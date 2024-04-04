@@ -46,11 +46,11 @@ namespace AZ
             : public SceneNotificationBus::Handler
         {
             friend class Scene;
-        public:
 
-            // [GFX TODO]: now these structure are empty, but we will clean up them later when we are sure we won't have any members in them.
+        public:
             struct PrepareViewsPacket
             {
+                AZStd::map<ViewPtr, RHI::DrawListMask> m_persistentViews;
             };
 
             struct SimulatePacket
@@ -105,7 +105,8 @@ namespace AZ
             //! views (transient views) are views that must be rendered only to correctly render 
             //! the main views. This function is called per frame and it happens on main thread.
             //! Support views should be added to outViews with their associated pipeline view tags.
-            virtual void PrepareViews(const PrepareViewsPacket&, AZStd::vector<AZStd::pair<PipelineViewTag, ViewPtr>>& /* outViews*/) {}
+            virtual void PrepareViews(
+                const PrepareViewsPacket& /*prepareViewPacket*/, AZStd::vector<AZStd::pair<PipelineViewTag, ViewPtr>>& /*outViews*/) {}
 
             //! The feature processor should perform any internal simulation at this point - For 
             //! instance, updating a particle system or animation. Not every feature processor
