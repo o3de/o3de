@@ -72,13 +72,6 @@ static const char* kBackupOrTempFolders[] =
     "_tmpresize", // legacy name
 };
 
-static const char* kLevelPathForSliceEditing = "EngineAssets/LevelForSliceEditing/LevelForSliceEditing.ly";
-
-static bool IsSliceFile(const QString& filePath)
-{
-    return filePath.endsWith(AzToolsFramework::SliceUtilities::GetSliceFileExtension().c_str(), Qt::CaseInsensitive);
-}
-
 namespace Internal
 {
     bool SaveLevel()

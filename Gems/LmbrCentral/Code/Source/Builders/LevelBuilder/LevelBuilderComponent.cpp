@@ -9,7 +9,6 @@
 #include "LevelBuilderComponent.h"
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
-#include <AzFramework/API/ApplicationAPI.h>
 
 namespace LevelBuilder
 {

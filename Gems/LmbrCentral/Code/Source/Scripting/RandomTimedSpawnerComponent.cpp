@@ -10,8 +10,6 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-#include <AzFramework/API/ApplicationAPI.h>
-
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <LmbrCentral/Scripting/SpawnerComponentBus.h>
 

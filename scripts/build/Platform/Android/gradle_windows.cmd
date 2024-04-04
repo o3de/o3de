@@ -10,8 +10,8 @@ REM
 SETLOCAL EnableDelayedExpansion
 
 IF NOT EXIST "%LY_3RDPARTY_PATH%" (
-    ECHO [ci_build] LY_3RDPARTY_PATH is invalid or not set
-    GOTO :error
+    ECHO [ci_build] Warning: LY_3RDPARTY_PATH %LY_3RDPARTY_PATH% does not exist. The 3rd party files will be downloaded.
+    mkdir %LY_3RDPARTY_PATH%
 )
 
 IF NOT EXIST "%GRADLE_BUILD_HOME%" (

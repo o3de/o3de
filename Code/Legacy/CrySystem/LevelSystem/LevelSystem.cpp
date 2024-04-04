@@ -18,7 +18,6 @@
 #include <CryCommon/LoadScreenBus.h>
 
 #include <AzCore/Time/ITime.h>
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/IO/FileOperations.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Input/Buses/Requests/InputChannelRequestBus.h>

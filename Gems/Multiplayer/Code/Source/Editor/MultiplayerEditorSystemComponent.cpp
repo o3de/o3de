@@ -26,7 +26,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/Utils/Utils.h>
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Process/ProcessUtils.h>
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>

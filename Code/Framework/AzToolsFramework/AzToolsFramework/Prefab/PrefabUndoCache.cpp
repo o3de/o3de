@@ -15,8 +15,6 @@
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Interface/Interface.h>
 
-#include <AzFramework/API/ApplicationAPI.h>
-
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
 

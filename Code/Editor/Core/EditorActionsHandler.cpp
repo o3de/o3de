@@ -8,8 +8,6 @@
 
 #include <Core/EditorActionsHandler.h>
 
-#include <AzFramework/API/ApplicationAPI.h>
-
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInternalInterface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>

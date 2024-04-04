@@ -17,7 +17,6 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/Asset/AssetBundleManifest.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/AssetBundle/AssetBundleComponent.h>
 #include <AzToolsFramework/Archive/ArchiveAPI.h>
 #include <AzToolsFramework/Asset/AssetSeedManager.h>
