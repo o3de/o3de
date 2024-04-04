@@ -92,8 +92,7 @@ private:
 
 bool IsLevelLoaded()
 {
-    auto cryEdit = CCryEditApp::instance();
-    return !cryEdit->IsExportingLegacyData() && GetIEditor()->IsLevelLoaded();
+    return GetIEditor()->IsLevelLoaded();
 }
 
 bool AreEntitiesSelected()
@@ -950,9 +949,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
             {
                 cryEdit->OnSwitchPhysics();
             },
-            [cryEdit = m_cryEditApp]
+            []
             {
-                return !cryEdit->IsExportingLegacyData() && GetIEditor()->GetGameEngine()->GetSimulationMode();
+                return GetIEditor()->GetGameEngine()->GetSimulationMode();
             }
         );
 
