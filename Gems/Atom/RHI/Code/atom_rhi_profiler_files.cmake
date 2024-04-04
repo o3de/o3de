@@ -6,5 +6,8 @@
 #
 #
 
-set(RENDERDOC_INCLUDE_DIRECTORIES ".")
-add_compile_definitions(ATOM_RENDERDOC_RUNTIME_PATH="${BASE_PATH}")
+set(FILES
+    Include/Atom/RHI.Profiler/GraphicsProfilerBus.h
+    Source/RHI.Profiler/GraphicsProfilerSystemComponent.h
+    Source/RHI.Profiler/GraphicsProfilerSystemComponent.cpp
+)

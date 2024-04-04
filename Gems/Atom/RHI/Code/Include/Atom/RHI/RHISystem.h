@@ -73,6 +73,7 @@ namespace AZ::RHI
         ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor(int deviceIndex = MultiDevice::DefaultDeviceIndex) const override;
         void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable) override;
         XRRenderingInterface* GetXRSystem() const override;
+        bool GpuMarkersEnabled() const override;
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
@@ -104,5 +105,6 @@ namespace AZ::RHI
 
         //Used for better verbosity related to gpu markers
         uint16_t m_numActiveRenderPipelines = 0;
+        bool m_gpuMarkersEnabled = true;
     };
 }

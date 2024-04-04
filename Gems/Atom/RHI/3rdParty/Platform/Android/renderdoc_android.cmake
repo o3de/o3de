@@ -7,4 +7,4 @@
 #
 
 set(RENDERDOC_INCLUDE_DIRECTORIES ".")
-add_compile_definitions(ATOM_RENDERDOC_RUNTIME_PATH="${BASE_PATH}")
+add_compile_definitions(ATOM_RENDERDOC_RUNTIME_PATH="")

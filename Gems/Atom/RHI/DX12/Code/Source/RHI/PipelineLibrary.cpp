@@ -8,6 +8,7 @@
 #include <RHI/Device.h>
 #include <RHI/PipelineLibrary.h>
 #include <Atom/RHI/Factory.h>
+#include <Atom/RHI.Profiler/GraphicsProfilerBus.h>
 
 namespace AZ
 {
@@ -51,8 +52,7 @@ namespace AZ
             AZStd::span<const uint8_t> bytes;
 
             bool shouldCreateLibFromSerializedData = true;
-            if (RHI::Factory::Get().IsRenderDocModuleLoaded() ||
-                RHI::Factory::Get().IsPixModuleLoaded())
+            if (RHI::GraphicsProfilerBus::HasHandlers())
             {
                 // CreatePipelineLibrary api does not function properly if Renderdoc or Pix is enabled
                 shouldCreateLibFromSerializedData = false;
@@ -217,8 +217,7 @@ namespace AZ
 
         RHI::ResultCode PipelineLibrary::MergeIntoInternal([[maybe_unused]] AZStd::span<const RHI::PipelineLibrary* const> pipelineLibraries)
         {
-            if (RHI::Factory::Get().IsRenderDocModuleLoaded() ||
-                RHI::Factory::Get().IsPixModuleLoaded())
+            if (RHI::GraphicsProfilerBus::HasHandlers())
             {
                 // StorePipeline api does not function properly if RenderDoc or Pix is enabled
                 return RHI::ResultCode::Fail;

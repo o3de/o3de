@@ -20,6 +20,8 @@
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
+#include <Atom/RHI/RHISystemInterface.h>
+
 namespace AZ
 {
     namespace DX12
@@ -322,7 +324,7 @@ namespace AZ
             const bool isPrologue = commandListIndex == 0;
             if (isPrologue)
             {
-                if (RHI::Factory::Get().PixGpuEventsEnabled())
+                if (RHI::RHISystemInterface::Get()->GpuMarkersEnabled())
                 {
                     PIXBeginEvent(commandList.GetCommandList(), PIX_MARKER_CMDLIST_COL, GetMarkerLabel().data());
                 }
@@ -434,7 +436,7 @@ namespace AZ
                     commandList.QueueTransitionBarrier(request);
                 }
 
-                if (RHI::Factory::Get().PixGpuEventsEnabled())
+                if (RHI::RHISystemInterface::Get()->GpuMarkersEnabled())
                 {
                     PIXEndEvent(commandList.GetCommandList());
                 }
