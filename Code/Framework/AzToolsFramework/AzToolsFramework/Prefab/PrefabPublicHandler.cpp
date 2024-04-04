@@ -2135,22 +2135,22 @@ namespace AzToolsFramework
                 return;
             }
 
-                            // Get the list of selected entities, we'll insert our duplicated entities after the last selected
-                // sibling in their parent's list, e.g. for:
-                // - Entity1
-                // - Entity2 (selected)
-                // - Entity3
-                // - Entity4 (selected)
-                // - Entity5
-                // Our duplicate selection command would create duplicate Entity2 and Entity4 and insert them after Entity4:
-                // - Entity1
-                // - Entity2
-                // - Entity3
-                // - Entity4
-                // - Entity2 (new, selected after duplicate)
-                // - Entity4 (new, selected after duplicate)
-                // - Entity5
-                AzToolsFramework::EntityIdList selectedEntities;
+            // Get the list of selected entities, we'll insert our duplicated entities after the last selected
+            // sibling in their parent's list, e.g. for:
+            // - Entity1
+            // - Entity2 (selected)
+            // - Entity3
+            // - Entity4 (selected)
+            // - Entity5
+            // Our duplicate selection command would create duplicate Entity2 and Entity4 and insert them after Entity4:
+            // - Entity1
+            // - Entity2
+            // - Entity3
+            // - Entity4
+            // - Entity2 (new, selected after duplicate)
+            // - Entity4 (new, selected after duplicate)
+            // - Entity5
+            AzToolsFramework::EntityIdList selectedEntities;
             AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
                 selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
             

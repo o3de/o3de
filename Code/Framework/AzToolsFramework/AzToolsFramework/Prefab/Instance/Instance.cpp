@@ -341,7 +341,7 @@ namespace AzToolsFramework
         void Instance::RemoveEntities(
             const AZStd::function<bool(const AZStd::unique_ptr<AZ::Entity>&)>& filter)
         {
-            // its possible for the container entity to be the one being asked to be removed
+            // It is possible for the container entity to be the one being asked to be removed
             // This can happen if the prefab is being exported to a spawnable, and the container
             // entity is set to "editor only" or even "not exported".  This is what allows
             // prefab container entities to be set to Editor Only without causing a crash in the Editor.

@@ -119,7 +119,7 @@ namespace AzToolsFramework
             void ContextMenu_OpenPrefabInstance(AZ::EntityId containerEntity);
             void ContextMenu_Duplicate();
             void ContextMenu_DeleteSelected();
-            void ContextMenu_DetachPrefab(AZ::EntityId containerEntity, bool keepContainers);
+            void ContextMenu_DetachPrefab(AZ::EntityId containerEntity);
             void ContextMenu_RevertOverrides(AZ::EntityId entityId);
 
             // Reference detection

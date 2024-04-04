@@ -20,6 +20,7 @@
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
+#include <AzToolsFramework/API/SettingsRegistryUtils.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h>
@@ -39,6 +40,7 @@
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/Procedural/ProceduralPrefabAsset.h>
+#include <AzToolsFramework/Prefab/PrefabSettings.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
 #include <AzToolsFramework/UI/Prefab/ActionManagerIdentifiers/PrefabActionUpdaterIdentifiers.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
@@ -500,7 +502,8 @@ namespace AzToolsFramework
                 AZStd::string actionIdentifier = "o3de.action.prefabs.detach";
                 AzToolsFramework::ActionProperties actionProperties;
                 actionProperties.m_name = "Detach Prefab";
-                actionProperties.m_description = "Selected prefab is detached from its prefab file and becomes normal entities instead.";
+                actionProperties.m_description = "Selected prefab is detached from its prefab file and becomes normal entities instead. "
+                                                 "You can change whether or not this action keeps the container entity in the editor settings panel.";
                 actionProperties.m_category = "Prefabs";
 
                 m_actionManagerInterface->RegisterAction(
@@ -515,56 +518,7 @@ namespace AzToolsFramework
 
                         if (CanDetachPrefabWithCurrentSelection(selectedEntities))
                         {
-                            ContextMenu_DetachPrefab(selectedEntities.front(), false);
-                        }
-                    }
-                );
-
-                m_actionManagerInterface->InstallEnabledStateCallback(
-                    actionIdentifier,
-                    [this]() -> bool
-                    {
-                        AzToolsFramework::EntityIdList selectedEntities;
-                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
-
-                        return CanDetachPrefabWithCurrentSelection(selectedEntities);
-                    }
-                );
-
-                // Trigger update whenever entity selection changes.
-                m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
-
-                // This action is only accessible outside of Component Modes
-                m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
-            }
-
-            // Detach Prefab and keep container entities
-            // note that the naming of this is opposite to the API convention.
-            // this is because the API "DetachPrefab" was the default behavior before
-            // and kept the container entities.  However, this is likely not to be the default
-            // user behavior desired since detaching and removing the container entity is the natural
-            // mirror of creating a prefab.
-            {
-                AZStd::string actionIdentifier = "o3de.action.prefabs.detach_and_keep_container_entities";
-                AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Detach Prefab and Keep Container Entities";
-                actionProperties.m_description = "Selected prefab detaches from its prefab file, but keeps its prefab container transform entity";
-                actionProperties.m_category = "Prefabs";
-
-                m_actionManagerInterface->RegisterAction(
-                    EditorIdentifiers::MainWindowActionContextIdentifier,
-                    actionIdentifier,
-                    actionProperties,
-                    [this]()
-                    {
-                        AzToolsFramework::EntityIdList selectedEntities;
-                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
-
-                        if (CanDetachPrefabWithCurrentSelection(selectedEntities))
-                        {
-                            ContextMenu_DetachPrefab(selectedEntities.front(), true);
+                            ContextMenu_DetachPrefab(selectedEntities.front());
                         }
                     }
                 );
@@ -1343,12 +1297,13 @@ namespace AzToolsFramework
             }
         }
 
-        void PrefabIntegrationManager::ContextMenu_DetachPrefab(AZ::EntityId containerEntity, bool keepContainerEntity)
+        void PrefabIntegrationManager::ContextMenu_DetachPrefab(AZ::EntityId containerEntity)
         {
-            PrefabOperationResult detachPrefabResult  = 
-                keepContainerEntity ? 
-                      s_prefabPublicInterface->DetachPrefab(containerEntity)
-                    : s_prefabPublicInterface->DetachPrefabAndRemoveContainerEntity(containerEntity);
+            bool shouldRemoveContainer = AzToolsFramework::GetRegistry(Settings::DetachPrefabRemovesContainerName, Settings::DetachPrefabRemovesContainerDefault);
+
+            PrefabOperationResult detachPrefabResult = shouldRemoveContainer ? 
+                       s_prefabPublicInterface->DetachPrefabAndRemoveContainerEntity(containerEntity)
+                    : s_prefabPublicInterface->DetachPrefab(containerEntity);
 
             if (!detachPrefabResult.IsSuccess())
             {

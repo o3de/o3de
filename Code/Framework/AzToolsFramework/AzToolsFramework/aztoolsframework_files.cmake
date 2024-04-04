@@ -91,6 +91,7 @@ set(FILES
     API/EditorViewportIconDisplayInterface.h
     API/PythonLoader.h
     API/PythonLoader.cpp
+    API/SettingsRegistryUtils.h
     API/ViewPaneOptions.h
     API/ViewportEditorModeTrackerInterface.h
     Application/Ticker.h
@@ -881,6 +882,7 @@ set(FILES
     Prefab/PrefabPublicRequestBus.h
     Prefab/PrefabPublicRequestHandler.h
     Prefab/PrefabPublicRequestHandler.cpp
+    Prefab/PrefabSettings.h
     Prefab/PrefabUndoCache.cpp
     Prefab/PrefabUndoCache.h
     Prefab/PrefabUndoHelpers.cpp
