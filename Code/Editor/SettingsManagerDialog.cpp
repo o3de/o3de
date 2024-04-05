@@ -112,17 +112,17 @@ void CSettingsManagerDialog::OnReadBtnClick()
         }
 
         AZStd::vector<char> charBuffer;
-
         charBuffer.resize_no_construct(length + 1);
         fileStream.Read(length, charBuffer.data());
         charBuffer.back() = 0;
 
-        if (!m_document.parse<0>(charBuffer.data()))
+        AZ::rapidxml::xml_document<char> document;
+        if (!document.parse<0>(charBuffer.data()))
         {
             return;
         }
 
-        auto layoutNames = GetIEditor()->GetSettingsManager()->GetMatchingLayoutNames(m_document);
+        auto layoutNames = GetIEditor()->GetSettingsManager()->GetMatchingLayoutNames(document);
         for (auto& en : layoutNames)
         {
             if (!en.humanReadable.isEmpty())
@@ -175,6 +175,37 @@ void CSettingsManagerDialog::OnImportBtnClick()
         }
     }
 
+    AZ::IO::FileIOStream fileStream;
+    if (!fileStream.Open(m_importFileStr.toUtf8().data(), AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary))
+    {
+        AZ_Warning("CSettingsManagerDialog", false, "Failed to open layout file ( %s ).\n", m_importFileStr.toUtf8().data());
+        return;
+    }
+
+    if (!fileStream.CanRead())
+    {
+        AZ_Warning("CSettingsManagerDialog", false, "Failed to read layout file ( %s ).\n", m_importFileStr.toUtf8().data());
+        return;
+    }
+
+    AZ::IO::SizeType length = fileStream.GetLength();
+
+    if (length == 0)
+    {
+        return;
+    }
+
+    AZStd::vector<char> charBuffer;
+    charBuffer.resize_no_construct(length + 1);
+    fileStream.Read(length, charBuffer.data());
+    charBuffer.back() = 0;
+
+    AZ::rapidxml::xml_document<char> document;
+    if (!document.parse<0>(charBuffer.data()))
+    {
+        return;
+    }
+
     // Import Settings
     if (bImportSettings)
     {
@@ -223,7 +254,7 @@ void CSettingsManagerDialog::OnImportBtnClick()
         it = toolNames.find(QStringLiteral(MAINFRM_LAYOUT_PREVIEW));
     }
 
-    AZStd::vector<struct CSettingsManager::FilterNameResult> filterResults = CSettingsManager::FilterMatchingLayoutNodes(m_document, toolNames);
+    AZStd::vector<struct CSettingsManager::FilterNameResult> filterResults = CSettingsManager::FilterMatchingLayoutNodes(document, toolNames);
     if (it != toolNames.end())
     {
         const QString& className = it->first;
@@ -239,19 +270,37 @@ void CSettingsManagerDialog::OnImportBtnClick()
             viewPaneManager->DeserializeLayout(dockingLayoutNode->node);
         }
     }
-    for(auto& filter: filterResults)
+    for (it = toolNames.begin(); it != toolNames.end(); ++it)
     {
-        if (filter.key == QStringLiteral(MAINFRM_LAYOUT_NORMAL) || filter.key == QStringLiteral(MAINFRM_LAYOUT_PREVIEW)== 0)
+        const QString& className = it->first;
+        const QString& paneName = it->second;
+
+        if (className == QStringLiteral(MAINFRM_LAYOUT_NORMAL) || className == QStringLiteral(MAINFRM_LAYOUT_PREVIEW))
         {
-            return;
+            continue;
         }
-        auto toolPanel = FindViewPane<QMainWindow>(filter.humanReadable);
+
+        auto dockingLayoutNode = AZStd::find_if(
+            filterResults.begin(),
+            filterResults.end(),
+            [&className](struct CSettingsManager::FilterNameResult& res)
+            {
+                return res.key == className;
+            });
+
+        if (dockingLayoutNode == filterResults.end())
+        {
+            continue;
+        }
+
+        auto toolPanel = FindViewPane<QMainWindow>(paneName);
         if (!toolPanel)
         {
             continue;
         }
 
-        for (auto* it = filter.node->first_node(); it; it->next_sibling())
+
+        for (auto* it = dockingLayoutNode->node; it; it->next_sibling())
         {
             if (azstricmp(it->name(), "WindowState"))
             {
