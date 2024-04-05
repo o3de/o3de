@@ -60,6 +60,8 @@ namespace AZ
 
         void GarbageCollect() override;
         void GarbageCollectStep(int numberOfSteps) override;
+        void SetGarbageCollectStepsIfDefault(int newNumberOfSteps) override;
+        int GetDefaultGarbageCollectSteps() override;
 
         bool Load(const Data::Asset<ScriptAsset>& asset, const char* mode, ScriptContextId id) override;
         ScriptLoadResult LoadAndGetNativeContext(const Data::Asset<ScriptAsset>& asset, const char* mode, ScriptContextId id) override;
@@ -129,6 +131,7 @@ namespace AZ
         {
             ScriptContext* m_context = nullptr;
             bool m_isOwner = true;
+            bool m_isDefaultNumberOfGCSteps = false;
             int m_garbageCollectorSteps = 0;
             AZStd::unordered_map<Uuid, LoadedScriptInfo> m_loadedScripts;
             AZStd::unordered_map<Uuid, Data::Asset<ScriptAsset>> m_trackedScripts;
@@ -146,6 +149,7 @@ namespace AZ
             {
                 m_context = rhs.m_context;
                 m_isOwner = rhs.m_isOwner;
+                m_isDefaultNumberOfGCSteps = rhs.m_isDefaultNumberOfGCSteps;
                 m_garbageCollectorSteps = rhs.m_garbageCollectorSteps;
 
                 {

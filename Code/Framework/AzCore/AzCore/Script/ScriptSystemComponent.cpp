@@ -149,7 +149,15 @@ ScriptContext*  ScriptSystemComponent::AddContext(ScriptContext* context, int ga
         ContextContainer& cc = m_contexts.back();
         cc.m_context = context;
         cc.m_isOwner = false;
-        cc.m_garbageCollectorSteps = garbageCollectorStep < 1 ? m_defaultGarbageCollectorSteps : garbageCollectorStep;
+        if (garbageCollectorStep < 1)
+        {
+            cc.m_garbageCollectorSteps = m_defaultGarbageCollectorSteps;
+            cc.m_isDefaultNumberOfGCSteps = true;
+        }
+        else
+        {
+            cc.m_garbageCollectorSteps = garbageCollectorStep;
+        }
 
         if (context->GetId() != ScriptContextIds::CryScriptContextId)
         {
@@ -183,6 +191,7 @@ ScriptContext* ScriptSystemComponent::AddContextWithId(ScriptContextId id)
     cc.m_context = aznew ScriptContext(id);
     cc.m_isOwner = true;
     cc.m_garbageCollectorSteps = m_defaultGarbageCollectorSteps;
+    cc.m_isDefaultNumberOfGCSteps = true;
     cc.m_context->SetRequireHook(
         [this](lua_State* lua, ScriptContext* context, const char* module) -> int
         {
@@ -300,17 +309,20 @@ ScriptContext*  ScriptSystemComponent::GetContext(ScriptContextId id)
 //=========================================================================
 // OnSystemTick
 //=========================================================================
-void    ScriptSystemComponent::OnSystemTick()
+void ScriptSystemComponent::OnSystemTick()
 {
     for (size_t i = 0; i < m_contexts.size(); ++i)
     {
         ContextContainer& contextContainer = m_contexts[i];
-        if (contextContainer.m_context->GetDebugContext())
+        ScriptContext* vm = contextContainer.m_context;
+        if (vm)
         {
-            contextContainer.m_context->GetDebugContext()->ProcessDebugCommands();
+            if (vm->GetDebugContext())
+            {
+                vm->GetDebugContext()->ProcessDebugCommands();
+            }
+            vm->GarbageCollectStep(contextContainer.m_garbageCollectorSteps);
         }
-
-        contextContainer.m_context->GarbageCollectStep(contextContainer.m_garbageCollectorSteps);
     }
 }
 
@@ -342,6 +354,29 @@ void ScriptSystemComponent::GarbageCollectStep(int numberOfSteps)
             vm->GarbageCollectStep(numberOfSteps);
         }
     }
+}
+
+//=========================================================================
+// SetGarbageCollectStepsIfDefault
+//=========================================================================
+void ScriptSystemComponent::SetGarbageCollectStepsIfDefault(int newNumberOfSteps)
+{
+    for (size_t i = 0; i < m_contexts.size(); ++i)
+    {
+        ContextContainer& contextContainer = m_contexts[i];
+        if (contextContainer.m_isDefaultNumberOfGCSteps)
+        {
+            contextContainer.m_garbageCollectorSteps = newNumberOfSteps;
+        }
+    }
+}
+
+//=========================================================================
+// ResetGarbageCollectStepsIfDefault
+//=========================================================================
+int ScriptSystemComponent::GetDefaultGarbageCollectSteps()
+{
+    return m_defaultGarbageCollectorSteps;
 }
 
 bool ScriptSystemComponent::Load(const Data::Asset<ScriptAsset>& asset, const char* mode, ScriptContextId id)

@@ -84,6 +84,12 @@ namespace AZ
         /// Step GC 
         virtual void GarbageCollectStep(int numberOfSteps) = 0;
 
+        /// Change GC number of steps for all contexts with default number of steps, do not touch custom contexts
+        virtual void SetGarbageCollectStepsIfDefault(int newNumberOfSteps) = 0;
+
+        /// Get default GC number of steps
+        virtual int GetDefaultGarbageCollectSteps() = 0;
+
         /**
          * Load script asset into the a context.
          * If the load succeeds, the script table will be on top of the stack
