@@ -2,10 +2,10 @@ import sys
 import signal
 import argparse
 import logging
-import Tools.RemoteConsole.ly_remote_console.ly_remote_console.remote_console_commands as remote_console_commands
+import ly_remote_console.ly_remote_console.remote_console_commands as remote_console_commands
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', filename='remote_console.log', encoding='utf-8', filemode='w', level=logging.INFO)
+logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', filename='remote_console.log', encoding='utf-8', level=logging.INFO)
 remoteConsole = None
 
 def main():
