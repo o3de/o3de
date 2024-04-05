@@ -50,7 +50,7 @@ namespace AZ::RHI
         //! If a bindless srg layout is not provided we simply skip initialization with the assumption that no one will use bindless srg
         if (bindlessSrgLayout)
         {
-            bool success = true;
+            [[maybe_unused]] bool success = true;
 
             for (auto device : m_devices)
             {

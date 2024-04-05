@@ -109,12 +109,12 @@ namespace AZ
                 const MaterialModelUvOverrideMap& materialModelUvMap = {},
                 const MaterialUvNameMap& materialUvNameMap = {}) const;
 
-           //! Fills a InputStreamLayout and StreamBufferViewList for the set of streams that satisfy a ShaderInputContract.
-           // @param uvStreamTangentBitmaskOut a mask processed during UV stream matching, and later to determine which tangent/bitangent stream to use.
-           // @param contract the contract that defines the expected inputs for a shader, used to determine which streams are optional.
-           // @param meshIndex the index of the mesh to search in.
-           // @param materialModelUvMap a map of UV name overrides, which can be supplied to bind a specific mesh stream name to a different material shader stream name.
-           // @param materialUvNameMap the UV name map that came from a MaterialTypeAsset, which defines the default set of material shader stream names.
+            //! Fills a InputStreamLayout and StreamBufferViewList for the set of streams that satisfy a ShaderInputContract.
+            // @param uvStreamTangentBitmaskOut a mask processed during UV stream matching, and later to determine which tangent/bitangent stream to use.
+            // @param contract the contract that defines the expected inputs for a shader, used to determine which streams are optional.
+            // @param meshIndex the index of the mesh to search in.
+            // @param materialModelUvMap a map of UV name overrides, which can be supplied to bind a specific mesh stream name to a different material shader stream name.
+            // @param materialUvNameMap the UV name map that came from a MaterialTypeAsset, which defines the default set of material shader stream names.
             bool GetStreamsForMesh(
                 RHI::InputStreamLayout& layoutOut,
                 ModelLod::StreamBufferViewList& streamBufferViewsOut,
