@@ -16,8 +16,11 @@
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/CommandLine/CommandLine.h>
+#include <AzFramework/Device/DeviceAttributeInterface.h>
+#include <AzFramework/Device/DeviceAttributeGPUModel.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
@@ -203,6 +206,21 @@ namespace AZ::RHI
         {
             AZ_Error("RHISystem", false, "Failed to initialize RHI device.");
             return ResultCode::Fail;
+        }
+
+        // Register device GPUs attributes
+        if (auto deviceRegistrar = AzFramework::DeviceAttributeRegistrar::Get())
+        {
+            AZStd::vector<AZStd::string_view> gpuList;
+            AZStd::transform(
+                m_devices.begin(),
+                m_devices.end(),
+                std::back_inserter(gpuList),
+                [](const auto& device)
+                {
+                    return device->GetPhysicalDevice().GetDescriptor().m_description.c_str();
+                });
+            deviceRegistrar->RegisterDeviceAttribute(AZStd::make_shared<AzFramework::DeviceAttributeGPUModel>(gpuList));
         }
         return ResultCode::Success;
     }

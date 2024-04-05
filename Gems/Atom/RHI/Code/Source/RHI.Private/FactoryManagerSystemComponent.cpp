@@ -70,6 +70,7 @@ namespace AZ::RHI
     void FactoryManagerSystemComponent::GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent)
     {
         dependent.push_back(AZ_CRC("GraphicsProfilerService"));
+        dependent.push_back(AZ_CRC_CE("DeviceAttributesSystemComponentService"));
     }
 
     void FactoryManagerSystemComponent::Activate()
