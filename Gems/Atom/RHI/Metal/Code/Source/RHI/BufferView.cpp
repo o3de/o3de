@@ -54,7 +54,6 @@ namespace AZ
                                                                  resourceOptions : mtlBuffer.resourceOptions
                                                                            usage : textureUsage];
                 mtlTextureDesc.textureType = MTLTextureTypeTextureBuffer;
-
                 [[maybe_unused]] uint32_t bytesPerRow = viewDescriptor.m_elementCount * bytesPerPixel;
                 AZ_Assert(bytesPerRow == (viewDescriptor.m_elementCount * viewDescriptor.m_elementSize), "Mismatch for bytesPerRow");
                 
@@ -62,8 +61,6 @@ namespace AZ
                                                                          offset:m_memoryView.GetOffset()
                                                                     bytesPerRow:(viewDescriptor.m_elementCount * bytesPerPixel)];
                 AZ_Assert(mtlTexture, "Failed to create texture");
-                [mtlTextureDesc release];
-                mtlTextureDesc = nil;
                 
                 RHI::Ptr<MetalResource> textureViewResource = MetalResource::Create(MetalResourceDescriptor{ mtlTexture, ResourceType::MtlTextureType });
                 m_imageBufferMemoryView = MemoryView(textureViewResource, 0, (viewDescriptor.m_elementCount * bytesPerPixel), 0);
