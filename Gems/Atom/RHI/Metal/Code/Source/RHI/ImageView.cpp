@@ -84,7 +84,6 @@ namespace AZ
                 RHI::Ptr<MetalResource> resc = MetalResource::Create(MetalResourceDescriptor{textureView, ResourceType::MtlTextureType});
                 m_memoryView = MemoryView(resc, 0, mtlTexture.buffer.length, 0);
             }
-
             
             //textureView is null for the swap chain texture as it is not created until the end of first frame.
             if(textureView)
