@@ -21,7 +21,7 @@ class PixelGeometryData_Eye
 {
     // BasePBR
     float3 positionWS;
-    float3 vertexNormal;
+    real3 vertexNormal;
     float2 uvs[UvSetCount];
     float3 tangents[UvSetCount];
     float3 bitangents[UvSetCount];

@@ -62,7 +62,7 @@ Surface EvaluateSurface_Eye(
 
     // ------- Iris/Sclera Layer Setup -------
 
-    float3x3 uvMatrix = CreateIdentity3x3(); // The eye material type doesn't support UV transforms
+    real3x3 uvMatrix = CreateIdentity3x3_real(); // The eye material type doesn't support UV transforms
 
 #if USE_NORMALIZED_SPACE_ALGORITHM
     float3 normalizedLocal = normalize(localPosition);

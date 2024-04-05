@@ -78,7 +78,7 @@ float3 AdjustBackFaceNormal(float3 normal, bool isFrontFace)
 
 // Get the input normal in world space
 float3 GetNormalInputWS(Texture2D map, sampler mapSampler, float2 uv, bool flipX, bool flipY, bool isFrontFace,
-                        float3 normal, float3 tangent, float3 bitangent, float3x3 uvMatrix, bool useTexture, float normalStrength)
+                        float3 normal, float3 tangent, float3 bitangent, real3x3 uvMatrix, bool useTexture, float normalStrength)
 {
     if (useTexture && AreNormalMapsEnabled())
     {
@@ -95,7 +95,7 @@ float3 GetNormalInputWS(Texture2D map, sampler mapSampler, float2 uv, bool flipX
 }
 
 // Get the input normal in tangent space
-float3 GetNormalInputTS(Texture2D map, sampler mapSampler, float2 uv, bool flipX, bool flipY, float3x3 uvMatrix, bool useTexture, float normalStrength)
+float3 GetNormalInputTS(Texture2D map, sampler mapSampler, float2 uv, bool flipX, bool flipY, real3x3 uvMatrix, bool useTexture, float normalStrength)
 {
     if (useTexture && AreNormalMapsEnabled())
     {
@@ -110,14 +110,14 @@ float3 GetNormalInputTS(Texture2D map, sampler mapSampler, float2 uv, bool flipX
 
 // Helper with default normal strength = 1.0f
 float3 GetNormalInputWS(Texture2D map, sampler mapSampler, float2 uv, bool flipX, bool flipY, bool isFrontFace,
-                        float3 normal, float3 tangent, float3 bitangent, float3x3 uvMatrix, bool useTexture)
+                        float3 normal, float3 tangent, float3 bitangent, real3x3 uvMatrix, bool useTexture)
 {
     const float normalStrength = 1.0f;
     return GetNormalInputWS(map, mapSampler, uv, flipX, flipY, isFrontFace, normal, tangent, bitangent, uvMatrix, useTexture, normalStrength);
 }
 
 // Helper with default normal strength = 1.0f
-float3 GetNormalInputTS(Texture2D map, sampler mapSampler, float2 uv, bool flipX, bool flipY, float3x3 uvMatrix, bool useTexture)
+float3 GetNormalInputTS(Texture2D map, sampler mapSampler, float2 uv, bool flipX, bool flipY, real3x3 uvMatrix, bool useTexture)
 {
     const float normalStrength = 1.0f;
     return GetNormalInputTS(map, mapSampler, uv, flipX, flipY, uvMatrix, useTexture, normalStrength);

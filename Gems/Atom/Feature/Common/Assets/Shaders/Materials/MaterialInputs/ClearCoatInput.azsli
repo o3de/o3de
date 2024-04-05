@@ -35,10 +35,10 @@ option bool prefix##o_clearCoat_normal_useTexture;
 
 void GetClearCoatInputs(Texture2D influenceMap, float2 influenceUV, real clearCoatFactor, bool useInfluenceMap,
                         Texture2D roughnessMap, float2 roughnessUV, real roughness, bool useRoughnessMap,
-                        Texture2D normalMap, float2 normalUV, float3 normal, bool useNormalMap, real normalStrength,
-                        float3x3 uvMatrix, float3 tangent, float3 bitangent,
+                        Texture2D normalMap, float2 normalUV, real3 normal, bool useNormalMap, real normalStrength,
+                        real3x3 uvMatrix, real3 tangent, real3 bitangent,
                         sampler mapSampler, bool isFrontFace,
-                        inout real finalClearCoatFactor, inout real clearCoatRoughness, inout float3 clearCoatNormal)
+                        inout real finalClearCoatFactor, inout real clearCoatRoughness, inout real3 clearCoatNormal)
 {
     if(useInfluenceMap)
     {
@@ -52,7 +52,7 @@ void GetClearCoatInputs(Texture2D influenceMap, float2 influenceUV, real clearCo
     
     if (useNormalMap)
     {  
-        float2 sampledValue = normalMap.Sample(mapSampler, normalUV).xy;
+        real2 sampledValue = normalMap.Sample(mapSampler, normalUV).xy;
         clearCoatNormal = GetWorldSpaceNormal(sampledValue, normal, tangent, bitangent, uvMatrix, normalStrength);
     }
     else
@@ -61,7 +61,7 @@ void GetClearCoatInputs(Texture2D influenceMap, float2 influenceUV, real clearCo
     }
     
     // Flip normal if back face is rendered   
-    clearCoatNormal *= float(mad(isFrontFace, 2.0, -1.0));
+    clearCoatNormal *= real(mad(isFrontFace, 2.0, -1.0));
     finalClearCoatFactor = clearCoatFactor;
     clearCoatRoughness = max(roughness, 1e-3);
 }

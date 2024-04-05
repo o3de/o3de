@@ -130,7 +130,7 @@ Surface EvaluateSurface_Skin(
         normalMapSample = ApplyNormalWrinkleMap(o_wrinkleLayers_normal_useTexture4, normalMapSample, MaterialSrg::m_wrinkle_normal_texture4, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, wrinkleBlendFactors.a);
     }
 
-    float3x3 uvMatrix = float3x3(CreateIdentity3x3());
+    real3x3 uvMatrix = CreateIdentity3x3_real();
 
     if(o_detail_normal_useTexture)
     {

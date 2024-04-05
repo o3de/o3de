@@ -26,7 +26,7 @@ float       prefix##m_heightmapOffset;
 option bool prefix##o_useHeightmap; 
 
 void GetParallaxInput(float3 normal, float3 tangent, float3 bitangent, float heightmapScale, float heightmapOffset,
-                      float4x4 objectWorldMatrix, float3x3 uvMatrix, float3x3 uvMatrixInverse,
+                      float4x4 objectWorldMatrix, real3x3 uvMatrix, real3x3 uvMatrixInverse,
                       inout float2 uv, inout float3 worldPosition, inout float depthNDC, inout float depthCS, out bool isClipped)
 {
     isClipped = false;

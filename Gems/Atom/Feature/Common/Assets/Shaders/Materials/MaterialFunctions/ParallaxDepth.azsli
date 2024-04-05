@@ -25,8 +25,8 @@
      inout float depthCS,
      out bool isClipped)
 {
-    float3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? float3x3(MaterialSrg::m_uvMatrix) : float3x3(CreateIdentity3x3());
-    float3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? float3x3(MaterialSrg::m_uvMatrixInverse) : float3x3(CreateIdentity3x3());
+    real3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? real3x3(MaterialSrg::m_uvMatrix) : CreateIdentity3x3_real();
+    real3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? real3x3(MaterialSrg::m_uvMatrixInverse) : CreateIdentity3x3_real();
     
     float heightmapScale = float(MaterialSrg::m_heightmapScale);
     float heightmapOffset = float(MaterialSrg::m_heightmapOffset);

@@ -372,7 +372,7 @@ ParallaxOffset GetParallaxOffset( float depthFactor,
                                   float3 tangentWS,
                                   float3 bitangentWS,
                                   float3 normalWS,
-                                  float3x3 uvMatrix)
+                                  real3x3 uvMatrix)
 {
     // Tangent space eye vector
     float3 dirToCameraTS = normalize(WorldSpaceToTangent(dirToCameraWS, normalWS, tangentWS, bitangentWS));

@@ -107,8 +107,8 @@ float3 ApplyNormalMapOverlayWS(bool applyOverlay, float3 vertexNormalWS, float3 
 }
 
 float3 GetDetailedNormalInputWS(bool isFrontFace, float3 vertexNormalWS,
-                                float3 mainTangent,   float3 mainBitangent,   Texture2D mainNormalMap,   sampler mainSampler,   float2 mainUv,   float mainNormalFactor,   bool flipMainNormalX,   bool flipMainNormalY,   float3x3 mainNormalUvMatrix,   bool useMainNormalMap,
-                                float3 detailTangent, float3 detailBitangent, Texture2D detailNormalMap, sampler detailSampler, float2 detailUv, float detailNormalFactor, bool flipDetailNormalX, bool flipDetailNormalY, float3x3 detailNormalUvMatrix, bool useDetailNormalMap)
+                                float3 mainTangent,   float3 mainBitangent,   Texture2D mainNormalMap,   sampler mainSampler,   float2 mainUv,   float mainNormalFactor,   bool flipMainNormalX,   bool flipMainNormalY,   real3x3 mainNormalUvMatrix,   bool useMainNormalMap,
+                                float3 detailTangent, float3 detailBitangent, Texture2D detailNormalMap, sampler detailSampler, float2 detailUv, float detailNormalFactor, bool flipDetailNormalX, bool flipDetailNormalY, real3x3 detailNormalUvMatrix, bool useDetailNormalMap)
 {
     float3 normal;
     
