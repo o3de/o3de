@@ -75,7 +75,8 @@ namespace AZ
         void ProfileDeallocation(void* ptr, size_t byteSize, size_t alignment, Debug::AllocationInfo* info);
 
         /// Records a reallocation for profiling.
-        void ProfileReallocation(void* ptr, void* newPtr, size_t newSize, size_t newAlignment);
+        void ProfileReallocationBegin(void* ptr);
+        void ProfileReallocationEnd(void* ptr, void* newPtr, size_t newSize, size_t newAlignment);
 
         /// Records a resize for profiling.
         void ProfileResize(void* ptr, size_t newSize);

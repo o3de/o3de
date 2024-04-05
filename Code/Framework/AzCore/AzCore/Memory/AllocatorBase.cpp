@@ -244,7 +244,20 @@ namespace AZ
 #endif
     }
 
-    void AllocatorBase::ProfileReallocation(void* ptr, void* newPtr, size_t newSize, size_t newAlignment)
+    void AllocatorBase::ProfileReallocationBegin(void* ptr)
+    {
+        if (m_isProfilingActive)
+        {
+            if (m_records)
+            {
+                m_records->UnregisterAllocation(ptr, 0, 0, nullptr);  // ignore metadata values
+            }
+        }
+#if O3DE_RECORDING_ENABLED
+        RecordAllocatorOperation(AllocatorOperation::DEALLOCATE, ptr);
+#endif
+    }
+    void AllocatorBase::ProfileReallocationEnd(void* ptr, void* newPtr, size_t newSize, size_t newAlignment)
     {
         if (newSize && m_isProfilingActive)
         {
@@ -254,7 +267,6 @@ namespace AZ
             }
         }
 #if O3DE_RECORDING_ENABLED
-        RecordAllocatorOperation(AllocatorOperation::DEALLOCATE, ptr);
         RecordAllocatorOperation(AllocatorOperation::ALLOCATE, newPtr, newSize, newAlignment);
 #endif
     }
