@@ -1313,6 +1313,33 @@ void QtViewPaneManager::SerializeLayout(XmlNodeRef& parentNode) const
     parentNode->addChild(windowStateNode);
 }
 
+bool QtViewPaneManager::DeserializeLayout(const AZ::rapidxml::xml_node<char>* parentNode)
+{
+    ViewLayoutState state;
+    const AZ::rapidxml::xml_node<char>* node = parentNode;
+    if(!node) {
+        return false;
+    }
+
+    for(node = node->first_node();node; node = node->next_sibling()) {
+        if(azstricmp(node->name(), "ViewPanes") == 0) {
+            break;
+        }
+    }
+    if (!node)
+        return false;
+    for(node = node->first_node();node; node = node->next_sibling()) {
+        if(azstricmp(node->name(), "WindowState") == 0) {
+            break;
+        }
+    }
+    if (!node)
+        return false;
+
+    state.mainWindowState = QByteArray::fromHex(node->value());
+    return RestoreLayout(state);
+}
+
 bool QtViewPaneManager::DeserializeLayout(const XmlNodeRef& parentNode)
 {
     ViewLayoutState state;

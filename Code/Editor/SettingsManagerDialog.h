@@ -12,6 +12,8 @@
 
 #pragma once
 
+#include <AzCore/XML/rapidxml.h>
+
 #if !defined(Q_MOC_RUN)
 #include <QDialog>
 #include <QScopedPointer>
@@ -43,14 +45,13 @@ protected:
     void OnReadBtnClick();
     void OnExportBtnClick();
     void ImportSettings(QString file);
-    void ImportLayouts(QString file, const QStringList& layouts);
     void OnImportBtnClick();
     void OnCloseAllTools();
     void OnSelectionChanged();
 
 private:
     QString m_importFileStr;
-
+    AZ::rapidxml::xml_document<char> m_document;
     QScopedPointer<Ui::SettingsManagerDialog> ui;
 };
 
