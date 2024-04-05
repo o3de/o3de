@@ -77,7 +77,8 @@ namespace AZ
                     Data::Instance<RPI::ShaderResourceGroup> srg=nullptr
                 );
 
-                static Data::Instance<RHI::MultiDeviceImagePool> CreateImagePool(RHI::ImagePoolDescriptor& imagePoolDesc);
+                static Data::Instance<RHI::MultiDeviceImagePool> CreateImagePool(
+                    RHI::ImagePoolDescriptor& imagePoolDesc);
 
                 static Data::Instance<RHI::MultiDeviceImage> CreateImage2D(
                     RHI::MultiDeviceImagePool* imagePool, RHI::ImageDescriptor& imageDesc);
