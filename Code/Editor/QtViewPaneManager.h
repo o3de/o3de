@@ -12,6 +12,7 @@
 #include "Include/EditorCoreAPI.h"
 #include <QtViewPane.h>
 #include "Resource.h"
+#include <AzCore/XML/rapidxml.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzQtComponents/Components/DockTabWidget.h>
@@ -201,6 +202,7 @@ public:
 
     void SerializeLayout(XmlNodeRef& parentNode) const;
     bool DeserializeLayout(const XmlNodeRef& parentNode);
+    bool DeserializeLayout(const AZ::rapidxml::xml_node<char>* parentNode);
 
     static QtViewPaneManager* instance();
     static bool exists();

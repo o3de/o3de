@@ -473,68 +473,58 @@ void CSettingsManager::UpdateLayoutNode()
     }
 }
 
-void CSettingsManager::GetMatchingLayoutNames(TToolNamesMap& foundTools, XmlNodeRef& resultNode, QString file)
+AZStd::vector<struct CSettingsManager::FilterNameResult> CSettingsManager::FilterMatchingLayoutNodes(
+    AZ::rapidxml::xml_document<char>& document,
+    const TToolNamesMap& filterTools)
 {
-    // Need to populate in-memory node with available layouts.
-    UpdateLayoutNode();
-
-    XmlNodeRef root = XmlHelpers::LoadXmlFromFile(file.toUtf8().data());
-
-    if (!root)
+    AZStd::vector<struct CSettingsManager::FilterNameResult> result;
+    AZ::rapidxml::xml_node<char>* node = document.first_node();
+    for (; node; node = node->next_sibling())
     {
-        return;
-    }
-
-    root = root->findChild(EDITOR_LAYOUT_ROOT_NODE);
-
-    if (!root)
-    {
-        return;
-    }
-
-    root = root->findChild(EDITOR_LAYOUT_NODE);
-
-    if (!root)
-    {
-        return;
-    }
-
-    TToolNamesMap* toolNames = nullptr;
-
-    if (!foundTools.empty())
-    {
-        toolNames = &foundTools;
-    }
-    else
-    {
-        toolNames = GetToolNames();
-    }
-
-    if (!toolNames)
-    {
-        return;
-    }
-
-    if (toolNames->empty())
-    {
-        return;
-    }
-
-    // toolIT->first is tool layout node name in XML file
-    TToolNamesMap::const_iterator toolIT = toolNames->begin();
-
-    for (; toolIT != toolNames->end(); ++toolIT)
-    {
-        if (root->findChild(toolIT->first.toUtf8().data()))
+        if (azstricmp(node->name(), EDITOR_LAYOUT_ROOT_NODE) == 0)
         {
-            foundTools[toolIT->first] = toolIT->second;
+            break;
+        }
+    }
 
-            if (resultNode)
+    if (!node)
+    {
+        return result;
+    }
+
+    node = node->first_node();
+    for (; node; node = node->next_sibling())
+    {
+        if (azstricmp(node->name(), EDITOR_LAYOUT_NODE) == 0)
+        {
+            break;
+        }
+    }
+
+    if (!node)
+    {
+        return result;
+    }
+    TToolNamesMap::const_iterator toolIT = filterTools.begin();
+    for (; toolIT != filterTools.end(); ++toolIT)
+    {
+        for (auto it = node->first_node(); it; it = it->next_sibling())
+        {
+            if (azstricmp(it->name(), toolIT->first.toUtf8().data()) == 0)
             {
-                resultNode->addChild(root->findChild(toolIT->first.toUtf8().data()));
+                result.push_back({it, toolIT->first, toolIT->second});
+                break;
             }
         }
     }
+    return result;
+}
+AZStd::vector<struct CSettingsManager::FilterNameResult> CSettingsManager::GetMatchingLayoutNames(
+    AZ::rapidxml::xml_document<char>& document)
+{
+    // Need to populate in-memory node with available layouts.
+    UpdateLayoutNode();
+    return CSettingsManager::FilterMatchingLayoutNodes(document, m_toolNames);
 }
 
 void CSettingsManager::ImportSettings(QString file)

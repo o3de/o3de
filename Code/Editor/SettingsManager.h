@@ -11,6 +11,9 @@
 #define CRYINCLUDE_EDITOR_SETTINGSMANAGER_H
 #pragma once
 
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/XML/rapidxml.h>
+#include <AzCore/std/functional.h>
 #include <QString>
 
 class QByteArray;
@@ -74,6 +77,12 @@ public:
     CSettingsManager(EditorSettingsManagerType managerType);
     ~CSettingsManager();
 
+    struct FilterNameResult{
+        AZ::rapidxml::xml_node<char>* node;
+        const QString key;
+        const QString humanReadable;
+    };
+
     // Sandbox Editor events
     void RegisterEvent(const SEventLog& event);
     void UnregisterEvent(const SEventLog& event);
@@ -122,7 +131,10 @@ public:
     void ExportSettings(XmlNodeRef exportNode, QString fileName);
     void Export();
 
-    void GetMatchingLayoutNames(TToolNamesMap& foundTools, XmlNodeRef& resultNode, QString file);
+
+    static AZStd::vector<struct FilterNameResult> FilterMatchingLayoutNodes(AZ::rapidxml::xml_document<char>& document, const TToolNamesMap& filterTools);
+    AZStd::vector<struct FilterNameResult> GetMatchingLayoutNames(AZ::rapidxml::xml_document<char>& document);
+
     bool NeedSettingsNode(const QString& path);
 
     void SerializeCVars(XmlNodeRef& node, bool bLoad);
