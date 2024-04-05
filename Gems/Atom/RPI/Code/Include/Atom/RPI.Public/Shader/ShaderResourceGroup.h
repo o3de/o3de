@@ -162,8 +162,7 @@ namespace AZ
 
             /// Returns a single image view associated with the image shader input index and array offset.
             const RHI::ConstPtr<RHI::MultiDeviceImageView>& GetImageView(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex = 0) const;
-            const RHI::ConstPtr<RHI::MultiDeviceImageView>& GetImageView(
-                RHI::ShaderInputImageIndex inputIndex, uint32_t arrayIndex = 0) const;
+            const RHI::ConstPtr<RHI::MultiDeviceImageView>& GetImageView(RHI::ShaderInputImageIndex inputIndex, uint32_t arrayIndex = 0) const;
 
             /// Returns a span of image views associated with the given image shader input index.
             AZStd::span<const RHI::ConstPtr<RHI::MultiDeviceImageView>> GetImageViewArray(RHI::ShaderInputNameIndex& inputIndex) const;
@@ -184,7 +183,8 @@ namespace AZ
             bool SetBufferViewUnboundedArray(RHI::ShaderInputBufferUnboundedArrayIndex inputIndex, AZStd::span<const RHI::MultiDeviceBufferView* const> bufferViews);
 
             /// Update the indirect buffer view with the indices of all the buffer views which reside in the global gpu heap.
-            void SetBindlessViews(RHI::ShaderInputBufferIndex indirectResourceBufferIndex,
+            void SetBindlessViews(
+                RHI::ShaderInputBufferIndex indirectResourceBufferIndex,
                 const RHI::MultiDeviceBufferView* indirectResourceBuffer,
                 AZStd::span<const RHI::MultiDeviceBufferView* const> bufferViews,
                 uint32_t* outIndices,
@@ -193,8 +193,7 @@ namespace AZ
             
             /// Returns a single buffer view associated with the buffer shader input index and array offset.
             const RHI::ConstPtr<RHI::MultiDeviceBufferView>& GetBufferView(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex = 0) const;
-            const RHI::ConstPtr<RHI::MultiDeviceBufferView>& GetBufferView(
-                RHI::ShaderInputBufferIndex inputIndex, uint32_t arrayIndex = 0) const;
+            const RHI::ConstPtr<RHI::MultiDeviceBufferView>& GetBufferView(RHI::ShaderInputBufferIndex inputIndex, uint32_t arrayIndex = 0) const;
 
             /// Returns a span of buffer views associated with the given buffer shader input index.
             AZStd::span<const RHI::ConstPtr<RHI::MultiDeviceBufferView>> GetBufferViewArray(RHI::ShaderInputNameIndex& inputIndex) const;
