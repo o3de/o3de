@@ -73,8 +73,7 @@ namespace AZ
                     {
                         AZ_Assert(false, "Undefined type");
                     }
-                }  
-                
+                }
             }
         }
     
