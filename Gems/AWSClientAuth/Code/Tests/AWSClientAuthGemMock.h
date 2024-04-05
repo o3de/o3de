@@ -177,11 +177,37 @@ namespace AWSClientAuthUnitTest
             AZ_UNUSED(callback);
         }
 
+        void AddRequestWithClientConfiguration(
+            const AZStd::string& URI,
+            Aws::Http::HttpMethod method,
+            const HttpRequestor::Callback& callback,
+            const Aws::Client::ClientConfiguration clientConfiguration) override
+        {
+            AZ_UNUSED(URI);
+            AZ_UNUSED(method);
+            AZ_UNUSED(clientConfiguration);
+            AZ_UNUSED(callback);
+        }
+
         void AddRequestWithHeaders(const AZStd::string& URI, Aws::Http::HttpMethod method, const HttpRequestor::Headers& headers, const HttpRequestor::Callback& callback) override
         {
             AZ_UNUSED(URI);
             AZ_UNUSED(method);
             AZ_UNUSED(headers);
+            AZ_UNUSED(callback);
+        }
+
+        void AddRequestWithHeadersAndClientConfiguration(
+            const AZStd::string& URI,
+            Aws::Http::HttpMethod method,
+            const HttpRequestor::Headers& headers,
+            const HttpRequestor::Callback& callback,
+            const Aws::Client::ClientConfiguration clientConfiguration) override
+        {
+            AZ_UNUSED(URI);
+            AZ_UNUSED(method);
+            AZ_UNUSED(headers);
+            AZ_UNUSED(clientConfiguration);
             AZ_UNUSED(callback);
         }
 
@@ -205,10 +231,38 @@ namespace AWSClientAuthUnitTest
             callback(jsonView, code);
         }
 
+        void AddRequestWithHeadersBodyAndClientConfiguration(
+            const AZStd::string& URI,
+            Aws::Http::HttpMethod method,
+            const HttpRequestor::Headers& headers,
+            const AZStd::string& body,
+            const HttpRequestor::Callback& callback,
+            const Aws::Client::ClientConfiguration clientConfiguration) override
+        {
+            AZ_UNUSED(URI);
+            AZ_UNUSED(method);
+            AZ_UNUSED(headers);
+            AZ_UNUSED(body);
+            AZ_UNUSED(clientConfiguration);
+            AZ_UNUSED(callback);
+        }
+
         void AddTextRequest(const AZStd::string& URI, Aws::Http::HttpMethod method, const HttpRequestor::TextCallback& callback) override
         {
             AZ_UNUSED(URI);
             AZ_UNUSED(method);
+            AZ_UNUSED(callback);
+        }
+
+        void AddTextRequestWithClientConfiguration(
+            const AZStd::string& URI,
+            Aws::Http::HttpMethod method,
+            const HttpRequestor::TextCallback& callback,
+            Aws::Client::ClientConfiguration clientConfiguration) override
+        {
+            AZ_UNUSED(URI);
+            AZ_UNUSED(method);
+            AZ_UNUSED(clientConfiguration);
             AZ_UNUSED(callback);
         }
 
@@ -220,12 +274,42 @@ namespace AWSClientAuthUnitTest
             AZ_UNUSED(callback);
         }
 
+        void AddTextRequestWithHeadersAndClientConfiguration(
+            const AZStd::string& URI,
+            Aws::Http::HttpMethod method,
+            const HttpRequestor::Headers& headers,
+            const HttpRequestor::TextCallback& callback,
+            const Aws::Client::ClientConfiguration clientConfiguration) override
+        {
+            AZ_UNUSED(URI);
+            AZ_UNUSED(method);
+            AZ_UNUSED(headers);
+            AZ_UNUSED(clientConfiguration);
+            AZ_UNUSED(callback);
+        }
+
         void AddTextRequestWithHeadersAndBody(const AZStd::string& URI, Aws::Http::HttpMethod method, const HttpRequestor::Headers& headers, const AZStd::string& body, const HttpRequestor::TextCallback& callback) override
         {
             AZ_UNUSED(URI);
             AZ_UNUSED(method);
             AZ_UNUSED(headers);
             AZ_UNUSED(body);
+            AZ_UNUSED(callback);
+        }
+
+        void AddTextRequestWithHeadersBodyAndClientConfiguration(
+            const AZStd::string& URI,
+            Aws::Http::HttpMethod method,
+            const HttpRequestor::Headers& headers,
+            const AZStd::string& body,
+            const HttpRequestor::TextCallback& callback,
+            const Aws::Client::ClientConfiguration clientConfiguration) override
+        {
+            AZ_UNUSED(URI);
+            AZ_UNUSED(method);
+            AZ_UNUSED(headers);
+            AZ_UNUSED(body);
+            AZ_UNUSED(clientConfiguration);
             AZ_UNUSED(callback);
         }
 
