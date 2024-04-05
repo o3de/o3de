@@ -479,7 +479,11 @@ AZStd::vector<struct CSettingsManager::FilterNameResult> CSettingsManager::Filte
 {
     AZStd::vector<struct CSettingsManager::FilterNameResult> result;
     AZ::rapidxml::xml_node<char>* node = document.first_node();
-    for (; node; node = node->next_sibling())
+    if (!node)
+    {
+        return result;
+    }
+    for (node = node->first_node(); node; node = node->next_sibling())
     {
         if (azstricmp(node->name(), EDITOR_LAYOUT_ROOT_NODE) == 0)
         {
@@ -492,8 +496,7 @@ AZStd::vector<struct CSettingsManager::FilterNameResult> CSettingsManager::Filte
         return result;
     }
 
-    node = node->first_node();
-    for (; node; node = node->next_sibling())
+    for (node = node->first_node(); node; node = node->next_sibling())
     {
         if (azstricmp(node->name(), EDITOR_LAYOUT_NODE) == 0)
         {

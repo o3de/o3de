@@ -152,6 +152,7 @@ private:
 
     // Node created in memory to be used for exporting editor settings, console-set cvars and layout
     XmlNodeRef m_pSettingsManagerMemoryNode;
+    AZ::rapidxml::xml_document<char> m_settingsDocument;
 
     // Registered Tool Names
     TToolNamesMap m_toolNames;

@@ -1316,27 +1316,45 @@ void QtViewPaneManager::SerializeLayout(XmlNodeRef& parentNode) const
 bool QtViewPaneManager::DeserializeLayout(const AZ::rapidxml::xml_node<char>* parentNode)
 {
     ViewLayoutState state;
-    const AZ::rapidxml::xml_node<char>* node = parentNode;
-    if(!node) {
+    if (!parentNode)
+    {
         return false;
     }
 
-    for(node = node->first_node();node; node = node->next_sibling()) {
-        if(azstricmp(node->name(), "ViewPanes") == 0) {
+    const AZ::rapidxml::xml_node<char>* viewPaneNode = nullptr;
+    for (viewPaneNode = parentNode->first_node(); viewPaneNode; viewPaneNode = viewPaneNode->next_sibling())
+    {
+        if (azstricmp(viewPaneNode->name(), "ViewPanes") == 0)
+        {
             break;
         }
     }
-    if (!node)
+    if (!viewPaneNode)
+    {
         return false;
-    for(node = node->first_node();node; node = node->next_sibling()) {
-        if(azstricmp(node->name(), "WindowState") == 0) {
-            break;
-        }
     }
-    if (!node)
-        return false;
 
-    state.mainWindowState = QByteArray::fromHex(node->value());
+
+    const AZ::rapidxml::xml_node<char>* windowstateNode = nullptr;
+    for (windowstateNode = parentNode->first_node(); windowstateNode; windowstateNode = windowstateNode->next_sibling())
+    {
+        if (azstricmp(windowstateNode->name(), "WindowState") == 0)
+        {
+            break;
+        }
+    }
+
+    if (!windowstateNode)
+    {
+        return false;
+    }
+
+    for (const AZ::rapidxml::xml_node<char>* it = viewPaneNode->first_node(); it; it = it->next_sibling())
+    {
+        state.viewPanes.push_back(QString(it->value()));
+    }
+
+    state.mainWindowState = QByteArray::fromHex(windowstateNode->value());
     return RestoreLayout(state);
 }
 

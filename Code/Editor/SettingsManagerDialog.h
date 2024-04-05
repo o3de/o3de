@@ -51,7 +51,6 @@ protected:
 
 private:
     QString m_importFileStr;
-    AZ::rapidxml::xml_document<char> m_document;
     QScopedPointer<Ui::SettingsManagerDialog> ui;
 };
 
