@@ -721,8 +721,8 @@ void CUiAnimViewSplineCtrl::mouseMoveEvent(QMouseEvent* event)
     case ScrollMode:
     {
         // Set the new scrolled coordinates
-        float ofsx = m_grid.origin.GetX() - (point.x() - m_cMouseDownPos.x()) / m_grid.zoom.GetX();
-        float ofsy = m_grid.origin.GetY() + (point.y() - m_cMouseDownPos.y()) / m_grid.zoom.GetY();
+        const float ofsx = m_grid.origin.GetX() - (point.x() - m_cMouseDownPos.x()) / m_grid.zoom.GetX();
+        const float ofsy = m_grid.origin.GetY() + (point.y() - m_cMouseDownPos.y()) / m_grid.zoom.GetY();
         SetScrollOffset(Vec2(ofsx, ofsy));
         m_cMouseDownPos = point;
     }
@@ -730,8 +730,8 @@ void CUiAnimViewSplineCtrl::mouseMoveEvent(QMouseEvent* event)
 
     case ZoomMode:
     {
-        float ofsx = (point.x() - m_cMouseDownPos.x()) * 0.01f;
-        float ofsy = (point.y() - m_cMouseDownPos.y()) * 0.01f;
+        const float ofsx = (point.x() - m_cMouseDownPos.x()) * 0.01f;
+        const float ofsy = (point.y() - m_cMouseDownPos.y()) * 0.01f;
 
         AZ::Vector2 z = m_grid.zoom;
         if (ofsx != 0)
