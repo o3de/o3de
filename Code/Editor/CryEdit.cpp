@@ -599,24 +599,13 @@ void CCryEditApp::OnFileSave()
 
     const QScopedValueRollback<bool> rollback(m_savingLevel, true);
 
-    bool usePrefabSystemForLevels = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+    auto* prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
+    AZ_Assert(prefabIntegrationInterface != nullptr, "PrefabIntegrationInterface is not found.");
 
-    if (!usePrefabSystemForLevels)
-    {
-        GetIEditor()->GetDocument()->DoFileSave();
-    }
-    else
-    {
-        auto* prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
-        AZ_Assert(prefabIntegrationInterface != nullptr, "PrefabIntegrationInterface is not found.");
+    prefabIntegrationInterface->SaveCurrentPrefab();
 
-        prefabIntegrationInterface->SaveCurrentPrefab();
-
-        // when attempting to save, update the last known location using the active camera transform
-        AzToolsFramework::StoreViewBookmarkLastKnownLocationFromActiveCamera();
-    }
+    // when attempting to save, update the last known location using the active camera transform
+    AzToolsFramework::StoreViewBookmarkLastKnownLocationFromActiveCamera();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2329,29 +2318,10 @@ void CCryEditApp::DisplayLevelLoadErrors()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCryEditApp::ExportLevel(bool bExportToGame, bool bExportTexture, bool bAutoExport)
+void CCryEditApp::ExportLevel(bool /* bExportToGame */, bool /* bExportTexture */, bool /* bAutoExport */)
 {
-    bool usePrefabSystemForLevels = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-    if (usePrefabSystemForLevels)
-    {
-        AZ_Assert(false, "Prefab system doesn't require level exports.");
-        return;
-    }
-
-    if (bExportTexture)
-    {
-        CGameExporter gameExporter;
-        gameExporter.SetAutoExportMode(bAutoExport);
-        gameExporter.Export(eExp_SurfaceTexture);
-    }
-    else if (bExportToGame)
-    {
-        CGameExporter gameExporter;
-        gameExporter.SetAutoExportMode(bAutoExport);
-        gameExporter.Export();
-    }
+    AZ_Assert(false, "Prefab system doesn't require level exports.");
+    return;
 }
 
 
@@ -2370,85 +2340,16 @@ void CCryEditApp::OnEditFetch()
 
 
 //////////////////////////////////////////////////////////////////////////
-bool CCryEditApp::UserExportToGame(bool bNoMsgBox)
+bool CCryEditApp::UserExportToGame(bool /* bNoMsgBox */)
 {
-    bool usePrefabSystemForLevels = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-    if (usePrefabSystemForLevels)
-    {
-        AZ_Assert(false, "Export Level should no longer exist.");
-        return false;
-    }
-
-    if (!GetIEditor()->GetGameEngine()->IsLevelLoaded())
-    {
-        if (bNoMsgBox == false)
-        {
-            QMessageBox::warning(AzToolsFramework::GetActiveWindow(), QString(), QObject::tr("Please load a level before attempting to export."));
-        }
-        return false;
-    }
-    else
-    {
-        EditorUtils::AzWarningAbsorber absorb("Source Control");
-
-        // Record errors and display a dialog with them at the end.
-        CErrorsRecorder errRecorder(GetIEditor());
-
-        // Temporarily disable auto backup.
-        CScopedVariableSetter<bool> autoBackupEnabledChange(gSettings.autoBackupEnabled, false);
-        CScopedVariableSetter<int> autoRemindTimeChange(gSettings.autoRemindTime, 0);
-
-        m_bIsExportingLegacyData = true;
-        CGameExporter gameExporter;
-
-        unsigned int flags = eExp_CoverSurfaces;
-
-        // Change the cursor to show that we're busy.
-        QWaitCursor wait;
-
-        if (gameExporter.Export(flags, eLittleEndian, "."))
-        {
-            m_bIsExportingLegacyData = false;
-            return true;
-        }
-        m_bIsExportingLegacyData = false;
-        return false;
-    }
+    AZ_Assert(false, "Export Level should no longer exist.");
+    return false;
 }
 
-void CCryEditApp::ExportToGame(bool bNoMsgBox)
+void CCryEditApp::ExportToGame(bool /* bNoMsgBox */)
 {
-    bool usePrefabSystemForLevels = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-    if (usePrefabSystemForLevels)
-    {
-        AZ_Assert(false, "Prefab system no longer exports levels.");
-        return;
-    }
-
-    CGameEngine* pGameEngine = GetIEditor()->GetGameEngine();
-    if (!pGameEngine->IsLevelLoaded())
-    {
-        if (pGameEngine->GetLevelPath().isEmpty())
-        {
-            QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(), ("Open or create a level first."));
-            return;
-        }
-
-        CErrorsRecorder errRecorder(GetIEditor());
-        // If level not loaded first fast export the level.
-        m_bIsExportingLegacyData = true;
-        CGameExporter gameExporter;
-        gameExporter.Export();
-        m_bIsExportingLegacyData = false;
-    }
-
-    {
-        UserExportToGame(bNoMsgBox);
-    }
+    AZ_Assert(false, "Prefab system no longer exports levels.");
+    return;
 }
 
 void CCryEditApp::OnFileExportToGameNoSurfaceTexture()
@@ -2829,10 +2730,6 @@ void CCryEditApp::OnUpdatePlayGame(QAction* action)
 //////////////////////////////////////////////////////////////////////////
 CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& levelName, QString& fullyQualifiedLevelName /* ={} */)
 {
-    bool usePrefabSystemForLevels = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
     // If we are creating a new level and we're in simulate mode, then switch it off before we do anything else
     if (GetIEditor()->GetGameEngine() && GetIEditor()->GetGameEngine()->GetSimulationMode())
     {
@@ -2841,13 +2738,10 @@ CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& levelNam
         OnSwitchPhysics();
         GetIEditor()->GetDocument()->SetModifiedFlag(bIsDocModified);
 
-        if (usePrefabSystemForLevels)
+        auto* rootSpawnableInterface = AzFramework::RootSpawnableInterface::Get();
+        if (rootSpawnableInterface)
         {
-            auto* rootSpawnableInterface = AzFramework::RootSpawnableInterface::Get();
-            if (rootSpawnableInterface)
-            {
-                rootSpawnableInterface->ProcessSpawnableQueue();
-            }
+            rootSpawnableInterface->ProcessSpawnableQueue();
         }
     }
 
@@ -2899,7 +2793,6 @@ CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& levelNam
         sv_map->Set(levelName.toUtf8().data());
     }
 
-
     GetIEditor()->GetDocument()->InitEmptyLevel(128, 1);
 
     GetIEditor()->SetStatusText("Creating Level...");
@@ -2908,36 +2801,18 @@ CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& levelNam
     GetIEditor()->GetDocument()->SetPathName(fullyQualifiedLevelName);
     GetIEditor()->GetGameEngine()->SetLevelPath(levelPath);
 
-    if (usePrefabSystemForLevels)
+    auto* service = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+    if (service)
     {
-        auto* service = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
-        if (service)
-        {
-            service->CreateNewLevelPrefab(fullyQualifiedLevelName.toUtf8().constData(), DefaultLevelTemplateName);
-        }
+        service->CreateNewLevelPrefab(fullyQualifiedLevelName.toUtf8().constData(), DefaultLevelTemplateName);
     }
 
     if (GetIEditor()->GetDocument()->Save())
     {
-        if (!usePrefabSystemForLevels)
-        {
-            m_bIsExportingLegacyData = true;
-            CGameExporter gameExporter;
-            gameExporter.Export();
-            m_bIsExportingLegacyData = false;
-        }
-
         GetIEditor()->GetGameEngine()->LoadLevel(true, true);
         GetIEditor()->GetSystem()->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_PRECACHE_START, 0, 0);
 
         GetIEditor()->GetSystem()->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_PRECACHE_END, 0, 0);
-    }
-
-    if (!usePrefabSystemForLevels)
-    {
-        // export default octree and visarea data.
-        CGameExporter gameExporter;
-        gameExporter.Export(eExp_CoverSurfaces | eExp_SurfaceTexture, eLittleEndian, ".");
     }
 
     GetIEditor()->GetDocument()->CreateDefaultLevelAssets(128, 1);
@@ -2975,70 +2850,36 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
     bool bIsDocModified = GetIEditor()->GetDocument()->IsModified();
     if (GetIEditor()->GetDocument()->IsDocumentReady() && bIsDocModified)
     {
-        bool usePrefabSystemForLevels = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-        if (!usePrefabSystemForLevels)
+        auto* prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+        auto* prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
+        AZ_Assert(prefabEditorEntityOwnershipInterface != nullptr, "PrefabEditorEntityOwnershipInterface is not found.");
+        AZ_Assert(prefabIntegrationInterface != nullptr, "PrefabIntegrationInterface is not found.");
+
+        if (prefabEditorEntityOwnershipInterface == nullptr || prefabIntegrationInterface == nullptr)
         {
-            QString str = QObject::tr("Level %1 has been changed. Save Level?").arg(GetIEditor()->GetGameEngine()->GetLevelName());
-            int result = QMessageBox::question(
-                AzToolsFramework::GetActiveWindow(), QObject::tr("Save Level"), str,
-                QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-            if (QMessageBox::Yes == result)
-            {
-                if (!GetIEditor()->GetDocument()->DoFileSave())
-                {
-                    // if the file save operation failed, assume that the user was informed of why
-                    // already and treat it as a cancel
-                    wasCreateLevelOperationCancelled = true;
-                    return false;
-                }
-
-                bIsDocModified = false;
-            }
-            else if (QMessageBox::No == result)
-            {
-                // Set Modified flag to false to prevent show Save unchanged dialog again
-                GetIEditor()->GetDocument()->SetModifiedFlag(false);
-            }
-            else if (QMessageBox::Cancel == result)
-            {
-                wasCreateLevelOperationCancelled = true;
-                return false;
-            }
+            return false;
         }
-        else
+
+        AzToolsFramework::Prefab::TemplateId rootPrefabTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
+        int prefabSaveSelection = prefabIntegrationInterface->HandleRootPrefabClosure(rootPrefabTemplateId);
+
+        // In order to get the accept and reject codes of QDialog and QDialogButtonBox aligned, we do (1-prefabSaveSelection) here.
+        // For example, QDialog::Rejected(0) is emitted when dialog is closed. But the int value corresponds to
+        // QDialogButtonBox::AcceptRole(0).
+        switch (1 - prefabSaveSelection)
         {
-            auto* prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
-            auto* prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
-            AZ_Assert(prefabEditorEntityOwnershipInterface != nullptr, "PrefabEditorEntityOwnershipInterface is not found.");
-            AZ_Assert(prefabIntegrationInterface != nullptr, "PrefabIntegrationInterface is not found.");
-
-            if (prefabEditorEntityOwnershipInterface == nullptr || prefabIntegrationInterface == nullptr)
-            {
-                return false;
-            }
-
-            AzToolsFramework::Prefab::TemplateId rootPrefabTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
-            int prefabSaveSelection = prefabIntegrationInterface->HandleRootPrefabClosure(rootPrefabTemplateId);
-
-            // In order to get the accept and reject codes of QDialog and QDialogButtonBox aligned, we do (1-prefabSaveSelection) here.
-            // For example, QDialog::Rejected(0) is emitted when dialog is closed. But the int value corresponds to
-            // QDialogButtonBox::AcceptRole(0).
-            switch (1 - prefabSaveSelection)
-            {
-            case QDialogButtonBox::AcceptRole:
-                bIsDocModified = false;
-                break;
-            case QDialogButtonBox::RejectRole:
-                wasCreateLevelOperationCancelled = true;
-                return false;
-            case QDialogButtonBox::InvalidRole:
-                // Set Modified flag to false to prevent show Save unchanged dialog again
-                GetIEditor()->GetDocument()->SetModifiedFlag(false);
-                break;
-            }
+        case QDialogButtonBox::AcceptRole:
+            bIsDocModified = false;
+            break;
+        case QDialogButtonBox::RejectRole:
+            wasCreateLevelOperationCancelled = true;
+            return false;
+        case QDialogButtonBox::InvalidRole:
+            // Set Modified flag to false to prevent show Save unchanged dialog again
+            GetIEditor()->GetDocument()->SetModifiedFlag(false);
+            break;
         }
+        
     }
 
     const char* temporaryLevelName = GetIEditor()->GetDocument()->GetTemporaryLevelName();
@@ -3189,10 +3030,6 @@ CCryEditDoc* CCryEditApp::OpenDocumentFile(const char* filename, bool addToMostR
         return GetIEditor()->GetDocument();
     }
 
-    bool usePrefabSystemForLevels = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
     // If we are loading and we're in simulate mode, then switch it off before we do anything else
     if (GetIEditor()->GetGameEngine() && GetIEditor()->GetGameEngine()->GetSimulationMode())
     {
@@ -3201,13 +3038,10 @@ CCryEditDoc* CCryEditApp::OpenDocumentFile(const char* filename, bool addToMostR
         OnSwitchPhysics();
         GetIEditor()->GetDocument()->SetModifiedFlag(bIsDocModified);
 
-        if (usePrefabSystemForLevels)
+        auto* rootSpawnableInterface = AzFramework::RootSpawnableInterface::Get();
+        if (rootSpawnableInterface)
         {
-            auto* rootSpawnableInterface = AzFramework::RootSpawnableInterface::Get();
-            if (rootSpawnableInterface)
-            {
-                rootSpawnableInterface->ProcessSpawnableQueue();
-            }
+            rootSpawnableInterface->ProcessSpawnableQueue();
         }
     }
 

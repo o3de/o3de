@@ -19,7 +19,6 @@
 #include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
-
 #include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
@@ -378,18 +377,11 @@ namespace AzToolsFramework
             m_highlightedEntities.set_capacity(0);
             m_dirtyEntities = {};
 
-            bool isPrefabSystemEnabled = false;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-            if (isPrefabSystemEnabled)
-            {
-                // This resets the editor context thereby asking the systems that own the entities to destroy them. By doing this, we are
-                // duly giving the authority to delete the entities to the systems that owns them, rather than leaving it to the
-                // ComponentApplication to do the cleanup.
-                AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-                    &AzToolsFramework::EditorEntityContextRequestBus::Events::ResetEditorContext);
-            }
+            // This resets the editor context thereby asking the systems that own the entities to destroy them. By doing this, we are
+            // duly giving the authority to delete the entities to the systems that owns them, rather than leaving it to the
+            // ComponentApplication to do the cleanup.
+            AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+                &AzToolsFramework::EditorEntityContextRequestBus::Events::ResetEditorContext);
 
             GetSerializeContext()->DestroyEditContext();
 
@@ -901,36 +893,17 @@ namespace AzToolsFramework
 
     void ToolsApplication::DeleteSelected()
     {
-        if (IsPrefabSystemEnabled())
-        {
-            m_editorEntityAPI->DeleteSelected();
-            return;
-        }
-
-        Internal::DeleteEntities(m_selectedEntities);
+        m_editorEntityAPI->DeleteSelected();
     }
 
     void ToolsApplication::DeleteEntityAndAllDescendants(AZ::EntityId entityId)
     {
-        if (IsPrefabSystemEnabled())
-        {
-            m_editorEntityAPI->DeleteEntityAndAllDescendants(entityId);
-            return;
-        }
-
-        DeleteEntitiesAndAllDescendants({ entityId });
+        m_editorEntityAPI->DeleteEntityAndAllDescendants(entityId);
     }
 
     void ToolsApplication::DeleteEntitiesAndAllDescendants(const EntityIdList& entities)
     {
-        if (IsPrefabSystemEnabled())
-        {
-            m_editorEntityAPI->DeleteEntitiesAndAllDescendants(entities);
-            return;
-        }
-
-        const EntityIdSet entitiesAndDescendants = GatherEntitiesAndAllDescendents(entities);
-        Internal::DeleteEntities(entitiesAndDescendants);
+        m_editorEntityAPI->DeleteEntitiesAndAllDescendants(entities);
     }
 
     bool ToolsApplication::DetachEntities(const AZStd::vector<AZ::EntityId>& entitiesToDetach, AZStd::vector<AZStd::pair<AZ::EntityId, AZ::SliceComponent::EntityRestoreInfo>>& restoreInfos)
@@ -1284,25 +1257,9 @@ namespace AzToolsFramework
 
     AZ::EntityId ToolsApplication::GetCurrentLevelEntityId()
     {
-        if (IsPrefabSystemEnabled())
+        if (auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get())
         {
-            if (auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get())
-            {
-                return prefabPublicInterface->GetLevelInstanceContainerEntityId();
-            }
-        }
-        else
-        {
-            AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-            AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-                editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
-            AZ::SliceComponent* rootSliceComponent = nullptr;
-            AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(
-                rootSliceComponent, editorEntityContextId, &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::GetRootSlice);
-            if (rootSliceComponent && rootSliceComponent->GetMetadataEntity())
-            {
-                return rootSliceComponent->GetMetadataEntity()->GetId();
-            }
+            return prefabPublicInterface->GetLevelInstanceContainerEntityId();
         }
 
         return AZ::EntityId();
@@ -1404,24 +1361,12 @@ namespace AzToolsFramework
 
     void ToolsApplication::DeleteEntityById(AZ::EntityId entityId)
     {
-        if (IsPrefabSystemEnabled())
-        {
-            m_editorEntityAPI->DeleteEntityById(entityId);
-            return;
-        }
-
-        DeleteEntities({ entityId });
+        m_editorEntityAPI->DeleteEntityById(entityId);
     }
 
     void ToolsApplication::DeleteEntities(const EntityIdList& entities)
     {
-        if (IsPrefabSystemEnabled())
-        {
-            m_editorEntityAPI->DeleteEntities(entities);
-            return;
-        }
-
-        Internal::DeleteEntities(entities);
+        m_editorEntityAPI->DeleteEntities(entities);
     }
 
     void ToolsApplication::AddDirtyEntity(AZ::EntityId entityId)
@@ -1651,60 +1596,19 @@ namespace AzToolsFramework
             return;
         }
 
-        if (!IsPrefabSystemEnabled())
+        auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
+        if (prefabPublicInterface)
         {
-            // If the current undo batch has commands in it, then we have to check that we do not add duplicates
-            // However if it starts out empty, we can just add things straight from the Set to the undo batch
-            bool mustCheckDuplicates = !m_currentBatchUndo->GetChildren().empty();
-
+            // Compared to the preemptive undo cache, we can avoid the duplicate check.
+            // Multiple changes to the same entity are just split between different undo nodes.
             for (AZ::EntityId entityId : m_dirtyEntities)
             {
-                AZ::Entity* entity = nullptr;
-                AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
+                auto outcome = prefabPublicInterface->GenerateUndoNodesForEntityChangeAndUpdateCache(entityId, m_currentBatchUndo);
 
-                if (entity)
+                if (!outcome.IsSuccess())
                 {
-                    EntityStateCommand* state = nullptr;
-
-                    if (mustCheckDuplicates)
-                    {
-                        // Check if this entity is already in the current undo batch
-                        state = azdynamic_cast<EntityStateCommand*>(
-                            m_currentBatchUndo->Find(static_cast<AZ::u64>(entityId), AZ::AzTypeInfo<EntityStateCommand>::Uuid()));
-                    }
-
-                    if (!state)
-                    {
-                        state = aznew EntityStateCommand(static_cast<AZ::u64>(entityId));
-                        state->SetParent(m_currentBatchUndo);
-
-                        // capture initial state of entity (before undo)
-                        state->Capture(entity, true);
-                    }
-
-                    // capture last state of entity (after undo) - for redo
-                    state->Capture(entity, false);
-                }
-
-                m_undoCache.UpdateCache(entityId);
-            }
-        }
-        else
-        {
-            auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
-            if (prefabPublicInterface)
-            {
-                // Compared to the preemptive undo cache, we can avoid the duplicate check.
-                // Multiple changes to the same entity are just split between different undo nodes.
-                for (AZ::EntityId entityId : m_dirtyEntities)
-                {
-                    auto outcome = prefabPublicInterface->GenerateUndoNodesForEntityChangeAndUpdateCache(entityId, m_currentBatchUndo);
-
-                    if (!outcome.IsSuccess())
-                    {
-                        QMessageBox::warning(
-                            AzToolsFramework::GetActiveWindow(), QString("Error"), QString(outcome.GetError().c_str()), QMessageBox::Ok, QMessageBox::Ok);
-                    }
+                    QMessageBox::warning(
+                        AzToolsFramework::GetActiveWindow(), QString("Error"), QString(outcome.GetError().c_str()), QMessageBox::Ok, QMessageBox::Ok);
                 }
             }
         }

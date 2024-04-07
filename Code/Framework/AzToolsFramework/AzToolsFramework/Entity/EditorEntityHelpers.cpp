@@ -521,12 +521,7 @@ namespace AzToolsFramework
         // There will currently always be one root container entity, so there's no order to retrieve
         if (!parentId.IsValid())
         {
-            bool isPrefabEnabled = false;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-            if (isPrefabEnabled)
-            {
-                return children;
-            }
+            return children;
         }
 
         EntityIdList entityChildOrder;

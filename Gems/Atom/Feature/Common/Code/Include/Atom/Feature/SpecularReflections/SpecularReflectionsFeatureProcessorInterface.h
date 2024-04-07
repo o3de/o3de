@@ -20,6 +20,14 @@ namespace AZ
             AZ_RTTI(SSROptions, "{A3DE7EDD-3680-458F-A69C-FE7550B75652}");
             AZ_CLASS_ALLOCATOR(SSROptions, SystemAllocator, 0);
 
+            enum class ReflectionMethod
+            {
+                ScreenSpace,
+                Hybrid,
+                HybridWithFallback,
+                RayTracing
+            };
+
             static void Reflect(ReflectContext* context)
             {
                 if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -33,8 +41,7 @@ namespace AZ
                         ->Field("MaxRoughness", &SSROptions::m_maxRoughness)
                         ->Field("RoughnessBias", &SSROptions::m_roughnessBias)
                         ->Field("HalfResolution", &SSROptions::m_halfResolution)
-                        ->Field("RayTracing", &SSROptions::m_rayTracing)
-                        ->Field("RayTraceFallbackData", &SSROptions::m_rayTraceFallbackData)
+                        ->Field("ReflectionMethod", &SSROptions::m_reflectionMethod)
                         ->Field("RayTraceFallbackSpecular", &SSROptions::m_rayTraceFallbackSpecular)
                         ->Field("TemporalFiltering", &SSROptions::m_temporalFiltering)
                         ->Field("TemporalFilteringStrength", &SSROptions::m_temporalFilteringStrength)
@@ -45,8 +52,8 @@ namespace AZ
             }
 
             bool IsEnabled() const { return m_enable; }
-            bool IsRayTracingEnabled() const { return m_enable && m_rayTracing; }
-            bool IsRayTracingFallbackEnabled() const { return m_enable && m_rayTracing && m_rayTraceFallbackData; }
+            bool IsRayTracingEnabled() const { return m_enable && m_reflectionMethod != ReflectionMethod::ScreenSpace; }
+            bool IsRayTracingFallbackEnabled() const { return IsRayTracingEnabled() && m_reflectionMethod != ReflectionMethod::Hybrid; }
             bool IsLuminanceClampEnabled() const { return m_enable && m_luminanceClamp; }
             bool IsTemporalFilteringEnabled() const { return m_enable && m_temporalFiltering; }
             float GetOutputScale() const { return m_halfResolution ? 0.5f : 1.0f; }
@@ -58,8 +65,7 @@ namespace AZ
             float m_maxRoughness = 0.31f;
             float m_roughnessBias = 0.0f;
             bool  m_halfResolution = true;
-            bool  m_rayTracing = true;
-            bool  m_rayTraceFallbackData = true;
+            ReflectionMethod m_reflectionMethod = ReflectionMethod::HybridWithFallback;
             bool  m_rayTraceFallbackSpecular = false;
             bool  m_temporalFiltering = true;
             float m_temporalFilteringStrength = 1.0f;

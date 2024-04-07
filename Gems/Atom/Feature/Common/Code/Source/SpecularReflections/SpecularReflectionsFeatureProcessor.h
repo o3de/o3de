@@ -46,7 +46,7 @@ namespace AZ
 
             RHI::ShaderInputNameIndex m_invOutputScaleNameIndex = "m_invOutputScale";
             RHI::ShaderInputNameIndex m_maxRoughnessNameIndex = "m_maxRoughness";
-            RHI::ShaderInputNameIndex m_rayTraceFallbackDataNameIndex = "m_rayTraceFallbackData";
+            RHI::ShaderInputNameIndex m_reflectionMethodNameIndex = "m_reflectionMethod";
             RHI::ShaderInputNameIndex m_rayTraceFallbackSpecularNameIndex = "m_rayTraceFallbackSpecular";
         };
     } // namespace Render

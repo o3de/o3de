@@ -9,7 +9,6 @@
 
 #include "Util/PakFile.h"
 #include "Util/Image.h"
-#include <AzFramework/API/ApplicationAPI.h>
 
 enum EGameExport
 {
@@ -68,16 +67,8 @@ private:
 
     static const char* GetLevelPakFilename()
     {
-        bool usePrefabSystemForLevels = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-        if (usePrefabSystemForLevels)
-        {
-            AZ_Assert(false, "Level.pak should no longer be used when prefabs are used for levels.");
-            return "";
-        }
-
-        return "level.pak";
+        AZ_Assert(false, "Level.pak should no longer be used when prefabs are used for levels.");
+        return "";
     }
 
     void ExportLevelData(const QString& path, bool bExportMission = true);
