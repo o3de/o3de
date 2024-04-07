@@ -194,6 +194,66 @@ bool CBinaryXmlNode::getAttr(const char* key, Ang3& value) const
     return false;
 }
 
+bool CBinaryXmlNode::getAttr(const char* key, AZ::Vector3& value) const
+{
+    const char* svalue = GetValue(key);
+    if (svalue)
+    {
+        float x, y, z;
+        if (azsscanf(svalue, "%f,%f,%f", &x, &y, &z) == 3)
+        {
+            value.Set(x, y, z);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool CBinaryXmlNode::getAttr(const char* key, AZ::Vector4& value) const
+{
+    const char* svalue = GetValue(key);
+    if (svalue)
+    {
+        float x, y, z, w;
+        if (azsscanf(svalue, "%f,%f,%f,%f", &x, &y, &z, &w) == 4)
+        {
+            value.Set(x, y, z, w);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool CBinaryXmlNode::getAttr(const char* key, AZ::Vector2& value) const
+{
+    const char* svalue = GetValue(key);
+    if (svalue)
+    {
+        float x, y;
+        if (azsscanf(svalue, "%f,%f", &x, &y) == 2)
+        {
+            value.Set(x, y);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool CBinaryXmlNode::getAttr(const char* key, AZ::Quaternion& value) const
+{
+    const char* svalue = GetValue(key);
+    if (svalue)
+    {
+        float w, x, y, z;
+        if (azsscanf(svalue, "%f,%f,%f,%f", &w, &x, &y, &z) == 4)
+        {
+            value.Set(w, x, y, z);
+            return true;
+        }
+    }
+    return false;
+}
+
 //////////////////////////////////////////////////////////////////////////
 bool CBinaryXmlNode::getAttr(const char* key, Vec3& value) const
 {
