@@ -52,7 +52,7 @@ namespace PassCanvas
         InitPassCanvasResources();
 
         QApplication::setOrganizationName("O3DE");
-        QApplication::setApplicationName("O3DE Pass Canvas (Preview)");
+        QApplication::setApplicationName("O3DE Pass Canvas");
         QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
 
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();

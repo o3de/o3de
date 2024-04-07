@@ -29,7 +29,7 @@
    <bool>true</bool>
   </property>
   <property name="windowTitle">
-   <string>Script Canvas (PREVIEW)</string>
+   <string>Script Canvas</string>
   </property>
   <property name="toolButtonStyle">
    <enum>Qt::ToolButtonIconOnly</enum>
