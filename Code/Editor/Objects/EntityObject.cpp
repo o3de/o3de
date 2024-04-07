@@ -564,44 +564,6 @@ struct IVariableType<Vec3>
     };
 };
 
-void CEntityObject::DrawExtraLightInfo(DisplayContext& dc)
-{
-    IObjectManager* objMan = GetIEditor()->GetObjectManager();
-
-    if (objMan)
-    {
-        if (objMan->IsLightClass(this) && GetProperties())
-        {
-            QString csText("");
-
-            if (GetEntityPropertyBool("bAmbient"))
-            {
-                csText += "A";
-            }
-
-            if (!GetEntityPropertyString("texture_Texture").isEmpty())
-            {
-                csText += "P";
-            }
-
-            int nLightType = GetEntityPropertyInteger("nCastShadows");
-            if (nLightType > 0)
-            {
-                csText += "S";
-            }
-
-            float fScale = GetIEditor()->GetViewManager()->GetView(ET_ViewportUnknown)->GetScreenScaleFactor(GetWorldPos());
-            Vec3 vDrawPos(GetWorldPos());
-            vDrawPos.z += fScale / 25;
-
-            ColorB col(255, 255, 255);
-            dc.SetColor(col);
-            dc.DrawTextLabel(vDrawPos, 1.3f, csText.toUtf8().data());
-        }
-    }
-}
-
-
 //////////////////////////////////////////////////////////////////////////
 void CEntityObject::DrawProjectorPyramid(DisplayContext& dc, float dist)
 {
