@@ -37,7 +37,7 @@ bool CScreenFaderKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& 
             keyHandle.GetKey(&screenFaderKey);
 
             mv_fadeTime = screenFaderKey.m_fadeTime;
-            mv_fadeColor = Vec3(screenFaderKey.m_fadeColor.GetR(), screenFaderKey.m_fadeColor.GetG(), screenFaderKey.m_fadeColor.GetB());
+            mv_fadeColor = AZ::Vector3(screenFaderKey.m_fadeColor.GetR(), screenFaderKey.m_fadeColor.GetG(), screenFaderKey.m_fadeColor.GetB());
             mv_strTexture = screenFaderKey.m_strTexture.c_str();
             mv_bUseCurColor = screenFaderKey.m_bUseCurColor;
             mv_fadeType = (int)screenFaderKey.m_fadeType;
@@ -90,8 +90,8 @@ void CScreenFaderKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle&
             }
             else if (pVar == mv_fadeColor.GetVar())
             {
-                Vec3 color = mv_fadeColor;
-                screenFaderKey.m_fadeColor = AZ::Color(color.x, color.y, color.z, screenFaderKey.m_fadeType == IScreenFaderKey::eFT_FadeIn ? 1.f : 0.f);
+                AZ::Vector3 color = mv_fadeColor;
+                screenFaderKey.m_fadeColor = AZ::Color(color.GetX(), color.GetY(), color.GetZ(), screenFaderKey.m_fadeType == IScreenFaderKey::eFT_FadeIn ? 1.f : 0.f);
             }
 
             selectedKey.SetKey(&screenFaderKey);

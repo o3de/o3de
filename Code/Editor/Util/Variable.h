@@ -22,6 +22,11 @@ AZ_PUSH_DISABLE_WARNING(4458, "-Wunknown-warning-option")
 AZ_POP_DISABLE_WARNING
 #include <QVariant>
 
+#include <AzCore/Math/Vector2.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/Vector4.h>
+#include <AzCore/Math/Quaternion.h>
+
 #include <StlUtils.h>
 
 inline const char* to_c_str(const char* str) { return str; }
@@ -257,11 +262,10 @@ struct IVariable
     virtual void Set(bool value) = 0;
     virtual void Set(float value) = 0;
     virtual void Set(double value) = 0;
-    virtual void Set(const Vec2& value) = 0;
-    virtual void Set(const Vec3& value) = 0;
-    virtual void Set(const Vec4& value) = 0;
-    virtual void Set(const Ang3& value) = 0;
-    virtual void Set(const Quat& value) = 0;
+    virtual void Set(const AZ::Vector2& value) = 0;
+    virtual void Set(const AZ::Vector3& value) = 0;
+    virtual void Set(const AZ::Vector4& value) = 0;
+    virtual void Set(const AZ::Quaternion& value) = 0;
     virtual void Set(const QString& value) = 0;
     virtual void Set(const char* value) = 0;
     virtual void SetDisplayValue(const QString& value) = 0;
@@ -276,11 +280,10 @@ struct IVariable
     virtual void Get(bool& value) const  = 0;
     virtual void Get(float& value) const  = 0;
     virtual void Get(double& value) const = 0;
-    virtual void Get(Vec2& value) const  = 0;
-    virtual void Get(Vec3& value) const  = 0;
-    virtual void Get(Vec4& value) const  = 0;
-    virtual void Get(Ang3& value) const  = 0;
-    virtual void Get(Quat& value) const  = 0;
+    virtual void Get(AZ::Vector2& value) const  = 0;
+    virtual void Get(AZ::Vector3& value) const  = 0;
+    virtual void Get(AZ::Vector4& value) const  = 0;
+    virtual void Get(AZ::Quaternion& value) const  = 0;
     virtual void Get(QString& value) const = 0;
     virtual QString GetDisplayValue() const = 0;
     virtual bool HasDefaultValue() const = 0;
@@ -419,11 +422,10 @@ public:
     void Set([[maybe_unused]] bool value) override                  { assert(0); }
     void Set([[maybe_unused]] float value) override                 { assert(0); }
     void Set([[maybe_unused]] double value) override                { assert(0); }
-    void Set([[maybe_unused]] const Vec2& value) override           { assert(0); }
-    void Set([[maybe_unused]] const Vec3& value) override           { assert(0); }
-    void Set([[maybe_unused]] const Vec4& value) override           { assert(0); }
-    void Set([[maybe_unused]] const Ang3& value) override           { assert(0); }
-    void Set([[maybe_unused]] const Quat& value) override           { assert(0); }
+    void Set([[maybe_unused]] const AZ::Vector2& value) override           { assert(0); }
+    void Set([[maybe_unused]] const AZ::Vector3& value) override           { assert(0); }
+    void Set([[maybe_unused]] const AZ::Vector4& value) override           { assert(0); }
+    void Set([[maybe_unused]] const AZ::Quaternion& value) override           { assert(0); }
     void Set([[maybe_unused]] const QString& value) override        { assert(0); }
     void Set([[maybe_unused]] const char* value) override            { assert(0); }
     void SetDisplayValue(const QString& value) override    { Set(value); }
@@ -435,11 +437,10 @@ public:
     void Get([[maybe_unused]] bool& value) const override       { assert(0); }
     void Get([[maybe_unused]] float& value) const override      { assert(0); }
     void Get([[maybe_unused]] double& value) const override     { assert(0); }
-    void Get([[maybe_unused]] Vec2& value) const override       { assert(0); }
-    void Get([[maybe_unused]] Vec3& value) const override       { assert(0); }
-    void Get([[maybe_unused]] Vec4& value) const override       { assert(0); }
-    void Get([[maybe_unused]] Ang3& value) const override       { assert(0); }
-    void Get([[maybe_unused]] Quat& value) const override       { assert(0); }
+    void Get([[maybe_unused]] AZ::Vector2& value) const override       { assert(0); }
+    void Get([[maybe_unused]] AZ::Vector3& value) const override       { assert(0); }
+    void Get([[maybe_unused]] AZ::Vector4& value) const override       { assert(0); }
+    void Get([[maybe_unused]] AZ::Quaternion& value) const override       { assert(0); }
     void Get([[maybe_unused]] QString& value) const override    { assert(0); }
     QString GetDisplayValue() const override     { QString val; Get(val); return val; }
 
@@ -887,16 +888,16 @@ namespace var_type
     struct type_traits<double>
         : public type_traits_base<IVariable::DOUBLE, true, false, false, true>{};
     template<>
-    struct type_traits<Vec2>
+    struct type_traits<AZ::Vector2>
         : public type_traits_base<IVariable::VECTOR2, false, false, false, false> {};
     template<>
-    struct type_traits<Vec3>
+    struct type_traits<AZ::Vector3>
         : public type_traits_base<IVariable::VECTOR, false, false, false, false> {};
     template<>
-    struct type_traits<Vec4>
+    struct type_traits<AZ::Vector4>
         : public type_traits_base<IVariable::VECTOR4, false, false, false, false> {};
     template<>
-    struct type_traits<Quat>
+    struct type_traits<AZ::Quaternion>
         : public type_traits_base<IVariable::QUAT, false, false, false, false> {};
     template<>
     struct type_traits<QString>
@@ -927,80 +928,59 @@ namespace var_type
         void operator()(const double& from, bool& to) const { to = from != 0; }
         void operator()(const double& from, float& to) const { to = aznumeric_cast<float>(from); }
 
-        void operator()(const Vec2& from, Vec2& to) const { to = from; }
-        void operator()(const Vec3& from, Vec3& to) const { to = from; }
-        void operator()(const Vec4& from, Vec4& to) const { to = from; }
-        void operator()(const Quat& from, Quat& to) const { to = from; }
+        void operator()(const AZ::Vector2& from, AZ::Vector2& to) const { to = from; }
+        void operator()(const AZ::Vector3& from, AZ::Vector3& to) const { to = from; }
+        void operator()(const AZ::Vector4& from, AZ::Vector4& to) const { to = from; }
+        void operator()(const AZ::Quaternion& from, AZ::Quaternion& to) const { to = from; }
         void operator()(const QString& from, QString& to) const { to = from; }
 
         void operator()(bool value, QString& to) const { to = QString::number((value) ? (int)1 : (int)0); }
         void operator()(int value, QString& to) const { to = QString::number(value); }
         void operator()(float value, QString& to) const { to = QString::number(value); };
         void operator()(double value, QString& to) const { to = QString::number(value); };
-        void operator()(const Vec2& value, QString& to) const { to = QString::fromLatin1("%1,%2").arg(value.x).arg(value.y); }
-        void operator()(const Vec3& value, QString& to) const { to = QString::fromLatin1("%1,%2,%3").arg(value.x).arg(value.y).arg(value.z); }
-        void operator()(const Vec4& value, QString& to) const { to = QString::fromLatin1("%1,%2,%3,%4").arg(value.x).arg(value.y).arg(value.z).arg(value.w); }
-        void operator()(const Ang3& value, QString& to) const { to = QString::fromLatin1("%1,%2,%3").arg(value.x).arg(value.y).arg(value.z); }
-        void operator()(const Quat& value, QString& to) const { to = QString::fromLatin1("%1,%2,%3,%4").arg(value.w).arg(value.v.x).arg(value.v.y).arg(value.v.z); }
+        void operator()(const AZ::Vector2& value, QString& to) const { to = QString::fromLatin1("%1,%2").arg(value.GetX()).arg(value.GetY()); }
+        void operator()(const AZ::Vector3& value, QString& to) const { to = QString::fromLatin1("%1,%2,%3").arg(value.GetX()).arg(value.GetY()).arg(value.GetZ()); }
+        void operator()(const AZ::Vector4& value, QString& to) const { to = QString::fromLatin1("%1,%2,%3,%4").arg(value.GetX()).arg(value.GetY()).arg(value.GetZ()).arg(value.GetW()); }
+        void operator()(const AZ::Quaternion& value, QString& to) const { to = QString::fromLatin1("%1,%2,%3,%4").arg(value.GetW()).arg(value.GetX()).arg(value.GetY()).arg(value.GetZ()); }
 
         void operator()(const QString& from, int& value) const { value = from.toInt(); }
         void operator()(const QString& from, bool& value) const { value = from.toInt() != 0; }
         void operator()(const QString& from, float& value) const { value = from.toFloat(); }
-        void operator()(const QString& from, Vec2& value) const
+        void operator()(const QString& from, AZ::Vector2& value) const
         {
             QStringList parts = from.split(QStringLiteral(","));
             while (parts.size() < 2)
             {
                 parts.push_back(QString());
             }
-            value.x = parts[0].toFloat();
-            value.y = parts[1].toFloat();
+            value.Set(parts[0].toFloat(), parts[1].toFloat());
         };
-        void operator()(const QString& from, Vec3& value) const
+        void operator()(const QString& from, AZ::Vector3& value) const
         {
             QStringList parts = from.split(QStringLiteral(","));
             while (parts.size() < 3)
             {
                 parts.push_back(QString());
             }
-            value.x = parts[0].toFloat();
-            value.y = parts[1].toFloat();
-            value.z = parts[2].toFloat();
+           value.Set(parts[0].toFloat(),parts[1].toFloat(),parts[2].toFloat());
         };
-        void operator()(const QString& from, Vec4& value) const
+        void operator()(const QString& from, AZ::Vector4& value) const
         {
             QStringList parts = from.split(QStringLiteral(","));
             while (parts.size() < 4)
             {
                 parts.push_back(QString());
             }
-            value.x = parts[0].toFloat();
-            value.y = parts[1].toFloat();
-            value.z = parts[2].toFloat();
-            value.w = parts[3].toFloat();
+            value.Set(parts[0].toFloat(), parts[1].toFloat(), parts[2].toFloat(), parts[3].toFloat());
         };
-        void operator()(const QString& from, Ang3& value) const
-        {
-            QStringList parts = from.split(QStringLiteral(","));
-            while (parts.size() < 3)
-            {
-                parts.push_back(QString());
-            }
-            value.x = parts[0].toFloat();
-            value.y = parts[1].toFloat();
-            value.z = parts[2].toFloat();
-        };
-        void operator()(const QString& from, Quat& value) const
+        void operator()(const QString& from, AZ::Quaternion& value) const
         {
             QStringList parts = from.split(QStringLiteral(","));
             while (parts.size() < 4)
             {
                 parts.push_back(QString());
             }
-            value.w = parts[0].toFloat();
-            value.v.x = parts[1].toFloat();
-            value.v.y = parts[2].toFloat();
-            value.v.z = parts[3].toFloat();
+            value.Set(parts[0].toFloat(), parts[1].toFloat(), parts[2].toFloat(), parts[3].toFloat());
         };
     };
 
@@ -1012,25 +992,21 @@ namespace var_type
     {
         return arg1 == arg2;
     };
-    inline bool compare(const Vec2& v1, const Vec2& v2)
+    inline bool compare(const AZ::Vector2& v1, const AZ::Vector2& v2)
     {
-        return v1.x == v2.x && v1.y == v2.y;
+        return v1 == v2;
     }
-    inline bool compare(const Vec3& v1, const Vec3& v2)
+    inline bool compare(const AZ::Vector3& v1, const AZ::Vector3& v2)
     {
-        return v1.x == v2.x && v1.y == v2.y && v1.z == v2.z;
+        return v1 == v2;
     }
-    inline bool compare(const Vec4& v1, const Vec4& v2)
+    inline bool compare(const AZ::Vector4& v1, const AZ::Vector4& v2)
     {
-        return v1.x == v2.x && v1.y == v2.y && v1.z == v2.z && v1.w == v2.w;
+        return v1 == v2;
     }
-    inline bool compare(const Ang3& v1, const Ang3& v2)
+    inline bool compare(const AZ::Quaternion& q1, const AZ::Quaternion& q2)
     {
-        return v1.x == v2.x && v1.y == v2.y && v1.z == v2.z;
-    }
-    inline bool compare(const Quat& q1, const Quat& q2)
-    {
-        return q1.v.x == q2.v.x && q1.v.y == q2.v.y && q1.v.z == q2.v.z && q1.w == q2.w;
+        return q1 == q2;
     }
     inline bool compare(const char* s1, const char* s2)
     {
@@ -1046,16 +1022,12 @@ namespace var_type
     {
         val = 0;
     };
-    inline void init(Vec2& val)   {   val.x = 0; val.y = 0;   };
-    inline void init(Vec3& val)   {   val.x = 0; val.y = 0; val.z = 0; };
-    inline void init(Vec4& val)   {   val.x = 0; val.y = 0; val.z = 0; val.w = 0;  };
-    inline void init(Ang3& val)   {   val.x = 0; val.y = 0; val.z = 0; };
-    inline void init(Quat& val)
+    inline void init(AZ::Vector2& val)   {   val.Set(0.0f);   };
+    inline void init(AZ::Vector3& val)   {   val.Set(0.0f); };
+    inline void init(AZ::Vector4& val)   {   val.Set(0.0f);  };
+    inline void init(AZ::Quaternion& val)
     {
-        val.v.x = 0;
-        val.v.y = 0;
-        val.v.z = 0;
-        val.w = 0;
+        val.Set(0.0f);
     };
     inline void init(const char*& val)
     {
@@ -1068,23 +1040,6 @@ namespace var_type
     //////////////////////////////////////////////////////////////////////////
 };
 
-//////////////////////////////////////////////////////////////////////////
-// Void variable does not contain any value.
-//////////////////////////////////////////////////////////////////////////
-class CVariableVoid
-    : public CVariableBase
-{
-public:
-    CVariableVoid(){};
-    EType GetType() const override { return IVariable::UNKNOWN; };
-    IVariable* Clone([[maybe_unused]] bool bRecursive) const override { return new CVariableVoid(*this); }
-    void CopyValue([[maybe_unused]] IVariable* fromVar) override {};
-    bool HasDefaultValue() const override { return true; }
-    void ResetToDefault() override {};
-protected:
-    CVariableVoid(const CVariableVoid& v)
-        : CVariableBase(v) {};
-};
 
 //////////////////////////////////////////////////////////////////////////
 template <class T>
@@ -1120,29 +1075,28 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // Set methods.
     //////////////////////////////////////////////////////////////////////////
-    void Set(int value) override                           { SetValue(value); }
-    void Set(bool value) override                      { SetValue(value); }
-    void Set(float value) override                     { SetValue(value); }
-    void Set(double value) override                { SetValue(value); }
-    void Set(const Vec2& value) override           { SetValue(value); }
-    void Set(const Vec3& value) override           { SetValue(value); }
-    void Set(const Vec4& value) override           { SetValue(value); }
-    void Set(const Ang3& value) override           { SetValue(value); }
-    void Set(const Quat& value) override           { SetValue(value); }
-    void Set(const QString& value) override    { SetValue(value); }
-    void Set(const char* value) override      { SetValue(QString(value)); }
+    void Set(int value) override                          { SetValue(value); }
+    void Set(bool value) override                         { SetValue(value); }
+    void Set(float value) override                        { SetValue(value); }
+    void Set(double value) override                       { SetValue(value); }
+    void Set(const AZ::Vector2& value) override           { SetValue(value); }
+    void Set(const AZ::Vector3& value) override           { SetValue(value); }
+    void Set(const AZ::Vector4& value) override           { SetValue(value); }
+    void Set(const AZ::Quaternion& value) override        { SetValue(value); }
+    void Set(const QString& value) override               { SetValue(value); }
+    void Set(const char* value) override                  { SetValue(QString(value)); }
 
     //////////////////////////////////////////////////////////////////////////
     // Get methods.
     //////////////////////////////////////////////////////////////////////////
-    void Get(int& value) const override                        { GetValue(value); }
+    void Get(int& value) const override                    { GetValue(value); }
     void Get(bool& value) const override                   { GetValue(value); }
     void Get(float& value) const override                  { GetValue(value); }
-    void Get(double& value) const override                  { GetValue(value); }
-    void Get(Vec2& value) const override                   { GetValue(value); }
-    void Get(Vec3& value) const override                   { GetValue(value); }
-    void Get(Vec4& value) const override                   { GetValue(value); }
-    void Get(Quat& value) const override                   { GetValue(value); }
+    void Get(double& value) const override                 { GetValue(value); }
+    void Get(AZ::Vector2& value) const override            { GetValue(value); }
+    void Get(AZ::Vector3& value) const override            { GetValue(value); }
+    void Get(AZ::Vector4& value) const override            { GetValue(value); }
+    void Get(AZ::Quaternion& value) const override         { GetValue(value); }
     void Get(QString& value) const override                { GetValue(value); }
     bool HasDefaultValue() const override
     {

@@ -209,6 +209,11 @@ public:
     void setAttr(const char* key, const Vec4& value) override;
     void setAttr(const char* key, const Quat& value) override;
 
+    void setAttr(const char* key, const AZ::Vector2& value) override;
+    void setAttr(const char* key, const AZ::Vector3& value) override;
+    void setAttr(const char* key, const AZ::Vector4& value) override;
+    void setAttr(const char* key, const AZ::Quaternion& value) override;
+
     //! Delete attrbute.
     void delAttr(const char* key) override;
     //! Remove all node attributes.
@@ -225,6 +230,11 @@ public:
 
     bool getAttr(const char* key, XmlString& value) const override
     {const char*    v(NULL); bool  boHasAttribute(getAttr(key, &v)); value = v; return boHasAttribute; }
+
+    virtual bool getAttr(const char* key, AZ::Quaternion& value) const override;
+    virtual bool getAttr(const char* key, AZ::Vector2& value) const override;
+    virtual bool getAttr(const char* key, AZ::Vector3& value) const override;
+    virtual bool getAttr(const char* key, AZ::Vector4& value) const override;
 
     bool getAttr(const char* key, Vec2& value) const override;
     bool getAttr(const char* key, Ang3& value) const override;

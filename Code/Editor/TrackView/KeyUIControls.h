@@ -170,7 +170,7 @@ public:
     CSmartVariable<QString> mv_comment;
     CSmartVariable<float> mv_duration;
     CSmartVariable<float> mv_size;
-    CSmartVariable<Vec3> mv_color;
+    CSmartVariable<AZ::Vector3> mv_color;
     CSmartVariableEnum<int> mv_align;
     CSmartVariableEnum<QString> mv_font;
 
@@ -347,7 +347,7 @@ class CScreenFaderKeyUIControls
 {
     CSmartVariableArray     mv_table;
     CSmartVariable<float>   mv_fadeTime;
-    CSmartVariable<Vec3>    mv_fadeColor;
+    CSmartVariable<AZ::Vector3>    mv_fadeColor;
     CSmartVariable<QString> mv_strTexture;
     CSmartVariable<bool>    mv_bUseCurColor;
     CSmartVariableEnum<int> mv_fadeType;
@@ -520,7 +520,7 @@ public:
     CSmartVariable<QString> mv_startTrigger;
     CSmartVariable<QString> mv_stopTrigger;
     CSmartVariable<float> mv_duration;
-    CSmartVariable<Vec3> mv_customColor;
+    CSmartVariable<AZ::Vector3> mv_customColor;
 
     void OnCreateVars() override
     {

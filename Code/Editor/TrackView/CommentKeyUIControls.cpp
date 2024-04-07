@@ -39,7 +39,7 @@ bool CCommentKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& sele
             mv_duration = commentKey.m_duration;
             mv_size = commentKey.m_size;
             mv_font = commentKey.m_strFont.c_str();
-            mv_color = Vec3(commentKey.m_color.GetR(), commentKey.m_color.GetG(), commentKey.m_color.GetB());
+            mv_color = AZ::Vector3(commentKey.m_color.GetR(), commentKey.m_color.GetG(), commentKey.m_color.GetB());
             mv_align = commentKey.m_align;
 
             bAssigned = true;
@@ -85,9 +85,9 @@ void CCommentKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& sel
             }
 
             SyncValue(mv_duration, commentKey.m_duration, false, pVar);
-            Vec3 color(commentKey.m_color.GetR(), commentKey.m_color.GetG(), commentKey.m_color.GetB());
+            AZ::Vector3 color(commentKey.m_color.GetR(), commentKey.m_color.GetG(), commentKey.m_color.GetB());
             SyncValue(mv_color, color, false, pVar);
-            commentKey.m_color.Set(color.x, color.y, color.z, commentKey.m_color.GetA());
+            commentKey.m_color.Set(color.GetX(), color.GetY(), color.GetZ(), commentKey.m_color.GetA());
             SyncValue(mv_size, commentKey.m_size, false, pVar);
 
             bool isDuringUndo = false;
