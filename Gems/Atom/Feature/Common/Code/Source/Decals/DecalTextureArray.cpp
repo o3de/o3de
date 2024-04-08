@@ -298,7 +298,7 @@ namespace AZ
             {
                 return {};
             }
-            // Gruber patch begin // STA : detailed error log and exit to prevent crash
+#if defined(CARBONATED) // detailed error log and exit to prevent crash
             if (mip >= image->GetImageDescriptor().m_mipLevels)
             {
                 AZ_Error("DecalTextureArray", false,
@@ -308,7 +308,12 @@ namespace AZ
                     , mip, image->GetImageDescriptor().m_mipLevels - 1, m_materials[arrayLevel].m_materialAssetData.GetHint().c_str());
                 return {};
             }
-            // Gruber patch end // STA
+#else 
+            AZ_Assert(
+                mip < image->GetImageDescriptor().m_mipLevels,
+                "It is expected that all decals in a texture array must have the same number of mips which may not be the case here. "
+                "Please ensure that all the materials within m_materials are pointing to textures with same mips.");
+#endif // defined(CARBONATED)
 
             const auto srcData = image->GetSubImageData(mip, 0);
             return srcData;
