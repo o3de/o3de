@@ -12,8 +12,11 @@
 
 namespace AZ::Debug::Platform
 {
-    void OutputToDebugger([[maybe_unused]] AZStd::string_view title, [[maybe_unused]] AZStd::string_view message)
+    void OutputToDebugger([[maybe_unused]] AZStd::string_view window, [[maybe_unused]] AZStd::string_view message)
     {
-        // std::cout << title << ": " << message;
+        constexpr AZStd::string_view separator = ": ";
+        fwrite(window.data(), 1, window.size(), stdout);
+        fwrite(separator.data(), 1, separator.size(), stdout);
+        fwrite(message.data(), 1, message.size(), stdout);
     }
 } // namespace AZ::Debug::Platform
