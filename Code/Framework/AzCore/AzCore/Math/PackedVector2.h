@@ -7,59 +7,56 @@
  */
 
 #pragma once
-#include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/Vector2.h>
 #include <AzCore/RTTI/TypeInfo.h>
 
 namespace AZ
 {
     template<typename TYPE>
-    class PackedVector3
+    class PackedVector2
     {
     public:
         //===============================================================
         // Constructors.
         //===============================================================
-        PackedVector3();
-        explicit PackedVector3(TYPE initValue);
-        PackedVector3(TYPE x, TYPE y, TYPE z);
-        explicit PackedVector3(const AZ::Vector3& rhs);
-        explicit PackedVector3(const TYPE* initData);
+        PackedVector2();
+        explicit PackedVector2(TYPE initValue);
+        PackedVector2(TYPE x, TYPE y);
+        explicit PackedVector2(const AZ::Vector2& rhs);
+        explicit PackedVector2(const TYPE* initData);
 
         //===============================================================
         // Conversions.
         //===============================================================
         explicit operator TYPE* ();
         explicit operator const TYPE* () const;
-        explicit operator AZ::Vector3() const;
+        explicit operator AZ::Vector2() const;
 
         //===============================================================
         // Interface.
         //===============================================================
-        void Set(TYPE x, TYPE y, TYPE z);
+        void Set(TYPE x, TYPE y);
 
         TYPE GetElement(size_t index) const;
         void SetElement(size_t index, TYPE val);
 
         TYPE GetX() const;
         TYPE GetY() const;
-        TYPE GetZ() const;
         void SetX(TYPE v);
         void SetY(TYPE v);
-        void SetZ(TYPE v);
 
     private:
         TYPE m_x;
         TYPE m_y;
-        TYPE m_z;
     };
 
-    AZ_TYPE_INFO_TEMPLATE(PackedVector3, "{AE80F5E2-F809-4E2A-AE63-39F171C62819}", AZ_TYPE_INFO_TYPENAME);
+    AZ_TYPE_INFO_TEMPLATE(PackedVector2, "{C20DBD4B-5542-4FAE-9BE2-BD1DD3027417}", AZ_TYPE_INFO_TYPENAME);
 
     //===============================================================
     // Standard type variations.
     //===============================================================
-    using PackedVector3f = PackedVector3<float>;
-    using PackedVector3i = PackedVector3<int32_t>;
+    using PackedVector2f = PackedVector2<float>;
+    using PackedVector2i = PackedVector2<int32_t>;
 
 
     //===============================================================
@@ -67,110 +64,94 @@ namespace AZ
     //===============================================================
 
     template<typename TYPE>
-    PackedVector3<TYPE>::PackedVector3()
+    PackedVector2<TYPE>::PackedVector2()
     {}
 
     template<typename TYPE>
-    PackedVector3<TYPE>::PackedVector3(TYPE initValue)
+    PackedVector2<TYPE>::PackedVector2(TYPE initValue)
         : m_x(initValue)
         , m_y(initValue)
-        , m_z(initValue)
     {}
 
     template<typename TYPE>
-    PackedVector3<TYPE>::PackedVector3(TYPE x, TYPE y, TYPE z)
+    PackedVector2<TYPE>::PackedVector2(TYPE x, TYPE y)
         : m_x(x)
         , m_y(y)
-        , m_z(z)
     {}
 
     template<typename TYPE>
-    PackedVector3<TYPE>::PackedVector3(const AZ::Vector3& rhs)
+    PackedVector2<TYPE>::PackedVector2(const AZ::Vector2& rhs)
         : m_x(rhs.GetX())
         , m_y(rhs.GetY())
-        , m_z(rhs.GetZ())
     {}
 
     template<typename TYPE>
-    PackedVector3<TYPE>::PackedVector3(const TYPE* initData)
+    PackedVector2<TYPE>::PackedVector2(const TYPE* initData)
         : m_x(initData[0])
         , m_y(initData[1])
-        , m_z(initData[2])
     {}
 
     template<typename TYPE>
-    PackedVector3<TYPE>::operator TYPE* ()
+    PackedVector2<TYPE>::operator TYPE* ()
     {
         return &m_x;
     }
 
     template<typename TYPE>
-    PackedVector3<TYPE>::operator const TYPE* () const
+    PackedVector2<TYPE>::operator const TYPE* () const
     {
         return &m_x;
     }
 
     template<typename TYPE>
-    PackedVector3<TYPE>::operator AZ::Vector3() const
+    PackedVector2<TYPE>::operator AZ::Vector2() const
     {
-        return AZ::Vector3(m_x, m_y, m_z);
+        return AZ::Vector2(m_x, m_y);
     }
 
     template<typename TYPE>
-    void PackedVector3<TYPE>::Set(TYPE x, TYPE y, TYPE z)
+    void PackedVector2<TYPE>::Set(TYPE x, TYPE y)
     {
         m_x = x;
         m_y = y;
-        m_z = z;
     }
 
     template<typename TYPE>
-    TYPE PackedVector3<TYPE>::GetElement(size_t index) const
+    TYPE PackedVector2<TYPE>::GetElement(size_t index) const
     {
-        AZ_MATH_ASSERT(index < 3, "access beyond bounds of PackedVector3");
+        AZ_MATH_ASSERT(index < 2, "access beyond bounds of PackedVector4");
         return reinterpret_cast<const TYPE*>(this)[index];
     }
 
     template<typename TYPE>
-    void PackedVector3<TYPE>::SetElement(size_t index, TYPE val)
+    void PackedVector2<TYPE>::SetElement(size_t index, TYPE val)
     {
-        AZ_MATH_ASSERT(index < 3, "access beyond bounds of PackedVector3");
+        AZ_MATH_ASSERT(index < 2, "access beyond bounds of PackedVector4");
         reinterpret_cast<TYPE*>(this)[index] = val;
     }
 
     template<typename TYPE>
-    TYPE PackedVector3<TYPE>::GetX() const
+    TYPE PackedVector2<TYPE>::GetX() const
     {
         return m_x;
     }
 
     template<typename TYPE>
-    void PackedVector3<TYPE>::SetX(TYPE v)
+    void PackedVector2<TYPE>::SetX(TYPE v)
     {
         m_x = v;
     }
 
     template<typename TYPE>
-    TYPE PackedVector3<TYPE>::GetY() const
+    TYPE PackedVector2<TYPE>::GetY() const
     {
         return m_y;
     }
 
     template<typename TYPE>
-    void PackedVector3<TYPE>::SetY(TYPE v)
+    void PackedVector2<TYPE>::SetY(TYPE v)
     {
         m_y = v;
     }
-
-    template<typename TYPE>
-    TYPE PackedVector3<TYPE>::GetZ() const
-    {
-        return m_z;
-    }
-
-    template<typename TYPE>
-    void PackedVector3<TYPE>::SetZ(TYPE v)
-    {
-        m_z = v;
-    }
 }
+
