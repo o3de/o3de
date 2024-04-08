@@ -32,6 +32,7 @@ namespace AZ::RHI
     void RenderDocSystemComponent::Activate()
     {
         bool loadRenderDoc = AzFramework::StringFunc::Equal(RHI::GetCommandLineValue("rhi-gpu-profiler"), "RenderDoc");
+        loadRenderDoc = true;
         AZStd::string filePath = ATOM_RENDERDOC_RUNTIME_PATH;
         if (!filePath.empty())
         {
