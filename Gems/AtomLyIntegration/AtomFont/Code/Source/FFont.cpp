@@ -1440,7 +1440,7 @@ bool AZ::FFont::InitTexture()
     const Name imageName(m_name.c_str());
 
     Data::Instance<RPI::AttachmentImagePool> imagePool = RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
-    RHI::ImageDescriptor imageDescriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite, width, height, rhiImageFormat);
+    RHI::ImageDescriptor imageDescriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderRead, width, height, rhiImageFormat);
     m_fontAttachmentImage = RPI::AttachmentImage::Create(*imagePool.get(), imageDescriptor, imageName);
 
     m_fontImage = m_fontAttachmentImage->GetRHIImage();
