@@ -49,9 +49,6 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         prefabProcessorContext.ListPrefabs(
             [&prefabProcessorContext, &excludedComponents](PrefabDocument& prefab) -> void
             {
-                (void) prefabProcessorContext;
-                (void) excludedComponents;
-
                 prefab.GetInstance().GetAllEntitiesInHierarchy(
                     [&prefab, &prefabProcessorContext, &excludedComponents](AZStd::unique_ptr<AZ::Entity>& entity) -> bool
                     {
