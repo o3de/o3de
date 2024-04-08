@@ -15,7 +15,6 @@
 
 // forward declarations.
 class CEntityObject;
-struct DisplayContext;
 class CTrackViewAnimNode;
 class CUsedResources;
 class CObjectClassDesc;

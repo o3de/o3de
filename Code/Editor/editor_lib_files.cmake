@@ -407,15 +407,12 @@ set(FILES
     LogFileImpl.cpp
     LogFileImpl.h
     Objects/ClassDesc.h
-    Objects/DisplayContextShared.inl
     Objects/ObjectLoader.cpp
     Objects/ObjectLoader.h
     Objects/ObjectManager.cpp
     Objects/ObjectManager.h
     Objects/ObjectManagerLegacyUndo.cpp
     Objects/ObjectManagerLegacyUndo.h
-    Objects/DisplayContext.cpp
-    Objects/DisplayContext.h
     Objects/EntityObject.cpp
     Objects/EntityObject.h
     PythonEditorFuncs.cpp

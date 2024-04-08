@@ -197,9 +197,6 @@ protected:
     T GetEntityProperty(const char* name, T defaultvalue) const;
 
     //! Draw default object items.
-    void DrawProjectorPyramid(DisplayContext& dc, float dist);
-    void DrawProjectorFrustum(DisplayContext& dc, Vec2 size, float dist);
-
     void OnLoadFailed();
 
     CVarBlock* CloneProperties(CVarBlock* srcProperties);
