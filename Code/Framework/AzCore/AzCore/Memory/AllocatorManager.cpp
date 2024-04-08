@@ -407,4 +407,99 @@ AllocatorManager::DebugBreak(void* address, const Debug::AllocationInfo& info)
     }
 }
 
+//=========================================================================
+// FindThreadData
+// [4/8/2024]
+//=========================================================================
+AllocatorManager::ThreadLocalData& AllocatorManager::FindThreadData()
+{
+    AZ_Assert(!m_recursive, "recursive call to allocator manager");
+    AZStd::mutex lock;
+    lock.lock();
+    if (!m_threadData.empty())
+    {
+        auto it = m_threadData.find(std::this_thread::get_id());
+        if (it != m_threadData.end())
+        {
+            lock.unlock();
+            return it->second;
+        }
+    }
+    m_recursive = true;
+    auto it = m_threadData.insert_key(std::this_thread::get_id());
+    m_recursive = false;
+    lock.unlock();
+    return it.first->second;
+}
+
+//=========================================================================
+// GetCodePoint
+// [4/8/2024]
+//=========================================================================
+AZStd::tuple<const AZ::AllocatorManager::CodePoint*, uint64_t> AllocatorManager::GetCodePointAndMask()
+{
+    ThreadLocalData& tld = FindThreadData();
+    const uint64_t mask = tld.m_tagMask;
+    if (tld.m_allocationMarkers.IsEmty())
+    {
+        return AZStd::make_tuple(nullptr, mask);  // you can put a breakpoint here to find unmarked memory piece allocations after another breakpoint in your code (otherwise there'll be a lot of cals)
+    }
+    return AZStd::make_tuple(&tld.m_allocationMarkers.Get(), mask);
+}
+
+//=========================================================================
+// PushMemoryMarker and PopMemoryMarker
+// [4/8/2024]
+//=========================================================================
+void AllocatorManager::PushMemoryMarker(const AllocatorManager::CodePoint& point)
+{
+    FindThreadData().m_allocationMarkers.Push(point);
+}
+void AllocatorManager::PopMemoryMarker()
+{
+    FindThreadData().m_allocationMarkers.Pop();
+}
+
+//=========================================================================
+// PushMemoryMarker and PopMemoryMarker
+// [4/9/2024]
+//=========================================================================
+constexpr unsigned int NO_CHANGE_BIT = 10;
+void AllocatorManager::PushMemoryTag(unsigned int tag)
+{
+    ThreadLocalData& tld = FindThreadData();
+
+    if (tld.m_allocationTags.IsFull())
+    {
+        tld.m_allocationTags.SimulatePush();  // just increase the index to enable pop
+    }
+
+    const uint64_t mask = 1u << tag;
+    if ((tld.m_tagMask & mask) != 0)
+    {
+        tag |= 1 << NO_CHANGE_BIT; // store that there is no need to roll back, the tag is already set
+    }
+    else
+    {
+        tld.m_tagMask |= mask;
+    }
+
+    tld.m_allocationTags.Push(tag);
+}
+void AllocatorManager::PopMemoryTag()
+{
+    ThreadLocalData& tld = FindThreadData();
+    AZ_Assert(!tld.m_allocationTags.IsEmty(), "Pop tag, but empty");
+    if (!tld.m_allocationTags.IsOverflow())
+    {
+        const unsigned int tag = tld.m_allocationTags.Get();
+        if ((tag & (1 << NO_CHANGE_BIT)) == 0)
+        {
+            const uint64_t mask = 1u << tag;
+            tld.m_tagMask &= ~mask;
+        }
+    }
+    tld.m_allocationTags.Pop();
+}
+
 } // namespace AZ

@@ -428,6 +428,8 @@ set(FILES
     Memory/Memory_fwd.h
     Memory/Memory.cpp
     Memory/Memory.h
+    Memory/MemoryMarker.cpp
+    Memory/MemoryMarker.h
     Memory/nedmalloc.inl
     Memory/NewAndDelete.inl
     Memory/OSAllocator.cpp

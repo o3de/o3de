@@ -9,6 +9,7 @@
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Memory/AllocationRecords.h>
 #include <AzCore/Memory/AllocatorManager.h>
+#include <AzCore/Memory/MemoryMarker.h>
 
 #include <AzCore/std/time.h>
 #include <AzCore/std/parallel/mutex.h>
@@ -128,8 +129,37 @@ namespace AZ::Debug
         ai.m_lineNum = 0;
         ai.m_timeStamp = AZStd::GetTimeNowMicroSecond();
 
+        AllocatorManager& manager = AllocatorManager::Instance();
+        if (!manager.IsRecursive())  // protection from recursive memory allocation in GetCodePoint() call
+        {
+            AZStd::tuple<const AZ::AllocatorManager::CodePoint*, uint64_t> data = manager.GetCodePointAndMask();
+            const AZ::AllocatorManager::CodePoint* point = AZStd::get<0>(data);
+            ai.m_tags = AZStd::get<1>(data);
+            if (point)
+            {
+                ai.m_name = point->m_name;
+                ai.m_fileName = point->m_file;
+                ai.m_lineNum = point->m_line;
+
+                if (ai.m_name && !point->m_isLiteral)  // do we need to copy the name?
+                {
+                    const size_t nameLength = strlen(ai.m_name);
+                    const size_t totalLength = nameLength + 1;
+                    ai.m_namesBlock = m_records.get_allocator().allocate(totalLength, 1);
+                    ai.m_namesBlockSize = totalLength;
+                    char* savedName = reinterpret_cast<char*>(ai.m_namesBlock);
+                    memcpy(savedName, ai.m_name, nameLength + 1);
+                    ai.m_name = savedName;
+                }
+            }
+        }
+        else
+        {
+            ai.m_tags = 1u << (unsigned int)AZ::MemoryTagValue::Overhead;
+        }
+
         // if we don't have a fileName,lineNum record the stack or if the user requested it.
-        if (m_mode == RECORD_STACK_IF_NO_FILE_LINE || m_mode == RECORD_FULL)
+        if ((m_mode == RECORD_STACK_IF_NO_FILE_LINE && ai.m_fileName == nullptr) || m_mode == RECORD_FULL)
         {
             ai.m_stackFrames = m_numStackLevels ? reinterpret_cast<AZ::Debug::StackFrame*>(m_records.get_allocator().allocate(
                                                       sizeof(AZ::Debug::StackFrame) * m_numStackLevels, 1))
@@ -169,7 +199,7 @@ namespace AZ::Debug
             }
         }
 
-        AllocatorManager::Instance().DebugBreak(address, ai);
+        manager.DebugBreak(address, ai);
 
         // statistics
         m_requestedBytes += byteSize;

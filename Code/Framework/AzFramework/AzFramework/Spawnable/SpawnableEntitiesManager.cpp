@@ -18,6 +18,7 @@
 #include <AzCore/std/sort.h> 
 #include <AzFramework/Helpers/EntityHelpers.h> // Helper methods to evaluate Entities moved here
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzCore/Memory/MemoryMarker.h>
 #endif
 // Gruber patch end // VMED
 #include <AzFramework/Components/TransformComponent.h>
@@ -728,6 +729,7 @@ namespace AzFramework
                 AZStd::shared_ptr<SpawnableInstanceDescriptor> spawnableInfo;
                 if (ticket.m_spawnable->IsDynamic())
                 {
+                    MEMORY_ALLOCATION_MARKER_NAME("SpawnTicket");
                     spawnableInfo = AZStd::make_shared<SpawnableInstanceDescriptor>(ticket.m_spawnable.GetId(), ticket.m_ticketId);
                     spawnableInfo->SetEntityIdMap(ticket.m_entityIdReferenceMap);
                     spawnableInfo->SetInstantiatedEntities(ticket.m_spawnedEntities);

@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <thread>
 #include <AzCore/base.h>
 #include <AzCore/Memory/AllocationRecords.h>
 #include <AzCore/std/algorithm.h>
@@ -138,6 +139,53 @@ namespace AZ
         void ResetMemoryBreak(int slot = -1);
         //////////////////////////////////////////////////////////////////////////
 
+        struct CodePoint
+        {
+            const char* m_name;
+            const char* m_file;
+            int m_line;
+            bool m_isLiteral;
+
+            CodePoint()
+                : m_name(nullptr)
+                , m_file(nullptr)
+                //, m_line(0)  // TODO delete if not needed
+                //, m_isLiteral(false)
+            {
+            }
+
+            CodePoint(const char* name, const char* file, int line, bool isLiteral)
+                : m_name(name)
+                , m_file(file)
+                , m_line(line)
+                , m_isLiteral(isLiteral)
+            {
+            }
+        };
+
+        /// Returns current thread's top stack registered code point
+        AZStd::tuple<const CodePoint*, uint64_t> GetCodePointAndMask();
+
+        /// TODO write desc
+        void PushMemoryMarker(const CodePoint& point);
+
+        /// TODO write desc
+        void PopMemoryMarker();
+
+        /// TODO write desc
+        void PushMemoryTag(unsigned int tag);
+
+        /// TODO write desc
+        void PopMemoryTag();
+
+        /// TODO write desc
+        bool IsRecursive()
+        {
+            return m_recursive;
+        }
+
+        //////////////////////////////////////////////////////////////////////////
+
         // Called from IAllocator
         void RegisterAllocator(IAllocator* alloc);
         void UnRegisterAllocator(IAllocator* alloc);
@@ -164,6 +212,63 @@ namespace AZ
         AZStd::atomic<int>  m_profilingRefcount;
 
         AZ::Debug::AllocationRecords::Mode m_defaultTrackingRecordMode;
+
+        // this is a specfic stack that can grow beyond its capacity not storing values
+        template<typename Data, int Size>
+        class DataStack
+        {
+        public:
+            void Push(const Data& d)
+            {
+                AZ_Assert(!IsFull(), "Push, but full");
+                m_stack[m_numItems++] = d;
+            }
+            void SimulatePush()  // stack grows beyond the capacity
+            {
+                AZ_Assert(IsFull(), "Simulate push, but not full");
+                m_numItems++;
+            }
+            void Pop()
+            {
+                AZ_Assert(!IsEmty(), "Pop, but empty");
+                m_numItems--;
+            }
+
+            const Data& Get() const
+            {
+                AZ_Assert(!IsEmty(), "Get, but empty");
+                AZ_Assert(!IsOverflow(), "Get, but overflow");
+                return m_stack[m_numItems - 1];
+            }
+
+            bool IsFull() const
+            {
+                return m_numItems >= Size;
+            }
+            bool IsOverflow() const
+            {
+                return m_numItems > Size;
+            }
+            bool IsEmty() const
+            {
+                return m_numItems == 0;
+            }
+
+        private:
+            Data m_stack[Size];
+            int m_numItems = 0;
+        };
+
+        struct ThreadLocalData
+        {
+            DataStack<CodePoint, 64> m_allocationMarkers;
+            DataStack<unsigned int, 64> m_allocationTags;
+            uint64_t m_tagMask = 0;
+        };
+        AZStd::unordered_map<std::thread::id, ThreadLocalData, std::hash<std::thread::id>> m_threadData;
+        volatile bool m_recursive = false;
+
+        ThreadLocalData& FindThreadData();
 
         static AllocatorManager g_allocMgr;    ///< The single instance of the allocator manager
     };
