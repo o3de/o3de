@@ -20,10 +20,6 @@
 #include <QObject>
 #endif
 
-#define CLASS_LIGHT "Light"
-#define CLASS_DESTROYABLE_LIGHT "DestroyableLight"
-#define CLASS_RIGIDBODY_LIGHT "RigidBodyLight"
-
 class CEntityObject;
 class QMenu;
 
@@ -79,7 +75,6 @@ public:
     void InitVariables() override;
     void Done() override;
 
-    void DrawExtraLightInfo (DisplayContext& disp);
 
     bool GetEntityPropertyBool(const char* name) const;
     int GetEntityPropertyInteger(const char* name) const;

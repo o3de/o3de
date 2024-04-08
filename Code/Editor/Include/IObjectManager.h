@@ -105,6 +105,4 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // Gathers all resources used by all objects.
     virtual void GatherUsedResources(CUsedResources& resources) = 0;
-
-    virtual bool IsLightClass(CBaseObject* pObject) = 0;
 };
