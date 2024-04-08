@@ -52,6 +52,8 @@ namespace AZ::RHI
             this->m_byteCount = other.m_byteCount;
             this->m_byteStride = other.m_byteStride;
 
+            m_cache.clear();
+
             return *this;
         }
 
