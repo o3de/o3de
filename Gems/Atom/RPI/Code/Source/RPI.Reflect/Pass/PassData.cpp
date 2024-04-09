@@ -92,9 +92,10 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<PassData>()
-                    ->Version(1)
+                    ->Version(2) // Added "MergeChildrenAsSubpasses"
                     ->Field("PipelineViewTag", &PassData::m_pipelineViewTag)
-                    ->Field("PipelineGlobalConnections", &PassData::m_pipelineGlobalConnections);
+                    ->Field("PipelineGlobalConnections", &PassData::m_pipelineGlobalConnections)
+                    ->Field("MergeChildrenAsSubpasses", &PassData::m_mergeChildrenAsSubpasses);
             }
         }
 
@@ -102,8 +103,8 @@ namespace AZ
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
-                serializeContext->Class<FullscreenTrianglePassData, RenderPassData>()
-                    ->Version(0)
+                serializeContext->Class<FullscreenTrianglePassData, RasterPassData>()
+                    ->Version(1) // Inherits from RasterPassData instead of RenderPassData.
                     ->Field("ShaderAsset", &FullscreenTrianglePassData::m_shaderAsset)
                     ->Field("StencilRef", &FullscreenTrianglePassData::m_stencilRef);
             }

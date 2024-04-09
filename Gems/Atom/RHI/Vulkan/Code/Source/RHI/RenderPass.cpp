@@ -470,124 +470,107 @@ namespace AZ
             return m_descriptor.m_attachmentCount;
         }
 
-
-        static void AddSubpassDependencyForSubpassInputs(
-            AZStd::vector<VkSubpassDependency>& subpassDependencies, uint32_t srcSubpass, uint32_t dstSubpass)
-        {
-            subpassDependencies.emplace_back();
-            VkSubpassDependency& dependency = subpassDependencies.back();
-            dependency = {};
-            dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT; // The only flag that makes sense for Tiled Rendering GPUs.
-
-            dependency.srcSubpass = srcSubpass;
-            dependency.srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-            dependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-
-            dependency.dstSubpass = dstSubpass;
-            dependency.dstStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-            dependency.dstAccessMask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT | VK_ACCESS_SHADER_READ_BIT;
-        }
-
-        static void AddSubpassDependencyForRenderTargets(
-            AZStd::vector<VkSubpassDependency>& subpassDependencies, uint32_t srcSubpass, uint32_t dstSubpass)
-        {
-            subpassDependencies.emplace_back();
-            VkSubpassDependency& dependency = subpassDependencies.back();
-            dependency = {};
-            dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT; // The only flag that makes sense for Tiled Rendering GPUs.
-
-            dependency.srcSubpass = srcSubpass;
-            dependency.srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-            dependency.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
-            dependency.dstSubpass = dstSubpass;
-            dependency.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-            dependency.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-        }
-
-        static void AddSubpassDependencyForDepthStencilTargets(
-            AZStd::vector<VkSubpassDependency>& subpassDependencies,
-            uint32_t srcSubpass, uint32_t dstSubpass)
-        {
-            subpassDependencies.emplace_back();
-            VkSubpassDependency& dependency = subpassDependencies.back();
-            dependency = {};
-            dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT; // The only flag that makes sense for Tiled Rendering GPUs. 
-
-            dependency.srcSubpass = srcSubpass;
-            dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-            dependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; // VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-            //VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
-            dependency.dstSubpass = dstSubpass;
-            dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-            dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-             //VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-             //VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-        }
-
-        static bool AreRenderAttachmentDescriptorsDependent(const RHI::RenderAttachmentDescriptor& srcDescriptor, const RHI::RenderAttachmentDescriptor& dstDescriptor)
-        {
-            if (!srcDescriptor.IsValid() || !dstDescriptor.IsValid())
-            {
-                return false;
-            }
-            return srcDescriptor.m_attachmentIndex == dstDescriptor.m_attachmentIndex;
-        }
-
-        static bool AreSubpassInputsDependent(
-            const RHI::SubpassInputDescriptor& srcDescriptor, const RHI::SubpassInputDescriptor& dstDescriptor)
-        {
-            return (srcDescriptor.m_attachmentIndex == dstDescriptor.m_attachmentIndex) &&
-                aznumeric_cast<uint32_t>(srcDescriptor.m_aspectFlags & dstDescriptor.m_aspectFlags);
-        }
-
         //! A helper function, invoked by ConvertRenderAttachmentLayout that adds all subpass dependecies for subpasses
         //! that depend on @preSubpassIndex.
         static void AddSubpassDependencies(
             AZStd::vector<VkSubpassDependency>& subpassDependencies,
-            uint32_t preSubpassIndex,
+            uint32_t subpassIndex,
             const AZStd::array<RHI::SubpassRenderAttachmentLayout, RHI::Limits::Pipeline::SubpassCountMax>& subpassLayouts,
             uint32_t subpassCount)
         {
-            const RHI::SubpassRenderAttachmentLayout& preSubpassLayout = subpassLayouts[preSubpassIndex];
-            for (uint32_t postSubpassIndex = preSubpassIndex + 1; postSubpassIndex < subpassCount; postSubpassIndex++)
+            if (subpassCount < 2)
             {
-                // Check if there's depthStencil dependency.
-                const RHI::SubpassRenderAttachmentLayout& postSubpassLayout = subpassLayouts[postSubpassIndex];
-                if (AreRenderAttachmentDescriptorsDependent(preSubpassLayout.m_depthStencilDescriptor, postSubpassLayout.m_depthStencilDescriptor))
+                return; // This is the most common scenario.
+            }
+
+            // Typical External dependencies for subpass 0
+            if (subpassIndex == 0)
+            {
+                if (subpassLayouts[subpassIndex].m_depthStencilDescriptor.IsValid())
                 {
-                    AddSubpassDependencyForDepthStencilTargets(subpassDependencies, preSubpassIndex, postSubpassIndex);
+                    subpassDependencies.emplace_back();
+                    VkSubpassDependency& subpassDependency = subpassDependencies.back();
+                    subpassDependency = {};
+                    subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+                    subpassDependency.dstSubpass = 0;
+                    subpassDependency.srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+                    subpassDependency.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+                    subpassDependency.srcAccessMask = 0;
+                    subpassDependency.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+                    subpassDependency.dependencyFlags = 0;
+                }
+                if (subpassLayouts[subpassIndex].m_rendertargetCount > 0)
+                {
+                    subpassDependencies.emplace_back();
+                    VkSubpassDependency& subpassDependency = subpassDependencies.back();
+                    subpassDependency = {};
+                    subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+                    subpassDependency.dstSubpass = 0;
+                    subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+                    subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+                    subpassDependency.srcAccessMask = 0;
+                    subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                    subpassDependency.dependencyFlags = 0;
+                }
+            }
+
+            // If the next subpass is valid, then we need to set the dependencey between the current and the next subpass.
+            uint32_t nextSubpassIndex = subpassIndex + 1;
+            if (nextSubpassIndex < subpassCount)
+            {
+                subpassDependencies.emplace_back();
+                VkSubpassDependency& subpassDependency = subpassDependencies.back();
+                subpassDependency = {};
+                subpassDependency.srcSubpass = subpassIndex;
+                subpassDependency.dstSubpass = nextSubpassIndex;
+                subpassDependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT; // The only flag that makes in between subpasses for Tiled GPUs. 
+
+                if (subpassLayouts[subpassIndex].m_rendertargetCount > 0)
+                {
+                    subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+                    subpassDependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                }
+                else
+                {
+                    // Most likely We are talking about a subpass that only has a vertex shader, and it's used for early depth fragment testing.
+                    // Also there are other pipeline stages before these, so this is a good conservative decision.
+                    subpassDependency.srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+                    subpassDependency.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
                 }
 
-                for (uint32_t preRenderTargetIndex = 0; preRenderTargetIndex < preSubpassLayout.m_rendertargetCount; preRenderTargetIndex++)
+                if (subpassLayouts[nextSubpassIndex].m_rendertargetCount > 0)
                 {
-                    for (uint32_t postRenderTargetIndex = 0; postRenderTargetIndex < postSubpassLayout.m_rendertargetCount;
-                        postRenderTargetIndex++)
+                    subpassDependency.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+                    if (subpassLayouts[nextSubpassIndex].m_subpassInputCount > 0)
                     {
-                        if (AreRenderAttachmentDescriptorsDependent(
-                                preSubpassLayout.m_rendertargetDescriptors[preRenderTargetIndex],
-                                postSubpassLayout.m_rendertargetDescriptors[postRenderTargetIndex]))
-                        {
-                            AddSubpassDependencyForRenderTargets(subpassDependencies, preSubpassIndex, postSubpassIndex);
-                        }
+                        subpassDependency.dstAccessMask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+                    }
+                    else
+                    {
+                        subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
                     }
                 }
-
-                for (uint32_t preSubpassInputIndex = 0; preSubpassInputIndex < preSubpassLayout.m_subpassInputCount; preSubpassInputIndex++)
+                else
                 {
-                    for (uint32_t postSubpassInputIndex = 0; postSubpassInputIndex < postSubpassLayout.m_subpassInputCount;
-                         postSubpassInputIndex++)
-                    {
-                        if (AreSubpassInputsDependent(
-                                preSubpassLayout.m_subpassInputDescriptors[preSubpassInputIndex],
-                                postSubpassLayout.m_subpassInputDescriptors[postSubpassInputIndex]))
-                        {
-                            AddSubpassDependencyForSubpassInputs(subpassDependencies, preSubpassIndex, postSubpassIndex);
-                        }
-                    }
+                    // Most likely We are talking about a subpass that only has a vertex shader, and it's used for early depth fragment
+                    // testing. Also there are other pipeline stages before these, so this is a good conservative decision.
+                    subpassDependency.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+                    subpassDependency.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
                 }
-
+            }
+            else
+            {
+                // Typical External dependency for last subpass
+                subpassDependencies.emplace_back();
+                VkSubpassDependency& subpassDependency = subpassDependencies.back();
+                subpassDependency = {};
+                subpassDependency.srcSubpass = subpassIndex;
+                subpassDependency.dstSubpass = VK_SUBPASS_EXTERNAL;
+                subpassDependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+                subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+                subpassDependency.dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+                subpassDependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                subpassDependency.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
             }
         }
 

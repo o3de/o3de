@@ -10,6 +10,7 @@
 #include <Atom/RHI.Reflect/Handle.h>
 #include <Atom/RHI.Reflect/Scissor.h>
 #include <Atom/RHI.Reflect/Viewport.h>
+#include <Atom/RHI.Reflect/RenderAttachmentLayoutBuilder.h>
 
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
@@ -33,14 +34,24 @@ namespace AZ
             //! Creates a RasterPass
             static Ptr<RasterPass> Create(const PassDescriptor& descriptor);
 
-            bool IsRasterPass() const override { return true; } // Added by GALIB
-
             // Draw List & Pipeline View Tags
             RHI::DrawListTag GetDrawListTag() const override;
 
             void SetDrawListTag(Name drawListName);
 
             void SetPipelineStateDataIndex(uint32_t index);
+
+            // GALIB add comment
+            virtual bool BuildSubpassLayout(
+                RHI::RenderAttachmentLayoutBuilder::SubpassAttachmentLayoutBuilder& subpassLayoutBuilder,
+                uint32_t subpassIndex);
+
+            // GALIB add comment
+            bool SetRenderAttachmentLayout(const AZStd::shared_ptr<RHI::RenderAttachmentLayout>& renderAttachmentLayout,
+                                           uint32_t subpassIndex);
+
+            // RenderPass override
+            RHI::RenderAttachmentConfiguration GetRenderAttachmentConfiguration() const override;
 
             //! Expose shader resource group.
             ShaderResourceGroup* GetShaderResourceGroup();
@@ -49,6 +60,8 @@ namespace AZ
 
         protected:
             explicit RasterPass(const PassDescriptor& descriptor);
+
+            void DeclareAttachmentsToFrameGraph(RHI::FrameGraphInterface frameGraph) const;
 
             // Pass behavior overrides
             void Validate(PassValidationResults& validationResults) override;
@@ -88,6 +101,9 @@ namespace AZ
             bool m_overrideScissorSate = false;
             bool m_overrideViewportState = false;
             uint32_t m_drawItemCount = 0;
+
+            AZStd::shared_ptr<RHI::RenderAttachmentLayout> m_renderAttachmentLayout; // GALIB Add comment
+            uint32_t m_subpassIndex = 0; // GALIB Add comment
         };
     }   // namespace RPI
 }   // namespace AZ

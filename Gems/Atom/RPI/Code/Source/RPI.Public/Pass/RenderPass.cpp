@@ -50,7 +50,7 @@ namespace AZ
         {
         }
 
-        RHI::RenderAttachmentConfiguration RenderPass::GetRenderAttachmentConfiguration(/* GALIB */ uint32_t subpassIndex) const
+        RHI::RenderAttachmentConfiguration RenderPass::GetRenderAttachmentConfiguration() const
         {
             RHI::RenderAttachmentLayoutBuilder builder;
             auto* layoutBuilder = builder.AddSubpass();
@@ -94,7 +94,8 @@ namespace AZ
             RHI::RenderAttachmentLayout layout;
             [[maybe_unused]] RHI::ResultCode result = builder.End(layout);
             AZ_Assert(result == RHI::ResultCode::Success, "RenderPass [%s] failed to create render attachment layout", GetPathName().GetCStr());
-            return RHI::RenderAttachmentConfiguration{ layout, subpassIndex };
+            static constexpr uint32_t subpassIndex = 0; // Values different than 0 only make sense if: This is RasterPass, and it is a subpass.
+            return RHI::RenderAttachmentConfiguration{ layout, subpassIndex};
         }
 
         RHI::MultisampleState RenderPass::GetMultisampleState() const

@@ -31,14 +31,11 @@ namespace AZ::RHI
         /// The image view associated with the binding.
         ImageViewDescriptor m_imageViewDescriptor;
 
-        //! GALIB
-        //! This is an optional parameter that becomes useful to connect the current Scope
-        //! to a previous scope so the current scope becomes a Subpass. Typically when
-        //! frameGraph.UseSubpassInputAttachment(descriptor); is called, then the Subpass connection
-        //! is made automatically. But for cases like
-        //! frameGraph.UseColorAttachment(descriptor); it is not clear that there is a an opportunity of making
-        //! the current scope a subpass of the previous scope and then this parameter comes to the rescue
-        //! to highlight an explicit connection.
-        ScopeId m_subpassScopeId;
+        //! Index of the Subpass that owns this scope attachment.
+        //! When this index is greater than 0, the frameGraph will make a "SameGroup"
+        //! connection between the previous and the current subpass.
+        //! This will guarantee that the Topological Sort of the framegraph
+        //! will group consecutive scopes as Subpasses.
+        uint32_t m_subpassIndex = 0;
     };
 }

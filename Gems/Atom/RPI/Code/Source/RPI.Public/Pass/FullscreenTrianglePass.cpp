@@ -35,7 +35,7 @@ namespace AZ
         }
 
         FullscreenTrianglePass::FullscreenTrianglePass(const PassDescriptor& descriptor)
-            : RenderPass(descriptor)
+            : RasterPass(descriptor)
             , m_passDescriptor(descriptor)
         {
             LoadShader();
@@ -78,6 +78,7 @@ namespace AZ
                     GetPathName().GetCStr());
                 return;
             }
+            SetDrawListTag(passData->m_drawListTag);
 
             AZ::Data::AssetId shaderAssetId = passData->m_shaderAsset.m_assetId;
             if (!shaderAssetId.IsValid())

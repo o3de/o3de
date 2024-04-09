@@ -58,6 +58,11 @@ namespace AZ
 
             // --- Children related functions ---
 
+            //! If this parent pass is supposed to merge child passes as subpasses
+            //! makes sure @child is a RasterPass and marks the child passes as mergeable.
+            //! if the child is NOT a RasterPass, this ParentPass clears its flag that merges children passes.
+            void MarkChildAsSubpass(const Ptr<Pass>& child);
+
             //! Adds pass to list of children. NOTE: skipStateCheckWhenRunningTests is only used to support manual adding of passing in unit tests, do not use this variable otherwise
             void AddChild(const Ptr<Pass>& child, bool skipStateCheckWhenRunningTests = false);
 
@@ -126,6 +131,13 @@ namespace AZ
 
             // Orphans all children by clearing m_children.
             void RemoveChildren(bool calledFromDestructor = false);
+
+            // GALIB: Add comment
+            void CreateRenderAttachmentConfigurationForSubpasses();
+
+            // GALIB: add more comment
+            // A helper function that can be called several times.
+            void ClearMergeAsSubpassesFlag();
 
         private:
             // RPI::Pass overrides...

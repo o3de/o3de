@@ -202,16 +202,19 @@ namespace AZ::RHI
                 }
             }
         }
-            
-        // TODO:[ATOM-1267] Replace with writer / reader dependencies.
-        GraphEdgeType edgeType = usage == ScopeAttachmentUsage::SubpassInput ? GraphEdgeType::SameGroup : GraphEdgeType::DifferentGroup;
+
+
         if (Scope* producer = frameAttachment.GetLastScope())
         {
-            if (producer->GetId() == descriptor.m_subpassScopeId)
+            // If there's a last scope, we are at a scope subpass that is NOT the first subpass
+            if ((usage == ScopeAttachmentUsage::SubpassInput) || (descriptor.m_subpassIndex > 0))
             {
-                edgeType = GraphEdgeType::SameGroup; // GALIB
+                InsertEdge(*producer, *m_currentScope, GraphEdgeType::SameGroup);
             }
-            InsertEdge(*producer, *m_currentScope, edgeType);
+            else
+            {
+                InsertEdge(*producer, *m_currentScope, GraphEdgeType::DifferentGroup);
+            }
         }
 
         ImageScopeAttachment* scopeAttachment =

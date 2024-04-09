@@ -310,20 +310,6 @@ namespace AZ
             // Update all bindings on this pass that are connected to bindings on other passes
             virtual void UpdateConnectedBindings();
 
-            /////////////////////////////////////////////////////////////
-            //! EXPERIMENTAL GALIB
-            virtual bool IsRasterPass() const { return false; }
-
-            // The following functions will be called when IsRasterPass() returns true.
-
-            //! Build and return RenderAttachmentConfiguration of this pass from its render attachments
-            //! This function usually need to be called after pass attachments rebuilt to reflect latest layout
-            virtual RHI::RenderAttachmentConfiguration GetRenderAttachmentConfiguration([[maybe_unused]]uint32_t subpassIndex = 0) const {  RHI::RenderAttachmentConfiguration v; return v; } // Called if IsRasterPass() returns true.
-
-            //! Get MultisampleState of this pass from its output attachments
-            virtual RHI::MultisampleState GetMultisampleState() const { return {}; } // Called if IsRasterPass() returns true.
-            /////////////////////////////////////////////////////////////
-
         protected:
             explicit Pass(const PassDescriptor& descriptor);
 
@@ -497,6 +483,11 @@ namespace AZ
 
                         // Whether this pass contains a binding that is referenced globally through the pipeline
                         uint64_t m_containsGlobalReference : 1;
+
+                        // If this is a parent pass, indicates whether the child passes should be merged as subpasses.
+                        // If this is a child pass, indicates whether it is a subpass.
+                        // Please read about PassData::m_mergeChildrenAsSubpasses for more details.
+                        uint64_t m_mergeChildrenAsSubpasses : 1;
                     };
                     uint64_t m_allFlags = 0;
                 };

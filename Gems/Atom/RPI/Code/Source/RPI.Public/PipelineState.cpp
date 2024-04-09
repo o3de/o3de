@@ -143,11 +143,11 @@ namespace AZ
             m_dirty = true;
         }
 
-        void PipelineStateForDraw::SetOutputFromPass(Pass* renderPass, uint32_t subpassIndex)
+        void PipelineStateForDraw::SetOutputFromPass(RenderPass* renderPass)
         {
             m_hasOutputData = true;
             m_dirty = true;
-            m_descriptor.m_renderAttachmentConfiguration = renderPass->GetRenderAttachmentConfiguration(subpassIndex);
+            m_descriptor.m_renderAttachmentConfiguration = renderPass->GetRenderAttachmentConfiguration();
             m_descriptor.m_renderStates.m_multisampleState = renderPass->GetMultisampleState();
         }
 

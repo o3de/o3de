@@ -13,7 +13,7 @@
 #include <Atom/RHI/DrawItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 
-#include <Atom/RPI.Public/Pass/RenderPass.h>
+#include <Atom/RPI.Public/Pass/RasterPass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
@@ -28,13 +28,13 @@ namespace AZ
         //! and instead issues a 3-vertex draw and relies on the vertex shader
         //! to generate a fullscreen triangle from the vertex ids.
         class FullscreenTrianglePass
-            : public RenderPass
+            : public RasterPass
             , public ShaderReloadNotificationBus::Handler
         {
             AZ_RPI_PASS(FullscreenTrianglePass);
 
         public:
-            AZ_RTTI(FullscreenTrianglePass, "{58C1EDD7-0459-4128-BB20-9839BA233AED}", RenderPass);
+            AZ_RTTI(FullscreenTrianglePass, "{58C1EDD7-0459-4128-BB20-9839BA233AED}", RasterPass);
             AZ_CLASS_ALLOCATOR(FullscreenTrianglePass, SystemAllocator);
             virtual ~FullscreenTrianglePass();
 
