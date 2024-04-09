@@ -11,6 +11,7 @@
 #include <AzCore/std/string/fixed_string.h>
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/Module/Environment.h>
+#include <AzCore/PlatformDef.h>
 
 namespace AZ
 {
@@ -23,6 +24,17 @@ namespace AZ
     class DynamicModuleHandle
     {
     public:
+        /// Flags used for loading a dynamic module.
+        enum class LoadFlags : uint32_t
+        {
+            None                = 0,
+            InitFuncRequired    = 1 << 0, /// Whether a missing \ref InitializeDynamicModuleFunction causes the Load to fail.
+            GlobalSymbols       = 1 << 1, /// On platforms that support it, make the module's symbols global and available for
+                                          /// the relocation processing of other modules. Otherwise, the symbols need to be queried manually.
+            NoLoad              = 1 << 2  /// Don't load the library (only get a handle if it's already loaded).
+                                          /// This can be used to test if the library is already resident.
+        };
+
         /// Platform-specific implementation should call Unload().
         virtual ~DynamicModuleHandle() = default;
 
@@ -47,7 +59,15 @@ namespace AZ
         ///                                     need to be queried manually.
         ///
         /// \return True if the module loaded successfully.
+        AZ_DEPRECATED_MESSAGE("This method has been deprecated. Please use DynamicModuleHandle::Load(LoadFlags flags) function instead")
         bool Load(bool isInitializeFunctionRequired, bool globalSymbols = false);
+
+        /// Loads the module.
+        /// Invokes the \ref InitializeDynamicModuleFunction if it is found in the module and this is the first time loading the module.
+        /// \param flags Flags to control the loading of the module. \ref LoadFlags
+        ///
+        /// \return True if the module loaded successfully.
+        bool Load(LoadFlags flags = LoadFlags::None);
 
         /// Unload the module.
         /// Invokes the \ref UninitializeDynamicModuleFunction if it is found in the module and
@@ -87,8 +107,14 @@ namespace AZ
             AlreadyLoaded
         };
 
+        template<typename T>
+        inline bool CheckBitsAny(T v, T bits)
+        {
+            return (v & bits) != (T)0;
+        }
+
         // Attempt to load a module.
-        virtual LoadStatus LoadModule(bool globalSymbols) = 0;
+        virtual LoadStatus LoadModule(LoadFlags flags) = 0;
         virtual bool       UnloadModule() = 0;
         virtual void*      GetFunctionAddress(const char* functionName) const = 0;
 
@@ -100,6 +126,8 @@ namespace AZ
         // just the refcount and ownership.
         AZ::EnvironmentVariable<bool> m_initialized;
     };
+
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(DynamicModuleHandle::LoadFlags);
 
     /**
      * Functions that the \ref AZ::ComponentApplication expects

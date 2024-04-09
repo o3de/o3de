@@ -90,7 +90,7 @@ namespace AZ
             Unload();
         }
 
-        LoadStatus LoadModule([[maybe_unused]] bool globalSymbols) override
+        LoadStatus LoadModule(LoadFlags flags) override
         {
             if (IsLoaded())
             {
@@ -106,9 +106,14 @@ namespace AZ
             {
                 // If module already open, return false, it was not loaded.
                 alreadyLoaded = NULL != GetModuleHandleW(fileNameW);
-
-                // Note: Windows LoadLibrary has no concept of specifying that the module symbols are global or local
-                m_handle = LoadLibraryW(fileNameW);
+                // Check if we need to load the dll
+                bool loadDll = !CheckBitsAny(flags, LoadFlags::NoLoad);
+                // Even if the DLL is already loaded we still need to call LoadLibraryW to increment the ref count.
+                if (alreadyLoaded || loadDll)
+                {
+                    // Note: Windows LoadLibrary has no concept of specifying that the module symbols are global or local
+                    m_handle = LoadLibraryW(fileNameW);
+                }
             }
             else
             {
