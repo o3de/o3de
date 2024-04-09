@@ -14,7 +14,7 @@ namespace AzFramework
     LibEVDevWrapper::LibEVDevWrapper()
     {
         m_libevdevHandle = AZ::DynamicModuleHandle::Create("libevdev.so");
-        if (!m_libevdevHandle->Load(false))
+        if (!m_libevdevHandle->Load())
         {
             AZ_Info("Input", "libevdev.so not found - gamepad support disabled.  Install libevdev2 to enable.\n");
             m_libevdevHandle.reset();
