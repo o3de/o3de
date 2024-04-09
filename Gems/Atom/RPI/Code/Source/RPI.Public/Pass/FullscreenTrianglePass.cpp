@@ -243,7 +243,7 @@ namespace AZ
 
         void FullscreenTrianglePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
-            RenderPass::SetupFrameGraphDependencies(frameGraph);
+            RasterPass::SetupFrameGraphDependencies(frameGraph);
 
             // Update scissor/viewport regions based on the mip level of the render target that is being written into
             uint16_t viewMinMip = RHI::ImageSubresourceRange::HighestSliceIndex;
