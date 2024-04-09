@@ -17,6 +17,15 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
+        // The number of changes to apply per tick when the system is
+        // up and running.  (For example, when changes happen due ot the user
+        // modifying files once the Editor has already started).
+        // This is a balance between responsiveness and performance.
+        // The higher the number,the faster the Asset Browser will populate
+        // itself when new assets appear (this is a per-tick limit, at a target
+        // of 60fps).
+        static const int s_BatchSize = 2;
+
         AssetEntryChangeset::AssetEntryChangeset(
             AZStd::shared_ptr<AssetDatabase::AssetDatabaseConnection> databaseConnection,
             AZStd::shared_ptr<RootAssetBrowserEntry> rootEntry)
@@ -60,21 +69,30 @@ namespace AzToolsFramework
 
             AZStd::lock_guard<AZStd::mutex> locker(m_mutex);
 
+            int changesToApplyThisBatch = s_BatchSize;
             if (m_updated)
             {
                 m_rootEntry->SetInitialUpdate(true);
                 m_rootEntry->Update(m_relativePath.c_str());
                 m_updated = false;
+                // during startup, do a big chunk of work for free before going into incremental mode.
+                changesToApplyThisBatch = 0;
             }
 
             // iterate through new changes and try to apply them
             // if application of change fails, try them again next tick
             AZStd::vector<AZStd::shared_ptr<AssetEntryChange>> changesFailed;
             changesFailed.reserve(m_changes.size());
-
+            int changesAppliedThisBatch = 0;
             for (auto& change : m_changes)
             {
-                if (!change->Apply(m_rootEntry))
+                // maintainer note, this is intentionally >, not >= so that if you set it to 1
+                // it moves 1, since we pre-increment it
+                if ( (changesToApplyThisBatch > 0) && (++changesAppliedThisBatch > changesToApplyThisBatch))
+                {
+                    changesFailed.emplace_back(AZStd::move(change));
+                }
+                else if (!change->Apply(m_rootEntry))
                 {
                     changesFailed.emplace_back(AZStd::move(change));
                 }
