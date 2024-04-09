@@ -5,6 +5,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+import os
 import sys
 import GenerateShaderVariantListUtil
 
@@ -16,9 +17,9 @@ def main():
         return
 
     inputPath = sys.argv[1]
-    suffix, extension = inputPath.split(".", 1)
-
-    if extension != "shader":
+    _, extension = os.path.splitext(inputPath)
+    
+    if extension != ".shader":
         print("The input argument for the script is not a valid .shader file")
         return
 
