@@ -164,7 +164,7 @@ namespace AZ
         };
 
         /// Returns current thread's top stack registered code point
-        AZStd::tuple<const CodePoint*, uint64_t> GetCodePointAndMask();
+        AZStd::tuple<const CodePoint*, uint64_t, unsigned int> GetCodePointAndTags();
 
         /// TODO write desc
         void PushMemoryMarker(const CodePoint& point);
@@ -230,13 +230,13 @@ namespace AZ
             }
             void Pop()
             {
-                AZ_Assert(!IsEmty(), "Pop, but empty");
+                AZ_Assert(!IsEmpty(), "Pop, but empty");
                 m_numItems--;
             }
 
             const Data& Get() const
             {
-                AZ_Assert(!IsEmty(), "Get, but empty");
+                AZ_Assert(!IsEmpty(), "Get, but empty");
                 AZ_Assert(!IsOverflow(), "Get, but overflow");
                 return m_stack[m_numItems - 1];
             }
@@ -249,7 +249,7 @@ namespace AZ
             {
                 return m_numItems > Size;
             }
-            bool IsEmty() const
+            bool IsEmpty() const
             {
                 return m_numItems == 0;
             }

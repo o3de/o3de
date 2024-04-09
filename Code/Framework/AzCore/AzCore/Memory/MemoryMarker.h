@@ -34,10 +34,10 @@ namespace AZ
     // fill tags here, fill names accordingly in cpp
     enum class MemoryTagValue : unsigned int
     {
-        Overhead = 0, // reserved for extra memory consumed by the memory tracking system
-        AI = 1,
+        Unused = 0,
+        Overhead = 1, // reserved for extra memory consumed by the memory tracking system
 
-        GameSpecific = 32  // game tags starts from this index, use your own enum
+        GameSpecific = 32  // game tags starts from this index, use your own enum starting with this value
     };
 
     class MemoryTagMarker
@@ -56,8 +56,8 @@ namespace AZ
 // the name must be a string literal
 #define MEMORY_ALLOCATION_MARKER_NAME(name) AZ::MemoryAllocationMarker(name, __FILE__, __LINE__)
 
-#define MEMORY_TAG(x) AZ::MemoryTagMarker tagMarker##__LINE__((unsigned int)(AZ::MemoryTagValue::x))
-#define MEMORY_TAG_GAME(x) AZ::MemoryTagMarker tagMarker##__LINE__((unsigned int)(x))
+#define MEMORY_TAG(x) AZ::MemoryTagMarker tagMarker##__LINE__(AZ::MemoryTagValue::x)
+#define MEMORY_TAG_GAME(x) AZ::MemoryTagMarker tagMarker##__LINE__(static_cast<AZ::MemoryTagValue>((unsigned int)(x)))
 
 #else
 

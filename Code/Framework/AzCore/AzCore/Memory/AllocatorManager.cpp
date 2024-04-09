@@ -436,15 +436,15 @@ AllocatorManager::ThreadLocalData& AllocatorManager::FindThreadData()
 // GetCodePoint
 // [4/8/2024]
 //=========================================================================
-AZStd::tuple<const AZ::AllocatorManager::CodePoint*, uint64_t> AllocatorManager::GetCodePointAndMask()
+AZStd::tuple<const AZ::AllocatorManager::CodePoint*, uint64_t, unsigned int> AllocatorManager::GetCodePointAndTags()
 {
     ThreadLocalData& tld = FindThreadData();
+
+    const AZ::AllocatorManager::CodePoint* point = !tld.m_allocationMarkers.IsEmpty() ? &tld.m_allocationMarkers.Get() : nullptr;
     const uint64_t mask = tld.m_tagMask;
-    if (tld.m_allocationMarkers.IsEmty())
-    {
-        return AZStd::make_tuple(nullptr, mask);  // you can put a breakpoint here to find unmarked memory piece allocations after another breakpoint in your code (otherwise there'll be a lot of cals)
-    }
-    return AZStd::make_tuple(&tld.m_allocationMarkers.Get(), mask);
+    const unsigned int tag = ((!tld.m_allocationTags.IsOverflow() && !tld.m_allocationTags.IsEmpty()) ? tld.m_allocationTags.Get() : 0u) & 63u;  // drop the other service bits
+
+    return AZStd::make_tuple(point, mask, tag);
 }
 
 //=========================================================================
@@ -474,7 +474,7 @@ void AllocatorManager::PushMemoryTag(unsigned int tag)
         tld.m_allocationTags.SimulatePush();  // just increase the index to enable pop
     }
 
-    const uint64_t mask = 1u << tag;
+    const uint64_t mask = 1ull << tag;
     if ((tld.m_tagMask & mask) != 0)
     {
         tag |= 1 << NO_CHANGE_BIT; // store that there is no need to roll back, the tag is already set
@@ -489,13 +489,13 @@ void AllocatorManager::PushMemoryTag(unsigned int tag)
 void AllocatorManager::PopMemoryTag()
 {
     ThreadLocalData& tld = FindThreadData();
-    AZ_Assert(!tld.m_allocationTags.IsEmty(), "Pop tag, but empty");
+    AZ_Assert(!tld.m_allocationTags.IsEmpty(), "Pop tag, but empty");
     if (!tld.m_allocationTags.IsOverflow())
     {
         const unsigned int tag = tld.m_allocationTags.Get();
         if ((tag & (1 << NO_CHANGE_BIT)) == 0)
         {
-            const uint64_t mask = 1u << tag;
+            const uint64_t mask = 1ull << tag;
             tld.m_tagMask &= ~mask;
         }
     }
