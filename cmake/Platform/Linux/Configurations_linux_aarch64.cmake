@@ -53,7 +53,7 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
             -Wl,--no-undefined
             -lpthread
             -Wl,--disable-new-dtags
-     )
+    )
     ly_set(CMAKE_CXX_EXTENSIONS OFF)
 
 else()
