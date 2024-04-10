@@ -751,7 +751,7 @@ bool CSprite::DoesSpriteTextureAssetExist(const AZStd::string& pathname)
 
     // Check if the texture asset exists
     const AZStd::string cacheRelativePath = AZStd::string::format("%s.%s", pathname.c_str(), streamingImageExtension);
-    bool textureExists = CheckIfFileExists(/* sourceRelativePath = */ pathname, cacheRelativePath);
+    bool textureExists = CheckIfFileExists(pathname, cacheRelativePath);
 
     return textureExists;
 }
