@@ -156,6 +156,13 @@ namespace AZ
 
         void AtomBridgeSystemComponent::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
         {
+            // If the pointer is not reset before being assigned again, the destructor of AtomDebugDisplayViewportInterface would
+            // disconnects from DebugDisplayRequestBus with the same id that is used to connect to it with the new instance.
+            if (auto it = m_activeViewportsList.find(AzFramework::g_defaultSceneEntityDebugDisplayId); it != m_activeViewportsList.end())
+            {
+                it->second.reset();
+            }
+
             // Make default AtomDebugDisplayViewportInterface
             AZStd::shared_ptr<AtomDebugDisplayViewportInterface> mainEntityDebugDisplay =
                 AZStd::make_shared<AtomDebugDisplayViewportInterface>(AzFramework::g_defaultSceneEntityDebugDisplayId, bootstrapScene);

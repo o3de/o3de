@@ -172,17 +172,19 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
         uint     m_bufferFlags;
         uint     m_bufferStartIndex;
 
-        float4   m_irradianceColor;
         float3x4 m_worldInvTranspose;
     };
 
     // hit shaders can retrieve the MeshInfo for a mesh hit using: RayTracingSceneSrg::m_meshInfo[InstanceIndex()]    
     StructuredBuffer<MeshInfo> m_meshInfo;
+    uint m_meshInfoCount;
     
     // indirection buffer containing indices into the m_meshBuffers unbounded array
     // Note 1: the index list for a particular mesh begins at MeshInfo::m_bufferStartIndex
     // Note 2: multiple MeshInfos will refer to the same buffer in m_meshBuffers when they are instances of the same mesh
     Buffer<uint> m_meshBufferIndices;
+
+    Buffer<uint2> m_proceduralGeometryInfo;
 
     // buffer array index offsets from MeshInfo::m_bufferStartIndex in the m_meshBufferIndices indirection buffer
     // Note: every mesh has all six entries in the index list, but only the Index, Position, and Normal buffers are guaranteed to be valid

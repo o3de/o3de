@@ -1,5 +1,5 @@
 {
-    "Source" : "ReflectionScreenSpaceRayTracingClosestHit.azsl",
+    "Source" : "SphereIntersection.azsl",
     "DrawList" : "RayTracing",
 
     "AddBuildArguments": 
@@ -12,14 +12,14 @@
         "EntryPoints":
         [
             {
-                "type": "RayTracing",
-                "name": "ClosestHit"
+                "name": "Intersection",
+                "type": "RayTracing"
             }
         ]
     },
 
     "DisabledRHIBackends": ["metal"],
-    
+
     "Supervariants":
     [
         {
