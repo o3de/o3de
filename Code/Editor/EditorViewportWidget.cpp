@@ -1524,49 +1524,6 @@ void EditorViewportWidget::CenterOnAABB(const AABB& aabb)
     SetViewTM(newTM);
 }
 
-void EditorViewportWidget::CenterOnSliceInstance()
-{
-    AzToolsFramework::EntityIdList selectedEntityList;
-    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-        selectedEntityList, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-
-    AZ::SliceComponent::SliceInstanceAddress sliceAddress;
-    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-        sliceAddress, &AzToolsFramework::ToolsApplicationRequestBus::Events::FindCommonSliceInstanceAddress, selectedEntityList);
-
-    if (!sliceAddress.IsValid())
-    {
-        return;
-    }
-
-    AZ::EntityId sliceRootEntityId;
-    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-        sliceRootEntityId, &AzToolsFramework::ToolsApplicationRequestBus::Events::GetRootEntityIdOfSliceInstance, sliceAddress);
-
-    if (!sliceRootEntityId.IsValid())
-    {
-        return;
-    }
-
-    AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-        &AzToolsFramework::ToolsApplicationRequestBus::Events::SetSelectedEntities, AzToolsFramework::EntityIdList{ sliceRootEntityId });
-
-    const AZ::SliceComponent::InstantiatedContainer* instantiatedContainer = sliceAddress.GetInstance()->GetInstantiated();
-
-    AABB aabb(Vec3(std::numeric_limits<float>::max()), Vec3(-std::numeric_limits<float>::max()));
-    for (AZ::Entity* entity : instantiatedContainer->m_entities)
-    {
-        CEntityObject* entityObject = nullptr;
-        AzToolsFramework::ComponentEntityEditorRequestBus::EventResult(
-            entityObject, entity->GetId(), &AzToolsFramework::ComponentEntityEditorRequestBus::Events::GetSandboxObject);
-        AABB box;
-        entityObject->GetBoundBox(box);
-        aabb.Add(box.min);
-        aabb.Add(box.max);
-    }
-    CenterOnAABB(aabb);
-}
-
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::SetFOV(const float fov)
 {

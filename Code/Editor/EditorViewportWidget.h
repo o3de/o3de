@@ -194,7 +194,6 @@ private:
     bool HitTest(const QPoint& point, HitContext& hitInfo) override;
     bool IsBoundsVisible(const AABB& box) const override;
     void CenterOnAABB(const AABB& aabb) override;
-    void CenterOnSliceInstance() override;
     void OnTitleMenu(QMenu* menu) override;
     void SetViewTM(const Matrix34& tm) override;
     const Matrix34& GetViewTM() const override;

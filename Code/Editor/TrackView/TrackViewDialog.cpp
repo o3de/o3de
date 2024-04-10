@@ -2213,7 +2213,6 @@ void CTrackViewDialog::OnEntityDestruction(const AZ::EntityId& entityId)
     if (m_currentSequenceEntityId == entityId)
     {
         // The currently selected sequence is about to be deleted, make sure to clear the selection right now.
-        // Clearing it here will make sure it is clear in slice work flow edge cases.
         GetIEditor()->GetAnimation()->SetSequence(nullptr, false, false);
 
         // Refresh the records in m_wndNodesCtrl, the sequence will not be selected in Track View
