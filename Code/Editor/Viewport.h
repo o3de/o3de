@@ -37,7 +37,6 @@ namespace AzQtComponents
 
 // forward declarations.
 class CBaseObject;
-struct DisplayContext;
 class CCryEditDoc;
 class CLayoutViewPane;
 class CViewManager;

@@ -106,8 +106,6 @@ public:
     // Gathers all resources used by all objects.
     void GatherUsedResources(CUsedResources& resources) override;
 
-    bool IsLightClass(CBaseObject* pObject) override;
-
     int GetAxisHelperHitRadius() const override { return m_axisHelperHitRadius; }
 
 private:

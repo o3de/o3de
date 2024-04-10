@@ -791,32 +791,6 @@ void CObjectManager::GatherUsedResources(CUsedResources& resources)
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CObjectManager::IsLightClass(CBaseObject* pObject)
-{
-    if (qobject_cast<CEntityObject*>(pObject))
-    {
-        CEntityObject* pEntity = (CEntityObject*)pObject;
-        if (pEntity)
-        {
-            if (pEntity->GetEntityClass().compare(CLASS_LIGHT) == 0)
-            {
-                return true;
-            }
-            if (pEntity->GetEntityClass().compare(CLASS_RIGIDBODY_LIGHT) == 0)
-            {
-                return true;
-            }
-            if (pEntity->GetEntityClass().compare(CLASS_DESTROYABLE_LIGHT) == 0)
-            {
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
 namespace
 {
     AZStd::vector<AZStd::string> PyGetAllObjects()

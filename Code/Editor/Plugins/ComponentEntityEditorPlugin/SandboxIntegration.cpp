@@ -140,7 +140,6 @@ void GetSelectedEntitiesSetWithFlattenedHierarchy(AzToolsFramework::EntityIdSet&
 
 SandboxIntegrationManager::SandboxIntegrationManager()
     : m_startedUndoRecordingNestingLevel(0)
-    , m_dc(nullptr)
 {
     // Required to receive events from the Cry Engine undo system.
     GetIEditor()->GetUndoManager()->AddListener(this);
@@ -170,8 +169,6 @@ void SandboxIntegrationManager::Setup()
     AzToolsFramework::EditorContextMenuBus::Handler::BusConnect();
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
 
-    AzFramework::DisplayContextRequestBus::Handler::BusConnect();
-
     m_prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
     AZ_Assert(
         (m_prefabIntegrationInterface != nullptr),
@@ -189,23 +186,11 @@ void SandboxIntegrationManager::Setup()
 void SandboxIntegrationManager::Teardown()
 {
     m_contextMenuBottomHandler.Teardown();
-
-    AzFramework::DisplayContextRequestBus::Handler::BusDisconnect();
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
     AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
     AzToolsFramework::EditorWindowRequests::Bus::Handler::BusDisconnect();
     AzToolsFramework::EditorRequests::Bus::Handler::BusDisconnect();
     AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusDisconnect();
-}
-
-void SandboxIntegrationManager::SetDC(DisplayContext* dc)
-{
-    m_dc = dc;
-}
-
-DisplayContext* SandboxIntegrationManager::GetDC()
-{
-    return m_dc;
 }
 
 void SandboxIntegrationManager::OnBeginUndo([[maybe_unused]] const char* label)

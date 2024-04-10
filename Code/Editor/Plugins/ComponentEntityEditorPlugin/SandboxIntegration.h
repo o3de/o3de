@@ -15,7 +15,6 @@
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <AzFramework/Viewport/DisplayContextRequestBus.h>
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -88,7 +87,6 @@ class SandboxIntegrationManager
     , private AzToolsFramework::EditorRequests::Bus::Handler
     , private AzToolsFramework::EditorContextMenuBus::Handler
     , private AzToolsFramework::EditorWindowRequests::Bus::Handler
-    , private AzFramework::DisplayContextRequestBus::Handler
     , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
     , private IUndoManagerListener
     , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
@@ -157,11 +155,6 @@ private:
     void OnPrepareForContextReset() override;
     //////////////////////////////////////////////////////////////////////////
 
-    // AzFramework::DisplayContextRequestBus (and @deprecated EntityDebugDisplayRequestBus)
-    // AzFramework::DisplayContextRequestBus
-    void SetDC(DisplayContext* dc) override;
-    DisplayContext* GetDC() override;
-
     // ActionManagerRegistrationNotificationBus overrides ...
     void OnActionRegistrationHook() override;
     void OnMenuBindingHook() override;
@@ -210,8 +203,6 @@ private:
     AZStd::optional<AzFramework::ScreenPoint> m_contextMenuViewPoint;
 
     short m_startedUndoRecordingNestingLevel; //!< Used in OnBegin/EndUndo to ensure we only accept undos we started recording
-
-    DisplayContext* m_dc;
 
     const AZStd::string m_defaultComponentIconLocation = "Icons/Components/Component_Placeholder.svg";
     const AZStd::string m_defaultComponentViewportIconLocation = "Icons/Components/Viewport/Component_Placeholder.svg";
