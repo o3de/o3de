@@ -130,34 +130,26 @@ namespace AZ::Debug
         ai.m_timeStamp = AZStd::GetTimeNowMicroSecond();
 
         AllocatorManager& manager = AllocatorManager::Instance();
-        if (!manager.IsRecursive())  // protection from recursive memory allocation in GetCodePoint() call
+        AZStd::tuple<const AZ::AllocatorManager::CodePoint*, uint64_t, unsigned int> data = manager.GetCodePointAndTags();
+        const AZ::AllocatorManager::CodePoint* point = AZStd::get<0>(data);
+        ai.m_tagMask = AZStd::get<1>(data);
+        ai.m_tag = AZStd::get<2>(data);
+        if (point)
         {
-            AZStd::tuple<const AZ::AllocatorManager::CodePoint*, uint64_t, unsigned int> data = manager.GetCodePointAndTags();
-            const AZ::AllocatorManager::CodePoint* point = AZStd::get<0>(data);
-            ai.m_tagMask = AZStd::get<1>(data);
-            ai.m_tag = AZStd::get<2>(data);
-            if (point)
-            {
-                ai.m_name = point->m_name;
-                ai.m_fileName = point->m_file;
-                ai.m_lineNum = point->m_line;
+            ai.m_name = point->m_name;
+            ai.m_fileName = point->m_file;
+            ai.m_lineNum = point->m_line;
 
-                if (ai.m_name && !point->m_isLiteral)  // do we need to copy the name?
-                {
-                    const size_t nameLength = strlen(ai.m_name);
-                    const size_t totalLength = nameLength + 1;
-                    ai.m_namesBlock = m_records.get_allocator().allocate(totalLength, 1);
-                    ai.m_namesBlockSize = totalLength;
-                    char* savedName = reinterpret_cast<char*>(ai.m_namesBlock);
-                    memcpy(savedName, ai.m_name, nameLength + 1);
-                    ai.m_name = savedName;
-                }
+            if (ai.m_name && !point->m_isLiteral) // do we need to copy the name?
+            {
+                const size_t nameLength = strlen(ai.m_name);
+                const size_t totalLength = nameLength + 1;
+                ai.m_namesBlock = m_records.get_allocator().allocate(totalLength, 1);
+                ai.m_namesBlockSize = totalLength;
+                char* savedName = reinterpret_cast<char*>(ai.m_namesBlock);
+                memcpy(savedName, ai.m_name, nameLength + 1);
+                ai.m_name = savedName;
             }
-        }
-        else
-        {
-            ai.m_tagMask = 1u << (unsigned int)AZ::MemoryTagValue::Overhead;
-            ai.m_tag = (unsigned int)AZ::MemoryTagValue::Overhead;
         }
 
         // if we don't have a fileName,lineNum record the stack or if the user requested it.

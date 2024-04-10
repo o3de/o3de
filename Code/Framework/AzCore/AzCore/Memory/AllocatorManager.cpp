@@ -413,22 +413,21 @@ AllocatorManager::DebugBreak(void* address, const Debug::AllocationInfo& info)
 //=========================================================================
 AllocatorManager::ThreadLocalData& AllocatorManager::FindThreadData()
 {
-    AZ_Assert(!m_recursive, "recursive call to allocator manager");
-    AZStd::mutex lock;
-    lock.lock();
+    m_threadDataLock.lock();
+    AZ_Assert(!m_recursive, "recursive call to allocator manager");  // protection from a recursive call from the same thread
     if (!m_threadData.empty())
     {
         auto it = m_threadData.find(std::this_thread::get_id());
         if (it != m_threadData.end())
         {
-            lock.unlock();
+            m_threadDataLock.unlock();
             return it->second;
         }
     }
     m_recursive = true;
     auto it = m_threadData.insert_key(std::this_thread::get_id());
     m_recursive = false;
-    lock.unlock();
+    m_threadDataLock.unlock();
     return it.first->second;
 }
 

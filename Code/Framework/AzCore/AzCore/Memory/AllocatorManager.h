@@ -265,8 +265,10 @@ namespace AZ
             DataStack<unsigned int, 64> m_allocationTags;
             uint64_t m_tagMask = 0;
         };
-        AZStd::unordered_map<std::thread::id, ThreadLocalData, std::hash<std::thread::id>> m_threadData;
+        AZStd::unordered_map<std::thread::id, ThreadLocalData, std::hash<std::thread::id>, AZStd::equal_to<std::thread::id>, AZStd::stateless_allocator>
+            m_threadData;
         volatile bool m_recursive = false;
+        AZStd::mutex m_threadDataLock;
 
         ThreadLocalData& FindThreadData();
 
