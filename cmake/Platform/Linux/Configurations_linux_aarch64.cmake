@@ -26,6 +26,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             -fpie
             -Wl,-z,relro,-z,now
             -Wl,-z,noexecstack
+            -Wl,--disable-new-dtags
     )
 
     ly_set(CMAKE_CXX_EXTENSIONS OFF)
