@@ -11,6 +11,7 @@
 #include <Atom/RHI.Reflect/Scissor.h>
 #include <Atom/RHI.Reflect/Viewport.h>
 #include <Atom/RHI.Reflect/RenderAttachmentLayoutBuilder.h>
+#include <Atom/RHI.Reflect/SubpassDependencies.h>
 
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
@@ -48,6 +49,7 @@ namespace AZ
 
             // GALIB add comment
             bool SetRenderAttachmentLayout(const AZStd::shared_ptr<RHI::RenderAttachmentLayout>& renderAttachmentLayout,
+                                           const AZStd::shared_ptr<RHI::SubpassDependencies>& subpassDependencies,
                                            uint32_t subpassIndex);
 
             // RenderPass override
@@ -103,6 +105,7 @@ namespace AZ
             uint32_t m_drawItemCount = 0;
 
             AZStd::shared_ptr<RHI::RenderAttachmentLayout> m_renderAttachmentLayout; // GALIB Add comment
+            AZStd::shared_ptr<RHI::SubpassDependencies> m_subpassDependencies; // GALIB Add comment
             uint32_t m_subpassIndex = 0; // GALIB Add comment
         };
     }   // namespace RPI

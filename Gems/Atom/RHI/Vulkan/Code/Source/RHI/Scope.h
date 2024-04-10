@@ -16,6 +16,7 @@
 #include <RHI/Framebuffer.h>
 #include <RHI/QueryPool.h>
 #include <RHI/Semaphore.h>
+#include <RHI/SubpassDependencies.h>
 
 namespace AZ
 {
@@ -114,6 +115,8 @@ namespace AZ
             //! Resolves multisampled attachments using a command list. ResolveMode must be ResolveMode::CommandList
             void ResolveMSAAAttachments(CommandList& commandList) const;
 
+            const SubpassDependencies* GetNativeSubpassDependencies() const;
+
         private:
             enum class OverlapType
             {
@@ -164,6 +167,7 @@ namespace AZ
             void DeactivateInternal() override;
             void CompileInternal(RHI::Device& device) override;
             void AddQueryPoolUse(RHI::Ptr<RHI::QueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access) override;
+            void SetSubpassDependencies(AZStd::shared_ptr<RHI::SubpassDependencies> subpassDependencies) override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
@@ -204,6 +208,8 @@ namespace AZ
             ResolveMode m_resolveMode = ResolveMode::None;
             AZStd::vector<CommandList::ResourceClearRequest> m_imageClearRequests;
             AZStd::vector<CommandList::ResourceClearRequest> m_bufferClearRequests;
+
+            AZStd::shared_ptr<RHI::SubpassDependencies> m_subpassDependencies; // GALIB Add comment
         };
 
         template<class T>

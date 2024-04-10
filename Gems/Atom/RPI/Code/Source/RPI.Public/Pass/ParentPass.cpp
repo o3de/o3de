@@ -559,11 +559,13 @@ namespace AZ
             RHI::ResultCode result = builder.End(*renderAttachmentLayout.get());
             if (result == RHI::ResultCode::Success)
             {
+                auto subpassDependenciesPtr = builder.GetSubpassDependencies();
+
                 // Loop again across all children and set their RenderAttachmentConfiguration
                 for (auto subpassIndex = 0; subpassIndex < numSubpasses; subpassIndex++)
                 {
                     RasterPass* rasterChild = azrtti_cast<RasterPass*>(m_children[subpassIndex].get());
-                    if (!rasterChild->SetRenderAttachmentLayout(renderAttachmentLayout, subpassIndex))
+                    if (!rasterChild->SetRenderAttachmentLayout(renderAttachmentLayout, subpassDependenciesPtr, subpassIndex))
                     {
                         AZ_Error("ParentPass", false, "RasterPass [%s] failed to set its render attachment layout.\n", rasterChild->GetName().GetCStr());
                         allChildrenBuiltLayout = false;

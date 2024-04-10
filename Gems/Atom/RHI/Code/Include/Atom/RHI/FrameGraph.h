@@ -107,6 +107,7 @@ namespace AZ::RHI
         ResultCode UseCopyAttachment(const BufferScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access);
         ResultCode UseCopyAttachment(const ImageScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access);
         ResultCode UseQueryPool(Ptr<QueryPool> queryPool, const RHI::Interval& interval, QueryPoolScopeAttachmentType type, ScopeAttachmentAccess access);
+        ResultCode UseSubpassDependencies(AZStd::shared_ptr<SubpassDependencies> subpassDependencies);
         void ExecuteAfter(const ScopeId& scopeId);
         void ExecuteBefore(const ScopeId& scopeId);
         void SignalFence(Fence& fence);

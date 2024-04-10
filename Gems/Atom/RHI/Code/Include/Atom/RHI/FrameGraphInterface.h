@@ -189,6 +189,12 @@ namespace AZ::RHI
         {
             return m_frameGraph.UseQueryPool(queryPool, interval, type, access);
         }
+
+        //! GALIB Add Comment
+        ResultCode UseSubpassDependencies(AZStd::shared_ptr<SubpassDependencies> subpassDependencies)
+        {
+            return m_frameGraph.UseSubpassDependencies(subpassDependencies);
+        }
             
         //! Declares that this scope depends on the given scope id, and must wait for it to complete.
         void ExecuteAfter(const ScopeId& producerScopeId)

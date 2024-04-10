@@ -9,6 +9,7 @@
 
 #include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI.Reflect/RenderAttachmentLayout.h>
+#include <Atom/RHI.Reflect/SubpassDependencies.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/utils.h>
@@ -162,11 +163,15 @@ namespace AZ::RHI
         //! Ends the building of a layout. Returns the result of the operation.
         ResultCode End(RenderAttachmentLayout& builtRenderAttachmentLayout);
 
+        //! GALIB Add comment
+        AZStd::shared_ptr<SubpassDependencies> GetSubpassDependencies();
+
         //! Resets all previous values so the builder can be reuse.
         void Reset();
 
     private:
         /// List of builders for each subpass.
         AZStd::vector<SubpassAttachmentLayoutBuilder> m_subpassLayoutBuilders;
+        AZStd::shared_ptr<SubpassDependencies> m_subpassDependencies;
     };
 }

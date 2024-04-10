@@ -415,6 +415,16 @@ namespace AZ::RHI
         return ResultCode::Success;
     }
 
+    ResultCode FrameGraph::UseSubpassDependencies(AZStd::shared_ptr<SubpassDependencies> subpassDependencies)
+    {
+        if (!m_currentScope)
+        {
+            return ResultCode::Fail;
+        }
+        m_currentScope->SetSubpassDependencies(subpassDependencies);
+        return ResultCode::Success;
+    }
+
     void FrameGraph::ExecuteAfter(const ScopeId& producerScopeId)
     {
         if (Scope* producer = FindScope(producerScopeId))

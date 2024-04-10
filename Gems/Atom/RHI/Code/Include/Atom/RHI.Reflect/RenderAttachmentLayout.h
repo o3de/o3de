@@ -11,6 +11,7 @@
 #include <Atom/RHI.Reflect/Format.h>
 #include <Atom/RHI.Reflect/Interval.h>
 #include <Atom/RHI.Reflect/Limits.h>
+
 #include <AzCore/Utils/TypeHash.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/span.h>

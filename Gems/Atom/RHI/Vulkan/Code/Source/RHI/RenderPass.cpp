@@ -5,12 +5,17 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
+#include <AzCore/std/hash.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
+#include <memory>
+
 #include <RHI/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Framebuffer.h>
 #include <RHI/RenderPass.h>
-#include <AzCore/std/hash.h>
-#include <memory>
+#include <RHI/SubpassDependencies.h>
+
 #include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
@@ -694,6 +699,19 @@ namespace AZ
             }
             Base::Shutdown();
         }
-    }
-}
+
+        /*static*/ AZStd::shared_ptr<RHI::SubpassDependencies> RenderPass::BuildNativeSubpassDependencies(
+            const RHI::RenderAttachmentLayout& layout)
+        {
+            auto subpassDependenciesPtr = AZStd::make_shared<SubpassDependencies>();
+            for (uint32_t subpassIndex = 0; subpassIndex < layout.m_subpassCount; ++subpassIndex)
+            {
+                AddSubpassDependencies(
+                    subpassDependenciesPtr->m_subpassDependencies, subpassIndex, layout.m_subpassLayouts, layout.m_subpassCount);
+            }
+            subpassDependenciesPtr->m_subpassCount = layout.m_subpassCount;
+            return subpassDependenciesPtr;
+        }
+    } // namespace Vulkan
+} // namespace AZ
 
