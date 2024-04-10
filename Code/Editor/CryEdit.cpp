@@ -1216,6 +1216,9 @@ void CCryEditApp::CompileCriticalAssets() const
                 assetCatalogRequests->LoadCatalog(assetCatalogPath.c_str());
             }
         };
+
+        CCryEditApp::OutputStartupMessage(QString("Loading Asset Catalog..."));
+
         AZ::Data::AssetCatalogRequestBus::Broadcast(AZStd::move(LoadCatalog));
 
         // Only signal the event *after* the asset catalog has been loaded.
@@ -1598,6 +1601,8 @@ bool CCryEditApp::InitInstance()
     // It will be launched if not running
     ConnectToAssetProcessor();
 
+    CCryEditApp::OutputStartupMessage(QString("Initializing Game System..."));
+
     auto initGameSystemOutcome = InitGameSystem(mainWindowWrapperHwnd);
     if (!initGameSystemOutcome.IsSuccess())
     {
@@ -1634,6 +1639,8 @@ bool CCryEditApp::InitInstance()
 
     // Meant to be called before MainWindow::Initialize
     InitPlugins();
+
+    CCryEditApp::OutputStartupMessage(QString("Initializing Main Window..."));
 
     mainWindow->Initialize();
 
@@ -1684,6 +1691,8 @@ bool CCryEditApp::InitInstance()
     SetEditorWindowTitle(nullptr, AZ::Utils::GetProjectDisplayName().c_str(), nullptr);
     m_pEditor->InitFinished();
 
+    CCryEditApp::OutputStartupMessage(QString("Activating Python..."));
+
     // Make sure Python is started before we attempt to restore the Editor layout, since the user
     // might have custom view panes in the saved layout that will need to be registered.
     auto editorPythonEventsInterface = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
@@ -1691,6 +1700,9 @@ bool CCryEditApp::InitInstance()
     {
         editorPythonEventsInterface->StartPython();
     }
+
+    CCryEditApp::OutputStartupMessage(QString("")); // add a blank line so that python is not blamed for anything that happens here
+
 
     if (!GetIEditor()->IsInConsolewMode())
     {
