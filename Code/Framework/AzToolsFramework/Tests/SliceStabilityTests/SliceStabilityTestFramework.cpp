@@ -46,7 +46,6 @@ namespace UnitTest
 
         AzToolsFramework::AssetSystemRequestBus::Handler::BusConnect();
         AzToolsFramework::EditorRequestBus::Handler::BusConnect();
-        AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusConnect();
 
         AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
@@ -95,7 +94,6 @@ namespace UnitTest
 
         AzToolsFramework::EditorRequestBus::Handler::BusDisconnect();
         AzToolsFramework::AssetSystemRequestBus::Handler::BusDisconnect();
-        AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusDisconnect();
     }
 
     AZ::EntityId SliceStabilityTest::CreateEditorEntity(const char* entityName, AzToolsFramework::EntityIdList& entityList, const AZ::EntityId& parentId /*= AZ::EntityId()*/)
@@ -142,196 +140,6 @@ namespace UnitTest
         entityTransform->SetLocalTranslation(AZ::Vector3(100, 100, 100));
 
         return entityList.back();
-    }
-
-    AZ::Data::AssetId SliceStabilityTest::CreateSlice(AZStd::string sliceAssetName, AzToolsFramework::EntityIdList entityList, AZ::SliceComponent::SliceInstanceAddress& sliceAddress)
-    {
-        // Fabricate a new asset id for this slice and set its sub id to the SliceAsset sub id
-        m_newSliceId = AZ::Uuid::CreateRandom();
-        m_newSliceId.m_subId = AZ::SliceAsset::GetAssetSubId();
-
-        // Init the sliceAddress to invalid
-        sliceAddress = AZ::SliceComponent::SliceInstanceAddress();
-
-        // The relative slice asset path will be used in registering the slice with the asset catalog
-        // It will show up in debugging and is useful for tracking multiple slice assets in a test
-        // Since we are mocking file io m_relativeSourceAssetRoot is purely cosmetic
-        AZStd::string relativeSliceAssetPath = m_relativeSourceAssetRoot + sliceAssetName;
-
-        // Call MakeNewSlice and deactivate all prompts for user input
-        // Since MakeNewSlice is tightly joined to QT dialogs and popups we default all decisions and silence all popups so we can run tests without user input
-        // inheritSlices: whether to inherit slice ancestry of added instance entities or make a new slice with no ancestry
-        // setAsDynamic: whether to mark the slice asset as dynamic
-        // acceptDefaultPath: whether to prompt the user for a path save location or to proceed with the generated one
-        // defaultMoveExternalRefs: whether to prompt the user on if external entity references found in added entities get added to the created slice or do this automatically
-        // defaultGenerateSharedRoot: whether to generate a shared root if one or more added entities do not share the same root
-        // silenceWarningPopups: disables QT warning popups from being generated, we can still rely on the return of MakeNewSlice for error handling
-        bool sliceCreateSuccess = AzToolsFramework::SliceUtilities::MakeNewSlice(AzToolsFramework::EntityIdSet(entityList.begin(), entityList.end()),
-            relativeSliceAssetPath.c_str(),
-            true  /*inheritSlices*/,
-            false /*setAsDynamic*/,
-            true  /*acceptDefaultPath*/,
-            true  /*defaultMoveExternalRefs*/,
-            true  /*defaultGenerateSharedRoot*/,
-            true  /*silenceWarningPopups*/);
-
-        if (sliceCreateSuccess)
-        {
-            // Setup the mock asset info for our new slice
-            AZ::Data::AssetInfo newSliceInfo;
-            newSliceInfo.m_assetId = m_newSliceId;
-            newSliceInfo.m_relativePath = relativeSliceAssetPath;
-            newSliceInfo.m_assetType = azrtti_typeid<AZ::SliceAsset>();
-            newSliceInfo.m_sizeBytes = 1;
-
-            // Register the asset with the asset catalog
-            // This mocks the asset load pipeline that triggers the OnCatalogAssetAdded event
-            // OnCatalogAssetAdded triggers the final steps of the create slice flow by building the first slice instance out of the added entities
-            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::RegisterAsset, m_newSliceId, newSliceInfo);
-        }
-        else
-        {
-            return AZ::Uuid::CreateNull();
-        }
-
-        // Acquire the slice instance address the added entities were promoted into
-        AzFramework::SliceEntityRequestBus::EventResult(sliceAddress, *entityList.begin(),
-            &AzFramework::SliceEntityRequestBus::Events::GetOwningSlice);
-
-        // Validate the slice instance
-        if (!sliceAddress.IsValid())
-        {
-            return AZ::Uuid::CreateNull();
-        }
-
-        // Validate the new slice asset id matches our generated asset id
-        AZ::Data::AssetId createdSliceId = sliceAddress.GetReference()->GetSliceAsset().GetId();
-
-        if (m_newSliceId != createdSliceId)
-        {
-            // Return invalid id as error
-            createdSliceId = AZ::Uuid::CreateNull();
-        }
-
-        // Reset our newSliceId so it's invalid for any OnSliceInstantiated calls
-        m_newSliceId = AZ::Uuid::CreateNull();
-
-        return createdSliceId;
-    }
-
-    bool SliceStabilityTest::PushEntitiesToSlice(AZ::SliceComponent::SliceInstanceAddress& sliceInstanceAddress, const AzToolsFramework::EntityIdList& entitiesToPush)
-    {
-        // Nothing to push
-        if (entitiesToPush.empty())
-        {
-            return true;
-        }
-
-        // Cannot push to an invalid slice
-        if (!sliceInstanceAddress.IsValid())
-        {
-            return false;
-        }
-
-        // Copy the slice instance id
-        // The internal instance of the slicecomponent we push to will be destroyed
-        // We will use this id to validate that the new instance maps to the same id after the push
-        AZ::SliceComponent::SliceInstance* sliceInstance = sliceInstanceAddress.GetInstance();
-        AZ::SliceComponent::SliceInstanceId sliceInstanceId = sliceInstance->GetId();
-
-        // Get the currently instantiated entities in this slice instance
-        const AZ::SliceComponent::EntityList& sliceInstanceInstantiatedEntities = sliceInstance->GetInstantiated() ? sliceInstance->GetInstantiated()->m_entities : AZ::SliceComponent::EntityList();
-
-        // Acquire the slice instance's asset and start the push slice transaction
-        const AZ::Data::Asset<AZ::SliceAsset> sliceAsset = sliceInstanceAddress.GetReference()->GetSliceAsset();
-        AzToolsFramework::SliceUtilities::SliceTransaction::TransactionPtr transaction = AzToolsFramework::SliceUtilities::SliceTransaction::BeginSlicePush(sliceAsset);
-
-        // Since a slice push causes the current instance to re-instantiate all added entities will be remade in the new instance
-        // We will be deleting the existing entities being added as they will be replaced in this manner
-        AzToolsFramework::EntityIdList entitiesToRemove;
-        for (const AZ::EntityId& entityToPush : entitiesToPush)
-        {
-            AzToolsFramework::SliceUtilities::SliceTransaction::Result result;
-
-            // If the entity already exists in the slice then we will update it
-            if (FindEntityInList(entityToPush, sliceInstanceInstantiatedEntities))
-            {
-                result = transaction->UpdateEntity(entityToPush);
-            }
-            else
-            {
-                // Otherwise we add it to the slice transaction
-                // and mark the entity for delete since it will be replaced
-                result = transaction->AddEntity(entityToPush);
-                entitiesToRemove.emplace_back(entityToPush);
-            }
-
-            if (!result.IsSuccess())
-            {
-                return false;
-            }
-        }
-
-        // This asset mocks the reloaded temp asset that would trigger the ReloadAssetFromData call after a slice push
-        AZ::Data::Asset<AZ::SliceAsset> slicePushResultClone;
-
-        AzToolsFramework::SliceUtilities::SliceTransaction::PostSaveCallback postSaveCallback =
-            [&sliceAsset, &slicePushResultClone](AzToolsFramework::SliceUtilities::SliceTransaction::TransactionPtr transaction, const char* fullSourcePath, const AzToolsFramework::SliceUtilities::SliceTransaction::SliceAssetPtr& asset) -> void
-        {
-            // SlicePostPushCallback updates the slice component that owns our instance's reference (usually the root slice component of the entity context)
-            // the update is to make a mapping of the existing entity id (about to be deleted) with the asset entity id (about to be instantiated and replace the existing)
-            // this sets the replacement entity back to its original id so that external references to that entity do not break by it not having the same id
-            AzToolsFramework::SliceUtilities::SlicePostPushCallback(transaction, fullSourcePath, asset);
-
-            // Clone our slice asset so that our temp has the same asset id
-            slicePushResultClone = { sliceAsset.Get()->Clone(), AZ::Data::AssetLoadBehavior::Default };
-
-            // Move the transaction's asset data into our temp
-            // the transaction's asset data is what would be saved to disk and reloaded into our temp
-            slicePushResultClone.Get()->SetData(asset.Get()->GetEntity(), asset.Get()->GetComponent());
-            asset.Get()->SetData(nullptr, nullptr, false);
-        };
-
-        // Commit our queued entity adds and updates to be pushed to our slice asset and set our pre and post commit callbacks
-        const AzToolsFramework::SliceUtilities::SliceTransaction::Result result = transaction->Commit(
-            "NotAValidAssetPath",
-            AzToolsFramework::SliceUtilities::SlicePreSaveCallbackForWorldEntities,
-            postSaveCallback);
-
-        if (!result.IsSuccess())
-        {
-            return false;
-        }
-
-        // Send the reload event that will trigger the owning slice component to re-instantiate its data with what was "written" to disk
-        // This replaces our deleted entities with their versions pushed to the slice and rebuilds our slice instance to contain those entities
-        // Because of the mapping we did in the post commit callback they will be re-mapped back to their original ids during the instantiation process
-        AZ::Data::AssetManager::Instance().ReloadAssetFromData(slicePushResultClone);
-
-        // Acquire the root slice
-        AZ::SliceComponent* rootSlice = nullptr;
-        AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::BroadcastResult(rootSlice,
-            &AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Events::GetEditorRootSlice);
-
-        if (!rootSlice)
-        {
-            return false;
-        }
-
-        // Find the owning slice instance of one of the entities we added
-        // This instance should contain all entities prior to the push plus the pushed entities
-        // We need to update the slice instance here since the instantiated entities in the original instance have been destroyed and re-allocated
-        // The data and ids should be the same but the SliceInstance* and SliceReference* of the input instance address are invalid and need to be updated
-        sliceInstanceAddress = rootSlice->FindSlice(*entitiesToPush.begin());
-
-        // The instance should be valid and its instance id should match our original instance before the asset reload
-        if (!sliceInstanceAddress.IsValid() ||
-            (sliceInstanceAddress.GetInstance()->GetId() != sliceInstanceId))
-        {
-            return false;
-        }
-
-        return true;
     }
 
     AZ::SliceComponent::SliceInstanceAddress SliceStabilityTest::InstantiateEditorSlice(AZ::Data::AssetId sliceAssetId, AzToolsFramework::EntityIdList& entityList, const AZ::EntityId& parent /*= AZ::EntityId()*/)
@@ -420,14 +228,7 @@ namespace UnitTest
 
     void SliceStabilityTest::ReparentEntity(AZ::EntityId& entity, const AZ::EntityId& newParent)
     {
-        if (AzToolsFramework::SliceUtilities::IsReparentNonTrivial(entity, newParent))
-        {
-            AzToolsFramework::SliceUtilities::ReparentNonTrivialSliceInstanceHierarchy(entity, newParent);
-        }
-        else
-        {
-            AZ::TransformBus::Event(entity, &AZ::TransformBus::Events::SetParent, newParent);
-        }
+        AZ::TransformBus::Event(entity, &AZ::TransformBus::Events::SetParent, newParent);
     }
 
     // A helper to find an entity within an entity list

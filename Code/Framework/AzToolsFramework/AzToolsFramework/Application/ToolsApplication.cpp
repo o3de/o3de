@@ -32,7 +32,6 @@
 #include <AzToolsFramework/AssetBundle/AssetBundleComponent.h>
 #include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
 #include <AzToolsFramework/AssetEditor/AssetEditorWidget.h>
-#include <AzToolsFramework/Commands/EntityStateCommand.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/Component/EditorComponentAPIComponent.h>
 #include <AzToolsFramework/Component/EditorLevelComponentAPIComponent.h>
@@ -110,85 +109,6 @@ namespace AzToolsFramework
 {
     namespace Internal
     {
-        template<typename IdContainerType>
-        void DeleteEntities(const IdContainerType& entityIds)
-        {
-            AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-            if (entityIds.empty())
-            {
-                return;
-            }
-
-            UndoSystem::URSequencePoint* currentUndoBatch = nullptr;
-            ToolsApplicationRequests::Bus::BroadcastResult(
-                currentUndoBatch, &ToolsApplicationRequests::Bus::Events::GetCurrentUndoBatch);
-
-            bool createdUndo = false;
-            if (!currentUndoBatch)
-            {
-                createdUndo = true;
-                ToolsApplicationRequests::Bus::BroadcastResult(
-                    currentUndoBatch, &ToolsApplicationRequests::Bus::Events::BeginUndoBatch, "Delete Selected");
-                AZ_Assert(currentUndoBatch, "Failed to create new undo batch.");
-            }
-
-            UndoSystem::UndoStack* undoStack = nullptr;
-            PreemptiveUndoCache* preemptiveUndoCache = nullptr;
-            ToolsApplicationRequests::Bus::BroadcastResult(undoStack, &ToolsApplicationRequests::Bus::Events::GetUndoStack);
-            ToolsApplicationRequests::Bus::BroadcastResult(preemptiveUndoCache, &ToolsApplicationRequests::Bus::Events::GetUndoCache);
-            AZ_Assert(undoStack, "Failed to retrieve undo stack.");
-            AZ_Assert(preemptiveUndoCache, "Failed to retrieve preemptive undo cache.");
-            if (undoStack && preemptiveUndoCache)
-            {
-                // In order to undo DeleteSelected, we have to create a selection command which selects the current selection
-                // and then add the deletion as children.
-                // Commands always execute themselves first and then their children (when going forwards)
-                // and do the opposite when going backwards.
-                AzToolsFramework::EntityIdList selection;
-                ToolsApplicationRequests::Bus::BroadcastResult(selection, &ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
-                AzToolsFramework::SelectionCommand* selCommand = aznew AzToolsFramework::SelectionCommand(selection, "Delete Entities");
-
-                // We insert a "deselect all" command before we delete the entities. This ensures the delete operations aren't changing
-                // selection state, which triggers expensive UI updates. By deselecting up front, we are able to do those expensive
-                // UI updates once at the start instead of once for each entity.
-                {
-                    AzToolsFramework::EntityIdList deselection;
-                    AzToolsFramework::SelectionCommand* deselectAllCommand = aznew AzToolsFramework::SelectionCommand(deselection, "Deselect Entities");
-                    deselectAllCommand->SetParent(selCommand);
-                }
-
-                {
-                    AZ_PROFILE_SCOPE(AzToolsFramework, "Internal::DeleteEntities:UndoCaptureAndPurgeEntities");
-                    for (const auto& entityId : entityIds)
-                    {
-                        AZ::Entity* entity = nullptr;
-                        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
-
-                        if (entity)
-                        {
-                            EntityDeleteCommand* command = aznew EntityDeleteCommand(static_cast<AZ::u64>(entityId));
-                            command->Capture(entity);
-                            command->SetParent(selCommand);
-                        }
-
-                        preemptiveUndoCache->PurgeCache(entityId);
-                    }
-                }
-
-                selCommand->SetParent(currentUndoBatch);
-                {
-                    AZ_PROFILE_SCOPE(AzToolsFramework, "Internal::DeleteEntities:RunRedo");
-                    selCommand->RunRedo();
-                }
-            }
-
-            if (createdUndo)
-            {
-                ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::EndUndoBatch);
-            }
-        }
-
         struct ToolsApplicationNotificationBusHandler final
             : public ToolsApplicationNotificationBus::Handler
             , public AZ::BehaviorEBusHandler
@@ -266,8 +186,6 @@ namespace AzToolsFramework
     {
         ToolsApplicationRequests::Bus::Handler::BusConnect();
         AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
-
-        m_undoCache.RegisterToUndoCacheInterface();
     }
 
     ToolsApplication::~ToolsApplication()
@@ -906,150 +824,6 @@ namespace AzToolsFramework
         m_editorEntityAPI->DeleteEntitiesAndAllDescendants(entities);
     }
 
-    bool ToolsApplication::DetachEntities(const AZStd::vector<AZ::EntityId>& entitiesToDetach, AZStd::vector<AZStd::pair<AZ::EntityId, AZ::SliceComponent::EntityRestoreInfo>>& restoreInfos)
-    {
-        AZStd::vector<AZStd::pair<AZ::Entity*, AZ::SliceComponent::SliceReference*>> pendingSliceChanges;
-
-        AZ::SliceComponent* editorRootSlice = nullptr;
-        AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::BroadcastResult(editorRootSlice,
-            &AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Events::GetEditorRootSlice);
-        AZ_Assert(editorRootSlice, "Failed to retrieve editor root slice.");
-
-        // Gather desired changes without modifying slices or entities
-        for (const AZ::EntityId& entityId : entitiesToDetach)
-        {
-            AZ::SliceComponent::SliceInstanceAddress sliceAddress(nullptr, nullptr);
-            AzFramework::SliceEntityRequestBus::EventResult(sliceAddress, entityId,
-                &AzFramework::SliceEntityRequestBus::Events::GetOwningSlice);
-
-            AZ::SliceComponent::SliceReference* sliceReference = sliceAddress.first;
-            AZ::SliceComponent::SliceInstance* sliceInstance = sliceAddress.second;
-            if (!sliceReference || !sliceInstance)
-            {
-                AZ_Error("DetachSliceEntity", false, "Entity with Id %s is not part of a slice. \"Detach\" action cancelled. No slices or entities were modified.", entityId.ToString().c_str());
-                return false;
-            }
-
-            AZ::Entity* entity = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
-            AZ_Error("DetachSliceEntity", entity, "Unable to find entity for Entity Id %s. \"Detach\" action cancelled. No slices or entities were modified.", entityId.ToString().c_str());
-            if (!entity)
-            {
-                return false;
-            }
-
-            AZ::SliceComponent::EntityRestoreInfo restoreInfo;
-            if (editorRootSlice->GetEntityRestoreInfo(entityId, restoreInfo))
-            {
-                restoreInfos.emplace_back(entityId, restoreInfo);
-                pendingSliceChanges.emplace_back(entity, sliceReference);
-            }
-            else
-            {
-                AZ_Error("DetachSliceEntity", entity, "Failed to prepare restore information for entity of Id %s. \"Detach\" action cancelled. No slices or entities were modified.", entityId.ToString().c_str());
-                return false;
-            }
-        }
-
-        // Apply pending changes
-        for (AZStd::pair<AZ::Entity*, AZ::SliceComponent::SliceReference*>& pendingSliceChange : pendingSliceChanges)
-        {
-            // Remove entity from current slice instance without deleting the entity. Delete slice instance if the detached entity is the last one
-            // in the slice instance. The slice instance will be reconstructed upon undo.
-            bool success = pendingSliceChange.second->GetSliceComponent()->RemoveEntity(pendingSliceChange.first->GetId(), false, true);
-            if (success)
-            {
-                editorRootSlice->AddEntity(pendingSliceChange.first); // Add back as loose entity
-            }
-            else
-            {
-                AZ_Error("DetachSliceEntity", success, "Entity with Id %s could not be removed from the slice. The Slice Instance is now in an unknown state, and saving it may result in data loss.", pendingSliceChange.first->GetId().ToString().c_str());
-            }
-        }
-
-        SliceEditorEntityOwnershipServiceNotificationBus::Broadcast(
-            &SliceEditorEntityOwnershipServiceNotifications::OnEditorEntitiesSliceOwnershipChanged, entitiesToDetach);
-        return true;
-    }
-
-    bool ToolsApplication::DetachSubsliceInstances(const AZ::SliceComponent::SliceInstanceEntityIdRemapList& subsliceRootList, AZStd::vector<AZStd::pair<AZ::EntityId, AZ::SliceComponent::EntityRestoreInfo>>& restoreInfos)
-    {
-        AZ::SliceComponent* editorRootSlice = nullptr;
-        AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::BroadcastResult(editorRootSlice,
-            &AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Events::GetEditorRootSlice);
-
-        if (!editorRootSlice)
-        {
-            AZ_Assert(false,
-                "ToolsApplication::DetachSubsliceInstances: Failed to retrieve editor root slice");
-
-            return false;
-        }
-
-        AZStd::vector<AZ::EntityId> entitiesToUpdate;
-        for (const auto& subsliceRoot : subsliceRootList)
-        {
-            if (!subsliceRoot.first.IsValid())
-            {
-                AZ_Assert(false,
-                    "ToolsApplication::DetachSubsliceInstances: Invalid subslice root was passed in. Unable to proceed");
-
-                return false;
-            }
-
-            // Gather EntityRestoreInfo for all entities in the subslice about to be detached
-            for (const AZStd::pair<AZ::EntityId, AZ::EntityId>& liveToSubsliceEntityIdMapping : subsliceRoot.second)
-            {
-                const AZ::EntityId& liveEntityId = liveToSubsliceEntityIdMapping.first;
-
-                bool isMetaDataEntity = false;
-                AzToolsFramework::SliceMetadataEntityContextRequestBus::BroadcastResult(isMetaDataEntity, &AzToolsFramework::SliceMetadataEntityContextRequestBus::Events::IsSliceMetadataEntity, liveEntityId);
-
-                // Skip gathering restore info for meta data entities
-                if (isMetaDataEntity)
-                {
-                    continue;
-                }
-
-                AZ::SliceComponent::EntityRestoreInfo restoreInfo;
-                if (editorRootSlice->GetEntityRestoreInfo(liveEntityId, restoreInfo))
-                {
-                    restoreInfos.emplace_back(liveEntityId, restoreInfo);
-                    entitiesToUpdate.emplace_back(liveEntityId);
-                }
-                else
-                {
-                    AZ_Error("ToolsApplication::DetachSubsliceInstances",
-                        false,
-                        "Failed to prepare restore information for entity of Id %s. \"DetachSubsliceInstance\" action cancelled. No slices or entities were modified.",
-                        liveEntityId.ToString().c_str());
-
-                    return false;
-                }
-            }
-        }
-
-        // Perform the detach operation by extracting each subslice from its current slice and adding it as a standalone instance owned by the root slice
-        for (const auto& subsliceRoot : subsliceRootList)
-        {
-            const AZ::Data::Asset<AZ::SliceAsset>& subsliceAsset = subsliceRoot.first.GetReference()->GetSliceAsset();
-
-            if (!editorRootSlice->AddSliceUsingExistingEntities(subsliceAsset, subsliceRoot.second).IsValid())
-            {
-                AZ_Error("ToolsApplication::DetachSubsliceInstances",
-                    false,
-                    "Subslice Instance of Asset with Id %s could not be detached from source slice. The Slice instance is now in an unknown state, and saving it may result in data loss.",
-                    subsliceAsset.ToString<AZStd::string>().c_str());
-
-                return false;
-            }
-        }
-
-        SliceEditorEntityOwnershipServiceNotificationBus::Broadcast(
-            &SliceEditorEntityOwnershipServiceNotificationBus::Events::OnEditorEntitiesSliceOwnershipChanged, entitiesToUpdate);
-        return true;
-    }
-
     bool ToolsApplication::FindCommonRoot(const AzToolsFramework::EntityIdSet& entitiesToBeChecked, AZ::EntityId& commonRootEntityId
         , AzToolsFramework::EntityIdList* topLevelEntities)
     {
@@ -1599,8 +1373,6 @@ namespace AzToolsFramework
         auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
         if (prefabPublicInterface)
         {
-            // Compared to the preemptive undo cache, we can avoid the duplicate check.
-            // Multiple changes to the same entity are just split between different undo nodes.
             for (AZ::EntityId entityId : m_dirtyEntities)
             {
                 auto outcome = prefabPublicInterface->GenerateUndoNodesForEntityChangeAndUpdateCache(entityId, m_currentBatchUndo);

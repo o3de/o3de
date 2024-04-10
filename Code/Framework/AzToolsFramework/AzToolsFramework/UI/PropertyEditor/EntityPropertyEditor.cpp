@@ -43,7 +43,6 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityRuntimeActivationBus.h>
-#include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
@@ -2382,8 +2381,6 @@ namespace AzToolsFramework
 
                 AddMenuOptionsForFields(node, componentNode, componentClassData, menu);
 
-                AddMenuOptionsForRevert(node, componentNode, componentClassData, menu);
-
                 AzToolsFramework::Components::EditorComponentBase* editorComponent = static_cast<AzToolsFramework::Components::EditorComponentBase*>(component);
 
                 if (editorComponent)
@@ -2442,141 +2439,6 @@ namespace AzToolsFramework
         {
             AZ_Error("PropertyEditor", false, "Entity \"%s\" does not belong to any context.", entity->GetName().c_str());
             return;
-        }
-
-        // If prefabs are enabled, there will be no root slice so bail out here since we don't need
-        // to show any slice options in the menu
-        AZ::SliceComponent* rootSlice = nullptr;
-        AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(rootSlice, contextId,
-            &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::GetRootSlice);
-        if (rootSlice)
-        {
-            AZ::SliceComponent::SliceInstanceAddress address;
-            AzFramework::SliceEntityRequestBus::EventResult(address, entity->GetId(), &AzFramework::SliceEntityRequests::GetOwningSlice);
-            AZ::SliceComponent::SliceReference* sliceReference = address.GetReference();
-            if (sliceReference)
-            {
-                // This entity is instanced from a slice, so show data push/pull options
-                AZ::SliceComponent::EntityAncestorList ancestors;
-                sliceReference->GetInstanceEntityAncestry(entity->GetId(), ancestors);
-
-                AZ_Error(
-                    "PropertyEditor", !ancestors.empty(), "Entity \"%s\" belongs to a slice, but its source entity could not be located.",
-                    entity->GetName().c_str());
-                if (!ancestors.empty())
-                {
-                    menu.addSeparator();
-
-                    // Populate slice push options.
-                    // Address should start with the fully-addressable component Id to resolve within the target entity.
-                    InstanceDataHierarchy::Address pushFieldAddress;
-                    CalculateAndAdjustNodeAddress(*fieldNode, AddressRootType::RootAtEntity, pushFieldAddress);
-                    if (!pushFieldAddress.empty())
-                    {
-                        SliceUtilities::PopulateQuickPushMenu(
-                            menu, entity->GetId(), pushFieldAddress,
-                            SliceUtilities::QuickPushMenuOptions(
-                                "Save field override",
-                                SliceUtilities::QuickPushMenuOverrideDisplayCount::ShowOverrideCountOnlyWhenMultiple));
-                    }
-                }
-            }
-
-            menu.addSeparator();
-
-            // by leaf node, we mean a visual leaf node in the property editor (ie, we do not have any visible children)
-            bool isLeafNode = !fieldNode->GetClassMetadata() || !fieldNode->GetClassMetadata()->m_container;
-
-            if (isLeafNode)
-            {
-                for (const InstanceDataNode& childNode : fieldNode->GetChildren())
-                {
-                    if (HasAnyVisibleElements(childNode))
-                    {
-                        // If we have any visible children, we must not be a leaf node
-                        isLeafNode = false;
-                        break;
-                    }
-                }
-            }
-
-#ifdef ENABLE_SLICE_EDITOR
-            // Show PreventOverride & HideProperty options
-            if (GetEntityDataPatchAddress(fieldNode, m_dataPatchAddressBuffer))
-            {
-                AZ::DataPatch::Flags nodeFlags = rootSlice->GetEntityDataFlagsAtAddress(entity->GetId(), m_dataPatchAddressBuffer);
-
-                if (nodeFlags & AZ::DataPatch::Flag::PreventOverrideSet)
-                {
-                    QAction* PreventOverrideAction = menu.addAction(tr("Allow property override"));
-                    PreventOverrideAction->setEnabled(isLeafNode);
-                    connect(
-                        PreventOverrideAction, &QAction::triggered, this,
-                        [this, fieldNode]
-                        {
-                            ContextMenuActionSetDataFlag(fieldNode, AZ::DataPatch::Flag::PreventOverrideSet, false);
-                            InvalidatePropertyDisplay(Refresh_AttributesAndValues);
-                        });
-                }
-                else
-                {
-                    QAction* PreventOverrideAction = menu.addAction(tr("Prevent property override"));
-                    PreventOverrideAction->setEnabled(isLeafNode);
-                    connect(
-                        PreventOverrideAction, &QAction::triggered, this,
-                        [this, fieldNode]
-                        {
-                            ContextMenuActionSetDataFlag(fieldNode, AZ::DataPatch::Flag::PreventOverrideSet, true);
-                            InvalidatePropertyDisplay(Refresh_AttributesAndValues);
-                        });
-                }
-
-                if (nodeFlags & AZ::DataPatch::Flag::HidePropertySet)
-                {
-                    QAction* HideProperyAction = menu.addAction(tr("Show property on instances"));
-                    HideProperyAction->setEnabled(isLeafNode);
-                    connect(
-                        HideProperyAction, &QAction::triggered, this,
-                        [this, fieldNode]
-                        {
-                            ContextMenuActionSetDataFlag(fieldNode, AZ::DataPatch::Flag::HidePropertySet, false);
-                            InvalidatePropertyDisplay(Refresh_AttributesAndValues);
-                        });
-                }
-                else
-                {
-                    QAction* HideProperyAction = menu.addAction(tr("Hide property on instances"));
-                    HideProperyAction->setEnabled(isLeafNode);
-                    connect(
-                        HideProperyAction, &QAction::triggered, this,
-                        [this, fieldNode]
-                        {
-                            ContextMenuActionSetDataFlag(fieldNode, AZ::DataPatch::Flag::HidePropertySet, true);
-                            InvalidatePropertyDisplay(Refresh_AttributesAndValues);
-                        });
-                }
-            }
-#endif
-
-            if (sliceReference)
-            {
-                // This entity is referenced from a slice, so show property override options
-                bool hasChanges = fieldNode->HasChangesVersusComparison(false);
-
-                if (!hasChanges && isLeafNode)
-                {
-                    // Add an option to set the ForceOverride flag for this field
-                    menu.setToolTipsVisible(true);
-                    QAction* forceOverrideAction = menu.addAction(tr("Force property override"));
-                    forceOverrideAction->setToolTip(tr("Prevents a property from inheriting from its source slice"));
-                    connect(
-                        forceOverrideAction, &QAction::triggered, this,
-                        [this, fieldNode]()
-                        {
-                            ContextMenuActionSetDataFlag(fieldNode, AZ::DataPatch::Flag::ForceOverrideSet, true);
-                        });
-                }
-            }
         }
 
         m_reorderRowWidget = nullptr;
@@ -2644,172 +2506,6 @@ namespace AzToolsFramework
 
         return false;
     }
-
-    void EntityPropertyEditor::AddMenuOptionsForRevert(InstanceDataNode* fieldNode, InstanceDataNode* componentNode, const AZ::SerializeContext::ClassData* componentClassData, QMenu& menu)
-    {
-        QMenu* revertMenu = nullptr;
-
-        auto addRevertMenu = [&menu]()
-            {
-                QMenu* revertOverridesMenu = menu.addMenu(tr("Revert overrides"));
-                revertOverridesMenu->setToolTipsVisible(true);
-                return revertOverridesMenu;
-            };
-
-        //check for changes on selected property
-        if (componentClassData)
-        {
-            AZ::SliceComponent::SliceInstanceAddress address;
-
-            AZ::Component* componentInstance = m_serializeContext->Cast<AZ::Component*>(
-                componentNode->FirstInstance(), componentClassData->m_typeId);
-            AZ_Assert(componentInstance, "Failed to cast component instance.");
-            AZ::Entity* entity = componentInstance->GetEntity();
-
-            AzFramework::SliceEntityRequestBus::EventResult(address, entity->GetId(),
-                &AzFramework::SliceEntityRequests::GetOwningSlice);
-            AZ::SliceComponent::SliceReference* sliceReference = address.GetReference();
-
-            if (!sliceReference)
-            {
-                return;
-            }
-
-            // Only add the "Revert overrides" menu option if it belongs to a slice
-            revertMenu = addRevertMenu();
-            revertMenu->setEnabled(false);
-
-            if (fieldNode)
-            {
-                bool hasChanges = fieldNode->HasChangesVersusComparison(false);
-
-                if (hasChanges)
-                {
-                    bool isLeafNode = !fieldNode->GetClassMetadata()->m_container;
-
-                    if (isLeafNode)
-                    {
-                        for (const InstanceDataNode& childNode : fieldNode->GetChildren())
-                        {
-                            if (HasAnyVisibleElements(childNode))
-                            {
-                                // If we have any visible children, we must not be a leaf node
-                                isLeafNode = false;
-                                break;
-                            }
-                        }
-
-                        if (isLeafNode)
-                        {
-                            revertMenu->setEnabled(true);
-
-                            // Add an option to pull data from the first level of the slice (clear the override).
-                            QAction* revertAction = revertMenu->addAction(tr("Property"));
-                            revertAction->setToolTip(tr("Revert the value for this property to the last saved state."));
-                            revertAction->setEnabled(true);
-                            connect(revertAction, &QAction::triggered, this, [this, componentInstance, fieldNode]()
-                                {
-                                    ContextMenuActionPullFieldData(componentInstance, fieldNode);
-                                }
-                            );
-                        }
-                    }
-                }
-            }
-        }
-
-        //check for changes on selected component(s)
-        bool hasSliceChanges = false;
-        bool isPartOfSlice = false;
-
-        const auto& componentsToEdit = GetSelectedComponents();
-
-        for (auto component : componentsToEdit)
-        {
-            AZ_Assert(component, "Parent component is invalid.");
-            auto componentEditorIterator = m_componentToEditorMap.find(component);
-            AZ_Assert(componentEditorIterator != m_componentToEditorMap.end(), "Unable to find a component editor for the given component");
-            if (componentEditorIterator != m_componentToEditorMap.end())
-            {
-                auto componentEditor = componentEditorIterator->second;
-                componentEditor->GetPropertyEditor()->EnumerateInstances(
-                    [&hasSliceChanges, &isPartOfSlice](InstanceDataHierarchy& hierarchy)
-                    {
-                        InstanceDataNode* root = hierarchy.GetRootNode();
-                        if (root && root->GetComparisonNode())
-                        {
-                            isPartOfSlice = true;
-                            if (root->HasChangesVersusComparison(true))
-                            {
-                                hasSliceChanges = true;
-                            }
-                        }
-                    });
-            }
-        }
-
-        if (isPartOfSlice && hasSliceChanges)
-        {
-            if (!revertMenu)
-            {
-                revertMenu = addRevertMenu();
-            }
-            revertMenu->setEnabled(true);
-
-            QAction* revertComponentAction = revertMenu->addAction(tr("Component"));
-            revertComponentAction->setToolTip(tr("Revert all properties for this component to their last saved state."));
-            connect(revertComponentAction, &QAction::triggered, this, [this]()
-                {
-                    ResetToSlice();
-                });
-        }
-
-        //check for changes on selected entities
-        EntityIdList selectedEntityIds;
-        GetSelectedEntities(selectedEntityIds);
-
-        bool canRevert = false;
-
-        for (AZ::EntityId id : m_selectedEntityIds)
-        {
-            bool entityHasOverrides = false;
-            AzToolsFramework::EditorEntityInfoRequestBus::EventResult(entityHasOverrides, id, &AzToolsFramework::EditorEntityInfoRequestBus::Events::HasSliceEntityOverrides);
-            if (entityHasOverrides)
-            {
-                canRevert = true;
-                break;
-            }
-        }
-
-        if (canRevert && !selectedEntityIds.empty())
-        {
-            //check for changes in the slice
-            EntityIdSet relevantEntitiesSet;
-            ToolsApplicationRequestBus::BroadcastResult(relevantEntitiesSet, &ToolsApplicationRequestBus::Events::GatherEntitiesAndAllDescendents, selectedEntityIds);
-
-            EntityIdList relevantEntities;
-            relevantEntities.reserve(relevantEntitiesSet.size());
-            for (AZ::EntityId& id : relevantEntitiesSet)
-            {
-                relevantEntities.push_back(id);
-            }
-
-            if (!revertMenu)
-            {
-                revertMenu = addRevertMenu();
-            }
-            revertMenu->setEnabled(true);
-            QAction* revertAction = revertMenu->addAction(QObject::tr("Entity"));
-            revertAction->setToolTip(QObject::tr("This will revert all component properties on this entity to the last saved."));
-
-            QObject::connect(revertAction, &QAction::triggered, [relevantEntities]
-                {
-                    SliceEditorEntityOwnershipServiceRequestBus::Broadcast(
-                        &SliceEditorEntityOwnershipServiceRequests::ResetEntitiesToSliceDefaults, relevantEntities);
-                });
-        }
-    }
-
 
     void EntityPropertyEditor::ContextMenuActionPullFieldData(AZ::Component* parentComponent, InstanceDataNode* fieldNode)
     {
@@ -3382,8 +3078,6 @@ namespace AzToolsFramework
         {
             menu.addSeparator();
         }
-
-        AddMenuOptionsForRevert(nullptr, nullptr, nullptr, menu);
 
         const auto& componentsToEdit = GetSelectedComponents();
         if (componentsToEdit.size() > 0)

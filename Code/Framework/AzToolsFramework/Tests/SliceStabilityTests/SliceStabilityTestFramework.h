@@ -12,7 +12,6 @@
 #include <AzCore/UnitTest/Mocks/MockFileIOBase.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 
@@ -22,7 +21,6 @@ namespace UnitTest
         : public ToolsApplicationFixture<>,
           public AzToolsFramework::AssetSystemRequestBus::Handler,
           public AzToolsFramework::EditorRequestBus::Handler,
-          public AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler
     {
     public:
         //! Creates an entity within the EditorEntityContext and supplies it required components
@@ -124,12 +122,6 @@ namespace UnitTest
 
         void SetUpEditorFixtureImpl() override;
         void TearDownEditorFixtureImpl() override;
-
-        /*
-         * SliceEditorEntityOwnershipServiceNotificationBus
-         */
-        void OnSliceInstantiated(const AZ::Data::AssetId& sliceAssetId, AZ::SliceComponent::SliceInstanceAddress& sliceAddress, const AzFramework::SliceInstantiationTicket& ticket) override;
-        void OnSliceInstantiationFailed(const AZ::Data::AssetId& sliceAssetId, const AzFramework::SliceInstantiationTicket& ticket) override;
 
         /*
         * EditorRequestBus
