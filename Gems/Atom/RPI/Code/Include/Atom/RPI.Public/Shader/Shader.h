@@ -120,9 +120,9 @@ namespace AZ
 
             //! Returns the ShaderOutputContract which describes which outputs the shader requires
             const ShaderOutputContract& GetOutputContract() const;
-            
+
             //! Acquires a pipeline state directly from a descriptor.
-            const RHI::PipelineState* AcquirePipelineState(const RHI::PipelineStateDescriptor& descriptor) const;
+            const RHI::PipelineState* AcquirePipelineState(RHI::PipelineStateDescriptor& descriptor) const;
 
             //! Finds and returns the shader resource group asset with the requested name. Returns an empty handle if no matching group was found.
             const RHI::Ptr<RHI::ShaderResourceGroupLayout>& FindShaderResourceGroupLayout(const Name& shaderResourceGroupName) const;

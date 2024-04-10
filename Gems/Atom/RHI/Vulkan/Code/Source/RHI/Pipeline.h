@@ -38,6 +38,7 @@ namespace AZ
                 const RHI::PipelineStateDescriptor* m_pipelineDescritor = nullptr;
                 Device* m_device = nullptr;
                 PipelineLibrary* m_pipelineLibrary = nullptr;
+                Name m_name;
             };
 
             RHI::ResultCode Init(const Descriptor& descriptor);

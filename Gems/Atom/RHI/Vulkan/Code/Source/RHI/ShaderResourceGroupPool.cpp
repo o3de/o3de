@@ -38,6 +38,7 @@ namespace AZ
 
             DescriptorSetLayout::Descriptor layoutDescriptor;
             layoutDescriptor.m_device = &device;
+            layoutDescriptor.m_name = descriptor.m_layout->GetName();
             layoutDescriptor.m_shaderResouceGroupLayout = &layout;
             m_descriptorSetLayout = device.AcquireDescriptorSetLayout(layoutDescriptor);
             if (!m_descriptorSetLayout)

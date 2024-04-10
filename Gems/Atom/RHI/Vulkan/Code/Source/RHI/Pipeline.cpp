@@ -21,6 +21,7 @@ namespace AZ
             AZ_Assert(descriptor.m_pipelineDescritor->m_pipelineLayoutDescriptor, "Pipeline layout descriptor is null.");
 
             PipelineLayout::Descriptor layoutDescriptor;
+            layoutDescriptor.m_name = descriptor.m_name;
             layoutDescriptor.m_device = descriptor.m_device;
             layoutDescriptor.m_pipelineLayoutDescriptor = descriptor.m_pipelineDescritor->m_pipelineLayoutDescriptor;
             RHI::Ptr<PipelineLayout> layout = descriptor.m_device->AcquirePipelineLayout(layoutDescriptor);
@@ -37,8 +38,8 @@ namespace AZ
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
             m_pipelineLayout = layout;
             m_pipelineLibrary = descriptor.m_pipelineLibrary;
-
-            SetName(GetName());
+            if (m_nativePipeline)
+                SetName(descriptor.m_name);
             return result;
         }
 

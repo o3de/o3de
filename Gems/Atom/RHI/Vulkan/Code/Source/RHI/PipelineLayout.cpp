@@ -176,8 +176,8 @@ namespace AZ
             // Merged SRGs are part of the Pipeline Layout.
             result = BuildMergedShaderResourceGroupPools();
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
-
-            SetName(GetName());
+            if (m_nativePipelineLayout)
+                SetName(descriptor.m_name);
             return result;
         }
 

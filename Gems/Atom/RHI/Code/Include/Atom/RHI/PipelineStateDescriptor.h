@@ -45,11 +45,18 @@ namespace AZ::RHI
         //! The pipeline layout describing the shader resource bindings.
         ConstPtr<PipelineLayoutDescriptor> m_pipelineLayoutDescriptor = nullptr;
 
+        //! Sets the name of the object.
+        void SetName(const Name& name);
+
+        //! Returns the name set on the object by SetName
+        const Name& GetName() const;
+
     protected:
         PipelineStateDescriptor(PipelineStateType pipelineStateType);
 
     private:
         PipelineStateType m_type = PipelineStateType::Count;
+        Name m_name;
     };
 
     //! Describes state necessary to build a compute pipeline state object. The compute pipe

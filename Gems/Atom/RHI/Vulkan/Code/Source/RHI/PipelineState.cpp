@@ -52,6 +52,7 @@ namespace AZ
         {
             Pipeline::Descriptor pipelineDescriptor;
             pipelineDescriptor.m_pipelineDescritor = &descriptor;
+            pipelineDescriptor.m_name = descriptor.GetName();
             pipelineDescriptor.m_device = static_cast<Device*>(&device);
             pipelineDescriptor.m_pipelineLibrary = static_cast<PipelineLibrary*>(pipelineLibrary);
             RHI::Ptr<GraphicsPipeline> pipeline = GraphicsPipeline::Create();
@@ -66,6 +67,7 @@ namespace AZ
         {
             Pipeline::Descriptor pipelineDescriptor;
             pipelineDescriptor.m_pipelineDescritor = &descriptor;
+            pipelineDescriptor.m_name = descriptor.GetName();
             pipelineDescriptor.m_device = static_cast<Device*>(&device);
             pipelineDescriptor.m_pipelineLibrary = static_cast<PipelineLibrary*>(pipelineLibrary);
             RHI::Ptr<ComputePipeline> pipeline = ComputePipeline::Create();
@@ -80,6 +82,7 @@ namespace AZ
         {
             Pipeline::Descriptor pipelineDescriptor;
             pipelineDescriptor.m_pipelineDescritor = &descriptor;
+            pipelineDescriptor.m_name = descriptor.GetName();
             pipelineDescriptor.m_device = static_cast<Device*>(&device);
             pipelineDescriptor.m_pipelineLibrary = static_cast<PipelineLibrary*>(pipelineLibrary);
             RHI::Ptr<RayTracingPipeline> pipeline = RayTracingPipeline::Create();

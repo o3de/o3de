@@ -42,6 +42,7 @@ namespace AZ
 
                 Device* m_device = nullptr;
                 RHI::ConstPtr<RHI::PipelineLayoutDescriptor> m_pipelineLayoutDescriptor;
+                AZ::Name m_name;
             };
 
             using ShaderResourceGroupBitset = AZStd::bitset<RHI::Limits::Pipeline::ShaderResourceGroupCountMax>;
