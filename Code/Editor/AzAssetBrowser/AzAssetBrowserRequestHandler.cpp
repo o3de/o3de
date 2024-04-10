@@ -42,11 +42,9 @@
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
-#include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
-#include <AzToolsFramework/UI/Slice/SliceRelationshipBus.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
 // AzQtComponents
@@ -199,11 +197,6 @@ namespace AzAssetBrowserRequestHandlerPrivate
             return false;
         }
 
-        if (product->GetAssetType() == AZ::AzTypeInfo<AZ::SliceAsset>::Uuid())
-        {
-            return true; // we can always instantiate slices.
-        }
-
         bool canCreateComponent = false;
         AZ::AssetTypeInfoBus::EventResult(canCreateComponent, product->GetAssetType(), &AZ::AssetTypeInfo::CanCreateComponent, product->GetAssetId());
         if (!canCreateComponent)
@@ -229,8 +222,7 @@ namespace AzAssetBrowserRequestHandlerPrivate
         AZStd::vector<const ProductAssetBrowserEntry*> products,
         AZ::Vector3 location,
         AZ::EntityId parentEntityId, // if valid, will treat the location as a local transform relative to this entity.
-        EntityIdList& createdEntities,
-        AzFramework::SliceInstantiationTicket& /* sliceTicket */)
+        EntityIdList& createdEntities)
     {
         if (products.empty())
         {
@@ -330,6 +322,7 @@ namespace AzAssetBrowserRequestHandlerPrivate
                 createdEntities.push_back(newEntity->GetId());
             }
         }
+
         // Select the new entity (and deselect others).
         if (!createdEntities.empty())
         {
@@ -680,29 +673,6 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
 
             AZStd::vector<const ProductAssetBrowserEntry*> products;
             entry->GetChildrenRecursively<ProductAssetBrowserEntry>(products);
-
-            // slice source files need to react by adding additional menu items, regardless of status of compile or presence of products.
-            if (AzFramework::StringFunc::Equal(extension.c_str(), AzToolsFramework::SliceUtilities::GetSliceFileExtension().c_str(), false))
-            {
-                AzToolsFramework::SliceUtilities::CreateSliceAssetContextMenu(menu, fullFilePath);
-
-                // SliceUtilities is in AZToolsFramework and can't open viewports, so add the relationship view open command here.
-                if (!products.empty())
-                {
-                    const ProductAssetBrowserEntry* productEntry = products[0];
-                    menu->addAction(
-                        "Open in Slice Relationship View",
-                        [productEntry]()
-                        {
-                            QtViewPaneManager::instance()->OpenPane(LyViewPane::SliceRelationships);
-
-                            const ProductAssetBrowserEntry* product = azrtti_cast<const ProductAssetBrowserEntry*>(productEntry);
-
-                            AzToolsFramework::SliceRelationshipRequestBus::Broadcast(
-                                &AzToolsFramework::SliceRelationshipRequests::OnSliceRelationshipViewRequested, product->GetAssetId());
-                        });
-                }
-            }
 
             if (!products.empty() || (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source))
             {
@@ -1063,8 +1033,7 @@ void AzAssetBrowserRequestHandler::DoDropItemView(bool& accepted, AzQtComponents
             }
 
             EntityIdList createdEntities;
-            AzFramework::SliceInstantiationTicket sliceTicket;
-            CreateEntitiesAtPoint(products, createLocation, outlinerContext->m_parentEntity, createdEntities, sliceTicket);
+            CreateEntitiesAtPoint(products, createLocation, outlinerContext->m_parentEntity, createdEntities);
         }
     }
 }
@@ -1095,9 +1064,7 @@ void AzAssetBrowserRequestHandler::Drop(QDropEvent* event, AzQtComponents::DragA
     event->setAccepted(true);
 
     EntityIdList createdEntities;
-    AzFramework::SliceInstantiationTicket sliceTicket;
-
-    CreateEntitiesAtPoint(products, viewportDragContext->m_hitLocation, AZ::EntityId(), createdEntities, sliceTicket);
+    CreateEntitiesAtPoint(products, viewportDragContext->m_hitLocation, AZ::EntityId(), createdEntities);
 }
 
 void AzAssetBrowserRequestHandler::AddSourceFileOpeners(

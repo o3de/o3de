@@ -23,7 +23,6 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
-#include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/UserSettings/UserSettings.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/sort.h>
@@ -58,9 +57,6 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
-#include <AzToolsFramework/Slice/SliceDataFlagsCommand.h>
-#include <AzToolsFramework/Slice/SliceMetadataEntityContextBus.h>
-#include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/ToolsComponents/ComponentAssetMimeDataContainer.h>
 #include <AzToolsFramework/ToolsComponents/ComponentMimeData.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
@@ -504,8 +500,7 @@ namespace AzToolsFramework
         int m_dropIndicatorRowWidgetOffset;
     };
 
-    EntityPropertyEditor::SharedComponentInfo::SharedComponentInfo(AZ::Component* component, AZ::Component* sliceReferenceComponent)
-        : m_sliceReferenceComponent(sliceReferenceComponent)
+    EntityPropertyEditor::SharedComponentInfo::SharedComponentInfo(AZ::Component* component)
     {
         m_instances.push_back(component);
     }
@@ -1227,10 +1222,6 @@ namespace AzToolsFramework
         setUpdatesEnabled(false);
 
         m_isBuildingProperties = true;
-        m_sliceCompareToEntity.reset();
-
-        // Wait to clear this until after the reset(), just in case any components try to call RefreshTree when we clear
-        // the m_sliceCompareToEntity entity.
         m_isAlreadyQueuedRefresh = false;
 
         HideComponentPalette();
@@ -1620,43 +1611,6 @@ namespace AzToolsFramework
         return nullptr;
     }
 
-    bool EntityPropertyEditor::SelectedEntitiesAreFromSameSourceSliceEntity() const
-    {
-        AZ::EntityId commonAncestorId;
-
-        for (AZ::EntityId id : m_selectedEntityIds)
-        {
-            AZ::SliceComponent::SliceInstanceAddress sliceInstanceAddress;
-            AzFramework::SliceEntityRequestBus::EventResult(sliceInstanceAddress, id,
-                &AzFramework::SliceEntityRequests::GetOwningSlice);
-            auto sliceReference = sliceInstanceAddress.GetReference();
-            if (!sliceReference)
-            {
-                return false;
-            }
-            else
-            {
-                AZ::SliceComponent::EntityAncestorList ancestors;
-                sliceReference->GetInstanceEntityAncestry(id, ancestors, 1);
-                if (ancestors.empty() || !ancestors[0].m_entity)
-                {
-                    return false;
-                }
-
-                if (!commonAncestorId.IsValid())
-                {
-                    commonAncestorId = ancestors[0].m_entity->GetId();
-                }
-                else if (ancestors[0].m_entity->GetId() != commonAncestorId)
-                {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
     void EntityPropertyEditor::BuildSharedComponentArray(SharedComponentArray& sharedComponentArray, bool containsLayerEntity)
     {
         AZ_Assert(!m_selectedEntityIds.empty(), "BuildSharedComponentArray should only be called if there are entities being displayed");
@@ -1670,31 +1624,7 @@ namespace AzToolsFramework
             return;
         }
 
-        // For single selection of a slice-instanced entity, gather the direct slice ancestor
-        // so we can visualize per-component differences.
-        m_sliceCompareToEntity.reset();
-        if (SelectedEntitiesAreFromSameSourceSliceEntity())
-        {
-            AZ::SliceComponent::SliceInstanceAddress sliceInstanceAddress;
-
-            AzFramework::SliceEntityRequestBus::EventResult(sliceInstanceAddress, entityId,
-                &AzFramework::SliceEntityRequests::GetOwningSlice);
-            auto sliceReference = sliceInstanceAddress.GetReference();
-            auto sliceInstance = sliceInstanceAddress.GetInstance();
-            if (sliceReference)
-            {
-                AZ::SliceComponent::EntityAncestorList ancestors;
-                sliceReference->GetInstanceEntityAncestry(entityId, ancestors, 1);
-
-                if (!ancestors.empty())
-                {
-                    m_sliceCompareToEntity = SliceUtilities::CloneSliceEntityForComparison(*ancestors[0].m_entity, *sliceInstance, *m_serializeContext);
-                }
-            }
-        }
-
         // Gather initial list of eligible display components from the first entity
-
         AZ::Entity::ComponentArrayType entityComponents;
         GetAllComponentsForEntityInOrder(entity, entityComponents);
 
@@ -1718,10 +1648,7 @@ namespace AzToolsFramework
                 }
             }
 
-            // Grab the slice reference component, if we have a slice compare entity
-            auto sliceReferenceComponent = m_sliceCompareToEntity ? m_sliceCompareToEntity->FindComponent(component->GetId()) : nullptr;
-
-            sharedComponentArray.push_back(SharedComponentInfo(component, sliceReferenceComponent));
+            sharedComponentArray.push_back(SharedComponentInfo(component));
         }
 
         // Now loop over the other entities
@@ -1796,9 +1723,7 @@ namespace AzToolsFramework
                 // non-first instances are aggregated under the first instance
                 AZ::Component* aggregateInstance = componentInstance != componentInstances.front() ? componentInstances.front() : nullptr;
 
-                // Reference the slice entity if we are a slice so we can indicate differences from base
-                AZ::Component* referenceComponentInstance = sharedComponentInfo.m_sliceReferenceComponent;
-                componentEditor->AddInstance(componentInstance, aggregateInstance, referenceComponentInstance);
+                componentEditor->AddInstance(componentInstance, aggregateInstance, nullptr);
             }
 
             // Set up other entity property editor customization
@@ -1920,7 +1845,6 @@ namespace AzToolsFramework
             connect(componentEditor, &ComponentEditor::OnRequestRequiredComponents, this, &EntityPropertyEditor::OnRequestRequiredComponents);
             connect(componentEditor, &ComponentEditor::OnRequestRemoveComponents, this, [this](AZStd::span<AZ::Component* const> components) {DeleteComponents(components); });
             connect(componentEditor, &ComponentEditor::OnRequestDisableComponents, this, [this](AZStd::span<AZ::Component* const> components) {DisableComponents(components); });
-            componentEditor->GetPropertyEditor()->SetValueComparisonFunction([this](const InstanceDataNode* source, const InstanceDataNode* target) { return InstanceNodeValueHasNoPushableChange(source, target); });
             componentEditor->GetPropertyEditor()->SetReadOnlyQueryFunction([this](const InstanceDataNode* node) { return QueryInstanceDataNodeReadOnlyStatus(node); });
             componentEditor->GetPropertyEditor()->SetHiddenQueryFunction([this](const InstanceDataNode* node) { return QueryInstanceDataNodeHiddenStatus(node); });
             componentEditor->GetPropertyEditor()->SetIndicatorQueryFunction([this](const InstanceDataNode* node) { return GetAppropriateIndicator(node); });
@@ -2424,22 +2348,10 @@ namespace AzToolsFramework
             fieldNode = fieldNode->GetParent();
             AZ_Assert(fieldNode && fieldNode->GetClassMetadata() && fieldNode->GetClassMetadata()->m_container, "New element should be a child of a container.");
         }
-
-        // Generate slice data push/pull options.
-        AZ::Component* componentInstance = m_serializeContext->Cast<AZ::Component*>(
-            componentNode->FirstInstance(), componentClassData->m_typeId);
+        
+        AZ::Component* componentInstance =
+            m_serializeContext->Cast<AZ::Component*>(componentNode->FirstInstance(), componentClassData->m_typeId);
         AZ_Assert(componentInstance, "Failed to cast component instance.");
-
-        // With the entity the property ultimately belongs to, we can look up slice ancestry for push/pull options.
-        AZ::Entity* entity = componentInstance->GetEntity();
-
-        AzFramework::EntityContextId contextId = AzFramework::EntityContextId::CreateNull();
-        AzFramework::EntityIdContextQueryBus::EventResult(contextId, entity->GetId(), &AzFramework::EntityIdContextQueryBus::Events::GetOwningContextId);
-        if (contextId.IsNull())
-        {
-            AZ_Error("PropertyEditor", false, "Entity \"%s\" does not belong to any context.", entity->GetName().c_str());
-            return;
-        }
 
         m_reorderRowWidget = nullptr;
         // Add move up/down actions if appropriate
@@ -2505,135 +2417,6 @@ namespace AzToolsFramework
 
 
         return false;
-    }
-
-    void EntityPropertyEditor::ContextMenuActionPullFieldData(AZ::Component* parentComponent, InstanceDataNode* fieldNode)
-    {
-        AZ_Assert(fieldNode && fieldNode->GetComparisonNode(), "Invalid node for slice data pull.");
-        if (!fieldNode->GetComparisonNode())
-        {
-            return;
-        }
-
-        BeforePropertyModified(fieldNode);
-
-        // Clear any slice data flags for this field
-        if (GetEntityDataPatchAddress(fieldNode, m_dataPatchAddressBuffer))
-        {
-            auto clearDataFlagsCommand = aznew ClearSliceDataFlagsBelowAddressCommand(parentComponent->GetEntityId(), m_dataPatchAddressBuffer, "Clear data flags");
-            clearDataFlagsCommand->SetParent(m_currentUndoOperation);
-        }
-
-        AZStd::unordered_set<InstanceDataNode*> targetContainerNodesWithNewElements;
-        InstanceDataHierarchy::CopyInstanceData(fieldNode->GetComparisonNode(), fieldNode, m_serializeContext,
-            // Target container child node being removed callback
-            nullptr,
-
-            // Source container child node being created callback
-            [&targetContainerNodesWithNewElements](const InstanceDataNode* sourceNode, InstanceDataNode* targetNodeParent)
-            {
-                (void)sourceNode;
-
-                targetContainerNodesWithNewElements.insert(targetNodeParent);
-            }
-        );
-
-        // Invoke Add notifiers
-        for (InstanceDataNode* targetContainerNode : targetContainerNodesWithNewElements)
-        {
-            AZ_Assert(targetContainerNode->GetClassMetadata()->m_container, "Target container node isn't a container!");
-            for (const AZ::Edit::AttributePair& attribute : targetContainerNode->GetElementEditMetadata()->m_attributes)
-            {
-                if (attribute.first == AZ::Edit::Attributes::AddNotify)
-                {
-                    AZ::Edit::AttributeFunction<void()>* func = azdynamic_cast<AZ::Edit::AttributeFunction<void()>*>(attribute.second);
-                    if (func)
-                    {
-                        InstanceDataNode* parentNode = targetContainerNode->GetParent();
-                        if (parentNode)
-                        {
-                            for (size_t idx = 0; idx < parentNode->GetNumInstances(); ++idx)
-                            {
-                                func->Invoke(parentNode->GetInstance(idx));
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Make sure change notifiers are invoked for the change across any changed nodes in sub-hierarchy
-        // under the affected node.
-        AZ_Assert(parentComponent, "Parent component is invalid.");
-        auto componentEditorIterator = m_componentToEditorMap.find(parentComponent);
-        AZ_Assert(componentEditorIterator != m_componentToEditorMap.end(), "Unable to find a component editor for the given component");
-        if (componentEditorIterator != m_componentToEditorMap.end())
-        {
-            AZStd::vector<PropertyRowWidget*> widgetStack;
-            AZStd::vector<PropertyRowWidget*> widgetsToNotify;
-            widgetStack.reserve(64);
-            widgetsToNotify.reserve(64);
-
-            auto componentEditor = componentEditorIterator->second;
-            PropertyRowWidget* widget = componentEditor->GetPropertyEditor()->GetWidgetFromNode(fieldNode);
-            if (widget)
-            {
-                widgetStack.push_back(widget);
-
-                while (!widgetStack.empty())
-                {
-                    PropertyRowWidget* top = widgetStack.back();
-                    widgetStack.pop_back();
-
-                    InstanceDataNode* topWidgetNode = top->GetNode();
-                    if (topWidgetNode && topWidgetNode->HasChangesVersusComparison(false))
-                    {
-                        widgetsToNotify.push_back(top);
-                    }
-
-                    // Only add children widgets for notification if the newly updated parent has children
-                    // otherwise the instance data nodes will have disappeared out from under the widgets
-                    // They will be cleaned up when we refresh the entire tree after the notifications go out
-                    if (!topWidgetNode || topWidgetNode->GetChildren().size() > 0)
-                    {
-                        for (auto* childWidget : top->GetChildrenRows())
-                        {
-                            widgetStack.push_back(childWidget);
-                        }
-                    }
-                }
-
-                // Issue property notifications, starting with leaf widgets first.
-                for (auto iter = widgetsToNotify.rbegin(); iter != widgetsToNotify.rend(); ++iter)
-                {
-                    (*iter)->DoPropertyNotify();
-                }
-            }
-        }
-
-        AfterPropertyModified(fieldNode);
-        SetPropertyEditingComplete(fieldNode);
-
-        // We must refresh the entire tree, because restoring previous entity state may've had major structural effects.
-        InvalidatePropertyDisplay(Refresh_EntireTree);
-    }
-
-    void EntityPropertyEditor::ContextMenuActionSetDataFlag(InstanceDataNode* node, AZ::DataPatch::Flag flag, bool additive)
-    {
-        // Attempt to get Entity and DataPatch address from this node.
-        AZ::EntityId entityId;
-        if (GetEntityDataPatchAddress(node, m_dataPatchAddressBuffer, &entityId))
-        {
-            BeforePropertyModified(node);
-
-            auto command = aznew SliceDataFlagsCommand(entityId, m_dataPatchAddressBuffer, flag, additive, "Set slice data flag");
-            command->SetParent(m_currentUndoOperation);
-
-            AfterPropertyModified(node);
-            SetPropertyEditingComplete(node);
-
-            InvalidatePropertyDisplay(Refresh_AttributesAndValues);
-        }
     }
 
     void EntityPropertyEditor::BeginMoveRowWidgetFade()
@@ -2804,48 +2587,6 @@ namespace AzToolsFramework
         }
 
         return false;
-    }
-
-    bool EntityPropertyEditor::InstanceNodeValueHasNoPushableChange(const InstanceDataNode* sourceNode, const InstanceDataNode* targetNode)
-    {
-        if (targetNode == nullptr)
-        {
-            return sourceNode == nullptr;
-        }
-        // If target node is affected by ForceOverride flag, consider it different from source.
-        AZ::EntityId entityId;
-        if (GetEntityDataPatchAddress(targetNode, m_dataPatchAddressBuffer, &entityId))
-        {
-            if (AZ::SliceComponent* rootSlice = GetEntityRootSlice(entityId))
-            {
-                AZ::DataPatch::Flags flags = rootSlice->GetEntityDataFlagsAtAddress(entityId, m_dataPatchAddressBuffer);
-                if (flags & AZ::DataPatch::Flag::ForceOverrideSet)
-                {
-                    return false;
-                }
-            }
-        }
-
-        // Verify that this is a field that can be pushed into the slice.
-        if (InstanceDataNode* componentNode = targetNode->GetRoot())
-        {
-            AZ::Component* component = m_serializeContext->Cast<AZ::Component*>(
-                componentNode->FirstInstance(), componentNode->GetClassMetadata()->m_typeId);
-            if (component)
-            {
-                AZ::Entity* entity = component->GetEntity();
-                bool isRootEntity = entity ? SliceUtilities::IsRootEntity(*entity) : false;
-                if (!SliceUtilities::IsNodePushable(*targetNode, isRootEntity))
-                {
-                    // If this field is one that can't be pushed into the slice, then
-                    // return true to signify that here is no pushable change on this field.
-                    return true;
-                }
-            }
-        }
-
-        // Otherwise, do the default value comparison.
-        return InstanceDataHierarchy::DefaultValueComparisonFunction(sourceNode, targetNode);
     }
 
     bool EntityPropertyEditor::QueryInstanceDataNodeReadOnlyStatus(const InstanceDataNode* node)
@@ -3767,37 +3508,6 @@ namespace AzToolsFramework
         ComponentEditorVector componentEditors = m_componentEditors;
         AZStd::reverse(componentEditors.begin(), componentEditors.end());
         return IsMoveAllowed(componentEditors);
-    }
-
-    void EntityPropertyEditor::ResetToSlice()
-    {
-        // Reset selected components to slice values
-        const auto& componentsToEdit = GetSelectedComponents();
-
-        if (!componentsToEdit.empty())
-        {
-            ScopedUndoBatch undoBatch("Resetting components to slice defaults.");
-
-            for (auto component : componentsToEdit)
-            {
-                AZ_Assert(component, "Component is invalid.");
-                auto componentEditorIterator = m_componentToEditorMap.find(component);
-                AZ_Assert(componentEditorIterator != m_componentToEditorMap.end(), "Unable to find a component editor for the given component");
-                if (componentEditorIterator != m_componentToEditorMap.end())
-                {
-                    auto componentEditor = componentEditorIterator->second;
-                    componentEditor->GetPropertyEditor()->EnumerateInstances(
-                        [this, &component](InstanceDataHierarchy& hierarchy)
-                        {
-                            InstanceDataNode* root = hierarchy.GetRootNode();
-                            ContextMenuActionPullFieldData(component, root);
-                        }
-                        );
-                }
-            }
-
-            QueuePropertyRefresh();
-        }
     }
 
     bool EntityPropertyEditor::DoesOwnFocus() const
@@ -5659,13 +5369,6 @@ namespace AzToolsFramework
 
     AZ::Entity* EntityPropertyEditor::GetSelectedEntityById(AZ::EntityId& entityId) const
     {
-        if (m_isLevelEntityEditor)
-        {
-            AZ::Entity* entity = nullptr;
-            SliceMetadataEntityContextRequestBus::BroadcastResult(entity, &SliceMetadataEntityContextRequestBus::Events::GetMetadataEntity, entityId);
-            return entity;
-        }
-
         return GetEntityById(entityId);
     }
 

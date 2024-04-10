@@ -152,7 +152,6 @@ public:
 
     bool event(QEvent* event) override;
 
-    void OnGotoSliceRoot();
 Q_SIGNALS:
     void ToggleRefCoordSys();
     void UpdateRefCoordSys();
