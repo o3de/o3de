@@ -451,7 +451,7 @@
   },
   "install_mono_release": {
     "TAGS": [],
-    "PIPELINE_ENV":{
+    "PIPELINE_ENV": {
       "NODE_LABEL":"windows-packaging"
     },
     "COMMAND": "build_windows.cmd",
