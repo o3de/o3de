@@ -35,7 +35,7 @@ namespace AZ
         }
 
         FullscreenTrianglePass::FullscreenTrianglePass(const PassDescriptor& descriptor)
-            : RasterPass(descriptor)
+            : RenderPass(descriptor)
             , m_passDescriptor(descriptor)
         {
             LoadShader();
@@ -78,7 +78,6 @@ namespace AZ
                     GetPathName().GetCStr());
                 return;
             }
-            SetDrawListTag(passData->m_drawListTag);
 
             AZ::Data::AssetId shaderAssetId = passData->m_shaderAsset.m_assetId;
             if (!shaderAssetId.IsValid())
@@ -243,7 +242,7 @@ namespace AZ
 
         void FullscreenTrianglePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
-            RasterPass::SetupFrameGraphDependencies(frameGraph);
+            RenderPass::SetupFrameGraphDependencies(frameGraph);
 
             // Update scissor/viewport regions based on the mip level of the render target that is being written into
             uint16_t viewMinMip = RHI::ImageSubresourceRange::HighestSliceIndex;
