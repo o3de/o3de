@@ -451,6 +451,9 @@
   },
   "install_mono_release": {
     "TAGS": [],
+    "PIPELINE_ENV": {
+      "NODE_LABEL":"windows-packaging"
+    },
     "COMMAND": "build_windows.cmd",
     "PARAMETERS": {
       "CONFIGURATION": "release",
@@ -473,7 +476,7 @@
   },
   "installer": {
     "TAGS": [],
-    "PIPELINE_ENV":{
+    "PIPELINE_ENV": {
       "NODE_LABEL":"windows-packaging"
     },
     "COMMAND": "build_installer_windows.cmd",
@@ -489,7 +492,7 @@
   },
   "installer_test": {
     "TAGS": [],
-    "PIPELINE_ENV":{
+    "PIPELINE_ENV": {
       "NODE_LABEL":"windows-installer-test"
     },
     "COMMAND": "pytest_windows.cmd",

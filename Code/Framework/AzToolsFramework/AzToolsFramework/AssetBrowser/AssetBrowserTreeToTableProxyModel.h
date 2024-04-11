@@ -39,10 +39,11 @@ namespace AzToolsFramework
             TableIterator TableBegin();
             TableIterator TableEnd();
             bool Empty() const;
+            void Reserve(TableMap::size_type size);
             bool TreeContains(TableType map) const;
             TreeType TreeToTable(TableType map) const;
             bool RemoveFromTree(TableType map);
-            TreeIterator Insert(TableType tmap, TreeType row);
+            void Insert(TableType tmap, TreeType row);
             void Clear();
 
         protected:
