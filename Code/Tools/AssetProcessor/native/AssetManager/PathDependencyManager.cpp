@@ -514,6 +514,7 @@ namespace AssetProcessor
 #if defined(CARBONATED)
             bool isRecursiveDependency = dependencyPathSearch.ends_with(RecursiveDependenciesPattern);
             dependencyPathSearch = isRecursiveDependency ? dependencyPathSearch.substr(0, dependencyPathSearch.length() - 1) : dependencyPathSearch;
+            AZStd::string pathWildcardSearchPathWithPlatform(platform + AZ_CORRECT_DATABASE_SEPARATOR_STRING + dependencyPathSearch);
 #endif
             // The database uses % for wildcards, both path based searching uses *, so keep a copy of the path with the * wildcard for later
             // use.
@@ -524,6 +525,9 @@ namespace AssetProcessor
             {
                 SanitizeForDatabase(dependencyPathSearch);
                 SanitizeForDatabase(pathWildcardSearchPath);
+#if defined(CARBONATED)
+                SanitizeForDatabase(pathWildcardSearchPathWithPlatform);
+#endif
                 AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer productInfoContainer;
                 QString productNameWithPlatform = QString("%1%2%3").arg(platform.c_str(), AZ_CORRECT_DATABASE_SEPARATOR_STRING, dependencyPathSearch.c_str());
 
@@ -574,7 +578,12 @@ namespace AssetProcessor
                             {
                                 AZ::IO::PathView searchPath(productDatabaseEntry.m_productName);
 
+#if defined(CARBONATED)
+                                if (!searchPath.Match(pathWildcardSearchPath) &&
+                                    !AZStd::wildcard_match(pathWildcardSearchPathWithPlatform.c_str(), productDatabaseEntry.m_productName.c_str()))
+#else
                                 if (!searchPath.Match(pathWildcardSearchPath))
+#endif
                                 {
                                     continue;
                                 }
