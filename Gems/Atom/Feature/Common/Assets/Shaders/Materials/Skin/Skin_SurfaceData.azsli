@@ -49,9 +49,11 @@ class SurfaceData_Skin
     real dualSpecF0;
 
     //! Subsurface scattering parameters
+#if OUTPUT_SUBSURFACE
     real subsurfaceScatteringFactor;
     real subsurfaceScatteringQuality;
     real3 scatterDistance;
+#endif
 
     //! Calculates roughnessA and roughnessA2 after roughness has been set
     void CalculateRoughnessA();

@@ -53,8 +53,8 @@
         // ------- BasePbrSurfaceData -------
     
         precise float3 position;    //!< Position in world-space
-        float3 normal;              //!< Normal in world-space
-        float3 vertexNormal;        //!< Vertex normal in world-space
+        real3 normal;              //!< Normal in world-space
+        real3 vertexNormal;        //!< Vertex normal in world-space
         real3 baseColor;           //!< Surface base color
         real metallic;             //!< Surface metallic property
         real roughnessLinear;      //!< Perceptually linear roughness value authored by artists. Must be remapped to roughnessA before use
@@ -81,10 +81,10 @@
         //! Sets albedo, base color, specularF0, and metallic properties using metallic workflow
         void SetAlbedoAndSpecularF0(real3 baseColor, real specularF0Factor, real metallic);
 
-        float3 GetDiffuseNormal() { return normal; }
-        float3 GetSpecularNormal() { return normal; }
-        float3 GetDefaultNormal() { return normal; }
-        float3 GetVertexNormal() { return vertexNormal; }
+        real3 GetDiffuseNormal() { return normal; }
+        real3 GetSpecularNormal() { return normal; }
+        real3 GetDefaultNormal() { return normal; }
+        real3 GetVertexNormal() { return vertexNormal; }
         real3 GetSpecularF0() { return specularF0; }
     };
 

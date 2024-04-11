@@ -66,7 +66,7 @@ real2 ApplyNormalWrinkleMap(bool shouldApply, real2 baseNormalSample, Texture2D 
 
 Surface EvaluateSurface_Skin(
     float3 positionWS,
-    float3 vertexNormal,
+    real3 vertexNormal,
     float3 tangents[UvSetCount],
     float3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],
@@ -109,7 +109,7 @@ Surface EvaluateSurface_Skin(
 
     // ------- Normal -------
 
-    surface.vertexNormal = real3(vertexNormal);
+    surface.vertexNormal = vertexNormal;
     real detailLayerNormalFactor = real(MaterialSrg::m_detail_normal_factor) * detailLayerBlendFactor;
 
     // Since the wrinkle normal maps should all be in the same tangent space as the main normal map, we should be able to blend the raw normal map
@@ -134,7 +134,7 @@ Surface EvaluateSurface_Skin(
 
     if(o_detail_normal_useTexture)
     {
-        float3 normalTS = GetTangentSpaceNormal(normalMapSample, uvMatrix, float(MaterialSrg::m_normalFactor));
+        real3 normalTS = GetTangentSpaceNormal(normalMapSample, uvMatrix, real(MaterialSrg::m_normalFactor));
     
         bool applyOverlay = true;
         surface.normal = ApplyNormalMapOverlayWS(applyOverlay, vertexNormal, normalTS, tangents[MaterialSrg::m_normalMapUvIndex], bitangents[MaterialSrg::m_normalMapUvIndex], 
@@ -211,6 +211,7 @@ Surface EvaluateSurface_Skin(
 
     // ------- Subsurface -------
 
+#if OUTPUT_SUBSURFACE
     float2 subsurfaceUv = uvs[MaterialSrg::m_subsurfaceScatteringInfluenceMapUvIndex];
     surface.subsurfaceScatteringFactor = GetSubsurfaceInput(MaterialSrg::m_subsurfaceScatteringInfluenceMap, MaterialSrg::m_sampler, subsurfaceUv, real(MaterialSrg::m_subsurfaceScatteringFactor));
     surface.subsurfaceScatteringQuality = real(MaterialSrg::m_subsurfaceScatteringQuality);
@@ -220,6 +221,7 @@ Surface EvaluateSurface_Skin(
     surface.subsurfaceScatteringFactor = real(0);
     surface.subsurfaceScatteringQuality = real(0);
     surface.scatterDistance = real3(0, 0, 0);
+#endif
 
     // ------- Occlusion -------
     

@@ -48,7 +48,7 @@ real GetIrisRadiusMask(real vertexDistanceToCenterOfPupil)
 
 Surface EvaluateSurface_Eye(
     float3 positionWS,
-    float3 vertexNormal,
+    real3 vertexNormal,
     float3 tangents[UvSetCount],
     float3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],
@@ -202,10 +202,12 @@ Surface EvaluateSurface_Eye(
 
     // ------- Subsurface -------
 
+#if OUTPUT_SUBSURFACE
     real2 subsurfaceUv = uvs[MaterialSrg::m_subsurfaceScatteringInfluenceMapUvIndex];
     surface.subsurfaceScatteringFactor = GetSubsurfaceInput(MaterialSrg::m_subsurfaceScatteringInfluenceMap, MaterialSrg::m_sampler, subsurfaceUv, real(MaterialSrg::m_subsurfaceScatteringFactor));
     surface.subsurfaceScatteringQuality = real(MaterialSrg::m_subsurfaceScatteringQuality);
     surface.scatterDistance = real3(MaterialSrg::m_scatterDistance);
+#endif
 
     // ------- Occlusion -------
     

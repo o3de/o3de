@@ -21,7 +21,7 @@
 
 Surface EvaluateSurface_StandardPBR(
     float3 positionWS,
-    float3 vertexNormal,
+    real3 vertexNormal,
     float3 tangents[UvSetCount],
     float3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],

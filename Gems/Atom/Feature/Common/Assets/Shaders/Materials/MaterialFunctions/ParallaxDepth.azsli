@@ -15,7 +15,7 @@
 
  void SetPixelDepth(
      inout float3 positionWS,
-     float3 normal,
+     real3 normal,
      float3 tangents[UvSetCount],
      float3 bitangents[UvSetCount],
      inout float2 uvs[UvSetCount],
@@ -42,7 +42,7 @@
 
  void SetPixelDepth(
      inout float3 positionWS,
-     float3 normal,
+     real3 normal,
      float3 tangents[UvSetCount],
      float3 bitangents[UvSetCount],
      inout float2 uvs[UvSetCount],
