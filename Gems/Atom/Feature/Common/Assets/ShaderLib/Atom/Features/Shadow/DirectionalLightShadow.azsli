@@ -14,6 +14,10 @@
 
 #if ENABLE_SHADOWS
 
+#ifndef ENABLE_FULLSCREEN_SHADOW
+#define ENABLE_FULLSCREEN_SHADOW              1
+#endif
+
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
 #include <Atom/RPI/Math.azsli>
@@ -51,11 +55,15 @@ class DirectionalLightShadow
 
 bool DirectionalLightShadow::UseFullscreenShadows()
 {
-#if FORCE_OPAQUE
+#if ENABLE_FULLSCREEN_SHADOW
+    #if FORCE_OPAQUE
     return true;
-#else
+    #else
     bool useFullscreenShadows = o_opacity_mode == OpacityMode::Opaque || o_opacity_mode == OpacityMode::Cutout;
     return useFullscreenShadows;
+    #endif    
+#else
+    return false;
 #endif
 }
 
