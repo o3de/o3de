@@ -47,7 +47,6 @@ set(FILES
     EntityInspectorTests.cpp
     EntityOwnershipService/EntityOwnershipServiceTestFixture.cpp
     EntityOwnershipService/EntityOwnershipServiceTestFixture.h
-    EntityOwnershipService/SliceEditorEntityOwnershipTests.cpp
     EntityOwnershipService/SliceEntityOwnershipTests.cpp
     EntityTestbed.h
     FileFunc.cpp
@@ -174,13 +173,6 @@ set(FILES
     Script/LuaEditorSystemComponentTests.cpp
     Script/ScriptComponentTests.cpp
     Script/ScriptEntityTests.cpp
-    Slice.cpp
-    Slices.cpp
-    SliceStabilityTests/SliceStabilityCreateTests.cpp
-    SliceStabilityTests/SliceStabilityPushTests.cpp
-    SliceStabilityTests/SliceStabilityReParentTests.cpp
-    SliceStabilityTests/SliceStabilityTestFramework.cpp
-    SliceStabilityTests/SliceStabilityTestFramework.h
     SliceUpgradeTests.cpp
     SliceUpgradeTestsData.h
     SpinBoxTests.cpp

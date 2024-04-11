@@ -114,15 +114,6 @@ namespace UnitTest
         return sliceInstantiationTicket;
     }
 
-    void EntityOwnershipServiceTestFixture::AddEditorSlice(
-        AZ::Data::Asset<AZ::SliceAsset>& sliceAsset, const AZ::Transform& worldTransform, const EntityList& entityList)
-    {
-        AddSliceComponentToAsset(sliceAsset, entityList);
-        AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Broadcast(
-            &AzToolsFramework::SliceEditorEntityOwnershipServiceRequests::InstantiateEditorSlice, sliceAsset, worldTransform);
-        AZ::TickBus::ExecuteQueuedEvents();
-    }
-
     void EntityOwnershipServiceTestFixture::AddSliceComponentToAsset(AZ::Data::Asset<AZ::SliceAsset>& sliceAsset,
         const EntityList& entityList)
     {
