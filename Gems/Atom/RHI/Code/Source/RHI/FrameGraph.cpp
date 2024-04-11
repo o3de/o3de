@@ -176,7 +176,7 @@ namespace AZ::RHI
     void FrameGraph::SetHardwareQueueClass(HardwareQueueClass hardwareQueueClass)
     {
         m_currentScope->m_hardwareQueueClass = hardwareQueueClass;
-    }            
+    }
 
     void FrameGraph::UseAttachmentInternal(
         ImageFrameAttachment& frameAttachment,
@@ -193,7 +193,7 @@ namespace AZ::RHI
             if(imageScopeInnerAttachment->GetFrameAttachment().GetId() == frameAttachment.GetId())
             {
                 //Check if it is the same sub resource as for an imagescopeattachments we may want to read and write into different mips
-                //and in that case we would want multiple scopeattachments. 
+                //and in that case we would want multiple scopeattachments.
                 if(imageScopeInnerAttachment->GetDescriptor().m_imageViewDescriptor.IsSameSubResource(descriptor.m_imageViewDescriptor))
                 {
                     AZ_Assert(imageScopeInnerAttachment->GetDescriptor().m_loadStoreAction == descriptor.m_loadStoreAction, "LoadStore actions for multiple usages need to match");
@@ -221,7 +221,7 @@ namespace AZ::RHI
             m_attachmentDatabase.EmplaceScopeAttachment<ImageScopeAttachment>(
                 *m_currentScope, frameAttachment, usage, access, descriptor);
 
-            
+
         m_currentScope->m_attachments.push_back(scopeAttachment);
         m_currentScope->m_imageAttachments.push_back(scopeAttachment);
         if (frameAttachment.GetLifetimeType() == AttachmentLifetimeType::Transient)
@@ -531,6 +531,7 @@ namespace AZ::RHI
         //////////////////////////////////////////////////////////////////
         // GALIB. TODO. Make sure this is the right thing to do!
         // This code makes sure that Subpasses get grouped consecutively.
+        // BUT adds an invalidation error for Compute Shaders like LightCullingPass.
         AZStd::sort(
             m_scopes.begin(), m_scopes.end(),
             [](const AZ::RHI::Scope* a, const AZ::RHI::Scope* b)

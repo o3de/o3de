@@ -194,9 +194,9 @@ namespace AZ
                 physicalDeviceDescriptorIndexingFeatures.descriptorBindingStorageBufferUpdateAfterBind;
 
             auto bufferDeviceAddressFeatures = physicalDevice.GetPhysicalDeviceBufferDeviceAddressFeatures();
-            auto depthClipEnabled = physicalDevice.GetPhysicalDeviceDepthClipEnableFeatures();            
-            auto rayQueryFeatures = physicalDevice.GetRayQueryFeatures();            
-            auto shaderImageAtomicInt64 = physicalDevice.GetShaderImageAtomicInt64Features();            
+            auto depthClipEnabled = physicalDevice.GetPhysicalDeviceDepthClipEnableFeatures();
+            auto rayQueryFeatures = physicalDevice.GetRayQueryFeatures();
+            auto shaderImageAtomicInt64 = physicalDevice.GetShaderImageAtomicInt64Features();
 
             VkPhysicalDeviceRobustness2FeaturesEXT robustness2 = {};
             robustness2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
@@ -242,6 +242,7 @@ namespace AZ
             VkPhysicalDeviceShaderAtomicInt64Features shaderAtomicInt64 = {};
             VkPhysicalDeviceAccelerationStructureFeaturesKHR accelerationStructureFeatures = {};
             VkPhysicalDeviceRayTracingPipelineFeaturesKHR rayTracingPipelineFeatures = {};
+            auto timelineSemaphoreFeature = physicalDevice.GetPhysicalDeviceTimelineSemaphoreFeatures();
 
             VkDeviceCreateInfo deviceInfo = {};
             deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -298,7 +299,7 @@ namespace AZ
                 shaderAtomicInt64.shaderBufferInt64Atomics = physicalDevice.GetShaderAtomicInt64Features().shaderBufferInt64Atomics;
                 shaderAtomicInt64.shaderSharedInt64Atomics = physicalDevice.GetShaderAtomicInt64Features().shaderSharedInt64Atomics;
 
-                AppendVkStruct(chainInit, { &float16Int8, &separateDepthStencil, &shaderAtomicInt64 });
+                AppendVkStruct(chainInit, { &float16Int8, &separateDepthStencil, &shaderAtomicInt64, &timelineSemaphoreFeature });
                 deviceInfo.pNext = &chainInit;
             }
 
@@ -435,7 +436,7 @@ namespace AZ
                 bufferPoolDescriptor.m_heapMemoryLevel = RHI::HeapMemoryLevel::Host;
                 result = m_constantBufferPool->Init(*this, bufferPoolDescriptor);
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            }           
+            }
 
             SetName(GetName());
             return result;
@@ -1186,7 +1187,7 @@ namespace AZ
             }
             m_features.m_swapchainScalingFlags = AZ_TRAIT_ATOM_VULKAN_SWAPCHAIN_SCALING_FLAGS;
 
-            m_features.m_signalFenceFromCPU = physicalDevice.GetPhysicalDeviceTimelineSemaphoreFeatures().timelineSemaphore;
+            m_features.m_signalFenceFromCPU = false; // GALIB doesn't work on Quest physicalDevice.GetPhysicalDeviceTimelineSemaphoreFeatures().timelineSemaphore;
 
             const auto& deviceLimits = physicalDevice.GetDeviceLimits();
             m_limits.m_maxImageDimension1D = deviceLimits.maxImageDimension1D;
