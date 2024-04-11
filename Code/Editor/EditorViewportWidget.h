@@ -13,7 +13,6 @@
 
 #include "EditorModularViewportCameraComposer.h"
 #include "EditorViewportSettings.h"
-#include "Objects/DisplayContext.h"
 #include "Undo/Undo.h"
 #include "Util/PredefinedAspectRatios.h"
 #include "Viewport.h"
@@ -195,7 +194,6 @@ private:
     bool HitTest(const QPoint& point, HitContext& hitInfo) override;
     bool IsBoundsVisible(const AABB& box) const override;
     void CenterOnAABB(const AABB& aabb) override;
-    void CenterOnSliceInstance() override;
     void OnTitleMenu(QMenu* menu) override;
     void SetViewTM(const Matrix34& tm) override;
     const Matrix34& GetViewTM() const override;
@@ -249,7 +247,6 @@ private:
     // Private helpers...
     void SetViewTM(const Matrix34& tm, bool bMoveOnly);
     void SetDefaultCameraNearFar();
-    void RenderSnapMarker();
     void RenderAll();
 
     bool RayRenderMeshIntersection(IRenderMesh* pRenderMesh, const Vec3& vInPos, const Vec3& vInDir, Vec3& vOutPos, Vec3& vOutNormal) const;
@@ -307,10 +304,6 @@ private:
     QPoint ViewportToWidget(const QPoint& point) const;
     QSize WidgetToViewport(const QSize& size) const;
 
-    const DisplayContext& GetDisplayContext() const
-    {
-        return m_displayContext;
-    }
 
     CBaseObject* GetCameraObject() const;
 
@@ -360,9 +353,6 @@ private:
 
     // The name to use for the default editor camera
     const QString m_defaultViewName;
-
-    // Note that any attempts to draw anything with this object will crash. Exists here for legacy "reasons"
-    DisplayContext m_displayContext;
 
     // Reentrancy guard for on paint events
     bool m_isOnPaint = false;

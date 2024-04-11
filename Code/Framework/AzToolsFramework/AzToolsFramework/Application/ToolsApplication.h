@@ -15,7 +15,6 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/EditorEntityAPI.h>
 #include <AzToolsFramework/Application/EditorEntityManager.h>
-#include <AzToolsFramework/Commands/PreemptiveUndoCache.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 
 #pragma once
@@ -112,7 +111,6 @@ namespace AzToolsFramework
 
         UndoSystem::UndoStack* GetUndoStack() override { return m_undoStack; }
         UndoSystem::URSequencePoint* GetCurrentUndoBatch() override { return m_currentBatchUndo; }
-        PreemptiveUndoCache* GetUndoCache() override { return &m_undoCache; }
 
         EntityIdSet GatherEntitiesAndAllDescendents(const EntityIdList& inputEntities) override;
 
@@ -125,18 +123,6 @@ namespace AzToolsFramework
         void DeleteEntities(const EntityIdList& entities) override;
         void DeleteEntityAndAllDescendants(AZ::EntityId entityId) override;
         void DeleteEntitiesAndAllDescendants(const EntityIdList& entities) override;
-
-        bool DetachEntities(const AZStd::vector<AZ::EntityId>& entitiesToDetach, AZStd::vector<AZStd::pair<AZ::EntityId, AZ::SliceComponent::EntityRestoreInfo>>& restoreInfos) override;
-
-        /**
-        * Detaches the supplied subslices from their owning slice instance
-        * @param subsliceRootList A list of SliceInstanceAddresses paired with a mapping from the sub slices asset entityId's to the owing slice instance's live entityIds
-                                  See SliceComponent::GetMappingBetweenSubsliceAndSourceInstanceEntityIds for a helper to acquire this mapping
-        * @param restoreInfos A list of EntityRestoreInfo's to be filled with information on how to restore the entities in the subslices back to their original state before this operation
-        * @return Returns true on operation success, false otherwise
-        */
-        bool DetachSubsliceInstances(const AZ::SliceComponent::SliceInstanceEntityIdRemapList& subsliceRootList,
-            AZStd::vector<AZStd::pair<AZ::EntityId, AZ::SliceComponent::EntityRestoreInfo>>& restoreInfos) override;
 
         bool FindCommonRoot(const EntityIdSet& entitiesToBeChecked, AZ::EntityId& commonRootEntityId, EntityIdList* topLevelEntities = nullptr) override;
         bool FindCommonRootInactive(const EntityList& entitiesToBeChecked, AZ::EntityId& commonRootEntityId, EntityList* topLevelEntities = nullptr) override;
@@ -189,7 +175,6 @@ namespace AzToolsFramework
         UndoSystem::UndoStack*              m_undoStack;
         UndoSystem::URSequencePoint*        m_currentBatchUndo;
         AZStd::unordered_set<AZ::EntityId>  m_dirtyEntities;
-        PreemptiveUndoCache                 m_undoCache;
         bool                                m_isDuringUndoRedo;
         bool                                m_isInIsolationMode;
         EntityIdSet                         m_isolatedEntityIdSet;

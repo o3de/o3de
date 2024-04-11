@@ -30,24 +30,12 @@ namespace AzToolsFramework
             m_instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
             AZ_Assert(m_instanceEntityMapperInterface, "PrefabUndoCache - Could not retrieve instance of InstanceEntityMapperInterface");
 
-            // By default, ToolsApplication will register the regular PreemptiveCache as the handler of this interface.
-            // Since the SettingsRegistry isn't active when ToolsApplication is constructed, and Start and StartCommon
-            // aren't called during tests, we have to resort to unregistering the Preemptive cache here, and registering
-            // the PrefabCache in its place. Both caches check if they're registered before unregistering on destroy.
-            auto preemptiveCache = AZ::Interface<UndoSystem::UndoCacheInterface>::Get();
-            if (preemptiveCache)
-            {
-                AZ::Interface<UndoSystem::UndoCacheInterface>::Unregister(preemptiveCache);
-            }
             AZ::Interface<UndoSystem::UndoCacheInterface>::Register(this);
         }
 
         void PrefabUndoCache::Destroy()
         {
-            if (AZ::Interface<UndoSystem::UndoCacheInterface>::Get() == this)
-            {
-                AZ::Interface<UndoSystem::UndoCacheInterface>::Unregister(this);
-            }
+            AZ::Interface<UndoSystem::UndoCacheInterface>::Unregister(this);
         }
 
         void PrefabUndoCache::Validate(const AZ::EntityId& entityId)

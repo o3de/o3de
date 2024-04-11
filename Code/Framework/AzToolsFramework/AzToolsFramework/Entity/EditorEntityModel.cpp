@@ -119,7 +119,6 @@ namespace AzToolsFramework
         EditorTransformChangeNotificationBus::Handler::BusConnect();
         ToolsApplicationEvents::Bus::Handler::BusConnect();
         EditorEntityContextNotificationBus::Handler::BusConnect();
-        SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusConnect();
         EditorEntityModelRequestBus::Handler::BusConnect();
 
         AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
@@ -137,7 +136,6 @@ namespace AzToolsFramework
     {
         AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
         AzFramework::EntityContextEventBus::Handler::BusDisconnect();
-        SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusDisconnect();
         EditorEntityContextNotificationBus::Handler::BusDisconnect();
         ToolsApplicationEvents::Bus::Handler::BusDisconnect();
         EditorTransformChangeNotificationBus::Handler::BusDisconnect();
@@ -649,41 +647,10 @@ namespace AzToolsFramework
         }
     }
 
-    void EditorEntityModel::OnEditorEntitiesPromotedToSlicedEntities(const AzToolsFramework::EntityIdList& promotedEntities)
-    {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-        OnEditorEntitiesSliceOwnershipChanged(promotedEntities);
-    }
-
-    void EditorEntityModel::OnEditorEntitiesSliceOwnershipChanged(const AzToolsFramework::EntityIdList& entityIdList)
-    {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-        // Need to update slice info from top of hierarchy down
-        // as parent entity slice status will be querried and needs to be correct
-        AzToolsFramework::EntityIdList sortedEntityList(entityIdList);
-        AzToolsFramework::SortEntitiesByLocationInHierarchy(sortedEntityList);
-        for (const auto& entityId : sortedEntityList)
-        {
-            UpdateSliceInfoHierarchy(entityId);
-            EditorEntityInfoNotificationBus::Broadcast(&EditorEntityInfoNotificationBus::Events::OnEntityInfoUpdateSliceOwnership, entityId);
-        }
-    }
-
     void EditorEntityModel::OnPrepareForContextReset()
     {
         m_preparingForContextReset = true;
         Reset();
-    }
-
-    void EditorEntityModel::OnSliceInstantiationFailed(const AZ::Data::AssetId&, const AzFramework::SliceInstantiationTicket&)
-    {
-        QMessageBox::warning(AzToolsFramework::GetActiveWindow(),
-            QStringLiteral("Can't instantiate the selected slice"),
-            QString("The slice may contain UI elements that can't be instantiated in the main Open 3D Engine editor. "
-                "Use the UI Editor to instantiate this slice or select another one."),
-            QMessageBox::Ok);
     }
 
     void EditorEntityModel::OnEntityStreamLoadBegin()
@@ -1100,11 +1067,6 @@ namespace AzToolsFramework
 
         // The re-parented entity is dirty due to parent change
         undo.MarkEntityDirty(m_entityId);
-
-        if (AzToolsFramework::SliceUtilities::IsReparentNonTrivial(m_entityId, parentId))
-        {
-            AzToolsFramework::SliceUtilities::ReparentNonTrivialSliceInstanceHierarchy(m_entityId, parentId);
-        }
 
         // Guarding this to prevent the entity from being marked dirty when the parent doesn't change.
         AZ::TransformBus::Event(m_entityId, &AZ::TransformBus::Events::SetParent, parentId);

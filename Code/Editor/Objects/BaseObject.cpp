@@ -208,9 +208,6 @@ void CUndoBaseObject::Undo(bool bUndo)
     pObject->Serialize(ar);
 
     GetIEditor()->ResumeUndo();
-
-    using namespace AzToolsFramework;
-    ComponentEntityObjectRequestBus::Event(pObject, &ComponentEntityObjectRequestBus::Events::UpdatePreemptiveUndoCache);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -230,9 +227,6 @@ void CUndoBaseObject::Redo()
     pObject->Serialize(ar);
 
     GetIEditor()->ResumeUndo();
-
-    using namespace AzToolsFramework;
-    ComponentEntityObjectRequestBus::Event(pObject, &ComponentEntityObjectRequestBus::Events::UpdatePreemptiveUndoCache);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -285,9 +279,6 @@ void CUndoBaseObjectMinimal::Undo(bool bUndo)
 
     pObject->ChangeColor(m_undoState.color);
     pObject->SetArea(m_undoState.area);
-
-    using namespace AzToolsFramework;
-    ComponentEntityObjectRequestBus::Event(pObject, &ComponentEntityObjectRequestBus::Events::UpdatePreemptiveUndoCache);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -303,9 +294,6 @@ void CUndoBaseObjectMinimal::Redo()
 
     pObject->ChangeColor(m_redoState.color);
     pObject->SetArea(m_redoState.area);
-
-    using namespace AzToolsFramework;
-    ComponentEntityObjectRequestBus::Event(pObject, &ComponentEntityObjectRequestBus::Events::UpdatePreemptiveUndoCache);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -742,222 +730,6 @@ void CBaseObject::GetLocalBounds(AABB& box)
 //////////////////////////////////////////////////////////////////////////
 void CBaseObject::SetModified(bool)
 {
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::DrawDimensions(DisplayContext&, AABB*)
-{
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::DrawSelectionHelper(DisplayContext& dc, const Vec3& pos, const QColor& labelColor, [[maybe_unused]] float alpha)
-{
-    DrawLabel(dc, pos, labelColor);
-
-    dc.SetColor(GetColor());
-    if (IsHighlighted() || IsSelected() || IsInSelectionBox())
-    {
-        dc.SetColor(dc.GetSelectedColor());
-    }
-
-    uint32 nPrevState = dc.GetState();
-    dc.DepthTestOff();
-    float r = dc.view->GetScreenScaleFactor(pos) * 0.006f;
-    dc.DrawWireBox(pos - Vec3(r, r, r), pos + Vec3(r, r, r));
-    dc.SetState(nPrevState);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::DrawLabel(DisplayContext& dc, const Vec3& pos, const QColor& lC, float alpha, float size)
-{
-    QColor labelColor = lC;
-
-    AABB box;
-    GetBoundBox(box);
-
-    //p.z = box.max.z + 0.2f;
-    if ((dc.flags & DISPLAY_2D) && labelColor == QColor(255, 255, 255))
-    {
-        labelColor = QColor(0, 0, 0);
-    }
-
-    if (dc.flags & DISPLAY_SELECTION_HELPERS)
-    {
-        Vec3 c(static_cast<f32>(labelColor.redF()), static_cast<f32>(labelColor.greenF()), static_cast<f32>(labelColor.redF()));
-        if (IsSelected())
-        {
-            c = Vec3(static_cast<f32>(dc.GetSelectedColor().redF()), static_cast<f32>(dc.GetSelectedColor().greenF()), static_cast<f32>(dc.GetSelectedColor().blueF()));
-        }
-
-        float col[4] = { c.x, c.y, c.z, 1 };
-        if (dc.flags & DISPLAY_SELECTION_HELPERS)
-        {
-            if (IsHighlighted())
-            {
-                c = Vec3(static_cast<f32>(dc.GetSelectedColor().redF()), static_cast<f32>(dc.GetSelectedColor().greenF()), static_cast<f32>(dc.GetSelectedColor().blueF()));
-            }
-            col[0] = c.x;
-            col[1] = c.y;
-            col[2] = c.z;
-        }
-
-        dc.SetColor(col[0], col[1], col[2], col[3] * alpha);
-        dc.DrawTextLabel(pos, size, GetName().toUtf8().data());
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::DrawHighlight(DisplayContext& dc)
-{
-    if (!m_nTextureIcon)
-    {
-        AABB box;
-        GetLocalBounds(box);
-
-        dc.PushMatrix(GetWorldTM());
-        dc.DrawWireBox(box.min, box.max);
-        dc.SetLineWidth(1);
-        dc.PopMatrix();
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::DrawBudgetUsage(DisplayContext& dc, const QColor& color)
-{
-    AABB box;
-    GetLocalBounds(box);
-
-    dc.SetColor(color);
-
-    dc.PushMatrix(GetWorldTM());
-    dc.DrawWireBox(box.min, box.max);
-    dc.PopMatrix();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void    CBaseObject::DrawAxis([[maybe_unused]] DisplayContext& dc, [[maybe_unused]] const Vec3& pos, [[maybe_unused]] float size)
-{
-    /*
-    dc.renderer->EnableDepthTest(false);
-    Vec3 x(size,0,0);
-    Vec3 y(0,size,0);
-    Vec3 z(0,0,size);
-
-    bool bWorldSpace = false;
-    if (dc.flags & DISPLAY_WORLDSPACEAXIS)
-        bWorldSpace = true;
-
-    Matrix tm = GetWorldTM();
-    Vec3 org = tm.TransformPoint( pos );
-
-    if (!bWorldSpace)
-    {
-        tm.NoScale();
-        x = tm.TransformVector(x);
-        y = tm.TransformVector(y);
-        z = tm.TransformVector(z);
-    }
-
-    float fScreenScale = dc.view->GetScreenScaleFactor(org);
-    x = x * fScreenScale;
-    y = y * fScreenScale;
-    z = z * fScreenScale;
-
-    float col[4] = { 1,1,1,1 };
-    float hcol[4] = { 1,0,0,1 };
-    dc.renderer->DrawLabelEx( org+x,1.2f,col,true,true,"X" );
-    dc.renderer->DrawLabelEx( org+y,1.2f,col,true,true,"Y" );
-    dc.renderer->DrawLabelEx( org+z,1.2f,col,true,true,"Z" );
-
-    Vec3 colX(1,0,0),colY(0,1,0),colZ(0,0,1);
-    if (s_highlightAxis)
-    {
-        float col[4] = { 1,0,0,1 };
-        if (s_highlightAxis == 1)
-        {
-            colX.Set(1,1,0);
-            dc.renderer->DrawLabelEx( org+x,1.2f,col,true,true,"X" );
-        }
-        if (s_highlightAxis == 2)
-        {
-            colY.Set(1,1,0);
-            dc.renderer->DrawLabelEx( org+y,1.2f,col,true,true,"Y" );
-        }
-        if (s_highlightAxis == 3)
-        {
-            colZ.Set(1,1,0);
-            dc.renderer->DrawLabelEx( org+z,1.2f,col,true,true,"Z" );
-        }
-    }
-
-    x = x * 0.8f;
-    y = y * 0.8f;
-    z = z * 0.8f;
-    float fArrowScale = fScreenScale * 0.07f;
-    dc.SetColor( colX );
-    dc.DrawArrow( org,org+x,fArrowScale );
-    dc.SetColor( colY );
-    dc.DrawArrow( org,org+y,fArrowScale );
-    dc.SetColor( colZ );
-    dc.DrawArrow( org,org+z,fArrowScale );
-
-    //dc.DrawLine( org,org+x,colX,colX );
-    //dc.DrawLine( org,org+y,colY,colY );
-    //dc.DrawLine( org,org+z,colZ,colZ );
-
-    dc.renderer->EnableDepthTest(true);
-    ///dc.SetColor( 0,1,1,1 );
-    //dc.DrawLine( p,p+dc.view->m_constructionPlane.m_normal*10.0f );
-    */
-}
-
-void CBaseObject::DrawArea(DisplayContext& dc)
-{
-    float area = m_flattenArea;
-    if (area > 0)
-    {
-        dc.SetColor(QColor(5, 5, 255), 1.f); // make it different color from the AI sight radius
-        Vec3 wp = GetWorldPos();
-        float z = GetIEditor()->GetTerrainElevation(wp.x, wp.y);
-        if (fabs(wp.z - z) < 5)
-        {
-            dc.DrawTerrainCircle(wp, area, 0.2f);
-        }
-        else
-        {
-            dc.DrawCircle(wp, area);
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CBaseObject::CanBeDrawn(const DisplayContext& dc, bool& outDisplaySelectionHelper) const
-{
-    bool bResult = true;
-    outDisplaySelectionHelper = false;
-
-    if (dc.flags & DISPLAY_SELECTION_HELPERS)
-    {
-        // Check if this object type is masked for selection.
-        if ((GetType() & gSettings.objectSelectMask) && !IsFrozen())
-        {
-            if (IsSkipSelectionHelper())
-            {
-                return bResult;
-            }
-            if (CanBeHightlighted())
-            {
-                outDisplaySelectionHelper = true;
-            }
-        }
-        else
-        {
-            // Object helpers should not be displayed when object is not for selection.
-            bResult = false;
-        }
-    }
-
-    return bResult;
 }
 
 //////////////////////////////////////////////////////////////////////////

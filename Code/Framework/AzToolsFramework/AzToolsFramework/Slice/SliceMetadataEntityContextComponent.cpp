@@ -10,7 +10,6 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Slice/SliceMetadataInfoBus.h>
 
-#include <AzToolsFramework/Commands/PreemptiveUndoCache.h>
 #include <AzToolsFramework/Entity/EditorEntitySortComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponent.h>

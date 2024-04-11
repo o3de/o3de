@@ -438,13 +438,14 @@ namespace AzToolsFramework
         bool AssetBrowserEntry::lessThan(const AssetBrowserEntry* other, const AssetEntrySortMode sortMode, const QCollator& collator) const
         {
             // folders should always come first
-            if (azrtti_istypeof<const FolderAssetBrowserEntry*>(this) && azrtti_istypeof<const SourceAssetBrowserEntry*>(other))
-            {
-                return false;
-            }
-            if (azrtti_istypeof<const SourceAssetBrowserEntry*>(this) && azrtti_istypeof<const FolderAssetBrowserEntry*>(other))
+            if (GetEntryType() == AssetEntryType::Folder && other->GetEntryType() != AssetEntryType::Folder)
             {
                 return true;
+            }
+
+            if (GetEntryType() != AssetEntryType::Folder && other->GetEntryType() == AssetEntryType::Folder)
+            {
+                return false;
             }
 
             switch (sortMode)
