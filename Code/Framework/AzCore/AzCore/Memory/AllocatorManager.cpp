@@ -78,9 +78,9 @@ AllocatorManager::AllocatorManager()
     m_defaultTrackingRecordMode = Debug::AllocationRecords::RECORD_NO_RECORDS;
 #endif
     m_activeBreaks = 0;  // bug - not initialized in the original code
-#else
+#else  // CARBONATED
     m_defaultTrackingRecordMode = Debug::AllocationRecords::RECORD_NO_RECORDS;
-#endif
+#endif // CARBONATED
 }
 
 //=========================================================================

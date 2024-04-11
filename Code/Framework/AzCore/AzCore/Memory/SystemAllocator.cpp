@@ -127,12 +127,14 @@ namespace AZ
     {
         newSize = MemorySizeAdjustedUp(newSize);
 
+#if defined(CARBONATED)
 #if defined(AZ_ENABLE_TRACING)
         AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
-#if defined(CARBONATED)
         AZ_MEMORY_PROFILE(ProfileReallocationBegin(ptr));
-#endif
-#endif
+#endif // AZ_ENABLE_TRACING
+#else
+        AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
+#endif // CARBONATED
 
         pointer newAddress = m_subAllocator->reallocate(ptr, newSize, newAlignment);
 

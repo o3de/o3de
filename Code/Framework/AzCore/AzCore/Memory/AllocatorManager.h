@@ -7,7 +7,9 @@
  */
 #pragma once
 
+#if defined(CARBONATED)
 #include <thread>
+#endif
 #include <AzCore/base.h>
 #include <AzCore/Memory/AllocationRecords.h>
 #include <AzCore/std/algorithm.h>

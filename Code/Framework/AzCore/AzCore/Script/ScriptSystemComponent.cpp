@@ -335,6 +335,7 @@ void ScriptSystemComponent::OnSystemTick()
         {
             contextContainer.m_context->GetDebugContext()->ProcessDebugCommands();
         }
+
         contextContainer.m_context->GarbageCollectStep(contextContainer.m_garbageCollectorSteps);
 #endif
     }
