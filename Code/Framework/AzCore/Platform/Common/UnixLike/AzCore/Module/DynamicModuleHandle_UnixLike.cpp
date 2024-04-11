@@ -134,12 +134,12 @@ namespace AZ
         LoadStatus LoadModule(LoadFlags flags) override
         {
             AZ::Debug::Trace::Instance().Printf("Module", "Attempting to load module:%s\n", m_fileName.c_str());
-
-            if (m_handle = dlopen(m_fileName.c_str(), RTLD_NOLOAD);
-                m_handle == nullptr && !CheckBitsAny(flags, LoadFlags::NoLoad))
-            {
-                const int openFlags = CheckBitsAny(flags, LoadFlags::GlobalSymbols) ? RTLD_NOW | RTLD_GLOBAL : RTLD_NOW;
-                m_handle = dlopen(m_fileName.c_str(), openFlags);
+            const int openFlags = CheckBitsAny(flags, LoadFlags::GlobalSymbols) ? RTLD_GLOBAL : 0;
+            m_handle = dlopen(m_fileName.c_str(), openFlags | RTLD_NOLOAD);
+            bool alreadyOpen = (m_handle != nullptr);
+            if (m_handle == nullptr && !CheckBitsAny(flags, LoadFlags::NoLoad))
+            {                
+                m_handle = dlopen(m_fileName.c_str(), openFlags | RTLD_NOW);
             }
 
             if (m_handle)
