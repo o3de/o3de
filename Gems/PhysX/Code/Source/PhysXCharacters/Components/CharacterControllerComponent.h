@@ -130,8 +130,8 @@ namespace PhysX
         void SetCharacterCollisions(const AZStd::string& layer, const AZStd::string& group) override;
         // Changes Physics::MaterialAsset in the slot referenced by index. Index 0 usually correponds to "Entire object" slot.
         void SetMaterial(uint32_t index, const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset) override;
-        [[deprecated("Use SetMaterial(uint32_t,).const AZ::Data::Asset<Physics::MaterialAsset>&")]] void SetMaterialByName(
-            [[maybe_unused]] uint32_t index, [[maybe_unused]] const AZStd::string& name) override{};
+        [[deprecated("Use SetMaterial(uint32_t, const AZ::Data::Asset<Physics::MaterialAsset>&")]]
+        void SetMaterialByName([[maybe_unused]] uint32_t index, [[maybe_unused]] const AZStd::string& name) override {};
         // Changes collider Tag to given AZ::Crc32(AZStd::string tagName).
         void SetTag(const AZ::Crc32& tag) override;
 #endif // defined(CARBONATED)

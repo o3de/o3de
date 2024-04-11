@@ -65,7 +65,7 @@ namespace PhysX
 
         /// Changes Physics::MaterialAsset in the slot referenced by index. Index 0 usually correponds to "Entire object" slot.
         virtual void SetMaterial(uint32_t index, const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset) = 0;
-        [[deprecated("Use SetMaterial(uint32_t,).const AZ::Data::Asset<Physics::MaterialAsset>&")]]
+        [[deprecated("Use SetMaterial(uint32_t, const AZ::Data::Asset<Physics::MaterialAsset>&")]]
         virtual void SetMaterialByName(uint32_t index, const AZStd::string& name) = 0;
 
         /// Changes collider Tag to given AZ::Crc32(AZStd::string tagName).
