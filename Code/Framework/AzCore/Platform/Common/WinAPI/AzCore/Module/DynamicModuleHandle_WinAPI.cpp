@@ -102,9 +102,8 @@ namespace AZ
             if (wcharResult == 0)
             {
                 // If module already open, return false, it was not loaded.
-                m_handle = GetModuleHandleW(fileNameW);
-                alreadyLoaded = NULL != m_handle;
-                if (!noLoad)
+                alreadyLoaded = NULL != GetModuleHandleW(fileNameW);
+                if (alreadyLoaded || !noLoad)
                 {
                     m_handle = LoadLibraryW(fileNameW);
                 }
