@@ -135,12 +135,10 @@ namespace AZ
         {
             AZ::Debug::Trace::Instance().Printf("Module", "Attempting to load module:%s\n", m_fileName.c_str());
 
-            m_handle = dlopen(m_fileName.c_str(), RTLD_NOLOAD);
-            bool alreadyOpen = (m_handle != nullptr);
-            bool loadModule = !CheckBitsAny(flags, LoadFlags::NoLoad);
-            if (!alreadyOpen && loadModule)
+            if (m_handle = dlopen(m_fileName.c_str(), RTLD_NOLOAD);
+                m_handle == nullptr && !CheckBitsAny(flags, LoadFlags::NoLoad))
             {
-                int openFlags = CheckBitsAny(flags, LoadFlags::GlobalSymbols) ? RTLD_NOW | RTLD_GLOBAL : RTLD_NOW;
+                const int openFlags = CheckBitsAny(flags, LoadFlags::GlobalSymbols) ? RTLD_NOW | RTLD_GLOBAL : RTLD_NOW;
                 m_handle = dlopen(m_fileName.c_str(), openFlags);
             }
 
