@@ -139,6 +139,7 @@ namespace AZ
         void ResetMemoryBreak(int slot = -1);
         //////////////////////////////////////////////////////////////////////////
 
+#if defined(CARBONATED)
         struct CodePoint
         {
             const char* m_name;
@@ -166,25 +167,25 @@ namespace AZ
         /// Returns current thread's top stack registered code point
         AZStd::tuple<const CodePoint*, uint64_t, unsigned int> GetCodePointAndTags();
 
-        /// TODO write desc
+        /// Pushes memory marker to stack, this speeds up memory tracking by dropping callstack symbolication, see MEMORY_ALLOCATION_MARKER_NAME macro
         void PushMemoryMarker(const CodePoint& point);
 
-        /// TODO write desc
+        /// Pop memory marker from stack
         void PopMemoryMarker();
 
-        /// TODO write desc
+        /// Pushes memory tag to stack, an alternative memory marking way, see MEMORY_TAG macro
         void PushMemoryTag(unsigned int tag);
 
-        /// TODO write desc
+        /// Pop mmeory tag from stack
         void PopMemoryTag();
 
-        /// TODO write desc
+        /// Protection from a recusrive call by the same thread
         bool IsRecursive()
         {
             return m_recursive;
         }
-
         //////////////////////////////////////////////////////////////////////////
+#endif  // CARBONATED
 
         // Called from IAllocator
         void RegisterAllocator(IAllocator* alloc);
@@ -213,6 +214,7 @@ namespace AZ
 
         AZ::Debug::AllocationRecords::Mode m_defaultTrackingRecordMode;
 
+#if defined(CARBONATED)
         // this is a specfic stack that can grow beyond its capacity not storing values
         template<typename Data, int Size>
         class DataStack
@@ -271,6 +273,7 @@ namespace AZ
         AZStd::mutex m_threadDataLock;
 
         ThreadLocalData& FindThreadData();
+#endif // CARBONATED
 
         static AllocatorManager g_allocMgr;    ///< The single instance of the allocator manager
     };

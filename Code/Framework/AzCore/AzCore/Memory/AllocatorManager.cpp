@@ -70,11 +70,17 @@ AllocatorManager::AllocatorManager()
 {
     m_numAllocators = 0;
     m_isAllocatorLeaking = false;
-    // aefimov original line commented out, profiling override lines are below
-    //m_defaultTrackingRecordMode = Debug::AllocationRecords::RECORD_NO_RECORDS;
+#if defined(CARBONATED)
+#if defined(AZ_ENABLE_TRACING) && !defined(_RELEASE)
     m_defaultTrackingRecordMode = Debug::AllocationRecords::RECORD_STACK_IF_NO_FILE_LINE;
     m_defaultProfilingState = true;
-    m_activeBreaks = 0;  // it was no initialized in the original code
+#else
+    m_defaultTrackingRecordMode = Debug::AllocationRecords::RECORD_NO_RECORDS;
+#endif
+    m_activeBreaks = 0;  // bug - not initialized in the original code
+#else
+    m_defaultTrackingRecordMode = Debug::AllocationRecords::RECORD_NO_RECORDS;
+#endif
 }
 
 //=========================================================================
@@ -407,6 +413,8 @@ AllocatorManager::DebugBreak(void* address, const Debug::AllocationInfo& info)
     }
 }
 
+#if defined(CARBONATED)
+
 //=========================================================================
 // FindThreadData
 // [4/8/2024]
@@ -500,5 +508,7 @@ void AllocatorManager::PopMemoryTag()
     }
     tld.m_allocationTags.Pop();
 }
+
+#endif // CARBONATED
 
 } // namespace AZ

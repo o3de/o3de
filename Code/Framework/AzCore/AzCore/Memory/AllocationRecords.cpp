@@ -9,7 +9,9 @@
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Memory/AllocationRecords.h>
 #include <AzCore/Memory/AllocatorManager.h>
+#if defined(CARBONATED)
 #include <AzCore/Memory/MemoryMarker.h>
+#endif
 
 #include <AzCore/std/time.h>
 #include <AzCore/std/parallel/mutex.h>
@@ -128,7 +130,7 @@ namespace AZ::Debug
         ai.m_namesBlockSize = 0;
         ai.m_lineNum = 0;
         ai.m_timeStamp = AZStd::GetTimeNowMicroSecond();
-
+#if defined(CARBONATED)
         AllocatorManager& manager = AllocatorManager::Instance();
         AZStd::tuple<const AZ::AllocatorManager::CodePoint*, uint64_t, unsigned int> data = manager.GetCodePointAndTags();
         const AZ::AllocatorManager::CodePoint* point = AZStd::get<0>(data);
@@ -151,9 +153,13 @@ namespace AZ::Debug
                 ai.m_name = savedName;
             }
         }
-
+#endif
         // if we don't have a fileName,lineNum record the stack or if the user requested it.
+#if defined(CARBONATED)
         if ((m_mode == RECORD_STACK_IF_NO_FILE_LINE && ai.m_fileName == nullptr) || m_mode == RECORD_FULL)
+#else
+        if (m_mode == RECORD_STACK_IF_NO_FILE_LINE || m_mode == RECORD_FULL)
+#endif
         {
             ai.m_stackFrames = m_numStackLevels ? reinterpret_cast<AZ::Debug::StackFrame*>(m_records.get_allocator().allocate(
                                                       sizeof(AZ::Debug::StackFrame) * m_numStackLevels, 1))
@@ -193,7 +199,11 @@ namespace AZ::Debug
             }
         }
 
+#if defined(CARBONATED)
         manager.DebugBreak(address, ai);
+#else
+        AllocatorManager::Instance().DebugBreak(address, ai);
+#endif
 
         // statistics
         m_requestedBytes += byteSize;

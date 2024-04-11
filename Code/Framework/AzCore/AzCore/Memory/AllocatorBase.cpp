@@ -244,6 +244,7 @@ namespace AZ
 #endif
     }
 
+#if defined(CARBONATED)
     void AllocatorBase::ProfileReallocationBegin(void* ptr)
     {
         if (m_isProfilingActive)
@@ -270,6 +271,22 @@ namespace AZ
         RecordAllocatorOperation(AllocatorOperation::ALLOCATE, newPtr, newSize, newAlignment);
 #endif
     }
+#else // CARBONATED
+    void AllocatorBase::ProfileReallocation(void* ptr, void* newPtr, size_t newSize, size_t newAlignment)
+    {
+        if (newSize && m_isProfilingActive)
+        {
+            if (m_records)
+            {
+                m_records->RegisterReallocation(ptr, newPtr, newSize, newAlignment, 1);
+            }
+        }
+#if O3DE_RECORDING_ENABLED
+        RecordAllocatorOperation(AllocatorOperation::DEALLOCATE, ptr);
+        RecordAllocatorOperation(AllocatorOperation::ALLOCATE, newPtr, newSize, newAlignment);
+#endif
+    }
+#endif  // CARBONATED
 
     void AllocatorBase::ProfileResize(void* ptr, size_t newSize)
     {

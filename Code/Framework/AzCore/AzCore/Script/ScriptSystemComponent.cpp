@@ -149,6 +149,7 @@ ScriptContext*  ScriptSystemComponent::AddContext(ScriptContext* context, int ga
         ContextContainer& cc = m_contexts.back();
         cc.m_context = context;
         cc.m_isOwner = false;
+#if defined(CARBONATED)
         if (garbageCollectorStep < 1)
         {
             cc.m_garbageCollectorSteps = m_defaultGarbageCollectorSteps;
@@ -158,6 +159,9 @@ ScriptContext*  ScriptSystemComponent::AddContext(ScriptContext* context, int ga
         {
             cc.m_garbageCollectorSteps = garbageCollectorStep;
         }
+#else
+        cc.m_garbageCollectorSteps = garbageCollectorStep < 1 ? m_defaultGarbageCollectorSteps : garbageCollectorStep;
+#endif
 
         if (context->GetId() != ScriptContextIds::CryScriptContextId)
         {
@@ -191,7 +195,9 @@ ScriptContext* ScriptSystemComponent::AddContextWithId(ScriptContextId id)
     cc.m_context = aznew ScriptContext(id);
     cc.m_isOwner = true;
     cc.m_garbageCollectorSteps = m_defaultGarbageCollectorSteps;
+#if defined(CARBONATED)
     cc.m_isDefaultNumberOfGCSteps = true;
+#endif
     cc.m_context->SetRequireHook(
         [this](lua_State* lua, ScriptContext* context, const char* module) -> int
         {
@@ -314,6 +320,7 @@ void ScriptSystemComponent::OnSystemTick()
     for (size_t i = 0; i < m_contexts.size(); ++i)
     {
         ContextContainer& contextContainer = m_contexts[i];
+#if defined(CARBONATED)
         ScriptContext* vm = contextContainer.m_context;
         if (vm)
         {
@@ -323,6 +330,13 @@ void ScriptSystemComponent::OnSystemTick()
             }
             vm->GarbageCollectStep(contextContainer.m_garbageCollectorSteps);
         }
+#else
+        if (contextContainer.m_context->GetDebugContext())
+        {
+            contextContainer.m_context->GetDebugContext()->ProcessDebugCommands();
+        }
+        contextContainer.m_context->GarbageCollectStep(contextContainer.m_garbageCollectorSteps);
+#endif
     }
 }
 
@@ -356,6 +370,8 @@ void ScriptSystemComponent::GarbageCollectStep(int numberOfSteps)
     }
 }
 
+#if defined(CARBONATED)
+
 //=========================================================================
 // SetGarbageCollectStepsIfDefault
 //=========================================================================
@@ -378,6 +394,8 @@ int ScriptSystemComponent::GetDefaultGarbageCollectSteps()
 {
     return m_defaultGarbageCollectorSteps;
 }
+
+#endif // CARBONATED
 
 bool ScriptSystemComponent::Load(const Data::Asset<ScriptAsset>& asset, const char* mode, ScriptContextId id)
 {
