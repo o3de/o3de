@@ -1061,11 +1061,37 @@ namespace AzToolsFramework
                 {
                     if (m_selectedEntityIds.size() > 1)
                     {
-                        return InspectorLayout::Invalid;
+                        return InspectorLayout::Invalid; // we have somehow selected both the container and something else.
                     }
                     else
                     {
                         return InspectorLayout::ContainerEntityOfFocusedPrefab;
+                    }
+                }
+                else
+                {
+                    // we have not selected THE container entity of the focused container,
+                    // but we could potentially have selected one or more container entities.
+                    bool anyContainerEntitySelected = false;
+                    bool anyNonContainerEntitySelected = false;
+                    for (const auto& selectedEntityId : m_selectedEntityIds)
+                    {
+                        if (m_prefabPublicInterface->IsInstanceContainerEntity(selectedEntityId))
+                        {
+                            anyContainerEntitySelected = true;
+                        }
+                        else
+                        {
+                            anyNonContainerEntitySelected = true;
+                        }
+                    }
+                    if (anyContainerEntitySelected && anyNonContainerEntitySelected)
+                    {
+                        return InspectorLayout::Invalid; // we have somehow selected both a container and something else.
+                    }
+                    else if (anyContainerEntitySelected && !anyNonContainerEntitySelected)
+                    {
+                        return InspectorLayout::ContainerEntity;
                     }
                 }
             }
@@ -1087,6 +1113,7 @@ namespace AzToolsFramework
             m_gui->m_entityNameEditor->setReadOnly(true);
 
             m_gui->m_entityIdText->setText(tr("multiple selected"));
+            m_gui->m_prefabContainerText->setText(tr("multiple prefab containers selected"));
         }
         else if (!m_selectedEntityIds.empty())
         {
@@ -1103,6 +1130,17 @@ namespace AzToolsFramework
             m_gui->m_entityNameEditor->setText(entity ? entity->GetName().data() : "Entity Not Found");
 
             m_gui->m_entityIdText->setText(QString::number(static_cast<AZ::u64>(entityId)));
+
+            if (m_prefabPublicInterface->IsInstanceContainerEntity(entityId))
+            {
+                // If the entity is a container entity, display the owning prefab path.
+                AZ::IO::Path prefabPath = m_prefabPublicInterface->GetOwningInstancePrefabPath(entityId);
+                m_gui->m_prefabContainerText->setText(QString::fromUtf8(prefabPath.c_str()));
+            }
+            else
+            {
+                m_gui->m_prefabContainerText->setText("");
+            }
         }
     }
 
@@ -1128,6 +1166,11 @@ namespace AzToolsFramework
         if (layout == InspectorLayout::Invalid)
         {
             return SelectionEntityTypeInfo::Mixed;
+        }
+
+        if (layout == InspectorLayout::ContainerEntity)
+        {
+            return SelectionEntityTypeInfo::OnlyPrefabEntities;
         }
 
         for (AZ::EntityId selectedEntityId : selection)
@@ -1173,9 +1216,11 @@ namespace AzToolsFramework
         }
 
         if (selectionEntityTypeInfo == SelectionEntityTypeInfo::Mixed ||
-            selectionEntityTypeInfo == SelectionEntityTypeInfo::None)
+            selectionEntityTypeInfo == SelectionEntityTypeInfo::None ||
+            selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyPrefabEntities ||
+            selectionEntityTypeInfo == SelectionEntityTypeInfo::ContainerEntityOfFocusedPrefab)
         {
-            // Can't add components in mixed selection, or if nothing is selected.
+            // Can't add components in mixed selection, or if nothing is selected, or if in prefab containers
             return false;
         }
 
@@ -1263,8 +1308,7 @@ namespace AzToolsFramework
             entityDetailsVisible = true;
             entityDetailsLabelText = GetEntityDetailsLabelText();
         }
-        else if (selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyLayerEntities || selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyPrefabEntities ||
-            selectionEntityTypeInfo == SelectionEntityTypeInfo::ContainerEntityOfFocusedPrefab)
+        else if (selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyLayerEntities)
         {
             // If a customer filter is not already in use, only show layer components.
             if (!m_customFilterSet)
@@ -1290,8 +1334,11 @@ namespace AzToolsFramework
             }
         }
 
-        bool isLevelLayout = GetCurrentInspectorLayout() == InspectorLayout::Level;
-        bool isContainerOfFocusedPrefabLayout = GetCurrentInspectorLayout() == InspectorLayout::ContainerEntityOfFocusedPrefab;
+        InspectorLayout currentLayout = GetCurrentInspectorLayout();
+
+        bool isLevelLayout = currentLayout == InspectorLayout::Level;
+        bool isContainerOfFocusedPrefabLayout = currentLayout == InspectorLayout::ContainerEntityOfFocusedPrefab;
+        bool isPrefabLayout = currentLayout == InspectorLayout::ContainerEntity || isContainerOfFocusedPrefabLayout;
 
         m_gui->m_entityDetailsLabel->setText(entityDetailsLabelText);
         m_gui->m_entityDetailsLabel->setVisible(entityDetailsVisible);
@@ -1333,11 +1380,15 @@ namespace AzToolsFramework
             UpdateEntityDisplay();
         }
 
-        m_gui->m_darkBox->setVisible(
-            displayComponentSearchBox && !m_isSystemEntityEditor && !isLevelLayout && !isContainerOfFocusedPrefabLayout);
+        m_gui->m_darkBox->setVisible(displayComponentSearchBox && !m_isSystemEntityEditor && !isLevelLayout || isPrefabLayout);
         m_gui->m_entitySearchBox->setVisible(displayComponentSearchBox);
 
-        bool displayAddComponentMenu = CanAddComponentsToSelection(selectionEntityTypeInfo);
+        bool isEditingPrefabContainer = isContainerOfFocusedPrefabLayout;
+        
+        m_gui->m_entityIdWidget->setVisible(!isEditingPrefabContainer);
+        m_gui->m_prefabContainerWidget->setVisible(isPrefabLayout);
+
+        bool displayAddComponentMenu = !isPrefabLayout && CanAddComponentsToSelection(selectionEntityTypeInfo);
         m_gui->m_addComponentButton->setVisible(displayAddComponentMenu);
 
         QueueScrollToNewComponent();
@@ -1398,7 +1449,7 @@ namespace AzToolsFramework
         AZStd::sort(
             sortedComponents.begin(),
             sortedComponents.end(),
-            [=](const OrderedSortComponentEntry& component1, const OrderedSortComponentEntry& component2)
+            [](const OrderedSortComponentEntry& component1, const OrderedSortComponentEntry& component2)
             {
                 AZStd::optional<int> fixedComponentListIndex1 = GetFixedComponentListIndex(component1.m_component);
                 AZStd::optional<int> fixedComponentListIndex2 = GetFixedComponentListIndex(component2.m_component);
@@ -1551,6 +1602,13 @@ namespace AzToolsFramework
         return {};
     }
 
+    bool EntityPropertyEditor::AllowAnyComponentModification() const
+    {
+        const InspectorLayout currentLayout = GetCurrentInspectorLayout();
+        return currentLayout != InspectorLayout::ContainerEntityOfFocusedPrefab &&
+               currentLayout != InspectorLayout::ContainerEntity;
+    }
+
     bool EntityPropertyEditor::IsComponentDraggable(const AZ::Component* component)
     {
         return !GetFixedComponentListIndex(component).has_value();
@@ -1558,6 +1616,11 @@ namespace AzToolsFramework
 
     bool EntityPropertyEditor::AreComponentsDraggable(AZStd::span<AZ::Component* const> components) const
     {
+        if (!AllowAnyComponentModification())
+        {
+            return false;
+        }
+
         return AZStd::all_of(
             components.begin(), components.end(), [](AZ::Component* component) { return IsComponentDraggable(component); });
     }
@@ -2977,15 +3040,18 @@ namespace AzToolsFramework
 
         const auto& componentsToEdit = GetSelectedComponents();
 
+        // you can use this to veto any ability to modify components present:
+        const bool allowAnyComponentModification = AllowAnyComponentModification();
+
         const bool hasComponents = !m_selectedEntityIds.empty() && !componentsToEdit.empty();
         // Don't allow components to be removed/cut/enabled/disabled if read only
-        const bool allowRemove = hasComponents && AreComponentsRemovable(componentsToEdit) && !m_selectionContainsReadOnlyEntity;
-        const bool allowCopy = hasComponents && AreComponentsCopyable(componentsToEdit);
+        const bool allowRemove = allowAnyComponentModification && hasComponents && AreComponentsRemovable(componentsToEdit) && !m_selectionContainsReadOnlyEntity;
+        const bool allowCopy = allowAnyComponentModification && hasComponents && AreComponentsCopyable(componentsToEdit);
 
         m_actionToDeleteComponents->setEnabled(allowRemove);
         m_actionToCutComponents->setEnabled(allowRemove && allowCopy);
         m_actionToCopyComponents->setEnabled(allowCopy);
-        m_actionToPasteComponents->setEnabled(!m_selectedEntityIds.empty() && CanPasteComponentsOnSelectedEntities());
+        m_actionToPasteComponents->setEnabled(allowAnyComponentModification && !m_selectedEntityIds.empty() && CanPasteComponentsOnSelectedEntities());
         m_actionToMoveComponentsUp->setEnabled(allowRemove && IsMoveComponentsUpAllowed());
         m_actionToMoveComponentsDown->setEnabled(allowRemove && IsMoveComponentsDownAllowed());
         m_actionToMoveComponentsTop->setEnabled(allowRemove && IsMoveComponentsUpAllowed());
@@ -3036,6 +3102,11 @@ namespace AzToolsFramework
 
     bool EntityPropertyEditor::CanPasteComponentsOnSelectedEntities() const
     {
+        if (!AllowAnyComponentModification())
+        {
+            return false;
+        }
+
         if (m_selectedEntityIds.empty())
         {
             return false;
@@ -3089,6 +3160,11 @@ namespace AzToolsFramework
 
     bool EntityPropertyEditor::CanPasteComponentsOnEntity(const ComponentTypeMimeData::ClassDataContainer& classDataForComponentsToPaste, const AZ::Entity* entity) const
     {
+        if (!AllowAnyComponentModification())
+        {
+            return false;
+        }
+
         if (!entity || classDataForComponentsToPaste.empty())
         {
             return false;
@@ -3150,6 +3226,11 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::CutComponents()
     {
+        if (!AllowAnyComponentModification())
+        {
+            return;
+        }
+
         const auto& componentsToEdit = GetSelectedComponents();
         if (!componentsToEdit.empty() && AreComponentsRemovable(componentsToEdit))
         {
@@ -4349,6 +4430,11 @@ namespace AzToolsFramework
 
     bool EntityPropertyEditor::IsDragAllowed(const ComponentEditorVector& componentEditors) const
     {
+        if (!AllowAnyComponentModification())
+        {
+            return false;
+        }
+
         if (m_dragStarted || m_selectedEntityIds.empty() || componentEditors.empty() || !DoesOwnFocus())
         {
             return false;
@@ -5361,6 +5447,7 @@ namespace AzToolsFramework
 
         AzQtComponents::SetWidgetInteractEnabled(propertyEditorUi->m_entityIdLabel, on);
         AzQtComponents::SetWidgetInteractEnabled(propertyEditorUi->m_entityIdText, on);
+        AzQtComponents::SetWidgetInteractEnabled(propertyEditorUi->m_prefabContainerText, on);
 
         AzQtComponents::SetWidgetInteractEnabled(propertyEditorUi->m_addComponentButton, on);
 
