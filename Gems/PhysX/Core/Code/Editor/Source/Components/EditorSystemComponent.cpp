@@ -76,7 +76,6 @@ namespace PhysX
     void EditorSystemComponent::Activate()
     {
         Physics::EditorWorldBus::Handler::BusConnect();
-        AzToolsFramework::EditorContextMenuBus::Handler::BusConnect();
 
         // Register PhysX Material Asset
         auto* materialAsset = aznew AzFramework::GenericAssetHandler<PhysX::EditorMaterialAsset>("PhysX Material", Physics::MaterialAsset::AssetGroup, EditorMaterialAsset::FileExtension);
@@ -119,7 +118,6 @@ namespace PhysX
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
-        AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
         Physics::EditorWorldBus::Handler::BusDisconnect();
 
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
@@ -186,10 +184,6 @@ namespace PhysX
         }
     }
 
-    void EditorSystemComponent::PopulateEditorGlobalContextMenu(
-        [[maybe_unused]] QMenu* menu, [[maybe_unused]] const AZStd::optional<AzFramework::ScreenPoint>& point, [[maybe_unused]] int flags)
-    {
-    }
 
     void EditorSystemComponent::NotifyRegisterViews()
     {
