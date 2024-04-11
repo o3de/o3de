@@ -377,7 +377,7 @@ namespace PhysX
         }
     }
 
-#if defined(CARBONATED) // called from CharacterControllerComponent::SetTag(const AZ::Crc32& tag) used in Gruber
+#if defined(CARBONATED) // provide means for custom collider setup in a game
     void CharacterController::SetTag(const AZ::Crc32& tag)
     {
         m_colliderTag = tag;
