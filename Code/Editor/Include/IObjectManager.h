@@ -98,10 +98,6 @@ public:
     virtual void ChangeObjectId(REFGUID oldId, REFGUID newId) = 0;
 
     //////////////////////////////////////////////////////////////////////////
-    //! Invalidate visibily settings of objects.
-    virtual void InvalidateVisibleList() = 0;
-
-    //////////////////////////////////////////////////////////////////////////
     // Gathers all resources used by all objects.
     virtual void GatherUsedResources(CUsedResources& resources) = 0;
 };

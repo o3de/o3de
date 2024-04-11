@@ -1696,11 +1696,6 @@ void CBaseObject::UpdateVisibility(bool bVisible)
 {
     if (bVisible == CheckFlags(OBJFLAG_INVISIBLE))
     {
-        if (IObjectManager* objectManager = GetObjectManager())
-        {
-            objectManager->InvalidateVisibleList();
-        }
-
         if (!bVisible)
         {
             m_flags |= OBJFLAG_INVISIBLE;

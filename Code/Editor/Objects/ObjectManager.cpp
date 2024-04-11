@@ -79,7 +79,6 @@ CObjectManager* g_pObjectManager = nullptr;
 //////////////////////////////////////////////////////////////////////////
 CObjectManager::CObjectManager()
     : m_bExiting(false)
-    , m_isUpdateVisibilityList(false)
     , m_currentHideCount(CBaseObject::s_invalidHiddenID)
 {
     g_pObjectManager = this;
@@ -333,8 +332,6 @@ void CObjectManager::DeleteAllObjects()
 {
     AZ_PROFILE_FUNCTION(Editor);
 
-    InvalidateVisibleList();
-
     TBaseObjects objectsHolder;
     GetAllObjects(objectsHolder);
 
@@ -465,7 +462,6 @@ bool CObjectManager::AddObject(CBaseObject* obj)
     m_objectsByName[nameCrc] = obj;
 
     RegisterObjectName(obj->GetName());
-    InvalidateVisibleList();
     return true;
 }
 
@@ -473,8 +469,6 @@ bool CObjectManager::AddObject(CBaseObject* obj)
 void CObjectManager::RemoveObject(CBaseObject* obj)
 {
     assert(obj != 0);
-
-    InvalidateVisibleList();
 
     // Handle removing object from type-specific containers if needed
     {
@@ -736,46 +730,6 @@ void CObjectManager::RegisterCVars()
         "Adjust the hit radius used for axis helpers, like the transform gizmo.");
 }
 
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::InvalidateVisibleList()
-{
-    if (m_isUpdateVisibilityList)
-    {
-        return;
-    }
-    ++m_visibilitySerialNumber;
-    m_visibleObjects.clear();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::UpdateVisibilityList()
-{
-    m_isUpdateVisibilityList = true;
-    m_visibleObjects.clear();
-
-    bool isInIsolationMode = false;
-    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-        isInIsolationMode, &AzToolsFramework::ToolsApplicationRequestBus::Events::IsEditorInIsolationMode);
-
-    for (Objects::iterator it = m_objects.begin(); it != m_objects.end(); ++it)
-    {
-        CBaseObject* obj = it->second;
-        bool visible = obj->IsPotentiallyVisible();
-
-        // entities not isolated in Isolation Mode will be invisible
-        bool isObjectIsolated = obj->IsIsolated();
-        visible = visible && (!isInIsolationMode || isObjectIsolated);
-        obj->UpdateVisibility(visible);
-
-        // when the new viewport interaction model is enabled we always want to add objects
-        // in the view (frustum) to the visible objects list so we can draw feedback for
-        // entities being hidden in the viewport when selected in the  entity outliner
-        // (EditorVisibleEntityDataCache must be populated even if entities are 'hidden')
-        m_visibleObjects.push_back(obj);
-    }
-
-    m_isUpdateVisibilityList = false;
-}
 
 //////////////////////////////////////////////////////////////////////////
 void CObjectManager::GatherUsedResources(CUsedResources& resources)

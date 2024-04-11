@@ -342,7 +342,6 @@ void CUndoManager::Redo(int numSteps)
     {
         GetIEditor()->UpdateViews(eUpdateObjects);
     }
-    GetIEditor()->GetObjectManager()->InvalidateVisibleList();
 
     m_bRedoing = true;
     EndUndoTransaction();
@@ -404,7 +403,6 @@ void CUndoManager::Undo(int numSteps)
     {
         GetIEditor()->UpdateViews(eUpdateObjects);
     }
-    GetIEditor()->GetObjectManager()->InvalidateVisibleList();
 
     m_bUndoing = true;
     EndUndoTransaction();

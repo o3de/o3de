@@ -99,10 +99,6 @@ public:
     void ChangeObjectId(REFGUID oldId, REFGUID newId) override;
 
     //////////////////////////////////////////////////////////////////////////
-    //! Invalidate visibily settings of objects.
-    void InvalidateVisibleList() override;
-
-    //////////////////////////////////////////////////////////////////////////
     // Gathers all resources used by all objects.
     void GatherUsedResources(CUsedResources& resources) override;
 
@@ -117,8 +113,6 @@ private:
     */
     CBaseObject* NewObject(CObjectArchive& archive, CBaseObject* pUndoObject, bool bMakeNewId) override;
 
-    //! Update visibility of all objects.
-    void UpdateVisibilityList();
     //! Get array of all objects in manager.
     void GetAllObjects(TBaseObjects& objects) const;
 
@@ -132,21 +126,6 @@ private:
     typedef AZStd::unordered_map<AZ::u32, CBaseObjectPtr> ObjectsByNameCrc;
     ObjectsByNameCrc m_objectsByName;
 
-    //! Array of currently visible objects.
-    TBaseObjects m_visibleObjects;
-
-    // this number changes whenever visibility is invalidated.  Viewports can use it to keep track of whether they need to recompute object
-    // visibility.
-    unsigned int m_visibilitySerialNumber = 1;
-    unsigned int m_lastComputedVisibility = 0; // when the object manager itself last updated visibility (since it also has a cache)
-    int m_lastHideMask = 0;
-
-    // True while performing a select or deselect operation on more than one object.
-    // Prevents individual undo/redo commands for every object, allowing bulk undo/redo
-    bool m_processingBulkSelect = false;
-
-    //////////////////////////////////////////////////////////////////////////
-
     //////////////////////////////////////////////////////////////////////////
     // Numbering for names.
     //////////////////////////////////////////////////////////////////////////
@@ -156,8 +135,6 @@ private:
     bool m_bExiting;
 
     std::unordered_set<CEntityObject*> m_animatedAttachedEntities;
-
-    bool m_isUpdateVisibilityList;
 
     uint64 m_currentHideCount;
 
