@@ -33,6 +33,7 @@
         "LyShine",
         "MiniAudio",
         "PhysX",
+        "PhysXCommon",
         "PrimitiveAssets",
         "PrefabBuilder",
         "SaveData",
