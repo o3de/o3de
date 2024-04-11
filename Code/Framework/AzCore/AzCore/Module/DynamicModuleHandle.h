@@ -108,9 +108,9 @@ namespace AZ
         };
 
         template<typename T>
-        inline bool CheckBitsAny(T v, T bits)
+        constexpr bool CheckBitsAny(T v, T bits)
         {
-            return (v & bits) != (T)0;
+            return (v & bits) != T{};
         }
 
         // Attempt to load a module.
