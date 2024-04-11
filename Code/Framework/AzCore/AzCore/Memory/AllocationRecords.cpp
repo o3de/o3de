@@ -130,6 +130,7 @@ namespace AZ::Debug
         ai.m_namesBlockSize = 0;
         ai.m_lineNum = 0;
         ai.m_timeStamp = AZStd::GetTimeNowMicroSecond();
+
 #if defined(CARBONATED)
         AllocatorManager& manager = AllocatorManager::Instance();
         AZStd::tuple<const AZ::AllocatorManager::CodePoint*, uint64_t, unsigned int> data = manager.GetCodePointAndTags();
@@ -413,14 +414,14 @@ namespace AZ::Debug
             auto node = m_records.extract(address);
             if (node.empty())
             {
-                return { false, nullptr };
+                return {false, nullptr};
             }
 
             // Make a best effort to avoid reallocations from mutating the
             // records map when recording a reallocation
             node.key() = newAddress;
             auto ai = &m_records.insert(AZStd::move(node)).position->second;
-            return { true, ai };
+            return {true, ai};
         }();
         if (!addressAlreadyRecorded)
         {
