@@ -210,8 +210,18 @@ void CViewManager::Cycle2DViewport()
 //////////////////////////////////////////////////////////////////////////
 CViewport* CViewManager::GetViewportAtPoint(const QPoint& point) const
 {
-    QWidget* widget = QApplication::widgetAt(point);
-    return qobject_cast<QtViewport*>(widget);
+    for (auto& vp : m_viewports)
+    {
+        if (!vp || !vp->widget())
+        {
+            continue;
+        }
+        if (vp->widget()->rect().contains(vp->widget()->mapFromGlobal(point)))
+        {
+            return vp;
+        }
+    }
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////

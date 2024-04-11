@@ -63,6 +63,7 @@
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h>
 
+#include "EditorViewportWidget.h"
 #include "ISourceControl.h"
 #include "UI/QComponentEntityEditorMainWindow.h"
 
@@ -627,26 +628,37 @@ void SandboxIntegrationManager::OnActionRegistrationHook()
                 AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
                     selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
 
-                // when nothing is selected, entity is created at root level.
-                if (selectedEntities.empty())
+                AZ::Vector3 worldPosition = AZ::Vector3::CreateZero();
+                QPoint cursorPos = QCursor::pos();
+                if (CViewport* view = GetIEditor()->GetViewManager()->GetViewportAtPoint(cursorPos))
                 {
-                    ContextMenu_NewEntity();
+                    QPoint relativeCursor = view->widget()->mapFromGlobal(cursorPos);
+                    worldPosition = AzToolsFramework::FindClosestPickIntersection(
+                        view->GetViewportId(),
+                        AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(relativeCursor),
+                        AzToolsFramework::EditorPickRayLength,
+                        AzToolsFramework::GetDefaultEntityPlacementDistance());
                 }
+
                 // when a single entity is selected, entity is created as its child.
-                else if (selectedEntities.size() == 1)
+                if (selectedEntities.size() == 1)
                 {
                     AZ::EntityId selectedEntityId = selectedEntities.front();
                     bool selectedEntityIsReadOnly = m_readOnlyEntityPublicInterface->IsReadOnly(selectedEntityId);
                     auto containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
-
-                    if (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) && !selectedEntityIsReadOnly)
+                    if (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) &&
+                        !selectedEntityIsReadOnly)
                     {
-                        AzToolsFramework::EditorRequestBus::Broadcast(
-                            &AzToolsFramework::EditorRequestBus::Handler::CreateNewEntityAsChild, selectedEntityId);
+                        AZ::Transform entityTransform = AZ::Transform::CreateIdentity();
+                        AZ::TransformBus::EventResult(entityTransform, selectedEntityId, &AZ::TransformBus::Events::GetWorldTM);
+                        CreateNewEntityAtPosition(entityTransform.GetInverse().TransformPoint(worldPosition), selectedEntityId);
                     }
                 }
-            }
-        );
+                else
+                {
+                    CreateNewEntityAtPosition(worldPosition);
+                }
+            });
 
         actionManagerInterface->InstallEnabledStateCallback(
             actionIdentifier,
