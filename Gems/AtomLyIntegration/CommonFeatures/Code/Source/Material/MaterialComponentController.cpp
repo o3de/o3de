@@ -882,6 +882,20 @@ namespace AZ
 
         void MaterialComponentController::DisplayMissingAssetWarning([[maybe_unused]] Data::Asset<Data::AssetData> asset) const
         {
+#if defined(CARBONATED)
+            AZStd::string name = "";
+            AZ::ComponentApplicationBus::BroadcastResult(name, &AZ::ComponentApplicationBus::Events::GetEntityName, m_entityId);
+
+            AZ_Warning(
+                "MaterialComponent",
+                false,
+                "Material component on entity %s (Id %s) failed to load asset %s. The material component might contain additional material and "
+                "property data if the component was copied or the associated model changed. This data can be cleared using the material "
+                "component request bus or from the editor material component context menu.",
+                name.c_str(),
+                m_entityId.ToString().c_str(),
+                asset.ToString<AZStd::string>().c_str());
+#else
             AZ_Warning(
                 "MaterialComponent",
                 false,
@@ -890,6 +904,7 @@ namespace AZ
                 "component request bus or from the editor material component context menu.",
                 m_entityId.ToString().c_str(),
                 asset.ToString<AZStd::string>().c_str());
+#endif
         }
     } // namespace Render
 } // namespace AZ
