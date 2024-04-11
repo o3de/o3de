@@ -386,7 +386,6 @@ namespace PhysX
             , "SetMaterial(): Invalid materialAsset passed for Entity %s.", GetEntityId().ToString().c_str());
         AZ_Warning("CharacterControllerComponent", index < m_characterConfig->m_materialSlots.GetSlotsCount()
             , "SetMaterial(): Invalid index %li passed for Entity %s.", index, GetEntityId().ToString().c_str());
-        return;
         m_characterConfig->m_materialSlots.SetMaterialAsset(index, materialAsset);
     }
 
