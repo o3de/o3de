@@ -41,7 +41,6 @@
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserThumbnailView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
-#include <AzToolsFramework/Commands/EntityStateCommand.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>

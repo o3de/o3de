@@ -208,9 +208,6 @@ void CUndoBaseObject::Undo(bool bUndo)
     pObject->Serialize(ar);
 
     GetIEditor()->ResumeUndo();
-
-    using namespace AzToolsFramework;
-    ComponentEntityObjectRequestBus::Event(pObject, &ComponentEntityObjectRequestBus::Events::UpdatePreemptiveUndoCache);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -230,9 +227,6 @@ void CUndoBaseObject::Redo()
     pObject->Serialize(ar);
 
     GetIEditor()->ResumeUndo();
-
-    using namespace AzToolsFramework;
-    ComponentEntityObjectRequestBus::Event(pObject, &ComponentEntityObjectRequestBus::Events::UpdatePreemptiveUndoCache);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -285,9 +279,6 @@ void CUndoBaseObjectMinimal::Undo(bool bUndo)
 
     pObject->ChangeColor(m_undoState.color);
     pObject->SetArea(m_undoState.area);
-
-    using namespace AzToolsFramework;
-    ComponentEntityObjectRequestBus::Event(pObject, &ComponentEntityObjectRequestBus::Events::UpdatePreemptiveUndoCache);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -303,9 +294,6 @@ void CUndoBaseObjectMinimal::Redo()
 
     pObject->ChangeColor(m_redoState.color);
     pObject->SetArea(m_redoState.area);
-
-    using namespace AzToolsFramework;
-    ComponentEntityObjectRequestBus::Event(pObject, &ComponentEntityObjectRequestBus::Events::UpdatePreemptiveUndoCache);
 }
 
 //////////////////////////////////////////////////////////////////////////

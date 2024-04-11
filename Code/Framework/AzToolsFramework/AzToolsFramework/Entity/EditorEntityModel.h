@@ -27,7 +27,6 @@
 #include <AzToolsFramework/Entity/EditorEntitySortBus.h>
 #include <AzToolsFramework/Entity/EditorEntityTransformBus.h>
 #include <AzToolsFramework/Entity/EditorEntityModelBus.h>
-#include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
@@ -41,7 +40,6 @@ namespace AzToolsFramework
     class EditorEntityModel
         : public AzFramework::EntityContextEventBus::Handler
         , public EditorEntityContextNotificationBus::Handler
-        , public SliceEditorEntityOwnershipServiceNotificationBus::Handler
         , public EditorEntitySortNotificationBus::MultiHandler
         , public ToolsApplicationEvents::Bus::Handler
         , public EditorOnlyEntityComponentNotificationBus::Handler
@@ -79,14 +77,6 @@ namespace AzToolsFramework
         // EditorEntitySortNotificationBus
         ///////////////////////////////////
         void ChildEntityOrderArrayUpdated() override;
-
-        //////////////////////////////////////////////////////////////////////////
-        // AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler
-        //////////////////////////////////////////////////////////////////////////
-        void OnSliceInstantiationFailed(const AZ::Data::AssetId& sliceAssetId,
-            const AzFramework::SliceInstantiationTicket& ticket) override;
-        void OnEditorEntitiesPromotedToSlicedEntities(const AzToolsFramework::EntityIdList& promotedEntities) override;
-        void OnEditorEntitiesSliceOwnershipChanged(const AzToolsFramework::EntityIdList& entityIdList) override;
 
         //////////////////////////////////////////////////////////////////////////
         // AzToolsFramework::EditorEntityContextNotificationBus::Handler

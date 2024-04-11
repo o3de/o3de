@@ -35,7 +35,6 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
-#include <AzToolsFramework/Commands/EntityStateCommand.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
