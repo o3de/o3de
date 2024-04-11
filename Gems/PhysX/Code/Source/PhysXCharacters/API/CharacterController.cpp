@@ -377,6 +377,13 @@ namespace PhysX
         }
     }
 
+#if defined(CARBONATED) // called from CharacterControllerComponent::SetTag(const AZ::Crc32& tag) used in Gruber
+    void CharacterController::SetTag(const AZ::Crc32& tag)
+    {
+        m_colliderTag = tag;
+    }
+#endif // defined(CARBONATED)
+
     void CharacterController::SetTag(const AZStd::string& tag)
     {
         m_colliderTag = AZ::Crc32(tag);
