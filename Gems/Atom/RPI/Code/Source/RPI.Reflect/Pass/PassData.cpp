@@ -92,9 +92,10 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<PassData>()
-                    ->Version(1)
+                    ->Version(2) // Added "MergeChildrenAsSubpasses"
                     ->Field("PipelineViewTag", &PassData::m_pipelineViewTag)
-                    ->Field("PipelineGlobalConnections", &PassData::m_pipelineGlobalConnections);
+                    ->Field("PipelineGlobalConnections", &PassData::m_pipelineGlobalConnections)
+                    ->Field("MergeChildrenAsSubpasses", &PassData::m_mergeChildrenAsSubpasses);
             }
         }
 
