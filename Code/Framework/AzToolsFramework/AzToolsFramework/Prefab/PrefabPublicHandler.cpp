@@ -1597,7 +1597,7 @@ namespace AzToolsFramework
 
             AZ_PROFILE_FUNCTION(AzToolsFramework);
             {
-                ScopedUndoBatch undoBatch("Detach Prefab");  // outer undo is for the entire thing - detach AND (optional) delete
+                ScopedUndoBatch outerUndoBatch("Detach Prefab");  // outer undo is for the entire thing - detach AND (optional) delete
 
                 {
                     ScopedUndoBatch undoBatch("Detach Prefab - Actual Detach"); // inner undo is just for the detach part.
