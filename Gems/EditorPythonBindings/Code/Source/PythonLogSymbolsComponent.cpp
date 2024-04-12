@@ -223,7 +223,7 @@ namespace EditorPythonBindings
             // add header
             AZ::u64 filesize = 0;
             AZ::IO::FileIOBase::GetInstance()->Size(fileHandle->m_handle, filesize);
-            bool needsHeader = (filesize == 0);
+            const bool needsHeader = (filesize == 0);
 
             AZStd::string buffer =
                 m_pythonBehaviorDescription.GlobalPropertyDefinition(moduleName, propertyName, *behaviorProperty, needsHeader);

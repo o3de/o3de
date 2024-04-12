@@ -140,24 +140,30 @@ namespace EditorPythonBindings
             AZStd::string FetchOutcomeType(const AZ::TypeId& typeId);
 
             //! Creates a string containing bus events and documentation.
-            AZStd::string BusDefinition(const AZStd::string busName, const AZ::BehaviorEBus* behaviorEBus);
+            AZStd::string BusDefinition(const AZStd::string_view& busName, const AZ::BehaviorEBus* behaviorEBus);
 
             //! Creates a string with class or global method definition and documentation.
+            //! @param methodName the name of the method
+            //! @param behaviorMethod the reflected behavior method to document
+            //! @param behaviorClass the class that the method belongs to (nullptr for non member functions)
             //! @param defineTooltip if true, the tooltip will be included in the definition
+            //! @param defineDebugDescription if true, the debug description will be included in the definition
             AZStd::string MethodDefinition(
-                const AZStd::string methodName,
+                const AZStd::string_view& methodName,
                 const AZ::BehaviorMethod& behaviorMethod,
                 const AZ::BehaviorClass* behaviorClass = nullptr,
                 bool defineTooltip = false,
                 bool defineDebugDescription = false);
 
             //! Creates a string with class definition and documentation.
+            //! @param behaviorClass the reflected behavior class to document
+            //! @param className the name of the class
             //! @param defineProperties if true, the properties will be included in the definition
             //! @param defineMethods if true, the methods will be included in the definition
             //! @param defineTooltip if true, the tooltip will be included in the definition
             AZStd::string ClassDefinition(
                 const AZ::BehaviorClass* behaviorClass,
-                const AZStd::string className,
+                const AZStd::string_view& className,
                 bool defineProperties = true,
                 bool defineMethods = true,
                 bool defineTooltip = false);
@@ -167,8 +173,8 @@ namespace EditorPythonBindings
                 AZStd::string_view propertyName, int level, const AZ::BehaviorProperty& property, const AZ::BehaviorClass* behaviorClass);
 
             AZStd::string GlobalPropertyDefinition(
-                const AZStd::string moduleName,
-                const AZStd::string propertyName,
+                const AZStd::string_view& moduleName,
+                const AZStd::string_view& propertyName,
                 const AZ::BehaviorProperty& behaviorProperty,
                 bool needsHeader = true);
 

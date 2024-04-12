@@ -753,7 +753,7 @@ namespace EditorPythonBindings
 
                 if (serializeContext)
                 {
-                    auto classData = serializeContext->FindClassData(typeId);
+                    const auto classData = serializeContext->FindClassData(typeId);
                     if (classData)
                     {
                         return classData->m_name;
@@ -763,7 +763,7 @@ namespace EditorPythonBindings
                 return "";
             }
 
-            void Indent(int level, AZStd::string& buffer)
+            void Indent(const int level, AZStd::string& buffer)
             {
                 buffer.append(level * 4, ' ');
             }
