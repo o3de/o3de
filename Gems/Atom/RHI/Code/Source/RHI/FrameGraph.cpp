@@ -208,7 +208,7 @@ namespace AZ::RHI
         if (Scope* producer = frameAttachment.GetLastScope())
         {
             // If there's a last scope, we are at a scope subpass that is NOT the first subpass
-            if ((usage == ScopeAttachmentUsage::SubpassInput) || (descriptor.m_subpassIndex > 0))
+            if (usage == ScopeAttachmentUsage::SubpassInput)
             {
                 m_requiresSortForSubpasses = true;
                 InsertEdge(*producer, *m_currentScope, GraphEdgeType::SameGroup);

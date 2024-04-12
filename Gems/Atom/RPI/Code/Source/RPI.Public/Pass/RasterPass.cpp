@@ -112,6 +112,7 @@ namespace AZ
 
             m_subpassIndex = subpassIndex;
 
+            bool atLeastOneAttachmentWasSubpassInput = false;
             for (size_t slotIndex = 0; slotIndex < m_attachmentBindings.size(); ++slotIndex)
             {
                 const PassAttachmentBinding& binding = m_attachmentBindings[slotIndex];
@@ -140,6 +141,8 @@ namespace AZ
                     AZ_Assert(subpassIndex > 0, "The first subpass can't have attachments used as SubpassInput");
                     AZ_Assert(binding.m_unifiedScopeDesc.GetType() == RHI::AttachmentType::Image,
                         "Only image attachments are allowed as SubpassInput.");
+                    AZ_Assert(m_subpassIndex > 0, "The first subpass can not depend on SubpassInput attachments");
+                    atLeastOneAttachmentWasSubpassInput = true;
                     const auto aspectFlags = binding.m_unifiedScopeDesc.GetAsImage().m_imageViewDescriptor.m_aspectFlags;
                     subpassLayoutBuilder.SubpassInputAttachment(binding.GetAttachment()->GetAttachmentId(), aspectFlags);
                     continue;
@@ -156,6 +159,12 @@ namespace AZ
                     RHI::Format format = binding.GetAttachment()->m_descriptor.m_image.m_format;
                     subpassLayoutBuilder.RenderTargetAttachment(format);
                 }
+            }
+
+            if (subpassIndex > 0)
+            {
+                AZ_Assert(atLeastOneAttachmentWasSubpassInput, "Starting from the second subpass, at least one attachment must be of SubpassInput usage.");
+                return false;
             }
 
             return true;
