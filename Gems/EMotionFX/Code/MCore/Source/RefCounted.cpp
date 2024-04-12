@@ -7,13 +7,12 @@
  */
 
 // include required headers
-#include "MemoryObject.h"
-
+#include "RefCounted.h"
 
 namespace MCore
 {
     // destroy a memory object
-    void Destroy(MemoryObject* object)
+    void Destroy(RefCounted* object)
     {
         if (object)
         {
@@ -21,38 +20,33 @@ namespace MCore
         }
     }
 
-
     // constructor
-    MemoryObject::MemoryObject()
+    RefCounted::RefCounted()
     {
         m_referenceCount.SetValue(1);
     }
 
-
     // destructor
-    MemoryObject::~MemoryObject()
+    RefCounted::~RefCounted()
     {
         MCORE_ASSERT(m_referenceCount.GetValue() == 0);
     }
 
-
     // increase the reference count
-    void MemoryObject::IncreaseReferenceCount()
+    void RefCounted::IncreaseReferenceCount()
     {
         m_referenceCount.Increment();
     }
 
-
     // decrease the reference count
-    void MemoryObject::DecreaseReferenceCount()
+    void RefCounted::DecreaseReferenceCount()
     {
         MCORE_ASSERT(m_referenceCount.GetValue() > 0);
         m_referenceCount.Decrement();
     }
 
-
     // destroy the object
-    void MemoryObject::Destroy()
+    void RefCounted::Destroy()
     {
         MCORE_ASSERT(m_referenceCount.GetValue() > 0);
         if (m_referenceCount.Decrement() == 1) 
@@ -61,17 +55,15 @@ namespace MCore
         }
     }
 
-
     // get the reference count
-    uint32 MemoryObject::GetReferenceCount() const
+    uint32 RefCounted::GetReferenceCount() const
     {
         return m_referenceCount.GetValue();
     }
 
-
     // delete it
-    void MemoryObject::Delete()
+    void RefCounted::Delete()
     {
         delete this;
     }
-}   // namespace MCore
+} // namespace MCore

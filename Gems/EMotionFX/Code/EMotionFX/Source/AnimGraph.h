@@ -16,7 +16,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 #include <EMotionFX/Source/AnimGraphObjectIds.h>
-#include <EMotionFX/Source/BaseObject.h>
+#include <MCore/Source/RefCounted.h>
 #include <EMotionFX/Source/EMotionFXConfig.h>
 #include <EMotionFX/Source/Parameter/GroupParameter.h>
 #include <EMotionFX/Source/Parameter/ValueParameter.h>
