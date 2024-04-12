@@ -165,6 +165,14 @@ namespace AZ
             m_deviceBufferNeedsUpdate = true;
         }
 
+        void SimplePointLightFeatureProcessor::SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to SimplePointLightFeatureProcessor::SetLightingChannelMask().");
+
+            m_lightData.GetData(handle.GetIndex()).m_lightingChannelMask = lightingChannelMask;
+            m_deviceBufferNeedsUpdate = true;
+        }
+
         const Data::Instance<RPI::Buffer> SimplePointLightFeatureProcessor::GetLightBuffer() const
         {
             return m_lightBufferHandler.GetBuffer();

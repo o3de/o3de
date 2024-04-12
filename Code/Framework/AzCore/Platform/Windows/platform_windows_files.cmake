@@ -35,6 +35,7 @@ set(FILES
     AzCore/Debug/StackTracer_Windows.cpp
     ../Common/WinAPI/AzCore/Debug/Trace_WinAPI.cpp
     ../Common/WinAPI/AzCore/IO/AnsiTerminalUtils_WinAPI.cpp
+    ../Common/WinAPI/AzCore/IO/FileIO_WinAPI.cpp
     ../Common/WinAPI/AzCore/IO/Streamer/StreamerContext_WinAPI.cpp
     ../Common/WinAPI/AzCore/IO/Streamer/StreamerContext_WinAPI.h
     ../Common/WinAPI/AzCore/IO/SystemFile_WinAPI.cpp

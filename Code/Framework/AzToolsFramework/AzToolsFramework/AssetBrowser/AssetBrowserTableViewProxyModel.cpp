@@ -12,7 +12,6 @@
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
-#include <AzToolsFramework/Editor/RichTextHighlighter.h>
 
 namespace AzToolsFramework
 {
@@ -42,13 +41,7 @@ namespace AzToolsFramework
                     {
                     case Name:
                         {
-                            const QString name = assetBrowserEntry->GetName().c_str();
-                            if (!m_searchString.isEmpty())
-                            {
-                                // highlight characters in filter
-                                return AzToolsFramework::RichTextHighlighter::HighlightText(name, m_searchString);
-                            }
-                            return name;
+                            return AssetBrowserViewUtils::GetAssetBrowserEntryNameWithHighlighting(assetBrowserEntry, m_searchString);
                         }
                     case Type:
                         {
@@ -145,11 +138,7 @@ namespace AzToolsFramework
             {
                 return (rowCount(parent) > 0) && (columnCount(parent) > 0);
             }
-            if (parent != m_rootIndex)
-            {
-                return false;
-            }
-            return true;
+            return parent == m_rootIndex;
         }
 
         int AssetBrowserTableViewProxyModel::columnCount([[maybe_unused]]const QModelIndex& parent) const

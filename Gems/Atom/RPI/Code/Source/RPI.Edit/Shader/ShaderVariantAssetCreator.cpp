@@ -44,7 +44,7 @@ namespace AZ
             bool foundDispatchFunctions = false;
 
             if (m_asset->GetShaderStageFunction(RHI::ShaderStage::Vertex) ||
-                m_asset->GetShaderStageFunction(RHI::ShaderStage::Tessellation) ||
+                m_asset->GetShaderStageFunction(RHI::ShaderStage::Geometry) ||
                 m_asset->GetShaderStageFunction(RHI::ShaderStage::Fragment))
             {
                 foundDrawFunctions = true;
@@ -69,14 +69,12 @@ namespace AZ
                 return false;
             }
 
-            if (m_asset->GetShaderStageFunction(RHI::ShaderStage::Tessellation) &&
+            if (m_asset->GetShaderStageFunction(RHI::ShaderStage::Geometry) &&
                 !m_asset->GetShaderStageFunction(RHI::ShaderStage::Vertex))
             {
-                ReportError("Shader Variant with StableId '%u' has a tessellation function but no vertex function.", m_asset->m_stableId);
+                ReportError("Shader Variant with StableId '%u' has a geometry function but no vertex function.", m_asset->m_stableId);
                 return false;
             }
-
-
 
             m_asset->SetReady();
             return EndCommon(result);

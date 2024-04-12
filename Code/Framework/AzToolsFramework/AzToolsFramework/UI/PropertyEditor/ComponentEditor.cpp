@@ -433,8 +433,8 @@ namespace AzToolsFramework
 
     AzQtComponents::CardNotification* ComponentEditor::CreateNotificationForMissingComponents(
         const QString& message, 
-        AZStd::span<const AZ::ComponentServiceType> services,
-        AZStd::span<const AZ::ComponentServiceType> incompatibleServices)
+        const AZ::ComponentDescriptor::DependencyArrayType& services,
+        const AZ::ComponentDescriptor::DependencyArrayType& incompatibleServices)
     {
         auto notification = CreateNotification(message);
         auto featureButton = notification->addButtonFeature(tr("Add Required Component \342\226\276"));

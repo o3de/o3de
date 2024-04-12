@@ -41,9 +41,9 @@ namespace LyViewPane
     static const char* const SubstanceEditor = "Substance Editor";
     static const char* const LandscapeCanvas = "Landscape Canvas";
     static const char* const AnimationEditor = "EMotion FX Animation Editor";
-    static const char* const PhysXConfigurationEditor = "PhysX Configuration (PREVIEW)";
+    static const char* const PhysXConfigurationEditor = "PhysX Configuration";
 
-    static const char* const SliceRelationships = "Slice Relationship View (PREVIEW)";
+    static const char* const SliceRelationships = "Slice Relationship View";
 
     const int NO_BUILTIN_ACTION = -1;
 }

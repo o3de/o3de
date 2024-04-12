@@ -63,6 +63,7 @@ namespace AZ
 
             void SetAffectsGI([[maybe_unused]] bool affectsGI) override {}
             void SetAffectsGIFactor([[maybe_unused]] float affectsGIFactor) override {}
+            void SetLightingChannelMask([[maybe_unused]] uint32_t lightingChannelMask) override;
 
         protected:
             void InitBase(EntityId entityId);

@@ -20,7 +20,7 @@ namespace AZ::RHI
     struct MultiDeviceBufferMapResponse
     {
         //! Will hold the mapped data for each device selected in the MultiDeviceBuffer
-        AZStd::vector<void*> m_data;
+        AZStd::unordered_map<int, void*> m_data;
     };
 
     using MultiDeviceBufferInitRequest = BufferInitRequestTemplate<MultiDeviceBuffer>;
@@ -120,8 +120,6 @@ namespace AZ::RHI
         //! Validates that the map operation succeeded by printing a warning otherwise. Increments
         //! the map reference counts for the buffer and the pool.
         void ValidateBufferMap(MultiDeviceBuffer& buffer, bool isDataValid);
-
-        bool ValidateNotDeviceLevel() const;
 
         bool ValidatePoolDescriptor(const BufferPoolDescriptor& descriptor) const;
         bool ValidateInitRequest(const MultiDeviceBufferInitRequest& initRequest) const;

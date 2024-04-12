@@ -28,7 +28,8 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
         float3 m_rgbIntensity;
         float  m_affectsGIFactor;
         bool   m_affectsGI;
-        float3 m_padding;
+        uint m_lightingChannelMask;
+        float2 m_padding;
     };
     
     StructuredBuffer<DirectionalLight> m_directionalLights;
@@ -42,7 +43,8 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
         float3 m_rgbIntensityCandelas;
         float m_affectsGIFactor;
         bool m_affectsGI;
-        float3 m_padding;
+        uint m_lightingChannelMask;
+        float2 m_padding;
     };
 
     StructuredBuffer<SimplePointLight> m_simplePointLights;
@@ -59,7 +61,8 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
         float m_cosOuterConeAngle; // cosine of the inner cone angle
         float m_affectsGIFactor;
         bool m_affectsGI;
-        float2 m_padding;
+        uint m_lightingChannelMask;
+        float m_padding;
     };
 
     StructuredBuffer<SimpleSpotLight> m_simpleSpotLights;
@@ -75,7 +78,8 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
         uint3 m_shadowIndices;
         float m_affectsGIFactor;
         bool m_affectsGI;
-        float3 m_padding;
+        uint m_lightingChannelMask;
+        float2 m_padding;
     };
     
     StructuredBuffer<PointLight> m_pointLights;
@@ -96,7 +100,8 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
         uint m_shadowIndex;
         float m_affectsGIFactor;
         bool m_affectsGI;
-        float2 m_padding;
+        uint m_lightingChannelMask;
+        float m_padding;
     };
     
     StructuredBuffer<DiskLight> m_diskLights;
@@ -113,7 +118,8 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
         float m_invAttenuationRadiusSquared;    // inverse of the distance at which this light no longer has an effect, squared. Also used for falloff calculations.
         float m_affectsGIFactor;
         bool m_affectsGI;
-        float2 m_padding;
+        uint m_lightingChannelMask;
+        float m_padding;
     };
     
     StructuredBuffer<CapsuleLight> m_capsuleLights;
@@ -132,7 +138,8 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
         uint   m_flags;                         // see QuadLightFlag enum
         float  m_affectsGIFactor;
         bool   m_affectsGI;
-        float2 m_padding;
+        uint m_lightingChannelMask;
+        float m_padding;
     };
     
     StructuredBuffer<QuadLight> m_quadLights;

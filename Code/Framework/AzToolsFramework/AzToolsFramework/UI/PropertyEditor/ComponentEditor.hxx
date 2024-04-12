@@ -155,8 +155,8 @@ namespace AzToolsFramework
         AzQtComponents::CardNotification* CreateNotificationForConflictingComponents(const QString& message, const AZ::Entity::ComponentArrayType& conflictingComponents);
         AzQtComponents::CardNotification* CreateNotificationForMissingComponents(
             const QString& message,
-            AZStd::span<const AZ::ComponentServiceType> services,
-            AZStd::span<const AZ::ComponentServiceType> incompatibleServices);
+            const AZ::ComponentDescriptor::DependencyArrayType& services,
+            const AZ::ComponentDescriptor::DependencyArrayType& incompatibleServices);
 
         AzQtComponents::CardNotification* CreateNotificationForWarningComponents(const QString& message);
 

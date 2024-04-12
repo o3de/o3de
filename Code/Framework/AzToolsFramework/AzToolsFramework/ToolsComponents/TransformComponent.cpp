@@ -993,24 +993,17 @@ namespace AzToolsFramework
 
             if (!m_parentEntityId.IsValid())
             {
-                // If Prefabs are enabled, reroute the invalid id to the focused prefab container entity id
-                bool isPrefabSystemEnabled = false;
-                AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                    isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+                // Reroute the invalid id to the focused prefab container entity id
+                auto prefabFocusPublicInterface = AZ::Interface<Prefab::PrefabFocusPublicInterface>::Get();
 
-                if (isPrefabSystemEnabled)
+                if (prefabFocusPublicInterface)
                 {
-                    auto prefabFocusPublicInterface = AZ::Interface<Prefab::PrefabFocusPublicInterface>::Get();
+                    auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+                    EditorEntityContextRequestBus::BroadcastResult(
+                        editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
-                    if (prefabFocusPublicInterface)
-                    {
-                        auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-                        EditorEntityContextRequestBus::BroadcastResult(
-                            editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
-
-                        m_parentEntityId = prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
-                        refreshLevel = AZ::Edit::PropertyRefreshLevels::ValuesOnly;
-                    }
+                    m_parentEntityId = prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
+                    refreshLevel = AZ::Edit::PropertyRefreshLevels::ValuesOnly;
                 }
             }
 

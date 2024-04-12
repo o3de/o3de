@@ -13,6 +13,7 @@
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/Serialization/DynamicSerializableField.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
@@ -34,6 +35,8 @@ namespace AZ::Reflection
             Name::FromStringLiteral("ParentContainerCanBeModified", AZ::Interface<AZ::NameDictionary>::Get());
         const Name ContainerElementOverride = Name::FromStringLiteral("ContainerElementOverride", AZ::Interface<AZ::NameDictionary>::Get());
         const Name ContainerIndex = Name::FromStringLiteral("ContainerIndex", AZ::Interface<AZ::NameDictionary>::Get());
+        const Name ParentInstance = Name::FromStringLiteral("ParentInstance", AZ::Interface<AZ::NameDictionary>::Get());
+        const Name ParentClassData = Name::FromStringLiteral("ParentClassData", AZ::Interface<AZ::NameDictionary>::Get());
     } // namespace DescriptorAttributes
 
     // attempts to stringify the passed instance; useful for things like maps where the key element should not be user editable
@@ -218,7 +221,8 @@ namespace AZ::Reflection
                 {
                     return value;
                 }
-                else if (underlyingTypeId == azrtti_typeid<unsigned long>() && GetEnumOptionNameUnsigned(*static_cast<unsigned long*>(instance)))
+                else if (
+                    underlyingTypeId == azrtti_typeid<unsigned long>() && GetEnumOptionNameUnsigned(*static_cast<unsigned long*>(instance)))
                 {
                     return value;
                 }
@@ -599,7 +603,8 @@ namespace AZ::Reflection
                                     groupName = AZStd::string::format("_GROUP[%d]", ++groupCounter);
                                     nodeData.m_groupEntries.insert(groupName);
 
-                                    // Create a dummy group entry that will be used to correctly display all children properties and UI elements.
+                                    // Create a dummy group entry that will be used to correctly display all children properties and UI
+                                    // elements.
                                     AZ::SerializeContext::ClassElement* UIElement = new AZ::SerializeContext::ClassElement();
                                     UIElement->m_editData = &currElement;
                                     UIElement->m_flags = SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT;
@@ -867,6 +872,7 @@ namespace AZ::Reflection
                 StackEntry& parentData = m_stack.back();
 
                 const AZ::Edit::ElementData* elementEditData = (classElement ? classElement->m_editData : nullptr);
+
                 if (classElement)
                 {
                     // Ensure our instance pointer is resolved and safe to bind to member attributes.
@@ -900,6 +906,7 @@ namespace AZ::Reflection
                     }
 
                     if (!elementEditData && ((classElement->m_flags & AZ::SerializeContext::ClassElement::FLG_BASE_CLASS) == 0) &&
+                        ((classElement->m_flags & AZ::SerializeContext::ClassElement::FLG_DYNAMIC_FIELD) == 0) &&
                         !(parentData.m_classData && parentData.m_classData->m_container))
                     {
                         m_nodeWasSkipped = true;
@@ -1530,6 +1537,20 @@ namespace AZ::Reflection
                         { group, DescriptorAttributes::Handler, Dom::Value(handlerName.GetCStr(), false) });
                 }
                 nodeData.m_cachedAttributes.push_back({ group, DescriptorAttributes::SerializedPath, Dom::Value(nodeData.m_path, true) });
+
+                if (m_stack.size() >= 2)
+                {
+                    StackEntry& parentNode = m_stack[m_stack.size() - 2];
+                    nodeData.m_cachedAttributes.push_back(
+                        { group, DescriptorAttributes::ParentInstance, Dom::Utils::ValueFromType(parentNode.m_instance) });
+
+                    AZ::PointerObject parentClassDataObject;
+                    parentClassDataObject.m_address = const_cast<SerializeContext::ClassData*>(parentNode.m_classData);
+                    parentClassDataObject.m_typeId = azrtti_typeid<const SerializeContext::ClassData*>();
+                    nodeData.m_cachedAttributes.push_back(
+                        { group, DescriptorAttributes::ParentClassData, Dom::Utils::ValueFromType(parentClassDataObject) });
+                }
+
                 if (!nodeData.m_skipLabel && !labelAttributeValue.empty())
                 {
                     // If we allocated a local label buffer we need to make a copy to store the label
@@ -1780,7 +1801,7 @@ namespace AZ::Reflection
         if (serializeContext == nullptr)
         {
             AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-            AZ_Assert(serializeContext != nullptr, "Unable to retreive a SerializeContext");
+            AZ_Assert(serializeContext != nullptr, "Unable to retrieve a SerializeContext");
         }
 
         LegacyReflectionInternal::InstanceVisitor helper(visitor, instance, typeId, serializeContext);

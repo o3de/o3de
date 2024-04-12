@@ -103,10 +103,6 @@ namespace AzToolsFramework
                 [this](const QModelIndex& index)
                 {
                     auto indexData = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
-                    if (indexData->GetEntryType() != AssetBrowserEntry::AssetEntryType::Folder)
-                    {
-                        AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, indexData);
-                    }
                     emit entryClicked(indexData);
                 });
 
@@ -271,6 +267,7 @@ namespace AzToolsFramework
         void AssetBrowserTableView::OnAssetBrowserComponentReady()
         {
             m_treeToTableProxyModel->setSourceModel(m_assetBrowserModel);
+            UpdateFilterInLocalFilterModel();
         }
 
         AzQtComponents::AssetFolderTableView* AssetBrowserTableView::GetTableViewWidget() const
@@ -564,7 +561,7 @@ namespace AzToolsFramework
             bool hasString{ false };
             const QString tagString("String");
             const QString tagFolder("Folder");
-            auto filterCopy = new CompositeFilter(CompositeFilter::LogicOperatorType::AND);
+            auto clonedFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::AND);
             for (const auto& subFilter : filter->GetSubFilters())
             {
                 if (subFilter->GetTag() == tagString)
@@ -576,7 +573,7 @@ namespace AzToolsFramework
                 // Skip the folder filter on the table view so that we can see files
                 if (subFilter->GetTag() != tagFolder)
                 {
-                    filterCopy->AddFilter(FilterConstType(subFilter->Clone()));
+                    clonedFilter->AddFilter(FilterConstType(subFilter->Clone()));
                 }
             }
 
@@ -588,41 +585,41 @@ namespace AzToolsFramework
 
             if (hasString)
             {
-                for (auto& subFilter : filterCopy->GetSubFilters())
+                // With string searches enabled we disable filter propagation to only show exact mattress.
+                for (auto subFilter : clonedFilter->GetSubFilters())
                 {
-                    auto anyCompFilter = qobject_cast<const CompositeFilter*>(subFilter.get());
-                    if (anyCompFilter)
+                    if (auto clonedCompositeFilter = qobject_cast<const CompositeFilter*>(subFilter.get()); clonedCompositeFilter)
                     {
-                        auto myCompFilter = const_cast<CompositeFilter*>(anyCompFilter);
-                        myCompFilter->SetFilterPropagation(AssetBrowserEntryFilter::None);
+                        auto modifiedCompositeFilter = const_cast<CompositeFilter*>(clonedCompositeFilter);
+                        modifiedCompositeFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::None);
                     }
                 }
 
-                auto productFilter = new CustomFilter([](const AssetBrowserEntry* entry) {
-                    return entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Product;
-                });
-                productFilter->SetName("NoProduct");
-                productFilter->SetFilterPropagation(AssetBrowserEntryFilter::None);
+                // With string searches enabled we only want to show sources and products in this view.
+                auto customTypeFilter = new CustomFilter(
+                    [](const AssetBrowserEntry* entry)
+                    {
+                        switch (entry->GetEntryType())
+                        {
+                        case AssetBrowserEntry::AssetEntryType::Product:
+                        case AssetBrowserEntry::AssetEntryType::Source:
+                            return true;
+                        }
+                        return false;
+                    });
+                clonedFilter->AddFilter(FilterConstType(customTypeFilter));
 
-                filterCopy->AddFilter(FilterConstType(productFilter));
-                filterCopy->SetFilterPropagation(AssetBrowserEntryFilter::None);
-            }
-            else
-            {
-                filterCopy->SetFilterPropagation(AssetBrowserEntryFilter::Up | AssetBrowserEntryFilter::Down);
-            }
-
-            m_assetFilterModel->SetFilter(FilterConstType(filterCopy));
-
-            if (hasString)
-            {
-                m_tableViewWidget->expandAll();
+                clonedFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::None);
                 m_assetFilterModel->setSourceModel(m_treeToTableProxyModel);
+                m_assetFilterModel->SetFilter(FilterConstType(clonedFilter));
+                m_tableViewWidget->expandAll();
             }
             else
             {
-                m_tableViewWidget->collapseAll();
+                clonedFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
                 m_assetFilterModel->setSourceModel(m_assetBrowserModel);
+                m_assetFilterModel->SetFilter(FilterConstType(clonedFilter));
+                m_tableViewWidget->collapseAll();
             }
         }
 

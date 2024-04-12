@@ -15,8 +15,6 @@
 #include <Atom/RHI.Reflect/Metal/ShaderStageFunction.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
-#include <ShaderBuilder_Traits_Platform.h>
-
 namespace AZ
 {
     namespace Metal

@@ -27,6 +27,7 @@ set(FILES
     Include/Atom/Feature/ImGui/ImGuiUtils.h
     Include/Atom/Feature/ImGui/SystemBus.h
     Include/Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessor.h
+    Include/Atom/Feature/LightingChannel/LightingChannelConfiguration.h
     Include/Atom/Feature/LookupTable/LookupTableAsset.h
     Include/Atom/Feature/Mesh/MeshFeatureProcessor.h
     Include/Atom/Feature/Mesh/ModelReloaderSystemInterface.h
@@ -144,6 +145,7 @@ set(FILES
     Source/ImGui/ImGuiSystemComponent.cpp
     Source/ImGui/ImGuiSystemComponent.h
     Source/ImageBasedLights/ImageBasedLightFeatureProcessor.cpp
+    Source/LightingChannel/LightingChannelConfiguration.cpp
     Source/LookupTable/LookupTableAsset.cpp
     Source/Material/ConvertEmissiveUnitFunctor.cpp
     Source/Material/ConvertEmissiveUnitFunctor.h
@@ -177,6 +179,8 @@ set(FILES
     Source/OcclusionCullingPlane/OcclusionCullingPlaneFeatureProcessor.cpp
     Source/OcclusionCullingPlane/OcclusionCullingPlane.h
     Source/OcclusionCullingPlane/OcclusionCullingPlane.cpp
+    Source/Silhouette/SilhouetteFeatureProcessor.cpp
+    Source/Silhouette/SilhouetteFeatureProcessor.h
     Source/PostProcess/PostProcessBase.cpp
     Source/PostProcess/PostProcessBase.h
     Source/PostProcess/PostProcessFeatureProcessor.cpp

@@ -27,7 +27,7 @@ uint        prefix##m_emissiveMapUvIndex;
 option bool prefix##o_emissiveEnabled; \
 option bool prefix##o_emissive_useTexture; 
 
-real3 GetEmissiveInput(Texture2D map, sampler mapSampler, float2 uv, real factor, real3 emissiveColor, real emissiveAffectedByAlpha, real alpha, bool emissiveEnabled, bool useTexture)
+real3 GetEmissiveInput(Texture2D map, sampler mapSampler, float2 uv, real factor, real3 emissiveColor, real emissiveAffectedByAlpha, real alpha, bool emissiveEnabled, bool useTexture, float4 uvDxDy = float4(0.0, 0.0, 0.0, 0.0), bool customDerivatives = false)
 {
     real3 emissive = real3(0,0,0);
     if(emissiveEnabled)
@@ -35,7 +35,15 @@ real3 GetEmissiveInput(Texture2D map, sampler mapSampler, float2 uv, real factor
         emissive = factor * lerp(1, alpha, emissiveAffectedByAlpha) * emissiveColor;
         if (useTexture)
         {
-            real3 sampledValue = real3(map.Sample(mapSampler, uv).rgb);
+            real3 sampledValue;
+            if (customDerivatives)
+            {
+                sampledValue = real3(map.SampleGrad(mapSampler, uv, uvDxDy.xy, uvDxDy.zw).rgb);
+            }
+            else
+            {
+                sampledValue = real3(map.Sample(mapSampler, uv).rgb);
+            }
             emissive *= TransformColor(sampledValue, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
         }
     }

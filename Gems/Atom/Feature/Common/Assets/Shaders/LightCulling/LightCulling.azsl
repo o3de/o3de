@@ -38,7 +38,8 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         float3 m_rgbIntensityCandelas;
         float m_affectsGIFactor;
         bool m_affectsGI;
-        float3 m_padding;
+        uint m_lightingChannelMask;
+        float2 m_padding;
     };
 
     struct SimpleSpotLight
@@ -51,7 +52,8 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         float m_cosOuterConeAngle; // cosine of the inner cone angle
         float m_affectsGIFactor;
         bool m_affectsGI;
-        float2 m_padding;
+        uint m_lightingChannelMask;
+        float m_padding;
     };
 
     struct PointLight
@@ -63,7 +65,8 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         uint3 m_shadowIndices;
         float m_affectsGIFactor;
         bool m_affectsGI;
-        float3 m_padding;
+        uint m_lightingChannelMask;
+        float2 m_padding;
     };
 
     struct DiskLight
@@ -80,7 +83,8 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         uint m_shadowIndex;
         float m_affectsGIFactor;
         bool m_affectsGI;
-        float2 m_padding;
+        uint m_lightingChannelMask;
+        float m_padding;
     };
 
     struct CapsuleLight
@@ -93,7 +97,8 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         float m_invAttenuationRadiusSquared; // Inverse of the distance at which this light no longer has an effect, squared. Also used for falloff calculations.
         float m_affectsGIFactor;
         bool m_affectsGI;
-        float2 m_padding;
+        uint m_lightingChannelMask;
+        float m_padding;
     };
     
     struct QuadLight
@@ -108,7 +113,8 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         uint m_flags; // See QuadLightFlag
         float m_affectsGIFactor;
         bool m_affectsGI;
-        float2 m_padding;
+        uint m_lightingChannelMask;
+        float m_padding;
     };
     
     struct LightCullingConstants

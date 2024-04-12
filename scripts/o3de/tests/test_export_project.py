@@ -409,7 +409,7 @@ def test_bundle_assets(tmp_path, asset_platform):
         mock_ctx.project_path = test_project_path
 
         result = bundle_assets(ctx=mock_ctx,
-                               selected_platform=asset_platform,
+                               selected_platforms=[asset_platform],
                                seedlist_paths=[test_seedlist_path],
                                seedfile_paths=[],
                                tools_build_path=test_build_tool_path,

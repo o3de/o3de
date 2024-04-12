@@ -121,6 +121,7 @@ set(FILES
     Prefab/PrefabInstantiateTests.cpp
     Prefab/PrefabAssetFixupTests.cpp
     Prefab/PrefabLoadTemplateTests.cpp
+    Prefab/PrefabProcessorRemoveComponentPerPlatformTests.cpp
     Prefab/PrefabTestComponent.cpp
     Prefab/PrefabTestComponent.h
     Prefab/PrefabTestData.cpp
@@ -168,6 +169,7 @@ set(FILES
     PropertyIntSpinCtrlTests.cpp
     PropertyTreeEditorTests.cpp
     PythonBindingTests.cpp
+    PythonLoaderTests.cpp
     QtWidgetLimitsTests.cpp
     Script/LuaEditorSystemComponentTests.cpp
     Script/ScriptComponentTests.cpp
@@ -184,7 +186,6 @@ set(FILES
     SpinBoxTests.cpp
     SQLiteConnectionTests.cpp
     ThumbnailerTests.cpp
-    ToolsComponents/EditorLayerComponentTests.cpp
     ToolsComponents/EditorTransformComponentTests.cpp
     TransformComponent.cpp
     UI/EntityIdQLineEditTests.cpp

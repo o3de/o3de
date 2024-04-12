@@ -55,7 +55,9 @@ Surface EvaluateSurface_Eye(
     float3 localPosition,
     bool isFrontFace,
     float4x4 worldMatrix,
-    float3x3 worldMatrixIT)
+    float3x3 worldMatrixIT,
+    float4 uvDxDy,
+    bool customDerivatives)
 {
     Surface surface;
     surface.position = positionWS;
@@ -87,12 +89,25 @@ Surface EvaluateSurface_Eye(
 
     // Get surface normal for each layer (iris/sclera) and blend using the mask defined above
     float2 irisNormalUv = uvs[MaterialSrg::m_iris_m_normalMapUvIndex];
-    float3 irisNormal = GetNormalInputWS(MaterialSrg::m_iris_m_normalMap, MaterialSrg::m_sampler, irisNormalUv, MaterialSrg::m_iris_m_flipNormalX, MaterialSrg::m_iris_m_flipNormalY, isFrontFace, surface.vertexNormal,
-                                    tangents[MaterialSrg::m_iris_m_normalMapUvIndex], bitangents[MaterialSrg::m_iris_m_normalMapUvIndex], uvMatrix, o_iris_o_normal_useTexture, MaterialSrg::m_iris_m_normalFactor);
-
     float2 scleraNormalUv = uvs[MaterialSrg::m_sclera_m_normalMapUvIndex];
-    float3 scleraNormal = GetNormalInputWS(MaterialSrg::m_sclera_m_normalMap, MaterialSrg::m_sampler, scleraNormalUv, MaterialSrg::m_sclera_m_flipNormalX, MaterialSrg::m_sclera_m_flipNormalY, isFrontFace, surface.vertexNormal,
-                                    tangents[MaterialSrg::m_sclera_m_normalMapUvIndex], bitangents[MaterialSrg::m_sclera_m_normalMapUvIndex], uvMatrix, o_sclera_o_normal_useTexture, MaterialSrg::m_sclera_m_normalFactor);
+    float3 irisNormal, scleraNormal;
+    
+    if (customDerivatives)
+    {
+        irisNormal = GetNormalInputWS(MaterialSrg::m_iris_m_normalMap, MaterialSrg::m_sampler, irisNormalUv, MaterialSrg::m_iris_m_flipNormalX, MaterialSrg::m_iris_m_flipNormalY, isFrontFace, surface.vertexNormal,
+                                        tangents[MaterialSrg::m_iris_m_normalMapUvIndex], bitangents[MaterialSrg::m_iris_m_normalMapUvIndex], uvMatrix, o_iris_o_normal_useTexture, real(MaterialSrg::m_iris_m_normalFactor), uvDxDy, customDerivatives);
+
+        scleraNormal = GetNormalInputWS(MaterialSrg::m_sclera_m_normalMap, MaterialSrg::m_sampler, scleraNormalUv, MaterialSrg::m_sclera_m_flipNormalX, MaterialSrg::m_sclera_m_flipNormalY, isFrontFace, surface.vertexNormal,
+                                        tangents[MaterialSrg::m_sclera_m_normalMapUvIndex], bitangents[MaterialSrg::m_sclera_m_normalMapUvIndex], uvMatrix, o_sclera_o_normal_useTexture, real(MaterialSrg::m_sclera_m_normalFactor), uvDxDy, customDerivatives);
+    }
+    else
+    {
+        irisNormal = GetNormalInputWS(MaterialSrg::m_iris_m_normalMap, MaterialSrg::m_sampler, irisNormalUv, MaterialSrg::m_iris_m_flipNormalX, MaterialSrg::m_iris_m_flipNormalY, isFrontFace, surface.vertexNormal,
+                                        tangents[MaterialSrg::m_iris_m_normalMapUvIndex], bitangents[MaterialSrg::m_iris_m_normalMapUvIndex], uvMatrix, o_iris_o_normal_useTexture, real(MaterialSrg::m_iris_m_normalFactor), float4(0.0f, 0.0f, 0.0f, 0.0f), false);
+
+        scleraNormal = GetNormalInputWS(MaterialSrg::m_sclera_m_normalMap, MaterialSrg::m_sampler, scleraNormalUv, MaterialSrg::m_sclera_m_flipNormalX, MaterialSrg::m_sclera_m_flipNormalY, isFrontFace, surface.vertexNormal,
+                                        tangents[MaterialSrg::m_sclera_m_normalMapUvIndex], bitangents[MaterialSrg::m_sclera_m_normalMapUvIndex], uvMatrix, o_sclera_o_normal_useTexture, real(MaterialSrg::m_sclera_m_normalFactor), float4(0.0f, 0.0f, 0.0f, 0.0f), false);
+    }
 
     surface.normal = normalize(lerp(irisNormal, scleraNormal, mask));
 
@@ -162,12 +177,12 @@ Surface EvaluateSurface_Eye(
 
     // Sample iris color map and blend with the base iris color
     real2 irisBaseColorUv = irisRefractionUv;
-    real3 irisSampledColor = GetBaseColorInput(MaterialSrg::m_iris_m_baseColorMap, MaterialSrg::m_sampler, irisBaseColorUv, real3(MaterialSrg::m_iris_m_baseColor), o_iris_o_baseColor_useTexture);
+    real3 irisSampledColor = GetBaseColorInput(MaterialSrg::m_iris_m_baseColorMap, MaterialSrg::m_sampler, irisBaseColorUv, real3(MaterialSrg::m_iris_m_baseColor), o_iris_o_baseColor_useTexture, uvDxDy, customDerivatives);
     real3 irisColor = BlendBaseColor(irisSampledColor, real3(MaterialSrg::m_iris_m_baseColor), real(MaterialSrg::m_iris_m_baseColorFactor), o_iris_o_baseColorTextureBlendMode, o_iris_o_baseColor_useTexture);
 
     // Sample sclera color map and blend with the base sclera color
     real2 scleraBaseColorUv = uvs[MaterialSrg::m_sclera_m_baseColorMapUvIndex];
-    real3 scleraSampledColor = GetBaseColorInput(MaterialSrg::m_sclera_m_baseColorMap, MaterialSrg::m_sampler, scleraBaseColorUv, real3(MaterialSrg::m_sclera_m_baseColor), o_sclera_o_baseColor_useTexture);
+    real3 scleraSampledColor = GetBaseColorInput(MaterialSrg::m_sclera_m_baseColorMap, MaterialSrg::m_sampler, scleraBaseColorUv, real3(MaterialSrg::m_sclera_m_baseColor), o_sclera_o_baseColor_useTexture, uvDxDy, customDerivatives);
     real3 scleraColor = BlendBaseColor(scleraSampledColor, real3(MaterialSrg::m_sclera_m_baseColor), real(MaterialSrg::m_sclera_m_baseColorFactor), o_sclera_o_baseColorTextureBlendMode, o_sclera_o_baseColor_useTexture);
 
     // Blend iris and sclera output colors
@@ -176,7 +191,7 @@ Surface EvaluateSurface_Eye(
     // ------- Specular -------
 
     real2 specularUv = uvs[MaterialSrg::m_specularF0MapUvIndex];
-    real specularF0Factor = GetSpecularInput(MaterialSrg::m_specularF0Map, MaterialSrg::m_sampler, specularUv, real(MaterialSrg::m_specularF0Factor), o_specularF0_useTexture);
+    real specularF0Factor = GetSpecularInput(MaterialSrg::m_specularF0Map, MaterialSrg::m_sampler, specularUv, real(MaterialSrg::m_specularF0Factor), o_specularF0_useTexture, uvDxDy, customDerivatives);
 
     surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor);
 
@@ -185,11 +200,11 @@ Surface EvaluateSurface_Eye(
     // Get surface roughness for each layer (iris/sclera) and blend using the mask defined above
     real2 irisRoughnessUv = irisRefractionUv;
     real irisRoughnessLinear = GetRoughnessInput(MaterialSrg::m_iris_m_roughnessMap, MaterialSrg::m_sampler, irisRoughnessUv, real(MaterialSrg::m_iris_m_roughnessFactor),
-                                        real(MaterialSrg::m_iris_m_roughnessLowerBound), real(MaterialSrg::m_iris_m_roughnessUpperBound), o_iris_o_roughness_useTexture);
+                                        real(MaterialSrg::m_iris_m_roughnessLowerBound), real(MaterialSrg::m_iris_m_roughnessUpperBound), o_iris_o_roughness_useTexture, uvDxDy, customDerivatives);
 
     real2 scleraRoughnessUv = uvs[MaterialSrg::m_sclera_m_roughnessMapUvIndex];
     real scleraRoughnessLinear = GetRoughnessInput(MaterialSrg::m_sclera_m_roughnessMap, MaterialSrg::m_sampler, scleraRoughnessUv, real(MaterialSrg::m_sclera_m_roughnessFactor),
-                                        real(MaterialSrg::m_sclera_m_roughnessLowerBound), real(MaterialSrg::m_sclera_m_roughnessUpperBound), o_sclera_o_roughness_useTexture);
+                                        real(MaterialSrg::m_sclera_m_roughnessLowerBound), real(MaterialSrg::m_sclera_m_roughnessUpperBound), o_sclera_o_roughness_useTexture, uvDxDy, customDerivatives);
 
     surface.roughnessLinear = lerp(irisRoughnessLinear, scleraRoughnessLinear, mask);
     surface.CalculateRoughnessA();
@@ -204,21 +219,21 @@ Surface EvaluateSurface_Eye(
 
 #if OUTPUT_SUBSURFACE
     real2 subsurfaceUv = uvs[MaterialSrg::m_subsurfaceScatteringInfluenceMapUvIndex];
-    surface.subsurfaceScatteringFactor = GetSubsurfaceInput(MaterialSrg::m_subsurfaceScatteringInfluenceMap, MaterialSrg::m_sampler, subsurfaceUv, real(MaterialSrg::m_subsurfaceScatteringFactor));
+    surface.subsurfaceScatteringFactor = GetSubsurfaceInput(MaterialSrg::m_subsurfaceScatteringInfluenceMap, MaterialSrg::m_sampler, subsurfaceUv, real(MaterialSrg::m_subsurfaceScatteringFactor), uvDxDy, customDerivatives);
     surface.subsurfaceScatteringQuality = real(MaterialSrg::m_subsurfaceScatteringQuality);
     surface.scatterDistance = real3(MaterialSrg::m_scatterDistance);
 #endif
 
     // ------- Occlusion -------
     
-    surface.diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_diffuseOcclusionMap, MaterialSrg::m_sampler, uvs[MaterialSrg::m_diffuseOcclusionMapUvIndex], real(MaterialSrg::m_diffuseOcclusionFactor), o_diffuseOcclusion_useTexture);
-    surface.specularOcclusion = GetOcclusionInput(MaterialSrg::m_specularOcclusionMap, MaterialSrg::m_sampler, uvs[MaterialSrg::m_specularOcclusionMapUvIndex], real(MaterialSrg::m_specularOcclusionFactor), o_specularOcclusion_useTexture);
+    surface.diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_diffuseOcclusionMap, MaterialSrg::m_sampler, uvs[MaterialSrg::m_diffuseOcclusionMapUvIndex], real(MaterialSrg::m_diffuseOcclusionFactor), o_diffuseOcclusion_useTexture, uvDxDy, customDerivatives);
+    surface.specularOcclusion = GetOcclusionInput(MaterialSrg::m_specularOcclusionMap, MaterialSrg::m_sampler, uvs[MaterialSrg::m_specularOcclusionMapUvIndex], real(MaterialSrg::m_specularOcclusionFactor), o_specularOcclusion_useTexture, uvDxDy, customDerivatives);
 
     // ------- Transmission -------
 
 #if ENABLE_TRANSMISSION
     real2 transmissionUv = uvs[MaterialSrg::m_transmissionThicknessMapUvIndex];
-    real4 transmissionTintThickness = GeTransmissionInput(MaterialSrg::m_transmissionThicknessMap, MaterialSrg::m_sampler, transmissionUv, real4(MaterialSrg::m_transmissionTintThickness));
+    real4 transmissionTintThickness = GeTransmissionInput(MaterialSrg::m_transmissionThicknessMap, MaterialSrg::m_sampler, transmissionUv, real4(MaterialSrg::m_transmissionTintThickness), uvDxDy, customDerivatives);
     surface.transmission.tint = transmissionTintThickness.rgb;
     surface.transmission.thickness = transmissionTintThickness.w;
     surface.transmission.transmissionParams = real4(MaterialSrg::m_transmissionParams);
@@ -226,6 +241,49 @@ Surface EvaluateSurface_Eye(
 #endif
 
     return surface;
+}
+
+// helper function to keep compatible with the previous version
+// because dxc compiler doesn't allow default parameters on functions with overloads
+Surface EvaluateSurface_Eye(
+    float3 positionWS,
+    real3 vertexNormal,
+    real3 tangents[UvSetCount],
+    real3 bitangents[UvSetCount],
+    float2 uvs[UvSetCount],
+    float3 localPosition,
+    bool isFrontFace,
+    real4x4 worldMatrix,
+    real3x3 worldMatrixIT)
+{
+    return EvaluateSurface_Eye(
+        positionWS,
+        vertexNormal,
+        tangents,
+        bitangents,
+        uvs,
+        localPosition,
+        isFrontFace,
+        worldMatrix,
+        worldMatrixIT,
+        float4(0.0f, 0.0f, 0.0f, 0.0f),
+        false);
+}
+
+Surface EvaluateSurface_Eye(VsOutput IN, PixelGeometryData geoData, float4 uvDxDy, bool customDerivatives)
+{
+    return EvaluateSurface_Eye(
+        geoData.positionWS,
+        geoData.vertexNormal,
+        geoData.tangents,
+        geoData.bitangents,
+        geoData.uvs,
+        geoData.localPosition,
+        geoData.isFrontFace,
+        geoData.objectToWorld,
+        geoData.objectToWorldIT,
+        uvDxDy,
+        customDerivatives);
 }
 
 Surface EvaluateSurface_Eye(VsOutput IN, PixelGeometryData geoData)
@@ -239,5 +297,7 @@ Surface EvaluateSurface_Eye(VsOutput IN, PixelGeometryData geoData)
         geoData.localPosition,
         geoData.isFrontFace,
         geoData.objectToWorld,
-        geoData.objectToWorldIT);
+        geoData.objectToWorldIT,
+        float4(0.0f, 0.0f, 0.0f, 0.0f),
+        false);
 }

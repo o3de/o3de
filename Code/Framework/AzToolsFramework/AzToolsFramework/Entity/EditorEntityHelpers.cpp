@@ -521,12 +521,7 @@ namespace AzToolsFramework
         // There will currently always be one root container entity, so there's no order to retrieve
         if (!parentId.IsValid())
         {
-            bool isPrefabEnabled = false;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-            if (isPrefabEnabled)
-            {
-                return children;
-            }
+            return children;
         }
 
         EntityIdList entityChildOrder;
@@ -748,7 +743,7 @@ namespace AzToolsFramework
 
     static void SetEntityLockStateRecursively(
         const AZ::EntityId entityId, const bool locked,
-        const AZ::EntityId toggledEntityId, const bool toggledEntityWasLayer)
+        const AZ::EntityId toggledEntityId)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
@@ -757,129 +752,24 @@ namespace AzToolsFramework
             return;
         }
 
-        // first set lock state of the entity in the outliner we clicked on to lock
-        bool notifyChildrenOfLayer = true;
-        if (!toggledEntityWasLayer || toggledEntityId == entityId)
-        {
-            EditorLockComponentRequestBus::Event(
-                entityId, &EditorLockComponentRequests::SetLocked, locked);
-        }
-        else
-        {
-            bool layerEntity = false;
-            Layers::EditorLayerComponentRequestBus::EventResult(
-                layerEntity, entityId, &Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-
-            bool prevLockState = false;
-            EditorEntityInfoRequestBus::EventResult(
-                prevLockState, entityId, &EditorEntityInfoRequestBus::Events::IsLocked);
-
-            // if we're unlocking a layer, we do not want to notify/modify child entities
-            // as this is a non-destructive change (their individual lock state is preserved)
-            if (prevLockState && layerEntity && !locked)
-            {
-                notifyChildrenOfLayer = false;
-            }
-
-            // for all other entities, if we're unlocking and they were individually already locked,
-            // keep their lock state, otherwise if we're locking, set all entities to be locked.
-            // note: this notification will update the lock state in ComponentEntityObject and EditorLockComponent
-            bool newLockState = locked ? true : prevLockState;
-            EditorLockComponentNotificationBus::Event(
-                entityId, &EditorLockComponentNotificationBus::Events::OnEntityLockChanged,
-                newLockState);
-        }
-
-        if (notifyChildrenOfLayer)
-        {
-            EntityIdList children;
-            EditorEntityInfoRequestBus::EventResult(
-                children, entityId, &EditorEntityInfoRequestBus::Events::GetChildren);
-
-            for (auto childId : children)
-            {
-                SetEntityLockStateRecursively(childId, locked, toggledEntityId, toggledEntityWasLayer);
-            }
-        }
-    }
-
-    // if a child of a layer has its lock state changed to false, change that layer to no longer be locked
-    // do this for all layers in the hierarchy (this is because not all entities under these layers
-    // will be locked so the layer cannot be represented as 'fully' locked)
-    // note: must be called on layer entity
-    static void UnlockLayer(const AZ::EntityId entityId)
-    {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
         EditorLockComponentRequestBus::Event(
-            entityId, &EditorLockComponentRequestBus::Events::SetLocked, false);
+            entityId, &EditorLockComponentRequests::SetLocked, locked);
 
-        // recursive lambda - notify all children of the layer if the lock has changed
-        const auto notifyChildrenOfLockChange = [](const AZ::EntityId entityId)
+        EntityIdList children;
+        EditorEntityInfoRequestBus::EventResult(
+            children, entityId, &EditorEntityInfoRequestBus::Events::GetChildren);
+
+        for (auto childId : children)
         {
-            const auto notifyChildrenOfLockChangeImpl =
-                [](const AZ::EntityId entityId, const auto& notifyChildrenRef) -> void
-            {
-                EntityIdList children;
-                EditorEntityInfoRequestBus::EventResult(
-                    children, entityId, &EditorEntityInfoRequestBus::Events::GetChildren);
-
-                for (auto childId : children)
-                {
-                    notifyChildrenRef(childId, notifyChildrenRef);
-                }
-
-                bool locked = false;
-                EditorLockComponentRequestBus::EventResult(
-                    locked, entityId, &EditorLockComponentRequests::GetLocked);
-
-                EditorEntityLockComponentNotificationBus::Event(
-                    entityId, &EditorEntityLockComponentNotificationBus::Events::OnEntityLockChanged,
-                    locked);
-            };
-
-            notifyChildrenOfLockChangeImpl(entityId, notifyChildrenOfLockChangeImpl);
-        };
-
-        notifyChildrenOfLockChange(entityId);
+            SetEntityLockStateRecursively(childId, locked, toggledEntityId);
+        }
     }
 
     void SetEntityLockState(const AZ::EntityId entityId, const bool locked)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        // when an entity is unlocked, if it was in a locked layer(s), unlock those layers
-        if (!locked)
-        {
-            AZ::EntityId currentEntityId = entityId;
-            while (currentEntityId.IsValid())
-            {
-                AZ::EntityId parentId;
-                EditorEntityInfoRequestBus::EventResult(
-                    parentId, currentEntityId, &EditorEntityInfoRequestBus::Events::GetParent);
-
-                bool parentLayer = false;
-                Layers::EditorLayerComponentRequestBus::EventResult(
-                    parentLayer, parentId, &Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-
-                if (parentLayer && IsEntitySetToBeLocked(parentId))
-                {
-                    // if a child of a layer has its lock state changed to false, unlock
-                    // that layer, do this for all layers in the hierarchy
-                    UnlockLayer(parentId);
-                    // even though layer lock state is saved to each layer individually, parents still
-                    // need to be checked recursively so that the entity that was toggled can be unlocked
-                }
-
-                currentEntityId = parentId;
-            }
-        }
-
-        bool isLayer = false;
-        Layers::EditorLayerComponentRequestBus::EventResult(
-            isLayer, entityId, &Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-
-        SetEntityLockStateRecursively(entityId, locked, entityId, isLayer);
+        SetEntityLockStateRecursively(entityId, locked, entityId);
     }
 
     void ToggleEntityLockState(const AZ::EntityId entityId)
@@ -918,65 +808,9 @@ namespace AzToolsFramework
         }
     }
 
-    static void SetEntityVisibilityInternal(const AZ::EntityId entityId, const bool visibility)
-    {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-        bool layerEntity = false;
-        Layers::EditorLayerComponentRequestBus::EventResult(
-            layerEntity, entityId, &Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-
-        if (layerEntity)
-        {
-            // update the EditorLayerComponent state to stay in sync with Entity visibility
-            Layers::EditorLayerComponentRequestBus::Event(
-                entityId, &Layers::EditorLayerComponentRequestBus::Events::SetLayerChildrenVisibility,
-                visibility);
-        }
-        else
-        {
-            EditorVisibilityRequestBus::Event(
-                entityId, &EditorVisibilityRequestBus::Events::SetVisibilityFlag, visibility);
-        }
-    }
-
-    // note: must be called on layer entity
-    static void ShowLayer(const AZ::EntityId entityId)
-    {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-        SetEntityVisibilityInternal(entityId, true);
-
-        // recursive lambda - notify all children of the layer if visibility has changed
-        const auto notifyChildrenOfVisibilityChange =
-            [](const AZ::EntityId entityId)
-        {
-            const auto notifyChildrenOfVisibilityChangeImpl =
-                [](const AZ::EntityId entityId, const auto& notifyChildrenRef) -> void
-            {
-                EntityIdList children;
-                EditorEntityInfoRequestBus::EventResult(
-                    children, entityId, &EditorEntityInfoRequestBus::Events::GetChildren);
-
-                for (auto childId : children)
-                {
-                    notifyChildrenRef(childId, notifyChildrenRef);
-                }
-
-                EditorVisibilityNotificationBus::Event(
-                    entityId, &EditorVisibilityNotificationBus::Events::OnEntityVisibilityChanged,
-                    IsEntitySetToBeVisible(entityId));
-            };
-
-            notifyChildrenOfVisibilityChangeImpl(entityId, notifyChildrenOfVisibilityChangeImpl);
-        };
-
-        notifyChildrenOfVisibilityChange(entityId);
-    }
-
     static void SetEntityVisibilityStateRecursively(
         const AZ::EntityId entityId, const bool visible,
-        const AZ::EntityId toggledEntityId, const bool toggledEntityWasLayer)
+        const AZ::EntityId toggledEntityId)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
@@ -985,43 +819,15 @@ namespace AzToolsFramework
             return;
         }
 
-        // should we notify children of this entity or layer of a visibility change
-        bool notifyChildrenOfLayer = true;
-        if (!toggledEntityWasLayer || toggledEntityId == entityId)
+        EditorVisibilityRequestBus::Event(entityId, &EditorVisibilityRequestBus::Events::SetVisibilityFlag, visible);
+
+        EntityIdList children;
+        EditorEntityInfoRequestBus::EventResult(
+            children, entityId, &EditorEntityInfoRequestBus::Events::GetChildren);
+
+        for (auto childId : children)
         {
-            SetEntityVisibilityInternal(entityId, visible);
-        }
-        else
-        {
-            bool layerEntity = false;
-            Layers::EditorLayerComponentRequestBus::EventResult(
-                layerEntity, entityId, &Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-
-            // if the layer in question was not visible and we're trying to make
-            // entities visible, do not override the state of the layer and notify
-            // child entities of a change in visibility
-            bool oldVisibilityState = IsEntitySetToBeVisible(entityId);
-            if (!oldVisibilityState && layerEntity && visible)
-            {
-                notifyChildrenOfLayer = false;
-            }
-
-            bool newVisibilityState = visible ? oldVisibilityState : false;
-            EditorVisibilityNotificationBus::Event(
-                entityId, &EditorVisibilityNotificationBus::Events::OnEntityVisibilityChanged,
-                newVisibilityState);
-        }
-
-        if (notifyChildrenOfLayer)
-        {
-            EntityIdList children;
-            EditorEntityInfoRequestBus::EventResult(
-                children, entityId, &EditorEntityInfoRequestBus::Events::GetChildren);
-
-            for (auto childId : children)
-            {
-                SetEntityVisibilityStateRecursively(childId, visible, toggledEntityId, toggledEntityWasLayer);
-            }
+            SetEntityVisibilityStateRecursively(childId, visible, toggledEntityId);
         }
     }
 
@@ -1029,38 +835,7 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        // when an entity is set to visible, if it was in an invisible layer(s), make that layer visible
-        if (visible)
-        {
-            AZ::EntityId currentEntityId = entityId;
-            while (currentEntityId.IsValid())
-            {
-                AZ::EntityId parentId;
-                EditorEntityInfoRequestBus::EventResult(
-                    parentId, currentEntityId, &EditorEntityInfoRequestBus::Events::GetParent);
-
-                bool parentLayer = false;
-                Layers::EditorLayerComponentRequestBus::EventResult(
-                    parentLayer, parentId, &Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-
-                if (parentLayer && !IsEntitySetToBeVisible(parentId))
-                {
-                    // if a child of a layer has its visibility state changed to true, change
-                    // that layer to be visible, do this for all layers in the hierarchy
-                    ShowLayer(parentId);
-                    // even though layer visibility is saved to each layer individually, parents still
-                    // need to be checked recursively so that the entity that was toggled can become visible
-                }
-
-                currentEntityId = parentId;
-            }
-        }
-
-        bool isLayer = false;
-        Layers::EditorLayerComponentRequestBus::EventResult(
-            isLayer, entityId, &Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-
-        SetEntityVisibilityStateRecursively(entityId, visible, entityId, isLayer);
+        SetEntityVisibilityStateRecursively(entityId, visible, entityId);
     }
 
     void ToggleEntityVisibility(const AZ::EntityId entityId)
@@ -1122,25 +897,10 @@ namespace AzToolsFramework
         // Visibility state is tracked in 5 places, see OutlinerListModel::dataForLock for info on 3 of these ways.
         // Visibility's fourth state over lock is the EditorVisibilityRequestBus has two sets of
         // setting and getting functions for visibility. Get/SetVisibilityFlag is what should be used in most cases.
-        // The fifth state is tracked on layers. Layers are always invisible to other systems, so the visibility flag
-        // is set false there. However, layers need to be able to toggle visibility to hide/show their children, so
-        // layers have a unique flag.
-        bool layerEntity = false;
-        Layers::EditorLayerComponentRequestBus::EventResult(
-            layerEntity, entityId, &Layers::EditorLayerComponentRequestBus::Events::HasLayer);
 
         bool visible = true;
-        if (layerEntity)
-        {
-            Layers::EditorLayerComponentRequestBus::EventResult(
-                visible, entityId, &Layers::EditorLayerComponentRequestBus::Events::AreLayerChildrenVisible);
-        }
-        else
-        {
-            EditorVisibilityRequestBus::EventResult(
-                visible, entityId, &EditorVisibilityRequestBus::Events::GetVisibilityFlag);
-        }
-
+        EditorVisibilityRequestBus::EventResult(
+            visible, entityId, &EditorVisibilityRequestBus::Events::GetVisibilityFlag);
         return visible;
     }
 

@@ -182,8 +182,6 @@ namespace AzToolsFramework
         //! EditorEntityContextRequestBus::Events::AddRequiredComponents()
         AZ::ComponentTypeList m_requiredEditorComponentTypes;
 
-        bool m_isLegacySliceService;
-
         UndoSystem::UndoCacheInterface* m_undoCacheInterface = nullptr;
     };
 } // namespace AzToolsFramework

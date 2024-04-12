@@ -40,10 +40,6 @@ namespace AZ
         {
             /// Used when the sub-stage is 1-to-1 with the virtual stage.
             const uint32_t Default = 0;
-
-            /// Tessellation is composed of two physical stages in HLSL.
-            const uint32_t TessellationHull = 0;
-            const uint32_t TessellationDomain = 1;
         }
 
         const uint32_t ShaderSubStageCountMax = 2;

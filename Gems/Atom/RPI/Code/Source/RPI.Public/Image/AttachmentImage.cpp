@@ -50,26 +50,22 @@ namespace AZ
         {
             Data::Asset<AttachmentImageAsset> imageAsset;
 
-            Data::InstanceId instanceId;
+            Data::AssetId assetId;
             if (createImageRequest.m_isUniqueName)
             {
-                instanceId = Data::InstanceId::CreateName(createImageRequest.m_imageName.GetCStr());
-                if (Data::InstanceDatabase<AttachmentImage>::Instance().Find(instanceId))
-                {
-                    AZ_Error("AttchmentImage", false, "AttachmentImage with an unique name '%s' was already created", createImageRequest.m_imageName.GetCStr());
-                    return nullptr;
-                }
+                assetId = AZ::Uuid::CreateName(createImageRequest.m_imageName.GetCStr());
             }
             else
             {
-                instanceId = Data::InstanceId::CreateRandom();
+                assetId = AZ::Uuid::CreateRandom();
             }
 
+            Data::InstanceId instanceId = Data::InstanceId::CreateFromAssetId(assetId);
+
             AttachmentImageAssetCreator imageAssetCreator;
-            imageAssetCreator.Begin(instanceId.GetGuid());
+            imageAssetCreator.Begin(assetId);
             imageAssetCreator.SetImageDescriptor(createImageRequest.m_imageDescriptor);
             imageAssetCreator.SetPoolAsset({createImageRequest.m_imagePool->GetAssetId(), azrtti_typeid<ResourcePoolAsset>()});
-
             imageAssetCreator.SetName(createImageRequest.m_imageName, createImageRequest.m_isUniqueName);
 
             if (createImageRequest.m_imageViewDescriptor)

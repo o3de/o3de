@@ -17,7 +17,6 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
-#include <AzToolsFramework/ToolsComponents/EditorLayerComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
 
@@ -560,27 +559,6 @@ namespace UnitTest
             entity->GetId());
 
         entity->Activate();
-
-        if (outEntity)
-        {
-            *outEntity = entity;
-        }
-
-        return entity->GetId();
-    }
-
-    AZ::EntityId CreateEditorLayerEntity(const char* name, AZ::Entity** outEntity /*= nullptr*/)
-    {
-        AZ::Entity* entity = nullptr;
-        CreateDefaultEditorEntity(name, &entity);
-
-        auto layer = aznew Layers::EditorLayerComponent();
-        AZ::Entity::ComponentArrayType newComponents{ layer };
-
-        EntityCompositionRequests::AddExistingComponentsOutcome componentAddResult;
-        EntityCompositionRequestBus::BroadcastResult(
-            componentAddResult, &EntityCompositionRequests::AddExistingComponentsToEntityById,
-            entity->GetId(), newComponents);
 
         if (outEntity)
         {

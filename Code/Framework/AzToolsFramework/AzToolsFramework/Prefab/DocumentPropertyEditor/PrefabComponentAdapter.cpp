@@ -73,7 +73,7 @@ namespace AzToolsFramework::Prefab
         AZ_Assert(adapterBuilder != nullptr, "PrefabComponentAdapter: CreateLabel called with null adapterBuilder!");
 
         adapterBuilder->BeginPropertyEditor<PrefabOverrideLabel>();
-        adapterBuilder->Attribute(PrefabOverrideLabel::Text, labelText);
+        adapterBuilder->Attribute(PrefabOverrideLabel::Value, labelText);
 
         AZ::Dom::Path relativePathFromEntity;
         if (!m_componentAlias.empty() && !serializedPath.empty())

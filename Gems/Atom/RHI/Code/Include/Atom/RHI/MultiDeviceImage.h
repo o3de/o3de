@@ -92,9 +92,6 @@ namespace AZ::RHI
         //! Shuts down the resource by detaching it from its parent pool.
         void Shutdown() override final;
 
-        //! Invalidate all device-specific views by setting off events on all corresponding ResourceInvalidateBusses
-        void InvalidateViews() override final;
-
         //! Returns true if the ResourceView is in the cache of all single device images
         bool IsInResourceCache(const ImageViewDescriptor& imageViewDescriptor);
 
@@ -133,7 +130,7 @@ namespace AZ::RHI
         //! Return the contained multi-device image
         const RHI::MultiDeviceImage* GetImage() const
         {
-            return m_image;
+            return m_image.get();
         }
 
         //! Return the contained ImageViewDescriptor
@@ -144,7 +141,7 @@ namespace AZ::RHI
 
         const MultiDeviceResource* GetResource() const override
         {
-            return m_image;
+            return m_image.get();
         }
 
         const ResourceView* GetDeviceResourceView(int deviceIndex) const override
@@ -153,8 +150,10 @@ namespace AZ::RHI
         }
 
     private:
+        //! Safe-guard access to ImageView cache during parallel access
+        mutable AZStd::mutex m_imageViewMutex;
         //! A raw pointer to a multi-device image
-        const RHI::MultiDeviceImage* m_image;
+        ConstPtr<RHI::MultiDeviceImage> m_image;
         //! The corresponding ImageViewDescriptor for this view.
         ImageViewDescriptor m_descriptor;
         //! ImageView cache

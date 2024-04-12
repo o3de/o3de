@@ -175,8 +175,6 @@ public:
     // Implementation
     void OnCreateLevel();
     void OnOpenLevel();
-    void OnCreateSlice();
-    void OnOpenSlice();
     void OnAppAbout();
     void OnAppShowWelcomeScreen();
     void OnUpdateShowWelcomeScreen(QAction* action);
@@ -202,7 +200,6 @@ public:
     void OnOpenAssetImporter();
     void OnEditLevelData();
     void OnFileEditLogFile();
-    void OnFileResaveSlices();
     void OnFileEditEditorini();
     void OnPreferences();
     void OnOpenProjectManagerSettings();

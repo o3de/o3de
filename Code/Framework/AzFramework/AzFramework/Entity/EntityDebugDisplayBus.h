@@ -27,7 +27,6 @@ namespace AZ
     class Entity;
 }
 
-struct DisplayContext;
 class ITexture;
 
 namespace AzFramework
@@ -52,7 +51,7 @@ namespace AzFramework
         virtual void DrawWireQuad(float width, float height) { (void)width; (void)height; }
         virtual void DrawQuadGradient(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4, const AZ::Vector4& firstColor, const AZ::Vector4& secondColor) { (void)p1; (void)p2; (void)p3; (void)p4; (void)firstColor; (void)secondColor; }
 
-        /// Draws a 2D quad with gradient to the viewport. 
+        /// Draws a 2D quad with gradient to the viewport.
         /// @param p1 p2 p3 p4 Normalized screen coordinates of the 4 points on the quad. <0, 0> is the upper-left corner of the viewport, <1,1> is the lower-right corner of the viewport.
         /// @param z Depth value. Useful when rendering multiple 2d quads on screen and you want them to stack in a particular order.
         /// @param firstColor. Vertex color applied to p1 p2.

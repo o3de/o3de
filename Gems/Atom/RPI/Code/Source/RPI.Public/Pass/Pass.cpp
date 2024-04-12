@@ -29,13 +29,14 @@
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/Pass/Specific/ImageAttachmentPreviewPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
+#include <Atom/RPI.Public/Image/AttachmentImagePool.h>
 
 #include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
 #include <Atom/RPI.Reflect/Pass/PassRequest.h>
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
 #include <Atom/RPI.Reflect/Pass/PassName.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
-
 
 namespace AZ
 {
@@ -1032,26 +1033,6 @@ namespace AZ
             }
         }
 
-        void Pass::UpdateConnectedInputBindings()
-        {
-            for (uint8_t idx : m_inputBindingIndices)
-            {
-                UpdateConnectedBinding(m_attachmentBindings[idx]);
-            }
-            for (uint8_t idx : m_inputOutputBindingIndices)
-            {
-                UpdateConnectedBinding(m_attachmentBindings[idx]);
-            }
-        }
-
-        void Pass::UpdateConnectedOutputBindings()
-        {
-            for (uint8_t idx : m_outputBindingIndices)
-            {
-                UpdateConnectedBinding(m_attachmentBindings[idx]);
-            }
-        }
-
         void Pass::RegisterPipelineGlobalConnections()
         {
             if (!m_pipeline)
@@ -1322,7 +1303,6 @@ namespace AZ
 
             if (earlyOut)
             {
-                UpdateConnectedBindings();
                 return;
             }
 
@@ -1332,7 +1312,6 @@ namespace AZ
 
             m_state = PassState::Rendering;
 
-            UpdateConnectedInputBindings();
             UpdateOwnedAttachments();
 
             CreateTransientAttachments(params.m_frameGraphBuilder->GetAttachmentDatabase());
@@ -1350,8 +1329,6 @@ namespace AZ
 
             // update attachment copy for preview
             UpdateAttachmentCopy(params);
-
-            UpdateConnectedOutputBindings();
         }
 
         void Pass::FrameEnd()
@@ -1547,6 +1524,56 @@ namespace AZ
             {
                 m_attachmentCopy.lock()->FrameBegin(params);
             }
+        }
+
+        bool Pass::UpdateImportedAttachmentImage(Ptr<PassAttachment>& attachment, RHI::ImageBindFlags bindFlags, RHI::ImageAspectFlags aspectFlags)
+        {
+            if (!attachment)
+            {
+                return false;
+            }
+
+            // update the image attachment descriptor to sync up size and format
+            attachment->Update(true);
+            RHI::ImageDescriptor& imageDesc = attachment->m_descriptor.m_image;
+
+            // The Format Source had no valid attachment
+            if (imageDesc.m_format == RHI::Format::Unknown)
+            {
+                return false;
+            }
+
+            RPI::AttachmentImage* currentImage = azrtti_cast<RPI::AttachmentImage*>(attachment->m_importedResource.get());
+
+            if (attachment->m_importedResource && imageDesc.m_size == currentImage->GetDescriptor().m_size)
+            {
+                // If there's a resource already and the size didn't change, just keep using the old AttachmentImage.
+                return true;
+            }
+            
+            Data::Instance<RPI::AttachmentImagePool> pool = RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
+
+            // set the bind flags
+            imageDesc.m_bindFlags |= bindFlags;
+            
+            // The ImageViewDescriptor must be specified to make sure the frame graph compiler doesn't treat this as a transient image.
+            RHI::ImageViewDescriptor viewDesc = RHI::ImageViewDescriptor::Create(imageDesc.m_format, 0, 0);
+            viewDesc.m_aspectFlags = aspectFlags;
+
+            // The full path name is needed for the attachment image so it's not deduplicated from accumulation images in different pipelines.
+            AZStd::string imageName = RPI::ConcatPassString(GetPathName(), attachment->m_path);
+            auto attachmentImage = RPI::AttachmentImage::Create(*pool.get(), imageDesc, Name(imageName), nullptr, &viewDesc);
+
+            if (attachmentImage)
+            {
+                attachment->m_path = attachmentImage->GetAttachmentId();
+                attachment->m_importedResource = attachmentImage;
+                return true;
+            }else
+            {
+                AZ_Error("Pass", false, "UpdateImportedAttachmentImage failed because it is unable to create an attachment image.");
+            }
+            return false;
         }
 
         void Pass::PrintIndent(AZStd::string& stringOutput, uint32_t indent) const

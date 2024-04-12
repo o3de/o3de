@@ -20,7 +20,7 @@ namespace AZ::RHI
 
         IndirectArgumentsTemplate(
             uint32_t maxSequenceCount,
-            const IndirectBufferView& indirectBuffer,
+            const IndirectBufferViewClass& indirectBuffer,
             uint64_t indirectBufferByteOffset)
             : IndirectArgumentsTemplate(
                 maxSequenceCount,
@@ -32,9 +32,9 @@ namespace AZ::RHI
 
         IndirectArgumentsTemplate(
             uint32_t maxSequenceCount,
-            const IndirectBufferView& indirectBuffer,
+            const IndirectBufferViewClass& indirectBuffer,
             uint64_t indirectBufferByteOffset,
-            const Buffer* countBuffer,
+            const BufferClass* countBuffer,
             uint64_t countBufferByteOffset)
             : m_maxSequenceCount(maxSequenceCount)
             , m_indirectBufferView(&indirectBuffer)

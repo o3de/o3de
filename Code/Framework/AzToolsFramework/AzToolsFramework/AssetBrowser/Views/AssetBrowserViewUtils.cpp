@@ -9,22 +9,21 @@
 
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
-
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzQtComponents/Components/Widgets/MessageBox.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
-#include <AzToolsFramework/AssetBrowser/Previewer/PreviewerBus.h>
-#include <AzToolsFramework/AssetBrowser/Previewer/PreviewerFactory.h>
+#include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Previewer/PreviewerBus.h>
+#include <AzToolsFramework/AssetBrowser/Previewer/PreviewerFactory.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeViewDialog.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
-#include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
+#include <AzToolsFramework/Editor/RichTextHighlighter.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
-
-#include <AzQtComponents/Components/Widgets/MessageBox.h>
 
 #include <QDir>
 #include <QPushButton>
@@ -89,24 +88,47 @@ namespace AzToolsFramework
                         AzQtComponents::FixedWidthMessageBox msgBox(
                             600,
                             QObject::tr(isFolder ? "Before Rename Folder Information" : "Before Rename Asset Information"),
-                            QObject::tr("The asset you are renaming may be referenced in other assets."),
+                            response.m_success ? QObject::tr("The asset you are renaming may be referenced in other assets.") :
+                                                 QObject::tr("The asset cannot be renamed."),
                             QObject::tr("More information can be found by pressing \"Show Details...\"."),
                             message.c_str(),
-                            QMessageBox::Warning,
+                            response.m_success ? QMessageBox::Warning : 
+                                                 QMessageBox::Critical,
                             QMessageBox::Cancel,
-                            QMessageBox::Yes,
+                            response.m_success ? QMessageBox::Yes : QMessageBox::Cancel,
                             callingWidget);
-                        auto* renameButton = msgBox.addButton(QObject::tr("Rename"), QMessageBox::YesRole);
+                        
+                        QPushButton* renameButton = nullptr;
+                        if (response.m_success)
+                        {
+                            renameButton = msgBox.addButton(QObject::tr("Rename"), QMessageBox::YesRole);
+                        }
                         msgBox.exec();
 
-                        if (msgBox.clickedButton() == static_cast<QAbstractButton*>(renameButton))
+                        if (renameButton && (msgBox.clickedButton() == static_cast<QAbstractButton*>(renameButton)))
                         {
                             return true;
                         }
                     }
                     else
                     {
-                        return true;
+                        if (!response.m_success) // failed but without any information why
+                        {
+                            AzQtComponents::FixedWidthMessageBox msgBox(
+                            600,
+                            QObject::tr(isFolder ? "Before Rename Folder Information" : "Before Rename Asset Information"),
+                            QObject::tr("The asset cannot be renamed.  Check the console log for additional information."),
+                            QString(),
+                            QString(),
+                            QMessageBox::Critical,
+                            QMessageBox::Ok,
+                            QMessageBox::Ok,
+                            callingWidget);
+                            msgBox.exec();
+                        }
+
+                        // if it succeeded with no information, we don't show any dialog - it means it Just Worked without issue.
+                        return response.m_success;
                     }
                 }
             }
@@ -152,7 +174,7 @@ namespace AzToolsFramework
                 toPath.ReplaceFilename(newVal.toStdString().c_str());
                 toPath.ReplaceExtension(extension);
             }
-            // if the source path is the same as the destintion path then we don't need to go any further
+            // if the source path is the same as the destination path then we don't need to go any further
             if (fromPath == toPath)
             {
                 return;
@@ -188,15 +210,35 @@ namespace AzToolsFramework
                     AzQtComponents::FixedWidthMessageBox msgBox(
                         600,
                         QObject::tr(isFolder ? "After Rename Folder Information" : "After Rename Asset Information"),
-                        QObject::tr("The asset has been renamed."),
+                        moveResponse.m_success ? QObject::tr("The asset has been renamed.") : 
+                                                QObject::tr("The asset cannot be renamed."),
                         QObject::tr("More information can be found by pressing \"Show Details...\"."),
                         message.c_str(),
-                        QMessageBox::Information,
+                        moveResponse.m_success ? QMessageBox::Information : QMessageBox::Critical,
                         QMessageBox::Ok,
                         QMessageBox::Ok,
                         callingWidget);
                     msgBox.exec();
                 }
+                else
+                {
+                    // empty response.  It could still have failed or it could have succeeded with no problems at all
+                    if (!moveResponse.m_success)
+                    {
+                        AzQtComponents::FixedWidthMessageBox msgBox(
+                        600,
+                        QObject::tr(isFolder ? "After Rename Folder Information" : "After Rename Asset Information"),
+                        QObject::tr("The asset could not be renamed.  Check the console log for additional information."),
+                        QString(),
+                        QString(),
+                        QMessageBox::Critical,
+                        QMessageBox::Ok,
+                        QMessageBox::Ok,
+                        callingWidget);
+                        msgBox.exec();
+                    }
+                }
+
                 if (isFolder)
                 {
                     AZ::IO::SystemFile::DeleteDir(item->GetFullPath().c_str());
@@ -263,7 +305,9 @@ namespace AzToolsFramework
 
                     if (SendRequest(request, response))
                     {
-                        bool canDelete = true;
+                        // when dealing with file deletes, always initialize to the default value of false and only proceed
+                        // when positive confirmation is given by the user.
+                        bool canDelete = false;
 
                         if (!response.m_lines.empty())
                         {
@@ -272,39 +316,64 @@ namespace AzToolsFramework
                             AzQtComponents::FixedWidthMessageBox msgBox(
                                 600,
                                 QObject::tr(isFolder ? "Before Delete Folder Information" : "Before Delete Asset Information"),
-                                QObject::tr("The asset you are deleting may be referenced in other assets."),
+                                response.m_success ? QObject::tr("The asset you are deleting may be referenced in other assets.") :
+                                                     QObject::tr("The asset cannot be deleted"),
                                 QObject::tr("More information can be found by pressing \"Show Details...\"."),
                                 message.c_str(),
-                                QMessageBox::Warning,
-                                QMessageBox::Cancel,
-                                QMessageBox::Yes,
+                                response.m_success ? QMessageBox::Warning : QMessageBox::Critical,
+                                QMessageBox::Cancel, // deletion should use cancel as the default operation.
+                                response.m_success ? QMessageBox::Yes : QMessageBox::Cancel,
                                 callingWidget);
-                            auto* deleteButton = msgBox.addButton(QObject::tr("Delete"), QMessageBox::YesRole);
+                            QPushButton* deleteButton = nullptr;
+                            
+                            if (response.m_success)
+                            {
+                                deleteButton = msgBox.addButton(QObject::tr("Delete"), QMessageBox::YesRole);
+                            }
+
                             msgBox.exec();
 
-                            if (msgBox.clickedButton() != static_cast<QAbstractButton*>(deleteButton))
+                            if (deleteButton && (msgBox.clickedButton() == static_cast<QAbstractButton*>(deleteButton)))
                             {
-                                canDelete = false;
+                                canDelete = true;
                             }
                         }
                         else
                         {
-                            QMessageBox warningBox;
-                            warningBox.setWindowTitle(QObject::tr(isFolder ? "Folder Deletion - Warning" : "Asset Deletion - Warning"));
-                            warningBox.setText(
-                                QObject::tr("O3DE is unable to detect if this file is being used inside a level, prefab, or asset."
-                                            "By deleting these asset(s), you understand this might break a connection if it's still in use."));
-                            warningBox.setInformativeText(
-                                QObject::tr("Currently, delete is a permanent action and cannot be undone.\n"
-                                    "Do you wish to proceed with this deletion?"));
-                            warningBox.setIcon(QMessageBox::Warning);
-                            warningBox.addButton(QMessageBox::Cancel);
-                            warningBox.addButton(QObject::tr("Delete"), QMessageBox::YesRole);
-                            warningBox.setDefaultButton(QMessageBox::Yes);
-                            warningBox.setFixedWidth(600);
-                            if (warningBox.exec() == QMessageBox::Cancel)
+                            if (!response.m_success)
                             {
-                                canDelete = false;
+                                AzQtComponents::FixedWidthMessageBox msgBox(
+                                600,
+                                QObject::tr(isFolder ? "Before Delete Folder Information" : "Before Delete Asset Information"),
+                                QObject::tr("The asset cannot be deleted.  Check the console log for additional information."),
+                                QString(),
+                                QString(),
+                                QMessageBox::Critical,
+                                QMessageBox::Ok,
+                                QMessageBox::Ok,
+                                callingWidget);
+                                msgBox.exec();
+                            }
+                            else
+                            {
+                                // the response succeeded, but could not determine whether there are dependencies or not.
+                                QMessageBox warningBox;
+                                warningBox.setWindowTitle(QObject::tr(isFolder ? "Folder Deletion - Warning" : "Asset Deletion - Warning"));
+                                warningBox.setText(
+                                    QObject::tr("O3DE is unable to detect if this file is being used inside a level, prefab, or asset."
+                                                "By deleting these asset(s), you understand this might break a connection if it's still in use."));
+                                warningBox.setInformativeText(
+                                    QObject::tr("Currently, delete is a permanent action and cannot be undone.\n"
+                                        "Do you wish to proceed with this deletion?"));
+                                warningBox.setIcon(QMessageBox::Warning);
+                                warningBox.setDefaultButton(warningBox.addButton(QMessageBox::Cancel));
+                                QPushButton* deleteButton = warningBox.addButton(QObject::tr("Delete"), QMessageBox::DestructiveRole);
+                                warningBox.setFixedWidth(600);
+                                warningBox.exec();// allow delete only if affirmation is given.  Assume all other responses are "no".
+                                if (warningBox.clickedButton() == deleteButton)
+                                {
+                                    canDelete = true;
+                                }
                             }
                         }
 
@@ -322,7 +391,8 @@ namespace AzToolsFramework
                                     AzQtComponents::FixedWidthMessageBox deleteMsgBox(
                                         600,
                                         QObject::tr(isFolder ? "After Delete Folder Information" : "After Delete Asset Information"),
-                                        QObject::tr("The asset has been deleted."),
+                                        response.m_success ? QObject::tr("The asset has been deleted.") :
+                                                             QObject::tr("Deletion has failed."),
                                         QObject::tr("More information can be found by pressing \"Show Details...\"."),
                                         deleteMessage.c_str(),
                                         QMessageBox::Information,
@@ -331,7 +401,25 @@ namespace AzToolsFramework
                                         callingWidget);
                                     deleteMsgBox.exec();
                                 }
+                                else
+                                {
+                                    if (!response.m_success)
+                                    {
+                                        AzQtComponents::FixedWidthMessageBox deleteMsgBox(
+                                            600,
+                                            QObject::tr(isFolder ? "After Delete Folder Information" : "After Delete Asset Information"),
+                                            QObject::tr("The asset could not be deleted.  Check the console log for additional information."),
+                                            QString(),
+                                            QString(),
+                                            QMessageBox::Critical,
+                                            QMessageBox::Ok,
+                                            QMessageBox::Ok,
+                                            callingWidget);
+                                        deleteMsgBox.exec();
+                                    }
+                                }
                             }
+
                             if (isFolder)
                             {
                                 AZ::IO::SystemFile::DeleteDir(item->GetFullPath().c_str());
@@ -449,30 +537,57 @@ namespace AzToolsFramework
 
             if (SendRequest(request, response))
             {
-                bool canMove = true;
+                bool canMove = false;
 
                 if (!response.m_lines.empty())
                 {
+                    // if we get here, it means AP has some information to share with the user about the move operation.
+                    // Note that this could either be a success "you can move it but be aware of these things"
+                    // or it could be a failure "you cannot move this, because of these things"
                     AZStd::string message;
                     AZ::StringFunc::Join(message, response.m_lines.begin(), response.m_lines.end(), "\n");
                     AzQtComponents::FixedWidthMessageBox msgBox(
                         600,
                         QObject::tr(isFolder ? "Before Move Folder Information" : "Before Move Asset Information"),
-                        QObject::tr("The asset you are moving may be referenced in other assets."),
+                        response.m_success ? QObject::tr("The asset you are moving may be referenced in other assets.") :
+                                             QObject::tr("The asset cannot be moved."),
                         QObject::tr("More information can be found by pressing \"Show Details...\"."),
                         message.c_str(),
-                        QMessageBox::Warning,
+                        response.m_success ? QMessageBox::Warning : QMessageBox::Critical,
                         QMessageBox::Cancel,
-                        QMessageBox::Yes,
+                        response.m_success ? QMessageBox::Yes : QMessageBox::Cancel,
                         parent);
-                    auto* moveButton = msgBox.addButton(QObject::tr("Move"), QMessageBox::YesRole);
+
+                    QPushButton* moveButton = response.m_success ? msgBox.addButton(QObject::tr("Move"), QMessageBox::YesRole) : nullptr;
                     msgBox.exec();
 
-                    if (msgBox.clickedButton() != static_cast<QAbstractButton*>(moveButton))
+                    if (moveButton && (msgBox.clickedButton() == static_cast<QAbstractButton*>(moveButton)))
                     {
-                        canMove = false;
+                        canMove = true;
                     }
                 }
+                else
+                {
+                    if (!response.m_success) // failed but with no extra info why from AP.
+                    {
+                        AzQtComponents::FixedWidthMessageBox msgBox(
+                            600,
+                            QObject::tr(isFolder ? "Before Move Folder Information" : "Before Move Asset Information"),
+                            QObject::tr("The asset cannot be moved.  Check the console log for additional information."),
+                            QString(),
+                            QString(),
+                            QMessageBox::Critical,
+                            QMessageBox::Ok,
+                            QMessageBox::Ok,
+                            parent);
+                        msgBox.exec();
+                    }
+                    else // succeeded, no objection or extra information from AP.
+                    {
+                        canMove = true;
+                    }
+                }
+
                 if (canMove)
                 {
                     AssetChangeReportRequest moveRequest(
@@ -507,14 +622,32 @@ namespace AzToolsFramework
                             AzQtComponents::FixedWidthMessageBox moveMsgBox(
                                 600,
                                 QObject::tr(isFolder ? "After Move Folder Information" : "After Move Asset Information"),
-                                QObject::tr("The asset has been moved."),
+                                response.m_success ? QObject::tr("The asset has been moved.") :
+                                                     QObject::tr("The asset could not be moved."),
                                 QObject::tr("More information can be found by pressing \"Show Details...\"."),
                                 moveMessage.c_str(),
-                                QMessageBox::Information,
+                                response.m_success ? QMessageBox::Information : QMessageBox::Critical,
                                 QMessageBox::Ok,
                                 QMessageBox::Ok,
                                 parent);
                             moveMsgBox.exec();
+                        }
+                        else
+                        {
+                            if (!response.m_success) // failed with no reason given
+                            {
+                                AzQtComponents::FixedWidthMessageBox moveMsgBox(
+                                    600,
+                                    QObject::tr(isFolder ? "After Move Folder Information" : "After Move Asset Information"),
+                                    QObject::tr("The asset could not be moved.  Check the console log for additional information."),
+                                    QString(),
+                                    QString(),
+                                    QMessageBox::Critical,
+                                    QMessageBox::Ok,
+                                    QMessageBox::Ok,
+                                    parent);
+                                moveMsgBox.exec();
+                            }
                         }
                     }
                     if (isFolder)
@@ -545,7 +678,6 @@ namespace AzToolsFramework
             {
                 QFile::copy(oldPath.c_str(), newPath.c_str());
             }
-
         }
 
         QVariant AssetBrowserViewUtils::GetThumbnail(const AssetBrowserEntry* entry, bool returnIcon, bool isFavorite)
@@ -668,6 +800,44 @@ namespace AzToolsFramework
                 iconPathToUse = (engineRoot / DefaultFileIconPath).c_str();
             }
             return iconPathToUse;
+        }
+
+        Qt::ItemFlags AssetBrowserViewUtils::GetAssetBrowserEntryCommonItemFlags(const AssetBrowserEntry* entry, Qt::ItemFlags defaultFlags)
+        {
+            if (entry)
+            {
+                switch (entry->GetEntryType())
+                {
+                case AssetBrowserEntry::AssetEntryType::Product:
+                case AssetBrowserEntry::AssetEntryType::Source:
+                    {
+                        return defaultFlags | Qt::ItemIsDragEnabled;
+                    }
+                case AssetBrowserEntry::AssetEntryType::Folder:
+                    {
+                        return defaultFlags | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
+                    }
+                }
+            }
+
+            return defaultFlags;
+        }
+
+        QString AssetBrowserViewUtils::GetAssetBrowserEntryNameWithHighlighting(
+            const AssetBrowserEntry* entry, const QString& highlightedText)
+        {
+            if (entry)
+            {
+                const QString name = entry->GetName().c_str();
+                if (!highlightedText.isEmpty())
+                {
+                    // highlight characters in filter
+                    return AzToolsFramework::RichTextHighlighter::HighlightText(name, highlightedText);
+                }
+                return name;
+            }
+
+            return {};
         }
 
         Qt::DropAction AssetBrowserViewUtils::SelectDropActionForEntries(const AZStd::vector<const AssetBrowserEntry*>& entries)

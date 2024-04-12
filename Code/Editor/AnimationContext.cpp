@@ -251,7 +251,7 @@ void CAnimationContext::SetSequence(CTrackViewSequence* sequence, bool force, bo
     {
         // If this was a sequence that was selected by the user in Track View
         // and it was "No Sequence" clear the m_mostRecentSequenceId so the sequence
-        // will not be reselected at unwanted events like a slice reload or an undo operation.
+        // will not be reselected at unwanted events like an undo operation.
         m_mostRecentSequenceId.SetInvalid();
     }
 

@@ -18,7 +18,7 @@
 
 namespace AssetProcessor
 {
-    class AssetProcessorManager_Test;
+    class AssetProcessorManagerUnit_Test;
 
     class AssetProcessorManagerUnitTests
         : public QObject
@@ -55,7 +55,7 @@ namespace AssetProcessor
         QList<QPair<QString, QString>> m_changedInputResults;
         QList<AzFramework::AssetSystem::AssetNotificationMessage> m_assetMessages;
 
-        AZStd::unique_ptr<AssetProcessorManager_Test> m_assetProcessorManager;
+        AZStd::unique_ptr<AssetProcessorManagerUnit_Test> m_assetProcessorManager;
         PlatformConfiguration m_config;
     };
 } // namespace assetprocessor

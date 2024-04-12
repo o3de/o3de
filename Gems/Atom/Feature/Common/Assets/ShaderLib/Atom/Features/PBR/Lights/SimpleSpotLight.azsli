@@ -69,12 +69,20 @@ void ApplySimpleSpotLights(Surface surface, inout LightingData lightingData)
         lightingData.tileIterator.LoadAdvance();
     
         ViewSrg::SimpleSpotLight light = ViewSrg::m_simpleSpotLights[currLightIndex];
+        if(!IsSameLightChannel(lightingData.lightingChannels, light.m_lightingChannelMask))
+        {
+            continue;
+        }
         ApplySimpleSpotLight(light, surface, lightingData);
     }
 #else
     for(uint lightIndex = 0; lightIndex < ViewSrg::m_simpleSpotLightCount; lightIndex++)
     {
         ViewSrg::SimpleSpotLight light = ViewSrg::m_simpleSpotLights[lightIndex];
+        if(!IsSameLightChannel(lightingData.lightingChannels, light.m_lightingChannelMask))
+        {
+            continue;
+        }
         ApplySimpleSpotLight(light, surface, lightingData);
     }
 #endif

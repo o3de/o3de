@@ -24,9 +24,9 @@
 #include "Util/Image.h"
 #include "ObjectManagerLegacyUndo.h"
 #include "Include/HitContext.h"
-#include "Plugins/ComponentEntityEditorPlugin/Objects/ComponentEntityObject.h"
 
 #include <AzCore/Console/Console.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 
@@ -788,32 +788,6 @@ void CObjectManager::GatherUsedResources(CUsedResources& resources)
         CBaseObject* pObject = objects[i];
         pObject->GatherUsedResources(resources);
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CObjectManager::IsLightClass(CBaseObject* pObject)
-{
-    if (qobject_cast<CEntityObject*>(pObject))
-    {
-        CEntityObject* pEntity = (CEntityObject*)pObject;
-        if (pEntity)
-        {
-            if (pEntity->GetEntityClass().compare(CLASS_LIGHT) == 0)
-            {
-                return true;
-            }
-            if (pEntity->GetEntityClass().compare(CLASS_RIGIDBODY_LIGHT) == 0)
-            {
-                return true;
-            }
-            if (pEntity->GetEntityClass().compare(CLASS_DESTROYABLE_LIGHT) == 0)
-            {
-                return true;
-            }
-        }
-    }
-
-    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -95,6 +95,12 @@ namespace AzFramework
                         &RootSpawnableNotificationBus::Events::OnRootSpawnableAssigned, AZStd::move(rootSpawnable), generation);
                 }, SpawnableEntitiesContainer::CheckIfSpawnableIsLoaded::Yes);
             m_rootSpawnableContainer.SpawnAllEntities();
+
+            #if defined(AZ_ENABLE_TRACING)
+                // Save the root spawnable's name before the compiler eats the rootSpawnable variable from AZStd::move(rootSpawnable)
+                AZStd::string rootSpawnableName = rootSpawnable.GetHint();
+            #endif
+
             m_rootSpawnableContainer.Alert(
                 [newSpawnable = AZStd::move(rootSpawnable)](uint32_t generation)
                 {
@@ -102,7 +108,7 @@ namespace AzFramework
                         &RootSpawnableNotificationBus::Events::OnRootSpawnableReady, AZStd::move(newSpawnable), generation);
                 });
 
-            AZ_TracePrintf("Spawnables", "Root spawnable set to '%s' at generation %zu.\n", rootSpawnable.GetHint().c_str(), generation);     
+            AZ_TracePrintf("Spawnables", "Root spawnable set to '%s' at generation %zu.\n", rootSpawnableName.c_str(), generation);     
         }
         else
         {

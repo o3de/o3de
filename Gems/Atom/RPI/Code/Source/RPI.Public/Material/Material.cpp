@@ -306,7 +306,7 @@ namespace AZ
             // Note that it might not be strictly necessary to reinitialize the entire material, we might be able to get away with
             // just bumping the m_currentChangeId or some other minor updates. But it's pretty hard to know what exactly needs to be
             // updated to correctly handle the reload, so it's safer to just reinitialize the whole material.
-            Init(*m_materialAsset);
+            ReInitKeepPropertyValues();
         }
 
         void Material::OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset)
@@ -315,13 +315,12 @@ namespace AZ
             // Note that it might not be strictly necessary to reinitialize the entire material, we might be able to get away with
             // just bumping the m_currentChangeId or some other minor updates. But it's pretty hard to know what exactly needs to be
             // updated to correctly handle the reload, so it's safer to just reinitialize the whole material.
-            Init(*m_materialAsset);
+            ReInitKeepPropertyValues();
         }
 
         void Material::OnShaderVariantReinitialized(const ShaderVariant& shaderVariant)
         {
             ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnShaderVariantReinitialized %s", this, shaderVariant.GetShaderVariantAsset().GetHint().c_str());
-
             // Note that it would be better to check the shaderVariantId to see if that variant is relevant to this particular material before reinitializing it.
             // There could be hundreds or even thousands of variants for a shader, but only one of those variants will be used by any given material. So we could
             // get better reload performance by only reinitializing the material when a relevant shader variant is updated.
@@ -331,8 +330,34 @@ namespace AZ
             // and mask out the parts of the ShaderVariantId that aren't owned by the material, but that would be premature optimization at this point, adding
             // potentially unnecessary complexity. There may also be more edge cases I haven't thought of. In short, it's much safer to just reinitialize every time
             // this callback happens.
-            Init(*m_materialAsset);
+            ReInitKeepPropertyValues();
         }
+
+        void Material::ReInitKeepPropertyValues()
+        {
+            // Save the material property values to be reapplied after reinitialization. The mapping is stored by name in case the property
+            // layout changes after reinitialization.
+            AZStd::unordered_map<AZ::Name, MaterialPropertyValue> properties;
+            properties.reserve(GetMaterialPropertiesLayout()->GetPropertyCount());
+            for (size_t propertyIndex = 0; propertyIndex < GetMaterialPropertiesLayout()->GetPropertyCount(); ++propertyIndex)
+            {
+                auto descriptor = GetMaterialPropertiesLayout()->GetPropertyDescriptor(AZ::RPI::MaterialPropertyIndex{ propertyIndex });
+                properties.emplace(descriptor->GetName(), GetPropertyValue(AZ::RPI::MaterialPropertyIndex{ propertyIndex }));
+            }
+
+            if (Init(*m_materialAsset) == RHI::ResultCode::Success)
+            {
+                for (const auto& [propertyName, propertyValue] : properties)
+                {
+                    if (const auto& propertyIndex = GetMaterialPropertiesLayout()->FindPropertyIndex(propertyName); propertyIndex.IsValid())
+                    {
+                        SetPropertyValue(propertyIndex, propertyValue);
+                    }
+                }
+                Compile();
+            }
+        }
+
         ///////////////////////////////////////////////////////////////////
 
         const MaterialPropertyCollection& Material::GetPropertyCollection() const
@@ -831,6 +856,10 @@ namespace AZ
         RHI::ConstPtr<MaterialPropertiesLayout> Material::GetMaterialPropertiesLayout() const
         {
             return m_materialProperties.GetMaterialPropertiesLayout();
+        }
+        Data::Instance<RPI::ShaderResourceGroup> Material::GetShaderResourceGroup()
+        {
+            return m_shaderResourceGroup;
         }
     } // namespace RPI
 } // namespace AZ

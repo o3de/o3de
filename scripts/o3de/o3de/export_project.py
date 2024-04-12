@@ -305,7 +305,6 @@ def extract_cmake_custom_args(arg_list: List[str])->tuple:
 
 
 def _export_script(export_script_path: pathlib.Path, project_path: pathlib.Path, passthru_args: list) -> int:
-
     if export_script_path.suffix != '.py':
         logging.error(f"Invalid export script type for '{export_script_path}'. Please provide a file path to an existing python script with '.py' extension.")
         return 1
@@ -319,6 +318,7 @@ def _export_script(export_script_path: pathlib.Path, project_path: pathlib.Path,
     else:
         # If the script is relative, try to match its root path based on the following order of search priorities
         possible_root_paths = [project_path,
+                               project_path / 'ExportScripts',
                                LOCAL_ENGINE_PATH,
                                LOCAL_ENGINE_PATH / 'scripts' / 'o3de',
                                LOCAL_ENGINE_PATH / 'scripts' / 'o3de' / 'ExportScripts']
@@ -355,7 +355,7 @@ def _export_script(export_script_path: pathlib.Path, project_path: pathlib.Path,
     export_process_args, cmake_configure_args, cmake_build_args= extract_cmake_custom_args(passthru_args)
 
     o3de_context = O3DEScriptExportContext(export_script_path=validated_export_script_path,
-                                           project_path=computed_project_path,
+                                           project_path=computed_project_path.resolve(),
                                            engine_path=manifest.get_project_engine_path(computed_project_path),
                                            args=export_process_args,
                                            cmake_additional_configure_args=cmake_configure_args,
@@ -380,7 +380,7 @@ def get_project_export_config_from_args(args: argparse) -> (command_utils.O3DECo
     :return:  Tuple of the appropriate config manager object and the project name if this is not a global settings, otherwise None
     """
     logger = logging.getLogger()
-
+    
     is_global = getattr(args, 'global', False)
     project = getattr(args, 'project', None)
 
@@ -474,8 +474,8 @@ def configure_project_export_options(args: argparse) -> int:
 # Argument handling
 def add_parser_args(parser) -> None:
     parser.add_argument('-es', '--export-script', type=pathlib.Path, required=True, help="An external Python script to run")
-    parser.add_argument('-pp', '--project-path', type=pathlib.Path, required=False,
-                        help="Project to export. If not supplied, it will be inferred by the export script.")
+    parser.add_argument('-pp', '--project-path', type=pathlib.Path, required=False, default=pathlib.Path(os.getcwd()),
+                        help="Project to export. If not supplied, it will be the current working directory.")
     
     parser.add_argument('-ll', '--log-level', default='ERROR',
                         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
@@ -586,6 +586,7 @@ def build_assets(ctx: O3DEScriptExportContext,
                  fail_on_ap_errors: bool,
                  using_installer_sdk: bool = False,
                  tool_config: str = PREREQUISITE_TOOL_BUILD_CONFIG,
+                 selected_platforms: List[str]|None = None,
                  logger: logging.Logger = None) -> int:
     """
     Build the assets for the project
@@ -608,6 +609,10 @@ def build_assets(ctx: O3DEScriptExportContext,
         logger.info(f"Processing assets for {ctx.project_name}")
 
     cmake_build_assets_command = [asset_processor_batch_path, "--project-path", ctx.project_path]
+    
+    if selected_platforms:
+        cmake_build_assets_command.extend([f'--platforms={",".join(selected_platforms)}'])
+    
     ret = process_command(cmake_build_assets_command,
                           cwd=ctx.engine_path if engine_centric else ctx.project_path)
     if ret != 0:
@@ -790,7 +795,7 @@ def build_game_targets(ctx: O3DEScriptExportContext,
 
 
 def bundle_assets(ctx: O3DEScriptExportContext,
-                  selected_platform: str,
+                  selected_platforms: List[str],
                   seedlist_paths: List[pathlib.Path],
                   seedfile_paths: List[pathlib.Path],
                   tools_build_path: pathlib.Path,
@@ -803,7 +808,7 @@ def bundle_assets(ctx: O3DEScriptExportContext,
     Execute the 'bundle assets' phase of the export
 
     @param ctx:                      Export Context
-    @param selected_platform:        The desired asset platform
+    @param selected_platforms:       The desired asset platforms (user can provide one or many)
     @param seedlist_paths:           The list of seedlist files
     @param seedfile_paths:           The list of individual seed files
     @param tools_build_path:         The path to the tools cmake build project
@@ -817,64 +822,65 @@ def bundle_assets(ctx: O3DEScriptExportContext,
     asset_bundler_batch_path = get_asset_bundler_batch_path(tools_build_path, using_installer_sdk, tool_config=tool_config, required=True)
     asset_list_path = asset_bundling_path / 'AssetLists'
 
-    game_asset_list_path = asset_list_path / f'game_{selected_platform}.assetlist'
-    engine_asset_list_path = asset_list_path / f'engine_{selected_platform}.assetlist'
     bundles_path = asset_bundling_path / 'Bundles'
 
-    # Generate the asset lists for the project
-    gen_game_asset_list_command = [asset_bundler_batch_path, 'assetLists',
-                                                             '--assetListFile', game_asset_list_path,
-                                                             '--platform', selected_platform,
-                                                             '--project-path', ctx.project_path,
-                                                             '--allowOverwrites']
-    for seed in seedlist_paths:
-        gen_game_asset_list_command.append("--seedListFile")
-        gen_game_asset_list_command.append(str(seed))
+    for selected_platform in selected_platforms:
+        
+        game_asset_list_path = asset_list_path / f'game_{selected_platform}.assetlist'
+        engine_asset_list_path = asset_list_path / f'engine_{selected_platform}.assetlist'
     
-    for seed in seedfile_paths:
-        gen_game_asset_list_command.append("--addSeed")
-        gen_game_asset_list_command.append(str(seed))
+        # Generate the asset lists for the project
+        gen_game_asset_list_command = [asset_bundler_batch_path, 'assetLists',
+                                                                '--assetListFile', game_asset_list_path,
+                                                                '--platform', selected_platform,
+                                                                '--project-path', ctx.project_path,
+                                                                '--allowOverwrites']
+        for seed in seedlist_paths:
+            gen_game_asset_list_command.extend(["--seedListFile", str(seed)])
+        
+        for seed in seedfile_paths:
+            gen_game_asset_list_command.extend(["--addSeed", str(seed)])
 
-    ret = process_command(gen_game_asset_list_command,
-                          cwd=ctx.engine_path if engine_centric else ctx.project_path)
-    if ret != 0:
-        raise RuntimeError(f"Error generating game assets lists for {game_asset_list_path}")
+        ret = process_command(gen_game_asset_list_command,
+                            cwd=ctx.engine_path if engine_centric else ctx.project_path)
+        if ret != 0:
+            raise RuntimeError(f"Error generating game assets lists for {game_asset_list_path}")
 
-    gen_engine_asset_list_command = [asset_bundler_batch_path, "assetLists",
-                                                               "--assetListFile", engine_asset_list_path,
-                                                               "--platform", selected_platform,
-                                                               '--project-path', ctx.project_path,
-                                                               "--allowOverwrites",
-                                                               "--addDefaultSeedListFiles"]
-    ret = process_command(gen_engine_asset_list_command,
-                          cwd=ctx.engine_path if engine_centric else ctx.project_path)
-    if ret != 0:
-        raise RuntimeError(f"Error generating engine assets lists for {engine_asset_list_path}")
+        gen_engine_asset_list_command = [asset_bundler_batch_path, "assetLists",
+                                                                "--assetListFile", engine_asset_list_path,
+                                                                '--platform', selected_platform,
+                                                                '--project-path', ctx.project_path,
+                                                                "--allowOverwrites",
+                                                                "--addDefaultSeedListFiles"]
+        ret = process_command(gen_engine_asset_list_command,
+                            cwd=ctx.engine_path if engine_centric else ctx.project_path)
+        if ret != 0:
+            raise RuntimeError(f"Error generating engine assets lists for {engine_asset_list_path}")
 
-    # Generate the bundles. We will place it in the project directory for now, since the files need to be copied multiple times (one for each separate launcher distribution)
-    gen_game_bundle_command = [asset_bundler_batch_path, "bundles",
-                                                         "--maxSize", str(max_bundle_size),
-                                                         "--platform", selected_platform,
-                                                         '--project-path', ctx.project_path,
-                                                         "--allowOverwrites",
-                                                         "--outputBundlePath", bundles_path / f"game_{selected_platform}.pak",
-                                                         "--assetListFile", game_asset_list_path]
-    ret = process_command(gen_game_bundle_command,
-                          cwd=ctx.engine_path if engine_centric else ctx.project_path)
-    if ret != 0:
-        raise RuntimeError(f"Error generating game bundle for {bundles_path / f'game_{selected_platform}.pak'}")
+        # Generate the bundles. We will place it in the project directory for now, since the files need to be copied multiple times (one for each separate launcher distribution)
+        gen_game_bundle_command = [asset_bundler_batch_path, "bundles",
+                                                            "--maxSize", str(max_bundle_size),
+                                                            "--platform",  selected_platform,
+                                                            '--project-path', ctx.project_path,
+                                                            "--allowOverwrites",
+                                                            "--outputBundlePath", bundles_path / f"game_{selected_platform}.pak",
+                                                            "--assetListFile", game_asset_list_path]
+        ret = process_command(gen_game_bundle_command,
+                            cwd=ctx.engine_path if engine_centric else ctx.project_path)
+        if ret != 0:
+            raise RuntimeError(f"Error generating game bundle for {bundles_path / f'game_{selected_platform}.pak'}")
 
-    gen_engine_bundle_command = [asset_bundler_batch_path, "bundles",
-                                                           "--maxSize", str(max_bundle_size),
-                                                           "--platform", selected_platform,
-                                                           '--project-path', ctx.project_path,
-                                                           "--allowOverwrites",
-                                                           "--outputBundlePath", bundles_path / f"engine_{selected_platform}.pak",
-                                                           "--assetListFile", engine_asset_list_path]
-    ret = process_command(gen_engine_bundle_command,
-                          cwd=ctx.engine_path if engine_centric else ctx.project_path)
-    if ret != 0:
-        raise RuntimeError(f"Error generating engine bundle for {bundles_path / f'game_{selected_platform}.pak'}")
+        gen_engine_bundle_command = [asset_bundler_batch_path, "bundles",
+                                                            "--maxSize", str(max_bundle_size),
+                                                            "--platform", selected_platform,
+                                                            '--project-path', ctx.project_path,
+                                                            "--allowOverwrites",
+                                                            "--outputBundlePath", bundles_path / f"engine_{selected_platform}.pak",
+                                                            "--assetListFile", engine_asset_list_path]
+        ret = process_command(gen_engine_bundle_command,
+                            cwd=ctx.engine_path if engine_centric else ctx.project_path)
+        if ret != 0:
+            raise RuntimeError(f"Error generating engine bundle for {bundles_path / f'game_{selected_platform}.pak'}")
 
     return bundles_path
 

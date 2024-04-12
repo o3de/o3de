@@ -22,30 +22,32 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Console/IConsoleTypes.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
-#include <AzToolsFramework/Undo/UndoSystem.h>
+
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
-#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
+#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityBus.h>
 #include <AzToolsFramework/FocusMode/FocusModeNotificationBus.h>
 #include <AzToolsFramework/ToolsComponents/ComponentMimeData.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponentBus.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+#include <AzToolsFramework/Undo/UndoSystem.h>
+
 #include <AzQtComponents/Components/O3DEStylesheet.h>
 
-#include <QtWidgets/QWidget>
-#include <QtGui/QIcon>
 #include <QComboBox>
+#include <QtGui/QIcon>
+#include <QtWidgets/QWidget>
 #endif
 
 class QLabel;
-class QSpacerItem;
 class QMenu;
 class QMimeData;
+class QSpacerItem;
 class QStandardItem;
 
 namespace Ui
@@ -210,9 +212,8 @@ namespace AzToolsFramework
 
         struct SharedComponentInfo
         {
-            SharedComponentInfo(AZ::Component* component, AZ::Component* sliceReferenceComponent);
+            SharedComponentInfo(AZ::Component* component);
             AZ::Entity::ComponentArrayType m_instances;
-            AZ::Component* m_sliceReferenceComponent;
         };
 
         using SharedComponentArray = AZStd::vector<SharedComponentInfo>;
@@ -305,12 +306,8 @@ namespace AzToolsFramework
 
         void AddMenuOptionsForComponents(QMenu& menu, const QPoint& position);
         void AddMenuOptionsForFields(InstanceDataNode* fieldNode, InstanceDataNode* componentNode, const AZ::SerializeContext::ClassData* componentClassData, QMenu& menu);
-        void AddMenuOptionsForRevert(InstanceDataNode* fieldNode, InstanceDataNode* componentNode, const AZ::SerializeContext::ClassData* componentClassData, QMenu& menu);
 
         bool HasAnyVisibleElements(const InstanceDataNode& node);
-
-        void ContextMenuActionPullFieldData(AZ::Component* parentComponent, InstanceDataNode* fieldNode);
-        void ContextMenuActionSetDataFlag(InstanceDataNode* node, AZ::DataPatch::Flag flag, bool additive);
 
         void GenerateRowWidgetIndexMapToChildIndex(PropertyRowWidget* parent, int destIndex);
         void ContextMenuActionMoveItemUp(ComponentEditor* componentEditor, PropertyRowWidget* rowWidget);
@@ -331,9 +328,6 @@ namespace AzToolsFramework
         // \param rootType type of root the address should be adjusted to. See \ref AddressRootType.
         // \param outAddress output parameter to be populated with the adjusted node address.
         void CalculateAndAdjustNodeAddress(const InstanceDataNode& componentFieldNode, AddressRootType rootType, InstanceDataNode::Address& outAddress) const;
-
-        // Custom function for comparing values of InstanceDataNodes
-        bool InstanceNodeValueHasNoPushableChange(const InstanceDataNode* sourceNode, const InstanceDataNode* targetNode);
 
         // Custom function for determining whether InstanceDataNodes are read-only
         bool QueryInstanceDataNodeReadOnlyStatus(const InstanceDataNode* node);
@@ -449,8 +443,6 @@ namespace AzToolsFramework
 
         bool IsMoveComponentsUpAllowed() const;
         bool IsMoveComponentsDownAllowed() const;
-
-        void ResetToSlice();
 
         bool DoesOwnFocus() const;
         AZ::u32 GetHeightOfRowAndVisibleChildren(const PropertyRowWidget* row) const;
@@ -605,7 +597,7 @@ namespace AzToolsFramework
         enum class InspectorLayout
         {
             Entity = 0,                     // All selected entities are regular entities.
-            Level,                          // The selected entity is the prefab container entity for the level prefab, or the slice level entity.
+            Level,                          // The selected entity is the prefab container entity for the level prefab.
             ContainerEntityOfFocusedPrefab, // The selected entity is the prefab container entity for the focused prefab.
             Invalid                         // Other entities are selected alongside the level prefab container entity.
         };
@@ -628,9 +620,6 @@ namespace AzToolsFramework
         // the filter, so it can't be checked if it's the default filter.
         bool m_customFilterSet = false;
 
-        // Pointer to entity that first entity is compared against for the purpose of rendering deltas vs. slice in the property grid.
-        AZStd::unique_ptr<AZ::Entity> m_sliceCompareToEntity;
-
         // Temporary buffer to use when calculating a data patch address.
         AZ::DataPatch::AddressType m_dataPatchAddressBuffer;
 
@@ -645,7 +634,6 @@ namespace AzToolsFramework
         // Prefab interfaces
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
         Prefab::InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;
-        bool m_prefabsAreEnabled = false;
 
         ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
         bool m_selectionContainsReadOnlyEntity = false;
@@ -697,8 +685,6 @@ namespace AzToolsFramework
         void ClearSearchFilter();
 
         void OpenPinnedInspector();
-
-        bool SelectedEntitiesAreFromSameSourceSliceEntity() const;
 
         void DragStopped();
 

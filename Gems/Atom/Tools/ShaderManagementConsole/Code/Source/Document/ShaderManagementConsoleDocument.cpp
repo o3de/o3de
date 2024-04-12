@@ -65,15 +65,21 @@ namespace ShaderManagementConsole
         ShaderManagementConsoleDocumentRequestBus::Handler::BusDisconnect();
     }
 
-    AZ::u32 ShaderManagementConsoleDocument::AddOneVariantRow()
+    void ShaderManagementConsoleDocument::AddOneVariantRow()
     {
         AZ::RPI::ShaderVariantListSourceData::VariantInfo variantInfo;
-        AZ::u32 nextStableId = m_shaderVariantListSourceData.m_shaderVariants.empty()
-            ? 1  // stable ID start at 1, since 0 is reserved as explained in ShaderVariantTreeAssetCreator
-            : m_shaderVariantListSourceData.m_shaderVariants.back().m_stableId + 1;  // by invariant (no row shuffles), last stableId is highest in vector
-        variantInfo.m_stableId = nextStableId;
+        // stable ID start at 1, since 0 is reserved as explained in ShaderVariantTreeAssetCreator
+        // by invariant (no row shuffles), last stableId is highest in vector
+        variantInfo.m_stableId = m_shaderVariantListSourceData.m_shaderVariants.empty()
+            ? 1
+            : m_shaderVariantListSourceData.m_shaderVariants.back().m_stableId + 1;
         m_shaderVariantListSourceData.m_shaderVariants.emplace_back(AZStd::move(variantInfo));
-        return nextStableId;
+
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
+        m_modified = true;
     }
 
     // Utility used in sparse-variant-set functions
@@ -103,7 +109,7 @@ namespace ShaderManagementConsole
         AZ::RPI::ShaderVariantListSourceData newSourceData{ m_shaderVariantListSourceData };
         AZ::u32 stableId = newSourceData.m_shaderVariants.empty() ? 1 : newSourceData.m_shaderVariants.back().m_stableId + 1;
         // add "line by line"
-        int numLines = matrixOfValues.size() / optionHeaders.size();
+        int numLines = aznumeric_cast<int>(matrixOfValues.size() / optionHeaders.size());
         for (int line = 0; line < numLines; ++line)
         {
             AZ::RPI::ShaderOptionValuesSourceData mapOfOptionNameToValues;
@@ -115,7 +121,7 @@ namespace ShaderManagementConsole
                 auto indexIt = nameToHeaderIndex.find(optionName);
                 if (indexIt != nameToHeaderIndex.end())
                 {
-                    int index = line * optionHeaders.size() + indexIt->second;
+                    int index = aznumeric_cast<int>(line * optionHeaders.size() + indexIt->second);
                     mapOfOptionNameToValues[optionName] = matrixOfValues[index];
                 }
             }
@@ -152,7 +158,7 @@ namespace ShaderManagementConsole
         //                           A   |b   |false
         //                           A   |a   |true
         //                           A   |b   |true
-        int numLines = matrixOfValues.size() / optionHeaders.size();
+        int numLines = aznumeric_cast<int>(matrixOfValues.size() / optionHeaders.size());
         for (int line = 0; line < numLines; ++line)
         {
             for (const AZ::RPI::ShaderVariantListSourceData::VariantInfo& oldVariant : m_shaderVariantListSourceData.m_shaderVariants)
@@ -167,7 +173,7 @@ namespace ShaderManagementConsole
                     if (indexIt != nameToHeaderIndex.end())
                     {
                         // if exists an entry from the arguments, it is prioritized
-                        int index = line * optionHeaders.size() + indexIt->second;
+                        int index = aznumeric_cast<int>(line * optionHeaders.size() + indexIt->second);
                         mapOfOptionNameToValues[optionName] = matrixOfValues[index];
                     }
                     else
@@ -187,51 +193,69 @@ namespace ShaderManagementConsole
         SetShaderVariantListSourceData(newSourceData);
     }
 
+    enum InfoConstness {ConstInfo, MutableInfo};
+
+    template<InfoConstness Constness> // configure whether the m_info field is const or not
+    struct VariantCompacterKey
+    {
+        using VariantInfo = AZ::RPI::ShaderVariantListSourceData::VariantInfo;
+        using VariantInfo_MaybeConst = AZStd::conditional_t<Constness == ConstInfo, AZStd::add_const_t<VariantInfo>, VariantInfo>;
+
+        VariantInfo_MaybeConst* m_info{};
+        size_t m_hash{};
+
+        bool operator==(const VariantCompacterKey& rhs) const
+        {
+            return m_hash == rhs.m_hash && m_info->m_options == rhs.m_info->m_options; // first part of expression for short circuit
+        }
+
+        static VariantCompacterKey Make(VariantInfo_MaybeConst* source)
+        {
+            VariantCompacterKey newKey;
+            newKey.m_info = source;
+            newKey.m_hash = AZ::ShaderBuilder::HashedVariantInfoSourceData::HashCombineShaderOptionValues(0, source->m_options);
+            return newKey;
+        }
+    };
+
+    template<InfoConstness Constness>
+    struct KeyHasher
+    {
+        std::size_t operator()(const VariantCompacterKey<Constness>& key) const
+        {
+            return key.m_hash;
+        }
+    };
+
+    template<InfoConstness Constness, typename VariantInfoIterable>
+    auto CompactVariants(VariantInfoIterable& variants)
+    {
+        // Use a set for uniquification process
+        AZStd::unordered_set<VariantCompacterKey<Constness>, KeyHasher<Constness>> compacter;
+        compacter.reserve(variants.size());
+        for (auto& variantInfo : variants)
+        {
+            compacter.insert(VariantCompacterKey<Constness>::Make(&variantInfo));
+        }
+        return compacter;
+    }
+
     void ShaderManagementConsoleDocument::DefragmentVariantList()
     {
-        struct VariantCompacterKey
-        {
-            AZ::RPI::ShaderVariantListSourceData::VariantInfo* m_info{};
-            size_t m_hash{};
-
-            bool operator==(const VariantCompacterKey& rhs) const
-            {
-                return m_hash == rhs.m_hash && m_info->m_options == rhs.m_info->m_options;  // first part of expression for short circuit
-            }
-
-            static VariantCompacterKey Make(AZ::RPI::ShaderVariantListSourceData::VariantInfo* source)
-            {
-                VariantCompacterKey newKey;
-                newKey.m_info = source;
-                newKey.m_hash = AZ::ShaderBuilder::HashedVariantInfoSourceData::HashCombineShaderOptionValues(0, source->m_options);
-                return newKey;
-            }
-        };
-
-        struct KeyHasher
-        {
-            std::size_t operator()(const VariantCompacterKey& key) const
-            {
-                return key.m_hash;
-            }
-        };
-        // Use a set for uniquification process
-        AZStd::unordered_set<VariantCompacterKey, KeyHasher> compacter;
-        compacter.reserve(m_shaderVariantListSourceData.m_shaderVariants.size());
-        for (auto& variantInfo : m_shaderVariantListSourceData.m_shaderVariants)
-        {
-            compacter.insert(VariantCompacterKey::Make(&variantInfo));
-        }
+        auto compactVariants = CompactVariants<MutableInfo>(m_shaderVariantListSourceData.m_shaderVariants);
         // Prepare a whole new source data
         AZ::RPI::ShaderVariantListSourceData newSourceData;
         // partial copy
         newSourceData.m_materialOptionsHint = m_shaderVariantListSourceData.m_materialOptionsHint;
         newSourceData.m_shaderFilePath = m_shaderVariantListSourceData.m_shaderFilePath;
         // variants are prepared from the compacted set
-        newSourceData.m_shaderVariants.reserve(compacter.size());
-        for (VariantCompacterKey& compactedKey : compacter)
+        newSourceData.m_shaderVariants.reserve(compactVariants.size());
+        for (VariantCompacterKey<MutableInfo>& compactedKey : compactVariants)
         {
-            newSourceData.m_shaderVariants.emplace_back(std::move(*compactedKey.m_info));
+            if (!compactedKey.m_info->m_options.empty()) // don't preserve root-like variants
+            {
+                newSourceData.m_shaderVariants.emplace_back(std::move(*compactedKey.m_info));
+            }
         }
         // sort by old stable id
         AZStd::sort(newSourceData.m_shaderVariants.begin(),
@@ -387,6 +411,32 @@ namespace ShaderManagementConsole
         return m_invalidDescriptor;
     }
 
+    DocumentVerificationResult ShaderManagementConsoleDocument::Verify() const
+    {
+        // verify compactness: (i.e. no duplicates)
+        auto compactVariants = CompactVariants<ConstInfo>(m_shaderVariantListSourceData.m_shaderVariants);
+        if (compactVariants.size() < m_shaderVariantListSourceData.m_shaderVariants.size())
+        {
+            return {/*m_hasRedundantVariants*/true};
+        }
+        // verify that the stableIDs "space" is dense:
+        AZ::u32 check = 1;
+        for (auto& variantInfo : m_shaderVariantListSourceData.m_shaderVariants)
+        {
+            if (variantInfo.m_stableId != check)
+            {
+                return {/*m_hasRedundantVariants*/false, /*m_hasRootLike*/false, /*m_rootLikeStableId*/0, /*m_hasStableIdJump*/true, /*faultyId*/variantInfo.m_stableId};
+            }
+            ++check;
+            // while we're looping, we can also check that no variant is root-like:
+            if (variantInfo.m_options.empty())
+            {
+                return {/*m_hasRedundantVariants*/false, /*m_hasRootLike*/true, /*m_rootLikeStableId*/variantInfo.m_stableId};
+            }
+        }
+        return {}; // no issue
+    }
+
     AtomToolsFramework::DocumentTypeInfo ShaderManagementConsoleDocument::BuildDocumentTypeInfo()
     {
         AtomToolsFramework::DocumentTypeInfo documentType;
@@ -540,6 +590,17 @@ namespace ShaderManagementConsole
 
     bool ShaderManagementConsoleDocument::SaveSourceData()
     {
+        auto verification = Verify();
+        if (!verification.AllGood())
+        {
+            // can't display message boxes from the document, use a trace:
+            AZ_TracePrintf("ShaderManagementConsoleDocument", "Verification reported: %s%s%s",
+                           verification.m_hasRedundantVariants ? "Redundant variants. " : "",
+                           verification.m_hasRootLike ? "Root-like found. " : "",
+                           verification.m_hasStableIdJump ? "Stable id jumps." : "");
+            return SaveFailed();
+        }
+
         if (!AZ::RPI::JsonUtils::SaveObjectToFile(m_savePathNormalized, m_shaderVariantListSourceData))
         {
             AZ_Error("ShaderManagementConsoleDocument", false, "Document could not be saved: '%s'.", m_savePathNormalized.c_str());
@@ -572,7 +633,6 @@ namespace ShaderManagementConsole
 
         SetShaderVariantListSourceData(shaderVariantListSourceData);
         m_modified = {};
-
         return OpenSucceeded();
     }
 

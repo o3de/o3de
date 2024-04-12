@@ -92,14 +92,6 @@ namespace AZ::RHI
         MultiDeviceResource::Shutdown();
     }
 
-    void MultiDeviceImage::InvalidateViews()
-    {
-        IterateObjects<Image>([]([[maybe_unused]] auto deviceIndex, auto deviceImage)
-        {
-            deviceImage->InvalidateViews();
-        });
-    }
-
     bool MultiDeviceImage::IsInResourceCache(const ImageViewDescriptor& imageViewDescriptor)
     {
         bool isInResourceCache{true};
@@ -113,6 +105,7 @@ namespace AZ::RHI
     //! Given a device index, return the corresponding BufferView for the selected device
     const RHI::Ptr<RHI::ImageView> MultiDeviceImageView::GetDeviceImageView(int deviceIndex) const
     {
+        AZStd::lock_guard lock(m_imageViewMutex);
         auto iterator{ m_cache.find(deviceIndex) };
         if (iterator == m_cache.end())
         {

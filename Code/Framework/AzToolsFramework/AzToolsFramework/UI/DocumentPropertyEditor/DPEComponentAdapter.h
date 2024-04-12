@@ -46,9 +46,6 @@ namespace AZ::DocumentPropertyEditor
         //! Sets the component, connects the appropriate Bus Handlers and sets the reflect data for this instance
         virtual void SetComponent(AZ::Component* componentInstance);
 
-        //! Trigger a refresh based on messages from the listeners
-        void DoRefresh();
-
         Dom::Value HandleMessage(const AdapterMessage& message) override;
 
         //! Creates a node for displaying label information.
@@ -64,6 +61,7 @@ namespace AZ::DocumentPropertyEditor
     private:
         //! Checks if the component is still valid in the entity.
         bool IsComponentValid() const;
+        void DoRefresh();
 
     protected:
         AZ::EntityId m_entityId;

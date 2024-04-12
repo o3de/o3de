@@ -129,6 +129,32 @@ namespace AZ
 
         bool operator==(const VkImageSubresourceRange& lhs, const VkImageSubresourceRange& rhs);
 
+        /// Appends a list of Vulkan structs to end of the "next" chain
+        template<class T>
+        void AppendVkStruct(T& init, const AZStd::vector<void*>& nextStructs)
+        {
+            VkBaseOutStructure* baseStruct = reinterpret_cast<VkBaseOutStructure*>(&init);
+            // Find the last struct in the chain
+            while (baseStruct->pNext)
+            {
+                baseStruct = baseStruct->pNext;
+            }
+
+            // Add the new structs to the chain
+            for (void* nextStruct : nextStructs)
+            {
+                baseStruct->pNext = reinterpret_cast<VkBaseOutStructure*>(nextStruct);
+                baseStruct = baseStruct->pNext;
+            }
+        }
+
+        /// Appends a Vulkan struct to end of the "next" chain
+        template<class T>
+        void AppendVkStruct(T& init, void* nextStruct)
+        {
+            AppendVkStruct(init, AZStd::vector<void*>{ nextStruct });
+        }
+
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(VkImageLayout);
     }
 }

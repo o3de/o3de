@@ -26,9 +26,11 @@ Surface EvaluateSurface_StandardPBR(
     float3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],
     bool isFrontFace,
-    bool isDisplacementClipped)
+    bool isDisplacementClipped,
+    float4 uvDxDy,
+    bool customDerivatives)
 {
-    Surface surface = EvaluateSurface_BasePBR(positionWS, vertexNormal, tangents, bitangents, uvs, isFrontFace);
+    Surface surface = EvaluateSurface_BasePBR(positionWS, vertexNormal, tangents, bitangents, uvs, isFrontFace, uvDxDy, customDerivatives);
 
     // ------- Parallax Clipping -------
 
@@ -40,17 +42,17 @@ Surface EvaluateSurface_StandardPBR(
     // ------- Alpha & Clip -------
 
     // TODO: this often invokes a separate sample of the base color texture which is wasteful
-    surface.alpha = GetAlphaAndClip(uvs);
+    surface.alpha = GetAlphaAndClip(uvs, uvDxDy, customDerivatives);
 
     // ------- Emissive -------
 
     float2 emissiveUv = uvs[MaterialSrg::m_emissiveMapUvIndex];
-    surface.emissiveLighting = GetEmissiveInput(MaterialSrg::m_emissiveMap, MaterialSrg::m_sampler, emissiveUv, real(MaterialSrg::m_emissiveIntensity), real3(MaterialSrg::m_emissiveColor.rgb), real(MaterialSrg::m_emissiveAffectedByAlpha), real(surface.alpha), o_emissiveEnabled, o_emissive_useTexture);
+    surface.emissiveLighting = GetEmissiveInput(MaterialSrg::m_emissiveMap, MaterialSrg::m_sampler, emissiveUv, real(MaterialSrg::m_emissiveIntensity), real3(MaterialSrg::m_emissiveColor.rgb), real(MaterialSrg::m_emissiveAffectedByAlpha), real(surface.alpha), o_emissiveEnabled, o_emissive_useTexture, uvDxDy, customDerivatives);
 
     // ------- Occlusion -------
     
-    surface.diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_diffuseOcclusionMap, MaterialSrg::m_sampler, uvs[MaterialSrg::m_diffuseOcclusionMapUvIndex], real(MaterialSrg::m_diffuseOcclusionFactor), o_diffuseOcclusion_useTexture);
-    surface.specularOcclusion = GetOcclusionInput(MaterialSrg::m_specularOcclusionMap, MaterialSrg::m_sampler, uvs[MaterialSrg::m_specularOcclusionMapUvIndex], real(MaterialSrg::m_specularOcclusionFactor), o_specularOcclusion_useTexture);
+    surface.diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_diffuseOcclusionMap, MaterialSrg::m_sampler, uvs[MaterialSrg::m_diffuseOcclusionMapUvIndex], real(MaterialSrg::m_diffuseOcclusionFactor), o_diffuseOcclusion_useTexture, uvDxDy, customDerivatives);
+    surface.specularOcclusion = GetOcclusionInput(MaterialSrg::m_specularOcclusionMap, MaterialSrg::m_sampler, uvs[MaterialSrg::m_specularOcclusionMapUvIndex], real(MaterialSrg::m_specularOcclusionFactor), o_specularOcclusion_useTexture, uvDxDy, customDerivatives);
 
     // ------- Clearcoat -------
 
@@ -66,7 +68,7 @@ Surface EvaluateSurface_StandardPBR(
                                MaterialSrg::m_clearCoatNormalMap,    uvs[MaterialSrg::m_clearCoatNormalMapUvIndex], vertexNormal, o_clearCoat_normal_useTexture, real(MaterialSrg::m_clearCoatNormalStrength),
                                uvMatrix, tangents[MaterialSrg::m_clearCoatNormalMapUvIndex], bitangents[MaterialSrg::m_clearCoatNormalMapUvIndex],
                                MaterialSrg::m_sampler, isFrontFace,
-                               surface.clearCoat.factor, surface.clearCoat.roughness, surface.clearCoat.normal);
+                               surface.clearCoat.factor, surface.clearCoat.roughness, surface.clearCoat.normal, uvDxDy, customDerivatives);
         }
 
         ApplyClearCoatToSpecularF0(surface.specularF0, surface.clearCoat.factor);
@@ -79,6 +81,43 @@ Surface EvaluateSurface_StandardPBR(
     return surface;
 }
 
+// helper function to keep compatible with the previous version
+// because dxc compiler doesn't allow default parameters on functions with overloads
+Surface EvaluateSurface_StandardPBR(
+    float3 positionWS,
+    real3 vertexNormal,
+    real3 tangents[UvSetCount],
+    real3 bitangents[UvSetCount],
+    float2 uvs[UvSetCount],
+    bool isFrontFace,
+    bool isDisplacementClipped)
+{
+    return EvaluateSurface_StandardPBR(
+        positionWS,
+        vertexNormal,
+        tangents,
+        bitangents,
+        uvs,
+        isFrontFace,
+        isDisplacementClipped,
+        float4(0.0f, 0.0f, 0.0f, 0.0f),
+        false);
+}
+
+Surface EvaluateSurface_StandardPBR(VsOutput IN, PixelGeometryData geoData, float4 uvDxDy, bool customDerivatives)
+{
+    return EvaluateSurface_StandardPBR(
+        geoData.positionWS,
+        geoData.vertexNormal,
+        geoData.tangents,
+        geoData.bitangents,
+        geoData.uvs,
+        geoData.isFrontFace,
+        geoData.isDisplacementClipped,
+        uvDxDy,
+        customDerivatives);
+}
+
 Surface EvaluateSurface_StandardPBR(VsOutput IN, PixelGeometryData geoData)
 {
     return EvaluateSurface_StandardPBR(
@@ -88,5 +127,7 @@ Surface EvaluateSurface_StandardPBR(VsOutput IN, PixelGeometryData geoData)
         geoData.bitangents,
         geoData.uvs,
         geoData.isFrontFace,
-        geoData.isDisplacementClipped);
+        geoData.isDisplacementClipped,
+        float4(0.0f, 0.0f, 0.0f, 0.0f),
+        false);
 }

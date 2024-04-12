@@ -12,18 +12,17 @@
 
 #include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
 
-#include <AzToolsFramework/Editor/RichTextHighlighter.h>
-
 #include <AzCore/Console/IConsole.h>
 
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserTreeToTableProxyModel.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 
+#include <QCollator>
 #include <QSharedPointer>
 #include <QTimer>
-#include <QCollator>
 AZ_POP_DISABLE_WARNING
 
 AZ_CVAR(
@@ -40,7 +39,6 @@ namespace AzToolsFramework
             , m_isTableView(isTableView)
         {
             setDynamicSortFilter(true);
-            setRecursiveFilteringEnabled(true);
             m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName));
             if (ed_useNewAssetBrowserListView)
             {
@@ -71,8 +69,10 @@ namespace AzToolsFramework
                 disconnect(m_filter.data(), &AssetBrowserEntryFilter::updatedSignal, this, &AssetBrowserFilterModel::filterUpdatedSlot);
             }
             connect(filter.data(), &AssetBrowserEntryFilter::updatedSignal, this, &AssetBrowserFilterModel::filterUpdatedSlot);
+
             m_filter = filter;
             m_invalidateFilter = true;
+
             // asset browser entries are not guaranteed to have populated when the filter is set, delay filtering until they are
             bool isAssetBrowserComponentReady = false;
             AssetBrowserComponentRequestBus::BroadcastResult(isAssetBrowserComponentReady, &AssetBrowserComponentRequests::AreEntriesReady);
@@ -109,13 +109,7 @@ namespace AzToolsFramework
             {
                 if (index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name))
                 {
-                    const QString name = assetBrowserEntry->GetName().c_str();
-                    if (!m_searchString.isEmpty())
-                    {
-                        // highlight characters in filter
-                        return AzToolsFramework::RichTextHighlighter::HighlightText(name, m_searchString);
-                    }
-                    return name;
+                    return AssetBrowserViewUtils::GetAssetBrowserEntryNameWithHighlighting(assetBrowserEntry, m_searchString);
                 }
                 
             }
@@ -156,7 +150,7 @@ namespace AzToolsFramework
                 return true;
             }
 
-            return !m_filter || m_filter->MatchWithoutPropagation(entry);
+            return !m_filter || m_filter->Match(entry);
         }
 
         bool AssetBrowserFilterModel::filterAcceptsColumn(int source_column, const QModelIndex&) const

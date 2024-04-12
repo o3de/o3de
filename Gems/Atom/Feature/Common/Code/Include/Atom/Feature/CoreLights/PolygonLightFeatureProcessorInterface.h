@@ -35,7 +35,8 @@ namespace AZ
 
             AZStd::array<float, 3> m_direction = { 0.0f, 0.0f, 1.0f };
 
-            float m_padding = 0.0f;
+            uint32_t m_lightingChannelMask = 1;
+
 
             // Convenience functions for setting start / end index.
 
@@ -89,6 +90,8 @@ namespace AZ
             virtual void SetLightEmitsBothDirections(LightHandle handle, bool lightEmitsBothDirections) = 0;
             //! Sets the radius in meters at which the provided LightHandle will no longer have an effect.
             virtual void SetAttenuationRadius(LightHandle handle, float attenuationRadius) = 0;
+            //! Sets the lighting channel mask
+            virtual void SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask) = 0;
         };
     } // namespace Render
 } // namespace AZ

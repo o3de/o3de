@@ -15,6 +15,7 @@
 namespace UnitTest
 {
     class DrawPacketTest;
+    class MultiDeviceDrawPacketTest;
 }
 
 namespace AZ
@@ -45,6 +46,8 @@ namespace AZ::RHI
     {
         friend class DrawPacketBuilder;
         friend class UnitTest::DrawPacketTest;
+        friend class UnitTest::MultiDeviceDrawPacketTest;
+
     public:
         using DrawItemVisitor = AZStd::function<void(DrawListTag, DrawItemProperties)>;
 

@@ -18,8 +18,10 @@
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Settings/CommandLine.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/std/algorithm.h>
 #include <AzCore/std/containers/queue.h>
 #include <AzCore/std/functional.h>
+#include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/wildcard.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <Application.h>
@@ -189,57 +191,24 @@ namespace AZ::SerializeContextTools
         return result;
     }
 
-    bool Utilities::InspectSerializedFile(
-        const char* filePath,
-        SerializeContext* sc,
-        const ObjectStream::ClassReadyCB& classCallback,
-        Data::AssetFilterCB assetFilterCallback)
+    AZStd::string Utilities::GenerateRelativePosixPath(const AZ::IO::PathView& projectPath, const AZ::IO::PathView& absolutePath)
     {
-        if (!AZ::IO::FileIOBase::GetInstance()->Exists(filePath))
+        AZ::IO::FixedMaxPath projectRelativeFilePath = absolutePath.LexicallyProximate(projectPath);
+        AZStd::to_lower(projectRelativeFilePath.Native().begin(), projectRelativeFilePath.Native().end());
+
+        AZStd::string result = projectRelativeFilePath.StringAsPosix();
+        const bool isOutsideProjectFolder = result.starts_with("..");
+        if (isOutsideProjectFolder)
         {
-            AZ_Error("Verify", false, "Unable to open file '%s' as it doesn't exist.", filePath);
-            return false;
+            result = GetStringAfterFirstOccurenceOf("assets/", result);
         }
-
-        AZ::IO::HandleType fileHandle;
-        auto openResult = AZ::IO::FileIOBase::GetInstance()->Open(filePath, AZ::IO::OpenMode::ModeRead, fileHandle);
-        if (!openResult)
-        {
-            AZ_Error("Verify", false, "File '%s' could not be opened.", filePath);
-            return false;
-        }
-
-        u64 fileLength = 0;
-        auto sizeResult = AZ::IO::FileIOBase::GetInstance()->Size(fileHandle, fileLength);
-        if (!sizeResult || (fileLength == 0))
-        {
-            AZ_Error("Verify", false, "File '%s' doesn't have content.", filePath);
-            return false;
-        }
-
-        AZStd::vector<u8> data;
-        data.resize_no_construct(fileLength);
-        u64 bytesRead = 0;
-        auto readResult = AZ::IO::FileIOBase::GetInstance()->Read(fileHandle, data.data(), fileLength, true, &bytesRead);
-        if (!readResult || (bytesRead != fileLength))
-        {
-            AZ_Error("Verify", false, "Unable to read file '%s'.", filePath);
-            return false;
-        }
-
-        AZ::IO::FileIOBase::GetInstance()->Close(fileHandle);
-
-        AZ::IO::MemoryStream stream(data.data(), fileLength);
-
-        ObjectStream::FilterDescriptor filter;
-        // By default, never load dependencies. That's another file that would need to be processed
-        // separately from this one.
-        filter.m_assetCB = assetFilterCallback;
-        if (!ObjectStream::LoadBlocking(&stream, *sc, classCallback, filter))
-        {
-            AZ_Printf("Verify", "Failed to deserialize '%s'\n", filePath);
-            return false;
-        }
-        return true;
+        return result;
     }
+
+    AZStd::string_view Utilities::GetStringAfterFirstOccurenceOf(const AZStd::string_view& toFind, const AZStd::string_view& string)
+    {
+        const auto startIndex = string.find(toFind);
+        return startIndex == AZStd::string::npos ? string : string.substr(startIndex + toFind.length());
+    }
+
 } // namespace AZ::SerializeContextTools

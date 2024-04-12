@@ -684,7 +684,7 @@ namespace AzToolsFramework
             };
             addLegacyTrackview(behaviorContext->Method("set_recording", PyTrackViewSetRecording, nullptr, "Activates/deactivates TrackView recording mode."));
 
-            addLegacyTrackview(behaviorContext->Method("new_sequence", PyTrackViewNewSequence, nullptr, "Creates a new sequence of the given type (0=Object Entity Sequence (Legacy), 1=Component Entity Sequence (PREVIEW)) with the given name."));
+            addLegacyTrackview(behaviorContext->Method("new_sequence", PyTrackViewNewSequence, nullptr, "Creates a new sequence of the given type (0=Object Entity Sequence (Legacy), 1=Component Entity Sequence) with the given name."));
             addLegacyTrackview(behaviorContext->Method("delete_sequence", PyTrackViewDeleteSequence, nullptr, "Deletes the specified sequence."));
             addLegacyTrackview(behaviorContext->Method("set_current_sequence", PyTrackViewSetCurrentSequence, nullptr, "Sets the specified sequence as a current one in TrackView."));
             addLegacyTrackview(behaviorContext->Method("get_num_sequences", PyTrackViewGetNumSequences, nullptr, "Gets the number of sequences."));

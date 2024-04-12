@@ -18,7 +18,7 @@ namespace AZ
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<AreaLightComponentConfig, ComponentConfig>()
-                    ->Version(8) // Added AffectsGI
+                    ->Version(9) // Added AffectsGI
                     ->Field("LightType", &AreaLightComponentConfig::m_lightType)
                     ->Field("Color", &AreaLightComponentConfig::m_color)
                     ->Field("IntensityMode", &AreaLightComponentConfig::m_intensityMode)
@@ -44,6 +44,8 @@ namespace AZ
                     // Global Illumination
                     ->Field("Affects GI", &AreaLightComponentConfig::m_affectsGI)
                     ->Field("Affects GI Factor", &AreaLightComponentConfig::m_affectsGIFactor)
+                    // Lighting channel
+                    ->Field("LightingChannelConfig", &AreaLightComponentConfig::m_lightingChannelConfig)
                     ;
             }
         }

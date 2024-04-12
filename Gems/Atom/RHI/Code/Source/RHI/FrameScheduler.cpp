@@ -623,7 +623,7 @@ namespace AZ::RHI
         {
             auto& rhiMetrics = statsProfiler->GetProfiler(rhiMetricsId);
             const auto* frameTimeStat = rhiMetrics.GetStatistic(frameTimeMetricId);
-            return (frameTimeStat->GetMostRecentSample() * 1000) / aznumeric_cast<double>(AZStd::GetTimeTicksPerSecond());
+            return !frameTimeStat ? 0 : (frameTimeStat->GetMostRecentSample() * 1000) / aznumeric_cast<double>(AZStd::GetTimeTicksPerSecond());
         }
         return 0;
     }

@@ -5,3 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
+
+set(LY_COMPILE_DEFINITIONS 
+        PRIVATE
+            AZ_TRAIT_PYTHON_LOADER_PYTHON_HOME_BIN_SUBPATH)
