@@ -366,7 +366,9 @@ namespace PhysX
         }
     }
 
- #if defined(CARBONATED) // Methods added to differentiate character collisions from other collisions
+ #if defined(CARBONATED)
+    // Methods added to differentiate character collisions from other collisions
+
     //This exists solely to help differentiate the character collider from the other colliders we use for vision/touch/etc
     void CharacterControllerComponent::SetCharacterCollisions(const AZStd::string& layer, const AZStd::string& group)
     {
@@ -391,9 +393,9 @@ namespace PhysX
 
     void CharacterControllerComponent::SetTag(const AZ::Crc32& tag)
     {
-        if (auto controller = GetController())
+        if (auto pController = GetController())
         {
-            controller->SetTag(tag);
+            pController->SetTag(tag);
         }
     }
 #endif // defined(CARBONATED)

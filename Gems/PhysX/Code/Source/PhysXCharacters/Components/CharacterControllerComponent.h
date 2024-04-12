@@ -125,7 +125,8 @@ namespace PhysX
         float GetHalfForwardExtent() override;
         void SetHalfForwardExtent(float halfForwardExtent) override;
 
-#if defined(CARBONATED) // Methods added to setup character collider so that to differentiate character collisions from other collisions
+#if defined(CARBONATED)
+        // Methods added to setup character collider so that to differentiate character collisions from other collisions
         // Changes collider layer and group to given names.
         void SetCharacterCollisions(const AZStd::string& layer, const AZStd::string& group) override;
         // Changes Physics::MaterialAsset in the slot referenced by index. Index 0 usually correponds to "Entire object" slot.

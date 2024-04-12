@@ -59,7 +59,8 @@ namespace PhysX
         /// @param halfForwardExtent The new half forward extent for the controller.
         virtual void SetHalfForwardExtent(float halfForwardExtent) = 0;
 
-#if defined(CARBONATED) // Methods added to setup character collider so that to differentiate character collisions from other collisions
+#if defined(CARBONATED)
+        // Methods added to setup character collider so that to differentiate character collisions from other collisions
         /// Changes collider layer and group to given names.
         virtual void SetCharacterCollisions(const AZStd::string& layer, const AZStd::string& group) = 0;
 
