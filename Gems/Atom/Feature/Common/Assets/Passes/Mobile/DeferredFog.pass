@@ -4,7 +4,7 @@
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "DeferredFogPassTemplate",
+            "Name": "MobileDeferredFogPassTemplate",
             "PassClass": "DeferredFogPass",
             "Slots": [
                 {
@@ -15,12 +15,6 @@
                         "LoadAction": "Load",
                         "StoreAction": "Store"
                     }
-                },
-                {
-                    "Name": "InputLinearDepth",
-                    "SlotType": "Input",
-                    "ShaderInputName": "m_linearDepthTexture",
-                    "ScopeAttachmentUsage": "Shader"
                 },
                 {
                     "Name": "InputDepthStencil",
@@ -37,7 +31,7 @@
             "PassData": {
                 "$type": "FullscreenTrianglePassData",
                 "ShaderAsset": {
-                    "FilePath": "Shaders/ScreenSpace/DeferredFog.shader"
+                    "FilePath": "Shaders/ScreenSpace/MobileDeferredFog.shader"
                 },
                 "BindViewSrg": true,
                 "ShaderDataMappings": {
@@ -45,16 +39,6 @@
                         {
                             "Name": "m_fogColor",
                             "Value": [ 0.45, 0.45, 0.6 ]
-                        }
-                    ],
-                    "Float2Mappings": [
-                        {
-                            "Name": "m_noiseScaleUV",
-                            "Value": [ 0.1, 0.1 ]
-                        },
-                        {
-                            "Name": "m_noiseVelocityUV",
-                            "Value": [ 0.02, 0.01 ]
                         }
                     ],
                     "FloatMappings": [
@@ -65,14 +49,6 @@
                         {
                             "Name": "m_fogEndDistance",
                             "Value": 5.0
-                        },
-                        {
-                            "Name": "m_fogMinHeight",
-                            "Value": 0.01
-                        },
-                        {
-                            "Name": "m_fogMaxHeight",
-                            "Value": 1.0
                         }
                     ]
                 }

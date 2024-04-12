@@ -33,8 +33,8 @@
                         {
                             "LocalSlot": "SkinnedMeshOutputStream",
                             "AttachmentRef": {
-                            "Pass": "MorphTargetPass",
-                            "Attachment": "MorphTargetDeltaOutput"
+                                "Pass": "MorphTargetPass",
+                                "Attachment": "MorphTargetDeltaOutput"
                             }
                         }
                     ]
@@ -154,7 +154,28 @@
                             }
                         }
                     ]
-                }, 
+                },
+                {
+                    "Name": "DeferredFogPass",
+                    "TemplateName": "MobileDeferredFogPassTemplate",
+                    "Enabled": false,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputDepthStencil",
+                            "AttachmentRef": {
+                                "Pass": "ForwardPass",
+                                "Attachment": "DepthStencilOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "RenderTargetInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "MobileTransparentPass",
+                                "Attachment": "InputOutput"
+                            }
+                        }
+                    ]
+                },
                 {
                     "Name": "SilhouettePass",
                     "TemplateName": "SilhouettePassTemplate",
@@ -165,6 +186,26 @@
                             "AttachmentRef": {
                                 "Pass": "MobileTransparentPass",
                                 "Attachment": "InputOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "MobilePostProcessPass",
+                    "TemplateName": "MobilePostProcessParentTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "LightingInput",
+                            "AttachmentRef": {
+                                "Pass": "MobileTransparentPass",
+                                "Attachment": "InputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Depth",
+                            "AttachmentRef": {
+                                "Pass": "ForwardPass",
+                                "Attachment": "DepthStencilOutput"
                             }
                         }
                     ]
@@ -198,7 +239,7 @@
                 {
                     "Name": "UIPass",
                     "TemplateName": "UIParentTemplate",
-                    "Connections": [  
+                    "Connections": [
                         {
                             "LocalSlot": "DepthInputOutput",
                             "AttachmentRef": {

@@ -144,12 +144,13 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
         geoData.isDisplacementClipped = false;
         geoData.m_vertexBlendMask = vertexBlendMask;
 
+#if ENABLE_PARALLAX
         if(ShouldHandleParallax())
         {
             MultilayerSetPixelDepth(vertexBlendMask, geoData.positionWS, geoData.vertexNormal, geoData.tangents, geoData.bitangents,
                 geoData.uvs, isFrontFace, objectToWorld, positionSV.z, positionSV.w, geoData.isDisplacementClipped);
         }
-
+#endif
         return geoData;
     }
     

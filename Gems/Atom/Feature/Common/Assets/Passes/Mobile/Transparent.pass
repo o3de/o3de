@@ -4,7 +4,7 @@
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "MultiViewTransparentPassTemplate",
+            "Name": "MobileTransparentPassTemplate",
             "PassClass": "RasterPass",
             "Slots": [
                 // Inputs...
