@@ -54,7 +54,7 @@ namespace AZ
 
             //! Only applicable for ParentPass.
             //! If set to "true" then:
-            //! 0- Yoú may get performance benefits if the GPU is a Tiled Based Rasterizer and the RHI supports TBR (like Vulkan).
+            //! 0- You may get performance benefits if the GPU is a Tiled Based Rasterizer and the RHI supports TBR (like Vulkan).
             //!    This is typically the case for Mobile and XR platforms.
             //! 1- All Child passes must be RasterPass or subclass of RasterPass.
             //! 2- The Child passes will be considered as mergeable into sequential subpasses.
