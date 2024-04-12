@@ -161,17 +161,20 @@ namespace AZ::RHI
         SubpassAttachmentLayoutBuilder* AddSubpass();
 
         //! Ends the building of a layout. Returns the result of the operation.
+        //! If there's more than one subpass it creates @m_subpassDependencies
         ResultCode End(RenderAttachmentLayout& builtRenderAttachmentLayout);
 
-        //! GALIB Add comment
+        //! Returns 
         AZStd::shared_ptr<SubpassDependencies> GetSubpassDependencies();
 
         //! Resets all previous values so the builder can be reuse.
         void Reset();
 
     private:
-        /// List of builders for each subpass.
+        //! List of builders for each subpass.
         AZStd::vector<SubpassAttachmentLayoutBuilder> m_subpassLayoutBuilders;
+        //! Stores an opaque handle to custom RHI data related with Subpass Dependencies.
+        //! This shared pointer is built only if there's more than 1 subpass.
         AZStd::shared_ptr<SubpassDependencies> m_subpassDependencies;
     };
 }

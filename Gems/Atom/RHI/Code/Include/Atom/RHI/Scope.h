@@ -179,7 +179,7 @@ namespace AZ::RHI
         /// Called when the scope is shutting down.
         virtual void ShutdownInternal();
 
-        /// GALIB Add Comment
+        /// Called when there's Subpass Dependency data that the RHI should use internally.
         virtual void SetSubpassDependencies(AZStd::shared_ptr<SubpassDependencies> subpassDependencies);
 
         //////////////////////////////////////////////////////////////////////////

@@ -79,6 +79,7 @@ namespace AZ::RHI
         m_scopeLookup.clear();
         m_attachmentDatabase.Clear();
         m_isCompiled = false;
+        m_requiresSortForSubpasses = false;
     }
 
     ResultCode FrameGraph::ValidateEnd()
@@ -141,7 +142,7 @@ namespace AZ::RHI
         m_isBuilding = false;
 
         /// Finally, topologically sort the graph in preparation for compilation.
-        resultCode = TopologicalSort();
+        resultCode = TopologicalSort(m_requiresSortForSubpasses);
         if (resultCode != ResultCode::Success)
         {
             Clear();
@@ -209,6 +210,7 @@ namespace AZ::RHI
             // If there's a last scope, we are at a scope subpass that is NOT the first subpass
             if ((usage == ScopeAttachmentUsage::SubpassInput) || (descriptor.m_subpassIndex > 0))
             {
+                m_requiresSortForSubpasses = true;
                 InsertEdge(*producer, *m_currentScope, GraphEdgeType::SameGroup);
             }
             else
@@ -451,7 +453,7 @@ namespace AZ::RHI
         m_currentScope->m_fencesToWaitFor.push_back(&fence);
     }
 
-    ResultCode FrameGraph::TopologicalSort()
+    ResultCode FrameGraph::TopologicalSort(bool requiresSortForSubpasses)
     {
         struct NodeId
         {
@@ -529,15 +531,37 @@ namespace AZ::RHI
         }
 
         //////////////////////////////////////////////////////////////////
-        // GALIB. TODO. Make sure this is the right thing to do!
-        // This code makes sure that Subpasses get grouped consecutively.
-        // BUT adds an invalidation error for Compute Shaders like LightCullingPass.
-        AZStd::sort(
-            m_scopes.begin(), m_scopes.end(),
-            [](const AZ::RHI::Scope* a, const AZ::RHI::Scope* b)
-            {
-                return (a->GetFrameGraphGroupId() < b->GetFrameGraphGroupId());
-            });
+        // This additional sort makes sure that Subpasses get grouped consecutively
+        // in MultiView(aka XR) pipelines.
+        // This is an example on how a Multiview(aka XR) scenario would sort scopes WITHOUT
+        // this sort:
+        //     [0] "Root"
+        //     [1] "XRLeftPipeline_-10.MultiViewForwardPass"
+        //     [2] "XRRightPipeline_-10.MultiViewForwardPass"
+        //     [3] "XRRightPipeline_-10.MultiViewSkyBoxPass"
+        //     [4] "XRLeftPipeline_-10.MultiViewSkyBoxPass"
+        // The RHI would crash because the subpasses in the LEFT View are not consecutive.
+        // On the other hand, thanks to this sort the order would end like this:
+        //     [0] "Root"
+        //     [1] "XRLeftPipeline_-10.MultiViewForwardPass"
+        //     [2] "XRLeftPipeline_-10.MultiViewSkyBoxPass" 
+        //     [3] "XRRightPipeline_-10.MultiViewForwardPass"
+        //     [4] "XRRightPipeline_-10.MultiViewSkyBoxPass"
+        // Breadcrumb: It was found that the main pipeline (Which luckily doesn't use subpasses)
+        //     reports a minor validation error in Vulkan related with image layout for some
+        //     compute passes like LightCullingPass when this sort is execute.
+        //     As mentioned already, FORTUNATELY the main pipeline doesn't use subpasses
+        //     and this sort is never executed in that case. 
+        if (requiresSortForSubpasses)
+        {
+            AZStd::sort(
+                m_scopes.begin(),
+                m_scopes.end(),
+                [](const AZ::RHI::Scope* a, const AZ::RHI::Scope* b)
+                {
+                    return (a->GetFrameGraphGroupId() < b->GetFrameGraphGroupId());
+                });
+        }
         ////////////////////////////////////////////////////////////////
 
         if (m_graphNodes.size() == m_scopes.size())

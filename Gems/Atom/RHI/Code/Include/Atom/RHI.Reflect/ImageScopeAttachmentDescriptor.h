@@ -9,7 +9,6 @@
 
 #include <Atom/RHI.Reflect/ImageViewDescriptor.h>
 #include <Atom/RHI.Reflect/ScopeAttachmentDescriptor.h>
-#include <Atom/RHI.Reflect/ScopeId.h> // GALIB
 
 namespace AZ::RHI
 {

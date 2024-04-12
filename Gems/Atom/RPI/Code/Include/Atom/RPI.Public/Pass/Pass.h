@@ -24,7 +24,6 @@
 #include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI.Reflect/Scissor.h>
 #include <Atom/RHI.Reflect/Viewport.h>
-#include <Atom/RHI.Reflect/RenderAttachmentLayout.h> // GALIB
 
 #include <AzCore/std/containers/span.h>
 

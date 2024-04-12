@@ -300,19 +300,18 @@ namespace AZ
             {
                 if (prebuiltSubpassDependencies->m_subpassCount == m_renderpassDesc.m_subpassCount)
                 {
-                    m_renderpassDesc.m_subpassDependencies.clear();
                     prebuiltSubpassDependencies->ApplySubpassDependencies(m_renderpassDesc);
                 }
             }
-            else //TODO: GALIB: Because we are in Vulkan land, is the "else" block needed?? 
+
+            // TODO: The following block should NOT exist because Subpasses in Vulkan
+            //    are only relevant for Raster passes that share Render Targets (images, not buffers).
+            // Add the subpass dependencies from the buffer attachments.
+            for (size_t index = 0; index < scope.GetBufferAttachments().size(); ++index)
             {
-                // Add the subpass dependencies from the buffer attachments.
-                for (size_t index = 0; index < scope.GetBufferAttachments().size(); ++index)
-                {
-                    const RHI::BufferScopeAttachment* scopeAttachment = scope.GetBufferAttachments()[index];
-                    const BufferView* bufferView = static_cast<const BufferView*>(scopeAttachment->GetBufferView());
-                    AddResourceDependency(subpassIndex, scope, bufferView);
-                }
+                const RHI::BufferScopeAttachment* scopeAttachment = scope.GetBufferAttachments()[index];
+                const BufferView* bufferView = static_cast<const BufferView*>(scopeAttachment->GetBufferView());
+                AddResourceDependency(subpassIndex, scope, bufferView);
             }
 
         }

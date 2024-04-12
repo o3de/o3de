@@ -132,11 +132,15 @@ namespace AZ
             // Orphans all children by clearing m_children.
             void RemoveChildren(bool calledFromDestructor = false);
 
-            // GALIB: Add comment
+            //! This function will only do work if @m_flags.m_mergeChildrenAsSubpasses is true.
+            //! Will loop through all children passes, make sure they are all RasterPass type,
+            //! and create a common RHI::RenderAttachmentLayout that all subpasses should use,
+            //! along with the custom RHI SubpassDepencies blob.
             void CreateRenderAttachmentConfigurationForSubpasses();
 
-            // GALIB: add more comment
-            // A helper function that can be called several times.
+            //! A helper function that clears m_flags.m_mergeChildrenAsSubpasses for this parent pass
+            //! and all its children.Typically called when it was requested to merge subpasses but
+            //! it was found that the subpasses are not mergeable.
             void ClearMergeAsSubpassesFlag();
 
         private:

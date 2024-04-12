@@ -52,10 +52,9 @@ namespace AtomToolsFramework
 
     void PreviewRendererSystemComponent::Activate()
     {
-        // GALIB
-        //AZ::SystemTickBus::Handler::BusConnect();
-        //AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusConnect();
-        //PreviewRendererSystemRequestBus::Handler::BusConnect();
+        AZ::SystemTickBus::Handler::BusConnect();
+        AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusConnect();
+        PreviewRendererSystemRequestBus::Handler::BusConnect();
     }
 
     void PreviewRendererSystemComponent::Deactivate()

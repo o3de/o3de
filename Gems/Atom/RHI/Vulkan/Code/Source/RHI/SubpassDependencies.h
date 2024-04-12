@@ -14,8 +14,9 @@
 
 namespace AZ::Vulkan
 {
-    //! GALIB: Add comment
-    //! Remark: This is not a Resource!
+    //! This is the Vulkan concrete implementation of RHI::SubpassDependencies.
+    //! Basically this class owns an array of VkSubpassDependency, which is all
+    //! the data required in Vulkan to define Subpass Dependencies. 
     class SubpassDependencies final : public RHI::SubpassDependencies
     {
         friend class RenderPass; // Builds the native vulkan data that is encapsulated by this class.
@@ -26,10 +27,24 @@ namespace AZ::Vulkan
         SubpassDependencies() = default;
         virtual ~SubpassDependencies() = default;
 
+        //! RHI::SubpassDependencies override
+        bool IsValid() const override;
+
     private:
+        //! Called by AZ::Vulkan::RenderPassBuilder to apply Subpass Dependency data when creating
+        //! a VkRenderPass.
+        //! @param dstRenderPassDescriptor The recipient/destination structure that needs the
+        //!        subpass dependency array.
         void ApplySubpassDependencies(RenderPass::Descriptor& dstRenderPassDescriptor) const;
 
-        AZStd::vector<VkSubpassDependency> m_subpassDependencies; // GALIB Add comment
-        uint32_t m_subpassCount = 0; // GALIB Add comment
+        //! This is the main blob of data that VkRenderPasses require to know what are the
+        //! dependencies between subpasses. This array is created by AZ::Vulkan::RenderPass class.
+        AZStd::vector<VkSubpassDependency> m_subpassDependencies;
+
+        //! We store here how many subpasses are connected by @m_subpassDependencies.
+        //! Do not assume that m_subpassCount == m_subpassDependencies.size().
+        //! This variable is ONLY used for validation purposes when ApplySubpassDependencies() is called
+        //! because it helps detect errors when the number of subpasses in dstRenderPassDescriptor does not match.
+        uint32_t m_subpassCount = 0;
     };
 } // namespace AZ::Vulkan

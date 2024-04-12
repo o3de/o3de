@@ -209,7 +209,10 @@ namespace AZ
             AZStd::vector<CommandList::ResourceClearRequest> m_imageClearRequests;
             AZStd::vector<CommandList::ResourceClearRequest> m_bufferClearRequests;
 
-            AZStd::shared_ptr<RHI::SubpassDependencies> m_subpassDependencies; // GALIB Add comment
+            //! Optional handle that is only relevant when several Scopes are grouped into Subpasses.
+            //! The merged scopes share the exact same VkSubpassDependencies that will be required when
+            //! creating the VkRenderPass.
+            AZStd::shared_ptr<RHI::SubpassDependencies> m_subpassDependencies;
         };
 
         template<class T>

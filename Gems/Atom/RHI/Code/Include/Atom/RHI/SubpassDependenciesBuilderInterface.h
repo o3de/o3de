@@ -15,7 +15,10 @@
 
 namespace AZ::RHI
 {
-    //! GALIB Add Comment
+    //! This is an optional interface that any RHI can support to build
+    //! SubpassDependencies data when the RHI supports grouping Raster passes Subpasses.
+    //! This API is typically invoked by the RPI when instantiating RasterPasses that
+    //! should be merged as Subpasses.
     class ISubpassDependenciesBuilder
     {
     public:
@@ -25,7 +28,10 @@ namespace AZ::RHI
         ISubpassDependenciesBuilder() = default;
         virtual ~ISubpassDependenciesBuilder() = default;
 
-        //! GALIB Add Comment
+        //! @returns A shared pointer to an opaque blob that encapsulates Subpass Dependency data from a Render Attachment Layout.
+        //! The RPI calls this function AFTER RasterPass::BuildInternal() has been called on all RasterPasses that should be merged
+        //! as a group of subpasses.
+        //! @remarks This function should only be called of there's more than one subpass declared in @layout.
         virtual AZStd::shared_ptr<SubpassDependencies> BuildSubpassDependencies(const RHI::RenderAttachmentLayout& layout) const = 0;
     };
 
