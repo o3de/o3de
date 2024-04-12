@@ -28,66 +28,9 @@
 
 static constexpr int VIEW_DISTANCE_MULTIPLIER_MAX = 100;
 
-//////////////////////////////////////////////////////////////////////////
-//! Undo object for attach/detach changes
-class CUndoAttachEntity
-    : public IUndoObject
-{
-public:
-    CUndoAttachEntity(CEntityObject* pAttachedObject, bool bAttach)
-        : m_attachedEntityGUID(pAttachedObject->GetId())
-        , m_attachmentTarget(pAttachedObject->GetAttachTarget())
-        , m_attachmentType(pAttachedObject->GetAttachType())
-        , m_bAttach(bAttach)
-    {}
-
-    void Undo([[maybe_unused]] bool bUndo) override
-    {
-        if (!m_bAttach)
-        {
-            SetAttachmentTypeAndTarget();
-        }
-    }
-
-    void Redo() override
-    {
-        if (m_bAttach)
-        {
-            SetAttachmentTypeAndTarget();
-        }
-    }
-
-private:
-    void SetAttachmentTypeAndTarget()
-    {
-        CObjectManager* pObjectManager = static_cast<CObjectManager*>(GetIEditor()->GetObjectManager());
-        CEntityObject* pEntity = static_cast<CEntityObject*>(pObjectManager->FindObject(m_attachedEntityGUID));
-
-        if (pEntity)
-        {
-            pEntity->SetAttachType(m_attachmentType);
-            pEntity->SetAttachTarget(m_attachmentTarget.toUtf8().data());
-        }
-    }
-
-    int GetSize() override { return sizeof(CUndoAttachEntity); }
-
-    GUID m_attachedEntityGUID;
-    CEntityObject::EAttachmentType m_attachmentType;
-    QString m_attachmentTarget;
-    bool m_bAttach;
-};
-
-//////////////////////////////////////////////////////////////////////////
-// CBase implementation.
-//////////////////////////////////////////////////////////////////////////
-
 namespace
 {
     CEntityObject* s_pPropertyPanelEntityObject = nullptr;
-
-    // Prevent OnPropertyChange to be executed when loading many properties at one time.
-    static bool s_ignorePropertiesUpdate = false;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -270,9 +213,7 @@ void CEntityObject::SetTransformDelegate(ITransformDelegate* pTransformDelegate)
         return;
     }
 
-    s_ignorePropertiesUpdate = true;
     ForceVariableUpdate();
-    s_ignorePropertiesUpdate = false;
     ResetCallbacks();
 }
 

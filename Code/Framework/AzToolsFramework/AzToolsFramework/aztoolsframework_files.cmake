@@ -91,6 +91,7 @@ set(FILES
     API/EditorViewportIconDisplayInterface.h
     API/PythonLoader.h
     API/PythonLoader.cpp
+    API/SettingsRegistryUtils.h
     API/ViewPaneOptions.h
     API/ViewportEditorModeTrackerInterface.h
     Application/Ticker.h
@@ -202,9 +203,6 @@ set(FILES
     Entity/PrefabEditorEntityOwnershipInterface.h
     Entity/PrefabEditorEntityOwnershipService.h
     Entity/PrefabEditorEntityOwnershipService.cpp
-    Entity/SliceEditorEntityOwnershipService.h
-    Entity/SliceEditorEntityOwnershipService.cpp
-    Entity/SliceEditorEntityOwnershipServiceBus.h
     Entity/EntityTypes.h
     Entity/EntityUtilityComponent.h
     Entity/EntityUtilityComponent.cpp
@@ -569,22 +567,8 @@ set(FILES
     Commands/ComponentModeCommand.h
     Commands/EntityManipulatorCommand.h
     Commands/EntityManipulatorCommand.cpp
-    Commands/EntityStateCommand.cpp
-    Commands/EntityStateCommand.h
     Commands/SelectionCommand.cpp
     Commands/SelectionCommand.h
-    Commands/PreemptiveUndoCache.cpp
-    Commands/PreemptiveUndoCache.h
-    Commands/BaseSliceCommand.cpp
-    Commands/BaseSliceCommand.h
-    Commands/SliceDetachEntityCommand.cpp
-    Commands/SliceDetachEntityCommand.h
-    Commands/DetachSubSliceInstanceCommand.cpp
-    Commands/DetachSubSliceInstanceCommand.h
-    Commands/PushToSliceCommand.cpp
-    Commands/PushToSliceCommand.h
-    Commands/CreateSliceCommand.cpp
-    Commands/CreateSliceCommand.h
     Viewport/ActionBus.h
     Viewport/EditorContextMenu.h
     Viewport/EditorContextMenu.cpp
@@ -881,6 +865,7 @@ set(FILES
     Prefab/PrefabPublicRequestBus.h
     Prefab/PrefabPublicRequestHandler.h
     Prefab/PrefabPublicRequestHandler.cpp
+    Prefab/PrefabSettings.h
     Prefab/PrefabUndoCache.cpp
     Prefab/PrefabUndoCache.h
     Prefab/PrefabUndoHelpers.cpp

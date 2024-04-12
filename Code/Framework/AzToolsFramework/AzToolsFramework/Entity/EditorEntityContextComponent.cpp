@@ -31,8 +31,6 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
-#include <AzToolsFramework/Commands/PreemptiveUndoCache.h>
-#include <AzToolsFramework/Commands/EntityStateCommand.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 
 #include <AzToolsFramework/ToolsComponents/EditorEntityIconComponent.h>
@@ -162,11 +160,7 @@ namespace AzToolsFramework
         m_entityOwnershipService->InstantiateAllPrefabs();
 
         EditorEntityContextRequestBus::Handler::BusConnect();
-
         EditorEntityContextPickingRequestBus::Handler::BusConnect(GetContextId());
-
-        SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusConnect();
-
         EditorLegacyGameModeNotificationBus::Handler::BusConnect();
     }
 
@@ -176,11 +170,7 @@ namespace AzToolsFramework
     void EditorEntityContextComponent::Deactivate()
     {
         EditorLegacyGameModeNotificationBus::Handler::BusDisconnect();
-
-        SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusDisconnect();
-
         EditorEntityContextRequestBus::Handler::BusDisconnect();
-
         EditorEntityContextPickingRequestBus::Handler::BusDisconnect();
 
         DestroyContext();
@@ -685,23 +675,6 @@ namespace AzToolsFramework
         AZ::Data::AssetManager::Instance().ResumeAssetRelease();
     }
 
-    void EditorEntityContextComponent::OnSaveStreamForGameBegin(AZ::IO::GenericStream& gameStream, AZ::DataStream::StreamType streamType,
-        AZStd::vector<AZStd::unique_ptr<AZ::Entity>>& levelEntities)
-    {
-        EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnSaveStreamForGameBegin,
-            gameStream, streamType, levelEntities);
-    }
-
-    void EditorEntityContextComponent::OnSaveStreamForGameSuccess(AZ::IO::GenericStream& gameStream)
-    {
-        EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnSaveStreamForGameSuccess, gameStream);
-    }
-
-    void EditorEntityContextComponent::OnSaveStreamForGameFailure(AZStd::string_view failureString)
-    {
-        EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnSaveStreamForGameFailure, failureString);
-    }
-    
     void EditorEntityContextComponent::OnStartGameModeRequest()
     {
         m_isRequestingGame = true;

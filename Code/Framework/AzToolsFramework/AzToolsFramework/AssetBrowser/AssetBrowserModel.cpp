@@ -264,7 +264,7 @@ namespace AzToolsFramework
             const AssetBrowserEntry* item = static_cast<const AssetBrowserEntry*>(parent.internalPointer());
 
             // We should only have an item as a folder but will check
-            if (item && (item->RTTI_IsTypeOf(FolderAssetBrowserEntry::RTTI_Type())))
+            if (item && (item->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder))
             {
                 AZStd::vector<const AssetBrowserEntry*> entries;
 
@@ -581,7 +581,7 @@ namespace AzToolsFramework
                 return false;
             }
 
-            if (azrtti_istypeof<RootAssetBrowserEntry*>(entry))
+            if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Root)
             {
                 index = QModelIndex();
                 return true;

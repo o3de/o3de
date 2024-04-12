@@ -32,7 +32,6 @@
 #include <AzToolsFramework/ToolsComponents/ComponentAssetMimeDataContainer.h>
 #include <AzToolsFramework/ToolsComponents/ScriptEditorComponent.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
-#include <AzToolsFramework/Commands/EntityStateCommand.h>
 
 #include <QTimer>
 

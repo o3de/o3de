@@ -19,7 +19,7 @@ ly_associate_package(PACKAGE_NAME cityhash-1.1-multiplatform                    
 # platform-specific:
 ly_associate_package(PACKAGE_NAME expat-2.4.2-rev2-linux                            TARGETS expat                       PACKAGE_HASH 755369a919e744b9b3f835d1acc684f02e43987832ad4a1c0b6bbf884e6cd45b)
 ly_associate_package(PACKAGE_NAME assimp-5.2.5-rev1-linux                           TARGETS assimplib                   PACKAGE_HASH 67bd3625078b63b40ae397ef7a3e589a6f77e95d3318c97dd7075e3e22a638cd)
-ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.11.144-rev1-linux                  TARGETS AWSNativeSDK                PACKAGE_HASH 4ba55b76b8af629a3d405434776790130f785e7c8fadb2f1d373008922a2a33a)
+ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.11.288-rev1-linux                  TARGETS AWSNativeSDK                PACKAGE_HASH 20421c93a5d32feae636c6dc46323b10547f2c5e7e62b63db00319765bb45331)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev3-linux                          TARGETS TIFF                        PACKAGE_HASH 2377f48b2ebc2d1628d9f65186c881544c92891312abe478a20d10b85877409a)
 ly_associate_package(PACKAGE_NAME freetype-2.11.1-rev1-linux                        TARGETS Freetype                    PACKAGE_HASH 28bbb850590507eff85154604787881ead6780e6eeee9e71ed09cd1d48d85983)
 ly_associate_package(PACKAGE_NAME Lua-5.4.4-rev1-linux                              TARGETS Lua                         PACKAGE_HASH d582362c3ef90e1ef175a874abda2265839ffc2e40778fa293f10b443b4697ac)
@@ -42,7 +42,7 @@ ly_associate_package(PACKAGE_NAME squish-ccr-deb557d-rev1-linux                 
 ly_associate_package(PACKAGE_NAME astc-encoder-3.2-rev2-linux                       TARGETS astc-encoder                PACKAGE_HASH 71549d1ca9e4d48391b92a89ea23656d3393810e6777879f6f8a9def2db1610c)
 ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-linux                    TARGETS ISPCTexComp                 PACKAGE_HASH 065fd12abe4247dde247330313763cf816c3375c221da030bdec35024947f259)
 ly_associate_package(PACKAGE_NAME lz4-1.9.4-rev2-linux                              TARGETS lz4                         PACKAGE_HASH 5d7e5d087c224dd26edb19deaa73673eefa2dc73f40d0709739e60f2ad35060b)
-ly_associate_package(PACKAGE_NAME pyside2-5.15.2.1-py3.10-rev6-linux                TARGETS pyside2                     PACKAGE_HASH 0e39a7f775e87516bf241acec2fbc437ed6b1fd2b99282d2490e0df7882ec567)
+ly_associate_package(PACKAGE_NAME pyside2-5.15.2.1-py3.10-rev7-linux                TARGETS pyside2                     PACKAGE_HASH bae4598cb5579d835e90e8435181bb3c5222449ce9c2665143a618dac6122be7)
 ly_associate_package(PACKAGE_NAME SQLite-3.37.2-rev1-linux                          TARGETS SQLite                      PACKAGE_HASH bee80d6c6db3e312c1f4f089c90894436ea9c9b74d67256d8c1fb00d4d81fe46)
 ly_associate_package(PACKAGE_NAME AwsIotDeviceSdkCpp-1.15.2-rev1-linux              TARGETS AwsIotDeviceSdkCpp          PACKAGE_HASH 83fc1711404d3e5b2faabb1134e97cc92b748d8b87ff4ea99599d8c750b8eff0)
 ly_associate_package(PACKAGE_NAME vulkan-validationlayers-1.2.198-rev1-linux        TARGETS vulkan-validationlayers     PACKAGE_HASH 9195c7959695bcbcd1bc1dc5c425c14639a759733b3abe2ffa87eb3915b12c71)
