@@ -232,6 +232,10 @@ namespace PhysX
         float GetHalfForwardExtent() const;
         void SetHalfForwardExtent(float halfForwardExtent);
 
+#if defined(CARBONATED) // provide means for custom collider setup in a game
+        void SetTag(const AZ::Crc32& tag);
+#endif // defined(CARBONATED)
+
     private:
         void SetFilterDataAndShape(const Physics::CharacterConfiguration& characterConfig);
         void SetUserData(const Physics::CharacterConfiguration& characterConfig);

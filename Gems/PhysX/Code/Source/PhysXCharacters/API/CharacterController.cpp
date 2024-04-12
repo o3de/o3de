@@ -377,6 +377,13 @@ namespace PhysX
         }
     }
 
+#if defined(CARBONATED) // provide means for custom collider setup in a game
+    void CharacterController::SetTag(const AZ::Crc32& tag)
+    {
+        m_colliderTag = tag;
+    }
+#endif // defined(CARBONATED)
+
     void CharacterController::SetTag(const AZStd::string& tag)
     {
         m_colliderTag = AZ::Crc32(tag);
