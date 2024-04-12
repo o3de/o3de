@@ -80,8 +80,8 @@ Surface EvaluateSurface_BasePBR(
 Surface EvaluateSurface_BasePBR(
     float3 positionWS,
     real3 vertexNormal,
-    real3 tangents[UvSetCount],
-    real3 bitangents[UvSetCount],
+    float3 tangents[UvSetCount],
+    float3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],
     bool isFrontFace)
 {
