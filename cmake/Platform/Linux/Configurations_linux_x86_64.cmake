@@ -37,6 +37,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
                 -fpie
                 -Wl,-z,relro,-z,now
                 -Wl,-z,noexecstack
+                -Wl,--disable-new-dtags
                 -L$ENV{SNAP}/lib/x86_64-linux-gnu
                 -L$ENV{SNAP}/usr/lib/x86_64-linux-gnu
         )
@@ -59,6 +60,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
                 -fpie
                 -Wl,-z,relro,-z,now
                 -Wl,-z,noexecstack
+                -Wl,--disable-new-dtags
         )
     endif()
 
