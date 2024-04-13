@@ -69,7 +69,7 @@ namespace AZ::RHI
             s_renderDocModule = DynamicModuleHandle::Create(AZ_TRAIT_RENDERDOC_MODULE);
             if (s_renderDocModule)
             {
-                if (s_renderDocModule->Load(false))
+                if (s_renderDocModule->Load())
                 {
                     s_isRenderDocDllLoaded = true;
                     pRENDERDOC_GetAPI renderDocGetAPI = s_renderDocModule->GetFunction<pRENDERDOC_GetAPI>("RENDERDOC_GetAPI");
@@ -111,7 +111,7 @@ namespace AZ::RHI
             s_pixModule = DynamicModuleHandle::Create(dllPath.c_str());
             if (s_pixModule)
             {
-                if (!s_pixModule->Load(false))
+                if (!s_pixModule->Load())
                 {
                     AZ_Printf("RHISystem", "Pix capture requested but module failed to load.\n");
                 }

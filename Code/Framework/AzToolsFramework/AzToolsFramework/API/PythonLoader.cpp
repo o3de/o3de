@@ -48,7 +48,7 @@ namespace AzToolsFramework::EmbeddedPython
         if (!isSdkEngine)
         {
             m_embeddedLibPythonModuleHandle = AZ::DynamicModuleHandle::Create(IMPLICIT_LOAD_PYTHON_SHARED_LIBRARY, false);
-            bool loadResult = m_embeddedLibPythonModuleHandle->Load(false, true);
+            bool loadResult = m_embeddedLibPythonModuleHandle->Load(AZ::DynamicModuleHandle::LoadFlags::GlobalSymbols);
             AZ_Error("PythonLoader", loadResult, "Failed to load " IMPLICIT_LOAD_PYTHON_SHARED_LIBRARY "\n");
         }
         #endif // IMPLICIT_LOAD_PYTHON_SHARED_LIBRARY
