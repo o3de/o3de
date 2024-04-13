@@ -43,7 +43,6 @@ namespace AzToolsFramework
 {
     struct ViewPaneOptions;
     class EntityPropertyEditor;
-    class PreemptiveUndoCache;
 
     namespace UndoSystem
     {
@@ -331,11 +330,6 @@ namespace AzToolsFramework
         virtual void EndUndoBatch() = 0;
 
         /*!
-         * Retrieves the preemptive undo cache for the application.
-         */
-        virtual PreemptiveUndoCache* GetUndoCache() = 0;
-
-        /*!
          * \return true if the entity (or entities) can be edited/modified.
          */
         virtual bool IsEntityEditable(AZ::EntityId entityId) = 0;
@@ -453,18 +447,6 @@ namespace AzToolsFramework
         * Deletes all entities in the provided list, as well as their transform descendants.
         */
         virtual void DeleteEntitiesAndAllDescendants(const EntityIdList& entities) = 0;
-
-        virtual bool DetachEntities(const AZStd::vector<AZ::EntityId>& entitiesToDetach, AZStd::vector<AZStd::pair<AZ::EntityId, AZ::SliceComponent::EntityRestoreInfo>>& restoreInfos) = 0;
-
-        /*!
-        * \brief Detaches the supplied subslices from their owning slice instance
-        * \param subsliceRootList A list of SliceInstanceAddresses paired with a mapping from the sub slices asset entityId's to the owing slice instance's live entityIds
-                                  See SliceComponent::GetMappingBetweenSubsliceAndSourceInstanceEntityIds for a helper to acquire this mapping
-        * \param restoreInfos A list of EntityRestoreInfo's to be filled with information on how to restore the entities in the subslices back to their original state before this operation
-        * \return Returns true on operation success, false otherwise
-        */
-        virtual bool DetachSubsliceInstances(const AZ::SliceComponent::SliceInstanceEntityIdRemapList& subsliceRootList,
-            AZStd::vector<AZStd::pair<AZ::EntityId, AZ::SliceComponent::EntityRestoreInfo>>& restoreInfos) = 0;
 
         /*!
         * \brief Finds the Common root of an entity list; Also finds the top level entities in a given list of active entities (who share the common root)
@@ -880,8 +862,6 @@ namespace AzToolsFramework
 
         /// Returns the world-space position under the center of the render viewport.
         virtual AZ::Vector3 GetWorldPositionAtViewportCenter() { return AZ::Vector3::CreateZero(); }
-
-        virtual void InstantiateSliceFromAssetId(const AZ::Data::AssetId& /*assetId*/) {}
 
         /// Clears current redo stack
         virtual void ClearRedoStack() {}

@@ -236,13 +236,7 @@
 #define ID_FILE_SAVE_LEVEL                         34197
 #define ID_TV_SYNC_TO_BASE                         34199
 #define ID_TV_SYNC_FROM_BASE                       34200
-#ifdef ENABLE_SLICE_EDITOR
-#define ID_FILE_NEW_SLICE                          34201
-#define ID_FILE_OPEN_SLICE                         34202
-#endif
-#define ID_FILE_SAVE_SELECTED_SLICE                34203
 #define ID_FILE_SAVESETTINGS                       34204
-#define ID_FILE_SAVE_SLICE_TO_ROOT                 34205
 #define ID_SET_TIME_TO_KEY                         34206
 #define ID_TOGGLE_SCRUB_UNITS                      34207
 #define ID_TOGGLE_PREVIEW_UNITS                    34208
@@ -285,7 +279,6 @@
 #define ID_DOCUMENTATION_FEEDBACK                    36043
 #define ID_OPEN_SUBSTANCE_EDITOR                     36060
 #define ID_IMPORT_ASSET                              36069
-#define ID_FILE_RESAVESLICES                        36210
 #define FIRST_QT_ACTION                      50000
 #define ID_VIEW_CONSOLEWINDOW                50001
 #define ID_TOOLBAR_SEPARATOR                 50002

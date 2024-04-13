@@ -23,7 +23,6 @@
 
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <AzToolsFramework/UI/Slice/SliceRelationshipWidget.hxx>
 
 #include "SandboxIntegration.h"
 

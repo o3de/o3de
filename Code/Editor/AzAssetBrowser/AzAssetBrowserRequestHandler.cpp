@@ -41,14 +41,10 @@
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserThumbnailView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
-#include <AzToolsFramework/Commands/EntityStateCommand.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
-#include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
-#include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
-#include <AzToolsFramework/UI/Slice/SliceRelationshipBus.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
 // AzQtComponents
@@ -201,11 +197,6 @@ namespace AzAssetBrowserRequestHandlerPrivate
             return false;
         }
 
-        if (product->GetAssetType() == AZ::AzTypeInfo<AZ::SliceAsset>::Uuid())
-        {
-            return true; // we can always instantiate slices.
-        }
-
         bool canCreateComponent = false;
         AZ::AssetTypeInfoBus::EventResult(canCreateComponent, product->GetAssetType(), &AZ::AssetTypeInfo::CanCreateComponent, product->GetAssetId());
         if (!canCreateComponent)
@@ -231,8 +222,7 @@ namespace AzAssetBrowserRequestHandlerPrivate
         AZStd::vector<const ProductAssetBrowserEntry*> products,
         AZ::Vector3 location,
         AZ::EntityId parentEntityId, // if valid, will treat the location as a local transform relative to this entity.
-        EntityIdList& createdEntities,
-        AzFramework::SliceInstantiationTicket& sliceTicket)
+        EntityIdList& createdEntities)
     {
         if (products.empty())
         {
@@ -259,96 +249,80 @@ namespace AzAssetBrowserRequestHandlerPrivate
 
         for (const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry* product : products)
         {
-            // Handle instantiation of slices.
-            if (product->GetAssetType() == AZ::AzTypeInfo<AZ::SliceAsset>::Uuid())
+            AZ::Uuid componentTypeId = AZ::Uuid::CreateNull();
+            AZ::AssetTypeInfoBus::EventResult(componentTypeId, product->GetAssetType(), &AZ::AssetTypeInfo::GetComponentTypeId);
+            if (!componentTypeId.IsNull())
             {
-                // Instantiate the slice at the specified location.
-                AZ::Data::Asset<AZ::SliceAsset> asset = AZ::Data::AssetManager::Instance().FindOrCreateAsset<AZ::SliceAsset>(
-                    product->GetAssetId(), AZ::Data::AssetLoadBehavior::Default);
-                if (asset)
+                AZ::IO::Path entryPath(product->GetName());
+                AZStd::string entityName = entryPath.Stem().Native();
+                if (entityName.empty())
                 {
-                    SliceEditorEntityOwnershipServiceRequestBus::BroadcastResult(
-                        sliceTicket, &SliceEditorEntityOwnershipServiceRequests::InstantiateEditorSlice, asset, worldTransform);
-                }
-            }
-            else
-            {
-                // non-slices, regular entities:
-
-                AZ::Uuid componentTypeId = AZ::Uuid::CreateNull();
-                AZ::AssetTypeInfoBus::EventResult(componentTypeId, product->GetAssetType(), &AZ::AssetTypeInfo::GetComponentTypeId);
-                if (!componentTypeId.IsNull())
-                {
-                    AZ::IO::Path entryPath(product->GetName());
-                    AZStd::string entityName = entryPath.Stem().Native();
+                    // if we can't use the file name, use the type of asset like "Model".
+                    AZ::AssetTypeInfoBus::EventResult(entityName, product->GetAssetType(), &AZ::AssetTypeInfo::GetAssetTypeDisplayName);
                     if (entityName.empty())
                     {
-                        // if we can't use the file name, use the type of asset like "Model".
-                        AZ::AssetTypeInfoBus::EventResult(entityName, product->GetAssetType(), &AZ::AssetTypeInfo::GetAssetTypeDisplayName);
-                        if (entityName.empty())
-                        {
-                            entityName = "Entity";
-                        }
+                        entityName = "Entity";
                     }
-
-                    AZ::EntityId targetEntityId;
-                    EditorRequests::Bus::BroadcastResult(
-                        targetEntityId, &EditorRequests::CreateNewEntityAtPosition, worldTransform.GetTranslation(), parentEntityId);
-
-                    AZ::Entity* newEntity = nullptr;
-                    AZ::ComponentApplicationBus::BroadcastResult(newEntity, &AZ::ComponentApplicationRequests::FindEntity, targetEntityId);
-
-                    if (newEntity == nullptr)
-                    {
-                        QMessageBox::warning(
-                            mainWindow,
-                            QObject::tr("Asset Drop Failed"),
-                            QStringLiteral("Could not create entity from selected asset(s)."));
-                        return;
-                    }
-
-                    // Deactivate the entity so the properties on the components can be set.
-                    newEntity->Deactivate();
-
-                    newEntity->SetName(entityName);
-
-                    AZ::ComponentTypeList componentsToAdd;
-                    componentsToAdd.push_back(componentTypeId);
-
-                     // Add the product as components to this entity.
-                    AZStd::vector<AZ::EntityId> entityIds = { targetEntityId };
-                    EntityCompositionRequests::AddComponentsOutcome addComponentsOutcome = AZ::Failure(AZStd::string());
-                    EntityCompositionRequestBus::BroadcastResult(
-                        addComponentsOutcome, &EntityCompositionRequests::AddComponentsToEntities, entityIds, componentsToAdd);
-                    
-                    if (!addComponentsOutcome.IsSuccess())
-                    {
-                        AZ_Error(
-                            "AssetBrowser",
-                            false,
-                            "Could not create the requested components from the selected assets: %s",
-                            addComponentsOutcome.GetError().c_str());
-                        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::DestroyEditorEntity, targetEntityId);
-                        return;
-                    }
-                    // activate the entity first, so that the primary asset change is done in the context of it being awake.
-                    newEntity->Activate();
-
-                    AZ::Component* componentAdded = newEntity->FindComponent(componentTypeId);
-                    if (componentAdded)
-                    {
-                        Components::EditorComponentBase* editorComponent = GetEditorComponent(componentAdded);
-                        if (editorComponent)
-                        {
-                            editorComponent->SetPrimaryAsset(product->GetAssetId());
-                        }
-                    }
-
-                    ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::AddDirtyEntity, newEntity->GetId());
-                    createdEntities.push_back(newEntity->GetId());
                 }
+
+                AZ::EntityId targetEntityId;
+                EditorRequests::Bus::BroadcastResult(
+                    targetEntityId, &EditorRequests::CreateNewEntityAtPosition, worldTransform.GetTranslation(), parentEntityId);
+
+                AZ::Entity* newEntity = nullptr;
+                AZ::ComponentApplicationBus::BroadcastResult(newEntity, &AZ::ComponentApplicationRequests::FindEntity, targetEntityId);
+
+                if (newEntity == nullptr)
+                {
+                    QMessageBox::warning(
+                        mainWindow,
+                        QObject::tr("Asset Drop Failed"),
+                        QStringLiteral("Could not create entity from selected asset(s)."));
+                    return;
+                }
+
+                // Deactivate the entity so the properties on the components can be set.
+                newEntity->Deactivate();
+
+                newEntity->SetName(entityName);
+
+                AZ::ComponentTypeList componentsToAdd;
+                componentsToAdd.push_back(componentTypeId);
+
+                    // Add the product as components to this entity.
+                AZStd::vector<AZ::EntityId> entityIds = { targetEntityId };
+                EntityCompositionRequests::AddComponentsOutcome addComponentsOutcome = AZ::Failure(AZStd::string());
+                EntityCompositionRequestBus::BroadcastResult(
+                    addComponentsOutcome, &EntityCompositionRequests::AddComponentsToEntities, entityIds, componentsToAdd);
+                    
+                if (!addComponentsOutcome.IsSuccess())
+                {
+                    AZ_Error(
+                        "AssetBrowser",
+                        false,
+                        "Could not create the requested components from the selected assets: %s",
+                        addComponentsOutcome.GetError().c_str());
+                    EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::DestroyEditorEntity, targetEntityId);
+                    return;
+                }
+                // activate the entity first, so that the primary asset change is done in the context of it being awake.
+                newEntity->Activate();
+
+                AZ::Component* componentAdded = newEntity->FindComponent(componentTypeId);
+                if (componentAdded)
+                {
+                    Components::EditorComponentBase* editorComponent = GetEditorComponent(componentAdded);
+                    if (editorComponent)
+                    {
+                        editorComponent->SetPrimaryAsset(product->GetAssetId());
+                    }
+                }
+
+                ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::AddDirtyEntity, newEntity->GetId());
+                createdEntities.push_back(newEntity->GetId());
             }
         }
+
         // Select the new entity (and deselect others).
         if (!createdEntities.empty())
         {
@@ -699,29 +673,6 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
 
             AZStd::vector<const ProductAssetBrowserEntry*> products;
             entry->GetChildrenRecursively<ProductAssetBrowserEntry>(products);
-
-            // slice source files need to react by adding additional menu items, regardless of status of compile or presence of products.
-            if (AzFramework::StringFunc::Equal(extension.c_str(), AzToolsFramework::SliceUtilities::GetSliceFileExtension().c_str(), false))
-            {
-                AzToolsFramework::SliceUtilities::CreateSliceAssetContextMenu(menu, fullFilePath);
-
-                // SliceUtilities is in AZToolsFramework and can't open viewports, so add the relationship view open command here.
-                if (!products.empty())
-                {
-                    const ProductAssetBrowserEntry* productEntry = products[0];
-                    menu->addAction(
-                        "Open in Slice Relationship View",
-                        [productEntry]()
-                        {
-                            QtViewPaneManager::instance()->OpenPane(LyViewPane::SliceRelationships);
-
-                            const ProductAssetBrowserEntry* product = azrtti_cast<const ProductAssetBrowserEntry*>(productEntry);
-
-                            AzToolsFramework::SliceRelationshipRequestBus::Broadcast(
-                                &AzToolsFramework::SliceRelationshipRequests::OnSliceRelationshipViewRequested, product->GetAssetId());
-                        });
-                }
-            }
 
             if (!products.empty() || (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source))
             {
@@ -1082,8 +1033,7 @@ void AzAssetBrowserRequestHandler::DoDropItemView(bool& accepted, AzQtComponents
             }
 
             EntityIdList createdEntities;
-            AzFramework::SliceInstantiationTicket sliceTicket;
-            CreateEntitiesAtPoint(products, createLocation, outlinerContext->m_parentEntity, createdEntities, sliceTicket);
+            CreateEntitiesAtPoint(products, createLocation, outlinerContext->m_parentEntity, createdEntities);
         }
     }
 }
@@ -1114,9 +1064,7 @@ void AzAssetBrowserRequestHandler::Drop(QDropEvent* event, AzQtComponents::DragA
     event->setAccepted(true);
 
     EntityIdList createdEntities;
-    AzFramework::SliceInstantiationTicket sliceTicket;
-
-    CreateEntitiesAtPoint(products, viewportDragContext->m_hitLocation, AZ::EntityId(), createdEntities, sliceTicket);
+    CreateEntitiesAtPoint(products, viewportDragContext->m_hitLocation, AZ::EntityId(), createdEntities);
 }
 
 void AzAssetBrowserRequestHandler::AddSourceFileOpeners(

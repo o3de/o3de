@@ -28,66 +28,9 @@
 
 static constexpr int VIEW_DISTANCE_MULTIPLIER_MAX = 100;
 
-//////////////////////////////////////////////////////////////////////////
-//! Undo object for attach/detach changes
-class CUndoAttachEntity
-    : public IUndoObject
-{
-public:
-    CUndoAttachEntity(CEntityObject* pAttachedObject, bool bAttach)
-        : m_attachedEntityGUID(pAttachedObject->GetId())
-        , m_attachmentTarget(pAttachedObject->GetAttachTarget())
-        , m_attachmentType(pAttachedObject->GetAttachType())
-        , m_bAttach(bAttach)
-    {}
-
-    void Undo([[maybe_unused]] bool bUndo) override
-    {
-        if (!m_bAttach)
-        {
-            SetAttachmentTypeAndTarget();
-        }
-    }
-
-    void Redo() override
-    {
-        if (m_bAttach)
-        {
-            SetAttachmentTypeAndTarget();
-        }
-    }
-
-private:
-    void SetAttachmentTypeAndTarget()
-    {
-        CObjectManager* pObjectManager = static_cast<CObjectManager*>(GetIEditor()->GetObjectManager());
-        CEntityObject* pEntity = static_cast<CEntityObject*>(pObjectManager->FindObject(m_attachedEntityGUID));
-
-        if (pEntity)
-        {
-            pEntity->SetAttachType(m_attachmentType);
-            pEntity->SetAttachTarget(m_attachmentTarget.toUtf8().data());
-        }
-    }
-
-    int GetSize() override { return sizeof(CUndoAttachEntity); }
-
-    GUID m_attachedEntityGUID;
-    CEntityObject::EAttachmentType m_attachmentType;
-    QString m_attachmentTarget;
-    bool m_bAttach;
-};
-
-//////////////////////////////////////////////////////////////////////////
-// CBase implementation.
-//////////////////////////////////////////////////////////////////////////
-
 namespace
 {
     CEntityObject* s_pPropertyPanelEntityObject = nullptr;
-
-    // Prevent OnPropertyChange to be executed when loading many properties at one time.
-    static bool s_ignorePropertiesUpdate = false;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -270,9 +213,7 @@ void CEntityObject::SetTransformDelegate(ITransformDelegate* pTransformDelegate)
         return;
     }
 
-    s_ignorePropertiesUpdate = true;
     ForceVariableUpdate();
-    s_ignorePropertiesUpdate = false;
     ResetCallbacks();
 }
 
@@ -563,150 +504,6 @@ struct IVariableType<Vec3>
         value = IVariable::VECTOR
     };
 };
-
-void CEntityObject::DrawExtraLightInfo(DisplayContext& dc)
-{
-    IObjectManager* objMan = GetIEditor()->GetObjectManager();
-
-    if (objMan)
-    {
-        if (objMan->IsLightClass(this) && GetProperties())
-        {
-            QString csText("");
-
-            if (GetEntityPropertyBool("bAmbient"))
-            {
-                csText += "A";
-            }
-
-            if (!GetEntityPropertyString("texture_Texture").isEmpty())
-            {
-                csText += "P";
-            }
-
-            int nLightType = GetEntityPropertyInteger("nCastShadows");
-            if (nLightType > 0)
-            {
-                csText += "S";
-            }
-
-            float fScale = GetIEditor()->GetViewManager()->GetView(ET_ViewportUnknown)->GetScreenScaleFactor(GetWorldPos());
-            Vec3 vDrawPos(GetWorldPos());
-            vDrawPos.z += fScale / 25;
-
-            ColorB col(255, 255, 255);
-            dc.SetColor(col);
-            dc.DrawTextLabel(vDrawPos, 1.3f, csText.toUtf8().data());
-        }
-    }
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-void CEntityObject::DrawProjectorPyramid(DisplayContext& dc, float dist)
-{
-    const int numPoints = 16; // per one arc
-    const int numArcs = 6;
-
-    if (m_projectorFOV < FLT_EPSILON)
-    {
-        return;
-    }
-
-    Vec3 points[numPoints * numArcs];
-    {
-        // generate 4 arcs on intersection of sphere with pyramid
-        const float fov = DEG2RAD(m_projectorFOV);
-
-        const Vec3 lightAxis(dist, 0.0f, 0.0f);
-        const float tanA = tan(fov * 0.5f);
-        const float fovProj = asinf(1.0f / sqrtf(2.0f + 1.0f / (tanA * tanA))) * 2.0f;
-
-        const float halfFov = 0.5f * fov;
-        const float halfFovProj = fovProj * 0.5f;
-        const float anglePerSegmentOfFovProj = 1.0f / (numPoints - 1) * fovProj;
-
-        const Quat yRot = Quat::CreateRotationY(halfFov);
-        Vec3* arcPoints = points;
-        for (int i = 0; i < numPoints; ++i)
-        {
-            float angle = i * anglePerSegmentOfFovProj - halfFovProj;
-            arcPoints[i] = lightAxis * Quat::CreateRotationZ(angle) * yRot;
-        }
-
-        const Quat zRot = Quat::CreateRotationZ(halfFov);
-        arcPoints += numPoints;
-        for (int i = 0; i < numPoints; ++i)
-        {
-            float angle = (numPoints - i - 1) * anglePerSegmentOfFovProj - halfFovProj;
-            arcPoints[i] = lightAxis * Quat::CreateRotationY(angle) * zRot;
-        }
-
-        const Quat nyRot = Quat::CreateRotationY(-halfFov);
-        arcPoints += numPoints;
-        for (int i = 0; i < numPoints; ++i)
-        {
-            float angle = (numPoints - i - 1) * anglePerSegmentOfFovProj - halfFovProj;
-            arcPoints[i] = lightAxis * Quat::CreateRotationZ(angle) * nyRot;
-        }
-
-        const Quat nzRot = Quat::CreateRotationZ(-halfFov);
-        arcPoints += numPoints;
-        for (int i = 0; i < numPoints; ++i)
-        {
-            float angle = i * anglePerSegmentOfFovProj - halfFovProj;
-            arcPoints[i] = lightAxis * Quat::CreateRotationY(angle) * nzRot;
-        }
-
-        // generate cross
-        arcPoints += numPoints;
-        const float anglePerSegmentOfFov = 1.0f / (numPoints - 1) * fov;
-        for (int i = 0; i < numPoints; ++i)
-        {
-            float angle = i * anglePerSegmentOfFov - halfFov;
-            arcPoints[i] = lightAxis * Quat::CreateRotationY(angle);
-        }
-
-        arcPoints += numPoints;
-        for (int i = 0; i < numPoints; ++i)
-        {
-            float angle = i * anglePerSegmentOfFov - halfFov;
-            arcPoints[i] = lightAxis * Quat::CreateRotationZ(angle);
-        }
-    }
-    // draw pyramid and sphere intersection
-    dc.DrawPolyLine(points, numPoints * 4, false);
-
-    // draw cross
-    dc.DrawPolyLine(points + numPoints * 4, numPoints, false);
-    dc.DrawPolyLine(points + numPoints * 5, numPoints, false);
-
-    Vec3 org(0.0f, 0.0f, 0.0f);
-    dc.DrawLine(org, points[numPoints * 0]);
-    dc.DrawLine(org, points[numPoints * 1]);
-    dc.DrawLine(org, points[numPoints * 2]);
-    dc.DrawLine(org, points[numPoints * 3]);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CEntityObject::DrawProjectorFrustum(DisplayContext& dc, Vec2 size, float dist)
-{
-    static const Vec3 org(0.0f, 0.0f, 0.0f);
-    const Vec3 corners[4] =
-    {
-        Vec3(dist, -size.x, -size.y),
-        Vec3(dist, size.x, -size.y),
-        Vec3(dist, -size.x, size.y),
-        Vec3(dist, size.x, size.y)
-    };
-
-    dc.DrawLine(org, corners[0]);
-    dc.DrawLine(org, corners[1]);
-    dc.DrawLine(org, corners[2]);
-    dc.DrawLine(org, corners[3]);
-
-    dc.DrawWireBox(Vec3(dist, -size.x, -size.y), Vec3(dist, size.x, size.y));
-}
 
 //////////////////////////////////////////////////////////////////////////
 void CEntityObject::Serialize(CObjectArchive& ar)

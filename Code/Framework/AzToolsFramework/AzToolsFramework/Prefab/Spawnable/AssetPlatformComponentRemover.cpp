@@ -52,6 +52,8 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
                 prefab.GetInstance().GetAllEntitiesInHierarchy(
                     [&prefab, &prefabProcessorContext, &excludedComponents](AZStd::unique_ptr<AZ::Entity>& entity) -> bool
                     {
+                        (void) prefab;
+
                         // Loop over an entity's components backwards and pop-off components that shouldn't exist.
                         AZStd::vector<AZ::Component*> components = entity->GetComponents();
                         const auto oldComponentCount = components.size();

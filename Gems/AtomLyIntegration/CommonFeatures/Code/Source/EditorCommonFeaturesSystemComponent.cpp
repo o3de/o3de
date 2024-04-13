@@ -23,15 +23,7 @@ namespace AZ
 {
     namespace Render
     {
-        static IEditor* GetLegacyEditor()
-        {
-            IEditor* editor = nullptr;
-            AzToolsFramework::EditorRequestBus::BroadcastResult(editor, &AzToolsFramework::EditorRequestBus::Events::GetEditor);
-            return editor;
-        }
-
         EditorCommonFeaturesSystemComponent::EditorCommonFeaturesSystemComponent() = default;
-
         EditorCommonFeaturesSystemComponent::~EditorCommonFeaturesSystemComponent() = default;
 
         //! Main system component for the Atom Common Feature Gem's editor/tools module.
@@ -106,52 +98,6 @@ namespace AZ
 
             m_skinnedMeshDebugDisplay.reset();
             TeardownThumbnails();
-        }
-
-        void EditorCommonFeaturesSystemComponent::OnSliceInstantiated(const AZ::Data::AssetId& sliceAssetId, AZ::SliceComponent::SliceInstanceAddress& sliceAddress, const AzFramework::SliceInstantiationTicket& /*ticket*/)
-        {
-            if (m_levelDefaultSliceAssetId == sliceAssetId)
-            {
-                const AZ::SliceComponent::EntityList& entities = sliceAddress.GetInstance()->GetInstantiated()->m_entities;
-
-                AZStd::vector<AZ::EntityId> entityIds;
-                entityIds.reserve(entities.size());
-                for (const Entity* entity : entities)
-                {
-                    entityIds.push_back(entity->GetId());
-                }
-
-                //Detach instantiated env probe entities from engine slice
-                AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Broadcast(
-                    &AzToolsFramework::SliceEditorEntityOwnershipServiceRequests::DetachSliceEntities, entityIds);
-                sliceAddress.SetInstance(nullptr);
-                sliceAddress.SetReference(nullptr);
-
-                AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusDisconnect();
-
-                IEditor* editor = GetLegacyEditor();
-
-                if(editor)
-                {
-                    //save after level default slice fully instantiated
-                    editor->SaveDocument();
-                    
-                    if (editor->IsUndoSuspended())
-                    {
-                        editor->ResumeUndo();
-                    }
-                }
-            }
-        }
-
-        void EditorCommonFeaturesSystemComponent::OnSliceInstantiationFailed(const AZ::Data::AssetId& sliceAssetId, const AzFramework::SliceInstantiationTicket& /*ticket*/)
-        {
-            if (m_levelDefaultSliceAssetId == sliceAssetId)
-            {
-                GetLegacyEditor()->ResumeUndo();
-                AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusDisconnect();
-                AZ_Warning("EditorCommonFeaturesSystemComponent", false, "Failed to instantiate default Atom environment slice.");
-            }
         }
 
         const AzToolsFramework::AssetBrowser::PreviewerFactory* EditorCommonFeaturesSystemComponent::GetPreviewerFactory(

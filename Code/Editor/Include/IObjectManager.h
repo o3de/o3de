@@ -15,7 +15,6 @@
 
 // forward declarations.
 class CEntityObject;
-struct DisplayContext;
 class CTrackViewAnimNode;
 class CUsedResources;
 class CObjectClassDesc;
@@ -105,6 +104,4 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // Gathers all resources used by all objects.
     virtual void GatherUsedResources(CUsedResources& resources) = 0;
-
-    virtual bool IsLightClass(CBaseObject* pObject) = 0;
 };
