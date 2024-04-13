@@ -111,6 +111,11 @@ namespace AtomImGuiTools
     {
         if (ImGui::BeginMenu("Atom Tools"))
         {
+            if (ImGui::MenuItem("Dump loaded Asset info", ""))
+            {
+                AZ::Data::AssetManager::Instance().DumpLoadedAssetsInfo();
+            }
+
             ImGui::MenuItem("Pass Viewer", "", &m_showPassTree);
             ImGui::MenuItem("Gpu Profiler", "", &m_showGpuProfiler);
             if (ImGui::MenuItem("Transient Attachment Profiler", "", &m_showTransientAttachmentProfiler))

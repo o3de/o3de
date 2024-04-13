@@ -51,6 +51,9 @@ namespace AZ
             bool m_isAlwaysDynamic = false;
             bool m_useForwardPassIblSpecular = false;
             bool m_isRayTracingEnabled = true;
+            // the ModelAsset should support ray intersection if any one of the two flags are enabled.
+            bool m_editorRayIntersection = false;       // Set to true if the config is for EditorMeshComponent so the ModelAsset always support ray intersection 
+            bool m_enableRayIntersection = false;       // Set to true if a mesh need ray intersection support at runtime. 
             RPI::Cullable::LodType m_lodType = RPI::Cullable::LodType::Default;
             RPI::Cullable::LodOverride m_lodOverride = aznumeric_cast<RPI::Cullable::LodOverride>(0);
             float m_minimumScreenCoverage = 1.0f / 1080.0f;
