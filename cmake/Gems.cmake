@@ -80,6 +80,72 @@ macro(o3de_gem_setup default_gem_name)
     o3de_pal_dir(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 endmacro()
 
+# resolve_all_dependent_gem_names_recursive
+#
+# Inspect a gem's dependencies recursively to collect of the list of gem names that the gem depends on
+#
+# \arg:gem_name(STRING) - Gem name whose "dependencies" will be queried from its gem.json
+# \arg:input_resolved_gem_names(LIST) - The current list of resolved gem name dependencies
+# \arg:output_resolved_gem_names(LIST) - The updated list of resolved gem name dependencies
+function(resolve_all_dependent_gem_names_recursive gem_name input_resolved_gem_names output_resolved_gem_names)
+
+    # Stop if the gem dependency has already been resolved
+    list(FIND input_resolved_gem_names ${gem_name} found_gem_name_index)
+    if (found_gem_name_index GREATER_EQUAL 0)
+        # Recursive stop condition
+        return()
+    endif()
+
+    # Attempt to read the dependencies for the gem
+    get_property(gem_path GLOBAL PROPERTY "@GEMROOT:${gem_name}@")
+    if (gem_path)
+        o3de_read_json_array(gem_dependencies "${gem_path}/gem.json" "dependencies")
+    else()
+        return()
+    endif()
+
+    set(resolved_gem_names ${input_resolved_gem_names})
+
+    # Read in the dependencies recursively
+    foreach(enabled_gem_dependent_gem_name IN LISTS gem_dependencies)
+        list(APPEND resolved_gem_names "${enabled_gem_dependent_gem_name}")
+        resolve_all_dependent_gem_names_recursive(${enabled_gem_dependent_gem_name} ${resolved_gem_names} resolved_gem_names)
+    endforeach()
+
+    list(REMOVE_DUPLICATES resolved_gem_names)
+
+    set(${output_resolved_gem_names} ${resolved_gem_names} PARENT_SCOPE)
+
+endfunction()
+
+# resolve_all_dependent_gem_names
+#
+# Given a list of gem names, resolve all the dependent gems and build a list of additional
+# gems that need to be included for full dependency coverage
+#
+# \arg:input_gem_name_list(LIST) - The list of gem names to resolve all the dependencies
+# \arg:out_gem_name_list(LIST) - The list of additional gems that are not currently in the list to consider
+function(resolve_all_dependent_gem_names input_gem_name_list out_gem_name_list)
+
+    # Build up the list of all dependent gems (recursively)
+    unset(all_gems_name_list)
+    foreach(gem_name IN LISTS input_gem_name_list)
+        unset(dependent_gems_for_gem)
+        resolve_all_dependent_gem_names_recursive(${gem_name} "" dependent_gems_for_gem)
+        list(APPEND all_gems_name_list ${dependent_gems_for_gem})
+    endforeach()
+
+    # Remove duplicates and gem names that were already on the list
+    list(REMOVE_DUPLICATES all_gems_name_list)
+    foreach(gem_name IN LISTS input_gem_name_list)
+        list(REMOVE_ITEM all_gems_name_list ${gem_name})
+    endforeach()
+
+    list(SORT all_gems_name_list)
+    set(${out_gem_name_list} ${all_gems_name_list} PARENT_SCOPE)
+
+endfunction()
+
 # o3de_find_ancestor_gem_root:Searches for the nearest gem root from input source_dir
 #
 # \arg:source_dir(FILEPATH) - Filepath to walk upwards from to locate a gem.json
@@ -384,6 +450,13 @@ function(ly_enable_gems)
         o3de_get_name_and_version_specifier(${gem_name_with_version_specifier} gem_name spec_op spec_version)
         list(APPEND GEM_NAMES "${gem_name}")
     endforeach()
+
+    # Resolve each gem's dependency as well to add to the list
+    unset(additional_dependent_gems)
+    resolve_all_dependent_gem_names("${GEM_NAMES}" additional_dependent_gems)
+    message(VERBOSE "Additional gem dependencies for ${ly_enable_gems_PROJECT_NAME} : ${additional_dependent_gems}" )
+    list(APPEND GEM_NAMES "${additional_dependent_gems}")
+
     set(ly_enable_gems_GEMS ${GEM_NAMES})
 
     # all the actual work has to be done later.
