@@ -80,12 +80,11 @@ macro(o3de_gem_setup default_gem_name)
     o3de_pal_dir(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 endmacro()
 
-# resolve_all_dependent_gem_names_recursive
+# get_all_gem_dependencies
 #
-# Inspect a gem's dependencies recursively to collect of the list of gem names that the gem depends on
+# Determine all of the gem dependencies (recursively) for a given gem.
 #
 # \arg:gem_name(STRING) - Gem name whose "dependencies" will be queried from its gem.json
-# \arg:input_resolved_gem_names(LIST) - The current list of resolved gem name dependencies
 # \arg:output_resolved_gem_names(LIST) - The updated list of resolved gem name dependencies
 function(get_all_gem_dependencies gem_name output_resolved_gem_names)
 
