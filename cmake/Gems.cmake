@@ -87,62 +87,37 @@ endmacro()
 # \arg:gem_name(STRING) - Gem name whose "dependencies" will be queried from its gem.json
 # \arg:input_resolved_gem_names(LIST) - The current list of resolved gem name dependencies
 # \arg:output_resolved_gem_names(LIST) - The updated list of resolved gem name dependencies
-function(resolve_all_dependent_gem_names_recursive gem_name input_resolved_gem_names output_resolved_gem_names)
+function(get_all_gem_dependencies gem_name output_resolved_gem_names)
 
-    # Stop if the gem dependency has already been resolved
-    list(FIND input_resolved_gem_names ${gem_name} found_gem_name_index)
-    if (found_gem_name_index GREATER_EQUAL 0)
-        # Recursive stop condition
+    get_property(gem_dependencies GLOBAL PROPERTY GEM_DEPENDENCIES_"${gem_name}")
+    if (gem_dependencies)
+        # The gem dependency for ${gem_name} has been calculated, return the cached property
+        set(${output_resolved_gem_names} ${gem_dependencies} PARENT_SCOPE)
         return()
-    endif()
-
-    # Attempt to read the dependencies for the gem
-    get_property(gem_path GLOBAL PROPERTY "@GEMROOT:${gem_name}@")
-    if (gem_path)
-        o3de_read_json_array(gem_dependencies "${gem_path}/gem.json" "dependencies")
     else()
-        return()
+        # The gem dependency for ${gem_name} has not been calculated. 
+        # First read in the dependencies from the gem.json ifpossible
+        get_property(gem_path GLOBAL PROPERTY "@GEMROOT:${gem_name}@")
+        o3de_read_json_array(gem_dependencies "${gem_path}/gem.json" "dependencies")
+
+        # Set the property for the gem so that we won't encounter a possible infinite recursion
+        # when evaluating the gem dependencies' dependency
+        set_property(GLOBAL PROPERTY GEM_DEPENDENCIES_"${gem_name}" ${gem_dependencies})
+
+        # Iterate and recursively collect dependent gem names
+        unset(all_dependent_gem_names)
+        foreach(dependent_gem_name IN LISTS gem_dependencies)
+            unset(dependent_gem_names)
+            get_all_gem_dependencies(${dependent_gem_name} dependent_gem_names)
+            list(APPEND all_dependent_gem_names ${dependent_gem_names})
+        endforeach()
+        list(APPEND gem_dependencies ${all_dependent_gem_names})
+        list(REMOVE_DUPLICATES gem_dependencies)
+
+        # Update the cached value and set the results
+        set_property(GLOBAL PROPERTY GEM_DEPENDENCIES_"${gem_name}" ${gem_dependencies})
+        set(${output_resolved_gem_names} ${gem_dependencies} PARENT_SCOPE)
     endif()
-
-    set(resolved_gem_names ${input_resolved_gem_names})
-
-    # Read in the dependencies recursively
-    foreach(enabled_gem_dependent_gem_name IN LISTS gem_dependencies)
-        list(APPEND resolved_gem_names "${enabled_gem_dependent_gem_name}")
-        resolve_all_dependent_gem_names_recursive(${enabled_gem_dependent_gem_name} ${resolved_gem_names} resolved_gem_names)
-    endforeach()
-
-    list(REMOVE_DUPLICATES resolved_gem_names)
-
-    set(${output_resolved_gem_names} ${resolved_gem_names} PARENT_SCOPE)
-
-endfunction()
-
-# resolve_all_dependent_gem_names
-#
-# Given a list of gem names, resolve all the dependent gems and build a list of additional
-# gems that need to be included for full dependency coverage
-#
-# \arg:input_gem_name_list(LIST) - The list of gem names to resolve all the dependencies
-# \arg:out_gem_name_list(LIST) - The list of additional gems that are not currently in the list to consider
-function(resolve_all_dependent_gem_names input_gem_name_list out_gem_name_list)
-
-    # Build up the list of all dependent gems (recursively)
-    unset(all_gems_name_list)
-    foreach(gem_name IN LISTS input_gem_name_list)
-        unset(dependent_gems_for_gem)
-        resolve_all_dependent_gem_names_recursive(${gem_name} "" dependent_gems_for_gem)
-        list(APPEND all_gems_name_list ${dependent_gems_for_gem})
-    endforeach()
-
-    # Remove duplicates and gem names that were already on the list
-    list(REMOVE_DUPLICATES all_gems_name_list)
-    foreach(gem_name IN LISTS input_gem_name_list)
-        list(REMOVE_ITEM all_gems_name_list ${gem_name})
-    endforeach()
-
-    list(SORT all_gems_name_list)
-    set(${out_gem_name_list} ${all_gems_name_list} PARENT_SCOPE)
 
 endfunction()
 
@@ -224,9 +199,9 @@ function(o3de_add_variant_dependencies_for_gem_dependencies)
         " any project.json or any gem.json which itself is registered?")
     endif()
 
-     # Open gem.json and read "dependencies" array
-     unset(gem_dependencies)
-     o3de_read_json_array(gem_dependencies "${gem_path}/gem.json" "dependencies")
+    # Open gem.json and read "dependencies" array
+    unset(gem_dependencies)
+    get_all_gem_dependencies(${gem_name} gem_dependencies)
 
     foreach(variant IN LISTS gem_variants)
         set(gem_variant_target "${gem_name}.${variant}")
@@ -446,17 +421,19 @@ function(ly_enable_gems)
     # Remove any version specifiers before looking for variants
     # e.g. "Atom==1.2.3" becomes "Atom"
     unset(GEM_NAMES)
+    unset(additional_dependent_gems)
     foreach(gem_name_with_version_specifier IN LISTS ly_enable_gems_GEMS)
         o3de_get_name_and_version_specifier(${gem_name_with_version_specifier} gem_name spec_op spec_version)
         list(APPEND GEM_NAMES "${gem_name}")
+        # In addition to the gems enabled, collect each of the enabled gem's dependencies as well
+        unset(gem_dependencies_for_gem)
+        get_all_gem_dependencies(${gem_name} gem_dependencies_for_gem)
+        list(APPEND additional_dependent_gems ${gem_dependencies_for_gem})
     endforeach()
 
-    # Resolve each gem's dependency as well to add to the list
-    unset(additional_dependent_gems)
-    resolve_all_dependent_gem_names("${GEM_NAMES}" additional_dependent_gems)
-    message(VERBOSE "Additional gem dependencies for ${ly_enable_gems_PROJECT_NAME} : ${additional_dependent_gems}" )
+    # Update the gems that were enabled to include all of the gem's dependent gems as well
     list(APPEND GEM_NAMES "${additional_dependent_gems}")
-
+    list(REMOVE_DUPLICATES GEM_NAMES)
     set(ly_enable_gems_GEMS ${GEM_NAMES})
 
     # all the actual work has to be done later.
