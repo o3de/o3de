@@ -10,4 +10,6 @@ set(FILES
     Include/Atom/RHI.Profiler/GraphicsProfilerBus.h
     Source/RHI.Profiler/GraphicsProfilerSystemComponent.h
     Source/RHI.Profiler/GraphicsProfilerSystemComponent.cpp
+    Source/RHI.Profiler/Utils.h
+    Source/RHI.Profiler/Utils.cpp
 )
