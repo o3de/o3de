@@ -209,6 +209,11 @@ namespace AZ
 
                 const uint32_t shadowFilterMethod = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_shadowFilterMethod;
                 RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(m_directionalShadowFilteringMethodName, AZ::RPI::ShaderOptionValue{shadowFilterMethod});
+
+                uint32_t shadowFilteringSampleCount = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_filteringSampleCountMode;
+                RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(
+                    m_directionalShadowFilteringSamplecountName, AZ::RPI::ShaderOptionValue{ shadowFilteringSampleCount });
+                
                 RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(m_directionalShadowReceiverPlaneBiasEnableName, AZ::RPI::ShaderOptionValue{ m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex()).m_isReceiverPlaneBiasEnabled });
 
                 const uint32_t cascadeCount = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_cascadeCount;
@@ -595,9 +600,21 @@ namespace AZ
                 AZ_Warning(FeatureProcessorName, false, "Sampling count exceed the limit.");
                 count = Shadow::MaxPcfSamplingCount;
             }
+
+            //Remap the count value to an enum value associated with that count.
+            ShadowFilterSampleCount samplingCountMode = ShadowFilterSampleCount::PcfTap16;
+            if (count <= 4)
+            {
+                samplingCountMode = ShadowFilterSampleCount::PcfTap4;
+            }
+            else if (count <= 9)
+            {
+                samplingCountMode = ShadowFilterSampleCount::PcfTap9;
+            }
+
             for (auto& it : m_shadowData)
             {
-                it.second.GetData(handle.GetIndex()).m_filteringSampleCount = count;
+                it.second.GetData(handle.GetIndex()).m_filteringSampleCountMode = static_cast<uint32_t>(samplingCountMode);
             }
             m_shadowBufferNeedsUpdate = true;
         }
@@ -1777,10 +1794,12 @@ namespace AZ
             if (m_fullscreenShadowPass)
             {
                 const uint32_t shadowFilterMethod = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_shadowFilterMethod;
+                const uint32_t filteringSampleCountMode = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_filteringSampleCountMode;
                 const uint32_t cascadeCount = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_cascadeCount;
                 m_fullscreenShadowPass->SetLightRawIndex(m_shadowProperties.GetRawIndex(m_shadowingLightHandle.GetIndex()));
                 m_fullscreenShadowPass->SetBlendBetweenCascadesEnable(cascadeCount > 1 && shadowProperty.m_blendBetweenCascades);
                 m_fullscreenShadowPass->SetFilterMethod(static_cast<ShadowFilterMethod>(shadowFilterMethod));
+                m_fullscreenShadowPass->SetFilteringSampleCountMode(static_cast<ShadowFilterSampleCount>(filteringSampleCountMode));
                 m_fullscreenShadowPass->SetReceiverShadowPlaneBiasEnable(shadowProperty.m_isReceiverPlaneBiasEnabled);
             }
 

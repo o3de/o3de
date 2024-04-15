@@ -45,6 +45,7 @@ partial ShaderResourceGroup ViewSrg
         bool m_affectsGI;
         uint m_lightingChannelMask;
         float2 m_padding;
+        [[pad_to(16)]]  // Here to ensure we pad the struct to 16 in case someone adds incorrect padding
     };
 
     StructuredBuffer<SimplePointLight> m_simplePointLights;
@@ -60,10 +61,11 @@ partial ShaderResourceGroup ViewSrg
         float m_cosInnerConeAngle; // cosine of the outer cone angle
         float3 m_rgbIntensityCandelas;
         float m_cosOuterConeAngle; // cosine of the inner cone angle
+        uint m_shadowIndex;
         float m_affectsGIFactor;
         bool m_affectsGI;
         uint m_lightingChannelMask;
-        float1 m_padding;
+        [[pad_to(16)]] // Here to ensure we pad the struct to 16 in case someone adds incorrect padding
     };
 
     StructuredBuffer<SimpleSpotLight> m_simpleSpotLights;
@@ -125,7 +127,7 @@ partial ShaderResourceGroup ViewSrg
         uint m_cascadeCount;
         float m_shadowBias; 
         float m_normalShadowBias; 
-        uint m_filteringSampleCount;
+        uint m_filteringSampleCountMode;
         uint m_debugFlags;
         uint m_shadowFilterMethod;
         float m_far_minus_near;
