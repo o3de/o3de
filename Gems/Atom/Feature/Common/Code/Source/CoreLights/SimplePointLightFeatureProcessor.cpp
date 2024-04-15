@@ -208,7 +208,7 @@ namespace AZ
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to SimplePointLightFeatureProcessor::SetLightingChannelMask().");
 
-            m_lightData.GetData(handle.GetIndex()).m_lightingChannelMask = lightingChannelMask;
+            m_lightData.GetData<0>(handle.GetIndex()).m_lightingChannelMask = lightingChannelMask;
             m_deviceBufferNeedsUpdate = true;
         }
 
