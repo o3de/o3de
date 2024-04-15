@@ -35,14 +35,13 @@ namespace PhysX
             serializeContext->Class<CharacterControllerComponent, AZ::Component>()
                 ->Version(1)
                 ->Field("CharacterConfig", &CharacterControllerComponent::m_characterConfig)
-                ->Field("ShapeConfig", &CharacterControllerComponent::m_shapeConfig)
-                ;
+                ->Field("ShapeConfig", &CharacterControllerComponent::m_shapeConfig);
         }
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->EBus<CharacterControllerRequestBus>("PhysXCharacterControllerRequestBus",
-                "Character Controller (PhysX specific)")
+            behaviorContext
+                ->EBus<CharacterControllerRequestBus>("PhysXCharacterControllerRequestBus", "Character Controller (PhysX specific)")
                 ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::RuntimeOwn)
                 ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                 ->Event("Resize", &CharacterControllerRequests::Resize)
@@ -53,15 +52,14 @@ namespace PhysX
                 ->Event("GetHalfSideExtent", &CharacterControllerRequests::GetHalfSideExtent, "Get Half Side Extent")
                 ->Event("SetHalfSideExtent", &CharacterControllerRequests::SetHalfSideExtent, "Set Half Side Extent")
                 ->Event("GetHalfForwardExtent", &CharacterControllerRequests::GetHalfForwardExtent, "Get Half Forward Extent")
-                ->Event("SetHalfForwardExtent", &CharacterControllerRequests::SetHalfForwardExtent, "Set Half Forward Extent")
-                ;
+                ->Event("SetHalfForwardExtent", &CharacterControllerRequests::SetHalfForwardExtent, "Set Half Forward Extent");
         }
     }
 
     CharacterControllerComponent::CharacterControllerComponent() = default;
 
-    CharacterControllerComponent::CharacterControllerComponent(AZStd::unique_ptr<Physics::CharacterConfiguration> characterConfig,
-        AZStd::shared_ptr<Physics::ShapeConfiguration> shapeConfig)
+    CharacterControllerComponent::CharacterControllerComponent(
+        AZStd::unique_ptr<Physics::CharacterConfiguration> characterConfig, AZStd::shared_ptr<Physics::ShapeConfiguration> shapeConfig)
         : m_characterConfig(AZStd::move(characterConfig))
         , m_shapeConfig(AZStd::move(shapeConfig))
     {
@@ -366,58 +364,45 @@ namespace PhysX
         }
     }
 
-    // carbonated begin enable_carbonated_1: Methods called from o3de-gruber
- #if defined(CARBONATED)
-    //This exists solely to help differentiate the character collider from the other colliders we use for vision/touch/etc
+#if defined(CARBONATED)
+    // Methods added to differentiate character collisions from other collisions
+
+    // This exists solely to help differentiate the character collider from the other colliders we use for vision/touch/etc
     void CharacterControllerComponent::SetCharacterCollisions(const AZStd::string& layer, const AZStd::string& group)
     {
         SetCollisionLayer(layer, AZ::Crc32());
         SetCollisionGroup(group, AZ::Crc32());
     }
-    
-    // Pilfered/inspired from SystemComponent::UpdateMaterialSelection
-    void CharacterControllerComponent::SetMaterialByName(uint32_t /*index*/, const AZStd::string& /*name*/) // Parameters are temporary commented to prevent warning
+
+    // Pilfered/inspired from LY's SystemComponent::UpdateMaterialSelection
+    // Deprecated, call SetMaterial(uint32_t, const AZ::Data::Asset<Physics::MaterialAsset>&) instead.
+    void CharacterControllerComponent::SetMaterialByName([[maybe_unused]] uint32_t index, [[maybe_unused]] const AZStd::string& name)
     {
-        AZ_Assert(m_characterConfig, "Character Config is null!");
-
-        // This code is commented because not compatible with o3de
-        /*
-        Physics::MaterialAsset::MaterialFromAssetConfiguration materialConfig;
-        const Physics::MaterialLibraryAsset* materialLibrary = m_characterConfig->m_materialSelection.GetMaterialLibraryAssetData();
-        
-        if (materialLibrary == nullptr)
-        {
-            AZ::Data::AssetId materialLibraryAssetId = m_characterConfig->m_materialSelection.GetMaterialLibraryAssetId();
-            m_characterConfig->m_materialSelection.SetMaterialLibrary(materialLibraryAssetId);
-
-            // Try again
-            materialLibrary = m_characterConfig->m_materialSelection.GetMaterialLibraryAssetData();
-        }
-
-        if (materialLibrary && materialLibrary->GetDataForMaterialName(name, materialConfig))
-        {
-            m_characterConfig->m_materialSelection.SetMaterialId(materialConfig.m_id, index);
-            m_controller->SetMaterial(m_characterConfig->m_materialSelection);
-        }
-        else
-        {
-            AZ_TracePrintf(
-                "CharacterControllerComponent",
-                "SetMaterialByName failed!  Could not load the Material Library or get the material data for '%s'",
-                name.c_str());
-        }
-        */
+        AZ_Assert(false, "(CharacterControllerComponent) - SetMaterialByName(): Not implemented, use SetMaterial(uint32_t, const AZ::Data::Asset<Physics::MaterialAsset>&)");
     }
 
-    void CharacterControllerComponent::SetTag(const AZ::Crc32& /*tag*/) // Parameter name is temporary commented to prevent warning
+    void CharacterControllerComponent::SetMaterial(uint32_t index, const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset)
     {
-        // This code is commented because not compatible with o3de
-        /*
-        m_controller->SetColliderTag(tag);
-        */
+        if (!m_characterConfig)
+        {
+            AZ_Error("CharacterControllerComponent", false, "SetMaterial(): Null Character Config for Entity %s.", GetEntityId().ToString().c_str());
+            return;
+        }
+        AZ_Warning("CharacterControllerComponent", materialAsset,
+            "SetMaterial(): Invalid materialAsset passed for Entity %s.", GetEntityId().ToString().c_str());
+        AZ_Warning("CharacterControllerComponent", index < m_characterConfig->m_materialSlots.GetSlotsCount(),
+            "SetMaterial(): Invalid index %li passed for Entity %s.", index, GetEntityId().ToString().c_str());
+        m_characterConfig->m_materialSlots.SetMaterialAsset(index, materialAsset);
     }
-#endif
-    // carbonated end enable_carbonated_1
+
+    void CharacterControllerComponent::SetTag(const AZ::Crc32& tag)
+    {
+        if (auto pController = GetController())
+        {
+            pController->SetTag(tag);
+        }
+    }
+#endif // defined(CARBONATED)
 
     // TransformNotificationBus
     void CharacterControllerComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
