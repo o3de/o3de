@@ -103,6 +103,7 @@ namespace AZ
             CommandQueueContext& GetCommandQueueContext();
             const CommandQueueContext& GetCommandQueueContext() const;
             SemaphoreAllocator& GetSemaphoreAllocator();
+            SwapChainSemaphoreAllocator& GetSwapChainSemaphoreAllocator();
 
             const AZStd::vector<VkQueueFamilyProperties>& GetQueueFamilyProperties() const;
 
@@ -213,6 +214,7 @@ namespace AZ
             RHI::Ptr<AsyncUploadQueue> m_asyncUploadQueue;
             CommandListAllocator m_commandListAllocator;
             SemaphoreAllocator m_semaphoreAllocator;
+            SwapChainSemaphoreAllocator m_swapChaiSemaphoreAllocator;
 
             // New VkImageUsageFlags are inserted in the map in a lazy way.
             // Because of this, the map containing the usages per formar is mutable to keep the

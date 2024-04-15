@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <RHI/FenceTracker.h>
 #include <RHI/FrameGraphExecuteGroup.h>
 #include <RHI/RenderPassBuilder.h>
 
@@ -27,7 +28,7 @@ namespace AZ::Vulkan
 
         FrameGraphExecuteGroupPrimary() = default;
 
-        void Init(Device& device, AZStd::vector<const Scope*>&& scopes);
+        void Init(Device& device, AZStd::vector<const Scope*>&& scopes, AZStd::shared_ptr<SemaphoreTrackerHandle> semaphoreTracker);
         //! Set the command list that the group will use.
         void SetPrimaryCommandList(CommandList& commandList);
         //! Set the list of renderpasses that the group will use.

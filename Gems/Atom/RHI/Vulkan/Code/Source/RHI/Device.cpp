@@ -412,6 +412,11 @@ namespace AZ
             semaphoreAllocDescriptor.m_collectLatency = RHI::Limits::Device::FrameCountMax;
             m_semaphoreAllocator.Init(semaphoreAllocDescriptor);
 
+            SwapChainSemaphoreAllocator::Descriptor swapChainSemaphoreAllocDescriptor;
+            swapChainSemaphoreAllocDescriptor.m_device = this;
+            swapChainSemaphoreAllocDescriptor.m_collectLatency = RHI::Limits::Device::FrameCountMax;
+            m_swapChaiSemaphoreAllocator.Init(swapChainSemaphoreAllocDescriptor);
+
             m_imageMemoryRequirementsCache.SetInitFunction([](auto& cache) { cache.set_capacity(MemoryRequirementsCacheSize); });
             m_bufferMemoryRequirementsCache.SetInitFunction([](auto& cache) { cache.set_capacity(MemoryRequirementsCacheSize); });
 
@@ -560,6 +565,11 @@ namespace AZ
         SemaphoreAllocator& Device::GetSemaphoreAllocator()
         {
             return m_semaphoreAllocator;
+        }
+
+        SwapChainSemaphoreAllocator& Device::GetSwapChainSemaphoreAllocator()
+        {
+            return m_swapChaiSemaphoreAllocator;
         }
 
         const AZStd::vector<VkQueueFamilyProperties>& Device::GetQueueFamilyProperties() const

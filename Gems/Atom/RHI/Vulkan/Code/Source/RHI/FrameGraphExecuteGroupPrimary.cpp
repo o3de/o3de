@@ -13,8 +13,7 @@
 namespace AZ::Vulkan
 {
     void FrameGraphExecuteGroupPrimary::Init(
-        Device& device,
-        AZStd::vector<const Scope*>&& scopes)
+        Device& device, AZStd::vector<const Scope*>&& scopes, AZStd::shared_ptr<SemaphoreTrackerHandle> semaphoreTracker)
     {
         AZ_Assert(!scopes.empty(), "Empty list of scopes for Merged group");
         // Use the max graphGroup id as the id of the execute group.
@@ -24,7 +23,7 @@ namespace AZ::Vulkan
             groupId = AZStd::max(groupId, scope->GetFrameGraphGroupId());
         });
 
-        Base::InitBase(device, groupId, scopes.back()->GetHardwareQueueClass());
+        Base::InitBase(device, groupId, scopes.back()->GetHardwareQueueClass(), semaphoreTracker);
 
         m_scopes = AZStd::move(scopes);
 
@@ -53,6 +52,7 @@ namespace AZ::Vulkan
         InitMergedRequest request;
         request.m_scopeEntries = scopeEntries.data();
         request.m_scopeCount = static_cast<uint32_t>(scopeEntries.size());
+        request.m_fenceTracker = m_fenceTracker;
         Base::Init(request);
 
         m_workRequest.m_debugLabel = "FrameGraph Merged Group";

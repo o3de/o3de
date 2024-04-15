@@ -13,6 +13,8 @@
 #include <RHI/CommandList.h>
 #include <RHI/Semaphore.h>
 
+#include "SemaphoreTracker.h"
+
 namespace AZ
 {
     namespace Vulkan
@@ -61,7 +63,8 @@ namespace AZ
                 const AZStd::vector<Semaphore::WaitSemaphore>& waitSemaphoresInfo,
                 const AZStd::vector<RHI::Ptr<Semaphore>>& semaphoresToSignal,
                 const AZStd::vector<RHI::Ptr<Fence>>& fencesToWaitFor,
-                Fence* fenceToSignal);
+                Fence* fenceToSignal,
+                SemaphoreTrackerHandle* semaphoreTrackerHandle);
 
             /// Waits (blocks) until all fences are signaled in the fence-list.
             void WaitForIdle();

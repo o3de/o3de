@@ -110,10 +110,11 @@ set(FILES
     Source/RHI/PipelineState.h
     Source/RHI/Sampler.cpp
     Source/RHI/Sampler.h
-    Source/RHI/SemaphoreAllocator.cpp
     Source/RHI/SemaphoreAllocator.h
     Source/RHI/Semaphore.cpp
     Source/RHI/Semaphore.h
+    Source/RHI/SemaphoreTracker.cpp
+    Source/RHI/SemaphoreTracker.h
     Source/RHI/Scope.cpp
     Source/RHI/Scope.h
     Source/RHI/ShaderResourceGroup.cpp

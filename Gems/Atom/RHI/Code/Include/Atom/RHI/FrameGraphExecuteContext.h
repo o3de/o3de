@@ -7,9 +7,10 @@
  */
 #pragma once
 
-#include <Atom/RHI/CommandList.h>
 #include <Atom/RHI.Reflect/AttachmentId.h>
 #include <Atom/RHI.Reflect/ScopeId.h>
+#include <Atom/RHI/CommandList.h>
+#include <Atom/RHI/FenceTracker.h>
 
 namespace AZ::RHI
 {
@@ -30,6 +31,7 @@ namespace AZ::RHI
             uint32_t m_commandListCount = 0;
             CommandList* m_commandList = nullptr;
             CommandList::SubmitRange m_submitRange;
+            AZStd::shared_ptr<FenceTracker> m_fenceTracker;
         };
 
         FrameGraphExecuteContext(const Descriptor& descriptor);
@@ -48,6 +50,13 @@ namespace AZ::RHI
 
         /// Returns the submit range for this context.
         const CommandList::SubmitRange& GetSubmitRange() const { return m_descriptor.m_submitRange; }
+
+        /// Returns a FenceTracker object which must be triggered when a Fence is signalled on the CPU
+        /// The returned point might be empty for some RHI backends
+        AZStd::shared_ptr<FenceTracker> GetFenceTracker() const
+        {
+            return m_descriptor.m_fenceTracker;
+        }
         //////////////////////////////////////////////////////////////////////////
 
         //! Allows setting a command list after initialization (e.g. BeginContextInternal).

@@ -504,7 +504,7 @@ namespace AZ
             {
                 semaphoresToSignal.push_back(semaphoreToSignal);
             }
-            queue->SubmitCommandBuffers(commandBuffers, semaphoresWaitInfo, semaphoresToSignal, {}, framePacket.m_fence.get());
+            queue->SubmitCommandBuffers(commandBuffers, semaphoresWaitInfo, semaphoresToSignal, {}, framePacket.m_fence.get(), nullptr);
             queue->EndDebugLabel();
 
             m_frameIndex = (m_frameIndex + 1) % m_descriptor.m_frameCount;

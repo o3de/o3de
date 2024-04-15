@@ -11,8 +11,10 @@
 #include <Atom/RHI/Object.h>
 #include <Atom/RHI/SwapChain.h>
 #include <RHI/CommandList.h>
-#include <RHI/Semaphore.h>
+#include <RHI/FenceTracker.h>
 #include <RHI/Queue.h>
+#include <RHI/Semaphore.h>
+
 
 namespace AZ
 {
@@ -40,6 +42,9 @@ namespace AZ
 
             /// Debug label to insert during work execution
             AZStd::string m_debugLabel;
+
+            /// FenceTracker for telling the framegraph a Fence has been signalled
+            AZStd::shared_ptr<FenceTracker> m_fenceTracker;
         };
 
         struct CommandQueueDescriptor

@@ -303,7 +303,7 @@ namespace AZ
             {
                 Queue* vulkanQueue = static_cast<Queue*>(queue);
                 vulkanQueue->SubmitCommandBuffers(
-                    { commandList }, AZStd::vector<Semaphore::WaitSemaphore>(), AZStd::vector<RHI::Ptr<Semaphore>>(), {}, nullptr);
+                    { commandList }, AZStd::vector<Semaphore::WaitSemaphore>(), AZStd::vector<RHI::Ptr<Semaphore>>(), {}, nullptr, nullptr);
             });
 
             return RHI::ResultCode::Success;

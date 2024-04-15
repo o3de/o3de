@@ -19,6 +19,8 @@
 #include <RHI/RenderPass.h>
 #include <RHI/WSISurface.h>
 
+#include "SemaphoreTracker.h"
+
 namespace AZ
 {
     namespace Vulkan
@@ -50,6 +52,7 @@ namespace AZ
             const CommandQueue& GetPresentationQueue() const;
 
             void QueueBarrier(const VkPipelineStageFlags src, const VkPipelineStageFlags dst, const VkImageMemoryBarrier& imageBarrier);
+            void SetSemaphoreTracker(const AZStd::shared_ptr<SemaphoreTracker>& tracker);
 
             bool ProcessRecreation() override;
         private:
@@ -120,6 +123,8 @@ namespace AZ
                 VkImageMemoryBarrier m_barrier = {};
                 bool m_isValid = false;
             } m_swapChainBarrier;
+
+            AZStd::shared_ptr<SemaphoreTracker> m_semaphoreTracker;
         };
     }
 }

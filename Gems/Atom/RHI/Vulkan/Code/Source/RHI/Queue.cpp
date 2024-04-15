@@ -40,7 +40,8 @@ namespace AZ
             const AZStd::vector<Semaphore::WaitSemaphore>& waitSemaphoresInfo,
             const AZStd::vector<RHI::Ptr<Semaphore>>& semaphoresToSignal,
             const AZStd::vector<RHI::Ptr<Fence>>& fencesToWaitFor,
-            Fence* fenceToSignal)
+            Fence* fenceToSignal,
+            SemaphoreTrackerHandle* semaphoreTrackerHandle)
         {
             AZStd::vector<VkCommandBuffer> vkCommandBuffers;
             AZStd::vector<VkSemaphore> vkWaitSemaphoreVector; // vulkan.h has a #define called vkWaitSemaphores, so we name this differently
@@ -62,25 +63,46 @@ namespace AZ
                     return item->GetNativeCommandBuffer(); 
                 });
                 vkSignalSemaphores.reserve(semaphoresToSignal.size());
-                AZStd::transform(semaphoresToSignal.begin(), semaphoresToSignal.end(), AZStd::back_inserter(vkSignalSemaphores), [&](const auto& item)
-                { 
-                    return item->GetNativeSemaphore(); 
-                });
+                for (const auto& semaphore : semaphoresToSignal)
+                {
+                    vkSignalSemaphores.push_back(semaphore->GetNativeSemaphore());
+                    if (semaphore->GetType() == SemaphoreType::Binary)
+                    {
+                        vkSignalSemaphoreValues.push_back(0);
+                    }
+                    else
+                    {
+                        vkSignalSemaphoreValues.push_back(semaphore->GetPendingValue());
+                    }
+                }
                 vkWaitPipelineStages.reserve(waitSemaphoresInfo.size());
                 vkWaitSemaphoreVector.reserve(waitSemaphoresInfo.size());
-                AZStd::for_each(waitSemaphoresInfo.begin(), waitSemaphoresInfo.end(), [&](auto& item) 
-                { 
+                bool hasTimelineSemaphore = false;
+                for (const auto& item : waitSemaphoresInfo)
+                {
                     vkWaitPipelineStages.push_back(item.first);
                     vkWaitSemaphoreVector.push_back(item.second->GetNativeSemaphore());
                     // Wait until the wait semaphores has been submitted for signaling.
-                    item.second->WaitEvent();
-                });
+                    if (item.second->GetType() == SemaphoreType::Binary)
+                    {
+                        item.second->WaitEvent();
+                        vkWaitSemaphoreValues.push_back(0);
+                    }
+                    else
+                    {
+                        vkWaitSemaphoreValues.push_back(item.second->GetPendingValue());
+                        hasTimelineSemaphore = true;
+                    }
+                }
 
                 submitInfo = {};
                 submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
                 submitInfo.pNext = nullptr;
 
-                if ((fenceToSignal && fenceToSignal->GetFenceType() == FenceType::TimelineSemaphore) || !fencesToWaitFor.empty())
+                hasTimelineSemaphore |=
+                    (fenceToSignal && fenceToSignal->GetFenceType() == FenceType::TimelineSemaphore) || !fencesToWaitFor.empty();
+
+                if (hasTimelineSemaphore)
                 {
                     timelineSemaphoresSubmitInfos.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
                     timelineSemaphoresSubmitInfos.pNext = nullptr;
@@ -131,10 +153,21 @@ namespace AZ
             AssertSuccess(result);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
+            if (semaphoreTrackerHandle)
+            {
+                int numFencestoSignal = fenceToSignal != nullptr;
+                semaphoreTrackerHandle->SignalSemaphores(numFencestoSignal + semaphoresToSignal.size());
+            }
             // Signal all signaling semaphores that they can be used.
-            AZStd::for_each(semaphoresToSignal.begin(), semaphoresToSignal.end(), [&](auto& item) { item->SignalEvent(); });
+            for (const auto& item : semaphoresToSignal)
+            {
+                if (item->GetType() == SemaphoreType::Binary)
+                {
+                    item->SignalEvent();
+                }
+            }
 
-            if (fenceToSignal)
+            if (fenceToSignal && fenceToSignal->GetFenceType() == FenceType::Fence)
             {
                 fenceToSignal->SignalEvent();
             }

@@ -19,7 +19,7 @@ namespace AZ
             return aznew Semaphore();
         }
 
-        RHI::ResultCode Semaphore::Init(Device& device)
+        RHI::ResultCode Semaphore::Init(Device& device, bool forceBinarySemaphore)
         {
             Base::Init(device);
 
@@ -27,6 +27,23 @@ namespace AZ
             createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
             createInfo.pNext = 0;
             createInfo.flags = 0;
+
+            VkSemaphoreTypeCreateInfo timelineCreateInfo{};
+            if (device.GetFeatures().m_signalFenceFromCPU && !forceBinarySemaphore && false)
+            {
+                m_type = SemaphoreType::Timeline;
+
+                timelineCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO;
+                timelineCreateInfo.pNext = nullptr;
+                timelineCreateInfo.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
+                timelineCreateInfo.initialValue = 0;
+                createInfo.pNext = &timelineCreateInfo;
+                m_pendingValue = 1;
+            }
+            else
+            {
+                m_type = SemaphoreType::Binary;
+            }
 
             const VkResult result =
                 device.GetContext().CreateSemaphore(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeSemaphore);
@@ -38,18 +55,38 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
+        SemaphoreType Semaphore::GetType()
+        {
+            return m_type;
+        }
+
+        uint64_t Semaphore::GetPendingValue()
+        {
+            AZ_Assert(m_type == SemaphoreType::Timeline, "%s: Invalid Semaphore Type", __FUNCTION__);
+            return m_pendingValue;
+        }
+
+        void Semaphore::IncrementPendingValue()
+        {
+            AZ_Assert(m_type == SemaphoreType::Timeline, "%s: Invalid Semaphore Type", __FUNCTION__);
+            m_pendingValue++;
+        }
+
         void Semaphore::SignalEvent()
         {
+            AZ_Assert(m_type == SemaphoreType::Binary, "%s: Invalid Semaphore Type", __FUNCTION__);
             m_signalEvent.Signal();
         }
 
         void Semaphore::WaitEvent() const
         {
+            AZ_Assert(m_type == SemaphoreType::Binary, "%s: Invalid Semaphore Type", __FUNCTION__);
             m_signalEvent.Wait();
         }
 
         void Semaphore::ResetSignalEvent()
         {
+            AZ_Assert(m_type == SemaphoreType::Binary, "%s: Invalid Semaphore Type", __FUNCTION__);
             m_signalEvent.SetValue(false);
         }
 

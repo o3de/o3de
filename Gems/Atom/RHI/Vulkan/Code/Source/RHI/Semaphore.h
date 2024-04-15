@@ -17,6 +17,12 @@ namespace AZ
     namespace Vulkan
     {
         class Device;
+        enum class SemaphoreType
+        {
+            Binary,
+            Timeline,
+            Invalid
+        };
 
         class Semaphore final
             : public RHI::DeviceObject
@@ -29,12 +35,20 @@ namespace AZ
             using WaitSemaphore = AZStd::pair<VkPipelineStageFlags, RHI::Ptr<Semaphore>>;
 
             static RHI::Ptr<Semaphore> Create();
-            RHI::ResultCode Init(Device& device);
+            RHI::ResultCode Init(Device& device, bool forceBinarySemaphore);
             ~Semaphore() = default;
 
+            SemaphoreType GetType();
+
+            // Timeline semaphore functions
+            uint64_t GetPendingValue();
+            void IncrementPendingValue();
+
+            // Binary semaphore functions
             void SignalEvent();
             void WaitEvent() const;
             void ResetSignalEvent();
+
             void SetRecycleValue(bool canRecycle);
             bool GetRecycleValue() const;
             VkSemaphore GetNativeSemaphore() const;
@@ -55,6 +69,9 @@ namespace AZ
             VkSemaphore m_nativeSemaphore = VK_NULL_HANDLE;
             AZ::Vulkan::SignalEvent m_signalEvent;
             bool m_recyclable = true;
+            SemaphoreType m_type = SemaphoreType::Invalid;
+
+            uint64_t m_pendingValue = 0;
         };
     }
 }

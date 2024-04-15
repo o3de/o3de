@@ -77,7 +77,8 @@ namespace AZ
                     request.m_semaphoresToWait,
                     request.m_semaphoresToSignal,
                     request.m_fencesToWaitFor,
-                    fenceToSignal);
+                    fenceToSignal,
+                    request.m_fenceTracker ? request.m_fenceTracker->GetSemaphoreTracker().get() : nullptr);
                 // Need to signal all the other fences (other than the first one)
                 for (size_t i = 1; i < request.m_fencesToSignal.size(); ++ i)
                 {
@@ -114,7 +115,8 @@ namespace AZ
                     AZStd::vector<Semaphore::WaitSemaphore>(),
                     AZStd::vector<RHI::Ptr<Semaphore>>(),
                     {},
-                    &fence);
+                    &fence,
+                    nullptr); // TODO
             });
         }
         
