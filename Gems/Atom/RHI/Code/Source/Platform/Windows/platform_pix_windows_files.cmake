@@ -6,5 +6,6 @@
 #
 #
 
-set(RENDERDOC_INCLUDE_DIRECTORIES ".")
-add_compile_definitions(ATOM_RENDERDOC_RUNTIME_PATH="${BASE_PATH}")
+set(FILES
+    RHI.Profiler/PIX/PIXSystemComponent_windows.cpp
+)

@@ -9,25 +9,13 @@
 #include <filesystem>
 #include <shlobj.h>
 #include <AzCore/base.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/string/conversions.h>
 
-namespace AZ::RHI::Platform
+namespace AZ::RHI::Internal
 {
-    bool IsPixDllInjected(const char* dllName)
-    {
-        bool isDllLoaded = false;
-
-        wchar_t fileNameW[256];
-        size_t numCharsConverted;
-        errno_t wcharResult = mbstowcs_s(&numCharsConverted, fileNameW, dllName, AZ_ARRAY_SIZE(fileNameW) - 1);
-        if (wcharResult == 0)
-        {
-            isDllLoaded = NULL != GetModuleHandleW(fileNameW);
-        }
-        return isDllLoaded;
-    }
-
-    AZStd::wstring GetLatestWinPixGpuCapturerPath()
+    AZ::IO::FixedMaxPathString GetLatestWinPixGpuCapturerPath()
     {
         LPWSTR programFilesPath = nullptr;
         SHGetKnownFolderPath(FOLDERID_ProgramFiles, KF_FLAG_DEFAULT, NULL, &programFilesPath);
@@ -50,10 +38,12 @@ namespace AZ::RHI::Platform
 
         if (newestVersionFound.empty())
         {
-            return L"";
+            return "";
         }
 
-        std::wstring finalPath = pixInstallationPath / newestVersionFound / L"WinPixGpuCapturer.dll";
-        return AZStd::wstring(finalPath.c_str());
+        std::wstring finalPathW = pixInstallationPath / newestVersionFound / L"WinPixGpuCapturer.dll";
+        AZ::IO::FixedMaxPathString finalPath;
+        AZStd::to_string(finalPath, finalPathW.c_str());
+        return finalPath;
     }
 } 

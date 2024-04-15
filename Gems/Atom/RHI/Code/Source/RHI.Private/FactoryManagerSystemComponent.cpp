@@ -67,6 +67,11 @@ namespace AZ::RHI
         incompatible.push_back(Factory::GetManagerComponentService());
     }
 
+    void FactoryManagerSystemComponent::GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent)
+    {
+        dependent.push_back(AZ_CRC("GraphicsProfilerService"));
+    }
+
     void FactoryManagerSystemComponent::Activate()
     {
         UpdateValidationModeFromCommandline();
