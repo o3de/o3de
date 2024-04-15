@@ -375,12 +375,6 @@ namespace PhysX
     }
 
     // Pilfered/inspired from LY's SystemComponent::UpdateMaterialSelection
-    // Deprecated, call SetMaterial(uint32_t, const AZ::Data::Asset<Physics::MaterialAsset>&) instead.
-    void CharacterControllerComponent::SetMaterialByName([[maybe_unused]] uint32_t index, [[maybe_unused]] const AZStd::string& name)
-    {
-        AZ_Assert(false, "(CharacterControllerComponent) - SetMaterialByName(): Not implemented, use SetMaterial(uint32_t, const AZ::Data::Asset<Physics::MaterialAsset>&)");
-    }
-
     void CharacterControllerComponent::SetMaterial(uint32_t index, const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset)
     {
         if (!m_characterConfig)
