@@ -570,23 +570,34 @@ namespace AssetProcessor
                             //  2. When another product is created, all existing wildcard dependencies are compared against that product to
                             //  see if it matches them.
                             // This check here makes sure that the filter for 1 matches 2.
-#if defined(CARBONATED)
-                            if (!isExactDependency && isRecursiveDependency)
-#else
                             if (!isExactDependency)
-#endif
                             {
                                 AZ::IO::PathView searchPath(productDatabaseEntry.m_productName);
 
 #if defined(CARBONATED)
-                                if (!searchPath.Match(pathWildcardSearchPath) &&
-                                    !AZStd::wildcard_match(pathWildcardSearchPathWithPlatform.c_str(), productDatabaseEntry.m_productName.c_str()))
+                                const bool pathMatch = searchPath.Match(pathWildcardSearchPath);
+                                if (!isRecursiveDependency)
+                                {
+                                    if (!pathMatch)
+                                    {
+                                        continue;
+                                    }
+                                }
+                                else
+                                {
+                                    if (!pathMatch &&
+                                        !AZStd::wildcard_match(
+                                            pathWildcardSearchPathWithPlatform.c_str(), productDatabaseEntry.m_productName.c_str()))
+                                    {
+                                        continue;
+                                    }
+                                }
 #else
                                 if (!searchPath.Match(pathWildcardSearchPath))
-#endif
                                 {
                                     continue;
                                 }
+#endif
                             }
 
                             AZStd::vector<AssetBuilderSDK::ProductDependency>& productDependencyList = isExcludedDependency ? excludedDeps : resolvedDeps;
