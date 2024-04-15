@@ -873,10 +873,7 @@ namespace AZ
             {
                 return AZStd::any(AZStd::any_cast<AZ::Data::Asset<AZ::RPI::ImageAsset>>(value).GetId());
             }
-            if (value.is<AZ::Data::Instance<AZ::RPI::Image>>())
-            {
-                return AZStd::any(AZStd::any_cast<AZ::Data::Instance<AZ::RPI::Image>>(value)->GetAssetId());
-            }
+
             return value;
         }
 
