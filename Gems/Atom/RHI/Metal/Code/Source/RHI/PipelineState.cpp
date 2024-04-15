@@ -21,6 +21,19 @@ namespace AZ
 {
     namespace Metal
     {
+        void RasterizerState::UpdateHash()
+        {
+            HashValue64 seed = HashValue64{ 0 };
+            seed = TypeHash64(m_cullMode, seed);
+            seed = TypeHash64(m_depthBias, seed);
+            seed = TypeHash64(m_depthSlopeScale, seed);
+            seed = TypeHash64(m_depthBiasClamp, seed);
+            seed = TypeHash64(m_frontFaceWinding, seed);
+            seed = TypeHash64(m_triangleFillMode, seed);
+            seed = TypeHash64(m_depthClipMode, seed);
+            m_hash = seed;
+        }
+    
         RHI::Ptr<PipelineState> PipelineState::Create()
         {
             return aznew PipelineState;
@@ -83,14 +96,21 @@ namespace AZ
             }
             else
             {
-                //In case byte code was not generated try to create the lib with source code
-                MTLCompileOptions* compileOptions = [MTLCompileOptions alloc];
-                compileOptions.fastMathEnabled = YES;
-                compileOptions.languageVersion = MTLLanguageVersion2_2;
-                lib = [mtlDevice newLibraryWithSource:source
-                                               options:compileOptions
-                                                 error:&error];
-                [compileOptions release];
+                if(!sourceStr.empty())
+                {
+                    //In case byte code was not generated try to create the lib with source code
+                    MTLCompileOptions* compileOptions = [MTLCompileOptions alloc];
+                    compileOptions.fastMathEnabled = YES;
+                    compileOptions.languageVersion = MTLLanguageVersion2_2;
+                    lib = [mtlDevice newLibraryWithSource:source
+                                                  options:compileOptions
+                                                    error:&error];
+                    [compileOptions release];
+                }
+                else
+                {
+                    AZ_Assert(false, "Shader source is not added by default. It can be added by enabling /O3DE/Atom/RHI/GraphicsDevMode via settings registry and re-building the shader.");
+                }
             }
             
             if (error)
@@ -189,7 +209,14 @@ namespace AZ
                 m_graphicsPipelineState = [device.GetMtlDevice() newRenderPipelineStateWithDescriptor:m_renderPipelineDesc options : MTLPipelineOptionBufferTypeInfo reflection : &ref error : &error];
             }
             
-            AZ_Assert(m_graphicsPipelineState, "Could not create Pipeline object!.");
+            if(m_graphicsPipelineState==nil)
+            {
+                if (RHI::Validation::IsEnabled())
+                {
+                    NSLog(@" error => %@ ", [error userInfo] );
+                }
+                AZ_Assert(false, "Could not create Pipeline object!.");
+            }
             //We keep the descriptors alive in case we want to build the PSO cache. Delete them otherwise.
             if (!r_enablePsoCaching)
             {

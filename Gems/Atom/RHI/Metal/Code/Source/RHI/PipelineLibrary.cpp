@@ -76,6 +76,14 @@ namespace AZ
             {
                 m_renderPipelineStates.emplace(hash, pipelineStateDesc);
             }
+            else
+            {
+                if (RHI::Validation::IsEnabled())
+                {
+                    NSLog(@" error => %@ ", [*error userInfo] );
+                }
+                AZ_Assert(false, "Could not create Pipeline object!.");
+            }
             return graphicsPipelineState;
         }
         
