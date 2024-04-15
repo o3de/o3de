@@ -99,16 +99,22 @@ function(get_all_gem_dependencies gem_name output_resolved_gem_names)
         get_property(gem_path GLOBAL PROPERTY "@GEMROOT:${gem_name}@")
         o3de_read_json_array(gem_dependencies "${gem_path}/gem.json" "dependencies")
 
-        # Set the property for the gem so that we won't encounter a possible infinite recursion
-        # when evaluating the gem dependencies' dependency
-        set_property(GLOBAL PROPERTY GEM_DEPENDENCIES_"${gem_name}" ${gem_dependencies})
+        # Keep track of the visited gems to prevent any dependency cycles that can
+        # cause a possible infinite recursion when evaluating the gem dependencies' dependency
+        list(APPEND get_all_gem_dependencies_visited ${gem_name})
 
         # Iterate and recursively collect dependent gem names
         unset(all_dependent_gem_names)
         foreach(dependent_gem_name IN LISTS gem_dependencies)
             unset(dependent_gem_names)
-            get_all_gem_dependencies(${dependent_gem_name} dependent_gem_names)
-            list(APPEND all_dependent_gem_names ${dependent_gem_names})
+
+            # Recursively check a depend gem only if it has not been visited yet
+            unset(visited_index)
+            list(FIND get_all_gem_dependencies_visited ${dependent_gem_name} visited_index)
+            if (visited_index LESS 0)
+                get_all_gem_dependencies(${dependent_gem_name} dependent_gem_names)
+                list(APPEND all_dependent_gem_names ${dependent_gem_names})
+            endif()
         endforeach()
         list(APPEND gem_dependencies ${all_dependent_gem_names})
         list(REMOVE_DUPLICATES gem_dependencies)
