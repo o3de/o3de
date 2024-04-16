@@ -182,6 +182,20 @@ namespace AZ
 
         bool MeshDrawPacket::Update(const Scene& parentScene, bool forceUpdate /*= false*/)
         {
+            // Setup the Shader variant handler when update this MeshDrawPacket the first time .
+            // This is because the MeshDrawPacket data can be copied or moved right after it's created.
+            // The m_shaderVariantHandler won't be copied correctly due to the capture of 'this' pointer.
+            // Instead of override all the copy and move operators, this might be a better solution.
+            if (!m_shaderVariantHandler.IsConnected())
+            {
+                m_shaderVariantHandler = Material::OnMaterialShaderVariantReadyEvent::Handler(
+                    [this]()
+                    {
+                        this->m_needUpdate = true;
+                    });
+                m_material->ConnectEvent(m_shaderVariantHandler);
+            }
+
             // Why we need to check "!m_material->NeedsCompile()"...
             //    Frame A:
             //      - Material::SetPropertyValue("foo",...). This bumps the material's CurrentChangeId()

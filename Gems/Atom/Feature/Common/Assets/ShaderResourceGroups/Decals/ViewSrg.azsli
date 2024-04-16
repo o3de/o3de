@@ -24,6 +24,9 @@ partial ShaderResourceGroup ViewSrg
         uint m_sortKeyPacked;
         uint m_textureArrayIndex;
         uint m_textureIndex;
+        float3 m_decalColor;
+        float m_decalColorFactor;
+        [[pad_to(16)]]
     };
 
     StructuredBuffer<Decal> m_decals; 

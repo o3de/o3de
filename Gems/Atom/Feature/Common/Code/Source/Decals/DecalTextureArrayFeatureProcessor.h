@@ -11,10 +11,12 @@
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
 #include <Atom/Feature/Utils/IndexedDataVector.h>
 #include <Atom/Feature/Decals/DecalFeatureProcessorInterface.h>
+#include <Atom/Feature/Utils/MultiIndexedDataVector.h>
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <AtomCore/Instance/Instance.h>
 #include <Atom/Feature/Utils/IndexableList.h>
+#include <AzCore/Math/Sphere.h>
 #include <Decals/DecalTextureArray.h>
 #include <Decals/AsyncLoadTracker.h>
 
@@ -61,6 +63,12 @@ namespace AZ
 
             //! Sets the position of the decal
             void SetDecalPosition(const DecalHandle handle, const AZ::Vector3& position) override;
+
+            //! Sets the color of the decal
+            void SetDecalColor(const DecalHandle handle, const AZ::Vector3& color) override;
+
+            //! Sets the factor for the decal color
+            void SetDecalColorFactor(const DecalHandle handle, float colorFactor) override;
 
             //! Sets the orientation of the decal
             void SetDecalOrientation(const DecalHandle handle, const AZ::Quaternion& orientation) override;
@@ -131,14 +139,12 @@ namespace AZ
             bool RemoveDecalFromTextureArrays(const DecalLocation decalLocation);
             AZ::Data::AssetId GetMaterialUsedByDecal(const DecalHandle handle) const;
             void PackTexureArrays();
-            // Check if a view is being used by a pipeline that has a GPU culling pass.
-            bool HasGPUCulling(const RPI::ViewPtr& view) const;
             // Cull the decals for a view using the CPU.
             void CullDecals(const RPI::ViewPtr& view);
-            // Get or create a buffer that will be used for visibility when doing CPU culling.
-            GpuBufferHandler& GetOrCreateVisibleBuffer();
+            void UpdateBounds(const DecalHandle handle);
 
-            IndexedDataVector<DecalData> m_decalData;
+            MultiIndexedDataVector<DecalData, AZ::Aabb> m_decalData;
+            RHI::Handle<uint32_t> m_decalMeshFlag;
 
             // Texture arrays are organized one per texture size permutation.
             // e.g. There may be a situation where we have 3 texture arrays:

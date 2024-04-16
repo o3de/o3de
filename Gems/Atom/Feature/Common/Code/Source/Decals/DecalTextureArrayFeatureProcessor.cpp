@@ -7,23 +7,26 @@
  */
 
 #include <Decals/DecalTextureArrayFeatureProcessor.h>
+#include <Atom/Feature/CoreLights/LightCommon.h>
+#include <Atom/Feature/Mesh/MeshCommon.h>
+#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/RHI/Factory.h>
+#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
-#include <AzCore/Math/Quaternion.h>
-#include <AzCore/std/containers/span.h>
-#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetHandler.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
-#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <AzCore/Math/Frustum.h>
+#include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/ShapeIntersection.h>
-
+#include <AzCore/std/containers/span.h>
 #include <numeric>
 
+//! If modified, ensure that r_maxVisibleDecals is equal to or lower than ENABLE_DECALS_CAP which is the limit set by the shader on GPU.
 AZ_CVAR(int, r_maxVisibleDecals, -1, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Maximum number of visible decals to use when culling is not available. -1 means no limit");
 
 namespace AZ
@@ -114,7 +117,7 @@ namespace AZ
             else
             {
                 m_deviceBufferNeedsUpdate = true;
-                DecalData& decalData = m_decalData.GetData(id);
+                DecalData& decalData = m_decalData.GetData<0>(id);
                 decalData.m_textureArrayIndex = DecalData::UnusedIndex;
                 return DecalHandle(id);
             }
@@ -130,8 +133,8 @@ namespace AZ
                 }
 
                 DecalLocation decalLocation;
-                decalLocation.textureArrayIndex = m_decalData.GetData(decal.GetIndex()).m_textureArrayIndex;
-                decalLocation.textureIndex = m_decalData.GetData(decal.GetIndex()).m_textureIndex;
+                decalLocation.textureArrayIndex = m_decalData.GetData<0>(decal.GetIndex()).m_textureArrayIndex;
+                decalLocation.textureIndex = m_decalData.GetData<0>(decal.GetIndex()).m_textureIndex;
                 RemoveDecalFromTextureArrays(decalLocation);
 
                 m_decalData.RemoveIndex(decal.GetIndex());
@@ -148,7 +151,7 @@ namespace AZ
             const DecalHandle decal = AcquireDecal();
             if (decal.IsValid())
             {
-                m_decalData.GetData(decal.GetIndex()) = m_decalData.GetData(sourceDecal.GetIndex());
+                m_decalData.GetData<0>(decal.GetIndex()) = m_decalData.GetData<0>(sourceDecal.GetIndex());
                 const auto materialAsset = GetMaterialUsedByDecal(sourceDecal);
                 if (materialAsset.IsValid())
                 {
@@ -170,8 +173,21 @@ namespace AZ
 
             if (m_deviceBufferNeedsUpdate)
             {
-                m_decalBufferHandler.UpdateBuffer(m_decalData.GetDataVector());
+                m_decalBufferHandler.UpdateBuffer(m_decalData.GetDataVector<0>());
                 m_deviceBufferNeedsUpdate = false;
+            }
+
+            if (r_enablePerMeshShaderOptionFlags)
+            {
+                auto decalFilter = [&](const AZ::Aabb& aabb) -> bool
+                {
+                    DecalHandle::IndexType index = m_decalData.GetIndexForData<1>(&aabb);
+                    return index != IndexedDataVector<int>::NoFreeSlot;
+                };
+
+                // Mark meshes that have decals
+                MeshCommon::MarkMeshesWithFlag(
+                    GetParentScene(), AZStd::span(m_decalData.GetDataVector<1>()), m_decalMeshFlag.GetIndex(), decalFilter);
             }
         }
 
@@ -192,7 +208,7 @@ namespace AZ
         {
             if (handle.IsValid())
             {
-                m_decalData.GetData(handle.GetIndex()) = data;
+                m_decalData.GetData<0>(handle.GetIndex()) = data;
                 m_deviceBufferNeedsUpdate = true;
             }
             else
@@ -215,8 +231,9 @@ namespace AZ
         {
             if (handle.IsValid())
             {
-                AZStd::array<float, 3>& writePos = m_decalData.GetData(handle.GetIndex()).m_position;
+                AZStd::array<float, 3>& writePos = m_decalData.GetData<0>(handle.GetIndex()).m_position;
                 position.StoreToFloat3(writePos.data());
+                UpdateBounds(handle);
                 m_deviceBufferNeedsUpdate = true;
             }
             else
@@ -229,7 +246,7 @@ namespace AZ
         {
             if (handle.IsValid())
             {
-                orientation.StoreToFloat4(m_decalData.GetData(handle.GetIndex()).m_quaternion.data());
+                orientation.StoreToFloat4(m_decalData.GetData<0>(handle.GetIndex()).m_quaternion.data());
                 m_deviceBufferNeedsUpdate = true;
             }
             else
@@ -238,11 +255,45 @@ namespace AZ
             }
         }
 
+        void DecalTextureArrayFeatureProcessor::SetDecalColor(const DecalHandle handle, const AZ::Vector3& color)
+        {
+            if (handle.IsValid())
+            {
+                AZStd::array<float, 3>& writeColor = m_decalData.GetData<0>(handle.GetIndex()).m_decalColor;
+                color.StoreToFloat3(writeColor.data());
+                m_deviceBufferNeedsUpdate = true;
+            }
+            else
+            {
+                AZ_Warning(
+                    "DecalTextureArrayFeatureProcessor",
+                    false,
+                    "Invalid handle passed to DecalTextureArrayFeatureProcessor::SetDecalColor().");
+            }
+        }
+
+        void DecalTextureArrayFeatureProcessor::SetDecalColorFactor(const DecalHandle handle, float colorFactor)
+        {
+            if (handle.IsValid())
+            {
+                m_decalData.GetData<0>(handle.GetIndex()).m_decalColorFactor = colorFactor;
+                m_deviceBufferNeedsUpdate = true;
+            }
+            else
+            {
+                AZ_Warning(
+                    "DecalTextureArrayFeatureProcessor",
+                    false,
+                    "Invalid handle passed to DecalTextureArrayFeatureProcessor::SetDecalColorFactor().");
+            }
+        }
+
         void DecalTextureArrayFeatureProcessor::SetDecalHalfSize(DecalHandle handle, const Vector3& halfSize)
         {
             if (handle.IsValid())
             {
-                halfSize.StoreToFloat3(m_decalData.GetData(handle.GetIndex()).m_halfSize.data());
+                halfSize.StoreToFloat3(m_decalData.GetData<0>(handle.GetIndex()).m_halfSize.data());
+                UpdateBounds(handle);
                 m_deviceBufferNeedsUpdate = true;
             }
             else
@@ -255,7 +306,7 @@ namespace AZ
         {
             if (handle.IsValid())
             {
-                m_decalData.GetData(handle.GetIndex()).m_angleAttenuation = angleAttenuation;
+                m_decalData.GetData<0>(handle.GetIndex()).m_angleAttenuation = angleAttenuation;
                 m_deviceBufferNeedsUpdate = true;
             }
             else
@@ -268,7 +319,7 @@ namespace AZ
         {
             if (handle.IsValid())
             {
-                m_decalData.GetData(handle.GetIndex()).m_opacity = opacity;
+                m_decalData.GetData<0>(handle.GetIndex()).m_opacity = opacity;
 
                 m_deviceBufferNeedsUpdate = true;
             }
@@ -282,7 +333,7 @@ namespace AZ
         {
             if (handle.IsValid())
             {
-                m_decalData.GetData(handle.GetIndex()).m_normalMapOpacity = opacity;
+                m_decalData.GetData<0>(handle.GetIndex()).m_normalMapOpacity = opacity;
 
                 m_deviceBufferNeedsUpdate = true;
             }
@@ -298,7 +349,7 @@ namespace AZ
         {
             if (handle.IsValid())
             {
-                m_decalData.GetData(handle.GetIndex()).m_sortKey = sortKey;
+                m_decalData.GetData<0>(handle.GetIndex()).m_sortKey = sortKey;
                 m_deviceBufferNeedsUpdate = true;
             }
             else
@@ -345,7 +396,7 @@ namespace AZ
 
             const auto decalIndex = handle.GetIndex();
 
-            const bool isValidMaterialBeingUsedCurrently = m_decalData.GetData(decalIndex).m_textureArrayIndex != DecalData::UnusedIndex;
+            const bool isValidMaterialBeingUsedCurrently = m_decalData.GetData<0>(decalIndex).m_textureArrayIndex != DecalData::UnusedIndex;
             if (isValidMaterialBeingUsedCurrently)
             {
                 RemoveMaterialFromDecal(decalIndex);
@@ -372,26 +423,12 @@ namespace AZ
         void DecalTextureArrayFeatureProcessor::OnRenderPipelinePersistentViewChanged(
             RPI::RenderPipeline* renderPipeline, [[maybe_unused]] RPI::PipelineViewTag viewTag, RPI::ViewPtr newView, RPI::ViewPtr previousView)
         {
-            // Check if render pipeline is using GPU culling
-            if (!renderPipeline->FindFirstPass(AZ::Name("LightCullingPass")))
-            {
-                return;
-            }
-
-            if (previousView)
-            {
-                m_hasGPUCulling.erase(AZStd::make_pair(renderPipeline, previousView.get()));
-            }
-
-            if (newView)
-            {
-                m_hasGPUCulling.insert(AZStd::make_pair(renderPipeline, newView.get()));
-            }
+            Render::LightCommon::CacheGPUCullingPipelineInfo(renderPipeline, newView, previousView, m_hasGPUCulling);
         }
 
         void DecalTextureArrayFeatureProcessor::RemoveMaterialFromDecal(const uint16_t decalIndex)
         {
-            auto& decalData = m_decalData.GetData(decalIndex);
+            auto& decalData = m_decalData.GetData<0>(decalIndex);
 
             DecalLocation decalLocation;
             decalLocation.textureArrayIndex = decalData.m_textureArrayIndex;
@@ -430,6 +467,12 @@ namespace AZ
                         "Unable to find %s in decal shader.",
                         baseName.c_str());
                 }
+            }
+
+            MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
+            if (meshFeatureProcessor)
+            {
+                m_decalMeshFlag = meshFeatureProcessor->GetShaderOptionFlagRegistry()->AcquireTag(AZ::Name("o_enableDecals"));
             }
         }
 
@@ -502,8 +545,8 @@ namespace AZ
         void DecalTextureArrayFeatureProcessor::SetDecalTextureLocation(const DecalHandle& handle, const DecalLocation location)
         {
             AZ_Assert(handle.IsValid(), "SetDecalTextureLocation called with invalid handle");
-            m_decalData.GetData(handle.GetIndex()).m_textureArrayIndex = location.textureArrayIndex;
-            m_decalData.GetData(handle.GetIndex()).m_textureIndex = location.textureIndex;
+            m_decalData.GetData<0>(handle.GetIndex()).m_textureArrayIndex = location.textureArrayIndex;
+            m_decalData.GetData<0>(handle.GetIndex()).m_textureIndex = location.textureIndex;
             m_deviceBufferNeedsUpdate = true;
         }
 
@@ -572,27 +615,15 @@ namespace AZ
             }
         }
 
-        bool DecalTextureArrayFeatureProcessor::HasGPUCulling(const RPI::ViewPtr& view) const
-        {
-            for (const auto& renderPipeline : GetParentScene()->GetRenderPipelines())
-            {
-                if (renderPipeline->NeedsRender() &&
-                    m_hasGPUCulling.contains(AZStd::pair(renderPipeline.get(), view.get())))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
         void DecalTextureArrayFeatureProcessor::CullDecals(const RPI::ViewPtr& view)
         {
-            if (!AZ::RHI::CheckBitsAll(view->GetUsageFlags(), RPI::View::UsageFlags::UsageCamera) || HasGPUCulling(view))
+            if (!AZ::RHI::CheckBitsAll(view->GetUsageFlags(), RPI::View::UsageFlags::UsageCamera) ||
+                Render::LightCommon::HasGPUCulling(GetParentScene(), view, m_hasGPUCulling))
             {
                 return;
             }
 
-            const auto& dataVector = m_decalData.GetDataVector();
+            const auto& dataVector = m_decalData.GetDataVector<0>();
             size_t numVisibleDecals =
                 r_maxVisibleDecals < 0 ? dataVector.size() : AZStd::min(dataVector.size(), static_cast<size_t>(r_maxVisibleDecals));
             AZStd::vector<uint32_t> sortedDecals(dataVector.size());
@@ -631,26 +662,18 @@ namespace AZ
                 }
             }
 
+            // Create the appropriate buffer handlers for the visibility data
+            Render::LightCommon::UpdateVisibleBuffers(
+                "DecalVisibilityBuffer",
+                "m_visibleDecalIndices",
+                "m_visibleDecalCount",
+                m_visibleDecalBufferUsedCount,
+                m_visibleDecalBufferHandlers);
+
             // Update buffer and View SRG
-            GpuBufferHandler& bufferHandler = GetOrCreateVisibleBuffer();
+            GpuBufferHandler& bufferHandler = m_visibleDecalBufferHandlers[m_visibleDecalBufferUsedCount++];
             bufferHandler.UpdateBuffer(visibilityBuffer);
             bufferHandler.UpdateSrg(view->GetShaderResourceGroup().get());
-        }
-
-        GpuBufferHandler& DecalTextureArrayFeatureProcessor::GetOrCreateVisibleBuffer()
-        {
-            while (m_visibleDecalBufferUsedCount >= m_visibleDecalBufferHandlers.size())
-            {
-                GpuBufferHandler::Descriptor desc;
-                desc.m_bufferName = "DecalVisibilityBuffer";
-                desc.m_bufferSrgName = "m_visibleDecalIndices";
-                desc.m_elementCountSrgName = "m_visibleDecalCount";
-                desc.m_elementFormat = AZ::RHI::Format::R32_UINT;
-                desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
-
-                m_visibleDecalBufferHandlers.emplace_back(desc);
-            }
-            return m_visibleDecalBufferHandlers[m_visibleDecalBufferUsedCount++];
         }
 
         AZ::Data::AssetId DecalTextureArrayFeatureProcessor::GetMaterialUsedByDecal(const DecalHandle handle) const
@@ -658,7 +681,7 @@ namespace AZ
             AZ::Data::AssetId material;
             if (handle.IsValid())
             {
-                const DecalData& decalData = m_decalData.GetData(handle.GetIndex());
+                const DecalData& decalData = m_decalData.GetData<0>(handle.GetIndex());
                 if (decalData.m_textureArrayIndex != DecalData::UnusedIndex)
                 {
                     const DecalTextureArray& textureArray = m_textureArrayList[decalData.m_textureArrayIndex].second;
@@ -689,6 +712,14 @@ namespace AZ
             {
                 AZ_Assert(false, "DecalTextureArrayFeatureProcessor::QueueMaterialLoadForDecal is in an unhandled state.");
             }
+        }
+
+        void DecalTextureArrayFeatureProcessor::UpdateBounds(const DecalHandle handle)
+        {
+            const DecalData& data = m_decalData.GetData<0>(handle.GetIndex());
+            m_decalData.GetData<1>(handle.GetIndex()) = Aabb::CreateCenterHalfExtents(
+                AZ::Vector3(data.m_position[0], data.m_position[1], data.m_position[2]),
+                AZ::Vector3(data.m_halfSize[0], data.m_halfSize[1], data.m_halfSize[2]));
         }
 
     } // namespace Render

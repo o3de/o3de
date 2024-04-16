@@ -15,6 +15,7 @@ set(FILES
     Include/Atom/Feature/ColorGrading/LutResolution.h
     Include/Atom/Feature/CoreLights/CoreLightsConstants.h
     Include/Atom/Feature/CoreLights/LightCommon.h
+    Source/CoreLights/LightCommon.cpp
     Include/Atom/Feature/CubeMapCapture/CubeMapCaptureFeatureProcessorInterface.h
     Include/Atom/Feature/DisplayMapper/AcesOutputTransformPass.h
     Include/Atom/Feature/DisplayMapper/AcesOutputTransformLutPass.h

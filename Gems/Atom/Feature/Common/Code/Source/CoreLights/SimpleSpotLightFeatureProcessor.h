@@ -84,6 +84,12 @@ namespace AZ
             const Data::Instance<RPI::Buffer>  GetLightBuffer() const;
             uint32_t GetLightCount()const;
 
+            // SceneNotificationBus::Handler overrides...
+            void OnRenderPipelinePersistentViewChanged(
+                RPI::RenderPipeline* renderPipeline,
+                RPI::PipelineViewTag viewTag,
+                RPI::ViewPtr newView,
+                RPI::ViewPtr previousView) override;
         private:
             SimpleSpotLightFeatureProcessor(const SimpleSpotLightFeatureProcessor&) = delete;
 
@@ -96,12 +102,23 @@ namespace AZ
             template<typename Functor, typename ParamType>
             void SetShadowSetting(LightHandle handle, Functor&&, ParamType&& param);
 
+            // Cull the lights for a view using the CPU.
+            void CullLights(const RPI::ViewPtr& view);
+
             MultiIndexedDataVector<SimpleSpotLightData, MeshCommon::BoundsVariant> m_lightData;
             GpuBufferHandler m_lightBufferHandler;
+            RHI::Handle<uint32_t> m_lightMeshFlag;
             RHI::Handle<uint32_t> m_shadowMeshFlag;
             bool m_deviceBufferNeedsUpdate = false;
 
             ProjectedShadowFeatureProcessor* m_shadowFeatureProcessor = nullptr;
+
+            // Handlers to GPU buffer that are being used for CPU culling visibility.
+            AZStd::vector<GpuBufferHandler> m_visibleSpotLightsBufferHandlers;
+            // Number of buffers being used for visibility in the current frame.
+            uint32_t m_visibleSpotLightsBufferUsedCount = 0;
+            // Views that have a GPU culling pass per render pipeline.
+            AZStd::unordered_set<AZStd::pair<const RPI::RenderPipeline*, const RPI::View*>> m_hasGPUCulling;
         };
     } // namespace Render
 } // namespace AZ

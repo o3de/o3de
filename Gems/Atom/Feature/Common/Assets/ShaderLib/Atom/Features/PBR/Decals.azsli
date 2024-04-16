@@ -14,18 +14,29 @@
 // ---------------------------------------------------------------------------------
 
 #include <Atom/Features/MatrixUtility.azsli>
+#include <Atom/Features/BlendUtility.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/MaterialInputs/BaseColorInput.azsli>
 #include <Atom/Features/Decals/DecalTextureUtil.azsli>
 #include <Atom/Features/LightCulling/LightCullingTileIterator.azsli>
 #include <Atom/RPI/TangentSpace.azsli>
 
 #ifndef ENABLE_DECALS_CAP
-#define ENABLE_DECALS_CAP 20 // Default cap if it was not set by the pipeline. This is only applicable is gpu culling is disabled
+#define ENABLE_DECALS_CAP 20 // Default cap if it was not set by the pipeline. This is only applicable if gpu culling is disabled
 #endif
 
 
 void ApplyDecal(uint currDecalIndex, inout Surface surface);
 
 #if ENABLE_DECALS
+
+void ApplyDecalInternal(uint currDecalIndex, inout Surface surface)
+{
+    if (o_enableDecals)
+    {
+        ApplyDecal(currDecalIndex, surface);
+    }
+}
+
 void ApplyDecals(inout LightCullingTileIterator tileIterator, inout Surface surface)
 {
 #if ENABLE_LIGHT_CULLING
@@ -36,14 +47,14 @@ void ApplyDecals(inout LightCullingTileIterator tileIterator, inout Surface surf
         uint currDecalIndex = tileIterator.GetValue();
         tileIterator.LoadAdvance();
         
-        ApplyDecal(currDecalIndex, surface);
+        ApplyDecalInternal(currDecalIndex, surface);
     }
 #else
     // Since there's no GPU culling for decals, we rely on culling done by CPU
     // Only apply visible decals
     for(uint decalIndex = 0; (decalIndex < ENABLE_DECALS_CAP && decalIndex < ViewSrg::m_visibleDecalCount); decalIndex++)
     {
-        ApplyDecal(ViewSrg::m_visibleDecalIndices[decalIndex], surface);
+        ApplyDecalInternal(ViewSrg::m_visibleDecalIndices[decalIndex], surface);
     }
 #endif
 }
@@ -115,7 +126,10 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface)
         
         const real decalAttenuation = GetDecalAttenuation(surface.GetVertexNormal(), decalRot[2], real(decal.m_angleAttenuation));
         const real albedoOpacity = real(baseMap.a) * real(decal.m_opacity) * decalAttenuation;
-        surface.albedo = lerp(surface.albedo, real3(baseMap.rgb), albedoOpacity);
+
+        bool useTexture = true;
+        real3 blendedBaseColor = BlendBaseColor(real3(baseMap.rgb), real3(decal.m_decalColor), real(decal.m_decalColorFactor), TextureBlendMode::Multiply, useTexture);
+        surface.albedo = lerp(surface.albedo, real3(blendedBaseColor.rgb), albedoOpacity);
 
         const real normalOpacity = real(baseMap.a) * real(decal.m_normalMapOpacity) * decalAttenuation;
         const real3 normalMapWS = GetWorldSpaceNormal(real2(normalMap), decalRot[2], decalRot[0], decalRot[1], 1.0);

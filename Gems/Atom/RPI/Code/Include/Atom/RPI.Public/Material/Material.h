@@ -143,6 +143,10 @@ namespace AZ
             //! Returns whether the material has property changes that have not been compiled yet.
             bool NeedsCompile() const;
 
+            using OnMaterialShaderVariantReadyEvent = AZ::Event<>;
+            //! Connect a handler to listen to the event that a shader variant asset of the shaders used by this material is ready
+            void ConnectEvent(OnMaterialShaderVariantReadyEvent::Handler& handler);
+
         private:
             Material() = default;
 
@@ -220,6 +224,8 @@ namespace AZ
             bool m_isInitializing = false;
 
             MaterialPropertyPsoHandling m_psoHandling = MaterialPropertyPsoHandling::Warning;
+
+            OnMaterialShaderVariantReadyEvent m_shaderVariantReadyEvent;
         };
 
     } // namespace RPI
