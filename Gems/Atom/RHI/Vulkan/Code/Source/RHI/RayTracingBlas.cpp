@@ -46,6 +46,7 @@ namespace AZ
             buffers.m_rangeInfos.clear();
             AZStd::vector<uint32_t> primitiveCounts;
 
+            // A BLAS can contain either triangle geometry or procedural geometry; decide based on the descriptor which one to create
             if (descriptor->HasAABB())
             {
                 const AZ::Aabb& aabb = descriptor->GetAABB();

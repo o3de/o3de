@@ -148,7 +148,7 @@ namespace DebugDraw
         {
             AZ::Vector3    m_previousWorldLocation = AZ::Vector3::CreateZero();
             float          m_previousRadius = 0;
-            uint32_t       m_localInstanceIndex;
+            uint32_t       m_localInstanceIndex = 0;
         };
 
         struct DebugDrawObbElementWrapper : DebugDrawObbElement
@@ -158,11 +158,14 @@ namespace DebugDraw
             AZ::Quaternion m_previousRotation;
         };
 
-        void CheckAddRaytracingData(DebugDrawSphereElementWrapper& element);
-        void CheckAddRaytracingData(DebugDrawObbElementWrapper& element);
+        // Adds the debug shape to the ray tracing scene by using the ProceduralGeometry interface of RayTracingFeatureProcessor and custom
+        // intersection shaders for hit detection
+        void AddRaytracingData(DebugDrawSphereElementWrapper& element);
+        void AddRaytracingData(DebugDrawObbElementWrapper& element);
 
-        void CheckRemoveRaytracingData(const DebugDrawSphereElementWrapper& element);
-        void CheckRemoveRaytracingData(const DebugDrawObbElementWrapper& element);
+        // Removes the debug shape from the ray tracing scene if it was added before
+        void RemoveRaytracingData(const DebugDrawSphereElementWrapper& element);
+        void RemoveRaytracingData(const DebugDrawObbElementWrapper& element);
 
         AZStd::vector<DebugDrawAabbElement> m_activeAabbs;
         AZStd::mutex m_activeAabbsMutex;

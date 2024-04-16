@@ -35,6 +35,7 @@ namespace AZ
 
             m_geometryDescs.clear();
 
+            // A BLAS can contain either triangle geometry or procedural geometry; decide based on the descriptor which one to create
             if (descriptor->HasAABB())
             {
                 const AZ::Aabb& aabb = descriptor->GetAABB();

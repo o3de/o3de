@@ -25,6 +25,7 @@ ShaderResourceGroup RayTracingGlobalSrg : SRG_RayTracingGlobal
     float m_maxRoughness;
     uint m_reflectionMethod;
     bool  m_rayTraceFallbackSpecular;
+    [[pad_to(16)]]
 
     Sampler PointSampler
     {

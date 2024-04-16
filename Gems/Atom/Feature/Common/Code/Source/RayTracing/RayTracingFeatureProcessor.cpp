@@ -95,13 +95,13 @@ namespace AZ
             ProceduralGeometryTypeHandle geometryTypeHandle;
 
             {
-                AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
-
                 ProceduralGeometryType proceduralGeometryType;
                 proceduralGeometryType.m_name = AZ::Name(name);
                 proceduralGeometryType.m_intersectionShader = intersectionShader;
                 proceduralGeometryType.m_intersectionShaderName = AZ::Name(intersectionShaderName);
                 proceduralGeometryType.m_bindlessBufferIndex = bindlessBufferIndex;
+
+                AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
                 geometryTypeHandle = m_proceduralGeometryTypes.insert(proceduralGeometryType);
             }
 
@@ -134,8 +134,6 @@ namespace AZ
                 return;
             }
 
-            AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
-
             RHI::Ptr<RHI::RayTracingBlas> rayTracingBlas = AZ::RHI::RayTracingBlas::CreateRHIRayTracingBlas();
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
             RHI::RayTracingBlasDescriptor blasDescriptor;
@@ -151,18 +149,21 @@ namespace AZ
             proceduralGeometry.m_instanceMask = static_cast<uint32_t>(instanceMask);
             proceduralGeometry.m_blas = rayTracingBlas;
             proceduralGeometry.m_localInstanceIndex = localInstanceIndex;
-            m_proceduralGeometryLookup.emplace(uuid, m_proceduralGeometry.size());
-            m_proceduralGeometry.push_back(proceduralGeometry);
-
-            geometryTypeHandle->m_instanceCount++;
-
-            MaterialInfo& materialInfo = m_proceduralGeometryMaterialInfos.emplace_back();
-            ConvertMaterial(materialInfo, material);
 
             MeshBlasInstance meshBlasInstance;
             meshBlasInstance.m_count = 1;
             meshBlasInstance.m_subMeshes.push_back(SubMeshBlasInstance{ rayTracingBlas });
+
+            MaterialInfo materialInfo;
+            ConvertMaterial(materialInfo, material);
+
+            AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
+
+            m_proceduralGeometryLookup.emplace(uuid, m_proceduralGeometry.size());
+            m_proceduralGeometry.push_back(proceduralGeometry);
+            m_proceduralGeometryMaterialInfos.push_back(materialInfo);
             m_blasInstanceMap.emplace(Data::AssetId(uuid), meshBlasInstance);
+            geometryTypeHandle->m_instanceCount++;
 
             m_revision++;
             m_proceduralGeometryInfoBufferNeedsUpdate = true;
@@ -177,6 +178,8 @@ namespace AZ
             {
                 return;
             }
+
+            AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
 
             if (auto it = m_proceduralGeometryLookup.find(uuid); it != m_proceduralGeometryLookup.end())
             {
@@ -193,6 +196,8 @@ namespace AZ
             {
                 return;
             }
+
+            AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
 
             if (auto it = m_proceduralGeometryLookup.find(uuid); it != m_proceduralGeometryLookup.end())
             {
@@ -536,6 +541,8 @@ namespace AZ
                 return;
             }
 
+            AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
+
             MeshMap::iterator itMesh = m_meshes.find(uuid);
             if (itMesh != m_meshes.end())
             {
@@ -568,6 +575,8 @@ namespace AZ
             {
                 return;
             }
+
+            AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
 
             MeshMap::iterator itMesh = m_meshes.find(uuid);
             if (itMesh != m_meshes.end())
@@ -837,7 +846,7 @@ namespace AZ
 
                 // update material texture indices buffer
                 Data::Instance<RPI::Buffer>& currentMaterialTextureIndicesGpuBuffer = m_materialTextureIndicesGpuBuffer[m_currentIndexListFrameIndex];
-                size_t newMaterialTextureIndicesByteCount = aznumeric_cast<uint32_t>(m_materialTextureIndices.GetIndexList().size()) * sizeof(uint32_t);
+                size_t newMaterialTextureIndicesByteCount = m_materialTextureIndices.GetIndexList().size() * sizeof(uint32_t);
 
                 if (currentMaterialTextureIndicesGpuBuffer == nullptr)
                 {

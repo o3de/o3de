@@ -7,10 +7,11 @@
  */
 
 // This structure must not be larger than 32 bytes (D3D12_RAYTRACING_MAX_ATTRIBUTE_SIZE_IN_BYTES)
-// TODO(intersection): Which attributes are useful here? Need to pack attributes?
 struct ProceduralGeometryIntersectionAttributes
 {
-    float3 m_position; // Surface hit point in object space (BLAS space)
-    float3 m_normal;   // Surface normal in object space (BLAS space)
-    float2 m_uv;
+    float3 m_position; // [12 bytes] Surface hit point in object space (BLAS space)
+    half3 m_normal;    // [ 6 bytes] Surface normal in object space (BLAS space)
+    half2 m_uv;        // [ 4 bytes] Surface uv coordinates
+    half4 m_tangent;   // [ 8 bytes] Surface tangent in object space (BLAS space)
+    //                sum: 30 bytes
 };

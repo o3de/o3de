@@ -141,8 +141,10 @@ namespace DebugDraw
         }
         {
             AZStd::lock_guard<AZStd::mutex> locker(m_activeObbsMutex);
-            for(const auto& obb : m_activeObbs)
-                CheckRemoveRaytracingData(obb);
+            for (const auto& obb : m_activeObbs)
+            {
+                RemoveRaytracingData(obb);
+            }
             m_activeObbs.clear();
         }
         {
@@ -151,8 +153,10 @@ namespace DebugDraw
         }
         {
             AZStd::lock_guard<AZStd::mutex> locker(m_activeSpheresMutex);
-            for(const auto& sphere : m_activeSpheres)
-                CheckRemoveRaytracingData(sphere);
+            for (const auto& sphere : m_activeSpheres)
+            {
+                RemoveRaytracingData(sphere);
+            }
             m_activeSpheres.clear();
         }
         {
@@ -644,7 +648,7 @@ namespace DebugDraw
                 DebugDrawObbElementWrapper& element = *iter;
                 if (element.m_targetEntityId == entityId)
                 {
-                    CheckRemoveRaytracingData(element);
+                    RemoveRaytracingData(element);
                     m_activeObbs.erase(iter);
                 }
                 else
@@ -662,7 +666,7 @@ namespace DebugDraw
                 DebugDrawSphereElementWrapper& element = *iter;
                 if (element.m_targetEntityId == entityId)
                 {
-                    CheckRemoveRaytracingData(element);
+                    RemoveRaytracingData(element);
                     m_activeSpheres.erase(iter);
                 }
                 else
@@ -741,7 +745,7 @@ namespace DebugDraw
                 DebugDrawObbElementWrapper& element = *iter;
                 if (element.m_targetEntityId == componentEntityId && element.m_owningEditorComponent == componentId)
                 {
-                    CheckRemoveRaytracingData(element);
+                    RemoveRaytracingData(element);
                     m_activeObbs.erase(iter);
                     break; // Only one element per component
                 }
@@ -760,7 +764,7 @@ namespace DebugDraw
                 DebugDrawSphereElementWrapper& element = *iter;
                 if (element.m_targetEntityId == componentEntityId && element.m_owningEditorComponent == componentId)
                 {
-                    CheckRemoveRaytracingData(element);
+                    RemoveRaytracingData(element);
                     m_activeSpheres.erase(iter);
                     break; // Only one element per component
                 }
@@ -908,7 +912,7 @@ namespace DebugDraw
         newElement.m_duration = duration;
         AZ::TickRequestBus::BroadcastResult(newElement.m_activateTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
 
-        CheckAddRaytracingData(newElement);
+        AddRaytracingData(newElement);
     }
 
     void DebugDrawSystemComponent::CreateObbEntryForComponent(const AZ::EntityId& componentEntityId, const DebugDrawObbElement& element)
@@ -925,7 +929,7 @@ namespace DebugDraw
         newElement.m_isRayTracingEnabled = element.m_isRayTracingEnabled;
         AZ::TickRequestBus::BroadcastResult(newElement.m_activateTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
 
-        CheckAddRaytracingData(newElement);
+        AddRaytracingData(newElement);
     }
 
 
@@ -1003,7 +1007,7 @@ namespace DebugDraw
         newElement.m_duration = duration;
         AZ::TickRequestBus::BroadcastResult(newElement.m_activateTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
 
-        CheckAddRaytracingData(newElement);
+        AddRaytracingData(newElement);
     }
     void DebugDrawSystemComponent::CreateSphereEntryForComponent(const AZ::EntityId& componentEntityId, const DebugDrawSphereElement& element)
     {
@@ -1018,7 +1022,7 @@ namespace DebugDraw
         newElement.m_owningEditorComponent = element.m_owningEditorComponent;
         AZ::TickRequestBus::BroadcastResult(newElement.m_activateTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
 
-        CheckAddRaytracingData(newElement);
+        AddRaytracingData(newElement);
     }
 
     ///////////////////////////////////////////////////////////////////////
@@ -1071,7 +1075,7 @@ namespace DebugDraw
         AZ::TickRequestBus::BroadcastResult(newText.m_activateTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
     }
 
-    void DebugDrawSystemComponent::CheckAddRaytracingData(DebugDrawSphereElementWrapper& element)
+    void DebugDrawSystemComponent::AddRaytracingData(DebugDrawSphereElementWrapper& element)
     {
         if (!element.m_isRayTracingEnabled)
         {
@@ -1135,7 +1139,7 @@ namespace DebugDraw
             element.m_localInstanceIndex);
     }
 
-    void DebugDrawSystemComponent::CheckAddRaytracingData(DebugDrawObbElementWrapper& element)
+    void DebugDrawSystemComponent::AddRaytracingData(DebugDrawObbElementWrapper& element)
     {
         if (!element.m_isRayTracingEnabled)
         {
@@ -1167,7 +1171,7 @@ namespace DebugDraw
             0);
     }
 
-    void DebugDrawSystemComponent::CheckRemoveRaytracingData(const DebugDrawSphereElementWrapper& element)
+    void DebugDrawSystemComponent::RemoveRaytracingData(const DebugDrawSphereElementWrapper& element)
     {
         if (m_rayTracingFeatureProcessor && element.m_isRayTracingEnabled)
         {
@@ -1182,7 +1186,7 @@ namespace DebugDraw
         }
     }
 
-    void DebugDrawSystemComponent::CheckRemoveRaytracingData(const DebugDrawObbElementWrapper& element)
+    void DebugDrawSystemComponent::RemoveRaytracingData(const DebugDrawObbElementWrapper& element)
     {
         if (m_rayTracingFeatureProcessor && element.m_isRayTracingEnabled)
         {

@@ -137,7 +137,7 @@ namespace AZ
                     RHI::RayTracingTlasDescriptor tlasDescriptor;
                     RHI::RayTracingTlasDescriptor* tlasDescriptorBuild = tlasDescriptor.Build();
 
-                    unsigned instanceIndex = 0;
+                    uint32_t instanceIndex = 0;
                     for (auto& subMesh : subMeshes)
                     {
                         tlasDescriptorBuild->Instance()
