@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#pragma once // Gruber patch // STA : fix compilation errors
+#pragma once
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/Decals/DecalComponentConfig.h>
