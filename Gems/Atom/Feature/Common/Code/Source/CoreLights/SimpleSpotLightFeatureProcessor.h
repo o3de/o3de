@@ -27,7 +27,7 @@ namespace AZ
     {
         static const uint8_t MaxGoboTextureCount = 5;
 
-        struct SimpleSpotLightData
+        struct alignas(16) SimpleSpotLightData
         {
             AZStd::array<float, 16> m_viewProjectionMatrix; // Matrix to transform from world space to the spot light's lighting frustum. 
             AZStd::array<float, 3> m_position = { { 0.0f, 0.0f, 0.0f } };
