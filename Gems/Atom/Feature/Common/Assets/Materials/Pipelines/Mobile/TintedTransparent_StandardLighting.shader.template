@@ -11,23 +11,7 @@
         },
         "Stencil" :
         {
-            "Enable" : true,
-            "ReadMask" : "0x00",
-            "WriteMask" : "0xFF",
-            "FrontFace" :
-            {
-                "Func" : "Always",
-                "DepthFailOp" : "Keep",
-                "FailOp" : "Keep",
-                "PassOp" : "Replace"
-            },
-            "BackFace" :
-            {
-                "Func" : "Always",
-                "DepthFailOp" : "Keep",
-                "FailOp" : "Keep",
-                "PassOp" : "Replace"
-            }
+            "Enable" : false
         }
     },
     
