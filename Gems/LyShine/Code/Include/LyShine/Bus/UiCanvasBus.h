@@ -162,10 +162,8 @@ public: // member functions
     //! Get the transformation from viewport space to canvas space
     virtual void GetViewportToCanvasMatrix(AZ::Matrix4x4& matrix) = 0;
 
-#if defined(CARBONATED)
     // Returns the authoered size of the canvas
     virtual AZ::Vector2 GetAuthoredCanvasSize() = 0;
-#endif
 
     //! Returns the "target" size of the canvas (in pixels)
     //
@@ -371,7 +369,6 @@ public: // member functions
 
     //! Called when the canvas sends an action to the listener
     virtual void OnAction(AZ::EntityId entityId, const LyShine::ActionName& actionName) = 0;
-#if defined(CARBONATED)
     //! Called when the canvas sends an action to the listener (With bonus multitouch info)
     virtual void OnActionMultitouch(
         [[maybe_unused]] AZ::EntityId entityId,
@@ -380,7 +377,6 @@ public: // member functions
         [[maybe_unused]] int multiTouchIndex){};
     //! Called when the canvas's enabled state changed
     virtual void OnEnableStateChanged([[maybe_unused]] AZ::EntityId entityId, [[maybe_unused]] bool state){};
-#endif
 };
 
 typedef AZ::EBus<UiCanvasActionNotification> UiCanvasNotificationBus;

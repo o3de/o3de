@@ -54,12 +54,8 @@ public: // member functions
     ScaleToDeviceMode GetScaleToDeviceMode() override;
     void SetScaleToDeviceMode(ScaleToDeviceMode scaleToDeviceMode) override;
 
-    // carbonated begin (alukyanov)
-#if defined(CARBONATED)
     bool GetIsFlooringOffsets() override;
     void SetIsFlooringOffsets(bool isFlooringOffsets) override;
-#endif
-    // carbonated end
 
     void GetViewportSpacePoints(RectPoints& points) final;
     AZ::Vector2 GetViewportSpacePivot() final;
@@ -254,11 +250,7 @@ private: // data
     float m_rotation;
     AZ::Vector2 m_scale;
 
-    // carbonated begin (alukyanov)
-#if defined(CARBONATED)
     bool m_isFlooringOffsets;
-#endif
-    // carbonated end
 
     //! Cached transform to viewport space. Gets recalculated if the m_recomputeTransformToViewport dirty flag is set
     AZ::Matrix4x4 m_transformToViewport;

@@ -111,7 +111,6 @@ public: // member functions
     //! Set vertical scrollbar visibility behavior
     virtual void SetVerticalScrollBarVisibility(ScrollBarVisibility visibility) = 0;
 
-#if defined(CARBONATED)
     //! Get horizontal and vertical scroll sensitivity speed
     virtual AZ::Vector2 GetScrollSensitivity() = 0;
 
@@ -129,7 +128,6 @@ public: // member functions
 
     //! Stops the scrolling
     virtual void StopMomentum() = 0;
-#endif
 
     //! Get the callback invoked while the scroll offset is changing
     virtual ScrollOffsetChangeCallback GetScrollOffsetChangingCallback() = 0;
