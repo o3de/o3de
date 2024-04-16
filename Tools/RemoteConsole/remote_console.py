@@ -16,23 +16,25 @@ logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S
 remoteConsole = None
 
 def main():
+    global remoteConsole
+
     parser = argparse.ArgumentParser(description="Provides common dev functionality", add_help=False)
     parser.add_argument('--addr', default='127.0.0.1', dest='address', help="Address for Remote Console to connect")
-    parser.add_argument('--port', default=4600, dest='port', help="Port for Remote Console to connect")
+    parser.add_argument('--port', default='4600', dest='port', help="Port for Remote Console to connect")
 
     args, unknown = parser.parse_known_args(sys.argv[1:])
 
-    remoteConsole = remote_console_commands.RemoteConsole(addr=args.address,port=args.port,on_message_received=printLog)
+    remoteConsole = remote_console_commands.RemoteConsole(addr=args.address,port=int(args.port),on_message_received=printLog)
     remoteConsole.start()
 
-def printLog(raw):
-    # type: (str) -> None
+def printLog(raw : str):
     refined = raw.strip()
     if len(refined):
         logger.info(raw)
-        print(refined)
 
 def handler(signal_received, frame):
+    global remoteConsole
+    
     print("Received Interrupt.  Exiting")
     remoteConsole.stop()
     sys.exit()
