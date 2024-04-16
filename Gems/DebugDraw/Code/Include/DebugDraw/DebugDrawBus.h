@@ -156,8 +156,6 @@ namespace DebugDraw
          */
         virtual void DrawTextOnScreen([[maybe_unused]] const AZStd::string& text, [[maybe_unused]] const AZ::Color& color, [[maybe_unused]] float duration) {}
 
-// carbonated begin : additional DebugDrawText methods
-#if defined(CARBONATED)
         /**
          * Draws text on the screen with scaled default render font.
          *
@@ -182,8 +180,6 @@ namespace DebugDraw
          */
         virtual void DrawScaledTextOnScreenPos([[maybe_unused]] float x, [[maybe_unused]] float y, [[maybe_unused]] const AZStd::string& text
             , [[maybe_unused]] float fontScale, [[maybe_unused]] const AZ::Color& color, [[maybe_unused]] float duration, [[maybe_unused]] bool bCenter = true) {}
-#endif // CARBONATED
-// carbonated end
 
         /**
          * Draws a ray in the world for a specified duration

@@ -459,13 +459,7 @@ namespace DebugDraw
         #endif // DEBUGDRAW_GEM_EDITOR
 
         // Draw text elements and remove any that are expired
-// carbonated begin : additional DebugDrawText methods
-#if defined(CARBONATED)
         float currentOnScreenY = 20.f; // Initial shift down for the 1st line, then recalculate shifts down for next lines accounting for textElement.m_fontScale
-#else
-        int numScreenTexts = 0;
-#endif // CARBONATED
-// carbonated end
         AZ::EntityId lastTargetEntityId;
 
         for (auto& textElement : m_activeTexts)
@@ -474,8 +468,6 @@ namespace DebugDraw
             debugDisplay.SetColor(textColor);
             if (textElement.m_drawMode == DebugDrawTextElement::DrawMode::OnScreen)
             {
-// carbonated begin : additional DebugDrawText methods
-#if defined(CARBONATED)
                 if (textElement.m_useOnScreenCoordinates)
                 {
                     // Reuse textElement.m_worldLocation for 2D OnScreen positioning.
@@ -490,11 +482,6 @@ namespace DebugDraw
                     // Could be more precise if Draw2dTextLabel() returned drawn text size with current viewport settings.
                     currentOnScreenY += textElement.m_fontScale * 14.0f + 2.0f; 
                 }
-#else
-                debugDisplay.Draw2dTextLabel(100.0f, 20.f + ((float)numScreenTexts * 15.0f), 1.4f, textElement.m_text.c_str() );
-                ++numScreenTexts;
-#endif // CARBONATED
-                // carbonated end
             }
             else if (textElement.m_drawMode == DebugDrawTextElement::DrawMode::InWorld)
             {
@@ -1020,8 +1007,6 @@ namespace DebugDraw
         AZ::TickRequestBus::BroadcastResult(newText.m_activateTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
     }
 
-    // carbonated begin : additional DebugDrawText methods
-#if defined(CARBONATED)
     void DebugDrawSystemComponent::DrawScaledTextOnScreen(const AZStd::string& text, float fontScale, const AZ::Color& color, float duration)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeTextsMutex);
@@ -1048,8 +1033,6 @@ namespace DebugDraw
         newText.m_worldLocation.Set(x, y, 1.f);
         AZ::TickRequestBus::BroadcastResult(newText.m_activateTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
     }
-#endif // CARBONATED
-    // carbonated end
 
     void DebugDrawSystemComponent::DebugDrawSystemComponent::CreateTextEntryForComponent(const AZ::EntityId& componentEntityId, const DebugDrawTextElement& element)
     {
