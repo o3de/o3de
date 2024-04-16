@@ -152,8 +152,6 @@ namespace AZ
             CodePoint()
                 : m_name(nullptr)
                 , m_file(nullptr)
-                //, m_line(0)  // TODO delete if not needed
-                //, m_isLiteral(false)
             {
             }
 
@@ -178,10 +176,10 @@ namespace AZ
         /// Pushes memory tag to stack, an alternative memory marking way, see MEMORY_TAG macro
         void PushMemoryTag(unsigned int tag);
 
-        /// Pop mmeory tag from stack
+        /// Pop memory tag from stack
         void PopMemoryTag();
 
-        /// Protection from a recusrive call by the same thread
+        /// Protection from a recursive call by the same thread
         bool IsRecursive()
         {
             return m_recursive;

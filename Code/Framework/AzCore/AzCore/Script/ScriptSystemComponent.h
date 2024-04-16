@@ -62,7 +62,7 @@ namespace AZ
         void GarbageCollectStep(int numberOfSteps) override;
 #if defined(CARBONATED)
         void SetGarbageCollectStepsIfDefault(int newNumberOfSteps) override;
-        int GetDefaultGarbageCollectSteps() override;
+        int GetDefaultGarbageCollectSteps() const override;
 #endif
 
         bool Load(const Data::Asset<ScriptAsset>& asset, const char* mode, ScriptContextId id) override;

@@ -89,7 +89,7 @@ namespace AZ
         virtual void SetGarbageCollectStepsIfDefault(int newNumberOfSteps) = 0;
 
         /// Get default GC number of steps
-        virtual int GetDefaultGarbageCollectSteps() = 0;
+        virtual int GetDefaultGarbageCollectSteps() const = 0;
 #endif
 
         /**

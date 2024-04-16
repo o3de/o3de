@@ -145,12 +145,12 @@ namespace AZ::Debug
 
             if (ai.m_name && !point->m_isLiteral) // do we need to copy the name?
             {
-                const size_t nameLength = strlen(ai.m_name);
-                const size_t totalLength = nameLength + 1;
+                const size_t nameLength = strlen(ai.m_name) + 1;
+                const size_t totalLength = nameLength;  // there can be more items in the future
                 ai.m_namesBlock = m_records.get_allocator().allocate(totalLength, 1);
                 ai.m_namesBlockSize = totalLength;
                 char* savedName = reinterpret_cast<char*>(ai.m_namesBlock);
-                memcpy(savedName, ai.m_name, nameLength + 1);
+                memcpy(savedName, ai.m_name, nameLength);
                 ai.m_name = savedName;
             }
         }

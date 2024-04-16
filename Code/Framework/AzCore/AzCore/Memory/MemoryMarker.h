@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#if defined(AZ_ENABLE_TRACING) && !defined(_RELEASE) && defined(CARBONATED)
+
 namespace AZ
 {
     /**
@@ -46,10 +48,7 @@ namespace AZ
         MemoryTagMarker(MemoryTagValue v);
         ~MemoryTagMarker();
     };
-
 }
-
-#if !defined(_RELEASE) && defined(AZ_ENABLE_TRACING)
 
 #define MEMORY_ALLOCATION_MARKER AZ::MemoryAllocationMarker(nullptr, __FILE__, __LINE__)
 
@@ -59,7 +58,7 @@ namespace AZ
 #define MEMORY_TAG(x) AZ::MemoryTagMarker tagMarker##__LINE__(AZ::MemoryTagValue::x)
 #define MEMORY_TAG_GAME(x) AZ::MemoryTagMarker tagMarker##__LINE__(static_cast<AZ::MemoryTagValue>((unsigned int)(x)))
 
-#else
+#else  // AZ_ENABLE_TRACING  && !_RELEASE && CARBONATED
 
 #define MEMORY_ALLOCATION_MARKER
 #define MEMORY_ALLOCATION_MARKER_NAME(name)
@@ -67,4 +66,4 @@ namespace AZ
 #define MEMORY_TAG(x)
 #define MEMORY_TAG_GAME(x)
 
-#endif
+#endif  // AZ_ENABLE_TRACING  && !_RELEASE && CARBONATED

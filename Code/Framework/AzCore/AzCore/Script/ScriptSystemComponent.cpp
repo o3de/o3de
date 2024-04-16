@@ -391,7 +391,7 @@ void ScriptSystemComponent::SetGarbageCollectStepsIfDefault(int newNumberOfSteps
 //=========================================================================
 // ResetGarbageCollectStepsIfDefault
 //=========================================================================
-int ScriptSystemComponent::GetDefaultGarbageCollectSteps()
+int ScriptSystemComponent::GetDefaultGarbageCollectSteps() const
 {
     return m_defaultGarbageCollectorSteps;
 }

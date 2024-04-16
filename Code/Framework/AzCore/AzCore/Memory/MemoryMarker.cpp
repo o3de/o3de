@@ -9,7 +9,7 @@
 #include <AzCore/Memory/MemoryMarker.h>
 #include <AzCore/Memory/AllocatorManager.h>
 
-#if defined(AZ_ENABLE_TRACING) && !defined(_RELEASE) // without tracing definition engine's memory tracking is off
+#if defined(AZ_ENABLE_TRACING) && !defined(_RELEASE) && defined(CARBONATED)  // without tracing definition engine's memory tracking is off
 
 void AZ::MemoryAllocationMarker::Init(const char* name, const char* file, int line, bool isLiteral)
 {
@@ -29,4 +29,4 @@ AZ::MemoryTagMarker::~MemoryTagMarker()
     AZ::AllocatorManager::Instance().PopMemoryTag();
 }
 
-#endif // AZ_ENABLE_TRACING  && !_RELEASE
+#endif  // AZ_ENABLE_TRACING  && !_RELEASE && CARBONATED
