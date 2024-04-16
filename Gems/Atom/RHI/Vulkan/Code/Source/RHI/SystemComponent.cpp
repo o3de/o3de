@@ -279,7 +279,7 @@ namespace AZ
         }
 
         ///////////////////////////////////////////////////////////////////
-        // SubpassDependenciesBuilderInterface
+        // SubpassSupportInterface
         AZStd::shared_ptr<RHI::SubpassDependencies> SystemComponent::BuildSubpassDependencies(
             const RHI::RenderAttachmentLayout& layout) const
         {

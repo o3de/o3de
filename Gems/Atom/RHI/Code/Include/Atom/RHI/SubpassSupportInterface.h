@@ -15,20 +15,19 @@
 
 namespace AZ::RHI
 {
-    //! This is an optional interface that any RHI can support to build
-    //! SubpassDependencies data when the RHI supports grouping Raster passes Subpasses.
+    //! This is an optional RHI interface. Only RHIs, like Vulkan, that support subpasses should implement this inteface.
     //! This API is typically invoked by the RPI when instantiating RasterPasses that
     //! should be merged as Subpasses.
     //! For more details:
     //! https://github.com/o3de/sig-graphics-audio/blob/9e4e4111ad9bc04d73f3149c6e54301781ffd569/rfcs/SubpassesSupportInRPI/RFC_SubpassesSupportInRPI.md
-    class ISubpassDependenciesBuilder
+    class ISubpassSupport
     {
     public:
-        AZ_RTTI(ISubpassDependenciesBuilder, "{0432D83C-6EE2-4086-BDB6-7C62BF39458A}");
-        AZ_DISABLE_COPY_MOVE(ISubpassDependenciesBuilder);
+        AZ_RTTI(ISubpassSupport, "{0432D83C-6EE2-4086-BDB6-7C62BF39458A}");
+        AZ_DISABLE_COPY_MOVE(ISubpassSupport);
 
-        ISubpassDependenciesBuilder() = default;
-        virtual ~ISubpassDependenciesBuilder() = default;
+        ISubpassSupport() = default;
+        virtual ~ISubpassSupport() = default;
 
         //! @returns A shared pointer to an opaque blob that encapsulates Subpass Dependency data from a Render Attachment Layout.
         //! The RPI calls this function AFTER RasterPass::BuildInternal() has been called on all RasterPasses that should be merged
@@ -37,5 +36,5 @@ namespace AZ::RHI
         virtual AZStd::shared_ptr<SubpassDependencies> BuildSubpassDependencies(const RHI::RenderAttachmentLayout& layout) const = 0;
     };
 
-    using SubpassDependenciesBuilderInterface = AZ::Interface<ISubpassDependenciesBuilder>;
+    using SubpassSupportInterface = AZ::Interface<ISubpassSupport>;
 } //namespace AZ::RHI

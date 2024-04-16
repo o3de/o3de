@@ -112,7 +112,7 @@ namespace AZ
             const Descriptor& GetDescriptor() const;
             uint32_t GetAttachmentCount() const;
 
-            //! This function does all the work required by SubpassDependenciesBuilderInterface in Vulkan.
+            //! This function does all the work required by SubpassSupportInterface in Vulkan.
             //! It creates all the Vulkan native data, related to subpass dependencies, and returns it as an RHI opaque handle.
             static AZStd::shared_ptr<RHI::SubpassDependencies> BuildNativeSubpassDependencies(const RHI::RenderAttachmentLayout& layout);
 

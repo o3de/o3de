@@ -10,7 +10,7 @@
 
 #include <Atom/RHI.Reflect/RenderAttachmentLayoutBuilder.h>
 
-#include <Atom/RHI/SubpassDependenciesBuilderInterface.h>
+#include <Atom/RHI/SubpassSupportInterface.h>
 
 namespace AZ::RHI
 {
@@ -202,7 +202,7 @@ namespace AZ::RHI
         // Request the active RHI to build the Subpass Dependencies, only if there's more than one subpass.
         if (builtRenderAttachmentLayout.m_subpassCount > 1)
         {
-            auto subpassDependencyBuilderIface = SubpassDependenciesBuilderInterface::Get();
+            auto subpassDependencyBuilderIface = SubpassSupportInterface::Get();
             if (subpassDependencyBuilderIface != nullptr) // Not all RHIs support building SubpassDependencies.
             {
                 m_subpassDependencies = subpassDependencyBuilderIface->BuildSubpassDependencies(builtRenderAttachmentLayout);

@@ -125,14 +125,16 @@ namespace AZ
                 // Handle the depth-stencil attachment. There should be only one.
                 if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::DepthStencil)
                 {
-                    subpassLayoutBuilder.DepthStencilAttachment(binding.GetAttachment()->m_descriptor.m_image.m_format);
+                    subpassLayoutBuilder.DepthStencilAttachment(
+                        binding.GetAttachment()->m_descriptor.m_image.m_format, binding.GetAttachment()->GetAttachmentId());
                     continue;
                 }
 
                 // Handle shading rate attachment. There should be only one.
                 if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::ShadingRate)
                 {
-                    subpassLayoutBuilder.ShadingRateAttachment(binding.GetAttachment()->m_descriptor.m_image.m_format);
+                    subpassLayoutBuilder.ShadingRateAttachment(
+                        binding.GetAttachment()->m_descriptor.m_image.m_format, binding.GetAttachment()->GetAttachmentId());
                     continue;
                 }
 
@@ -157,14 +159,17 @@ namespace AZ
                 if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::RenderTarget)
                 {
                     RHI::Format format = binding.GetAttachment()->m_descriptor.m_image.m_format;
-                    subpassLayoutBuilder.RenderTargetAttachment(format);
+                    subpassLayoutBuilder.RenderTargetAttachment(format, binding.GetAttachment()->GetAttachmentId());
                 }
             }
 
             if (subpassIndex > 0)
             {
-                AZ_Assert(atLeastOneAttachmentWasSubpassInput, "Starting from the second subpass, at least one attachment must be of SubpassInput usage.");
-                return false;
+                if (!atLeastOneAttachmentWasSubpassInput)
+                {
+                    AZ_Assert(false, "Starting from the second subpass, at least one attachment must be of SubpassInput usage.");
+                    return false;
+                }
             }
 
             return true;

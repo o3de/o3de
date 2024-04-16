@@ -244,9 +244,9 @@ namespace AZ
                 {
                     auto layout = GetImageAttachmentLayout(*scopeAttachment);
                     auto finalLayout = GetFinalLayout(scope, *scopeAttachment);
-                        auto scopeAttachmentId2 = scopeAttachment->GetDescriptor().m_attachmentId;
-                        auto findIter = m_attachmentsMap.find(scopeAttachmentId2);
-                        AZ_Assert(findIter != m_attachmentsMap.end(), "Could not find input attachment %s", scopeAttachmentId2.GetCStr());
+                    auto scopeAttachmentId2 = scopeAttachment->GetDescriptor().m_attachmentId;
+                    auto findIter = m_attachmentsMap.find(scopeAttachmentId2);
+                    AZ_Assert(findIter != m_attachmentsMap.end(), "Could not find input attachment %s", scopeAttachmentId2.GetCStr());
                     const uint32_t attachmentIndex = findIter->second;
                     subpassDescriptor.m_subpassInputAttachments[subpassDescriptor.m_subpassInputCount++] =
                         RenderPass::SubpassAttachment{ attachmentIndex , layout, ConvertImageAspectFlags(attachmentImageView->GetDescriptor().m_aspectFlags) };

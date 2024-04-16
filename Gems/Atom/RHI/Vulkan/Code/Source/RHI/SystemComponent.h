@@ -11,7 +11,7 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI.Reflect/Vulkan/Base.h>
 
-#include <Atom/RHI/SubpassDependenciesBuilderInterface.h>
+#include <Atom/RHI/SubpassSupportInterface.h>
 
 #include <AzCore/Component/Component.h>
 
@@ -22,7 +22,7 @@ namespace AZ
         class SystemComponent final
             : public AZ::Component
             , public RHI::Factory
-            , public RHI::SubpassDependenciesBuilderInterface::Registrar
+            , public RHI::SubpassSupportInterface::Registrar
         {
         public:
             AZ_COMPONENT(SystemComponent, "{63A5BE62-43F4-45B9-93FE-E1C6371C457D}");
@@ -81,7 +81,7 @@ namespace AZ
             ///////////////////////////////////////////////////////////////////
 
             ///////////////////////////////////////////////////////////////////
-            // SubpassDependenciesBuilderInterface
+            // SubpassSupportInterface
             AZStd::shared_ptr<RHI::SubpassDependencies> BuildSubpassDependencies(const RHI::RenderAttachmentLayout& layout) const override;
             ///////////////////////////////////////////////////////////////////
         private:
