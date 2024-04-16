@@ -226,6 +226,10 @@ namespace EditorPythonBindings
                     typeId == AZ::AzTypeInfo<char>::Uuid()              ||
                     typeId == AZ::AzTypeInfo<float>::Uuid()             ||
                     typeId == AZ::AzTypeInfo<double>::Uuid()            ||
+                    typeId == AZ::AzTypeInfo<short>::Uuid()             ||
+                    typeId == AZ::AzTypeInfo<unsigned short>::Uuid()    ||
+                    typeId == AZ::AzTypeInfo<long>::Uuid()              ||
+                    typeId == AZ::AzTypeInfo<unsigned long>::Uuid()     ||
                     typeId == AZ::AzTypeInfo<AZ::s8>::Uuid()            ||
                     typeId == AZ::AzTypeInfo<AZ::u8>::Uuid()            ||
                     typeId == AZ::AzTypeInfo<AZ::s16>::Uuid()           ||
@@ -282,6 +286,13 @@ namespace EditorPythonBindings
         {
             if (const AZ::BehaviorParameter* resultType = behaviorMethod->GetResult())
             {
+                if (strcmp("unsigned long", resultType->m_name)==0)
+                {
+                    AZ_Info("SMC", "(%s) result (%s): (%s)", 
+                        behaviorMethod->m_name.c_str(),
+                        resultType->m_name, 
+                        resultType->m_typeId.ToString<AZStd::string>().c_str());
+                }
                 result.Set(*resultType);
 
                 if (auto underlyingTypeId = Internal::IsEnumClass(result); underlyingTypeId)
