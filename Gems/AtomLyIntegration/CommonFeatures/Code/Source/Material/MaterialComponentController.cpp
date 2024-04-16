@@ -873,10 +873,15 @@ namespace AZ
             {
                 return AZStd::any(AZStd::any_cast<AZ::Data::Asset<AZ::RPI::ImageAsset>>(value).GetId());
             }
+#if defined(CARBONATED)
+            // AZ::RPI::Image is not an asset.
+#else
             if (value.is<AZ::Data::Instance<AZ::RPI::Image>>())
             {
                 return AZStd::any(AZStd::any_cast<AZ::Data::Instance<AZ::RPI::Image>>(value)->GetAssetId());
             }
+#endif
+
             return value;
         }
 
