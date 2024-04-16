@@ -73,7 +73,6 @@ bool RCON_IsRemoteAllowedToConnect(const AZ::AzSock::AzSocketAddress& connectee)
     for (const AZStd::string& address : addresses)
     {
         AZStd::regex re(address);
-
         if (address == connectee.GetIP() || AZStd::regex_match(connectee.GetIP(), re))
 #else
     AZ::AzSock::AzSocketAddress testAddress;
