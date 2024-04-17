@@ -64,6 +64,7 @@ UiInteractableComponent::UiInteractableComponent()
     , m_isHover(false)
     , m_isPressed(false)
     , m_pressedPoint(0.0f, 0.0f)
+    , m_pressedMultiTouchIndex(0)
     , m_state(UiInteractableStatesInterface::StateNormal)
     , m_hoverStartActionCallback(nullptr)
     , m_hoverEndActionCallback(nullptr)
@@ -125,7 +126,7 @@ bool UiInteractableComponent::HandleReleased([[maybe_unused]] AZ::Vector2 point)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 bool UiInteractableComponent::HandleMultiTouchPressed(AZ::Vector2 point, int multiTouchIndex)
 {
-    AZ_UNUSED(multiTouchIndex);
+    m_pressedMultiTouchIndex = multiTouchIndex;
     bool shouldStayActive = false;
     return m_isHandlingMultiTouchEvents && HandlePressed(point, shouldStayActive);
 }
@@ -134,7 +135,9 @@ bool UiInteractableComponent::HandleMultiTouchPressed(AZ::Vector2 point, int mul
 bool UiInteractableComponent::HandleMultiTouchReleased(AZ::Vector2 point, int multiTouchIndex)
 {
     AZ_UNUSED(multiTouchIndex);
-    return m_isHandlingMultiTouchEvents && HandleReleased(point);
+    bool handled = m_isHandlingMultiTouchEvents && HandleReleased(point);
+    m_pressedMultiTouchIndex = 0;
+    return handled;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -327,6 +330,17 @@ void UiInteractableComponent::SetReleasedActionName(const LyShine::ActionName& a
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiInteractableComponent::SetOutsideReleasedActionName(const LyShine::ActionName& actionName)
+{
+    m_outsideReleasedActionName = actionName;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+const LyShine::ActionName& UiInteractableComponent::GetOutsideReleasedActionName() const
+{
+    return m_outsideReleasedActionName;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 UiInteractableActionsInterface::OnActionCallback UiInteractableComponent::GetHoverStartActionCallback()
 {
     return m_hoverStartActionCallback;
@@ -443,6 +457,9 @@ void UiInteractableComponent::Reflect(AZ::ReflectContext* context)
 
             ->Field("HoverStartActionName", &UiInteractableComponent::m_hoverStartActionName)
             ->Field("HoverEndActionName", &UiInteractableComponent::m_hoverEndActionName)
+
+            ->Field("OutsideReleasedActionName", &UiInteractableComponent::m_outsideReleasedActionName)
+
             ->Field("PressedActionName", &UiInteractableComponent::m_pressedActionName)
             ->Field("ReleasedActionName", &UiInteractableComponent::m_releasedActionName);
 
@@ -498,6 +515,7 @@ void UiInteractableComponent::Reflect(AZ::ReflectContext* context)
                 editInfo->DataElement(0, &UiInteractableComponent::m_hoverEndActionName, "Hover end", "Action triggered on hover end");
                 editInfo->DataElement(0, &UiInteractableComponent::m_pressedActionName, "Pressed", "Action triggered on press");
                 editInfo->DataElement(0, &UiInteractableComponent::m_releasedActionName, "Released", "Action triggered on release");
+                editInfo->DataElement(0, &UiInteractableComponent::m_outsideReleasedActionName, "Outside Released", "Action triggered on release outside of element");
             }
         }
     }
@@ -511,6 +529,7 @@ void UiInteractableComponent::Reflect(AZ::ReflectContext* context)
             ->Event("IsHandlingMultiTouchEvents", &UiInteractableBus::Events::IsHandlingMultiTouchEvents)
             ->Event("SetIsHandlingMultiTouchEvents", &UiInteractableBus::Events::SetIsHandlingMultiTouchEvents)
             ->Event("GetIsAutoActivationEnabled", &UiInteractableBus::Events::GetIsAutoActivationEnabled)
+            ->Event("LostActiveStatus", &UiInteractableBus::Events::LostActiveStatus)
             ->Event("SetIsAutoActivationEnabled", &UiInteractableBus::Events::SetIsAutoActivationEnabled);
 
         behaviorContext->EBus<UiInteractableActionsBus>("UiInteractableActionsBus")
@@ -707,11 +726,12 @@ void UiInteractableComponent::TriggerPressedAction()
         UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
         // Queue the event to prevent deletions during the input event
         UiCanvasNotificationBus::QueueEvent(canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_pressedActionName);
+        UiCanvasNotificationBus::QueueEvent(canvasEntityId, &UiCanvasNotificationBus::Events::OnActionMultitouch, GetEntityId(), m_pressedActionName, m_pressedPoint, m_pressedMultiTouchIndex);
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiInteractableComponent::TriggerReleasedAction()
+void UiInteractableComponent::TriggerReleasedAction(bool releasedOutside)
 {
     // if a C++ callback is registered for released then call it
     if (m_releasedActionCallback)
@@ -722,6 +742,17 @@ void UiInteractableComponent::TriggerReleasedAction()
     // Queue the event to prevent deletions during the input event
     UiInteractableNotificationBus::QueueEvent(GetEntityId(), &UiInteractableNotificationBus::Events::OnReleased);
 
+    if (releasedOutside && !m_outsideReleasedActionName.empty())
+    {
+        AZ::EntityId canvasEntityId;
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+        // Queue the event to prevent deletions during the input event
+
+        UiCanvasNotificationBus::QueueEvent(canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_outsideReleasedActionName);
+        UiCanvasNotificationBus::QueueEvent(canvasEntityId, &UiCanvasNotificationBus::Events::OnActionMultitouch, GetEntityId(), m_outsideReleasedActionName, m_pressedPoint, m_pressedMultiTouchIndex);
+        return;
+    }
+
     // Tell any action listeners about the event
     if (!m_releasedActionName.empty())
     {
@@ -730,6 +761,7 @@ void UiInteractableComponent::TriggerReleasedAction()
         // Queue the event to prevent deletions during the input event
         UiCanvasNotificationBus::QueueEvent(
             canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_releasedActionName);
+        UiCanvasNotificationBus::QueueEvent(canvasEntityId, &UiCanvasNotificationBus::Events::OnActionMultitouch, GetEntityId(), m_releasedActionName, m_pressedPoint, m_pressedMultiTouchIndex);
     }
 }
 

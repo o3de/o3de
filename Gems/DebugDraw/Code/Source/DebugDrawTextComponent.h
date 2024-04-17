@@ -42,6 +42,9 @@ namespace DebugDraw
         AZ::EntityId m_targetEntityId;
         AZ::Vector3 m_worldLocation = AZ::Vector3::CreateZero();
         AZ::ComponentId m_owningEditorComponent = AZ::InvalidComponentId;
+        float m_fontScale = 1.0f; // Scale factor to default render font
+        bool m_useOnScreenCoordinates = false; // Whether to use m_worldLocation.X and m_worldLocation.Y as OnScreen 2d Coordinates
+        bool m_bCenter = false; // If true, centers drawn text relative to x coordinate
     };
 
 
