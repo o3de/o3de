@@ -272,6 +272,62 @@
             },
             "platformFlags": 255,
             "pathHint": "passes/lowendrenderpipeline.azasset"
+        },
+        {
+            "assetId": {
+                "guid": "{5495972F-99D7-5570-AEC2-7C68F3A8DB13}"
+            },
+            "platformFlags": 255,
+            "pathHint": "passes/mobile/forward.pass"
+        },
+        {
+            "assetId": {
+                "guid": "{C4CB8706-E5A8-584A-8FFD-0CAF131774BE}"
+            },
+            "platformFlags": 255,
+            "pathHint": "passes/mobile/pipeline.pass"
+        },
+        {
+            "assetId": {
+                "guid": "{DA32B242-A663-5930-8CBF-8BCE2FBBC42C}"
+            },
+            "platformFlags": 255,
+            "pathHint": "passes/mobile/postprocessparent.pass"
+        },
+        {
+            "assetId": {
+                "guid": "{61F77C83-9848-590E-9D42-DC5D7E99CCCD}"
+            },
+            "platformFlags": 255,
+            "pathHint": "passes/mobile/shadowparent.pass"
+        },
+        {
+            "assetId": {
+                "guid": "{ED8FA42B-15A0-5D87-A2C2-72AB64E9AFB6}"
+            },
+            "platformFlags": 255,
+            "pathHint": "passes/mobile/skybox.pass"
+        },
+        {
+            "assetId": {
+                "guid": "{286E0449-B21E-5980-AE39-DF3CDCC3B2F4}"
+            },
+            "platformFlags": 255,
+            "pathHint": "passes/mobile/transparent.pass"
+        },
+        {
+            "assetId": {
+                "guid": "{42D206CA-575B-5852-8793-78E67F7D8620}"
+            },
+            "platformFlags": 255,
+            "pathHint": "passes/mobile/transparentparent.pass"
+        },
+        {
+            "assetId": {
+                "guid": "{50C71A96-E184-5DBC-A46B-C791D7FDB93F}"
+            },
+            "platformFlags": 255,
+            "pathHint": "passes/mobile/mobilerenderpipeline.azasset"
         }
     ]
 }
