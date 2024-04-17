@@ -13,7 +13,9 @@
 #include <QMessageBox>
 
 // AzToolsFramework
+#include <AzToolsFramework/API/SettingsRegistryUtils.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
+#include <AzToolsFramework/Prefab/PrefabSettings.h>
 #include <AzQtComponents/Components/StyleManager.h>
 
 // Editor
@@ -24,6 +26,7 @@
 #define EDITORPREFS_EVENTVALTOGGLE "operation"
 #define UNDOSLICESAVE_VALON "UndoSliceSaveValueOn"
 #define UNDOSLICESAVE_VALOFF "UndoSliceSaveValueOff"
+
 
 void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
 {
@@ -41,9 +44,13 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
         ->Field("EnableSceneInspector", &GeneralSettings::m_enableSceneInspector)
         ->Field("RestoreViewportCamera", &GeneralSettings::m_restoreViewportCamera);
 
+    // note, despite this class name being LevelSaveSettings, it is used for general prefab settings
+    // and the name is retained to avoid breaking things
     serialize.Class<LevelSaveSettings>()
         ->Version(1)
-        ->Field("SaveAllPrefabsPreference", &LevelSaveSettings::m_saveAllPrefabsPreference);
+        ->Field("SaveAllPrefabsPreference", &LevelSaveSettings::m_saveAllPrefabsPreference)
+        ->Field("DetachPrefabRemovesContainer", &LevelSaveSettings::m_bDetachPrefabRemovesContainer);
+
 
     serialize.Class<Messaging>()
         ->Version(2)
@@ -86,7 +93,9 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
                     "This option controls whether nested prefabs should be saved when a prefab is saved.")
                 ->EnumAttribute(AzToolsFramework::Prefab::SaveAllPrefabsPreference::AskEveryTime, "Ask every time")
                 ->EnumAttribute(AzToolsFramework::Prefab::SaveAllPrefabsPreference::SaveAll, "Save all")
-                ->EnumAttribute(AzToolsFramework::Prefab::SaveAllPrefabsPreference::SaveNone, "Save none");
+                ->EnumAttribute(AzToolsFramework::Prefab::SaveAllPrefabsPreference::SaveNone, "Save none")
+            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &LevelSaveSettings::m_bDetachPrefabRemovesContainer, "Detach removes container entity", 
+                    "When you choose the 'detach' option on a prefab container, should the container entity be removed also?");
 
         editContext->Class<Messaging>("Messaging", "")
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Messaging::m_showDashboard, "Show Welcome to Open 3D Engine at startup", "Show Welcome to Open 3D Engine at startup");
@@ -100,7 +109,7 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_generalSettings, "General Settings", "General Editor Preferences")
-            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_levelSaveSettings, "Prefab Save Settings", "File>Save")
+            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_levelSaveSettings, "Prefab Settings", "General Prefab Settings")
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_messaging, "Messaging", "Messaging")
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_undo, "Undo", "Undo Preferences");
     }
@@ -125,6 +134,8 @@ QIcon& CEditorPreferencesPage_General::GetIcon()
 
 void CEditorPreferencesPage_General::OnApply()
 {
+    using namespace AzToolsFramework::Prefab::Settings;
+
     //general settings
     gSettings.bPreviewGeometryWindow = m_generalSettings.m_previewPanel;
     gSettings.enableSourceControl = m_generalSettings.m_enableSourceControl;
@@ -136,6 +147,7 @@ void CEditorPreferencesPage_General::OnApply()
     gSettings.stylusMode = m_generalSettings.m_stylusMode;
     gSettings.restoreViewportCamera = m_generalSettings.m_restoreViewportCamera;
     gSettings.enableSceneInspector = m_generalSettings.m_enableSceneInspector;
+    AzToolsFramework::SetRegistry(AzToolsFramework::Prefab::Settings::DetachPrefabRemovesContainerName, m_levelSaveSettings.m_bDetachPrefabRemovesContainer);
 
     if (static_cast<int>(m_generalSettings.m_toolbarIconSize) != gSettings.gui.nToolbarIconSize)
     {
@@ -152,6 +164,8 @@ void CEditorPreferencesPage_General::OnApply()
 
 void CEditorPreferencesPage_General::InitializeSettings()
 {
+    using namespace AzToolsFramework::Prefab::Settings;
+
     //general settings
     m_generalSettings.m_previewPanel = gSettings.bPreviewGeometryWindow;
     m_generalSettings.m_enableSourceControl = gSettings.enableSourceControl;
@@ -162,11 +176,11 @@ void CEditorPreferencesPage_General::InitializeSettings()
     m_generalSettings.m_stylusMode = gSettings.stylusMode;
     m_generalSettings.m_restoreViewportCamera = gSettings.restoreViewportCamera;
     m_generalSettings.m_enableSceneInspector = gSettings.enableSceneInspector;
-
     m_generalSettings.m_toolbarIconSize = static_cast<AzQtComponents::ToolBar::ToolBarIconSize>(gSettings.gui.nToolbarIconSize);
 
     //prefabs
     m_levelSaveSettings.m_saveAllPrefabsPreference = gSettings.levelSaveSettings.saveAllPrefabsPreference;
+    m_levelSaveSettings.m_bDetachPrefabRemovesContainer = AzToolsFramework::GetRegistry(DetachPrefabRemovesContainerName, DetachPrefabRemovesContainerDefault);
 
     //Messaging
     m_messaging.m_showDashboard = gSettings.bShowDashboardAtStartup;
