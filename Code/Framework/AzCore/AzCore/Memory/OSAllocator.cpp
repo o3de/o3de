@@ -103,6 +103,9 @@ namespace AZ
     {
 #if defined(AZ_ENABLE_TRACING)
         const size_type previouslyAllocatedSize = ptr ? get_allocated_size(ptr, 1) : 0;
+#if defined(CARBONATED)
+        AZ_MEMORY_PROFILE(ProfileReallocationBegin(ptr));
+#endif // CARBONATED
 #endif
 
         pointer newPtr = AZ_OS_REALLOC(ptr, newSize, static_cast<AZStd::size_t>(alignment));
@@ -111,7 +114,11 @@ namespace AZ
         const size_type allocatedSize = get_allocated_size(newPtr, 1);
         m_numAllocatedBytes += (allocatedSize - previouslyAllocatedSize);
         AZ_PROFILE_MEMORY_ALLOC_EX(MemoryReserved, fileName, lineNum, address, byteSize, name);
+#if defined(CARBONATED)
+        AZ_MEMORY_PROFILE(ProfileReallocationEnd(ptr, newPtr, allocatedSize, 1));
+#else
         AZ_MEMORY_PROFILE(ProfileReallocation(ptr, newPtr, allocatedSize, 1));
+#endif  // CARBONATED
 #endif
 
         return newPtr;

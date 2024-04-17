@@ -127,14 +127,25 @@ namespace AZ
     {
         newSize = MemorySizeAdjustedUp(newSize);
 
+#if defined(CARBONATED)
+#if defined(AZ_ENABLE_TRACING)
         AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
+        AZ_MEMORY_PROFILE(ProfileReallocationBegin(ptr));
+#endif // AZ_ENABLE_TRACING
+#else
+        AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
+#endif // CARBONATED
 
         pointer newAddress = m_subAllocator->reallocate(ptr, newSize, newAlignment);
 
 #if defined(AZ_ENABLE_TRACING)
         [[maybe_unused]] const size_type allocatedSize = get_allocated_size(newAddress, 1);
         AZ_PROFILE_MEMORY_ALLOC(MemoryReserved, newAddress, newSize, "SystemAllocator realloc");
+#if defined(CARBONATED)
+        AZ_MEMORY_PROFILE(ProfileReallocationEnd(ptr, newAddress, allocatedSize, newAlignment));
+#else
         AZ_MEMORY_PROFILE(ProfileReallocation(ptr, newAddress, allocatedSize, newAlignment));
+#endif
 #endif
 
         return newAddress;
