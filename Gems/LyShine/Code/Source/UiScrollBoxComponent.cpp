@@ -1012,7 +1012,9 @@ void UiScrollBoxComponent::InputPositionUpdate(AZ::Vector2 point)
             
             //Reset offset and time accumulators if change scrolling direction
             if (m_lastOffsetChange.Dot(m_offsetChangeAccumulator) < 0.0f)
+            {
                 SetMomentumActive(false);
+            }
         }
     }
 }
@@ -1257,22 +1259,30 @@ void UiScrollBoxComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTi
     {
         m_draggingTimeAccumulator += deltaTime;
         // Detect if stopped by checking if immediate offset change falls below threshold
-        if ((m_lastOffsetChange/m_scrollSensitivity).GetLength() < MIN_OFFSET_THRESHOLD)
+        if ((m_lastOffsetChange / m_scrollSensitivity).GetLength() < MIN_OFFSET_THRESHOLD)
+        {
             m_stoppingTimeAccumulator += deltaTime;
+        }
         else
+        {
             m_stoppingTimeAccumulator = 0.0f;
+        }
     }
     
     // Stop momentum if off or already ran the full momentum duration
     if (!m_momentumIsActive ||
         m_momentumDuration < m_momentumTimeAccumulator)
+    {
         return;
+    }
     
     // Stop momentum if no dragging accumulator, or not enough drag, or if stopped for long enough
     if (m_draggingTimeAccumulator == 0.0f ||
-        (m_offsetChangeAccumulator/m_scrollSensitivity).GetLength() < MIN_OFFSET_THRESHOLD ||
+        (m_offsetChangeAccumulator / m_scrollSensitivity).GetLength() < MIN_OFFSET_THRESHOLD ||
         m_stoppingTimeAccumulator > MAX_STOPPING_DELAY)
+    {
         return;
+    }
     
     m_momentumTimeAccumulator += deltaTime;
 

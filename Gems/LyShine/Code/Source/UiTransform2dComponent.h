@@ -250,7 +250,7 @@ private: // data
     float m_rotation;
     AZ::Vector2 m_scale;
 
-    bool m_isFlooringOffsets;
+    bool m_isFlooringOffsets = false;
 
     //! Cached transform to viewport space. Gets recalculated if the m_recomputeTransformToViewport dirty flag is set
     AZ::Matrix4x4 m_transformToViewport;

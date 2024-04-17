@@ -292,14 +292,14 @@ private: // data
 
     AZ::Vector2 m_lastDragPoint; // the point of the last drag
 
-    AZ::Vector2 m_scrollSensitivity; // Vector2(horizontal, vertical) factor applied to the dragging vector to adjust scroll speed
-    AZ::Vector2 m_lastOffsetChange; // Last instant offset change
-    AZ::Vector2 m_offsetChangeAccumulator;
-    float m_stoppingTimeAccumulator;
-    float m_draggingTimeAccumulator;
-    bool m_momentumIsActive;
-    float m_momentumDuration; // Time in seconds for which we keep scrolling after release
-    float m_momentumTimeAccumulator;
+    AZ::Vector2 m_scrollSensitivity = AZ::Vector2::CreateZero(); // Vector2(horizontal, vertical) factor applied to the dragging vector to adjust scroll speed
+    AZ::Vector2 m_lastOffsetChange = AZ::Vector2::CreateZero(); // Last instant offset change
+    AZ::Vector2 m_offsetChangeAccumulator = AZ::Vector2::CreateZero();
+    float m_stoppingTimeAccumulator = 0.f;
+    float m_draggingTimeAccumulator = 0.f;
+    bool m_momentumIsActive = false;
+    float m_momentumDuration = 0.f; // Time in seconds for which we keep scrolling after release
+    float m_momentumTimeAccumulator = 0.f;
     const float MIN_OFFSET_THRESHOLD = 10.0f;
     const float MAX_STOPPING_DELAY = 0.12f;
 };
