@@ -156,8 +156,6 @@ namespace EditorPythonBindings
                 AZ::s64 outboundPythonValue = 0;
 
                 bool converted = 
-                    ConvertPythonFromEnumClass<short>(underlyingTypeId, behaviorValue, outboundPythonValue) ||
-                    ConvertPythonFromEnumClass<unsigned short>(underlyingTypeId, behaviorValue, outboundPythonValue) ||
                     ConvertPythonFromEnumClass<long>(underlyingTypeId, behaviorValue, outboundPythonValue) ||
                     ConvertPythonFromEnumClass<unsigned long>(underlyingTypeId, behaviorValue, outboundPythonValue) ||
                     ConvertPythonFromEnumClass<AZ::u8>(underlyingTypeId, behaviorValue, outboundPythonValue) ||
@@ -211,8 +209,6 @@ namespace EditorPythonBindings
                     parameter.m_typeId = behaviorArgument.m_typeId;
 
                     bool handled = 
-                        ConvertBehaviorParameterEnum<short>(obj, underlyingTypeId, parameter) ||
-                        ConvertBehaviorParameterEnum<unsigned short>(obj, underlyingTypeId, parameter) ||
                         ConvertBehaviorParameterEnum<long>(obj, underlyingTypeId, parameter) ||
                         ConvertBehaviorParameterEnum<unsigned long>(obj, underlyingTypeId, parameter) ||
                         ConvertBehaviorParameterEnum<AZ::u8>(obj, underlyingTypeId, parameter) ||
@@ -239,8 +235,6 @@ namespace EditorPythonBindings
                 typeId == AZ::AzTypeInfo<char>::Uuid() ||
                 typeId == AZ::AzTypeInfo<float>::Uuid() ||
                 typeId == AZ::AzTypeInfo<double>::Uuid() ||
-                typeId == AZ::AzTypeInfo<short>::Uuid() ||
-                typeId == AZ::AzTypeInfo<unsigned short>::Uuid() ||
                 typeId == AZ::AzTypeInfo<long>::Uuid() ||
                 typeId == AZ::AzTypeInfo<unsigned long>::Uuid() ||
                 typeId == AZ::AzTypeInfo<AZ::s8>::Uuid() ||
@@ -855,7 +849,6 @@ namespace EditorPythonBindings
                     type = "bool";
                 }
                 else if (
-                    AZ::AzTypeInfo<short>::Uuid() == typeId || AZ::AzTypeInfo<unsigned short>::Uuid() == typeId ||
                     AZ::AzTypeInfo<long>::Uuid() == typeId || AZ::AzTypeInfo<unsigned long>::Uuid() == typeId ||
                     AZ::AzTypeInfo<AZ::s8>::Uuid() == typeId || AZ::AzTypeInfo<AZ::u8>::Uuid() == typeId ||
                     AZ::AzTypeInfo<AZ::s16>::Uuid() == typeId || AZ::AzTypeInfo<AZ::u16>::Uuid() == typeId ||
