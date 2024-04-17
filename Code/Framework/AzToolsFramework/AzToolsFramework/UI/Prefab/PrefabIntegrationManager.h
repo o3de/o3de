@@ -77,6 +77,7 @@ namespace AzToolsFramework
             void OnActionUpdaterRegistrationHook() override;
             void OnActionRegistrationHook() override;
             void OnWidgetActionRegistrationHook() override;
+            void OnMenuRegistrationHook() override;
             void OnMenuBindingHook() override;
             void OnToolBarBindingHook() override;
             void OnPostActionManagerRegistrationHook() override;

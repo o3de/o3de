@@ -64,14 +64,14 @@ namespace AZ
 
 namespace AzToolsFramework
 {
-    class ActionManagerInterface;
     class ComponentEditor;
     class ComponentPaletteWidget;
     class ComponentModeCollectionInterface;
-    struct SourceControlFileInfo;
-    class ReadOnlyEntityPublicInterface;
-    class FocusModeInterface;
     class ContainerEntityInterface;
+    class FocusModeInterface;
+    class MenuManagerInterface;
+    class ReadOnlyEntityPublicInterface;
+    struct SourceControlFileInfo;
  
     namespace AssetBrowser
     {
@@ -398,7 +398,7 @@ namespace AzToolsFramework
         QAction* m_actionToMoveComponentsTop = nullptr;
         QAction* m_actionToMoveComponentsBottom = nullptr;
 
-        AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
+        AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
 
         void CreateActions();
         void UpdateActions();

@@ -20,6 +20,7 @@
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
+#include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
 #include <AzToolsFramework/API/SettingsRegistryUtils.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
@@ -45,6 +46,7 @@
 #include <AzToolsFramework/UI/Prefab/ActionManagerIdentifiers/PrefabActionUpdaterIdentifiers.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabViewportFocusPathHandler.h>
+#include <AzToolsFramework/UI/PropertyEditor/ComponentEditor.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
@@ -821,6 +823,85 @@ namespace AzToolsFramework
                         PrefabIdentifiers::PrefabInstancePropagationEndUpdaterIdentifier, actionIdentifier);
                 }
             }
+
+            // Revert overrides on Component
+            {
+                AZStd::string actionIdentifier = "o3de.action.prefabs.revertComponentOverrides";
+                AzToolsFramework::ActionProperties actionProperties;
+                actionProperties.m_name = "Revert overrides";
+                actionProperties.m_description = "Revert all overrides on this component.";
+                actionProperties.m_category = "Prefabs";
+
+                m_actionManagerInterface->RegisterAction(
+                    EditorIdentifiers::MainWindowActionContextIdentifier,
+                    actionIdentifier,
+                    actionProperties,
+                    []()
+                    {
+                        if (auto prefabOverridePublicInterface =
+                                AZ::Interface<AzToolsFramework::Prefab::PrefabOverridePublicInterface>::Get())
+                        {
+                            EntityPropertyEditorRequestBus::Broadcast(
+                                &EntityPropertyEditorRequestBus::Events::VisitComponentEditors,
+                                [prefabOverridePublicInterface](const AzToolsFramework::ComponentEditor* componentEditor)
+                                {
+                                    // TODO - This will actually trigger if a component is selected in another pinned inspector...
+                                    // Maybe lose the selection when focus is lost?
+                                    if (componentEditor->parentWidget()->hasFocus() && componentEditor->IsSelected())
+                                    {
+                                        auto components = componentEditor->GetComponents();
+
+                                        // Note: Multiple selection is not currently supported for overrides.
+                                        // Revert overrides on the single component that's displaying override state.
+                                        prefabOverridePublicInterface->RevertComponentOverrides(
+                                            AZ::EntityComponentIdPair(components[0]->GetEntityId(), components[0]->GetId()));
+                                    }
+
+                                    return true;
+                                }
+                            );
+                        }
+                    }
+                );
+
+                m_actionManagerInterface->InstallEnabledStateCallback(
+                    actionIdentifier,
+                    [prefabPublicInterface = s_prefabPublicInterface,
+                        prefabOverridePublicInterface = m_prefabOverridePublicInterface]() -> bool
+                    {
+                        // TODO - Change this to check if overrides are on the component specifically.
+
+                        AzToolsFramework::EntityIdList selectedEntities;
+                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                        if (selectedEntities.size() != 1)
+                        {
+                            return false;
+                        }
+
+                        AZ::EntityId selectedEntityId = selectedEntities.front();
+
+                        // Returns false if the selected entity is not owned by a prefab instance. This could happen when the callback
+                        // is triggered after entity selection changes, but prefab propagation does not finish yet to create/reload the
+                        // entity.
+                        if (!prefabPublicInterface->IsOwnedByPrefabInstance(selectedEntityId))
+                        {
+                            return false;
+                        }
+
+                        return !prefabPublicInterface->IsInstanceContainerEntity(selectedEntityId) &&
+                            prefabOverridePublicInterface->AreOverridesPresent(selectedEntityId) &&
+                            prefabOverridePublicInterface->GetEntityOverrideType(selectedEntityId) != OverrideType::AddEntity;
+                    }
+                );
+
+                // Refresh this action whenever instance propagation ends, as that could have changed overrides on the current selection.
+                m_actionManagerInterface->AddActionToUpdater(
+                    EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+                m_actionManagerInterface->AddActionToUpdater(
+                    PrefabIdentifiers::PrefabInstancePropagationEndUpdaterIdentifier, actionIdentifier);
+            }
         }
 
         void PrefabIntegrationManager::OnWidgetActionRegistrationHook()
@@ -839,6 +920,21 @@ namespace AzToolsFramework
                         return new PrefabFocusPathWidget();
                     }
                 );
+            }
+        }
+
+        void PrefabIntegrationManager::OnMenuRegistrationHook()
+        {
+            {
+                AzToolsFramework::MenuProperties menuProperties;
+                menuProperties.m_name = "Inspector Entity Component Context Menu";
+                m_menuManagerInterface->RegisterMenu(EditorIdentifiers::InspectorEntityComponentContextMenuIdentifier, menuProperties);
+            }
+
+            {
+                AzToolsFramework::MenuProperties menuProperties;
+                menuProperties.m_name = "Inspector Entity Property Context Menu";
+                m_menuManagerInterface->RegisterMenu(EditorIdentifiers::InspectorEntityComponentContextMenuIdentifier, menuProperties);
             }
         }
 
@@ -871,6 +967,9 @@ namespace AzToolsFramework
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.procedural.instantiate", 20400);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.save", 30100);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.revertInstanceOverrides", 30200);
+
+            // Inspector Entity Component Context Menu
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::InspectorEntityComponentContextMenuIdentifier, "o3de.action.prefabs.revertComponentOverrides", 10000);   
         }
 
         void PrefabIntegrationManager::OnToolBarBindingHook()

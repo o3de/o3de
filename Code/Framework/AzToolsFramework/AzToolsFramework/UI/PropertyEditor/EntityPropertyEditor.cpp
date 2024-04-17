@@ -33,12 +33,12 @@ AZ_POP_DISABLE_WARNING
 #include <AzQtComponents/Components/StyleHelpers.h>
 #include <AzQtComponents/Components/Widgets/DragAndDrop.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
-#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
-#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityRuntimeActivationBus.h>
@@ -670,7 +670,7 @@ namespace AzToolsFramework
             GetEntityContextId());
         ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
 
-        m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        m_menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
 
         // Assign this widget to the Editor Entity Property Editor Action Context.
         AssignWidgetToActionContextHelper(
@@ -929,6 +929,9 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::OnComponentOverrideContextMenu(const QPoint& position)
     {
+        m_menuManagerInterface->DisplayMenuAtScreenPosition(EditorIdentifiers::InspectorEntityComponentContextMenuIdentifier, position);
+
+        /*
         auto componentEditor = qobject_cast<ComponentEditor*>(sender());
         AZ_Assert(componentEditor, "sender() was not convertible to a ComponentEditor*");
 
@@ -973,6 +976,7 @@ namespace AzToolsFramework
         );
 
         menu.exec(position);
+        */
     }
 
     bool EntityPropertyEditor::IsEntitySelected(const AZ::EntityId& id) const
@@ -2879,8 +2883,6 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::CreateActions()
     {
-        m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-
         m_actionToAddComponents = new QAction(tr("Add component"), this);
         m_actionToAddComponents->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         connect(m_actionToAddComponents, &QAction::triggered, this, &EntityPropertyEditor::OnAddComponent);
