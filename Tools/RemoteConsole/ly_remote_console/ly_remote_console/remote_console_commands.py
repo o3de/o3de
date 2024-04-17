@@ -215,7 +215,7 @@ class RemoteConsole:
             try:
                 self._handle_message(self.socket.recv(4096))
             except Exception as e:
-                print(f'disconnect because of an exception {e}')
+                diagnostic_logger.debug(f'disconnect because of an exception {e}')
                 self.on_disconnect()
                 self.stop_pump.set()
 
@@ -282,9 +282,9 @@ class RemoteConsole:
         diagnostic code
         if message_type != 49 and message_type != 50:
             if message_type in REVERSE_CONSOLE_MESSAGE_MAP:
-                print(f'handle message {message_type}/{REVERSE_CONSOLE_MESSAGE_MAP[message_type]} : {message[1:]}')
+                diagnostic_logger.debug(f'handle message {message_type}/{REVERSE_CONSOLE_MESSAGE_MAP[message_type]} : {message[1:]}')
             else:
-                print(f'handle message {message_type}/unknown : {message[1:]}')
+                diagnostic_logger.debug(f'handle message {message_type}/unknown : {message[1:]}')
         '''
 
         # display the message if it's a logging message type
