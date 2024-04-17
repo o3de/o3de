@@ -293,6 +293,7 @@ class RemoteConsole:
             for key in self.handlers.keys():
                 # message received, set flag handler as True for success
                 if key in message_body:
+                    client_message_logger.info(f'matched key=<{key}>')
                     self.handlers[key].set()
                     continue
 
