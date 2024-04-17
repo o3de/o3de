@@ -1285,13 +1285,15 @@ void CLog::LogStringToFile(AZStd::string_view message, ELogType logType, bool ap
 #if !defined(_RELEASE)
     if (queueState == MessageQueueState::NotQueued)
     {
-        AZStd::string formattedLog = AZStd::string::format(
-            "%s%s%s", 
-            !timeStr.empty() ? timeStr.data() : "", 
-            message.data(), 
-            message.ends_with('\n') ? "" : "\n");
-
-        AZ::Debug::Trace::Instance().RawOutput(nullptr, formattedLog.c_str());
+        if (!timeStr.empty())
+        {
+            AZ::Debug::Trace::Instance().OutputToRawAndDebugger(nullptr, timeStr.data());
+        }
+        AZ::Debug::Trace::Instance().OutputToRawAndDebugger(nullptr, message.data());
+        if (!message.ends_with('\n'))
+        {
+           AZ::Debug::Trace::Instance().OutputToRawAndDebugger(nullptr, "\n");
+        }
     }
 
     if (!bIsMainThread)
