@@ -1281,19 +1281,17 @@ void CLog::LogStringToFile(AZStd::string_view message, ELogType logType, bool ap
         }
     }
 
-    // do not OutputDebugString in release.
+    // do not output in release.
 #if !defined(_RELEASE)
     if (queueState == MessageQueueState::NotQueued)
     {
-        if (!timeStr.empty())
-        {
-            AZ::Debug::Platform::OutputToDebugger({}, timeStr);
-        }
-        AZ::Debug::Platform::OutputToDebugger({}, message);
-        if (!message.ends_with('\n'))
-        {
-            AZ::Debug::Platform::OutputToDebugger({}, "\n");
-        }
+        AZStd::string formattedLog = AZStd::string::format(
+            "%s%s%s", 
+            !timeStr.empty() ? timeStr.data() : "", 
+            message.data(), 
+            message.ends_with('\n') ? "" : "\n");
+
+        AZ::Debug::Trace::Instance().RawOutput(nullptr, formattedLog.c_str());
     }
 
     if (!bIsMainThread)
