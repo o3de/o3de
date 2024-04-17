@@ -120,18 +120,14 @@ namespace AZ
             {
                 fprintf(stdout, "%s: %s\n", window, message);
             }
-
             virtual void RawOutput(const char* window, const char* message)
             {
                 fprintf(stdout, "%s: %s\n", window, message);
             }
-        
-#if defined(CARBONATED) 
             virtual void OutputToRawAndDebugger(const char* window, const char* message)
             {
                 RawOutput(window, message);
             }
-#endif
 
             virtual void PrintCallstack(const char* /*window*/, unsigned int /*suppressCount*/ = 0, void* /*nativeContext*/ = nullptr) {}
 

@@ -603,7 +603,6 @@ namespace AZ::Debug
         OutputToRawAndDebugger(window, message);
     }
 
-#if defined(CARBONATED)
     void Trace::OutputToRawAndDebugger(const char* window, const char* message)
     {
         if (window == nullptr)
@@ -614,7 +613,6 @@ namespace AZ::Debug
         Platform::OutputToDebugger(window, message);
         RawOutput(window, message);
     }
-#endif
 
     void Trace::RawOutput(const char* window, const char* message)
     {
