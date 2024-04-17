@@ -174,8 +174,6 @@ public:
 
     void Validate(IErrorReport* report) override;
 
-    // Find CEntity from AZ::EntityId, which can also handle legacy game Ids stored as AZ::EntityIds
-    static CEntityObject* FindFromEntityId(const AZ::EntityId& id);
 
     // Get the name of the light animation node assigned to this, if any.
     QString GetLightAnimation() const;

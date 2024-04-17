@@ -53,16 +53,6 @@ protected:
     {
         // Only switch camera when in Play mode.
         GUID camObjId = GUID_NULL;
-        if (Params.cameraEntityId.IsValid())
-        {
-            // Find owner editor entity.
-            CEntityObject* pEditorEntity = CEntityObject::FindFromEntityId(Params.cameraEntityId);
-            if (pEditorEntity)
-            {
-                camObjId = pEditorEntity->GetId();
-            }
-        }
-
         // Switch camera in active rendering view.
         if (GetIEditor()->GetViewManager())
         {

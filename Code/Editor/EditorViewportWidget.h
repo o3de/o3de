@@ -304,9 +304,6 @@ private:
     QPoint ViewportToWidget(const QPoint& point) const;
     QSize WidgetToViewport(const QSize& size) const;
 
-
-    CBaseObject* GetCameraObject() const;
-
     void UnProjectFromScreen(float sx, float sy, float* px, float* py, float* pz) const;
     void ProjectToScreen(float ptx, float pty, float ptz, float* sx, float* sy) const;
 

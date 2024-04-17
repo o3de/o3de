@@ -565,19 +565,6 @@ void EditorViewportWidget::PostCameraSet()
 }
 
 //////////////////////////////////////////////////////////////////////////
-CBaseObject* EditorViewportWidget::GetCameraObject() const
-{
-    CBaseObject* pCameraObject = nullptr;
-
-    if (m_viewSourceType == ViewSourceType::CameraComponent)
-    {
-        AzToolsFramework::ComponentEntityEditorRequestBus::EventResult(
-            pCameraObject, m_viewEntityId, &AzToolsFramework::ComponentEntityEditorRequests::GetSandboxObject);
-    }
-    return pCameraObject;
-}
-
-//////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
 {
     switch (event)
@@ -1197,96 +1184,8 @@ void EditorViewportWidget::SetViewTM(const Matrix34& tm)
 void EditorViewportWidget::SetViewTM(const Matrix34& camMatrix, bool bMoveOnly)
 {
     AZ_Warning("EditorViewportWidget", !bMoveOnly, "'Move Only' mode is deprecated");
-    CBaseObject* cameraObject = GetCameraObject();
 
-    // Check if the active view entity is the same as the entity having the current view
-    // Sometimes this isn't the case because the active view is in the process of changing
-    // If it isn't, then we're doing the wrong thing below: we end up copying data from one (seemingly random)
-    // camera to another (seemingly random) camera
-    enum class ShouldUpdateObject
-    {
-        Yes,
-        No,
-        YesButViewsOutOfSync
-    };
-
-    const ShouldUpdateObject shouldUpdateObject = [&]()
-    {
-        if (!cameraObject)
-        {
-            return ShouldUpdateObject::No;
-        }
-
-        if (m_viewSourceType == ViewSourceType::CameraComponent)
-        {
-            if (!m_viewEntityId.IsValid())
-            {
-                // Should be impossible anyways
-                AZ_Assert(false, "Internal logic error - view entity Id and view source type out of sync. Please report this as a bug");
-                return ShouldUpdateObject::No;
-            }
-
-            // Check that the current view is the same view as the view entity view
-            AZ::RPI::ViewPtr viewEntityView;
-            AZ::RPI::ViewProviderBus::EventResult(viewEntityView, m_viewEntityId, &AZ::RPI::ViewProviderBus::Events::GetView);
-
-            return viewEntityView == GetCurrentAtomView() ? ShouldUpdateObject::Yes : ShouldUpdateObject::YesButViewsOutOfSync;
-        }
-        else
-        {
-            AZ_Assert(
-                false,
-                "Internal logic error - view source type is the default camera, but there is somehow a camera object. Please report this "
-                "as a bug.");
-
-            // For non-component cameras, can't do any complicated view-based checks
-            return ShouldUpdateObject::No;
-        }
-    }();
-
-    if (shouldUpdateObject == ShouldUpdateObject::Yes)
-    {
-        int flags = 0;
-        {
-            // It isn't clear what this logic is supposed to do (it's legacy code)...
-            // For now, instead of removing it, just assert if the m_pressedKeyState isn't as expected
-            // Do not touch unless you really know what you're doing!
-            AZ_Assert(
-                m_pressedKeyState == KeyPressedState::AllUp,
-                "Internal logic error - key pressed state got changed. Please report this as a bug");
-
-            AZStd::optional<CUndo> undo;
-            if (m_pressedKeyState != KeyPressedState::PressedInPreviousFrame)
-            {
-                flags = eObjectUpdateFlags_UserInput;
-                undo.emplace("Move Camera");
-            }
-
-            if (bMoveOnly)
-            {
-                cameraObject->SetWorldPos(camMatrix.GetTranslation(), flags);
-            }
-            else
-            {
-                cameraObject->SetWorldTM(camMatrix, flags);
-            }
-        }
-    }
-    else if (shouldUpdateObject == ShouldUpdateObject::YesButViewsOutOfSync)
-    {
-        // Technically this should not cause anything to go wrong, but may indicate some underlying bug by a caller
-        // of SetViewTm, for example, trying to set the view TM in the middle of a camera change.
-        // If this is an important case, it can potentially be supported by caching the requested view TM
-        // until the entity and view ptr become synchronized.
-        AZ_Error(
-            "EditorViewportWidget", m_playInEditorState == PlayInEditorState::Editor,
-            "Viewport camera entity ID and view out of sync; request view transform will be ignored. "
-            "Please report this as a bug.");
-    }
-    else if (shouldUpdateObject == ShouldUpdateObject::No)
-    {
-        GetCurrentAtomView()->SetCameraTransform(LYTransformToAZMatrix3x4(camMatrix));
-    }
+    GetCurrentAtomView()->SetCameraTransform(LYTransformToAZMatrix3x4(camMatrix));
 
     if (m_pressedKeyState == KeyPressedState::PressedThisFrame)
     {
@@ -1473,7 +1372,6 @@ bool EditorViewportWidget::CheckRespondToInput() const
 //////////////////////////////////////////////////////////////////////////
 bool EditorViewportWidget::HitTest(const QPoint& point, HitContext& hitInfo)
 {
-    hitInfo.pExcludedObject = GetCameraObject();
     return QtViewport::HitTest(point, hitInfo);
 }
 

@@ -196,14 +196,6 @@ bool CEntityObject::Init(IEditor* pEditor, CBaseObject* pPrev, const QString& fi
 }
 
 //////////////////////////////////////////////////////////////////////////
-/*static*/ CEntityObject* CEntityObject::FindFromEntityId(const AZ::EntityId& id)
-{
-    CEntityObject* retEntity = nullptr;
-    AzToolsFramework::ComponentEntityEditorRequestBus::EventResult(retEntity, id, &AzToolsFramework::ComponentEntityEditorRequestBus::Events::GetSandboxObject);
-    return retEntity;
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CEntityObject::SetTransformDelegate(ITransformDelegate* pTransformDelegate)
 {
     CBaseObject::SetTransformDelegate(pTransformDelegate);
