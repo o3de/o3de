@@ -1222,7 +1222,7 @@ namespace EditorPythonBindings
         }
 
         AZStd::string PythonBehaviorDescription::PropertyDefinition(
-            AZStd::string_view propertyName, int level, const AZ::BehaviorProperty& property, const AZ::BehaviorClass* behaviorClass)
+            AZStd::string_view propertyName, int level, const AZ::BehaviorProperty& property, [[maybe_unused]] const AZ::BehaviorClass* behaviorClass)
         {
             AZStd::string buffer;
             Internal::Indent(level, buffer);
@@ -1249,7 +1249,7 @@ namespace EditorPythonBindings
         }
 
         AZStd::string PythonBehaviorDescription::GlobalPropertyDefinition(
-            const AZStd::string_view& moduleName,
+            [[maybe_unused]] const AZStd::string_view& moduleName,
             const AZStd::string_view& propertyName,
             const AZ::BehaviorProperty& behaviorProperty,
             bool needsHeader)
