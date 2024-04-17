@@ -75,7 +75,12 @@ namespace AZ
         void ProfileDeallocation(void* ptr, size_t byteSize, size_t alignment, Debug::AllocationInfo* info);
 
         /// Records a reallocation for profiling.
+#if defined(CARBONATED)
+        void ProfileReallocationBegin(void* ptr);
+        void ProfileReallocationEnd(void* ptr, void* newPtr, size_t newSize, size_t newAlignment);
+#else
         void ProfileReallocation(void* ptr, void* newPtr, size_t newSize, size_t newAlignment);
+#endif
 
         /// Records a resize for profiling.
         void ProfileResize(void* ptr, size_t newSize);

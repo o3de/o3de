@@ -70,7 +70,17 @@ AllocatorManager::AllocatorManager()
 {
     m_numAllocators = 0;
     m_isAllocatorLeaking = false;
+#if defined(CARBONATED)
+#if defined(AZ_ENABLE_TRACING) && !defined(_RELEASE)
+    m_defaultTrackingRecordMode = Debug::AllocationRecords::RECORD_STACK_IF_NO_FILE_LINE;
+    m_defaultProfilingState = true;
+#else
     m_defaultTrackingRecordMode = Debug::AllocationRecords::RECORD_NO_RECORDS;
+#endif
+    m_activeBreaks = 0;  // bug - not initialized in the original code
+#else  // CARBONATED
+    m_defaultTrackingRecordMode = Debug::AllocationRecords::RECORD_NO_RECORDS;
+#endif // CARBONATED
 }
 
 //=========================================================================
@@ -402,5 +412,103 @@ AllocatorManager::DebugBreak(void* address, const Debug::AllocationInfo& info)
         }
     }
 }
+
+#if defined(CARBONATED)
+
+//=========================================================================
+// FindThreadData
+// [4/8/2024]
+//=========================================================================
+AllocatorManager::ThreadLocalData& AllocatorManager::FindThreadData()
+{
+    m_threadDataLock.lock();
+    AZ_Assert(!m_recursive, "recursive call to allocator manager");  // protection from a recursive call from the same thread
+    if (!m_threadData.empty())
+    {
+        auto it = m_threadData.find(std::this_thread::get_id());
+        if (it != m_threadData.end())
+        {
+            m_threadDataLock.unlock();
+            return it->second;
+        }
+    }
+    m_recursive = true;
+    auto it = m_threadData.insert_key(std::this_thread::get_id());
+    m_recursive = false;
+    m_threadDataLock.unlock();
+    return it.first->second;
+}
+
+//=========================================================================
+// GetCodePoint
+// [4/8/2024]
+//=========================================================================
+AZStd::tuple<const AZ::AllocatorManager::CodePoint*, uint64_t, unsigned int> AllocatorManager::GetCodePointAndTags()
+{
+    ThreadLocalData& tld = FindThreadData();
+
+    const AZ::AllocatorManager::CodePoint* point = !tld.m_allocationMarkers.IsEmpty() ? &tld.m_allocationMarkers.Get() : nullptr;
+    const uint64_t mask = tld.m_tagMask;
+    const unsigned int tag = ((!tld.m_allocationTags.IsOverflow() && !tld.m_allocationTags.IsEmpty()) ? tld.m_allocationTags.Get() : 0u) & 63u;  // drop the other service bits
+
+    return AZStd::make_tuple(point, mask, tag);
+}
+
+//=========================================================================
+// PushMemoryMarker and PopMemoryMarker
+// [4/8/2024]
+//=========================================================================
+void AllocatorManager::PushMemoryMarker(const AllocatorManager::CodePoint& point)
+{
+    FindThreadData().m_allocationMarkers.Push(point);
+}
+void AllocatorManager::PopMemoryMarker()
+{
+    FindThreadData().m_allocationMarkers.Pop();
+}
+
+//=========================================================================
+// PushMemoryMarker and PopMemoryMarker
+// [4/9/2024]
+//=========================================================================
+constexpr unsigned int NO_CHANGE_BIT = 10;
+void AllocatorManager::PushMemoryTag(unsigned int tag)
+{
+    ThreadLocalData& tld = FindThreadData();
+
+    if (tld.m_allocationTags.IsFull())
+    {
+        tld.m_allocationTags.SimulatePush();  // just increase the index to enable pop
+    }
+
+    const uint64_t mask = 1ull << tag;
+    if ((tld.m_tagMask & mask) != 0)
+    {
+        tag |= 1 << NO_CHANGE_BIT; // store that there is no need to roll back, the tag is already set
+    }
+    else
+    {
+        tld.m_tagMask |= mask;
+    }
+
+    tld.m_allocationTags.Push(tag);
+}
+void AllocatorManager::PopMemoryTag()
+{
+    ThreadLocalData& tld = FindThreadData();
+    AZ_Assert(!tld.m_allocationTags.IsEmpty(), "Pop tag, but empty");
+    if (!tld.m_allocationTags.IsOverflow())
+    {
+        const unsigned int tag = tld.m_allocationTags.Get();
+        if ((tag & (1 << NO_CHANGE_BIT)) == 0)
+        {
+            const uint64_t mask = 1ull << tag;
+            tld.m_tagMask &= ~mask;
+        }
+    }
+    tld.m_allocationTags.Pop();
+}
+
+#endif // CARBONATED
 
 } // namespace AZ

@@ -39,6 +39,10 @@ namespace AZ
             unsigned int m_stackFramesCount{};
 
             AZ::u64         m_timeStamp{}; ///< Timestamp for sorting/tracking allocations
+#if defined(CARBONATED)
+            uint64_t        m_tagMask; ///< Tag bit mask for identifying memory consumption per feature
+            unsigned int    m_tag;     ///< Latest memory tag
+#endif
         };
 
         // We use OSAllocator which uses system calls to allocate memory, they are not recorded or tracked!
