@@ -120,10 +120,19 @@ namespace AZ
             {
                 fprintf(stdout, "%s: %s\n", window, message);
             }
+
             virtual void RawOutput(const char* window, const char* message)
             {
                 fprintf(stdout, "%s: %s\n", window, message);
             }
+        
+#if defined(CARBONATED) 
+            virtual void OutputToRawAndDebugger(const char* window, const char* message)
+            {
+                RawOutput(window, message);
+            }
+#endif
+
             virtual void PrintCallstack(const char* /*window*/, unsigned int /*suppressCount*/ = 0, void* /*nativeContext*/ = nullptr) {}
 
         private:
@@ -176,6 +185,10 @@ namespace AZ
             void Printf(const char* window, const char* format, ...) override;
 
             void Output(const char* window, const char* message) override;
+
+#if defined(CARBONATED) 
+            void OutputToRawAndDebugger(const char* window, const char* message) override;
+#endif
 
             /// Called by output to handle the actual output, does not interact with ebus or allow interception
             void RawOutput(const char* window, const char* message) override;

@@ -599,8 +599,22 @@ namespace AZ::Debug
                 return;
             }
         }
+
+        OutputToRawAndDebugger(window, message);
+    }
+
+#if defined(CARBONATED)
+    void Trace::OutputToRawAndDebugger(const char* window, const char* message)
+    {
+        if (window == nullptr)
+        {
+            window = NoWindow;
+        }
+
+        Platform::OutputToDebugger(window, message);
         RawOutput(window, message);
     }
+#endif
 
     void Trace::RawOutput(const char* window, const char* message)
     {
@@ -609,9 +623,6 @@ namespace AZ::Debug
             window = g_dbgSystemWnd;
         }
 
-#if defined(CARBONATED)
-        Platform::OutputToDebugger(window, message);
-#endif
         // printf on Windows platforms seem to have a buffer length limit of 4096 characters
         // Therefore fwrite is used directly to write the window and message to stdout or stderr
         AZStd::string_view windowView{ window };

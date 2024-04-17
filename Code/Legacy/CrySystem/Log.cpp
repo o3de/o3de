@@ -1393,12 +1393,12 @@ void CLog::LogStringToFile(AZStd::string_view message, ELogType logType, bool ap
     {
         if (!timeStr.empty())
         {
-            AZ::Debug::Trace::Instance().RawOutput(nullptr, timeStr.data());
+            AZ::Debug::Trace::Instance().OutputToRawAndDebugger(nullptr, timeStr.data());
         }
-        AZ::Debug::Trace::Instance().RawOutput(nullptr, message.data());
+        AZ::Debug::Trace::Instance().OutputToRawAndDebugger(nullptr, message.data());
         if (!message.ends_with('\n'))
         {
-           AZ::Debug::Trace::Instance().RawOutput(nullptr, "\n");
+           AZ::Debug::Trace::Instance().OutputToRawAndDebugger(nullptr, "\n");
         }
     }
 
