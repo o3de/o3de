@@ -97,6 +97,9 @@ namespace AZ
             if (ProfileAllocations)
             {
                 AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
+#if defined(CARBONATED)
+                AZ_MEMORY_PROFILE(ProfileReallocationBegin(ptr));
+#endif
             }
 
             newSize = MemorySizeAdjustedUp(newSize);
@@ -106,7 +109,11 @@ namespace AZ
             if (ProfileAllocations)
             {
                 AZ_PROFILE_MEMORY_ALLOC(MemoryReserved, newPtr, newSize, GetName());
+#if defined(CARBONATED)
+                AZ_MEMORY_PROFILE(ProfileReallocationEnd(ptr, newPtr, newSize, newAlignment));
+#else
                 AZ_MEMORY_PROFILE(ProfileReallocation(ptr, newPtr, newSize, newAlignment));
+#endif
             }
 
             AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option") // conditional expression is constant
