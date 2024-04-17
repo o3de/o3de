@@ -25,6 +25,9 @@ namespace AZ
 {
     namespace Debug
     {
+        // The NoWindow constant contains a special case string that can skip outputting the
+        // "<window-name> :" portion of a trace message of the form "<window-name>: <message>"
+        inline constexpr const char* NoWindow = "";
         namespace Platform
         {
             void OutputToDebugger(AZStd::basic_string_view<char, AZStd::char_traits<char>> window, AZStd::basic_string_view<char, AZStd::char_traits<char>> message);
@@ -147,6 +150,10 @@ namespace AZ
             * or to force a Trace message bus handler to do special processing by using a known, consistent char*
             */
             static const char* GetDefaultSystemWindow();
+
+            //! Returns a Window string that indicates that the window
+            //! parameter and the separating ":" not be part of the output
+            static constexpr const char* GetNoWindow() { return NoWindow; }
             bool IsDebuggerPresent() override;
             static bool AttachDebugger();
             static bool WaitForDebugger(float timeoutSeconds = -1.f);
