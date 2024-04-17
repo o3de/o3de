@@ -27,35 +27,35 @@ remoteConsole = None
 
 
 def main():
-	global remoteConsole
+    global remoteConsole
 
-	parser = argparse.ArgumentParser(description="Provides common dev functionality", add_help=False)
-	parser.add_argument('--addr', default='127.0.0.1', dest='address', help="Address for Remote Console to connect")
-	parser.add_argument('--port', default='4600', dest='port', help="Port for Remote Console to connect")
+    parser = argparse.ArgumentParser(description="Provides common dev functionality", add_help=False)
+    parser.add_argument('--addr', default='127.0.0.1', dest='address', help="Address for Remote Console to connect")
+    parser.add_argument('--port', default='4600', dest='port', help="Port for Remote Console to connect")
 
-	args, unknown = parser.parse_known_args(sys.argv[1:])
+    args, unknown = parser.parse_known_args(sys.argv[1:])
 
-	remoteConsole = remote_console_commands.RemoteConsole(addr=args.address, port=int(args.port), on_message_received=printLog)
-	remoteConsole.start()
+    remoteConsole = remote_console_commands.RemoteConsole(addr=args.address, port=int(args.port), on_message_received=printLog)
+    remoteConsole.start()
 
 
 def printLog(raw: str):
-	refined = raw.strip()
-	if len(refined):
-		if raw[-1] == '\n':
-			client_message_logger.info(raw[:-1])
-		else:
-			client_message_logger.info(raw)
+    refined = raw.strip()
+    if len(refined):
+        if raw[-1] == '\n':
+            client_message_logger.info(raw[:-1])
+        else:
+            client_message_logger.info(raw)
 
 
 def handler(signal_received, frame):
-	global remoteConsole
+    global remoteConsole
 
-	diagnostic_logger.info("Received interrupt, exiting.")
-	remoteConsole.stop()
-	sys.exit()
+    diagnostic_logger.info("Received interrupt, exiting.")
+    remoteConsole.stop()
+    sys.exit()
 
 
 if __name__ == "__main__":
-	signal.signal(signal.SIGINT, handler)
-	main()
+    signal.signal(signal.SIGINT, handler)
+    main()
