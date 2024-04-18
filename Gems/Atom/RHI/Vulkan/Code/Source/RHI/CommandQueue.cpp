@@ -72,18 +72,19 @@ namespace AZ
                 }
 
                 // Submit commands to queue for the current frame.
+                auto semaphoreTracker = request.m_fenceTracker ? request.m_fenceTracker->GetSemaphoreTracker().get() : nullptr;
                 vulkanQueue->SubmitCommandBuffers(
                     { request.m_commandList },
                     request.m_semaphoresToWait,
                     request.m_semaphoresToSignal,
                     request.m_fencesToWaitFor,
                     fenceToSignal,
-                    request.m_fenceTracker ? request.m_fenceTracker->GetSemaphoreTracker().get() : nullptr);
+                    semaphoreTracker);
                 // Need to signal all the other fences (other than the first one)
                 for (size_t i = 1; i < request.m_fencesToSignal.size(); ++ i)
                 {
                    const auto& fence = request.m_fencesToSignal[i];
-                   Signal(*fence);
+                   vulkanQueue->SubmitCommandBuffers({}, {}, {}, {}, fence.get(), semaphoreTracker);
                 }
 
                 {
@@ -116,7 +117,7 @@ namespace AZ
                     AZStd::vector<RHI::Ptr<Semaphore>>(),
                     {},
                     &fence,
-                    nullptr); // TODO
+                    nullptr);
             });
         }
         

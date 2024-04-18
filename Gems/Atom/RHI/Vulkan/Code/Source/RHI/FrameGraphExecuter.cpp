@@ -212,7 +212,6 @@ namespace AZ
                         semaphoreTrackers->AddSemaphores(numUnwaitedFences);
                         numUnwaitedFences = 0;
                         userFencesSignalledMap.clear();
-                        // TODO no need to create a separate tracker for multiple swap chains in the same group
                         auto vulkanSwapChain = static_cast<SwapChain*>(swapchain);
                         vulkanSwapChain->SetSemaphoreTracker(semaphoreTrackers->GetCurrentTracker());
                     }
