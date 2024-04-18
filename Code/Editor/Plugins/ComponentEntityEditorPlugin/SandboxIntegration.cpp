@@ -1165,6 +1165,16 @@ AZ::Vector3 SandboxIntegrationManager::GetWorldPositionAtViewportCenter()
     return AZ::Vector3::CreateZero();
 }
 
+AZ::Vector3 SandboxIntegrationManager::GetWorldPositionAtViewportInteraction() const
+{
+    if (GetIEditor() && GetIEditor()->GetViewManager())
+    {
+        return GetIEditor()->GetViewManager()->GetClickPositionInViewportSpace();
+    }
+
+    return AZ::Vector3::CreateZero();
+}
+
 void SandboxIntegrationManager::ClearRedoStack()
 {
     // We have two separate undo systems that are assumed to be kept in sync,

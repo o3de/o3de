@@ -18,6 +18,8 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 
 // AzToolsFramework
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 
 // Editor
@@ -210,8 +212,50 @@ void CViewManager::Cycle2DViewport()
 //////////////////////////////////////////////////////////////////////////
 CViewport* CViewManager::GetViewportAtPoint(const QPoint& point) const
 {
-    QWidget* widget = QApplication::widgetAt(point);
-    return qobject_cast<QtViewport*>(widget);
+    for (auto& vp : m_viewports)
+    {
+        if (!vp || !vp->widget())
+        {
+            continue;
+        }
+        if (vp->widget()->rect().contains(vp->widget()->mapFromGlobal(point)))
+        {
+            return vp;
+        }
+    }
+
+    return nullptr;
+}
+
+//////////////////////////////////////////////////////////////////////////
+AZ::Vector3 CViewManager::GetClickPositionInViewportSpace() const
+{
+    // Retrieve click position.
+    QPoint clickPos = QCursor::pos();
+
+    // If a context menu is active, get its position as the click position.
+    if (auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get())
+    {
+        auto outcome = menuManagerInterface->GetLastContextMenuPosition();
+        if (outcome.IsSuccess())
+        {
+            clickPos = outcome.GetValue();
+        }
+    }
+
+    // If the click position was on a viewport, retrieve the position in world coordinates.
+    AZ::Vector3 worldPosition = AZ::Vector3::CreateZero();
+    if (CViewport* view = GetViewportAtPoint(clickPos))
+    {
+        QPoint relativeCursor = view->widget()->mapFromGlobal(clickPos);
+        worldPosition = AzToolsFramework::FindClosestPickIntersection(
+            view->GetViewportId(),
+            AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(relativeCursor),
+            AzToolsFramework::EditorPickRayLength,
+            AzToolsFramework::GetDefaultEntityPlacementDistance());
+    }
+
+    return worldPosition;
 }
 
 //////////////////////////////////////////////////////////////////////////
