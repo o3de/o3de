@@ -71,7 +71,7 @@ AllocatorManager::AllocatorManager()
     m_numAllocators = 0;
     m_isAllocatorLeaking = false;
 #if defined(CARBONATED)
-#if defined(AZ_ENABLE_TRACING) && !defined(_RELEASE)
+#if defined(AZ_ENABLE_TRACING) && defined(AZ_START_MEMORY_TRACING) && !defined(_RELEASE)
     m_defaultTrackingRecordMode = Debug::AllocationRecords::RECORD_STACK_IF_NO_FILE_LINE;
     m_defaultProfilingState = true;
 #else

@@ -6,10 +6,10 @@
  *
  */
 
-#include <AzCore/Memory/MemoryMarker.h>
-#include <AzCore/Memory/AllocatorManager.h>
-
 #if defined(AZ_ENABLE_TRACING) && !defined(_RELEASE) && defined(CARBONATED)  // without tracing definition engine's memory tracking is off
+
+#include <AzCore/Memory/AllocatorManager.h>
+#include <AzCore/Memory/MemoryMarker.h>
 
 void AZ::MemoryAllocationMarker::Init(const char* name, const char* file, int line, bool isLiteral)
 {
