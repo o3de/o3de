@@ -284,10 +284,8 @@ namespace AZ::Dom
         bool HasMember(KeyType name) const;
         bool HasMember(AZStd::string_view name) const;
 
-        Value& AddMember(KeyType name, const Value& value);
-        Value& AddMember(AZStd::string_view name, const Value& value);
-        Value& AddMember(KeyType name, Value&& value);
-        Value& AddMember(AZStd::string_view name, Value&& value);
+        Value& AddMember(KeyType name, Value value);
+        Value& AddMember(AZStd::string_view name, Value value);
 
         void RemoveAllMembers();
         void RemoveMember(KeyType name);
@@ -323,6 +321,15 @@ namespace AZ::Dom
         Value& ArrayReserve(size_t newCapacity);
         Value& ArrayPushBack(Value value);
         Value& ArrayPopBack();
+
+        // Insert a contigious span of Dom Values before position
+        Array::Iterator ArrayInsertRange(Array::ConstIterator insertPos, AZStd::span<Value> values);
+        // Insert elements from range [first, last) before position
+        Array::Iterator ArrayInsert(Array::ConstIterator insertPos, Array::ConstIterator first, Array::ConstIterator last);
+        // Insert an array from an initializer_list
+        Array::Iterator ArrayInsert(Array::ConstIterator insertPos, AZStd::initializer_list<Value> initList);
+        // Insert single Value value before position
+        Array::Iterator ArrayInsert(Array::ConstIterator insertPos, Value value);
 
         Array::Iterator ArrayErase(Array::Iterator pos);
         Array::Iterator ArrayErase(Array::Iterator first, Array::Iterator last);

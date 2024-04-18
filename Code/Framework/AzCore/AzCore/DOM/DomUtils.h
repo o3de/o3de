@@ -227,6 +227,7 @@ namespace AZ::Dom::Utils
                     return true;
                 }
             }
+
             // For pointer types, the pointer marshaling logic is used
             // to extract a pointer address from the Object with the Dom::Value
             if constexpr (AZStd::is_pointer_v<WrapperType>)
