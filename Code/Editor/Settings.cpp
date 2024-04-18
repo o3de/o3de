@@ -834,6 +834,7 @@ void SEditorSettings::PostInitApply()
     CCryEditApp::instance()->KeepEditorActive(keepEditorActive > 0);
 
 #if defined(CARBONATED)
+    //This was added because these are registered so late that the deferred commands have already been ran, so they do not get set via setreg. Will be creating o3de issue to solve this better for all cvars that are registered late
     const auto pConsole = AZ::Interface<AZ::IConsole>::Get();
     AZ_Assert(pConsole, "Editor Settings is attempting to register console commands before AZ::Console is available.");
     pConsole->ExecuteDeferredConsoleCommands();
