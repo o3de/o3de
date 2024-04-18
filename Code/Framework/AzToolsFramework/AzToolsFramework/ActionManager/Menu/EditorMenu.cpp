@@ -186,6 +186,16 @@ namespace AzToolsFramework
         DisplayAtPosition(QCursor::pos());
     }
 
+    QPoint EditorMenu::GetMenuPosition() const
+    {
+        return m_menu->pos();
+    }
+
+    bool EditorMenu::IsMenuVisible() const
+    {
+        return m_menu->isVisible();
+    }
+
     void EditorMenu::RefreshMenu()
     {
         m_menu->clear();
