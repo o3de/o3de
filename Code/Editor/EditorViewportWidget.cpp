@@ -1517,7 +1517,6 @@ void EditorViewportWidget::SetDefaultCamera()
 
     m_viewEntityId.SetInvalid();
     m_viewSourceType = ViewSourceType::None;
-    GetViewManager()->SetCameraObjectId(GUID_NULL);
     SetName(m_defaultViewName);
 
     // synchronize the configured editor viewport FOV to the default camera
