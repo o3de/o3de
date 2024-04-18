@@ -8,12 +8,12 @@ RemoteConsole: Used to interact with Lumberyard Launchers through the Remote Con
 """
 
 import logging
-import os
 import socket
 import threading
 import time
 
-logger = logging.getLogger(__name__)
+client_message_logger = logging.getLogger('remote_console.client_message')
+diagnostic_logger = logging.getLogger('remote_console.diagnostic')
 
 
 # List of all console command types, some are not being used in this
@@ -30,6 +30,9 @@ CONSOLE_MESSAGE_MAP = {
     'GAMEPLAYEVENT': BASE_MSG_TYPE + 22,
     'CONNECTMESSAGE': BASE_MSG_TYPE + 25,
 }
+REVERSE_CONSOLE_MESSAGE_MAP = dict()
+for key in CONSOLE_MESSAGE_MAP:
+    REVERSE_CONSOLE_MESSAGE_MAP[CONSOLE_MESSAGE_MAP[key]] = key
 
 
 def capture_screenshot_command(remote_console_instance):
@@ -41,7 +44,7 @@ def capture_screenshot_command(remote_console_instance):
     """
     screenshot_response = 'Screenshot: '
     send_command_and_expect_response(remote_console_instance, 'r_GetScreenShot 2', screenshot_response)
-    logger.info("Screenshot has been taken.")
+    diagnostic_logger.info('Screenshot has been taken.')
 
 
 def send_command_and_expect_response(remote_console_instance, command_to_run, expected_log_line, timeout=60):
@@ -67,8 +70,7 @@ def send_command_and_expect_response(remote_console_instance, command_to_run, ex
             command_to_run, expected_log_line)
 
 
-def _default_on_message_received(raw):
-    # type: (str) -> None
+def _default_on_message_received(raw: str):
     """
     This will just print the raw data from the message received.  We are striping white spaces before and after the
     message and logging it.  We are passing this function to the remote console instance as a default.  On any received
@@ -78,23 +80,20 @@ def _default_on_message_received(raw):
     """
     refined = raw.strip()
     if len(refined):
-        logger.info(raw)
+        client_message_logger.info(raw)
 
 
 def _default_disconnect():
-    # type: () -> None
     """
     On a disconnect a user can overwrite the functionality with any function, this one will just print to the
     logger a line 'Disconnecting from the Port.'
     :return: None
     """
-    logger.info('Disconnecting from the Port')
+    diagnostic_logger.info('Disconnecting')
 
 
 class RemoteConsole:
-    def __init__(self, addr='127.0.0.1', port=4600, on_disconnect=_default_disconnect,
-                 on_message_received=_default_on_message_received):
-        # type: (str, int, func, func) -> None
+    def __init__(self, addr='127.0.0.1', port=4600, on_disconnect=_default_disconnect, on_message_received=_default_on_message_received):
         """
         Creates a port connection using port 4600 to issue console commands and poll for specific console log lines.
         :param addr: The ip address where the launcher lives that we want to connect to
@@ -116,8 +115,7 @@ class RemoteConsole:
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    def start(self, timeout=10, timeout_port=30, retry_delay=5):
-        # type: (int) -> None
+    def start(self, timeout: int = 10, timeout_port: int = 30, retry_delay: int = 5):
         """
         Starts the socket connection to the Launcher instance.
         :param timeout: The timeout in seconds for the pump thread to get ready before raising an exception.
@@ -125,7 +123,7 @@ class RemoteConsole:
         :param retry_delay: The delay in seconds before a retry is attempted.
         """
         if self.connected:
-            logger.warning('RemoteConsole is already connected.')
+            diagnostic_logger.warning('RemoteConsole is already connected.')
             return
 
         # Connect to the remote console via a port
@@ -137,13 +135,12 @@ class RemoteConsole:
         # Check if the remote console is ready
         self.pump_thread.start()
         if not self.ready.wait(timeout):
-            raise Exception("remote_console_commands.py:start: Remote console connection never became ready. "
-                            "Waited for {} seconds.".format(timeout))
+            raise Exception(f'remote_console_commands.py:start: Remote console connection never became ready. Waited for {timeout} seconds.')
 
         self.connected = True
-        logger.info('Remote Console Started at port {}'.format(self.port))
+        diagnostic_logger.info(f'Remote Console Started at port {self.port}')
 
-    def _connect_to_port(self, timeout_port, retry_delay):
+    def _connect_to_port(self, timeout_port: int, retry_delay: int):
         """
         Helper method to connect to the RC on a given port.
         :param timeout_port: The timeout in seconds before giving up connecting to a port
@@ -152,8 +149,7 @@ class RemoteConsole:
         time_waited = 0
         while True:
             if time_waited >= timeout_port:
-                raise Exception("remote_console_commands.py:start: Remote console connection never became ready. "
-                                "Waited for {} seconds.".format(time_waited))
+                raise Exception(f'remote_console_commands.py:start: Remote console connection never became ready. Waited for {time_waited} seconds.')
             else:
                 if self._scan_ports():
                     # connected successfully to RC on a port
@@ -162,7 +158,7 @@ class RemoteConsole:
                     # failed to find RC on a port, wait
                     time_waited += retry_delay
                     time.sleep(retry_delay)
-                    logger.debug("remote_console_commands.py:start: Have waited for at least {} seconds.".format(time_waited))
+                    diagnostic_logger.debug(f'remote_console_commands.py:start: Have waited for at least {time_waited} seconds.')
 
     def _scan_ports(self):
         # Do not wait more than 3.0 seconds per connection attempt.
@@ -171,25 +167,24 @@ class RemoteConsole:
         max_port = self.port + num_ports_to_scan
         while self.port < max_port:
             try:
+                diagnostic_logger.debug(f'Trying port {self.addr}:{self.port}')
                 self.socket.connect((self.addr, self.port))
-                logger.info('Successfully connected to port: {}'.format(self.port))
+                diagnostic_logger.info(f'Successfully connected to port: {self.port}')
                 return True
-            except:
+            except Exception as e:
+                diagnostic_logger.info(f'Connection exception {e}')
                 self.port += 1
         if self.port >= max_port:
-            from_port_to_port = "from port {} to port {}".format(
-                self.port - num_ports_to_scan, self.port - 1)
-            logger.debug("Remote console connection never became ready after scanning {}. Trying again".format(
-                from_port_to_port))
+            from_port_to_port = f'from port {self.port - num_ports_to_scan} to port {self.port - 1}'
+            diagnostic_logger.debug(f'Remote console connection never became ready after scanning {from_port_to_port}. Trying again')
         return False
 
     def stop(self):
-        # type: () -> None
         """
         Stops and closes the socket connection to the Launcher instance.
         """
         if not self.connected:
-            logger.warning('RemoteConsole is not connected, cannot stop.')
+            diagnostic_logger.warning('RemoteConsole is not connected, cannot stop.')
             return
 
         self.stop_pump.set()
@@ -198,8 +193,7 @@ class RemoteConsole:
         self.pump_thread.join()
         self.connected = False
 
-    def send_command(self, command):
-        # type: (str) -> None
+    def send_command(self, command: str):
         """
         Transforms and sends commands to the Launcher instance.
         :param command: The command to be sent to the Launcher instance
@@ -207,11 +201,10 @@ class RemoteConsole:
         message = self._create_message(CONSOLE_MESSAGE_MAP['COMMAND'], command)
         try:
             self._send_message(message)
-        except:
+        except Exception:
             self.on_disconnect()
 
     def pump(self):
-        # type: () -> None
         """
         Pump function that is used by the pump_thread. Listens to receive messages from the socket
         and disconnects during an exception.
@@ -221,50 +214,46 @@ class RemoteConsole:
             self._send_message(self._create_message(CONSOLE_MESSAGE_MAP['NOOP']))
             try:
                 self._handle_message(self.socket.recv(4096))
-            except:
+            except Exception as e:
+                diagnostic_logger.debug(f'disconnect because of an exception {e}')
                 self.on_disconnect()
                 self.stop_pump.set()
 
-    def expect_log_line(self, match_string, timeout=30):
-        # type: (str, int) -> bool
+    def expect_log_line(self, match_string: str, timeout: int = 30):
         """
         Looks for a log line event to expect within a time frame. Returns False is timeout is reached.
         :param match_string: The string to match that acts as a key
         :param timeout: The timeout to wait for the log line in seconds
         :return: boolean True if match_string found, False otherwise.
         """
-        logger.info("waiting for event '{}' for '{}' seconds".format(match_string, timeout))
+        diagnostic_logger.info(f'Waiting for event "{match_string}" for {timeout} seconds')
 
         event = threading.Event()
         self.handlers[match_string.encode()] = event
         event_success = event.wait(timeout)
 
-        logger.warning(
-            'Returning "{}" for expect_log_line() - previously this returned a function object, '
-            'so if you see failures now this may be why.'.format(event_success))
+        diagnostic_logger.warning(f'Returning "{event_success}" for expect_log_line() - previously this returned a function object, so if you see failures now this may be why.')
         return event_success
 
-    def _create_message(self, message_type, message_body=''):
-        # type: (bytes, str) -> bytearray
+    def _create_message(self, message_type: int, message_body: str = '') -> bytearray:
         """
         Transforms a message to be sent to the launcher. The string is converted to a bytearray and
         is prepended with the message type and appended with an ending 0.
         :param message_type: Uses CONSOLE_MESSAGE_MAP to prepend the bytearray message
         :param message_body: The message string to be converted
         """
-        message_body = message_body.encode()
         message = bytearray(0)
 
         message.append(message_type)
 
+        message_body = message_body.encode()
         for message_body_char in message_body:
             message.append(message_body_char)
 
         message.append(0)
         return message
 
-    def _send_message(self, message):
-        # type: (bytearray) -> None
+    def _send_message(self, message: bytearray):
         """
         Sends console commands through the socket connection to the launcher. The message string should
         first be transformed into a bytearray.
@@ -272,13 +261,16 @@ class RemoteConsole:
         """
         self.socket.sendall(message)
 
-    def _handle_message(self, message):
-        # type: (bytearray) -> None
+    def _handle_message(self, message: bytearray):
         """
         Handles the messages and and will poll for expected console messages that we are looking for and set() events to True.
         Displays the message if we determine it is a logging message.
         :param message: The message (a byte array) received to be handled in various ways
         """
+        if len(message) < 1:
+            diagnostic_logger.error('Received an empty message')
+            return
+
         # message[0] is the representation of the message type inside of the message received from our launchers
         message_type = message[0]
 
@@ -286,13 +278,22 @@ class RemoteConsole:
         # Null terminator
         message_body = message[1:-1]
 
+        '''
+        diagnostic code
+        if message_type != 49 and message_type != 50:
+            if message_type in REVERSE_CONSOLE_MESSAGE_MAP:
+                diagnostic_logger.debug(f'handle message {message_type}/{REVERSE_CONSOLE_MESSAGE_MAP[message_type]} : {message[1:]}')
+            else:
+                diagnostic_logger.debug(f'handle message {message_type}/unknown : {message[1:]}')
+        '''
+
         # display the message if it's a logging message type
         if CONSOLE_MESSAGE_MAP['LOGMESSAGE'] <= message_type <= CONSOLE_MESSAGE_MAP['LOGERROR']:
-            self.on_display(message_body)
+            self.on_display(message_body.decode("utf-8"))
             for key in self.handlers.keys():
                 # message received, set flag handler as True for success
                 if key in message_body:
-                    logger.info("matched key=<{}>".format(key))
+                    client_message_logger.info(f'matched key=<{key}>')
                     self.handlers[key].set()
                     continue
 

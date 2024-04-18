@@ -9,6 +9,9 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Socket/AzSocket.h>
 
+#if defined(CARBONATED)
+#include <AzCore/std/string/regex.h>
+#endif
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/API/ApplicationAPI.h>
 
@@ -66,6 +69,12 @@ bool RCON_IsRemoteAllowedToConnect(const AZ::AzSock::AzSocketAddress& connectee)
         addresses.push_back("127.0.0.1");
     }
 
+#if defined(CARBONATED)
+    for (const AZStd::string& address : addresses)
+    {
+        AZStd::regex re(address);
+        if (address == connectee.GetIP() || AZStd::regex_match(connectee.GetIP(), re))
+#else
     AZ::AzSock::AzSocketAddress testAddress;
     for (const AZStd::string& address : addresses)
     {
@@ -73,6 +82,7 @@ bool RCON_IsRemoteAllowedToConnect(const AZ::AzSock::AzSocketAddress& connectee)
         testAddress.SetAddress(address.c_str(), connectee.GetAddrPort());
 
         if (testAddress == connectee)
+#endif
         {
             // its an exact match.
             if (gEnv->pLog)
