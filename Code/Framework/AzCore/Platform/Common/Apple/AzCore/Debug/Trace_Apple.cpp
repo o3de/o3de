@@ -80,10 +80,7 @@ namespace AZ
 
             void OutputToDebugger(AZStd::string_view window, AZStd::string_view message)
             {
-                constexpr AZStd::string_view separator = ": ";
-                fwrite(window.data(), 1, window.size(), stdout);
-                fwrite(separator.data(), 1, separator.size(), stdout);
-                fwrite(message.data(), 1, message.size(), stdout);
+                // Not implemented on Apple
             }
         }
     }
