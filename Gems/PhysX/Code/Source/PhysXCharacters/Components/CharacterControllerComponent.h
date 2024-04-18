@@ -125,13 +125,15 @@ namespace PhysX
         float GetHalfForwardExtent() override;
         void SetHalfForwardExtent(float halfForwardExtent) override;
 
-        // carbonated begin enable_carbonated_1: Methods called from o3de-gruber
 #if defined(CARBONATED)
+        // Methods added to setup character collider so that to differentiate character collisions from other collisions
+        // Changes collider layer and group to given names.
         void SetCharacterCollisions(const AZStd::string& layer, const AZStd::string& group) override;
-        void SetMaterialByName(uint32_t index, const AZStd::string& name) override;
+        // Changes Physics::MaterialAsset in the slot referenced by index. Index 0 usually correponds to "Entire object" slot.
+        void SetMaterial(uint32_t index, const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset) override;
+        // Changes collider Tag to given AZ::Crc32(AZStd::string tagName).
         void SetTag(const AZ::Crc32& tag) override;
-#endif
-        // carbonated end enable_carbonated_1
+#endif // defined(CARBONATED)
 
         // TransformNotificationBus
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;

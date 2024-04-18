@@ -10,6 +10,10 @@
 
 #include <AzCore/Component/ComponentBus.h>
 
+#if defined(CARBONATED)
+#include <PhysX/Material/PhysXMaterial.h>
+#endif // defined(CARBONATED)
+
 namespace AZ
 {
     class Vector3;
@@ -55,14 +59,17 @@ namespace PhysX
         /// @param halfForwardExtent The new half forward extent for the controller.
         virtual void SetHalfForwardExtent(float halfForwardExtent) = 0;
 
-        // carbonated begin enable_carbonated_1: Methods called from o3de-gruber
 #if defined(CARBONATED)
+        // Methods added to setup character collider so that to differentiate character collisions from other collisions
+        /// Changes collider layer and group to given names.
         virtual void SetCharacterCollisions(const AZStd::string& layer, const AZStd::string& group) = 0;
 
-        virtual void SetMaterialByName(uint32_t index, const AZStd::string& name) = 0;
+        /// Changes Physics::MaterialAsset in the slot referenced by index. Index 0 usually correponds to "Entire object" slot.
+        virtual void SetMaterial(uint32_t index, const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset) = 0;
+
+        /// Changes collider Tag to given AZ::Crc32(AZStd::string tagName).
         virtual void SetTag(const AZ::Crc32& tag) = 0;
-#endif
-        // carbonated end enable_carbonated_1
+#endif // defined(CARBONATED)
     };
     using CharacterControllerRequestBus = AZ::EBus<CharacterControllerRequests>;
 } // namespace PhysX
