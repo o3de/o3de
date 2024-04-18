@@ -246,9 +246,9 @@ namespace AZ
             VkDeviceCreateInfo deviceInfo = {};
             deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 
+            auto timelineSemaphore = physicalDevice.GetPhysicalDeviceTimelineSemaphoreFeatures();
             // If we are running Vulkan >= 1.2, then we must use VkPhysicalDeviceVulkan12Features instead
             // of VkPhysicalDeviceShaderFloat16Int8FeaturesKHR or VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR.
-            auto timelineSemaphore = physicalDevice.GetPhysicalDeviceTimelineSemaphoreFeatures();
             if (majorVersion >= 1 && minorVersion >= 2)
             {
                 vulkan12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
