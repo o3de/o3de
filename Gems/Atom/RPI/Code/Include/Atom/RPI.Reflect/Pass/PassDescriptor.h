@@ -36,6 +36,8 @@ namespace AZ
             { 
                 if (passRequest)
                 {
+                    // If the optional passRequest is passed in, create a copy of it and reference it with a smart pointer
+                    // rather than keeping a reference to the passRequest
                     m_passRequest = AZStd::make_shared<PassRequest>(*passRequest);
                 }
             }
