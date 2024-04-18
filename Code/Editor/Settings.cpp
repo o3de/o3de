@@ -835,7 +835,7 @@ void SEditorSettings::PostInitApply()
 
 #if defined(CARBONATED)
     const auto pConsole = AZ::Interface<AZ::IConsole>::Get();
-    AZ_Assert(pConsole, "Multiplayer system is attempting to register console commands before AZ::Console is available.");
+    AZ_Assert(pConsole, "Editor Settings is attempting to register console commands before AZ::Console is available.");
     pConsole->ExecuteDeferredConsoleCommands();
 #endif
 }
