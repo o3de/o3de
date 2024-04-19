@@ -947,53 +947,6 @@ namespace AzToolsFramework
     void EntityPropertyEditor::OnComponentOverrideContextMenu(const QPoint& position)
     {
         m_menuManagerInterface->DisplayMenuAtScreenPosition(EditorIdentifiers::InspectorEntityComponentContextMenuIdentifier, position);
-
-        /*
-        auto componentEditor = qobject_cast<ComponentEditor*>(sender());
-        AZ_Assert(componentEditor, "sender() was not convertible to a ComponentEditor*");
-
-        AZStd::span<AZ::Component* const> components = componentEditor->GetComponents();
-        AZ_Assert(!components.empty() && components[0], "ComponentEditor should have at least one component.");
-        QMenu menu;
-
-        QAction* revertAction = menu.addAction(QObject::tr("Revert Overrides"));
-        QObject::connect(
-            revertAction,
-            &QAction::triggered,
-            this,
-            [components]
-            {
-                if (auto prefabOverridePublicInterface =
-                        AZ::Interface<AzToolsFramework::Prefab::PrefabOverridePublicInterface>::Get())
-                {
-                    // Note: Multiple selection is not currently supported for overrides.
-                    // Revert overrides on the single component that's displaying override state.
-                    prefabOverridePublicInterface->RevertComponentOverrides(
-                        AZ::EntityComponentIdPair(components[0]->GetEntityId(), components[0]->GetId()));
-                }
-            }
-        );
-
-        QAction* applyAction = menu.addAction(QObject::tr("Apply Overrides"));
-        QObject::connect(
-            applyAction,
-            &QAction::triggered,
-            this,
-            [components]
-            {
-                if (auto prefabOverridePublicInterface =
-                        AZ::Interface<AzToolsFramework::Prefab::PrefabOverridePublicInterface>::Get())
-                {
-                    // Note: Multiple selection is not currently supported for overrides.
-                    // Revert overrides on the single component that's displaying override state.
-                    prefabOverridePublicInterface->ApplyComponentOverrides(
-                        AZ::EntityComponentIdPair(components[0]->GetEntityId(), components[0]->GetId()));
-                }
-            }
-        );
-
-        menu.exec(position);
-        */
     }
 
     bool EntityPropertyEditor::IsEntitySelected(const AZ::EntityId& id) const

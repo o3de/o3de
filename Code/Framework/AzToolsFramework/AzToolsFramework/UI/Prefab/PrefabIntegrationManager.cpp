@@ -456,7 +456,6 @@ namespace AzToolsFramework
                     m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
                 }
 
-
             }
 
             // Create Prefab
@@ -900,6 +899,78 @@ namespace AzToolsFramework
                 m_actionManagerInterface->AddActionToUpdater(
                     PrefabIdentifiers::PrefabInstancePropagationEndUpdaterIdentifier, actionIdentifier);
             }
+
+            // Apply overrides on Component
+            {
+                AZStd::string actionIdentifier = "o3de.action.prefabs.applyComponentOverrides";
+                AzToolsFramework::ActionProperties actionProperties;
+                actionProperties.m_name = "Apply overrides";
+                actionProperties.m_description = "Apply all overrides on this component.";
+                actionProperties.m_category = "Prefabs";
+
+                m_actionManagerInterface->RegisterAction(
+                    EditorIdentifiers::MainWindowActionContextIdentifier,
+                    actionIdentifier,
+                    actionProperties,
+                    []()
+                    {
+                        if (auto prefabOverridePublicInterface =
+                                AZ::Interface<AzToolsFramework::Prefab::PrefabOverridePublicInterface>::Get())
+                        {
+                            EntityPropertyEditorRequestBus::Broadcast(
+                                &EntityPropertyEditorRequestBus::Events::VisitComponentEditors,
+                                [prefabOverridePublicInterface](const AzToolsFramework::ComponentEditor* componentEditor)
+                                {
+                                    if (componentEditor->IsSelected())
+                                    {
+                                        auto components = componentEditor->GetComponents();
+
+                                        if (components.size() > 1)
+                                        {
+                                            // We do not support multi-editing with overrides.
+                                            return false;
+                                        }
+
+                                        const auto& component = components.front();
+                                        prefabOverridePublicInterface->ApplyComponentOverrides(
+                                                AZ::EntityComponentIdPair(component->GetEntityId(), component->GetId()));
+                                    }
+
+                                    return true;
+                                }
+                            );
+                        }
+                    }
+                );
+
+                m_actionManagerInterface->InstallEnabledStateCallback(
+                    actionIdentifier,
+                    [prefabOverridePublicInterface = m_prefabOverridePublicInterface]() -> bool
+                    {
+                        // Retrieve selected component in the Inspector.
+                        AZStd::unordered_set<AZ::EntityComponentIdPair> selectedEntityComponentIds;
+                        EntityPropertyEditorRequestBus::Broadcast(
+                            &EntityPropertyEditorRequests::GetSelectedComponents, selectedEntityComponentIds);
+
+                        if (selectedEntityComponentIds.size() != 1)
+                        {
+                            // Override handling doesn't support multi-editing.
+                            return false;
+                        }
+
+                        const auto& selectedEntityComponentId = *selectedEntityComponentIds.begin();
+                        return prefabOverridePublicInterface->AreComponentOverridesPresent(selectedEntityComponentId);
+                    }
+                );
+
+                // Refresh this action whenever instance propagation ends, as that could have changed overrides on the current selection.
+                m_actionManagerInterface->AddActionToUpdater(
+                    EditorIdentifiers::ComponentSelectionChangedUpdaterIdentifier, actionIdentifier);
+                m_actionManagerInterface->AddActionToUpdater(
+                    EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+                m_actionManagerInterface->AddActionToUpdater(
+                    PrefabIdentifiers::PrefabInstancePropagationEndUpdaterIdentifier, actionIdentifier);
+            }
         }
 
         void PrefabIntegrationManager::OnWidgetActionRegistrationHook()
@@ -967,7 +1038,8 @@ namespace AzToolsFramework
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.revertInstanceOverrides", 30200);
 
             // Inspector Entity Component Context Menu
-            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::InspectorEntityComponentContextMenuIdentifier, "o3de.action.prefabs.revertComponentOverrides", 10000);   
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::InspectorEntityComponentContextMenuIdentifier, "o3de.action.prefabs.applyComponentOverrides", 10000);   
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::InspectorEntityComponentContextMenuIdentifier, "o3de.action.prefabs.revertComponentOverrides", 10100);   
         }
 
         void PrefabIntegrationManager::OnToolBarBindingHook()
