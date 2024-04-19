@@ -7,5 +7,7 @@
 #
 
 # This will export its "SourcePaths" to the generated "cmake_dependencies.<project>.assetbuilder.setreg"
-ly_create_alias(NAME UiBasics.Builders NAMESPACE Gem)
-ly_create_alias(NAME UiBasics.Tools NAMESPACE Gem)
+if(PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_create_alias(NAME UiBasics.Builders NAMESPACE Gem)
+    ly_create_alias(NAME UiBasics.Tools NAMESPACE Gem)
+endif()
