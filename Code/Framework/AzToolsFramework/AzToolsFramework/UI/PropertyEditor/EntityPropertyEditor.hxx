@@ -24,6 +24,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
+#include <AzToolsFramework/API/EntityPropertyEditorNotificationBus.h>
 #include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
@@ -119,6 +120,7 @@ namespace AzToolsFramework
         , private ToolsApplicationEvents::Bus::Handler
         , public IPropertyEditorNotify
         , public AzToolsFramework::EditorEntityContextNotificationBus::Handler
+        , public AzToolsFramework::EntityPropertyEditorNotificationBus::Handler
         , public AzToolsFramework::EntityPropertyEditorRequestBus::Handler
         , public AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler
         , private AzToolsFramework::ViewportEditorModeNotificationsBus::Handler
@@ -264,6 +266,10 @@ namespace AzToolsFramework
         void GetSelectedEntities(EntityIdList& selectedEntityIds) override;
         void SetNewComponentId(AZ::ComponentId componentId) override;
         void VisitComponentEditors(const VisitComponentEditorsCallback& callback) const override;
+
+        // EntityPropertyEditorNotificationBus overrides ...
+        void OnComponentSelectionChanged(
+            EntityPropertyEditor* entityPropertyEditor, const AZStd::vector<AZ::EntityComponentIdPair>& selectedEntityComponentIds) override;
 
         // TickBus overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
@@ -467,7 +473,7 @@ namespace AzToolsFramework
         const ComponentEditorVector& GetSelectedComponentEditors() const;
         AZStd::span<AZ::Component* const> GetSelectedComponents() const;
         const AZStd::unordered_map<AZ::EntityId, AZ::Entity::ComponentArrayType>& GetSelectedComponentsByEntityId() const;
-        void UpdateSelectionCache();
+        void UpdateSelectionCache(bool notify = false);
 
         ComponentEditorVector m_selectedComponentEditors;
         AZ::Entity::ComponentArrayType m_selectedComponents;
@@ -549,7 +555,7 @@ namespace AzToolsFramework
         int m_autoScrollMargin;
         bool m_autoScrollQueued;
 
-        void UpdateInternalState();
+        void UpdateInternalState(bool notify = false);
 
         enum StatusType
         {

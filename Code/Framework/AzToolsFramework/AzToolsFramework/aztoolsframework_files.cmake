@@ -84,6 +84,7 @@ set(FILES
     API/EditorPythonConsoleBus.h
     API/EditorPythonRunnerRequestsBus.h
     API/EditorPythonScriptNotificationsBus.h
+    API/EntityPropertyEditorNotificationBus.h
     API/EntityPropertyEditorRequestsBus.h
     API/EditorWindowRequestBus.h
     API/EntityCompositionRequestBus.h

@@ -618,6 +618,7 @@ namespace AzToolsFramework
 
         ToolsApplicationEvents::Bus::Handler::BusConnect();
         AZ::EntitySystemBus::Handler::BusConnect();
+        EntityPropertyEditorNotificationBus::Handler::BusConnect();
         EntityPropertyEditorRequestBus::Handler::BusConnect();
         EditorWindowUIRequestBus::Handler::BusConnect();
 
@@ -690,6 +691,7 @@ namespace AzToolsFramework
         ReadOnlyEntityPublicNotificationBus::Handler::BusDisconnect();
         EditorWindowUIRequestBus::Handler::BusDisconnect();
         EntityPropertyEditorRequestBus::Handler::BusDisconnect();
+        EntityPropertyEditorNotificationBus::Handler::BusDisconnect();
         AZ::EntitySystemBus::Handler::BusDisconnect();
         ToolsApplicationEvents::Bus::Handler::BusDisconnect();
         
@@ -775,6 +777,16 @@ namespace AzToolsFramework
             {
                 return;
             }
+        }
+    }
+
+    void EntityPropertyEditor::OnComponentSelectionChanged(
+        EntityPropertyEditor* entityPropertyEditor,
+        [[maybe_unused]] const AZStd::vector<AZ::EntityComponentIdPair>& selectedEntityComponentIds)
+    {
+        if (entityPropertyEditor != this)
+        {
+            ClearComponentEditorSelection();
         }
     }
 
@@ -3643,7 +3655,7 @@ namespace AzToolsFramework
             componentEditor->SetSelected(false);
         }
         SaveComponentEditorState();
-        UpdateInternalState();
+        UpdateInternalState(false);
     }
 
     void EntityPropertyEditor::SelectRangeOfComponentEditors(const AZ::s32 index1, const AZ::s32 index2, bool selected)
@@ -3659,7 +3671,7 @@ namespace AzToolsFramework
             m_componentEditorLastSelectedIndex = index2;
         }
         SaveComponentEditorState();
-        UpdateInternalState();
+        UpdateInternalState(true);
     }
 
     void EntityPropertyEditor::SelectIntersectingComponentEditors(const QRect& globalRect, bool selected)
@@ -3670,7 +3682,7 @@ namespace AzToolsFramework
             m_componentEditorLastSelectedIndex = GetComponentEditorIndex(componentEditor);
         }
         SaveComponentEditorState();
-        UpdateInternalState();
+        UpdateInternalState(true);
     }
 
     bool EntityPropertyEditor::SelectIntersectingComponentEditorsSafe(const QRect& globalRect)
@@ -3687,7 +3699,7 @@ namespace AzToolsFramework
             }
         }
         SaveComponentEditorState();
-        UpdateInternalState();
+        UpdateInternalState(true);
 
         return selectedChanged;
     }
@@ -3700,7 +3712,7 @@ namespace AzToolsFramework
             m_componentEditorLastSelectedIndex = GetComponentEditorIndex(componentEditor);
         }
         SaveComponentEditorState();
-        UpdateInternalState();
+        UpdateInternalState(true);
     }
 
     AZ::s32 EntityPropertyEditor::GetComponentEditorIndex(const ComponentEditor* componentEditor) const
@@ -3760,8 +3772,10 @@ namespace AzToolsFramework
         return m_selectedComponentsByEntityId;
     }
 
-    void EntityPropertyEditor::UpdateSelectionCache()
+    void EntityPropertyEditor::UpdateSelectionCache(bool notify)
     {
+        AZStd::vector<AZ::EntityComponentIdPair> selectedEntityComponentIds;
+
         AZ_PROFILE_FUNCTION(AzToolsFramework);
         m_selectedComponentEditors.clear();
         m_selectedComponentEditors.reserve(m_componentEditors.size());
@@ -3784,6 +3798,13 @@ namespace AzToolsFramework
         for (auto component : m_selectedComponents)
         {
             m_selectedComponentsByEntityId[component->GetEntityId()].push_back(component);
+            selectedEntityComponentIds.push_back(AZ::EntityComponentIdPair(component->GetEntityId(), component->GetId()));
+        }
+
+        if (notify)
+        {
+            EntityPropertyEditorNotificationBus::Broadcast(
+                &EntityPropertyEditorNotifications::OnComponentSelectionChanged, this, selectedEntityComponentIds);
         }
     }
 
@@ -5229,9 +5250,9 @@ namespace AzToolsFramework
         }
     }
 
-    void EntityPropertyEditor::UpdateInternalState()
+    void EntityPropertyEditor::UpdateInternalState(bool notify)
     {
-        UpdateSelectionCache();
+        UpdateSelectionCache(notify);
         UpdateActions();
         UpdateOverlay();
     }
