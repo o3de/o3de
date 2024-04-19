@@ -305,10 +305,13 @@ set(FILES
     ShaderLib/Atom/Features/PostProcessing/PostProcessUtil.azsli
     ShaderLib/Atom/Features/PostProcessing/Shapers.azsli
     ShaderLib/Atom/Features/PostProcessing/Tonemap.azsli
+    ShaderLib/Atom/Features/RayTracing/RayTracingIntersectionAttributes.azsli
+    ShaderLib/Atom/Features/RayTracing/RayTracingGlobalSrg.azsli
     ShaderLib/Atom/Features/RayTracing/RayTracingMaterialSrg.azsli
     ShaderLib/Atom/Features/RayTracing/RayTracingMaterialUtils.azsli
     ShaderLib/Atom/Features/RayTracing/RayTracingSceneSrg.azsli
     ShaderLib/Atom/Features/RayTracing/RayTracingSceneUtils.azsli
+    ShaderLib/Atom/Features/RayTracing/RayTracingSrgs.azsli
     ShaderLib/Atom/Features/RayTracing/RayTracingSrgs.azsl
     ShaderLib/Atom/Features/RayTracing/RayTracingSrgs.shader
     ShaderLib/Atom/Features/ScreenSpace/ScreenSpaceUtil.azsli
@@ -580,8 +583,11 @@ set(FILES
     Shaders/Reflections/ReflectionScreenSpaceFilter.shader
     Shaders/Reflections/ReflectionScreenSpaceRayTracing.azsl
     Shaders/Reflections/ReflectionScreenSpaceRayTracing.shader
+    Shaders/Reflections/ReflectionScreenSpaceRayTracingClosestHit.azsli
     Shaders/Reflections/ReflectionScreenSpaceRayTracingClosestHit.azsl
     Shaders/Reflections/ReflectionScreenSpaceRayTracingClosestHit.shader
+    Shaders/Reflections/ReflectionScreenSpaceRayTracingClosestHitProcedural.azsl
+    Shaders/Reflections/ReflectionScreenSpaceRayTracingClosestHitProcedural.shader
     Shaders/Reflections/ReflectionScreenSpaceRayTracingCommon.azsli
     Shaders/Reflections/ReflectionScreenSpaceRayTracingMiss.azsl
     Shaders/Reflections/ReflectionScreenSpaceRayTracingMiss.shader

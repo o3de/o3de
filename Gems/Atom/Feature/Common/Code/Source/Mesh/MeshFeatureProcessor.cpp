@@ -2240,6 +2240,7 @@ namespace AZ
 
                 // set the SubMesh data to pass to the RayTracingFeatureProcessor, starting with vertex/index data
                 RayTracingFeatureProcessor::SubMesh subMesh;
+                RayTracingFeatureProcessor::SubMeshMaterial& subMeshMaterial = subMesh.m_material;
                 subMesh.m_positionFormat = PositionStreamFormat;
                 subMesh.m_positionVertexBufferView = streamBufferViews[0];
                 subMesh.m_positionShaderBufferView = const_cast<RHI::Buffer*>(streamBufferViews[0].GetBuffer())->GetBufferView(positionBufferDescriptor);
@@ -2284,27 +2285,27 @@ namespace AZ
                     propertyIndex = material->FindPropertyIndex(s_baseColor_color_Name);
                     if (propertyIndex.IsValid())
                     {
-                        subMesh.m_baseColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
+                        subMeshMaterial.m_baseColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
                     }
 
                     propertyIndex = material->FindPropertyIndex(s_baseColor_factor_Name);
                     if (propertyIndex.IsValid())
                     {
-                        subMesh.m_baseColor *= material->GetPropertyValue<float>(propertyIndex);
+                        subMeshMaterial.m_baseColor *= material->GetPropertyValue<float>(propertyIndex);
                     }
 
                     // metallic
                     propertyIndex = material->FindPropertyIndex(s_metallic_factor_Name);
                     if (propertyIndex.IsValid())
                     {
-                        subMesh.m_metallicFactor = material->GetPropertyValue<float>(propertyIndex);
+                        subMeshMaterial.m_metallicFactor = material->GetPropertyValue<float>(propertyIndex);
                     }
 
                     // roughness
                     propertyIndex = material->FindPropertyIndex(s_roughness_factor_Name);
                     if (propertyIndex.IsValid())
                     {
-                        subMesh.m_roughnessFactor = material->GetPropertyValue<float>(propertyIndex);
+                        subMeshMaterial.m_roughnessFactor = material->GetPropertyValue<float>(propertyIndex);
                     }
 
                     // emissive color
@@ -2316,7 +2317,7 @@ namespace AZ
                             propertyIndex = material->FindPropertyIndex(s_emissive_color_Name);
                             if (propertyIndex.IsValid())
                             {
-                                subMesh.m_emissiveColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
+                                subMeshMaterial.m_emissiveColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
                             }
 
                             // When we have an emissive intensity, the unit of the intensity is defined in the material settings.
@@ -2355,7 +2356,7 @@ namespace AZ
                                         material->GetAsset()->GetId().ToFixedString().c_str());
                                     if (foundEmissiveUnitFunctor)
                                     {
-                                        subMesh.m_emissiveColor *= intensity;
+                                        subMeshMaterial.m_emissiveColor *= intensity;
                                     }
                                 }
                             }
@@ -2370,8 +2371,8 @@ namespace AZ
                         Data::Instance<RPI::Image> image = material->GetPropertyValue<Data::Instance<RPI::Image>>(propertyIndex);
                         if (image.get())
                         {
-                            subMesh.m_textureFlags |= RayTracingSubMeshTextureFlags::BaseColor;
-                            subMesh.m_baseColorImageView = image->GetImageView();
+                            subMeshMaterial.m_textureFlags |= RayTracingSubMeshTextureFlags::BaseColor;
+                            subMeshMaterial.m_baseColorImageView = image->GetImageView();
                             baseColorImage = image;
                         }
                     }
@@ -2382,8 +2383,8 @@ namespace AZ
                         Data::Instance<RPI::Image> image = material->GetPropertyValue<Data::Instance<RPI::Image>>(propertyIndex);
                         if (image.get())
                         {
-                            subMesh.m_textureFlags |= RayTracingSubMeshTextureFlags::Normal;
-                            subMesh.m_normalImageView = image->GetImageView();
+                            subMeshMaterial.m_textureFlags |= RayTracingSubMeshTextureFlags::Normal;
+                            subMeshMaterial.m_normalImageView = image->GetImageView();
                         }
                     }
 
@@ -2393,8 +2394,8 @@ namespace AZ
                         Data::Instance<RPI::Image> image = material->GetPropertyValue<Data::Instance<RPI::Image>>(propertyIndex);
                         if (image.get())
                         {
-                            subMesh.m_textureFlags |= RayTracingSubMeshTextureFlags::Metallic;
-                            subMesh.m_metallicImageView = image->GetImageView();
+                            subMeshMaterial.m_textureFlags |= RayTracingSubMeshTextureFlags::Metallic;
+                            subMeshMaterial.m_metallicImageView = image->GetImageView();
                         }
                     }
 
@@ -2404,8 +2405,8 @@ namespace AZ
                         Data::Instance<RPI::Image> image = material->GetPropertyValue<Data::Instance<RPI::Image>>(propertyIndex);
                         if (image.get())
                         {
-                            subMesh.m_textureFlags |= RayTracingSubMeshTextureFlags::Roughness;
-                            subMesh.m_roughnessImageView = image->GetImageView();
+                            subMeshMaterial.m_textureFlags |= RayTracingSubMeshTextureFlags::Roughness;
+                            subMeshMaterial.m_roughnessImageView = image->GetImageView();
                         }
                     }
 
@@ -2415,8 +2416,8 @@ namespace AZ
                         Data::Instance<RPI::Image> image = material->GetPropertyValue<Data::Instance<RPI::Image>>(propertyIndex);
                         if (image.get())
                         {
-                            subMesh.m_textureFlags |= RayTracingSubMeshTextureFlags::Emissive;
-                            subMesh.m_emissiveImageView = image->GetImageView();
+                            subMeshMaterial.m_textureFlags |= RayTracingSubMeshTextureFlags::Emissive;
+                            subMeshMaterial.m_emissiveImageView = image->GetImageView();
                         }
                     }
 
@@ -2458,13 +2459,14 @@ namespace AZ
 
             uint32_t enumVal = material->GetPropertyValue<uint32_t>(propertyIndex);
             AZ::Name irradianceColorSource = material->GetMaterialPropertiesLayout()->GetPropertyDescriptor(propertyIndex)->GetEnumName(enumVal);
+            RayTracingFeatureProcessor::SubMeshMaterial& subMeshMaterial = subMesh.m_material;
 
             if (irradianceColorSource.IsEmpty() || irradianceColorSource == s_Manual_Name)
             {
                 propertyIndex = material->FindPropertyIndex(s_irradiance_manualColor_Name);
                 if (propertyIndex.IsValid())
                 {
-                    subMesh.m_irradianceColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
+                    subMeshMaterial.m_irradianceColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
                 }
                 else
                 {
@@ -2473,21 +2475,21 @@ namespace AZ
                     propertyIndex = material->FindPropertyIndex(s_irradiance_color_Name);
                     if (propertyIndex.IsValid())
                     {
-                        subMesh.m_irradianceColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
+                        subMeshMaterial.m_irradianceColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
                     }
                     else
                     {
                         AZ_Warning(
                             "MeshFeatureProcessor", false,
                             "No irradiance.manualColor or irradiance.color field found. Defaulting to 1.0f.");
-                        subMesh.m_irradianceColor = AZ::Colors::White;
+                        subMeshMaterial.m_irradianceColor = AZ::Colors::White;
                     }
                 }
             }
             else if (irradianceColorSource == s_BaseColorTint_Name)
             {
                 // Use only the baseColor, no texture on top of it
-                subMesh.m_irradianceColor = subMesh.m_baseColor;
+                subMeshMaterial.m_irradianceColor = subMeshMaterial.m_baseColor;
             }
             else if (irradianceColorSource == s_BaseColor_Name)
             {
@@ -2524,27 +2526,27 @@ namespace AZ
 
                         // We do a simple 'multiply' blend with the base color
                         // Note: other blend modes are currently not supported
-                        subMesh.m_irradianceColor = avgColor * subMesh.m_baseColor;
+                        subMeshMaterial.m_irradianceColor = avgColor * subMeshMaterial.m_baseColor;
                     }
                     else
                     {
                         AZ_Warning("MeshFeatureProcessor", false, "Using BaseColor as irradianceColorSource "
                                 "is currently only supported for textures of type StreamingImage");
                         // Default to the flat base color
-                        subMesh.m_irradianceColor = subMesh.m_baseColor;
+                        subMeshMaterial.m_irradianceColor = subMeshMaterial.m_baseColor;
                     }
                 }
                 else
                 {
                     // No texture, simply copy the baseColor
-                    subMesh.m_irradianceColor = subMesh.m_baseColor;
+                    subMeshMaterial.m_irradianceColor = subMeshMaterial.m_baseColor;
                 }
             }
             else
             {
                 AZ_Warning("MeshFeatureProcessor", false, "Unknown irradianceColorSource value: %s, "
                         "defaulting to 1.0f.", irradianceColorSource.GetCStr());
-                subMesh.m_irradianceColor = AZ::Colors::White;
+                subMeshMaterial.m_irradianceColor = AZ::Colors::White;
             }
 
 
@@ -2552,7 +2554,7 @@ namespace AZ
             propertyIndex = material->FindPropertyIndex(s_irradiance_factor_Name);
             if (propertyIndex.IsValid())
             {
-                subMesh.m_irradianceColor *= material->GetPropertyValue<float>(propertyIndex);
+                subMeshMaterial.m_irradianceColor *= material->GetPropertyValue<float>(propertyIndex);
             }
 
             // set the raytracing transparency from the material opacity factor
@@ -2572,7 +2574,7 @@ namespace AZ
                 }
             }
 
-            subMesh.m_irradianceColor.SetA(opacity);
+            subMeshMaterial.m_irradianceColor.SetA(opacity);
         }
 
         void ModelDataInstance::SetRayTracingReflectionProbeData(

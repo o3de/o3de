@@ -124,7 +124,7 @@ namespace DebugDraw
          * @param color             Color of Obb
          * @param duration          How long to display the Obb for; 0 value will draw for one frame; negative values draw forever
          */
-        virtual void DrawObbOnEntity([[maybe_unused]] const AZ::EntityId& targetEntity, [[maybe_unused]] const AZ::Obb& obb, [[maybe_unused]] const AZ::Color& color, [[maybe_unused]] float duration) {}
+        virtual void DrawObbOnEntity([[maybe_unused]] const AZ::EntityId& targetEntity, [[maybe_unused]] const AZ::Obb& obb, [[maybe_unused]] const AZ::Color& color, [[maybe_unused]] bool enableRayTracing, [[maybe_unused]] float duration) {}
 
         /**
          * Draws text in the world centered at worldLocation
@@ -204,7 +204,7 @@ namespace DebugDraw
          * @param color             Color of sphere
          * @param duration          How long to display the sphere for; 0 value will draw for one frame; negative values draw forever
          */
-        virtual void DrawSphereOnEntity([[maybe_unused]] const AZ::EntityId& targetEntity, [[maybe_unused]] float radius, [[maybe_unused]] const AZ::Color& color, [[maybe_unused]] float duration) {}
+        virtual void DrawSphereOnEntity([[maybe_unused]] const AZ::EntityId& targetEntity, [[maybe_unused]] float radius, [[maybe_unused]] const AZ::Color& color, [[maybe_unused]] bool enableRayTracing, [[maybe_unused]] float duration) {}
     };
     using DebugDrawRequestBus = AZ::EBus<DebugDrawRequests>;
 
