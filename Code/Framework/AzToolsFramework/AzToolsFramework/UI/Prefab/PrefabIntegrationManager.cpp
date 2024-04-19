@@ -150,6 +150,7 @@ namespace AzToolsFramework
             PrefabFocusNotificationBus::Handler::BusConnect(s_editorEntityContextId);
             PrefabInstanceContainerNotificationBus::Handler::BusConnect();
             AZ::Interface<PrefabIntegrationInterface>::Register(this);
+            EntityPropertyEditorNotificationBus::Handler::BusConnect();
             EditorEntityContextNotificationBus::Handler::BusConnect();
             PrefabPublicNotificationBus::Handler::BusConnect();
         }
@@ -163,6 +164,7 @@ namespace AzToolsFramework
 
             PrefabPublicNotificationBus::Handler::BusDisconnect();
             EditorEntityContextNotificationBus::Handler::BusDisconnect();
+            EntityPropertyEditorNotificationBus::Handler::BusDisconnect();
             AZ::Interface<PrefabIntegrationInterface>::Unregister(this);
             PrefabInstanceContainerNotificationBus::Handler::BusDisconnect();
             PrefabFocusNotificationBus::Handler::BusDisconnect();
@@ -177,6 +179,9 @@ namespace AzToolsFramework
         {
             // Update actions whenever a new root prefab is loaded.
             m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier);
+
+            // Update actions whenever component selection in the Inspector changes.
+            m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::ComponentSelectionChangedUpdaterIdentifier);
 
             // Update actions whenever Prefab Focus changes (or is refreshed).
             m_actionManagerInterface->RegisterActionUpdater(PrefabIdentifiers::PrefabFocusChangedUpdaterIdentifier);
@@ -845,16 +850,19 @@ namespace AzToolsFramework
                                 &EntityPropertyEditorRequestBus::Events::VisitComponentEditors,
                                 [prefabOverridePublicInterface](const AzToolsFramework::ComponentEditor* componentEditor)
                                 {
-                                    // TODO - This will actually trigger if a component is selected in another pinned inspector...
-                                    // Maybe lose the selection when focus is lost?
-                                    if (componentEditor->parentWidget()->hasFocus() && componentEditor->IsSelected())
+                                    if (componentEditor->IsSelected())
                                     {
                                         auto components = componentEditor->GetComponents();
 
-                                        // Note: Multiple selection is not currently supported for overrides.
-                                        // Revert overrides on the single component that's displaying override state.
+                                        if (components.size() > 1)
+                                        {
+                                            // We do not support multi-editing with overrides.
+                                            return false;
+                                        }
+
+                                        const auto& component = components.front();
                                         prefabOverridePublicInterface->RevertComponentOverrides(
-                                            AZ::EntityComponentIdPair(components[0]->GetEntityId(), components[0]->GetId()));
+                                            AZ::EntityComponentIdPair(component->GetEntityId(), component->GetId()));
                                     }
 
                                     return true;
@@ -866,37 +874,27 @@ namespace AzToolsFramework
 
                 m_actionManagerInterface->InstallEnabledStateCallback(
                     actionIdentifier,
-                    [prefabPublicInterface = s_prefabPublicInterface,
-                        prefabOverridePublicInterface = m_prefabOverridePublicInterface]() -> bool
+                    [prefabOverridePublicInterface = m_prefabOverridePublicInterface]() -> bool
                     {
-                        // TODO - Change this to check if overrides are on the component specifically.
+                        // Retrieve selected component in the Inspector.
+                        AZStd::unordered_set<AZ::EntityComponentIdPair> selectedEntityComponentIds;
+                        EntityPropertyEditorRequestBus::Broadcast(
+                            &EntityPropertyEditorRequests::GetSelectedComponents, selectedEntityComponentIds);
 
-                        AzToolsFramework::EntityIdList selectedEntities;
-                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
-
-                        if (selectedEntities.size() != 1)
+                        if (selectedEntityComponentIds.size() != 1)
                         {
+                            // Override handling doesn't support multi-editing.
                             return false;
                         }
 
-                        AZ::EntityId selectedEntityId = selectedEntities.front();
-
-                        // Returns false if the selected entity is not owned by a prefab instance. This could happen when the callback
-                        // is triggered after entity selection changes, but prefab propagation does not finish yet to create/reload the
-                        // entity.
-                        if (!prefabPublicInterface->IsOwnedByPrefabInstance(selectedEntityId))
-                        {
-                            return false;
-                        }
-
-                        return !prefabPublicInterface->IsInstanceContainerEntity(selectedEntityId) &&
-                            prefabOverridePublicInterface->AreOverridesPresent(selectedEntityId) &&
-                            prefabOverridePublicInterface->GetEntityOverrideType(selectedEntityId) != OverrideType::AddEntity;
+                        const auto& selectedEntityComponentId = *selectedEntityComponentIds.begin();
+                        return prefabOverridePublicInterface->AreComponentOverridesPresent(selectedEntityComponentId);
                     }
                 );
 
                 // Refresh this action whenever instance propagation ends, as that could have changed overrides on the current selection.
+                m_actionManagerInterface->AddActionToUpdater(
+                    EditorIdentifiers::ComponentSelectionChangedUpdaterIdentifier, actionIdentifier);
                 m_actionManagerInterface->AddActionToUpdater(
                     EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
                 m_actionManagerInterface->AddActionToUpdater(
@@ -1060,6 +1058,15 @@ namespace AzToolsFramework
                     s_containerEntityInterface->RefreshAllContainerEntities(s_editorEntityContextId);
                 }
             );
+        }
+
+        
+        void PrefabIntegrationManager::OnComponentSelectionChanged(EntityPropertyEditor*, const AZStd::unordered_set<AZ::EntityComponentIdPair>&)
+        {
+            if (m_actionManagerInterface)
+            {
+                m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::ComponentSelectionChangedUpdaterIdentifier);
+            }
         }
 
         bool PrefabIntegrationManager::CanCreatePrefabWithCurrentSelection(const AzToolsFramework::EntityIdList& selectedEntities)

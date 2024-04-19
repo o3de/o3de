@@ -264,12 +264,14 @@ namespace AzToolsFramework
         // EntityPropertEditorRequestBus overrides ...
         void GetSelectedAndPinnedEntities(EntityIdList& selectedEntityIds) override;
         void GetSelectedEntities(EntityIdList& selectedEntityIds) override;
+        void GetSelectedComponents(AZStd::unordered_set<AZ::EntityComponentIdPair>& selectedComponentEntityIds) override;
         void SetNewComponentId(AZ::ComponentId componentId) override;
         void VisitComponentEditors(const VisitComponentEditorsCallback& callback) const override;
 
         // EntityPropertyEditorNotificationBus overrides ...
         void OnComponentSelectionChanged(
-            EntityPropertyEditor* entityPropertyEditor, const AZStd::vector<AZ::EntityComponentIdPair>& selectedEntityComponentIds) override;
+            EntityPropertyEditor* entityPropertyEditor,
+            const AZStd::unordered_set<AZ::EntityComponentIdPair>& selectedEntityComponentIds) override;
 
         // TickBus overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
@@ -477,6 +479,7 @@ namespace AzToolsFramework
 
         ComponentEditorVector m_selectedComponentEditors;
         AZ::Entity::ComponentArrayType m_selectedComponents;
+        AZStd::unordered_set<AZ::EntityComponentIdPair> m_selectedEntityComponentIds;
         AZStd::unordered_map<AZ::EntityId, AZ::Entity::ComponentArrayType> m_selectedComponentsByEntityId;
 
         void SaveComponentEditorState();

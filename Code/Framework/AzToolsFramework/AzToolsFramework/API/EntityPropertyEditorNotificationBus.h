@@ -28,7 +28,7 @@ namespace AzToolsFramework
         //! Notifies whenever component selection changes on an EntityPropertyEditor
         virtual void OnComponentSelectionChanged(
             [[maybe_unused]] EntityPropertyEditor* entityPropertyEditor,
-            [[maybe_unused]] const AZStd::vector<AZ::EntityComponentIdPair>& selectedEntityComponentIds)
+            [[maybe_unused]] const AZStd::unordered_set<AZ::EntityComponentIdPair>& selectedEntityComponentIds)
         {}
     };
 

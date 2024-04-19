@@ -759,6 +759,11 @@ namespace AzToolsFramework
         }
     }
 
+    void EntityPropertyEditor::GetSelectedComponents(AZStd::unordered_set<AZ::EntityComponentIdPair>& selectedComponentEntityIds)
+    {
+        selectedComponentEntityIds.insert(m_selectedEntityComponentIds.begin(), m_selectedEntityComponentIds.end());
+    }
+
     void EntityPropertyEditor::SetNewComponentId(AZ::ComponentId componentId)
     {
         m_newComponentId = componentId;
@@ -782,7 +787,7 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::OnComponentSelectionChanged(
         EntityPropertyEditor* entityPropertyEditor,
-        [[maybe_unused]] const AZStd::vector<AZ::EntityComponentIdPair>& selectedEntityComponentIds)
+        [[maybe_unused]] const AZStd::unordered_set<AZ::EntityComponentIdPair>& selectedEntityComponentIds)
     {
         if (entityPropertyEditor != this)
         {
@@ -3774,8 +3779,6 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::UpdateSelectionCache(bool notify)
     {
-        AZStd::vector<AZ::EntityComponentIdPair> selectedEntityComponentIds;
-
         AZ_PROFILE_FUNCTION(AzToolsFramework);
         m_selectedComponentEditors.clear();
         m_selectedComponentEditors.reserve(m_componentEditors.size());
@@ -3794,17 +3797,19 @@ namespace AzToolsFramework
             m_selectedComponents.insert(m_selectedComponents.end(), components.begin(), components.end());
         }
 
+        m_selectedEntityComponentIds.clear();
         m_selectedComponentsByEntityId.clear();
         for (auto component : m_selectedComponents)
         {
             m_selectedComponentsByEntityId[component->GetEntityId()].push_back(component);
-            selectedEntityComponentIds.push_back(AZ::EntityComponentIdPair(component->GetEntityId(), component->GetId()));
+            m_selectedEntityComponentIds.insert(AZ::EntityComponentIdPair(component->GetEntityId(), component->GetId()));
         }
 
+        // TODO - can you move this out now, and save yourself all these bools?
         if (notify)
         {
             EntityPropertyEditorNotificationBus::Broadcast(
-                &EntityPropertyEditorNotifications::OnComponentSelectionChanged, this, selectedEntityComponentIds);
+                &EntityPropertyEditorNotifications::OnComponentSelectionChanged, this, m_selectedEntityComponentIds);
         }
     }
 
