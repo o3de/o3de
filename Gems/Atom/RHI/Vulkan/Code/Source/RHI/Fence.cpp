@@ -148,7 +148,6 @@ namespace AZ
                         device.GetContext().DestroyFence(device.GetNativeDevice(), m_nativeFence, VkSystemAllocator::Get());
                         m_nativeFence = VK_NULL_HANDLE;
                     }
-                    m_signalEvent.Signal();
                 }
                 break;
             case FenceType::TimelineSemaphore:

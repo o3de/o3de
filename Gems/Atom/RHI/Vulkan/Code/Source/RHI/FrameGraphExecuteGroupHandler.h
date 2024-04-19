@@ -7,9 +7,9 @@
  */
 #pragma once
 
-#include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <RHI/CommandList.h>
 #include <RHI/CommandQueue.h>
+#include <Atom/RHI.Reflect/AttachmentEnums.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
 
