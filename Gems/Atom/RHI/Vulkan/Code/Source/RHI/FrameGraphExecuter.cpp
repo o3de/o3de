@@ -80,7 +80,7 @@ namespace AZ
             bool useSemaphoreTrackers = device.GetFeatures().m_signalFenceFromCPU;
             if (useSemaphoreTrackers)
             {
-                semaphoreTrackers = new SemaphoreTrackerCollection;
+                semaphoreTrackers = aznew SemaphoreTrackerCollection;
                 currentSemaphoreHandle = semaphoreTrackers->CreateHandle();
             }
 
