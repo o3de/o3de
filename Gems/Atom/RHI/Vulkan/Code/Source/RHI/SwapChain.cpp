@@ -70,11 +70,6 @@ namespace AZ
             m_swapChainBarrier.m_isValid = true;
         }
 
-        void SwapChain::SetSemaphoreTracker(const AZStd::shared_ptr<SemaphoreTracker>& tracker)
-        {
-            m_semaphoreTracker = tracker;
-        }
-
         bool SwapChain::ProcessRecreation()
         {
             if (m_pendingRecreation)
@@ -281,7 +276,6 @@ namespace AZ
                         AZStd::vector<Semaphore::WaitSemaphore>{ AZStd::make_pair(VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, presentSemaphore) },
                         AZStd::vector<RHI::Ptr<Semaphore>>{ transferSemaphore },
                         {},
-                        nullptr,
                         nullptr);
 
                     // The presentation engine must wait until the ownership transfer has completed.
@@ -351,10 +345,6 @@ namespace AZ
             }
             else
             {
-                if (m_semaphoreTracker)
-                {
-                    m_semaphoreTracker->WaitForSignalAllSemaphores();
-                }
                 m_presentationQueue->QueueCommand(AZStd::move(presentCommand));
                 return acquiredImageIndex;
             }

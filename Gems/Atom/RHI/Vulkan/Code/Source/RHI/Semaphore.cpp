@@ -29,7 +29,7 @@ namespace AZ
             createInfo.flags = 0;
 
             VkSemaphoreTypeCreateInfo timelineCreateInfo{};
-            if (device.GetFeatures().m_signalFenceFromCPU && !forceBinarySemaphore && false)
+            if (device.GetFeatures().m_signalFenceFromCPU && !forceBinarySemaphore)
             {
                 m_type = SemaphoreType::Timeline;
 
@@ -70,18 +70,36 @@ namespace AZ
         {
             AZ_Assert(m_type == SemaphoreType::Timeline, "%s: Invalid Semaphore Type", __FUNCTION__);
             m_pendingValue++;
+            m_semaphoreHandle = {};
+        }
+
+        void Semaphore::SetSemaphoreHandle(AZStd::shared_ptr<SemaphoreTrackerHandle> semaphoreHandle)
+        {
+            m_semaphoreHandle = semaphoreHandle;
         }
 
         void Semaphore::SignalEvent()
         {
-            AZ_Assert(m_type == SemaphoreType::Binary, "%s: Invalid Semaphore Type", __FUNCTION__);
-            m_signalEvent.Signal();
+            if (m_type == SemaphoreType::Binary)
+            {
+                m_signalEvent.Signal();
+            }
+            else
+            {
+                m_semaphoreHandle->SignalSemaphores(1);
+            }
         }
 
         void Semaphore::WaitEvent() const
         {
-            AZ_Assert(m_type == SemaphoreType::Binary, "%s: Invalid Semaphore Type", __FUNCTION__);
-            m_signalEvent.Wait();
+            if (m_type == SemaphoreType::Binary)
+            {
+                if (m_semaphoreHandle)
+                {
+                    m_semaphoreHandle->GetTracker()->WaitForSignalAllSemaphores();
+                }
+                m_signalEvent.Wait();
+            }
         }
 
         void Semaphore::ResetSignalEvent()

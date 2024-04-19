@@ -15,19 +15,17 @@ namespace AZ
     namespace Vulkan
     {
         RHI::ResultCode FrameGraphExecuteGroupHandler::Init(
-            Device& device, const AZStd::vector<RHI::FrameGraphExecuteGroup*>& executeGroups, AZStd::shared_ptr<FenceTracker> fenceTracker)
+            Device& device, const AZStd::vector<RHI::FrameGraphExecuteGroup*>& executeGroups)
         {
             m_device = &device;
             m_executeGroups = executeGroups;
             m_hardwareQueueClass = static_cast<FrameGraphExecuteGroup*>(executeGroups.back())->GetHardwareQueueClass();
-            m_fenceTracker = fenceTracker;
 
             return InitInternal(device, executeGroups);
         }
 
         void FrameGraphExecuteGroupHandler::End()
         {
-            m_workRequest.m_fenceTracker = m_fenceTracker;
             EndInternal();
             CommandQueue* cmdQueue = &m_device->GetCommandQueueContext().GetCommandQueue(m_hardwareQueueClass);
             cmdQueue->ExecuteWork(AZStd::move(m_workRequest));

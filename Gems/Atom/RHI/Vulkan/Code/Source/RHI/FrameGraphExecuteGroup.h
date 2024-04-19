@@ -12,8 +12,6 @@
 #include <RHI/CommandQueue.h>
 #include <RHI/Scope.h>
 
-#include "FenceTracker.h"
-
 namespace AZ
 {
     namespace Vulkan
@@ -30,11 +28,7 @@ namespace AZ
             FrameGraphExecuteGroup() = default;
             AZ_RTTI(FrameGraphExecuteGroup, "{8F39B46F-37D3-4026-AB1A-A78F646F311B}", Base);
 
-            void InitBase(
-                Device& device,
-                const RHI::GraphGroupId& groupId,
-                RHI::HardwareQueueClass hardwareQueueClass,
-                AZStd::shared_ptr<SemaphoreTrackerHandle> semaphoreTracker);
+            void InitBase(Device& device, const RHI::GraphGroupId& groupId, RHI::HardwareQueueClass hardwareQueueClass);
 
             const ExecuteWorkRequest& GetWorkRequest() const;
 
@@ -46,8 +40,6 @@ namespace AZ
 
             virtual AZStd::span<const RHI::Ptr<CommandList>> GetCommandLists() const = 0;
 
-            const AZStd::shared_ptr<FenceTracker>& GetFenceTracker() const;
-
         protected:
             RHI::Ptr<CommandList> AcquireCommandList(VkCommandBufferLevel level) const;
 
@@ -55,7 +47,6 @@ namespace AZ
             RHI::HardwareQueueClass m_hardwareQueueClass = RHI::HardwareQueueClass::Graphics;
             ExecuteWorkRequest m_workRequest;
             RHI::GraphGroupId m_groupId;
-            AZStd::shared_ptr<FenceTracker> m_fenceTracker;
         };
     }
 }

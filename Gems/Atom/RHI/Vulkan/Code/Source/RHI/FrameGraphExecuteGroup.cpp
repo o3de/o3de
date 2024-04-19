@@ -12,19 +12,11 @@ namespace AZ
 {
     namespace Vulkan
     {
-        void FrameGraphExecuteGroup::InitBase(
-            Device& device,
-            const RHI::GraphGroupId& groupId,
-            RHI::HardwareQueueClass hardwareQueueClass,
-            AZStd::shared_ptr<SemaphoreTrackerHandle> semaphoreTracker)
+        void FrameGraphExecuteGroup::InitBase(Device& device, const RHI::GraphGroupId& groupId, RHI::HardwareQueueClass hardwareQueueClass)
         {
             m_device = &device;
             m_groupId = groupId;
             m_hardwareQueueClass = hardwareQueueClass;
-            if (semaphoreTracker)
-            {
-                m_fenceTracker = AZStd::make_shared<FenceTracker>(semaphoreTracker);
-            }
         }
 
         const ExecuteWorkRequest& FrameGraphExecuteGroup::GetWorkRequest() const
@@ -40,11 +32,6 @@ namespace AZ
         const RHI::GraphGroupId& FrameGraphExecuteGroup::GetGroupId() const
         {
             return m_groupId;
-        }
-
-        const AZStd::shared_ptr<FenceTracker>& FrameGraphExecuteGroup::GetFenceTracker() const
-        {
-            return m_fenceTracker;
         }
 
         RHI::Ptr<CommandList> FrameGraphExecuteGroup::AcquireCommandList(VkCommandBufferLevel level) const

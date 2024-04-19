@@ -115,6 +115,7 @@ namespace AZ
             RHI::HardwareQueueClass mergedHardwareQueueClass = RHI::HardwareQueueClass::Graphics;
             uint32_t mergedGroupCost = 0;
             uint32_t mergedSwapchainCount = 0;
+            bool needNewSemaphoreHandle = false;
 
             for (auto it = scopes.begin(); it != scopes.end(); ++it)
             {
@@ -174,13 +175,13 @@ namespace AZ
                         mergedSwapchainCount = 0;
                         mergedHardwareQueueClass = scope.GetHardwareQueueClass();
                         FrameGraphExecuteGroupPrimary* multiScopeContextGroup = AddGroup<FrameGraphExecuteGroupPrimary>();
-                        multiScopeContextGroup->Init(device, AZStd::move(mergedScopes), currentSemaphoreHandle);
+                        multiScopeContextGroup->Init(device, AZStd::move(mergedScopes));
                     }
                 }
 
                 if (useSemaphoreTrackers)
                 {
-                    if (scopePrev && !scopePrev->GetSwapChainsToPresent().empty())
+                    if (needNewSemaphoreHandle)
                     {
                         currentSemaphoreHandle = semaphoreTrackers->CreateHandle();
                     }
@@ -204,16 +205,41 @@ namespace AZ
                             }
                         }
                         userFencesSignalledMap[fence.get()] = true;
+                        fence->SetSemaphoreHandle(currentSemaphoreHandle);
+                        if (fence->GetFenceType() == FenceType::TimelineSemaphore)
+                        {
+                            semaphoreTrackers->AddSemaphores(1);
+                        }
                     }
-                    semaphoreTrackers->AddSemaphores(scope.GetWaitSemaphores().size() + scope.GetWaitFences().size());
-
-                    for (auto& swapchain : scope.GetSwapChainsToPresent())
+                    for (auto& semaphore : scope.GetWaitSemaphores())
                     {
-                        semaphoreTrackers->AddSemaphores(numUnwaitedFences);
-                        numUnwaitedFences = 0;
-                        userFencesSignalledMap.clear();
-                        auto vulkanSwapChain = static_cast<SwapChain*>(swapchain);
-                        vulkanSwapChain->SetSemaphoreTracker(semaphoreTrackers->GetCurrentTracker());
+                        // We want to set the Handle when we wait for the semaphore, not when we signal it
+                        // We could signal the semaphore before a swapchain and wait for it afterwards
+                        // Then the waiting for the signal would be too early
+                        // This would not lead to any deadlocks, but maybe to too much waits in the swapchain
+                        semaphore.second->SetSemaphoreHandle(currentSemaphoreHandle);
+                        if (semaphore.second->GetType() == SemaphoreType::Binary)
+                        {
+                            for (auto [fence, waitedFor] : userFencesSignalledMap)
+                            {
+                                if (!waitedFor)
+                                {
+                                    // Here we assume that the fence is waited for in the same scope as we signal it, but on the CPU
+                                    fence->SetSemaphoreHandle(currentSemaphoreHandle);
+                                    if (fence->GetFenceType() == FenceType::TimelineSemaphore)
+                                    {
+                                        semaphoreTrackers->AddSemaphores(1);
+                                    }
+                                }
+                            }
+                            numUnwaitedFences = 0;
+                            userFencesSignalledMap.clear();
+                            needNewSemaphoreHandle = true;
+                        }
+                        else
+                        {
+                            semaphoreTrackers->AddSemaphores(1);
+                        }
                     }
                 }
 
@@ -230,7 +256,7 @@ namespace AZ
                     // And then create a new group for the current scope with dedicated [1, N] secondary command lists
                     const uint32_t commandListCount = AZStd::max(AZ::DivideAndRoundUp(totalScopeCost, CommandListCostThreshold), 1u);
                     FrameGraphExecuteGroupSecondary* scopeContextGroup = AddGroup<FrameGraphExecuteGroupSecondary>();
-                    scopeContextGroup->Init(device, scope, commandListCount, GetJobPolicy(), currentSemaphoreHandle);
+                    scopeContextGroup->Init(device, scope, commandListCount, GetJobPolicy());
                 }
                 scopePrev = &scope;
             }
@@ -241,8 +267,7 @@ namespace AZ
                 mergedGroupCost = 0;
                 mergedSwapchainCount = 0;
                 FrameGraphExecuteGroupPrimary* multiScopeContextGroup = AddGroup<FrameGraphExecuteGroupPrimary>();
-                multiScopeContextGroup->Init(
-                    device, AZStd::move(mergedScopes), currentSemaphoreHandle);
+                multiScopeContextGroup->Init(device, AZStd::move(mergedScopes));
             }
 #endif
             // Create the handlers to manage the execute groups.
@@ -312,8 +337,7 @@ namespace AZ
                     ? static_cast<FrameGraphExecuteGroupHandler*>(aznew FrameGraphExecuteGroupPrimaryHandler)
                     : static_cast<FrameGraphExecuteGroupHandler*>(aznew FrameGraphExecuteGroupSecondaryHandler));
 
-            auto firstGroup = static_cast<FrameGraphExecuteGroup*>(groups.front());
-            handler->Init(GetDevice(), groups, firstGroup->GetFenceTracker());
+            handler->Init(GetDevice(), groups);
             m_groupHandlers.insert({ groupId, AZStd::move(handler) });
         }
     } // namespace Vulkan

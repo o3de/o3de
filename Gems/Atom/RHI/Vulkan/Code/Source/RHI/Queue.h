@@ -63,8 +63,7 @@ namespace AZ
                 const AZStd::vector<Semaphore::WaitSemaphore>& waitSemaphoresInfo,
                 const AZStd::vector<RHI::Ptr<Semaphore>>& semaphoresToSignal,
                 const AZStd::vector<RHI::Ptr<Fence>>& fencesToWaitFor,
-                Fence* fenceToSignal,
-                SemaphoreTrackerHandle* semaphoreTrackerHandle);
+                Fence* fenceToSignal);
 
             /// Waits (blocks) until all fences are signaled in the fence-list.
             void WaitForIdle();

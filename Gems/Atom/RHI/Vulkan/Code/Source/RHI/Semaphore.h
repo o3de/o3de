@@ -7,9 +7,10 @@
  */
 #pragma once
 
-#include <Atom_RHI_Vulkan_Platform.h>
 #include <Atom/RHI/DeviceObject.h>
+#include <Atom_RHI_Vulkan_Platform.h>
 #include <AzCore/Memory/PoolAllocator.h>
+#include <RHI/SemaphoreTracker.h>
 #include <RHI/SignalEvent.h>
 
 namespace AZ
@@ -43,6 +44,7 @@ namespace AZ
             // Timeline semaphore functions
             uint64_t GetPendingValue();
             void IncrementPendingValue();
+            void SetSemaphoreHandle(AZStd::shared_ptr<SemaphoreTrackerHandle> semaphoreHandle);
 
             // Binary semaphore functions
             void SignalEvent();
@@ -70,7 +72,7 @@ namespace AZ
             AZ::Vulkan::SignalEvent m_signalEvent;
             bool m_recyclable = true;
             SemaphoreType m_type = SemaphoreType::Invalid;
-
+            AZStd::shared_ptr<SemaphoreTrackerHandle> m_semaphoreHandle;
             uint64_t m_pendingValue = 0;
         };
     }

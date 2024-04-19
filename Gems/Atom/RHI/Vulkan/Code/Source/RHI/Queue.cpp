@@ -40,8 +40,7 @@ namespace AZ
             const AZStd::vector<Semaphore::WaitSemaphore>& waitSemaphoresInfo,
             const AZStd::vector<RHI::Ptr<Semaphore>>& semaphoresToSignal,
             const AZStd::vector<RHI::Ptr<Fence>>& fencesToWaitFor,
-            Fence* fenceToSignal,
-            SemaphoreTrackerHandle* semaphoreTrackerHandle)
+            Fence* fenceToSignal)
         {
             AZStd::vector<VkCommandBuffer> vkCommandBuffers;
             AZStd::vector<VkSemaphore> vkWaitSemaphoreVector; // vulkan.h has a #define called vkWaitSemaphores, so we name this differently
@@ -62,6 +61,7 @@ namespace AZ
                 { 
                     return item->GetNativeCommandBuffer(); 
                 });
+                bool hasTimelineSemaphore = false;
                 vkSignalSemaphores.reserve(semaphoresToSignal.size());
                 for (const auto& semaphore : semaphoresToSignal)
                 {
@@ -73,19 +73,19 @@ namespace AZ
                     else
                     {
                         vkSignalSemaphoreValues.push_back(semaphore->GetPendingValue());
+                        hasTimelineSemaphore = true;
                     }
                 }
                 vkWaitPipelineStages.reserve(waitSemaphoresInfo.size());
                 vkWaitSemaphoreVector.reserve(waitSemaphoresInfo.size());
-                bool hasTimelineSemaphore = false;
                 for (const auto& item : waitSemaphoresInfo)
                 {
                     vkWaitPipelineStages.push_back(item.first);
                     vkWaitSemaphoreVector.push_back(item.second->GetNativeSemaphore());
                     // Wait until the wait semaphores has been submitted for signaling.
+                    item.second->WaitEvent();
                     if (item.second->GetType() == SemaphoreType::Binary)
                     {
-                        item.second->WaitEvent();
                         vkWaitSemaphoreValues.push_back(0);
                     }
                     else
@@ -110,14 +110,13 @@ namespace AZ
 
                     if ((fenceToSignal && fenceToSignal->GetFenceType() == FenceType::TimelineSemaphore))
                     {
-                        vkSignalSemaphoreValues.resize(vkSignalSemaphores.size(), 0); // Add 'dummy' values for binary sempahores
                         vkSignalSemaphoreValues.push_back(fenceToSignal->GetPendingValue());
                         vkSignalSemaphores.push_back(fenceToSignal->GetNativeSemaphore());
-                        timelineSemaphoresSubmitInfos.signalSemaphoreValueCount = static_cast<uint32_t>(vkSignalSemaphoreValues.size());
-                        timelineSemaphoresSubmitInfos.pSignalSemaphoreValues = vkSignalSemaphoreValues.data();
                     }
+                    timelineSemaphoresSubmitInfos.signalSemaphoreValueCount = static_cast<uint32_t>(vkSignalSemaphoreValues.size());
+                    timelineSemaphoresSubmitInfos.pSignalSemaphoreValues =
+                        vkSignalSemaphoreValues.empty() ? nullptr : vkSignalSemaphoreValues.data();
 
-                    vkWaitSemaphoreValues.resize(vkWaitSemaphoreVector.size(), 0); // Add 'dummy' values for binary sempahores
                     for (auto& fence : fencesToWaitFor)
                     {
                         AZ_Assert(
@@ -153,18 +152,10 @@ namespace AZ
             AssertSuccess(result);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
-            if (semaphoreTrackerHandle)
-            {
-                int numFencestoSignal = fenceToSignal != nullptr;
-                semaphoreTrackerHandle->SignalSemaphores(numFencestoSignal + semaphoresToSignal.size());
-            }
             // Signal all signaling semaphores that they can be used.
             for (const auto& item : semaphoresToSignal)
             {
-                if (item->GetType() == SemaphoreType::Binary)
-                {
-                    item->SignalEvent();
-                }
+                item->SignalEvent();
             }
 
             if (fenceToSignal && fenceToSignal->GetFenceType() == FenceType::Fence)

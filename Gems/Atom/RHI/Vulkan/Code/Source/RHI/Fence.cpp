@@ -32,6 +32,10 @@ namespace AZ
 
         void Fence::SignalEvent()
         {
+            if (m_semaphoreHandle)
+            {
+                m_semaphoreHandle->SignalSemaphores(1);
+            }
             switch (m_fenceType)
             {
             case FenceType::Fence:
@@ -55,6 +59,11 @@ namespace AZ
         {
             AZ_Assert(m_fenceType == FenceType::TimelineSemaphore, "Vulkan Fence::GetPendingValue: Invalid type");
             return m_pendingValue;
+        }
+
+        void Fence::SetSemaphoreHandle(AZStd::shared_ptr<SemaphoreTrackerHandle> semaphoreHandle)
+        {
+            m_semaphoreHandle = semaphoreHandle;
         }
 
         void Fence::SetNameInternal(const AZStd::string_view& name)
@@ -139,7 +148,6 @@ namespace AZ
                         device.GetContext().DestroyFence(device.GetNativeDevice(), m_nativeFence, VkSystemAllocator::Get());
                         m_nativeFence = VK_NULL_HANDLE;
                     }
-                    // Signal any pending thread.
                     m_signalEvent.Signal();
                 }
                 break;
@@ -156,6 +164,8 @@ namespace AZ
             default:
                 break;
             }
+            // Signal any pending thread.
+            SignalEvent();
         }
 
         void Fence::SignalOnCpuInternal()
@@ -222,6 +232,7 @@ namespace AZ
 
         void Fence::ResetInternal()
         {
+            m_semaphoreHandle = {};
             switch (m_fenceType)
             {
             case FenceType::Fence:

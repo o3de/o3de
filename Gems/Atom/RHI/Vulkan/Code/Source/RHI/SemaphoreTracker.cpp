@@ -59,6 +59,11 @@ namespace AZ
             return m_trackers.back();
         };
 
+        const AZStd::shared_ptr<SemaphoreTracker>& SemaphoreTrackerCollection::GetTracker(int index)
+        {
+            return m_trackers[index];
+        }
+
         void SemaphoreTrackerCollection::SignalSemaphores(int firstSemaphoreToTrigger, int numSemphores)
         {
             for (int i = firstSemaphoreToTrigger; i < m_trackers.size(); i++)
@@ -77,6 +82,11 @@ namespace AZ
         void SemaphoreTrackerHandle::SignalSemaphores(int numSemaphores)
         {
             m_tracker->SignalSemaphores(m_firstSemaphoreToTrigger, numSemaphores);
+        }
+
+        const AZStd::shared_ptr<SemaphoreTracker>& SemaphoreTrackerHandle::GetTracker()
+        {
+            return m_tracker->GetTracker(m_firstSemaphoreToTrigger);
         }
 
     } // namespace Vulkan

@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#include <Atom/RHI/FenceTracker.h>
 #include <RHI/CommandList.h>
 #include <RHI/CommandQueue.h>
 #include <RHI/FrameGraphExecuteGroup.h>
@@ -35,12 +34,7 @@ namespace AZ::Vulkan
         FrameGraphExecuteGroupSecondary() = default;
         ~FrameGraphExecuteGroupSecondary() = default;
 
-        void Init(
-            Device& device,
-            const Scope& scope,
-            uint32_t commandListCount,
-            RHI::JobPolicy globalJobPolicy,
-            AZStd::shared_ptr<SemaphoreTrackerHandle> semaphoreTracker);
+        void Init(Device& device, const Scope& scope, uint32_t commandListCount, RHI::JobPolicy globalJobPolicy);
 
         //////////////////////////////////////////////////////////////////////////
         // FrameGraphExecuteGroup

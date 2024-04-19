@@ -9,6 +9,7 @@
 
 #include <Atom/RHI/Fence.h>
 #include <AzCore/Memory/PoolAllocator.h>
+#include <RHI/SemaphoreTracker.h>
 #include <RHI/SignalEvent.h>
 
 namespace AZ
@@ -54,6 +55,7 @@ namespace AZ
             // VkSemaphore functions
             VkSemaphore GetNativeSemaphore() const;
             uint64_t GetPendingValue() const;
+            void SetSemaphoreHandle(AZStd::shared_ptr<SemaphoreTrackerHandle> semaphoreHandle);
 
         private:
             Fence() = default;
@@ -80,6 +82,7 @@ namespace AZ
 
             VkSemaphore m_nativeSemaphore = VK_NULL_HANDLE;
             uint64_t m_pendingValue = 0;
+            AZStd::shared_ptr<SemaphoreTrackerHandle> m_semaphoreHandle;
         };
     } // namespace Vulkan
 } // namespace AZ

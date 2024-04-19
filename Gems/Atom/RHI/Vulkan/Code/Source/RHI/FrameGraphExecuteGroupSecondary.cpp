@@ -10,7 +10,6 @@
 #include <RHI/CommandList.h>
 #include <RHI/CommandPool.h>
 #include <RHI/Device.h>
-#include <RHI/FenceTracker.h>
 #include <RHI/FrameGraphExecuteGroupSecondary.h>
 #include <RHI/Scope.h>
 #include <RHI/SwapChain.h>
@@ -18,13 +17,9 @@
 namespace AZ::Vulkan
 {
     void FrameGraphExecuteGroupSecondary::Init(
-        Device& device,
-        const Scope& scope,
-        uint32_t commandListCount,
-        RHI::JobPolicy globalJobPolicy,
-        AZStd::shared_ptr<SemaphoreTrackerHandle> semaphoreTracker)
+        Device& device, const Scope& scope, uint32_t commandListCount, RHI::JobPolicy globalJobPolicy)
     {
-        Base::InitBase(device, scope.GetFrameGraphGroupId(), scope.GetHardwareQueueClass(), semaphoreTracker);
+        Base::InitBase(device, scope.GetFrameGraphGroupId(), scope.GetHardwareQueueClass());
         m_scope = &scope;
         m_secondaryCommands.resize(commandListCount);
 
@@ -45,7 +40,6 @@ namespace AZ::Vulkan
         request.m_commandLists = reinterpret_cast<RHI::CommandList*const*>(m_secondaryCommands.data());
         request.m_commandListCount = commandListCount;
         request.m_jobPolicy = globalJobPolicy;
-        request.m_fenceTracker = m_fenceTracker;
         Base::Init(request);
 
         m_workRequest.m_debugLabel = AZStd::string::format("Framegraph %s Group", m_scope->GetId().GetCStr());

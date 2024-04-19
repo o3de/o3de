@@ -11,8 +11,6 @@
 #include <RHI/CommandList.h>
 #include <RHI/CommandQueue.h>
 
-#include "FenceTracker.h"
-
 #include <AzCore/Memory/SystemAllocator.h>
 
 namespace AZ
@@ -38,10 +36,7 @@ namespace AZ
             FrameGraphExecuteGroupHandler() = default;
             virtual ~FrameGraphExecuteGroupHandler() = default;
 
-            RHI::ResultCode Init(
-                Device& device,
-                const AZStd::vector<RHI::FrameGraphExecuteGroup*>& executeGroups,
-                AZStd::shared_ptr<FenceTracker> fenceTracker);
+            RHI::ResultCode Init(Device& device, const AZStd::vector<RHI::FrameGraphExecuteGroup*>& executeGroups);
             void End();
 
             bool IsComplete() const;
@@ -58,7 +53,6 @@ namespace AZ
             RHI::HardwareQueueClass m_hardwareQueueClass = RHI::HardwareQueueClass::Graphics;
             AZStd::vector<RHI::FrameGraphExecuteGroup*> m_executeGroups;
             bool m_isExecuted = false;
-            AZStd::shared_ptr<FenceTracker> m_fenceTracker;
         };
     }
 }
