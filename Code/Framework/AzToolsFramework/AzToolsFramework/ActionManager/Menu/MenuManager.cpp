@@ -599,15 +599,13 @@ namespace AzToolsFramework
     {
         if (m_lastDisplayedMenuIdentifier.empty())
         {
-            return AZ::Failure(AZStd::string::format(
-                "Menu Manager - Could not return last context menu position. No menu was displayed yet."));
+            return AZ::Failure("Menu Manager - Could not return last context menu position. No menu was displayed yet.");
         }
 
         auto menuIterator = m_menus.find(m_lastDisplayedMenuIdentifier);
         if (menuIterator == m_menus.end())
         {
-            return AZ::Failure(
-                AZStd::string::format("Menu Manager - Could not return last context menu position. Menu could not be found."));
+            return AZ::Failure("Menu Manager - Could not return last context menu position. Menu could not be found.");
         }
 
         return menuIterator->second.GetMenuPosition();

@@ -467,9 +467,10 @@ AZ::Vector3 SandboxIntegrationManager::GetWorldPositionAtViewportCenter()
 
 AZ::Vector3 SandboxIntegrationManager::GetWorldPositionAtViewportInteraction() const
 {
-    if (GetIEditor() && GetIEditor()->GetViewManager())
+    const auto& iEditor = GetIEditor();
+    if (const auto& viewManager = (iEditor != nullptr) ? iEditor->GetViewManager() : nullptr)
     {
-        return GetIEditor()->GetViewManager()->GetClickPositionInViewportSpace();
+        return viewManager->GetClickPositionInViewportSpace();
     }
 
     return AZ::Vector3::CreateZero();
