@@ -10,6 +10,7 @@
 
 #include <RayTracing/RayTracingResourceList.h>
 #include <RayTracing/RayTracingIndexList.h>
+#include <RayTracing/RayTracingRingBuffer.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
 #include <Atom/RHI/RayTracingBufferPools.h>
@@ -355,10 +356,10 @@ namespace AZ
             RHI::AttachmentId GetTlasAttachmentId() const { return m_tlasAttachmentId; }
 
             //! Retrieves the GPU buffer containing information for all ray tracing meshes.
-            const Data::Instance<RPI::Buffer> GetMeshInfoGpuBuffer() const { return m_meshInfoGpuBuffer[m_currentMeshInfoFrameIndex]; }
+            const Data::Instance<RPI::Buffer> GetMeshInfoGpuBuffer() const { return m_meshInfoGpuBuffer.GetCurrentBuffer(); }
 
             //! Retrieves the GPU buffer containing information for all ray tracing materials.
-            const Data::Instance<RPI::Buffer> GetMaterialInfoGpuBuffer() const { return m_materialInfoGpuBuffer[m_currentMaterialInfoFrameIndex]; }
+            const Data::Instance<RPI::Buffer> GetMaterialInfoGpuBuffer() const { return m_materialInfoGpuBuffer.GetCurrentBuffer(); }
 
             //! Updates the RayTracingSceneSrg and RayTracingMaterialSrg, called after the TLAS is allocated in the RayTracingAccelerationStructurePass
             void UpdateRayTracingSrgs();
@@ -454,12 +455,8 @@ namespace AZ
             // vector of MeshInfo, transferred to the meshInfoGpuBuffer
             using MeshInfoVector = AZStd::vector<MeshInfo>;
             MeshInfoVector m_meshInfos;
-            static const uint32_t BufferFrameCount = 3;
-            Data::Instance<RPI::Buffer> m_meshInfoGpuBuffer[BufferFrameCount];
-            uint32_t m_currentMeshInfoFrameIndex = 0;
-
-            Data::Instance<RPI::Buffer> m_proceduralGeometryInfoGpuBuffer[BufferFrameCount];
-            uint32_t m_currentProceduralGeometryInfoFrameIndex = 0;
+            RayTracingRingBuffer m_meshInfoGpuBuffer{ "RayTracingMeshInfo", RPI::CommonBufferPoolType::ReadOnly, sizeof(MeshInfo) };
+            RayTracingRingBuffer m_proceduralGeometryInfoGpuBuffer{ "ProceduralGeometryInfo", RPI::CommonBufferPoolType::ReadOnly, RHI::Format::R32G32_UINT };
 
             // structure for data in the m_materialInfoBuffer, shaders that use the buffer must match this type
             struct alignas(16) MaterialInfo
@@ -492,8 +489,7 @@ namespace AZ
             using MaterialInfoVector = AZStd::vector<MaterialInfo>;
             MaterialInfoVector m_materialInfos;
             MaterialInfoVector m_proceduralGeometryMaterialInfos;
-            Data::Instance<RPI::Buffer> m_materialInfoGpuBuffer[BufferFrameCount];
-            uint32_t m_currentMaterialInfoFrameIndex = 0;
+            RayTracingRingBuffer m_materialInfoGpuBuffer{ "RayTracingMaterialInfo", RPI::CommonBufferPoolType::ReadOnly, sizeof(MaterialInfo) };
 
             // update flags
             bool m_meshInfoBufferNeedsUpdate = false;
@@ -525,9 +521,8 @@ namespace AZ
             RayTracingIndexList<NumMaterialTexturesPerMesh> m_materialTextureIndices;
 
             // Gpu buffers for the mesh and material index lists
-            Data::Instance<RPI::Buffer> m_meshBufferIndicesGpuBuffer[BufferFrameCount];
-            Data::Instance<RPI::Buffer> m_materialTextureIndicesGpuBuffer[BufferFrameCount];
-            uint32_t m_currentIndexListFrameIndex = 0;
+            RayTracingRingBuffer m_meshBufferIndicesGpuBuffer{ "RayTracingMeshBufferIndices", RPI::CommonBufferPoolType::ReadOnly, RHI::Format::R32_UINT };
+            RayTracingRingBuffer m_materialTextureIndicesGpuBuffer{ "RayTracingMaterialTextureIndices", RPI::CommonBufferPoolType::ReadOnly, RHI::Format::R32_UINT };
 
             uint32_t m_skinnedMeshCount = 0;
 

@@ -33,8 +33,7 @@ namespace AZ
             const VkPhysicalDeviceAccelerationStructurePropertiesKHR& accelerationStructureProperties = physicalDevice.GetPhysicalDeviceAccelerationStructureProperties();
                         
             // advance to the next buffer
-            m_currentBufferIndex = (m_currentBufferIndex + 1) % BufferCount;
-            TlasBuffers& buffers = m_buffers[m_currentBufferIndex];
+            TlasBuffers& buffers = m_buffers.AdvanceCurrentElement();
 
             if (buffers.m_accelerationStructure)
             {
