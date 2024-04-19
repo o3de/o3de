@@ -55,7 +55,7 @@ namespace AzToolsFramework
                     ->Attribute(AZ::Script::Attributes::Category, "Prefab")
                     ->Attribute(AZ::Script::Attributes::Module, "prefab")
                     ->Event("AreOverridesPresent", &PrefabOverridePublicInterface::AreOverridesPresent)
-                    ->Event("AreOverridesPresent", &PrefabOverridePublicInterface::AreComponentOverridesPresent)
+                    ->Event("AreComponentOverridesPresent", &PrefabOverridePublicInterface::AreComponentOverridesPresent)
                     ->Event("RevertOverrides", &PrefabOverridePublicInterface::RevertOverrides);
             }
         }
