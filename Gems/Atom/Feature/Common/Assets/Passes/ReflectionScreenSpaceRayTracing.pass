@@ -221,6 +221,8 @@
                 "RayGenerationShaderName": "RayGeneration",
                 "ClosestHitShaderAsset": { "FilePath": "Shaders/Reflections/ReflectionScreenSpaceRayTracingClosestHit.shader" },
                 "ClosestHitShaderName": "ClosestHit",
+                "ClosestHitProceduralShaderAsset": { "FilePath": "Shaders/Reflections/ReflectionScreenSpaceRayTracingClosestHitProcedural.shader" },
+                "ClosestHitProceduralShaderName": "ClosestHitProcedural",
                 "MissShaderAsset": { "FilePath": "Shaders/Reflections/ReflectionScreenSpaceRayTracingMiss.shader" },
                 "MissShaderName": "Miss",
                 "MaxPayloadSize": 80,

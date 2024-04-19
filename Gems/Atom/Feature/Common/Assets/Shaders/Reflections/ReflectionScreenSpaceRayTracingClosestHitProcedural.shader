@@ -1,5 +1,5 @@
 {
-    "Source" : "ReflectionScreenSpaceRayTracingClosestHit.azsl",
+    "Source" : "ReflectionScreenSpaceRayTracingClosestHitProcedural.azsl",
     "DrawList" : "RayTracing",
 
     "AddBuildArguments": 
@@ -13,7 +13,7 @@
         [
             {
                 "type": "RayTracing",
-                "name": "ClosestHit"
+                "name": "ClosestHitProcedural"
             }
         ]
     },
