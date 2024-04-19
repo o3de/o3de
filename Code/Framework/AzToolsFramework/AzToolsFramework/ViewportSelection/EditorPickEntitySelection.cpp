@@ -88,7 +88,25 @@ namespace AzToolsFramework
 
         const AzFramework::CameraState cameraState = GetCameraState(viewportId);
 
-        m_cachedEntityIdUnderCursor = m_editorHelpers->FindEntityIdUnderCursor(cameraState, mouseInteraction).ContainerAncestorEntityId();
+        auto result = m_editorHelpers->FindEntityIdUnderCursor(cameraState, mouseInteraction);
+
+        // is entity pick mode enabled?
+        bool isEntityPickModeEnabled = false;
+        if (auto viewportEditorModeTracker = AZ::Interface<AzToolsFramework::ViewportEditorModeTrackerInterface>::Get())
+        {
+            isEntityPickModeEnabled = viewportEditorModeTracker->GetViewportEditorModes({ AzToolsFramework::GetEntityContextId() })
+                                          ->IsModeActive(AzToolsFramework::ViewportEditorMode::Pick);
+        }
+
+        // If entity pick mode is enabled, just select the entity itself.
+        if (isEntityPickModeEnabled)
+        {
+            m_cachedEntityIdUnderCursor = result.EntityIdUnderCursor();
+        }
+        else
+        {
+            m_cachedEntityIdUnderCursor = result.ContainerAncestorEntityId();
+        }
 
         // when left clicking, if we successfully clicked an entity, assign that
         // to the entity field selected in the entity inspector (RPE)
