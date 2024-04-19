@@ -13,8 +13,6 @@
 #include <RHI/CommandList.h>
 #include <RHI/Semaphore.h>
 
-#include "SemaphoreTracker.h"
-
 namespace AZ
 {
     namespace Vulkan
