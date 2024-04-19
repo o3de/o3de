@@ -32,23 +32,49 @@ namespace AZ::AllocatorStorage
                 {
                     m_allocator = Environment::CreateVariable<Allocator>(AzTypeInfo<Allocator>::Name());
                 }
+#if defined(CARBONATED)
+                s_AllocatorEnvironmentVariable = &m_allocator;
+#endif
             }
+
+#if defined(CARBONATED)
+            ~AllocatorEnvironmentVariable()
+            {
+                s_AllocatorEnvironmentVariable = nullptr;
+            }
+#endif
 
             Allocator& operator*() const
             {
                 return *m_allocator;
             }
 
+#if defined(CARBONATED)
+            inline static EnvironmentVariable<Allocator>* s_AllocatorEnvironmentVariable{};
+#endif
         private:
             EnvironmentVariable<Allocator> m_allocator;
         };
 
     public:
+#if defined(CARBONATED)
+        static bool HasAllocator()
+        {
+            static AllocatorEnvironmentVariable s_allocator;
+            return AllocatorEnvironmentVariable::s_AllocatorEnvironmentVariable != nullptr;
+        }
+        AZ_FORCE_INLINE static IAllocator& GetAllocator()
+        {
+            HasAllocator();
+            return **AllocatorEnvironmentVariable::s_AllocatorEnvironmentVariable;
+        }
+#else
         static IAllocator& GetAllocator()
         {
             static AllocatorEnvironmentVariable s_allocator;
             return *s_allocator;
         }
+#endif
     };
 } // namespace AZ::AllocatorStorage
 
@@ -65,6 +91,12 @@ namespace AZ::Internal
         {
             return StoragePolicy::GetAllocator();
         }
+#if defined(CARBONATED)
+        AZ_FORCE_INLINE static bool HasAllocator()
+        {
+            return StoragePolicy::HasAllocator();
+        }
+#endif
     };
 } // namespace AZ::Internal
 
