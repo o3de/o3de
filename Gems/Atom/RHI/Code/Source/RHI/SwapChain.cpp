@@ -180,7 +180,11 @@ namespace AZ::RHI
     {
         if (m_descriptor.m_isXrSwapChain)
         {
+#if defined (AZ_FORCE_CPU_GPU_INSYNC)
+            return m_images[0].get();
+#else
             return m_images[m_xrSystem->GetCurrentImageIndex(m_descriptor.m_xrSwapChainIndex)].get();
+#endif
         }
         return m_images[m_currentImageIndex].get();
     }

@@ -160,4 +160,6 @@ set(FILES
     Source/RHI/Conversion.cpp
     Source/RHI/Conversion.h
     Source/RHI/WindowSurfaceBus.h
+    Source/RHI/SubpassDependencies.cpp
+    Source/RHI/SubpassDependencies.h
 )

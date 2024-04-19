@@ -189,6 +189,13 @@ namespace AZ::RHI
         {
             return m_frameGraph.UseQueryPool(queryPool, interval, type, access);
         }
+
+        //! Declares that this scope requires @subpassDependencies data to build the RHI internal
+        //! scope. This function is only called when there's more than one subpass.
+        ResultCode UseSubpassDependencies(AZStd::shared_ptr<SubpassDependencies> subpassDependencies)
+        {
+            return m_frameGraph.UseSubpassDependencies(subpassDependencies);
+        }
             
         //! Declares that this scope depends on the given scope id, and must wait for it to complete.
         void ExecuteAfter(const ScopeId& producerScopeId)

@@ -51,6 +51,15 @@ namespace AZ
             PipelineGlobalConnectionList m_pipelineGlobalConnections;
 
             Name m_pipelineViewTag;
+
+            //! Only applicable for ParentPass.
+            //! If set to "true" then:
+            //! 0- Yoú may get performance benefits if the GPU is a Tiled Based Renderer and the RHI supports TBR (like Vulkan).
+            //!    This is typically the case for Mobile and XR platforms.
+            //! 1- All Child passes must be RasterPass or subclass of RasterPass.
+            //! 2- The Child passes will be considered as mergeable into sequential subpasses (Where each subpass writes to the same Tile sequentially
+            //!    before committing the Tile to main system memory with the result).
+            bool m_mergeChildrenAsSubpasses = false;
         };
     } // namespace RPI
 } // namespace AZ

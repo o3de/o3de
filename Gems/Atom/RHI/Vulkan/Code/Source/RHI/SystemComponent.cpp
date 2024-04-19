@@ -46,6 +46,7 @@
 #include <RHI/RayTracingTlas.h>
 #include <RHI/RayTracingPipelineState.h>
 #include <RHI/RayTracingShaderTable.h>
+#include <RHI/RenderPass.h>
 #include <Atom/RHI.Reflect/Vulkan/Base.h>
 #include <Atom/RHI/FactoryManagerBus.h>
 #include <Atom/RHI/RayTracingPipelineState.h>
@@ -276,5 +277,14 @@ namespace AZ
         {
             return DispatchRaysIndirectBuffer::Create();
         }
+
+        ///////////////////////////////////////////////////////////////////
+        // SubpassDependenciesBuilderInterface
+        AZStd::shared_ptr<RHI::SubpassDependencies> SystemComponent::BuildSubpassDependencies(
+            const RHI::RenderAttachmentLayout& layout) const
+        {
+            return RenderPass::BuildNativeSubpassDependencies(layout);
+        }
+        ///////////////////////////////////////////////////////////////////
     }
 }

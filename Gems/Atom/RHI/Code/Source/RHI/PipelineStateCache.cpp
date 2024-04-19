@@ -274,7 +274,7 @@ namespace AZ::RHI
     }
 
     bool PipelineStateCache::InsertPipelineState(PipelineStateSet& pipelineStateSet, PipelineStateEntry pipelineStateEntry)
-    {
+    {        
         auto ret = pipelineStateSet.insert(pipelineStateEntry);
         return ret.second;
     }

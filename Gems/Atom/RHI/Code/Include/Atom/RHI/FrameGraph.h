@@ -107,6 +107,7 @@ namespace AZ::RHI
         ResultCode UseCopyAttachment(const BufferScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access);
         ResultCode UseCopyAttachment(const ImageScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access);
         ResultCode UseQueryPool(Ptr<QueryPool> queryPool, const RHI::Interval& interval, QueryPoolScopeAttachmentType type, ScopeAttachmentAccess access);
+        ResultCode UseSubpassDependencies(AZStd::shared_ptr<SubpassDependencies> subpassDependencies);
         void ExecuteAfter(const ScopeId& scopeId);
         void ExecuteBefore(const ScopeId& scopeId);
         void SignalFence(Fence& fence);
@@ -188,7 +189,10 @@ namespace AZ::RHI
             ScopeAttachmentAccess access,
             const BufferScopeAttachmentDescriptor& descriptor);
 
-        ResultCode TopologicalSort();            
+
+        //! @param requiresSortForSubpasses If true, a second sort is executed after the topological sort
+        //!        that makes sure subpasses get grouped consecutively.
+        ResultCode TopologicalSort(bool requiresSortForSubpasses);            
             
         // The type of edge connection between two node graphs.
         enum class GraphEdgeType : uint16_t
@@ -234,5 +238,9 @@ namespace AZ::RHI
         bool m_isCompiled = false;
         bool m_isBuilding = false;
         size_t m_frameCount = 0;
+        //! Becomes true if the Graph contains Subpasses.
+        //! This will be used as a hint for the Topological Sort to do a second sort
+        //! that groups Subpasses consecutively.
+        bool m_requiresSortForSubpasses = false;
     };
 }

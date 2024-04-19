@@ -1085,7 +1085,7 @@ namespace AZ
                         }
                         else if (child->HasDrawListTag())
                         {
-                            // only need to process RasterPass since it and its derived classes need to use draw list tag to 
+                            // Only need to process RasterPass since it and its derived classes need to use draw list tag to 
                             // acquire OutputAttachmentLayout and MultisampleState
                             RasterPass* rasterPass = azrtti_cast<RasterPass*>(child.get());
                             if (rasterPass == nullptr)
@@ -1101,7 +1101,7 @@ namespace AZ
                                 m_pipelineStatesLookup[drawListTag].emplace_back();
                                 m_pipelineStatesLookup[drawListTag][0].m_multisampleState = rasterPass->GetMultisampleState();
                                 m_pipelineStatesLookup[drawListTag][0].m_renderAttachmentConfiguration = rasterPass->GetRenderAttachmentConfiguration();
-                                rasterPass->SetPipelineStateDataIndex(0);
+                                rasterPass->SetPipelineStateDataIndex(0); // This appears to be useless.
                             }
                             else
                             {
@@ -1126,7 +1126,7 @@ namespace AZ
                                 if (index < size)
                                 {
                                     // Found matching pipeline state data, set index
-                                    rasterPass->SetPipelineStateDataIndex(index);
+                                    rasterPass->SetPipelineStateDataIndex(index); // This appears to be useless.
                                 }
                                 else
                                 {
@@ -1134,7 +1134,7 @@ namespace AZ
                                     pipelineStateList.emplace_back();
                                     pipelineStateList[size].m_multisampleState = rasterPass->GetMultisampleState();
                                     pipelineStateList[size].m_renderAttachmentConfiguration = rasterPass->GetRenderAttachmentConfiguration();
-                                    rasterPass->SetPipelineStateDataIndex(static_cast<AZ::u32>(size));
+                                    rasterPass->SetPipelineStateDataIndex(static_cast<AZ::u32>(size)); // This appears to be useless.
                                 }
                             }
                         }
