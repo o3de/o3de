@@ -475,7 +475,8 @@ namespace AzToolsFramework
         const ComponentEditorVector& GetSelectedComponentEditors() const;
         AZStd::span<AZ::Component* const> GetSelectedComponents() const;
         const AZStd::unordered_map<AZ::EntityId, AZ::Entity::ComponentArrayType>& GetSelectedComponentsByEntityId() const;
-        void UpdateSelectionCache(bool notify = false);
+        void UpdateSelectionCache();
+        void NotifySelectionChanges();
 
         ComponentEditorVector m_selectedComponentEditors;
         AZ::Entity::ComponentArrayType m_selectedComponents;
@@ -558,7 +559,7 @@ namespace AzToolsFramework
         int m_autoScrollMargin;
         bool m_autoScrollQueued;
 
-        void UpdateInternalState(bool notify = false);
+        void UpdateInternalState();
 
         enum StatusType
         {

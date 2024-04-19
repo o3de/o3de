@@ -3613,7 +3613,7 @@ namespace AzToolsFramework
             componentEditor->SetSelected(false);
         }
         SaveComponentEditorState();
-        UpdateInternalState(false);
+        UpdateInternalState();
     }
 
     void EntityPropertyEditor::SelectRangeOfComponentEditors(const AZ::s32 index1, const AZ::s32 index2, bool selected)
@@ -3629,7 +3629,8 @@ namespace AzToolsFramework
             m_componentEditorLastSelectedIndex = index2;
         }
         SaveComponentEditorState();
-        UpdateInternalState(true);
+        UpdateInternalState();
+        NotifySelectionChanges();
     }
 
     void EntityPropertyEditor::SelectIntersectingComponentEditors(const QRect& globalRect, bool selected)
@@ -3640,7 +3641,8 @@ namespace AzToolsFramework
             m_componentEditorLastSelectedIndex = GetComponentEditorIndex(componentEditor);
         }
         SaveComponentEditorState();
-        UpdateInternalState(true);
+        UpdateInternalState();
+        NotifySelectionChanges();
     }
 
     bool EntityPropertyEditor::SelectIntersectingComponentEditorsSafe(const QRect& globalRect)
@@ -3657,7 +3659,8 @@ namespace AzToolsFramework
             }
         }
         SaveComponentEditorState();
-        UpdateInternalState(true);
+        UpdateInternalState();
+        NotifySelectionChanges();
 
         return selectedChanged;
     }
@@ -3670,7 +3673,8 @@ namespace AzToolsFramework
             m_componentEditorLastSelectedIndex = GetComponentEditorIndex(componentEditor);
         }
         SaveComponentEditorState();
-        UpdateInternalState(true);
+        UpdateInternalState();
+        NotifySelectionChanges();
     }
 
     AZ::s32 EntityPropertyEditor::GetComponentEditorIndex(const ComponentEditor* componentEditor) const
@@ -3730,7 +3734,7 @@ namespace AzToolsFramework
         return m_selectedComponentsByEntityId;
     }
 
-    void EntityPropertyEditor::UpdateSelectionCache(bool notify)
+    void EntityPropertyEditor::UpdateSelectionCache()
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
         m_selectedComponentEditors.clear();
@@ -3757,13 +3761,12 @@ namespace AzToolsFramework
             m_selectedComponentsByEntityId[component->GetEntityId()].push_back(component);
             m_selectedEntityComponentIds.insert(AZ::EntityComponentIdPair(component->GetEntityId(), component->GetId()));
         }
+    }
 
-        // TODO - can you move this out now, and save yourself all these bools?
-        if (notify)
-        {
-            EntityPropertyEditorNotificationBus::Broadcast(
-                &EntityPropertyEditorNotifications::OnComponentSelectionChanged, this, m_selectedEntityComponentIds);
-        }
+    void EntityPropertyEditor::NotifySelectionChanges()
+    {
+        EntityPropertyEditorNotificationBus::Broadcast(
+            &EntityPropertyEditorNotifications::OnComponentSelectionChanged, this, m_selectedEntityComponentIds);
     }
 
     void EntityPropertyEditor::SaveComponentEditorState()
@@ -5208,9 +5211,9 @@ namespace AzToolsFramework
         }
     }
 
-    void EntityPropertyEditor::UpdateInternalState(bool notify)
+    void EntityPropertyEditor::UpdateInternalState()
     {
-        UpdateSelectionCache(notify);
+        UpdateSelectionCache();
         UpdateActions();
         UpdateOverlay();
     }
