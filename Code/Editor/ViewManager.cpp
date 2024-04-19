@@ -212,19 +212,17 @@ void CViewManager::Cycle2DViewport()
 //////////////////////////////////////////////////////////////////////////
 CViewport* CViewManager::GetViewportAtPoint(const QPoint& point) const
 {
-    for (auto& vp : m_viewports)
-    {
-        if (!vp || !vp->widget())
+    const auto viewportIter = AZStd::find_if(
+        m_viewports.begin(),
+        m_viewports.end(),
+        [&point](CViewport* viewport) -> bool
         {
-            continue;
+            auto* widget = viewport->widget();
+            return widget && widget->rect().contains(widget->mapFromGlobal(point));
         }
-        if (vp->widget()->rect().contains(vp->widget()->mapFromGlobal(point)))
-        {
-            return vp;
-        }
-    }
+    );
 
-    return nullptr;
+    return (viewportIter == m_viewports.end()) ? nullptr : *viewportIter;
 }
 
 //////////////////////////////////////////////////////////////////////////
