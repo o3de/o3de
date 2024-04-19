@@ -1,5 +1,5 @@
 {
-    "Source" : "ReflectionScreenSpaceRayTracingClosestHit.azsl",
+    "Source" : "ObbIntersection.azsl",
     "DrawList" : "RayTracing",
 
     "AddBuildArguments": 
@@ -12,29 +12,19 @@
         "EntryPoints":
         [
             {
-                "type": "RayTracing",
-                "name": "ClosestHit"
+                "name": "Intersection",
+                "type": "RayTracing"
             }
         ]
     },
 
     "DisabledRHIBackends": ["metal"],
-    
+
     "Supervariants":
     [
         {
             "Name": "",
             "RemoveBuildArguments": 
-            {
-                "azslc": ["--strip-unused-srgs"]
-            }
-        },
-        {
-            "Name": "NoMSAA",
-            "AddBuildArguments": {
-                "azslc": ["--no-ms"]
-            },
-            "RemoveBuildArguments" :
             {
                 "azslc": ["--strip-unused-srgs"]
             }
