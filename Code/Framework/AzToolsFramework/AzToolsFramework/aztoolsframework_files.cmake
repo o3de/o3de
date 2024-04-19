@@ -168,7 +168,6 @@ set(FILES
     Editor/ActionManagerIdentifiers/EditorToolBarIdentifiers.h
     Editor/ActionManagerUtils.cpp
     Editor/ActionManagerUtils.h
-    Editor/EditorContextMenuBus.h
     Editor/EditorSettingsAPIBus.h
     Editor/RichTextHighlighter.h
     Editor/RichTextHighlighter.cpp
