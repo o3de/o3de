@@ -41,7 +41,6 @@
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
-#include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
@@ -165,7 +164,6 @@ void SandboxIntegrationManager::Setup()
     AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusConnect();
     AzToolsFramework::EditorRequests::Bus::Handler::BusConnect();
     AzToolsFramework::EditorWindowRequests::Bus::Handler::BusConnect();
-    AzToolsFramework::EditorContextMenuBus::Handler::BusConnect();
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
 
     m_prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
@@ -186,7 +184,6 @@ void SandboxIntegrationManager::Teardown()
 {
     m_contextMenuBottomHandler.Teardown();
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
-    AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
     AzToolsFramework::EditorWindowRequests::Bus::Handler::BusDisconnect();
     AzToolsFramework::EditorRequests::Bus::Handler::BusDisconnect();
     AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusDisconnect();
@@ -245,101 +242,6 @@ void SandboxIntegrationManager::OnEndUndo(const char* label, bool changed)
                 GetIEditor()->CancelUndo();
             }
         }
-    }
-}
-
-int SandboxIntegrationManager::GetMenuPosition() const
-{
-    return aznumeric_cast<int>(AzToolsFramework::EditorContextMenuOrdering::TOP);
-}
-
-void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(
-    QMenu* menu, const AZStd::optional<AzFramework::ScreenPoint>& point, int flags)
-{
-    if (!IsLevelDocumentOpen())
-    {
-        return;
-    }
-
-    if (flags & AzToolsFramework::EditorEvents::eECMF_USE_VIEWPORT_CENTER)
-    {
-        int width = 0;
-        int height = 0;
-        // If there is no 3D Viewport active to aid in the positioning of context menu
-        // operations, we don't need to store anything but default values here. Any code
-        // using these numbers for placement should default to the origin when there's
-        // no 3D viewport to raycast into.
-        if (const CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport())
-        {
-            view->GetDimensions(&width, &height);
-        }
-
-        m_contextMenuViewPoint = AzFramework::ScreenPoint{ width / 2, height / 2 };
-    }
-    else
-    {
-        m_contextMenuViewPoint = point;
-    }
-
-    CGameEngine* gameEngine = GetIEditor()->GetGameEngine();
-    if (!gameEngine || !gameEngine->IsLevelLoaded())
-    {
-        return;
-    }
-
-    menu->setToolTipsVisible(true);
-
-    AzToolsFramework::EntityIdList selected;
-    GetSelectedOrHighlightedEntities(selected);
-
-    QAction* action = nullptr;
-
-    // when nothing is selected, entity is created at root level
-    if (selected.size() == 0)
-    {
-        action = menu->addAction(QObject::tr("Create entity"));
-        action->setShortcut(QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_N));
-        QObject::connect(
-            action, &QAction::triggered, action,
-            [this]
-            {
-                ContextMenu_NewEntity();
-            }
-        );
-    }
-    // when a single entity is selected, entity is created as its child
-    else if (selected.size() == 1)
-    {
-        AZ::EntityId selectedEntityId = selected.front();
-        bool selectedEntityIsReadOnly = m_readOnlyEntityPublicInterface->IsReadOnly(selectedEntityId);
-        auto containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
-        if (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) && !selectedEntityIsReadOnly)
-        {
-            action = menu->addAction(QObject::tr("Create entity"));
-            action->setShortcut(QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_N));
-            QObject::connect(
-                action, &QAction::triggered, action,
-                [selectedEntityId]
-                {
-                    AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequestBus::Handler::CreateNewEntityAsChild, selectedEntityId);
-                }
-            );
-        }
-    }
-
-    menu->addSeparator();
-
-    if (selected.size() > 0)
-    {
-        action = menu->addAction(QObject::tr("Find in Entity Outliner"));
-        QObject::connect(
-            action, &QAction::triggered,
-            [selected]
-            {
-                AzToolsFramework::EditorEntityContextNotificationBus::Broadcast(
-                    &EditorEntityContextNotification::OnFocusInEntityOutliner, selected);
-            });
-        menu->addSeparator();
     }
 }
 
