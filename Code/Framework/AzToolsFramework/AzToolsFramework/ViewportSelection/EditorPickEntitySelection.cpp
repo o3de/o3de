@@ -87,6 +87,7 @@ namespace AzToolsFramework
         const int viewportId = mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId;
 
         const AzFramework::CameraState cameraState = GetCameraState(viewportId);
+
         m_cachedEntityIdUnderCursor = m_editorHelpers->FindEntityIdUnderCursor(cameraState, mouseInteraction).ContainerAncestorEntityId();
 
         // when left clicking, if we successfully clicked an entity, assign that
