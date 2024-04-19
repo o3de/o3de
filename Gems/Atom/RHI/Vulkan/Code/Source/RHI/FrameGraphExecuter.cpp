@@ -76,7 +76,6 @@ namespace AZ
             // Some semaphores (Fences) might be waited-for by the use in a scope
             // We remember which semaphores are signalled and assume that the ones that are never waited-for are waited-for by the user
             AZStd::unordered_map<Fence*, bool> userFencesSignalledMap;
-            [[maybe_unused]] int numUnwaitedFences = 0;
             bool useSemaphoreTrackers = device.GetFeatures().m_signalFenceFromCPU;
             if (useSemaphoreTrackers)
             {
@@ -191,19 +190,10 @@ namespace AZ
                         if (it == userFencesSignalledMap.end())
                         {
                             userFencesSignalledMap[fence.get()] = false;
-                            numUnwaitedFences++;
                         }
                     }
                     for (auto& fence : scope.GetWaitFences())
                     {
-                        auto it = userFencesSignalledMap.find(fence.get());
-                        if (it != userFencesSignalledMap.end())
-                        {
-                            if (!it->second)
-                            {
-                                numUnwaitedFences--;
-                            }
-                        }
                         userFencesSignalledMap[fence.get()] = true;
                         fence->SetSemaphoreHandle(currentSemaphoreHandle);
                         if (fence->GetFenceType() == FenceType::TimelineSemaphore)
@@ -232,7 +222,6 @@ namespace AZ
                                     }
                                 }
                             }
-                            numUnwaitedFences = 0;
                             userFencesSignalledMap.clear();
                             needNewSemaphoreHandle = true;
                         }
