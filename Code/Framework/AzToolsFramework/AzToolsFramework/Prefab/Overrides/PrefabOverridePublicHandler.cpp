@@ -77,8 +77,6 @@ namespace AzToolsFramework
 
         bool PrefabOverridePublicHandler::AreComponentOverridesPresent(AZ::EntityComponentIdPair entityComponentIdPair)
         {
-            AZStd::optional<OverrideType> overrideType = {};
-
             AZStd::pair<AZ::Dom::Path, LinkId> pathAndLinkIdPair = GetComponentPathAndLinkIdFromFocusedPrefab(entityComponentIdPair);
             if (!pathAndLinkIdPair.first.IsEmpty() && pathAndLinkIdPair.second != InvalidLinkId)
             {
