@@ -14,7 +14,6 @@
 #include "UiAnimViewNode.h"
 #include "Plugin.h"
 #include "UiAnimViewDopeSheetBase.h"
-#include "QtViewPane.h"
 
 #include <QScopedPointer>
 #include <Controls/ReflectedPropertyControl/ReflectedPropertyCtrl.h>

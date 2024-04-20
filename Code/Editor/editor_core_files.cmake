@@ -55,5 +55,4 @@ set(FILES
     QtUI/ColorButton.h
     QtUtil.h
     QtUtilWin.h
-    QtViewPane.h
 )
