@@ -28,8 +28,6 @@
 #include <PostProcessing/FastDepthAwareBlurPasses.h>
 #include <Shadows/FullscreenShadowPass.h>
 
-#pragma optimize("", off)
-
 namespace AZ
 {
     namespace Render
@@ -1820,5 +1818,3 @@ namespace AZ
 
     } // namespace Render
 } // namespace AZ
-
-#pragma optimize("", on)
