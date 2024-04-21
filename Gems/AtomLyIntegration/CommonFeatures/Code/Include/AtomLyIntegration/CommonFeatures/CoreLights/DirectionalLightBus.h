@@ -219,6 +219,12 @@ namespace AZ
             //! Returns the lighting channel mask
             virtual uint32_t GetLightingChannelMask() const = 0;
 
+            //! Sets whether this light will be visible/enabled
+            virtual void SetVisible(bool visible) = 0;
+
+            //! Returns whether the light is visible/enabled
+            virtual bool IsVisible() const = 0;
+
             //! Sets the lighting channel mask
             virtual void SetLightingChannelMask(uint32_t lightingChannelMask) = 0;
             //! when the user modifies the component properties in the Inspector panel. 

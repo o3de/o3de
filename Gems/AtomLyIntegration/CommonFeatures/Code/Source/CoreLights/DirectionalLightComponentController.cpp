@@ -96,6 +96,8 @@ namespace AZ
                     ->Event("SetAffectsGIFactor", &DirectionalLightRequestBus::Events::SetAffectsGIFactor)
                     ->Event("GetLightingChannelMask", &DirectionalLightRequestBus::Events::GetLightingChannelMask)
                     ->Event("SetLightingChannelMask", &DirectionalLightRequestBus::Events::SetLightingChannelMask)
+                    ->Event("SetVisible", &DirectionalLightRequestBus::Events::SetVisible)
+                    ->Event("IsVisible", &DirectionalLightRequestBus::Events::IsVisible)
                     ->VirtualProperty("Color", "GetColor", "SetColor")
                     ->VirtualProperty("Intensity", "GetIntensity", "SetIntensity")
                     ->VirtualProperty("AngularDiameter", "GetAngularDiameter", "SetAngularDiameter")
@@ -491,7 +493,7 @@ namespace AZ
 
         bool DirectionalLightComponentController::GetAffectsGI() const
         {
-            return m_configuration.m_affectsGI;
+            return m_configuration.m_affectsGI && m_configuration.m_isVisible;
         }
 
         void DirectionalLightComponentController::SetAffectsGI(bool affectsGI)
@@ -499,7 +501,7 @@ namespace AZ
             m_configuration.m_affectsGI = affectsGI;
             if (m_featureProcessor)
             {
-                m_featureProcessor->SetAffectsGI(m_lightHandle, m_configuration.m_affectsGI);
+                m_featureProcessor->SetAffectsGI(m_lightHandle, m_configuration.m_affectsGI && m_configuration.m_isVisible);
             }
         }
 
@@ -624,6 +626,7 @@ namespace AZ
             SetFullscreenBlurEnabled(m_configuration.m_fullscreenBlurEnabled);
             SetFullscreenBlurConstFalloff(m_configuration.m_fullscreenBlurConstFalloff);
             SetFullscreenBlurDepthFalloffStrength(m_configuration.m_fullscreenBlurDepthFalloffStrength);
+            SetVisible(m_configuration.m_isVisible);
             SetAffectsGI(m_configuration.m_affectsGI);
             SetAffectsGIFactor(m_configuration.m_affectsGIFactor);
             LightingChannelMaskChanged();
@@ -754,6 +757,17 @@ namespace AZ
         {
             m_configuration.m_cascadeBlendingEnabled = enable;
             m_featureProcessor->SetCascadeBlendingEnabled(m_lightHandle, enable);
+        }
+
+        void DirectionalLightComponentController::SetVisible(bool visible)
+        {
+            m_configuration.m_isVisible = visible;
+            m_featureProcessor->SetVisible(m_lightHandle, visible);
+        }
+
+        bool DirectionalLightComponentController::IsVisible() const
+        {
+            return m_configuration.m_isVisible;
         }
 
     } // namespace Render

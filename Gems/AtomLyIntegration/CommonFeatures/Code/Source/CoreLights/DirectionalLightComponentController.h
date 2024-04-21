@@ -85,7 +85,7 @@ namespace AZ
             float GetShadowBias() const override;
             void SetShadowBias(float bias) override;
             float GetNormalShadowBias() const override;
-            void SetNormalShadowBias(float bias) override;            
+            void SetNormalShadowBias(float bias) override;
             bool GetCascadeBlendingEnabled() const override;
             void SetCascadeBlendingEnabled(bool enable) override;
             void SetFullscreenBlurEnabled(bool enable);
@@ -95,6 +95,8 @@ namespace AZ
             void SetAffectsGI(bool affectsGI) override;
             float GetAffectsGIFactor() const override;
             void SetAffectsGIFactor(float affectsGIFactor) override;
+            void SetVisible(bool visible) override;
+            bool IsVisible() const override;
             void BindConfigurationChangedEventHandler(DirectionalLightConfigurationChangedEvent::Handler& configurationChangedHandler) override;
             uint32_t GetLightingChannelMask() const override;
             void SetLightingChannelMask(const uint32_t mask) override;

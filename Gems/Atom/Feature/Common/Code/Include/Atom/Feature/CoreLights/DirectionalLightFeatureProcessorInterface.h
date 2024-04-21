@@ -186,6 +186,9 @@ namespace AZ
 
             //! Sets the lighting channel mask
             virtual void SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask) = 0;
+
+            //! Sets whether the light is visible
+            virtual void SetVisible(LightHandle handle, bool visible) = 0;
         };
     } // namespace Render
 } // namespace AZ
