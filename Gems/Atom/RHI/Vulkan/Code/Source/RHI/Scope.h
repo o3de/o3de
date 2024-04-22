@@ -16,7 +16,6 @@
 #include <RHI/Framebuffer.h>
 #include <RHI/QueryPool.h>
 #include <RHI/Semaphore.h>
-#include <RHI/SubpassDependencies.h>
 
 namespace AZ
 {
