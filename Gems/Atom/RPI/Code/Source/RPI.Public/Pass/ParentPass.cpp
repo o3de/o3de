@@ -405,6 +405,8 @@ namespace AZ
                 {
                     child->UpdateConnectedBindings();
                 }
+                // Need to update connected bindings again in case the children updated their fallback binding
+                Pass::UpdateConnectedBindings();
             }
         }
 
