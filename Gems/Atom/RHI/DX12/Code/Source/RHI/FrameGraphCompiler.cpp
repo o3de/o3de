@@ -403,8 +403,6 @@ namespace AZ
 #else
             ResourceTransitionLoggerNull logger(bufferFrameAttachment.GetId());
 #endif
-
-            Buffer& buffer = static_cast<Buffer&>(*bufferFrameAttachment.GetBuffer()->GetDeviceBuffer(rootScope->GetDeviceIndex()));
             RHI::BufferScopeAttachment* scopeAttachment = bufferFrameAttachment.GetFirstScopeAttachment();
 
             if (scopeAttachment == nullptr)
@@ -413,13 +411,15 @@ namespace AZ
                 return;
             }
 
+            Scope& firstScope = static_cast<Scope&>(scopeAttachment->GetScope());
+            Buffer& buffer = static_cast<Buffer&>(*bufferFrameAttachment.GetBuffer()->GetDeviceBuffer(firstScope.GetDeviceIndex()));
+
             D3D12_RESOURCE_TRANSITION_BARRIER transition;
             transition.pResource = buffer.GetMemoryView().GetMemory();
             transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
             transition.StateBefore = buffer.m_initialAttachmentState;
             logger.SetStateBefore(transition.StateBefore);
 
-            Scope& firstScope = static_cast<Scope&>(scopeAttachment->GetScope());
             if (firstScope.IsResourceDiscarded(*scopeAttachment))
             {
                 auto afterState = GetDiscardResourceState(*scopeAttachment, ConvertBufferBindFlags(buffer.GetDescriptor().m_bindFlags));
