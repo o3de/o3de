@@ -33,12 +33,12 @@ AZ_POP_DISABLE_WARNING
 #include <AzQtComponents/Components/StyleHelpers.h>
 #include <AzQtComponents/Components/Widgets/DragAndDrop.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
-#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
-#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityRuntimeActivationBus.h>
@@ -618,6 +618,7 @@ namespace AzToolsFramework
 
         ToolsApplicationEvents::Bus::Handler::BusConnect();
         AZ::EntitySystemBus::Handler::BusConnect();
+        EntityPropertyEditorNotificationBus::Handler::BusConnect();
         EntityPropertyEditorRequestBus::Handler::BusConnect();
         EditorWindowUIRequestBus::Handler::BusConnect();
 
@@ -670,7 +671,7 @@ namespace AzToolsFramework
             GetEntityContextId());
         ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
 
-        m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        m_menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
 
         // Assign this widget to the Editor Entity Property Editor Action Context.
         AssignWidgetToActionContextHelper(
@@ -690,6 +691,7 @@ namespace AzToolsFramework
         ReadOnlyEntityPublicNotificationBus::Handler::BusDisconnect();
         EditorWindowUIRequestBus::Handler::BusDisconnect();
         EntityPropertyEditorRequestBus::Handler::BusDisconnect();
+        EntityPropertyEditorNotificationBus::Handler::BusDisconnect();
         AZ::EntitySystemBus::Handler::BusDisconnect();
         ToolsApplicationEvents::Bus::Handler::BusDisconnect();
         
@@ -757,6 +759,11 @@ namespace AzToolsFramework
         }
     }
 
+    void EntityPropertyEditor::GetSelectedComponents(AZStd::unordered_set<AZ::EntityComponentIdPair>& selectedComponentEntityIds)
+    {
+        selectedComponentEntityIds.insert(m_selectedEntityComponentIds.begin(), m_selectedEntityComponentIds.end());
+    }
+
     void EntityPropertyEditor::SetNewComponentId(AZ::ComponentId componentId)
     {
         m_newComponentId = componentId;
@@ -775,6 +782,16 @@ namespace AzToolsFramework
             {
                 return;
             }
+        }
+    }
+
+    void EntityPropertyEditor::OnComponentSelectionChanged(
+        EntityPropertyEditor* entityPropertyEditor,
+        [[maybe_unused]] const AZStd::unordered_set<AZ::EntityComponentIdPair>& selectedEntityComponentIds)
+    {
+        if (entityPropertyEditor != this)
+        {
+            ClearComponentEditorSelection();
         }
     }
 
@@ -929,50 +946,7 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::OnComponentOverrideContextMenu(const QPoint& position)
     {
-        auto componentEditor = qobject_cast<ComponentEditor*>(sender());
-        AZ_Assert(componentEditor, "sender() was not convertible to a ComponentEditor*");
-
-        AZStd::span<AZ::Component* const> components = componentEditor->GetComponents();
-        AZ_Assert(!components.empty() && components[0], "ComponentEditor should have at least one component.");
-        QMenu menu;
-
-        QAction* revertAction = menu.addAction(QObject::tr("Revert Overrides"));
-        QObject::connect(
-            revertAction,
-            &QAction::triggered,
-            this,
-            [components]
-            {
-                if (auto prefabOverridePublicInterface =
-                        AZ::Interface<AzToolsFramework::Prefab::PrefabOverridePublicInterface>::Get())
-                {
-                    // Note: Multiple selection is not currently supported for overrides.
-                    // Revert overrides on the single component that's displaying override state.
-                    prefabOverridePublicInterface->RevertComponentOverrides(
-                        AZ::EntityComponentIdPair(components[0]->GetEntityId(), components[0]->GetId()));
-                }
-            }
-        );
-
-        QAction* applyAction = menu.addAction(QObject::tr("Apply Overrides"));
-        QObject::connect(
-            applyAction,
-            &QAction::triggered,
-            this,
-            [components]
-            {
-                if (auto prefabOverridePublicInterface =
-                        AZ::Interface<AzToolsFramework::Prefab::PrefabOverridePublicInterface>::Get())
-                {
-                    // Note: Multiple selection is not currently supported for overrides.
-                    // Revert overrides on the single component that's displaying override state.
-                    prefabOverridePublicInterface->ApplyComponentOverrides(
-                        AZ::EntityComponentIdPair(components[0]->GetEntityId(), components[0]->GetId()));
-                }
-            }
-        );
-
-        menu.exec(position);
+        m_menuManagerInterface->DisplayMenuAtScreenPosition(EditorIdentifiers::InspectorEntityComponentContextMenuIdentifier, position);
     }
 
     bool EntityPropertyEditor::IsEntitySelected(const AZ::EntityId& id) const
@@ -2879,8 +2853,6 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::CreateActions()
     {
-        m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-
         m_actionToAddComponents = new QAction(tr("Add component"), this);
         m_actionToAddComponents->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         connect(m_actionToAddComponents, &QAction::triggered, this, &EntityPropertyEditor::OnAddComponent);
@@ -3658,6 +3630,7 @@ namespace AzToolsFramework
         }
         SaveComponentEditorState();
         UpdateInternalState();
+        NotifySelectionChanges();
     }
 
     void EntityPropertyEditor::SelectIntersectingComponentEditors(const QRect& globalRect, bool selected)
@@ -3669,6 +3642,7 @@ namespace AzToolsFramework
         }
         SaveComponentEditorState();
         UpdateInternalState();
+        NotifySelectionChanges();
     }
 
     bool EntityPropertyEditor::SelectIntersectingComponentEditorsSafe(const QRect& globalRect)
@@ -3686,6 +3660,7 @@ namespace AzToolsFramework
         }
         SaveComponentEditorState();
         UpdateInternalState();
+        NotifySelectionChanges();
 
         return selectedChanged;
     }
@@ -3699,6 +3674,7 @@ namespace AzToolsFramework
         }
         SaveComponentEditorState();
         UpdateInternalState();
+        NotifySelectionChanges();
     }
 
     AZ::s32 EntityPropertyEditor::GetComponentEditorIndex(const ComponentEditor* componentEditor) const
@@ -3778,11 +3754,19 @@ namespace AzToolsFramework
             m_selectedComponents.insert(m_selectedComponents.end(), components.begin(), components.end());
         }
 
+        m_selectedEntityComponentIds.clear();
         m_selectedComponentsByEntityId.clear();
         for (auto component : m_selectedComponents)
         {
             m_selectedComponentsByEntityId[component->GetEntityId()].push_back(component);
+            m_selectedEntityComponentIds.insert(AZ::EntityComponentIdPair(component->GetEntityId(), component->GetId()));
         }
+    }
+
+    void EntityPropertyEditor::NotifySelectionChanges()
+    {
+        EntityPropertyEditorNotificationBus::Broadcast(
+            &EntityPropertyEditorNotifications::OnComponentSelectionChanged, this, m_selectedEntityComponentIds);
     }
 
     void EntityPropertyEditor::SaveComponentEditorState()
