@@ -34,6 +34,7 @@
 class QMainWindow;
 class ViewportEditorModeNotificationsBusImpl;
 struct ViewLayoutState;
+struct QtViewPane;
 
 namespace AzQtComponents
 {
