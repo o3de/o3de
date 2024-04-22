@@ -5,6 +5,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+import os
 import sys
 import GenerateShaderVariantListUtil
 
@@ -15,14 +16,14 @@ def main():
         print("The script requires a .shader file as input argument")
         return
 
-    filename = sys.argv[1]
-    suffix, extension = filename.split(".", 1)
-
-    if extension != "shader":
+    inputPath = sys.argv[1]
+    _, extension = os.path.splitext(inputPath)
+    
+    if extension != ".shader":
         print("The input argument for the script is not a valid .shader file")
         return
 
-    shaderVariantList = GenerateShaderVariantListUtil.create_shadervariantlist_for_shader(filename)
+    shaderVariantList = GenerateShaderVariantListUtil.create_shadervariantlist_for_shader(inputPath)
 
     # Create shader variant list document
     documentId = azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(
