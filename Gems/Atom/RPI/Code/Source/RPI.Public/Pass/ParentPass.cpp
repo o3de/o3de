@@ -547,7 +547,7 @@ namespace AZ
             {
                 RasterPass* rasterChild = azrtti_cast<RasterPass*>(m_children[subpassIndex].get());
                 AZ_Assert(rasterChild != nullptr, "When merging subpasses, all children must be RasterPass");
-                auto* layoutBuilder = builder.AddSubpass();
+                auto* layoutBuilder = builder.AddSubpass(&rasterChild->GetPathName());
                 if (!rasterChild->BuildSubpassLayout(*layoutBuilder, subpassIndex))
                 {
                     AZ_Error("ParentPass", false, "RasterPass [%s] failed to build its subpass layout.\n", rasterChild->GetName().GetCStr());
@@ -567,13 +567,11 @@ namespace AZ
             RHI::ResultCode result = builder.End(*renderAttachmentLayout.get());
             if (result == RHI::ResultCode::Success)
             {
-                auto subpassDependenciesPtr = builder.GetSubpassDependencies();
-
                 // Loop again across all children and set their RenderAttachmentConfiguration
                 for (auto subpassIndex = 0; subpassIndex < numSubpasses; subpassIndex++)
                 {
                     RasterPass* rasterChild = azrtti_cast<RasterPass*>(m_children[subpassIndex].get());
-                    if (!rasterChild->SetRenderAttachmentLayout(renderAttachmentLayout, subpassDependenciesPtr, subpassIndex))
+                    if (!rasterChild->SetRenderAttachmentLayout(renderAttachmentLayout, subpassIndex))
                     {
                         AZ_Error("ParentPass", false, "RasterPass [%s] failed to set its render attachment layout.\n", rasterChild->GetName().GetCStr());
                         allChildrenBuiltLayout = false;

@@ -130,5 +130,4 @@ set(FILES
     Include/Atom/RHI.Reflect/ShaderInputNameIndex.h
     Source/RHI.Reflect/ShaderInputNameIndex.cpp
     Include/Atom/RHI.Reflect/VariableRateShadingEnums.h
-    Include/Atom/RHI.Reflect/SubpassDependencies.h
 )

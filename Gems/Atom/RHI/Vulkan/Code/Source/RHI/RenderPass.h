@@ -12,7 +12,6 @@
 #include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>
 #include <Atom/RHI.Reflect/Format.h>
-#include <Atom/RHI.Reflect/SubpassDependencies.h>
 #include <Atom/RHI.Reflect/RenderAttachmentLayout.h>
 
 #include <AzCore/std/containers/array.h>
@@ -111,10 +110,6 @@ namespace AZ
             VkRenderPass GetNativeRenderPass() const;
             const Descriptor& GetDescriptor() const;
             uint32_t GetAttachmentCount() const;
-
-            //! This function does all the work required by SubpassSupportInterface in Vulkan.
-            //! It creates all the Vulkan native data, related to subpass dependencies, and returns it as an RHI opaque handle.
-            static AZStd::shared_ptr<RHI::SubpassDependencies> BuildNativeSubpassDependencies(const RHI::RenderAttachmentLayout& layout);
 
             //! Typically the returned descriptor is only used to create a dummy VkRenderPass (cached and reusable)
             //! that will be associated with one or more PSOs. The PSO will use such VkRenderPass as a data source

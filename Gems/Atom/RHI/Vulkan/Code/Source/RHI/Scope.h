@@ -168,7 +168,6 @@ namespace AZ
             void DeactivateInternal() override;
             void CompileInternal(RHI::Device& device) override;
             void AddQueryPoolUse(RHI::Ptr<RHI::QueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access) override;
-            void SetSubpassDependencies(AZStd::shared_ptr<RHI::SubpassDependencies> subpassDependencies) override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
@@ -209,11 +208,6 @@ namespace AZ
             ResolveMode m_resolveMode = ResolveMode::None;
             AZStd::vector<CommandList::ResourceClearRequest> m_imageClearRequests;
             AZStd::vector<CommandList::ResourceClearRequest> m_bufferClearRequests;
-
-            //! Optional handle that is only relevant when several Scopes are grouped into Subpasses.
-            //! The merged scopes share the exact same VkSubpassDependencies that will be required when
-            //! creating the VkRenderPass.
-            AZStd::shared_ptr<RHI::SubpassDependencies> m_subpassDependencies;
         };
 
         template<class T>

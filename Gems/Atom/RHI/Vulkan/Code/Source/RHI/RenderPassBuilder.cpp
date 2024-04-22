@@ -17,6 +17,8 @@
 #include <RHI/RenderPass.h>
 #include <RHI/Scope.h>
 
+#include "SubpassDependencies.h"
+
 namespace AZ
 {
     namespace Vulkan
@@ -295,13 +297,14 @@ namespace AZ
                 }
             }
 
-            const auto* prebuiltSubpassDependencies = scope.GetNativeSubpassDependencies();
-            if (prebuiltSubpassDependencies != nullptr)
+            if ((m_subpassCount > 1) && (m_subpassCount == m_renderpassDesc.m_subpassCount))
             {
-                if (prebuiltSubpassDependencies->m_subpassCount == m_renderpassDesc.m_subpassCount)
-                {
-                    prebuiltSubpassDependencies->ApplySubpassDependencies(m_renderpassDesc);
-                }
+                const auto subpassDependenciesPtr = SubpassDependenciesManager::GetInstance().GetSubpassDependencies(scope.GetId());
+                AZ_Assert(subpassDependenciesPtr != nullptr, "Subpass Dependencies for scope [%s] do not exist.", scope.GetId().GetCStr());
+                AZ_Assert(subpassDependenciesPtr->m_subpassCount == m_subpassCount,
+                    "Subpass Dependencies for scope [%s] was created for %u subpasses, but this Render Pass is being created with %u subpasses",
+                    scope.GetId().GetCStr(), subpassDependenciesPtr->m_subpassCount, m_subpassCount);
+                subpassDependenciesPtr->CopySubpassDependencies(m_renderpassDesc.m_subpassDependencies);
             }
 
             // TODO: The following block should NOT exist because Subpasses in Vulkan

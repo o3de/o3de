@@ -9,8 +9,7 @@
 #include <AzCore/std/containers/unordered_map.h>
 
 #include <Atom/RHI.Reflect/RenderAttachmentLayoutBuilder.h>
-
-#include <Atom/RHI/SubpassSupportInterface.h>
+#include <Atom/RHI/RenderAttachmentLayoutNotificationsInterface.h>
 
 namespace AZ::RHI
 {
@@ -59,8 +58,10 @@ namespace AZ::RHI
             return ResultCode::Success;
         };
 
-        for (const auto& builder : m_subpassLayoutBuilders)
+        const size_t subpassCount = m_subpassLayoutBuilders.size();
+        for (size_t subpassIndex = 0; subpassIndex < subpassCount; subpassIndex++)
         {
+            const auto& builder = m_subpassLayoutBuilders[subpassIndex];
             SubpassRenderAttachmentLayout& subpassLayout = builtRenderAttachmentLayout.m_subpassLayouts[builtRenderAttachmentLayout.m_subpassCount++];
             subpassLayout.m_rendertargetCount = static_cast<uint32_t>(builder.m_renderTargetAttachments.size());
             subpassLayout.m_subpassInputCount = static_cast<uint32_t>(builder.m_subpassInputAttachments.size());
@@ -199,13 +200,22 @@ namespace AZ::RHI
             }
         }
 
-        // Request the active RHI to build the Subpass Dependencies, only if there's more than one subpass.
+        // If there's more than one subpass, it is important to report to the RHI the current group of subpasses that
+        // are using the current RenderAttachmentLayout
         if (builtRenderAttachmentLayout.m_subpassCount > 1)
         {
-            auto subpassDependencyBuilderIface = SubpassSupportInterface::Get();
-            if (subpassDependencyBuilderIface != nullptr) // Not all RHIs support building SubpassDependencies.
+            auto iface = RenderAttachmentLayoutNotificationsInterface::Get();
+            if (iface != nullptr) // Not all RHIs support this interface.
             {
-                m_subpassDependencies = subpassDependencyBuilderIface->BuildSubpassDependencies(builtRenderAttachmentLayout);
+                AZStd::vector<RHI::ScopeId> scopeList;
+                for (size_t subpassIndex = 0; subpassIndex < subpassCount; subpassIndex++)
+                {
+                    const auto& subpassScopeId = m_subpassLayoutBuilders[subpassIndex].m_subpassScopeId;
+                    AZ_Assert(!subpassScopeId.IsEmpty(),
+                        "When building a RenderAttachmentLayout with more than one subpasses, all subpasses need a ScopeId");
+                    scopeList.push_back(subpassScopeId);
+                }
+                iface->SetLayoutForSubpasses(scopeList, builtRenderAttachmentLayout);
             }
         }
 
@@ -217,10 +227,15 @@ namespace AZ::RHI
         m_subpassLayoutBuilders.clear();
     }
 
-    RenderAttachmentLayoutBuilder::SubpassAttachmentLayoutBuilder* RenderAttachmentLayoutBuilder::AddSubpass()
+    RenderAttachmentLayoutBuilder::SubpassAttachmentLayoutBuilder* RenderAttachmentLayoutBuilder::AddSubpass(const RHI::ScopeId* subpassScopeId)
     {
         m_subpassLayoutBuilders.push_back(SubpassAttachmentLayoutBuilder(static_cast<uint32_t>(m_subpassLayoutBuilders.size())));
-        return &m_subpassLayoutBuilders.back();
+        auto& newLayoutBuilder = m_subpassLayoutBuilders.back();
+        if (subpassScopeId != nullptr)
+        {
+            newLayoutBuilder.m_subpassScopeId = *subpassScopeId;
+        }
+        return &newLayoutBuilder;
     }
         
     RenderAttachmentLayoutBuilder::SubpassAttachmentLayoutBuilder::SubpassAttachmentLayoutBuilder(uint32_t subpassIndex)
@@ -346,8 +361,4 @@ namespace AZ::RHI
         return this;
     }
 
-    AZStd::shared_ptr<SubpassDependencies> RenderAttachmentLayoutBuilder::GetSubpassDependencies() const
-    {
-        return m_subpassDependencies;
-    }
 }

@@ -9,7 +9,7 @@
 
 #include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI.Reflect/RenderAttachmentLayout.h>
-#include <Atom/RHI.Reflect/SubpassDependencies.h>
+#include <Atom/RHI.Reflect/ScopeId.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/utils.h>
@@ -153,20 +153,21 @@ namespace AZ::RHI
             RenderAttachmentEntry m_depthStencilAttachment;
             RenderAttachmentEntry m_shadingRateAttachment;
             uint32_t m_subpassIndex = 0;
+            //! ScopeId for this subpass.
+            RHI::ScopeId m_subpassScopeId;
         };
 
         RenderAttachmentLayoutBuilder();
 
         //! Adds a new subpass to the layout.
-        SubpassAttachmentLayoutBuilder* AddSubpass();
+        //! @param subpassScopeId The subpass ScopeId is only required when there are two or more subpasses.
+        //!     Once a RenderAttachmentLayout is built, the list of ScopeIds (subpasses) that use
+        //!     the same RenderAttachmentLayout will be reported to the RHI.
+        SubpassAttachmentLayoutBuilder* AddSubpass(const RHI::ScopeId * subpassScopeId = nullptr);
 
         //! Ends the building of a layout. Returns the result of the operation.
         //! If there's more than one subpass it creates @m_subpassDependencies
         ResultCode End(RenderAttachmentLayout& builtRenderAttachmentLayout);
-
-        //! Invoked only by RPI::ParentPass when it is told to merge children RasterPasses
-        //! as Subpasses. The returned shared pointer is subsequently given to each child pass.
-        AZStd::shared_ptr<SubpassDependencies> GetSubpassDependencies() const;
 
         //! Resets all previous values so the builder can be reuse.
         void Reset();
@@ -174,8 +175,5 @@ namespace AZ::RHI
     private:
         //! List of builders for each subpass.
         AZStd::vector<SubpassAttachmentLayoutBuilder> m_subpassLayoutBuilders;
-        //! Stores an opaque handle to custom RHI data related with Subpass Dependencies.
-        //! This shared pointer is built only if there's more than 1 subpass.
-        AZStd::shared_ptr<SubpassDependencies> m_subpassDependencies;
     };
 }

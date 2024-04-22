@@ -10,8 +10,7 @@
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI.Reflect/Vulkan/Base.h>
-
-#include <Atom/RHI/SubpassSupportInterface.h>
+#include <Atom/RHI/RenderAttachmentLayoutNotificationsInterface.h>
 
 #include <AzCore/Component/Component.h>
 
@@ -22,7 +21,7 @@ namespace AZ
         class SystemComponent final
             : public AZ::Component
             , public RHI::Factory
-            , public RHI::SubpassSupportInterface::Registrar
+            , public RHI::RenderAttachmentLayoutNotificationsInterface::Registrar
         {
         public:
             AZ_COMPONENT(SystemComponent, "{63A5BE62-43F4-45B9-93FE-E1C6371C457D}");
@@ -81,9 +80,10 @@ namespace AZ
             ///////////////////////////////////////////////////////////////////
 
             ///////////////////////////////////////////////////////////////////
-            // SubpassSupportInterface
-            AZStd::shared_ptr<RHI::SubpassDependencies> BuildSubpassDependencies(const RHI::RenderAttachmentLayout& layout) const override;
+            // RenderAttachmentLayoutNotificationsInterface overrides
+            void SetLayoutForSubpasses(const AZStd::vector<RHI::ScopeId>& scopeIds, const RHI::RenderAttachmentLayout& layout) override;
             ///////////////////////////////////////////////////////////////////
+
         private:
 
             const Name m_apiName{APINameString};

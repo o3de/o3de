@@ -46,7 +46,7 @@
 #include <RHI/RayTracingTlas.h>
 #include <RHI/RayTracingPipelineState.h>
 #include <RHI/RayTracingShaderTable.h>
-#include <RHI/RenderPass.h>
+#include <RHI/SubpassDependencies.h>
 #include <Atom/RHI.Reflect/Vulkan/Base.h>
 #include <Atom/RHI/FactoryManagerBus.h>
 #include <Atom/RHI/RayTracingPipelineState.h>
@@ -279,11 +279,11 @@ namespace AZ
         }
 
         ///////////////////////////////////////////////////////////////////
-        // SubpassSupportInterface
-        AZStd::shared_ptr<RHI::SubpassDependencies> SystemComponent::BuildSubpassDependencies(
-            const RHI::RenderAttachmentLayout& layout) const
+        // RenderAttachmentLayoutNotificationsInterface overrides
+        void SystemComponent::SetLayoutForSubpasses(const AZStd::vector<RHI::ScopeId>& scopeIds, const RHI::RenderAttachmentLayout& layout)
         {
-            return RenderPass::BuildNativeSubpassDependencies(layout);
+            auto subpassDependenciesPtr = SubpassDependenciesManager::BuildSubpassDependencies(layout);
+            SubpassDependenciesManager::GetInstance().SetSubpassDependencies(scopeIds, subpassDependenciesPtr);
         }
         ///////////////////////////////////////////////////////////////////
     }

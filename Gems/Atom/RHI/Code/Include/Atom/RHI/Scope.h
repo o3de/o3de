@@ -10,7 +10,6 @@
 #include <Atom/RHI.Reflect/ScopeId.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <Atom/RHI.Reflect/Handle.h>
-#include <Atom/RHI.Reflect/SubpassDependencies.h>
 #include <Atom/RHI/ResourcePool.h>
 #include <Atom/RHI/QueryPool.h>
 #include <Atom/RHI/Fence.h>
@@ -178,9 +177,6 @@ namespace AZ::RHI
 
         /// Called when the scope is shutting down.
         virtual void ShutdownInternal();
-
-        /// Called when there's Subpass Dependency data that the RHI should use internally.
-        virtual void SetSubpassDependencies(AZStd::shared_ptr<SubpassDependencies> subpassDependencies);
 
         //////////////////////////////////////////////////////////////////////////
 

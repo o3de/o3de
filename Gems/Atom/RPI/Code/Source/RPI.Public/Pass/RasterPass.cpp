@@ -177,7 +177,6 @@ namespace AZ
 
         bool RasterPass::SetRenderAttachmentLayout(
             const AZStd::shared_ptr<RHI::RenderAttachmentLayout>& renderAttachmentLayout,
-            const AZStd::shared_ptr<RHI::SubpassDependencies>& subpassDependencies,
             uint32_t subpassIndex)
         {
             if (!m_flags.m_mergeChildrenAsSubpasses)
@@ -195,7 +194,6 @@ namespace AZ
             }
 
             m_renderAttachmentLayout = renderAttachmentLayout;
-            m_subpassDependencies = subpassDependencies;
             return true;
         }
 
@@ -402,11 +400,6 @@ namespace AZ
 
         void RasterPass::DeclareAttachmentsToFrameGraph(RHI::FrameGraphInterface frameGraph) const
         {
-            if (m_subpassDependencies)
-            {
-                frameGraph.UseSubpassDependencies(m_subpassDependencies);
-            }
-
             for (const PassAttachmentBinding& attachmentBinding : m_attachmentBindings)
             {
                 if (attachmentBinding.GetAttachment() != nullptr &&

@@ -8,43 +8,64 @@
 #pragma once
 
 #include <Atom_RHI_Vulkan_Platform.h>
-#include <Atom/RHI.Reflect/SubpassDependencies.h>
 
-#include <RHI/RenderPass.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/containers/unordered_map.h>
+
+#include <Atom/RHI.Reflect/ScopeId.h>
+#include <Atom/RHI.Reflect/RenderAttachmentLayout.h>
 
 namespace AZ::Vulkan
 {
-    //! This is the Vulkan concrete implementation of RHI::SubpassDependencies.
-    //! Basically this class owns an array of VkSubpassDependency, which is all
+    //! This class owns an array of VkSubpassDependency, which is all
     //! the data required in Vulkan to define Subpass Dependencies. 
-    class SubpassDependencies final : public RHI::SubpassDependencies
+    class SubpassDependencies final
     {
-        friend class RenderPass; // Builds the native vulkan data that is encapsulated by this class.
-        friend class RenderPassBuilder; // Consumes the data by calling ApplySubpassDependencies()
+        friend class SubpassDependenciesManager;
+        friend class RenderPass;
+        friend class RenderPassBuilder;
     public:
-        AZ_RTTI(SubpassDependencies, "{E45B8D93-1854-4D16-966F-2388DCC6BB22}", RHI::SubpassDependencies);
+        AZ_RTTI(SubpassDependencies, "{E45B8D93-1854-4D16-966F-2388DCC6BB22}");
 
         SubpassDependencies() = default;
         virtual ~SubpassDependencies() = default;
 
-        //! RHI::SubpassDependencies override
-        bool IsValid() const override;
-
     private:
-        //! Called by AZ::Vulkan::RenderPassBuilder to apply Subpass Dependency data when creating
-        //! a VkRenderPass.
-        //! @param dstRenderPassDescriptor The recipient/destination structure that needs the
-        //!        subpass dependency array.
-        void ApplySubpassDependencies(RenderPass::Descriptor& dstRenderPassDescriptor) const;
+        // Copies the content of @m_subpassDependencies into @dstSubpassDependencies.
+        void CopySubpassDependencies(AZStd::vector<VkSubpassDependency>& dstSubpassDependencies) const;
 
         //! This is the main blob of data that VkRenderPasses require to know what are the
-        //! dependencies between subpasses. This array is created by AZ::Vulkan::RenderPass class.
+        //! dependencies between subpasses.
         AZStd::vector<VkSubpassDependency> m_subpassDependencies;
 
         //! We store here how many subpasses are connected by @m_subpassDependencies.
         //! Do not assume that m_subpassCount == m_subpassDependencies.size().
-        //! This variable is ONLY used for validation purposes when ApplySubpassDependencies() is called
-        //! because it helps detect errors when the number of subpasses in dstRenderPassDescriptor does not match.
+        //! This variable is ONLY used for validation purposes by RenderPassBuilder..
         uint32_t m_subpassCount = 0;
+    };
+
+    //! This is a static singleton. Its main purpose is to keep a table of the SubpassDependencies
+    //! used by all scopes that function as Vulkan Subpasses.
+    class SubpassDependenciesManager final
+    {
+    public:
+        static SubpassDependenciesManager& GetInstance();
+
+        static AZStd::shared_ptr<SubpassDependencies> BuildSubpassDependencies(const RHI::RenderAttachmentLayout& layout);
+
+        //! The following two functions are thread safe.
+        void SetSubpassDependencies(const AZStd::vector<RHI::ScopeId>& scopeIds, AZStd::shared_ptr<SubpassDependencies> subpassDependencies);
+        const SubpassDependencies* GetSubpassDependencies(const RHI::ScopeId& scopeId) const;
+        
+    private:
+        SubpassDependenciesManager() = default;
+
+        static AZStd::unique_ptr<SubpassDependenciesManager> s_instance;
+
+        //! Protects @m_subpassDependenciesTable.
+        mutable AZStd::shared_mutex m_mutex;
+        //! The reason the value is a shared_ptr is because different ScopeIds can share the same SubpassDependencies
+        AZStd::unordered_map<RHI::ScopeId, AZStd::shared_ptr<SubpassDependencies>> m_subpassDependenciesTable;
     };
 } // namespace AZ::Vulkan

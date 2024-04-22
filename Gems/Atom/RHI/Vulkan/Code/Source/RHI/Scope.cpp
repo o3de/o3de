@@ -363,11 +363,6 @@ namespace AZ
             m_queryPoolAttachments.push_back({ AZStd::static_pointer_cast<QueryPool>(queryPool), interval, access });
         }
 
-        void Scope::SetSubpassDependencies(AZStd::shared_ptr<RHI::SubpassDependencies> subpassDependencies)
-        {
-            m_subpassDependencies = subpassDependencies;
-        }
-
         bool Scope::CanOptimizeBarrier(const Barrier& barrier, BarrierSlot slot) const
         {
             if (!UsesRenderpass() || !barrier.m_attachment)
@@ -616,15 +611,5 @@ namespace AZ
             return m_resolveMode;            
         }
 
-        const SubpassDependencies* Scope::GetNativeSubpassDependencies() const
-        {
-            if (!m_subpassDependencies)
-            {
-                return nullptr;
-            }
-            const auto* nativeSubpassDependencies = azrtti_cast<const SubpassDependencies *>(m_subpassDependencies.get());
-            AZ_Assert(nativeSubpassDependencies != nullptr, "The SubpassDependencies data is not native to the Vulkan RHI.");
-            return nativeSubpassDependencies;
-        }
     }
 }

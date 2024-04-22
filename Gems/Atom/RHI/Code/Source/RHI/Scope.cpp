@@ -130,7 +130,6 @@ namespace AZ::RHI
     void Scope::CompileInternal([[maybe_unused]] Device& device) {}
     void Scope::DeactivateInternal() {}
     void Scope::ShutdownInternal() {}
-    void Scope::SetSubpassDependencies([[maybe_unused]] AZStd::shared_ptr<SubpassDependencies> subpassDependencies){}
 
     const ScopeId& Scope::GetId() const
     {
