@@ -9,7 +9,7 @@
 #pragma once
 
 #include <MCore/Source/RefCounted.h>
-
+#include <EMotionFX/Source/EMotionFXConfig.h>
 
 namespace EMotionFX
 {
