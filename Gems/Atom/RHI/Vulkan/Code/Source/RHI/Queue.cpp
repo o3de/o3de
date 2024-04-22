@@ -158,7 +158,7 @@ namespace AZ
                 item->SignalEvent();
             }
 
-            if (fenceToSignal && fenceToSignal->GetFenceType() == FenceType::Fence)
+            if (fenceToSignal)
             {
                 fenceToSignal->SignalEvent();
             }

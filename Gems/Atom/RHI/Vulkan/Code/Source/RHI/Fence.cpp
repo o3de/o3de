@@ -189,6 +189,10 @@ namespace AZ
 
                     auto& device = static_cast<Device&>(GetDevice());
                     device.GetContext().SignalSemaphore(device.GetNativeDevice(), &signalInfo);
+                    if (m_semaphoreHandle)
+                    {
+                        m_semaphoreHandle->SignalSemaphores(1);
+                    }
                 }
                 break;
             default:
