@@ -202,6 +202,7 @@ class RemoteConsole:
         try:
             self._send_message(message)
         except Exception:
+            self.connected = False
             self.on_disconnect()
 
     def pump(self):
@@ -210,12 +211,14 @@ class RemoteConsole:
         and disconnects during an exception.
         """
         while not self.stop_pump.is_set():
-            # Sending a NOOP message in order to get log lines
-            self._send_message(self._create_message(CONSOLE_MESSAGE_MAP['NOOP']))
             try:
+                # Sending a NOOP message in order to get log lines
+                self._send_message(self._create_message(CONSOLE_MESSAGE_MAP['NOOP']))
+                
                 self._handle_message(self.socket.recv(4096))
             except Exception as e:
                 diagnostic_logger.debug(f'disconnect because of an exception {e}')
+                self.connected = False
                 self.on_disconnect()
                 self.stop_pump.set()
 
