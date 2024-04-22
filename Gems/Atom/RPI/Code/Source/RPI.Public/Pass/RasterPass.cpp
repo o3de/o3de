@@ -410,7 +410,6 @@ namespace AZ
                     case RHI::AttachmentType::Image:
                         {
                             AZ::RHI::ImageScopeAttachmentDescriptor imageScopeAttachmentDescriptor = attachmentBinding.m_unifiedScopeDesc.GetAsImage();
-                            imageScopeAttachmentDescriptor.m_subpassIndex = m_subpassIndex;
                             if (attachmentBinding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::SubpassInput)
                             {
                                 AZ_Assert(m_flags.m_mergeChildrenAsSubpasses, "SubpassInputs are only allowed in RasterPasses that are mergeable as subpass.");

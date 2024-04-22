@@ -12,8 +12,6 @@
 #include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>
 #include <Atom/RHI.Reflect/Format.h>
-#include <Atom/RHI.Reflect/RenderAttachmentLayout.h>
-
 #include <AzCore/std/containers/array.h>
 
 namespace AZ

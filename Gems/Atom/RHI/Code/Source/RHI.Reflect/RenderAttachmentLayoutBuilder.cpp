@@ -58,10 +58,8 @@ namespace AZ::RHI
             return ResultCode::Success;
         };
 
-        const size_t subpassCount = m_subpassLayoutBuilders.size();
-        for (size_t subpassIndex = 0; subpassIndex < subpassCount; subpassIndex++)
+        for (const auto& builder : m_subpassLayoutBuilders)
         {
-            const auto& builder = m_subpassLayoutBuilders[subpassIndex];
             SubpassRenderAttachmentLayout& subpassLayout = builtRenderAttachmentLayout.m_subpassLayouts[builtRenderAttachmentLayout.m_subpassCount++];
             subpassLayout.m_rendertargetCount = static_cast<uint32_t>(builder.m_renderTargetAttachments.size());
             subpassLayout.m_subpassInputCount = static_cast<uint32_t>(builder.m_subpassInputAttachments.size());
@@ -202,7 +200,8 @@ namespace AZ::RHI
 
         // If there's more than one subpass, it is important to report to the RHI the current group of subpasses that
         // are using the current RenderAttachmentLayout
-        if (builtRenderAttachmentLayout.m_subpassCount > 1)
+        const auto subpassCount = builtRenderAttachmentLayout.m_subpassCount;
+        if (subpassCount > 1)
         {
             auto iface = RenderAttachmentLayoutNotificationsInterface::Get();
             if (iface != nullptr) // Not all RHIs support this interface.

@@ -56,7 +56,6 @@ namespace AZ
             //! @returns true if the incoming data makes sense.
             //! @remarks:
             //!     The data in @renderAttachmentLayout will be used when GetRenderAttachmentConfiguration() is called.
-            //!     The data in @subpassDependencies will be used when the FrameGraph compiles the attachment data.
             bool SetRenderAttachmentLayout(const AZStd::shared_ptr<RHI::RenderAttachmentLayout>& renderAttachmentLayout,
                                            uint32_t subpassIndex);
 

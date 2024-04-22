@@ -115,9 +115,6 @@ namespace AZ
             //! Resolves multisampled attachments using a command list. ResolveMode must be ResolveMode::CommandList
             void ResolveMSAAAttachments(CommandList& commandList) const;
 
-            //! May return nullptr is there's no Subpass Dependencies data to use.
-            const SubpassDependencies* GetNativeSubpassDependencies() const;
-
         private:
             enum class OverlapType
             {

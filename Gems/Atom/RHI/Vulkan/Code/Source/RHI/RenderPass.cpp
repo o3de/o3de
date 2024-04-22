@@ -5,16 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include <AzCore/std/hash.h>
-#include <AzCore/std/smart_ptr/make_shared.h>
-#include <memory>
-
 #include <RHI/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Framebuffer.h>
 #include <RHI/RenderPass.h>
-
+#include <AzCore/std/hash.h>
+#include <memory>
 #include <Atom/RHI.Reflect/VkAllocator.h>
 
 #include "SubpassDependencies.h"

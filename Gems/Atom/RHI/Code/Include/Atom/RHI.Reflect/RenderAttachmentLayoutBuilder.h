@@ -166,7 +166,8 @@ namespace AZ::RHI
         SubpassAttachmentLayoutBuilder* AddSubpass(const RHI::ScopeId * subpassScopeId = nullptr);
 
         //! Ends the building of a layout. Returns the result of the operation.
-        //! If there's more than one subpass it creates @m_subpassDependencies
+        //! When there are two or more subpasses, the list of subpasses using the built
+        //! RenderAttachmentLayout is reported to the RHI.
         ResultCode End(RenderAttachmentLayout& builtRenderAttachmentLayout);
 
         //! Resets all previous values so the builder can be reuse.
