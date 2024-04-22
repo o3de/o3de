@@ -24,6 +24,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
+#include <AzToolsFramework/API/EntityPropertyEditorNotificationBus.h>
 #include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
@@ -64,14 +65,14 @@ namespace AZ
 
 namespace AzToolsFramework
 {
-    class ActionManagerInterface;
     class ComponentEditor;
     class ComponentPaletteWidget;
     class ComponentModeCollectionInterface;
-    struct SourceControlFileInfo;
-    class ReadOnlyEntityPublicInterface;
-    class FocusModeInterface;
     class ContainerEntityInterface;
+    class FocusModeInterface;
+    class MenuManagerInterface;
+    class ReadOnlyEntityPublicInterface;
+    struct SourceControlFileInfo;
  
     namespace AssetBrowser
     {
@@ -119,6 +120,7 @@ namespace AzToolsFramework
         , private ToolsApplicationEvents::Bus::Handler
         , public IPropertyEditorNotify
         , public AzToolsFramework::EditorEntityContextNotificationBus::Handler
+        , public AzToolsFramework::EntityPropertyEditorNotificationBus::Handler
         , public AzToolsFramework::EntityPropertyEditorRequestBus::Handler
         , public AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler
         , private AzToolsFramework::ViewportEditorModeNotificationsBus::Handler
@@ -262,8 +264,14 @@ namespace AzToolsFramework
         // EntityPropertEditorRequestBus overrides ...
         void GetSelectedAndPinnedEntities(EntityIdList& selectedEntityIds) override;
         void GetSelectedEntities(EntityIdList& selectedEntityIds) override;
+        void GetSelectedComponents(AZStd::unordered_set<AZ::EntityComponentIdPair>& selectedComponentEntityIds) override;
         void SetNewComponentId(AZ::ComponentId componentId) override;
         void VisitComponentEditors(const VisitComponentEditorsCallback& callback) const override;
+
+        // EntityPropertyEditorNotificationBus overrides ...
+        void OnComponentSelectionChanged(
+            EntityPropertyEditor* entityPropertyEditor,
+            const AZStd::unordered_set<AZ::EntityComponentIdPair>& selectedEntityComponentIds) override;
 
         // TickBus overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
@@ -398,7 +406,7 @@ namespace AzToolsFramework
         QAction* m_actionToMoveComponentsTop = nullptr;
         QAction* m_actionToMoveComponentsBottom = nullptr;
 
-        AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
+        AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
 
         void CreateActions();
         void UpdateActions();
@@ -468,9 +476,11 @@ namespace AzToolsFramework
         AZStd::span<AZ::Component* const> GetSelectedComponents() const;
         const AZStd::unordered_map<AZ::EntityId, AZ::Entity::ComponentArrayType>& GetSelectedComponentsByEntityId() const;
         void UpdateSelectionCache();
+        void NotifySelectionChanges();
 
         ComponentEditorVector m_selectedComponentEditors;
         AZ::Entity::ComponentArrayType m_selectedComponents;
+        AZStd::unordered_set<AZ::EntityComponentIdPair> m_selectedEntityComponentIds;
         AZStd::unordered_map<AZ::EntityId, AZ::Entity::ComponentArrayType> m_selectedComponentsByEntityId;
 
         void SaveComponentEditorState();
