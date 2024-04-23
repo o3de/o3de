@@ -73,7 +73,7 @@ def EditorWorkflow_EditorCameraBeThisCameraIsClearedWhenChangingLevel():
 
         # note: level name needs to match name in parent TestSuite_Main file
         # see TestAutomation(EditorTestSuite)
-        first_level_created = helper.create_level("MinimalProject", "tmp_level_1")
+        first_level_created = helper.create_level("DefaultProject", "tmp_level_1")
         Report.critical_result(Tests.first_level_created, first_level_created)
 
         # record initial viewport position (new level default)
@@ -92,7 +92,7 @@ def EditorWorkflow_EditorCameraBeThisCameraIsClearedWhenChangingLevel():
 
         # note: level name needs to match name in parent TestSuite_Main file
         # see TestAutomation(EditorTestSuite)
-        second_level_created = helper.create_level("MinimalProject", "tmp_level_2")
+        second_level_created = helper.create_level("DefaultProject", "tmp_level_2")
         Report.critical_result(
             Tests.second_level_created, second_level_created)
 
