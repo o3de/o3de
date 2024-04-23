@@ -18,7 +18,6 @@
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationManager.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
@@ -85,7 +84,6 @@ namespace AzToolsFramework
 class SandboxIntegrationManager
     : private AzToolsFramework::ToolsApplicationEvents::Bus::Handler
     , private AzToolsFramework::EditorRequests::Bus::Handler
-    , private AzToolsFramework::EditorContextMenuBus::Handler
     , private AzToolsFramework::EditorWindowRequests::Bus::Handler
     , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
     , private IUndoManagerListener
@@ -142,12 +140,6 @@ private:
     //////////////////////////////////////////////////////////////////////////
     // AzToolsFramework::EditorWindowRequests::Bus::Handler
     QWidget* GetAppMainWindow() override;
-    //////////////////////////////////////////////////////////////////////////
-
-    //////////////////////////////////////////////////////////////////////////
-    // AzToolsFramework::EditorContextMenu::Bus::Handler overrides
-    void PopulateEditorGlobalContextMenu(QMenu* menu, const AZStd::optional<AzFramework::ScreenPoint>& point, int flags) override;
-    int GetMenuPosition() const override;
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////

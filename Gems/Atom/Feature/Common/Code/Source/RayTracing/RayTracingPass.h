@@ -55,7 +55,7 @@ namespace AZ
             void OnShaderVariantReinitialized(const RPI::ShaderVariant& shaderVariant) override;
 
             // load the raytracing shaders and setup pipeline states
-            void Init();
+            void CreatePipelineState();
 
             // helper for loading a shader from a shader asset reference
             Data::Instance<RPI::Shader> LoadShader(const RPI::AssetReference& shaderAssetReference);
@@ -66,11 +66,14 @@ namespace AZ
 
             // revision number of the ray tracing TLAS when the shader table was built
             uint32_t m_rayTracingRevision = 0;
+            uint32_t m_proceduralGeometryTypeRevision = 0;
 
             // raytracing shaders, pipeline states, and shader table
             Data::Instance<RPI::Shader> m_rayGenerationShader;
             Data::Instance<RPI::Shader> m_missShader;
             Data::Instance<RPI::Shader> m_closestHitShader;
+            Data::Instance<RPI::Shader> m_closestHitProceduralShader;
+            Data::Instance<RPI::Shader> m_intersectionShader;
             RHI::Ptr<RHI::RayTracingPipelineState> m_rayTracingPipelineState;
             RHI::ConstPtr<RHI::PipelineState> m_globalPipelineState;
             RHI::Ptr<RHI::RayTracingShaderTable> m_rayTracingShaderTable;

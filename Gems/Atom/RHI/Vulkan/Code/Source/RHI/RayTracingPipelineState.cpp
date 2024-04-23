@@ -117,6 +117,17 @@ namespace AZ
 
                     hitStageIndices.insert(AZStd::pair<AZStd::string_view, uint32_t>(shaderLibrary.m_anyHitShaderName.GetStringView(), aznumeric_cast<uint32_t>(stages.size() - 1)));
                 }
+
+                // intersection
+                if (!shaderLibrary.m_intersectionShaderName.IsEmpty())
+                {
+                    VkPipelineShaderStageCreateInfo intersectionCreateInfo = stageCreateInfo;
+                    intersectionCreateInfo.stage = VK_SHADER_STAGE_INTERSECTION_BIT_KHR;
+                    intersectionCreateInfo.pName = shaderLibrary.m_intersectionShaderName.GetCStr();
+                    stages.push_back(intersectionCreateInfo);
+
+                    hitStageIndices.insert(AZStd::pair<AZStd::string_view, uint32_t>(shaderLibrary.m_intersectionShaderName.GetStringView(), aznumeric_cast<uint32_t>(stages.size() - 1)));
+                }
             }
 
             // create group entries for the hit group shaders, using the hitStageIndices map to retrieve the stage index for the shader
@@ -124,6 +135,7 @@ namespace AZ
             {
                 uint32_t closestHitShaderIndex = VK_SHADER_UNUSED_KHR;
                 uint32_t anytHitShaderIndex = VK_SHADER_UNUSED_KHR;
+                uint32_t intersectionShaderIndex = VK_SHADER_UNUSED_KHR;
 
                 if (!hitGroup.m_closestHitShaderName.IsEmpty())
                 {
@@ -141,16 +153,26 @@ namespace AZ
                     anytHitShaderIndex = itStage->second;
                 }
 
+                if (!hitGroup.m_intersectionShaderName.IsEmpty())
+                {
+                    HitStageIndexMap::iterator itStage = hitStageIndices.find(hitGroup.m_intersectionShaderName.GetCStr());
+                    AZ_Assert(itStage != hitStageIndices.end(), "HitGroup specified an unknown IntersectionShader");
+
+                    intersectionShaderIndex = itStage->second;
+                }
+
                 AZ_Assert(closestHitShaderIndex != VK_SHADER_UNUSED_KHR || anytHitShaderIndex != VK_SHADER_UNUSED_KHR, "HitGroup must specify at least one hit shader");
 
                 VkRayTracingShaderGroupCreateInfoKHR groupCreateInfo = {};
                 groupCreateInfo.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
                 groupCreateInfo.pNext = nullptr;
-                groupCreateInfo.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
+                groupCreateInfo.type = hitGroup.m_intersectionShaderName.IsEmpty()
+                    ? VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR
+                    : VK_RAY_TRACING_SHADER_GROUP_TYPE_PROCEDURAL_HIT_GROUP_KHR;
                 groupCreateInfo.generalShader = VK_SHADER_UNUSED_KHR;
                 groupCreateInfo.closestHitShader = closestHitShaderIndex;
                 groupCreateInfo.anyHitShader = anytHitShaderIndex;
-                groupCreateInfo.intersectionShader = VK_SHADER_UNUSED_KHR;
+                groupCreateInfo.intersectionShader = intersectionShaderIndex;
                 groups.push_back(groupCreateInfo);
 
                 shaderGroupNames.push_back(hitGroup.m_hitGroupName.GetStringView());

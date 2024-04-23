@@ -103,7 +103,6 @@ namespace AzToolsFramework
         "Display the position of the manipulator to the viewport as debug text");
 
     // strings related to new viewport interaction model (EditorTransformComponentSelection)
-    static const char* const TogglePivotTitleRightClick = "Toggle pivot";
     static const char* const TogglePivotTitleEditMenu = "Toggle Pivot Location";
     static const char* const TogglePivotDesc = "Toggle pivot location";
     static const char* const ManipulatorUndoRedoName = "Manipulator Adjustment";
@@ -1027,7 +1026,7 @@ namespace AzToolsFramework
 
         m_editorHelpers = AZStd::make_unique<EditorHelpers>(entityDataCache);
 
-        ActionManagerRegistrationNotificationBus::Handler::BusConnect();        
+        ActionManagerRegistrationNotificationBus::Handler::BusConnect();
         EditorTransformComponentSelectionRequestBus::Handler::BusConnect(entityContextId);
         ToolsApplicationNotificationBus::Handler::BusConnect();
         Camera::EditorCameraNotificationBus::Handler::BusConnect();
@@ -1036,7 +1035,6 @@ namespace AzToolsFramework
         EditorEntityVisibilityNotificationBus::Router::BusRouterConnect();
         EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
         EditorManipulatorCommandUndoRedoRequestBus::Handler::BusConnect(entityContextId);
-        EditorContextMenuBus::Handler::BusConnect();
         ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusConnect(ViewportUi::DefaultViewportId);
         ReadOnlyEntityPublicNotificationBus::Handler::BusConnect(entityContextId);
 
@@ -1087,7 +1085,6 @@ namespace AzToolsFramework
 
         ReadOnlyEntityPublicNotificationBus::Handler::BusDisconnect();
         ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusDisconnect();
-        EditorContextMenuBus::Handler::BusConnect();
         EditorManipulatorCommandUndoRedoRequestBus::Handler::BusDisconnect();
         EditorEntityLockComponentNotificationBus::Router::BusRouterDisconnect();
         EditorEntityVisibilityNotificationBus::Router::BusRouterDisconnect();
@@ -2551,7 +2548,7 @@ namespace AzToolsFramework
 
             m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+Shift+I");
         }
-        
+
         // Toggle Pivot Location
         {
             const AZStd::string_view actionIdentifier = "o3de.action.edit.togglePivot";
@@ -2904,7 +2901,7 @@ namespace AzToolsFramework
         }
 
         // Transform Mode - Scale
-        {      
+        {
             AZStd::string actionIdentifier = "o3de.action.edit.transform.scale";
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = "Scale";
@@ -3917,49 +3914,6 @@ namespace AzToolsFramework
             RefreshUiAfterChange(manipulatorEntityIds.m_entityIds);
 
             ClearManipulatorTranslationOverride();
-        }
-    }
-
-    int EditorTransformComponentSelection::GetMenuPosition() const
-    {
-        return aznumeric_cast<int>(EditorContextMenuOrdering::BOTTOM);
-    }
-
-    AZStd::string EditorTransformComponentSelection::GetMenuIdentifier() const
-    {
-        return "Transform Component";
-    }
-
-    void EditorTransformComponentSelection::PopulateEditorGlobalContextMenu(
-        QMenu* menu, [[maybe_unused]] const AZStd::optional<AzFramework::ScreenPoint>& point, [[maybe_unused]] int flags)
-    {
-        // Don't show the Toggle Pivot option if any read-only entities are in the current selection
-        // We need to request the selected entities instead of just using the m_selectedEntities variable
-        // because we filter out any read-only entities from the m_selectedEntities so that the manipulators
-        // will be hidden
-        EntityIdList selectedEntityIds;
-        ToolsApplicationRequests::Bus::BroadcastResult(selectedEntityIds, &ToolsApplicationRequests::GetSelectedEntities);
-
-        auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get();
-        bool readOnlyEntityInSelection = false;
-        for (const auto& entityId : selectedEntityIds)
-        {
-            if (readOnlyEntityPublicInterface->IsReadOnly(entityId))
-            {
-                readOnlyEntityInSelection = true;
-                break;
-            }
-        }
-
-        if (!readOnlyEntityInSelection)
-        {
-            QAction* action = menu->addAction(QObject::tr(TogglePivotTitleRightClick));
-            QObject::connect(
-                action, &QAction::triggered, action,
-                [this]
-                {
-                    ToggleCenterPivotSelection();
-                });
         }
     }
 
