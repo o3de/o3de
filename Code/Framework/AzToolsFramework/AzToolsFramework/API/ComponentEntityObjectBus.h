@@ -64,9 +64,6 @@ namespace AzToolsFramework
 
         /// Retrieve AZ Entity Id associated with this sandbox object.
         virtual AZ::EntityId GetAssociatedEntityId() = 0;
-
-        /// Updates the undo cache for this sandbox object
-        virtual void UpdatePreemptiveUndoCache() = 0;
     };
 
     using ComponentEntityObjectRequestBus = AZ::EBus < ComponentEntityObjectRequests >;

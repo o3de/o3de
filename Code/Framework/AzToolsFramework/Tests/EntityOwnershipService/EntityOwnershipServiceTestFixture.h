@@ -18,7 +18,6 @@
 #include <AzFramework/Entity/GameEntityContextComponent.h>
 #include <AzFramework/Entity/SliceEntityOwnershipService.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
-#include <AzToolsFramework/Entity/SliceEditorEntityOwnershipService.h>
 
 namespace UnitTest
 {

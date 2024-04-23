@@ -48,7 +48,7 @@ namespace AzToolsFramework::EmbeddedPython
         if (!isSdkEngine)
         {
             m_embeddedLibPythonModuleHandle = AZ::DynamicModuleHandle::Create(IMPLICIT_LOAD_PYTHON_SHARED_LIBRARY, false);
-            bool loadResult = m_embeddedLibPythonModuleHandle->Load(AZ::DynamicModuleHandle::LoadFlags::GlobalSymbols);
+            [[maybe_unused]] bool loadResult = m_embeddedLibPythonModuleHandle->Load(AZ::DynamicModuleHandle::LoadFlags::GlobalSymbols);
             AZ_Error("PythonLoader", loadResult, "Failed to load " IMPLICIT_LOAD_PYTHON_SHARED_LIBRARY "\n");
         }
         #endif // IMPLICIT_LOAD_PYTHON_SHARED_LIBRARY
@@ -122,7 +122,7 @@ namespace AzToolsFramework::EmbeddedPython
             }
             return true;
         };
-        const auto parseOutcome = AZ::Settings::ParseConfigFile(systemFileStream, parserSettings);
+        [[maybe_unused]] const auto parseOutcome = AZ::Settings::ParseConfigFile(systemFileStream, parserSettings);
         AZ_Error("python", parseOutcome, "Python venv file at %s missing home key. Make sure to run python/get_python.", pythonVenvConfig.c_str());
 
         return AZ::IO::FixedMaxPath(pythonHome);

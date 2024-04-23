@@ -29,7 +29,6 @@
 
 // AzToolsFramework
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
-#include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzToolsFramework/API/EditorLevelNotificationBus.h>
 
@@ -300,26 +299,6 @@ void CCryEditDoc::Load(TDocMultiArchive& /* arrXmlAr */, const QString& szFilena
         {
             CAutoLogTime logtime("Game Engine level load");
             GetIEditor()->GetGameEngine()->LoadLevel(true, true);
-        }
-
-        {
-            // support old version of sequences
-            IMovieSystem* pMs = GetIEditor()->GetMovieSystem();
-
-            if (pMs)
-            {
-                for (int k = 0; k < pMs->GetNumSequences(); ++k)
-                {
-                    IAnimSequence* seq = pMs->GetSequence(k);
-                    QString fullname = seq->GetName();
-                    CBaseObject* pObj = GetIEditor()->GetObjectManager()->FindObject(fullname);
-
-                    if (!pObj)
-                    {
-                        pObj = GetIEditor()->GetObjectManager()->NewObject("SequenceObject", nullptr, fullname);
-                    }
-                }
-            }
         }
 
         {

@@ -20,9 +20,8 @@ def main():
         return
 
     inputPath = sys.argv[1]
-    rootPath, extension = inputPath.split(".", 1)
-
-    if extension != "shader":
+    rootPath, extension = os.path.splitext(inputPath)
+    if extension != ".shader":
         print("The input argument for the script is not a valid .shader file")
         return
 

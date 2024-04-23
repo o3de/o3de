@@ -326,52 +326,6 @@ namespace UnitTest
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     }
 
-    TEST_F(EditorTransformComponentSelectionFixture, TestComponentPropertyNotificationIsSentAfterModifyingSlice)
-    {
-        using AzToolsFramework::EditorTransformComponentSelectionRequestBus;
-
-        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
-
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // Given
-        AZ::Entity* grandParent = nullptr;
-        AZ::Entity* parent = nullptr;
-        AZ::Entity* child = nullptr;
-
-        AZ::EntityId grandParentId = CreateDefaultEditorEntity("GrandParent", &grandParent);
-        AZ::EntityId parentId = CreateDefaultEditorEntity("Parent", &parent);
-        AZ::EntityId childId = CreateDefaultEditorEntity("Child", &child);
-
-        AZ::TransformBus::Event(childId, &AZ::TransformInterface::SetParent, parentId);
-        AZ::TransformBus::Event(parentId, &AZ::TransformInterface::SetParent, grandParentId);
-
-        UnitTest::SliceAssets sliceAssets;
-        const auto sliceAssetId = UnitTest::SaveAsSlice({ grandParent }, GetApplication(), sliceAssets);
-
-        AzToolsFramework::EntityList instantiatedEntities = UnitTest::InstantiateSlice(sliceAssetId, sliceAssets);
-
-        const AZ::EntityId entityIdToMove = instantiatedEntities.back()->GetId();
-        EditorEntityComponentChangeDetector editorEntityChangeDetector(entityIdToMove);
-
-        AzToolsFramework::SelectEntity(entityIdToMove);
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // When
-        EditorTransformComponentSelectionRequestBus::Event(
-            AzToolsFramework::GetEntityContextId(),
-            &EditorTransformComponentSelectionRequestBus::Events::CopyOrientationToSelectedEntitiesIndividual,
-            AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisX(), AZ::DegToRad(90.0f)));
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // Then
-        EXPECT_TRUE(editorEntityChangeDetector.ChangeDetected());
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-        UnitTest::DestroySlices(sliceAssets);
-    }
-
     TEST_F(EditorTransformComponentSelectionFixture, CopyOrientationToSelectedEntitiesIndividualDoesNotAffectScale)
     {
         using AzToolsFramework::EditorTransformComponentSelectionRequestBus;

@@ -131,7 +131,7 @@ public:
     void SetEditorWindowTitle(QString sTitleStr = QString(), QString sPreTitleStr = QString(), QString sPostTitleStr = QString());
     RecentFileList* GetRecentFileList();
     virtual void AddToRecentFileList(const QString& lpszPathName);
-    ECreateLevelResult CreateLevel(const QString& levelName, QString& fullyQualifiedLevelName);
+    ECreateLevelResult CreateLevel(const QString& templateName, const QString& levelName, QString& fullyQualifiedLevelName);
     bool FirstInstance(bool bForceNewInstance = false);
     void InitFromCommandLine(CEditCommandLineInfo& cmdInfo);
     bool CheckIfAlreadyRunning();
@@ -175,8 +175,6 @@ public:
     // Implementation
     void OnCreateLevel();
     void OnOpenLevel();
-    void OnCreateSlice();
-    void OnOpenSlice();
     void OnAppAbout();
     void OnAppShowWelcomeScreen();
     void OnUpdateShowWelcomeScreen(QAction* action);
@@ -202,7 +200,6 @@ public:
     void OnOpenAssetImporter();
     void OnEditLevelData();
     void OnFileEditLogFile();
-    void OnFileResaveSlices();
     void OnFileEditEditorini();
     void OnPreferences();
     void OnOpenProjectManagerSettings();
@@ -337,8 +334,6 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 private:
-    static inline constexpr const char* DefaultLevelTemplateName = "Prefabs/Default_Level.prefab";
-
     // Optional Uri to start an external lua debugger. If not specified,
     // then the Editor will open LuaIDE.exe.
     // For example, if using The Visual Studio Debugger Extension provided by lumbermixalot

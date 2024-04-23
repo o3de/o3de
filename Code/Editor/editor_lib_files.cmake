@@ -222,6 +222,7 @@ set(FILES
     res/veed_tree.bmp
     res/vegetati.bmp
     res/vegtree.bmp
+    res/Prefab_80.svg
     res/video_record.ico
     res/warning16x16.ico
     res/water.bmp
@@ -382,6 +383,7 @@ set(FILES
     NewLevelDialog.cpp
     NewLevelDialog.h
     NewLevelDialog.ui
+    NewLevelDialog.qrc
     Dialogs/PythonScriptsDialog.cpp
     Dialogs/PythonScriptsDialog.h
     Dialogs/PythonScriptsDialog.ui
@@ -407,15 +409,12 @@ set(FILES
     LogFileImpl.cpp
     LogFileImpl.h
     Objects/ClassDesc.h
-    Objects/DisplayContextShared.inl
     Objects/ObjectLoader.cpp
     Objects/ObjectLoader.h
     Objects/ObjectManager.cpp
     Objects/ObjectManager.h
     Objects/ObjectManagerLegacyUndo.cpp
     Objects/ObjectManagerLegacyUndo.h
-    Objects/DisplayContext.cpp
-    Objects/DisplayContext.h
     Objects/EntityObject.cpp
     Objects/EntityObject.h
     PythonEditorFuncs.cpp

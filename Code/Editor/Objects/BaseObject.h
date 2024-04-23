@@ -18,11 +18,15 @@
 #if !defined(Q_MOC_RUN)
 #include "Include/HitContext.h"
 #include "ClassDesc.h"
-#include "DisplayContext.h"
 #include "ObjectLoader.h"
 #include "Util/Variable.h"
 
 #include "AzCore/Math/Guid.h"
+
+#include "SandboxAPI.h"
+#include <Cry_Color.h>
+#include <Cry_Geo.h>
+#include <AzCore/std/containers/vector.h>
 #endif
 
 //////////////////////////////////////////////////////////////////////////
@@ -465,9 +469,6 @@ public:
     //! In This function variables of the object must be initialized.
     virtual void InitVariables() {};
 
-    //! Draw a reddish highlight indicating its budget usage.
-    virtual void DrawBudgetUsage(DisplayContext& dc, const QColor& color);
-
     bool CanBeHightlighted() const;
     bool IsSkipSelectionHelper() const;
 
@@ -515,23 +516,6 @@ protected:
     //! Resolve parent from callback.
     void ResolveParent(CBaseObject* object);
     void SetColor(const QColor& color);
-
-    //! Draw object label.
-    void    DrawLabel(DisplayContext& dc, const Vec3& pos, const QColor& labelColor = QColor(255, 255, 255), float alpha = 1.0f, float size = 1.f);
-    //! Draw 3D Axis at object position.
-    void    DrawAxis(DisplayContext& dc, const Vec3& pos, float size);
-    //! Draw area around object.
-    void    DrawArea(DisplayContext& dc);
-    //! Draw selection helper.
-    void    DrawSelectionHelper(DisplayContext& dc, const Vec3& pos, const QColor& labelColor = QColor(255, 255, 255), float alpha = 1.0f);
-    //! Check if dimension's figures can be displayed before draw them.
-    virtual void DrawDimensions(DisplayContext& dc, AABB* pMergedBoundBox = nullptr);
-
-    //! Draw highlight.
-    virtual void DrawHighlight(DisplayContext& dc);
-
-    //! Returns if the object can be drawn, and if its selection helper should also be drawn.
-    bool CanBeDrawn(const DisplayContext& dc, bool& outDisplaySelectionHelper) const;
 
     // Do basic intersection tests
     virtual bool IntersectRectBounds(const AABB& bbox);

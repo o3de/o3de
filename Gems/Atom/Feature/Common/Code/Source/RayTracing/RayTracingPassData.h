@@ -35,8 +35,12 @@ namespace AZ
                         ->Field("RayGenerationShaderName", &RayTracingPassData::m_rayGenerationShaderName)
                         ->Field("ClosestHitShaderAsset", &RayTracingPassData::m_closestHitShaderAssetReference)
                         ->Field("ClosestHitShaderName", &RayTracingPassData::m_closestHitShaderName)
+                        ->Field("ClosestHitProceduralShaderAsset", &RayTracingPassData::m_closestHitProceduralShaderAssetReference)
+                        ->Field("ClosestHitProceduralShaderName", &RayTracingPassData::m_closestHitProceduralShaderName)
                         ->Field("MissShaderAsset", &RayTracingPassData::m_missShaderAssetReference)
                         ->Field("MissShaderName", &RayTracingPassData::m_missShaderName)
+                        ->Field("IntersectionShaderAsset", &RayTracingPassData::m_intersectionShaderAssetReference)
+                        ->Field("IntersectionShaderName", &RayTracingPassData::m_intersectionShaderName)
                         ->Field("MaxPayloadSize", &RayTracingPassData::m_maxPayloadSize)
                         ->Field("MaxAttributeSize", &RayTracingPassData::m_maxAttributeSize)
                         ->Field("MaxRecursionDepth", &RayTracingPassData::m_maxRecursionDepth)
@@ -53,8 +57,12 @@ namespace AZ
             AZStd::string m_rayGenerationShaderName;
             RPI::AssetReference m_closestHitShaderAssetReference;
             AZStd::string m_closestHitShaderName;
+            RPI::AssetReference m_closestHitProceduralShaderAssetReference;
+            AZStd::string m_closestHitProceduralShaderName;
             RPI::AssetReference m_missShaderAssetReference;
             AZStd::string m_missShaderName;
+            RPI::AssetReference m_intersectionShaderAssetReference;
+            AZStd::string m_intersectionShaderName;
 
             uint32_t m_maxPayloadSize = 64;
             uint32_t m_maxAttributeSize = 32;

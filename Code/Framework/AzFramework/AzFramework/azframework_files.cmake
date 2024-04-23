@@ -112,7 +112,6 @@ set(FILES
     Viewport/ClickDetector.h
     Viewport/ClickDetector.cpp
     Viewport/CursorState.h
-    Viewport/DisplayContextRequestBus.h
     Entity/BehaviorEntity.cpp
     Entity/BehaviorEntity.h
     Entity/GameEntityContextComponent.cpp

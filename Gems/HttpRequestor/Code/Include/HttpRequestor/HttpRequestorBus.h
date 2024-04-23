@@ -7,8 +7,9 @@
  */
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
 #include "HttpTypes.h"
+#include <AzCore/EBus/EBus.h>
+#include <aws/core/client/ClientConfiguration.h>
 
 namespace HttpRequestor
 {
@@ -26,6 +27,17 @@ namespace HttpRequestor
         //! @param callback The callback method to receive the JSON response object.
         virtual void AddRequest(const AZStd::string& URI, Aws::Http::HttpMethod method, const Callback& callback) = 0;
 
+        //! Make a RESTful call to a HTTP(s) endpoint. Receive the response, via the supplied callback as JSON.
+        //! @param URI The universal resource indicator representing the endpoint to make the request to.
+        //! @param method The HTTP method to use, for example HTTP_GET.
+        //! @param callback The callback method to receive the JSON response object.
+        //! @param clientConfiguration The client configuration to use for the HTTP request.
+        virtual void AddRequestWithClientConfiguration(
+            const AZStd::string& URI,
+            Aws::Http::HttpMethod method,
+            const Callback& callback,
+            const Aws::Client::ClientConfiguration clientConfiguration) = 0;
+
         //! Make a RESTful call to a HTTP(s) endpoint with customized headers. Receive the response, via the supplied callback as JSON.
         //! @param URI The universal resource indicator representing the endpoint to make the request to.
         //! @param method The HTTP method to use, for example HTTP_GET.
@@ -34,7 +46,21 @@ namespace HttpRequestor
         virtual void AddRequestWithHeaders(
             const AZStd::string& URI, Aws::Http::HttpMethod method, const Headers& headers, const Callback& callback) = 0;
 
-        //! Make a RESTful call to a HTTP(s) endpoint with customized headers and a body. Receive the response, via the supplied callback as JSON.
+        //! Make a RESTful call to a HTTP(s) endpoint with customized headers. Receive the response, via the supplied callback as JSON.
+        //! @param URI The universal resource indicator representing the endpoint to make the request to.
+        //! @param method The HTTP method to use, for example HTTP_GET.
+        //! @param headers A map of header names and values to set on the request.
+        //! @param callback The callback method to receive the JSON response object.
+        //! @param clientConfiguration The client configuration to use for the HTTP request.
+        virtual void AddRequestWithHeadersAndClientConfiguration(
+            const AZStd::string& URI,
+            Aws::Http::HttpMethod method,
+            const Headers& headers,
+            const Callback& callback,
+            const Aws::Client::ClientConfiguration clientConfiguration) = 0;
+
+        //! Make a RESTful call to a HTTP(s) endpoint with customized headers and a body. Receive the response, via the supplied callback as
+        //! JSON.
         //! @param URI The universal resource indicator representing the endpoint to make the request to.
         //! @param method The HTTP method to use, for example HTTP_POST.
         //! @param headers A map of header names and values to set on the request.
@@ -48,11 +74,39 @@ namespace HttpRequestor
             const AZStd::string& body,
             const Callback& callback) = 0;
 
+        //! Make a RESTful call to a HTTP(s) endpoint with customized headers and a body. Receive the response, via the supplied callback as
+        //! JSON.
+        //! @param URI The universal resource indicator representing the endpoint to make the request to.
+        //! @param method The HTTP method to use, for example HTTP_POST.
+        //! @param headers A map of header names and values to set on the request.
+        //! @param body Any HTTP request data to include in the request. Use Content-Type and Content-Length headers to specify the nature
+        //! of the body payload.
+        //! @param callback The callback method to receive the JSON response object.
+        //! @param clientConfiguration The client configuration to use for the HTTP request.
+        virtual void AddRequestWithHeadersBodyAndClientConfiguration(
+            const AZStd::string& URI,
+            Aws::Http::HttpMethod method,
+            const Headers& headers,
+            const AZStd::string& body,
+            const Callback& callback,
+            const Aws::Client::ClientConfiguration clientConfiguration) = 0;
+
         //! Make a RESTful call to a HTTP(s) endpoint. Receive the response, via the supplied callback as text.
         //! @param URI The universal resource indicator representing the endpoint to make the request to.
         //! @param method The http method to use, for example HTTP_GET.
         //! @param callback The callback method to receive the JSON response object.
         virtual void AddTextRequest(const AZStd::string& URI, Aws::Http::HttpMethod method, const TextCallback& callback) = 0;
+
+        //! Make a RESTful call to a HTTP(s) endpoint. Receive the response, via the supplied callback as text.
+        //! @param URI The universal resource indicator representing the endpoint to make the request to.
+        //! @param method The http method to use, for example HTTP_GET.
+        //! @param callback The callback method to receive the JSON response object.
+        //! @param clientConfiguration The client configuration to use for the HTTP request.
+        virtual void AddTextRequestWithClientConfiguration(
+            const AZStd::string& URI,
+            Aws::Http::HttpMethod method,
+            const TextCallback& callback,
+            Aws::Client::ClientConfiguration clientConfiguration) = 0;
 
         //! Make a RESTful call to a HTTP(s) endpoint with customized headers. Receive the response, via the supplied callback as text.
         //! @param URI The universal resource indicator representing the endpoint to make the request to.
@@ -62,11 +116,26 @@ namespace HttpRequestor
         virtual void AddTextRequestWithHeaders(
             const AZStd::string& URI, Aws::Http::HttpMethod method, const Headers& headers, const TextCallback& callback) = 0;
 
-        //! Make a RESTful call to a HTTP(s) endpoint with customized headers and a body. Receive the response, via the supplied callback as text.
+        //! Make a RESTful call to a HTTP(s) endpoint with customized headers. Receive the response, via the supplied callback as text.
+        //! @param URI The universal resource indicator representing the endpoint to make the request to.
+        //! @param method The HTTP method to use, for example HTTP_GET.
+        //! @param headers A map of header names and values to set on the request.
+        //! @param callback The callback method to receive the JSON response object.
+        //! @param clientConfiguration The client configuration to use for the HTTP request.
+        virtual void AddTextRequestWithHeadersAndClientConfiguration(
+            const AZStd::string& URI,
+            Aws::Http::HttpMethod method,
+            const Headers& headers,
+            const TextCallback& callback,
+            const Aws::Client::ClientConfiguration clientConfiguration) = 0;
+
+        //! Make a RESTful call to a HTTP(s) endpoint with customized headers and a body. Receive the response, via the supplied callback as
+        //! text.
         //! @param URI The universal resource indicator representing the endpoint to make the request to.
         //! @param method The HTTP method to use, for example HTTP_POST.
         //! @param headers A map of header names and values to set on the request.
-        //! @param body Any HTTP request data to include in the request. Use Content-Type and Content-Length headers to specify the nature of the body payload.
+        //! @param body Any HTTP request data to include in the request. Use Content-Type and Content-Length headers to specify the nature
+        //! of the body payload.
         //! @param callback The callback method to receive the JSON response object.
         virtual void AddTextRequestWithHeadersAndBody(
             const AZStd::string& URI,
@@ -74,6 +143,23 @@ namespace HttpRequestor
             const Headers& headers,
             const AZStd::string& body,
             const TextCallback& callback) = 0;
+
+        //! Make a RESTful call to a HTTP(s) endpoint with customized headers and a body. Receive the response, via the supplied callback as
+        //! text.
+        //! @param URI The universal resource indicator representing the endpoint to make the request to.
+        //! @param method The HTTP method to use, for example HTTP_POST.
+        //! @param headers A map of header names and values to set on the request.
+        //! @param body Any HTTP request data to include in the request. Use Content-Type and Content-Length headers to specify the nature
+        //! of the body payload.
+        //! @param callback The callback method to receive the JSON response object.
+        //! @param clientConfiguration The client configuration to use for the HTTP request.
+        virtual void AddTextRequestWithHeadersBodyAndClientConfiguration(
+            const AZStd::string& URI,
+            Aws::Http::HttpMethod method,
+            const Headers& headers,
+            const AZStd::string& body,
+            const TextCallback& callback,
+            const Aws::Client::ClientConfiguration clientConfiguration) = 0;
 
         //! Receive the round trip time of the last RESTful call made to a HTTP(s) endpoint.
         //! Call this method from inside the supplied callback to get the round trip time of the original request.
