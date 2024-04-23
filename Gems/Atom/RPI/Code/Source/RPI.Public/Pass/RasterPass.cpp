@@ -143,7 +143,6 @@ namespace AZ
                     AZ_Assert(subpassIndex > 0, "The first subpass can't have attachments used as SubpassInput");
                     AZ_Assert(binding.m_unifiedScopeDesc.GetType() == RHI::AttachmentType::Image,
                         "Only image attachments are allowed as SubpassInput.");
-                    AZ_Assert(m_subpassIndex > 0, "The first subpass can not depend on SubpassInput attachments");
                     atLeastOneAttachmentWasSubpassInput = true;
                     const auto aspectFlags = binding.m_unifiedScopeDesc.GetAsImage().m_imageViewDescriptor.m_aspectFlags;
                     subpassLayoutBuilder.SubpassInputAttachment(binding.GetAttachment()->GetAttachmentId(), aspectFlags);

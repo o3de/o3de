@@ -57,7 +57,6 @@ namespace AZ::Vulkan
             {
                 subpassDependencies.emplace_back();
                 VkSubpassDependency& subpassDependency = subpassDependencies.back();
-                subpassDependency = {};
                 subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
                 subpassDependency.dstSubpass = 0;
                 subpassDependency.srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
@@ -70,7 +69,6 @@ namespace AZ::Vulkan
             {
                 subpassDependencies.emplace_back();
                 VkSubpassDependency& subpassDependency = subpassDependencies.back();
-                subpassDependency = {};
                 subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
                 subpassDependency.dstSubpass = 0;
                 subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -87,7 +85,6 @@ namespace AZ::Vulkan
         {
             subpassDependencies.emplace_back();
             VkSubpassDependency& subpassDependency = subpassDependencies.back();
-            subpassDependency = {};
             subpassDependency.srcSubpass = subpassIndex;
             subpassDependency.dstSubpass = nextSubpassIndex;
             subpassDependency.dependencyFlags =
@@ -131,7 +128,6 @@ namespace AZ::Vulkan
             // Typical External dependency for last subpass
             subpassDependencies.emplace_back();
             VkSubpassDependency& subpassDependency = subpassDependencies.back();
-            subpassDependency = {};
             subpassDependency.srcSubpass = subpassIndex;
             subpassDependency.dstSubpass = VK_SUBPASS_EXTERNAL;
             subpassDependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;

@@ -58,9 +58,11 @@ namespace AZ
 
             // --- Children related functions ---
 
-            //! If this parent pass is supposed to merge child passes as subpasses
-            //! makes sure @child is a RasterPass and marks the child passes as mergeable.
-            //! if the child is NOT a RasterPass, this ParentPass clears its flag that merges children passes.
+            //! When PassData::m_mergeChildrenAsSubpasses is true, the ParentPass will try to merge child passes as subpasses.
+            //! Child passes do not mark themselves as mergeable, instead the ParentPass marks its children as mergeable by
+            //! calling this function.
+            //! This function makes sure @child is a RasterPass and marks it as mergeable.
+            //! if the child is NOT a RasterPass, this ParentPass clears its own flag that merges children passes.
             void MarkChildAsSubpass(const Ptr<Pass>& child);
 
             //! Adds pass to list of children. NOTE: skipStateCheckWhenRunningTests is only used to support manual adding of passing in unit tests, do not use this variable otherwise

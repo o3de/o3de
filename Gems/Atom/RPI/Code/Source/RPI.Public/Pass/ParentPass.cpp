@@ -539,7 +539,12 @@ namespace AZ
             // We validated already during AddChild() and InsertChild() that all children are
             // of type RasterPass or subclass of RasterPass.
             const auto numSubpasses = m_children.size();
-            AZ_Assert(numSubpasses > 1, "A parent pass that merges its children must have at least two children");
+            if (numSubpasses < 2)
+            {
+                AZ_Error("ParentPass", false, "A parent pass that merges its children must have at least two children");
+                m_flags.m_mergeChildrenAsSubpasses = false;
+                return;
+            }
 
             bool allChildrenBuiltLayout = true;
             RHI::RenderAttachmentLayoutBuilder builder;
@@ -562,7 +567,6 @@ namespace AZ
                 return;
             }
 
-            allChildrenBuiltLayout = true;
             auto renderAttachmentLayout = AZStd::make_shared<RHI::RenderAttachmentLayout>();
             RHI::ResultCode result = builder.End(*renderAttachmentLayout.get());
             if (result == RHI::ResultCode::Success)
