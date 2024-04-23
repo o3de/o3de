@@ -90,6 +90,10 @@ namespace EMotionFX
             virtual void SetRenderCharacter(bool enable) = 0;
             virtual bool GetRenderActorVisible() const = 0;
 
+#if defined(CARBONATED)
+            virtual void SetForceJointUpdate(bool force) = 0;
+#endif
+
             /// Returns skinning method used by the actor.
             virtual SkinningMethod GetSkinningMethod() const = 0;
 

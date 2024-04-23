@@ -370,6 +370,14 @@ namespace EMotionFX
             }
         }
 
+#if defined(CARBONATED)
+        //////////////////////////////////////////////////////////////////////////
+        void ActorComponent::SetForceJointUpdate(bool force)
+        {
+            m_configuration.m_forceUpdateJointsOOV = force;
+        }
+#endif
+
         //////////////////////////////////////////////////////////////////////////
         bool ActorComponent::GetRenderActorVisible() const
         {
