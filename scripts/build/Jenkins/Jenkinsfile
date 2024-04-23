@@ -1217,7 +1217,7 @@ try {
                         } else {
                             // Non-PR builds
                             def branchInput = env.SNAPSHOT ? env.SNAPSHOT.tokenize('/')[0] : null
-                            def match = branchInput ? BUILD_SNAPSHOTS.find { it.startsWith(userInput) } : null
+                            def match = branchInput ? BUILD_SNAPSHOTS.find { it.startsWith(branchInput) } : null
                             if(match) {
                                 snapshot = env.CHANGE_BRANCH
                                 echo "Snapshot \"${snapshot}\" selected based on user input."
