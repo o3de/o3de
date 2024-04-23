@@ -67,7 +67,7 @@ namespace Multiplayer
         const float TEXT_BASE_WIDTH = ImGui::CalcTextSize("A").x;
         const ImGuiTableFlags flags = ImGuiTableFlags_BordersV
             | ImGuiTableFlags_BordersOuterH
-            | ImGuiTableFlags_Resizable 
+            | ImGuiTableFlags_Resizable
             | ImGuiTableFlags_SizingStretchSame
             | ImGuiTableFlags_RowBg
             | ImGuiTableFlags_NoBordersInBody;
@@ -89,7 +89,7 @@ namespace Multiplayer
             for (auto elem = auditTrailElems.begin(); elem != auditTrailElems.end(); ++elem)
             {
                 if (elem == auditTrailElems.begin() && elem->m_category != AuditCategory::Desync)
-                {                   
+                {
                     ImGui::TableNextRow();
                     ImGui::TableNextColumn();
                     atRootLevel = !ImGui::TreeNodeEx("HEAD", ImGuiTreeNodeFlags_SpanFullWidth);
@@ -124,9 +124,9 @@ namespace Multiplayer
                                 AZStd::string::format(nodeTitle, elem->m_name.c_str()).c_str(),
                                 (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_SpanFullWidth));
                             ImGui::TableNextColumn();
-                            ImGui::Text("%hu", elem->m_inputId);
+                            ImGui::Text("%hu", static_cast<unsigned short>(elem->m_inputId));
                             ImGui::TableNextColumn();
-                            ImGui::Text("%d", elem->m_hostFrameId);
+                            ImGui::Text("%d", static_cast<int>(elem->m_hostFrameId));
                             ImGui::TableNextColumn();
                             ImGui::Text("%s", cliServValues.first.c_str());
                             ImGui::TableNextColumn();
@@ -141,9 +141,9 @@ namespace Multiplayer
                     {
                         atRootLevel = false;
                         ImGui::TableNextColumn();
-                        ImGui::Text("%hu", elem->m_inputId);
+                        ImGui::Text("%hu", static_cast<unsigned short>(elem->m_inputId));
                         ImGui::TableNextColumn();
-                        ImGui::Text("%d", elem->m_hostFrameId);
+                        ImGui::Text("%d", static_cast<int>(elem->m_hostFrameId));
                         ImGui::TableNextColumn();
                         ImGui::TableNextColumn();
 
@@ -198,9 +198,9 @@ namespace Multiplayer
                     else
                     {
                         ImGui::TableNextColumn();
-                        ImGui::Text("%hu", elem->m_inputId);
+                        ImGui::Text("%hu", static_cast<unsigned short>(elem->m_inputId));
                         ImGui::TableNextColumn();
-                        ImGui::Text("%d", elem->m_hostFrameId);
+                        ImGui::Text("%d", static_cast<int>(elem->m_hostFrameId));
                         ImGui::TableNextColumn();
                         ImGui::TableNextColumn();
                         ImGui::TableNextRow();
