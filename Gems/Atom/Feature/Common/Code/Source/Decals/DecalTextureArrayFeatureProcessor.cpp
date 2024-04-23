@@ -563,6 +563,11 @@ namespace AZ
             }
             else if (materialAsset.IsReady())
             {
+                // Add the material asset and decal handle to the material load tracker
+                // because the OnAssetReady function is expecting this information to be there.
+                // The OnAssetReady will remove them from the material load tracker after finishing
+                // with the material loading.
+                m_materialLoadTracker.TrackAssetLoad(handle, materialAsset);
                 OnAssetReady(materialAsset);
             }
             else if (materialAsset.IsError())
