@@ -420,6 +420,7 @@ namespace AzToolsFramework
             addLegacyGeneral(behaviorContext->Method("set_current_view_position", PySetCurrentViewPosition, nullptr, "Sets the position of the current view as given x, y, z coordinates."));
             addLegacyGeneral(behaviorContext->Method("set_current_view_rotation", PySetCurrentViewRotation, nullptr, "Sets the rotation of the current view as given x, y, z Euler angles in degrees."));
 
+            addLegacyGeneral(behaviorContext->Method("export_to_engine", CCryEditApp::Command_ExportToEngine, nullptr, "Exports the current level to the engine."));
             addLegacyGeneral(behaviorContext->Method("get_config_platform", PyGetConfigPlatform, nullptr, "Gets the system config platform."));
 
             addLegacyGeneral(behaviorContext->Method("set_result_to_success", PySetResultToSuccess, nullptr, "Sets the result of a script execution to success. Used only for Sandbox AutoTests."));

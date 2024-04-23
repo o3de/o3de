@@ -94,6 +94,7 @@
 #define ID_FILE_IMPORT                             33457
 #define ID_EDIT_HOLD                               33464
 #define ID_EDIT_FETCH                              33465
+#define ID_FILE_EXPORTTOGAMENOSURFACETEXTURE       33473
 #define ID_VIEW_SWITCHTOGAME                       33477
 #define ID_VIEW_SWITCHTOGAME_FULLSCREEN            33478
 #define ID_VIEW_SWITCHTOGAME_VIEWPORT              33479

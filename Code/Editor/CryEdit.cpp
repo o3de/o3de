@@ -376,6 +376,8 @@ class CEditCommandLineInfo
 public:
     bool m_bTest = false;
     bool m_bAutoLoadLevel = false;
+
+    // Legacy, will not be used.
     bool m_bExport = false;
     bool m_bExportTexture = false;
 
@@ -413,7 +415,8 @@ public:
         // nsDocumentRevisionDebugMode is an argument that the macOS system passed into an App bundle that is being debugged.
         // Need to include it here so that Qt argument parser does not error out.
         bool nsDocumentRevisionsDebugMode = false;
-        const std::vector<std::pair<QString, bool&> > options = {
+        const std::vector<std::pair<QString, bool&>> options = {
+            { "export", m_bExport },
             { "exportTexture", m_bExportTexture },
             { "test", m_bTest },
             { "auto_level_load", m_bAutoLoadLevel },
@@ -3082,6 +3085,12 @@ void CCryEditApp::SetEditorWindowTitle(QString sTitleStr, QString sPreTitleStr, 
             m_pConsoleDialog->setWindowTitle(sTitleStr);
         }
     }
+}
+
+bool CCryEditApp::Command_ExportToEngine()
+{
+    // Legacy, does nothing.
+    return false;
 }
 
 CMainFrame * CCryEditApp::GetMainFrame() const
