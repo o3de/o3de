@@ -49,7 +49,7 @@ def main():
     parser = argparse.ArgumentParser(description="Provides common dev functionality", add_help=False)
     parser.add_argument('--addr', default='127.0.0.1', dest='address', help="Address for Remote Console to connect")
     parser.add_argument('--port', default='4600', dest='port', help="Port for Remote Console to connect")
-    parser.add_argument('--console', action='store_true', dest='console', help="All the messages to console instead of remote_console.log file")
+    parser.add_argument('--console', action='store_true', dest='console', help="Log all the client messages to console in addition to remote_console.log")
 
     args, unknown = parser.parse_known_args(sys.argv[1:])
 
