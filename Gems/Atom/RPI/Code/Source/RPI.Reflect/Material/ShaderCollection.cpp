@@ -73,7 +73,11 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderCollection::Item>()
+#if defined(CARBONATED)
+                    ->Version(7)  // because of m_ownedShaderOptionIndices change
+#else
                     ->Version(6)
+#endif
                     ->EventHandler<ShaderVariantReferenceSerializationEvents>()
                     ->Field("ShaderAsset", &ShaderCollection::Item::m_shaderAsset)
                     ->Field("ShaderVariantId", &ShaderCollection::Item::m_shaderVariantId)
@@ -212,12 +216,29 @@ namespace AZ
 
         bool ShaderCollection::Item::MaterialOwnsShaderOption(const AZ::Name& shaderOptionName) const
         {
+#if defined(CARBONATED)
+            ShaderOptionIndex index = m_shaderOptionGroup.FindShaderOptionIndex(shaderOptionName);
+            if (index.IsNull())
+            {
+                return false;
+            }
+            return m_ownedShaderOptionIndices.test(index.GetIndex());
+#else
             return m_ownedShaderOptionIndices.contains(m_shaderOptionGroup.FindShaderOptionIndex(shaderOptionName));
+#endif
         }
 
         bool ShaderCollection::Item::MaterialOwnsShaderOption(ShaderOptionIndex shaderOptionIndex) const
         {
+#if defined(CARBONATED)
+            if (shaderOptionIndex.IsNull())
+            {
+                return false;
+            }
+            return m_ownedShaderOptionIndices.test(shaderOptionIndex.GetIndex());
+#else
             return m_ownedShaderOptionIndices.contains(shaderOptionIndex);
+#endif
         }
 
         const RHI::RenderStates* ShaderCollection::Item::GetRenderStatesOverlay() const

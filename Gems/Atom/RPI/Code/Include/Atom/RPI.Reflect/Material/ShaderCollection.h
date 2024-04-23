@@ -18,6 +18,54 @@
 
 namespace AZ
 {
+    template<AZStd::size_t NumBits>
+    class effective_bitset
+    {
+    public:
+        AZ_TYPE_INFO(effective_bitset, "{91549C52-F424-4D13-85CC-BE74D7A75D41}")
+
+        effective_bitset()
+        {
+            static_assert(sizeof(unit_t) == 8);
+            static_assert(BitsPerUnit == 64);
+            static_assert(BitMask == 63);
+            static_assert(NumBits % BitsPerUnit == 0);
+            for (AZStd::size_t u = 0; u < NumUnits; u++)
+            {
+                m_units[u] = 0;
+            }
+        }
+        void set(AZStd::size_t n)
+        {
+            AZ_Assert(n < NumBits, "over capacity");
+            m_units[n >> NumShift] |= 1ull << (n & BitMask);
+        }
+        void clear(AZStd::size_t n)
+        {
+            AZ_Assert(n < NumBits, "over capacity");
+            m_units[n >> NumShift] &= ~(1ull << (n & BitMask));
+        }
+        bool test(AZStd::size_t n) const
+        {
+            AZ_Assert(n < NumBits, "over capacity");
+            return (m_units[n >> NumShift] & (1ull << (n & BitMask))) != 0;
+        }
+
+    private:
+        typedef uint64_t unit_t;
+        enum
+        {
+            BitsPerUnit = 8 * sizeof(unit_t),
+            NumUnits = NumBits / BitsPerUnit,
+            BitMask = BitsPerUnit - 1,
+            NumShift = 6 // 64 is 1 << 6
+        };
+        unit_t m_units[NumUnits];
+    };
+} // namespace AZ
+
+namespace AZ
+{
     class ReflectContext;
 
     namespace RPI
@@ -100,15 +148,24 @@ namespace AZ
                 // Returns true if was able to initialized the non-serialized @m_shaderOptionGroup.
                 // Only returns false if @m_shaderAsset is not ready.
                 bool InitializeShaderOptionGroup();
-
+                /*
+                const AZStd::unordered_set<ShaderOptionIndex>& GetShaderOptionIndices() const
+                {
+                    return m_ownedShaderOptionIndices;
+                }
+                */
             private:
                 Data::Asset<ShaderAsset> m_shaderAsset;
                 ShaderVariantId m_shaderVariantId;       //!< Temporarily holds the ShaderVariantId, used for serialization. This will be copied to/from m_shaderOptionGroup.
                 ShaderOptionGroup m_shaderOptionGroup;   //!< Holds and manipulates the ShaderVariantId at runtime.
                 RHI::RenderStates m_renderStatesOverlay; //!< Holds and manipulates the RenderStates at runtime.
                 RHI::DrawListTag  m_drawListTagOverride; //!< Holds and manipulates the DrawList at runtime.
+#if defined(CARBONATED)
+                effective_bitset<128> m_ownedShaderOptionIndices;
+#else
                 //[GFX TODO][ATOM-5636]: This may need to use a more efficient data structure. Consider switching to vector_set class (which will need to be updated to support serialization).
                 AZStd::unordered_set<ShaderOptionIndex> m_ownedShaderOptionIndices; //!< Set of shader options in this shader that are owned by the material.
+#endif
                 bool m_enabled = true;                   //!< Disabled items will not be included in the final draw packet that gets sent to the renderer.
                 AZ::Name m_shaderTag;                    //!< Unique tag that identifies this item
             };

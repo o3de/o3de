@@ -162,7 +162,11 @@ namespace AZ
                     ShaderOptionIndex index = shaderItem.GetShaderOptions()->FindShaderOptionIndex(shaderOptionName);
                     if (index.IsValid())
                     {
+#if defined(CARBONATED)
+                        shaderItem.m_ownedShaderOptionIndices.set(index.GetIndex());
+#else
                         shaderItem.m_ownedShaderOptionIndices.insert(index);
+#endif
                         optionFound = true;
                     }
                     return true;
@@ -433,8 +437,11 @@ namespace AZ
                     outputId.m_itemIndex = RHI::Handle<uint32_t>{optionIndex.GetIndex()};
 
                     m_wipMaterialProperty.m_outputConnections.push_back(outputId);
-
+#if defined(CARBONATED)
+                    shaderItem.m_ownedShaderOptionIndices.set(optionIndex.GetIndex());
+#else
                     shaderItem.m_ownedShaderOptionIndices.insert(optionIndex);
+#endif
                 }
 
                 return true;
