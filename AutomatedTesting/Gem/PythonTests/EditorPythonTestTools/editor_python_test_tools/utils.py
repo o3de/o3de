@@ -42,7 +42,8 @@ class TestHelper:
         :param level_name: The name of the level to be created
         :return: True if ECreateLevelResult returns 0, False otherwise with logging to report reason
         """
-        Report.info(f"Creating level {level_name}")
+        template_name = "MinimalProject"
+        Report.info(f"Creating level {level_name} from template '{template_name}'")
 
         # Use these hardcoded values to pass expected values for old terrain system until new create_level API is
         # available
@@ -51,7 +52,7 @@ class TestHelper:
         terrain_texture_resolution = 4096
         use_terrain = False
 
-        result = general.create_level_no_prompt(level_name, heightmap_resolution, heightmap_meters_per_pixel,
+        result = general.create_level_no_prompt(template_name, level_name, heightmap_resolution, heightmap_meters_per_pixel,
                                                 terrain_texture_resolution, use_terrain)
 
         # Result codes are ECreateLevelResult defined in CryEdit.h

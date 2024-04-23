@@ -74,9 +74,10 @@ def LayerBlender_E2E_Editor():
     from editor_python_test_tools.utils import TestHelper as helper
 
     # 1) Create a new, temporary level
+    lvl_template_name = "MinimalProject"
     lvl_name = "tmp_level"
     helper.init_idle()
-    level_created = helper.create_level(lvl_name)
+    level_created = helper.create_level(lvl_template_name, lvl_name)
     general.idle_wait(1.0)
     Report.critical_result(Tests.level_created, level_created)
 

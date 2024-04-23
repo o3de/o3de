@@ -58,6 +58,7 @@ def Debugger_HappyPath_TargetMultipleEntities():
     from utils import TestHelper as helper
     from utils import Report
 
+    TEMPLATE_NAME ="MinimalProject"
     LEVEL_NAME = "tmp_level"
     ASSET_NAME_1 = "ScriptCanvas_TwoComponents0.scriptcanvas"
     ASSET_NAME_2 = "ScriptCanvas_TwoComponents1.scriptcanvas"
