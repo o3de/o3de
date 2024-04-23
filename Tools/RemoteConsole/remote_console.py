@@ -16,6 +16,10 @@ import time
 
 client_message_logger = logging.getLogger('remote_console.client_message')
 client_message_logger.setLevel(logging.INFO)
+message_handler = logging.FileHandler('remote_console.log', mode='w+', encoding='utf-8')  # use mode='a' to append
+message_formatter = logging.Formatter(fmt='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+message_handler.setFormatter(message_formatter)
+client_message_logger.addHandler(message_handler)
 
 diagnostic_logger = logging.getLogger('remote_console.diagnostic')
 diagnostic_logger.setLevel(logging.DEBUG)
@@ -53,11 +57,9 @@ def main():
     if args.console:
         messages_to_console = True
         message_handler = logging.StreamHandler(stream=sys.stdout)
-    else:
-        message_handler = logging.FileHandler('remote_console.log', mode='w+', encoding='utf-8')  # use mode='a' to append
-    message_formatter = logging.Formatter(fmt='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
-    message_handler.setFormatter(message_formatter)
-    client_message_logger.addHandler(message_handler)
+        message_formatter = logging.Formatter(fmt='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+        message_handler.setFormatter(message_formatter)
+        client_message_logger.addHandler(message_handler)
 
     remote_console = remote_console_commands.RemoteConsole(addr=args.address, port=int(args.port), on_message_received=printLog)
     remote_console.start()
