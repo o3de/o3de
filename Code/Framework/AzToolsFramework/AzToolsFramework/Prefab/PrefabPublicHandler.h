@@ -18,6 +18,7 @@
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/PrefabUndoCache.h>
+#include <AzCore/Math/Transform.h>
 
 class QString;
 
@@ -49,7 +50,7 @@ namespace AzToolsFramework
             CreatePrefabResult CreatePrefabAndSaveToDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
             CreatePrefabResult CreatePrefabInMemory(const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
             InstantiatePrefabResult InstantiatePrefab(
-                AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Vector3& position) override;
+                AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Transform& transform) override;
             PrefabOperationResult SavePrefab(AZ::IO::Path filePath) override;
             PrefabEntityResult CreateEntity(AZ::EntityId parentId, const AZ::Vector3& position) override;
             

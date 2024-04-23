@@ -11,6 +11,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/Transform.h>
 
 #include <AzToolsFramework/Entity/EntityTypes.h>
 
@@ -70,11 +71,24 @@ namespace AzToolsFramework
              * Instantiate a prefab from a prefab file.
              * @param filePath The path to the prefab file to instantiate.
              * @param parentId The entity id the prefab should be a child of in the transform hierarchy.
+             * @param transform The transform in world space the prefab should be instantiated in.
+             * @return An outcome object with an entityId of the new prefab's container entity;
+             *  on failure, it comes with an error message detailing the cause of the error.
+             */
+            virtual InstantiatePrefabResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Transform& transform) = 0;
+
+            /**
+             * Instantiate a prefab from a prefab file.
+             * @param filePath The path to the prefab file to instantiate.
+             * @param parentId The entity id the prefab should be a child of in the transform hierarchy.
              * @param position The position in world space the prefab should be instantiated in.
              * @return An outcome object with an entityId of the new prefab's container entity;
              *  on failure, it comes with an error message detailing the cause of the error.
              */
-            virtual InstantiatePrefabResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Vector3& position) = 0;
+            virtual InstantiatePrefabResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Vector3& position)
+            {
+                return InstantiatePrefab(filePath, parentId, AZ::Transform::CreateTranslation(position));
+            }
 
             /**
              * Saves changes to prefab to disk.
