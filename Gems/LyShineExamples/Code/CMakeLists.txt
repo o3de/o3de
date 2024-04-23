@@ -42,8 +42,12 @@ ly_add_target(
 
 # if enabled, LyShineExamples is used by all kinds of applications, however, the dependency to LmbrCentral is different
 # per application type
-ly_create_alias(NAME LyShineExamples.Builders NAMESPACE Gem TARGETS Gem::LyShineExamples Gem::UiBasics.Builders Gem::LmbrCentral.Editor)
-ly_create_alias(NAME LyShineExamples.Tools    NAMESPACE Gem TARGETS Gem::LyShineExamples Gem::LmbrCentral.Editor)
+if (PAL_TRAIT_BUILD_HOST_TOOLS)
+    # only if building tools for this platform, alias to tool targets
+    ly_create_alias(NAME LyShineExamples.Builders NAMESPACE Gem TARGETS Gem::LyShineExamples Gem::UiBasics.Builders Gem::LmbrCentral.Editor)
+    ly_create_alias(NAME LyShineExamples.Tools    NAMESPACE Gem TARGETS Gem::LyShineExamples Gem::LmbrCentral.Editor)
+endif()
+
 ly_create_alias(NAME LyShineExamples.Clients  NAMESPACE Gem TARGETS Gem::LyShineExamples Gem::LmbrCentral)
 ly_create_alias(NAME LyShineExamples.Servers  NAMESPACE Gem TARGETS Gem::LyShineExamples Gem::LmbrCentral)
 ly_create_alias(NAME LyShineExamples.Unified  NAMESPACE Gem TARGETS Gem::LyShineExamples Gem::LmbrCentral)
