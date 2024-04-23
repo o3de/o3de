@@ -42,7 +42,7 @@ class TestHelper:
         :param level_name: The name of the level to be created
         :return: True if ECreateLevelResult returns 0, False otherwise with logging to report reason
         """
-        template_name = "MinimalProject"
+        template_name = "DefaultProject"
         Report.info(f"Creating level {level_name} from template '{template_name}'")
 
         # Use these hardcoded values to pass expected values for old terrain system until new create_level API is
