@@ -52,4 +52,5 @@ ly_add_target(
 ly_create_alias(NAME GameStateSamples.Clients  NAMESPACE Gem TARGETS Gem::GameStateSamples)
 ly_create_alias(NAME GameStateSamples.Servers  NAMESPACE Gem TARGETS Gem::GameStateSamples)
 ly_create_alias(NAME GameStateSamples.Unified  NAMESPACE Gem TARGETS Gem::GameStateSamples)
+
 ly_create_alias(NAME GameStateSamples.Builders NAMESPACE Gem TARGETS Gem::UiBasics.Builders Gem::LyShineExamples.Builders)
