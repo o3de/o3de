@@ -34,6 +34,8 @@ namespace Editor
         return new EditorQtApplicationWindows(argc, argv);
     }
 
+#pragma optimize("", off)
+
     bool EditorQtApplicationWindows::nativeEventFilter([[maybe_unused]] const QByteArray& eventType, void* message, long* result)
     {
         MSG* msg = (MSG*)message;
@@ -120,7 +122,19 @@ namespace Editor
             }
             else if (msg->message == WM_KEYDOWN || msg->message == WM_KEYUP || msg->message == WM_CHAR)
             {
+#if defined(CARBONATED)
+                // Process raw WM_CHAR event sending keycode to a LyShine UiTextInputComponent in Editor game mode
+                if (filterInputEvents && msg->message == WM_CHAR)
+                {
+                   AzFramework::RawInputNotificationBusWindows::Broadcast(
+                        &AzFramework::RawInputNotificationsWindows::OnRawInputCodeUnitUTF16Event, msg->wParam);
+                    return true;
+                }
+                // Returning true filters out all keyboard events in Editor game mode, thus preventing input to a LyShine UiTextInputComponent
+                return false;
+#else
                 return filterInputEvents;
+#endif // defined(CARBONATED)
             }
 
             // allow all other Qt event types to pass through
@@ -129,6 +143,8 @@ namespace Editor
 
         return false;
     }
+
+#pragma optimize("", on)
 
     bool EditorQtApplicationWindows::eventFilter(QObject* object, QEvent* event)
     {
