@@ -33,14 +33,14 @@ namespace AZ::AllocatorStorage
                     m_allocator = Environment::CreateVariable<Allocator>(AzTypeInfo<Allocator>::Name());
                 }
 #if defined(CARBONATED)
-                s_AllocatorEnvironmentVariable = &m_allocator;
+                s_allocated = true;
 #endif
             }
 
 #if defined(CARBONATED)
             ~AllocatorEnvironmentVariable()
             {
-                s_AllocatorEnvironmentVariable = nullptr;
+                s_allocated = false;
             }
 #endif
 
@@ -50,7 +50,7 @@ namespace AZ::AllocatorStorage
             }
 
 #if defined(CARBONATED)
-            inline static EnvironmentVariable<Allocator>* s_AllocatorEnvironmentVariable{};
+            inline static bool s_allocated = false;
 #endif
         private:
             EnvironmentVariable<Allocator> m_allocator;
@@ -60,21 +60,14 @@ namespace AZ::AllocatorStorage
 #if defined(CARBONATED)
         static bool HasAllocator()
         {
-            static AllocatorEnvironmentVariable s_allocator;
-            return AllocatorEnvironmentVariable::s_AllocatorEnvironmentVariable != nullptr;
+            return AllocatorEnvironmentVariable::s_allocated;
         }
-        AZ_FORCE_INLINE static IAllocator& GetAllocator()
-        {
-            HasAllocator();
-            return **AllocatorEnvironmentVariable::s_AllocatorEnvironmentVariable;
-        }
-#else
+#endif
         static IAllocator& GetAllocator()
         {
             static AllocatorEnvironmentVariable s_allocator;
             return *s_allocator;
         }
-#endif
     };
 } // namespace AZ::AllocatorStorage
 
