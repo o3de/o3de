@@ -113,8 +113,6 @@ set(FILES
     Source/RHI/SemaphoreAllocator.h
     Source/RHI/Semaphore.cpp
     Source/RHI/Semaphore.h
-    Source/RHI/SemaphoreTracker.cpp
-    Source/RHI/SemaphoreTracker.h
     Source/RHI/Scope.cpp
     Source/RHI/Scope.h
     Source/RHI/ShaderResourceGroup.cpp

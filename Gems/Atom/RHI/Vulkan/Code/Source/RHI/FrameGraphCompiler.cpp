@@ -9,10 +9,12 @@
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/BufferView.h>
-#include <Atom/RHI/FrameGraphAttachmentDatabase.h>
 #include <Atom/RHI/FrameGraph.h>
+#include <Atom/RHI/FrameGraphAttachmentDatabase.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
+#include <Atom/RHI/SwapChain.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferView.h>
 #include <RHI/Conversion.h>
@@ -22,6 +24,7 @@
 #include <RHI/ImageView.h>
 #include <RHI/Scope.h>
 #include <RHI/SwapChain.h>
+
 
 namespace AZ
 {
@@ -47,7 +50,7 @@ namespace AZ
 
             AZ_Assert(request.m_frameGraph, "FrameGraph is null.");
             RHI::FrameGraph& frameGraph = *request.m_frameGraph;
-            
+
             CompileResourceBarriers(frameGraph.GetAttachmentDatabase());
 
             if (!RHI::CheckBitsAny(request.m_compileFlags, RHI::FrameSchedulerCompileFlags::DisableAsyncQueues))
@@ -55,12 +58,15 @@ namespace AZ
                 CompileAsyncQueueSemaphores(frameGraph);
             }
 
+            CompileSemaphoreSynchronization(frameGraph);
+
             return AZ::Success();
         }
 
         bool NeedsClearBarrier(const RHI::ScopeAttachment& scopeAttachment, const RHI::ScopeAttachmentDescriptor& descriptor)
         {
-            if (descriptor.m_loadStoreAction.m_loadAction != RHI::AttachmentLoadAction::Clear && descriptor.m_loadStoreAction.m_loadActionStencil != RHI::AttachmentLoadAction::Clear)
+            if (descriptor.m_loadStoreAction.m_loadAction != RHI::AttachmentLoadAction::Clear &&
+                descriptor.m_loadStoreAction.m_loadActionStencil != RHI::AttachmentLoadAction::Clear)
             {
                 return false;
             }
@@ -88,15 +94,15 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileResourceBarriers(Vulkan)");
 
-             for (RHI::BufferFrameAttachment* bufferFrameAttachment : attachmentDatabase.GetBufferAttachments())
-             {
-                 CompileBufferBarriers(*bufferFrameAttachment);
-             }
+            for (RHI::BufferFrameAttachment* bufferFrameAttachment : attachmentDatabase.GetBufferAttachments())
+            {
+                CompileBufferBarriers(*bufferFrameAttachment);
+            }
 
-             for (RHI::ImageFrameAttachment* imageFrameAttachment : attachmentDatabase.GetImageAttachments())
-             {
-                 CompileImageBarriers(*imageFrameAttachment);
-             }
+            for (RHI::ImageFrameAttachment* imageFrameAttachment : attachmentDatabase.GetImageAttachments())
+            {
+                CompileImageBarriers(*imageFrameAttachment);
+            }
         }
 
         void FrameGraphCompiler::CompileBufferBarriers(RHI::BufferFrameAttachment& frameGraphAttachment)
@@ -177,8 +183,7 @@ namespace AZ
 
                 // Check if we are resolving using the command list function because we need to insert a
                 // layout transition to Transfer Source.
-                if (scopeAttachment->IsBeingResolved() &&
-                    scope.GetResolveMode() == Scope::ResolveMode::CommandList)
+                if (scopeAttachment->IsBeingResolved() && scope.GetResolveMode() == Scope::ResolveMode::CommandList)
                 {
                     // So we can reuse the same functions, we create a new image scope attachment
                     // with a copy read usage.
@@ -222,7 +227,8 @@ namespace AZ
 
                 // We need to wait until the presentation engine finish presenting the swapchain image
                 Scope& firstScope = static_cast<Scope&>(imageFrameAttachment.GetFirstScopeAttachment()->GetScope());
-                firstScope.AddWaitSemaphore(AZStd::make_pair(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, frameContext.m_imageAvailableSemaphore));
+                firstScope.AddWaitSemaphore(
+                    AZStd::make_pair(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, frameContext.m_imageAvailableSemaphore));
 
                 auto* lastScopeAttachment = imageFrameAttachment.GetLastScopeAttachment();
                 Scope& lastScope = static_cast<Scope&>(lastScopeAttachment->GetScope());
@@ -238,7 +244,7 @@ namespace AZ
                 imageBarrier.oldLayout = GetImageAttachmentLayout(*lastScopeAttachment);
                 imageBarrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
                 imageBarrier.subresourceRange = VkImageSubresourceRange{ image.GetImageAspectFlags(), 0, 1, 0, 1 };
-                
+
                 lastScope.QueueAttachmentBarrier(
                     *lastScopeAttachment,
                     Scope::BarrierSlot::Epilogue,
@@ -266,9 +272,9 @@ namespace AZ
             const RHI::ScopeAttachment& scopeAttachment,
             Buffer& buffer,
             const RHI::BufferSubresourceRange& range,
-            const Scope::BarrierSlot slot, 
-            VkPipelineStageFlags srcPipelineStages, 
-            VkAccessFlags srcAccess, 
+            const Scope::BarrierSlot slot,
+            VkPipelineStageFlags srcPipelineStages,
+            VkAccessFlags srcAccess,
             const QueueId& srcQueueId,
             const QueueId& dstQueueId) const
         {
@@ -279,12 +285,14 @@ namespace AZ
             // We only need buffer barriers if we are doing an ownership transfer
             // or the queues are the same. In all the other cases a semaphore will
             // provide the memory and execution dependency needed.
-            if (srcQueueId == dstQueueId ||
-                srcQueueId.m_familyIndex != dstQueueId.m_familyIndex)
+            if (srcQueueId == dstQueueId || srcQueueId.m_familyIndex != dstQueueId.m_familyIndex)
             {
-                // Check if we are transferring between queues because the src and dst access flags must be 0 for the release and request barriers.
-                VkPipelineStageFlags srcPipelineStageFlags = srcQueueId == scopeQueueId ? srcPipelineStages : VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-                VkPipelineStageFlags dstPipelineStageFlags = dstQueueId == scopeQueueId ? GetResourcePipelineStateFlags(scopeAttachment) : VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+                // Check if we are transferring between queues because the src and dst access flags must be 0 for the release and request
+                // barriers.
+                VkPipelineStageFlags srcPipelineStageFlags =
+                    srcQueueId == scopeQueueId ? srcPipelineStages : VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+                VkPipelineStageFlags dstPipelineStageFlags =
+                    dstQueueId == scopeQueueId ? GetResourcePipelineStateFlags(scopeAttachment) : VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
                 VkAccessFlags srcAccessFlags = srcQueueId == scopeQueueId ? srcAccess : 0;
                 VkAccessFlags dstAccessFlags = dstQueueId == scopeQueueId ? GetResourceAccessFlags(scopeAttachment) : 0;
                 bool sameFamily = srcQueueId.m_familyIndex == dstQueueId.m_familyIndex;
@@ -309,8 +317,8 @@ namespace AZ
         }
 
         void FrameGraphCompiler::QueueResourceBarrier(
-            Scope& scope, 
-            const RHI::ScopeAttachment& scopeAttachment, 
+            Scope& scope,
+            const RHI::ScopeAttachment& scopeAttachment,
             Image& image,
             const RHI::ImageSubresourceRange& range,
             const Scope::BarrierSlot slot,
@@ -322,10 +330,12 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
             auto& queueContext = device.GetCommandQueueContext();
 
-            // Check if we are transferring between queues because the src and dst access flags must be 0 for the release and request barriers.
+            // Check if we are transferring between queues because the src and dst access flags must be 0 for the release and request
+            // barriers.
             QueueId scopeQueueId = queueContext.GetCommandQueue(scope.GetHardwareQueueClass()).GetId();
             VkPipelineStageFlags srcPipelineStageFlags = srcQueueId == scopeQueueId ? srcPipelineStages : VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-            VkPipelineStageFlags dstPipelineStageFlags = dstQueueId == scopeQueueId ? GetResourcePipelineStateFlags(scopeAttachment) : VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+            VkPipelineStageFlags dstPipelineStageFlags =
+                dstQueueId == scopeQueueId ? GetResourcePipelineStateFlags(scopeAttachment) : VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
             VkAccessFlags srcAccessFlags = srcQueueId == scopeQueueId ? srcAccess : 0;
             VkAccessFlags dstAccessFlags = dstQueueId == scopeQueueId ? GetResourceAccessFlags(scopeAttachment) : 0;
             bool sameFamily = srcQueueId.m_familyIndex == dstQueueId.m_familyIndex;
@@ -355,8 +365,7 @@ namespace AZ
                 // or the destination and source queue are the same. In all the other cases a semaphore will
                 // provide the memory and execution dependency needed.
                 if (imageBarrier.oldLayout != imageBarrier.newLayout ||
-                    imageBarrier.srcQueueFamilyIndex != imageBarrier.dstQueueFamilyIndex ||
-                    srcQueueId == dstQueueId)
+                    imageBarrier.srcQueueFamilyIndex != imageBarrier.dstQueueFamilyIndex || srcQueueId == dstQueueId)
                 {
                     scope.QueueAttachmentBarrier(scopeAttachment, slot, srcPipelineStageFlags, dstPipelineStageFlags, imageBarrier);
                 }
@@ -396,7 +405,7 @@ namespace AZ
 
         RHI::ImageSubresourceRange FrameGraphCompiler::GetSubresourceRange(const RHI::ImageScopeAttachment& scopeAttachment) const
         {
-            auto &physicalDevice = static_cast<const PhysicalDevice&>(GetDevice().GetPhysicalDevice());
+            auto& physicalDevice = static_cast<const PhysicalDevice&>(GetDevice().GetPhysicalDevice());
             const auto* imageView = static_cast<const ImageView*>(scopeAttachment.GetImageView());
             auto range = RHI::ImageSubresourceRange(imageView->GetDescriptor());
             RHI::ImageAspectFlags imageAspectFlags = imageView->GetImage().GetAspectFlags();
@@ -414,5 +423,64 @@ namespace AZ
             const auto* bufferView = scopeAttachment.GetBufferView();
             return RHI::BufferSubresourceRange(bufferView->GetDescriptor());
         }
-    }
-}
+
+        void FrameGraphCompiler::CompileSemaphoreSynchronization(const RHI::FrameGraph& frameGraph)
+        {
+            // We need to synchronize submissions of binary semaphores/fences to the queues:
+            // https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkQueuePresentKHR.html#VUID-vkQueuePresentKHR-pWaitSemaphores-03268
+            // https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkQueueSubmit.html#VUID-vkQueueSubmit-pWaitSemaphores-03238
+            // https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkQueueSubmit.html#VUID-vkQueueSubmit-fence-00063
+            // The wait operation of a binary semaphore/fence cannot be submitted before the respective signal operation is submitted.
+            // Timeline semaphores don't have that limitation,
+            //   but all dependent semaphores of a binary semaphore must be signalled before waiting (including timeline semaphore)
+            // Here every semaphore (scope) gets assigned an index in a bitfield, and which other semaphores it depends on
+            // There is one bit set for every scope, instead of every semaphore/fence
+            //   because all semaphores of a scope are waited-for/signalled at the same time
+            AZStd::shared_ptr<SignalEvent> signalEvent = AZStd::make_shared<SignalEvent>();
+            int currentBitToSignal{ 0 };
+            SignalEvent::BitSet currentDependencies{};
+            AZStd::unordered_set<Fence*> signalledFences;
+
+            for (RHI::Scope* scopeBase : frameGraph.GetScopes())
+            {
+                bool hasSemaphoreSignal = false;
+                Scope* scope = static_cast<Scope*>(scopeBase);
+                for (auto& fence : scope->GetWaitFences())
+                {
+                    fence->SetDependencies(signalEvent, currentDependencies);
+                    if (!signalledFences.contains(fence.get()))
+                    {
+                        // We assume the fence is signalled on the CPU
+                        fence->SetSignalEvent(signalEvent, currentBitToSignal);
+                        hasSemaphoreSignal = true;
+                    }
+                }
+                for (auto& semaphore : scope->GetWaitSemaphores())
+                {
+                    semaphore.second->SetDependencies(signalEvent, currentDependencies);
+                }
+
+                for (auto& fence : scope->GetSignalFences())
+                {
+                    fence->SetSignalEvent(signalEvent, currentBitToSignal);
+                    signalledFences.insert(fence.get());
+                    // The fence wait might not be on the framegraph (wait on CPU)
+                    // In this case we want wait for the current scopes dependencies (i.e. for signalling of the fence itself)
+                    // If the Fence is waited-for on the framegraph at a later scope, we overwrite the dependencies later
+                    fence->SetDependencies(signalEvent, currentDependencies);
+                    hasSemaphoreSignal = true;
+                }
+                for (auto& semaphore : scope->GetSignalSemaphores())
+                {
+                    semaphore->SetSignalEvent(signalEvent, currentBitToSignal);
+                    hasSemaphoreSignal = true;
+                }
+                if (hasSemaphoreSignal)
+                {
+                    currentDependencies.set(currentBitToSignal);
+                    currentBitToSignal++;
+                }
+            }
+        }
+    } // namespace Vulkan
+} // namespace AZ

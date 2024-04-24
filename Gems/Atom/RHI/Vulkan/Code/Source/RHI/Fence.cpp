@@ -24,6 +24,22 @@ namespace AZ
             return m_fenceType;
         }
 
+        void Fence::SetSignalEvent(const AZStd::shared_ptr<AZ::Vulkan::SignalEvent>& signalEvent, int bitToSignal)
+        {
+            m_signalEvent = signalEvent;
+            m_bitToSignal = bitToSignal;
+            if (m_inSignalledState)
+            {
+                SignalEvent();
+            }
+        }
+
+        void Fence::SetDependencies(const AZStd::shared_ptr<AZ::Vulkan::SignalEvent>& signalEvent, SignalEvent::BitSet dependencies)
+        {
+            m_signalEvent = signalEvent;
+            m_waitDependencies = dependencies;
+        }
+
         VkFence Fence::GetNativeFence() const
         {
             AZ_Assert(m_fenceType == FenceType::Fence, "Vulkan Fence::GetNativeFence: Invalid type");
@@ -32,21 +48,12 @@ namespace AZ
 
         void Fence::SignalEvent()
         {
-            if (m_semaphoreHandle)
+            if (m_signalEvent)
             {
-                m_semaphoreHandle->SignalSemaphores(1);
+                AZ_Assert(m_bitToSignal >= 0, "Fence: SignaEvent was not set");
+                m_signalEvent->Signal(m_bitToSignal);
             }
-            switch (m_fenceType)
-            {
-            case FenceType::Fence:
-                m_signalEvent.Signal();
-                break;
-            case FenceType::TimelineSemaphore:
-                break; // Nothing to do as timeline semaphores can be waited for before they are submitted
-            default:
-                AZ_Assert(false, "Vulkan Fence::SignalEvent: Invalid fence type");
-                break;
-            }
+            m_inSignalledState = true;
         }
 
         VkSemaphore Fence::GetNativeSemaphore() const
@@ -59,11 +66,6 @@ namespace AZ
         {
             AZ_Assert(m_fenceType == FenceType::TimelineSemaphore, "Vulkan Fence::GetPendingValue: Invalid type");
             return m_pendingValue;
-        }
-
-        void Fence::SetSemaphoreHandle(AZStd::shared_ptr<SemaphoreTrackerHandle> semaphoreHandle)
-        {
-            m_semaphoreHandle = semaphoreHandle;
         }
 
         void Fence::SetNameInternal(const AZStd::string_view& name)
@@ -109,15 +111,15 @@ namespace AZ
                 VkFenceCreateInfo createInfo{};
                 createInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
                 createInfo.pNext = nullptr;
-                bool readyToWait = false;
+                // bool readyToWait = false;
                 switch (initialState)
                 {
                 case RHI::FenceState::Reset:
-                    readyToWait = false;
+                    // readyToWait = false;
                     createInfo.flags = 0;
                     break;
                 case RHI::FenceState::Signaled:
-                    readyToWait = true;
+                    // readyToWait = true;
                     createInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
                     break;
                 default:
@@ -129,10 +131,22 @@ namespace AZ
                 AssertSuccess(result);
 
                 RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
-                m_signalEvent.SetValue(readyToWait);
+                m_signalEvent = {};
                 SetName(GetName());
                 m_fenceType = FenceType::Fence;
                 return RHI::ResultCode::Success;
+            }
+
+            switch (initialState)
+            {
+            case RHI::FenceState::Reset:
+                m_inSignalledState = false;
+                break;
+            case RHI::FenceState::Signaled:
+                m_inSignalledState = true;
+                break;
+            default:
+                return RHI::ResultCode::InvalidArgument;
             }
         }
 
@@ -189,10 +203,7 @@ namespace AZ
 
                     auto& device = static_cast<Device&>(GetDevice());
                     device.GetContext().SignalSemaphore(device.GetNativeDevice(), &signalInfo);
-                    if (m_semaphoreHandle)
-                    {
-                        m_semaphoreHandle->SignalSemaphores(1);
-                    }
+                    SignalEvent();
                 }
                 break;
             default:
@@ -208,7 +219,10 @@ namespace AZ
             case FenceType::Fence:
                 {
                     // According to the standard we can't wait until the event (like VkSubmitQueue) happens first.
-                    m_signalEvent.Wait();
+                    if (m_signalEvent)
+                    {
+                        m_signalEvent->Wait(m_waitDependencies);
+                    }
                     auto& device = static_cast<Device&>(GetDevice());
                     AssertSuccess(device.GetContext().WaitForFences(device.GetNativeDevice(), 1, &m_nativeFence, VK_FALSE, UINT64_MAX));
                 }
@@ -235,12 +249,10 @@ namespace AZ
 
         void Fence::ResetInternal()
         {
-            m_semaphoreHandle = {};
             switch (m_fenceType)
             {
             case FenceType::Fence:
                 {
-                    m_signalEvent.SetValue(false);
                     auto& device = static_cast<Device&>(GetDevice());
                     AssertSuccess(device.GetContext().ResetFences(device.GetNativeDevice(), 1, &m_nativeFence));
                 }
@@ -254,6 +266,7 @@ namespace AZ
                 AZ_Assert(false, "Vulkan Fence::ResetInternal: Invalid fence type");
                 break;
             }
+            m_inSignalledState = false;
         }
 
         RHI::FenceState Fence::GetFenceStateInternal() const

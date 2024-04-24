@@ -10,7 +10,6 @@
 #include <Atom/RHI/DeviceObject.h>
 #include <Atom_RHI_Vulkan_Platform.h>
 #include <AzCore/Memory/PoolAllocator.h>
-#include <RHI/SemaphoreTracker.h>
 #include <RHI/SignalEvent.h>
 
 namespace AZ
@@ -41,10 +40,12 @@ namespace AZ
 
             SemaphoreType GetType();
 
+            void SetSignalEvent(const AZStd::shared_ptr<AZ::Vulkan::SignalEvent>& signalEvent, int bitToSignal);
+            void SetDependencies(const AZStd::shared_ptr<AZ::Vulkan::SignalEvent>& signalEvent, SignalEvent::BitSet dependencies);
+
             // Timeline semaphore functions
             uint64_t GetPendingValue();
             void IncrementPendingValue();
-            void SetSemaphoreHandle(AZStd::shared_ptr<SemaphoreTrackerHandle> semaphoreHandle);
 
             // Binary semaphore functions
             void SignalEvent();
@@ -68,11 +69,13 @@ namespace AZ
             void Shutdown() override;
             //////////////////////////////////////////////////////////////////////////
 
+            AZStd::shared_ptr<AZ::Vulkan::SignalEvent> m_signalEvent;
+            int m_bitToSignal = -1;
+            SignalEvent::BitSet m_waitDependencies = 0;
+
             VkSemaphore m_nativeSemaphore = VK_NULL_HANDLE;
-            AZ::Vulkan::SignalEvent m_signalEvent;
             bool m_recyclable = true;
             SemaphoreType m_type = SemaphoreType::Invalid;
-            AZStd::shared_ptr<SemaphoreTrackerHandle> m_semaphoreHandle;
             uint64_t m_pendingValue = 0;
         };
     }

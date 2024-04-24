@@ -66,23 +66,6 @@ namespace AZ
             const Scope* scopeNext = nullptr;
             const AZStd::vector<RHI::Scope*>& scopes = frameGraph.GetScopes();
 
-            // The following semaphore trackers are there to count how many semaphores are present before each swapchain
-            // Swapchains need to use a binary semaphore, which needs all dependent semaphores to be signalled before submitted to the queue
-            // We do this by counting the number of semaphores that the scopes are waiting for
-            // Not needed when AZ_FORCE_CPU_GPU_INSYNC because of synchronization after every scope
-            AZStd::intrusive_ptr<SemaphoreTrackerCollection> semaphoreTrackers;
-            // Tracker that will be used for the next swapchain in the framegraph
-            AZStd::shared_ptr<SemaphoreTrackerHandle> currentSemaphoreHandle;
-            // Some semaphores (Fences) might be waited-for by the use in a scope
-            // We remember which semaphores are signalled and assume that the ones that are never waited-for are waited-for by the user
-            AZStd::unordered_map<Fence*, bool> userFencesSignalledMap;
-            bool useSemaphoreTrackers = device.GetFeatures().m_signalFenceFromCPU;
-            if (useSemaphoreTrackers)
-            {
-                semaphoreTrackers = aznew SemaphoreTrackerCollection;
-                currentSemaphoreHandle = semaphoreTrackers->CreateHandle();
-            }
-
 #if defined(AZ_FORCE_CPU_GPU_INSYNC)
             // Forces all scopes to issue a dedicated merged scope group with one command list.
             // This will ensure that the Execute is done on only one scope and if an error happens
@@ -98,14 +81,14 @@ namespace AZ
                 if (subpassGroup)
                 {
                     FrameGraphExecuteGroupSecondary* scopeContextGroup = AddGroup<FrameGraphExecuteGroupSecondary>();
-                    scopeContextGroup->Init(device, scope, 1, GetJobPolicy(), nullptr);
+                    scopeContextGroup->Init(static_cast<Device&>(scope.GetDevice()), scope, 1, GetJobPolicy());
                 }
                 else
                 {
                     mergedScopes.push_back(&scope);
                     FrameGraphExecuteGroupPrimary* multiScopeContextGroup = AddGroup<FrameGraphExecuteGroupPrimary>();
                     multiScopeContextGroup->SetName(scope.GetName());
-                    multiScopeContextGroup->Init(device, AZStd::move(mergedScopes), nullptr);
+                    multiScopeContextGroup->Init(static_cast<Device&>(scope.GetDevice()), AZStd::move(mergedScopes));
                 }
                 scopePrev = &scope;
             }
@@ -114,7 +97,6 @@ namespace AZ
             RHI::HardwareQueueClass mergedHardwareQueueClass = RHI::HardwareQueueClass::Graphics;
             uint32_t mergedGroupCost = 0;
             uint32_t mergedSwapchainCount = 0;
-            bool needNewSemaphoreHandle = false;
 
             for (auto it = scopes.begin(); it != scopes.end(); ++it)
             {
@@ -175,60 +157,6 @@ namespace AZ
                         mergedHardwareQueueClass = scope.GetHardwareQueueClass();
                         FrameGraphExecuteGroupPrimary* multiScopeContextGroup = AddGroup<FrameGraphExecuteGroupPrimary>();
                         multiScopeContextGroup->Init(device, AZStd::move(mergedScopes));
-                    }
-                }
-
-                if (useSemaphoreTrackers)
-                {
-                    if (needNewSemaphoreHandle)
-                    {
-                        currentSemaphoreHandle = semaphoreTrackers->CreateHandle();
-                    }
-                    for (auto& fence : scope.GetSignalFences())
-                    {
-                        auto it = userFencesSignalledMap.find(fence.get());
-                        if (it == userFencesSignalledMap.end())
-                        {
-                            userFencesSignalledMap[fence.get()] = false;
-                        }
-                    }
-                    for (auto& fence : scope.GetWaitFences())
-                    {
-                        userFencesSignalledMap[fence.get()] = true;
-                        fence->SetSemaphoreHandle(currentSemaphoreHandle);
-                        if (fence->GetFenceType() == FenceType::TimelineSemaphore)
-                        {
-                            semaphoreTrackers->AddSemaphores(1);
-                        }
-                    }
-                    for (auto& semaphore : scope.GetWaitSemaphores())
-                    {
-                        // We want to set the Handle when we wait for the semaphore, not when we signal it
-                        // We could signal the semaphore before a swapchain and wait for it afterwards
-                        // Then the waiting for the signal would be too early
-                        // This would not lead to any deadlocks, but maybe to too much waits in the swapchain
-                        semaphore.second->SetSemaphoreHandle(currentSemaphoreHandle);
-                        if (semaphore.second->GetType() == SemaphoreType::Binary)
-                        {
-                            for (auto [fence, waitedFor] : userFencesSignalledMap)
-                            {
-                                if (!waitedFor)
-                                {
-                                    // Here we assume that the fence is waited for in the same scope as we signal it, but on the CPU
-                                    fence->SetSemaphoreHandle(currentSemaphoreHandle);
-                                    if (fence->GetFenceType() == FenceType::TimelineSemaphore)
-                                    {
-                                        semaphoreTrackers->AddSemaphores(1);
-                                    }
-                                }
-                            }
-                            userFencesSignalledMap.clear();
-                            needNewSemaphoreHandle = true;
-                        }
-                        else
-                        {
-                            semaphoreTrackers->AddSemaphores(1);
-                        }
                     }
                 }
 

@@ -60,6 +60,19 @@ namespace AZ
             return m_type;
         }
 
+        void Semaphore::SetSignalEvent(const AZStd::shared_ptr<AZ::Vulkan::SignalEvent>& signalEvent, int bitToSignal)
+        {
+            m_signalEvent = signalEvent;
+            m_bitToSignal = bitToSignal;
+            // TODO signal if the fence is in a signalled state
+        }
+
+        void Semaphore::SetDependencies(const AZStd::shared_ptr<AZ::Vulkan::SignalEvent>& signalEvent, SignalEvent::BitSet dependencies)
+        {
+            m_signalEvent = signalEvent;
+            m_waitDependencies = dependencies;
+        }
+
         uint64_t Semaphore::GetPendingValue()
         {
             AZ_Assert(m_type == SemaphoreType::Timeline, "%s: Invalid Semaphore Type", __FUNCTION__);
@@ -70,42 +83,30 @@ namespace AZ
         {
             AZ_Assert(m_type == SemaphoreType::Timeline, "%s: Invalid Semaphore Type", __FUNCTION__);
             m_pendingValue++;
-            m_semaphoreHandle = {};
-        }
-
-        void Semaphore::SetSemaphoreHandle(AZStd::shared_ptr<SemaphoreTrackerHandle> semaphoreHandle)
-        {
-            m_semaphoreHandle = semaphoreHandle;
+            m_signalEvent = {};
         }
 
         void Semaphore::SignalEvent()
         {
-            if (m_type == SemaphoreType::Binary)
+            if (m_signalEvent)
             {
-                m_signalEvent.Signal();
-            }
-            else
-            {
-                m_semaphoreHandle->SignalSemaphores(1);
+                AZ_Assert(m_bitToSignal >= 0, "Fence: Signavent was not set");
+                m_signalEvent->Signal(m_bitToSignal);
             }
         }
 
         void Semaphore::WaitEvent() const
         {
-            if (m_type == SemaphoreType::Binary)
+            if (m_type == SemaphoreType::Binary && m_signalEvent)
             {
-                if (m_semaphoreHandle)
-                {
-                    m_semaphoreHandle->GetTracker()->WaitForSignalAllSemaphores();
-                }
-                m_signalEvent.Wait();
+                m_signalEvent->Wait(m_waitDependencies);
             }
         }
 
         void Semaphore::ResetSignalEvent()
         {
             AZ_Assert(m_type == SemaphoreType::Binary, "%s: Invalid Semaphore Type", __FUNCTION__);
-            m_signalEvent.SetValue(false);
+            m_signalEvent = {};
         }
 
         void Semaphore::SetRecycleValue(bool canRecycle)
@@ -140,7 +141,7 @@ namespace AZ
                 m_nativeSemaphore = VK_NULL_HANDLE;
             }
             // Signal any pending threads.
-            m_signalEvent.Signal();
+            SignalEvent();
             Base::Shutdown();
         }
     }

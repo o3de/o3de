@@ -9,7 +9,6 @@
 
 #include <Atom/RHI/Fence.h>
 #include <AzCore/Memory/PoolAllocator.h>
-#include <RHI/SemaphoreTracker.h>
 #include <RHI/SignalEvent.h>
 
 namespace AZ
@@ -45,6 +44,9 @@ namespace AZ
 
             FenceType GetFenceType() const;
 
+            void SetSignalEvent(const AZStd::shared_ptr<AZ::Vulkan::SignalEvent>& signalEvent, int bitToSignal);
+            void SetDependencies(const AZStd::shared_ptr<AZ::Vulkan::SignalEvent>& signalEvent, SignalEvent::BitSet dependencies);
+
             // VkFence functions
             VkFence GetNativeFence() const;
             // According to the Vulkan Standard, fences can only be waited after the event
@@ -55,7 +57,6 @@ namespace AZ
             // VkSemaphore functions
             VkSemaphore GetNativeSemaphore() const;
             uint64_t GetPendingValue() const;
-            void SetSemaphoreHandle(AZStd::shared_ptr<SemaphoreTrackerHandle> semaphoreHandle);
 
         private:
             Fence() = default;
@@ -77,12 +78,15 @@ namespace AZ
 
             FenceType m_fenceType = FenceType::Invalid;
 
+            AZStd::shared_ptr<AZ::Vulkan::SignalEvent> m_signalEvent;
+            int m_bitToSignal = -1;
+            SignalEvent::BitSet m_waitDependencies = 0;
+            bool m_inSignalledState = false;
+
             VkFence m_nativeFence = VK_NULL_HANDLE;
-            AZ::Vulkan::SignalEvent m_signalEvent;
 
             VkSemaphore m_nativeSemaphore = VK_NULL_HANDLE;
             uint64_t m_pendingValue = 0;
-            AZStd::shared_ptr<SemaphoreTrackerHandle> m_semaphoreHandle;
         };
     } // namespace Vulkan
 } // namespace AZ
