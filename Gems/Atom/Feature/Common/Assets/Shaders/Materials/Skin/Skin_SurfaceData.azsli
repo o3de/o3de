@@ -61,7 +61,7 @@ class SurfaceData_Skin
     //! Sets albedo and specularF0 (no metallic for skin)
     void SetAlbedoAndSpecularF0(real3 newBaseColor, real specularF0Factor);
 
-    real3 GetDiffuseNormal() { return vertexNormal; }       // Returns the normal used for diffuse  lighting calculations
+    real3 GetDiffuseNormal() { return normal; }       // Returns the normal used for diffuse  lighting calculations
     real3 GetSpecularNormal() { return normal; }            // Returns the normal used for specular lighting calculations
     real3 GetDefaultNormal() { return normal; }             // Returns the normal used for calculations that are common to both diffuse and specular calculations
                                                             // If you're doing something unusual with one of the normals, you probably want to return the other one here
