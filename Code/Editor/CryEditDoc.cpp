@@ -45,7 +45,6 @@
 #include "ErrorReportDialog.h"
 #include "Util/AutoLogTime.h"
 #include "CheckOutDialog.h"
-#include "GameExporter.h"
 #include "MainWindow.h"
 #include "LevelFileDialog.h"
 #include "Undo/Undo.h"
@@ -108,7 +107,7 @@ CCryEditDoc::CCryEditDoc()
 
     GetIEditor()->SetDocument(this);
     CLogFile::WriteLine("Document created");
-    
+
     m_prefabSystemComponentInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
     AZ_Assert(m_prefabSystemComponentInterface, "PrefabSystemComponentInterface is not found.");
     m_prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
@@ -480,11 +479,6 @@ bool CCryEditDoc::CanCloseFrame()
         return false;
     }
 
-    // If there is an export in process, exiting will corrupt it
-    if (CGameExporter::GetCurrentExporter() != nullptr)
-    {
-        return false;
-    }
 
     return true;
 }
