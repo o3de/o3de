@@ -49,7 +49,7 @@ namespace AZ::RHI
             {
                 auto* device = RHISystemInterface::Get()->GetDevice(deviceIndex);
 
-                m_deviceObjects[deviceIndex] = Factory::Get().CreateFence();
+                m_deviceObjects[deviceIndex] = Factory::Get().CreateFence(*device);
                 resultCode = GetDeviceFence(deviceIndex)->Init(*device, initialState);
 
                 return resultCode == ResultCode::Success;

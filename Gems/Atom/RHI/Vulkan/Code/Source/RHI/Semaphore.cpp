@@ -14,76 +14,25 @@ namespace AZ
 {
     namespace Vulkan
     {
-        RHI::Ptr<Semaphore> Semaphore::Create()
-        {
-            return aznew Semaphore();
-        }
-
-        RHI::ResultCode Semaphore::Init(Device& device, bool forceBinarySemaphore)
+        RHI::ResultCode Semaphore::Init(Device& device)
         {
             Base::Init(device);
-
-            VkSemaphoreCreateInfo createInfo{};
-            createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-            createInfo.pNext = 0;
-            createInfo.flags = 0;
-
-            VkSemaphoreTypeCreateInfo timelineCreateInfo{};
-            if (device.GetFeatures().m_signalFenceFromCPU && !forceBinarySemaphore)
-            {
-                m_type = SemaphoreType::Timeline;
-
-                timelineCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO;
-                timelineCreateInfo.pNext = nullptr;
-                timelineCreateInfo.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
-                timelineCreateInfo.initialValue = 0;
-                createInfo.pNext = &timelineCreateInfo;
-                m_pendingValue = 1;
-            }
-            else
-            {
-                m_type = SemaphoreType::Binary;
-            }
-
-            const VkResult result =
-                device.GetContext().CreateSemaphore(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeSemaphore);
-            AssertSuccess(result);
-
-            RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
-
-            SetName(GetName());
-            return RHI::ResultCode::Success;
+            return InitInternal(device);
         }
 
-        SemaphoreType Semaphore::GetType()
-        {
-            return m_type;
-        }
-
-        void Semaphore::SetSignalEvent(const AZStd::shared_ptr<AZ::Vulkan::SignalEvent>& signalEvent, int bitToSignal)
+        void Semaphore::SetSignalEvent(const AZStd::shared_ptr<AZ::Vulkan::SignalEvent>& signalEvent)
         {
             m_signalEvent = signalEvent;
+        }
+
+        void Semaphore::SetSignalEventBitToSignal(int bitToSignal)
+        {
             m_bitToSignal = bitToSignal;
-            // TODO signal if the fence is in a signalled state
         }
 
-        void Semaphore::SetDependencies(const AZStd::shared_ptr<AZ::Vulkan::SignalEvent>& signalEvent, SignalEvent::BitSet dependencies)
+        void Semaphore::SetSignalEventDependencies(SignalEvent::BitSet dependencies)
         {
-            m_signalEvent = signalEvent;
             m_waitDependencies = dependencies;
-        }
-
-        uint64_t Semaphore::GetPendingValue()
-        {
-            AZ_Assert(m_type == SemaphoreType::Timeline, "%s: Invalid Semaphore Type", __FUNCTION__);
-            return m_pendingValue;
-        }
-
-        void Semaphore::IncrementPendingValue()
-        {
-            AZ_Assert(m_type == SemaphoreType::Timeline, "%s: Invalid Semaphore Type", __FUNCTION__);
-            m_pendingValue++;
-            m_signalEvent = {};
         }
 
         void Semaphore::SignalEvent()
@@ -97,16 +46,16 @@ namespace AZ
 
         void Semaphore::WaitEvent() const
         {
-            if (m_type == SemaphoreType::Binary && m_signalEvent)
+            if (m_signalEvent)
             {
                 m_signalEvent->Wait(m_waitDependencies);
             }
         }
 
-        void Semaphore::ResetSignalEvent()
+        void Semaphore::Reset()
         {
-            AZ_Assert(m_type == SemaphoreType::Binary, "%s: Invalid Semaphore Type", __FUNCTION__);
             m_signalEvent = {};
+            ResetInternal();
         }
 
         void Semaphore::SetRecycleValue(bool canRecycle)

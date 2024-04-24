@@ -18,7 +18,7 @@ namespace AZ
 {
     namespace Vulkan
     {
-        class Fence;
+        class FenceBase;
 
         struct ExecuteWorkRequest
             : public RHI::ExecuteWorkRequest
@@ -33,10 +33,10 @@ namespace AZ
             AZStd::vector<RHI::Ptr<Semaphore>> m_semaphoresToSignal;
 
             /// Fence to signal after execution of commands
-            AZStd::vector<RHI::Ptr<Fence>> m_fencesToSignal;
+            AZStd::vector<RHI::Ptr<FenceBase>> m_fencesToSignal;
 
             /// Fence to wait for before execution of command
-            AZStd::vector<RHI::Ptr<Fence>> m_fencesToWaitFor;
+            AZStd::vector<RHI::Ptr<FenceBase>> m_fencesToWaitFor;
 
             /// Debug label to insert during work execution
             AZStd::string m_debugLabel;
@@ -66,8 +66,8 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             const Queue::Descriptor& GetQueueDescriptor() const;
-            
-            void Signal(Fence& fence);
+
+            void Signal(FenceBase& fence);
             VkPipelineStageFlags GetSupportedPipelineStages() const;
 
             QueueId GetId() const;

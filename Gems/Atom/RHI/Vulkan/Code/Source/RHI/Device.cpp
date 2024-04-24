@@ -6,24 +6,27 @@
  *
  */
 
-#include <Atom_RHI_Vulkan_Platform.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <Atom/RHI.Reflect/Vulkan/PlatformLimitsDescriptor.h>
 #include <Atom/RHI.Reflect/Vulkan/VulkanBus.h>
 #include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/RHIMemoryStatisticsInterface.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/TransientAttachmentPool.h>
+#include <Atom_RHI_Vulkan_Platform.h>
+#include <AzCore/Debug/Trace.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/Debug/Trace.h>
 #include <RHI/AsyncUploadQueue.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferPool.h>
-#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/CommandList.h>
 #include <RHI/CommandQueue.h>
 #include <RHI/Device.h>
+#include <RHI/Fence.h>
+#include <RHI/FenceTimelineSemaphore.h>
 #include <RHI/GraphicsPipeline.h>
 #include <RHI/ImagePool.h>
 #include <RHI/Instance.h>
@@ -32,7 +35,6 @@
 #include <RHI/WSISurface.h>
 #include <RHI/WindowSurfaceBus.h>
 #include <Vulkan_Traits_Platform.h>
-#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -570,6 +572,18 @@ namespace AZ
         SwapChainSemaphoreAllocator& Device::GetSwapChainSemaphoreAllocator()
         {
             return m_swapChaiSemaphoreAllocator;
+        }
+
+        RHI::Ptr<FenceBase> Device::CreateFence() const
+        {
+            if (GetFeatures().m_signalFenceFromCPU)
+            {
+                return FenceTimelineSemaphore::Create();
+            }
+            else
+            {
+                return Fence::Create();
+            }
         }
 
         const AZStd::vector<VkQueueFamilyProperties>& Device::GetQueueFamilyProperties() const
@@ -1197,6 +1211,7 @@ namespace AZ
             m_features.m_swapchainScalingFlags = AZ_TRAIT_ATOM_VULKAN_SWAPCHAIN_SCALING_FLAGS;
 
             m_features.m_signalFenceFromCPU = physicalDevice.GetPhysicalDeviceTimelineSemaphoreFeatures().timelineSemaphore;
+            // m_features.m_signalFenceFromCPU = false;
 
             const auto& deviceLimits = physicalDevice.GetDeviceLimits();
             m_limits.m_maxImageDimension1D = deviceLimits.maxImageDimension1D;

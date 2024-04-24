@@ -439,7 +439,7 @@ namespace AZ
             AZStd::shared_ptr<SignalEvent> signalEvent = AZStd::make_shared<SignalEvent>();
             int currentBitToSignal{ 0 };
             SignalEvent::BitSet currentDependencies{};
-            AZStd::unordered_set<Fence*> signalledFences;
+            AZStd::unordered_set<FenceBase*> signalledFences;
 
             for (RHI::Scope* scopeBase : frameGraph.GetScopes())
             {
@@ -447,32 +447,36 @@ namespace AZ
                 Scope* scope = static_cast<Scope*>(scopeBase);
                 for (auto& fence : scope->GetWaitFences())
                 {
-                    fence->SetDependencies(signalEvent, currentDependencies);
+                    fence->SetSignalEvent(signalEvent);
+                    fence->SetSignalEventDependencies(currentDependencies);
                     if (!signalledFences.contains(fence.get()))
                     {
                         // We assume the fence is signalled on the CPU
-                        fence->SetSignalEvent(signalEvent, currentBitToSignal);
+                        fence->SetSignalEventBitToSignal(currentBitToSignal);
                         hasSemaphoreSignal = true;
                     }
                 }
                 for (auto& semaphore : scope->GetWaitSemaphores())
                 {
-                    semaphore.second->SetDependencies(signalEvent, currentDependencies);
+                    semaphore.second->SetSignalEvent(signalEvent);
+                    semaphore.second->SetSignalEventDependencies(currentDependencies);
                 }
 
                 for (auto& fence : scope->GetSignalFences())
                 {
-                    fence->SetSignalEvent(signalEvent, currentBitToSignal);
+                    fence->SetSignalEvent(signalEvent);
+                    fence->SetSignalEventBitToSignal(currentBitToSignal);
                     signalledFences.insert(fence.get());
                     // The fence wait might not be on the framegraph (wait on CPU)
                     // In this case we want wait for the current scopes dependencies (i.e. for signalling of the fence itself)
                     // If the Fence is waited-for on the framegraph at a later scope, we overwrite the dependencies later
-                    fence->SetDependencies(signalEvent, currentDependencies);
+                    fence->SetSignalEventDependencies(currentDependencies);
                     hasSemaphoreSignal = true;
                 }
                 for (auto& semaphore : scope->GetSignalSemaphores())
                 {
-                    semaphore->SetSignalEvent(signalEvent, currentBitToSignal);
+                    semaphore->SetSignalEvent(signalEvent);
+                    semaphore->SetSignalEventBitToSignal(currentBitToSignal);
                     hasSemaphoreSignal = true;
                 }
                 if (hasSemaphoreSignal)

@@ -15,26 +15,24 @@ namespace AZ
     {
         class Device;
 
-        // Fence is based on VkFence
-        // Cannot natively be signalled from the CPU
-        // Signalling from the CPU is emulated by submitting a signal command to the Graphics queue
-        // The signal command must also be submitted before we can wait for the fence to be signalled
-        // Used if the device does not support timeline semaphores (Vulkan version < 1.2)
-        class Fence final : public FenceBase
+        // Fence based on a timeline semaphore VkSemaphore
+        // Is used if the device supports it
+        class FenceTimelineSemaphore final : public FenceBase
         {
             using Base = FenceBase;
 
         public:
-            AZ_CLASS_ALLOCATOR(Fence, AZ::ThreadPoolAllocator);
-            AZ_RTTI(Fence, "{5B157619-B775-43D9-9112-B38F5B8011EC}", Base);
+            AZ_CLASS_ALLOCATOR(FenceTimelineSemaphore, AZ::ThreadPoolAllocator);
+            AZ_RTTI(FenceTimelineSemaphore, "{B3FABCC5-24A7-43D0-868E-3C5E8FB6257A}", Base);
 
             static RHI::Ptr<FenceBase> Create();
-            ~Fence() = default;
+            ~FenceTimelineSemaphore() = default;
 
-            VkFence GetNativeFence() const;
+            VkSemaphore GetNativeSemaphore() const;
+            uint64_t GetPendingValue() const;
 
         private:
-            Fence() = default;
+            FenceTimelineSemaphore() = default;
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::Object
@@ -51,7 +49,8 @@ namespace AZ
             RHI::FenceState GetFenceStateInternal() const override;
             //////////////////////////////////////////////////////////////////////
 
-            VkFence m_nativeFence = VK_NULL_HANDLE;
+            VkSemaphore m_nativeSemaphore = VK_NULL_HANDLE;
+            uint64_t m_pendingValue = 0;
         };
     } // namespace Vulkan
 } // namespace AZ

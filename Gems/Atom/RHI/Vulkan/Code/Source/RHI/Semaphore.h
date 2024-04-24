@@ -17,47 +17,36 @@ namespace AZ
     namespace Vulkan
     {
         class Device;
-        enum class SemaphoreType
-        {
-            Binary,
-            Timeline,
-            Invalid
-        };
 
-        class Semaphore final
-            : public RHI::DeviceObject
+        class Semaphore : public RHI::DeviceObject
         {
             using Base = RHI::DeviceObject;
 
         public:
+            AZ_RTTI(Semaphore, "{A0946587-C4FD-49E7-BB6D-92EA80CE140E}", RHI::DeviceObject);
             AZ_CLASS_ALLOCATOR(Semaphore, AZ::ThreadPoolAllocator);
 
             using WaitSemaphore = AZStd::pair<VkPipelineStageFlags, RHI::Ptr<Semaphore>>;
 
-            static RHI::Ptr<Semaphore> Create();
-            RHI::ResultCode Init(Device& device, bool forceBinarySemaphore);
+            RHI::ResultCode Init(Device& device);
             ~Semaphore() = default;
+            void Reset();
 
-            SemaphoreType GetType();
-
-            void SetSignalEvent(const AZStd::shared_ptr<AZ::Vulkan::SignalEvent>& signalEvent, int bitToSignal);
-            void SetDependencies(const AZStd::shared_ptr<AZ::Vulkan::SignalEvent>& signalEvent, SignalEvent::BitSet dependencies);
-
-            // Timeline semaphore functions
-            uint64_t GetPendingValue();
-            void IncrementPendingValue();
-
-            // Binary semaphore functions
-            void SignalEvent();
-            void WaitEvent() const;
-            void ResetSignalEvent();
+            void SetSignalEvent(const AZStd::shared_ptr<AZ::Vulkan::SignalEvent>& signalEvent);
+            void SetSignalEventBitToSignal(int bitToSignal);
+            void SetSignalEventDependencies(SignalEvent::BitSet dependencies);
 
             void SetRecycleValue(bool canRecycle);
             bool GetRecycleValue() const;
             VkSemaphore GetNativeSemaphore() const;
 
-        private:
+            virtual void SignalEvent();
+            virtual void WaitEvent() const;
+
+        protected:
             Semaphore() = default;
+            virtual RHI::ResultCode InitInternal(Device& device) = 0;
+            virtual void ResetInternal(){};
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::Object
@@ -75,8 +64,6 @@ namespace AZ
 
             VkSemaphore m_nativeSemaphore = VK_NULL_HANDLE;
             bool m_recyclable = true;
-            SemaphoreType m_type = SemaphoreType::Invalid;
-            uint64_t m_pendingValue = 0;
         };
     }
 }

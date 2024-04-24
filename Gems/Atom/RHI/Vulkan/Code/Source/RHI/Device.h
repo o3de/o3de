@@ -7,30 +7,32 @@
  */
 #pragma once
 
+#include <Atom/RHI.Loader/LoaderContext.h>
+#include <Atom/RHI.Reflect/BufferDescriptor.h>
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <Atom/RHI/ObjectCache.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/ThreadLocalContext.h>
-#include <Atom/RHI.Loader/LoaderContext.h>
-#include <Atom/RHI.Reflect/BufferDescriptor.h>
+#include <AtomCore/std/containers/lru_cache.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/list.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>
-#include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/lock.h>
+#include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/utils.h>
-#include <AtomCore/std/containers/lru_cache.h>
+#include <RHI/BindlessDescriptorPool.h>
 #include <RHI/Buffer.h>
 #include <RHI/CommandList.h>
-#include <RHI/CommandPool.h>
 #include <RHI/CommandListAllocator.h>
+#include <RHI/CommandPool.h>
 #include <RHI/CommandQueueContext.h>
 #include <RHI/DescriptorSetLayout.h>
+#include <RHI/FenceBase.h>
 #include <RHI/Framebuffer.h>
 #include <RHI/NullDescriptorManager.h>
 #include <RHI/PhysicalDevice.h>
@@ -39,7 +41,6 @@
 #include <RHI/RenderPass.h>
 #include <RHI/Sampler.h>
 #include <RHI/SemaphoreAllocator.h>
-#include <RHI/BindlessDescriptorPool.h>
 
 namespace AZ
 {
@@ -104,6 +105,7 @@ namespace AZ
             const CommandQueueContext& GetCommandQueueContext() const;
             SemaphoreAllocator& GetSemaphoreAllocator();
             SwapChainSemaphoreAllocator& GetSwapChainSemaphoreAllocator();
+            RHI::Ptr<FenceBase> CreateFence() const;
 
             const AZStd::vector<VkQueueFamilyProperties>& GetQueueFamilyProperties() const;
 

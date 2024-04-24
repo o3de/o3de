@@ -21,7 +21,7 @@ namespace AZ
         class Device;
         class Semaphore;
         class SwapChain;
-        class Fence;
+        class FenceBase;
 
         struct QueueId
         {
@@ -60,8 +60,8 @@ namespace AZ
                 const AZStd::vector<RHI::Ptr<CommandList>>& commandBuffers,
                 const AZStd::vector<Semaphore::WaitSemaphore>& waitSemaphoresInfo,
                 const AZStd::vector<RHI::Ptr<Semaphore>>& semaphoresToSignal,
-                const AZStd::vector<RHI::Ptr<Fence>>& fencesToWaitFor,
-                Fence* fenceToSignal);
+                const AZStd::vector<RHI::Ptr<FenceBase>>& fencesToWaitFor,
+                FenceBase* fenceToSignal);
 
             /// Waits (blocks) until all fences are signaled in the fence-list.
             void WaitForIdle();

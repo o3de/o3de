@@ -62,12 +62,12 @@ namespace AZ
                     semaphoresToSignal[index] = request.m_semaphoresToSignal[index]->GetNativeSemaphore();
                 }
 
-                Fence* fenceToSignal = nullptr;
+                FenceBase* fenceToSignal = nullptr;
                 if (!request.m_fencesToSignal.empty())
                 {
                     // Only the first fence is added to the submit command buffer call
                     // since Vulkan can only signal one fence per submit.
-                    RHI::Ptr<Fence> fence = request.m_fencesToSignal.front();
+                    RHI::Ptr<FenceBase> fence = request.m_fencesToSignal.front();
                     fenceToSignal = fence.get();
                 }
 
@@ -101,8 +101,8 @@ namespace AZ
                 }
             });
         }
-        
-        void CommandQueue::Signal(Fence& fence)
+
+        void CommandQueue::Signal(FenceBase& fence)
         {
             // The queue doesn't have an explicit way to signal a fence, so
             // we submit an empty work batch with only a fence to signal.

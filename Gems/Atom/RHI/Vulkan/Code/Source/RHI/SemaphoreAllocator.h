@@ -10,8 +10,9 @@
 #include <Atom/RHI/Object.h>
 #include <Atom/RHI/ObjectPool.h>
 #include <AzCore/std/parallel/mutex.h>
+#include <RHI/BinarySemaphore.h>
 #include <RHI/Device.h>
-#include <RHI/Semaphore.h>
+#include <RHI/TimelineSemaphore.h>
 
 namespace AZ
 {
@@ -38,8 +39,16 @@ namespace AZ
 
                 RHI::Ptr<Semaphore> CreateObject()
                 {
-                    RHI::Ptr<Semaphore> semaphore = Semaphore::Create();
-                    if (semaphore->Init(*m_descriptor.m_device, ForceBinarySemaphores) != RHI::ResultCode::Success)
+                    RHI::Ptr<Semaphore> semaphore;
+                    if (m_descriptor.m_device->GetFeatures().m_signalFenceFromCPU && !ForceBinarySemaphores)
+                    {
+                        semaphore = TimelineSemaphore::Create();
+                    }
+                    else
+                    {
+                        semaphore = BinarySemaphore::Create();
+                    }
+                    if (semaphore->Init(*m_descriptor.m_device) != RHI::ResultCode::Success)
                     {
                         AZ_Printf("Vulkan", "Failed to initialize Semaphore");
                         return nullptr;
@@ -50,14 +59,7 @@ namespace AZ
 
                 void ResetObject(Semaphore& semaphore)
                 {
-                    if (semaphore.GetType() == SemaphoreType::Binary)
-                    {
-                        semaphore.ResetSignalEvent();
-                    }
-                    else
-                    {
-                        semaphore.IncrementPendingValue();
-                    }
+                    semaphore.Reset();
                 }
                 void ShutdownObject(Semaphore& semaphore, bool isPoolShutdown)
                 {
