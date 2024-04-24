@@ -32,27 +32,19 @@ namespace AZ::AllocatorStorage
                 {
                     m_allocator = Environment::CreateVariable<Allocator>(AzTypeInfo<Allocator>::Name());
                 }
-#if defined(CARBONATED)
-                s_allocated = true;
-#endif
             }
-
 #if defined(CARBONATED)
             ~AllocatorEnvironmentVariable()
             {
-                s_allocated = false;
+                m_allocator.Reset();
             }
 #endif
-
+            
             Allocator& operator*() const
             {
                 return *m_allocator;
             }
 
-#if defined(CARBONATED)
-            inline static bool s_allocated = false;
-#endif
-        private:
             EnvironmentVariable<Allocator> m_allocator;
         };
 
@@ -60,14 +52,28 @@ namespace AZ::AllocatorStorage
 #if defined(CARBONATED)
         static bool HasAllocator()
         {
-            return AllocatorEnvironmentVariable::s_allocated;
+            return GetAllocatorPtr() != nullptr;
         }
-#endif
+        static IAllocator* GetAllocatorPtr()
+        {
+            static AllocatorEnvironmentVariable s_allocator;
+            if (s_allocator.m_allocator.IsConstructed())
+            {
+                return &*s_allocator;
+            }
+            return nullptr;
+        }
+        static IAllocator& GetAllocator()
+        {
+            return *GetAllocatorPtr();
+        }
+#else
         static IAllocator& GetAllocator()
         {
             static AllocatorEnvironmentVariable s_allocator;
             return *s_allocator;
         }
+#endif
     };
 } // namespace AZ::AllocatorStorage
 
