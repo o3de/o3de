@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#pragma once
-
 #include <AzCore/std/smart_ptr/make_shared.h>
 
 #include "SubpassDependencies.h"
