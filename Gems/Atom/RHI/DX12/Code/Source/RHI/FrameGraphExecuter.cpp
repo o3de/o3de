@@ -129,7 +129,7 @@ namespace AZ
                         mergedHardwareQueueClass = scope.GetHardwareQueueClass();
                         mergedDeviceIndex = scope.GetDeviceIndex();
                         FrameGraphExecuteGroupMerged* multiScopeContextGroup = AddGroup<FrameGraphExecuteGroupMerged>();
-                        multiScopeContextGroup->Init(static_cast<Device&>(scope.GetDevice()), AZStd::move(mergedScopes), m_mergedScopeId);
+                        multiScopeContextGroup->Init(static_cast<Device&>(scopePrev->GetDevice()), AZStd::move(mergedScopes), m_mergedScopeId);
                     }
                 }
 

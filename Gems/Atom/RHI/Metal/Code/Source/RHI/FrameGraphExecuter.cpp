@@ -128,7 +128,7 @@ namespace AZ
                     mergedHardwareQueueClass = scope.GetHardwareQueueClass();
                     mergedDeviceIndex = scope.GetDeviceIndex();
                     FrameGraphExecuteGroupMerged* multiScopeContextGroup = AddGroup<FrameGraphExecuteGroupMerged>();
-                    multiScopeContextGroup->Init(static_cast<Device&>(scope.GetDevice()), AZStd::move(mergedScopes), GetGroupCount());
+                    multiScopeContextGroup->Init(static_cast<Device&>(scopePrev.GetDevice()), AZStd::move(mergedScopes), GetGroupCount());
                 }
                 
                 // Attempt to merge the current scope.
