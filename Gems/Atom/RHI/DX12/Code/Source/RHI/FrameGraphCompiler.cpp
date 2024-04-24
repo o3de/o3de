@@ -411,6 +411,12 @@ namespace AZ
                 return;
             }
 
+            // TODO:
+            // As the FrameGraph currently does not track ScopeAttachments per device but puts them all into one list,
+            // we currently insert transition barriers between resources on different devices.
+            // As this cannot be solved with the information at this point, we defer this until we properly handle
+            // linking between ScopeAttachments on a per-device basis
+
             Scope& firstScope = static_cast<Scope&>(scopeAttachment->GetScope());
             Buffer& buffer = static_cast<Buffer&>(*bufferFrameAttachment.GetBuffer()->GetDeviceBuffer(firstScope.GetDeviceIndex()));
 
@@ -484,6 +490,12 @@ namespace AZ
                 AZ_WarningOnce("RHI", false, "Imported ImageFrameAttachment isn't used in any Scope");
                 return;
             }
+
+            // TODO:
+            // As the FrameGraph currently does not track ScopeAttachments per device but puts them all into one list,
+            // we currently insert transition barriers between resources on different devices.
+            // As this cannot be solved with the information at this point, we defer this until we properly handle
+            // linking between ScopeAttachments on a per-device basis
 
             Scope& firstScope = static_cast<Scope&>(scopeAttachment->GetScope());
             Image& image = static_cast<Image&>(*imageFrameAttachment.GetImage()->GetDeviceImage(firstScope.GetDeviceIndex()));
