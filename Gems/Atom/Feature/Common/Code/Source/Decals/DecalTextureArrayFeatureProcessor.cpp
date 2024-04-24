@@ -724,8 +724,8 @@ namespace AZ
                 PackTexureArrays();
             }
         }
-		
-		void DecalTextureArrayFeatureProcessor::UpdateBounds(const DecalHandle handle)
+        
+        void DecalTextureArrayFeatureProcessor::UpdateBounds(const DecalHandle handle)
         {
             const DecalData& data = m_decalData.GetData<0>(handle.GetIndex());
             m_decalData.GetData<1>(handle.GetIndex()) = Aabb::CreateCenterHalfExtents(
