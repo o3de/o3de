@@ -432,36 +432,10 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(AzRender, "DecalTextureArrayFeatureProcessor: OnAssetReady");
             const Data::AssetId& assetId = asset->GetId();
-            
-            RPI::MaterialAsset* materialAsset = asset.GetAs<AZ::RPI::MaterialAsset>();
-            const bool validDecalMaterial = materialAsset && DecalTextureArray::IsValidDecalMaterial(*materialAsset);
-            if (validDecalMaterial)
-            {
-                const auto& decalsThatUseThisMaterial = m_materialLoadTracker.GetHandlesByAsset(asset.GetId());
-                const auto& decalLocation = AddMaterialToTextureArrays(materialAsset);
-
-                if (decalLocation)
-                {
-                    for (const auto& decal : decalsThatUseThisMaterial)
-                    {
-                        m_materialToTextureArrayLookupTable[assetId].m_useCount++;
-                        SetDecalTextureLocation(decal, *decalLocation);
-                    }
-                    m_materialToTextureArrayLookupTable[assetId].m_location = *decalLocation;
-                }
-            }
-            else
-            {
-                AZ_Warning("DecalTextureArrayFeatureProcessor", false, "DecalTextureArray::IsValidDecalMaterial() failed, unable to add this material to the decal");
-            }
-
+            const auto decalsThatUseThisMaterial = m_materialLoadTracker.GetHandlesByAsset(assetId);
             m_materialLoadTracker.RemoveAllHandlesWithAsset(assetId);
+            SetMaterialToDecals(asset.GetAs<AZ::RPI::MaterialAsset>(), decalsThatUseThisMaterial);
             AZ::Data::AssetBus::MultiHandler::BusDisconnect(assetId);
-
-            if (!m_materialLoadTracker.AreAnyLoadsInFlight())
-            {
-                PackTexureArrays();
-            }
         }
 
         void DecalTextureArrayFeatureProcessor::SetDecalTextureLocation(const DecalHandle& handle, const DecalLocation location)
@@ -563,12 +537,7 @@ namespace AZ
             }
             else if (materialAsset.IsReady())
             {
-                // Add the material asset and decal handle to the material load tracker
-                // because the OnAssetReady function is expecting this information to be there.
-                // The OnAssetReady will remove them from the material load tracker after finishing
-                // with the material loading.
-                m_materialLoadTracker.TrackAssetLoad(handle, materialAsset);
-                OnAssetReady(materialAsset);
+                SetMaterialToDecals(materialAsset.GetAs<AZ::RPI::MaterialAsset>(), { handle });
             }
             else if (materialAsset.IsError())
             {
@@ -577,6 +546,43 @@ namespace AZ
             else
             {
                 AZ_Assert(false, "DecalTextureArrayFeatureProcessor::QueueMaterialLoadForDecal is in an unhandled state.");
+            }
+        }
+
+        void DecalTextureArrayFeatureProcessor::SetMaterialToDecals(
+            RPI::MaterialAsset* materialAsset, const AZStd::vector<DecalHandle>& decalsThatUseThisMaterial)
+        {
+            if (!materialAsset)
+            {
+                return;
+            }
+
+            const Data::AssetId& assetId = materialAsset->GetId();
+            const bool validDecalMaterial = materialAsset && DecalTextureArray::IsValidDecalMaterial(*materialAsset);
+            if (validDecalMaterial)
+            {
+                const auto& decalLocation = AddMaterialToTextureArrays(materialAsset);
+                if (decalLocation)
+                {
+                    for (const auto& decal : decalsThatUseThisMaterial)
+                    {
+                        m_materialToTextureArrayLookupTable[assetId].m_useCount++;
+                        SetDecalTextureLocation(decal, *decalLocation);
+                    }
+                    m_materialToTextureArrayLookupTable[assetId].m_location = *decalLocation;
+                }
+            }
+            else
+            {
+                AZ_Warning(
+                    "DecalTextureArrayFeatureProcessor",
+                    false,
+                    "DecalTextureArray::IsValidDecalMaterial() failed, unable to add this material to the decal");
+            }
+
+            if (!m_materialLoadTracker.AreAnyLoadsInFlight())
+            {
+                PackTexureArrays();
             }
         }
 
