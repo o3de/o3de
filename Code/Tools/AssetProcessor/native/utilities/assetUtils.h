@@ -251,7 +251,10 @@ namespace AssetUtilities
     QString GuessProductNameInDatabase(QString path, QString platform, AssetProcessor::AssetDatabaseConnection* databaseConnection);
 
     //! A utility function which checks the given path starting at the root and updates the relative path to be the actual case correct path.
-    bool UpdateToCorrectCase(const QString& rootPath, QString& relativePathFromRoot);
+    //! Set checkEntirePath to false if the caller is absolutely sure the path is correct and only the last element (file name or extension)
+    //! is potentially wrong. This can happen when for example taking a real file found from a real file directory that is already correct
+    //! and modifying just the file path or extension.  It is significantly faster to avoid checking the entire path.
+    bool UpdateToCorrectCase(const QString& rootPath, QString& relativePathFromRoot, bool checkEntirePath = true);
 
     //! Returns true if the path is in the cachePath and *not* in the intermediate assets folder.
     //! If cachePath is empty, it will be computed using ComputeProjectCacheRoot.
