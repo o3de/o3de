@@ -46,9 +46,14 @@ IF NOT !ERRORLEVEL!==0 (
     )
 )
 
+REM If the %LY_3RDPARTY_PATH% is not set, then default it to %USERPROFILE%/.o3de/3rdParty
+IF "" == "%LY_3RDPARTY_PATH%" (
+    SET LY_3RDPARTY_PATH=%USERPROFILE%\.o3de\3rdParty
+)
+
 REM output the version number for forensic logging
 cmake --version
-cmake -DPAL_PLATFORM_NAME:string=Windows -D "LY_3RDPARTY_PATH:string=%CMD_DIR%" -P "%CMD_DIR%\get_python.cmake"
+cmake -DPAL_PLATFORM_NAME:string=Windows -D "LY_3RDPARTY_PATH:string=%LY_3RDPARTY_PATH%" -D "LY_ROOT_FOLDER=%CMD_DIR%\.." -P "%CMD_DIR%\get_python.cmake"
 
 if ERRORLEVEL 1 (
     ECHO ERROR: Unable to fetch python using cmake.  
@@ -59,13 +64,14 @@ if ERRORLEVEL 1 (
 
 :install_packages
 echo calling PIP to install requirements...
-call "%CMD_DIR%\pip.cmd" install -r "%CMD_DIR%/requirements.txt" --disable-pip-version-check --no-warn-script-location
+CALL "%CMD_DIR%\python.cmd" -m pip install -r "%CMD_DIR%/requirements.txt" --disable-pip-version-check --no-warn-script-location
 if ERRORLEVEL 1 (
     echo Failed to install the packages listed in %CMD_DIR%\requirements.txt.  Check the log above!
     EXIT /b 1
 )
 
-call "%CMD_DIR%\pip.cmd" install -e "%CMD_DIR%/../scripts/o3de" --disable-pip-version-check --no-warn-script-location --no-deps
+echo calling PIP to O3DE
+CALL "%CMD_DIR%\python.cmd" -m pip install -e "%CMD_DIR%/../scripts/o3de" --disable-pip-version-check --no-warn-script-location --no-deps
 if ERRORLEVEL 1 (
     echo Failed to install %CMD_DIR%\..\scripts\o3de into python.  Check the log above!
     EXIT /b 1

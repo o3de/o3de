@@ -176,8 +176,10 @@ LayerBlendSource GetFinalLayerBlendSource()
 //! @param blendSource indicates where to get the blend mask from
 //! @param blendMaskUv for sampling a blend mask texture, if that's the blend source
 //! @param blendMaskVertexColors the vertex color values to use for the blend mask, if that's the blend source
+//! @param uvDxDy for sampling the textures if derivatives are customized
+//! @param customDerivatives whether or not using customized derivatives
 //! @return the blend mask values, or 0 if there is no blend mask
-float3 GetApplicableBlendMaskValues(LayerBlendSource blendSource, float2 blendMaskUv, float3 blendMaskVertexColors)
+float3 GetApplicableBlendMaskValues(LayerBlendSource blendSource, float2 blendMaskUv, float3 blendMaskVertexColors, float4 uvDxDy = float4(0.0, 0.0, 0.0, 0.0), bool customDerivatives = false)
 {
     float3 blendSourceValues = float3(0,0,0);
 
@@ -191,7 +193,14 @@ float3 GetApplicableBlendMaskValues(LayerBlendSource blendSource, float2 blendMa
                 break;
             case LayerBlendSource::BlendMaskTexture:
             case LayerBlendSource::Displacement_With_BlendMaskTexture:
-                blendSourceValues = MaterialSrg::m_blendMaskTexture.Sample(MaterialSrg::m_sampler, blendMaskUv).rgb;
+                if (customDerivatives)
+                {
+                    blendSourceValues = MaterialSrg::m_blendMaskTexture.SampleGrad(MaterialSrg::m_sampler, blendMaskUv, uvDxDy.xy, uvDxDy.zw).rgb;
+                }
+                else
+                {
+                    blendSourceValues = MaterialSrg::m_blendMaskTexture.Sample(MaterialSrg::m_sampler, blendMaskUv).rgb;
+                }
                 break;
             case LayerBlendSource::BlendMaskVertexColors:
             case LayerBlendSource::Displacement_With_BlendMaskVertexColors:
@@ -319,11 +328,11 @@ float3 GetLayerDepthValues(float2 uv, float2 uv_ddx, float2 uv_ddy);
 //! Return the final blend weights to be used for rendering, based on the available data and configuration.
 //! Note this will sample the displacement maps in the case of LayerBlendSource::Displacement. If you have already
 //! the layer depth values, use the GetBlendWeights() overload that takes layerDepthValues instead.
-float3 GetBlendWeights(LayerBlendSource blendSource, float2 uv, float3 blendMaskVertexColors)
+float3 GetBlendWeights(LayerBlendSource blendSource, float2 uv, float3 blendMaskVertexColors, float4 uvDxDy, bool customDerivatives)
 {
     float3 layerDepthValues = float3(0,0,0);
     
-    float3 blendMaskValues = GetApplicableBlendMaskValues(blendSource, uv, blendMaskVertexColors);
+    float3 blendMaskValues = GetApplicableBlendMaskValues(blendSource, uv, blendMaskVertexColors, uvDxDy, customDerivatives);
 
     if(blendSource == LayerBlendSource::Displacement ||
        blendSource == LayerBlendSource::Displacement_With_BlendMaskTexture ||

@@ -32,18 +32,57 @@ namespace AZ::RHI
             uint32_t byteCount,
             uint32_t byteStride);
 
+        //! The mutex stops the default generation
+        MultiDeviceIndirectBufferView(const MultiDeviceIndirectBufferView& other)
+            : m_hash{ other.m_hash }
+            , m_mdBuffer{ other.m_mdBuffer }
+            , m_mdSignature{ other.m_mdSignature }
+            , m_byteOffset{ other.m_byteOffset }
+            , m_byteCount{ other.m_byteCount }
+            , m_byteStride{ other.m_byteStride }
+        {
+        }
+
+        MultiDeviceIndirectBufferView& operator=(const MultiDeviceIndirectBufferView& other)
+        {
+            this->m_hash = other.m_hash;
+            this->m_mdBuffer = other.m_mdBuffer;
+            this->m_mdSignature = other.m_mdSignature;
+            this->m_byteOffset = other.m_byteOffset;
+            this->m_byteCount = other.m_byteCount;
+            this->m_byteStride = other.m_byteStride;
+
+            m_cache.clear();
+
+            return *this;
+        }
+
         //! Returns the device-specific IndirectBufferView for the given index
-        IndirectBufferView GetDeviceIndirectBufferView(int deviceIndex) const
+        const IndirectBufferView& GetDeviceIndirectBufferView(int deviceIndex) const
         {
             AZ_Error("MultiDeviceIndirectBufferView", m_mdSignature, "No MultiDeviceIndirectBufferSignature available\n");
             AZ_Error("MultiDeviceIndirectBufferView", m_mdBuffer, "No MultiDeviceBuffer available\n");
 
-            return IndirectBufferView(
-                *m_mdBuffer->GetDeviceBuffer(deviceIndex),
-                *m_mdSignature->GetDeviceIndirectBufferSignature(deviceIndex),
-                m_byteOffset,
-                m_byteCount,
-                m_byteStride);
+            AZStd::lock_guard lock(m_bufferViewMutex);
+            auto iterator{ m_cache.find(deviceIndex) };
+            if (iterator == m_cache.end())
+            {
+                //! Buffer view is not yet in the cache
+                auto [new_iterator, inserted]{ m_cache.insert(AZStd::make_pair(
+                    deviceIndex,
+                    IndirectBufferView(
+                        *m_mdBuffer->GetDeviceBuffer(deviceIndex),
+                        *m_mdSignature->GetDeviceIndirectBufferSignature(deviceIndex),
+                        m_byteOffset,
+                        m_byteCount,
+                        m_byteStride))) };
+                if (inserted)
+                {
+                    return new_iterator->second;
+                }
+            }
+
+            return iterator->second;
         }
 
         //! Returns the hash of the view. This hash is precomputed at creation time.
@@ -72,5 +111,9 @@ namespace AZ::RHI
         uint32_t m_byteOffset = 0;
         uint32_t m_byteCount = 0;
         uint32_t m_byteStride = 0;
+
+        //! Safe-guard access to IndirectBufferView cache during parallel access
+        mutable AZStd::mutex m_bufferViewMutex{};
+        mutable AZStd::unordered_map<int, IndirectBufferView> m_cache;
     };
 } // namespace AZ::RHI

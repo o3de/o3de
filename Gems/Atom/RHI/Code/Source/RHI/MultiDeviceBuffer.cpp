@@ -53,14 +53,6 @@ namespace AZ::RHI
         MultiDeviceResource::Shutdown();
     }
 
-    void MultiDeviceBuffer::InvalidateViews()
-    {
-        IterateObjects<Buffer>([]([[maybe_unused]] auto deviceIndex, auto deviceBuffer)
-        {
-            deviceBuffer->InvalidateViews();
-                                           });
-    }
-
     bool MultiDeviceBuffer::IsInResourceCache(const BufferViewDescriptor& bufferViewDescriptor)
     {
         bool isInResourceCache{true};
@@ -74,6 +66,7 @@ namespace AZ::RHI
     //! Given a device index, return the corresponding BufferView for the selected device
     const RHI::Ptr<RHI::BufferView> MultiDeviceBufferView::GetDeviceBufferView(int deviceIndex) const
     {
+        AZStd::lock_guard lock(m_bufferViewMutex);
         auto iterator{ m_cache.find(deviceIndex) };
         if (iterator == m_cache.end())
         {

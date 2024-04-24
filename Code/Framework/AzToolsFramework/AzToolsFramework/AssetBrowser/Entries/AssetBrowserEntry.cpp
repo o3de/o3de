@@ -200,16 +200,8 @@ namespace AzToolsFramework
             return m_visiblePath.Native();
         }
 
-        const AZStd::string AssetBrowserEntry::GetFullPath() const
+        const AZStd::string& AssetBrowserEntry::GetFullPath() const
         {
-            // the full path could use a decoding:
-            if (AZ::IO::FileIOBase* instance = AZ::IO::FileIOBase::GetInstance())
-            {
-                char resolvedPath[AZ_MAX_PATH_LEN] = { 0 };
-                instance->ResolvePath(m_fullPath.Native().c_str(), resolvedPath, AZ_MAX_PATH_LEN);
-                return AZStd::string(resolvedPath);
-            }
-
             return m_fullPath.Native();
         }
 
@@ -237,9 +229,17 @@ namespace AzToolsFramework
         {
             m_fullPath = fullPath;
 
-            // Update the entryType string.
-            m_entryType = "";
+            // the full path could use a decoding:
+            if (AZ::IO::FileIOBase* instance = AZ::IO::FileIOBase::GetInstance())
+            {
+                char resolvedPath[AZ_MAX_PATH_LEN] = { 0 };
+                if (instance->ResolvePath(fullPath.Native().c_str(), resolvedPath, AZ_MAX_PATH_LEN))
+                {
+                    m_fullPath = resolvedPath;
+                }
+            }
 
+            // Update the entryType string.
             switch (GetEntryType())
             {
             case AssetBrowserEntry::AssetEntryType::Root:
@@ -253,6 +253,9 @@ namespace AzToolsFramework
                 break;
             case AssetBrowserEntry::AssetEntryType::Product:
                 m_entryType = tr("Product");
+                break;
+            default:
+                m_entryType = "";
                 break;
             }
         }
@@ -435,13 +438,14 @@ namespace AzToolsFramework
         bool AssetBrowserEntry::lessThan(const AssetBrowserEntry* other, const AssetEntrySortMode sortMode, const QCollator& collator) const
         {
             // folders should always come first
-            if (azrtti_istypeof<const FolderAssetBrowserEntry*>(this) && azrtti_istypeof<const SourceAssetBrowserEntry*>(other))
-            {
-                return false;
-            }
-            if (azrtti_istypeof<const SourceAssetBrowserEntry*>(this) && azrtti_istypeof<const FolderAssetBrowserEntry*>(other))
+            if (GetEntryType() == AssetEntryType::Folder && other->GetEntryType() != AssetEntryType::Folder)
             {
                 return true;
+            }
+
+            if (GetEntryType() != AssetEntryType::Folder && other->GetEntryType() == AssetEntryType::Folder)
+            {
+                return false;
             }
 
             switch (sortMode)

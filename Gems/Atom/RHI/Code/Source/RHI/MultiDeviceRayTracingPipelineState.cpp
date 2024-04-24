@@ -21,7 +21,7 @@ namespace AZ::RHI
 
         if (m_mdPipelineState)
         {
-            descriptor.PipelineState(m_mdPipelineState->GetDevicePipelineState(deviceIndex).get());
+            descriptor.m_pipelineState = m_mdPipelineState->GetDevicePipelineState(deviceIndex).get();
         }
 
         return descriptor;

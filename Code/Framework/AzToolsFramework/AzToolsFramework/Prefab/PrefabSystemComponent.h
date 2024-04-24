@@ -449,7 +449,8 @@ namespace AzToolsFramework
 
             PrefabSystemScriptingHandler m_prefabSystemScriptingHandler;
 
-            // If true, individual template-remove messages will be suppressed
+            // If true, individual template-remove messages will be suppressed.
+            // It also prevents unnecessary link instance updates during template removal.
             bool m_removingAllTemplates = false;
 
             AZStd::unordered_set<TemplateId> m_templatesWhichNeedGarbageCollection;

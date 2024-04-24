@@ -78,6 +78,13 @@ namespace AZ
 
         void OcclusionCullingPlaneComponentController::Activate(AZ::EntityId entityId)
         {
+            AZ::ApplicationTypeQuery appType;
+            ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+            if (appType.IsHeadless())
+            {
+                return;
+            }
+
             m_entityId = entityId;
 
             TransformNotificationBus::Handler::BusConnect(m_entityId);

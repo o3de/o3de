@@ -91,7 +91,7 @@ namespace AzFramework
             else
             {
                 newResolution.m_height = AZStd::max(resolution.m_width, resolution.m_height);
-                newResolution.m_width *= newResolution.m_height * aspectRatio;
+                newResolution.m_width = newResolution.m_height * aspectRatio;
             }
             ANativeWindow_setBuffersGeometry(
                 m_nativeWindow, newResolution.m_width, newResolution.m_height, ANativeWindow_getFormat(m_nativeWindow));

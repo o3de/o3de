@@ -38,8 +38,7 @@ namespace UnitTest
         MOCK_CONST_METHOD1(GetSortKey, AZ::RHI::DrawItemSortKey(const MeshHandle&));
         MOCK_METHOD2(SetMeshLodConfiguration, void(const MeshHandle&, const AZ::RPI::Cullable::LodConfiguration&));
         MOCK_CONST_METHOD1(GetMeshLodConfiguration, AZ::RPI::Cullable::LodConfiguration(const MeshHandle&));
-        MOCK_METHOD2(AcquireMesh, MeshHandle (const AZ::Render::MeshHandleDescriptor&, const AZ::Render::CustomMaterialMap&));
-        MOCK_METHOD2(AcquireMesh, MeshHandle (const AZ::Render::MeshHandleDescriptor&, const AZ::Data::Instance<AZ::RPI::Material>&));
+        MOCK_METHOD1(AcquireMesh, MeshHandle (const AZ::Render::MeshHandleDescriptor&));
         MOCK_METHOD2(SetRayTracingEnabled, void (const MeshHandle&, bool));
         MOCK_CONST_METHOD1(GetRayTracingEnabled, bool(const MeshHandle&));
         MOCK_METHOD2(SetExcludeFromReflectionCubeMaps, void(const MeshHandle&, bool));

@@ -370,9 +370,12 @@ namespace AZ::DocumentPropertyEditor
                     // either a column or an attribute was added, update the nearest row as necessary
                     if (rowIsDirectParent)
                     {
-                        // the added child was not a full row, but it was the immediate child of a row
-                        // this addition shifts subsequent entries, so account for that in the parent
-                        rowNode->ShiftChildIndices(adapterIndex, patchPath.Back().GetIndex(), 1);
+                        if (auto backIndex = patchPath.Back(); backIndex.IsIndex())
+                        {
+                            // the added child was not a full row, but it was the immediate child of a row
+                            // this addition shifts subsequent entries, so account for that in the parent
+                            rowNode->ShiftChildIndices(adapterIndex, backIndex.GetIndex(), 1);
+                        }
                     }
                     UpdateAndPatchNode(rowNode, adapterIndex, patchOperation, leftoverPath, outgoingPatch);
                 }

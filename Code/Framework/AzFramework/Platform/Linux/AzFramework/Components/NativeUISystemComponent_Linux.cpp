@@ -18,6 +18,16 @@
 #include <AzFramework/XcbNativeWindow.h>
 #endif
 
+// libevdev could be used for other devices in the future (Can do keyboard, mouse, etc), so it doesn't belong in the gamepad
+// folder.
+#include <AzFramework/Input/LibEVDevWrapper.h> 
+
+// For now, hardcode support for up to 4 gamepads connected.  Linux can actually do an very large number of connected
+// devices, but since O3DE pre-creates a device for each one, choose a normal number that corresponds to most other
+// consoles / game platforms.
+constexpr int g_max_gamepads = 4;
+#include <AzFramework/Input/Devices/Gamepad/InputDeviceGamepad_Linux.h>
+
 constexpr rlim_t g_minimumOpenFileHandles = 65536L;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -108,6 +118,37 @@ namespace AzFramework
 #endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
         }
     };
+
+    struct LinuxDeviceGamepadImplFactory
+        : public InputDeviceGamepad::ImplementationFactory
+    {
+        // there is only one impl factory, so it can be used to create one libevdev wrapper for all gamepads.
+        AZStd::shared_ptr<LibEVDevWrapper> m_libevdevWrapper;
+        LinuxDeviceGamepadImplFactory()
+        {
+            m_libevdevWrapper = AZStd::make_shared<LibEVDevWrapper>();
+        }
+
+        AZStd::unique_ptr<InputDeviceGamepad::Implementation> Create(InputDeviceGamepad& inputDevice) override
+        {
+            AZ_Assert(
+                inputDevice.GetInputDeviceId().GetIndex() < GetMaxSupportedGamepads(),
+                "Creating InputDeviceGamepadWindows with index %d that is greater than max allowed: %d - increase the g_max_gamepads constant.",
+                inputDevice.GetInputDeviceId().GetIndex(),
+                GetMaxSupportedGamepads());
+
+            return AZStd::unique_ptr<InputDeviceGamepad::Implementation>(InputDeviceGamepadLinux::Create(inputDevice, m_libevdevWrapper));
+        }
+
+        AZ::u32 GetMaxSupportedGamepads() const override
+        {
+            return g_max_gamepads;
+        }
+        ~LinuxDeviceGamepadImplFactory()
+        {
+            m_libevdevWrapper.reset();
+        }
+    };
     
     void NativeUISystemComponent::InitializeApplicationImplementationFactory()
     {
@@ -117,7 +158,8 @@ namespace AzFramework
 
     void NativeUISystemComponent::InitializeDeviceGamepadImplentationFactory()
     {
-        // Gamepad not supported on Linux
+        m_deviceGamepadImplFactory = AZStd::make_unique<LinuxDeviceGamepadImplFactory>();
+        AZ::Interface<InputDeviceGamepad::ImplementationFactory>::Register(m_deviceGamepadImplFactory.get());
     }
 
     void NativeUISystemComponent::InitializeDeviceKeyboardImplementationFactory()

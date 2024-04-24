@@ -20,9 +20,6 @@ namespace AZ::RHI
 {
     struct DeviceFeatures
     {
-        //! Whether the adapter supports tessellation shaders.
-        bool m_tessellationShader;
-
         //! Whether the adapter supports geometry shaders.
         bool m_geometryShader;
 
@@ -98,6 +95,10 @@ namespace AZ::RHI
                         
         //! Whether swapchain scaling support is available.
         RHI::ScalingFlags m_swapchainScalingFlags = RHI::ScalingFlags::None;
+
+        //! Whether fences can be signalled from the CPU
+        //! If this is false, the Fence::SignalOnCpu inserts the signal command into a queue
+        bool m_signalFenceFromCPU = false;
 
         /// Additional features here.
     };

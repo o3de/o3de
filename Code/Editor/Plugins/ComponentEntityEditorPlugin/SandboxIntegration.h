@@ -12,25 +12,16 @@
 #include "ContextMenuHandlers.h"
 
 #include <AzCore/Component/ComponentApplicationBus.h>
-#include <AzCore/Slice/SliceBus.h>
-#include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/std/string/conversions.h>
-#include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <AzFramework/Viewport/DisplayContextRequestBus.h>
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
-#include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
-#include <AzToolsFramework/UI/Layer/LayerUiHandler.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationManager.h>
-#include <AzToolsFramework/UI/Slice/SliceOverridesNotificationWindowManager.hxx>
-#include <AzToolsFramework/UI/Slice/SliceOverridesNotificationWindow.hxx>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
-#include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 // Sandbox imports.
@@ -72,12 +63,10 @@ class CToolsApplicationUndoLink;
 
 class QMenu;
 class QWidget;
-class CComponentEntityObject;
 
 namespace AzToolsFramework
 {
     class EditorEntityAPI;
-    class EditorEntityUiInterface;
     class ReadOnlyEntityPublicInterface;
 
     namespace AssetBrowser
@@ -98,12 +87,8 @@ class SandboxIntegrationManager
     , private AzToolsFramework::EditorRequests::Bus::Handler
     , private AzToolsFramework::EditorContextMenuBus::Handler
     , private AzToolsFramework::EditorWindowRequests::Bus::Handler
-    , private AzFramework::AssetCatalogEventBus::Handler
-    , private AzFramework::DisplayContextRequestBus::Handler
     , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
-    , private AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler
     , private IUndoManagerListener
-    , private AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler
     , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
 {
 public:
@@ -115,22 +100,12 @@ public:
     void Teardown();
 
 private:
-
-    //////////////////////////////////////////////////////////////////////////
-    // AssetCatalogEventBus::Handler
-    void OnCatalogAssetAdded(const AZ::Data::AssetId& assetId) override;
-    void OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo) override;
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////
     // AzToolsFramework::ToolsApplicationEvents::Bus::Handler overrides
     void OnBeginUndo(const char* label) override;
     void OnEndUndo(const char* label, bool changed) override;
-    void EntityParentChanged(
-        AZ::EntityId entityId,
-        AZ::EntityId newParentId,
-        AZ::EntityId oldParentId) override;
-    void OnSaveLevel() override;
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////
@@ -144,7 +119,6 @@ private:
     void CloseViewPane(const char* paneName) override;
     void BrowseForAssets(AzToolsFramework::AssetBrowser::AssetSelectionModel& selection) override;
     void CreateEditorRepresentation(AZ::Entity* entity) override;
-    bool DestroyEditorRepresentation(AZ::EntityId entityId, bool deleteAZEntity) override;
     void CloneSelection(bool& handled) override;
     void DeleteSelectedEntities(bool includeDescendants) override;
     AZ::EntityId CreateNewEntity(AZ::EntityId parentId = AZ::EntityId()) override;
@@ -153,9 +127,6 @@ private:
     AzFramework::EntityContextId GetEntityContextId() override;
     QWidget* GetMainWindow() override;
     IEditor* GetEditor() override;
-    bool GetUndoSliceOverrideSaveValue() override;
-    bool GetShowCircularDependencyError() override;
-    void SetShowCircularDependencyError(const bool& showCircularDependencyError) override;
     void LaunchLuaEditor(const char* files) override;
     bool IsLevelDocumentOpen() override;
     AZStd::string GetLevelName() override;
@@ -165,7 +136,6 @@ private:
     void GoToSelectedEntitiesInViewports() override;
     bool CanGoToSelectedEntitiesInViewports() override;
     AZ::Vector3 GetWorldPositionAtViewportCenter() override;
-    void InstantiateSliceFromAssetId(const AZ::Data::AssetId& assetId) override;
     void ClearRedoStack() override;
     //////////////////////////////////////////////////////////////////////////
 
@@ -185,40 +155,14 @@ private:
     void OnPrepareForContextReset() override;
     //////////////////////////////////////////////////////////////////////////
 
-    //////////////////////////////////////////////////////////////////////////
-    /// AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler
-    void OnSliceInstantiated(
-        const AZ::Data::AssetId& sliceAssetId,
-        AZ::SliceComponent::SliceInstanceAddress& sliceAddress,
-        const AzFramework::SliceInstantiationTicket& ticket) override;
-    //////////////////////////////////////////////////////////////////////////
-
-    // AzFramework::DisplayContextRequestBus (and @deprecated EntityDebugDisplayRequestBus)
-    // AzFramework::DisplayContextRequestBus
-    void SetDC(DisplayContext* dc) override;
-    DisplayContext* GetDC() override;
-
     // ActionManagerRegistrationNotificationBus overrides ...
     void OnActionRegistrationHook() override;
     void OnMenuBindingHook() override;
 
     // Context menu handlers.
     void ContextMenu_NewEntity();
-    AZ::EntityId ContextMenu_NewLayer();
-    void ContextMenu_SaveLayers(const AZStd::unordered_set<AZ::EntityId>& layers);
-    void ContextMenu_MakeSlice(AzToolsFramework::EntityIdList entities);
-    void ContextMenu_InheritSlice(AzToolsFramework::EntityIdList entities);
-    void ContextMenu_InstantiateSlice();
-    void ContextMenu_SelectSlice();
-    void ContextMenu_PushEntitiesToSlice(AzToolsFramework::EntityIdList entities,
-        AZ::SliceComponent::EntityAncestorList ancestors,
-        AZ::Data::AssetId targetAncestorId,
-        bool affectEntireHierarchy);
     void ContextMenu_Duplicate();
     void ContextMenu_DeleteSelected();
-    void ContextMenu_ResetToSliceDefaults(AzToolsFramework::EntityIdList entities);
-
-    void MakeSliceFromEntities(const AzToolsFramework::EntityIdList& entities, bool inheritSlices, bool setAsDynamic);
 
     void GetSelectedEntities(AzToolsFramework::EntityIdList& entities);
     void GetSelectedOrHighlightedEntities(AzToolsFramework::EntityIdList& entities);
@@ -247,36 +191,9 @@ private:
     // Listens for Cry Undo System events.
     void UndoStackFlushed() override;
 
-    // EditorLayerRequestBus...
-    void OnLayerComponentActivated(AZ::EntityId entityId) override;
-    void OnLayerComponentDeactivated(AZ::EntityId entityId) override;
-
 private:
-    // Right click context menu when a layer is included in the selection.
-    void SetupLayerContextMenu(QMenu* menu);
-    void SetupSliceContextMenu(QMenu* menu);
-    void SetupSliceContextMenu_Modify(QMenu* menu, const AzToolsFramework::EntityIdList& selectedEntities, const AZ::u32 numEntitiesInSlices);
-    void SaveSlice(const bool& QuickPushToFirstLevel);
-    void GetEntitiesInSlices(const AzToolsFramework::EntityIdList& selectedEntities, AZ::u32& entitiesInSlices, AZStd::vector<AZ::SliceComponent::SliceInstanceAddress>& sliceInstances);
-
     void GoToEntitiesInViewports(const AzToolsFramework::EntityIdList& entityIds);
-
     bool CanGoToEntityOrChildren(const AZ::EntityId& entityId) const;
-
-    // This struct exists to help handle the error case where slice assets are 
-    // accidentally deleted from disk but their instances are still in the editing level.
-    struct SliceAssetDeletionErrorInfo
-    {
-        SliceAssetDeletionErrorInfo() = default;
-
-        SliceAssetDeletionErrorInfo(AZ::Data::AssetId assetId, AZStd::vector<AZStd::pair<AZ::EntityId, AZ::SliceComponent::EntityRestoreInfo>>&& entityRestoreInfos) 
-            : m_assetId(assetId)
-            , m_entityRestoreInfos(AZStd::move(entityRestoreInfos))
-        { }
-
-        AZ::Data::AssetId m_assetId;
-        AZStd::vector<AZStd::pair<AZ::EntityId, AZ::SliceComponent::EntityRestoreInfo>> m_entityRestoreInfos;
-    };
 
 private:
     EditorContextMenuHandler m_contextMenuBottomHandler;
@@ -287,28 +204,14 @@ private:
 
     short m_startedUndoRecordingNestingLevel; //!< Used in OnBegin/EndUndo to ensure we only accept undos we started recording
 
-    AzToolsFramework::SliceOverridesNotificationWindowManager* m_notificationWindowManager;
-
-    DisplayContext* m_dc;
-
-    AZStd::vector<SliceAssetDeletionErrorInfo> m_sliceAssetDeletionErrorRestoreInfos;
-
-    // Tracks new entities that have not yet been saved.
-    AZStd::unordered_set<AZ::EntityId> m_unsavedEntities;
-
     const AZStd::string m_defaultComponentIconLocation = "Icons/Components/Component_Placeholder.svg";
     const AZStd::string m_defaultComponentViewportIconLocation = "Icons/Components/Viewport/Component_Placeholder.svg";
     const AZStd::string m_defaultEntityIconLocation = "Icons/Components/Viewport/Transform.svg";
 
-    AzToolsFramework::Prefab::PrefabIntegrationManager* m_prefabIntegrationManager = nullptr;
-
-    AzToolsFramework::EditorEntityUiInterface* m_editorEntityUiInterface = nullptr;
-    AzToolsFramework::Prefab::PrefabIntegrationInterface* m_prefabIntegrationInterface = nullptr;
     AzToolsFramework::EditorEntityAPI* m_editorEntityAPI = nullptr;
+    AzToolsFramework::Prefab::PrefabIntegrationManager* m_prefabIntegrationManager = nullptr;
+    AzToolsFramework::Prefab::PrefabIntegrationInterface* m_prefabIntegrationInterface = nullptr;
     AzToolsFramework::ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
-
-    // Overrides UI styling and behavior for Layer Entities
-    AzToolsFramework::LayerUiHandler m_layerUiOverrideHandler;
 };
 
 //////////////////////////////////////////////////////////////////////////

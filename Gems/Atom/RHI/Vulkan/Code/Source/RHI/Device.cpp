@@ -144,8 +144,6 @@ namespace AZ
             AZStd::vector<VkDeviceQueueCreateInfo> queueCreationInfo;
             VkDeviceQueueCreateInfo queueCreateInfo = {};
             queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-            queueCreateInfo.pNext = nullptr;
-            queueCreateInfo.flags = 0;
 
             for (size_t familyIndex = 0; familyIndex < m_queueFamilyProperties.size(); ++familyIndex)
             {
@@ -171,6 +169,7 @@ namespace AZ
 
             // unbounded array functionality
             VkPhysicalDeviceDescriptorIndexingFeaturesEXT descriptorIndexingFeatures = {};
+            VkBaseOutStructure& chainInit = reinterpret_cast<VkBaseOutStructure&>(descriptorIndexingFeatures);
             descriptorIndexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT;
             const VkPhysicalDeviceDescriptorIndexingFeaturesEXT& physicalDeviceDescriptorIndexingFeatures =
                 physicalDevice.GetPhysicalDeviceDescriptorIndexingFeatures();
@@ -195,46 +194,54 @@ namespace AZ
                 physicalDeviceDescriptorIndexingFeatures.descriptorBindingStorageBufferUpdateAfterBind;
 
             auto bufferDeviceAddressFeatures = physicalDevice.GetPhysicalDeviceBufferDeviceAddressFeatures();
-            descriptorIndexingFeatures.pNext = &bufferDeviceAddressFeatures;
-
-            auto depthClipEnabled = physicalDevice.GetPhysicalDeviceDepthClipEnableFeatures();
-            bufferDeviceAddressFeatures.pNext = &depthClipEnabled;
-
-            auto fragmenDensityMapFeatures = physicalDevice.GetPhysicalDeviceFragmentDensityMapFeatures();
-            depthClipEnabled.pNext = &fragmenDensityMapFeatures;
-
-            auto fragmenShadingRateFeatures = physicalDevice.GetPhysicalDeviceFragmentShadingRateFeatures();
-            fragmenDensityMapFeatures.pNext = &fragmenShadingRateFeatures;
-
-            if (fragmenShadingRateFeatures.attachmentFragmentShadingRate)
-            {
-                // Must disable the "fragmentDensityMap" usage if "attachmentFragmentShadingRate" is enabled.
-                physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::FragmentDensityMap);
-                fragmenDensityMapFeatures.fragmentDensityMap = false;
-            }
-            else if (fragmenDensityMapFeatures.fragmentDensityMap)
-            {
-                // Must disable the "pipelineFragmentShadingRate" and "primitiveFragmentShadingRate" usage if "fragmentDensityMap" is enabled.
-                physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::FragmentShadingRate);
-                fragmenShadingRateFeatures.pipelineFragmentShadingRate = false;
-                fragmenShadingRateFeatures.primitiveFragmentShadingRate = false;
-            }
+            auto depthClipEnabled = physicalDevice.GetPhysicalDeviceDepthClipEnableFeatures();            
+            auto rayQueryFeatures = physicalDevice.GetRayQueryFeatures();            
+            auto shaderImageAtomicInt64 = physicalDevice.GetShaderImageAtomicInt64Features();            
 
             VkPhysicalDeviceRobustness2FeaturesEXT robustness2 = {};
             robustness2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
             robustness2.nullDescriptor = physicalDevice.GetPhysicalDeviceRobutness2Features().nullDescriptor;
-            fragmenShadingRateFeatures.pNext = &robustness2;
 
-            VkPhysicalDeviceRayQueryFeaturesKHR rayQueryFeatures = physicalDevice.GetRayQueryFeatures();
-            robustness2.pNext = &rayQueryFeatures;
+            bufferDeviceAddressFeatures.pNext = nullptr;
+            depthClipEnabled.pNext = nullptr;
+            rayQueryFeatures.pNext = nullptr;
+            shaderImageAtomicInt64.pNext = nullptr;
+            robustness2.pNext = nullptr;
 
-            VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT shaderImageAtomicInt64 = physicalDevice.GetShaderImageAtomicInt64Features();
-            rayQueryFeatures.pNext = &shaderImageAtomicInt64;
+            AppendVkStruct(
+                chainInit,
+                {
+                    &bufferDeviceAddressFeatures,
+                    &depthClipEnabled,
+                    &rayQueryFeatures,
+                    &shaderImageAtomicInt64,
+                    &robustness2
+                });
+
+            auto fragmenDensityMapFeatures = physicalDevice.GetPhysicalDeviceFragmentDensityMapFeatures();
+            auto fragmenShadingRateFeatures = physicalDevice.GetPhysicalDeviceFragmentShadingRateFeatures();
+
+            if (fragmenShadingRateFeatures.attachmentFragmentShadingRate)
+            {
+                // Must disable the "FragmentDensityMap" usage if "attachmentFragmentShadingRate" is enabled.
+                physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::FragmentDensityMap);
+                fragmenShadingRateFeatures.pNext = nullptr;
+                AppendVkStruct(chainInit, &fragmenShadingRateFeatures);
+            }
+            else if (fragmenDensityMapFeatures.fragmentDensityMap)
+            {
+                // Must disable the "FragmentShadingRate" usage if "fragmentDensityMap" is enabled.
+                physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::FragmentShadingRate);
+                fragmenDensityMapFeatures.pNext = nullptr;
+                AppendVkStruct(chainInit, &fragmenDensityMapFeatures);
+            }
 
             VkPhysicalDeviceVulkan12Features vulkan12Features = {};
             VkPhysicalDeviceShaderFloat16Int8FeaturesKHR float16Int8 = {};
             VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR separateDepthStencil = {};
             VkPhysicalDeviceShaderAtomicInt64Features shaderAtomicInt64 = {};
+            VkPhysicalDeviceAccelerationStructureFeaturesKHR accelerationStructureFeatures = {};
+            VkPhysicalDeviceRayTracingPipelineFeaturesKHR rayTracingPipelineFeatures = {};
 
             VkDeviceCreateInfo deviceInfo = {};
             deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -264,7 +271,19 @@ namespace AZ
                 vulkan12Features.descriptorBindingStorageBufferUpdateAfterBind = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorBindingStorageBufferUpdateAfterBind;
                 vulkan12Features.descriptorBindingPartiallyBound = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorBindingPartiallyBound;
                 vulkan12Features.descriptorBindingUpdateUnusedWhilePending = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorBindingUpdateUnusedWhilePending;
-                shaderImageAtomicInt64.pNext = &vulkan12Features;
+                vulkan12Features.shaderOutputViewportIndex = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderOutputViewportIndex;
+                vulkan12Features.shaderOutputLayer = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderOutputLayer;
+                vulkan12Features.timelineSemaphore = physicalDevice.GetPhysicalDeviceVulkan12Features().timelineSemaphore;
+
+                accelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+                accelerationStructureFeatures.accelerationStructure = physicalDevice.GetPhysicalDeviceAccelerationStructureFeatures().accelerationStructure;
+
+                rayTracingPipelineFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+                rayTracingPipelineFeatures.rayTracingPipeline = physicalDevice.GetPhysicalDeviceRayTracingPipelineFeatures().rayTracingPipeline;
+                rayTracingPipelineFeatures.rayTracingPipelineTraceRaysIndirect = physicalDevice.GetPhysicalDeviceRayTracingPipelineFeatures().rayTracingPipelineTraceRaysIndirect;
+
+                AppendVkStruct(chainInit, { &vulkan12Features, &accelerationStructureFeatures, &rayTracingPipelineFeatures });
+                // Do not start from the chainInit, but from the depthClipEnabled struct
                 deviceInfo.pNext = &depthClipEnabled;
             }
             else
@@ -274,15 +293,13 @@ namespace AZ
 
                 separateDepthStencil.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES;
                 separateDepthStencil.separateDepthStencilLayouts = physicalDevice.GetPhysicalDeviceSeparateDepthStencilFeatures().separateDepthStencilLayouts;
-                float16Int8.pNext = &separateDepthStencil;
 
                 shaderAtomicInt64.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_INT64_FEATURES;
                 shaderAtomicInt64.shaderBufferInt64Atomics = physicalDevice.GetShaderAtomicInt64Features().shaderBufferInt64Atomics;
                 shaderAtomicInt64.shaderSharedInt64Atomics = physicalDevice.GetShaderAtomicInt64Features().shaderSharedInt64Atomics;
-                separateDepthStencil.pNext = &shaderAtomicInt64;
 
-                shaderImageAtomicInt64.pNext = &float16Int8;
-                deviceInfo.pNext = &descriptorIndexingFeatures;
+                AppendVkStruct(chainInit, { &float16Int8, &separateDepthStencil, &shaderAtomicInt64 });
+                deviceInfo.pNext = &chainInit;
             }
 
 #if defined(USE_NSIGHT_AFTERMATH)
@@ -301,22 +318,6 @@ namespace AZ
             aftermathInfo.pNext = deviceInfo.pNext;
             deviceInfo.pNext = &aftermathInfo;
 #endif
-
-            // set raytracing features if we are running Vulkan >= 1.2
-            VkPhysicalDeviceAccelerationStructureFeaturesKHR accelerationStructureFeatures = {};
-            VkPhysicalDeviceRayTracingPipelineFeaturesKHR rayTracingPipelineFeatures = {};
-
-            if (majorVersion >= 1 && minorVersion >= 2)
-            {
-                accelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
-                accelerationStructureFeatures.accelerationStructure = physicalDevice.GetPhysicalDeviceAccelerationStructureFeatures().accelerationStructure;
-                vulkan12Features.pNext = &accelerationStructureFeatures;
-
-                rayTracingPipelineFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
-                rayTracingPipelineFeatures.rayTracingPipeline = physicalDevice.GetPhysicalDeviceRayTracingPipelineFeatures().rayTracingPipeline;
-                rayTracingPipelineFeatures.rayTracingPipelineTraceRaysIndirect = physicalDevice.GetPhysicalDeviceRayTracingPipelineFeatures().rayTracingPipelineTraceRaysIndirect;
-                accelerationStructureFeatures.pNext = &rayTracingPipelineFeatures;
-            }
 
             deviceInfo.flags = 0;
             deviceInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreationInfo.size());
@@ -1063,7 +1064,6 @@ namespace AZ
 
         void Device::InitFeaturesAndLimits(const PhysicalDevice& physicalDevice)
         {
-            m_features.m_tessellationShader = (m_enabledDeviceFeatures.tessellationShader == VK_TRUE);
             m_features.m_geometryShader = (m_enabledDeviceFeatures.geometryShader == VK_TRUE);
             m_features.m_computeShader = true;
             m_features.m_independentBlend = (m_enabledDeviceFeatures.independentBlend == VK_TRUE);
@@ -1185,6 +1185,8 @@ namespace AZ
                 }
             }
             m_features.m_swapchainScalingFlags = AZ_TRAIT_ATOM_VULKAN_SWAPCHAIN_SCALING_FLAGS;
+
+            m_features.m_signalFenceFromCPU = physicalDevice.GetPhysicalDeviceTimelineSemaphoreFeatures().timelineSemaphore;
 
             const auto& deviceLimits = physicalDevice.GetDeviceLimits();
             m_limits.m_maxImageDimension1D = deviceLimits.maxImageDimension1D;

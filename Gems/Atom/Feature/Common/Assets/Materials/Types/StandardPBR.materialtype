@@ -56,6 +56,9 @@
             },
             { 
                 "$import": "MaterialInputs/GeneralCommonPropertyGroup.json"
+            },
+            {
+                "$import": "MaterialInputs/SilhouetteBlockerPropertyGroup.json"
             }
         ]
     },

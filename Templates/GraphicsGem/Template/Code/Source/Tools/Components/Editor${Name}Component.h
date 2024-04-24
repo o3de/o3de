@@ -43,10 +43,6 @@ namespace ${Name}
         void Activate() override;
         void Deactivate() override;
 
-    protected:
-
-        void OnEntityVisibilityChanged(bool visibility) override;
-
     private:
 
         // AZ::TickBus overrides

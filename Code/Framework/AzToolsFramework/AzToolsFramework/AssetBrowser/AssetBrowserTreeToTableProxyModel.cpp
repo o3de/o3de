@@ -14,6 +14,10 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
+        // the table is a hash and needs to eventually store the entire asset tree
+        // start with a good amount reserved so it doesn't incur crazy re-hashing as it grows.
+        static constexpr const int INITIAL_TABLE_RESERVE_SIZE = 1024 * 8; 
+
         ConstTableIterator IndexToMap::TableConstBegin() const
         {
             return m_tableToTree.constBegin();
@@ -71,19 +75,50 @@ namespace AzToolsFramework
             return m_tableToTree.remove(row) != 0;
         }
 
-        TreeIterator IndexToMap::Insert(TableType map, TreeType row)
+        void IndexToMap::Reserve(TableMap::size_type size)
         {
-            if (m_treeToTable.contains(map))
+            m_treeToTable.reserve(size);
+        }
+
+        void IndexToMap::Insert(TableType map, TreeType row)
+        {
+            // m_treeToTable maps from ModelIndex to int
+            // m_tableToTree maps from int to ModelIndex
+
+            // we have to erase from both maps before we update them.
+            // avoid using "Remove" on the hash, as that causes a re-hash.  Strategy here
+            // will be to update the value if we find it, and erase the value in the other container.
+            // this will yield the minimum amount of re-hashing and memory clearing.
+            bool insertIntoTableToTree = true;
+            bool insertIntoTreeToTable = true;
+            if (auto it = m_treeToTable.find(map); it != m_treeToTable.end())
             {
-                m_tableToTree.remove(m_treeToTable.take(map));
-            }
-            if (m_tableToTree.contains(row))
-            {
-                m_treeToTable.remove(m_tableToTree.take(row));
+                int& currentValue = it.value();
+                auto elementInOtherMap = m_tableToTree.find(currentValue);
+                m_tableToTree.erase(elementInOtherMap);
+                currentValue = row;
+                insertIntoTreeToTable = false;
             }
 
-            m_tableToTree.insert(row, map);
-            return m_treeToTable.insert(map, row);
+            if (auto it = m_tableToTree.find(row); it != m_tableToTree.end())
+            {
+                QPersistentModelIndex& currentValue = it.value();
+                auto elementInOtherMap = m_treeToTable.find(currentValue);
+                m_treeToTable.erase(elementInOtherMap);
+                currentValue = map;
+                insertIntoTableToTree = false;
+            }
+            
+            if (insertIntoTableToTree)
+            {
+                m_tableToTree.insert(row, map);
+            }
+
+            if (insertIntoTreeToTable)
+            {
+                m_treeToTable.insert(map, row);
+            }
+            
         }
 
         TableIterator IndexToMap::TableBegin()
@@ -100,6 +135,7 @@ namespace AzToolsFramework
         AssetBrowserTreeToTableProxyModel::AssetBrowserTreeToTableProxyModel(QObject* parent)
             : QAbstractProxyModel(parent)
         {
+            m_map.Reserve(INITIAL_TABLE_RESERVE_SIZE);
         }
 
         void AssetBrowserTreeToTableProxyModel::setSourceModel(QAbstractItemModel* model)
@@ -907,6 +943,7 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeToTableProxyModel::ProcessParents()
         {
+            m_map.Reserve(m_parents.size());
             auto sourceModelPtr = sourceModel();
             while (!m_parents.isEmpty())
             {

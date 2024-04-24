@@ -2514,10 +2514,11 @@ namespace EMotionFX
                 {
                     return false;
                 }
+
                 const AZ::Color convertedColor(
-                    MCore::ExtractRed(oldColor)/255.0f,
-                    MCore::ExtractGreen(oldColor)/255.0f,
-                    MCore::ExtractBlue(oldColor)/255.0f,
+                    ((oldColor >> 16) & 0xff)/255.0f,
+                    ((oldColor >> 8)  & 0xff)/255.0f,
+                    (oldColor & 0xff)/255.0f,
                     1.0f
                 );
                 classElement.RemoveElement(vizColorIndex);

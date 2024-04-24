@@ -259,15 +259,10 @@ namespace AzToolsFramework
         {
             auto selectedAssets = m_ui->m_assetBrowserTreeViewWidget->isVisible() ? m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets()
                                                                                   : m_ui->m_assetBrowserListViewWidget->GetSelectedAssets();
-            // exactly one item must be selected, even if multi-select option is disabled, still good practice to check
-            if (selectedAssets.empty())
-            {
-                return false;
-            }
 
             m_selection.GetResults().clear();
-
             AZStd::unordered_set<const AssetBrowserEntry*> entries;
+
             for (auto entry : selectedAssets)
             {
                 m_selection.GetSelectionFilter()->Filter(entries, entry);

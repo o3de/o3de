@@ -26,7 +26,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/Utils/Utils.h>
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Process/ProcessUtils.h>
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
@@ -190,7 +189,10 @@ namespace Multiplayer
         AZ_Assert(m_editor == nullptr, "NotifyRegisterViews occurred twice!");
         m_editor = nullptr;
         AzToolsFramework::EditorRequests::Bus::BroadcastResult(m_editor, &AzToolsFramework::EditorRequests::GetEditor);
-        m_editor->RegisterNotifyListener(this);
+        if(m_editor)
+        {
+            m_editor->RegisterNotifyListener(this);
+        }
     }
 
     void MultiplayerEditorSystemComponent::ResetLevelSendData()
@@ -384,9 +386,7 @@ namespace Multiplayer
         const auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
         if (!prefabEditorEntityOwnershipInterface)
         {
-            bool prefabSystemEnabled = false;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-            AZ_Error("MultiplayerEditor", !prefabSystemEnabled, "PrefabEditorEntityOwnershipInterface unavailable but prefabs are enabled");
+            AZ_Error("MultiplayerEditor", false, "PrefabEditorEntityOwnershipInterface could not find PrefabEditorEntityOwnershipInterface!");
             return;
         }
         
@@ -784,13 +784,8 @@ namespace Multiplayer
                         AZ::EntityId selectedEntityId = selectedEntities.front();
                         bool selectedEntityIsReadOnly = readOnlyEntityPublicInterface->IsReadOnly(selectedEntityId);
                         auto containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
-                        bool prefabSystemEnabled = false;
-                        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                            prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
-                        if (!prefabSystemEnabled ||
-                            (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) &&
-                             !selectedEntityIsReadOnly))
+                        if (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) && !selectedEntityIsReadOnly)
                         {
                             ContextMenu_NewMultiplayerEntity(selectedEntityId, AZ::Vector3::CreateZero());
                         }
@@ -815,14 +810,8 @@ namespace Multiplayer
                         AZ::EntityId selectedEntityId = selectedEntities.front();
                         bool selectedEntityIsReadOnly = readOnlyEntityPublicInterface->IsReadOnly(selectedEntityId);
                         auto containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
-                        bool prefabSystemEnabled = false;
-                        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                            prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
-                        return (
-                            !prefabSystemEnabled ||
-                            (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) &&
-                             !selectedEntityIsReadOnly));
+                        return (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) && !selectedEntityIsReadOnly);
                     }
 
                     return false;

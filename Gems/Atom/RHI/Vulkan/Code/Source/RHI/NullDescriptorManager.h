@@ -28,7 +28,8 @@ namespace AZ
                 // 2d images
                 General2D = 0,
                 ReadOnly2D,
-                Storage2D,  
+                Storage2D,
+                Depth2D,
 
                 // 2d images that are multi-sampled
                 MultiSampleGeneral2D,
@@ -38,10 +39,12 @@ namespace AZ
                 GeneralArray2D,
                 ReadOnlyArray2D,
                 StorageArray2D,
+                DepthArray2D,
 
                 // cube images
                 GeneralCube,
                 ReadOnlyCube,
+                DepthCube,
 
                 // 3d images
                 General3D,
@@ -70,7 +73,7 @@ namespace AZ
 
             //! Returns the null descriptor for image info based on the image type,
             //! access, and if the image is used as storage
-            VkDescriptorImageInfo GetDescriptorImageInfo(RHI::ShaderInputImageType imageType, bool storageImage) const;
+            VkDescriptorImageInfo GetDescriptorImageInfo(RHI::ShaderInputImageType imageType, bool storageImage, bool usesDepthFormat) const;
 
         protected:
             NullDescriptorManager() = default;

@@ -949,18 +949,12 @@ namespace LyShine
         defaultBlendModeState.m_writeMask = uiRenderer->GetBaseState().m_blendStateWriteMask;
         dynamicDraw->SetTarget0BlendState(defaultBlendModeState);
 
-        // First render the render targets, they are sorted so that more deeply nested ones are rendered first.
-        // They only need to be rendered the first time that a render graph is rendered after it has been built.
-        if (m_renderToRenderTargetCount == 0)
-        {
-            // Enable the Rtt passes to draw onto the render targets
-            SetRttPassesEnabled(uiRenderer, true);
-        }
-
         // LYSHINE_ATOM_TODO - It is currently necessary to render to the targets twice. Needs investigation
+        // Note, the rtt pass might not be created when the first time the render is called. So we enable rtt pass in both frames when render the node.
         constexpr int timesToRenderToRenderTargets = 2;
         if (m_renderToRenderTargetCount < timesToRenderToRenderTargets)
         {
+            SetRttPassesEnabled(uiRenderer, true);
             for (RenderNode* renderNode : m_renderTargetRenderNodes)
             {
                 renderNode->Render(uiRenderer, uiRenderer->GetModelViewProjectionMatrix(), dynamicDraw);

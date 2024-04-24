@@ -75,7 +75,7 @@ namespace AZ::RHI
     }
 
     bool MultiDeviceShaderResourceGroupData::SetImageView(
-        ShaderInputImageIndex inputIndex, const MultiDeviceImageView* imageView, uint32_t arrayIndex = 0)
+        ShaderInputImageIndex inputIndex, const MultiDeviceImageView* imageView, uint32_t arrayIndex)
     {
         AZStd::array<const MultiDeviceImageView* const, 1> imageViews = { { imageView } };
         return SetImageViewArray(inputIndex, imageViews, arrayIndex);

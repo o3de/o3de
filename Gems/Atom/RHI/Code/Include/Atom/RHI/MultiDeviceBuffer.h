@@ -50,8 +50,6 @@ namespace AZ::RHI
         //! Shuts down the resource by detaching it from its parent pool.
         void Shutdown() override final;
 
-        void InvalidateViews() override final;
-
         //! Returns true if the ResourceView is in the cache of all single device buffers
         bool IsInResourceCache(const BufferViewDescriptor& bufferViewDescriptor);
 
@@ -86,7 +84,7 @@ namespace AZ::RHI
         //! Return the contained multi-device buffer
         const RHI::MultiDeviceBuffer* GetBuffer() const
         {
-            return m_buffer;
+            return m_buffer.get();
         }
 
         //! Return the contained BufferViewDescriptor
@@ -97,7 +95,7 @@ namespace AZ::RHI
 
         const MultiDeviceResource* GetResource() const override
         {
-            return m_buffer;
+            return m_buffer.get();
         }
 
         const ResourceView* GetDeviceResourceView(int deviceIndex) const override
@@ -106,8 +104,10 @@ namespace AZ::RHI
         }
 
     private:
+        //! Safe-guard access to BufferView cache during parallel access
+        mutable AZStd::mutex m_bufferViewMutex;
         //! A raw pointer to a multi-device buffer
-        const RHI::MultiDeviceBuffer* m_buffer;
+        ConstPtr<RHI::MultiDeviceBuffer> m_buffer;
         //! The corresponding BufferViewDescriptor for this view.
         BufferViewDescriptor m_descriptor;
         //! BufferView cache

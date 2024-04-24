@@ -44,7 +44,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = "Material Type Builder";
-            materialBuilderDescriptor.m_version = 48; // common counter to avoid 'common' intermediate shader files with the same name
+            materialBuilderDescriptor.m_version = 50; // Using ordered map for shader templates to fix unstable assets sub IDs
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialTypeBuilder>();
             materialBuilderDescriptor.m_createJobFunction = AZStd::bind(&MaterialTypeBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -321,16 +321,32 @@ namespace AZ
             }
         }
 
-        AZStd::vector<AZStd::string> MaterialTypeBuilder::PipelineStage::GetMaterialPipelinePaths() const
+        AZStd::set<AZStd::string> MaterialTypeBuilder::PipelineStage::GetMaterialPipelinePaths() const
         {
-            AZStd::vector<AZStd::string> materialPipelines;
+            AZStd::set<AZStd::string> combinedMaterialPipelines;
+
+            auto ResolvePathAndAddToReturnValue = [&](const AZStd::string& path)
+            {
+                AZ::IO::FixedMaxPath pathWithoutAlias;
+                AZ::IO::FileIOBase::GetInstance()->ResolvePath(pathWithoutAlias, AZ::IO::PathView{ path });
+                combinedMaterialPipelines.insert(pathWithoutAlias.StringAsPosix());
+            };
 
             if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
             {
-                settingsRegistry->GetObject(materialPipelines, "/O3DE/Atom/RPI/MaterialPipelineFiles");
+                AZStd::vector<AZStd::string> defaultMaterialPipelines;
+                settingsRegistry->GetObject(defaultMaterialPipelines, "/O3DE/Atom/RPI/MaterialPipelineFiles");
+                AZStd::for_each(defaultMaterialPipelines.begin(), defaultMaterialPipelines.end(), ResolvePathAndAddToReturnValue);
+
+                AZStd::map<AZStd::string, AZStd::vector<AZStd::string>> gemMaterialPipelines;
+                settingsRegistry->GetObject(gemMaterialPipelines, "/O3DE/Atom/RPI/MaterialPipelineFilesByGem");
+                for (const auto& [_ /*gemName*/, gemMaterialPipelinePaths] : gemMaterialPipelines)
+                {
+                    AZStd::for_each(gemMaterialPipelinePaths.begin(), gemMaterialPipelinePaths.end(), ResolvePathAndAddToReturnValue);
+                }
             }
 
-            return materialPipelines;
+            return combinedMaterialPipelines;
         }
 
         AZStd::map<AZ::IO::Path, MaterialPipelineSourceData> MaterialTypeBuilder::PipelineStage::LoadMaterialPipelines() const
@@ -376,7 +392,7 @@ namespace AZ
             AZStd::vector<const AZStd::vector<AZStd::string>*> objectSrgAdditionsFromMaterialPipelines;
 
             // Some shader templates may be reused by multiple pipelines, so first collect a full picture of all the dependencies
-            AZStd::unordered_map<MaterialPipelineSourceData::ShaderTemplate, AZStd::vector<Name/*materialPipielineName*/>> shaderTemplateReferences;
+            AZStd::map<MaterialPipelineSourceData::ShaderTemplate, AZStd::vector<Name/*materialPipielineName*/>> shaderTemplateReferences;
             {
                 bool foundProblems = false;
 

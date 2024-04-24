@@ -7,7 +7,7 @@
             "assetId": {
                 "guid": "{4F3761EF-E279-5FDD-98C3-EF90F924FBAC}"
             },
-            "platformFlags": 3,
+            "platformFlags": 255,
             "pathHint": "lightingpresets/thumbnail.lightingpreset.azasset"
         },
         {
@@ -15,28 +15,28 @@
                 "guid": "{6DE0E9A8-A1C7-5D0F-9407-4E627C1F223C}",
                 "subId": 284780167
             },
-            "platformFlags": 3,
+            "platformFlags": 255,
             "pathHint": "models/sphere.azmodel"
         },
         {
             "assetId": {
                 "guid": "{CF91AE08-8FD5-538B-A5F2-427DFA9D5E1C}"
             },
-            "platformFlags": 3,
+            "platformFlags": 255,
             "pathHint": "materials/basic_grey.azmaterial"
         },
         {
             "assetId": {
                 "guid": "{DCE9A5B2-1907-5A0D-8A96-5ABF608D103B}"
             },
-            "platformFlags": 3,
+            "platformFlags": 255,
             "pathHint": "passes/mainpipeline.pass"
         },
         {
             "assetId": {
                 "guid": "{6B01EDAB-1951-5588-AB7B-DF2F703950D4}"
             },
-            "platformFlags": 3,
+            "platformFlags": 255,
             "pathHint": "passes/smaaconfiguration.azasset"
         }
     ]

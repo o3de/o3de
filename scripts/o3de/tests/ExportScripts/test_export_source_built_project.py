@@ -18,6 +18,8 @@ import o3de.utils as utils
 from o3de import command_utils
 utils.prepend_to_system_path(pathlib.Path(__file__).parent.parent.parent / 'ExportScripts')
 from export_source_built_project import export_standalone_project, export_standalone_parse_args, export_standalone_run_command
+import export_utility as eutil
+
 
 def test_should_fail_immediately_for_installer_mono_build_with_no_artifacts(tmp_path):
     test_project_name = "TestProject"
@@ -291,13 +293,10 @@ def test_asset_bundler_combinations(tmp_path, is_engine_centric, use_sdk, has_mo
                     if not selected_asset_bundling_path.is_absolute():
                         selected_asset_bundling_path = test_o3de_base_path / selected_asset_bundling_path
 
-                    mock_get_asset_bundler_path.assert_called_once_with(tools_build_path=selected_tools_build_path,
-                                                                    using_installer_sdk=use_sdk,
-                                                                    tool_config='profile',
-                                                                    required=True)
+                    mock_get_asset_bundler_path.assert_not_called()
                     
                     mock_bundle_assets.assert_called_once_with(ctx=mock_ctx,
-                                                            selected_platform=mock_platform,
+                                                            selected_platforms=[mock_platform],
                                                             seedlist_paths=[],
                                                             seedfile_paths=[],
                                                             tools_build_path=selected_tools_build_path,
@@ -309,6 +308,7 @@ def test_asset_bundler_combinations(tmp_path, is_engine_centric, use_sdk, has_mo
 
                 mock_get_asset_bundler_path.reset_mock()
                 mock_bundle_assets.reset_mock()
+
 
 @pytest.mark.parametrize("test_seedlists, test_seedfiles, test_levelnames",[
     pytest.param([],[],[]),
@@ -349,6 +349,7 @@ def test_asset_bundler_seed_combinations(tmp_path, test_seedlists, test_seedfile
          patch('o3de.export_project.build_assets') as mock_build_assets,\
          patch('o3de.export_project.get_asset_bundler_batch_path') as mock_get_asset_bundler_path,\
          patch('o3de.export_project.bundle_assets') as mock_bundle_assets,\
+         patch('pathlib.Path.is_file'),\
          patch('o3de.export_project.setup_launcher_layout_directory') as mock_setup_launcher_layout_directory:
         
         mock_ctx = create_autospec(O3DEScriptExportContext)
@@ -371,17 +372,20 @@ def test_asset_bundler_seed_combinations(tmp_path, test_seedlists, test_seedfile
         for ln in test_levelnames:
             combined_seedfiles.append(test_project_path / f'Cache/{mock_platform}/levels' / ln.lower() / (ln.lower() + ".spawnable"))
         
-        mock_bundle_assets.assert_called_once_with(ctx=mock_ctx,
-                                              selected_platform=mock_platform,
-                                              seedlist_paths=test_seedlists,
-                                              seedfile_paths=combined_seedfiles,
-                                              tools_build_path=test_tools_sdk_path,
-                                              engine_centric=False,
-                                              asset_bundling_path=test_o3de_base_path / 'build/asset_bundling',
-                                              using_installer_sdk=True,
-                                              tool_config='profile',
-                                              max_bundle_size=2048)
+        _, kwargs = mock_bundle_assets.call_args
+
         
+        assert kwargs['ctx'] == mock_ctx
+        assert kwargs['selected_platforms'] == [mock_platform]
+        assert sorted(kwargs['seedlist_paths']) == sorted(test_seedlists)
+        assert sorted(kwargs['seedfile_paths']) == sorted(combined_seedfiles)
+        assert kwargs['tools_build_path'] == test_tools_sdk_path
+        assert kwargs['engine_centric'] == False
+        assert kwargs['asset_bundling_path'] == test_o3de_base_path / 'build/asset_bundling'
+        assert kwargs['using_installer_sdk'] == True
+        assert kwargs['tool_config'] == 'profile'
+        assert kwargs['max_bundle_size'] == 2048
+
 
 @pytest.mark.parametrize("is_engine_centric, use_sdk, has_monolithic, use_monolithic", [
     pytest.param(False, True, True, True),
@@ -493,6 +497,7 @@ def test_asset_processor_combinations(tmp_path, is_engine_centric, use_sdk, has_
                                                             fail_on_ap_errors=False,
                                                             using_installer_sdk=use_sdk,
                                                             tool_config='profile',
+                                                            selected_platforms=[mock_platform],
                                                             logger=mock_logger)
 
                 mock_get_asset_processor_path.reset_mock()
@@ -534,10 +539,12 @@ def test_asset_processor_combinations(tmp_path, is_engine_centric, use_sdk, has_
 
 from itertools import chain, combinations
 
+
 # helper function for generating launcher combinations
 def launcher_powerset_indices():
     s = list([1,2,3,4])
     return list(chain.from_iterable(combinations(s, r) for r in range(len(s) +  1))) 
+
 
 @pytest.mark.parametrize("is_engine_centric, use_sdk, has_monolithic, use_monolithic", [
     pytest.param(False, True, True, True),
@@ -587,7 +594,6 @@ def test_build_game_targets_combinations(tmp_path, is_engine_centric, use_sdk, h
          patch('o3de.export_project.setup_launcher_layout_directory') as mock_setup_launcher_layout_directory,\
          patch('logging.getLogger', return_value=mock_logger) as mock_get_logger:
         
-
         mock_ctx = create_autospec(O3DEScriptExportContext)
         mock_ctx.project_path = test_project_path
         mock_ctx.engine_path = test_engine_path
@@ -688,6 +694,7 @@ def test_build_game_targets_combinations(tmp_path, is_engine_centric, use_sdk, h
                                                                             monolithic_build=use_monolithic,
                                                                             logger=mock_logger)
                     mock_build_game_targets.reset_mock()
+
 
 @pytest.mark.parametrize("is_engine_centric, use_sdk, has_monolithic, use_monolithic", [
     pytest.param(False, True, True, True),
@@ -878,78 +885,12 @@ def test_setup_launcher_layout_directory(tmp_path, is_engine_centric, use_sdk, h
                     mock_setup_launcher_layout_directory.reset_mock()
 
 
-#helper to generate settings file
-def create_dummy_commands_settings_file(build_config='profile', tool_config='profile', archive_format='none',
-                                        build_assets=False, fail_asset_errors=False, build_tools=False,
-                                        tools_path='build/tools', launcher_path='build/launcher', android_path='build/game_android',
-                                        build_ios='build/game_ios', allow_reg_overrides=False,
-                                        asset_bundle_path='build/asset_bundling', max_size=2048,
-                                        build_game_launcher=True, build_server_launcher=True, build_headless_server_launcher=True, build_unified_launcher=True,
-                                        engine_centric = False, monolithic=False):
-    return  f"""
-[export_project]
-project.build.config = {build_config}
-tool.build.config = {tool_config}
-archive.output.format = {archive_format}
-option.build.assets = {str(build_assets)}
-option.fail.on.asset.errors = {str(fail_asset_errors)}
-seedlist.paths = 
-seedfile.paths = 
-default.level.names = 
-additional.game.project.file.pattern.to.copy = 
-additional.server.project.file.pattern.to.copy = 
-additional.project.file.pattern.to.copy = 
-option.build.tools = {str(build_tools)}
-default.build.tools.path = {tools_path}
-default.launcher.build.path = {launcher_path}
-default.android.build.path = {android_path}
-default.ios.build.path = {build_ios}
-option.allow.registry.overrides = {str(allow_reg_overrides)}
-asset.bundling.path = {asset_bundle_path}
-max.size = {max_size}
-option.build.game.launcher = {str(build_game_launcher)}
-option.build.server.launcher = {str(build_server_launcher)}
-option.build.headless.server.launcher = {str(build_headless_server_launcher)}
-option.build.unified.launcher = {str(build_unified_launcher)}
-option.engine.centric = {str(engine_centric)}
-option.build.monolithic = {str(monolithic)}
-
-[android]
-platform.sdk.api = 31
-ndk.version = 25.*
-android.gradle.plugin = 8.1.0
-gradle.jvmargs = 
-
-"""
-
+from export_test_utility import create_dummy_commands_settings_file, setup_local_export_config_test
 import o3de.export_project as exp
 from itertools import product
 
-def setup_local_export_config_test(tmpdir, **command_settings_kwargs):
-    tmpdir.ensure('.o3de', dir=True)
-
-    test_project_name = "TestProject"
-    test_project_path = tmpdir/ 'O3DE' / "project"
-    test_engine_path = tmpdir/ 'O3DE' / "engine"
-
-    dummy_project_file = test_project_path / 'project.json'
-    dummy_project_file.ensure()
-    with dummy_project_file.open('w') as dpf:
-        dpf.write("""
-{
-    "project_name": "TestProject",
-    "project_id": "{11111111-1111-AAAA-AA11-111111111111}"
-}
-""")
-
-    dummy_commands_file = tmpdir / '.o3de' / '.command_settings'
-    with dummy_commands_file.open('w') as dcf:
-        dcf.write(create_dummy_commands_settings_file(**command_settings_kwargs))
-    
-    return test_project_name, test_project_path, test_engine_path
 
 def test_export_standalone_parse_args_should_require_output(tmpdir):
-    
     # Test Data
     test_project_name, test_project_path, test_engine_path = setup_local_export_config_test(tmpdir)
 
@@ -985,6 +926,7 @@ def test_export_standalone_parse_args_should_require_output(tmpdir):
 
         export_standalone_parse_args(mock_ctx, test_export_config)
 
+
 @pytest.mark.parametrize('dum_fail_asset_err', [True, False])
 @pytest.mark.parametrize('dum_build_tools', [True, False])
 @pytest.mark.parametrize('dum_build_assets', [True, False])
@@ -1001,6 +943,7 @@ def test_export_standalone_exhaustive(tmpdir, dum_fail_asset_err, dum_build_tool
     test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, dum_build_assets,
                                                      dum_build_game, dum_build_server, dum_build_headless_server, dum_build_unified,
                                                      dum_engine_centric, dum_monolithic, dum_reg_override)
+
 
 @pytest.mark.parametrize("dum_fail_asset_err, dum_build_tools, dum_build_assets,dum_build_game, dum_build_server, dum_build_headless_server, dum_build_unified,dum_engine_centric, dum_monolithic, dum_reg_override",[])
 def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, dum_build_assets,
@@ -1271,6 +1214,7 @@ def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, d
                                     monolithic_build=check_mono,
                                     logger=mock_logger)
                     mock_export_func.reset_mock()
+
 
 @pytest.mark.parametrize("seedlists, seedfiles, levelnames, gamefile_patterns, serverfile_patterns, project_patterns",[
     pytest.param([],[],[], [], [], []),

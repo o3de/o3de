@@ -10,6 +10,12 @@
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI/DeviceObject.h>
 
+// Predefinition for unit test friend class
+namespace UnitTest
+{
+    struct MultiDeviceDrawPacketData;
+}
+
 #define AZ_RHI_MULTI_DEVICE_OBJECT_GETTER(Type) AZ_FORCE_INLINE Ptr<Type> GetDevice##Type(int deviceIndex) const \
 { \
     return GetDeviceObject<Type>(deviceIndex); \
@@ -23,6 +29,8 @@ namespace AZ::RHI
     //! DeviceMask (1 bit per device).
     class MultiDeviceObject : public Object
     {
+        friend struct UnitTest::MultiDeviceDrawPacketData;
+
     public:
         AZ_RTTI(MultiDeviceObject, "{17D34F71-944C-4AF5-9823-627474C4C0A6}", Object);
         virtual ~MultiDeviceObject() = default;

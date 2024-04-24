@@ -29,6 +29,8 @@ void InitializeLightingData_BasePBR(inout Surface surface, float4 screenPosition
 #endif
 
     lightingData.Init(surface.position, surface.GetSpecularNormal(), surface.roughnessLinear, viewPosition);
+
+    lightingData.lightingChannels = ObjectSrg::m_lightingChannelMask;
     
     // Diffuse and Specular response (used in IBL calculations)
     real3 specularResponse = FresnelSchlickWithRoughness(lightingData.GetSpecularNdotV(), surface.GetSpecularF0(), surface.roughnessLinear);

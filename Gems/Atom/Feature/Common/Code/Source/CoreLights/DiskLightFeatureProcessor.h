@@ -62,6 +62,7 @@ namespace AZ
             void SetUseCachedShadows(LightHandle handle, bool useCachedShadows) override;
             void SetAffectsGI(LightHandle handle, bool affectsGI) override;
             void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) override;
+            void SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask) override;
 
             void SetDiskData(LightHandle handle, const DiskLightData& data) override;
             const DiskLightData& GetDiskData(LightHandle handle) const override;

@@ -1162,19 +1162,6 @@ void MainWindow::OnGotoSelected()
     AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequestBus::Events::GoToSelectedEntitiesInViewports);
 }
 
-void MainWindow::OnGotoSliceRoot()
-{
-    int numViews = GetIEditor()->GetViewManager()->GetViewCount();
-    for (int i = 0; i < numViews; ++i)
-    {
-        CViewport* viewport = GetIEditor()->GetViewManager()->GetView(i);
-        if (viewport)
-        {
-            viewport->CenterOnSliceInstance();
-        }
-    }
-}
-
 // don't want to eat escape as if it were a shortcut, as it would eat it for other windows that also care about escape
 // and are reading it as an event rather.
 void MainWindow::keyPressEvent(QKeyEvent* e)

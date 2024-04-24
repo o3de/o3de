@@ -641,7 +641,7 @@ namespace O3DE::ProjectManager
             projectName = getProjectResult.GetValue().m_displayName;
         }
 
-        const QString pythonPath = GetPythonExecutablePath(engineInfo.m_path);
+        const QString pythonPath = ProjectUtils::GetPythonExecutablePath(engineInfo.m_path);
         const QString apgPath = QString("%1/Code/Tools/Android/ProjectGenerator/main.py").arg(engineInfo.m_path);
 
 

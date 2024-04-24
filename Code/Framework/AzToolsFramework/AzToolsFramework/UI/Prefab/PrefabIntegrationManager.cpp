@@ -20,6 +20,7 @@
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
+#include <AzToolsFramework/API/SettingsRegistryUtils.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h>
@@ -39,7 +40,7 @@
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/Procedural/ProceduralPrefabAsset.h>
-#include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
+#include <AzToolsFramework/Prefab/PrefabSettings.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
 #include <AzToolsFramework/UI/Prefab/ActionManagerIdentifiers/PrefabActionUpdaterIdentifiers.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
@@ -501,7 +502,8 @@ namespace AzToolsFramework
                 AZStd::string actionIdentifier = "o3de.action.prefabs.detach";
                 AzToolsFramework::ActionProperties actionProperties;
                 actionProperties.m_name = "Detach Prefab";
-                actionProperties.m_description = "Creates a prefab out of the currently selected entities.";
+                actionProperties.m_description = "Selected prefab is detached from its prefab file and becomes normal entities instead. "
+                                                 "You can change whether or not this action keeps the container entity in the editor settings panel.";
                 actionProperties.m_category = "Prefabs";
 
                 m_actionManagerInterface->RegisterAction(
@@ -850,6 +852,7 @@ namespace AzToolsFramework
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.closeInstance", 10900);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.create", 20100);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.detach", 20200);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.detach_and_keep_container_entities", 20210);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.instantiate", 20300);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.procedural.instantiate", 20400);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.save", 30100);
@@ -863,6 +866,7 @@ namespace AzToolsFramework
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.closeInstance", 10900);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.create", 20100);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.detach", 20200);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.detach_and_keep_container_entities", 20210);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.instantiate", 20300);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.procedural.instantiate", 20400);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.save", 30100);
@@ -975,20 +979,11 @@ namespace AzToolsFramework
             }
 
             // Check all entities
-            bool containsLayers = false;
             for (const auto& entityId : selectedEntities)
             {
                 if (m_readOnlyEntityPublicInterface->IsReadOnly(entityId))
                 {
                     // Can't create a prefab with read-only entities in it.
-                    return false;
-                }
-
-                AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-                    containsLayers, entityId, &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-                if (containsLayers)
-                {
-                    // Can't create a prefab with layers in it.
                     return false;
                 }
             }
@@ -1304,7 +1299,11 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::ContextMenu_DetachPrefab(AZ::EntityId containerEntity)
         {
-            PrefabOperationResult detachPrefabResult = s_prefabPublicInterface->DetachPrefab(containerEntity);
+            bool shouldRemoveContainer = AzToolsFramework::GetRegistry(Settings::DetachPrefabRemovesContainerName, Settings::DetachPrefabRemovesContainerDefault);
+
+            PrefabOperationResult detachPrefabResult = shouldRemoveContainer ? 
+                       s_prefabPublicInterface->DetachPrefabAndRemoveContainerEntity(containerEntity)
+                    : s_prefabPublicInterface->DetachPrefab(containerEntity);
 
             if (!detachPrefabResult.IsSuccess())
             {

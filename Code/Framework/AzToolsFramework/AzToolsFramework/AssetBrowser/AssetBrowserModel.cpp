@@ -220,22 +220,13 @@ namespace AzToolsFramework
         Qt::ItemFlags AssetBrowserModel::flags(const QModelIndex& index) const
         {
             Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
+
             if (index.isValid())
             {
-                // We can only drop items onto folders so set flags accordingly
-                AssetBrowserEntry* item = static_cast<AssetBrowserEntry*>(index.internalPointer());
-                if (item)
-                {
-                    if (item->RTTI_IsTypeOf(ProductAssetBrowserEntry::RTTI_Type()) || item->RTTI_IsTypeOf(SourceAssetBrowserEntry::RTTI_Type()))
-                    {
-                        return Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
-                    }
-                    if (item->RTTI_IsTypeOf(FolderAssetBrowserEntry::RTTI_Type()))
-                    {
-                        return Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
-                    }
-                }
+                return AssetBrowserViewUtils::GetAssetBrowserEntryCommonItemFlags(
+                    static_cast<AssetBrowserEntry*>(index.internalPointer()), defaultFlags);
             }
+
             return defaultFlags;
         }
         QStringList AssetBrowserModel::mimeTypes() const
@@ -273,7 +264,7 @@ namespace AzToolsFramework
             const AssetBrowserEntry* item = static_cast<const AssetBrowserEntry*>(parent.internalPointer());
 
             // We should only have an item as a folder but will check
-            if (item && (item->RTTI_IsTypeOf(FolderAssetBrowserEntry::RTTI_Type())))
+            if (item && (item->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder))
             {
                 AZStd::vector<const AssetBrowserEntry*> entries;
 
@@ -590,7 +581,7 @@ namespace AzToolsFramework
                 return false;
             }
 
-            if (azrtti_istypeof<RootAssetBrowserEntry*>(entry))
+            if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Root)
             {
                 index = QModelIndex();
                 return true;

@@ -375,7 +375,6 @@ namespace LUAEditor
         entryTypeFilter->SetFilterPropagation(AssetTypeFilter::PropagateDirection::None);
 
         // Add in a string filter that comes from user input
-        // Propagate this up so that if we match a folder, it will show everything under that folder
         StringFilter* stringFilter = new StringFilter();
         stringFilter->SetFilterPropagation(AssetTypeFilter::PropagateDirection::Up);
 

@@ -10,6 +10,12 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
+#ifndef USE_CUSTOM_DRAW_SRG
+#define USE_CUSTOM_DRAW_SRG 0
+#endif
+
+#if USE_CUSTOM_DRAW_SRG
+#else
 ShaderResourceGroup DrawSrg : SRG_PerDraw
 {
     // This SRG is unique per draw packet
@@ -20,4 +26,5 @@ ShaderResourceGroup DrawSrg : SRG_PerDraw
         return (m_uvStreamTangentBitmask >> (4 * uvIndex)) & 0xF;
     }
 }
+#endif
 

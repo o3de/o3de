@@ -15,9 +15,7 @@
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
-#include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
-#include <AzToolsFramework/ToolsComponents/EditorLayerComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
 
@@ -569,27 +567,6 @@ namespace UnitTest
         return entity->GetId();
     }
 
-    AZ::EntityId CreateEditorLayerEntity(const char* name, AZ::Entity** outEntity /*= nullptr*/)
-    {
-        AZ::Entity* entity = nullptr;
-        CreateDefaultEditorEntity(name, &entity);
-
-        auto layer = aznew Layers::EditorLayerComponent();
-        AZ::Entity::ComponentArrayType newComponents{ layer };
-
-        EntityCompositionRequests::AddExistingComponentsOutcome componentAddResult;
-        EntityCompositionRequestBus::BroadcastResult(
-            componentAddResult, &EntityCompositionRequests::AddExistingComponentsToEntityById,
-            entity->GetId(), newComponents);
-
-        if (outEntity)
-        {
-            *outEntity = entity;
-        }
-
-        return entity->GetId();
-    }
-
     AZ::Data::AssetId SaveAsSlice(
         AZStd::vector<AZ::Entity*> entities, AzToolsFramework::ToolsApplication* toolsApplication,
         SliceAssets& inoutSliceAssets)
@@ -614,42 +591,6 @@ namespace UnitTest
         inoutSliceAssets.emplace(assetId, sliceAssetHolder);
 
         return assetId;
-    }
-
-    AZ::SliceComponent::EntityList InstantiateSlice(
-        AZ::Data::AssetId sliceAssetId, const SliceAssets& sliceAssets)
-    {
-        auto foundItr = sliceAssets.find(sliceAssetId);
-        AZ_Assert(foundItr != sliceAssets.end(), "sliceAssetId not in sliceAssets");
-
-        AZ::SliceComponent* rootSlice;
-        AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::BroadcastResult(
-            rootSlice, &AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Events::GetEditorRootSlice);
-        AZ::SliceComponent::SliceInstanceAddress sliceInstAddress = rootSlice->AddSlice(foundItr->second);
-        rootSlice->Instantiate();
-
-        const AZ::SliceComponent::InstantiatedContainer* instanceContainer =
-            sliceInstAddress.GetInstance()->GetInstantiated();
-
-        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-            &AzToolsFramework::EditorEntityContextRequestBus::Events::HandleEntitiesAdded,
-            instanceContainer->m_entities);
-
-        return instanceContainer->m_entities;
-    }
-
-    void DestroySlices(SliceAssets& sliceAssets)
-    {
-        AZ::SliceComponent* rootSlice = nullptr;
-        AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::BroadcastResult(
-            rootSlice, &AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Events::GetEditorRootSlice);
-
-        for (const auto& sliceAssetPair : sliceAssets)
-        {
-            rootSlice->RemoveSlice(sliceAssetPair.second);
-        }
-
-        sliceAssets.clear();
     }
 
     const AZStd::unordered_map<AzToolsFramework::ViewportUi::ClusterId, AZStd::shared_ptr<ViewportUiManagerTestable::ButtonGroup>>&

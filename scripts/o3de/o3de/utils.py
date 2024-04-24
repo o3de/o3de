@@ -287,15 +287,31 @@ def sanitize_identifier_for_cpp(identifier: str) -> str:
     :param identifier: the name which needs to be sanitized
     :return: str: sanitized identifier
     """
+    cpp_keywords = [
+        'alignas', 'constinit', 'false', 'public', 'true', 'alignof', 'const_cast', 'float', 'register',
+        'try', 'asm', 'continue', 'for', 'reinterpret_cast', 'typedef', 'auto', 'co_await', 'friend',
+        'requires', 'typeid', 'bool', 'co_return', 'goto', 'return', 'typename', 'break', 'co_yield',
+        'if', 'short', 'union', 'case', 'decltype', 'inline', 'signed', 'unsigned', 'catch', 'default',
+        'int', 'sizeof', 'using', 'char', 'delete', 'long', 'static', 'virtual', 'char8_t', 'do', 'mutable',
+        'static_assert', 'void', 'char16_t', 'double', 'namespace', 'static_cast', 'volatile', 'char32_t',
+        'dynamic_cast', 'new', 'struct', 'wchar_t', 'class', 'else', 'noexcept', 'switch', 'while', 'concept',
+        'enum', 'nullptr', 'template', 'const', 'explicit', 'operator', 'this', 'consteval', 'export', 'private',
+        'thread_local', 'constexpr', 'extern', 'protected', 'throw', 'and', 'and_eq', 'bitand', 'bitor', 'compl',
+        'not', 'not_eq', 'or', 'or_eq', 'xor', 'xor_eq']
+    
     if not identifier:
         return ''
     
-    sanitized_identifier = list(identifier)
-    for index, character in enumerate(sanitized_identifier):
+    identifier_chars = list(identifier)
+    for index, character in enumerate(identifier_chars):
         if not (character.isalnum() or character == '_'):
-            sanitized_identifier[index] = '_'
+            identifier_chars[index] = '_'
             
-    return "".join(sanitized_identifier)
+    sanitized_identifier = "".join(identifier_chars)
+    if sanitized_identifier in cpp_keywords:
+        sanitized_identifier += '_'
+            
+    return sanitized_identifier
 
 
 def validate_uuid4(uuid_string: str) -> bool:

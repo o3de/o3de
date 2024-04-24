@@ -56,7 +56,7 @@
                 // this is an example of a headless platform that has no renderer.
                 // To use this you would still need to make sure 'assetplatform' in your startup params in your main() chooses this 'server' platform as your server 'assets' flavor
                 "Platform server": {
-                    "tags": "server,dx12,vulkan"
+                    "tags": "server,dx12,vulkan,null"
                 },
                 // this section allows you to turn on various platforms in addition to the host platform you're running on
                 // 'enabled' is AUTOMATICALLY TRUE for the current platform that you are running on, so it is not necessary to force it to true for that platform

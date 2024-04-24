@@ -40,6 +40,8 @@
 #include <EMotionFX/Source/Recorder.h>
 #include <EMotionFX/Source/MotionEventTable.h>
 
+#include <AzQtComponents/Utilities/Conversions.h>
+
 namespace EMStudio
 {
     TimeViewPlugin::TimeViewPlugin()
@@ -1224,8 +1226,7 @@ namespace EMStudio
                             }
                             delimiter = ", {";
                         }
-                        uint32 color = GetEventPresetManager()->GetEventColor(motionEvent.GetEventDatas());
-                        QColor qColor = QColor(MCore::ExtractRed(color), MCore::ExtractGreen(color), MCore::ExtractBlue(color));
+                        QColor qColor = AzQtComponents::toQColor(GetEventPresetManager()->GetEventColor(motionEvent.GetEventDatas()));
 
                         element->SetIsVisible(true);
                         element->SetName(text.c_str());

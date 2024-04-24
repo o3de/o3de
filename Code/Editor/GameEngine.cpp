@@ -465,22 +465,6 @@ bool CGameEngine::LoadLevel(
     // directory is wrong
     QDir::setCurrent(GetIEditor()->GetPrimaryCDFolder());
 
-
-    bool usePrefabSystemForLevels = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-    if (!usePrefabSystemForLevels)
-    {
-        QString pakFile = m_levelPath + "/level.pak";
-
-        // Open Pak file for this level.
-        if (!m_pISystem->GetIPak()->OpenPack(m_levelPath.toUtf8().data(), pakFile.toUtf8().data()))
-        {
-            CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, "Level Pack File %s Not Found", pakFile.toUtf8().data());
-        }
-    }
-
     // Audio: notify audio of level loading start?
     GetIEditor()->GetObjectManager()->SendEvent(EVENT_REFRESH);
 

@@ -41,8 +41,5 @@ namespace AZ::RHI
 
         //! Shuts down the device-specific resources by detaching them from their parent pool.
         void Shutdown() override final;
-
-        //! Invalidates all views by setting off events on all device-specific ResourceInvalidateBusses
-        void InvalidateViews() override final;
     };
 } // namespace AZ::RHI

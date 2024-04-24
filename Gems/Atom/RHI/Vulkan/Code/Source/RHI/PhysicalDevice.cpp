@@ -181,6 +181,11 @@ namespace AZ
             return m_bufferDeviceAddressFeatures;
         }
 
+        const VkPhysicalDeviceTimelineSemaphoreFeatures& PhysicalDevice::GetPhysicalDeviceTimelineSemaphoreFeatures() const
+        {
+            return m_timelineSemaphoreFeatures;
+        }
+
         const VkPhysicalDeviceVulkan12Features& PhysicalDevice::GetPhysicalDeviceVulkan12Features() const
         {
             return m_vulkan12Features;
@@ -325,6 +330,7 @@ namespace AZ
                 VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME,
                 VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME,
                 VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME,
+                VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
             } };
 
             [[maybe_unused]] uint32_t optionalExtensionCount = aznumeric_cast<uint32_t>(optionalExtensions.size());
@@ -359,100 +365,62 @@ namespace AZ
 
             if (VK_INSTANCE_EXTENSION_SUPPORTED(context, KHR_get_physical_device_properties2))
             {
-                // features
-                VkPhysicalDeviceDescriptorIndexingFeaturesEXT& descriptorIndexingFeatures = m_descriptorIndexingFeatures;
-                descriptorIndexingFeatures = {};
-                descriptorIndexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT;
-
-                VkPhysicalDeviceBufferDeviceAddressFeaturesEXT& bufferDeviceAddressFeatures = m_bufferDeviceAddressFeatures;
-                bufferDeviceAddressFeatures = {};
-                bufferDeviceAddressFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_EXT;
-                descriptorIndexingFeatures.pNext = &bufferDeviceAddressFeatures;
-
-                VkPhysicalDeviceDepthClipEnableFeaturesEXT& dephClipEnableFeatures = m_dephClipEnableFeatures;
-                dephClipEnableFeatures = {};
-                dephClipEnableFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT;
-                bufferDeviceAddressFeatures.pNext = &dephClipEnableFeatures;
-
-                VkPhysicalDeviceShaderAtomicInt64Features& shaderAtomicInt64Features = m_shaderAtomicInt64Features;
-                shaderAtomicInt64Features = {};
-                shaderAtomicInt64Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_INT64_FEATURES;
-                dephClipEnableFeatures.pNext = &shaderAtomicInt64Features;
-
-                VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT& shaderImageAtomicInt64Features = m_shaderImageAtomicInt64Features;
-                shaderImageAtomicInt64Features = {};
-                shaderImageAtomicInt64Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_ATOMIC_INT64_FEATURES_EXT;
-                shaderAtomicInt64Features.pNext = &shaderImageAtomicInt64Features;
-
-                VkPhysicalDeviceRayQueryFeaturesKHR& rayQueryFeatures = m_rayQueryFeatures;
-                rayQueryFeatures = {};
-                rayQueryFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR;
-                shaderImageAtomicInt64Features.pNext = &rayQueryFeatures;
-
-                VkPhysicalDeviceRobustness2FeaturesEXT& robustness2Feature = m_robutness2Features;
-                robustness2Feature = {};
-                robustness2Feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
-                rayQueryFeatures.pNext = &robustness2Feature;
-
-                VkPhysicalDeviceShaderFloat16Int8FeaturesKHR& float16Int8Features = m_float16Int8Features;
-                float16Int8Features = {};
-                float16Int8Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR;
-                robustness2Feature.pNext = &float16Int8Features;
-
-                VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR& separateDepthStencilFeatures = m_separateDepthStencilFeatures;
-                separateDepthStencilFeatures = {};
-                separateDepthStencilFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES;
-                float16Int8Features.pNext = &separateDepthStencilFeatures;
-
-                VkPhysicalDeviceVulkan12Features& vulkan12Features = m_vulkan12Features;
-                vulkan12Features = {};
-                vulkan12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
-                separateDepthStencilFeatures.pNext = &vulkan12Features;
-
-                VkPhysicalDeviceAccelerationStructureFeaturesKHR& accelerationStructureFeatures = m_accelerationStructureFeatures;
-                accelerationStructureFeatures = {};
-                accelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
-                vulkan12Features.pNext = &accelerationStructureFeatures;
-
-                VkPhysicalDeviceRayTracingPipelineFeaturesKHR& rayTracingPipelineFeatures = m_rayTracingPipelineFeatures;
-                rayTracingPipelineFeatures = {};
-                rayTracingPipelineFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
-                accelerationStructureFeatures.pNext = &rayTracingPipelineFeatures;
-
-                VkPhysicalDeviceFragmentShadingRateFeaturesKHR& shadingRateFeatures = m_shadingRateFeatures;
-                shadingRateFeatures = {};
-                shadingRateFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR;
-                rayTracingPipelineFeatures.pNext = &shadingRateFeatures;
-
-                VkPhysicalDeviceFragmentDensityMapFeaturesEXT& densityMapFeatures = m_fragmentDensityMapFeatures;
-                densityMapFeatures = {};
-                densityMapFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT;
-                shadingRateFeatures.pNext = &densityMapFeatures;
+                // Features
+                m_descriptorIndexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT;
+                m_bufferDeviceAddressFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_EXT;
+                m_dephClipEnableFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT;
+                m_shaderAtomicInt64Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_INT64_FEATURES;
+                m_shaderImageAtomicInt64Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_ATOMIC_INT64_FEATURES_EXT;
+                m_rayQueryFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR;
+                m_robutness2Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
+                m_float16Int8Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR;
+                m_separateDepthStencilFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES;
+                m_vulkan12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+                m_accelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+                m_rayTracingPipelineFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+                m_shadingRateFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR;
+                m_fragmentDensityMapFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT;
+                m_timelineSemaphoreFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES;
 
                 VkPhysicalDeviceFeatures2 deviceFeatures2 = {};
                 deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-                deviceFeatures2.pNext = &descriptorIndexingFeatures;
+                AppendVkStruct(
+                    deviceFeatures2,
+                    { &m_descriptorIndexingFeatures,
+                      &m_bufferDeviceAddressFeatures,
+                      &m_dephClipEnableFeatures,
+                      &m_shaderAtomicInt64Features,
+                      &m_shaderImageAtomicInt64Features,
+                      &m_rayQueryFeatures,
+                      &m_robutness2Features,
+                      &m_float16Int8Features,
+                      &m_separateDepthStencilFeatures,
+                      &m_vulkan12Features,
+                      &m_accelerationStructureFeatures,
+                      &m_rayTracingPipelineFeatures,
+                      &m_shadingRateFeatures,
+                      &m_fragmentDensityMapFeatures,
+                      &m_timelineSemaphoreFeatures });
 
                 context.GetPhysicalDeviceFeatures2KHR(vkPhysicalDevice, &deviceFeatures2);
                 m_deviceFeatures = deviceFeatures2.features;
 
-                // properties
-                VkPhysicalDeviceProperties2 deviceProps2 = {};
+                // Properties
                 m_conservativeRasterProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONSERVATIVE_RASTERIZATION_PROPERTIES_EXT;
-                deviceProps2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
-                deviceProps2.pNext = &m_conservativeRasterProperties;
-
                 m_rayTracingPipelineProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR;
-                m_conservativeRasterProperties.pNext = &m_rayTracingPipelineProperties;
-
                 m_accelerationStructureProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_PROPERTIES_KHR;
-                m_rayTracingPipelineProperties.pNext = &m_accelerationStructureProperties;
-
                 m_fragmentDensityMapProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_PROPERTIES_EXT;
-                m_accelerationStructureProperties.pNext = &m_fragmentDensityMapProperties;
-
                 m_fragmentShadingRateProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR;
-                m_fragmentDensityMapProperties.pNext = &m_fragmentShadingRateProperties;
+                
+                VkPhysicalDeviceProperties2 deviceProps2 = {};
+                deviceProps2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
+                AppendVkStruct(
+                    deviceProps2,
+                    { &m_conservativeRasterProperties,
+                      &m_rayTracingPipelineProperties,
+                      &m_accelerationStructureProperties,
+                      &m_fragmentDensityMapProperties,
+                      &m_fragmentShadingRateProperties });
 
                 context.GetPhysicalDeviceProperties2KHR(vkPhysicalDevice, &deviceProps2);
                 m_deviceProperties = deviceProps2.properties;
