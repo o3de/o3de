@@ -716,7 +716,7 @@ namespace AZ
             if (m_materialInfoBufferNeedsUpdate)
             {
                 m_materialInfoGpuBuffer.AdvanceCurrentElement();
-                m_materialInfoGpuBuffer.CreateOrResizeBufferWithElementCount<MaterialInfo>(
+                m_materialInfoGpuBuffer.CreateOrResizeCurrentBufferWithElementCount<MaterialInfo>(
                     m_subMeshCount + m_proceduralGeometryMaterialInfos.size());
                 m_materialInfoGpuBuffer.UpdateCurrentBufferData(m_materialInfos);
                 m_materialInfoGpuBuffer.UpdateCurrentBufferData(m_proceduralGeometryMaterialInfos, m_materialInfos.size());

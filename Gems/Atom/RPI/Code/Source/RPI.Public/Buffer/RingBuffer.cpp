@@ -6,12 +6,11 @@
  *
  */
 
-#include "RayTracingRingBuffer.h"
+#include <Atom/RPI.Public/Buffer/RingBuffer.h>
 
-namespace AZ::Render
+namespace AZ::RPI
 {
-    RayTracingRingBuffer::RayTracingRingBuffer(
-        const AZStd::string& bufferName, RPI::CommonBufferPoolType bufferPoolType, RHI::Format bufferFormat)
+    RingBuffer::RingBuffer(const AZStd::string& bufferName, CommonBufferPoolType bufferPoolType, RHI::Format bufferFormat)
         : m_bufferName{ bufferName }
         , m_bufferPoolType{ bufferPoolType }
         , m_bufferFormat{ bufferFormat }
@@ -19,48 +18,47 @@ namespace AZ::Render
     {
     }
 
-    RayTracingRingBuffer::RayTracingRingBuffer(
-        const AZStd::string& bufferName, RPI::CommonBufferPoolType bufferPoolType, uint32_t elementSize)
+    RingBuffer::RingBuffer(const AZStd::string& bufferName, CommonBufferPoolType bufferPoolType, uint32_t elementSize)
         : m_bufferName{ bufferName }
         , m_bufferPoolType{ bufferPoolType }
         , m_elementSize{ elementSize }
     {
     }
 
-    bool RayTracingRingBuffer::IsCurrentBufferValid() const
+    bool RingBuffer::IsCurrentBufferValid() const
     {
         return GetCurrentBuffer();
     }
 
-    const Data::Instance<RPI::Buffer>& RayTracingRingBuffer::GetCurrentBuffer() const
+    const Data::Instance<Buffer>& RingBuffer::GetCurrentBuffer() const
     {
         return GetCurrentElement();
     }
 
-    const RHI::BufferView* RayTracingRingBuffer::GetCurrentBufferView() const
+    const RHI::BufferView* RingBuffer::GetCurrentBufferView() const
     {
         return GetCurrentBuffer()->GetBufferView();
     }
 
-    void RayTracingRingBuffer::AdvanceCurrentBufferAndUpdateData(const void* data, u64 dataSizeInBytes)
+    void RingBuffer::AdvanceCurrentBufferAndUpdateData(const void* data, u64 dataSizeInBytes)
     {
         AdvanceCurrentElement();
-        CreateOrResizeBuffer(dataSizeInBytes);
+        CreateOrResizeCurrentBuffer(dataSizeInBytes);
         UpdateCurrentBufferData(data, dataSizeInBytes, 0);
     }
 
-    void RayTracingRingBuffer::CreateOrResizeBuffer(u64 bufferSizeInBytes)
+    void RingBuffer::CreateOrResizeCurrentBuffer(u64 bufferSizeInBytes)
     {
         auto& currentBuffer{ GetCurrentElement() };
         if (!currentBuffer)
         {
-            RPI::CommonBufferDescriptor desc;
+            CommonBufferDescriptor desc;
             desc.m_bufferName = m_bufferName;
             desc.m_poolType = m_bufferPoolType;
             desc.m_elementSize = m_elementSize;
             desc.m_elementFormat = m_bufferFormat;
             desc.m_byteCount = bufferSizeInBytes;
-            currentBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+            currentBuffer = BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
         }
         else if (currentBuffer->GetBufferSize() < bufferSizeInBytes)
         {
@@ -68,9 +66,9 @@ namespace AZ::Render
         }
     }
 
-    void RayTracingRingBuffer::UpdateCurrentBufferData(const void* data, u64 dataSizeInBytes, u64 bufferOffsetInBytes)
+    void RingBuffer::UpdateCurrentBufferData(const void* data, u64 dataSizeInBytes, u64 bufferOffsetInBytes)
     {
         auto& currentBuffer{ GetCurrentBuffer() };
         currentBuffer->UpdateData(data, dataSizeInBytes, bufferOffsetInBytes);
     }
-} // namespace AZ::Render
+} // namespace AZ::RPI

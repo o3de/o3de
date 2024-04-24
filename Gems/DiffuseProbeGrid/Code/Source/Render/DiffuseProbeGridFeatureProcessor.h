@@ -11,8 +11,8 @@
 #include <DiffuseProbeGrid/DiffuseProbeGridFeatureProcessorInterface.h>
 #include <Atom/RHI/RayTracingBufferPools.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
+#include <Atom/RPI.Public/Buffer/RingBuffer.h>
 #include <Atom/RPI.Public/Model/Model.h>
-#include <RayTracing/RayTracingRingBuffer.h>
 #include <Render/DiffuseProbeGrid.h>
 
 namespace AZ
@@ -223,7 +223,7 @@ namespace AZ
             IrradianceQueryVector m_irradianceQueries;
             RHI::BufferViewDescriptor m_queryBufferViewDescriptor;
             RHI::AttachmentId m_queryBufferAttachmentId;
-            RayTracingRingBuffer m_queryBuffer{ "DiffuseQueryBuffer", RPI::CommonBufferPoolType::ReadWrite, sizeof(IrradianceQuery) };
+            RPI::RingBuffer m_queryBuffer{ "DiffuseQueryBuffer", RPI::CommonBufferPoolType::ReadWrite, sizeof(IrradianceQuery) };
 
             // SSR state, for controlling the DiffuseProbeGridQueryPass in the SSR pipeline
             SpecularReflectionsFeatureProcessorInterface* m_specularReflectionsFeatureProcessor = nullptr;

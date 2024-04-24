@@ -15,40 +15,40 @@
 #include <AzCore/std/containers/span.h>
 #include <AzCore/std/string/string.h>
 
-namespace AZ::Render
+namespace AZ::RPI
 {
     //! A class which manages a FrameCountMax number of RPI buffers and manages them in a ring buffer structure, meaning that whenever data
     //! needs to be updated, the current buffer index is incremented (mod FrameCountMax) and the data is then written to the new current
     //! buffer, such that the other buffers stay valid.
-    class RayTracingRingBuffer : public RHI::FrameCountMaxRingBuffer<Data::Instance<RPI::Buffer>>
+    class RingBuffer : public RHI::FrameCountMaxRingBuffer<Data::Instance<Buffer>>
     {
         AZStd::string m_bufferName;
-        RPI::CommonBufferPoolType m_bufferPoolType{ RPI::CommonBufferPoolType::ReadOnly };
+        CommonBufferPoolType m_bufferPoolType{ CommonBufferPoolType::ReadOnly };
         uint32_t m_elementSize{ 1 };
         RHI::Format m_bufferFormat{ RHI::Format::Unknown };
 
     public:
         //! Creates a set of buffers with a name and a format. The element size is derived from the format.
-        RayTracingRingBuffer(const AZStd::string& bufferName, RPI::CommonBufferPoolType bufferPoolType, RHI::Format bufferFormat);
+        RingBuffer(const AZStd::string& bufferName, CommonBufferPoolType bufferPoolType, RHI::Format bufferFormat);
 
         //! Creates a set of buffers with a name and an element size. The format is set to unknown.
-        RayTracingRingBuffer(const AZStd::string& bufferName, RPI::CommonBufferPoolType bufferPoolType, uint32_t elementSize);
+        RingBuffer(const AZStd::string& bufferName, CommonBufferPoolType bufferPoolType, uint32_t elementSize);
 
         //! Returns true if the current buffer was already created and is not empty.
         bool IsCurrentBufferValid() const;
 
         //! Returns the current buffer
-        const Data::Instance<RPI::Buffer>& GetCurrentBuffer() const;
+        const Data::Instance<Buffer>& GetCurrentBuffer() const;
 
         //! Returns a RHI view of the current buffer
         const RHI::BufferView* GetCurrentBufferView() const;
 
         //! Increments the current buffer index, potentially resized the current buffer and updates the data of the current data. This is a
-        //! convenience function which calls AdvanceCurrentBuffer(), CreateOrResizeBuffer(...) and UpdateCurrentBufferData(...)
+        //! convenience function which calls AdvanceCurrentBuffer(), CreateOrResizeCurrentBuffer(...) and UpdateCurrentBufferData(...)
         void AdvanceCurrentBufferAndUpdateData(const void* data, u64 dataSizeInBytes);
 
         //! Increments the current buffer index, potentially resized the current buffer and updates the data of the current data. This is a
-        //! convenience function which calls AdvanceCurrentBuffer(), CreateOrResizeBuffer(...) and UpdateCurrentBufferData(...)
+        //! convenience function which calls AdvanceCurrentBuffer(), CreateOrResizeCurrentBuffer(...) and UpdateCurrentBufferData(...)
         template<typename T>
         void AdvanceCurrentBufferAndUpdateData(AZStd::span<const T> data)
         {
@@ -63,13 +63,13 @@ namespace AZ::Render
         }
 
         //! Creates or resizes the current buffer to fit the given number of bytes.
-        void CreateOrResizeBuffer(u64 bufferSizeInBytes);
+        void CreateOrResizeCurrentBuffer(u64 bufferSizeInBytes);
 
         //! Creates or resizes the current buffer to fit the given number of elements.
         template<typename T>
-        void CreateOrResizeBufferWithElementCount(u64 elementCount)
+        void CreateOrResizeCurrentBufferWithElementCount(u64 elementCount)
         {
-            CreateOrResizeBuffer(elementCount * sizeof(T));
+            CreateOrResizeCurrentBuffer(elementCount * sizeof(T));
         }
 
         //! Updates the data of the current buffer.
@@ -89,4 +89,4 @@ namespace AZ::Render
             UpdateCurrentBufferData<typename T::value_type>(data, bufferElementOffset);
         }
     };
-} // namespace AZ::Render
+} // namespace AZ::RPI

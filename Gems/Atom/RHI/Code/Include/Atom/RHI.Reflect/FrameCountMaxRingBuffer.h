@@ -43,5 +43,11 @@ namespace AZ::RHI
         {
             return m_elements[m_currentElementIndex];
         }
+
+        //! Returns the number of elements that are managed by this class
+        unsigned GetElementCount() const
+        {
+            return Limits::Device::FrameCountMax;
+        }
     };
 } // namespace AZ::RHI

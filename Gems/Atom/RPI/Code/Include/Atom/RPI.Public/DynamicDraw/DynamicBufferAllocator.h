@@ -8,14 +8,9 @@
 
 #pragma once
 
-#include <AtomCore/Instance/Instance.h>
-
 #include <Atom/RHI/IndexBufferView.h>
 #include <Atom/RHI/StreamBufferView.h>
-
-#include <Atom/RPI.Public/Base.h>
-#include <Atom/RPI.Public/Buffer/Buffer.h>
-
+#include <Atom/RPI.Public/Buffer/RingBuffer.h>
 
 namespace AZ
 {
@@ -28,7 +23,7 @@ namespace AZ
         //! Since the allocations are sub-allocations they almost have zero cost with both cpu and gpu.
         //! Limitation: the allocation may fail if the request buffer size is larger than the ring buffer size or
         //!     there isn't enough unused memory available within the ring buffer. User may increase the input of Init(ringBufferSize)
-        //!     to increase the ring buffer's size. 
+        //!     to increase the ring buffer's size.
         class DynamicBufferAllocator
         {
         public:
@@ -38,13 +33,14 @@ namespace AZ
             virtual ~DynamicBufferAllocator() = default;
 
             //! One time initialization
-            //! This operation may be slow since it will allocate large size gpu resource. 
+            //! This operation may be slow since it will allocate large size gpu resource.
             void Init(uint32_t ringBufferSize);
 
             void Shutdown();
 
             //! Allocate a dynamic buffer with specified size and alignment
-            //! It may return nullptr if the input size is larger than ring buffer size or there isn't enough unused memory available within the ring buffer
+            //! It may return nullptr if the input size is larger than ring buffer size or there isn't enough unused memory available within
+            //! the ring buffer
             RHI::Ptr<DynamicBuffer> Allocate(uint32_t size, uint32_t alignment);
 
             //! Get an IndexBufferView for a DynamicBuffer used as an index buffer
@@ -65,20 +61,17 @@ namespace AZ
 
             // The position where the buffer is available.
             uint32_t m_currentPosition = 0;
-            // The upper bound limit of the allocation of current frame 
-            uint32_t m_endPositionLimit = 0;
-            // The allocated buffer size of current frame
-            uint32_t m_currentAllocatedSize = 0;
 
+            // The size of the buffer per frame
             uint32_t m_ringBufferSize = 0;
-            void* m_ringBufferStartAddress = 0;
-            Data::Instance<Buffer> m_ringBuffer;
-
-            // Allocation history which are in use by GPU. 
-            uint32_t m_frameStartPositions[AZ::RHI::Limits::Device::FrameCountMax];
-            uint32_t m_currentFrame = 0;
 
             bool m_enableAllocationWarning = false;
+
+            // The resident buffer data per frame
+            RingBuffer m_bufferData{ "DynamicBufferAllocator", CommonBufferPoolType::DynamicInputAssembly, 1 };
+
+            // The CPU address of the mapped buffer per frame
+            RHI::FrameCountMaxRingBuffer<void*> m_bufferStartAddresses;
         };
-    }
-}
+    } // namespace RPI
+} // namespace AZ

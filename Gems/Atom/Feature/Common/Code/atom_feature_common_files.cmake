@@ -291,8 +291,6 @@ set(FILES
     Source/RayTracing/RayTracingPass.cpp
     Source/RayTracing/RayTracingPass.h
     Source/RayTracing/RayTracingPassData.h
-    Source/RayTracing/RayTracingRingBuffer.h
-    Source/RayTracing/RayTracingRingBuffer.cpp
     Source/ReflectionProbe/ReflectionProbeFeatureProcessor.h
     Source/ReflectionProbe/ReflectionProbeFeatureProcessor.cpp
     Source/ReflectionProbe/ReflectionProbe.h
