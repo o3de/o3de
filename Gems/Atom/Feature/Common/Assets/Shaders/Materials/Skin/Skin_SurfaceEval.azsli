@@ -248,11 +248,6 @@ Surface EvaluateSurface_Skin(
     surface.subsurfaceScatteringFactor = GetSubsurfaceInput(MaterialSrg::m_subsurfaceScatteringInfluenceMap, MaterialSrg::m_sampler, subsurfaceUv, real(MaterialSrg::m_subsurfaceScatteringFactor), uvDxDy, customDerivatives);
     surface.subsurfaceScatteringQuality = real(MaterialSrg::m_subsurfaceScatteringQuality);
     surface.scatterDistance = real3(MaterialSrg::m_scatterDistance);
-
-    // AKM_MARKER
-    surface.subsurfaceScatteringFactor = real(0);
-    surface.subsurfaceScatteringQuality = real(0);
-    surface.scatterDistance = real3(0, 0, 0);
 #endif
 
     // ------- Occlusion -------
