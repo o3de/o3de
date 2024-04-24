@@ -95,8 +95,19 @@ function(get_all_gem_dependencies gem_name output_resolved_gem_names)
         return()
     else()
         # The gem dependency for ${gem_name} has not been calculated. 
-        # First read in the dependencies from the gem.json ifpossible
-        get_property(gem_path GLOBAL PROPERTY "@GEMROOT:${gem_name}@")
+        # First read in the dependencies from the gem.json if possible
+
+        # Strip out any possible version specifier in order to lookup the gem path based on the cached
+        # global property "@GEMROOT:${gem_name}"
+        unset(gem_name_only)
+        o3de_get_name_and_version_specifier(${gem_name} gem_name_only ignore_spec_op ignore_spec_version)
+        get_property(gem_path GLOBAL PROPERTY "@GEMROOT:${gem_name_only}@")
+        if(NOT gem_path)
+            message(FATAL_ERROR "Unable to locate gem path for Gem \"${gem_name_only}\"."
+                    " Is the gem registered in either the ~/.o3de/o3de_manifest.json, ${LY_ROOT_FOLDER}/engine.json,"
+                    " any project.json or any gem.json which itself is registered?")
+        endif()
+
         o3de_read_json_array(gem_dependencies "${gem_path}/gem.json" "dependencies")
 
         # Keep track of the visited gems to prevent any dependency cycles that can
