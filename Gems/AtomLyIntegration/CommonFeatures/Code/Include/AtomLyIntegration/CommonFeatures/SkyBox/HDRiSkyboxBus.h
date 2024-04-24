@@ -29,6 +29,9 @@ namespace AZ
             virtual void SetCubemapAssetPath(const AZStd::string& path) = 0;
             virtual AZStd::string GetCubemapAssetPath() const = 0;
 
+            virtual void SetCubemapAssetId(AZ::Data::AssetId) = 0;
+            virtual AZ::Data::AssetId GetCubemapAssetId() const = 0;
+
             virtual void SetExposure(float exposure) = 0;
             virtual float GetExposure() const = 0; 
         };

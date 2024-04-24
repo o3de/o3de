@@ -9,6 +9,94 @@
             },
             "methods": [
                 {
+                    "base": "SetCubemapAssetId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Cubemap Asset Id"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Cubemap Asset Id is invoked"
+                    },
+                    "details": {
+                        "name": "Set Cubemap Asset Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "Asset Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetCubemapAssetId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Cubemap Asset Id"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Cubemap Asset Id is invoked"
+                    },
+                    "details": {
+                        "name": "Get Cubemap Asset Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "Asset Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetCubemapAssetPath",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Cubemap Asset Path"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Cubemap Asset Path is invoked"
+                    },
+                    "details": {
+                        "name": "Set Cubemap Asset Path"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Asset Path"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetCubemapAssetPath",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Cubemap Asset Path"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Cubemap Asset Path is invoked"
+                    },
+                    "details": {
+                        "name": "Get Cubemap Asset Path"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Asset Path"
+                            }
+                        }
+                    ]
+                },
+                {
                     "base": "SetExposure",
                     "entry": {
                         "name": "In",
@@ -48,50 +136,6 @@
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
                                 "name": "Exposure"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "base": "SetCubemapAssetPath",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Cubemap Asset Path"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after Set Cubemap Asset Path is invoked"
-                    },
-                    "details": {
-                        "name": "Set Cubemap Asset Path"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
-                            "details": {
-                                "name": "Cubemap Asset Path"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "base": "GetCubemapAssetPath",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Cubemap Asset Path"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after Get Cubemap Asset Path is invoked"
-                    },
-                    "details": {
-                        "name": "Get Cubemap Asset Path"
-                    },
-                    "results": [
-                        {
-                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
-                            "details": {
-                                "name": "Cubemap Asset Path"
                             }
                         }
                     ]
