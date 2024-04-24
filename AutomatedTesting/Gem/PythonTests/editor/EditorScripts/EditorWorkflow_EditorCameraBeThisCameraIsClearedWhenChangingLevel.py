@@ -71,9 +71,11 @@ def EditorWorkflow_EditorCameraBeThisCameraIsClearedWhenChangingLevel():
     with Tracer() as error_tracer:
         helper = EditorTestHelper(log_prefix="Editor Camera")
 
+        template_name = "Prefabs/Default_Level.prefab"
+
         # note: level name needs to match name in parent TestSuite_Main file
         # see TestAutomation(EditorTestSuite)
-        first_level_created = helper.create_level("tmp_level_1")
+        first_level_created = helper.create_level(template_name, "tmp_level_1")
         Report.critical_result(Tests.first_level_created, first_level_created)
 
         # record initial viewport position (new level default)
@@ -92,7 +94,7 @@ def EditorWorkflow_EditorCameraBeThisCameraIsClearedWhenChangingLevel():
 
         # note: level name needs to match name in parent TestSuite_Main file
         # see TestAutomation(EditorTestSuite)
-        second_level_created = helper.create_level("tmp_level_2")
+        second_level_created = helper.create_level(template_name, "tmp_level_2")
         Report.critical_result(
             Tests.second_level_created, second_level_created)
 
