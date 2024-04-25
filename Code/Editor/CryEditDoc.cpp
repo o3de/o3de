@@ -41,6 +41,7 @@
 #include "GameEngine.h"
 
 #include "CryEdit.h"
+#include "Util/PakFile.h"
 #include "Include/IObjectManager.h"
 #include "ErrorReportDialog.h"
 #include "Util/AutoLogTime.h"
@@ -249,7 +250,7 @@ void CCryEditDoc::Load(TDocMultiArchive& /* arrXmlAr */, const QString& szFilena
     // Register a unique load event
     QString fileName = Path::GetFileName(szFilename);
     QString levelHash = szFilename;
-    
+
     SEventLog loadEvent("Level_" + Path::GetFileName(fileName), "", levelHash);
 
     // Register this level and its content hash as version
