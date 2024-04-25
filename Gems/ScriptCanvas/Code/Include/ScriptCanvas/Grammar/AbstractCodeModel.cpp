@@ -2585,6 +2585,7 @@ namespace ScriptCanvas
 
                 if (result == Nodes::Core::IsFunctionCallNodeOutOfDateResult::Yes)
                 {
+                    printf("LLOYD 1\n");
                     AZ_Warning("ScriptCanvas", false, "FunctionCallNode '%s' is out-of-date.", node.GetNodeName().c_str());
                     AddError(nullptr, aznew NodeCompatiliblity::NodeOutOfDate(node.GetEntityId(), node.GetNodeName()));
                     return false;
@@ -2596,6 +2597,7 @@ namespace ScriptCanvas
             }
             else if (node.IsOutOfDate(m_source.m_graph->GetVersion()))
             {
+                printf("LLOYD 2\n");
                 AZ_Warning("ScriptCanvas", false, "Node '%s' is out-of-date.", node.GetNodeName().c_str());
                 AddError(nullptr, aznew NodeCompatiliblity::NodeOutOfDate(node.GetEntityId(), node.GetNodeName()));
                 return false;
@@ -3397,6 +3399,7 @@ namespace ScriptCanvas
                             {
                                 if (azrtti_cast<const Nodes::Core::Method*>(node))
                                 {
+                                    printf("LLOYD 3\n");
                                     // Method should have only one execution out, this node is out of date and unsupported by new backend
                                     AddError(nullptr, aznew NodeCompatiliblity::NodeOutOfDate(node->GetEntityId(), node->GetNodeName()));
                                 }
@@ -4578,6 +4581,7 @@ namespace ScriptCanvas
             {
                 if (IsLocallyDefinedFunctionCallNodeOutOfDate(*functionCallNode, compareConfig, m_subgraphInterface))
                 {
+                    printf("LLOYD 4\n");
                     AZ_Warning("ScriptCanvas", false, "%s node is out-of-date.", functionCallNode->GetNodeName().c_str());
                     AddError
                         ( nullptr

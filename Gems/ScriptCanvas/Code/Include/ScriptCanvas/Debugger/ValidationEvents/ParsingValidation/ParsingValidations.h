@@ -219,6 +219,7 @@ namespace ScriptCanvas
             NodeOutOfDate(AZ::EntityId nodeId, const AZStd::string_view& nodeName)
                 : ParserValidation(nodeId, ValidationSeverity::Error, nodeName)
             {
+                printf("LLOYD 19\n");
                 SetDescription(AZStd::string::format("Node (%s) is out of date.", nodeName.data()));
             }
 

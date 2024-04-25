@@ -497,6 +497,7 @@ namespace ScriptCanvas
 
                 if (!asset || !asset->IsReady())
                 {
+                    printf("LLOYD 5\n");
                     AZ_Warning("ScriptCanvas", false, "FunctionCallNode %s failed to load source asset.", m_prettyName.data());
                     return IsFunctionCallNodeOutOfDateResult::Yes;
                 }
@@ -504,6 +505,7 @@ namespace ScriptCanvas
                 const Grammar::SubgraphInterface* latestAssetInterface = asset ? &asset.Get()->m_interfaceData.m_interface : nullptr;
                 if (!latestAssetInterface)
                 {
+                    printf("LLOYD 6\n");
                     AZ_Warning("ScriptCanvas", false, "FunctionCallNode %s failed to load latest interface from the source asset.", m_prettyName.data());
                     return IsFunctionCallNodeOutOfDateResult::Yes;
                 }
