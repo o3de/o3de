@@ -26,12 +26,12 @@
 #include <RHI/CommandQueue.h>
 #include <RHI/Device.h>
 #include <RHI/Fence.h>
-#include <RHI/FenceTimelineSemaphore.h>
 #include <RHI/GraphicsPipeline.h>
 #include <RHI/ImagePool.h>
 #include <RHI/Instance.h>
 #include <RHI/Pipeline.h>
 #include <RHI/SwapChain.h>
+#include <RHI/TimelineSemaphoreFence.h>
 #include <RHI/WSISurface.h>
 #include <RHI/WindowSurfaceBus.h>
 #include <Vulkan_Traits_Platform.h>
@@ -578,7 +578,7 @@ namespace AZ
         {
             if (GetFeatures().m_signalFenceFromCPU)
             {
-                return FenceTimelineSemaphore::Create();
+                return TimelineSemaphoreFence::Create();
             }
             else
             {
@@ -1211,7 +1211,6 @@ namespace AZ
             m_features.m_swapchainScalingFlags = AZ_TRAIT_ATOM_VULKAN_SWAPCHAIN_SCALING_FLAGS;
 
             m_features.m_signalFenceFromCPU = physicalDevice.GetPhysicalDeviceTimelineSemaphoreFeatures().timelineSemaphore;
-            // m_features.m_signalFenceFromCPU = false;
 
             const auto& deviceLimits = physicalDevice.GetDeviceLimits();
             m_limits.m_maxImageDimension1D = deviceLimits.maxImageDimension1D;

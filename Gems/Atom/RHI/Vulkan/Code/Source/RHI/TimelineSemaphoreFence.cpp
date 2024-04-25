@@ -8,28 +8,28 @@
 #include <Atom/RHI.Reflect/VkAllocator.h>
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
-#include <RHI/FenceTimelineSemaphore.h>
+#include <RHI/TimelineSemaphoreFence.h>
 
 namespace AZ
 {
     namespace Vulkan
     {
-        RHI::Ptr<FenceBase> FenceTimelineSemaphore::Create()
+        RHI::Ptr<FenceBase> TimelineSemaphoreFence::Create()
         {
-            return aznew FenceTimelineSemaphore();
+            return aznew TimelineSemaphoreFence();
         }
 
-        VkSemaphore FenceTimelineSemaphore::GetNativeSemaphore() const
+        VkSemaphore TimelineSemaphoreFence::GetNativeSemaphore() const
         {
             return m_nativeSemaphore;
         }
 
-        uint64_t FenceTimelineSemaphore::GetPendingValue() const
+        uint64_t TimelineSemaphoreFence::GetPendingValue() const
         {
             return m_pendingValue;
         }
 
-        void FenceTimelineSemaphore::SetNameInternal(const AZStd::string_view& name)
+        void TimelineSemaphoreFence::SetNameInternal(const AZStd::string_view& name)
         {
             if (IsInitialized() && !name.empty())
             {
@@ -38,7 +38,7 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode FenceTimelineSemaphore::InitInternal(RHI::Device& baseDevice, RHI::FenceState initialState)
+        RHI::ResultCode TimelineSemaphoreFence::InitInternal(RHI::Device& baseDevice, RHI::FenceState initialState)
         {
             RETURN_RESULT_IF_UNSUCCESSFUL(Base::InitInternal(baseDevice, initialState));
 
@@ -65,7 +65,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        void FenceTimelineSemaphore::ShutdownInternal()
+        void TimelineSemaphoreFence::ShutdownInternal()
         {
             if (m_nativeSemaphore != VK_NULL_HANDLE)
             {
@@ -76,7 +76,7 @@ namespace AZ
             Base::ShutdownInternal();
         }
 
-        void FenceTimelineSemaphore::SignalOnCpuInternal()
+        void TimelineSemaphoreFence::SignalOnCpuInternal()
         {
             VkSemaphoreSignalInfo signalInfo;
             signalInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SIGNAL_INFO;
@@ -89,7 +89,7 @@ namespace AZ
             SignalEvent();
         }
 
-        void FenceTimelineSemaphore::WaitOnCpuInternal() const
+        void TimelineSemaphoreFence::WaitOnCpuInternal() const
         {
             VkSemaphoreWaitInfo waitInfo{};
             waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
@@ -103,13 +103,13 @@ namespace AZ
             device.GetContext().WaitSemaphores(device.GetNativeDevice(), &waitInfo, AZStd::numeric_limits<uint64_t>::max());
         }
 
-        void FenceTimelineSemaphore::ResetInternal()
+        void TimelineSemaphoreFence::ResetInternal()
         {
             m_pendingValue++;
             m_inSignalledState = false;
         }
 
-        RHI::FenceState FenceTimelineSemaphore::GetFenceStateInternal() const
+        RHI::FenceState TimelineSemaphoreFence::GetFenceStateInternal() const
         {
             auto& device = static_cast<Device&>(GetDevice());
             uint64_t completedValue = 0;

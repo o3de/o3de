@@ -44,8 +44,8 @@ set(FILES
     Source/RHI/Fence.h
     Source/RHI/FenceBase.cpp
     Source/RHI/FenceBase.h
-    Source/RHI/FenceTimelineSemaphore.cpp
-    Source/RHI/FenceTimelineSemaphore.h
+    Source/RHI/TimelineSemaphoreFence.cpp
+    Source/RHI/TimelineSemaphoreFence.h
     Source/RHI/Framebuffer.cpp
     Source/RHI/Framebuffer.h
     Source/RHI/FrameGraphCompiler.cpp

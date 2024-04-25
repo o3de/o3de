@@ -23,8 +23,7 @@
 #include <RHI/BufferView.h>
 #include <RHI/Device.h>
 #include <RHI/DispatchRaysIndirectBuffer.h>
-#include <RHI/Fence.h>
-#include <RHI/FenceTimelineSemaphore.h>
+#include <RHI/FenceBase.h>
 #include <RHI/FrameGraphCompiler.h>
 #include <RHI/FrameGraphExecuter.h>
 #include <RHI/Image.h>

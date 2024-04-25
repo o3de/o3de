@@ -17,22 +17,22 @@ namespace AZ
 
         // Fence based on a timeline semaphore VkSemaphore
         // Is used if the device supports it
-        class FenceTimelineSemaphore final : public FenceBase
+        class TimelineSemaphoreFence final : public FenceBase
         {
             using Base = FenceBase;
 
         public:
-            AZ_CLASS_ALLOCATOR(FenceTimelineSemaphore, AZ::ThreadPoolAllocator);
-            AZ_RTTI(FenceTimelineSemaphore, "{B3FABCC5-24A7-43D0-868E-3C5E8FB6257A}", Base);
+            AZ_CLASS_ALLOCATOR(TimelineSemaphoreFence, AZ::ThreadPoolAllocator);
+            AZ_RTTI(TimelineSemaphoreFence, "{B3FABCC5-24A7-43D0-868E-3C5E8FB6257A}", Base);
 
             static RHI::Ptr<FenceBase> Create();
-            ~FenceTimelineSemaphore() = default;
+            ~TimelineSemaphoreFence() = default;
 
             VkSemaphore GetNativeSemaphore() const;
             uint64_t GetPendingValue() const;
 
         private:
-            FenceTimelineSemaphore() = default;
+            TimelineSemaphoreFence() = default;
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::Object

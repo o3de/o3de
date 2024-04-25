@@ -11,9 +11,10 @@
 #include <AzCore/std/iterator.h>
 #include <RHI/Device.h>
 #include <RHI/Fence.h>
-#include <RHI/FenceTimelineSemaphore.h>
 #include <RHI/Queue.h>
 #include <RHI/Semaphore.h>
+#include <RHI/TimelineSemaphoreFence.h>
+
 
 namespace AZ
 {
@@ -52,7 +53,7 @@ namespace AZ
             AZStd::vector<uint64_t> vkSignalSemaphoreValues;
             AZStd::vector<uint64_t> vkWaitSemaphoreValues;
 
-            auto timelineSemaphoreFenceToSignal = azrtti_cast<FenceTimelineSemaphore*>(fenceToSignal);
+            auto timelineSemaphoreFenceToSignal = azrtti_cast<TimelineSemaphoreFence*>(fenceToSignal);
 
             VkSubmitInfo submitInfo;
             uint32_t submitCount = 0;
@@ -123,7 +124,7 @@ namespace AZ
 
                     for (auto& fence : fencesToWaitFor)
                     {
-                        auto timelineSemaphoreFence = azrtti_cast<FenceTimelineSemaphore*>(fence);
+                        auto timelineSemaphoreFence = azrtti_cast<TimelineSemaphoreFence*>(fence);
                         AZ_Assert(timelineSemaphoreFence, "Queue: Only fences of type timeline semaphores can be waited for");
                         vkWaitSemaphoreValues.push_back(timelineSemaphoreFence->GetPendingValue());
                         vkWaitSemaphoreVector.push_back(timelineSemaphoreFence->GetNativeSemaphore());
