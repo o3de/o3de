@@ -12,7 +12,6 @@
 #include <Atom/RHI/FrameGraph.h>
 #include <Atom/RHI/FrameGraphAttachmentDatabase.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
-#include <Atom/RHI/SwapChain.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <RHI/Buffer.h>
@@ -50,7 +49,6 @@ namespace AZ
 
             AZ_Assert(request.m_frameGraph, "FrameGraph is null.");
             RHI::FrameGraph& frameGraph = *request.m_frameGraph;
-
             CompileResourceBarriers(frameGraph.GetAttachmentDatabase());
 
             if (!RHI::CheckBitsAny(request.m_compileFlags, RHI::FrameSchedulerCompileFlags::DisableAsyncQueues))
@@ -65,8 +63,7 @@ namespace AZ
 
         bool NeedsClearBarrier(const RHI::ScopeAttachment& scopeAttachment, const RHI::ScopeAttachmentDescriptor& descriptor)
         {
-            if (descriptor.m_loadStoreAction.m_loadAction != RHI::AttachmentLoadAction::Clear &&
-                descriptor.m_loadStoreAction.m_loadActionStencil != RHI::AttachmentLoadAction::Clear)
+            if (descriptor.m_loadStoreAction.m_loadAction != RHI::AttachmentLoadAction::Clear && descriptor.m_loadStoreAction.m_loadActionStencil != RHI::AttachmentLoadAction::Clear)
             {
                 return false;
             }
@@ -94,15 +91,15 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileResourceBarriers(Vulkan)");
 
-            for (RHI::BufferFrameAttachment* bufferFrameAttachment : attachmentDatabase.GetBufferAttachments())
-            {
-                CompileBufferBarriers(*bufferFrameAttachment);
-            }
+             for (RHI::BufferFrameAttachment* bufferFrameAttachment : attachmentDatabase.GetBufferAttachments())
+             {
+                 CompileBufferBarriers(*bufferFrameAttachment);
+             }
 
-            for (RHI::ImageFrameAttachment* imageFrameAttachment : attachmentDatabase.GetImageAttachments())
-            {
-                CompileImageBarriers(*imageFrameAttachment);
-            }
+             for (RHI::ImageFrameAttachment* imageFrameAttachment : attachmentDatabase.GetImageAttachments())
+             {
+                 CompileImageBarriers(*imageFrameAttachment);
+             }
         }
 
         void FrameGraphCompiler::CompileBufferBarriers(RHI::BufferFrameAttachment& frameGraphAttachment)
@@ -183,7 +180,8 @@ namespace AZ
 
                 // Check if we are resolving using the command list function because we need to insert a
                 // layout transition to Transfer Source.
-                if (scopeAttachment->IsBeingResolved() && scope.GetResolveMode() == Scope::ResolveMode::CommandList)
+                if (scopeAttachment->IsBeingResolved() &&
+                    scope.GetResolveMode() == Scope::ResolveMode::CommandList)
                 {
                     // So we can reuse the same functions, we create a new image scope attachment
                     // with a copy read usage.
@@ -227,8 +225,7 @@ namespace AZ
 
                 // We need to wait until the presentation engine finish presenting the swapchain image
                 Scope& firstScope = static_cast<Scope&>(imageFrameAttachment.GetFirstScopeAttachment()->GetScope());
-                firstScope.AddWaitSemaphore(
-                    AZStd::make_pair(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, frameContext.m_imageAvailableSemaphore));
+                firstScope.AddWaitSemaphore(AZStd::make_pair(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, frameContext.m_imageAvailableSemaphore));
 
                 auto* lastScopeAttachment = imageFrameAttachment.GetLastScopeAttachment();
                 Scope& lastScope = static_cast<Scope&>(lastScopeAttachment->GetScope());
@@ -244,7 +241,6 @@ namespace AZ
                 imageBarrier.oldLayout = GetImageAttachmentLayout(*lastScopeAttachment);
                 imageBarrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
                 imageBarrier.subresourceRange = VkImageSubresourceRange{ image.GetImageAspectFlags(), 0, 1, 0, 1 };
-
                 lastScope.QueueAttachmentBarrier(
                     *lastScopeAttachment,
                     Scope::BarrierSlot::Epilogue,
@@ -272,9 +268,9 @@ namespace AZ
             const RHI::ScopeAttachment& scopeAttachment,
             Buffer& buffer,
             const RHI::BufferSubresourceRange& range,
-            const Scope::BarrierSlot slot,
-            VkPipelineStageFlags srcPipelineStages,
-            VkAccessFlags srcAccess,
+            const Scope::BarrierSlot slot, 
+            VkPipelineStageFlags srcPipelineStages, 
+            VkAccessFlags srcAccess, 
             const QueueId& srcQueueId,
             const QueueId& dstQueueId) const
         {
@@ -285,14 +281,12 @@ namespace AZ
             // We only need buffer barriers if we are doing an ownership transfer
             // or the queues are the same. In all the other cases a semaphore will
             // provide the memory and execution dependency needed.
-            if (srcQueueId == dstQueueId || srcQueueId.m_familyIndex != dstQueueId.m_familyIndex)
+            if (srcQueueId == dstQueueId ||
+                srcQueueId.m_familyIndex != dstQueueId.m_familyIndex)
             {
-                // Check if we are transferring between queues because the src and dst access flags must be 0 for the release and request
-                // barriers.
-                VkPipelineStageFlags srcPipelineStageFlags =
-                    srcQueueId == scopeQueueId ? srcPipelineStages : VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-                VkPipelineStageFlags dstPipelineStageFlags =
-                    dstQueueId == scopeQueueId ? GetResourcePipelineStateFlags(scopeAttachment) : VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+                // Check if we are transferring between queues because the src and dst access flags must be 0 for the release and request barriers.
+                VkPipelineStageFlags srcPipelineStageFlags = srcQueueId == scopeQueueId ? srcPipelineStages : VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+                VkPipelineStageFlags dstPipelineStageFlags = dstQueueId == scopeQueueId ? GetResourcePipelineStateFlags(scopeAttachment) : VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
                 VkAccessFlags srcAccessFlags = srcQueueId == scopeQueueId ? srcAccess : 0;
                 VkAccessFlags dstAccessFlags = dstQueueId == scopeQueueId ? GetResourceAccessFlags(scopeAttachment) : 0;
                 bool sameFamily = srcQueueId.m_familyIndex == dstQueueId.m_familyIndex;
@@ -317,8 +311,8 @@ namespace AZ
         }
 
         void FrameGraphCompiler::QueueResourceBarrier(
-            Scope& scope,
-            const RHI::ScopeAttachment& scopeAttachment,
+            Scope& scope, 
+            const RHI::ScopeAttachment& scopeAttachment, 
             Image& image,
             const RHI::ImageSubresourceRange& range,
             const Scope::BarrierSlot slot,
@@ -330,12 +324,10 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
             auto& queueContext = device.GetCommandQueueContext();
 
-            // Check if we are transferring between queues because the src and dst access flags must be 0 for the release and request
-            // barriers.
+            // Check if we are transferring between queues because the src and dst access flags must be 0 for the release and request barriers.
             QueueId scopeQueueId = queueContext.GetCommandQueue(scope.GetHardwareQueueClass()).GetId();
             VkPipelineStageFlags srcPipelineStageFlags = srcQueueId == scopeQueueId ? srcPipelineStages : VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-            VkPipelineStageFlags dstPipelineStageFlags =
-                dstQueueId == scopeQueueId ? GetResourcePipelineStateFlags(scopeAttachment) : VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+            VkPipelineStageFlags dstPipelineStageFlags = dstQueueId == scopeQueueId ? GetResourcePipelineStateFlags(scopeAttachment) : VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
             VkAccessFlags srcAccessFlags = srcQueueId == scopeQueueId ? srcAccess : 0;
             VkAccessFlags dstAccessFlags = dstQueueId == scopeQueueId ? GetResourceAccessFlags(scopeAttachment) : 0;
             bool sameFamily = srcQueueId.m_familyIndex == dstQueueId.m_familyIndex;
@@ -365,7 +357,8 @@ namespace AZ
                 // or the destination and source queue are the same. In all the other cases a semaphore will
                 // provide the memory and execution dependency needed.
                 if (imageBarrier.oldLayout != imageBarrier.newLayout ||
-                    imageBarrier.srcQueueFamilyIndex != imageBarrier.dstQueueFamilyIndex || srcQueueId == dstQueueId)
+                    imageBarrier.srcQueueFamilyIndex != imageBarrier.dstQueueFamilyIndex ||
+                    srcQueueId == dstQueueId)
                 {
                     scope.QueueAttachmentBarrier(scopeAttachment, slot, srcPipelineStageFlags, dstPipelineStageFlags, imageBarrier);
                 }
@@ -405,7 +398,7 @@ namespace AZ
 
         RHI::ImageSubresourceRange FrameGraphCompiler::GetSubresourceRange(const RHI::ImageScopeAttachment& scopeAttachment) const
         {
-            auto& physicalDevice = static_cast<const PhysicalDevice&>(GetDevice().GetPhysicalDevice());
+            auto &physicalDevice = static_cast<const PhysicalDevice&>(GetDevice().GetPhysicalDevice());
             const auto* imageView = static_cast<const ImageView*>(scopeAttachment.GetImageView());
             auto range = RHI::ImageSubresourceRange(imageView->GetDescriptor());
             RHI::ImageAspectFlags imageAspectFlags = imageView->GetImage().GetAspectFlags();
