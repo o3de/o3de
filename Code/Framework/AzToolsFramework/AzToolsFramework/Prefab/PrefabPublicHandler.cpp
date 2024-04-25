@@ -598,6 +598,14 @@ namespace AzToolsFramework
                 m_prefabUndoCache.UpdateCache(containerEntityId);
                 m_prefabUndoCache.UpdateCache(parentId);
 
+                // Select newly instantiated prefab.
+                AzToolsFramework::EntityIdList selection = { containerEntityId };
+
+                SelectionCommand* selectionCommand = aznew SelectionCommand(selection, "");
+                selectionCommand->SetParent(undoBatch.GetUndoBatch());
+
+                ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selection);
+
                 AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
                     &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
             }
@@ -1597,7 +1605,7 @@ namespace AzToolsFramework
 
             AZ_PROFILE_FUNCTION(AzToolsFramework);
             {
-                ScopedUndoBatch undoBatch("Detach Prefab");  // outer undo is for the entire thing - detach AND (optional) delete
+                ScopedUndoBatch outerUndoBatch("Detach Prefab");  // outer undo is for the entire thing - detach AND (optional) delete
 
                 {
                     ScopedUndoBatch undoBatch("Detach Prefab - Actual Detach"); // inner undo is just for the detach part.

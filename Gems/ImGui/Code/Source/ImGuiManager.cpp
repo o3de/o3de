@@ -452,8 +452,8 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
         // Handle Keyboard Hotkeys
         if (inputChannel.IsStateBegan())
         {
-            // Cycle through ImGui Menu Bar States on ~ button press
-            if (inputChannelId == InputDeviceKeyboard::Key::PunctuationTilde)
+            // Cycle through ImGui Menu Bar States on Home button press
+            if (inputChannelId == InputDeviceKeyboard::Key::NavigationHome)
             {
                 ToggleThroughImGuiVisibleState();
             }

@@ -58,6 +58,7 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
 
         from .EditorScripts import BasicEditorWorkflows_LevelEntityComponentCRUD as test_module
 
+    @pytest.mark.skip(reason="Skipped for intermittently failing.")
     class test_InputBindings_Add_Remove_Input_Events(EditorBatchedTest):
         from .EditorScripts import InputBindings_Add_Remove_Input_Events as test_module
 

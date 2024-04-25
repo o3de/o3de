@@ -1,0 +1,24 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include "ReflectionScreenSpaceRayTracingClosestHit.azsli"
+#include <Atom/Features/RayTracing/RayTracingIntersectionAttributes.azsli>
+
+// TODO(intersection): Implement multiple closesthit-shaders per source file
+[shader("closesthit")]
+void ClosestHitProcedural(inout PayloadData payload, ProceduralGeometryIntersectionAttributes attrib)
+{
+    VertexData vertexData;
+    vertexData.m_position = attrib.m_position;
+    vertexData.m_normal = float3(attrib.m_normal);
+    vertexData.m_uv = float2(attrib.m_uv);
+    vertexData.m_tangent = float4(attrib.m_tangent);
+    vertexData.m_bitangent = cross(vertexData.m_normal, vertexData.m_tangent.xyz) * vertexData.m_tangent.w;
+
+    ScreenSpaceClosestHitImpl(payload, vertexData, transpose(ObjectToWorld4x3()));
+}

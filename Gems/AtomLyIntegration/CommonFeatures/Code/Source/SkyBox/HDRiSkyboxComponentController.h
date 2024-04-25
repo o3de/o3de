@@ -54,6 +54,8 @@ namespace AZ
             // HDRiSkyboxRequestBus::Handler overrides ...
             Data::Asset<RPI::StreamingImageAsset> GetCubemapAsset() const override;
             void SetCubemapAsset(const Data::Asset<RPI::StreamingImageAsset>& cubemapAsset) override;
+            void SetCubemapAssetPath(const AZStd::string& path) override;
+            AZStd::string GetCubemapAssetPath() const override;
             void SetExposure(float exposure) override;
             float GetExposure() const override;
 

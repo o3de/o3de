@@ -274,4 +274,5 @@ set(FILES
     Include/Atom/RHI/TagRegistry.h
     Include/Atom/RHI/XRRenderingInterface.h
     Include/Atom/RHI/DispatchRaysIndirectBuffer.h
+    Include/Atom/RHI/MultiDeviceDispatchRaysIndirectBuffer.h
 )

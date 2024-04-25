@@ -31,6 +31,7 @@ namespace AZ
             {
                 RHI::Ptr<RHI::Buffer> m_blasBuffer;
                 RHI::Ptr<RHI::Buffer> m_scratchBuffer;
+                RHI::Ptr<RHI::Buffer> m_aabbBuffer;
                 VkAccelerationStructureKHR m_accelerationStructure = VK_NULL_HANDLE;
 
                 AZStd::vector<VkAccelerationStructureGeometryKHR> m_geometryDescs;
