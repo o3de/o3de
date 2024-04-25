@@ -79,8 +79,11 @@ def printLog(raw: str):
 
     refined = raw.strip()
     if len(refined):
-        if len(refined) > 4 and refined[0] == '$' and refined[1] == '3' and ('$5' in refined) and not messages_to_console:  # command starts with $3 and contains $5
-            diagnostic_logger.info(refined.replace('$3', '').replace('$4', '').replace('$5', '').replace('$6', ''))  # drop color markers
+        if len(refined) > 4 and refined[0] == '$':  # likely there are color markers
+            if refined[1] == '3' and ('$5' in refined) and not messages_to_console:  # command starts with $3 and contains $5
+                diagnostic_logger.info(refined.replace('$3', '').replace('$4', '').replace('$5', '').replace('$6', ''))  # drop color markers in console output
+            raw = raw.replace('$3', '').replace('$4', '').replace('$5', '').replace('$6', '')  # drop color markers in log file output
+
         if raw[-1] == '\n':
             client_message_logger.info(raw[:-1])
         else:
