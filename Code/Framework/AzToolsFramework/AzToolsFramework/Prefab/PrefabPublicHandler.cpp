@@ -613,6 +613,12 @@ namespace AzToolsFramework
             return AZ::Success(containerEntityId);
         }
 
+        InstantiatePrefabResult PrefabPublicHandler::InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Vector3& position)
+        {
+            const AZ::Transform transform = AZ::Transform::CreateTranslation(position);
+            return InstantiatePrefab(filePath, parentId, transform);
+        }
+
         PrefabOperationResult PrefabPublicHandler::FindCommonRootOwningInstance(
             const AZStd::vector<AZ::EntityId>& entityIds, EntityList& inputEntityList, EntityList& topLevelEntities,
             AZ::EntityId& commonRootEntityId, InstanceOptionalReference& commonRootEntityOwningInstance)

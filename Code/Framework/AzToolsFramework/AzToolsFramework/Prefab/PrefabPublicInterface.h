@@ -85,10 +85,7 @@ namespace AzToolsFramework
              * @return An outcome object with an entityId of the new prefab's container entity;
              *  on failure, it comes with an error message detailing the cause of the error.
              */
-            virtual InstantiatePrefabResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Vector3& position)
-            {
-                return InstantiatePrefab(filePath, parentId, AZ::Transform::CreateTranslation(position));
-            }
+            virtual InstantiatePrefabResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Vector3& position) = 0;
 
             /**
              * Saves changes to prefab to disk.
