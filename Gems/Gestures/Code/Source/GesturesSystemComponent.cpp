@@ -91,6 +91,10 @@ namespace Gestures
 
         InputChannelGestureClickOrTap::TypeAndConfig::Reflect(context);
         InputChannelGestureDrag::TypeAndConfig::Reflect(context);
+// Add the DragRight gesture
+#if defined(CARBONATED)
+        InputChannelGestureDragRight::TypeAndConfig::Reflect(context);
+#endif
         InputChannelGestureHold::TypeAndConfig::Reflect(context);
         InputChannelGesturePinch::TypeAndConfig::Reflect(context);
         InputChannelGestureRotate::TypeAndConfig::Reflect(context);
