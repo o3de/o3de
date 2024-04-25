@@ -15,6 +15,7 @@
 #include <Atom/RHI.Reflect/NameIdReflectionMap.h>
 #include <Atom/RHI.Reflect/Handle.h>
 
+
 namespace AZ
 {
     class ReflectContext;
