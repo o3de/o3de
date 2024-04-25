@@ -16,6 +16,18 @@ namespace AZ
 {
     namespace RPI
     {
+#if defined(CARBONATED)
+        void EffectiveBitset::Reflect(AZ::ReflectContext* context)
+        {
+            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<EffectiveBitset>()
+                    ->Version(1)
+                    ->Field("bits", &EffectiveBitset::m_bits);
+                    ;
+            }
+        }
+#endif
         //! This allows ShaderCollection::Item to serialize only a ShaderVariantId rather than the ShaderOptionsGroup object,
         //! but still provide the corresponding ShaderOptionsGroup for use at runtime.
         //! RenderStates will be modified at runtime as well. It will be merged into the RenderStates stored in the corresponding ShaderVariant.
@@ -61,7 +73,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderCollection>()
-                    ->Version(5)
+                    ->Version(6)
                     ->Field("ShaderItems", &ShaderCollection::m_shaderItems)
                     ->Field("ShaderTagIndexMap", &ShaderCollection::m_shaderTagIndexMap)
                     ;
@@ -70,6 +82,9 @@ namespace AZ
 
         void ShaderCollection::Item::Reflect(AZ::ReflectContext* context)
         {
+#if defined(CARBONATED)
+            EffectiveBitset::Reflect(context);
+#endif
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderCollection::Item>()
@@ -218,7 +233,7 @@ namespace AZ
         {
 #if defined(CARBONATED)
             ShaderOptionIndex index = m_shaderOptionGroup.FindShaderOptionIndex(shaderOptionName);
-            if (index.IsNull())
+            if (!index.IsValid())
             {
                 return false;
             }
@@ -231,7 +246,7 @@ namespace AZ
         bool ShaderCollection::Item::MaterialOwnsShaderOption(ShaderOptionIndex shaderOptionIndex) const
         {
 #if defined(CARBONATED)
-            if (shaderOptionIndex.IsNull())
+            if (!shaderOptionIndex.IsValid())
             {
                 return false;
             }

@@ -15,61 +15,54 @@
 #include <Atom/RHI.Reflect/NameIdReflectionMap.h>
 #include <Atom/RHI.Reflect/Handle.h>
 
-
-namespace AZ
-{
-    template<AZStd::size_t NumBits>
-    class effective_bitset
-    {
-    public:
-        AZ_TYPE_INFO(effective_bitset, "{91549C52-F424-4D13-85CC-BE74D7A75D41}")
-
-        effective_bitset()
-        {
-            static_assert(sizeof(unit_t) == 8);
-            static_assert(BitsPerUnit == 64);
-            static_assert(BitMask == 63);
-            static_assert(NumBits % BitsPerUnit == 0);
-            for (AZStd::size_t u = 0; u < NumUnits; u++)
-            {
-                m_units[u] = 0;
-            }
-        }
-        void set(AZStd::size_t n)
-        {
-            AZ_Assert(n < NumBits, "over capacity");
-            m_units[n >> NumShift] |= 1ull << (n & BitMask);
-        }
-        void clear(AZStd::size_t n)
-        {
-            AZ_Assert(n < NumBits, "over capacity");
-            m_units[n >> NumShift] &= ~(1ull << (n & BitMask));
-        }
-        bool test(AZStd::size_t n) const
-        {
-            AZ_Assert(n < NumBits, "over capacity");
-            return (m_units[n >> NumShift] & (1ull << (n & BitMask))) != 0;
-        }
-
-    private:
-        typedef uint64_t unit_t;
-        enum
-        {
-            BitsPerUnit = 8 * sizeof(unit_t),
-            NumUnits = NumBits / BitsPerUnit,
-            BitMask = BitsPerUnit - 1,
-            NumShift = 6 // 64 is 1 << 6
-        };
-        unit_t m_units[NumUnits];
-    };
-} // namespace AZ
-
 namespace AZ
 {
     class ReflectContext;
 
     namespace RPI
     {
+#if defined(CARBONATED)
+        class EffectiveBitset
+        {
+        public:
+            AZ_TYPE_INFO(EffectiveBitset, "{B1720E13-8927-4B85-89CB-165A1D1FE003}");
+            static void Reflect(ReflectContext* context);
+
+            EffectiveBitset()
+            {
+                static_assert(sizeof(u64) == 8);
+                static_assert(BitsPerUnit == 64);
+                static_assert(BitMask == 63);
+                static_assert(NumBits % BitsPerUnit == 0);
+                static_assert(NumUnits > 0);
+                for (AZStd::size_t u = 0; u < NumUnits; u++)
+                {
+                    m_bits[u] = 0;
+                }
+            }
+            void set(AZStd::size_t n)
+            {
+                AZ_Assert(n < NumBits, "over capacity");
+                m_bits[n >> NumShift] |= 1ull << (n & BitMask);
+            }
+            bool test(AZStd::size_t n) const
+            {
+                AZ_Assert(n < NumBits, "over capacity");
+                return (m_bits[n >> NumShift] & (1ull << (n & BitMask))) != 0;
+            }
+
+        private:
+            enum
+            {
+                NumBits = 128,
+                BitsPerUnit = 64,
+                BitMask = BitsPerUnit - 1,
+                NumUnits = NumBits / BitsPerUnit,
+                NumShift = 6 // 64 is 1 << 6
+            };
+            AZStd::array<u64, NumUnits> m_bits;
+        };
+#endif
         //! Collects the set of all possible shaders that a material could use at runtime,
         //! along with configuration that indicates how each shader should be used.
         //! Each shader item may be reconfigured at runtime, but items cannot be added
@@ -161,7 +154,7 @@ namespace AZ
                 RHI::RenderStates m_renderStatesOverlay; //!< Holds and manipulates the RenderStates at runtime.
                 RHI::DrawListTag  m_drawListTagOverride; //!< Holds and manipulates the DrawList at runtime.
 #if defined(CARBONATED)
-                effective_bitset<128> m_ownedShaderOptionIndices;
+                EffectiveBitset m_ownedShaderOptionIndices; //!< Set of shader options in this shader that are owned by the material.
 #else
                 //[GFX TODO][ATOM-5636]: This may need to use a more efficient data structure. Consider switching to vector_set class (which will need to be updated to support serialization).
                 AZStd::unordered_set<ShaderOptionIndex> m_ownedShaderOptionIndices; //!< Set of shader options in this shader that are owned by the material.
