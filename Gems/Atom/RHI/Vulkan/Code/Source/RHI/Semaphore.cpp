@@ -39,7 +39,7 @@ namespace AZ
         {
             if (m_signalEvent)
             {
-                AZ_Assert(m_bitToSignal >= 0, "Fence: Signavent was not set");
+                AZ_Assert(m_bitToSignal >= 0, "Fence: SignalEvent was not set");
                 m_signalEvent->Signal(m_bitToSignal);
             }
         }
