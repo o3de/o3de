@@ -2585,7 +2585,7 @@ namespace ScriptCanvas
 
                 if (result == Nodes::Core::IsFunctionCallNodeOutOfDateResult::Yes)
                 {
-                    AZ_Warning("ScriptCanvas", false, "%s node is out-of-date.", node.GetNodeName().c_str());
+                    AZ_Warning("ScriptCanvas", false, "FunctionCallNode '%s' is out-of-date.", node.GetNodeName().c_str());
                     AddError(nullptr, aznew NodeCompatiliblity::NodeOutOfDate(node.GetEntityId(), node.GetNodeName()));
                     return false;
                 }
@@ -2596,7 +2596,7 @@ namespace ScriptCanvas
             }
             else if (node.IsOutOfDate(m_source.m_graph->GetVersion()))
             {
-                AZ_Warning("ScriptCanvas", false, "%s node is out-of-date.", node.GetNodeName().c_str());
+                AZ_Warning("ScriptCanvas", false, "Node '%s' is out-of-date.", node.GetNodeName().c_str());
                 AddError(nullptr, aznew NodeCompatiliblity::NodeOutOfDate(node.GetEntityId(), node.GetNodeName()));
                 return false;
             }
