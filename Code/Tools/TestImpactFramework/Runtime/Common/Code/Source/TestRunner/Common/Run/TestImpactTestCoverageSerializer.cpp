@@ -6,8 +6,6 @@
  *
  */
 
-#pragma once
-
 #include <TestRunner/Common/Run/TestImpactTestCoverageSerializer.h>
 
 #include <AzCore/Date/DateFormat.h>

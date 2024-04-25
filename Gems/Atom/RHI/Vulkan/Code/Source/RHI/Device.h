@@ -76,7 +76,7 @@ namespace AZ
             AZ_RTTI(Device, "C77D578F-841F-41B0-84BB-EE5430FCF8BC", Base);
 
             static RHI::Ptr<Device> Create();
-            ~Device() = default;
+            ~Device();
 
             static StringList GetRequiredLayers();
             static StringList GetRequiredExtensions();
