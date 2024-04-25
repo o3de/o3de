@@ -21,7 +21,8 @@ namespace
     static const uint32_t s_assetPath = AssetUtilities::ComputeCRC32Lowercase("assetPath");
 }
 
-AssetRequestHandler::AssetRequestLine::AssetRequestLine(QString platform, QString searchTerm, const AZ::Data::AssetId& assetId, bool isStatusRequest, int searchType)
+AssetRequestHandler::AssetRequestLine::AssetRequestLine(
+    QString platform, QString searchTerm, const AZ::Data::AssetId& assetId, bool isStatusRequest, int searchType)
     : m_platform(platform)
     , m_searchTerm(searchTerm)
     , m_isStatusRequest(isStatusRequest)
@@ -73,6 +74,36 @@ namespace
     using namespace AzToolsFramework::AssetSystem;
     using namespace AzFramework::AssetSystem;
 
+    //! utility function - splits a string into lines and outputs them to the console at the same time as a trace.
+    void ParseToLines(AZStd::vector<AZStd::string>& lines, const AZStd::string& text)
+    {
+        AzFramework::StringFunc::TokenizeVisitor(
+            text,
+            [&lines](AZStd::string line)
+            {
+                lines.push_back(line);
+                AZ::Debug::Trace::Instance().Output(AssetProcessor::ConsoleChannel, (line + "\n").c_str());
+            },
+            "\n");
+    }
+
+    // generic version of BuildFailure, generally assumes that the failure type is a string.
+    template<typename T> 
+    void BuildFailure(const T& failure,  AZStd::vector<AZStd::string>& lines)
+    {
+       ParseToLines(lines, failure);
+    }
+
+    // specialized version of BuildFailure, for when the failure type is a MoveFailure, the string will be in m_reason
+    template<> 
+    void BuildFailure(const MoveFailure& failure,  AZStd::vector<AZStd::string>& lines)
+    {
+        ParseToLines(lines, failure.m_reason);
+    }
+
+    // Build a report based on the result of an Asset Change Request and echo to the console.
+    // The expected output is a list of strings in the 'lines' variable.
+    // The expected input is a result of an Asset Change Report Request function below
     template<typename T>
     void BuildReport(AssetProcessor::ISourceFileRelocation* relocationInterface, T& result, AZStd::vector<AZStd::string>& lines)
     {
@@ -82,38 +113,37 @@ namespace
 
             // The report can be too long for the AZ_Printf buffer, so split it into individual lines
             AZStd::string report = relocationInterface->BuildChangeReport(success.m_relocationContainer, success.m_updateTasks);
-            AzFramework::StringFunc::TokenizeVisitor(
-                report,
-                [&lines](AZStd::string line)
-                {
-                    lines.push_back(line);
-                    AZ::Debug::Trace::Instance().Output(AssetProcessor::ConsoleChannel, (line + "\n").c_str());
-                },
-                "\n");
+            ParseToLines(lines, report);
+        }
+        else
+        {
+            BuildFailure(result.GetError(), lines);
         }
     }
 
-    AssetChangeReportResponse HandleAssetChangeReportRequest(MessageData < AssetChangeReportRequest> messageData)
+    AssetChangeReportResponse HandleAssetChangeReportRequest(MessageData<AssetChangeReportRequest> messageData)
     {
         AZStd::vector<AZStd::string> lines;
+        bool success = false;
 
         auto* relocationInterface = AZ::Interface<AssetProcessor::ISourceFileRelocation>::Get();
         if (relocationInterface)
         {
             switch (messageData.m_message->m_type)
             {
-                case AssetChangeReportRequest::ChangeType::CheckMove:
+            case AssetChangeReportRequest::ChangeType::CheckMove:
                 {
-                        auto resultCheck = relocationInterface->Move(
-                            messageData.m_message->m_fromPath,
-                            messageData.m_message->m_toPath,
-                            RelocationParameters_PreviewOnlyFlag | RelocationParameters_AllowDependencyBreakingFlag |
-                                RelocationParameters_UpdateReferencesFlag | RelocationParameters_AllowNonDatabaseFilesFlag);
+                    auto resultCheck = relocationInterface->Move(
+                        messageData.m_message->m_fromPath,
+                        messageData.m_message->m_toPath,
+                        RelocationParameters_PreviewOnlyFlag | RelocationParameters_AllowDependencyBreakingFlag |
+                            RelocationParameters_UpdateReferencesFlag | RelocationParameters_AllowNonDatabaseFilesFlag);
 
                     BuildReport(relocationInterface, resultCheck, lines);
+                    success = resultCheck.IsSuccess();
                     break;
                 }
-                case AssetChangeReportRequest::ChangeType::Move:
+            case AssetChangeReportRequest::ChangeType::Move:
                 {
                     auto* metadataUpdates = AZ::Interface<AssetProcessor::IMetadataUpdates>::Get();
                     AZ_Assert(metadataUpdates, "Programmer Error - IMetadataUpdates interface is not available.");
@@ -127,11 +157,13 @@ namespace
                             RelocationParameters_AllowNonDatabaseFilesFlag);
 
                     BuildReport(relocationInterface, resultMove, lines);
+                    success = resultMove.IsSuccess();
                     break;
                 }
-                case AssetChangeReportRequest::ChangeType::CheckDelete:
+            case AssetChangeReportRequest::ChangeType::CheckDelete:
                 {
-                    auto flags = RelocationParameters_PreviewOnlyFlag | RelocationParameters_AllowDependencyBreakingFlag | RelocationParameters_AllowNonDatabaseFilesFlag;
+                    auto flags = RelocationParameters_PreviewOnlyFlag | RelocationParameters_AllowDependencyBreakingFlag |
+                        RelocationParameters_AllowNonDatabaseFilesFlag;
                     if (messageData.m_message->m_isFolder)
                     {
                         flags |= RelocationParameters_RemoveEmptyFoldersFlag;
@@ -139,9 +171,10 @@ namespace
                     auto resultCheck = relocationInterface->Delete(messageData.m_message->m_fromPath, flags);
 
                     BuildReport(relocationInterface, resultCheck, lines);
+                    success = resultCheck.IsSuccess();
                     break;
                 }
-                case AssetChangeReportRequest::ChangeType::Delete:
+            case AssetChangeReportRequest::ChangeType::Delete:
                 {
                     int flags = RelocationParameters_AllowDependencyBreakingFlag | RelocationParameters_AllowNonDatabaseFilesFlag;
                     if (messageData.m_message->m_isFolder)
@@ -151,11 +184,12 @@ namespace
                     auto resultDelete = relocationInterface->Delete(messageData.m_message->m_fromPath, flags);
 
                     BuildReport(relocationInterface, resultDelete, lines);
+                    success = resultDelete.IsSuccess();
                     break;
                 }
             }
         }
-        return AssetChangeReportResponse(lines);
+        return AssetChangeReportResponse(lines, success);
     }
 
     GetFullSourcePathFromRelativeProductPathResponse HandleGetFullSourcePathFromRelativeProductPathRequest(MessageData<GetFullSourcePathFromRelativeProductPathRequest> messageData)
@@ -330,19 +364,19 @@ namespace
             // Call the appropriate AssetCatalog API based on the type of dependencies requested.
             switch (messageData.m_message->m_dependencyType)
             {
-                case AssetDependencyInfoRequest::DependencyType::DirectDependencies:
-                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(result,
+            case AssetDependencyInfoRequest::DependencyType::DirectDependencies:
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(result,
                         &AZ::Data::AssetCatalogRequestBus::Events::GetDirectProductDependencies, messageData.m_message->m_assetId);
-                    break;
-                case AssetDependencyInfoRequest::DependencyType::AllDependencies:
-                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(result,
+                break;
+            case AssetDependencyInfoRequest::DependencyType::AllDependencies:
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(result,
                         &AZ::Data::AssetCatalogRequestBus::Events::GetAllProductDependencies, messageData.m_message->m_assetId);
-                    break;
-                case AssetDependencyInfoRequest::DependencyType::LoadBehaviorDependencies:
-                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(result,
-                        &AZ::Data::AssetCatalogRequestBus::Events::GetLoadBehaviorProductDependencies,
-                        messageData.m_message->m_assetId, response.m_noloadSet, response.m_preloadAssetList);
-                    break;
+                break;
+            case AssetDependencyInfoRequest::DependencyType::LoadBehaviorDependencies:
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(result,
+                    &AZ::Data::AssetCatalogRequestBus::Events::GetLoadBehaviorProductDependencies,
+                    messageData.m_message->m_assetId, response.m_noloadSet, response.m_preloadAssetList);
+                break;
             }
 
             // Decompose the AZ::Outcome into separate variables, since AZ::Outcome is not a serializable type.
@@ -386,8 +420,9 @@ void AssetRequestHandler::HandleRequestEscalateAsset(MessageData<RequestEscalate
 
 bool AssetRequestHandler::InvokeHandler(MessageData<AzFramework::AssetSystem::BaseAssetProcessorMessage> messageData)
 {
-    // This function checks to see whether the incoming message is either one of those request, which require decoding the type of message and then invoking the appropriate EBUS handler.
-    // If the message is not one of those type than it checks to see whether some one has registered a request handler for that message type and then invokes it.
+    // This function checks to see whether the incoming message is either one of those request, which require decoding the type of message
+    // and then invoking the appropriate EBUS handler. If the message is not one of those type than it checks to see whether some one has
+    // registered a request handler for that message type and then invokes it.
 
     using namespace AzFramework::AssetSystem;
 
