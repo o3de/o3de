@@ -73,7 +73,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderCollection>()
-                    ->Version(6)
+                    ->Version(5)
                     ->Field("ShaderItems", &ShaderCollection::m_shaderItems)
                     ->Field("ShaderTagIndexMap", &ShaderCollection::m_shaderTagIndexMap)
                     ;

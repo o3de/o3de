@@ -141,12 +141,7 @@ namespace AZ
                 // Returns true if was able to initialized the non-serialized @m_shaderOptionGroup.
                 // Only returns false if @m_shaderAsset is not ready.
                 bool InitializeShaderOptionGroup();
-                /*
-                const AZStd::unordered_set<ShaderOptionIndex>& GetShaderOptionIndices() const
-                {
-                    return m_ownedShaderOptionIndices;
-                }
-                */
+
             private:
                 Data::Asset<ShaderAsset> m_shaderAsset;
                 ShaderVariantId m_shaderVariantId;       //!< Temporarily holds the ShaderVariantId, used for serialization. This will be copied to/from m_shaderOptionGroup.
