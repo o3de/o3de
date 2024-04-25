@@ -26,20 +26,17 @@ namespace ScriptCanvas
 
                     if (!config.compare.ignorePurityChanges && !latestIsNodeable)
                     {
-                        printf("LLOYD 7\n");
                         AZ_Warning("ScriptCanvas", false, "FunctionCallNode %s source interface has changed. The node must be recreated.", config.node.GetName().data());
                         return true;
                     }
 
                     if (IsFunctionCallNodeOutOfDateLatents(config))
                     {
-                        printf("LLOYD 8\n");
                         return true;
                     }
 
                     if (IsFunctionCallNodeOutOfDateNodeable(config))
                     {
-                        printf("LLOYD 9\n");
                         return true;
                     }
                 }
@@ -64,7 +61,6 @@ namespace ScriptCanvas
                         {
                             if (!latestIsNodeable)
                             {
-                                printf("LLOYD 10\n");
                                 AZ_Warning("ScriptCanvas", false, "FunctionCallNode %s is exposing a latent function that has been deleted from the source. The node must be deleted.", config.node.GetName().data());
                                 return true;
                             }
@@ -75,21 +71,18 @@ namespace ScriptCanvas
                                 {
                                     if (IsOutOfDate(config.compare, *oldLatent, *newLatent))
                                     {
-                                        printf("LLOYD 11\n");
                                         AZ_Warning("ScriptCanvas", false, "FunctionCallNode %s is exposing a latent function that has been changed in the source. THe node must be recreated.", config.node.GetName().data());
                                         return true;
                                     }
                                 }
                                 else
                                 {
-                                    printf("LLOYD 12\n");
                                     AZ_Warning("ScriptCanvas", false, "FunctionCallNode %s is exposing a latent function that has been deleted from the source. The node must be deleted.", config.node.GetName().data());
                                     return true;
                                 }
                             }
                             else
                             {
-                                printf("LLOYD 13\n");
                                 AZ_Error("ScriptCanvas", false, "FunctionCallNode %s is exposing a latent function with a slot that cannot be found in its execution map.", config.node.GetName().data());
                                 return true;
                             }
@@ -115,21 +108,18 @@ namespace ScriptCanvas
                                 {
                                     if (IsOutOfDate(config.compare, *oldIn, *newIn))
                                     {
-                                        printf("LLOYD 14\n");
                                         AZ_Warning("ScriptCanvas", false, "FunctionCallNode %s is calling a function that has been changed in the source. THe node must be recreated.", config.node.GetName().data());
                                         return true;
                                     }
                                 }
                                 else
                                 {
-                                    printf("LLOYD 15\n");
                                     AZ_Warning("ScriptCanvas", false, "FunctionCallNode %s is calling a function that has been deleted from the source. The node must be recreated.", config.node.GetName().data());
                                     return true;
                                 }
                             }
                             else
                             {
-                                printf("LLOYD 16\n");
                                 AZ_Error("ScriptCanvas", false, "FunctionCallNode %s is calling a function with a slot that doesn't refer to a function in the source graph.", config.node.GetName().data());
                                 return true;
                             }
@@ -137,7 +127,6 @@ namespace ScriptCanvas
                     }
                     else
                     {
-                        printf("LLOYD 17\n");
                         AZ_Error("ScriptCanvas", false, "FunctionCallNode %s is calling a function with a slot that cannot be found in its execution map.", config.node.GetName().data());
                         return true;
                     }
