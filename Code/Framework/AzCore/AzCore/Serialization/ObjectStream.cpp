@@ -489,6 +489,32 @@ namespace AZ
                         if ((m_filterDesc.m_flags & FILTERFLAG_IGNORE_UNKNOWN_CLASSES) == 0)
                         {
                             // we're not ignoring unknown classes.
+#if defined(CARBONATED)
+                            // Detecting dependencies on UI slices for parent objects is buried deep inside AssetProcessor scanning algorithm.
+                            // UI slices can have EditorOnlyEntityComponent, which is removed from dynamic slices, and which is unknown in a standalone product.
+                            // So do not clutter Log with detailed reports and printed stream stack.
+                            constexpr const char* EditorOnlyEntityComponentUuid = "{22A16F1D-6D49-422D-AAE9-91AE45B5D3E7}";
+                            if (element.m_id.ToString<AZStd::string>().c_str() == AZStd::string(EditorOnlyEntityComponentUuid))
+                            {
+                                // Report this feature to keep track on the issue possible fixes, yet report once not to clutter Log
+                                AZ_ErrorOnce("ObjectStream", false,
+                                    "LoadClass(%s): Object references EditorOnlyEntityComponent. Error reported only once, other occurrences skipped.",
+                                    GetStreamFilename())
+                            }
+                            else
+                            {
+                                AZStd::string error = AZStd::string::format(
+                                    "Element '%s'(0x%x) with class ID '%s' found in '%s' is not registered with the serializer!\n"
+                                    "If this class was removed, consider using serializeContext->ClassDeprecate(...) to register classes "
+                                    "as having been deprecated to avoid this error.  File %s\n",
+                                    element.m_name ? element.m_name : "NULL", element.m_nameCrc, element.m_id.ToString<AZStd::string>().c_str(), parentClassInfo ? parentClassInfo->m_name : "ROOT",
+                                    GetStreamFilename());
+                                m_errorLogger.ReportError(error.c_str());
+
+                                // its not just a deprecated class.  Its unregistered
+                                result = result && ((m_filterDesc.m_flags & FILTERFLAG_STRICT) == 0);  // in strict mode, this is a complete failure.
+                            }
+#else // defined(CARBONATED)
                             AZStd::string error = AZStd::string::format(
                                 "Element '%s'(0x%x) with class ID '%s' found in '%s' is not registered with the serializer!\n"
                                 "If this class was removed, consider using serializeContext->ClassDeprecate(...) to register classes as having been deprecated to avoid this error.  File %s\n",
@@ -498,6 +524,7 @@ namespace AZ
 
                             // its not just a deprecated class.  Its unregistered
                             result = result && ((m_filterDesc.m_flags & FILTERFLAG_STRICT) == 0);  // in strict mode, this is a complete failure.
+#endif // defined(CARBONATED)
                         }
                     }
 
