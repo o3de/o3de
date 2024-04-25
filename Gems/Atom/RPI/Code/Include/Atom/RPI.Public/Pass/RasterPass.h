@@ -70,6 +70,9 @@ namespace AZ
         protected:
             explicit RasterPass(const PassDescriptor& descriptor);
 
+            //! Binds all attachments to the current scope in the frameGraph.
+            //! Similar functionality as RenderPass::DeclareAttachmentsToFrameGraph(), but
+            //! RasterPass also binds "SubpassInput" attachments where applicable. 
             void DeclareAttachmentsToFrameGraph(RHI::FrameGraphInterface frameGraph) const;
 
             // Pass behavior overrides

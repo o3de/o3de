@@ -20,7 +20,7 @@ namespace AZ::RHI
     //! In pragmatic terms, this interface should only
     //! be implemented by RHIs that support Subpasses(e.g. Vulkan).
     //! For more details:
-    //! https://github.com/o3de/sig-graphics-audio/blob/9e4e4111ad9bc04d73f3149c6e54301781ffd569/rfcs/SubpassesSupportInRPI/RFC_SubpassesSupportInRPI.md
+    //! https://github.com/o3de/sig-graphics-audio/blob/main/rfcs/SubpassesSupportInRPI/RFC_SubpassesSupportInRPI.md
     class IRenderAttachmentLayoutNotifications
     {
     public:
