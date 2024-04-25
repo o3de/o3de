@@ -12,7 +12,9 @@
 
 namespace AZ::Vulkan
 {
-    void FrameGraphExecuteGroupPrimary::Init(Device& device, AZStd::vector<const Scope*>&& scopes)
+    void FrameGraphExecuteGroupPrimary::Init(
+        Device& device,
+        AZStd::vector<const Scope*>&& scopes)
     {
         AZ_Assert(!scopes.empty(), "Empty list of scopes for Merged group");
         // Use the max graphGroup id as the id of the execute group.

@@ -6,23 +6,22 @@
  *
  */
 #include <Atom/RHI/FrameGraph.h>
-#include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/std/parallel/thread.h>
-#include <RHI/CommandQueueContext.h>
-#include <RHI/Device.h>
-#include <RHI/FrameGraphExecuteGroupPrimary.h>
+#include <RHI/FrameGraphExecuteGroupSecondaryHandler.h>
 #include <RHI/FrameGraphExecuteGroupPrimaryHandler.h>
 #include <RHI/FrameGraphExecuteGroupSecondary.h>
-#include <RHI/FrameGraphExecuteGroupSecondaryHandler.h>
+#include <RHI/FrameGraphExecuteGroupPrimary.h>
 #include <RHI/FrameGraphExecuter.h>
-#include <RHI/Scope.h>
+#include <RHI/Device.h>
 #include <RHI/SwapChain.h>
+#include <RHI/Scope.h>
+#include <RHI/CommandQueueContext.h>
+
 
 namespace AZ
 {
     namespace Vulkan
     {
-
         RHI::Ptr<FrameGraphExecuter> FrameGraphExecuter::Create()
         {
             return aznew FrameGraphExecuter();
@@ -32,7 +31,7 @@ namespace AZ
         {
             return static_cast<Device&>(Base::GetDevice());
         }
-
+        
         FrameGraphExecuter::FrameGraphExecuter()
         {
             RHI::JobPolicy graphJobPolicy = RHI::JobPolicy::Parallel;
@@ -41,12 +40,11 @@ namespace AZ
 #endif
             SetJobPolicy(graphJobPolicy);
         }
-
+        
         RHI::ResultCode FrameGraphExecuter::InitInternal(const RHI::FrameGraphExecuterDescriptor& descriptor)
         {
             const RHI::ConstPtr<RHI::PlatformLimitsDescriptor> rhiPlatformLimitsDescriptor = descriptor.m_platformLimitsDescriptor;
-            if (RHI::ConstPtr<PlatformLimitsDescriptor> vkPlatformLimitsDesc =
-                    azrtti_cast<const PlatformLimitsDescriptor*>(rhiPlatformLimitsDescriptor))
+            if (RHI::ConstPtr<PlatformLimitsDescriptor> vkPlatformLimitsDesc = azrtti_cast<const PlatformLimitsDescriptor*>(rhiPlatformLimitsDescriptor))
             {
                 m_frameGraphExecuterData = vkPlatformLimitsDesc->m_frameGraphExecuterData;
             }
@@ -76,24 +74,24 @@ namespace AZ
                 auto nextIter = it + 1;
                 scopeNext = nextIter != scopes.end() ? static_cast<const Scope*>(*nextIter) : nullptr;
                 const bool subpassGroup = (scopeNext && scopeNext->GetFrameGraphGroupId() == scope.GetFrameGraphGroupId()) ||
-                    (scopePrev && scopePrev->GetFrameGraphGroupId() == scope.GetFrameGraphGroupId());
-
+                                          (scopePrev && scopePrev->GetFrameGraphGroupId() == scope.GetFrameGraphGroupId());
+                
                 if (subpassGroup)
                 {
                     FrameGraphExecuteGroupSecondary* scopeContextGroup = AddGroup<FrameGraphExecuteGroupSecondary>();
-                    scopeContextGroup->Init(static_cast<Device&>(scope.GetDevice()), scope, 1, GetJobPolicy());
+                    scopeContextGroup->Init(device, scope, 1, GetJobPolicy());
                 }
                 else
                 {
                     mergedScopes.push_back(&scope);
                     FrameGraphExecuteGroupPrimary* multiScopeContextGroup = AddGroup<FrameGraphExecuteGroupPrimary>();
                     multiScopeContextGroup->SetName(scope.GetName());
-                    multiScopeContextGroup->Init(static_cast<Device&>(scope.GetDevice()), AZStd::move(mergedScopes));
+                    multiScopeContextGroup->Init(device, AZStd::move(mergedScopes));
                 }
                 scopePrev = &scope;
             }
 #else
-
+            
             RHI::HardwareQueueClass mergedHardwareQueueClass = RHI::HardwareQueueClass::Graphics;
             uint32_t mergedGroupCost = 0;
             uint32_t mergedSwapchainCount = 0;
@@ -112,19 +110,22 @@ namespace AZ
 
                 const uint32_t estimatedItemCount = scope.GetEstimatedItemCount();
 
-                const uint32_t CommandListCostThreshold = AZStd::max(
-                    m_frameGraphExecuterData.m_commandListCostThresholdMin,
-                    AZ::DivideAndRoundUp(estimatedItemCount, m_frameGraphExecuterData.m_commandListsPerScopeMax));
+                const uint32_t CommandListCostThreshold =
+                    AZStd::max(
+                        m_frameGraphExecuterData.m_commandListCostThresholdMin,
+                        AZ::DivideAndRoundUp(estimatedItemCount, m_frameGraphExecuterData.m_commandListsPerScopeMax));
 
                 /**
-                 * Computes a cost heuristic based on the number of items and number of attachments in
-                 * the scope. This cost is used to partition command list generation.
-                 */
-                const uint32_t totalScopeCost = estimatedItemCount * m_frameGraphExecuterData.m_itemCost +
+                    * Computes a cost heuristic based on the number of items and number of attachments in
+                    * the scope. This cost is used to partition command list generation.
+                    */
+                const uint32_t totalScopeCost =
+                    estimatedItemCount * m_frameGraphExecuterData.m_itemCost +
                     static_cast<uint32_t>(scope.GetAttachments().size()) * m_frameGraphExecuterData.m_attachmentCost;
 
                 // Check if we are in a middle of a framegraph group.
-                const bool subpassGroup = (scopeNext && scopeNext->GetFrameGraphGroupId() == scope.GetFrameGraphGroupId()) ||
+                const bool subpassGroup =
+                    (scopeNext && scopeNext->GetFrameGraphGroupId() == scope.GetFrameGraphGroupId()) ||
                     (scopePrev && scopePrev->GetFrameGraphGroupId() == scope.GetFrameGraphGroupId());
 
                 const uint32_t swapchainCount = static_cast<uint32_t>(scope.GetSwapChainsToPresent().size());
@@ -135,8 +136,7 @@ namespace AZ
                     const bool exceededCommandCost = (mergedGroupCost + totalScopeCost) > CommandListCostThreshold;
 
                     // Check if the swap chains fit into this group.
-                    const bool exceededSwapChainLimit =
-                        (mergedSwapchainCount + swapchainCount) > m_frameGraphExecuterData.m_swapChainsPerCommandList;
+                    const bool exceededSwapChainLimit = (mergedSwapchainCount + swapchainCount) > m_frameGraphExecuterData.m_swapChainsPerCommandList;
 
                     // Check if the hardware queue classes match.
                     const bool hardwareQueueMismatch = scope.GetHardwareQueueClass() != mergedHardwareQueueClass;
@@ -146,8 +146,7 @@ namespace AZ
                         (scopePrev && (!scopePrev->GetSignalSemaphores().empty() || !scopePrev->GetSignalFences().empty()));
 
                     // If we exceeded limits, then flush the group.
-                    const bool flushMergedScopes =
-                        exceededCommandCost || exceededSwapChainLimit || hardwareQueueMismatch || onSyncBoundaries || subpassGroup;
+                    const bool flushMergedScopes = exceededCommandCost || exceededSwapChainLimit || hardwareQueueMismatch || onSyncBoundaries || subpassGroup;
 
                     if (flushMergedScopes && mergedScopes.size())
                     {
@@ -156,7 +155,7 @@ namespace AZ
                         mergedSwapchainCount = 0;
                         mergedHardwareQueueClass = scope.GetHardwareQueueClass();
                         FrameGraphExecuteGroupPrimary* multiScopeContextGroup = AddGroup<FrameGraphExecuteGroupPrimary>();
-                        multiScopeContextGroup->Init(device, AZStd::move(mergedScopes));
+                        multiScopeContextGroup->Init(device, AZStd::move(mergedScopes));                    
                     }
                 }
 
@@ -226,8 +225,7 @@ namespace AZ
             auto findIter = m_groupHandlers.find(group.GetGroupId());
             AZ_Assert(findIter != m_groupHandlers.end(), "Could not find group handler for groupId %d", group.GetGroupId().GetIndex());
             FrameGraphExecuteGroupHandler* handler = findIter->second.get();
-            // Wait until all execute groups of the handler has finished and also make sure that the handler itself hasn't executed already
-            // (which is possible for parallel encoding).
+            // Wait until all execute groups of the handler has finished and also make sure that the handler itself hasn't executed already (which is possible for parallel encoding).
             if (!handler->IsExecuted() && handler->IsComplete())
             {
                 // This will execute the recorded work into the queue.
@@ -240,8 +238,7 @@ namespace AZ
             m_groupHandlers.clear();
         }
 
-        void FrameGraphExecuter::AddExecuteGroupHandler(
-            const RHI::GraphGroupId& groupId, const AZStd::vector<RHI::FrameGraphExecuteGroup*>& groups)
+        void FrameGraphExecuter::AddExecuteGroupHandler(const RHI::GraphGroupId& groupId, const AZStd::vector<RHI::FrameGraphExecuteGroup*>& groups)
         {
             if (groups.empty())
             {
@@ -249,13 +246,12 @@ namespace AZ
             }
 
             // Add the handler depending on the number of execute groups.
-            AZStd::unique_ptr<FrameGraphExecuteGroupHandler> handler(
-                groups.size() == 1 && azrtti_cast<FrameGraphExecuteGroupPrimary*>(groups.front())
-                    ? static_cast<FrameGraphExecuteGroupHandler*>(aznew FrameGraphExecuteGroupPrimaryHandler)
-                    : static_cast<FrameGraphExecuteGroupHandler*>(aznew FrameGraphExecuteGroupSecondaryHandler));
+            AZStd::unique_ptr<FrameGraphExecuteGroupHandler> handler(groups.size() == 1 && azrtti_cast<FrameGraphExecuteGroupPrimary*>(groups.front()) ?
+                static_cast<FrameGraphExecuteGroupHandler*>(aznew FrameGraphExecuteGroupPrimaryHandler) :
+                static_cast<FrameGraphExecuteGroupHandler*>(aznew FrameGraphExecuteGroupSecondaryHandler));
 
             handler->Init(GetDevice(), groups);
             m_groupHandlers.insert({ groupId, AZStd::move(handler) });
         }
-    } // namespace Vulkan
-} // namespace AZ
+    }
+}

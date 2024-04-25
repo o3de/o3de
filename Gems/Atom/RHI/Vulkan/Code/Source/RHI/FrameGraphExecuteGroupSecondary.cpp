@@ -17,7 +17,10 @@
 namespace AZ::Vulkan
 {
     void FrameGraphExecuteGroupSecondary::Init(
-        Device& device, const Scope& scope, uint32_t commandListCount, RHI::JobPolicy globalJobPolicy)
+        Device& device,
+        const Scope& scope,
+        uint32_t commandListCount,
+        RHI::JobPolicy globalJobPolicy)
     {
         Base::InitBase(device, scope.GetFrameGraphGroupId(), scope.GetHardwareQueueClass());
         m_scope = &scope;

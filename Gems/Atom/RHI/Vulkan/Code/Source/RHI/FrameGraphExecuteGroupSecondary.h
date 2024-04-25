@@ -34,7 +34,10 @@ namespace AZ::Vulkan
         FrameGraphExecuteGroupSecondary() = default;
         ~FrameGraphExecuteGroupSecondary() = default;
 
-        void Init(Device& device, const Scope& scope, uint32_t commandListCount, RHI::JobPolicy globalJobPolicy);
+        void Init(Device& device,
+            const Scope& scope,
+            uint32_t commandListCount,
+            RHI::JobPolicy globalJobPolicy);
 
         //////////////////////////////////////////////////////////////////////////
         // FrameGraphExecuteGroup
