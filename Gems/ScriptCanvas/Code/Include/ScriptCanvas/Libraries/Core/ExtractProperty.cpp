@@ -106,7 +106,7 @@ namespace ScriptCanvas
                         AZ_Warning("ScriptCanvas", false,"Node '%s':  Property (%s : %s) getter method could not be found in Data::PropertyMetadata.  This node is out of date!",
                             this->GetDebugName().c_str(),
                             propertyAccount.m_propertyName.c_str(),
-                            Data::GetName(propertyAccount.m_propertyType).data());
+                            Data::GetName(propertyAccount.m_propertyType).c_str());
 
                         isOutOfDate = true;
                         break;
