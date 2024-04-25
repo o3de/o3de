@@ -63,6 +63,8 @@ namespace AZ
                 }
                 void ShutdownObject(Semaphore& semaphore, bool isPoolShutdown)
                 {
+                    AZ_UNUSED(semaphore);
+                    AZ_UNUSED(isPoolShutdown);
                 }
                 bool CollectObject(Semaphore& semaphore)
                 {
