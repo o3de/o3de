@@ -9,7 +9,7 @@
 #pragma once
 
 // Add the DragRight gesture
-#if defined(CARBONATED)
+#if defined(CARBONATED) && 0
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>

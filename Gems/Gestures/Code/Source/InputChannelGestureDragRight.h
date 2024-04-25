@@ -9,7 +9,7 @@
 #pragma once
 
 // Add the DragRight gesture
-#if defined(CARBONATED)
+#if defined(CARBONATED) && 0
 
 #include "InputChannelGesture.h"
 

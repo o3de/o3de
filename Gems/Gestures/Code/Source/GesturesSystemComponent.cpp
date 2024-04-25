@@ -48,7 +48,7 @@ namespace Gestures
                 ->Field("DoublePressConfig", &GesturesSystemComponent::m_doublePressConfig)
                 ->Field("DragConfig", &GesturesSystemComponent::m_dragConfig)
 // Add the DragRight gesture
-#if defined(CARBONATED)
+#if defined(CARBONATED) && 0
                 ->Field("DragRightConfig", &GesturesSystemComponent::m_dragRightConfig)
 #endif
                 ->Field("HoldConfig", &GesturesSystemComponent::m_holdConfig)
@@ -68,7 +68,7 @@ namespace Gestures
                     ->DataElement(0, &GesturesSystemComponent::m_dragConfig,
                         "Drag", "The config used to create the default drag gesture input channel.")
 // Add the DragRight gesture
-#if defined(CARBONATED)
+#if defined(CARBONATED) && 0
                     ->DataElement(0, &GesturesSystemComponent::m_dragRightConfig,
                         "DragRight", "The config used to create the right drag gesture input channel.")
 #endif
@@ -121,7 +121,7 @@ namespace Gestures
         configsByName[InputDeviceGestures::Gesture::DoublePress.GetName()] = &m_doublePressConfig;
         configsByName[InputDeviceGestures::Gesture::Drag.GetName()] = &m_dragConfig;
 // Add the DragRight gesture
-#if defined(CARBONATED)
+#if defined(CARBONATED) && 0
         configsByName[InputDeviceGestures::Gesture::DragRight.GetName()] = &m_dragRightConfig;
 #endif
         configsByName[InputDeviceGestures::Gesture::Hold.GetName()] = &m_holdConfig;

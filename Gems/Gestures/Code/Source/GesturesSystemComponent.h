@@ -16,7 +16,7 @@
 #include "InputChannelGestureClickOrTap.h"
 #include "InputChannelGestureDrag.h"
 // Add the DragRight gesture
-#if defined(CARBONATED)
+#if defined(CARBONATED) && 0
 #include "InputChannelGestureDragRight.h"
 #endif
 #include "InputChannelGestureHold.h"
@@ -76,7 +76,7 @@ namespace Gestures
         InputChannelGestureClickOrTap::TypeAndConfig m_doublePressConfig;
         InputChannelGestureDrag::TypeAndConfig       m_dragConfig;
 // Add the DragRight gesture
-#if defined(CARBONATED)
+#if defined(CARBONATED) && 0
         InputChannelGestureDragRight::TypeAndConfig  m_dragRightConfig;
 #endif
         InputChannelGestureHold::TypeAndConfig       m_holdConfig;

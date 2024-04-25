@@ -38,7 +38,7 @@ namespace Gestures
             static const AzFramework::InputChannelId DoublePress;
             static const AzFramework::InputChannelId Drag;
 // Add the DragRight gesture
-#if defined(CARBONATED)
+#if defined(CARBONATED) && 0
             static const AzFramework::InputChannelId DragRight;
 #endif
             static const AzFramework::InputChannelId Hold;
@@ -48,7 +48,7 @@ namespace Gestures
 
             //!< All gesture channel ids
 // Add the DragRight gesture
-#if defined(CARBONATED)
+#if defined(CARBONATED) && 0
             static const AZStd::array<AzFramework::InputChannelId, 7> All;
 #else
             static const AZStd::array<AzFramework::InputChannelId, 6> All;
