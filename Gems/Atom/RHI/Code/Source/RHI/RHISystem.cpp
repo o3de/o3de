@@ -118,7 +118,10 @@ namespace AZ::RHI
         {
             AZ_Printf("RHISystem", "\tUsing multiple devices\n");
 
-            usePhysicalDevices = AZStd::move(physicalDevices);
+            for(auto i {0}; (i < deviceCount) && (i < static_cast<int>(AZStd::size(physicalDevices))); ++i)
+            {
+                usePhysicalDevices.emplace_back(physicalDevices[i]);
+            }
         }
         else
         {
@@ -268,21 +271,10 @@ namespace AZ::RHI
             return AZStd::nullopt;
         }
 
-        // We need to pass a non-const PhysicalDevice& to Device::Init(), hence this detour is needed to locate
-        // the corresponding PhysicalDevice without const
-        RHI::Ptr<RHI::PhysicalDevice> selectedPhysicalDevice;
-        for (RHI::Ptr<RHI::PhysicalDevice>& physicalDevice : RHI::Factory::Get().EnumeratePhysicalDevices())
-        {
-            if (physicalDevice.get() == &m_devices[deviceIndexToVirtualize]->GetPhysicalDevice())
-            {
-                selectedPhysicalDevice = physicalDevice;
-                break;
-            }
-        }
-
         RHI::Ptr<RHI::Device> device = RHI::Factory::Get().CreateDevice();
         auto virtualDeviceIndex{ static_cast<int>(m_devices.size()) };
-        if (device->Init(virtualDeviceIndex, *selectedPhysicalDevice) == RHI::ResultCode::Success)
+        auto& selectedPhysicalDevice = const_cast<RHI::PhysicalDevice&>(m_devices[deviceIndexToVirtualize]->GetPhysicalDevice());
+        if (device->Init(virtualDeviceIndex, selectedPhysicalDevice) == RHI::ResultCode::Success)
         {
             m_devices.emplace_back(AZStd::move(device));
             return virtualDeviceIndex;

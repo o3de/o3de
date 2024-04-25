@@ -23,7 +23,6 @@
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabToInMemorySpawnableNotificationBus.h>
-#include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 
 namespace AzNetworking
 {
@@ -55,7 +54,6 @@ namespace Multiplayer
         , private AZ::TickBus::Handler
         , private AzToolsFramework::Prefab::PrefabToInMemorySpawnableNotificationBus::Handler
         , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
-        , private AzToolsFramework::EditorContextMenuBus::Handler
         , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
     {
     public:
@@ -99,12 +97,6 @@ namespace Multiplayer
         void OnStartPlayInEditorBegin() override;
         void OnStartPlayInEditor() override;
         void OnStopPlayInEditorBegin() override;
-        //! @}
-
-        //! AzToolsFramework::EditorContextMenu::Bus::Handler overrides
-        //! @{
-        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZStd::optional<AzFramework::ScreenPoint>& point, int flags) override;
-        int GetMenuPosition() const override;
         //! @}
 
         // AzToolsFramework::ActionManagerRegistrationNotificationBus overrides ...
@@ -152,7 +144,7 @@ namespace Multiplayer
             AZStd::string assetHint;
             AZ::Data::AssetId assetId;
         };
-        
+
         AZStd::vector<PreAliasedSpawnableData> m_preAliasedSpawnablesForServer;
 
         // Structure that encapsulates the data we need for sending the level data to the server when entering game mode.

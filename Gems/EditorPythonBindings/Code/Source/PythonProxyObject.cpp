@@ -10,11 +10,11 @@
 
 #include <AzFramework/StringFunc/StringFunc.h>
 
-#include <Source/PythonCommon.h>
-#include <Source/PythonUtility.h>
+#include <EditorPythonBindings/PythonUtility.h>
+#include <EditorPythonBindings/PythonCommon.h>
 #include <Source/PythonMarshalComponent.h>
-#include <Source/PythonTypeCasters.h>
 #include <Source/PythonSymbolsBus.h>
+#include <Source/PythonTypeCasters.h>
 
 #include <pybind11/embed.h>
 #include <pybind11/pybind11.h>

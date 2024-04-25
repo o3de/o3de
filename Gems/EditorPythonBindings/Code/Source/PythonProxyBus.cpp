@@ -8,10 +8,10 @@
 
 #include <PythonProxyBus.h>
 
-#include <Source/PythonUtility.h>
+#include <EditorPythonBindings/PythonUtility.h>
 #include <Source/PythonTypeCasters.h>
 
-#include <Source/PythonCommon.h>
+#include <EditorPythonBindings/PythonCommon.h>
 #include <Source/PythonSymbolsBus.h>
 #include <pybind11/embed.h>
 

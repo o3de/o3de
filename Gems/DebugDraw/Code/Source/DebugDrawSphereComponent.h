@@ -31,6 +31,8 @@ namespace DebugDraw
         AZ::Vector3             m_worldLocation;
         float                   m_radius;
 
+        bool                    m_isRayTracingEnabled = false;
+
         AZ::ComponentId         m_owningEditorComponent;
 
         DebugDrawSphereElement()

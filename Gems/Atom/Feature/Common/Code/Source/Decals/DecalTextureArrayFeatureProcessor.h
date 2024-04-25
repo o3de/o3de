@@ -124,6 +124,7 @@ namespace AZ
             bool RemoveDecalFromTextureArrays(const DecalLocation decalLocation);
             AZ::Data::AssetId GetMaterialUsedByDecal(const DecalHandle handle) const;
             void PackTexureArrays();
+            void SetMaterialToDecals(RPI::MaterialAsset* materialAsset, const AZStd::vector<DecalHandle>& decalsThatUseThisMaterial);
 
             IndexedDataVector<DecalData> m_decalData;
 
