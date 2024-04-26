@@ -29,7 +29,8 @@ namespace
     // Color to u32 => 0xAARRGGBB
     AZ::u32 PackARGB8888(const AZ::Color& color)
     {
-#if defined(CARBONATED) && defined(AZ_PLATFORM_IOS) // support ABGR color on iOS
+#if defined(CARBONATED) && defined(AZ_PLATFORM_IOS)
+        // support ABGR color on iOS
         return (color.GetA8() << 24) | (color.GetB8() << 16) | (color.GetG8() << 8) | color.GetR8();
 #else
         return (color.GetA8() << 24) | (color.GetR8() << 16) | (color.GetG8() << 8) | color.GetB8();
