@@ -1842,7 +1842,7 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
         auto systemImage = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
         bool isClampTextureMode = true;
 
-#if defined(CARBONATED) && defined(AZ_PLATFORM_IOS) // support ABGR color on IOS
+#if defined(CARBONATED) && defined(AZ_PLATFORM_IOS) // support ABGR color on iOS
         uint32 packedColor = (m_textSelectionColor.GetA8() << 24) | (m_textSelectionColor.GetB8() << 16) | (m_textSelectionColor.GetG8() << 8) | m_textSelectionColor.GetR8();
 #else
         uint32 packedColor = (m_textSelectionColor.GetA8() << 24) | (m_textSelectionColor.GetR8() << 16) | (m_textSelectionColor.GetG8() << 8) | m_textSelectionColor.GetB8();
@@ -4187,7 +4187,7 @@ void UiTextComponent::RenderToCache(float alpha)
             elemSize.GetY());
     }
 
-#if defined(CARBONATED) && defined(AZ_PLATFORM_IOS) // support ABGR color on IOS
+#if defined(CARBONATED) && defined(AZ_PLATFORM_IOS) // support ABGR color on iOS
     AZStd::swap(fontContext.m_colorOverride.b, fontContext.m_colorOverride.r); // swap R and B
 #endif
     m_renderCache.m_fontContext = fontContext;
