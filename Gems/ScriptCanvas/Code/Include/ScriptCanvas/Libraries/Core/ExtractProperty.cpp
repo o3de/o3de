@@ -98,9 +98,18 @@ namespace ScriptCanvas
             {
                 AZ_UNUSED(graphVersion);
 
+                AZ_Info("ScriptCanvas", "Node '%s' - Checking Is Out Of Date:", this->GetDebugName().c_str());
                 bool isOutOfDate = false;
                 for (auto propertyAccount : m_propertyAccounts)
                 {
+                    bool hasGetter = (bool)propertyAccount.m_getterFunction;
+                    AZ_Info(
+                        "ScriptCanvas",
+                        "Property: (%s : %s) = %s",
+                        propertyAccount.m_propertyName.c_str(),
+                        Data::GetName(propertyAccount.m_propertyType).c_str(),
+                        hasGetter ? "True" : "False");
+
                     if (!propertyAccount.m_getterFunction)
                     {
                         // Print out the error message for each property that is out of date
@@ -132,6 +141,8 @@ namespace ScriptCanvas
 
             void ExtractProperty::RefreshGetterFunctions()
             {
+                AZ_Info("ScriptCanvas", "Node '%s' - Refreshing Getter Functions:", this->GetDebugName().c_str());
+
                 Data::Type sourceType = GetSourceSlotDataType();
                 if (!sourceType.IsValid())
                 {
@@ -142,6 +153,13 @@ namespace ScriptCanvas
 
                 for (auto&& propertyAccount : m_propertyAccounts)
                 {
+                    bool hasGetter = (bool)propertyAccount.m_getterFunction;
+                    AZ_Info("ScriptCanvas",
+                        "Property: (%s : %s) = %s",
+                        propertyAccount.m_propertyName.c_str(),
+                        Data::GetName(propertyAccount.m_propertyType).c_str(),
+                        hasGetter ? "True" : "False");
+
                     if (!propertyAccount.m_getterFunction)
                     {
                         auto foundPropIt = getterWrapperMap.find(propertyAccount.m_propertyName);
