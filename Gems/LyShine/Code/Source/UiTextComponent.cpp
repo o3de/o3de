@@ -4188,11 +4188,9 @@ void UiTextComponent::RenderToCache(float alpha)
     }
 
 #if defined(CARBONATED) && defined(AZ_PLATFORM_IOS) // support ABGR color on IOS
-    std::swap(fontContext.m_colorOverride.b, fontContext.m_colorOverride.r); // swap R and B
+    AZStd::swap(fontContext.m_colorOverride.b, fontContext.m_colorOverride.r); // swap R and B
 #endif
-
     m_renderCache.m_fontContext = fontContext;
-
     AZ::Vector2 pos = CalculateAlignedPositionWithYOffset(points);
     RenderDrawBatchLines(drawBatchLines, pos, points, transform, fontContext);
 }
