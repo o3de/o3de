@@ -155,6 +155,7 @@ namespace ScriptCanvas
 
                 auto getterWrapperMap = Data::ExplodeToGetters(sourceType);
 
+                int i = 0;
                 for (auto&& propertyAccount : m_propertyAccounts)
                 {
                     AZ_Info("ScriptCanvas", "Checking Property: (%s : %s)", propertyAccount.m_propertyName.c_str(), Data::GetName(propertyAccount.m_propertyType).c_str());
@@ -178,8 +179,6 @@ namespace ScriptCanvas
                                 propertyAccount.m_propertyName.c_str(), Data::GetName(propertyAccount.m_propertyType).data());
                         }
                     }
-
-                    int i = 0;
                     bool hasGetter = (bool)propertyAccount.m_getterFunction;
                     AZ_Info(
                         "ScriptCanvas",
