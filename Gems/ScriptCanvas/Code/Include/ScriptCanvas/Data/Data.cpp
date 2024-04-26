@@ -96,6 +96,7 @@ namespace ScriptCanvas
                 }
             }
 
+            AZ_Info("ScriptCanvas", "Failed to find behavior class for typeID: %s", typeID.ToString<AZStd::string>().c_str());
             return "Invalid BehaviorContext::Class name";
         }
 
