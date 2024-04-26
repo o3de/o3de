@@ -136,9 +136,9 @@ namespace AzFramework
                 // Refs:
                 // - MAD-15059
                 // - https://discord.com/channels/805939474655346758/1222658661604659270/1233132847745990777
-                //   Nick_L — 04/25/24 10:09 PM
+                //   Nick_L (04/25/24 10:09 PM)
                 //   so summary here
-                //    - ultra short term, may have to use classdeprecate to hack around the errors
+                //    - ultra short term, may have to use classdeprecate to hack around the errors      
                 //    - short term, gotta pass the slice files from ui thru the ui compiler somehow so it does the same process
                 //    - longer term,  gotta move the ui stuff off slices and onto prefabs
                 //    somehow the longer term kind of implies the shorter terms are kind of throwaway or temp
