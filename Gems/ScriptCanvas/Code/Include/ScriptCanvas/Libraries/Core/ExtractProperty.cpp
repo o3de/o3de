@@ -98,6 +98,7 @@ namespace ScriptCanvas
             {
                 AZ_UNUSED(graphVersion);
 
+#if defined(CARBONATED)
                 int numOutOfDate = 0;
                 for (auto propertyAccount : m_propertyAccounts)
                 {
@@ -113,8 +114,21 @@ namespace ScriptCanvas
                     }
                 }
 
-                AZ_Error("ScriptCanvas", numOutOfDate == 0, "Node '%s':  Node is out of date due to one or more properties missing a getter function.", this->GetDebugName().c_str());
+                AZ_Error("ScriptCanvas", numOutOfDate == 0, "Node '%s':  Out of date, due %d/%d properties missing a getter function.", this->GetDebugName().c_str(), numOutOfDate, m_propertyAccounts.size());
                 return (numOutOfDate > 0);
+#else
+                bool isOutOfDate = false;
+                for (auto propertyAccount : m_propertyAccounts)
+                {
+                    if (!propertyAccount.m_getterFunction)
+                    {
+                        isOutOfDate = true;
+                        break;
+                    }
+                }
+
+                return isOutOfDate;
+#endif
             }
 
             UpdateResult ExtractProperty::OnUpdateNode()
