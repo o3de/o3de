@@ -96,7 +96,12 @@ namespace EMotionFX
             return 2;
         }
 
+#if defined(CARBONATED)
+        // Fixed incorrect rounding. Sometimes we calculated a value like 14.9999999 and it was erroneously casted to 14 instead of 15 on some platforms.
+        return static_cast<size_t>(AZStd::lround(duration / sampleSpacing)) + 1;
+#else
         return static_cast<size_t>(duration / sampleSpacing) + 1;
+#endif
     }
 
     void MotionData::CalculateSampleInformation(float duration, float& inOutSampleRate, size_t& numSamples, float& sampleSpacing)

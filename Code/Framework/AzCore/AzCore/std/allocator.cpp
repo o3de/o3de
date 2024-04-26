@@ -19,6 +19,13 @@ namespace AZStd
 
     void allocator::deallocate(pointer ptr, size_type byteSize, size_type alignment)
     {
+#if defined(CARBONATED)
+        if (!AZ::AllocatorInstance<AZ::SystemAllocator>::HasAllocator())
+        {
+            // Avoid the crash on app exit when deallocate is invoked after the allocator object deleted.
+            return;
+        }
+#endif
         AZ::AllocatorInstance<AZ::SystemAllocator>::Get().deallocate(ptr, byteSize, alignment);
     }
 

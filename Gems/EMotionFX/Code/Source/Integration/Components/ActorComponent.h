@@ -119,6 +119,9 @@ namespace EMotionFX
             void DetachFromEntity() override;
             bool GetRenderCharacter() const override;
             void SetRenderCharacter(bool enable) override;
+#if defined(CARBONATED)
+            void SetForceJointUpdate(bool force) override;
+#endif
             bool GetRenderActorVisible() const override;
             SkinningMethod GetSkinningMethod() const override;
             void SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset) override;
