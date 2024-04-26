@@ -215,7 +215,7 @@ namespace AZ
 
         SetState(State::Active);
 
-#if defined(CARBONATED_LOG)
+#if defined(CARBONATED_ENGINE_LOG)
         AZ_Printf("Entity", "Activate. %s, %s, m_components.size=%u", GetId().ToString().c_str(), GetName().c_str(), m_components.size());
 #endif
         EntityBus::Event(m_id, &EntityBus::Events::OnEntityActivated, m_id);
@@ -242,7 +242,7 @@ namespace AZ
         AZ_Assert(m_state == State::Active, "Component should be in Active state to be Deactivated!");
         SetState(State::Deactivating);
 
-#if defined(CARBONATED_LOG)
+#if defined(CARBONATED_ENGINE_LOG)
         AZ_Printf("Entity", "Deactivate. %s, %s, m_components.size=%u", GetId().ToString().c_str(), GetName().c_str(), m_components.size());
 #endif
 
