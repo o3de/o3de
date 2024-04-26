@@ -45,6 +45,8 @@ namespace AZ
             m_descriptor.m_platformLimitsDescriptor = RHI::Ptr<RHI::PlatformLimitsDescriptor>(platformLimitsDescriptor);
         }
 
+        Device::~Device() = default;
+
         RHI::Ptr<Device> Device::Create()
         {
             return aznew Device();
