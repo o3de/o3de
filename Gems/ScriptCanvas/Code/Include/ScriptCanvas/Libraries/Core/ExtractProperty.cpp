@@ -98,20 +98,9 @@ namespace ScriptCanvas
             {
                 AZ_UNUSED(graphVersion);
 
-                AZ_Info("ScriptCanvas", "Node '%s' - Checking Is Out Of Date:", this->GetDebugName().c_str());
-                bool isOutOfDate = false;
-                int i = 0;
+                int numOutOfDate = 0;
                 for (auto propertyAccount : m_propertyAccounts)
                 {
-                    bool hasGetter = (bool)propertyAccount.m_getterFunction;
-                    AZ_Info(
-                        "ScriptCanvas",
-                        "%d) Property: (%s : %s) = %s",
-                        i++,
-                        propertyAccount.m_propertyName.c_str(),
-                        Data::GetName(propertyAccount.m_propertyType).c_str(),
-                        hasGetter ? "True" : "False");
-
                     if (!propertyAccount.m_getterFunction)
                     {
                         // Print out the error message for each property that is out of date
@@ -120,14 +109,12 @@ namespace ScriptCanvas
                             propertyAccount.m_propertyName.c_str(),
                             Data::GetName(propertyAccount.m_propertyType).c_str());
 
-                        isOutOfDate = true;
+                        numOutOfDate++;
                     }
                 }
-                AZ_Warning("ScriptCanvas", !isOutOfDate, "Node '%s':  Node is out of date due to one or more properties missing a getter function.", this->GetDebugName().c_str());
 
-                AZ_Info("ScriptCanvas", "Node '%s' - DONE CHECKING IS OUT OF DATE", this->GetDebugName().c_str());
-
-                return isOutOfDate;
+                AZ_Error("ScriptCanvas", numOutOfDate == 0, "Node '%s':  Node is out of date due to one or more properties missing a getter function.", this->GetDebugName().c_str());
+                return (numOutOfDate > 0);
             }
 
             UpdateResult ExtractProperty::OnUpdateNode()
@@ -145,8 +132,6 @@ namespace ScriptCanvas
 
             void ExtractProperty::RefreshGetterFunctions()
             {
-                AZ_Info("ScriptCanvas", "Node '%s' - Refreshing Getter Functions:", this->GetDebugName().c_str());
-
                 Data::Type sourceType = GetSourceSlotDataType();
                 if (!sourceType.IsValid())
                 {
@@ -155,16 +140,8 @@ namespace ScriptCanvas
 
                 auto getterWrapperMap = Data::ExplodeToGetters(sourceType);
 
-                int i = 0;
                 for (auto&& propertyAccount : m_propertyAccounts)
                 {
-                    AZ_Info("ScriptCanvas", "Checking Property: (%s : %s)", propertyAccount.m_propertyName.c_str(), Data::GetName(propertyAccount.m_propertyType).c_str());
-
-                    if (propertyAccount.m_propertyName == "infamy")
-                    {
-                        AZ_Info("ScriptCanvas", "here");
-                    }
-
                     if (!propertyAccount.m_getterFunction)
                     {
                         auto foundPropIt = getterWrapperMap.find(propertyAccount.m_propertyName);
@@ -179,18 +156,9 @@ namespace ScriptCanvas
                                 propertyAccount.m_propertyName.c_str(), Data::GetName(propertyAccount.m_propertyType).data());
                         }
                     }
-                    bool hasGetter = (bool)propertyAccount.m_getterFunction;
-                    AZ_Info(
-                        "ScriptCanvas",
-                        "%d) Result: Property: (%s : %s) = %s",
-                        i++,
-                        propertyAccount.m_propertyName.c_str(),
-                        Data::GetName(propertyAccount.m_propertyType).c_str(),
-                        hasGetter ? "True" : "False");
                 }
 
                 UpdatePropertyVersion();
-                AZ_Info("ScriptCanvas", "Node '%s' - DONE REFRESHING GETTER FUNCTIONS", this->GetDebugName().c_str());
             }
 
             void ExtractProperty::UpdatePropertyVersion()
@@ -228,11 +196,6 @@ namespace ScriptCanvas
 
                     if (existingSlots.find(slotName) == existingSlots.end())
                     {
-                        if (propertyName == "infamy")
-                        {
-                            AZ_Info("ScriptCanvas", "here");
-                        }
-
                         Data::PropertyMetadata propertyAccount;
                         propertyAccount.m_propertyType = getterWrapper.m_propertyType;
                         propertyAccount.m_propertyName = propertyName;
@@ -247,9 +210,6 @@ namespace ScriptCanvas
 
                         propertyAccount.m_getterFunction = getterWrapper.m_getterFunction;
                         m_propertyAccounts.push_back(propertyAccount);
-
-                        AZ_Info("ScriptCanvas", "Added Property Slot: (%s : %s)", propertyName.c_str(), Data::GetName(getterWrapper.m_propertyType).c_str());
-
                     }
                 }
             }
