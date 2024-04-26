@@ -248,6 +248,9 @@ namespace ScriptCanvas
 
                         propertyAccount.m_getterFunction = getterWrapper.m_getterFunction;
                         m_propertyAccounts.push_back(propertyAccount);
+
+                        AZ_Info("ScriptCanvas", "Added Property Slot: (%s : %s)", propertyName.c_str(), Data::GetName(getterWrapper.m_propertyType).c_str());
+
                     }
                 }
             }
