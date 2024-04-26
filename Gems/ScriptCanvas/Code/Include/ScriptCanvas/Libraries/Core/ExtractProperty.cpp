@@ -184,7 +184,7 @@ namespace ScriptCanvas
                     AZ_Info(
                         "ScriptCanvas",
                         "%d) Result: Property: (%s : %s) = %s",
-                        i++
+                        i++,
                         propertyAccount.m_propertyName.c_str(),
                         Data::GetName(propertyAccount.m_propertyType).c_str(),
                         hasGetter ? "True" : "False");
