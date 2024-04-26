@@ -149,10 +149,10 @@ float ProjectedShadow::GetVisibilityPcf()
 
     SampleShadowMapBicubicParameters param;
     param.shadowMap = PassSrg::m_projectedShadowmaps;
-    param.shadowPos = float3(atlasPosition.xy * ViewSrg::m_invShadowmapAtlasSize, atlasPosition.z);
-    param.shadowMapSize = ViewSrg::m_shadowmapAtlasSize;
-    param.invShadowMapSize = ViewSrg::m_invShadowmapAtlasSize;
-    param.comparisonValue = m_shadowPosition.z - m_bias;
+    param.shadowPos = real3(atlasPosition.xy * ViewSrg::m_invShadowmapAtlasSize, atlasPosition.z);
+    param.shadowMapSize = real(ViewSrg::m_shadowmapAtlasSize);
+    param.invShadowMapSize = real(ViewSrg::m_invShadowmapAtlasSize);
+    param.comparisonValue = real(m_shadowPosition.z - m_bias);
     param.samplerState = SceneSrg::m_hwPcfSampler;
 
     if (filteringSampleCount <= 4)       

@@ -49,8 +49,7 @@ namespace AZ
 
             void End(
                 CommandList& commandList,
-                AZ::u32 commandListIndex,
-                AZ::u32 commandListCount) const;
+                bool signalFencesForAliasedResources) const;
             
             MTLRenderPassDescriptor* GetRenderPassDescriptor() const;
             

@@ -27,6 +27,7 @@
 #include <Atom/RHI/DispatchRaysItem.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/IndirectArguments.h>
+#include <Atom/RHI/RHISystemInterface.h>
 
 #include <RHI/DispatchRaysIndirectBuffer.h>
 
@@ -96,7 +97,7 @@ namespace AZ
         {
             SetName(name);
 
-            if (RHI::Factory::Get().PixGpuEventsEnabled() && r_gpuMarkersMergeGroups)
+            if (RHI::RHISystemInterface::Get()->GpuMarkersEnabled() && r_gpuMarkersMergeGroups)
             {
                 PIXBeginEvent(GetCommandList(), PIX_MARKER_CMDLIST_COL, name.GetCStr());
             }
@@ -105,7 +106,7 @@ namespace AZ
         void CommandList::Close()
         {
             FlushBarriers();
-            if (RHI::Factory::Get().PixGpuEventsEnabled() && r_gpuMarkersMergeGroups)
+            if (RHI::RHISystemInterface::Get()->GpuMarkersEnabled() && r_gpuMarkersMergeGroups)
             {
                 PIXEndEvent(GetCommandList());
             }

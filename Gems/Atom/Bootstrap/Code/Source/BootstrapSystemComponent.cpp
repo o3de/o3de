@@ -121,7 +121,19 @@ AZ_CVAR(uint32_t, r_width, 1920, nullptr, AZ::ConsoleFunctorFlags::DontReplicate
 AZ_CVAR(uint32_t, r_height, 1080, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Starting window height in pixels.");
 AZ_CVAR(uint32_t, r_fullscreen, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Starting fullscreen state.");
 AZ_CVAR(uint32_t, r_resolutionMode, 0, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "0: render resolution same as window client area size, 1: render resolution use the values specified by r_width and r_height");
-AZ_CVAR(float, r_renderScale, 1.0f, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Scale to apply to the window resolution.");
+
+void cvar_r_renderScale_Changed(const float& newRenderScale)
+{
+    AZ_Error("AtomBootstrap", newRenderScale > 0, "RenderScale should be greater than 0");
+    if (newRenderScale > 0)
+    {
+        AzFramework::WindowSize newSize =
+            AzFramework::WindowSize(static_cast<uint32_t>(r_width * newRenderScale), static_cast<uint32_t>(r_height * newRenderScale));
+        AzFramework::WindowRequestBus::Broadcast(&AzFramework::WindowRequestBus::Events::SetEnableCustomizedResolution, true);
+        AzFramework::WindowRequestBus::Broadcast(&AzFramework::WindowRequestBus::Events::SetRenderResolution, newSize);
+    }
+}
+AZ_CVAR(float, r_renderScale, 1.0f, cvar_r_renderScale_Changed, AZ::ConsoleFunctorFlags::DontReplicate, "Scale to apply to the window resolution.");
 AZ_CVAR(AZ::CVarFixedString, r_antiAliasing, "", cvar_r_antiAliasing_Changed, AZ::ConsoleFunctorFlags::DontReplicate, "The anti-aliasing to be used for the current render pipeline. Available options: MSAA, TAA, SMAA");
 AZ_CVAR(uint16_t, r_multiSampleCount, 0, cvar_r_multiSample_Changed, AZ::ConsoleFunctorFlags::DontReplicate, "The multi-sample count to be used for the current render pipeline."); // 0 stands for unchanged, load the default setting from the pipeline itself
 
@@ -677,8 +689,10 @@ namespace AZ
 
                 // Switch render pipeline
                 viewportContext->GetRenderScene()->RemoveRenderPipeline(oldRenderPipeline->GetId());
+                auto view = oldRenderPipeline->GetDefaultView();
+                oldRenderPipeline = nullptr;
                 viewportContext->GetRenderScene()->AddRenderPipeline(newRenderPipeline);
-                newRenderPipeline->SetDefaultView(oldRenderPipeline->GetDefaultView());
+                newRenderPipeline->SetDefaultView(view);
 
                 AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(newRenderPipeline->GetRenderSettings().m_multisampleState);
             }
