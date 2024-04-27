@@ -114,7 +114,7 @@ namespace ScriptCanvas
                     }
                 }
 
-                AZ_Error("ScriptCanvas", numOutOfDate == 0, "Node '%s':  Out of date, due %d/%d properties missing a getter function.", this->GetDebugName().c_str(), numOutOfDate, m_propertyAccounts.size());
+                AZ_Error("ScriptCanvas", numOutOfDate == 0, "Node '%s':  Out of date.  (%d/%d) properties are missing a getter function.", this->GetDebugName().c_str(), numOutOfDate, m_propertyAccounts.size());
                 return (numOutOfDate > 0);
 #else
                 bool isOutOfDate = false;
