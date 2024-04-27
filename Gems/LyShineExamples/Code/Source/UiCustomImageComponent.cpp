@@ -354,8 +354,8 @@ namespace LyShineExamples
         AZ::Color color = AZ::Color::CreateFromVector3AndFloat(m_overrideColor.GetAsVector3(), desiredAlpha);
         color = color.GammaToLinear();   // the colors are specified in sRGB but we want linear colors in the shader
 
-#if defined(CARBONATED) && defined(AZ_PLATFORM_IOS)
-        // support ABGR color on iOS
+#if defined(CARBONATED) && AZ_TRAIT_OS_PLATFORM_APPLE
+        // support ABGR colorization
         uint32 packedColor = (color.GetA8() << 24) | (color.GetB8() << 16) | (color.GetG8() << 8) | color.GetR8();
 #else
         uint32 packedColor = (color.GetA8() << 24) | (color.GetR8() << 16) | (color.GetG8() << 8) | color.GetB8();
