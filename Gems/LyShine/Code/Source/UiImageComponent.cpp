@@ -374,7 +374,12 @@ void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
         {
             color = color.GammaToLinear();   // the colors are specified in sRGB but we want linear colors in the shader
         }
+#if defined(CARBONATED) && AZ_TRAIT_OS_PLATFORM_APPLE
+        // support ABGR colorization
+        uint32 packedColor = (desiredPackedAlpha << 24) | (color.GetB8() << 16) | (color.GetG8() << 8) | color.GetR8();
+#else
         uint32 packedColor = (desiredPackedAlpha << 24) | (color.GetR8() << 16) | (color.GetG8() << 8) | color.GetB8();
+#endif
 
         ImageType imageType = m_imageType;
 
