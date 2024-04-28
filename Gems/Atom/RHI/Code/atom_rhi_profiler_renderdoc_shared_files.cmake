@@ -7,5 +7,7 @@
 #
 
 set(FILES
-    RHI/Factory_windows.cpp
+    Source/RHI.Profiler/RenderDoc/Module.cpp
+    Source/RHI.Profiler/RenderDoc/RenderDocSystemComponent.h
+    Source/RHI.Profiler/RenderDoc/RenderDocSystemComponent.cpp
 )

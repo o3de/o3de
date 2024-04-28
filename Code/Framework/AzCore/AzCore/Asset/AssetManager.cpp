@@ -24,6 +24,9 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
+#include <AzCore/Utils/Utils.h>
+#include <AzCore/JSON/stringbuffer.h>
+#include <AzCore/JSON/prettywriter.h>
 #include <cinttypes>
 #include <utility>
 #include <AzCore/Serialization/ObjectStream.h>
@@ -2385,6 +2388,100 @@ namespace AZ::Data
     {
         return AZStd::shared_ptr<AssetContainer>( aznew AssetContainer(AZStd::move(asset), loadParams, isReload));
     }
+
+    void AssetManager::DumpLoadedAssetsInfo()
+    {
+        rapidjson::Document doc;
+
+        rapidjson::Value& docRoot = doc.SetObject();
+        rapidjson::Value infoArray(rapidjson::kArrayType);
+
+        struct TypeInfo
+        {
+            uint64_t size = 0;
+            uint64_t count = 0;
+        };
+        AZStd::map<AZStd::string, TypeInfo> assetTypeInfos;
+        uint64_t totalSize = 0;
+
+        AZStd::lock_guard<AZStd::recursive_mutex> assetLock(m_assetMutex);
+
+        // we need to cache the AssetStreamInfo since json objects are referencing the names in it. 
+        AZStd::vector<AssetStreamInfo> cachedStreamInfos;
+        cachedStreamInfos.reserve(m_assets.size());
+
+        for (const auto& assetEntry : m_assets)
+        {
+            cachedStreamInfos.emplace_back(GetLoadStreamInfoForAsset(assetEntry.first, assetEntry.second->GetType()));
+
+            const AssetStreamInfo& streamInfo = cachedStreamInfos.back();
+            totalSize += streamInfo.m_dataLen;
+            auto& typeInfo = assetTypeInfos[AZStd::string(assetEntry.second->RTTI_GetTypeName())];
+            typeInfo.size += streamInfo.m_dataLen;
+            typeInfo.count++;
+
+            rapidjson::Value assetInfoObject(rapidjson::kObjectType);
+
+            assetInfoObject.AddMember("Type", rapidjson::StringRef(assetEntry.second->RTTI_GetTypeName()), doc.GetAllocator());
+            assetInfoObject.AddMember("Path", rapidjson::StringRef(streamInfo.m_streamName.c_str()), doc.GetAllocator());
+            assetInfoObject.AddMember("SizeInBytes", static_cast<uint64_t>(streamInfo.m_dataLen), doc.GetAllocator());
+            assetInfoObject.AddMember("RefCount", static_cast<uint64_t>(assetEntry.second->GetUseCount()), doc.GetAllocator());
+            infoArray.PushBack(assetInfoObject, doc.GetAllocator());
+        }
+                
+        rapidjson::Value typeSizeArray(rapidjson::kArrayType);
+        for (const auto& [typeName, typeInfo] : assetTypeInfos)
+        {
+            rapidjson::Value typeInfoObject(rapidjson::kObjectType);
+            typeInfoObject.AddMember("AssetType", rapidjson::StringRef(typeName.c_str()), doc.GetAllocator());
+            typeInfoObject.AddMember("TotalSize", typeInfo.size, doc.GetAllocator());
+            typeInfoObject.AddMember("Count", typeInfo.count, doc.GetAllocator());
+            typeSizeArray.PushBack(typeInfoObject, doc.GetAllocator());
+        }
+
+        docRoot.AddMember("Total Asset Size", totalSize, doc.GetAllocator());
+        docRoot.AddMember("Total size per type", typeSizeArray, doc.GetAllocator());
+        docRoot.AddMember("Assets", infoArray, doc.GetAllocator());
+
+        rapidjson::StringBuffer jsonStringBuffer;
+        rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(jsonStringBuffer);
+        doc.Accept(writer);
+
+        // write to a json file
+        AZ::IO::Path path = AZStd::string_view(AZ::Utils::GetProjectUserPath());
+
+        path /= "log";
+
+        [[maybe_unused]] const bool dirCreated = AZ::IO::SystemFile::CreateDir(path.c_str());
+        AZ_Assert(dirCreated, "Failed to create destination folder for asset info dump '%s'", path.c_str())
+
+        time_t ltime;
+        time(&ltime);
+        tm today;
+
+#if AZ_TRAIT_USE_SECURE_CRT_FUNCTIONS
+        localtime_s(&today, &ltime);
+#else
+        today = *localtime(&ltime);
+#endif
+        char assetDumpFileName[128];
+        strftime(assetDumpFileName, sizeof(assetDumpFileName), "%Y-%m-%d.%H-%M-%S", &today);
+        AZStd::string filename =
+            AZStd::string::format("%s/AssetMemoryLog_%s.%ld.json", path.c_str(), assetDumpFileName, static_cast<long>(ltime));
+
+        AZ::IO::SystemFile outputFile;
+        if (!outputFile.Open(filename.c_str(), AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
+        {
+            AZ_Error("AssetManager", false, AZStd::string::format("Failed to open file %s for writing", filename.c_str()).c_str());
+            return;
+        }
+        
+        outputFile.Write(jsonStringBuffer.GetString(), jsonStringBuffer.GetSize());
+        outputFile.Close();
+
+        AZ_TracePrintf("AssetManager", "Loaded assets size info is saved to file [%s]", filename.c_str());
+    }
+
 } // namespace AZ::Data
 
 size_t AZStd::hash<AZ::Data::AssetContainerKey>::operator()(const AZ::Data::AssetContainerKey& obj) const

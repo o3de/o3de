@@ -7,6 +7,7 @@
  */
 
 #include <CoreLights/DiskLightFeatureProcessor.h>
+#include <CoreLights/SpotLightUtils.h>
 
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Transform.h>
@@ -88,7 +89,7 @@ namespace AZ
         {
             if (handle.IsValid())
             {
-                ShadowId shadowId = ShadowId(m_lightData.GetData<0>(handle.GetIndex()).m_shadowIndex);
+                SpotLightUtils::ShadowId shadowId = SpotLightUtils::ShadowId(m_lightData.GetData<0>(handle.GetIndex()).m_shadowIndex);
                 if (shadowId.IsValid())
                 {
                     m_shadowFeatureProcessor->ReleaseShadow(shadowId);
@@ -116,12 +117,12 @@ namespace AZ
 
                 static_assert(AZStd::variant_detail::copy_assignable_traits<AZ::Frustum, AZ::Hemisphere, AZ::Sphere, AZ::Aabb> != AZStd::variant_detail::SpecialFunctionTraits::Unavailable);
 
-                ShadowId shadowId = ShadowId(light.m_shadowIndex);
+                SpotLightUtils::ShadowId shadowId = SpotLightUtils::ShadowId(light.m_shadowIndex);
                 if (shadowId.IsValid())
                 {
                     // Since the source light has a valid shadow, a new shadow must be generated for the cloned light.
                     ProjectedShadowFeatureProcessorInterface::ProjectedShadowDescriptor originalDesc = m_shadowFeatureProcessor->GetShadowProperties(shadowId);
-                    ShadowId cloneShadow = m_shadowFeatureProcessor->AcquireShadow();
+                    SpotLightUtils::ShadowId cloneShadow = m_shadowFeatureProcessor->AcquireShadow();
                     light.m_shadowIndex = cloneShadow.GetIndex();
                     m_shadowFeatureProcessor->SetShadowProperties(cloneShadow, originalDesc);
                 }
@@ -147,7 +148,7 @@ namespace AZ
                 // Helper lambdas
                 auto indexHasShadow = [&](LightHandle::IndexType index) -> bool
                 {
-                    ShadowId shadowId = ShadowId(m_lightData.GetData<0>(index).m_shadowIndex);
+                    SpotLightUtils::ShadowId shadowId = SpotLightUtils::ShadowId(m_lightData.GetData<0>(index).m_shadowIndex);
                     return shadowId.IsValid();
                 };
 
@@ -231,10 +232,10 @@ namespace AZ
             UpdateBounds(handle);
 
             // Update the shadow near far planes if necessary
-            ShadowId shadowId = ShadowId(light.m_shadowIndex);
+            SpotLightUtils::ShadowId shadowId = SpotLightUtils::ShadowId(light.m_shadowIndex);
             if (shadowId.IsValid())
             {
-                m_shadowFeatureProcessor->SetNearFarPlanes(ShadowId(light.m_shadowIndex),
+                m_shadowFeatureProcessor->SetNearFarPlanes(SpotLightUtils::ShadowId(light.m_shadowIndex),
                     light.m_bulbPositionOffset, attenuationRadius + light.m_bulbPositionOffset);
             }
 
@@ -282,18 +283,8 @@ namespace AZ
             DiskLightData& light = m_lightData.GetData<0>(handle.GetIndex());
 
             // Assume if the cone angles are being set that the user wants to constrain to a cone angle
-            SetConstrainToConeLight(handle, true);
-            
-            ShadowId shadowId = ShadowId(light.m_shadowIndex);
-            float maxRadians = shadowId.IsNull() ? MaxConeRadians : MaxProjectedShadowRadians;
-            float minRadians = 0.001f;
-
-            outerRadians = AZStd::clamp(outerRadians, minRadians, maxRadians);
-            innerRadians = AZStd::clamp(innerRadians, minRadians, outerRadians);
-
-            light.m_cosInnerConeAngle = cosf(innerRadians);
-            light.m_cosOuterConeAngle = cosf(outerRadians);
-            
+            SetConstrainToConeLight(handle, true);         
+            SpotLightUtils::ValidateAndSetConeAngles(light, innerRadians, outerRadians);
             UpdateBulbPositionOffset(light);
         }
 
@@ -328,7 +319,7 @@ namespace AZ
         void DiskLightFeatureProcessor::SetShadowsEnabled(LightHandle handle, bool enabled)
         {
             DiskLightData& light = m_lightData.GetData<0>(handle.GetIndex());
-            ShadowId shadowId = ShadowId(light.m_shadowIndex);
+            SpotLightUtils::ShadowId shadowId = SpotLightUtils::ShadowId(light.m_shadowIndex);
             if (shadowId.IsValid() && enabled == false)
             {
                 // Disable shadows
@@ -357,7 +348,7 @@ namespace AZ
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to DiskLightFeatureProcessor::SetShadowSetting().");
             
             DiskLightData& light = m_lightData.GetData<0>(handle.GetIndex());
-            ShadowId shadowId = ShadowId(light.m_shadowIndex);
+            SpotLightUtils::ShadowId shadowId = SpotLightUtils::ShadowId(light.m_shadowIndex);
 
             AZ_Assert(shadowId.IsValid(), "Attempting to set a shadow property when shadows are not enabled.");
             if (shadowId.IsValid())
@@ -428,7 +419,7 @@ namespace AZ
         void DiskLightFeatureProcessor::UpdateShadow(LightHandle handle)
         {
             const DiskLightData& diskLight = m_lightData.GetData<0>(handle.GetIndex());
-            ShadowId shadowId = ShadowId(diskLight.m_shadowIndex);
+            SpotLightUtils::ShadowId shadowId = SpotLightUtils::ShadowId(diskLight.m_shadowIndex);
             if (shadowId.IsNull())
             {
                 // Early out if shadows are disabled.
@@ -436,31 +427,7 @@ namespace AZ
             }
 
             ProjectedShadowFeatureProcessorInterface::ProjectedShadowDescriptor desc = m_shadowFeatureProcessor->GetShadowProperties(shadowId);
-
-            Vector3 position = Vector3::CreateFromFloat3(diskLight.m_position.data());
-            const Vector3 direction = Vector3::CreateFromFloat3(diskLight.m_direction.data());
-
-            constexpr float SmallAngle = 0.01f;
-            float halfFov = acosf(diskLight.m_cosOuterConeAngle);
-            desc.m_fieldOfViewYRadians = GetMax(halfFov * 2.0f, SmallAngle);
-            
-            // To handle bulb radius, set the position of the shadow caster behind the actual light depending on the radius of the bulb
-            //
-            //   \         /
-            //    \       /
-            //     \_____/  <-- position of light itself (and forward plane of shadow casting view)
-            //      .   .
-            //       . .
-            //        *     <-- position of shadow casting view
-            //
-            position += diskLight.m_bulbPositionOffset * -direction;
-            desc.m_transform = Transform::CreateLookAt(position, position + direction);
-
-            desc.m_aspectRatio = 1.0f;
-            desc.m_nearPlaneDistance = diskLight.m_bulbPositionOffset;
-            const float attenuationRadius = LightCommon::GetRadiusFromInvRadiusSquared(diskLight.m_invAttenuationRadiusSquared);
-            desc.m_farPlaneDistance = attenuationRadius + diskLight.m_bulbPositionOffset;
-
+            SpotLightUtils::UpdateShadowDescriptor(diskLight, desc);
             m_shadowFeatureProcessor->SetShadowProperties(shadowId, desc);
         }
         
@@ -476,33 +443,7 @@ namespace AZ
         void DiskLightFeatureProcessor::UpdateBounds(LightHandle handle)
         {
             DiskLightData data = m_lightData.GetData<0>(handle.GetIndex());
-
-            float radius = LightCommon::GetRadiusFromInvRadiusSquared(data.m_invAttenuationRadiusSquared);
-            AZ::Vector3 position = AZ::Vector3::CreateFromFloat3(data.m_position.data());
-            AZ::Vector3 normal = AZ::Vector3::CreateFromFloat3(data.m_direction.data());
-
-            // At greater than a 68 degree cone angle, a hemisphere will have a smaller volume than a frustum.
-            constexpr float CosFrustumHemisphereVolumeCrossoverAngle = 0.37f;
-
-            if (data.m_cosOuterConeAngle < CosFrustumHemisphereVolumeCrossoverAngle)
-            {
-                // Wide angle, use a hemisphere for bounds instead of frustum
-                MeshCommon::BoundsVariant& bounds = m_lightData.GetData<1>(handle.GetIndex());
-                bounds.emplace<Hemisphere>(Hemisphere(position, radius, normal));
-            }
-            else
-            {
-                ViewFrustumAttributes desc;
-                desc.m_aspectRatio = 1.0f;
-
-                desc.m_nearClip = data.m_bulbPositionOffset;
-                desc.m_farClip = data.m_bulbPositionOffset + radius;
-                desc.m_verticalFovRadians = GetMax(0.001f, acosf(data.m_cosOuterConeAngle) * 2.0f);
-                desc.m_worldTransform = AZ::Transform::CreateLookAt(position, position + normal);
-
-                m_lightData.GetData<1>(handle.GetIndex()) = AZ::Frustum(desc);
-            }
-
+            m_lightData.GetData<1>(handle.GetIndex()) = SpotLightUtils::BuildBounds(data);
         }
 
     } // namespace Render

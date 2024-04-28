@@ -16,8 +16,11 @@
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/CommandLine/CommandLine.h>
+#include <AzFramework/Device/DeviceAttributeInterface.h>
+#include <AzFramework/Device/DeviceAttributeGPUModel.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
@@ -56,6 +59,8 @@ namespace AZ::RHI
 
         m_drawListTagRegistry = RHI::DrawListTagRegistry::Create();
         m_pipelineStateCache = RHI::PipelineStateCache::Create(*m_devices[MultiDevice::DefaultDeviceIndex]);
+
+        m_gpuMarkersEnabled = !RHI::QueryCommandLineOption("rhi-disable-gpu-markers");
 
         frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_renderTargetBudgetInBytes = platformLimitsDescriptor->m_transientAttachmentPoolBudgets.m_renderTargetBudgetInBytes;
         frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_imageBudgetInBytes = platformLimitsDescriptor->m_transientAttachmentPoolBudgets.m_imageBudgetInBytes;
@@ -118,7 +123,10 @@ namespace AZ::RHI
         {
             AZ_Printf("RHISystem", "\tUsing multiple devices\n");
 
-            usePhysicalDevices = AZStd::move(physicalDevices);
+            for(auto i {0}; (i < deviceCount) && (i < static_cast<int>(AZStd::size(physicalDevices))); ++i)
+            {
+                usePhysicalDevices.emplace_back(physicalDevices[i]);
+            }
         }
         else
         {
@@ -210,6 +218,21 @@ namespace AZ::RHI
             AZ_Error("RHISystem", false, "Failed to initialize RHI device.");
             return ResultCode::Fail;
         }
+
+        // Register device GPUs attributes
+        if (auto deviceRegistrar = AzFramework::DeviceAttributeRegistrar::Get())
+        {
+            AZStd::vector<AZStd::string_view> gpuList;
+            AZStd::transform(
+                m_devices.begin(),
+                m_devices.end(),
+                std::back_inserter(gpuList),
+                [](const auto& device)
+                {
+                    return device->GetPhysicalDevice().GetDescriptor().m_description.c_str();
+                });
+            deviceRegistrar->RegisterDeviceAttribute(AZStd::make_shared<AzFramework::DeviceAttributeGPUModel>(gpuList));
+        }
         return ResultCode::Success;
     }
 
@@ -268,21 +291,10 @@ namespace AZ::RHI
             return AZStd::nullopt;
         }
 
-        // We need to pass a non-const PhysicalDevice& to Device::Init(), hence this detour is needed to locate
-        // the corresponding PhysicalDevice without const
-        RHI::Ptr<RHI::PhysicalDevice> selectedPhysicalDevice;
-        for (RHI::Ptr<RHI::PhysicalDevice>& physicalDevice : RHI::Factory::Get().EnumeratePhysicalDevices())
-        {
-            if (physicalDevice.get() == &m_devices[deviceIndexToVirtualize]->GetPhysicalDevice())
-            {
-                selectedPhysicalDevice = physicalDevice;
-                break;
-            }
-        }
-
         RHI::Ptr<RHI::Device> device = RHI::Factory::Get().CreateDevice();
         auto virtualDeviceIndex{ static_cast<int>(m_devices.size()) };
-        if (device->Init(virtualDeviceIndex, *selectedPhysicalDevice) == RHI::ResultCode::Success)
+        auto& selectedPhysicalDevice = const_cast<RHI::PhysicalDevice&>(m_devices[deviceIndexToVirtualize]->GetPhysicalDevice());
+        if (device->Init(virtualDeviceIndex, selectedPhysicalDevice) == RHI::ResultCode::Success)
         {
             m_devices.emplace_back(AZStd::move(device));
             return virtualDeviceIndex;
@@ -399,6 +411,10 @@ namespace AZ::RHI
         return m_drawListTagsDisabledByDefault;
     }
 
+    bool RHISystem::GpuMarkersEnabled() const
+    {
+        return m_gpuMarkersEnabled;
+    }
 
     /////////////////////////////////////////////////////////////////////////////
     // RHIMemoryStatisticsInterface overrides

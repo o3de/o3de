@@ -182,6 +182,20 @@ namespace AZ
 
         bool MeshDrawPacket::Update(const Scene& parentScene, bool forceUpdate /*= false*/)
         {
+            // Setup the Shader variant handler when update this MeshDrawPacket the first time .
+            // This is because the MeshDrawPacket data can be copied or moved right after it's created.
+            // The m_shaderVariantHandler won't be copied correctly due to the capture of 'this' pointer.
+            // Instead of override all the copy and move operators, this might be a better solution.
+            if (!m_shaderVariantHandler.IsConnected())
+            {
+                m_shaderVariantHandler = Material::OnMaterialShaderVariantReadyEvent::Handler(
+                    [this]()
+                    {
+                        this->m_needUpdate = true;
+                    });
+                m_material->ConnectEvent(m_shaderVariantHandler);
+            }
+
             // Why we need to check "!m_material->NeedsCompile()"...
             //    Frame A:
             //      - Material::SetPropertyValue("foo",...). This bumps the material's CurrentChangeId()
@@ -202,6 +216,8 @@ namespace AZ
                 DoUpdate(parentScene);
                 m_materialChangeId = m_material->GetCurrentChangeId();
                 m_needUpdate = false;
+
+                DebugOutputShaderVariants();
                 return true;
             }
 
@@ -211,6 +227,22 @@ namespace AZ
         static bool HasRootConstants(const RHI::ConstantsLayout* rootConstantsLayout)
         {
             return rootConstantsLayout && rootConstantsLayout->GetDataSize() > 0;
+        }
+
+        void MeshDrawPacket::DebugOutputShaderVariants()
+        {
+#ifdef DEBUG_MESH_SHADERVARIANTS
+            uint32_t index = 0;
+
+            AZ::Data::AssetInfo assetInfo;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, m_modelLod->GetAssetId());
+
+            AZ_TracePrintf("MeshDrawPacket", "Mesh: %s", assetInfo.m_relativePath.data());
+            for (const auto& variant : m_shaderVariantNames)
+            {
+                AZ_TracePrintf("MeshDrawPacket", "%d: %s", index++, variant.data());
+            }
+#endif
         }
 
         bool MeshDrawPacket::DoUpdate(const Scene& parentScene)
@@ -251,6 +283,10 @@ namespace AZ
             bool isFirstShaderItem = true;
 
             m_perDrawSrgs.clear();
+
+#ifdef DEBUG_MESH_SHADERVARIANTS
+            m_shaderVariantNames.clear();
+#endif
 
             auto appendShader = [&](const ShaderCollection::Item& shaderItem, const Name& materialPipelineName)
             {
@@ -334,6 +370,10 @@ namespace AZ
 
                 const ShaderVariantId requestedVariantId = shaderOptions.GetShaderVariantId();
                 const ShaderVariant& variant = r_forceRootShaderVariantUsage ? shader->GetRootVariant() : shader->GetVariant(requestedVariantId);
+
+#ifdef DEBUG_MESH_SHADERVARIANTS
+                m_shaderVariantNames.push_back(variant.GetShaderVariantAsset().GetHint());
+#endif
 
                 RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
                 variant.ConfigurePipelineState(pipelineStateDescriptor);
@@ -484,3 +524,4 @@ namespace AZ
         }
     } // namespace RPI
 } // namespace AZ
+

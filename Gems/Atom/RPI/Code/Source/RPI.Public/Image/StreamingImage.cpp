@@ -149,6 +149,9 @@ namespace AZ
 
             if (resultCode == RHI::ResultCode::Success)
             {
+                // Set rhi image name
+                m_imageAsset = { &imageAsset, AZ::Data::AssetLoadBehavior::PreLoad };
+                m_image->SetName(Name(m_imageAsset.GetHint()));
                 m_imageView = m_image->GetImageView(imageAsset.GetImageViewDescriptor());
                 if(!m_imageView.get())
                 {
@@ -177,13 +180,9 @@ namespace AZ
                 m_mipChainState.m_maskReady |= mipChainBit;
 
                 // Take references on dependent assets
-                m_imageAsset = { &imageAsset, AZ::Data::AssetLoadBehavior::PreLoad };
                 m_rhiPool = rhiPool;
                 m_pool = pool;
                 m_pool->AttachImage(this);
-
-                // Set rhi image name
-                m_image->SetName(Name(m_imageAsset.GetHint()));
 
                 // queue expand mipmaps if it's not managed by the streaming controller
                 if (!m_streamingController)
@@ -236,7 +235,7 @@ namespace AZ
 
         StreamingImage::~StreamingImage()
         {
-            Shutdown(); 
+            Shutdown();
         }
 
         void StreamingImage::SetTargetMip(uint16_t targetMipLevel)
