@@ -26,11 +26,10 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
         float3 m_direction;
         float  m_angularRadius;
         float3 m_rgbIntensity;
-        bool   m_isVisible;
         float  m_affectsGIFactor;
         bool   m_affectsGI;
         uint m_lightingChannelMask;
-        float1 m_padding;
+        float2 m_padding;
     };
     
     StructuredBuffer<DirectionalLight> m_directionalLights;
