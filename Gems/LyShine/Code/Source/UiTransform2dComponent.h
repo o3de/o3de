@@ -54,6 +54,9 @@ public: // member functions
     ScaleToDeviceMode GetScaleToDeviceMode() override;
     void SetScaleToDeviceMode(ScaleToDeviceMode scaleToDeviceMode) override;
 
+    bool GetIsFlooringOffsets() override;
+    void SetIsFlooringOffsets(bool isFlooringOffsets) override;
+
     void GetViewportSpacePoints(RectPoints& points) final;
     AZ::Vector2 GetViewportSpacePivot() final;
     void GetTransformToViewport(AZ::Matrix4x4& mat) final;
@@ -246,6 +249,8 @@ private: // data
     AZ::Vector2 m_pivot;
     float m_rotation;
     AZ::Vector2 m_scale;
+
+    bool m_isFlooringOffsets = false;
 
     //! Cached transform to viewport space. Gets recalculated if the m_recomputeTransformToViewport dirty flag is set
     AZ::Matrix4x4 m_transformToViewport;

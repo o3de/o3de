@@ -154,6 +154,7 @@ class EditorTestHelper:
     # Create a new empty level
     def create_level(
         self,
+        template_name: str,
         level_name: str,
         heightmap_resolution: int = 1024,
         heightmap_meters_per_pixel: int = 1,
@@ -161,9 +162,9 @@ class EditorTestHelper:
         use_terrain: bool = False,
         bypass_viewport_resize: bool = False,
     ) -> bool:
-        self.log(f"Creating level {level_name}")
+        self.log(f"Creating level {level_name} from template '{template_name}'")
         result = general.create_level_no_prompt(
-            level_name, heightmap_resolution, heightmap_meters_per_pixel, terrain_texture_resolution, use_terrain
+            template_name, level_name, heightmap_resolution, heightmap_meters_per_pixel, terrain_texture_resolution, use_terrain
         )
 
         # Result codes are ECreateLevelResult defined in CryEdit.h

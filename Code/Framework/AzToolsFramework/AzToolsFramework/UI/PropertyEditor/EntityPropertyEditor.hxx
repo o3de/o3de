@@ -309,6 +309,7 @@ namespace AzToolsFramework
         bool AreComponentsRemovable(AZStd::span<AZ::Component* const> components) const;
         static AZStd::optional<int> GetFixedComponentListIndex(const AZ::Component* component);
         static bool IsComponentDraggable(const AZ::Component* component);
+        bool AllowAnyComponentModification() const;
         bool AreComponentsDraggable(AZStd::span<AZ::Component* const> components) const;
         bool AreComponentsCopyable(AZStd::span<AZ::Component* const> components) const;
 
@@ -609,6 +610,7 @@ namespace AzToolsFramework
             Entity = 0,                     // All selected entities are regular entities.
             Level,                          // The selected entity is the prefab container entity for the level prefab.
             ContainerEntityOfFocusedPrefab, // The selected entity is the prefab container entity for the focused prefab.
+            ContainerEntity,                // The selected entity is the prefab container entity for a prefab that is not the focused prefab.
             Invalid                         // Other entities are selected alongside the level prefab container entity.
         };
 

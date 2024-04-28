@@ -157,6 +157,31 @@ namespace DebugDraw
         virtual void DrawTextOnScreen([[maybe_unused]] const AZStd::string& text, [[maybe_unused]] const AZ::Color& color, [[maybe_unused]] float duration) {}
 
         /**
+         * Draws text on the screen with scaled default render font.
+         *
+         * @param text              Text to be displayed.
+         * @param fontScale         Scale factor to default render font.
+         * @param color             Color of text.
+         * @param duration          How long to display the text for (in seconds); 0 value will draw for one frame; negative values draw forever.
+         */
+        virtual void DrawScaledTextOnScreen([[maybe_unused]] const AZStd::string& text
+            , [[maybe_unused]] float fontScale, [[maybe_unused]] const AZ::Color& color, [[maybe_unused]] float duration) {}
+
+        /**
+         * Draws text on the screen with scaled default render font at given 2D coordinates.
+         *
+         * @param x                 X coordinate.
+         * @param y                 Y coordinate.
+         * @param text              Text to be displayed.
+         * @param fontScale         Scale factor to default render font.
+         * @param color             Color of text.
+         * @param duration          How long to display the text for (in seconds); 0 value will draw for one frame; negative values draw forever.
+         * @param bCenter           If true (default), centers drawn text relative to x coordinate, otherwise text is left-aligned.
+         */
+        virtual void DrawScaledTextOnScreenPos([[maybe_unused]] float x, [[maybe_unused]] float y, [[maybe_unused]] const AZStd::string& text
+            , [[maybe_unused]] float fontScale, [[maybe_unused]] const AZ::Color& color, [[maybe_unused]] float duration, [[maybe_unused]] bool bCenter = true) {}
+
+        /**
          * Draws a ray in the world for a specified duration
          *
          * @param worldLocation     World location for the ray to start at

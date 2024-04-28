@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="/NewLevel">
+    <file>res/folder.png</file>
+    <file>res/Prefab_80.svg</file>
+  </qresource>
+</RCC>

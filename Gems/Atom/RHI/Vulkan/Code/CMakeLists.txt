@@ -59,6 +59,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
+            AZ::AzFramework
             Gem::Atom_RHI.Reflect
             Gem::${gem_name}.Glad.Static
 )

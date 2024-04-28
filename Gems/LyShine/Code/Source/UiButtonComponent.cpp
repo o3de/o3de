@@ -67,6 +67,11 @@ bool UiButtonComponent::HandleReleased(AZ::Vector2 point)
     }
     else
     {
+        if (m_isHandlingEvents)
+        {
+            UiInteractableComponent::TriggerReleasedAction(true);
+        }
+
         m_isPressed = false;
 
         return m_isHandlingEvents;

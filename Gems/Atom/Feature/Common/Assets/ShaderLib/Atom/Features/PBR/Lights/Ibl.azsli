@@ -42,6 +42,18 @@ real3 GetIblDiffuse(
     return diffuseResponse * albedo * diffuseSample;
 }
 
+real3 EnvBRDFApprox( real3 specularF0, real roughnessLinear, real NdotV )
+{
+    // Environment brdf approximation (Lazarov 2013). Use this approximation if sampling specular env map gets too expensive or is prohibitive on mobile
+    // see https://www.unrealengine.com/en-US/blog/physically-based-shading-on-mobile
+    const real4 c0 = { -1, -0.0275, -0.572, 0.022 };
+    const real4 c1 = { 1, 0.0425, 1.04, -0.04 };
+    real4 r = roughnessLinear * c0 + c1;
+    real a004 = min( r.x * r.x, exp2( -9.28 * NdotV ) ) * r.x + r.y;
+    real2 env = real2( -1.04, 1.04 ) * a004 + r.zw;
+    return (specularF0 * env.x) + (env.y * saturate( 50.0 * specularF0.g ));
+}
+
 real3 GetIblSpecular(
     float3 position, 
     real3 normal, 

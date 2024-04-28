@@ -109,7 +109,7 @@ void ImGuiManager::Initialize()
     // Let the application process the path
     AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::ResolveModulePath, imgGuiLibPath);
     m_imgSharedLib = AZ::DynamicModuleHandle::Create(imgGuiLibPath.c_str());
-    if (!m_imgSharedLib->Load(false))
+    if (!m_imgSharedLib->Load())
     {
         AZ_Warning("ImGuiManager", false, "%s %s", __func__, "Unable to load " AZ_DYNAMIC_LIBRARY_PREFIX "imguilib" AZ_DYNAMIC_LIBRARY_EXTENSION "-- Skipping ImGui Initialization.");
         return;

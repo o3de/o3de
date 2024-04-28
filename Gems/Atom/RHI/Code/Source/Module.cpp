@@ -9,6 +9,7 @@
 #include <Atom/RHI.Reflect/ReflectSystemComponent.h>
 #include <RHI.Private/FactoryManagerSystemComponent.h>
 #include <RHI.Private/FactoryRegistrationFinalizerSystemComponent.h>
+#include <RHI.Profiler/GraphicsProfilerSystemComponent.h>
 #include <AzCore/Module/Module.h>
 
 namespace AZ::RHI
@@ -26,7 +27,8 @@ namespace AZ::RHI
             m_descriptors.insert(m_descriptors.end(), {
                 ReflectSystemComponent::CreateDescriptor(),
                 FactoryManagerSystemComponent::CreateDescriptor(),
-                FactoryRegistrationFinalizerSystemComponent::CreateDescriptor()
+                FactoryRegistrationFinalizerSystemComponent::CreateDescriptor(),
+                GraphicsProfilerSystemComponent::CreateDescriptor()
             });
         }
         ~PlatformModule() override = default;

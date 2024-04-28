@@ -163,8 +163,25 @@ namespace AZ::Render
         }
 
         m_drawParams.m_drawViewportId = viewportContext->GetId();
-        auto viewportSize = viewportContext->GetViewportSize();
-        m_drawParams.m_position = AZ::Vector3(static_cast<float>(viewportSize.m_width), 0.0f, 1.0f) + AZ::Vector3(r_topRightBorderPadding) * viewportContext->GetDpiScalingFactor();
+        
+        AZ::IConsole* console = AZ::Interface<AZ::IConsole>::Get();
+        uint32_t r_width, r_resolutionMode  = 0;
+        console->GetCvarValue("r_resolutionMode", r_resolutionMode);
+        
+        if (r_resolutionMode > 0u)
+        {
+            //This ensures the debug text is always attached to the top right when r_resolutionMode is enabled
+            console->GetCvarValue("r_width", r_width);
+            m_drawParams.m_position = AZ::Vector3(static_cast<float>(r_width), 0.0f, 1.0f) +
+                AZ::Vector3(r_topRightBorderPadding) * viewportContext->GetDpiScalingFactor();
+        }
+        else
+        {
+            auto viewportSize = viewportContext->GetViewportSize();
+            m_drawParams.m_position = AZ::Vector3(static_cast<float>(viewportSize.m_width), 0.0f, 1.0f) +
+                AZ::Vector3(r_topRightBorderPadding) * viewportContext->GetDpiScalingFactor();
+        }
+        
         m_drawParams.m_color = AZ::Colors::White;
         m_drawParams.m_scale = AZ::Vector2(BaseFontSize);
         m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Right;

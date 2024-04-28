@@ -13,6 +13,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <Atom/RPI.Public/Scene.h>
+#include <Atom/Utils/Utils.h>
 
 namespace AZ
 {
@@ -35,6 +36,8 @@ namespace AZ
                     ->Event("SetExposure", &HDRiSkyboxRequestBus::Events::SetExposure)
                     ->Event("GetExposure", &HDRiSkyboxRequestBus::Events::GetExposure)
                     ->VirtualProperty("Exposure", "GetExposure", "SetExposure")
+                    ->Event("SetCubemapAssetPath", &HDRiSkyboxRequestBus::Events::SetCubemapAssetPath)
+                    ->Event("GetCubemapAssetPath", &HDRiSkyboxRequestBus::Events::GetCubemapAssetPath)
                     ;
             }
         }
@@ -155,6 +158,19 @@ namespace AZ
             m_configuration.m_cubemapAsset = cubemapAsset;
             LoadImage(m_configuration.m_cubemapAsset);
         }
+
+        void HDRiSkyboxComponentController::SetCubemapAssetPath(const AZStd::string& path)
+        {
+            SetCubemapAsset(GetAssetFromPath<RPI::StreamingImageAsset>(path, m_configuration.m_cubemapAsset.GetAutoLoadBehavior()));
+        }
+
+        AZStd::string HDRiSkyboxComponentController::GetCubemapAssetPath() const
+        {
+            AZStd::string assetPathString;
+            Data::AssetCatalogRequestBus::BroadcastResult(assetPathString, &Data::AssetCatalogRequests::GetAssetPathById, m_configuration.m_cubemapAsset.GetId());
+            return assetPathString;
+        }
+
 
         void HDRiSkyboxComponentController::SetExposure(float exposure)
         {

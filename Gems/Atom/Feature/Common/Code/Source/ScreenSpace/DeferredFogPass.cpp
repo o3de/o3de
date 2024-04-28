@@ -28,6 +28,9 @@ namespace AZ
 {
     namespace Render
     {
+
+        AZ_CVAR(bool, r_enableFog, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Enable fog");
+
         DeferredFogPass::DeferredFogPass(const RPI::PassDescriptor& descriptor)
             : RPI::FullscreenTrianglePass(descriptor)
         {
@@ -141,18 +144,29 @@ namespace AZ
 
             // The Srg constants value settings
 #define AZ_GFX_COMMON_PARAM(ValueType, Name, MemberName, DefaultValue)                          \
-            srg->SetConstant( fogSettings->MemberName##SrgIndex, fogSettings->MemberName );     \
+            if (fogSettings->MemberName##SrgIndex.IsValid())                                    \
+            {   \
+                srg->SetConstant( fogSettings->MemberName##SrgIndex, fogSettings->MemberName ); \
+            }   \
 
 #include <Atom/Feature/ParamMacros/MapParamCommon.inl>
 
             // The following macro overrides the regular macro defined above, loads an image and bind it
 #undef AZ_GFX_TEXTURE2D_PARAM
 #define AZ_GFX_TEXTURE2D_PARAM(Name, MemberName, DefaultValue)                      \
-            if (!srg->SetImage(fogSettings->MemberName##SrgIndex, fogSettings->MemberName##Image ))           \
-            {                                                                       \
-                AZ_Error( "DeferredFogPass::SetSrgConstants", false, "Failed to bind SRG image for %s = %s",  \
-                    #MemberName, fogSettings->MemberName.c_str() );                                      \
-            }                                                                       \
+            if (fogSettings->MemberName##SrgIndex.IsValid())            \
+            {   \
+                if (!srg->SetImage(fogSettings->MemberName##SrgIndex, fogSettings->MemberName##Image))  \
+                {   \
+                    AZ_Error(                                                                                                                      \
+                        "DeferredFogPass::SetSrgConstants",                                                                                        \
+                        false,                                                                                                                     \
+                        "Failed to bind SRG image for %s = %s",                                                                                    \
+                        #MemberName,                                                                                                               \
+                        fogSettings->MemberName.c_str());                                                                                          \
+                }   \
+            }   \
+       
 
 #include <Atom/Feature/ScreenSpace/DeferredFogParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
@@ -180,6 +194,11 @@ namespace AZ
 
         bool DeferredFogPass::IsEnabled() const 
         {
+            if (!r_enableFog)
+            {
+                return false;
+            }
+
             const DeferredFogSettings* constFogSettings = const_cast<DeferredFogPass*>(this)->GetPassFogSettings();
             return constFogSettings->GetEnabled();
         }

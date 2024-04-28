@@ -19,7 +19,6 @@
 namespace AZ::Platform
 {
     AZ::IO::FixedMaxPath GetModulePath();
-    void* OpenModule(const AZ::IO::FixedMaxPathString& fileName, bool& alreadyOpen, bool globalSymbols);
     void ConstructModuleFullFileName(AZ::IO::FixedMaxPath& fullPath);
     AZ::IO::FixedMaxPath CreateFrameworkModulePath(const AZ::IO::PathView& moduleName);
 }
@@ -132,12 +131,16 @@ namespace AZ
             Unload();
         }
 
-        LoadStatus LoadModule(bool globalSymbols) override
+        LoadStatus LoadModule(LoadFlags flags) override
         {
             AZ::Debug::Trace::Instance().Printf("Module", "Attempting to load module:%s\n", m_fileName.c_str());
-            bool alreadyOpen = false;
-
-            m_handle = Platform::OpenModule(m_fileName, alreadyOpen, globalSymbols);
+            const int openFlags = RTLD_NOW | (CheckBitsAny(flags, LoadFlags::GlobalSymbols) ? RTLD_GLOBAL : 0);
+            m_handle = dlopen(m_fileName.c_str(), openFlags | RTLD_NOLOAD);
+            bool alreadyOpen = (m_handle != nullptr);
+            if (m_handle == nullptr && !CheckBitsAny(flags, LoadFlags::NoLoad))
+            {                
+                m_handle = dlopen(m_fileName.c_str(), openFlags);
+            }
 
             if (m_handle)
             {
