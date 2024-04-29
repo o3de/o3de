@@ -23,11 +23,34 @@ namespace AssetProcessor
 
         AZ::s64 dayCount = durationInMs / dayInMs;
         QTime duration = QTime::fromMSecsSinceStartOfDay(durationInMs % dayInMs);
+#if defined(CARBONATED)
+        if (dayCount > 0)
+        {
+            return duration.toString("'%1d 'hh'h 'mm'm 'ss's 'zzz'ms'").arg(dayCount);
+        }
+        
+        if (duration.isValid())
+        {
+            if (duration.hour() > 0)
+            {
+                return duration.toString("hh'h 'mm'm 'ss's 'zzz'ms'");
+            }
+            if (duration.minute() > 0)
+            {
+                return duration.toString("mm'm 'ss's 'zzz'ms'");
+            }
+            if (duration.second() > 0)
+            {
+                return duration.toString("ss's 'zzz'ms'");
+            }
+            return duration.toString("zzz'ms'");
+        }
+#else
         if (dayCount > 0)
         {
             return duration.toString("zzz' ms, 'ss' sec, 'mm' min, 'hh' hr, %1 day'").arg(dayCount);
         }
-        
+
         if (duration.isValid())
         {
             if (duration.hour() > 0)
@@ -44,6 +67,7 @@ namespace AssetProcessor
             }
             return duration.toString("zzz' ms'");
         }
+#endif
 
         return QString();
     }

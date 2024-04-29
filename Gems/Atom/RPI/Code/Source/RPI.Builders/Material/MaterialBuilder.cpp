@@ -192,6 +192,14 @@ namespace AZ
             // Create the output jobs for each platform
             for (const AssetBuilderSDK::PlatformInfo& platformInfo : request.m_enabledPlatforms)
             {
+#if defined(CARBONATED)
+                if (platformInfo.m_identifier == "server")
+                {
+                    // Materials don't get processed for the 'server' platform.
+                    continue;
+                }
+#endif
+
                 outputJobDescriptor.SetPlatformIdentifier(platformInfo.m_identifier.c_str());
 
                 for (auto& jobDependency : outputJobDescriptor.m_jobDependencyList)

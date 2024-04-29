@@ -15,10 +15,6 @@
 
 #include "InputChannelGestureClickOrTap.h"
 #include "InputChannelGestureDrag.h"
-// Add the DragRight gesture
-#if defined(CARBONATED)
-#include "InputChannelGestureDragRight.h"
-#endif
 #include "InputChannelGestureHold.h"
 #include "InputChannelGesturePinch.h"
 #include "InputChannelGestureRotate.h"
@@ -75,9 +71,9 @@ namespace Gestures
         //! The config used to create a default gesture input channel
         InputChannelGestureClickOrTap::TypeAndConfig m_doublePressConfig;
         InputChannelGestureDrag::TypeAndConfig       m_dragConfig;
-// Add the DragRight gesture
 #if defined(CARBONATED)
-        InputChannelGestureDragRight::TypeAndConfig  m_dragRightConfig;
+        // Add the DragRight gesture configuration
+        InputChannelGestureDrag::TypeAndConfig       m_dragRightConfig;
 #endif
         InputChannelGestureHold::TypeAndConfig       m_holdConfig;
         InputChannelGesturePinch::TypeAndConfig      m_pinchConfig;

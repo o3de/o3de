@@ -2583,20 +2583,20 @@ namespace ScriptCanvas
                 Nodes::Core::FunctionCallNodeCompareConfig config;
                 const auto result = functionNode->IsOutOfDate(config, m_source.m_assetId.m_guid);
 
-                if (result == Nodes::Core::IsFunctionCallNodeOutOfDataResult::Yes)
+                if (result == Nodes::Core::IsFunctionCallNodeOutOfDateResult::Yes)
                 {
-                    AZ_Warning("ScriptCanvas", false, "%s node is out-of-date.", node.GetNodeName().c_str());
+                    AZ_Warning("ScriptCanvas", false, "FunctionCallNode '%s' is out-of-date.", node.GetNodeName().c_str());
                     AddError(nullptr, aznew NodeCompatiliblity::NodeOutOfDate(node.GetEntityId(), node.GetNodeName()));
                     return false;
                 }
-                else if (result == Nodes::Core::IsFunctionCallNodeOutOfDataResult::EvaluateAfterLocalDefinition)
+                else if (result == Nodes::Core::IsFunctionCallNodeOutOfDateResult::EvaluateAfterLocalDefinition)
                 {
                     m_locallyDefinedFunctionCallNodes.push_back(functionNode);
                 }
             }
             else if (node.IsOutOfDate(m_source.m_graph->GetVersion()))
             {
-                AZ_Warning("ScriptCanvas", false, "%s node is out-of-date.", node.GetNodeName().c_str());
+                AZ_Warning("ScriptCanvas", false, "Node '%s' is out-of-date.", node.GetNodeName().c_str());
                 AddError(nullptr, aznew NodeCompatiliblity::NodeOutOfDate(node.GetEntityId(), node.GetNodeName()));
                 return false;
             }
