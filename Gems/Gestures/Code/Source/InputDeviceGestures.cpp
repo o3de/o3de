@@ -30,16 +30,16 @@ namespace Gestures
     ////////////////////////////////////////////////////////////////////////////////////////////////
     const InputChannelId InputDeviceGestures::Gesture::DoublePress("gesture_double_press");
     const InputChannelId InputDeviceGestures::Gesture::Drag("gesture_drag");
-// Add the DragRight gesture
 #if defined(CARBONATED)
+    // Add the DragRight gesture
     const InputChannelId InputDeviceGestures::Gesture::DragRight("gesture_drag_right");
 #endif
     const InputChannelId InputDeviceGestures::Gesture::Hold("gesture_hold");
     const InputChannelId InputDeviceGestures::Gesture::Pinch("gesture_pinch");
     const InputChannelId InputDeviceGestures::Gesture::Rotate("gesture_rotate");
     const InputChannelId InputDeviceGestures::Gesture::Swipe("gesture_swipe");
-// Add the DragRight gesture
 #if defined(CARBONATED)
+    // Add the DragRight gesture
     const AZStd::array<InputChannelId, 7> InputDeviceGestures::Gesture::All =
 #else
     const AZStd::array<InputChannelId, 6> InputDeviceGestures::Gesture::All =
@@ -47,8 +47,8 @@ namespace Gestures
     {{
         DoublePress,
         Drag,
-// Add the DragRight gesture
 #if defined(CARBONATED)
+        // Add the DragRight gesture
         DragRight,
 #endif
         Hold,
@@ -79,10 +79,6 @@ namespace Gestures
 
                 ->Constant(Gesture::DoublePress.GetName(), BehaviorConstant(Gesture::DoublePress.GetName()))
                 ->Constant(Gesture::Drag.GetName(), BehaviorConstant(Gesture::Drag.GetName()))
-// Add the DragRight gesture
-#if defined(CARBONATED)
-                ->Constant(Gesture::DragRight.GetName(), BehaviorConstant(Gesture::DragRight.GetName()))
-#endif
                 ->Constant(Gesture::Hold.GetName(), BehaviorConstant(Gesture::Hold.GetName()))
                 ->Constant(Gesture::Pinch.GetName(), BehaviorConstant(Gesture::Pinch.GetName()))
                 ->Constant(Gesture::Rotate.GetName(), BehaviorConstant(Gesture::Rotate.GetName()))

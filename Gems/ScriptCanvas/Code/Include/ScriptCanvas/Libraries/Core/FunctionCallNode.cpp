@@ -469,21 +469,21 @@ namespace ScriptCanvas
                 }
 
                 FunctionCallNodeCompareConfig config;
-                return IsOutOfDate(config, {}) != IsFunctionCallNodeOutOfDataResult::No;
+                return IsOutOfDate(config, {}) != IsFunctionCallNodeOutOfDateResult::No;
             }
 
-            IsFunctionCallNodeOutOfDataResult FunctionCallNode::IsOutOfDate(const FunctionCallNodeCompareConfig& config, const AZ::Uuid& graphId) const
+            IsFunctionCallNodeOutOfDateResult FunctionCallNode::IsOutOfDate(const FunctionCallNodeCompareConfig& config, const AZ::Uuid& graphId) const
             {
                 bool isUnitTestingInProgress = false;
                 ScriptCanvas::SystemRequestBus::BroadcastResult(isUnitTestingInProgress, &ScriptCanvas::SystemRequests::IsScriptUnitTestingInProgress);
                 if (isUnitTestingInProgress)
                 {
-                    return IsFunctionCallNodeOutOfDataResult::No;
+                    return IsFunctionCallNodeOutOfDateResult::No;
                 }
 
                 if ((!graphId.IsNull()) && graphId == m_asset.GetId().m_guid)
                 {
-                    return IsFunctionCallNodeOutOfDataResult::EvaluateAfterLocalDefinition;
+                    return IsFunctionCallNodeOutOfDateResult::EvaluateAfterLocalDefinition;
                 }
 
                 AZ::Data::AssetId interfaceAssetId(m_asset.GetId().m_guid, AZ_CRC("SubgraphInterface", 0xdfe6dc72));
@@ -498,18 +498,18 @@ namespace ScriptCanvas
                 if (!asset || !asset->IsReady())
                 {
                     AZ_Warning("ScriptCanvas", false, "FunctionCallNode %s failed to load source asset.", m_prettyName.data());
-                    return IsFunctionCallNodeOutOfDataResult::Yes;
+                    return IsFunctionCallNodeOutOfDateResult::Yes;
                 }
 
                 const Grammar::SubgraphInterface* latestAssetInterface = asset ? &asset.Get()->m_interfaceData.m_interface : nullptr;
                 if (!latestAssetInterface)
                 {
                     AZ_Warning("ScriptCanvas", false, "FunctionCallNode %s failed to load latest interface from the source asset.", m_prettyName.data());
-                    return IsFunctionCallNodeOutOfDataResult::Yes;
+                    return IsFunctionCallNodeOutOfDateResult::Yes;
                 }
 
-                IsFunctionCallOutOfDateConfig isOutOfDataConfig{ config, *this, m_slotExecutionMap, m_sourceId, m_slotExecutionMapSourceInterface, *latestAssetInterface };
-                return IsFunctionCallNodeOutOfDate(isOutOfDataConfig) ? IsFunctionCallNodeOutOfDataResult::Yes : IsFunctionCallNodeOutOfDataResult::No;
+                IsFunctionCallOutOfDateConfig isOutOfDateConfig{ config, *this, m_slotExecutionMap, m_sourceId, m_slotExecutionMapSourceInterface, *latestAssetInterface };
+                return IsFunctionCallNodeOutOfDate(isOutOfDateConfig) ? IsFunctionCallNodeOutOfDateResult::Yes : IsFunctionCallNodeOutOfDateResult::No;
             }
 
             UpdateResult FunctionCallNode::OnUpdateNode()
@@ -526,7 +526,7 @@ namespace ScriptCanvas
                 }
 
                 FunctionCallNodeCompareConfig config;
-                if (IsOutOfDate(config, m_asset.GetId().m_guid) != Nodes::Core::IsFunctionCallNodeOutOfDataResult::No)
+                if (IsOutOfDate(config, m_asset.GetId().m_guid) != Nodes::Core::IsFunctionCallNodeOutOfDateResult::No)
                 {
                     AZ_Warning("ScriptCanvas", false, "FunctionCallNode %s's source public interface has changed", m_prettyName.data());
                     this->AddNodeDisabledFlag(NodeDisabledFlag::ErrorInUpdate);

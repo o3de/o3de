@@ -52,12 +52,8 @@ namespace NodeCpp
         // This change resolves this error by setting the version higher than any previous version.
         FixedVersioningIssue = 14,
 
-#if defined(CARBONATED)
-        Current = MergeFromBackend2dotZero
-#else
         // add your named version above
-        Current
-#endif
+        Current,
     }; 
 }
 
