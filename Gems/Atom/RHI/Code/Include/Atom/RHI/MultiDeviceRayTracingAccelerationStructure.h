@@ -73,6 +73,7 @@ namespace AZ::RHI
         //! Build operations
         MultiDeviceRayTracingBlasDescriptor* Build();
         MultiDeviceRayTracingBlasDescriptor* Geometry();
+        MultiDeviceRayTracingBlasDescriptor* AABB(const AZ::Aabb& aabb);
         MultiDeviceRayTracingBlasDescriptor* VertexBuffer(const RHI::MultiDeviceStreamBufferView& vertexBuffer);
         MultiDeviceRayTracingBlasDescriptor* VertexFormat(RHI::Format vertexFormat);
         MultiDeviceRayTracingBlasDescriptor* IndexBuffer(const RHI::MultiDeviceIndexBufferView& indexBuffer);
@@ -80,6 +81,7 @@ namespace AZ::RHI
 
     private:
         MultiDeviceRayTracingGeometryVector m_mdGeometries;
+        AZStd::optional<AZ::Aabb> m_aabb;
         MultiDeviceRayTracingGeometry* m_mdBuildContext = nullptr;
         RayTracingAccelerationStructureBuildFlags m_mdBuildFlags = AZ::RHI::RayTracingAccelerationStructureBuildFlags::FAST_TRACE;
     };
@@ -190,7 +192,7 @@ namespace AZ::RHI
         MultiDeviceRayTracingTlasDescriptor* Transform(const AZ::Transform& transform);
         MultiDeviceRayTracingTlasDescriptor* NonUniformScale(const AZ::Vector3& nonUniformScale);
         MultiDeviceRayTracingTlasDescriptor* Transparent(bool transparent);
-        MultiDeviceRayTracingTlasDescriptor* Blas(RHI::Ptr<RHI::MultiDeviceRayTracingBlas>& blas);
+        MultiDeviceRayTracingTlasDescriptor* Blas(const RHI::Ptr<MultiDeviceRayTracingBlas> &blas);
         MultiDeviceRayTracingTlasDescriptor* InstancesBuffer(RHI::Ptr<RHI::MultiDeviceBuffer>& tlasInstances);
         MultiDeviceRayTracingTlasDescriptor* NumInstances(uint32_t numInstancesInBuffer);
 

@@ -41,6 +41,12 @@ namespace AZ::RHI
         return this;
     }
 
+    MultiDeviceRayTracingBlasDescriptor* MultiDeviceRayTracingBlasDescriptor::AABB(const Aabb& aabb)
+    {
+        m_aabb = aabb;
+        return this;
+    }
+
     MultiDeviceRayTracingBlasDescriptor* MultiDeviceRayTracingBlasDescriptor::VertexBuffer(
         const RHI::MultiDeviceStreamBufferView& vertexBuffer)
     {
@@ -149,7 +155,7 @@ namespace AZ::RHI
         return this;
     }
 
-    MultiDeviceRayTracingTlasDescriptor* MultiDeviceRayTracingTlasDescriptor::Blas(RHI::Ptr<RHI::MultiDeviceRayTracingBlas>& blas)
+    MultiDeviceRayTracingTlasDescriptor* MultiDeviceRayTracingTlasDescriptor::Blas(const RHI::Ptr<RHI::MultiDeviceRayTracingBlas>& blas)
     {
         AZ_Assert(m_mdBuildContext, "Blas property can only be added to an Instance entry");
         m_mdBuildContext->m_mdBlas = blas;
