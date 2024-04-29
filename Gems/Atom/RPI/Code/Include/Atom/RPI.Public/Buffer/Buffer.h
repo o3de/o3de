@@ -107,6 +107,7 @@ namespace AZ
             // Tracks the streaming upload of the buffer.
             RHI::Ptr<RHI::MultiDeviceFence> m_streamFence;
             AZStd::mutex m_pendingUploadMutex;
+            AZStd::atomic_int m_initialUploadCount{0};
 
             RHI::BufferViewDescriptor m_bufferViewDescriptor;
 
