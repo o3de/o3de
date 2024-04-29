@@ -10,6 +10,7 @@
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/ImageView.h>
+#include <Atom/RHI.Reflect/Format.h>
 
 namespace AZ
 {
@@ -121,6 +122,7 @@ namespace AZ
                 }
             }
             
+            m_memoryView.SetName(AZStd::string::format("%s_View_%s", image.GetName().GetCStr(), AZ::RHI::ToString(image.GetDescriptor().m_format)));
             m_hash = TypeHash64(m_imageSubresourceRange.GetHash(), m_hash);
             m_hash = TypeHash64(m_format, m_hash);
             return RHI::ResultCode::Success;

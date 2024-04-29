@@ -1099,11 +1099,6 @@ void CSystem::OnLanguageCVarChanged(ICVar* language)
 
             LocalizationManagerRequestBus::Broadcast(&LocalizationManagerRequestBus::Events::SetLanguage, lang);
             LocalizationManagerRequestBus::Broadcast(&LocalizationManagerRequestBus::Events::ReloadData);
-
-            if (gEnv->pCryFont)
-            {
-                gEnv->pCryFont->OnLanguageChanged();
-            }
         }
     }
 }

@@ -7,5 +7,8 @@
 #
 
 set(FILES
-    RHI/Factory_windows.cpp
+    Shaders/ObbIntersection.azsl
+    Shaders/ObbIntersection.shader
+    Shaders/SphereIntersection.azsl
+    Shaders/SphereIntersection.shader
 )

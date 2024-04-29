@@ -13,6 +13,7 @@
 #include <Atom/RHI.Reflect/Metal/Base.h>
 #include <Atom/RHI.Reflect/Metal/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/Metal/ShaderStageFunction.h>
+#include <Atom/RHI/RHIUtils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 namespace AZ
@@ -119,10 +120,11 @@ namespace AZ
 
             const Metal::ShaderSourceCode& sourceCode = stageDescriptor.m_sourceCode;
 
-            //Metal sourceCode is great for debugging but it is not needed as we are also packing the bytecode. This
-            //can be removed for more optimized shader assets
-            newShaderStageFunction->SetSourceCode(sourceCode);
-
+            if (!sourceCode.empty())
+            {
+                newShaderStageFunction->SetSourceCode(sourceCode);
+            }
+            
             const Metal::ShaderByteCode& byteCode = stageDescriptor.m_byteCode;
             const AZStd::string& entryFunctionName = stageDescriptor.m_entryFunctionName;
             newShaderStageFunction->SetByteCode(byteCode);
@@ -181,6 +183,9 @@ namespace AZ
             AZStd::vector<char> shaderSourceCode;
             AZStd::vector<uint8_t> shaderByteCode;
 
+            bool isGraphicsDevModeEnabled = RHI::IsGraphicsDevModeEnabled();
+            isGraphicsDevModeEnabled |= BuildHasDebugInfo(shaderBuildArguments);
+                
             // Compile HLSL shader to METAL source code
             bool compiledSucessfully = CompileHLSLShader(
                 shaderSourcePath,                // shader source filename
@@ -191,6 +196,7 @@ namespace AZ
                 shaderSourceCode,                // cross-compiled shader output
                 shaderByteCode,                  // compiled byte code
                 platform,                        // target platform
+                isGraphicsDevModeEnabled,        //Embed debug symbols
                 outputDescriptor.m_byProducts);  // debug objects
 
             if (!compiledSucessfully)
@@ -202,9 +208,14 @@ namespace AZ
             if (shaderSourceCode.size() > 0)
             {
                 outputDescriptor.m_stageType = shaderStage;
-                outputDescriptor.m_sourceCode = AZStd::move(shaderSourceCode);
                 outputDescriptor.m_byteCode = AZStd::move(shaderByteCode);
                 outputDescriptor.m_entryFunctionName = AZStd::move(functionName);
+
+                if (isGraphicsDevModeEnabled)
+                {
+                    //Metal sourceCode is great for debugging at runtime but it is not needed as we are also packing the bytecode.
+                    outputDescriptor.m_sourceCode = AZStd::move(shaderSourceCode);
+                }
             }
             else
             {
@@ -227,6 +238,7 @@ namespace AZ
             AZStd::vector<char>& sourceMetalShader,
             AZStd::vector<uint8_t>& compiledByteCode,
             const AssetBuilderSDK::PlatformInfo& platform,
+            const bool isGraphicsDevModeEnabled,
             ByProducts& byProducts) const
         {
             // Shader compiler executable
@@ -336,7 +348,7 @@ namespace AZ
                 byProducts.m_intermediatePaths.emplace(AZStd::move(shaderMSLOutputFile));   // .msl metal out of sv-cross
             }
 
-            bool compileMetalSL = CreateMetalLib(MetalShaderPlatformName, shaderSourceFile, tempFolder, compiledByteCode, sourceMetalShader, platform, shaderBuildArguments);
+            bool compileMetalSL = CreateMetalLib(MetalShaderPlatformName, shaderSourceFile, tempFolder, compiledByteCode, sourceMetalShader, platform, shaderBuildArguments, isGraphicsDevModeEnabled);
             if (!compileMetalSL)
             {
                 AZ_Error(MetalShaderPlatformName, false, "Failed to create bytecode");
@@ -375,7 +387,8 @@ namespace AZ
                                                      AZStd::vector<uint8_t>& compiledByteCode,
                                                      AZStd::vector<char>& sourceMetalShader,
                                                      const AssetBuilderSDK::PlatformInfo& platform,
-                                                     const RHI::ShaderBuildArguments& shaderBuildArguments) const
+                                                     const RHI::ShaderBuildArguments& shaderBuildArguments,
+                                                     const bool isGraphicsDevModeEnabled) const
         {
             AZStd::string inputMetalFile = RHI::BuildFileNameWithExtension(shaderSourceFile, tempFolder, "metal");
 
@@ -394,7 +407,14 @@ namespace AZ
             AZStd::string outMetalLibFile = RHI::BuildFileNameWithExtension(shaderSourceFile, tempFolder, "metallib");
 
             //Convert to air file
-            const auto metalAirArgumentsStr = RHI::ShaderBuildArguments::ListAsString(shaderBuildArguments.m_metalAirArguments);
+            auto metalAirArguments = shaderBuildArguments.m_metalAirArguments;
+            if (isGraphicsDevModeEnabled)
+            {
+                //Embed debug symbols into the bytecode
+                RHI::ShaderBuildArguments::AppendArguments(metalAirArguments, { "-gline-tables-only", "-MO" });
+            }
+            
+            const auto metalAirArgumentsStr = RHI::ShaderBuildArguments::ListAsString(metalAirArguments);
             const auto mslToAirCommandOptions = AZStd::string::format("%s \"%s\" -o \"%s\"", metalAirArgumentsStr.c_str(), inputMetalFile.c_str(), outputAirFile.c_str());
             if (!RHI::ExecuteShaderCompiler("/usr/bin/xcrun", mslToAirCommandOptions, inputMetalFile, tempFolder, "MslToAir"))
             {
@@ -715,7 +735,20 @@ namespace AZ
                     structuredBufferTempStructs += AZStd::string::format("struct type_RWStructuredDummyBuffer%i_DescSet%i\n{\n    DummySRG_%s_DescSet%i _m0[%i];\n};\n", regId, groupLayoutIndex, shaderInputBuffer.m_name.GetCStr(), groupLayoutIndex, shaderInputBuffer.m_count);
 
                     //Create the final resource entry to be added to the set
-                    AZStd::string dummyResource = AZStd::string::format("device type_RWStructuredDummyBuffer%i_DescSet%i* dummyStructuredBuffer%i [[id(%i)]];", regId, groupLayoutIndex, regId, regId);
+                    AZStd::string dummyResource;
+                    switch(shaderInputBuffer.m_type)
+                    {
+                        case RHI::ShaderInputBufferType::Typed:
+                        {
+                            dummyResource = AZStd::string::format("texture_buffer<float> TypedDummyBuffer%i [[id(%i)]];", regId, regId);
+                            break;
+                        }
+                        default:
+                        {
+                            dummyResource = AZStd::string::format("device type_RWStructuredDummyBuffer%i_DescSet%i* dummyStructuredBuffer%i [[id(%i)]];", regId, groupLayoutIndex, regId, regId);
+                            break;
+                        }
+                    }
                     m_argBufferEntries.insert(AZStd::make_pair(dummyResource, regId));
                 }
                 else

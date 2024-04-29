@@ -41,11 +41,13 @@ PixelGeometryData EvaluatePixelGeometry_EnhancedPBR(
 
     geoData.isDisplacementClipped = false;
 
+#if ENABLE_PARALLAX
     if(ShouldHandleParallax())
     {
         SetPixelDepth(geoData.positionWS, geoData.vertexNormal, geoData.tangents, geoData.bitangents,
                       geoData.uvs, geoData.detailUvs, isFrontFace, objectToWorld, positionSV.z, positionSV.w, geoData.isDisplacementClipped);
     }
+#endif
 
     return geoData;
 }

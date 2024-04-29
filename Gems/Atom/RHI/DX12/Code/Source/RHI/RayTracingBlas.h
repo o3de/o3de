@@ -31,6 +31,7 @@ namespace AZ
             {
                 RHI::Ptr<RHI::Buffer> m_blasBuffer;
                 RHI::Ptr<RHI::Buffer> m_scratchBuffer;
+                RHI::Ptr<RHI::Buffer> m_aabbBuffer;
             };
 
 #ifdef AZ_DX12_DXR_SUPPORT

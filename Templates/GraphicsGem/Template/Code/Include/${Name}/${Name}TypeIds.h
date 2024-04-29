@@ -13,12 +13,12 @@
 namespace ${SanitizedCppName}
 {
     // System Component TypeIds
-    inline constexpr const char* ${SanitizedCppName}SystemComponentTypeId = "${SysCompClassId}";
-    inline constexpr const char* ${SanitizedCppName}EditorSystemComponentTypeId = "${EditorSysCompClassId}";
+    inline constexpr const char* ${SanitizedCppName}SystemComponentTypeId = "{${Random_Uuid}}";
+    inline constexpr const char* ${SanitizedCppName}EditorSystemComponentTypeId = "{${Random_Uuid}}";
 
     // Module derived classes TypeIds
     inline constexpr const char* ${SanitizedCppName}ModuleInterfaceTypeId = "{${Random_Uuid}}";
-    inline constexpr const char* ${SanitizedCppName}ModuleTypeId = "${ModuleClassId}";
+    inline constexpr const char* ${SanitizedCppName}ModuleTypeId = "{${Random_Uuid}}";
     // The Editor Module by default is mutually exclusive with the Client Module
     // so they use the Same TypeId
     inline constexpr const char* ${SanitizedCppName}EditorModuleTypeId = ${SanitizedCppName}ModuleTypeId;

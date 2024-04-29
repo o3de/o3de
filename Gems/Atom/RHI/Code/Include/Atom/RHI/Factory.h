@@ -13,11 +13,8 @@
 #include <AzCore/Name/Name.h>
 #include <AzCore/Console/IConsole.h>
 
-#if defined(USE_RENDERDOC)
-#include <renderdoc_app.h>
-#endif
-
 AZ_CVAR_EXTERNED(bool, r_gpuMarkersMergeGroups);
+AZ_CVAR_EXTERNED(bool, r_enablePsoCaching);
 
 namespace AZ::RHI
 {
@@ -98,24 +95,6 @@ namespace AZ::RHI
 
         //! Access the global factory instance.
         static Factory& Get();
-
-#if defined(USE_RENDERDOC)
-        //! Access the RenderDoc API pointer if available.
-        //! The availability of the render doc API at runtime depends on the following:
-        //! - You must not be building a packaged game/product (LY_MONOLITHIC_GAME not enabled in CMake)
-        //! - A valid renderdoc installation was found, either by auto-discovery, or by supplying ATOM_RENDERDOC_PATH as an environment variable
-        //! - The module loaded successfully at runtime, and the API function pointer was retrieved successfully
-        static RENDERDOC_API_1_1_2* GetRenderDocAPI();
-#endif
-            
-        //! Returns true if RenderDoc dll is loaded
-        static bool IsRenderDocModuleLoaded();
-
-        //! Returns true if Pix dll is loaded
-        static bool IsPixModuleLoaded();
-
-        //! Returns true if Pix GPU events should be emitted
-        static bool PixGpuEventsEnabled();
 
         //! Returns true if Warp is enabled
         static bool UsingWarpDevice();

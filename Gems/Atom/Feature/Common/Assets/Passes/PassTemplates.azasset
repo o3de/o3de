@@ -549,6 +549,38 @@
                 "Path": "Passes/MultiViewTransparentParent.pass"
             },
             {
+                "Name": "MobileDeferredFogPassTemplate",
+                "Path": "Passes/Mobile/DeferredFog.pass"
+            },
+            {
+                "Name": "MobileForwardPassTemplate",
+                "Path": "Passes/Mobile/Forward.pass"
+            },
+            {
+                "Name": "MobilePipelineTemplate",
+                "Path": "Passes/Mobile/Pipeline.pass"
+            },
+            {
+                "Name": "MobileSkyBoxTemplate",
+                "Path": "Passes/Mobile/SkyBox.pass"
+            },
+            {
+                "Name": "MobileTransparentPassTemplate",
+                "Path": "Passes/Mobile/Transparent.pass"
+            },
+            {
+                "Name": "MobileTransparentParentTemplate",
+                "Path": "Passes/Mobile/TransparentParent.pass"
+            },
+            {
+                "Name": "MobileShadowParentTemplate",
+                "Path": "Passes/Mobile/ShadowParent.pass"
+            },
+            {
+                "Name": "MobilePostProcessParentTemplate",
+                "Path": "Passes/Mobile/PostProcessParent.pass"
+            },
+            {
                 "Name": "KawaseShadowBlurTemplate",
                 "Path": "Passes/KawaseShadowBlur.pass"
             },

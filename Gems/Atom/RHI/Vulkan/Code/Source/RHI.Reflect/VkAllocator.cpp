@@ -7,6 +7,7 @@
  */
 
 #include <Atom/RHI.Reflect/VkAllocator.h>
+#include <Atom/RHI.Profiler/GraphicsProfilerBus.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 namespace AZ
@@ -40,22 +41,28 @@ namespace AZ
 
         VkSystemAllocator::VkSystemAllocator()
         {
-            m_allocationCallbacks.pfnFree = RHI_vkFreeFunction;
-            m_allocationCallbacks.pfnReallocation = RHI_vkReallocationFunction;
-            m_allocationCallbacks.pfnAllocation = RHI_vkAllocationFunction;
-            m_allocationCallbacks.pfnInternalAllocation = nullptr;
-            m_allocationCallbacks.pfnInternalFree = nullptr;
+            // For instance creation/destruction use nullptr for VkAllocationCallbacks* as using VkSystemAllocator::Get() crashes RenderDoc
+            // when used with openxr enabled projects. We think it's because RenderDoc is maybe injecting something when doing allocations.
+            // Because of this we deactivate callbacks when using Renderdoc.
+            if (!RHI::GraphicsProfilerBus::HasHandlers())
+            {
+                m_allocationCallbacks = AZStd::make_unique<VkAllocationCallbacks>();
+                m_allocationCallbacks->pfnFree = RHI_vkFreeFunction;
+                m_allocationCallbacks->pfnReallocation = RHI_vkReallocationFunction;
+                m_allocationCallbacks->pfnAllocation = RHI_vkAllocationFunction;
+                m_allocationCallbacks->pfnInternalAllocation = nullptr;
+                m_allocationCallbacks->pfnInternalFree = nullptr;
+            }
         }
 
         VkSystemAllocator::~VkSystemAllocator()
         {
-
         }
 
         VkAllocationCallbacks* VkSystemAllocator::Get()
         {
             static VkSystemAllocator allocator;
-            return &allocator.m_allocationCallbacks;
+            return allocator.m_allocationCallbacks.get();
         }
     }
 }

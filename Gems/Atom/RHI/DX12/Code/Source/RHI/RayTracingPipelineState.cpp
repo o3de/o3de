@@ -78,6 +78,8 @@ namespace AZ
             closestHitShaderNameWstrings.reserve(hitGroupCount);
             AZStd::vector<AZStd::wstring> anyHitShaderNameWstrings;
             anyHitShaderNameWstrings.reserve(hitGroupCount);
+            AZStd::vector<AZStd::wstring> intersectionShaderNameWstrings;
+            intersectionShaderNameWstrings.reserve(hitGroupCount);
 
             for (const RHI::RayTracingHitGroup& hitGroup : descriptor->GetHitGroups())
             {
@@ -93,12 +95,16 @@ namespace AZ
                 AZStd::to_wstring(anyHitShaderNameWstring, hitGroup.m_anyHitShaderName.GetStringView());
                 anyHitShaderNameWstrings.push_back(anyHitShaderNameWstring);
 
+                AZStd::wstring intersectionShaderNameWstring;
+                AZStd::to_wstring(intersectionShaderNameWstring, hitGroup.m_intersectionShaderName.GetStringView());
+                intersectionShaderNameWstrings.push_back(intersectionShaderNameWstring);
+
                 D3D12_HIT_GROUP_DESC hitGroupDesc = {};
-                hitGroupDesc.Type = D3D12_HIT_GROUP_TYPE_TRIANGLES;
+                hitGroupDesc.Type = intersectionShaderNameWstring.empty() ? D3D12_HIT_GROUP_TYPE_TRIANGLES : D3D12_HIT_GROUP_TYPE_PROCEDURAL_PRIMITIVE;
                 hitGroupDesc.HitGroupExport = hitGroupNameWstrings.back().c_str();
                 hitGroupDesc.ClosestHitShaderImport = closestHitShaderNameWstring.empty() ? nullptr : closestHitShaderNameWstrings.back().c_str();
                 hitGroupDesc.AnyHitShaderImport = anyHitShaderNameWstring.empty() ? nullptr : anyHitShaderNameWstrings.back().c_str();
-                hitGroupDesc.IntersectionShaderImport = nullptr; // only triangle geometry is supported at this time
+                hitGroupDesc.IntersectionShaderImport = intersectionShaderNameWstring.empty() ? nullptr : intersectionShaderNameWstrings.back().c_str();
                 hitGroupDescs.push_back(hitGroupDesc);
         
                 D3D12_STATE_SUBOBJECT hitGroupSubObject = {};

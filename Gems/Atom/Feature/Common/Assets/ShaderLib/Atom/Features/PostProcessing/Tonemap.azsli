@@ -12,7 +12,12 @@
 real3 ApplyFilmicTonemap(real3 color)
 {
     // Apply filmic curve. 
-    return (color * (6.2 * color + 0.5)) / (color * (6.2 * color + 1.7)+ 0.06);
+    real a = 2.51f; // 6.2
+    real b = 0.03f; // 0.5
+    real c = 2.43f; // 6.2
+    real d = 0.59f; // 1.7
+    real e = 0.14f; // 0.06
+    return saturate((color * (a * color + b)) / (color * (c * color + d)+ e));
 }
 
 real3 ApplyManualExposure(real3 color, real exposure)

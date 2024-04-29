@@ -28,7 +28,7 @@ namespace AzFramework
     NativeWindowImpl_Win32::NativeWindowImpl_Win32()
     {
         // Attempt to load GetDpiForWindow from user32 at runtime, available on Windows 10+ versions >= 1607
-        if (auto user32module = AZ::DynamicModuleHandle::Create("user32"); user32module->Load(false))
+        if (auto user32module = AZ::DynamicModuleHandle::Create("user32"); user32module->Load())
         {
             m_getDpiFunction = user32module->GetFunction<GetDpiForWindowType>("GetDpiForWindow");
         }

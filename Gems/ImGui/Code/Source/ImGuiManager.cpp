@@ -109,7 +109,7 @@ void ImGuiManager::Initialize()
     // Let the application process the path
     AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::ResolveModulePath, imgGuiLibPath);
     m_imgSharedLib = AZ::DynamicModuleHandle::Create(imgGuiLibPath.c_str());
-    if (!m_imgSharedLib->Load(false))
+    if (!m_imgSharedLib->Load())
     {
         AZ_Warning("ImGuiManager", false, "%s %s", __func__, "Unable to load " AZ_DYNAMIC_LIBRARY_PREFIX "imguilib" AZ_DYNAMIC_LIBRARY_EXTENSION "-- Skipping ImGui Initialization.");
         return;
@@ -452,8 +452,8 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
         // Handle Keyboard Hotkeys
         if (inputChannel.IsStateBegan())
         {
-            // Cycle through ImGui Menu Bar States on ~ button press
-            if (inputChannelId == InputDeviceKeyboard::Key::PunctuationTilde)
+            // Cycle through ImGui Menu Bar States on Home button press
+            if (inputChannelId == InputDeviceKeyboard::Key::NavigationHome)
             {
                 ToggleThroughImGuiVisibleState();
             }

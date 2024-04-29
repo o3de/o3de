@@ -53,16 +53,19 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
     // simple spot lights
     struct SimpleSpotLight
     {
+        float4x4 m_viewProjectionMatrix;    // Light's view projection matrix. Used to calculate uv for gobo 
         float3 m_position;
         float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
         float3 m_direction;
         float m_cosInnerConeAngle; // cosine of the outer cone angle
         float3 m_rgbIntensityCandelas;
         float m_cosOuterConeAngle; // cosine of the inner cone angle
+        uint m_shadowIndex;
+        uint m_goboTexIndex;
         float m_affectsGIFactor;
         bool m_affectsGI;
         uint m_lightingChannelMask;
-        float m_padding;
+        [[pad_to(16)]] // Here to ensure we pad the struct to 16 in case someone adds incorrect padding
     };
 
     StructuredBuffer<SimpleSpotLight> m_simpleSpotLights;
@@ -172,17 +175,22 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
         uint     m_bufferFlags;
         uint     m_bufferStartIndex;
 
-        float4   m_irradianceColor;
         float3x4 m_worldInvTranspose;
     };
 
     // hit shaders can retrieve the MeshInfo for a mesh hit using: RayTracingSceneSrg::m_meshInfo[InstanceIndex()]    
     StructuredBuffer<MeshInfo> m_meshInfo;
+    uint m_meshInfoCount;
     
     // indirection buffer containing indices into the m_meshBuffers unbounded array
     // Note 1: the index list for a particular mesh begins at MeshInfo::m_bufferStartIndex
     // Note 2: multiple MeshInfos will refer to the same buffer in m_meshBuffers when they are instances of the same mesh
     Buffer<uint> m_meshBufferIndices;
+
+    // contains a mapping from RT InstanceIndex to procedural geometry instances, which can be used to read per-instance geometry data:
+    // [0] bindlessBufferIndex parameter from RegisterProceduralGeometryType
+    // [1] localInstanceIndex parameter from AddProceduralGeometry
+    Buffer<uint2> m_proceduralGeometryInfo;
 
     // buffer array index offsets from MeshInfo::m_bufferStartIndex in the m_meshBufferIndices indirection buffer
     // Note: every mesh has all six entries in the index list, but only the Index, Position, and Normal buffers are guaranteed to be valid
