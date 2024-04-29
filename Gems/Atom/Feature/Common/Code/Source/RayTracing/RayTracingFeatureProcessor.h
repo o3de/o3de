@@ -221,7 +221,7 @@ namespace AZ
                 uint32_t m_instanceMask;
                 Transform m_transform = Transform::CreateIdentity();
                 AZ::Vector3 m_nonUniformScale = Vector3::CreateOne();
-                RHI::Ptr<RHI::SingleDeviceRayTracingBlas> m_blas;
+                RHI::Ptr<RHI::MultiDeviceRayTracingBlas> m_blas;
                 uint32_t m_localInstanceIndex;
             };
             using ProceduralGeometryTypeList = StableDynamicArray<ProceduralGeometryType>;

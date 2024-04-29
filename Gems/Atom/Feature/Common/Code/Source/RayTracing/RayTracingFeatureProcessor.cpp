@@ -10,6 +10,7 @@
 #include <RayTracing/RayTracingPass.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/RHI/Factory.h>
+#include <Atom/RHI/MultiDeviceRayTracingAccelerationStructure.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
@@ -134,13 +135,12 @@ namespace AZ
                 return;
             }
 
-            RHI::Ptr<RHI::SingleDeviceRayTracingBlas> rayTracingBlas = AZ::RHI::SingleDeviceRayTracingBlas::CreateRHIRayTracingBlas();
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-            RHI::SingleDeviceRayTracingBlasDescriptor blasDescriptor;
+            RHI::Ptr<AZ::RHI::MultiDeviceRayTracingBlas> rayTracingBlas = aznew AZ::RHI::MultiDeviceRayTracingBlas;
+            RHI::MultiDeviceRayTracingBlasDescriptor blasDescriptor;
             blasDescriptor.Build()
                 ->AABB(aabb)
                 ;
-            rayTracingBlas->CreateBuffers(*device, &blasDescriptor, *m_bufferPools);
+            rayTracingBlas->CreateBuffers(RHI::MultiDevice::AllDevices, &blasDescriptor, *m_bufferPools);
 
             ProceduralGeometry proceduralGeometry;
             proceduralGeometry.m_uuid = uuid;

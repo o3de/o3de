@@ -163,15 +163,26 @@ namespace AZ
 
                     if (m_streamFence)
                     {
-                        m_streamFence->WaitOnCpuAsync(
-                            [this]()
-                            {
-                                // Once the uploading to gpu process is done, we shouldn't need to keep the reference of the m_bufferAsset
-                                this->m_pendingUploadMutex.lock();
-                                this->m_bufferAsset.Reset();
-                                this->m_pendingUploadMutex.unlock();
-                            });
+                        auto deviceCount{RHI::RHISystemInterface::Get()->GetDeviceCount()};
+                        auto deviceMask{m_streamFence->GetDeviceMask()};
 
+                        m_initialUploadCount = az_popcnt_u32(AZStd::to_underlying(deviceMask) & ((1 << deviceCount) - 1));
+
+                        for (auto deviceIndex{0}; deviceIndex < deviceCount; ++deviceIndex)
+                        {
+                            if (AZStd::to_underlying(deviceMask) & (1 << deviceIndex))
+                            {
+                                m_streamFence->GetDeviceFence(deviceIndex)->WaitOnCpuAsync([this]()
+                                {
+                                    if (--m_initialUploadCount == 0)
+                                    {
+                                        // Once the uploading to gpu process is done, we shouldn't need to keep the reference of the m_bufferAsset
+                                        AZStd::lock_guard<AZStd::mutex> lock(m_pendingUploadMutex);
+                                        m_bufferAsset.Reset();
+                                    }
+                                });
+                            }
+                        }
                     }
                 }
                 
