@@ -6,7 +6,7 @@ O3DE (Open 3D Engine) is an open-source, real-time, multi-platform 3D engine tha
 For information about contributing to Open 3D Engine, visit [https://o3de.org/docs/contributing/](https://o3de.org/docs/contributing/).
 
 ## Roadmap
-For information about upcoming work and features, please visit [https://o3de.org/roadmap](https://o3de.org/roadmap). Progress against the roadmap is tracked here [https://github.com/orgs/o3de/projects/56/views/2](https://github.com/orgs/o3de/projects/56/views/2)
+For information about upcoming work and features, please visit [https://o3de.org/roadmap](https://o3de.org/roadmap). Progress against the roadmap is tracked [here](https://github.com/orgs/o3de/projects/56/views/2).
 
 ## Download and Install
 
