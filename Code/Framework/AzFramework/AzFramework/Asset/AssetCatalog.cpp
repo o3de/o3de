@@ -189,6 +189,16 @@ namespace AzFramework
         AZ::Data::AssetId legacyMapping = m_registry->GetAssetIdByLegacyAssetId(id);
         if (legacyMapping.IsValid())
         {
+            AZ_Warning(
+                "O3DE_DEPRECATION_NOTICE(GHI-17861)",
+                false,
+                "Deprecated asset id warning! GetAssetInfoByIdInternal could not find asset id \"%s\" and so fell back to using the legacy "
+                "asset id. \"%s\". Please look up these asset ids in AssetProcessor to find their source asset. Recreate the asset and "
+                "update any other assets referencing this asset in order to generate a modern asset id.",
+                id.ToFixedString().c_str(),
+                legacyMapping.ToFixedString().c_str()
+            );
+
             return GetAssetPathByIdInternal(legacyMapping);
         }
 
@@ -225,6 +235,16 @@ namespace AzFramework
         AZ::Data::AssetId legacyMapping = m_registry->GetAssetIdByLegacyAssetId(id);
         if (legacyMapping.IsValid())
         {
+            AZ_Warning(
+                "O3DE_DEPRECATION_NOTICE(GHI-17861)",
+                false,
+                "Deprecated asset id warning! GetAssetInfoByIdInternal could not find asset id \"%s\" and so fell back to using the legacy "
+                "asset id. \"%s\". Please look up these asset ids in AssetProcessor to find their source asset. Recreate the asset and update "
+                "any other assets referencing this asset in order to generate a modern asset id."
+                id.ToFixedString().c_str(),
+                legacyMapping.ToFixedString().c_str()
+            );
+
             return GetAssetInfoByIdInternal(legacyMapping);
         }
 

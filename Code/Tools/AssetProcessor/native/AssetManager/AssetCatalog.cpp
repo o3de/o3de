@@ -1715,6 +1715,15 @@ namespace AssetProcessor
         AssetId legacyMapping = registryToUse.GetAssetIdByLegacyAssetId(assetId);
         if (legacyMapping.IsValid())
         {
+            AZ_Error(
+                "O3DE_DEPRECATION_NOTICE(GHI-17861)",
+                false,
+                "Deprecated asset id warning! GetAssetInfoByIdInternal could not find asset id \"%s\" and so fell back to using the legacy "
+                "asset id. \"%s\". Please look up these asset ids in AssetProcessor and recreate the asset in order to generate a new "
+                "asset id.",
+                assetId.ToFixedString().c_str(),
+                legacyMapping.ToFixedString().c_str());
+
             return GetProductAssetInfo(platformName, legacyMapping);
         }
 
