@@ -522,7 +522,7 @@ namespace AzFramework
     //=========================================================================
     void ScriptComponent::Activate()
     {
-#if defined(CARBONATED_LOG)
+#if defined(CARBONATED_ENGINE_LOG)
         if (!m_script.GetHint().empty())
         {
             AZ_Printf("ScriptComponent", "Load: %s", m_script.GetHint().c_str());

@@ -97,7 +97,7 @@ namespace ScriptCanvasEditor
 
     bool Interpreter::InitializeExecution(ScriptCanvas::RuntimeAssetPtr asset)
     {
-#if defined(CARBONATED_LOG)
+#if defined(CARBONATED_ENGINE_LOG)
         AZ_Printf("Interpreter", "InitializeExecution. id=%s, hint=%s", asset.GetId().ToFixedString().c_str(), asset.GetHint().c_str());
 #endif
         if (asset.Get())

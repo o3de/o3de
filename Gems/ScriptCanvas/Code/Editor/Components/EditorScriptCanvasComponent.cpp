@@ -77,7 +77,7 @@ namespace ScriptCanvasEditor
 
     void EditorScriptCanvasComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
-#if defined(CARBONATED_LOG)
+#if defined(CARBONATED_ENGINE_LOG)
         AZ_Printf(
             "ScriptCanvas",
             "EditorScriptCanvasComponent::BuildGameEntity. gameEntity->GetId()=%s. HasSource=%i",
@@ -91,7 +91,7 @@ namespace ScriptCanvasEditor
             return;
         }
 
-#if defined(CARBONATED_LOG)
+#if defined(CARBONATED_ENGINE_LOG)
         AZ_Printf(
             "ScriptCanvas",
             "EditorScriptCanvasComponent::BuildGameEntity. Source=%s", m_configuration.GetSource().Name().c_str());

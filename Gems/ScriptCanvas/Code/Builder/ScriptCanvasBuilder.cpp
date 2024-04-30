@@ -313,7 +313,7 @@ namespace ScriptCanvasBuilder
     ScriptCanvas::RuntimeDataOverrides ConvertToRuntime(const BuildVariableOverrides& buildOverrides)
     {
         ScriptCanvas::RuntimeDataOverrides runtimeOverrides;
-#if defined(CARBONATED_LOG)
+#if defined(CARBONATED_ENGINE_LOG)
         AZ_Printf(
             "ScriptCanvas",
             "ConvertToRuntime. Source=%s, size=%i",

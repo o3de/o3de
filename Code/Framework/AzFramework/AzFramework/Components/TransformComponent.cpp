@@ -178,7 +178,7 @@ namespace AzFramework
 
             void MarshalCtorData(ReplicaChunkBase* chunk, WriteBuffer& wb) override
             {
-#if defined(CARBONATED_LOG)
+#if defined(CARBONATED_ENGINE_LOG)
                 AZ_Printf("TransformReplicaChunk", "MarshalCtorData");
 #endif
                 TransformReplicaChunk* transformChunk = static_cast<TransformReplicaChunk*>(chunk);
