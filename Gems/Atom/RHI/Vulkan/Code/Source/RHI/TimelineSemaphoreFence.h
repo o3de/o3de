@@ -40,7 +40,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////
-            // RHI::Fence
+            // FenceBase
             RHI::ResultCode InitInternal(RHI::Device& device, RHI::FenceState initialState) override;
             void ShutdownInternal() override;
             void SignalOnCpuInternal() override;

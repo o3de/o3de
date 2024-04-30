@@ -14,13 +14,10 @@ namespace AZ
     namespace Vulkan
     {
         class Device;
-        enum class SemaphoreType
-        {
-            Binary,
-            Timeline,
-            Invalid
-        };
 
+        // Semaphore based on a basic VkSemaphore
+        // Is used if the device does not support timeline semaphores and always for the SwapChain 
+        // due to limitations discussed here: https://www.khronos.org/blog/vulkan-timeline-semaphores
         class BinarySemaphore final : public Semaphore
         {
             using Base = RHI::DeviceObject;

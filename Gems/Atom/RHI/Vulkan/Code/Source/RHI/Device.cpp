@@ -25,13 +25,11 @@
 #include <RHI/CommandList.h>
 #include <RHI/CommandQueue.h>
 #include <RHI/Device.h>
-#include <RHI/Fence.h>
 #include <RHI/GraphicsPipeline.h>
 #include <RHI/ImagePool.h>
 #include <RHI/Instance.h>
 #include <RHI/Pipeline.h>
 #include <RHI/SwapChain.h>
-#include <RHI/TimelineSemaphoreFence.h>
 #include <RHI/WSISurface.h>
 #include <RHI/WindowSurfaceBus.h>
 #include <Vulkan_Traits_Platform.h>
@@ -572,18 +570,6 @@ namespace AZ
         SwapChainSemaphoreAllocator& Device::GetSwapChainSemaphoreAllocator()
         {
             return m_swapChaiSemaphoreAllocator;
-        }
-
-        RHI::Ptr<FenceBase> Device::CreateFence() const
-        {
-            if (GetFeatures().m_signalFenceFromCPU)
-            {
-                return TimelineSemaphoreFence::Create();
-            }
-            else
-            {
-                return Fence::Create();
-            }
         }
 
         const AZStd::vector<VkQueueFamilyProperties>& Device::GetQueueFamilyProperties() const

@@ -432,7 +432,7 @@ namespace AZ
             AZStd::shared_ptr<SignalEvent> signalEvent = AZStd::make_shared<SignalEvent>();
             int currentBitToSignal{ 0 };
             SignalEvent::BitSet currentDependencies{};
-            AZStd::unordered_set<FenceBase*> signalledFences;
+            AZStd::unordered_set<Fence*> signalledFences;
 
             for (RHI::Scope* scopeBase : frameGraph.GetScopes())
             {

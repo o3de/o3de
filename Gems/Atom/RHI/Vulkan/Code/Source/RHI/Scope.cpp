@@ -213,7 +213,7 @@ namespace AZ
             m_signalSemaphores.push_back(semaphore);
         }
 
-        void Scope::AddSignalFence(RHI::Ptr<FenceBase> fence)
+        void Scope::AddSignalFence(RHI::Ptr<Fence> fence)
         {
             m_signalFences.push_back(fence);
         }
@@ -223,12 +223,12 @@ namespace AZ
             return m_signalSemaphores;
         }
 
-        const AZStd::vector<RHI::Ptr<FenceBase>>& Scope::GetSignalFences() const
+        const AZStd::vector<RHI::Ptr<Fence>>& Scope::GetSignalFences() const
         {
             return m_signalFences;
         }
 
-        const AZStd::vector<RHI::Ptr<FenceBase>>& Scope::GetWaitFences() const
+        const AZStd::vector<RHI::Ptr<Fence>>& Scope::GetWaitFences() const
         {
             return m_waitFences;
         }
@@ -342,14 +342,14 @@ namespace AZ
             m_signalFences.reserve(signalFences.size());
             for (const auto& fence : signalFences)
             {
-                m_signalFences.push_back(AZStd::static_pointer_cast<FenceBase>(fence));
+                m_signalFences.push_back(AZStd::static_pointer_cast<Fence>(fence));
             }
 
             const auto& waitFences = GetFencesToWaitFor();
             m_waitFences.reserve(waitFences.size());
             for (const auto& fence : waitFences)
             {
-                m_waitFences.push_back(AZStd::static_pointer_cast<FenceBase>(fence));
+                m_waitFences.push_back(AZStd::static_pointer_cast<Fence>(fence));
             }
 
             Device& device = static_cast<Device&>(deviceBase);

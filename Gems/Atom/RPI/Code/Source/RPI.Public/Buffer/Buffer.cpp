@@ -139,7 +139,7 @@ namespace AZ
                 if (bufferAsset.GetBuffer().size() > 0 && !initWithData)
                 {
                     AZ_PROFILE_SCOPE(RPI, "Stream Upload");
-                    m_streamFence = RHI::Factory::Get().CreateFence(m_rhiBufferPool->GetDevice());
+                    m_streamFence = RHI::Factory::Get().CreateFence();
                     if (m_streamFence)
                     {
                         m_streamFence->Init(m_rhiBufferPool->GetDevice(), RHI::FenceState::Reset);

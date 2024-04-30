@@ -7,16 +7,15 @@
  */
 #pragma once
 
-#include <Atom/RHI.Reflect/ClearValue.h>
 #include <Atom/RHI/FrameEventBus.h>
 #include <Atom/RHI/Scope.h>
+#include <Atom/RHI.Reflect/ClearValue.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
-#include <RHI/FenceBase.h>
+#include <RHI/Fence.h>
 #include <RHI/Framebuffer.h>
 #include <RHI/QueryPool.h>
 #include <RHI/Semaphore.h>
-
 
 namespace AZ
 {
@@ -98,12 +97,12 @@ namespace AZ
 
             void AddWaitSemaphore(const Semaphore::WaitSemaphore& semaphoreInfo);
             void AddSignalSemaphore(RHI::Ptr<Semaphore> semaphore);
-            void AddSignalFence(RHI::Ptr<FenceBase> fence);
+            void AddSignalFence(RHI::Ptr<Fence> fence);
 
             const AZStd::vector<Semaphore::WaitSemaphore>& GetWaitSemaphores() const;
             const AZStd::vector<RHI::Ptr<Semaphore>>& GetSignalSemaphores() const;
-            const AZStd::vector<RHI::Ptr<FenceBase>>& GetSignalFences() const;
-            const AZStd::vector<RHI::Ptr<FenceBase>>& GetWaitFences() const;
+            const AZStd::vector<RHI::Ptr<Fence>>& GetSignalFences() const;
+            const AZStd::vector<RHI::Ptr<Fence>>& GetWaitFences() const;
 
             //! Graphics scopes that draw items use a renderpass.
             //! Compute or copy scopes do not use a renderpass.
@@ -195,8 +194,8 @@ namespace AZ
 
             AZStd::vector<Semaphore::WaitSemaphore> m_waitSemaphores;
             AZStd::vector<RHI::Ptr<Semaphore>> m_signalSemaphores;
-            AZStd::vector<RHI::Ptr<FenceBase>> m_signalFences;
-            AZStd::vector<RHI::Ptr<FenceBase>> m_waitFences;
+            AZStd::vector<RHI::Ptr<Fence>> m_signalFences;
+            AZStd::vector<RHI::Ptr<Fence>> m_waitFences;
             AZStd::vector<QueryPoolAttachment> m_queryPoolAttachments;
             bool m_usesRenderpass = false;
 

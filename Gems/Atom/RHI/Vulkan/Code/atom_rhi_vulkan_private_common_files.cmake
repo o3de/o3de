@@ -40,6 +40,8 @@ set(FILES
     Source/RHI/Device.cpp
     Source/RHI/Device.h
     Source/RHI/DispatchRaysIndirectBuffer.h
+    Source/RHI/BinaryFence.cpp
+    Source/RHI/BinaryFence.h
     Source/RHI/Fence.cpp
     Source/RHI/Fence.h
     Source/RHI/FenceBase.cpp

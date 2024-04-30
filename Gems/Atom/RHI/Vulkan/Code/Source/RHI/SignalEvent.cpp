@@ -13,11 +13,11 @@ namespace AZ
     {
         void SignalEvent::Signal(int bit)
         {
+            AZStd::unique_lock<AZStd::mutex> lock(m_eventMutex);
             if (m_readyBits.test(bit))
             {
                 return;
             }
-            AZStd::unique_lock<AZStd::mutex> lock(m_eventMutex);
             m_readyBits.set(bit);
             m_eventSignal.notify_all();
         }

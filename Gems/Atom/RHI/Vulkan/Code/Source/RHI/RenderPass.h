@@ -7,13 +7,12 @@
  */
 #pragma once
 
-#include <Atom/RHI.Reflect/Format.h>
-#include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>
-#include <Atom/RHI.Reflect/Limits.h>
-#include <Atom/RHI/DeviceObject.h>
 #include <Atom_RHI_Vulkan_Platform.h>
+#include <Atom/RHI/DeviceObject.h>
+#include <Atom/RHI.Reflect/Limits.h>
+#include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>
+#include <Atom/RHI.Reflect/Format.h>
 #include <AzCore/std/containers/array.h>
-#include <RHI/Conversion.h>
 
 namespace AZ
 {

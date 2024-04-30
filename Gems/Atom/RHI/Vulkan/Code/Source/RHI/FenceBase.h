@@ -16,14 +16,16 @@ namespace AZ
     namespace Vulkan
     {
         class Device;
+        class Fence;
 
-        class FenceBase : public RHI::Fence
+        class FenceBase : public RHI::DeviceObject
         {
-            using Base = RHI::Fence;
+            using Base = RHI::DeviceObject;
+            friend class AZ::Vulkan::Fence;
 
         public:
             AZ_CLASS_ALLOCATOR(FenceBase, AZ::ThreadPoolAllocator);
-            AZ_RTTI(FenceBase, "{AAAD0A37-5F85-4A68-9464-06EDAC6D62B0}", Base);
+            AZ_RTTI(FenceBase, "{AAAD0A37-5F85-4A68-9464-06EDAC6D62B0}", RHI::DeviceObject);
 
             ~FenceBase() = default;
 
@@ -37,9 +39,19 @@ namespace AZ
             FenceBase() = default;
 
             //////////////////////////////////////////////////////////////////////
-            // RHI::Fence
-            RHI::ResultCode InitInternal(RHI::Device& device, RHI::FenceState initialState) override;
-            void ShutdownInternal() override;
+            // RHI::Object
+            virtual void SetNameInternal(const AZStd::string_view& name) = 0;
+            //////////////////////////////////////////////////////////////////////
+
+            //////////////////////////////////////////////////////////////////////
+            // Interface
+            virtual RHI::ResultCode InitInternal(RHI::Device& device, RHI::FenceState initialState);
+            virtual void ShutdownInternal();
+            virtual void SignalOnCpuInternal() = 0;
+            virtual void WaitOnCpuInternal() const = 0;
+            virtual void ResetInternal() = 0;
+            virtual RHI::FenceState GetFenceStateInternal() const = 0;
+
             //////////////////////////////////////////////////////////////////////
 
             AZStd::shared_ptr<AZ::Vulkan::SignalEvent> m_signalEvent;

@@ -48,7 +48,7 @@ namespace AZ
             RHI::Ptr<RHI::BufferPool> CreateBufferPool() override;
             RHI::Ptr<RHI::BufferView> CreateBufferView() override;
             RHI::Ptr<RHI::Device> CreateDevice() override;
-            RHI::Ptr<RHI::Fence> CreateFence(const RHI::Device& device) override;
+            RHI::Ptr<RHI::Fence> CreateFence() override;
             RHI::Ptr<RHI::FrameGraphCompiler> CreateFrameGraphCompiler() override;
             RHI::Ptr<RHI::FrameGraphExecuter> CreateFrameGraphExecuter() override;
             RHI::Ptr<RHI::Image> CreateImage() override;

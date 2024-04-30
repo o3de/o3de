@@ -7,13 +7,12 @@
  */
 #pragma once
 
-#include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <Atom/RHI/DeviceObject.h>
+#include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/vector.h>
 #include <RHI/CommandQueue.h>
-#include <RHI/FenceBase.h>
-
+#include <RHI/Fence.h>
 
 namespace AZ
 {
@@ -51,8 +50,8 @@ namespace AZ
             CommandQueue& GetCommandQueue(RHI::HardwareQueueClass hardwareQueueClass) const;
             CommandQueue& GetOrCreatePresentationCommandQueue(const SwapChain& swapchain);
             CommandQueue& GetPresentationCommandQueue() const;
-            RHI::Ptr<FenceBase> GetFrameFence(RHI::HardwareQueueClass hardwareQueueClass) const;
-            RHI::Ptr<FenceBase> GetFrameFence(const QueueId& queueId) const;
+            RHI::Ptr<Fence> GetFrameFence(RHI::HardwareQueueClass hardwareQueueClass) const;
+            RHI::Ptr<Fence> GetFrameFence(const QueueId& queueId) const;
             uint32_t GetCurrentFrameIndex() const;
             uint32_t GetFrameCount() const;
             uint32_t GetQueueFamilyIndex(const RHI::HardwareQueueClass hardwareQueueClass) const;
@@ -77,7 +76,7 @@ namespace AZ
             /// Maps queue classes to the index in the m_commandQueues vector.
             AZStd::array<uint32_t, RHI::HardwareQueueClassCount> m_queueClassMapping;
 
-            using FencesPerQueue = AZStd::vector<RHI::Ptr<FenceBase>>;
+            using FencesPerQueue = AZStd::vector<RHI::Ptr<Fence>>;
             AZStd::array<FencesPerQueue, RHI::Limits::Device::FrameCountMax> m_frameFences;
             uint32_t m_currentFrameIndex = 0;
 

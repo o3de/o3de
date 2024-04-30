@@ -7,47 +7,51 @@
  */
 
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayout.h>
-#include <Atom/RHI.Reflect/Vulkan/Base.h>
-#include <Atom/RHI/FactoryManagerBus.h>
-#include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/RHIUtils.h>
-#include <Atom/RHI/RayTracingPipelineState.h>
-#include <Atom/RHI/RayTracingShaderTable.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/CommandLine/CommandLine.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <RHI/SystemComponent.h>
+#include <RHI/Device.h>
+#include <RHI/DispatchRaysIndirectBuffer.h>
+#include <RHI/Instance.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferPool.h>
 #include <RHI/BufferView.h>
-#include <RHI/Device.h>
-#include <RHI/DispatchRaysIndirectBuffer.h>
-#include <RHI/FenceBase.h>
+#include <RHI/Fence.h>
 #include <RHI/FrameGraphCompiler.h>
-#include <RHI/FrameGraphExecuter.h>
 #include <RHI/Image.h>
 #include <RHI/ImagePool.h>
 #include <RHI/ImageView.h>
-#include <RHI/IndirectBufferSignature.h>
 #include <RHI/IndirectBufferWriter.h>
-#include <RHI/Instance.h>
+#include <RHI/IndirectBufferSignature.h>
+#include <RHI/FrameGraphExecuter.h>
 #include <RHI/PipelineLibrary.h>
 #include <RHI/PipelineState.h>
 #include <RHI/Query.h>
 #include <RHI/QueryPool.h>
-#include <RHI/RayTracingBlas.h>
-#include <RHI/RayTracingBufferPools.h>
-#include <RHI/RayTracingPipelineState.h>
-#include <RHI/RayTracingShaderTable.h>
-#include <RHI/RayTracingTlas.h>
 #include <RHI/Scope.h>
 #include <RHI/ShaderResourceGroup.h>
 #include <RHI/ShaderResourceGroupPool.h>
 #include <RHI/StreamingImagePool.h>
-#include <RHI/SwapChain.h>
-#include <RHI/SystemComponent.h>
 #include <RHI/TransientAttachmentPool.h>
+#include <RHI/SwapChain.h>
+#include <RHI/PipelineState.h>
+#include <RHI/PipelineLibrary.h>
+#include <RHI/ShaderResourceGroupPool.h>
+#include <RHI/TransientAttachmentPool.h>
+#include <RHI/RayTracingBufferPools.h>
+#include <RHI/RayTracingBlas.h>
+#include <RHI/RayTracingTlas.h>
+#include <RHI/RayTracingPipelineState.h>
+#include <RHI/RayTracingShaderTable.h>
+#include <Atom/RHI.Reflect/Vulkan/Base.h>
+#include <Atom/RHI/FactoryManagerBus.h>
+#include <Atom/RHI/RayTracingPipelineState.h>
+#include <Atom/RHI/RayTracingShaderTable.h>
+#include <Atom/RHI/RHIUtils.h>
+#include <Atom/RHI/RHISystemInterface.h>
 
 namespace AZ
 {
@@ -153,9 +157,9 @@ namespace AZ
             return Device::Create();
         }
 
-        RHI::Ptr<RHI::Fence> SystemComponent::CreateFence(const RHI::Device& device)
+        RHI::Ptr<RHI::Fence> SystemComponent::CreateFence()
         {
-            return static_cast<const Device*>(&device)->CreateFence();
+            return Fence::Create();
         }
 
         RHI::Ptr<RHI::FrameGraphCompiler> SystemComponent::CreateFrameGraphCompiler()

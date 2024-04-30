@@ -120,7 +120,7 @@ namespace AZ
             
             // Create fence
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-            m_fence = RHI::Factory::Get().CreateFence(*device);
+            m_fence = RHI::Factory::Get().CreateFence();
             AZ_Assert(m_fence != nullptr, "AttachmentReadback failed to create a fence");
             [[maybe_unused]] RHI::ResultCode result = m_fence->Init(*device, RHI::FenceState::Reset);
             AZ_Assert(result == RHI::ResultCode::Success, "AttachmentReadback failed to init fence");

@@ -15,6 +15,9 @@ namespace AZ
     {
         class Device;
 
+        // Semaphore based on a timeline semaphore VkSemaphore
+        // Is used if the device supports it and in all places except for the SwapChain
+        // https://www.khronos.org/blog/vulkan-timeline-semaphores
         class TimelineSemaphore final : public Semaphore
         {
             using Base = Semaphore;

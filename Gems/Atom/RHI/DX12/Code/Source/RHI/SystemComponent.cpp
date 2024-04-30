@@ -128,7 +128,7 @@ namespace AZ
             return Device::Create();
         }
 
-        RHI::Ptr<RHI::Fence> SystemComponent::CreateFence([[maybe_unused]] const RHI::Device& device)
+        RHI::Ptr<RHI::Fence> SystemComponent::CreateFence()
         {
             return FenceImpl::Create();
         }

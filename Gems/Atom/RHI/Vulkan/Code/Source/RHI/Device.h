@@ -32,7 +32,6 @@
 #include <RHI/CommandPool.h>
 #include <RHI/CommandQueueContext.h>
 #include <RHI/DescriptorSetLayout.h>
-#include <RHI/FenceBase.h>
 #include <RHI/Framebuffer.h>
 #include <RHI/NullDescriptorManager.h>
 #include <RHI/PhysicalDevice.h>
@@ -105,7 +104,6 @@ namespace AZ
             const CommandQueueContext& GetCommandQueueContext() const;
             SemaphoreAllocator& GetSemaphoreAllocator();
             SwapChainSemaphoreAllocator& GetSwapChainSemaphoreAllocator();
-            RHI::Ptr<FenceBase> CreateFence() const;
 
             const AZStd::vector<VkQueueFamilyProperties>& GetQueueFamilyProperties() const;
 

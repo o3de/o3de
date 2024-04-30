@@ -126,13 +126,13 @@ namespace AZ
             return *m_commandQueues[commandQueueIndex];
         }
 
-        RHI::Ptr<FenceBase> CommandQueueContext::GetFrameFence(RHI::HardwareQueueClass hardwareQueueClass) const
+        RHI::Ptr<Fence> CommandQueueContext::GetFrameFence(RHI::HardwareQueueClass hardwareQueueClass) const
         {
             uint32_t commandQueueIndex = m_queueClassMapping[static_cast<uint32_t>(hardwareQueueClass)];
             return m_frameFences[m_currentFrameIndex][commandQueueIndex];
         }
 
-        RHI::Ptr<FenceBase> CommandQueueContext::GetFrameFence(const QueueId& queueId) const
+        RHI::Ptr<Fence> CommandQueueContext::GetFrameFence(const QueueId& queueId) const
         {
             for (uint32_t i = 0; i < m_commandQueues.size(); ++i)
             {
@@ -142,7 +142,7 @@ namespace AZ
                 }
             }
             AZ_Assert(false, "Could not find frame fence for queueId=(%lu, %lu)", static_cast<unsigned long>(queueId.m_familyIndex), static_cast<unsigned long>(queueId.m_queueIndex));
-            return RHI::Ptr<FenceBase>();
+            return RHI::Ptr<Fence>();
         }
 
         uint32_t CommandQueueContext::GetCurrentFrameIndex() const
@@ -280,7 +280,7 @@ namespace AZ
             AZ_Assert(GetFrameCount() <= m_frameFences.size(), "FrameCount is too large.");
             for (uint32_t index = 0; index < GetFrameCount(); ++index)
             {
-                RHI::Ptr<FenceBase> fence = device.CreateFence();
+                RHI::Ptr<Fence> fence = Fence::Create();
                 result = fence->Init(device, RHI::FenceState::Signaled);
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
                 m_frameFences[index].push_back(fence);

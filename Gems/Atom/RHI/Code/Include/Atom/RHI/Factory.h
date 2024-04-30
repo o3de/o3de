@@ -168,7 +168,7 @@ namespace AZ::RHI
 
         virtual Ptr<Device> CreateDevice() = 0;
 
-        virtual Ptr<Fence> CreateFence(const RHI::Device& device) = 0;
+        virtual Ptr<Fence> CreateFence() = 0;
 
         virtual Ptr<FrameGraphCompiler> CreateFrameGraphCompiler() = 0;
 

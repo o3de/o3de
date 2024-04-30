@@ -7,19 +7,17 @@
  */
 #pragma once
 
-#include <Atom/RHI/AsyncWorkQueue.h>
-#include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/DeviceObject.h>
+#include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/Fence.h>
 #include <Atom/RHI/StreamingImagePool.h>
-#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/parallel/mutex.h>
+#include <AzCore/std/containers/unordered_map.h>
+#include <Atom/RHI/AsyncWorkQueue.h>
 #include <RHI/CommandQueue.h>
 #include <RHI/Device.h>
-#include <RHI/FenceBase.h>
 #include <RHI/Queue.h>
 #include <RHI/Semaphore.h>
-
 
 namespace AZ
 {
@@ -28,7 +26,7 @@ namespace AZ
         class Buffer;
         class CommandList;
         class Queue;
-        class FenceBase;
+        class Fence;
         struct QueueId;
 
         /**
@@ -75,7 +73,7 @@ namespace AZ
             struct FramePacket
             {
                 RHI::Ptr<Buffer> m_stagingBuffer;
-                RHI::Ptr<FenceBase> m_fence;
+                RHI::Ptr<Fence> m_fence;
 
                 uint32_t m_dataOffset = 0;
             };
@@ -102,11 +100,14 @@ namespace AZ
 
             // Handles the end of the upload. This includes emitting the epilogue barriers and doing any
             // necessary cross queue synchronization and ownership transfer (if needed).
-            template<typename... Args>
+            template<typename ...Args>
             void ProcessEndOfUpload(
-                Queue* queue, VkPipelineStageFlags waitStage, const AZStd::vector<FenceBase*> fencesToSignal, Args&&... args);
-
-            RHI::AsyncWorkHandle CreateAsyncWork(RHI::Ptr<FenceBase> fence, RHI::Fence::SignalCallback callback = nullptr);
+                Queue* queue,
+                VkPipelineStageFlags waitStage,
+                const AZStd::vector<Fence*> fencesToSignal,
+                Args&& ...args);
+            
+            RHI::AsyncWorkHandle CreateAsyncWork(RHI::Ptr<Fence> fence, RHI::Fence::SignalCallback callback = nullptr);
             void ProcessCallback(const RHI::AsyncWorkHandle& handle);
 
             Descriptor m_descriptor;
@@ -120,9 +121,12 @@ namespace AZ
             AZStd::unordered_map<RHI::AsyncWorkHandle, RHI::CompleteCallback> m_callbackList;
         };
 
-        template<typename... Args>
+        template<typename ...Args>
         void AsyncUploadQueue::ProcessEndOfUpload(
-            Queue* queue, [[maybe_unused]] VkPipelineStageFlags waitStage, const AZStd::vector<FenceBase*> fencesToSignal, Args&&... args)
+            Queue* queue,
+            [[maybe_unused]] VkPipelineStageFlags waitStage,
+            const AZStd::vector<Fence*> fencesToSignal,
+            Args&& ...args)
         {
             BeginFramePacket(queue);
 
@@ -131,13 +135,10 @@ namespace AZ
                 AZStd::forward<Args>(args)...);
 
             EndFramePacket(queue);
-            AZStd::for_each(
-                fencesToSignal.begin(),
-                fencesToSignal.end(),
-                [&](FenceBase* fence)
-                {
-                    queue->GetDescriptor().m_commandQueue->Signal(*fence);
-                });
+            AZStd::for_each(fencesToSignal.begin(), fencesToSignal.end(), [&](Fence* fence)
+            {
+                queue->GetDescriptor().m_commandQueue->Signal(*fence);
+            });
         }
     }
 }

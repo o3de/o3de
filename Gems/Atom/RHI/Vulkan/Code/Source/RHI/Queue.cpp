@@ -9,6 +9,7 @@
 #include <Atom_RHI_Vulkan_Platform.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/iterator.h>
+#include <RHI/BinaryFence.h>
 #include <RHI/Device.h>
 #include <RHI/Fence.h>
 #include <RHI/Queue.h>
@@ -41,8 +42,8 @@ namespace AZ
             const AZStd::vector<RHI::Ptr<CommandList>>& commandBuffers,
             const AZStd::vector<Semaphore::WaitSemaphore>& waitSemaphoresInfo,
             const AZStd::vector<RHI::Ptr<Semaphore>>& semaphoresToSignal,
-            const AZStd::vector<RHI::Ptr<FenceBase>>& fencesToWaitFor,
-            FenceBase* fenceToSignal)
+            const AZStd::vector<RHI::Ptr<Fence>>& fencesToWaitFor,
+            Fence* fenceToSignal)
         {
             AZStd::vector<VkCommandBuffer> vkCommandBuffers;
             AZStd::vector<VkSemaphore> vkWaitSemaphoreVector; // vulkan.h has a #define called vkWaitSemaphores, so we name this differently
@@ -53,7 +54,7 @@ namespace AZ
             AZStd::vector<uint64_t> vkSignalSemaphoreValues;
             AZStd::vector<uint64_t> vkWaitSemaphoreValues;
 
-            auto timelineSemaphoreFenceToSignal = azrtti_cast<TimelineSemaphoreFence*>(fenceToSignal);
+            auto timelineSemaphoreFenceToSignal = azrtti_cast<TimelineSemaphoreFence*>(fenceToSignal ? &fenceToSignal->GetFenceBase() : nullptr);
 
             VkSubmitInfo submitInfo;
             uint32_t submitCount = 0;
@@ -145,10 +146,10 @@ namespace AZ
             }
 
             VkFence nativeFence = VK_NULL_HANDLE;
-            auto fenceVulkanFence = azrtti_cast<Fence*>(fenceToSignal);
+            auto fenceVulkanFence = azrtti_cast<BinaryFence*>(fenceToSignal ? &fenceToSignal->GetFenceBase() : nullptr);
             if (fenceVulkanFence)
             {
-                fenceVulkanFence->Reset();
+                fenceToSignal->Reset();
                 nativeFence = fenceVulkanFence->GetNativeFence();
             }
             const VkResult result = static_cast<Device&>(GetDevice())

@@ -5,11 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI.Reflect/ImageSubresource.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
 #include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/StreamingImagePool.h>
+#include <Atom/RHI.Reflect/ImageSubresource.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/std/containers/vector.h>
 #include <RHI/AsyncUploadQueue.h>
@@ -20,7 +20,7 @@
 #include <RHI/CommandQueueContext.h>
 #include <RHI/Conversion.h>
 #include <RHI/Device.h>
-#include <RHI/FenceBase.h>
+#include <RHI/Fence.h>
 #include <RHI/Image.h>
 #include <RHI/MemoryView.h>
 #include <RHI/Queue.h>
@@ -91,7 +91,7 @@ namespace AZ
                 return RHI::AsyncWorkHandle::Null;
             }
 
-            RHI::Ptr<FenceBase> uploadFence = device.CreateFence();
+            RHI::Ptr<Fence> uploadFence = Fence::Create();
             uploadFence->Init(device, RHI::FenceState::Reset);
             CommandQueue::Command command = [=, &device](void* queue)
             {
@@ -134,10 +134,10 @@ namespace AZ
                     EndFramePacket(vulkanQueue);
                 }
 
-                AZStd::vector<FenceBase*> fencesToSignal;
+                AZStd::vector<Fence*> fencesToSignal;
                 if (request.m_fenceToSignal)
                 {
-                    fencesToSignal.push_back(static_cast<FenceBase*>(request.m_fenceToSignal));
+                    fencesToSignal.push_back(static_cast<Fence*>(request.m_fenceToSignal));
                 }
                 fencesToSignal.push_back(uploadFence.get());
 
@@ -180,7 +180,7 @@ namespace AZ
             const uint16_t startMip = static_cast<uint16_t>(residentMip - 1);
             const uint16_t endMip = static_cast<uint16_t>(residentMip - request.m_mipSlices.size());
 
-            RHI::Ptr<FenceBase> uploadFence = device.CreateFence();
+            RHI::Ptr<Fence> uploadFence = Fence::Create();
             uploadFence->Init(device, RHI::FenceState::Reset);
 
             CommandQueue::Command command = [=, &device](void* queue)
@@ -369,7 +369,12 @@ namespace AZ
                 // Set pipeline barriers after the copy.
                 VkPipelineStageFlags waitStage = GetResourcePipelineStateFlags(image->GetDescriptor().m_bindFlags) & device.GetSupportedPipelineStageFlags();
                 EndFramePacket(vulkanQueue);
-                ProcessEndOfUpload(vulkanQueue, waitStage, AZStd::vector<FenceBase*>{ uploadFence.get() }, request, residentMip);
+                ProcessEndOfUpload(
+                    vulkanQueue,
+                    waitStage,
+                    AZStd::vector<Fence*>{uploadFence.get()},
+                    request,
+                    residentMip);
             };
 
             RHI::ImageSubresourceRange range;
@@ -456,7 +461,7 @@ namespace AZ
             {
                 framePacket.m_stagingBuffer = device.AcquireStagingBuffer(m_descriptor.m_stagingSizeInBytes);
                 AZ_Assert(framePacket.m_stagingBuffer, "Failed to acquire staging buffer");
-                framePacket.m_fence = device.CreateFence();
+                framePacket.m_fence = Fence::Create();
                 result = framePacket.m_fence->Init(device, RHI::FenceState::Signaled);
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
             }
@@ -648,8 +653,7 @@ namespace AZ
                 &barrier);
         }
 
-        RHI::AsyncWorkHandle AsyncUploadQueue::CreateAsyncWork(
-            RHI::Ptr<FenceBase> fence, RHI::Fence::SignalCallback callback /* = nullptr */)
+        RHI::AsyncWorkHandle AsyncUploadQueue::CreateAsyncWork(RHI::Ptr<Fence> fence, RHI::Fence::SignalCallback callback /* = nullptr */)
         {
             return m_asyncWaitQueue.CreateAsyncWork([fence, callback]()
             {
