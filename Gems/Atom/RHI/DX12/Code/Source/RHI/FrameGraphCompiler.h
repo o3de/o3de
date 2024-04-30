@@ -45,7 +45,7 @@ namespace AZ
             RHI::MessageOutcome CompileInternal(const RHI::FrameGraphCompileRequest& request) override;
             //////////////////////////////////////////////////////////////////////////
 
-            static D3D12_RESOURCE_STATES GetResourceState(const RHI::ScopeAttachment& scopeAttachment);
+            static AZStd::pair<D3D12_RESOURCE_STATES, bool> GetResourceState(const RHI::ScopeAttachment& scopeAttachment);
 
             //Returns pre-discard transition state.
             static AZStd::optional<D3D12_RESOURCE_STATES> GetDiscardResourceState(const RHI::ScopeAttachment& scopeAttachment, D3D12_RESOURCE_FLAGS bindflags);
