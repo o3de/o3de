@@ -122,6 +122,7 @@ namespace Gestures
         configsByName[InputDeviceGestures::Gesture::Drag.GetName()] = &m_dragConfig;
 #if defined(CARBONATED)
         // Add the DragRight gesture
+        m_dragRightConfig.pointerIndex = 1;
         configsByName[InputDeviceGestures::Gesture::DragRight.GetName()] = &m_dragRightConfig;
 #endif
         configsByName[InputDeviceGestures::Gesture::Hold.GetName()] = &m_holdConfig;
