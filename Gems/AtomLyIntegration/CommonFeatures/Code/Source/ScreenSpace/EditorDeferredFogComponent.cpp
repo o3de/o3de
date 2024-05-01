@@ -136,7 +136,7 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
                         // Fog turbulence properties
-                        ->ClassElement(Edit::ClassElements::Group, "Turbulance")
+                        ->ClassElement(Edit::ClassElements::Group, "Turbulence")
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                             ->Attribute(Edit::Attributes::Visibility, &DeferredFogComponentConfig::GetUseNoiseTextureShaderOption)
                         ->DataElement(AZ::Edit::UIHandlers::LineEdit, &DeferredFogComponentConfig::m_noiseTexture,
