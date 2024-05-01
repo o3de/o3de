@@ -1459,8 +1459,8 @@ namespace ScriptCanvasEditor
                         AZ::AttributeReader attributeReader(nullptr, assetTypeAttribute);
                         AZ::Data::AssetType assetType;
                         attributeReader.Read<AZ::Data::AssetType>(assetType);
-                        ScriptCanvasAssetIdDataInterface* interface = static_cast<ScriptCanvasAssetIdDataInterface*>(dataInterface);
-                        interface->SetAssetType(assetType);
+                        ScriptCanvasAssetIdDataInterface* assetIdinterface = static_cast<ScriptCanvasAssetIdDataInterface*>(dataInterface);
+                        assetIdinterface->SetAssetType(assetType);
                     }
 
                     if (AZ::Attribute* sourceAssetFilterAttribute = FindAttribute(AZ::Edit::Attributes::SourceAssetFilterPattern, method->GetMethod()->m_attributes))
@@ -1468,8 +1468,8 @@ namespace ScriptCanvasEditor
                         AZ::AttributeReader attributeReader(nullptr, sourceAssetFilterAttribute);
                         AZStd::string filterPattern;
                         attributeReader.Read<AZStd::string>(filterPattern);
-                        ScriptCanvasAssetIdDataInterface* interface = static_cast<ScriptCanvasAssetIdDataInterface*>(dataInterface);
-                        interface->SetStringFilter(filterPattern);
+                        ScriptCanvasAssetIdDataInterface* assetIdinterface = static_cast<ScriptCanvasAssetIdDataInterface*>(dataInterface);
+                        assetIdinterface->SetStringFilter(filterPattern);
                     }
                 }
 
