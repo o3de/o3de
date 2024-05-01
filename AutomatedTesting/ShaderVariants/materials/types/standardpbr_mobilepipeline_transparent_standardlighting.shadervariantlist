@@ -1,3 +1,8 @@
+//Step 1 -> Use CreateShaderVariantListDocumentFromShader via SMC to crawl the  materials and create variants for material shader options.
+//Step 2 -> Use ExpandOptionsFullCombinatorials via SMC and apply o_directional_shadow_filtering_method with value ShadowFilterMethod::Pcf. Generation Method 'Mulitply'.
+//Step 3 -> Use ExpandOptionsFullCombinatorials via SMC and apply o_directional_shadow_filtering_sample_count with values ShadowFilterSampleCount::PcfTap4 and ShadowFilterSampleCount::PcfTap9. Generation Method 'Mulitply'.
+//Step 4 -> Use ExpandOptionsFullCombinatorials via SMC and add o_enableDecals, o_enableSimpleSpotLights, Generation Method 'Mulitply'.
+
 {
     "Shader": "materials/types/standardpbr_mobilepipeline_transparent_standardlighting.shader",
     "Variants": [
