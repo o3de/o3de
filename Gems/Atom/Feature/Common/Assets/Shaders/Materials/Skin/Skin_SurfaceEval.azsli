@@ -83,8 +83,8 @@ real2 ApplyNormalWrinkleMap(bool shouldApply, real2 baseNormalSample, Texture2D 
 Surface EvaluateSurface_Skin(
     float3 positionWS,
     real3 vertexNormal,
-    real3 tangents[UvSetCount],
-    real3 bitangents[UvSetCount],
+    float3 tangents[UvSetCount],
+    float3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],
     float2 detailUv,
     real4 wrinkleBlendFactors,
@@ -140,7 +140,7 @@ Surface EvaluateSurface_Skin(
     // Since the wrinkle normal maps should all be in the same tangent space as the main normal map, we should be able to blend the raw normal map
     // texture values before doing all the tangent space transforms, so we only have to do the transforms once, for better performance.
     
-    real2 normalMapSample = real2(0.0,0.0);
+    real2 normalMapSample = real2(0.0, 0.0);
     
     if(o_normal_useTexture)
     {
@@ -162,7 +162,7 @@ Surface EvaluateSurface_Skin(
         normalMapSample = ApplyNormalWrinkleMap(o_wrinkleLayers_normal_useTexture4, normalMapSample, MaterialSrg::m_wrinkle_normal_texture4, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, wrinkleBlendFactors.a, uvDxDy, customDerivatives);
     }
 
-    real3x3 uvMatrix = real3x3(CreateIdentity3x3());
+    real3x3 uvMatrix = CreateIdentity3x3_real();
 
     if(o_detail_normal_useTexture)
     {
@@ -232,6 +232,7 @@ Surface EvaluateSurface_Skin(
     float2 roughnessUv = uvs[MaterialSrg::m_roughnessMapUvIndex];
     surface.roughnessLinear = GetRoughnessInput(MaterialSrg::m_roughnessMap, MaterialSrg::m_sampler, roughnessUv, real(MaterialSrg::m_roughnessFactor),
                                         real(MaterialSrg::m_roughnessLowerBound), real(MaterialSrg::m_roughnessUpperBound), o_roughness_useTexture, uvDxDy, customDerivatives);
+
     surface.CalculateRoughnessA();
 
     // ------- Dual Specular -------
@@ -242,10 +243,12 @@ Surface EvaluateSurface_Skin(
 
     // ------- Subsurface -------
 
+#if OUTPUT_SUBSURFACE
     float2 subsurfaceUv = uvs[MaterialSrg::m_subsurfaceScatteringInfluenceMapUvIndex];
     surface.subsurfaceScatteringFactor = GetSubsurfaceInput(MaterialSrg::m_subsurfaceScatteringInfluenceMap, MaterialSrg::m_sampler, subsurfaceUv, real(MaterialSrg::m_subsurfaceScatteringFactor), uvDxDy, customDerivatives);
     surface.subsurfaceScatteringQuality = real(MaterialSrg::m_subsurfaceScatteringQuality);
     surface.scatterDistance = real3(MaterialSrg::m_scatterDistance);
+#endif
 
     // ------- Occlusion -------
     
@@ -271,8 +274,8 @@ Surface EvaluateSurface_Skin(
 Surface EvaluateSurface_Skin(
     float3 positionWS,
     real3 vertexNormal,
-    real3 tangents[UvSetCount],
-    real3 bitangents[UvSetCount],
+    float3 tangents[UvSetCount],
+    float3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],
     float2 detailUv,
     real4 wrinkleBlendFactors,
