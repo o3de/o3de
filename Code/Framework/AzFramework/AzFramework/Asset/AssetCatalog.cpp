@@ -240,7 +240,7 @@ namespace AzFramework
             AZ_Warning(
                 "O3DE_DEPRECATION_NOTICE(GHI-17861)",
                 false,
-                "Deprecated asset id warning! GetAssetInfoByIdInternal could not the modern asset id for \"%s\" and so fell back to using "
+                "Deprecated asset id warning! GetAssetInfoByIdInternal could not resolve the modern asset id for \"%s\" and so fell back to using "
                 "the legacy asset id \"%s\"."
                 "Please recreate the asset and update any other assets referencing this asset in order to generate a modern asset id.",
                 legacyAssetInfo.m_relativePath.c_str(),
