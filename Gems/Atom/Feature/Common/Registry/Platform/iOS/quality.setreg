@@ -19,6 +19,8 @@
 
                         //PostProcessing related cvars
                         "r_enableFog": [ 0, 0, 1, 1 ],
+                        "r_fogLayerSupport": [0, 0, 1, 1],
+                        "r_fogTurbulenceSupport": [0, 0, 0, 1],
                         "r_enableDOF": [ 0, 0, 1, 1 ],
                         // temporary disable bloom for all iOS tiers (see details in MAD-14453)
                         "r_enableBloom": [ 0, 0, 0, 0 ],

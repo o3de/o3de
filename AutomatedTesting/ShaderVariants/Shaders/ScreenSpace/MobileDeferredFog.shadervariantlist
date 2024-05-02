@@ -1,0 +1,25 @@
+{
+    "Shader": "Shaders/ScreenSpace/MobileDeferredFog.shader",
+    "Variants": [
+        {
+            "StableId": 1,
+            "Options": {
+                "o_enableFogLayer": "false"
+            }
+        },
+        {
+            "StableId": 2,
+            "Options": {
+                "o_enableFogLayer": "true",
+                "o_useNoiseTexture": "false"
+            }
+        },
+        {
+            "StableId": 3,
+            "Options": {
+                "o_enableFogLayer": "true",
+                "o_useNoiseTexture": "true"
+            }
+        }
+    ]
+}

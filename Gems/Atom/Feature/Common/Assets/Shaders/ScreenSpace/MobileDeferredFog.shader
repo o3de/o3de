@@ -1,6 +1,6 @@
 { 
     "Source" : "DeferredFog.azsl",
-    "Definitions": ["ENABLE_FOG_LAYER=0", "HAS_LINEAR_DEPTH=0"],
+    "Definitions": ["HAS_LINEAR_DEPTH=0"],
 
     "DepthStencilState" : 
     {

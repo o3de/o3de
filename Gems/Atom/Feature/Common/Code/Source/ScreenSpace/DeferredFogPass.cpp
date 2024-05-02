@@ -30,6 +30,8 @@ namespace AZ
     {
 
         AZ_CVAR(bool, r_enableFog, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Enable fog");
+        AZ_CVAR(bool, r_fogLayerSupport, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Enable fog layer support");
+        AZ_CVAR(bool, r_fogTurbulenceSupport, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Enable fog turbulence support");
 
         DeferredFogPass::DeferredFogPass(const RPI::PassDescriptor& descriptor)
             : RPI::FullscreenTrianglePass(descriptor)
@@ -211,9 +213,9 @@ namespace AZ
             // [TODO][ATOM-13659] - AZ::Name all over our code base should use init with string and
             // hash key for the iterations themselves.
             shaderOption.SetValue(AZ::Name("o_enableFogLayer"),
-                fogSettings->GetEnableFogLayerShaderOption() ? AZ::Name("true") : AZ::Name("false"));
+                r_fogLayerSupport && fogSettings->GetEnableFogLayerShaderOption() ? AZ::Name("true") : AZ::Name("false"));
             shaderOption.SetValue(AZ::Name("o_useNoiseTexture"),
-                fogSettings->GetUseNoiseTextureShaderOption() ? AZ::Name("true") : AZ::Name("false"));
+                r_fogTurbulenceSupport && fogSettings->GetUseNoiseTextureShaderOption() ? AZ::Name("true") : AZ::Name("false"));
 
             // The following method returns the specified options, as well as fall back values for all 
             // non-specified options.  If all were set you can use the method GetShaderVariantKey that is 
