@@ -118,10 +118,28 @@ namespace Editor
                 }
                 return true;
             }
+#if defined(CARBONATED)
+            else if (msg->message == WM_KEYDOWN || msg->message == WM_KEYUP)
+            {
+                return false; // pass through unhandled so that WM_CHAR is generated
+            }
+            else if (msg->message == WM_CHAR)
+            {
+                if (filterInputEvents)
+                {
+                    // Process raw WM_CHAR event sending keycode to a LyShine UiTextInputComponent in Editor game mode
+                    AzFramework::RawInputNotificationBusWindows::Broadcast(
+                        &AzFramework::RawInputNotificationsWindows::OnRawInputCodeUnitUTF16Event, msg->wParam);
+                    return true; // mark as handled to avoid doubling a character which will pass through Editor handlers
+                }
+                return false; // pass through unhandled to get to lower priority handlers like Editor console input
+            }
+#else
             else if (msg->message == WM_KEYDOWN || msg->message == WM_KEYUP || msg->message == WM_CHAR)
             {
                 return filterInputEvents;
             }
+#endif // defined(CARBONATED)
 
             // allow all other Qt event types to pass through
             // which are needed for focusing, etc.
