@@ -144,7 +144,7 @@ namespace AzFramework
                 //    somehow the longer term kind of implies the shorter terms are kind of throwaway or temp
                 // 
                 // This component was selected to insert below patch just because it is always serialized and safe.
-                // TODO: remove this patch when  AP / UI compiler pipeline is fixed.
+                // TODO: remove this patch when  AP / UI compiler pipeline is fixed. See https://jira.carbonated.com:8443/browse/MAD-15198
                 serializeContext->ClassDeprecate("EditorOnlyEntityComponent", AZ::Uuid("{22A16F1D-6D49-422D-AAE9-91AE45B5D3E7}"));
                 serializeContext->ClassDeprecate("ScriptEditorComponent", AZ::Uuid("{B5FC8679-FA2A-4C7C-AC42-DCC279EA613A}"));
                 serializeContext->ClassDeprecate("EditorEntitySortComponent", AZ::Uuid("{6EA1E03D-68B2-466D-97F7-83998C8C27F0}"));
