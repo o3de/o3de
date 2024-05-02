@@ -629,8 +629,12 @@ namespace AZ
             AZStd::vector<uint32_t> sortedDecals(dataVector.size());
             // Initialize with all the decals indices
             std::iota(sortedDecals.begin(), sortedDecals.end(), 0);
+#if !defined(CARBONATED)
             // Only sort if we are going to limit the number of visible decals
             if (numVisibleDecals < dataVector.size())
+#else
+            // Sort always due to the render pipeline can have its own limit for visible decals. And that limit can be much less than numVisibleDecals.
+#endif
             {
                 AZ::Vector3 viewPos = view->GetViewToWorldMatrix().GetTranslation();
                 AZStd::sort(
