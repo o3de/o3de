@@ -177,7 +177,7 @@ namespace AzToolsFramework
                 AssetBrowserComponentNotificationBus::Broadcast(&AssetBrowserComponentNotifications::OnAssetBrowserComponentReady);
             }
 
-            if ((m_isResetting)&&(m_changesApplied))
+            if (m_isResetting && m_changesApplied)
             {
                 m_isResetting = false;
                 m_changesApplied = false;
