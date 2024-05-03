@@ -62,6 +62,7 @@ namespace EMotionFX
             bool GetRenderActorVisible() const override;
 #if defined(CARBONATED)
             void SetForceJointUpdate(bool force) override;
+            bool GetForceJointUpdate() override;
 #endif
             size_t GetNumJoints() const override;
             SkinningMethod GetSkinningMethod() const override;
