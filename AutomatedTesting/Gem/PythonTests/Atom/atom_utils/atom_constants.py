@@ -426,9 +426,9 @@ class AtomComponentProperties:
             'Octaves Blend Factor': 'Controller|Configuration|Turbulence|Octaves Blend Factor',
             'Enable Turbulence Properties': 'Controller|Configuration|Enable Turbulence Properties',
             'Enable Fog Layer': 'Controller|Configuration|Enable Fog Layer',
-            'Fog Density': 'Controller|Configuration|Density Control|Fog Density'
-            'Fog Density Clamp': 'Controller|Configuration|Density Control|Fog Density Clamp'
-            'Fog Mode': 'Controller|Configuration|Fog Mode'
+            'Fog Density': 'Controller|Configuration|Density Control|Fog Density',
+            'Fog Density Clamp': 'Controller|Configuration|Density Control|Fog Density Clamp',
+            'Fog Mode': 'Controller|Configuration|Fog Mode',
         }
         return properties[property]
 
