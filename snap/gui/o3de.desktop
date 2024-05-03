@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Name=O3DE
+Comment=O3DE Project Manager
+Type=Application
+Exec=o3de
+Icon=Icon=${SNAP}/meta/gui/o3de.svg
+Terminal=false
+StartupWMClass=O3DE-Snap
+StartupNotify=true
+X-GNOME-Autostart-enabled=true

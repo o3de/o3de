@@ -1136,6 +1136,12 @@ function(ly_setup_o3de_install)
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
 
+    ly_install(FILES
+        ${LY_ROOT_FOLDER}/snap/gui/o3de.svg
+        DESTINATION .
+        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+    )
+
     # Inject other build directories
     foreach(external_dir ${LY_INSTALL_EXTERNAL_BUILD_DIRS})
         ly_install(CODE
