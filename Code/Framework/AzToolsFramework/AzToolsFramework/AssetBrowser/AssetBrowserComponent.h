@@ -124,6 +124,8 @@ namespace AzToolsFramework
             AZStd::atomic_bool m_waitingForMore;
             //! should the query thread stop
             AZStd::atomic_bool m_disposed;
+            AZStd::atomic_bool m_isResetting;
+            AZStd::atomic_bool m_changesApplied;
 
             AZStd::unique_ptr<AssetBrowserModel> m_assetBrowserModel;
             AZStd::shared_ptr<AssetEntryChangeset> m_changeset;
