@@ -375,6 +375,10 @@ namespace EMotionFX
         void ActorComponent::SetForceJointUpdate(bool force)
         {
             m_configuration.m_forceUpdateJointsOOV = force;
+            if (force && m_actorInstance)
+            {
+                m_actorInstance->SetIsVisible(true);
+            }
         }
 #endif
 
@@ -621,6 +625,12 @@ namespace EMotionFX
                     const bool updateTransforms = AZ::RHI::CheckBitsAny(m_configuration.m_renderFlags, s_requireUpdateTransforms);
                     m_actorInstance->SetIsVisible(isInCameraFrustum && updateTransforms);
                 }
+#if defined(CARBONATED)
+                else
+                {
+                    m_actorInstance->SetIsVisible(true);
+                }
+#endif
             }
         }
 

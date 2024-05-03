@@ -273,6 +273,10 @@ namespace EMotionFX
         void EditorActorComponent::SetForceJointUpdate(bool force)
         {
             m_forceUpdateJointsOOV = force;
+            if (force && m_actorInstance)
+            {
+                m_actorInstance->SetIsVisible(true);
+            }
         }
 #endif
 
