@@ -29,6 +29,8 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     float3              m_fogColor;
     float               m_fogStartDistance; // Distance at which the fog starts to appear
     float               m_fogEndDistance;   // Distance for complete fog color taking over
+    float               m_fogDensity;
+    float               m_fogDensityClamp;
 
 #if ENABLE_FOG_LAYER
     float               m_fogMinHeight;     // Minmum and Maximum fog layer heights
@@ -79,6 +81,8 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 
 option bool o_useNoiseTexture = true;
 option bool o_enableFogLayer = true;
+// "Linear" is a reserved keyword, so we change it to "LinearMode"
+option enum class FogMode { LinearMode, ExponentialMode, ExponentialSquaredMode } o_fogMode = FogMode::LinearMode;
 
 #if ENABLE_FOG_LAYER
 float CalculateFogDensity(float3 surfacePosWS, float depthInLayer)
@@ -194,7 +198,7 @@ PSOutput MainPS(VSOutput IN)
         linearDepth *= lerp(1.0, fogDensity, fogDistanceDeviationRatio);
 
         // The following line is the linear depth traversing the layer
-        linearDepth = fogTraversalRelLength * linearDepth - max( 0, PassSrg::m_fogStartDistance - distToFogLayer * linearDepth);
+        linearDepth = max(0, fogTraversalRelLength * linearDepth - max( 0, PassSrg::m_fogStartDistance - distToFogLayer * linearDepth));
     }
     else
 #endif // ENABLE_FOG_LAYER
@@ -202,9 +206,24 @@ PSOutput MainPS(VSOutput IN)
         linearDepth = max( 0, linearDepth - PassSrg::m_fogStartDistance );
     }
  
-    float layerFogAmountWithStartDist = saturate(linearDepth / (PassSrg::m_fogEndDistance - PassSrg::m_fogStartDistance));
+    float density = 0.0f;
+    switch(o_fogMode)
+    {
+        case FogMode::LinearMode:
+            density = saturate(linearDepth / (PassSrg::m_fogEndDistance - PassSrg::m_fogStartDistance));
+            break;
+        case FogMode::ExponentialMode:
+            density = 1.0 - exp(-linearDepth * PassSrg::m_fogDensity); 
+            break;
+        case FogMode::ExponentialSquaredMode:
+            density = 1.0 - exp(-pow(linearDepth * PassSrg::m_fogDensity, 2));
+            break;
+        default:
+            break;
+    }
 
-    OUT.m_color = float4(PassSrg::m_fogColor, layerFogAmountWithStartDist);
+    density = clamp(density, 0.0, PassSrg::m_fogDensityClamp);
+    OUT.m_color = float4(PassSrg::m_fogColor, density);
 
     return OUT;
 }
