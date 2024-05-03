@@ -317,7 +317,7 @@ def AtomEditorComponents_DeferredFog_AddedToEntity():
                           deferred_fog_component.get_component_property_value(
                               AtomComponentProperties.deferred_fog('Fog Start Distance')) == 5000.0)
 
-            if FOG_MODES[fog_mode] in (FOG_MODES['Linear']):
+            if FOG_MODES[fog_mode] == FOG_MODES['Linear']:
                 # 13. Update the Fog End Distance parameter to min/max values.
                 # Update the Fog End Distance parameter to its maximum value.
                 deferred_fog_component.set_component_property_value(
