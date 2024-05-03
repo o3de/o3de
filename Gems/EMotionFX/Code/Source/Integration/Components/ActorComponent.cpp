@@ -629,12 +629,6 @@ namespace EMotionFX
                     const bool updateTransforms = AZ::RHI::CheckBitsAny(m_configuration.m_renderFlags, s_requireUpdateTransforms);
                     m_actorInstance->SetIsVisible(isInCameraFrustum && updateTransforms);
                 }
-#if defined(CARBONATED)
-                else
-                {
-                    m_actorInstance->SetIsVisible(true);
-                }
-#endif
             }
         }
 
