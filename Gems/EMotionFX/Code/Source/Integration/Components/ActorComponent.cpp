@@ -380,6 +380,10 @@ namespace EMotionFX
                 m_actorInstance->SetIsVisible(true);
             }
         }
+        bool ActorComponent::GetForceJointUpdate()
+        {
+            return m_configuration.m_forceUpdateJointsOOV;
+        }
 #endif
 
         //////////////////////////////////////////////////////////////////////////

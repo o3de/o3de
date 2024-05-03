@@ -278,6 +278,10 @@ namespace EMotionFX
                 m_actorInstance->SetIsVisible(true);
             }
         }
+        bool EditorActorComponent::GetForceJointUpdate()
+        {
+            return m_forceUpdateJointsOOV;
+        }
 #endif
 
         size_t EditorActorComponent::GetNumJoints() const

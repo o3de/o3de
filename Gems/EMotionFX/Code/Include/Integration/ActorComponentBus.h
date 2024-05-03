@@ -92,6 +92,7 @@ namespace EMotionFX
 
 #if defined(CARBONATED)
             virtual void SetForceJointUpdate(bool force) = 0;
+            virtual bool GetForceJointUpdate() = 0;
 #endif
 
             /// Returns skinning method used by the actor.
