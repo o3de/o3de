@@ -22,48 +22,6 @@ namespace AZ
 
     namespace RPI
     {
-#if defined(CARBONATED)
-        class EffectiveBitset
-        {
-        public:
-            AZ_TYPE_INFO(EffectiveBitset, "{B1720E13-8927-4B85-89CB-165A1D1FE003}");
-            static void Reflect(ReflectContext* context);
-
-            EffectiveBitset()
-            {
-                static_assert(sizeof(u64) == 8);
-                static_assert(BitsPerUnit == 64);
-                static_assert(BitMask == 63);
-                static_assert(NumBits % BitsPerUnit == 0);
-                static_assert(NumUnits > 0);
-                for (AZStd::size_t u = 0; u < NumUnits; u++)
-                {
-                    m_bits[u] = 0;
-                }
-            }
-            void set(AZStd::size_t n)
-            {
-                AZ_Assert(n < NumBits, "over capacity");
-                m_bits[n >> NumShift] |= 1ull << (n & BitMask);
-            }
-            bool test(AZStd::size_t n) const
-            {
-                AZ_Assert(n < NumBits, "over capacity");
-                return (m_bits[n >> NumShift] & (1ull << (n & BitMask))) != 0;
-            }
-
-        private:
-            enum
-            {
-                NumBits = 128,
-                BitsPerUnit = 64,
-                BitMask = BitsPerUnit - 1,
-                NumUnits = NumBits / BitsPerUnit,
-                NumShift = 6 // 64 is 1 << 6
-            };
-            AZStd::array<u64, NumUnits> m_bits;
-        };
-#endif
         //! Collects the set of all possible shaders that a material could use at runtime,
         //! along with configuration that indicates how each shader should be used.
         //! Each shader item may be reconfigured at runtime, but items cannot be added
@@ -149,12 +107,8 @@ namespace AZ
                 ShaderOptionGroup m_shaderOptionGroup;   //!< Holds and manipulates the ShaderVariantId at runtime.
                 RHI::RenderStates m_renderStatesOverlay; //!< Holds and manipulates the RenderStates at runtime.
                 RHI::DrawListTag  m_drawListTagOverride; //!< Holds and manipulates the DrawList at runtime.
-#if defined(CARBONATED)
-                EffectiveBitset m_ownedShaderOptionIndices; //!< Set of shader options in this shader that are owned by the material.
-#else
                 //[GFX TODO][ATOM-5636]: This may need to use a more efficient data structure. Consider switching to vector_set class (which will need to be updated to support serialization).
                 AZStd::unordered_set<ShaderOptionIndex> m_ownedShaderOptionIndices; //!< Set of shader options in this shader that are owned by the material.
-#endif
                 bool m_enabled = true;                   //!< Disabled items will not be included in the final draw packet that gets sent to the renderer.
                 AZ::Name m_shaderTag;                    //!< Unique tag that identifies this item
             };
