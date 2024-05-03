@@ -28,6 +28,7 @@ namespace AZ
 {
     namespace Render
     {
+        static const char* const FogModeOptionName{ "o_fogMode" };
 
         AZ_CVAR(bool, r_enableFog, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Enable fog");
         AZ_CVAR(bool, r_fogLayerSupport, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Enable fog layer support");
@@ -35,6 +36,7 @@ namespace AZ
 
         DeferredFogPass::DeferredFogPass(const RPI::PassDescriptor& descriptor)
             : RPI::FullscreenTrianglePass(descriptor)
+            , m_fogModeOptionName(FogModeOptionName)
         {
         }
 
@@ -216,6 +218,21 @@ namespace AZ
                 r_fogLayerSupport && fogSettings->GetEnableFogLayerShaderOption() ? AZ::Name("true") : AZ::Name("false"));
             shaderOption.SetValue(AZ::Name("o_useNoiseTexture"),
                 r_fogTurbulenceSupport && fogSettings->GetUseNoiseTextureShaderOption() ? AZ::Name("true") : AZ::Name("false"));
+            switch (fogSettings->GetFogMode())
+            {
+            case FogMode::Linear:
+                shaderOption.SetValue(m_fogModeOptionName, AZ::Name("FogMode::LinearMode"));
+                break;
+            case FogMode::Exponential:
+                shaderOption.SetValue(m_fogModeOptionName, AZ::Name("FogMode::ExponentialMode"));
+                break;
+            case FogMode::ExponentialSquared:
+                shaderOption.SetValue(m_fogModeOptionName, AZ::Name("FogMode::ExponentialSquaredMode"));
+                break;
+            default:
+                AZ_Error("DeferredFogPass", false, "Invalid fog mode %d", fogSettings->GetFogMode());
+                break;
+            }
 
             // The following method returns the specified options, as well as fall back values for all 
             // non-specified options.  If all were set you can use the method GetShaderVariantKey that is 
