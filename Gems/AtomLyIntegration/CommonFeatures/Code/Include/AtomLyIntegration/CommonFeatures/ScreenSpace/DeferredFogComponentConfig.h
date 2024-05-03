@@ -72,6 +72,15 @@ namespace AZ
                 return m_enableFogLayerShaderOption;
             }
 
+            bool SupportsFogDensity()
+            {
+                return m_fogMode == FogMode::Exponential || m_fogMode == FogMode::ExponentialSquared;
+            }
+            bool SupportsFogEnd()
+            {
+                return m_fogMode == FogMode::Linear;
+            }
+
             // Generate Get / Set methods
 #define AZ_GFX_COMMON_PARAM(ValueType, Name, MemberName, DefaultValue)                                  \
         virtual ValueType Get##Name() const { return MemberName; }                                      \
