@@ -63,6 +63,7 @@
 #include <AzFramework/Script/ScriptRemoteDebugging.h>
 #include <AzFramework/Script/ScriptRemoteDebuggingConstants.h>
 #include <AzFramework/Script/ScriptComponent.h>
+#include <AzFramework/ScriptCanvas/ScriptCanvasRemoteDebuggingConstants.h>
 #include <AzFramework/Spawnable/SpawnableSystemComponent.h>
 #include <AzFramework/StreamingInstall/StreamingInstall.h>
 #include <AzFramework/SurfaceData/SurfaceData.h>
@@ -253,6 +254,8 @@ namespace AzFramework
             {
                 remoteTools->RegisterToolingServiceClient(
                     AzFramework::LuaToolsKey, AzFramework::LuaToolsName, AzFramework::LuaToolsPort);
+                remoteTools->RegisterToolingServiceClient(
+                    AzFramework::ScriptCanvasToolsKey, AzFramework::ScriptCanvasToolsName, AzFramework::ScriptCanvasToolsPort);
             }
 #endif
         }

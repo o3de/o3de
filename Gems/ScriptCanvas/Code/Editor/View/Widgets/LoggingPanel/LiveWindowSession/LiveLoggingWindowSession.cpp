@@ -7,13 +7,12 @@
  */
 
 #include <AzCore/Interface/Interface.h>
+#include <AzFramework/ScriptCanvas/ScriptCanvasRemoteDebuggingConstants.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <EditorCoreAPI.h>
 #include <IEditor.h>
 
 #include <Editor/View/Widgets/LoggingPanel/LiveWindowSession/LiveLoggingWindowSession.h>
-
-#include <ScriptCanvas/Utils/ScriptCanvasConstants.h>
 
 namespace ScriptCanvasEditor
 {
@@ -125,7 +124,7 @@ namespace ScriptCanvasEditor
         AzFramework::RemoteToolsEndpointContainer targets;
         if (remoteTools)
         {
-            remoteTools->EnumTargetInfos(ScriptCanvas::RemoteToolsKey, targets);
+            remoteTools->EnumTargetInfos(AzFramework::ScriptCanvasToolsKey, targets);
         }
 
         for (const auto& targetPair : targets)
@@ -260,7 +259,7 @@ namespace ScriptCanvasEditor
                 AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
 
                 const AzFramework::RemoteToolsEndpointInfo& desiredInfo =
-                    AzFramework::RemoteToolsInterface::Get()->GetDesiredEndpoint(ScriptCanvas::RemoteToolsKey);
+                    AzFramework::RemoteToolsInterface::Get()->GetDesiredEndpoint(AzFramework::ScriptCanvasToolsKey);
 
                 if (desiredInfo.IsValid() && !desiredInfo.IsSelf())
                 {
@@ -412,7 +411,7 @@ namespace ScriptCanvasEditor
         // Special case out the editor
         if (index == 0)
         {
-            AzFramework::RemoteToolsInterface::Get()->SetDesiredEndpoint(ScriptCanvas::RemoteToolsKey, 0);
+            AzFramework::RemoteToolsInterface::Get()->SetDesiredEndpoint(AzFramework::ScriptCanvasToolsKey, 0);
         }
         else
         {
@@ -420,7 +419,7 @@ namespace ScriptCanvasEditor
 
             if (info.IsValid())
             {
-                AzFramework::RemoteToolsInterface::Get()->SetDesiredEndpoint(ScriptCanvas::RemoteToolsKey, info.GetPersistentId());
+                AzFramework::RemoteToolsInterface::Get()->SetDesiredEndpoint(AzFramework::ScriptCanvasToolsKey, info.GetPersistentId());
             }
         }
     }

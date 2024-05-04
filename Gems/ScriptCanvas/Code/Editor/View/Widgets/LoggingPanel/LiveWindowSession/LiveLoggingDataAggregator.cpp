@@ -10,6 +10,7 @@
 #include <AzCore/std/containers/vector.h>
 
 #include <AzFramework/Network/IRemoteTools.h>
+#include <AzFramework/ScriptCanvas/ScriptCanvasRemoteDebuggingConstants.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 #include <Editor/View/Widgets/LoggingPanel/LiveWindowSession/LiveLoggingDataAggregator.h>
@@ -17,7 +18,6 @@
 #include <ScriptCanvas/Asset/ExecutionLogAssetBus.h>
 #include <ScriptCanvas/Core/ExecutionNotificationsBus.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
-#include <ScriptCanvas/Utils/ScriptCanvasConstants.h>
 
 namespace ScriptCanvasEditor
 {
@@ -395,7 +395,7 @@ namespace ScriptCanvasEditor
             AzFramework::IRemoteTools* remoteTools = AzFramework::RemoteToolsInterface::Get();
             if (remoteTools)
             {
-                const AzFramework::RemoteToolsEndpointInfo& desiredTarget = remoteTools->GetDesiredEndpoint(ScriptCanvas::RemoteToolsKey);
+                const AzFramework::RemoteToolsEndpointInfo& desiredTarget = remoteTools->GetDesiredEndpoint(AzFramework::ScriptCanvasToolsKey);
                 isDesiredTargetConnected = desiredTarget.IsOnline();
             }
 

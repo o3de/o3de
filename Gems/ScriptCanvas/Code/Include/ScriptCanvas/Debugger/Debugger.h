@@ -32,6 +32,7 @@ namespace ScriptCanvas
             : public AZ::Component
             , public Message::RequestVisitor
             , public ExecutionNotificationsBus::Handler
+            , public AZ::SystemTickBus::Handler
         {
            using Lock = AZStd::lock_guard<AZStd::recursive_mutex>;
 
@@ -52,6 +53,11 @@ namespace ScriptCanvas
             void Init() override;
             void Activate() override;
             void Deactivate() override;
+            //////////////////////////////////////////////////////////////////////////
+
+            //////////////////////////////////////////////////////////////////////////
+            // AZ::SystemTickBus::Handler
+            void OnSystemTick() override;
             //////////////////////////////////////////////////////////////////////////
 
             void OnReceivedMsg(AzFramework::RemoteToolsMessagePointer msg);

@@ -7,6 +7,7 @@
  */
 
 #include <AzFramework/Entity/GameEntityContextBus.h>
+#include <AzFramework/ScriptCanvas/ScriptCanvasRemoteDebuggingConstants.h>
 
 #include "Debugger.h"
 #include "Messages/Notify.h"
@@ -14,7 +15,6 @@
 
 #include <ScriptCanvas/Core/GraphBus.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
-#include <ScriptCanvas/Utils/ScriptCanvasConstants.h>
 
 namespace ScriptCanvas
 {
@@ -57,7 +57,7 @@ namespace ScriptCanvas
         Message::Request* ServiceComponent::FilterMessage(AzFramework::RemoteToolsMessagePointer& msg)
         {
             AzFramework::RemoteToolsEndpointInfo client =
-                AzFramework::RemoteToolsInterface::Get()->GetEndpointInfo(ScriptCanvas::RemoteToolsKey, msg->GetSenderTargetId());
+                AzFramework::RemoteToolsInterface::Get()->GetEndpointInfo(AzFramework::ScriptCanvasToolsKey, msg->GetSenderTargetId());
 
             // cull messages without a target match
             if (!m_client.m_info.IsIdentityEqualTo(client))
@@ -145,9 +145,26 @@ namespace ScriptCanvas
             }
         }
 
+        void ServiceComponent::OnSystemTick()
+        {
+            AzFramework::IRemoteTools* remoteTools = AzFramework::RemoteToolsInterface::Get();
+            if (remoteTools)
+            {
+                const AzFramework::ReceivedRemoteToolsMessages* messages =
+                    remoteTools->GetReceivedMessages(AzFramework::ScriptCanvasToolsKey);
+                if (messages)
+                {
+                    for (const AzFramework::RemoteToolsMessagePointer& msg : *messages)
+                    {
+                        OnReceivedMsg(msg);
+                    }
+                    remoteTools->ClearReceivedMessages(AzFramework::ScriptCanvasToolsKey);
+                }
+            }
+        }
+
         void ServiceComponent::OnReceivedMsg(AzFramework::RemoteToolsMessagePointer msg)
         {
-            // \todo Messages are no longer delivered by callback, update to use IRemoteTools::GetReceivedMessages/ClearReceivedMessages
             if (!msg)
             {
                 AZ_Error("ScriptCanvas Debugger", false, "We received a NULL message in the service message queue");
@@ -193,12 +210,13 @@ namespace ScriptCanvas
         {
             m_state = SCDebugState_Detached;
             ExecutionNotificationsBus::Handler::BusConnect();
+            AZ::SystemTickBus::Handler::BusConnect();
 
             AzFramework::RemoteToolsEndpointContainer targets;
             m_remoteTools = AzFramework::RemoteToolsInterface::Get();
             if (m_remoteTools)
             {
-                m_remoteTools->EnumTargetInfos(ScriptCanvas::RemoteToolsKey, targets);
+                m_remoteTools->EnumTargetInfos(AzFramework::ScriptCanvasToolsKey, targets);
                 for (auto& idAndInfo : targets)
                 {
                     if (idAndInfo.second.IsSelf())
@@ -223,6 +241,7 @@ namespace ScriptCanvas
                 //\todo DetachAll();
             }
 
+            AZ::SystemTickBus::Handler::BusDisconnect();
             ExecutionNotificationsBus::Handler::BusDisconnect();
 
             {

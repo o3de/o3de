@@ -411,6 +411,7 @@ namespace RemoteTools
                 m_entryRegistry[key].m_availableTargets.insert_key(persistentId);
             AzFramework::RemoteToolsEndpointInfo& ti = ret.first->second;
             ti.SetInfo(packet.GetDisplayName(), persistentId, static_cast<uint32_t>(connection->GetConnectionId()));
+            m_entryRegistry[key].m_lastTarget = ti;
             m_entryRegistry[key].m_endpointJoinedEvent.Signal(ti);
         }
         return true;
@@ -446,6 +447,7 @@ namespace RemoteTools
 
                 AzFramework::RemoteToolsEndpointInfo& ti = ret.first->second;
                 ti.SetInfo("Host", packet.GetPersistentId(), static_cast<uint32_t>(connection->GetConnectionId()));
+                m_entryRegistry[key].m_lastTarget = ti;
                 m_entryRegistry[key].m_endpointJoinedEvent.Signal(ti);
             }
 
@@ -551,6 +553,12 @@ namespace RemoteTools
                     {
                         AzFramework::RemoteToolsEndpointInfo ti = endpointIt->second;
                         registryIt->second.m_endpointLeftEvent.Signal(ti);
+                        if (registryIt->second.m_lastTarget.GetPersistentId() == ti.GetPersistentId())
+                        {
+                            // Stored as unordered map, we can't know what was the target registered before this
+                            registryIt->second.m_lastTarget = AzFramework::RemoteToolsEndpointInfo();
+                        }
+
                         container.extract(endpointIt);
                         break;
                     }

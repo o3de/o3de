@@ -11,7 +11,7 @@
 #include "Messages/Request.h"
 #include "Messages/Notify.h"
 
-#include <ScriptCanvas/Utils/ScriptCanvasConstants.h>
+#include <AzFramework/ScriptCanvas/ScriptCanvasRemoteDebuggingConstants.h>
 
 using namespace AzFramework;
 
@@ -25,10 +25,15 @@ namespace ScriptCanvas
             ClientUIRequestBus::Handler::BusConnect();
 
             DiscoverNetworkTargets();
-            
+
+            if (!m_networkTargets.empty())
+            {
+                DesiredTargetConnected(true);
+            }
+
             for (auto& idAndInfo : m_networkTargets)
             {
-                if (idAndInfo.second.IsSelf())
+                if (strcmp(idAndInfo.second.GetDisplayName(), "Editor.exe") == 0)
                 {
                     m_selfTarget = idAndInfo.second;
                     SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("Self found!");
@@ -103,7 +108,7 @@ namespace ScriptCanvas
             if (connected)
             {
                 SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("DesiredTarget connected!, sending connect request to %s", m_currentTarget.GetDisplayName());
-                m_currentTarget = RemoteToolsInterface::Get()->GetDesiredEndpoint(ScriptCanvas::RemoteToolsKey);
+                m_currentTarget = RemoteToolsInterface::Get()->GetDesiredEndpoint(AzFramework::ScriptCanvasToolsKey);
             }
             else
             {
@@ -139,7 +144,7 @@ namespace ScriptCanvas
             AzFramework::RemoteToolsEndpointContainer targets;
             if (AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get())
             {
-                remoteTools->EnumTargetInfos(ScriptCanvas::RemoteToolsKey, targets);
+                remoteTools->EnumTargetInfos(AzFramework::ScriptCanvasToolsKey, targets);
             }
 
             AzFramework::RemoteToolsEndpointContainer connectableTargets;
@@ -170,7 +175,7 @@ namespace ScriptCanvas
             AzFramework::RemoteToolsEndpointInfo targetInfo;
             if (AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get())
             {
-                targetInfo = remoteTools->GetDesiredEndpoint(ScriptCanvas::RemoteToolsKey);
+                targetInfo = remoteTools->GetDesiredEndpoint(AzFramework::ScriptCanvasToolsKey);
             }
 
             if (!targetInfo.GetPersistentId())
@@ -400,7 +405,7 @@ namespace ScriptCanvas
             if (m_resetDesiredTarget)
             {
                 m_resetDesiredTarget = false;
-                RemoteToolsInterface::Get()->SetDesiredEndpointInfo(ScriptCanvas::RemoteToolsKey, m_previousDesiredInfo);
+                RemoteToolsInterface::Get()->SetDesiredEndpointInfo(AzFramework::ScriptCanvasToolsKey, m_previousDesiredInfo);
                 m_currentTarget = AzFramework::RemoteToolsEndpointInfo();
             }
         }
@@ -467,8 +472,8 @@ namespace ScriptCanvas
                 m_resetDesiredTarget = true;
                 if (AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get())
                 {
-                    m_previousDesiredInfo = remoteTools->GetDesiredEndpoint(ScriptCanvas::RemoteToolsKey);
-                    remoteTools->SetDesiredEndpointInfo(ScriptCanvas::RemoteToolsKey, m_selfTarget);
+                    m_previousDesiredInfo = remoteTools->GetDesiredEndpoint(AzFramework::ScriptCanvasToolsKey);
+                    remoteTools->SetDesiredEndpointInfo(AzFramework::ScriptCanvasToolsKey, m_selfTarget);
                 }
             }
         }
