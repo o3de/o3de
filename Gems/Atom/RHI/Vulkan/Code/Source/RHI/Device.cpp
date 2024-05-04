@@ -1189,7 +1189,11 @@ namespace AZ
             }
             m_features.m_swapchainScalingFlags = AZ_TRAIT_ATOM_VULKAN_SWAPCHAIN_SCALING_FLAGS;
 
+#ifdef DISABLE_TIMELINE_SEMAPHORES
+            m_features.m_signalFenceFromCPU = false;
+#else
             m_features.m_signalFenceFromCPU = physicalDevice.GetPhysicalDeviceTimelineSemaphoreFeatures().timelineSemaphore;
+#endif
 
             const auto& deviceLimits = physicalDevice.GetDeviceLimits();
             m_limits.m_maxImageDimension1D = deviceLimits.maxImageDimension1D;
