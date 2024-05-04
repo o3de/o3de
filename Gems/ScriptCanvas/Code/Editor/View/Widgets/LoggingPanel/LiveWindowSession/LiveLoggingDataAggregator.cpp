@@ -55,10 +55,11 @@ namespace ScriptCanvasEditor
                 ScriptCanvas::Debugger::ServiceNotificationsBus::Handler::BusConnect();
             }
 
-            bool isSelf = false;
-            ScriptCanvas::Debugger::ClientRequestsBus::BroadcastResult(isSelf, &ScriptCanvas::Debugger::ClientRequests::IsConnectedToSelf);
+            bool isEditor = false;
+            ScriptCanvas::Debugger::ClientRequestsBus::BroadcastResult(
+                isEditor, &ScriptCanvas::Debugger::ClientRequests::IsConnectedToEditor);
 
-            if (!isSelf)
+            if (!isEditor)
             {
                 m_captureType = CaptureType::External;
                 m_staticRegistrations.clear();

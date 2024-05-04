@@ -55,7 +55,7 @@ namespace ScriptCanvas
 
             bool HasValidConnection() const override;
             bool IsConnected(const AzFramework::RemoteToolsEndpointInfo&) const override;
-            bool IsConnectedToSelf() const override;
+            bool IsConnectedToEditor() const override;
             AzFramework::RemoteToolsEndpointInfo GetNetworkTarget() override;
 
             void AddBreakpoint(const Breakpoint&) override;
@@ -134,7 +134,7 @@ namespace ScriptCanvas
 
             Mutex m_mutex;
 
-            AzFramework::RemoteToolsEndpointInfo m_selfTarget;
+            AzFramework::RemoteToolsEndpointInfo m_editorTarget;
 
             bool m_resetDesiredTarget = false;
             AzFramework::RemoteToolsEndpointInfo m_previousDesiredInfo;

@@ -346,10 +346,11 @@ namespace ScriptCanvasEditor
 
     void LiveLoggingWindowSession::OnCaptureButtonPressed()
     {
-        bool isSelfTarget = false;
-        ScriptCanvas::Debugger::ClientRequestsBus::BroadcastResult(isSelfTarget, &ScriptCanvas::Debugger::ClientRequests::IsConnectedToSelf);
+        bool isEditorTarget = false;
+        ScriptCanvas::Debugger::ClientRequestsBus::BroadcastResult(
+            isEditorTarget, &ScriptCanvas::Debugger::ClientRequests::IsConnectedToEditor);
 
-        if (isSelfTarget)
+        if (isEditorTarget)
         {
             if (!m_startedSession)
             {
