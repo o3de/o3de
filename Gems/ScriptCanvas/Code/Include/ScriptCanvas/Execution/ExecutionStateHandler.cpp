@@ -130,9 +130,9 @@ namespace ScriptCanvas
         if (m_executionState)
         {
             m_executionState->StopExecution();
-            SC_EXECUTION_TRACE_GRAPH_DEACTIVATED(CreateActivationInfo());
             Execution::Destruct(m_executionStateStorage);
             SCRIPT_CANVAS_PERFORMANCE_FINALIZE_TIMER(m_executionState);
+            SC_EXECUTION_TRACE_GRAPH_DEACTIVATED(CreateActivationInfo());
             m_executionState = nullptr;
         }
     }
@@ -141,8 +141,8 @@ namespace ScriptCanvas
         if (m_executionState)
         {
             m_executionState->StopExecution();
-            SC_EXECUTION_TRACE_GRAPH_DEACTIVATED(CreateActivationInfo());
             SCRIPT_CANVAS_PERFORMANCE_FINALIZE_TIMER(m_executionState);
+            SC_EXECUTION_TRACE_GRAPH_DEACTIVATED(CreateActivationInfo());
         }
     }
 }
