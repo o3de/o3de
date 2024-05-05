@@ -185,6 +185,11 @@ namespace AzFramework
         //! @param key The key of the service to clear messages for
         virtual void ClearReceivedMessages(AZ::Crc32 key) = 0;
 
+        //! Will clear pending received messages at the start of the next tick
+        //! Useful if multiple areas of the same service wants to read the messages
+        //! @param key The key of the service to clear messages for
+        virtual void ClearReceivedMessagesForNextTick(AZ::Crc32 key) = 0;
+
         virtual void RegisterRemoteToolsEndpointJoinedHandler(AZ::Crc32 key, RemoteToolsEndpointStatusEvent::Handler& handler) = 0;
 
         virtual void RegisterRemoteToolsEndpointLeftHandler(AZ::Crc32 key, RemoteToolsEndpointStatusEvent::Handler& handler) = 0;

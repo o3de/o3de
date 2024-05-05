@@ -23,6 +23,7 @@ namespace ScriptCanvas
         {
             ClientRequestsBus::Handler::BusConnect();
             ClientUIRequestBus::Handler::BusConnect();
+            AZ::SystemTickBus::Handler::BusConnect();
 
             DiscoverNetworkTargets();
 
@@ -51,6 +52,7 @@ namespace ScriptCanvas
 
         ClientTransceiver::~ClientTransceiver()
         {
+            AZ::SystemTickBus::Handler::BusDisconnect();
             ClientUIRequestBus::Handler::BusDisconnect();
             ClientRequestsBus::Handler::BusDisconnect();
         }
@@ -451,18 +453,33 @@ namespace ScriptCanvas
 
         void ClientTransceiver::OnSystemTick()
         {
-            if (AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get())
+            AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get();
+            if (!remoteTools)
+                return;
+
+            if (!m_addCache.m_entities.empty())
             {
                 remoteTools->SendRemoteToolsMessage(m_currentTarget, Message::AddTargetsRequest(m_addCache));
                 m_connectionState.Merge(m_addCache);
                 m_addCache.Clear();
+            }
 
+            if (!m_removeCache.m_entities.empty())
+            {
                 remoteTools->SendRemoteToolsMessage(m_currentTarget, Message::RemoveTargetsRequest(m_removeCache));
                 m_connectionState.Remove(m_removeCache);
                 m_removeCache.Clear();
             }
 
-            AZ::SystemTickBus::Handler::BusDisconnect();
+            const AzFramework::ReceivedRemoteToolsMessages* messages = remoteTools->GetReceivedMessages(AzFramework::ScriptCanvasToolsKey);
+            if (messages)
+            {
+                for (const AzFramework::RemoteToolsMessagePointer& msg : *messages)
+                {
+                    OnReceivedMsg(msg);
+                }
+                remoteTools->ClearReceivedMessagesForNextTick(AzFramework::ScriptCanvasToolsKey);
+            }
         }
 
         void ClientTransceiver::StartEditorSession()
@@ -522,11 +539,6 @@ namespace ScriptCanvas
             {
                 removeCacheIter->second.erase(graphIdentifier);
             }
-
-            if (!AZ::SystemTickBus::Handler::BusIsConnected())
-            {
-                AZ::SystemTickBus::Handler::BusConnect();
-            }
         }
 
         void ClientTransceiver::RemoveEntityLoggingTarget(const AZ::EntityId& entityId, const ScriptCanvas::GraphIdentifier& graphIdentifier)
@@ -542,33 +554,18 @@ namespace ScriptCanvas
             {
                 addCacheIter->second.erase(graphIdentifier);
             }
-
-            if (!AZ::SystemTickBus::Handler::BusIsConnected())
-            {
-                AZ::SystemTickBus::Handler::BusConnect();
-            }
         }
 
         void ClientTransceiver::AddGraphLoggingTarget(const AZ::Data::AssetId& assetId)
         {
             m_addCache.m_graphs.insert(assetId);
             m_removeCache.m_graphs.erase(assetId);
-
-            if (!AZ::SystemTickBus::Handler::BusIsConnected())
-            {
-                AZ::SystemTickBus::Handler::BusConnect();
-            }
         }
 
         void ClientTransceiver::RemoveGraphLoggingTarget(const AZ::Data::AssetId& assetId)
         {
             m_addCache.m_graphs.erase(assetId);
             m_removeCache.m_graphs.insert(assetId);
-
-            if (!AZ::SystemTickBus::Handler::BusIsConnected())
-            {
-                AZ::SystemTickBus::Handler::BusConnect();
-            }
         }
     }
 }

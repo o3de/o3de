@@ -114,6 +114,15 @@ namespace RemoteTools
 
     void RemoteToolsSystemComponent::OnSystemTick()
     {
+        if (!m_messageTypesToClearForNextTick.empty())
+        {
+            for (const AZ::Crc32 key : m_messageTypesToClearForNextTick)
+            {
+                ClearReceivedMessages(key);
+            }
+            m_messageTypesToClearForNextTick.clear();
+        }
+
         // Join thread can stop itself, check if it needs to join
         if (m_joinThread && !m_joinThread->IsRunning())
         {
@@ -182,6 +191,11 @@ namespace RemoteTools
         {
             m_inbox.at(key).clear();
         }
+    }
+
+    void RemoteToolsSystemComponent::ClearReceivedMessagesForNextTick(AZ::Crc32 key)
+    {
+        m_messageTypesToClearForNextTick.insert(key);
     }
 
     void RemoteToolsSystemComponent::RegisterRemoteToolsEndpointJoinedHandler(

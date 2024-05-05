@@ -158,7 +158,7 @@ namespace ScriptCanvas
                     {
                         OnReceivedMsg(msg);
                     }
-                    remoteTools->ClearReceivedMessages(AzFramework::ScriptCanvasToolsKey);
+                    remoteTools->ClearReceivedMessagesForNextTick(AzFramework::ScriptCanvasToolsKey);
                 }
             }
         }

@@ -73,7 +73,7 @@ namespace ScriptCanvas
 
             virtual bool HasValidConnection() const { return false; }
             virtual bool IsConnected(const AzFramework::RemoteToolsEndpointInfo&) const { return false; }
-            virtual bool IsConnectedToEditor() const { return false; }
+            virtual bool IsConnectedToEditor() const { return false; } // The game runs inside of editor play mode, we are not connected to a separate .exe
             virtual AzFramework::RemoteToolsEndpointInfo GetNetworkTarget() { return AzFramework::RemoteToolsEndpointInfo(); }
 
             // Control Methods

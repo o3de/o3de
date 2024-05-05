@@ -126,6 +126,12 @@ namespace ScriptCanvasEditor
 
     void LiveLoggingDataAggregator::GraphActivated(const ScriptCanvas::GraphActivation& activationSignal)
     {
+        if (!activationSignal.m_executionState)
+        {
+            AZ_Error("LiveLoggingDataAggregator", false, "Message has invalid payload");
+            return;
+        }
+
         const auto userData =
             AZStd::any_cast<const ScriptCanvas::RuntimeComponentUserData>(&activationSignal.m_executionState->GetUserData());
         if (!userData)
