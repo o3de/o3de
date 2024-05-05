@@ -124,14 +124,10 @@ namespace ScriptCanvasEditor
         SetupExternalEntities();
     }
 
-    void LiveLoggingDataAggregator::GraphActivated(const ScriptCanvas::GraphActivation& activationSignal)
+    void LiveLoggingDataAggregator::GraphActivated([[maybe_unused]] const ScriptCanvas::GraphActivation& activationSignal)
     {
-        if (!activationSignal.m_executionState)
-        {
-            AZ_Error("LiveLoggingDataAggregator", false, "Message has invalid payload");
-            return;
-        }
-
+        // Execution state sent by remote tool is not serialized
+        /*
         const auto userData =
             AZStd::any_cast<const ScriptCanvas::RuntimeComponentUserData>(&activationSignal.m_executionState->GetUserData());
         if (!userData)
@@ -151,6 +147,7 @@ namespace ScriptCanvasEditor
             activationSignal.m_entityIsObserved,
             userData->entity,
             graphIdentifier);
+        */
     }
 
     void LiveLoggingDataAggregator::GraphDeactivated(const ScriptCanvas::GraphDeactivation& deactivationSignal)

@@ -440,6 +440,8 @@ namespace ScriptCanvas
             payload.m_entityIsObserved = IsGraphObserved(*graphInfo.m_executionState);
             if (m_remoteTools)
             {
+                // Payload will not be properly serialized, only the timestamp will be, the structure is too complicated (weak ptr and so on)
+                // Check ExecutionNotificationBus.cpp for more details
                 m_remoteTools->SendRemoteToolsMessage(m_client.m_info, Message::GraphActivated(payload));
             }
         }
@@ -558,6 +560,8 @@ namespace ScriptCanvas
                 return false;
             }
 
+            // IsObserving will always return false because of mismatch with script asset Id and the one we check
+            // force return true in m_script.IsObserving and IsObservingAsset to show logs for all graphs
             const GraphIdentifier graphIdentifier(executionState.GetAssetId(), userData->component.GetId());
             return m_client.m_script.IsObserving(userData->entity, graphIdentifier);
 #endif //defined(SCRIPT_CANVAS_DEBUGGER_IS_ALWAYS_OBSERVING)

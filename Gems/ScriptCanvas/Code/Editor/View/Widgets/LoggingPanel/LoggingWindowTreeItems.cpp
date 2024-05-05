@@ -218,11 +218,14 @@ namespace ScriptCanvasEditor
         m_inputName = "---";
         m_outputName = "---";
 
+        // Payload sent from remote tool does not serialize the execution state
+        /*
         if (m_graphInfo.m_executionState)
         {
             const auto userData = AZStd::any_cast<const ScriptCanvas::RuntimeComponentUserData>(&graphInfo.m_executionState->GetUserData());
             m_graphIdentifier = ScriptCanvas::GraphIdentifier(m_graphInfo.m_executionState->GetAssetId(), userData->component.GetId());
         }
+        */
 
         // GeneralAssetNotificationBus::Handler::BusConnect(GetAssetId());
     }
