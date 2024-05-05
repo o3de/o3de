@@ -84,7 +84,7 @@ namespace AzFramework
 
         //! Reflect RemoteToolsMessage
         //! @param reflection Context to reflect to
-        static void ReflectRemoteToolsMessage(AZ::ReflectContext* reflection);
+        static void Reflect(AZ::ReflectContext* reflection);
 
     protected:
         AZ::u64 m_msgId = 0;
@@ -145,6 +145,10 @@ namespace AzFramework
         void SetInfo(AZStd::string displayName, AZ::u32 persistentId, AZ::u32 networkId);
 
         bool IsIdentityEqualTo(const RemoteToolsEndpointInfo& other) const;
+
+        //! Reflect RemoteToolsEndpointInfo
+        //! @param reflection Context to reflect to
+        static void Reflect(AZ::ReflectContext* reflection);
 
     private:
         AZStd::string m_displayName;
