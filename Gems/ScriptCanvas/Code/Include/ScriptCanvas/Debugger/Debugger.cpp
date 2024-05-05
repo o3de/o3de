@@ -195,7 +195,16 @@ namespace ScriptCanvas
             }
         }
 
-        void ServiceComponent::TargetLeftNetwork(AzFramework::RemoteToolsEndpointInfo info)
+        void ServiceComponent::RemoteToolsEndpointJoined(const AzFramework::RemoteToolsEndpointInfo& info)
+        {
+            // Temporary workaround as info.isSelf() never returns true
+            if (strcmp(info.GetDisplayName(), "Editor.exe") == 0)
+            {
+                m_self.m_info = info;
+            }
+        }
+
+        void ServiceComponent::RemoteToolsEndpointLeft(const AzFramework::RemoteToolsEndpointInfo& info)
         {
             if (m_client.m_info.IsIdentityEqualTo(info))
             {
@@ -204,33 +213,31 @@ namespace ScriptCanvas
         }
 
         void ServiceComponent::Init()
-        {}
+        {
+            m_remoteTools = AzFramework::RemoteToolsInterface::Get();
+            if (!m_remoteTools)
+                return;
+
+            m_endpointJoinedEventHandler = AzFramework::RemoteToolsEndpointStatusEvent::Handler(
+                [this](AzFramework::RemoteToolsEndpointInfo info)
+                {
+                    this->RemoteToolsEndpointJoined(info);
+                });
+            m_remoteTools->RegisterRemoteToolsEndpointJoinedHandler(AzFramework::ScriptCanvasToolsKey, m_endpointJoinedEventHandler);
+
+            m_endpointLeftEventHandler = AzFramework::RemoteToolsEndpointStatusEvent::Handler(
+                [this](AzFramework::RemoteToolsEndpointInfo info)
+                {
+                    this->RemoteToolsEndpointLeft(info);
+                });
+            m_remoteTools->RegisterRemoteToolsEndpointLeftHandler(AzFramework::ScriptCanvasToolsKey, m_endpointLeftEventHandler);
+        }
 
         void ServiceComponent::Activate()
         {
             m_state = SCDebugState_Detached;
             ExecutionNotificationsBus::Handler::BusConnect();
             AZ::SystemTickBus::Handler::BusConnect();
-
-            AzFramework::RemoteToolsEndpointContainer targets;
-            m_remoteTools = AzFramework::RemoteToolsInterface::Get();
-            if (m_remoteTools)
-            {
-                m_remoteTools->EnumTargetInfos(AzFramework::ScriptCanvasToolsKey, targets);
-                for (auto& idAndInfo : targets)
-                {
-                    if (idAndInfo.second.IsSelf())
-                    {
-                        m_self.m_info = idAndInfo.second;
-                        SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("Self found!");
-                    }
-                }
-
-                if (!m_self.m_info.GetDisplayName())
-                {
-                    SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("Self NOT found!");
-                }
-            }
         }
 
         void ServiceComponent::Deactivate()

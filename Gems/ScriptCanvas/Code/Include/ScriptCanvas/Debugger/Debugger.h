@@ -63,8 +63,9 @@ namespace ScriptCanvas
             void OnReceivedMsg(AzFramework::RemoteToolsMessagePointer msg);
 
             //////////////////////////////////////////////////////////////////////////
-            // TargetManagerClient::Bus::Handler
-            void TargetLeftNetwork(AzFramework::RemoteToolsEndpointInfo info);
+            // IRemoteTools handlers
+            void RemoteToolsEndpointJoined(const AzFramework::RemoteToolsEndpointInfo& info);
+            void RemoteToolsEndpointLeft(const AzFramework::RemoteToolsEndpointInfo& info);
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
@@ -194,6 +195,8 @@ namespace ScriptCanvas
             AZStd::recursive_mutex m_msgMutex;
             AzFramework::RemoteToolsMessageQueue m_msgQueue;
             AzFramework::IRemoteTools* m_remoteTools = nullptr;
+            AzFramework::RemoteToolsEndpointStatusEvent::Handler m_endpointJoinedEventHandler;
+            AzFramework::RemoteToolsEndpointStatusEvent::Handler m_endpointLeftEventHandler;
         };
     }
 }
