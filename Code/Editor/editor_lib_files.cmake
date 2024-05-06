@@ -392,9 +392,7 @@ set(FILES
     EditorFileMonitor.cpp
     EditorFileMonitor.h
     Include/IEditorFileMonitor.h
-    GameExporter.cpp
     GameResourcesExporter.cpp
-    GameExporter.h
     GameResourcesExporter.h
     DocMultiArchive.h
     FBXExporterDialog.h

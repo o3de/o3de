@@ -66,7 +66,6 @@ namespace CryEditPythonBindingsUnitTests
         EXPECT_TRUE(behaviorContext->m_methods.find("get_current_view_rotation") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("set_current_view_position") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("set_current_view_rotation") != behaviorContext->m_methods.end());
-        EXPECT_TRUE(behaviorContext->m_methods.find("export_to_engine") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("get_config_platform") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("set_result_to_success") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("set_result_to_failure") != behaviorContext->m_methods.end());

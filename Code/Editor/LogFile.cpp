@@ -73,7 +73,7 @@ SANDBOX_API void ErrorV(const char* format, va_list argList)
 
     CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_ERROR, "%s", str.toUtf8().data());
 
-    if (!CCryEditApp::instance()->IsInTestMode() && !CCryEditApp::instance()->IsInExportMode() && !CCryEditApp::instance()->IsInLevelLoadTestMode())
+    if (!CCryEditApp::instance()->IsInTestMode() && !CCryEditApp::instance()->IsInLevelLoadTestMode())
     {
         if (gEnv && gEnv->pSystem)
         {
@@ -108,7 +108,7 @@ SANDBOX_API void WarningV(const char* format, va_list argList)
         bNoUI = true;
     }
 
-    if (!CCryEditApp::instance()->IsInTestMode() && !CCryEditApp::instance()->IsInExportMode() && !bNoUI)
+    if (!CCryEditApp::instance()->IsInTestMode() && !bNoUI)
     {
         if (gEnv && gEnv->pSystem)
         {
