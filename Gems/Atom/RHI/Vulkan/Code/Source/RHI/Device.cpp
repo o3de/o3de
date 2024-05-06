@@ -6,21 +6,22 @@
  *
  */
 
-#include <Atom_RHI_Vulkan_Platform.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <Atom/RHI.Reflect/Vulkan/PlatformLimitsDescriptor.h>
 #include <Atom/RHI.Reflect/Vulkan/VulkanBus.h>
 #include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/RHIMemoryStatisticsInterface.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/SingleDeviceTransientAttachmentPool.h>
+#include <Atom_RHI_Vulkan_Platform.h>
+#include <AzCore/Debug/Trace.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/Debug/Trace.h>
 #include <RHI/AsyncUploadQueue.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferPool.h>
-#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/CommandList.h>
 #include <RHI/CommandQueue.h>
 #include <RHI/Device.h>
@@ -32,7 +33,6 @@
 #include <RHI/WSISurface.h>
 #include <RHI/WindowSurfaceBus.h>
 #include <Vulkan_Traits_Platform.h>
-#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -412,6 +412,11 @@ namespace AZ
             semaphoreAllocDescriptor.m_collectLatency = RHI::Limits::Device::FrameCountMax;
             m_semaphoreAllocator.Init(semaphoreAllocDescriptor);
 
+            SwapChainSemaphoreAllocator::Descriptor swapChainSemaphoreAllocDescriptor;
+            swapChainSemaphoreAllocDescriptor.m_device = this;
+            swapChainSemaphoreAllocDescriptor.m_collectLatency = RHI::Limits::Device::FrameCountMax;
+            m_swapChaiSemaphoreAllocator.Init(swapChainSemaphoreAllocDescriptor);
+
             m_imageMemoryRequirementsCache.SetInitFunction([](auto& cache) { cache.set_capacity(MemoryRequirementsCacheSize); });
             m_bufferMemoryRequirementsCache.SetInitFunction([](auto& cache) { cache.set_capacity(MemoryRequirementsCacheSize); });
 
@@ -560,6 +565,11 @@ namespace AZ
         SemaphoreAllocator& Device::GetSemaphoreAllocator()
         {
             return m_semaphoreAllocator;
+        }
+
+        SwapChainSemaphoreAllocator& Device::GetSwapChainSemaphoreAllocator()
+        {
+            return m_swapChaiSemaphoreAllocator;
         }
 
         const AZStd::vector<VkQueueFamilyProperties>& Device::GetQueueFamilyProperties() const
