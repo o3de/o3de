@@ -219,6 +219,7 @@ namespace ScriptCanvasEditor
         m_outputName = "---";
 
         // Payload sent from remote tool does not serialize the execution state
+        // Without m_graphIdentifier the graph name on the log will be marked as "Unknown" this needs to be fixed
         /*
         if (m_graphInfo.m_executionState)
         {

@@ -560,8 +560,6 @@ namespace ScriptCanvas
                 return false;
             }
 
-            // IsObserving will always return false because of mismatch with script asset Id and the one we check
-            // force return true in m_script.IsObserving and IsObservingAsset to show logs for all graphs
             const GraphIdentifier graphIdentifier(executionState.GetAssetId(), userData->component.GetId());
             return m_client.m_script.IsObserving(userData->entity, graphIdentifier);
 #endif //defined(SCRIPT_CANVAS_DEBUGGER_IS_ALWAYS_OBSERVING)
@@ -826,8 +824,8 @@ namespace ScriptCanvas
         }
 
         void ServiceComponent::RuntimeError([[maybe_unused]] const ExecutionState& executionState, [[maybe_unused]] const AZStd::string_view& description)
-                    {
-                    }
+        {
+        }
 
         void ServiceComponent::SetTargetsObserved(const TargetEntities& targetEntities, [[maybe_unused]] bool observedState)
         {

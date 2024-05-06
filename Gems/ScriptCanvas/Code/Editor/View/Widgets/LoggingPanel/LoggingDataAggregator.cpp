@@ -336,6 +336,7 @@ namespace ScriptCanvasEditor
              {
                  foundMatch = true;
                  AZ_Warning("ScriptCanvas", false, "Received a duplicated registration callback.");
+                 break;
              }
          }
  

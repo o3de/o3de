@@ -127,6 +127,7 @@ namespace ScriptCanvasEditor
     void LiveLoggingDataAggregator::GraphActivated([[maybe_unused]] const ScriptCanvas::GraphActivation& activationSignal)
     {
         // Execution state sent by remote tool is not serialized
+        // This needs to be fixed so that the code below can be enabled (no identified side effect for the code below not working, but there might be some)
         /*
         const auto userData =
             AZStd::any_cast<const ScriptCanvas::RuntimeComponentUserData>(&activationSignal.m_executionState->GetUserData());
