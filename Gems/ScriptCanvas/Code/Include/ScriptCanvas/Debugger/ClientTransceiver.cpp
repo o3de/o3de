@@ -11,6 +11,7 @@
 #include "Messages/Request.h"
 #include "Messages/Notify.h"
 
+#include <AzCore/StringFunc/StringFunc.h>
 #include <AzFramework/ScriptCanvas/ScriptCanvasRemoteDebuggingConstants.h>
 
 using namespace AzFramework;
@@ -34,10 +35,11 @@ namespace ScriptCanvas
 
             for (auto& idAndInfo : m_networkTargets)
             {
-                if (strcmp(idAndInfo.second.GetDisplayName(), "Editor.exe") == 0)
+                if (AZ::StringFunc::StartsWith(idAndInfo.second.GetDisplayName(), "Editor"))
                 {
                     m_editorTarget = idAndInfo.second;
                     SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("Editor found!");
+                    break;
                 }
             }
 

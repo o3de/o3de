@@ -198,7 +198,9 @@ namespace ScriptCanvas
         void ServiceComponent::RemoteToolsEndpointJoined(const AzFramework::RemoteToolsEndpointInfo& info)
         {
             // Temporary workaround as info.isSelf() never returns true
-            if (strcmp(info.GetDisplayName(), "Editor.exe") == 0)
+            // Self and the client should be equal as script canvas debugging is only supported within the same process for now
+            // (Script canvas window is not a separate .exe, this remote debug code handling is there for future support of exported game debugging)
+            if (!m_self.m_info.IsValid())
             {
                 m_self.m_info = info;
             }
