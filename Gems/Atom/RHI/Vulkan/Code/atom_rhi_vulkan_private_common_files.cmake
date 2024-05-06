@@ -40,8 +40,14 @@ set(FILES
     Source/RHI/Device.cpp
     Source/RHI/Device.h
     Source/RHI/DispatchRaysIndirectBuffer.h
+    Source/RHI/BinaryFence.cpp
+    Source/RHI/BinaryFence.h
     Source/RHI/Fence.cpp
     Source/RHI/Fence.h
+    Source/RHI/FenceBase.cpp
+    Source/RHI/FenceBase.h
+    Source/RHI/TimelineSemaphoreFence.cpp
+    Source/RHI/TimelineSemaphoreFence.h
     Source/RHI/Framebuffer.cpp
     Source/RHI/Framebuffer.h
     Source/RHI/FrameGraphCompiler.cpp
@@ -110,10 +116,13 @@ set(FILES
     Source/RHI/PipelineState.h
     Source/RHI/Sampler.cpp
     Source/RHI/Sampler.h
-    Source/RHI/SemaphoreAllocator.cpp
     Source/RHI/SemaphoreAllocator.h
     Source/RHI/Semaphore.cpp
     Source/RHI/Semaphore.h
+    Source/RHI/TimelineSemaphore.cpp
+    Source/RHI/TimelineSemaphore.h
+    Source/RHI/BinarySemaphore.cpp
+    Source/RHI/BinarySemaphore.h
     Source/RHI/Scope.cpp
     Source/RHI/Scope.h
     Source/RHI/ShaderResourceGroup.cpp

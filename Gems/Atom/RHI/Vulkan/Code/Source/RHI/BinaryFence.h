@@ -15,32 +15,27 @@ namespace AZ
     {
         class Device;
 
-        // Fence is based on VkFence
+        // BinaryFence is based on VkFence
         // Cannot natively be signalled from the CPU
         // Signalling from the CPU is emulated by submitting a signal command to the Graphics queue
         // The signal command must also be submitted before we can wait for the fence to be signalled
         // Used if the device does not support timeline semaphores (Vulkan version < 1.2)
-        class Fence final : public RHI::Fence
+        class BinaryFence final : public FenceBase
         {
-            using Base = RHI::Fence;
+            using Base = FenceBase;
 
         public:
-            AZ_CLASS_ALLOCATOR(Fence, AZ::ThreadPoolAllocator);
-            AZ_RTTI(Fence, "{5B157619-B775-43D9-9112-B38F5B8011EC}", Base);
+            AZ_CLASS_ALLOCATOR(BinaryFence, AZ::ThreadPoolAllocator);
+            AZ_RTTI(BinaryFence, "{FE8974F0-8C64-48A7-8BF2-89E92F911AA4}", Base);
 
-            static RHI::Ptr<Fence> Create();
-            ~Fence() = default;
+            static RHI::Ptr<FenceBase> Create(Fence& fence);
+            ~BinaryFence() = default;
 
-            void SetSignalEvent(const AZStd::shared_ptr<AZ::Vulkan::SignalEvent>& signalEvent);
-            void SetSignalEventBitToSignal(int bitToSignal);
-            void SetSignalEventDependencies(AZ::Vulkan::SignalEvent::BitSet dependencies);
-
-            void SignalEvent();
-
-            FenceBase& GetFenceBase() const;
+            VkFence GetNativeFence() const;
 
         private:
-            Fence() = default;
+            BinaryFence(Fence& fence)
+                : m_fence{ fence } {};
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::Object
@@ -48,7 +43,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////
-            // RHI::Fence
+            // FenceBase
             RHI::ResultCode InitInternal(RHI::Device& device, RHI::FenceState initialState) override;
             void ShutdownInternal() override;
             void SignalOnCpuInternal() override;
@@ -57,7 +52,8 @@ namespace AZ
             RHI::FenceState GetFenceStateInternal() const override;
             //////////////////////////////////////////////////////////////////////
 
-            RHI::Ptr<FenceBase> m_fenceImpl;
+            VkFence m_nativeFence = VK_NULL_HANDLE;
+            Fence& m_fence;
         };
     } // namespace Vulkan
 } // namespace AZ
