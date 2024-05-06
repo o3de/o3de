@@ -70,6 +70,9 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
                         {
                             if (entity->EvaluateDependencies() == AZ::Entity::DependencySortResult::MissingRequiredService)
                             {
+#if defined(CARBONATED)
+                                (void)prefab; // suppress 'warning as error' for unused variable from capture list in Release
+#endif
                                 AZ_Error( "AssetPlatformComponentRemover", false,
                                     "Processing prefab '%s' failed! Removing components on entity '%s' has broken component "
                                     "dependency. Make sure you also remove any dependent components. If dependent component is actually required, "
