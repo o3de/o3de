@@ -56,6 +56,6 @@ set(snap_file "${CPACK_TEMPORARY_DIRECTORY}/o3de_${CPACK_PACKAGE_VERSION}_amd64.
 # Manually copy the files, the CPACK_EXTERNAL_BUILT_PACKAGES process runs after our packaging post build script
 # which is too late to be uploaded.
 file(COPY_FILE
-                ${snap_file}
-                "${CPACK_TOPLEVEL_DIRECTORY}/${snap_file_name}.snap"
-            )
+     ${snap_file}
+     "${CPACK_TOPLEVEL_DIRECTORY}/${snap_file_name}.snap"
+)

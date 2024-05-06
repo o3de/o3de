@@ -14,21 +14,23 @@ set -o errexit # exit on the first failure encountered
     ln -s @CPACK_PACKAGING_INSTALL_PREFIX@/bin/Linux/profile/Default/AssetProcessor /usr/local/bin/o3de.assetprocessor
     ln -s @CPACK_PACKAGING_INSTALL_PREFIX@/bin/Linux/profile/Default/Editor /usr/local/bin/o3de.editor
 
+    # Generate the desktop icon
     DESKTOP_ICON_FILE=/usr/share/applications/o3de.desktop
 
-    echo "[Desktop Entry]" > $DESKTOP_ICON_FILE
-    echo "Version=1.0" >> $DESKTOP_ICON_FILE
-    echo "Name=O3DE" >> $DESKTOP_ICON_FILE
-    echo "Comment=O3DE Project Manager" >> $DESKTOP_ICON_FILE
-    echo "Type=Application" >> $DESKTOP_ICON_FILE
-    echo "Exec=@CPACK_PACKAGING_INSTALL_PREFIX@/bin/Linux/profile/Default/o3de" >> $DESKTOP_ICON_FILE
-    echo "Path=@CPACK_PACKAGING_INSTALL_PREFIX@/bin/Linux/profile/Default/" >> $DESKTOP_ICON_FILE
-    echo "Icon=@CPACK_PACKAGING_INSTALL_PREFIX@/o3de.svg" >> $DESKTOP_ICON_FILE
-    echo "Terminal=false" >> $DESKTOP_ICON_FILE
-    echo "StartupWMClass=O3DE" >> $DESKTOP_ICON_FILE
-    echo "StartupNotify=true" >> $DESKTOP_ICON_FILE
-    echo "X-GNOME-Autostart-enabled=true" >> $DESKTOP_ICON_FILE
-       
+    echo -e "[Desktop Entry]\n\
+Version=@CPACK_PACKAGE_VERSION@\n\
+Name=O3DE\n\
+Comment=O3DE Project Manager\n\
+Type=Application\n\
+Exec=@CPACK_PACKAGING_INSTALL_PREFIX@/bin/Linux/profile/Default/o3de\n\
+Path=@CPACK_PACKAGING_INSTALL_PREFIX@/bin/Linux/profile/Default/\n\
+Icon=@CPACK_PACKAGING_INSTALL_PREFIX@/o3de.svg\n\
+Terminal=false\n\
+StartupWMClass=O3DE.SNAP\n\
+StartupNotify=true\n\
+X-GNOME-Autostart-enabled=true\n\
+" > $DESKTOP_ICON_FILE
+
     if [ "" != "$SUDO_USER" ]
     then
         pushd @CPACK_PACKAGING_INSTALL_PREFIX@
