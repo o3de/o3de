@@ -87,24 +87,28 @@ option enum class FogMode { LinearMode, ExponentialMode, ExponentialSquaredMode 
 #if ENABLE_FOG_LAYER
 float CalculateFogDensity(float3 surfacePosWS, float depthInLayer)
 {
-    // Noise pattern across the XY plane - first octave
-    float2 noiseUV = surfacePosWS.xy * PassSrg::m_noiseScaleUV + PassSrg::m_noiseVelocityUV * SceneSrg::m_time;
-    float  fogDensity = PassSrg::m_noiseTexture.Sample(PassSrg::LinearMirrorSampler, noiseUV).r;
+    if (o_useNoiseTexture)
+    {
+        // Noise pattern across the XY plane - first octave
+        float2 noiseUV = surfacePosWS.xy * PassSrg::m_noiseScaleUV + PassSrg::m_noiseVelocityUV * SceneSrg::m_time;
+        float  fogDensity = PassSrg::m_noiseTexture.Sample(PassSrg::LinearMirrorSampler, noiseUV).r;
 
-    // second noise octave 
-    float2 noiseUV2 = surfacePosWS.xy * PassSrg::m_noiseScaleUV2 + PassSrg::m_noiseVelocityUV2 * SceneSrg::m_time;
-    float fogDensity2 = PassSrg::m_noiseTexture.Sample(PassSrg::LinearMirrorSampler, noiseUV2).r;
+        // second noise octave 
+        float2 noiseUV2 = surfacePosWS.xy * PassSrg::m_noiseScaleUV2 + PassSrg::m_noiseVelocityUV2 * SceneSrg::m_time;
+        float fogDensity2 = PassSrg::m_noiseTexture.Sample(PassSrg::LinearMirrorSampler, noiseUV2).r;
 
-    // Overall fog density in this xy position
-    fogDensity = lerp(fogDensity, fogDensity2, PassSrg::m_octavesBlendFactor);
+        // Overall fog density in this xy position
+        fogDensity = lerp(fogDensity, fogDensity2, PassSrg::m_octavesBlendFactor);
 
-    // Apply height attenuation at location xy based on the density amount.  This is a heuristic 
-    // in order to avoid using 3D texture yet have height deviation near the layer's edge.
-    const float fadeStartHeight = 0.8;  // relative fog layer height at which point we start to fade
-    // The fade will be gradual from the end of the noise location 
-    float fogRelativeHeight = 1.0 - smoothstep( fadeStartHeight, 1.0, depthInLayer );
+        // Apply height attenuation at location xy based on the density amount.  This is a heuristic 
+        // in order to avoid using 3D texture yet have height deviation near the layer's edge.
+        const float fadeStartHeight = 0.8;  // relative fog layer height at which point we start to fade
+        // The fade will be gradual from the end of the noise location 
+        float fogRelativeHeight = 1.0 - smoothstep( fadeStartHeight, 1.0, depthInLayer );
 
-    return fogDensity * fogRelativeHeight;
+        return fogDensity * fogRelativeHeight;
+    }
+    return 0;
 }
 #endif //ENABLE_FOG_LAYER
 
