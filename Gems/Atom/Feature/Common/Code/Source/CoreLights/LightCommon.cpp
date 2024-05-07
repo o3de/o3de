@@ -13,12 +13,13 @@ namespace AZ::Render::LightCommon
 {
     bool NeedsCPUCulling(
         const RPI::ViewPtr& view,
-        AZStd::unordered_map<const RPI::View*, AZStd::vector<const RPI::RenderPipeline*>>& cpuCulledPipelinesPerView)
+        const AZStd::unordered_map<const RPI::View*, AZStd::vector<const RPI::RenderPipeline*>>& cpuCulledPipelinesPerView)
     {
         auto viewPipelines = cpuCulledPipelinesPerView.find(view.get());
         if (viewPipelines == cpuCulledPipelinesPerView.end())
+        {
             return false;
-
+        }
         return (viewPipelines->second.size() > 0);
     }
 

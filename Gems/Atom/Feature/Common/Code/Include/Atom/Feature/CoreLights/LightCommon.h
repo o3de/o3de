@@ -26,7 +26,7 @@ namespace AZ::Render::LightCommon
     // @param cpuCulledPipelinesPerView - Map of views -> pipelines in that view that need CPU culling (i.e. no GPU culling pass)
     bool NeedsCPUCulling(
         const RPI::ViewPtr& view,
-        AZStd::unordered_map<const RPI::View*, AZStd::vector<const RPI::RenderPipeline*>>& cpuCulledPipelinesPerView);
+        const AZStd::unordered_map<const RPI::View*, AZStd::vector<const RPI::RenderPipeline*>>& cpuCulledPipelinesPerView);
 
     //! Cache pipelines that need CPU culling (i.e. no GPU culling pass) with their respective view, store in cpuCulledPipelinesPerView
     //! @param renderPipeline - Cache data associated with the passed RenderPipeline
