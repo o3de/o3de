@@ -48,11 +48,7 @@ namespace AzFramework
     }
     
     void NativeWindowImpl_Ios::InitWindow([[maybe_unused]]const AZStd::string& title,
-#if defined(CARBONATED)
-                                          [[maybe_unused]]const WindowGeometry& geometry,
-#else
                                           const WindowGeometry& geometry,
-#endif
                                           [[maybe_unused]]const WindowStyleMasks& styleMasks)
     {
         CGRect screenBounds = [[UIScreen mainScreen] bounds];
@@ -68,9 +64,15 @@ namespace AzFramework
         {
             AZStd::swap(m_width, m_height);
         }
+        // Make sure that the window width does not exceed the one of the geometry.
+        if (geometry.m_width < m_width)
+        {
+            m_height = static_cast<uint32_t>((static_cast<float>(m_height) / m_width) * geometry.m_width);
+            m_width = geometry.m_width;
+        }
 #else
-        m_width = geometry.width;
-        m_height = geometry.height;
+        m_width = geometry.m_width;
+        m_height = geometry.m_height;
 #endif
         m_mainDisplayRefreshRate = [[UIScreen mainScreen] maximumFramesPerSecond];
     }
