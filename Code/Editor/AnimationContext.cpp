@@ -306,7 +306,6 @@ void CAnimationContext::SetTime(float t)
     m_currTime = t;
     m_fRecordingCurrTime = t;
     ForceAnimation();
-    UpdateAnimatedLights();
 
     NotifyTimeChangedListenersUsingCurrTime();
 }
@@ -577,7 +576,6 @@ void CAnimationContext::Update()
         NotifyTimeChangedListenersUsingCurrTime();
     }
 
-    UpdateAnimatedLights();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -671,34 +669,6 @@ void CAnimationContext::OnPostRender()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
-void CAnimationContext::UpdateAnimatedLights()
-{
-    bool bLightAnimationSetActive = m_pSequence && (m_pSequence->GetFlags() & IAnimSequence::eSeqFlags_LightAnimationSet);
-    if (bLightAnimationSetActive == false)
-    {
-        return;
-    }
-
-    std::vector<CBaseObject*> entityObjects;
-    GetIEditor()->GetObjectManager()->FindObjectsOfType(&CEntityObject::staticMetaObject, entityObjects);
-    std::for_each(std::begin(entityObjects), std::end(entityObjects),
-        [this](CBaseObject* pBaseObject)
-        {
-            CEntityObject* pEntityObject = static_cast<CEntityObject*>(pBaseObject);
-            bool bLight = pEntityObject && pEntityObject->GetEntityClass().compare("Light") == 0;
-            if (bLight)
-            {
-                bool bTimeScrubbing = pEntityObject->GetEntityPropertyBool("bTimeScrubbingInTrackView");
-                if (bTimeScrubbing)
-                {
-                    pEntityObject->SetEntityPropertyFloat("_fTimeScrubbed", m_currTime);
-                }
-            }
-        });
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CAnimationContext::BeginUndoTransaction()
 {
     m_bSavedRecordingState = m_recording;
