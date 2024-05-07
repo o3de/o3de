@@ -40,7 +40,7 @@ namespace AZ
                 uint32_t commandListIndex,
                 uint32_t commandListCount) const;
 
-            const bool IsStateSupportedByQueue(D3D12_RESOURCE_STATES state) const;
+            const bool IsStateSupportedByQueue(D3D12_RESOURCE_STATES state, bool copyQueueState = false) const;
 
             //! Adds a transition barrier that will be emitted at the beginning of the scope.
             //! Can specify a state that the command list need to be before emitting the barrier.

@@ -572,7 +572,7 @@ namespace AZ
                      // Check if we can service the request at the beginning of the current scope. This is the
                      // normal case when transitioning within the same queue family.
                     if (scopeAfter.IsStateSupportedByQueue(transition.StateBefore) &&
-                        (scopeAfter.GetHardwareQueueClass() == RHI::HardwareQueueClass::Copy ? copyQueueState : scopeAfter.IsStateSupportedByQueue(transition.StateAfter)))
+                        scopeAfter.IsStateSupportedByQueue(transition.StateAfter, copyQueueState))
                     {
                         // We can just queue the transition on the scope directly.
                         logger.LogPrologueTransition(scopeAfter);
