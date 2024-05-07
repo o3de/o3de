@@ -31,6 +31,9 @@ namespace AzFramework
         uint32_t GetDisplayRefreshRate() const override;
         
     private:
+#if defined(CARBONATED)
+        static bool IsLandscape();
+#endif
         UIWindow* m_nativeWindow;
         uint32_t m_mainDisplayRefreshRate = 0;
     };
@@ -57,9 +60,11 @@ namespace AzFramework
         [m_nativeWindow makeKeyAndVisible];
 
 #if defined(CARBONATED)
-        m_width = [UIScreen mainScreen].nativeBounds.size.width;
-        m_height = [UIScreen mainScreen].nativeBounds.size.height;
-        if (m_width < m_height)
+        m_width = [[UIScreen mainScreen] nativeBounds].size.width;
+        m_height = [[UIScreen mainScreen] nativeBounds].size.height;
+        // The rectangle returned by nativeBounds is always in a portrait orientation.
+        // If the app is landscape, width and height must be swapped.
+        if (IsLandscape())
         {
             AZStd::swap(m_width, m_height);
         }
@@ -79,6 +84,31 @@ namespace AzFramework
     {
         return m_mainDisplayRefreshRate;
     }
+
+#if defined(CARBONATED)
+    bool NativeWindowImpl_Ios::IsLandscape()
+    {
+        UIInterfaceOrientation uiOrientation = UIInterfaceOrientationUnknown;
+
+        UIWindow* foundWindow = nil;
+        NSArray* windows = [[UIApplication sharedApplication] windows];
+        for (UIWindow* window in windows)
+        {
+            if (window.isKeyWindow)
+            {
+                foundWindow = window;
+                break;
+            }
+        }
+        UIWindowScene* windowScene = foundWindow ? foundWindow.windowScene : nullptr;
+        AZ_Assert(windowScene, "WindowScene is invalid");
+        if (windowScene)
+        {
+            uiOrientation = windowScene.interfaceOrientation;
+        }
+        return uiOrientation == UIInterfaceOrientationLandscapeLeft || uiOrientation == UIInterfaceOrientationLandscapeRight;
+    }
+#endif
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     class IosNativeWindowFactory 
