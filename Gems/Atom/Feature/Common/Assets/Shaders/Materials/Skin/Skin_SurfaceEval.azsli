@@ -64,8 +64,8 @@ real2 ApplyNormalWrinkleMap(bool shouldApply, real2 baseNormalSample, Texture2D 
 Surface EvaluateSurface_Skin(
     float3 positionWS,
     real3 vertexNormal,
-    real3 tangents[UvSetCount],
-    real3 bitangents[UvSetCount],
+    float3 tangents[UvSetCount],
+    float3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],
     float2 detailUv,
     real4 wrinkleBlendFactors,
@@ -112,7 +112,7 @@ Surface EvaluateSurface_Skin(
     // Since the wrinkle normal maps should all be in the same tangent space as the main normal map, we should be able to blend the raw normal map
     // texture values before doing all the tangent space transforms, so we only have to do the transforms once, for better performance.
     
-    real2 normalMapSample = real2(0.0,0.0);
+    real2 normalMapSample = real2(0.0, 0.0);
     
     if(o_normal_useTexture)
     {
@@ -127,7 +127,7 @@ Surface EvaluateSurface_Skin(
         normalMapSample = ApplyNormalWrinkleMap(o_wrinkleLayers_normal_useTexture4, normalMapSample, MaterialSrg::m_wrinkle_normal_texture4, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, wrinkleBlendFactors.a);
     }
 
-    real3x3 uvMatrix = real3x3(CreateIdentity3x3());
+    real3x3 uvMatrix = CreateIdentity3x3_real();
 
     if(o_detail_normal_useTexture)
     {

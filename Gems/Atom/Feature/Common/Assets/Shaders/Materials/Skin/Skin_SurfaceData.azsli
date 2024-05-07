@@ -39,9 +39,11 @@ class SurfaceData_Skin
     real metallic;
 
     //! Subsurface scattering parameters
+#if OUTPUT_SUBSURFACE
     real subsurfaceScatteringFactor;
     real subsurfaceScatteringQuality;
     real3 scatterDistance;
+#endif
 
     //! Calculates roughnessA and roughnessA2 after roughness has been set
     void CalculateRoughnessA();
@@ -59,6 +61,6 @@ void SurfaceData_Skin::SetAlbedoAndSpecularF0(real3 newBaseColor, real specularF
 {
     baseColor = newBaseColor;
     albedo = newBaseColor;
-    specularF0 = MaxDielectricSpecularF0 * specularF0Factor;
+    specularF0 = MaxDielectricSpecularF0.r * specularF0Factor;
     metallic = 0;
 }
