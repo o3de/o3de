@@ -10,9 +10,9 @@
 #include <AzCore/Name/Name.h>
 #include <AzCore/Name/NameDictionary.h>
 
-namespace AzFramework
+namespace ScriptCanvas
 {
-    static const AZ::Name ScriptCanvasToolsName = AZ::Name::FromStringLiteral("ScriptCanvasRemoteTools", nullptr);
-    static constexpr AZ::Crc32 ScriptCanvasToolsKey("ScriptCanvasRemoteTools");
-    static constexpr uint16_t ScriptCanvasToolsPort = 6787;
+    static const AZ::Name RemoteToolsName = AZ::Name::FromStringLiteral("ScriptCanvasRemoteTools", nullptr);
+    static constexpr AZ::Crc32 RemoteToolsKey("ScriptCanvasRemoteTools");
+    static constexpr uint16_t RemoteToolsPort = 6787;
 }

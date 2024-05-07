@@ -155,5 +155,8 @@ namespace RemoteTools
         AZStd::mutex m_inboxMutex;
 
         AZStd::set<AZ::Crc32> m_messageTypesToClearForNextTick;
+
+    private:
+        AzFramework::RemoteToolsMessage* DeserializeMessage(const AZ::Crc32& key, AZStd::vector<AZStd::byte>& buffer, const uint32_t& totalBufferSize);
     };
 } // namespace RemoteTools

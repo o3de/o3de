@@ -160,7 +160,7 @@ namespace AzFramework
     using RemoteToolsEndpointStatusEvent = AZ::Event<RemoteToolsEndpointInfo>;
     using RemoteToolsEndpointConnectedEvent = AZ::Event<bool>;
     using RemoteToolsEndpointChangedEvent = AZ::Event<AZ::u32, AZ::u32>;
-    using ReceivedRemoteToolsMessages = AZStd::fixed_vector<RemoteToolsMessagePointer, 64>;
+    using ReceivedRemoteToolsMessages = AZStd::fixed_vector<RemoteToolsMessagePointer, 128>;
 
     class IRemoteTools
     {

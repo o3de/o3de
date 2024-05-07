@@ -10,7 +10,6 @@
 #include <AzCore/std/containers/vector.h>
 
 #include <AzFramework/Network/IRemoteTools.h>
-#include <AzFramework/ScriptCanvas/ScriptCanvasRemoteDebuggingConstants.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 #include <Editor/View/Widgets/LoggingPanel/LiveWindowSession/LiveLoggingDataAggregator.h>
@@ -18,6 +17,7 @@
 #include <ScriptCanvas/Asset/ExecutionLogAssetBus.h>
 #include <ScriptCanvas/Core/ExecutionNotificationsBus.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
+#include <ScriptCanvas/Utils/ScriptCanvasConstants.h>
 
 namespace ScriptCanvasEditor
 {
@@ -55,11 +55,10 @@ namespace ScriptCanvasEditor
                 ScriptCanvas::Debugger::ServiceNotificationsBus::Handler::BusConnect();
             }
 
-            bool isEditor = false;
-            ScriptCanvas::Debugger::ClientRequestsBus::BroadcastResult(
-                isEditor, &ScriptCanvas::Debugger::ClientRequests::IsConnectedToEditor);
+            bool isSelf = false;
+            ScriptCanvas::Debugger::ClientRequestsBus::BroadcastResult(isSelf, &ScriptCanvas::Debugger::ClientRequests::IsConnectedToSelf);
 
-            if (!isEditor)
+            if (!isSelf)
             {
                 m_captureType = CaptureType::External;
                 m_staticRegistrations.clear();
@@ -400,7 +399,7 @@ namespace ScriptCanvasEditor
             AzFramework::IRemoteTools* remoteTools = AzFramework::RemoteToolsInterface::Get();
             if (remoteTools)
             {
-                const AzFramework::RemoteToolsEndpointInfo& desiredTarget = remoteTools->GetDesiredEndpoint(AzFramework::ScriptCanvasToolsKey);
+                const AzFramework::RemoteToolsEndpointInfo& desiredTarget = remoteTools->GetDesiredEndpoint(ScriptCanvas::RemoteToolsKey);
                 isDesiredTargetConnected = desiredTarget.IsOnline();
             }
 

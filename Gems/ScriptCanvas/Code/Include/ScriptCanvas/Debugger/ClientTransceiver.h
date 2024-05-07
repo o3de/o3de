@@ -55,7 +55,7 @@ namespace ScriptCanvas
 
             bool HasValidConnection() const override;
             bool IsConnected(const AzFramework::RemoteToolsEndpointInfo&) const override;
-            bool IsConnectedToEditor() const override;
+            bool IsConnectedToSelf() const override;
             AzFramework::RemoteToolsEndpointInfo GetNetworkTarget() override;
 
             void AddBreakpoint(const Breakpoint&) override;
@@ -75,8 +75,7 @@ namespace ScriptCanvas
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            void DesiredTargetConnected(bool connected);
-            void DesiredTargetChanged(AZ::u32 newId, AZ::u32 oldId);
+            // TODO : Must be implemented via IRemoteTools handlers
             void TargetJoinedNetwork(AzFramework::RemoteToolsEndpointInfo info);
             void TargetLeftNetwork(AzFramework::RemoteToolsEndpointInfo info);
             //////////////////////////////////////////////////////////////////////////
@@ -128,13 +127,14 @@ namespace ScriptCanvas
             void ProcessMessages();
             
         private:
-
+            void DesiredTargetConnected(bool connected);
+            void DesiredTargetChanged(AZ::u32 newId, AZ::u32 oldId);
             void DisconnectFromTarget();
             void CleanupConnection();
 
             Mutex m_mutex;
 
-            AzFramework::RemoteToolsEndpointInfo m_editorTarget;
+            AzFramework::RemoteToolsEndpointInfo m_selfTarget;
 
             bool m_resetDesiredTarget = false;
             AzFramework::RemoteToolsEndpointInfo m_previousDesiredInfo;

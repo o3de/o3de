@@ -7,13 +7,14 @@
  */
 
 #include <AzCore/Interface/Interface.h>
-#include <AzFramework/ScriptCanvas/ScriptCanvasRemoteDebuggingConstants.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <EditorCoreAPI.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <IEditor.h>
 
 #include <Editor/View/Widgets/LoggingPanel/LiveWindowSession/LiveLoggingWindowSession.h>
+
+#include <ScriptCanvas/Utils/ScriptCanvasConstants.h>
 
 namespace ScriptCanvasEditor
 {
@@ -125,7 +126,7 @@ namespace ScriptCanvasEditor
         AzFramework::RemoteToolsEndpointContainer targets;
         if (remoteTools)
         {
-            remoteTools->EnumTargetInfos(AzFramework::ScriptCanvasToolsKey, targets);
+            remoteTools->EnumTargetInfos(ScriptCanvas::RemoteToolsKey, targets);
         }
 
         for (const auto& targetPair : targets)
@@ -260,7 +261,7 @@ namespace ScriptCanvasEditor
                 AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
 
                 const AzFramework::RemoteToolsEndpointInfo& desiredInfo =
-                    AzFramework::RemoteToolsInterface::Get()->GetDesiredEndpoint(AzFramework::ScriptCanvasToolsKey);
+                    AzFramework::RemoteToolsInterface::Get()->GetDesiredEndpoint(ScriptCanvas::RemoteToolsKey);
 
                 if (desiredInfo.IsValid() && !desiredInfo.IsSelf())
                 {
@@ -347,11 +348,10 @@ namespace ScriptCanvasEditor
 
     void LiveLoggingWindowSession::OnCaptureButtonPressed()
     {
-        bool isEditorTarget = false;
-        ScriptCanvas::Debugger::ClientRequestsBus::BroadcastResult(
-            isEditorTarget, &ScriptCanvas::Debugger::ClientRequests::IsConnectedToEditor);
+        bool isSelfTarget = false;
+        ScriptCanvas::Debugger::ClientRequestsBus::BroadcastResult(isSelfTarget, &ScriptCanvas::Debugger::ClientRequests::IsConnectedToSelf);
 
-        if (isEditorTarget)
+        if (isSelfTarget)
         {
             if (!m_startedSession)
             {
@@ -413,7 +413,7 @@ namespace ScriptCanvasEditor
         // Special case out the editor
         if (index == 0)
         {
-            AzFramework::RemoteToolsInterface::Get()->SetDesiredEndpoint(AzFramework::ScriptCanvasToolsKey, 0);
+            AzFramework::RemoteToolsInterface::Get()->SetDesiredEndpoint(ScriptCanvas::RemoteToolsKey, 0);
         }
         else
         {
@@ -421,7 +421,7 @@ namespace ScriptCanvasEditor
 
             if (info.IsValid())
             {
-                AzFramework::RemoteToolsInterface::Get()->SetDesiredEndpoint(AzFramework::ScriptCanvasToolsKey, info.GetPersistentId());
+                AzFramework::RemoteToolsInterface::Get()->SetDesiredEndpoint(ScriptCanvas::RemoteToolsKey, info.GetPersistentId());
             }
         }
     }

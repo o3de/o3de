@@ -7,7 +7,6 @@
  */
 
 #include <AzFramework/Entity/GameEntityContextBus.h>
-#include <AzFramework/ScriptCanvas/ScriptCanvasRemoteDebuggingConstants.h>
 
 #include "Debugger.h"
 #include "Messages/Notify.h"
@@ -15,6 +14,7 @@
 
 #include <ScriptCanvas/Core/GraphBus.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
+#include <ScriptCanvas/Utils/ScriptCanvasConstants.h>
 
 namespace ScriptCanvas
 {
@@ -57,7 +57,7 @@ namespace ScriptCanvas
         Message::Request* ServiceComponent::FilterMessage(AzFramework::RemoteToolsMessagePointer& msg)
         {
             AzFramework::RemoteToolsEndpointInfo client =
-                AzFramework::RemoteToolsInterface::Get()->GetEndpointInfo(AzFramework::ScriptCanvasToolsKey, msg->GetSenderTargetId());
+                AzFramework::RemoteToolsInterface::Get()->GetEndpointInfo(ScriptCanvas::RemoteToolsKey, msg->GetSenderTargetId());
 
             // cull messages without a target match
             if (!m_client.m_info.IsIdentityEqualTo(client))
@@ -151,14 +151,14 @@ namespace ScriptCanvas
             if (remoteTools)
             {
                 const AzFramework::ReceivedRemoteToolsMessages* messages =
-                    remoteTools->GetReceivedMessages(AzFramework::ScriptCanvasToolsKey);
+                    remoteTools->GetReceivedMessages(ScriptCanvas::RemoteToolsKey);
                 if (messages)
                 {
                     for (const AzFramework::RemoteToolsMessagePointer& msg : *messages)
                     {
                         OnReceivedMsg(msg);
                     }
-                    remoteTools->ClearReceivedMessagesForNextTick(AzFramework::ScriptCanvasToolsKey);
+                    remoteTools->ClearReceivedMessagesForNextTick(ScriptCanvas::RemoteToolsKey);
                 }
             }
         }
@@ -195,17 +195,6 @@ namespace ScriptCanvas
             }
         }
 
-        void ServiceComponent::RemoteToolsEndpointJoined(const AzFramework::RemoteToolsEndpointInfo& info)
-        {
-            // Temporary workaround as info.isSelf() never returns true
-            // Self and the client should be equal as script canvas debugging is only supported within the same process for now
-            // (Script canvas window is not a separate .exe, this remote debug code handling is there for future support of exported game debugging)
-            if (!m_self.m_info.IsValid())
-            {
-                m_self.m_info = info;
-            }
-        }
-
         void ServiceComponent::RemoteToolsEndpointLeft(const AzFramework::RemoteToolsEndpointInfo& info)
         {
             if (m_client.m_info.IsIdentityEqualTo(info))
@@ -215,31 +204,40 @@ namespace ScriptCanvas
         }
 
         void ServiceComponent::Init()
-        {
-            m_remoteTools = AzFramework::RemoteToolsInterface::Get();
-            if (!m_remoteTools)
-                return;
-
-            m_endpointJoinedEventHandler = AzFramework::RemoteToolsEndpointStatusEvent::Handler(
-                [this](AzFramework::RemoteToolsEndpointInfo info)
-                {
-                    this->RemoteToolsEndpointJoined(info);
-                });
-            m_remoteTools->RegisterRemoteToolsEndpointJoinedHandler(AzFramework::ScriptCanvasToolsKey, m_endpointJoinedEventHandler);
-
-            m_endpointLeftEventHandler = AzFramework::RemoteToolsEndpointStatusEvent::Handler(
-                [this](AzFramework::RemoteToolsEndpointInfo info)
-                {
-                    this->RemoteToolsEndpointLeft(info);
-                });
-            m_remoteTools->RegisterRemoteToolsEndpointLeftHandler(AzFramework::ScriptCanvasToolsKey, m_endpointLeftEventHandler);
-        }
+        {}
 
         void ServiceComponent::Activate()
         {
             m_state = SCDebugState_Detached;
             ExecutionNotificationsBus::Handler::BusConnect();
             AZ::SystemTickBus::Handler::BusConnect();
+
+            m_remoteTools = AzFramework::RemoteToolsInterface::Get();
+            if (!m_remoteTools)
+                return;
+
+            m_endpointLeftEventHandler = AzFramework::RemoteToolsEndpointStatusEvent::Handler(
+                [this](AzFramework::RemoteToolsEndpointInfo info)
+                {
+                    this->RemoteToolsEndpointLeft(info);
+                });
+            m_remoteTools->RegisterRemoteToolsEndpointLeftHandler(ScriptCanvas::RemoteToolsKey, m_endpointLeftEventHandler);
+
+            AzFramework::RemoteToolsEndpointContainer targets;
+            m_remoteTools->EnumTargetInfos(ScriptCanvas::RemoteToolsKey, targets);
+            for (auto& idAndInfo : targets)
+            {
+                if (idAndInfo.second.IsSelf())
+                {
+                    m_self.m_info = idAndInfo.second;
+                    SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("Self found!");
+                }
+            }
+
+            if (!m_self.m_info.IsValid())
+            {
+                SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("Self NOT found!");
+            }
         }
 
         void ServiceComponent::Deactivate()
@@ -250,7 +248,6 @@ namespace ScriptCanvas
                 //\todo DetachAll();
             }
 
-            AZ::SystemTickBus::Handler::BusDisconnect();
             ExecutionNotificationsBus::Handler::BusDisconnect();
 
             {
