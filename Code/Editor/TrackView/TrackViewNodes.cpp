@@ -1323,7 +1323,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
             if(!GetNodeRecord(animNode2)) {
                 QMessageBox::warning(
                     this,
-                    tr("Entity does not exists"),
+                    tr("Entity does not exist"),
                     tr("Entity has been deleted.\n\nUnable to rename entity"));
             }
             else if (!newName.isEmpty())
