@@ -10,7 +10,7 @@
 
 // include MCore related files
 #include "EMotionFXConfig.h"
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 #include "Pose.h"
 
 
@@ -25,7 +25,7 @@ namespace EMotionFX
      * This last example is useful for clothing items or character customization.
      */
     class EMFX_API Attachment
-        : public BaseObject
+        : public MCore::RefCounted
     {
         AZ_CLASS_ALLOCATOR_DECL
 

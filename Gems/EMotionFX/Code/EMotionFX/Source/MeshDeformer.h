@@ -10,7 +10,7 @@
 
 // include the required headers
 #include "EMotionFXConfig.h"
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 
 
 namespace EMotionFX
@@ -30,7 +30,7 @@ namespace EMotionFX
      * deformers which are executed in the specified order.
      */
     class EMFX_API MeshDeformer
-        : public BaseObject
+        : public MCore::RefCounted
     {
         AZ_CLASS_ALLOCATOR_DECL
 

@@ -10,7 +10,7 @@
 
 // include the required headers
 #include "EMotionFXConfig.h"
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 #include "Pose.h"
 
 namespace EMotionFX
@@ -25,7 +25,7 @@ namespace EMotionFX
      * If for example you wish to get the world space matrices for all nodes, to be used for rendering, you will have to use this class.
      */
     class EMFX_API TransformData
-        : public BaseObject
+        : public MCore::RefCounted
     {
         AZ_CLASS_ALLOCATOR_DECL
 
