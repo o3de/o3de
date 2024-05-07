@@ -142,7 +142,7 @@ namespace AZ
             // Cull the decals for a view using the CPU.
             void CullDecals(const RPI::ViewPtr& view);
             void UpdateBounds(const DecalHandle handle);
-			void SetMaterialToDecals(RPI::MaterialAsset* materialAsset, const AZStd::vector<DecalHandle>& decalsThatUseThisMaterial);
+            void SetMaterialToDecals(RPI::MaterialAsset* materialAsset, const AZStd::vector<DecalHandle>& decalsThatUseThisMaterial);
 
             MultiIndexedDataVector<DecalData, AZ::Aabb> m_decalData;
             RHI::Handle<uint32_t> m_decalMeshFlag;
