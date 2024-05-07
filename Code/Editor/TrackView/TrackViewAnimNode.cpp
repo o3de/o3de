@@ -2379,92 +2379,12 @@ CTrackViewAnimNode* CTrackViewAnimNode::AddComponent(const AZ::Component* compon
     return retNewComponentNode;
 }
 
-//////////////////////////////////////////////////////////////////////////
-void CTrackViewAnimNode::MatrixInvalidated()
-{
-}
-
-//////////////////////////////////////////////////////////////////////////
-Vec3 CTrackViewAnimNode::GetTransformDelegatePos(const Vec3& basePos) const
-{
-    const Vec3 position = GetPos();
-
-    return Vec3(CheckTrackAnimated(AnimParamType::PositionX) ? position.x : basePos.x,
-        CheckTrackAnimated(AnimParamType::PositionY) ? position.y : basePos.y,
-        CheckTrackAnimated(AnimParamType::PositionZ) ? position.z : basePos.z);
-}
-
-//////////////////////////////////////////////////////////////////////////
-Quat CTrackViewAnimNode::GetTransformDelegateRotation(const Quat& baseRotation) const
-{
-    if (!CheckTrackAnimated(AnimParamType::Rotation))
-    {
-        return baseRotation;
-    }
-
-    // Pass the sequence time to get the rotation from the
-    // track data if it is present. We don't want to go all the way out
-    // to the current rotation in component transform because that would mean
-    // we are going from Quat to Euler and then back to Quat and that could lead
-    // to the data drifting away from the original value.
-    Quat nodeRotation = GetRotation(GetSequenceConst()->GetTime());
-
-    const Ang3 angBaseRotation(baseRotation);
-    const Ang3 angNodeRotation(nodeRotation);
-    return Quat(Ang3(CheckTrackAnimated(AnimParamType::RotationX) ? angNodeRotation.x : angBaseRotation.x,
-            CheckTrackAnimated(AnimParamType::RotationY) ? angNodeRotation.y : angBaseRotation.y,
-            CheckTrackAnimated(AnimParamType::RotationZ) ? angNodeRotation.z : angBaseRotation.z));
-}
-
-//////////////////////////////////////////////////////////////////////////
-Vec3 CTrackViewAnimNode::GetTransformDelegateScale(const Vec3& baseScale) const
-{
-    const Vec3 scale = GetScale();
-
-    return Vec3(CheckTrackAnimated(AnimParamType::ScaleX) ? scale.x : baseScale.x,
-        CheckTrackAnimated(AnimParamType::ScaleY) ? scale.y : baseScale.y,
-        CheckTrackAnimated(AnimParamType::ScaleZ) ? scale.z : baseScale.z);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CTrackViewAnimNode::SetTransformDelegatePos(const Vec3& position)
-{
-    SetPos(position);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CTrackViewAnimNode::SetTransformDelegateRotation(const Quat& rotation)
-{
-    SetRotation(rotation);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CTrackViewAnimNode::SetTransformDelegateScale(const Vec3& scale)
-{
-    SetScale(scale);
-}
-
 bool CTrackViewAnimNode::IsTransformAnimParamTypeDelegated(const AnimParamType animParamType) const
 {
     const bool delegated = (GetIEditor()->GetAnimation()->IsRecording() && AzToolsFramework::IsSelected(m_nodeEntityId) &&
                              GetTrackForParameter(animParamType)) ||
         CheckTrackAnimated(animParamType);
     return delegated;
-}
-
-bool CTrackViewAnimNode::IsPositionDelegated() const
-{
-    return IsTransformAnimParamTypeDelegated(AnimParamType::Position);
-}
-
-bool CTrackViewAnimNode::IsRotationDelegated() const
-{
-    return IsTransformAnimParamTypeDelegated(AnimParamType::Rotation);
-}
-
-bool CTrackViewAnimNode::IsScaleDelegated() const
-{
-    return IsTransformAnimParamTypeDelegated(AnimParamType::Scale);
 }
 
 void CTrackViewAnimNode::OnEntityDestruction([[maybe_unused]] const AZ::EntityId& entityId)
