@@ -1320,7 +1320,13 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
                 }
             } while (retryRename);
 
-            if (!newName.isEmpty())
+            if(!GetNodeRecord(animNode2)) {
+                QMessageBox::warning(
+                    this,
+                    tr("Entity does not exists"),
+                    tr("Entity has been deleted.\n\nUnable to rename entity"));
+            }
+            else if (!newName.isEmpty())
             {
                 const CTrackViewSequenceManager* sequenceManager = GetIEditor()->GetSequenceManager();
                 sequenceManager->RenameNode(animNode2, newName.toUtf8().data());
