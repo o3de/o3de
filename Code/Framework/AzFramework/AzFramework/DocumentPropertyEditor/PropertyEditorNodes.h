@@ -54,6 +54,11 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto QueryKey = CallbackAttributeDefinition<void(DocumentAdapterPtr*, AZ::Dom::Path)>("QueryKey");
         static constexpr auto AddContainerKey = CallbackAttributeDefinition<void(DocumentAdapterPtr*, AZ::Dom::Path)>("AddContainerKey");
         static constexpr auto RejectContainerKey = CallbackAttributeDefinition<void(AZ::Dom::Path)>("RejectContainerKey");
+        static constexpr auto QuerySubclass =
+            CallbackAttributeDefinition<void(AZStd::shared_ptr<AZStd::vector<const AZ::SerializeContext::ClassData*>>*, AZ::Dom::Path)>(
+                "QuerySubclass");
+        static constexpr auto AddContainerSubclass =
+            CallbackAttributeDefinition<void(const AZ::SerializeContext::ClassData*, AZ::Dom::Path)>("AddContainerSubclass");
 
         //! Use this callback attribute if there is need to enable/disable an adapter's nodes at runtime.
         static constexpr auto SetNodeDisabled =
@@ -168,7 +173,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto GenericValueList = GenericValueListAttributeDefinition<GenericValueType>("GenericValueList");
 
         static constexpr auto ChangeNotify = CallbackAttributeDefinition<PropertyRefreshLevel()>("ChangeNotify");
-        static constexpr auto ChangeValidate = CallbackAttributeDefinition<AZ::Outcome<void, AZStd::string>(void*, const AZ::Uuid&)>("ChangeValidate");
+        static constexpr auto ChangeValidate = CallbackAttributeDefinition<AZ::Outcome<void, AZStd::string>(void*, AZ::Uuid)>("ChangeValidate");
         static constexpr auto RequestTreeUpdate = CallbackAttributeDefinition<void(PropertyRefreshLevel)>("RequestTreeUpdate");
     };
 
@@ -223,6 +228,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
 
     enum class ContainerAction
     {
+        None = 0,
         AddElement,
         RemoveElement,
         Clear,

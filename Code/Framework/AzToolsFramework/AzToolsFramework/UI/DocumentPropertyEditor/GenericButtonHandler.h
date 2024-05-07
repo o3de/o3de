@@ -19,7 +19,12 @@ namespace AzToolsFramework
     public:
         GenericButtonHandler();
 
-        virtual void SetValueFromDom(const AZ::Dom::Value& node);
+        virtual void SetValueFromDom(const AZ::Dom::Value& node) override;
+        virtual bool ResetToDefaults() override
+        {
+            m_node.SetNull();
+            return true;
+        }
 
         static constexpr const AZStd::string_view GetHandlerName()
         {

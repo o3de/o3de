@@ -41,6 +41,14 @@ namespace AssetProcessor
         bool m_isDirectory{};
     };
 
+    //! IFileStateRequests is the pure interface for all File State Requests, which can optionally
+    //! use a transparent cache.   You can call this from anywhere using
+    //! AZ::Interface<IFileStateRequests>::Get()-> function calls
+    //! Note that in order to satisfy the API here,
+    //! Exists, GetFileInfo, GetHash, and other file related functions are expected to function as if
+    //! case insensitive - that is, on case-sensitive file systems, the implementation should
+    //! work even if the input file name is not the actual file name on the system and the GetFileInfo
+    //! function should for example return the actual file name and case of the file on the system.
     struct IFileStateRequests
     {
         AZ_RTTI(IFileStateRequests, "{2D883B3A-DCA3-4CE0-976C-4511C3277371}");
@@ -95,8 +103,11 @@ namespace AssetProcessor
         virtual void WarmUpCache(const AssetFileInfo& /*existingInfo*/, const FileHash /*hash*/) {}
     };
 
-    /// Caches file state information retrieved by the file scanner and file watcher
-    /// Profiling has shown it is faster (at least on windows) compared to asking the OS for file information every time
+    //! Caches file state information retrieved by the file scanner and file watcher.
+    //! Profiling has shown it is faster (at least on windows) compared to asking the OS for file information every time.
+    //! Note that this cache absolutely depends on the file watcher and file scanner to keep it up to date.
+    //! It also means it will cause errors to use this cache on anything outside a watched/scanned folder, so sources
+    //! and intermediates only.  (Checking this on every operation would be prohibitively expensive).
     class FileStateCache final :
         public FileStateBase
     {
@@ -143,7 +154,9 @@ namespace AssetProcessor
         using LockGuardType = AZStd::lock_guard<decltype(m_mapMutex)>;
     };
 
-    /// Pass through version of the FileStateCache which does not cache anything.  Every request is redirected to the OS
+    //! Pass through version of the FileStateCache which does not cache anything.  Every request is redirected to the OS.
+    //! Note that in order to satisfy the API here, it must function as if case insensitive, so it can't just directly
+    //! call through to the OS and must use case-correcting functions on case-sensitive file systems.
     class FileStatePassthrough final :
         public FileStateBase
     {

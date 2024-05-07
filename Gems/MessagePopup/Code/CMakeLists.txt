@@ -39,4 +39,4 @@ ly_add_target(
 
 # MessagePopup is used only in client applications
 ly_create_alias(NAME MessagePopup.Clients NAMESPACE Gem TARGETS Gem::MessagePopup)
-ly_create_alias(NAME MessagePopup.Builders NAMESPACE Gem TARGETS Gem::UiBasics.Builders)
+
