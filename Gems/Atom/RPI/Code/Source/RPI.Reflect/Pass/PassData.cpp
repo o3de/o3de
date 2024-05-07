@@ -150,9 +150,10 @@ namespace AZ
                     ->Field("ImageSourceOrigin", &CopyPassData::m_imageSourceOrigin)
                     ->Field("ImageDestinationSubresource", &CopyPassData::m_imageDestinationSubresource)
                     ->Field("ImageDestinationOrigin", &CopyPassData::m_imageDestinationOrigin)
+                    ->Field("SourceDeviceIndex", &CopyPassData::m_sourceDeviceIndex)
+                    ->Field("DestinationDeviceIndex", &CopyPassData::m_destinationDeviceIndex)
                     ->Field("CloneInput", &CopyPassData::m_cloneInput)
-                    ->Field("UseCopyQueue", &CopyPassData::m_useCopyQueue)
-                    ;
+                    ->Field("UseCopyQueue", &CopyPassData::m_useCopyQueue);
             }
         }
 
