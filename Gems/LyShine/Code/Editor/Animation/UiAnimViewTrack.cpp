@@ -251,7 +251,7 @@ void CUiAnimViewTrack::SlideKeys(const float time0, const float timeOffset)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CUiAnimViewTrack::OffsetKeyPosition(const Vec3& offset)
+void CUiAnimViewTrack::OffsetKeyPosition(const AZ::Vector3& offset)
 {
     UiAnimUndo::Record(new CUndoTrackObject(this, GetSequence()));
     m_pAnimTrack->OffsetKeyPosition(offset);
