@@ -531,6 +531,7 @@ namespace AssetProcessor
                 AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer productInfoContainer;
 
                 QString productNameWithPlatform = QString("%1%2%3").arg(platform.c_str(), AZ_CORRECT_DATABASE_SEPARATOR_STRING, dependencyPathSearch.c_str());
+
                 if (AzFramework::StringFunc::Equal(productNameWithPlatform.toUtf8().data(), productName.c_str()))
                 {
                     AZ_Warning(AssetProcessor::ConsoleChannel, false,
