@@ -26,6 +26,7 @@ namespace AzToolsFramework
         AZ_CLASS_ALLOCATOR(LabelHandler, AZ::SystemAllocator);
 
         QWidget* CreateGUI(QWidget* parent) override;
+        bool ResetGUIToDefaults(QLabel* GUI) override;
         AZ::u32 GetHandlerName() const override;
 
         void ConsumeAttribute(QLabel* widget, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName) override;

@@ -264,7 +264,7 @@ namespace AzToolsFramework
             const AssetBrowserEntry* item = static_cast<const AssetBrowserEntry*>(parent.internalPointer());
 
             // We should only have an item as a folder but will check
-            if (item && (item->RTTI_IsTypeOf(FolderAssetBrowserEntry::RTTI_Type())))
+            if (item && (item->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder))
             {
                 AZStd::vector<const AssetBrowserEntry*> entries;
 
@@ -472,21 +472,31 @@ namespace AzToolsFramework
 
         void AssetBrowserModel::BeginAddEntry(AssetBrowserEntry* parent)
         {
+            if (m_isResetting)
+            {
+                return; // don't notify during reset.
+            }
+
             QModelIndex parentIndex;
             if (GetEntryIndex(parent, parentIndex))
             {
                 m_addingEntry = true;
                 int row = parent->GetChildCount();
-                beginInsertRows(parentIndex, row, row);
+                Q_EMIT beginInsertRows(parentIndex, row, row);
             }
         }
 
         void AssetBrowserModel::EndAddEntry(AssetBrowserEntry* parent)
         {
+            if (m_isResetting)
+            {
+                return; // don't notify during reset.
+            }
+
             if (m_addingEntry)
             {
                 m_addingEntry = false;
-                endInsertRows();
+                Q_EMIT endInsertRows();
 
                 // we have to also invalidate our parent all the way up the chain.
                 // since in this model, the children's data is actually relevant to the filtering of a parent
@@ -517,22 +527,44 @@ namespace AzToolsFramework
 
         void AssetBrowserModel::BeginRemoveEntry(AssetBrowserEntry* entry)
         {
+            if (m_isResetting)
+            {
+                return; // don't notify during reset.
+            }
+            
             int row = entry->row();
             QModelIndex parentIndex;
             if (GetEntryIndex(entry->m_parentAssetEntry, parentIndex))
             {
                 m_removingEntry = true;
-                beginRemoveRows(parentIndex, row, row);
+                Q_EMIT beginRemoveRows(parentIndex, row, row);
             }
         }
 
         void AssetBrowserModel::EndRemoveEntry()
         {
+            if (m_isResetting)
+            {
+                return; // don't notify during reset.
+            }
+
             if (m_removingEntry)
             {
                 m_removingEntry = false;
-                endRemoveRows();
+                Q_EMIT endRemoveRows();
             }
+        }
+
+        void AssetBrowserModel::BeginReset()
+        {
+            Q_EMIT beginResetModel();
+            m_isResetting = true;
+        }
+
+        void AssetBrowserModel::EndReset()
+        {
+            m_isResetting = false;
+            Q_EMIT endResetModel();
         }
 
         void AssetBrowserModel::HandleAssetCreatedInEditor(const AZStd::string& assetPath, const AZ::Crc32& creatorBusId, const bool initialFilenameChange)
@@ -542,7 +574,7 @@ namespace AzToolsFramework
                 QModelIndex index = findIndex(assetPath.c_str());
                 if (index.isValid())
                 {
-                    emit RequestOpenItemForEditing(index);
+                    Q_EMIT RequestOpenItemForEditing(index);
                 }
                 else
                 {
@@ -581,7 +613,7 @@ namespace AzToolsFramework
                 return false;
             }
 
-            if (azrtti_istypeof<RootAssetBrowserEntry*>(entry))
+            if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Root)
             {
                 index = QModelIndex();
                 return true;
@@ -616,7 +648,7 @@ namespace AzToolsFramework
                         QModelIndex index;
                         if (GetEntryIndex(entry, index))
                         {
-                            emit RequestOpenItemForEditing(index);
+                            Q_EMIT RequestOpenItemForEditing(index);
                         }
                     });
             }

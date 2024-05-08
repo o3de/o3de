@@ -588,6 +588,14 @@ namespace AzToolsFramework
                 m_prefabUndoCache.UpdateCache(containerEntityId);
                 m_prefabUndoCache.UpdateCache(parentId);
 
+                // Select newly instantiated prefab.
+                AzToolsFramework::EntityIdList selection = { containerEntityId };
+
+                SelectionCommand* selectionCommand = aznew SelectionCommand(selection, "");
+                selectionCommand->SetParent(undoBatch.GetUndoBatch());
+
+                ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selection);
+
                 AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
                     &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
             }

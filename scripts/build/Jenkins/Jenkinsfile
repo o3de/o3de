@@ -47,7 +47,7 @@ def doit()
 doit()
 
 // Branches with build snapshots
-BUILD_SNAPSHOTS = ['development', 'stabilization/2305']
+BUILD_SNAPSHOTS = ['development', 'stabilization', 'hotfix', 'point-release']
 
 // Build snapshots with empty snapshot (for use with 'SNAPSHOT' pipeline parameter)
 BUILD_SNAPSHOTS_WITH_EMPTY = BUILD_SNAPSHOTS + ''
@@ -1205,18 +1205,27 @@ try {
                         }
                         if(env.CHANGE_TARGET) {
                             // PR builds
-                            if(BUILD_SNAPSHOTS.contains(env.CHANGE_TARGET)) {
+                            def branchRoot = env.CHANGE_TARGET.tokenize('/')[0] // get target branch root
+                            def match = BUILD_SNAPSHOTS.find { it.startsWith(branchRoot) }
+                            if(match) {
                                 snapshot = env.CHANGE_TARGET
-                                echo "Snapshot for destination branch \"${env.CHANGE_TARGET}\" found."
+                                echo "Snapshot for destination branch \"${env.CHANGE_TARGET}\" found as \"${snapshot}\"."
                             } else { 
                                 snapshot = DEFAULT_BUILD_SNAPSHOT
                                 echo "Snapshot for destination branch \"${env.CHANGE_TARGET}\" does not exist, defaulting to snapshot \"${snapshot}\""
                             }
                         } else {
                             // Non-PR builds
-                            pipelineParameters.add(choice(name: 'SNAPSHOT', choices: BUILD_SNAPSHOTS_WITH_EMPTY, description: 'Selects the build snapshot to use. A more diverted snapshot will cause longer build times, but will not cause build failures.'))
-                            snapshot = env.SNAPSHOT
-                            echo "Snapshot \"${snapshot}\" selected."
+                            def branchInput = env.SNAPSHOT ? env.SNAPSHOT.tokenize('/')[0] : null
+                            def match = branchInput ? BUILD_SNAPSHOTS.find { it.startsWith(branchInput) } : null
+                            if(match) {
+                                snapshot = env.CHANGE_BRANCH
+                                echo "Snapshot \"${snapshot}\" selected based on user input."
+                            } else {
+                                pipelineParameters.add(choice(name: 'SNAPSHOT', choices: BUILD_SNAPSHOTS_WITH_EMPTY, description: 'Selects the build snapshot to use. A more diverted snapshot will cause longer build times, but will not cause build failures.'))
+                                snapshot = DEFAULT_BUILD_SNAPSHOT // Default if no input or no match
+                                echo "No valid snapshot selected or provided; defaulting to \"${snapshot}\"."
+                            }
                         }
                         pipelineProperties.add(disableConcurrentBuilds())
 

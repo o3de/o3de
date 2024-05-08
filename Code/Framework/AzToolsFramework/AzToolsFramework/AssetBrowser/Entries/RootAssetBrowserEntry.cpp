@@ -50,13 +50,16 @@ namespace AzToolsFramework
             return AssetEntryType::Root;
         }
 
-        void RootAssetBrowserEntry::Update(const char* enginePath)
+
+        void RootAssetBrowserEntry::PrepareForReset()
         {
             RemoveChildren();
-
             auto entryCache = EntryCache::GetInstance();
             entryCache->Clear();
+        }
 
+        void RootAssetBrowserEntry::Update(const char* enginePath)
+        {
             m_enginePath = AZ::IO::Path(enginePath).LexicallyNormal();
             m_projectPath = AZ::IO::Path(AZ::Utils::GetProjectPath()).LexicallyNormal();
             SetFullPath(m_enginePath);
@@ -241,7 +244,7 @@ namespace AzToolsFramework
                 return false;
             }
 
-            auto source = azrtti_cast<SourceAssetBrowserEntry*>(itFile->second);
+            auto source = static_cast<SourceAssetBrowserEntry*>(itFile->second); // it MUST be a source to get here.
             source->m_sourceId = sourceWithFileIdEntry.second.m_sourceID;
             source->m_sourceUuid = sourceWithFileIdEntry.second.m_sourceGuid;
             source->PathsUpdated(); // update thumbnailkey to valid uuid
@@ -424,11 +427,12 @@ namespace AzToolsFramework
         {
             auto it = AZStd::find_if(parent->m_children.begin(), parent->m_children.end(), [folderName](AssetBrowserEntry* entry)
             {
-                return azrtti_istypeof<FolderAssetBrowserEntry*>(entry) && AZ::IO::PathView(entry->m_name) == AZ::IO::PathView(folderName);
+                return (entry->GetEntryType() == AssetEntryType::Folder) && AZ::IO::PathView(entry->m_name) == AZ::IO::PathView(folderName);
             });
+            
             if (it != parent->m_children.end())
             {
-                return azrtti_cast<FolderAssetBrowserEntry*>(*it);
+                return static_cast<FolderAssetBrowserEntry*>(*it); // RTTI Cast is not necessary since find_if only returns folders.
             }
 
             auto folder = aznew FolderAssetBrowserEntry();
