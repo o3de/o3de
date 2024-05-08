@@ -125,7 +125,7 @@ namespace AZ
 
                     for (auto& fence : fencesToWaitFor)
                     {
-                        auto timelineSemaphoreFence = azrtti_cast<TimelineSemaphoreFence*>(fence);
+                        auto timelineSemaphoreFence = azrtti_cast<TimelineSemaphoreFence*>(&fence->GetFenceBase());
                         AZ_Assert(timelineSemaphoreFence, "Queue: Only fences of type timeline semaphores can be waited for");
                         vkWaitSemaphoreValues.push_back(timelineSemaphoreFence->GetPendingValue());
                         vkWaitSemaphoreVector.push_back(timelineSemaphoreFence->GetNativeSemaphore());
