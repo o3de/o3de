@@ -440,13 +440,10 @@ namespace CopyDependencyBuilder
             AssetBuilderSDK::ProductPathDependencySet pathDependencies;
             if (MatchExistingSchema(request.m_sourceFile, matchedSchemas, productDependencies, pathDependencies, request.m_watchFolder) != SchemaMatchResult::Error)
             {
-                // Only add source path dependendencies if the path:
-                // a) .. is of type SourceFile
-                // b) .. contains a wildcard character
+                // Product dependencies with wildcards are treated as source dependencies
                 for (const auto& pathDependency : pathDependencies)
                 {
-                    if (pathDependency.m_dependencyType != AssetBuilderSDK::ProductPathDependencyType::SourceFile ||
-                        !(pathDependency.m_dependencyPath.contains('*') || pathDependency.m_dependencyPath.contains('?')))
+                    if (!pathDependency.m_dependencyPath.contains('*') && !pathDependency.m_dependencyPath.contains('?'))
                         continue;
 
                     AssetBuilderSDK::SourceFileDependency sourceFileDependency;
