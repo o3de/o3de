@@ -29,7 +29,6 @@ set(FILES
     IValidator.h
     IWindowMessageHandler.h
     IXml.h
-    IMNM.h
     SerializationTypes.h
     CryEndian.h
     CryRandomInternal.h
