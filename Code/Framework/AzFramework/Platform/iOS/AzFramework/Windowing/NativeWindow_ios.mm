@@ -10,6 +10,10 @@
 #include <AzFramework/Windowing/NativeWindow.h>
 #include <AzFramework/Components/NativeUISystemComponent.h>
 
+#if defined(CARBONATED)
+#include <AzCore/Console/IConsole.h>
+#endif
+
 #include <UIKit/UIKit.h>
 @class NSWindow;
 
@@ -64,11 +68,21 @@ namespace AzFramework
         {
             AZStd::swap(m_width, m_height);
         }
-        // Make sure that the window width does not exceed the one of the geometry.
-        if (geometry.m_width < m_width)
+        
+        uint32_t resolutionMode = 0;
+        AZ::IConsole* console = AZ::Interface<AZ::IConsole>::Get();
+        if (console)
         {
-            m_height = static_cast<uint32_t>((static_cast<float>(m_height) / m_width) * geometry.m_width);
-            m_width = geometry.m_width;
+            console->GetCvarValue("r_resolutionMode", resolutionMode);
+        }
+        if (resolutionMode == 1)
+        {
+            // Make sure that the window width does not exceed the given geometry width.
+            if (geometry.m_width < m_width)
+            {
+                m_height = static_cast<uint32_t>((static_cast<float>(m_height) / m_width) * geometry.m_width);
+                m_width = geometry.m_width;
+            }
         }
 #else
         m_width = geometry.m_width;
