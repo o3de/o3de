@@ -95,6 +95,7 @@ namespace AssetProcessor
                         if (m_platformConfig->IsFileExcluded(pathMatch))
                         {
                             // Add the folder to the list and do not proceed any deeper
+                            pathMatch = AssetUtilities::NormalizeFilePath(pathMatch);
                             excludedFolders.emplace(pathMatch.toUtf8().constData());
                         }
                         else if (scanFolderInfo.RecurseSubFolders())
@@ -122,14 +123,20 @@ namespace AssetProcessor
 
         if (!pendingAdds.empty())
         {
-            m_excludedFolders.insert(pendingAdds.begin(), pendingAdds.end());
+            for (const auto& pendingAdd : pendingAdds)
+            {
+                QString normalizedAdd = AssetUtilities::NormalizeFilePath(QString::fromUtf8(pendingAdd.c_str()));
+                m_excludedFolders.insert(normalizedAdd.toUtf8().constData());
+
+            }
         }
 
         if (!pendingDeletes.empty())
         {
             for (const auto& pendingDelete : pendingDeletes)
             {
-                m_excludedFolders.erase(pendingDelete);
+                QString normalizedDelete = AssetUtilities::NormalizeFilePath(QString::fromUtf8(pendingDelete.c_str()));
+                m_excludedFolders.erase(normalizedDelete.toUtf8().constData());
             }
         }
 

@@ -152,8 +152,10 @@ namespace EditorPythonBindings
             {
                 AZ::s64 outboundPythonValue = 0;
 
-                bool converted =
-                    ConvertPythonFromEnumClass<AZ::u8>(underlyingTypeId, behaviorValue, outboundPythonValue)  ||
+                bool converted = 
+                    ConvertPythonFromEnumClass<long>(underlyingTypeId, behaviorValue, outboundPythonValue) ||
+                    ConvertPythonFromEnumClass<unsigned long>(underlyingTypeId, behaviorValue, outboundPythonValue) ||
+                    ConvertPythonFromEnumClass<AZ::u8>(underlyingTypeId, behaviorValue, outboundPythonValue) ||
                     ConvertPythonFromEnumClass<AZ::u16>(underlyingTypeId, behaviorValue, outboundPythonValue) ||
                     ConvertPythonFromEnumClass<AZ::u32>(underlyingTypeId, behaviorValue, outboundPythonValue) ||
                     ConvertPythonFromEnumClass<AZ::u64>(underlyingTypeId, behaviorValue, outboundPythonValue) ||
@@ -202,8 +204,10 @@ namespace EditorPythonBindings
                     parameter.m_traits = behaviorArgument.m_traits;
                     parameter.m_typeId = behaviorArgument.m_typeId;
 
-                    bool handled =
-                        ConvertBehaviorParameterEnum<AZ::u8>(obj, underlyingTypeId, parameter)  ||
+                    bool handled = 
+                        ConvertBehaviorParameterEnum<long>(obj, underlyingTypeId, parameter) ||
+                        ConvertBehaviorParameterEnum<unsigned long>(obj, underlyingTypeId, parameter) ||
+                        ConvertBehaviorParameterEnum<AZ::u8>(obj, underlyingTypeId, parameter) ||
                         ConvertBehaviorParameterEnum<AZ::u16>(obj, underlyingTypeId, parameter) ||
                         ConvertBehaviorParameterEnum<AZ::u32>(obj, underlyingTypeId, parameter) ||
                         ConvertBehaviorParameterEnum<AZ::u64>(obj, underlyingTypeId, parameter) ||
@@ -222,18 +226,21 @@ namespace EditorPythonBindings
         // type checks
         bool IsPrimitiveType(const AZ::TypeId& typeId)
         {
-            return (typeId == AZ::AzTypeInfo<bool>::Uuid()              ||
-                    typeId == AZ::AzTypeInfo<char>::Uuid()              ||
-                    typeId == AZ::AzTypeInfo<float>::Uuid()             ||
-                    typeId == AZ::AzTypeInfo<double>::Uuid()            ||
-                    typeId == AZ::AzTypeInfo<AZ::s8>::Uuid()            ||
-                    typeId == AZ::AzTypeInfo<AZ::u8>::Uuid()            ||
-                    typeId == AZ::AzTypeInfo<AZ::s16>::Uuid()           ||
-                    typeId == AZ::AzTypeInfo<AZ::u16>::Uuid()           ||
-                    typeId == AZ::AzTypeInfo<AZ::s32>::Uuid()           ||
-                    typeId == AZ::AzTypeInfo<AZ::u32>::Uuid()           ||
-                    typeId == AZ::AzTypeInfo<AZ::s64>::Uuid()           ||
-                    typeId == AZ::AzTypeInfo<AZ::u64>::Uuid() );
+            return (
+                typeId == AZ::AzTypeInfo<bool>::Uuid() ||
+                typeId == AZ::AzTypeInfo<char>::Uuid() ||
+                typeId == AZ::AzTypeInfo<float>::Uuid() ||
+                typeId == AZ::AzTypeInfo<double>::Uuid() ||
+                typeId == AZ::AzTypeInfo<long>::Uuid() ||
+                typeId == AZ::AzTypeInfo<unsigned long>::Uuid() ||
+                typeId == AZ::AzTypeInfo<AZ::s8>::Uuid() ||
+                typeId == AZ::AzTypeInfo<AZ::u8>::Uuid() ||
+                typeId == AZ::AzTypeInfo<AZ::s16>::Uuid() ||
+                typeId == AZ::AzTypeInfo<AZ::u16>::Uuid() ||
+                typeId == AZ::AzTypeInfo<AZ::s32>::Uuid() ||
+                typeId == AZ::AzTypeInfo<AZ::u32>::Uuid() ||
+                typeId == AZ::AzTypeInfo<AZ::s64>::Uuid() ||
+                typeId == AZ::AzTypeInfo<AZ::u64>::Uuid());
         }
 
         bool IsPointerType(const AZ::u32 traits)
@@ -347,7 +354,9 @@ namespace EditorPythonBindings
                     // so this code tries to pull out more type information about the typeId so that the user can get more human readable
                     // information than a UUID
                     LogSerializeTypeInfo(resultType->m_typeId);
-                    AZ_Error("python", behaviorClass, "A behavior class is missing for %s!",
+                    AZ_Error("python", behaviorClass, "A behavior class for method %s is missing for type '%s' (%s)!",
+                        behaviorMethod->m_name.c_str(),
+                        resultType->m_name,
                         resultType->m_typeId.ToString<AZStd::string>().c_str());
                 }
             }

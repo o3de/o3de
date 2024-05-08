@@ -18,9 +18,9 @@ namespace AzQtComponents
         : public QFrame
     {
         Q_OBJECT
-        Q_PROPERTY(qreal hue READ hue WRITE setHue NOTIFY hueChanged)
-        Q_PROPERTY(qreal saturation READ saturation WRITE setSaturation NOTIFY saturationChanged)
-        Q_PROPERTY(qreal value READ value WRITE setValue NOTIFY valueChanged)
+        Q_PROPERTY(qreal hue READ hue WRITE setHue)
+        Q_PROPERTY(qreal saturation READ saturation WRITE setSaturation)
+        Q_PROPERTY(qreal value READ value WRITE setValue)
 
     public:
         explicit ColorGrid(QWidget* parent = nullptr);
@@ -50,9 +50,7 @@ namespace AzQtComponents
 
     Q_SIGNALS:
         void gridPressed();
-        void hueChanged(qreal hue);
-        void saturationChanged(qreal saturation);
-        void valueChanged(qreal value);
+        void hsvChanged(qreal hue, qreal saturation, qreal value);
         void gridReleased();
 
     protected:

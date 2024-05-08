@@ -692,14 +692,6 @@ namespace AZ
             }
         }
 
-        void DecalTextureArrayFeatureProcessor::UpdateBounds(const DecalHandle handle)
-        {
-            const DecalData& data = m_decalData.GetData<0>(handle.GetIndex());
-            m_decalData.GetData<1>(handle.GetIndex()) = Aabb::CreateCenterHalfExtents(
-                AZ::Vector3(data.m_position[0], data.m_position[1], data.m_position[2]),
-                AZ::Vector3(data.m_halfSize[0], data.m_halfSize[1], data.m_halfSize[2]));
-        }
-
         void DecalTextureArrayFeatureProcessor::SetMaterialToDecals(
             RPI::MaterialAsset* materialAsset, const AZStd::vector<DecalHandle>& decalsThatUseThisMaterial)
         {
@@ -735,6 +727,14 @@ namespace AZ
             {
                 PackTexureArrays();
             }
+        }
+        
+        void DecalTextureArrayFeatureProcessor::UpdateBounds(const DecalHandle handle)
+        {
+            const DecalData& data = m_decalData.GetData<0>(handle.GetIndex());
+            m_decalData.GetData<1>(handle.GetIndex()) = Aabb::CreateCenterHalfExtents(
+                AZ::Vector3(data.m_position[0], data.m_position[1], data.m_position[2]),
+                AZ::Vector3(data.m_halfSize[0], data.m_halfSize[1], data.m_halfSize[2]));
         }
 
     } // namespace Render

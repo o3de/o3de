@@ -40,6 +40,7 @@ namespace AzToolsFramework
         AZ_CLASS_ALLOCATOR(MultiLineTextEditHandler, AZ::SystemAllocator);
 
         QWidget* CreateGUI(QWidget* parent) override;
+        bool ResetGUIToDefaults(GrowTextEdit* GUI) override;
         AZ::u32 GetHandlerName() const override;
         bool AutoDelete() const override;
 

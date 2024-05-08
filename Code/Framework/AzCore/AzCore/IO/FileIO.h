@@ -33,6 +33,10 @@ namespace AZ
         /// like "*.bat" or "blah??.pak" or "test*.exe" and such.
         bool NameMatchesFilter(AZStd::string_view name, AZStd::string_view filter);
 
+        //! Converts the operating-specific values returned by AZ::IO::FileIO API
+        //! to independent units representing the milliseconds since 1/1/1970 0:00 UTC
+        AZ::u64 FileTimeToMSecsSincePosixEpoch(AZ::u64 fileTime);
+
         using HandleType = AZ::u32;
         static const HandleType InvalidHandle = 0;
 

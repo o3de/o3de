@@ -89,6 +89,7 @@ namespace AzQtComponents
             void setHsvHue(float hue);
             void setHsvSaturation(float saturation);
             void setValue(float value);
+            void setHSV(float hue, float saturation, float value);
 
             void setAlpha(float alpha);
 

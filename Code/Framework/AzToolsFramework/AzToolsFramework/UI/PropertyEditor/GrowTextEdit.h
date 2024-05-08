@@ -40,6 +40,8 @@ namespace AzToolsFramework
         void EditCompleted();
     private:
         static const int s_padding;
+        static const int s_minHeight;
+        static const int s_maxHeight;
         bool m_textChanged;
     };
 }

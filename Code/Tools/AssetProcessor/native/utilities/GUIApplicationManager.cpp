@@ -814,9 +814,17 @@ ApplicationManager::RegistryCheckInstructions GUIApplicationManager::PopupRegist
 void GUIApplicationManager::InitSourceControl()
 {
     // Look in the editor's settings for the Source Control value
-    QSettings settings(QApplication::organizationName(), QString("O3DE Editor"));
-    settings.beginGroup("Settings");
-    bool enableSourceControl = settings.value("EnableSourceControl", 1).toBool();
+    constexpr AZStd::string_view enableSourceControlKey = "/Amazon/Settings/EnableSourceControl";
+    bool enableSourceControl = false;
+
+    if (const auto* registry = AZ::SettingsRegistry::Get())
+    {
+        bool potentialValue;
+        if (registry->Get(potentialValue, enableSourceControlKey))
+        {
+            enableSourceControl = AZStd::move(potentialValue);
+        }
+    }
 
     const AzFramework::CommandLine* commandLine = nullptr;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetCommandLine);
@@ -826,13 +834,36 @@ void GUIApplicationManager::InitSourceControl()
         enableSourceControl = true;
     }
 
-    if (enableSourceControl)
+    AzToolsFramework::SourceControlConnectionRequestBus::Broadcast(&AzToolsFramework::SourceControlConnectionRequestBus::Events::EnableSourceControl, enableSourceControl);
+
+    if (!enableSourceControl)
     {
-        AzToolsFramework::SourceControlConnectionRequestBus::Broadcast(&AzToolsFramework::SourceControlConnectionRequestBus::Events::EnableSourceControl, true);
-    }
-    else
-    {
+        // Source control is disabled, emit the SourceControlReady signal immediately since the source control system will not emit it
         Q_EMIT SourceControlReady();
+    }
+
+    // Register the source control status request - whenever it comes in, we need to reset our source control
+    // to follow that state:
+    if (m_connectionManager)
+    {
+        auto refreshSourceControl = [](unsigned int /*connId*/, unsigned int /*type*/, unsigned int /*serial*/, QByteArray payload, QString /*platform*/)
+        {
+            AzFramework::AssetSystem::UpdateSourceControlStatusRequest request;
+            bool readFromStream = AZ::Utils::LoadObjectFromBufferInPlace(payload.data(), payload.size(), request);
+            AZ_Assert(readFromStream, "GUIApplicationManager::UpdateSourceControlStatusRequest: Could not deserialize from stream");
+            if (readFromStream)
+            {
+                AzToolsFramework::SourceControlState state = AzToolsFramework::SourceControlState::Disabled;
+                AzToolsFramework::SourceControlConnectionRequestBus::BroadcastResult(state, &AzToolsFramework::SourceControlConnectionRequestBus::Events::GetSourceControlState);
+                bool wasEnabled = state != AzToolsFramework::SourceControlState::Disabled;
+                bool isEnabled = request.m_sourceControlEnabled;
+                if (wasEnabled != isEnabled)
+                {
+                    AzToolsFramework::SourceControlConnectionRequestBus::Broadcast(&AzToolsFramework::SourceControlConnectionRequestBus::Events::EnableSourceControl, isEnabled);
+                }
+            }
+        };
+        m_connectionManager->RegisterService(AzFramework::AssetSystem::UpdateSourceControlStatusRequest::MessageType, refreshSourceControl);
     }
 }
 

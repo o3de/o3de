@@ -40,6 +40,8 @@ namespace PhysX
             {
                 AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
                     &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, picker);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, picker);
             });
 
             connect(picker->GetEditButton(), &QToolButton::clicked, this, &CollisionGroupWidget::OnEditButtonClicked);

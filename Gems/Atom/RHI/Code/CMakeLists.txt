@@ -180,39 +180,40 @@ endif()
 # Tests
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+    if (PAL_TRAIT_BUILD_HOST_TOOLS)  # needed in order to link to Atom_RHI.Edit
+        if (ATOM_RHI_TRAIT_BUILD_SUPPORTS_TEST)
+            ly_add_target(
+                NAME Atom_RHI.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+                NAMESPACE Gem
+                FILES_CMAKE
+                    atom_rhi_tests_files.cmake
+                INCLUDE_DIRECTORIES
+                    PRIVATE
+                        .
+                        Tests
+                BUILD_DEPENDENCIES
+                    PRIVATE
+                        AZ::AzTest
+                        AZ::AzFramework
+                        Gem::Atom_RHI.Edit
+                        Gem::Atom_RHI.Public
+                        Gem::Atom_Feature_Common.Public
+            )
+            ly_add_googletest(
+                NAME Gem::Atom_RHI.Tests
+                LABELS REQUIRES_tiaf
+            )
 
-    if (ATOM_RHI_TRAIT_BUILD_SUPPORTS_TEST)
-        ly_add_target(
-            NAME Atom_RHI.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
-            NAMESPACE Gem
-            FILES_CMAKE
-                atom_rhi_tests_files.cmake
-            INCLUDE_DIRECTORIES
-                PRIVATE
-                    .
-                    Tests
-            BUILD_DEPENDENCIES
-                PRIVATE
-                    AZ::AzTest
-                    AZ::AzFramework
-                    Gem::Atom_RHI.Edit
-                    Gem::Atom_RHI.Public
-                    Gem::Atom_Feature_Common.Public
-        )
-        ly_add_googletest(
-            NAME Gem::Atom_RHI.Tests
-            LABELS REQUIRES_tiaf
-        )
-
-        ly_add_target_files(
-            TARGETS
-                Atom_RHI.Tests
-            FILES
-                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/UtilsTestsData/DummyTransformColor.MainPS.dx12.dxil.txt
-                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/UtilsTestsData/DummyTransformColor.MainPS.vulkan.spirv.txt
-                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/UtilsTestsData/HelloWorld.txt
-            OUTPUT_SUBDIRECTORY
-                Gems/Atom/RHI/Code/Tests/UtilsTestsData
-        )
+            ly_add_target_files(
+                TARGETS
+                    Atom_RHI.Tests
+                FILES
+                    ${CMAKE_CURRENT_SOURCE_DIR}/Tests/UtilsTestsData/DummyTransformColor.MainPS.dx12.dxil.txt
+                    ${CMAKE_CURRENT_SOURCE_DIR}/Tests/UtilsTestsData/DummyTransformColor.MainPS.vulkan.spirv.txt
+                    ${CMAKE_CURRENT_SOURCE_DIR}/Tests/UtilsTestsData/HelloWorld.txt
+                OUTPUT_SUBDIRECTORY
+                    Gems/Atom/RHI/Code/Tests/UtilsTestsData
+            )
+        endif()
     endif()
 endif()
