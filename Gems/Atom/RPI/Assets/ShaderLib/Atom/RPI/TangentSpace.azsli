@@ -135,8 +135,8 @@ real3 GetTangentSpaceNormal(real2 normalMapSample, real3x3 uvTransform, real nor
 
 real3 GetWorldSpaceNormal(real2 normalMapSample, float3 normalWS, float3 tangentWS, float3 bitangentWS, float3x3 uvTransform, real normalStrength)
 {
-    real3 tangentSpaceNormal_Unnormalized = GetTangentSpaceNormal_Unnormalized( normalMapSample, uvTransform, normalStrength );
-    return real3( normalize( TangentSpaceToWorld(tangentSpaceNormal_Unnormalized, normalWS, tangentWS, bitangentWS) ) );
+    real3 tangentSpaceNormal_Unnormalized = GetTangentSpaceNormal_Unnormalized( normalMapSample, (real3x3)uvTransform, normalStrength );
+    return real3( normalize( TangentSpaceToWorld(tangentSpaceNormal_Unnormalized, (real3)normalWS, (real3)tangentWS, (real3)bitangentWS) ) );
 }
 
 real3 GetWorldSpaceNormal(real2 normalMapSample, float3 normalWS, float3 tangentWS, float3 bitangentWS, float3x3 uvTransform)
