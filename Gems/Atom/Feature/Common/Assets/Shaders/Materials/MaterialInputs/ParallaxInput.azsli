@@ -25,24 +25,24 @@ float       prefix##m_heightmapOffset;
 #define COMMON_OPTIONS_PARALLAX(prefix) \
 option bool prefix##o_useHeightmap; 
 
-void GetParallaxInput(real3 normal, real3 tangent, real3 bitangent, real heightmapScale, real heightmapOffset,
-                      real4x4 objectWorldMatrix, real3x3 uvMatrix, real3x3 uvMatrixInverse,
+void GetParallaxInput(float3 normal, float3 tangent, float3 bitangent, float heightmapScale, float heightmapOffset,
+                      float4x4 objectWorldMatrix, real3x3 uvMatrix, real3x3 uvMatrixInverse,
                       inout float2 uv, inout float3 worldPosition, inout float depthNDC, inout float depthCS, out bool isClipped)
 {
     isClipped = false;
 
     if(o_parallax_feature_enabled)
     {
-        real3 dirToCamera;
+        float3 dirToCamera;
         if(ViewSrg::m_projectionMatrix[3].w == 1)
         {
             // orthographic projection (directional light)
             // No view position, use light direction
-            dirToCamera = real3(ViewSrg::m_viewMatrix[2].xyz);
+            dirToCamera = float3(ViewSrg::m_viewMatrix[2].xyz);
         }
         else
         {
-            dirToCamera = real3(ViewSrg::m_worldPosition.xyz - worldPosition);
+            dirToCamera = float3(ViewSrg::m_worldPosition.xyz - worldPosition);
         }
     
         ParallaxOffset tangentOffset = GetParallaxOffset( heightmapScale,
@@ -54,20 +54,20 @@ void GetParallaxInput(real3 normal, real3 tangent, real3 bitangent, real heightm
                                                           normal,
                                                           uvMatrix);
 
-        uv += real2(tangentOffset.m_offsetTS.xy);
+        uv += float2(tangentOffset.m_offsetTS.xy);
         isClipped = tangentOffset.m_isClipped;
 
         if(o_parallax_enablePixelDepthOffset)
         {
             PixelDepthOffset pdo = CalcPixelDepthOffset(heightmapScale,
-                                                        real3(tangentOffset.m_offsetTS),
+                                                        float3(tangentOffset.m_offsetTS),
                                                         worldPosition,
                                                         tangent,
                                                         bitangent,
                                                         normal,
                                                         uvMatrixInverse,
                                                         objectWorldMatrix,
-                                                        real4x4(ViewSrg::m_viewProjectionMatrix));
+                                                        float4x4(ViewSrg::m_viewProjectionMatrix));
 
             depthCS = pdo.m_depthCS;
             depthNDC = pdo.m_depthNDC;
@@ -77,17 +77,17 @@ void GetParallaxInput(real3 normal, real3 tangent, real3 bitangent, real heightm
     }
 }
 
-void GetParallaxInput(real3 normal, real3 tangent, real3 bitangent, real heightmapScale, real heightmapOffset,
-                      real4x4 objectWorldMatrix, real3x3 uvMatrix, real3x3 uvMatrixInverse,
-                      inout real2 uv, inout real3 worldPosition, inout float depthNDC, inout float depthCS)
+void GetParallaxInput(float3 normal, float3 tangent, float3 bitangent, float heightmapScale, float heightmapOffset,
+                      float4x4 objectWorldMatrix, float3x3 uvMatrix, float3x3 uvMatrixInverse,
+                      inout float2 uv, inout float3 worldPosition, inout float depthNDC, inout float depthCS)
 {
     bool isClipped = false;
     GetParallaxInput(normal, tangent, bitangent, heightmapScale, heightmapOffset, objectWorldMatrix, uvMatrix, uvMatrixInverse, uv, worldPosition, depthNDC, depthCS, isClipped);
 }
 
-void GetParallaxInput(real3 normal, real3 tangent, real3 bitangent, real heightmapScale, real heightmapOffset,
-    real4x4 objectWorldMatrix, real3x3 uvMatrix, real3x3 uvMatrixInverse,
-    inout real2 uv, inout real3 worldPosition, inout float depthNDC)
+void GetParallaxInput(float3 normal, float3 tangent, float3 bitangent, float heightmapScale, float heightmapOffset,
+    float4x4 objectWorldMatrix, float3x3 uvMatrix, float3x3 uvMatrixInverse,
+    inout float2 uv, inout float3 worldPosition, inout float depthNDC)
 {
     float depthCS;
     GetParallaxInput(normal, tangent, bitangent, heightmapScale, heightmapOffset, objectWorldMatrix, uvMatrix, uvMatrixInverse, uv, worldPosition, depthNDC, depthCS);

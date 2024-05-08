@@ -13,7 +13,12 @@
 //! Utility function to convert vector from tangent space to world space
 real3 TangentSpaceToWorld(real3 vectorTS, real3 normalWS, real3 tangentWS, real3 bitangentWS)
 {
-    return (vectorTS.x * tangentWS + vectorTS.y * bitangentWS + vectorTS.z * normalWS);
+    return real3(vectorTS.x * tangentWS + vectorTS.y * bitangentWS + vectorTS.z * normalWS);
+}
+
+float3 TangentSpaceToWorldFp32(float3 vectorTS, float3 normalWS, float3 tangentWS, float3 bitangentWS)
+{
+    return vectorTS.x * tangentWS + vectorTS.y * bitangentWS + vectorTS.z * normalWS;
 }
 
 //! Utility function to convert vector from world space to tangent space
@@ -23,11 +28,32 @@ real3 WorldSpaceToTangent(real3 vectorWS, real3 normalWS, real3 tangentWS, real3
     real b = dot(bitangentWS, vectorWS);
     real c = dot(normalWS, vectorWS);
 
-    return real3(a,b,c);
+    return real3(a, b, c);
+}
+
+float3 WorldSpaceToTangentFp32(float3 vectorWS, float3 normalWS, float3 tangentWS, float3 bitangentWS)
+{
+    float a = dot(tangentWS, vectorWS);
+    float b = dot(bitangentWS, vectorWS);
+    float c = dot(normalWS, vectorWS);
+
+    return float3(a, b, c);
 }
 
 //! Utility function for *pixel* shaders to transform vertex tangent, bitangent, and normal vectors into world space.
-void ConstructTBN(real3 vertexNormal, real4 vertexTangent, real4x4 localToWorld, real3x3 localToWorldInverseTranspose, out real3 normalWS, out real3 tangentWS, out real3 bitangentWS)
+void ConstructTBN(float3 vertexNormal, float4 vertexTangent, float4x4 localToWorld, float3x3 localToWorldInverseTranspose, out float3 normalWS, out float3 tangentWS, out float3 bitangentWS)
+{
+    // No guarantee that normal and tangent will preserve unit length after interpolation in pixel shaders.
+    // Instead of doing normalization in each shader, do it here.
+    float3 unitNormal = normalize(vertexNormal);
+    float3 unitTangent = normalize(vertexTangent.xyz);
+    float3 unitBitangent = cross(unitNormal, unitTangent) * float(sign(vertexTangent.w));
+    normalWS = normalize(mul(localToWorldInverseTranspose, unitNormal));
+    tangentWS = normalize(mul(localToWorld, float4(unitTangent, 0.0)).xyz);
+    bitangentWS = normalize(mul(localToWorld, float4(unitBitangent, 0.0)).xyz);
+}
+
+void ConstructTBN_real(real3 vertexNormal, real4 vertexTangent, real4x4 localToWorld, real3x3 localToWorldInverseTranspose, out real3 normalWS, out real3 tangentWS, out real3 bitangentWS)
 {
     // No guarantee that normal and tangent will preserve unit length after interpolation in pixel shaders.
     // Instead of doing normalization in each shader, do it here.
@@ -66,13 +92,13 @@ real3 GetTangentSpaceNormal_Unnormalized(real2 normalMapSample, real normalStren
 // Normalized version of above function
 real3 GetTangentSpaceNormal(real2 normalMapSample, real normalStrength)
 {
-    return normalize(GetTangentSpaceNormal_Unnormalized(normalMapSample, normalStrength));
+    return real3( normalize( GetTangentSpaceNormal_Unnormalized(normalMapSample, normalStrength) ) );
 }
 
 real3 GetWorldSpaceNormal(real2 normalMapSample, real3 normalWS, real3 tangentWS, real3 bitangentWS, real normalStrength)
 {
     real3 tangentSpaceNormal_Unnormalized = GetTangentSpaceNormal_Unnormalized(normalMapSample, normalStrength);
-    return normalize( TangentSpaceToWorld(tangentSpaceNormal_Unnormalized, normalWS, tangentWS, bitangentWS) );
+    return real3( normalize( TangentSpaceToWorld(tangentSpaceNormal_Unnormalized, normalWS, tangentWS, bitangentWS) ) );
 }
 
 real3 GetWorldSpaceNormal(real2 normalMapSample, real3 normalWS, real3 tangentWS, real3 bitangentWS)
@@ -98,22 +124,22 @@ real3 GetTangentSpaceNormal_Unnormalized(real2 normalMapSample, real3x3 uvTransf
     uvTransform[2] = real3(0, 0, (length(uvTransform[0].xy) + length(uvTransform[1].xy)) * 0.5);
     surfaceNormal = mul(uvTransform, surfaceNormal);
 
-    return surfaceNormal;
+    return real3(surfaceNormal);
 }
 
 // Normalized version of above function
 real3 GetTangentSpaceNormal(real2 normalMapSample, real3x3 uvTransform, real normalStrength)
 {
-    return normalize(GetTangentSpaceNormal_Unnormalized(normalMapSample, uvTransform, normalStrength));
+    return real3( normalize( GetTangentSpaceNormal_Unnormalized(normalMapSample, uvTransform, normalStrength) ) );
 }
 
-real3 GetWorldSpaceNormal(real2 normalMapSample, real3 normalWS, real3 tangentWS, real3 bitangentWS, real3x3 uvTransform, real normalStrength)
+real3 GetWorldSpaceNormal(real2 normalMapSample, float3 normalWS, float3 tangentWS, float3 bitangentWS, float3x3 uvTransform, real normalStrength)
 {
     real3 tangentSpaceNormal_Unnormalized = GetTangentSpaceNormal_Unnormalized( normalMapSample, uvTransform, normalStrength );
-    return normalize( TangentSpaceToWorld(tangentSpaceNormal_Unnormalized, normalWS, tangentWS, bitangentWS) );
+    return real3( normalize( TangentSpaceToWorld(tangentSpaceNormal_Unnormalized, normalWS, tangentWS, bitangentWS) ) );
 }
 
-real3 GetWorldSpaceNormal(real2 normalMapSample, real3 normalWS, real3 tangentWS, real3 bitangentWS, real3x3 uvTransform)
+real3 GetWorldSpaceNormal(real2 normalMapSample, float3 normalWS, float3 tangentWS, float3 bitangentWS, float3x3 uvTransform)
 {
     return GetWorldSpaceNormal(normalMapSample, normalWS, tangentWS, bitangentWS, uvTransform, 1.0);
 }
@@ -131,6 +157,13 @@ real3 GetWorldSpaceNormal(real2 normalMapSample, real3 normalWS, real3 tangentWS
 //! float3 u = tex2D(texDetail, uv).xyz*float3(-2, -2, 2) + float3( 1,  1, -1);
 //! float3 r = normalize(t*dot(t, u) - u*t.z);
 real3 ReorientTangentSpaceNormal(real3 surfaceNormalTS, real3 detailNormalTS)
+{
+    surfaceNormalTS.z = surfaceNormalTS.z + 1.0;
+    detailNormalTS.xy = -detailNormalTS.xy;
+    return real3( normalize( surfaceNormalTS.xyz * dot( surfaceNormalTS, detailNormalTS) - detailNormalTS * surfaceNormalTS.z) );
+}
+
+float3 ReorientTangentSpaceNormalFp32(float3 surfaceNormalTS, float3 detailNormalTS)
 {
     surfaceNormalTS.z = surfaceNormalTS.z + 1.0;
     detailNormalTS.xy = -detailNormalTS.xy;
@@ -161,10 +194,10 @@ enum BackfaceMode
 //! Call this at the start of your pixel shader if you need to use any of the SGBNM utility functions.
 //! posWS should ideally be in camera-relative world space to improve precision.
 //! backfaceMode should be set to one of the BACKFACE_MODE_* values.
-void SurfaceGradientNormalMapping_Init(real3 normalWS, float3 posWS, bool isBackface = false, real backfaceMode = BACKFACE_MODE_NONE)
+void SurfaceGradientNormalMapping_Init(real3 normalWS, float3 posWS, bool isBackface = false, float backfaceMode = BACKFACE_MODE_NONE)
 {
-    real renormFactor = 1.0/length(normalWS);
-    real fs = (isBackface && backfaceMode != BACKFACE_MODE_NONE) ? -1.0 : 1.0;
+    float renormFactor = 1.0/length(normalWS);
+    float fs = (isBackface && backfaceMode != BACKFACE_MODE_NONE) ? -1.0 : 1.0;
     g_nrmBaseNormal = (fs*renormFactor) * normalWS;
     g_resolveSign = (isBackface && backfaceMode == BACKFACE_MODE_FLIP) ? -1.0 : 1.0; 
     g_dPdx = ddx_fine(posWS);
@@ -177,7 +210,7 @@ void SurfaceGradientNormalMapping_Init(real3 normalWS, float3 posWS, bool isBack
 }
 
 //! Utility function to generate a tangent basis without using explicit tangent/bitangent vectors.
-void SurfaceGradientNormalMapping_GenerateTB(float2 uv, out float3 tangentWS, out float3 bitangentWS)
+void SurfaceGradientNormalMapping_GenerateTB(float2 uv, out real3 tangentWS, out real3 bitangentWS)
 {
     float2 dUVdx = ddx_fine(uv); 
     float2 dUVdy = ddy_fine(uv);
@@ -187,12 +220,14 @@ void SurfaceGradientNormalMapping_GenerateTB(float2 uv, out float3 tangentWS, ou
     // invC0 represents (dXds , dYds); but we don’t divide by determinant (scale by sign instead) 
     float2 invC0 = signDet*float2(dUVdy.y, -dUVdx.y); 
     // Using the chain rule we can obtain the tangent as follows
-    tangentWS = g_sigmaX * invC0.x + g_sigmaY * invC0.y; 
+    float3 tangent = g_sigmaX * invC0.x + g_sigmaY * invC0.y; 
     if(abs(det) > 0.0) 
     {
-        tangentWS = normalize(tangentWS);
+        tangent = normalize(tangent);
     }
-    bitangentWS = (signDet * g_flipSign) * cross(g_nrmBaseNormal, tangentWS);
+    float3 bitangent = (signDet * g_flipSign) * cross(g_nrmBaseNormal, tangent);
+    tangentWS = real3(tangent);
+    bitangentWS = real3(bitangent);
 }
 
 //! Utility macro to nest SGBNM setup processes.

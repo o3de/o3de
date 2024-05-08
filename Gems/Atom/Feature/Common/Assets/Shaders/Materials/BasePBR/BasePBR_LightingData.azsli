@@ -36,7 +36,7 @@ class LightingData_BasePBR
     real shrinkFactor;
 
     // Normalized direction from surface to camera
-    real3 dirToCamera;
+    float3 dirToCamera;
     
     // Scaling term to approximate multiscattering contribution in specular BRDF
     real3 multiScatterCompensation;
@@ -48,7 +48,7 @@ class LightingData_BasePBR
     real2 brdf;
 
     // Normal . View
-    real NdotV;
+    float NdotV;
 
 #if ENABLE_TRANSMISSION
     real3 translucentBackLighting;
@@ -75,11 +75,11 @@ void LightingData_BasePBR::Init(float3 positionWS, real3 normal, real roughnessL
     diffuseAmbientOcclusion = 1.0;
     specularOcclusion = 1.0;
 
-    dirToCamera = real3(normalize(ViewSrg::m_worldPosition.xyz - positionWS));
+    dirToCamera = normalize(ViewSrg::m_worldPosition.xyz - positionWS);
 
     // sample BRDF map (indexed by smoothness values rather than roughness)
     NdotV = saturate(dot(normal, dirToCamera));
-    real2 brdfUV = real2(NdotV, (1.0 - roughnessLinear));
+    float2 brdfUV = float2(NdotV, (1.0 - roughnessLinear));
     brdf = real2(PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, brdfUV).rg);
 }
 

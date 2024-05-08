@@ -1589,7 +1589,6 @@ namespace AssetProcessor
 
                 // now we need notify everyone about the new products
                 AzToolsFramework::AssetDatabase::ProductDatabaseEntry& newProduct = pair.first;
-                AZStd::vector<AZ::u32>& subIds = newLegacySubIDs[productIdx];
 
                 // product name will be in the form "platform/relativeProductPath"
                 QString productName = QString::fromUtf8(newProduct.m_productName.c_str());
@@ -1603,7 +1602,6 @@ namespace AssetProcessor
 
                 AssetNotificationMessage message(relativeProductPath, AssetNotificationMessage::AssetChanged, newProduct.m_assetType, processedAsset.m_entry.m_platformInfo.m_identifier.c_str());
                 AZ::Data::AssetId assetId(source.m_sourceGuid, newProduct.m_subID);
-                AZ::Data::AssetId legacyAssetId(newProduct.m_legacyGuid, 0);
 
                 message.m_data = relativeProductPath;
                 message.m_sizeBytes = QFileInfo(fullProductPath).size();
@@ -1616,40 +1614,6 @@ namespace AssetProcessor
                     message.m_dependencies.emplace_back(AZ::Data::AssetId(entry.m_dependencySourceGuid, entry.m_dependencySubID), entry.m_dependencyFlags);
                 }
 
-                if (legacyAssetId != assetId)
-                {
-                    message.m_legacyAssetIds.push_back(legacyAssetId);
-                }
-
-                const SourceAssetReference& sourceAsset = processedAsset.m_entry.m_sourceAssetReference;
-                AZStd::unordered_set<AZ::Data::AssetId> legacySourceAssetIds; // Keep track of the legacy *asset* Ids to avoid duplicates
-                auto legacySourceUuidsOutcome = AssetUtilities::GetLegacySourceUuids(sourceAsset);
-
-                if (legacySourceUuidsOutcome)
-                {
-                    auto legacySourceUuids = legacySourceUuidsOutcome.GetValue();
-                    legacySourceAssetIds.reserve(legacySourceUuids.size());
-
-                    for (const auto& legacyUuid : legacySourceUuids)
-                    {
-                        AZ::Data::AssetId legacySourceAssetId(legacyUuid, newProduct.m_subID);
-
-                        if (legacySourceAssetId != assetId)
-                        {
-                            legacySourceAssetIds.emplace(legacySourceAssetId);
-                            message.m_legacyAssetIds.push_back(AZStd::move(legacySourceAssetId));
-                        }
-                    }
-                }
-
-                for (AZ::u32 newLegacySubId : subIds)
-                {
-                    AZ::Data::AssetId createdSubID(source.m_sourceGuid, newLegacySubId);
-                    if ((createdSubID != legacyAssetId) && !legacySourceAssetIds.contains(createdSubID) && (createdSubID != assetId))
-                    {
-                        message.m_legacyAssetIds.push_back(createdSubID);
-                    }
-                }
 
                 Q_EMIT AssetMessage(message);
 
