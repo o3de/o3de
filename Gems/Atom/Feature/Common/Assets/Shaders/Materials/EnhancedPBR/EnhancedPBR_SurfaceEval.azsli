@@ -21,8 +21,8 @@
 Surface EvaluateSurface_EnhancedPBR(
     float3 positionWS,
     real3 normalWS,
-    real3 tangents[UvSetCount],
-    real3 bitangents[UvSetCount],
+    float3 tangents[UvSetCount],
+    float3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],
     float2 detailUvs[UvSetCount],
     bool isFrontFace,
@@ -49,15 +49,15 @@ Surface EvaluateSurface_EnhancedPBR(
 
     // ------- Normal -------
     
-    surface.vertexNormal = normalWS;
+    surface.vertexNormal = real3(normalWS);
     float2 normalUv = uvs[MaterialSrg::m_normalMapUvIndex];
-    real3x3 uvMatrix = MaterialSrg::m_normalMapUvIndex == 0 ? real3x3(MaterialSrg::m_uvMatrix) : real3x3(CreateIdentity3x3()); // By design, only UV0 is allowed to apply transforms.
+    real3x3 uvMatrix = MaterialSrg::m_normalMapUvIndex == 0 ? real3x3(MaterialSrg::m_uvMatrix) : CreateIdentity3x3_real(); // By design, only UV0 is allowed to apply transforms.
     real detailLayerNormalFactor = real(MaterialSrg::m_detail_normal_factor) * detailLayerBlendFactor;
-    surface.normal = GetDetailedNormalInputWS(
+    float3 normal = GetDetailedNormalInputWS(
         isFrontFace, normalWS,
-        real3(tangents[MaterialSrg::m_normalMapUvIndex]),      real3(bitangents[MaterialSrg::m_normalMapUvIndex]),      MaterialSrg::m_normalMap,             MaterialSrg::m_sampler, normalUv, real(MaterialSrg::m_normalFactor),  MaterialSrg::m_flipNormalX,         MaterialSrg::m_flipNormalY,         uvMatrix,                               o_normal_useTexture,
-        real3(tangents[MaterialSrg::m_detail_allMapsUvIndex]), real3(bitangents[MaterialSrg::m_detail_allMapsUvIndex]), MaterialSrg::m_detail_normal_texture, MaterialSrg::m_sampler, detailUv, detailLayerNormalFactor,           MaterialSrg::m_detail_normal_flipX,  MaterialSrg::m_detail_normal_flipY, real3x3(MaterialSrg::m_detailUvMatrix), o_detail_normal_useTexture);
-
+        tangents[MaterialSrg::m_normalMapUvIndex],      bitangents[MaterialSrg::m_normalMapUvIndex],      MaterialSrg::m_normalMap,             MaterialSrg::m_sampler, normalUv, MaterialSrg::m_normalFactor,  MaterialSrg::m_flipNormalX,         MaterialSrg::m_flipNormalY,         uvMatrix,                               o_normal_useTexture,
+        tangents[MaterialSrg::m_detail_allMapsUvIndex], bitangents[MaterialSrg::m_detail_allMapsUvIndex], MaterialSrg::m_detail_normal_texture, MaterialSrg::m_sampler, detailUv, detailLayerNormalFactor,           MaterialSrg::m_detail_normal_flipX,  MaterialSrg::m_detail_normal_flipY, real3x3(MaterialSrg::m_detailUvMatrix), o_detail_normal_useTexture);
+    surface.normal = real3(normal);
     // ------- Base Color -------
 
     real detailLayerBaseColorFactor = real(MaterialSrg::m_detail_baseColor_factor) * detailLayerBlendFactor;
@@ -148,7 +148,7 @@ Surface EvaluateSurface_EnhancedPBR(
     {
         if(o_clearCoat_enabled)
         {
-            real3x3 uvMatrix = MaterialSrg::m_clearCoatNormalMapUvIndex == 0 ? real3x3(MaterialSrg::m_uvMatrix) : real3x3(CreateIdentity3x3());
+            real3x3 uvMatrix = MaterialSrg::m_clearCoatNormalMapUvIndex == 0 ? real3x3(MaterialSrg::m_uvMatrix) : CreateIdentity3x3_real();
             GetClearCoatInputs(MaterialSrg::m_clearCoatInfluenceMap, uvs[MaterialSrg::m_clearCoatInfluenceMapUvIndex], real(MaterialSrg::m_clearCoatFactor), o_clearCoat_factor_useTexture,
                                MaterialSrg::m_clearCoatRoughnessMap, uvs[MaterialSrg::m_clearCoatRoughnessMapUvIndex], real(MaterialSrg::m_clearCoatRoughness), o_clearCoat_roughness_useTexture,
                                MaterialSrg::m_clearCoatNormalMap,    uvs[MaterialSrg::m_clearCoatNormalMapUvIndex], normalWS, o_clearCoat_normal_useTexture, real(MaterialSrg::m_clearCoatNormalStrength),

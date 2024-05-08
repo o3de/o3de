@@ -257,9 +257,9 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
 
         float2 m_vertexUv[UvSetCount];
         float3x3 m_uvMatrix;
-        real3 m_normal;
-        real3 m_tangents[UvSetCount];
-        real3 m_bitangents[UvSetCount];
+        float3 m_normal;
+        float3 m_tangents[UvSetCount];
+        float3 m_bitangents[UvSetCount];
 
         sampler m_sampler;
 
@@ -422,9 +422,9 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
 
     Surface EvaluateSurface_StandardMultilayerPBR(
         float3 positionWS,
-        real3 normalWS,
-        real3 tangents[UvSetCount],
-        real3 bitangents[UvSetCount],
+        float3 normalWS,
+        float3 tangents[UvSetCount],
+        float3 bitangents[UvSetCount],
         float2 uvs[UvSetCount],
         bool isFrontFace,
         bool isDisplacementClipped,

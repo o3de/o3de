@@ -14,6 +14,10 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
+        // the table is a hash and needs to eventually store the entire asset tree
+        // start with a good amount reserved so it doesn't incur crazy re-hashing as it grows.
+        static constexpr const int INITIAL_TABLE_RESERVE_SIZE = 1024 * 8; 
+
         ConstTableIterator IndexToMap::TableConstBegin() const
         {
             return m_tableToTree.constBegin();
@@ -71,19 +75,50 @@ namespace AzToolsFramework
             return m_tableToTree.remove(row) != 0;
         }
 
-        TreeIterator IndexToMap::Insert(TableType map, TreeType row)
+        void IndexToMap::Reserve(TableMap::size_type size)
         {
-            if (m_treeToTable.contains(map))
+            m_treeToTable.reserve(size);
+        }
+
+        void IndexToMap::Insert(TableType map, TreeType row)
+        {
+            // m_treeToTable maps from ModelIndex to int
+            // m_tableToTree maps from int to ModelIndex
+
+            // we have to erase from both maps before we update them.
+            // avoid using "Remove" on the hash, as that causes a re-hash.  Strategy here
+            // will be to update the value if we find it, and erase the value in the other container.
+            // this will yield the minimum amount of re-hashing and memory clearing.
+            bool insertIntoTableToTree = true;
+            bool insertIntoTreeToTable = true;
+            if (auto it = m_treeToTable.find(map); it != m_treeToTable.end())
             {
-                m_tableToTree.remove(m_treeToTable.take(map));
-            }
-            if (m_tableToTree.contains(row))
-            {
-                m_treeToTable.remove(m_tableToTree.take(row));
+                int& currentValue = it.value();
+                auto elementInOtherMap = m_tableToTree.find(currentValue);
+                m_tableToTree.erase(elementInOtherMap);
+                currentValue = row;
+                insertIntoTreeToTable = false;
             }
 
-            m_tableToTree.insert(row, map);
-            return m_treeToTable.insert(map, row);
+            if (auto it = m_tableToTree.find(row); it != m_tableToTree.end())
+            {
+                QPersistentModelIndex& currentValue = it.value();
+                auto elementInOtherMap = m_treeToTable.find(currentValue);
+                m_treeToTable.erase(elementInOtherMap);
+                currentValue = map;
+                insertIntoTableToTree = false;
+            }
+            
+            if (insertIntoTableToTree)
+            {
+                m_tableToTree.insert(row, map);
+            }
+
+            if (insertIntoTreeToTable)
+            {
+                m_treeToTable.insert(map, row);
+            }
+            
         }
 
         TableIterator IndexToMap::TableBegin()
@@ -100,6 +135,7 @@ namespace AzToolsFramework
         AssetBrowserTreeToTableProxyModel::AssetBrowserTreeToTableProxyModel(QObject* parent)
             : QAbstractProxyModel(parent)
         {
+            m_map.Reserve(INITIAL_TABLE_RESERVE_SIZE);
         }
 
         void AssetBrowserTreeToTableProxyModel::setSourceModel(QAbstractItemModel* model)
@@ -181,6 +217,10 @@ namespace AzToolsFramework
                     [this]()
                     {
                         beginResetModel();
+                        resetInternalData();
+                        m_rowCount = 0;
+                        m_map.Clear();
+                        m_parents.clear();
                     });
 
                 connect(
@@ -229,7 +269,6 @@ namespace AzToolsFramework
                     });
             }
 
-            resetInternalData();
             if (model && model->hasChildren())
             {
                 RefreshMap();
@@ -322,7 +361,7 @@ namespace AzToolsFramework
             const int rowCount = sourceModelPtr->rowCount(parent);
             const int span = end - start + 1;
 
-            if (rowCount == span)
+            if (rowCount == span) // updating the entire parent
             {
                 const QModelIndex index = mapFromSource(parent);
                 if (parent.isValid())
@@ -349,11 +388,8 @@ namespace AzToolsFramework
             {
                 const QModelIndex oldIndex = sourceModelPtr->index(rowCount - 1 - span, column, parent);
                 AZ_Assert(m_map.TreeContains(oldIndex), "Tree does not contain index");
-
                 const QModelIndex newIndex = sourceModelPtr->index(rowCount - 1, column, parent);
-
                 QModelIndex indexAbove = oldIndex;
-
                 if (start > 0)
                 {
                     while (sourceModelPtr->hasChildren(indexAbove))
@@ -684,13 +720,14 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeToTableProxyModel::ModelReset()
         {
+            m_processing = true;
             resetInternalData();
             auto sourceModelPtr = sourceModel();
             if (sourceModelPtr->hasChildren() && sourceModelPtr->rowCount() > 0)
             {
-                m_parents.append(QModelIndex());
-                ProcessParents();
+                RefreshMap();
             }
+            m_processing = false;
             endResetModel();
         }
 
@@ -749,8 +786,18 @@ namespace AzToolsFramework
             {
                 const QModelIndex sourceTopLeft = sourceModelPtr->index(i, topLeft.column(), topLeft.parent());
                 const QModelIndex proxyTopLeft = mapFromSource(sourceTopLeft);
+                if (!proxyTopLeft.isValid())
+                {
+                    // not all elements might be mapped during a partial update.
+                    continue;
+                }
                 const QModelIndex sourceBottomRight = sourceModelPtr->index(i, bottomRight.column(), bottomRight.parent());
                 const QModelIndex proxyBottomRight = mapFromSource(sourceBottomRight);
+                if (!proxyBottomRight.isValid())
+                {
+                    // not all elements might be mapped during a partial update.
+                    continue;
+                }
                 emit dataChanged(proxyTopLeft, proxyBottomRight);
             }
         }
@@ -796,6 +843,13 @@ namespace AzToolsFramework
                         break;
                     }
                 }
+
+                if (result == end)
+                {
+                    // its possible to still be building the model and to not find the target
+                    return QModelIndex();
+                }
+
                 const QModelIndex sourceLastChild = result.value();
                 int proxyRow = result.key();
                 QModelIndex index = sourceLastChild;
@@ -840,7 +894,7 @@ namespace AzToolsFramework
                 verticalDistance -= (ancestorRow + 1);
                 ancestor = ancestor.parent();
             }
-            AZ_Assert(0, "Could't find target row.");
+            // its possible not to find a target row if the model is still building incrementally.
             return QModelIndex();
         }
 
@@ -907,6 +961,7 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeToTableProxyModel::ProcessParents()
         {
+            m_map.Reserve(m_parents.size());
             auto sourceModelPtr = sourceModel();
             while (!m_parents.isEmpty())
             {

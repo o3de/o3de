@@ -77,14 +77,14 @@ PixelGeometryData EvaluatePixelGeometry_Eye(
 
 PixelGeometryData EvaluatePixelGeometry_Eye(VsOutput IN, bool isFrontFace)
 {
-    real4x4 objectToWorld = real4x4(GetObjectToWorldMatrix(IN.m_instanceId));
-    real3x3 objectToWorldIT = real3x3(GetObjectToWorldMatrixInverseTranspose(IN.m_instanceId));
+    float4x4 objectToWorld = float4x4(GetObjectToWorldMatrix(IN.m_instanceId));
+    float3x3 objectToWorldIT = float3x3(GetObjectToWorldMatrixInverseTranspose(IN.m_instanceId));
 
     real3 normalWS, tangentWS, bitangentWS;
-    ConstructTBN(real3(IN.normal), real4(IN.tangent), objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
+    ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
 
     // Bitangent is temporarily added back to fix the eye material screenshot test.
-    bitangentWS = normalize(mul(objectToWorld, real4(IN.bitangent, 0.0)).xyz);
+    bitangentWS = real3(normalize(mul(objectToWorld, float4(IN.bitangent, 0.0)).xyz));
 
     PixelGeometryData geoData = EvaluatePixelGeometry_Eye(
         IN.worldPosition,

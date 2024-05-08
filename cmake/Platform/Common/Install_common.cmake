@@ -996,6 +996,7 @@ function(ly_setup_o3de_install)
         ${LY_ROOT_FOLDER}/pytest.ini
         ${LY_ROOT_FOLDER}/LICENSE.txt
         ${LY_ROOT_FOLDER}/README.md
+        ${LY_ROOT_FOLDER}/CMakePresets.json
         DESTINATION .
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )

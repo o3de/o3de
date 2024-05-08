@@ -185,24 +185,6 @@ namespace AzFramework
             return foundIter->second.m_relativePath;
         }
 
-        // we did not find it - try the backup mapping!
-        AZ::Data::AssetId legacyMapping = m_registry->GetAssetIdByLegacyAssetId(id);
-        if (legacyMapping.IsValid())
-        {
-            const AZStd::string legacyAssetPath = GetAssetPathByIdInternal(legacyMapping);
-            AZ_Warning(
-                "O3DE_DEPRECATION_NOTICE(GHI-17861)",
-                false,
-                "Deprecated asset id warning! GetAssetInfoByIdInternal could not find modern asset id for \"%s\" and so fell back to using "
-                "the legacy asset id \"%s\"."
-                "Please recreate the asset and update any other assets referencing this asset in order to generate a modern asset id.",
-                legacyAssetPath.c_str(),
-                legacyMapping.ToFixedString().c_str()
-            );
-
-            return legacyAssetPath;
-        }
-
         return AZStd::string();
     }
 
@@ -230,24 +212,6 @@ namespace AzFramework
         if (foundIter != m_registry->m_assetIdToInfo.end())
         {
             return foundIter->second;
-        }
-
-        // we did not find it - try the backup mapping!
-        AZ::Data::AssetId legacyMapping = m_registry->GetAssetIdByLegacyAssetId(id);
-        if (legacyMapping.IsValid())
-        {
-            const AZ::Data::AssetInfo legacyAssetInfo = GetAssetInfoByIdInternal(legacyMapping);
-            AZ_Warning(
-                "O3DE_DEPRECATION_NOTICE(GHI-17861)",
-                false,
-                "Deprecated asset id warning! GetAssetInfoByIdInternal could not the modern asset id for \"%s\" and so fell back to using "
-                "the legacy asset id \"%s\"."
-                "Please recreate the asset and update any other assets referencing this asset in order to generate a modern asset id.",
-                legacyAssetInfo.m_relativePath.c_str(),
-                legacyMapping.ToFixedString().c_str()
-            );
-
-            return legacyAssetInfo;
         }
 
         return AZ::Data::AssetInfo();
@@ -882,11 +846,6 @@ namespace AzFramework
 
                     m_registry->RegisterAsset(assetId, newData);
                     m_registry->SetAssetDependencies(assetId, message.m_dependencies);
-
-                    for (const auto& mapping : message.m_legacyAssetIds)
-                    {
-                        m_registry->RegisterLegacyAssetMapping(mapping, assetId);
-                    }
                 }
                 if (!isNewAsset)
                 {
@@ -897,17 +856,6 @@ namespace AzFramework
                             AzFramework::AssetCatalogEventBus::Broadcast(
                                 &AzFramework::AssetCatalogEventBus::Events::OnCatalogAssetChanged, assetId);
                         });
-
-                    // in case someone has an ancient reference, notify on that too.
-                    for (const auto& mapping : message.m_legacyAssetIds)
-                    {
-                        AZ::SystemTickBus::QueueFunction(
-                            [mapping]()
-                            {
-                                AzFramework::AssetCatalogEventBus::Broadcast(
-                                    &AzFramework::AssetCatalogEventBus::Events::OnCatalogAssetChanged, mapping);
-                            });
-                    }
                 }
                 // This can happen when running with VFS, where the AP connection is done first
                 // and it's too early to send messages since catalog is not initialized yet.
@@ -919,15 +867,6 @@ namespace AzFramework
                             AzFramework::AssetCatalogEventBus::Broadcast(
                                 &AzFramework::AssetCatalogEventBus::Events::OnCatalogAssetAdded, assetId);
                         });
-                    for (const auto& mapping : message.m_legacyAssetIds)
-                    {
-                        AZ::SystemTickBus::QueueFunction(
-                            [mapping]()
-                            {
-                                AzFramework::AssetCatalogEventBus::Broadcast(
-                                    &AzFramework::AssetCatalogEventBus::Events::OnCatalogAssetAdded, mapping);
-                            });
-                    }
                 }
 
                 // This can happen when running with VFS, where the AP connection is done first
@@ -974,10 +913,7 @@ namespace AzFramework
                 AZStd::string extension;
                 AzFramework::StringFunc::Path::GetExtension(relativePath.c_str(), extension, false);
                 UnregisterAsset(assetId);
-                {
-                    AZStd::lock_guard<AZStd::recursive_mutex> lock(m_registryMutex);
-                    m_registry->UnregisterLegacyAssetMappingsForAsset(assetId);
-                }
+
                 // queue this for later delivery, since we are not on the main thread:
                 AzFramework::LegacyAssetEventBus::QueueEvent(
                     AZ::Crc32(extension.c_str()), &AzFramework::LegacyAssetEventBus::Events::OnFileRemoved, relativePath);
@@ -1331,10 +1267,6 @@ namespace AzFramework
             {
                 deltaRegistry.RegisterAssetDependency(asset, dependency);
             }
-        }
-        for (auto legacyToRealPair : m_registry->GetLegacyMappingSubsetFromRealIds(deltaPakAssetIds))
-        {
-            deltaRegistry.RegisterLegacyAssetMapping(legacyToRealPair.first, legacyToRealPair.second);
         }
 
         // serialize the registry

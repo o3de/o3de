@@ -76,7 +76,7 @@ namespace AzFramework
 
         if (qualityLevel == QualityLevel::Invalid)
         {
-            // handle enum pre-defined values 
+            // handle enum pre-defined values
             qualityLevel = FromEnum(value);
         }
 
@@ -94,7 +94,7 @@ namespace AzFramework
         int32_t intValue{ 0 };
         auto result = AZStd::from_chars(value.begin(), value.end(), intValue);
 
-        // don't allow values outside the known quality level ranges 
+        // don't allow values outside the known quality level ranges
         constexpr int32_t minValue = static_cast<int32_t>(QualityLevel::LevelFromDeviceRules);
         if (result.ec != AZStd::errc() || intValue >= m_numQualityLevels || intValue < minValue)
         {
@@ -214,9 +214,9 @@ namespace AzFramework
                 }
                 else if (!result)
                 {
-                    // the requested qualityLevel index wasn't found, use highest available 
+                    // the requested qualityLevel index wasn't found, use highest available
                     PerformConsoleCommand(command, FixedValueString::format("%.*s/%d",
-                        AZ_STRING_ARG(visitArgs.m_jsonKeyPath), currentQualityLevel));
+                        AZ_STRING_ARG(visitArgs.m_jsonKeyPath), static_cast<int>(currentQualityLevel)));
                 }
             }
             else

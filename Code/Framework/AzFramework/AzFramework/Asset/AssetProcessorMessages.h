@@ -573,6 +573,23 @@ namespace AzFramework
             unsigned int GetMessageType() const override;
         };
 
+        //! Sent from any tool to the AP, notifying it to toggle the state of source control to either on or off.
+        //! This avoids the need for AP to restart.
+        class UpdateSourceControlStatusRequest
+            : public BaseAssetProcessorMessage
+        {
+        public:
+            AZ_CLASS_ALLOCATOR(UpdateSourceControlStatusRequest, AZ::OSAllocator);
+            AZ_RTTI(UpdateSourceControlStatusRequest, "{B313400A-3E5D-496F-BD91-09B9C10EBDF0}", BaseAssetProcessorMessage);
+            static void Reflect(AZ::ReflectContext* context);
+            static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::UpdateSourceControlStatusRequest", 0x42f7a516);
+
+            UpdateSourceControlStatusRequest() = default;
+            unsigned int GetMessageType() const override;
+
+            bool m_sourceControlEnabled = false;
+        };
+
         //////////////////////////////////////////////////////////////////////////
         //ShowAssetInAssetProcessorRequest
         class ShowAssetInAssetProcessorRequest
@@ -623,7 +640,6 @@ namespace AzFramework
             NotificationType m_type;
             AZ::u64 m_sizeBytes = 0;
             AZ::Data::AssetId m_assetId = AZ::Data::AssetId();
-            AZStd::vector<AZ::Data::AssetId> m_legacyAssetIds; // if this asset was referred to by other legacy assetIds in the past, then they will be included here.
             AZ::Data::AssetType m_assetType = AZ::Data::s_invalidAssetType;
             AZStd::vector<AZ::Data::ProductDependency> m_dependencies;
         };
@@ -1310,10 +1326,11 @@ namespace AzFramework
 
             // The default constructor is only required for the SerializeContext.
             AssetChangeReportResponse() = default;
-            AssetChangeReportResponse(AZStd::vector<AZStd::string> lines);
+            AssetChangeReportResponse(AZStd::vector<AZStd::string> lines, bool success);
             unsigned int GetMessageType() const override;
 
             AZStd::vector<AZStd::string> m_lines;
+            bool m_success = false;
         };
 
     } // namespace AssetSystem

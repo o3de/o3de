@@ -521,8 +521,8 @@ namespace AZ
         bool EnumerateInstance(EnumerateInstanceCallContext* callContext, void* ptr, const Uuid& classId, const SerializeContext::ClassData* classData, const SerializeContext::ClassElement* classElement) const;
 
     private:
-        typedef AZStd::list<Edit::ClassData> ClassDataListType;
-        typedef AZStd::unordered_map<AZ::Uuid, Edit::ElementData> EnumDataMapType;
+        using ClassDataListType = AZStd::list<Edit::ClassData>;
+        using EnumDataMapType = AZStd::unordered_map<AZ::Uuid, Edit::ElementData>;
 
         ClassDataListType   m_classData;
         EnumDataMapType     m_enumData;
@@ -981,7 +981,38 @@ namespace AZ
             AZ_Error("EditContext", !modifyingGlobalEnum, "You cannot add enum values to an enum which is globally reflected");
             if (!modifyingGlobalEnum)
             {
-                m_editElement->m_attributes.push_back(Edit::AttributePair(idCrc, aznew ContainerType(value)));
+                // Special case the ChangeValidate attribute to map any functions that accept a const Uuid& -> Uuid value
+                // The Document Property Editor cannot convert a Dom::Value representing a UUID into a const Uuid&
+                // Only converting to a Uuid value type is supported
+                if (idCrc == Edit::Attributes::ChangeValidate)
+                {
+                    using ClassType = typename AZStd::function_traits<T>::class_type;
+                    if constexpr (AZStd::is_member_function_pointer_v<AZStd::remove_cvref_t<T>>
+                        && AZStd::is_invocable_r_v<AZ::Outcome<void, AZStd::string>, T, ClassType, void*, Uuid>)
+                    {
+                        auto changeValidateFunc = [value = AZStd::move(value)](ClassType* classInst, void* address, Uuid typeId) -> AZ::Outcome<void, AZStd::string>
+                        {
+                            return AZStd::invoke(value, classInst, address, typeId);
+                        };
+                        m_editElement->m_attributes.push_back(Edit::AttributePair(idCrc, aznew AttributeInvocable(AZStd::move(changeValidateFunc))));
+                    }
+                    else if constexpr (AZStd::is_invocable_r_v<AZ::Outcome<void, AZStd::string>, T, void*, Uuid>)
+                    {
+                        auto changeValidateFunc = [value = AZStd::move(value)](void* address, Uuid typeId) -> AZ::Outcome<void, AZStd::string>
+                        {
+                            return value(address, typeId);
+                        };
+                        m_editElement->m_attributes.push_back(Edit::AttributePair(idCrc, aznew AttributeInvocable(AZStd::move(changeValidateFunc))));
+                    }
+                    else
+                    {
+                        AZ_Assert(false, "Change Validate attribute can only be used with a function/functor which accepts a (void*, Uuid)");
+                    }
+                }
+                else
+                {
+                    m_editElement->m_attributes.push_back(Edit::AttributePair(idCrc, aznew ContainerType(value)));
+                }
 
                 if (idCrc == AZ::Edit::Attributes::EnumValues)
                 {

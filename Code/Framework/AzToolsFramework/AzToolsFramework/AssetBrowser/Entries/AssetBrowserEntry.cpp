@@ -123,6 +123,9 @@ namespace AzToolsFramework
             child->m_parentAssetEntry = nullptr;
             AssetBrowserModelRequestBus::Broadcast(&AssetBrowserModelRequests::EndRemoveEntry);
             AssetBrowserModelNotificationBus::Broadcast(&AssetBrowserModelNotifications::EntryRemoved, childToRemove.get());
+
+            // before we allow the destructor of AssetBrowserEntry to run, we must remove its children, etc.
+            childToRemove->RemoveChildren();
         }
 
         void AssetBrowserEntry::RemoveChildren()
@@ -438,13 +441,14 @@ namespace AzToolsFramework
         bool AssetBrowserEntry::lessThan(const AssetBrowserEntry* other, const AssetEntrySortMode sortMode, const QCollator& collator) const
         {
             // folders should always come first
-            if (azrtti_istypeof<const FolderAssetBrowserEntry*>(this) && azrtti_istypeof<const SourceAssetBrowserEntry*>(other))
-            {
-                return false;
-            }
-            if (azrtti_istypeof<const SourceAssetBrowserEntry*>(this) && azrtti_istypeof<const FolderAssetBrowserEntry*>(other))
+            if (GetEntryType() == AssetEntryType::Folder && other->GetEntryType() != AssetEntryType::Folder)
             {
                 return true;
+            }
+
+            if (GetEntryType() != AssetEntryType::Folder && other->GetEntryType() == AssetEntryType::Folder)
+            {
+                return false;
             }
 
             switch (sortMode)

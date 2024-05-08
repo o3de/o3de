@@ -177,7 +177,8 @@ namespace AzToolsFramework
 
             //! Resets the instance to an initial state.
             //! It unregisters the instance, entities and nested instances.
-            void Reset();
+            //! @param forReuse If true, the instance can be reused after reset, otherwise it is partially destroyed
+            void Reset(bool forReuse=true);
 
             //! Gets the aliases for the entities in the Instance DOM.
             //! @return The list of EntityAliases.
