@@ -728,50 +728,13 @@ namespace AZ
                 PackTexureArrays();
             }
         }
-
+        
         void DecalTextureArrayFeatureProcessor::UpdateBounds(const DecalHandle handle)
         {
             const DecalData& data = m_decalData.GetData<0>(handle.GetIndex());
             m_decalData.GetData<1>(handle.GetIndex()) = Aabb::CreateCenterHalfExtents(
                 AZ::Vector3(data.m_position[0], data.m_position[1], data.m_position[2]),
                 AZ::Vector3(data.m_halfSize[0], data.m_halfSize[1], data.m_halfSize[2]));
-        }
-
-        void DecalTextureArrayFeatureProcessor::SetMaterialToDecals(
-            RPI::MaterialAsset* materialAsset, const AZStd::vector<DecalHandle>& decalsThatUseThisMaterial)
-        {
-            if (!materialAsset)
-            {
-                return;
-            }
-
-            const Data::AssetId& assetId = materialAsset->GetId();
-            const bool validDecalMaterial = materialAsset && DecalTextureArray::IsValidDecalMaterial(*materialAsset);
-            if (validDecalMaterial)
-            {
-                const auto& decalLocation = AddMaterialToTextureArrays(materialAsset);
-                if (decalLocation)
-                {
-                    for (const auto& decal : decalsThatUseThisMaterial)
-                    {
-                        m_materialToTextureArrayLookupTable[assetId].m_useCount++;
-                        SetDecalTextureLocation(decal, *decalLocation);
-                    }
-                    m_materialToTextureArrayLookupTable[assetId].m_location = *decalLocation;
-                }
-            }
-            else
-            {
-                AZ_Warning(
-                    "DecalTextureArrayFeatureProcessor",
-                    false,
-                    "DecalTextureArray::IsValidDecalMaterial() failed, unable to add this material to the decal");
-            }
-
-            if (!m_materialLoadTracker.AreAnyLoadsInFlight())
-            {
-                PackTexureArrays();
-            }
         }
 
     } // namespace Render
