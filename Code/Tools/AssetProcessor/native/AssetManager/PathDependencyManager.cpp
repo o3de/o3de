@@ -512,32 +512,26 @@ namespace AssetProcessor
             bool isExcludedDependency = dependencyPathSearch.starts_with(ExcludedDependenciesSymbol);
             dependencyPathSearch = isExcludedDependency ? dependencyPathSearch.substr(1) : dependencyPathSearch;
 
-#if defined(CARBONATED)
-            AZStd::string dependencyPathSearchWithPlatform(platform + AZ_CORRECT_DATABASE_SEPARATOR_STRING + dependencyPathSearch);
-#endif
-
             // The database uses % for wildcards, both path based searching uses *, so keep a copy of the path with the * wildcard for later
             // use.
+#if defined(CARBONATED)
+            AZStd::string pathWildcardSearchPath = platform + AZ_CORRECT_DATABASE_SEPARATOR_STRING + dependencyPathSearch;
+#else
             AZStd::string pathWildcardSearchPath(dependencyPathSearch);
+#endif
+
             bool isExactDependency = !AzFramework::StringFunc::Replace(dependencyPathSearch, '*', '%');
 
             if (cleanedupDependency.m_dependencyType == AssetBuilderSDK::ProductPathDependencyType::ProductFile)
             {
-#if defined(CARBONATED)
-                SanitizeForDatabase(dependencyPathSearchWithPlatform);
-#else
+
                 SanitizeForDatabase(dependencyPathSearch);
-#endif
                 SanitizeForDatabase(pathWildcardSearchPath);
 
                 AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer productInfoContainer;
 
-#if defined(CARBONATED)
-                if(dependencyPathSearchWithPlatform == productName)
-#else
                 QString productNameWithPlatform = QString("%1%2%3").arg(platform.c_str(), AZ_CORRECT_DATABASE_SEPARATOR_STRING, dependencyPathSearch.c_str());
                 if (AzFramework::StringFunc::Equal(productNameWithPlatform.toUtf8().data(), productName.c_str()))
-#endif
                 {
                     AZ_Warning(AssetProcessor::ConsoleChannel, false,
                         "Invalid dependency: Product Asset ( %s ) has listed itself as one of its own Product Dependencies.",
@@ -551,20 +545,12 @@ namespace AssetProcessor
                     // Search for products in the cache platform folder
                     // Example: If a path dependency is "test1.asset" in AutomatedTesting on PC, this would search
                     //  "AutomatedTesting/Cache/pc/test1.asset"
-#if defined(CARBONATED)
-                    m_stateData->GetProductsByProductName(dependencyPathSearchWithPlatform.c_str(), productInfoContainer);
-#else
                     m_stateData->GetProductsByProductName(productNameWithPlatform, productInfoContainer);
-#endif
 
                 }
                 else
                 {
-#if defined(CARBONATED)
-                    m_stateData->GetProductsLikeProductName(dependencyPathSearchWithPlatform.c_str(), AzToolsFramework::AssetDatabase::AssetDatabaseConnection::LikeType::Raw, productInfoContainer);
-#else
                     m_stateData->GetProductsLikeProductName(productNameWithPlatform, AzToolsFramework::AssetDatabase::AssetDatabaseConnection::LikeType::Raw, productInfoContainer);
-#endif
                 }
 
                 // See if path matches any product files
@@ -587,7 +573,7 @@ namespace AssetProcessor
                             if (!isExactDependency)
                             {
 #if defined(CARBONATED)
-                                if (!AZStd::wildcard_match(dependencyPathSearchWithPlatform.c_str(), productDatabaseEntry.m_productName.c_str()))
+                                if (!AZStd::wildcard_match(pathWildcardSearchPath.c_str(), productDatabaseEntry.m_productName.c_str()))
                                 {
                                     continue;
                                 }
