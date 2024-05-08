@@ -524,10 +524,8 @@ namespace AssetProcessor
 
             if (cleanedupDependency.m_dependencyType == AssetBuilderSDK::ProductPathDependencyType::ProductFile)
             {
-
                 SanitizeForDatabase(dependencyPathSearch);
                 SanitizeForDatabase(pathWildcardSearchPath);
-
                 AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer productInfoContainer;
                 QString productNameWithPlatform = QString("%1%2%3").arg(platform.c_str(), AZ_CORRECT_DATABASE_SEPARATOR_STRING, dependencyPathSearch.c_str());
 
