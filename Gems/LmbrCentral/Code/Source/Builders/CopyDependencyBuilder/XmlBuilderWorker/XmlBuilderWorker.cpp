@@ -439,8 +439,8 @@ namespace CopyDependencyBuilder
                     AssetBuilderSDK::SourceFileDependency sourceFileDependency;
                     sourceFileDependency.m_sourceFileDependencyPath = schemaPath;
                     sourceDependencies.emplace_back(sourceFileDependency);
-#endif
                 }
+#endif
             }
         }
 
