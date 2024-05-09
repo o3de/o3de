@@ -8,6 +8,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 Write-Host "Installing Android SDK"
 choco install -y android-sdk
 [Environment]::SetEnvironmentVariable("ANDROID_HOME", "C:\Android\android-sdk", [EnvironmentVariableTarget]::Machine)
+[Environment]::SetEnvironmentVariable("ANDROID_SDK_ROOT", "C:\Android\android-sdk", [EnvironmentVariableTarget]::Machine)
 
 # Set package versions
 $android_packages = '"platforms;android-28" "platforms;android-29" "platforms;android-30"'
@@ -23,8 +24,8 @@ Start-Process -FilePath $sdkmanager -ArgumentList $build_tools -NoNewWindow -Wai
 Start-Process -FilePath $sdkmanager -ArgumentList $ndk -NoNewWindow -Wait
 
 Write-Host "Installing Gradle"
-$gradle_version = '7.0'
-$gradle_checksum = '81003F83B0056D20EEDF48CDDD4F52A9813163D4BA185BCF8ABD34B8EEEA4CBD'
+$gradle_version = '8.7'
+$gradle_checksum = '194717442575a6f96e1c1befa2c30e9a4fc90f701d7aee33eb879b79e7ff05c0'
 
 #Gradle needs a custom installer due to being hardcoded to C:\Programdata in Chocolatey
 Import-Module C:\ProgramData\chocolatey\helpers\chocolateyInstaller.psm1 
