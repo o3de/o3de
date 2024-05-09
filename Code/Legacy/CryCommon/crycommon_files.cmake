@@ -20,7 +20,6 @@ set(FILES
     IMiniLog.h
     IMovieSystem.cpp
     IMovieSystem.h
-    IRenderAuxGeom.h
     IRenderer.h
     ISerialize.h
     ISplines.h
