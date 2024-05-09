@@ -404,10 +404,9 @@ namespace CopyDependencyBuilder
 
 #if defined(CARBONATED)
         AZStd::vector<AZStd::string> matchedSchemas;
-#endif
-
         AZStd::string fullPath;
         AzFramework::StringFunc::AssetDatabasePath::Join(request.m_watchFolder.c_str(), request.m_sourceFile.c_str(), fullPath);
+#endif
 
         // Iterate through each schema file and check whether the source XML matches its file path pattern
         for (const AZStd::string& schemaFileDirectory : m_schemaFileDirectories)
@@ -426,11 +425,18 @@ namespace CopyDependencyBuilder
                 {
                     return AZ::Failure(AZStd::string::format("Failed to load schema file: %s.", schemaPath.c_str()));
                 }
+                
+
+#if defined(CARBONATED)                
                 if (SourceFileDependsOnSchema(schemaAsset, fullPath.c_str()))
                 {
-#if defined(CARBONATED)
                     matchedSchemas.emplace_back(schemaPath);
-#else
+                }
+#else           
+                AZStd::string fullPath;
+                AzFramework::StringFunc::AssetDatabasePath::Join(request.m_watchFolder.c_str(), request.m_sourceFile.c_str(), fullPath);
+                if (SourceFileDependsOnSchema(schemaAsset, fullPath.c_str()))
+                {
                     AssetBuilderSDK::SourceFileDependency sourceFileDependency;
                     sourceFileDependency.m_sourceFileDependencyPath = schemaPath;
                     sourceDependencies.emplace_back(sourceFileDependency);
