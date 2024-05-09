@@ -514,7 +514,11 @@ namespace AssetProcessor
 
             // The database uses % for wildcards, both path based searching uses *, so keep a copy of the path with the * wildcard for later
             // use.
+#if defined(CARBONATED)
+            AZStd::string pathWildcardSearchPath("*/" + dependencyPathSearch); 
+#else
             AZStd::string pathWildcardSearchPath(dependencyPathSearch);
+#endif
 
             bool isExactDependency = !AzFramework::StringFunc::Replace(dependencyPathSearch, '*', '%');
 
