@@ -222,7 +222,14 @@ namespace LUAEditor
             newState->m_bAutoReloadUnmodifiedFiles = newValue;
         });
 
-        connect(this, &LUAEditorMainWindow::OnReferenceDataChanged, this, [this]() { luaClassFilterTextChanged(m_ClassReferenceFilter->GetFilter()); });
+        connect(this, &LUAEditorMainWindow::OnReferenceDataChanged, this, [this]() {
+            luaClassFilterTextChanged(m_ClassReferenceFilter->GetFilter());
+            if (auto* view = GetCurrentView())
+            {
+                // Update syntax highlighting now that the project libraries are loaded
+                view->UpdateFont();
+            }
+         });
 
         // preset our running state based on outside conditions when we are created
         if (connectedState)
