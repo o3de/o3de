@@ -1815,7 +1815,7 @@ void CTrackViewAnimNode::SetPos(const Vec3& position)
             // Offset all keys by move amount.
             Vec3 offset = m_animNode->GetOffsetPosition(position);
             
-            track->OffsetKeyPosition(offset);
+            track->OffsetKeyPosition(LYVec3ToAZVec3(offset));
 
             GetSequence()->OnKeysChanged();
         }

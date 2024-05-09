@@ -435,7 +435,7 @@ struct IAnimTrack
     void SetValue(float time, AZ::Quaternion& value, bool bDefault = false);
 
     // Only for position tracks, offset all track keys by this amount.
-    virtual void OffsetKeyPosition(const Vec3& value) = 0;
+    virtual void OffsetKeyPosition(const AZ::Vector3& value) = 0;
 
     // Used to update the data in tracks after the parent entity has been changed.
     virtual void UpdateKeyDataAfterParentChanged(const AZ::Transform& oldParentWorldTM, const AZ::Transform& newParentWorldTM) = 0;
