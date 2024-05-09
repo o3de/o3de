@@ -425,7 +425,6 @@ namespace CopyDependencyBuilder
                 {
                     return AZ::Failure(AZStd::string::format("Failed to load schema file: %s.", schemaPath.c_str()));
                 }
-                
 
 #if defined(CARBONATED)                
                 if (SourceFileDependsOnSchema(schemaAsset, fullPath.c_str()))
