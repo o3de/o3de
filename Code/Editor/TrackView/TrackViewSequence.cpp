@@ -611,7 +611,7 @@ void CTrackViewSequence::SubmitPendingNotifcations(bool force)
         m_selectionRecursionLevel = 1;
     }
 
-    assert(m_selectionRecursionLevel > 0);
+    AZ_Assert(m_selectionRecursionLevel > 0, "Dangling SubmitPendingNotifcations()");
     if (m_selectionRecursionLevel > 0)
     {
         --m_selectionRecursionLevel;
