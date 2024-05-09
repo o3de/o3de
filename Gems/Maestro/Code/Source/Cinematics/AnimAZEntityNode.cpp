@@ -134,7 +134,7 @@ CAnimComponentNode* CAnimAzEntityNode::GetTransformComponentNode() const
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CAnimAzEntityNode::SetPos(float time, const Vec3& pos)
+void CAnimAzEntityNode::SetPos(float time, const AZ::Vector3& pos)
 {
     CAnimComponentNode* transformComponent = GetTransformComponentNode();
     if (transformComponent)
@@ -155,7 +155,7 @@ Vec3 CAnimAzEntityNode::GetPos()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CAnimAzEntityNode::SetRotate(float time, const Quat& rotation)
+void CAnimAzEntityNode::SetRotate(float time, const AZ::Quaternion& rotation)
 {
     CAnimComponentNode* transformComponent = GetTransformComponentNode();
     if (transformComponent)
@@ -185,7 +185,7 @@ Quat CAnimAzEntityNode::GetRotate(float time)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CAnimAzEntityNode::SetScale(float time, const Vec3& scale)
+void CAnimAzEntityNode::SetScale(float time, const AZ::Vector3& scale)
 {
     CAnimComponentNode* transformComponent = GetTransformComponentNode();
     if (transformComponent)

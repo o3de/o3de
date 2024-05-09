@@ -1833,15 +1833,15 @@ void CTrackViewAnimNode::SetPos(const Vec3& position)
 
                 // Set the selected flag to enable record when unselected camera is moved through viewport
                 m_animNode->SetFlags(flags | eAnimNodeFlags_EntitySelected);
-                m_animNode->SetPos(sequence->GetTime(), position);
+                m_animNode->SetPos(sequence->GetTime(), LYVec3ToAZVec3(position));
                 m_animNode->SetFlags(flags);
-                    
+
                 // We don't want to use ScopedUndoBatch here because we don't want a separate Undo operation
                 // generate for every frame as the user moves an entity.
                 AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
-                    &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, 
+                    &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity,
                     sequence->GetSequenceComponentEntityId()
-                );                    
+                );
 
                 sequence->OnKeysChanged();
             }
@@ -1865,7 +1865,7 @@ void CTrackViewAnimNode::SetScale(const Vec3& scale)
             // undo a previous move delta as the entity is dragged.
             CUndo::Record(new CUndoComponentEntityTrackObject(track));
 
-            m_animNode->SetScale(sequence->GetTime(), scale);
+            m_animNode->SetScale(sequence->GetTime(), LYVec3ToAZVec3(scale));
 
             // We don't want to use ScopedUndoBatch here because we don't want a separate Undo operation
             // generate for every frame as the user scales an entity.
@@ -1897,7 +1897,7 @@ void CTrackViewAnimNode::SetRotation(const Quat& rotation)
 
             // Set the selected flag to enable record when unselected camera is moved through viewport
             m_animNode->SetFlags(flags | eAnimNodeFlags_EntitySelected);
-            m_animNode->SetRotate(sequence->GetTime(), rotation);
+            m_animNode->SetRotate(sequence->GetTime(), LYQuaternionToAZQuaternion(rotation));
             m_animNode->SetFlags(flags);
 
             // We don't want to use ScopedUndoBatch here because we don't want a separate Undo operation
@@ -2458,10 +2458,10 @@ void CTrackViewAnimNode::OnParentChanged(AZ::EntityId oldParent, AZ::EntityId ne
     }
 }
 
-void CTrackViewAnimNode::OnParentTransformWillChange(AZ::Transform oldTransform, AZ::Transform newTransform) 
-{ 
-    // Only used in circumstances where modified keys are required, but OnParentChanged 
-    // message will not be received for some reason, e.g. node being cloned in memory 
+void CTrackViewAnimNode::OnParentTransformWillChange(AZ::Transform oldTransform, AZ::Transform newTransform)
+{
+    // Only used in circumstances where modified keys are required, but OnParentChanged
+    // message will not be received for some reason, e.g. node being cloned in memory
     UpdateKeyDataAfterParentChanged(oldTransform, newTransform);
 
     CTrackViewSequence* sequence = GetSequence();
