@@ -727,16 +727,6 @@ void CObjectManager::LoadClassTemplates(const QString& path)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CObjectManager::RegisterCVars()
-{
-    REGISTER_CVAR2("AxisHelperHitRadius",
-        &m_axisHelperHitRadius,
-        20,
-        VF_DEV_ONLY,
-        "Adjust the hit radius used for axis helpers, like the transform gizmo.");
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CObjectManager::InvalidateVisibleList()
 {
     if (m_isUpdateVisibilityList)
