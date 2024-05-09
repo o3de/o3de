@@ -9,6 +9,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <EditorCoreAPI.h>
+#include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <IEditor.h>
 
 #include <Editor/View/Widgets/LoggingPanel/LiveWindowSession/LiveLoggingWindowSession.h>
@@ -525,7 +526,8 @@ namespace ScriptCanvasEditor
 
         for (const auto& graphIdentifier : registrationSet)
         {
-            captureInfo.m_graphs.insert(graphIdentifier.m_assetId);
+            // Graphs capture is using runtime asset subID, need this conversion else comparison won't match
+            captureInfo.m_graphs.insert(AZ::Data::AssetId(graphIdentifier.m_assetId.m_guid, ScriptCanvas::RuntimeDataSubId));
         }
     }
 
