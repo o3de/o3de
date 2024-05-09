@@ -116,7 +116,7 @@ namespace RemoteTools
     {
         if (!m_messageTypesToClearForNextTick.empty())
         {
-            for (const AZ::Crc32 key : m_messageTypesToClearForNextTick)
+            for (const AZ::Crc32& key : m_messageTypesToClearForNextTick)
             {
                 ClearReceivedMessages(key);
             }
@@ -332,17 +332,27 @@ namespace RemoteTools
         AZStd::vector<char, AZ::OSStdAllocator> msgBuffer;
         AZ::IO::ByteContainerStream<AZStd::vector<char, AZ::OSStdAllocator>> outMsg(&msgBuffer);
 
-        AZ::ObjectStream* objStream = AZ::ObjectStream::Create(&outMsg, *serializeContext, AZ::ObjectStream::ST_BINARY);
-        objStream->WriteClass(&msg);
-        if (!objStream->Finalize())
+        if (!msgBuffer.empty())
         {
-            AZ_Assert(false, "ObjectStream failed to serialize outbound TmMsg!");
+            AZ::ObjectStream* objStream = AZ::ObjectStream::Create(&outMsg, *serializeContext, AZ::ObjectStream::ST_BINARY);
+            objStream->WriteClass(&msg);
+            if (!objStream->Finalize())
+            {
+                AZ_Assert(false, "ObjectStream failed to serialize outbound TmMsg!");
+            }
         }
 
-        size_t customBlobSize = msg.GetCustomBlobSize();
-        if (msg.GetCustomBlobSize() > 0)
+        const size_t customBlobSize = msg.GetCustomBlobSize();
+        if (customBlobSize > 0)
         {
             outMsg.Write(customBlobSize, msg.GetCustomBlob().data());
+        }
+
+        // If sent message is empty, add some dull data into it so that it can be deserialized anyway
+        if (msgBuffer.empty() && customBlobSize == 0)
+        {
+            AZStd::vector<AZStd::byte> dullBuffer{ 1 };
+            outMsg.Write(dullBuffer.size(), dullBuffer.data());
         }
 
         // Messages targeted at our own application are also serialized/deserialized then moved onto the inbox
