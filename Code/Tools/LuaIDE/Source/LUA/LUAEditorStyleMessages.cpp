@@ -39,6 +39,7 @@ namespace LUAEditor
                 ->Field("m_useSpacesInsteadOfTabs", &SyntaxStyleSettings::m_useSpacesInsteadOfTabs)
 
                 ->Field("m_textColor", &SyntaxStyleSettings::m_textColor)
+                ->Field("m_lineNumberColor", &SyntaxStyleSettings::m_lineNumberColor)
                 ->Field("m_textSelectedColor", &SyntaxStyleSettings::m_textSelectedColor)
                 ->Field("m_textSelectedBackgroundColor", &SyntaxStyleSettings::m_textSelectedBackgroundColor)
 
@@ -105,6 +106,8 @@ namespace LUAEditor
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Text")
 
                     ->DataElement(AZ::Edit::UIHandlers::Color, &SyntaxStyleSettings::m_textColor, "Default", "Default text color")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SyntaxStyleSettings::OnColorChange)
+                    ->DataElement(AZ::Edit::UIHandlers::Color, &SyntaxStyleSettings::m_lineNumberColor, "Line Number", "")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SyntaxStyleSettings::OnColorChange)
 
                     ->DataElement(AZ::Edit::UIHandlers::Color, &SyntaxStyleSettings::m_textSelectedColor, "Selected Text", "")

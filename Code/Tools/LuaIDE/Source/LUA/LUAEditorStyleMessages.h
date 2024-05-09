@@ -37,6 +37,7 @@ namespace LUAEditor
         }
 
         QColor GetTextColor() const { return ToQColor(m_textColor); }
+        QColor GetLineNumberColor() const { return ToQColor(m_lineNumberColor); }
         QColor GetTextFocusedBackgroundColor() const { return ToQColor(m_textFocusedBackgroundColor); }
         QColor GetTextUnfocusedBackgroundColor() const { return ToQColor(m_textUnfocusedBackgroundColor); }
         QColor GetTextReadOnlyFocusedBackgroundColor() const { return ToQColor(m_textReadOnlyFocusedBackgroundColor); }
@@ -79,6 +80,9 @@ namespace LUAEditor
     private:
         AZ::Vector3 m_textColor {
             156.0f / 255.0f, 220.0f / 255.0f, 254.0f / 255.0f
+        };
+        AZ::Vector3 m_lineNumberColor {
+            200.0f / 255.0f, 200.0f / 255.0f, 200.0f / 255.0f
         };
         AZ::Vector3 m_textFocusedBackgroundColor {
             31.0f / 255.0f, 31.0f / 255.0f, 31.0f / 255.0f
