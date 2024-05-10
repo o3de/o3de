@@ -447,9 +447,13 @@ namespace AZ
             {
                 // this may not be the best way to set it, other option would be using m_asset->m_assetData.m_name
                 if (!m_asset->GetName().IsEmpty())
+                {
                     descriptor.SetName(m_asset->GetName());
+                }
                 else if (!m_asset.GetHint().empty())
+                {
                     descriptor.SetName(AZ::Name{ m_asset.GetHint() });
+                }
             }
             return m_pipelineStateCache->AcquirePipelineState(m_pipelineLibraryHandle, descriptor, m_asset->GetName());
         }

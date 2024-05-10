@@ -39,7 +39,9 @@ namespace AZ
             m_pipelineLayout = layout;
             m_pipelineLibrary = descriptor.m_pipelineLibrary;
             if (m_nativePipeline)
+            {
                 SetName(descriptor.m_name);
+            }
             return result;
         }
 

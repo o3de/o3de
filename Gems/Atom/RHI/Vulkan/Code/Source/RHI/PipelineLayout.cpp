@@ -177,7 +177,9 @@ namespace AZ
             result = BuildMergedShaderResourceGroupPools();
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
             if (m_nativePipelineLayout)
+            {
                 SetName(descriptor.m_name);
+            }
             return result;
         }
 
