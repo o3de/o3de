@@ -9,19 +9,34 @@
 #pragma once
 
 
-real3 ApplyFilmicTonemap(real3 color)
-{
-    // Apply filmic curve. 
-    real a = 2.51f; // 6.2
-    real b = 0.03f; // 0.5
-    real c = 2.43f; // 6.2
-    real d = 0.59f; // 1.7
-    real e = 0.14f; // 0.06
-    return saturate((color * (a * color + b)) / (color * (c * color + d)+ e));
-}
 
 real3 ApplyManualExposure(real3 color, real exposure)
 {
     // Apply Manual exposure
     return color * pow(2.0, exposure);
 }
+
+real3 TonemapFilmic(real3 x) {
+    // See: https://github.com/dmnsgn/glsl-tone-map/blob/main/filmic.glsl
+    real3 X = max(real3(0.0, 0.0, 0.0), x - 0.004);
+    real3 result = (X * (6.2 * X + 0.5)) / (X * (6.2 * X + 1.7) + 0.06);
+    return pow(result, real3(2.2, 2.2, 2.2));
+}
+
+real3 TonemapAces(real3 x) {
+    // See: https://github.com/dmnsgn/glsl-tone-map/blob/main/aces.glsl
+    // Note: On Quest, this function makes skin look overly red
+    const real a = 2.51;
+    const real b = 0.03;
+    const real c = 2.43;
+    const real d = 0.59;
+    const real e = 0.14;
+    return saturate((x * (a * x + b)) / (x * (c * x + d) + e));
+}
+
+// NOTE: DEPRECATED! PLEASE USE ONE OF THE ABOVE FUNCTIONS!
+real3 ApplyFilmicTonemap(real3 color)
+{
+    return TonemapAces(color);
+}
+
