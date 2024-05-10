@@ -39,31 +39,30 @@ namespace AzFramework
     // Remarks:
     //   Bits 0 - 22 are currently reserved for prim type and per draw call render parameters (point size, etc.)
     //   Check RenderAuxGeom.h in ../RenderDll/Common
-    enum EAuxGeomPublicRenderflagBitMasks
+    enum EAuxGeomPublicRenderflagBitMasks: AZ::u32
     {
-        e_Mode2D3DShift             = 31,
-        e_Mode2D3DMask              = 0x1 << e_Mode2D3DShift,
+        e_Mode2D3DShift       = 31,
+        e_Mode2D3DMask        = 0x1u << e_Mode2D3DShift,
 
-        e_AlphaBlendingShift        = 29,
-        e_AlphaBlendingMask         = 0x3 << e_AlphaBlendingShift,
+        e_AlphaBlendingShift  = 29,
+        e_AlphaBlendingMask   = 0x3u << e_AlphaBlendingShift,
 
-        e_DrawInFrontShift          = 28,
-        e_DrawInFrontMask           = 0x1 << e_DrawInFrontShift,
+        e_DrawInFrontShift    = 28,
+        e_DrawInFrontMask     = 0x1u << e_DrawInFrontShift,
 
-        e_FillModeShift             = 26,
-        e_FillModeMask              = 0x3 << e_FillModeShift,
+        e_FillModeShift       = 26,
+        e_FillModeMask        = 0x3u << e_FillModeShift,
 
-        e_CullModeShift             = 24,
-        e_CullModeMask              = 0x3 << e_CullModeShift,
+        e_CullModeShift       = 24,
+        e_CullModeMask        = 0x3u << e_CullModeShift,
 
-        e_DepthWriteShift           = 23,
-        e_DepthWriteMask            = 0x1 << e_DepthWriteShift,
+        e_DepthWriteShift     = 23,
+        e_DepthWriteMask      = 0x1u << e_DepthWriteShift,
 
-        e_DepthTestShift            = 22,
-        e_DepthTestMask             = 0x1 << e_DepthTestShift,
+        e_DepthTestShift      = 22,
+        e_DepthTestMask       = 0x1u << e_DepthTestShift,
 
-        e_PublicParamsMask      = e_Mode2D3DMask | e_AlphaBlendingMask | e_DrawInFrontMask | e_FillModeMask |
-        e_CullModeMask | e_DepthWriteMask | e_DepthTestMask
+        e_PublicParamsMask    = e_Mode2D3DMask | e_AlphaBlendingMask | e_DrawInFrontMask | e_FillModeMask | e_CullModeMask | e_DepthWriteMask | e_DepthTestMask
     };
 
     // Notes:
@@ -77,10 +76,10 @@ namespace AzFramework
     //   Check RenderAuxGeom.h in ../RenderDll/Common
     // See also:
     //   EAuxGeomPublicRenderflagBitMasks
-    enum EAuxGeomPublicRenderflags_Mode2D3D
+    enum EAuxGeomPublicRenderflags_Mode2D3D: AZ::u32
     {
-        e_Mode3D                            = 0x0 << e_Mode2D3DShift,
-        e_Mode2D                            = 0x1 << e_Mode2D3DShift,
+        e_Mode3D = 0x0u << e_Mode2D3DShift,
+        e_Mode2D = 0x1u << e_Mode2D3DShift,
     };
 
     // Notes:
@@ -93,11 +92,11 @@ namespace AzFramework
     //   Check RenderAuxGeom.h in ../RenderDll/Common
     // See also:
     //   EAuxGeomPublicRenderflagBitMasks
-    enum EAuxGeomPublicRenderflags_AlphaBlendMode
+    enum EAuxGeomPublicRenderflags_AlphaBlendMode: AZ::u32
     {
-        e_AlphaNone                     = 0x0 << e_AlphaBlendingShift,
-        e_AlphaAdditive             = 0x1 << e_AlphaBlendingShift,
-        e_AlphaBlended              = 0x2 << e_AlphaBlendingShift,
+        e_AlphaNone     = 0x0u << e_AlphaBlendingShift,
+        e_AlphaAdditive = 0x1u << e_AlphaBlendingShift,
+        e_AlphaBlended  = 0x2u << e_AlphaBlendingShift,
     };
 
     // Notes:
@@ -110,10 +109,10 @@ namespace AzFramework
     //   Check RenderAuxGeom.h in ../RenderDll/Common
     // See also:
     //   EAuxGeomPublicRenderflagBitMasks
-    enum EAuxGeomPublicRenderflags_DrawInFrontMode
+    enum EAuxGeomPublicRenderflags_DrawInFrontMode: AZ::u32
     {
-        e_DrawInFrontOff            = 0x0 << e_DrawInFrontShift,
-        e_DrawInFrontOn             = 0x1 << e_DrawInFrontShift,
+        e_DrawInFrontOff = 0x0u << e_DrawInFrontShift,
+        e_DrawInFrontOn  = 0x1u << e_DrawInFrontShift,
     };
 
     // Notes:
@@ -126,11 +125,11 @@ namespace AzFramework
     //   Check RenderAuxGeom.h in ../RenderDll/Common
     // See also:
     //   EAuxGeomPublicRenderflagBitMasks
-    enum EAuxGeomPublicRenderflags_FillMode
+    enum EAuxGeomPublicRenderflags_FillMode: AZ::u32
     {
-        e_FillModeSolid             = 0x0 << e_FillModeShift,
-        e_FillModeWireframe     = 0x1 << e_FillModeShift,
-        e_FillModePoint             = 0x2 << e_FillModeShift,
+        e_FillModeSolid     = 0x0u << e_FillModeShift,
+        e_FillModeWireframe = 0x1u << e_FillModeShift,
+        e_FillModePoint     = 0x2u << e_FillModeShift,
     };
 
     // Notes:
@@ -143,11 +142,11 @@ namespace AzFramework
     //   Check RenderAuxGeom.h in ../RenderDll/Common
     // See also:
     //   EAuxGeomPublicRenderflagBitMasks
-    enum EAuxGeomPublicRenderflags_CullMode
+    enum EAuxGeomPublicRenderflags_CullMode: AZ::u32
     {
-        e_CullModeNone              = 0x0 << e_CullModeShift,
-        e_CullModeFront             = 0x1 << e_CullModeShift,
-        e_CullModeBack              = 0x2 << e_CullModeShift,
+        e_CullModeNone  = 0x0u << e_CullModeShift,
+        e_CullModeFront = 0x1u << e_CullModeShift,
+        e_CullModeBack  = 0x2u << e_CullModeShift,
     };
 
     // Notes:
@@ -160,10 +159,10 @@ namespace AzFramework
     //   Check RenderAuxGeom.h in ../RenderDll/Common
     // See also:
     //   EAuxGeomPublicRenderflagBitMasks
-    enum EAuxGeomPublicRenderflags_DepthWrite
+    enum EAuxGeomPublicRenderflags_DepthWrite: AZ::u32
     {
-        e_DepthWriteOn              = 0x0 << e_DepthWriteShift,
-        e_DepthWriteOff             = 0x1 << e_DepthWriteShift,
+        e_DepthWriteOn  = 0x0u << e_DepthWriteShift,
+        e_DepthWriteOff = 0x1u << e_DepthWriteShift,
     };
 
     // Notes:
@@ -176,12 +175,11 @@ namespace AzFramework
     //   Check RenderAuxGeom.h in ../RenderDll/Common
     // See also:
     //   EAuxGeomPublicRenderflagBitMasks
-    enum EAuxGeomPublicRenderflags_DepthTest
+    enum EAuxGeomPublicRenderflags_DepthTest: AZ::u32
     {
-        e_DepthTestOn                   = 0x0 << e_DepthTestShift,
-        e_DepthTestOff              = 0x1 << e_DepthTestShift,
+        e_DepthTestOn  = 0x0u << e_DepthTestShift,
+        e_DepthTestOff = 0x1u << e_DepthTestShift,
     };
-
 
     /// DebugDisplayRequests provides a debug draw api to be used by components and viewport features.
     class DebugDisplayRequests
