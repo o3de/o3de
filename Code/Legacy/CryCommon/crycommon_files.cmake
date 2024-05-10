@@ -44,7 +44,6 @@ set(FILES
     CryVersion.h
     MiniQueue.h
     MultiThread_Containers.h
-    PNoise3.h
     ProjectDefines.h
     Range.h
     ScopedVariableSetter.h
