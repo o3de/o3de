@@ -25,7 +25,7 @@ namespace AZ
 {
     namespace DX12
     {
-        AZStd::string GetResourceStateDebugString(D3D12_RESOURCE_STATES state, bool copyQueueState)
+        AZStd::string GetResourceStateDebugString(D3D12_RESOURCE_STATES state)
         {
             AZStd::string result;
 
@@ -100,10 +100,6 @@ namespace AZ
                 {
                     result += "RESOLVE_SOURCE|";
                 }
-                if (copyQueueState)
-                {
-                    result += "COPY_QUEUE_BIT|";
-                }
                 if (state & D3D12_RESOURCE_STATE_PREDICATION)
                 {
                     result += "PREDICATION|";
@@ -144,14 +140,14 @@ namespace AZ
                 AZ_Printf("FrameScheduler", "ATTACHMENT %s\n", m_attachmentId.GetCStr());
             }
 
-            void SetStateBefore(D3D12_RESOURCE_STATES stateBefore, bool copyQueueState = false)
+            void SetStateBefore(D3D12_RESOURCE_STATES stateBefore)
             {
-                m_stateBeforeString = GetResourceStateDebugString(stateBefore, copyQueueState);
+                m_stateBeforeString = GetResourceStateDebugString(stateBefore);
             }
 
-            void SetStateAfter(D3D12_RESOURCE_STATES stateAfter, bool copyQueueState = false)
+            void SetStateAfter(D3D12_RESOURCE_STATES stateAfter)
             {
-                m_stateAfterString = GetResourceStateDebugString(stateAfter, copyQueueState);
+                m_stateAfterString = GetResourceStateDebugString(stateAfter);
             }
 
             void LogPrologueTransition(const RHI::Scope& scopeAfter)
@@ -219,7 +215,7 @@ namespace AZ
             return AZ::Success();
         }
 
-        AZStd::pair<D3D12_RESOURCE_STATES, bool> FrameGraphCompiler::GetResourceState(const RHI::ScopeAttachment& scopeAttachment)
+        D3D12_RESOURCE_STATES FrameGraphCompiler::GetResourceState(const RHI::ScopeAttachment& scopeAttachment)
         {
             static const D3D12_RESOURCE_STATES ReadWriteState[RHI::HardwareQueueClassCount] =
             {
@@ -269,8 +265,6 @@ namespace AZ
                 D3D12_RESOURCE_STATE_COPY_DEST
             };
 
-            bool copyQueueState{false};
-
             const RHI::Scope& parentScope = scopeAttachment.GetScope();
             const RHI::HardwareQueueClass hardwareQueueClass = parentScope.GetHardwareQueueClass();
             const uint32_t hardwareQueueClassIdx = static_cast<uint32_t>(hardwareQueueClass);
@@ -297,20 +291,16 @@ namespace AZ
 
                 case RHI::ScopeAttachmentUsage::Shader:
                 {
-                    mergedResourceState |= RHI::CheckBitsAny(usageAndAccess.m_access, RHI::ScopeAttachmentAccess::Write) ?
-                                            ReadWriteState[hardwareQueueClassIdx] :
-                                            ReadState[hardwareQueueClassIdx];
-
-                    copyQueueState = (hardwareQueueClass == RHI::HardwareQueueClass::Copy);
+                    mergedResourceState |= RHI::CheckBitsAny(usageAndAccess.m_access, RHI::ScopeAttachmentAccess::Write)
+                        ? ReadWriteState[hardwareQueueClassIdx]
+                        : ReadState[hardwareQueueClassIdx];
                     break;
                 }
                 case RHI::ScopeAttachmentUsage::Copy:
                 {
-                    mergedResourceState |= RHI::CheckBitsAny(usageAndAccess.m_access, RHI::ScopeAttachmentAccess::Write) ?
-                                            CopyWriteState[hardwareQueueClassIdx] :
-                                            CopyReadState[hardwareQueueClassIdx];
-
-                    copyQueueState = (hardwareQueueClass == RHI::HardwareQueueClass::Copy);
+                    mergedResourceState |= RHI::CheckBitsAny(usageAndAccess.m_access, RHI::ScopeAttachmentAccess::Write)
+                        ? CopyWriteState[hardwareQueueClassIdx]
+                        : CopyReadState[hardwareQueueClassIdx];
                     break;
                 }
                 case RHI::ScopeAttachmentUsage::Resolve:
@@ -346,7 +336,7 @@ namespace AZ
                     break;
                 }
             }
-            return {mergedResourceState, copyQueueState};
+            return mergedResourceState;
         }
 
         AZStd::optional<D3D12_RESOURCE_STATES> FrameGraphCompiler::GetDiscardResourceState(const RHI::ScopeAttachment& scopeAttachment, D3D12_RESOURCE_FLAGS bindflags)
@@ -452,9 +442,9 @@ namespace AZ
             while (scopeAttachment)
             {
                 Scope& scopeAfter = static_cast<Scope&>(scopeAttachment->GetScope());
-                auto[state, copyQueueState] = GetResourceState(*scopeAttachment);
+                auto state = GetResourceState(*scopeAttachment);
                 transition.StateAfter = state;
-                logger.SetStateAfter(transition.StateAfter, copyQueueState);
+                logger.SetStateAfter(transition.StateAfter);
 
                 /**
                  * Due to implicit state promotion and decay (which applies to all buffers), we only need
@@ -546,9 +536,9 @@ namespace AZ
             while (scopeAttachment)
             {
                 Scope& scopeAfter = static_cast<Scope&>(scopeAttachment->GetScope());
-                auto [state, copyQueueState] = GetResourceState(*scopeAttachment);
+                auto state = GetResourceState(*scopeAttachment);
                 transition.StateAfter = state;
-                logger.SetStateAfter(transition.StateAfter, copyQueueState);
+                logger.SetStateAfter(transition.StateAfter);
 
                 RHI::ImageSubresourceRange viewRange = RHI::ImageSubresourceRange(scopeAttachment->GetImageView()->GetDescriptor());
                 for (const auto& subresourceState : image.GetAttachmentStateByIndex(&viewRange))
@@ -572,7 +562,7 @@ namespace AZ
                      // Check if we can service the request at the beginning of the current scope. This is the
                      // normal case when transitioning within the same queue family.
                     if (scopeAfter.IsStateSupportedByQueue(transition.StateBefore) &&
-                        scopeAfter.IsStateSupportedByQueue(transition.StateAfter, copyQueueState))
+                        scopeAfter.IsStateSupportedByQueue(transition.StateAfter))
                     {
                         // We can just queue the transition on the scope directly.
                         logger.LogPrologueTransition(scopeAfter);
@@ -649,7 +639,7 @@ namespace AZ
 
                                 // Transition from COMMON -> AFTER on graphics / compute scope.
                                 logger.SetStateBefore(transition.StateBefore);
-                                logger.SetStateAfter(transition.StateAfter, copyQueueState);
+                                logger.SetStateAfter(transition.StateAfter);
                                 logger.LogPrologueTransition(scopeAfter);
                                 scopeAfter.QueuePrologueTransition(transition, barrierState);
                             }

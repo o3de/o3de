@@ -93,7 +93,7 @@ namespace AZ
             return m_waitFencesByQueue;
         }
 
-        const bool Scope::IsStateSupportedByQueue(D3D12_RESOURCE_STATES state, bool copyQueueState) const
+        const bool Scope::IsStateSupportedByQueue(D3D12_RESOURCE_STATES state) const
         {
             constexpr D3D12_RESOURCE_STATES VALID_COMPUTE_QUEUE_RESOURCE_STATES =
                 (D3D12_RESOURCE_STATE_UNORDERED_ACCESS |
@@ -114,7 +114,7 @@ namespace AZ
                 return RHI::CheckBitsAll(VALID_COMPUTE_QUEUE_RESOURCE_STATES, state);
 
             case RHI::HardwareQueueClass::Copy:
-                return RHI::CheckBitsAll(VALID_COPY_QUEUE_RESOURCE_STATES, state) || copyQueueState;
+                return RHI::CheckBitsAll(VALID_COPY_QUEUE_RESOURCE_STATES, state);
             }
             return false;
         }
