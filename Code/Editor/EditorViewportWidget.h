@@ -245,7 +245,6 @@ private:
 
     ////////////////////////////////////////////////////////////////////////
     // Private helpers...
-    void SetViewTM(const Matrix34& tm, bool bMoveOnly);
     void SetDefaultCameraNearFar();
     void RenderAll();
 

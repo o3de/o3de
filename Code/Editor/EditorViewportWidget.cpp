@@ -1176,15 +1176,8 @@ void EditorViewportWidget::keyPressEvent(QKeyEvent* event)
 #endif // defined(AZ_PLATFORM_WINDOWS)
 }
 
-void EditorViewportWidget::SetViewTM(const Matrix34& tm)
+void EditorViewportWidget::SetViewTM(const Matrix34& camMatrix)
 {
-    SetViewTM(tm, false);
-}
-
-void EditorViewportWidget::SetViewTM(const Matrix34& camMatrix, bool bMoveOnly)
-{
-    AZ_Warning("EditorViewportWidget", !bMoveOnly, "'Move Only' mode is deprecated");
-
     GetCurrentAtomView()->SetCameraTransform(LYTransformToAZMatrix3x4(camMatrix));
 
     if (m_pressedKeyState == KeyPressedState::PressedThisFrame)
