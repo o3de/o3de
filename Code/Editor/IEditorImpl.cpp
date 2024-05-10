@@ -1293,7 +1293,6 @@ void CEditorImpl::ReduceMemory()
 {
     GetIEditor()->GetUndoManager()->ClearRedoStack();
     GetIEditor()->GetUndoManager()->ClearUndoStack();
-    GetIEditor()->GetObjectManager()->SendEvent(EVENT_FREE_GAME_DATA);
 
 #if defined(AZ_PLATFORM_WINDOWS)
     HANDLE hHeap = GetProcessHeap();
