@@ -66,6 +66,9 @@ namespace AZ
             RHI::DrawListMask GetDrawListMask() const { return m_drawListMask; }
             void Reset();
 
+            //! Prints the draw list mask for this view. Useful for printf debugging.
+            void PrintDrawListMask();
+
             RHI::ShaderResourceGroup* GetRHIShaderResourceGroup() const;
 
             Data::Instance<RPI::ShaderResourceGroup> GetShaderResourceGroup();
