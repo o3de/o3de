@@ -332,27 +332,17 @@ namespace RemoteTools
         AZStd::vector<char, AZ::OSStdAllocator> msgBuffer;
         AZ::IO::ByteContainerStream<AZStd::vector<char, AZ::OSStdAllocator>> outMsg(&msgBuffer);
 
-        if (!msgBuffer.empty())
+        AZ::ObjectStream* objStream = AZ::ObjectStream::Create(&outMsg, *serializeContext, AZ::ObjectStream::ST_BINARY);
+        objStream->WriteClass(&msg);
+        if (!objStream->Finalize())
         {
-            AZ::ObjectStream* objStream = AZ::ObjectStream::Create(&outMsg, *serializeContext, AZ::ObjectStream::ST_BINARY);
-            objStream->WriteClass(&msg);
-            if (!objStream->Finalize())
-            {
-                AZ_Assert(false, "ObjectStream failed to serialize outbound TmMsg!");
-            }
+            AZ_Assert(false, "ObjectStream failed to serialize outbound TmMsg!");
         }
 
         const size_t customBlobSize = msg.GetCustomBlobSize();
         if (customBlobSize > 0)
         {
             outMsg.Write(customBlobSize, msg.GetCustomBlob().data());
-        }
-
-        // If sent message is empty, add some dull data into it so that it can be deserialized anyway
-        if (msgBuffer.empty() && customBlobSize == 0)
-        {
-            AZStd::vector<AZStd::byte> dullBuffer{ 1 };
-            outMsg.Write(dullBuffer.size(), dullBuffer.data());
         }
 
         // Messages targeted at our own application are also serialized/deserialized then moved onto the inbox
@@ -432,7 +422,6 @@ namespace RemoteTools
                 m_entryRegistry[key].m_availableTargets.insert_key(persistentId);
             AzFramework::RemoteToolsEndpointInfo& ti = ret.first->second;
             ti.SetInfo(packet.GetDisplayName(), persistentId, static_cast<uint32_t>(connection->GetConnectionId()));
-            m_entryRegistry[key].m_lastTarget = ti;
             m_entryRegistry[key].m_endpointJoinedEvent.Signal(ti);
         }
         return true;
@@ -468,7 +457,6 @@ namespace RemoteTools
 
                 AzFramework::RemoteToolsEndpointInfo& ti = ret.first->second;
                 ti.SetInfo("Host", packet.GetPersistentId(), static_cast<uint32_t>(connection->GetConnectionId()));
-                m_entryRegistry[key].m_lastTarget = ti;
                 m_entryRegistry[key].m_endpointJoinedEvent.Signal(ti);
             }
 
@@ -555,12 +543,6 @@ namespace RemoteTools
                     {
                         AzFramework::RemoteToolsEndpointInfo ti = endpointIt->second;
                         registryIt->second.m_endpointLeftEvent.Signal(ti);
-                        if (registryIt->second.m_lastTarget.GetPersistentId() == ti.GetPersistentId())
-                        {
-                            // Stored as unordered map, we can't know what was the target registered before this
-                            registryIt->second.m_lastTarget = AzFramework::RemoteToolsEndpointInfo();
-                        }
-
                         container.extract(endpointIt);
                         break;
                     }

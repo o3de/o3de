@@ -101,6 +101,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     Source
             BUILD_DEPENDENCIES
                 PRIVATE
+                    AZ::AzCoreTestCommon
                     AZ::AzTest
                     AZ::AzFramework
                     Gem::${gem_name}.Private.Static
