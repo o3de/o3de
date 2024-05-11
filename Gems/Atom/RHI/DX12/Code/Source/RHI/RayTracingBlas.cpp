@@ -30,8 +30,7 @@ namespace AZ
             ID3D12DeviceX* dx12Device = device.GetDevice();
 
             // advance to the next buffer
-            m_currentBufferIndex = (m_currentBufferIndex + 1) % BufferCount;
-            BlasBuffers& buffers = m_buffers[m_currentBufferIndex];
+            BlasBuffers& buffers = m_buffers.AdvanceCurrentElement();
 
             m_geometryDescs.clear();
 

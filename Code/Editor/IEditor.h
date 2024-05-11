@@ -56,7 +56,6 @@ class CDisplaySettings;
 class CLevelIndependentFileMan;
 class CSelectionTreeManager;
 struct SEditorSettings;
-class CGameExporter;
 class IAWSResourceManager;
 
 struct ISystem;

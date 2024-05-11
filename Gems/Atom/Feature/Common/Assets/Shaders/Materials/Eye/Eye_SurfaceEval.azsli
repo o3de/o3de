@@ -49,13 +49,13 @@ real GetIrisRadiusMask(real vertexDistanceToCenterOfPupil)
 Surface EvaluateSurface_Eye(
     float3 positionWS,
     real3 vertexNormal,
-    real3 tangents[UvSetCount],
-    real3 bitangents[UvSetCount],
+    float3 tangents[UvSetCount],
+    float3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],
     float3 localPosition,
     bool isFrontFace,
-    real4x4 worldMatrix,
-    real3x3 worldMatrixIT,
+    float4x4 worldMatrix,
+    float3x3 worldMatrixIT,
     float4 uvDxDy,
     bool customDerivatives)
 {
@@ -64,21 +64,21 @@ Surface EvaluateSurface_Eye(
 
     // ------- Iris/Sclera Layer Setup -------
 
-    real3x3 uvMatrix = CreateIdentity3x3(); // The eye material type doesn't support UV transforms
+    real3x3 uvMatrix = CreateIdentity3x3_real(); // The eye material type doesn't support UV transforms
 
 #if USE_NORMALIZED_SPACE_ALGORITHM
-    real3 normalizedLocal = normalize(localPosition);
-    real projection = dot(normalizedLocal, real3(0.0, 1.0, 0.0));
+    float3 normalizedLocal = normalize(localPosition);
+    float projection = dot(normalizedLocal, float3(0.0, 1.0, 0.0));
     // If the localPosition of the vertex is at the center of the pupil, then the dot product
     // with the forward vector will be at maximum value = 1.0.
     // But the iris is in the XZ plane.
-    real tempDistFactor = sqrt(1 - projection * projection);
-    const real distFromCenter = tempDistFactor * NORMALIZED_EYE_RADIUS;
+    float tempDistFactor = sqrt(1 - projection * projection);
+    const float distFromCenter = tempDistFactor * NORMALIZED_EYE_RADIUS;
 #else
     // This is the original equation used by the first developer of this shader.
     // This equation suffers issues when the vertex data coming from the FBX changes
     // from the original assumption that the radius of the eye mesh is 0.5.
-    const real distFromCenter = length(localPosition.xz);
+    const float distFromCenter = length(localPosition.xz);
 #endif
 
     real mask = GetIrisRadiusMask(distFromCenter);
@@ -88,9 +88,9 @@ Surface EvaluateSurface_Eye(
     surface.vertexNormal = normalize(vertexNormal);
 
     // Get surface normal for each layer (iris/sclera) and blend using the mask defined above
-    real2 irisNormalUv = uvs[MaterialSrg::m_iris_m_normalMapUvIndex];
-    real2 scleraNormalUv = uvs[MaterialSrg::m_sclera_m_normalMapUvIndex];
-    real3 irisNormal, scleraNormal;
+    float2 irisNormalUv = uvs[MaterialSrg::m_iris_m_normalMapUvIndex];
+    float2 scleraNormalUv = uvs[MaterialSrg::m_sclera_m_normalMapUvIndex];
+    float3 irisNormal, scleraNormal;
     
     if (customDerivatives)
     {
@@ -113,7 +113,7 @@ Surface EvaluateSurface_Eye(
 
     //--------------------- Eye refraction UV offset ----------------------
 
-    real3 viewDir = real3(normalize(surface.position - ViewSrg::m_worldPosition.xyz));
+    float3 viewDir = float3(normalize(surface.position - ViewSrg::m_worldPosition.xyz));
 
     // Get refracted vector
     const real airIOR = 1.0;
@@ -217,10 +217,12 @@ Surface EvaluateSurface_Eye(
 
     // ------- Subsurface -------
 
+#if OUTPUT_SUBSURFACE
     real2 subsurfaceUv = uvs[MaterialSrg::m_subsurfaceScatteringInfluenceMapUvIndex];
     surface.subsurfaceScatteringFactor = GetSubsurfaceInput(MaterialSrg::m_subsurfaceScatteringInfluenceMap, MaterialSrg::m_sampler, subsurfaceUv, real(MaterialSrg::m_subsurfaceScatteringFactor), uvDxDy, customDerivatives);
     surface.subsurfaceScatteringQuality = real(MaterialSrg::m_subsurfaceScatteringQuality);
     surface.scatterDistance = real3(MaterialSrg::m_scatterDistance);
+#endif
 
     // ------- Occlusion -------
     
@@ -246,8 +248,8 @@ Surface EvaluateSurface_Eye(
 Surface EvaluateSurface_Eye(
     float3 positionWS,
     real3 vertexNormal,
-    real3 tangents[UvSetCount],
-    real3 bitangents[UvSetCount],
+    float3 tangents[UvSetCount],
+    float3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],
     float3 localPosition,
     bool isFrontFace,

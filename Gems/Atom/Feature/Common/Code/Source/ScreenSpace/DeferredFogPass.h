@@ -79,6 +79,9 @@ namespace AZ
 
             // Shader options for variant generation (texture and layer activation in this case)
             AZ::RPI::ShaderVariantKey m_ShaderOptions;
+
+            // Fog mode option name
+            const AZ::Name m_fogModeOptionName;
         };       
     }   // namespace Render
 }   // namespace AZ

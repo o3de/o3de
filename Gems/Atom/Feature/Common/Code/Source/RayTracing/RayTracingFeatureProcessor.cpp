@@ -687,31 +687,7 @@ namespace AZ
         {
             if (m_meshInfoBufferNeedsUpdate)
             {
-                // advance to the next buffer in the frame list
-                m_currentMeshInfoFrameIndex = (m_currentMeshInfoFrameIndex + 1) % BufferFrameCount;
-
-                // update mesh info buffer
-                Data::Instance<RPI::Buffer>& currentMeshInfoGpuBuffer = m_meshInfoGpuBuffer[m_currentMeshInfoFrameIndex];
-                size_t newMeshByteCount = m_subMeshCount * sizeof(MeshInfo);
-
-                if (currentMeshInfoGpuBuffer == nullptr)
-                {
-                    // allocate the MeshInfo structured buffer
-                    RPI::CommonBufferDescriptor desc;
-                    desc.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
-                    desc.m_bufferName = "RayTracingMeshInfo";
-                    desc.m_byteCount = AZStd::max(newMeshByteCount, sizeof(MeshInfo));
-                    desc.m_elementSize = sizeof(MeshInfo);
-                    currentMeshInfoGpuBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
-                }
-                else if (currentMeshInfoGpuBuffer->GetBufferSize() < newMeshByteCount)
-                {
-                    // resize for the new sub-mesh count
-                    currentMeshInfoGpuBuffer->Resize(newMeshByteCount);
-                }
-
-                currentMeshInfoGpuBuffer->UpdateData(m_meshInfos.data(), newMeshByteCount);
-
+                m_meshInfoGpuBuffer.AdvanceCurrentBufferAndUpdateData(m_meshInfos);
                 m_meshInfoBufferNeedsUpdate = false;
             }
         }
@@ -723,8 +699,6 @@ namespace AZ
                 return;
             }
 
-            m_currentProceduralGeometryInfoFrameIndex = (m_currentProceduralGeometryInfoFrameIndex + 1) % BufferFrameCount;
-
             AZStd::vector<uint32_t> proceduralGeometryInfo;
             proceduralGeometryInfo.reserve(m_proceduralGeometry.size() * 2);
             for (const auto& proceduralGeometry : m_proceduralGeometry)
@@ -733,28 +707,7 @@ namespace AZ
                 proceduralGeometryInfo.push_back(proceduralGeometry.m_localInstanceIndex);
             }
 
-            Data::Instance<RPI::Buffer>& currentProceduralGeometryInfoGpuBuffer = m_proceduralGeometryInfoGpuBuffer[m_currentProceduralGeometryInfoFrameIndex];
-            size_t proceduralGeometryInfoByteCount = proceduralGeometryInfo.size() * sizeof(uint32_t);
-
-            if (currentProceduralGeometryInfoGpuBuffer == nullptr)
-            {
-                // allocate the MaterialInfo structured buffer
-                RPI::CommonBufferDescriptor desc;
-                desc.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
-                desc.m_bufferName = "ProceduralGeometryInfo";
-                desc.m_byteCount = proceduralGeometryInfoByteCount;
-                desc.m_elementSize = sizeof(uint32_t) * 2;
-                desc.m_elementFormat = RHI::Format::R32G32_UINT;
-                currentProceduralGeometryInfoGpuBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
-            }
-            else if (currentProceduralGeometryInfoGpuBuffer->GetBufferSize() < proceduralGeometryInfoByteCount)
-            {
-                // resize for the new index count
-                currentProceduralGeometryInfoGpuBuffer->Resize(proceduralGeometryInfoByteCount);
-            }
-
-            currentProceduralGeometryInfoGpuBuffer->UpdateData(proceduralGeometryInfo.data(), proceduralGeometryInfoByteCount);
-
+            m_proceduralGeometryInfoGpuBuffer.AdvanceCurrentBufferAndUpdateData(proceduralGeometryInfo);
             m_proceduralGeometryInfoBufferNeedsUpdate = false;
         }
 
@@ -762,33 +715,11 @@ namespace AZ
         {
             if (m_materialInfoBufferNeedsUpdate)
             {
-                // advance to the next buffer in the frame list
-                m_currentMaterialInfoFrameIndex = (m_currentMaterialInfoFrameIndex + 1) % BufferFrameCount;
-
-                // update MaterialInfo buffer
-                Data::Instance<RPI::Buffer>& currentMaterialInfoGpuBuffer = m_materialInfoGpuBuffer[m_currentMaterialInfoFrameIndex];
-                uint64_t meshMaterialInfoByteCount = m_subMeshCount * sizeof(MaterialInfo);
-                uint64_t proceduralMaterialInfoByteCount = m_proceduralGeometryMaterialInfos.size() * sizeof(MaterialInfo);
-                uint64_t newMaterialInfoByteCount = meshMaterialInfoByteCount + proceduralMaterialInfoByteCount;
-
-                if (currentMaterialInfoGpuBuffer == nullptr)
-                {
-                    // allocate the MaterialInfo structured buffer
-                    RPI::CommonBufferDescriptor desc;
-                    desc.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
-                    desc.m_bufferName = "RayTracingMaterialInfo";
-                    desc.m_byteCount = newMaterialInfoByteCount;
-                    desc.m_elementSize = sizeof(MaterialInfo);
-                    currentMaterialInfoGpuBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
-                }
-                else if (currentMaterialInfoGpuBuffer->GetBufferSize() < newMaterialInfoByteCount)
-                {
-                    // resize for the new sub-mesh count
-                    currentMaterialInfoGpuBuffer->Resize(newMaterialInfoByteCount);
-                }
-
-                currentMaterialInfoGpuBuffer->UpdateData(m_materialInfos.data(), meshMaterialInfoByteCount);
-                currentMaterialInfoGpuBuffer->UpdateData(m_proceduralGeometryMaterialInfos.data(), proceduralMaterialInfoByteCount, meshMaterialInfoByteCount);
+                m_materialInfoGpuBuffer.AdvanceCurrentElement();
+                m_materialInfoGpuBuffer.CreateOrResizeCurrentBufferWithElementCount<MaterialInfo>(
+                    m_subMeshCount + m_proceduralGeometryMaterialInfos.size());
+                m_materialInfoGpuBuffer.UpdateCurrentBufferData(m_materialInfos);
+                m_materialInfoGpuBuffer.UpdateCurrentBufferData(m_proceduralGeometryMaterialInfos, m_materialInfos.size());
 
                 m_materialInfoBufferNeedsUpdate = false;
             }
@@ -798,30 +729,6 @@ namespace AZ
         {
             if (m_indexListNeedsUpdate)
             {
-                // advance to the next buffer in the frame list
-                m_currentIndexListFrameIndex = (m_currentIndexListFrameIndex + 1) % BufferFrameCount;
-
-                // update mesh buffer indices buffer
-                Data::Instance<RPI::Buffer>& currentMeshBufferIndicesGpuBuffer = m_meshBufferIndicesGpuBuffer[m_currentIndexListFrameIndex];
-                size_t newMeshBufferIndicesByteCount = aznumeric_cast<uint32_t>(m_meshBufferIndices.GetIndexList().size()) * sizeof(uint32_t);
-
-                if (currentMeshBufferIndicesGpuBuffer == nullptr)
-                {
-                    // allocate the MeshBufferIndices buffer
-                    RPI::CommonBufferDescriptor desc;
-                    desc.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
-                    desc.m_bufferName = "RayTracingMeshBufferIndices";
-                    desc.m_byteCount = AZStd::max(newMeshBufferIndicesByteCount, sizeof(uint32_t));
-                    desc.m_elementSize = sizeof(IndexVector::value_type);
-                    desc.m_elementFormat = RHI::Format::R32_UINT;
-                    currentMeshBufferIndicesGpuBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
-                }
-                else if (currentMeshBufferIndicesGpuBuffer->GetBufferSize() < newMeshBufferIndicesByteCount)
-                {
-                    // resize for the new index count
-                    currentMeshBufferIndicesGpuBuffer->Resize(newMeshBufferIndicesByteCount);
-                }
-
 #if !USE_BINDLESS_SRG
                 // resolve to the true indices using the indirection list
                 // Note: this is done on the CPU to avoid double-indirection in the shader
@@ -839,31 +746,10 @@ namespace AZ
                     }
                 }
 
-                currentMeshBufferIndicesGpuBuffer->UpdateData(resolvedMeshBufferIndices.data(), newMeshBufferIndicesByteCount);
+                m_meshBufferIndicesGpuBuffer.AdvanceCurrentBufferAndUpdateData(resolvedMeshBufferIndices);
 #else
-                currentMeshBufferIndicesGpuBuffer->UpdateData(m_meshBufferIndices.GetIndexList().data(), newMeshBufferIndicesByteCount);
+                m_meshBufferIndicesGpuBuffer.AdvanceCurrentBufferAndUpdateData(m_meshBufferIndices.GetIndexList());
 #endif
-
-                // update material texture indices buffer
-                Data::Instance<RPI::Buffer>& currentMaterialTextureIndicesGpuBuffer = m_materialTextureIndicesGpuBuffer[m_currentIndexListFrameIndex];
-                size_t newMaterialTextureIndicesByteCount = m_materialTextureIndices.GetIndexList().size() * sizeof(uint32_t);
-
-                if (currentMaterialTextureIndicesGpuBuffer == nullptr)
-                {
-                    // allocate the MaterialInfo structured buffer
-                    RPI::CommonBufferDescriptor desc;
-                    desc.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
-                    desc.m_bufferName = "RayTracingMaterialTextureIndices";
-                    desc.m_byteCount = AZStd::max(newMaterialTextureIndicesByteCount, sizeof(uint32_t));
-                    desc.m_elementSize = sizeof(IndexVector::value_type);
-                    desc.m_elementFormat = RHI::Format::R32_UINT;
-                    currentMaterialTextureIndicesGpuBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
-                }
-                else if (currentMaterialTextureIndicesGpuBuffer->GetBufferSize() < newMaterialTextureIndicesByteCount)
-                {
-                    // resize for the new index count
-                    currentMaterialTextureIndicesGpuBuffer->Resize(newMaterialTextureIndicesByteCount);
-                }
 
 #if !USE_BINDLESS_SRG
                 // resolve to the true indices using the indirection list
@@ -882,9 +768,9 @@ namespace AZ
                     }
                 }
 
-                currentMaterialTextureIndicesGpuBuffer->UpdateData(resolvedMaterialTextureIndices.data(), newMaterialTextureIndicesByteCount);
+                m_materialTextureIndicesGpuBuffer.AdvanceCurrentBufferAndUpdateData(resolvedMaterialTextureIndices);
 #else
-                currentMaterialTextureIndicesGpuBuffer->UpdateData(m_materialTextureIndices.GetIndexList().data(), newMaterialTextureIndicesByteCount);
+                m_materialTextureIndicesGpuBuffer.AdvanceCurrentBufferAndUpdateData(m_materialTextureIndices.GetIndexList());
 #endif
 
                 m_indexListNeedsUpdate = false;
@@ -975,22 +861,22 @@ namespace AZ
                 m_rayTracingSceneSrg->SetConstant(constantIndex, imageBasedLightFeatureProcessor->GetExposure());
             }
 
-            if (m_meshInfoGpuBuffer[m_currentMeshInfoFrameIndex])
+            if (m_meshInfoGpuBuffer.IsCurrentBufferValid())
             {
                 bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_meshInfo"));
-                m_rayTracingSceneSrg->SetBufferView(bufferIndex, m_meshInfoGpuBuffer[m_currentMeshInfoFrameIndex]->GetBufferView());
+                m_rayTracingSceneSrg->SetBufferView(bufferIndex, m_meshInfoGpuBuffer.GetCurrentBufferView());
             }
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_meshInfoCount"));
             m_rayTracingSceneSrg->SetConstant(constantIndex, m_subMeshCount);
 
             bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_meshBufferIndices"));
-            m_rayTracingSceneSrg->SetBufferView(bufferIndex, m_meshBufferIndicesGpuBuffer[m_currentIndexListFrameIndex]->GetBufferView());
+            m_rayTracingSceneSrg->SetBufferView(bufferIndex, m_meshBufferIndicesGpuBuffer.GetCurrentBufferView());
 
-            if (m_proceduralGeometryInfoGpuBuffer[m_currentProceduralGeometryInfoFrameIndex])
+            if (m_proceduralGeometryInfoGpuBuffer.IsCurrentBufferValid())
             {
                 bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_proceduralGeometryInfo"));
-                m_rayTracingSceneSrg->SetBufferView(bufferIndex, m_proceduralGeometryInfoGpuBuffer[m_currentProceduralGeometryInfoFrameIndex]->GetBufferView());
+                m_rayTracingSceneSrg->SetBufferView(bufferIndex, m_proceduralGeometryInfoGpuBuffer.GetCurrentBufferView());
             }
 
 #if !USE_BINDLESS_SRG
@@ -1006,10 +892,10 @@ namespace AZ
             RHI::ShaderInputBufferIndex bufferIndex;
 
             bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_materialInfo"));
-            m_rayTracingMaterialSrg->SetBufferView(bufferIndex, m_materialInfoGpuBuffer[m_currentMaterialInfoFrameIndex]->GetBufferView());
+            m_rayTracingMaterialSrg->SetBufferView(bufferIndex, m_materialInfoGpuBuffer.GetCurrentBufferView());
 
             bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_materialTextureIndices"));
-            m_rayTracingMaterialSrg->SetBufferView(bufferIndex, m_materialTextureIndicesGpuBuffer[m_currentIndexListFrameIndex]->GetBufferView());
+            m_rayTracingMaterialSrg->SetBufferView(bufferIndex, m_materialTextureIndicesGpuBuffer.GetCurrentBufferView());
 
 #if !USE_BINDLESS_SRG
             RHI::ShaderInputImageUnboundedArrayIndex textureUnboundedArrayIndex = srgLayout->FindShaderInputImageUnboundedArrayIndex(AZ::Name("m_materialTextures"));

@@ -31,8 +31,7 @@ namespace AZ
             const VkPhysicalDeviceAccelerationStructurePropertiesKHR& accelerationStructureProperties = physicalDevice.GetPhysicalDeviceAccelerationStructureProperties();
 
             // advance to the next buffer
-            m_currentBufferIndex = (m_currentBufferIndex + 1) % BufferCount;
-            BlasBuffers& buffers = m_buffers[m_currentBufferIndex];
+            BlasBuffers& buffers = m_buffers.AdvanceCurrentElement();
 
             if (buffers.m_accelerationStructure)
             {

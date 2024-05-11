@@ -9,30 +9,29 @@
 #pragma once
 
 // include required files
-#include <AzCore/std/typetraits/integral_constant.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
-#include "StandardHeaders.h"
 #include "MultiThreadManager.h"
-
+#include "StandardHeaders.h"
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/typetraits/integral_constant.h>
 
 namespace MCore
 {
     /**
      * The reference counter class.
      */
-    class MCORE_API MemoryObject
+    class MCORE_API RefCounted
     {
     public:
         /**
          * The constructor.
          * Sets the initial reference count to 1.
          */
-        MemoryObject();
+        RefCounted();
 
         /**
          * The destructor.
          */
-        virtual ~MemoryObject();
+        virtual ~RefCounted();
 
         /**
          * Increase the reference count by one.
@@ -64,16 +63,14 @@ namespace MCore
         AtomicUInt32    m_referenceCount;
     };
 
-
-
     /**
      * A little helper to destroy a given memory object.
      * Internally this just checks if the object is nullptr or not, and only calls Destroy on the object if it is not nullptr.
      * This does NOT set the object to nullptr afterwards!
      * @param object The object to be destroyed.
      */
-    MCORE_API void Destroy(MemoryObject* object);
+    MCORE_API void Destroy(RefCounted* object);
 
     template<typename T>
     using MemoryObjectUniquePtr = AZStd::unique_ptr<T, AZStd::integral_constant<decltype(&Destroy), &Destroy>>;
-}   // namespace MCore
+} // namespace MCore
