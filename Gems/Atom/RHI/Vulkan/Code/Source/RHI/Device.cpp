@@ -1128,7 +1128,15 @@ namespace AZ
                 && m_enabledDeviceFeatures.sparseResidencyImage3D
                 && m_enabledDeviceFeatures.sparseResidencyAliased
                 && deviceProperties.sparseProperties.residencyStandard2DBlockShape
-                && deviceProperties.sparseProperties.residencyStandard3DBlockShape;
+                && deviceProperties.sparseProperties.residencyStandard3DBlockShape && ([this]{
+                    for(const auto& queueFamily: m_queueFamilyProperties) {
+                        const VkQueueFlags requiredFlags = AZ::Vulkan::ConvertQueueClass(RHI::HardwareQueueClass::Copy);
+                        if((queueFamily.queueFlags & requiredFlags) == requiredFlags) {
+                            return true;
+                        }
+                    }
+                    return false;
+                })();
 
             // Check if the Vulkan device support subgroup operations
             m_features.m_waveOperation = physicalDevice.IsFeatureSupported(DeviceFeature::SubgroupOperation);
