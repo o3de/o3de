@@ -18,6 +18,7 @@ namespace LUAEditor
         m_font.setFixedPitch(true);
         m_font.setStyleHint(QFont::Monospace);
         m_font.setPointSize(m_fontSize);
+        m_font.setStyleStrategy(GetNoAntiAliasing() ? QFont::NoAntialias : QFont::PreferDefault);
     }
 
     void SyntaxStyleSettings::SetZoomPercent(float zoom)
@@ -32,9 +33,11 @@ namespace LUAEditor
         if (serializeContext)
         {
             serializeContext->Class<SyntaxStyleSettings, AZ::UserSettings >()
-                ->Version(6)
+                ->Version(7)
+                ->EventHandler<SerializationEvents>()
                 ->Field("m_fontFamily", &SyntaxStyleSettings::m_fontFamily)
                 ->Field("m_fontSize", &SyntaxStyleSettings::m_fontSize)
+                ->Field("m_noAntialiasing", &SyntaxStyleSettings::m_noAntialiasing)
                 ->Field("m_tabSize", &SyntaxStyleSettings::m_tabSize)
                 ->Field("m_useSpacesInsteadOfTabs", &SyntaxStyleSettings::m_useSpacesInsteadOfTabs)
 
@@ -92,6 +95,9 @@ namespace LUAEditor
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SyntaxStyleSettings::OnFontChange)
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SyntaxStyleSettings::m_fontSize, "Size", "")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SyntaxStyleSettings::OnFontChange)
+
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SyntaxStyleSettings::m_noAntialiasing, "No Antialiasing", "")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SyntaxStyleSettings::OnFontChange)
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SyntaxStyleSettings::m_tabSize, "Tab Size", "")
@@ -198,6 +204,8 @@ namespace LUAEditor
     {
         m_font.setFamily(m_fontFamily.c_str());
         m_font.setPointSize(m_fontSize);
+        m_font.setStyleStrategy(GetNoAntiAliasing() ? QFont::NoAntialias : QFont::PreferDefault);
+
         LUAEditorMainWindowMessages::Bus::Broadcast(&LUAEditorMainWindowMessages::Bus::Events::Repaint);
     }
 }
