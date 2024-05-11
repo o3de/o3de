@@ -584,6 +584,8 @@ namespace AssetProcessor
 #endif
                             }
 
+                            AZ_Info(AssetProcessor::ConsoleChannel, "(%s) Adding Dependency: %s", productName.c_str(), productDatabaseEntry.m_productName.c_str());
+                            
                             AZStd::vector<AssetBuilderSDK::ProductDependency>& productDependencyList = isExcludedDependency ? excludedDeps : resolvedDeps;
                             productDependencyList.emplace_back(AZ::Data::AssetId(sourceDatabaseEntry.m_sourceGuid, productDatabaseEntry.m_subID), productDependencyFlags);
                         }
