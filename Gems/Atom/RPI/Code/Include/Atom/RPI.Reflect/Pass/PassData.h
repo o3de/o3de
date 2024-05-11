@@ -51,6 +51,11 @@ namespace AZ
             PipelineGlobalConnectionList m_pipelineGlobalConnections;
 
             Name m_pipelineViewTag;
+
+            int m_deviceIndex = RHI::MultiDevice::InvalidDeviceIndex;
+
+            //! Should this pass inherit the device index of its parent pass.
+            bool m_inheritDeviceIndex = false;
         };
     } // namespace RPI
 } // namespace AZ

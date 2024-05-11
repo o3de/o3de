@@ -56,6 +56,7 @@ namespace AZ
             {
                 PassUtils::ExtractPipelineGlobalConnections(m_passData, m_pipelineGlobalConnections);
                 m_viewTag = m_passData->m_pipelineViewTag;
+                m_flags.m_inheritDeviceIndex = m_passData->m_inheritDeviceIndex;
             }
 
             m_flags.m_enabled = true;

@@ -482,6 +482,9 @@ namespace AZ
 
                         // Whether this pass contains a binding that is referenced globally through the pipeline
                         uint64_t m_containsGlobalReference : 1;
+
+                        // Whether this pass should inherit parent pass's device index
+                        uint64_t m_inheritDeviceIndex : 1;
                     };
                     uint64_t m_allFlags = 0;
                 };

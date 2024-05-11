@@ -41,6 +41,10 @@ namespace AZ
             : Pass(descriptor)
         {
             m_flags.m_createChildren = true;
+            if (m_passData)
+            {
+                m_deviceIndex = m_passData->m_deviceIndex;
+            }
         }
 
         ParentPass::~ParentPass()
@@ -126,6 +130,11 @@ namespace AZ
 
         void ParentPass::OnHierarchyChange()
         {
+            if (m_parent && m_flags.m_inheritDeviceIndex)
+            {
+                m_deviceIndex = azrtti_cast<AZ::RPI::ParentPass*>(m_parent)->GetDeviceIndex();
+            }
+
             Pass::OnHierarchyChange();
 
             // Notify children about hierarchy change
@@ -264,6 +273,11 @@ namespace AZ
             {
                 child->SetPipelineStatisticsQueryEnabled(enable);
             }
+        }
+
+        const int ParentPass::GetDeviceIndex() const
+        {
+            return m_deviceIndex;
         }
 
         // --- Child creation ---

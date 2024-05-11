@@ -44,7 +44,10 @@ namespace AZ
             {
                 m_flags.m_bindViewSrg = true;
             }
-            if (passData && passData->m_deviceIndex >= 0 && passData->m_deviceIndex < RHI::RHISystemInterface::Get()->GetDeviceCount())
+            if (passData
+                && !passData->m_inheritDeviceIndex 
+                && passData->m_deviceIndex >= 0 
+                && passData->m_deviceIndex < RHI::RHISystemInterface::Get()->GetDeviceCount())
             {
                 m_deviceIndex = passData->m_deviceIndex;
             }
@@ -193,6 +196,12 @@ namespace AZ
         void RenderPass::FrameBeginInternal(FramePrepareParams params)
         {
             m_timestampResult = AZ::RPI::TimestampResult();
+
+            if (m_parent && m_flags.m_inheritDeviceIndex)
+            {
+                m_deviceIndex = azrtti_cast<AZ::RPI::ParentPass*>(m_parent)->GetDeviceIndex();
+            }
+
             if (GetScopeId().IsEmpty())
             {
                 InitScope(RHI::ScopeId(GetPathName()), m_hardwareQueueClass, m_deviceIndex);
