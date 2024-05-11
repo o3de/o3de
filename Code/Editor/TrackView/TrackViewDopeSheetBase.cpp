@@ -1996,13 +1996,13 @@ void CTrackViewDopeSheetBase::ChangeSequenceTrackSelection(CTrackViewSequence* s
 bool CTrackViewDopeSheetBase::CreateColorKey(CTrackViewTrack* pTrack, float keyTime)
 {
     bool keyCreated = false;
-    Vec3 vColor(0, 0, 0);
+    AZ::Vector3 vColor(0, 0, 0);
     pTrack->GetValue(keyTime, vColor);
 
     const AZ::Color defaultColor(
-        clamp_tpl<AZ::u8>(static_cast<AZ::u8>(FloatToIntRet(vColor.x)), 0, 255),
-        clamp_tpl<AZ::u8>(static_cast<AZ::u8>(FloatToIntRet(vColor.y)), 0, 255),
-        clamp_tpl<AZ::u8>(static_cast<AZ::u8>(FloatToIntRet(vColor.z)), 0, 255),
+        clamp_tpl<AZ::u8>(static_cast<AZ::u8>(FloatToIntRet(vColor.GetX())), 0, 255),
+        clamp_tpl<AZ::u8>(static_cast<AZ::u8>(FloatToIntRet(vColor.GetY())), 0, 255),
+        clamp_tpl<AZ::u8>(static_cast<AZ::u8>(FloatToIntRet(vColor.GetZ())), 0, 255),
         255);
     AzQtComponents::ColorPicker dlg(AzQtComponents::ColorPicker::Configuration::RGB, QString(), this);
     dlg.setWindowTitle(tr("Select Color"));
@@ -2114,13 +2114,13 @@ void CTrackViewDopeSheetBase::EditSelectedColorKey(CTrackViewTrack* pTrack)
             // init with the first selected key color
             m_colorUpdateKeyTime = selectedKeyBundle.GetKey(0).GetTime();
 
-            Vec3  color;
+            AZ::Vector3  color;
             pTrack->GetValue(m_colorUpdateKeyTime, color);
 
             const AZ::Color defaultColor(
-                clamp_tpl(static_cast<AZ::u8>(FloatToIntRet(color.x)), AZ::u8(0), AZ::u8(255)),
-                clamp_tpl(static_cast<AZ::u8>(FloatToIntRet(color.y)), AZ::u8(0), AZ::u8(255)),
-                clamp_tpl(static_cast<AZ::u8>(FloatToIntRet(color.z)), AZ::u8(0), AZ::u8(255)),
+                clamp_tpl(static_cast<AZ::u8>(FloatToIntRet(color.GetX())), AZ::u8(0), AZ::u8(255)),
+                clamp_tpl(static_cast<AZ::u8>(FloatToIntRet(color.GetY())), AZ::u8(0), AZ::u8(255)),
+                clamp_tpl(static_cast<AZ::u8>(FloatToIntRet(color.GetZ())), AZ::u8(0), AZ::u8(255)),
                 255);
 
             AzQtComponents::ColorPicker picker(AzQtComponents::ColorPicker::Configuration::RGB);
@@ -3584,10 +3584,10 @@ void CTrackViewDopeSheetBase::DrawColorGradient(QPainter* painter, const QRect& 
     for (int x = rc.left(); x < rc.right(); ++x)
     {
         // This is really slow. Is there a better way?
-        Vec3 vColor(0, 0, 0);
+        AZ::Vector3 vColor(0, 0, 0);
         pTrack->GetValue(TimeFromPointUnsnapped(QPoint(x, rc.top())), vColor);
 
-        painter->setPen(ColorLinearToGamma(vColor / 255.0f));
+        painter->setPen(ColorToQColor(AZ::Color(vColor).ToU32LinearToGamma()));
         painter->drawLine(x, rc.top(), x, rc.bottom());
     }
     painter->setPen(pOldPen);

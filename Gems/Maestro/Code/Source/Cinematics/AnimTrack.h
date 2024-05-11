@@ -158,9 +158,9 @@ public:
     // Interpolates keys if needed.
     //////////////////////////////////////////////////////////////////////////
     void GetValue([[maybe_unused]] float time, [[maybe_unused]] float& value, [[maybe_unused]] bool applyMultiplier = false) override { assert(0); };
-    void GetValue([[maybe_unused]] float time, [[maybe_unused]] Vec3& value, [[maybe_unused]] bool applyMultiplier = false) override { assert(0); };
-    void GetValue([[maybe_unused]] float time, [[maybe_unused]] Vec4& value, [[maybe_unused]] bool applyMultiplier = false) override { assert(0); };
-    void GetValue([[maybe_unused]] float time, [[maybe_unused]] Quat& value) override { assert(0); };
+    void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZ::Vector3& value, [[maybe_unused]] bool applyMultiplier = false) override { assert(0); };
+    void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZ::Vector4& value, [[maybe_unused]] bool applyMultiplier = false) override { assert(0); };
+    void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZ::Quaternion& value) override { assert(0); };
     void GetValue([[maybe_unused]] float time, [[maybe_unused]] bool& value) override { assert(0); };
     void GetValue([[maybe_unused]] float time, [[maybe_unused]] Maestro::AssetBlends<AZ::Data::AssetData>& value) override { assert(0); }
 
@@ -169,9 +169,9 @@ public:
     // Adds new keys if required.
     //////////////////////////////////////////////////////////////////////////
     void SetValue([[maybe_unused]] float time, [[maybe_unused]] const float& value, [[maybe_unused]] bool bDefault = false, [[maybe_unused]] bool applyMultiplier = false) override { assert(0); };
-    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Vec3& value, [[maybe_unused]] bool bDefault = false, [[maybe_unused]] bool applyMultiplier = false) override { assert(0); };
-    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Vec4& value, [[maybe_unused]] bool bDefault = false, [[maybe_unused]] bool applyMultiplier = false) override { assert(0); };
-    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Quat& value, [[maybe_unused]] bool bDefault = false) override { assert(0); };
+    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZ::Vector3& value, [[maybe_unused]] bool bDefault = false, [[maybe_unused]] bool applyMultiplier = false) override { assert(0); };
+    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZ::Vector4& value, [[maybe_unused]] bool bDefault = false, [[maybe_unused]] bool applyMultiplier = false) override { assert(0); };
+    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZ::Quaternion& value, [[maybe_unused]] bool bDefault = false) override { assert(0); };
     void SetValue([[maybe_unused]] float time, [[maybe_unused]] const bool& value, [[maybe_unused]] bool bDefault = false) override { assert(0); };
     void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Maestro::AssetBlends<AZ::Data::AssetData>& value, [[maybe_unused]] bool bDefault = false) override { assert(0); }
 

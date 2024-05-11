@@ -16,6 +16,7 @@
 #include "CharacterTrack.h"
 #include "AnimSplineTrack.h"
 #include "BoolTrack.h"
+#include "MathConversion.h"
 #include "SelectTrack.h"
 #include "EventTrack.h"
 #include "SoundTrack.h"
@@ -777,7 +778,7 @@ bool CAnimNode::SetParamValue(float time, CAnimParamType param, float value)
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CAnimNode::SetParamValue(float time, CAnimParamType param, const Vec3& value)
+bool CAnimNode::SetParamValue(float time, CAnimParamType param, const AZ::Vector3& value)
 {
     if (m_bIgnoreSetParam)
     {
@@ -789,14 +790,14 @@ bool CAnimNode::SetParamValue(float time, CAnimParamType param, const Vec3& valu
     {
         // Vec3 track.
         bool bDefault = !(gEnv->pMovieSystem->IsRecording() && (m_flags & eAnimNodeFlags_EntitySelected)); // Only selected nodes can be recorded
-        pTrack->SetValue(time, value, bDefault);
+        pTrack->SetValue(time, AZVec3ToLYVec3(value), bDefault);
         return true;
     }
     return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CAnimNode::SetParamValue(float time, CAnimParamType param, const Vec4& value)
+bool CAnimNode::SetParamValue(float time, CAnimParamType param, const AZ::Vector4& value)
 {
     if (m_bIgnoreSetParam)
     {
@@ -828,7 +829,7 @@ bool CAnimNode::GetParamValue(float time, CAnimParamType param, float& value)
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CAnimNode::GetParamValue(float time, CAnimParamType param, Vec3& value)
+bool CAnimNode::GetParamValue(float time, CAnimParamType param, AZ::Vector3& value)
 {
     CCompoundSplineTrack* pTrack = static_cast<CCompoundSplineTrack*>(GetTrackForParameter(param));
     if (pTrack && pTrack->GetValueType() == AnimValueType::Vector && pTrack->GetNumKeys() > 0)
@@ -841,7 +842,7 @@ bool CAnimNode::GetParamValue(float time, CAnimParamType param, Vec3& value)
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CAnimNode::GetParamValue(float time, CAnimParamType param, Vec4& value)
+bool CAnimNode::GetParamValue(float time, CAnimParamType param, AZ::Vector4& value)
 {
     CCompoundSplineTrack* pTrack = static_cast<CCompoundSplineTrack*>(GetTrackForParameter(param));
     if (pTrack && pTrack->GetValueType() == AnimValueType::Vector4 && pTrack->GetNumKeys() > 0)
