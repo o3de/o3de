@@ -104,6 +104,7 @@ public:
     QIcon GetIconForTrack(const CUiAnimViewTrack* pTrack);
     void ShowNextResult();
 
+    static QIcon TrackViewNodeIcon(EUiAnimNodeType type);
 protected:
     void paintEvent(QPaintEvent* event) override;
     void keyPressEvent(QKeyEvent* event) override;
@@ -126,9 +127,6 @@ private:
 
     void SetPopupMenuLock(QMenu* menu);
     void CreateSetAnimationLayerPopupMenu(QMenu& menuSetLayer, CUiAnimViewTrack* pTrack) const;
-
-    int GetIconIndexForTrack(const CUiAnimViewTrack* pTrack) const;
-    int GetIconIndexForNode(EUiAnimNodeType type) const;
 
     void AddNodeRecord(CRecord* pParentRecord, CUiAnimViewNode* pNode);
     CRecord* AddTrackRecord(CRecord* pParentRecord, CUiAnimViewTrack* pTrack);
@@ -185,7 +183,6 @@ private:
 
     std::unordered_map<const CUiAnimViewNode*, CRecord*> m_nodeToRecordMap;
 
-    QMap<int, QIcon> m_imageList;
     QScopedPointer<Ui::CUiAnimViewNodesCtrl> ui;
 };
 
