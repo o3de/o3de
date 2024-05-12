@@ -469,10 +469,6 @@ namespace AssetProcessor
 
     void PathDependencyManager::ResolveDependencies(AssetBuilderSDK::ProductPathDependencySet& pathDeps, AZStd::vector<AssetBuilderSDK::ProductDependency>& resolvedDeps, const AZStd::string& platform, [[maybe_unused]] const AZStd::string& productName)
     {
-#if defined(CARBONATED)
-        AZ_Info(AssetProcessor::ConsoleChannel, "CARBONATED - Resolving Dependencies for: %s", productName.c_str());
-#endif
-
         const AZ::Data::ProductDependencyInfo::ProductDependencyFlags productDependencyFlags =
             AZ::Data::ProductDependencyInfo::CreateFlags(AZ::Data::AssetLoadBehavior::NoLoad);
 
@@ -528,10 +524,6 @@ namespace AssetProcessor
 
             if (cleanedupDependency.m_dependencyType == AssetBuilderSDK::ProductPathDependencyType::ProductFile)
             {
-#if defined(CARBONATED)
-                AZ_Info(AssetProcessor::ConsoleChannel, "CARBONATED - (%s) Dependency Type: ProductFile", cleanedupDependency.m_dependencyPath.c_str());
-#endif
-
                 SanitizeForDatabase(dependencyPathSearch);
                 SanitizeForDatabase(pathWildcardSearchPath);
                 AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer productInfoContainer;
@@ -581,20 +573,16 @@ namespace AssetProcessor
 #if defined(CARBONATED)
                                 if (!AZStd::wildcard_match(pathWildcardSearchPath.c_str(), productDatabaseEntry.m_productName.c_str()))
                                 {                                    
-                                    AZ_Info(AssetProcessor::ConsoleChannel, "CARBONATED - (%s) Product is not a wildcard match!", pathWildcardSearchPath.c_str(), productDatabaseEntry.m_productName.c_str());
                                     continue;
                                 }
 #else
                                 AZ::IO::PathView searchPath(productDatabaseEntry.m_productName);
                                 if (!searchPath.Match(pathWildcardSearchPath))
                                 {
-                                    AZ_Info(AssetProcessor::ConsoleChannel, "OLD CODE?! - (%s) Product is not a PathView!", pathWildcardSearchPath.c_str(), productDatabaseEntry.m_productName.c_str());
                                     continue;
                                 }
 #endif
                             }
-
-                            AZ_Info(AssetProcessor::ConsoleChannel, "CARBONATED - (%s) Adding Dependency: %s", productName.c_str(), productDatabaseEntry.m_productName.c_str());
                             
                             AZStd::vector<AssetBuilderSDK::ProductDependency>& productDependencyList = isExcludedDependency ? excludedDeps : resolvedDeps;
                             productDependencyList.emplace_back(AZ::Data::AssetId(sourceDatabaseEntry.m_sourceGuid, productDatabaseEntry.m_subID), productDependencyFlags);
@@ -621,10 +609,6 @@ namespace AssetProcessor
             }
             else
             {
-#if defined(CARBONATED)
-                AZ_Info(AssetProcessor::ConsoleChannel, "CARBONATED - (%s) Dependency Type: SourceFile", cleanedupDependency.m_dependencyPath.c_str());
-#endif
-
                 // For source assets, the casing of the input path must be maintained. Just fix up the path separators.
                 AZStd::replace(dependencyPathSearch.begin(), dependencyPathSearch.end(), AZ_WRONG_DATABASE_SEPARATOR, AZ_CORRECT_DATABASE_SEPARATOR);
                 AzFramework::StringFunc::Replace(dependencyPathSearch, AZ_DOUBLE_CORRECT_DATABASE_SEPARATOR, AZ_CORRECT_DATABASE_SEPARATOR_STRING);
