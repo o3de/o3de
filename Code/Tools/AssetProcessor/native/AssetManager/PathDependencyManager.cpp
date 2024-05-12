@@ -511,23 +511,21 @@ namespace AssetProcessor
 
             bool isExcludedDependency = dependencyPathSearch.starts_with(ExcludedDependenciesSymbol);
             dependencyPathSearch = isExcludedDependency ? dependencyPathSearch.substr(1) : dependencyPathSearch;
-#if defined(CARBONATED)
-            bool isRecursiveDependency = dependencyPathSearch.ends_with(RecursiveDependenciesPattern);
-            dependencyPathSearch = isRecursiveDependency ? dependencyPathSearch.substr(0, dependencyPathSearch.length() - 1) : dependencyPathSearch;
-            AZStd::string pathWildcardSearchPathWithPlatform(platform + AZ_CORRECT_DATABASE_SEPARATOR_STRING + dependencyPathSearch);
-#endif
+
             // The database uses % for wildcards, both path based searching uses *, so keep a copy of the path with the * wildcard for later
             // use.
+#if defined(CARBONATED)
+            AZStd::string pathWildcardSearchPath("*/" + dependencyPathSearch); 
+#else
             AZStd::string pathWildcardSearchPath(dependencyPathSearch);
+#endif
+
             bool isExactDependency = !AzFramework::StringFunc::Replace(dependencyPathSearch, '*', '%');
 
             if (cleanedupDependency.m_dependencyType == AssetBuilderSDK::ProductPathDependencyType::ProductFile)
             {
                 SanitizeForDatabase(dependencyPathSearch);
                 SanitizeForDatabase(pathWildcardSearchPath);
-#if defined(CARBONATED)
-                SanitizeForDatabase(pathWildcardSearchPathWithPlatform);
-#endif
                 AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer productInfoContainer;
                 QString productNameWithPlatform = QString("%1%2%3").arg(platform.c_str(), AZ_CORRECT_DATABASE_SEPARATOR_STRING, dependencyPathSearch.c_str());
 
@@ -572,34 +570,20 @@ namespace AssetProcessor
                             // This check here makes sure that the filter for 1 matches 2.
                             if (!isExactDependency)
                             {
-                                AZ::IO::PathView searchPath(productDatabaseEntry.m_productName);
-
 #if defined(CARBONATED)
-                                const bool pathMatch = searchPath.Match(pathWildcardSearchPath);
-                                if (!isRecursiveDependency)
-                                {
-                                    if (!pathMatch)
-                                    {
-                                        continue;
-                                    }
-                                }
-                                else
-                                {
-                                    if (!pathMatch &&
-                                        !AZStd::wildcard_match(
-                                            pathWildcardSearchPathWithPlatform.c_str(), productDatabaseEntry.m_productName.c_str()))
-                                    {
-                                        continue;
-                                    }
+                                if (!AZStd::wildcard_match(pathWildcardSearchPath.c_str(), productDatabaseEntry.m_productName.c_str()))
+                                {                                    
+                                    continue;
                                 }
 #else
+                                AZ::IO::PathView searchPath(productDatabaseEntry.m_productName);
                                 if (!searchPath.Match(pathWildcardSearchPath))
                                 {
                                     continue;
                                 }
 #endif
                             }
-
+                            
                             AZStd::vector<AssetBuilderSDK::ProductDependency>& productDependencyList = isExcludedDependency ? excludedDeps : resolvedDeps;
                             productDependencyList.emplace_back(AZ::Data::AssetId(sourceDatabaseEntry.m_sourceGuid, productDatabaseEntry.m_subID), productDependencyFlags);
                         }
