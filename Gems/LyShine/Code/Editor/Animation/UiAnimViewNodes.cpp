@@ -42,22 +42,6 @@
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
 #include <AzQtComponents/Utilities/Conversions.h>
 
-static QString AzEntityNode = QStringLiteral(":/nodes/tvnodes-21.png");
-static QString DirectorIcon = QStringLiteral(":/nodes/tvnodes-27.png");
-static QString CvarIcon = QStringLiteral(":/nodes/tvnodes-15.png");
-static QString ScriptVarIcon = QStringLiteral(":/nodes/tvnodes-14.png");
-static QString GroupIcon = QStringLiteral(":/nodes/tvnodes-01.png");
-static QString LayerIcon = QStringLiteral(":/nodes/tvnodes-20.png");
-static QString CommentIcon = QStringLiteral(":/nodes/tvnodes-23.png");
-static QString LightIcon = QStringLiteral(":/nodes/tvnodes-18.png");
-static QString ShadowIcon = QStringLiteral(":/nodes/tvnodes-24.png");
-static QString EmptyIcon = QStringLiteral(":/nodes/tvnodes-21.png");
-static QString HdrIcon = QStringLiteral(":/nodes/tvnodes-26.png");
-static QString MaterialIcon = QStringLiteral(":/nodes/tvnodes-16.png");
-static QString CameraIcon = QStringLiteral(":/nodes/tvnodes-08.png");
-static QString EventIcon = QStringLiteral(":/nodes/tvnodes-06.png");
-static QString TrackIcon = QStringLiteral(":/nodes/tvnodes-13.png");
-
 CUiAnimViewNodesCtrl::CRecord::CRecord(CUiAnimViewNode* pNode /*= nullptr*/)
     : m_pNode(pNode)
     , m_bVisible(false)
@@ -480,7 +464,7 @@ void CUiAnimViewNodesCtrl::UpdateNodeRecord(CRecord* pRecord)
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimViewNodesCtrl::UpdateTrackRecord(CRecord* pRecord, CUiAnimViewTrack* pTrack)
 {
-    pRecord->setIcon(0, QIcon(TrackIcon));
+    pRecord->setIcon(0, QIcon(QStringLiteral(":/nodes/tvnodes-13.png")));
 
     // Check if parameter is valid for non sub tracks
     CUiAnimViewAnimNode* pAnimNode = pTrack->GetAnimNode();
@@ -493,38 +477,38 @@ void CUiAnimViewNodesCtrl::UpdateTrackRecord(CRecord* pRecord, CUiAnimViewTrack*
     pRecord->setData(0, CRecord::EnableRole, !bDisabledOrMuted && isParamValid);
 }
 
-QIcon CUiAnimViewNodesCtrl::TrackViewNodeIcon(EUiAnimNodeType nodeType)
+QIcon CUiAnimViewNodesCtrl::NodeTypeToTrackViewIcon(EUiAnimNodeType nodeType)
 {
     switch (nodeType)
     {
     case eUiAnimNodeType_AzEntity:
-        return QIcon(AzEntityNode);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-21.png"));
     case eUiAnimNodeType_Director:
-        return QIcon(DirectorIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-27.png"));
     case eUiAnimNodeType_Camera:
-        return QIcon(CameraIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-08.png"));
     case eUiAnimNodeType_CVar:
-        return QIcon(CvarIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-15.png"));
     case eUiAnimNodeType_ScriptVar:
-        return QIcon(ScriptVarIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-14.png"));
     case eUiAnimNodeType_Material:
-        return QIcon(MaterialIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-16.png"));
     case eUiAnimNodeType_Event:
-        return QIcon(EventIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-06.png"));
     case eUiAnimNodeType_Group:
-        return QIcon(GroupIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-01.png"));
     case eUiAnimNodeType_Layer:
-        return QIcon(LayerIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-20.png"));
     case eUiAnimNodeType_Comment:
-        return QIcon(CommentIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-23.png"));
     case eUiAnimNodeType_Light:
-        return QIcon(LightIcon);
+        return QIcon( QStringLiteral(":/nodes/tvnodes-18.png"));
     case eUiAnimNodeType_HDRSetup:
-        return QIcon(HdrIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-26.png"));
     case eUiAnimNodeType_ShadowSetup:
-        return QIcon(ShadowIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-24.png"));
     }
-    return QIcon(EmptyIcon);
+    return QIcon(QStringLiteral(":/nodes/tvnodes-21.png"));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -543,7 +527,7 @@ void CUiAnimViewNodesCtrl::UpdateUiAnimNodeRecord(CRecord* pRecord, CUiAnimViewA
     EUiAnimNodeType nodeType = pAnimNode->GetType();
     QString nodeName = QString::fromUtf8(pAnimNode->GetName().c_str());
 
-    pRecord->setIcon(0, TrackViewNodeIcon(nodeType));
+    pRecord->setIcon(0, NodeTypeToTrackViewIcon(nodeType));
 
     const bool bDisabled = pAnimNode->IsDisabled();
     pRecord->setData(0, CRecord::EnableRole, !bDisabled);
@@ -1654,7 +1638,7 @@ void CUiAnimViewNodesCtrl::EndUndoTransaction()
 //////////////////////////////////////////////////////////////////////////
 QIcon CUiAnimViewNodesCtrl::GetIconForTrack(const CUiAnimViewTrack* pTrack)
 {
-    return QIcon(TrackIcon);
+    return QIcon(QStringLiteral(":/nodes/tvnodes-13.png"));
 }
 
 //////////////////////////////////////////////////////////////////////////

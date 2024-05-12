@@ -49,37 +49,6 @@
 #include "TrackViewFBXImportPreviewDialog.h"
 #include "AnimationContext.h"
 
-static QString TrackIcon = QStringLiteral(":/nodes/tvnodes-13.png");
-static QString FovIcon = QStringLiteral(":/nodes/tvnodes-02.png");
-static QString PositionIcon = QStringLiteral(":/nodes/tvnodes-03.png");
-static QString RotationIcon = QStringLiteral(":/nodes/tvnodes-04.png");
-static QString ScaleIcon = QStringLiteral(":/nodes/tvnodes-05.png");
-static QString EventIcon = QStringLiteral(":/nodes/tvnodes-06.png");
-static QString VisibilityIcon = QStringLiteral(":/nodes/tvnodes-07.png");
-static QString CameraIcon = QStringLiteral(":/nodes/tvnodes-08.png");
-static QString SoundIcon = QStringLiteral(":/nodes/tvnodes-09.png");
-static QString AnimationIcon = QStringLiteral(":/nodes/tvnodes-10.png");
-static QString SequenceIcon = QStringLiteral(":/nodes/tvnodes-11.png");
-static QString CaptureIcon = QStringLiteral(":/nodes/tvnodes-25.png");
-static QString ConsoleIcon = QStringLiteral(":/nodes/tvnodes-15.png");
-static QString LookAtIcon = QStringLiteral(":/nodes/tvnodes-17.png");
-static QString TimeWarpIcon = QStringLiteral(":/nodes/tvnodes-22.png");
-static QString CommentTextIcon = QStringLiteral(":/nodes/tvnodes-23.png");
-static QString ShakeMultiplierIcon = QStringLiteral(":/nodes/tvnodes-28.png");
-
-static QString AzEntityNode = QStringLiteral(":/nodes/tvnodes-21.png");
-static QString DirectorIcon = QStringLiteral(":/nodes/tvnodes-27.png");
-static QString CvarIcon = QStringLiteral(":/nodes/tvnodes-15.png");
-static QString ScriptVarIcon = QStringLiteral(":/nodes/tvnodes-14.png");
-static QString GroupIcon = QStringLiteral(":/nodes/tvnodes-01.png");
-static QString LayerIcon = QStringLiteral(":/nodes/tvnodes-20.png");
-static QString CommentIcon = QStringLiteral(":/nodes/tvnodes-23.png");
-static QString LightIcon = QStringLiteral(":/nodes/tvnodes-18.png");
-static QString ShadowIcon = QStringLiteral(":/nodes/tvnodes-24.png");
-static QString EmptyIcon = QStringLiteral(":/nodes/tvnodes-21.png");
-static QString HdrIcon = QStringLiteral(":/nodes/tvnodes-26.png");
-static QString MaterialIcon = QStringLiteral(":/nodes/tvnodes-16.png");
-
 CTrackViewNodesCtrl::CRecord::CRecord(CTrackViewNode* pNode /*= nullptr*/)
     : m_pNode(pNode)
     , m_bVisible(false)
@@ -496,7 +465,6 @@ CTrackViewNodesCtrl::CRecord* CTrackViewNodesCtrl::AddAnimNodeRecord(CRecord* pP
 CTrackViewNodesCtrl::CRecord* CTrackViewNodesCtrl::AddTrackRecord(CRecord* pParentRecord, CTrackViewTrack* pTrack)
 {
     CRecord* pNewTrackRecord = new CRecord(pTrack);
-    //pNewTrackRecord->setSizeHint(0, QSize(50, 18));
     pNewTrackRecord->setText(0, QString::fromUtf8(pTrack->GetName().c_str()));
     UpdateTrackRecord(pNewTrackRecord, pTrack);
     pParentRecord->insertChild(GetInsertPosition(pParentRecord, pTrack), pNewTrackRecord);
@@ -2431,10 +2399,13 @@ void CTrackViewNodesCtrl::EndUndoTransaction()
     UpdateDopeSheet();
 }
 
-QIcon CTrackViewNodesCtrl::TrackViewIcon(const CTrackViewTrack* pTrack) {
+QIcon CTrackViewNodesCtrl::TrackViewIcon(const CTrackViewTrack* pTrack)
+{
+    const QIcon defaultIcon(QStringLiteral(":/nodes/tvnodes-13.png"));
+
     if (!pTrack)
     {
-        return QIcon(TrackIcon);
+        return defaultIcon;
     }
     const CAnimParamType paramType = pTrack->GetParameterType();
     const AnimValueType valueType = pTrack->GetValueType();
@@ -2443,59 +2414,59 @@ QIcon CTrackViewNodesCtrl::TrackViewIcon(const CTrackViewTrack* pTrack) {
     if (nodeType == AnimNodeType::RadialBlur || nodeType == AnimNodeType::ColorCorrection || nodeType == AnimNodeType::DepthOfField ||
         nodeType == AnimNodeType::ShadowSetup)
     {
-        return QIcon(TrackIcon);
+        return defaultIcon;
     }
 
     switch (valueType)
     {
     case AnimValueType::CharacterAnim:
     case AnimValueType::AssetBlend:
-        return QIcon(AnimationIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-10.png"));
     }
 
     AnimParamType type = paramType.GetType();
     switch (type)
     {
     case AnimParamType::FOV:
-        return QIcon(FovIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-02.png"));
     case AnimParamType::Position:
-        return QIcon(PositionIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-03.png"));
     case AnimParamType::Rotation:
-        return QIcon(RotationIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-04.png"));
     case AnimParamType::Scale:
-        return QIcon(ScaleIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-05.png"));
     case AnimParamType::Event:
     case AnimParamType::TrackEvent:
-        return QIcon(EventIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-06.png"));
     case AnimParamType::Visibility:
-        return QIcon(VisibilityIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-07.png"));
     case AnimParamType::Camera:
-        return QIcon(CameraIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-08.png"));
     case AnimParamType::Sound:
-        return QIcon(CameraIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-09.png"));
     case AnimParamType::Animation:
     case AnimParamType::TimeRanges:
-        return QIcon(AnimationIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-10.png"));
     case AnimParamType::Sequence:
-        return QIcon(SequenceIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-11.png"));
     case AnimParamType::Capture:
-        return QIcon(CaptureIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-25.png"));
     case AnimParamType::Console:
-        return QIcon(ConsoleIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-15.png"));
     case AnimParamType::LookAt:
-        return QIcon(LookAtIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-17.png"));
     case AnimParamType::TimeWarp:
-        return QIcon(TimeWarpIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-22.png"));
     case AnimParamType::CommentText:
-        return QIcon(CommentTextIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-23.png"));
     case AnimParamType::ShakeMultiplier:
     case AnimParamType::TransformNoise:
-        return QIcon(ShakeMultiplierIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-28.png"));
     default:
     case AnimParamType::Float:
         break;
     }
-    return QIcon(TrackIcon);
+    return defaultIcon;
 }
 
 QIcon CTrackViewNodesCtrl::TrackViewNodeIcon(AnimNodeType type)
@@ -2503,31 +2474,31 @@ QIcon CTrackViewNodesCtrl::TrackViewNodeIcon(AnimNodeType type)
     switch (type)
     {
     case AnimNodeType::AzEntity:
-        return QIcon(AzEntityNode);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-21.png"));
     case AnimNodeType::Director:
-        return QIcon(DirectorIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-27.png"));
     case AnimNodeType::Camera:
-        return QIcon(CameraIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-08.png"));
     case AnimNodeType::CVar:
-        return QIcon(CvarIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-15.png"));
     case AnimNodeType::ScriptVar:
-        return QIcon(ScriptVarIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-14.png"));
     case AnimNodeType::Material:
-        return QIcon(MaterialIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-16.png"));
     case AnimNodeType::Event:
-        return QIcon(EventIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-06.png"));
     case AnimNodeType::Group:
-        return QIcon(GroupIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-01.png"));
     case AnimNodeType::Layer:
-        return QIcon(LayerIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-20.png"));
     case AnimNodeType::Comment:
-        return QIcon(CommentIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-23.png"));
     case AnimNodeType::Light:
-        return QIcon(LightIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-18.png"));
     case AnimNodeType::ShadowSetup:
-        return QIcon(ShadowIcon);
+        return QIcon(QStringLiteral(":/nodes/tvnodes-24.png"));
     }
-    return QIcon(EmptyIcon);
+    return QIcon(QStringLiteral(":/nodes/tvnodes-21.png"));
 }
 //////////////////////////////////////////////////////////////////////////
 QIcon CTrackViewNodesCtrl::GetIconForTrack(const CTrackViewTrack* pTrack)

@@ -101,10 +101,10 @@ public:
     virtual void EndUndoTransaction() override;
 
     // Helper for dialog
-    QIcon GetIconForTrack(const CUiAnimViewTrack* pTrack);
     void ShowNextResult();
 
-    static QIcon TrackViewNodeIcon(EUiAnimNodeType type);
+    QIcon GetIconForTrack(const CUiAnimViewTrack* pTrack);
+    static QIcon NodeTypeToTrackViewIcon(EUiAnimNodeType type);
 protected:
     void paintEvent(QPaintEvent* event) override;
     void keyPressEvent(QKeyEvent* event) override;
