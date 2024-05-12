@@ -4003,7 +4003,9 @@ namespace AssetProcessor
                 // Listing all the builderUuids that have the same (sourcefile,platform,jobKey) for this job dependency
                 JobDesc jobDesc(
                     SourceAssetReference(sourceFileDependency.m_sourceFileDependencyPath.c_str()),
-                    jobDependencyInternal->m_jobDependency.m_jobKey, jobDependencyInternal->m_jobDependency.m_platformIdentifier);
+                    jobDependencyInternal->m_jobDependency.m_jobKey,
+                    jobDependencyInternal->m_jobDependency.m_platformIdentifier);
+
                 auto buildersFound = m_jobDescToBuilderUuidMap.find(jobDesc);
 
                 if (buildersFound != m_jobDescToBuilderUuidMap.end())
@@ -4015,7 +4017,7 @@ namespace AssetProcessor
                 }
                 else if(sourceFileDependency.m_sourceDependencyType != AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards)
                 {
-                    AZ_TracePrintf(AssetProcessor::ConsoleChannel, "UpdateJobDependency: Failed to find builder dependency for %s job (%s, %s, %s)\n",
+                    AZ_TracePrintf(AssetProcessor::ConsoleChannel, "UpdateJobDependency: (Job: %s) Failed to find builder dependency: (%s, %s, %s)\n",
                         job.m_jobEntry.GetAbsoluteSourcePath().toUtf8().constData(),
                         jobDependencyInternal->m_jobDependency.m_sourceFile.m_sourceFileDependencyPath.c_str(),
                         jobDependencyInternal->m_jobDependency.m_jobKey.c_str(),
