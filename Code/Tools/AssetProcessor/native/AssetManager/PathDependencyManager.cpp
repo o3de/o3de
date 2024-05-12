@@ -469,6 +469,10 @@ namespace AssetProcessor
 
     void PathDependencyManager::ResolveDependencies(AssetBuilderSDK::ProductPathDependencySet& pathDeps, AZStd::vector<AssetBuilderSDK::ProductDependency>& resolvedDeps, const AZStd::string& platform, [[maybe_unused]] const AZStd::string& productName)
     {
+#if defined(CARBONATED)
+        AZ_Info(AssetProcessor::ConsoleChannel, "CARBONATED - Resolving Dependencies for: %s", productName.c_str());
+#endif
+
         const AZ::Data::ProductDependencyInfo::ProductDependencyFlags productDependencyFlags =
             AZ::Data::ProductDependencyInfo::CreateFlags(AZ::Data::AssetLoadBehavior::NoLoad);
 
@@ -572,13 +576,15 @@ namespace AssetProcessor
                             {
 #if defined(CARBONATED)
                                 if (!AZStd::wildcard_match(pathWildcardSearchPath.c_str(), productDatabaseEntry.m_productName.c_str()))
-                                {
+                                {                                    
+                                    AZ_Info(AssetProcessor::ConsoleChannel, "CARBONATED - (%s) Product is not a wildcard match!", pathWildcardSearchPath.c_str(), productDatabaseEntry.m_productName.c_str());
                                     continue;
                                 }
 #else
                                 AZ::IO::PathView searchPath(productDatabaseEntry.m_productName);
                                 if (!searchPath.Match(pathWildcardSearchPath))
                                 {
+                                    AZ_Info(AssetProcessor::ConsoleChannel, "OLD CODE?! - (%s) Product is not a PathView!", pathWildcardSearchPath.c_str(), productDatabaseEntry.m_productName.c_str());
                                     continue;
                                 }
 #endif
