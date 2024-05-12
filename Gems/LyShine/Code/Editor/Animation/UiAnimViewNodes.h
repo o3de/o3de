@@ -114,7 +114,6 @@ private slots:
     void OnNMRclick(QPoint pos);
     void OnItemExpanded(QTreeWidgetItem*);
     void OnSelectionChanged();
-    void OnItemDblClick(QTreeWidgetItem* item, int);
     void OnFilterChange(const QString& text);
 
 private:
