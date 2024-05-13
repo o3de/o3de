@@ -589,7 +589,7 @@ namespace LUAEditor
         // Match methods and definitions. Any word which ends with '('
         {
             HighlightingRule rule;
-            rule.pattern = QRegularExpression(R"(\b[A-Za-z0-9_]+(?=\())");
+            rule.pattern = QRegularExpression(R"(\b(?!function\b)[A-Za-z0-9_]+(?=\())");
             rule.colorCB = [colors]()
             {
                 return colors->GetMethodColor();
