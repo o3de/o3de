@@ -2460,6 +2460,7 @@ QIcon CTrackViewNodesCtrl::TrackViewIcon(const CTrackViewTrack* pTrack)
     case AnimParamType::CommentText:
         return QIcon(QStringLiteral(":/nodes/tvnodes-23.png"));
     case AnimParamType::ShakeMultiplier:
+        [[fallthrough]];
     case AnimParamType::TransformNoise:
         return QIcon(QStringLiteral(":/nodes/tvnodes-28.png"));
     default:
@@ -2474,7 +2475,7 @@ QIcon CTrackViewNodesCtrl::TrackViewNodeIcon(AnimNodeType type)
     switch (type)
     {
     case AnimNodeType::AzEntity:
-        return QIcon(QStringLiteral(":/nodes/tvnodes-21.png"));
+        return QIcon(QStringLiteral(":/nodes/tvnodes-29.png"));
     case AnimNodeType::Director:
         return QIcon(QStringLiteral(":/nodes/tvnodes-27.png"));
     case AnimNodeType::Camera:
