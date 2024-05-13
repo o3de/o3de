@@ -57,8 +57,10 @@ namespace AzQtComponents
         QRect region({}, m_size);
         region.moveCenter(point);
         CGRect bounds = CGRectMake(region.x(), region.y(), region.width(), region.height());
-
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         CGImageRef cgImage = CGWindowListCreateImageFromArray(bounds, windows, kCGWindowImageNominalResolution);
+#pragma clang diagnostic pop
         CFRelease(windows);
 
         QImage result = QtMac::fromCGImageRef(cgImage).toImage();
