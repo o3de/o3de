@@ -123,8 +123,8 @@ namespace AZ
         {
         public:
             ResourceTransitionLoggerNull(const RHI::AttachmentId&) {}
-            void SetStateBefore(D3D12_RESOURCE_STATES, bool = false) {}
-            void SetStateAfter(D3D12_RESOURCE_STATES, bool = false) {}
+            void SetStateBefore(D3D12_RESOURCE_STATES) {}
+            void SetStateAfter(D3D12_RESOURCE_STATES) {}
             void LogEpilogueTransition(const RHI::Scope&) {}
             void LogPrologueTransition(const RHI::Scope&) {}
             void LogPreDiscardTransition(const RHI::Scope&) {}
@@ -291,16 +291,16 @@ namespace AZ
 
                 case RHI::ScopeAttachmentUsage::Shader:
                 {
-                    mergedResourceState |= RHI::CheckBitsAny(usageAndAccess.m_access, RHI::ScopeAttachmentAccess::Write)
-                        ? ReadWriteState[hardwareQueueClassIdx]
-                        : ReadState[hardwareQueueClassIdx];
+                    mergedResourceState |= RHI::CheckBitsAny(usageAndAccess.m_access, RHI::ScopeAttachmentAccess::Write) ?
+                                            ReadWriteState[hardwareQueueClassIdx] :
+                                            ReadState[hardwareQueueClassIdx];
                     break;
                 }
                 case RHI::ScopeAttachmentUsage::Copy:
                 {
-                    mergedResourceState |= RHI::CheckBitsAny(usageAndAccess.m_access, RHI::ScopeAttachmentAccess::Write)
-                        ? CopyWriteState[hardwareQueueClassIdx]
-                        : CopyReadState[hardwareQueueClassIdx];
+                    mergedResourceState |= RHI::CheckBitsAny(usageAndAccess.m_access, RHI::ScopeAttachmentAccess::Write) ?
+                                            CopyWriteState[hardwareQueueClassIdx] :
+                                            CopyReadState[hardwareQueueClassIdx];
                     break;
                 }
                 case RHI::ScopeAttachmentUsage::Resolve:
@@ -442,8 +442,7 @@ namespace AZ
             while (scopeAttachment)
             {
                 Scope& scopeAfter = static_cast<Scope&>(scopeAttachment->GetScope());
-                auto state = GetResourceState(*scopeAttachment);
-                transition.StateAfter = state;
+                transition.StateAfter = GetResourceState(*scopeAttachment);
                 logger.SetStateAfter(transition.StateAfter);
 
                 /**
@@ -536,8 +535,7 @@ namespace AZ
             while (scopeAttachment)
             {
                 Scope& scopeAfter = static_cast<Scope&>(scopeAttachment->GetScope());
-                auto state = GetResourceState(*scopeAttachment);
-                transition.StateAfter = state;
+                transition.StateAfter = GetResourceState(*scopeAttachment);
                 logger.SetStateAfter(transition.StateAfter);
 
                 RHI::ImageSubresourceRange viewRange = RHI::ImageSubresourceRange(scopeAttachment->GetImageView()->GetDescriptor());
