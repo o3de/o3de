@@ -44,10 +44,7 @@ namespace AZ
             {
                 m_flags.m_bindViewSrg = true;
             }
-            if (passData
-                && !passData->m_inheritDeviceIndex 
-                && passData->m_deviceIndex >= 0 
-                && passData->m_deviceIndex < RHI::RHISystemInterface::Get()->GetDeviceCount())
+            if (passData && passData->m_deviceIndex >= 0 && passData->m_deviceIndex < RHI::RHISystemInterface::Get()->GetDeviceCount())
             {
                 m_deviceIndex = passData->m_deviceIndex;
             }
@@ -197,7 +194,7 @@ namespace AZ
         {
             m_timestampResult = AZ::RPI::TimestampResult();
 
-            if (m_parent && m_flags.m_inheritDeviceIndex)
+            if (m_deviceIndex == AZ::RHI::MultiDevice::InvalidDeviceIndex && m_parent)
             {
                 m_deviceIndex = azrtti_cast<AZ::RPI::ParentPass*>(m_parent)->GetDeviceIndex();
             }

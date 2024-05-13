@@ -94,7 +94,6 @@ namespace AZ
                 serializeContext->Class<PassData>()
                     ->Version(2)
                     ->Field("DeviceIndex", &PassData::m_deviceIndex)
-                    ->Field("InheritDeviceIndex", &PassData::m_inheritDeviceIndex)
                     ->Field("PipelineViewTag", &PassData::m_pipelineViewTag)
                     ->Field("PipelineGlobalConnections", &PassData::m_pipelineGlobalConnections);
             }

@@ -130,11 +130,6 @@ namespace AZ
 
         void ParentPass::OnHierarchyChange()
         {
-            if (m_parent && m_flags.m_inheritDeviceIndex)
-            {
-                m_deviceIndex = azrtti_cast<AZ::RPI::ParentPass*>(m_parent)->GetDeviceIndex();
-            }
-
             Pass::OnHierarchyChange();
 
             // Notify children about hierarchy change
@@ -277,6 +272,10 @@ namespace AZ
 
         const int ParentPass::GetDeviceIndex() const
         {
+            if (m_deviceIndex == AZ::RHI::MultiDevice::InvalidDeviceIndex && m_parent)
+            {
+                return m_parent->GetDeviceIndex();
+            }
             return m_deviceIndex;
         }
 
