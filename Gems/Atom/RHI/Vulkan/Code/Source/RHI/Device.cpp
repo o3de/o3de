@@ -1128,10 +1128,14 @@ namespace AZ
                 && m_enabledDeviceFeatures.sparseResidencyImage3D
                 && m_enabledDeviceFeatures.sparseResidencyAliased
                 && deviceProperties.sparseProperties.residencyStandard2DBlockShape
-                && deviceProperties.sparseProperties.residencyStandard3DBlockShape && ([this]{
-                    for(const auto& queueFamily: m_queueFamilyProperties) {
+                && deviceProperties.sparseProperties.residencyStandard3DBlockShape && ([this] 
+                {
+                    // check if there is a queue family that supports both VK_QUEUE_TRANSFER_BIT and VK_QUEUE_SPARSE_BINDING_BIT.
+                    for(const auto& queueFamily: m_queueFamilyProperties)
+                    {
                         const VkQueueFlags requiredFlags = AZ::Vulkan::ConvertQueueClass(RHI::HardwareQueueClass::Copy);
-                        if((queueFamily.queueFlags & requiredFlags) == requiredFlags) {
+                        if((queueFamily.queueFlags & requiredFlags) == requiredFlags)
+                        {
                             return true;
                         }
                     }
