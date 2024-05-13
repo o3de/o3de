@@ -241,30 +241,6 @@ namespace AZ
                 D3D12_RESOURCE_STATE_COMMON
             };
 
-            static const D3D12_RESOURCE_STATES CopyReadState[RHI::HardwareQueueClassCount] =
-            {
-                /// Graphics
-                D3D12_RESOURCE_STATE_COPY_SOURCE,
-
-                /// Compute
-                D3D12_RESOURCE_STATE_COPY_SOURCE,
-
-                /// Copy
-                D3D12_RESOURCE_STATE_COPY_SOURCE
-            };
-
-            static const D3D12_RESOURCE_STATES CopyWriteState[RHI::HardwareQueueClassCount] =
-            {
-                /// Graphics
-                D3D12_RESOURCE_STATE_COPY_DEST,
-
-                /// Compute
-                D3D12_RESOURCE_STATE_COPY_DEST,
-
-                /// Copy
-                D3D12_RESOURCE_STATE_COPY_DEST
-            };
-
             const RHI::Scope& parentScope = scopeAttachment.GetScope();
             const RHI::HardwareQueueClass hardwareQueueClass = parentScope.GetHardwareQueueClass();
             const uint32_t hardwareQueueClassIdx = static_cast<uint32_t>(hardwareQueueClass);
@@ -299,8 +275,8 @@ namespace AZ
                 case RHI::ScopeAttachmentUsage::Copy:
                 {
                     mergedResourceState |= RHI::CheckBitsAny(usageAndAccess.m_access, RHI::ScopeAttachmentAccess::Write) ?
-                                            CopyWriteState[hardwareQueueClassIdx] :
-                                            CopyReadState[hardwareQueueClassIdx];
+                                            D3D12_RESOURCE_STATE_COPY_DEST :
+                                            D3D12_RESOURCE_STATE_COPY_SOURCE;
                     break;
                 }
                 case RHI::ScopeAttachmentUsage::Resolve:
