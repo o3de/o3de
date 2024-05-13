@@ -285,9 +285,9 @@ namespace AZ::Render
                 }
 
                 AZ::RPI::RenderPass* asRenderPass = azrtti_cast<AZ::RPI::RenderPass*>(pass);
-                if (AZ::RHI::RHISystemInterface::Get()->GetDeviceCount() > 1 && asRenderPass)
+                if (AZ::RHI::RHISystemInterface::Get()->GetDeviceCount() > 1 && asRenderPass && asRenderPass->IsEnabled())
                 {
-                    ImGui::Text("Pass run on device %d", AZStd::max(asRenderPass->GetDeviceIndex(), 0));
+                    ImGui::Text("Pass runs on device %d", AZStd::max(asRenderPass->GetDeviceIndex(), 0));
                 }
 
                 if (ImGui::IsItemClicked())
