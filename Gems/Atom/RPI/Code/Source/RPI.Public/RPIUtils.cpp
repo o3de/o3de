@@ -687,7 +687,7 @@ namespace AZ
         {
             RHI::ImageAspectFlags imageAspectFlags = RHI::GetImageAspectFlags(format);
 
-            // only need to convert is the source contains two aspects
+            // only need to convert if the source contains two aspects
             if (imageAspectFlags == RHI::ImageAspectFlags::DepthStencil)
             {
                 switch (imageAspect)

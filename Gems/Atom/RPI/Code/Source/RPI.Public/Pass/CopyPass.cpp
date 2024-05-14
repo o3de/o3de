@@ -122,6 +122,7 @@ namespace AZ
                     device2->GetFeatures().m_signalFenceFromCPU,
                     "CopyPass: Device to device copy is only possible if all devices support signalling fences from the CPU");
 
+                // Initialize #MaxFrames fences that are signaled on device 1 and perform the copy between the host staging buffers from device 1 to device 2
                 for (auto& fence : m_device1SignalFence)
                 {
                     fence = new RHI::MultiDeviceFence();
@@ -130,6 +131,7 @@ namespace AZ
                     AZ_Assert(result == RHI::ResultCode::Success, "CopyPass failed to init fence");
                 }
 
+                // Initialize #MaxFrames fences that can be waited for on device 2 before data is uploaded to device 2
                 for (auto& fence : m_device2WaitFence)
                 {
                     fence = new RHI::MultiDeviceFence();
@@ -154,8 +156,7 @@ namespace AZ
                     m_hardwareQueueClass,
                     m_data.m_destinationDeviceIndex);
             }
-            //@TODO scope queries (not sure how to do this for two different devices)
-
+            
             // Create transient attachment based on input if required
             if (m_data.m_cloneInput)
             {
@@ -225,51 +226,7 @@ namespace AZ
 
         void CopyPass::SetupFrameGraphDependenciesSameDevice(RHI::FrameGraphInterface frameGraph)
         {
-            for (const PassAttachmentBinding& attachmentBinding : m_attachmentBindings)
-            {
-                if (attachmentBinding.GetAttachment() != nullptr &&
-                    frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentBinding.GetAttachment()->GetAttachmentId()))
-                {
-                    switch (attachmentBinding.m_unifiedScopeDesc.GetType())
-                    {
-                    case RHI::AttachmentType::Image:
-                        {
-                            frameGraph.UseAttachment(
-                                attachmentBinding.m_unifiedScopeDesc.GetAsImage(),
-                                attachmentBinding.GetAttachmentAccess(),
-                                attachmentBinding.m_scopeAttachmentUsage);
-                            break;
-                        }
-                    case RHI::AttachmentType::Buffer:
-                        {
-                            frameGraph.UseAttachment(
-                                attachmentBinding.m_unifiedScopeDesc.GetAsBuffer(),
-                                attachmentBinding.GetAttachmentAccess(),
-                                attachmentBinding.m_scopeAttachmentUsage);
-                            break;
-                        }
-                    default:
-                        AZ_Assert(false, "Error, trying to bind an attachment that is neither an image nor a buffer!");
-                        break;
-                    }
-                }
-            }
-            for (Pass* pass : m_executeAfterPasses)
-            {
-                RenderPass* renderPass = azrtti_cast<RenderPass*>(pass);
-                if (renderPass)
-                {
-                    frameGraph.ExecuteAfter(renderPass->GetScopeId());
-                }
-            }
-            for (Pass* pass : m_executeBeforePasses)
-            {
-                RenderPass* renderPass = azrtti_cast<RenderPass*>(pass);
-                if (renderPass)
-                {
-                    frameGraph.ExecuteBefore(renderPass->GetScopeId());
-                }
-            }
+            DeclareAttachmentsToFrameGraph(frameGraph);
         }
 
         void CopyPass::CompileResourcesSameDevice(const RHI::FrameGraphCompileContext& context)
@@ -306,43 +263,7 @@ namespace AZ
         {
             // We need the size of the output image when copying from image to image, so we need all attachments (even the output ones)
             // We also need it so the framegraph knows the two scopes depend on each other
-            for (const PassAttachmentBinding& attachmentBinding : m_attachmentBindings)
-            {
-                if (attachmentBinding.GetAttachment() != nullptr &&
-                    frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentBinding.GetAttachment()->GetAttachmentId()))
-                {
-                    switch (attachmentBinding.m_unifiedScopeDesc.GetType())
-                    {
-                    case RHI::AttachmentType::Image:
-                        {
-                            frameGraph.UseAttachment(
-                                attachmentBinding.m_unifiedScopeDesc.GetAsImage(),
-                                attachmentBinding.GetAttachmentAccess(),
-                                attachmentBinding.m_scopeAttachmentUsage);
-                            break;
-                        }
-                    case RHI::AttachmentType::Buffer:
-                        {
-                            frameGraph.UseAttachment(
-                                attachmentBinding.m_unifiedScopeDesc.GetAsBuffer(),
-                                attachmentBinding.GetAttachmentAccess(),
-                                attachmentBinding.m_scopeAttachmentUsage);
-                            break;
-                        }
-                    default:
-                        AZ_Assert(false, "Error, trying to bind an attachment that is neither an image nor a buffer!");
-                        break;
-                    }
-                }
-            }
-            for (Pass* pass : m_executeAfterPasses)
-            {
-                RenderPass* renderPass = azrtti_cast<RenderPass*>(pass);
-                if (renderPass)
-                {
-                    frameGraph.ExecuteAfter(renderPass->GetScopeId());
-                }
-            }
+            DeclareAttachmentsToFrameGraph(frameGraph);
 
             frameGraph.SignalFence(*m_device1SignalFence[m_currentBufferIndex]);
         }
@@ -384,14 +305,20 @@ namespace AZ
                         ->GetSubresourceLayouts(sourceRange, sourceImageSubResourcesLayouts.data(), &sourceTotalSizeInBytes);
                     AZ::u64 sourceByteCount = sourceTotalSizeInBytes;
 
-                    RPI::CommonBufferDescriptor desc;
-                    desc.m_poolType = RPI::CommonBufferPoolType::ReadBack;
-                    desc.m_bufferName = AZStd::string(GetPathName().GetStringView()) + "_hostbuffer";
-                    desc.m_byteCount = sourceByteCount;
-                    m_device1HostBuffer[m_currentBufferIndex] = BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
-                    desc.m_bufferName = AZStd::string(GetPathName().GetStringView()) + "_hostbuffer2";
-                    desc.m_poolType = RPI::CommonBufferPoolType::Staging;
-                    m_device2HostBuffer[m_currentBufferIndex] = BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+                    if(m_deviceHostBufferByteCount[m_currentBufferIndex] != sourceByteCount)
+                    {
+                        m_deviceHostBufferByteCount[m_currentBufferIndex] = sourceByteCount;
+
+                        RPI::CommonBufferDescriptor desc;
+                        desc.m_poolType = RPI::CommonBufferPoolType::ReadBack;
+                        desc.m_bufferName = AZStd::string(GetPathName().GetStringView()) + "_hostbuffer";
+                        desc.m_byteCount = m_deviceHostBufferByteCount[m_currentBufferIndex];
+                        m_device1HostBuffer[m_currentBufferIndex] = BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+
+                        desc.m_bufferName = AZStd::string(GetPathName().GetStringView()) + "_hostbuffer2";
+                        desc.m_poolType = RPI::CommonBufferPoolType::Staging;
+                        m_device2HostBuffer[m_currentBufferIndex] = BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+                    }
 
                     // copy descriptor for copying image to buffer
                     RHI::MultiDeviceCopyImageToBufferDescriptor copyImageToBufferDesc;
@@ -455,20 +382,25 @@ namespace AZ
                 {
                     const auto* buffer = context.GetBuffer(inputId);
 
-                    RPI::CommonBufferDescriptor desc;
-                    desc.m_poolType = RPI::CommonBufferPoolType::ReadBack;
-                    desc.m_bufferName = AZStd::string(GetPathName().GetStringView()) + "_hostbuffer";
-                    desc.m_byteCount = buffer->GetDescriptor().m_byteCount;
+                    if(m_deviceHostBufferByteCount[m_currentBufferIndex] != buffer->GetDescriptor().m_byteCount)
+                    {
+                        m_deviceHostBufferByteCount[m_currentBufferIndex] = buffer->GetDescriptor().m_byteCount;
 
-                    m_device1HostBuffer[m_currentBufferIndex] = BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
-                    desc.m_bufferName = AZStd::string(GetPathName().GetStringView()) + "_hostbuffer2";
-                    m_device2HostBuffer[m_currentBufferIndex] = BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+                        RPI::CommonBufferDescriptor desc;
+                        desc.m_poolType = RPI::CommonBufferPoolType::ReadBack;
+                        desc.m_bufferName = AZStd::string(GetPathName().GetStringView()) + "_hostbuffer";
+                        desc.m_byteCount = m_deviceHostBufferByteCount[m_currentBufferIndex];
+
+                        m_device1HostBuffer[m_currentBufferIndex] = BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+                        desc.m_bufferName = AZStd::string(GetPathName().GetStringView()) + "_hostbuffer2";
+                        m_device2HostBuffer[m_currentBufferIndex] = BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+                    }
 
                     // copy buffer
                     RHI::MultiDeviceCopyBufferDescriptor copyBuffer;
                     copyBuffer.m_mdSourceBuffer = buffer;
                     copyBuffer.m_mdDestinationBuffer = m_device1HostBuffer[m_currentBufferIndex]->GetRHIBuffer();
-                    copyBuffer.m_size = aznumeric_cast<uint32_t>(desc.m_byteCount);
+                    copyBuffer.m_size = aznumeric_cast<uint32_t>(m_deviceHostBufferByteCount[m_currentBufferIndex]);
 
                     m_copyItemDeviceToHost = copyBuffer;
                 }
@@ -485,6 +417,7 @@ namespace AZ
                 context.GetCommandList()->Submit(m_copyItemDeviceToHost.GetDeviceCopyItem(context.GetDeviceIndex()));
             }
 
+            // Once signaled on device 1, we can map the host staging buffers on device 1 and 2 and copy data from 1 -> 2 and then signal the upload on device 2
             m_device1SignalFence[m_currentBufferIndex]
                 ->GetDeviceFence(context.GetDeviceIndex())
                 ->WaitOnCpuAsync(
@@ -503,38 +436,7 @@ namespace AZ
 
         void CopyPass::SetupFrameGraphDependenciesHostToDevice(RHI::FrameGraphInterface frameGraph)
         {
-            for (const PassAttachmentBinding& attachmentBinding : m_attachmentBindings)
-            {
-                if (attachmentBinding.m_slotType == PassSlotType::Output) // We don't need dependencies on the input slot here
-                {
-                    if (attachmentBinding.GetAttachment() != nullptr &&
-                        frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentBinding.GetAttachment()->GetAttachmentId()))
-                    {
-                        switch (attachmentBinding.m_unifiedScopeDesc.GetType())
-                        {
-                        case RHI::AttachmentType::Image:
-                            {
-                                frameGraph.UseAttachment(
-                                    attachmentBinding.m_unifiedScopeDesc.GetAsImage(),
-                                    attachmentBinding.GetAttachmentAccess(),
-                                    attachmentBinding.m_scopeAttachmentUsage);
-                                break;
-                            }
-                        case RHI::AttachmentType::Buffer:
-                            {
-                                frameGraph.UseAttachment(
-                                    attachmentBinding.m_unifiedScopeDesc.GetAsBuffer(),
-                                    attachmentBinding.GetAttachmentAccess(),
-                                    attachmentBinding.m_scopeAttachmentUsage);
-                                break;
-                            }
-                        default:
-                            AZ_Assert(false, "Error, trying to bind an attachment that is neither an image nor a buffer!");
-                            break;
-                        }
-                    }
-                }
-            }
+            DeclareAttachmentsToFrameGraph(frameGraph, PassSlotType::Output);
             frameGraph.ExecuteAfter(m_copyScopeProducerHostToDevice->GetScopeId());
             for (Pass* pass : m_executeBeforePasses)
             {
