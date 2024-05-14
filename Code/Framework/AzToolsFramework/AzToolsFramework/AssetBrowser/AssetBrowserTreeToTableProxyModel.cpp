@@ -217,6 +217,10 @@ namespace AzToolsFramework
                     [this]()
                     {
                         beginResetModel();
+                        resetInternalData();
+                        m_rowCount = 0;
+                        m_map.Clear();
+                        m_parents.clear();
                     });
 
                 connect(
@@ -265,7 +269,6 @@ namespace AzToolsFramework
                     });
             }
 
-            resetInternalData();
             if (model && model->hasChildren())
             {
                 RefreshMap();
@@ -358,7 +361,7 @@ namespace AzToolsFramework
             const int rowCount = sourceModelPtr->rowCount(parent);
             const int span = end - start + 1;
 
-            if (rowCount == span)
+            if (rowCount == span) // updating the entire parent
             {
                 const QModelIndex index = mapFromSource(parent);
                 if (parent.isValid())
@@ -385,11 +388,8 @@ namespace AzToolsFramework
             {
                 const QModelIndex oldIndex = sourceModelPtr->index(rowCount - 1 - span, column, parent);
                 AZ_Assert(m_map.TreeContains(oldIndex), "Tree does not contain index");
-
                 const QModelIndex newIndex = sourceModelPtr->index(rowCount - 1, column, parent);
-
                 QModelIndex indexAbove = oldIndex;
-
                 if (start > 0)
                 {
                     while (sourceModelPtr->hasChildren(indexAbove))
@@ -720,13 +720,14 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeToTableProxyModel::ModelReset()
         {
+            m_processing = true;
             resetInternalData();
             auto sourceModelPtr = sourceModel();
             if (sourceModelPtr->hasChildren() && sourceModelPtr->rowCount() > 0)
             {
-                m_parents.append(QModelIndex());
-                ProcessParents();
+                RefreshMap();
             }
+            m_processing = false;
             endResetModel();
         }
 
@@ -785,8 +786,18 @@ namespace AzToolsFramework
             {
                 const QModelIndex sourceTopLeft = sourceModelPtr->index(i, topLeft.column(), topLeft.parent());
                 const QModelIndex proxyTopLeft = mapFromSource(sourceTopLeft);
+                if (!proxyTopLeft.isValid())
+                {
+                    // not all elements might be mapped during a partial update.
+                    continue;
+                }
                 const QModelIndex sourceBottomRight = sourceModelPtr->index(i, bottomRight.column(), bottomRight.parent());
                 const QModelIndex proxyBottomRight = mapFromSource(sourceBottomRight);
+                if (!proxyBottomRight.isValid())
+                {
+                    // not all elements might be mapped during a partial update.
+                    continue;
+                }
                 emit dataChanged(proxyTopLeft, proxyBottomRight);
             }
         }
@@ -832,6 +843,13 @@ namespace AzToolsFramework
                         break;
                     }
                 }
+
+                if (result == end)
+                {
+                    // its possible to still be building the model and to not find the target
+                    return QModelIndex();
+                }
+
                 const QModelIndex sourceLastChild = result.value();
                 int proxyRow = result.key();
                 QModelIndex index = sourceLastChild;
@@ -876,7 +894,7 @@ namespace AzToolsFramework
                 verticalDistance -= (ancestorRow + 1);
                 ancestor = ancestor.parent();
             }
-            AZ_Assert(0, "Could't find target row.");
+            // its possible not to find a target row if the model is still building incrementally.
             return QModelIndex();
         }
 
