@@ -21,7 +21,8 @@
 #include <Atom/RPI/TangentSpace.azsli>
 
 #ifndef ENABLE_DECALS_CAP
-#define ENABLE_DECALS_CAP 20 // Default cap if it was not set by the pipeline. This is only applicable if gpu culling is disabled
+// CARBONATED - increased default number of decals
+#define ENABLE_DECALS_CAP 25 // Default cap if it was not set by the pipeline. This is only applicable if gpu culling is disabled
 #endif
 
 
