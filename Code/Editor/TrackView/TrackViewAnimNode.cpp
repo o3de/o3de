@@ -490,7 +490,7 @@ CTrackViewAnimNode* CTrackViewAnimNode::CreateSubNode(
     CTrackViewAnimNode* newNode = animNodeFactory.BuildAnimNode(m_animSequence, newAnimNode, this);
 
     // Make sure that camera and entity nodes get created with an owner
-    AZ_Assert((animNodeType != AnimNodeType::Camera && animNodeType != AnimNodeType::Entity), "Entity node should have valid owner.");
+    AZ_Assert((animNodeType != AnimNodeType::Entity), "Entity node should have valid owner.");
 
     newNode->SetNodeEntityId(owner);
     newAnimNode->SetNodeOwner(newNode);
@@ -1287,17 +1287,6 @@ void CTrackViewAnimNode::AddCurrentLayer()
     const QString name = "Main";
 
     CreateSubNode(name, AnimNodeType::Entity);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CTrackViewAnimNode::SetAsViewCamera()
-{
-    assert (GetType() == AnimNodeType::Camera);
-
-    if (GetType() == AnimNodeType::Camera)
-    {
-        AZ_Error("CTrackViewAnimNode", false, "Legacy cameras are no longer supported.  Unable to set view camera.");
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

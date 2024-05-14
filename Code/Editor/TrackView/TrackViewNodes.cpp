@@ -486,11 +486,7 @@ int CTrackViewNodesCtrl::GetIconIndexForTrack(const CTrackViewTrack* pTrack) con
 
     AnimParamType type = paramType.GetType();
 
-    if (type == AnimParamType::FOV)
-    {
-        nImage = 2;
-    }
-    else if (type == AnimParamType::Position)
+    if (type == AnimParamType::Position)
     {
         nImage = 3;
     }
@@ -1003,14 +999,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
 
     float scrollPos = SaveVerticalScrollPos();
 
-    if (cmd == eMI_SetAsViewCamera)
-    {
-        if (animNode && animNode->GetType() == AnimNodeType::Camera)
-        {
-            animNode->SetAsViewCamera();
-        }
-    }
-    else if (cmd == eMI_RemoveSelected)
+    if (cmd == eMI_RemoveSelected)
     {
         // If we are about to delete the sequence, cancel the notification
         // context, otherwise it will notify on a stale sequence pointer.
@@ -1220,18 +1209,6 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
                 groupNode->GetAnimNodesByType(AnimNodeType::AzEntity).CollapseAll();
                 undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
             }
-            else if (cmd == eMI_ExpandCameras)
-            {
-                AzToolsFramework::ScopedUndoBatch undoBatch("Expand Track View cameras");
-                groupNode->GetAnimNodesByType(AnimNodeType::Camera).ExpandAll();
-                undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
-            }
-            else if (cmd == eMI_CollapseCameras)
-            {
-                AzToolsFramework::ScopedUndoBatch undoBatch("Collapse Track View cameras");
-                groupNode->GetAnimNodesByType(AnimNodeType::Camera).CollapseAll();
-                undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
-            }
             else if (cmd == eMI_ExpandEvents)
             {
                 AzToolsFramework::ScopedUndoBatch undoBatch("Expand Track View events");
@@ -1244,7 +1221,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
                 groupNode->GetAnimNodesByType(AnimNodeType::Event).CollapseAll();
                 undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
             }
-        }  
+        }
     }
 
     if (cmd == eMI_EditEvents)
@@ -1666,11 +1643,6 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
 
         contextMenu.main.addAction("Select In Viewport")->setData(eMI_SelectInViewport);
 
-        if (animNode->GetType() == AnimNodeType::Camera)
-        {
-            contextMenu.main.addAction("Set As View Camera")->setData(eMI_SetAsViewCamera);
-        }
-
         bAppended = true;
     }
 
@@ -1994,7 +1966,7 @@ bool CTrackViewNodesCtrl::FillAddTrackMenu(STrackMenuTreeNode& menuAddTrack, con
     int paramCount = 0;
     IAnimNode::AnimParamInfos animatableProperties;
     CTrackViewNode* parentNode = animNode->GetParentNode();
-   
+
     // all AZ::Entity entities are animated through components. Component nodes always have a parent - the containing AZ::Entity
     if (nodeType == AnimNodeType::Component && parentNode)
     {
@@ -2007,19 +1979,19 @@ bool CTrackViewNodesCtrl::FillAddTrackMenu(STrackMenuTreeNode& menuAddTrack, con
             const AZ::EntityId azEntityId = static_cast<CTrackViewAnimNode*>(parentNode)->GetAzEntityId();
 
             // query the animatable component properties from the Sequence Component
-            Maestro::EditorSequenceComponentRequestBus::Event(const_cast<CTrackViewAnimNode*>(animNode)->GetSequence()->GetSequenceComponentEntityId(), 
-                                                                    &Maestro::EditorSequenceComponentRequestBus::Events::GetAllAnimatablePropertiesForComponent, 
+            Maestro::EditorSequenceComponentRequestBus::Event(const_cast<CTrackViewAnimNode*>(animNode)->GetSequence()->GetSequenceComponentEntityId(),
+                                                                    &Maestro::EditorSequenceComponentRequestBus::Events::GetAllAnimatablePropertiesForComponent,
                                                                     animatableProperties, azEntityId, animNode->GetComponentId());
 
             paramCount = static_cast<int>(animatableProperties.size());
-        }       
+        }
     }
     else
     {
         // legacy Entity
-        paramCount = animNode->GetParamCount(); 
+        paramCount = animNode->GetParamCount();
     }
-    
+
     for (int i = 0; i < paramCount; ++i)
     {
         CAnimParamType paramType;
@@ -2081,9 +2053,9 @@ bool CTrackViewNodesCtrl::FillAddTrackMenu(STrackMenuTreeNode& menuAddTrack, con
             pParamNode->paramType = paramType;
 
             bTracksToAdd = true;
-        }  
+        }
     }
-    
+
     return bTracksToAdd;
 }
 
@@ -2422,7 +2394,7 @@ void CTrackViewNodesCtrl::ClearCustomTrackColor(CTrackViewTrack* pTrack)
     }
 
     AzToolsFramework::ScopedUndoBatch undoBatch("Clear Custom Track Color");
-    
+
     pTrack->ClearCustomColor();
     undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
 
