@@ -8,16 +8,46 @@
 
 #pragma once
 
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
 
-real3 ApplyFilmicTonemap(real3 color)
+// Simple reinhard tone mapping algorithm based on below paper.
+// http://www.cmap.polytechnique.fr/~peyre/cours/x2005signal/hdr_photographic.pdf
+real3 TonemapReinhard(const real3 inputColor)
+{
+    return inputColor / (1.0 + inputColor);
+}
+
+// Originally written by Stephen Hill (@self_shadow)
+// Input and output color are in AcesCG space
+real3 TonemapAcesFitted(const real3 inputColor)
+{
+    // Apply RRT and ODT
+    float a = 0.0245786f;
+    float b = 0.000090537f;
+    float c = 0.983729f;
+    float d = 0.4329510f;
+    float e = 0.238081f;
+    return saturate((inputColor * (inputColor + a) - b) / (inputColor * (c * inputColor + d) + e));
+}
+
+// https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
+real3 TonemapAcesFilmic(const real3 inputColor)
 {
     // Apply filmic curve. 
-    real a = 2.51f; // 6.2
-    real b = 0.03f; // 0.5
-    real c = 2.43f; // 6.2
-    real d = 0.59f; // 1.7
-    real e = 0.14f; // 0.06
-    return saturate((color * (a * color + b)) / (color * (c * color + d)+ e));
+    real a = 2.51f;
+    real b = 0.03f;
+    real c = 2.43f;
+    real d = 0.59f;
+    real e = 0.14f;
+    return saturate((inputColor * (a * inputColor + b)) / (inputColor * (c * inputColor + d) + e));
+}
+
+// Applies the filmic curve from John Hable
+real3 TonemapFilmic(const real3 inputColor)
+{
+    // See: https://github.com/dmnsgn/glsl-tone-map/blob/main/filmic.glsl
+    real3 color = max(real3(0.0, 0.0, 0.0), inputColor - 0.004);
+    return (color * (6.2 * color + 0.5)) / (color * (6.2 * color + 1.7) + 0.06);
 }
 
 real3 ApplyManualExposure(real3 color, real exposure)
