@@ -1435,8 +1435,6 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
     const bool bOnSequence = pNode->GetNodeType() == eTVNT_Sequence;
     const bool bOnNode = pNode->GetNodeType() == eTVNT_AnimNode;
     const bool bOnTrack = pNode->GetNodeType() == eTVNT_Track;
-    const bool bIsLightAnimationSet = sequence->GetFlags() & IAnimSequence::eSeqFlags_LightAnimationSet;
-
     // Get track & anim node pointers
     CTrackViewTrack* pTrack = bOnTrack ? static_cast<CTrackViewTrack*>(pNode) : nullptr;
     const bool bOnTrackNotSub = bOnTrack && !pTrack->IsSubTrack();
@@ -1475,7 +1473,7 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
     }
 
     // Entity
-    if (bOnNode && !bIsLightAnimationSet && animNode->IsBoundToAzEntity())
+    if (bOnNode && animNode->IsBoundToAzEntity())
     {
         AddMenuSeperatorConditional(contextMenu.main, bAppended);
 
@@ -1631,7 +1629,7 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
 
     bool isLegacySequence = (sequence && sequence->GetSequenceType() == SequenceType::Legacy);
 
-    if (isLegacySequence && bOnNode && !bIsLightAnimationSet && !isOnDirector && !isOnComponentNode && !isOnAzEntityNode)
+    if (isLegacySequence && bOnNode  && !isOnDirector && !isOnComponentNode && !isOnAzEntityNode)
     {
         AddMenuSeperatorConditional(contextMenu.main, bAppended);
         contextMenu.main.addAction("Import FBX File...")->setData(eMI_ImportFromFBX);
@@ -1640,7 +1638,7 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
     }
 
     // Events
-    if (bOnSequence || pNode->IsGroupNode() && !bIsLightAnimationSet && !isOnAzEntity)
+    if (bOnSequence || pNode->IsGroupNode() && !isOnAzEntity)
     {
         AddMenuSeperatorConditional(contextMenu.main, bAppended);
         contextMenu.main.addAction("Edit Events...")->setData(eMI_EditEvents);

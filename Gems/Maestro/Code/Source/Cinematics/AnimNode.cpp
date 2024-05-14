@@ -563,33 +563,6 @@ void CAnimNode::SerializeAnims(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmp
                 }
             }
 
-            if (paramTypeVersion <= 5 && !(GetSequence()->GetFlags() & IAnimSequence::eSeqFlags_LightAnimationSet))
-            {
-                // In old versions there was special code for lights that is now handled
-                // by generic entity node code if this is not a light animation set sequence
-                switch (paramType.GetType())
-                {
-                case AnimParamType::LightDiffuse:
-                    paramType = CAnimParamType("ScriptTable:Properties/Color/clrDiffuse");
-                    break;
-                case AnimParamType::LightRadius:
-                    paramType = CAnimParamType("ScriptTable:Properties/Radius");
-                    break;
-                case AnimParamType::LightDiffuseMult:
-                    paramType = CAnimParamType("ScriptTable:Properties/Color/fDiffuseMultiplier");
-                    break;
-                case AnimParamType::LightHDRDynamic:
-                    paramType = CAnimParamType("ScriptTable:Properties/Color/fHDRDynamic");
-                    break;
-                case AnimParamType::LightSpecularMult:
-                    paramType = CAnimParamType("ScriptTable:Properties/Color/fSpecularMultiplier");
-                    break;
-                case AnimParamType::LightSpecPercentage:
-                    paramType = CAnimParamType("ScriptTable:Properties/Color/fSpecularPercentage");
-                    break;
-                }
-            }
-
             if (paramTypeVersion <= 7 && paramType.GetType() == AnimParamType::Physics)
             {
                 paramType = AnimParamType::PhysicsDriven;
@@ -1165,8 +1138,8 @@ void CAnimNode::AnimateSound(std::vector<SSoundInfo>& nodeSoundInfo, SAnimContex
 }
 
 void CAnimNode::SetParent(IAnimNode* parent)
-{ 
-    m_pParentNode = parent; 
+{
+    m_pParentNode = parent;
     if (parent)
     {
         m_parentNodeId = static_cast<CAnimNode*>(m_pParentNode)->GetId();
@@ -1205,7 +1178,7 @@ void CAnimNode::UpdateDynamicParams()
         // which could happen from multiple threads. Lock to avoid a crash iterating over the lua stack
         AZStd::lock_guard<AZStd::mutex> lock(m_updateDynamicParamsLock);
 
-        // run this on the main thread to prevent further threading issues downstream in 
+        // run this on the main thread to prevent further threading issues downstream in
         // AnimNodes that may use EBuses that are not thread safe
         if (gEnv && gEnv->mMainThreadId == CryGetCurrentThreadId())
         {

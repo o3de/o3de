@@ -1446,8 +1446,6 @@ bool CTrackViewAnimNode::PasteNodesFromClipboard(QWidget* context)
         return false;
     }
 
-    const bool bLightAnimationSetActive = GetSequence()->GetFlags() & IAnimSequence::eSeqFlags_LightAnimationSet;
-
     AZStd::map<int, IAnimNode*> copiedIdToNodeMap;
     const unsigned int numNodes = animNodesRoot->getChildCount();
     for (unsigned int i = 0; i < numNodes; ++i)
@@ -1456,7 +1454,7 @@ bool CTrackViewAnimNode::PasteNodesFromClipboard(QWidget* context)
 
         // skip non-light nodes in light animation sets
         int type;
-        if (!xmlNode->getAttr("Type", type) || (bLightAnimationSetActive && (AnimNodeType)type != AnimNodeType::Light))
+        if (!xmlNode->getAttr("Type", type))
         {
             continue;
         }

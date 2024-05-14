@@ -1038,7 +1038,6 @@ int CUiAnimViewNodesCtrl::ShowPopupMenuSingleSelection(UiAnimContextMenu& contex
     const bool bOnSequence = pNode->GetNodeType() == eUiAVNT_Sequence;
     const bool bOnNode = pNode->GetNodeType() == eUiAVNT_AnimNode;
     const bool bOnTrack = pNode->GetNodeType() == eUiAVNT_Track;
-    const bool bIsLightAnimationSet = pSequence->GetFlags() & IUiAnimSequence::eSeqFlags_LightAnimationSet;
 
     // Get track & anim node pointers
     CUiAnimViewTrack* pTrack = bOnTrack ? static_cast<CUiAnimViewTrack*>(pNode) : nullptr;
@@ -1053,23 +1052,6 @@ int CUiAnimViewNodesCtrl::ShowPopupMenuSingleSelection(UiAnimContextMenu& contex
     {
         pAnimNode = pTrack->GetAnimNode();
     }
-
-#if UI_ANIMATION_REMOVED
-    // Entity
-    if (bOnNode && pAnimNode->GetEntity() != nullptr && !bIsLightAnimationSet)
-    {
-        AddMenuSeperatorConditional(contextMenu.main, bAppended);
-
-        contextMenu.main.addAction("Select In Viewport")->setData(eMI_SelectInViewport);
-
-        if (pAnimNode->GetType() == eUiAnimNodeType_Camera)
-        {
-            contextMenu.main.addAction("Set As View Camera")->setData(eMI_SetAsViewCamera);
-        }
-
-        bAppended = true;
-    }
-#endif
 
     {
         if (bOnNode || bOnSequence || bOnTrackNotSub)
@@ -1117,7 +1099,7 @@ int CUiAnimViewNodesCtrl::ShowPopupMenuSingleSelection(UiAnimContextMenu& contex
     }
 
     // Events
-    if (bOnSequence || pNode->IsGroupNode() && !bIsLightAnimationSet)
+    if (bOnSequence || pNode->IsGroupNode())
     {
         AddMenuSeperatorConditional(contextMenu.main, bAppended);
         contextMenu.main.addAction("Edit Events...")->setData(eMI_EditEvents);

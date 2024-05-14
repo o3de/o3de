@@ -1472,7 +1472,6 @@ bool CUiAnimViewAnimNode::PasteNodesFromClipboard(QWidget* context)
         return false;
     }
 
-    const bool bLightAnimationSetActive = GetSequence()->GetFlags() & IUiAnimSequence::eSeqFlags_LightAnimationSet;
 
     const unsigned int numNodes = animNodesRoot->getChildCount();
     for (unsigned int i = 0; i < numNodes; ++i)
@@ -1482,12 +1481,6 @@ bool CUiAnimViewAnimNode::PasteNodesFromClipboard(QWidget* context)
         int type;
         if (!xmlNode->getAttr("Type", type))
         {
-            continue;
-        }
-
-        if (bLightAnimationSetActive && (EUiAnimNodeType)type != eUiAnimNodeType_Light)
-        {
-            // Ignore non light nodes in light animation set
             continue;
         }
 

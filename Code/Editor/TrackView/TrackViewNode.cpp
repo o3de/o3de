@@ -569,29 +569,43 @@ namespace
 {
     static int GetNodeOrder(AnimNodeType nodeType)
     {
-        AZ_Assert(nodeType < AnimNodeType::Num, "Expected nodeType to be less than AnimNodeType::Num");
-
-        // note: this array gets over-allocated and is sparsely populated because the eAnimNodeType enums are not sequential in IMovieSystem.h
-        // I wonder if the original authors intended this? Not a big deal, just some trivial memory wastage.
-        static int nodeOrder[static_cast<int>(AnimNodeType::Num)];
-        nodeOrder[static_cast<int>(AnimNodeType::Invalid)] = 0;
-        nodeOrder[static_cast<int>(AnimNodeType::Director)] = 1;
-        nodeOrder[static_cast<int>(AnimNodeType::Alembic)] = 4;
-        nodeOrder[static_cast<int>(AnimNodeType::CVar)] = 6;
-        nodeOrder[static_cast<int>(AnimNodeType::ScriptVar)] = 7;
-        nodeOrder[static_cast<int>(AnimNodeType::Event)] = 9;
-        nodeOrder[static_cast<int>(AnimNodeType::Layer)] = 10;
-        nodeOrder[static_cast<int>(AnimNodeType::Comment)] = 11;
-        nodeOrder[static_cast<int>(AnimNodeType::RadialBlur)] = 12;
-        nodeOrder[static_cast<int>(AnimNodeType::ColorCorrection)] = 13;
-        nodeOrder[static_cast<int>(AnimNodeType::DepthOfField)] = 14;
-        nodeOrder[static_cast<int>(AnimNodeType::ScreenFader)] = 15;
-        nodeOrder[static_cast<int>(AnimNodeType::Light)] = 16;
-        nodeOrder[static_cast<int>(AnimNodeType::ShadowSetup)] = 17;
-        nodeOrder[static_cast<int>(AnimNodeType::Environment)] = 18;
-        nodeOrder[static_cast<int>(AnimNodeType::Group)] = 19;
-
-        return nodeOrder[static_cast<int>(nodeType)];
+        switch (nodeType)
+        {
+        case AnimNodeType::Invalid:
+            return 0;
+        case AnimNodeType::Director:
+            return 1;
+        case AnimNodeType::Alembic:
+            return 4;
+        case AnimNodeType::CVar:
+            return 6;
+        case AnimNodeType::ScriptVar:
+            return 7;
+        case AnimNodeType::Event:
+            return 9;
+        case AnimNodeType::Layer:
+            return 10;
+        case AnimNodeType::Comment:
+            return 11;
+        case AnimNodeType::RadialBlur:
+            return 12;
+        case AnimNodeType::ColorCorrection:
+            return 13;
+        case AnimNodeType::DepthOfField:
+            return 14;
+        case AnimNodeType::ScreenFader:
+            return 15;
+        case AnimNodeType::ShadowSetup:
+            return 17;
+        case AnimNodeType::Environment:
+            return 18;
+        case AnimNodeType::Group:
+            return 19;
+        default:
+            AZ_Assert(false, "Unhandled nodeType: %d", nodeType);
+            break;
+        }
+        return 0;
     }
 }
 

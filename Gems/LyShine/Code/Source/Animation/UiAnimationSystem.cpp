@@ -1124,14 +1124,6 @@ void UiAnimationSystem::SerializeNodeType(EUiAnimNodeType& animNodeType, XmlNode
             return;
         }
 
-        // Convert light nodes that are not part of a light
-        // animation set to common entity nodes
-        if (version <= 1 && animNodeType == eUiAnimNodeType_Light && !(flags & IUiAnimSequence::eSeqFlags_LightAnimationSet))
-        {
-            animNodeType = eUiAnimNodeType_Entity;
-            return;
-        }
-
         if (version <= 2)
         {
             int type;

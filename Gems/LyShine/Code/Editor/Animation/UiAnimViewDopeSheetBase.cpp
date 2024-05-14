@@ -2057,15 +2057,6 @@ void CUiAnimViewDopeSheetBase::DrawTrack(CUiAnimViewTrack* pTrack, QPainter* pai
     rcInner.setLeft(max(trackRect.left(), m_leftOffset - m_scrollOffset.x()));
     rcInner.setRight(min(trackRect.right(), (m_scrollMax + m_scrollMin) - m_scrollOffset.x() + m_leftOffset * 2));
 
-    bool bLightAnimationSetActive = pSequence->GetFlags() & IUiAnimSequence::eSeqFlags_LightAnimationSet;
-    if (bLightAnimationSetActive && pTrack->GetKeyCount() > 0)
-    {
-        // In the case of the light animation set, the time of of the last key
-        // determines the end of the track.
-        float lastKeyTime = pTrack->GetKey(pTrack->GetKeyCount() - 1).GetTime();
-        rcInner.setRight(min(rcInner.right(), TimeToClient(lastKeyTime)));
-    }
-
     QRect rcInnerDraw(QPoint(rcInner.left() - 6, rcInner.top()), QPoint(rcInner.right() + 6, rcInner.bottom()));
 
     QColor trackColor = CUiAVCustomizeTrackColorsDlg::GetTrackColor(pTrack->GetParameterType());

@@ -437,10 +437,6 @@ void CAnimSequence::RemoveAll()
 //////////////////////////////////////////////////////////////////////////
 void CAnimSequence::Reset(bool bSeekToStart)
 {
-    if (GetFlags() & eSeqFlags_LightAnimationSet)
-    {
-        return;
-    }
 
     m_precached = false;
     m_bResetting = true;
@@ -489,10 +485,6 @@ void CAnimSequence::Reset(bool bSeekToStart)
 //////////////////////////////////////////////////////////////////////////
 void CAnimSequence::ResetHard()
 {
-    if (GetFlags() & eSeqFlags_LightAnimationSet)
-    {
-        return;
-    }
 
     m_bResetting = true;
 
@@ -529,7 +521,7 @@ void CAnimSequence::ResetHard()
 //////////////////////////////////////////////////////////////////////////
 void CAnimSequence::Pause()
 {
-    if (GetFlags() & eSeqFlags_LightAnimationSet || m_bPaused)
+    if (m_bPaused)
     {
         return;
     }
@@ -550,11 +542,6 @@ void CAnimSequence::Pause()
 //////////////////////////////////////////////////////////////////////////
 void CAnimSequence::Resume()
 {
-    if (GetFlags() & eSeqFlags_LightAnimationSet)
-    {
-        return;
-    }
-
     if (m_bPaused)
     {
         m_bPaused = false;
@@ -624,11 +611,6 @@ void CAnimSequence::TimeChanged(float newTime)
 //////////////////////////////////////////////////////////////////////////
 void CAnimSequence::StillUpdate()
 {
-    if (GetFlags() & eSeqFlags_LightAnimationSet)
-    {
-        return;
-    }
-
     for (AnimNodes::iterator it = m_nodes.begin(); it != m_nodes.end(); ++it)
     {
         IAnimNode* animNode = it->get();
@@ -640,12 +622,6 @@ void CAnimSequence::StillUpdate()
 void CAnimSequence::Animate(const SAnimContext& ec)
 {
     assert(m_bActive);
-
-    if (GetFlags() & eSeqFlags_LightAnimationSet)
-    {
-        return;
-    }
-
     SAnimContext animContext = ec;
     animContext.sequence = this;
     m_time = animContext.time;

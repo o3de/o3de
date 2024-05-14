@@ -362,8 +362,6 @@ set(FILES
     LevelFileDialog.qrc
     LevelFileDialog.h
     LevelFileDialog.ui
-    SelectLightAnimationDialog.cpp
-    SelectLightAnimationDialog.h
     SelectSequenceDialog.cpp
     SelectSequenceDialog.h
     StartupLogoDialog.cpp

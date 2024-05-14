@@ -328,12 +328,6 @@ void CUiAnimViewSequence::OnNodeChanged(CUiAnimViewNode* pNode, IUiAnimViewSeque
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimViewSequence::OnNodeRenamed(CUiAnimViewNode* pNode, const char* pOldName)
 {
-    bool bLightAnimationSetActive = GetFlags() & IUiAnimSequence::eSeqFlags_LightAnimationSet;
-    if (bLightAnimationSetActive)
-    {
-        UpdateLightAnimationRefs(pOldName, pNode->GetName().c_str());
-    }
-
     if (m_bNoNotifications)
     {
         return;
@@ -530,29 +524,6 @@ void CUiAnimViewSequence::SelectSelectedNodesInViewport()
             }
         }
     }
-#endif
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CUiAnimViewSequence::UpdateLightAnimationRefs([[maybe_unused]] const char* pOldName, [[maybe_unused]] const char* pNewName)
-{
-#if UI_ANIMATION_REMOVED    // lights
-    std::vector<CBaseObject*> entityObjects;
-    GetIEditor()->GetObjectManager()->FindObjectsOfType(&CEntityObject::staticMetaObject, entityObjects);
-    std::for_each(std::begin(entityObjects), std::end(entityObjects),
-        [&pOldName, &pNewName](CBaseObject* pBaseObject)
-        {
-            CEntityObject* pEntityObject = static_cast<CEntityObject*>(pBaseObject);
-            bool bLight = pEntityObject && pEntityObject->GetEntityClass().Compare("Light") == 0;
-            if (bLight)
-            {
-                string lightAnimation = pEntityObject->GetEntityPropertyString("lightanimation_LightAnimation");
-                if (lightAnimation == pOldName)
-                {
-                    pEntityObject->SetEntityPropertyString("lightanimation_LightAnimation", pNewName);
-                }
-            }
-        });
 #endif
 }
 
