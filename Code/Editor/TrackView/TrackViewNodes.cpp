@@ -1750,8 +1750,6 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
             contextMenu.collapseSub.addAction("Collapse Folders")->setData(eMI_CollapseFolders);
             contextMenu.expandSub.addAction("Expand Entities")->setData(eMI_ExpandEntities);
             contextMenu.collapseSub.addAction("Collapse Entities")->setData(eMI_CollapseEntities);
-            contextMenu.expandSub.addAction("Expand Cameras")->setData(eMI_ExpandCameras);
-            contextMenu.collapseSub.addAction("Collapse Cameras")->setData(eMI_CollapseCameras);
             contextMenu.expandSub.addAction("Expand Events")->setData(eMI_ExpandEvents);
             contextMenu.collapseSub.addAction("Collapse Events")->setData(eMI_CollapseEvents);
         }
