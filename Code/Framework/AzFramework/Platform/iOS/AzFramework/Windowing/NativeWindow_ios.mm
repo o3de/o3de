@@ -84,6 +84,12 @@ namespace AzFramework
                 m_width = geometry.m_width;
             }
         }
+        if (console)
+        {
+            // screen to world uses default viewport's size, which is based on these cvars, so we should keep them in sync
+            console->PerformCommand(AZStd::string::format("r_width %d", m_width).c_str());
+            console->PerformCommand(AZStd::string::format("r_height %d", m_height).c_str());
+        }
 #else
         m_width = geometry.m_width;
         m_height = geometry.m_height;
