@@ -22,8 +22,6 @@
 //////////////////////////////////////////////////////////////////////////
 namespace
 {
-    const char* kScriptTablePrefix = "ScriptTable:";
-
     AZStd::array<CUiAnimNode::SParamInfo, 1> s_nodeParams{ { {
         /*.name =*/"Component Field float",
         /*.paramType =*/eUiAnimParamType_AzComponentField,
@@ -336,12 +334,6 @@ AZStd::string CUiAnimAzEntityNode::GetParamName(const CUiAnimParamType& param) c
         return info.name;
     }
 
-    const char* pName = param.GetName();
-    if (param.GetType() == eUiAnimParamType_ByString && pName && strncmp(pName, kScriptTablePrefix, strlen(kScriptTablePrefix)) == 0)
-    {
-        return pName + strlen(kScriptTablePrefix);
-    }
-
     return "Unknown Entity Parameter";
 }
 
@@ -360,12 +352,6 @@ AZStd::string CUiAnimAzEntityNode::GetParamNameForTrack(const CUiAnimParamType& 
     if (GetParamInfoFromType(param, info))
     {
         return info.name;
-    }
-
-    const char* pName = param.GetName();
-    if (param.GetType() == eUiAnimParamType_ByString && pName && strncmp(pName, kScriptTablePrefix, strlen(kScriptTablePrefix)) == 0)
-    {
-        return pName + strlen(kScriptTablePrefix);
     }
 
     return "Unknown Entity Parameter";
