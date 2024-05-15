@@ -21,6 +21,8 @@
 #include <Atom/RPI.Public/GpuQuery/GpuPassProfiler.h>
 #include <Atom/RPI.Public/XR/XRRenderingInterface.h>
 
+#include <AzFramework/API/ApplicationAPI.h>
+
 #include "PerformanceCVarManager.h"
 
 namespace AZ
@@ -42,6 +44,7 @@ namespace AZ
             , public AZ::RHI::RHISystemNotificationBus::Handler
             , public XRRegisterInterface::Registrar
             , public PerformanceCollectorOwner::Registrar
+            , public AzFramework::ApplicationLifecycleEvents::Bus::Handler
         {
         public:
             AZ_COMPONENT(RPISystemComponent, "{83E301F3-7A0C-4099-B530-9342B91B1BC0}");
@@ -61,6 +64,12 @@ namespace AZ
             // IXRRegisterInterface overrides
             void RegisterXRInterface(XRRenderingInterface* xrSystemInterface) override;
             void UnRegisterXRInterface() override;
+            ///////////////////////////////////////////////////////////////////
+
+            ///////////////////////////////////////////////////////////////////
+            // ApplicationLifecycleEvents overrides
+            void OnApplicationSuspended(Event lastEvent) override;
+            void OnApplicationResumed(Event lastEvent) override;
             ///////////////////////////////////////////////////////////////////
 
         private:
@@ -102,6 +111,8 @@ namespace AZ
             RPISystemDescriptor m_rpiDescriptor;
 
             MaterialFunctorSourceDataRegistration* m_materialFunctorRegistration = nullptr;
+            
+            bool m_suspended = false;
         };
     } // namespace RPI
 } // namespace AZ

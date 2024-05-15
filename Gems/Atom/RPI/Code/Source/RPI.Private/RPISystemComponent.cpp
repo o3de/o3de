@@ -146,17 +146,33 @@ namespace AZ
 
             AZ::SystemTickBus::Handler::BusConnect();
             AZ::RHI::RHISystemNotificationBus::Handler::BusConnect();
+            AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusConnect();
         }
 
         void RPISystemComponent::Deactivate()
         {
+            AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusDisconnect();
             AZ::SystemTickBus::Handler::BusDisconnect();
             m_rpiSystem.Shutdown();
             AZ::RHI::RHISystemNotificationBus::Handler::BusDisconnect();
         }
 
+        void RPISystemComponent::OnApplicationSuspended(ApplicationLifecycleEvents::Event)
+        {
+            m_suspended = true;
+        }
+        void RPISystemComponent::OnApplicationResumed(ApplicationLifecycleEvents::Event)
+        {
+            m_suspended = false;
+        }
+    
         void RPISystemComponent::OnSystemTick()
         {
+            if (m_suspended)
+            {
+                return;
+            }
+            
             if (m_performanceCollector)
             {
                 if (m_gpuPassProfiler && !m_performanceCollector->IsWaitingBeforeCapture() && m_gpuPassProfiler->IsGpuTimeMeasurementEnabled())
