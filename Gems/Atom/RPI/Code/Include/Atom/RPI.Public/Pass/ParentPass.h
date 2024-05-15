@@ -90,9 +90,6 @@ namespace AZ
             //! Recursively set all the PipelineStatistics queries enabled for all its children.
             void SetPipelineStatisticsQueryEnabled(bool enable) override;
 
-            //! Get the device index of this pass
-            const int GetDeviceIndex() const;
-
             // --- Validation & Debug ---
 
             void Validate(PassValidationResults& validationResults) override;
@@ -157,9 +154,6 @@ namespace AZ
             // So now we detect clear actions on parent slots and generate a clear pass for them.
             void CreateClearPassFromBinding(PassAttachmentBinding& binding, PassRequest& clearRequest);
             void CreateClearPassesFromBindings();
-
-            // The device index the pass should run on. Can be invalid if it doesn't matter.
-            int m_deviceIndex{ AZ::RHI::MultiDevice::InvalidDeviceIndex };
         };
 
         template<typename PassType>

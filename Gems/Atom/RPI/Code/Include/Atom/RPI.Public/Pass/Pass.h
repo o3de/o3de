@@ -146,6 +146,9 @@ namespace AZ
             //! It may return nullptr if the pass wasn't create from a template
             const PassTemplate* GetPassTemplate() const { return m_template.get(); }
 
+            //! Get the device index of this pass
+            const int GetDeviceIndex() const;
+
             //! Enable/disable this pass
             //! If the pass is disabled, it (and any children if it's a ParentPass) won't be rendered.  
             void SetEnabled(bool enabled);
@@ -627,6 +630,9 @@ namespace AZ
 
             // Used to track what phases of build/initialization the pass is queued for
             PassQueueState m_queueState = PassQueueState::NoQueue;
+
+            // The device index the pass should run on. Can be invalid if it doesn't matter.
+            int m_deviceIndex{ AZ::RHI::MultiDevice::InvalidDeviceIndex };
         };
 
         //! Struct used to return results from Pass hierarchy validation

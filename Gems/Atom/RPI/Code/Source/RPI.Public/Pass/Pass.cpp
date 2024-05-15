@@ -56,6 +56,7 @@ namespace AZ
             {
                 PassUtils::ExtractPipelineGlobalConnections(m_passData, m_pipelineGlobalConnections);
                 m_viewTag = m_passData->m_pipelineViewTag;
+                m_deviceIndex = m_passData->m_deviceIndex;
             }
 
             m_flags.m_enabled = true;
@@ -99,6 +100,15 @@ namespace AZ
             desc.m_passRequest = m_flags.m_createdByPassRequest ? &m_request : nullptr;
             desc.m_passData = m_passData;
             return desc;
+        }
+
+        const int Pass::GetDeviceIndex() const
+        {
+            if (m_deviceIndex == AZ::RHI::MultiDevice::InvalidDeviceIndex && m_parent)
+            {
+                return m_parent->GetDeviceIndex();
+            }
+            return m_deviceIndex;
         }
 
         void Pass::SetEnabled(bool enabled)

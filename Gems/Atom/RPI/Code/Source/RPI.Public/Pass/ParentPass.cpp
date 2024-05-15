@@ -41,10 +41,6 @@ namespace AZ
             : Pass(descriptor)
         {
             m_flags.m_createChildren = true;
-            if (m_passData)
-            {
-                m_deviceIndex = m_passData->m_deviceIndex;
-            }
         }
 
         ParentPass::~ParentPass()
@@ -268,15 +264,6 @@ namespace AZ
             {
                 child->SetPipelineStatisticsQueryEnabled(enable);
             }
-        }
-
-        const int ParentPass::GetDeviceIndex() const
-        {
-            if (m_deviceIndex == AZ::RHI::MultiDevice::InvalidDeviceIndex && m_parent)
-            {
-                return m_parent->GetDeviceIndex();
-            }
-            return m_deviceIndex;
         }
 
         // --- Child creation ---

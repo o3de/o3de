@@ -194,14 +194,15 @@ namespace AZ
         {
             m_timestampResult = AZ::RPI::TimestampResult();
 
-            if (m_deviceIndex == AZ::RHI::MultiDevice::InvalidDeviceIndex && m_parent)
+            int deviceIndex = m_deviceIndex;
+            if (deviceIndex == AZ::RHI::MultiDevice::InvalidDeviceIndex && m_parent)
             {
-                m_deviceIndex = azrtti_cast<AZ::RPI::ParentPass*>(m_parent)->GetDeviceIndex();
+                deviceIndex = azrtti_cast<AZ::RPI::ParentPass*>(m_parent)->GetDeviceIndex();
             }
 
             if (GetScopeId().IsEmpty())
             {
-                InitScope(RHI::ScopeId(GetPathName()), m_hardwareQueueClass, m_deviceIndex);
+                InitScope(RHI::ScopeId(GetPathName()), m_hardwareQueueClass, deviceIndex);
             }
 
             params.m_frameGraphBuilder->ImportScopeProducer(*this);
