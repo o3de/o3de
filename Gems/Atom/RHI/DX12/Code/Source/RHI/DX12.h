@@ -60,13 +60,6 @@ namespace AZ
             return newResource.Get();
         }
 
-        enum
-        {
-            DX12_RESOURCE_STATE_COPY_QUEUE_BIT = 0x80000000,
-
-            DX12_RESOURCE_STATE_VALID_API_MASK = ~DX12_RESOURCE_STATE_COPY_QUEUE_BIT
-        };
-
         using GpuDescriptorHandle = D3D12_GPU_DESCRIPTOR_HANDLE;
         using GpuVirtualAddress = D3D12_GPU_VIRTUAL_ADDRESS;
         using CpuVirtualAddress = uint8_t*;
