@@ -83,18 +83,10 @@ namespace AZ
             void BuildGradingLutTemplate();
             void CreateGradingAndAcesPasses();
 
-            void UpdateDisplayMapperConfiguration();
+            void GetDisplayMapperConfiguration();
             void ClearChildren();
 
-            // Return true if it needs a separate ldr color grading pass
-            bool UsesLdrGradingLutPass() const;
-            // Return true if it needs an output transform pass (for doing certain tonemapping and gamma correction)
-            bool UsesOutputTransformPass() const;
-
             DisplayMapperConfigurationDescriptor m_displayMapperConfigurationDescriptor;
-            DisplayMapperConfigurationDescriptor m_defaultDisplayMapperConfigurationDescriptor;
-            bool m_mergeLdrGradingLut = false;
-            RPI::AssetReference m_outputTransformOverrideShader;
             bool m_needToRebuildChildren = false;
 
             const RPI::PassAttachmentBinding* m_pipelineOutput = nullptr;

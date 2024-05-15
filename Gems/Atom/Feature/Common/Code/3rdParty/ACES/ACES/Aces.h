@@ -145,10 +145,7 @@ namespace AZ
             AcesLut,
             Passthrough,
             GammaSRGB,
-            Reinhard,
-            AcesFitted,
-            AcesFilmic,
-            Filmic
+            Reinhard
         );
 
         enum class ShaperPresetType
@@ -167,10 +164,7 @@ namespace AZ
         enum class ToneMapperType
         {
             None = 0,
-            Reinhard,
-            AcesFitted,
-            AcesFilmic,
-            Filmic
+            Reinhard
         };
 
         enum class TransferFunctionType

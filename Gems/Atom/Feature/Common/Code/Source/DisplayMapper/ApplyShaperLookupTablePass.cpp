@@ -51,8 +51,11 @@ namespace AZ
             UpdateShaperSrg();
         }
 
-        void ApplyShaperLookupTablePass::SetupFrameGraphDependenciesCommon([[maybe_unused]] RHI::FrameGraphInterface frameGraph)
+        void ApplyShaperLookupTablePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
+            DeclareAttachmentsToFrameGraph(frameGraph);
+            DeclarePassDependenciesToFrameGraph(frameGraph);
+
             if (m_needToReloadLut)
             {
                 ReleaseLutImage();
@@ -61,17 +64,7 @@ namespace AZ
             }
 
             AZ_Assert(m_lutResource.m_lutStreamingImage != nullptr, "ApplyShaperLookupTablePass unable to acquire LUT image");
-        }
 
-        void ApplyShaperLookupTablePass::CompileResourcesCommon([[maybe_unused]] const RHI::FrameGraphCompileContext& context)
-        {
-        }
-
-        void ApplyShaperLookupTablePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
-        {
-            DeclareAttachmentsToFrameGraph(frameGraph);
-            DeclarePassDependenciesToFrameGraph(frameGraph);
-            SetupFrameGraphDependenciesCommon(frameGraph);
             frameGraph.SetEstimatedItemCount(1);
         }
 
@@ -79,7 +72,6 @@ namespace AZ
         {
             AZ_Assert(m_shaderResourceGroup != nullptr, "ApplyShaperLookupTablePass %s has a null shader resource group when calling Compile.", GetPathName().GetCStr());
 
-            CompileResourcesCommon(context);
             BindPassSrg(context, m_shaderResourceGroup);
             m_shaderResourceGroup->Compile();
         }
@@ -105,11 +97,6 @@ namespace AZ
         void ApplyShaperLookupTablePass::SetLutAssetId(const AZ::Data::AssetId& assetId)
         {
             m_lutAssetId = assetId;
-        }
-
-        const AZ::Data::AssetId& ApplyShaperLookupTablePass::GetLutAssetId() const
-        {
-            return m_lutAssetId;
         }
 
         void ApplyShaperLookupTablePass::UpdateShaperSrg()

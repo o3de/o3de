@@ -207,16 +207,9 @@
                                 "Pass": "ForwardPass",
                                 "Attachment": "DepthStencilOutput"
                             }
-                        },
-                        {
-                            "LocalSlot": "PipelineOutput",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "PipelineOutput"
-                            }
                         }
                     ]
-                },               
+                },
                 {
                     "Name": "AuxGeomPass",
                     "TemplateName": "AuxGeomPassTemplate",
@@ -225,8 +218,8 @@
                         {
                             "LocalSlot": "ColorInputOutput",
                             "AttachmentRef": {
-                                "Pass": "MobilePostProcessPass",
-                                "Attachment": "Output"
+                                "Pass": "MobileTransparentPass",
+                                "Attachment": "InputOutput"
                             }
                         },
                         {

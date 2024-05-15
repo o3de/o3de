@@ -137,8 +137,6 @@ namespace AZ
                 serializeContext->Class<DisplayMapperPassData, Base>()
                     ->Version(0)
                     ->Field("DisplayMapperConfig", &DisplayMapperPassData::m_config)
-                    ->Field("MergeLdrGradingLut", &DisplayMapperPassData::m_mergeLdrGradingLut)
-                    ->Field("OutputTransformShaderOverride", &DisplayMapperPassData::m_outputTransformOverride)
                     ;
             }
         }

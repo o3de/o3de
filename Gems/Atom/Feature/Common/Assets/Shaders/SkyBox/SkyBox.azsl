@@ -196,7 +196,7 @@ PSOutput MainPS(VSOutput input)
     color = ApplyManualExposure(color, real(ViewSrg::GetExposureValueCompensation()));
 
     // We could add Aces support here as well if perf allows.
-    color = TonemapFilmic(color);
+    color = ApplyFilmicTonemap(color);
 #endif
 
     PSOutput OUT;

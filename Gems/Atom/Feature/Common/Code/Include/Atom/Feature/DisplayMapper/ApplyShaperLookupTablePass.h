@@ -38,7 +38,6 @@ namespace AZ
 
             void SetShaperParameters(const ShaperParams& shaperParams);
             void SetLutAssetId(const AZ::Data::AssetId& assetId);
-            const AZ::Data::AssetId& GetLutAssetId() const;
 
         protected:
             explicit ApplyShaperLookupTablePass(const RPI::PassDescriptor& descriptor);
@@ -51,9 +50,6 @@ namespace AZ
             RHI::ShaderInputConstantIndex m_shaderShaperTypeIndex;
             RHI::ShaderInputConstantIndex m_shaderShaperBiasIndex;
             RHI::ShaderInputConstantIndex m_shaderShaperScaleIndex;
-
-            void SetupFrameGraphDependenciesCommon(RHI::FrameGraphInterface frameGraph);
-            void CompileResourcesCommon(const RHI::FrameGraphCompileContext& context);
 
         private:
 

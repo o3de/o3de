@@ -74,7 +74,7 @@ namespace AZ
             //! Configuration name
             AZStd::string m_name;
 
-            DisplayMapperOperationType m_operationType = DisplayMapperOperationType::Aces;
+            DisplayMapperOperationType m_operationType;
 
             bool m_ldrGradingLutEnabled = false;
             Data::Asset<RPI::AnyAsset> m_ldrColorGradingLut;
@@ -96,8 +96,6 @@ namespace AZ
             static void Reflect(ReflectContext* context);
 
             DisplayMapperConfigurationDescriptor m_config;
-            bool m_mergeLdrGradingLut = false;
-            RPI::AssetReference m_outputTransformOverride;
         };
     } // namespace Render
 } // namespace AZ
