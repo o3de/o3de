@@ -101,16 +101,20 @@ namespace AZ
                  D3D12_RESOURCE_STATE_COPY_DEST |
                  D3D12_RESOURCE_STATE_COPY_SOURCE);
 
+            constexpr D3D12_RESOURCE_STATES VALID_COPY_QUEUE_RESOURCE_STATES =
+                (D3D12_RESOURCE_STATE_COPY_DEST |
+                 D3D12_RESOURCE_STATE_COPY_SOURCE);
+
             switch (GetHardwareQueueClass())
             {
             case RHI::HardwareQueueClass::Graphics:
-                return RHI::CheckBitsAll(state, (D3D12_RESOURCE_STATES)DX12_RESOURCE_STATE_VALID_API_MASK);
+                return true;
 
             case RHI::HardwareQueueClass::Compute:
                 return RHI::CheckBitsAll(VALID_COMPUTE_QUEUE_RESOURCE_STATES, state);
 
             case RHI::HardwareQueueClass::Copy:
-                return RHI::CheckBitsAny(state, (D3D12_RESOURCE_STATES)DX12_RESOURCE_STATE_COPY_QUEUE_BIT);
+                return RHI::CheckBitsAll(VALID_COPY_QUEUE_RESOURCE_STATES, state);
             }
             return false;
         }
