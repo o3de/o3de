@@ -605,7 +605,7 @@ namespace AzToolsFramework
 
     void ComponentEditor::QueuePropertyEditorInvalidationForComponent(AZ::EntityComponentIdPair entityComponentIdPair, PropertyModificationRefreshLevel refreshLevel)
     {
-        for (auto component : m_components)
+        for (const auto component : m_components)
         {
             if ((component->GetId() == entityComponentIdPair.GetComponentId()) 
              && (component->GetEntityId() == entityComponentIdPair.GetEntityId()))
