@@ -44,7 +44,9 @@ namespace AZ
             , public AZ::RHI::RHISystemNotificationBus::Handler
             , public XRRegisterInterface::Registrar
             , public PerformanceCollectorOwner::Registrar
+#if defined(CARBONATED)
             , public AzFramework::ApplicationLifecycleEvents::Bus::Handler
+#endif
         {
         public:
             AZ_COMPONENT(RPISystemComponent, "{83E301F3-7A0C-4099-B530-9342B91B1BC0}");
@@ -65,13 +67,13 @@ namespace AZ
             void RegisterXRInterface(XRRenderingInterface* xrSystemInterface) override;
             void UnRegisterXRInterface() override;
             ///////////////////////////////////////////////////////////////////
-
+#if defined(CARBONATED)
             ///////////////////////////////////////////////////////////////////
             // ApplicationLifecycleEvents overrides
             void OnApplicationSuspended(Event lastEvent) override;
             void OnApplicationResumed(Event lastEvent) override;
             ///////////////////////////////////////////////////////////////////
-
+#endif
         private:
             RPISystemComponent(const RPISystemComponent&) = delete;
 
@@ -111,8 +113,9 @@ namespace AZ
             RPISystemDescriptor m_rpiDescriptor;
 
             MaterialFunctorSourceDataRegistration* m_materialFunctorRegistration = nullptr;
-            
+#if defined(CARBONATED)
             bool m_suspended = false;
+#endif
         };
     } // namespace RPI
 } // namespace AZ
