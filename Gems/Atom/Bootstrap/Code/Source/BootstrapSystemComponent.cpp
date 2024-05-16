@@ -589,7 +589,10 @@ namespace AZ
                     {
                         renderPipeline->SetActiveAAMethod(antiAliasing.c_str());
                     }
+                }
 
+                // BRDF Texture Pipeline
+                {
                     // As part of our initialization we need to create the BRDF texture generation pipeline
                     AZ::RPI::RenderPipelineDescriptor pipelineDesc;
                     pipelineDesc.m_mainViewTagName = "MainCamera";
