@@ -477,8 +477,6 @@ set(FILES
     TrackView/TrackViewPythonFuncs.cpp
     TrackView/TrackViewSequenceManager.cpp
     TrackView/TrackViewSequenceManager.h
-    TrackView/TrackViewUndo.cpp
-    TrackView/TrackViewUndo.h
     TrackView/CommentNodeAnimator.cpp
     TrackView/DirectorNodeAnimator.cpp
     TrackView/CommentNodeAnimator.h
