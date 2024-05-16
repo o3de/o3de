@@ -194,6 +194,7 @@ namespace AZ
         {
             m_timestampResult = AZ::RPI::TimestampResult();
 
+            // the pass is potentially re-allocated amount devices dynamically in runtime so deviceIndex is updated everyframe.
             int deviceIndex = m_deviceIndex;
             if (deviceIndex == AZ::RHI::MultiDevice::InvalidDeviceIndex && m_parent)
             {
