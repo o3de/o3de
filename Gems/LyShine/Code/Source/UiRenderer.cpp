@@ -299,6 +299,29 @@ AZ::Matrix4x4 UiRenderer::GetModelViewProjectionMatrix()
     return modelViewProjMat;
 }
 
+#if defined(CARBONATED)
+AZ::Matrix4x4 UiRenderer::GetModelViewProjectionMatrix(const AZ::Vector2& viewportSize)
+{
+    const float viewWidth = viewportSize.GetX();
+    const float viewHeight = viewportSize.GetY();
+
+    float zf = 0.0f;
+    float zn = 1.0f;
+    auto viewportContext = GetViewportContext();
+    if (viewportContext)
+    {
+        const AZ::RHI::Viewport& viewport = viewportContext->GetWindowContext()->GetViewport();
+        zf = viewport.m_minZ;
+        zn = viewport.m_maxZ;
+    }
+
+    AZ::Matrix4x4 modelViewProjMat;
+    AZ::MakeOrthographicMatrixRH(modelViewProjMat, 0.0f, viewWidth, viewHeight, 0.0f, zn, zf);
+
+    return modelViewProjMat;
+}
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 AZ::Vector2 UiRenderer::GetViewportSize()
 {

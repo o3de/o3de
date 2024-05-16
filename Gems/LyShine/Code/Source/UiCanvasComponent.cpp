@@ -1161,6 +1161,9 @@ void UiCanvasComponent::SetLocalUserIdInputFilter(AzFramework::LocalUserId local
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 bool UiCanvasComponent::HandleInputEvent(const AzFramework::InputChannel::Snapshot& inputSnapshot,
     const AZ::Vector2* viewportPos,
+#if defined(CARBONATED)
+    const AZ::Vector2* viewportSize,
+#endif
     AzFramework::ModifierKeyMask activeModifierKeys)
 {
     // Ignore input events if we're not enabled
@@ -1196,7 +1199,35 @@ bool UiCanvasComponent::HandleInputEvent(const AzFramework::InputChannel::Snapsh
     {
         if (!m_renderToTexture && m_isPositionalInputSupported)
         {
+#if defined(CARBONATED)
+            float viewportWidth;
+            float viewportHeight;
+
+            if (viewportSize)
+            {
+                viewportWidth = viewportSize->GetX();
+                viewportHeight = viewportSize->GetY();
+            }
+            else
+            {
+                UiRenderer* uiRenderer = m_renderInEditor ? GetUiRendererForEditor() : GetUiRendererForGame();
+                AZ_Assert(uiRenderer, "UiRenderer is not available");
+
+                const AZ::RHI::Viewport& viewport = uiRenderer->GetViewportContext()->GetWindowContext()->GetViewport();
+                viewportWidth = viewport.GetWidth();
+                viewportHeight = viewport.GetHeight();
+            }
+
+            // Transform this position to the scaled canvas
+            const float x_ratio = m_targetCanvasSize.GetX() / viewportWidth;
+            const float y_ratio = m_targetCanvasSize.GetY() / viewportHeight;
+
+            const AZ::Vector2 scaledPos = (*viewportPos) * AZ::Vector2(x_ratio, y_ratio);
+
+            if (HandleInputPositionalEvent(inputSnapshot, scaledPos))
+#else
             if (HandleInputPositionalEvent(inputSnapshot, *viewportPos))
+#endif
             {
                 return true;
             }
@@ -3675,12 +3706,32 @@ void UiCanvasComponent::SetTargetCanvasSizeAndUniformScale(bool isInGame, AZ::Ve
 
     if (isInGame)
     {
+#if defined(CARBONATED)
+        m_targetCanvasSize = m_canvasSize;
+
+        float origAspectRatio = m_targetCanvasSize.GetX() / m_targetCanvasSize.GetY();
+        float newAspectRatio = canvasSize.GetX() / canvasSize.GetY();
+
+        // Wider
+        if (newAspectRatio > origAspectRatio)
+        {
+            // Preserve Height, alter Width into new aspect ratio
+            m_targetCanvasSize.SetX(m_targetCanvasSize.GetY() * (canvasSize.GetX() / canvasSize.GetY()));
+        }
+        // Taller
+        else if (newAspectRatio < origAspectRatio)
+        {
+            // Preserve Width, alter Height into new aspect ratio
+            m_targetCanvasSize.SetY(m_targetCanvasSize.GetX() * (canvasSize.GetY() / canvasSize.GetX()));
+        }
+#else
         // Set the target canvas size to the canvas size specified by the caller
         m_targetCanvasSize = canvasSize;
 
         // set the device scale
         m_deviceScale.SetX(m_targetCanvasSize.GetX() / m_canvasSize.GetX());
         m_deviceScale.SetY(m_targetCanvasSize.GetY() / m_canvasSize.GetY());
+#endif
     }
     else
     {

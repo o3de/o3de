@@ -115,6 +115,9 @@ private: // member functions
     // Handle input event for all loaded canvases
     bool HandleInputEventForLoadedCanvases(const AzFramework::InputChannel::Snapshot& inputSnapshot,
         const AZ::Vector2& viewportPos,
+#if defined(CARBONATED)
+        const AZ::Vector2& viewportSize,
+#endif
         AzFramework::ModifierKeyMask activeModifierKeys,
         bool isPositional);
 

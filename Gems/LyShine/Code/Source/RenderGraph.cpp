@@ -963,7 +963,11 @@ namespace LyShine
         {
             for (RenderNode* renderNode : m_renderTargetRenderNodes)
             {
+#if defined(CARBONATED)
+                renderNode->Render(uiRenderer, uiRenderer->GetModelViewProjectionMatrix(viewportSize), dynamicDraw);
+#else
                 renderNode->Render(uiRenderer, uiRenderer->GetModelViewProjectionMatrix(), dynamicDraw);
+#endif
             }
             m_renderToRenderTargetCount++;
         }
@@ -977,7 +981,11 @@ namespace LyShine
 
         for (RenderNode* renderNode : m_renderNodes)
         {
+#if defined(CARBONATED)
+            renderNode->Render(uiRenderer, uiRenderer->GetModelViewProjectionMatrix(viewportSize), dynamicDraw);
+#else
             renderNode->Render(uiRenderer, uiRenderer->GetModelViewProjectionMatrix(), dynamicDraw);
+#endif
         }
     }
 
