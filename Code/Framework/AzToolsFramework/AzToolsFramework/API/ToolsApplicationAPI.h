@@ -60,15 +60,14 @@ namespace AzToolsFramework
     //! Return true to accept this type of component.
     using ComponentFilter = AZStd::function<bool(const AZ::SerializeContext::ClassData&)>;
 
-    // when a property is modified, we attempt to retrieve the value that comes out in response to the Property Modification function that you may supply
-    // if you return anything other than Refresh_None, the tree may be queued for update:
+    //! Controls how much to rebuild the property display when a change is made
     enum PropertyModificationRefreshLevel : int
     {
-        Refresh_None,
-        Refresh_Values,
-        Refresh_AttributesAndValues,
-        Refresh_EntireTree,
-        Refresh_EntireTree_NewContent,
+        Refresh_None,                   //! No refresh is required
+        Refresh_Values,                 //! Repopulate the values from components into the UI
+        Refresh_AttributesAndValues,    //! In addition to the above, also check if attributes such as visibility have changed
+        Refresh_EntireTree,             //! Discard the entire UI and rebuild it from scratch
+        Refresh_EntireTree_NewContent,  //! In addition to the above, scroll to the bottom of the view.
     };
 
     /**
@@ -155,9 +154,18 @@ namespace AzToolsFramework
         virtual void OnEndUndo(const char* /*label*/, bool /*changed*/) {}
 
         /*!
-         * Notify property UI to refresh the property tree.
+         * Notify property UI to refresh the property tree.  Note that this will go out to every
+         * property UI control in every window in the entire application, and using the below function if you can
+         * will yield faster results.
          */
         virtual void InvalidatePropertyDisplay(PropertyModificationRefreshLevel /*level*/) {}
+
+        /*!
+         * Notify property UI to refresh the properties displayed for a specific component.
+         * You should prefer to use this call over the above one, except in circumstances where
+         * you need to refresh every UI element in every property tree in every window in the entire application.
+         */
+        virtual void InvalidatePropertyDisplayForComponent(AZ::EntityComponentIdPair /*entityComponentIdPair*/, PropertyModificationRefreshLevel /*level*/) {}
 
         /*!
          * Process source control status for the specified file.

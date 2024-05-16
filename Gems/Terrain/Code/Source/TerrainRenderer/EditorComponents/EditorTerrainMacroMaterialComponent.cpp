@@ -265,13 +265,11 @@ namespace Terrain
 
             // If the asset status changed and the image asset property is visible, refresh the entire tree so
             // that the label change is picked up.
-            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
+            InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
         }
         else
         {
-            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+            InvalidatePropertyDisplay(AzToolsFramework::Refresh_AttributesAndValues);
         }
     }
 

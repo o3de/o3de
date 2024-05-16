@@ -1365,7 +1365,17 @@ namespace AzToolsFramework
         bool displayAddComponentMenu = !isPrefabLayout && CanAddComponentsToSelection(selectionEntityTypeInfo);
         m_gui->m_addComponentButton->setVisible(displayAddComponentMenu);
 
-        QueueScrollToNewComponent();
+        if (m_shouldScrollToNewComponents)
+        {
+            QueueScrollToNewComponent();
+        }
+        else if (!m_shouldScrollToNewComponentsQueued)
+        {
+            // immediately execute a scroll to restore it.
+            QTimer::singleShot(0, this, &EntityPropertyEditor::ScrollToNewComponent);
+            m_shouldScrollToNewComponentsQueued = true;
+        }
+
         LoadComponentEditorState();
         UpdateInternalState();
 
@@ -1938,6 +1948,7 @@ namespace AzToolsFramework
 
         if (level == Refresh_EntireTree_NewContent)
         {
+             // this should ONLY happen for when new content is added to the bottom of the view, like when Add Component occurs.
             QueuePropertyRefresh();
             m_shouldScrollToNewComponents = true;
             return;
@@ -1953,6 +1964,30 @@ namespace AzToolsFramework
                 if (componentEditor->isVisible())
                 {
                     componentEditor->QueuePropertyEditorInvalidation(level);
+                }
+            }
+        }
+    }
+
+    void EntityPropertyEditor::InvalidatePropertyDisplayForComponent(AZ::EntityComponentIdPair entityComponentIdPair, PropertyModificationRefreshLevel level)
+    {
+        if (level == Refresh_None)
+        {
+            return;
+        }
+
+        if (m_selectedEntityComponentIds.find(entityComponentIdPair) == m_selectedEntityComponentIds.end())
+        {
+            return;
+        }
+
+        if (!m_isAlreadyQueuedRefresh)
+        {
+            for (auto componentEditor : m_componentEditors)
+            {
+                if (componentEditor->isVisible())
+                {
+                    componentEditor->QueuePropertyEditorInvalidationForComponent(entityComponentIdPair, level);
                 }
             }
         }
@@ -2215,11 +2250,21 @@ namespace AzToolsFramework
             // Refresh the properties using a singleShot
             // this makes sure that the properties aren't refreshed while processing
             // other events, and instead runs after the current events are processed
+
+            // note that if we're getting here, we're actually clearing and rebuilding the entire
+            // tree, not just refreshing values (that is taken care of elsewhere).
+            // Sometimes, these events cause it to repeatedly refresh, so instead, give it a delay of more than 0 so that
+            // tick can happen first.
             QTimer::singleShot(0, this, &EntityPropertyEditor::UpdateContents);
 
             //saving state any time refresh gets queued because requires valid components
             //attempting to call directly anywhere state needed to be preserved always occurred with QueuePropertyRefresh
             SaveComponentEditorState();
+
+            QScrollBar* verticalScroll = m_gui->m_componentList->verticalScrollBar();
+            QScrollBar* horizontalScroll = m_gui->m_componentList->horizontalScrollBar();
+            m_savedVerticalScroll = verticalScroll->value();
+            m_savedHorizontalScroll = horizontalScroll->value();
         }
     }
 
@@ -3913,6 +3958,24 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::ScrollToNewComponent()
     {
+        m_shouldScrollToNewComponentsQueued = false;
+
+        if (!m_shouldScrollToNewComponents)
+        {
+            // if we get here, we should just restore the scroll.
+            if (m_savedVerticalScroll >= 0)
+            {
+                m_gui->m_componentList->verticalScrollBar()->setValue(m_savedVerticalScroll);
+            }
+
+            if (m_savedHorizontalScroll >= 0)
+            {
+                m_gui->m_componentList->horizontalScrollBar()->setValue(m_savedHorizontalScroll);
+            }
+            return;
+        }
+        m_shouldScrollToNewComponents = false;
+        
         // force new components to be visible
         // if no component has been explicitly set at the most recently added,
         // assume new components are added to the end of the list and layout
@@ -3942,8 +4005,6 @@ namespace AzToolsFramework
         {
             m_gui->m_componentList->ensureWidgetVisible(componentEditor);
         }
-        m_shouldScrollToNewComponents = false;
-        m_shouldScrollToNewComponentsQueued = false;
         m_newComponentId.reset();
 
         HighlightMovedRowWidget();
@@ -3951,9 +4012,9 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::QueueScrollToNewComponent()
     {
-        if (m_shouldScrollToNewComponents && !m_shouldScrollToNewComponentsQueued)
+        if (!m_shouldScrollToNewComponentsQueued)
         {
-            QTimer::singleShot(100, this, &EntityPropertyEditor::ScrollToNewComponent);
+            QTimer::singleShot(30, this, &EntityPropertyEditor::ScrollToNewComponent);
             m_shouldScrollToNewComponentsQueued = true;
         }
     }

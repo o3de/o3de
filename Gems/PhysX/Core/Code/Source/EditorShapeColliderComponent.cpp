@@ -663,9 +663,7 @@ namespace PhysX
         // m_shapeConfigs vector is reflected in the component and resizing it without invalidating property tree leads to dangling pointers
         // in the hierarchy comparison system.
 
-        AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
-            &AzToolsFramework::ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay,
-            AzToolsFramework::Refresh_EntireTree);
+        InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
     }
 
     // AZ::Component
