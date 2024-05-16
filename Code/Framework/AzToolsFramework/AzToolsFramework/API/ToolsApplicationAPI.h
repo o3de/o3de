@@ -155,8 +155,8 @@ namespace AzToolsFramework
 
         /*!
          * Notify property UI to refresh the property tree.  Note that this will go out to every
-         * property UI control in every window in the entire application, and using the below function if you can
-         * will yield faster results.
+         * property UI control in every window in the entire application.
+         * Use InvalidatePropertyDisplayForComponent() instead when possible for faster results.
          */
         virtual void InvalidatePropertyDisplay(PropertyModificationRefreshLevel /*level*/) {}
 
