@@ -1371,7 +1371,8 @@ namespace AzToolsFramework
         }
         else if (!m_shouldScrollToNewComponentsQueued)
         {
-            // immediately execute a scroll to restore it.
+            // if we are not going to scroll to new components, then
+            // immediately execute a scroll to restore the saved scroll position.
             QTimer::singleShot(0, this, &EntityPropertyEditor::ScrollToNewComponent);
             m_shouldScrollToNewComponentsQueued = true;
         }
@@ -1976,19 +1977,21 @@ namespace AzToolsFramework
             return;
         }
 
+        if (m_isAlreadyQueuedRefresh)
+        {
+            return;
+        }
+
         if (m_selectedEntityComponentIds.find(entityComponentIdPair) == m_selectedEntityComponentIds.end())
         {
             return;
         }
 
-        if (!m_isAlreadyQueuedRefresh)
+        for (auto componentEditor : m_componentEditors)
         {
-            for (auto componentEditor : m_componentEditors)
+            if (componentEditor->isVisible())
             {
-                if (componentEditor->isVisible())
-                {
-                    componentEditor->QueuePropertyEditorInvalidationForComponent(entityComponentIdPair, level);
-                }
+                componentEditor->QueuePropertyEditorInvalidationForComponent(entityComponentIdPair, level);
             }
         }
     }
@@ -4014,6 +4017,10 @@ namespace AzToolsFramework
     {
         if (!m_shouldScrollToNewComponentsQueued)
         {
+            // this delay cannot be zero but still should be as short as possible to avoid jiggling in the display
+            // it cannot be zero, because other immediate updates are likely scheduled
+            // and it cannot be 1 since other cascading updates are likely to be scheduled.
+            // In windows, a timer of less than about 20ms will actually turn into a busy loop, so 30ms is a good value
             QTimer::singleShot(30, this, &EntityPropertyEditor::ScrollToNewComponent);
             m_shouldScrollToNewComponentsQueued = true;
         }
