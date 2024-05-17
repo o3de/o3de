@@ -30,13 +30,14 @@ namespace AZ
         //!     or you want to have more control over the pool such as define your own budget for the pool and not share the pool with others.
         enum class CommonBufferPoolType : uint8_t
         {
-            Constant = 0,           //<! For structured constants. They are often used as ConstantBuffer in shaders
-            StaticInputAssembly,    //<! For input assembly buffers that are not updated often. 
-            DynamicInputAssembly,   //<! For input assembly buffers that are updated per frame
-            ReadBack,               //<! For gpu write cpu read buffers which is mainly used to read back gpu data
-            ReadWrite,              //<! For gpu read/write buffers. They are often used as both StructuredBuffer and RWStructuredBuffer in different shaders
-            ReadOnly,               //<! For buffers which are read only. They are usually only used as StructuredBuffer in shaders
-            Indirect,               //<! For buffers which are used as indirect call arguments
+            Constant = 0, //<! For structured constants. They are often used as ConstantBuffer in shaders
+            StaticInputAssembly, //<! For input assembly buffers that are not updated often.
+            DynamicInputAssembly, //<! For input assembly buffers that are updated per frame
+            ReadBack, //<! For gpu write cpu read buffers which is mainly used to read back gpu data
+            Staging, //<! For gpu write cpu read buffers which is mainly used to read back gpu data
+            ReadWrite, //<! For gpu read/write buffers. They are often used as both StructuredBuffer and RWStructuredBuffer in different shaders
+            ReadOnly, //<! For buffers which are read only. They are usually only used as StructuredBuffer in shaders
+            Indirect, //<! For buffers which are used as indirect call arguments
 
             Count,
             Invalid = Count

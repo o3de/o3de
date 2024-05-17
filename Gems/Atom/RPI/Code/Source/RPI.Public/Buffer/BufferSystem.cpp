@@ -117,6 +117,11 @@ namespace AZ
                 bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Host;
                 bufferPoolDesc.m_hostMemoryAccess = RHI::HostMemoryAccess::Read;
                 break;
+            case CommonBufferPoolType::Staging:
+                bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::CopyRead;
+                bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Host;
+                bufferPoolDesc.m_hostMemoryAccess = RHI::HostMemoryAccess::Write;
+                break;
             case CommonBufferPoolType::ReadWrite:
                 // Add CopyRead flag too since it's often we need to read back GPU attachment buffers.
                 bufferPoolDesc.m_bindFlags =

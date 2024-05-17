@@ -32,85 +32,6 @@ namespace AZ
 {
     namespace RPI
     {
-        // Helper class to build scope producer with functions
-        class ScopeProducerFunction final
-            : public RHI::ScopeProducer
-        {
-        public:
-            AZ_CLASS_ALLOCATOR(ScopeProducerFunction, SystemAllocator);
-
-            using PrepareFunction = AZStd::function<void(RHI::FrameGraphInterface)>;
-            using CompileFunction = AZStd::function<void(const RHI::FrameGraphCompileContext&)>;
-            using ExecuteFunction = AZStd::function<void(const RHI::FrameGraphExecuteContext&)>;
-
-            ScopeProducerFunction(
-                const RHI::ScopeId& scopeId,
-                PrepareFunction prepareFunction,
-                CompileFunction compileFunction,
-                ExecuteFunction executeFunction)
-                : ScopeProducer(scopeId)
-                , m_prepareFunction{ AZStd::move(prepareFunction) }
-                , m_compileFunction{ AZStd::move(compileFunction) }
-                , m_executeFunction{ AZStd::move(executeFunction) }
-            {}
-
-        private:
-            //////////////////////////////////////////////////////////////////////////
-            // ScopeProducer overrides
-            void SetupFrameGraphDependencies(RHI::FrameGraphInterface builder) override
-            {
-                m_prepareFunction(builder);
-            }
-
-            void CompileResources(const RHI::FrameGraphCompileContext& context) override
-            {
-                m_compileFunction(context);
-            }
-
-            void BuildCommandList(const RHI::FrameGraphExecuteContext& context) override
-            {
-                m_executeFunction(context);
-            }
-            //////////////////////////////////////////////////////////////////////////
-
-            PrepareFunction m_prepareFunction;
-            CompileFunction m_compileFunction;
-            ExecuteFunction m_executeFunction;
-        };
-
-
-        // Find a format for formats with two planars (DepthStencil) based on its ImageView's aspect flag
-        RHI::Format FindFormatForAspect(RHI::Format format, RHI::ImageAspect imageAspect)
-        {
-            RHI::ImageAspectFlags imageAspectFlags = RHI::GetImageAspectFlags(format);
-
-            // only need to convert is the source contains two aspects
-            if (imageAspectFlags == RHI::ImageAspectFlags::DepthStencil)
-            {
-                switch (imageAspect)
-                {
-                case RHI::ImageAspect::Stencil:
-                    return RHI::Format::R8_UINT;
-                case RHI::ImageAspect::Depth:
-                {
-                    switch (format)
-                    {
-                    case RHI::Format::D32_FLOAT_S8X24_UINT:
-                        return RHI::Format::R32_FLOAT;
-                    case RHI::Format::D24_UNORM_S8_UINT:
-                        return RHI::Format::R32_UINT;
-                    case RHI::Format::D16_UNORM_S8_UINT:
-                        return RHI::Format::R16_UNORM;
-                    default:
-                        AZ_Assert(false, "Unknown DepthStencil format. Please update this function");
-                        return RHI::Format::R32_FLOAT;
-                    }
-                }
-                }
-            }
-            return format;
-        }
-
         AttachmentReadback::AttachmentReadback(const RHI::ScopeId& scopeId) : m_dispatchItem(RHI::MultiDevice::AllDevices)
         {
             for(uint32_t i = 0; i < RHI::Limits::Device::FrameCountMax; i++)
@@ -162,12 +83,11 @@ namespace AZ
             m_decomposeOutputImageIndex = m_decomposeSrg->FindShaderInputImageIndex(Name("m_outputImage"));
 
             // build scope producer for copying
-            m_copyScopeProducer = AZStd::make_shared<ScopeProducerFunction>(
-                    scopeId,
-                    AZStd::bind(&AttachmentReadback::CopyPrepare, this, AZStd::placeholders::_1),
-                    AZStd::bind(&AttachmentReadback::CopyCompile, this, AZStd::placeholders::_1),
-                    AZStd::bind(&AttachmentReadback::CopyExecute, this, AZStd::placeholders::_1)
-                );
+            m_copyScopeProducer = AZStd::make_shared<RHI::ScopeProducerFunctionNoData>(
+                scopeId,
+                AZStd::bind(&AttachmentReadback::CopyPrepare, this, AZStd::placeholders::_1),
+                AZStd::bind(&AttachmentReadback::CopyCompile, this, AZStd::placeholders::_1),
+                AZStd::bind(&AttachmentReadback::CopyExecute, this, AZStd::placeholders::_1));
 
             m_state = ReadbackState::Idle;
         }
@@ -255,12 +175,11 @@ namespace AZ
                 if (m_imageDescriptor.m_multisampleState.m_samples > 1)
                 {
                     m_copyAttachmentId = RHI::AttachmentId(AZStd::string::format("%s_Decomposed", m_attachmentId.GetCStr()));
-                    m_decomposeScopeProducer = AZStd::make_shared<ScopeProducerFunction>(
+                    m_decomposeScopeProducer = AZStd::make_shared<RHI::ScopeProducerFunctionNoData>(
                         m_copyAttachmentId,
                         AZStd::bind(&AttachmentReadback::DecomposePrepare, this, AZStd::placeholders::_1),
                         AZStd::bind(&AttachmentReadback::DecomposeCompile, this, AZStd::placeholders::_1),
-                        AZStd::bind(&AttachmentReadback::DecomposeExecute, this, AZStd::placeholders::_1)
-                        );
+                        AZStd::bind(&AttachmentReadback::DecomposeExecute, this, AZStd::placeholders::_1));
                 }
             }
             return true;
@@ -675,5 +594,5 @@ namespace AZ
             }
             return true;
         }
-    }   // namespace RPI
+    } // namespace RPI
 }   // namespace AZ

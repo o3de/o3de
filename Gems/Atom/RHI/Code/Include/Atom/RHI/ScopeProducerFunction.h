@@ -88,4 +88,53 @@ namespace AZ::RHI
         CompileFunction m_compileFunction;
         ExecuteFunction m_executeFunction;
     };
+
+    // Helper class to build scope producer with functions
+    class ScopeProducerFunctionNoData final : public RHI::ScopeProducer
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(ScopeProducerFunctionNoData, SystemAllocator);
+
+        using PrepareFunction = AZStd::function<void(RHI::FrameGraphInterface)>;
+        using CompileFunction = AZStd::function<void(const RHI::FrameGraphCompileContext&)>;
+        using ExecuteFunction = AZStd::function<void(const RHI::FrameGraphExecuteContext&)>;
+
+        ScopeProducerFunctionNoData(
+            const RHI::ScopeId& scopeId,
+            PrepareFunction prepareFunction,
+            CompileFunction compileFunction,
+            ExecuteFunction executeFunction,
+            HardwareQueueClass hardwareQueueClass = HardwareQueueClass::Graphics,
+            int deviceIndex = RHI::MultiDevice::InvalidDeviceIndex)
+            : ScopeProducer(scopeId, deviceIndex)
+            , m_prepareFunction{ AZStd::move(prepareFunction) }
+            , m_compileFunction{ AZStd::move(compileFunction) }
+            , m_executeFunction{ AZStd::move(executeFunction) }
+        {
+            InitScope(scopeId, hardwareQueueClass, deviceIndex);
+        }
+
+    private:
+        //////////////////////////////////////////////////////////////////////////
+        // ScopeProducer overrides
+        void SetupFrameGraphDependencies(RHI::FrameGraphInterface builder) override
+        {
+            m_prepareFunction(builder);
+        }
+
+        void CompileResources(const RHI::FrameGraphCompileContext& context) override
+        {
+            m_compileFunction(context);
+        }
+
+        void BuildCommandList(const RHI::FrameGraphExecuteContext& context) override
+        {
+            m_executeFunction(context);
+        }
+        //////////////////////////////////////////////////////////////////////////
+
+        PrepareFunction m_prepareFunction;
+        CompileFunction m_compileFunction;
+        ExecuteFunction m_executeFunction;
+    };
 }

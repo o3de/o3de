@@ -42,12 +42,13 @@ namespace AZ
         void RayTracingFeatureProcessor::Activate()
         {
             auto deviceMask{RHI::RHISystemInterface::Get()->GetRayTracingSupport()};
+            m_rayTracingEnabled = (deviceMask != RHI::MultiDevice::NoDevices);
 
-            if (deviceMask == RHI::MultiDevice::NoDevices)
+            if (!m_rayTracingEnabled)
             {
                 return;
             }
-
+            
             m_transformServiceFeatureProcessor = GetParentScene()->GetFeatureProcessor<TransformServiceFeatureProcessor>();
 
             // initialize the ray tracing buffer pools

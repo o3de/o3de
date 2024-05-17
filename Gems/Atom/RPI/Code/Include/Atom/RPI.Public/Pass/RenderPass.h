@@ -73,9 +73,6 @@ namespace AZ
 
             virtual void BuildCommandListInternal([[maybe_unused]] const RHI::FrameGraphExecuteContext& context){};
 
-            // Binds all attachments from the pass 
-            void DeclareAttachmentsToFrameGraph(RHI::FrameGraphInterface frameGraph) const;
-
             // Declares explicitly set dependencies between passes (execute after and execute before)
             // Note most pass ordering is determined by attachments. This is only used for
             // dependencies between passes that don't have any attachments/connections in common.
