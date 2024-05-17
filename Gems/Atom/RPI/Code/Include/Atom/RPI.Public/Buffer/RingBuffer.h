@@ -41,7 +41,7 @@ namespace AZ::RPI
         const Data::Instance<Buffer>& GetCurrentBuffer() const;
 
         //! Returns a RHI view of the current buffer
-        const RHI::MultiDeviceBufferView* GetCurrentBufferView() const;
+        const RHI::BufferView* GetCurrentBufferView() const;
 
         //! Increments the current buffer index, potentially resized the current buffer and updates the data of the current data. This is a
         //! convenience function which calls AdvanceCurrentBuffer(), CreateOrResizeCurrentBuffer(...) and UpdateCurrentBufferData(...)

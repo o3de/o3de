@@ -13,10 +13,10 @@
 #include <Atom/RHI/FrameGraphExecuter.h>
 #include <Atom/RHI/FrameGraphCompiler.h>
 #include <Atom/RHI/FrameGraph.h>
-#include <Atom/RHI/SingleDeviceRayTracingShaderTable.h>
+#include <Atom/RHI/DeviceRayTracingShaderTable.h>
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RHI/ScopeProducerEmpty.h>
-#include <Atom/RHI/MultiDeviceTransientAttachmentPool.h>
+#include <Atom/RHI/TransientAttachmentPool.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace AZ
@@ -27,7 +27,7 @@ namespace AZ
 
 namespace AZ::RHI
 {
-    class SingleDeviceShaderResourceGroupPool;
+    class DeviceShaderResourceGroupPool;
     class FrameGraphExecuteGroup;
 
     //! @brief Fill this descriptor when initializing a FrameScheduler instance.
@@ -113,7 +113,7 @@ namespace AZ::RHI
     //!
     //! FrameScheduler contains a single "root" Graphics scope which is always the first scope added to the graph. All
     //! subsequent scopes take on a dependency to this root scope. The reason for this is twofold:
-    //! 1) SingleDeviceResourcePool implementations need a scope to perform resolves (DMA uploads) to GPU memory. These operations
+    //! 1) DeviceResourcePool implementations need a scope to perform resolves (DMA uploads) to GPU memory. These operations
     //! occur first in the frame to avoid complicating pool / scope dependencies. Hence, this is done synchronously
     //!       on the Graphics queue.
     //! 2) To make resource transitions and aliasing easier, the first scope in an attachment chain should be a
@@ -177,11 +177,11 @@ namespace AZ::RHI
         //! Returns the implicit root scope id for the given deviceIndex.
         ScopeId GetRootScopeId(int deviceIndex = 0);
 
-        //! Returns the descriptor which has information on the properties of a MultiDeviceTransientAttachmentPool.
+        //! Returns the descriptor which has information on the properties of a TransientAttachmentPool.
         const AZStd::unordered_map<int, TransientAttachmentPoolDescriptor>* GetTransientAttachmentPoolDescriptor() const;
 
-        //! Adds a SingleDeviceRayTracingShaderTable to be built this frame
-        void QueueRayTracingShaderTableForBuild(SingleDeviceRayTracingShaderTable* rayTracingShaderTable);
+        //! Adds a DeviceRayTracingShaderTable to be built this frame
+        void QueueRayTracingShaderTableForBuild(DeviceRayTracingShaderTable* rayTracingShaderTable);
 
         //! Returns PhysicalDeviceDescriptor which can be used to extract vendor/driver information
         const PhysicalDeviceDescriptor& GetPhysicalDeviceDescriptor();
@@ -218,7 +218,7 @@ namespace AZ::RHI
         Ptr<FrameGraphCompiler> m_frameGraphCompiler;
         Ptr<FrameGraphExecuter> m_frameGraphExecuter;
 
-        Ptr<MultiDeviceTransientAttachmentPool> m_transientAttachmentPool;
+        Ptr<TransientAttachmentPool> m_transientAttachmentPool;
 
         AZStd::sys_time_t m_lastFrameEndTime{};
         MemoryStatistics m_memoryStatistics;
@@ -231,7 +231,7 @@ namespace AZ::RHI
         AZStd::unordered_map<ScopeId, ScopeProducer*> m_scopeProducerLookup;
 
         // list of RayTracingShaderTables that should be built this frame
-        AZStd::vector<RHI::Ptr<SingleDeviceRayTracingShaderTable>> m_rayTracingShaderTablesToBuild;
+        AZStd::vector<RHI::Ptr<DeviceRayTracingShaderTable>> m_rayTracingShaderTablesToBuild;
 
         AZ::TaskGraphActiveInterface* m_taskGraphActive = nullptr;
     };

@@ -164,7 +164,7 @@ namespace AZ
 
                 RHI::PipelineStateCache* pipelineStateCache = rhiSystem->GetPipelineStateCache();
                 auto serializedData = LoadPipelineLibrary();
-                RHI::MultiDevicePipelineLibraryHandle pipelineLibraryHandle =
+                RHI::PipelineLibraryHandle pipelineLibraryHandle =
                     pipelineStateCache->CreateLibrary(serializedData, m_pipelineLibraryPaths);
 
                 if (pipelineLibraryHandle.IsNull())
@@ -325,7 +325,7 @@ namespace AZ
         {
             if (!m_pipelineLibraryPaths.empty())
             {
-                RHI::ConstPtr<RHI::MultiDevicePipelineLibrary> pipelineLibrary = m_pipelineStateCache->GetMergedLibrary(m_pipelineLibraryHandle);
+                RHI::ConstPtr<RHI::PipelineLibrary> pipelineLibrary = m_pipelineStateCache->GetMergedLibrary(m_pipelineLibraryHandle);
                 if (!pipelineLibrary)
                 {
                     return;
@@ -337,7 +337,7 @@ namespace AZ
                 {
                     RHI::Device* device = RHI::RHISystemInterface::Get()->GetDevice(deviceIndex);
 
-                    RHI::ConstPtr<RHI::SingleDevicePipelineLibrary> pipelineLib = pipelineLibrary->GetDevicePipelineLibrary(deviceIndex);
+                    RHI::ConstPtr<RHI::DevicePipelineLibrary> pipelineLib = pipelineLibrary->GetDevicePipelineLibrary(deviceIndex);
 
                     // Check if explicit file load/save operation is needed as the RHI backend api may not support it
                     if (device->GetFeatures().m_isPsoCacheFileOperationsNeeded)
@@ -469,7 +469,7 @@ namespace AZ
             return m_asset->GetOutputContract(m_supervariantIndex);
         }
 
-        const RHI::MultiDevicePipelineState* Shader::AcquirePipelineState(const RHI::PipelineStateDescriptor& descriptor) const
+        const RHI::PipelineState* Shader::AcquirePipelineState(const RHI::PipelineStateDescriptor& descriptor) const
         {
             return m_pipelineStateCache->AcquirePipelineState(m_pipelineLibraryHandle, descriptor, m_asset->GetName());
         }

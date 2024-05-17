@@ -151,7 +151,7 @@ namespace AZ
 
             struct QueryPoolAttachment
             {
-                RHI::Ptr<RHI::MultiDeviceQueryPool> m_pool;
+                RHI::Ptr<RHI::QueryPool> m_pool;
                 RHI::Interval m_interval;
                 RHI::ScopeAttachmentAccess m_access;
             };
@@ -163,7 +163,7 @@ namespace AZ
             void ActivateInternal() override;
             void DeactivateInternal() override;
             void CompileInternal() override;
-            void AddQueryPoolUse(RHI::Ptr<RHI::MultiDeviceQueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access) override;
+            void AddQueryPoolUse(RHI::Ptr<RHI::QueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access) override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////

@@ -38,7 +38,7 @@ namespace AZ
 
         public:
             //! Create a StreamingImageController
-            static AZStd::unique_ptr<StreamingImageController> Create(RHI::MultiDeviceStreamingImagePool& pool);
+            static AZStd::unique_ptr<StreamingImageController> Create(RHI::StreamingImagePool& pool);
 
             StreamingImageController() = default;
             ~StreamingImageController() = default;
@@ -121,7 +121,7 @@ namespace AZ
 
             ///////////////////////////////////////////////////////////////////
 
-            RHI::MultiDeviceStreamingImagePool* m_pool = nullptr;
+            RHI::StreamingImagePool* m_pool = nullptr;
 
             // The mutex used to serialize attachment, detachment, and update; as they would otherwise stomp on each other.
             AZStd::mutex m_contextAccessMutex;

@@ -9,9 +9,9 @@
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/MultiDeviceFence.h>
+#include <Atom/RHI/Fence.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/MultiDeviceBufferPool.h>
+#include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
 #include <Atom/RPI.Public/Buffer/BufferPool.h>
 #include <Atom/RPI.Public/Buffer/BufferSystemInterface.h>
@@ -42,7 +42,7 @@ namespace AZ
              * pointer around at all times, and then only initialize the buffer view once.
              */
 
-            m_rhiBuffer = aznew RHI::MultiDeviceBuffer;
+            m_rhiBuffer = aznew RHI::Buffer;
             AZ_Assert(m_rhiBuffer, "Failed to acquire an buffer instance from the RHI. Is the RHI initialized?");
         }
 
@@ -51,17 +51,17 @@ namespace AZ
             WaitForUpload();
         }
 
-        RHI::MultiDeviceBuffer* Buffer::GetRHIBuffer()
+        RHI::Buffer* Buffer::GetRHIBuffer()
         {
             return m_rhiBuffer.get();
         }
 
-        const RHI::MultiDeviceBuffer* Buffer::GetRHIBuffer() const
+        const RHI::Buffer* Buffer::GetRHIBuffer() const
         {
             return m_rhiBuffer.get();
         }
 
-        const RHI::MultiDeviceBufferView* Buffer::GetBufferView() const
+        const RHI::BufferView* Buffer::GetBufferView() const
         {
             if (m_rhiBuffer->GetDescriptor().m_bindFlags == RHI::BufferBindFlags::InputAssembly ||
                 m_rhiBuffer->GetDescriptor().m_bindFlags == RHI::BufferBindFlags::DynamicInputAssembly)
@@ -124,7 +124,7 @@ namespace AZ
 
             bool initWithData = (bufferAsset.GetBuffer().size() > 0 && bufferAsset.GetBuffer().size() <= MinStreamSize);
 
-            RHI::MultiDeviceBufferInitRequest request;
+            RHI::BufferInitRequest request;
             request.m_buffer = m_rhiBuffer.get();
             request.m_descriptor = bufferAsset.GetBufferDescriptor();
             request.m_initialData = initWithData ? bufferAsset.GetBuffer().data() : nullptr;
@@ -139,7 +139,7 @@ namespace AZ
                     m_bufferAsset = { &bufferAsset, AZ::Data::AssetLoadBehavior::PreLoad };
 
                     AZ_PROFILE_SCOPE(RPI, "Stream Upload");
-                    m_streamFence = aznew RHI::MultiDeviceFence;
+                    m_streamFence = aznew RHI::Fence;
                     if (m_streamFence)
                     {
                         m_streamFence->Init(m_rhiBufferPool->GetDeviceMask(), RHI::FenceState::Reset);
@@ -147,7 +147,7 @@ namespace AZ
 
                     RHI::BufferDescriptor bufferDescriptor = bufferAsset.GetBufferDescriptor();
 
-                    RHI::MultiDeviceBufferStreamRequest request2;
+                    RHI::BufferStreamRequest request2;
                     request2.m_buffer = m_rhiBuffer.get();
                     request2.m_fenceToSignal = m_streamFence.get();
                     request2.m_byteCount = bufferDescriptor.m_byteCount;
@@ -206,11 +206,11 @@ namespace AZ
         void Buffer::Resize(uint64_t bufferSize)
         {
             RHI::BufferDescriptor desc = m_rhiBuffer->GetDescriptor();            
-            m_rhiBuffer = aznew RHI::MultiDeviceBuffer;
+            m_rhiBuffer = aznew RHI::Buffer;
             AZ_Assert(m_rhiBuffer, "Failed to acquire an buffer instance from the RHI. Is the RHI initialized?");
             
             desc.m_byteCount = bufferSize;
-            RHI::MultiDeviceBufferInitRequest request;
+            RHI::BufferInitRequest request;
             request.m_buffer = m_rhiBuffer.get();
             request.m_descriptor = desc;
 
@@ -251,12 +251,12 @@ namespace AZ
                 return {};
             }
 
-            RHI::MultiDeviceBufferMapRequest request;
+            RHI::BufferMapRequest request;
             request.m_buffer = m_rhiBuffer.get();
             request.m_byteCount = byteCount;
             request.m_byteOffset = byteOffset;
 
-            RHI::MultiDeviceBufferMapResponse response;
+            RHI::BufferMapResponse response;
             RHI::ResultCode result = m_rhiBufferPool->MapBuffer(request, response);
 
             if (result == RHI::ResultCode::Success)

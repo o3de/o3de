@@ -14,7 +14,7 @@ namespace AZ::RHI
 {
     class Scope;
     class ScopeAttachment;
-    class MultiDeviceResource;
+    class Resource;
 
     //! FrameAttachment is the base class for all attachments stored in the frame graph. Attachments
     //! are "attached" to scopes via ScopeAttachment instances. These scope attachments form a linked list
@@ -33,8 +33,8 @@ namespace AZ::RHI
         const AttachmentId& GetId() const;
 
         /// Returns the resource associated with this frame attachment.
-        MultiDeviceResource* GetResource();
-        const MultiDeviceResource* GetResource() const;
+        Resource* GetResource();
+        const Resource* GetResource() const;
 
         /// Returns the attachment lifetime type.
         AttachmentLifetimeType GetLifetimeType() const;
@@ -61,7 +61,7 @@ namespace AZ::RHI
         HardwareQueueClassMask GetSupportedQueueMask() const;
 
         /// [Internal] Assigns the resource. This may only be done once.
-        void SetResource(Ptr<MultiDeviceResource> resource);
+        void SetResource(Ptr<Resource> resource);
 
     protected:
         FrameAttachment(
@@ -74,7 +74,7 @@ namespace AZ::RHI
 
     private:
         AttachmentId m_attachmentId;
-        Ptr<MultiDeviceResource> m_resource;
+        Ptr<Resource> m_resource;
         AttachmentLifetimeType m_lifetimeType;
         HardwareQueueClassMask m_usedQueueMask = HardwareQueueClassMask::None;
         HardwareQueueClassMask m_supportedQueueMask = HardwareQueueClassMask::None;

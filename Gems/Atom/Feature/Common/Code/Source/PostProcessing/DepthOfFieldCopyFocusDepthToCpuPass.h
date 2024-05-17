@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/MultiDeviceCopyItem.h>
+#include <Atom/RHI/CopyItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
@@ -49,9 +49,9 @@ namespace AZ
 
             RPI::Ptr<RPI::Buffer> m_bufferRef;
             Data::Instance<RPI::Buffer> m_readbackBuffer;
-            RHI::MultiDeviceCopyBufferDescriptor m_copyDescriptor;
+            RHI::CopyBufferDescriptor m_copyDescriptor;
             bool m_needsInitialize = true;
-            RHI::Ptr<RHI::MultiDeviceFence> m_fence;
+            RHI::Ptr<RHI::Fence> m_fence;
             float m_lastFocusDepth = 0;
         };
     }   // namespace RPI

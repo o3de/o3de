@@ -9,13 +9,13 @@
 
 #include <Atom/RHI.Reflect/TransientBufferDescriptor.h>
 #include <Atom/RHI/FrameAttachment.h>
-#include <Atom/RHI/MultiDeviceBuffer.h>
+#include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/ObjectCache.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
 namespace AZ::RHI
 {
-    class SingleDeviceBufferView;
+    class DeviceBufferView;
     class BufferScopeAttachment;
 
     //! A specialization of Attachment for a buffer. Provides access to the buffer.
@@ -28,7 +28,7 @@ namespace AZ::RHI
         virtual ~BufferFrameAttachment() override = default;
 
         /// Initialization for imported buffers.
-        BufferFrameAttachment(const AttachmentId& attachmentId, Ptr<MultiDeviceBuffer> buffer);
+        BufferFrameAttachment(const AttachmentId& attachmentId, Ptr<Buffer> buffer);
 
         /// Initialization for transient buffers.
         BufferFrameAttachment(const TransientBufferDescriptor& descriptor);
@@ -43,8 +43,8 @@ namespace AZ::RHI
 
         /// Returns the buffer resource assigned to this attachment. This is not guaranteed to exist
         /// until after frame graph compilation.
-        const MultiDeviceBuffer* GetBuffer() const;
-        MultiDeviceBuffer* GetBuffer();
+        const Buffer* GetBuffer() const;
+        Buffer* GetBuffer();
 
         /// Returns the buffer descriptor assigned to this attachment.
         const BufferDescriptor& GetBufferDescriptor() const;

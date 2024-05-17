@@ -154,10 +154,10 @@ namespace UnitTest
             RHI::ConstPtr<RHI::ShaderResourceGroupLayout> srgLayout = CreateLayout();
 
             {
-                RHI::Ptr<RHI::SingleDeviceShaderResourceGroup> srgA = RHI::Factory::Get().CreateShaderResourceGroup();
+                RHI::Ptr<RHI::DeviceShaderResourceGroup> srgA = RHI::Factory::Get().CreateShaderResourceGroup();
 
                 {
-                    RHI::Ptr<RHI::SingleDeviceShaderResourceGroupPool> srgPool = RHI::Factory::Get().CreateShaderResourceGroupPool();
+                    RHI::Ptr<RHI::DeviceShaderResourceGroupPool> srgPool = RHI::Factory::Get().CreateShaderResourceGroupPool();
 
                     RHI::ShaderResourceGroupPoolDescriptor descriptor;
                     descriptor.m_budgetInBytes = 16;
@@ -174,7 +174,7 @@ namespace UnitTest
 
                     ASSERT_TRUE(srgLayout->use_count() == 3);
 
-                    RHI::Ptr<RHI::SingleDeviceShaderResourceGroup> srgB = RHI::Factory::Get().CreateShaderResourceGroup();
+                    RHI::Ptr<RHI::DeviceShaderResourceGroup> srgB = RHI::Factory::Get().CreateShaderResourceGroup();
                     ASSERT_TRUE(srgA->GetPool() == nullptr);
 
                     srgPool->InitGroup(*srgA);
@@ -200,13 +200,13 @@ namespace UnitTest
                     {
                         uint32_t srgIndex = 0;
 
-                        const RHI::SingleDeviceShaderResourceGroup* srgs[] =
+                        const RHI::DeviceShaderResourceGroup* srgs[] =
                         {
                             srgA.get(),
                             srgB.get()
                         };
 
-                        srgPool->ForEach<RHI::SingleDeviceShaderResourceGroup>([&srgIndex, &srgs](const RHI::SingleDeviceShaderResourceGroup& srg)
+                        srgPool->ForEach<RHI::DeviceShaderResourceGroup>([&srgIndex, &srgs](const RHI::DeviceShaderResourceGroup& srg)
                         {
                             ASSERT_TRUE(srgs[srgIndex] == &srg);
                             srgIndex++;
@@ -219,7 +219,7 @@ namespace UnitTest
             }
 
             ASSERT_TRUE(srgLayout->use_count() == 1);
-            RHI::Ptr<RHI::SingleDeviceShaderResourceGroup> noopShaderResourceGroup = RHI::Factory::Get().CreateShaderResourceGroup();
+            RHI::Ptr<RHI::DeviceShaderResourceGroup> noopShaderResourceGroup = RHI::Factory::Get().CreateShaderResourceGroup();
         }
 
         void TestShaderResourceGroupReflection(const RHI::ConstPtr<RHI::ShaderResourceGroupLayout>& srgLayout)
@@ -270,17 +270,17 @@ namespace UnitTest
 
             RHI::Ptr<RHI::Device> device = MakeTestDevice();
 
-            RHI::Ptr<RHI::SingleDeviceShaderResourceGroupPool> srgPool = RHI::Factory::Get().CreateShaderResourceGroupPool();
+            RHI::Ptr<RHI::DeviceShaderResourceGroupPool> srgPool = RHI::Factory::Get().CreateShaderResourceGroupPool();
 
             RHI::ShaderResourceGroupPoolDescriptor descriptor;
             descriptor.m_budgetInBytes = 16;
             descriptor.m_layout = srgLayout.get();
             srgPool->Init(*device, descriptor);
 
-            RHI::Ptr<RHI::SingleDeviceShaderResourceGroup> srg = RHI::Factory::Get().CreateShaderResourceGroup();
+            RHI::Ptr<RHI::DeviceShaderResourceGroup> srg = RHI::Factory::Get().CreateShaderResourceGroup();
             srgPool->InitGroup(*srg);
 
-            RHI::SingleDeviceShaderResourceGroupData srgData(*srg);
+            RHI::DeviceShaderResourceGroupData srgData(*srg);
 
             float floatValue = 1.234f;
             srgData.SetConstant(floatValueIndex, floatValue);
@@ -446,20 +446,20 @@ namespace UnitTest
         }
     };
 
-    RHI::SingleDeviceShaderResourceGroupData PrepareSRGData(const RHI::ConstPtr<RHI::ShaderResourceGroupLayout>& srgLayout)
+    RHI::DeviceShaderResourceGroupData PrepareSRGData(const RHI::ConstPtr<RHI::ShaderResourceGroupLayout>& srgLayout)
     {
         RHI::Ptr<RHI::Device> device = MakeTestDevice();
 
-        RHI::Ptr<RHI::SingleDeviceShaderResourceGroupPool> srgPool = RHI::Factory::Get().CreateShaderResourceGroupPool();
+        RHI::Ptr<RHI::DeviceShaderResourceGroupPool> srgPool = RHI::Factory::Get().CreateShaderResourceGroupPool();
 
         RHI::ShaderResourceGroupPoolDescriptor descriptor;
         descriptor.m_layout = srgLayout.get();
         srgPool->Init(*device, descriptor);
 
-        RHI::Ptr<RHI::SingleDeviceShaderResourceGroup> srg = RHI::Factory::Get().CreateShaderResourceGroup();
+        RHI::Ptr<RHI::DeviceShaderResourceGroup> srg = RHI::Factory::Get().CreateShaderResourceGroup();
         srgPool->InitGroup(*srg);
 
-        RHI::SingleDeviceShaderResourceGroupData srgData(*srg);
+        RHI::DeviceShaderResourceGroupData srgData(*srg);
         return srgData;
     }
 
@@ -472,7 +472,7 @@ namespace UnitTest
         const RHI::ShaderInputConstantIndex vector4index = srgLayout->FindShaderInputConstantIndex(Name("m_vector4"));
         EXPECT_EQ(vector4index.GetIndex(), 9);
 
-        RHI::SingleDeviceShaderResourceGroupData srgData = PrepareSRGData(srgLayout);
+        RHI::DeviceShaderResourceGroupData srgData = PrepareSRGData(srgLayout);
 
         const float vector2values[2] = { 1.0f, 2.0f };
         const Vector2 vector2 = Vector2::CreateFromFloat2(vector2values);
@@ -507,7 +507,7 @@ namespace UnitTest
         const RHI::ShaderInputConstantIndex vector4index = srgLayout->FindShaderInputConstantIndex(Name("m_vector4"));
         EXPECT_EQ(vector4index.GetIndex(), 9);
 
-        RHI::SingleDeviceShaderResourceGroupData srgData = PrepareSRGData(srgLayout);
+        RHI::DeviceShaderResourceGroupData srgData = PrepareSRGData(srgLayout);
 
         const float vector2values[2] = { 1.0f, 2.0f };
         const Vector2 vector2 = Vector2::CreateFromFloat2(vector2values);
@@ -558,7 +558,7 @@ namespace UnitTest
         const RHI::ShaderInputConstantIndex vector4index = srgLayout->FindShaderInputConstantIndex(Name("m_vector4"));
         EXPECT_EQ(vector4index.GetIndex(), 9);
 
-        RHI::SingleDeviceShaderResourceGroupData srgData = PrepareSRGData(srgLayout);
+        RHI::DeviceShaderResourceGroupData srgData = PrepareSRGData(srgLayout);
 
         const float vector2values[2] = { 1.0f, 2.0f };
         const Vector2 vector2 = Vector2::CreateFromFloat2(vector2values);
@@ -590,7 +590,7 @@ namespace UnitTest
         const RHI::ShaderInputConstantIndex vector4index = srgLayout->FindShaderInputConstantIndex(Name("m_vector4"));
         EXPECT_EQ(vector4index.GetIndex(), 9);
 
-        RHI::SingleDeviceShaderResourceGroupData srgData = PrepareSRGData(srgLayout);
+        RHI::DeviceShaderResourceGroupData srgData = PrepareSRGData(srgLayout);
 
         const float vector2values[2] = { 1.0f, 2.0f };
         const Vector2 vector2 = Vector2::CreateFromFloat2(vector2values);

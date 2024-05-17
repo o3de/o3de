@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/SingleDeviceImagePool.h>
+#include <Atom/RHI/DeviceImagePool.h>
 
 namespace AZ
 {
@@ -17,12 +17,12 @@ namespace AZ
     
         class Device;
         class ImagePool final
-            : public RHI::SingleDeviceImagePool
+            : public RHI::DeviceImagePool
         {
-            using Base = RHI::SingleDeviceImagePool;
+            using Base = RHI::DeviceImagePool;
         public:
             AZ_CLASS_ALLOCATOR(ImagePool, AZ::SystemAllocator);
-            AZ_RTTI(ImagePool, "{04E85806-9E84-4BD0-99F6-EEBA32B1C4F7}", RHI::SingleDeviceImagePool);
+            AZ_RTTI(ImagePool, "{04E85806-9E84-4BD0-99F6-EEBA32B1C4F7}", RHI::DeviceImagePool);
             
             static RHI::Ptr<ImagePool> Create();
             
@@ -35,11 +35,11 @@ namespace AZ
             void SubtractMemoryUsage(size_t bytesToSubtract);
             
             //////////////////////////////////////////////////////////////////////////
-            // RHI::SingleDeviceImagePool
+            // RHI::DeviceImagePool
             RHI::ResultCode InitInternal(RHI::Device&, const RHI::ImagePoolDescriptor&) override;
-            RHI::ResultCode InitImageInternal(const RHI::SingleDeviceImageInitRequest& request) override;
-            RHI::ResultCode UpdateImageContentsInternal(const RHI::SingleDeviceImageUpdateRequest& request) override;
-            void ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase) override;
+            RHI::ResultCode InitImageInternal(const RHI::DeviceImageInitRequest& request) override;
+            RHI::ResultCode UpdateImageContentsInternal(const RHI::DeviceImageUpdateRequest& request) override;
+            void ShutdownResourceInternal(RHI::DeviceResource& resourceBase) override;
             //////////////////////////////////////////////////////////////////////////
         };
     }

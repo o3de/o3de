@@ -283,7 +283,7 @@ namespace AZ
             m_psoHandling = psoHandlingOverride;
         }
 
-        const RHI::MultiDeviceShaderResourceGroup* Material::GetRHIShaderResourceGroup() const
+        const RHI::ShaderResourceGroup* Material::GetRHIShaderResourceGroup() const
         {
             return m_rhiShaderResourceGroup;
         }

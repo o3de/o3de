@@ -10,7 +10,7 @@
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/FrameGraphBuilder.h>
 #include <Atom/RHI/FrameGraphInterface.h>
-#include <Atom/RHI/SingleDevicePipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Scene.h>
@@ -144,7 +144,7 @@ namespace AZ
             // query buffer
             {
                 RHI::AttachmentId attachmentId = diffuseProbeGridFeatureProcessor->GetQueryBufferAttachmentId();
-                RHI::Ptr<RHI::MultiDeviceBuffer> buffer = diffuseProbeGridFeatureProcessor->GetQueryBuffer()->GetRHIBuffer();
+                RHI::Ptr<RHI::Buffer> buffer = diffuseProbeGridFeatureProcessor->GetQueryBuffer()->GetRHIBuffer();
 
                 if (!frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentId))
                 {
@@ -226,13 +226,13 @@ namespace AZ
 
                 // bind query buffer
                 RHI::ShaderInputBufferIndex bufferIndex = m_srgLayout->FindShaderInputBufferIndex(AZ::Name("m_irradianceQueries"));
-                RHI::Ptr<RHI::MultiDeviceBuffer> buffer = diffuseProbeGridFeatureProcessor->GetQueryBuffer()->GetRHIBuffer();
+                RHI::Ptr<RHI::Buffer> buffer = diffuseProbeGridFeatureProcessor->GetQueryBuffer()->GetRHIBuffer();
                 RHI::BufferViewDescriptor bufferViewDescriptor = diffuseProbeGridFeatureProcessor->GetQueryBufferViewDescriptor();
                 diffuseProbeGrid->GetQuerySrg()->SetBufferView(bufferIndex, buffer->BuildBufferView(bufferViewDescriptor).get());
 
                 // bind output UAV
                 bufferIndex = m_srgLayout->FindShaderInputBufferIndex(AZ::Name("m_output"));
-                const RHI::MultiDeviceBufferView* bufferView = context.GetBufferView(AZ::Name(m_outputBufferAttachmentId.GetCStr()), RHI::ScopeAttachmentUsage::Shader);
+                const RHI::BufferView* bufferView = context.GetBufferView(AZ::Name(m_outputBufferAttachmentId.GetCStr()), RHI::ScopeAttachmentUsage::Shader);
                 diffuseProbeGrid->GetQuerySrg()->SetBufferView(bufferIndex, bufferView);
 
                 diffuseProbeGrid->GetQuerySrg()->Compile();
@@ -250,10 +250,10 @@ namespace AZ
             {
                 AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = diffuseProbeGridFeatureProcessor->GetVisibleProbeGrids()[index];
 
-                const RHI::MultiDeviceShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetQuerySrg()->GetRHIShaderResourceGroup();
+                const RHI::ShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetQuerySrg()->GetRHIShaderResourceGroup();
                 commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup->GetDeviceShaderResourceGroup(context.GetDeviceIndex()));
 
-                RHI::SingleDeviceDispatchItem dispatchItem;
+                RHI::DeviceDispatchItem dispatchItem;
                 dispatchItem.m_arguments = m_dispatchArgs;
                 dispatchItem.m_pipelineState = m_pipelineState->GetDevicePipelineState(context.GetDeviceIndex()).get();
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = diffuseProbeGridFeatureProcessor->GetIrradianceQueryCount();

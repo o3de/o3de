@@ -29,7 +29,7 @@ namespace AZ::RHI
     //! or just one (potentially preferred) adapter
     enum class InitDevicesFlags : uint32_t
     {
-        SingleDevice = 0,
+        Device = 0,
         MultiDevice
     };
 
@@ -74,7 +74,7 @@ namespace AZ::RHI
         double GetCpuFrameTime() const override;
         const AZStd::unordered_map<int, TransientAttachmentPoolDescriptor>* GetTransientAttachmentPoolDescriptor() const override;
         ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor(int deviceIndex = MultiDevice::DefaultDeviceIndex) const override;
-        void QueueRayTracingShaderTableForBuild(SingleDeviceRayTracingShaderTable* rayTracingShaderTable) override;
+        void QueueRayTracingShaderTableForBuild(DeviceRayTracingShaderTable* rayTracingShaderTable) override;
         XRRenderingInterface* GetXRSystem() const override;
         void SetDrawListTagEnabledByDefault(DrawListTag drawListTag, bool enabled) override;
         const AZStd::vector<DrawListTag>& GetDrawListTagsDisabledByDefault() const override;

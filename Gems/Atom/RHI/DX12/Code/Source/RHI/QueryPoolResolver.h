@@ -9,7 +9,7 @@
 
 #include <RHI/ResourcePoolResolver.h>
 #include <AzCore/Memory/PoolAllocator.h>
-#include <Atom/RHI/MultiDeviceFence.h>
+#include <Atom/RHI/Fence.h>
 
 namespace AZ
 {
@@ -64,7 +64,7 @@ namespace AZ
             int m_deviceIndex;
             AZStd::vector<ResolveRequest> m_resolveRequests; /// List of requests to be resolved.
 
-            RHI::Ptr<RHI::MultiDeviceFence> m_resolveFence; ///< Fence used for checking if a request has finished.
+            RHI::Ptr<RHI::Fence> m_resolveFence; ///< Fence used for checking if a request has finished.
         };
     }
 }

@@ -27,7 +27,7 @@ namespace AZ
              * pointer around at all times, and then only initialize the image view once.
              */
 
-            m_image = aznew RHI::MultiDeviceImage;
+            m_image = aznew RHI::Image;
             AZ_Assert(m_image, "Failed to acquire an image instance from the RHI. Is the RHI initialized?");
         }
 
@@ -36,17 +36,17 @@ namespace AZ
             return m_image->IsInitialized();
         }
 
-        RHI::MultiDeviceImage* Image::GetRHIImage()
+        RHI::Image* Image::GetRHIImage()
         {
             return m_image.get();
         }
 
-        const RHI::MultiDeviceImage* Image::GetRHIImage() const
+        const RHI::Image* Image::GetRHIImage() const
         {
             return m_image.get();
         }
 
-        const RHI::MultiDeviceImageView* Image::GetImageView() const
+        const RHI::ImageView* Image::GetImageView() const
         {
             return m_imageView.get();
         }
@@ -61,9 +61,9 @@ namespace AZ
             return m_image->GetDescriptor().m_mipLevels;
         }
 
-        RHI::ResultCode Image::UpdateImageContents(const RHI::MultiDeviceImageUpdateRequest& request)
+        RHI::ResultCode Image::UpdateImageContents(const RHI::ImageUpdateRequest& request)
         {
-            RHI::MultiDeviceImagePool* imagePool = azrtti_cast<RHI::MultiDeviceImagePool*>(m_image->GetPool());
+            RHI::ImagePool* imagePool = azrtti_cast<RHI::ImagePool*>(m_image->GetPool());
             return imagePool->UpdateImageContents(request);
         }     
     }

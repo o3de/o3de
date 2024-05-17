@@ -7,8 +7,8 @@
  */
 #pragma once
 
-#include <Atom/RHI/SingleDeviceRayTracingAccelerationStructure.h>
-#include <Atom/RHI/SingleDeviceRayTracingBufferPools.h>
+#include <Atom/RHI/DeviceRayTracingAccelerationStructure.h>
+#include <Atom/RHI/DeviceRayTracingBufferPools.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
@@ -19,21 +19,21 @@ namespace AZ
         class Buffer;
 
         class RayTracingBlas final
-            : public RHI::SingleDeviceRayTracingBlas
+            : public RHI::DeviceRayTracingBlas
         {
         public:
             AZ_CLASS_ALLOCATOR(RayTracingBlas, AZ::SystemAllocator);
 
             static RHI::Ptr<RayTracingBlas> Create();
 
-            // RHI::SingleDeviceRayTracingBlas overrides...
+            // RHI::DeviceRayTracingBlas overrides...
             virtual bool IsValid() const override { return true; }
 
         private:
             RayTracingBlas() = default;
 
-            // RHI::SingleDeviceRayTracingBlas overrides...
-            RHI::ResultCode CreateBuffersInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::SingleDeviceRayTracingBlasDescriptor* descriptor, [[maybe_unused]] const RHI::SingleDeviceRayTracingBufferPools& rayTracingBufferPools) override {return RHI::ResultCode::Success;}
+            // RHI::DeviceRayTracingBlas overrides...
+            RHI::ResultCode CreateBuffersInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::DeviceRayTracingBlasDescriptor* descriptor, [[maybe_unused]] const RHI::DeviceRayTracingBufferPools& rayTracingBufferPools) override {return RHI::ResultCode::Success;}
         };
     }
 }

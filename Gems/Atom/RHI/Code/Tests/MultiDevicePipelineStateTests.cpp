@@ -12,8 +12,8 @@
 #include <Tests/ThreadTester.h>
 
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
-#include <Atom/RHI/MultiDevicePipelineLibrary.h>
-#include <Atom/RHI/MultiDevicePipelineState.h>
+#include <Atom/RHI/PipelineLibrary.h>
+#include <Atom/RHI/PipelineState.h>
 #include <Atom/RHI/PipelineStateCache.h>
 
 #include <AzCore/Math/Random.h>
@@ -91,14 +91,14 @@ namespace UnitTest
 
     TEST_F(MultiDevicePipelineStateTests, PipelineState_CreateEmpty_Test)
     {
-        RHI::Ptr<RHI::MultiDevicePipelineState> empty = aznew RHI::MultiDevicePipelineState;
+        RHI::Ptr<RHI::PipelineState> empty = aznew RHI::PipelineState;
         EXPECT_NE(empty.get(), nullptr);
         EXPECT_FALSE(empty->IsInitialized());
     }
 
     TEST_F(MultiDevicePipelineStateTests, PipelineState_Init_Test)
     {
-        RHI::Ptr<RHI::MultiDevicePipelineState> pipelineState = aznew RHI::MultiDevicePipelineState;
+        RHI::Ptr<RHI::PipelineState> pipelineState = aznew RHI::PipelineState;
         RHI::ResultCode resultCode = pipelineState->Init(DeviceMask, CreatePipelineStateDescriptor(0));
         EXPECT_EQ(resultCode, RHI::ResultCode::Success);
 
@@ -112,7 +112,7 @@ namespace UnitTest
 
     TEST_F(MultiDevicePipelineStateTests, PipelineState_Init_Subpass)
     {
-        RHI::Ptr<RHI::MultiDevicePipelineState> pipelineState = aznew RHI::MultiDevicePipelineState;
+        RHI::Ptr<RHI::PipelineState> pipelineState = aznew RHI::PipelineState;
         auto descriptor = CreatePipelineStateDescriptor(0);
         descriptor.m_renderAttachmentConfiguration.m_subpassIndex = 1337;
         AZ_TEST_START_ASSERTTEST;
@@ -123,7 +123,7 @@ namespace UnitTest
 
     TEST_F(MultiDevicePipelineStateTests, PipelineState_Init_SubpassInput)
     {
-        RHI::Ptr<RHI::MultiDevicePipelineState> pipelineState = aznew RHI::MultiDevicePipelineState;
+        RHI::Ptr<RHI::PipelineState> pipelineState = aznew RHI::PipelineState;
         auto descriptor = CreatePipelineStateDescriptor(0);
         descriptor.m_renderAttachmentConfiguration.m_renderAttachmentLayout.m_subpassLayouts[0].m_subpassInputCount = 1;
         descriptor.m_renderAttachmentConfiguration.m_renderAttachmentLayout.m_subpassLayouts[0]
@@ -133,7 +133,7 @@ namespace UnitTest
         EXPECT_EQ(resultCode, RHI::ResultCode::Success);
 
         AZ_TEST_START_ASSERTTEST;
-        pipelineState = aznew RHI::MultiDevicePipelineState;
+        pipelineState = aznew RHI::PipelineState;
         descriptor.m_renderAttachmentConfiguration.m_renderAttachmentLayout.m_subpassLayouts[0]
             .m_subpassInputDescriptors[0]
             .m_attachmentIndex = 3;
@@ -144,7 +144,7 @@ namespace UnitTest
 
     TEST_F(MultiDevicePipelineStateTests, PipelineState_Init_Resolve)
     {
-        RHI::Ptr<RHI::MultiDevicePipelineState> pipelineState = aznew RHI::MultiDevicePipelineState;
+        RHI::Ptr<RHI::PipelineState> pipelineState = aznew RHI::PipelineState;
         auto descriptor = CreatePipelineStateDescriptor(0);
         descriptor.m_renderAttachmentConfiguration.m_renderAttachmentLayout.m_subpassLayouts[0]
             .m_rendertargetDescriptors[0]
@@ -153,7 +153,7 @@ namespace UnitTest
         EXPECT_EQ(resultCode, RHI::ResultCode::Success);
 
         AZ_TEST_START_ASSERTTEST;
-        pipelineState = aznew RHI::MultiDevicePipelineState;
+        pipelineState = aznew RHI::PipelineState;
         descriptor.m_renderAttachmentConfiguration.m_renderAttachmentLayout.m_subpassLayouts[0]
             .m_rendertargetDescriptors[0]
             .m_resolveAttachmentIndex = 5;
@@ -162,7 +162,7 @@ namespace UnitTest
         EXPECT_EQ(resultCode, RHI::ResultCode::InvalidOperation);
 
         AZ_TEST_START_ASSERTTEST;
-        pipelineState = aznew RHI::MultiDevicePipelineState;
+        pipelineState = aznew RHI::PipelineState;
         descriptor.m_renderAttachmentConfiguration.m_renderAttachmentLayout.m_subpassLayouts[0]
             .m_rendertargetDescriptors[0]
             .m_resolveAttachmentIndex = 0;
@@ -173,7 +173,7 @@ namespace UnitTest
 
     TEST_F(MultiDevicePipelineStateTests, PipelineLibrary_CreateEmpty_Test)
     {
-        RHI::Ptr<RHI::MultiDevicePipelineLibrary> empty = aznew RHI::MultiDevicePipelineLibrary;
+        RHI::Ptr<RHI::PipelineLibrary> empty = aznew RHI::PipelineLibrary;
         EXPECT_NE(empty.get(), nullptr);
         EXPECT_FALSE(empty->IsInitialized());
 
@@ -185,15 +185,15 @@ namespace UnitTest
 
     TEST_F(MultiDevicePipelineStateTests, PipelineLibrary_Init_Test)
     {
-        RHI::Ptr<RHI::MultiDevicePipelineLibrary> pipelineLibrary = aznew RHI::MultiDevicePipelineLibrary;
+        RHI::Ptr<RHI::PipelineLibrary> pipelineLibrary = aznew RHI::PipelineLibrary;
         AZ_TEST_START_ASSERTTEST; // Suppress asserts from default constructed library descriptor
-        RHI::ResultCode resultCode = pipelineLibrary->Init(DeviceMask, RHI::MultiDevicePipelineLibraryDescriptor{});
+        RHI::ResultCode resultCode = pipelineLibrary->Init(DeviceMask, RHI::PipelineLibraryDescriptor{});
         AZ_TEST_STOP_ASSERTTEST(DeviceCount);
         EXPECT_EQ(resultCode, RHI::ResultCode::Success);
 
         // Second init should fail and throw validation error.
         AZ_TEST_START_ASSERTTEST;
-        resultCode = pipelineLibrary->Init(DeviceMask, RHI::MultiDevicePipelineLibraryDescriptor{});
+        resultCode = pipelineLibrary->Init(DeviceMask, RHI::PipelineLibraryDescriptor{});
         AZ_TEST_STOP_ASSERTTEST(1);
 
         EXPECT_EQ(resultCode, RHI::ResultCode::InvalidOperation);
@@ -204,7 +204,7 @@ namespace UnitTest
         RHI::Ptr<RHI::PipelineStateCache> pipelineStateCache =
         RHI::PipelineStateCache::Create(DeviceMask);
 
-        AZStd::array<RHI::MultiDevicePipelineLibraryHandle, RHI::PipelineStateCache::LibraryCountMax> handles;
+        AZStd::array<RHI::PipelineLibraryHandle, RHI::PipelineStateCache::LibraryCountMax> handles;
         for (size_t i = 0; i < handles.size(); ++i)
         {
             handles[i] = pipelineStateCache->CreateLibrary({}, {});
@@ -219,7 +219,7 @@ namespace UnitTest
 
         // Creating more than the maximum number of libraries should assert but still function.
         AZ_TEST_START_ASSERTTEST;
-        EXPECT_EQ(pipelineStateCache->CreateLibrary({}, {}), RHI::MultiDevicePipelineLibraryHandle{});
+        EXPECT_EQ(pipelineStateCache->CreateLibrary({}, {}), RHI::PipelineLibraryHandle{});
         AZ_TEST_STOP_ASSERTTEST(1);
 
         // Reset should no-op.
@@ -262,16 +262,16 @@ namespace UnitTest
 
         RHI::PipelineStateDescriptorForDraw descriptor = CreatePipelineStateDescriptor(0);
 
-        RHI::MultiDevicePipelineLibraryHandle libraryHandle = pipelineStateCache->CreateLibrary({}, {});
+        RHI::PipelineLibraryHandle libraryHandle = pipelineStateCache->CreateLibrary({}, {});
 
         AZStd::mutex mutex;
-        AZStd::unordered_set<const RHI::MultiDevicePipelineState*> pipelineStatesMerged;
+        AZStd::unordered_set<const RHI::PipelineState*> pipelineStatesMerged;
 
         ThreadTester::Dispatch(
             ThreadCountMax,
             [&]([[maybe_unused]] size_t threadIndex)
             {
-                AZStd::unordered_set<const RHI::MultiDevicePipelineState*> pipelineStates;
+                AZStd::unordered_set<const RHI::PipelineState*> pipelineStates;
 
                 for (size_t i = 0; i < IterationCountMax; ++i)
                 {
@@ -309,7 +309,7 @@ namespace UnitTest
             descriptors.push_back(CreatePipelineStateDescriptor(static_cast<uint32_t>(i)));
         }
 
-        AZStd::vector<RHI::MultiDevicePipelineLibraryHandle> libraryHandles;
+        AZStd::vector<RHI::PipelineLibraryHandle> libraryHandles;
         for (size_t i = 0; i < LibraryCountMax; ++i)
         {
             libraryHandles.push_back(pipelineStateCache->CreateLibrary({}, {}));
@@ -321,9 +321,9 @@ namespace UnitTest
         {
             for (size_t libraryIndex = 0; libraryIndex < LibraryCountMax; ++libraryIndex)
             {
-                RHI::MultiDevicePipelineLibraryHandle libraryHandle = libraryHandles[libraryIndex];
+                RHI::PipelineLibraryHandle libraryHandle = libraryHandles[libraryIndex];
 
-                AZStd::unordered_set<const RHI::MultiDevicePipelineState*> pipelineStatesMerged;
+                AZStd::unordered_set<const RHI::PipelineState*> pipelineStatesMerged;
 
                 ThreadTester::Dispatch(
                     ThreadCountMax,
@@ -331,7 +331,7 @@ namespace UnitTest
                     {
                         SimpleLcgRandom random(threadIndex);
 
-                        AZStd::unordered_set<const RHI::MultiDevicePipelineState*> pipelineStates;
+                        AZStd::unordered_set<const RHI::PipelineState*> pipelineStates;
 
                         for (size_t i = 0; i < AcquireIterationCountMax; ++i)
                         {
@@ -342,7 +342,7 @@ namespace UnitTest
                         }
 
                         mutex.lock();
-                        for (const RHI::MultiDevicePipelineState* pipelineState : pipelineStates)
+                        for (const RHI::PipelineState* pipelineState : pipelineStates)
                         {
                             pipelineStatesMerged.emplace(pipelineState);
                         }

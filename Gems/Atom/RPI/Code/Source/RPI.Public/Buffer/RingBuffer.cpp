@@ -35,7 +35,7 @@ namespace AZ::RPI
         return GetCurrentElement();
     }
 
-    const RHI::MultiDeviceBufferView* RingBuffer::GetCurrentBufferView() const
+    const RHI::BufferView* RingBuffer::GetCurrentBufferView() const
     {
         return GetCurrentBuffer()->GetBufferView();
     }

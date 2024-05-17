@@ -359,7 +359,7 @@ namespace AZ
             RHI::FrameEventBus::Handler::BusConnect(&deviceBase);
         }
 
-        void Scope::AddQueryPoolUse(RHI::Ptr<RHI::MultiDeviceQueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access)
+        void Scope::AddQueryPoolUse(RHI::Ptr<RHI::QueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access)
         {
             m_queryPoolAttachments.push_back({ queryPool, interval, access });
         }

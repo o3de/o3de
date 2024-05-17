@@ -495,7 +495,7 @@ namespace AZ
             }
 
             DrawItemInfo drawItemInfo{{RHI::MultiDevice::AllDevices}};
-            RHI::MultiDeviceDrawItem& drawItem = drawItemInfo.m_drawItem;
+            RHI::DrawItem& drawItem = drawItemInfo.m_drawItem;
 
             // Draw argument
             RHI::DrawIndexed drawIndexed;
@@ -585,7 +585,7 @@ namespace AZ
             }
 
             DrawItemInfo drawItemInfo{{RHI::MultiDevice::AllDevices}};
-            RHI::MultiDeviceDrawItem& drawItem = drawItemInfo.m_drawItem;
+            RHI::DrawItem& drawItem = drawItemInfo.m_drawItem;
 
             // Draw argument
             RHI::DrawLinear drawLinear;
@@ -721,9 +721,9 @@ namespace AZ
                     drawItemInfo.m_drawItem.SetStreamBufferViews(&m_cachedStreamBufferViews[drawItemInfo.m_vertexBufferViewIndex], 1);
                 }
 
-                RHI::MultiDeviceDrawItemProperties drawItemProperties;
+                RHI::DrawItemProperties drawItemProperties;
                 drawItemProperties.m_sortKey = drawItemInfo.m_sortKey;
-                drawItemProperties.m_mdItem = &drawItemInfo.m_drawItem;
+                drawItemProperties.m_Item = &drawItemInfo.m_drawItem;
                 drawItemProperties.m_drawFilterMask = m_drawFilter;
                 m_cachedDrawList.emplace_back(drawItemProperties);
             }
@@ -769,7 +769,7 @@ namespace AZ
             }
         }
 
-        const RHI::MultiDevicePipelineState* DynamicDrawContext::GetCurrentPipelineState()
+        const RHI::PipelineState* DynamicDrawContext::GetCurrentPipelineState()
         {
             // If m_currentStates wasn't changed, it's safe to return m_rhiPipelineState directly.
             if (!m_currentStates.m_isDirty)
@@ -811,7 +811,7 @@ namespace AZ
                     m_pipelineState->RenderStatesOverlay().m_blendState.m_targets[0] = m_currentStates.m_blendState0;
                 }
 
-                const RHI::MultiDevicePipelineState* pipelineState = m_pipelineState->Finalize();                
+                const RHI::PipelineState* pipelineState = m_pipelineState->Finalize();                
                 m_cachedRhiPipelineStates[m_currentStates.m_hash] = pipelineState;
                 m_rhiPipelineState = pipelineState;
             }

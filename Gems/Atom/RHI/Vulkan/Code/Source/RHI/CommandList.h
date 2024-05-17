@@ -12,8 +12,8 @@
 #include <Atom/RHI/CommandListStates.h>
 #include <Atom/RHI/DeviceObject.h>
 #include <Atom/RHI/PipelineStateDescriptor.h>
-#include <Atom/RHI/MultiDeviceResource.h>
-#include <Atom/RHI/SingleDeviceRayTracingAccelerationStructure.h>
+#include <Atom/RHI/Resource.h>
+#include <Atom/RHI/DeviceRayTracingAccelerationStructure.h>
 #include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>
 #include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI.Reflect/ScopeId.h>
@@ -67,7 +67,7 @@ namespace AZ
             struct ResourceClearRequest
             {
                 RHI::ClearValue m_clearValue;
-                const RHI::MultiDeviceResourceView* m_resourceView = nullptr;
+                const RHI::ResourceView* m_resourceView = nullptr;
             };
 
             ~CommandList() = default;
@@ -78,18 +78,18 @@ namespace AZ
             // RHI::CommandList
             void SetViewports(const RHI::Viewport* rhiViewports, uint32_t count) override;
             void SetScissors(const RHI::Scissor* rhiScissors, uint32_t count) override;
-            void SetShaderResourceGroupForDraw(const RHI::SingleDeviceShaderResourceGroup& shaderResourceGroup) override;
-            void SetShaderResourceGroupForDispatch(const RHI::SingleDeviceShaderResourceGroup& shaderResourceGroup) override;
-            void Submit(const RHI::SingleDeviceCopyItem& copyItems, uint32_t submitIndex = 0) override;
-            void Submit(const RHI::SingleDeviceDrawItem& itemList, uint32_t submitIndex = 0) override;
-            void Submit(const RHI::SingleDeviceDispatchItem& dispatchItems, uint32_t submitIndex = 0) override;
-            void Submit(const RHI::SingleDeviceDispatchRaysItem& dispatchRaysItem, uint32_t submitIndex = 0) override;
-            void BeginPredication(const RHI::SingleDeviceBuffer& buffer, uint64_t offset, RHI::PredicationOp operation) override;
+            void SetShaderResourceGroupForDraw(const RHI::DeviceShaderResourceGroup& shaderResourceGroup) override;
+            void SetShaderResourceGroupForDispatch(const RHI::DeviceShaderResourceGroup& shaderResourceGroup) override;
+            void Submit(const RHI::DeviceCopyItem& copyItems, uint32_t submitIndex = 0) override;
+            void Submit(const RHI::DeviceDrawItem& itemList, uint32_t submitIndex = 0) override;
+            void Submit(const RHI::DeviceDispatchItem& dispatchItems, uint32_t submitIndex = 0) override;
+            void Submit(const RHI::DeviceDispatchRaysItem& dispatchRaysItem, uint32_t submitIndex = 0) override;
+            void BeginPredication(const RHI::DeviceBuffer& buffer, uint64_t offset, RHI::PredicationOp operation) override;
             void EndPredication() override;
-            void BuildBottomLevelAccelerationStructure(const RHI::SingleDeviceRayTracingBlas& rayTracingBlas) override;
-            void UpdateBottomLevelAccelerationStructure(const RHI::SingleDeviceRayTracingBlas& rayTracingBlas) override;
+            void BuildBottomLevelAccelerationStructure(const RHI::DeviceRayTracingBlas& rayTracingBlas) override;
+            void UpdateBottomLevelAccelerationStructure(const RHI::DeviceRayTracingBlas& rayTracingBlas) override;
             void BuildTopLevelAccelerationStructure(
-                const RHI::SingleDeviceRayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::SingleDeviceRayTracingBlas*>& changedBlasList) override;
+                const RHI::DeviceRayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::DeviceRayTracingBlas*>& changedBlasList) override;
             void SetFragmentShadingRate(
                 RHI::ShadingRate rate,
                 const RHI::ShadingRateCombinators& combinators = DefaultShadingRateCombinators) override;
@@ -162,9 +162,9 @@ namespace AZ
 
             RHI::ResultCode BuildNativeCommandBuffer();
 
-            void SetShaderResourceGroup(const RHI::SingleDeviceShaderResourceGroup& shaderResourceGroup, RHI::PipelineStateType type);
-            void SetStreamBuffers(const RHI::SingleDeviceStreamBufferView* streams, uint32_t count);
-            void SetIndexBuffer(const RHI::SingleDeviceIndexBufferView& indexBufferView);
+            void SetShaderResourceGroup(const RHI::DeviceShaderResourceGroup& shaderResourceGroup, RHI::PipelineStateType type);
+            void SetStreamBuffers(const RHI::DeviceStreamBufferView* streams, uint32_t count);
+            void SetIndexBuffer(const RHI::DeviceIndexBufferView& indexBufferView);
             void SetStencilRef(uint8_t stencilRef);
             void BindPipeline(const PipelineState* pipelineState);
             void CommitViewportState();

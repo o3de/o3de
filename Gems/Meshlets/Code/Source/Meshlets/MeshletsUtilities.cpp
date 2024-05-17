@@ -144,7 +144,7 @@ namespace AZ
         }
 
         // Returns the buffer view instance as well as the buffer allocator
-        Data::Instance<RHI::MultiDeviceBufferView> UtilityClass::CreateSharedBufferView(
+        Data::Instance<RHI::BufferView> UtilityClass::CreateSharedBufferView(
             const char* warningHeader,
             SrgBufferDescriptor& bufferDesc,
             Data::Instance<Meshlets::SharedBufferAllocation>& outputBufferAllocator)
@@ -154,7 +154,7 @@ namespace AZ
             if (!outputBufferAllocator)
             {
                 AZ_Error(warningHeader, false, "Shared buffer out of memory for [%s]", bufferDesc.m_bufferName.GetCStr());
-                return Data::Instance<RHI::MultiDeviceBufferView>();
+                return Data::Instance<RHI::BufferView>();
             }
 
             // Create the buffer view into the shared buffer - it will be used as a separate buffer
@@ -172,13 +172,13 @@ namespace AZ
             // The attachment itself is created for the PerPass shared buffer.
             viewDescriptor.m_ignoreFrameAttachmentValidation = true;
 
-            RHI::MultiDeviceBuffer* rhiBuffer = Meshlets::SharedBufferInterface::Get()->GetBuffer()->GetRHIBuffer();
+            RHI::Buffer* rhiBuffer = Meshlets::SharedBufferInterface::Get()->GetBuffer()->GetRHIBuffer();
             return rhiBuffer->BuildBufferView(viewDescriptor);
         }
 
         bool UtilityClass::BindBufferViewToSrg(
             [[maybe_unused]] const char* warningHeader,
-            Data::Instance<RHI::MultiDeviceBufferView> bufferView,
+            Data::Instance<RHI::BufferView> bufferView,
             SrgBufferDescriptor& bufferDesc,
             Data::Instance<RPI::ShaderResourceGroup> srg)
         {
@@ -204,14 +204,14 @@ namespace AZ
             return true;
         }
 
-        Data::Instance<RHI::MultiDeviceBufferView> UtilityClass::CreateSharedBufferViewAndBindToSrg(
+        Data::Instance<RHI::BufferView> UtilityClass::CreateSharedBufferViewAndBindToSrg(
             const char* warningHeader,
             SrgBufferDescriptor& bufferDesc,
             Data::Instance<Meshlets::SharedBufferAllocation>& outputBufferAllocator,
             Data::Instance<RPI::ShaderResourceGroup> srg)
         {
             // BufferView creation
-            Data::Instance<RHI::MultiDeviceBufferView> bufferView = CreateSharedBufferView(warningHeader, bufferDesc, outputBufferAllocator);
+            Data::Instance<RHI::BufferView> bufferView = CreateSharedBufferView(warningHeader, bufferDesc, outputBufferAllocator);
 
             if (srg && !BindBufferViewToSrg(warningHeader, bufferView, bufferDesc, srg))
             {

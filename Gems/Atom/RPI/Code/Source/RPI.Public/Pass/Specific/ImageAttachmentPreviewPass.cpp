@@ -104,12 +104,12 @@ namespace AZ
         void ImageAttachmentCopy::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             // copy descriptor for copying image
-            RHI::MultiDeviceCopyImageDescriptor copyImage;
-            const AZ::RHI::MultiDeviceImage* image = context.GetImage(m_srcAttachmentId);
-            copyImage.m_mdSourceImage = image;
+            RHI::CopyImageDescriptor copyImage;
+            const AZ::RHI::Image* image = context.GetImage(m_srcAttachmentId);
+            copyImage.m_sourceImage = image;
             copyImage.m_sourceSize = image->GetDescriptor().m_size;
             copyImage.m_sourceSubresource.m_arraySlice = m_sourceArraySlice;
-            copyImage.m_mdDestinationImage = context.GetImage(m_destAttachmentId);
+            copyImage.m_destinationImage = context.GetImage(m_destAttachmentId);
             
             m_copyItem = copyImage;
         }
@@ -438,7 +438,7 @@ namespace AZ
                 float aspectRatio = 1;
 
                 // Find image type
-                const RHI::MultiDeviceImageView* inputImageView = context.GetImageView(m_imageAttachmentId);
+                const RHI::ImageView* inputImageView = context.GetImageView(m_imageAttachmentId);
                 if (!inputImageView)
                 {
                     AZ_Warning("RPI", false, "Image attachment [%s] doesn't have image view in current context", m_imageAttachmentId.GetCStr());
@@ -478,7 +478,7 @@ namespace AZ
                 }
                 
                 // config pipeline states related to output attachment
-                const RHI::MultiDeviceImageView* outputImageView = context.GetImageView(m_outputColorAttachment->GetAttachmentId());
+                const RHI::ImageView* outputImageView = context.GetImageView(m_outputColorAttachment->GetAttachmentId());
                 RHI::Format outputFormat = outputImageView->GetDescriptor().m_overrideFormat;
                 if (outputFormat == RHI::Format::Unknown)
                 {
@@ -530,7 +530,7 @@ namespace AZ
                     RHI::DrawLinear drawLinear;
                     drawLinear.m_vertexCount = 4;
                     drawLinear.m_instanceCount = previewInfo.m_imageCount;
-                    previewInfo.m_item.SetArguments(RHI::MultiDeviceDrawArguments(drawLinear));
+                    previewInfo.m_item.SetArguments(RHI::DrawArguments(drawLinear));
                     previewInfo.m_item.SetPipelineState(m_shader->AcquirePipelineState(previewInfo.m_pipelineStateDescriptor));
                 }
             }

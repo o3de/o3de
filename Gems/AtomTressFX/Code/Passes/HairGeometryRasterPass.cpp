@@ -8,8 +8,8 @@
 
 //#include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/SingleDeviceDrawPacketBuilder.h>
-#include <Atom/RHI/SingleDevicePipelineState.h>
+#include <Atom/RHI/DeviceDrawPacketBuilder.h>
+#include <Atom/RHI/DevicePipelineState.h>
 
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/RPIUtils.h>
@@ -186,7 +186,7 @@ namespace AZ
                     return false;
                 }
 
-                RHI::MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest drawRequest;
+                RHI::DrawPacketBuilder::DrawRequest drawRequest;
                 drawRequest.m_listTag = m_drawListTag;
                 drawRequest.m_pipelineState = m_pipelineState;
 //                drawRequest.m_streamBufferViews =  // no explicit vertex buffer.  shader is using the srg buffers
@@ -214,7 +214,7 @@ namespace AZ
 
                 for (auto& renderObject : hairRenderObjects)
                 {
-                    const RHI::MultiDeviceDrawPacket* drawPacket = renderObject->GetGeometrylDrawPacket(m_shader.get());
+                    const RHI::DrawPacket* drawPacket = renderObject->GetGeometrylDrawPacket(m_shader.get());
                     if (!drawPacket)
                     {   // might not be an error - the object might have just been added and the DrawPacket is
                         // scheduled to be built when the render frame begins

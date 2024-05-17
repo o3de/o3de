@@ -13,7 +13,7 @@
 #include <AzCore/std/containers/array.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/MultiDeviceDrawPacketBuilder.h>
+#include <Atom/RHI/DrawPacketBuilder.h>
 
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
@@ -54,7 +54,7 @@ namespace AZ
             desc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
             desc.m_bindFlags = RHI::BufferBindFlags::InputAssembly;
 
-            m_bufferPool = aznew RHI::MultiDeviceBufferPool;
+            m_bufferPool = aznew RHI::BufferPool;
             m_bufferPool->SetName(Name("AuxGeomFixedShapeBufferPool"));
             RHI::ResultCode resultCode = m_bufferPool->Init(deviceMask, desc);
 
@@ -78,7 +78,7 @@ namespace AZ
             CreateCylinderBuffersAndViews(AuxGeomShapeType::ShapeType_CylinderNoEnds);
             CreateBoxBuffersAndViews();
 
-            // cache scene pointer for RHI::MultiDevicePipelineState creation.
+            // cache scene pointer for RHI::PipelineState creation.
             m_scene = scene;
 
             LoadShaders();
@@ -132,7 +132,7 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(AzRender, "FixedShapeProcessor: ProcessObjects");
 
-            RHI::MultiDeviceDrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
+            RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
 
             // Draw opaque shapes with LODs. This requires a separate draw packet per shape per view that it is in (usually only one)
 
@@ -1225,10 +1225,10 @@ namespace AZ
         {
             AZ::RHI::ResultCode result = AZ::RHI::ResultCode::Fail;
 
-            AZ::RHI::MultiDeviceBufferInitRequest request;
+            AZ::RHI::BufferInitRequest request;
 
             // setup m_pointIndexBuffer
-            objectBuffers.m_pointIndexBuffer = aznew RHI::MultiDeviceBuffer;
+            objectBuffers.m_pointIndexBuffer = aznew RHI::Buffer;
             const auto pointIndexDataSize = static_cast<uint32_t>(meshData.m_pointIndices.size() * sizeof(uint16_t));
 
             request.m_buffer = objectBuffers.m_pointIndexBuffer.get();
@@ -1243,7 +1243,7 @@ namespace AZ
             }
 
             // setup m_lineIndexBuffer
-            objectBuffers.m_lineIndexBuffer = aznew RHI::MultiDeviceBuffer;
+            objectBuffers.m_lineIndexBuffer = aznew RHI::Buffer;
             const auto lineIndexDataSize = static_cast<uint32_t>(meshData.m_lineIndices.size() * sizeof(uint16_t));
 
             request.m_buffer = objectBuffers.m_lineIndexBuffer.get();
@@ -1258,7 +1258,7 @@ namespace AZ
             }
 
             // setup m_triangleIndexBuffer
-            objectBuffers.m_triangleIndexBuffer = aznew RHI::MultiDeviceBuffer;
+            objectBuffers.m_triangleIndexBuffer = aznew RHI::Buffer;
             const auto triangleIndexDataSize = static_cast<uint32_t>(meshData.m_triangleIndices.size() * sizeof(uint16_t));
             request.m_buffer = objectBuffers.m_triangleIndexBuffer.get();
             request.m_descriptor = AZ::RHI::BufferDescriptor{ AZ::RHI::BufferBindFlags::InputAssembly, triangleIndexDataSize };
@@ -1272,7 +1272,7 @@ namespace AZ
             }
 
             // setup m_positionBuffer
-            objectBuffers.m_positionBuffer = aznew RHI::MultiDeviceBuffer;
+            objectBuffers.m_positionBuffer = aznew RHI::Buffer;
             const auto positionDataSize = static_cast<uint32_t>(meshData.m_positions.size() * sizeof(AuxGeomPosition));
 
             request.m_buffer = objectBuffers.m_positionBuffer.get();
@@ -1286,7 +1286,7 @@ namespace AZ
             }
 
             // setup m_normalBuffer
-            objectBuffers.m_normalBuffer = aznew RHI::MultiDeviceBuffer;
+            objectBuffers.m_normalBuffer = aznew RHI::Buffer;
             const auto normalDataSize = static_cast<uint32_t>(meshData.m_normals.size() * sizeof(AuxGeomNormal));
 
             request.m_buffer = objectBuffers.m_normalBuffer.get();
@@ -1301,7 +1301,7 @@ namespace AZ
 
             // Setup point index buffer view
             objectBuffers.m_pointIndexCount = static_cast<uint32_t>(meshData.m_pointIndices.size());
-            AZ::RHI::MultiDeviceIndexBufferView pointIndexBufferView =
+            AZ::RHI::IndexBufferView pointIndexBufferView =
             {
                 *objectBuffers.m_pointIndexBuffer,
                 0,
@@ -1312,7 +1312,7 @@ namespace AZ
 
             // Setup line index buffer view
             objectBuffers.m_lineIndexCount = static_cast<uint32_t>(meshData.m_lineIndices.size());
-            AZ::RHI::MultiDeviceIndexBufferView lineIndexBufferView =
+            AZ::RHI::IndexBufferView lineIndexBufferView =
             {
                 *objectBuffers.m_lineIndexBuffer,
                 0,
@@ -1323,7 +1323,7 @@ namespace AZ
 
             // Setup triangle index buffer view
             objectBuffers.m_triangleIndexCount = static_cast<uint32_t>(meshData.m_triangleIndices.size());
-            AZ::RHI::MultiDeviceIndexBufferView triangleIndexBufferView =
+            AZ::RHI::IndexBufferView triangleIndexBufferView =
             {
                 *objectBuffers.m_triangleIndexBuffer,
                 0,
@@ -1336,7 +1336,7 @@ namespace AZ
             const auto positionCount = static_cast<uint32_t>(meshData.m_positions.size());
             const uint32_t positionSize = sizeof(float) * 3;
 
-            AZ::RHI::MultiDeviceStreamBufferView positionBufferView =
+            AZ::RHI::StreamBufferView positionBufferView =
             {
                 *objectBuffers.m_positionBuffer,
                 0,
@@ -1348,7 +1348,7 @@ namespace AZ
             const auto normalCount = static_cast<uint32_t>(meshData.m_normals.size());
             const uint32_t normalSize = sizeof(float) * 3;
 
-            AZ::RHI::MultiDeviceStreamBufferView normalBufferView =
+            AZ::RHI::StreamBufferView normalBufferView =
             {
                 *objectBuffers.m_normalBuffer,
                 0,
@@ -1559,7 +1559,7 @@ namespace AZ
             destPipelineState->Finalize();
         }
 
-        const AZ::RHI::MultiDeviceIndexBufferView& FixedShapeProcessor::GetShapeIndexBufferView(AuxGeomShapeType shapeType, int drawStyle, LodIndex lodIndex) const
+        const AZ::RHI::IndexBufferView& FixedShapeProcessor::GetShapeIndexBufferView(AuxGeomShapeType shapeType, int drawStyle, LodIndex lodIndex) const
         {
             switch(drawStyle)
             {
@@ -1600,8 +1600,8 @@ namespace AZ
             }
         }
 
-        RHI::ConstPtr<RHI::MultiDeviceDrawPacket> FixedShapeProcessor::BuildDrawPacketForShape(
-            RHI::MultiDeviceDrawPacketBuilder& drawPacketBuilder,
+        RHI::ConstPtr<RHI::DrawPacket> FixedShapeProcessor::BuildDrawPacketForShape(
+            RHI::DrawPacketBuilder& drawPacketBuilder,
             const ShapeBufferEntry& shape,
             int drawStyle,
             const AZStd::vector<AZ::Matrix4x4>& viewProjOverrides,
@@ -1661,7 +1661,7 @@ namespace AZ
             return nullptr;
         }
 
-        const AZ::RHI::MultiDeviceIndexBufferView& FixedShapeProcessor::GetBoxIndexBufferView(int drawStyle) const
+        const AZ::RHI::IndexBufferView& FixedShapeProcessor::GetBoxIndexBufferView(int drawStyle) const
         {
             switch(drawStyle)
             {
@@ -1702,8 +1702,8 @@ namespace AZ
             }
         }
 
-        RHI::ConstPtr<RHI::MultiDeviceDrawPacket> FixedShapeProcessor::BuildDrawPacketForBox(
-            RHI::MultiDeviceDrawPacketBuilder& drawPacketBuilder,
+        RHI::ConstPtr<RHI::DrawPacket> FixedShapeProcessor::BuildDrawPacketForBox(
+            RHI::DrawPacketBuilder& drawPacketBuilder,
             const BoxBufferEntry& box,
             int drawStyle,
             const AZStd::vector<AZ::Matrix4x4>& viewProjOverrides,
@@ -1754,14 +1754,14 @@ namespace AZ
                 sortKey);
         }
 
-        RHI::ConstPtr<RHI::MultiDeviceDrawPacket> FixedShapeProcessor::BuildDrawPacket(
-            RHI::MultiDeviceDrawPacketBuilder& drawPacketBuilder,
+        RHI::ConstPtr<RHI::DrawPacket> FixedShapeProcessor::BuildDrawPacket(
+            RHI::DrawPacketBuilder& drawPacketBuilder,
             AZ::Data::Instance<RPI::ShaderResourceGroup>& srg,
             uint32_t indexCount,
-            const RHI::MultiDeviceIndexBufferView& indexBufferView,
+            const RHI::IndexBufferView& indexBufferView,
             const StreamBufferViewsForAllStreams& streamBufferViews,
             RHI::DrawListTag drawListTag,
-            const RHI::MultiDevicePipelineState* pipelineState,
+            const RHI::PipelineState* pipelineState,
             RHI::DrawItemSortKey sortKey)
         {
             RHI::DrawIndexed drawIndexed;
@@ -1774,7 +1774,7 @@ namespace AZ
             drawPacketBuilder.SetIndexBufferView(indexBufferView);
             drawPacketBuilder.AddShaderResourceGroup(srg->GetRHIShaderResourceGroup());
 
-            RHI::MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest drawRequest;
+            RHI::DrawPacketBuilder::DrawRequest drawRequest;
             drawRequest.m_listTag = drawListTag;
             drawRequest.m_pipelineState = pipelineState;
             drawRequest.m_streamBufferViews = streamBufferViews;

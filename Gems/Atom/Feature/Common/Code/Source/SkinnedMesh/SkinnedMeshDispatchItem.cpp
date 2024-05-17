@@ -17,7 +17,7 @@
 #include <Atom/RPI.Public/RPIUtils.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/SingleDeviceBufferView.h>
+#include <Atom/RHI/DeviceBufferView.h>
 
 #include <limits>
 
@@ -215,7 +215,7 @@ namespace AZ
             return true;
         }
 
-        const RHI::MultiDeviceDispatchItem& SkinnedMeshDispatchItem::GetRHIDispatchItem() const
+        const RHI::DispatchItem& SkinnedMeshDispatchItem::GetRHIDispatchItem() const
         {
             return m_dispatchItem;
         }

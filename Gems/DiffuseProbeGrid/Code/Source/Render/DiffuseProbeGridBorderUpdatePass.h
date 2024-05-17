@@ -9,7 +9,7 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/MultiDeviceDispatchItem.h>
+#include <Atom/RHI/DispatchItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -36,7 +36,7 @@ namespace AZ
 
             void LoadShader(AZStd::string shaderFilePath,
                             Data::Instance<RPI::Shader>& shader,
-                            const RHI::MultiDevicePipelineState*& pipelineState,
+                            const RHI::PipelineState*& pipelineState,
                             RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout,
                             RHI::DispatchDirect& dispatchArgs);
 
@@ -50,8 +50,8 @@ namespace AZ
             // the data for submits in this pass are pre-built to properly handle submitting on multiple threads
             struct SubmitItem
             {
-                RHI::MultiDeviceShaderResourceGroup* m_shaderResourceGroup{nullptr};
-                RHI::MultiDeviceDispatchItem m_dispatchItem{RHI::MultiDevice::AllDevices};
+                RHI::ShaderResourceGroup* m_shaderResourceGroup{nullptr};
+                RHI::DispatchItem m_dispatchItem{RHI::MultiDevice::AllDevices};
             };
 
             AZStd::vector<SubmitItem> m_submitItems;
@@ -59,8 +59,8 @@ namespace AZ
             // shader
             Data::Instance<RPI::Shader> m_rowShader;
             Data::Instance<RPI::Shader> m_columnShader;
-            const RHI::MultiDevicePipelineState* m_rowPipelineState = nullptr;
-            const RHI::MultiDevicePipelineState* m_columnPipelineState = nullptr;
+            const RHI::PipelineState* m_rowPipelineState = nullptr;
+            const RHI::PipelineState* m_columnPipelineState = nullptr;
             RHI::Ptr<RHI::ShaderResourceGroupLayout> m_rowSrgLayout;
             RHI::Ptr<RHI::ShaderResourceGroupLayout> m_columnSrgLayout;
             RHI::DispatchDirect m_rowDispatchArgs;

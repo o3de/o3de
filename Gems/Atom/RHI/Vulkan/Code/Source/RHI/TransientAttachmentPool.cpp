@@ -49,20 +49,20 @@ namespace AZ
             }
         }
 
-        RHI::SingleDeviceImage* TransientAttachmentPool::ActivateImage(const RHI::TransientImageDescriptor& descriptor)
+        RHI::DeviceImage* TransientAttachmentPool::ActivateImage(const RHI::TransientImageDescriptor& descriptor)
         {
             AliasedAttachmentAllocator* allocator = GetImageAllocator(descriptor.m_imageDescriptor);
             AZ_Assert(allocator, "No image heap allocator to allocate an image. Make sure you specified one at pool creation time");
-            RHI::SingleDeviceImage* image = allocator->ActivateImage(descriptor, *m_currentScope);
+            RHI::DeviceImage* image = allocator->ActivateImage(descriptor, *m_currentScope);
             AZ_Assert(RHI::CheckBitsAll(GetCompileFlags(), RHI::TransientAttachmentPoolCompileFlags::DontAllocateResources) || image, "Failed to allocate image. Heap is not big enough");
             m_imageToAllocatorMap[descriptor.m_attachmentId] = allocator;
             return image;
         }
 
-        RHI::SingleDeviceBuffer* TransientAttachmentPool::ActivateBuffer(const RHI::TransientBufferDescriptor& descriptor)
+        RHI::DeviceBuffer* TransientAttachmentPool::ActivateBuffer(const RHI::TransientBufferDescriptor& descriptor)
         {
             AZ_Assert(m_bufferAllocator, "No buffer heap allocator to allocate a transient buffer. Make sure you specified one at pool creation time");
-            RHI::SingleDeviceBuffer* buffer = m_bufferAllocator->ActivateBuffer(descriptor, *m_currentScope);
+            RHI::DeviceBuffer* buffer = m_bufferAllocator->ActivateBuffer(descriptor, *m_currentScope);
             AZ_Assert(RHI::CheckBitsAll(GetCompileFlags(), RHI::TransientAttachmentPoolCompileFlags::DontAllocateResources) || buffer, "Failed to allocate buffer. Heap is not big enough.");
             return buffer;
         }

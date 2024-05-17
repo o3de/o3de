@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/SingleDeviceBufferPool.h>
+#include <Atom/RHI/DeviceBufferPool.h>
 
 namespace AZ
 {
@@ -18,9 +18,9 @@ namespace AZ
         class Device;
 
         class BufferPool final
-            : public RHI::SingleDeviceBufferPool
+            : public RHI::DeviceBufferPool
         {
-            using Base = RHI::SingleDeviceBufferPool;
+            using Base = RHI::DeviceBufferPool;
 
         public:
             AZ_RTTI(BufferPool, "F3DE9E13-12F2-489E-8665-6895FD7446C0", Base);
@@ -36,15 +36,15 @@ namespace AZ
             BufferPoolResolver* GetResolver();
 
             //////////////////////////////////////////////////////////////////////////
-             // RHI::SingleDeviceBufferPool
+             // RHI::DeviceBufferPool
             RHI::ResultCode InitInternal(RHI::Device& device, const RHI::BufferPoolDescriptor& descriptor) override;
             void ShutdownInternal() override;
-            RHI::ResultCode InitBufferInternal(RHI::SingleDeviceBuffer& buffer, const RHI::BufferDescriptor& rhiDescriptor) override;
-            void ShutdownResourceInternal(RHI::SingleDeviceResource& resource) override;
-            RHI::ResultCode OrphanBufferInternal(RHI::SingleDeviceBuffer& buffer) override;
-            RHI::ResultCode MapBufferInternal(const RHI::SingleDeviceBufferMapRequest& mapRequest, RHI::SingleDeviceBufferMapResponse& response) override;
-            void UnmapBufferInternal(RHI::SingleDeviceBuffer& buffer) override;
-            RHI::ResultCode StreamBufferInternal(const RHI::SingleDeviceBufferStreamRequest& request) override;
+            RHI::ResultCode InitBufferInternal(RHI::DeviceBuffer& buffer, const RHI::BufferDescriptor& rhiDescriptor) override;
+            void ShutdownResourceInternal(RHI::DeviceResource& resource) override;
+            RHI::ResultCode OrphanBufferInternal(RHI::DeviceBuffer& buffer) override;
+            RHI::ResultCode MapBufferInternal(const RHI::DeviceBufferMapRequest& mapRequest, RHI::DeviceBufferMapResponse& response) override;
+            void UnmapBufferInternal(RHI::DeviceBuffer& buffer) override;
+            RHI::ResultCode StreamBufferInternal(const RHI::DeviceBufferStreamRequest& request) override;
             void ComputeFragmentation() const override;
             //////////////////////////////////////////////////////////////////////////
         };

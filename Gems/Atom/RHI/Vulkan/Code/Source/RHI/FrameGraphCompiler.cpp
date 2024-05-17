@@ -8,8 +8,8 @@
 
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
-#include <Atom/RHI/SingleDeviceBufferView.h>
-#include <Atom/RHI/MultiDeviceSwapChain.h>
+#include <Atom/RHI/DeviceBufferView.h>
+#include <Atom/RHI/SwapChain.h>
 #include <Atom/RHI/FrameGraph.h>
 #include <Atom/RHI/FrameGraphAttachmentDatabase.h>
 #include <Atom/RHI/ImageScopeAttachment.h>

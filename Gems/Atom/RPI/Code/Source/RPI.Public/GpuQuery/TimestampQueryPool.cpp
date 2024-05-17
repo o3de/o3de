@@ -28,16 +28,16 @@ namespace AZ
 
         RHI::ResultCode TimestampQueryPool::BeginQueryInternal(RHI::Interval rhiQueryIndices, const RHI::FrameGraphExecuteContext& context)
         {
-            AZStd::span<const RHI::Ptr<RHI::MultiDeviceQuery>> rhiQueryArray = GetRhiQueryArray();
-            AZ::RHI::Ptr<AZ::RHI::MultiDeviceQuery> beginQuery = rhiQueryArray[rhiQueryIndices.m_min];
+            AZStd::span<const RHI::Ptr<RHI::Query>> rhiQueryArray = GetRhiQueryArray();
+            AZ::RHI::Ptr<AZ::RHI::Query> beginQuery = rhiQueryArray[rhiQueryIndices.m_min];
 
             return beginQuery->GetDeviceQuery(context.GetDeviceIndex())->WriteTimestamp(*context.GetCommandList());
         }
 
         RHI::ResultCode TimestampQueryPool::EndQueryInternal(RHI::Interval rhiQueryIndices, const RHI::FrameGraphExecuteContext& context)
         {
-            AZStd::span<const RHI::Ptr<RHI::MultiDeviceQuery>> rhiQueryArray = GetRhiQueryArray();
-            AZ::RHI::Ptr<AZ::RHI::MultiDeviceQuery> endQuery = rhiQueryArray[rhiQueryIndices.m_max];
+            AZStd::span<const RHI::Ptr<RHI::Query>> rhiQueryArray = GetRhiQueryArray();
+            AZ::RHI::Ptr<AZ::RHI::Query> endQuery = rhiQueryArray[rhiQueryIndices.m_max];
 
             return endQuery->GetDeviceQuery(context.GetDeviceIndex())->WriteTimestamp(*context.GetCommandList());
         }

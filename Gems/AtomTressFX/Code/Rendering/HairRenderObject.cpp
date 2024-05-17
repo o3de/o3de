@@ -110,7 +110,7 @@ namespace AZ
 
                 m_readBuffersViews.resize(2);
            
-                RHI::MultiDeviceBuffer* rhiBuffer = SharedBuffer::Get()->GetBuffer()->GetRHIBuffer();
+                RHI::Buffer* rhiBuffer = SharedBuffer::Get()->GetBuffer()->GetRHIBuffer();
                 for (uint8_t index = 0; index < 2 ; ++index)
                 {
                     // Buffer view creation from the shared buffer
@@ -228,7 +228,7 @@ namespace AZ
                 m_dynamicBuffersViews.resize(uint8_t(HairDynamicBuffersSemantics::NumBufferStreams));
                 m_dynamicViewAllocators.resize(uint8_t(HairDynamicBuffersSemantics::NumBufferStreams));
 
-                RHI::MultiDeviceBuffer* rhiBuffer = SharedBuffer::Get()->GetBuffer()->GetRHIBuffer();
+                RHI::Buffer* rhiBuffer = SharedBuffer::Get()->GetBuffer()->GetRHIBuffer();
                 for (int stream=0; stream< uint8_t(HairDynamicBuffersSemantics::NumBufferStreams) ; ++stream)
                 {
                     SrgBufferDescriptor& streamDesc = m_dynamicBuffersDescriptors[stream];
@@ -564,9 +564,9 @@ namespace AZ
                 //------------ Index Buffer  ------------
                 m_TotalIndices = asset.GetNumHairTriangleIndices();
 
-                RHI::MultiDeviceBufferInitRequest request;
+                RHI::BufferInitRequest request;
                 uint32_t indexBufferSize = m_TotalIndices * sizeof(uint32_t);
-                m_indexBuffer = aznew RHI::MultiDeviceBuffer;
+                m_indexBuffer = aznew RHI::Buffer;
                 request.m_buffer = m_indexBuffer.get();
                 request.m_descriptor = RHI::BufferDescriptor{
                     RHI::BufferBindFlags::ShaderRead | RHI::BufferBindFlags::InputAssembly,
@@ -574,7 +574,7 @@ namespace AZ
                 };
                 request.m_initialData = (void*)asset.m_triangleIndices.data();
                 
-                RHI::Ptr<RHI::MultiDeviceBufferPool> bufferPool = RPI::BufferSystemInterface::Get()->GetCommonBufferPool(RPI::CommonBufferPoolType::StaticInputAssembly);
+                RHI::Ptr<RHI::BufferPool> bufferPool = RPI::BufferSystemInterface::Get()->GetCommonBufferPool(RPI::CommonBufferPoolType::StaticInputAssembly);
                 if (!bufferPool)
                 {
                     AZ_Error("Hair Gem", false, "Common buffer pool for index buffer could not be created");
@@ -585,7 +585,7 @@ namespace AZ
                 AZ_Error("Hair Gem", result == RHI::ResultCode::Success, "Failed to initialize index buffer - error [%d]", result);
 
                 // create index buffer view
-                m_indexBufferView = RHI::MultiDeviceIndexBufferView(*m_indexBuffer, 0, indexBufferSize, RHI::IndexFormat::Uint32 );
+                m_indexBufferView = RHI::IndexBufferView(*m_indexBuffer, 0, indexBufferSize, RHI::IndexFormat::Uint32 );
 
                 return true;
             }
@@ -1106,9 +1106,9 @@ namespace AZ
                 return updatedCB;
             }
 
-            bool HairRenderObject::BuildDrawPacket(RPI::Shader* geometryShader, RHI::MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest& drawRequest)
+            bool HairRenderObject::BuildDrawPacket(RPI::Shader* geometryShader, RHI::DrawPacketBuilder::DrawRequest& drawRequest)
             {
-                RHI::MultiDeviceDrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
+                RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
                 RHI::DrawIndexed drawIndexed;
 
                 uint32_t numPrimsToRender = m_TotalIndices;
@@ -1170,7 +1170,7 @@ namespace AZ
                 return true;
             }
 
-            const RHI::MultiDeviceDrawPacket* HairRenderObject::GetGeometrylDrawPacket(RPI::Shader* geometryShader)
+            const RHI::DrawPacket* HairRenderObject::GetGeometrylDrawPacket(RPI::Shader* geometryShader)
             {
                 auto iter = m_geometryDrawPackets.find(geometryShader);
                 if (iter == m_geometryDrawPackets.end())
@@ -1180,7 +1180,7 @@ namespace AZ
                 return iter->second.get();
             }
 
-            const RHI::MultiDeviceDispatchItem* HairRenderObject::GetDispatchItem(RPI::Shader* computeShader)
+            const RHI::DispatchItem* HairRenderObject::GetDispatchItem(RPI::Shader* computeShader)
             {
                 auto dispatchIter = m_dispatchItems.find(computeShader);
                 if (dispatchIter == m_dispatchItems.end())

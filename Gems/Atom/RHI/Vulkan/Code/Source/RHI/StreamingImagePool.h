@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/SingleDeviceStreamingImagePool.h>
+#include <Atom/RHI/DeviceStreamingImagePool.h>
 #include <AzCore/std/parallel/mutex.h>
 
 namespace AZ
@@ -17,9 +17,9 @@ namespace AZ
         class Device;
 
         class StreamingImagePool final
-            : public RHI::SingleDeviceStreamingImagePool
+            : public RHI::DeviceStreamingImagePool
         {
-            using Base = RHI::SingleDeviceStreamingImagePool;
+            using Base = RHI::DeviceStreamingImagePool;
             friend class Image;
 
         public:
@@ -44,19 +44,19 @@ namespace AZ
             StreamingImagePool() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::SingleDeviceStreamingImagePool
+            // RHI::DeviceStreamingImagePool
             RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::StreamingImagePoolDescriptor& descriptor) override;
-            RHI::ResultCode InitImageInternal(const RHI::SingleDeviceStreamingImageInitRequest& request) override;
-            RHI::ResultCode ExpandImageInternal(const RHI::SingleDeviceStreamingImageExpandRequest& request) override;
-            RHI::ResultCode TrimImageInternal(RHI::SingleDeviceImage& image, uint32_t targetMipLevel) override;
+            RHI::ResultCode InitImageInternal(const RHI::DeviceStreamingImageInitRequest& request) override;
+            RHI::ResultCode ExpandImageInternal(const RHI::DeviceStreamingImageExpandRequest& request) override;
+            RHI::ResultCode TrimImageInternal(RHI::DeviceImage& image, uint32_t targetMipLevel) override;
             RHI::ResultCode SetMemoryBudgetInternal(size_t newBudget) override;
             bool SupportTiledImageInternal() const override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::SingleDeviceResourcePool
+            // RHI::DeviceResourcePool
             void ShutdownInternal() override;
-            void ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase) override;
+            void ShutdownResourceInternal(RHI::DeviceResource& resourceBase) override;
             /// As streaming image tiles are allocated from a pool allocator, fragmentation will remain 0 for
             /// the streaming image pool
             void ComputeFragmentation() const override;

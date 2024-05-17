@@ -7,21 +7,21 @@
  */
 #pragma once
 
-#include <Atom/RHI/SingleDeviceShaderResourceGroupPool.h>
-#include <Atom/RHI/SingleDeviceShaderResourceGroup.h>
+#include <Atom/RHI/DeviceShaderResourceGroupPool.h>
+#include <Atom/RHI/DeviceShaderResourceGroup.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 namespace UnitTest
 {
     class ShaderResourceGroup
-        : public AZ::RHI::SingleDeviceShaderResourceGroup
+        : public AZ::RHI::DeviceShaderResourceGroup
     {
     public:
         AZ_CLASS_ALLOCATOR(ShaderResourceGroup, AZ::SystemAllocator);
     };
 
     class ShaderResourceGroupPool
-        : public AZ::RHI::SingleDeviceShaderResourceGroupPool
+        : public AZ::RHI::DeviceShaderResourceGroupPool
     {
     public:
         AZ_CLASS_ALLOCATOR(ShaderResourceGroupPool, AZ::SystemAllocator);
@@ -31,12 +31,12 @@ namespace UnitTest
 
         void ShutdownInternal() override;
 
-        AZ::RHI::ResultCode InitGroupInternal(AZ::RHI::SingleDeviceShaderResourceGroup& shaderResourceGroupBase) override;
+        AZ::RHI::ResultCode InitGroupInternal(AZ::RHI::DeviceShaderResourceGroup& shaderResourceGroupBase) override;
 
         AZ::RHI::ResultCode CompileGroupInternal(
-            AZ::RHI::SingleDeviceShaderResourceGroup& groupBase,
-            const AZ::RHI::SingleDeviceShaderResourceGroupData& groupData) override;
+            AZ::RHI::DeviceShaderResourceGroup& groupBase,
+            const AZ::RHI::DeviceShaderResourceGroupData& groupData) override;
 
-        void ShutdownResourceInternal(AZ::RHI::SingleDeviceResource& resourceBase) override;
+        void ShutdownResourceInternal(AZ::RHI::DeviceResource& resourceBase) override;
     };
 }

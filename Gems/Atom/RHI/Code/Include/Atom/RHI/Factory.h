@@ -18,34 +18,34 @@ AZ_CVAR_EXTERNED(bool, r_enablePsoCaching);
 
 namespace AZ::RHI
 {
-    class SingleDeviceBuffer;
-    class SingleDeviceBufferPool;
-    class SingleDeviceBufferView;
+    class DeviceBuffer;
+    class DeviceBufferPool;
+    class DeviceBufferView;
     class Device;
-    class DispatchRaysIndirectBuffer;
-    class SingleDeviceImage;
-    class SingleDeviceImagePool;
-    class SingleDeviceImageView;
-    class SingleDeviceIndirectBufferSignature;
-    class SingleDeviceIndirectBufferWriter;
-    class SingleDeviceFence;
+    class DeviceDispatchRaysIndirectBuffer;
+    class DeviceImage;
+    class DeviceImagePool;
+    class DeviceImageView;
+    class DeviceIndirectBufferSignature;
+    class DeviceIndirectBufferWriter;
+    class DeviceFence;
     class FrameGraphCompiler;
     class FrameGraphExecuter;
-    class SingleDevicePipelineState;
-    class SingleDevicePipelineLibrary;
-    class SingleDeviceQuery;
-    class SingleDeviceQueryPool;
+    class DevicePipelineState;
+    class DevicePipelineLibrary;
+    class DeviceQuery;
+    class DeviceQueryPool;
     class Scope;
-    class SingleDeviceShaderResourceGroup;
-    class SingleDeviceShaderResourceGroupPool;
-    class SingleDeviceStreamingImagePool;
-    class SingleDeviceSwapChain;
-    class SingleDeviceTransientAttachmentPool;
-    class SingleDeviceRayTracingBufferPools;
-    class SingleDeviceRayTracingBlas;
-    class SingleDeviceRayTracingTlas;
-    class SingleDeviceRayTracingPipelineState;
-    class SingleDeviceRayTracingShaderTable;
+    class DeviceShaderResourceGroup;
+    class DeviceShaderResourceGroupPool;
+    class DeviceStreamingImagePool;
+    class DeviceSwapChain;
+    class DeviceTransientAttachmentPool;
+    class DeviceRayTracingBufferPools;
+    class DeviceRayTracingBlas;
+    class DeviceRayTracingTlas;
+    class DeviceRayTracingPipelineState;
+    class DeviceRayTracingShaderTable;
 
     //! Priority of a Factory. The lower the number the higher the priority.
     //! Used when there's multiple factories available and the user hasn't define
@@ -139,60 +139,60 @@ namespace AZ::RHI
         //! in an uninitialized state; the operation simply allocates the memory for the appropriate
         //! platform type and returns the pointer.
 
-        virtual Ptr<SingleDeviceBuffer> CreateBuffer() = 0;
+        virtual Ptr<DeviceBuffer> CreateBuffer() = 0;
 
-        virtual Ptr<SingleDeviceBufferPool> CreateBufferPool() = 0;
+        virtual Ptr<DeviceBufferPool> CreateBufferPool() = 0;
 
-        virtual Ptr<SingleDeviceBufferView> CreateBufferView() = 0;
+        virtual Ptr<DeviceBufferView> CreateBufferView() = 0;
 
         virtual Ptr<Device> CreateDevice() = 0;
 
-        virtual Ptr<SingleDeviceFence> CreateFence() = 0;
+        virtual Ptr<DeviceFence> CreateFence() = 0;
 
         virtual Ptr<FrameGraphCompiler> CreateFrameGraphCompiler() = 0;
 
         virtual Ptr<FrameGraphExecuter> CreateFrameGraphExecuter() = 0;
 
-        virtual Ptr<SingleDeviceImage> CreateImage() = 0;
+        virtual Ptr<DeviceImage> CreateImage() = 0;
 
-        virtual Ptr<SingleDeviceImagePool> CreateImagePool() = 0;
+        virtual Ptr<DeviceImagePool> CreateImagePool() = 0;
 
-        virtual Ptr<SingleDeviceImageView> CreateImageView() = 0;
+        virtual Ptr<DeviceImageView> CreateImageView() = 0;
 
-        virtual Ptr<SingleDeviceStreamingImagePool> CreateStreamingImagePool() = 0;
+        virtual Ptr<DeviceStreamingImagePool> CreateStreamingImagePool() = 0;
 
-        virtual Ptr<SingleDevicePipelineState> CreatePipelineState() = 0;
+        virtual Ptr<DevicePipelineState> CreatePipelineState() = 0;
 
-        virtual Ptr<SingleDevicePipelineLibrary> CreatePipelineLibrary() = 0;
+        virtual Ptr<DevicePipelineLibrary> CreatePipelineLibrary() = 0;
 
         virtual Ptr<Scope> CreateScope() = 0;
 
-        virtual Ptr<SingleDeviceShaderResourceGroup> CreateShaderResourceGroup() = 0;
+        virtual Ptr<DeviceShaderResourceGroup> CreateShaderResourceGroup() = 0;
 
-        virtual Ptr<SingleDeviceShaderResourceGroupPool> CreateShaderResourceGroupPool() = 0;
+        virtual Ptr<DeviceShaderResourceGroupPool> CreateShaderResourceGroupPool() = 0;
 
-        virtual Ptr<SingleDeviceSwapChain> CreateSwapChain() = 0;
+        virtual Ptr<DeviceSwapChain> CreateSwapChain() = 0;
 
-        virtual Ptr<SingleDeviceTransientAttachmentPool> CreateTransientAttachmentPool() = 0;
+        virtual Ptr<DeviceTransientAttachmentPool> CreateTransientAttachmentPool() = 0;
 
-        virtual Ptr<SingleDeviceQueryPool> CreateQueryPool() = 0;
+        virtual Ptr<DeviceQueryPool> CreateQueryPool() = 0;
 
-        virtual Ptr<SingleDeviceQuery> CreateQuery() = 0;
+        virtual Ptr<DeviceQuery> CreateQuery() = 0;
 
-        virtual Ptr<SingleDeviceIndirectBufferSignature> CreateIndirectBufferSignature() = 0;
+        virtual Ptr<DeviceIndirectBufferSignature> CreateIndirectBufferSignature() = 0;
 
-        virtual Ptr<SingleDeviceIndirectBufferWriter> CreateIndirectBufferWriter() = 0;
+        virtual Ptr<DeviceIndirectBufferWriter> CreateIndirectBufferWriter() = 0;
 
-        virtual Ptr<SingleDeviceRayTracingBufferPools> CreateRayTracingBufferPools() = 0;
+        virtual Ptr<DeviceRayTracingBufferPools> CreateRayTracingBufferPools() = 0;
 
-        virtual Ptr<SingleDeviceRayTracingBlas> CreateRayTracingBlas() = 0;
+        virtual Ptr<DeviceRayTracingBlas> CreateRayTracingBlas() = 0;
 
-        virtual Ptr<SingleDeviceRayTracingTlas> CreateRayTracingTlas() = 0;
+        virtual Ptr<DeviceRayTracingTlas> CreateRayTracingTlas() = 0;
 
-        virtual Ptr<SingleDeviceRayTracingPipelineState> CreateRayTracingPipelineState() = 0;
+        virtual Ptr<DeviceRayTracingPipelineState> CreateRayTracingPipelineState() = 0;
 
-        virtual Ptr<SingleDeviceRayTracingShaderTable> CreateRayTracingShaderTable() = 0;
+        virtual Ptr<DeviceRayTracingShaderTable> CreateRayTracingShaderTable() = 0;
 
-        virtual Ptr<DispatchRaysIndirectBuffer> CreateDispatchRaysIndirectBuffer() = 0;
+        virtual Ptr<DeviceDispatchRaysIndirectBuffer> CreateDispatchRaysIndirectBuffer() = 0;
     };
 } // namespace AZ::RHI

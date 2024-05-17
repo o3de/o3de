@@ -13,8 +13,8 @@
 
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 
-#include <Atom/RHI/MultiDeviceIndexBufferView.h>
-#include <Atom/RHI/MultiDeviceStreamBufferView.h>
+#include <Atom/RHI/IndexBufferView.h>
+#include <Atom/RHI/StreamBufferView.h>
 
 namespace AZ
 {
@@ -51,11 +51,11 @@ namespace AZ
             const AZStd::unordered_map<int, void*>& GetBufferAddress();
 
             //! Get IndexBufferView if this buffer is used as index buffer
-            RHI::MultiDeviceIndexBufferView GetIndexBufferView(RHI::IndexFormat format);
+            RHI::IndexBufferView GetIndexBufferView(RHI::IndexFormat format);
 
             //! Get StreamBufferView if this buffer is used as vertex buffer
             //! @param strideByteCount the byte count of the element
-            RHI::MultiDeviceStreamBufferView GetStreamBufferView(uint32_t strideByteCount);
+            RHI::StreamBufferView GetStreamBufferView(uint32_t strideByteCount);
 
         private:
             // Only DynamicBufferAllocator can allocate a DynamicBuffer

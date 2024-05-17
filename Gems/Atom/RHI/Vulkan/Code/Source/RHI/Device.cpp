@@ -14,7 +14,7 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHIMemoryStatisticsInterface.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/SingleDeviceTransientAttachmentPool.h>
+#include <Atom/RHI/DeviceTransientAttachmentPool.h>
 #include <Atom_RHI_Vulkan_Platform.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/std/containers/set.h>
@@ -603,7 +603,7 @@ namespace AZ
             RHI::Ptr<Buffer> stagingBuffer = Buffer::Create();
             RHI::BufferDescriptor bufferDesc(RHI::BufferBindFlags::CopyRead, byteCount);
             bufferDesc.m_alignment = alignment;
-            RHI::SingleDeviceBufferInitRequest initRequest(*stagingBuffer, bufferDesc);
+            RHI::DeviceBufferInitRequest initRequest(*stagingBuffer, bufferDesc);
             const RHI::ResultCode result = m_stagingBufferPool->InitBuffer(initRequest);
             if (result != RHI::ResultCode::Success)
             {

@@ -535,7 +535,7 @@ namespace AZ
             desc.m_byteCount = 64;
             desc.m_bufferData = instanceData;
             m_instanceBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
-            m_instanceBufferView = RHI::MultiDeviceStreamBufferView(
+            m_instanceBufferView = RHI::StreamBufferView(
                 *m_instanceBuffer->GetRHIBuffer(),
                 0,
                 aznumeric_cast<uint32_t>(desc.m_byteCount),
@@ -679,12 +679,12 @@ namespace AZ
             for (uint32_t i = context.GetSubmitRange().m_startIndex; i < context.GetSubmitRange().m_endIndex; ++i)
             {
                 auto indexBufferView{m_indexBufferView.GetDeviceIndexBufferView(context.GetDeviceIndex())};
-                AZStd::array<RHI::SingleDeviceStreamBufferView, 2> vertexBufferView{
+                AZStd::array<RHI::DeviceStreamBufferView, 2> vertexBufferView{
                     m_vertexBufferView[0].GetDeviceStreamBufferView(context.GetDeviceIndex()),
                     m_vertexBufferView[1].GetDeviceStreamBufferView(context.GetDeviceIndex())
                 };
 
-                RHI::SingleDeviceDrawItem drawItem;
+                RHI::DeviceDrawItem drawItem;
                 drawItem.m_arguments = m_draws.at(i).m_drawIndexed;
                 drawItem.m_pipelineState = m_pipelineState->GetRHIPipelineState()->GetDevicePipelineState(context.GetDeviceIndex()).get();
                 drawItem.m_indexBufferView = &indexBufferView;

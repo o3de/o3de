@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/SingleDeviceImageView.h>
+#include <Atom/RHI/DeviceImageView.h>
 #include <Atom/RHI.Reflect/ImageSubresource.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <RHI/MemoryView.h>
@@ -19,9 +19,9 @@ namespace AZ
         class Image;
 
         class ImageView final
-            : public RHI::SingleDeviceImageView
+            : public RHI::DeviceImageView
         {
-            using Base = RHI::SingleDeviceImageView;
+            using Base = RHI::DeviceImageView;
         public:
             AZ_CLASS_ALLOCATOR(ImageView, AZ::ThreadPoolAllocator);
             AZ_RTTI(ImageView, "{8D509777-8BF1-4652-B0B1-539C7225DAE9}", Base);
@@ -45,11 +45,11 @@ namespace AZ
             
         private:
             ImageView() = default;
-            void BuildImageSubResourceRange(const RHI::SingleDeviceResource& resourceBase);
+            void BuildImageSubResourceRange(const RHI::DeviceResource& resourceBase);
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::SingleDeviceImageView
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::SingleDeviceResource& resourceBase) override;
+            // RHI::DeviceImageView
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::DeviceResource& resourceBase) override;
             RHI::ResultCode InvalidateInternal() override;
             void ShutdownInternal() override;
             //////////////////////////////////////////////////////////////////////////

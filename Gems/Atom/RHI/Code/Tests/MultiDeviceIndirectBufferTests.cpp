@@ -8,11 +8,11 @@
 
 #include "RHITestFixture.h"
 #include <Atom/RHI/FrameEventBus.h>
-#include <Atom/RHI/MultiDeviceBufferPool.h>
-#include <Atom/RHI/MultiDeviceIndirectBufferSignature.h>
-#include <Atom/RHI/MultiDeviceIndirectBufferWriter.h>
-#include <Atom/RHI/MultiDeviceStreamBufferView.h>
-#include <Atom/RHI/MultiDeviceIndexBufferView.h>
+#include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/IndirectBufferSignature.h>
+#include <Atom/RHI/IndirectBufferWriter.h>
+#include <Atom/RHI/StreamBufferView.h>
+#include <Atom/RHI/IndexBufferView.h>
 #include <Tests/Buffer.h>
 #include <Tests/Device.h>
 #include <Tests/IndirectBuffer.h>
@@ -53,13 +53,13 @@ namespace UnitTest
             m_commands.push_back(RHI::IndirectCommandType::IndexBufferView);
             m_commands.push_back(RHI::IndirectCommandType::DrawIndexed);
 
-            m_bufferPool = aznew AZ::RHI::MultiDeviceBufferPool;
+            m_bufferPool = aznew AZ::RHI::BufferPool;
             RHI::BufferPoolDescriptor poolDesc;
             poolDesc.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
             m_bufferPool->Init(DeviceMask, poolDesc);
 
-            m_buffer = aznew AZ::RHI::MultiDeviceBuffer;
-            RHI::MultiDeviceBufferInitRequest initRequest;
+            m_buffer = aznew AZ::RHI::Buffer;
+            RHI::BufferInitRequest initRequest;
             initRequest.m_buffer = m_buffer.get();
             initRequest.m_descriptor.m_byteCount = m_writerCommandStride * m_writerNumCommands;
             initRequest.m_descriptor.m_bindFlags = poolDesc.m_bindFlags;
@@ -148,38 +148,38 @@ namespace UnitTest
             }
         }
 
-        RHI::Ptr<AZ::RHI::MultiDeviceIndirectBufferSignature> CreateInitializedSignature()
+        RHI::Ptr<AZ::RHI::IndirectBufferSignature> CreateInitializedSignature()
         {
             using namespace ::testing;
-            auto signature = aznew AZ::RHI::MultiDeviceIndirectBufferSignature;
+            auto signature = aznew AZ::RHI::IndirectBufferSignature;
             m_signatureDescriptor.m_layout = CreateFinalizedLayout();
             EXPECT_EQ(signature->Init(DeviceMask, m_signatureDescriptor), RHI::ResultCode::Success);
 
             return signature;
         }
 
-        RHI::Ptr<AZ::RHI::MultiDeviceIndirectBufferSignature> CreateUnInitializedSignature()
+        RHI::Ptr<AZ::RHI::IndirectBufferSignature> CreateUnInitializedSignature()
         {
-            auto signature = aznew AZ::RHI::MultiDeviceIndirectBufferSignature;
+            auto signature = aznew AZ::RHI::IndirectBufferSignature;
             return signature;
         }
 
-        RHI::Ptr<AZ::RHI::MultiDeviceIndirectBufferWriter> CreateInitializedWriter()
+        RHI::Ptr<AZ::RHI::IndirectBufferWriter> CreateInitializedWriter()
         {
-            auto writer = aznew AZ::RHI::MultiDeviceIndirectBufferWriter;
+            auto writer = aznew AZ::RHI::IndirectBufferWriter;
             EXPECT_EQ(
                 writer->Init(*m_buffer, m_writerOffset, m_writerCommandStride, m_writerNumCommands, *m_writerSignature),
                 RHI::ResultCode::Success);
             return writer;
         }
 
-        void ValidateSignature(const RHI::MultiDeviceIndirectBufferSignature& signature)
+        void ValidateSignature(const RHI::IndirectBufferSignature& signature)
         {
             ValidateLayout(signature.GetLayout());
             EXPECT_TRUE(signature.IsInitialized());
         }
 
-        void ValidateWriter(const AZ::RHI::MultiDeviceIndirectBufferWriter& writer)
+        void ValidateWriter(const AZ::RHI::IndirectBufferWriter& writer)
         {
             auto currentSequenceIndex{ writer.GetCurrentSequenceIndex() };
             for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
@@ -197,16 +197,16 @@ namespace UnitTest
         AZStd::vector<RHI::IndirectCommandDescriptor> m_commands;
 
         AZStd::unique_ptr<SerializeContext> m_serializeContext;
-        RHI::MultiDeviceIndirectBufferSignatureDescriptor m_signatureDescriptor;
+        RHI::IndirectBufferSignatureDescriptor m_signatureDescriptor;
 
-        RHI::Ptr<AZ::RHI::MultiDeviceBufferPool> m_bufferPool;
-        RHI::Ptr<AZ::RHI::MultiDeviceBuffer> m_buffer;
+        RHI::Ptr<AZ::RHI::BufferPool> m_bufferPool;
+        RHI::Ptr<AZ::RHI::Buffer> m_buffer;
 
         size_t m_writerOffset = 0;
         uint32_t m_writerCommandStride = 2;
         uint32_t m_writerNumCommands = 1024;
 
-        RHI::Ptr<AZ::RHI::MultiDeviceIndirectBufferSignature> m_writerSignature;
+        RHI::Ptr<AZ::RHI::IndirectBufferSignature> m_writerSignature;
     };
 
     TEST_F(MultiDeviceIndirectBufferTests, TestSignature)
@@ -284,7 +284,7 @@ namespace UnitTest
 
         // Initialization with invalid size
         {
-            RHI::Ptr<AZ::RHI::MultiDeviceIndirectBufferWriter> writer = aznew AZ::RHI::MultiDeviceIndirectBufferWriter;
+            RHI::Ptr<AZ::RHI::IndirectBufferWriter> writer = aznew AZ::RHI::IndirectBufferWriter;
             AZ_TEST_START_TRACE_SUPPRESSION;
             EXPECT_EQ(
                 writer->Init(*m_buffer, 1, m_writerCommandStride, m_writerNumCommands, *m_writerSignature),
@@ -294,7 +294,7 @@ namespace UnitTest
 
         // Initialization with invalid stride
         {
-            RHI::Ptr<AZ::RHI::MultiDeviceIndirectBufferWriter> writer = aznew AZ::RHI::MultiDeviceIndirectBufferWriter;
+            RHI::Ptr<AZ::RHI::IndirectBufferWriter> writer = aznew AZ::RHI::IndirectBufferWriter;
             AZ_TEST_START_TRACE_SUPPRESSION;
             EXPECT_EQ(
                 writer->Init(*m_buffer, m_writerOffset, 0, m_writerNumCommands, *m_writerSignature), RHI::ResultCode::InvalidArgument);
@@ -303,7 +303,7 @@ namespace UnitTest
 
         // Initialization with invalid max num sequences
         {
-            RHI::Ptr<AZ::RHI::MultiDeviceIndirectBufferWriter> writer = aznew AZ::RHI::MultiDeviceIndirectBufferWriter;
+            RHI::Ptr<AZ::RHI::IndirectBufferWriter> writer = aznew AZ::RHI::IndirectBufferWriter;
             AZ_TEST_START_TRACE_SUPPRESSION;
             EXPECT_EQ(
                 writer->Init(*m_buffer, m_writerOffset, m_writerCommandStride, 0, *m_writerSignature), RHI::ResultCode::InvalidArgument);
@@ -312,7 +312,7 @@ namespace UnitTest
 
         // Initialization with small invalid stride
         {
-            RHI::Ptr<AZ::RHI::MultiDeviceIndirectBufferWriter> writer = aznew AZ::RHI::MultiDeviceIndirectBufferWriter;
+            RHI::Ptr<AZ::RHI::IndirectBufferWriter> writer = aznew AZ::RHI::IndirectBufferWriter;
             AZ_TEST_START_TRACE_SUPPRESSION;
             EXPECT_EQ(
                 writer->Init(*m_buffer, m_writerOffset, m_writerCommandStride - 1, m_writerNumCommands, *m_writerSignature),
@@ -322,7 +322,7 @@ namespace UnitTest
 
         // Initialization with invalid signature
         {
-            RHI::Ptr<AZ::RHI::MultiDeviceIndirectBufferWriter> writer = aznew AZ::RHI::MultiDeviceIndirectBufferWriter;
+            RHI::Ptr<AZ::RHI::IndirectBufferWriter> writer = aznew AZ::RHI::IndirectBufferWriter;
             auto signature = CreateUnInitializedSignature();
             AZ_TEST_START_TRACE_SUPPRESSION;
             EXPECT_EQ(
@@ -333,7 +333,7 @@ namespace UnitTest
 
         // Initialization with offset
         {
-            RHI::Ptr<AZ::RHI::MultiDeviceIndirectBufferWriter> writer = aznew AZ::RHI::MultiDeviceIndirectBufferWriter;
+            RHI::Ptr<AZ::RHI::IndirectBufferWriter> writer = aznew AZ::RHI::IndirectBufferWriter;
             size_t offset = 16;
             EXPECT_EQ(writer->Init(*m_buffer, offset, m_writerCommandStride, 5, *m_writerSignature), RHI::ResultCode::Success);
             for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
@@ -346,7 +346,7 @@ namespace UnitTest
 
         // Initialization with memory pointer
         {
-            RHI::Ptr<AZ::RHI::MultiDeviceIndirectBufferWriter> writer = aznew AZ::RHI::MultiDeviceIndirectBufferWriter;
+            RHI::Ptr<AZ::RHI::IndirectBufferWriter> writer = aznew AZ::RHI::IndirectBufferWriter;
             AZStd::unordered_map<int, void*> memoryPtrs;
             for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
             {
@@ -433,7 +433,7 @@ namespace UnitTest
                     {
                         auto index = m_signatureDescriptor.m_layout.FindCommandIndex(RHI::IndirectBufferViewArguments{ s_vertexSlotIndex });
                         EXPECT_FALSE(index.IsNull());
-                        AZ::RHI::MultiDeviceStreamBufferView bufferView(*m_buffer, 0, 12, 10);
+                        AZ::RHI::StreamBufferView bufferView(*m_buffer, 0, 12, 10);
                         for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
                             EXPECT_CALL(
                                 *static_cast<IndirectBufferWriter*>(writer->GetDeviceIndirectBufferWriter(deviceIndex).get()),
@@ -446,7 +446,7 @@ namespace UnitTest
                     {
                         auto index = m_signatureDescriptor.m_layout.FindCommandIndex(command.m_type);
                         EXPECT_FALSE(index.IsNull());
-                        AZ::RHI::MultiDeviceIndexBufferView indexView(*m_buffer, 0, 12, RHI::IndexFormat::Uint16);
+                        AZ::RHI::IndexBufferView indexView(*m_buffer, 0, 12, RHI::IndexFormat::Uint16);
                         for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
                             EXPECT_CALL(
                                 *static_cast<IndirectBufferWriter*>(writer->GetDeviceIndirectBufferWriter(deviceIndex).get()),
@@ -515,7 +515,7 @@ namespace UnitTest
 
         // Write command on uninitialized writer
         {
-            RHI::Ptr<AZ::RHI::MultiDeviceIndirectBufferWriter> writer = aznew AZ::RHI::MultiDeviceIndirectBufferWriter;
+            RHI::Ptr<AZ::RHI::IndirectBufferWriter> writer = aznew AZ::RHI::IndirectBufferWriter;
             ;
             AZ::RHI::DrawIndexed arguments(1, 2, 3, 4, 5);
             AZ_TEST_START_TRACE_SUPPRESSION;
@@ -529,7 +529,7 @@ namespace UnitTest
             writer->Flush();
             for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
                 EXPECT_FALSE(static_cast<Buffer*>(m_buffer->GetDeviceBuffer(deviceIndex).get())->IsMapped());
-            AZ::RHI::MultiDeviceIndexBufferView indexView(*m_buffer, 0, 12, RHI::IndexFormat::Uint16);
+            AZ::RHI::IndexBufferView indexView(*m_buffer, 0, 12, RHI::IndexFormat::Uint16);
             for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
                 EXPECT_CALL(
                     *static_cast<IndirectBufferWriter*>(writer->GetDeviceIndirectBufferWriter(deviceIndex).get()),

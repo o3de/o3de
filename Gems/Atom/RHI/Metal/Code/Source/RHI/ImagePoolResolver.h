@@ -7,7 +7,7 @@
  */
 #pragma once
 #include <RHI/ResourcePoolResolver.h>
-#include <Atom/RHI/SingleDeviceStreamingImagePool.h>
+#include <Atom/RHI/DeviceStreamingImagePool.h>
 
 namespace AZ
 {
@@ -28,7 +28,7 @@ namespace AZ
             
             ImagePoolResolver(Device& device);
 
-            RHI::ResultCode UpdateImage(const RHI::SingleDeviceImageUpdateRequest& request, size_t& bytesTransferred);
+            RHI::ResultCode UpdateImage(const RHI::DeviceImageUpdateRequest& request, size_t& bytesTransferred);
             int CalculateMipLevel(int lowestMipLength, int currentMipLength);
             
             //////////////////////////////////////////////////////////////////////
@@ -36,7 +36,7 @@ namespace AZ
             void Compile() override;
             void Resolve(CommandList& commandList) const override;
             void Deactivate() override;
-            void OnResourceShutdown(const RHI::SingleDeviceResource& resource) override;
+            void OnResourceShutdown(const RHI::DeviceResource& resource) override;
             //////////////////////////////////////////////////////////////////////
             
         private:
@@ -45,7 +45,7 @@ namespace AZ
             {
                 Image* m_destinationImage = nullptr;
                 RHI::Ptr<Buffer> m_stagingBuffer;
-                RHI::SingleDeviceImageSubresourceLayout m_subresourceLayout;
+                RHI::DeviceImageSubresourceLayout m_subresourceLayout;
                 RHI::ImageSubresource m_subresource;
                 RHI::Origin m_offset;
             };

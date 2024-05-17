@@ -215,10 +215,10 @@ namespace AZ
             }
             PassSystemInterface::Get()->IncrementFrameDrawItemCount(m_drawItemCount);
             m_combinedDrawList.resize(m_drawItemCount);
-            RHI::MultiDeviceDrawItemProperties* currentBuffer = m_combinedDrawList.data();
+            RHI::DrawItemProperties* currentBuffer = m_combinedDrawList.data();
             for (auto drawList : drawLists)
             {
-                memcpy(currentBuffer, drawList.data(), drawList.size()*sizeof(RHI::MultiDeviceDrawItemProperties));
+                memcpy(currentBuffer, drawList.data(), drawList.size()*sizeof(RHI::DrawItemProperties));
                 currentBuffer += drawList.size();
             }
             SortDrawList(m_combinedDrawList);
@@ -261,10 +261,10 @@ namespace AZ
             uint32_t clampedEndIndex = AZStd::GetMin<uint32_t>(endIndex, static_cast<uint32_t>(m_drawListView.size()));
             for (uint32_t index = startIndex; index < clampedEndIndex; ++index)
             {
-                const RHI::MultiDeviceDrawItemProperties& drawItemProperties = m_drawListView[index];
+                const RHI::DrawItemProperties& drawItemProperties = m_drawListView[index];
                 if (drawItemProperties.m_drawFilterMask & m_pipeline->GetDrawFilterMask())
                 {
-                    commandList->Submit(drawItemProperties.m_mdItem->GetDeviceDrawItem(context.GetDeviceIndex()), index + indexOffset);
+                    commandList->Submit(drawItemProperties.m_Item->GetDeviceDrawItem(context.GetDeviceIndex()), index + indexOffset);
                 }
             }
         }

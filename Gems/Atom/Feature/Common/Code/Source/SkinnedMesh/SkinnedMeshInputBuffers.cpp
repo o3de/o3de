@@ -58,7 +58,7 @@ namespace AZ
             return asset;
         }
 
-        RHI::BufferViewDescriptor SkinnedMeshInputLod::CreateInputViewDescriptor(SkinnedMeshInputVertexStreams inputStream, RHI::Format elementFormat, const RHI::MultiDeviceStreamBufferView &streamBufferView)
+        RHI::BufferViewDescriptor SkinnedMeshInputLod::CreateInputViewDescriptor(SkinnedMeshInputVertexStreams inputStream, RHI::Format elementFormat, const RHI::StreamBufferView &streamBufferView)
         {
             RHI::BufferViewDescriptor descriptor;
             uint32_t elementOffset = streamBufferView.GetByteOffset() / streamBufferView.GetByteStride();
@@ -107,13 +107,13 @@ namespace AZ
                 const SkinnedMeshVertexStreamInfo* streamInfo = SkinnedMeshVertexStreamPropertyInterface::Get()->GetInputStreamInfo(
                     inputLayout.GetStreamChannels()[meshStreamIndex].m_semantic);
 
-                const RHI::MultiDeviceStreamBufferView& streamBufferView = streamBufferViews[meshStreamIndex];
+                const RHI::StreamBufferView& streamBufferView = streamBufferViews[meshStreamIndex];
                 if (streamInfo && streamBufferView.GetByteCount() > 0)
                 {
                     RHI::BufferViewDescriptor descriptor =
                         CreateInputViewDescriptor(streamInfo->m_enum, streamInfo->m_elementFormat, streamBufferView);
 
-                    AZ::RHI::Ptr<AZ::RHI::MultiDeviceBufferView> bufferView = const_cast<RHI::MultiDeviceBuffer*>(streamBufferView.GetBuffer())->BuildBufferView(descriptor);
+                    AZ::RHI::Ptr<AZ::RHI::BufferView> bufferView = const_cast<RHI::Buffer*>(streamBufferView.GetBuffer())->BuildBufferView(descriptor);
                     {
                         // Initialize the buffer view
                         AZStd::string bufferViewName = AZStd::string::format(

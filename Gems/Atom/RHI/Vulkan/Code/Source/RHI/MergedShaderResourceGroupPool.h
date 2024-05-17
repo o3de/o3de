@@ -45,7 +45,7 @@ namespace AZ
 
         private:
             //////////////////////////////////////////////////////////////////////////
-            // RHI::SingleDeviceResourcePool
+            // RHI::DeviceResourcePool
             RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::ShaderResourceGroupPoolDescriptor& descriptor) override;
             void ShutdownInternal() override;
             //////////////////////////////////////////////////////////////////////////

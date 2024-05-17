@@ -35,7 +35,7 @@ namespace AZ
 
             //! Begins construction of a new mip level in the group. The number of mips in the chain must
             //! exactly match mipLevels passed to Begin().
-            void BeginMip(const RHI::SingleDeviceImageSubresourceLayout& layout);
+            void BeginMip(const RHI::DeviceImageSubresourceLayout& layout);
 
             //! Inserts a sub-image into the current mip level. You must call this method for each array element in the mip.
             //! Every mip level must have the same number of array elements matching arraySize passed in Begin().

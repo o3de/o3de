@@ -10,9 +10,9 @@
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
-#include <Atom/RHI/MultiDeviceRayTracingBufferPools.h>
-#include <Atom/RHI/MultiDeviceRayTracingPipelineState.h>
-#include <Atom/RHI/MultiDeviceRayTracingShaderTable.h>
+#include <Atom/RHI/RayTracingBufferPools.h>
+#include <Atom/RHI/RayTracingPipelineState.h>
+#include <Atom/RHI/RayTracingShaderTable.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Render/DiffuseProbeGrid.h>
@@ -58,14 +58,14 @@ namespace AZ
             Data::Instance<RPI::Shader> m_rayTracingShader;
             Data::Instance<RPI::Shader> m_closestHitShader;
             Data::Instance<RPI::Shader> m_missShader;
-            RHI::Ptr<RHI::MultiDeviceRayTracingPipelineState> m_rayTracingPipelineState;
+            RHI::Ptr<RHI::RayTracingPipelineState> m_rayTracingPipelineState;
 
             // ray tracing shader table
-            RHI::Ptr<RHI::MultiDeviceRayTracingShaderTable> m_rayTracingShaderTable;
+            RHI::Ptr<RHI::RayTracingShaderTable> m_rayTracingShaderTable;
 
             // ray tracing global shader resource group layout and pipeline state
             RHI::Ptr<RHI::ShaderResourceGroupLayout> m_globalSrgLayout;
-            RHI::ConstPtr<RHI::MultiDevicePipelineState> m_globalPipelineState;
+            RHI::ConstPtr<RHI::PipelineState> m_globalPipelineState;
 
             RHI::ShaderInputNameIndex m_maxRecursionDepthNameIndex = "m_maxRecursionDepth";
         };

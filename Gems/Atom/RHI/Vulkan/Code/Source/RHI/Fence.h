@@ -20,9 +20,9 @@ namespace AZ
         // Signalling from the CPU is emulated by submitting a signal command to the Graphics queue
         // The signal command must also be submitted before we can wait for the fence to be signalled
         // Used if the device does not support timeline semaphores (Vulkan version < 1.2)
-        class Fence final : public RHI::SingleDeviceFence
+        class Fence final : public RHI::DeviceFence
         {
-            using Base = RHI::SingleDeviceFence;
+            using Base = RHI::DeviceFence;
 
         public:
             AZ_CLASS_ALLOCATOR(Fence, AZ::ThreadPoolAllocator);
@@ -48,7 +48,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////
-            // RHI::SingleDeviceFence
+            // RHI::DeviceFence
             RHI::ResultCode InitInternal(RHI::Device& device, RHI::FenceState initialState) override;
             void ShutdownInternal() override;
             void SignalOnCpuInternal() override;

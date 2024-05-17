@@ -7,7 +7,7 @@
  */
 
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/SingleDeviceDispatchRaysItem.h>
+#include <Atom/RHI/DeviceDispatchRaysItem.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -78,7 +78,7 @@ namespace AZ
             AZ_Assert(m_globalSrgLayout != nullptr, "Failed to find RayTracingGlobalSrg layout for shader [%s]", shaderFilePath.c_str());
 
             // build the ray tracing pipeline state descriptor
-            RHI::MultiDeviceRayTracingPipelineStateDescriptor descriptor;
+            RHI::RayTracingPipelineStateDescriptor descriptor;
             descriptor.Build()
                 ->PipelineState(m_globalPipelineState.get())
                 ->MaxPayloadSize(64)
@@ -94,7 +94,7 @@ namespace AZ
                     ->ClosestHitShaderName(AZ::Name("ClosestHit"));
 
             // create the ray tracing pipeline state object
-            m_rayTracingPipelineState = aznew RHI::MultiDeviceRayTracingPipelineState;
+            m_rayTracingPipelineState = aznew RHI::RayTracingPipelineState;
             m_rayTracingPipelineState->Init(RHI::MultiDevice::AllDevices, descriptor);
         }
 
@@ -139,12 +139,12 @@ namespace AZ
 
             if (!m_rayTracingShaderTable)
             {
-                RHI::MultiDeviceRayTracingBufferPools& rayTracingBufferPools = diffuseProbeGridFeatureProcessor->GetVisualizationBufferPools();
+                RHI::RayTracingBufferPools& rayTracingBufferPools = diffuseProbeGridFeatureProcessor->GetVisualizationBufferPools();
 
-                m_rayTracingShaderTable = aznew RHI::MultiDeviceRayTracingShaderTable;
+                m_rayTracingShaderTable = aznew RHI::RayTracingShaderTable;
                 m_rayTracingShaderTable->Init(RHI::MultiDevice::AllDevices, rayTracingBufferPools);
 
-                AZStd::shared_ptr<RHI::MultiDeviceRayTracingShaderTableDescriptor> descriptor = AZStd::make_shared<RHI::MultiDeviceRayTracingShaderTableDescriptor>();
+                AZStd::shared_ptr<RHI::RayTracingShaderTableDescriptor> descriptor = AZStd::make_shared<RHI::RayTracingShaderTableDescriptor>();
 
                 // build the ray tracing shader table descriptor
                 descriptor->Build(AZ::Name("RayTracingShaderTable"), m_rayTracingPipelineState)
@@ -178,7 +178,7 @@ namespace AZ
                 // TLAS
                 {
                     AZ::RHI::AttachmentId tlasAttachmentId = diffuseProbeGrid->GetProbeVisualizationTlasAttachmentId();
-                    const RHI::Ptr<RHI::MultiDeviceBuffer>& visualizationTlasBuffer = diffuseProbeGrid->GetVisualizationTlas()->GetTlasBuffer();
+                    const RHI::Ptr<RHI::Buffer>& visualizationTlasBuffer = diffuseProbeGrid->GetVisualizationTlas()->GetTlasBuffer();
                     if (visualizationTlasBuffer)
                     {
                         if (!frameGraph.GetAttachmentDatabase().IsAttachmentValid(tlasAttachmentId))
@@ -248,7 +248,7 @@ namespace AZ
 
         void DiffuseProbeGridVisualizationRayTracingPass::CompileResources([[maybe_unused]] const RHI::FrameGraphCompileContext& context)
         {
-            const RHI::MultiDeviceImageView* outputImageView = context.GetImageView(GetOutputBinding(0).GetAttachment()->GetAttachmentId());
+            const RHI::ImageView* outputImageView = context.GetImageView(GetOutputBinding(0).GetAttachment()->GetAttachmentId());
             AZ_Assert(outputImageView, "Failed to retrieve output ImageView");
 
             RPI::Scene* scene = m_pipeline->GetScene();
@@ -291,13 +291,13 @@ namespace AZ
                     continue;
                 }
 
-                const RHI::SingleDeviceShaderResourceGroup* shaderResourceGroups[] = {
+                const RHI::DeviceShaderResourceGroup* shaderResourceGroups[] = {
                     diffuseProbeGrid->GetVisualizationRayTraceSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get(),
                     rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get(),
                     views[0]->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get(),
                 };
 
-                RHI::SingleDeviceDispatchRaysItem dispatchRaysItem;
+                RHI::DeviceDispatchRaysItem dispatchRaysItem;
                 dispatchRaysItem.m_arguments.m_direct.m_width = m_outputAttachmentSize.m_width;
                 dispatchRaysItem.m_arguments.m_direct.m_height = m_outputAttachmentSize.m_height;
                 dispatchRaysItem.m_arguments.m_direct.m_depth = 1;

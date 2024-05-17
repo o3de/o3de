@@ -135,7 +135,7 @@ namespace AZ
                      
                      {
                          AZ::Debug::ScopedTimer presentTimer(m_lastPresentDuration);
-                         for (RHI::SingleDeviceSwapChain* swapChain : request.m_swapChainsToPresent)
+                         for (RHI::DeviceSwapChain* swapChain : request.m_swapChainsToPresent)
                          {
                              static_cast<SwapChain*>(swapChain)->SetCommandBuffer(workRequestCommandBuffer);
                              swapChain->Present();

@@ -27,8 +27,8 @@ namespace AZ
         // shared data for rendering reflections, loaded and stored by the ReflectionProbeFeatureProcessor and passed to all probes
         struct ReflectionRenderData
         {
-            AZStd::array<RHI::MultiDeviceStreamBufferView, 1> m_boxPositionBufferView;
-            RHI::MultiDeviceIndexBufferView m_boxIndexBufferView;
+            AZStd::array<RHI::StreamBufferView, 1> m_boxPositionBufferView;
+            RHI::IndexBufferView m_boxIndexBufferView;
             uint32_t m_boxIndexCount = 0;
 
             RPI::Ptr<RPI::PipelineStateForDraw> m_stencilPipelineState;
@@ -120,7 +120,7 @@ namespace AZ
 
             AZ_DISABLE_COPY_MOVE(ReflectionProbe);
 
-            RHI::ConstPtr<RHI::MultiDeviceDrawPacket> BuildDrawPacket(
+            RHI::ConstPtr<RHI::DrawPacket> BuildDrawPacket(
                 const Data::Instance<RPI::ShaderResourceGroup>& srg,
                 const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
                 const RHI::DrawListTag& drawListTag,
@@ -163,10 +163,10 @@ namespace AZ
             Data::Instance<RPI::ShaderResourceGroup> m_blendWeightSrg;
             Data::Instance<RPI::ShaderResourceGroup> m_renderOuterSrg;
             Data::Instance<RPI::ShaderResourceGroup> m_renderInnerSrg;
-            RHI::ConstPtr<RHI::MultiDeviceDrawPacket> m_stencilDrawPacket;
-            RHI::ConstPtr<RHI::MultiDeviceDrawPacket> m_blendWeightDrawPacket;
-            RHI::ConstPtr<RHI::MultiDeviceDrawPacket> m_renderOuterDrawPacket;
-            RHI::ConstPtr<RHI::MultiDeviceDrawPacket> m_renderInnerDrawPacket;
+            RHI::ConstPtr<RHI::DrawPacket> m_stencilDrawPacket;
+            RHI::ConstPtr<RHI::DrawPacket> m_blendWeightDrawPacket;
+            RHI::ConstPtr<RHI::DrawPacket> m_renderOuterDrawPacket;
+            RHI::ConstPtr<RHI::DrawPacket> m_renderInnerDrawPacket;
             float m_renderExposure = 0.0f;
             float m_bakeExposure = 0.0f;
             bool m_updateSrg = false;

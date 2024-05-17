@@ -30,7 +30,7 @@ namespace AZ
                 auto& fencesToSignal = m_workRequest.m_userFencesToSignal;
 
                 fencesToSignal.reserve(scope.GetFencesToSignal().size());
-                for (const RHI::Ptr<RHI::MultiDeviceFence>& fence : scope.GetFencesToSignal())
+                for (const RHI::Ptr<RHI::Fence>& fence : scope.GetFencesToSignal())
                 {
                     fencesToSignal.push_back(&static_cast<FenceImpl&>(*fence->GetDeviceFence(scope.GetDeviceIndex())).Get());
                 }
@@ -40,7 +40,7 @@ namespace AZ
                 auto& swapChainsToPresent = m_workRequest.m_swapChainsToPresent;
 
                 swapChainsToPresent.reserve(scope.GetSwapChainsToPresent().size());
-                for (RHI::SingleDeviceSwapChain* swapChain : scope.GetSwapChainsToPresent())
+                for (RHI::DeviceSwapChain* swapChain : scope.GetSwapChainsToPresent())
                 {
                     swapChainsToPresent.push_back(static_cast<SwapChain*>(swapChain));
                 }

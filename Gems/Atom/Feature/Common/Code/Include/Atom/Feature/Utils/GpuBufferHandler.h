@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/std/string/string.h>
-#include <Atom/RHI/SingleDeviceBufferView.h>
+#include <Atom/RHI/DeviceBufferView.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 

@@ -11,7 +11,7 @@
 #include <AzCore/std/parallel/conditional_variable.h>
 #include <Tests/Device.h>
 
-#include <Atom/RHI/MultiDeviceBufferPool.h>
+#include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/ResourceInvalidateBus.h>
 
 #include <Tests/Buffer.h>
@@ -41,27 +41,27 @@ namespace UnitTest
 
     TEST_F(MultiDeviceBufferTests, TestNoop)
     {
-        RHI::Ptr<RHI::MultiDeviceBuffer> noopBuffer;
-        noopBuffer = aznew RHI::MultiDeviceBuffer;
+        RHI::Ptr<RHI::Buffer> noopBuffer;
+        noopBuffer = aznew RHI::Buffer;
     }
 
     TEST_F(MultiDeviceBufferTests, TestAll)
     {
-        RHI::Ptr<RHI::MultiDeviceBuffer> bufferA;
-        bufferA = aznew RHI::MultiDeviceBuffer;
+        RHI::Ptr<RHI::Buffer> bufferA;
+        bufferA = aznew RHI::Buffer;
 
         bufferA->SetName(Name("BufferA"));
         AZ_TEST_ASSERT(bufferA->GetName().GetStringView() == "BufferA");
         AZ_TEST_ASSERT(bufferA->use_count() == 1);
 
         {
-            RHI::Ptr<AZ::RHI::MultiDeviceBufferPool> bufferPool;
-            bufferPool = aznew AZ::RHI::MultiDeviceBufferPool;
+            RHI::Ptr<AZ::RHI::BufferPool> bufferPool;
+            bufferPool = aznew AZ::RHI::BufferPool;
 
             AZ_TEST_ASSERT(bufferPool->use_count() == 1);
 
-            RHI::Ptr<RHI::MultiDeviceBuffer> bufferB;
-            bufferB = aznew RHI::MultiDeviceBuffer;
+            RHI::Ptr<RHI::Buffer> bufferB;
+            bufferB = aznew RHI::Buffer;
             AZ_TEST_ASSERT(bufferB->use_count() == 1);
 
             RHI::BufferPoolDescriptor bufferPoolDesc;
@@ -77,7 +77,7 @@ namespace UnitTest
             AZ_TEST_ASSERT(bufferA->IsInitialized() == false);
             AZ_TEST_ASSERT(bufferB->IsInitialized() == false);
 
-            RHI::MultiDeviceBufferInitRequest initRequest;
+            RHI::BufferInitRequest initRequest;
             initRequest.m_buffer = bufferA.get();
             initRequest.m_descriptor = RHI::BufferDescriptor(RHI::BufferBindFlags::Constant, 32);
             initRequest.m_initialData = testData.data();
@@ -85,7 +85,7 @@ namespace UnitTest
 
             for(auto deviceIndex{0}; deviceIndex < DeviceCount; ++deviceIndex)
             {
-                RHI::Ptr<RHI::SingleDeviceBufferView> bufferView;
+                RHI::Ptr<RHI::DeviceBufferView> bufferView;
                 bufferView = bufferA->GetDeviceBuffer(deviceIndex)->GetBufferView(RHI::BufferViewDescriptor::CreateRaw(0, 32));
 
                 AZ_TEST_ASSERT(bufferView->IsInitialized());
@@ -121,13 +121,13 @@ namespace UnitTest
             {
                 uint32_t bufferIndex = 0;
 
-                const RHI::MultiDeviceBuffer* buffers[] =
+                const RHI::Buffer* buffers[] =
                 {
                     bufferA.get(),
                     bufferB.get()
                 };
 
-                bufferPool->ForEach<RHI::MultiDeviceBuffer>([&bufferIndex, &buffers]([[maybe_unused]] RHI::MultiDeviceBuffer& buffer)
+                bufferPool->ForEach<RHI::Buffer>([&bufferIndex, &buffers]([[maybe_unused]] RHI::Buffer& buffer)
                 {
                     AZ_UNUSED(buffers); // Prevent unused warning in release builds
                     AZ_Assert(buffers[bufferIndex] == &buffer, "buffers don't match");
@@ -138,8 +138,8 @@ namespace UnitTest
             bufferB->Shutdown();
             AZ_TEST_ASSERT(bufferB->GetPool() == nullptr);
 
-            RHI::Ptr<AZ::RHI::MultiDeviceBufferPool> bufferPoolB;
-            bufferPoolB = aznew AZ::RHI::MultiDeviceBufferPool;
+            RHI::Ptr<AZ::RHI::BufferPool> bufferPoolB;
+            bufferPoolB = aznew AZ::RHI::BufferPool;
             bufferPoolB->Init(DeviceMask, bufferPoolDesc);
 
             initRequest.m_buffer = bufferB.get();
@@ -162,20 +162,20 @@ namespace UnitTest
 
     TEST_F(MultiDeviceBufferTests, TestViews)
     {
-        AZStd::vector<RHI::Ptr<RHI::SingleDeviceBufferView>> bufferViewsA(DeviceCount);
+        AZStd::vector<RHI::Ptr<RHI::DeviceBufferView>> bufferViewsA(DeviceCount);
 
         {
-            RHI::Ptr<RHI::MultiDeviceBufferPool> bufferPool;
-            bufferPool = aznew RHI::MultiDeviceBufferPool;
+            RHI::Ptr<RHI::BufferPool> bufferPool;
+            bufferPool = aznew RHI::BufferPool;
 
             RHI::BufferPoolDescriptor bufferPoolDesc;
             bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::Constant;
             bufferPool->Init(DeviceMask, bufferPoolDesc);
 
-            RHI::Ptr<RHI::MultiDeviceBuffer> buffer;
-            buffer = aznew RHI::MultiDeviceBuffer;
+            RHI::Ptr<RHI::Buffer> buffer;
+            buffer = aznew RHI::Buffer;
 
-            RHI::MultiDeviceBufferInitRequest initRequest;
+            RHI::BufferInitRequest initRequest;
             initRequest.m_buffer = buffer.get();
             initRequest.m_descriptor = RHI::BufferDescriptor(RHI::BufferBindFlags::Constant, 32);
             bufferPool->InitBuffer(initRequest);
@@ -229,7 +229,7 @@ namespace UnitTest
             }
 
             // Create an uninitialized bufferview and let it go out of scope
-            RHI::Ptr<RHI::SingleDeviceBufferView> uninitializedBufferViewPtr = RHI::Factory::Get().CreateBufferView();
+            RHI::Ptr<RHI::DeviceBufferView> uninitializedBufferViewPtr = RHI::Factory::Get().CreateBufferView();
         }
     }
 
@@ -250,13 +250,13 @@ namespace UnitTest
             MultiDeviceBufferTests::SetUp();
 
             // Create a pool and buffer with the buffer bind flags from the parameterized test
-            m_bufferPool = aznew AZ::RHI::MultiDeviceBufferPool;
+            m_bufferPool = aznew AZ::RHI::BufferPool;
             RHI::BufferPoolDescriptor bufferPoolDesc;
             bufferPoolDesc.m_bindFlags = GetParam().bufferBindFlags;
             m_bufferPool->Init(DeviceMask, bufferPoolDesc);
 
-            m_buffer = aznew RHI::MultiDeviceBuffer;
-            RHI::MultiDeviceBufferInitRequest initRequest;
+            m_buffer = aznew RHI::Buffer;
+            RHI::BufferInitRequest initRequest;
             initRequest.m_buffer = m_buffer.get();
             initRequest.m_descriptor = RHI::BufferDescriptor(GetParam().bufferBindFlags, 32);
             m_bufferPool->InitBuffer(initRequest);
@@ -270,9 +270,9 @@ namespace UnitTest
             MultiDeviceBufferTests::TearDown();
         }
 
-        RHI::Ptr<RHI::MultiDeviceBufferPool> m_bufferPool;
-        RHI::Ptr<RHI::MultiDeviceBuffer> m_buffer;
-        RHI::Ptr<RHI::SingleDeviceBufferView> m_bufferView;
+        RHI::Ptr<RHI::BufferPool> m_bufferPool;
+        RHI::Ptr<RHI::Buffer> m_buffer;
+        RHI::Ptr<RHI::DeviceBufferView> m_bufferView;
     };
 
     TEST_P(MultiDeviceBufferBindFlagTests, InitView_ViewIsCreated)
@@ -494,17 +494,17 @@ namespace UnitTest
             "This test uses offsets/sizes to create unique BufferViewDescriptors. Ensure the buffer size is large enough to handle the "
             "number of unique buffer views.");
 
-        RHI::Ptr<RHI::MultiDeviceBufferPool> bufferPool;
-        bufferPool = aznew AZ::RHI::MultiDeviceBufferPool;
+        RHI::Ptr<RHI::BufferPool> bufferPool;
+        bufferPool = aznew AZ::RHI::BufferPool;
 
         RHI::BufferPoolDescriptor bufferPoolDesc;
         bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::Constant;
         bufferPool->Init(DeviceMask, bufferPoolDesc);
 
-        RHI::Ptr<RHI::MultiDeviceBuffer> buffer;
-        buffer = aznew RHI::MultiDeviceBuffer;
+        RHI::Ptr<RHI::Buffer> buffer;
+        buffer = aznew RHI::Buffer;
 
-        RHI::MultiDeviceBufferInitRequest initRequest;
+        RHI::BufferInitRequest initRequest;
         initRequest.m_buffer = buffer.get();
         initRequest.m_descriptor = RHI::BufferDescriptor(RHI::BufferBindFlags::Constant, bufferSize);
         bufferPool->InitBuffer(initRequest);
@@ -516,7 +516,7 @@ namespace UnitTest
             viewDescriptors.push_back(RHI::BufferViewDescriptor::CreateRaw(i * viewSize, viewSize));
         }
 
-        AZStd::vector<AZStd::vector<RHI::Ptr<RHI::SingleDeviceBufferView>>> referenceTable(bufferViewCount);
+        AZStd::vector<AZStd::vector<RHI::Ptr<RHI::DeviceBufferView>>> referenceTable(bufferViewCount);
 
         AZStd::vector<AZStd::thread> threads;
         AZStd::mutex mutex;
@@ -544,7 +544,7 @@ namespace UnitTest
                         if (currentAction == MultiDeviceParallelGetBufferViewCurrentAction::Get ||
                             currentAction == MultiDeviceParallelGetBufferViewCurrentAction::Create)
                         {
-                            RHI::Ptr<RHI::SingleDeviceBufferView> ptr = nullptr;
+                            RHI::Ptr<RHI::DeviceBufferView> ptr = nullptr;
                             if (currentAction == MultiDeviceParallelGetBufferViewCurrentAction::Get)
                             {
                                 ptr = buffer->GetDeviceBuffer(deviceIndex)->GetBufferView(viewDescriptor);

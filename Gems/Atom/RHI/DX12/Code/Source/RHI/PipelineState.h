@@ -8,7 +8,7 @@
 #pragma once
 
 #include <RHI/PipelineLayout.h>
-#include <Atom/RHI/SingleDevicePipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
@@ -37,7 +37,7 @@ namespace AZ
         };        
 
         class PipelineState final
-            : public RHI::SingleDevicePipelineState
+            : public RHI::DevicePipelineState
         {
             friend class PipelineStatePool;
         public:
@@ -57,10 +57,10 @@ namespace AZ
             PipelineState() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::SingleDevicePipelineState
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForDraw& descriptor, RHI::SingleDevicePipelineLibrary* pipelineLibrary) override;
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForDispatch& descriptor, RHI::SingleDevicePipelineLibrary* pipelineLibrary) override;
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForRayTracing& descriptor, RHI::SingleDevicePipelineLibrary* pipelineLibrary) override;
+            // RHI::DevicePipelineState
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForDraw& descriptor, RHI::DevicePipelineLibrary* pipelineLibrary) override;
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForDispatch& descriptor, RHI::DevicePipelineLibrary* pipelineLibrary) override;
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForRayTracing& descriptor, RHI::DevicePipelineLibrary* pipelineLibrary) override;
             void ShutdownInternal() override;
             //////////////////////////////////////////////////////////////////////////
 

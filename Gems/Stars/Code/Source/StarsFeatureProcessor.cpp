@@ -8,7 +8,7 @@
 
 #include <StarsFeatureProcessor.h>
 
-#include <Atom/RHI/MultiDeviceDrawPacketBuilder.h>
+#include <Atom/RHI/DrawPacketBuilder.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -166,7 +166,7 @@ namespace AZ::Render
             m_starsVertexBuffer->UpdateData(m_starsMeshData.data(), bufferSize);
         }
 
-        m_meshStreamBufferViews[0] = RHI::MultiDeviceStreamBufferView(*m_starsVertexBuffer->GetRHIBuffer(), 0, bufferSize, elementSize);
+        m_meshStreamBufferViews[0] = RHI::StreamBufferView(*m_starsVertexBuffer->GetRHIBuffer(), 0, bufferSize, elementSize);
 
         UpdateDrawPacket();
     }
@@ -276,11 +276,11 @@ namespace AZ::Render
         RPI::PassSystemInterface::Get()->ForEachPass(passFilter, setClearValue);
     }
 
-    RHI::ConstPtr<RHI::MultiDeviceDrawPacket> StarsFeatureProcessor::BuildDrawPacket(
+    RHI::ConstPtr<RHI::DrawPacket> StarsFeatureProcessor::BuildDrawPacket(
                 const Data::Instance<RPI::ShaderResourceGroup>& srg,
                 const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
                 const RHI::DrawListTag& drawListTag,
-                const AZStd::span<const AZ::RHI::MultiDeviceStreamBufferView>& streamBufferViews,
+                const AZStd::span<const AZ::RHI::StreamBufferView>& streamBufferViews,
                 uint32_t vertexCount)
     {
         RHI::DrawLinear drawLinear;
@@ -289,12 +289,12 @@ namespace AZ::Render
         drawLinear.m_instanceCount = 1;
         drawLinear.m_instanceOffset = 0;
 
-        RHI::MultiDeviceDrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
+        RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
         drawPacketBuilder.Begin(nullptr);
         drawPacketBuilder.SetDrawArguments(drawLinear);
         drawPacketBuilder.AddShaderResourceGroup(srg->GetRHIShaderResourceGroup());
 
-        RHI::MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest drawRequest;
+        RHI::DrawPacketBuilder::DrawRequest drawRequest;
         drawRequest.m_listTag = drawListTag;
         drawRequest.m_pipelineState = pipelineState->GetRHIPipelineState();
         drawRequest.m_streamBufferViews = streamBufferViews;

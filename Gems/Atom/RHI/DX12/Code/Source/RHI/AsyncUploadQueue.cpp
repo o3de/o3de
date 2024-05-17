@@ -109,7 +109,7 @@ namespace AZ
             Base::Shutdown();
         }
 
-        uint64_t AsyncUploadQueue::QueueUpload(const RHI::SingleDeviceBufferStreamRequest& uploadRequest)
+        uint64_t AsyncUploadQueue::QueueUpload(const RHI::DeviceBufferStreamRequest& uploadRequest)
         {
             // Take a reference on the DX12 buffer / fence to make sure that they stay alive
             // for the duration of the upload. This also allows the higher level buffer / fence
@@ -119,16 +119,16 @@ namespace AZ
             // of the upload operation.
 
             Buffer& buffer = static_cast<Buffer&>(*uploadRequest.m_buffer);
-            RHI::SingleDeviceBufferPool& bufferPool = static_cast<RHI::SingleDeviceBufferPool&>(*buffer.GetPool());
+            RHI::DeviceBufferPool& bufferPool = static_cast<RHI::DeviceBufferPool&>(*buffer.GetPool());
             if (bufferPool.GetDescriptor().m_heapMemoryLevel == RHI::HeapMemoryLevel::Host)
             {
                 // No need to use staging buffers since it's host memory.
                 // We just map, copy and then unmap.
-                RHI::SingleDeviceBufferMapRequest mapRequest;
+                RHI::DeviceBufferMapRequest mapRequest;
                 mapRequest.m_buffer = uploadRequest.m_buffer;
                 mapRequest.m_byteCount = uploadRequest.m_byteCount;
                 mapRequest.m_byteOffset = uploadRequest.m_byteOffset;
-                RHI::SingleDeviceBufferMapResponse mapResponse;
+                RHI::DeviceBufferMapResponse mapResponse;
                 bufferPool.MapBuffer(mapRequest, mapResponse);
                 ::memcpy(mapResponse.m_data, uploadRequest.m_sourceData, uploadRequest.m_byteCount);
                 bufferPool.UnmapBuffer(*uploadRequest.m_buffer);
@@ -238,7 +238,7 @@ namespace AZ
         }
 
         // [GFX TODO][ATOM-4205] Stage/Upload 3D streaming images more efficiently.
-        uint64_t AsyncUploadQueue::QueueUpload(const RHI::SingleDeviceStreamingImageExpandRequest& request, uint32_t residentMip)
+        uint64_t AsyncUploadQueue::QueueUpload(const RHI::DeviceStreamingImageExpandRequest& request, uint32_t residentMip)
         {
             AZ_PROFILE_SCOPE(RHI, "AsyncUploadQueue: QueueUpload");
             uint64_t fenceValue = 0;
@@ -254,7 +254,7 @@ namespace AZ
 
                 Memory* imageMemory = static_cast<Image&>(*request.m_image).GetMemoryView().GetMemory();
 
-                RHI::SingleDeviceStreamingImageExpandRequest cachedRequest = request;
+                RHI::DeviceStreamingImageExpandRequest cachedRequest = request;
 
                 m_copyQueue->QueueCommand([=](void* commandQueue)
                 {
@@ -274,7 +274,7 @@ namespace AZ
                     for (uint32_t curMip = endMip; curMip <= startMip; curMip++)
                     {
                         size_t sliceIndex = curMip - endMip;
-                        const RHI::SingleDeviceImageSubresourceLayout& subresourceLayout = cachedRequest.m_mipSlices[sliceIndex].m_subresourceLayout;
+                        const RHI::DeviceImageSubresourceLayout& subresourceLayout = cachedRequest.m_mipSlices[sliceIndex].m_subresourceLayout;
                         uint32_t arraySlice = 0;
                         const uint32_t subresourceSlicePitch = subresourceLayout.m_bytesPerImage;
 

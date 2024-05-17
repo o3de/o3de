@@ -10,21 +10,21 @@
 #include <Atom/RHI.Reflect/ScopeId.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <Atom/RHI.Reflect/Handle.h>
-#include <Atom/RHI/SingleDeviceResourcePool.h>
-#include <Atom/RHI/MultiDeviceQueryPool.h>
-#include <Atom/RHI/MultiDeviceFence.h>
+#include <Atom/RHI/DeviceResourcePool.h>
+#include <Atom/RHI/QueryPool.h>
+#include <Atom/RHI/Fence.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/array.h>
 
 namespace AZ::RHI
 {
-    class SingleDeviceSwapChain;
+    class DeviceSwapChain;
     class ScopeAttachment;
     class ImageScopeAttachment;
     class BufferScopeAttachment;
     class ResolveScopeAttachment;
-    class SingleDeviceBufferPoolBase;
-    class SingleDeviceImagePoolBase;
+    class DeviceBufferPoolBase;
+    class DeviceImagePoolBase;
     class ResourcePoolDatabase;
     class FrameGraph;
     class Device;
@@ -120,13 +120,13 @@ namespace AZ::RHI
         const AZStd::vector<ResourcePoolResolver*>& GetResourcePoolResolves() const;
 
         //! Returns a list of swap chains which require presentation at the end of the scope.
-        const AZStd::vector<SingleDeviceSwapChain*>& GetSwapChainsToPresent() const;
+        const AZStd::vector<DeviceSwapChain*>& GetSwapChainsToPresent() const;
 
         //! Returns a list of fences to signal on completion of the scope.
-        const AZStd::vector<Ptr<MultiDeviceFence>>& GetFencesToSignal() const;
+        const AZStd::vector<Ptr<Fence>>& GetFencesToSignal() const;
 
         //! Returns a list of fences to wait for before start of the scope.
-        const AZStd::vector<Ptr<MultiDeviceFence>>& GetFencesToWaitFor() const;
+        const AZStd::vector<Ptr<Fence>>& GetFencesToWaitFor() const;
 
         //! Initializes the scope.
         void Init(const ScopeId& scopeId, HardwareQueueClass hardwareQueueClass = HardwareQueueClass::Graphics);
@@ -161,11 +161,11 @@ namespace AZ::RHI
         static void LinkProducerConsumerByQueues(Scope* producer, Scope* consumer);
 
         //! Adds a fence that will be signaled at the end of the scope.
-        void AddFenceToSignal(Ptr<MultiDeviceFence> fence);
+        void AddFenceToSignal(Ptr<Fence> fence);
 
     protected:
         //! Called when the scope will use a query pool during it's execution. Some platforms need this information.
-        virtual void AddQueryPoolUse(Ptr<MultiDeviceQueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access);
+        virtual void AddQueryPoolUse(Ptr<QueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access);
 
     private:
         //////////////////////////////////////////////////////////////////////////
@@ -249,15 +249,15 @@ namespace AZ::RHI
         AZStd::vector<ResourcePoolResolver*>     m_resourcePoolResolves;
 
         /// The set of swap chain present actions requested.
-        AZStd::vector<SingleDeviceSwapChain*>                m_swapChainsToPresent;
+        AZStd::vector<DeviceSwapChain*>                m_swapChainsToPresent;
 
         /// The set of fences to signal on scope completion.
-        AZStd::vector<Ptr<MultiDeviceFence>>                m_fencesToSignal;
+        AZStd::vector<Ptr<Fence>>                m_fencesToSignal;
 
         /// The set of fences to wait for before scope has started.
-        AZStd::vector<Ptr<MultiDeviceFence>> m_fencesToWaitFor;
+        AZStd::vector<Ptr<Fence>> m_fencesToWaitFor;
 
         /// The set query pools.
-        AZStd::vector<Ptr<MultiDeviceQueryPool>>                m_queryPools;
+        AZStd::vector<Ptr<QueryPool>>                m_queryPools;
     };
 }

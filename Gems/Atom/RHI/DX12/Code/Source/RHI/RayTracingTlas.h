@@ -8,7 +8,7 @@
 #pragma once
 
 #include <RHI/DX12.h>
-#include <Atom/RHI/SingleDeviceRayTracingAccelerationStructure.h>
+#include <Atom/RHI/DeviceRayTracingAccelerationStructure.h>
 #include <Atom/RHI.Reflect/FrameCountMaxRingBuffer.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -21,7 +21,7 @@ namespace AZ
 
         //! This class builds and contains the DX12 RayTracing TLAS buffers.
         class RayTracingTlas final
-            : public RHI::SingleDeviceRayTracingTlas
+            : public RHI::DeviceRayTracingTlas
         {
         public:
             AZ_CLASS_ALLOCATOR(RayTracingTlas, AZ::SystemAllocator);
@@ -30,9 +30,9 @@ namespace AZ
 
             struct TlasBuffers
             {
-                RHI::Ptr<RHI::SingleDeviceBuffer> m_tlasBuffer;
-                RHI::Ptr<RHI::SingleDeviceBuffer> m_scratchBuffer;
-                RHI::Ptr<RHI::SingleDeviceBuffer> m_tlasInstancesBuffer;
+                RHI::Ptr<RHI::DeviceBuffer> m_tlasBuffer;
+                RHI::Ptr<RHI::DeviceBuffer> m_scratchBuffer;
+                RHI::Ptr<RHI::DeviceBuffer> m_tlasInstancesBuffer;
             };
 
 #ifdef AZ_DX12_DXR_SUPPORT
@@ -40,15 +40,15 @@ namespace AZ
 #endif
             const TlasBuffers& GetBuffers() const { return m_buffers.GetCurrentElement(); }
 
-            // RHI::SingleDeviceRayTracingTlas overrides...
-            const RHI::Ptr<RHI::SingleDeviceBuffer> GetTlasBuffer() const override { return GetBuffers().m_tlasBuffer; }
-            const RHI::Ptr<RHI::SingleDeviceBuffer> GetTlasInstancesBuffer() const override { return GetBuffers().m_tlasInstancesBuffer; }
+            // RHI::DeviceRayTracingTlas overrides...
+            const RHI::Ptr<RHI::DeviceBuffer> GetTlasBuffer() const override { return GetBuffers().m_tlasBuffer; }
+            const RHI::Ptr<RHI::DeviceBuffer> GetTlasInstancesBuffer() const override { return GetBuffers().m_tlasInstancesBuffer; }
 
         private:
             RayTracingTlas() = default;
 
-            // RHI::SingleDeviceRayTracingTlas overrides
-            RHI::ResultCode CreateBuffersInternal(RHI::Device& deviceBase, const RHI::SingleDeviceRayTracingTlasDescriptor* descriptor, const RHI::SingleDeviceRayTracingBufferPools& rayTracingBufferPools) override;
+            // RHI::DeviceRayTracingTlas overrides
+            RHI::ResultCode CreateBuffersInternal(RHI::Device& deviceBase, const RHI::DeviceRayTracingTlasDescriptor* descriptor, const RHI::DeviceRayTracingBufferPools& rayTracingBufferPools) override;
 
 #ifdef AZ_DX12_DXR_SUPPORT
             D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS m_inputs;

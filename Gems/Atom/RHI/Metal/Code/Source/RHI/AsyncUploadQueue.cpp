@@ -8,7 +8,7 @@
 
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
-#include <Atom/RHI/SingleDeviceBufferPool.h>
+#include <Atom/RHI/DeviceBufferPool.h>
 #include <Atom/RHI/CommandQueue.h>
 #include <AzCore/Component/TickBus.h>
 #include <RHI/AsyncUploadQueue.h>
@@ -70,22 +70,22 @@ namespace AZ
             Base::Shutdown();
         }
 
-        uint64_t AsyncUploadQueue::QueueUpload(const RHI::SingleDeviceBufferStreamRequest& uploadRequest)
+        uint64_t AsyncUploadQueue::QueueUpload(const RHI::DeviceBufferStreamRequest& uploadRequest)
         {
             Buffer& destBuffer = static_cast<Buffer&>(*uploadRequest.m_buffer);
             const MemoryView& destMemoryView = destBuffer.GetMemoryView();
             MTLStorageMode mtlStorageMode = destBuffer.GetMemoryView().GetStorageMode();
-            RHI::SingleDeviceBufferPool& bufferPool = static_cast<RHI::SingleDeviceBufferPool&>(*destBuffer.GetPool());
+            RHI::DeviceBufferPool& bufferPool = static_cast<RHI::DeviceBufferPool&>(*destBuffer.GetPool());
             
             // No need to use staging buffers since it's host memory.
             // We just map, copy and then unmap.
             if(mtlStorageMode == MTLStorageModeShared || mtlStorageMode == GetCPUGPUMemoryMode())
             {
-                RHI::SingleDeviceBufferMapRequest mapRequest;
+                RHI::DeviceBufferMapRequest mapRequest;
                 mapRequest.m_buffer = uploadRequest.m_buffer;
                 mapRequest.m_byteCount = uploadRequest.m_byteCount;
                 mapRequest.m_byteOffset = uploadRequest.m_byteOffset;
-                RHI::SingleDeviceBufferMapResponse mapResponse;
+                RHI::DeviceBufferMapResponse mapResponse;
                 bufferPool.MapBuffer(mapRequest, mapResponse);
                 ::memcpy(mapResponse.m_data, uploadRequest.m_sourceData, uploadRequest.m_byteCount);
                 bufferPool.UnmapBuffer(*uploadRequest.m_buffer);
@@ -160,7 +160,7 @@ namespace AZ
         }
                 
         // [GFX TODO][ATOM-4205] Stage/Upload 3D streaming images more efficiently.
-        RHI::AsyncWorkHandle AsyncUploadQueue::QueueUpload(const RHI::SingleDeviceStreamingImageExpandRequest& request, uint32_t residentMip)
+        RHI::AsyncWorkHandle AsyncUploadQueue::QueueUpload(const RHI::DeviceStreamingImageExpandRequest& request, uint32_t residentMip)
         {
             auto& device = static_cast<Device&>(GetDevice());
             id<MTLDevice> mtlDevice = device.GetMtlDevice();
@@ -186,7 +186,7 @@ namespace AZ
                 for (uint16_t curMip = endMip; curMip <= startMip; ++curMip)
                 {
                     const size_t sliceIndex = curMip - endMip;
-                    const RHI::SingleDeviceImageSubresourceLayout& subresourceLayout = request.m_mipSlices[sliceIndex].m_subresourceLayout;
+                    const RHI::DeviceImageSubresourceLayout& subresourceLayout = request.m_mipSlices[sliceIndex].m_subresourceLayout;
                     uint32_t arraySlice = 0;
                     const uint32_t subresourceSlicePitch = subresourceLayout.m_bytesPerImage;
 
@@ -413,7 +413,7 @@ namespace AZ
             ProcessCallback(workHandle);
         }
     
-        RHI::AsyncWorkHandle AsyncUploadQueue::CreateAsyncWork(Fence& fence, RHI::SingleDeviceFence::SignalCallback callback )
+        RHI::AsyncWorkHandle AsyncUploadQueue::CreateAsyncWork(Fence& fence, RHI::DeviceFence::SignalCallback callback )
         {
             return m_asyncWaitQueue.CreateAsyncWork([fence, callback]()
             {

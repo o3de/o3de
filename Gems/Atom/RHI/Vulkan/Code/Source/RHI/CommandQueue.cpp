@@ -89,7 +89,7 @@ namespace AZ
                     AZ::Debug::ScopedTimer presentTimer(m_lastPresentDuration);
 
                     // present the image of the current frame.
-                    for (RHI::SingleDeviceSwapChain* swapChain : request.m_swapChainsToPresent)
+                    for (RHI::DeviceSwapChain* swapChain : request.m_swapChainsToPresent)
                     {
                         swapChain->Present();
                     }

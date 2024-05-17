@@ -47,10 +47,10 @@ namespace AZ
         RHI::ResultCode ShaderResourceGroupPool::Init(
             ShaderAsset& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName)
         {
-            m_pool = aznew RHI::MultiDeviceShaderResourceGroupPool;
+            m_pool = aznew RHI::ShaderResourceGroupPool;
             if (!m_pool)
             {
-                AZ_Error("ShaderResourceGroupPool", false, "Failed to create RHI::MultiDeviceShaderResourceGroupPool");
+                AZ_Error("ShaderResourceGroupPool", false, "Failed to create RHI::ShaderResourceGroupPool");
                 return RHI::ResultCode::Fail;
             }
 
@@ -63,10 +63,10 @@ namespace AZ
             return resultCode;
         }
 
-        RHI::Ptr<RHI::MultiDeviceShaderResourceGroup> ShaderResourceGroupPool::CreateRHIShaderResourceGroup()
+        RHI::Ptr<RHI::ShaderResourceGroup> ShaderResourceGroupPool::CreateRHIShaderResourceGroup()
         {
-            RHI::Ptr<RHI::MultiDeviceShaderResourceGroup> srg = aznew RHI::MultiDeviceShaderResourceGroup();
-            AZ_Error("ShaderResourceGroupPool", srg, "Failed to create RHI::MultiDeviceShaderResourceGroup");
+            RHI::Ptr<RHI::ShaderResourceGroup> srg = aznew RHI::ShaderResourceGroup();
+            AZ_Error("ShaderResourceGroupPool", srg, "Failed to create RHI::ShaderResourceGroup");
 
             if (srg)
             {
@@ -74,19 +74,19 @@ namespace AZ
                 if (result != RHI::ResultCode::Success)
                 {
                     srg.reset();
-                    AZ_Error("ShaderResourceGroupPool", false, "Failed to initialize RHI::MultiDeviceShaderResourceGroup");
+                    AZ_Error("ShaderResourceGroupPool", false, "Failed to initialize RHI::ShaderResourceGroup");
                 }
             }
 
             return srg;
         }
 
-        RHI::MultiDeviceShaderResourceGroupPool* ShaderResourceGroupPool::GetRHIPool()
+        RHI::ShaderResourceGroupPool* ShaderResourceGroupPool::GetRHIPool()
         {
             return m_pool.get();
         }
 
-        const RHI::MultiDeviceShaderResourceGroupPool* ShaderResourceGroupPool::GetRHIPool() const
+        const RHI::ShaderResourceGroupPool* ShaderResourceGroupPool::GetRHIPool() const
         {
             return m_pool.get();
         }

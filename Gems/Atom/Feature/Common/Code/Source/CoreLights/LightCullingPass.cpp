@@ -9,13 +9,13 @@
 #include <CoreLights/LightCullingPass.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/SingleDevicePipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RHI/FrameGraphInterface.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/Device.h>
 
 #include <Atom/Feature/Decals/DecalFeatureProcessorInterface.h>
-#include <Atom/RHI/MultiDeviceImagePool.h>
+#include <Atom/RHI/ImagePool.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/Image/AttachmentImagePool.h>

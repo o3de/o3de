@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/SingleDeviceImageView.h>
+#include <Atom/RHI/DeviceImageView.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <RHI/Image.h>
 
@@ -18,9 +18,9 @@ namespace AZ
         class SwapChain;
 
         class ImageView final
-            : public RHI::SingleDeviceImageView
+            : public RHI::DeviceImageView
         {
-            using Base = RHI::SingleDeviceImageView;
+            using Base = RHI::DeviceImageView;
         public:
             using ResourceType = Image;
 
@@ -48,8 +48,8 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::SingleDeviceImageView
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::SingleDeviceResource& resourceBase) override;
+            // RHI::DeviceImageView
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::DeviceResource& resourceBase) override;
             RHI::ResultCode InvalidateInternal() override;
             void ShutdownInternal() override;
             //////////////////////////////////////////////////////////////////////////

@@ -10,7 +10,7 @@
 #include <RayTracing/RayTracingPass.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/MultiDeviceRayTracingAccelerationStructure.h>
+#include <Atom/RHI/RayTracingAccelerationStructure.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
@@ -52,7 +52,7 @@ namespace AZ
             m_transformServiceFeatureProcessor = GetParentScene()->GetFeatureProcessor<TransformServiceFeatureProcessor>();
 
             // initialize the ray tracing buffer pools
-            m_bufferPools = aznew RHI::MultiDeviceRayTracingBufferPools;
+            m_bufferPools = aznew RHI::RayTracingBufferPools;
             m_bufferPools->Init(deviceMask);
 
             auto deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
@@ -72,7 +72,7 @@ namespace AZ
             m_tlasAttachmentId = RHI::AttachmentId(AZStd::string::format("RayTracingTlasAttachmentId_%s", uuidString.c_str()));
 
             // create the TLAS object
-            m_tlas = aznew RHI::MultiDeviceRayTracingTlas;
+            m_tlas = aznew RHI::RayTracingTlas;
 
             // load the RayTracingSrg asset asset
             m_rayTracingSrgAsset = RPI::AssetUtils::LoadCriticalAsset<RPI::ShaderAsset>("shaderlib/atom/features/rayTracing/raytracingsrgs.azshader");
@@ -147,8 +147,8 @@ namespace AZ
                 return;
             }
 
-            RHI::Ptr<AZ::RHI::MultiDeviceRayTracingBlas> rayTracingBlas = aznew AZ::RHI::MultiDeviceRayTracingBlas;
-            RHI::MultiDeviceRayTracingBlasDescriptor blasDescriptor;
+            RHI::Ptr<AZ::RHI::RayTracingBlas> rayTracingBlas = aznew AZ::RHI::RayTracingBlas;
+            RHI::RayTracingBlasDescriptor blasDescriptor;
             blasDescriptor.Build()
                 ->AABB(aabb)
                 ;
@@ -344,7 +344,7 @@ namespace AZ
             {
                 SubMesh& subMesh = m_subMeshes[mesh.m_subMeshIndices[subMeshIndex]];
 
-                RHI::MultiDeviceRayTracingBlasDescriptor blasDescriptor;
+                RHI::RayTracingBlasDescriptor blasDescriptor;
                 blasDescriptor.Build()
                     ->Geometry()
                         ->VertexFormat(subMesh.m_positionFormat)
@@ -367,7 +367,7 @@ namespace AZ
                     AZ_Assert(blasInstanceFound == false, "Partial set of RayTracingBlas objects found for mesh");
 
                     // create the BLAS object and store it in the BLAS list
-                    RHI::Ptr<RHI::MultiDeviceRayTracingBlas> rayTracingBlas = aznew RHI::MultiDeviceRayTracingBlas;
+                    RHI::Ptr<RHI::RayTracingBlas> rayTracingBlas = aznew RHI::RayTracingBlas;
                     itMeshBlasInstance->second.m_subMeshes.push_back({ rayTracingBlas });
 
                     // create the buffers from the BLAS descriptor

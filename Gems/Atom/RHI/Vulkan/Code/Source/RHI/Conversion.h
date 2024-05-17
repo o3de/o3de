@@ -8,8 +8,8 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
-#include <Atom/RHI/SingleDeviceIndexBufferView.h>
-#include <Atom/RHI/SingleDeviceQuery.h>
+#include <Atom/RHI/DeviceIndexBufferView.h>
+#include <Atom/RHI/DeviceQuery.h>
 #include <Atom/RHI/PipelineStateDescriptor.h>
 
 #include <vma/vk_mem_alloc.h>

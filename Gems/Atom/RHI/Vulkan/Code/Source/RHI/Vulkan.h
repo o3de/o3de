@@ -30,8 +30,8 @@ namespace AZ
         {
             enum class BufferBindFlags : uint32_t;
         }
-        class SingleDeviceBufferView;
-        class SingleDeviceImageView;
+        class DeviceBufferView;
+        class DeviceImageView;
         struct BufferSubresourceRange;
     }
 
@@ -117,9 +117,9 @@ namespace AZ
 
         RawStringList FilterList(const RawStringList& source, const StringList& filter);
 
-        bool ResourceViewOverlaps(const RHI::SingleDeviceBufferView& lhs, const RHI::SingleDeviceBufferView& rhs);
+        bool ResourceViewOverlaps(const RHI::DeviceBufferView& lhs, const RHI::DeviceBufferView& rhs);
 
-        bool ResourceViewOverlaps(const RHI::SingleDeviceImageView& lhs, const RHI::SingleDeviceImageView& rhs);
+        bool ResourceViewOverlaps(const RHI::DeviceImageView& lhs, const RHI::DeviceImageView& rhs);
 
         bool SubresourceRangeOverlaps(const VkImageSubresourceRange& lhs, const VkImageSubresourceRange& rhs);
 

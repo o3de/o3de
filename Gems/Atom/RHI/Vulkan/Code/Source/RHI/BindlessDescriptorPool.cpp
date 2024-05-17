@@ -13,7 +13,7 @@
 #include <RHI/ImageView.h>
 #include <Atom/RHI.Reflect/VkAllocator.h>
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
-#include <Atom/RHI/SingleDeviceShaderResourceGroupData.h>
+#include <Atom/RHI/DeviceShaderResourceGroupData.h>
 
 
 namespace AZ::Vulkan

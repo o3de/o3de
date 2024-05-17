@@ -6,7 +6,7 @@
  *
  */
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/MultiDeviceImagePool.h>
+#include <Atom/RHI/ImagePool.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/RHIUtils.h>
 #include <AzCore/Jobs/JobCompletion.h>

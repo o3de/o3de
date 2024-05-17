@@ -27,7 +27,7 @@ namespace AZ::Vulkan
         m_secondaryCommands.resize(commandListCount);
 
         m_workRequest.m_swapChainsToPresent.reserve(scope.GetSwapChainsToPresent().size());
-        for (RHI::SingleDeviceSwapChain* swapchainBase : scope.GetSwapChainsToPresent())
+        for (RHI::DeviceSwapChain* swapchainBase : scope.GetSwapChainsToPresent())
         {
             m_workRequest.m_swapChainsToPresent.emplace_back(static_cast<SwapChain*>(swapchainBase));
         }

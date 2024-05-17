@@ -391,7 +391,7 @@ namespace AZ::RHI
         return m_devices[deviceIndex]->GetDescriptor().m_platformLimitsDescriptor;
     }
 
-    void RHISystem::QueueRayTracingShaderTableForBuild(SingleDeviceRayTracingShaderTable* rayTracingShaderTable)
+    void RHISystem::QueueRayTracingShaderTableForBuild(DeviceRayTracingShaderTable* rayTracingShaderTable)
     {
         m_frameScheduler.QueueRayTracingShaderTableForBuild(rayTracingShaderTable);
     }

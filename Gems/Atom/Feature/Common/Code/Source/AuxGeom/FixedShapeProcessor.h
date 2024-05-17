@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include <Atom/RHI/MultiDeviceBuffer.h>
-#include <Atom/RHI/MultiDeviceBufferPool.h>
-#include <Atom/RHI/MultiDeviceIndexBufferView.h>
-#include <Atom/RHI/MultiDeviceStreamBufferView.h>
-#include <Atom/RHI/SingleDevicePipelineState.h>
+#include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/IndexBufferView.h>
+#include <Atom/RHI/StreamBufferView.h>
+#include <Atom/RHI/DevicePipelineState.h>
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/PipelineState.h>
@@ -29,7 +29,7 @@ namespace AZ
 {
     namespace RHI
     {
-        class MultiDeviceDrawPacketBuilder;
+        class DrawPacketBuilder;
     }
 
     namespace RPI
@@ -51,7 +51,7 @@ namespace AZ
         class FixedShapeProcessor final
         {
         public:
-            using StreamBufferViewsForAllStreams = AZStd::fixed_vector<AZ::RHI::MultiDeviceStreamBufferView, AZ::RHI::Limits::Pipeline::StreamCountMax>;
+            using StreamBufferViewsForAllStreams = AZStd::fixed_vector<AZ::RHI::StreamBufferView, AZ::RHI::Limits::Pipeline::StreamCountMax>;
 
             using AuxGeomNormal = AuxGeomPosition;
 
@@ -88,19 +88,19 @@ namespace AZ
             struct ObjectBuffers
             {
                 uint32_t m_pointIndexCount;
-                AZ::RHI::Ptr<AZ::RHI::MultiDeviceBuffer> m_pointIndexBuffer;
-                AZ::RHI::MultiDeviceIndexBufferView m_pointIndexBufferView;
+                AZ::RHI::Ptr<AZ::RHI::Buffer> m_pointIndexBuffer;
+                AZ::RHI::IndexBufferView m_pointIndexBufferView;
 
                 uint32_t m_lineIndexCount;
-                AZ::RHI::Ptr<AZ::RHI::MultiDeviceBuffer> m_lineIndexBuffer;
-                AZ::RHI::MultiDeviceIndexBufferView m_lineIndexBufferView;
+                AZ::RHI::Ptr<AZ::RHI::Buffer> m_lineIndexBuffer;
+                AZ::RHI::IndexBufferView m_lineIndexBufferView;
 
                 uint32_t m_triangleIndexCount;
-                AZ::RHI::Ptr<AZ::RHI::MultiDeviceBuffer> m_triangleIndexBuffer;
-                AZ::RHI::MultiDeviceIndexBufferView m_triangleIndexBufferView;
+                AZ::RHI::Ptr<AZ::RHI::Buffer> m_triangleIndexBuffer;
+                AZ::RHI::IndexBufferView m_triangleIndexBufferView;
 
-                AZ::RHI::Ptr<AZ::RHI::MultiDeviceBuffer> m_positionBuffer;
-                AZ::RHI::Ptr<AZ::RHI::MultiDeviceBuffer> m_normalBuffer;
+                AZ::RHI::Ptr<AZ::RHI::Buffer> m_positionBuffer;
+                AZ::RHI::Ptr<AZ::RHI::Buffer> m_normalBuffer;
                 StreamBufferViewsForAllStreams m_streamBufferViews;
                 StreamBufferViewsForAllStreams m_streamBufferViewsWithNormals;
             };
@@ -173,13 +173,13 @@ namespace AZ
             void InitPipelineState(const PipelineStateOptions& options);
             RPI::Ptr<RPI::PipelineStateForDraw>& GetPipelineState(const PipelineStateOptions& pipelineStateOptions);
 
-            const AZ::RHI::MultiDeviceIndexBufferView& GetShapeIndexBufferView(AuxGeomShapeType shapeType, int drawStyle, LodIndex lodIndex) const;
+            const AZ::RHI::IndexBufferView& GetShapeIndexBufferView(AuxGeomShapeType shapeType, int drawStyle, LodIndex lodIndex) const;
             const StreamBufferViewsForAllStreams& GetShapeStreamBufferViews(AuxGeomShapeType shapeType, LodIndex lodIndex, int drawStyle) const;
             uint32_t GetShapeIndexCount(AuxGeomShapeType shapeType, int drawStyle, LodIndex lodIndex);
 
             //! Uses the given drawPacketBuilder to build a draw packet for given shape and state and returns it
-            RHI::ConstPtr<RHI::MultiDeviceDrawPacket> BuildDrawPacketForShape(
-                RHI::MultiDeviceDrawPacketBuilder& drawPacketBuilder,
+            RHI::ConstPtr<RHI::DrawPacket> BuildDrawPacketForShape(
+                RHI::DrawPacketBuilder& drawPacketBuilder,
                 const ShapeBufferEntry& shape,
                 int drawStyle,
                 const AZStd::vector<AZ::Matrix4x4>& viewProjOverrides,
@@ -187,13 +187,13 @@ namespace AZ
                 LodIndex lodIndex,
                 RHI::DrawItemSortKey sortKey = 0);
 
-            const AZ::RHI::MultiDeviceIndexBufferView& GetBoxIndexBufferView(int drawStyle) const;
+            const AZ::RHI::IndexBufferView& GetBoxIndexBufferView(int drawStyle) const;
             const StreamBufferViewsForAllStreams& GetBoxStreamBufferViews(int drawStyle) const;
             uint32_t GetBoxIndexCount(int drawStyle);
 
             //! Uses the given drawPacketBuilder to build a draw packet for given box and state and returns it
-            RHI::ConstPtr<RHI::MultiDeviceDrawPacket> BuildDrawPacketForBox(
-                RHI::MultiDeviceDrawPacketBuilder& drawPacketBuilder,
+            RHI::ConstPtr<RHI::DrawPacket> BuildDrawPacketForBox(
+                RHI::DrawPacketBuilder& drawPacketBuilder,
                 const BoxBufferEntry& box,
                 int drawStyle,
                 const AZStd::vector<AZ::Matrix4x4>& overrideViewProjMatrices,
@@ -201,20 +201,20 @@ namespace AZ
                 RHI::DrawItemSortKey sortKey = 0);
 
             //! Uses the given drawPacketBuilder to build a draw packet with the given data
-            RHI::ConstPtr<RHI::MultiDeviceDrawPacket> BuildDrawPacket(
-                RHI::MultiDeviceDrawPacketBuilder& drawPacketBuilder,
+            RHI::ConstPtr<RHI::DrawPacket> BuildDrawPacket(
+                RHI::DrawPacketBuilder& drawPacketBuilder,
                 AZ::Data::Instance<RPI::ShaderResourceGroup>& srg,
                 uint32_t indexCount,
-                const RHI::MultiDeviceIndexBufferView& indexBufferView,
+                const RHI::IndexBufferView& indexBufferView,
                 const StreamBufferViewsForAllStreams& streamBufferViews,
                 RHI::DrawListTag drawListTag,
-                const AZ::RHI::MultiDevicePipelineState* pipelineState,
+                const AZ::RHI::PipelineState* pipelineState,
                 RHI::DrawItemSortKey sortKey);
 
         private: // data
 
             //! The buffer pool that manages the index and vertex buffers for each shape
-            RHI::Ptr<AZ::RHI::MultiDeviceBufferPool> m_bufferPool;
+            RHI::Ptr<AZ::RHI::BufferPool> m_bufferPool;
 
             //! The descriptor for drawing an object of each draw style using predefined streams
             RHI::InputStreamLayout m_objectStreamLayout[DrawStyle_Count];
@@ -256,7 +256,7 @@ namespace AZ
             ShaderData m_perObjectShaderData[ShapeLightingStyle_Count];
             ShaderData& GetShaderDataForDrawStyle(int drawStyle) {return m_perObjectShaderData[drawStyle == DrawStyle_Shaded];}
 
-            AZStd::vector<AZ::RHI::ConstPtr<RHI::MultiDeviceDrawPacket>> m_drawPackets;
+            AZStd::vector<AZ::RHI::ConstPtr<RHI::DrawPacket>> m_drawPackets;
 
             const AZ::RPI::Scene* m_scene = nullptr;
 

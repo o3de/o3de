@@ -51,7 +51,7 @@ namespace AZ
             imageDescriptor.m_size = imageSize;
             imageDescriptor.m_format = imageFormat;
 
-            const RHI::SingleDeviceImageSubresourceLayout imageSubresourceLayout =
+            const RHI::DeviceImageSubresourceLayout imageSubresourceLayout =
                 RHI::GetImageSubresourceLayout(imageDescriptor, RHI::ImageSubresource{});
 
             const size_t expectedImageDataSize = imageSubresourceLayout.m_bytesPerImage * imageDescriptor.m_size.m_depth;
@@ -126,7 +126,7 @@ namespace AZ
             }
 
             // Cache off the RHI streaming image pool instance.
-            RHI::MultiDeviceStreamingImagePool* rhiPool = pool->GetRHIPool();
+            RHI::StreamingImagePool* rhiPool = pool->GetRHIPool();
 
             /**
              * NOTE: The tail mip-chain is required to exist as a dependency of this asset. This allows
@@ -139,7 +139,7 @@ namespace AZ
             const ImageMipChainAsset& mipChainTailAsset = imageAsset.GetTailMipChain();
 
             {
-                RHI::MultiDeviceStreamingImageInitRequest initRequest;
+                RHI::StreamingImageInitRequest initRequest;
                 initRequest.m_image = GetRHIImage();
                 initRequest.m_descriptor = imageAsset.GetImageDescriptor();
                 initRequest.m_tailMipSlices = mipChainTailAsset.GetMipSlices();
@@ -201,7 +201,7 @@ namespace AZ
                 return RHI::ResultCode::Success;
             }
 
-            AZ_Warning("StreamingImagePool", false, "Failed to initialize RHI::MultiDeviceImage on RHI::MultiDeviceStreamingImagePool.");
+            AZ_Warning("StreamingImagePool", false, "Failed to initialize RHI::Image on RHI::StreamingImagePool.");
             return resultCode;
         }
 
@@ -486,7 +486,7 @@ namespace AZ
             {
                 const auto& mipSlices = mipChainAsset->GetMipSlices();
 
-                RHI::MultiDeviceStreamingImageExpandRequest request;
+                RHI::StreamingImageExpandRequest request;
                 request.m_image = GetRHIImage();
                 request.m_mipSlices = mipSlices;
 

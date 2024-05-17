@@ -13,7 +13,7 @@
 #include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
-#include <Atom/RHI/MultiDeviceDrawPacketBuilder.h>
+#include <Atom/RHI/DrawPacketBuilder.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <AzCore/Console/Console.h>
 
@@ -124,7 +124,7 @@ namespace AZ::Render
             return false;
         }
 
-        RHI::MultiDeviceDrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
+        RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
         drawPacketBuilder.Begin(nullptr);
 
         drawPacketBuilder.SetDrawArguments(mesh.m_drawArguments);
@@ -137,10 +137,10 @@ namespace AZ::Render
         EditorStateMeshDrawPacket::ShaderList shaderList;
         shaderList.reserve(m_activeShaders.size());
 
-        // We have to keep a list of these outside the loops that collect all the shaders because the MultiDeviceDrawPacketBuilder
-        // keeps pointers to StreamBufferViews until MultiDeviceDrawPacketBuilder::End() is called. And we use a fixed_vector to guarantee
+        // We have to keep a list of these outside the loops that collect all the shaders because the DrawPacketBuilder
+        // keeps pointers to StreamBufferViews until DrawPacketBuilder::End() is called. And we use a fixed_vector to guarantee
         // that the memory won't be relocated when new entries are added.
-        AZStd::fixed_vector<RPI::ModelLod::StreamBufferViewList, RHI::MultiDeviceDrawPacketBuilder::DrawItemCountMax> streamBufferViewsPerShader;
+        AZStd::fixed_vector<RPI::ModelLod::StreamBufferViewList, RHI::DrawPacketBuilder::DrawItemCountMax> streamBufferViewsPerShader;
 
         m_perDrawSrgs.clear();
 
@@ -242,14 +242,14 @@ namespace AZ::Render
 
             parentScene.ConfigurePipelineState(m_drawListTag, pipelineStateDescriptor);
 
-            const RHI::MultiDevicePipelineState* pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
+            const RHI::PipelineState* pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
             if (!pipelineState)
             {
                 AZ_Error("EditorStateMeshDrawPacket", false, "Shader '%s'. Failed to acquire default pipeline state", shaderItem.GetShaderAsset()->GetName().GetCStr());
                 return false;
             }
 
-            RHI::MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest drawRequest;
+            RHI::DrawPacketBuilder::DrawRequest drawRequest;
             drawRequest.m_listTag = m_drawListTag;
             drawRequest.m_pipelineState = pipelineState;
             drawRequest.m_streamBufferViews = streamBufferViews;
@@ -294,9 +294,9 @@ namespace AZ::Render
             {
                 if (shaderItem.IsEnabled())
                 {
-                    if (shaderList.size() == RHI::MultiDeviceDrawPacketBuilder::DrawItemCountMax)
+                    if (shaderList.size() == RHI::DrawPacketBuilder::DrawItemCountMax)
                     {
-                        AZ_Error("MeshDrawPacket", false, "Material has more than the limit of %d active shader items.", RHI::MultiDeviceDrawPacketBuilder::DrawItemCountMax);
+                        AZ_Error("MeshDrawPacket", false, "Material has more than the limit of %d active shader items.", RHI::DrawPacketBuilder::DrawItemCountMax);
                         return false;
                     }
 
@@ -321,7 +321,7 @@ namespace AZ::Render
         }
     }
 
-    const RHI::MultiDeviceDrawPacket* EditorStateMeshDrawPacket::GetRHIDrawPacket() const
+    const RHI::DrawPacket* EditorStateMeshDrawPacket::GetRHIDrawPacket() const
     {
         return m_drawPacket.get();
     }

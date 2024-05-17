@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/SingleDeviceBuffer.h>
+#include <Atom/RHI/DeviceBuffer.h>
 #include <RHI/RayTracingTlas.h>
 
 namespace AZ

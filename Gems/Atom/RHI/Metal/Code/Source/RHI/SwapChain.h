@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/SingleDeviceSwapChain.h>
+#include <Atom/RHI/DeviceSwapChain.h>
 #include <RHI/Device.h>
 #import <QuartzCore/CAMetalLayer.h>
 
@@ -19,9 +19,9 @@ namespace AZ
         class Image;
 
         class SwapChain
-            : public RHI::SingleDeviceSwapChain
+            : public RHI::DeviceSwapChain
         {
-            using Base = RHI::SingleDeviceSwapChain;
+            using Base = RHI::DeviceSwapChain;
         public:
             AZ_RTTI(SwapChain, "{2ECD01DB-BD24-4FD1-BA21-370B20071F02}", Base);
             AZ_CLASS_ALLOCATOR(SwapChain, AZ::SystemAllocator);
@@ -36,12 +36,12 @@ namespace AZ
             SwapChain() = default;
             
             //////////////////////////////////////////////////////////////////////////
-            // RHI::SingleDeviceSwapChain
+            // RHI::DeviceSwapChain
             RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::SwapChainDescriptor& descriptor, RHI::SwapChainDimensions* nativeDimensions) override;
             void ShutdownInternal() override;
             uint32_t PresentInternal() override;
             RHI::ResultCode InitImageInternal(const InitImageRequest& request) override;
-            void ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase) override;
+            void ShutdownResourceInternal(RHI::DeviceResource& resourceBase) override;
             RHI::ResultCode ResizeInternal(const RHI::SwapChainDimensions& dimensions, RHI::SwapChainDimensions* nativeDimensions) override;
             //////////////////////////////////////////////////////////////////////////
             

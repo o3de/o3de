@@ -9,8 +9,8 @@
 #pragma once
 
 #include <DiffuseProbeGrid/DiffuseProbeGridFeatureProcessorInterface.h>
-#include <Atom/RHI/MultiDeviceRayTracingBufferPools.h>
-#include <Atom/RHI/MultiDeviceRayTracingAccelerationStructure.h>
+#include <Atom/RHI/RayTracingBufferPools.h>
+#include <Atom/RHI/RayTracingAccelerationStructure.h>
 #include <Atom/RPI.Public/Buffer/RingBuffer.h>
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Render/DiffuseProbeGrid.h>
@@ -99,11 +99,11 @@ namespace AZ
             DiffuseProbeGridVector& GetVisibleRealTimeProbeGrids() { return m_visibleRealTimeDiffuseProbeGrids; }
 
             // returns the RayTracingBufferPool used for the DiffuseProbeGrid visualization
-            RHI::MultiDeviceRayTracingBufferPools& GetVisualizationBufferPools() { return *m_visualizationBufferPools; }
+            RHI::RayTracingBufferPools& GetVisualizationBufferPools() { return *m_visualizationBufferPools; }
 
             // returns the RayTracingBlas for the visualization model
-            const RHI::Ptr<RHI::MultiDeviceRayTracingBlas>& GetVisualizationBlas() const { return m_visualizationBlas; }
-            RHI::Ptr<RHI::MultiDeviceRayTracingBlas>& GetVisualizationBlas() { return m_visualizationBlas; }
+            const RHI::Ptr<RHI::RayTracingBlas>& GetVisualizationBlas() const { return m_visualizationBlas; }
+            RHI::Ptr<RHI::RayTracingBlas>& GetVisualizationBlas() { return m_visualizationBlas; }
 
             // adds a worldspace position and direction for an irradiance query, returns the index of the query result in the output buffer
             uint32_t AddIrradianceQuery(const AZ::Vector3& position, const AZ::Vector3& direction);
@@ -173,14 +173,14 @@ namespace AZ
             };
 
             // buffer pool for the vertex and index buffers
-            RHI::Ptr<RHI::MultiDeviceBufferPool> m_bufferPool;
+            RHI::Ptr<RHI::BufferPool> m_bufferPool;
 
             // box mesh rendering buffers
             // note that the position and index views are stored in DiffuseProbeGridRenderData
             AZStd::vector<Position> m_boxPositions;
             AZStd::vector<uint16_t> m_boxIndices;
-            RHI::Ptr<RHI::MultiDeviceBuffer> m_boxPositionBuffer;
-            RHI::Ptr<RHI::MultiDeviceBuffer> m_boxIndexBuffer;
+            RHI::Ptr<RHI::Buffer> m_boxPositionBuffer;
+            RHI::Ptr<RHI::Buffer> m_boxIndexBuffer;
             RHI::InputStreamLayout m_boxStreamLayout;
 
             // contains the rendering data needed by probe grids
@@ -205,12 +205,12 @@ namespace AZ
             NotifyTextureAssetVector m_notifyTextureAssets;
 
             // visualization
-            RHI::Ptr<RHI::MultiDeviceRayTracingBufferPools> m_visualizationBufferPools;
+            RHI::Ptr<RHI::RayTracingBufferPools> m_visualizationBufferPools;
             Data::Asset<RPI::ModelAsset> m_visualizationModelAsset;
-            RHI::Ptr<RHI::MultiDeviceRayTracingBlas> m_visualizationBlas;
+            RHI::Ptr<RHI::RayTracingBlas> m_visualizationBlas;
             Data::Instance<RPI::Model> m_visualizationModel;
-            RHI::MultiDeviceStreamBufferView m_visualizationVB;
-            RHI::MultiDeviceIndexBufferView m_visualizationIB;
+            RHI::StreamBufferView m_visualizationVB;
+            RHI::IndexBufferView m_visualizationIB;
 
             // irradiance queries
             struct IrradianceQuery

@@ -7,9 +7,9 @@
  */
 #include <Atom/RHI/FrameGraphCompileContext.h>
 #include <Atom/RHI/FrameGraphAttachmentDatabase.h>
-#include <Atom/RHI/MultiDeviceBuffer.h>
+#include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
-#include <Atom/RHI/MultiDeviceImage.h>
+#include <Atom/RHI/Image.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
 
 namespace AZ::RHI
@@ -36,7 +36,7 @@ namespace AZ::RHI
         return 0;
     }
 
-    const MultiDeviceBufferView* FrameGraphCompileContext::GetBufferView(const ScopeAttachment* scopeAttacment) const
+    const BufferView* FrameGraphCompileContext::GetBufferView(const ScopeAttachment* scopeAttacment) const
     {
         const BufferScopeAttachment* attachment = azrtti_cast<const BufferScopeAttachment*>(scopeAttacment);
         if (!attachment)
@@ -46,21 +46,21 @@ namespace AZ::RHI
         return attachment->GetBufferView();
     }
 
-    const MultiDeviceBufferView* FrameGraphCompileContext::GetBufferView(const AttachmentId& attachmentId) const
+    const BufferView* FrameGraphCompileContext::GetBufferView(const AttachmentId& attachmentId) const
     {
         const ScopeAttachment* scopeAttacment = m_attachmentDatabase->FindScopeAttachment(m_scopeId, attachmentId);
         return GetBufferView(scopeAttacment);
     }
 
-    const MultiDeviceBufferView* FrameGraphCompileContext::GetBufferView(const AttachmentId& attachmentId, const RHI::ScopeAttachmentUsage attachmentUsage) const
+    const BufferView* FrameGraphCompileContext::GetBufferView(const AttachmentId& attachmentId, const RHI::ScopeAttachmentUsage attachmentUsage) const
     {
         const ScopeAttachment* scopeAttacment = m_attachmentDatabase->FindScopeAttachment(m_scopeId, attachmentId, attachmentUsage);
         return GetBufferView(scopeAttacment);
     }
 
-    const MultiDeviceBuffer* FrameGraphCompileContext::GetBuffer(const AttachmentId& attachmentId) const
+    const Buffer* FrameGraphCompileContext::GetBuffer(const AttachmentId& attachmentId) const
     {
-        const MultiDeviceBufferView* bufferView = GetBufferView(attachmentId);
+        const BufferView* bufferView = GetBufferView(attachmentId);
         if (bufferView)
         {
             return bufferView->GetBuffer();
@@ -68,7 +68,7 @@ namespace AZ::RHI
         return nullptr;
     }
 
-    const MultiDeviceImageView* FrameGraphCompileContext::GetImageView(const ScopeAttachment* scopeAttacment) const
+    const ImageView* FrameGraphCompileContext::GetImageView(const ScopeAttachment* scopeAttacment) const
     {
         const ImageScopeAttachment* attachment = azrtti_cast<const ImageScopeAttachment*>(scopeAttacment);
         if (!attachment)
@@ -78,21 +78,21 @@ namespace AZ::RHI
         return attachment->GetImageView();
     }
 
-    const MultiDeviceImageView* FrameGraphCompileContext::GetImageView(const AttachmentId& attachmentId, const ImageViewDescriptor& imageViewDescriptor, RHI::ScopeAttachmentUsage attachmentUsage) const
+    const ImageView* FrameGraphCompileContext::GetImageView(const AttachmentId& attachmentId, const ImageViewDescriptor& imageViewDescriptor, RHI::ScopeAttachmentUsage attachmentUsage) const
     {
         const ScopeAttachment* scopeAttacment = m_attachmentDatabase->FindScopeAttachment(m_scopeId, attachmentId, imageViewDescriptor, attachmentUsage);
         return GetImageView(scopeAttacment);
     }
 
-    const MultiDeviceImageView* FrameGraphCompileContext::GetImageView(const AttachmentId& attachmentId) const
+    const ImageView* FrameGraphCompileContext::GetImageView(const AttachmentId& attachmentId) const
     {
         const ScopeAttachment* scopeAttacment = m_attachmentDatabase->FindScopeAttachment(m_scopeId, attachmentId);
         return GetImageView(scopeAttacment);
     }
 
-    const MultiDeviceImage* FrameGraphCompileContext::GetImage(const AttachmentId& attachmentId) const
+    const Image* FrameGraphCompileContext::GetImage(const AttachmentId& attachmentId) const
     {
-        const MultiDeviceImageView* imageView = GetImageView(attachmentId);
+        const ImageView* imageView = GetImageView(attachmentId);
         if (imageView)
         {
             return imageView->GetImage();

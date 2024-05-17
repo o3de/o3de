@@ -10,12 +10,12 @@
 #include <Atom/RHI.Reflect/Viewport.h>
 #include <Atom/RHI.Reflect/Scissor.h>
 #include <Atom/RHI.Reflect/VariableRateShadingEnums.h>
-#include <Atom/RHI/SingleDeviceDrawItem.h>
-#include <Atom/RHI/SingleDeviceDispatchItem.h>
-#include <Atom/RHI/SingleDeviceDispatchRaysItem.h>
-#include <Atom/RHI/SingleDeviceCopyItem.h>
-#include <Atom/RHI/SingleDeviceRayTracingAccelerationStructure.h>
-#include <Atom/RHI/SingleDeviceRayTracingBufferPools.h>
+#include <Atom/RHI/DeviceDrawItem.h>
+#include <Atom/RHI/DeviceDispatchItem.h>
+#include <Atom/RHI/DeviceDispatchRaysItem.h>
+#include <Atom/RHI/DeviceCopyItem.h>
+#include <Atom/RHI/DeviceRayTracingAccelerationStructure.h>
+#include <Atom/RHI/DeviceRayTracingBufferPools.h>
 
 namespace AZ::RHI
 {
@@ -53,41 +53,41 @@ namespace AZ::RHI
         //! Assigns a shader resource group for draw on the graphics pipe, at the binding slot
         //! determined by the layout used to create the shader resource group.
         //! @param shaderResourceGroup The shader resource group to bind.
-        virtual void SetShaderResourceGroupForDraw(const SingleDeviceShaderResourceGroup& shaderResourceGroup) = 0;
+        virtual void SetShaderResourceGroupForDraw(const DeviceShaderResourceGroup& shaderResourceGroup) = 0;
 
         //! Assigns a shader resource group for dispatch on compute pipe, at the binding slot
         //! determined by the layout used to create the shader resource group.
         //! @param shaderResourceGroup The shader resource group to bind.
-        virtual void SetShaderResourceGroupForDispatch(const SingleDeviceShaderResourceGroup& shaderResourceGroup) = 0;
+        virtual void SetShaderResourceGroupForDispatch(const DeviceShaderResourceGroup& shaderResourceGroup) = 0;
 
         /// Submits a single copy item for processing on the command list.
-        virtual void Submit(const SingleDeviceCopyItem& copyItem, uint32_t submitIndex = 0) = 0;
+        virtual void Submit(const DeviceCopyItem& copyItem, uint32_t submitIndex = 0) = 0;
 
         /// Submits a single draw item for processing on the command list.
-        virtual void Submit(const SingleDeviceDrawItem& drawItem, uint32_t submitIndex = 0) = 0;
+        virtual void Submit(const DeviceDrawItem& drawItem, uint32_t submitIndex = 0) = 0;
 
         /// Submits a single dispatch item for processing on the command list.
-        virtual void Submit(const SingleDeviceDispatchItem& dispatchItem, uint32_t submitIndex = 0) = 0;
+        virtual void Submit(const DeviceDispatchItem& dispatchItem, uint32_t submitIndex = 0) = 0;
 
         /// Submits a single dispatch rays item for processing on the command list.
-        virtual void Submit(const SingleDeviceDispatchRaysItem& dispatchRaysItem, uint32_t submitIndex = 0) = 0;
+        virtual void Submit(const DeviceDispatchRaysItem& dispatchRaysItem, uint32_t submitIndex = 0) = 0;
 
         /// Starts predication on the command list.
-        virtual void BeginPredication(const SingleDeviceBuffer& buffer, uint64_t offset, PredicationOp operation) = 0;
+        virtual void BeginPredication(const DeviceBuffer& buffer, uint64_t offset, PredicationOp operation) = 0;
 
         /// End predication on the command list.
         virtual void EndPredication() = 0;
 
-        /// Builds a Bottom Level Acceleration Structure (BLAS) for ray tracing operations, which is made up of SingleDeviceRayTracingGeometry entries
-        virtual void BuildBottomLevelAccelerationStructure(const RHI::SingleDeviceRayTracingBlas& rayTracingBlas) = 0;
+        /// Builds a Bottom Level Acceleration Structure (BLAS) for ray tracing operations, which is made up of DeviceRayTracingGeometry entries
+        virtual void BuildBottomLevelAccelerationStructure(const RHI::DeviceRayTracingBlas& rayTracingBlas) = 0;
 
-        /// Updates a Bottom Level Acceleration Structure (BLAS) for ray tracing operations, which is made up of SingleDeviceRayTracingGeometry entries
-        virtual void UpdateBottomLevelAccelerationStructure(const RHI::SingleDeviceRayTracingBlas& rayTracingBlas) = 0;
+        /// Updates a Bottom Level Acceleration Structure (BLAS) for ray tracing operations, which is made up of DeviceRayTracingGeometry entries
+        virtual void UpdateBottomLevelAccelerationStructure(const RHI::DeviceRayTracingBlas& rayTracingBlas) = 0;
 
         /// Builds a Top Level Acceleration Structure (TLAS) for ray tracing operations, which is made up of RayTracingInstance entries that
         /// refer to a BLAS entry
         virtual void BuildTopLevelAccelerationStructure(
-            const RHI::SingleDeviceRayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::SingleDeviceRayTracingBlas*>& changedBlasList) = 0;
+            const RHI::DeviceRayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::DeviceRayTracingBlas*>& changedBlasList) = 0;
 
         /// Defines the submit range for a CommandList
         /// Note: the default is 0 items, which disables validation for items submitted outside of the framegraph

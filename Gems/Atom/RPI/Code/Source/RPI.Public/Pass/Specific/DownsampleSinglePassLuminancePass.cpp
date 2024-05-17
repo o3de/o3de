@@ -78,7 +78,7 @@ namespace AZ::RPI
         }
         const uint32_t mipLevelCount = attachment->m_descriptor.m_image.m_mipLevels;
         RHI::AttachmentId attachmentId = attachment->GetAttachmentId();
-        const RHI::MultiDeviceImage* rhiImage = context.GetImage(attachmentId);
+        const RHI::Image* rhiImage = context.GetImage(attachmentId);
         if (!rhiImage)
         {
             return;
@@ -89,13 +89,13 @@ namespace AZ::RPI
         {
             imageViewDescriptor.m_mipSliceMin = static_cast<uint16_t>(mipIndex);
             imageViewDescriptor.m_mipSliceMax = static_cast<uint16_t>(mipIndex);
-            Ptr<RHI::MultiDeviceImageView> imageView = const_cast<RHI::MultiDeviceImage*>(rhiImage)->BuildImageView(imageViewDescriptor);
+            Ptr<RHI::ImageView> imageView = const_cast<RHI::Image*>(rhiImage)->BuildImageView(imageViewDescriptor);
             srg.SetImageView(m_imageDestinationIndex, imageView.get(), mipIndex);
             m_imageViews[mipIndex] = imageView;
         }
 
         // Set Globally coherent image view.
-        const RHI::MultiDeviceImageView* mip6ImageView = context.GetImageView(m_mip6PassAttachment->GetAttachmentId());
+        const RHI::ImageView* mip6ImageView = context.GetImageView(m_mip6PassAttachment->GetAttachmentId());
         srg.SetImageView(m_mip6ImageIndex, mip6ImageView);
 
         // Set Global Atomic buffer.

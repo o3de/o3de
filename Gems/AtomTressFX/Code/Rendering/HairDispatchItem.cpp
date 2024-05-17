@@ -17,7 +17,7 @@
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/SingleDeviceBufferView.h>
+#include <Atom/RHI/DeviceBufferView.h>
 
 #include <limits>
 
@@ -49,7 +49,7 @@ namespace AZ
                 RHI::PipelineStateDescriptorForDispatch pipelineDesc;
                 m_shader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId).ConfigurePipelineState(pipelineDesc);
                 m_dispatchItem.SetPipelineState(m_shader->AcquirePipelineState(pipelineDesc));
-                AZStd::array<const RHI::MultiDeviceShaderResourceGroup*, 2> srgs{
+                AZStd::array<const RHI::ShaderResourceGroup*, 2> srgs{
                     hairGenerationSrg->GetRHIShaderResourceGroup(), // Static generation data
                     hairSimSrg->GetRHIShaderResourceGroup() // Dynamic data changed between passes
                 };

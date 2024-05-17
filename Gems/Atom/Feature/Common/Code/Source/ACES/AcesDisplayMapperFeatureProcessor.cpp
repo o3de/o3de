@@ -346,7 +346,7 @@ namespace AZ::Render
 
     void AcesDisplayMapperFeatureProcessor::InitializeImagePool()
     {
-        m_displayMapperImagePool = aznew RHI::MultiDeviceImagePool;
+        m_displayMapperImagePool = aznew RHI::ImagePool;
         m_displayMapperImagePool->SetName(Name("DisplayMapperImagePool"));
 
         RHI::ImagePoolDescriptor   imagePoolDesc = {};
@@ -369,10 +369,10 @@ namespace AZ::Render
         }
 
         DisplayMapperLut lutResource;
-        lutResource.m_lutImage = aznew RHI::MultiDeviceImage;
+        lutResource.m_lutImage = aznew RHI::Image;
         lutResource.m_lutImage->SetName(lutName);
 
-        RHI::MultiDeviceImageInitRequest imageRequest;
+        RHI::ImageInitRequest imageRequest;
         imageRequest.m_image = lutResource.m_lutImage.get();
         static const int LutSize = 32;
         imageRequest.m_descriptor = RHI::ImageDescriptor::Create3D(RHI::ImageBindFlags::ShaderReadWrite, LutSize, LutSize, LutSize, LutFormat);

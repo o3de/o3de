@@ -922,7 +922,7 @@ namespace AZ
                 }
                 else if (typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable)
                 {
-                    for (const RHI::MultiDeviceDrawPacket* drawPacket : lod.m_drawPackets)
+                    for (const RHI::DrawPacket* drawPacket : lod.m_drawPackets)
                     {
                         view.AddDrawPacket(drawPacket, pos);
                     }

@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/SingleDeviceImage.h>
+#include <Atom/RHI/DeviceImage.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
 namespace AZ
@@ -15,9 +15,9 @@ namespace AZ
     namespace Null
     {
         class Image final
-            : public RHI::SingleDeviceImage
+            : public RHI::DeviceImage
         {
-            using Base = RHI::SingleDeviceImage;
+            using Base = RHI::DeviceImage;
         public:
             AZ_CLASS_ALLOCATOR(Image, AZ::ThreadPoolAllocator);
             AZ_RTTI(Image, "{2AA22D3F-521B-4058-92F2-CEBBD2891D6C}", Base);
@@ -34,10 +34,10 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             
             //////////////////////////////////////////////////////////////////////////
-            // RHI::SingleDeviceImage
+            // RHI::DeviceImage
             void GetSubresourceLayoutsInternal(
                 [[maybe_unused]] const RHI::ImageSubresourceRange& subresourceRange,
-                [[maybe_unused]] RHI::SingleDeviceImageSubresourceLayout* subresourceLayouts,
+                [[maybe_unused]] RHI::DeviceImageSubresourceLayout* subresourceLayouts,
                 [[maybe_unused]] size_t* totalSizeInBytes) const override
             {
             }

@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/SingleDeviceQuery.h>
+#include <Atom/RHI/DeviceQuery.h>
 
 namespace AZ
 {
@@ -16,9 +16,9 @@ namespace AZ
         class CommandList;
 
         class Query final
-            : public RHI::SingleDeviceQuery
+            : public RHI::DeviceQuery
         {
-            using Base = RHI::SingleDeviceQuery;
+            using Base = RHI::DeviceQuery;
 
         public:
             AZ_RTTI(Query, "{E27876FA-D96D-407A-926A-C480F4EDCBD0}", Base);
@@ -30,7 +30,7 @@ namespace AZ
             Query() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::SingleDeviceQuery
+            // RHI::DeviceQuery
             RHI::ResultCode BeginInternal(RHI::CommandList& commandList, RHI::QueryControlFlags flags) override;
             RHI::ResultCode EndInternal(RHI::CommandList& commandList) override;
             RHI::ResultCode WriteTimestampInternal(RHI::CommandList& commandList) override;

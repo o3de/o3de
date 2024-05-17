@@ -12,7 +12,7 @@
 #include <RHI/Image.h>
 #include <RHI/ShaderResourceGroupPool.h>
 #include <Atom/RHI.Reflect/DX12/PlatformLimitsDescriptor.h>
-#include <Atom/RHI/SingleDeviceShaderResourceGroupPool.h>
+#include <Atom/RHI/DeviceShaderResourceGroupPool.h>
 
 namespace AZ
 {

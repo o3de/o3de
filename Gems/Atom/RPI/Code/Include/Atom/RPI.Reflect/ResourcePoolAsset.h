@@ -10,7 +10,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 
 #include <Atom/RHI.Reflect/Base.h>
-#include <Atom/RHI/SingleDeviceResourcePool.h>
+#include <Atom/RHI/DeviceResourcePool.h>
 
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 

@@ -94,9 +94,9 @@ namespace AZ
                 }
 
                 // import and attach the visualization TLAS buffers
-                RHI::Ptr<RHI::MultiDeviceRayTracingTlas>& visualizationTlas = diffuseProbeGrid->GetVisualizationTlas();
-                const RHI::Ptr<RHI::MultiDeviceBuffer>& tlasBuffer = visualizationTlas->GetTlasBuffer();
-                const RHI::Ptr<RHI::MultiDeviceBuffer>& tlasInstancesBuffer = visualizationTlas->GetTlasInstancesBuffer();
+                RHI::Ptr<RHI::RayTracingTlas>& visualizationTlas = diffuseProbeGrid->GetVisualizationTlas();
+                const RHI::Ptr<RHI::Buffer>& tlasBuffer = visualizationTlas->GetTlasBuffer();
+                const RHI::Ptr<RHI::Buffer>& tlasInstancesBuffer = visualizationTlas->GetTlasInstancesBuffer();
                 if (tlasBuffer && tlasInstancesBuffer)
                 {
                     // TLAS buffer
@@ -149,7 +149,7 @@ namespace AZ
 
             // build the visualization BLAS from the DiffuseProbeGridFeatureProcessor
             // Note: the BLAS is used by all DiffuseProbeGrid visualization TLAS objects
-            AZStd::vector<const RHI::SingleDeviceRayTracingBlas*> changedBlasList;
+            AZStd::vector<const RHI::DeviceRayTracingBlas*> changedBlasList;
             if (m_visualizationBlasBuilt == false)
             {
                 context.GetCommandList()->BuildBottomLevelAccelerationStructure(*diffuseProbeGridFeatureProcessor->GetVisualizationBlas()->GetDeviceRayTracingBlas(context.GetDeviceIndex()));

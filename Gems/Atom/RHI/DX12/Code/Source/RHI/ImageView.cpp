@@ -20,7 +20,7 @@ namespace AZ
             return aznew ImageView();
         }
 
-        RHI::ResultCode ImageView::InitInternal(RHI::Device& deviceBase, const RHI::SingleDeviceResource& resourceBase)
+        RHI::ResultCode ImageView::InitInternal(RHI::Device& deviceBase, const RHI::DeviceResource& resourceBase)
         {
             const Image& image = static_cast<const Image&>(resourceBase);
 

@@ -24,7 +24,7 @@ namespace AZ
             return m_nativePipelineCache;
         }
 
-        RHI::ResultCode PipelineLibrary::InitInternal(RHI::Device& deviceBase, const RHI::SingleDevicePipelineLibraryDescriptor& descriptor)
+        RHI::ResultCode PipelineLibrary::InitInternal(RHI::Device& deviceBase, const RHI::DevicePipelineLibraryDescriptor& descriptor)
         {
             DeviceObject::Init(deviceBase);
             auto& device = static_cast<Device&>(deviceBase);
@@ -61,7 +61,7 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode PipelineLibrary::MergeIntoInternal(AZStd::span<const RHI::SingleDevicePipelineLibrary * const> libraries)
+        RHI::ResultCode PipelineLibrary::MergeIntoInternal(AZStd::span<const RHI::DevicePipelineLibrary * const> libraries)
         {
             auto& device = static_cast<Device&>(GetDevice());
             if (libraries.empty())
@@ -71,7 +71,7 @@ namespace AZ
 
             AZStd::vector<VkPipelineCache> pipelineCaches;
             pipelineCaches.reserve(libraries.size());
-            for (const RHI::SingleDevicePipelineLibrary* libraryBase : libraries)
+            for (const RHI::DevicePipelineLibrary* libraryBase : libraries)
             {
                 const auto* library = static_cast<const PipelineLibrary*>(libraryBase);
                 pipelineCaches.emplace_back(library->GetNativePipelineCache());

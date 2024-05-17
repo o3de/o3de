@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/SingleDevicePipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <RHI/Pipeline.h>
 #include <RHI/PipelineLayout.h>
 
@@ -16,9 +16,9 @@ namespace AZ
     namespace Vulkan
     {
         class PipelineState final
-            : public RHI::SingleDevicePipelineState 
+            : public RHI::DevicePipelineState 
         {
-            using Base = RHI::SingleDevicePipelineState;
+            using Base = RHI::DevicePipelineState;
 
         public:
             AZ_CLASS_ALLOCATOR(PipelineState, AZ::SystemAllocator);
@@ -32,10 +32,10 @@ namespace AZ
 
         private:
             //////////////////////////////////////////////////////////////////////////
-            // RHI::SingleDevicePipelineState
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForDraw& descriptor, RHI::SingleDevicePipelineLibrary* pipelineLibrary) override;
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForDispatch& descriptor, RHI::SingleDevicePipelineLibrary* pipelineLibrary) override;
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForRayTracing& descriptor, RHI::SingleDevicePipelineLibrary* pipelineLibrary) override;
+            // RHI::DevicePipelineState
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForDraw& descriptor, RHI::DevicePipelineLibrary* pipelineLibrary) override;
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForDispatch& descriptor, RHI::DevicePipelineLibrary* pipelineLibrary) override;
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForRayTracing& descriptor, RHI::DevicePipelineLibrary* pipelineLibrary) override;
             void ShutdownInternal() override;
             //////////////////////////////////////////////////////////////////////////
 

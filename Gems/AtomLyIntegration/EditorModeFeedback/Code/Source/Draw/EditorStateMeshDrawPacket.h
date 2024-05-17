@@ -11,8 +11,8 @@
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Public/Model/ModelLod.h>
-#include <Atom/RHI/MultiDeviceDrawPacket.h>
-#include <Atom/RHI/MultiDeviceDrawPacketBuilder.h>
+#include <Atom/RHI/DrawPacket.h>
+#include <Atom/RHI/DrawPacketBuilder.h>
 
 #include <AzCore/Math/Obb.h>
 
@@ -45,7 +45,7 @@ namespace AZ::Render
 
         bool Update(const RPI::Scene& parentScene, bool forceUpdate = false);
 
-        const RHI::MultiDeviceDrawPacket* GetRHIDrawPacket() const;
+        const RHI::DrawPacket* GetRHIDrawPacket() const;
 
         void SetStencilRef(uint8_t stencilRef) { m_stencilRef = stencilRef; }
         void SetSortKey(RHI::DrawItemSortKey sortKey) { m_sortKey = sortKey; };
@@ -56,10 +56,10 @@ namespace AZ::Render
     private:
         bool DoUpdate(const RPI::Scene& parentScene);
 
-        RPI::ConstPtr<RHI::MultiDeviceDrawPacket> m_drawPacket;
+        RPI::ConstPtr<RHI::DrawPacket> m_drawPacket;
 
         // Note, many of the following items are held locally in the EditorStateMeshDrawPacket solely to keep them resident in memory as long as they are needed
-        // for the m_drawPacket. RHI::MultiDeviceDrawPacket uses raw pointers only, but we use smart pointers here to hold on to the data.
+        // for the m_drawPacket. RHI::DrawPacket uses raw pointers only, but we use smart pointers here to hold on to the data.
 
         // Maintains references to the shader instances to keep their PSO caches resident (see Shader::Shutdown())
         ShaderList m_activeShaders;
@@ -73,11 +73,11 @@ namespace AZ::Render
         // The per-object shader resource group
         Data::Instance<RPI::ShaderResourceGroup> m_objectSrg;
 
-        // We hold ConstPtr<RHI::MultiDeviceShaderResourceGroup> instead of Instance<RPI::ShaderResourceGroup> because the Material class
+        // We hold ConstPtr<RHI::ShaderResourceGroup> instead of Instance<RPI::ShaderResourceGroup> because the Material class
         // does not allow public access to its Instance<RPI::ShaderResourceGroup>.
-        RPI::ConstPtr<RHI::MultiDeviceShaderResourceGroup> m_materialSrg;
+        RPI::ConstPtr<RHI::ShaderResourceGroup> m_materialSrg;
 
-        AZStd::fixed_vector<Data::Instance<RPI::ShaderResourceGroup>, RHI::MultiDeviceDrawPacketBuilder::DrawItemCountMax> m_perDrawSrgs;
+        AZStd::fixed_vector<Data::Instance<RPI::ShaderResourceGroup>, RHI::DrawPacketBuilder::DrawItemCountMax> m_perDrawSrgs;
 
         // A reference to the material, used to rebuild the DrawPacket if needed
         Data::Instance<RPI::Material> m_material;

@@ -7,7 +7,7 @@
  */
 #include <Atom/RHI/Scope.h>
 #include <Atom/RHI/ResourcePoolDatabase.h>
-#include <Atom/RHI/SingleDeviceImagePoolBase.h>
+#include <Atom/RHI/DeviceImagePoolBase.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
 namespace AZ::RHI
@@ -134,7 +134,7 @@ namespace AZ::RHI
         resourcePoolDatabase.ForEachPoolResolver<decltype(queuePoolResolverFunction)>(queuePoolResolverFunction);
     }
 
-    void Scope::AddQueryPoolUse(Ptr<MultiDeviceQueryPool> queryPool, [[maybe_unused]] const RHI::Interval& interval, [[maybe_unused]] RHI::ScopeAttachmentAccess access)
+    void Scope::AddQueryPoolUse(Ptr<QueryPool> queryPool, [[maybe_unused]] const RHI::Interval& interval, [[maybe_unused]] RHI::ScopeAttachmentAccess access)
     {
         m_queryPools.push_back(queryPool);
     }
@@ -227,17 +227,17 @@ namespace AZ::RHI
         return m_resourcePoolResolves;
     }
 
-    const AZStd::vector<SingleDeviceSwapChain*>& Scope::GetSwapChainsToPresent() const
+    const AZStd::vector<DeviceSwapChain*>& Scope::GetSwapChainsToPresent() const
     {
         return m_swapChainsToPresent;
     }
 
-    const AZStd::vector<Ptr<MultiDeviceFence>>& Scope::GetFencesToSignal() const
+    const AZStd::vector<Ptr<Fence>>& Scope::GetFencesToSignal() const
     {
         return m_fencesToSignal;
     }
 
-    const AZStd::vector<Ptr<MultiDeviceFence>>& Scope::GetFencesToWaitFor() const
+    const AZStd::vector<Ptr<Fence>>& Scope::GetFencesToWaitFor() const
     {
         return m_fencesToWaitFor;
     }
@@ -271,7 +271,7 @@ namespace AZ::RHI
         consumer->m_producersByQueue[static_cast<uint32_t>(producer->GetHardwareQueueClass())] = producer;
     }
 
-    void Scope::AddFenceToSignal(Ptr<MultiDeviceFence> fence)
+    void Scope::AddFenceToSignal(Ptr<Fence> fence)
     {
         m_fencesToSignal.push_back(fence);
     }

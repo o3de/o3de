@@ -7,31 +7,72 @@
  */
 #pragma once
 
-#include <Atom/RHI/SingleDeviceRayTracingShaderTable.h>
+#include <Atom/RHI/DeviceDispatchRaysIndirectBuffer.h>
+#include <Atom/RHI/Factory.h>
+#include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/RayTracingShaderTable.h>
+#include <Atom/RHI/RHISystemInterface.h>
 
 namespace AZ
 {
     namespace RHI
     {
-        class SingleDeviceBufferPool;
-
         //! This class needs to be passed to the command list when submitting an indirect raytracing command
         //! The class is only relavant for DX12, other RHIs have dummy implementations
         //! For more information, see the DX12 implementation of this class
         class DispatchRaysIndirectBuffer : public Object
         {
         public:
-            AZ_RTTI(AZ::RHI::DispatchRaysIndirectBuffer, "{CA9BC0E5-E43E-455B-9AFA-9C12B6107FD9}", Object)
-            DispatchRaysIndirectBuffer() = default;
-            virtual ~DispatchRaysIndirectBuffer() = default;
-            DispatchRaysIndirectBuffer(const DispatchRaysIndirectBuffer&) = delete;
-            DispatchRaysIndirectBuffer(DispatchRaysIndirectBuffer&&) = delete;
-            DispatchRaysIndirectBuffer& operator=(const DispatchRaysIndirectBuffer&) = delete;
-            DispatchRaysIndirectBuffer& operator=(const DispatchRaysIndirectBuffer&&) = delete;
+            AZ_RTTI(AZ::RHI::DispatchRaysIndirectBuffer, "{25E39682-5D6C-4ECF-8F15-2C5EFD8B14D2}", Object)
+            DispatchRaysIndirectBuffer(MultiDevice::DeviceMask deviceMask)
+                : m_deviceMask{ deviceMask }
+            {
+                auto deviceCount{ RHI::RHISystemInterface::Get()->GetDeviceCount() };
 
-            virtual void Init(RHI::SingleDeviceBufferPool* bufferPool) = 0;
+                for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
+                {
+                    if (CheckBitsAll(AZStd::to_underlying(m_deviceMask), 1u << deviceIndex))
+                    {
+                        m_deviceDispatchRaysIndirectBuffers.emplace(deviceIndex, Factory::Get().CreateDispatchRaysIndirectBuffer());
+                    }
+                }
+            }
+
+            Ptr<DeviceDispatchRaysIndirectBuffer> GetDeviceDispatchRaysIndirectBuffer(int deviceIndex) const
+            {
+                AZ_Error(
+                    "DispatchRaysIndirectBuffer",
+                    m_deviceDispatchRaysIndirectBuffers.find(deviceIndex) != m_deviceDispatchRaysIndirectBuffers.end(),
+                    "No DeviceDispatchRaysIndirectBuffer found for device index %d\n",
+                    deviceIndex);
+
+                return m_deviceDispatchRaysIndirectBuffers.at(deviceIndex);
+            }
+
+            AZ_DISABLE_COPY_MOVE(DispatchRaysIndirectBuffer);
+
+            void Init(RHI::BufferPool* bufferPool)
+            {
+                for (auto& [deviceIndex, dispatchRaysIndirectBuffer] : m_deviceDispatchRaysIndirectBuffers)
+                {
+                    dispatchRaysIndirectBuffer->Init(bufferPool->GetDeviceBufferPool(deviceIndex).get());
+                }
+            }
+
             // This needs to be called every time the shader table changes
-            virtual void Build(SingleDeviceRayTracingShaderTable* shaderTable) = 0;
+            void Build(RayTracingShaderTable* shaderTable)
+            {
+                for (auto& [deviceIndex, dispatchRaysIndirectBuffer] : m_deviceDispatchRaysIndirectBuffers)
+                {
+                    dispatchRaysIndirectBuffer->Build(shaderTable->GetDeviceRayTracingShaderTable(deviceIndex).get());
+                }
+            }
+
+        private:
+            //! A DeviceMask denoting on which devices a device-specific SingleDeviceDispatchItem should be generated
+            MultiDevice::DeviceMask m_deviceMask{ MultiDevice::DefaultDevice };
+            //! A map of all device-specific DeviceDispatchRaysIndirectBuffer, indexed by the device index
+            AZStd::unordered_map<int, Ptr<DeviceDispatchRaysIndirectBuffer>> m_deviceDispatchRaysIndirectBuffers;
         };
     } // namespace RHI
 } // namespace AZ

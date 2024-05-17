@@ -108,17 +108,17 @@ namespace AZ
             return PhysicalDevice::Enumerate();
         }
 
-        RHI::Ptr<RHI::SingleDeviceBuffer> SystemComponent::CreateBuffer()
+        RHI::Ptr<RHI::DeviceBuffer> SystemComponent::CreateBuffer()
         {
             return Buffer::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceBufferPool> SystemComponent::CreateBufferPool()
+        RHI::Ptr<RHI::DeviceBufferPool> SystemComponent::CreateBufferPool()
         {
             return BufferPool::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceBufferView> SystemComponent::CreateBufferView()
+        RHI::Ptr<RHI::DeviceBufferView> SystemComponent::CreateBufferView()
         {
             return BufferView::Create();
         }
@@ -128,7 +128,7 @@ namespace AZ
             return Device::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceFence> SystemComponent::CreateFence()
+        RHI::Ptr<RHI::DeviceFence> SystemComponent::CreateFence()
         {
             return FenceImpl::Create();
         }
@@ -143,32 +143,32 @@ namespace AZ
             return FrameGraphExecuter::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceImage> SystemComponent::CreateImage()
+        RHI::Ptr<RHI::DeviceImage> SystemComponent::CreateImage()
         {
             return Image::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceImagePool> SystemComponent::CreateImagePool()
+        RHI::Ptr<RHI::DeviceImagePool> SystemComponent::CreateImagePool()
         {
             return ImagePool::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceImageView> SystemComponent::CreateImageView()
+        RHI::Ptr<RHI::DeviceImageView> SystemComponent::CreateImageView()
         {
             return ImageView::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceStreamingImagePool> SystemComponent::CreateStreamingImagePool()
+        RHI::Ptr<RHI::DeviceStreamingImagePool> SystemComponent::CreateStreamingImagePool()
         {
             return StreamingImagePool::Create();
         }
 
-        RHI::Ptr<RHI::SingleDevicePipelineLibrary> SystemComponent::CreatePipelineLibrary()
+        RHI::Ptr<RHI::DevicePipelineLibrary> SystemComponent::CreatePipelineLibrary()
         {
             return PipelineLibrary::Create();
         }
 
-        RHI::Ptr<RHI::SingleDevicePipelineState> SystemComponent::CreatePipelineState()
+        RHI::Ptr<RHI::DevicePipelineState> SystemComponent::CreatePipelineState()
         {
             return PipelineState::Create();
         }
@@ -178,72 +178,72 @@ namespace AZ
             return Scope::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceShaderResourceGroup> SystemComponent::CreateShaderResourceGroup()
+        RHI::Ptr<RHI::DeviceShaderResourceGroup> SystemComponent::CreateShaderResourceGroup()
         {
             return ShaderResourceGroup::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceShaderResourceGroupPool> SystemComponent::CreateShaderResourceGroupPool()
+        RHI::Ptr<RHI::DeviceShaderResourceGroupPool> SystemComponent::CreateShaderResourceGroupPool()
         {
             return ShaderResourceGroupPool::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceTransientAttachmentPool> SystemComponent::CreateTransientAttachmentPool()
+        RHI::Ptr<RHI::DeviceTransientAttachmentPool> SystemComponent::CreateTransientAttachmentPool()
         {
             return TransientAttachmentPool::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceSwapChain> SystemComponent::CreateSwapChain()
+        RHI::Ptr<RHI::DeviceSwapChain> SystemComponent::CreateSwapChain()
         {
             return SwapChain::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceQueryPool> SystemComponent::CreateQueryPool()
+        RHI::Ptr<RHI::DeviceQueryPool> SystemComponent::CreateQueryPool()
         {
             return QueryPool::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceQuery> SystemComponent::CreateQuery()
+        RHI::Ptr<RHI::DeviceQuery> SystemComponent::CreateQuery()
         {
             return Query::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceIndirectBufferSignature> SystemComponent::CreateIndirectBufferSignature()
+        RHI::Ptr<RHI::DeviceIndirectBufferSignature> SystemComponent::CreateIndirectBufferSignature()
         {
             return IndirectBufferSignature::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceIndirectBufferWriter> SystemComponent::CreateIndirectBufferWriter()
+        RHI::Ptr<RHI::DeviceIndirectBufferWriter> SystemComponent::CreateIndirectBufferWriter()
         {
             return IndirectBufferWriter::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceRayTracingBufferPools> SystemComponent::CreateRayTracingBufferPools()
+        RHI::Ptr<RHI::DeviceRayTracingBufferPools> SystemComponent::CreateRayTracingBufferPools()
         {
             return RayTracingBufferPools::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceRayTracingBlas> SystemComponent::CreateRayTracingBlas()
+        RHI::Ptr<RHI::DeviceRayTracingBlas> SystemComponent::CreateRayTracingBlas()
         {
             return RayTracingBlas::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceRayTracingTlas> SystemComponent::CreateRayTracingTlas()
+        RHI::Ptr<RHI::DeviceRayTracingTlas> SystemComponent::CreateRayTracingTlas()
         {
             return RayTracingTlas::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceRayTracingPipelineState> SystemComponent::CreateRayTracingPipelineState()
+        RHI::Ptr<RHI::DeviceRayTracingPipelineState> SystemComponent::CreateRayTracingPipelineState()
         {
             return RayTracingPipelineState::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceRayTracingShaderTable> SystemComponent::CreateRayTracingShaderTable()
+        RHI::Ptr<RHI::DeviceRayTracingShaderTable> SystemComponent::CreateRayTracingShaderTable()
         {
             return RayTracingShaderTable::Create();
         }
 
-        RHI::Ptr<RHI::DispatchRaysIndirectBuffer> SystemComponent::CreateDispatchRaysIndirectBuffer()
+        RHI::Ptr<RHI::DeviceDispatchRaysIndirectBuffer> SystemComponent::CreateDispatchRaysIndirectBuffer()
         {
             return DispatchRaysIndirectBuffer::Create();
         }

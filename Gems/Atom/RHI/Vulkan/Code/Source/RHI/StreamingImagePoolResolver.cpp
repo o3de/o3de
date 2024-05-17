@@ -69,7 +69,7 @@ namespace AZ
             m_prologueBarriers.clear();
          }
 
-        void StreamingImagePoolResolver::OnResourceShutdown(const RHI::SingleDeviceResource& resource)
+        void StreamingImagePoolResolver::OnResourceShutdown(const RHI::DeviceResource& resource)
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_barrierLock);
             auto predicate = [&resource](const BarrierInfo& barrierInfo)

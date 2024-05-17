@@ -9,7 +9,7 @@
 
 #include <RHI/Descriptor.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
-#include <Atom/RHI/SingleDeviceImageView.h>
+#include <Atom/RHI/DeviceImageView.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
 namespace AZ
@@ -19,9 +19,9 @@ namespace AZ
         class Image;
 
         class ImageView final
-            : public RHI::SingleDeviceImageView
+            : public RHI::DeviceImageView
         {
-            using Base = RHI::SingleDeviceImageView;
+            using Base = RHI::DeviceImageView;
         public:
             AZ_CLASS_ALLOCATOR(ImageView, AZ::ThreadPoolAllocator);
             AZ_RTTI(ImageView, "{FEC44057-C031-4454-9326-94758C4F729A}", Base);
@@ -45,7 +45,7 @@ namespace AZ
             DescriptorHandle GetDepthStencilDescriptor(RHI::ScopeAttachmentAccess access) const;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::SingleDeviceImageView
+            // RHI::DeviceImageView
             uint32_t GetBindlessReadIndex() const override;
             uint32_t GetBindlessReadWriteIndex() const override;
             //////////////////////////////////////////////////////////////////////////
@@ -54,8 +54,8 @@ namespace AZ
             ImageView() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::SingleDeviceImageView
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::SingleDeviceResource& resourceBase) override;
+            // RHI::DeviceImageView
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::DeviceResource& resourceBase) override;
             RHI::ResultCode InvalidateInternal() override;
             void ShutdownInternal() override;
             //////////////////////////////////////////////////////////////////////////

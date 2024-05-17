@@ -10,7 +10,7 @@
 
 #include <AtomCore/Instance/InstanceData.h>
 
-#include <Atom/RHI/MultiDeviceImagePool.h>
+#include <Atom/RHI/ImagePool.h>
 
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
@@ -77,11 +77,11 @@ namespace AZ
                     Data::Instance<RPI::ShaderResourceGroup> srg=nullptr
                 );
 
-                static Data::Instance<RHI::MultiDeviceImagePool> CreateImagePool(
+                static Data::Instance<RHI::ImagePool> CreateImagePool(
                     RHI::ImagePoolDescriptor& imagePoolDesc);
 
-                static Data::Instance<RHI::MultiDeviceImage> CreateImage2D(
-                    RHI::MultiDeviceImagePool* imagePool, RHI::ImageDescriptor& imageDesc);
+                static Data::Instance<RHI::Image> CreateImage2D(
+                    RHI::ImagePool* imagePool, RHI::ImageDescriptor& imageDesc);
             };
 
             //! The following class matches between a constant buffer structure in CPU and its counter

@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom_RHI_Vulkan_Platform.h>
-#include <Atom/RHI/SingleDeviceBufferView.h>
+#include <Atom/RHI/DeviceBufferView.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
 namespace AZ
@@ -18,9 +18,9 @@ namespace AZ
         class Buffer;
 
         class BufferView final
-            : public RHI::SingleDeviceBufferView 
+            : public RHI::DeviceBufferView 
         {
-            using Base = RHI::SingleDeviceBufferView;
+            using Base = RHI::DeviceBufferView;
 
         public:
             using ResourceType = Buffer;
@@ -53,8 +53,8 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            //  RHI::SingleDeviceBufferView
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::SingleDeviceResource& resourceBase) override;
+            //  RHI::DeviceBufferView
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::DeviceResource& resourceBase) override;
             RHI::ResultCode InvalidateInternal() override;
             void ShutdownInternal() override;
             //////////////////////////////////////////////////////////////////////////

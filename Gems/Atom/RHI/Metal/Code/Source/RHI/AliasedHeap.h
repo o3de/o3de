@@ -38,17 +38,17 @@ namespace AZ
             // RHI::AliasedHeap
             AZStd::unique_ptr<RHI::AliasingBarrierTracker> CreateBarrierTrackerInternal() override;
             RHI::ResultCode InitInternal(RHI::Device& device, const RHI::AliasedHeapDescriptor& descriptor) override;
-            RHI::ResultCode InitImageInternal(const RHI::SingleDeviceImageInitRequest& request, size_t heapOffset) override;
-            RHI::ResultCode InitBufferInternal(const RHI::SingleDeviceBufferInitRequest& request, size_t heapOffset) override;
+            RHI::ResultCode InitImageInternal(const RHI::DeviceImageInitRequest& request, size_t heapOffset) override;
+            RHI::ResultCode InitBufferInternal(const RHI::DeviceBufferInitRequest& request, size_t heapOffset) override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::SingleDeviceResourcePool
+            // RHI::DeviceResourcePool
             void ShutdownInternal() override;
-            void ShutdownResourceInternal(RHI::SingleDeviceResource& resource) override;
+            void ShutdownResourceInternal(RHI::DeviceResource& resource) override;
             //////////////////////////////////////////////////////////////////////////
 
-            void DeactivateResourceInternal(RHI::SingleDeviceResource& resource, Scope& scope);
+            void DeactivateResourceInternal(RHI::DeviceResource& resource, Scope& scope);
 
             Device& GetMetalRHIDevice() const;        
 

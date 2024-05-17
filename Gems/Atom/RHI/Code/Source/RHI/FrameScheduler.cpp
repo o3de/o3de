@@ -19,11 +19,11 @@
 #include <Atom/RHI/MemoryStatisticsBus.h>
 #include <Atom/RHI/ResourceInvalidateBus.h>
 #include <Atom/RHI/ScopeProducer.h>
-#include <Atom/RHI/SingleDeviceShaderResourceGroupPool.h>
-#include <Atom/RHI/MultiDeviceTransientAttachmentPool.h>
+#include <Atom/RHI/DeviceShaderResourceGroupPool.h>
+#include <Atom/RHI/TransientAttachmentPool.h>
 #include <Atom/RHI/ResourcePoolDatabase.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/SingleDeviceRayTracingShaderTable.h>
+#include <Atom/RHI/DeviceRayTracingShaderTable.h>
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Jobs/Algorithms.h>
@@ -68,7 +68,7 @@ namespace AZ::RHI
 
         for (auto& [deviceIndex, transientAttachmentPoolDescriptor] : descriptor.m_transientAttachmentPoolDescriptors)
         {
-            if (SingleDeviceTransientAttachmentPool::NeedsTransientAttachmentPool(transientAttachmentPoolDescriptor))
+            if (DeviceTransientAttachmentPool::NeedsTransientAttachmentPool(transientAttachmentPoolDescriptor))
             {
                 transientAttachmentPoolDeviceMask |= static_cast<RHI::MultiDevice::DeviceMask>(1 << deviceIndex);
             }
@@ -76,7 +76,7 @@ namespace AZ::RHI
 
         if (transientAttachmentPoolDeviceMask != static_cast<RHI::MultiDevice::DeviceMask>(0))
         {
-            m_transientAttachmentPool = aznew MultiDeviceTransientAttachmentPool();
+            m_transientAttachmentPool = aznew TransientAttachmentPool();
             resultCode = m_transientAttachmentPool->Init(transientAttachmentPoolDeviceMask, descriptor.m_transientAttachmentPoolDescriptors);
 
             if (resultCode != ResultCode::Success)
@@ -322,7 +322,7 @@ namespace AZ::RHI
                 {
                     AZ::TaskGraph taskGraph{ "SRG Compilation" };
 
-                    const auto compileIntervalsFunction = [compilesPerJob, &taskGraph](SingleDeviceShaderResourceGroupPool* srgPool)
+                    const auto compileIntervalsFunction = [compilesPerJob, &taskGraph](DeviceShaderResourceGroupPool* srgPool)
                     {
                         srgPool->CompileGroupsBegin();
                         const uint32_t compilesInPool = srgPool->GetGroupsToCompileCount();
@@ -364,7 +364,7 @@ namespace AZ::RHI
                 }
                 else // use Job system
                 {
-                    const auto compileGroupsBeginFunction = [](SingleDeviceShaderResourceGroupPool* srgPool)
+                    const auto compileGroupsBeginFunction = [](DeviceShaderResourceGroupPool* srgPool)
                     {
                         srgPool->CompileGroupsBegin();
                     };
@@ -374,7 +374,7 @@ namespace AZ::RHI
                     // Iterate over each SRG pool and fork jobs to compile SRGs.
                     AZ::JobCompletion jobCompletion;
 
-                    const auto compileIntervalsFunction = [compilesPerJob, &jobCompletion](SingleDeviceShaderResourceGroupPool* srgPool)
+                    const auto compileIntervalsFunction = [compilesPerJob, &jobCompletion](DeviceShaderResourceGroupPool* srgPool)
                     {
                         const uint32_t compilesInPool = srgPool->GetGroupsToCompileCount();
                         const uint32_t jobCount = AZ::DivideAndRoundUp(compilesInPool, compilesPerJob);
@@ -401,7 +401,7 @@ namespace AZ::RHI
 
                     jobCompletion.StartAndWaitForCompletion();
 
-                    const auto compileGroupsEndFunction = [](SingleDeviceShaderResourceGroupPool* srgPool)
+                    const auto compileGroupsEndFunction = [](DeviceShaderResourceGroupPool* srgPool)
                     {
                         srgPool->CompileGroupsEnd();
                     };
@@ -411,7 +411,7 @@ namespace AZ::RHI
             }
             else
             {
-                const auto compileAllLambda = [](SingleDeviceShaderResourceGroupPool* srgPool)
+                const auto compileAllLambda = [](DeviceShaderResourceGroupPool* srgPool)
                 {
                     srgPool->CompileGroupsBegin();
                     srgPool->CompileGroupsForInterval(Interval(0, srgPool->GetGroupsToCompileCount()));
@@ -437,7 +437,7 @@ namespace AZ::RHI
             rayTracingShaderTable->Validate();
 
             [[maybe_unused]] ResultCode resultCode = rayTracingShaderTable->BuildInternal();
-            AZ_Assert(resultCode == ResultCode::Success, "SingleDeviceRayTracingShaderTable build failed");
+            AZ_Assert(resultCode == ResultCode::Success, "DeviceRayTracingShaderTable build failed");
 
             rayTracingShaderTable->m_isQueuedForBuild = false;
         }
@@ -735,7 +735,7 @@ namespace AZ::RHI
         return m_transientAttachmentPool ? &m_transientAttachmentPool->GetDescriptor() : nullptr;
     }
 
-    void FrameScheduler::QueueRayTracingShaderTableForBuild(SingleDeviceRayTracingShaderTable* rayTracingShaderTable)
+    void FrameScheduler::QueueRayTracingShaderTableForBuild(DeviceRayTracingShaderTable* rayTracingShaderTable)
     {
         m_rayTracingShaderTablesToBuild.push_back(rayTracingShaderTable);
     }

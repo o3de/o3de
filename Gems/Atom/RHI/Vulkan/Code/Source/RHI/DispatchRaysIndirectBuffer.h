@@ -7,16 +7,16 @@
  */
 #pragma once
 
-#include <Atom/RHI/DispatchRaysIndirectBuffer.h>
+#include <Atom/RHI/DeviceDispatchRaysIndirectBuffer.h>
 
 namespace AZ
 {
     namespace Vulkan
     {
-        class DispatchRaysIndirectBuffer : public RHI::DispatchRaysIndirectBuffer
+        class DispatchRaysIndirectBuffer : public RHI::DeviceDispatchRaysIndirectBuffer
         {
         public:
-            AZ_RTTI(AZ::Vulkan::DispatchRaysIndirectBuffer, "{D6767937-A314-43A8-82BB-8F8E7D32A937}", RHI::DispatchRaysIndirectBuffer)
+            AZ_RTTI(AZ::Vulkan::DispatchRaysIndirectBuffer, "{D6767937-A314-43A8-82BB-8F8E7D32A937}", RHI::DeviceDispatchRaysIndirectBuffer)
             DispatchRaysIndirectBuffer() = default;
             virtual ~DispatchRaysIndirectBuffer() = default;
             DispatchRaysIndirectBuffer(const DispatchRaysIndirectBuffer&) = delete;
@@ -29,10 +29,10 @@ namespace AZ
                 return aznew DispatchRaysIndirectBuffer;
             }
 
-            void Init(RHI::SingleDeviceBufferPool*) override
+            void Init(RHI::DeviceBufferPool*) override
             {
             }
-            void Build(RHI::SingleDeviceRayTracingShaderTable*) override
+            void Build(RHI::DeviceRayTracingShaderTable*) override
             {
             }
         };

@@ -12,8 +12,8 @@
 #include <RHI/Buffer.h>
 #include <RHI/Device.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/SingleDeviceBufferPool.h>
-#include <Atom/RHI/SingleDeviceRayTracingBufferPools.h>
+#include <Atom/RHI/DeviceBufferPool.h>
+#include <Atom/RHI/DeviceRayTracingBufferPools.h>
 #include <RHI/ShaderResourceGroup.h>
 
 namespace AZ
@@ -25,11 +25,11 @@ namespace AZ
             return aznew RayTracingShaderTable;
         }
 
-        RHI::Ptr<RHI::SingleDeviceBuffer> RayTracingShaderTable::BuildTable(
+        RHI::Ptr<RHI::DeviceBuffer> RayTracingShaderTable::BuildTable(
             const VkPhysicalDeviceRayTracingPipelinePropertiesKHR& rayTracingPipelineProperties,
             const RayTracingPipelineState* rayTracingPipelineState,
-            const RHI::SingleDeviceRayTracingBufferPools& bufferPools,
-            const RHI::RayTracingShaderTableRecordList& recordList,
+            const RHI::DeviceRayTracingBufferPools& bufferPools,
+            const RHI::DeviceRayTracingShaderTableRecordList& recordList,
             uint32_t shaderRecordSize,
             AZStd::string shaderTableName)
         {
@@ -40,12 +40,12 @@ namespace AZ
                 return nullptr;
             }
 
-            RHI::Ptr<RHI::SingleDeviceBuffer> shaderTableBuffer = RHI::Factory::Get().CreateBuffer();
+            RHI::Ptr<RHI::DeviceBuffer> shaderTableBuffer = RHI::Factory::Get().CreateBuffer();
             AZ::RHI::BufferDescriptor shaderTableBufferDescriptor;
             shaderTableBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::CopyRead | RHI::BufferBindFlags::RayTracingShaderTable;
             shaderTableBufferDescriptor.m_byteCount = shaderTableSize;
 
-            AZ::RHI::SingleDeviceBufferInitRequest shaderTableBufferRequest;
+            AZ::RHI::DeviceBufferInitRequest shaderTableBufferRequest;
             shaderTableBufferRequest.m_buffer = shaderTableBuffer.get();
             shaderTableBufferRequest.m_descriptor = shaderTableBufferDescriptor;
             [[maybe_unused]] RHI::ResultCode resultCode = bufferPools.GetShaderTableBufferPool()->InitBuffer(shaderTableBufferRequest);
@@ -54,8 +54,8 @@ namespace AZ
             BufferMemoryView* shaderTableMemoryView = static_cast<Buffer*>(shaderTableBuffer.get())->GetBufferMemoryView();
             shaderTableMemoryView->SetName(shaderTableName);
 
-            RHI::SingleDeviceBufferMapResponse mapResponse;
-            resultCode = bufferPools.GetShaderTableBufferPool()->MapBuffer(RHI::SingleDeviceBufferMapRequest(*shaderTableBuffer, 0, shaderTableSize), mapResponse);
+            RHI::DeviceBufferMapResponse mapResponse;
+            resultCode = bufferPools.GetShaderTableBufferPool()->MapBuffer(RHI::DeviceBufferMapRequest(*shaderTableBuffer, 0, shaderTableSize), mapResponse);
             AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to map shader table buffer");
             uint8_t* mappedData = reinterpret_cast<uint8_t*>(mapResponse.m_data);
 

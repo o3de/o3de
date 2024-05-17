@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/SingleDevicePipelineLibrary.h>
+#include <Atom/RHI/DevicePipelineLibrary.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 namespace AZ
@@ -15,7 +15,7 @@ namespace AZ
     namespace Metal
     {
         class PipelineLibrary final
-            : public RHI::SingleDevicePipelineLibrary
+            : public RHI::DevicePipelineLibrary
         {
         public:
             AZ_CLASS_ALLOCATOR(PipelineLibrary, AZ::SystemAllocator);
@@ -30,16 +30,16 @@ namespace AZ
             PipelineLibrary() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::SingleDevicePipelineLibrary
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::SingleDevicePipelineLibraryDescriptor& descriptor) override;
+            // RHI::DevicePipelineLibrary
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::DevicePipelineLibraryDescriptor& descriptor) override;
             void ShutdownInternal() override;
-            RHI::ResultCode MergeIntoInternal(AZStd::span<const RHI::SingleDevicePipelineLibrary* const> libraries) override;
+            RHI::ResultCode MergeIntoInternal(AZStd::span<const RHI::DevicePipelineLibrary* const> libraries) override;
             RHI::ConstPtr<RHI::PipelineLibraryData> GetSerializedDataInternal() const override;
             bool IsMergeRequired() const;
             bool SaveSerializedDataInternal(const AZStd::string& filePath) const;
             //////////////////////////////////////////////////////////////////////////
 
-            RHI::SingleDevicePipelineLibraryDescriptor m_descriptor;
+            RHI::DevicePipelineLibraryDescriptor m_descriptor;
             id<MTLBinaryArchive> m_mtlBinaryArchive = nil;
             mutable AZStd::mutex m_mutex;
             

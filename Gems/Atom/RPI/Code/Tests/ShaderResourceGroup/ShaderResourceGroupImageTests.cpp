@@ -27,11 +27,11 @@ namespace UnitTest
         Data::Instance<Image> m_whiteImage;
         Data::Instance<Image> m_blackImage;
         Data::Instance<Image> m_greyImage;
-        Ptr<RHI::MultiDeviceImageView> m_imageViewA;
-        Ptr<RHI::MultiDeviceImageView> m_imageViewB;
-        Ptr<RHI::MultiDeviceImageView> m_imageViewC;
+        Ptr<RHI::ImageView> m_imageViewA;
+        Ptr<RHI::ImageView> m_imageViewB;
+        Ptr<RHI::ImageView> m_imageViewC;
         AZStd::vector<Data::Instance<Image>> m_threeImages;
-        AZStd::vector<const RHI::MultiDeviceImageView*> m_threeImageViews;
+        AZStd::vector<const RHI::ImageView*> m_threeImageViews;
         const RHI::ShaderInputImageIndex m_indexImageA{ 0 };
         const RHI::ShaderInputImageIndex m_indexImageB{ 1 };
         const RHI::ShaderInputImageIndex m_indexImageArray{ 2 };
@@ -84,7 +84,7 @@ namespace UnitTest
             m_testSrg = nullptr;
 
             m_threeImages = AZStd::vector<Data::Instance<Image>>();
-            m_threeImageViews = AZStd::vector<const RHI::MultiDeviceImageView*>();
+            m_threeImageViews = AZStd::vector<const RHI::ImageView*>();
             m_imageViewA = nullptr;
             m_imageViewB = nullptr;
             m_imageViewC = nullptr;
@@ -297,7 +297,7 @@ namespace UnitTest
         EXPECT_EQ(m_imageViewA, m_testSrg->GetImageView(m_indexImageA, 0));
         EXPECT_EQ(m_imageViewB, m_testSrg->GetImageView(m_indexImageB, 0));
 
-        // The RPI::Image should get cleared when you set a RHI::SingleDeviceImageView directly
+        // The RPI::Image should get cleared when you set a RHI::DeviceImageView directly
         EXPECT_EQ(nullptr, m_testSrg->GetImage(m_indexImageA));
         EXPECT_EQ(nullptr, m_testSrg->GetImage(m_indexImageB));
     }
@@ -325,7 +325,7 @@ namespace UnitTest
         EXPECT_EQ(m_imageViewB, m_testSrg->GetImageView(m_indexImageArray, 1));
         EXPECT_EQ(m_imageViewC, m_testSrg->GetImageView(m_indexImageArray, 2));
 
-        // The RPI::Image should get cleared when you set a RHI::SingleDeviceImageView directly
+        // The RPI::Image should get cleared when you set a RHI::DeviceImageView directly
         EXPECT_EQ(nullptr, m_testSrg->GetImage(m_indexImageArray, 0));
         EXPECT_EQ(nullptr, m_testSrg->GetImage(m_indexImageArray, 1));
         EXPECT_EQ(nullptr, m_testSrg->GetImage(m_indexImageArray, 2));
@@ -353,7 +353,7 @@ namespace UnitTest
 
         ProcessQueuedSrgCompilations(m_testShaderAsset, m_testSrgLayout->GetName());
 
-        AZStd::vector<const RHI::MultiDeviceImageView*> alternateImageViews = { m_imageViewB.get(), nullptr };
+        AZStd::vector<const RHI::ImageView*> alternateImageViews = { m_imageViewB.get(), nullptr };
 
         EXPECT_TRUE(m_testSrg->SetImageViewArray(m_indexImageArray, alternateImageViews));
         m_testSrg->Compile();
@@ -367,7 +367,7 @@ namespace UnitTest
     {
         // Make sure the no changes are made when a validation failure is detected
 
-        AZStd::vector<const RHI::MultiDeviceImageView*> tooManyImageViews{ 4, m_imageViewA.get() };
+        AZStd::vector<const RHI::ImageView*> tooManyImageViews{ 4, m_imageViewA.get() };
 
         AZ_TEST_START_ASSERTTEST;
         EXPECT_FALSE(m_testSrg->SetImageViewArray(m_indexImageArray, tooManyImageViews));
@@ -381,7 +381,7 @@ namespace UnitTest
 
     TEST_F(ShaderResourceGroupImageTests, TestSetImageViewArrayAtOffset)
     {
-        AZStd::vector<const RHI::MultiDeviceImageView*> twoImageViews = { m_imageViewA.get(), m_imageViewB.get() };
+        AZStd::vector<const RHI::ImageView*> twoImageViews = { m_imageViewA.get(), m_imageViewB.get() };
 
         // Test set operation, skipping the first element...
 
@@ -404,7 +404,7 @@ namespace UnitTest
     {
         // Make sure the no changes are made when a validation failure is detected
 
-        AZStd::vector<const RHI::MultiDeviceImageView*> tooManyImageViews{ 3, m_imageViewA.get() };
+        AZStd::vector<const RHI::ImageView*> tooManyImageViews{ 3, m_imageViewA.get() };
 
         AZ_TEST_START_ASSERTTEST;
         EXPECT_FALSE(m_testSrg->SetImageViewArray(m_indexImageArray, tooManyImageViews, 1));

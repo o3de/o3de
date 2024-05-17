@@ -156,12 +156,12 @@ namespace AZ::RHI
         return "Unknown";
     }
     
-    const MultiDeviceResourceView* ScopeAttachment::GetResourceView() const
+    const ResourceView* ScopeAttachment::GetResourceView() const
     {
         return m_resourceView.get();
     }
 
-    void ScopeAttachment::SetResourceView(ConstPtr<MultiDeviceResourceView> resourceView)
+    void ScopeAttachment::SetResourceView(ConstPtr<ResourceView> resourceView)
     {
         m_resourceView = AZStd::move(resourceView);
     }

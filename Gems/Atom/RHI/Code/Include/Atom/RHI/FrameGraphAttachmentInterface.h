@@ -8,8 +8,8 @@
 #pragma once
 
 #include <Atom/RHI/FrameGraphAttachmentDatabase.h>
-#include <Atom/RHI/MultiDeviceSwapChain.h>
-#include <Atom/RHI/MultiDeviceBuffer.h>
+#include <Atom/RHI/SwapChain.h>
+#include <Atom/RHI/Buffer.h>
 
 #include <Atom/RHI.Reflect/TransientImageDescriptor.h>
 #include <Atom/RHI.Reflect/TransientBufferDescriptor.h>
@@ -17,8 +17,8 @@
 
 namespace AZ::RHI
 {
-    class MultiDeviceImage;
-    class MultiDeviceBuffer;
+    class Image;
+    class Buffer;
 
     //! This interface exposes FrameGraphAttachmentDatabase functionality to non-RHI systems (like the RPI). This is in order
     //! to reduce access to certain public functions in FrameGraphAttachmentDatabase that are intended for RHI use only.
@@ -47,21 +47,21 @@ namespace AZ::RHI
 
         //! Imports a persistent image as an attachment.
         //! \param imageAttachment The image attachment to import.
-        ResultCode ImportImage(const AttachmentId& attachmentId, Ptr<MultiDeviceImage> image)
+        ResultCode ImportImage(const AttachmentId& attachmentId, Ptr<Image> image)
         {
             return m_attachmentDatabase.ImportImage(attachmentId, image);
         }
 
         //! Imports a swap chain image as an attachment.
         //! \param swapChainAttachment The swap chain attachment to import.
-        ResultCode ImportSwapChain(const AttachmentId& attachmentId, Ptr<MultiDeviceSwapChain> swapChain)
+        ResultCode ImportSwapChain(const AttachmentId& attachmentId, Ptr<SwapChain> swapChain)
         {
             return m_attachmentDatabase.ImportSwapChain(attachmentId, swapChain);
         }
 
         //! Imports a persistent buffer as an attachment.
         //! \param bufferAttachment The buffer attachment to import.
-        ResultCode ImportBuffer(const AttachmentId& attachmentId, Ptr<MultiDeviceBuffer> buffer)
+        ResultCode ImportBuffer(const AttachmentId& attachmentId, Ptr<Buffer> buffer)
         {
             return m_attachmentDatabase.ImportBuffer(attachmentId, buffer);
         }

@@ -278,7 +278,7 @@ namespace AZ
             m_bakeExposure = bakeExposure;
         }
 
-        RHI::ConstPtr<RHI::MultiDeviceDrawPacket> ReflectionProbe::BuildDrawPacket(
+        RHI::ConstPtr<RHI::DrawPacket> ReflectionProbe::BuildDrawPacket(
             const Data::Instance<RPI::ShaderResourceGroup>& srg,
             const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
             const RHI::DrawListTag& drawListTag,
@@ -291,7 +291,7 @@ namespace AZ
                 return nullptr;
             }
 
-            RHI::MultiDeviceDrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
+            RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
 
             RHI::DrawIndexed drawIndexed;
             drawIndexed.m_indexCount = (uint32_t)m_reflectionRenderData->m_boxIndexCount;
@@ -303,7 +303,7 @@ namespace AZ
             drawPacketBuilder.SetIndexBufferView(m_reflectionRenderData->m_boxIndexBufferView);
             drawPacketBuilder.AddShaderResourceGroup(srg->GetRHIShaderResourceGroup());
 
-            RHI::MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest drawRequest;
+            RHI::DrawPacketBuilder::DrawRequest drawRequest;
             drawRequest.m_listTag = drawListTag;
             drawRequest.m_pipelineState = pipelineState->GetRHIPipelineState();
             drawRequest.m_streamBufferViews = m_reflectionRenderData->m_boxPositionBufferView;

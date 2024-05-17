@@ -53,7 +53,7 @@ namespace AZ
                 }
             }
 
-            RHI::Ptr<RHI::MultiDeviceStreamingImagePool> pool = aznew RHI::MultiDeviceStreamingImagePool;
+            RHI::Ptr<RHI::StreamingImagePool> pool = aznew RHI::StreamingImagePool;
 
             const RHI::ResultCode resultCode = pool->Init(deviceMask, poolAsset.GetPoolDescriptor());
 
@@ -65,7 +65,7 @@ namespace AZ
                 return RHI::ResultCode::Success;
             }
 
-            AZ_Warning("StreamingImagePoolAsset", false, "Failed to initialize RHI::MultiDeviceStreamingImagePool.");
+            AZ_Warning("StreamingImagePoolAsset", false, "Failed to initialize RHI::StreamingImagePool.");
             return resultCode;
         }
 
@@ -91,12 +91,12 @@ namespace AZ
             m_controller->Update();
         }
 
-        RHI::MultiDeviceStreamingImagePool* StreamingImagePool::GetRHIPool()
+        RHI::StreamingImagePool* StreamingImagePool::GetRHIPool()
         {
             return m_pool.get();
         }
 
-        const RHI::MultiDeviceStreamingImagePool* StreamingImagePool::GetRHIPool() const
+        const RHI::StreamingImagePool* StreamingImagePool::GetRHIPool() const
         {
             return m_pool.get();
         }

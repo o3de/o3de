@@ -13,8 +13,8 @@
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
 #include <Atom/RHI.Reflect/ImageViewDescriptor.h>
 #include <Atom/RHI.Reflect/SamplerState.h>
-#include <Atom/RHI/SingleDeviceBuffer.h>
-#include <Atom/RHI/SingleDeviceImage.h>
+#include <Atom/RHI/DeviceBuffer.h>
+#include <Atom/RHI/DeviceImage.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <RHI/ShaderResourceGroup.h>
 

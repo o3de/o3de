@@ -206,13 +206,13 @@ namespace AZ
         }
 
         void ArgumentBuffer::UpdateImageViews(const RHI::ShaderInputImageDescriptor& shaderInputImage,
-                                              const AZStd::span<const RHI::ConstPtr<RHI::SingleDeviceImageView>>& imageViews)
+                                              const AZStd::span<const RHI::ConstPtr<RHI::DeviceImageView>>& imageViews)
         {
             int imageArrayLen = 0;
             AZStd::array<id<MTLTexture>, MaxEntriesInArgTable> mtlTextures;
             
             m_resourceBindings[shaderInputImage.m_name].clear();
-            for (const RHI::ConstPtr<RHI::SingleDeviceImageView>& imageViewBase : imageViews)
+            for (const RHI::ConstPtr<RHI::DeviceImageView>& imageViewBase : imageViews)
             {
                 if (imageViewBase && !imageViewBase->IsStale())
                 {
@@ -270,7 +270,7 @@ namespace AZ
         }
 
         void ArgumentBuffer::UpdateBufferViews(const RHI::ShaderInputBufferDescriptor& shaderInputBuffer,
-                                               const AZStd::span<const RHI::ConstPtr<RHI::SingleDeviceBufferView>>& bufferViews)
+                                               const AZStd::span<const RHI::ConstPtr<RHI::DeviceBufferView>>& bufferViews)
         {
             int bufferArrayLen = 0;
             AZStd::array<id<MTLBuffer>, MaxEntriesInArgTable> mtlBuffers;
@@ -278,7 +278,7 @@ namespace AZ
             AZStd::array<id<MTLTexture>, MaxEntriesInArgTable> mtlTextures;
 
             m_resourceBindings[shaderInputBuffer.m_name].clear();
-            for (const RHI::ConstPtr<RHI::SingleDeviceBufferView>& bufferViewBase : bufferViews)
+            for (const RHI::ConstPtr<RHI::DeviceBufferView>& bufferViewBase : bufferViews)
             {
                 if (bufferViewBase && !bufferViewBase->IsStale())
                 {

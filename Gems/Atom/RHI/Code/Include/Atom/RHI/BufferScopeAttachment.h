@@ -13,7 +13,7 @@
 
 namespace AZ::RHI
 {
-    class MultiDeviceBufferView;
+    class BufferView;
     class BufferFrameAttachment;
 
     //! A specialization of a scope attachment for buffers. Provides
@@ -47,10 +47,10 @@ namespace AZ::RHI
         BufferScopeAttachment* GetNext();
 
         /// Returns the buffer view set on the scope attachment.
-        const AZ::RHI::MultiDeviceBufferView* GetBufferView() const;
+        const AZ::RHI::BufferView* GetBufferView() const;
 
         /// Assigns a buffer view to the scope attachment.
-        void SetBufferView(ConstPtr<MultiDeviceBufferView> bufferView);
+        void SetBufferView(ConstPtr<BufferView> bufferView);
 
     private:
         BufferScopeAttachmentDescriptor m_descriptor;

@@ -24,7 +24,7 @@ namespace AZ
             : m_queryPool(queryPool)
             , m_deviceIndex(deviceIndex)
         {
-            m_resolveFence = new RHI::MultiDeviceFence;
+            m_resolveFence = new RHI::Fence;
             m_resolveFence->Init(static_cast<RHI::MultiDevice::DeviceMask>(1 << deviceIndex), RHI::FenceState::Reset);
         }
 

@@ -11,7 +11,7 @@
 #include <AzCore/std/containers/unordered_map.h>
 
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/SingleDeviceDrawItem.h>
+#include <Atom/RHI/DeviceDrawItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 
 #include <Atom/RPI.Reflect/Shader/ShaderVariantKey.h>

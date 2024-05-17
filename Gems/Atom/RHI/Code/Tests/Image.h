@@ -7,36 +7,36 @@
  */
 #pragma once
 
-#include <Atom/RHI/SingleDeviceImagePool.h>
-#include <Atom/RHI/SingleDeviceImageView.h>
+#include <Atom/RHI/DeviceImagePool.h>
+#include <Atom/RHI/DeviceImageView.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 namespace UnitTest
 {
     class ImageView
-        : public AZ::RHI::SingleDeviceImageView
+        : public AZ::RHI::DeviceImageView
     {
     public:
         AZ_CLASS_ALLOCATOR(ImageView, AZ::SystemAllocator);
 
     private:
-        AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::SingleDeviceResource&) override;
+        AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::DeviceResource&) override;
         AZ::RHI::ResultCode InvalidateInternal() override;
         void ShutdownInternal() override;
     };
 
     class Image
-        : public AZ::RHI::SingleDeviceImage
+        : public AZ::RHI::DeviceImage
     {
     public:
         AZ_CLASS_ALLOCATOR(Image, AZ::SystemAllocator);
 
     private:
-        void GetSubresourceLayoutsInternal(const AZ::RHI::ImageSubresourceRange&, AZ::RHI::SingleDeviceImageSubresourceLayout*, size_t*) const override {}
+        void GetSubresourceLayoutsInternal(const AZ::RHI::ImageSubresourceRange&, AZ::RHI::DeviceImageSubresourceLayout*, size_t*) const override {}
     };
 
     class ImagePool
-        : public AZ::RHI::SingleDeviceImagePool
+        : public AZ::RHI::DeviceImagePool
     {
     public:
         AZ_CLASS_ALLOCATOR(ImagePool, AZ::SystemAllocator);
@@ -46,10 +46,10 @@ namespace UnitTest
 
         void ShutdownInternal() override;
 
-        AZ::RHI::ResultCode InitImageInternal(const AZ::RHI::SingleDeviceImageInitRequest& request) override;
+        AZ::RHI::ResultCode InitImageInternal(const AZ::RHI::DeviceImageInitRequest& request) override;
 
-        AZ::RHI::ResultCode UpdateImageContentsInternal(const AZ::RHI::SingleDeviceImageUpdateRequest&) override { return AZ::RHI::ResultCode::Success; }
+        AZ::RHI::ResultCode UpdateImageContentsInternal(const AZ::RHI::DeviceImageUpdateRequest&) override { return AZ::RHI::ResultCode::Success; }
 
-        void ShutdownResourceInternal(AZ::RHI::SingleDeviceResource& image) override;
+        void ShutdownResourceInternal(AZ::RHI::DeviceResource& image) override;
     };
 }

@@ -21,14 +21,14 @@
 
 namespace AZ::RHI
 {
-    class MultiDeviceImage;
-    class MultiDeviceBuffer;
+    class Image;
+    class Buffer;
     class ImageFrameAttachment;
     class SwapChainFrameAttachment;
     class BufferFrameAttachment;
     class ImageScopeAttachment;
     class BufferScopeAttachment;
-    class MultiDeviceSwapChain;
+    class SwapChain;
     struct TransientImageDescriptor;
     struct TransientBufferDescriptor;
     struct ResolveScopeAttachmentDescriptor;
@@ -42,13 +42,13 @@ namespace AZ::RHI
         void Clear();
 
         //! Imports an image into the database.
-        ResultCode ImportImage(const AttachmentId& attachmentId, Ptr<MultiDeviceImage> image);
+        ResultCode ImportImage(const AttachmentId& attachmentId, Ptr<Image> image);
 
         //! Imports a swapchain into the database.
-        ResultCode ImportSwapChain(const AttachmentId& attachmentId, Ptr<MultiDeviceSwapChain> swapChain);
+        ResultCode ImportSwapChain(const AttachmentId& attachmentId, Ptr<SwapChain> swapChain);
 
         //! Imports a buffer into the database.
-        ResultCode ImportBuffer(const AttachmentId& attachmentId, Ptr<MultiDeviceBuffer> buffer);
+        ResultCode ImportBuffer(const AttachmentId& attachmentId, Ptr<Buffer> buffer);
 
         //! Creates a transient image and inserts it into the database.
         ResultCode CreateTransientImage(const TransientImageDescriptor& descriptor);
@@ -136,7 +136,7 @@ namespace AZ::RHI
 
         //! Emplaces a use of a resource pool by a specific scope. Returns the ScopeId of the most recent use of the pool or en empty
         //! ScopeId if this is the first use.
-        ScopeId EmplaceResourcePoolUse(MultiDeviceResourcePool& pool, ScopeId scopeId);
+        ScopeId EmplaceResourcePoolUse(ResourcePool& pool, ScopeId scopeId);
 
     private:
         bool ValidateAttachmentIsUnregistered(const AttachmentId& attachmentId) const;
@@ -162,7 +162,7 @@ namespace AZ::RHI
         AZStd::vector<BufferFrameAttachment*>                   m_bufferAttachments;
         AZStd::vector<BufferFrameAttachment*>                   m_importedBufferAttachments;
         AZStd::vector<BufferFrameAttachment*>                   m_transientBufferAttachments;
-        AZStd::unordered_map<Ptr<MultiDeviceResourcePool>, ScopeId>        m_resourcePoolLastScopeUse;
+        AZStd::unordered_map<Ptr<ResourcePool>, ScopeId>        m_resourcePoolLastScopeUse;
     };
 
     template <typename FrameAttachmentType, typename... Args>

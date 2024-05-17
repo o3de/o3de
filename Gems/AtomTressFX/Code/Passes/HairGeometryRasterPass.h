@@ -20,7 +20,7 @@ namespace AZ
 {
     namespace RHI
     {
-        struct DrawItem;
+        class DrawItem;
     }
 
     namespace Render
@@ -93,7 +93,7 @@ namespace AZ
                 // To help create the pipeline state 
                 RPI::PassDescriptor m_passDescriptor;
 
-                const RHI::MultiDevicePipelineState* m_pipelineState = nullptr;
+                const RHI::PipelineState* m_pipelineState = nullptr;
                 RPI::ViewPtr m_currentView = nullptr;
 
                 AZStd::mutex m_mutex;

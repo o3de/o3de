@@ -61,7 +61,7 @@ namespace AZ
              //! Compute render data
             Data::Instance<RPI::ShaderResourceGroup> ComputeSrg;          // Per object Compute data - can be shared across instances
             AZStd::vector<SrgBufferDescriptor> ComputeBuffersDescriptors;
-            AZStd::vector<Data::Instance<RHI::MultiDeviceBufferView>> ComputeBuffersViews;
+            AZStd::vector<Data::Instance<RHI::BufferView>> ComputeBuffersViews;
             AZStd::vector<Data::Instance<Meshlets::SharedBufferAllocation>> ComputeBuffersAllocators;
             AZStd::vector <Data::Instance<RPI::Buffer>> ComputeBuffers;   // stand alone non shared buffers
             MeshletsDispatchItem MeshDispatchItem;
@@ -69,11 +69,11 @@ namespace AZ
             //! Render pass data
             Data::Instance<RPI::ShaderResourceGroup> RenderObjectSrg;     // Per object render data - includes instanceId and vertex buffers
             AZStd::vector<SrgBufferDescriptor> RenderBuffersDescriptors;
-            RHI::MultiDeviceIndexBufferView IndexBufferView;
-            AZStd::vector<Data::Instance<RHI::MultiDeviceBufferView>> RenderBuffersViews;
+            RHI::IndexBufferView IndexBufferView;
+            AZStd::vector<Data::Instance<RHI::BufferView>> RenderBuffersViews;
             AZStd::vector <Data::Instance<RPI::Buffer>> RenderBuffers;    // stand alone non shared buffers
 
-            const RHI::MultiDeviceDrawPacket* MeshDrawPacket = nullptr;    // Should be moved to the instance data structure
+            const RHI::DrawPacket* MeshDrawPacket = nullptr;    // Should be moved to the instance data structure
         };
         using ModelLodDataArray = AZStd::vector<MeshRenderData*>;    // MeshRenderData per mesh in the Lod
 
@@ -148,7 +148,7 @@ namespace AZ
             uint32_t CreateMeshletsRenderObject(const RPI::ModelLodAsset::Mesh& meshAsset, MeshRenderData &meshRenderData);
 
 
-            bool BuildDrawPacket( RHI::MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest& drawRequest, MeshRenderData& meshRenderData);
+            bool BuildDrawPacket( RHI::DrawPacketBuilder::DrawRequest& drawRequest, MeshRenderData& meshRenderData);
 
             bool CreateAndBindRenderBuffers(MeshRenderData &meshRenderData);
 

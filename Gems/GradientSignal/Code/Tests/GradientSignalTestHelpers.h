@@ -19,12 +19,12 @@
 
 namespace UnitTest
 {
-    //! Helper method to build a AZ::RHI::MultiDeviceImageSubresourceLayout
+    //! Helper method to build a AZ::RHI::ImageSubresourceLayout
     //! @param width The width of the image
     //! @param height The height of the image
     //! @param pixelSize Number of bytes per pixel
-    //! @return The AZ::RHI::MultiDeviceImageSubresourceLayout that has been filled out appropriately
-    AZ::RHI::SingleDeviceImageSubresourceLayout BuildSubImageLayout(AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize);
+    //! @return The AZ::RHI::ImageSubresourceLayout that has been filled out appropriately
+    AZ::RHI::DeviceImageSubresourceLayout BuildSubImageLayout(AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize);
 
     //! Build a deterministic random set of image pixel data
     //! @param width Width of the image

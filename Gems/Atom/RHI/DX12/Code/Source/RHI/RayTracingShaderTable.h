@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/SingleDeviceRayTracingShaderTable.h>
+#include <Atom/RHI/DeviceRayTracingShaderTable.h>
 #include <Atom/RHI.Reflect/FrameCountMaxRingBuffer.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -20,7 +20,7 @@ namespace AZ
         class Buffer;
 
         class RayTracingShaderTable final
-            : public RHI::SingleDeviceRayTracingShaderTable
+            : public RHI::DeviceRayTracingShaderTable
         {
         public:
             AZ_CLASS_ALLOCATOR(RayTracingShaderTable, AZ::SystemAllocator);
@@ -52,17 +52,17 @@ namespace AZ
             RayTracingShaderTable() = default;
 
 #ifdef AZ_DX12_DXR_SUPPORT
-            uint32_t FindLargestRecordSize(const RHI::RayTracingShaderTableRecordList& recordList);
+            uint32_t FindLargestRecordSize(const RHI::DeviceRayTracingShaderTableRecordList& recordList);
             RHI::Ptr<Buffer> BuildTable(RHI::Device& deviceBase,
-                                        const RHI::SingleDeviceRayTracingBufferPools& bufferPools,
-                                        const RHI::RayTracingShaderTableRecordList& recordList,
+                                        const RHI::DeviceRayTracingBufferPools& bufferPools,
+                                        const RHI::DeviceRayTracingShaderTableRecordList& recordList,
                                         uint32_t shaderRecordSize,
                                         AZStd::wstring shaderTableName,
                                         Microsoft::WRL::ComPtr<ID3D12StateObjectProperties>& stateObjectProperties);
 #endif
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::SingleDeviceRayTracingShaderTable
+            // RHI::DeviceRayTracingShaderTable
             RHI::ResultCode BuildInternal() override;
             //////////////////////////////////////////////////////////////////////////
 

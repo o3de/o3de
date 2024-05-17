@@ -16,8 +16,8 @@
 
 namespace Platform
 {
-    AZ::RHI::ResultCode MapBufferInternal(const AZ::RHI::SingleDeviceBufferMapRequest& request, AZ::RHI::SingleDeviceBufferMapResponse& response);
-    void UnMapBufferInternal(AZ::RHI::SingleDeviceBuffer& bufferBase);
+    AZ::RHI::ResultCode MapBufferInternal(const AZ::RHI::DeviceBufferMapRequest& request, AZ::RHI::DeviceBufferMapResponse& response);
+    void UnMapBufferInternal(AZ::RHI::DeviceBuffer& bufferBase);
 }
 
 namespace AZ
@@ -82,7 +82,7 @@ namespace AZ
             Base::OnFrameEnd();
         }
 
-        RHI::ResultCode BufferPool::InitBufferInternal(RHI::SingleDeviceBuffer& bufferBase, const RHI::BufferDescriptor& bufferDescriptor)
+        RHI::ResultCode BufferPool::InitBufferInternal(RHI::DeviceBuffer& bufferBase, const RHI::BufferDescriptor& bufferDescriptor)
         {
             BufferMemoryView memoryView = m_allocator.Allocate(bufferDescriptor.m_byteCount);
             if (memoryView.IsValid())
@@ -99,7 +99,7 @@ namespace AZ
             return RHI::ResultCode::OutOfMemory;
         }
 
-        void BufferPool::ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase)
+        void BufferPool::ShutdownResourceInternal(RHI::DeviceResource& resourceBase)
         {
             Buffer& buffer = static_cast<Buffer&>(resourceBase);
 
@@ -113,7 +113,7 @@ namespace AZ
             buffer.m_pendingResolves = 0;
         }
 
-        RHI::ResultCode BufferPool::OrphanBufferInternal(RHI::SingleDeviceBuffer& bufferBase)
+        RHI::ResultCode BufferPool::OrphanBufferInternal(RHI::DeviceBuffer& bufferBase)
         {
             Buffer& buffer = static_cast<Buffer&>(bufferBase);
             
@@ -128,7 +128,7 @@ namespace AZ
             return RHI::ResultCode::OutOfMemory;
         }
         
-        RHI::ResultCode BufferPool::MapBufferInternal(const RHI::SingleDeviceBufferMapRequest& request, RHI::SingleDeviceBufferMapResponse& response)
+        RHI::ResultCode BufferPool::MapBufferInternal(const RHI::DeviceBufferMapRequest& request, RHI::DeviceBufferMapResponse& response)
         {
             Buffer& buffer = *static_cast<Buffer*>(request.m_buffer);            
             MTLStorageMode mtlStorageMode = buffer.GetMemoryView().GetStorageMode();
@@ -172,7 +172,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        void BufferPool::UnmapBufferInternal(RHI::SingleDeviceBuffer& bufferBase)
+        void BufferPool::UnmapBufferInternal(RHI::DeviceBuffer& bufferBase)
         {
             //MTLStorageModeShared - We need to do nothing here as the memory is shared
             //MTLStorageModePrivate - Do nothing because the Resolver will take care of this via a staging buffer
@@ -180,7 +180,7 @@ namespace AZ
             Platform::UnMapBufferInternal(bufferBase);
         }
         
-        RHI::ResultCode BufferPool::StreamBufferInternal(const RHI::SingleDeviceBufferStreamRequest& request)
+        RHI::ResultCode BufferPool::StreamBufferInternal(const RHI::DeviceBufferStreamRequest& request)
         {
             GetDevice().GetAsyncUploadQueue().QueueUpload(request);
             return RHI::ResultCode::Success;

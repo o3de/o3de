@@ -116,7 +116,7 @@ namespace AZ
         {
             for (const RHI::ConstPtr<ImageView>& imageView : m_attachments)
             {
-                const RHI::SingleDeviceImage& image = imageView->GetImage();
+                const RHI::DeviceImage& image = imageView->GetImage();
                 RHI::ResourceInvalidateBus::MultiHandler::BusDisconnect(&image);
             }
             Invalidate();

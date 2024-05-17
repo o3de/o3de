@@ -263,7 +263,7 @@ namespace AZ
                     {
                         inputIndex = imageIndex;
                     }
-                    const RHI::MultiDeviceImageView* imageView =
+                    const RHI::ImageView* imageView =
                         context.GetImageView(attachment->GetAttachmentId(), binding.m_unifiedScopeDesc.GetImageViewDescriptor(), binding.m_scopeAttachmentUsage);
 
                     if (binding.m_shaderImageDimensionsNameIndex.HasName())
@@ -303,7 +303,7 @@ namespace AZ
                     {
                         inputIndex = bufferIndex;
                     }
-                    const RHI::MultiDeviceBufferView* bufferView = context.GetBufferView(attachment->GetAttachmentId(), binding.m_scopeAttachmentUsage);
+                    const RHI::BufferView* bufferView = context.GetBufferView(attachment->GetAttachmentId(), binding.m_scopeAttachmentUsage);
                     m_shaderResourceGroup->SetBufferView(RHI::ShaderInputBufferIndex(inputIndex), bufferView, arrayIndex);
                     ++bufferIndex;
                 }
@@ -357,7 +357,7 @@ namespace AZ
         void RenderPass::CollectSrgs()
         {
             // Scene srg
-            const RHI::MultiDeviceShaderResourceGroup* sceneSrg = m_pipeline->GetScene()->GetRHIShaderResourceGroup();
+            const RHI::ShaderResourceGroup* sceneSrg = m_pipeline->GetScene()->GetRHIShaderResourceGroup();
             BindSrg(sceneSrg);
 
             // View srg
@@ -381,7 +381,7 @@ namespace AZ
             m_shaderResourceGroupsToBind.clear();
         }
 
-        void RenderPass::BindSrg(const RHI::MultiDeviceShaderResourceGroup* srg)
+        void RenderPass::BindSrg(const RHI::ShaderResourceGroup* srg)
         {
             if (srg)
             {

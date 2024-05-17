@@ -16,9 +16,9 @@ namespace UnitTest
     struct MultiDeviceDrawPacketData;
 }
 
-#define AZ_RHI_MULTI_DEVICE_OBJECT_GETTER(Type) AZ_FORCE_INLINE Ptr<SingleDevice##Type> GetDevice##Type(int deviceIndex) const \
+#define AZ_RHI_MULTI_DEVICE_OBJECT_GETTER(Type) AZ_FORCE_INLINE Ptr<Device##Type> GetDevice##Type(int deviceIndex) const \
 { \
-    return GetDeviceObject<SingleDevice##Type>(deviceIndex); \
+    return GetDeviceObject<Device##Type>(deviceIndex); \
 }
 
 namespace AZ::RHI

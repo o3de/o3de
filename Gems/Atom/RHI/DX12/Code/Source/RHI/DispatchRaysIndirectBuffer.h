@@ -8,8 +8,8 @@
 #pragma once
 
 #include "RHI/MemoryView.h"
-#include <Atom/RHI/DispatchRaysIndirectBuffer.h>
-#include <Atom/RHI/SingleDeviceIndirectBufferView.h>
+#include <Atom/RHI/DeviceDispatchRaysIndirectBuffer.h>
+#include <Atom/RHI/DeviceIndirectBufferView.h>
 
 struct ID3D12GraphicsCommandList;
 namespace AZ
@@ -21,10 +21,10 @@ namespace AZ
         // This means, we can't use the indirect ray dispatch buffer, usually passed using a slot of the pass.
         // This class is reponsible for copying the shader table, and the actual indirect raytracing arguments to a DX12 specific buffer
         // The buffer is then used by the commandlist as the argument buffer
-        class DispatchRaysIndirectBuffer : public RHI::DispatchRaysIndirectBuffer
+        class DispatchRaysIndirectBuffer : public RHI::DeviceDispatchRaysIndirectBuffer
         {
         public:
-            AZ_RTTI(AZ::DX12::DispatchRaysIndirectBuffer, "{623567A8-5A73-46FE-BAE6-6B8F59BDEFB3}", RHI::DispatchRaysIndirectBuffer)
+            AZ_RTTI(AZ::DX12::DispatchRaysIndirectBuffer, "{623567A8-5A73-46FE-BAE6-6B8F59BDEFB3}", RHI::DeviceDispatchRaysIndirectBuffer)
             DispatchRaysIndirectBuffer() = default;
             virtual ~DispatchRaysIndirectBuffer() = default;
             DispatchRaysIndirectBuffer(const DispatchRaysIndirectBuffer&) = delete;
@@ -34,10 +34,10 @@ namespace AZ
 
             static RHI::Ptr<DispatchRaysIndirectBuffer> Create();
 
-            void Init(RHI::SingleDeviceBufferPool* bufferPool) override;
-            void Build(RHI::SingleDeviceRayTracingShaderTable* shaderTable) override;
+            void Init(RHI::DeviceBufferPool* bufferPool) override;
+            void Build(RHI::DeviceRayTracingShaderTable* shaderTable) override;
 
-            RHI::Ptr<RHI::SingleDeviceBuffer> m_buffer;
+            RHI::Ptr<RHI::DeviceBuffer> m_buffer;
             MemoryView m_shaderTableStagingMemory;
             bool m_shaderTableNeedsCopy = false;
         };

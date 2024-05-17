@@ -46,34 +46,34 @@ namespace AZ
             uint32_t GetAPIUniqueIndex() const override { return APIUniqueIndex; }
             bool SupportsXR() const override;
             RHI::PhysicalDeviceList EnumeratePhysicalDevices() override;
-            RHI::Ptr<RHI::SingleDeviceBuffer> CreateBuffer() override;
-            RHI::Ptr<RHI::SingleDeviceBufferPool> CreateBufferPool() override;
-            RHI::Ptr<RHI::SingleDeviceBufferView> CreateBufferView() override;
+            RHI::Ptr<RHI::DeviceBuffer> CreateBuffer() override;
+            RHI::Ptr<RHI::DeviceBufferPool> CreateBufferPool() override;
+            RHI::Ptr<RHI::DeviceBufferView> CreateBufferView() override;
             RHI::Ptr<RHI::Device> CreateDevice() override;
-            RHI::Ptr<RHI::SingleDeviceFence> CreateFence() override;
+            RHI::Ptr<RHI::DeviceFence> CreateFence() override;
             RHI::Ptr<RHI::FrameGraphCompiler> CreateFrameGraphCompiler() override;
             RHI::Ptr<RHI::FrameGraphExecuter> CreateFrameGraphExecuter() override;
-            RHI::Ptr<RHI::SingleDeviceImage> CreateImage() override;
-            RHI::Ptr<RHI::SingleDeviceImagePool> CreateImagePool() override;
-            RHI::Ptr<RHI::SingleDeviceImageView> CreateImageView() override;
-            RHI::Ptr<RHI::SingleDeviceStreamingImagePool> CreateStreamingImagePool() override;
-            RHI::Ptr<RHI::SingleDevicePipelineLibrary> CreatePipelineLibrary() override;
-            RHI::Ptr<RHI::SingleDevicePipelineState> CreatePipelineState() override;
+            RHI::Ptr<RHI::DeviceImage> CreateImage() override;
+            RHI::Ptr<RHI::DeviceImagePool> CreateImagePool() override;
+            RHI::Ptr<RHI::DeviceImageView> CreateImageView() override;
+            RHI::Ptr<RHI::DeviceStreamingImagePool> CreateStreamingImagePool() override;
+            RHI::Ptr<RHI::DevicePipelineLibrary> CreatePipelineLibrary() override;
+            RHI::Ptr<RHI::DevicePipelineState> CreatePipelineState() override;
             RHI::Ptr<RHI::Scope> CreateScope() override;
-            RHI::Ptr<RHI::SingleDeviceShaderResourceGroup> CreateShaderResourceGroup() override;
-            RHI::Ptr<RHI::SingleDeviceShaderResourceGroupPool> CreateShaderResourceGroupPool() override;
-            RHI::Ptr<RHI::SingleDeviceSwapChain> CreateSwapChain() override;
-            RHI::Ptr<RHI::SingleDeviceTransientAttachmentPool> CreateTransientAttachmentPool() override;
-            RHI::Ptr<RHI::SingleDeviceQueryPool> CreateQueryPool() override;
-            RHI::Ptr<RHI::SingleDeviceQuery> CreateQuery() override;
-            RHI::Ptr<RHI::SingleDeviceIndirectBufferSignature> CreateIndirectBufferSignature() override;
-            RHI::Ptr<RHI::SingleDeviceIndirectBufferWriter> CreateIndirectBufferWriter() override;
-            RHI::Ptr<RHI::SingleDeviceRayTracingBufferPools> CreateRayTracingBufferPools() override;
-            RHI::Ptr<RHI::SingleDeviceRayTracingBlas> CreateRayTracingBlas() override;
-            RHI::Ptr<RHI::SingleDeviceRayTracingTlas> CreateRayTracingTlas() override;
-            RHI::Ptr<RHI::SingleDeviceRayTracingPipelineState> CreateRayTracingPipelineState() override;
-            RHI::Ptr<RHI::SingleDeviceRayTracingShaderTable> CreateRayTracingShaderTable() override;
-            RHI::Ptr<RHI::DispatchRaysIndirectBuffer> CreateDispatchRaysIndirectBuffer() override;
+            RHI::Ptr<RHI::DeviceShaderResourceGroup> CreateShaderResourceGroup() override;
+            RHI::Ptr<RHI::DeviceShaderResourceGroupPool> CreateShaderResourceGroupPool() override;
+            RHI::Ptr<RHI::DeviceSwapChain> CreateSwapChain() override;
+            RHI::Ptr<RHI::DeviceTransientAttachmentPool> CreateTransientAttachmentPool() override;
+            RHI::Ptr<RHI::DeviceQueryPool> CreateQueryPool() override;
+            RHI::Ptr<RHI::DeviceQuery> CreateQuery() override;
+            RHI::Ptr<RHI::DeviceIndirectBufferSignature> CreateIndirectBufferSignature() override;
+            RHI::Ptr<RHI::DeviceIndirectBufferWriter> CreateIndirectBufferWriter() override;
+            RHI::Ptr<RHI::DeviceRayTracingBufferPools> CreateRayTracingBufferPools() override;
+            RHI::Ptr<RHI::DeviceRayTracingBlas> CreateRayTracingBlas() override;
+            RHI::Ptr<RHI::DeviceRayTracingTlas> CreateRayTracingTlas() override;
+            RHI::Ptr<RHI::DeviceRayTracingPipelineState> CreateRayTracingPipelineState() override;
+            RHI::Ptr<RHI::DeviceRayTracingShaderTable> CreateRayTracingShaderTable() override;
+            RHI::Ptr<RHI::DeviceDispatchRaysIndirectBuffer> CreateDispatchRaysIndirectBuffer() override;
             ///////////////////////////////////////////////////////////////////
 
         private:

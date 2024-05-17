@@ -42,7 +42,7 @@
 #include <AzCore/Interface/Interface.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/MultiDeviceImagePool.h>
+#include <Atom/RHI/ImagePool.h>
 
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 
@@ -1464,10 +1464,10 @@ bool AZ::FFont::UpdateTexture()
         return false;
     }
 
-    RHI::MultiDeviceImageSubresourceLayout layout;
+    RHI::ImageSubresourceLayout layout;
     m_fontImage->GetSubresourceLayout(layout);
 
-    RHI::MultiDeviceImageUpdateRequest imageUpdateReq;
+    RHI::ImageUpdateRequest imageUpdateReq;
     imageUpdateReq.m_image = m_fontImage.get();
     imageUpdateReq.m_imageSubresource = RHI::ImageSubresource{ 0, 0 };
     imageUpdateReq.m_sourceData = m_fontTexture->GetBuffer();

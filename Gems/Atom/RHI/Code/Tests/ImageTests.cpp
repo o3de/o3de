@@ -40,7 +40,7 @@ namespace UnitTest
 
     TEST_F(ImageTests, TestNoop)
     {
-        RHI::Ptr<RHI::SingleDeviceImage> noopImage;
+        RHI::Ptr<RHI::DeviceImage> noopImage;
         noopImage = RHI::Factory::Get().CreateImage();
     }
 
@@ -48,7 +48,7 @@ namespace UnitTest
     {
         RHI::Ptr<RHI::Device> device = MakeTestDevice();
 
-        RHI::Ptr<RHI::SingleDeviceImage> imageA;
+        RHI::Ptr<RHI::DeviceImage> imageA;
         imageA = RHI::Factory::Get().CreateImage();
         imageA->SetName(Name("ImageA"));
 
@@ -56,12 +56,12 @@ namespace UnitTest
         ASSERT_TRUE(imageA->use_count() == 1);
 
         {
-            RHI::Ptr<RHI::SingleDeviceImage> imageB;
+            RHI::Ptr<RHI::DeviceImage> imageB;
             imageB = RHI::Factory::Get().CreateImage();
 
             ASSERT_TRUE(imageB->use_count() == 1);
 
-            RHI::Ptr<RHI::SingleDeviceImagePool> imagePool;
+            RHI::Ptr<RHI::DeviceImagePool> imagePool;
             imagePool = RHI::Factory::Get().CreateImagePool();
 
             ASSERT_TRUE(imagePool->use_count() == 1);
@@ -73,13 +73,13 @@ namespace UnitTest
             ASSERT_TRUE(imageA->IsInitialized() == false);
             ASSERT_TRUE(imageB->IsInitialized() == false);
 
-            RHI::SingleDeviceImageInitRequest initRequest;
+            RHI::DeviceImageInitRequest initRequest;
             initRequest.m_image = imageA.get();
             initRequest.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::Color, 16, 16, RHI::Format::R8G8B8A8_UNORM_SRGB);
             imagePool->InitImage(initRequest);
             ASSERT_TRUE(imageA->use_count() == 1);
 
-            RHI::Ptr<RHI::SingleDeviceImageView> imageView;
+            RHI::Ptr<RHI::DeviceImageView> imageView;
             imageView = imageA->GetImageView(RHI::ImageViewDescriptor(RHI::Format::R8G8B8A8_UINT));
             AZ_TEST_ASSERT(imageView->IsStale() == false);
             ASSERT_TRUE(imageView->IsInitialized());
@@ -100,13 +100,13 @@ namespace UnitTest
             {
                 uint32_t imageIndex = 0;
 
-                const RHI::SingleDeviceImage* images[] =
+                const RHI::DeviceImage* images[] =
                 {
                     imageA.get(),
                     imageB.get()
                 };
 
-                imagePool->ForEach<RHI::SingleDeviceImage>([&imageIndex, &images]([[maybe_unused]] const RHI::SingleDeviceImage& image)
+                imagePool->ForEach<RHI::DeviceImage>([&imageIndex, &images]([[maybe_unused]] const RHI::DeviceImage& image)
                 {
                     AZ_UNUSED(images); // Prevent unused warning in release builds
                     AZ_Assert(images[imageIndex] == &image, "images don't match");
@@ -117,7 +117,7 @@ namespace UnitTest
             imageB->Shutdown();
             ASSERT_TRUE(imageB->GetPool() == nullptr);
 
-            RHI::Ptr<RHI::SingleDeviceImagePool> imagePoolB;
+            RHI::Ptr<RHI::DeviceImagePool> imagePoolB;
             imagePoolB = RHI::Factory::Get().CreateImagePool();
             imagePoolB->Init(*device, imagePoolDesc);
 
@@ -142,20 +142,20 @@ namespace UnitTest
     {
         RHI::Ptr<RHI::Device> device = MakeTestDevice();
 
-        RHI::Ptr<RHI::SingleDeviceImageView> imageViewA;
+        RHI::Ptr<RHI::DeviceImageView> imageViewA;
         
         {
-            RHI::Ptr<RHI::SingleDeviceImagePool> imagePool;
+            RHI::Ptr<RHI::DeviceImagePool> imagePool;
             imagePool = RHI::Factory::Get().CreateImagePool();
 
             RHI::ImagePoolDescriptor imagePoolDesc;
             imagePoolDesc.m_bindFlags = RHI::ImageBindFlags::Color;
             imagePool->Init(*device, imagePoolDesc);
 
-            RHI::Ptr<RHI::SingleDeviceImage> image;
+            RHI::Ptr<RHI::DeviceImage> image;
             image = RHI::Factory::Get().CreateImage();
 
-            RHI::SingleDeviceImageInitRequest initRequest;
+            RHI::DeviceImageInitRequest initRequest;
             initRequest.m_image = image.get();
             initRequest.m_descriptor = RHI::ImageDescriptor::Create2DArray(RHI::ImageBindFlags::Color, 8, 8, 2, RHI::Format::R8G8B8A8_UNORM_SRGB);
             imagePool->InitImage(initRequest);
@@ -237,16 +237,16 @@ namespace UnitTest
             imageDescriptor.m_bindFlags = GetParam().imageBindFlags;
 
             m_image = RHI::Factory::Get().CreateImage();
-            RHI::SingleDeviceImageInitRequest initRequest;
+            RHI::DeviceImageInitRequest initRequest;
             initRequest.m_image = m_image.get();
             initRequest.m_descriptor = imageDescriptor;
             m_imagePool->InitImage(initRequest);
         }
 
         RHI::Ptr<RHI::Device> m_device;
-        RHI::Ptr<RHI::SingleDeviceImagePool> m_imagePool;
-        RHI::Ptr<RHI::SingleDeviceImage> m_image;
-        RHI::Ptr<RHI::SingleDeviceImageView> m_imageView;
+        RHI::Ptr<RHI::DeviceImagePool> m_imagePool;
+        RHI::Ptr<RHI::DeviceImage> m_image;
+        RHI::Ptr<RHI::DeviceImageView> m_imageView;
     };
 
     TEST_P(ImageBindFlagTests, InitView_ViewIsCreated)

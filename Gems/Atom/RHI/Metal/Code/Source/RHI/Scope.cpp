@@ -8,7 +8,7 @@
 
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
-#include <Atom/RHI/MultiDeviceSwapChain.h>
+#include <Atom/RHI/SwapChain.h>
 #include <RHI/CommandList.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
@@ -291,8 +291,8 @@ namespace AZ
                 //here and attach it directly to the colorAttachment. The assumption here is that this scope should be the
                 //CopyToSwapChain scope. With this way if the internal resolution differs from the window resolution the compositer
                 //within the metal driver will perform the appropriate upscale/downscale at the end.
-                const RHI::SingleDeviceSwapChain* swapChain = (azrtti_cast<const RHI::SwapChainFrameAttachment*>(&m_swapChainAttachment->GetFrameAttachment()))->GetSwapChain()->GetDeviceSwapChain(GetDeviceIndex()).get();
-                SwapChain* metalSwapChain = static_cast<SwapChain*>(const_cast<RHI::SingleDeviceSwapChain*>(swapChain));
+                const RHI::DeviceSwapChain* swapChain = (azrtti_cast<const RHI::SwapChainFrameAttachment*>(&m_swapChainAttachment->GetFrameAttachment()))->GetSwapChain()->GetDeviceSwapChain(GetDeviceIndex()).get();
+                SwapChain* metalSwapChain = static_cast<SwapChain*>(const_cast<RHI::DeviceSwapChain*>(swapChain));
                 m_renderPassDescriptor.colorAttachments[0].texture = metalSwapChain->RequestDrawable(m_isSwapChainAndFrameCaptureEnabled);
             }
             
@@ -437,7 +437,7 @@ namespace AZ
             m_resourceFences[static_cast<uint32_t>(fenceAction)].push_back(fence);
         }
     
-        void Scope::AddQueryPoolUse(RHI::Ptr<RHI::MultiDeviceQueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access)
+        void Scope::AddQueryPoolUse(RHI::Ptr<RHI::QueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access)
         {
             m_queryPoolAttachments.push_back({ queryPool, interval, access });
         }

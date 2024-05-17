@@ -9,16 +9,16 @@
 
 #pragma once
 
-#include <Atom/RHI/SingleDeviceStreamingImagePool.h>
+#include <Atom/RHI/DeviceStreamingImagePool.h>
 
 namespace AZ
 {
     namespace Null
     {
         class StreamingImagePool final
-            : public RHI::SingleDeviceStreamingImagePool
+            : public RHI::DeviceStreamingImagePool
         {
-            using Base = RHI::SingleDeviceStreamingImagePool;
+            using Base = RHI::DeviceStreamingImagePool;
         public:
             AZ_CLASS_ALLOCATOR(StreamingImagePool, AZ::SystemAllocator);
             AZ_RTTI(StreamingImagePool, "{15688218-739F-40B2-9753-70AD2A432C3A}", Base);
@@ -28,17 +28,17 @@ namespace AZ
             StreamingImagePool() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::SingleDeviceStreamingImagePool
+            // RHI::DeviceStreamingImagePool
             RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::StreamingImagePoolDescriptor& descriptor) override { return RHI::ResultCode::Success;}
-            RHI::ResultCode InitImageInternal([[maybe_unused]] const RHI::SingleDeviceStreamingImageInitRequest& request) override { return RHI::ResultCode::Success;}
-            RHI::ResultCode ExpandImageInternal([[maybe_unused]] const RHI::SingleDeviceStreamingImageExpandRequest& request) override { return RHI::ResultCode::Success;}
-            RHI::ResultCode TrimImageInternal([[maybe_unused]] RHI::SingleDeviceImage& image, [[maybe_unused]] uint32_t targetMipLevel) override { return RHI::ResultCode::Success;}
+            RHI::ResultCode InitImageInternal([[maybe_unused]] const RHI::DeviceStreamingImageInitRequest& request) override { return RHI::ResultCode::Success;}
+            RHI::ResultCode ExpandImageInternal([[maybe_unused]] const RHI::DeviceStreamingImageExpandRequest& request) override { return RHI::ResultCode::Success;}
+            RHI::ResultCode TrimImageInternal([[maybe_unused]] RHI::DeviceImage& image, [[maybe_unused]] uint32_t targetMipLevel) override { return RHI::ResultCode::Success;}
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::SingleDeviceResourcePool
+            // RHI::DeviceResourcePool
             void ShutdownInternal() override {}
-            void ShutdownResourceInternal([[maybe_unused]] RHI::SingleDeviceResource& resourceBase) override {}
+            void ShutdownResourceInternal([[maybe_unused]] RHI::DeviceResource& resourceBase) override {}
             void ComputeFragmentation() const override {}
             //////////////////////////////////////////////////////////////////////////
         };

@@ -50,7 +50,7 @@ namespace AZ
             return cpuSourceDescriptors;
         }
 
-        AZStd::vector<DescriptorHandle> ShaderResourceGroupPool::GetCBVsFromBufferViews(const AZStd::span<const RHI::ConstPtr<RHI::SingleDeviceBufferView>>& bufferViews)
+        AZStd::vector<DescriptorHandle> ShaderResourceGroupPool::GetCBVsFromBufferViews(const AZStd::span<const RHI::ConstPtr<RHI::DeviceBufferView>>& bufferViews)
         {
             AZStd::vector<DescriptorHandle> cpuSourceDescriptors(bufferViews.size(), m_descriptorContext->GetNullHandleCBV());
 
@@ -110,7 +110,7 @@ namespace AZ
             Base::ShutdownInternal();
         }
 
-        RHI::ResultCode ShaderResourceGroupPool::InitGroupInternal(RHI::SingleDeviceShaderResourceGroup& groupBase)
+        RHI::ResultCode ShaderResourceGroupPool::InitGroupInternal(RHI::DeviceShaderResourceGroup& groupBase)
         {
             ShaderResourceGroup& group = static_cast<ShaderResourceGroup&>(groupBase);
 
@@ -155,7 +155,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        void ShaderResourceGroupPool::ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase)
+        void ShaderResourceGroupPool::ShutdownResourceInternal(RHI::DeviceResource& resourceBase)
         {
             ShaderResourceGroup& group = static_cast<ShaderResourceGroup&>(resourceBase);
 
@@ -196,10 +196,10 @@ namespace AZ
         }
 
         RHI::ResultCode ShaderResourceGroupPool::CompileGroupInternal(
-            RHI::SingleDeviceShaderResourceGroup& groupBase,
-            const RHI::SingleDeviceShaderResourceGroupData& groupData)
+            RHI::DeviceShaderResourceGroup& groupBase,
+            const RHI::DeviceShaderResourceGroupData& groupData)
         {
-            typedef AZ::RHI::SingleDeviceShaderResourceGroupData::ResourceTypeMask ResourceMask;
+            typedef AZ::RHI::DeviceShaderResourceGroupData::ResourceTypeMask ResourceMask;
             ShaderResourceGroup& group = static_cast<ShaderResourceGroup&>(groupBase);
 
             group.m_compiledDataIndex = (group.m_compiledDataIndex + 1) % RHI::Limits::Device::FrameCountMax;
@@ -266,11 +266,11 @@ namespace AZ
         }
 
         void ShaderResourceGroupPool::UpdateViewsDescriptorTable(DescriptorTable descriptorTable,
-                                                                 RHI::SingleDeviceShaderResourceGroup& group,
-                                                                 const RHI::SingleDeviceShaderResourceGroupData& groupData,
+                                                                 RHI::DeviceShaderResourceGroup& group,
+                                                                 const RHI::DeviceShaderResourceGroupData& groupData,
                                                                  bool forceUpdateViews /*= false*/ )
         {
-            typedef AZ::RHI::SingleDeviceShaderResourceGroupData::ResourceTypeMask ResourceMask;
+            typedef AZ::RHI::DeviceShaderResourceGroupData::ResourceTypeMask ResourceMask;
             const RHI::ShaderResourceGroupLayout& groupLayout = *groupData.GetLayout();
             uint32_t shaderInputIndex = 0;
             
@@ -280,19 +280,19 @@ namespace AZ
                 {
                     const RHI::ShaderInputBufferIndex bufferInputIndex(shaderInputIndex);
 
-                    AZStd::span<const RHI::ConstPtr<RHI::SingleDeviceBufferView>> bufferViews = groupData.GetBufferViewArray(bufferInputIndex);
+                    AZStd::span<const RHI::ConstPtr<RHI::DeviceBufferView>> bufferViews = groupData.GetBufferViewArray(bufferInputIndex);
                     D3D12_DESCRIPTOR_RANGE_TYPE descriptorRangeType = ConvertShaderInputBufferAccess(shaderInputBuffer.m_access);
                     AZStd::vector<DescriptorHandle> descriptorHandles;
                     switch (descriptorRangeType)
                     {
                         case D3D12_DESCRIPTOR_RANGE_TYPE_SRV:
                         {
-                            descriptorHandles = GetSRVsFromImageViews< RHI::SingleDeviceBufferView, BufferView> (bufferViews, D3D12_SRV_DIMENSION_BUFFER);
+                            descriptorHandles = GetSRVsFromImageViews< RHI::DeviceBufferView, BufferView> (bufferViews, D3D12_SRV_DIMENSION_BUFFER);
                             break;
                         }
                         case D3D12_DESCRIPTOR_RANGE_TYPE_UAV:
                         {
-                            descriptorHandles = GetUAVsFromImageViews<RHI::SingleDeviceBufferView, BufferView>(bufferViews, D3D12_UAV_DIMENSION_BUFFER);
+                            descriptorHandles = GetUAVsFromImageViews<RHI::DeviceBufferView, BufferView>(bufferViews, D3D12_UAV_DIMENSION_BUFFER);
                             break;
                         }
                         case D3D12_DESCRIPTOR_RANGE_TYPE_CBV:
@@ -317,7 +317,7 @@ namespace AZ
                 {
                     const RHI::ShaderInputImageIndex imageInputIndex(shaderInputIndex);
 
-                    AZStd::span<const RHI::ConstPtr<RHI::SingleDeviceImageView>> imageViews = groupData.GetImageViewArray(imageInputIndex);
+                    AZStd::span<const RHI::ConstPtr<RHI::DeviceImageView>> imageViews = groupData.GetImageViewArray(imageInputIndex);
                     D3D12_DESCRIPTOR_RANGE_TYPE descriptorRangeType = ConvertShaderInputImageAccess(shaderInputImage.m_access);
 
                     AZStd::vector<DescriptorHandle> descriptorHandles;
@@ -326,13 +326,13 @@ namespace AZ
                         case D3D12_DESCRIPTOR_RANGE_TYPE_SRV:
                         {
                             descriptorHandles =
-                                GetSRVsFromImageViews<RHI::SingleDeviceImageView, ImageView>(imageViews, ConvertSRVDimension(shaderInputImage.m_type));
+                                GetSRVsFromImageViews<RHI::DeviceImageView, ImageView>(imageViews, ConvertSRVDimension(shaderInputImage.m_type));
                             break;
                         }
                         case D3D12_DESCRIPTOR_RANGE_TYPE_UAV:
                         {
                             descriptorHandles =
-                                GetUAVsFromImageViews<RHI::SingleDeviceImageView, ImageView>(imageViews, ConvertUAVDimension(shaderInputImage.m_type));
+                                GetUAVsFromImageViews<RHI::DeviceImageView, ImageView>(imageViews, ConvertUAVDimension(shaderInputImage.m_type));
                             break;
                         }
                         default:
@@ -348,10 +348,10 @@ namespace AZ
 
         void ShaderResourceGroupPool::UpdateSamplersDescriptorTable(
             DescriptorTable descriptorTable,
-            RHI::SingleDeviceShaderResourceGroup& group,
-            const RHI::SingleDeviceShaderResourceGroupData& groupData)
+            RHI::DeviceShaderResourceGroup& group,
+            const RHI::DeviceShaderResourceGroupData& groupData)
         {
-            if(group.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(RHI::SingleDeviceShaderResourceGroupData::ResourceTypeMask::SamplerMask)))
+            if(group.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(RHI::DeviceShaderResourceGroupData::ResourceTypeMask::SamplerMask)))
             {
                 const RHI::ShaderResourceGroupLayout& groupLayout = *groupData.GetLayout();
                 const size_t shaderInputSize = groupLayout.GetShaderInputListForSamplers().size();
@@ -365,13 +365,13 @@ namespace AZ
             }
         }
 
-        void ShaderResourceGroupPool::UpdateUnboundedArrayDescriptorTables(ShaderResourceGroup& group, const RHI::SingleDeviceShaderResourceGroupData& groupData)
+        void ShaderResourceGroupPool::UpdateUnboundedArrayDescriptorTables(ShaderResourceGroup& group, const RHI::DeviceShaderResourceGroupData& groupData)
         {
             const RHI::ShaderResourceGroupLayout& groupLayout = *groupData.GetLayout();
             uint32_t shaderInputIndex = 0;
 
             bool updateBuffers = group.IsResourceTypeEnabledForCompilation(
-                static_cast<uint32_t>(RHI::SingleDeviceShaderResourceGroupData::ResourceTypeMask::BufferViewUnboundedArrayMask));
+                static_cast<uint32_t>(RHI::DeviceShaderResourceGroupData::ResourceTypeMask::BufferViewUnboundedArrayMask));
 
             if (updateBuffers)
             {
@@ -382,7 +382,7 @@ namespace AZ
                     uint32_t tableIndex = shaderInputIndex * RHI::Limits::Device::FrameCountMax + group.m_compiledDataIndex;
                     ShaderResourceGroupCompiledData& compiledData = group.m_compiledData[group.m_compiledDataIndex];
 
-                    AZStd::span<const RHI::ConstPtr<RHI::SingleDeviceBufferView>> bufferViews = groupData.GetBufferViewUnboundedArray(bufferUnboundedArrayInputIndex);
+                    AZStd::span<const RHI::ConstPtr<RHI::DeviceBufferView>> bufferViews = groupData.GetBufferViewUnboundedArray(bufferUnboundedArrayInputIndex);
 
                     // resize the descriptor table allocation if necessary
                     if (group.m_unboundedDescriptorTables[tableIndex].GetSize() != bufferViews.size())
@@ -421,7 +421,7 @@ namespace AZ
             }
 
             bool updateImages = group.IsResourceTypeEnabledForCompilation(
-                static_cast<uint32_t>(RHI::SingleDeviceShaderResourceGroupData::ResourceTypeMask::ImageViewUnboundedArrayMask));
+                static_cast<uint32_t>(RHI::DeviceShaderResourceGroupData::ResourceTypeMask::ImageViewUnboundedArrayMask));
 
             if (updateImages)
             {
@@ -432,7 +432,7 @@ namespace AZ
                     uint32_t tableIndex = shaderInputIndex * RHI::Limits::Device::FrameCountMax + group.m_compiledDataIndex;
                     ShaderResourceGroupCompiledData& compiledData = group.m_compiledData[group.m_compiledDataIndex];
 
-                    AZStd::span<const RHI::ConstPtr<RHI::SingleDeviceImageView>> imageViews = groupData.GetImageViewUnboundedArray(imageUnboundedArrayInputIndex);
+                    AZStd::span<const RHI::ConstPtr<RHI::DeviceImageView>> imageViews = groupData.GetImageViewUnboundedArray(imageUnboundedArrayInputIndex);
 
                     // resize the descriptor table allocation if necessary
                     if (group.m_unboundedDescriptorTables[tableIndex].GetSize() != imageViews.size())
@@ -473,12 +473,12 @@ namespace AZ
 
         void ShaderResourceGroupPool::UpdateUnboundedBuffersDescTable(
             DescriptorTable descriptorTable,
-            const RHI::SingleDeviceShaderResourceGroupData& groupData,
+            const RHI::DeviceShaderResourceGroupData& groupData,
             uint32_t shaderInputIndex,
             RHI::ShaderInputBufferAccess bufferAccess)
         {
             const RHI::ShaderInputBufferUnboundedArrayIndex bufferUnboundedArrayInputIndex(shaderInputIndex);
-            AZStd::span<const RHI::ConstPtr<RHI::SingleDeviceBufferView>> bufferViews =
+            AZStd::span<const RHI::ConstPtr<RHI::DeviceBufferView>> bufferViews =
                 groupData.GetBufferViewUnboundedArray(bufferUnboundedArrayInputIndex);
 
             if (bufferViews.empty())
@@ -494,12 +494,12 @@ namespace AZ
             {
             case D3D12_DESCRIPTOR_RANGE_TYPE_SRV:
                 {
-                    descriptorHandles = GetSRVsFromImageViews<RHI::SingleDeviceBufferView, BufferView>(bufferViews, D3D12_SRV_DIMENSION_BUFFER);
+                    descriptorHandles = GetSRVsFromImageViews<RHI::DeviceBufferView, BufferView>(bufferViews, D3D12_SRV_DIMENSION_BUFFER);
                     break;
                 }
             case D3D12_DESCRIPTOR_RANGE_TYPE_UAV:
                 {
-                    descriptorHandles = GetUAVsFromImageViews<RHI::SingleDeviceBufferView, BufferView>(bufferViews, D3D12_UAV_DIMENSION_BUFFER);
+                    descriptorHandles = GetUAVsFromImageViews<RHI::DeviceBufferView, BufferView>(bufferViews, D3D12_UAV_DIMENSION_BUFFER);
                     break;
                 }
             default:
@@ -513,13 +513,13 @@ namespace AZ
 
         void ShaderResourceGroupPool::UpdateUnboundedImagesDescTable(
             DescriptorTable descriptorTable,
-            const RHI::SingleDeviceShaderResourceGroupData& groupData,
+            const RHI::DeviceShaderResourceGroupData& groupData,
             uint32_t shaderInputIndex,
             RHI::ShaderInputImageAccess imageAccess,
             RHI::ShaderInputImageType imageType)
         {
             const RHI::ShaderInputImageUnboundedArrayIndex imageUnboundedArrayInputIndex(shaderInputIndex);
-            AZStd::span<const RHI::ConstPtr<RHI::SingleDeviceImageView>> imageViews =
+            AZStd::span<const RHI::ConstPtr<RHI::DeviceImageView>> imageViews =
                 groupData.GetImageViewUnboundedArray(imageUnboundedArrayInputIndex);
 
             if (imageViews.empty())
@@ -535,12 +535,12 @@ namespace AZ
             {
             case D3D12_DESCRIPTOR_RANGE_TYPE_SRV:
                 {
-                    descriptorHandles = GetSRVsFromImageViews<RHI::SingleDeviceImageView, ImageView>(imageViews, ConvertSRVDimension(imageType));
+                    descriptorHandles = GetSRVsFromImageViews<RHI::DeviceImageView, ImageView>(imageViews, ConvertSRVDimension(imageType));
                     break;
                 }
             case D3D12_DESCRIPTOR_RANGE_TYPE_UAV:
                 {
-                    descriptorHandles = GetUAVsFromImageViews<RHI::SingleDeviceImageView, ImageView>(imageViews, ConvertUAVDimension(imageType));
+                    descriptorHandles = GetUAVsFromImageViews<RHI::DeviceImageView, ImageView>(imageViews, ConvertUAVDimension(imageType));
                     break;
                 }
             default:

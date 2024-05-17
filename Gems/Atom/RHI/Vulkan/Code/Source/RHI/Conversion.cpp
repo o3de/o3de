@@ -9,9 +9,9 @@
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/Scope.h>
 #include <Atom/RHI/ScopeAttachment.h>
-#include <Atom/RHI/MultiDeviceImage.h>
-#include <Atom/RHI/MultiDeviceResource.h>
-#include <Atom/RHI/SingleDeviceImageView.h>
+#include <Atom/RHI/Image.h>
+#include <Atom/RHI/Resource.h>
+#include <Atom/RHI/DeviceImageView.h>
 #include <RHI/Conversion.h>
 #include <RHI/Image.h>
 
@@ -92,7 +92,7 @@ namespace AZ
                 case RHI::ScopeAttachmentUsage::ShadingRate:
                     {
                         const Image& image =
-                            static_cast<const Image&>(*(static_cast<const RHI::MultiDeviceImageView*>(scopeAttachment.GetResourceView()))->GetImage()->GetDeviceImage(scopeAttachment.GetScope().GetDeviceIndex()));
+                            static_cast<const Image&>(*(static_cast<const RHI::ImageView*>(scopeAttachment.GetResourceView()))->GetImage()->GetDeviceImage(scopeAttachment.GetScope().GetDeviceIndex()));
                         mergedStateFlags |=
                             RHI::CheckBitsAll(
                                 image.GetUsageFlags(), static_cast<VkImageUsageFlags>(VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT))
@@ -263,7 +263,7 @@ namespace AZ
                 case RHI::ScopeAttachmentUsage::ShadingRate:
                     {
                         const Image& image =
-                            static_cast<const Image&>(*(static_cast<const RHI::MultiDeviceImageView*>(scopeAttachment.GetResourceView()))->GetImage()->GetDeviceImage(scopeAttachment.GetScope().GetDeviceIndex()));
+                            static_cast<const Image&>(*(static_cast<const RHI::ImageView*>(scopeAttachment.GetResourceView()))->GetImage()->GetDeviceImage(scopeAttachment.GetScope().GetDeviceIndex()));
                         accessFlags |=
                             RHI::CheckBitsAll(
                                 image.GetUsageFlags(), static_cast<VkImageUsageFlags>(VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT))
@@ -394,7 +394,7 @@ namespace AZ
                 }
             }
 
-            const RHI::SingleDeviceImageView* imageView = imageAttachment.GetImageView()->GetDeviceImageView(imageAttachment.GetScope().GetDeviceIndex()).get();
+            const RHI::DeviceImageView* imageView = imageAttachment.GetImageView()->GetDeviceImageView(imageAttachment.GetScope().GetDeviceIndex()).get();
             auto imageAspects = RHI::FilterBits(imageView->GetImage().GetAspectFlags(), imageView->GetDescriptor().m_aspectFlags);
             switch (usagesAndAccesses.front().m_usage)
             {

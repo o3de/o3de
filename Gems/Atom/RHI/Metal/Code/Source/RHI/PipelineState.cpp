@@ -141,7 +141,7 @@ namespace AZ
         
         RHI::ResultCode PipelineState::InitInternal(RHI::Device& deviceBase,
                                                     const RHI::PipelineStateDescriptorForDraw& descriptor,
-                                                    RHI::SingleDevicePipelineLibrary* pipelineLibraryBase)
+                                                    RHI::DevicePipelineLibrary* pipelineLibraryBase)
         {
             NSError* error = 0;
             Device& device = static_cast<Device&>(deviceBase);
@@ -250,7 +250,7 @@ namespace AZ
 
         RHI::ResultCode PipelineState::InitInternal(RHI::Device& deviceBase,
                                                     const RHI::PipelineStateDescriptorForDispatch& descriptor,
-                                                    RHI::SingleDevicePipelineLibrary* pipelineLibraryBase)
+                                                    RHI::DevicePipelineLibrary* pipelineLibraryBase)
         {
             Device& device = static_cast<Device&>(deviceBase);
             NSError* error = 0;
@@ -293,7 +293,7 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode PipelineState::InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForRayTracing& descriptor, RHI::SingleDevicePipelineLibrary* pipelineLibrary)
+        RHI::ResultCode PipelineState::InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForRayTracing& descriptor, RHI::DevicePipelineLibrary* pipelineLibrary)
         {
             // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
             AZ_Assert(false, "Not implemented");

@@ -9,7 +9,7 @@
 
 #include <Atom/RHI.Reflect/AttachmentId.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
-#include <Atom/RHI/MultiDeviceResource.h>
+#include <Atom/RHI/Resource.h>
 #include <AzCore/RTTI/RTTI.h>
 
 namespace AZ::RHI
@@ -58,7 +58,7 @@ namespace AZ::RHI
         const AZStd::vector<ScopeAttachmentUsageAndAccess>& GetUsageAndAccess() const;
 
         //! Returns the resource view.
-        const MultiDeviceResourceView* GetResourceView() const;
+        const ResourceView* GetResourceView() const;
 
         //! Returns the parent scope that this attachment is bound to.
         const Scope& GetScope() const;
@@ -90,7 +90,7 @@ namespace AZ::RHI
     protected:
 
         //! Assigns the resource view to this scope attachment.
-        void SetResourceView(ConstPtr<MultiDeviceResourceView> resourceView);
+        void SetResourceView(ConstPtr<ResourceView> resourceView);
 
     private:
             
@@ -101,7 +101,7 @@ namespace AZ::RHI
         ScopeAttachment* m_next = nullptr;
 
         /// The resource view declared for usage on this scope.
-        ConstPtr<MultiDeviceResourceView> m_resourceView;
+        ConstPtr<ResourceView> m_resourceView;
 
         /// The scope that the attachment is bound to.
         Scope* m_scope = nullptr;

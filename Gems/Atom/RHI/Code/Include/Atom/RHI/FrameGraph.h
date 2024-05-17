@@ -14,7 +14,7 @@
 #include <Atom/RHI.Reflect/ResolveScopeAttachmentDescriptor.h>
 #include <Atom/RHI.Reflect/ScopeId.h>
 
-#include <Atom/RHI/SingleDeviceBufferPoolBase.h>
+#include <Atom/RHI/DeviceBufferPoolBase.h>
 #include <Atom/RHI/FrameGraphAttachmentDatabase.h>
 #include <Atom/RHI/Scope.h>
 
@@ -26,8 +26,8 @@ namespace AZ::RHI
     class ImageScopeAttachment;
     class BufferScopeAttachment;
     class ResolveScopeAttachment;
-    class MultiDeviceQueryPool;
-    class SingleDeviceFence;
+    class QueryPool;
+    class DeviceFence;
     struct Interval;
 
     //! The frame graph is a graph of scopes, where edges are derived from attachment usage. It can be visualized as a sparse 2D grid.
@@ -104,11 +104,11 @@ namespace AZ::RHI
         ResultCode UseShaderAttachment(const ImageScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access);
         ResultCode UseCopyAttachment(const BufferScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access);
         ResultCode UseCopyAttachment(const ImageScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access);
-        ResultCode UseQueryPool(Ptr<MultiDeviceQueryPool> queryPool, const RHI::Interval& interval, QueryPoolScopeAttachmentType type, ScopeAttachmentAccess access);
+        ResultCode UseQueryPool(Ptr<QueryPool> queryPool, const RHI::Interval& interval, QueryPoolScopeAttachmentType type, ScopeAttachmentAccess access);
         void ExecuteAfter(const ScopeId& scopeId);
         void ExecuteBefore(const ScopeId& scopeId);
-        void SignalFence(MultiDeviceFence& fence);
-        void WaitFence(MultiDeviceFence& fence);
+        void SignalFence(Fence& fence);
+        void WaitFence(Fence& fence);
         void SetEstimatedItemCount(uint32_t itemCount);
         void SetHardwareQueueClass(HardwareQueueClass hardwareQueueClass);
 

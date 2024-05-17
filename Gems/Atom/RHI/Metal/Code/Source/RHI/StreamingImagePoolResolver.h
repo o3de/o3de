@@ -7,7 +7,7 @@
  */
 #pragma once
 #include <RHI/ResourcePoolResolver.h>
-#include <Atom/RHI/SingleDeviceStreamingImagePool.h>
+#include <Atom/RHI/DeviceStreamingImagePool.h>
 
 namespace AZ
 {
@@ -28,7 +28,7 @@ namespace AZ
             : ResourcePoolResolver(device)
             {}
 
-            RHI::ResultCode UpdateImage(const RHI::SingleDeviceStreamingImageExpandRequest& request);
+            RHI::ResultCode UpdateImage(const RHI::DeviceStreamingImageExpandRequest& request);
             int CalculateMipLevel(int lowestMipLength, int currentMipLength);
             
             void Compile() override;

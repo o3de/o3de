@@ -12,8 +12,8 @@
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RHI/FrameScheduler.h>
 #include <AzCore/Math/Random.h>
-#include <Atom/RHI/MultiDeviceBufferPool.h>
-#include <Atom/RHI/MultiDeviceImagePool.h>
+#include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/ImagePool.h>
 
 #include <Atom/RHI/RHISystemInterface.h>
 
@@ -24,13 +24,13 @@ namespace UnitTest
     struct ImportedImage
     {
         RHI::AttachmentId m_id;
-        RHI::Ptr<RHI::MultiDeviceImage> m_image;
+        RHI::Ptr<RHI::Image> m_image;
     };
 
     struct ImportedBuffer
     {
         RHI::AttachmentId m_id;
-        RHI::Ptr<RHI::MultiDeviceBuffer> m_buffer;
+        RHI::Ptr<RHI::Buffer> m_buffer;
     };
 
     struct TransientImage
@@ -167,7 +167,7 @@ namespace UnitTest
             m_state.reset(new State);
 
             {
-                m_state->m_bufferPool = aznew RHI::MultiDeviceBufferPool;
+                m_state->m_bufferPool = aznew RHI::BufferPool;
 
                 RHI::BufferPoolDescriptor desc;
                 desc.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
@@ -176,14 +176,14 @@ namespace UnitTest
 
             for (uint32_t i = 0; i < ImportedBufferCount; ++i)
             {
-                RHI::Ptr<RHI::MultiDeviceBuffer> buffer;
-                buffer = aznew RHI::MultiDeviceBuffer;
+                RHI::Ptr<RHI::Buffer> buffer;
+                buffer = aznew RHI::Buffer;
 
                 RHI::BufferDescriptor desc;
                 desc.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
                 desc.m_byteCount = BufferSize;
 
-                RHI::MultiDeviceBufferInitRequest request;
+                RHI::BufferInitRequest request;
                 request.m_descriptor = desc;
                 request.m_buffer = buffer.get();
                 m_state->m_bufferPool->InitBuffer(request);
@@ -193,7 +193,7 @@ namespace UnitTest
             }
 
             {
-                m_state->m_imagePool = aznew RHI::MultiDeviceImagePool();
+                m_state->m_imagePool = aznew RHI::ImagePool();
 
                 RHI::ImagePoolDescriptor desc;
                 desc.m_bindFlags = RHI::ImageBindFlags::ShaderReadWrite;
@@ -202,8 +202,8 @@ namespace UnitTest
 
             for (uint32_t i = 0; i < ImportedImageCount; ++i)
             {
-                RHI::Ptr<RHI::MultiDeviceImage> image;
-                image = aznew RHI::MultiDeviceImage();
+                RHI::Ptr<RHI::Image> image;
+                image = aznew RHI::Image();
 
                 RHI::ImageDescriptor desc = RHI::ImageDescriptor::Create2D(
                     RHI::ImageBindFlags::ShaderReadWrite,
@@ -211,7 +211,7 @@ namespace UnitTest
                     ImageSize,
                     RHI::Format::R8G8B8A8_UNORM);
 
-                RHI::MultiDeviceImageInitRequest request;
+                RHI::ImageInitRequest request;
                 request.m_descriptor = desc;
                 request.m_image = image.get();
                 m_state->m_imagePool->InitImage(request);
@@ -419,13 +419,13 @@ namespace UnitTest
         static const uint32_t ScopeCount = 16;
 
         AZStd::unique_ptr<Factory> m_rootFactory;
-        AZStd::unique_ptr<AZ::RHI::RHISystem> m_rhiSystem; //! Needed for the MultiDeviceTransientAttachmentPool in the FrameScheduler
+        AZStd::unique_ptr<AZ::RHI::RHISystem> m_rhiSystem; //! Needed for the TransientAttachmentPool in the FrameScheduler
         RHI::Ptr<RHI::Device> m_device;
 
         struct State
         {
-            RHI::Ptr<RHI::MultiDeviceBufferPool> m_bufferPool;
-            RHI::Ptr<RHI::MultiDeviceImagePool> m_imagePool;
+            RHI::Ptr<RHI::BufferPool> m_bufferPool;
+            RHI::Ptr<RHI::ImagePool> m_imagePool;
             ImportedImage m_imageAttachments[ImportedImageCount];
             ImportedBuffer m_bufferAttachments[ImportedBufferCount];
             AZStd::vector<AZStd::unique_ptr<ScopeProducer>> m_producers;

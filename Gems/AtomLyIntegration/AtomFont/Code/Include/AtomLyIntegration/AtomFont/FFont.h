@@ -26,8 +26,8 @@
 
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI/DrawList.h>
-#include <Atom/RHI/MultiDeviceImage.h>
-#include <Atom/RHI/SingleDevicePipelineState.h>
+#include <Atom/RHI/Image.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
@@ -272,7 +272,7 @@ namespace AZ
         AZStd::unique_ptr<uint8_t[]> m_fontBuffer;
 
         AZ::Data::Instance<AZ::RPI::AttachmentImage> m_fontAttachmentImage;
-        AZ::RHI::Ptr<AZ::RHI::MultiDeviceImage>     m_fontImage;
+        AZ::RHI::Ptr<AZ::RHI::Image>     m_fontImage;
         uint32_t m_fontImageVersion = 0;
 
         AtomFont* m_atomFont = nullptr;

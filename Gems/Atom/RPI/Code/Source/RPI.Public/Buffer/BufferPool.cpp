@@ -11,7 +11,7 @@
 #include <Atom/RPI.Reflect/ResourcePoolAsset.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/MultiDeviceBufferPool.h>
+#include <Atom/RHI/BufferPool.h>
 
 #include <Atom/RHI.Reflect/BufferPoolDescriptor.h>
 
@@ -42,10 +42,10 @@ namespace AZ
 
         RHI::ResultCode BufferPool::Init(RHI::MultiDevice::DeviceMask deviceMask, ResourcePoolAsset& poolAsset)
         {
-            RHI::Ptr<RHI::MultiDeviceBufferPool> bufferPool = aznew RHI::MultiDeviceBufferPool;
+            RHI::Ptr<RHI::BufferPool> bufferPool = aznew RHI::BufferPool;
             if (!bufferPool)
             {
-                AZ_Error("RPI::BufferPool", false, "Failed to create RHI::MultiDeviceBufferPool");
+                AZ_Error("RPI::BufferPool", false, "Failed to create RHI::BufferPool");
                 return RHI::ResultCode::Fail;
             }
 
@@ -66,12 +66,12 @@ namespace AZ
             return resultCode;
         }
 
-        const RHI::MultiDeviceBufferPool* BufferPool::GetRHIPool() const
+        const RHI::BufferPool* BufferPool::GetRHIPool() const
         {
             return m_pool.get();
         }
 
-        RHI::MultiDeviceBufferPool* BufferPool::GetRHIPool()
+        RHI::BufferPool* BufferPool::GetRHIPool()
         {
             return m_pool.get();
         }

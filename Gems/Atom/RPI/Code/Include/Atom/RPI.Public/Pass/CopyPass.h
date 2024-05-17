@@ -10,7 +10,7 @@
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <Atom/RHI.Reflect/Scissor.h>
 #include <Atom/RHI.Reflect/Viewport.h>
-#include <Atom/RHI/MultiDeviceCopyItem.h>
+#include <Atom/RHI/CopyItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 
 #include <Atom/RPI.Reflect/Pass/CopyPassData.h>
@@ -61,9 +61,9 @@ namespace AZ
             RHI::CopyItemType GetCopyItemType();
 
             // The copy item submitted to the command list
-            RHI::MultiDeviceCopyItem m_copyItemSameDevice;
-            RHI::MultiDeviceCopyItem m_copyItemDeviceToHost;
-            RHI::MultiDeviceCopyItem m_copyItemHostToDevice;
+            RHI::CopyItem m_copyItemSameDevice;
+            RHI::CopyItem m_copyItemDeviceToHost;
+            RHI::CopyItem m_copyItemHostToDevice;
             AZStd::shared_ptr<AZ::RHI::ScopeProducer> m_copyScopeProducerSameDevice;
             AZStd::shared_ptr<AZ::RHI::ScopeProducer> m_copyScopeProducerDeviceToHost;
             AZStd::shared_ptr<AZ::RHI::ScopeProducer> m_copyScopeProducerHostToDevice;
@@ -86,9 +86,9 @@ namespace AZ
             AZStd::array<Data::Instance<Buffer>, MaxFrames> m_device1HostBuffer;
             AZStd::array<Data::Instance<Buffer>, MaxFrames> m_device2HostBuffer;
             AZStd::array<AZ::u64, MaxFrames> m_deviceHostBufferByteCount;
-            AZStd::array<Ptr<RHI::MultiDeviceFence>, MaxFrames> m_device1SignalFence;
-            AZStd::array<Ptr<RHI::MultiDeviceFence>, MaxFrames> m_device2WaitFence;
-            RHI::SingleDeviceImageSubresourceLayout m_inputImageLayout;
+            AZStd::array<Ptr<RHI::Fence>, MaxFrames> m_device1SignalFence;
+            AZStd::array<Ptr<RHI::Fence>, MaxFrames> m_device2WaitFence;
+            RHI::DeviceImageSubresourceLayout m_inputImageLayout;
         };
     } // namespace RPI
 } // namespace AZ

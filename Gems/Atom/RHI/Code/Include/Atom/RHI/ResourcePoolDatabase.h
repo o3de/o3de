@@ -13,18 +13,18 @@
 
 namespace AZ::RHI
 {
-    class SingleDeviceResourcePool;
+    class DeviceResourcePool;
     class ResourcePoolResolver;
-    class SingleDeviceBufferPoolBase;
-    class SingleDeviceImagePoolBase;
-    class SingleDeviceShaderResourceGroupPool;
+    class DeviceBufferPoolBase;
+    class DeviceImagePoolBase;
+    class DeviceShaderResourceGroupPool;
 
     //! This class is a simple database of active resource pools. Resource pools
     //! are attached and detached from the database when they initialize and shutdown,
     //! respectively. The database provides a way to iterate over active pools in
     //! a thread-safe way using a reader-writer lock.
     //!
-    //! SingleDeviceResourcePool is friended to the class in order to allow it to control
+    //! DeviceResourcePool is friended to the class in order to allow it to control
     //! attachment / detachment from the database.
     class ResourcePoolDatabase final
     {
@@ -34,42 +34,42 @@ namespace AZ::RHI
         ~ResourcePoolDatabase();
 
         //! Provides a read-locked loop over the set of buffer pools.
-        //! @param predicate The predicate to call for each instance. Expected signature: void(const SingleDeviceBufferPoolBase*).
+        //! @param predicate The predicate to call for each instance. Expected signature: void(const DeviceBufferPoolBase*).
         template <typename Predicate>
         void ForEachBufferPool(Predicate predicate) const;
 
         //! Provides a read-locked loop over the set of buffer pools.
-        //! @param predicate The predicate to call for each instance. Expected signature: void(SingleDeviceBufferPoolBase*).
+        //! @param predicate The predicate to call for each instance. Expected signature: void(DeviceBufferPoolBase*).
         template <typename Predicate>
         void ForEachBufferPool(Predicate predicate);
 
         //! Provides a read-locked loop over the set of image pools.
-        //! @param predicate The predicate to call for each instance. Expected signature: void(const SingleDeviceImagePoolBase*).
+        //! @param predicate The predicate to call for each instance. Expected signature: void(const DeviceImagePoolBase*).
         template <typename Predicate>
         void ForEachImagePool(Predicate predicate) const;
 
         //! Provides a read-locked loop over the set of image pools.
-        //! @param predicate The predicate to call for each instance. Expected signature: void(SingleDeviceImagePoolBase*).
+        //! @param predicate The predicate to call for each instance. Expected signature: void(DeviceImagePoolBase*).
         template <typename Predicate>
         void ForEachImagePool(Predicate predicate);
 
         //! Provides a read-locked loop over the set of shader resource group pools.
-        //! @param predicate The predicate to call for each instance. Expected signature: void(const SingleDeviceShaderResourceGroupPool*).
+        //! @param predicate The predicate to call for each instance. Expected signature: void(const DeviceShaderResourceGroupPool*).
         template <typename Predicate>
         void ForEachShaderResourceGroupPool(Predicate predicate) const;
 
         //! Provides a read-locked loop over the set of shader resource group pools.
-        //! @param predicate The predicate to call for each instance. Expected signature: void(SingleDeviceShaderResourceGroupPool*).
+        //! @param predicate The predicate to call for each instance. Expected signature: void(DeviceShaderResourceGroupPool*).
         template <typename Predicate>
         void ForEachShaderResourceGroupPool(Predicate predicate);
 
         //! Provides a read-locked loop over the set resource pools.
-        //! @param predicate The predicate to call for each instance. Expected signature: void(const SingleDeviceResourcePool*).
+        //! @param predicate The predicate to call for each instance. Expected signature: void(const DeviceResourcePool*).
         template <typename Predicate>
         void ForEachPool(Predicate predicate) const;
 
         //! Provides a read-locked loop over the set of resource pools.
-        //! @param predicate The predicate to call for each instance. Expected signature: void(SingleDeviceResourcePool*).
+        //! @param predicate The predicate to call for each instance. Expected signature: void(DeviceResourcePool*).
         template <typename Predicate>
         void ForEachPool(Predicate predicate);
 
@@ -84,15 +84,15 @@ namespace AZ::RHI
         void ForEachPoolResolver(Predicate predicate);
 
     private:
-        friend class SingleDeviceResourcePool;
-        void AttachPool(SingleDeviceResourcePool* resourcePool);
-        void DetachPool(SingleDeviceResourcePool* resourcePool);
+        friend class DeviceResourcePool;
+        void AttachPool(DeviceResourcePool* resourcePool);
+        void DetachPool(DeviceResourcePool* resourcePool);
 
         mutable AZStd::shared_mutex m_mutex;
-        AZStd::vector<SingleDeviceResourcePool*> m_pools;
-        AZStd::vector<SingleDeviceBufferPoolBase*> m_bufferPools;
-        AZStd::vector<SingleDeviceImagePoolBase*> m_imagePools;
-        AZStd::vector<SingleDeviceShaderResourceGroupPool*> m_shaderResourceGroupPools;
+        AZStd::vector<DeviceResourcePool*> m_pools;
+        AZStd::vector<DeviceBufferPoolBase*> m_bufferPools;
+        AZStd::vector<DeviceImagePoolBase*> m_imagePools;
+        AZStd::vector<DeviceShaderResourceGroupPool*> m_shaderResourceGroupPools;
         AZStd::vector<ResourcePoolResolver*> m_poolResolvers;
     };
 

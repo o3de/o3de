@@ -127,12 +127,12 @@ namespace AZ
             {
                 if (rayTracingFeatureProcessor->GetRevision() != m_rayTracingRevision)
                 {
-                    RHI::MultiDeviceRayTracingBufferPools& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
+                    RHI::RayTracingBufferPools& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
                     RayTracingFeatureProcessor::SubMeshVector& subMeshes = rayTracingFeatureProcessor->GetSubMeshes();
 
                     // create the TLAS descriptor
-                    RHI::MultiDeviceRayTracingTlasDescriptor tlasDescriptor;
-                    RHI::MultiDeviceRayTracingTlasDescriptor* tlasDescriptorBuild = tlasDescriptor.Build();
+                    RHI::RayTracingTlasDescriptor tlasDescriptor;
+                    RHI::RayTracingTlasDescriptor* tlasDescriptorBuild = tlasDescriptor.Build();
 
                     uint32_t instanceIndex = 0;
                     for (auto& subMesh : subMeshes)
@@ -173,11 +173,11 @@ namespace AZ
                     }
 
                     // create the TLAS buffers based on the descriptor
-                    RHI::Ptr<RHI::MultiDeviceRayTracingTlas>& rayTracingTlas = rayTracingFeatureProcessor->GetTlas();
+                    RHI::Ptr<RHI::RayTracingTlas>& rayTracingTlas = rayTracingFeatureProcessor->GetTlas();
                     rayTracingTlas->CreateBuffers(RHI::RHISystemInterface::Get()->GetRayTracingSupport(), &tlasDescriptor, rayTracingBufferPools);
 
                     // import and attach the TLAS buffer
-                    const RHI::Ptr<RHI::MultiDeviceBuffer>& rayTracingTlasBuffer = rayTracingTlas->GetTlasBuffer();
+                    const RHI::Ptr<RHI::Buffer>& rayTracingTlasBuffer = rayTracingTlas->GetTlasBuffer();
                     if (rayTracingTlasBuffer && rayTracingFeatureProcessor->HasGeometry())
                     {
                         AZ::RHI::AttachmentId tlasAttachmentId = rayTracingFeatureProcessor->GetTlasAttachmentId();
@@ -252,7 +252,7 @@ namespace AZ
             BeginScopeQuery(context);
 
             // build newly added or skinned BLAS objects
-            AZStd::vector<const AZ::RHI::SingleDeviceRayTracingBlas*> changedBlasList;
+            AZStd::vector<const AZ::RHI::DeviceRayTracingBlas*> changedBlasList;
             RayTracingFeatureProcessor::BlasInstanceMap& blasInstances = rayTracingFeatureProcessor->GetBlasInstances();
             for (auto& blasInstance : blasInstances)
             {

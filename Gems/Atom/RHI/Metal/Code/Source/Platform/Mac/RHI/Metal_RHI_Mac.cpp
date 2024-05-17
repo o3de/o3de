@@ -146,7 +146,7 @@ namespace Platform
         }
     }
 
-    AZ::RHI::ResultCode MapBufferInternal(const AZ::RHI::SingleDeviceBufferMapRequest& request, AZ::RHI::SingleDeviceBufferMapResponse& response)
+    AZ::RHI::ResultCode MapBufferInternal(const AZ::RHI::DeviceBufferMapRequest& request, AZ::RHI::DeviceBufferMapResponse& response)
     {
         AZ::Metal::Buffer& buffer = *static_cast<AZ::Metal::Buffer*>(request.m_buffer);
         MTLStorageMode mtlStorageMode = buffer.GetMemoryView().GetStorageMode();
@@ -176,7 +176,7 @@ namespace Platform
         return AZ::RHI::ResultCode::Success;
     }
 
-    void UnMapBufferInternal(AZ::RHI::SingleDeviceBuffer& bufferBase)
+    void UnMapBufferInternal(AZ::RHI::DeviceBuffer& bufferBase)
     {
         AZ::Metal::Buffer& buffer = static_cast<AZ::Metal::Buffer&>(bufferBase);
         //Ony need to handle MTLStorageModeManaged memory.

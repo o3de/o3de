@@ -48,7 +48,7 @@ namespace AZ
         {
         }
 
-        RHI::ResultCode BufferPool::InitBufferInternal(RHI::SingleDeviceBuffer& bufferBase, const RHI::BufferDescriptor& bufferDescriptor)
+        RHI::ResultCode BufferPool::InitBufferInternal(RHI::DeviceBuffer& bufferBase, const RHI::BufferDescriptor& bufferDescriptor)
         {
             auto& buffer = static_cast<Buffer&>(bufferBase);
             auto& device = static_cast<Device&>(GetDevice());
@@ -78,7 +78,7 @@ namespace AZ
             return result;
         }
 
-        void BufferPool::ShutdownResourceInternal(RHI::SingleDeviceResource& resource) 
+        void BufferPool::ShutdownResourceInternal(RHI::DeviceResource& resource) 
         {
             auto& buffer = static_cast<Buffer&>(resource);
             auto& device = static_cast<Device&>(GetDevice());
@@ -104,7 +104,7 @@ namespace AZ
             buffer.Invalidate();
         }
 
-        RHI::ResultCode BufferPool::OrphanBufferInternal(RHI::SingleDeviceBuffer& bufferBase) 
+        RHI::ResultCode BufferPool::OrphanBufferInternal(RHI::DeviceBuffer& bufferBase) 
         {
             auto& buffer = static_cast<Buffer&>(bufferBase);
             auto& device = static_cast<Device&>(GetDevice());
@@ -121,7 +121,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode BufferPool::MapBufferInternal(const RHI::SingleDeviceBufferMapRequest& mapRequest, RHI::SingleDeviceBufferMapResponse& response) 
+        RHI::ResultCode BufferPool::MapBufferInternal(const RHI::DeviceBufferMapRequest& mapRequest, RHI::DeviceBufferMapResponse& response) 
         {
             const RHI::BufferPoolDescriptor& descriptor = GetDescriptor();
             auto* buffer = static_cast<Buffer*>(mapRequest.m_buffer);
@@ -168,7 +168,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        void BufferPool::UnmapBufferInternal(RHI::SingleDeviceBuffer& bufferBase) 
+        void BufferPool::UnmapBufferInternal(RHI::DeviceBuffer& bufferBase) 
         {
             const RHI::BufferPoolDescriptor& descriptor = GetDescriptor();
             auto& buffer = static_cast<Buffer&>(bufferBase);
@@ -189,7 +189,7 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode BufferPool::StreamBufferInternal(const RHI::SingleDeviceBufferStreamRequest& request)
+        RHI::ResultCode BufferPool::StreamBufferInternal(const RHI::DeviceBufferStreamRequest& request)
         {
             auto& device = static_cast<Device&>(GetDevice());
             device.GetAsyncUploadQueue().QueueUpload(request);

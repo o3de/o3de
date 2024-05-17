@@ -113,8 +113,8 @@ namespace AZ
                 }
 
                 // create the TLAS descriptor by adding an instance entry for each probe in the grid
-                RHI::MultiDeviceRayTracingTlasDescriptor tlasDescriptor;
-                RHI::MultiDeviceRayTracingTlasDescriptor* tlasDescriptorBuild = tlasDescriptor.Build();
+                RHI::RayTracingTlasDescriptor tlasDescriptor;
+                RHI::RayTracingTlasDescriptor* tlasDescriptorBuild = tlasDescriptor.Build();
 
                 // initialize the transform for each probe to Identity(), they will be updated by the compute shader
                 AZ::Transform transform = AZ::Transform::Identity();
@@ -132,7 +132,7 @@ namespace AZ
                 }
 
                 // create the TLAS buffers from on the descriptor
-                RHI::Ptr<RHI::MultiDeviceRayTracingTlas>& visualizationTlas = diffuseProbeGrid->GetVisualizationTlas();
+                RHI::Ptr<RHI::RayTracingTlas>& visualizationTlas = diffuseProbeGrid->GetVisualizationTlas();
                 visualizationTlas->CreateBuffers(RHI::MultiDevice::AllDevices, &tlasDescriptor, diffuseProbeGridFeatureProcessor->GetVisualizationBufferPools());
             }
 
@@ -156,9 +156,9 @@ namespace AZ
                 }
 
                 // import and attach the visualization TLAS and probe data
-                RHI::Ptr<RHI::MultiDeviceRayTracingTlas>& visualizationTlas = diffuseProbeGrid->GetVisualizationTlas();
-                const RHI::Ptr<RHI::MultiDeviceBuffer>& tlasBuffer = visualizationTlas->GetTlasBuffer();
-                const RHI::Ptr<RHI::MultiDeviceBuffer>& tlasInstancesBuffer = visualizationTlas->GetTlasInstancesBuffer();
+                RHI::Ptr<RHI::RayTracingTlas>& visualizationTlas = diffuseProbeGrid->GetVisualizationTlas();
+                const RHI::Ptr<RHI::Buffer>& tlasBuffer = visualizationTlas->GetTlasBuffer();
+                const RHI::Ptr<RHI::Buffer>& tlasInstancesBuffer = visualizationTlas->GetTlasInstancesBuffer();
                 if (tlasBuffer && tlasInstancesBuffer)
                 {
                     // TLAS buffer
@@ -266,10 +266,10 @@ namespace AZ
                     continue;
                 }
 
-                const RHI::SingleDeviceShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetVisualizationPrepareSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get();
+                const RHI::DeviceShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetVisualizationPrepareSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get();
                 commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
-                RHI::SingleDeviceDispatchItem dispatchItem;
+                RHI::DeviceDispatchItem dispatchItem;
                 dispatchItem.m_arguments = m_dispatchArgs;
                 dispatchItem.m_pipelineState = m_pipelineState->GetDevicePipelineState(context.GetDeviceIndex()).get();
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = diffuseProbeGrid->GetTotalProbeCount();

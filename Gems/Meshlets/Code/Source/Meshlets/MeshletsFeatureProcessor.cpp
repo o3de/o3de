@@ -256,14 +256,14 @@ namespace AZ
                 // ObjectId belongs to the instance and not the object - to be moved
                 lodRenderData->ObjectId = objectId;
 
-                RHI::MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest drawRequest;
+                RHI::DrawPacketBuilder::DrawRequest drawRequest;
                 m_renderPass->FillDrawRequestData(drawRequest);
                 drawRequest.m_stencilRef = 0;
                 drawRequest.m_sortKey = 0;
 // Leave the following empty if using buffers rather than vertex streams.
 //                drawRequest.m_streamBufferViews = lodRenderData->m_renderStreamBuffersViews; 
 
-                RHI::MultiDeviceDrawPacketBuilder drawPacketBuilder;
+                RHI::DrawPacketBuilder drawPacketBuilder;
                 RHI::DrawIndexed drawIndexed;
 
                 drawIndexed.m_indexCount = lodRenderData->IndexCount;
@@ -378,8 +378,8 @@ namespace AZ
             // Remove any dangling leftovers 
             DeletePendingMeshletsRenderObjects();
 
-            AZStd::list<RHI::MultiDeviceDispatchItem*> dispatchItems;
-            AZStd::list<const RHI::MultiDeviceDrawPacket*> drawPackets;
+            AZStd::list<RHI::DispatchItem*> dispatchItems;
+            AZStd::list<const RHI::DrawPacket*> drawPackets;
             for (auto renderObject : m_meshletsRenderObjects)
             {
                 // For demo purposed the model lod index is set for 0.

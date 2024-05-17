@@ -7,7 +7,7 @@
  */
 
 #include "RHITestFixture.h"
-#include <Atom/RHI/MultiDeviceImagePool.h>
+#include <Atom/RHI/ImagePool.h>
 #include <Atom/RHI/ResourceInvalidateBus.h>
 #include <Tests/Device.h>
 
@@ -35,27 +35,27 @@ namespace UnitTest
 
     TEST_F(MultiDeviceImageTests, TestNoop)
     {
-        RHI::Ptr<RHI::MultiDeviceImage> noopImage;
-        noopImage = aznew RHI::MultiDeviceImage;
+        RHI::Ptr<RHI::Image> noopImage;
+        noopImage = aznew RHI::Image;
     }
 
     TEST_F(MultiDeviceImageTests, TestAll)
     {
-        RHI::Ptr<RHI::MultiDeviceImage> imageA;
-        imageA = aznew RHI::MultiDeviceImage;
+        RHI::Ptr<RHI::Image> imageA;
+        imageA = aznew RHI::Image;
         imageA->SetName(Name("ImageA"));
 
         ASSERT_TRUE(imageA->GetName().GetStringView() == "ImageA");
         ASSERT_TRUE(imageA->use_count() == 1);
 
         {
-            RHI::Ptr<RHI::MultiDeviceImage> imageB;
-            imageB = aznew RHI::MultiDeviceImage;
+            RHI::Ptr<RHI::Image> imageB;
+            imageB = aznew RHI::Image;
 
             ASSERT_TRUE(imageB->use_count() == 1);
 
-            RHI::Ptr<RHI::MultiDeviceImagePool> imagePool;
-            imagePool = aznew RHI::MultiDeviceImagePool;
+            RHI::Ptr<RHI::ImagePool> imagePool;
+            imagePool = aznew RHI::ImagePool;
 
             ASSERT_TRUE(imagePool->use_count() == 1);
 
@@ -66,7 +66,7 @@ namespace UnitTest
             ASSERT_TRUE(imageA->IsInitialized() == false);
             ASSERT_TRUE(imageB->IsInitialized() == false);
 
-            RHI::MultiDeviceImageInitRequest initRequest;
+            RHI::ImageInitRequest initRequest;
             initRequest.m_image = imageA.get();
             initRequest.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::Color, 16, 16, RHI::Format::R8G8B8A8_UNORM_SRGB);
             imagePool->InitImage(initRequest);
@@ -74,7 +74,7 @@ namespace UnitTest
 
             for(auto deviceIndex{0}; deviceIndex < DeviceCount; ++deviceIndex) 
             {
-                RHI::Ptr<RHI::SingleDeviceImageView> imageView;
+                RHI::Ptr<RHI::DeviceImageView> imageView;
                 imageView = imageA->GetDeviceImage(deviceIndex)->GetImageView(RHI::ImageViewDescriptor(RHI::Format::R8G8B8A8_UINT));
                 AZ_TEST_ASSERT(imageView->IsStale() == false);
                 ASSERT_TRUE(imageView->IsInitialized());
@@ -97,13 +97,13 @@ namespace UnitTest
             {
                 uint32_t imageIndex = 0;
 
-                const RHI::MultiDeviceImage* images[] =
+                const RHI::Image* images[] =
                 {
                     imageA.get(),
                     imageB.get()
                 };
 
-                imagePool->ForEach<RHI::MultiDeviceImage>([&imageIndex, &images]([[maybe_unused]] const RHI::MultiDeviceImage& image)
+                imagePool->ForEach<RHI::Image>([&imageIndex, &images]([[maybe_unused]] const RHI::Image& image)
                 {
                     AZ_UNUSED(images); // Prevent unused warning in release builds
                     AZ_Assert(images[imageIndex] == &image, "images don't match");
@@ -114,8 +114,8 @@ namespace UnitTest
             imageB->Shutdown();
             ASSERT_TRUE(imageB->GetPool() == nullptr);
 
-            RHI::Ptr<RHI::MultiDeviceImagePool> imagePoolB;
-            imagePoolB = aznew RHI::MultiDeviceImagePool;
+            RHI::Ptr<RHI::ImagePool> imagePoolB;
+            imagePoolB = aznew RHI::ImagePool;
             imagePoolB->Init(DeviceMask, imagePoolDesc);
 
             initRequest.m_image = imageB.get();
@@ -137,20 +137,20 @@ namespace UnitTest
 
     TEST_F(MultiDeviceImageTests, TestViews)
     {
-        RHI::Ptr<RHI::SingleDeviceImageView> imageViewA;
+        RHI::Ptr<RHI::DeviceImageView> imageViewA;
         
         {
-            RHI::Ptr<RHI::MultiDeviceImagePool> imagePool;
-            imagePool = aznew RHI::MultiDeviceImagePool;
+            RHI::Ptr<RHI::ImagePool> imagePool;
+            imagePool = aznew RHI::ImagePool;
 
             RHI::ImagePoolDescriptor imagePoolDesc;
             imagePoolDesc.m_bindFlags = RHI::ImageBindFlags::Color;
             imagePool->Init(DeviceMask, imagePoolDesc);
 
-            RHI::Ptr<RHI::MultiDeviceImage> image;
-            image = aznew RHI::MultiDeviceImage;
+            RHI::Ptr<RHI::Image> image;
+            image = aznew RHI::Image;
 
-            RHI::MultiDeviceImageInitRequest initRequest;
+            RHI::ImageInitRequest initRequest;
             initRequest.m_image = image.get();
             initRequest.m_descriptor = RHI::ImageDescriptor::Create2DArray(RHI::ImageBindFlags::Color, 8, 8, 2, RHI::Format::R8G8B8A8_UNORM_SRGB);
             imagePool->InitImage(initRequest);
@@ -246,7 +246,7 @@ namespace UnitTest
             MultiDeviceImageTests::SetUp();
 
             // Create a pool and image with the image bind flags from the parameterized test
-            m_imagePool = aznew RHI::MultiDeviceImagePool;
+            m_imagePool = aznew RHI::ImagePool;
             RHI::ImagePoolDescriptor imagePoolDesc;
             imagePoolDesc.m_bindFlags = GetParam().imageBindFlags;
             m_imagePool->Init(DeviceMask, imagePoolDesc);
@@ -254,8 +254,8 @@ namespace UnitTest
             RHI::ImageDescriptor imageDescriptor;
             imageDescriptor.m_bindFlags = GetParam().imageBindFlags;
 
-            m_image = aznew RHI::MultiDeviceImage;
-            RHI::MultiDeviceImageInitRequest initRequest;
+            m_image = aznew RHI::Image;
+            RHI::ImageInitRequest initRequest;
             initRequest.m_image = m_image.get();
             initRequest.m_descriptor = imageDescriptor;
             m_imagePool->InitImage(initRequest);
@@ -270,9 +270,9 @@ namespace UnitTest
             MultiDeviceImageTests::TearDown();
         }
 
-        RHI::Ptr<RHI::MultiDeviceImagePool> m_imagePool;
-        RHI::Ptr<RHI::MultiDeviceImage> m_image;
-        RHI::Ptr<RHI::SingleDeviceImageView> m_imageView;
+        RHI::Ptr<RHI::ImagePool> m_imagePool;
+        RHI::Ptr<RHI::Image> m_image;
+        RHI::Ptr<RHI::DeviceImageView> m_imageView;
     };
 
     TEST_P(MultiDeviceImageBindFlagTests, InitView_ViewIsCreated)

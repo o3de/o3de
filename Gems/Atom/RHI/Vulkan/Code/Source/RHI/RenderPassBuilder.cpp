@@ -8,7 +8,7 @@
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/ImageFrameAttachment.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
-#include <Atom/RHI/MultiDeviceBuffer.h>
+#include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
 #include <RHI/BufferView.h>
 #include <RHI/Conversion.h>

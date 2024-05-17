@@ -11,7 +11,7 @@
 #include <AtomCore/Instance/InstanceData.h>
 #include <AtomCore/Instance/Instance.h>
 
-#include <Atom/RHI/MultiDeviceImagePool.h>
+#include <Atom/RHI/ImagePool.h>
 
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
@@ -64,7 +64,7 @@ namespace AZ
                 Data::Instance<RPI::ShaderResourceGroup> srg = nullptr
             );
 
-            static Data::Instance<RHI::MultiDeviceBufferView> CreateSharedBufferView(
+            static Data::Instance<RHI::BufferView> CreateSharedBufferView(
                 const char* warningHeader,
                 SrgBufferDescriptor& bufferDesc,
                 Data::Instance<Meshlets::SharedBufferAllocation>& bufferAllocator
@@ -72,12 +72,12 @@ namespace AZ
 
             static bool BindBufferViewToSrg(
                 [[maybe_unused]] const char* warningHeader,
-                Data::Instance<RHI::MultiDeviceBufferView> bufferView,
+                Data::Instance<RHI::BufferView> bufferView,
                 SrgBufferDescriptor& bufferDesc,
                 Data::Instance<RPI::ShaderResourceGroup> srg
             );
 
-            static Data::Instance<RHI::MultiDeviceBufferView> CreateSharedBufferViewAndBindToSrg(
+            static Data::Instance<RHI::BufferView> CreateSharedBufferViewAndBindToSrg(
                 const char* warningHeader,
                 SrgBufferDescriptor& bufferDesc,
                 Data::Instance<Meshlets::SharedBufferAllocation>& outputBufferAllocator,

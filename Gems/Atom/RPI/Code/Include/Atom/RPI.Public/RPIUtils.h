@@ -11,7 +11,7 @@
  
 #include <AtomCore/Instance/Instance.h>
 
-#include <Atom/RHI/SingleDeviceDispatchItem.h>
+#include <Atom/RHI/DeviceDispatchItem.h>
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>

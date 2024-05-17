@@ -16,7 +16,7 @@
 #include <Atom/RPI.Public/RPIUtils.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/SingleDeviceBufferView.h>
+#include <Atom/RHI/DeviceBufferView.h>
 
 #include <limits>
 
@@ -169,7 +169,7 @@ namespace AZ
             return m_rootConstantData.GetConstant<float>(m_weightIndex);
         }
 
-        const RHI::MultiDeviceDispatchItem& MorphTargetDispatchItem::GetRHIDispatchItem() const
+        const RHI::DispatchItem& MorphTargetDispatchItem::GetRHIDispatchItem() const
         {
             return m_dispatchItem;
         }

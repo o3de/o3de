@@ -8,8 +8,8 @@
 #pragma once
 
 #include <Atom/RPI.Public/Pass/RenderPass.h>
-#include <Atom/RHI/MultiDeviceRayTracingPipelineState.h>
-#include <Atom/RHI/MultiDeviceRayTracingShaderTable.h>
+#include <Atom/RHI/RayTracingPipelineState.h>
+#include <Atom/RHI/RayTracingShaderTable.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
 namespace AZ
@@ -49,17 +49,17 @@ namespace AZ
             Data::Instance<RPI::Shader> m_rayTracingShader;
             Data::Instance<RPI::Shader> m_missShader;
             Data::Instance<RPI::Shader> m_closestHitShader;
-            RHI::Ptr<RHI::MultiDeviceRayTracingPipelineState> m_rayTracingPipelineState;
+            RHI::Ptr<RHI::RayTracingPipelineState> m_rayTracingPipelineState;
 
             // ray tracing shader table
-            RHI::Ptr<RHI::MultiDeviceRayTracingShaderTable> m_rayTracingShaderTable;
+            RHI::Ptr<RHI::RayTracingShaderTable> m_rayTracingShaderTable;
 
             // current size of output attachment, updated every frame
             RHI::Size m_outputAttachmentSize;
 
             // ray tracing global shader resource group layout and pipeline state
             RHI::Ptr<RHI::ShaderResourceGroupLayout> m_globalSrgLayout;
-            RHI::ConstPtr<RHI::MultiDevicePipelineState> m_globalPipelineState;
+            RHI::ConstPtr<RHI::PipelineState> m_globalPipelineState;
 
             bool m_initialized = false;
         };

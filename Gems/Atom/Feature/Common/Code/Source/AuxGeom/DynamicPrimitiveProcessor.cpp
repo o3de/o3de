@@ -9,7 +9,7 @@
 #include "DynamicPrimitiveProcessor.h"
 #include "AuxGeomDrawProcessorShared.h"
 
-#include <Atom/RHI/MultiDeviceDrawPacketBuilder.h>
+#include <Atom/RHI/DrawPacketBuilder.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 
@@ -92,7 +92,7 @@ namespace AZ
         void DynamicPrimitiveProcessor::ProcessDynamicPrimitives(const AuxGeomBufferData* bufferData, const RPI::FeatureProcessor::RenderPacket& fpPacket)
         {
             AZ_PROFILE_SCOPE(AzRender, "DynamicPrimitiveProcessor: ProcessDynamicPrimitives");
-            RHI::MultiDeviceDrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
+            RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
 
             const DynamicPrimitiveData& srcPrimitives = bufferData->m_primitiveData;
             // Update the buffers for the dynamic primitives and generate draw packets for them
@@ -385,13 +385,13 @@ namespace AZ
             }
         }
 
-        RHI::ConstPtr<RHI::MultiDeviceDrawPacket> DynamicPrimitiveProcessor::BuildDrawPacketForDynamicPrimitive(
+        RHI::ConstPtr<RHI::DrawPacket> DynamicPrimitiveProcessor::BuildDrawPacketForDynamicPrimitive(
             DynamicBufferGroup& group,
             const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
             Data::Instance<RPI::ShaderResourceGroup> srg,
             uint32_t indexCount,
             uint32_t indexOffset,
-            RHI::MultiDeviceDrawPacketBuilder& drawPacketBuilder,
+            RHI::DrawPacketBuilder& drawPacketBuilder,
             RHI::DrawItemSortKey sortKey)
         {
             RHI::DrawIndexed drawIndexed;
@@ -404,7 +404,7 @@ namespace AZ
             drawPacketBuilder.SetIndexBufferView(group.m_indexBufferView);
             drawPacketBuilder.AddShaderResourceGroup(srg->GetRHIShaderResourceGroup());
 
-            RHI::MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest drawRequest;
+            RHI::DrawPacketBuilder::DrawRequest drawRequest;
             drawRequest.m_listTag = m_shaderData.m_drawListTag;
             drawRequest.m_pipelineState = pipelineState->GetRHIPipelineState();
             drawRequest.m_streamBufferViews = group.m_streamBufferViews;

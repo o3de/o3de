@@ -260,7 +260,7 @@ namespace AZ
             return imageAsset->GetImageDescriptor().m_mipLevels;
         }
 
-        RHI::SingleDeviceImageSubresourceLayout DecalTextureArray::GetLayout(const DecalMapType mapType, int mip) const
+        RHI::DeviceImageSubresourceLayout DecalTextureArray::GetLayout(const DecalMapType mapType, int mip) const
         {
             AZ_Assert(m_materials.size() > 0, "GetLayout() cannot be called unless at least one material has been added");
 
