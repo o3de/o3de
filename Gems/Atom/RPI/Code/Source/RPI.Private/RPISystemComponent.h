@@ -21,7 +21,9 @@
 #include <Atom/RPI.Public/GpuQuery/GpuPassProfiler.h>
 #include <Atom/RPI.Public/XR/XRRenderingInterface.h>
 
+#if defined(CARBONATED)
 #include <AzFramework/API/ApplicationAPI.h>
+#endif
 
 #include "PerformanceCVarManager.h"
 
