@@ -175,11 +175,19 @@ namespace
     bool HandleCanvasInputEvent(AZ::EntityId canvasEntityId,
                                 const AzFramework::InputChannel::Snapshot& inputSnapshot,
                                 const AZ::Vector2* viewportPos = nullptr,
+#if defined(CARBONATED)
+                                const AZ::Vector2* viewportSize = nullptr,
+#endif
                                 const AzFramework::ModifierKeyMask activeModifierKeys = AzFramework::ModifierKeyMask::None)
     {
         bool handled = false;
+#if defined(CARBONATED)
+        UiCanvasBus::EventResult(
+            handled, canvasEntityId, &UiCanvasBus::Events::HandleInputEvent, inputSnapshot, viewportPos, viewportSize, activeModifierKeys);
+#else
         UiCanvasBus::EventResult(
             handled, canvasEntityId, &UiCanvasBus::Events::HandleInputEvent, inputSnapshot, viewportPos, activeModifierKeys);
+#endif
 
         // Execute events that have been queued during the input event handler
         AZ::Interface<ILyShine>::Get()->ExecuteQueuedEvents();
@@ -769,7 +777,12 @@ void ViewportWidget::keyPressEvent(QKeyEvent* event)
                 const AzFramework::InputChannel::Snapshot inputSnapshot(*inputChannelId,
                                                                         AzFramework::InputDeviceKeyboard::Id,
                                                                         AzFramework::InputChannel::State::Began);
+#if defined(CARBONATED)
+                const AZ::Vector2 viewportSize(aznumeric_cast<float>(size().width()), aznumeric_cast<float>(size().height()));
+                HandleCanvasInputEvent(canvasEntityId, inputSnapshot, nullptr, &viewportSize, activeModifierKeys);
+#else
                 HandleCanvasInputEvent(canvasEntityId, inputSnapshot, nullptr, activeModifierKeys);
+#endif
             }
         }
     }
@@ -811,7 +824,12 @@ void ViewportWidget::keyReleaseEvent(QKeyEvent* event)
                 const AzFramework::InputChannel::Snapshot inputSnapshot(*inputChannelId,
                                                                         AzFramework::InputDeviceKeyboard::Id,
                                                                         AzFramework::InputChannel::State::Ended);
+#if defined(CARBONATED)
+                const AZ::Vector2 viewportSize(aznumeric_cast<float>(size().width()), aznumeric_cast<float>(size().height()));
+                HandleCanvasInputEvent(canvasEntityId, inputSnapshot, nullptr, &viewportSize, activeModifierKeys);
+#else
                 HandleCanvasInputEvent(canvasEntityId, inputSnapshot, nullptr, activeModifierKeys);
+#endif
             }
 
             QString string = event->text();

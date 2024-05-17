@@ -1213,9 +1213,9 @@ bool UiCanvasComponent::HandleInputEvent(const AzFramework::InputChannel::Snapsh
                 UiRenderer* uiRenderer = m_renderInEditor ? GetUiRendererForEditor() : GetUiRendererForGame();
                 AZ_Assert(uiRenderer, "UiRenderer is not available");
 
-                const AZ::RHI::Viewport& viewport = uiRenderer->GetViewportContext()->GetWindowContext()->GetViewport();
-                viewportWidth = viewport.GetWidth();
-                viewportHeight = viewport.GetHeight();
+                const AZ::Vector2 renderViewportSize = uiRenderer->GetViewportSize();
+                viewportWidth = renderViewportSize.GetX();
+                viewportHeight = renderViewportSize.GetY();
             }
 
             // Transform this position to the scaled canvas
