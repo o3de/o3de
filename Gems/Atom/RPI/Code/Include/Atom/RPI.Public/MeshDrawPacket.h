@@ -11,8 +11,8 @@
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Public/Model/ModelLod.h>
-#include <Atom/RHI/DrawPacket.h>
-#include <Atom/RHI/DrawPacketBuilder.h>
+#include <Atom/RHI/SingleDeviceDrawPacket.h>
+#include <Atom/RHI/SingleDeviceDrawPacketBuilder.h>
 
 #include <AzCore/Math/Obb.h>
 #include <AzCore/std/containers/fixed_vector.h>
@@ -61,8 +61,8 @@ namespace AZ
 
             bool Update(const Scene& parentScene, bool forceUpdate = false);
 
-            RHI::DrawPacket* GetRHIDrawPacket() { return m_drawPacket.get(); }
-            const RHI::DrawPacket* GetRHIDrawPacket() const { return m_drawPacket.get(); }
+            RHI::SingleDeviceDrawPacket* GetRHIDrawPacket() { return m_drawPacket.get(); }
+            const RHI::SingleDeviceDrawPacket* GetRHIDrawPacket() const { return m_drawPacket.get(); }
             const RHI::ConstPtr<RHI::ConstantsLayout> GetRootConstantsLayout() const;
 
             void SetStencilRef(uint8_t stencilRef);
@@ -88,10 +88,10 @@ namespace AZ
             bool DoUpdate(const Scene& parentScene);
             void ForValidShaderOptionName(const Name& shaderOptionName, const AZStd::function<bool(const ShaderCollection::Item&, ShaderOptionIndex)>& callback);
 
-            Ptr<RHI::DrawPacket> m_drawPacket;
+            Ptr<RHI::SingleDeviceDrawPacket> m_drawPacket;
 
             // Note, many of the following items are held locally in the MeshDrawPacket solely to keep them resident in memory as long as they are needed
-            // for the m_drawPacket. RHI::DrawPacket uses raw pointers only, but we use smart pointers here to hold on to the data.
+            // for the m_drawPacket. RHI::SingleDeviceDrawPacket uses raw pointers only, but we use smart pointers here to hold on to the data.
 
             // Maintains references to the shader instances to keep their PSO caches resident (see Shader::Shutdown())
             ShaderList m_activeShaders;
@@ -107,11 +107,11 @@ namespace AZ
             // The per-object shader resource group
             Data::Instance<ShaderResourceGroup> m_objectSrg;
 
-            // We hold ConstPtr<RHI::ShaderResourceGroup> instead of Instance<RPI::ShaderResourceGroup> because the Material class
+            // We hold ConstPtr<RHI::SingleDeviceShaderResourceGroup> instead of Instance<RPI::ShaderResourceGroup> because the Material class
             // does not allow public access to its Instance<RPI::ShaderResourceGroup>.
-            ConstPtr<RHI::ShaderResourceGroup> m_materialSrg;
+            ConstPtr<RHI::SingleDeviceShaderResourceGroup> m_materialSrg;
 
-            AZStd::fixed_vector<Data::Instance<ShaderResourceGroup>, RHI::DrawPacketBuilder::DrawItemCountMax> m_perDrawSrgs;
+            AZStd::fixed_vector<Data::Instance<ShaderResourceGroup>, RHI::SingleDeviceDrawPacketBuilder::DrawItemCountMax> m_perDrawSrgs;
 
             // A reference to the material, used to rebuild the DrawPacket if needed
             Data::Instance<Material> m_material;

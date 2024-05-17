@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/ShaderResourceGroup.h>
+#include <Atom/RHI/SingleDeviceShaderResourceGroup.h>
 #include <AzCore/std/containers/list.h>
 #include <AzCore/std/containers/queue.h>
 #include <AzCore/std/containers/vector.h>
@@ -24,9 +24,9 @@ namespace AZ
         class ShaderResourceGroupPool;
 
         class ShaderResourceGroup
-            : public RHI::ShaderResourceGroup
+            : public RHI::SingleDeviceShaderResourceGroup
         {
-            using Base = RHI::ShaderResourceGroup;
+            using Base = RHI::SingleDeviceShaderResourceGroup;
             friend class ShaderResourceGroupPool;
 
         public:

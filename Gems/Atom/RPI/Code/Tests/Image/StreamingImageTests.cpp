@@ -183,7 +183,7 @@ namespace UnitTest
             return image;
         }
 
-        void ValidateImageData(AZStd::span<const uint8_t> data, const AZ::RHI::ImageSubresourceLayout& layout)
+        void ValidateImageData(AZStd::span<const uint8_t> data, const AZ::RHI::SingleDeviceImageSubresourceLayout& layout)
         {
             const uint32_t pixelSize = layout.m_size.m_width / layout.m_bytesPerRow;
 
@@ -222,9 +222,9 @@ namespace UnitTest
 
             for (uint16_t mipLevel = 0; mipLevel < mipChain->GetMipLevelCount(); ++mipLevel)
             {
-                RHI::ImageSubresourceLayout layout = BuildSubImageLayout(imageSize >> mipLevel, expectedPixelSize);
+                RHI::SingleDeviceImageSubresourceLayout layout = BuildSubImageLayout(imageSize >> mipLevel, expectedPixelSize);
 
-                EXPECT_EQ(memcmp(&layout, &mipChain->GetSubImageLayout(mipLevel), sizeof(RHI::ImageSubresourceLayout)), 0);
+                EXPECT_EQ(memcmp(&layout, &mipChain->GetSubImageLayout(mipLevel), sizeof(RHI::SingleDeviceImageSubresourceLayout)), 0);
 
                 for (uint16_t arrayIndex = 0; arrayIndex < mipChain->GetArraySize(); ++arrayIndex)
                 {
@@ -278,7 +278,7 @@ namespace UnitTest
 
             const size_t mipChainTailIndex = imageAsset->GetMipChainCount() - 1;
 
-            RHI::Ptr<RHI::Image> rhiImage = imageInstance->GetRHIImage();
+            RHI::Ptr<RHI::SingleDeviceImage> rhiImage = imageInstance->GetRHIImage();
 
             // This should no-op.
             imageInstance->TrimToMipChainLevel(mipChainTailIndex);
@@ -326,11 +326,11 @@ namespace UnitTest
             EXPECT_EQ(rhiImage->GetResidentMipLevel(), 0);
         }
 
-        AZ::RHI::ImageSubresourceLayout BuildSubImageLayout(uint32_t imageSize, uint32_t pixelSize)
+        AZ::RHI::SingleDeviceImageSubresourceLayout BuildSubImageLayout(uint32_t imageSize, uint32_t pixelSize)
         {
             using namespace AZ;
 
-            RHI::ImageSubresourceLayout layout;
+            RHI::SingleDeviceImageSubresourceLayout layout;
             layout.m_size = RHI::Size{ imageSize, imageSize, 1 };
             layout.m_rowCount = imageSize;
             layout.m_bytesPerRow = imageSize * pixelSize;
@@ -352,7 +352,7 @@ namespace UnitTest
             {
                 const uint32_t mipSize = imageSize >> mipLevel;
 
-                RHI::ImageSubresourceLayout layout = BuildSubImageLayout(mipSize, pixelSize);
+                RHI::SingleDeviceImageSubresourceLayout layout = BuildSubImageLayout(mipSize, pixelSize);
 
                 assetCreator.BeginMip(layout);
 
@@ -469,7 +469,7 @@ namespace UnitTest
         {
             RPI::ImageMipChainAssetCreator assetCreator;
             assetCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()), mipLevels, arraySize);
-            assetCreator.BeginMip(RHI::ImageSubresourceLayout());
+            assetCreator.BeginMip(RHI::SingleDeviceImageSubresourceLayout());
 
             ErrorMessageFinder messageFinder("Expected 1 sub-images in mip, but got 0.");
             assetCreator.EndMip();
@@ -478,7 +478,7 @@ namespace UnitTest
         {
             RPI::ImageMipChainAssetCreator assetCreator;
             assetCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()), mipLevels, arraySize);
-            assetCreator.BeginMip(RHI::ImageSubresourceLayout());
+            assetCreator.BeginMip(RHI::SingleDeviceImageSubresourceLayout());
 
             ErrorMessageFinder messageFinder("You must supply a valid data payload.");
             assetCreator.AddSubImage(nullptr, 0);
@@ -487,7 +487,7 @@ namespace UnitTest
         {
             RPI::ImageMipChainAssetCreator assetCreator;
             assetCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()), mipLevels, arraySize);
-            assetCreator.BeginMip(RHI::ImageSubresourceLayout());
+            assetCreator.BeginMip(RHI::SingleDeviceImageSubresourceLayout());
 
             ErrorMessageFinder messageFinder("You must supply a valid data payload.");
             assetCreator.AddSubImage(nullptr, 10);
@@ -499,7 +499,7 @@ namespace UnitTest
         {
             RPI::ImageMipChainAssetCreator assetCreator;
             assetCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()), mipLevels, arraySize);
-            assetCreator.BeginMip(RHI::ImageSubresourceLayout());
+            assetCreator.BeginMip(RHI::SingleDeviceImageSubresourceLayout());
             assetCreator.AddSubImage(data, dataSize);
 
             ErrorMessageFinder messageFinder("Exceeded the 1 array slices declared in Begin().");
@@ -509,18 +509,18 @@ namespace UnitTest
         {
             RPI::ImageMipChainAssetCreator assetCreator;
             assetCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()), mipLevels, arraySize);
-            assetCreator.BeginMip(RHI::ImageSubresourceLayout());
+            assetCreator.BeginMip(RHI::SingleDeviceImageSubresourceLayout());
             assetCreator.AddSubImage(data, dataSize);
 
             ErrorMessageFinder messageFinder("Already building a mip. You must call EndMip() first.");
-            assetCreator.BeginMip(RHI::ImageSubresourceLayout());
+            assetCreator.BeginMip(RHI::SingleDeviceImageSubresourceLayout());
         }
 
         // Finally, build a valid one
         {
             RPI::ImageMipChainAssetCreator assetCreator;
             assetCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()), mipLevels, arraySize);
-            assetCreator.BeginMip(RHI::ImageSubresourceLayout());
+            assetCreator.BeginMip(RHI::SingleDeviceImageSubresourceLayout());
             assetCreator.AddSubImage(data, dataSize);
             assetCreator.EndMip();
 

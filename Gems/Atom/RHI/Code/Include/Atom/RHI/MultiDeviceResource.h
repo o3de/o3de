@@ -15,9 +15,9 @@ namespace AZ::RHI
     class MultiDeviceResourcePool;
     class FrameAttachment;
     class MemoryStatisticsBuilder;
-    class ResourceView;
-    class ImageView;
-    class BufferView;
+    class SingleDeviceResourceView;
+    class SingleDeviceImageView;
+    class SingleDeviceBufferView;
     struct ImageViewDescriptor;
     struct BufferViewDescriptor;
 
@@ -87,7 +87,7 @@ namespace AZ::RHI
 
     class MultiDeviceBuffer;
     class MultiDeviceImage;
-    class ResourceView;
+    class SingleDeviceResourceView;
 
     //! MultiDeviceResourceView is a base class for multi-device buffer and image views for
     //! polymorphic usage of views in a generic way.
@@ -98,7 +98,7 @@ namespace AZ::RHI
 
         //! Returns the resource associated with this view.
         virtual const MultiDeviceResource* GetResource() const = 0;
-        virtual const ResourceView* GetDeviceResourceView(int deviceIndex) const = 0;
+        virtual const SingleDeviceResourceView* GetDeviceResourceView(int deviceIndex) const = 0;
 
         AZ_RTTI(MultiDeviceResourceView, "{D7442960-531D-4DCC-B60D-FD26FF75BE51}", Object);
     };

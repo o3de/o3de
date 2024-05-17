@@ -149,7 +149,7 @@ namespace AZ::Render
         RPI::RenderPipeline* m_primaryShadowPipeline = nullptr;
 
         Data::Instance<RPI::Shader> m_clearShadowShader;
-        RHI::ConstPtr<RHI::DrawPacket> m_clearShadowDrawPacket;
+        RHI::ConstPtr<RHI::SingleDeviceDrawPacket> m_clearShadowDrawPacket;
 
         RHI::ShaderInputNameIndex m_shadowmapAtlasSizeIndex{ "m_shadowmapAtlasSize" };
         RHI::ShaderInputNameIndex m_invShadowmapAtlasSizeIndex{ "m_invShadowmapAtlasSize" };

@@ -7,8 +7,8 @@
  */
 #pragma once
 
-#include <Atom/RHI/DrawPacketBuilder.h>
-#include <Atom/RHI/RayTracingAccelerationStructure.h>
+#include <Atom/RHI/SingleDeviceDrawPacketBuilder.h>
+#include <Atom/RHI/SingleDeviceRayTracingAccelerationStructure.h>
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/PipelineState.h>
 #include <Atom/RPI.Public/Scene.h>
@@ -30,11 +30,11 @@ namespace AZ
             static const RHI::Format ProbeDataImageFormat = RHI::Format::R16G16B16A16_FLOAT;
             static const uint32_t GridDataBufferSize = 112;
 
-            RHI::Ptr<RHI::ImagePool> m_imagePool;          
-            RHI::Ptr<RHI::BufferPool> m_bufferPool;
+            RHI::Ptr<RHI::SingleDeviceImagePool> m_imagePool;          
+            RHI::Ptr<RHI::SingleDeviceBufferPool> m_bufferPool;
 
-            AZStd::array<RHI::StreamBufferView, 1> m_boxPositionBufferView;
-            RHI::IndexBufferView m_boxIndexBufferView;
+            AZStd::array<RHI::SingleDeviceStreamBufferView, 1> m_boxPositionBufferView;
+            RHI::SingleDeviceIndexBufferView m_boxIndexBufferView;
             uint32_t m_boxIndexCount = 0;
 
             // image views
@@ -269,15 +269,15 @@ namespace AZ
             void UpdateClassificationSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout);
             void UpdateRenderObjectSrg();
             void UpdateVisualizationPrepareSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout);
-            void UpdateVisualizationRayTraceSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout, const RHI::ImageView* outputImageView);
+            void UpdateVisualizationRayTraceSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout, const RHI::SingleDeviceImageView* outputImageView);
             void UpdateQuerySrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout);
 
             // textures
-            const RHI::Ptr<RHI::Image> GetRayTraceImage() { return m_rayTraceImage[m_currentImageIndex]; }
-            const RHI::Ptr<RHI::Image> GetIrradianceImage() { return m_mode == DiffuseProbeGridMode::RealTime ? m_irradianceImage[m_currentImageIndex] : m_bakedIrradianceImage->GetRHIImage(); }
-            const RHI::Ptr<RHI::Image> GetDistanceImage() { return m_mode == DiffuseProbeGridMode::RealTime ? m_distanceImage[m_currentImageIndex] : m_bakedDistanceImage->GetRHIImage(); }
-            const RHI::Ptr<RHI::Image> GetProbeDataImage() { return m_mode == DiffuseProbeGridMode::RealTime ? m_probeDataImage[m_currentImageIndex] : m_bakedProbeDataImage->GetRHIImage(); }
-            const RHI::Ptr<RHI::Buffer> GetGridDataBuffer() { return m_gridDataBuffer; }
+            const RHI::Ptr<RHI::SingleDeviceImage> GetRayTraceImage() { return m_rayTraceImage[m_currentImageIndex]; }
+            const RHI::Ptr<RHI::SingleDeviceImage> GetIrradianceImage() { return m_mode == DiffuseProbeGridMode::RealTime ? m_irradianceImage[m_currentImageIndex] : m_bakedIrradianceImage->GetRHIImage(); }
+            const RHI::Ptr<RHI::SingleDeviceImage> GetDistanceImage() { return m_mode == DiffuseProbeGridMode::RealTime ? m_distanceImage[m_currentImageIndex] : m_bakedDistanceImage->GetRHIImage(); }
+            const RHI::Ptr<RHI::SingleDeviceImage> GetProbeDataImage() { return m_mode == DiffuseProbeGridMode::RealTime ? m_probeDataImage[m_currentImageIndex] : m_bakedProbeDataImage->GetRHIImage(); }
+            const RHI::Ptr<RHI::SingleDeviceBuffer> GetGridDataBuffer() { return m_gridDataBuffer; }
 
             const AZStd::string& GetBakedIrradianceRelativePath() const { return m_bakedIrradianceRelativePath; }
             const AZStd::string& GetBakedDistanceRelativePath() const { return m_bakedDistanceRelativePath; }
@@ -309,8 +309,8 @@ namespace AZ
             static constexpr int32_t DefaultNumRelocationIterations = 100;
 
             // visualization TLAS
-            const RHI::Ptr<RHI::RayTracingTlas>& GetVisualizationTlas() const { return m_visualizationTlas; }
-            RHI::Ptr<RHI::RayTracingTlas>& GetVisualizationTlas() { return m_visualizationTlas; }
+            const RHI::Ptr<RHI::SingleDeviceRayTracingTlas>& GetVisualizationTlas() const { return m_visualizationTlas; }
+            RHI::Ptr<RHI::SingleDeviceRayTracingTlas>& GetVisualizationTlas() { return m_visualizationTlas; }
 
             bool GetVisualizationTlasUpdateRequired() const;
             void ResetVisualizationTlasUpdateRequired() { m_visualizationTlasUpdateRequired = false; }
@@ -388,7 +388,7 @@ namespace AZ
             DiffuseProbeGridRenderData* m_renderData = nullptr;
 
             // render draw packet
-            RHI::ConstPtr<RHI::DrawPacket> m_drawPacket;
+            RHI::ConstPtr<RHI::SingleDeviceDrawPacket> m_drawPacket;
 
             // sort key for the draw item
             const RHI::DrawItemSortKey InvalidSortKey = static_cast<RHI::DrawItemSortKey>(-1);
@@ -401,16 +401,16 @@ namespace AZ
             DiffuseProbeGridMode m_mode = DiffuseProbeGridMode::RealTime;
 
             // grid data buffer
-            RHI::Ptr<RHI::Buffer> m_gridDataBuffer;
+            RHI::Ptr<RHI::SingleDeviceBuffer> m_gridDataBuffer;
             bool m_gridDataInitialized = false;
 
             // real-time textures
             static const uint32_t MaxTextureDimension = 8192;
             static const uint32_t ImageFrameCount = 3;
-            RHI::Ptr<RHI::Image> m_rayTraceImage[ImageFrameCount];
-            RHI::Ptr<RHI::Image> m_irradianceImage[ImageFrameCount];
-            RHI::Ptr<RHI::Image> m_distanceImage[ImageFrameCount];
-            RHI::Ptr<RHI::Image> m_probeDataImage[ImageFrameCount];
+            RHI::Ptr<RHI::SingleDeviceImage> m_rayTraceImage[ImageFrameCount];
+            RHI::Ptr<RHI::SingleDeviceImage> m_irradianceImage[ImageFrameCount];
+            RHI::Ptr<RHI::SingleDeviceImage> m_distanceImage[ImageFrameCount];
+            RHI::Ptr<RHI::SingleDeviceImage> m_probeDataImage[ImageFrameCount];
             uint32_t m_currentImageIndex = 0;
             bool m_updateTextures = false;
             bool m_textureClearRequired = true;
@@ -454,7 +454,7 @@ namespace AZ
             bool m_visualizationEnabled = false;
             bool m_visualizationShowInactiveProbes = false;
             float m_visualizationSphereRadius = DefaultVisualizationSphereRadius;
-            RHI::Ptr<RHI::RayTracingTlas> m_visualizationTlas;
+            RHI::Ptr<RHI::SingleDeviceRayTracingTlas> m_visualizationTlas;
             bool m_visualizationTlasUpdateRequired = false;
             RHI::AttachmentId m_visualizationTlasAttachmentId;
             RHI::AttachmentId m_visualizationTlasInstancesAttachmentId;

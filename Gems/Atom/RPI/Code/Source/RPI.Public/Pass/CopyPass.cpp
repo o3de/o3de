@@ -7,7 +7,7 @@
  */
 
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/ShaderResourceGroup.h>
+#include <Atom/RHI/SingleDeviceShaderResourceGroup.h>
 #include <Atom/RHI/DrawListTagRegistry.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
@@ -151,11 +151,11 @@ namespace AZ
 
         void CopyPass::CopyBuffer(const RHI::FrameGraphCompileContext& context)
         {
-            RHI::CopyBufferDescriptor copyDesc;
+            RHI::SingleDeviceCopyBufferDescriptor copyDesc;
 
             // Source Buffer
             PassAttachmentBinding& copySource = GetInputBinding(0);
-            const AZ::RHI::Buffer* sourceBuffer = context.GetBuffer(copySource.GetAttachment()->GetAttachmentId());
+            const AZ::RHI::SingleDeviceBuffer* sourceBuffer = context.GetBuffer(copySource.GetAttachment()->GetAttachmentId());
             copyDesc.m_sourceBuffer = sourceBuffer;
             copyDesc.m_size = static_cast<uint32_t>(sourceBuffer->GetDescriptor().m_byteCount);
             copyDesc.m_sourceOffset = m_data.m_bufferSourceOffset;
@@ -170,11 +170,11 @@ namespace AZ
 
         void CopyPass::CopyImage(const RHI::FrameGraphCompileContext& context)
         {
-            RHI::CopyImageDescriptor copyDesc;
+            RHI::SingleDeviceCopyImageDescriptor copyDesc;
 
             // Source Image
             PassAttachmentBinding& copySource = GetInputBinding(0);
-            const AZ::RHI::Image* sourceImage = context.GetImage(copySource.GetAttachment()->GetAttachmentId());
+            const AZ::RHI::SingleDeviceImage* sourceImage = context.GetImage(copySource.GetAttachment()->GetAttachmentId());
             copyDesc.m_sourceImage = sourceImage;
             copyDesc.m_sourceSize = sourceImage->GetDescriptor().m_size;
             copyDesc.m_sourceOrigin = m_data.m_imageSourceOrigin;
@@ -191,11 +191,11 @@ namespace AZ
 
         void CopyPass::CopyBufferToImage(const RHI::FrameGraphCompileContext& context)
         {
-            RHI::CopyBufferToImageDescriptor copyDesc;
+            RHI::SingleDeviceCopyBufferToImageDescriptor copyDesc;
 
             // Source Buffer
             PassAttachmentBinding& copySource = GetInputBinding(0);
-            const AZ::RHI::Buffer* sourceBuffer = context.GetBuffer(copySource.GetAttachment()->GetAttachmentId());
+            const AZ::RHI::SingleDeviceBuffer* sourceBuffer = context.GetBuffer(copySource.GetAttachment()->GetAttachmentId());
             copyDesc.m_sourceBuffer = sourceBuffer;
             copyDesc.m_sourceSize = m_data.m_sourceSize;
             copyDesc.m_sourceOffset = m_data.m_bufferSourceOffset;
@@ -213,11 +213,11 @@ namespace AZ
 
         void CopyPass::CopyImageToBuffer(const RHI::FrameGraphCompileContext& context)
         {
-            RHI::CopyImageToBufferDescriptor copyDesc;
+            RHI::SingleDeviceCopyImageToBufferDescriptor copyDesc;
 
             // Source Image
             PassAttachmentBinding& copySource = GetInputBinding(0);
-            const AZ::RHI::Image* sourceImage = context.GetImage(copySource.GetAttachment()->GetAttachmentId());
+            const AZ::RHI::SingleDeviceImage* sourceImage = context.GetImage(copySource.GetAttachment()->GetAttachmentId());
             copyDesc.m_sourceImage = sourceImage;
             copyDesc.m_sourceSize = sourceImage->GetDescriptor().m_size;
             copyDesc.m_sourceOrigin = m_data.m_imageSourceOrigin;

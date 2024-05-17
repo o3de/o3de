@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/QueryPool.h>
+#include <Atom/RHI/SingleDeviceQueryPool.h>
 
 namespace AZ
 {
@@ -20,9 +20,9 @@ namespace AZ
         *   It uses the VkQueryPool vulkan object to implement the pool.
         */
         class QueryPool final
-            : public RHI::QueryPool
+            : public RHI::SingleDeviceQueryPool
         {
-            using Base = RHI::QueryPool;
+            using Base = RHI::SingleDeviceQueryPool;
 
         public:
             AZ_RTTI(QueryPool, "{46816FA4-3B31-434A-AAE3-037BC889AE73}", Base);
@@ -38,9 +38,9 @@ namespace AZ
             QueryPool() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::QueryPool
+            // RHI::SingleDeviceQueryPool
             RHI::ResultCode InitInternal(RHI::Device& device, const RHI::QueryPoolDescriptor& descriptor) override;
-            RHI::ResultCode InitQueryInternal(RHI::Query& query) override;
+            RHI::ResultCode InitQueryInternal(RHI::SingleDeviceQuery& query) override;
             RHI::ResultCode GetResultsInternal(uint32_t startIndex, uint32_t queryCount, uint64_t* results, uint32_t resultsCount, RHI::QueryResultFlagBits flags) override;
             void ShutdownInternal() override;
             //////////////////////////////////////////////////////////////////////////

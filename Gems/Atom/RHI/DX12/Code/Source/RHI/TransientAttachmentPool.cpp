@@ -214,7 +214,7 @@ namespace AZ
             }
         }
 
-        RHI::Image* TransientAttachmentPool::ActivateImage(const RHI::TransientImageDescriptor& descriptor)
+        RHI::SingleDeviceImage* TransientAttachmentPool::ActivateImage(const RHI::TransientImageDescriptor& descriptor)
         {
             AliasedAttachmentAllocator* allocator = nullptr;
             if (RHI::CheckBitsAny(descriptor.m_imageDescriptor.m_bindFlags, RHI::ImageBindFlags::Color | RHI::ImageBindFlags::DepthStencil))
@@ -227,7 +227,7 @@ namespace AZ
             }
 
             AZ_Assert(allocator, "No image heap allocator to allocate an image. Make sure you specified one at pool creation time");
-            RHI::Image* image = allocator->ActivateImage(descriptor, *m_currentScope);
+            RHI::SingleDeviceImage* image = allocator->ActivateImage(descriptor, *m_currentScope);
             AZ_Assert(
                 RHI::CheckBitsAll(GetCompileFlags(), RHI::TransientAttachmentPoolCompileFlags::DontAllocateResources) || image,
                 "Failed to allocate image. Allocator %s is not big enough", allocator->GetName().GetCStr());
@@ -244,10 +244,10 @@ namespace AZ
             m_imageToAllocatorMap.erase(findIt);
         }
 
-        RHI::Buffer* TransientAttachmentPool::ActivateBuffer(const RHI::TransientBufferDescriptor& descriptor)
+        RHI::SingleDeviceBuffer* TransientAttachmentPool::ActivateBuffer(const RHI::TransientBufferDescriptor& descriptor)
         {
             AZ_Assert(m_bufferAllocator, "No buffer heap allocator to allocate a transient buffer. Make sure you specified one at pool creation time");
-            RHI::Buffer* buffer = m_bufferAllocator->ActivateBuffer(descriptor, *m_currentScope);
+            RHI::SingleDeviceBuffer* buffer = m_bufferAllocator->ActivateBuffer(descriptor, *m_currentScope);
             AZ_Assert(RHI::CheckBitsAll(GetCompileFlags(), RHI::TransientAttachmentPoolCompileFlags::DontAllocateResources) || buffer, "Failed to allocate buffer. Allocator is not big enough.");
             return buffer;
         }

@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <Atom/RHI/IndexBufferView.h>
-#include <Atom/RHI/StreamBufferView.h>
+#include <Atom/RHI/SingleDeviceIndexBufferView.h>
+#include <Atom/RHI/SingleDeviceStreamBufferView.h>
 #include <Atom/RPI.Public/Buffer/RingBuffer.h>
 
 namespace AZ
@@ -44,10 +44,10 @@ namespace AZ
             RHI::Ptr<DynamicBuffer> Allocate(uint32_t size, uint32_t alignment);
 
             //! Get an IndexBufferView for a DynamicBuffer used as an index buffer
-            RHI::IndexBufferView GetIndexBufferView(RHI::Ptr<DynamicBuffer> subBuffer, RHI::IndexFormat format);
+            RHI::SingleDeviceIndexBufferView GetIndexBufferView(RHI::Ptr<DynamicBuffer> subBuffer, RHI::IndexFormat format);
 
             //! Get an StreamBufferView for a DynamicBuffer used as a vertex buffer
-            RHI::StreamBufferView GetStreamBufferView(RHI::Ptr<DynamicBuffer> dynamicBuffer, uint32_t strideByteCount);
+            RHI::SingleDeviceStreamBufferView GetStreamBufferView(RHI::Ptr<DynamicBuffer> dynamicBuffer, uint32_t strideByteCount);
 
             //! Submit allocated dynamic buffer to gpu for current frame
             void FrameEnd();

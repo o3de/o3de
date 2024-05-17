@@ -21,7 +21,7 @@ namespace AZ::RHI
         {
             if ((AZStd::to_underlying(m_deviceMask) >> deviceIndex) & 1)
             {
-                m_deviceDrawItems.emplace(deviceIndex, DrawItem{});
+                m_deviceDrawItems.emplace(deviceIndex, SingleDeviceDrawItem{});
             }
         }
 
@@ -31,7 +31,7 @@ namespace AZ::RHI
         }
     }
 
-    MultiDeviceDrawItem::MultiDeviceDrawItem(MultiDevice::DeviceMask deviceMask, AZStd::unordered_map<int, DrawItem*>&& deviceDrawItemPtrs)
+    MultiDeviceDrawItem::MultiDeviceDrawItem(MultiDevice::DeviceMask deviceMask, AZStd::unordered_map<int, SingleDeviceDrawItem*>&& deviceDrawItemPtrs)
         : m_deviceMask{ deviceMask }
         , m_deviceDrawItemPtrs{ deviceDrawItemPtrs }
     {

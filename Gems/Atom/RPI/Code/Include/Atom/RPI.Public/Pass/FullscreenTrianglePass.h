@@ -10,7 +10,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/SingleDeviceDrawItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 
 #include <Atom/RPI.Public/Pass/RenderPass.h>
@@ -74,7 +74,7 @@ namespace AZ
             PipelineStateForDraw m_pipelineStateForDraw;
 
             // The draw item submitted by this pass
-            RHI::DrawItem m_item;
+            RHI::SingleDeviceDrawItem m_item;
 
             // The stencil reference value for the draw item
             uint32_t m_stencilRef;

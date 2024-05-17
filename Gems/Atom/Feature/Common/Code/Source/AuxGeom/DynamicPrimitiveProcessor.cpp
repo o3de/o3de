@@ -9,7 +9,7 @@
 #include "DynamicPrimitiveProcessor.h"
 #include "AuxGeomDrawProcessorShared.h"
 
-#include <Atom/RHI/DrawPacketBuilder.h>
+#include <Atom/RHI/SingleDeviceDrawPacketBuilder.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 
@@ -92,7 +92,7 @@ namespace AZ
         void DynamicPrimitiveProcessor::ProcessDynamicPrimitives(const AuxGeomBufferData* bufferData, const RPI::FeatureProcessor::RenderPacket& fpPacket)
         {
             AZ_PROFILE_SCOPE(AzRender, "DynamicPrimitiveProcessor: ProcessDynamicPrimitives");
-            RHI::DrawPacketBuilder drawPacketBuilder;
+            RHI::SingleDeviceDrawPacketBuilder drawPacketBuilder;
 
             const DynamicPrimitiveData& srcPrimitives = bufferData->m_primitiveData;
             // Update the buffers for the dynamic primitives and generate draw packets for them
@@ -172,7 +172,7 @@ namespace AZ
                         RHI::DrawItemSortKey sortKey = primitive.m_blendMode == BlendMode_Off ? 0 : view->GetSortKeyForPosition(primitive.m_center);
 
 
-                        const RHI::DrawPacket* drawPacket = BuildDrawPacketForDynamicPrimitive(
+                        const RHI::SingleDeviceDrawPacket* drawPacket = BuildDrawPacketForDynamicPrimitive(
                             m_primitiveBuffers,
                             pipelineState,
                             srg,
@@ -385,13 +385,13 @@ namespace AZ
             }
         }
 
-        const RHI::DrawPacket* DynamicPrimitiveProcessor::BuildDrawPacketForDynamicPrimitive(
+        const RHI::SingleDeviceDrawPacket* DynamicPrimitiveProcessor::BuildDrawPacketForDynamicPrimitive(
             DynamicBufferGroup& group,
             const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
             Data::Instance<RPI::ShaderResourceGroup> srg,
             uint32_t indexCount,
             uint32_t indexOffset,
-            RHI::DrawPacketBuilder& drawPacketBuilder,
+            RHI::SingleDeviceDrawPacketBuilder& drawPacketBuilder,
             RHI::DrawItemSortKey sortKey)
         {
             RHI::DrawIndexed drawIndexed;
@@ -404,7 +404,7 @@ namespace AZ
             drawPacketBuilder.SetIndexBufferView(group.m_indexBufferView);
             drawPacketBuilder.AddShaderResourceGroup(srg->GetRHIShaderResourceGroup());
 
-            RHI::DrawPacketBuilder::DrawRequest drawRequest;
+            RHI::SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest drawRequest;
             drawRequest.m_listTag = m_shaderData.m_drawListTag;
             drawRequest.m_pipelineState = pipelineState->GetRHIPipelineState();
             drawRequest.m_streamBufferViews = group.m_streamBufferViews;

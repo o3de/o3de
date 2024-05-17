@@ -11,8 +11,8 @@
 #include <AzCore/base.h>
 #include <AzCore/Math/Vector3.h>
 
-#include <Atom/RHI/BufferView.h>
-#include <Atom/RHI/DrawPacketBuilder.h>
+#include <Atom/RHI/SingleDeviceBufferView.h>
+#include <Atom/RHI/SingleDeviceDrawPacketBuilder.h>
 
 // Hair specific
 #include <TressFX/AMD_TressFX.h>
@@ -139,8 +139,8 @@ namespace AZ
                 //! This indirectly forces the sync to be applied to all 'sub-buffers' used by each of the
                 //!  HairObjects / HairDispatches and therefore allows us to change their data in the shader
                 //!  between passes.
-                AZStd::vector<Data::Instance<RHI::BufferView>> m_dynamicBuffersViews;   // RW used for the Compute
-                AZStd::vector<Data::Instance<RHI::BufferView>> m_readBuffersViews;      // Read only used for the Raster fill
+                AZStd::vector<Data::Instance<RHI::SingleDeviceBufferView>> m_dynamicBuffersViews;   // RW used for the Compute
+                AZStd::vector<Data::Instance<RHI::SingleDeviceBufferView>> m_readBuffersViews;      // Read only used for the Raster fill
 
                 //! The following vector is required in order to keep the allocators 'alive' or
                 //!  else they are cleared from the buffer via the reference mechanism.
@@ -185,14 +185,14 @@ namespace AZ
                     AMD::TressFXSimulationSettings* simSettings, AMD::TressFXRenderingSettings* renderSettings
                 );
 
-                bool BuildDrawPacket(RPI::Shader* geometryShader, RHI::DrawPacketBuilder::DrawRequest& drawRequest);
+                bool BuildDrawPacket(RPI::Shader* geometryShader, RHI::SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest& drawRequest);
 
-                const RHI::DrawPacket* GetGeometrylDrawPacket(RPI::Shader* geometryShader);
+                const RHI::SingleDeviceDrawPacket* GetGeometrylDrawPacket(RPI::Shader* geometryShader);
 
                 //! Creates and fill the dispatch item associated with the compute shader
                 bool BuildDispatchItem(RPI::Shader* computeShader, DispatchLevel dispatchLevel);
 
-                const RHI::DispatchItem* GetDispatchItem(RPI::Shader* computeShader);
+                const RHI::SingleDeviceDispatchItem* GetDispatchItem(RPI::Shader* computeShader);
 
                 void PrepareHairGenerationSrgDescriptors(uint32_t vertexCount, uint32_t numStrands);
 
@@ -316,7 +316,7 @@ namespace AZ
                 Data::Instance<RPI::Shader> m_geometryRasterShader = nullptr;
 
                 //! DrawPacket for the multi object geometry raster pass.
-                AZStd::unordered_map<RPI::Shader*, const RHI::DrawPacket*>  m_geometryDrawPackets;
+                AZStd::unordered_map<RPI::Shader*, const RHI::SingleDeviceDrawPacket*>  m_geometryDrawPackets;
 
                 float m_frameDeltaTime = 0.02;
 
@@ -380,8 +380,8 @@ namespace AZ
                 Data::Instance<RPI::ShaderResourceGroup> m_hairRenderSrg;   
  
                 //! Index buffer for the render pass via draw calls - naming was kept
-                Data::Instance<RHI::Buffer> m_indexBuffer;
-                RHI::IndexBufferView m_indexBufferView;
+                Data::Instance<RHI::SingleDeviceBuffer> m_indexBuffer;
+                RHI::SingleDeviceIndexBufferView m_indexBufferView;
                 //-------------------------------------------------------------------
 
                 AZStd::mutex m_mutex;

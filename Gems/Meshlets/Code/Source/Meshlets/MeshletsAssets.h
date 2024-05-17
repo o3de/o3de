@@ -17,7 +17,7 @@
 #include <AtomCore/Instance/Instance.h>
 #include <AtomCore/Instance/InstanceData.h>
 
-#include <Atom/RHI/ImagePool.h>
+#include <Atom/RHI/SingleDeviceImagePool.h>
 
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/Material/Material.h>

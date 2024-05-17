@@ -18,7 +18,7 @@ namespace AZ
             return aznew IndirectBufferSignature();
         }
 
-        RHI::ResultCode IndirectBufferSignature::InitInternal([[maybe_unused]] RHI::Device& deviceBase, const RHI::IndirectBufferSignatureDescriptor& descriptor)
+        RHI::ResultCode IndirectBufferSignature::InitInternal([[maybe_unused]] RHI::Device& deviceBase, const RHI::SingleDeviceIndirectBufferSignatureDescriptor& descriptor)
         {
             // Vulkan doesn't have an object to represent an indirect buffer signature.
             // We just calculate the offsets of the commands and the stride of the whole sequence.

@@ -12,7 +12,7 @@
 
 namespace AZ::RHI
 {
-    class SwapChain;
+    class SingleDeviceSwapChain;
 
     //! A swap chain registered into the frame scheduler.
     class SwapChainFrameAttachment final
@@ -24,13 +24,13 @@ namespace AZ::RHI
 
         SwapChainFrameAttachment(
             const AttachmentId& attachmentId,
-            Ptr<SwapChain> swapChain);
+            Ptr<SingleDeviceSwapChain> swapChain);
 
         /// Returns the swap chain referenced by this attachment.
-        const SwapChain* GetSwapChain() const;
-        SwapChain* GetSwapChain();
+        const SingleDeviceSwapChain* GetSwapChain() const;
+        SingleDeviceSwapChain* GetSwapChain();
 
     private:
-        Ptr<SwapChain> m_swapChain;
+        Ptr<SingleDeviceSwapChain> m_swapChain;
     };
 }

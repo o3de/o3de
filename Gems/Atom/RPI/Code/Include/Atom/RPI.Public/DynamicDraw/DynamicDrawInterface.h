@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Atom/RHI/DrawPacket.h>
+#include <Atom/RHI/SingleDeviceDrawPacket.h>
 
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicBuffer.h>
@@ -59,15 +59,15 @@ namespace AZ
             //! Draw a geometry to a scene with a given material
             virtual void DrawGeometry(Data::Instance<Material> material, const GeometryData& geometry, ScenePtr scene) = 0;
 
-            //! Deprecated. Please use AddDrawPacket(Scene* scene, ConstPtr<RHI::DrawPacket> drawPacket) instead
+            //! Deprecated. Please use AddDrawPacket(Scene* scene, ConstPtr<RHI::SingleDeviceDrawPacket> drawPacket) instead
             //! Submits a DrawPacket to the renderer.
             //! Note that ownership of the DrawPacket pointer is passed to the dynamic draw system.
             //! (it will be cleaned up correctly since the DrawPacket keeps track of the allocator that was used when it was built)
-            virtual void AddDrawPacket(Scene* scene, AZStd::unique_ptr<const RHI::DrawPacket> drawPacket) = 0;
+            virtual void AddDrawPacket(Scene* scene, AZStd::unique_ptr<const RHI::SingleDeviceDrawPacket> drawPacket) = 0;
             
             //! Submits a DrawPacket to the scene.
             //! The dynamic draw system will keep a reference for the DrawPacket until it's rendered.
-            virtual void AddDrawPacket(Scene* scene, ConstPtr<RHI::DrawPacket> drawPacket) = 0;
+            virtual void AddDrawPacket(Scene* scene, ConstPtr<RHI::SingleDeviceDrawPacket> drawPacket) = 0;
 
             //! Get DrawLists from any DynamicDrawContext which output to the specified RasterPass.
             virtual AZStd::vector<RHI::DrawListView> GetDrawListsForPass(const RasterPass* pass) = 0;

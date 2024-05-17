@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Limits.h>
-#include <Atom/RHI/DispatchRaysItem.h>
+#include <Atom/RHI/SingleDeviceDispatchRaysItem.h>
 #include <Atom/RHI/MultiDeviceDispatchRaysIndirectBuffer.h>
 #include <Atom/RHI/MultiDeviceRayTracingAccelerationStructure.h>
 #include <Atom/RHI/MultiDeviceRayTracingPipelineState.h>
@@ -22,8 +22,8 @@ namespace AZ::RHI
     class MultiDeviceRayTracingPipelineState;
     class MultiDeviceRayTracingShaderTable;
     class MultiDeviceShaderResourceGroup;
-    class ImageView;
-    class BufferView;
+    class SingleDeviceImageView;
+    class SingleDeviceBufferView;
 
     struct MultiDeviceDispatchRaysIndirect : public MultiDeviceIndirectArguments
     {
@@ -77,15 +77,15 @@ namespace AZ::RHI
         {
         }
 
-        //! Returns the device-specific DispatchArguments for the given index
-        DispatchRaysArguments GetDeviceDispatchRaysArguments(int deviceIndex) const
+        //! Returns the device-specific SingleDeviceDispatchArguments for the given index
+        SingleDeviceDispatchRaysArguments GetDeviceDispatchRaysArguments(int deviceIndex) const
         {
             switch (m_type)
             {
             case DispatchRaysType::Direct:
-                return DispatchRaysArguments(m_direct);
+                return SingleDeviceDispatchRaysArguments(m_direct);
             case DispatchRaysType::Indirect:
-                return DispatchRaysArguments(DispatchRaysIndirect{
+                return SingleDeviceDispatchRaysArguments(DispatchRaysIndirect{
                     m_mdIndirect.m_maxSequenceCount,
                     m_mdIndirect.m_indirectBufferView->GetDeviceIndirectBufferView(deviceIndex),
                     m_mdIndirect.m_indirectBufferByteOffset,
@@ -95,7 +95,7 @@ namespace AZ::RHI
                     m_mdIndirect.m_countBuffer ? m_mdIndirect.m_countBuffer->GetDeviceBuffer(deviceIndex).get() : nullptr,
                     m_mdIndirect.m_countBufferByteOffset });
             default:
-                return DispatchRaysArguments();
+                return SingleDeviceDispatchRaysArguments();
             }
         }
 
@@ -121,13 +121,13 @@ namespace AZ::RHI
             {
                 if (CheckBitsAll(AZStd::to_underlying(m_deviceMask), 1u << deviceIndex))
                 {
-                    m_deviceDispatchRaysItems.emplace(deviceIndex, DispatchRaysItem{});
+                    m_deviceDispatchRaysItems.emplace(deviceIndex, SingleDeviceDispatchRaysItem{});
                 }
             }
         }
 
-        //! Returns the device-specific DispatchRaysItem for the given index
-        const DispatchRaysItem& GetDeviceDispatchRaysItem(int deviceIndex) const
+        //! Returns the device-specific SingleDeviceDispatchRaysItem for the given index
+        const SingleDeviceDispatchRaysItem& GetDeviceDispatchRaysItem(int deviceIndex) const
         {
             AZ_Error(
                 "MultiDeviceDispatchItem",
@@ -181,7 +181,7 @@ namespace AZ::RHI
                 dispatchRaysItem.m_shaderResourceGroupCount = shaderResourceGroupCount;
 
                 auto [it, insertOK]{ m_deviceShaderResourceGroups.emplace(
-                    deviceIndex, AZStd::vector<ShaderResourceGroup*>(shaderResourceGroupCount)) };
+                    deviceIndex, AZStd::vector<SingleDeviceShaderResourceGroup*>(shaderResourceGroupCount)) };
 
                 auto& [index, deviceShaderResourceGroup]{ *it };
 
@@ -204,12 +204,12 @@ namespace AZ::RHI
         }
 
     private:
-        //! A DeviceMask denoting on which devices a device-specific DispatchRaysItem should be generated
+        //! A DeviceMask denoting on which devices a device-specific SingleDeviceDispatchRaysItem should be generated
         MultiDevice::DeviceMask m_deviceMask{ MultiDevice::DefaultDevice };
-        //! A map of all device-specific DispatchRaysItem, indexed by the device index
-        AZStd::unordered_map<int, DispatchRaysItem> m_deviceDispatchRaysItems;
+        //! A map of all device-specific SingleDeviceDispatchRaysItem, indexed by the device index
+        AZStd::unordered_map<int, SingleDeviceDispatchRaysItem> m_deviceDispatchRaysItems;
         //! A map of all device-specific ShaderResourceGroups, indexed by the device index
-        AZStd::unordered_map<int, AZStd::vector<ShaderResourceGroup*>> m_deviceShaderResourceGroups;
+        AZStd::unordered_map<int, AZStd::vector<SingleDeviceShaderResourceGroup*>> m_deviceShaderResourceGroups;
         //! Caching the arguments for the corresponding getter.
         MultiDeviceDispatchRaysArguments m_arguments;
     };

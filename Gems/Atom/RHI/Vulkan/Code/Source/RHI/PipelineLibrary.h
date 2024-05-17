@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/PipelineLibrary.h>
+#include <Atom/RHI/SingleDevicePipelineLibrary.h>
 #include <Atom/RHI.Reflect/PipelineLibraryData.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <RHI/GraphicsPipeline.h>
@@ -18,9 +18,9 @@ namespace AZ
     namespace Vulkan
     {
         class PipelineLibrary final
-            : public RHI::PipelineLibrary
+            : public RHI::SingleDevicePipelineLibrary
         {
-            using Base = RHI::PipelineLibrary;
+            using Base = RHI::SingleDevicePipelineLibrary;
 
         public:
             AZ_CLASS_ALLOCATOR(PipelineLibrary, AZ::SystemAllocator);
@@ -39,10 +39,10 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::PipelineLibrary
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineLibraryDescriptor& descriptor) override;
+            // RHI::SingleDevicePipelineLibrary
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::SingleDevicePipelineLibraryDescriptor& descriptor) override;
             void ShutdownInternal() override;
-            RHI::ResultCode MergeIntoInternal(AZStd::span<const RHI::PipelineLibrary* const> libraries) override;
+            RHI::ResultCode MergeIntoInternal(AZStd::span<const RHI::SingleDevicePipelineLibrary* const> libraries) override;
             RHI::ConstPtr<RHI::PipelineLibraryData> GetSerializedDataInternal() const override;
             bool SaveSerializedDataInternal(const AZStd::string& filePath) const override;
             //////////////////////////////////////////////////////////////////////////

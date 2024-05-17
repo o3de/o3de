@@ -7,12 +7,12 @@
  */
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
 #include <Atom/RHI.Reflect/ImageViewDescriptor.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/SingleDeviceBufferView.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/SingleDeviceImageView.h>
 #include <Atom/RHI/MultiDeviceResource.h>
 #include <Atom/RHI/MultiDeviceResourcePool.h>
-#include <Atom/RHI/ResourceView.h>
+#include <Atom/RHI/SingleDeviceResourceView.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/hash.h>
 
@@ -44,7 +44,7 @@ namespace AZ::RHI
 
     void MultiDeviceResource::InvalidateViews()
     {
-        IterateObjects<Resource>(
+        IterateObjects<SingleDeviceResource>(
             []([[maybe_unused]] auto deviceIndex, auto deviceResource)
             {
                 deviceResource->InvalidateViews();

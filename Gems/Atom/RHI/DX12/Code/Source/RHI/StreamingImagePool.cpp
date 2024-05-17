@@ -102,7 +102,7 @@ namespace AZ
                 }
             }
 
-            void OnResourceShutdown(const RHI::Resource& resource) override
+            void OnResourceShutdown(const RHI::SingleDeviceResource& resource) override
             {
                 const Image& image = static_cast<const Image&>(resource);
                 if (!image.m_pendingResolves)
@@ -457,7 +457,7 @@ namespace AZ
             return false;
         }
 
-        RHI::ResultCode StreamingImagePool::InitImageInternal(const RHI::StreamingImageInitRequest& request)
+        RHI::ResultCode StreamingImagePool::InitImageInternal(const RHI::SingleDeviceStreamingImageInitRequest& request)
         {
             AZ_PROFILE_FUNCTION(RHI);
 
@@ -527,7 +527,7 @@ namespace AZ
             image.m_minimumResidentSizeInBytes = image.m_residentSizeInBytes;
 
             // Queue upload tail mip slices
-            RHI::StreamingImageExpandRequest uploadMipRequest;
+            RHI::SingleDeviceStreamingImageExpandRequest uploadMipRequest;
             uploadMipRequest.m_image = &image;
             uploadMipRequest.m_mipSlices = request.m_tailMipSlices;
             uploadMipRequest.m_waitForUpload = true;
@@ -538,7 +538,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        void StreamingImagePool::ShutdownResourceInternal(RHI::Resource& resourceBase)
+        void StreamingImagePool::ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase)
         {
             Image& image = static_cast<Image&>(resourceBase);
 
@@ -576,7 +576,7 @@ namespace AZ
             image.m_pendingResolves = 0;
         }
 
-        RHI::ResultCode StreamingImagePool::ExpandImageInternal(const RHI::StreamingImageExpandRequest& request)
+        RHI::ResultCode StreamingImagePool::ExpandImageInternal(const RHI::SingleDeviceStreamingImageExpandRequest& request)
         {
             Image& image = static_cast<Image&>(*request.m_image);
 
@@ -589,7 +589,7 @@ namespace AZ
             }
 
             // Create new expend request and append callback from the StreamingImagePool
-            RHI::StreamingImageExpandRequest newRequest = request;
+            RHI::SingleDeviceStreamingImageExpandRequest newRequest = request;
             newRequest.m_completeCallback = [=]() 
             {
                 Image& dxImage = static_cast<Image&>(*request.m_image);
@@ -607,7 +607,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode StreamingImagePool::TrimImageInternal(RHI::Image& image, uint32_t targetMipLevel)
+        RHI::ResultCode StreamingImagePool::TrimImageInternal(RHI::SingleDeviceImage& image, uint32_t targetMipLevel)
         {
             Image& imageImpl = static_cast<Image&>(image);
 

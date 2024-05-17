@@ -9,8 +9,8 @@
 
 #include <Atom/RHI.Reflect/ImageSubresource.h>
 #include <Atom/RHI.Reflect/ImageViewDescriptor.h>
-#include <Atom/RHI/Image.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/SingleDeviceImage.h>
+#include <Atom/RHI/SingleDeviceImageView.h>
 #include <Atom/RHI/MultiDeviceResource.h>
 
 namespace AZ::RHI
@@ -27,7 +27,7 @@ namespace AZ::RHI
     //! Subresources are organized by a linear indexing scheme: mipSliceOffset + arraySliceOffset * arraySize. The total
     //! number of subresources is equal to mipLevels * arraySize. All subresources share the same pixel format.
     //!
-    //! @see ImageView on how to interpret contents of an image.
+    //! @see SingleDeviceImageView on how to interpret contents of an image.
     class MultiDeviceImage : public MultiDeviceResource
     {
         friend class MultiDeviceImagePoolBase;
@@ -49,7 +49,7 @@ namespace AZ::RHI
         //! are considered undefined.
         const ImageDescriptor& GetDescriptor() const;
 
-        //! Returns the multi-device ImageView
+        //! Returns the multi-device SingleDeviceImageView
         Ptr<MultiDeviceImageView> BuildImageView(const ImageViewDescriptor& imageViewDescriptor);
 
         //! Computes the subresource layouts and total size of the image contents, if represented linearly. Effectively,
@@ -92,7 +92,7 @@ namespace AZ::RHI
         //! Shuts down the resource by detaching it from its parent pool.
         void Shutdown() override final;
 
-        //! Returns true if the ResourceView is in the cache of all single device images
+        //! Returns true if the SingleDeviceResourceView is in the cache of all single device images
         bool IsInResourceCache(const ImageViewDescriptor& imageViewDescriptor);
 
     protected:
@@ -124,8 +124,8 @@ namespace AZ::RHI
         {
         }
 
-        //! Given a device index, return the corresponding ImageView for the selected device
-        const RHI::Ptr<RHI::ImageView> GetDeviceImageView(int deviceIndex) const;
+        //! Given a device index, return the corresponding SingleDeviceImageView for the selected device
+        const RHI::Ptr<RHI::SingleDeviceImageView> GetDeviceImageView(int deviceIndex) const;
 
         //! Return the contained multi-device image
         const RHI::MultiDeviceImage* GetImage() const
@@ -144,22 +144,22 @@ namespace AZ::RHI
             return m_image.get();
         }
 
-        const ResourceView* GetDeviceResourceView(int deviceIndex) const override
+        const SingleDeviceResourceView* GetDeviceResourceView(int deviceIndex) const override
         {
             return GetDeviceImageView(deviceIndex).get();
         }
 
     private:
-        //! Safe-guard access to ImageView cache during parallel access
+        //! Safe-guard access to SingleDeviceImageView cache during parallel access
         mutable AZStd::mutex m_imageViewMutex;
         //! A raw pointer to a multi-device image
         ConstPtr<RHI::MultiDeviceImage> m_image;
         //! The corresponding ImageViewDescriptor for this view.
         ImageViewDescriptor m_descriptor;
-        //! ImageView cache
+        //! SingleDeviceImageView cache
         //! This cache is necessary as the caller receives raw pointers from the ResourceCache,
         //! which now, with multi-device objects in use, need to be held in memory as long as
         //! the multi-device view is held.
-        mutable AZStd::unordered_map<int, Ptr<RHI::ImageView>> m_cache;
+        mutable AZStd::unordered_map<int, Ptr<RHI::SingleDeviceImageView>> m_cache;
     };
 } // namespace AZ::RHI

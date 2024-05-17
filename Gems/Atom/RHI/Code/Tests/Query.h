@@ -8,14 +8,14 @@
 #pragma once
 
 #include <AzCore/UnitTest/TestTypes.h>
-#include <Atom/RHI/Query.h>
-#include <Atom/RHI/QueryPool.h>
+#include <Atom/RHI/SingleDeviceQuery.h>
+#include <Atom/RHI/SingleDeviceQueryPool.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 namespace UnitTest
 {
     class Query
-        : public AZ::RHI::Query
+        : public AZ::RHI::SingleDeviceQuery
     {
     public:
         AZ_CLASS_ALLOCATOR(Query, AZ::SystemAllocator);
@@ -27,7 +27,7 @@ namespace UnitTest
     };
 
     class QueryPool
-        : public AZ::RHI::QueryPool
+        : public AZ::RHI::SingleDeviceQueryPool
     {
     public:
         AZ_CLASS_ALLOCATOR(QueryPool, AZ::SystemAllocator);
@@ -36,7 +36,7 @@ namespace UnitTest
 
     private:
         AZ::RHI::ResultCode InitInternal(AZ::RHI::Device& device, const AZ::RHI::QueryPoolDescriptor& descriptor) override;
-        AZ::RHI::ResultCode InitQueryInternal(AZ::RHI::Query& query) override;
+        AZ::RHI::ResultCode InitQueryInternal(AZ::RHI::SingleDeviceQuery& query) override;
         AZ::RHI::ResultCode GetResultsInternal(uint32_t startIndex, uint32_t queryCount, uint64_t* results, uint32_t resultsCount, AZ::RHI::QueryResultFlagBits flags) override;
     };
 }

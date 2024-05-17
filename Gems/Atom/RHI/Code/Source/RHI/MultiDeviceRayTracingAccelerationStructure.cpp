@@ -14,9 +14,9 @@
 
 namespace AZ::RHI
 {
-    RayTracingBlasDescriptor MultiDeviceRayTracingBlasDescriptor::GetDeviceRayTracingBlasDescriptor(int deviceIndex) const
+    SingleDeviceRayTracingBlasDescriptor MultiDeviceRayTracingBlasDescriptor::GetDeviceRayTracingBlasDescriptor(int deviceIndex) const
     {
-        RayTracingBlasDescriptor descriptor;
+        SingleDeviceRayTracingBlasDescriptor descriptor;
 
         for (const auto& geometry : m_mdGeometries)
         {
@@ -71,9 +71,9 @@ namespace AZ::RHI
         return this;
     }
 
-    RayTracingTlasDescriptor MultiDeviceRayTracingTlasDescriptor::GetDeviceRayTracingTlasDescriptor(int deviceIndex) const
+    SingleDeviceRayTracingTlasDescriptor MultiDeviceRayTracingTlasDescriptor::GetDeviceRayTracingTlasDescriptor(int deviceIndex) const
     {
-        RayTracingTlasDescriptor descriptor;
+        SingleDeviceRayTracingTlasDescriptor descriptor;
 
         for (const auto& instance : m_mdInstances)
         {
@@ -199,7 +199,7 @@ namespace AZ::RHI
 
         if (resultCode != ResultCode::Success)
         {
-            // Reset already initialized device-specific RayTracingBlas and set deviceMask to 0
+            // Reset already initialized device-specific SingleDeviceRayTracingBlas and set deviceMask to 0
             m_deviceObjects.clear();
             MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
         }
@@ -214,7 +214,7 @@ namespace AZ::RHI
             return false;
         }
 
-        IterateObjects<RayTracingBlas>(
+        IterateObjects<SingleDeviceRayTracingBlas>(
             [](auto /*deviceIndex*/, auto deviceRayTracingBlas)
             {
                 if (!deviceRayTracingBlas->IsValid())
@@ -252,7 +252,7 @@ namespace AZ::RHI
 
         if (resultCode != ResultCode::Success)
         {
-            // Reset already initialized device-specific RayTracingTlas and set deviceMask to 0
+            // Reset already initialized device-specific SingleDeviceRayTracingTlas and set deviceMask to 0
             m_deviceObjects.clear();
             MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
         }
@@ -280,7 +280,7 @@ namespace AZ::RHI
         m_tlasBuffer = aznew RHI::MultiDeviceBuffer;
         m_tlasBuffer->Init(GetDeviceMask());
 
-        IterateObjects<RayTracingTlas>(
+        IterateObjects<SingleDeviceRayTracingTlas>(
             [this](int deviceIndex, auto deviceRayTracingTlas)
             {
                 m_tlasBuffer->m_deviceObjects[deviceIndex] = deviceRayTracingTlas->GetTlasBuffer();
@@ -315,7 +315,7 @@ namespace AZ::RHI
         m_tlasInstancesBuffer = aznew RHI::MultiDeviceBuffer;
         m_tlasInstancesBuffer->Init(GetDeviceMask());
 
-        IterateObjects<RayTracingTlas>(
+        IterateObjects<SingleDeviceRayTracingTlas>(
             [this](int deviceIndex, auto deviceRayTracingTlas)
             {
                 m_tlasInstancesBuffer->m_deviceObjects[deviceIndex] = deviceRayTracingTlas->GetTlasBuffer();

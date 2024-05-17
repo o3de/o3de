@@ -78,15 +78,15 @@ namespace AZ
             return allocatedBuffer;
         }
 
-        RHI::IndexBufferView DynamicBufferAllocator::GetIndexBufferView(RHI::Ptr<DynamicBuffer> dynamicBuffer, RHI::IndexFormat format)
+        RHI::SingleDeviceIndexBufferView DynamicBufferAllocator::GetIndexBufferView(RHI::Ptr<DynamicBuffer> dynamicBuffer, RHI::IndexFormat format)
         {
-            return RHI::IndexBufferView(
+            return RHI::SingleDeviceIndexBufferView(
                 *m_bufferData.GetCurrentElement()->GetRHIBuffer(), GetBufferAddressOffset(dynamicBuffer), dynamicBuffer->m_size, format);
         }
 
-        RHI::StreamBufferView DynamicBufferAllocator::GetStreamBufferView(RHI::Ptr<DynamicBuffer> dynamicBuffer, uint32_t strideByteCount)
+        RHI::SingleDeviceStreamBufferView DynamicBufferAllocator::GetStreamBufferView(RHI::Ptr<DynamicBuffer> dynamicBuffer, uint32_t strideByteCount)
         {
-            return RHI::StreamBufferView(
+            return RHI::SingleDeviceStreamBufferView(
                 *m_bufferData.GetCurrentElement()->GetRHIBuffer(),
                 GetBufferAddressOffset(dynamicBuffer),
                 dynamicBuffer->m_size,

@@ -8,7 +8,7 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/SingleDevicePipelineState.h>
 #include <Atom/RHI/FrameGraphInterface.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPIUtils.h>
@@ -147,10 +147,10 @@ namespace AZ
             {
                 AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = diffuseProbeGridFeatureProcessor->GetVisibleProbeGrids()[index];
 
-                const RHI::ShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetPrepareSrg()->GetRHIShaderResourceGroup();
+                const RHI::SingleDeviceShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetPrepareSrg()->GetRHIShaderResourceGroup();
                 commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
-                RHI::DispatchItem dispatchItem;
+                RHI::SingleDeviceDispatchItem dispatchItem;
                 dispatchItem.m_arguments = m_dispatchArgs;
                 dispatchItem.m_pipelineState = m_pipelineState;
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = 1;

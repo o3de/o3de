@@ -7,14 +7,14 @@
  */
 
 #include <Atom/RHI/FactoryManagerBus.h>
-#include <Atom/RHI/Fence.h>
-#include <Atom/RHI/IndirectBufferSignature.h>
-#include <Atom/RHI/IndirectBufferWriter.h>
+#include <Atom/RHI/SingleDeviceFence.h>
+#include <Atom/RHI/SingleDeviceIndirectBufferSignature.h>
+#include <Atom/RHI/SingleDeviceIndirectBufferWriter.h>
 #include <Atom/RHI/PhysicalDevice.h>
-#include <Atom/RHI/QueryPool.h>
-#include <Atom/RHI/RayTracingAccelerationStructure.h>
-#include <Atom/RHI/RayTracingPipelineState.h>
-#include <Atom/RHI/RayTracingShaderTable.h>
+#include <Atom/RHI/SingleDeviceQueryPool.h>
+#include <Atom/RHI/SingleDeviceRayTracingAccelerationStructure.h>
+#include <Atom/RHI/SingleDeviceRayTracingPipelineState.h>
+#include <Atom/RHI/SingleDeviceRayTracingShaderTable.h>
 #include <Atom/RHI/DispatchRaysIndirectBuffer.h>
 #include <Atom/RHI.Reflect/Metal/Base.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -99,27 +99,27 @@ namespace AZ
             return PhysicalDevice::Enumerate();
         }
 
-        RHI::Ptr<RHI::SwapChain> SystemComponent::CreateSwapChain()
+        RHI::Ptr<RHI::SingleDeviceSwapChain> SystemComponent::CreateSwapChain()
         {
             return SwapChain::Create();
         }
 
-        RHI::Ptr<RHI::Fence> SystemComponent::CreateFence()
+        RHI::Ptr<RHI::SingleDeviceFence> SystemComponent::CreateFence()
         {
             return FenceImpl::Create();
         }
 
-        RHI::Ptr<RHI::Buffer> SystemComponent::CreateBuffer()
+        RHI::Ptr<RHI::SingleDeviceBuffer> SystemComponent::CreateBuffer()
         {
             return Buffer::Create();
         }
 
-        RHI::Ptr<RHI::BufferView> SystemComponent::CreateBufferView()
+        RHI::Ptr<RHI::SingleDeviceBufferView> SystemComponent::CreateBufferView()
         {
             return BufferView::Create();
         }
 
-        RHI::Ptr<RHI::BufferPool> SystemComponent::CreateBufferPool()
+        RHI::Ptr<RHI::SingleDeviceBufferPool> SystemComponent::CreateBufferPool()
         {
             return BufferPool::Create();
         }
@@ -129,42 +129,42 @@ namespace AZ
             return Device::Create();
         }
         
-        RHI::Ptr<RHI::Image> SystemComponent::CreateImage()
+        RHI::Ptr<RHI::SingleDeviceImage> SystemComponent::CreateImage()
         {
             return Image::Create();
         }
 
-        RHI::Ptr<RHI::ImageView> SystemComponent::CreateImageView()
+        RHI::Ptr<RHI::SingleDeviceImageView> SystemComponent::CreateImageView()
         {
             return ImageView::Create();
         }
         
-        RHI::Ptr<RHI::ImagePool> SystemComponent::CreateImagePool()
+        RHI::Ptr<RHI::SingleDeviceImagePool> SystemComponent::CreateImagePool()
         {
             return ImagePool::Create();
         }
 
-        RHI::Ptr<RHI::StreamingImagePool> SystemComponent::CreateStreamingImagePool()
+        RHI::Ptr<RHI::SingleDeviceStreamingImagePool> SystemComponent::CreateStreamingImagePool()
         {
             return StreamingImagePool::Create();
         }
 
-        RHI::Ptr<RHI::ShaderResourceGroup> SystemComponent::CreateShaderResourceGroup()
+        RHI::Ptr<RHI::SingleDeviceShaderResourceGroup> SystemComponent::CreateShaderResourceGroup()
         {
             return ShaderResourceGroup::Create();
         }
 
-        RHI::Ptr<RHI::ShaderResourceGroupPool> SystemComponent::CreateShaderResourceGroupPool()
+        RHI::Ptr<RHI::SingleDeviceShaderResourceGroupPool> SystemComponent::CreateShaderResourceGroupPool()
         {
             return ShaderResourceGroupPool::Create();
         }
 
-        RHI::Ptr<RHI::PipelineLibrary> SystemComponent::CreatePipelineLibrary()
+        RHI::Ptr<RHI::SingleDevicePipelineLibrary> SystemComponent::CreatePipelineLibrary()
         {
             return PipelineLibrary::Create();
         }
 
-        RHI::Ptr<RHI::PipelineState> SystemComponent::CreatePipelineState()
+        RHI::Ptr<RHI::SingleDevicePipelineState> SystemComponent::CreatePipelineState()
         {
             return PipelineState::Create();
         }
@@ -179,7 +179,7 @@ namespace AZ
             return FrameGraphExecuter::Create();
         }
 
-        RHI::Ptr<RHI::TransientAttachmentPool> SystemComponent::CreateTransientAttachmentPool()
+        RHI::Ptr<RHI::SingleDeviceTransientAttachmentPool> SystemComponent::CreateTransientAttachmentPool()
         {
             return TransientAttachmentPool::Create();
         }
@@ -189,55 +189,55 @@ namespace AZ
             return Scope::Create();
         }
 
-        RHI::Ptr<RHI::QueryPool> SystemComponent::CreateQueryPool()
+        RHI::Ptr<RHI::SingleDeviceQueryPool> SystemComponent::CreateQueryPool()
         {
             return QueryPool::Create();
         }
 
-        RHI::Ptr<RHI::Query> SystemComponent::CreateQuery()
+        RHI::Ptr<RHI::SingleDeviceQuery> SystemComponent::CreateQuery()
         {
             return Query::Create();
         }
 
-        RHI::Ptr<RHI::IndirectBufferSignature> SystemComponent::CreateIndirectBufferSignature()
+        RHI::Ptr<RHI::SingleDeviceIndirectBufferSignature> SystemComponent::CreateIndirectBufferSignature()
         {
-            return RHI::Ptr<RHI::IndirectBufferSignature>();
+            return RHI::Ptr<RHI::SingleDeviceIndirectBufferSignature>();
         }
 
-        RHI::Ptr<RHI::IndirectBufferWriter> SystemComponent::CreateIndirectBufferWriter()
+        RHI::Ptr<RHI::SingleDeviceIndirectBufferWriter> SystemComponent::CreateIndirectBufferWriter()
         {
-            return RHI::Ptr<RHI::IndirectBufferWriter>();
+            return RHI::Ptr<RHI::SingleDeviceIndirectBufferWriter>();
         }
 
-        RHI::Ptr<RHI::RayTracingBufferPools> SystemComponent::CreateRayTracingBufferPools()
-        {
-            // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
-            AZ_Assert(false, "Not implemented");
-            return nullptr;
-        }
-
-        RHI::Ptr<RHI::RayTracingBlas> SystemComponent::CreateRayTracingBlas()
+        RHI::Ptr<RHI::SingleDeviceRayTracingBufferPools> SystemComponent::CreateRayTracingBufferPools()
         {
             // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
             AZ_Assert(false, "Not implemented");
             return nullptr;
         }
 
-        RHI::Ptr<RHI::RayTracingTlas> SystemComponent::CreateRayTracingTlas()
+        RHI::Ptr<RHI::SingleDeviceRayTracingBlas> SystemComponent::CreateRayTracingBlas()
         {
             // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
             AZ_Assert(false, "Not implemented");
             return nullptr;
         }
 
-        RHI::Ptr<RHI::RayTracingPipelineState> SystemComponent::CreateRayTracingPipelineState()
+        RHI::Ptr<RHI::SingleDeviceRayTracingTlas> SystemComponent::CreateRayTracingTlas()
         {
             // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
             AZ_Assert(false, "Not implemented");
             return nullptr;
         }
 
-        RHI::Ptr<RHI::RayTracingShaderTable> SystemComponent::CreateRayTracingShaderTable()
+        RHI::Ptr<RHI::SingleDeviceRayTracingPipelineState> SystemComponent::CreateRayTracingPipelineState()
+        {
+            // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
+            AZ_Assert(false, "Not implemented");
+            return nullptr;
+        }
+
+        RHI::Ptr<RHI::SingleDeviceRayTracingShaderTable> SystemComponent::CreateRayTracingShaderTable()
         {
             // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
             AZ_Assert(false, "Not implemented");

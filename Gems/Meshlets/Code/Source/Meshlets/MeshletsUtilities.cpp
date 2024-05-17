@@ -144,7 +144,7 @@ namespace AZ
         }
 
         // Returns the buffer view instance as well as the buffer allocator
-        Data::Instance<RHI::BufferView> UtilityClass::CreateSharedBufferView(
+        Data::Instance<RHI::SingleDeviceBufferView> UtilityClass::CreateSharedBufferView(
             const char* warningHeader,
             SrgBufferDescriptor& bufferDesc,
             Data::Instance<Meshlets::SharedBufferAllocation>& outputBufferAllocator)
@@ -154,7 +154,7 @@ namespace AZ
             if (!outputBufferAllocator)
             {
                 AZ_Error(warningHeader, false, "Shared buffer out of memory for [%s]", bufferDesc.m_bufferName.GetCStr());
-                return Data::Instance<RHI::BufferView>();
+                return Data::Instance<RHI::SingleDeviceBufferView>();
             }
 
             // Create the buffer view into the shared buffer - it will be used as a separate buffer
@@ -172,14 +172,14 @@ namespace AZ
             // The attachment itself is created for the PerPass shared buffer.
             viewDescriptor.m_ignoreFrameAttachmentValidation = true;
 
-            RHI::Buffer* rhiBuffer = Meshlets::SharedBufferInterface::Get()->GetBuffer()->GetRHIBuffer();
-            Data::Instance<RHI::BufferView> bufferView = RHI::Factory::Get().CreateBufferView();
+            RHI::SingleDeviceBuffer* rhiBuffer = Meshlets::SharedBufferInterface::Get()->GetBuffer()->GetRHIBuffer();
+            Data::Instance<RHI::SingleDeviceBufferView> bufferView = RHI::Factory::Get().CreateBufferView();
             RHI::ResultCode resultCode = bufferView->Init(*rhiBuffer, viewDescriptor);
 
             if (resultCode != RHI::ResultCode::Success)
             {
                 AZ_Error(warningHeader, false, "BufferView could not be retrieved for [%s]", bufferDesc.m_bufferName.GetCStr());
-                return Data::Instance<RHI::BufferView>();
+                return Data::Instance<RHI::SingleDeviceBufferView>();
             }
 
             return bufferView;
@@ -187,7 +187,7 @@ namespace AZ
 
         bool UtilityClass::BindBufferViewToSrg(
             [[maybe_unused]] const char* warningHeader,
-            Data::Instance<RHI::BufferView> bufferView,
+            Data::Instance<RHI::SingleDeviceBufferView> bufferView,
             SrgBufferDescriptor& bufferDesc,
             Data::Instance<RPI::ShaderResourceGroup> srg)
         {
@@ -213,14 +213,14 @@ namespace AZ
             return true;
         }
 
-        Data::Instance<RHI::BufferView> UtilityClass::CreateSharedBufferViewAndBindToSrg(
+        Data::Instance<RHI::SingleDeviceBufferView> UtilityClass::CreateSharedBufferViewAndBindToSrg(
             const char* warningHeader,
             SrgBufferDescriptor& bufferDesc,
             Data::Instance<Meshlets::SharedBufferAllocation>& outputBufferAllocator,
             Data::Instance<RPI::ShaderResourceGroup> srg)
         {
             // BufferView creation
-            Data::Instance<RHI::BufferView> bufferView = CreateSharedBufferView(warningHeader, bufferDesc, outputBufferAllocator);
+            Data::Instance<RHI::SingleDeviceBufferView> bufferView = CreateSharedBufferView(warningHeader, bufferDesc, outputBufferAllocator);
 
             if (srg && !BindBufferViewToSrg(warningHeader, bufferView, bufferDesc, srg))
             {

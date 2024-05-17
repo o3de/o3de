@@ -13,7 +13,7 @@ namespace AZ
 {
     namespace Metal
     {
-        RHI::ResultCode StreamingImagePoolResolver::UpdateImage(const RHI::StreamingImageExpandRequest& request)
+        RHI::ResultCode StreamingImagePoolResolver::UpdateImage(const RHI::SingleDeviceStreamingImageExpandRequest& request)
         {
             AZ_PROFILE_FUNCTION(RHI);
             
@@ -26,7 +26,7 @@ namespace AZ
                 {
                     const RHI::StreamingImageMipSlice& mipSliceData = request.m_mipSlices[mipSliceLocal];
                     const RHI::StreamingImageSubresourceData& subresourceDataSource = mipSliceData.m_subresources[arraySlice];
-                    const RHI::ImageSubresourceLayout& subImageLayout = request.m_mipSlices[mipSliceLocal].m_subresourceLayout;
+                    const RHI::SingleDeviceImageSubresourceLayout& subImageLayout = request.m_mipSlices[mipSliceLocal].m_subresourceLayout;
                     
                     MTLRegion mtlRegion = MTLRegionMake3D(0, 0, 0, subImageLayout.m_size.m_width, subImageLayout.m_size.m_height, subImageLayout.m_size.m_depth);
                     

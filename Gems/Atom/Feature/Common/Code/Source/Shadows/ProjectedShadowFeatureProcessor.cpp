@@ -11,7 +11,7 @@
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <Math/GaussianMathFilter.h>
-#include <Atom/RHI/DrawPacketBuilder.h>
+#include <Atom/RHI/SingleDeviceDrawPacketBuilder.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -766,18 +766,18 @@ namespace AZ::Render
         RHI::InputStreamLayoutBuilder layoutBuilder;
         pipelineStateDescriptor.m_inputStreamLayout = layoutBuilder.End();
 
-        const RHI::PipelineState* pipelineState = m_clearShadowShader->AcquirePipelineState(pipelineStateDescriptor);
+        const RHI::SingleDevicePipelineState* pipelineState = m_clearShadowShader->AcquirePipelineState(pipelineStateDescriptor);
         if (!pipelineState)
         {
             AZ_Assert(false, "Shader '%s'. Failed to acquire default pipeline state", shaderAsset->GetName().GetCStr());
             return;
         }
 
-        RHI::DrawPacketBuilder drawPacketBuilder;
+        RHI::SingleDeviceDrawPacketBuilder drawPacketBuilder;
         drawPacketBuilder.Begin(nullptr);
         drawPacketBuilder.SetDrawArguments(RHI::DrawLinear(1, 0, 3, 0));
 
-        RHI::DrawPacketBuilder::DrawRequest drawRequest;
+        RHI::SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest drawRequest;
         drawRequest.m_listTag = m_clearShadowShader->GetDrawListTag();
         drawRequest.m_pipelineState = pipelineState;
         drawRequest.m_sortKey = AZStd::numeric_limits<RHI::DrawItemSortKey>::min();

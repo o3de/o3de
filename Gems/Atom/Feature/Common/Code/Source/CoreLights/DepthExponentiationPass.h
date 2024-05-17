@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/SingleDevicePipelineState.h>
 #include <Atom/RPI.Public/Pass/ComputePass.h>
 #include <CoreLights/Shadow.h>
 
@@ -39,7 +39,7 @@ namespace AZ
             struct ShaderVariantInfo
             {
                 const bool m_isFullyBaked = false;
-                const RHI::PipelineState* m_pipelineState = nullptr;
+                const RHI::SingleDevicePipelineState* m_pipelineState = nullptr;
             };
 
             DepthExponentiationPass() = delete;

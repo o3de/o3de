@@ -756,7 +756,7 @@ void CDraw2d::DeferredQuad::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynam
     AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
 
     // Set texture
-    const AZ::RHI::ImageView* imageView = m_image ? m_image->GetImageView() : nullptr;
+    const AZ::RHI::SingleDeviceImageView* imageView = m_image ? m_image->GetImageView() : nullptr;
     if (!imageView)
     {
         // Default to white texture
@@ -817,7 +817,7 @@ void CDraw2d::DeferredLine::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynam
     AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
 
     // Set texture
-    const AZ::RHI::ImageView* imageView = m_image ? m_image->GetImageView() : nullptr;
+    const AZ::RHI::SingleDeviceImageView* imageView = m_image ? m_image->GetImageView() : nullptr;
     if (!imageView)
     {
         // Default to white texture
@@ -893,7 +893,7 @@ void CDraw2d::DeferredRectOutline::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext
     AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
 
     // Set texture
-    const AZ::RHI::ImageView* imageView = m_image ? m_image->GetImageView() : nullptr;
+    const AZ::RHI::SingleDeviceImageView* imageView = m_image ? m_image->GetImageView() : nullptr;
     if (!imageView)
     {
         // Default to white texture

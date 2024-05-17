@@ -132,7 +132,7 @@ namespace AZ::RHI
         ImageViewDescriptor::Reflect(context);
         ImageSubresource::Reflect(context);
         ImageSubresourceRange::Reflect(context);
-        ImageSubresourceLayout::Reflect(context);
+        SingleDeviceImageSubresourceLayout::Reflect(context);
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////

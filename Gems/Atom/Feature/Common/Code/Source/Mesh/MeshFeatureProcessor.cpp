@@ -764,12 +764,12 @@ namespace AZ
             {
                 // Since there is only one task that will operate both on this view index and on the bucket with this instance group,
                 // there is no need to lock here.
-                RHI::DrawPacketBuilder drawPacketBuilder;
+                RHI::SingleDeviceDrawPacketBuilder drawPacketBuilder;
                 instanceGroup.m_perViewDrawPackets[viewIndex] = drawPacketBuilder.Clone(instanceGroup.m_drawPacket.GetRHIDrawPacket());
             }
 
             // Now that we have a valid cloned draw packet, update it with the latest offset + count
-            RHI::Ptr<RHI::DrawPacket> clonedDrawPacket = instanceGroup.m_perViewDrawPackets[viewIndex];
+            RHI::Ptr<RHI::SingleDeviceDrawPacket> clonedDrawPacket = instanceGroup.m_perViewDrawPackets[viewIndex];
 
             // Set the instance data offset
             AZStd::span<uint8_t> data{ reinterpret_cast<uint8_t*>(&instanceGroupBeginIndex), sizeof(uint32_t) };
@@ -1042,7 +1042,7 @@ namespace AZ
             {
                 for (AZ::RPI::MeshDrawPacket& meshDrawPacket : drawPacketList)
                 {
-                    RHI::DrawPacket* drawPacket = meshDrawPacket.GetRHIDrawPacket();
+                    RHI::SingleDeviceDrawPacket* drawPacket = meshDrawPacket.GetRHIDrawPacket();
 
                     if (drawPacket != nullptr)
                     {
@@ -1074,7 +1074,7 @@ namespace AZ
                 u32 drawPacketCounter = 0;
                 for (AZ::RPI::MeshDrawPacket& meshDrawPacket : drawPacketList)
                 {
-                    RHI::DrawPacket* drawPacket = meshDrawPacket.GetRHIDrawPacket();
+                    RHI::SingleDeviceDrawPacket* drawPacket = meshDrawPacket.GetRHIDrawPacket();
                     if (drawPacket)
                     {
                         size_t numDrawItems = drawPacket->GetDrawItemCount();
@@ -1082,7 +1082,7 @@ namespace AZ
 
                         for (size_t drawItemIdx = 0; drawItemIdx < numDrawItems; ++drawItemIdx)
                         {
-                            RHI::DrawItem* drawItem = drawPacket->GetDrawItem(drawItemIdx);
+                            RHI::SingleDeviceDrawItem* drawItem = drawPacket->GetDrawItem(drawItemIdx);
                             RHI::DrawListTag tag = drawPacket->GetDrawListTag(drawItemIdx);
                             stringOutput += AZStd::string::format("Item %zu | ", drawItemIdx);
                             stringOutput += drawItem->m_enabled ? "Enabled  | " : "Disabled | ";
@@ -2234,22 +2234,22 @@ namespace AZ
                 // note that the element count is the size of the entire buffer, even though this mesh may only
                 // occupy a portion of the vertex buffer.  This is necessary since we are accessing it using
                 // a ByteAddressBuffer in the raytracing shaders and passing the byte offset to the shader in a constant buffer.
-                uint32_t positionBufferByteCount = static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamBufferViews[0].GetBuffer())->GetDescriptor().m_byteCount);
+                uint32_t positionBufferByteCount = static_cast<uint32_t>(const_cast<RHI::SingleDeviceBuffer*>(streamBufferViews[0].GetBuffer())->GetDescriptor().m_byteCount);
                 RHI::BufferViewDescriptor positionBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, positionBufferByteCount);
 
-                uint32_t normalBufferByteCount = static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamBufferViews[1].GetBuffer())->GetDescriptor().m_byteCount);
+                uint32_t normalBufferByteCount = static_cast<uint32_t>(const_cast<RHI::SingleDeviceBuffer*>(streamBufferViews[1].GetBuffer())->GetDescriptor().m_byteCount);
                 RHI::BufferViewDescriptor normalBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, normalBufferByteCount);
 
-                uint32_t tangentBufferByteCount = static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamBufferViews[2].GetBuffer())->GetDescriptor().m_byteCount);
+                uint32_t tangentBufferByteCount = static_cast<uint32_t>(const_cast<RHI::SingleDeviceBuffer*>(streamBufferViews[2].GetBuffer())->GetDescriptor().m_byteCount);
                 RHI::BufferViewDescriptor tangentBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, tangentBufferByteCount);
 
-                uint32_t bitangentBufferByteCount = static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamBufferViews[3].GetBuffer())->GetDescriptor().m_byteCount);
+                uint32_t bitangentBufferByteCount = static_cast<uint32_t>(const_cast<RHI::SingleDeviceBuffer*>(streamBufferViews[3].GetBuffer())->GetDescriptor().m_byteCount);
                 RHI::BufferViewDescriptor bitangentBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, bitangentBufferByteCount);
 
-                uint32_t uvBufferByteCount = static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamBufferViews[4].GetBuffer())->GetDescriptor().m_byteCount);
+                uint32_t uvBufferByteCount = static_cast<uint32_t>(const_cast<RHI::SingleDeviceBuffer*>(streamBufferViews[4].GetBuffer())->GetDescriptor().m_byteCount);
                 RHI::BufferViewDescriptor uvBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, uvBufferByteCount);
 
-                const RHI::IndexBufferView& indexBufferView = mesh.m_indexBufferView;
+                const RHI::SingleDeviceIndexBufferView& indexBufferView = mesh.m_indexBufferView;
                 uint32_t indexElementSize = indexBufferView.GetIndexFormat() == RHI::IndexFormat::Uint16 ? 2 : 4;
                 uint32_t indexElementCount = (uint32_t)indexBufferView.GetBuffer()->GetDescriptor().m_byteCount / indexElementSize;
                 RHI::BufferViewDescriptor indexBufferDescriptor;
@@ -2263,18 +2263,18 @@ namespace AZ
                 RayTracingFeatureProcessor::SubMeshMaterial& subMeshMaterial = subMesh.m_material;
                 subMesh.m_positionFormat = PositionStreamFormat;
                 subMesh.m_positionVertexBufferView = streamBufferViews[0];
-                subMesh.m_positionShaderBufferView = const_cast<RHI::Buffer*>(streamBufferViews[0].GetBuffer())->GetBufferView(positionBufferDescriptor);
+                subMesh.m_positionShaderBufferView = const_cast<RHI::SingleDeviceBuffer*>(streamBufferViews[0].GetBuffer())->GetBufferView(positionBufferDescriptor);
 
                 subMesh.m_normalFormat = NormalStreamFormat;
                 subMesh.m_normalVertexBufferView = streamBufferViews[1];
-                subMesh.m_normalShaderBufferView = const_cast<RHI::Buffer*>(streamBufferViews[1].GetBuffer())->GetBufferView(normalBufferDescriptor);
+                subMesh.m_normalShaderBufferView = const_cast<RHI::SingleDeviceBuffer*>(streamBufferViews[1].GetBuffer())->GetBufferView(normalBufferDescriptor);
 
                 if (tangentBufferByteCount > 0)
                 {
                     subMesh.m_bufferFlags |= RayTracingSubMeshBufferFlags::Tangent;
                     subMesh.m_tangentFormat = TangentStreamFormat;
                     subMesh.m_tangentVertexBufferView = streamBufferViews[2];
-                    subMesh.m_tangentShaderBufferView = const_cast<RHI::Buffer*>(streamBufferViews[2].GetBuffer())->GetBufferView(tangentBufferDescriptor);
+                    subMesh.m_tangentShaderBufferView = const_cast<RHI::SingleDeviceBuffer*>(streamBufferViews[2].GetBuffer())->GetBufferView(tangentBufferDescriptor);
                 }
 
                 if (bitangentBufferByteCount > 0)
@@ -2282,7 +2282,7 @@ namespace AZ
                     subMesh.m_bufferFlags |= RayTracingSubMeshBufferFlags::Bitangent;
                     subMesh.m_bitangentFormat = BitangentStreamFormat;
                     subMesh.m_bitangentVertexBufferView = streamBufferViews[3];
-                    subMesh.m_bitangentShaderBufferView = const_cast<RHI::Buffer*>(streamBufferViews[3].GetBuffer())->GetBufferView(bitangentBufferDescriptor);
+                    subMesh.m_bitangentShaderBufferView = const_cast<RHI::SingleDeviceBuffer*>(streamBufferViews[3].GetBuffer())->GetBufferView(bitangentBufferDescriptor);
                 }
 
                 if (uvBufferByteCount > 0)
@@ -2290,11 +2290,11 @@ namespace AZ
                     subMesh.m_bufferFlags |= RayTracingSubMeshBufferFlags::UV;
                     subMesh.m_uvFormat = UVStreamFormat;
                     subMesh.m_uvVertexBufferView = streamBufferViews[4];
-                    subMesh.m_uvShaderBufferView = const_cast<RHI::Buffer*>(streamBufferViews[4].GetBuffer())->GetBufferView(uvBufferDescriptor);
+                    subMesh.m_uvShaderBufferView = const_cast<RHI::SingleDeviceBuffer*>(streamBufferViews[4].GetBuffer())->GetBufferView(uvBufferDescriptor);
                 }
 
                 subMesh.m_indexBufferView = mesh.m_indexBufferView;
-                subMesh.m_indexShaderBufferView = const_cast<RHI::Buffer*>(mesh.m_indexBufferView.GetBuffer())->GetBufferView(indexBufferDescriptor);
+                subMesh.m_indexShaderBufferView = const_cast<RHI::SingleDeviceBuffer*>(mesh.m_indexBufferView.GetBuffer())->GetBufferView(indexBufferDescriptor);
 
                 // add material data
                 if (material)
@@ -2773,7 +2773,7 @@ namespace AZ
                     for (const RPI::MeshDrawPacket& drawPacket : drawPacketList)
                     {
                         // If mesh instancing is disabled, get the draw packets directly from this ModelDataInstance
-                        const RHI::DrawPacket* rhiDrawPacket = drawPacket.GetRHIDrawPacket();
+                        const RHI::SingleDeviceDrawPacket* rhiDrawPacket = drawPacket.GetRHIDrawPacket();
 
                         if (rhiDrawPacket)
                         {
@@ -2790,7 +2790,7 @@ namespace AZ
                     for (const ModelDataInstance::PostCullingInstanceData& postCullingData : postCullingInstanceDataList)
                     {
                         // If mesh instancing is enabled, get the draw packet from the MeshInstanceManager
-                        const RHI::DrawPacket* rhiDrawPacket = postCullingData.m_instanceGroupHandle->m_drawPacket.GetRHIDrawPacket();
+                        const RHI::SingleDeviceDrawPacket* rhiDrawPacket = postCullingData.m_instanceGroupHandle->m_drawPacket.GetRHIDrawPacket();
 
                         if (rhiDrawPacket)
                         {

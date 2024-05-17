@@ -159,15 +159,15 @@ namespace Terrain
             Vector2i m_worldCoord = AZStd::numeric_limits<int32_t>::max();
 
             // When drawing, either the m_rhiDrawPacket will be used, or some number of the m_rhiDrawPacketQuadrants
-            AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> m_rhiDrawPacket;
-            AZStd::array<AZ::RHI::ConstPtr<AZ::RHI::DrawPacket>, 4> m_rhiDrawPacketQuadrant;
+            AZ::RHI::ConstPtr<AZ::RHI::SingleDeviceDrawPacket> m_rhiDrawPacket;
+            AZStd::array<AZ::RHI::ConstPtr<AZ::RHI::SingleDeviceDrawPacket>, 4> m_rhiDrawPacketQuadrant;
 
             AZ::Data::Instance<AZ::RPI::Buffer> m_heightsNormalsBuffer;
             AZ::Data::Instance<AZ::RPI::Buffer> m_lodHeightsNormalsBuffer;
-            AZStd::array<AZ::RHI::StreamBufferView, StreamIndex::Count> m_streamBufferViews;
+            AZStd::array<AZ::RHI::SingleDeviceStreamBufferView, StreamIndex::Count> m_streamBufferViews;
 
             // Hold reference to the draw srgs so they don't get released.
-            AZStd::fixed_vector<AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>, AZ::RHI::DrawPacketBuilder::DrawItemCountMax> m_perDrawSrgs;
+            AZStd::fixed_vector<AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>, AZ::RHI::SingleDeviceDrawPacketBuilder::DrawItemCountMax> m_perDrawSrgs;
 
             AZStd::unique_ptr<RtSector> m_rtData;
 
@@ -215,7 +215,7 @@ namespace Terrain
         {
             AZ::Data::Instance<AZ::RPI::Shader> m_shader;
             AZ::RPI::ShaderOptionGroup m_shaderOptions;
-            const AZ::RHI::PipelineState* m_pipelineState;
+            const AZ::RHI::SingleDevicePipelineState* m_pipelineState;
             AZ::RHI::DrawListTag m_drawListTag;
             AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout> m_drawSrgLayout;
             AZ::RPI::ShaderVariant m_shaderVariant;
@@ -231,7 +231,7 @@ namespace Terrain
         struct CandidateSector
         {
             AZ::Aabb m_aabb;
-            const AZ::RHI::DrawPacket* m_rhiDrawPacket;
+            const AZ::RHI::SingleDeviceDrawPacket* m_rhiDrawPacket;
         };
 
         struct XYPosition
@@ -259,7 +259,7 @@ namespace Terrain
         void RebuildSectors();
         void RebuildDrawPackets();
         void RemoveRayTracedMeshes();
-        AZ::RHI::StreamBufferView CreateStreamBufferView(AZ::Data::Instance<AZ::RPI::Buffer>& buffer, uint32_t offset = 0);
+        AZ::RHI::SingleDeviceStreamBufferView CreateStreamBufferView(AZ::Data::Instance<AZ::RPI::Buffer>& buffer, uint32_t offset = 0);
 
         void CreateCommonBuffers();
         void UpdateSectorBuffers(Sector& sector, const AZStd::span<const HeightNormalVertex> heightsNormals);
@@ -305,7 +305,7 @@ namespace Terrain
         AZ::Data::Instance<AZ::RPI::Buffer> m_indexBuffer;
         AZ::Data::Instance<AZ::RPI::Buffer> m_rtIndexBuffer;
         AZ::Data::Instance<AZ::RPI::Buffer> m_dummyLodHeightsNormalsBuffer;
-        AZ::RHI::IndexBufferView m_indexBufferView;
+        AZ::RHI::SingleDeviceIndexBufferView m_indexBufferView;
 
         AZStd::vector<SectorLodGrid> m_sectorLods;
         AZStd::vector<CandidateSector> m_candidateSectors;

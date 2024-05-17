@@ -7,16 +7,16 @@
  */
 #pragma once
 
-#include <Atom/RHI/Fence.h>
+#include <Atom/RHI/SingleDeviceFence.h>
 
 namespace AZ
 {
     namespace Null
     {
         class Fence
-            : public RHI::Fence
+            : public RHI::SingleDeviceFence
         {
-            using Base = RHI::Fence;
+            using Base = RHI::SingleDeviceFence;
         public:
             AZ_RTTI(Fence, "{34908F40-A7DE-4EE8-A871-71ACE0C24972}", Base);
             AZ_CLASS_ALLOCATOR(Fence, AZ::SystemAllocator);
@@ -27,7 +27,7 @@ namespace AZ
             Fence() = default;
             
             //////////////////////////////////////////////////////////////////////////
-            // RHI::Fence
+            // RHI::SingleDeviceFence
             RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] RHI::FenceState initialState) override { return RHI::ResultCode::Success;}
             void ShutdownInternal() override {}
             void SignalOnCpuInternal() override {}

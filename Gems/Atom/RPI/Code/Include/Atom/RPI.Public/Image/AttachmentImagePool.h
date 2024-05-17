@@ -17,7 +17,7 @@ namespace AZ
     namespace RHI
     {
         class Device;
-        class ImagePool;
+        class SingleDeviceImagePool;
     }
 
     namespace RPI
@@ -38,9 +38,9 @@ namespace AZ
 
             ~AttachmentImagePool() override = default;
 
-            RHI::ImagePool* GetRHIPool();
+            RHI::SingleDeviceImagePool* GetRHIPool();
 
-            const RHI::ImagePool* GetRHIPool() const;
+            const RHI::SingleDeviceImagePool* GetRHIPool() const;
 
         private:
             AttachmentImagePool() = default;
@@ -50,7 +50,7 @@ namespace AZ
             RHI::ResultCode Init(RHI::Device& device, ResourcePoolAsset& poolAsset);
 
             /// The RHI image pool instance.
-            RHI::Ptr<RHI::ImagePool> m_pool;
+            RHI::Ptr<RHI::SingleDeviceImagePool> m_pool;
         };
     }
 }

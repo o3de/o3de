@@ -22,7 +22,7 @@ namespace AZ
         {
         }
 
-        void* BufferPoolResolver::MapBuffer(const RHI::BufferMapRequest& request)
+        void* BufferPoolResolver::MapBuffer(const RHI::SingleDeviceBufferMapRequest& request)
         {
             AZ_Assert(request.m_byteCount > 0, "ByteCount of request is null");
             auto* buffer = static_cast<Buffer*>(request.m_buffer);
@@ -103,14 +103,14 @@ namespace AZ
                 AZ_Assert(stagingBuffer, "Staging Buffer is null.");
                 AZ_Assert(destBuffer, "Attachment Buffer is null.");
 
-                RHI::CopyBufferDescriptor copyDescriptor;
+                RHI::SingleDeviceCopyBufferDescriptor copyDescriptor;
                 copyDescriptor.m_sourceBuffer = stagingBuffer;
                 copyDescriptor.m_sourceOffset = 0;
                 copyDescriptor.m_destinationBuffer = destBuffer;
                 copyDescriptor.m_destinationOffset = static_cast<uint32_t>(packet.m_byteOffset);
                 copyDescriptor.m_size = static_cast<uint32_t>(packet.m_byteSize);
 
-                commandList.Submit(RHI::CopyItem(copyDescriptor));
+                commandList.Submit(RHI::SingleDeviceCopyItem(copyDescriptor));
                 device.QueueForRelease(stagingBuffer);                
             }
         }
@@ -128,7 +128,7 @@ namespace AZ
             list.erase(AZStd::remove_if(list.begin(), list.end(), predicate), list.end());
         }
 
-        void BufferPoolResolver::OnResourceShutdown(const RHI::Resource& resource)
+        void BufferPoolResolver::OnResourceShutdown(const RHI::SingleDeviceResource& resource)
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_uploadPacketsLock);
             const Buffer* buffer = static_cast<const Buffer*>(&resource);

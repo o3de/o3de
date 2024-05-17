@@ -9,8 +9,8 @@
 
 #include <Atom/RHI.Reflect/BufferDescriptor.h>
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
-#include <Atom/RHI/Buffer.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/SingleDeviceBuffer.h>
+#include <Atom/RHI/SingleDeviceBufferView.h>
 #include <Atom/RHI/MultiDeviceResource.h>
 
 namespace AZ::RHI
@@ -50,7 +50,7 @@ namespace AZ::RHI
         //! Shuts down the resource by detaching it from its parent pool.
         void Shutdown() override final;
 
-        //! Returns true if the ResourceView is in the cache of all single device buffers
+        //! Returns true if the SingleDeviceResourceView is in the cache of all single device buffers
         bool IsInResourceCache(const BufferViewDescriptor& bufferViewDescriptor);
 
     protected:
@@ -78,8 +78,8 @@ namespace AZ::RHI
         {
         }
 
-        //! Given a device index, return the corresponding BufferView for the selected device
-        const RHI::Ptr<RHI::BufferView> GetDeviceBufferView(int deviceIndex) const;
+        //! Given a device index, return the corresponding SingleDeviceBufferView for the selected device
+        const RHI::Ptr<RHI::SingleDeviceBufferView> GetDeviceBufferView(int deviceIndex) const;
 
         //! Return the contained multi-device buffer
         const RHI::MultiDeviceBuffer* GetBuffer() const
@@ -98,22 +98,22 @@ namespace AZ::RHI
             return m_buffer.get();
         }
 
-        const ResourceView* GetDeviceResourceView(int deviceIndex) const override
+        const SingleDeviceResourceView* GetDeviceResourceView(int deviceIndex) const override
         {
             return GetDeviceBufferView(deviceIndex).get();
         }
 
     private:
-        //! Safe-guard access to BufferView cache during parallel access
+        //! Safe-guard access to SingleDeviceBufferView cache during parallel access
         mutable AZStd::mutex m_bufferViewMutex;
         //! A raw pointer to a multi-device buffer
         ConstPtr<RHI::MultiDeviceBuffer> m_buffer;
         //! The corresponding BufferViewDescriptor for this view.
         BufferViewDescriptor m_descriptor;
-        //! BufferView cache
+        //! SingleDeviceBufferView cache
         //! This cache is necessary as the caller receives raw pointers from the ResourceCache, 
         //! which now, with multi-device objects in use, need to be held in memory as long as
         //! the multi-device view is held.
-        mutable AZStd::unordered_map<int, Ptr<RHI::BufferView>> m_cache;
+        mutable AZStd::unordered_map<int, Ptr<RHI::SingleDeviceBufferView>> m_cache;
     };
 } // namespace AZ::RHI

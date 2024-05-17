@@ -14,7 +14,7 @@
 #include <Atom/RHI/MultiDeviceResourcePool.h>
 #include <Atom/RHI/ObjectCache.h>
 #include <Atom/RHI/Scope.h>
-#include <Atom/RHI/TransientAttachmentPool.h>
+#include <Atom/RHI/SingleDeviceTransientAttachmentPool.h>
 
 #include <AzCore/std/optional.h>
 

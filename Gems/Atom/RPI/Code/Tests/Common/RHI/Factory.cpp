@@ -9,17 +9,17 @@
 #include <Common/RHI/Factory.h>
 #include <Common/RHI/Stubs.h>
 #include <Atom/RHI/DispatchRaysIndirectBuffer.h>
-#include <Atom/RHI/RayTracingAccelerationStructure.h>
-#include <Atom/RHI/RayTracingPipelineState.h>
-#include <Atom/RHI/RayTracingShaderTable.h>
-#include <Atom/RHI/RayTracingBufferPools.h>
-#include <Atom/RHI/TransientAttachmentPool.h>
+#include <Atom/RHI/SingleDeviceRayTracingAccelerationStructure.h>
+#include <Atom/RHI/SingleDeviceRayTracingPipelineState.h>
+#include <Atom/RHI/SingleDeviceRayTracingShaderTable.h>
+#include <Atom/RHI/SingleDeviceRayTracingBufferPools.h>
+#include <Atom/RHI/SingleDeviceTransientAttachmentPool.h>
 #include <Atom/RHI/FrameGraphExecuter.h>
 #include <Atom/RHI/FrameGraphCompiler.h>
-#include <Atom/RHI/PipelineState.h>
-#include <Atom/RHI/ShaderResourceGroupPool.h>
-#include <Atom/RHI/Fence.h>
-#include <Atom/RHI/SwapChain.h>
+#include <Atom/RHI/SingleDevicePipelineState.h>
+#include <Atom/RHI/SingleDeviceShaderResourceGroupPool.h>
+#include <Atom/RHI/SingleDeviceFence.h>
+#include <Atom/RHI/SingleDeviceSwapChain.h>
 
 namespace UnitTest
 {
@@ -82,67 +82,67 @@ namespace UnitTest
             return aznew Device;
         }
 
-        RHI::Ptr<RHI::SwapChain> Factory::CreateSwapChain()
+        RHI::Ptr<RHI::SingleDeviceSwapChain> Factory::CreateSwapChain()
         {
             return aznew SwapChain;
         }
 
-        RHI::Ptr<RHI::Fence> Factory::CreateFence()
+        RHI::Ptr<RHI::SingleDeviceFence> Factory::CreateFence()
         {
             return aznew Fence;
         }
 
-        RHI::Ptr<RHI::Buffer> Factory::CreateBuffer()
+        RHI::Ptr<RHI::SingleDeviceBuffer> Factory::CreateBuffer()
         {
             return aznew Buffer;
         }
 
-        RHI::Ptr<RHI::BufferView> Factory::CreateBufferView()
+        RHI::Ptr<RHI::SingleDeviceBufferView> Factory::CreateBufferView()
         {
             return aznew BufferView;
         }
 
-        RHI::Ptr<RHI::BufferPool> Factory::CreateBufferPool()
+        RHI::Ptr<RHI::SingleDeviceBufferPool> Factory::CreateBufferPool()
         {
             return aznew BufferPool;
         }
 
-        RHI::Ptr<RHI::Image> Factory::CreateImage()
+        RHI::Ptr<RHI::SingleDeviceImage> Factory::CreateImage()
         {
             return aznew Image;
         }
 
-        RHI::Ptr<RHI::ImageView> Factory::CreateImageView()
+        RHI::Ptr<RHI::SingleDeviceImageView> Factory::CreateImageView()
         {
             return aznew ImageView;
         }
 
-        RHI::Ptr<RHI::ImagePool> Factory::CreateImagePool()
+        RHI::Ptr<RHI::SingleDeviceImagePool> Factory::CreateImagePool()
         {
             return aznew ImagePool;
         }
 
-        RHI::Ptr<RHI::StreamingImagePool> Factory::CreateStreamingImagePool()
+        RHI::Ptr<RHI::SingleDeviceStreamingImagePool> Factory::CreateStreamingImagePool()
         {
             return aznew StreamingImagePool;
         }
 
-        RHI::Ptr<RHI::ShaderResourceGroupPool> Factory::CreateShaderResourceGroupPool()
+        RHI::Ptr<RHI::SingleDeviceShaderResourceGroupPool> Factory::CreateShaderResourceGroupPool()
         {
             return aznew ShaderResourceGroupPool;
         }
 
-        RHI::Ptr<RHI::ShaderResourceGroup> Factory::CreateShaderResourceGroup()
+        RHI::Ptr<RHI::SingleDeviceShaderResourceGroup> Factory::CreateShaderResourceGroup()
         {
             return aznew ShaderResourceGroup;
         }
 
-        RHI::Ptr<RHI::PipelineLibrary> Factory::CreatePipelineLibrary()
+        RHI::Ptr<RHI::SingleDevicePipelineLibrary> Factory::CreatePipelineLibrary()
         {
             return aznew PipelineLibrary;
         }
 
-        RHI::Ptr<RHI::PipelineState> Factory::CreatePipelineState()
+        RHI::Ptr<RHI::SingleDevicePipelineState> Factory::CreatePipelineState()
         {
             return aznew PipelineState;
         }
@@ -162,56 +162,56 @@ namespace UnitTest
             return aznew FrameGraphExecuter;
         }
 
-        RHI::Ptr<RHI::TransientAttachmentPool> Factory::CreateTransientAttachmentPool()
+        RHI::Ptr<RHI::SingleDeviceTransientAttachmentPool> Factory::CreateTransientAttachmentPool()
         {
             return aznew TransientAttachmentPool;
         }
 
-        AZ::RHI::Ptr<AZ::RHI::QueryPool> Factory::CreateQueryPool()
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceQueryPool> Factory::CreateQueryPool()
         {
             return aznew QueryPool;
         }
 
-        AZ::RHI::Ptr<AZ::RHI::Query> Factory::CreateQuery()
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceQuery> Factory::CreateQuery()
         {
             return aznew Query;
         }
 
-        AZ::RHI::Ptr<AZ::RHI::IndirectBufferSignature> Factory::CreateIndirectBufferSignature()
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceIndirectBufferSignature> Factory::CreateIndirectBufferSignature()
         {
             return aznew IndirectBufferSignature;
         }
 
-        AZ::RHI::Ptr<AZ::RHI::IndirectBufferWriter> Factory::CreateIndirectBufferWriter()
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceIndirectBufferWriter> Factory::CreateIndirectBufferWriter()
         {
             return aznew IndirectBufferWriter;
         }
 
-        AZ::RHI::Ptr<AZ::RHI::RayTracingBufferPools> Factory::CreateRayTracingBufferPools()
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceRayTracingBufferPools> Factory::CreateRayTracingBufferPools()
         {
             AZ_Assert(false, "Not implemented");
             return nullptr;
         }
 
-        AZ::RHI::Ptr<AZ::RHI::RayTracingBlas> Factory::CreateRayTracingBlas()
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceRayTracingBlas> Factory::CreateRayTracingBlas()
         {
             AZ_Assert(false, "Not implemented");
             return nullptr;
         }
 
-        AZ::RHI::Ptr<AZ::RHI::RayTracingTlas> Factory::CreateRayTracingTlas()
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceRayTracingTlas> Factory::CreateRayTracingTlas()
         {
             AZ_Assert(false, "Not implemented");
             return nullptr;
         }
 
-        AZ::RHI::Ptr<AZ::RHI::RayTracingPipelineState> Factory::CreateRayTracingPipelineState()
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceRayTracingPipelineState> Factory::CreateRayTracingPipelineState()
         {
             AZ_Assert(false, "Not implemented");
             return nullptr;
         }
 
-        AZ::RHI::Ptr<AZ::RHI::RayTracingShaderTable> Factory::CreateRayTracingShaderTable()
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceRayTracingShaderTable> Factory::CreateRayTracingShaderTable()
         {
             AZ_Assert(false, "Not implemented");
             return nullptr;

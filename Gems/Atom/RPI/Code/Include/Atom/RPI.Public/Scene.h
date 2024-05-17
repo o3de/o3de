@@ -136,7 +136,7 @@ namespace AZ
 
             void RemoveRenderPipeline(const RenderPipelineId& pipelineId);
 
-            const RHI::ShaderResourceGroup* GetRHIShaderResourceGroup() const;
+            const RHI::SingleDeviceShaderResourceGroup* GetRHIShaderResourceGroup() const;
             Data::Instance<ShaderResourceGroup> GetShaderResourceGroup() const;
 
             const SceneId& GetId() const;

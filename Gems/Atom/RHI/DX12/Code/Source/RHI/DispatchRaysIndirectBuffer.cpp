@@ -12,9 +12,9 @@
 #include <RHI/Device.h>
 #include <RHI/RayTracingShaderTable.h>
 
-#include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/SingleDeviceBufferPool.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/RayTracingShaderTable.h>
+#include <Atom/RHI/SingleDeviceRayTracingShaderTable.h>
 
 namespace AZ
 {
@@ -25,21 +25,21 @@ namespace AZ
             return aznew DispatchRaysIndirectBuffer;
         }
 
-        void DispatchRaysIndirectBuffer::Init(RHI::BufferPool* bufferPool)
+        void DispatchRaysIndirectBuffer::Init(RHI::SingleDeviceBufferPool* bufferPool)
         {
             m_buffer = RHI::Factory::Get().CreateBuffer();
             AZ::RHI::BufferDescriptor bufferDescriptor;
             bufferDescriptor.m_bindFlags = bufferPool->GetDescriptor().m_bindFlags;
             bufferDescriptor.m_byteCount = sizeof(D3D12_DISPATCH_RAYS_DESC);
 
-            AZ::RHI::BufferInitRequest bufferRequest;
+            AZ::RHI::SingleDeviceBufferInitRequest bufferRequest;
             bufferRequest.m_buffer = m_buffer.get();
             bufferRequest.m_descriptor = bufferDescriptor;
             [[maybe_unused]] RHI::ResultCode resultCode = bufferPool->InitBuffer(bufferRequest);
             AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create DispatchRaysIndirectBuffer buffer");
         }
 
-        void DispatchRaysIndirectBuffer::Build(RHI::RayTracingShaderTable* shaderTable)
+        void DispatchRaysIndirectBuffer::Build(RHI::SingleDeviceRayTracingShaderTable* shaderTable)
         {
             const RayTracingShaderTable* dxShaderTable = static_cast<const RayTracingShaderTable*>(shaderTable);
             const RayTracingShaderTable::ShaderTableBuffers& shaderTableBuffers = dxShaderTable->GetBuffers();

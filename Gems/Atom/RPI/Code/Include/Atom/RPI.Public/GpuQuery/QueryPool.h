@@ -13,7 +13,7 @@
 
 #include <Atom/RHI.Reflect/Interval.h>
 
-#include <Atom/RHI/QueryPool.h>
+#include <Atom/RHI/SingleDeviceQueryPool.h>
 
 #include <AzCore/std/containers/span.h>
 
@@ -60,16 +60,16 @@ namespace AZ
             QueryPool(uint32_t queryCapacity, uint32_t queriesPerResult, RHI::QueryType queryType, RHI::PipelineStatisticsFlags statisticsFlags);
 
             // Returns the RHI Query array as a span.
-            AZStd::span<const RHI::Ptr<RHI::Query>> GetRhiQueryArray() const;
+            AZStd::span<const RHI::Ptr<RHI::SingleDeviceQuery>> GetRhiQueryArray() const;
 
         private:
             // Distributes the RHI Query indices into sub-intervals. Each sub interval is assigned to a RPI Query.
             void CreateRhiQueryIntervals();
 
             // Returns a span of RHI Queries depending on the indices that are provided.
-            AZStd::span<const RHI::Ptr<RHI::Query>> GetRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices) const;
+            AZStd::span<const RHI::Ptr<RHI::SingleDeviceQuery>> GetRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices) const;
             // Returns an array of raw RHI Query pointers depending on the indices that are provided.
-            AZStd::vector<RHI::Query*> GetRawRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices) const;
+            AZStd::vector<RHI::SingleDeviceQuery*> GetRawRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices) const;
 
             // Readback results from the provided RHI Query indices.
             QueryResultCode GetQueryResultFromIndices(uint64_t* result, RHI::Interval rhiQueryIndices, RHI::QueryResultFlagBits queryResultFlag);
@@ -110,8 +110,8 @@ namespace AZ
             AZStd::vector<RHI::Interval> m_availableIntervalArray;
 
             // RHI Query related resources.
-            AZStd::vector<RHI::Ptr<RHI::Query>> m_rhiQueryArray;
-            RHI::Ptr<RHI::QueryPool> m_rhiQueryPool;
+            AZStd::vector<RHI::Ptr<RHI::SingleDeviceQuery>> m_rhiQueryArray;
+            RHI::Ptr<RHI::SingleDeviceQueryPool> m_rhiQueryPool;
         };
 
     }; // namespace RPI

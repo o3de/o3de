@@ -74,7 +74,7 @@ namespace UnitTest
 
             for(auto deviceIndex{0}; deviceIndex < DeviceCount; ++deviceIndex) 
             {
-                RHI::Ptr<RHI::ImageView> imageView;
+                RHI::Ptr<RHI::SingleDeviceImageView> imageView;
                 imageView = imageA->GetDeviceImage(deviceIndex)->GetImageView(RHI::ImageViewDescriptor(RHI::Format::R8G8B8A8_UINT));
                 AZ_TEST_ASSERT(imageView->IsStale() == false);
                 ASSERT_TRUE(imageView->IsInitialized());
@@ -137,7 +137,7 @@ namespace UnitTest
 
     TEST_F(MultiDeviceImageTests, TestViews)
     {
-        RHI::Ptr<RHI::ImageView> imageViewA;
+        RHI::Ptr<RHI::SingleDeviceImageView> imageViewA;
         
         {
             RHI::Ptr<RHI::MultiDeviceImagePool> imagePool;
@@ -272,7 +272,7 @@ namespace UnitTest
 
         RHI::Ptr<RHI::MultiDeviceImagePool> m_imagePool;
         RHI::Ptr<RHI::MultiDeviceImage> m_image;
-        RHI::Ptr<RHI::ImageView> m_imageView;
+        RHI::Ptr<RHI::SingleDeviceImageView> m_imageView;
     };
 
     TEST_P(MultiDeviceImageBindFlagTests, InitView_ViewIsCreated)

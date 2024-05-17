@@ -69,7 +69,7 @@ namespace AZ
             }
 
         private:
-            //! A DeviceMask denoting on which devices a device-specific DispatchItem should be generated
+            //! A DeviceMask denoting on which devices a device-specific SingleDeviceDispatchItem should be generated
             MultiDevice::DeviceMask m_deviceMask{ MultiDevice::DefaultDevice };
             //! A map of all device-specific DispatchRaysIndirectBuffer, indexed by the device index
             AZStd::unordered_map<int, Ptr<DispatchRaysIndirectBuffer>> m_deviceDispatchRaysIndirectBuffers;

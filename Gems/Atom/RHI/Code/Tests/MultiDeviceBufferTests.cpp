@@ -85,7 +85,7 @@ namespace UnitTest
 
             for(auto deviceIndex{0}; deviceIndex < DeviceCount; ++deviceIndex)
             {
-                RHI::Ptr<RHI::BufferView> bufferView;
+                RHI::Ptr<RHI::SingleDeviceBufferView> bufferView;
                 bufferView = bufferA->GetDeviceBuffer(deviceIndex)->GetBufferView(RHI::BufferViewDescriptor::CreateRaw(0, 32));
 
                 AZ_TEST_ASSERT(bufferView->IsInitialized());
@@ -162,7 +162,7 @@ namespace UnitTest
 
     TEST_F(MultiDeviceBufferTests, TestViews)
     {
-        AZStd::vector<RHI::Ptr<RHI::BufferView>> bufferViewsA(DeviceCount);
+        AZStd::vector<RHI::Ptr<RHI::SingleDeviceBufferView>> bufferViewsA(DeviceCount);
 
         {
             RHI::Ptr<RHI::MultiDeviceBufferPool> bufferPool;
@@ -229,7 +229,7 @@ namespace UnitTest
             }
 
             // Create an uninitialized bufferview and let it go out of scope
-            RHI::Ptr<RHI::BufferView> uninitializedBufferViewPtr = RHI::Factory::Get().CreateBufferView();
+            RHI::Ptr<RHI::SingleDeviceBufferView> uninitializedBufferViewPtr = RHI::Factory::Get().CreateBufferView();
         }
     }
 
@@ -272,7 +272,7 @@ namespace UnitTest
 
         RHI::Ptr<RHI::MultiDeviceBufferPool> m_bufferPool;
         RHI::Ptr<RHI::MultiDeviceBuffer> m_buffer;
-        RHI::Ptr<RHI::BufferView> m_bufferView;
+        RHI::Ptr<RHI::SingleDeviceBufferView> m_bufferView;
     };
 
     TEST_P(MultiDeviceBufferBindFlagTests, InitView_ViewIsCreated)
@@ -516,7 +516,7 @@ namespace UnitTest
             viewDescriptors.push_back(RHI::BufferViewDescriptor::CreateRaw(i * viewSize, viewSize));
         }
 
-        AZStd::vector<AZStd::vector<RHI::Ptr<RHI::BufferView>>> referenceTable(bufferViewCount);
+        AZStd::vector<AZStd::vector<RHI::Ptr<RHI::SingleDeviceBufferView>>> referenceTable(bufferViewCount);
 
         AZStd::vector<AZStd::thread> threads;
         AZStd::mutex mutex;
@@ -544,7 +544,7 @@ namespace UnitTest
                         if (currentAction == MultiDeviceParallelGetBufferViewCurrentAction::Get ||
                             currentAction == MultiDeviceParallelGetBufferViewCurrentAction::Create)
                         {
-                            RHI::Ptr<RHI::BufferView> ptr = nullptr;
+                            RHI::Ptr<RHI::SingleDeviceBufferView> ptr = nullptr;
                             if (currentAction == MultiDeviceParallelGetBufferViewCurrentAction::Get)
                             {
                                 ptr = buffer->GetDeviceBuffer(deviceIndex)->GetBufferView(viewDescriptor);

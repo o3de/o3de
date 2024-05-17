@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include <Atom/RHI/Buffer.h>
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/IndexBufferView.h>
-#include <Atom/RHI/StreamBufferView.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/SingleDeviceBuffer.h>
+#include <Atom/RHI/SingleDeviceBufferPool.h>
+#include <Atom/RHI/SingleDeviceIndexBufferView.h>
+#include <Atom/RHI/SingleDeviceStreamBufferView.h>
+#include <Atom/RHI/SingleDevicePipelineState.h>
 #include <Atom/RHI/DrawList.h>
 
 #include <Atom/RHI.Reflect/InputStreamLayout.h>
@@ -28,7 +28,7 @@ namespace AZ
 {
     namespace RHI
     {
-        class DrawPacketBuilder;
+        class SingleDeviceDrawPacketBuilder;
     }
 
     namespace RPI
@@ -77,18 +77,18 @@ namespace AZ
 
         private: // types
 
-            using StreamBufferViewsForAllStreams = AZStd::fixed_vector<AZ::RHI::StreamBufferView, AZ::RHI::Limits::Pipeline::StreamCountMax>;
+            using StreamBufferViewsForAllStreams = AZStd::fixed_vector<AZ::RHI::SingleDeviceStreamBufferView, AZ::RHI::Limits::Pipeline::StreamCountMax>;
 
             struct DynamicBufferGroup
             {
                 //! The view into the index buffer
-                AZ::RHI::IndexBufferView m_indexBufferView;
+                AZ::RHI::SingleDeviceIndexBufferView m_indexBufferView;
 
                 //! The stream views into the vertex buffer (we only have one in our case)
                 StreamBufferViewsForAllStreams m_streamBufferViews;
             };
 
-            using DrawPackets = AZStd::vector<AZStd::unique_ptr<const RHI::DrawPacket>>;
+            using DrawPackets = AZStd::vector<AZStd::unique_ptr<const RHI::SingleDeviceDrawPacket>>;
 
             struct ShaderData
             {
@@ -113,13 +113,13 @@ namespace AZ
         private: // functions
 
             //!Uses the given drawPacketBuilder to build a draw packet with given data and returns it
-            const RHI::DrawPacket* BuildDrawPacketForDynamicPrimitive(
+            const RHI::SingleDeviceDrawPacket* BuildDrawPacketForDynamicPrimitive(
                 DynamicBufferGroup& group,
                 const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
                 Data::Instance<RPI::ShaderResourceGroup> srg,
                 uint32_t indexCount,
                 uint32_t indexOffset,
-                RHI::DrawPacketBuilder& drawPacketBuilder,
+                RHI::SingleDeviceDrawPacketBuilder& drawPacketBuilder,
                 RHI::DrawItemSortKey sortKey = 0);
 
             // Update a dynamic index buffer, given the data from draw requests

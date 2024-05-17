@@ -15,12 +15,12 @@
 
 namespace AZ::RHI
 {
-    AZStd::shared_ptr<RayTracingShaderTableDescriptor> MultiDeviceRayTracingShaderTableDescriptor::GetDeviceRayTracingShaderTableDescriptor(
+    AZStd::shared_ptr<SingleDeviceRayTracingShaderTableDescriptor> MultiDeviceRayTracingShaderTableDescriptor::GetDeviceRayTracingShaderTableDescriptor(
         int deviceIndex)
     {
         AZ_Assert(m_mdRayTracingPipelineState, "No MultiDeviceRayTracingPipelineState available\n");
 
-        AZStd::shared_ptr<RayTracingShaderTableDescriptor> descriptor = AZStd::make_shared<RayTracingShaderTableDescriptor>();
+        AZStd::shared_ptr<SingleDeviceRayTracingShaderTableDescriptor> descriptor = AZStd::make_shared<SingleDeviceRayTracingShaderTableDescriptor>();
 
         if (m_mdRayTracingPipelineState)
         {
@@ -132,7 +132,7 @@ namespace AZ::RHI
 
     void MultiDeviceRayTracingShaderTable::Build(const AZStd::shared_ptr<MultiDeviceRayTracingShaderTableDescriptor> descriptor)
     {
-        IterateObjects<RayTracingShaderTable>(
+        IterateObjects<SingleDeviceRayTracingShaderTable>(
             [&descriptor](auto deviceIndex, auto deviceRayTracingShaderTable)
             {
                 deviceRayTracingShaderTable->Build(descriptor->GetDeviceRayTracingShaderTableDescriptor(deviceIndex));

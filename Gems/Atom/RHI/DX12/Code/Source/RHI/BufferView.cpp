@@ -20,7 +20,7 @@ namespace AZ
             return aznew BufferView();
         }
 
-        RHI::ResultCode BufferView::InitInternal(RHI::Device& deviceBase, const RHI::Resource& resourceBase)
+        RHI::ResultCode BufferView::InitInternal(RHI::Device& deviceBase, const RHI::SingleDeviceResource& resourceBase)
         {
             Device& device = static_cast<Device&>(deviceBase);
 

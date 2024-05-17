@@ -7,13 +7,13 @@
  */
 #pragma once
 
-#include <Atom/RHI/RayTracingShaderTable.h>
+#include <Atom/RHI/SingleDeviceRayTracingShaderTable.h>
 
 namespace AZ
 {
     namespace RHI
     {
-        class BufferPool;
+        class SingleDeviceBufferPool;
 
         //! This class needs to be passed to the command list when submitting an indirect raytracing command
         //! The class is only relavant for DX12, other RHIs have dummy implementations
@@ -29,9 +29,9 @@ namespace AZ
             DispatchRaysIndirectBuffer& operator=(const DispatchRaysIndirectBuffer&) = delete;
             DispatchRaysIndirectBuffer& operator=(const DispatchRaysIndirectBuffer&&) = delete;
 
-            virtual void Init(RHI::BufferPool* bufferPool) = 0;
+            virtual void Init(RHI::SingleDeviceBufferPool* bufferPool) = 0;
             // This needs to be called every time the shader table changes
-            virtual void Build(RayTracingShaderTable* shaderTable) = 0;
+            virtual void Build(SingleDeviceRayTracingShaderTable* shaderTable) = 0;
         };
     } // namespace RHI
 } // namespace AZ

@@ -60,7 +60,7 @@ namespace AZ
             ViewPtr GetView() const;
 
             // Add a srg to srg list to be bound for this pass
-            void BindSrg(const RHI::ShaderResourceGroup* srg);
+            void BindSrg(const RHI::SingleDeviceShaderResourceGroup* srg);
             
 
         protected:
@@ -150,7 +150,7 @@ namespace AZ
 
             // List of all ShaderResourceGroups to be bound during rendering or computing
             // Derived classed may call BindSrg function to add other srgs the list
-            AZStd::unordered_map<uint8_t, const RHI::ShaderResourceGroup*> m_shaderResourceGroupsToBind;
+            AZStd::unordered_map<uint8_t, const RHI::SingleDeviceShaderResourceGroup*> m_shaderResourceGroupsToBind;
         };
     }   // namespace RPI
 }   // namespace AZ

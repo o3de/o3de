@@ -17,7 +17,7 @@
 
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/Fence.h>
+#include <Atom/RHI/SingleDeviceFence.h>
 #include <Atom/RHI/FrameGraphExecuteContext.h>
 #include <Atom/RHI/FrameScheduler.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -289,7 +289,7 @@ namespace AZ
 
             m_dispatchItem.m_arguments = dispatchArgs;
 
-            const RHI::ImageView* imageView = context.GetImageView(m_attachmentId);
+            const RHI::SingleDeviceImageView* imageView = context.GetImageView(m_attachmentId);
             m_decomposeSrg->SetImageView(m_decomposeInputImageIndex, imageView);
 
             imageView = context.GetImageView(m_copyAttachmentId);
@@ -367,7 +367,7 @@ namespace AZ
         {
             if (m_attachmentType == RHI::AttachmentType::Buffer)
             {
-                const AZ::RHI::Buffer* buffer = context.GetBuffer(m_copyAttachmentId);
+                const AZ::RHI::SingleDeviceBuffer* buffer = context.GetBuffer(m_copyAttachmentId);
 
                 RPI::CommonBufferDescriptor desc;
                 desc.m_poolType = RPI::CommonBufferPoolType::ReadBack;
@@ -377,7 +377,7 @@ namespace AZ
                 m_readbackItems[0].m_readbackBufferArray[m_readbackBufferCurrentIndex] = BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
 
                 // copy buffer
-                RHI::CopyBufferDescriptor copyBuffer;
+                RHI::SingleDeviceCopyBufferDescriptor copyBuffer;
                 copyBuffer.m_sourceBuffer = buffer;
                 copyBuffer.m_destinationBuffer = m_readbackItems[0].m_readbackBufferArray[m_readbackBufferCurrentIndex]->GetRHIBuffer();
                 copyBuffer.m_size = aznumeric_cast<uint32_t>(desc.m_byteCount);
@@ -387,7 +387,7 @@ namespace AZ
             else if (m_attachmentType == RHI::AttachmentType::Image)
             {
                 // copy image to a read back buffer since only a buffer can be accessed by the host.
-                const AZ::RHI::Image* image = context.GetImage(m_copyAttachmentId);
+                const AZ::RHI::SingleDeviceImage* image = context.GetImage(m_copyAttachmentId);
                 if (!image)
                 {
                     AZ_Warning("AttachmentReadback", false, "Failed to find attachment image %s for copy to buffer", m_copyAttachmentId.GetCStr());
@@ -413,7 +413,7 @@ namespace AZ
                         range.m_aspectFlags = RHI::ImageAspectFlags::Depth;
                     }
 
-                    AZStd::vector<RHI::ImageSubresourceLayout> imageSubresourceLayouts;
+                    AZStd::vector<RHI::SingleDeviceImageSubresourceLayout> imageSubresourceLayouts;
                     imageSubresourceLayouts.resize_no_construct(m_imageDescriptor.m_mipLevels);
                     size_t totalSizeInBytes = 0;
                     image->GetSubresourceLayouts(range, imageSubresourceLayouts.data(), &totalSizeInBytes);
@@ -430,7 +430,7 @@ namespace AZ
                     m_imageDescriptor.m_format = FindFormatForAspect(m_imageDescriptor.m_format, imageAspect);
 
                     // copy descriptor for copying image to buffer
-                    RHI::CopyImageToBufferDescriptor copyImageToBuffer;
+                    RHI::SingleDeviceCopyImageToBufferDescriptor copyImageToBuffer;
                     copyImageToBuffer.m_sourceImage = image;
                     copyImageToBuffer.m_sourceSize = imageSubresourceLayouts[mipSlice].m_size;
                     copyImageToBuffer.m_sourceSubresource = RHI::ImageSubresource(mipSlice, 0 /*arraySlice*/, imageAspect);
@@ -591,7 +591,7 @@ namespace AZ
                     else if (m_attachmentType == RHI::AttachmentType::Image)
                     {
                         RHI::Size mipSize = readbackItem.m_mipInfo.m_size;
-                        RHI::ImageSubresourceLayout imageLayout = RHI::GetImageSubresourceLayout(mipSize,
+                        RHI::SingleDeviceImageSubresourceLayout imageLayout = RHI::GetImageSubresourceLayout(mipSize,
                             m_imageDescriptor.m_format);
 
                         auto rowCount = imageLayout.m_rowCount;

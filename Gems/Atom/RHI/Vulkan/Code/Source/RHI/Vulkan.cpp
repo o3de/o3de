@@ -149,7 +149,7 @@ namespace AZ
             return x1 < y2 && y1 < x2;
         }
 
-        bool ResourceViewOverlaps(const RHI::BufferView& lhs, const RHI::BufferView& rhs)
+        bool ResourceViewOverlaps(const RHI::SingleDeviceBufferView& lhs, const RHI::SingleDeviceBufferView& rhs)
         {
             auto const& lhsBufferMemoryView = static_cast<const Buffer&>(lhs.GetBuffer()).GetBufferMemoryView();
             auto const& rhsBufferMemoryView = static_cast<const Buffer&>(rhs.GetBuffer()).GetBufferMemoryView();
@@ -167,7 +167,7 @@ namespace AZ
             return Overlaps(lhsBegin, lhsEnd, rhsBegin, rhsEnd);
         }
 
-        bool ResourceViewOverlaps(const RHI::ImageView& lhs, const RHI::ImageView& rhs)
+        bool ResourceViewOverlaps(const RHI::SingleDeviceImageView& lhs, const RHI::SingleDeviceImageView& rhs)
         {
             auto const& lhsImage = static_cast<const Image&>(lhs.GetImage());
             auto const& rhsImage = static_cast<const Image&>(rhs.GetImage());

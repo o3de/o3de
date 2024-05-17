@@ -54,7 +54,7 @@ namespace AZ
 
         void DiffuseProbeGridBorderUpdatePass::LoadShader(AZStd::string shaderFilePath,
                                                           Data::Instance<RPI::Shader>& shader,
-                                                          const RHI::PipelineState*& pipelineState,
+                                                          const RHI::SingleDevicePipelineState*& pipelineState,
                                                           RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout,
                                                           RHI::DispatchDirect& dispatchArgs)
         {

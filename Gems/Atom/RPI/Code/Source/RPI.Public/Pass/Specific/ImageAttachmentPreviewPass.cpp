@@ -104,8 +104,8 @@ namespace AZ
         void ImageAttachmentCopy::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             // copy descriptor for copying image
-            RHI::CopyImageDescriptor copyImage;
-            const AZ::RHI::Image* image = context.GetImage(m_srcAttachmentId);
+            RHI::SingleDeviceCopyImageDescriptor copyImage;
+            const AZ::RHI::SingleDeviceImage* image = context.GetImage(m_srcAttachmentId);
             copyImage.m_sourceImage = image;
             copyImage.m_sourceSize = image->GetDescriptor().m_size;
             copyImage.m_sourceSubresource.m_arraySlice = m_sourceArraySlice;
@@ -438,7 +438,7 @@ namespace AZ
                 float aspectRatio = 1;
 
                 // Find image type
-                const RHI::ImageView* inputImageView = context.GetImageView(m_imageAttachmentId);
+                const RHI::SingleDeviceImageView* inputImageView = context.GetImageView(m_imageAttachmentId);
                 if (!inputImageView)
                 {
                     AZ_Warning("RPI", false, "Image attachment [%s] doesn't have image view in current context", m_imageAttachmentId.GetCStr());
@@ -478,7 +478,7 @@ namespace AZ
                 }
                 
                 // config pipeline states related to output attachment
-                const RHI::ImageView* outputImageView = context.GetImageView(m_outputColorAttachment->GetAttachmentId());
+                const RHI::SingleDeviceImageView* outputImageView = context.GetImageView(m_outputColorAttachment->GetAttachmentId());
                 RHI::Format outputFormat = outputImageView->GetDescriptor().m_overrideFormat;
                 if (outputFormat == RHI::Format::Unknown)
                 {
@@ -530,7 +530,7 @@ namespace AZ
                     RHI::DrawLinear drawLinear;
                     drawLinear.m_vertexCount = 4;
                     drawLinear.m_instanceCount = previewInfo.m_imageCount;
-                    previewInfo.m_item.m_arguments = RHI::DrawArguments(drawLinear);
+                    previewInfo.m_item.m_arguments = RHI::SingleDeviceDrawArguments(drawLinear);
                     previewInfo.m_item.m_pipelineState = m_shader->AcquirePipelineState(previewInfo.m_pipelineStateDescriptor);
                 }
             }

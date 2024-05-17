@@ -69,14 +69,14 @@ namespace AZ::RHI
             initRequest.m_descriptor,
             [this, &initRequest]()
             {
-                ResultCode result = IterateObjects<ImagePool>([&initRequest](auto deviceIndex, auto deviceImagePool)
+                ResultCode result = IterateObjects<SingleDeviceImagePool>([&initRequest](auto deviceIndex, auto deviceImagePool)
                 {
                     if (!initRequest.m_image->m_deviceObjects.contains(deviceIndex))
                     {
                         initRequest.m_image->m_deviceObjects[deviceIndex] = Factory::Get().CreateImage();
                     }
 
-                    ImageInitRequest imageInitRequest(
+                    SingleDeviceImageInitRequest imageInitRequest(
                         *initRequest.m_image->GetDeviceImage(deviceIndex), initRequest.m_descriptor, initRequest.m_optimizedClearValue);
                     return deviceImagePool->InitImage(imageInitRequest);
                 });
@@ -109,9 +109,9 @@ namespace AZ::RHI
             return ResultCode::InvalidArgument;
         }
 
-        return IterateObjects<ImagePool>([&request](auto deviceIndex, auto deviceImagePool)
+        return IterateObjects<SingleDeviceImagePool>([&request](auto deviceIndex, auto deviceImagePool)
         {
-            ImageUpdateRequest imageUpdateRequest;
+            SingleDeviceImageUpdateRequest imageUpdateRequest;
 
             imageUpdateRequest.m_image = request.m_image->GetDeviceImage(deviceIndex).get();
             imageUpdateRequest.m_imageSubresource = request.m_imageSubresource;
@@ -130,7 +130,7 @@ namespace AZ::RHI
 
     void MultiDeviceImagePool::Shutdown()
     {
-        IterateObjects<ImagePool>([]([[maybe_unused]] auto deviceIndex, auto deviceImagePool)
+        IterateObjects<SingleDeviceImagePool>([]([[maybe_unused]] auto deviceIndex, auto deviceImagePool)
         {
             deviceImagePool->Shutdown();
         });

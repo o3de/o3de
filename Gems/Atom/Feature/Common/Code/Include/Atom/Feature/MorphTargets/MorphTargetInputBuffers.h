@@ -48,7 +48,7 @@ namespace AZ
             //! Set the buffer views and vertex count on the given SRG
             void SetBufferViewsOnShaderResourceGroup(const Data::Instance<RPI::ShaderResourceGroup>& perInstanceSRG);
         private:
-            RHI::Ptr<RHI::BufferView> m_vertexDeltaBufferView;
+            RHI::Ptr<RHI::SingleDeviceBufferView> m_vertexDeltaBufferView;
             Data::Instance<RPI::Buffer> m_vertexDeltaBuffer;
         };
 

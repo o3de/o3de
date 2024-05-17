@@ -10,22 +10,22 @@
 #include <Atom/RHI.Reflect/AttachmentId.h>
 #include <Atom/RHI.Reflect/TransientAttachmentStatistics.h>
 #include <Atom/RHI/AliasingBarrierTracker.h>
-#include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/SingleDeviceBufferPool.h>
 #include <Atom/RHI/FreeListAllocator.h>
-#include <Atom/RHI/ImagePool.h>
+#include <Atom/RHI/SingleDeviceImagePool.h>
 #include <Atom/RHI/Object.h>
 #include <Atom/RHI/ObjectCache.h>
-#include <Atom/RHI/ResourcePool.h>
-#include <Atom/RHI/TransientAttachmentPool.h>
+#include <Atom/RHI/SingleDeviceResourcePool.h>
+#include <Atom/RHI/SingleDeviceTransientAttachmentPool.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace AZ::RHI
 {
-    class Resource;
+    class SingleDeviceResource;
     class Scope;
-    class Buffer;
-    class Image;
+    class SingleDeviceBuffer;
+    class SingleDeviceImage;
 
     struct AliasedHeapDescriptor
         : public ResourcePoolDescriptor
@@ -45,9 +45,9 @@ namespace AZ::RHI
     //! and they will reuse memory whenever possible, and will also track the necessary barriers that need to be inserted when aliasing happens.
     //! Aliased Heaps do not support aliased resources being used at the same time (even if the resources are compatible).
     class AliasedHeap
-        : public ResourcePool
+        : public SingleDeviceResourcePool
     {
-        using Base = ResourcePool;
+        using Base = SingleDeviceResourcePool;
     public:
         AZ_CLASS_ALLOCATOR(AliasedHeap, AZ::SystemAllocator);
         AZ_RTTI(AliasedHeap, "{9C4BB24D-3B76-4584-BA68-600BC7E2A2AA}");
@@ -65,7 +65,7 @@ namespace AZ::RHI
         ResultCode ActivateBuffer(
             const TransientBufferDescriptor& descriptor,
             Scope& scope,
-            Buffer** activatedBuffer);
+            SingleDeviceBuffer** activatedBuffer);
 
         //! Ends the use of a previously activated buffer.
         void DeactivateBuffer(
@@ -76,7 +76,7 @@ namespace AZ::RHI
         ResultCode ActivateImage(
             const TransientImageDescriptor& descriptor,
             Scope& scope,
-            Image** activatedImage);
+            SingleDeviceImage** activatedImage);
 
         //! Ends the use of a previously activated image.
         void DeactivateImage(
@@ -107,14 +107,14 @@ namespace AZ::RHI
         virtual ResultCode InitInternal(Device& device, const AliasedHeapDescriptor& descriptor) = 0;
         //! Implementation initialization of an Aliased image.
         //! @param heapOffset Offset in bytes of the heap where the resource should be created.
-        virtual ResultCode InitImageInternal(const ImageInitRequest& request, size_t heapOffset) = 0;
+        virtual ResultCode InitImageInternal(const SingleDeviceImageInitRequest& request, size_t heapOffset) = 0;
         //! Implementation initialization of an Aliased buffer.
         //! @param heapOffset Offset in bytes of the heap where the resource should be created.
-        virtual ResultCode InitBufferInternal(const BufferInitRequest& request, size_t heapOffset) = 0;
+        virtual ResultCode InitBufferInternal(const SingleDeviceBufferInitRequest& request, size_t heapOffset) = 0;
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
-        // ResourcePool
+        // SingleDeviceResourcePool
         void ShutdownInternal() override;
         void ComputeFragmentation() const override;
         //////////////////////////////////////////////////////////////////////////
@@ -129,7 +129,7 @@ namespace AZ::RHI
         FreeListAllocator m_firstFitAllocator;
 
         /// Cache of attachments.
-        ObjectCache<Resource> m_cache;
+        ObjectCache<SingleDeviceResource> m_cache;
 
         /// The aliasing barrier tracker used to compute aliasing barriers when activations
         /// and deactivations occur.
@@ -148,7 +148,7 @@ namespace AZ::RHI
         /// Reverse lookup for getting the attachment index the heap statistics.
         struct AttachmentData
         {
-            Resource* m_resource = nullptr;
+            SingleDeviceResource* m_resource = nullptr;
             uint32_t m_attachmentIndex = 0;
             Scope* m_activateScope = nullptr;
         };

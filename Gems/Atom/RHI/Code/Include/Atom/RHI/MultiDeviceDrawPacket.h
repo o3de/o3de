@@ -9,7 +9,7 @@
 #pragma once
 
 #include <Atom/RHI/DrawList.h>
-#include <Atom/RHI/DrawPacket.h>
+#include <Atom/RHI/SingleDeviceDrawPacket.h>
 #include <Atom/RHI/MultiDeviceDrawItem.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 
@@ -35,7 +35,7 @@ namespace AZ::RHI
         using DrawItemVisitor = AZStd::function<void(DrawListTag, MultiDeviceDrawItemProperties)>;
 
         //! Draw packets cannot be move constructed or copied, as they contain an additional memory payload.
-        //! Use DrawPacketBuilder::Clone to copy a draw packet.
+        //! Use SingleDeviceDrawPacketBuilder::Clone to copy a draw packet.
         AZ_DISABLE_COPY_MOVE(MultiDeviceDrawPacket);
 
         //! Returns the mask representing all the draw lists affected by the packet.
@@ -47,10 +47,10 @@ namespace AZ::RHI
         //! Returns the index associated with the given DrawListTag
         s32 GetDrawListIndex(DrawListTag drawListTag) const;
 
-        //! Returns the DrawItem at the given index
+        //! Returns the SingleDeviceDrawItem at the given index
         MultiDeviceDrawItem* GetDrawItem(size_t index);
 
-        //! Returns the DrawItem associated with the given DrawListTag
+        //! Returns the SingleDeviceDrawItem associated with the given DrawListTag
         MultiDeviceDrawItem* GetDrawItem(DrawListTag drawListTag);
 
         //! Returns the draw item and its properties associated with the provided index.
@@ -69,19 +69,19 @@ namespace AZ::RHI
         //! Set the instance count in all draw items.
         void SetInstanceCount(uint32_t instanceCount);
 
-        const DrawPacket* GetDeviceDrawPacket(int deviceIndex) const
+        const SingleDeviceDrawPacket* GetDeviceDrawPacket(int deviceIndex) const
         {
             AZ_Error(
                 "MultiDeviceDrawPacket",
                 m_deviceDrawPackets.find(deviceIndex) != m_deviceDrawPackets.end(),
-                "No DrawPacket found for device index %d\n",
+                "No SingleDeviceDrawPacket found for device index %d\n",
                 deviceIndex);
 
             return m_deviceDrawPackets.at(deviceIndex).get();
         }
 
     private:
-        //! Use DrawPacketBuilder to construct an instance.
+        //! Use SingleDeviceDrawPacketBuilder to construct an instance.
         MultiDeviceDrawPacket() = default;
 
         //! The bit-mask of all active filter tags.
@@ -100,6 +100,6 @@ namespace AZ::RHI
         AZStd::vector<DrawFilterMask> m_drawFilterMasks;
 
         //! A map of single-device DrawPackets, index by the device index
-        AZStd::unordered_map<int, RHI::Ptr<DrawPacket>> m_deviceDrawPackets;
+        AZStd::unordered_map<int, RHI::Ptr<SingleDeviceDrawPacket>> m_deviceDrawPackets;
     };
 } // namespace AZ::RHI

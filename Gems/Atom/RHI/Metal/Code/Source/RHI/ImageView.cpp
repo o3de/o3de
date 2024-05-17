@@ -21,7 +21,7 @@ namespace AZ
             return aznew ImageView();
         }
 
-        RHI::ResultCode ImageView::InitInternal(RHI::Device& deviceBase, const RHI::Resource& resourceBase)
+        RHI::ResultCode ImageView::InitInternal(RHI::Device& deviceBase, const RHI::SingleDeviceResource& resourceBase)
         {
             const Image& image = static_cast<const Image&>(resourceBase);
             auto& device = static_cast<Device&>(deviceBase);
@@ -201,7 +201,7 @@ namespace AZ
             return m_imageSubresourceRange;
         }
         
-        void ImageView::BuildImageSubResourceRange(const RHI::Resource& resourceBase)
+        void ImageView::BuildImageSubResourceRange(const RHI::SingleDeviceResource& resourceBase)
         {
             const Image& image = static_cast<const Image&>(resourceBase);
             const RHI::ImageDescriptor& imageDesc = image.GetDescriptor();

@@ -8,8 +8,8 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Bits.h>
-#include <Atom/RHI/IndirectBufferView.h>
-#include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/SingleDeviceIndirectBufferView.h>
+#include <Atom/RHI/SingleDeviceBuffer.h>
 #include <Atom/RHI/MultiDeviceIndirectBufferSignature.h>
 #include <AzCore/Utils/TypeHash.h>
 
@@ -57,8 +57,8 @@ namespace AZ::RHI
             return *this;
         }
 
-        //! Returns the device-specific IndirectBufferView for the given index
-        const IndirectBufferView& GetDeviceIndirectBufferView(int deviceIndex) const
+        //! Returns the device-specific SingleDeviceIndirectBufferView for the given index
+        const SingleDeviceIndirectBufferView& GetDeviceIndirectBufferView(int deviceIndex) const
         {
             AZ_Error("MultiDeviceIndirectBufferView", m_mdSignature, "No MultiDeviceIndirectBufferSignature available\n");
             AZ_Error("MultiDeviceIndirectBufferView", m_mdBuffer, "No MultiDeviceBuffer available\n");
@@ -70,7 +70,7 @@ namespace AZ::RHI
                 //! Buffer view is not yet in the cache
                 auto [new_iterator, inserted]{ m_cache.insert(AZStd::make_pair(
                     deviceIndex,
-                    IndirectBufferView(
+                    SingleDeviceIndirectBufferView(
                         *m_mdBuffer->GetDeviceBuffer(deviceIndex),
                         *m_mdSignature->GetDeviceIndirectBufferSignature(deviceIndex),
                         m_byteOffset,
@@ -112,8 +112,8 @@ namespace AZ::RHI
         uint32_t m_byteCount = 0;
         uint32_t m_byteStride = 0;
 
-        //! Safe-guard access to IndirectBufferView cache during parallel access
+        //! Safe-guard access to SingleDeviceIndirectBufferView cache during parallel access
         mutable AZStd::mutex m_bufferViewMutex{};
-        mutable AZStd::unordered_map<int, IndirectBufferView> m_cache;
+        mutable AZStd::unordered_map<int, SingleDeviceIndirectBufferView> m_cache;
     };
 } // namespace AZ::RHI

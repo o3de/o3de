@@ -8,7 +8,7 @@
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameGraphInterface.h>
-#include <Atom/RHI/Query.h>
+#include <Atom/RHI/SingleDeviceQuery.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/Scope.h>
 
@@ -84,10 +84,10 @@ namespace AZ
 
             // Create the RHI queries.
             {
-                AZStd::vector<RHI::Query*> rawQueryArray;
+                AZStd::vector<RHI::SingleDeviceQuery*> rawQueryArray;
                 rawQueryArray.reserve(m_rhiQueryArray.size());
 
-                for (RHI::Ptr<RHI::Query>& query : m_rhiQueryArray)
+                for (RHI::Ptr<RHI::SingleDeviceQuery>& query : m_rhiQueryArray)
                 {
                     query = RHI::Factory::Get().CreateQuery();
                     rawQueryArray.emplace_back(query.get());
@@ -159,7 +159,7 @@ namespace AZ
         RHI::ResultCode QueryPool::BeginQueryInternal(RHI::Interval rhiQueryIndices, RHI::CommandList& commandList)
         {
             auto rhiQueryArray = GetRhiQueryArray();
-            RHI::Ptr<RHI::Query> beginQuery = rhiQueryArray[rhiQueryIndices.m_min];
+            RHI::Ptr<RHI::SingleDeviceQuery> beginQuery = rhiQueryArray[rhiQueryIndices.m_min];
 
             return beginQuery->Begin(commandList);
         }
@@ -167,12 +167,12 @@ namespace AZ
         RHI::ResultCode QueryPool::EndQueryInternal(RHI::Interval rhiQueryIndices, RHI::CommandList& commandList)
         {
             auto rhiQueryArray = GetRhiQueryArray();
-            RHI::Ptr<RHI::Query> endQuery = rhiQueryArray[rhiQueryIndices.m_max];
+            RHI::Ptr<RHI::SingleDeviceQuery> endQuery = rhiQueryArray[rhiQueryIndices.m_max];
 
             return endQuery->End(commandList);
         }
 
-        AZStd::span<const RHI::Ptr<RHI::Query>> RPI::QueryPool::GetRhiQueryArray() const
+        AZStd::span<const RHI::Ptr<RHI::SingleDeviceQuery>> RPI::QueryPool::GetRhiQueryArray() const
         {
             return m_rhiQueryArray;
         }
@@ -180,7 +180,7 @@ namespace AZ
         QueryResultCode QueryPool::GetQueryResultFromIndices(uint64_t* result, RHI::Interval rhiQueryIndices, RHI::QueryResultFlagBits queryResultFlag)
         {
             // Get the raw RHI Query pointers.
-            AZStd::vector<RHI::Query*> queryArray = GetRawRhiQueriesFromInterval(rhiQueryIndices);
+            AZStd::vector<RHI::SingleDeviceQuery*> queryArray = GetRawRhiQueriesFromInterval(rhiQueryIndices);
 
             // RHI Query results are readback with values that are a multiple of uint64_t.
             const uint32_t resultCount = m_queryResultSize / sizeof(uint64_t);
@@ -255,21 +255,21 @@ namespace AZ
             return m_queriesPerResult;
         }
 
-        AZStd::span<const RHI::Ptr<RHI::Query>> QueryPool::GetRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices) const
+        AZStd::span<const RHI::Ptr<RHI::SingleDeviceQuery>> QueryPool::GetRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices) const
         {
             const uint32_t queryCount = rhiQueryIndices.m_max - rhiQueryIndices.m_min + 1u;
             AZ_Assert(rhiQueryIndices.m_max < m_rhiQueryCapacity, "Query array index is going over the limit");
 
-            return AZStd::span<const RHI::Ptr<RHI::Query>>(m_rhiQueryArray.begin() + rhiQueryIndices.m_min, queryCount);
+            return AZStd::span<const RHI::Ptr<RHI::SingleDeviceQuery>>(m_rhiQueryArray.begin() + rhiQueryIndices.m_min, queryCount);
         }
 
-        AZStd::vector<RHI::Query*> QueryPool::GetRawRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices) const
+        AZStd::vector<RHI::SingleDeviceQuery*> QueryPool::GetRawRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices) const
         {
             auto rhiQueries = GetRhiQueriesFromInterval(rhiQueryIndices);
 
-            AZStd::vector<RHI::Query*> queryArray;
+            AZStd::vector<RHI::SingleDeviceQuery*> queryArray;
             queryArray.reserve(rhiQueries.size());
-            for (RHI::Ptr<RHI::Query> rhiQuery : rhiQueries)
+            for (RHI::Ptr<RHI::SingleDeviceQuery> rhiQuery : rhiQueries)
             {
                 queryArray.emplace_back(rhiQuery.get());
             }

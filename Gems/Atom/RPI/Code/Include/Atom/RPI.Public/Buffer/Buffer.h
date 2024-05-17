@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include <Atom/RHI/Buffer.h>
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/BufferView.h>
-#include <Atom/RHI/Fence.h>
+#include <Atom/RHI/SingleDeviceBuffer.h>
+#include <Atom/RHI/SingleDeviceBufferPool.h>
+#include <Atom/RHI/SingleDeviceBufferView.h>
+#include <Atom/RHI/SingleDeviceFence.h>
 
 #include <Atom/RHI.Reflect/AttachmentId.h>
 #include <Atom/RHI.Reflect/Base.h>
@@ -48,11 +48,11 @@ namespace AZ
             //! Blocks until a streaming upload has completed (if one is currently in flight).
             void WaitForUpload();
 
-            RHI::Buffer* GetRHIBuffer();
+            RHI::SingleDeviceBuffer* GetRHIBuffer();
 
-            const RHI::Buffer* GetRHIBuffer() const;
+            const RHI::SingleDeviceBuffer* GetRHIBuffer() const;
 
-            const RHI::BufferView* GetBufferView() const;
+            const RHI::SingleDeviceBufferView* GetBufferView() const;
 
             //! Update buffer's content with sourceData at an offset of bufferByteOffset
             bool UpdateData(const void* sourceData, uint64_t sourceDataSizeInBytes, uint64_t bufferByteOffset = 0);
@@ -94,9 +94,9 @@ namespace AZ
             RHI::ResultCode Init(BufferAsset& bufferAsset);
             void InitBufferView();
 
-            RHI::Ptr<RHI::Buffer> m_rhiBuffer;
-            RHI::Ptr<RHI::BufferView> m_bufferView;
-            RHI::BufferPool* m_rhiBufferPool = nullptr;
+            RHI::Ptr<RHI::SingleDeviceBuffer> m_rhiBuffer;
+            RHI::Ptr<RHI::SingleDeviceBufferView> m_bufferView;
+            RHI::SingleDeviceBufferPool* m_rhiBufferPool = nullptr;
 
             Data::Instance<BufferPool> m_bufferPool;
 
@@ -104,7 +104,7 @@ namespace AZ
             Data::Asset<BufferAsset> m_bufferAsset;
 
             // Tracks the streaming upload of the buffer.
-            RHI::Ptr<RHI::Fence> m_streamFence;
+            RHI::Ptr<RHI::SingleDeviceFence> m_streamFence;
             AZStd::mutex m_pendingUploadMutex;
 
             RHI::BufferViewDescriptor m_bufferViewDescriptor;

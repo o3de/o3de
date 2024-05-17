@@ -21,7 +21,7 @@ namespace AZ
             return aznew RayTracingPipelineState;
         }
 
-        RHI::ResultCode RayTracingPipelineState::InitInternal(RHI::Device& deviceBase, const RHI::RayTracingPipelineStateDescriptor* descriptor)
+        RHI::ResultCode RayTracingPipelineState::InitInternal(RHI::Device& deviceBase, const RHI::SingleDeviceRayTracingPipelineStateDescriptor* descriptor)
         {
             Device &device = static_cast<Device&>(deviceBase);
             auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());

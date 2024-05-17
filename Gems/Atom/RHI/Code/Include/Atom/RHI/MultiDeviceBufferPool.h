@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/BufferPoolDescriptor.h>
-#include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/SingleDeviceBufferPool.h>
 #include <Atom/RHI/MultiDeviceBuffer.h>
 #include <Atom/RHI/MultiDeviceBufferPoolBase.h>
 
