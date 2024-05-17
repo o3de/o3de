@@ -956,12 +956,12 @@ namespace AZ
             {
                 case RHI::ShaderInputImageAccess::Read:
                 {
-                    imgArgDescriptor.access = MTLArgumentAccessReadOnly;
+                    imgArgDescriptor.access = MTLBindingAccessReadOnly;
                     break;
                 }
                 case RHI::ShaderInputImageAccess::ReadWrite:
                 {
-                    imgArgDescriptor.access = MTLArgumentAccessReadWrite;
+                    imgArgDescriptor.access = MTLBindingAccessReadWrite;
                     break;
                 }
                 default:
@@ -1029,12 +1029,12 @@ namespace AZ
                 case RHI::ShaderInputBufferAccess::Constant:
                 case RHI::ShaderInputBufferAccess::Read:
                 {
-                    bufferArgDescriptor.access = MTLArgumentAccessReadOnly;
+                    bufferArgDescriptor.access = MTLBindingAccessReadOnly;
                     break;
                 }
                 case RHI::ShaderInputBufferAccess::ReadWrite:
                 {
-                    bufferArgDescriptor.access = MTLArgumentAccessReadWrite;
+                    bufferArgDescriptor.access = MTLBindingAccessReadWrite;
                     break;
                 }
                 default:
