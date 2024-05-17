@@ -3709,20 +3709,20 @@ void UiCanvasComponent::SetTargetCanvasSizeAndUniformScale(bool isInGame, AZ::Ve
 #if defined(CARBONATED)
         m_targetCanvasSize = m_canvasSize;
 
-        float origAspectRatio = m_targetCanvasSize.GetX() / m_targetCanvasSize.GetY();
-        float newAspectRatio = canvasSize.GetX() / canvasSize.GetY();
+        const float origAspectRatio = m_targetCanvasSize.GetX() / m_targetCanvasSize.GetY();
+        const float newAspectRatio = canvasSize.GetX() / canvasSize.GetY();
 
         // Wider
         if (newAspectRatio > origAspectRatio)
         {
             // Preserve Height, alter Width into new aspect ratio
-            m_targetCanvasSize.SetX(m_targetCanvasSize.GetY() * (canvasSize.GetX() / canvasSize.GetY()));
+            m_targetCanvasSize.SetX(m_targetCanvasSize.GetY() * newAspectRatio);
         }
         // Taller
         else if (newAspectRatio < origAspectRatio)
         {
             // Preserve Width, alter Height into new aspect ratio
-            m_targetCanvasSize.SetY(m_targetCanvasSize.GetX() * (canvasSize.GetY() / canvasSize.GetX()));
+            m_targetCanvasSize.SetY(m_targetCanvasSize.GetX() / newAspectRatio);
         }
 #else
         // Set the target canvas size to the canvas size specified by the caller
