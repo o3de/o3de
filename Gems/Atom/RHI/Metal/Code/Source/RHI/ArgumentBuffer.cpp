@@ -138,7 +138,7 @@ namespace AZ
                 MTLArgumentDescriptor* samplerArgDescriptor = [[[MTLArgumentDescriptor alloc] init] autorelease];
                 samplerArgDescriptor.dataType = MTLDataTypeSampler;
                 samplerArgDescriptor.index = shaderInputSampler.m_registerId;
-                samplerArgDescriptor.access = MTLArgumentAccessReadOnly;
+                samplerArgDescriptor.access = MTLBindingAccessReadOnly;
                 samplerArgDescriptor.arrayLength = shaderInputSampler.m_count > 1 ? shaderInputSampler.m_count:0;
                 [argBufferDecriptors addObject:samplerArgDescriptor];
                 resourceAdded = true;
@@ -149,7 +149,7 @@ namespace AZ
                 MTLArgumentDescriptor* staticSamplerArgDescriptor = [[[MTLArgumentDescriptor alloc] init] autorelease];
                 staticSamplerArgDescriptor.dataType = MTLDataTypeSampler;
                 staticSamplerArgDescriptor.index = staticSamplerInput.m_registerId;
-                staticSamplerArgDescriptor.access = MTLArgumentAccessReadOnly;
+                staticSamplerArgDescriptor.access = MTLBindingAccessReadOnly;
                 [argBufferDecriptors addObject:staticSamplerArgDescriptor];
                 resourceAdded = true;
             }
@@ -161,7 +161,7 @@ namespace AZ
                 MTLArgumentDescriptor* constBufferArgDescriptor = [[[MTLArgumentDescriptor alloc] init] autorelease];
                 constBufferArgDescriptor.dataType = MTLDataTypePointer;
                 constBufferArgDescriptor.index = shaderInputConstant.m_registerId;
-                constBufferArgDescriptor.access = MTLArgumentAccessReadOnly;
+                constBufferArgDescriptor.access = MTLBindingAccessReadOnly;
                 [argBufferDecriptors addObject:constBufferArgDescriptor];
                 resourceAdded = true;
             }
