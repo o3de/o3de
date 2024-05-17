@@ -151,7 +151,7 @@ namespace AZ::RHI
         {
             for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
             {
-                drawItem->m_pipelineState = pipelineState->GetDevicePipelineState(deviceIndex).get();
+                drawItem->m_pipelineState = pipelineState ? pipelineState->GetDevicePipelineState(deviceIndex).get() : nullptr;
             }
         }
 

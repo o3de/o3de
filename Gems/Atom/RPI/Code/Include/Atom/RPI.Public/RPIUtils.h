@@ -56,6 +56,9 @@ namespace AZ
         //! Loads a streaming image asset for the given file path
         Data::Instance<RPI::StreamingImage> LoadStreamingTexture(AZStd::string_view path);
 
+        // Find a format for formats with two planars (DepthStencil) based on its ImageView's aspect flag
+        RHI::Format FindFormatForAspect(RHI::Format format, RHI::ImageAspect imageAspect);
+
         //! Looks for a three arguments attribute named @attributeName in the given shader asset.
         //! Assigns the value to each non-null output variables.
         //! @param shaderAsset
