@@ -83,7 +83,7 @@ namespace AZ
 
             m_initDataFromShader = true;
 
-            // Cache shader so it can be used for create RHI::PipelineState later
+            // Cache shader so it can be used for create RHI::SingleDevicePipelineState later
             m_shader = shader;
         }
 
@@ -156,7 +156,7 @@ namespace AZ
             m_descriptor.m_inputStreamLayout = inputStreamLayout;
         }
 
-        const RHI::PipelineState* PipelineStateForDraw::Finalize()
+        const RHI::SingleDevicePipelineState* PipelineStateForDraw::Finalize()
         {
             if (m_dirty)
             {
@@ -178,7 +178,7 @@ namespace AZ
             return m_pipelineState;
         }
 
-        const RHI::PipelineState* PipelineStateForDraw::GetRHIPipelineState() const
+        const RHI::SingleDevicePipelineState* PipelineStateForDraw::GetRHIPipelineState() const
         {
             AZ_Assert(false == m_dirty, "The descriptor has been modified and Finalize() need to be called before get a proper PipelineState");
 

@@ -24,7 +24,7 @@ namespace AZ
 
         Device& SwapChain::GetDevice() const
         {
-            return static_cast<Device&>(RHI::SwapChain::GetDevice());
+            return static_cast<Device&>(RHI::SingleDeviceSwapChain::GetDevice());
         }
 
         RHI::ResultCode SwapChain::InitInternal(RHI::Device& deviceBase, const RHI::SwapChainDescriptor& descriptor, RHI::SwapChainDimensions* nativeDimensions)
@@ -144,7 +144,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        void SwapChain::ShutdownResourceInternal(RHI::Resource& resourceBase)
+        void SwapChain::ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase)
         {
             Image& image = static_cast<Image&>(resourceBase);
 

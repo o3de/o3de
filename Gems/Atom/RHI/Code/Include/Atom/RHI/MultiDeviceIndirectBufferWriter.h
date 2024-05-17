@@ -9,7 +9,7 @@
 
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI.Reflect/IndirectBufferLayout.h>
-#include <Atom/RHI/IndirectBufferWriter.h>
+#include <Atom/RHI/SingleDeviceIndirectBufferWriter.h>
 #include <Atom/RHI/Object.h>
 
 namespace AZ::RHI
@@ -35,13 +35,13 @@ namespace AZ::RHI
         AZ_RTTI(MultiDeviceIndirectBufferWriter, "{096CBDFF-AB05-4E8D-9EC1-04F12CFCD85D}");
         virtual ~MultiDeviceIndirectBufferWriter() = default;
 
-        //! Returns the device-specific IndirectBufferWriter for the given index
-        inline Ptr<IndirectBufferWriter> GetDeviceIndirectBufferWriter(int deviceIndex) const
+        //! Returns the device-specific SingleDeviceIndirectBufferWriter for the given index
+        inline Ptr<SingleDeviceIndirectBufferWriter> GetDeviceIndirectBufferWriter(int deviceIndex) const
         {
             AZ_Error(
                 "MultiDeviceIndirectBufferWriter",
                 m_deviceIndirectBufferWriter.find(deviceIndex) != m_deviceIndirectBufferWriter.end(),
-                "No IndirectBufferWriter found for device index %d\n",
+                "No SingleDeviceIndirectBufferWriter found for device index %d\n",
                 deviceIndex);
             return m_deviceIndirectBufferWriter.at(deviceIndex);
         }
@@ -126,7 +126,7 @@ namespace AZ::RHI
         void Shutdown() override;
 
     private:
-        //! A map of all device-specific IndirectBufferWriter, indexed by the device index
-        AZStd::unordered_map<int, Ptr<IndirectBufferWriter>> m_deviceIndirectBufferWriter;
+        //! A map of all device-specific SingleDeviceIndirectBufferWriter, indexed by the device index
+        AZStd::unordered_map<int, Ptr<SingleDeviceIndirectBufferWriter>> m_deviceIndirectBufferWriter;
     };
 } // namespace AZ::RHI

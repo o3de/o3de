@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Limits.h>
-#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/SingleDeviceDrawItem.h>
 #include <Atom/RHI/MultiDeviceIndexBufferView.h>
 #include <Atom/RHI/MultiDeviceIndirectArguments.h>
 #include <Atom/RHI/MultiDeviceIndirectBufferView.h>
@@ -57,19 +57,19 @@ namespace AZ::RHI
         {
         }
 
-        //! Returns the device-specific DrawArguments for the given index
-        DrawArguments GetDeviceDrawArguments(int deviceIndex) const
+        //! Returns the device-specific SingleDeviceDrawArguments for the given index
+        SingleDeviceDrawArguments GetDeviceDrawArguments(int deviceIndex) const
         {
             switch (m_type)
             {
             case DrawType::Indexed:
-                return DrawArguments(m_indexed);
+                return SingleDeviceDrawArguments(m_indexed);
             case DrawType::Linear:
-                return DrawArguments(m_linear);
+                return SingleDeviceDrawArguments(m_linear);
             case DrawType::Indirect:
-                return DrawArguments(DrawIndirect{m_mdIndirect.m_maxSequenceCount, m_mdIndirect.m_indirectBufferView->GetDeviceIndirectBufferView(deviceIndex), m_mdIndirect.m_indirectBufferByteOffset, m_mdIndirect.m_countBuffer->GetDeviceBuffer(deviceIndex).get(), m_mdIndirect.m_countBufferByteOffset});
+                return SingleDeviceDrawArguments(DrawIndirect{m_mdIndirect.m_maxSequenceCount, m_mdIndirect.m_indirectBufferView->GetDeviceIndirectBufferView(deviceIndex), m_mdIndirect.m_indirectBufferByteOffset, m_mdIndirect.m_countBuffer->GetDeviceBuffer(deviceIndex).get(), m_mdIndirect.m_countBufferByteOffset});
             default:
-                return DrawArguments();
+                return SingleDeviceDrawArguments();
             }
         }
 
@@ -88,7 +88,7 @@ namespace AZ::RHI
     public:
         MultiDeviceDrawItem(MultiDevice::DeviceMask deviceMask);
 
-        MultiDeviceDrawItem(MultiDevice::DeviceMask deviceMask, AZStd::unordered_map<int, DrawItem*>&& deviceDrawItemPtrs);
+        MultiDeviceDrawItem(MultiDevice::DeviceMask deviceMask, AZStd::unordered_map<int, SingleDeviceDrawItem*>&& deviceDrawItemPtrs);
 
         MultiDeviceDrawItem(const MultiDeviceDrawItem& other) = delete;
         MultiDeviceDrawItem(MultiDeviceDrawItem&& other) = default;
@@ -96,8 +96,8 @@ namespace AZ::RHI
         MultiDeviceDrawItem& operator=(const MultiDeviceDrawItem& other) = delete;
         MultiDeviceDrawItem& operator=(MultiDeviceDrawItem&& other) = default;
 
-        //! Returns the device-specific DrawItem for the given index
-        const DrawItem& GetDeviceDrawItem(int deviceIndex) const
+        //! Returns the device-specific SingleDeviceDrawItem for the given index
+        const SingleDeviceDrawItem& GetDeviceDrawItem(int deviceIndex) const
         {
             AZ_Error(
                 "MultiDeviceDrawItem",
@@ -177,7 +177,7 @@ namespace AZ::RHI
             {
                 drawItem->m_streamBufferViewCount = static_cast<uint8_t>(streamBufferViewCount);
 
-                auto [it, insertOK]{ m_deviceStreamBufferViews.emplace(deviceIndex, AZStd::vector<StreamBufferView>{}) };
+                auto [it, insertOK]{ m_deviceStreamBufferViews.emplace(deviceIndex, AZStd::vector<SingleDeviceStreamBufferView>{}) };
 
                 auto& [index, deviceStreamBufferView]{ *it };
 
@@ -198,7 +198,7 @@ namespace AZ::RHI
                 drawItem->m_shaderResourceGroupCount = static_cast<uint8_t>(shaderResourceGroupCount);
 
                 auto [it, insertOK]{ m_deviceShaderResourceGroups.emplace(
-                    deviceIndex, AZStd::vector<ShaderResourceGroup*>(shaderResourceGroupCount)) };
+                    deviceIndex, AZStd::vector<SingleDeviceShaderResourceGroup*>(shaderResourceGroupCount)) };
 
                 auto& [index, deviceShaderResourceGroup]{ *it };
 
@@ -257,23 +257,23 @@ namespace AZ::RHI
         bool m_enabled{ true };
         MultiDevice::DeviceMask m_deviceMask{ MultiDevice::DefaultDevice };
         //! A map of all device-specific DrawItems, indexed by the device index
-        AZStd::unordered_map<int, DrawItem> m_deviceDrawItems;
+        AZStd::unordered_map<int, SingleDeviceDrawItem> m_deviceDrawItems;
         //! A map of pointers to device-specific DrawItems, indexed by the device index
-        //! These pointers may point to m_deviceDrawItems (in case of direct usage of a DrawItem)
-        //! or may point to DrawItems in linear memory (when allocated via a DrawPacket)
-        AZStd::unordered_map<int, DrawItem*> m_deviceDrawItemPtrs;
+        //! These pointers may point to m_deviceDrawItems (in case of direct usage of a SingleDeviceDrawItem)
+        //! or may point to DrawItems in linear memory (when allocated via a SingleDeviceDrawPacket)
+        AZStd::unordered_map<int, SingleDeviceDrawItem*> m_deviceDrawItemPtrs;
         //! A map of all device-specific IndexBufferViews, indexed by the device index
         //! This additional cache is needed since device-specific IndexBufferViews are returned as objects
-        //! and the device-specific DrawItem holds a pointer to it.
-        AZStd::unordered_map<int, IndexBufferView> m_deviceIndexBufferView;
+        //! and the device-specific SingleDeviceDrawItem holds a pointer to it.
+        AZStd::unordered_map<int, SingleDeviceIndexBufferView> m_deviceIndexBufferView;
         //! A map of all device-specific StreamBufferViews, indexed by the device index
         //! This additional cache is needed since device-specific StreamBufferViews are returned as objects
-        //! and the device-specific DrawItem holds a pointer to it.
-        AZStd::unordered_map<int, AZStd::vector<StreamBufferView>> m_deviceStreamBufferViews;
+        //! and the device-specific SingleDeviceDrawItem holds a pointer to it.
+        AZStd::unordered_map<int, AZStd::vector<SingleDeviceStreamBufferView>> m_deviceStreamBufferViews;
         //! A map of all device-specific ShaderResourceGroups, indexed by the device index
-        //! This additional cache is needed since device-specific ShaderResourceGroups are provided as a ShaderResourceGroup**,
-        //! which are then locally cached in a vector (per device) and the device-specific DrawItem holds a pointer to this vector's data.
-        AZStd::unordered_map<int, AZStd::vector<ShaderResourceGroup*>> m_deviceShaderResourceGroups;
+        //! This additional cache is needed since device-specific ShaderResourceGroups are provided as a SingleDeviceShaderResourceGroup**,
+        //! which are then locally cached in a vector (per device) and the device-specific SingleDeviceDrawItem holds a pointer to this vector's data.
+        AZStd::unordered_map<int, AZStd::vector<SingleDeviceShaderResourceGroup*>> m_deviceShaderResourceGroups;
     };
 
     struct MultiDeviceDrawItemProperties
@@ -294,12 +294,12 @@ namespace AZ::RHI
             return m_sortKey < rhs.m_sortKey;
         }
 
-        //! Returns the device-specific DrawItemProperties for the given index
-        DrawItemProperties GetDeviceDrawItemProperties(int deviceIndex) const
+        //! Returns the device-specific SingleDeviceDrawItemProperties for the given index
+        SingleDeviceDrawItemProperties GetDeviceDrawItemProperties(int deviceIndex) const
         {
             AZ_Assert(m_mdItem, "Not initialized with MultiDeviceDrawItem\n");
 
-            DrawItemProperties result{ &m_mdItem->GetDeviceDrawItem(deviceIndex), m_sortKey, m_drawFilterMask, m_depth };
+            SingleDeviceDrawItemProperties result{ &m_mdItem->GetDeviceDrawItem(deviceIndex), m_sortKey, m_drawFilterMask, m_depth };
 
             return result;
         }

@@ -22,11 +22,11 @@ namespace AZ
         {
         }
     
-        RHI::ResultCode ImagePoolResolver::UpdateImage(const RHI::ImageUpdateRequest& request, size_t& bytesTransferred)
+        RHI::ResultCode ImagePoolResolver::UpdateImage(const RHI::SingleDeviceImageUpdateRequest& request, size_t& bytesTransferred)
         {
             Image* image = static_cast<Image*>(request.m_image);
 
-            const RHI::ImageSubresourceLayout& sourceSubresourceLayout = request.m_sourceSubresourceLayout;
+            const RHI::SingleDeviceImageSubresourceLayout& sourceSubresourceLayout = request.m_sourceSubresourceLayout;
 
             const uint32_t stagingRowPitch = sourceSubresourceLayout.m_bytesPerRow;
             const uint32_t stagingSlicePitch = sourceSubresourceLayout.m_bytesPerImage;
@@ -79,11 +79,11 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
             for (const auto& packet : m_uploadPackets)
             {
-                const RHI::ImageSubresourceLayout& subresourceLayout = packet.m_subresourceLayout;
+                const RHI::SingleDeviceImageSubresourceLayout& subresourceLayout = packet.m_subresourceLayout;
                 const uint32_t stagingRowPitch = subresourceLayout.m_bytesPerRow;
                 const uint32_t stagingSlicePitch = subresourceLayout.m_rowCount * stagingRowPitch;
 
-                RHI::CopyBufferToImageDescriptor copyDescriptor;
+                RHI::SingleDeviceCopyBufferToImageDescriptor copyDescriptor;
                 copyDescriptor.m_sourceBuffer = packet.m_stagingBuffer.get();
                 copyDescriptor.m_sourceOffset = 0;
                 copyDescriptor.m_sourceBytesPerRow = stagingRowPitch;
@@ -96,7 +96,7 @@ namespace AZ
                 copyDescriptor.m_destinationOrigin.m_top = packet.m_offset.m_top;
                 copyDescriptor.m_destinationOrigin.m_front = packet.m_offset.m_front;
 
-                commandList.Submit(RHI::CopyItem(copyDescriptor));
+                commandList.Submit(RHI::SingleDeviceCopyItem(copyDescriptor));
                 device.QueueForRelease(packet.m_stagingBuffer->GetMemoryView());
             }
         }
@@ -112,7 +112,7 @@ namespace AZ
             m_uploadPackets.clear();
         }
     
-        void ImagePoolResolver::OnResourceShutdown(const RHI::Resource& resource)
+        void ImagePoolResolver::OnResourceShutdown(const RHI::SingleDeviceResource& resource)
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_uploadPacketsLock);
             const Image* image = static_cast<const Image*>(&resource);

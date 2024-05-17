@@ -96,13 +96,13 @@ namespace AZ
                       AZStd::string argBufferName);
             
             void UpdateImageViews(const RHI::ShaderInputImageDescriptor& shaderInputImage,
-                                  const AZStd::span<const RHI::ConstPtr<RHI::ImageView>>& imageViews);
+                                  const AZStd::span<const RHI::ConstPtr<RHI::SingleDeviceImageView>>& imageViews);
 
             void UpdateSamplers(const RHI::ShaderInputSamplerDescriptor& shaderInputSampler,
                                 const AZStd::span<const RHI::SamplerState>& samplerStates);
 
             void UpdateBufferViews(const RHI::ShaderInputBufferDescriptor& shaderInputBuffer,
-                                   const AZStd::span<const RHI::ConstPtr<RHI::BufferView>>& bufferViews);
+                                   const AZStd::span<const RHI::ConstPtr<RHI::SingleDeviceBufferView>>& bufferViews);
 
             void UpdateConstantBufferViews(AZStd::span<const uint8_t> rawData);
 

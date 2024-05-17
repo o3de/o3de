@@ -79,7 +79,7 @@ namespace AZ
             return GetSwapChain(viewType)->GetAttachmentId();
         }
 
-        const RHI::Ptr<RHI::SwapChain>& WindowContext::GetSwapChain(ViewType viewType) const
+        const RHI::Ptr<RHI::SingleDeviceSwapChain>& WindowContext::GetSwapChain(ViewType viewType) const
         {
             uint32_t swapChainIndex = static_cast<uint32_t>(viewType);
             AZ_Assert(swapChainIndex < GetSwapChainsSize(), "Swapchain with index %i does not exist", swapChainIndex);
@@ -122,7 +122,7 @@ namespace AZ
 
         bool WindowContext::CheckResizeSwapChain()
         {
-            RHI::Ptr<RHI::SwapChain> defaultSwapChain = GetSwapChain(ViewType::Default);
+            RHI::Ptr<RHI::SingleDeviceSwapChain> defaultSwapChain = GetSwapChain(ViewType::Default);
             const AZ::RHI::SwapChainDimensions& currentDimensions = defaultSwapChain->GetDescriptor().m_dimensions;
             AzFramework::WindowSize renderSize = ResolveSwapchainSize();
             if (renderSize.m_width != currentDimensions.m_imageWidth || renderSize.m_height != currentDimensions.m_imageHeight)
@@ -155,7 +155,7 @@ namespace AZ
 
         void WindowContext::OnVsyncIntervalChanged(uint32_t interval)
         {
-            RHI::Ptr<RHI::SwapChain> defaultSwapChain = GetSwapChain(ViewType::Default);
+            RHI::Ptr<RHI::SingleDeviceSwapChain> defaultSwapChain = GetSwapChain(ViewType::Default);
             if (defaultSwapChain->GetDescriptor().m_verticalSyncInterval != interval)
             {
                 defaultSwapChain->SetVerticalSyncInterval(interval);
@@ -164,19 +164,19 @@ namespace AZ
 
         bool WindowContext::IsExclusiveFullScreenPreferred() const
         {
-            RHI::Ptr<RHI::SwapChain> defaultSwapChain = GetSwapChain(ViewType::Default);
+            RHI::Ptr<RHI::SingleDeviceSwapChain> defaultSwapChain = GetSwapChain(ViewType::Default);
             return defaultSwapChain->IsExclusiveFullScreenPreferred();
         }
 
         bool WindowContext::GetExclusiveFullScreenState() const
         {
-            RHI::Ptr<RHI::SwapChain> defaultSwapChain = GetSwapChain(ViewType::Default);
+            RHI::Ptr<RHI::SingleDeviceSwapChain> defaultSwapChain = GetSwapChain(ViewType::Default);
             return defaultSwapChain->GetExclusiveFullScreenState();
         }
 
         bool WindowContext::SetExclusiveFullScreenState(bool fullScreenState)
         {
-            RHI::Ptr<RHI::SwapChain> defaultSwapChain = GetSwapChain(ViewType::Default);
+            RHI::Ptr<RHI::SingleDeviceSwapChain> defaultSwapChain = GetSwapChain(ViewType::Default);
             return defaultSwapChain->SetExclusiveFullScreenState(fullScreenState);
         }
 
@@ -206,7 +206,7 @@ namespace AZ
 
         void WindowContext::CreateSwapChains(RHI::Device& device)
         {
-            RHI::Ptr<RHI::SwapChain> swapChain = RHI::Factory::Get().CreateSwapChain();
+            RHI::Ptr<RHI::SingleDeviceSwapChain> swapChain = RHI::Factory::Get().CreateSwapChain();
 
             RHI::SwapChainDescriptor descriptor;
 
@@ -260,7 +260,7 @@ namespace AZ
                 AZ_Assert(numXrViews <= 2, "Atom only supports two XR views");
                 for (AZ::u32 i = 0; i < numXrViews; i++)
                 {
-                    RHI::Ptr<RHI::SwapChain> xrSwapChain = RHI::Factory::Get().CreateSwapChain();
+                    RHI::Ptr<RHI::SingleDeviceSwapChain> xrSwapChain = RHI::Factory::Get().CreateSwapChain();
                     RHI::SwapChainDescriptor xrDescriptor;
                     xrDescriptor.m_dimensions.m_imageWidth = xrSystem->GetSwapChainWidth(i);
                     xrDescriptor.m_dimensions.m_imageHeight = xrSystem->GetSwapChainHeight(i);

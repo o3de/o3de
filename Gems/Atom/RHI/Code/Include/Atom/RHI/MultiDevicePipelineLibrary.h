@@ -9,7 +9,7 @@
 
 #include <Atom/RHI.Reflect/Handle.h>
 #include <Atom/RHI/MultiDeviceObject.h>
-#include <Atom/RHI/PipelineLibrary.h>
+#include <Atom/RHI/SingleDevicePipelineLibrary.h>
 
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI.Reflect/PipelineLibraryData.h>
@@ -42,8 +42,8 @@ namespace AZ::RHI
             }
         }
 
-        //! Returns the device-specific PipelineLibraryDescriptor for the given index
-        inline PipelineLibraryDescriptor GetDevicePipelineLibraryDescriptor(int deviceIndex) const
+        //! Returns the device-specific SingleDevicePipelineLibraryDescriptor for the given index
+        inline SingleDevicePipelineLibraryDescriptor GetDevicePipelineLibraryDescriptor(int deviceIndex) const
         {
             AZ_Assert(
                 m_devicePipelineLibraryDescriptors.find(deviceIndex) != m_devicePipelineLibraryDescriptors.end(),
@@ -56,21 +56,21 @@ namespace AZ::RHI
             }
             else
             {
-                return PipelineLibraryDescriptor{};
+                return SingleDevicePipelineLibraryDescriptor{};
             }
         }
 
         //! A map of all device-specific PipelineLibraryDescriptors, indexed by the device index
-        AZStd::unordered_map<int, PipelineLibraryDescriptor> m_devicePipelineLibraryDescriptors;
+        AZStd::unordered_map<int, SingleDevicePipelineLibraryDescriptor> m_devicePipelineLibraryDescriptors;
     };
 
-    //! MultiDevicePipelineLibrary is a multi-device class (representing a PipelineLibrary on multiple devices).
-    //! It holds a map of device-specific PipelineLibrary objects, which can be addressed with a device index.
-    //! The class is initialized with a device mask (1 bit per device), which initializes one PipelineLibrary
+    //! MultiDevicePipelineLibrary is a multi-device class (representing a SingleDevicePipelineLibrary on multiple devices).
+    //! It holds a map of device-specific SingleDevicePipelineLibrary objects, which can be addressed with a device index.
+    //! The class is initialized with a device mask (1 bit per device), which initializes one SingleDevicePipelineLibrary
     //! for each bit set and stores them in a map.
-    //! The API then forwards all calls to the all device-specific PipelineLibrary objects by iterating over them
+    //! The API then forwards all calls to the all device-specific SingleDevicePipelineLibrary objects by iterating over them
     //! and forwarding the call.
-    //! A device-specific PipelineLibrary can be accessed by calling GetDevicePipelineLibrary
+    //! A device-specific SingleDevicePipelineLibrary can be accessed by calling GetDevicePipelineLibrary
     //! with the corresponding device index
     class MultiDevicePipelineLibrary : public MultiDeviceObject
     {
@@ -81,16 +81,16 @@ namespace AZ::RHI
         MultiDevicePipelineLibrary() = default;
         virtual ~MultiDevicePipelineLibrary() = default;
 
-        //! For all devices selected via the deviceMask, a PipelineLibrary is initialized and stored internally
-        //! in a map (mapping from device index to a device-specific PipelineLibrary).
+        //! For all devices selected via the deviceMask, a SingleDevicePipelineLibrary is initialized and stored internally
+        //! in a map (mapping from device index to a device-specific SingleDevicePipelineLibrary).
         //! A device-specific descriptor (retrieved from MultiDevicePipelineLibraryDescriptor) is passed to the 
-        //! respective initialized methods of the device-specific PipelineLibrary.
-        //! @param deviceMask A bitmask selecting on which devices a PipelineLibrary should be initialized
+        //! respective initialized methods of the device-specific SingleDevicePipelineLibrary.
+        //! @param deviceMask A bitmask selecting on which devices a SingleDevicePipelineLibrary should be initialized
         //! @param descriptor The descriptor needed to init the MultiDevicePipelineLibrary.
         ResultCode Init(MultiDevice::DeviceMask deviceMask, const MultiDevicePipelineLibraryDescriptor& descriptor);
 
-        //! Forwards the call to all device-specific PipelineLibraries, for each device-specific PipelineLibrary,
-        //! extracting the corresponding PipelineLibrary(ies) from librariesToMerge and passing them on.
+        //! Forwards the call to all device-specific PipelineLibraries, for each device-specific SingleDevicePipelineLibrary,
+        //! extracting the corresponding SingleDevicePipelineLibrary(ies) from librariesToMerge and passing them on.
         //! @param librariesToMerge A span of libraries to merge into this library
         ResultCode MergeInto(AZStd::span<const MultiDevicePipelineLibrary* const> librariesToMerge);
 
@@ -120,7 +120,7 @@ namespace AZ::RHI
         {
             AZStd::unordered_map<int, ConstPtr<PipelineLibraryData>> serializedData;
 
-            IterateObjects<PipelineLibrary>(
+            IterateObjects<SingleDevicePipelineLibrary>(
                 [&serializedData]([[maybe_unused]] auto deviceIndex, auto devicePipelineLibrary)
                 {
                     serializedData[deviceIndex] = devicePipelineLibrary->GetSerializedData();
@@ -134,7 +134,7 @@ namespace AZ::RHI
         bool SaveSerializedData(const AZStd::unordered_map<int, AZStd::string>& filePaths) const;
 
         //! Returns whether the current library need to be merged
-        //! Returns true if any of the device-specific PipelineLibrary objects needs to be merged
+        //! Returns true if any of the device-specific SingleDevicePipelineLibrary objects needs to be merged
         virtual bool IsMergeRequired() const;
 
     private:

@@ -16,14 +16,14 @@
 namespace AZ::RHI
 {
     class Scope;
-    class Resource;
+    class SingleDeviceResource;
 
     //! Describes the use of an Aliased Resource.
     struct AliasedResource
     {
         Scope* m_beginScope = nullptr;  ///< Scope when the resource begins being used.
         Scope* m_endScope = nullptr;    ///< Scope when the resource ends being used.
-        Resource* m_resource = nullptr; ///< Resource being aliased.
+        SingleDeviceResource* m_resource = nullptr; ///< SingleDeviceResource being aliased.
         uint64_t m_byteOffsetMin = 0;   ///< Begin offset in the memory heap for the aliased resource.
         uint64_t m_byteOffsetMax = 0;   ///< End offset in the memory heap for the aliased resource.
         AliasedResourceType m_type = AliasedResourceType::Image; // Type of resource being aliased.

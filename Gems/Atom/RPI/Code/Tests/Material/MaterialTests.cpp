@@ -151,8 +151,8 @@ namespace UnitTest
 
             // Dig in to the SRG to make sure the values were applied there as well...
 
-            const RHI::ShaderResourceGroup* srg = material->GetRHIShaderResourceGroup();
-            const RHI::ShaderResourceGroupData& srgData = srg->GetData();
+            const RHI::SingleDeviceShaderResourceGroup* srg = material->GetRHIShaderResourceGroup();
+            const RHI::SingleDeviceShaderResourceGroupData& srgData = srg->GetData();
 
             EXPECT_EQ(srgData.GetConstant<bool>(srgData.FindShaderInputConstantIndex(Name{ "m_bool" })), false);
             EXPECT_EQ(srgData.GetConstant<int32_t>(srgData.FindShaderInputConstantIndex(Name{ "m_int" })), -12);
@@ -189,8 +189,8 @@ namespace UnitTest
 
             // Dig in to the SRG to make sure the values were applied there as well...
 
-            const RHI::ShaderResourceGroup* srg = material->GetRHIShaderResourceGroup();
-            const RHI::ShaderResourceGroupData& srgData = srg->GetData();
+            const RHI::SingleDeviceShaderResourceGroup* srg = material->GetRHIShaderResourceGroup();
+            const RHI::SingleDeviceShaderResourceGroupData& srgData = srg->GetData();
 
             EXPECT_EQ(srgData.GetConstant<bool>(srgData.FindShaderInputConstantIndex(Name{ "m_bool" })), true);
             EXPECT_EQ(srgData.GetConstant<int32_t>(srgData.FindShaderInputConstantIndex(Name{ "m_int" })), -2);
@@ -361,8 +361,8 @@ namespace UnitTest
 
         // Dig in to the SRG to make sure the values were applied there as well...
 
-        const RHI::ShaderResourceGroup* srg = material->GetRHIShaderResourceGroup();
-        const RHI::ShaderResourceGroupData& srgData = srg->GetData();
+        const RHI::SingleDeviceShaderResourceGroup* srg = material->GetRHIShaderResourceGroup();
+        const RHI::SingleDeviceShaderResourceGroupData& srgData = srg->GetData();
 
         EXPECT_EQ(srgData.GetConstant<bool>(srgData.FindShaderInputConstantIndex(Name{ "m_bool" })), false);
         EXPECT_EQ(srgData.GetConstant<int32_t>(srgData.FindShaderInputConstantIndex(Name{ "m_int" })), -5);
@@ -411,8 +411,8 @@ namespace UnitTest
 
         // Dig in to the SRG to make sure the values were applied to both shader constants...
 
-        const RHI::ShaderResourceGroup* srg = material->GetRHIShaderResourceGroup();
-        const RHI::ShaderResourceGroupData& srgData = srg->GetData();
+        const RHI::SingleDeviceShaderResourceGroup* srg = material->GetRHIShaderResourceGroup();
+        const RHI::SingleDeviceShaderResourceGroupData& srgData = srg->GetData();
 
         EXPECT_EQ(srgData.GetConstant<int32_t>(srgData.FindShaderInputConstantIndex(Name{ "m_int" })), 42);
         EXPECT_EQ(srgData.GetConstant<uint32_t>(srgData.FindShaderInputConstantIndex(Name{ "m_uint" })), 42u);
@@ -428,9 +428,9 @@ namespace UnitTest
         EXPECT_TRUE(material->Compile());
 
         // Taint the SRG so we can check whether it was set by the SetPropertyValue() calls below.
-        const RHI::ShaderResourceGroup* srg = material->GetRHIShaderResourceGroup();
-        const RHI::ShaderResourceGroupData& srgData = srg->GetData();
-        const_cast<RHI::ShaderResourceGroupData*>(&srgData)->SetConstant(m_testMaterialSrgLayout->FindShaderInputConstantIndex(Name{"m_float"}), 0.0f);
+        const RHI::SingleDeviceShaderResourceGroup* srg = material->GetRHIShaderResourceGroup();
+        const RHI::SingleDeviceShaderResourceGroupData& srgData = srg->GetData();
+        const_cast<RHI::SingleDeviceShaderResourceGroupData*>(&srgData)->SetConstant(m_testMaterialSrgLayout->FindShaderInputConstantIndex(Name{"m_float"}), 0.0f);
 
         // Set the properties to the same values as before
         EXPECT_FALSE(material->SetPropertyValue<float>(material->FindPropertyIndex(Name{ "MyFloat" }), 2.5f));
@@ -468,7 +468,7 @@ namespace UnitTest
         ProcessQueuedSrgCompilations(m_testMaterialShaderAsset, m_testMaterialSrgLayout->GetName());
         material->Compile();
 
-        const RHI::ShaderResourceGroupData& srgData = material->GetRHIShaderResourceGroup()->GetData();
+        const RHI::SingleDeviceShaderResourceGroupData& srgData = material->GetRHIShaderResourceGroup()->GetData();
 
         EXPECT_EQ(srgData.GetImageView(srgData.FindShaderInputImageIndex(Name{"m_image"}), 0), nullptr);
     }

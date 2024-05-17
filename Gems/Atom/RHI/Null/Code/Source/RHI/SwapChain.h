@@ -7,16 +7,16 @@
  */
 #pragma once
 
-#include <Atom/RHI/SwapChain.h>
+#include <Atom/RHI/SingleDeviceSwapChain.h>
 
 namespace AZ
 {
     namespace Null
     {
         class SwapChain
-            : public RHI::SwapChain
+            : public RHI::SingleDeviceSwapChain
         {
-            using Base = RHI::SwapChain;
+            using Base = RHI::SingleDeviceSwapChain;
         public:
             AZ_RTTI(SwapChain, "{FD1CC898-684A-46A5-92C3-519CD8E490D7}", Base);
             AZ_CLASS_ALLOCATOR(SwapChain, AZ::SystemAllocator);
@@ -27,12 +27,12 @@ namespace AZ
             SwapChain() = default;
             
             //////////////////////////////////////////////////////////////////////////
-            // RHI::SwapChain
+            // RHI::SingleDeviceSwapChain
             RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::SwapChainDescriptor& descriptor, [[maybe_unused]] RHI::SwapChainDimensions* nativeDimensions) override { return RHI::ResultCode::Success;}
             void ShutdownInternal() override {}
             uint32_t PresentInternal() override {return 0;}
             RHI::ResultCode InitImageInternal([[maybe_unused]] const InitImageRequest& request) override { return RHI::ResultCode::Success;}
-            void ShutdownResourceInternal([[maybe_unused]] RHI::Resource& resourceBase) override {}
+            void ShutdownResourceInternal([[maybe_unused]] RHI::SingleDeviceResource& resourceBase) override {}
             RHI::ResultCode ResizeInternal([[maybe_unused]] const RHI::SwapChainDimensions& dimensions, [[maybe_unused]] RHI::SwapChainDimensions* nativeDimensions) override { return RHI::ResultCode::Success;}
             //////////////////////////////////////////////////////////////////////////
         };

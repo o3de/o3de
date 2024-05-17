@@ -769,7 +769,7 @@ namespace AZ
             DdsFlags pitchOrLinearSize = PitchOrLinearSizeFromFormat(m_externalFormat);
             m_header.m_flags |= pitchOrLinearSize;
 
-            RHI::ImageSubresourceLayout layout = RHI::GetImageSubresourceLayout(GetSize(), m_externalFormat);
+            RHI::SingleDeviceImageSubresourceLayout layout = RHI::GetImageSubresourceLayout(GetSize(), m_externalFormat);
             m_header.m_pitchOrLinearSize = layout.m_bytesPerRow;
         }
     }

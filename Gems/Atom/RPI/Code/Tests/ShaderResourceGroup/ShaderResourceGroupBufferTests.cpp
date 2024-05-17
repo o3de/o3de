@@ -34,11 +34,11 @@ namespace UnitTest
         Data::Instance<Buffer> m_shortBuffer;
         Data::Instance<Buffer> m_mediumBuffer;
         Data::Instance<Buffer> m_longBuffer;
-        Ptr<RHI::BufferView> m_bufferViewA;
-        Ptr<RHI::BufferView> m_bufferViewB;
-        Ptr<RHI::BufferView> m_bufferViewC;
+        Ptr<RHI::SingleDeviceBufferView> m_bufferViewA;
+        Ptr<RHI::SingleDeviceBufferView> m_bufferViewB;
+        Ptr<RHI::SingleDeviceBufferView> m_bufferViewC;
         AZStd::vector<Data::Instance<Buffer>> m_threeBuffers;
-        AZStd::vector<const RHI::BufferView*> m_threeBufferViews;
+        AZStd::vector<const RHI::SingleDeviceBufferView*> m_threeBufferViews;
         const RHI::ShaderInputBufferIndex m_indexOfBufferA{ 0 };
         const RHI::ShaderInputBufferIndex m_indexOfBufferB{ 1 };
         const RHI::ShaderInputBufferIndex m_indexOfBufferArray{ 2 };
@@ -127,7 +127,7 @@ namespace UnitTest
             m_bufferPoolAsset.Reset();
 
             m_threeBuffers = AZStd::vector<Data::Instance<Buffer>>();
-            m_threeBufferViews = AZStd::vector<const RHI::BufferView*>();
+            m_threeBufferViews = AZStd::vector<const RHI::SingleDeviceBufferView*>();
             m_bufferViewA = nullptr;
             m_bufferViewB = nullptr;
             m_bufferViewC = nullptr;
@@ -340,7 +340,7 @@ namespace UnitTest
         EXPECT_EQ(m_bufferViewA, m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferA, 0));
         EXPECT_EQ(m_bufferViewB, m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferB, 0));
 
-        // The RPI::Buffer should get cleared when you set a RHI::BufferView directly
+        // The RPI::Buffer should get cleared when you set a RHI::SingleDeviceBufferView directly
         EXPECT_EQ(nullptr, m_testSrg->GetBuffer(m_indexOfBufferA));
         EXPECT_EQ(nullptr, m_testSrg->GetBuffer(m_indexOfBufferB));
     }
@@ -368,7 +368,7 @@ namespace UnitTest
         EXPECT_EQ(m_bufferViewB, m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 1));
         EXPECT_EQ(m_bufferViewC, m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 2));
 
-        // The RPI::Buffer should get cleared when you set a RHI::BufferView directly
+        // The RPI::Buffer should get cleared when you set a RHI::SingleDeviceBufferView directly
         EXPECT_EQ(nullptr, m_testSrg->GetBuffer(m_indexOfBufferArray, 0));
         EXPECT_EQ(nullptr, m_testSrg->GetBuffer(m_indexOfBufferArray, 1));
         EXPECT_EQ(nullptr, m_testSrg->GetBuffer(m_indexOfBufferArray, 2));
@@ -396,7 +396,7 @@ namespace UnitTest
 
         ProcessQueuedSrgCompilations(m_testSrgShaderAsset, m_testSrgLayout->GetName());
 
-        AZStd::vector<const RHI::BufferView*> alternateBufferViews = { m_bufferViewB.get(), nullptr };
+        AZStd::vector<const RHI::SingleDeviceBufferView*> alternateBufferViews = { m_bufferViewB.get(), nullptr };
 
         EXPECT_TRUE(m_testSrg->SetBufferViewArray(m_indexOfBufferArray, alternateBufferViews));
         m_testSrg->Compile();
@@ -410,7 +410,7 @@ namespace UnitTest
     {
         // Make sure the no changes are made when a validation failure is detected
 
-        AZStd::vector<const RHI::BufferView*> tooManyBufferViews{ 4, m_bufferViewA.get() };
+        AZStd::vector<const RHI::SingleDeviceBufferView*> tooManyBufferViews{ 4, m_bufferViewA.get() };
 
         AZ_TEST_START_ASSERTTEST;
         EXPECT_FALSE(m_testSrg->SetBufferViewArray(m_indexOfBufferArray, tooManyBufferViews));
@@ -424,7 +424,7 @@ namespace UnitTest
 
     TEST_F(ShaderResourceGroupBufferTests, TestSetBufferViewArrayAtOffset)
     {
-        AZStd::vector<const RHI::BufferView*> twoBufferViews = { m_bufferViewA.get(), m_bufferViewB.get() };
+        AZStd::vector<const RHI::SingleDeviceBufferView*> twoBufferViews = { m_bufferViewA.get(), m_bufferViewB.get() };
 
         // Test set operation, skipping the first element...
 
@@ -447,7 +447,7 @@ namespace UnitTest
     {
         // Make sure the no changes are made when a validation failure is detected
 
-        AZStd::vector<const RHI::BufferView*> tooManyBufferViews{ 3, m_bufferViewA.get() };
+        AZStd::vector<const RHI::SingleDeviceBufferView*> tooManyBufferViews{ 3, m_bufferViewA.get() };
 
         AZ_TEST_START_ASSERTTEST;
         EXPECT_FALSE(m_testSrg->SetBufferViewArray(m_indexOfBufferArray, tooManyBufferViews, 1));

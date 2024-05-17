@@ -11,7 +11,7 @@
 #include <Atom/RHI.Reflect/QueryPoolDescriptor.h>
 #include <Atom/RHI/MultiDeviceQuery.h>
 #include <Atom/RHI/MultiDeviceResourcePool.h>
-#include <Atom/RHI/QueryPool.h>
+#include <Atom/RHI/SingleDeviceQueryPool.h>
 #include <Atom/RHI/QueryPoolSubAllocator.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/parallel/mutex.h>
@@ -38,7 +38,7 @@ namespace AZ::RHI
         //!  Initialize the MultiDeviceQueryPool by initializing all device-specific QueryPools for each device mentioned in the deviceMask.
         ResultCode Init(MultiDevice::DeviceMask deviceMask, const QueryPoolDescriptor& descriptor);
 
-        //! Initialize a query from the pool (one device-specific query for each QueryPool).
+        //! Initialize a query from the pool (one device-specific query for each SingleDeviceQueryPool).
         //! When initializing multiple queries use the other version of InitQuery
         //! because the pool will try to group the queries together.
         //!  @param query MultiDeviceQuery to initialize.

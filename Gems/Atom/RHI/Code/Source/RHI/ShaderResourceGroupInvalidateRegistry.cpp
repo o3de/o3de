@@ -6,7 +6,7 @@
  *
  */
 #include <Atom/RHI/ShaderResourceGroupInvalidateRegistry.h>
-#include <Atom/RHI/ShaderResourceGroup.h>
+#include <Atom/RHI/SingleDeviceShaderResourceGroup.h>
 namespace AZ::RHI
 {
     void ShaderResourceGroupInvalidateRegistry::SetCompileGroupFunction(CompileGroupFunction compileGroupFunction)
@@ -14,7 +14,7 @@ namespace AZ::RHI
         m_compileGroupFunction = compileGroupFunction;
     }
 
-    void ShaderResourceGroupInvalidateRegistry::OnAttach(const Resource* resource, ShaderResourceGroup* shaderResourceGroup)
+    void ShaderResourceGroupInvalidateRegistry::OnAttach(const SingleDeviceResource* resource, SingleDeviceShaderResourceGroup* shaderResourceGroup)
     {
         RefCountType &refcount = m_resourceToRegistryMap[resource][shaderResourceGroup];
         if (refcount == 0)
@@ -24,7 +24,7 @@ namespace AZ::RHI
         ++refcount;
     }
 
-    void ShaderResourceGroupInvalidateRegistry::OnDetach(const Resource* resource, ShaderResourceGroup* shaderResourceGroup)
+    void ShaderResourceGroupInvalidateRegistry::OnDetach(const SingleDeviceResource* resource, SingleDeviceShaderResourceGroup* shaderResourceGroup)
     {
         auto outerIt = m_resourceToRegistryMap.find(resource);
         AZ_Assert(outerIt != m_resourceToRegistryMap.end(), "No SRG registry found.");
@@ -58,7 +58,7 @@ namespace AZ::RHI
     {
         AZ_PROFILE_FUNCTION(RHI);
         AZ_Assert(m_compileGroupFunction, "No compile function set");
-        const Resource* resource = *ResourceInvalidateBus::GetCurrentBusId();
+        const SingleDeviceResource* resource = *ResourceInvalidateBus::GetCurrentBusId();
 
         Registry& registry = m_resourceToRegistryMap[resource];
         AZ_Assert(registry.empty() == false, "Registry should not be empty.");

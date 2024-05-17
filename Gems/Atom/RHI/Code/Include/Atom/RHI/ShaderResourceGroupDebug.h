@@ -9,19 +9,19 @@
 namespace AZ::RHI
 {
     class ConstantsData;
-    struct DrawItem;
-    class ShaderResourceGroup;
+    struct SingleDeviceDrawItem;
+    class SingleDeviceShaderResourceGroup;
 
-    /// Given a ShaderResourceGroup and a reference ConstantsData input, this function will fetch the ConstantsData on the SRG and compare it
+    /// Given a SingleDeviceShaderResourceGroup and a reference ConstantsData input, this function will fetch the ConstantsData on the SRG and compare it
     /// to the reference ConstantsData. It will print the names of any constants that are different between the two.
     /// The parameter updateReferenceData can be used to set the reference data to the SRG's constant data after the comparison. This is
     /// useful for keeping track of differences in between calls to the function, such as between frames.
-    void PrintConstantDataDiff(const ShaderResourceGroup& shaderResourceGroup, ConstantsData& referenceData, bool updateReferenceData = false);
+    void PrintConstantDataDiff(const SingleDeviceShaderResourceGroup& shaderResourceGroup, ConstantsData& referenceData, bool updateReferenceData = false);
 
-    /// Given a DrawItem, an SRG binding slot on that draw item and a reference ConstantsData input, this function will fetch the ConstantsData
+    /// Given a SingleDeviceDrawItem, an SRG binding slot on that draw item and a reference ConstantsData input, this function will fetch the ConstantsData
     /// from the draw item's SRG at the binding slot and compare it to the reference ConstantsData. It will print the names of any constants
     /// that are different between the two.
     /// The parameter updateReferenceData can be used to set the reference data to the draw item's constant data after the comparison. This is
     /// useful for keeping track of differences in between calls to the function, such as between frames.
-    void PrintConstantDataDiff(const DrawItem& drawItem, ConstantsData& referenceData, uint32_t srgBindingSlot, bool updateReferenceData = false);
+    void PrintConstantDataDiff(const SingleDeviceDrawItem& drawItem, ConstantsData& referenceData, uint32_t srgBindingSlot, bool updateReferenceData = false);
 }

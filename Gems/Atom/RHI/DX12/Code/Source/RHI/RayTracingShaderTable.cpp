@@ -12,8 +12,8 @@
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/RayTracingBufferPools.h>
+#include <Atom/RHI/SingleDeviceBufferPool.h>
+#include <Atom/RHI/SingleDeviceRayTracingBufferPools.h>
 #include <RHI/ShaderResourceGroup.h>
 
 namespace AZ
@@ -48,7 +48,7 @@ namespace AZ
         }
 
         RHI::Ptr<Buffer> RayTracingShaderTable::BuildTable([[maybe_unused]] RHI::Device& deviceBase,
-                                                           const RHI::RayTracingBufferPools& bufferPools,
+                                                           const RHI::SingleDeviceRayTracingBufferPools& bufferPools,
                                                            const RHI::RayTracingShaderTableRecordList& recordList,
                                                            uint32_t shaderRecordSize,
                                                            AZStd::wstring shaderTableName,
@@ -63,13 +63,13 @@ namespace AZ
             }
 
             // create shader table buffer
-            RHI::Ptr<RHI::Buffer> shaderTableBuffer = RHI::Factory::Get().CreateBuffer();
+            RHI::Ptr<RHI::SingleDeviceBuffer> shaderTableBuffer = RHI::Factory::Get().CreateBuffer();
             AZ::RHI::BufferDescriptor shaderTableBufferDescriptor;
             shaderTableBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderRead | RHI::BufferBindFlags::CopyRead | RHI::BufferBindFlags::RayTracingShaderTable;
             shaderTableBufferDescriptor.m_byteCount = shaderTableSize;
             shaderTableBufferDescriptor.m_alignment = D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT;
 
-            AZ::RHI::BufferInitRequest shaderTableBufferRequest;
+            AZ::RHI::SingleDeviceBufferInitRequest shaderTableBufferRequest;
             shaderTableBufferRequest.m_buffer = shaderTableBuffer.get();
             shaderTableBufferRequest.m_descriptor = shaderTableBufferDescriptor;
             [[maybe_unused]] RHI::ResultCode resultCode = bufferPools.GetShaderTableBufferPool()->InitBuffer(shaderTableBufferRequest);
@@ -79,8 +79,8 @@ namespace AZ
             shaderTableMemoryView.SetName(L"RayTracingShaderTable");
 
             // copy records
-            RHI::BufferMapResponse mapResponse;
-            resultCode = bufferPools.GetShaderTableBufferPool()->MapBuffer(RHI::BufferMapRequest(*shaderTableBuffer, 0, shaderTableSize), mapResponse);
+            RHI::SingleDeviceBufferMapResponse mapResponse;
+            resultCode = bufferPools.GetShaderTableBufferPool()->MapBuffer(RHI::SingleDeviceBufferMapRequest(*shaderTableBuffer, 0, shaderTableSize), mapResponse);
             AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to map shader table buffer");
             uint8_t* mappedData = reinterpret_cast<uint8_t*>(mapResponse.m_data);
 

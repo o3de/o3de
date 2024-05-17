@@ -7,8 +7,8 @@
  */
 #pragma once
 
-#include <Atom/RHI/ShaderResourceGroup.h>
-#include <Atom/RHI/ShaderResourceGroupPool.h>
+#include <Atom/RHI/SingleDeviceShaderResourceGroup.h>
+#include <Atom/RHI/SingleDeviceShaderResourceGroupPool.h>
 #include <RHI/MemoryView.h>
 
 namespace AZ
@@ -16,9 +16,9 @@ namespace AZ
     namespace Metal
     {
         class ShaderResourceGroupPool final
-            : public RHI::ShaderResourceGroupPool
+            : public RHI::SingleDeviceShaderResourceGroupPool
         {
-            using Base = RHI::ShaderResourceGroupPool;
+            using Base = RHI::SingleDeviceShaderResourceGroupPool;
         public:
             AZ_CLASS_ALLOCATOR(ShaderResourceGroupPool, AZ::SystemAllocator);
 
@@ -30,10 +30,10 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // Platform API
             RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::ShaderResourceGroupPoolDescriptor& descriptor) override;
-            RHI::ResultCode InitGroupInternal(RHI::ShaderResourceGroup& groupBase) override;
+            RHI::ResultCode InitGroupInternal(RHI::SingleDeviceShaderResourceGroup& groupBase) override;
             void ShutdownInternal() override;
-            RHI::ResultCode CompileGroupInternal(RHI::ShaderResourceGroup& groupBase, const RHI::ShaderResourceGroupData& groupData) override;
-            void ShutdownResourceInternal(RHI::Resource& resourceBase) override;
+            RHI::ResultCode CompileGroupInternal(RHI::SingleDeviceShaderResourceGroup& groupBase, const RHI::SingleDeviceShaderResourceGroupData& groupData) override;
+            void ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase) override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////

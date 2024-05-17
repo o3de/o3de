@@ -19,7 +19,7 @@ namespace AZ
             return aznew IndirectBufferWriter();
         }
 
-        void IndirectBufferWriter::SetVertexViewInternal(RHI::IndirectCommandIndex index, const RHI::StreamBufferView& view)
+        void IndirectBufferWriter::SetVertexViewInternal(RHI::IndirectCommandIndex index, const RHI::SingleDeviceStreamBufferView& view)
         {
             const Buffer* buffer = static_cast<const Buffer*>(view.GetBuffer());
             D3D12_VERTEX_BUFFER_VIEW* command = reinterpret_cast<D3D12_VERTEX_BUFFER_VIEW*>(GetCommandTargetMemory(index));
@@ -28,7 +28,7 @@ namespace AZ
             command->StrideInBytes = view.GetByteStride();
         }
 
-        void IndirectBufferWriter::SetIndexViewInternal(RHI::IndirectCommandIndex index, const RHI::IndexBufferView& indexBufferView)
+        void IndirectBufferWriter::SetIndexViewInternal(RHI::IndirectCommandIndex index, const RHI::SingleDeviceIndexBufferView& indexBufferView)
         {
             const Buffer* indexBuffer = static_cast<const Buffer*>(indexBufferView.GetBuffer());
             D3D12_INDEX_BUFFER_VIEW* command = reinterpret_cast<D3D12_INDEX_BUFFER_VIEW*>(GetCommandTargetMemory(index));

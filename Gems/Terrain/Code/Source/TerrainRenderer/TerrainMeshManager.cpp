@@ -290,7 +290,7 @@ namespace Terrain
 
     }
 
-    AZ::RHI::StreamBufferView TerrainMeshManager::CreateStreamBufferView(AZ::Data::Instance<AZ::RPI::Buffer>& buffer, uint32_t offset)
+    AZ::RHI::SingleDeviceStreamBufferView TerrainMeshManager::CreateStreamBufferView(AZ::Data::Instance<AZ::RPI::Buffer>& buffer, uint32_t offset)
     {
         return
         {
@@ -303,7 +303,7 @@ namespace Terrain
 
     void TerrainMeshManager::BuildDrawPacket(Sector& sector)
     {
-        AZ::RHI::DrawPacketBuilder drawPacketBuilder;
+        AZ::RHI::SingleDeviceDrawPacketBuilder drawPacketBuilder;
         uint32_t indexCount = m_indexBuffer->GetBufferViewDescriptor().m_elementCount;
         drawPacketBuilder.Begin(nullptr);
         drawPacketBuilder.SetDrawArguments(AZ::RHI::DrawIndexed(1, 0, 0, indexCount, 0));
@@ -317,7 +317,7 @@ namespace Terrain
         {
             AZ::Data::Instance<AZ::RPI::Shader>& shader = drawData.m_shader;
 
-            AZ::RHI::DrawPacketBuilder::DrawRequest drawRequest;
+            AZ::RHI::SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest drawRequest;
             drawRequest.m_listTag = drawData.m_drawListTag;
             drawRequest.m_pipelineState = drawData.m_pipelineState;
             drawRequest.m_streamBufferViews = sector.m_streamBufferViews;
@@ -350,7 +350,7 @@ namespace Terrain
             drawPacketBuilder.AddDrawItem(drawRequest);
         }
 
-        AZ::RHI::DrawPacketBuilder commonQuadrantDrawPacketBuilder = drawPacketBuilder; // Copy of the draw packet builder to use later.
+        AZ::RHI::SingleDeviceDrawPacketBuilder commonQuadrantDrawPacketBuilder = drawPacketBuilder; // Copy of the draw packet builder to use later.
         sector.m_rhiDrawPacket = drawPacketBuilder.End();
 
         // Generate draw packets for each of the quadrants so they can be used to fill in places where the previous LOD didn't draw.
@@ -359,7 +359,7 @@ namespace Terrain
         uint32_t lowerLodIndexCount = indexCount / 4;
         for (uint32_t i = 0; i < 4; ++i)
         {
-            AZ::RHI::DrawPacketBuilder quadrantDrawPacketBuilder = commonQuadrantDrawPacketBuilder;
+            AZ::RHI::SingleDeviceDrawPacketBuilder quadrantDrawPacketBuilder = commonQuadrantDrawPacketBuilder;
             quadrantDrawPacketBuilder.SetDrawArguments(AZ::RHI::DrawIndexed(1, 0, 0, lowerLodIndexCount, lowerLodIndexCount * i));
             sector.m_rhiDrawPacketQuadrant[i] = quadrantDrawPacketBuilder.End();
         }
@@ -375,21 +375,21 @@ namespace Terrain
         rtSector.m_normalsBuffer = CreateRayTracingMeshBufferInstance(AZ::RHI::Format::R32G32B32_FLOAT, m_gridVerts2D, nullptr, positionName.c_str());
 
         // setup the stream and shader buffer views
-        AZ::RHI::Buffer& rhiPositionsBuffer = *rtSector.m_positionsBuffer->GetRHIBuffer();
+        AZ::RHI::SingleDeviceBuffer& rhiPositionsBuffer = *rtSector.m_positionsBuffer->GetRHIBuffer();
         uint32_t positionsBufferByteCount = aznumeric_cast<uint32_t>(rhiPositionsBuffer.GetDescriptor().m_byteCount);
         AZ::RHI::Format positionsBufferFormat = rtSector.m_positionsBuffer->GetBufferViewDescriptor().m_elementFormat;
         uint32_t positionsBufferElementSize = AZ::RHI::GetFormatSize(positionsBufferFormat);
-        AZ::RHI::StreamBufferView positionsVertexBufferView(rhiPositionsBuffer, 0, positionsBufferByteCount, positionsBufferElementSize);
+        AZ::RHI::SingleDeviceStreamBufferView positionsVertexBufferView(rhiPositionsBuffer, 0, positionsBufferByteCount, positionsBufferElementSize);
         AZ::RHI::BufferViewDescriptor positionsBufferDescriptor = AZ::RHI::BufferViewDescriptor::CreateRaw(0, positionsBufferByteCount);
 
-        AZ::RHI::Buffer& rhiNormalsBuffer = *rtSector.m_normalsBuffer->GetRHIBuffer();
+        AZ::RHI::SingleDeviceBuffer& rhiNormalsBuffer = *rtSector.m_normalsBuffer->GetRHIBuffer();
         uint32_t normalsBufferByteCount = aznumeric_cast<uint32_t>(rhiNormalsBuffer.GetDescriptor().m_byteCount);
         AZ::RHI::Format normalsBufferFormat = rtSector.m_normalsBuffer->GetBufferViewDescriptor().m_elementFormat;
         uint32_t normalsBufferElementSize = AZ::RHI::GetFormatSize(normalsBufferFormat);
-        AZ::RHI::StreamBufferView normalsVertexBufferView(rhiNormalsBuffer, 0, normalsBufferByteCount, normalsBufferElementSize);
+        AZ::RHI::SingleDeviceStreamBufferView normalsVertexBufferView(rhiNormalsBuffer, 0, normalsBufferByteCount, normalsBufferElementSize);
         AZ::RHI::BufferViewDescriptor normalsBufferDescriptor = AZ::RHI::BufferViewDescriptor::CreateRaw(0, normalsBufferByteCount);
 
-        AZ::RHI::Buffer& rhiIndexBuffer = *m_rtIndexBuffer->GetRHIBuffer();
+        AZ::RHI::SingleDeviceBuffer& rhiIndexBuffer = *m_rtIndexBuffer->GetRHIBuffer();
         AZ::RHI::IndexFormat indexBufferFormat = AZ::RHI::IndexFormat::Uint32;
 
         uint32_t totalIndexBufferByteCount = aznumeric_cast<uint32_t>(rhiIndexBuffer.GetDescriptor().m_byteCount);
@@ -408,7 +408,7 @@ namespace Terrain
             subMesh.m_normalFormat = normalsBufferFormat;
             subMesh.m_normalVertexBufferView = normalsVertexBufferView;
             subMesh.m_normalShaderBufferView = rhiNormalsBuffer.GetBufferView(normalsBufferDescriptor);
-            subMesh.m_indexBufferView = AZ::RHI::IndexBufferView(rhiIndexBuffer, indexBufferByteOffset, indexBufferByteCount, indexBufferFormat);
+            subMesh.m_indexBufferView = AZ::RHI::SingleDeviceIndexBufferView(rhiIndexBuffer, indexBufferByteOffset, indexBufferByteCount, indexBufferFormat);
             subMesh.m_material.m_baseColor = AZ::Color::CreateFromVector3(AZ::Vector3(0.18f));
 
             AZ::RHI::BufferViewDescriptor indexBufferDescriptor;
@@ -627,7 +627,7 @@ namespace Terrain
 
                 m_parentScene->ConfigurePipelineState(drawListTag, pipelineStateDescriptor);
 
-                const AZ::RHI::PipelineState* pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
+                const AZ::RHI::SingleDevicePipelineState* pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
                 if (!pipelineState)
                 {
                     AZ_Error(

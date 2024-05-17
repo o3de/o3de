@@ -37,14 +37,14 @@ namespace AZ
                 scopeEntries.push_back({ scope->GetId(), scope->GetEstimatedItemCount() });
                 
                 m_workRequest.m_swapChainsToPresent.reserve(m_workRequest.m_swapChainsToPresent.size() + scope->GetSwapChainsToPresent().size());
-                for (RHI::SwapChain* swapChain : scope->GetSwapChainsToPresent())
+                for (RHI::SingleDeviceSwapChain* swapChain : scope->GetSwapChainsToPresent())
                 {
                     m_workRequest.m_swapChainsToPresent.push_back(static_cast<SwapChain*>(swapChain));
                 }
 
                 auto& fencesToSignal = m_workRequest.m_scopeFencesToSignal;
                 fencesToSignal.reserve(fencesToSignal.size() + scope->GetFencesToSignal().size());
-                for (const RHI::Ptr<RHI::Fence>& fence : scope->GetFencesToSignal())
+                for (const RHI::Ptr<RHI::SingleDeviceFence>& fence : scope->GetFencesToSignal())
                 {
                     fencesToSignal.push_back(&static_cast<FenceImpl&>(*fence).Get());
                 }

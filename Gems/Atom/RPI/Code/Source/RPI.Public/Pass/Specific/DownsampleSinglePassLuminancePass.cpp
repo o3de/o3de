@@ -78,7 +78,7 @@ namespace AZ::RPI
         }
         const uint32_t mipLevelCount = attachment->m_descriptor.m_image.m_mipLevels;
         RHI::AttachmentId attachmentId = attachment->GetAttachmentId();
-        const RHI::Image* rhiImage = context.GetImage(attachmentId);
+        const RHI::SingleDeviceImage* rhiImage = context.GetImage(attachmentId);
         if (!rhiImage)
         {
             return;
@@ -90,11 +90,11 @@ namespace AZ::RPI
         {
             imageViewDescriptor.m_mipSliceMin = static_cast<uint16_t>(mipIndex);
             imageViewDescriptor.m_mipSliceMax = static_cast<uint16_t>(mipIndex);
-            Ptr<RHI::ImageView> imageView = RHI::Factory::Get().CreateImageView();
+            Ptr<RHI::SingleDeviceImageView> imageView = RHI::Factory::Get().CreateImageView();
             result = imageView->Init(*rhiImage, imageViewDescriptor);
             if (result != RHI::ResultCode::Success)
             {
-                AZ_Assert(false, "DownsampleSingelPassMipChainPass failed to create RHI::ImageView.");
+                AZ_Assert(false, "DownsampleSingelPassMipChainPass failed to create RHI::SingleDeviceImageView.");
                 return;
             }
             srg.SetImageView(m_imageDestinationIndex, imageView.get(), mipIndex);
@@ -102,7 +102,7 @@ namespace AZ::RPI
         }
 
         // Set Globally coherent image view.
-        const RHI::ImageView* mip6ImageView = context.GetImageView(m_mip6PassAttachment->GetAttachmentId());
+        const RHI::SingleDeviceImageView* mip6ImageView = context.GetImageView(m_mip6PassAttachment->GetAttachmentId());
         srg.SetImageView(m_mip6ImageIndex, mip6ImageView);
 
         // Set Global Atomic buffer.

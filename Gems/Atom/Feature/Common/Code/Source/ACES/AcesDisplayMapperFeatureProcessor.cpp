@@ -374,7 +374,7 @@ namespace AZ::Render
         lutResource.m_lutImage = RHI::Factory::Get().CreateImage();
         lutResource.m_lutImage->SetName(lutName);
 
-        RHI::ImageInitRequest imageRequest;
+        RHI::SingleDeviceImageInitRequest imageRequest;
         imageRequest.m_image = lutResource.m_lutImage.get();
         static const int LutSize = 32;
         imageRequest.m_descriptor = RHI::ImageDescriptor::Create3D(RHI::ImageBindFlags::ShaderReadWrite, LutSize, LutSize, LutSize, LutFormat);

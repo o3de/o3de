@@ -9,8 +9,8 @@
 
 #include <AtomCore/Instance/Instance.h>
 
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/CopyItem.h>
+#include <Atom/RHI/SingleDeviceBufferPool.h>
+#include <Atom/RHI/SingleDeviceCopyItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 
 #include <Atom/RPI.Public/Buffer/Buffer.h>
@@ -59,7 +59,7 @@ namespace AZ
             u16 m_sourceArraySlice = 0;
 
             // Copy item to be submitted to command list
-            RHI::CopyItem m_copyItem;
+            RHI::SingleDeviceCopyItem m_copyItem;
         };
 
         //! Render preview of specified image attachment to the selected output attachment.
@@ -135,7 +135,7 @@ namespace AZ
                 // Cached pipeline state descriptor
                 RHI::PipelineStateDescriptorForDraw m_pipelineStateDescriptor;
                 // The draw item for drawing the image preview for this type of image
-                RHI::DrawItem m_item;
+                RHI::SingleDeviceDrawItem m_item;
 
                 // Key to pass to the SRG when desired shader variant isn't found
                 ShaderVariantKey m_shaderVariantKeyFallback;

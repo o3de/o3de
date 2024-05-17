@@ -15,9 +15,9 @@
 
 namespace UnitTest
 {
-    AZ::RHI::ImageSubresourceLayout BuildSubImageLayout(AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize)
+    AZ::RHI::SingleDeviceImageSubresourceLayout BuildSubImageLayout(AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize)
     {
-        AZ::RHI::ImageSubresourceLayout layout;
+        AZ::RHI::SingleDeviceImageSubresourceLayout layout;
         layout.m_size = AZ::RHI::Size{ width, height, 1 };
         layout.m_rowCount = width;
         layout.m_bytesPerRow = width * pixelSize;
@@ -59,7 +59,7 @@ namespace UnitTest
         const uint16_t arraySize = 1;
         assetCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()), mipLevels, arraySize);
 
-        RHI::ImageSubresourceLayout layout = BuildSubImageLayout(width, height, pixelSize);
+        RHI::SingleDeviceImageSubresourceLayout layout = BuildSubImageLayout(width, height, pixelSize);
 
         assetCreator.BeginMip(layout);
         assetCreator.AddSubImage(data.data(), data.size());

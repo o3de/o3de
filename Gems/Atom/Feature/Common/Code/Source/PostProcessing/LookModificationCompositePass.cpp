@@ -14,7 +14,7 @@
 #include <Atom/RPI.Public/Shader/ShaderVariant.h>
 
 #include <Atom/RHI/FrameScheduler.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/SingleDevicePipelineState.h>
 
 #include <AzCore/Console/Console.h>
 

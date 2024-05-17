@@ -67,13 +67,13 @@ namespace AZ
             AZ_Error("RPI", false, "Unimplemented function");
         }
 
-        void DynamicDrawSystem::AddDrawPacket(Scene* scene, AZStd::unique_ptr<const RHI::DrawPacket> drawPacket)
+        void DynamicDrawSystem::AddDrawPacket(Scene* scene, AZStd::unique_ptr<const RHI::SingleDeviceDrawPacket> drawPacket)
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_mutexDrawPackets);
-            m_drawPackets[scene].emplace_back(ConstPtr<RHI::DrawPacket>(drawPacket.release()));
+            m_drawPackets[scene].emplace_back(ConstPtr<RHI::SingleDeviceDrawPacket>(drawPacket.release()));
         }
 
-        void DynamicDrawSystem::AddDrawPacket(Scene* scene, ConstPtr<RHI::DrawPacket> drawPacket)
+        void DynamicDrawSystem::AddDrawPacket(Scene* scene, ConstPtr<RHI::SingleDeviceDrawPacket> drawPacket)
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_mutexDrawPackets);
             m_drawPackets[scene].emplace_back(drawPacket);

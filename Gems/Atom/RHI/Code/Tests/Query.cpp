@@ -31,7 +31,7 @@ namespace UnitTest
         return RHI::ResultCode::Success;
     }
 
-    RHI::ResultCode QueryPool::InitQueryInternal([[maybe_unused]] RHI::Query& query)
+    RHI::ResultCode QueryPool::InitQueryInternal([[maybe_unused]] RHI::SingleDeviceQuery& query)
     {
         return RHI::ResultCode::Success;
     }

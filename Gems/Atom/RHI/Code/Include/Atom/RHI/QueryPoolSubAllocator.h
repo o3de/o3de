@@ -37,7 +37,7 @@ namespace AZ::RHI
         //! Initialize the sub allocator.
         void Init(uint32_t maxQueryCount);
 
-        //! Allocate space for a group of Query objects. It will try to allocate in a consecutive manner
+        //! Allocate space for a group of SingleDeviceQuery objects. It will try to allocate in a consecutive manner
         //! if enough space is available. If not, it will allocate in multiple groups.
         //! @param count Number of queries to allocate.
         //! @return A list of allocations.

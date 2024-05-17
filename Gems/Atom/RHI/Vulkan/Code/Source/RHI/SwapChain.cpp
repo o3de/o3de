@@ -160,7 +160,7 @@ namespace AZ
             m_currentFrameContext = {};
         }
 
-        RHI::ResultCode SwapChain::InitImageInternal(const RHI::SwapChain::InitImageRequest& request)
+        RHI::ResultCode SwapChain::InitImageInternal(const RHI::SingleDeviceSwapChain::InitImageRequest& request)
         {
             auto& device = static_cast<Device&>(GetDevice());
             Image* image = static_cast<Image*>(request.m_image);

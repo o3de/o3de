@@ -8,9 +8,9 @@
 #include <Tests/TransientAttachmentPool.h>
 #include <Atom/RHI.Reflect/TransientImageDescriptor.h>
 #include <Atom/RHI.Reflect/TransientBufferDescriptor.h>
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/ImagePool.h>
-#include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/SingleDeviceBufferPool.h>
+#include <Atom/RHI/SingleDeviceImagePool.h>
+#include <Atom/RHI/SingleDeviceBuffer.h>
 
 namespace UnitTest
 {
@@ -48,19 +48,19 @@ namespace UnitTest
     {
     }
 
-    RHI::Image* TransientAttachmentPool::ActivateImage(
+    RHI::SingleDeviceImage* TransientAttachmentPool::ActivateImage(
         const RHI::TransientImageDescriptor& descriptor)
     {
         using namespace AZ;
         auto findIt = m_attachments.find(descriptor.m_attachmentId);
         if (findIt != m_attachments.end())
         {
-            return azrtti_cast<RHI::Image*>(findIt->second.get());
+            return azrtti_cast<RHI::SingleDeviceImage*>(findIt->second.get());
         }
 
-        RHI::Ptr<RHI::Image> image = RHI::Factory::Get().CreateImage();
+        RHI::Ptr<RHI::SingleDeviceImage> image = RHI::Factory::Get().CreateImage();
 
-        RHI::ImageInitRequest request;
+        RHI::SingleDeviceImageInitRequest request;
         request.m_image = image.get();
         request.m_descriptor = descriptor.m_imageDescriptor;
         m_imagePool->InitImage(request);
@@ -71,19 +71,19 @@ namespace UnitTest
         return image.get();
     }
 
-    RHI::Buffer* TransientAttachmentPool::ActivateBuffer(
+    RHI::SingleDeviceBuffer* TransientAttachmentPool::ActivateBuffer(
         const RHI::TransientBufferDescriptor& descriptor)
     {
         using namespace AZ;
         auto findIt = m_attachments.find(descriptor.m_attachmentId);
         if (findIt != m_attachments.end())
         {
-            return azrtti_cast<RHI::Buffer*>(findIt->second.get());
+            return azrtti_cast<RHI::SingleDeviceBuffer*>(findIt->second.get());
         }
 
-        RHI::Ptr<RHI::Buffer> buffer = RHI::Factory::Get().CreateBuffer();
+        RHI::Ptr<RHI::SingleDeviceBuffer> buffer = RHI::Factory::Get().CreateBuffer();
 
-        RHI::BufferInitRequest request;
+        RHI::SingleDeviceBufferInitRequest request;
         request.m_descriptor = descriptor.m_bufferDescriptor;
         request.m_buffer = buffer.get();
         m_bufferPool->InitBuffer(request);

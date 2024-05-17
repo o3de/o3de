@@ -7,16 +7,16 @@
  */
 #pragma once
 
-#include <Atom/RHI/QueryPool.h>
+#include <Atom/RHI/SingleDeviceQueryPool.h>
 
 namespace AZ
 {
     namespace Null
     {
         class QueryPool final
-            : public RHI::QueryPool
+            : public RHI::SingleDeviceQueryPool
         {
-            using Base = RHI::QueryPool;
+            using Base = RHI::SingleDeviceQueryPool;
         public:
             AZ_RTTI(QueryPool, "{C4057417-0B50-4F7C-9FFA-CB66E937AD6E}", Base);
             AZ_CLASS_ALLOCATOR(QueryPool, AZ::SystemAllocator);
@@ -28,9 +28,9 @@ namespace AZ
             QueryPool() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::QueryPool
+            // RHI::SingleDeviceQueryPool
             RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::QueryPoolDescriptor& descriptor) override { return RHI::ResultCode::Success;}
-            RHI::ResultCode InitQueryInternal([[maybe_unused]] RHI::Query& query) override { return RHI::ResultCode::Success;}
+            RHI::ResultCode InitQueryInternal([[maybe_unused]] RHI::SingleDeviceQuery& query) override { return RHI::ResultCode::Success;}
             RHI::ResultCode GetResultsInternal([[maybe_unused]] uint32_t startIndex, [[maybe_unused]] uint32_t queryCount, [[maybe_unused]] uint64_t* results, [[maybe_unused]] uint32_t resultsCount, [[maybe_unused]] RHI::QueryResultFlagBits flags) override { return RHI::ResultCode::Success;}
             //////////////////////////////////////////////////////////////////////////
 

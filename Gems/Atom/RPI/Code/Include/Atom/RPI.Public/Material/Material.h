@@ -133,7 +133,7 @@ namespace AZ
 
             Data::Instance<RPI::ShaderResourceGroup> GetShaderResourceGroup();
 
-            const RHI::ShaderResourceGroup* GetRHIShaderResourceGroup() const;
+            const RHI::SingleDeviceShaderResourceGroup* GetRHIShaderResourceGroup() const;
 
             const Data::Asset<MaterialAsset>& GetAsset() const;
 
@@ -204,7 +204,7 @@ namespace AZ
             Data::Instance<RPI::ShaderResourceGroup> m_shaderResourceGroup;
 
             //! The RHI shader resource group owned by m_shaderResourceGroup. Held locally to avoid an indirection.
-            const RHI::ShaderResourceGroup* m_rhiShaderResourceGroup = nullptr;
+            const RHI::SingleDeviceShaderResourceGroup* m_rhiShaderResourceGroup = nullptr;
 
             //! These the main material properties, exposed in the Material Editor, and configured directly by users.
             MaterialPropertyCollection m_materialProperties;

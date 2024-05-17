@@ -9,7 +9,7 @@
 
 #include <Atom/RHI.Reflect/SwapChainDescriptor.h>
 #include <Atom/RHI/MultiDeviceImagePoolBase.h>
-#include <Atom/RHI/SwapChain.h>
+#include <Atom/RHI/SingleDeviceSwapChain.h>
 #include <Atom/RHI/XRRenderingInterface.h>
 
 namespace AZ::RHI
@@ -22,7 +22,7 @@ namespace AZ::RHI
     //! The frame scheduler controls presentation of the swap chain. The user may attach a swap chain to a scope
     //! in order to render to the current image.
     //!
-    //! Although a multi-device resource class, we still enforce single-device behavior, as a SwapChain is tied to a
+    //! Although a multi-device resource class, we still enforce single-device behavior, as a SingleDeviceSwapChain is tied to a
     //! specific window. This is done by initializing it with a device index, which sets the correspondings bit in the
     //! deviceMask. The need for a multi-device class arises from the interoperability within a multi-device context,
     //! especially attachments and the FrameGraph.
@@ -36,11 +36,11 @@ namespace AZ::RHI
         virtual ~MultiDeviceSwapChain() = default;
 
         //! Initializes the swap chain, making it ready for attachment.
-        //! As the SwapChain uses multi-device resources on just a single device,
+        //! As the SingleDeviceSwapChain uses multi-device resources on just a single device,
         //! it is explicitly initialized with just a deviceIndex
         ResultCode Init(int deviceIndex, const SwapChainDescriptor& descriptor);
 
-        Ptr<SwapChain> GetDeviceSwapChain() const;
+        Ptr<SingleDeviceSwapChain> GetDeviceSwapChain() const;
 
         //! Presents the swap chain to the display, and rotates the images.
         void Present();

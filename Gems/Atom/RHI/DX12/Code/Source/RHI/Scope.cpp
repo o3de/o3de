@@ -15,7 +15,7 @@
 #include <RHI/ResourcePoolResolver.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
 #include <Atom/RHI/BufferFrameAttachment.h>
-#include <Atom/RHI/ResourcePool.h>
+#include <Atom/RHI/SingleDeviceResourcePool.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/Factory.h>

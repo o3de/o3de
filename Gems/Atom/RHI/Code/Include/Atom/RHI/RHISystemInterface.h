@@ -22,11 +22,11 @@ namespace AZ::RHI
 {
     class Device;
     class FrameGraphBuilder;
-    class PipelineState;
+    class SingleDevicePipelineState;
     class PipelineStateCache;
     class PlatformLimitsDescriptor;
     class PhysicalDeviceDescriptor;
-    class RayTracingShaderTable;
+    class SingleDeviceRayTracingShaderTable;
     struct FrameSchedulerCompileRequest;
     struct TransientAttachmentStatistics;
     struct TransientAttachmentPoolDescriptor;
@@ -64,7 +64,7 @@ namespace AZ::RHI
 
         virtual ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor(int deviceIndex = MultiDevice::DefaultDeviceIndex) const = 0;
 
-        virtual void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable) = 0;
+        virtual void QueueRayTracingShaderTableForBuild(SingleDeviceRayTracingShaderTable* rayTracingShaderTable) = 0;
             
         virtual XRRenderingInterface* GetXRSystem() const = 0;
 

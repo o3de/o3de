@@ -7,14 +7,14 @@
  */
 #pragma once
 #include <Atom/RHI.Reflect/Format.h>
-#include <Atom/RHI/Buffer.h>
-#include <Atom/RHI/BufferView.h>
-#include <Atom/RHI/Image.h>
-#include <Atom/RHI/ImageView.h>
-#include <Atom/RHI/PipelineState.h>
-#include <Atom/RHI/DrawItem.h>
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/Query.h>
+#include <Atom/RHI/SingleDeviceBuffer.h>
+#include <Atom/RHI/SingleDeviceBufferView.h>
+#include <Atom/RHI/SingleDeviceImage.h>
+#include <Atom/RHI/SingleDeviceImageView.h>
+#include <Atom/RHI/SingleDevicePipelineState.h>
+#include <Atom/RHI/SingleDeviceDrawItem.h>
+#include <Atom/RHI/SingleDeviceBufferPool.h>
+#include <Atom/RHI/SingleDeviceQuery.h>
 #include <Atom/RHI.Reflect/InputStreamLayout.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <Metal/Metal.h>

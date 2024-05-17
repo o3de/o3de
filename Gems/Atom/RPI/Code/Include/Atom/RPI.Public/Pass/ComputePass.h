@@ -9,7 +9,7 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 
-#include <Atom/RHI/DispatchItem.h>
+#include <Atom/RHI/SingleDeviceDispatchItem.h>
 
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
@@ -73,7 +73,7 @@ namespace AZ
             Data::Instance<RPI::ShaderResourceGroup> m_drawSrg = nullptr;
 
             // The draw item submitted by this pass
-            RHI::DispatchItem m_dispatchItem;
+            RHI::SingleDeviceDispatchItem m_dispatchItem;
 
             // Whether or not to make the pass a full-screen compute pass. If set to true, the dispatch group counts will
             // be automatically calculated from the size of the first output attachment and the group size dimensions.

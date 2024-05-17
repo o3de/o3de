@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/Fence.h>
+#include <Atom/RHI/SingleDeviceFence.h>
 #include <Atom/RHI/Scope.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/containers/array.h>
@@ -80,13 +80,13 @@ namespace AZ
 
         //! The RHI fence implementation for Metal. 
         //! This exists separately from Fence to decouple
-        //! the RHI::Device instance from low-level queue management. This is because RHI::Fence holds
+        //! the RHI::Device instance from low-level queue management. This is because RHI::SingleDeviceFence holds
         //! a reference to the RHI device, which would create circular dependency issues if the device
         //! indirectly held a reference to one. Therefore, this implementation is only used when passing
         //! fences back and forth between the user and the RHI interface. Low-level systems will use
         //! the internal Fence instance instead.
         class FenceImpl final
-            : public RHI::Fence
+            : public RHI::SingleDeviceFence
         {
         public:
             AZ_CLASS_ALLOCATOR(FenceImpl, AZ::SystemAllocator);
@@ -102,7 +102,7 @@ namespace AZ
             FenceImpl() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::Fence overrides ...
+            // RHI::SingleDeviceFence overrides ...
             RHI::ResultCode InitInternal(RHI::Device& device, RHI::FenceState initialState) override;
             void ShutdownInternal() override;
             void SignalOnCpuInternal() override;

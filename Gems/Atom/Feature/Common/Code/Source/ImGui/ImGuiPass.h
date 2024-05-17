@@ -12,8 +12,8 @@
 #include <AzFramework/Input/Events/InputTextEventListener.h>
 #include <AzFramework/Input/Events/InputChannelEventListener.h>
 
-#include <Atom/RHI/PipelineState.h>
-#include <Atom/RHI/StreamBufferView.h>
+#include <Atom/RHI/SingleDevicePipelineState.h>
+#include <Atom/RHI/SingleDeviceStreamBufferView.h>
 
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
@@ -151,8 +151,8 @@ namespace AZ
             RHI::ShaderInputNameIndex m_projectionMatrixIndex = "m_projectionMatrix";
             RHI::Viewport m_viewportState;
 
-            RHI::IndexBufferView m_indexBufferView;
-            AZStd::array<RHI::StreamBufferView, 2> m_vertexBufferView; // For vertex buffer and instance data
+            RHI::SingleDeviceIndexBufferView m_indexBufferView;
+            AZStd::array<RHI::SingleDeviceStreamBufferView, 2> m_vertexBufferView; // For vertex buffer and instance data
             AZStd::vector<DrawInfo> m_draws;
             Data::Instance<RPI::StreamingImage> m_fontAtlas;
 
@@ -171,7 +171,7 @@ namespace AZ
 
             AZStd::unordered_map<Data::Instance<RPI::StreamingImage>, uint32_t> m_userTextures;
             Data::Instance<RPI::Buffer> m_instanceBuffer;
-            RHI::StreamBufferView m_instanceBufferView;
+            RHI::SingleDeviceStreamBufferView m_instanceBufferView;
 
             // cache the font text id
             void* m_imguiFontTexId = nullptr;

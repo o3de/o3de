@@ -7,7 +7,7 @@
  */
 
 #include <Atom/RHI/ImageFrameAttachment.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/SingleDeviceImageView.h>
 #include <Atom/RHI/MultiDeviceImage.h>
 
 namespace AZ::RHI
@@ -32,7 +32,7 @@ namespace AZ::RHI
         subresourceRange.m_arraySliceMax = 0;
         subresourceRange.m_aspectFlags = aspectFlags;
 
-        IterateObjects<Image>([&subresourceRange, &subresourceLayout](auto deviceIndex, auto deviceImage)
+        IterateObjects<SingleDeviceImage>([&subresourceRange, &subresourceLayout](auto deviceIndex, auto deviceImage)
         {
             deviceImage->GetSubresourceLayouts(subresourceRange, &subresourceLayout.GetDeviceImageSubresource(deviceIndex), nullptr);
         });
@@ -51,7 +51,7 @@ namespace AZ::RHI
     uint32_t MultiDeviceImage::GetResidentMipLevel() const
     {
         auto minLevel{AZStd::numeric_limits<uint32_t>::max()};
-        IterateObjects<Image>([&minLevel]([[maybe_unused]] auto deviceIndex, auto deviceImage)
+        IterateObjects<SingleDeviceImage>([&minLevel]([[maybe_unused]] auto deviceIndex, auto deviceImage)
         {
             minLevel = AZStd::min(minLevel, deviceImage->GetResidentMipLevel());
         });
@@ -61,7 +61,7 @@ namespace AZ::RHI
     bool MultiDeviceImage::IsStreamable() const
     {
         bool isStreamable{true};
-        IterateObjects<Image>([&isStreamable]([[maybe_unused]] auto deviceIndex, auto deviceImage)
+        IterateObjects<SingleDeviceImage>([&isStreamable]([[maybe_unused]] auto deviceIndex, auto deviceImage)
         {
             isStreamable &= deviceImage->IsStreamable();
         });
@@ -84,7 +84,7 @@ namespace AZ::RHI
 
     void MultiDeviceImage::Shutdown()
     {
-        IterateObjects<Image>([]([[maybe_unused]] auto deviceIndex, auto deviceImage)
+        IterateObjects<SingleDeviceImage>([]([[maybe_unused]] auto deviceIndex, auto deviceImage)
         {
             deviceImage->Shutdown();
         });
@@ -95,15 +95,15 @@ namespace AZ::RHI
     bool MultiDeviceImage::IsInResourceCache(const ImageViewDescriptor& imageViewDescriptor)
     {
         bool isInResourceCache{true};
-        IterateObjects<Image>([&isInResourceCache, &imageViewDescriptor]([[maybe_unused]] auto deviceIndex, auto deviceImage)
+        IterateObjects<SingleDeviceImage>([&isInResourceCache, &imageViewDescriptor]([[maybe_unused]] auto deviceIndex, auto deviceImage)
         {
             isInResourceCache &= deviceImage->IsInResourceCache(imageViewDescriptor);
         });
         return isInResourceCache;
     }
 
-    //! Given a device index, return the corresponding BufferView for the selected device
-    const RHI::Ptr<RHI::ImageView> MultiDeviceImageView::GetDeviceImageView(int deviceIndex) const
+    //! Given a device index, return the corresponding SingleDeviceBufferView for the selected device
+    const RHI::Ptr<RHI::SingleDeviceImageView> MultiDeviceImageView::GetDeviceImageView(int deviceIndex) const
     {
         AZStd::lock_guard lock(m_imageViewMutex);
         auto iterator{ m_cache.find(deviceIndex) };

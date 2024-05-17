@@ -10,8 +10,8 @@
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/RayTracingBufferPools.h>
+#include <Atom/RHI/SingleDeviceBufferPool.h>
+#include <Atom/RHI/SingleDeviceRayTracingBufferPools.h>
 
 
 namespace AZ
@@ -23,7 +23,7 @@ namespace AZ
             return aznew RayTracingBlas;
         }
 
-        RHI::ResultCode RayTracingBlas::CreateBuffersInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::RayTracingBlasDescriptor* descriptor, [[maybe_unused]] const RHI::RayTracingBufferPools& bufferPools)
+        RHI::ResultCode RayTracingBlas::CreateBuffersInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::SingleDeviceRayTracingBlasDescriptor* descriptor, [[maybe_unused]] const RHI::SingleDeviceRayTracingBufferPools& bufferPools)
         {
 #ifdef AZ_DX12_DXR_SUPPORT
             Device& device = static_cast<Device&>(deviceBase);
@@ -52,7 +52,7 @@ namespace AZ
                 rtAabb.MaxY = aabb.GetMax().GetY();
                 rtAabb.MaxZ = aabb.GetMax().GetZ();
 
-                AZ::RHI::BufferInitRequest blasBufferRequest;
+                AZ::RHI::SingleDeviceBufferInitRequest blasBufferRequest;
                 blasBufferRequest.m_buffer = buffers.m_aabbBuffer.get();
                 blasBufferRequest.m_initialData = &rtAabb;
                 blasBufferRequest.m_descriptor = blasBufferDescriptor;
@@ -79,7 +79,7 @@ namespace AZ
                 // build the list of D3D12_RAYTRACING_GEOMETRY_DESC structures
                 m_geometryDescs.reserve(geometries.size());
                 D3D12_RAYTRACING_GEOMETRY_DESC geometryDesc = {};
-                for (const RHI::RayTracingGeometry& geometry : geometries)
+                for (const RHI::SingleDeviceRayTracingGeometry& geometry : geometries)
                 {
                     geometryDesc = {};
                     geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
@@ -118,7 +118,7 @@ namespace AZ
             scratchBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingScratchBuffer;
             scratchBufferDescriptor.m_byteCount = prebuildInfo.ScratchDataSizeInBytes;
 
-            AZ::RHI::BufferInitRequest scratchBufferRequest;
+            AZ::RHI::SingleDeviceBufferInitRequest scratchBufferRequest;
             scratchBufferRequest.m_buffer = buffers.m_scratchBuffer.get();
             scratchBufferRequest.m_descriptor = scratchBufferDescriptor;
             [[maybe_unused]] RHI::ResultCode resultCode = bufferPools.GetScratchBufferPool()->InitBuffer(scratchBufferRequest);
@@ -133,7 +133,7 @@ namespace AZ
             blasBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingAccelerationStructure;
             blasBufferDescriptor.m_byteCount = prebuildInfo.ResultDataMaxSizeInBytes;
 
-            AZ::RHI::BufferInitRequest blasBufferRequest;
+            AZ::RHI::SingleDeviceBufferInitRequest blasBufferRequest;
             blasBufferRequest.m_buffer = buffers.m_blasBuffer.get();
             blasBufferRequest.m_descriptor = blasBufferDescriptor;
             resultCode = bufferPools.GetBlasBufferPool()->InitBuffer(blasBufferRequest);

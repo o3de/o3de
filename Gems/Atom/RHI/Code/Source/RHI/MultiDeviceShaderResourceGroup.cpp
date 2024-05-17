@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/BufferView.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/SingleDeviceBufferView.h>
+#include <Atom/RHI/SingleDeviceImageView.h>
 #include <Atom/RHI/MultiDeviceShaderResourceGroup.h>
 #include <Atom/RHI/MultiDeviceShaderResourceGroupPool.h>
 
@@ -15,7 +15,7 @@ namespace AZ::RHI
     void MultiDeviceShaderResourceGroup::Compile(
         const MultiDeviceShaderResourceGroupData& groupData, CompileMode compileMode /*= CompileMode::Async*/)
     {
-        IterateObjects<ShaderResourceGroup>([&groupData, compileMode](auto deviceIndex, auto deviceShaderResourceGroup)
+        IterateObjects<SingleDeviceShaderResourceGroup>([&groupData, compileMode](auto deviceIndex, auto deviceShaderResourceGroup)
         {
             deviceShaderResourceGroup->Compile(groupData.GetDeviceShaderResourceGroupData(deviceIndex), compileMode);
         });
@@ -28,7 +28,7 @@ namespace AZ::RHI
 
     bool MultiDeviceShaderResourceGroup::IsQueuedForCompile() const
     {
-        return IterateObjects<ShaderResourceGroup>([]([[maybe_unused]] auto deviceIndex, auto deviceShaderResourceGroup)
+        return IterateObjects<SingleDeviceShaderResourceGroup>([]([[maybe_unused]] auto deviceIndex, auto deviceShaderResourceGroup)
         {
             if (deviceShaderResourceGroup->IsQueuedForCompile())
             {
@@ -56,7 +56,7 @@ namespace AZ::RHI
 
     void MultiDeviceShaderResourceGroup::Shutdown()
     {
-        IterateObjects<ShaderResourceGroup>([]([[maybe_unused]] auto deviceIndex, auto deviceShaderResourceGroup)
+        IterateObjects<SingleDeviceShaderResourceGroup>([]([[maybe_unused]] auto deviceIndex, auto deviceShaderResourceGroup)
         {
             deviceShaderResourceGroup->Shutdown();
         });

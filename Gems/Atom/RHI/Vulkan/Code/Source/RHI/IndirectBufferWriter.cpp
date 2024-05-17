@@ -19,12 +19,12 @@ namespace AZ
             return aznew IndirectBufferWriter();
         }
 
-        void IndirectBufferWriter::SetVertexViewInternal([[maybe_unused]] RHI::IndirectCommandIndex index, [[maybe_unused]] const RHI::StreamBufferView& view)
+        void IndirectBufferWriter::SetVertexViewInternal([[maybe_unused]] RHI::IndirectCommandIndex index, [[maybe_unused]] const RHI::SingleDeviceStreamBufferView& view)
         {
             AZ_Assert(false, "Vertex View command is not supported on this platform");
         }
 
-        void IndirectBufferWriter::SetIndexViewInternal([[maybe_unused]] RHI::IndirectCommandIndex index, [[maybe_unused]] const RHI::IndexBufferView& indexBufferView)
+        void IndirectBufferWriter::SetIndexViewInternal([[maybe_unused]] RHI::IndirectCommandIndex index, [[maybe_unused]] const RHI::SingleDeviceIndexBufferView& indexBufferView)
         {
             AZ_Assert(false, "Index View command is not supported on this platform");
         }

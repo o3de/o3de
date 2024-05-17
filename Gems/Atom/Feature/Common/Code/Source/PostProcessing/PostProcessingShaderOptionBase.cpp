@@ -64,7 +64,7 @@ namespace AZ
             }
         }
 
-        const AZ::RHI::PipelineState* PostProcessingShaderOptionBase::GetPipelineStateFromShaderVariant()const
+        const AZ::RHI::SingleDevicePipelineState* PostProcessingShaderOptionBase::GetPipelineStateFromShaderVariant()const
         {
             auto shaderVariant = GetShaderVariant(m_currentShaderVariantKeyValue);
             AZ_Assert(shaderVariant != nullptr, "Couldn't get a shader variation using the shader variant key[0x%llx].", m_currentShaderVariantKeyValue);

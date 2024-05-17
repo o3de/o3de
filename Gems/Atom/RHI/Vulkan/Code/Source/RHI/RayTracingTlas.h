@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom_RHI_Vulkan_Platform.h>
-#include <Atom/RHI/RayTracingAccelerationStructure.h>
+#include <Atom/RHI/SingleDeviceRayTracingAccelerationStructure.h>
 #include <Atom/RHI.Reflect/FrameCountMaxRingBuffer.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -21,7 +21,7 @@ namespace AZ
 
         //! This class builds and contains the Vulkan RayTracing TLAS buffers.
         class RayTracingTlas final
-            : public RHI::RayTracingTlas
+            : public RHI::SingleDeviceRayTracingTlas
         {
         public:
             AZ_CLASS_ALLOCATOR(RayTracingTlas, AZ::SystemAllocator);
@@ -30,9 +30,9 @@ namespace AZ
 
             struct TlasBuffers
             {
-                RHI::Ptr<RHI::Buffer> m_tlasBuffer;
-                RHI::Ptr<RHI::Buffer> m_scratchBuffer;
-                RHI::Ptr<RHI::Buffer> m_tlasInstancesBuffer;
+                RHI::Ptr<RHI::SingleDeviceBuffer> m_tlasBuffer;
+                RHI::Ptr<RHI::SingleDeviceBuffer> m_scratchBuffer;
+                RHI::Ptr<RHI::SingleDeviceBuffer> m_tlasInstancesBuffer;
                 VkAccelerationStructureKHR m_accelerationStructure = VK_NULL_HANDLE;
 
                 VkAccelerationStructureGeometryKHR m_geometry = {};
@@ -43,15 +43,15 @@ namespace AZ
 
             const TlasBuffers& GetBuffers() const { return m_buffers.GetCurrentElement(); }
 
-            // RHI::RayTracingTlas overrides...
-            const RHI::Ptr<RHI::Buffer> GetTlasBuffer() const override { return GetBuffers().m_tlasBuffer; }
-            const RHI::Ptr<RHI::Buffer> GetTlasInstancesBuffer() const override { return GetBuffers().m_tlasInstancesBuffer; }
+            // RHI::SingleDeviceRayTracingTlas overrides...
+            const RHI::Ptr<RHI::SingleDeviceBuffer> GetTlasBuffer() const override { return GetBuffers().m_tlasBuffer; }
+            const RHI::Ptr<RHI::SingleDeviceBuffer> GetTlasInstancesBuffer() const override { return GetBuffers().m_tlasInstancesBuffer; }
 
         private:
             RayTracingTlas() = default;
 
-            // RHI::RayTracingTlas overrides
-            RHI::ResultCode CreateBuffersInternal(RHI::Device& deviceBase, const RHI::RayTracingTlasDescriptor* descriptor, const RHI::RayTracingBufferPools& rayTracingBufferPools) override;
+            // RHI::SingleDeviceRayTracingTlas overrides
+            RHI::ResultCode CreateBuffersInternal(RHI::Device& deviceBase, const RHI::SingleDeviceRayTracingTlasDescriptor* descriptor, const RHI::SingleDeviceRayTracingBufferPools& rayTracingBufferPools) override;
 
             // buffer list to keep buffers alive for several frames
             RHI::FrameCountMaxRingBuffer<TlasBuffers> m_buffers;

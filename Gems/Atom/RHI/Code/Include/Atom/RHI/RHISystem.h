@@ -73,7 +73,7 @@ namespace AZ::RHI
         double GetCpuFrameTime() const override;
         const RHI::TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const override;
         ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor(int deviceIndex = MultiDevice::DefaultDeviceIndex) const override;
-        void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable) override;
+        void QueueRayTracingShaderTableForBuild(SingleDeviceRayTracingShaderTable* rayTracingShaderTable) override;
         XRRenderingInterface* GetXRSystem() const override;
         void SetDrawListTagEnabledByDefault(DrawListTag drawListTag, bool enabled) override;
         const AZStd::vector<DrawListTag>& GetDrawListTagsDisabledByDefault() const override;

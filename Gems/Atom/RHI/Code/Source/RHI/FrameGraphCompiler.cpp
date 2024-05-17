@@ -16,7 +16,7 @@
 #include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/Scope.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
-#include <Atom/RHI/TransientAttachmentPool.h>
+#include <Atom/RHI/SingleDeviceTransientAttachmentPool.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/optional.h>
@@ -84,7 +84,7 @@ namespace AZ::RHI
             const bool hasTransientAttachments = attachmentDatabase.GetTransientBufferAttachments().size() || attachmentDatabase.GetTransientImageAttachments().size();
             if (request.m_transientAttachmentPool == nullptr && hasTransientAttachments)
             {
-                return AZ::Failure(AZStd::string("TransientAttachmentPool is null, but transient attachments are in the graph. Skipping compilation..."));
+                return AZ::Failure(AZStd::string("SingleDeviceTransientAttachmentPool is null, but transient attachments are in the graph. Skipping compilation..."));
             }
         }
 
@@ -453,7 +453,7 @@ namespace AZ::RHI
 
     void FrameGraphCompiler::CompileTransientAttachments(
         FrameGraph& frameGraph,
-        TransientAttachmentPool& transientAttachmentPool,
+        SingleDeviceTransientAttachmentPool& transientAttachmentPool,
         FrameSchedulerCompileFlags compileFlags,
         FrameSchedulerStatisticsFlags statisticsFlags)
     {
@@ -524,8 +524,8 @@ namespace AZ::RHI
         AZ_Assert(transientBufferGraphAttachments.size() + transientImageGraphAttachments.size() < AZ_BIT(ATTACHMENT_BIT_COUNT),
             "Exceeded maximum number of allowed attachments");            
 
-        AZStd::vector<Buffer*> transientBuffers(transientBufferGraphAttachments.size());
-        AZStd::vector<Image*> transientImages(transientImageGraphAttachments.size());
+        AZStd::vector<SingleDeviceBuffer*> transientBuffers(transientBufferGraphAttachments.size());
+        AZStd::vector<SingleDeviceImage*> transientImages(transientImageGraphAttachments.size());
         AZStd::vector<Command> commands;
         commands.reserve((transientBufferGraphAttachments.size() + transientImageGraphAttachments.size()) * 2);
 
@@ -625,7 +625,7 @@ namespace AZ::RHI
 
                 case Action::DeactivateBuffer:
                 {
-                    AZ_Assert(!allocateResources || transientBuffers[attachmentIndex] || IsNullRHI(), "Buffer is not active: %s", transientBufferGraphAttachments[attachmentIndex]->GetId().GetCStr());
+                    AZ_Assert(!allocateResources || transientBuffers[attachmentIndex] || IsNullRHI(), "SingleDeviceBuffer is not active: %s", transientBufferGraphAttachments[attachmentIndex]->GetId().GetCStr());
                     BufferFrameAttachment* bufferFrameAttachment = transientBufferGraphAttachments[attachmentIndex];
                     transientAttachmentPool.DeactivateBuffer(bufferFrameAttachment->GetId());
                     transientBuffers[attachmentIndex] = nullptr;
@@ -634,7 +634,7 @@ namespace AZ::RHI
 
                 case Action::DeactivateImage:
                 {
-                    AZ_Assert(!allocateResources || transientImages[attachmentIndex] || IsNullRHI(), "Image is not active: %s", transientImageGraphAttachments[attachmentIndex]->GetId().GetCStr());
+                    AZ_Assert(!allocateResources || transientImages[attachmentIndex] || IsNullRHI(), "SingleDeviceImage is not active: %s", transientImageGraphAttachments[attachmentIndex]->GetId().GetCStr());
                     ImageFrameAttachment* imageFrameAttachment = transientImageGraphAttachments[attachmentIndex];
                     transientAttachmentPool.DeactivateImage(imageFrameAttachment->GetId());
                     transientImages[attachmentIndex] = nullptr;
@@ -644,13 +644,13 @@ namespace AZ::RHI
                 case Action::ActivateBuffer:
                 {
                     BufferFrameAttachment* bufferFrameAttachment = transientBufferGraphAttachments[attachmentIndex];
-                    AZ_Assert(transientBuffers[attachmentIndex] == nullptr, "Buffer has been activated already. %s", bufferFrameAttachment->GetId().GetCStr());
+                    AZ_Assert(transientBuffers[attachmentIndex] == nullptr, "SingleDeviceBuffer has been activated already. %s", bufferFrameAttachment->GetId().GetCStr());
 
                     TransientBufferDescriptor descriptor;
                     descriptor.m_attachmentId = bufferFrameAttachment->GetId();
                     descriptor.m_bufferDescriptor = bufferFrameAttachment->GetBufferDescriptor();
 
-                    Buffer* buffer = transientAttachmentPool.ActivateBuffer(descriptor);
+                    SingleDeviceBuffer* buffer = transientAttachmentPool.ActivateBuffer(descriptor);
                     if (allocateResources && buffer)
                     {
                         bufferFrameAttachment->SetResource(buffer);
@@ -662,7 +662,7 @@ namespace AZ::RHI
                 case Action::ActivateImage:
                 {
                     ImageFrameAttachment* imageFrameAttachment = transientImageGraphAttachments[attachmentIndex];
-                    AZ_Assert(transientImages[attachmentIndex] == nullptr, "Image has been activated already. %s", imageFrameAttachment->GetId().GetCStr());
+                    AZ_Assert(transientImages[attachmentIndex] == nullptr, "SingleDeviceImage has been activated already. %s", imageFrameAttachment->GetId().GetCStr());
 
                     ClearValue optimizedClearValue;
 
@@ -678,7 +678,7 @@ namespace AZ::RHI
                         descriptor.m_optimizedClearValue = &optimizedClearValue;
                     }
 
-                    Image* image = transientAttachmentPool.ActivateImage(descriptor);
+                    SingleDeviceImage* image = transientAttachmentPool.ActivateImage(descriptor);
                     if (allocateResources && image)
                     {
                         imageFrameAttachment->SetResource(image);
@@ -712,14 +712,14 @@ namespace AZ::RHI
         processCommands(poolCompileFlags, memoryUsage ? &memoryUsage.value() : nullptr);
     }
                     
-    ImageView* FrameGraphCompiler::GetImageViewFromLocalCache(Image* image, const ImageViewDescriptor& imageViewDescriptor)
+    SingleDeviceImageView* FrameGraphCompiler::GetImageViewFromLocalCache(SingleDeviceImage* image, const ImageViewDescriptor& imageViewDescriptor)
     {
-        const size_t baseHash = AZStd::hash<Image*>()(image);
+        const size_t baseHash = AZStd::hash<SingleDeviceImage*>()(image);
         // [GFX TODO][ATOM-6289] This should be looked into, combining cityhash with AZStd::hash
         const HashValue64 hash = imageViewDescriptor.GetHash(static_cast<HashValue64>(baseHash));
 
         // Attempt to find the image view in the cache.
-        ImageView* imageView = m_imageViewCache.Find(static_cast<uint64_t>(hash));
+        SingleDeviceImageView* imageView = m_imageViewCache.Find(static_cast<uint64_t>(hash));
 
         if (!imageView)
         {
@@ -728,7 +728,7 @@ namespace AZ::RHI
             const ImageResourceViewData imageResourceViewData = ImageResourceViewData {image->GetName(), imageViewDescriptor};
             RemoveFromCache(imageResourceViewData, m_imageReverseLookupHash, m_imageViewCache);
             // Create a new image view instance and insert it into the cache.
-            Ptr<ImageView> imageViewPtr = Factory::Get().CreateImageView();
+            Ptr<SingleDeviceImageView> imageViewPtr = Factory::Get().CreateImageView();
             if (imageViewPtr->Init(*image, imageViewDescriptor) == ResultCode::Success)
             {
                 imageView = imageViewPtr.get();
@@ -746,14 +746,14 @@ namespace AZ::RHI
         return imageView;
     }
                     
-    BufferView* FrameGraphCompiler::GetBufferViewFromLocalCache(Buffer* buffer, const BufferViewDescriptor& bufferViewDescriptor)
+    SingleDeviceBufferView* FrameGraphCompiler::GetBufferViewFromLocalCache(SingleDeviceBuffer* buffer, const BufferViewDescriptor& bufferViewDescriptor)
     {
-        const size_t baseHash = AZStd::hash<Buffer*>()(buffer);
+        const size_t baseHash = AZStd::hash<SingleDeviceBuffer*>()(buffer);
         // [GFX TODO][ATOM-6289] This should be looked into, combining cityhash with AZStd::hash
         const HashValue64 hash = bufferViewDescriptor.GetHash(static_cast<HashValue64>(baseHash));
 
         // Attempt to find the buffer view in the cache.
-        BufferView* bufferView = m_bufferViewCache.Find(static_cast<uint64_t>(hash));
+        SingleDeviceBufferView* bufferView = m_bufferViewCache.Find(static_cast<uint64_t>(hash));
 
         if (!bufferView)
         {
@@ -763,7 +763,7 @@ namespace AZ::RHI
             RemoveFromCache(bufferResourceViewData, m_bufferReverseLookupHash, m_bufferViewCache);
                 
             // Create a new buffer view instance and insert it into the cache.
-            Ptr<BufferView> bufferViewPtr = Factory::Get().CreateBufferView();
+            Ptr<SingleDeviceBufferView> bufferViewPtr = Factory::Get().CreateBufferView();
             if (bufferViewPtr->Init(*buffer, bufferViewDescriptor) == ResultCode::Success)
             {
                 bufferView = bufferViewPtr.get();
@@ -787,7 +787,7 @@ namespace AZ::RHI
 
         for (ImageFrameAttachment* imageAttachment : attachmentDatabase.GetImageAttachments())
         {
-            Image* image = imageAttachment->GetImage();
+            SingleDeviceImage* image = imageAttachment->GetImage();
 
             if (!image)
             {
@@ -799,7 +799,7 @@ namespace AZ::RHI
             {
                 const ImageViewDescriptor& imageViewDescriptor = node->GetDescriptor().m_imageViewDescriptor;
                     
-                ImageView* imageView = nullptr;
+                SingleDeviceImageView* imageView = nullptr;
                 //Check image's cache first as that contains views provided by higher level code.
                 if(image->IsInResourceCache(imageViewDescriptor))
                 {
@@ -819,7 +819,7 @@ namespace AZ::RHI
 
         for (BufferFrameAttachment* bufferAttachment : attachmentDatabase.GetBufferAttachments())
         {
-            Buffer* buffer = bufferAttachment->GetBuffer();
+            SingleDeviceBuffer* buffer = bufferAttachment->GetBuffer();
 
             if (!buffer)
             {
@@ -832,7 +832,7 @@ namespace AZ::RHI
             {
                 const BufferViewDescriptor& bufferViewDescriptor = node->GetDescriptor().m_bufferViewDescriptor;
                     
-                BufferView* bufferView = nullptr;
+                SingleDeviceBufferView* bufferView = nullptr;
                 //Check buffer's cache first as that contains views provided by higher level code.
                 if(buffer->IsInResourceCache(bufferViewDescriptor))
                 {

@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/IndirectBufferWriter.h>
+#include <Atom/RHI/SingleDeviceIndirectBufferWriter.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
 namespace AZ
@@ -20,9 +20,9 @@ namespace AZ
         //! It writes DX12 Indirect Commands into the a buffer or memory location.
         //! It supports Tier2 indirect commands.
         class IndirectBufferWriter final
-            : public RHI::IndirectBufferWriter
+            : public RHI::SingleDeviceIndirectBufferWriter
         {
-            using Base = RHI::IndirectBufferWriter;
+            using Base = RHI::SingleDeviceIndirectBufferWriter;
         public:
             AZ_CLASS_ALLOCATOR(IndirectBufferWriter, AZ::ThreadPoolAllocator);
             AZ_RTTI(IndirectBufferWriter, "{A83429FE-19AD-423C-BEEA-884AA31DCD77}", Base);
@@ -33,9 +33,9 @@ namespace AZ
             IndirectBufferWriter() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::IndirectBufferWriter
-            void SetVertexViewInternal(RHI::IndirectCommandIndex index, const RHI::StreamBufferView& view) override;
-            void SetIndexViewInternal(RHI::IndirectCommandIndex index, const RHI::IndexBufferView& view) override;
+            // RHI::SingleDeviceIndirectBufferWriter
+            void SetVertexViewInternal(RHI::IndirectCommandIndex index, const RHI::SingleDeviceStreamBufferView& view) override;
+            void SetIndexViewInternal(RHI::IndirectCommandIndex index, const RHI::SingleDeviceIndexBufferView& view) override;
             void DrawInternal(RHI::IndirectCommandIndex index, const RHI::DrawLinear& arguments) override;
             void DrawIndexedInternal(RHI::IndirectCommandIndex index, const RHI::DrawIndexed& arguments) override;
             void DispatchInternal(RHI::IndirectCommandIndex index, const RHI::DispatchDirect& arguments) override;

@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/SingleDeviceDrawItem.h>
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI.Reflect/Handle.h>
 
@@ -31,8 +31,8 @@ namespace AZ::RHI
     using DrawListTag = Handle<uint8_t>;
     using DrawListMask = AZStd::bitset<RHI::Limits::Pipeline::DrawListTagCountMax>;
 
-    using DrawList = AZStd::vector<RHI::DrawItemProperties>;
-    using DrawListView = AZStd::span<const RHI::DrawItemProperties>;
+    using DrawList = AZStd::vector<RHI::SingleDeviceDrawItemProperties>;
+    using DrawListView = AZStd::span<const RHI::SingleDeviceDrawItemProperties>;
 
     /// Contains a table of draw lists, indexed by the tag.
     using DrawListsByTag = AZStd::array<DrawList, RHI::Limits::Pipeline::DrawListTagCountMax>;

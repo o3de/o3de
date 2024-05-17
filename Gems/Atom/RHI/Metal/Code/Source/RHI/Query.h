@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/Query.h>
+#include <Atom/RHI/SingleDeviceQuery.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
 namespace AZ
@@ -17,10 +17,10 @@ namespace AZ
         class QueryPool;
 
         class Query final
-            : public RHI::Query
+            : public RHI::SingleDeviceQuery
         {
             friend class QueryPool;
-            using Base = RHI::Query;
+            using Base = RHI::SingleDeviceQuery;
         public:
             AZ_CLASS_ALLOCATOR(Query, AZ::ThreadPoolAllocator);
             AZ_RTTI(Query, "{07E43C0C-A2BD-4DD1-B0F2-F4C62BE023E6}", Base);
@@ -34,7 +34,7 @@ namespace AZ
             Query() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::Query
+            // RHI::SingleDeviceQuery
             RHI::ResultCode BeginInternal(RHI::CommandList& commandList, RHI::QueryControlFlags flags) override;
             RHI::ResultCode EndInternal(RHI::CommandList& commandList) override;
             RHI::ResultCode WriteTimestampInternal(RHI::CommandList& commandList) override;

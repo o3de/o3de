@@ -44,31 +44,31 @@ namespace UnitTest
 
         AZ::RHI::Ptr<AZ::RHI::Device> CreateDevice() override;
 
-        AZ::RHI::Ptr<AZ::RHI::SwapChain> CreateSwapChain() override;
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceSwapChain> CreateSwapChain() override;
 
-        AZ::RHI::Ptr<AZ::RHI::Fence> CreateFence() override;
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceFence> CreateFence() override;
 
-        AZ::RHI::Ptr<AZ::RHI::Buffer> CreateBuffer() override;
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceBuffer> CreateBuffer() override;
 
-        AZ::RHI::Ptr<AZ::RHI::BufferView> CreateBufferView() override;
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceBufferView> CreateBufferView() override;
 
-        AZ::RHI::Ptr<AZ::RHI::BufferPool> CreateBufferPool() override;
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceBufferPool> CreateBufferPool() override;
 
-        AZ::RHI::Ptr<AZ::RHI::Image> CreateImage() override;
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceImage> CreateImage() override;
 
-        AZ::RHI::Ptr<AZ::RHI::ImageView> CreateImageView() override;
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceImageView> CreateImageView() override;
 
-        AZ::RHI::Ptr<AZ::RHI::ImagePool> CreateImagePool() override;
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceImagePool> CreateImagePool() override;
 
-        AZ::RHI::Ptr<AZ::RHI::StreamingImagePool> CreateStreamingImagePool() override;
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceStreamingImagePool> CreateStreamingImagePool() override;
 
-        AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupPool> CreateShaderResourceGroupPool() override;
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceShaderResourceGroupPool> CreateShaderResourceGroupPool() override;
 
-        AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroup> CreateShaderResourceGroup() override;
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceShaderResourceGroup> CreateShaderResourceGroup() override;
 
-        AZ::RHI::Ptr<AZ::RHI::PipelineLibrary> CreatePipelineLibrary() override;
+        AZ::RHI::Ptr<AZ::RHI::SingleDevicePipelineLibrary> CreatePipelineLibrary() override;
 
-        AZ::RHI::Ptr<AZ::RHI::PipelineState> CreatePipelineState() override;
+        AZ::RHI::Ptr<AZ::RHI::SingleDevicePipelineState> CreatePipelineState() override;
 
         AZ::RHI::Ptr<AZ::RHI::Scope> CreateScope() override;
 
@@ -76,25 +76,25 @@ namespace UnitTest
 
         AZ::RHI::Ptr<AZ::RHI::FrameGraphExecuter> CreateFrameGraphExecuter() override;
 
-        AZ::RHI::Ptr<AZ::RHI::TransientAttachmentPool> CreateTransientAttachmentPool() override;
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceTransientAttachmentPool> CreateTransientAttachmentPool() override;
 
-        AZ::RHI::Ptr<AZ::RHI::QueryPool> CreateQueryPool() override;
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceQueryPool> CreateQueryPool() override;
 
-        AZ::RHI::Ptr<AZ::RHI::Query> CreateQuery() override;
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceQuery> CreateQuery() override;
 
-        AZ::RHI::Ptr<AZ::RHI::IndirectBufferSignature> CreateIndirectBufferSignature() override;
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceIndirectBufferSignature> CreateIndirectBufferSignature() override;
 
-        AZ::RHI::Ptr<AZ::RHI::IndirectBufferWriter> CreateIndirectBufferWriter() override;
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceIndirectBufferWriter> CreateIndirectBufferWriter() override;
 
-        AZ::RHI::Ptr<AZ::RHI::RayTracingBufferPools> CreateRayTracingBufferPools() override;
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceRayTracingBufferPools> CreateRayTracingBufferPools() override;
 
-        AZ::RHI::Ptr<AZ::RHI::RayTracingBlas> CreateRayTracingBlas() override;
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceRayTracingBlas> CreateRayTracingBlas() override;
 
-        AZ::RHI::Ptr<AZ::RHI::RayTracingTlas> CreateRayTracingTlas() override;
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceRayTracingTlas> CreateRayTracingTlas() override;
 
-        AZ::RHI::Ptr<AZ::RHI::RayTracingPipelineState> CreateRayTracingPipelineState() override;
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceRayTracingPipelineState> CreateRayTracingPipelineState() override;
 
-        AZ::RHI::Ptr<AZ::RHI::RayTracingShaderTable> CreateRayTracingShaderTable() override;
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceRayTracingShaderTable> CreateRayTracingShaderTable() override;
 
         AZ::RHI::Ptr<AZ::RHI::DispatchRaysIndirectBuffer> CreateDispatchRaysIndirectBuffer() override;
     };

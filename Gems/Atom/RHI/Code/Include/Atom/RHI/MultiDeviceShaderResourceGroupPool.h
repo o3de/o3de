@@ -13,7 +13,7 @@
 #include <Atom/RHI/MultiDeviceResourcePool.h>
 #include <Atom/RHI/MultiDeviceShaderResourceGroup.h>
 #include <Atom/RHI/ShaderResourceGroupInvalidateRegistry.h>
-#include <Atom/RHI/ShaderResourceGroupPool.h>
+#include <Atom/RHI/SingleDeviceShaderResourceGroupPool.h>
 
 #include <AzCore/std/parallel/containers/concurrent_vector.h>
 

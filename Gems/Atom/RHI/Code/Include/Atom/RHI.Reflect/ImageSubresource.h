@@ -89,13 +89,13 @@ namespace AZ::RHI
         ImageAspectFlags m_aspectFlags = ImageAspectFlags::All;
     };
 
-    struct ImageSubresourceLayout
+    struct SingleDeviceImageSubresourceLayout
     {
-        AZ_TYPE_INFO(ImageSubresourceLayout, "{076A8345-B6E4-4287-A1B3-4079E1BA3CA9}");
+        AZ_TYPE_INFO(SingleDeviceImageSubresourceLayout, "{076A8345-B6E4-4287-A1B3-4079E1BA3CA9}");
         static void Reflect(AZ::ReflectContext* context);
 
-        ImageSubresourceLayout() = default;
-        ImageSubresourceLayout(
+        SingleDeviceImageSubresourceLayout() = default;
+        SingleDeviceImageSubresourceLayout(
             Size size,
             uint32_t rowCount,
             uint32_t bytesPerRow,
@@ -134,29 +134,29 @@ namespace AZ::RHI
 
         MultiDeviceImageSubresourceLayout() = default;
 
-        ImageSubresourceLayout& GetDeviceImageSubresource(int deviceIndex)
+        SingleDeviceImageSubresourceLayout& GetDeviceImageSubresource(int deviceIndex)
         {
             return m_deviceImageSubresourceLayout[deviceIndex];
         }
 
-        const ImageSubresourceLayout& GetDeviceImageSubresource(int deviceIndex) const
+        const SingleDeviceImageSubresourceLayout& GetDeviceImageSubresource(int deviceIndex) const
         {
             AZ_Assert(
                 m_deviceImageSubresourceLayout.find(deviceIndex) != m_deviceImageSubresourceLayout.end(),
-                "No ImageSubresourceLayout found for device index %d\n",
+                "No SingleDeviceImageSubresourceLayout found for device index %d\n",
                 deviceIndex);
             return m_deviceImageSubresourceLayout.at(deviceIndex);
         }
 
-        AZStd::unordered_map<int, ImageSubresourceLayout> m_deviceImageSubresourceLayout;
+        AZStd::unordered_map<int, SingleDeviceImageSubresourceLayout> m_deviceImageSubresourceLayout;
     };
 
     //! This family of helper function provide a standard subresource layout suitable for
     //! the source of a copy from system memory to a destination RHI staging buffer. The results are
     //! platform agnostic. It works by inspecting the image size and format, and then computing the required
     //! size and memory layout requirements to represent the data as linear rows.
-    ImageSubresourceLayout GetImageSubresourceLayout(Size imageSize, Format imageFormat);
-    ImageSubresourceLayout GetImageSubresourceLayout(const ImageDescriptor& imageDescriptor, const ImageSubresource& subresource);
+    SingleDeviceImageSubresourceLayout GetImageSubresourceLayout(Size imageSize, Format imageFormat);
+    SingleDeviceImageSubresourceLayout GetImageSubresourceLayout(const ImageDescriptor& imageDescriptor, const ImageSubresource& subresource);
 
     //! Returns the image subresource index given the mip and array slices, and the total mip levels. Subresources
     //! are organized by arrays of mip chains. The formula is: subresourceIndex = mipSlice + arraySlice * mipLevels.

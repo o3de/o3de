@@ -13,7 +13,7 @@
 
 namespace AZ::RHI
 {
-    class ImageView;
+    class SingleDeviceImageView;
     class ImageFrameAttachment;
 
     //! A specialization of a scope attachment for images. Provides
@@ -47,10 +47,10 @@ namespace AZ::RHI
         ImageScopeAttachment* GetNext();
 
         //! Returns the image view set on the scope attachment.
-        const ImageView* GetImageView() const;
+        const SingleDeviceImageView* GetImageView() const;
 
         //! Assigns an image view to the scope attachment.
-        void SetImageView(ConstPtr<ImageView> imageView);
+        void SetImageView(ConstPtr<SingleDeviceImageView> imageView);
 
         bool IsBeingResolved() const;
 

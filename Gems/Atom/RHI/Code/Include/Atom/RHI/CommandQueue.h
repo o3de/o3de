@@ -22,7 +22,7 @@ namespace AZ::RHI
     struct ExecuteWorkRequest
     {
         // A set of swap chains to present after executing the command lists.
-        AZStd::vector<SwapChain*> m_swapChainsToPresent;
+        AZStd::vector<SingleDeviceSwapChain*> m_swapChainsToPresent;
     };
         
     struct CommandQueueDescriptor

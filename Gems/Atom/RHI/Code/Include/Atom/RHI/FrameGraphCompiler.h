@@ -10,8 +10,8 @@
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
 #include <Atom/RHI/Object.h>
 #include <Atom/RHI/ObjectCache.h>
-#include <Atom/RHI/ImageView.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/SingleDeviceImageView.h>
+#include <Atom/RHI/SingleDeviceBufferView.h>
 
 //! Struct used as a key for m_imageReverseLookupHash map below. The reason for using a struct instead of a hash directly is
 //! so that the map can handle hash collision correctly by using the == operator. This struct contains
@@ -81,7 +81,7 @@ namespace AZ::RHI
     class FrameGraph;
     class FrameGraphAttachmentDatabase;
     class ResourcePoolFrameAttachment;
-    class TransientAttachmentPool;
+    class SingleDeviceTransientAttachmentPool;
 
     /**
         * @brief Fill this request structure and pass to FrameGraphCompiler::Compile.
@@ -94,7 +94,7 @@ namespace AZ::RHI
         FrameGraph* m_frameGraph = nullptr;
 
         /// The transient attachment pool used for transient attachment allocations. Must be a valid instance.
-        TransientAttachmentPool* m_transientAttachmentPool = nullptr;
+        SingleDeviceTransientAttachmentPool* m_transientAttachmentPool = nullptr;
 
         /// The verbosity requested for compilation. Logs are emitted using the AzCore logging functions.
         FrameSchedulerLogVerbosity m_logVerbosity = FrameSchedulerLogVerbosity::None;
@@ -139,7 +139,7 @@ namespace AZ::RHI
     //!      == Transient Attachments ==
     //!
     //! Transient attachments are intra-frame and do not persist after the frame ends and can take the form of
-    //! buffers or images. These attachments are owned by a TransientAttachmentPool; every frame, the pool
+    //! buffers or images. These attachments are owned by a SingleDeviceTransientAttachmentPool; every frame, the pool
     //! is reset. Since attachments are always declared for usage on scopes, its full usage chain--and thus its
     //! lifetime across the frame--is immediately available.
     //!
@@ -213,7 +213,7 @@ namespace AZ::RHI
 
         void CompileTransientAttachments(
             FrameGraph& frameGraph,
-            TransientAttachmentPool& transientAttachmentPool,
+            SingleDeviceTransientAttachmentPool& transientAttachmentPool,
             FrameSchedulerCompileFlags compileFlags,
             FrameSchedulerStatisticsFlags statisticsFlags);
 
@@ -226,13 +226,13 @@ namespace AZ::RHI
                                 ObjectCache<ObjectCacheType>& objectCache);
             
         // Returns the resource from local cache if it exists within it or create one if it doesn't and add it to the cache
-        ImageView* GetImageViewFromLocalCache(Image* image, const ImageViewDescriptor& imageViewDescriptor);
-        BufferView* GetBufferViewFromLocalCache(Buffer* buffer, const BufferViewDescriptor& bufferViewDescriptor);
+        SingleDeviceImageView* GetImageViewFromLocalCache(SingleDeviceImage* image, const ImageViewDescriptor& imageViewDescriptor);
+        SingleDeviceBufferView* GetBufferViewFromLocalCache(SingleDeviceBuffer* buffer, const BufferViewDescriptor& bufferViewDescriptor);
             
         // This cache is mainly for transient resources. It adds a dependency to the resource views and hence they wont be
         // deleted at the end of the frame and re-created at the start. Mainly used as an optimization.  
-        ObjectCache<ImageView> m_imageViewCache;
-        ObjectCache<BufferView> m_bufferViewCache;
+        ObjectCache<SingleDeviceImageView> m_imageViewCache;
+        ObjectCache<SingleDeviceBufferView> m_bufferViewCache;
             
         // The maps below are used to reverse look up view hashes so we can clear them out of m_imageViewCache/m_bufferViewCache
         // once they have been replaced with a new view instance. 

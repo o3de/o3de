@@ -89,10 +89,10 @@ namespace AZ
             StableDynamicArray<SkinnedMeshRenderProxy> m_renderProxies;
             AZStd::unique_ptr<SkinnedMeshStatsCollector> m_statsCollector;
 
-            AZStd::unordered_set<const RHI::DispatchItem*> m_skinningDispatches;
+            AZStd::unordered_set<const RHI::SingleDeviceDispatchItem*> m_skinningDispatches;
             bool m_alreadyCreatedSkinningScopeThisFrame = false;
 
-            AZStd::unordered_set<const RHI::DispatchItem*> m_morphTargetDispatches;
+            AZStd::unordered_set<const RHI::SingleDeviceDispatchItem*> m_morphTargetDispatches;
             bool m_alreadyCreatedMorphTargetScopeThisFrame = false;
 
             AZStd::mutex m_dispatchItemMutex;

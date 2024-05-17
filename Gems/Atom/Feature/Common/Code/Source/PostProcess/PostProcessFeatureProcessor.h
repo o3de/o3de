@@ -10,7 +10,7 @@
 
 #include <PostProcess/PostProcessSettings.h>
 #include <Atom/Feature/PostProcess/PostProcessFeatureProcessorInterface.h>
-#include <Atom/RHI/ShaderResourceGroup.h>
+#include <Atom/RHI/SingleDeviceShaderResourceGroup.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Base.h>
 #include <AtomCore/std/containers/vector_set.h>

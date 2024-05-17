@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/CopyItem.h>
+#include <Atom/RHI/SingleDeviceCopyItem.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <Atom/RHI.Reflect/Scissor.h>
 #include <Atom/RHI.Reflect/Viewport.h>
@@ -54,7 +54,7 @@ namespace AZ
             RHI::CopyItemType GetCopyItemType();
 
             // The copy item submitted to the command list
-            RHI::CopyItem m_copyItem;
+            RHI::SingleDeviceCopyItem m_copyItem;
 
             // Potential data provided by the PassRequest
             CopyPassData m_data;

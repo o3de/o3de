@@ -68,7 +68,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode QueryPool::InitQueryInternal([[maybe_unused]] RHI::Query& query)
+        RHI::ResultCode QueryPool::InitQueryInternal([[maybe_unused]] RHI::SingleDeviceQuery& query)
         {
             // Nothing to do
             return RHI::ResultCode::Success;

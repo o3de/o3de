@@ -129,10 +129,10 @@ namespace AZ
                 return buffer;
             }
 
-            Data::Instance<RHI::ImagePool> UtilityClass::CreateImagePool(RHI::ImagePoolDescriptor& imagePoolDesc)
+            Data::Instance<RHI::SingleDeviceImagePool> UtilityClass::CreateImagePool(RHI::ImagePoolDescriptor& imagePoolDesc)
             {
                 RHI::Ptr<RHI::Device> device = RHI::GetRHIDevice();
-                Data::Instance<RHI::ImagePool> imagePool = RHI::Factory::Get().CreateImagePool();
+                Data::Instance<RHI::SingleDeviceImagePool> imagePool = RHI::Factory::Get().CreateImagePool();
                 RHI::ResultCode result = imagePool->Init(*device, imagePoolDesc);
                 if (result != RHI::ResultCode::Success)
                 {
@@ -142,10 +142,10 @@ namespace AZ
                 return imagePool;
             }
 
-            Data::Instance<RHI::Image> UtilityClass::CreateImage2D(RHI::ImagePool* imagePool, RHI::ImageDescriptor& imageDesc)
+            Data::Instance<RHI::SingleDeviceImage> UtilityClass::CreateImage2D(RHI::SingleDeviceImagePool* imagePool, RHI::ImageDescriptor& imageDesc)
             {
-                Data::Instance<RHI::Image> rhiImage = RHI::Factory::Get().CreateImage();
-                RHI::ImageInitRequest request;
+                Data::Instance<RHI::SingleDeviceImage> rhiImage = RHI::Factory::Get().CreateImage();
+                RHI::SingleDeviceImageInitRequest request;
                 request.m_image = rhiImage.get();
                 request.m_descriptor = imageDesc;
                 RHI::ResultCode result = imagePool->InitImage(request);

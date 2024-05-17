@@ -29,7 +29,7 @@ namespace AZ
             static void GetAssetHandlers(AssetHandlerPtrList& assetHandlers);
 
             // BufferSystemInterface overrides...
-            RHI::Ptr<RHI::BufferPool> GetCommonBufferPool(CommonBufferPoolType poolType) override;
+            RHI::Ptr<RHI::SingleDeviceBufferPool> GetCommonBufferPool(CommonBufferPoolType poolType) override;
             Data::Instance<Buffer> CreateBufferFromCommonPool(const CommonBufferDescriptor& descriptor) override;
             Data::Instance<Buffer> FindCommonBuffer(AZStd::string_view uniqueBufferName) override;
 
@@ -40,7 +40,7 @@ namespace AZ
             bool CreateCommonBufferPool(CommonBufferPoolType poolType);
 
         private:
-            RHI::Ptr<RHI::BufferPool> m_commonPools[static_cast<uint8_t>(CommonBufferPoolType::Count)];
+            RHI::Ptr<RHI::SingleDeviceBufferPool> m_commonPools[static_cast<uint8_t>(CommonBufferPoolType::Count)];
 
             bool m_initialized = false;
         };

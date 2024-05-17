@@ -9,9 +9,9 @@
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/Fence.h>
-#include <Atom/RHI/BufferView.h>
-#include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/SingleDeviceFence.h>
+#include <Atom/RHI/SingleDeviceBufferView.h>
+#include <Atom/RHI/SingleDeviceBufferPool.h>
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
 #include <Atom/RPI.Public/Buffer/BufferPool.h>
 #include <Atom/RPI.Public/Buffer/BufferSystemInterface.h>
@@ -52,17 +52,17 @@ namespace AZ
             WaitForUpload();
         }
 
-        RHI::Buffer* Buffer::GetRHIBuffer()
+        RHI::SingleDeviceBuffer* Buffer::GetRHIBuffer()
         {
             return m_rhiBuffer.get();
         }
 
-        const RHI::Buffer* Buffer::GetRHIBuffer() const
+        const RHI::SingleDeviceBuffer* Buffer::GetRHIBuffer() const
         {
             return m_rhiBuffer.get();
         }
 
-        const RHI::BufferView* Buffer::GetBufferView() const
+        const RHI::SingleDeviceBufferView* Buffer::GetBufferView() const
         {
             if (m_rhiBuffer->GetDescriptor().m_bindFlags == RHI::BufferBindFlags::InputAssembly ||
                 m_rhiBuffer->GetDescriptor().m_bindFlags == RHI::BufferBindFlags::DynamicInputAssembly)
@@ -125,7 +125,7 @@ namespace AZ
 
             bool initWithData = (bufferAsset.GetBuffer().size() > 0 && bufferAsset.GetBuffer().size() <= MinStreamSize);
 
-            RHI::BufferInitRequest request;
+            RHI::SingleDeviceBufferInitRequest request;
             request.m_buffer = m_rhiBuffer.get();
             request.m_descriptor = bufferAsset.GetBufferDescriptor();
             request.m_initialData = initWithData ? bufferAsset.GetBuffer().data() : nullptr;
@@ -148,7 +148,7 @@ namespace AZ
 
                     RHI::BufferDescriptor bufferDescriptor = bufferAsset.GetBufferDescriptor();
 
-                    RHI::BufferStreamRequest request2;
+                    RHI::SingleDeviceBufferStreamRequest request2;
                     request2.m_buffer = m_rhiBuffer.get();
                     request2.m_fenceToSignal = m_streamFence.get();
                     request2.m_byteCount = bufferDescriptor.m_byteCount;
@@ -200,7 +200,7 @@ namespace AZ
             AZ_Assert(m_rhiBuffer, "Failed to acquire an buffer instance from the RHI. Is the RHI initialized?");
             
             desc.m_byteCount = bufferSize;
-            RHI::BufferInitRequest request;
+            RHI::SingleDeviceBufferInitRequest request;
             request.m_buffer = m_rhiBuffer.get();
             request.m_descriptor = desc;
 
@@ -241,12 +241,12 @@ namespace AZ
                 return nullptr;
             }
 
-            RHI::BufferMapRequest request;
+            RHI::SingleDeviceBufferMapRequest request;
             request.m_buffer = m_rhiBuffer.get();
             request.m_byteCount = byteCount;
             request.m_byteOffset = byteOffset;
 
-            RHI::BufferMapResponse response;
+            RHI::SingleDeviceBufferMapResponse response;
             RHI::ResultCode result = m_rhiBufferPool->MapBuffer(request, response);
 
             if (result == RHI::ResultCode::Success)

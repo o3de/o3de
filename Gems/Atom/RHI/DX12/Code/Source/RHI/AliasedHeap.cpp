@@ -84,7 +84,7 @@ namespace AZ
             Base::ShutdownInternal();
         }
 
-        void AliasedHeap::ShutdownResourceInternal(RHI::Resource& resource)
+        void AliasedHeap::ShutdownResourceInternal(RHI::SingleDeviceResource& resource)
         {
             Device& device = GetDX12RHIDevice();
             if (Buffer* buffer = azrtti_cast <Buffer*>(&resource))
@@ -99,7 +99,7 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode AliasedHeap::InitBufferInternal(const RHI::BufferInitRequest& request, size_t heapOffset)
+        RHI::ResultCode AliasedHeap::InitBufferInternal(const RHI::SingleDeviceBufferInitRequest& request, size_t heapOffset)
         {
             const RHI::BufferDescriptor& descriptor = request.m_descriptor;
             Buffer* buffer = static_cast<Buffer*>(request.m_buffer);
@@ -121,7 +121,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode AliasedHeap::InitImageInternal(const RHI::ImageInitRequest& request, size_t heapOffset)
+        RHI::ResultCode AliasedHeap::InitImageInternal(const RHI::SingleDeviceImageInitRequest& request, size_t heapOffset)
         {
             const RHI::ImageDescriptor& descriptor = request.m_descriptor;
             Image* image = static_cast<Image*>(request.m_image);

@@ -9,8 +9,8 @@
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/Scope.h>
 #include <Atom/RHI/ScopeAttachment.h>
-#include <Atom/RHI/Image.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/SingleDeviceImage.h>
+#include <Atom/RHI/SingleDeviceImageView.h>
 #include <RHI/Conversion.h>
 #include <RHI/Image.h>
 
@@ -91,7 +91,7 @@ namespace AZ
                 case RHI::ScopeAttachmentUsage::ShadingRate:
                     {
                         const Image& image =
-                            static_cast<const Image&>((static_cast<const RHI::ImageView*>(scopeAttachment.GetResourceView()))->GetImage());
+                            static_cast<const Image&>((static_cast<const RHI::SingleDeviceImageView*>(scopeAttachment.GetResourceView()))->GetImage());
                         mergedStateFlags |=
                             RHI::CheckBitsAll(
                                 image.GetUsageFlags(), static_cast<VkImageUsageFlags>(VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT))
@@ -262,7 +262,7 @@ namespace AZ
                 case RHI::ScopeAttachmentUsage::ShadingRate:
                     {
                         const Image& image =
-                            static_cast<const Image&>((static_cast<const RHI::ImageView*>(scopeAttachment.GetResourceView()))->GetImage());
+                            static_cast<const Image&>((static_cast<const RHI::SingleDeviceImageView*>(scopeAttachment.GetResourceView()))->GetImage());
                         accessFlags |=
                             RHI::CheckBitsAll(
                                 image.GetUsageFlags(), static_cast<VkImageUsageFlags>(VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT))
@@ -393,7 +393,7 @@ namespace AZ
                 }
             }
 
-            const RHI::ImageView* imageView = imageAttachment.GetImageView();
+            const RHI::SingleDeviceImageView* imageView = imageAttachment.GetImageView();
             auto imageAspects = RHI::FilterBits(imageView->GetImage().GetAspectFlags(), imageView->GetDescriptor().m_aspectFlags);
             switch (usagesAndAccesses.front().m_usage)
             {

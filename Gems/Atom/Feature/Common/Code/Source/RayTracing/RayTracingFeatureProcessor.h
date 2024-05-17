@@ -11,10 +11,10 @@
 #include <RayTracing/RayTracingResourceList.h>
 #include <RayTracing/RayTracingIndexList.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
-#include <Atom/RHI/RayTracingAccelerationStructure.h>
-#include <Atom/RHI/RayTracingBufferPools.h>
-#include <Atom/RHI/BufferView.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/SingleDeviceRayTracingAccelerationStructure.h>
+#include <Atom/RHI/SingleDeviceRayTracingBufferPools.h>
+#include <Atom/RHI/SingleDeviceBufferView.h>
+#include <Atom/RHI/SingleDeviceImageView.h>
 #include <Atom/RPI.Public/Buffer/RingBuffer.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/Utils/StableDynamicArray.h>
@@ -98,11 +98,11 @@ namespace AZ
                 RayTracingSubMeshTextureFlags m_textureFlags = RayTracingSubMeshTextureFlags::None;
 
                 // material textures
-                RHI::Ptr<const RHI::ImageView> m_baseColorImageView;
-                RHI::Ptr<const RHI::ImageView> m_normalImageView;
-                RHI::Ptr<const RHI::ImageView> m_metallicImageView;
-                RHI::Ptr<const RHI::ImageView> m_roughnessImageView;
-                RHI::Ptr<const RHI::ImageView> m_emissiveImageView;
+                RHI::Ptr<const RHI::SingleDeviceImageView> m_baseColorImageView;
+                RHI::Ptr<const RHI::SingleDeviceImageView> m_normalImageView;
+                RHI::Ptr<const RHI::SingleDeviceImageView> m_metallicImageView;
+                RHI::Ptr<const RHI::SingleDeviceImageView> m_roughnessImageView;
+                RHI::Ptr<const RHI::SingleDeviceImageView> m_emissiveImageView;
             };
 
             //! Contains data for a single subMesh
@@ -110,34 +110,34 @@ namespace AZ
             {
                 // vertex streams
                 RHI::Format m_positionFormat = RHI::Format::Unknown;
-                RHI::StreamBufferView m_positionVertexBufferView;
-                RHI::Ptr<RHI::BufferView> m_positionShaderBufferView;
+                RHI::SingleDeviceStreamBufferView m_positionVertexBufferView;
+                RHI::Ptr<RHI::SingleDeviceBufferView> m_positionShaderBufferView;
 
                 RHI::Format m_normalFormat = RHI::Format::Unknown;
-                RHI::StreamBufferView m_normalVertexBufferView;
-                RHI::Ptr<RHI::BufferView> m_normalShaderBufferView;
+                RHI::SingleDeviceStreamBufferView m_normalVertexBufferView;
+                RHI::Ptr<RHI::SingleDeviceBufferView> m_normalShaderBufferView;
 
                 RHI::Format m_tangentFormat = RHI::Format::Unknown;
-                RHI::StreamBufferView m_tangentVertexBufferView;
-                RHI::Ptr<RHI::BufferView> m_tangentShaderBufferView;
+                RHI::SingleDeviceStreamBufferView m_tangentVertexBufferView;
+                RHI::Ptr<RHI::SingleDeviceBufferView> m_tangentShaderBufferView;
 
                 RHI::Format m_bitangentFormat = RHI::Format::Unknown;
-                RHI::StreamBufferView m_bitangentVertexBufferView;
-                RHI::Ptr<RHI::BufferView> m_bitangentShaderBufferView;
+                RHI::SingleDeviceStreamBufferView m_bitangentVertexBufferView;
+                RHI::Ptr<RHI::SingleDeviceBufferView> m_bitangentShaderBufferView;
 
                 RHI::Format m_uvFormat = RHI::Format::Unknown;
-                RHI::StreamBufferView m_uvVertexBufferView;
-                RHI::Ptr<RHI::BufferView> m_uvShaderBufferView;
+                RHI::SingleDeviceStreamBufferView m_uvVertexBufferView;
+                RHI::Ptr<RHI::SingleDeviceBufferView> m_uvShaderBufferView;
 
                 // index buffer
-                RHI::IndexBufferView m_indexBufferView;
-                RHI::Ptr<RHI::BufferView> m_indexShaderBufferView;
+                RHI::SingleDeviceIndexBufferView m_indexBufferView;
+                RHI::Ptr<RHI::SingleDeviceBufferView> m_indexShaderBufferView;
 
                 // vertex buffer usage flags
                 RayTracingSubMeshBufferFlags m_bufferFlags = RayTracingSubMeshBufferFlags::None;
 
                 // ray tracing Blas
-                RHI::Ptr<RHI::RayTracingBlas> m_blas;
+                RHI::Ptr<RHI::SingleDeviceRayTracingBlas> m_blas;
 
                 // submesh material
                 SubMeshMaterial m_material;
@@ -218,7 +218,7 @@ namespace AZ
                 uint32_t m_instanceMask;
                 Transform m_transform = Transform::CreateIdentity();
                 AZ::Vector3 m_nonUniformScale = Vector3::CreateOne();
-                RHI::Ptr<RHI::RayTracingBlas> m_blas;
+                RHI::Ptr<RHI::SingleDeviceRayTracingBlas> m_blas;
                 uint32_t m_localInstanceIndex;
             };
             using ProceduralGeometryTypeList = StableDynamicArray<ProceduralGeometryType>;
@@ -321,8 +321,8 @@ namespace AZ
             Data::Instance<RPI::ShaderResourceGroup> GetRayTracingMaterialSrg() const { return m_rayTracingMaterialSrg; }
 
             //! Retrieves the RayTracingTlas
-            const RHI::Ptr<RHI::RayTracingTlas>& GetTlas() const { return m_tlas; }
-            RHI::Ptr<RHI::RayTracingTlas>& GetTlas() { return m_tlas; }
+            const RHI::Ptr<RHI::SingleDeviceRayTracingTlas>& GetTlas() const { return m_tlas; }
+            RHI::Ptr<RHI::SingleDeviceRayTracingTlas>& GetTlas() { return m_tlas; }
 
             //! Retrieves the revision number of the ray tracing data.
             //! This is used to determine if the RayTracingShaderTable needs to be rebuilt.
@@ -338,7 +338,7 @@ namespace AZ
             }
 
             //! Retrieves the buffer pools used for ray tracing operations.
-            RHI::RayTracingBufferPools& GetBufferPools() { return *m_bufferPools; }
+            RHI::SingleDeviceRayTracingBufferPools& GetBufferPools() { return *m_bufferPools; }
 
             //! Retrieves the total number of ray tracing meshes.
             uint32_t GetSubMeshCount() const { return m_subMeshCount; }
@@ -366,7 +366,7 @@ namespace AZ
 
             struct SubMeshBlasInstance
             {
-                RHI::Ptr<RHI::RayTracingBlas> m_blas;
+                RHI::Ptr<RHI::SingleDeviceRayTracingBlas> m_blas;
             };
 
             struct MeshBlasInstance
@@ -408,10 +408,10 @@ namespace AZ
             SubMeshVector m_subMeshes;
 
             // buffer pools used in ray tracing operations
-            RHI::Ptr<RHI::RayTracingBufferPools> m_bufferPools;
+            RHI::Ptr<RHI::SingleDeviceRayTracingBufferPools> m_bufferPools;
 
             // ray tracing acceleration structure (TLAS)
-            RHI::Ptr<RHI::RayTracingTlas> m_tlas;
+            RHI::Ptr<RHI::SingleDeviceRayTracingTlas> m_tlas;
 
             // RayTracingScene and RayTracingMaterial asset and Srgs
             Data::Asset<RPI::ShaderAsset> m_rayTracingSrgAsset;
@@ -506,8 +506,8 @@ namespace AZ
             // without invalidating the indices held here in the m_meshBufferIndices and m_materialTextureIndices lists.
             
             // mesh buffer and material texture resource lists, accessed by the shader through an unbounded array
-            RayTracingResourceList<RHI::BufferView> m_meshBuffers;
-            RayTracingResourceList<const RHI::ImageView> m_materialTextures;
+            RayTracingResourceList<RHI::SingleDeviceBufferView> m_meshBuffers;
+            RayTracingResourceList<const RHI::SingleDeviceImageView> m_materialTextures;
 #endif
 
             // RayTracingIndexList implements an internal freelist chain stored inside the list itself, allowing entries to be

@@ -17,7 +17,7 @@
 #include <AtomCore/Instance/Instance.h>
 #include <AtomCore/Instance/InstanceData.h>
 
-#include <Atom/RHI/StreamBufferView.h>
+#include <Atom/RHI/SingleDeviceStreamBufferView.h>
 
 #include <Atom/RPI.Public/MeshDrawPacket.h>
 #include <Atom/RPI.Public/Model/Model.h>
@@ -64,7 +64,7 @@ namespace AZ
              //! Compute render data
             Data::Instance<RPI::ShaderResourceGroup> ComputeSrg;          // Per object Compute data - can be shared across instances
             AZStd::vector<SrgBufferDescriptor> ComputeBuffersDescriptors;
-            AZStd::vector<Data::Instance<RHI::BufferView>> ComputeBuffersViews;
+            AZStd::vector<Data::Instance<RHI::SingleDeviceBufferView>> ComputeBuffersViews;
             AZStd::vector<Data::Instance<Meshlets::SharedBufferAllocation>> ComputeBuffersAllocators;
             AZStd::vector <Data::Instance<RPI::Buffer>> ComputeBuffers;   // stand alone non shared buffers
             MeshletsDispatchItem MeshDispatchItem;
@@ -72,11 +72,11 @@ namespace AZ
             //! Render pass data
             Data::Instance<RPI::ShaderResourceGroup> RenderObjectSrg;     // Per object render data - includes instanceId and vertex buffers
             AZStd::vector<SrgBufferDescriptor> RenderBuffersDescriptors;
-            RHI::IndexBufferView IndexBufferView;
-            AZStd::vector<Data::Instance<RHI::BufferView>> RenderBuffersViews; 
+            RHI::SingleDeviceIndexBufferView IndexBufferView;
+            AZStd::vector<Data::Instance<RHI::SingleDeviceBufferView>> RenderBuffersViews; 
             AZStd::vector <Data::Instance<RPI::Buffer>> RenderBuffers;    // stand alone non shared buffers
 
-            const RHI::DrawPacket* MeshDrawPacket = nullptr;    // Should be moved to the instance data structure
+            const RHI::SingleDeviceDrawPacket* MeshDrawPacket = nullptr;    // Should be moved to the instance data structure
         };
         using ModelLodDataArray = AZStd::vector<MeshRenderData*>;    // MeshRenderData per mesh in the Lod
 
@@ -151,7 +151,7 @@ namespace AZ
             uint32_t CreateMeshletsRenderObject(const RPI::ModelLodAsset::Mesh& meshAsset, MeshRenderData &meshRenderData);
 
 
-            bool BuildDrawPacket( RHI::DrawPacketBuilder::DrawRequest& drawRequest, MeshRenderData& meshRenderData);
+            bool BuildDrawPacket( RHI::SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest& drawRequest, MeshRenderData& meshRenderData);
 
             bool CreateAndBindRenderBuffers(MeshRenderData &meshRenderData);
 

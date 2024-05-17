@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/TransientAttachmentStatistics.h>
-#include <Atom/RHI/TransientAttachmentPool.h>
+#include <Atom/RHI/SingleDeviceTransientAttachmentPool.h>
 #include <Atom/RHI/AliasedAttachmentAllocator.h>
 #include <RHI/AliasedHeap.h>
 
@@ -21,9 +21,9 @@ namespace AZ
         using AliasedAttachmentAllocator = RHI::AliasedAttachmentAllocator<AliasedHeap>;
 
         class TransientAttachmentPool final
-            : public RHI::TransientAttachmentPool
+            : public RHI::SingleDeviceTransientAttachmentPool
         {
-            using Base = RHI::TransientAttachmentPool;
+            using Base = RHI::SingleDeviceTransientAttachmentPool;
 
         public:
             AZ_CLASS_ALLOCATOR(TransientAttachmentPool, AZ::SystemAllocator);
@@ -36,12 +36,12 @@ namespace AZ
             TransientAttachmentPool() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::TransientAttachmentPool
+            // RHI::SingleDeviceTransientAttachmentPool
             RHI::ResultCode InitInternal(RHI::Device& device, const RHI::TransientAttachmentPoolDescriptor& descriptor) override;
             void BeginInternal(const RHI::TransientAttachmentPoolCompileFlags compileFlags, const RHI::TransientAttachmentStatistics::MemoryUsage* memoryHint) override;
             void EndInternal() override;
-            RHI::Image* ActivateImage(const RHI::TransientImageDescriptor& descriptor) override;
-            RHI::Buffer* ActivateBuffer(const RHI::TransientBufferDescriptor& descriptor) override;
+            RHI::SingleDeviceImage* ActivateImage(const RHI::TransientImageDescriptor& descriptor) override;
+            RHI::SingleDeviceBuffer* ActivateBuffer(const RHI::TransientBufferDescriptor& descriptor) override;
             void DeactivateBuffer(const RHI::AttachmentId& attachmentId) override;
             void DeactivateImage(const RHI::AttachmentId& attachmentId) override;
             void ShutdownInternal() override;
