@@ -603,6 +603,19 @@ namespace AzToolsFramework
         GetPropertyEditor()->QueueInvalidation(refreshLevel);
     }
 
+    void ComponentEditor::QueuePropertyEditorInvalidationForComponent(AZ::EntityComponentIdPair entityComponentIdPair, PropertyModificationRefreshLevel refreshLevel)
+    {
+        for (const auto component : m_components)
+        {
+            if ((component->GetId() == entityComponentIdPair.GetComponentId()) 
+             && (component->GetEntityId() == entityComponentIdPair.GetEntityId()))
+            {
+                GetPropertyEditor()->QueueInvalidation(refreshLevel);
+                break;
+            }
+        }
+    }
+
     void ComponentEditor::CancelQueuedRefresh()
     {
         GetPropertyEditor()->CancelQueuedRefresh();

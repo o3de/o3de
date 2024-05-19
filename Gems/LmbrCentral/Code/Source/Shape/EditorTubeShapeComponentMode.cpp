@@ -349,7 +349,9 @@ namespace LmbrCentral
 
         // ensure property grid values are refreshed
         AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
-            &AzToolsFramework::ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
+            &AzToolsFramework::ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplayForComponent, 
+            GetEntityComponentIdPair(),
+            AzToolsFramework::Refresh_Values);
     }
 
     void EditorTubeShapeComponentMode::OnOpenCloseChanged(const bool /*closed*/)
