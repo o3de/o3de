@@ -300,28 +300,16 @@ namespace ScriptCanvas
             SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("GraphActivation: %s", graphInfo.ToString().data());
 
             Lock lock(m_mutex);
-            if (!graphInfo.m_executionState)
-            {
-                return;
-            }
 
             ActiveGraphStatus* activeGraphStatus = nullptr;
-            const auto& graphAssetId = graphInfo.m_executionState->GetAssetId();
-            const auto userData = AZStd::any_cast<const RuntimeComponentUserData>(&graphInfo.m_executionState->GetUserData());
-            if (!userData)
-            {
-                AZ_Error("Debugger", false, "Failed to get user data from graph");
-                return;
-            }
 
-            const GraphIdentifier graphIdentifier(graphAssetId, userData->component.GetId());
-            auto graphIter = m_activeGraphs.find(graphAssetId);
+            auto graphIter = m_activeGraphs.find(graphInfo.m_graphIdentifier.m_assetId);
 
             if (graphIter == m_activeGraphs.end())
             {
-                activeGraphStatus = &(m_activeGraphs[graphAssetId]);
+                activeGraphStatus = &(m_activeGraphs[graphInfo.m_graphIdentifier.m_assetId]);
 
-                if (IsAssetObserved(graphAssetId))
+                if (IsAssetObserved(graphInfo.m_graphIdentifier.m_assetId))
                 {
                     activeGraphStatus->m_isObserved = true;
                 }
@@ -336,7 +324,7 @@ namespace ScriptCanvas
                 activeGraphStatus->m_instanceCounter++;
             }
 
-            const AZ::NamedEntityId& namedEntityId = userData->entity;
+            const AZ::NamedEntityId& namedEntityId = graphInfo.m_runtimeEntity;
 
             auto entityIter = m_activeEntities.find(namedEntityId);
 
@@ -354,14 +342,14 @@ namespace ScriptCanvas
 
             if (entityStatus)
             {
-                auto graphCountIter = entityStatus->m_activeGraphs.find(graphIdentifier);
+                auto graphCountIter = entityStatus->m_activeGraphs.find(graphInfo.m_graphIdentifier);
                 if (graphCountIter == entityStatus->m_activeGraphs.end())
                 {
                     ActiveGraphStatus graphStatus;
                     graphStatus.m_instanceCounter = 1;
 
-                    graphStatus.m_isObserved = IsGraphObserved(*graphInfo.m_executionState);
-                    entityStatus->m_activeGraphs.insert(AZStd::make_pair(graphIdentifier, graphStatus));
+                    graphStatus.m_isObserved = IsGraphObserved(graphInfo.m_runtimeEntity, graphInfo.m_graphIdentifier);
+                    entityStatus->m_activeGraphs.insert(AZStd::make_pair(graphInfo.m_graphIdentifier, graphStatus));
                 }
                 else
                 {
@@ -381,7 +369,7 @@ namespace ScriptCanvas
                     AZ::SliceComponent::EntityIdToEntityIdMap loadedEntityIdMap;
                     AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(runtimeEntityId, m_contextId, &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::FindLoadedEntityIdMapping, clientStaticEntityIter->first);
 
-                    if (runtimeEntityId == namedEntityId)
+                    if (runtimeEntityId == graphInfo.m_runtimeEntity)
                     {
                         AZ::EntityId staticEntity = clientStaticEntityIter->first;
 
@@ -392,12 +380,12 @@ namespace ScriptCanvas
                             AZ_Assert(selfStaticEntityIter != m_self.m_script.m_staticEntities.end(), "self scripts miss match with client scripts");
                             // Once debugger supports multiple same graphs per entity, we can directly copy over without comparing,
                             // because the component id should be hooked between editor and runtime component
-                            for (auto staticGraphIdentifier : selfStaticEntityIter->second)
+                            for (auto graphIdentifier : selfStaticEntityIter->second)
                             {
-                                if (staticGraphIdentifier.m_assetId == graphAssetId)
+                                if (graphIdentifier.m_assetId == graphInfo.m_graphIdentifier.m_assetId)
                                 {
-                                    insertResult.first->second.insert(graphIdentifier);
-                                    selfStaticEntityIter->second.erase(staticGraphIdentifier);
+                                    insertResult.first->second.insert(graphInfo.m_graphIdentifier);
+                                    selfStaticEntityIter->second.erase(graphIdentifier);
                                     break;
                                 }
                             }
@@ -412,12 +400,12 @@ namespace ScriptCanvas
                             auto insertResult = m_client.m_script.m_entities.insert(runtimeEntityId);
                             // Once debugger supports multiple same graphs per entity, we can directly copy over without comparing,
                             // because the component id should be hooked between editor and runtime component
-                            for (auto clientGraphIdentifier : clientStaticEntityIter->second)
+                            for (auto graphIdentifier : clientStaticEntityIter->second)
                             {
-                                if (clientGraphIdentifier.m_assetId == graphAssetId)
+                                if (graphIdentifier.m_assetId == graphInfo.m_graphIdentifier.m_assetId)
                                 {
-                                    insertResult.first->second.insert(graphIdentifier);
-                                    clientStaticEntityIter->second.erase(clientGraphIdentifier);
+                                    insertResult.first->second.insert(graphInfo.m_graphIdentifier);
+                                    clientStaticEntityIter->second.erase(graphIdentifier);
                                     break;
                                 }
                             }
@@ -436,28 +424,20 @@ namespace ScriptCanvas
             }
 
             GraphActivation payload = graphInfo;
-            payload.m_entityIsObserved = IsGraphObserved(*graphInfo.m_executionState);
+            payload.m_entityIsObserved = IsGraphObserved(graphInfo.m_runtimeEntity, graphInfo.m_graphIdentifier);
             if (m_remoteTools)
             {
-                // Payload will not be properly serialized, only the timestamp will be, the structure is too complicated (weak ptr and so on)
-                // Check ExecutionNotificationBus.cpp for more details
                 m_remoteTools->SendRemoteToolsMessage(m_client.m_info, Message::GraphActivated(payload));
             }
         }
 
-        void ServiceComponent::GraphDeactivated(const GraphActivation& graphInfo)
+        void ServiceComponent::GraphDeactivated(const GraphDeactivation& graphInfo)
         {
             SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("GraphDeactivated: %s", graphInfo.ToString().data());
 
             Lock lock(m_mutex);
 
-            if (!graphInfo.m_executionState)
-            {
-                return;
-            }
-
-            const auto& graphAssetId = graphInfo.m_executionState->GetAssetId();
-            auto graphIter = m_activeGraphs.find(graphAssetId);
+            auto graphIter = m_activeGraphs.find(graphInfo.m_graphIdentifier.m_assetId);
             if (graphIter == m_activeGraphs.end())
             {
                 SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("Accounting error. A deactivated graph was not found in the active list");
@@ -472,15 +452,7 @@ namespace ScriptCanvas
                 }
             }
 
-            const auto userData = AZStd::any_cast<const RuntimeComponentUserData>(&graphInfo.m_executionState->GetUserData());
-            if (!userData)
-            {
-                AZ_Error("Debugger", false, "Failed to get user data from graph");
-                return;
-            }
-
-            auto namedEntity = userData->entity;
-            const GraphIdentifier graphIdentifier(graphAssetId, userData->component.GetId());
+            auto namedEntity = graphInfo.m_runtimeEntity;
 
             auto entityIter = m_activeEntities.find(namedEntity);
             if (entityIter == m_activeEntities.end())
@@ -491,7 +463,7 @@ namespace ScriptCanvas
             {
                 ActiveEntityStatus& entityStatus = entityIter->second;
 
-                auto graphIterator = entityStatus.m_activeGraphs.find(graphIdentifier);
+                auto graphIterator = entityStatus.m_activeGraphs.find(graphInfo.m_graphIdentifier);
 
                 if (graphIterator == entityStatus.m_activeGraphs.end())
                 {
@@ -510,7 +482,7 @@ namespace ScriptCanvas
             }
 
             GraphActivation payload = graphInfo;
-            payload.m_entityIsObserved = IsGraphObserved(*graphInfo.m_executionState);
+            payload.m_entityIsObserved = IsGraphObserved(graphInfo.m_runtimeEntity, graphInfo.m_graphIdentifier);
 
             if (m_remoteTools)
             {
@@ -537,7 +509,7 @@ namespace ScriptCanvas
 #endif //defined(SCRIPT_CANVAS_DEBUGGER_IS_ALWAYS_OBSERVING)
         }
 
-        bool ServiceComponent::IsGraphObserved(const ExecutionState& executionState)
+        bool ServiceComponent::IsGraphObserved(const AZ::EntityId& entityId, const GraphIdentifier& identifier)
         {
             if (!m_client.m_script.m_logExecution)
             {
@@ -552,15 +524,7 @@ namespace ScriptCanvas
                 return false;
             }
 
-            const auto userData = AZStd::any_cast<const RuntimeComponentUserData>(&executionState.GetUserData());
-            if (!userData)
-            {
-                AZ_Error("Debugger", false, "Failed to get user data from graph");
-                return false;
-            }
-
-            const GraphIdentifier graphIdentifier(executionState.GetAssetId(), userData->component.GetId());
-            return m_client.m_script.IsObserving(userData->entity, graphIdentifier);
+            return m_client.m_script.IsObserving(entityId, identifier);
 #endif //defined(SCRIPT_CANVAS_DEBUGGER_IS_ALWAYS_OBSERVING)
         }
 
@@ -582,6 +546,10 @@ namespace ScriptCanvas
         void ServiceComponent::NodeSignaledInput(const InputSignal& nodeSignal)
         {
             NodeSignalled<InputSignal, Message::SignaledInput>(nodeSignal);
+        }
+
+        void ServiceComponent::GraphSignaledReturn([[maybe_unused]] const ReturnSignal& graphSignal)
+        {
         }
 
         void ServiceComponent::NodeStateUpdated(const NodeStateChange&)

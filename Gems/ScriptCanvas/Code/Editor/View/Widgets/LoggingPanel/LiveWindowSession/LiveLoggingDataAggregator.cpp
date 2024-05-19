@@ -123,47 +123,18 @@ namespace ScriptCanvasEditor
         SetupExternalEntities();
     }
 
-    void LiveLoggingDataAggregator::GraphActivated([[maybe_unused]] const ScriptCanvas::GraphActivation& activationSignal)
+    void LiveLoggingDataAggregator::GraphActivated(const ScriptCanvas::GraphActivation& activationSignal)
     {
-        // Execution state sent by remote tool is not serialized
-        // This needs to be fixed so that the code below can be enabled (no identified side effect for the code below not working, but there might be some)
-        /*
-        const auto userData =
-            AZStd::any_cast<const ScriptCanvas::RuntimeComponentUserData>(&activationSignal.m_executionState->GetUserData());
-        if (!userData)
-        {
-            AZ_Error("LiveLoggingDataAggregator", false, "Failed to get user data from graph");
-            return;
-        }
-
-        const ScriptCanvas::GraphIdentifier graphIdentifier(activationSignal.m_executionState->GetAssetId(), userData->component.GetId());
-
         AZStd::lock(m_notificationMutex);
-        RegisterScriptCanvas(userData->entity, graphIdentifier);
-        RegisterEntityName(userData->entity, userData->entity.ToString());
-        LoggingDataNotificationBus::Event(
-            GetDataId(),
-            &LoggingDataNotifications::OnEnabledStateChanged,
-            activationSignal.m_entityIsObserved,
-            userData->entity,
-            graphIdentifier);
-        */
+        RegisterScriptCanvas(activationSignal.m_runtimeEntity, activationSignal.m_graphIdentifier);
+        RegisterEntityName(activationSignal.m_runtimeEntity, activationSignal.m_runtimeEntity.GetName());
+        LoggingDataNotificationBus::Event(GetDataId(), &LoggingDataNotifications::OnEnabledStateChanged, activationSignal.m_entityIsObserved, activationSignal.m_runtimeEntity, activationSignal.m_graphIdentifier);
     }
 
     void LiveLoggingDataAggregator::GraphDeactivated(const ScriptCanvas::GraphDeactivation& deactivationSignal)
     {
-        const auto userData =
-            AZStd::any_cast<const ScriptCanvas::RuntimeComponentUserData>(&deactivationSignal.m_executionState->GetUserData());
-        if (!userData)
-        {
-            AZ_Error("LiveLoggingDataAggregator", false, "Failed to get user data from graph");
-            return;
-        }
-
-        const ScriptCanvas::GraphIdentifier graphIdentifier(deactivationSignal.m_executionState->GetAssetId(), userData->component.GetId());
-
         AZStd::lock(m_notificationMutex);
-        UnregisterScriptCanvas(userData->entity, graphIdentifier);
+        UnregisterScriptCanvas(deactivationSignal.m_runtimeEntity, deactivationSignal.m_graphIdentifier);
     }
 
     void LiveLoggingDataAggregator::NodeStateChanged(const ScriptCanvas::NodeStateChange& nodeStateChangeSignal)
