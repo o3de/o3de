@@ -176,6 +176,14 @@ namespace AzToolsFramework
             return AzToolsFramework::IsSelected(GetEntityId());
         }
 
+        void EditorComponentBase::InvalidatePropertyDisplay(PropertyModificationRefreshLevel refreshFlags)
+        {
+            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplayForComponent,
+                AZ::EntityComponentIdPair(GetEntityId(), GetId()), 
+                static_cast<PropertyModificationRefreshLevel>(refreshFlags));
+        }
+
         void EditorComponentBase::SetSerializedIdentifier(AZStd::string alias)
         {
             m_alias = alias;
