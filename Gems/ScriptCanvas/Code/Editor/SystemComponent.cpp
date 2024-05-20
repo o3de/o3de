@@ -108,7 +108,10 @@ namespace ScriptCanvasEditor
     void SystemComponent::Init()
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
+    }
 
+    void SystemComponent::Activate()
+    {
 #if defined(ENABLE_REMOTE_TOOLS)
         if (auto* remoteToolsInterface = AzFramework::RemoteToolsInterface::Get())
         {
@@ -116,10 +119,7 @@ namespace ScriptCanvasEditor
                 ScriptCanvas::RemoteToolsKey, ScriptCanvas::RemoteToolsName, ScriptCanvas::RemoteToolsPort);
         }
 #endif
-    }
 
-    void SystemComponent::Activate()
-    {
         AZ::JobManagerDesc jobDesc;
         for (size_t i = 0; i < cs_jobThreads; ++i)
         {
