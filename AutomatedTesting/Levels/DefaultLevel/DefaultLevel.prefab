@@ -231,8 +231,7 @@
                     "Id": 16880285896855930892,
                     "Controller": {
                         "Configuration": {
-                            "Field of View": 55.0,
-                            "EditorEntityId": 8929576024571800510
+                            "Field of View": 55.0
                         }
                     }
                 },
@@ -403,7 +402,7 @@
                                     "guid": "{FD340C30-755C-5911-92A3-19A3F7A77931}",
                                     "subId": 281415304
                                 },
-                                "assetHint": "objects/shaderball/shaderball_default_1m.azmodel"
+                                "assetHint": "objects/shaderball/shaderball_default_1m.fbx.azmodel"
                             }
                         }
                     }
@@ -415,6 +414,29 @@
                 "Component_[9439770997198325425]": {
                     "$type": "EditorLockComponent",
                     "Id": 9439770997198325425
+                },
+                "EditorMaterialComponent": {
+                    "$type": "EditorMaterialComponent",
+                    "Id": 2134882399362278535,
+                    "Controller": {
+                        "Configuration": {
+                            "materials": [
+                                {
+                                    "Key": {
+                                        "materialSlotStableId": 3716062507
+                                    },
+                                    "Value": {
+                                        "MaterialAsset": {
+                                            "assetId": {
+                                                "guid": "{C99D3776-099A-5481-9F37-39CCC5A1F925}"
+                                            },
+                                            "assetHint": "objects/shaderball/shaderball_default_1m_shaderball_01.azmaterial"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
                 }
             }
         },
