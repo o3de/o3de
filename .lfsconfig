@@ -1,6 +1,6 @@
 [lfs]
 # Default LFS endpoint for this repository
-url=https://d3df09qsjufr6g.cloudfront.net/api/v1
+url=https://d3df09qsjufr6g.cloudfront.net/api/v1/fork/carbonated-dev
 
 # To use the endpoint with your fork, run the following git command
 # in your local repository (without the '#'), replacing 'owner' with 
