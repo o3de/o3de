@@ -35,6 +35,8 @@ namespace AZ
             friend class RenderPassBuilder;
 
         public:
+            struct Barrier;
+
             AZ_RTTI(Scope, "328CA015-A73A-4A64-8C10-798C021575B3", Base);
             AZ_CLASS_ALLOCATOR(Scope, AZ::SystemAllocator);
 
@@ -65,25 +67,25 @@ namespace AZ
 
             //! Adds a barrier for a scope attachment resource to be emitted at a later time.
             template<class T>
-            void QueueAttachmentBarrier(
+            const Barrier& QueueAttachmentBarrier(
                 const RHI::ScopeAttachment& attachment,
                 BarrierSlot slot,
                 const VkPipelineStageFlags src,
                 const VkPipelineStageFlags dst,
                 const T& barrier)
             {
-                QueueBarrierInternal(&attachment, slot, src, dst, barrier);
+                return QueueBarrierInternal(&attachment, slot, src, dst, barrier);
             }
 
             //! Adds a barrier over a resource that is not a scope attachment that will be emitted at a later time.
             template<class T>
-            void QueueBarrier(
+            const Barrier& QueueBarrier(
                 BarrierSlot slot,
                 const VkPipelineStageFlags src,
                 const VkPipelineStageFlags dst,
                 const T& barrier)
             {
-                QueueBarrierInternal(nullptr, slot, src, dst, barrier);
+                return QueueBarrierInternal(nullptr, slot, src, dst, barrier);
             }
 
             //! Execute the queued barriers into the provided commandlist.
@@ -114,7 +116,9 @@ namespace AZ
             //! Resolves multisampled attachments using a command list. ResolveMode must be ResolveMode::CommandList
             void ResolveMSAAAttachments(CommandList& commandList) const;
 
-        private:
+            void SetDepthStencilHolder(RHI::ConstPtr<RHI::ImageView> view) const;
+            const RHI::ImageView* GetDepthStencilHolder() const;
+
             enum class OverlapType
             {
                 Partial = 0,
@@ -141,14 +145,19 @@ namespace AZ
                 };
 
                 // Checks if the image barrier affects the imageView
-                bool BlocksResource(const ImageView& imageView, OverlapType overlapType) const;
+                bool Overlaps(const ImageView& imageView, OverlapType overlapType) const;
 
                 // Checks if the buffer barrier affects the bufferView
-                bool BlocksResource(const BufferView& bufferView, OverlapType overlapType) const;
+                bool Overlaps(const BufferView& bufferView, OverlapType overlapType) const;
+
+                bool Overlaps(const Barrier& barrier, OverlapType overlapType) const;
+
+                void Combine(const Barrier& rhs);
             };
 
             using BarrierList = AZStd::array<AZStd::vector<Barrier>, BarrierSlotCount>;
 
+        private:
             struct QueryPoolAttachment
             {
                 RHI::Ptr<QueryPool> m_pool;
@@ -175,7 +184,7 @@ namespace AZ
             bool CanOptimizeBarrier(const Barrier& barrier, BarrierSlot slot) const;
 
             template<class T>
-            void QueueBarrierInternal(
+            const Barrier& QueueBarrierInternal(
                 const RHI::ScopeAttachment* attachment,
                 BarrierSlot slot,
                 const VkPipelineStageFlags src,
@@ -204,10 +213,12 @@ namespace AZ
             ResolveMode m_resolveMode = ResolveMode::None;
             AZStd::vector<CommandList::ResourceClearRequest> m_imageClearRequests;
             AZStd::vector<CommandList::ResourceClearRequest> m_bufferClearRequests;
+
+            mutable RHI::ConstPtr<RHI::ImageView> m_depthStencilViewHolder;
         };
 
         template<class T>
-        void Scope::QueueBarrierInternal(
+        const Scope::Barrier& Scope::QueueBarrierInternal(
             const RHI::ScopeAttachment* attachment,
             BarrierSlot slot,
             const VkPipelineStageFlags src,
@@ -220,8 +231,26 @@ namespace AZ
             barrier.m_dstStageMask = dst;
             barrier.m_srcStageMask = src;
 
-            m_unoptimizedBarriers[static_cast<uint32_t>(slot)].push_back(barrier);
-        }
+            auto& unoptimizedBarriers = m_unoptimizedBarriers[static_cast<uint32_t>(slot)];
+            auto findIt = AZStd::find_if(
+                unoptimizedBarriers.begin(),
+                unoptimizedBarriers.end(),
+                [&](const Barrier& element)
+                {
+                    return element.Overlaps(barrier, OverlapType::Partial);
+                });
 
+            if (findIt != unoptimizedBarriers.end())
+            {
+                Barrier& mergedBarrier = *findIt;
+                mergedBarrier.Combine(barrier);
+                return mergedBarrier;
+            }
+            else
+            {
+                unoptimizedBarriers.push_back(barrier);
+                return unoptimizedBarriers.back();
+            }
+        }
     } // namespace Vulkan
 }

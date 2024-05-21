@@ -95,6 +95,34 @@ namespace AZ::RHI
         }
     }
 
+    const char* ToString(ScopeAttachmentStage attachmentStage)
+    {
+        switch (attachmentStage)
+        {
+            case ScopeAttachmentStage::VertexShader:
+            return "VertexShader";
+            case ScopeAttachmentStage::FragmentShader:
+                return "FragmentShader";
+            case ScopeAttachmentStage::ComputeShader:
+                return "ComputeShader";
+            case ScopeAttachmentStage::RayTracingShader:
+                return "RayTracingShader";
+            case ScopeAttachmentStage::EarlyFragmentTest:
+                return "EarlyFragmentTest";
+            case ScopeAttachmentStage::LateFragmentTest:
+                return "LateFragmentTest";
+            case ScopeAttachmentStage::AnyGraphics:
+                return "AnyGraphics";
+            case ScopeAttachmentStage::Any:
+                return "Any";
+            case ScopeAttachmentStage::Uninitialized:
+                return "Uninitialized";
+            default:
+                AZ_Assert(false, "Unkown ScopeAttachmentStage: %d", static_cast<uint32_t>(attachmentStage));
+                return "Unknown";
+        }
+    }
+
     ScopeAttachmentAccess AdjustAccessBasedOnUsage(ScopeAttachmentAccess access, ScopeAttachmentUsage usage)
     {
         switch (usage)
@@ -108,7 +136,6 @@ namespace AZ::RHI
 
         // Remap read/write to write for DepthStencil scope attachments. This is because from a user standpoint, an attachment
         // might be an input/output to a pass (which maps to read/write) but still be used as a render target (write).
-        // We disallow read access and throw an error because having a read access on a render target is nonsensical.
         case ScopeAttachmentUsage::DepthStencil:
             if (access == ScopeAttachmentAccess::ReadWrite)
             {

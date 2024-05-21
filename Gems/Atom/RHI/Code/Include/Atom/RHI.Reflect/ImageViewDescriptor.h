@@ -81,6 +81,7 @@ namespace AZ::RHI
         ImageViewDescriptor() = default;
         explicit ImageViewDescriptor(Format overrideFormat);
         bool operator==(const ImageViewDescriptor& other) const;
+        bool operator!=(const ImageViewDescriptor& other) const;
             
         HashValue64 GetHash(HashValue64 seed = HashValue64{ 0 }) const;
 

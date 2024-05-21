@@ -45,7 +45,7 @@ namespace AZ
             m_aliasingBarriers.clear();
             m_depthStencilAttachment = nullptr;
             m_shadingRateAttachment = nullptr;
-            m_depthStencilAccess = RHI::ScopeAttachmentAccess::ReadWrite;
+            m_depthStencilAccess = RHI::ScopeAttachmentAccess::Unknown;
             m_colorAttachments.clear();
             m_clearRenderTargetRequests.clear();
             m_clearImageRequests.clear();
@@ -125,25 +125,25 @@ namespace AZ
             m_aliasingBarriers.emplace_back(barrier, state);
         }
 
-        void Scope::QueueResolveTransition(
+        const D3D12_RESOURCE_TRANSITION_BARRIER& Scope::QueueResolveTransition(
             const D3D12_RESOURCE_TRANSITION_BARRIER& transitionBarrier, const BarrierOp::CommandListState* state /*= nullptr*/)
         {
             AZ_Assert(
                 transitionBarrier.StateAfter == D3D12_RESOURCE_STATE_RESOLVE_SOURCE || transitionBarrier.StateAfter == D3D12_RESOURCE_STATE_RESOLVE_DEST,
                 "Invalid state for resolve barrier");
-            m_resolveTransitionBarrierRequests.emplace_back(transitionBarrier, state);
+            return QueueTransitionInternal(m_resolveTransitionBarrierRequests, BarrierOp(transitionBarrier, state));
         }
 
-        void Scope::QueuePrologueTransition(
+        const D3D12_RESOURCE_TRANSITION_BARRIER& Scope::QueuePrologueTransition(
             const D3D12_RESOURCE_TRANSITION_BARRIER& barrier, const BarrierOp::CommandListState* state /*= nullptr*/)
         {
-            m_prologueTransitionBarrierRequests.emplace_back(barrier, state);
+            return QueueTransitionInternal(m_prologueTransitionBarrierRequests, BarrierOp(barrier, state));
         }
 
-        void Scope::QueueEpilogueTransition(
+        const D3D12_RESOURCE_TRANSITION_BARRIER& Scope::QueueEpilogueTransition(
             const D3D12_RESOURCE_TRANSITION_BARRIER& barrier, const BarrierOp::CommandListState* state /*= nullptr*/)
         {
-            m_epilogueTransitionBarrierRequests.emplace_back(barrier, state);
+            return QueueTransitionInternal(m_epilogueTransitionBarrierRequests, BarrierOp(barrier, state));
         }
 
         void Scope::QueuePreDiscardTransition(
@@ -165,6 +165,37 @@ namespace AZ
             }
             
             return true;
+        }
+
+        const D3D12_RESOURCE_TRANSITION_BARRIER& Scope::QueueTransitionInternal(
+            AZStd::vector<BarrierOp>& barriers, const BarrierOp& barrierToAdd)
+        {
+            auto findIt = AZStd::find_if(
+                barriers.begin(),
+                barriers.end(),
+                [&](const BarrierOp& element)
+                {
+                    if (element.m_barrier.Transition.pResource != barrierToAdd.m_barrier.Transition.pResource)
+                    {
+                        return false;
+                    }
+
+                    return element.m_barrier.Transition.Subresource == barrierToAdd.m_barrier.Transition.Subresource ||
+                        (element.m_barrier.Transition.Subresource == D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES ||
+                            barrierToAdd.m_barrier.Transition.Subresource == D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+                });
+
+            if (findIt == barriers.end())
+            {
+                barriers.push_back(barrierToAdd);
+                return barriers.back().m_barrier.Transition;
+            }
+            else
+            {
+                BarrierOp& mergeBarrier = *findIt;
+                mergeBarrier.m_barrier.Transition.StateAfter |= barrierToAdd.m_barrier.Transition.StateAfter;
+                return mergeBarrier.m_barrier.Transition;
+            }
         }
     
         bool Scope::IsResourceDiscarded(const RHI::ImageScopeAttachment& scopeAttachment) const
@@ -209,7 +240,6 @@ namespace AZ
 
             for (const RHI::ImageScopeAttachment* scopeAttachment : GetImageAttachments())
             {
-                const AZStd::vector<RHI::ScopeAttachmentUsageAndAccess>& usagesAndAccesses = scopeAttachment->GetUsageAndAccess();
                 const ImageView* imageView = static_cast<const ImageView*>(scopeAttachment->GetImageView());
                 const RHI::ImageScopeAttachmentDescriptor& bindingDescriptor = scopeAttachment->GetDescriptor();
 
@@ -218,6 +248,7 @@ namespace AZ
                 const bool isClearActionStencil = bindingDescriptor.m_loadStoreAction.m_loadActionStencil == RHI::AttachmentLoadAction::Clear;
                 const bool isClear              = isClearAction || isClearActionStencil;
                 bool isFullClear                = isClearAction && isFullView;
+                RHI::ScopeAttachmentAccess access = scopeAttachment->GetAccess();
 
                 CommandList::ImageClearRequest clearRequest;
                 clearRequest.m_clearValue = bindingDescriptor.m_loadStoreAction.m_clearValue;
@@ -225,54 +256,75 @@ namespace AZ
 
                 AZStd::vector<CommandList::ImageClearRequest>* clearRequestQueue = nullptr;
 
-                for (const RHI::ScopeAttachmentUsageAndAccess& usageAndAccess : usagesAndAccesses)
+                switch (scopeAttachment->GetUsage())
                 {
-                   switch (usageAndAccess.m_usage)
-                    {
-                    case RHI::ScopeAttachmentUsage::Shader:
-                        if (RHI::CheckBitsAny(usageAndAccess.m_access, RHI::ScopeAttachmentAccess::Write))
-                        { 
-                            clearRequestQueue = &m_clearImageRequests;
-                        }
-                            
-                        break;
-
-                    case RHI::ScopeAttachmentUsage::RenderTarget:
-                        if (RHI::CheckBitsAny(usageAndAccess.m_access, RHI::ScopeAttachmentAccess::Write))
-                        {
-                            clearRequestQueue = &m_clearRenderTargetRequests;
-                        }
-
-                        // Accumulate color attachments for the render target bind command.
-                        m_colorAttachments.push_back(imageView);
-                        break;
-
-                    case RHI::ScopeAttachmentUsage::DepthStencil:
-                        if (RHI::CheckBitsAny(usageAndAccess.m_access, RHI::ScopeAttachmentAccess::Write))
-                        {
-                            clearRequestQueue = &m_clearRenderTargetRequests;
-                            clearRequest.m_clearFlags |= isClearAction ? D3D12_CLEAR_FLAG_DEPTH : clearRequest.m_clearFlags;
-                            clearRequest.m_clearFlags |= isClearActionStencil ? D3D12_CLEAR_FLAG_STENCIL : clearRequest.m_clearFlags;
-                            isFullClear &= isClearActionStencil;
-                        }
-                            
-                        // Set the depth stencil attachment.
-                        AZ_Error("Scope", m_depthStencilAttachment == nullptr, "More than one depth stencil attachment was used on scope '%s'", GetId().GetCStr());
-                        m_depthStencilAttachment = imageView;
-                        m_depthStencilAccess = usageAndAccess.m_access;
-                        break;
-
-                    case RHI::ScopeAttachmentUsage::ShadingRate:
-                        {
-                            m_shadingRateAttachment = imageView;
-                        }
-                        break;
-                    case RHI::ScopeAttachmentUsage::Uninitialized:
-                        AZ_Assert(false, "ScopeAttachmentUsage is Uninitialized");
-                        break;
+                case RHI::ScopeAttachmentUsage::Shader:
+                    if (RHI::CheckBitsAny(access, RHI::ScopeAttachmentAccess::Write))
+                    { 
+                        clearRequestQueue = &m_clearImageRequests;
                     }
+                            
+                    break;
+
+                case RHI::ScopeAttachmentUsage::RenderTarget:
+                    if (RHI::CheckBitsAny(access, RHI::ScopeAttachmentAccess::Write))
+                    {
+                        clearRequestQueue = &m_clearRenderTargetRequests;
+                    }
+
+                    // Accumulate color attachments for the render target bind command.
+                    m_colorAttachments.push_back(imageView);
+                    break;
+
+                case RHI::ScopeAttachmentUsage::DepthStencil:
+                    if (RHI::CheckBitsAny(access, RHI::ScopeAttachmentAccess::Write))
+                    {
+                        clearRequestQueue = &m_clearRenderTargetRequests;
+                        clearRequest.m_clearFlags |= isClearAction ? D3D12_CLEAR_FLAG_DEPTH : clearRequest.m_clearFlags;
+                        clearRequest.m_clearFlags |= isClearActionStencil ? D3D12_CLEAR_FLAG_STENCIL : clearRequest.m_clearFlags;
+                        isFullClear &= isClearActionStencil;
+                    }
+                            
+                    // Set the depth stencil attachment.
+                    AZ_Error(
+                        "Scope",
+                        m_depthStencilAttachment == nullptr ||
+                            !RHI::CheckBitsAll(m_depthStencilAttachment->GetDescriptor().m_aspectFlags, RHI::ImageAspectFlags::DepthStencil) ||
+                            !RHI::CheckBitsAll(imageView->GetDescriptor().m_aspectFlags, RHI::ImageAspectFlags::DepthStencil),
+                        "More than one depth stencil attachment was used on scope '%s'",
+                        GetId().GetCStr());
+
+                    // Handle the case with multiple ScopeAttachmentUsage::DepthStencil attachments.
+                    // One for the Depth and another for the Stencil, with different access.
+                    // Need to create a new ImageView that has both depth and stencil.
+                    if (m_depthStencilAttachment)
+                    {
+                        RHI::ImageViewDescriptor descriptor = m_depthStencilAttachment->GetDescriptor();
+                        descriptor.m_aspectFlags |= imageView->GetDescriptor().m_aspectFlags;
+                        // Check if we need to create a new depth stencil image view or we can reuse the one saved in the scope
+                        if (!m_fullDepthStencilView || &m_fullDepthStencilView->GetImage() != &m_depthStencilAttachment->GetImage() ||
+                            m_fullDepthStencilView->GetDescriptor() != descriptor)
+                        {
+                            RHI::Ptr<ImageView> fullDepthStencil = ImageView::Create();
+                            fullDepthStencil->Init(m_depthStencilAttachment->GetImage(), descriptor);
+                            m_fullDepthStencilView = fullDepthStencil;
+                        }
+                        imageView = m_fullDepthStencilView.get();
+                    }
+                    m_depthStencilAttachment = imageView;
+                    m_depthStencilAccess |= access;
+                    break;
+
+                case RHI::ScopeAttachmentUsage::ShadingRate:
+                    {
+                        m_shadingRateAttachment = imageView;
+                    }
+                    break;
+                case RHI::ScopeAttachmentUsage::Uninitialized:
+                    AZ_Assert(false, "ScopeAttachmentUsage is Uninitialized");
+                    break;
                 }
-                
+
                 //Since we can only have one usage with write access there should only be one clearRequestQueue
                 if (isClear && clearRequestQueue)
                 {
@@ -283,7 +335,6 @@ namespace AZ
 
             for (const RHI::BufferScopeAttachment* scopeAttachment : GetBufferAttachments())
             {
-                const AZStd::vector<RHI::ScopeAttachmentUsageAndAccess>& usagesAndAccesses = scopeAttachment->GetUsageAndAccess();
                 const BufferView* bufferView = static_cast<const BufferView*>(scopeAttachment->GetBufferView());
                 const RHI::BufferScopeAttachmentDescriptor& bindingDescriptor = scopeAttachment->GetDescriptor();
 
@@ -291,20 +342,19 @@ namespace AZ
                 
                 bool isFullClear = false;
 
-                for (const RHI::ScopeAttachmentUsageAndAccess& usageAndAccess : usagesAndAccesses)
+                const bool isShaderUsage = scopeAttachment->GetUsage() == RHI::ScopeAttachmentUsage::Shader;
+                if (isClearAction && isShaderUsage)
                 {
-                    const bool isShaderUsage = usageAndAccess.m_usage == RHI::ScopeAttachmentUsage::Shader;
-                    if (isClearAction && isShaderUsage)
-                    {
-                        AZ_Assert(RHI::CheckBitsAny(usageAndAccess.m_access, RHI::ScopeAttachmentAccess::Write), "We shouldnt be clearing without write access");
-                        CommandList::BufferClearRequest request;
-                        request.m_clearValue = bindingDescriptor.m_loadStoreAction.m_clearValue;
-                        request.m_bufferView = bufferView;
-                        m_clearBufferRequests.push_back(request);
+                    AZ_Assert(
+                        RHI::CheckBitsAny(scopeAttachment->GetAccess(), RHI::ScopeAttachmentAccess::Write),
+                        "We shouldnt be clearing without write access");
+                    CommandList::BufferClearRequest request;
+                    request.m_clearValue = bindingDescriptor.m_loadStoreAction.m_clearValue;
+                    request.m_bufferView = bufferView;
+                    m_clearBufferRequests.push_back(request);
 
-                        isFullClear = bufferView->IsFullView();
-                        break;
-                    }
+                    isFullClear = bufferView->IsFullView();
+                    break;
                 }
 
                 CompileAttachmentInternal(isFullClear, *scopeAttachment, bufferView->GetMemory());

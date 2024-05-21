@@ -162,4 +162,9 @@ namespace AZ::RHI
             m_isArray == other.m_isArray;
             
     }
+
+    bool ImageViewDescriptor::operator!=(const ImageViewDescriptor& other) const
+    {
+        return !operator==(other);
+    }
 }

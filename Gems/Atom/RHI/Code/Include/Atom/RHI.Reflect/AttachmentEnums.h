@@ -103,6 +103,23 @@ namespace AZ::RHI
 
     const char* ToString(ScopeAttachmentUsage attachmentUsage);
 
+    enum class ScopeAttachmentStage : uint32_t
+    {
+        Uninitialized = 0,
+        VertexShader = AZ_BIT(0),
+        FragmentShader = AZ_BIT(1),
+        ComputeShader = AZ_BIT(2),
+        RayTracingShader = AZ_BIT(3),
+        EarlyFragmentTest = AZ_BIT(4),
+        LateFragmentTest = AZ_BIT(5),
+        AnyGraphics = VertexShader | FragmentShader | ComputeShader | RayTracingShader,
+        Any = AnyGraphics | EarlyFragmentTest | LateFragmentTest
+    };
+
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::ScopeAttachmentStage);
+
+    const char* ToString(ScopeAttachmentStage attachmentStage);
+
     //! Modifies access to fit the constraints of the scope attachment usage. For example, a scope attachment
     //! with the usage 'Shader' and 'Write' access becomes a UAV under the hood, so it should be remapped to 'ReadWrite'.
     ScopeAttachmentAccess AdjustAccessBasedOnUsage(ScopeAttachmentAccess access, ScopeAttachmentUsage usage);
@@ -216,4 +233,6 @@ namespace AZ::RHI
     AZ_TYPE_INFO_SPECIALIZE(AttachmentLoadAction, "{1DB7E288-1C11-4316-B6A8-8D62BA963541}");
     AZ_TYPE_INFO_SPECIALIZE(AttachmentStoreAction, "{F580ED24-1537-47D8-90D6-2E620087BE14}");
     AZ_TYPE_INFO_SPECIALIZE(AttachmentType, "{41A254E8-C4BF-459A-80D8-5B959501943E}");
+    AZ_TYPE_INFO_SPECIALIZE(ScopeAttachmentStage, "{9F875055-0DA2-49EC-A17F-4C18504A5297}");
+
 }

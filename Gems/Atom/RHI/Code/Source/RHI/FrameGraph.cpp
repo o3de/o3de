@@ -182,27 +182,12 @@ namespace AZ::RHI
         ImageFrameAttachment& frameAttachment,
         ScopeAttachmentUsage usage,
         ScopeAttachmentAccess access,
+        ScopeAttachmentStage stage,
         const ImageScopeAttachmentDescriptor& descriptor)
     {
         AZ_Assert(usage != ScopeAttachmentUsage::Uninitialized, "ScopeAttachmentUsage is Uninitialized");
+        AZ_Assert(stage != ScopeAttachmentStage::Uninitialized, "ScopeAttachmentStage is Uninitialized");
 
-        //A scopeattachment can be used in multiple ways within the same scope. Hence, instead of adding duplicate scopeattachments
-        //for a scope we add multiple usage/access related data within the same scopeattachment.
-        for (ImageScopeAttachment* imageScopeInnerAttachment : m_currentScope->m_imageAttachments)
-        {
-            if(imageScopeInnerAttachment->GetFrameAttachment().GetId() == frameAttachment.GetId())
-            {
-                //Check if it is the same sub resource as for an imagescopeattachments we may want to read and write into different mips
-                //and in that case we would want multiple scopeattachments. 
-                if(imageScopeInnerAttachment->GetDescriptor().m_imageViewDescriptor.IsSameSubResource(descriptor.m_imageViewDescriptor))
-                {
-                    AZ_Assert(imageScopeInnerAttachment->GetDescriptor().m_loadStoreAction == descriptor.m_loadStoreAction, "LoadStore actions for multiple usages need to match");
-                    imageScopeInnerAttachment->AddUsageAndAccess(usage, access);
-                    return;
-                }
-            }
-        }
-            
         // TODO:[ATOM-1267] Replace with writer / reader dependencies.
         GraphEdgeType edgeType = usage == ScopeAttachmentUsage::SubpassInput ? GraphEdgeType::SameGroup : GraphEdgeType::DifferentGroup;
         if (Scope* producer = frameAttachment.GetLastScope())
@@ -212,7 +197,7 @@ namespace AZ::RHI
 
         ImageScopeAttachment* scopeAttachment =
             m_attachmentDatabase.EmplaceScopeAttachment<ImageScopeAttachment>(
-                *m_currentScope, frameAttachment, usage, access, descriptor);
+            *m_currentScope, frameAttachment, usage, access, stage, descriptor);
 
             
         m_currentScope->m_attachments.push_back(scopeAttachment);
@@ -266,20 +251,11 @@ namespace AZ::RHI
         BufferFrameAttachment& frameAttachment,
         ScopeAttachmentUsage usage,
         ScopeAttachmentAccess access,
+        ScopeAttachmentStage stage,
         const BufferScopeAttachmentDescriptor& descriptor)
     {
         AZ_Assert(usage != ScopeAttachmentUsage::Uninitialized, "ScopeAttachmentUsage is Uninitialized");
-
-        //A scopeattachment can be used in multiple ways within the same scope. Hence, instead of adding duplicate scopeattachments
-        //for a scope we add multiple usage/access related data within the same scopeattahcment.
-        for (BufferScopeAttachment* scopeInnerAttachment : m_currentScope->m_bufferAttachments)
-        {
-            if (scopeInnerAttachment->GetFrameAttachment().GetId() == frameAttachment.GetId())
-            {
-                scopeInnerAttachment->AddUsageAndAccess(usage, access);
-                return;
-            }
-        }
+        AZ_Assert(stage != ScopeAttachmentStage::Uninitialized, "ScopeAttachmentStage is Uninitialized");
 
         // TODO:[ATOM-1267] Replace with writer / reader dependencies.
         if (Scope* producer = frameAttachment.GetLastScope())
@@ -289,7 +265,7 @@ namespace AZ::RHI
 
         BufferScopeAttachment* scopeAttachment =
             m_attachmentDatabase.EmplaceScopeAttachment<BufferScopeAttachment>(
-                *m_currentScope, frameAttachment, usage, access, descriptor);
+            *m_currentScope, frameAttachment, usage, access, stage, descriptor);
 
         m_currentScope->m_attachments.push_back(scopeAttachment);
         m_currentScope->m_bufferAttachments.push_back(scopeAttachment);
@@ -299,14 +275,18 @@ namespace AZ::RHI
         }
     }
 
-    ResultCode FrameGraph::UseAttachment(const BufferScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access, ScopeAttachmentUsage usage)
+    ResultCode FrameGraph::UseAttachment(
+        const BufferScopeAttachmentDescriptor& descriptor,
+        ScopeAttachmentAccess access,
+        ScopeAttachmentUsage usage,
+        ScopeAttachmentStage stage)
     {
         AZ_Assert(!descriptor.m_attachmentId.IsEmpty(), "Calling FrameGraph::UseAttachment with an empty attachment ID");
 
         BufferFrameAttachment* attachment = m_attachmentDatabase.FindAttachment<BufferFrameAttachment>(descriptor.m_attachmentId);
         if (attachment)
         {
-            UseAttachmentInternal(*attachment, usage, access, descriptor);
+            UseAttachmentInternal(*attachment, usage, access, stage, descriptor);
             return ResultCode::Success;
         }
 
@@ -314,14 +294,18 @@ namespace AZ::RHI
         return ResultCode::InvalidArgument;
     }
 
-    ResultCode FrameGraph::UseAttachment(const ImageScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access, ScopeAttachmentUsage usage)
+    ResultCode FrameGraph::UseAttachment(
+        const ImageScopeAttachmentDescriptor& descriptor,
+        ScopeAttachmentAccess access,
+        ScopeAttachmentUsage usage,
+        ScopeAttachmentStage stage)
     {
         AZ_Assert(!descriptor.m_attachmentId.IsEmpty(), "Calling FrameGraph::UseAttachment with an empty attachment ID");
 
         ImageFrameAttachment* attachment = m_attachmentDatabase.FindAttachment<ImageFrameAttachment>(descriptor.m_attachmentId);
         if (attachment)
         {
-            UseAttachmentInternal(*attachment, usage, access, descriptor);
+            UseAttachmentInternal(*attachment, usage, access, stage, descriptor);
             return ResultCode::Success;
         }
 
@@ -329,11 +313,15 @@ namespace AZ::RHI
         return ResultCode::InvalidArgument;
     }
 
-    ResultCode FrameGraph::UseAttachments(AZStd::span<const ImageScopeAttachmentDescriptor> descriptors, ScopeAttachmentAccess access, ScopeAttachmentUsage usage)
+    ResultCode FrameGraph::UseAttachments(
+        AZStd::span<const ImageScopeAttachmentDescriptor> descriptors,
+        ScopeAttachmentAccess access,
+        ScopeAttachmentUsage usage,
+        ScopeAttachmentStage stage)
     {
         for (const ImageScopeAttachmentDescriptor& descriptor : descriptors)
         {
-            ResultCode resultCode = UseAttachment(descriptor, access, usage);
+            ResultCode resultCode = UseAttachment(descriptor, access, usage, stage);
             if (resultCode != ResultCode::Success)
             {
                 AZ_Error("FrameGraph", false, "Error loading image scope attachment array. Attachment that errored is '%s'", descriptor.m_attachmentId.GetCStr());
@@ -358,37 +346,41 @@ namespace AZ::RHI
 
     ResultCode FrameGraph::UseColorAttachments(AZStd::span<const ImageScopeAttachmentDescriptor> descriptors)
     {
-        return UseAttachments(descriptors, ScopeAttachmentAccess::Write, ScopeAttachmentUsage::RenderTarget);
+        return UseAttachments(descriptors, ScopeAttachmentAccess::Write, ScopeAttachmentUsage::RenderTarget, ScopeAttachmentStage::Any);
     }
 
-    ResultCode FrameGraph::UseDepthStencilAttachment(const ImageScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access)
+    ResultCode FrameGraph::UseDepthStencilAttachment(
+        const ImageScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access, ScopeAttachmentStage stage)
     {
-        return UseAttachment(descriptor, access, ScopeAttachmentUsage::DepthStencil);
+        return UseAttachment(descriptor, access, ScopeAttachmentUsage::DepthStencil, stage);
     }
 
-    ResultCode FrameGraph::UseSubpassInputAttachments(AZStd::span<const ImageScopeAttachmentDescriptor> descriptors)
+    ResultCode FrameGraph::UseSubpassInputAttachments(
+        AZStd::span<const ImageScopeAttachmentDescriptor> descriptors, ScopeAttachmentStage stage)
     {
-        return UseAttachments(descriptors, ScopeAttachmentAccess::Read, ScopeAttachmentUsage::SubpassInput);
+        return UseAttachments(descriptors, ScopeAttachmentAccess::Read, ScopeAttachmentUsage::SubpassInput, stage);
     }
 
-    ResultCode FrameGraph::UseShaderAttachment(const BufferScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access)
+    ResultCode FrameGraph::UseShaderAttachment(
+        const BufferScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access, ScopeAttachmentStage stage)
     {
-        return UseAttachment(descriptor, access, ScopeAttachmentUsage::Shader);
+        return UseAttachment(descriptor, access, ScopeAttachmentUsage::Shader, stage);
     }
 
-    ResultCode FrameGraph::UseShaderAttachment(const ImageScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access)
+    ResultCode FrameGraph::UseShaderAttachment(
+        const ImageScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access, ScopeAttachmentStage stage)
     {
-        return UseAttachment(descriptor, access, ScopeAttachmentUsage::Shader);
+        return UseAttachment(descriptor, access, ScopeAttachmentUsage::Shader, stage);
     }
 
     ResultCode FrameGraph::UseCopyAttachment(const BufferScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access)
     {
-        return UseAttachment(descriptor, access, ScopeAttachmentUsage::Copy);
+        return UseAttachment(descriptor, access, ScopeAttachmentUsage::Copy, ScopeAttachmentStage::Any);
     }
 
     ResultCode FrameGraph::UseCopyAttachment(const ImageScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access)
     {
-        return UseAttachment(descriptor, access, ScopeAttachmentUsage::Copy);
+        return UseAttachment(descriptor, access, ScopeAttachmentUsage::Copy, ScopeAttachmentStage::Any);
     }
 
     ResultCode FrameGraph::UseQueryPool(Ptr<QueryPool> queryPool, const RHI::Interval& interval, QueryPoolScopeAttachmentType type, ScopeAttachmentAccess access)

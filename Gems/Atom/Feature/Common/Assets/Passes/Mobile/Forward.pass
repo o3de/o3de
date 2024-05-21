@@ -12,13 +12,15 @@
                     "Name": "BRDFTextureInput",
                     "ShaderInputName": "m_brdfMap",
                     "SlotType": "Input",
-                    "ScopeAttachmentUsage": "Shader"
+                    "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage": "FragmentShader"
                 },
                 {
                     "Name": "DirectionalLightShadowmap",
                     "ShaderInputName": "m_directionalLightShadowmap",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage": "FragmentShader",
                     "ImageViewDesc": {
                         "IsArray": 1
                     }
@@ -28,6 +30,7 @@
                     "ShaderInputName": "m_projectedShadowmaps",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage": "FragmentShader",
                     "ImageViewDesc": {
                         "IsArray": 1
                     }

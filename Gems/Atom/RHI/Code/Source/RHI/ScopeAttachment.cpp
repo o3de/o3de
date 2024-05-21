@@ -16,11 +16,14 @@ namespace AZ::RHI
         Scope& scope,
         FrameAttachment& attachment,
         ScopeAttachmentUsage usage,
-        ScopeAttachmentAccess access)
+        ScopeAttachmentAccess access,
+        ScopeAttachmentStage stage)
         : m_scope{&scope}
         , m_attachment{&attachment}
+        , m_usage(usage)
+        , m_access(access)
+        , m_stage(stage)
     {
-        m_usageAndAccess.push_back(ScopeAttachmentUsageAndAccess{usage, access});
         m_isSwapChainAttachment = azrtti_cast<const RHI::SwapChainFrameAttachment*>(m_attachment) != nullptr;
     }
 
@@ -42,35 +45,21 @@ namespace AZ::RHI
     FrameAttachment& ScopeAttachment::GetFrameAttachment()
     {
         return *m_attachment;
-    }        
-    
-    bool ScopeAttachment::HasUsage(const ScopeAttachmentUsage usage) const
+    }   
+  
+    ScopeAttachmentUsage ScopeAttachment::GetUsage() const
     {
-        auto findIter = AZStd::find_if(m_usageAndAccess.begin(), m_usageAndAccess.end(), [&usage](const auto& usageAndAccess)
-        {
-            return usage == usageAndAccess.m_usage;
-        });
-
-        if (findIter == m_usageAndAccess.end())
-        {
-            return false;
-        }
-        return true;
+        return m_usage;
     }
-    
-    bool ScopeAttachment::HasAccessAndUsage(const ScopeAttachmentUsage usage, const ScopeAttachmentAccess access) const
+
+    ScopeAttachmentAccess ScopeAttachment::GetAccess() const
     {
-        auto findIter = AZStd::find_if(m_usageAndAccess.begin(), m_usageAndAccess.end(), [&usage](const auto& usageAndAccess)
-        {
-            return usage == usageAndAccess.m_usage;
-        });
-            
-        if (findIter == m_usageAndAccess.end())
-        {
-            return false;
-        }
-            
-        return findIter->m_access == access;
+        return m_access;
+    }
+
+    ScopeAttachmentStage ScopeAttachment::GetStage() const
+    {
+        return m_stage;
     }
 
     const ScopeAttachment* ScopeAttachment::GetPrevious() const
@@ -93,46 +82,24 @@ namespace AZ::RHI
         return m_next;
     }
     
-    AZStd::string ScopeAttachment::GetUsageTypes() const
+    const char* ScopeAttachment::GetTypeName() const
     {
-        //Used for logging
-        AZStd::string usageTypesStr;
-        for (const RHI::ScopeAttachmentUsageAndAccess& usageAndAccess : m_usageAndAccess)
-        {
-            usageTypesStr += AZStd::string::format("%s ", GetTypeName(usageAndAccess));
-        }
-        return usageTypesStr;
-    }
-    
-    AZStd::string ScopeAttachment::GetAccessTypes() const
-    {
-        //Used for logging
-        AZStd::string usageTypesStr;
-        for (const RHI::ScopeAttachmentUsageAndAccess& usageAndAccess : m_usageAndAccess)
-        {
-            usageTypesStr += AZStd::string::format("%s ", ToString(usageAndAccess.m_access));
-        }
-        return usageTypesStr;
-    }
-    
-    const char* ScopeAttachment::GetTypeName(const RHI::ScopeAttachmentUsageAndAccess& usageAndAccess) const
-    {
-        switch (usageAndAccess.m_usage)
+        switch (m_usage)
         {
         case ScopeAttachmentUsage::RenderTarget:
             return "RenderTarget";
 
         case ScopeAttachmentUsage::DepthStencil:
-                return CheckBitsAny(usageAndAccess.m_access, ScopeAttachmentAccess::Write) ? "DepthStencilReadWrite" : "DepthStencilRead";
+            return CheckBitsAny(m_access, ScopeAttachmentAccess::Write) ? "DepthStencilReadWrite" : "DepthStencilRead";
 
         case ScopeAttachmentUsage::SubpassInput:
             return "SubpassInput";
 
         case ScopeAttachmentUsage::Shader:
-            return CheckBitsAny(usageAndAccess.m_access, ScopeAttachmentAccess::Write) ? "ShaderReadWrite" : "ShaderRead";
+            return CheckBitsAny(m_access, ScopeAttachmentAccess::Write) ? "ShaderReadWrite" : "ShaderRead";
 
         case ScopeAttachmentUsage::Copy:
-            return CheckBitsAny(usageAndAccess.m_access, ScopeAttachmentAccess::Write) ? "CopyDest" : "CopySource";
+            return CheckBitsAny(m_access, ScopeAttachmentAccess::Write) ? "CopyDest" : "CopySource";
 
         case ScopeAttachmentUsage::Predication:
             return "Predication";
@@ -165,21 +132,8 @@ namespace AZ::RHI
     {
         m_resourceView = AZStd::move(resourceView);
     }
-    
-    void ScopeAttachment::AddUsageAndAccess(ScopeAttachmentUsage usage, ScopeAttachmentAccess access)
-    {
-#if defined (AZ_RHI_ENABLE_VALIDATION) 
-        ValidateMultipleScopeAttachmentUsages(usage, access);
-#endif
-        m_usageAndAccess.push_back(ScopeAttachmentUsageAndAccess{usage, access});
-    }
-    
-    const AZStd::vector<ScopeAttachmentUsageAndAccess>& ScopeAttachment::GetUsageAndAccess() const
-    {
-        return m_usageAndAccess;
-    }
-        
-    void ScopeAttachment::ValidateMultipleScopeAttachmentUsages(const ScopeAttachmentUsage usage, const ScopeAttachmentAccess access)
+
+    /*void ScopeAttachment::ValidateMultipleScopeAttachmentUsages(const ScopeAttachmentUsage usage, const ScopeAttachmentAccess access)
     {
         for (const RHI::ScopeAttachmentUsageAndAccess& usageAndAccess : m_usageAndAccess)
         {
@@ -321,7 +275,7 @@ namespace AZ::RHI
             }
             }
         }
-    }
+    }*/
         
     bool ScopeAttachment::IsSwapChainAttachment() const
     {

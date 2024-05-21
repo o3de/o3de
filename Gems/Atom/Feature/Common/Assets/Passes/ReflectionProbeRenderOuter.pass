@@ -6,6 +6,7 @@
         "PassTemplate": {
             "Name": "ReflectionProbeRenderOuterPassTemplate",
             "PassClass": "RasterPass",
+            "DefaultShaderAttachmentStage": "FragmentShader",
             "Slots": [
                 {
                     "Name": "DepthStencilTextureInput",

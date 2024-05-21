@@ -17,17 +17,8 @@ namespace AZ::RHI
     class Scope;
     class FrameAttachment;
     class SwapChain;
+    struct ScopeAttachmentDescriptor;
     
-    struct ScopeAttachmentUsageAndAccess
-    {
-        /// How the attachment is used by the scope (render target, shader resource, depth stencil, etc.)
-        ScopeAttachmentUsage m_usage = ScopeAttachmentUsage::Uninitialized;
-
-        /// How the attachment is accessed by the scope (read, write or readwrite)
-        ScopeAttachmentAccess m_access = ScopeAttachmentAccess::ReadWrite;
-    };
-    
-        
     //! A ScopeAttachment is created when a FrameAttachment is "attached" to a specific scope. A single FrameAttachment
     //! exists for a given AttachemntId, but many ScopeAttachments can exist as "children" of a FrameAttachment. More
     //! precisely, ScopeAttachment forms a linked list, where the first node is the first "usage" on the first scope, and the last node
@@ -45,18 +36,19 @@ namespace AZ::RHI
             Scope& scope,
             FrameAttachment& attachment,
             ScopeAttachmentUsage usage,
-            ScopeAttachmentAccess access);
+            ScopeAttachmentAccess access,
+            ScopeAttachmentStage stage);
 
         virtual ~ScopeAttachment() = default;
-            
-        //! Returns true if usage is compatible with how this scopeattachment will be used
-        bool HasUsage(const ScopeAttachmentUsage usage) const;
 
-        //! Returns true if access is compatible with how this scopeattachment will be accessed
-        bool HasAccessAndUsage(const ScopeAttachmentUsage usage, const ScopeAttachmentAccess access) const;
-            
-        //! Returns a vector containing all usage/access data used by this scopeattachment.
-        const AZStd::vector<ScopeAttachmentUsageAndAccess>& GetUsageAndAccess() const;
+        //! Returns the usage
+        ScopeAttachmentUsage GetUsage() const;
+
+        //! Returns the access
+        ScopeAttachmentAccess GetAccess() const;
+
+        //! Returns the pipeline stage
+        ScopeAttachmentStage GetStage() const;
             
         //! Returns the resource view.
         const ResourceView* GetResourceView() const;
@@ -78,15 +70,13 @@ namespace AZ::RHI
         ScopeAttachment* GetNext();
 
         //! Returns the friendly usage and access type names of this scope attachment (used for logging).
-        const char* GetTypeName(const RHI::ScopeAttachmentUsageAndAccess& usageAndAccess) const;
-        AZStd::string GetUsageTypes() const;
-        AZStd::string GetAccessTypes() const;
+        const char* GetTypeName() const;
 
-        //! Add how the attachment is used by the scope and how it is accessed by the scope.
-        void AddUsageAndAccess(ScopeAttachmentUsage usage, ScopeAttachmentAccess access);
-            
         //! Returns true if this is a SwapChainFrameAttachment
-        bool IsSwapChainAttachment() const;            
+        bool IsSwapChainAttachment() const;
+
+        //! Return the ScopeAttachmentDescriptor used by this attachment
+        virtual const ScopeAttachmentDescriptor& GetScopeAttachmentDescriptor() const = 0;
             
     protected:
 
@@ -94,9 +84,6 @@ namespace AZ::RHI
         void SetResourceView(ConstPtr<ResourceView> resourceView);
 
     private:
-            
-        //! Validates multiple usages/access for the same scopeattachment
-        void ValidateMultipleScopeAttachmentUsages(const ScopeAttachmentUsage usage, const ScopeAttachmentAccess access);
             
         ScopeAttachment* m_prev = nullptr;
         ScopeAttachment* m_next = nullptr;
@@ -110,7 +97,14 @@ namespace AZ::RHI
         /// The attachment being bound.
         FrameAttachment* m_attachment = nullptr;
 
-        AZStd::vector<ScopeAttachmentUsageAndAccess> m_usageAndAccess;
+        /// How the attachment is used by the scope (render target, shader resource, depth stencil, etc.)
+        ScopeAttachmentUsage m_usage = ScopeAttachmentUsage::Uninitialized;
+
+        /// How the attachment is accessed by the scope (read, write or readwrite)
+        ScopeAttachmentAccess m_access = ScopeAttachmentAccess::ReadWrite;
+
+        // In which pipeline stages is being used (VertexShader, FragmentShader, LateFragmentTest, etc.)
+        ScopeAttachmentStage m_stage = ScopeAttachmentStage::Any;
             
         bool m_isSwapChainAttachment = false;
     };

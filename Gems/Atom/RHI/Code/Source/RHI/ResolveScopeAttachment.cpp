@@ -14,7 +14,7 @@ namespace AZ::RHI
         Scope& scope,
         FrameAttachment& attachment,
         const ResolveScopeAttachmentDescriptor& descriptor)
-        : ImageScopeAttachment(scope, attachment, ScopeAttachmentUsage::Resolve, ScopeAttachmentAccess::Write, descriptor)
+        : ImageScopeAttachment(scope, attachment, ScopeAttachmentUsage::Resolve, ScopeAttachmentAccess::Write, ScopeAttachmentStage::Any, descriptor)
         , m_descriptor{ descriptor }
     {
     }

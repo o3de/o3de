@@ -9,8 +9,7 @@
             "Slots": [
                 {
                     "Name": "Input",
-                    "SlotType": "Input",
-                    "ScopeAttachmentUsage": "Shader"
+                    "SlotType": "Input"
                 },
                 {
                     "Name": "Output",

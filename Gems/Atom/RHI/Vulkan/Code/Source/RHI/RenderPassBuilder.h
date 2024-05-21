@@ -81,7 +81,7 @@ namespace AZ
 
             auto prologueBarrierFoundIter = AZStd::find_if(prologueBarriers.begin(), prologueBarriers.end(), [resourceView](const Scope::Barrier& barrier)
             {
-                return barrier.BlocksResource(*resourceView, Scope::OverlapType::Partial);
+                return barrier.Overlaps(*resourceView, Scope::OverlapType::Partial);
             });
 
             auto lastUseIter = m_lastSubpassResourceUse.find(resourceView);
@@ -93,7 +93,7 @@ namespace AZ
 
             auto epilogueBarrierFoundIter = AZStd::find_if(epilogueBarriers.begin(), epilogueBarriers.end(), [resourceView](const Scope::Barrier& barrier)
             {
-                return barrier.BlocksResource(*resourceView, Scope::OverlapType::Partial);
+                return barrier.Overlaps(*resourceView, Scope::OverlapType::Partial);
             });
 
             if (epilogueBarrierFoundIter != epilogueBarriers.end())

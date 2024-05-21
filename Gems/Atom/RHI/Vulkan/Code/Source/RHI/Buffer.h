@@ -59,12 +59,19 @@ namespace AZ
             void SetOwnerQueue(const QueueId& queueId, const RHI::BufferSubresourceRange* range = nullptr);
             void SetOwnerQueue(const QueueId& queueId, const RHI::BufferView& bufferView);
 
+            using ImagePipelineAccessProperty = RHI::BufferProperty<PipelineAccessFlags>;
+
+            PipelineAccessFlags GetPipelineAccess(const RHI::BufferSubresourceRange* range = nullptr) const;
+            void SetPipelineAccess(const PipelineAccessFlags& pipelineAccess, const RHI::BufferSubresourceRange* range = nullptr);
+
             void SetUploadHandle(const RHI::AsyncWorkHandle& handle);
             const RHI::AsyncWorkHandle& GetUploadHandle() const;
 
             /// Only valid for buffers with the RayTracingAccelerationStructure bind flag
             VkAccelerationStructureKHR GetNativeAccelerationStructure() const;
             void SetNativeAccelerationStructure(const VkAccelerationStructureKHR& accelerationStructure);
+
+            VkSharingMode GetSharingMode() const;
 
         private:
             Buffer() = default;
@@ -81,12 +88,18 @@ namespace AZ
             // RHI::Resource
             void ReportMemoryUsage(RHI::MemoryStatisticsBuilder& builder) const override;
             //////////////////////////////////////////////////////////////////////////
+
+            void SetInitalQueueOwner();
    
             BufferMemoryView m_memoryView;
 
             // Family queue index that owns the buffer regions.
             BufferOwnerProperty m_ownerQueue;
             mutable AZStd::mutex m_ownerQueueMutex;
+
+            // Last pipeline access to the image subresources
+            ImagePipelineAccessProperty m_pipelineAccess;
+            mutable AZStd::mutex m_pipelineAccessMutex;
 
             RHI::AsyncWorkHandle m_uploadHandle;
 
