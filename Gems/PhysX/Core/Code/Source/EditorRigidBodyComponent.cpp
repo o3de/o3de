@@ -355,11 +355,9 @@ namespace PhysX
         }
 
         m_sceneConfigChangedHandler = AzPhysics::SystemEvents::OnDefaultSceneConfigurationChangedEvent::Handler(
-            []([[maybe_unused]] const AzPhysics::SceneConfiguration* config)
+            [this]([[maybe_unused]] const AzPhysics::SceneConfiguration* config)
             {
-                AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
-                    &AzToolsFramework::ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay,
-                    AzToolsFramework::Refresh_EntireTree);
+                this->InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
             });
 
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())

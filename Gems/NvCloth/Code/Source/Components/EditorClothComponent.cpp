@@ -507,9 +507,7 @@ namespace NvCloth
         UpdateConfigMeshNodeData();
 
         // Refresh UI
-        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
-            AzToolsFramework::Refresh_EntireTree);
+        InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
     }
 
     void EditorClothComponent::OnModelPreDestroy()
@@ -531,9 +529,7 @@ namespace NvCloth
         UpdateConfigMeshNodeData();
 
         // Refresh UI
-        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
-            AzToolsFramework::Refresh_EntireTree);
+        InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
     }
 
     bool EditorClothComponent::IsSimulatedInEditor() const
