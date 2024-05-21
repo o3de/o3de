@@ -45,7 +45,8 @@ namespace AZ
             virtual void GetLutFromAssetLocation(DisplayMapperAssetLut& displayMapperAssetLut, const AZStd::string& assetPath) = 0;
             virtual void GetLutFromAssetId(DisplayMapperAssetLut& displayMapperAssetLut, const AZ::Data::AssetId) = 0;
             virtual void RegisterDisplayMapperConfiguration(const DisplayMapperConfigurationDescriptor& config) = 0;
-            virtual DisplayMapperConfigurationDescriptor GetDisplayMapperConfiguration() = 0;
+            virtual void UnregisterDisplayMapperConfiguration() = 0;
+            virtual const DisplayMapperConfigurationDescriptor* GetDisplayMapperConfiguration() = 0;
         };
     } // namespace Render
 } // namespace AZ
