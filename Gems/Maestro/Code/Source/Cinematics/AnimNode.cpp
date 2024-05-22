@@ -790,7 +790,7 @@ bool CAnimNode::SetParamValue(float time, CAnimParamType param, const AZ::Vector
     {
         // Vec3 track.
         bool bDefault = !(gEnv->pMovieSystem->IsRecording() && (m_flags & eAnimNodeFlags_EntitySelected)); // Only selected nodes can be recorded
-        pTrack->SetValue(time, AZVec3ToLYVec3(value), bDefault);
+        pTrack->SetValue(time, value, bDefault);
         return true;
     }
     return false;
@@ -1166,8 +1166,8 @@ void CAnimNode::AnimateSound(std::vector<SSoundInfo>& nodeSoundInfo, SAnimContex
 }
 
 void CAnimNode::SetParent(IAnimNode* parent)
-{ 
-    m_pParentNode = parent; 
+{
+    m_pParentNode = parent;
     if (parent)
     {
         m_parentNodeId = static_cast<CAnimNode*>(m_pParentNode)->GetId();
@@ -1206,7 +1206,7 @@ void CAnimNode::UpdateDynamicParams()
         // which could happen from multiple threads. Lock to avoid a crash iterating over the lua stack
         AZStd::lock_guard<AZStd::mutex> lock(m_updateDynamicParamsLock);
 
-        // run this on the main thread to prevent further threading issues downstream in 
+        // run this on the main thread to prevent further threading issues downstream in
         // AnimNodes that may use EBuses that are not thread safe
         if (gEnv && gEnv->mMainThreadId == CryGetCurrentThreadId())
         {
