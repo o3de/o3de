@@ -123,6 +123,47 @@ namespace AZ::RHI
         }
     }
 
+    const char* ToString(ScopeAttachmentUsage usage, ScopeAttachmentAccess acess)
+    {
+        switch (usage)
+        {
+        case ScopeAttachmentUsage::RenderTarget:
+            return "RenderTarget";
+
+        case ScopeAttachmentUsage::DepthStencil:
+            return CheckBitsAny(acess, ScopeAttachmentAccess::Write) ? "DepthStencilReadWrite" : "DepthStencilRead";
+
+        case ScopeAttachmentUsage::SubpassInput:
+            return "SubpassInput";
+
+        case ScopeAttachmentUsage::Shader:
+            return CheckBitsAny(acess, ScopeAttachmentAccess::Write) ? "ShaderReadWrite" : "ShaderRead";
+
+        case ScopeAttachmentUsage::Copy:
+            return CheckBitsAny(acess, ScopeAttachmentAccess::Write) ? "CopyDest" : "CopySource";
+
+        case ScopeAttachmentUsage::Predication:
+            return "Predication";
+
+        case ScopeAttachmentUsage::InputAssembly:
+            return "InputAssembly";
+
+        case ScopeAttachmentUsage::ShadingRate:
+            return "ShadingRate";
+
+        case ScopeAttachmentUsage::Resolve:
+            return "Resolve";
+
+        case ScopeAttachmentUsage::Indirect:
+            return "Indirect";
+
+        case ScopeAttachmentUsage::Uninitialized:
+            return "Uninitialized";
+        }
+
+        return "Unknown";
+    }
+
     ScopeAttachmentAccess AdjustAccessBasedOnUsage(ScopeAttachmentAccess access, ScopeAttachmentUsage usage)
     {
         switch (usage)

@@ -117,6 +117,216 @@ namespace AZ::RHI
         return ResultCode::Success;
     }
 
+    void FrameGraph::ValidateOverlappingAttachment(
+        const ScopeAttachmentDescriptor& descriptor, ScopeAttachmentUsage usage, ScopeAttachmentAccess access) const
+    {
+        const ScopeAttachmentPtrList* scopeAttachmentList =
+            m_attachmentDatabase.FindScopeAttachmentList(m_currentScope->GetId(), descriptor.m_attachmentId);
+        if (scopeAttachmentList)
+        {
+            const ImageViewDescriptor* imageViewDescriptor = nullptr;
+            const BufferViewDescriptor* bufferViewDescriptor = nullptr;
+            if (const auto* imageAttachmentDescriptor = azrtti_cast<const ImageScopeAttachmentDescriptor*>(&descriptor))
+            {
+                imageViewDescriptor = &imageAttachmentDescriptor->m_imageViewDescriptor;
+            }
+            else if (const auto* bufferAttachmentDescriptor = azrtti_cast<const BufferScopeAttachmentDescriptor*>(&descriptor))
+            {
+                bufferViewDescriptor = &bufferAttachmentDescriptor->m_bufferViewDescriptor;
+            }
+
+            for (const ScopeAttachment* attachment : *scopeAttachmentList)
+            {
+                if (imageViewDescriptor)
+                {
+                    if (!imageViewDescriptor->OverlapsSubResource(
+                        static_cast<const ImageScopeAttachment*>(attachment)->GetDescriptor().m_imageViewDescriptor))
+                    {
+                        continue;
+                    }
+                }
+                else if (bufferViewDescriptor)
+                {
+                    if (!bufferViewDescriptor->OverlapsSubResource(
+                            static_cast<const BufferScopeAttachment*>(attachment)->GetDescriptor().m_bufferViewDescriptor))
+                    {
+                        continue;
+                    }
+                }
+
+                // Validation for access type
+                AZ_Assert(
+                    !CheckBitsAll(access, ScopeAttachmentAccess::Write) &&
+                    !CheckBitsAll(attachment->GetAccess(), ScopeAttachmentAccess::Write),
+                    "Invalid write access detected when adding overlapping attachment %s",
+                    descriptor.m_attachmentId.GetCStr());
+
+                // Validation for usage type
+                switch (usage)
+                {
+                case ScopeAttachmentUsage::RenderTarget:
+                    {
+                        switch (attachment->GetUsage())
+                        {
+                        case ScopeAttachmentUsage::RenderTarget:
+                            AZ_Assert(
+                                false,
+                                "Multiple usages of same type RenderTarget getting added for resource %s",
+                                descriptor.m_attachmentId.GetCStr());
+                            break;
+                        default:
+                            AZ_Assert(
+                                false,
+                                "ScopeAttachmentUsage::RenderTarget usage mixed with ScopeAttachmentUsage::%s for resource %s",
+                                ToString(usage, access),
+                                descriptor.m_attachmentId.GetCStr());
+                            break;
+                        }
+                        break;
+                    }
+                case ScopeAttachmentUsage::DepthStencil:
+                    {
+                        switch (attachment->GetUsage())
+                        {
+                        case ScopeAttachmentUsage::DepthStencil:
+                            AZ_Assert(
+                                false,
+                                "Multiple usages of same type DepthStencil getting added for resource %s",
+                                descriptor.m_attachmentId.GetCStr());
+                            break;
+                        case ScopeAttachmentUsage::RenderTarget:
+                        case ScopeAttachmentUsage::Predication:
+                        case ScopeAttachmentUsage::Resolve:
+                        case ScopeAttachmentUsage::InputAssembly:
+                        case ScopeAttachmentUsage::ShadingRate:
+                            AZ_Assert(
+                                false,
+                                "ScopeAttachmentUsage::DepthStencil usage mixed with ScopeAttachmentUsage::%s for resource %s",
+                                ToString(usage, access),
+                                descriptor.m_attachmentId.GetCStr());
+                            break;
+                        }
+                        break;
+                    }
+                case ScopeAttachmentUsage::Shader:
+                    {
+                        switch (attachment->GetUsage())
+                        {
+                        case ScopeAttachmentUsage::Resolve:
+                        case ScopeAttachmentUsage::Predication:
+                        case ScopeAttachmentUsage::InputAssembly:
+                            AZ_Assert(
+                                false,
+                                "ScopeAttachmentUsage::Shader usage mixed with ScopeAttachmentUsage::%s for resource %s",
+                                ToString(usage, access),
+                                descriptor.m_attachmentId.GetCStr());
+                            break;
+                        }
+                        break;
+                    }
+                case ScopeAttachmentUsage::Resolve:
+                    {
+                        switch (attachment->GetUsage())
+                        {
+                        case ScopeAttachmentUsage::Resolve:
+                            AZ_Assert(
+                                false,
+                                "Multiple usages of same type DepthStencil getting added for resource %s",
+                                descriptor.m_attachmentId.GetCStr());
+                            break;
+                        case ScopeAttachmentUsage::RenderTarget:
+                        case ScopeAttachmentUsage::DepthStencil:
+                        case ScopeAttachmentUsage::Shader:
+                        case ScopeAttachmentUsage::Predication:
+                        case ScopeAttachmentUsage::SubpassInput:
+                        case ScopeAttachmentUsage::InputAssembly:
+                        case ScopeAttachmentUsage::ShadingRate:
+                            AZ_Assert(
+                                false,
+                                "ScopeAttachmentUsage::Resolve usage mixed with ScopeAttachmentUsage::%s for resource %s",
+                                ToString(usage, access),
+                                descriptor.m_attachmentId.GetCStr());
+                            break;
+                        }
+                        break;
+                    }
+                case ScopeAttachmentUsage::Predication:
+                    {
+                        switch (attachment->GetUsage())
+                        {
+                        case ScopeAttachmentUsage::Predication:
+                            AZ_Assert(
+                                false,
+                                "Multiple usages of same type Predication getting added for resource %s",
+                                descriptor.m_attachmentId.GetCStr());
+                            break;
+                        case ScopeAttachmentUsage::RenderTarget:
+                        case ScopeAttachmentUsage::DepthStencil:
+                        case ScopeAttachmentUsage::Shader:
+                        case ScopeAttachmentUsage::Resolve:
+                        case ScopeAttachmentUsage::SubpassInput:
+                        case ScopeAttachmentUsage::InputAssembly:
+                        case ScopeAttachmentUsage::ShadingRate:
+                            AZ_Assert(
+                                false,
+                                "ScopeAttachmentUsage::Predication usage mixed with ScopeAttachmentUsage::%s for resource %s",
+                                ToString(usage, access),
+                                descriptor.m_attachmentId.GetCStr());
+                            break;
+                        }
+                        break;
+                    }
+                case ScopeAttachmentUsage::Indirect:
+                    {
+                        break;
+                    }
+                case ScopeAttachmentUsage::SubpassInput:
+                    {
+                        switch (attachment->GetUsage())
+                        {
+                        case ScopeAttachmentUsage::Resolve:
+                        case ScopeAttachmentUsage::Predication:
+                        case ScopeAttachmentUsage::InputAssembly:
+                            AZ_Assert(
+                                false,
+                                "ScopeAttachmentUsage::SubpassInput usage mixed with ScopeAttachmentUsage::%s for resource %s",
+                                ToString(usage, access),
+                                descriptor.m_attachmentId.GetCStr());
+                            break;
+                        }
+                        break;
+                    }
+                case ScopeAttachmentUsage::InputAssembly:
+                    {
+                        AZ_Assert(
+                            false,
+                            "ScopeAttachmentUsage::InputAssembly usage mixed with ScopeAttachmentUsage::%s for resource %s",
+                            ToString(usage, access),
+                            descriptor.m_attachmentId.GetCStr());
+                        break;
+                    }
+                case ScopeAttachmentUsage::ShadingRate:
+                    {
+                        switch (attachment->GetUsage())
+                        {
+                        case ScopeAttachmentUsage::Resolve:
+                        case ScopeAttachmentUsage::Predication:
+                        case ScopeAttachmentUsage::InputAssembly:
+                        case ScopeAttachmentUsage::Indirect:
+                            AZ_Assert(
+                                false,
+                                "ScopeAttachmentUsage::ShadingRate usage mixed with ScopeAttachmentUsage::%s for resource %s",
+                                ToString(usage, access),
+                                descriptor.m_attachmentId.GetCStr());
+                            break;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
     ResultCode FrameGraph::End()
     {
         AZ_PROFILE_SCOPE(RHI, "FrameGraph: End");
@@ -188,6 +398,11 @@ namespace AZ::RHI
         AZ_Assert(usage != ScopeAttachmentUsage::Uninitialized, "ScopeAttachmentUsage is Uninitialized");
         AZ_Assert(stage != ScopeAttachmentStage::Uninitialized, "ScopeAttachmentStage is Uninitialized");
 
+        if (Validation::IsEnabled())
+        {
+            ValidateOverlappingAttachment(descriptor, usage, access);
+        }
+
         // TODO:[ATOM-1267] Replace with writer / reader dependencies.
         GraphEdgeType edgeType = usage == ScopeAttachmentUsage::SubpassInput ? GraphEdgeType::SameGroup : GraphEdgeType::DifferentGroup;
         if (Scope* producer = frameAttachment.GetLastScope())
@@ -256,6 +471,11 @@ namespace AZ::RHI
     {
         AZ_Assert(usage != ScopeAttachmentUsage::Uninitialized, "ScopeAttachmentUsage is Uninitialized");
         AZ_Assert(stage != ScopeAttachmentStage::Uninitialized, "ScopeAttachmentStage is Uninitialized");
+
+        if (Validation::IsEnabled())
+        {
+            ValidateOverlappingAttachment(descriptor, usage, access);
+        }
 
         // TODO:[ATOM-1267] Replace with writer / reader dependencies.
         if (Scope* producer = frameAttachment.GetLastScope())

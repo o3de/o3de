@@ -690,14 +690,14 @@ namespace AZ
             }
         }
 
-        void Scope::SetDepthStencilHolder(RHI::ConstPtr<RHI::ImageView> view) const
+        void Scope::SetDepthStencilFullView(RHI::ConstPtr<RHI::ImageView> view)
         {
-            m_depthStencilViewHolder = view;
+            m_depthStencilFullView = view;
         }
 
-        const RHI::ImageView* Scope::GetDepthStencilHolder() const
+        const RHI::ImageView* Scope::GetDepthStencilFullView() const
         {
-            return m_depthStencilViewHolder.get();
+            return m_depthStencilFullView.get();
         }
 
         Scope::ResolveMode Scope::GetResolveMode() const

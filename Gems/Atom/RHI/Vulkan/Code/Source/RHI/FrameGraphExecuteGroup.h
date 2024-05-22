@@ -37,6 +37,7 @@ namespace AZ
             const RHI::GraphGroupId& GetGroupId() const;
 
             virtual AZStd::span<const Scope* const> GetScopes() const = 0;
+            virtual AZStd::span<Scope* const> GetScopes() = 0;
 
             virtual AZStd::span<const RHI::Ptr<CommandList>> GetCommandLists() const = 0;
 

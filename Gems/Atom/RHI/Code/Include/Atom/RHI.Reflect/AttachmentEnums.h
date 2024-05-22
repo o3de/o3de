@@ -103,22 +103,44 @@ namespace AZ::RHI
 
     const char* ToString(ScopeAttachmentUsage attachmentUsage);
 
+    //! Describes in which pipeline stages a Scope Attachment is used
     enum class ScopeAttachmentStage : uint32_t
     {
+        //! Error value to catch uninitialized usage of this enum
         Uninitialized = 0,
+
+        //! Is used by the vertex shader
         VertexShader = AZ_BIT(0),
+
+        //! Is used by the fragment shader
         FragmentShader = AZ_BIT(1),
+
+        //! Is used by the compute shader
         ComputeShader = AZ_BIT(2),
+
+        //! Is used by the ray tracing shader
         RayTracingShader = AZ_BIT(3),
+
+        //! Is used for early depth/stencil test
         EarlyFragmentTest = AZ_BIT(4),
+
+        //! Is used for late depth/stencil test
         LateFragmentTest = AZ_BIT(5),
+
+        //! All graphics stages
         AnyGraphics = VertexShader | FragmentShader | ComputeShader | RayTracingShader,
+
+        //! All stages
         Any = AnyGraphics | EarlyFragmentTest | LateFragmentTest
     };
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::ScopeAttachmentStage);
 
+    //! Returns a string describing a usage
     const char* ToString(ScopeAttachmentStage attachmentStage);
+
+    //! Returns a string describing a usage and an access
+    const char* ToString(ScopeAttachmentUsage usage, ScopeAttachmentAccess acess);
 
     //! Modifies access to fit the constraints of the scope attachment usage. For example, a scope attachment
     //! with the usage 'Shader' and 'Write' access becomes a UAV under the hood, so it should be remapped to 'ReadWrite'.

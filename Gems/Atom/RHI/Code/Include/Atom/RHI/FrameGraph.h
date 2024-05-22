@@ -192,6 +192,10 @@ namespace AZ::RHI
         /// Validates the graph at the end of the building phase.
         ResultCode ValidateEnd();
 
+        /// Validates that an overlapping attachment has the proper access and usage before adding it.
+        void ValidateOverlappingAttachment(
+            const ScopeAttachmentDescriptor& descriptor, ScopeAttachmentUsage usage, ScopeAttachmentAccess access) const;
+
         /// Called by the FrameGraphCompiler to mark the graph as compiled.
         void SetCompiled();
 

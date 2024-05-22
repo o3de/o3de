@@ -116,8 +116,8 @@ namespace AZ
             //! Resolves multisampled attachments using a command list. ResolveMode must be ResolveMode::CommandList
             void ResolveMSAAAttachments(CommandList& commandList) const;
 
-            void SetDepthStencilHolder(RHI::ConstPtr<RHI::ImageView> view) const;
-            const RHI::ImageView* GetDepthStencilHolder() const;
+            void SetDepthStencilFullView(RHI::ConstPtr<RHI::ImageView> view);
+            const RHI::ImageView* GetDepthStencilFullView() const;
 
             enum class OverlapType
             {
@@ -214,7 +214,9 @@ namespace AZ
             AZStd::vector<CommandList::ResourceClearRequest> m_imageClearRequests;
             AZStd::vector<CommandList::ResourceClearRequest> m_bufferClearRequests;
 
-            mutable RHI::ConstPtr<RHI::ImageView> m_depthStencilViewHolder;
+            // Used to hold a view to the full depth and stencil when we need to merge two
+            // ScopeAttachment views, one that is only depth with one that is only stencil.
+            RHI::ConstPtr<RHI::ImageView> m_depthStencilFullView;
         };
 
         template<class T>

@@ -43,7 +43,7 @@ namespace AZ
             ~RenderPassBuilder() = default;
 
             //! Adds the attachments that are used by the Scope into the renderpass descriptor.
-            void AddScopeAttachments(const Scope& scope);
+            void AddScopeAttachments(Scope& scope);
 
             //! Builds the renderpass and framebuffer from the information collected from the scopes.
             RHI::ResultCode End(RenderPassContext& builtContext);

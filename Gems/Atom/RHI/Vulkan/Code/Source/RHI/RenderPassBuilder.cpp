@@ -49,7 +49,7 @@ namespace AZ
             m_usedAttachmentsPerSubpass.resize(m_subpassCount);
         }
 
-        void RenderPassBuilder::AddScopeAttachments(const Scope& scope)
+        void RenderPassBuilder::AddScopeAttachments(Scope& scope)
         {
             if (!scope.UsesRenderpass())
             {
@@ -216,17 +216,17 @@ namespace AZ
                                 scope.GetId().GetCStr());
                             RHI::ImageViewDescriptor descriptor = depthImageView->GetDescriptor();
                             descriptor.m_aspectFlags |= scopeAttachment->GetImageView()->GetDescriptor().m_aspectFlags;
-                            auto depthStencilHolder = scope.GetDepthStencilHolder();
+                            auto fullDepthStencil = scope.GetDepthStencilFullView();
                             // Check if we need to create a new depth stencil image view or we can reuse the one saved in the scope
-                            if (!depthStencilHolder || &depthStencilHolder->GetImage() != &depthImageView->GetImage() ||
-                                depthStencilHolder->GetDescriptor() != descriptor)
+                            if (!fullDepthStencil || &fullDepthStencil->GetImage() != &depthImageView->GetImage() ||
+                                fullDepthStencil->GetDescriptor() != descriptor)
                             {
-                                RHI::Ptr<ImageView> fullDepthStencil = ImageView::Create();
-                                fullDepthStencil->Init(depthImageView->GetImage(), descriptor);
-                                scope.SetDepthStencilHolder(fullDepthStencil);
-                                depthStencilHolder = fullDepthStencil.get();
+                                RHI::Ptr<ImageView> fullDepthStencilPtr = ImageView::Create();
+                                fullDepthStencilPtr->Init(depthImageView->GetImage(), descriptor);
+                                scope.SetDepthStencilFullView(fullDepthStencilPtr);
+                                fullDepthStencil = fullDepthStencilPtr.get();
                             }
-                            m_framebufferDesc.m_attachmentImageViews[attachmentIndex] = static_cast<const ImageView*>(depthStencilHolder);
+                            m_framebufferDesc.m_attachmentImageViews[attachmentIndex] = static_cast<const ImageView*>(fullDepthStencil);
                         }
                     }
 

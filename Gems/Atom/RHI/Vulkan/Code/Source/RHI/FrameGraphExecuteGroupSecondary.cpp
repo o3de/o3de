@@ -18,7 +18,7 @@ namespace AZ::Vulkan
 {
     void FrameGraphExecuteGroupSecondary::Init(
         Device& device,
-        const Scope& scope,
+        Scope& scope,
         uint32_t commandListCount,
         RHI::JobPolicy globalJobPolicy)
     {
@@ -86,6 +86,11 @@ namespace AZ::Vulkan
     AZStd::span<const Scope* const> FrameGraphExecuteGroupSecondary::GetScopes() const
     {
         return AZStd::span<const Scope* const>(&m_scope, 1);
+    }
+
+    AZStd::span<Scope* const> FrameGraphExecuteGroupSecondary::GetScopes()
+    {
+        return AZStd::span<Scope* const>(&m_scope, 1);
     }
 
     AZStd::span<const RHI::Ptr<CommandList>> FrameGraphExecuteGroupSecondary::GetCommandLists() const

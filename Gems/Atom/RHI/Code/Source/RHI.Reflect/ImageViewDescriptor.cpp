@@ -7,6 +7,7 @@
  */
 
 #include <Atom/RHI.Reflect/ImageViewDescriptor.h>
+#include <Atom/RHI.Reflect/Interval.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Utils/TypeHash.h>
@@ -150,6 +151,14 @@ namespace AZ::RHI
             m_depthSliceMin == other.m_depthSliceMin &&
             m_depthSliceMax == other.m_depthSliceMax &&
             m_aspectFlags == other.m_aspectFlags;
+    }
+
+    bool ImageViewDescriptor::OverlapsSubResource(const ImageViewDescriptor& other) const
+    {
+        return CheckBitsAny(m_aspectFlags, other.m_aspectFlags) &&
+            Interval(m_arraySliceMin, m_arraySliceMax).Overlaps(Interval(other.m_arraySliceMin, other.m_arraySliceMax)) &&
+            Interval(m_mipSliceMin, m_mipSliceMax).Overlaps(Interval(other.m_mipSliceMin, other.m_mipSliceMax));
+        ;
     }
     
     bool ImageViewDescriptor::operator==(const ImageViewDescriptor& other) const

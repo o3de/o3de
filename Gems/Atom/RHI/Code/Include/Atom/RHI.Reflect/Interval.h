@@ -29,5 +29,9 @@ namespace AZ::RHI
 
         bool operator == (const Interval& rhs) const;
         bool operator != (const Interval& rhs) const;
+
+        //! Return true if it overlaps with an interval.
+        //! Overlapping m_min or m_max counts as interval overlap (e.g. [0, 3] overlaps with [3, 4])
+        bool Overlaps(const Interval& rhs) const;
     };
 }
