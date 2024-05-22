@@ -12,7 +12,8 @@
         "EntryPoints":
         [
             {
-                "type": "RayTracing"
+                "type": "RayTracing",
+                "name": "ClosestHit"
             }
         ]
     },

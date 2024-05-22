@@ -7,6 +7,7 @@
  */
 
 #include <ProjectGemCatalogScreen.h>
+#include <ProjectUtils.h>
 #include <GemRepo/GemRepoScreen.h>
 #include <CreateAGemScreen.h>
 #include <ProjectManagerDefs.h>
@@ -313,12 +314,12 @@ namespace O3DE::ProjectManager
                 else if (const auto& incompatibleObjects = incompatibleObjectsResult.GetValue(); !incompatibleObjects.isEmpty())
                 {
                     // provide a couple more user friendly error messages for uncommon cases
-                    if (incompatibleObjects.at(0).contains("engine.json", Qt::CaseInsensitive))
+                    if (incompatibleObjects.at(0).contains(ProjectUtils::EngineJsonFilename.data(), Qt::CaseInsensitive))
                     {
                         errorTitle = "Failed to read engine.json";
                         generalError = "The projects compatibility with the new engine could not be checked because the engine.json could not be read";
                     }
-                    else if (incompatibleObjects.at(0).contains("project.json", Qt::CaseInsensitive))
+                    else if (incompatibleObjects.at(0).contains(ProjectUtils::ProjectJsonFilename.data(), Qt::CaseInsensitive))
                     {
                         errorTitle = "Invalid project, failed to read project.json";
                         generalError = "The projects compatibility with the new engine could not be checked because the project.json could not be read.";

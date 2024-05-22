@@ -10,7 +10,7 @@
 
 // include required files
 #include "EMotionFXConfig.h"
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 #include <AzCore/std/containers/vector.h>
 #include <MCore/Source/StringIdPool.h>
 #include <MCore/Source/Endian.h>
@@ -32,7 +32,7 @@ namespace EMotionFX
      * You should not have any duplicated firstName entries. The multiple entries can have the same second name though.
      */
     class EMFX_API NodeMap
-        : public BaseObject
+        : public MCore::RefCounted
     {
         AZ_CLASS_ALLOCATOR_DECL
 

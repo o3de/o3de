@@ -1,0 +1,59 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "MobilePostProcessParentTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                // Inputs...
+                {
+                    "Name": "LightingInput",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "Depth",
+                    "SlotType": "Input"
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "DepthOfFieldPass",
+                    "TemplateName": "NewDepthOfFieldTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "LightingBuffer",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "LightingInput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Depth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "Depth"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "BloomPass",
+                    "TemplateName": "BloomPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "LightingInput"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

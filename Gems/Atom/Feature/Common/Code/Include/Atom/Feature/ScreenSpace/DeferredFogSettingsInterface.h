@@ -10,11 +10,20 @@
 
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/Preprocessor/Enum.h>
 
 namespace AZ
 {
     namespace Render
     {
+        AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(
+            FogMode,
+            uint8_t,
+            (Linear, 0),            //!< f = (end - d)/(end - start). "d" represents depth, or the distance from the viewpoint
+            (Exponential, 1),       //!< f = 1/exp(d * density). "density" is an arbitrary fog density that can range from 0.0 to 1.0.
+            (ExponentialSquared, 2) //!< f = 1/exp((d * density)^2). "density" is an arbitrary fog density that can range from 0.0 to 1.0.
+        );
+
         class DeferredFogSettingsInterface
         {
         public:

@@ -11,7 +11,8 @@
 #include <FileCacheManager.h>
 
 #include <AzTest/AzTest.h>
-#include <IRenderAuxGeom.h>
+
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 
 namespace AZ::IO
 {
@@ -37,7 +38,7 @@ namespace Audio
 
         MOCK_METHOD0(UpdateLocalizedFileCacheEntries, void());
 
-        MOCK_METHOD3(DrawDebugInfo, void(IRenderAuxGeom&, const float, const float));
+        MOCK_METHOD3(DrawDebugInfo, void(AzFramework::DebugDisplayRequests&, const float, const float));
 
         MOCK_METHOD3(TryLoadRequest, EAudioRequestStatus(const TAudioPreloadRequestID, const bool, const bool));
         MOCK_METHOD1(TryUnloadRequest, EAudioRequestStatus(const TAudioPreloadRequestID));

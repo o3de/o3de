@@ -37,6 +37,29 @@ foreach(engine_subfolder ${O3DE_PY_SUBDIRS})
     endforeach()
 endforeach()
 
+
+# Generate the files needed for the desktop icon
+file(MAKE_DIRECTORY "${CPACK_TEMPORARY_DIRECTORY}/snap/gui/")
+string(JOIN "\n" O3DE_DESKTOP_CONTENT
+  "[Desktop Entry]"
+  "Version=${CPACK_PACKAGE_VERSION}"
+  "Name=O3DE"
+  "Comment=O3DE Project Manager"
+  "Type=Application"
+  "Exec=o3de"
+  "Icon=\${SNAP}/meta/gui/o3de.svg"
+  "Terminal=false"
+  "StartupWMClass=O3DE-Snap"
+  "StartupNotify=true"
+  "X-GNOME-Autostart-enabled=true"
+)
+file(WRITE "${CPACK_TEMPORARY_DIRECTORY}/snap/gui/o3de.desktop" ${O3DE_DESKTOP_CONTENT})
+file(COPY_FILE
+     "${LY_ROOT_FOLDER}/Code/Tools/ProjectManager/Resources/o3de.svg"
+     "${CPACK_TEMPORARY_DIRECTORY}/snap/gui/o3de.svg"
+)
+
+
 # make sure that all files have the correct permissions
 execute_process (COMMAND chmod -R 755 O3DE
                  WORKING_DIRECTORY ${CPACK_TEMPORARY_DIRECTORY}
@@ -56,6 +79,6 @@ set(snap_file "${CPACK_TEMPORARY_DIRECTORY}/o3de_${CPACK_PACKAGE_VERSION}_amd64.
 # Manually copy the files, the CPACK_EXTERNAL_BUILT_PACKAGES process runs after our packaging post build script
 # which is too late to be uploaded.
 file(COPY_FILE
-                ${snap_file}
-                "${CPACK_TOPLEVEL_DIRECTORY}/${snap_file_name}.snap"
-            )
+     ${snap_file}
+     "${CPACK_TOPLEVEL_DIRECTORY}/${snap_file_name}.snap"
+)

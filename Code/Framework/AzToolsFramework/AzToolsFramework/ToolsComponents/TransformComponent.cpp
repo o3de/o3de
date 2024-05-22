@@ -303,21 +303,12 @@ namespace AzToolsFramework
                 {
                     boundsUnion->OnTransformUpdated(GetEntity());
                 }
-                // Fire a property changed notification for this component
+                // Fire a property changed notification for this component.  This will cascade to updating the UI.  It is not
+                // necessary to notify the UI directly.
                 if (const AZ::Component* component = entity->FindComponent<Components::TransformComponent>())
                 {
                     PropertyEditorEntityChangeNotificationBus::Event(
                         GetEntityId(), &PropertyEditorEntityChangeNotifications::OnEntityComponentPropertyChanged, component->GetId());
-                }
-
-                // Refresh the property editor if we're selected
-                bool selected = false;
-                ToolsApplicationRequestBus::BroadcastResult(
-                    selected, &AzToolsFramework::ToolsApplicationRequests::IsSelected, GetEntityId());
-                if (selected)
-                {
-                    ToolsApplicationEvents::Bus::Broadcast(
-                        &ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
                 }
             }
         }
@@ -1048,9 +1039,7 @@ namespace AzToolsFramework
         // This is called when our transform changes static state.
         AZ::u32 TransformComponent::StaticChangedInspector()
         {
-            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay,
-                AzToolsFramework::PropertyModificationRefreshLevel::Refresh_EntireTree);
+            InvalidatePropertyDisplay(AzToolsFramework::PropertyModificationRefreshLevel::Refresh_EntireTree);
            
             if (GetEntity())
             {
@@ -1320,7 +1309,7 @@ namespace AzToolsFramework
                         SetDirty();
                     }
 
-                    AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
+                    InvalidatePropertyDisplay(AzToolsFramework::Refresh_Values);
                 });
                 resetAction->setEnabled(!m_editorTransform.m_locked && !parentEntityIsReadOnly);
 
@@ -1332,7 +1321,7 @@ namespace AzToolsFramework
                         m_editorTransform.m_locked = !m_editorTransform.m_locked;
                         SetDirty();
                     }
-                    AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+                    InvalidatePropertyDisplay(AzToolsFramework::Refresh_AttributesAndValues);
                 });
                 lockAction->setEnabled(!parentEntityIsReadOnly);
             }

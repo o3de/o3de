@@ -20,8 +20,10 @@ namespace GraphCanvas
         virtual void SetAssetId(const AZ::Data::AssetId& assetId) = 0;
 
         virtual AZ::Data::AssetType GetAssetType() const = 0;
-
         virtual AZStd::string GetStringFilter() const = 0; 
+
+        virtual void SetAssetType(AZ::Data::AssetType) {}
+        virtual void SetStringFilter(const AZStd::string&) {}
 
     };
 }

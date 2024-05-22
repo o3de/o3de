@@ -22,44 +22,12 @@
 
 void EditorContextMenuHandler::Setup()
 {
-    AzToolsFramework::EditorContextMenuBus::Handler::BusConnect();
     AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
 }
 
 void EditorContextMenuHandler::Teardown()
 {
     AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
-    AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
-}
-
-int EditorContextMenuHandler::GetMenuPosition() const
-{
-    return aznumeric_cast<int>(AzToolsFramework::EditorContextMenuOrdering::BOTTOM);
-}
-
-void EditorContextMenuHandler::PopulateEditorGlobalContextMenu(
-    QMenu* menu, [[maybe_unused]] const AZStd::optional<AzFramework::ScreenPoint>& point, [[maybe_unused]] int flags)
-{
-    AzToolsFramework::EntityIdList selected;
-    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-        selected, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-
-    QAction* action = nullptr;
-
-    if (selected.size() > 0)
-    {
-        action = menu->addAction(QObject::tr("Open pinned Inspector"));
-        QObject::connect(
-            action, &QAction::triggered, action,
-            [selected]
-            {
-                AzToolsFramework::EntityIdSet pinnedEntities(selected.begin(), selected.end());
-                AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequests::OpenPinnedInspector, pinnedEntities);
-            }
-        );
-
-        menu->addSeparator();
-    }
 }
 
 void EditorContextMenuHandler::OnMenuBindingHook()

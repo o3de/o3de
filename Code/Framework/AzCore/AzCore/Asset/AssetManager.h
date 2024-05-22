@@ -324,6 +324,9 @@ namespace AZ
             */
             bool HasActiveJobsOrStreamerRequests();
 
+            // memory debug output
+            void DumpLoadedAssetsInfo();
+
         protected:
             AssetManager(const Descriptor& desc);
             virtual ~AssetManager();

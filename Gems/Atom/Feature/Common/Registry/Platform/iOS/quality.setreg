@@ -1,0 +1,101 @@
+{
+    "O3DE": {
+        "Quality": {
+            // Platform specific quality setting overrides go in this file 
+            "Groups": {
+                "q_general": {
+                    "Default": 1 // override the default level for this platform to be medium
+                },
+                "q_graphics": {
+                    "Default": 1, // override the default level for this platform to be medium
+                    
+                    // Setting overrides can be specified using an array to assign values to
+                    // quality levels. For example if you have 4 quality levels:
+                    // "<cvar>": [<low setting>, <medium setting>, <high setting>, <veryhigh setting>]
+                    "Settings": {
+                        
+                        //Render resolution scale to help with gpu performance
+                        "r_renderScale": [ 0.7, 0.8, 0.9, 1.0 ],
+
+                        //PostProcessing related cvars
+                        "r_enableFog": [ 0, 0, 1, 1 ],
+                        "r_fogLayerSupport": [0, 0, 1, 1],
+                        "r_fogTurbulenceSupport": [0, 0, 0, 1],
+                        "r_enableDOF": [ 0, 0, 1, 1 ],
+                        // temporary disable bloom for all iOS tiers (see details in MAD-14453)
+                        "r_enableBloom": [ 0, 0, 0, 0 ],
+
+                        //Set directional shadow filtering to ShadowFilterMethod::pcf as we are only building variants for that method
+                        "r_directionalShadowFilteringMethod": [1, 1, 1, 1],
+                        //ShadowFilterSampleCount mode: 0 = PcfTap4, 1 = PcfTap9
+                        "r_directionalShadowFilteringSampleCountMode": [0, 0, 1, 1]
+                    }
+                },
+                "q_shadows": {
+                    "Settings": {
+                        // Shadows console variable setting overrides go here
+                    }
+                }
+                // Additional custom quality groups overrides go here. 
+            },
+            "Devices": {
+                // Device rules for this platform go here 
+                // Device rule groups can have whatever name makes sense to you
+                "iPhoneLow": {
+                    "Rules": {
+                        // Device rules are regular expressions
+                        // Example rule matching iPhone10,1 (iPhone 8) - iPhone 11,8 (iPhone XR)
+                        "DeviceModelIphone10_11": { "DeviceModel": "iPhone(1[0-1].*)" },
+                        "DeviceModelIphone6_8": { "DeviceModel": "iPhone([6-8].*)" },
+                        "DeviceModelIPad4_6": { "DeviceModel": "iPad([4-6].*)" }
+                    },
+                    "Settings": {
+                        // Device cvar quality overrides go here for this rule
+                        // Change the general quality level to low (i.e setting 0)
+                        "q_general": 0
+                        // For example, to change a specific setting
+                        // "r_skinnedMeshInstanceMemoryPoolSize":  64
+                    }
+                },
+                "iPhoneMedium": {
+                    "Rules": {
+                        // Device rules are regular expressions
+                        // Example rule matching iPhone10,1 (iPhone 8) - iPhone 11,8 (iPhone XR)
+                        "DeviceModelIphone12_13": { "DeviceModel": "iPhone(1[2-3].*)" },
+                        "DeviceModelIpad7": { "DeviceModel": "iPad(7.*)" }
+                    },
+                    "Settings": {
+                        // Device cvar quality overrides go here for this rule
+                        // Change the general quality level to medium (i.e setting 1)
+                        "q_general": 1
+                    }
+                },
+                "iPhoneHigh": {
+                    "Rules": {
+                        // Device rules are regular expressions
+                        // Example rule matching iPhone 15 models 15,4 (iPhone 15) - 16,1 16,2 (iPhone 15 Pro Max)
+                        "DeviceModelIphone14": { "DeviceModel": "iPhone(14.*)" },
+                        "DeviceModelIpad8_9": { "DeviceModel": "iPad([8-9].*)" }
+                    },
+                    "Settings": {
+                        // Device cvar quality overrides go here for this rule
+                        // Change the general quality level for the device to high (i.e setting 2)
+                        "q_general": 2
+                    }
+                },
+                "iPhoneVeryHigh": {
+                    "Rules": {
+                        // Device rules are regular expressions
+                        // Example rule matching iPhone 15 models 15,4 (iPhone 15) - 16,1 16,2 (iPhone 15 Pro Max)
+                        "DeviceModelIphone15_16": { "DeviceModel": "iPhone(15,[4-5]|16,[1-9])" }
+                    },
+                    "Settings": {
+                        // Device cvar quality overrides go here for this rule
+                        // Change the general quality level for the device to very high (i.e setting 3)
+                        "q_general": 3
+                    }
+                }
+            }
+        }
+    }
+}

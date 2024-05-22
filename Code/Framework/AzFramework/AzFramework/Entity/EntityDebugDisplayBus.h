@@ -33,6 +33,154 @@ namespace AzFramework
 {
     inline constexpr AZ::s32 g_defaultSceneEntityDebugDisplayId = AZ_CRC_CE("MainViewportEntityDebugDisplayId"); // default id to draw to all viewports in the default scene
 
+    // Notes:
+    //   Don't change the xxxShift values, they need to match the values from legacy cry rendering
+    //   This also applies to the individual flags in EAuxGeomPublicRenderflags_*!
+    // Remarks:
+    //   Bits 0 - 22 are currently reserved for prim type and per draw call render parameters (point size, etc.)
+    //   Check RenderAuxGeom.h in ../RenderDll/Common
+    enum EAuxGeomPublicRenderflagBitMasks: AZ::u32
+    {
+        e_Mode2D3DShift       = 31,
+        e_Mode2D3DMask        = 0x1u << e_Mode2D3DShift,
+
+        e_AlphaBlendingShift  = 29,
+        e_AlphaBlendingMask   = 0x3u << e_AlphaBlendingShift,
+
+        e_DrawInFrontShift    = 28,
+        e_DrawInFrontMask     = 0x1u << e_DrawInFrontShift,
+
+        e_FillModeShift       = 26,
+        e_FillModeMask        = 0x3u << e_FillModeShift,
+
+        e_CullModeShift       = 24,
+        e_CullModeMask        = 0x3u << e_CullModeShift,
+
+        e_DepthWriteShift     = 23,
+        e_DepthWriteMask      = 0x1u << e_DepthWriteShift,
+
+        e_DepthTestShift      = 22,
+        e_DepthTestMask       = 0x1u << e_DepthTestShift,
+
+        e_PublicParamsMask    = e_Mode2D3DMask | e_AlphaBlendingMask | e_DrawInFrontMask | e_FillModeMask | e_CullModeMask | e_DepthWriteMask | e_DepthTestMask
+    };
+
+    // Notes:
+    //   e_Mode2D renders in normalized [0.. 1] screen space.
+    //   Don't change the xxxShift values blindly as they affect the rendering output
+    //   that is two primitives have to be rendered after 3d primitives, alpha blended
+    //   geometry have to be rendered after opaque ones, etc.
+    //   This also applies to the individual flags in EAuxGeomPublicRenderflagBitMasks!
+    // Remarks:
+    //   Bits 0 - 22 are currently reserved for prim type and per draw call render parameters (point size, etc.)
+    //   Check RenderAuxGeom.h in ../RenderDll/Common
+    // See also:
+    //   EAuxGeomPublicRenderflagBitMasks
+    enum EAuxGeomPublicRenderflags_Mode2D3D: AZ::u32
+    {
+        e_Mode3D = 0x0u << e_Mode2D3DShift,
+        e_Mode2D = 0x1u << e_Mode2D3DShift,
+    };
+
+    // Notes:
+    //   Don't change the xxxShift values blindly as they affect the rendering output
+    //   that is two primitives have to be rendered after 3d primitives, alpha blended
+    //   geometry have to be rendered after opaque ones, etc.
+    //   This also applies to the individual flags in EAuxGeomPublicRenderflagBitMasks!
+    // Remarks:
+    //   Bits 0 - 22 are currently reserved for prim type and per draw call render parameters (point size, etc.)
+    //   Check RenderAuxGeom.h in ../RenderDll/Common
+    // See also:
+    //   EAuxGeomPublicRenderflagBitMasks
+    enum EAuxGeomPublicRenderflags_AlphaBlendMode: AZ::u32
+    {
+        e_AlphaNone     = 0x0u << e_AlphaBlendingShift,
+        e_AlphaAdditive = 0x1u << e_AlphaBlendingShift,
+        e_AlphaBlended  = 0x2u << e_AlphaBlendingShift,
+    };
+
+    // Notes:
+    //   Don't change the xxxShift values blindly as they affect the rendering output
+    //   that is two primitives have to be rendered after 3d primitives, alpha blended
+    //   geometry have to be rendered after opaque ones, etc.
+    //   This also applies to the individual flags in EAuxGeomPublicRenderflagBitMasks!
+    // Remarks:
+    //   Bits 0 - 22 are currently reserved for prim type and per draw call render parameters (point size, etc.)
+    //   Check RenderAuxGeom.h in ../RenderDll/Common
+    // See also:
+    //   EAuxGeomPublicRenderflagBitMasks
+    enum EAuxGeomPublicRenderflags_DrawInFrontMode: AZ::u32
+    {
+        e_DrawInFrontOff = 0x0u << e_DrawInFrontShift,
+        e_DrawInFrontOn  = 0x1u << e_DrawInFrontShift,
+    };
+
+    // Notes:
+    //   Don't change the xxxShift values blindly as they affect the rendering output
+    //   that is two primitives have to be rendered after 3d primitives, alpha blended
+    //   geometry have to be rendered after opaque ones, etc.
+    //   This also applies to the individual flags in EAuxGeomPublicRenderflagBitMasks!
+    // Remarks:
+    //   Bits 0 - 22 are currently reserved for prim type and per draw call render parameters (point size, etc.)
+    //   Check RenderAuxGeom.h in ../RenderDll/Common
+    // See also:
+    //   EAuxGeomPublicRenderflagBitMasks
+    enum EAuxGeomPublicRenderflags_FillMode: AZ::u32
+    {
+        e_FillModeSolid     = 0x0u << e_FillModeShift,
+        e_FillModeWireframe = 0x1u << e_FillModeShift,
+        e_FillModePoint     = 0x2u << e_FillModeShift,
+    };
+
+    // Notes:
+    //   Don't change the xxxShift values blindly as they affect the rendering output
+    //   that is two primitives have to be rendered after 3d primitives, alpha blended
+    //   geometry have to be rendered after opaque ones, etc.
+    //   This also applies to the individual flags in EAuxGeomPublicRenderflagBitMasks!
+    // Remarks:
+    //   Bits 0 - 22 are currently reserved for prim type and per draw call render parameters (point size, etc.)
+    //   Check RenderAuxGeom.h in ../RenderDll/Common
+    // See also:
+    //   EAuxGeomPublicRenderflagBitMasks
+    enum EAuxGeomPublicRenderflags_CullMode: AZ::u32
+    {
+        e_CullModeNone  = 0x0u << e_CullModeShift,
+        e_CullModeFront = 0x1u << e_CullModeShift,
+        e_CullModeBack  = 0x2u << e_CullModeShift,
+    };
+
+    // Notes:
+    //   Don't change the xxxShift values blindly as they affect the rendering output
+    //   that is two primitives have to be rendered after 3d primitives, alpha blended
+    //   geometry have to be rendered after opaque ones, etc.
+    //   This also applies to the individual flags in EAuxGeomPublicRenderflagBitMasks!
+    // Remarks:
+    //   Bits 0 - 22 are currently reserved for prim type and per draw call render parameters (point size, etc.)
+    //   Check RenderAuxGeom.h in ../RenderDll/Common
+    // See also:
+    //   EAuxGeomPublicRenderflagBitMasks
+    enum EAuxGeomPublicRenderflags_DepthWrite: AZ::u32
+    {
+        e_DepthWriteOn  = 0x0u << e_DepthWriteShift,
+        e_DepthWriteOff = 0x1u << e_DepthWriteShift,
+    };
+
+    // Notes:
+    //   Don't change the xxxShift values blindly as they affect the rendering output
+    //   that is two primitives have to be rendered after 3d primitives, alpha blended
+    //   geometry have to be rendered after opaque ones, etc.
+    //   This also applies to the individual flags in EAuxGeomPublicRenderflagBitMasks!
+    // Remarks:
+    //   Bits 0 - 22 are currently reserved for prim type and per draw call render parameters (point size, etc.)
+    //   Check RenderAuxGeom.h in ../RenderDll/Common
+    // See also:
+    //   EAuxGeomPublicRenderflagBitMasks
+    enum EAuxGeomPublicRenderflags_DepthTest: AZ::u32
+    {
+        e_DepthTestOn  = 0x0u << e_DepthTestShift,
+        e_DepthTestOff = 0x1u << e_DepthTestShift,
+    };
+
     /// DebugDisplayRequests provides a debug draw api to be used by components and viewport features.
     class DebugDisplayRequests
         : public AZ::EBusTraits

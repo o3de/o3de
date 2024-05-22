@@ -40,6 +40,9 @@ namespace AZ::DocumentPropertyEditor
         // AzToolsFramework::ToolsApplicationEvents::Bus overrides
         void InvalidatePropertyDisplay(AzToolsFramework::PropertyModificationRefreshLevel level) override;
 
+        // AzToolsFramework::ToolsApplicationEvents::Bus overrides
+        void InvalidatePropertyDisplayForComponent(AZ::EntityComponentIdPair entityComponentIdPair, AzToolsFramework::PropertyModificationRefreshLevel level) override;
+
         // AzToolsFramework::PropertyEditorGUIMessages::Bus overrides
         void RequestRefresh(AzToolsFramework::PropertyModificationRefreshLevel level) override;
 

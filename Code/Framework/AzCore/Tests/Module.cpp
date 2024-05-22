@@ -410,14 +410,14 @@ namespace UnitTest
                 PrintFCollector watchForCreation("InitializeDynamicModule called");
                 {
                     auto handle = DynamicModuleHandle::Create("AzCoreTestDLL");
-                    handle->Load(true);
+                    handle->Load(AZ::DynamicModuleHandle::LoadFlags::InitFuncRequired);
                     EXPECT_TRUE(watchForCreation.m_foundWhatWeWereWatchingFor); // should not destroy until we leave scope.
                                                                                 // steal the file path (which will be resolved with per-platform extensions like DLL or SO.
                     EXPECT_FALSE(watchForDestruction.m_foundWhatWeWereWatchingFor); // should not destroy until we leave scope.
 
                     PrintFCollector watchForCreationSecondTime("InitializeDynamicModule called");
                     auto handle2 = DynamicModuleHandle::Create("AzCoreTestDLL");
-                    handle2->Load(true);
+                    handle2->Load(AZ::DynamicModuleHandle::LoadFlags::InitFuncRequired);
                     // this should NOT have initialized it again:
                     EXPECT_FALSE(watchForCreationSecondTime.m_foundWhatWeWereWatchingFor); // should not destroy until we leave scope.
                 }

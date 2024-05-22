@@ -318,8 +318,7 @@ namespace PhysX
             m_config.m_localPosition = newLocalJoint.GetTranslation();
             m_config.m_localRotation = newLocalJoint.GetEulerDegrees();
 
-            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
+            InvalidatePropertyDisplay(AzToolsFramework::Refresh_Values);
         }
         m_cachedWorldTM = worldTM;
     }

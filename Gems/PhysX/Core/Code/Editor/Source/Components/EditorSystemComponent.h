@@ -15,7 +15,6 @@
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
-#include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <Editor/Source/Material/PhysXEditorMaterialAssetBuilder.h>
 #include <EditorPhysXJointInterface.h>
@@ -35,7 +34,6 @@ namespace PhysX
         , public Physics::EditorWorldBus::Handler
         , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
         , private AzToolsFramework::EditorEvents::Bus::Handler
-        , private AzToolsFramework::EditorContextMenuBus::Handler
         , public AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
     {
     public:
@@ -67,9 +65,6 @@ namespace PhysX
         // AzToolsFramework::EditorEntityContextNotificationBus overrides...
         void OnStartPlayInEditorBegin() override;
         void OnStopPlayInEditor() override;
-
-        // AztoolsFramework::EditorContextMenuBus overrides...
-        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZStd::optional<AzFramework::ScreenPoint>& point, int flags) override;
 
         // AztoolsFramework::EditorEvents overrides...
         void NotifyRegisterViews() override;

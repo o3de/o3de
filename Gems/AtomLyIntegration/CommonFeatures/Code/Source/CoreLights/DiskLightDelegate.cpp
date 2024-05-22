@@ -32,8 +32,8 @@ namespace AZ::Render
     {
         if (GetLightHandle().IsValid())
         {
-            GetFeatureProcessor()->SetPosition(GetLightHandle(), GetTransform().GetTranslation());
             GetFeatureProcessor()->SetDirection(GetLightHandle(), m_shapeBus->GetNormal());
+            GetFeatureProcessor()->SetPosition(GetLightHandle(), GetTransform().GetTranslation());
             GetFeatureProcessor()->SetDiskRadius(GetLightHandle(), GetRadius());
         }
     }

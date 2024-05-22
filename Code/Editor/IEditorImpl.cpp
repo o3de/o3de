@@ -318,7 +318,6 @@ void CEditorImpl::SetGameEngine(CGameEngine* ge)
 
     m_templateRegistry.LoadTemplates("Editor");
     m_pObjectManager->LoadClassTemplates("Editor");
-    m_pObjectManager->RegisterCVars();
 
     m_pAnimationContext->Init();
 }
@@ -969,7 +968,7 @@ bool CEditorImpl::ExecuteConsoleApp(const QString& CommandLine, QString& OutputT
 
     // Wait for the process to finish
     process.waitForFinished();
-    
+
     OutputText += process.readAllStandardOutput();
     OutputText += process.readAllStandardError();
 
@@ -1294,7 +1293,6 @@ void CEditorImpl::ReduceMemory()
 {
     GetIEditor()->GetUndoManager()->ClearRedoStack();
     GetIEditor()->GetUndoManager()->ClearUndoStack();
-    GetIEditor()->GetObjectManager()->SendEvent(EVENT_FREE_GAME_DATA);
 
 #if defined(AZ_PLATFORM_WINDOWS)
     HANDLE hHeap = GetProcessHeap();

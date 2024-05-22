@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <Atom/RHI/RHIMemoryStatisticsInterface.h>
+#include <Atom/RHI.Profiler/GraphicsProfilerBus.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <AzFramework/Components/ConsoleBus.h>
 #include <ImGuiBus.h>
@@ -111,6 +112,11 @@ namespace AtomImGuiTools
     {
         if (ImGui::BeginMenu("Atom Tools"))
         {
+            if (ImGui::MenuItem("Dump loaded Asset info", ""))
+            {
+                AZ::Data::AssetManager::Instance().DumpLoadedAssetsInfo();
+            }
+
             ImGui::MenuItem("Pass Viewer", "", &m_showPassTree);
             ImGui::MenuItem("Gpu Profiler", "", &m_showGpuProfiler);
             if (ImGui::MenuItem("Transient Attachment Profiler", "", &m_showTransientAttachmentProfiler))
@@ -128,6 +134,10 @@ namespace AtomImGuiTools
                 {
                     m_imguiMaterialDetails.CloseDialog();
                 }
+            }
+            if (ImGui::MenuItem("Trigger GPU Capture", "", false, AZ::RHI::GraphicsProfilerBus::HasHandlers()))
+            {
+                AZ::RHI::GraphicsProfilerBus::Broadcast(&AZ::RHI::GraphicsProfilerBus::Events::TriggerCapture);
             }
             ImGui::EndMenu();
         }

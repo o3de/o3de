@@ -71,7 +71,7 @@ AZStd::unique_ptr<AZ::DynamicModuleHandle> AssetImporterPlugin::LoadSceneLibrary
     AZStd::unique_ptr<AZ::DynamicModuleHandle> module = AZ::DynamicModuleHandle::Create(name);
     if (module)
     {
-        module->Load(false);
+        module->Load();
 
         if (explicitInit)
         {

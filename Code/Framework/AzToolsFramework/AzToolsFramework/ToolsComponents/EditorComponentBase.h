@@ -19,9 +19,6 @@
 #pragma once
 
 #include <AzCore/base.h>
-#include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/Math/Crc.h>
-#include <AzCore/Math/Transform.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h>
@@ -31,10 +28,19 @@ class QMenu;
 namespace AZ
 {
     class Vector2;
+    class TransformInterface;
+    class Transform;
+
+    namespace Data
+    {
+        struct AssetId;
+    }
 }
 
 namespace AzToolsFramework
 {
+    enum PropertyModificationRefreshLevel : int;
+
     namespace Components
     {        
         /**
@@ -163,6 +169,18 @@ namespace AzToolsFramework
              * Otherwise, false.
              */
             bool IsSelected() const;
+
+            /** 
+             * Invoke this to refresh the property display for the component.
+             * Only refreshes the ui for this component, not adjacent ones, which is faster than
+             * asking for complete full tree refresh of every entity in every inspector on every
+             * component.
+             * See @ref AzToolsFramework::RefreshType for the different types of refreshes.
+             * @ref Code/Framework/AzToolsFramework/AzToolsFramework/API/ToolsApplicationAPI.h
+             * @param refreshFlags The type of refresh to perform.
+             *   (Most common is either Refresh_EntireTree or Refresh_Values).
+             */
+            void InvalidatePropertyDisplay(AzToolsFramework::PropertyModificationRefreshLevel refreshFlags);
 
             /**
              * Override this function to create one or more game components

@@ -21,7 +21,7 @@ namespace EMotionFX
 
     // the constructor
     MorphTarget::MorphTarget(const char* name)
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_rangeMin       = 0.0f;
         m_rangeMax       = 1.0f;

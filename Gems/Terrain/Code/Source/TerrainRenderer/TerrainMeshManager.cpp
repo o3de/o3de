@@ -409,7 +409,7 @@ namespace Terrain
             subMesh.m_normalVertexBufferView = normalsVertexBufferView;
             subMesh.m_normalShaderBufferView = rhiNormalsBuffer.GetBufferView(normalsBufferDescriptor);
             subMesh.m_indexBufferView = AZ::RHI::IndexBufferView(rhiIndexBuffer, indexBufferByteOffset, indexBufferByteCount, indexBufferFormat);
-            subMesh.m_baseColor = AZ::Color::CreateFromVector3(AZ::Vector3(0.18f));
+            subMesh.m_material.m_baseColor = AZ::Color::CreateFromVector3(AZ::Vector3(0.18f));
 
             AZ::RHI::BufferViewDescriptor indexBufferDescriptor;
             indexBufferDescriptor.m_elementOffset = indexBufferByteOffset / indexElementSize;

@@ -41,11 +41,11 @@
 #include "GameEngine.h"
 
 #include "CryEdit.h"
+#include "Util/PakFile.h"
 #include "Include/IObjectManager.h"
 #include "ErrorReportDialog.h"
 #include "Util/AutoLogTime.h"
 #include "CheckOutDialog.h"
-#include "GameExporter.h"
 #include "MainWindow.h"
 #include "LevelFileDialog.h"
 #include "Undo/Undo.h"
@@ -108,7 +108,7 @@ CCryEditDoc::CCryEditDoc()
 
     GetIEditor()->SetDocument(this);
     CLogFile::WriteLine("Document created");
-    
+
     m_prefabSystemComponentInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
     AZ_Assert(m_prefabSystemComponentInterface, "PrefabSystemComponentInterface is not found.");
     m_prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
@@ -250,7 +250,7 @@ void CCryEditDoc::Load(TDocMultiArchive& /* arrXmlAr */, const QString& szFilena
     // Register a unique load event
     QString fileName = Path::GetFileName(szFilename);
     QString levelHash = szFilename;
-    
+
     SEventLog loadEvent("Level_" + Path::GetFileName(fileName), "", levelHash);
 
     // Register this level and its content hash as version
@@ -299,26 +299,6 @@ void CCryEditDoc::Load(TDocMultiArchive& /* arrXmlAr */, const QString& szFilena
         {
             CAutoLogTime logtime("Game Engine level load");
             GetIEditor()->GetGameEngine()->LoadLevel(true, true);
-        }
-
-        {
-            // support old version of sequences
-            IMovieSystem* pMs = GetIEditor()->GetMovieSystem();
-
-            if (pMs)
-            {
-                for (int k = 0; k < pMs->GetNumSequences(); ++k)
-                {
-                    IAnimSequence* seq = pMs->GetSequence(k);
-                    QString fullname = seq->GetName();
-                    CBaseObject* pObj = GetIEditor()->GetObjectManager()->FindObject(fullname);
-
-                    if (!pObj)
-                    {
-                        pObj = GetIEditor()->GetObjectManager()->NewObject("SequenceObject", nullptr, fullname);
-                    }
-                }
-            }
         }
 
         {
@@ -500,11 +480,6 @@ bool CCryEditDoc::CanCloseFrame()
         return false;
     }
 
-    // If there is an export in process, exiting will corrupt it
-    if (CGameExporter::GetCurrentExporter() != nullptr)
-    {
-        return false;
-    }
 
     return true;
 }

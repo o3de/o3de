@@ -27,7 +27,7 @@ function(ly_copy source_files relative_target_directory)
         if("${source_file}" IS_NEWER_THAN "${target_file}")
             message(STATUS "Copying ${source_file} to ${full_target_directory}...")
             file(MAKE_DIRECTORY "${full_target_directory}")
-            file(COPY "${source_file}" DESTINATION "${full_target_directory}" FILE_PERMISSIONS @LY_COPY_PERMISSIONS@ FOLLOW_SYMLINK_CHAIN)
+            file(COPY "${source_file}" DESTINATION "${full_target_directory}" USE_SOURCE_PERMISSIONS FOLLOW_SYMLINK_CHAIN)
             file(TOUCH_NOCREATE "${target_file}")
 
             # Special case for install

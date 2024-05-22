@@ -11,7 +11,7 @@
 // include the required headers
 #include "EMotionFXConfig.h"
 #include "MeshDeformer.h"
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 #include <AzCore/std/containers/vector.h>
 
 
@@ -37,7 +37,8 @@ namespace EMotionFX
      * People who know 3D Studio Max will recognise this system as the Max Modifier Stack.
      */
     class EMFX_API MeshDeformerStack
-        : public BaseObject
+        : public MCore::RefCounted
+
     {
         AZ_CLASS_ALLOCATOR_DECL
 

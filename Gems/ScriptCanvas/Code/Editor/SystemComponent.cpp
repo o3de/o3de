@@ -14,6 +14,7 @@
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/std/string/wildcard.h>
 #include <AzFramework/Entity/EntityContextBus.h>
+#include <AzFramework/Network/IRemoteTools.h>
 #include <AzFramework/IO/FileOperations.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
@@ -39,6 +40,7 @@
 #include <ScriptCanvas/Data/DataRegistry.h>
 #include <ScriptCanvas/Libraries/Libraries.h>
 #include <ScriptCanvas/PerformanceStatisticsBus.h>
+#include <ScriptCanvas/Utils/ScriptCanvasConstants.h>
 #include <ScriptCanvas/Variable/VariableCore.h>
 
 namespace ScriptCanvasEditor
@@ -106,6 +108,14 @@ namespace ScriptCanvasEditor
     void SystemComponent::Init()
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
+
+#if defined(ENABLE_REMOTE_TOOLS)
+        if (auto* remoteToolsInterface = AzFramework::RemoteToolsInterface::Get())
+        {
+            remoteToolsInterface->RegisterToolingServiceHost(
+                ScriptCanvas::RemoteToolsKey, ScriptCanvas::RemoteToolsName, ScriptCanvas::RemoteToolsPort);
+        }
+#endif
     }
 
     void SystemComponent::Activate()

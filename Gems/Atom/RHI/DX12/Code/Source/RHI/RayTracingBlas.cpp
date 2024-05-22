@@ -30,31 +30,72 @@ namespace AZ
             ID3D12DeviceX* dx12Device = device.GetDevice();
 
             // advance to the next buffer
-            m_currentBufferIndex = (m_currentBufferIndex + 1) % BufferCount;
-            BlasBuffers& buffers = m_buffers[m_currentBufferIndex];
+            BlasBuffers& buffers = m_buffers.AdvanceCurrentElement();
 
-            const RHI::RayTracingGeometryVector& geometries = descriptor->GetGeometries();
-
-            // build the list of D3D12_RAYTRACING_GEOMETRY_DESC structures
             m_geometryDescs.clear();
-            m_geometryDescs.reserve(geometries.size());
-            D3D12_RAYTRACING_GEOMETRY_DESC geometryDesc = {};
-            for (const RHI::RayTracingGeometry& geometry : geometries)
-            {
-                geometryDesc = {};
-                geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
-                geometryDesc.Triangles.VertexBuffer.StartAddress = static_cast<const DX12::Buffer*>(geometry.m_vertexBuffer.GetBuffer())->GetMemoryView().GetGpuAddress() + geometry.m_vertexBuffer.GetByteOffset();
-                geometryDesc.Triangles.VertexBuffer.StrideInBytes = geometry.m_vertexBuffer.GetByteStride();
-                geometryDesc.Triangles.VertexCount = geometry.m_vertexBuffer.GetByteCount() / aznumeric_cast<UINT>(geometryDesc.Triangles.VertexBuffer.StrideInBytes);
-                geometryDesc.Triangles.VertexFormat = ConvertFormat(geometry.m_vertexFormat);
-                geometryDesc.Triangles.IndexBuffer = static_cast<const DX12::Buffer*>(geometry.m_indexBuffer.GetBuffer())->GetMemoryView().GetGpuAddress() + geometry.m_indexBuffer.GetByteOffset();
-                geometryDesc.Triangles.IndexFormat = (geometry.m_indexBuffer.GetIndexFormat() == RHI::IndexFormat::Uint16) ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
-                geometryDesc.Triangles.IndexCount = aznumeric_cast<UINT>(geometry.m_indexBuffer.GetByteCount()) / ((geometry.m_indexBuffer.GetIndexFormat() == RHI::IndexFormat::Uint16) ? 2 : 4);
-                geometryDesc.Triangles.Transform3x4 = 0; // [GFX-TODO][ATOM-4989] Add DXR BLAS Transform Buffer
 
-                // all BLAS geometry is set to opaque, but can be set to transparent at the TLAS Instance level
+            // A BLAS can contain either triangle geometry or procedural geometry; decide based on the descriptor which one to create
+            if (descriptor->HasAABB())
+            {
+                const AZ::Aabb& aabb = descriptor->GetAABB();
+                buffers.m_aabbBuffer = RHI::Factory::Get().CreateBuffer();
+                AZ::RHI::BufferDescriptor blasBufferDescriptor;
+                blasBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingAccelerationStructure;
+                blasBufferDescriptor.m_byteCount = sizeof(D3D12_RAYTRACING_AABB);
+                blasBufferDescriptor.m_alignment = D3D12_RAYTRACING_AABB_BYTE_ALIGNMENT;
+
+                D3D12_RAYTRACING_AABB rtAabb;
+                rtAabb.MinX = aabb.GetMin().GetX();
+                rtAabb.MinY = aabb.GetMin().GetY();
+                rtAabb.MinZ = aabb.GetMin().GetZ();
+                rtAabb.MaxX = aabb.GetMax().GetX();
+                rtAabb.MaxY = aabb.GetMax().GetY();
+                rtAabb.MaxZ = aabb.GetMax().GetZ();
+
+                AZ::RHI::BufferInitRequest blasBufferRequest;
+                blasBufferRequest.m_buffer = buffers.m_aabbBuffer.get();
+                blasBufferRequest.m_initialData = &rtAabb;
+                blasBufferRequest.m_descriptor = blasBufferDescriptor;
+                auto resultCode = bufferPools.GetBlasBufferPool()->InitBuffer(blasBufferRequest);
+                if (resultCode != AZ::RHI::ResultCode::Success)
+                {
+                    AZ_Error("RayTracing", false, "Failed to initialize BLAS buffer index buffer with error code: %d", resultCode);
+                }
+
+                D3D12_RAYTRACING_GEOMETRY_DESC geometryDesc = {};
+                geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS;
                 geometryDesc.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
+                geometryDesc.AABBs.AABBCount = 1;
+                geometryDesc.AABBs.AABBs.StartAddress = static_cast<const DX12::Buffer*>(buffers.m_aabbBuffer.get())->GetMemoryView().GetGpuAddress();
+                //geometryDesc.AABBs.AABBs.StrideInBytes = D3D12_RAYTRACING_AABB_BYTE_ALIGNMENT;
+                geometryDesc.AABBs.AABBs.StrideInBytes = 0;
+
                 m_geometryDescs.push_back(geometryDesc);
+            }
+            else
+            {
+                const RHI::RayTracingGeometryVector& geometries = descriptor->GetGeometries();
+
+                // build the list of D3D12_RAYTRACING_GEOMETRY_DESC structures
+                m_geometryDescs.reserve(geometries.size());
+                D3D12_RAYTRACING_GEOMETRY_DESC geometryDesc = {};
+                for (const RHI::RayTracingGeometry& geometry : geometries)
+                {
+                    geometryDesc = {};
+                    geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
+                    geometryDesc.Triangles.VertexBuffer.StartAddress = static_cast<const DX12::Buffer*>(geometry.m_vertexBuffer.GetBuffer())->GetMemoryView().GetGpuAddress() + geometry.m_vertexBuffer.GetByteOffset();
+                    geometryDesc.Triangles.VertexBuffer.StrideInBytes = geometry.m_vertexBuffer.GetByteStride();
+                    geometryDesc.Triangles.VertexCount = geometry.m_vertexBuffer.GetByteCount() / aznumeric_cast<UINT>(geometryDesc.Triangles.VertexBuffer.StrideInBytes);
+                    geometryDesc.Triangles.VertexFormat = ConvertFormat(geometry.m_vertexFormat);
+                    geometryDesc.Triangles.IndexBuffer = static_cast<const DX12::Buffer*>(geometry.m_indexBuffer.GetBuffer())->GetMemoryView().GetGpuAddress() + geometry.m_indexBuffer.GetByteOffset();
+                    geometryDesc.Triangles.IndexFormat = (geometry.m_indexBuffer.GetIndexFormat() == RHI::IndexFormat::Uint16) ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
+                    geometryDesc.Triangles.IndexCount = aznumeric_cast<UINT>(geometry.m_indexBuffer.GetByteCount()) / ((geometry.m_indexBuffer.GetIndexFormat() == RHI::IndexFormat::Uint16) ? 2 : 4);
+                    geometryDesc.Triangles.Transform3x4 = 0; // [GFX-TODO][ATOM-4989] Add DXR BLAS Transform Buffer
+
+                    // all BLAS geometry is set to opaque, but can be set to transparent at the TLAS Instance level
+                    geometryDesc.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
+                    m_geometryDescs.push_back(geometryDesc);
+                }
             }
 
             // retrieve the required sizes for the scratch and result buffers            

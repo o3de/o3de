@@ -537,6 +537,7 @@ namespace LUAEditor
         , m_machine(azcreate(StateMachine, ()))
     {
         AddBlockKeywords();
+        BuildRegExes();
     }
 
     LUASyntaxHighlighter::LUASyntaxHighlighter(QTextDocument* parent)
@@ -544,6 +545,57 @@ namespace LUAEditor
         , m_machine(azcreate(StateMachine, ()))
     {
         AddBlockKeywords();
+        BuildRegExes();
+    }
+
+    void LUASyntaxHighlighter::BuildRegExes()
+    {
+        auto colors =
+            AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC("LUA Editor Text Settings", 0xb6e15565), AZ::UserSettings::CT_GLOBAL);
+
+        // Match against ; : , . = * - + /
+        {
+            HighlightingRule rule;
+            rule.pattern = QRegularExpression(R"([\;\:\,\.\=\*\-\+\/])");
+            rule.colorCB = [colors]()
+            {
+                return colors->GetSpecialCharacterColor();
+            };
+            m_highlightingRules.push_back(rule);
+        }
+
+        // Match against parenthesis and brackets
+        {
+            HighlightingRule rule;
+            rule.pattern = QRegularExpression(R"([\(\)\{\}\[\]])");
+            rule.colorCB = [colors]()
+            {
+                return colors->GetBracketColor();
+            };
+            m_highlightingRules.push_back(rule);
+        }
+
+        // Match against local and self keywords
+        {
+            HighlightingRule rule;
+            rule.pattern = QRegularExpression(R"(\bself\b|\blocal\b)");
+            rule.colorCB = [colors]()
+            {
+                return colors->GetSpecialKeywordColor();
+            };
+            m_highlightingRules.push_back(rule);
+        }
+
+        // Match methods and definitions. Any word which ends with '('
+        {
+            HighlightingRule rule;
+            rule.pattern = QRegularExpression(R"(\b[A-Za-z0-9_]+(?=\())");
+            rule.colorCB = [colors]()
+            {
+                return colors->GetMethodColor();
+            };
+            m_highlightingRules.push_back(rule);
+        }
     }
 
     void LUASyntaxHighlighter::AddBlockKeywords()
@@ -585,7 +637,8 @@ namespace LUAEditor
         QTBlockState currentState;
         currentState.m_qtBlockState = currentBlockState();
         QTextCharFormat textFormat;
-        textFormat.setFont(m_font);
+
+        textFormat.setFont(colors->GetFont());
 
         textFormat.setForeground(colors->GetTextColor());
         setFormat(0, cBlock.length(), textFormat);
@@ -600,30 +653,6 @@ namespace LUAEditor
             int length = tabsAndSpaces.matchedLength();
             setFormat(index, length, spaceFormat);
             index = tabsAndSpaces.indexIn(text, index + length);
-        }
-
-        //first take care of bracket highlighting. let later overwrite to handle case of brackets inside of a comment,ect
-        if (m_openBracketPos >= 0 && m_closeBracketPos >= 0)
-        {
-            if (cBlock.contains(m_openBracketPos))
-            {
-                setFormat(m_openBracketPos - cBlock.position(), 1, colors->GetBracketColor());
-            }
-            if (cBlock.contains(m_closeBracketPos))
-            {
-                setFormat(m_closeBracketPos - cBlock.position(), 1, colors->GetBracketColor());
-            }
-        }
-        else if (m_openBracketPos >= 0)
-        {
-            if (cBlock.contains(m_openBracketPos))
-            {
-                setFormat(m_openBracketPos - cBlock.position(), 1, colors->GetUnmatchedBracketColor());
-            }
-            if (cBlock.contains(m_closeBracketPos))
-            {
-                setFormat(m_closeBracketPos - cBlock.position(), 1, colors->GetUnmatchedBracketColor());
-            }
         }
 
         QTBlockState prevState;
@@ -677,8 +706,47 @@ namespace LUAEditor
                     textFormat.setForeground(colors->GetStringLiteralColor());
                     setFormat(position, length, textFormat);
                 }
+
+                const bool canRunRegEx = state == ParserStates::Null || state == ParserStates::Name;
+                if (!canRunRegEx)
+                    return;
+
+                for (const HighlightingRule& rule : m_highlightingRules)
+                {
+                    QRegularExpressionMatchIterator i = rule.pattern.globalMatch(text);
+                    while (i.hasNext())
+                    {
+                        QRegularExpressionMatch match = i.next();
+                        textFormat.setForeground(rule.colorCB());
+                        setFormat(match.capturedStart(), match.capturedLength(), textFormat);
+                    }
+                }
             };
         m_machine->Parse(text);
+
+        // Selected bracket matching highlighting
+        if (m_openBracketPos >= 0 && m_closeBracketPos >= 0)
+        {
+            if (cBlock.contains(m_openBracketPos))
+            {
+                setFormat(m_openBracketPos - cBlock.position(), 1, colors->GetSelectedBracketColor());
+            }
+            if (cBlock.contains(m_closeBracketPos))
+            {
+                setFormat(m_closeBracketPos - cBlock.position(), 1, colors->GetSelectedBracketColor());
+            }
+        }
+        else if (m_openBracketPos >= 0)
+        {
+            if (cBlock.contains(m_openBracketPos))
+            {
+                setFormat(m_openBracketPos - cBlock.position(), 1, colors->GetUnmatchedBracketColor());
+            }
+            if (cBlock.contains(m_closeBracketPos))
+            {
+                setFormat(m_closeBracketPos - cBlock.position(), 1, colors->GetUnmatchedBracketColor());
+            }
+        }
 
         auto endingState = m_machine->GetCurrentParserState();
         if (startingState != ParserStates::LongComment && endingState == ParserStates::LongComment)

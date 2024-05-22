@@ -10,7 +10,7 @@
 
 // include MCore related files
 #include "EMotionFXConfig.h"
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 
 
 namespace EMotionFX
@@ -22,7 +22,7 @@ namespace EMotionFX
      * In order to create your own node attribute, simply inherit a class from this base class.
      */
     class EMFX_API NodeAttribute
-        : public BaseObject
+        : public MCore::RefCounted
     {
     public:
         /**
@@ -49,7 +49,9 @@ namespace EMotionFX
          * The constructor.
          */
         NodeAttribute()
-            : BaseObject() {}
+            : MCore::RefCounted()
+        {
+        }
 
         /**
          * The destructor.

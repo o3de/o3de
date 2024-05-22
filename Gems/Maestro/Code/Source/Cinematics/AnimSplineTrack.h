@@ -199,7 +199,7 @@ public:
     void SetValue([[maybe_unused]] float time, [[maybe_unused]] const bool& value, [[maybe_unused]] bool bDefault = false) override { assert(0); }
     void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Maestro::AssetBlends<AZ::Data::AssetData>& value, [[maybe_unused]] bool bDefault = false) override { assert(0); }
 
-    void OffsetKeyPosition([[maybe_unused]] const Vec3& value) override { assert(0); };
+    void OffsetKeyPosition([[maybe_unused]] const AZ::Vector3& value) override { assert(0); };
     void UpdateKeyDataAfterParentChanged([[maybe_unused]] const AZ::Transform& oldParentWorldTM, [[maybe_unused]] const AZ::Transform& newParentWorldTM) override { assert(0); };
 
     bool Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;

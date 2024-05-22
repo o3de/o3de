@@ -47,6 +47,11 @@ namespace AZ
                 m_filterMethod = method;
             }
 
+            void SetFilteringSampleCountMode(AZ::Render::ShadowFilterSampleCount filteringSampleCount)
+            {
+                m_filteringSampleCountMode = filteringSampleCount;
+            }
+
             void SetReceiverShadowPlaneBiasEnable(bool enable)
             {
                 m_receiverShadowPlaneBiasEnable = enable;
@@ -63,6 +68,7 @@ namespace AZ
             bool m_blendBetweenCascadesEnable = false;
             bool m_receiverShadowPlaneBiasEnable = false;
             ShadowFilterMethod m_filterMethod = ShadowFilterMethod::None;
+            ShadowFilterSampleCount m_filteringSampleCountMode = ShadowFilterSampleCount::PcfTap16;
 
             FullscreenShadowPass(const RPI::PassDescriptor& descriptor);
 

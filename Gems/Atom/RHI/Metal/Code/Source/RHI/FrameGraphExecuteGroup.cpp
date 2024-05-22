@@ -113,7 +113,12 @@ namespace AZ
             RHI::FrameGraphExecuteContext& context,
             AZ::u32 contextIndex)
         {
-            m_scope->End(*static_cast<CommandList*>(context.GetCommandList()), context.GetCommandListIndex(), context.GetCommandListCount());
+            //For non-merged groups we handle signalling fences related to aliased resources at the end of the group within
+            //FrameGraphExecuteGroup::EndInternal. The reason for this is that you can only signal fences once the parallel
+            //encoders (within FrameGraphExecuteGroup) are flushed. Hence we can not signal at the end of the context itself
+            //as it is still in the middle of encoding work for active scope
+            const bool signalFencesForAliasedResources = false;
+            m_scope->End(*static_cast<CommandList*>(context.GetCommandList()), signalFencesForAliasedResources);
             static_cast<CommandList*>(context.GetCommandList())->Close();
         }
     }

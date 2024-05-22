@@ -124,8 +124,7 @@ namespace AZ
         {
 #ifdef AZ_DX12_DXR_SUPPORT
             // advance to the next buffer
-            m_currentBufferIndex = (m_currentBufferIndex + 1) % BufferCount;
-            ShaderTableBuffers& buffers = m_buffers[m_currentBufferIndex];
+            ShaderTableBuffers& buffers = m_buffers.AdvanceCurrentElement();
 
             // clear the shader table if the descriptor has no ray generation shader
             if (m_descriptor->GetRayGenerationRecord().empty())

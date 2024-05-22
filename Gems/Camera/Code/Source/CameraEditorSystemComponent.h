@@ -12,7 +12,6 @@
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
-#include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 
 #include "CameraViewRegistrationBus.h"
 
@@ -23,7 +22,6 @@ namespace Camera
         , private AzToolsFramework::EditorEvents::Bus::Handler
         , private EditorCameraSystemRequestBus::Handler
         , private CameraViewRegistrationRequestsBus::Handler
-        , private AzToolsFramework::EditorContextMenuBus::Handler
         , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
     {
     public:
@@ -40,10 +38,6 @@ namespace Camera
         //////////////////////////////////////////////////////////////////////////
 
     private:
-        //////////////////////////////////////////////////////////////////////////
-        // AzToolsFramework::EditorContextMenuBus
-        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZStd::optional<AzFramework::ScreenPoint>& point, int flags) override;
-        //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
         // AzToolsFramework::EditorEvents

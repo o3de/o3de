@@ -126,8 +126,15 @@
             <Parameter Name="Roll"/>
             <Parameter Name="Yaw"/>
         </Function>
-        
-        <Function Name="RotateVector3">
+
+      <Function Name="CreateFromValues">
+        <Parameter Name="x"/>
+        <Parameter Name="y"/>
+        <Parameter Name="z"/>
+        <Parameter Name="w"/>
+      </Function>
+
+      <Function Name="RotateVector3">
             <Parameter Name="Quaternion"/>
             <Parameter Name="Vector"/>
         </Function>

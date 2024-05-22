@@ -438,8 +438,7 @@ namespace GradientSignal
         m_previewer.SetPreviewEntity(m_configuration.m_inputBounds);
         m_previewer.RefreshPreview();
 
-        AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
-            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+        InvalidatePropertyDisplay(AzToolsFramework::Refresh_AttributesAndValues);
     }
 
     void EditorGradientBakerComponent::SetupDependencyMonitor()
@@ -483,8 +482,7 @@ namespace GradientSignal
         m_bakeImageJob->Start();
 
         // Force a refresh now so the bake button gets disabled
-        AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
-            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+        InvalidatePropertyDisplay(AzToolsFramework::Refresh_AttributesAndValues);
     }
 
     bool EditorGradientBakerComponent::IsBakeDisabled() const
@@ -516,8 +514,7 @@ namespace GradientSignal
             }
 
             // Refresh once the job has completed so the Bake button can be re-enabled
-            AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
-                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+            InvalidatePropertyDisplay(AzToolsFramework::Refresh_AttributesAndValues);
         }
         else if (!m_bakeImageJob)
         {

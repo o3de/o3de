@@ -12,35 +12,20 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Component/TickBus.h>
 
-#if defined(USE_RENDERDOC) || defined(USE_PIX)
-#include <AzCore/Module/DynamicModuleHandle.h>
-#include <Atom_RHI_Traits_Platform.h>
-#endif
-
-#if defined(USE_RENDERDOC)
-static AZStd::unique_ptr<AZ::DynamicModuleHandle> s_renderDocModule;
-static RENDERDOC_API_1_1_2* s_renderDocApi = nullptr;
-static bool s_isRenderDocDllLoaded = false;
-#endif
-
-#if defined(USE_PIX)
-static AZStd::unique_ptr<AZ::DynamicModuleHandle> s_pixModule;
-static bool s_isPixGpuCaptureDllLoaded = false;
-static bool s_pixGpuMarkersEnabled = true;
-#endif
-
 static bool s_usingWarpDevice = false;
 AZ_CVAR(bool, r_gpuMarkersMergeGroups, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enable merging of gpu markers in order to track payload (i.e all the scopes) per command list.");
+
+AZ_CVAR(
+    bool,
+    r_enablePsoCaching,
+    false,
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate,
+    "If true the active RHI backend will try to write out PSO cache (as long as it is able to). By default it is false.");
 
 
 namespace AZ::RHI
 {
-    namespace Platform
-    {
-        bool IsPixDllInjected(const char* dllName);
-        AZStd::wstring GetLatestWinPixGpuCapturerPath();
-    }
-
     uint32_t Factory::GetComponentService()
     {
         return AZ_CRC("RHIService", 0x45d8e053);
@@ -60,72 +45,6 @@ namespace AZ::RHI
     {
         AZStd::string preferredUserAdapterName = RHI::GetCommandLineValue("forceAdapter");
         s_usingWarpDevice = preferredUserAdapterName == "Microsoft Basic Render Driver";
-#if defined(USE_RENDERDOC)
-        // If RenderDoc is requested, we need to load the library as early as possible (before device queries/factories are made)
-        bool enableRenderDoc = RHI::QueryCommandLineOption("enableRenderDoc");
-
-        if (enableRenderDoc && AZ_TRAIT_RENDERDOC_MODULE && !s_renderDocModule)
-        {
-            s_renderDocModule = DynamicModuleHandle::Create(AZ_TRAIT_RENDERDOC_MODULE);
-            if (s_renderDocModule)
-            {
-                if (s_renderDocModule->Load(false))
-                {
-                    s_isRenderDocDllLoaded = true;
-                    pRENDERDOC_GetAPI renderDocGetAPI = s_renderDocModule->GetFunction<pRENDERDOC_GetAPI>("RENDERDOC_GetAPI");
-                    if (renderDocGetAPI)
-                    {
-                        if (!renderDocGetAPI(eRENDERDOC_API_Version_1_1_2, reinterpret_cast<void**>(&s_renderDocApi)))
-                        {
-                            s_renderDocApi = nullptr;
-                        }
-                    }
-
-                    if (s_renderDocApi)
-                    {
-                        // Prevent RenderDoc from handling any exceptions that may interfere with the O3DE exception handler
-                        s_renderDocApi->UnloadCrashHandler();
-                    }
-                    else
-                    {
-                        AZ_Printf("RHISystem", "RenderDoc module loaded but failed to retrieve API function pointer.\n");
-                    }
-                }
-                else
-                {
-                    AZ_Printf("RHISystem", "RenderDoc module requested but module failed to load.\n");
-                }
-            }
-        }
-#endif
-
-#if defined(USE_PIX)
-        // If GPU capture is requested, we need to load the pix library as early as possible (before device queries/factories are made)
-        bool enablePixGPU = RHI::QueryCommandLineOption("enablePixGPU");
-        if (enablePixGPU && AZ_TRAIT_PIX_MODULE && !s_pixModule)
-        {
-            //Get the path to the latest pix install directory
-            AZStd::wstring pixGpuDllPath = Platform::GetLatestWinPixGpuCapturerPath();
-            AZStd::string dllPath;
-            AZStd::to_string(dllPath, pixGpuDllPath);
-            s_pixModule = DynamicModuleHandle::Create(dllPath.c_str());
-            if (s_pixModule)
-            {
-                if (!s_pixModule->Load(false))
-                {
-                    AZ_Printf("RHISystem", "Pix capture requested but module failed to load.\n");
-                }
-            }
-        }
-
-        //Pix dll can still be injected even if we do not pass in enablePixGPU. This can be done if we launch the app from Pix.
-        s_isPixGpuCaptureDllLoaded = Platform::IsPixDllInjected(AZ_TRAIT_PIX_MODULE);
-
-        if (RHI::QueryCommandLineOption("disablePixGpuMarkers"))
-        {
-            s_pixGpuMarkersEnabled = false;
-        }
-#endif
     }
 
     void Factory::Register(Factory* instance)
@@ -156,19 +75,6 @@ namespace AZ::RHI
         ResourceInvalidateBus::ClearQueuedEvents();
 
         Interface<Factory>::Unregister(instance);
-
-#if defined(USE_RENDERDOC)
-        if (s_renderDocModule)
-        {
-            s_renderDocModule->Unload();
-        }
-#endif
-#if defined(USE_PIX)
-        if (s_pixModule)
-        {
-            s_pixModule->Unload();
-        }
-#endif
     }
 
     bool Factory::IsReady()
@@ -181,40 +87,6 @@ namespace AZ::RHI
         Factory* factory = Interface<Factory>::Get();
         AZ_Assert(factory, "RHI::Factory is not connected to a platform. Call IsReady() to get the status of the platform. A null de-reference is imminent.");
         return *factory;
-    }
-
-#if defined(USE_RENDERDOC)
-    RENDERDOC_API_1_1_2* Factory::GetRenderDocAPI()
-    {
-        return s_renderDocApi;
-    }
-#endif
-
-    bool Factory::IsRenderDocModuleLoaded()
-    {
-#if defined(USE_RENDERDOC)
-        return s_isRenderDocDllLoaded;
-#else
-        return false;
-#endif
-    }
-
-    bool Factory::IsPixModuleLoaded()
-    {
-#if defined(USE_PIX)
-        return s_isPixGpuCaptureDllLoaded;
-#else
-        return false;
-#endif
-    }
-
-    bool Factory::PixGpuEventsEnabled()
-    {
-#if defined(USE_PIX)
-        return s_pixGpuMarkersEnabled;
-#else
-        return false;
-#endif
     }
 
     bool Factory::UsingWarpDevice()

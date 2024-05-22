@@ -542,7 +542,7 @@ struct IUiAnimTrack
     virtual void SetValue(float time, const AZ::Color& value, bool bDefault = false) = 0;
 
     // Only for position tracks, offset all track keys by this amount.
-    virtual void OffsetKeyPosition(const Vec3& value) = 0;
+    virtual void OffsetKeyPosition(const AZ::Vector3& value) = 0;
 
     // Assign active time range for this track.
     virtual void SetTimeRange(const Range& timeRange) = 0;

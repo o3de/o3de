@@ -147,6 +147,11 @@ namespace ScriptCanvas
             return AZ::ConvertEulerDegreesToQuaternion(eulerDegress);
         }
 
+        QuaternionType CreateFromValues(NumberType x, NumberType y, NumberType z, NumberType w)
+        {
+            return QuaternionType(aznumeric_cast<float>(x), aznumeric_cast<float>(y), aznumeric_cast<float>(z), aznumeric_cast<float>(w));
+        }
+
         Vector3Type RotateVector3(QuaternionType source, Vector3Type vector3)
         {
             return source.TransformVector(vector3);

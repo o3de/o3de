@@ -101,6 +101,48 @@ namespace AZ
             return AZStd::span<const Data::Asset<ModelLodAsset>>(m_lodAssets);
         }
 
+        void ModelAsset::LoadBufferAssets()
+        {
+            for (auto& lodAsset : m_lodAssets)
+            {
+                lodAsset->LoadBufferAssets();
+            }
+        }
+
+        void ModelAsset::ReleaseBufferAssets()
+        {
+            for (auto& lodAsset : m_lodAssets)
+            {
+                lodAsset->ReleaseBufferAssets();
+            }
+        }
+
+        void ModelAsset::AddRefBufferAssets()
+        {
+            if (m_bufferAssetsRef == 0)
+            {
+                LoadBufferAssets();
+            }
+            m_bufferAssetsRef++;
+        }
+
+        void ModelAsset::ReleaseRefBufferAssets()
+        {
+            if (m_bufferAssetsRef > 0)
+            {
+                m_bufferAssetsRef--;
+                if (m_bufferAssetsRef == 0)
+                {
+                    ReleaseBufferAssets();
+                }
+            }
+        }
+
+        bool ModelAsset::SupportLocalRayIntersection() const
+        {
+            return m_bufferAssetsRef > 0;
+        }
+
         void ModelAsset::SetReady()
         {
             m_status = Data::AssetData::AssetStatus::Ready;

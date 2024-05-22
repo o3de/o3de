@@ -51,9 +51,9 @@ public:
     // return AnimParamType::Invalid for this pure virtual for the legacy system
     CAnimParamType GetParamType(unsigned int nIndex) const override;
 
-    void SetPos(float time, const Vec3& pos) override;
-    void SetRotate(float time, const Quat& quat) override;
-    void SetScale(float time, const Vec3& scale) override;
+    void SetPos(float time, const AZ::Vector3& pos) override;
+    void SetRotate(float time, const AZ::Quaternion& quat) override;
+    void SetScale(float time, const AZ::Vector3& scale) override;
 
     Vec3 GetOffsetPosition(const Vec3& position) override;
 

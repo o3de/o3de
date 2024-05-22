@@ -87,7 +87,7 @@ namespace EMotionFX
 
     // constructor
     MotionInstancePool::MotionInstancePool()
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_pool = nullptr;
     }

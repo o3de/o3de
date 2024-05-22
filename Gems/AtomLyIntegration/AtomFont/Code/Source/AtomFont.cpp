@@ -486,7 +486,10 @@ FontFamilyPtr AZ::AtomFont::LoadFontFamily(const char* fontFamilyName)
                     fontFamily.reset(new FontFamily(),
                         [this](FontFamily* fontFamily)
                     {
-                        ReleaseFontFamily(fontFamily);
+                        if (AZ::Interface<AzFramework::FontQueryInterface>::Get())
+                        {
+                            ReleaseFontFamily(fontFamily);
+                        }
                     });
 
                     // Map the font family name both by path and by name defined
@@ -532,7 +535,10 @@ FontFamilyPtr AZ::AtomFont::LoadFontFamily(const char* fontFamilyName)
             fontFamily.reset(new FontFamily(),
                 [this](FontFamily* fontFamily)
             {
-                ReleaseFontFamily(fontFamily);
+                if (AZ::Interface<AzFramework::FontQueryInterface>::Get())
+                {
+                    ReleaseFontFamily(fontFamily);
+                }
             });
 
             // Use filepath as familyName so font loading/unloading doesn't break with duplicate file names

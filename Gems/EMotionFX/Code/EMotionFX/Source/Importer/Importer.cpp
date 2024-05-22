@@ -45,7 +45,7 @@ namespace EMotionFX
 
     // constructor
     Importer::Importer()
-        : BaseObject()
+        : MCore::RefCounted()
     {
         // register all standard chunks
         RegisterStandardChunks();

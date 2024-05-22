@@ -33,7 +33,7 @@ namespace SceneLoggingExample
             // sure to repeat the following two lines for any SceneAPI you want to use. Omitting these 
             // calls or making them too late can cause problems such as missing EBus events.
             m_sceneCoreModule = AZ::DynamicModuleHandle::Create("SceneCore");
-            m_sceneCoreModule->Load(true);
+            m_sceneCoreModule->Load(AZ::DynamicModuleHandle::LoadFlags::InitFuncRequired);
             m_descriptors.insert(m_descriptors.end(), 
             {
                 LoggingGroupBehavior::CreateDescriptor(),

@@ -321,16 +321,11 @@ namespace AZ
         void Material::OnShaderVariantReinitialized(const ShaderVariant& shaderVariant)
         {
             ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnShaderVariantReinitialized %s", this, shaderVariant.GetShaderVariantAsset().GetHint().c_str());
-            // Note that it would be better to check the shaderVariantId to see if that variant is relevant to this particular material before reinitializing it.
-            // There could be hundreds or even thousands of variants for a shader, but only one of those variants will be used by any given material. So we could
-            // get better reload performance by only reinitializing the material when a relevant shader variant is updated.
-            //
-            // But it isn't always possible to know the exact ShaderVariantId that this material is using. For example, some of the shader options might not be
-            // owned by the material and could be set externally *later* in the frame (see SetSystemShaderOption). We could probably check the shader option ownership
-            // and mask out the parts of the ShaderVariantId that aren't owned by the material, but that would be premature optimization at this point, adding
-            // potentially unnecessary complexity. There may also be more edge cases I haven't thought of. In short, it's much safer to just reinitialize every time
-            // this callback happens.
-            ReInitKeepPropertyValues();
+
+            // Note: we don't need to re-compile the material if a shader variant is ready or changed
+            // The DrawPacket created for the material need to be updated since the PSO need to be re-creaed.
+            // This event can be used to notify the owners to update their DrawPackets
+            m_shaderVariantReadyEvent.Signal();
         }
 
         void Material::ReInitKeepPropertyValues()
@@ -378,6 +373,11 @@ namespace AZ
         bool Material::NeedsCompile() const
         {
             return m_compiledChangeId != m_currentChangeId;
+        }
+
+        void Material::ConnectEvent(OnMaterialShaderVariantReadyEvent::Handler& handler)
+        {
+            handler.Connect(m_shaderVariantReadyEvent);
         }
 
         bool Material::TryApplyPropertyConnectionToShaderInput(

@@ -18,7 +18,6 @@
 #include <Shape/ShapeGeometryUtil.h>
 #include <Shape/ShapeDisplay.h>
 #include <ISystem.h>
-#include <IRenderAuxGeom.h>
 
 namespace LmbrCentral
 {

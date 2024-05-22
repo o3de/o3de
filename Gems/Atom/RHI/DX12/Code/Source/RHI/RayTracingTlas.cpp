@@ -31,8 +31,7 @@ namespace AZ
             ID3D12DeviceX* dx12Device = device.GetDevice();
 
             // advance to the next buffer
-            m_currentBufferIndex = (m_currentBufferIndex + 1) % BufferCount;
-            TlasBuffers& buffers = m_buffers[m_currentBufferIndex];
+            TlasBuffers& buffers = m_buffers.AdvanceCurrentElement();
 
             const RHI::RayTracingTlasInstanceVector& instances = descriptor->GetInstances();
             if (instances.empty())

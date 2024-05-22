@@ -82,8 +82,6 @@ set(FILES
     Source/MemoryFile.h
     Source/MemoryManager.cpp
     Source/MemoryManager.h
-    Source/MemoryObject.cpp
-    Source/MemoryObject.h
     Source/MemoryTracker.cpp
     Source/MemoryTracker.h
     Source/MultiThreadManager.h
@@ -92,6 +90,8 @@ set(FILES
     Source/Random.h
     Source/Ray.cpp
     Source/Ray.h
+    Source/RefCounted.cpp
+    Source/RefCounted.h
     Source/StaticAllocator.cpp
     Source/StaticAllocator.h
     Source/StaticString.h

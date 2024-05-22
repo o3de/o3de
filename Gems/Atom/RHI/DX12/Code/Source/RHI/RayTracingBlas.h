@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RHI.Reflect/FrameCountMaxRingBuffer.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -31,15 +32,16 @@ namespace AZ
             {
                 RHI::Ptr<RHI::Buffer> m_blasBuffer;
                 RHI::Ptr<RHI::Buffer> m_scratchBuffer;
+                RHI::Ptr<RHI::Buffer> m_aabbBuffer;
             };
 
 #ifdef AZ_DX12_DXR_SUPPORT
             const D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS& GetInputs() const { return m_inputs; }
 #endif
-            const BlasBuffers& GetBuffers() const { return m_buffers[m_currentBufferIndex]; }
+            const BlasBuffers& GetBuffers() const { return m_buffers.GetCurrentElement(); }
 
             // RHI::RayTracingBlas overrides...
-            virtual bool IsValid() const override { return m_buffers[m_currentBufferIndex].m_blasBuffer != nullptr; }
+            virtual bool IsValid() const override { return GetBuffers().m_blasBuffer != nullptr; }
 
         private:
             RayTracingBlas() = default;
@@ -55,9 +57,7 @@ namespace AZ
 #endif
 
             // buffer list to keep buffers alive for several frames
-            static const uint32_t BufferCount = AZ::RHI::Limits::Device::FrameCountMax;
-            BlasBuffers m_buffers[BufferCount];
-            uint32_t m_currentBufferIndex = 0;
+            RHI::FrameCountMaxRingBuffer<BlasBuffers> m_buffers;
         };
     }
 }

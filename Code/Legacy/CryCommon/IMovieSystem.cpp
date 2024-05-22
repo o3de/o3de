@@ -207,34 +207,6 @@ IAnimNode::SParamInfo::SParamInfo(const char* _name, CAnimParamType _paramType, 
     , valueType(_valueType)
     , flags(_flags) {};
 
-/**
- * O3DE_DEPRECATION_NOTICE(GHI-9326)
- * use equivalent SetPos that accepts AZ::Vector3
- **/
-void IAnimNode::SetPos(float time, const AZ::Vector3& pos)
-{
-    Vec3 vec3(pos.GetX(), pos.GetY(), pos.GetZ());
-    SetPos(time, vec3);
-}
-/**
- * O3DE_DEPRECATION_NOTICE(GHI-9326)
- * use equivalent SetRotate that accepts AZ::Quaternion
- **/
-void IAnimNode::SetRotate(float time, const AZ::Quaternion& rot)
-{
-    Quat quat(rot.GetX(), rot.GetY(), rot.GetZ(), rot.GetW());
-    SetRotate(time, quat);
-}
-/**
- * O3DE_DEPRECATION_NOTICE(GHI-9326)
- * use equivalent SetScale that accepts AZ::Vector3
- **/
-void IAnimNode::SetScale(float time, const AZ::Vector3& scale)
-{
-    Vec3 vec3(scale.GetX(), scale.GetY(), scale.GetZ());
-    SetScale(time, vec3);
-}
-
 //! Compute and return the offset which brings the current position to the given position
 Vec3 IAnimNode::GetOffsetPosition(const Vec3& position) { return position - GetPos(); }
 

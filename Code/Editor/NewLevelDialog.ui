@@ -6,124 +6,96 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>430</width>
-    <height>180</height>
+    <width>471</width>
+    <height>371</height>
    </rect>
   </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
-     <item>
-       <spacer name="topVerticalSpacer">
-         <property name="orientation">
-           <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-           <size>
-             <width>20</width>
-             <height>10</height>
-           </size>
-         </property>
-       </spacer>
-     </item>
-     <item>
-       <widget class="QLabel" name="TITLE">
-         <property name="text">
-           <string>Assign a name and location to the new level.</string>
-         </property>
-         <property name="alignment">
-           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-         </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QListWidget" name="listTemplates">
+     <property name="movement">
+      <enum>QListView::Static</enum>
+     </property>
+     <property name="resizeMode">
+      <enum>QListView::Adjust</enum>
+     </property>
+     <property name="spacing">
+      <number>4</number>
+     </property>
+     <property name="viewMode">
+      <enum>QListView::IconMode</enum>
+     </property>
+     <property name="uniformItemSizes">
+      <bool>true</bool>
+     </property>
+     <property name="selectionRectVisible">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="STATIC_GROUP1">
+     <layout class="QFormLayout" name="formLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="STATIC2">
+        <property name="text">
+         <string>Name</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+        </property>
+        <property name="buddy">
+         <cstring>LEVEL</cstring>
+        </property>
        </widget>
-     </item>
-     <item>
-       <spacer name="verticalSpacer">
-         <property name="orientation">
-           <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-           <size>
-             <width>20</width>
-             <height>20</height>
-           </size>
-         </property>
-       </spacer>
-     </item>
-     <item>
-       <layout class="QGridLayout" name="gridLayout">
-         <item row="0" column="0" colspan="2">
-           <widget class="QGroupBox" name="STATIC_GROUP1">
-             <property name="styleSheet">
-               <string notr="true">border: 0px;</string>
-             </property>
-             <layout class="QFormLayout" name="formLayout">
-               <item row="0" column="0">
-                 <widget class="QLabel" name="STATIC2">
-                   <property name="text">
-                     <string>Name</string>
-                   </property>
-                   <property name="alignment">
-                     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-                   </property>
-                   <property name="buddy">
-                     <cstring>LEVEL</cstring>
-                   </property>
-                 </widget>
-               </item>
-               <item row="0" column="1">
-                 <widget class="QLineEdit" name="LEVEL">
-                   <property name="alignment">
-                     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                   </property>
-                 </widget>
-               </item>
-               <item row="1" column="0">
-                 <widget class="QLabel" name="STATIC1">
-                   <property name="minimumSize">
-                     <size>
-                       <width>100</width>
-                       <height>0</height>
-                     </size>
-                   </property>
-                   <property name="text">
-                     <string>Location</string>
-                   </property>
-                   <property name="alignment">
-                     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-                   </property>
-                   <property name="buddy">
-                     <cstring>LEVEL_FOLDERS</cstring>
-                   </property>
-                 </widget>
-               </item>
-               <item row="1" column="1">
-                 <widget class="AzQtComponents::BrowseEdit" name="LEVEL_FOLDERS" native="true">
-                   <property name="sizePolicy">
-                     <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                     </sizepolicy>
-                   </property>
-                 </widget>
-               </item>
-             </layout>
-           </widget>
-         </item>
-       </layout>
-     </item>
-     <item>
-       <spacer name="verticalSpacer2">
-         <property name="orientation">
-           <enum>Qt::Vertical</enum>
-         </property>
-       </spacer>
-     </item>
-     <item row="1" column="0" colspan="2">
-       <widget class="QDialogButtonBox" name="buttonBox">
-         <property name="standardButtons">
-           <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-         </property>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="LEVEL">
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
        </widget>
-     </item>
-   </layout>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="STATIC1">
+        <property name="minimumSize">
+         <size>
+          <width>100</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Location</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+        </property>
+        <property name="buddy">
+         <cstring>LEVEL_FOLDERS</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="AzQtComponents::BrowseEdit" name="LEVEL_FOLDERS" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <customwidgets>
   <customwidget>
@@ -136,7 +108,9 @@
  <tabstops>
   <tabstop>LEVEL</tabstop>
  </tabstops>
- <resources/>
+ <resources>
+  <include location="NewLevelDialog.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>

@@ -19,7 +19,7 @@
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 
 #include <MCore/Source/Vector.h>
-#include <MCore/Source/MemoryObject.h>
+#include <MCore/Source/RefCounted.h>
 
 #include <EMotionFX/Source/Transform.h>
 
@@ -29,14 +29,14 @@ namespace AZStd
      * Intrusive ptr for EMotionFX-owned objects (uses EMotionFX's internal ref-counting MCore::Destroy()).
      */
     template<>
-    struct IntrusivePtrCountPolicy<MCore::MemoryObject>
+    struct IntrusivePtrCountPolicy<MCore::RefCounted>
     {
-        static AZ_FORCE_INLINE void add_ref(MCore::MemoryObject* ptr) 
-        { 
+        static AZ_FORCE_INLINE void add_ref(MCore::RefCounted* ptr)
+        {
             ptr->IncreaseReferenceCount();
         }
-        static AZ_FORCE_INLINE void release(MCore::MemoryObject* ptr) 
-        { 
+        static AZ_FORCE_INLINE void release(MCore::RefCounted* ptr)
+        {
             MCore::Destroy(ptr); // Calls DecreaseReferenceCount.
         }
     };

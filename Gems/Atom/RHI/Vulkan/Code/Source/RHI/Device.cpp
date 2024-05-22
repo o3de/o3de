@@ -6,21 +6,22 @@
  *
  */
 
-#include <Atom_RHI_Vulkan_Platform.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <Atom/RHI.Reflect/Vulkan/PlatformLimitsDescriptor.h>
 #include <Atom/RHI.Reflect/Vulkan/VulkanBus.h>
 #include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/RHIMemoryStatisticsInterface.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/TransientAttachmentPool.h>
+#include <Atom_RHI_Vulkan_Platform.h>
+#include <AzCore/Debug/Trace.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/Debug/Trace.h>
 #include <RHI/AsyncUploadQueue.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferPool.h>
-#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/CommandList.h>
 #include <RHI/CommandQueue.h>
 #include <RHI/Device.h>
@@ -32,7 +33,6 @@
 #include <RHI/WSISurface.h>
 #include <RHI/WindowSurfaceBus.h>
 #include <Vulkan_Traits_Platform.h>
-#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -44,6 +44,8 @@ namespace AZ
             platformLimitsDescriptor->LoadPlatformLimitsDescriptor(RHI::Factory::Get().GetName().GetCStr());
             m_descriptor.m_platformLimitsDescriptor = RHI::Ptr<RHI::PlatformLimitsDescriptor>(platformLimitsDescriptor);
         }
+
+        Device::~Device() = default;
 
         RHI::Ptr<Device> Device::Create()
         {
@@ -246,6 +248,7 @@ namespace AZ
             VkDeviceCreateInfo deviceInfo = {};
             deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 
+            auto timelineSemaphore = physicalDevice.GetPhysicalDeviceTimelineSemaphoreFeatures();
             // If we are running Vulkan >= 1.2, then we must use VkPhysicalDeviceVulkan12Features instead
             // of VkPhysicalDeviceShaderFloat16Int8FeaturesKHR or VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR.
             if (majorVersion >= 1 && minorVersion >= 2)
@@ -273,7 +276,7 @@ namespace AZ
                 vulkan12Features.descriptorBindingUpdateUnusedWhilePending = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorBindingUpdateUnusedWhilePending;
                 vulkan12Features.shaderOutputViewportIndex = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderOutputViewportIndex;
                 vulkan12Features.shaderOutputLayer = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderOutputLayer;
-                vulkan12Features.timelineSemaphore = physicalDevice.GetPhysicalDeviceVulkan12Features().timelineSemaphore;
+                vulkan12Features.timelineSemaphore = timelineSemaphore.timelineSemaphore;
 
                 accelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
                 accelerationStructureFeatures.accelerationStructure = physicalDevice.GetPhysicalDeviceAccelerationStructureFeatures().accelerationStructure;
@@ -298,7 +301,7 @@ namespace AZ
                 shaderAtomicInt64.shaderBufferInt64Atomics = physicalDevice.GetShaderAtomicInt64Features().shaderBufferInt64Atomics;
                 shaderAtomicInt64.shaderSharedInt64Atomics = physicalDevice.GetShaderAtomicInt64Features().shaderSharedInt64Atomics;
 
-                AppendVkStruct(chainInit, { &float16Int8, &separateDepthStencil, &shaderAtomicInt64 });
+                AppendVkStruct(chainInit, { &float16Int8, &separateDepthStencil, &shaderAtomicInt64, &timelineSemaphore });
                 deviceInfo.pNext = &chainInit;
             }
 
@@ -411,6 +414,11 @@ namespace AZ
             semaphoreAllocDescriptor.m_device = this;
             semaphoreAllocDescriptor.m_collectLatency = RHI::Limits::Device::FrameCountMax;
             m_semaphoreAllocator.Init(semaphoreAllocDescriptor);
+
+            SwapChainSemaphoreAllocator::Descriptor swapChainSemaphoreAllocDescriptor;
+            swapChainSemaphoreAllocDescriptor.m_device = this;
+            swapChainSemaphoreAllocDescriptor.m_collectLatency = RHI::Limits::Device::FrameCountMax;
+            m_swapChaiSemaphoreAllocator.Init(swapChainSemaphoreAllocDescriptor);
 
             m_imageMemoryRequirementsCache.SetInitFunction([](auto& cache) { cache.set_capacity(MemoryRequirementsCacheSize); });
             m_bufferMemoryRequirementsCache.SetInitFunction([](auto& cache) { cache.set_capacity(MemoryRequirementsCacheSize); });
@@ -560,6 +568,11 @@ namespace AZ
         SemaphoreAllocator& Device::GetSemaphoreAllocator()
         {
             return m_semaphoreAllocator;
+        }
+
+        SwapChainSemaphoreAllocator& Device::GetSwapChainSemaphoreAllocator()
+        {
+            return m_swapChaiSemaphoreAllocator;
         }
 
         const AZStd::vector<VkQueueFamilyProperties>& Device::GetQueueFamilyProperties() const
@@ -1186,7 +1199,11 @@ namespace AZ
             }
             m_features.m_swapchainScalingFlags = AZ_TRAIT_ATOM_VULKAN_SWAPCHAIN_SCALING_FLAGS;
 
+#ifdef DISABLE_TIMELINE_SEMAPHORES
+            m_features.m_signalFenceFromCPU = false;
+#else
             m_features.m_signalFenceFromCPU = physicalDevice.GetPhysicalDeviceTimelineSemaphoreFeatures().timelineSemaphore;
+#endif
 
             const auto& deviceLimits = physicalDevice.GetDeviceLimits();
             m_limits.m_maxImageDimension1D = deviceLimits.maxImageDimension1D;

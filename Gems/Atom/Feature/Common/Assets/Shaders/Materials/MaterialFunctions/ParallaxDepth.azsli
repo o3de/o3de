@@ -16,22 +16,22 @@
  void SetPixelDepth(
      inout float3 positionWS,
      real3 normal,
-     real3 tangents[UvSetCount],
-     real3 bitangents[UvSetCount],
+     float3 tangents[UvSetCount],
+     float3 bitangents[UvSetCount],
      inout float2 uvs[UvSetCount],
      bool isFrontFace,
-     real4x4 objectToWorld,
+     float4x4 objectToWorld,
      inout float depthNDC,
      inout float depthCS,
      out bool isClipped)
 {
-    real3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? real3x3(MaterialSrg::m_uvMatrix) : real3x3(CreateIdentity3x3());
-    real3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? real3x3(MaterialSrg::m_uvMatrixInverse) : real3x3(CreateIdentity3x3());
+    real3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? real3x3(MaterialSrg::m_uvMatrix) : CreateIdentity3x3_real();
+    real3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? real3x3(MaterialSrg::m_uvMatrixInverse) : CreateIdentity3x3_real();
     
-    real heightmapScale = real(MaterialSrg::m_heightmapScale);
-    real heightmapOffset = real(MaterialSrg::m_heightmapOffset);
+    float heightmapScale = float(MaterialSrg::m_heightmapScale);
+    float heightmapOffset = float(MaterialSrg::m_heightmapOffset);
     
-    AdjustParallaxShadowCaster(heightmapScale, heightmapOffset, real(MaterialSrg::m_parallax_pdo_shadowFactor));
+    AdjustParallaxShadowCaster(heightmapScale, heightmapOffset, float(MaterialSrg::m_parallax_pdo_shadowFactor));
 
     GetParallaxInput(
         normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex],
@@ -43,15 +43,15 @@
  void SetPixelDepth(
      inout float3 positionWS,
      real3 normal,
-     real3 tangents[UvSetCount],
-     real3 bitangents[UvSetCount],
+     float3 tangents[UvSetCount],
+     float3 bitangents[UvSetCount],
      inout float2 uvs[UvSetCount],
      bool isFrontFace,
-     real4x4 objectToWorld,
+     float4x4 objectToWorld,
      inout float depthNDC)
 {
     // Dummy variables to call the above function
-    real depthCS = 1.0;
+    float depthCS = 1.0;
     bool isClipped = false;
     
     SetPixelDepth(positionWS, normal, tangents, bitangents, uvs, isFrontFace, objectToWorld, depthNDC, depthCS, isClipped);
@@ -59,13 +59,13 @@
 
  void SetPixelDepth(
      inout float3 positionWS,
-     real3 normal,
-     real3 tangents[UvSetCount],
-     real3 bitangents[UvSetCount],
+     float3 normal,
+     float3 tangents[UvSetCount],
+     float3 bitangents[UvSetCount],
      inout float2 uvs[UvSetCount],
      inout float2 detailUv[UvSetCount],
      bool isFrontFace,
-     real4x4 objectToWorld,
+     float4x4 objectToWorld,
      inout float depthNDC,
      inout float depthCS,
      out bool isClipped)

@@ -95,7 +95,7 @@ namespace AZ
                     module = DynamicModuleHandle::Create(name);
                     if (module)
                     {
-                        module->Load(false);
+                        module->Load();
                         auto init = module->GetFunction<InitializeDynamicModuleFunction>(InitializeDynamicModuleFunctionName);
                         if (init)
                         {

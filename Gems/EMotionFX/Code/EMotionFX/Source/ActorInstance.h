@@ -18,7 +18,6 @@
 #include <MCore/Source/Vector.h>
 #include <MCore/Source/Ray.h>
 #include <MCore/Source/MultiThreadManager.h>
-#include "BaseObject.h"
 #include "Actor.h"
 #include "Transform.h"
 #include "AnimGraphPosePool.h"
@@ -47,13 +46,13 @@ namespace EMotionFX
      * the transformation and mesh information. Still, each actor instance can be controlled and animated individually.
      */
     class EMFX_API ActorInstance
-        : public BaseObject
+        : public MCore::RefCounted
     {
         AZ_CLASS_ALLOCATOR_DECL
         friend class Attachment;
 
     public:
-        AZ_RTTI(EMotionFX::ActorInstance, "{280A0170-EB6A-4E90-B2F1-E18D8EAEFB36}", BaseObject);
+        AZ_RTTI(EMotionFX::ActorInstance, "{280A0170-EB6A-4E90-B2F1-E18D8EAEFB36}");
         /**
          * The bounding volume generation types.
          */

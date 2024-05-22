@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Transform.h>
 #include <Atom/RHI/IndexBufferView.h>
 #include <Atom/RHI/StreamBufferView.h>
@@ -86,7 +87,9 @@ namespace AZ::RHI
         ~RayTracingBlasDescriptor() = default;
 
         // accessors
+        bool HasAABB() const { return m_aabb.has_value(); }
         const RayTracingGeometryVector& GetGeometries() const { return m_geometries; }
+        const AZ::Aabb& GetAABB() const { return *m_aabb; }
         RayTracingGeometryVector& GetGeometries() { return m_geometries; }
 
         [[nodiscard]] const RayTracingAccelerationStructureBuildFlags& GetBuildFlags() const { return m_buildFlags; }
@@ -94,6 +97,7 @@ namespace AZ::RHI
         // build operations
         RayTracingBlasDescriptor* Build();
         RayTracingBlasDescriptor* Geometry();
+        RayTracingBlasDescriptor* AABB(const AZ::Aabb& aabb);
         RayTracingBlasDescriptor* VertexBuffer(const RHI::StreamBufferView& vertexBuffer);
         RayTracingBlasDescriptor* VertexFormat(RHI::Format vertexFormat);
         RayTracingBlasDescriptor* IndexBuffer(const RHI::IndexBufferView& indexBuffer);
@@ -101,6 +105,7 @@ namespace AZ::RHI
 
     private:
         RayTracingGeometryVector m_geometries;
+        AZStd::optional<AZ::Aabb> m_aabb;
         RayTracingGeometry* m_buildContext = nullptr;
         RayTracingAccelerationStructureBuildFlags m_buildFlags = AZ::RHI::RayTracingAccelerationStructureBuildFlags::FAST_TRACE;
     };

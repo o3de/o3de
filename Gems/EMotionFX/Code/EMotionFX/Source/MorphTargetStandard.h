@@ -10,7 +10,7 @@
 
 // include the required headers
 #include "EMotionFXConfig.h"
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 #include "Node.h"
 #include "Actor.h"
 #include "MorphTarget.h"
@@ -48,7 +48,7 @@ namespace EMotionFX
          * The structure which contains the deformation data for each node which is being touched by this morph target.
          */
         class DeformData
-            : public BaseObject
+            : public MCore::RefCounted
         {
         public:
             AZ_CLASS_ALLOCATOR_DECL

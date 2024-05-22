@@ -75,15 +75,13 @@ namespace ScriptCanvas
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // TargetManagerClient
-            void DesiredTargetConnected(bool connected);
-            void DesiredTargetChanged(AZ::u32 newId, AZ::u32 oldId);
+            // TODO : Must be implemented via IRemoteTools handlers
             void TargetJoinedNetwork(AzFramework::RemoteToolsEndpointInfo info);
             void TargetLeftNetwork(AzFramework::RemoteToolsEndpointInfo info);
             //////////////////////////////////////////////////////////////////////////
 
             void OnReceivedMsg(AzFramework::RemoteToolsMessagePointer msg);
-            
+
             //////////////////////////////////////////////////////////////////////////
             // Message processing
             void Visit(Message::ActiveEntitiesResult& notification) override;
@@ -129,7 +127,8 @@ namespace ScriptCanvas
             void ProcessMessages();
             
         private:
-
+            void DesiredTargetConnected(bool connected);
+            void DesiredTargetChanged(AZ::u32 newId, AZ::u32 oldId);
             void DisconnectFromTarget();
             void CleanupConnection();
 

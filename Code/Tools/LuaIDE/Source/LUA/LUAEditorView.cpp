@@ -141,8 +141,6 @@ namespace LUAEditor
         option.setFlags(option.flags() | QTextOption::ShowTabsAndSpaces);
         doc->setDefaultTextOption(option);
 
-        UpdateFont();
-
         connect(m_gui->m_luaTextEdit, &LUAEditorPlainTextEdit::modificationChanged, this, &LUAViewWidget::modificationChanged);
         connect(m_gui->m_luaTextEdit, &LUAEditorPlainTextEdit::cursorPositionChanged, this, &LUAViewWidget::UpdateBraceHighlight);
         connect(m_gui->m_luaTextEdit, &LUAEditorPlainTextEdit::Scrolled, m_gui->m_folding, static_cast<void(FoldingWidget::*)()>(&FoldingWidget::update));
@@ -173,6 +171,8 @@ namespace LUAEditor
         SetReadonly(true);
 
         m_gui->m_luaTextEdit->SetGetLuaName([&](const QTextCursor& cursor) {return m_Highlighter->GetLUAName(cursor); });
+
+        UpdateFont();
 
         LUABreakpointTrackerMessages::Handler::BusConnect();
     }
@@ -289,6 +289,7 @@ namespace LUAEditor
             {
                 delete m_pLoadingProgressShield;
                 m_pLoadingProgressShield = NULL;
+                UpdateFont(); // Loading over, inner document need the latest font settings
             }
 
             // scan the breakpoint store from our context and pre-set the markers to get in sync
@@ -1239,15 +1240,14 @@ namespace LUAEditor
     void LUAViewWidget::UpdateFont()
     {
         auto syntaxSettings = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC("LUA Editor Text Settings", 0xb6e15565), AZ::UserSettings::CT_GLOBAL);
-        auto font = syntaxSettings->GetFont();
-        font.setPointSize(static_cast<int>(font.pointSize() * (m_zoomPercent / 100.0f)));
+        syntaxSettings->SetZoomPercent(m_zoomPercent);
+        const auto& font = syntaxSettings->GetFont();
 
         m_gui->m_luaTextEdit->SetTabSize(syntaxSettings->GetTabSize());
         m_gui->m_luaTextEdit->SetUseSpaces(syntaxSettings->UseSpacesInsteadOfTabs());
 
         m_gui->m_luaTextEdit->UpdateFont(font, syntaxSettings->GetTabSize());
         m_gui->m_breakpoints->SetFont(font);
-        m_Highlighter->SetFont(font);
         m_gui->m_folding->SetFont(font);
 
         m_gui->m_luaTextEdit->update();

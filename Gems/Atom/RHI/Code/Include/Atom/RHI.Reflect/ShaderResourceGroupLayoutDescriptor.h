@@ -315,11 +315,11 @@ namespace AZ::RHI
         //! The number of bytes 
         uint32_t m_constantByteCount = 0;
             
-            //! Register id of the resource in the SRG.
-            //! This is only valid if the platform compiles the SRGs using "spaces".
-            //! If not, this same information will be in the PipelineLayoutDescriptor.
-            //! Some platforms (like Vulkan) need the register number when creating the
-            //! SRG, others need it when creating the PipelineLayout.
+        //! Register id of the resource in the SRG.
+        //! This is only valid if the platform compiles the SRGs using "spaces".
+        //! If not, this same information will be in the PipelineLayoutDescriptor.
+        //! Some platforms (like Vulkan) need the register number when creating the
+        //! SRG, others need it when creating the PipelineLayout.
         uint32_t m_registerId = UndefinedRegisterSlot;
 
         //! Logical Register Space that the register id is within.

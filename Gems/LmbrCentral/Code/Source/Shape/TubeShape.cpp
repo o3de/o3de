@@ -603,27 +603,16 @@ namespace LmbrCentral
         }
     }
 
-    static void RefreshUI()
-    {
-#if LMBR_CENTRAL_EDITOR
-        AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-            &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
-            AzToolsFramework::PropertyModificationRefreshLevel::Refresh_Values);
-#endif
-    }
-
     void TubeShape::BaseRadiusChanged()
     {
         // ensure all variable radii stay in bounds should the base radius
         // change and cause the resulting total radius to be negative
         ValidateAllVariableRadii();
-        RefreshUI();
     }
 
     void TubeShape::VariableRadiusChanged(size_t vertIndex)
     {
         ValidateVariableRadius(vertIndex);
-        RefreshUI();
     }
 
     void TubeShape::ValidateVariableRadius(const size_t vertIndex)

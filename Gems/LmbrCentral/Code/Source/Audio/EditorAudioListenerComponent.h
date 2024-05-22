@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
-
+#include <AzCore/Math/Vector3.h>
 
 namespace LmbrCentral
 {

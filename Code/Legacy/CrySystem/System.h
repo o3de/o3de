@@ -184,9 +184,6 @@ public:
     ICmdLine* GetICmdLine() override{ return m_pCmdLine; }
     ILevelSystem* GetILevelSystem() override;
     ISystemEventDispatcher* GetISystemEventDispatcher() override { return m_pSystemEventDispatcher; }
-    //////////////////////////////////////////////////////////////////////////
-    // retrieves the perlin noise singleton instance
-    CPNoise3* GetNoiseGen() override;
 
     void DetectGameFolderAccessRights();
 

@@ -7,9 +7,9 @@
  */
 #pragma once
 
-#include <Source/PythonCommon.h>
-#include <pybind11/pybind11.h>
 #include <AzCore/std/string/string.h>
+#include <EditorPythonBindings/PythonCommon.h>
+#include <pybind11/pybind11.h>
 
 namespace pybind11
 {

@@ -679,6 +679,8 @@ namespace AZ::Render
             meshDescriptor.m_isAlwaysDynamic = true;
             meshDescriptor.m_excludeFromReflectionCubeMaps = true;
             meshDescriptor.m_isSkinnedMesh = true;
+            meshDescriptor.m_supportRayIntersection = true; // we need to keep the buffer data in order to initialize the actor.
+
             meshDescriptor.m_objectSrgCreatedHandler = m_objectSrgCreatedHandler;
             m_meshHandle = AZStd::make_shared<MeshFeatureProcessorInterface::MeshHandle>(m_meshFeatureProcessor->AcquireMesh(meshDescriptor));
         }

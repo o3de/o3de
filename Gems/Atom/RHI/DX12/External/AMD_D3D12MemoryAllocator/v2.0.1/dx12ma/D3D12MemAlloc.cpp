@@ -125,7 +125,7 @@ static constexpr UINT STANDARD_HEAP_TYPE_COUNT = 3; // Only DEFAULT, UPLOAD, REA
 static constexpr UINT DEFAULT_POOL_MAX_COUNT = 9;
 static const UINT NEW_BLOCK_SIZE_SHIFT_MAX = 3;
 // Minimum size of a free suballocation to register it in the free suballocation collection.
-static const UINT64 MIN_FREE_SUBALLOCATION_SIZE_TO_REGISTER = 16;
+[[maybe_unused]] static const UINT64 MIN_FREE_SUBALLOCATION_SIZE_TO_REGISTER = 16;
 
 static const WCHAR* const HeapTypeNames[] =
 {

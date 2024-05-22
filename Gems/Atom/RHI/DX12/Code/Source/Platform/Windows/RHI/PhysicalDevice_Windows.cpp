@@ -26,6 +26,15 @@ namespace AZ
                 DX12Ptr<IDXGIAdapterX> dxgiAdapterX;
                 dxgiAdapter->QueryInterface(IID_GRAPHICS_PPV_ARGS(dxgiAdapterX.GetAddressOf()));
 
+                DXGI_ADAPTER_DESC1 adapterDesc;
+                dxgiAdapterX->GetDesc1(&adapterDesc);
+
+                // Skip devices with software rasterization
+                if(RHI::CheckBitsAny(adapterDesc.Flags, static_cast<UINT>(DXGI_ADAPTER_FLAG::DXGI_ADAPTER_FLAG_SOFTWARE)))
+                {
+                    continue;
+                }
+
                 PhysicalDevice* physicalDevice = aznew PhysicalDevice;
                 physicalDevice->Init(dxgiFactory.Get(), dxgiAdapterX.Get());
                 physicalDeviceList.emplace_back(physicalDevice);

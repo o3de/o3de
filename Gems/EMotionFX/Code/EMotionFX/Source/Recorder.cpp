@@ -105,7 +105,7 @@ namespace EMotionFX
     }
 
     Recorder::Recorder()
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_isInPlayMode   = false;
         m_isRecording    = false;

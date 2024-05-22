@@ -70,7 +70,6 @@ public:
 class CTrackViewAnimNode
     : public CTrackViewNode
     , public IAnimNodeOwner
-    , public ITransformDelegate
     , public AzToolsFramework::EditorEntityContextNotificationBus::Handler
     , public AZ::EntityBus::Handler
     , private AZ::TransformNotificationBus::Handler
@@ -294,22 +293,6 @@ private:
     void OnNodeReset(IAnimNode* pNode) override;
     // ~IAnimNodeOwner
 
-    // ITransformDelegate
-    void MatrixInvalidated() override;
-
-    Vec3 GetTransformDelegatePos(const Vec3& realPos) const override;
-    Quat GetTransformDelegateRotation(const Quat& realRotation) const override;
-    Vec3 GetTransformDelegateScale(const Vec3& realScale) const override;
-
-    void SetTransformDelegatePos(const Vec3& position) override;
-    void SetTransformDelegateRotation(const Quat& rotation) override;
-    void SetTransformDelegateScale(const Vec3& scale) override;
-
-    // If those return true the base object uses its own transform instead
-    bool IsPositionDelegated() const override;
-    bool IsRotationDelegated() const override;
-    bool IsScaleDelegated() const override;
-    // ~ITransformDelegate
 
     // Helper for Is<Position/Rotation/Scale>Delegated to call internally
     bool IsTransformAnimParamTypeDelegated(AnimParamType animParamType) const;

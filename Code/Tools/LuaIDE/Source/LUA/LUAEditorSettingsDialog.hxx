@@ -39,6 +39,7 @@ namespace LUAEditor
         void OnSave();
         void OnSaveClose();
         void OnCancel();
+        void OnApply();
 
     private:
 

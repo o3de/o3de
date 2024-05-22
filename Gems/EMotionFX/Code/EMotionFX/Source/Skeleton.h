@@ -10,7 +10,7 @@
 
 #include <AzCore/std/string/string.h>
 #include "EMotionFXConfig.h"
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 #include "Pose.h"
 #include <AzCore/std/containers/vector.h>
 
@@ -23,7 +23,7 @@ namespace EMotionFX
 
 
     class EMFX_API Skeleton
-        : public BaseObject
+        : public MCore::RefCounted
     {
         AZ_CLASS_ALLOCATOR_DECL
     public:

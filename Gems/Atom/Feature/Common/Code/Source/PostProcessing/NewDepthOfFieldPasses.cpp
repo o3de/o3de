@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Math/MathUtils.h>
 
 #include <PostProcess/PostProcessFeatureProcessor.h>
@@ -20,6 +21,7 @@ namespace AZ
 {
     namespace Render
     {
+        AZ_CVAR(bool, r_enableDOF, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Enable depth of field effect support");
 
         // Must match the struct in NewDepthOfFieldCommon.azsli
         struct NewDepthOfFieldConstants
@@ -46,6 +48,10 @@ namespace AZ
 
         bool NewDepthOfFieldParentPass::IsEnabled() const
         {
+            if (!r_enableDOF)
+            {
+                return false;
+            }
             if (!ParentPass::IsEnabled())
             {
                 return false;

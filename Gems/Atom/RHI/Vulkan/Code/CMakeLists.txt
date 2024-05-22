@@ -23,6 +23,12 @@ if(PAL_TRAIT_ATOM_RHI_VULKAN_TARGETS_ALREADY_DEFINED)
     return() # Vulkan targets already defined in PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
 endif()
 
+set(ANDROID_USE_OCULUS_OPENXR OFF CACHE BOOL "Allows for custom behavior in the RHI related with issues that only occur on Quest devices.")
+if(ANDROID_USE_OCULUS_OPENXR)
+    message(STATUS "Some quirks for Quest devices may apply in the Vulkan RHI.")
+    # It was found that as of April 2024 using Timeline Semaphores on Quest devices crashes the app.
+    set(DISABLE_TIMELINE_SEMAPHORES_DEFINE "DISABLE_TIMELINE_SEMAPHORES") # Disables Timeline Semaphores even if the device claims to support them. 
+endif()
 
 ly_add_target(
     NAME ${gem_name}.Glad.Static STATIC
@@ -59,6 +65,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
+            AZ::AzFramework
             Gem::Atom_RHI.Reflect
             Gem::${gem_name}.Glad.Static
 )
@@ -147,6 +154,7 @@ ly_add_target(
     COMPILE_DEFINITIONS 
         PRIVATE
             ${USE_NSIGHT_AFTERMATH_DEFINE}
+            ${DISABLE_TIMELINE_SEMAPHORES_DEFINE}
 )
 
 ly_add_target(

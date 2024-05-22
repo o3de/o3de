@@ -87,7 +87,6 @@ AZ_POP_DISABLE_WARNING
 // Editor
 #include "Settings.h"
 
-#include "GameExporter.h"
 #include "GameResourcesExporter.h"
 
 #include "MainWindow.h"
@@ -2596,7 +2595,7 @@ void CCryEditApp::OnUpdatePlayGame(QAction* action)
 }
 
 //////////////////////////////////////////////////////////////////////////
-CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& levelName, QString& fullyQualifiedLevelName /* ={} */)
+CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& templateName, const QString& levelName, QString& fullyQualifiedLevelName /* ={} */)
 {
     // If we are creating a new level and we're in simulate mode, then switch it off before we do anything else
     if (GetIEditor()->GetGameEngine() && GetIEditor()->GetGameEngine()->GetSimulationMode())
@@ -2672,7 +2671,8 @@ CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& levelNam
     auto* service = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
     if (service)
     {
-        service->CreateNewLevelPrefab(fullyQualifiedLevelName.toUtf8().constData(), DefaultLevelTemplateName);
+        const AZStd::string templateNameString(templateName.toUtf8().constData());
+        service->CreateNewLevelPrefab(fullyQualifiedLevelName.toUtf8().constData(), templateNameString);
     }
 
     if (GetIEditor()->GetDocument()->Save())
@@ -2747,7 +2747,7 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
             GetIEditor()->GetDocument()->SetModifiedFlag(false);
             break;
         }
-        
+
     }
 
     const char* temporaryLevelName = GetIEditor()->GetDocument()->GetTemporaryLevelName();
@@ -2792,7 +2792,7 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
     GetIEditor()->StartLevelErrorReportRecording();
 
     QString fullyQualifiedLevelName;
-    ECreateLevelResult result = CreateLevel(levelNameWithPath, fullyQualifiedLevelName);
+    ECreateLevelResult result = CreateLevel(dlg.GetTemplateName(), levelNameWithPath, fullyQualifiedLevelName);
 
     if (result == ECLR_ALREADY_EXISTS)
     {

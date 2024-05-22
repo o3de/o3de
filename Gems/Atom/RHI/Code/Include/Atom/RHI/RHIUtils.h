@@ -76,5 +76,8 @@ namespace AZ::RHI
  
     //! Utility function to get the Name associated with a DrawListTag
     Name GetDrawListName(DrawListTag drawListTag);
+
+    AZStd::string DrawListMaskToString(const RHI::DrawListMask& drawListMask);
+
 }
 

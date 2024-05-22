@@ -10,7 +10,7 @@
 
 #include <AzCore/std/containers/vector.h>
 #include "EMotionFXConfig.h"
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 #include "MotionEvent.h"
 
 namespace AZ

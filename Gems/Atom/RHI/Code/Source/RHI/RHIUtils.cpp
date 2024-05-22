@@ -486,4 +486,26 @@ namespace AZ::RHI
         RHI::DrawListTagRegistry* drawListTagRegistry = GetDrawListTagRegistry();
         return drawListTagRegistry->GetName(drawListTag);
     }
+
+    AZStd::string DrawListMaskToString(const RHI::DrawListMask& drawListMask)
+    {
+        AZStd::string tagString;
+        u32 maxTags = RHI::Limits::Pipeline::DrawListTagCountMax;
+
+        u32 drawListTagCount = 0;
+
+        for (u32 i = 0; i < maxTags; ++i)
+        {
+            if (drawListMask[i])
+            {
+                DrawListTag tag(i);
+                tagString += AZStd::string::format("%s | ", GetDrawListName(tag).GetCStr());
+                ++drawListTagCount;
+            }
+        }
+
+        AZStd::string output = AZStd::string::format("DrawListMask has %d tags = %s", drawListTagCount, tagString.c_str());
+        return output;
+    }
+
 }

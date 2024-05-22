@@ -182,7 +182,7 @@ private:
             return {};
         }
 
-        module->Load(false);
+        module->Load();
         if (auto init = module->GetFunction<AZ::InitializeDynamicModuleFunction>(AZ::InitializeDynamicModuleFunctionName); init)
         {
             AZStd::invoke(init);

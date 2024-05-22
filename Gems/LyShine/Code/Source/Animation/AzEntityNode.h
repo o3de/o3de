@@ -150,21 +150,6 @@ private:
     bool m_visible;
     bool m_bInitialPhysicsStatus;
 
-    // Pos/rot noise parameters
-    struct Noise
-    {
-        float m_amp;
-        float m_freq;
-
-        Vec3 Get(float time) const;
-
-        Noise()
-            : m_amp(0.0f)
-            , m_freq(0.0f) {}
-    };
-
-    Noise m_posNoise;
-    Noise m_rotNoise;
 
     struct SScriptPropertyParamInfo
     {

@@ -26,6 +26,8 @@ namespace AZ
             static void Reflect(ReflectContext* context);
 
             Data::Asset<RPI::StreamingImageAsset> m_cubemapAsset;
+            Data::AssetId m_cubemapAssetId;
+
             float m_exposure = 0.0f;
         };
     } // namespace Render

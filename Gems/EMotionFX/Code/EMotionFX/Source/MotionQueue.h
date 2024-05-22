@@ -10,7 +10,7 @@
 
 // include the required headers
 #include "EMotionFXConfig.h"
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 #include "PlayBackInfo.h"
 #include <AzCore/std/containers/vector.h>
 
@@ -31,7 +31,8 @@ namespace EMotionFX
      * animation has been finished. A smooth transition between both motions can be made when desired.
      */
     class EMFX_API MotionQueue
-        : public BaseObject
+        : public MCore::RefCounted
+
     {
         AZ_CLASS_ALLOCATOR_DECL
 

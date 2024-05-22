@@ -23,7 +23,7 @@ namespace EMotionFX
 
     // constructor
     ActorManager::ActorManager()
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_scheduler  = nullptr;
 

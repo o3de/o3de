@@ -444,11 +444,11 @@ namespace UnitTest
 
         // before we detach, the level should contain 1 entity (the container entity) and 1 instance (of the car)
         int count = 0;
-        levelInstance->get().GetEntityIds([&count](AZ::EntityId entityId) { count++; return true; });
+        levelInstance->get().GetEntityIds([&count](AZ::EntityId) { count++; return true; });
         EXPECT_EQ(count, 1); // expect 1 real entity, that is, the container for the car.
 
         count = 0;
-        levelInstance->get().GetNestedInstances([&count](AZStd::unique_ptr<Instance>& instance) { count++; });
+        levelInstance->get().GetNestedInstances([&count](AZStd::unique_ptr<Instance>&) { count++; });
         EXPECT_EQ(count, 1); // expect 1 instance of another prefab (The the car)
 
         // Detach the car prefab.
@@ -459,11 +459,11 @@ namespace UnitTest
 
         // after we detach, the level should contain 3 entities (2 of them real entities, one of them an instance container)
         count = 0;
-        levelInstance->get().GetEntityIds([&count](const AZ::EntityId& entityId) { count++; return true; });
+        levelInstance->get().GetEntityIds([&count](const AZ::EntityId&) { count++; return true; });
         EXPECT_EQ(count, 3); // expect 2 REAL entities.
 
         count = 0;
-        levelInstance->get().GetNestedInstances([&count](AZStd::unique_ptr<Instance>& instance) { count++; });
+        levelInstance->get().GetNestedInstances([&count](AZStd::unique_ptr<Instance>&) { count++; });
         EXPECT_EQ(count, 1); // expect 1 instance of another prefab (the wheel)
 
         // Validate child entity order under the level after detaching the car prefab.  Should be engine, wheel, battery.

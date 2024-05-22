@@ -36,7 +36,7 @@ namespace ScriptCanvas
         {
             struct FunctionCallNodeCompareConfig;
 
-            enum class IsFunctionCallNodeOutOfDataResult
+            enum class IsFunctionCallNodeOutOfDateResult
             {
                 No,
                 Yes,
@@ -80,7 +80,7 @@ namespace ScriptCanvas
 
                 bool IsOutOfDate(const VersionData& graphVersion) const override;
 
-                IsFunctionCallNodeOutOfDataResult IsOutOfDate(const FunctionCallNodeCompareConfig& config, const AZ::Uuid& graphId) const;
+                IsFunctionCallNodeOutOfDateResult IsOutOfDate(const FunctionCallNodeCompareConfig& config, const AZ::Uuid& graphId) const;
 
                 UpdateResult OnUpdateNode() override;
 

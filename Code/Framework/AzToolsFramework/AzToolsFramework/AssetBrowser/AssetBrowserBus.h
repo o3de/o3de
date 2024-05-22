@@ -298,6 +298,9 @@ namespace AzToolsFramework
 
             virtual void BeginRemoveEntry(AssetBrowserEntry* entry) = 0;
             virtual void EndRemoveEntry() = 0;
+
+            virtual void BeginReset() = 0;
+            virtual void EndReset() = 0;
         };
 
         using AssetBrowserModelRequestBus = AZ::EBus<AssetBrowserModelRequests>;

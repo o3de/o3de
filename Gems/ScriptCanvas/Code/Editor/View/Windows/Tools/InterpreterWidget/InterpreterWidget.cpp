@@ -74,7 +74,7 @@ namespace ScriptCanvasEditor
         m_handlerSourceCompiled = m_interpreter.GetConfiguration().ConnectToSourceCompiled
             ([propertyEditor](const Configuration&)
             {
-                propertyEditor->QueueInvalidation(AzToolsFramework::Refresh_EntireTree_NewContent);
+                propertyEditor->QueueInvalidation(AzToolsFramework::Refresh_EntireTree);
             });
 
         // initialized status window and enabled setting for buttons

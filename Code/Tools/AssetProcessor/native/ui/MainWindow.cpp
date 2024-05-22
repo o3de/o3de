@@ -1557,7 +1557,13 @@ void MainWindow::OnAssetProcessorStatusChanged(const AssetProcessor::AssetProces
 
         if (m_processJobsCount + m_createJobCount > 0)
         {
-            text = tr("Working, analyzing jobs remaining %1, processing jobs remaining %2...").arg(m_createJobCount).arg(m_processJobsCount);
+            text += tr("Working, analyzing jobs remaining %1, processing jobs remaining %2...").arg(m_createJobCount).arg(m_processJobsCount);
+
+            if (!entry.m_extraInfo.isEmpty())
+            {
+                text += tr("<p style='font-size:small;'>%1</p>").arg(entry.m_extraInfo);
+            }
+
             ui->timerContainerWidget->setVisible(false);
             ui->productAssetDetailsPanel->SetScanQueueEnabled(false);
 

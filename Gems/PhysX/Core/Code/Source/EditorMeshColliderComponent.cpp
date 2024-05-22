@@ -559,7 +559,7 @@ namespace PhysX
 
         m_configuration.m_materialSlots.SetSlotsReadOnly(m_proxyShapeConfiguration.m_physicsAsset.m_configuration.m_useMaterialsFromAsset);
 
-        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
+        InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
 
         // By refreshing the entire tree the component's properties reflected on edit context
         // will get updated correctly and show the right material slots list.
@@ -623,8 +623,7 @@ namespace PhysX
         else
         {
             m_componentWarnings.clear();
-            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
+            InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
         }
     }
 
@@ -645,8 +644,7 @@ namespace PhysX
             {
                 m_componentWarnings.clear();
 
-                AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                    &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
+                InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
                 return;
             }
 
@@ -699,8 +697,7 @@ namespace PhysX
             m_componentWarnings.clear();
         }
 
-        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
+        InvalidatePropertyDisplay(
             m_componentWarnings.empty() ? AzToolsFramework::Refresh_EntireTree : AzToolsFramework::Refresh_EntireTree_NewContent);
     }
 

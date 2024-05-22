@@ -11,7 +11,7 @@
 // include the required headers
 #include <AzCore/PlatformIncl.h>
 #include "EMotionFXConfig.h"
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 #include <AzCore/Memory/Memory.h>
 #include <MCore/Source/Attribute.h>
 #include <MCore/Source/AttributeFloat.h>
@@ -57,7 +57,7 @@ public:                                                                  \
      *
      */
     class EMFX_API AnimGraphObjectData
-        : public BaseObject
+        : public MCore::RefCounted
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL

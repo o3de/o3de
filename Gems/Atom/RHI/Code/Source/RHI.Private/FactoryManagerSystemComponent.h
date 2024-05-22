@@ -36,6 +36,7 @@ namespace AZ::RHI
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+        static void GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent);
 
         // AZ::Component overrides ...
         void Activate() override;

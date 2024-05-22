@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/std/string/string.h>
 
 #include <QRect>
 #include <QKeySequence>

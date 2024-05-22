@@ -17,7 +17,7 @@ namespace EMotionFX
 
     // default constructor
     ThreadData::ThreadData()
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_threadIndex    = MCORE_INVALIDINDEX32;
     }

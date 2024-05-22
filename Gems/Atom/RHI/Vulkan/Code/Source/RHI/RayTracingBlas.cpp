@@ -31,8 +31,7 @@ namespace AZ
             const VkPhysicalDeviceAccelerationStructurePropertiesKHR& accelerationStructureProperties = physicalDevice.GetPhysicalDeviceAccelerationStructureProperties();
 
             // advance to the next buffer
-            m_currentBufferIndex = (m_currentBufferIndex + 1) % BufferCount;
-            BlasBuffers& buffers = m_buffers[m_currentBufferIndex];
+            BlasBuffers& buffers = m_buffers.AdvanceCurrentElement();
 
             if (buffers.m_accelerationStructure)
             {
@@ -41,65 +40,122 @@ namespace AZ
                 buffers.m_accelerationStructure = nullptr;
             }
 
-            const RHI::RayTracingGeometryVector& geometries = descriptor->GetGeometries();
-
             // build the list of VkAccelerationStructureGeometryKHR structures
             buffers.m_geometryDescs.clear();
-            buffers.m_geometryDescs.reserve(geometries.size());
             buffers.m_rangeInfos.clear();
-            buffers.m_rangeInfos.reserve(geometries.size());
             AZStd::vector<uint32_t> primitiveCounts;
-            primitiveCounts.reserve(geometries.size());
 
-            for (const RHI::RayTracingGeometry& geometry : geometries)
+            // A BLAS can contain either triangle geometry or procedural geometry; decide based on the descriptor which one to create
+            if (descriptor->HasAABB())
             {
-                VkAccelerationStructureGeometryKHR geometryDesc = {};
-                geometryDesc.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;
-                geometryDesc.pNext = nullptr;
-                geometryDesc.geometryType = VK_GEOMETRY_TYPE_TRIANGLES_KHR;
-                geometryDesc.geometry.triangles.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_TRIANGLES_DATA_KHR;
-                geometryDesc.geometry.triangles.pNext = nullptr;
+                const AZ::Aabb& aabb = descriptor->GetAABB();
+                buffers.m_aabbBuffer = RHI::Factory::Get().CreateBuffer();
+                AZ::RHI::BufferDescriptor blasBufferDescriptor;
+                blasBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingAccelerationStructure;
+                blasBufferDescriptor.m_byteCount = sizeof(VkAabbPositionsKHR);
+                blasBufferDescriptor.m_alignment = RHI::AlignUp(sizeof(VkAabbPositionsKHR), 8);
+
+                VkAabbPositionsKHR rtAabb;
+                rtAabb.minX = aabb.GetMin().GetX();
+                rtAabb.minY = aabb.GetMin().GetY();
+                rtAabb.minZ = aabb.GetMin().GetZ();
+                rtAabb.maxX = aabb.GetMax().GetX();
+                rtAabb.maxY = aabb.GetMax().GetY();
+                rtAabb.maxZ = aabb.GetMax().GetZ();
+
+                AZ::RHI::BufferInitRequest blasBufferRequest;
+                blasBufferRequest.m_buffer = buffers.m_aabbBuffer.get();
+                blasBufferRequest.m_initialData = &rtAabb;
+                blasBufferRequest.m_descriptor = blasBufferDescriptor;
+                auto resultCode = bufferPools.GetBlasBufferPool()->InitBuffer(blasBufferRequest);
+                if (resultCode != AZ::RHI::ResultCode::Success)
+                {
+                    AZ_Error("RayTracing", false, "Failed to initialize BLAS buffer index buffer with error code: %d", resultCode);
+                }
 
                 VkBufferDeviceAddressInfo addressInfo = {};
                 addressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
                 addressInfo.pNext = nullptr;
-                addressInfo.buffer = static_cast<const Vulkan::Buffer* > (geometry.m_vertexBuffer.GetBuffer())->GetBufferMemoryView()->GetNativeBuffer();
-                geometryDesc.geometry.triangles.vertexData.deviceAddress =
-                    device.GetContext().GetBufferDeviceAddress(device.GetNativeDevice(), &addressInfo) +
-                    geometry.m_vertexBuffer.GetByteOffset();
-                geometryDesc.geometry.triangles.vertexStride = geometry.m_vertexBuffer.GetByteStride();
-                geometryDesc.geometry.triangles.maxVertex = geometry.m_vertexBuffer.GetByteCount() / aznumeric_cast<uint32_t>(geometryDesc.geometry.triangles.vertexStride);
-                geometryDesc.geometry.triangles.vertexFormat = ConvertFormat(geometry.m_vertexFormat);
+                addressInfo.buffer = static_cast<const Vulkan::Buffer*>(buffers.m_aabbBuffer.get())->GetBufferMemoryView()->GetNativeBuffer();
 
-                addressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
-                addressInfo.pNext = nullptr;
-                addressInfo.buffer = static_cast<const Vulkan::Buffer*>(geometry.m_indexBuffer.GetBuffer())->GetBufferMemoryView()->GetNativeBuffer();
-                geometryDesc.geometry.triangles.indexData.deviceAddress =
-                    device.GetContext().GetBufferDeviceAddress(device.GetNativeDevice(), &addressInfo) +
-                    geometry.m_indexBuffer.GetByteOffset();
-                geometryDesc.geometry.triangles.indexType = (geometry.m_indexBuffer.GetIndexFormat() == RHI::IndexFormat::Uint16) ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32;
-                geometryDesc.geometry.triangles.transformData = {}; // [GFX-TODO][ATOM-4989] Add BLAS Transform Buffer
-
-                // all BLAS geometry is set to opaque, but can be set to transparent at the TLAS Instance level
+                VkAccelerationStructureGeometryKHR geometryDesc = {};
+                geometryDesc.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;
+                geometryDesc.pNext = nullptr;
+                geometryDesc.geometryType = VK_GEOMETRY_TYPE_AABBS_KHR;
+                geometryDesc.geometry.aabbs.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_AABBS_DATA_KHR;
+                geometryDesc.geometry.aabbs.pNext = nullptr;
+                geometryDesc.geometry.aabbs.data.deviceAddress = device.GetContext().GetBufferDeviceAddress(device.GetNativeDevice(), &addressInfo);
+                geometryDesc.geometry.aabbs.stride = RHI::AlignUp(sizeof(VkAabbPositionsKHR), 8);
                 geometryDesc.flags = VK_GEOMETRY_OPAQUE_BIT_KHR;
-                buffers.m_geometryDescs.push_back(geometryDesc);
 
-                uint32_t indexCount = geometry.m_indexBuffer.GetByteCount() / ((geometry.m_indexBuffer.GetIndexFormat() == RHI::IndexFormat::Uint16) ? 2 : 4);
+                buffers.m_geometryDescs.push_back(geometryDesc);
+                primitiveCounts.push_back(1);
 
                 VkAccelerationStructureBuildRangeInfoKHR rangeInfo = {};
                 rangeInfo.firstVertex = 0;
                 rangeInfo.primitiveOffset = 0;
-                rangeInfo.primitiveCount = indexCount / 3;
+                rangeInfo.primitiveCount = 1;
                 rangeInfo.transformOffset = 0;
                 buffers.m_rangeInfos.push_back(rangeInfo);
+            }
+            else
+            {
+                const RHI::RayTracingGeometryVector& geometries = descriptor->GetGeometries();
 
-                primitiveCounts.push_back(rangeInfo.primitiveCount);
+                buffers.m_geometryDescs.reserve(geometries.size());
+                buffers.m_rangeInfos.reserve(geometries.size());
+                primitiveCounts.reserve(geometries.size());
+
+                for (const RHI::RayTracingGeometry& geometry : geometries)
+                {
+                    VkAccelerationStructureGeometryKHR geometryDesc = {};
+                    geometryDesc.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;
+                    geometryDesc.pNext = nullptr;
+                    geometryDesc.geometryType = VK_GEOMETRY_TYPE_TRIANGLES_KHR;
+                    geometryDesc.geometry.triangles.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_TRIANGLES_DATA_KHR;
+                    geometryDesc.geometry.triangles.pNext = nullptr;
+
+                    VkBufferDeviceAddressInfo addressInfo = {};
+                    addressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+                    addressInfo.pNext = nullptr;
+                    addressInfo.buffer = static_cast<const Vulkan::Buffer* > (geometry.m_vertexBuffer.GetBuffer())->GetBufferMemoryView()->GetNativeBuffer();
+                    geometryDesc.geometry.triangles.vertexData.deviceAddress =
+                        device.GetContext().GetBufferDeviceAddress(device.GetNativeDevice(), &addressInfo) +
+                        geometry.m_vertexBuffer.GetByteOffset();
+                    geometryDesc.geometry.triangles.vertexStride = geometry.m_vertexBuffer.GetByteStride();
+                    geometryDesc.geometry.triangles.maxVertex = geometry.m_vertexBuffer.GetByteCount() / aznumeric_cast<uint32_t>(geometryDesc.geometry.triangles.vertexStride);
+                    geometryDesc.geometry.triangles.vertexFormat = ConvertFormat(geometry.m_vertexFormat);
+
+                    addressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+                    addressInfo.pNext = nullptr;
+                    addressInfo.buffer = static_cast<const Vulkan::Buffer*>(geometry.m_indexBuffer.GetBuffer())->GetBufferMemoryView()->GetNativeBuffer();
+                    geometryDesc.geometry.triangles.indexData.deviceAddress =
+                        device.GetContext().GetBufferDeviceAddress(device.GetNativeDevice(), &addressInfo) +
+                        geometry.m_indexBuffer.GetByteOffset();
+                    geometryDesc.geometry.triangles.indexType = (geometry.m_indexBuffer.GetIndexFormat() == RHI::IndexFormat::Uint16) ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32;
+                    geometryDesc.geometry.triangles.transformData = {}; // [GFX-TODO][ATOM-4989] Add BLAS Transform Buffer
+
+                    // all BLAS geometry is set to opaque, but can be set to transparent at the TLAS Instance level
+                    geometryDesc.flags = VK_GEOMETRY_OPAQUE_BIT_KHR;
+                    buffers.m_geometryDescs.push_back(geometryDesc);
+
+                    uint32_t indexCount = geometry.m_indexBuffer.GetByteCount() / ((geometry.m_indexBuffer.GetIndexFormat() == RHI::IndexFormat::Uint16) ? 2 : 4);
+
+                    VkAccelerationStructureBuildRangeInfoKHR rangeInfo = {};
+                    rangeInfo.firstVertex = 0;
+                    rangeInfo.primitiveOffset = 0;
+                    rangeInfo.primitiveCount = indexCount / 3;
+                    rangeInfo.transformOffset = 0;
+                    buffers.m_rangeInfos.push_back(rangeInfo);
+
+                    primitiveCounts.push_back(rangeInfo.primitiveCount);
+                }
             }
 
             buffers.m_buildInfo = {};
             buffers.m_buildInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR;
             buffers.m_buildInfo.flags = GetAccelerationStructureBuildFlags(descriptor->GetBuildFlags());
-            buffers.m_buildInfo.geometryCount = aznumeric_cast<uint32_t>(geometries.size());
+            buffers.m_buildInfo.geometryCount = aznumeric_cast<uint32_t>(buffers.m_geometryDescs.size());
             buffers.m_buildInfo.pGeometries = buffers.m_geometryDescs.data();
             buffers.m_buildInfo.mode = VK_BUILD_ACCELERATION_STRUCTURE_MODE_BUILD_KHR;
             buffers.m_buildInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;

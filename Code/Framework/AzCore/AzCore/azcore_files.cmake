@@ -401,7 +401,9 @@ set(FILES
     Math/VertexContainer.h
     Math/VertexContainer.cpp
     Math/VertexContainerInterface.h
+    Math/PackedVector2.h
     Math/PackedVector3.h
+    Math/PackedVector4.h
     Math/Color.h
     Math/Color.cpp
     Math/ColorSerializer.h

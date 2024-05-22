@@ -439,11 +439,13 @@ namespace AZ
                 if (imageDescriptor.m_arraySize > 1)
                 {
                     // get smallest mip size
-                    uint32_t formatDiemensionAlignment = RHI::GetFormatDimensionAlignment(imageDescriptor.m_format);
+                    RHI::Size formatDimensionAlignment = RHI::GetFormatDimensionAlignment(imageDescriptor.m_format);
                     uint32_t minMipWidth = AZStd::max(imageDescriptor.m_size.m_width >> (imageDescriptor.m_mipLevels-1), 1u);
                     uint32_t minMipHeight = AZStd::max(imageDescriptor.m_size.m_height >> (imageDescriptor.m_mipLevels-1), 1u);
-                    uint32_t minMipSize = AZ::DivideAndRoundUp(minMipWidth, formatDiemensionAlignment) * AZ::DivideAndRoundUp(minMipHeight, formatDiemensionAlignment)
-                        * RHI::GetFormatSize(imageDescriptor.m_format);
+                    uint32_t minMipSize =
+                        AZ::DivideAndRoundUp(minMipWidth, formatDimensionAlignment.m_width) *
+                        AZ::DivideAndRoundUp(minMipHeight, formatDimensionAlignment.m_height) *
+                        RHI::GetFormatSize(imageDescriptor.m_format);
                     if (minMipSize < TileSizeInBytes)
                     {
                         return false;

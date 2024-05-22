@@ -366,13 +366,17 @@ namespace AzToolsFramework
         void ComponentModeDelegate::OnEntityVisibilityChanged(bool /*visibility*/)
         {
             ToolsApplicationNotificationBus::Broadcast(
-                &ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_AttributesAndValues);
+                &ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplayForComponent,
+                m_entityComponentIdPair,
+                Refresh_AttributesAndValues);
         }
 
         void ComponentModeDelegate::OnEntityLockChanged(bool /*locked*/)
         {
             ToolsApplicationNotificationBus::Broadcast(
-                &ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_AttributesAndValues);
+                &ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplayForComponent,
+                m_entityComponentIdPair,
+                Refresh_AttributesAndValues);
         }
     } // namespace ComponentModeFramework
 } // namespace AzToolsFramework

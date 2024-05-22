@@ -174,9 +174,7 @@ namespace PhysX
             m_angularLimit.m_standardLimitConfig.m_inComponentMode = value;
             m_config.m_inComponentMode = value;
 
-            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay
-                , AzToolsFramework::Refresh_EntireTree);
+            InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
         }
         else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::EnableLimits)
         {

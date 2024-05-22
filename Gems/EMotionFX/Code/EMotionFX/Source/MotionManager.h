@@ -13,7 +13,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <MCore/Source/Config.h>
 #include <MCore/Source/MultiThreadManager.h>
-#include <EMotionFX/Source/BaseObject.h>
+#include <MCore/Source/RefCounted.h>
 #include <EMotionFX/Source/EMotionFXConfig.h>
 #include <EMotionFX/Source/MotionSet.h>
 
@@ -26,7 +26,8 @@ namespace EMotionFX
     class MotionDataFactory;
 
     class EMFX_API MotionManager
-        : public BaseObject
+        : public MCore::RefCounted
+
     {
         AZ_CLASS_ALLOCATOR_DECL
         friend class Initializer;

@@ -33,11 +33,11 @@ real GetOcclusionInput(Texture2D map, sampler mapSampler, float2 uv, real factor
     {
         if (customDerivatives)
         {
-            occlusion = map.SampleGrad(mapSampler, uv, uvDxDy.xy, uvDxDy.zw).r;
+            occlusion = real(map.SampleGrad(mapSampler, uv, uvDxDy.xy, uvDxDy.zw).r);
         }
         else
         {
-            occlusion = map.Sample(mapSampler, uv).r;
+            occlusion = real(map.Sample(mapSampler, uv).r);
         }
         occlusion = pow(occlusion, factor);
     }

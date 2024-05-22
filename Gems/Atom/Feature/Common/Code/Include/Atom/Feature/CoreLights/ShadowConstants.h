@@ -27,13 +27,25 @@ namespace AZ
         static constexpr ShadowmapSize MinShadowmapImageSize = ShadowmapSize::Size256;
         static constexpr ShadowmapSize MaxShadowmapImageSize = ShadowmapSize::Size2048;
 
-        // This matchs ShadowFilterMethod in CoreLights/ViewSrg.azsli
+        // This matches ShadowFilterMethod in DirectionalLightShadowCalculator.azsli
+        // and represents m_shadowFilterMethod in CoreLights/ViewSrg.azsli
         enum class ShadowFilterMethod : uint32_t
         {
             None = 0,
             Pcf, // Percentage Closer Filtering
             Esm, // Exponential Shadow Maps
             EsmPcf, // ESM with PCF fallback
+
+            Count
+        };
+
+        // This matches ShadowFilterSampleCount in DirectionalLightShadowCalculator.azsli
+        // and represents m_filteringSampleCountMode in CoreLights/ViewSrg.azsli
+        enum class ShadowFilterSampleCount : uint32_t
+        {
+            PcfTap4 = 0,
+            PcfTap9,
+            PcfTap16,
 
             Count
         };

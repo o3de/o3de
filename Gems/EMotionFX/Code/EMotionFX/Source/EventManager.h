@@ -10,7 +10,7 @@
 
 // include the required headers
 #include "EMotionFXConfig.h"
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 #include <AzCore/std/containers/vector.h>
 #include <MCore/Source/MultiThreadManager.h>
 #include "MemoryCategories.h"
@@ -79,7 +79,7 @@ namespace EMotionFX
      * @see MotionEventTable.
      */
     class EMFX_API EventManager
-        : public BaseObject
+        : public MCore::RefCounted
     {
         AZ_CLASS_ALLOCATOR_DECL
 

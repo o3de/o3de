@@ -163,6 +163,7 @@ set(FILES
     Math/Vector4Tests.cpp
     Math/VectorNTests.cpp
     Math/VectorNPerformanceTests.cpp
+    Math/PackedVectorTest.cpp
     Memory/AllocatorBenchmarks.cpp
     Memory/HphaAllocator.cpp
     Memory/HphaAllocatorErrorDetection.cpp

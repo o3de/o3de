@@ -20,6 +20,8 @@
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
+#include <Atom/RHI/RHISystemInterface.h>
+
 namespace AZ
 {
     namespace DX12
@@ -99,19 +101,20 @@ namespace AZ
                  D3D12_RESOURCE_STATE_COPY_DEST |
                  D3D12_RESOURCE_STATE_COPY_SOURCE);
 
-            constexpr D3D12_RESOURCE_STATES VALID_GRAPHICS_QUEUE_RESOURCE_STATES =
-                (D3D12_RESOURCE_STATES)DX12_RESOURCE_STATE_VALID_API_MASK;
+            constexpr D3D12_RESOURCE_STATES VALID_COPY_QUEUE_RESOURCE_STATES =
+                (D3D12_RESOURCE_STATE_COPY_DEST |
+                 D3D12_RESOURCE_STATE_COPY_SOURCE);
 
             switch (GetHardwareQueueClass())
             {
             case RHI::HardwareQueueClass::Graphics:
-                return RHI::CheckBitsAll(VALID_GRAPHICS_QUEUE_RESOURCE_STATES, state);
+                return true;
 
             case RHI::HardwareQueueClass::Compute:
                 return RHI::CheckBitsAll(VALID_COMPUTE_QUEUE_RESOURCE_STATES, state);
 
             case RHI::HardwareQueueClass::Copy:
-                return RHI::CheckBitsAny(state, (D3D12_RESOURCE_STATES)DX12_RESOURCE_STATE_COPY_QUEUE_BIT);
+                return RHI::CheckBitsAll(VALID_COPY_QUEUE_RESOURCE_STATES, state);
             }
             return false;
         }
@@ -322,7 +325,7 @@ namespace AZ
             const bool isPrologue = commandListIndex == 0;
             if (isPrologue)
             {
-                if (RHI::Factory::Get().PixGpuEventsEnabled())
+                if (RHI::RHISystemInterface::Get()->GpuMarkersEnabled())
                 {
                     PIXBeginEvent(commandList.GetCommandList(), PIX_MARKER_CMDLIST_COL, GetMarkerLabel().data());
                 }
@@ -434,7 +437,7 @@ namespace AZ
                     commandList.QueueTransitionBarrier(request);
                 }
 
-                if (RHI::Factory::Get().PixGpuEventsEnabled())
+                if (RHI::RHISystemInterface::Get()->GpuMarkersEnabled())
                 {
                     PIXEndEvent(commandList.GetCommandList());
                 }

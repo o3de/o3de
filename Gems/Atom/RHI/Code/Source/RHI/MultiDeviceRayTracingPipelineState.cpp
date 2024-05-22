@@ -92,6 +92,13 @@ namespace AZ::RHI
         return this;
     }
 
+    MultiDeviceRayTracingPipelineStateDescriptor* MultiDeviceRayTracingPipelineStateDescriptor::IntersectionShaderName(
+        const Name& intersectionShaderName)
+    {
+        m_descriptor.IntersectionShaderName(intersectionShaderName);
+        return this;
+    }
+
     MultiDeviceRayTracingPipelineStateDescriptor* MultiDeviceRayTracingPipelineStateDescriptor::HitGroup(const AZ::Name& hitGroupName)
     {
         m_descriptor.HitGroup(hitGroupName);

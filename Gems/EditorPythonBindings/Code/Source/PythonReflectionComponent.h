@@ -11,7 +11,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <EditorPythonBindings/EditorPythonBindingsBus.h>
-#include <Source/PythonCommon.h>
+#include <EditorPythonBindings/PythonCommon.h>
 #include <pybind11/pybind11.h>
 
 namespace EditorPythonBindings

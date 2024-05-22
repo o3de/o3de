@@ -10,7 +10,7 @@
 
 // include the required headers
 #include "EMotionFXConfig.h"
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 #include <AzCore/std/string/string.h>
 
 
@@ -28,7 +28,7 @@ namespace EMotionFX
      * or vertex color or softskinning information.
      */
     class EMFX_API VertexAttributeLayer
-        : public BaseObject
+        : public MCore::RefCounted
     {
         AZ_CLASS_ALLOCATOR_DECL
 

@@ -12,7 +12,7 @@
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Math/Color.h>
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 #include <MCore/Source/Attribute.h>
 #include <AzCore/std/containers/vector.h>
 #include <MCore/Source/File.h>
@@ -42,7 +42,7 @@ namespace EMotionFX
     class Motion;
 
     class EMFX_API Recorder
-        : public BaseObject
+        : public MCore::RefCounted
         , private EMotionFX::ActorInstanceNotificationBus::Handler
     {
     public:

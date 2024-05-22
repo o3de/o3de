@@ -8,15 +8,15 @@
 
 #pragma once
 
-#include "BaseObject.h"
-
+#include <MCore/Source/RefCounted.h>
+#include <EMotionFX/Source/EMotionFXConfig.h>
 
 namespace EMotionFX
 {
     class MotionInstance;
 
     class EMFX_API BlendSpaceParamEvaluator
-        : public BaseObject
+        : public MCore::RefCounted
     {
     public:
         AZ_RTTI(BlendSpaceParamEvaluator, "{4736FF5A-8759-464C-9C7A-5D8D112AB1A0}")

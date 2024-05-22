@@ -22,7 +22,7 @@
                 "DestColor": "Linear",
                 "PixelFormat": "ASTC_4x4",
                 "Swizzle": "rrr1",
-                "MaxTextureSize": 2048,
+                "MaxTextureSize": 512,
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"
@@ -35,7 +35,7 @@
                 "DestColor": "Linear",
                 "PixelFormat": "ASTC_6x6",
                 "Swizzle": "rrr1",
-                "MaxTextureSize": 2048,
+                "MaxTextureSize": 512,
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"

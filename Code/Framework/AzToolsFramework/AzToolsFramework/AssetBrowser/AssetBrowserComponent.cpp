@@ -47,6 +47,8 @@ namespace AzToolsFramework
             , m_dbReady(false)
             , m_waitingForMore(false)
             , m_disposed(false)
+            , m_isResetting(false)
+            , m_changesApplied(false)
             , m_assetBrowserModel(aznew AssetBrowserModel)
             , m_changeset(new AssetEntryChangeset(m_databaseConnection, m_rootEntry))
         {
@@ -173,6 +175,13 @@ namespace AzToolsFramework
             {
                 m_entriesReady = true;
                 AssetBrowserComponentNotificationBus::Broadcast(&AssetBrowserComponentNotifications::OnAssetBrowserComponentReady);
+            }
+
+            if (m_isResetting && m_changesApplied)
+            {
+                m_isResetting = false;
+                m_changesApplied = false;
+                m_assetBrowserModel->EndReset();
             }
         }
 
@@ -390,6 +399,11 @@ namespace AzToolsFramework
 
         void AssetBrowserComponent::PopulateAssets()
         {
+            // populating the assets is a complete reset of the model.
+            m_isResetting = true;
+            m_changesApplied = false;
+            m_assetBrowserModel->BeginReset();
+            m_rootEntry->PrepareForReset();
             m_changeset->PopulateEntries();
             NotifyUpdateThread();
         }
@@ -414,6 +428,7 @@ namespace AzToolsFramework
                 if (m_dbReady)
                 {
                     m_changeset->Update();
+                    m_changesApplied = true;
                 }
             }
         }

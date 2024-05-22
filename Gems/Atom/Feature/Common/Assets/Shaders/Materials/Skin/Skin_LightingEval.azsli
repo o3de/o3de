@@ -23,7 +23,6 @@ void InitializeLightingData_SkinPBR(inout Surface surface, float4 screenPosition
     InitializeLightingData_BasePBR(surface, screenPosition, viewPosition, lightingData);
 
     // --- Skin PBR ---
-
     lightingData.diffuseAmbientOcclusion = surface.diffuseAmbientOcclusion;
     lightingData.specularOcclusion = surface.specularOcclusion;
 }

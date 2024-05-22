@@ -44,6 +44,7 @@
 #include <AzQtComponents/Utilities/QtViewPaneEffects.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <IXml.h>
 
 // Helper for EditorComponentModeNotifications to be used
 // as a member instead of inheriting from EBus directly.

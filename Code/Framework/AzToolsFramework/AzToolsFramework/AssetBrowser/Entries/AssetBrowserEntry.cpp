@@ -123,6 +123,9 @@ namespace AzToolsFramework
             child->m_parentAssetEntry = nullptr;
             AssetBrowserModelRequestBus::Broadcast(&AssetBrowserModelRequests::EndRemoveEntry);
             AssetBrowserModelNotificationBus::Broadcast(&AssetBrowserModelNotifications::EntryRemoved, childToRemove.get());
+
+            // before we allow the destructor of AssetBrowserEntry to run, we must remove its children, etc.
+            childToRemove->RemoveChildren();
         }
 
         void AssetBrowserEntry::RemoveChildren()

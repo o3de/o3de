@@ -35,19 +35,50 @@ namespace GradientSignal
     {
     }
 
+
     bool SupportedImageAssetPickerDialog::EvaluateSelection() const
     {
-        bool isValid = AzToolsFramework::AssetBrowser::AssetPickerDialog::EvaluateSelection();
+        using namespace AzToolsFramework::AssetBrowser;
+        if (!AssetPickerDialog::EvaluateSelection())
+        {
+            return false;
+        }
+        // note that this function is called as part of the internals of the asset picker dialog
+        // and that the selection currently selected refers to the actual entry picked in the UI by the user
+        // and not necessarily the products of that file.  The user could have clicked on a source file, a folder, etc.
 
         // If we have a valid selection (a streaming image asset), we need to also verify
         // that its pixel format is supported by the image data retrieval API
-        if (isValid)
+        const AssetBrowserEntry* entry = m_selection.GetResult();
+        if (!entry)
         {
-            const auto productEntry = azrtti_cast<const ProductAssetBrowserEntry*>(m_selection.GetResult());
-            isValid = Internal::IsImageDataPixelAPISupportedForAsset(productEntry->GetAssetId());
+            return false;
         }
 
-        return isValid;
+        if ((entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Source) && (entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Product))
+        {
+            return false;
+        }
+
+        bool foundValidImage = false;
+        entry->VisitDown( // checks itself, and all its children.
+            [&](const auto& currentEntry)
+            {
+                if (const auto productEntry = azrtti_cast<const ProductAssetBrowserEntry*>(currentEntry))
+                {
+                    if (productEntry->GetAssetType() == AZ::AzTypeInfo<AZ::RPI::StreamingImageAsset>::Uuid())
+                    {
+                        if (Internal::IsImageDataPixelAPISupportedForAsset(productEntry->GetAssetId()))
+                        {
+                            foundValidImage = true;
+                            return false; // returning false from the visitor stops it from continuing to search.
+                        }
+                    }
+                }
+                return true; // continue searching for more...
+            });
+
+        return foundValidImage;
     }
 
     StreamingImagePropertyAssetCtrl::StreamingImagePropertyAssetCtrl(QWidget* parent)
@@ -62,6 +93,24 @@ namespace GradientSignal
         // format has been selected
         SupportedImageAssetPickerDialog dialog(selection, parent);
         dialog.exec();
+    }
+
+    bool StreamingImagePropertyAssetCtrl::CanAcceptAsset(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType) const
+    {
+        using namespace AzToolsFramework::AssetBrowser;
+        if (!PropertyAssetCtrl::CanAcceptAsset(assetId, assetType))
+        {
+            return false;
+        }
+
+        // If the asset is a streaming image asset, we need to verify that its pixel format
+        // is supported by the image data retrieval API
+        if (assetType == AZ::AzTypeInfo<AZ::RPI::StreamingImageAsset>::Uuid())
+        {
+            return Internal::IsImageDataPixelAPISupportedForAsset(assetId);
+        }
+
+        return false;
     }
 
     void StreamingImagePropertyAssetCtrl::OnAutocomplete(const QModelIndex& index)

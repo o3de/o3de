@@ -115,7 +115,7 @@ public:
     // Key modifications
     virtual CTrackViewKeyHandle CreateKey(const float time);
     virtual void SlideKeys(const float time0, const float timeOffset);
-    void OffsetKeyPosition(const Vec3& offset);
+    void OffsetKeyPosition(const AZ::Vector3& offset);
     void UpdateKeyDataAfterParentChanged(const AZ::Transform& oldParentWorldTM, const AZ::Transform& newParentWorldTM);
 
     // Value getters

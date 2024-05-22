@@ -70,5 +70,10 @@ namespace ScriptCanvas
     {
         m_executor.TakeRuntimeDataOverrides(AZStd::move(overrideData));
     }
+
+    const RuntimeDataOverrides& RuntimeComponent::GetRuntimeDataOverrides() const
+    {
+        return m_executor.GetRuntimeOverrides();
+    }
 }
 

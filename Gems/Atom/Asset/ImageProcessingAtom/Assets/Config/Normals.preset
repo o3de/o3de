@@ -24,7 +24,7 @@
                 "DestColor": "Linear",
                 "PixelFormat": "ASTC_4x4",
                 "DiscardAlpha": true,
-                "MaxTextureSize": 1024,
+                "MaxTextureSize": 512,
                 "IsPowerOf2": true,
                 "MipRenormalize": true,
                 "MipMapSetting": {
@@ -38,7 +38,7 @@
                 "DestColor": "Linear",
                 "PixelFormat": "ASTC_4x4",
                 "DiscardAlpha": true,
-                "MaxTextureSize": 1024,
+                "MaxTextureSize": 512,
                 "IsPowerOf2": true,
                 "MipRenormalize": true,
                 "MipMapSetting": {

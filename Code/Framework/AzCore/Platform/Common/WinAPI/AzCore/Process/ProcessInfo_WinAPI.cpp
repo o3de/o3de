@@ -31,7 +31,7 @@ namespace AZ
                     // Load the PSAPI.dll if it is not loaded
                     if (!handlePsapi->IsLoaded())
                     {
-                        handlePsapi->Load(false);
+                        handlePsapi->Load();
                     }
 
                     // If the Psapi.dll is loaded lookup the GetProcessMemoryInfo function

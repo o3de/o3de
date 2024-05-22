@@ -1,0 +1,39 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+ShaderResourceGroup RayTracingGlobalSrg : SRG_RayTracingGlobal
+{
+    Texture2DMS<float>    m_depth;
+    Texture2DMS<float4>   m_normal;       // RGB10 = Normal (Encoded), A2 = Flags
+    Texture2DMS<float4>   m_specularF0;   // RGB8 = SpecularF0, A8 = Roughness
+    Texture2D<float2>     m_brdfMap;
+    RWTexture2D<float4>   m_hitCoords;
+    RWTexture2D<float4>   m_fallbackColor;
+    RWTexture2D<float4>   m_fallbackAlbedo;
+    RWTexture2D<float4>   m_fallbackPosition;
+    RWTexture2D<float4>   m_fallbackNormal;
+
+    float m_invOutputScale;
+    float m_maxRayLength;
+    float m_maxRoughness;
+    uint m_reflectionMethod;
+    bool  m_rayTraceFallbackSpecular;
+    [[pad_to(16)]]
+
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+};

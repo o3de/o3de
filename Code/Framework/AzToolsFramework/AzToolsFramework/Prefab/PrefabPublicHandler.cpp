@@ -466,7 +466,7 @@ namespace AzToolsFramework
         }
 
         InstantiatePrefabResult PrefabPublicHandler::InstantiatePrefab(
-            AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Vector3& position)
+            AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Transform& transform)
         {
             auto prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
             if (!prefabEditorEntityOwnershipInterface)
@@ -564,7 +564,7 @@ namespace AzToolsFramework
                 AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetParent, parentId);
 
                 // Set the position of the container entity
-                AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetWorldTranslation, position);
+                AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetWorldTM, transform);
 
                 PrefabDom containerEntityDomAfter;
                 m_instanceToTemplateInterface->GenerateEntityDomBySerializing(containerEntityDomAfter, *containerEntity);
@@ -598,11 +598,25 @@ namespace AzToolsFramework
                 m_prefabUndoCache.UpdateCache(containerEntityId);
                 m_prefabUndoCache.UpdateCache(parentId);
 
+                // Select newly instantiated prefab.
+                AzToolsFramework::EntityIdList selection = { containerEntityId };
+
+                SelectionCommand* selectionCommand = aznew SelectionCommand(selection, "");
+                selectionCommand->SetParent(undoBatch.GetUndoBatch());
+
+                ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selection);
+
                 AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
                     &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
             }
 
             return AZ::Success(containerEntityId);
+        }
+
+        InstantiatePrefabResult PrefabPublicHandler::InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Vector3& position)
+        {
+            const AZ::Transform transform = AZ::Transform::CreateTranslation(position);
+            return InstantiatePrefab(filePath, parentId, transform);
         }
 
         PrefabOperationResult PrefabPublicHandler::FindCommonRootOwningInstance(

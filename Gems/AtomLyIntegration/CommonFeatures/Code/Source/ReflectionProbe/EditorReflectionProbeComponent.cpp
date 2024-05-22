@@ -162,11 +162,13 @@ namespace AZ
 
             AZ::u64 entityId = (AZ::u64)GetEntityId();
             configuration.m_entityId = entityId;
+            AZ::EntityComponentIdPair entityComponentId = AZ::EntityComponentIdPair(GetEntityId(), GetId());
 
-            m_innerExtentsChangedHandler = AZ::Event<bool>::Handler([]([[maybe_unused]] bool value)
+            m_innerExtentsChangedHandler = AZ::Event<bool>::Handler([entityComponentId]([[maybe_unused]] bool value)
                 {
                     AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                        &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
+                        &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplayForComponent,
+                        entityComponentId,
                         AzToolsFramework::Refresh_Values);
                 });
             m_controller.RegisterInnerExtentsChangedHandler(m_innerExtentsChangedHandler);

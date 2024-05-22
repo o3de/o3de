@@ -257,7 +257,7 @@ namespace AssetProcessor
         }
         else if constexpr (!ASSETPROCESSOR_TRAIT_CASE_SENSITIVE_FILESYSTEM)
         {
-            // if the file does NOT exist and its a a case-insensitive file system
+            // if the file does NOT exist and its a case-insensitive file system
             // it means that it wont exist with any casing.  We can early out here.
             return false;
         }

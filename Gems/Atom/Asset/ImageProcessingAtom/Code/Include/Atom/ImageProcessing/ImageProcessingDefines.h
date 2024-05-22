@@ -59,7 +59,8 @@ namespace ImageProcessingAtom
         "*.tga",
         "*.gif",
         "*.dds",
-        "*.exr"
+        "*.exr",
+        "*.pgm"
     };
     static constexpr int s_TotalSupportedImageExtensions = AZ_ARRAY_SIZE(s_SupportedImageExtensions);
 

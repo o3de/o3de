@@ -13,9 +13,9 @@
         ],
         "spirv-cross": [],
         "metalair": ["-sdk", "macosx", "metal" // For xcrun
-                   , "-gline-tables-only", "-MO" //Debug symbols are always enabled at the moment. Need to turn them off for optimized shader assets.
                    , "-fpreserve-invariance"
                    , "-c"
+                   , "-Wno-null-character"
         ],
         "metallib": ["-sdk", "macosx", "metallib" // For xcrun
         ]

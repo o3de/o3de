@@ -125,6 +125,26 @@ real3 AnisotropicGGX( real3 dirToCamera, real3 dirToLight, real3 normal, real3 t
     return multiScatterCompensation * (D * G * F * NdotL);
 }
 
+real3 SpecularGGXMobile(real3 dirToCamera, real3 dirToLight, real3 normal, real3 specularF0, real roughnessA2, real roughnessA, real roughnessLinear)
+{
+    //! See "Optimizing PBR for Mobile" from Siggraph 2015 moving mobile graphics course
+    //! https://community.arm.com/events/1155
+    real3 halfVector = normalize(dirToLight + dirToCamera);
+    real NdotH = saturate(dot(normal, halfVector));
+    real LdotH = saturate(dot(dirToLight, halfVector));
+    real NdotL = saturate(dot(normal, dirToLight));
+
+    real LdotH2 = LdotH * LdotH;
+    real D = (NdotH * roughnessA2 - NdotH) * NdotH + 1.000001;
+    real denom = 4 * PI * D * D * max(0.1, LdotH2)  * (roughnessLinear + 0.5);
+    real specularTerm = (roughnessA2/denom);
+
+    // Prevent FP16 overflow on mobiles
+    specularTerm = specularTerm - FLOAT_16_MIN;
+    specularTerm = clamp(specularTerm, 0.0, 100.0);
+    return specularTerm * NdotL * specularF0;
+}
+
 real3 ClearCoatGGX(real NdotH, real HdotL, real NdotL, real3 normal, real roughnessA, real3 F)
 {
     // Specular Anti-Aliasing correction
@@ -138,7 +158,7 @@ real3 ClearCoatGGX(real NdotH, real HdotL, real NdotL, real3 normal, real roughn
     // Kelemen geometry term : Kelemen. C. and Szirmay-Kalos. L. 2001
     // "A Microfacet Based Coupled Specular-Matte BRDF Model with Importance Sampling"
     real G = 0.25 / max(HdotL * HdotL, 1e-4);
-    
+
     D = max(0.0, D);
     G = max(0.0, G);
 

@@ -49,6 +49,7 @@ real3 GetSpecularLighting_Skin(Surface surface, LightingData lightingData, const
     }
 
     specular *= lightIntensity;
+
     return specular;
 }
 

@@ -49,9 +49,11 @@ class SurfaceData_Skin
     real dualSpecF0;
 
     //! Subsurface scattering parameters
+#if OUTPUT_SUBSURFACE
     real subsurfaceScatteringFactor;
     real subsurfaceScatteringQuality;
     real3 scatterDistance;
+#endif
 
     //! Calculates roughnessA and roughnessA2 after roughness has been set
     void CalculateRoughnessA();
@@ -59,12 +61,12 @@ class SurfaceData_Skin
     //! Sets albedo and specularF0 (no metallic for skin)
     void SetAlbedoAndSpecularF0(real3 newBaseColor, real specularF0Factor);
 
-    real3 GetDiffuseNormal() { return normal; }         // Returns the normal used for diffuse  lighting calculations
-    real3 GetSpecularNormal() { return normal; }        // Returns the normal used for specular lighting calculations
-    real3 GetDefaultNormal() { return normal; }         // Returns the normal used for calculations that are common to both diffuse and specular calculations
-                                                        // If you're doing something unusual with one of the normals, you probably want to return the other one here
-                                                        // Search the code for 'GetDefaultNormal' to see how/where this is applied
-    real3 GetVertexNormal() { return vertexNormal; }    // Returns the interpolated vertex normal
+    real3 GetDiffuseNormal() { return normal; }       // Returns the normal used for diffuse  lighting calculations
+    real3 GetSpecularNormal() { return normal; }            // Returns the normal used for specular lighting calculations
+    real3 GetDefaultNormal() { return normal; }             // Returns the normal used for calculations that are common to both diffuse and specular calculations
+                                                            // If you're doing something unusual with one of the normals, you probably want to return the other one here
+                                                            // Search the code for 'GetDefaultNormal' to see how/where this is applied
+    real3 GetVertexNormal() { return vertexNormal; }        // Returns the interpolated vertex normal
     real3 GetSpecularF0() { return specularF0.xxx; }
 };
 
@@ -77,6 +79,6 @@ void SurfaceData_Skin::SetAlbedoAndSpecularF0(real3 newBaseColor, real specularF
 {
     baseColor = newBaseColor;
     albedo = newBaseColor;
-    specularF0 = MaxDielectricSpecularF0 * specularF0Factor;
+    specularF0 = MaxDielectricSpecularF0.r * specularF0Factor;
     metallic = 0;
 }

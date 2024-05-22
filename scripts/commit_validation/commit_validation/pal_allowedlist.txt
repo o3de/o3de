@@ -6,6 +6,8 @@
 */Code/Framework/AzCore/AzCore/Math/Matrix4x4.h
 */Code/Framework/AzCore/AzCore/Math/Obb.h
 */Code/Framework/AzCore/AzCore/Math/PackedVector3.h
+*/Code/Framework/AzCore/AzCore/Math/PackedVector2.h
+*/Code/Framework/AzCore/AzCore/Math/PackedVector4.h
 */Code/Framework/AzCore/AzCore/Math/Plane.h
 */Code/Framework/AzCore/AzCore/Math/Quaternion.h
 */Code/Framework/AzCore/AzCore/Math/Transform.h

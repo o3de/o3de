@@ -120,6 +120,7 @@ namespace AZ
             bool m_isAlwaysDynamic = false;
             bool m_excludeFromReflectionCubeMaps = false;
             bool m_isSkinnedMesh = false;
+            bool m_supportRayIntersection = false;
 
             CustomMaterialMap m_customMaterials;
 

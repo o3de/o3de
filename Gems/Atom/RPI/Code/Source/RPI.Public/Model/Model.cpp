@@ -163,7 +163,8 @@ namespace AZ
             const int result = Intersect::IntersectRayAABB2(rayStart, rayDir.GetReciprocal(), GetModelAsset()->GetAabb(), start, end);
             if (Intersect::ISECT_RAY_AABB_NONE != result)
             {
-                if (ModelAsset* modelAssetPtr = m_modelAsset.Get())
+                ModelAsset* modelAssetPtr = m_modelAsset.Get();
+                if (modelAssetPtr && modelAssetPtr->SupportLocalRayIntersection())
                 {
 #if defined(AZ_RPI_PROFILE_RAYCASTING_AGAINST_MODELS)
                     AZ::Debug::Timer timer;

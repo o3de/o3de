@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RHI.Reflect/FrameCountMaxRingBuffer.h>
 #include <Atom_RHI_Vulkan_Platform.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -31,6 +32,7 @@ namespace AZ
             {
                 RHI::Ptr<RHI::Buffer> m_blasBuffer;
                 RHI::Ptr<RHI::Buffer> m_scratchBuffer;
+                RHI::Ptr<RHI::Buffer> m_aabbBuffer;
                 VkAccelerationStructureKHR m_accelerationStructure = VK_NULL_HANDLE;
 
                 AZStd::vector<VkAccelerationStructureGeometryKHR> m_geometryDescs;
@@ -38,10 +40,10 @@ namespace AZ
                 VkAccelerationStructureBuildGeometryInfoKHR m_buildInfo = {};
             };
 
-            const BlasBuffers& GetBuffers() const { return m_buffers[m_currentBufferIndex]; }
+            const BlasBuffers& GetBuffers() const { return m_buffers.GetCurrentElement(); }
 
             // RHI::RayTracingBlas overrides...
-            virtual bool IsValid() const override { return m_buffers[m_currentBufferIndex].m_accelerationStructure != VK_NULL_HANDLE; }
+            virtual bool IsValid() const override { return GetBuffers().m_accelerationStructure != VK_NULL_HANDLE; }
 
         private:
             RayTracingBlas() = default;
@@ -52,9 +54,7 @@ namespace AZ
             static VkBuildAccelerationStructureFlagsKHR GetAccelerationStructureBuildFlags(const RHI::RayTracingAccelerationStructureBuildFlags &buildFlags);
 
             // buffer list to keep buffers alive for several frames
-            static const uint32_t BufferCount = 3;
-            BlasBuffers m_buffers[BufferCount];
-            uint32_t m_currentBufferIndex = 0;
+            RHI::FrameCountMaxRingBuffer<BlasBuffers> m_buffers;
         };
     }
 }

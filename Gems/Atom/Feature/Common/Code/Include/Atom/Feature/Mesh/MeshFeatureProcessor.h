@@ -60,6 +60,9 @@ namespace AZ
             using PostCullingInstanceDataList = AZStd::vector<PostCullingInstanceData>;
             const bool IsSkinnedMesh() { return m_descriptor.m_isSkinnedMesh; }
 
+            //! called when a DrawPacket used by this ModelDataInstance was updated. 
+            void HandleDrawPacketUpdate();
+
         private:
             class MeshLoader
                 : private SystemTickBus::Handler
@@ -121,7 +124,6 @@ namespace AZ
             bool MaterialRequiresForwardPassIblSpecular(Data::Instance<RPI::Material> material) const;
             void SetVisible(bool isVisible);
             CustomMaterialInfo GetCustomMaterialWithFallback(const CustomMaterialId& id) const;
-            void HandleDrawPacketUpdate();
 
             // When instancing is disabled, draw packets are owned by the ModelDataInstance
             RPI::MeshDrawPacketLods m_drawPacketListsByLod;
@@ -131,11 +133,6 @@ namespace AZ
             // which are turned into instance draw calls after culling
             AZStd::vector<PostCullingInstanceDataList> m_postCullingInstanceDataByLod;
             
-            // AZ::Event is used to communicate back to all the objects that refer to an instance group whenever a draw packet is updated
-            // This is used to trigger an update to the cullable to use the new draw packet
-            using UpdateDrawPacketHandlerList = AZStd::vector<AZ::Event<>::Handler>;
-            AZStd::vector<UpdateDrawPacketHandlerList> m_updateDrawPacketEventHandlersByLod;
-
             size_t m_lodBias = 0;
 
             RPI::Cullable m_cullable;
@@ -179,6 +176,7 @@ namespace AZ
                 bool m_hasForwardPassIblSpecularMaterial : 1;
                 bool m_needsSetRayTracingData : 1;
                 bool m_hasRayTracingReflectionProbe : 1;
+                bool m_keepBufferAssetsInMemory : 1;            // If true, we need to keep BufferAssets referenced by ModelAsset stay in memory. This is needed when editor use RayIntersection
             } m_flags;
         };
 

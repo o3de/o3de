@@ -80,6 +80,63 @@ macro(o3de_gem_setup default_gem_name)
     o3de_pal_dir(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 endmacro()
 
+# get_all_gem_dependencies
+#
+# Determine all of the gem dependencies (recursively) for a given gem.
+#
+# \arg:gem_name(STRING) - Gem name whose "dependencies" will be queried from its gem.json
+# \arg:output_resolved_gem_names(LIST) - The updated list of resolved gem name dependencies
+function(get_all_gem_dependencies gem_name output_resolved_gem_names)
+
+    get_property(gem_dependencies GLOBAL PROPERTY GEM_DEPENDENCIES_"${gem_name}")
+    if (gem_dependencies)
+        # The gem dependency for ${gem_name} has been calculated, return the cached property
+        set(${output_resolved_gem_names} ${gem_dependencies} PARENT_SCOPE)
+        return()
+    else()
+        # The gem dependency for ${gem_name} has not been calculated. 
+        # First read in the dependencies from the gem.json if possible
+
+        # Strip out any possible version specifier in order to lookup the gem path based on the cached
+        # global property "@GEMROOT:${gem_name}"
+        unset(gem_name_only)
+        o3de_get_name_and_version_specifier(${gem_name} gem_name_only ignore_spec_op ignore_spec_version)
+        get_property(gem_path GLOBAL PROPERTY "@GEMROOT:${gem_name_only}@")
+        if(NOT gem_path)
+            message(FATAL_ERROR "Unable to locate gem path for Gem \"${gem_name_only}\"."
+                    " Is the gem registered in either the ~/.o3de/o3de_manifest.json, ${LY_ROOT_FOLDER}/engine.json,"
+                    " any project.json or any gem.json which itself is registered?")
+        endif()
+
+        o3de_read_json_array(gem_dependencies "${gem_path}/gem.json" "dependencies")
+
+        # Keep track of the visited gems to prevent any dependency cycles that can
+        # cause a possible infinite recursion when evaluating the gem dependencies' dependency
+        list(APPEND get_all_gem_dependencies_visited ${gem_name})
+
+        # Iterate and recursively collect dependent gem names
+        unset(all_dependent_gem_names)
+        foreach(dependent_gem_name IN LISTS gem_dependencies)
+            unset(dependent_gem_names)
+
+            # Recursively check a depend gem only if it has not been visited yet
+            unset(visited_index)
+            list(FIND get_all_gem_dependencies_visited ${dependent_gem_name} visited_index)
+            if (visited_index LESS 0)
+                get_all_gem_dependencies(${dependent_gem_name} dependent_gem_names)
+                list(APPEND all_dependent_gem_names ${dependent_gem_names})
+            endif()
+        endforeach()
+        list(APPEND gem_dependencies ${all_dependent_gem_names})
+        list(REMOVE_DUPLICATES gem_dependencies)
+
+        # Update the cached value and set the results
+        set_property(GLOBAL PROPERTY GEM_DEPENDENCIES_"${gem_name}" ${gem_dependencies})
+        set(${output_resolved_gem_names} ${gem_dependencies} PARENT_SCOPE)
+    endif()
+
+endfunction()
+
 # o3de_find_ancestor_gem_root:Searches for the nearest gem root from input source_dir
 #
 # \arg:source_dir(FILEPATH) - Filepath to walk upwards from to locate a gem.json
@@ -158,9 +215,9 @@ function(o3de_add_variant_dependencies_for_gem_dependencies)
         " any project.json or any gem.json which itself is registered?")
     endif()
 
-     # Open gem.json and read "dependencies" array
-     unset(gem_dependencies)
-     o3de_read_json_array(gem_dependencies "${gem_path}/gem.json" "dependencies")
+    # Open gem.json and read "dependencies" array
+    unset(gem_dependencies)
+    get_all_gem_dependencies(${gem_name} gem_dependencies)
 
     foreach(variant IN LISTS gem_variants)
         set(gem_variant_target "${gem_name}.${variant}")
@@ -380,10 +437,19 @@ function(ly_enable_gems)
     # Remove any version specifiers before looking for variants
     # e.g. "Atom==1.2.3" becomes "Atom"
     unset(GEM_NAMES)
+    unset(additional_dependent_gems)
     foreach(gem_name_with_version_specifier IN LISTS ly_enable_gems_GEMS)
         o3de_get_name_and_version_specifier(${gem_name_with_version_specifier} gem_name spec_op spec_version)
         list(APPEND GEM_NAMES "${gem_name}")
+        # In addition to the gems enabled, collect each of the enabled gem's dependencies as well
+        unset(gem_dependencies_for_gem)
+        get_all_gem_dependencies(${gem_name} gem_dependencies_for_gem)
+        list(APPEND additional_dependent_gems ${gem_dependencies_for_gem})
     endforeach()
+
+    # Update the gems that were enabled to include all of the gem's dependent gems as well
+    list(APPEND GEM_NAMES "${additional_dependent_gems}")
+    list(REMOVE_DUPLICATES GEM_NAMES)
     set(ly_enable_gems_GEMS ${GEM_NAMES})
 
     # all the actual work has to be done later.

@@ -134,7 +134,7 @@ namespace PhysX
             return buttonId;
         }
 
-        void RefreshUI()
+        void RefreshUI(const AZ::EntityComponentIdPair& entityComponentIdPair)
         {
             // The reason this is in a free function is because JointsComponentMode
             // privately inherits from ToolsApplicationNotificationBus. Trying to invoke
@@ -143,7 +143,8 @@ namespace PhysX
             // Using the global namespace operator :: should have fixed that, except there
             // is a bug in the Microsoft compiler meaning it doesn't work. So this is a work around.
             AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
-                &AzToolsFramework::ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
+                &AzToolsFramework::ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplayForComponent,
+                entityComponentIdPair, AzToolsFramework::Refresh_Values);
         }
     } // namespace Internal
 
@@ -997,7 +998,7 @@ namespace PhysX
         m_subModes[m_subMode]->ResetValues(entityComponentIdPair);
         m_subModes[m_subMode]->Refresh(entityComponentIdPair);
 
-        Internal::RefreshUI();
+        Internal::RefreshUI(entityComponentIdPair);
     }
 
     void JointsComponentMode::TeardownSubModes()

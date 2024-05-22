@@ -83,6 +83,8 @@ set(FILES
     Device/DeviceAttributeInterface.h
     Device/DeviceAttributeRAM.cpp
     Device/DeviceAttributeRAM.h
+    Device/DeviceAttributeGPUModel.cpp
+    Device/DeviceAttributeGPUModel.h
     Device/DeviceAttributesSystemComponent.cpp
     Device/DeviceAttributesSystemComponent.h
     Viewport/ViewportBus.h

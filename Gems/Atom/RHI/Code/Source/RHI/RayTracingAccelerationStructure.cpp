@@ -24,6 +24,12 @@ namespace AZ::RHI
         return this;
     }
 
+    RayTracingBlasDescriptor* RayTracingBlasDescriptor::AABB(const Aabb& aabb)
+    {
+        m_aabb = aabb;
+        return this;
+    }
+
     RayTracingBlasDescriptor* RayTracingBlasDescriptor::VertexBuffer(const RHI::StreamBufferView& vertexBuffer)
     {
         AZ_Assert(m_buildContext, "VertexBuffer property can only be added to a Geometry entry");

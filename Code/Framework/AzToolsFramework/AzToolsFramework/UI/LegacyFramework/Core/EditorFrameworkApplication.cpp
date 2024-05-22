@@ -34,6 +34,8 @@
 #include <AzFramework/Asset/AssetCatalogComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
+#include <AzCore/Utils/Utils.h>
+
 #ifdef AZ_PLATFORM_WINDOWS
 #include "shlobj.h"
 #endif
@@ -146,7 +148,7 @@ namespace LegacyFramework
 
     AZStd::string Application::GetApplicationGlobalStoragePath()
     {
-        return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation).toUtf8().data();
+        return AZ::Utils::GetProjectUserPath().c_str();
     }
 
     void Application::SetSettingsRegistrySpecializations(AZ::SettingsRegistryInterface::Specializations& specializations)

@@ -4,7 +4,8 @@
       "SwitchableRenderPipelines": [
         "Passes/LowEndRenderPipeline.azasset",
         "Passes/MainRenderPipeline.azasset",
-        "Passes/MultiViewRenderPipeline.azasset"
+        "Passes/MultiViewRenderPipeline.azasset",
+        "Passes/Mobile/MobileRenderPipeline.azasset"
       ]
     }
   }

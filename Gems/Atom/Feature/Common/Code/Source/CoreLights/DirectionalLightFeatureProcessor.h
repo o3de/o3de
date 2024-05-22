@@ -107,7 +107,7 @@ namespace AZ
             float m_shadowBias = 0.0015f;
             // Reduces acne by biasing the shadowmap lookup along the geometric normal.
             float m_normalShadowBias = 2.5f;
-            uint32_t m_filteringSampleCount = 0;
+            uint32_t m_filteringSampleCountMode = 0;
             uint32_t m_debugFlags = 0;
             uint32_t m_shadowFilterMethod = 0; 
             float m_far_minus_near = 0;
@@ -410,6 +410,7 @@ namespace AZ
 
             Name m_lightTypeName = Name("directional");
             Name m_directionalShadowFilteringMethodName = Name("o_directional_shadow_filtering_method");
+            Name m_directionalShadowFilteringSamplecountName = Name("o_directional_shadow_filtering_sample_count");
             Name m_directionalShadowReceiverPlaneBiasEnableName = Name("o_directional_shadow_receiver_plane_bias_enable");
             Name m_BlendBetweenCascadesEnableName = Name("o_blend_between_cascades_enable");
             static constexpr const char* FeatureProcessorName = "DirectionalLightFeatureProcessor";

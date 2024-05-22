@@ -19,7 +19,7 @@ namespace EMotionFX
 
     // constructor
     VertexAttributeLayer::VertexAttributeLayer(uint32 numAttributes, bool keepOriginals)
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_numAttributes  = numAttributes;
         m_keepOriginals  = keepOriginals;

@@ -50,7 +50,7 @@ namespace GradientSignal
     void EditorGradientTransformComponent::OnCompositionChanged()
     {
         UpdateFromShape();
-        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+        InvalidatePropertyDisplay(AzToolsFramework::Refresh_AttributesAndValues);
     }
 
     void EditorGradientTransformComponent::UpdateFromShape()

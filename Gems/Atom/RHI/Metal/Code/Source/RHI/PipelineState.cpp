@@ -10,6 +10,7 @@
 #include <Atom/RHI.Reflect/Metal/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/Metal/ShaderStageFunction.h>
 #include <Atom/RHI.Reflect/ShaderStageFunction.h>
+#include <Atom/RHI/Factory.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
 #include <RHI/PipelineState.h>
@@ -20,6 +21,19 @@ namespace AZ
 {
     namespace Metal
     {
+        void RasterizerState::UpdateHash()
+        {
+            HashValue64 seed = HashValue64{ 0 };
+            seed = TypeHash64(m_cullMode, seed);
+            seed = TypeHash64(m_depthBias, seed);
+            seed = TypeHash64(m_depthSlopeScale, seed);
+            seed = TypeHash64(m_depthBiasClamp, seed);
+            seed = TypeHash64(m_frontFaceWinding, seed);
+            seed = TypeHash64(m_triangleFillMode, seed);
+            seed = TypeHash64(m_depthClipMode, seed);
+            m_hash = seed;
+        }
+    
         RHI::Ptr<PipelineState> PipelineState::Create()
         {
             return aznew PipelineState;
@@ -78,17 +92,25 @@ namespace AZ
             {
                 dispatch_data_t dispatchByteCodeData = dispatch_data_create(shaderByteCode, byteCodeLength, NULL, DISPATCH_DATA_DESTRUCTOR_DEFAULT);
                 lib = [mtlDevice newLibraryWithData:dispatchByteCodeData error:&error];
+                dispatch_release(dispatchByteCodeData);
             }
             else
             {
-                //In case byte code was not generated try to create the lib with source code
-                MTLCompileOptions* compileOptions = [MTLCompileOptions alloc];
-                compileOptions.fastMathEnabled = YES;
-                compileOptions.languageVersion = MTLLanguageVersion2_2;
-                lib = [mtlDevice newLibraryWithSource:source
-                                               options:compileOptions
-                                                 error:&error];
-                [compileOptions release];
+                if(!sourceStr.empty())
+                {
+                    //In case byte code was not generated try to create the lib with source code
+                    MTLCompileOptions* compileOptions = [MTLCompileOptions alloc];
+                    compileOptions.fastMathEnabled = YES;
+                    compileOptions.languageVersion = MTLLanguageVersion2_2;
+                    lib = [mtlDevice newLibraryWithSource:source
+                                                  options:compileOptions
+                                                    error:&error];
+                    [compileOptions release];
+                }
+                else
+                {
+                    AZ_Assert(false, "Shader source is not added by default. It can be added by enabling /O3DE/Atom/RHI/GraphicsDevMode via settings registry and re-building the shader.");
+                }
             }
             
             if (error)
@@ -104,6 +126,8 @@ namespace AZ
             {
                 NSString* entryPointStr = [[NSString alloc] initWithCString : entryPoint.data() encoding: NSASCIIStringEncoding];
                 pFunction = [lib newFunctionWithName:entryPointStr];
+                [entryPointStr release];
+                entryPointStr = nil;
                 [lib release];
                 lib = nil;
             }
@@ -187,7 +211,22 @@ namespace AZ
                 m_graphicsPipelineState = [device.GetMtlDevice() newRenderPipelineStateWithDescriptor:m_renderPipelineDesc options : MTLPipelineOptionBufferTypeInfo reflection : &ref error : &error];
             }
             
-            AZ_Assert(m_graphicsPipelineState, "Could not create Pipeline object!.");
+            if(m_graphicsPipelineState==nil)
+            {
+                if (RHI::Validation::IsEnabled())
+                {
+                    NSLog(@" error => %@ ", [error userInfo] );
+                }
+                AZ_Assert(false, "Could not create Pipeline object!.");
+            }
+            //We keep the descriptors alive in case we want to build the PSO cache. Delete them otherwise.
+            if (!r_enablePsoCaching)
+            {
+                [m_renderPipelineDesc release];
+                m_renderPipelineDesc = nil;
+            }
+            
+             
             m_pipelineStateMultiSampleState = descriptor.m_renderStates.m_multisampleState;
             
             //Cache the rasterizer state
@@ -233,6 +272,13 @@ namespace AZ
             }
             
             AZ_Assert(m_computePipelineState, "Could not create Pipeline object!.");
+            
+            //We keep the descriptors alive in case we want to build the PSO cache. Delete them otherwise.
+            if (!r_enablePsoCaching)
+            {
+                [m_computePipelineDesc release];
+                m_computePipelineDesc = nil;
+            }
             
             if (m_computePipelineState)
             {

@@ -107,9 +107,10 @@ namespace AZ
             
             const Scope* scope = m_scopes[contextIndex];
             CommandList* commandList = static_cast<CommandList*>(context.GetCommandList());
-            scope->End(*commandList, context.GetCommandListIndex(), context.GetCommandListCount());
+            //In a merged group every scope needs to signal the fences (related to aliased resources) after all
+            //the work related to it is encoded.
+            bool signalFencesForAliasedResources = context.GetCommandListCount() == 1;
+            scope->End(*commandList, signalFencesForAliasedResources);
         }
-
-
     }
 }

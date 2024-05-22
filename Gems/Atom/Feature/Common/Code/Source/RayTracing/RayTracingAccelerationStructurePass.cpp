@@ -132,7 +132,6 @@ namespace AZ
                 {
                     RHI::RayTracingBufferPools& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
                     RayTracingFeatureProcessor::SubMeshVector& subMeshes = rayTracingFeatureProcessor->GetSubMeshes();
-                    uint32_t rayTracingSubMeshCount = rayTracingFeatureProcessor->GetSubMeshCount();
 
                     // create the TLAS descriptor
                     RHI::RayTracingTlasDescriptor tlasDescriptor;
@@ -148,9 +147,31 @@ namespace AZ
                             ->Blas(subMesh.m_blas)
                             ->Transform(subMesh.m_mesh->m_transform)
                             ->NonUniformScale(subMesh.m_mesh->m_nonUniformScale)
-                            ->Transparent(subMesh.m_irradianceColor.GetA() < 1.0f)
+                            ->Transparent(subMesh.m_material.m_irradianceColor.GetA() < 1.0f)
                             ;
 
+                        instanceIndex++;
+                    }
+
+                    unsigned proceduralHitGroupIndex = 1; // Hit group 0 is used for normal meshes
+                    const auto& proceduralGeometryTypes = rayTracingFeatureProcessor->GetProceduralGeometryTypes();
+                    AZStd::unordered_map<Name, unsigned> geometryTypeMap;
+                    geometryTypeMap.reserve(proceduralGeometryTypes.size());
+                    for (auto it = proceduralGeometryTypes.cbegin(); it != proceduralGeometryTypes.cend(); ++it)
+                    {
+                        geometryTypeMap[it->m_name] = proceduralHitGroupIndex++;
+                    }
+
+                    for (const auto& proceduralGeometry : rayTracingFeatureProcessor->GetProceduralGeometries())
+                    {
+                        tlasDescriptorBuild->Instance()
+                            ->InstanceID(instanceIndex)
+                            ->InstanceMask(proceduralGeometry.m_instanceMask)
+                            ->HitGroupIndex(geometryTypeMap[proceduralGeometry.m_typeHandle->m_name])
+                            ->Blas(proceduralGeometry.m_blas)
+                            ->Transform(proceduralGeometry.m_transform)
+                            ->NonUniformScale(proceduralGeometry.m_nonUniformScale)
+                            ;
                         instanceIndex++;
                     }
 
@@ -160,7 +181,7 @@ namespace AZ
 
                     // import and attach the TLAS buffer
                     const RHI::Ptr<RHI::Buffer>& rayTracingTlasBuffer = rayTracingTlas->GetTlasBuffer();
-                    if (rayTracingTlasBuffer && rayTracingSubMeshCount)
+                    if (rayTracingTlasBuffer && rayTracingFeatureProcessor->HasGeometry())
                     {
                         AZ::RHI::AttachmentId tlasAttachmentId = rayTracingFeatureProcessor->GetTlasAttachmentId();
                         if (frameGraph.GetAttachmentDatabase().IsAttachmentValid(tlasAttachmentId) == false)
@@ -225,7 +246,7 @@ namespace AZ
             // update the stored revision, even if we don't have any meshes to process
             m_rayTracingRevision = rayTracingFeatureProcessor->GetRevision();
 
-            if (!rayTracingFeatureProcessor->GetSubMeshCount())
+            if (!rayTracingFeatureProcessor->HasGeometry())
             {
                 // no ray tracing meshes in the scene
                 return;

@@ -90,7 +90,7 @@ namespace AZ
             Unload();
         }
 
-        LoadStatus LoadModule([[maybe_unused]] bool globalSymbols) override
+        LoadStatus LoadModule(LoadFlags flags) override
         {
             if (IsLoaded())
             {
@@ -104,11 +104,12 @@ namespace AZ
             errno_t wcharResult = mbstowcs_s(&numCharsConverted, fileNameW, m_fileName.c_str(), AZ_ARRAY_SIZE(fileNameW) - 1);
             if (wcharResult == 0)
             {
-                // If module already open, return false, it was not loaded.
-                alreadyLoaded = NULL != GetModuleHandleW(fileNameW);
-
-                // Note: Windows LoadLibrary has no concept of specifying that the module symbols are global or local
-                m_handle = LoadLibraryW(fileNameW);
+                alreadyLoaded = GetModuleHandleExW(0, fileNameW, &m_handle);
+                if (m_handle == nullptr && !CheckBitsAny(flags, LoadFlags::NoLoad))
+                {
+                    // Note: Windows LoadLibrary has no concept of specifying that the module symbols are global or local
+                    m_handle = LoadLibraryW(fileNameW);
+                }
             }
             else
             {
@@ -155,7 +156,7 @@ namespace AZ
             return reinterpret_cast<void*>(::GetProcAddress(m_handle, functionName));
         }
 
-        HMODULE m_handle;
+        HMODULE m_handle = nullptr;
     };
 
     // Implement the module creation function

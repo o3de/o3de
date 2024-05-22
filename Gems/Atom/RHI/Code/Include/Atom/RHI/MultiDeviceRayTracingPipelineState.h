@@ -91,6 +91,7 @@ namespace AZ::RHI
         MultiDeviceRayTracingPipelineStateDescriptor* MissShaderName(const AZ::Name& name);
         MultiDeviceRayTracingPipelineStateDescriptor* ClosestHitShaderName(const AZ::Name& closestHitShaderName);
         MultiDeviceRayTracingPipelineStateDescriptor* AnyHitShaderName(const AZ::Name& anyHitShaderName);
+        MultiDeviceRayTracingPipelineStateDescriptor* IntersectionShaderName(const AZ::Name& intersectionShaderName);
 
         MultiDeviceRayTracingPipelineStateDescriptor* HitGroup(const AZ::Name& name);
 

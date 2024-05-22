@@ -73,9 +73,6 @@ namespace AZ
         private:
 
             static constexpr const char* FeatureProcessorName = "DiskLightFeatureProcessor";
-            static constexpr float MaxConeRadians = AZ::DegToRad(90.0f);
-            static constexpr float MaxProjectedShadowRadians = ProjectedShadowFeatureProcessorInterface::MaxProjectedShadowRadians * 0.5f;
-            using ShadowId = ProjectedShadowFeatureProcessor::ShadowId;
 
             DiskLightFeatureProcessor(const DiskLightFeatureProcessor&) = delete;
             

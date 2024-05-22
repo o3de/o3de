@@ -77,6 +77,7 @@ namespace AZ::RHI
         XRRenderingInterface* GetXRSystem() const override;
         void SetDrawListTagEnabledByDefault(DrawListTag drawListTag, bool enabled) override;
         const AZStd::vector<DrawListTag>& GetDrawListTagsDisabledByDefault() const override;
+        bool GpuMarkersEnabled() const override;
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
@@ -109,5 +110,6 @@ namespace AZ::RHI
 
         //Used for better verbosity related to gpu markers
         uint16_t m_numActiveRenderPipelines = 0;
+        bool m_gpuMarkersEnabled = true;
     };
 }

@@ -16,7 +16,7 @@
 namespace EMotionFX
 {
     class EMFX_API BlendSpaceManager
-        : public BaseObject
+        : public MCore::RefCounted
     {
     public:
         AZ_RTTI(BlendSpaceManager, "{FCCE8C41-01A5-43F2-A9AD-04E8ECE3304F}")

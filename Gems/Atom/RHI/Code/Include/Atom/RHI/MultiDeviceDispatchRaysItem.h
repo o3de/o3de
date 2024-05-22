@@ -9,6 +9,7 @@
 
 #include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI/DispatchRaysItem.h>
+#include <Atom/RHI/MultiDeviceDispatchRaysIndirectBuffer.h>
 #include <Atom/RHI/MultiDeviceRayTracingAccelerationStructure.h>
 #include <Atom/RHI/MultiDeviceRayTracingPipelineState.h>
 #include <Atom/RHI/MultiDeviceRayTracingShaderTable.h>
@@ -23,6 +24,89 @@ namespace AZ::RHI
     class MultiDeviceShaderResourceGroup;
     class ImageView;
     class BufferView;
+
+    struct MultiDeviceDispatchRaysIndirect : public MultiDeviceIndirectArguments
+    {
+        MultiDeviceDispatchRaysIndirect() = default;
+
+        MultiDeviceDispatchRaysIndirect(
+            uint32_t maxSequenceCount,
+            const MultiDeviceIndirectBufferView& indirectBuffer,
+            uint64_t indirectBufferByteOffset,
+            MultiDeviceDispatchRaysIndirectBuffer* dispatchRaysIndirectBuffer)
+            : MultiDeviceDispatchRaysIndirect(
+                  maxSequenceCount, indirectBuffer, indirectBufferByteOffset, dispatchRaysIndirectBuffer, nullptr, 0)
+        {
+        }
+
+        MultiDeviceDispatchRaysIndirect(
+            uint32_t maxSequenceCount,
+            const MultiDeviceIndirectBufferView& indirectBuffer,
+            uint64_t indirectBufferByteOffset,
+            MultiDeviceDispatchRaysIndirectBuffer* dispatchRaysIndirectBuffer,
+            const MultiDeviceBuffer* countBuffer,
+            uint64_t countBufferByteOffset)
+            : MultiDeviceIndirectArguments(maxSequenceCount, indirectBuffer, indirectBufferByteOffset, countBuffer, countBufferByteOffset)
+            , m_dispatchRaysIndirectBuffer(dispatchRaysIndirectBuffer)
+        {
+        }
+
+        MultiDeviceDispatchRaysIndirectBuffer* m_dispatchRaysIndirectBuffer = nullptr;
+    };
+
+    //! Encapsulates the arguments that are specific to a type of dispatch.
+    //! It uses a union to be able to store all possible arguments.
+    struct MultiDeviceDispatchRaysArguments
+    {
+        AZ_TYPE_INFO(MultiDeviceDispatchRaysArguments, "1080A8F2-0BDE-497E-9CBD-C55575623AFD");
+
+        MultiDeviceDispatchRaysArguments()
+            : MultiDeviceDispatchRaysArguments(DispatchRaysDirect{})
+        {
+        }
+
+        MultiDeviceDispatchRaysArguments(const DispatchRaysDirect& direct)
+            : m_type{ DispatchRaysType::Direct }
+            , m_direct{ direct }
+        {
+        }
+
+        MultiDeviceDispatchRaysArguments(const MultiDeviceDispatchRaysIndirect& indirect)
+            : m_type{ DispatchRaysType::Indirect }
+            , m_mdIndirect{ indirect }
+        {
+        }
+
+        //! Returns the device-specific DispatchArguments for the given index
+        DispatchRaysArguments GetDeviceDispatchRaysArguments(int deviceIndex) const
+        {
+            switch (m_type)
+            {
+            case DispatchRaysType::Direct:
+                return DispatchRaysArguments(m_direct);
+            case DispatchRaysType::Indirect:
+                return DispatchRaysArguments(DispatchRaysIndirect{
+                    m_mdIndirect.m_maxSequenceCount,
+                    m_mdIndirect.m_indirectBufferView->GetDeviceIndirectBufferView(deviceIndex),
+                    m_mdIndirect.m_indirectBufferByteOffset,
+                    m_mdIndirect.m_dispatchRaysIndirectBuffer
+                        ? m_mdIndirect.m_dispatchRaysIndirectBuffer->GetDeviceDispatchRaysIndirectBuffer(deviceIndex).get()
+                        : nullptr,
+                    m_mdIndirect.m_countBuffer ? m_mdIndirect.m_countBuffer->GetDeviceBuffer(deviceIndex).get() : nullptr,
+                    m_mdIndirect.m_countBufferByteOffset });
+            default:
+                return DispatchRaysArguments();
+            }
+        }
+
+        DispatchRaysType m_type;
+        union {
+            //! Arguments for a direct dispatch.
+            DispatchRaysDirect m_direct;
+            //! Arguments for an indirect dispatch.
+            MultiDeviceDispatchRaysIndirect m_mdIndirect;
+        };
+    };
 
     //! Encapsulates all the necessary information for doing a ray tracing dispatch call.
     class MultiDeviceDispatchRaysItem
@@ -54,14 +138,20 @@ namespace AZ::RHI
             return m_deviceDispatchRaysItems.at(deviceIndex);
         }
 
-        //! The number of rays to cast
-        void SetDimensionsDirect(uint32_t width, uint32_t height, uint32_t depth)
+        //! Retrieve arguments specifing a dispatch type.
+        const MultiDeviceDispatchRaysArguments& GetArguments() const
         {
+            return m_arguments;
+        }
+
+        //! Arguments specific to a dispatch type.
+        void SetArguments(const MultiDeviceDispatchRaysArguments& arguments)
+        {
+            m_arguments = arguments;
+
             for (auto& [deviceIndex, dispatchRaysItem] : m_deviceDispatchRaysItems)
             {
-                dispatchRaysItem.m_arguments.m_direct.m_width = width;
-                dispatchRaysItem.m_arguments.m_direct.m_height = height;
-                dispatchRaysItem.m_arguments.m_direct.m_depth = depth;
+                dispatchRaysItem.m_arguments = arguments.GetDeviceDispatchRaysArguments(deviceIndex);
             }
         }
 
@@ -120,5 +210,7 @@ namespace AZ::RHI
         AZStd::unordered_map<int, DispatchRaysItem> m_deviceDispatchRaysItems;
         //! A map of all device-specific ShaderResourceGroups, indexed by the device index
         AZStd::unordered_map<int, AZStd::vector<ShaderResourceGroup*>> m_deviceShaderResourceGroups;
+        //! Caching the arguments for the corresponding getter.
+        MultiDeviceDispatchRaysArguments m_arguments;
     };
 } // namespace AZ::RHI

@@ -89,14 +89,14 @@ namespace
 
     // generic version of BuildFailure, generally assumes that the failure type is a string.
     template<typename T> 
-    void BuildFailure(T& failure,  AZStd::vector<AZStd::string>& lines)
+    void BuildFailure(const T& failure,  AZStd::vector<AZStd::string>& lines)
     {
        ParseToLines(lines, failure);
     }
 
     // specialized version of BuildFailure, for when the failure type is a MoveFailure, the string will be in m_reason
     template<> 
-    void BuildFailure(MoveFailure& failure,  AZStd::vector<AZStd::string>& lines)
+    void BuildFailure(const MoveFailure& failure,  AZStd::vector<AZStd::string>& lines)
     {
         ParseToLines(lines, failure.m_reason);
     }

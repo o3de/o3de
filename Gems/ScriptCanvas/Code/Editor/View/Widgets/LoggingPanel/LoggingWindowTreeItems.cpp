@@ -23,6 +23,10 @@
 #include <Editor/View/Widgets/NodePalette/NodePaletteModel.h>
 
 #include <ScriptCanvas/Bus/RequestBus.h>
+#include <ScriptCanvas/Core/ExecutionNotificationsBus.h>
+#include <ScriptCanvas/Execution/ExecutionState.h>
+#include <ScriptCanvas/Execution/ExecutionStateDeclarations.h>
+#include <ScriptCanvas/Execution/RuntimeComponent.h>
 #include <ScriptCanvas/GraphCanvas/MappingBus.h>
 #include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
 
@@ -122,11 +126,11 @@ namespace ScriptCanvasEditor
     {
     }
 
-    ExecutionLogTreeItem* DebugLogRootItem::CreateExecutionItem
-        ( [[maybe_unused]] const LoggingDataId& loggingDataId
-        , [[maybe_unused]] const ScriptCanvas::NodeTypeIdentifier& nodeType
-        , [[maybe_unused]] const ScriptCanvas::GraphInfo& graphInfo
-        , [[maybe_unused]] const ScriptCanvas::NamedNodeId& nodeId)
+    ExecutionLogTreeItem* DebugLogRootItem::CreateExecutionItem(
+        const LoggingDataId& loggingDataId,
+        const ScriptCanvas::NodeTypeIdentifier& nodeType,
+        const ScriptCanvas::GraphInfo& graphInfo,
+        const ScriptCanvas::NamedNodeId& nodeId)
     {
         ExecutionLogTreeItem* treeItem = nullptr;
 
@@ -136,6 +140,15 @@ namespace ScriptCanvasEditor
             {
                 m_additionTimer.start();
             }
+        }
+
+        if (m_updatePolicy == UpdatePolicy::SingleTime)
+        {
+            treeItem = CreateChildNodeWithoutAddSignal<ExecutionLogTreeItem>(loggingDataId, nodeType, graphInfo, nodeId);
+        }
+        else
+        {
+            treeItem = CreateChildNode<ExecutionLogTreeItem>(loggingDataId, nodeType, graphInfo, nodeId);
         }
 
         return treeItem;
@@ -183,7 +196,7 @@ namespace ScriptCanvasEditor
     ExecutionLogTreeItem::ExecutionLogTreeItem
         ( const LoggingDataId& loggingDataId
         , const ScriptCanvas::NodeTypeIdentifier& nodeType
-        , const SourceHandle& graphInfo
+        , const ScriptCanvas::GraphInfo& graphInfo
         , const ScriptCanvas::NamedNodeId& nodeId)
         : m_loggingDataId(loggingDataId)
         , m_nodeType(nodeType)
@@ -205,7 +218,17 @@ namespace ScriptCanvasEditor
         m_inputName = "---";
         m_outputName = "---";
 
-        GeneralAssetNotificationBus::Handler::BusConnect(graphInfo);
+        // Payload sent from remote tool does not serialize the execution state
+        // Without m_graphIdentifier the graph name on the log will be marked as "Unknown" this needs to be fixed
+        /*
+        if (m_graphInfo.m_executionState)
+        {
+            const auto userData = AZStd::any_cast<const ScriptCanvas::RuntimeComponentUserData>(&graphInfo.m_executionState->GetUserData());
+            m_graphIdentifier = ScriptCanvas::GraphIdentifier(m_graphInfo.m_executionState->GetAssetId(), userData->component.GetId());
+        }
+        */
+
+        // GeneralAssetNotificationBus::Handler::BusConnect(GetAssetId());
     }
 
     QVariant ExecutionLogTreeItem::Data(const QModelIndex& index, int role) const
@@ -505,7 +528,7 @@ namespace ScriptCanvasEditor
 
     AZ::Data::AssetId ExecutionLogTreeItem::GetAssetId() const
     {
-        return m_graphInfo.Id();
+        return m_graphIdentifier.m_assetId;
     }
 
     AZ::EntityId ExecutionLogTreeItem::GetScriptCanvasAssetNodeId() const

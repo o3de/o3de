@@ -85,6 +85,9 @@ namespace AzToolsFramework
             void BeginRemoveEntry(AssetBrowserEntry* entry) override;
             void EndRemoveEntry() override;
 
+            void BeginReset() override;
+            void EndReset() override;
+
             //////////////////////////////////////////////////////////////////////////
             // TickBus
             //////////////////////////////////////////////////////////////////////////
@@ -119,6 +122,8 @@ namespace AzToolsFramework
             AZStd::unordered_map<AZStd::string, AZ::Crc32> m_newlyCreatedAssetPathsToCreatorBusIds;
 
             void WatchForExpectedAssets(AssetBrowserEntry* entry);
+
+            bool m_isResetting = false;
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

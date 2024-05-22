@@ -18,7 +18,6 @@
 #include "TrackViewNode.h"
 #include "Plugin.h"
 #include "TrackViewDopeSheetBase.h"
-#include "QtViewPane.h"
 
 #include <QScopedPointer>
 #include <QDockWidget>

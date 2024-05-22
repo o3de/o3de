@@ -83,7 +83,7 @@ namespace PhysX
 #if defined(PHYSX_EDITOR)
             {
                 AZStd::unique_ptr<AZ::DynamicModuleHandle> sceneCoreModule = AZ::DynamicModuleHandle::Create("SceneCore");
-                [[maybe_unused]] bool ok = sceneCoreModule->Load(true/*isInitializeFunctionRequired*/);
+                [[maybe_unused]] bool ok = sceneCoreModule->Load(AZ::DynamicModuleHandle::LoadFlags::InitFuncRequired);
                 AZ_Error("PhysX::Module", ok, "Error loading SceneCore module");
 
                 m_modules.push_back(AZStd::move(sceneCoreModule));

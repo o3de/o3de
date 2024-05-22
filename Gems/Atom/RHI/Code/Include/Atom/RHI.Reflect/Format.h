@@ -9,6 +9,7 @@
 
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI.Reflect/ImageEnums.h>
+#include <Atom/RHI.Reflect/Size.h>
 
 namespace AZ::RHI
 {
@@ -220,10 +221,10 @@ namespace AZ::RHI
     const char* ToString(Format format);
 
     //! @brief Returns the required alignment for width / height of an image for the given format. Block
-    //! compressed formats will return 4. Certain Packed / Planar formats may return 2. This is especially
-    //! important for low level of detail mips in the chain, which will reduce down to the alignment instead
+    //! compressed formats will return the number of blocks (e.g 4x4, 8x8, etc). Certain Packed / Planar formats may return 2.
+    //!  This is especially important for low level of detail mips in the chain, which will reduce down to the alignment instead
     //! of 1x1. The returned value only applies to image width and height. Depth is unaffected.
-    uint32_t GetFormatDimensionAlignment(Format format);
+    RHI::Size GetFormatDimensionAlignment(Format format);
 
     //! @brief Returns the SRGB equivalent to the provided linear format, if it exists. If not, the provided
     //! format is returned unchanged.

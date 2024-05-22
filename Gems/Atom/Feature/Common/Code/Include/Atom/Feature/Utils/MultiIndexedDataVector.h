@@ -224,6 +224,18 @@ namespace AZ
                 }
             }
 
+            template<typename LambdaType>
+            void ForEach(LambdaType lambda) const
+            {
+                for (auto& elementIdx : m_dataToIndices)
+                {
+                    if (!lambda(elementIdx))
+                    {
+                        break;
+                    }
+                }
+            }
+
         private:
             using Fn = void(&)(AZStd::vector<Ts>& ...);
 

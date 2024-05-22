@@ -52,8 +52,6 @@ namespace AZ
                 return m_loaderContext->GetContext();
             }
             const Descriptor& GetDescriptor() const;
-            StringList GetInstanceLayerNames() const;
-            StringList GetInstanceExtensionNames(const char* layerName = nullptr) const;
             RHI::PhysicalDeviceList GetSupportedDevices() const;
             AZ::RHI::ValidationMode GetValidationMode() const;
 

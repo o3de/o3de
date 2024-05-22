@@ -63,6 +63,20 @@ namespace AZ
 
             AZStd::span<const Data::Asset<ModelLodAsset>> GetLodAssets() const;
 
+            // These two functions are used to keep references for BufferAssets so we can release them when they are done using after RPI::Model was created
+            // Sometime they might need to be stay in memory for certain cpu operations such as ray intersection etc.
+
+            //! Increase reference for an overall reference count for all BufferAssets referenced by this ModelAsset
+            //! When the ref count was 0, increase ref count would trigger block loading for all the BufferAssets
+            void AddRefBufferAssets();
+
+            //! Reduce reference for an overall reference count for all BufferAssets referenced by this ModelAsset
+            //! When the ref count reaches 0 after the reduce, it would release all the BufferAssets from the ModelAsset
+            void ReleaseRefBufferAssets();
+
+            //! Returns true if the ModelAsset contains data which is required by LocalRayIntersectionAgainstModel() function.
+            bool SupportLocalRayIntersection() const;
+
             //! Checks a ray for intersection against this model. The ray must be in the same coordinate space as the model.
             //! Important: only to be used in the Editor, it may kick off a job to calculate spatial information.
             //! [GFX TODO][ATOM-4343 Bake mesh spatial information during AP processing]
@@ -125,6 +139,10 @@ namespace AZ
                 float& distanceNormalized,
                 AZ::Vector3& normal) const;
 
+            // load/release all the BufferAsset references by this ModelAsset's ModelLodAssets.
+            void LoadBufferAssets();
+            void ReleaseBufferAssets();
+
             // Various model information used in raycasting
             AZ::Name m_positionName{ "POSITION" };
             // there is a tradeoff between memory use and performance but anywhere under a few thousand triangles or so remains under a few milliseconds per ray cast
@@ -133,6 +151,11 @@ namespace AZ
             volatile mutable bool m_isKdTreeCalculationRunning = false;
             mutable AZStd::mutex m_kdTreeLock;
             mutable AZStd::optional<AZStd::size_t> m_modelTriangleCount;
+
+            // An overall reference count for all BufferAssets referenced by this ModelAsset
+            // Set default to 1 since the ModelAsset would load all its BufferAssets by default.
+            // ModelAsset would release these BufferAssets if this ref count reach 0 to save memory
+            AZStd::atomic<size_t> m_bufferAssetsRef = 1;
             
             // Lists all of the material slots that are used by this LOD.
             // Note the same slot can appear in multiple LODs in the model, so that LODs don't have to refer back to the model asset.

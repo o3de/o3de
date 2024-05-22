@@ -124,6 +124,10 @@ namespace AZ
             {
                 fprintf(stdout, "%s: %s\n", window, message);
             }
+            virtual void OutputToRawAndDebugger(const char* window, const char* message)
+            {
+                RawOutput(window, message);
+            }
 
             virtual void PrintCallstack(const char* /*window*/, unsigned int /*suppressCount*/ = 0, void* /*nativeContext*/ = nullptr) {}
 
@@ -186,6 +190,7 @@ namespace AZ
             void Printf(const char* window, const char* format, ...) override;
 
             void Output(const char* window, const char* message) override;
+            void OutputToRawAndDebugger(const char* window, const char* message) override;
 
             /// Called by output to handle the actual output, does not interact with ebus or allow interception
             void RawOutput(const char* window, const char* message) override;

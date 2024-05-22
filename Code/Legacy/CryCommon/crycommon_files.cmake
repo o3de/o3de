@@ -20,7 +20,6 @@ set(FILES
     IMiniLog.h
     IMovieSystem.cpp
     IMovieSystem.h
-    IRenderAuxGeom.h
     IRenderer.h
     ISerialize.h
     ISplines.h
@@ -29,7 +28,6 @@ set(FILES
     IValidator.h
     IWindowMessageHandler.h
     IXml.h
-    IMNM.h
     SerializationTypes.h
     CryEndian.h
     CryRandomInternal.h
@@ -46,7 +44,6 @@ set(FILES
     CryVersion.h
     MiniQueue.h
     MultiThread_Containers.h
-    PNoise3.h
     ProjectDefines.h
     Range.h
     ScopedVariableSetter.h

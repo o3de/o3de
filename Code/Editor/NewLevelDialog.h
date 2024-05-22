@@ -8,14 +8,9 @@
 
 
 #pragma once
-#ifndef CRYINCLUDE_EDITOR_NEWLEVELDIALOG_H
-#define CRYINCLUDE_EDITOR_NEWLEVELDIALOG_H
 
 #if !defined(Q_MOC_RUN)
 #include <QScopedPointer>
-
-#include <vector>
-
 #include <QAbstractButton>
 #include <QDialog>
 #endif
@@ -30,22 +25,20 @@ class CNewLevelDialog
     Q_OBJECT
 
 public:
-    CNewLevelDialog(QWidget* pParent = nullptr);   // standard constructor
+    CNewLevelDialog(QWidget* pParent = nullptr);
     ~CNewLevelDialog();
 
     QString GetLevel() const;
-    void IsResize(bool bIsResize);
     bool ValidateLevel();
+    QString GetTemplateName() const;
 
 protected:
     void UpdateData(bool fromUi = true);
     void OnInitDialog();
-
     void ReloadLevelFolder();
-
-    void showEvent(QShowEvent* event);
-
+    void showEvent(QShowEvent* event) override;
     QString GetLevelsFolder() const;
+    void InitTemplateListWidget() const;
 
 protected slots:
     void OnLevelNameChange();
@@ -56,12 +49,6 @@ protected slots:
 public:
     QString         m_level;
     QString         m_levelFolders;
-    bool                m_bIsResize;
-    bool                m_bUpdate;
-
-    std::vector<QString>    m_itemFolders;
-
     QScopedPointer<Ui::CNewLevelDialog> ui;
     bool m_initialized;
 };
-#endif // CRYINCLUDE_EDITOR_NEWLEVELDIALOG_H

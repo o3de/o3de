@@ -9,6 +9,7 @@
 #pragma once
 #include <AzCore/base.h>
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <vulkan/vulkan.h>
 
 namespace AZ
@@ -25,7 +26,7 @@ namespace AZ
             VkSystemAllocator();
             ~VkSystemAllocator();
 
-            VkAllocationCallbacks m_allocationCallbacks;
+            AZStd::unique_ptr<VkAllocationCallbacks> m_allocationCallbacks;
         };
     }
 }

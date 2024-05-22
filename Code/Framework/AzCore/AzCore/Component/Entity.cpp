@@ -675,9 +675,17 @@ namespace AZ
 
     void Entity::OnNameChanged() const
     {
-        EntityBus::Event(GetId(), &EntityBus::Events::OnEntityNameChanged, m_name);
-        EntitySystemBus::Broadcast(&EntitySystemBus::Events::OnEntityNameChanged, GetId(), m_name);
+        // we only emit on these busses if the entity is active.  This prevents OnEntityNameChanged happening on inactive entities
+        // when for example, another thread is constructing a prefab.  It also prevents spam of these functions from situations where
+        // inactive entities are being constructed or modified in place, such as in undo/redo or scene compilation.
+        // In general, only active entities should have any bearing on the actual scene, such as showing up in the Scene Outliner.
+        if (m_state == State::Active)
+        {
+            EntityBus::Event(GetId(), &EntityBus::Events::OnEntityNameChanged, m_name);
+            EntitySystemBus::Broadcast(&EntitySystemBus::Events::OnEntityNameChanged, GetId(), m_name);
+        }
     }
+
 
     bool Entity::CanAddRemoveComponents() const
     {

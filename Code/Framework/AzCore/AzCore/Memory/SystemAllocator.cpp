@@ -144,7 +144,6 @@ namespace AZ
     auto SystemAllocator::get_allocated_size(pointer ptr, align_type alignment) const -> size_type
     {
         size_type allocSize = MemorySizeAdjustedDown(m_subAllocator->get_allocated_size(ptr, alignment));
-
         return allocSize;
     }
 

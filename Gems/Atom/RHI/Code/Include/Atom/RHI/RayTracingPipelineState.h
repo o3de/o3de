@@ -25,6 +25,7 @@ namespace AZ::RHI
         AZ::Name m_callableShaderName;
         AZ::Name m_closestHitShaderName;
         AZ::Name m_anyHitShaderName;
+        AZ::Name m_intersectionShaderName;
     };
     using RayTracingShaderLibraryVector = AZStd::vector<RayTracingShaderLibrary>;
 
@@ -34,6 +35,7 @@ namespace AZ::RHI
         AZ::Name m_hitGroupName;
         AZ::Name m_closestHitShaderName;
         AZ::Name m_anyHitShaderName;
+        AZ::Name m_intersectionShaderName;
     };
     using RayTracingHitGroupVector = AZStd::vector<RayTracingHitGroup>;
 
@@ -104,6 +106,7 @@ namespace AZ::RHI
         RayTracingPipelineStateDescriptor* CallableShaderName(const AZ::Name& callableShaderName);
         RayTracingPipelineStateDescriptor* ClosestHitShaderName(const AZ::Name& closestHitShaderName);
         RayTracingPipelineStateDescriptor* AnyHitShaderName(const AZ::Name& anyHitShaderName);
+        RayTracingPipelineStateDescriptor* IntersectionShaderName(const AZ::Name& intersectionShaderName);
 
         RayTracingPipelineStateDescriptor* HitGroup(const AZ::Name& name);
 

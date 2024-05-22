@@ -27,7 +27,7 @@ namespace EMotionFX
     AZ_CLASS_ALLOCATOR_IMPL(Mesh, MeshAllocator)
 
     Mesh::Mesh()
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_numVertices        = 0;
         m_numIndices         = 0;
@@ -40,6 +40,7 @@ namespace EMotionFX
 
     // allocation constructor
     Mesh::Mesh(uint32 numVerts, uint32 numIndices, uint32 numPolygons, uint32 numOrgVerts, bool isCollisionMesh)
+        : MCore::RefCounted()
     {
         m_numVertices        = 0;
         m_numIndices         = 0;

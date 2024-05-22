@@ -602,8 +602,10 @@ namespace GradientSignal::ImageCreatorUtils
         // Resync the configurations and refresh the display to hide the "Create" button
         // We need to use "Refresh_EntireTree" because "Refresh_AttributesAndValues" isn't enough to refresh the visibility
         // settings.
-        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
+        AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
+                &AzToolsFramework::ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplayForComponent,
+                m_ownerEntityComponentIdPair,
+                AzToolsFramework::Refresh_EntireTree);
 
         return createdAsset;
     }

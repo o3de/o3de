@@ -782,7 +782,7 @@ namespace AzToolsFramework
                 m_scriptComponent.m_context->GetDebugContext()->ConnectHook();
             }
 
-            ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, Refresh_EntireTree);
+            InvalidatePropertyDisplay(Refresh_EntireTree);
             ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::AddDirtyEntity, GetEntityId());
         }
 
@@ -842,7 +842,7 @@ namespace AzToolsFramework
 
             SortProperties(m_scriptComponent.m_properties);
 
-            ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, Refresh_EntireTree);
+            InvalidatePropertyDisplay(Refresh_EntireTree);
         }
 
         void ScriptEditorComponent::ClearDataElements()
@@ -862,9 +862,7 @@ namespace AzToolsFramework
             // edited, so a refresh is at best superfluous, and at worst could cause a feedback loop of infinite refreshes.
             if (GetEntity())
             {
-                AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                    &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, 
-                    AzToolsFramework::Refresh_EntireTree);
+                InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
             }
         }
 

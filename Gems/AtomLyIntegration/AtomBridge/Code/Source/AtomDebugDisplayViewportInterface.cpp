@@ -22,158 +22,6 @@
 
 #include <AzFramework/Font/FontInterface.h>
 
-namespace // unnamed namespace to hold copies of Cry AuxGeom state enum's, this is to avoid creating a dependency on IRenderAuxGeom.h
-{
-    // Notes:
-    //   Don't change the xxxShift values, they need to match the values from legacy cry rendering
-    //   This also applies to the individual flags in EAuxGeomPublicRenderflags_*!
-    // Remarks:
-    //   Bits 0 - 22 are currently reserved for prim type and per draw call render parameters (point size, etc.)
-    //   Check RenderAuxGeom.h in ../RenderDll/Common
-    enum EAuxGeomPublicRenderflagBitMasks
-    {
-        e_Mode2D3DShift             = 31,
-        e_Mode2D3DMask              = 0x1 << e_Mode2D3DShift,
-
-        e_AlphaBlendingShift        = 29,
-        e_AlphaBlendingMask         = 0x3 << e_AlphaBlendingShift,
-
-        e_DrawInFrontShift          = 28,
-        e_DrawInFrontMask           = 0x1 << e_DrawInFrontShift,
-
-        e_FillModeShift             = 26,
-        e_FillModeMask              = 0x3 << e_FillModeShift,
-
-        e_CullModeShift             = 24,
-        e_CullModeMask              = 0x3 << e_CullModeShift,
-
-        e_DepthWriteShift           = 23,
-        e_DepthWriteMask            = 0x1 << e_DepthWriteShift,
-
-        e_DepthTestShift            = 22,
-        e_DepthTestMask             = 0x1 << e_DepthTestShift,
-
-        e_PublicParamsMask      = e_Mode2D3DMask | e_AlphaBlendingMask | e_DrawInFrontMask | e_FillModeMask |
-            e_CullModeMask | e_DepthWriteMask | e_DepthTestMask
-    };
-
-    // Notes:
-    //   e_Mode2D renders in normalized [0.. 1] screen space.
-    //   Don't change the xxxShift values blindly as they affect the rendering output
-    //   that is two primitives have to be rendered after 3d primitives, alpha blended
-    //   geometry have to be rendered after opaque ones, etc.
-    //   This also applies to the individual flags in EAuxGeomPublicRenderflagBitMasks!
-    // Remarks:
-    //   Bits 0 - 22 are currently reserved for prim type and per draw call render parameters (point size, etc.)
-    //   Check RenderAuxGeom.h in ../RenderDll/Common
-    // See also:
-    //   EAuxGeomPublicRenderflagBitMasks
-    enum EAuxGeomPublicRenderflags_Mode2D3D
-    {
-        e_Mode3D                            = 0x0 << e_Mode2D3DShift,
-        e_Mode2D                            = 0x1 << e_Mode2D3DShift,
-    };
-
-    // Notes:
-    //   Don't change the xxxShift values blindly as they affect the rendering output
-    //   that is two primitives have to be rendered after 3d primitives, alpha blended
-    //   geometry have to be rendered after opaque ones, etc.
-    //   This also applies to the individual flags in EAuxGeomPublicRenderflagBitMasks!
-    // Remarks:
-    //   Bits 0 - 22 are currently reserved for prim type and per draw call render parameters (point size, etc.)
-    //   Check RenderAuxGeom.h in ../RenderDll/Common
-    // See also:
-    //   EAuxGeomPublicRenderflagBitMasks
-    enum EAuxGeomPublicRenderflags_AlphaBlendMode
-    {
-        e_AlphaNone                     = 0x0 << e_AlphaBlendingShift,
-        e_AlphaAdditive             = 0x1 << e_AlphaBlendingShift,
-        e_AlphaBlended              = 0x2 << e_AlphaBlendingShift,
-    };
-
-    // Notes:
-    //   Don't change the xxxShift values blindly as they affect the rendering output
-    //   that is two primitives have to be rendered after 3d primitives, alpha blended
-    //   geometry have to be rendered after opaque ones, etc.
-    //   This also applies to the individual flags in EAuxGeomPublicRenderflagBitMasks!
-    // Remarks:
-    //   Bits 0 - 22 are currently reserved for prim type and per draw call render parameters (point size, etc.)
-    //   Check RenderAuxGeom.h in ../RenderDll/Common
-    // See also:
-    //   EAuxGeomPublicRenderflagBitMasks
-    enum EAuxGeomPublicRenderflags_DrawInFrontMode
-    {
-        e_DrawInFrontOff            = 0x0 << e_DrawInFrontShift,
-        e_DrawInFrontOn             = 0x1 << e_DrawInFrontShift,
-    };
-
-    // Notes:
-    //   Don't change the xxxShift values blindly as they affect the rendering output
-    //   that is two primitives have to be rendered after 3d primitives, alpha blended
-    //   geometry have to be rendered after opaque ones, etc.
-    //   This also applies to the individual flags in EAuxGeomPublicRenderflagBitMasks!
-    // Remarks:
-    //   Bits 0 - 22 are currently reserved for prim type and per draw call render parameters (point size, etc.)
-    //   Check RenderAuxGeom.h in ../RenderDll/Common
-    // See also:
-    //   EAuxGeomPublicRenderflagBitMasks
-    enum EAuxGeomPublicRenderflags_FillMode
-    {
-        e_FillModeSolid             = 0x0 << e_FillModeShift,
-        e_FillModeWireframe     = 0x1 << e_FillModeShift,
-        e_FillModePoint             = 0x2 << e_FillModeShift,
-    };
-
-    // Notes:
-    //   Don't change the xxxShift values blindly as they affect the rendering output
-    //   that is two primitives have to be rendered after 3d primitives, alpha blended
-    //   geometry have to be rendered after opaque ones, etc.
-    //   This also applies to the individual flags in EAuxGeomPublicRenderflagBitMasks!
-    // Remarks:
-    //   Bits 0 - 22 are currently reserved for prim type and per draw call render parameters (point size, etc.)
-    //   Check RenderAuxGeom.h in ../RenderDll/Common
-    // See also:
-    //   EAuxGeomPublicRenderflagBitMasks
-    enum EAuxGeomPublicRenderflags_CullMode
-    {
-        e_CullModeNone              = 0x0 << e_CullModeShift,
-        e_CullModeFront             = 0x1 << e_CullModeShift,
-        e_CullModeBack              = 0x2 << e_CullModeShift,
-    };
-
-    // Notes:
-    //   Don't change the xxxShift values blindly as they affect the rendering output
-    //   that is two primitives have to be rendered after 3d primitives, alpha blended
-    //   geometry have to be rendered after opaque ones, etc.
-    //   This also applies to the individual flags in EAuxGeomPublicRenderflagBitMasks!
-    // Remarks:
-    //   Bits 0 - 22 are currently reserved for prim type and per draw call render parameters (point size, etc.)
-    //   Check RenderAuxGeom.h in ../RenderDll/Common
-    // See also:
-    //   EAuxGeomPublicRenderflagBitMasks
-    enum EAuxGeomPublicRenderflags_DepthWrite
-    {
-        e_DepthWriteOn              = 0x0 << e_DepthWriteShift,
-        e_DepthWriteOff             = 0x1 << e_DepthWriteShift,
-    };
-
-    // Notes:
-    //   Don't change the xxxShift values blindly as they affect the rendering output
-    //   that is two primitives have to be rendered after 3d primitives, alpha blended
-    //   geometry have to be rendered after opaque ones, etc.
-    //   This also applies to the individual flags in EAuxGeomPublicRenderflagBitMasks!
-    // Remarks:
-    //   Bits 0 - 22 are currently reserved for prim type and per draw call render parameters (point size, etc.)
-    //   Check RenderAuxGeom.h in ../RenderDll/Common
-    // See also:
-    //   EAuxGeomPublicRenderflagBitMasks
-    enum EAuxGeomPublicRenderflags_DepthTest
-    {
-        e_DepthTestOn                   = 0x0 << e_DepthTestShift,
-        e_DepthTestOff              = 0x1 << e_DepthTestShift,
-    };
-};
-
 namespace AZ::AtomBridge
 {
 
@@ -195,7 +43,7 @@ namespace AZ::AtomBridge
     }
 
     void SingleColorDynamicSizeLineHelper::Draw(
-        AZ::RPI::AuxGeomDrawPtr auxGeomDrawPtr, 
+        AZ::RPI::AuxGeomDrawPtr auxGeomDrawPtr,
         const RenderState& rendState
         ) const
     {
@@ -216,7 +64,7 @@ namespace AZ::AtomBridge
     }
 
     void SingleColorDynamicSizeLineHelper::Draw2d(
-        AZ::RPI::AuxGeomDrawPtr auxGeomDrawPtr, 
+        AZ::RPI::AuxGeomDrawPtr auxGeomDrawPtr,
         const RenderState& rendState
         ) const
     {
@@ -344,9 +192,9 @@ namespace AZ::AtomBridge
     }
 
     void AtomDebugDisplayViewportInterface::DrawQuad(
-        const AZ::Vector3& p1, 
-        const AZ::Vector3& p2, 
-        const AZ::Vector3& p3, 
+        const AZ::Vector3& p1,
+        const AZ::Vector3& p2,
+        const AZ::Vector3& p3,
         const AZ::Vector3& p4)
     {
         if (m_auxGeomPtr)
@@ -380,9 +228,9 @@ namespace AZ::AtomBridge
         }
 
         m_auxGeomPtr->DrawQuad(
-            width, 
-            height, 
-            GetCurrentTransform(), 
+            width,
+            height,
+            GetCurrentTransform(),
             m_rendState.m_color,
             drawShaded ? AZ::RPI::AuxGeomDraw::DrawStyle::Shaded : AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
             m_rendState.m_depthTest,
@@ -392,9 +240,9 @@ namespace AZ::AtomBridge
     }
 
     void AtomDebugDisplayViewportInterface::DrawWireQuad(
-        const AZ::Vector3& p1, 
-        const AZ::Vector3& p2, 
-        const AZ::Vector3& p3, 
+        const AZ::Vector3& p1,
+        const AZ::Vector3& p2,
+        const AZ::Vector3& p3,
         const AZ::Vector3& p4)
     {
         if (m_auxGeomPtr)
@@ -421,10 +269,10 @@ namespace AZ::AtomBridge
         }
 
         m_auxGeomPtr->DrawQuad(
-            width, 
-            height, 
-            GetCurrentTransform(), 
-            m_rendState.m_color, 
+            width,
+            height,
+            GetCurrentTransform(),
+            m_rendState.m_color,
             AZ::RPI::AuxGeomDraw::DrawStyle::Line,
             m_rendState.m_depthTest,
             m_rendState.m_depthWrite,
@@ -433,11 +281,11 @@ namespace AZ::AtomBridge
     }
 
     void AtomDebugDisplayViewportInterface::DrawQuadGradient(
-        const AZ::Vector3& p1, 
-        const AZ::Vector3& p2, 
-        const AZ::Vector3& p3, 
-        const AZ::Vector3& p4, 
-        const AZ::Vector4& firstColor, 
+        const AZ::Vector3& p1,
+        const AZ::Vector3& p2,
+        const AZ::Vector3& p3,
+        const AZ::Vector3& p4,
+        const AZ::Vector4& firstColor,
         const AZ::Vector4& secondColor)
     {
         if (m_auxGeomPtr)
@@ -541,8 +389,8 @@ namespace AZ::AtomBridge
     }
 
     void AtomDebugDisplayViewportInterface::DrawTrianglesIndexed(
-        const AZStd::vector<AZ::Vector3>& vertices, 
-        const AZStd::vector<AZ::u32>& indices, 
+        const AZStd::vector<AZ::Vector3>& vertices,
+        const AZStd::vector<AZ::u32>& indices,
         const AZ::Color& color)
     {
         if (m_auxGeomPtr)
@@ -568,9 +416,9 @@ namespace AZ::AtomBridge
         if (m_auxGeomPtr)
         {
             m_auxGeomPtr->DrawAabb(
-                AZ::Aabb::CreateFromMinMax(min, max), 
-                GetCurrentTransform(), 
-                m_rendState.m_color, 
+                AZ::Aabb::CreateFromMinMax(min, max),
+                GetCurrentTransform(),
+                m_rendState.m_color,
                 AZ::RPI::AuxGeomDraw::DrawStyle::Line,
                 m_rendState.m_depthTest,
                 m_rendState.m_depthWrite,
@@ -585,9 +433,9 @@ namespace AZ::AtomBridge
         if (m_auxGeomPtr)
         {
             m_auxGeomPtr->DrawAabb(
-                AZ::Aabb::CreateFromMinMax(min, max), 
-                GetCurrentTransform(), 
-                m_rendState.m_color, 
+                AZ::Aabb::CreateFromMinMax(min, max),
+                GetCurrentTransform(),
+                m_rendState.m_color,
                 AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
                 m_rendState.m_depthTest,
                 m_rendState.m_depthWrite,
@@ -597,10 +445,10 @@ namespace AZ::AtomBridge
     }
 
     void AtomDebugDisplayViewportInterface::DrawWireOBB(
-        const AZ::Vector3& center, 
-        const AZ::Vector3& axisX, 
-        const AZ::Vector3& axisY, 
-        const AZ::Vector3& axisZ, 
+        const AZ::Vector3& center,
+        const AZ::Vector3& axisX,
+        const AZ::Vector3& axisY,
+        const AZ::Vector3& axisZ,
         const AZ::Vector3& halfExtents)
     {
         if (m_auxGeomPtr)
@@ -609,8 +457,8 @@ namespace AZ::AtomBridge
             AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(center, rotation, halfExtents);
             m_auxGeomPtr->DrawObb(
                 obb,
-                AZ::Vector3::CreateZero(), 
-                m_rendState.m_color, 
+                AZ::Vector3::CreateZero(),
+                m_rendState.m_color,
                 AZ::RPI::AuxGeomDraw::DrawStyle::Line,
                 m_rendState.m_depthTest,
                 m_rendState.m_depthWrite,
@@ -620,10 +468,10 @@ namespace AZ::AtomBridge
     }
 
     void AtomDebugDisplayViewportInterface::DrawSolidOBB(
-        const AZ::Vector3& center, 
-        const AZ::Vector3& axisX, 
-        const AZ::Vector3& axisY, 
-        const AZ::Vector3& axisZ, 
+        const AZ::Vector3& center,
+        const AZ::Vector3& axisX,
+        const AZ::Vector3& axisY,
+        const AZ::Vector3& axisZ,
         const AZ::Vector3& halfExtents)
     {
         if (m_auxGeomPtr)
@@ -632,8 +480,8 @@ namespace AZ::AtomBridge
             AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(center, rotation, halfExtents);
             m_auxGeomPtr->DrawObb(
                 obb,
-                AZ::Vector3::CreateZero(), 
-                m_rendState.m_color, 
+                AZ::Vector3::CreateZero(),
+                m_rendState.m_color,
                 AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
                 m_rendState.m_depthTest,
                 m_rendState.m_depthWrite,
@@ -757,7 +605,7 @@ namespace AZ::AtomBridge
             points[1] = AZ::Vector3(p2.GetX(), p1.GetY(), z);
             points[2] = AZ::Vector3(p2.GetX(), p2.GetY(), z);
             points[3] = AZ::Vector3(p1.GetX(), p2.GetY(), z);
-            
+
             AZ::RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments drawArgs;
             drawArgs.m_verts = points;
             drawArgs.m_vertCount = 4;
@@ -779,7 +627,7 @@ namespace AZ::AtomBridge
             AZ::Vector3 points[2];
             points[0] = AZ::Vector3(p1.GetX(), p1.GetY(), z);
             points[1] = AZ::Vector3(p2.GetX(), p2.GetY(), z);
-            
+
             AZ::RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments drawArgs;
             drawArgs.m_verts = points;
             drawArgs.m_vertCount = 2;
@@ -802,7 +650,7 @@ namespace AZ::AtomBridge
             points[0] = AZ::Vector3(p1.GetX(), p1.GetY(), z);
             points[1] = AZ::Vector3(p2.GetX(), p2.GetY(), z);
             AZ::Color colors[2] = {firstColor, secondColor};
-            
+
             AZ::RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments drawArgs;
             drawArgs.m_verts = points;
             drawArgs.m_vertCount = 2;
@@ -833,12 +681,12 @@ namespace AZ::AtomBridge
             AZ::Vector3 radiusV3 = AZ::Vector3(aspectRadius, radius, radius);
             AZ::Vector3 pos = AZ::Vector3(center.GetX(), center.GetY(), z);
             CreateAxisAlignedArc(
-                lines, 
-                stepAngle, 
-                startAngle, 
+                lines,
+                stepAngle,
+                startAngle,
                 stopAngle,
                 pos,
-                radiusV3, 
+                radiusV3,
                 CircleAxis::CircleAxisZ
             );
             lines.Draw2d(m_auxGeomPtr, m_rendState);
@@ -846,11 +694,11 @@ namespace AZ::AtomBridge
     }
 
     void AtomDebugDisplayViewportInterface::DrawArc(
-        const AZ::Vector3& pos, 
-        float radius, 
-        float startAngleDegrees, 
-        float sweepAngleDegrees, 
-        float angularStepDegrees, 
+        const AZ::Vector3& pos,
+        float radius,
+        float startAngleDegrees,
+        float sweepAngleDegrees,
+        float angularStepDegrees,
         int referenceAxis)
     {
         if (m_auxGeomPtr)
@@ -862,12 +710,12 @@ namespace AZ::AtomBridge
             SingleColorDynamicSizeLineHelper lines(1+static_cast<int>(sweepAngleDegrees/angularStepDegrees));
             AZ::Vector3 radiusV3 = AZ::Vector3(radius);
             CreateAxisAlignedArc(
-                lines, 
-                stepAngle, 
-                startAngle, 
+                lines,
+                stepAngle,
+                startAngle,
                 stopAngle,
                 pos,
-                radiusV3, 
+                radiusV3,
                 static_cast<CircleAxis>(referenceAxis)
             );
             lines.Draw(m_auxGeomPtr, m_rendState);
@@ -875,11 +723,11 @@ namespace AZ::AtomBridge
     }
 
     void AtomDebugDisplayViewportInterface::DrawArc(
-        const AZ::Vector3& pos, 
-        float radius, 
-        float startAngleDegrees, 
-        float sweepAngleDegrees, 
-        float angularStepDegrees, 
+        const AZ::Vector3& pos,
+        float radius,
+        float startAngleDegrees,
+        float sweepAngleDegrees,
+        float angularStepDegrees,
         const AZ::Vector3& fixedAxis)
     {
         if (m_auxGeomPtr)
@@ -891,9 +739,9 @@ namespace AZ::AtomBridge
             SingleColorDynamicSizeLineHelper lines(1+static_cast<int>(sweepAngleDegrees/angularStepDegrees));
             AZ::Vector3 radiusV3 = AZ::Vector3(radius);
             CreateArbitraryAxisArc(
-                lines, 
-                stepAngle, 
-                startAngle, 
+                lines,
+                stepAngle,
+                startAngle,
                 stopAngle,
                 pos,
                 radiusV3,
@@ -902,7 +750,7 @@ namespace AZ::AtomBridge
             lines.Draw(m_auxGeomPtr, m_rendState);
         }
     }
-    
+
     void AtomDebugDisplayViewportInterface::DrawCircle(const AZ::Vector3& pos, float radius, int nUnchangedAxis)
     {
         if (m_auxGeomPtr)
@@ -913,12 +761,12 @@ namespace AZ::AtomBridge
             SingleColorStaticSizeLineHelper<40> lines; // hard code 40 lines until DegToRad is constexpr.
             AZ::Vector3 radiusV3 = AZ::Vector3(radius);
             CreateAxisAlignedArc(
-                lines, 
-                step, 
-                0.0f, 
+                lines,
+                step,
+                0.0f,
                 maxAngle,
                 pos,
-                radiusV3, 
+                radiusV3,
                 static_cast<CircleAxis>(nUnchangedAxis));
             lines.Draw(m_auxGeomPtr, m_rendState);
         }
@@ -938,7 +786,7 @@ namespace AZ::AtomBridge
             const AZ::Vector3 worldView = ToWorldSpacePosition(viewPos);
             const AZ::Vector3 worldDir = worldView - worldPos;
 
-            CreateAxisAlignedArc(lines, step, 0.0f, maxAngle, pos, radiusV3, static_cast<CircleAxis>(nUnchangedAxis%CircleAxisMax), 
+            CreateAxisAlignedArc(lines, step, 0.0f, maxAngle, pos, radiusV3, static_cast<CircleAxis>(nUnchangedAxis%CircleAxisMax),
                                     [&worldPos, &worldDir](const AZ::Vector3& lineStart, const AZ::Vector3& lineEnd, int segmentIndex)
                                     {
                                         AZ_UNUSED(lineEnd);
@@ -962,11 +810,11 @@ namespace AZ::AtomBridge
             const AZ::Vector3 worldPos = ToWorldSpacePosition(pos);
             const AZ::Vector3 worldDir = ToWorldSpaceVector(dir);
             m_auxGeomPtr->DrawCone(
-                worldPos, 
-                worldDir, 
-                radius, 
-                height, 
-                m_rendState.m_color, 
+                worldPos,
+                worldDir,
+                radius,
+                height,
+                m_rendState.m_color,
                 AZ::RPI::AuxGeomDraw::DrawStyle::Line,
                 m_rendState.m_depthTest,
                 m_rendState.m_depthWrite,
@@ -983,11 +831,11 @@ namespace AZ::AtomBridge
             const AZ::Vector3 worldPos = ToWorldSpacePosition(pos);
             const AZ::Vector3 worldDir = ToWorldSpaceVector(dir);
             m_auxGeomPtr->DrawCone(
-                worldPos, 
-                worldDir, 
-                radius, 
-                height, 
-                m_rendState.m_color, 
+                worldPos,
+                worldDir,
+                radius,
+                height,
+                m_rendState.m_color,
                 drawShaded ? AZ::RPI::AuxGeomDraw::DrawStyle::Shaded : AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
                 m_rendState.m_depthTest,
                 m_rendState.m_depthWrite,
@@ -996,7 +844,7 @@ namespace AZ::AtomBridge
             );
         }
     }
-    
+
     void AtomDebugDisplayViewportInterface::DrawWireCylinder(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height)
     {
         if (m_auxGeomPtr)
@@ -1005,11 +853,11 @@ namespace AZ::AtomBridge
             const AZ::Vector3 worldCenter = ToWorldSpacePosition(center);
             const AZ::Vector3 worldAxis = ToWorldSpaceVector(axis);
             m_auxGeomPtr->DrawCylinder(
-                worldCenter, 
-                worldAxis, 
-                scale * radius, 
-                scale * height, 
-                m_rendState.m_color, 
+                worldCenter,
+                worldAxis,
+                scale * radius,
+                scale * height,
+                m_rendState.m_color,
                 AZ::RPI::AuxGeomDraw::DrawStyle::Line,
                 m_rendState.m_depthTest,
                 m_rendState.m_depthWrite,
@@ -1020,10 +868,10 @@ namespace AZ::AtomBridge
     }
 
     void AtomDebugDisplayViewportInterface::DrawSolidCylinder(
-        const AZ::Vector3& center, 
-        const AZ::Vector3& axis, 
-        float radius, 
-        float height, 
+        const AZ::Vector3& center,
+        const AZ::Vector3& axis,
+        float radius,
+        float height,
         bool drawShaded)
     {
         if (m_auxGeomPtr)
@@ -1032,11 +880,11 @@ namespace AZ::AtomBridge
             const AZ::Vector3 worldCenter = ToWorldSpacePosition(center);
             const AZ::Vector3 worldAxis = ToWorldSpaceVector(axis);
             m_auxGeomPtr->DrawCylinder(
-                worldCenter, 
-                worldAxis, 
-                scale * radius, 
-                scale * height, 
-                m_rendState.m_color, 
+                worldCenter,
+                worldAxis,
+                scale * radius,
+                scale * height,
+                m_rendState.m_color,
                 drawShaded ? AZ::RPI::AuxGeomDraw::DrawStyle::Shaded : AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
                 m_rendState.m_depthTest,
                 m_rendState.m_depthWrite,
@@ -1054,11 +902,11 @@ namespace AZ::AtomBridge
             const AZ::Vector3 worldCenter = ToWorldSpacePosition(center);
             const AZ::Vector3 worldAxis = ToWorldSpaceVector(axis);
             m_auxGeomPtr->DrawCylinderNoEnds(
-                worldCenter, 
-                worldAxis, 
-                scale * radius, 
-                scale * height, 
-                m_rendState.m_color, 
+                worldCenter,
+                worldAxis,
+                scale * radius,
+                scale * height,
+                m_rendState.m_color,
                 AZ::RPI::AuxGeomDraw::DrawStyle::Line,
                 m_rendState.m_depthTest,
                 m_rendState.m_depthWrite,
@@ -1069,10 +917,10 @@ namespace AZ::AtomBridge
     }
 
     void AtomDebugDisplayViewportInterface::DrawSolidCylinderNoEnds(
-        const AZ::Vector3& center, 
-        const AZ::Vector3& axis, 
-        float radius, 
-        float height, 
+        const AZ::Vector3& center,
+        const AZ::Vector3& axis,
+        float radius,
+        float height,
         bool drawShaded)
     {
         if (m_auxGeomPtr)
@@ -1081,11 +929,11 @@ namespace AZ::AtomBridge
             const AZ::Vector3 worldCenter = ToWorldSpacePosition(center);
             const AZ::Vector3 worldAxis = ToWorldSpaceVector(axis);
             m_auxGeomPtr->DrawCylinderNoEnds(
-                worldCenter, 
-                worldAxis, 
-                scale * radius, 
-                scale * height, 
-                m_rendState.m_color, 
+                worldCenter,
+                worldAxis,
+                scale * radius,
+                scale * height,
+                m_rendState.m_color,
                 drawShaded ? AZ::RPI::AuxGeomDraw::DrawStyle::Shaded : AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
                 m_rendState.m_depthTest,
                 m_rendState.m_depthWrite,
@@ -1096,9 +944,9 @@ namespace AZ::AtomBridge
     }
 
     void AtomDebugDisplayViewportInterface::DrawWireCapsule(
-        const AZ::Vector3& center, 
-        const AZ::Vector3& axis, 
-        float radius, 
+        const AZ::Vector3& center,
+        const AZ::Vector3& axis,
+        float radius,
         float heightStraightSection)
     {
         if (m_auxGeomPtr &&  radius > FLT_EPSILON &&  axis.GetLengthSq() > FLT_EPSILON)
@@ -1130,9 +978,9 @@ namespace AZ::AtomBridge
         {
             const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
             m_auxGeomPtr->DrawSphere(
-                ToWorldSpacePosition(pos), 
-                scale * radius, 
-                m_rendState.m_color, 
+                ToWorldSpacePosition(pos),
+                scale * radius,
+                m_rendState.m_color,
                 AZ::RPI::AuxGeomDraw::DrawStyle::Line,
                 m_rendState.m_depthTest,
                 m_rendState.m_depthWrite,
@@ -1198,9 +1046,9 @@ namespace AZ::AtomBridge
             SingleColorDynamicSizeLineHelper lines(2 + static_cast<int>(360.0f / 11.25f)); // num disk segments + 1 for axis line + 1 for spare
             const AZ::Vector3 radiusV3 = AZ::Vector3(radius);
             CreateArbitraryAxisArc(
-                lines, 
-                stepAngle, 
-                startAngle, 
+                lines,
+                stepAngle,
+                startAngle,
                 stopAngle,
                 pos,
                 radiusV3,
@@ -1225,9 +1073,9 @@ namespace AZ::AtomBridge
 
             AZ::RPI::AuxGeomDraw::DrawStyle drawStyle = drawShaded ? AZ::RPI::AuxGeomDraw::DrawStyle::Shaded : AZ::RPI::AuxGeomDraw::DrawStyle::Solid;
             m_auxGeomPtr->DrawSphere(
-                ToWorldSpacePosition(pos), 
-                maxTransformedRadius, 
-                m_rendState.m_color, 
+                ToWorldSpacePosition(pos),
+                maxTransformedRadius,
+                m_rendState.m_color,
                 drawStyle,
                 m_rendState.m_depthTest,
                 m_rendState.m_depthWrite,
@@ -1245,9 +1093,9 @@ namespace AZ::AtomBridge
             const AZ::Vector3 worldPos = ToWorldSpacePosition(pos);
             const AZ::Vector3 worldDir = ToWorldSpaceVector(dir);
             m_auxGeomPtr->DrawDisk(
-                worldPos, 
-                worldDir, 
-                scale * radius, 
+                worldPos,
+                worldDir,
+                scale * radius,
                 m_rendState.m_color,
                 drawShaded ? AZ::RPI::AuxGeomDraw::DrawStyle::Shaded : AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
                 m_rendState.m_depthTest,
@@ -1287,10 +1135,10 @@ namespace AZ::AtomBridge
                 verts[1] -= dir * arrowLen;
                 m_auxGeomPtr->DrawLines(drawArgs);
                 m_auxGeomPtr->DrawCone(
-                    verts[1], 
-                    dir, 
-                    arrowRadius * f2dScale, 
-                    arrowLen * f2dScale, 
+                    verts[1],
+                    dir,
+                    arrowRadius * f2dScale,
+                    arrowLen * f2dScale,
                     m_rendState.m_color,
                     AZ::RPI::AuxGeomDraw::DrawStyle::Shaded,
                     m_rendState.m_depthTest,
@@ -1305,10 +1153,10 @@ namespace AZ::AtomBridge
                 verts[1] -= dir * arrowLen;
                 m_auxGeomPtr->DrawLines(drawArgs);
                 m_auxGeomPtr->DrawCone(
-                    verts[0], 
-                    -dir, 
-                    arrowRadius * f2dScale, 
-                    arrowLen * f2dScale, 
+                    verts[0],
+                    -dir,
+                    arrowRadius * f2dScale,
+                    arrowLen * f2dScale,
                     m_rendState.m_color,
                     AZ::RPI::AuxGeomDraw::DrawStyle::Shaded,
                     m_rendState.m_depthTest,
@@ -1317,10 +1165,10 @@ namespace AZ::AtomBridge
                     m_rendState.m_viewProjOverrideIndex
                     );
                 m_auxGeomPtr->DrawCone(
-                    verts[1], 
-                    dir, 
-                    arrowRadius * f2dScale, 
-                    arrowLen * f2dScale, 
+                    verts[1],
+                    dir,
+                    arrowRadius * f2dScale,
+                    arrowLen * f2dScale,
                     m_rendState.m_color,
                     AZ::RPI::AuxGeomDraw::DrawStyle::Shaded,
                     m_rendState.m_depthTest,
@@ -1333,11 +1181,11 @@ namespace AZ::AtomBridge
     }
 
     void AtomDebugDisplayViewportInterface::DrawTextLabel(
-        const AZ::Vector3& pos, 
-        float size, 
-        const char* text, 
-        const bool center, 
-        int srcOffsetX [[maybe_unused]], 
+        const AZ::Vector3& pos,
+        float size,
+        const char* text,
+        const bool center,
+        int srcOffsetX [[maybe_unused]],
         int srcOffsetY [[maybe_unused]])
     {
         // abort draw if draw is invalid or font query interface is missing.
@@ -1370,10 +1218,10 @@ namespace AZ::AtomBridge
     }
 
     void AtomDebugDisplayViewportInterface::Draw2dTextLabel(
-        float x, 
-        float y, 
-        float size, 
-        const char* text, 
+        float x,
+        float y,
+        float size,
+        const char* text,
         bool center)
     {
         // abort draw if draw is invalid or font query interface is missing.
@@ -1431,7 +1279,7 @@ namespace AZ::AtomBridge
     }
     // int AtomDebugDisplayViewportInterface::SetFillMode(int nFillMode) override;
     float AtomDebugDisplayViewportInterface::GetLineWidth()
-    { 
+    {
         return m_rendState.m_lineWidth;
     }
 
@@ -1451,33 +1299,33 @@ namespace AZ::AtomBridge
     {
         m_rendState.m_depthTest = AZ::RPI::AuxGeomDraw::DepthTest::On;
     }
-    
+
     void AtomDebugDisplayViewportInterface::DepthWriteOff()
     {
         m_rendState.m_depthWrite = AZ::RPI::AuxGeomDraw::DepthWrite::Off;
     }
-    
+
     void AtomDebugDisplayViewportInterface::DepthWriteOn()
     {
         m_rendState.m_depthWrite = AZ::RPI::AuxGeomDraw::DepthWrite::On;
     }
-    
+
     void AtomDebugDisplayViewportInterface::CullOff()
     {
         m_rendState.m_faceCullMode = AZ::RPI::AuxGeomDraw::FaceCullMode::None;
     }
-    
+
     void AtomDebugDisplayViewportInterface::CullOn()
     {
         m_rendState.m_faceCullMode = AZ::RPI::AuxGeomDraw::FaceCullMode::Back;
     }
-    
+
     bool AtomDebugDisplayViewportInterface::SetDrawInFrontMode(bool on)
     {
         AZ_UNUSED(on);
         return false;
     }
-    
+
     AZ::u32 AtomDebugDisplayViewportInterface::GetState()
     {
         return ConvertRenderStateToCry();
@@ -1486,14 +1334,14 @@ namespace AZ::AtomBridge
     AZ::u32 AtomDebugDisplayViewportInterface::SetState(AZ::u32 state)
     {
         uint32_t currentState = ConvertRenderStateToCry();
-        uint32_t changedState = (state & e_PublicParamsMask) ^ currentState;
+        uint32_t changedState = (state & AzFramework::e_PublicParamsMask) ^ currentState;
 
-        if (changedState & e_Mode2D3DMask)
+        if (changedState & AzFramework::e_Mode2D3DMask)
         {
             // this is the only way to turn on 2d Mode under Atom
-            if (state & e_Mode2D)
+            if (state & AzFramework::e_Mode2D)
             {
-                AZ_Assert((currentState & e_DrawInFrontOn) == 0 && (changedState & e_DrawInFrontOn) == 0, "Atom doesnt support Draw In Front and 2d at the same time");
+                AZ_Assert((currentState & AzFramework::e_DrawInFrontOn) == 0 && (changedState & AzFramework::e_DrawInFrontOn) == 0, "Atom doesnt support Draw In Front and 2d at the same time");
                 m_rendState.m_viewProjOverrideIndex = m_auxGeomPtr->GetOrAdd2DViewProjOverride();
                 m_rendState.m_2dMode = true;
             }
@@ -1504,50 +1352,50 @@ namespace AZ::AtomBridge
             }
         }
 
-        if (changedState & e_AlphaBlendingMask)
+        if (changedState & AzFramework::e_AlphaBlendingMask)
         {
-            switch (state&e_AlphaBlendingMask)
+            switch (state&AzFramework::e_AlphaBlendingMask)
             {
-                case e_AlphaNone:
+                case AzFramework::e_AlphaNone:
                     m_rendState.m_opacityType = AZ::RPI::AuxGeomDraw::OpacityType::Opaque;
                     break;
-                case e_AlphaAdditive:
+                case AzFramework::e_AlphaAdditive:
                     [[fallthrough]]; // Additive not currently supported in Atom AuxGeom implementation
-                case e_AlphaBlended:
+                case AzFramework::e_AlphaBlended:
                     m_rendState.m_opacityType = AZ::RPI::AuxGeomDraw::OpacityType::Translucent;
                     break;
             }
         }
 
-        if (changedState & e_DrawInFrontMask)
+        if (changedState & AzFramework::e_DrawInFrontMask)
         {
             AZ_Assert( // either state is turning DrawInFront off or Mode 2D has to be off
-                (state & e_DrawInFrontOn) == 0 ||
-                ((currentState & e_Mode2D) == 0 && (changedState & e_Mode2D) == 0), 
+                (state & AzFramework::e_DrawInFrontOn) == 0 ||
+                ((currentState & AzFramework::e_Mode2D) == 0 && (changedState & AzFramework::e_Mode2D) == 0),
                 "Atom doesnt support Draw In Front and 2d at the same time");
-            SetDrawInFrontMode(changedState & e_DrawInFrontOn);
+            SetDrawInFrontMode(changedState & AzFramework::e_DrawInFrontOn);
         }
 
-        if (changedState & e_CullModeMask)
+        if (changedState & AzFramework::e_CullModeMask)
         {
-            switch (state & e_CullModeMask)
+            switch (state & AzFramework::e_CullModeMask)
             {
-                case e_CullModeNone:
+                case AzFramework::e_CullModeNone:
                     CullOff();
                     break;
-                case e_CullModeFront:
+                case AzFramework::e_CullModeFront:
                     // Currently no other way to set front face culling in DebugDisplayRequestBus
                     m_rendState.m_faceCullMode = AZ::RPI::AuxGeomDraw::FaceCullMode::Front;
                     break;
-                case e_CullModeBack:
+                case AzFramework::e_CullModeBack:
                     CullOn();
                     break;
             }
         }
 
-        if (changedState & e_DepthWriteMask)
+        if (changedState & AzFramework::e_DepthWriteMask)
         {
-            if (state & e_DepthWriteOff)
+            if (state & AzFramework::e_DepthWriteOff)
             {
                 DepthWriteOff();
             }
@@ -1557,9 +1405,9 @@ namespace AZ::AtomBridge
             }
         }
 
-        if (changedState & e_DepthTestMask)
+        if (changedState & AzFramework::e_DepthTestMask)
         {
-            if (state & e_DepthTestOff)
+            if (state & AzFramework::e_DepthTestOff)
             {
                 DepthTestOff();
             }
@@ -1653,21 +1501,21 @@ namespace AZ::AtomBridge
     {
         uint32_t result = 0;
 
-        result |= m_rendState.m_2dMode ? e_Mode2D : e_Mode3D;
-        result |= m_rendState.m_opacityType == AZ::RPI::AuxGeomDraw::OpacityType::Opaque ? e_AlphaNone : e_AlphaBlended;
-        result |= m_rendState.m_drawInFront ? e_DrawInFrontOn : e_DrawInFrontOff;
-        result |= m_rendState.m_depthTest == AZ::RPI::AuxGeomDraw::DepthTest::On ? e_DepthTestOn : e_DepthTestOff;
-        result |= m_rendState.m_depthWrite == AZ::RPI::AuxGeomDraw::DepthWrite::On ? e_DepthWriteOn : e_DepthWriteOff;
+        result |= m_rendState.m_2dMode ? AzFramework::e_Mode2D : AzFramework::e_Mode3D;
+        result |= m_rendState.m_opacityType == AZ::RPI::AuxGeomDraw::OpacityType::Opaque ? AzFramework::e_AlphaNone : AzFramework::e_AlphaBlended;
+        result |= m_rendState.m_drawInFront ? AzFramework::e_DrawInFrontOn : AzFramework::e_DrawInFrontOff;
+        result |= m_rendState.m_depthTest == AZ::RPI::AuxGeomDraw::DepthTest::On ? AzFramework::e_DepthTestOn : AzFramework::e_DepthTestOff;
+        result |= m_rendState.m_depthWrite == AZ::RPI::AuxGeomDraw::DepthWrite::On ? AzFramework::e_DepthWriteOn : AzFramework::e_DepthWriteOff;
         switch (m_rendState.m_faceCullMode)
         {
             case AZ::RPI::AuxGeomDraw::FaceCullMode::None:
-                result |= e_CullModeNone;
+                result |= AzFramework::e_CullModeNone;
                 break;
             case AZ::RPI::AuxGeomDraw::FaceCullMode::Front:
-                result |= e_CullModeFront;
+                result |= AzFramework::e_CullModeFront;
                 break;
             case AZ::RPI::AuxGeomDraw::FaceCullMode::Back:
-                result |= e_CullModeBack;
+                result |= AzFramework::e_CullModeBack;
                 break;
             default:
                 AZ_Assert(false, "Trying to convert an unknown culling mode to cry!");

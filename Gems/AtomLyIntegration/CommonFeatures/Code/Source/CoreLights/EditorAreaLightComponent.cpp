@@ -90,6 +90,8 @@ namespace AZ
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsBothDirections)
                         ->DataElement(Edit::UIHandlers::CheckBox, &AreaLightComponentConfig::m_useFastApproximation, "Fast approximation", "Whether the light should use the default high quality linear transformed cosine technique or a faster approximation.")
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsFastApproximation)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &AreaLightComponentConfig::m_goboImageAsset, "Gobo", "Select a texture to be used as gobo")
+                            ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsGobo)
                         ->ClassElement(Edit::ClassElements::Group, "Attenuation radius")
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)

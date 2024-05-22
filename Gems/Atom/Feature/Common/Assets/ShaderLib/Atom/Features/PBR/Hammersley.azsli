@@ -22,7 +22,7 @@ float GetVanDerCorputRadicalInverse(uint bits)
 
 //! Returns a set of 2D points that are reasonably well distributed, in the range [0,1) on both axes.
 //! See Holger Dammertz's "Hammersley Points on the Hemisphere": http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html
-float2 GetHammersleyPoint(uint pointIndex, uint totalPointCount)
+real2 GetHammersleyPoint(uint pointIndex, uint totalPointCount)
 {
-    return float2(float(pointIndex) / float(totalPointCount), GetVanDerCorputRadicalInverse(pointIndex));
+    return real2(float(pointIndex) / float(totalPointCount), GetVanDerCorputRadicalInverse(pointIndex));
 }

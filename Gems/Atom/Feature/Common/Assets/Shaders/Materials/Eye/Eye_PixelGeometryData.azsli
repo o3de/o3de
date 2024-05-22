@@ -21,14 +21,14 @@ class PixelGeometryData_Eye
 {
     // BasePBR
     float3 positionWS;
-    real3 vertexNormal;
     float2 uvs[UvSetCount];
-    real3 tangents[UvSetCount];
-    real3 bitangents[UvSetCount];
+    float3 tangents[UvSetCount];
+    float3 bitangents[UvSetCount];
+    real3 vertexNormal;
     bool isFrontFace;
 
     // Eye
-    real4x4 objectToWorld;
-    real3x3 objectToWorldIT;
+    float4x4 objectToWorld;
+    float3x3 objectToWorldIT;
     float3 localPosition;
 };

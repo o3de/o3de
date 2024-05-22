@@ -18,6 +18,8 @@
 
 namespace AZ::Render
 {
+    class ModelDataInstance;
+
     //! This struct contains all the data for a group of meshes that are capable of being rendered
     //! with a single instanced draw call
     struct MeshInstanceGroupData
@@ -42,9 +44,10 @@ namespace AZ::Render
         // or store it with the data for each individual instance
         MeshInstanceGroupKey m_key;
 
-        // Event to signal to any data instance that refers to this InstanceGroup that the draw packet has been updated
-        AZ::Event<> m_updateDrawPacketEvent;
-        // Connecting to an AZ::Event is not thread safe, so we need to protect that with a lock
+        // A list of ModelDataInstances which are referencing this instance group
+        AZStd::set<ModelDataInstance*> m_associatedInstances;
+
+        // Mutex for adding/removing associated ModelDataInstance
         AZStd::mutex m_eventLock;
 
         // Enable draw motion or not. Set to true if any of mesh instance use this group has the same flag set in their ModelDataInstance
@@ -52,6 +55,28 @@ namespace AZ::Render
 
         // If the group is transparent, sort depth in reverse
         bool m_isTransparent = false;
+
+        // For per-mesh shader options
+        // If all the ModelDataInstances within this group are using the same shader option value, then we can apply the mesh shader options to the draw packet.
+        // These are two variables which are used to indicate which shader option should be applied and which value is applied.
+        // combined shader options from any ModelDataInstance which use this group
+        uint32_t m_shaderOptionFlags = 0;
+
+        // flag shader option flags which are in use
+        uint32_t m_shaderOptionFlagMask = 0;
+
+        // Update mesh draw packet
+        // Return true if DrawPacket was rebuilt
+        bool UpdateDrawPacket(const RPI::Scene& parentScene, bool forceUpdate);
+
+        // Update shader option flags for the instance group
+        // It goes through the cullable's m_shaderOptionFlags of each associated ModelDataInstance and get combined m_shaderOptionFlags and m_shaderOptionFlagMask
+        // Return true if flags or mask changed.
+        bool UpdateShaderOptionFlags();
+
+        // Add/remove an associated ModelDataInstance (thread safe)
+        void AddAssociatedInstance(ModelDataInstance* instance);
+        void RemoveAssociatedInstance(ModelDataInstance* instance);
     };
 
     //! Manages all the instance groups used by mesh instancing.

@@ -222,6 +222,7 @@ set(FILES
     res/veed_tree.bmp
     res/vegetati.bmp
     res/vegtree.bmp
+    res/Prefab_80.svg
     res/video_record.ico
     res/warning16x16.ico
     res/water.bmp
@@ -382,6 +383,7 @@ set(FILES
     NewLevelDialog.cpp
     NewLevelDialog.h
     NewLevelDialog.ui
+    NewLevelDialog.qrc
     Dialogs/PythonScriptsDialog.cpp
     Dialogs/PythonScriptsDialog.h
     Dialogs/PythonScriptsDialog.ui
@@ -390,9 +392,7 @@ set(FILES
     EditorFileMonitor.cpp
     EditorFileMonitor.h
     Include/IEditorFileMonitor.h
-    GameExporter.cpp
     GameResourcesExporter.cpp
-    GameExporter.h
     GameResourcesExporter.h
     DocMultiArchive.h
     FBXExporterDialog.h

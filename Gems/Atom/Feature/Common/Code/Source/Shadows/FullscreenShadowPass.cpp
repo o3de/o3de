@@ -77,6 +77,7 @@ namespace AZ
                 AZStd::array<float, 2> m_screenSize;
                 int m_lightIndex;
                 int m_filterMode;
+                int m_filteringSampleCountMode;
                 int m_blendBetweenCascadesEnable;
                 int m_receiverShadowPlaneBiasEnable;
 
@@ -86,6 +87,7 @@ namespace AZ
             constantData.m_lightIndex = m_lightIndex;
             constantData.m_screenSize = { static_cast<float>(resolution.m_width), static_cast<float>(resolution.m_height) };
             constantData.m_filterMode = static_cast<int>(m_filterMethod);
+            constantData.m_filteringSampleCountMode = static_cast<int>(m_filteringSampleCountMode);
             constantData.m_blendBetweenCascadesEnable = m_blendBetweenCascadesEnable ? 1 : 0;
             constantData.m_receiverShadowPlaneBiasEnable = m_receiverShadowPlaneBiasEnable ? 1 : 0;
 

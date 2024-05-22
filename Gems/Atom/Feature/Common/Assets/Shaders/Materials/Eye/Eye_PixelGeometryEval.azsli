@@ -84,7 +84,7 @@ PixelGeometryData EvaluatePixelGeometry_Eye(VsOutput IN, bool isFrontFace)
     ConstructTBN(real3(IN.normal), real4(IN.tangent), objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
 
     // Bitangent is temporarily added back to fix the eye material screenshot test.
-    bitangentWS = normalize(mul(objectToWorld, real4(IN.bitangent, 0.0)).xyz);
+    bitangentWS = real3(normalize(mul(objectToWorld, float4(IN.bitangent, 0.0)).xyz));
 
     PixelGeometryData geoData = EvaluatePixelGeometry_Eye(
         IN.worldPosition,

@@ -60,6 +60,9 @@ namespace AZ
             //! Get scene by using scene name.
             virtual Scene* GetSceneByName(const AZ::Name& name) const = 0;
 
+            //! Return the number of registered scenes
+            virtual uint32_t GetNumScenes() const = 0;
+
             //! Get the render pipeline created for a window
             virtual RenderPipelinePtr GetRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle) = 0;
 

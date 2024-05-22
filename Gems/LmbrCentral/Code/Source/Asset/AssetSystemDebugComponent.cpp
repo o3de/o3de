@@ -8,7 +8,6 @@
 
 #include "AssetSystemDebugComponent.h"
 #include "ISystem.h"
-#include "IRenderAuxGeom.h"
 
 #include "AzCore/Asset/AssetManager.h"
 #include <AzCore/Interface/Interface.h>

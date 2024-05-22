@@ -435,7 +435,7 @@ struct IAnimTrack
     void SetValue(float time, AZ::Quaternion& value, bool bDefault = false);
 
     // Only for position tracks, offset all track keys by this amount.
-    virtual void OffsetKeyPosition(const Vec3& value) = 0;
+    virtual void OffsetKeyPosition(const AZ::Vector3& value) = 0;
 
     // Used to update the data in tracks after the parent entity has been changed.
     virtual void UpdateKeyDataAfterParentChanged(const AZ::Transform& oldParentWorldTM, const AZ::Transform& newParentWorldTM) = 0;
@@ -587,31 +587,9 @@ public:
     // Return movie system that created this node.
     virtual IMovieSystem*   GetMovieSystem() const = 0;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Space position/orientation scale.
-    //////////////////////////////////////////////////////////////////////////
-    //! Translate entity node.
-    virtual void SetPos(float time, const Vec3& pos) = 0;
-    //! Rotate entity node.
-    virtual void SetRotate(float time, const Quat& quat) = 0;
-    //! Scale entity node.
-    virtual void SetScale(float time, const Vec3& scale) = 0;
-
-    /**
-     * O3DE_DEPRECATION_NOTICE(GHI-9326)
-     * use equivalent SetPos that accepts AZ::Vector3
-     **/
-    void SetPos(float time, const AZ::Vector3& pos);
-    /**
-     * O3DE_DEPRECATION_NOTICE(GHI-9326)
-     * use equivalent SetRotate that accepts AZ::Quaternion
-     **/
-    void SetRotate(float time, const AZ::Quaternion& rot);
-    /**
-     * O3DE_DEPRECATION_NOTICE(GHI-9326)
-     * use equivalent SetScale that accepts AZ::Vector3
-     **/
-    void SetScale(float time, const AZ::Vector3& scale);
+    virtual void SetPos(float time, const AZ::Vector3& pos) = 0;
+    virtual void SetRotate(float time, const AZ::Quaternion& rot) = 0;
+    virtual void SetScale(float time, const AZ::Vector3& scale) = 0;
 
     //! Compute and return the offset which brings the current position to the given position
     virtual Vec3 GetOffsetPosition(const Vec3& position);

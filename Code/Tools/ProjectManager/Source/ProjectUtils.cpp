@@ -303,14 +303,14 @@ namespace O3DE::ProjectManager
             else if (const auto& incompatibleObjects = incompatibleObjectsResult.GetValue(); !incompatibleObjects.isEmpty())
             {
                 // provide a couple more user friendly error messages for uncommon cases
-                if (incompatibleObjects.at(0).contains("engine.json", Qt::CaseInsensitive))
+                if (incompatibleObjects.at(0).contains(EngineJsonFilename.data(), Qt::CaseInsensitive))
                 {
-                    errorTitle = "Failed to read engine.json";
+                    errorTitle = errorTitle.format("Failed to read %s", EngineJsonFilename.data());
                     generalError = "The projects compatibility with this engine could not be checked because the engine.json could not be read";
                 }
-                else if (incompatibleObjects.at(0).contains("project.json", Qt::CaseInsensitive))
+                else if (incompatibleObjects.at(0).contains(ProjectJsonFilename.data(), Qt::CaseInsensitive))
                 {
-                    errorTitle = "Invalid project, failed to read project.json";
+                    errorTitle = errorTitle.format("Invalid project, failed to read %s", ProjectJsonFilename.data());
                     generalError = "The projects compatibility with this engine could not be checked because the project.json could not be read.";
                 }
                 else

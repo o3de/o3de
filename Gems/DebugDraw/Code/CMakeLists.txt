@@ -35,6 +35,7 @@ ly_add_target(
             AZ::AtomCore
             Gem::Atom_RPI.Public
             Gem::Atom_Bootstrap.Headers
+            Gem::Atom_Feature_Common.Static
             Legacy::CryCommon
 )
 
@@ -43,6 +44,7 @@ ly_add_target(
     NAMESPACE Gem
     FILES_CMAKE
         debugdraw_shared_files.cmake
+        ../Assets/debugdraw_asset_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
@@ -86,6 +88,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AtomCore
                 Gem::Atom_RPI.Public
                 Gem::Atom_Bootstrap.Headers
+                Gem::Atom_Feature_Common.Static
                 Legacy::CryCommon
                 AZ::AzToolsFramework
     )

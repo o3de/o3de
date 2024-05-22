@@ -398,7 +398,10 @@ namespace AZ
 
         void ParentPass::UpdateConnectedBindings()
         {
-            Pass::UpdateConnectedBindings();
+            // Update parent pass inputs first...
+            UpdateConnectedInputBindings();
+
+            /// ... then update children, which may depend on inputs...
             if (IsEnabled())
             {
                 for (const Ptr<Pass>& child : m_children)
@@ -406,6 +409,9 @@ namespace AZ
                     child->UpdateConnectedBindings();
                 }
             }
+
+            // ... then update outputs, which may depend on children.
+            UpdateConnectedOutputBindings();
         }
 
         void ParentPass::FrameBeginInternal(FramePrepareParams params)

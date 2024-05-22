@@ -104,7 +104,7 @@ public:
     // Key modifications
     virtual CUiAnimViewKeyHandle CreateKey(const float time);
     virtual void SlideKeys(const float time0, const float timeOffset);
-    void OffsetKeyPosition(const Vec3& offset);
+    void OffsetKeyPosition(const AZ::Vector3& offset);
 
     // Value getters
     template <class Type>

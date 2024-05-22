@@ -6,5 +6,5 @@
 #
 #
 
-set(RENDERDOC_RUNTIME_DEPENDENCIES "${BASE_PATH}/lib/librenderdoc.so")
 set(RENDERDOC_INCLUDE_DIRECTORIES "include")
+add_compile_definitions(ATOM_RENDERDOC_RUNTIME_PATH="${BASE_PATH}/lib")

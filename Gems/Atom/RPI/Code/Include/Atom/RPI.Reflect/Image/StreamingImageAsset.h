@@ -82,7 +82,7 @@ namespace AZ
             //! Given a mip chain index, returns the number of mip levels in the chain.
             size_t GetMipCount(size_t mipChainIndex) const;
 
-            //! Get image data for specified mip and slice. It may return empty array if its mipchain assets are not loaded
+            //! Get image data for specified mip and slice. It may trigger mipchain asset loading if the asset wasn't loaded
             AZStd::span<const uint8_t> GetSubImageData(uint32_t mip, uint32_t slice);
 
             //! Returns streaming image pool asset id of the pool that will be used to create the streaming image.

@@ -52,6 +52,12 @@ public: // member functions
     //! Set the released action name
     virtual void SetReleasedActionName(const LyShine::ActionName& actionName) = 0;
 
+    //! Get the release outside of the UI element action name
+    virtual const LyShine::ActionName& GetOutsideReleasedActionName() const = 0;
+
+    //! Set the release outside of the UI element action name
+    virtual void SetOutsideReleasedActionName(const LyShine::ActionName& actionName) = 0;
+
     //! Get the hover start callback
     virtual OnActionCallback GetHoverStartActionCallback() = 0;
 

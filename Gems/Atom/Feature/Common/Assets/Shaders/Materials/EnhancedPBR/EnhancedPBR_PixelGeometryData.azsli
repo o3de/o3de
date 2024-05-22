@@ -34,8 +34,8 @@
         real3 vertexNormal;
         float2 uvs[UvSetCount];
         float2 detailUvs[UvSetCount];
-        real3 tangents[UvSetCount];
-        real3 bitangents[UvSetCount];
+        float3 tangents[UvSetCount];
+        float3 bitangents[UvSetCount];
         bool isFrontFace;
         bool isDisplacementClipped;
     };

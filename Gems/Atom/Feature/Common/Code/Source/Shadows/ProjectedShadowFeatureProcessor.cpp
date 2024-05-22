@@ -573,7 +573,6 @@ namespace AZ::Render
     {
         if (m_primaryEsmShadowmapsPass == nullptr)
         {
-            AZ_Error("ProjectedShadowFeatureProcessor", false, "Cannot find a required pass.");
             return;
         }
 
@@ -594,11 +593,6 @@ namespace AZ::Render
     void ProjectedShadowFeatureProcessor::SetFilterParameterToPass()
     {
         static uint32_t nameIndex = 0;
-        if (m_primaryProjectedShadowmapsPass == nullptr || m_primaryEsmShadowmapsPass == nullptr)
-        {
-            AZ_Error("ProjectedShadowFeatureProcessor", false, "Cannot find a required pass.");
-            return;
-        }
 
         // Create index table buffer.
         // [GFX TODO ATOM-14851] Should not be creating a new buffer here, just map the data or orphan with new data.
@@ -607,8 +601,11 @@ namespace AZ::Render
 
         m_filterParamBufferHandler.UpdateBuffer(m_shadowData.GetRawData<FilterParamIndex>(), static_cast<uint32_t>(m_shadowData.GetSize()));
 
-        m_primaryEsmShadowmapsPass->SetShadowmapIndexTableBuffer(indexTableBuffer);
-        m_primaryEsmShadowmapsPass->SetFilterParameterBuffer(m_filterParamBufferHandler.GetBuffer());
+        if (m_primaryEsmShadowmapsPass)
+        {
+            m_primaryEsmShadowmapsPass->SetShadowmapIndexTableBuffer(indexTableBuffer);
+            m_primaryEsmShadowmapsPass->SetFilterParameterBuffer(m_filterParamBufferHandler.GetBuffer());
+        }
     }
 
     void ProjectedShadowFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& /*packet*/)

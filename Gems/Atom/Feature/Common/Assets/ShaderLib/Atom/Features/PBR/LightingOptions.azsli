@@ -69,6 +69,13 @@
 #define ENABLE_TRANSMISSION             1
 #endif
 
+#ifndef ENABLE_PARALLAX
+#define ENABLE_PARALLAX					1
+#endif
+
+#ifndef ENABLE_MOBILEBRDF
+#define ENABLE_MOBILEBRDF               0
+#endif
 
 // --- Shader Options ---
 
@@ -86,6 +93,10 @@ option bool o_enableCapsuleLights = true;
 option bool o_enableQuadLightLTC = true;
 option bool o_enableQuadLightApprox = true;
 option bool o_enablePolygonLights = true;
+option bool o_enableSimplePointLights = true;
+option bool o_enableSimpleSpotLights = true;
+option bool o_enableSimpleSpotLightShadows = true;
+option bool o_enableDecals = true;
 
 option bool o_enableIBL = true;
 option bool o_enableSubsurfaceScattering = false;

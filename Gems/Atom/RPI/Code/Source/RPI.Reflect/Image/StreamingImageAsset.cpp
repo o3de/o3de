@@ -173,7 +173,20 @@ namespace AZ
 
         AZStd::span<const uint8_t> StreamingImageAsset::GetSubImageData(uint32_t mip, uint32_t slice)
         {
+            auto mipChainIndex = GetMipChainIndex(mip);
             const ImageMipChainAsset* mipChainAsset = GetImageMipChainAsset(mip);
+
+            if (mipChainAsset == nullptr)
+            {
+                MipChain& mipChain = m_mipChains[mipChainIndex];
+
+                if (mipChain.m_asset.QueueLoad())
+                {
+                    mipChain.m_asset.BlockUntilLoadComplete();
+                }
+
+                mipChainAsset = GetImageMipChainAsset(mip);
+            }
 
             if (mipChainAsset == nullptr)
             {
@@ -182,7 +195,6 @@ namespace AZ
                 return AZStd::span<const uint8_t>();
             }
 
-            auto mipChainIndex = GetMipChainIndex(mip);
             auto mipChainOffset = aznumeric_cast<AZ::u32>(GetMipLevel(mipChainIndex));
             return mipChainAsset->GetSubImageData(mip - mipChainOffset, slice);
         }

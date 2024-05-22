@@ -59,7 +59,7 @@ namespace AZ
 
                 const BufferAssetView& indexBufferAssetView = mesh.GetIndexBufferAssetView();
                 const Data::Asset<BufferAsset>& indexBufferAsset = indexBufferAssetView.GetBufferAsset();
-                if (indexBufferAsset)
+                if (indexBufferAsset.GetId().IsValid())
                 {
                     Data::Instance<Buffer> indexBuffer = Buffer::FindOrCreate(indexBufferAsset);
 

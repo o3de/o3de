@@ -113,7 +113,7 @@ namespace LUAEditor
         void OnMenuCloseCurrentWindow();
 
         //file menu
-        void assetBrowserPressed();
+        void OnFileMenuOpen();
         void OnFileMenuNew();
         void OnFileMenuSave();
         void OnFileMenuSaveAs();

@@ -509,9 +509,25 @@ namespace AssetProcessor
 
             QString sourceFullPath(builderParams.m_processJobRequest.m_fullPath.c_str());
 
-            if (sourceFullPath.length() >= AP_MAX_PATH_LEN)
+            if (sourceFullPath.length() >= ASSETPROCESSOR_WARN_PATH_LEN && sourceFullPath.length() < ASSETPROCESSOR_TRAIT_MAX_PATH_LEN)
             {
-                AZ_Warning(AssetBuilderSDK::WarningWindow, false, "Source Asset: %s filepath length %d exceeds the maximum path length (%d) allowed.\n", sourceFullPath.toUtf8().data(), sourceFullPath.length(), AP_MAX_PATH_LEN);
+                AZ_Warning(
+                    AssetBuilderSDK::WarningWindow,
+                    false,
+                    "Source Asset: %s filepath length %d exceeds the suggested max path length (%d). This may not work on all platforms.\n",
+                    sourceFullPath.toUtf8().data(),
+                    sourceFullPath.length(),
+                    ASSETPROCESSOR_WARN_PATH_LEN);
+            }
+            if (sourceFullPath.length() >= ASSETPROCESSOR_TRAIT_MAX_PATH_LEN)
+            {
+                AZ_Warning(
+                    AssetBuilderSDK::WarningWindow,
+                    false,
+                    "Source Asset: %s filepath length %d exceeds the maximum path length (%d) allowed.\n",
+                    sourceFullPath.toUtf8().data(),
+                    sourceFullPath.length(),
+                    ASSETPROCESSOR_TRAIT_MAX_PATH_LEN);
                 result.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
             }
             else
@@ -972,12 +988,26 @@ namespace AssetProcessor
         // breaks macOS. The case is already setup properly when the job
         // was created.
 
-        if (productFile.length() >= AP_MAX_PATH_LEN)
+        if (productFile.length() >= ASSETPROCESSOR_WARN_PATH_LEN && productFile.length() < ASSETPROCESSOR_TRAIT_MAX_PATH_LEN)
+        {
+            AZ_Warning(
+                AssetBuilderSDK::WarningWindow,
+                false,
+                "Product '%s' path length (%d) exceeds the suggested max path length (%d). This may not work on all platforms.\n",
+                productFile.toUtf8().data(),
+                productFile.length(),
+                ASSETPROCESSOR_WARN_PATH_LEN);
+        }
+
+        if (productFile.length() >= ASSETPROCESSOR_TRAIT_MAX_PATH_LEN)
         {
             AZ_Error(
-                AssetBuilderSDK::ErrorWindow, false,
+                AssetBuilderSDK::ErrorWindow,
+                false,
                 "Cannot copy file: Product '%s' path length (%d) exceeds the max path length (%d) allowed on disk\n",
-                productFile.toUtf8().data(), productFile.length(), AP_MAX_PATH_LEN);
+                productFile.toUtf8().data(),
+                productFile.length(),
+                ASSETPROCESSOR_TRAIT_MAX_PATH_LEN);
             return false;
         }
 

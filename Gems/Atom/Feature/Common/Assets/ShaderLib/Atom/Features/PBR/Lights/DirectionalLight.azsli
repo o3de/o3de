@@ -18,13 +18,13 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
 {
     // Shadowed check
     const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
-    float litRatio = 1.0;
+    real litRatio = 1.0;
     real camToSurfDist = real(distance(ViewSrg::m_worldPosition, surface.position));
 
     // Distance travelled by the light inside the object. If not redefined to a non-negative value, it will take the following behavior:
     // - If transmission mode is thick object -> use transmission thickness parameter instead
     // - If transmission mode is thin object -> ignore back lighting
-    float transmissionDistance = -1.0;
+    real transmissionDistance = -1.0;
 
 #if ENABLE_SHADOWS
     if (o_enableShadows && shadowIndex <  SceneSrg::m_directionalLightCount)
@@ -32,24 +32,24 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
 #if ENABLE_TRANSMISSION
         if (o_transmission_mode == TransmissionMode::ThickObject)
         {
-            float2 visibilityAndThickness = DirectionalLightShadow::GetVisibilityThickTransmission(shadowIndex, surface.position, surface.vertexNormal, screenUv);
+            real2 visibilityAndThickness = DirectionalLightShadow::GetVisibilityThickTransmission(shadowIndex, real3(surface.position), surface.vertexNormal, screenUv);
             litRatio = visibilityAndThickness.x;
             transmissionDistance = visibilityAndThickness.y;
         } 
         else if (o_transmission_mode == TransmissionMode::ThinObject) 
         {
-            float2 visibilityAndThickness = DirectionalLightShadow::GetVisibilityThinTransmission(
-                                                shadowIndex, surface.position, surface.vertexNormal, screenUv, surface.transmission.GetShrinkFactor());
+            real2 visibilityAndThickness = DirectionalLightShadow::GetVisibilityThinTransmission(
+                                                shadowIndex, real3(surface.position), surface.vertexNormal, screenUv, surface.transmission.GetShrinkFactor());
 
             litRatio = visibilityAndThickness.x;
             transmissionDistance = visibilityAndThickness.y;
         }
         else
         {
-            litRatio = DirectionalLightShadow::GetVisibility(shadowIndex, surface.position, surface.vertexNormal, screenUv);
+            litRatio = DirectionalLightShadow::GetVisibility(shadowIndex, real3(surface.position), surface.vertexNormal, screenUv);
         }
 #else 
-        litRatio = DirectionalLightShadow::GetVisibility(shadowIndex, surface.position, surface.vertexNormal, screenUv);
+        litRatio = DirectionalLightShadow::GetVisibility(shadowIndex, real3(surface.position), surface.vertexNormal, screenUv);
 #endif // ENABLE_TRANSMISSION
 
     }
@@ -76,7 +76,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
         // [GFX TODO][ATOM-2012] care of multiple directional light
         // Currently shadow check is done only for index == shadowIndex.
         real currentLitRatio = 1.0;
-        float currentTransmissionDistance = -1.0;
+        real currentTransmissionDistance = -1.0;
 
 #if ENABLE_SHADOWS
         if (o_enableShadows && index == shadowIndex)
@@ -107,7 +107,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
     // Add debug coloring for directional light shadow
     if (o_enableShadows && shadowIndex <  SceneSrg::m_directionalLightCount)
     {
-        lightingData.specularLighting = real3(DirectionalLightShadow::AddDebugColoring(lightingData.specularLighting, shadowIndex, surface.position, real3(surface.vertexNormal)));
+        lightingData.specularLighting = DirectionalLightShadow::AddDebugColoring(lightingData.specularLighting, shadowIndex, real3(surface.position), surface.vertexNormal);
     }
 #endif
 }

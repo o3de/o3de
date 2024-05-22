@@ -10,7 +10,6 @@
 
 #if !defined(Q_MOC_RUN)
 #include "Include/EditorCoreAPI.h"
-#include <QtViewPane.h>
 #include "Resource.h"
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -35,6 +34,8 @@
 class QMainWindow;
 class ViewportEditorModeNotificationsBusImpl;
 struct ViewLayoutState;
+struct QtViewPane;
+class XmlNodeRef;
 
 namespace AzQtComponents
 {

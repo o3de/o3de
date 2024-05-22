@@ -10,7 +10,7 @@
 
 // include the required headers
 #include "EMotionFXConfig.h"
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 #include "MorphTarget.h"
 
 
@@ -22,7 +22,8 @@ namespace EMotionFX
      * Each LOD in an Actor object can have a morph setup.
      */
     class EMFX_API MorphSetup
-        : public BaseObject
+        : public MCore::RefCounted
+
     {
         AZ_CLASS_ALLOCATOR_DECL
 

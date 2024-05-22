@@ -80,9 +80,18 @@ namespace AzToolsFramework
             }
 
             // iterate through new changes and try to apply them
-            // if application of change fails, try them again next tick
+            // if application of change fails, or the number of changes exceeds
+            // the number allowed during this synchronize operation, place the
+            // unprocessed and unsuccessful changes back to the list and try again
+            // the next time synchronize is triggered.
+
+            // Track both failed and unprocessed changes separately. Failed changes must go after
+            // unprocessed changes to prevent a starvation in case there are changes that are
+            // dependent on the application of other changes in the queue.
             AZStd::vector<AZStd::shared_ptr<AssetEntryChange>> changesFailed;
+            AZStd::vector<AZStd::shared_ptr<AssetEntryChange>> deferredChanges;
             changesFailed.reserve(m_changes.size());
+            deferredChanges.reserve(m_changes.size());
             int changesAppliedThisBatch = 0;
             for (auto& change : m_changes)
             {
@@ -90,22 +99,25 @@ namespace AzToolsFramework
                 // it moves 1, since we pre-increment it
                 if ( (changesToApplyThisBatch > 0) && (++changesAppliedThisBatch > changesToApplyThisBatch))
                 {
-                    changesFailed.emplace_back(AZStd::move(change));
+                    deferredChanges.emplace_back(AZStd::move(change));
                 }
                 else if (!change->Apply(m_rootEntry))
                 {
                     changesFailed.emplace_back(AZStd::move(change));
                 }
             }
-
+            for (auto& failedChange : changesFailed)
+            {
+                deferredChanges.emplace_back(AZStd::move(failedChange));
+            }
 #if AZ_DEBUG_BUILD
             if (!m_changes.empty())
             {
                 AZ_TracePrintf("Asset Browser DEBUG", "%d/%d data changes applied\n", m_changes.size() - changesFailed.size(), m_changes.size());
             }
 #endif
-            // try again next time.
-            AZStd::swap(m_changes, changesFailed);
+            // try again next time, with the unprocessed changes before the failed changes.
+            AZStd::swap(m_changes, deferredChanges);
 
             if (m_rootEntry->IsInitialUpdate())
             {

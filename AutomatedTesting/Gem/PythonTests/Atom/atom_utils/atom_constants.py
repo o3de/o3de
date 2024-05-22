@@ -186,6 +186,13 @@ ATMOSPHERE_ORIGIN = {
     'PlanetCenterAtLocalOrigin': 2,
 }
 
+# Fog Mode
+FOG_MODES = {
+    'Linear': 0,
+    'Exponential': 1,
+    'ExponentialSquared': 2
+}
+
 # Level list used in Editor Level Load Test
 # WARNING: "Sponza" level is sandboxed due to an intermittent failure.
 LEVEL_LIST = ["hermanubis", "hermanubis_high", "macbeth_shaderballs", "PbrMaterialChart", "ShadowTest"]
@@ -392,6 +399,13 @@ class AtomComponentProperties:
           - 'Octaves Blend Factor' Blend factor between the noise octaves (0.0, 1.0).
           - 'Enable Turbulence Properties' Enables Turbulence Properties (bool).
           - 'Enable Fog Layer' Enables the fog layer (bool).
+          - 'Fog Mode' Set the fog formula
+          (enum, Uses above dictionary FOG_MODES)
+               Linear: f = (end - d)/(end - start)
+               Exponential: f = 1/exp(d * density)
+               ExponentialSquared: f = 1/exp((d * density)^2)
+          - 'Fog Density': Density control for Exponential and ExponentialSquared modes.
+          - 'Fog Density Clamp': The maximum density that the fog can reach. 
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -400,18 +414,21 @@ class AtomComponentProperties:
             'requires': [AtomComponentProperties.postfx_layer()],
             'Enable Deferred Fog': 'Controller|Configuration|Enable Deferred Fog',
             'Fog Color': 'Controller|Configuration|Fog Color',
-            'Fog Start Distance': 'Controller|Configuration|Fog Start Distance',
-            'Fog End Distance': 'Controller|Configuration|Fog End Distance',
-            'Fog Bottom Height': 'Controller|Configuration|Fog Bottom Height',
-            'Fog Max Height': 'Controller|Configuration|Fog Max Height',
-            'Noise Texture': 'Controller|Configuration|Noise Texture',
-            'Noise Texture First Octave Scale': 'Controller|Configuration|Noise Texture First Octave Scale',
-            'Noise Texture First Octave Velocity': 'Controller|Configuration|Noise Texture First Octave Velocity',
-            'Noise Texture Second Octave Scale': 'Controller|Configuration|Noise Texture Second Octave Scale',
-            'Noise Texture Second Octave Velocity': 'Controller|Configuration|Noise Texture Second Octave Velocity',
-            'Octaves Blend Factor': 'Controller|Configuration|Octaves Blend Factor',
+            'Fog Start Distance': 'Controller|Configuration|Distance|Fog Start Distance',
+            'Fog End Distance': 'Controller|Configuration|Distance|Fog End Distance',
+            'Fog Bottom Height': 'Controller|Configuration|Fog Layer|Fog Bottom Height',
+            'Fog Max Height': 'Controller|Configuration|Fog Layer|Fog Max Height',
+            'Noise Texture': 'Controller|Configuration|Turbulence|Noise Texture',
+            'Noise Texture First Octave Scale': 'Controller|Configuration|Turbulence|Noise Texture First Octave Scale',
+            'Noise Texture First Octave Velocity': 'Controller|Configuration|Turbulence|Noise Texture First Octave Velocity',
+            'Noise Texture Second Octave Scale': 'Controller|Configuration|Turbulence|Noise Texture Second Octave Scale',
+            'Noise Texture Second Octave Velocity': 'Controller|Configuration|Turbulence|Noise Texture Second Octave Velocity',
+            'Octaves Blend Factor': 'Controller|Configuration|Turbulence|Octaves Blend Factor',
             'Enable Turbulence Properties': 'Controller|Configuration|Enable Turbulence Properties',
             'Enable Fog Layer': 'Controller|Configuration|Enable Fog Layer',
+            'Fog Density': 'Controller|Configuration|Density Control|Fog Density',
+            'Fog Density Clamp': 'Controller|Configuration|Density Control|Fog Density Clamp',
+            'Fog Mode': 'Controller|Configuration|Fog Mode',
         }
         return properties[property]
 

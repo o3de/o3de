@@ -67,6 +67,7 @@ namespace AZ
                 AZStd::vector<char>& compiledShader,
                 AZStd::vector<uint8_t>& compiledByteCode,
                 const AssetBuilderSDK::PlatformInfo& platform,
+                const bool isGraphicsDevModeEnabled,
                 ByProducts& byproducts) const;
 
             bool UpdateCompiledShader(AZ::IO::FileIOStream& fileStream,
@@ -80,7 +81,8 @@ namespace AZ
                                 AZStd::vector<uint8_t>& compiledByteCode,
                                 AZStd::vector<char>& sourceMetalShader,
                                 const AssetBuilderSDK::PlatformInfo& platform,
-                                const RHI::ShaderBuildArguments& shaderBuildArguments) const;
+                                const RHI::ShaderBuildArguments& shaderBuildArguments,
+                                const bool isGraphicsDevModeEnabled) const;
             
             using ArgBufferEntries = AZStd::pair<AZStd::string, uint32_t>;
             struct compareByRegisterId {

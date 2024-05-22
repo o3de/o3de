@@ -98,8 +98,7 @@ namespace LmbrCentral
     void EditorBaseShapeComponent::SetShapeColor(const AZ::Color& shapeColor)
     {
         m_shapeColor = shapeColor;
-        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
+        InvalidatePropertyDisplay(AzToolsFramework::Refresh_Values);
     }
 
     void EditorBaseShapeComponent::SetShapeWireframeColor(const AZ::Color& wireColor)
@@ -125,8 +124,7 @@ namespace LmbrCentral
             }
 
             // This changes the visibility of a property so a request to refresh the entire tree must be sent.
-            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
+            InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
         }
     }
 

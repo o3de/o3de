@@ -50,7 +50,7 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
     color = AcesCg_To_LinearSrgb(color);
 
     // We could add other forms of tonemapping in future via shader options.
-    color = ApplyFilmicTonemap(color);
+    color = TonemapFilmic(color);
 #endif
 
     OUT.m_color.rgb = color;

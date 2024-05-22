@@ -846,7 +846,6 @@ namespace GradientSignal
 
     void ImageGradientComponent::ClearImageModificationBuffer()
     {
-        AZ_Assert(!ModificationBufferIsActive(), "Clearing modified image data while it's still in use as the active asset!");
         AZ_Assert(m_configuration.m_numImageModificationsActive == 0, "Clearing modified image data while in modification mode!")
         m_modifiedImageData.resize(0);
         m_imageIsModified = false;
@@ -856,7 +855,7 @@ namespace GradientSignal
     {
         // The modification buffer is considered active if the modification buffer has data in it and
         // our cached imageData pointer is pointing into the modification buffer instead of into an image asset.
-        return (m_modifiedImageData.data() != nullptr) &&
+        return (m_modifiedImageData.data() != nullptr) && (!m_modifiedImageData.empty()) && 
             (reinterpret_cast<const void*>(m_imageData.data()) == reinterpret_cast<const void*>(m_modifiedImageData.data()));
     }
 

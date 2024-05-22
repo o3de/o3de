@@ -567,8 +567,6 @@ namespace AZ::Debug
             window = NoWindow;
         }
 
-        Platform::OutputToDebugger(window, message);
-
         if (!DebugInternal::g_suppressEBusCalls)
         {
             // only call into Ebusses if we are not in a recursive-exception situation as that
@@ -582,6 +580,17 @@ namespace AZ::Debug
             }
         }
 
+        OutputToRawAndDebugger(window, message);
+    }
+
+    void Trace::OutputToRawAndDebugger(const char* window, const char* message)
+    {
+        if (window == nullptr)
+        {
+            window = NoWindow;
+        }
+
+        Platform::OutputToDebugger(window, message);
         RawOutput(window, message);
     }
 

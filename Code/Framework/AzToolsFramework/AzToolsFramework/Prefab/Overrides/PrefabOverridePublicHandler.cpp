@@ -55,6 +55,7 @@ namespace AzToolsFramework
                     ->Attribute(AZ::Script::Attributes::Category, "Prefab")
                     ->Attribute(AZ::Script::Attributes::Module, "prefab")
                     ->Event("AreOverridesPresent", &PrefabOverridePublicInterface::AreOverridesPresent)
+                    ->Event("AreComponentOverridesPresent", &PrefabOverridePublicInterface::AreComponentOverridesPresent)
                     ->Event("RevertOverrides", &PrefabOverridePublicInterface::RevertOverrides);
             }
         }
@@ -69,6 +70,22 @@ namespace AzToolsFramework
                     pathAndLinkIdPair.first /= AZ::Dom::Path(relativePathFromEntity);
                 }
                 return m_prefabOverrideHandler.AreOverridesPresent(pathAndLinkIdPair.first, pathAndLinkIdPair.second);
+            }
+
+            return false;
+        }
+
+        bool PrefabOverridePublicHandler::AreComponentOverridesPresent(AZ::EntityComponentIdPair entityComponentIdPair)
+        {
+            AZStd::pair<AZ::Dom::Path, LinkId> pathAndLinkIdPair = GetComponentPathAndLinkIdFromFocusedPrefab(entityComponentIdPair);
+            if (!pathAndLinkIdPair.first.IsEmpty() && pathAndLinkIdPair.second != InvalidLinkId)
+            {
+                AZStd::optional<PatchType> patchType =
+                    m_prefabOverrideHandler.GetPatchType(pathAndLinkIdPair.first, pathAndLinkIdPair.second);
+                if (patchType.has_value())
+                {
+                    return true;
+                }
             }
 
             return false;

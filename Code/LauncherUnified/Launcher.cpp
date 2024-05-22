@@ -563,7 +563,7 @@ namespace O3DELauncher
     #if !defined(AZ_MONOLITHIC_BUILD)
         constexpr const char* crySystemLibraryName = AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX  "CrySystem" AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION;
         AZStd::unique_ptr<AZ::DynamicModuleHandle> crySystemLibrary = AZ::DynamicModuleHandle::Create(crySystemLibraryName);
-        if (crySystemLibrary->Load(true))
+        if (crySystemLibrary->Load(AZ::DynamicModuleHandle::LoadFlags::InitFuncRequired))
         {
             PFNCREATESYSTEMINTERFACE CreateSystemInterface =
                 crySystemLibrary->GetFunction<PFNCREATESYSTEMINTERFACE>("CreateSystemInterface");

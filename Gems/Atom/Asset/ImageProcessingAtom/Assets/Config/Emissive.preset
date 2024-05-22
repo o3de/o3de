@@ -19,7 +19,7 @@
                 "Name": "Emissive",
                 "RGB_Weight": "CIEXYZ",
                 "PixelFormat": "ASTC_4x4",
-                "MaxTextureSize": 2048,
+                "MaxTextureSize": 512,
                 "DiscardAlpha": true,
                 "MipMapSetting": {
                   "MipGenType": "Box"
@@ -30,7 +30,7 @@
                 "Name": "Emissive",
                 "RGB_Weight": "CIEXYZ",
                 "PixelFormat": "ASTC_6x6",
-                "MaxTextureSize": 2048,
+                "MaxTextureSize": 512,
                 "DiscardAlpha": true,
                 "MipMapSetting": {
                   "MipGenType": "Box"

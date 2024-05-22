@@ -352,8 +352,41 @@ void CAnimComponentNode::ConvertBetweenWorldAndLocalScale(Vec3& scale, ETransfor
     scale.Set(uniformScale, uniformScale, uniformScale);
 }
 
+AZ::Vector3 CAnimComponentNode::TransformFromWorldToLocalPosition(const AZ::Vector3& position) const {
+    AZ::Transform parentTransform = AZ::Transform::Identity();
+    GetParentWorldTransform(parentTransform);
+    parentTransform.Invert();
+    return parentTransform.TransformPoint(position);
+}
+
+AZ::Vector3 CAnimComponentNode::TransformFromWorldToLocalScale(const AZ::Vector3& scale) const
+{
+    AZ::Transform parentTransform = AZ::Transform::Identity();
+    AZ::Transform scaleTransform = AZ::Transform::CreateUniformScale(scale.GetMaxElement());
+
+    GetParentWorldTransform(parentTransform);
+    parentTransform.Invert();
+    scaleTransform = parentTransform * scaleTransform;
+    const float uniformScale = scaleTransform.GetUniformScale();
+    return AZ::Vector3(uniformScale);
+}
+
+
+AZ::Quaternion CAnimComponentNode::TransformFromWorldToLocalRotation(const AZ::Quaternion& rotation) const {
+    AZ::Transform rotTransform = AZ::Transform::CreateFromQuaternion(rotation);
+    rotTransform.ExtractUniformScale();
+
+    AZ::Transform parentTransform = AZ::Transform::Identity();
+    GetParentWorldTransform(parentTransform);
+    parentTransform.ExtractUniformScale();
+    parentTransform.Invert();
+    
+    rotTransform = parentTransform * rotTransform;
+    return rotTransform.GetRotation();
+}
+
 //////////////////////////////////////////////////////////////////////////
-void CAnimComponentNode::SetPos(float time, const Vec3& pos)
+void CAnimComponentNode::SetPos(float time, const AZ::Vector3& pos)
 {
     if (m_componentTypeId == AZ::Uuid(AZ::EditorTransformComponentTypeId) || m_componentTypeId == AzFramework::TransformComponent::TYPEINFO_Uuid())
     {
@@ -364,10 +397,8 @@ void CAnimComponentNode::SetPos(float time, const Vec3& pos)
         {
             // pos is in world position, even if the entity is parented - because Component Entity AZ::Transforms do not correctly set
             // CBaseObject parenting. This should probably be fixed, but for now, we explicitly change from World to Local space here
-            Vec3 localPos(pos);
-            ConvertBetweenWorldAndLocalPosition(localPos, eTransformConverstionDirection_toLocalSpace);
-
-            posTrack->SetValue(time, localPos, bDefault);
+            AZ::Vector3 localPosition = TransformFromWorldToLocalPosition(pos);
+            posTrack->SetValue(time, localPosition, bDefault);
         }
 
         if (!bDefault)
@@ -392,7 +423,7 @@ Vec3 CAnimComponentNode::GetPos()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CAnimComponentNode::SetRotate(float time, const Quat& rotation)
+void CAnimComponentNode::SetRotate(float time, const AZ::Quaternion& rotation)
 {
     if (m_componentTypeId == AZ::Uuid(AZ::EditorTransformComponentTypeId) || m_componentTypeId == AzFramework::TransformComponent::TYPEINFO_Uuid())
     {
@@ -403,9 +434,8 @@ void CAnimComponentNode::SetRotate(float time, const Quat& rotation)
         {
             // Rotation is in world space, even if the entity is parented - because Component Entity AZ::Transforms do not correctly set
             // CBaseObject parenting, so we convert it to Local space here. This should probably be fixed, but for now, we explicitly change from World to Local space here.
-            Quat localRot(rotation);
-            ConvertBetweenWorldAndLocalRotation(localRot, eTransformConverstionDirection_toLocalSpace);
-            rotTrack->SetValue(time, localRot, bDefault);
+            AZ::Quaternion localRotation = TransformFromWorldToLocalRotation(rotation);
+            rotTrack->SetValue(time, localRotation, bDefault);
         }
 
         if (!bDefault)
@@ -452,7 +482,7 @@ Quat CAnimComponentNode::GetRotate()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CAnimComponentNode::SetScale(float time, const Vec3& scale)
+void CAnimComponentNode::SetScale(float time, const AZ::Vector3& scale)
 {
     if (m_componentTypeId == AZ::Uuid(AZ::EditorTransformComponentTypeId) || m_componentTypeId == AzFramework::TransformComponent::TYPEINFO_Uuid())
     {
@@ -463,8 +493,7 @@ void CAnimComponentNode::SetScale(float time, const Vec3& scale)
         {
             // Scale is in World space, even if the entity is parented - because Component Entity AZ::Transforms do not correctly set
             // CBaseObject parenting, so we convert it to Local space here. This should probably be fixed, but for now, we explicitly change from World to Local space here.
-            Vec3 localScale(scale);
-            ConvertBetweenWorldAndLocalScale(localScale, eTransformConverstionDirection_toLocalSpace);
+            AZ::Vector3 localScale = TransformFromWorldToLocalScale(scale);
             scaleTrack->SetValue(time, localScale, bDefault);
         }
 

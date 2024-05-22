@@ -9,12 +9,12 @@
 #include <PythonSystemComponent.h>
 #include <EditorPythonBindings/EditorPythonBindingsBus.h>
 
-#include <Source/PythonCommon.h>
+#include <EditorPythonBindings/PythonCommon.h>
 #include <Source/PythonSymbolsBus.h>
-#include <pybind11/pybind11.h>
+#include <osdefs.h> // for DELIM
 #include <pybind11/embed.h>
 #include <pybind11/eval.h>
-#include <osdefs.h> // for DELIM
+#include <pybind11/pybind11.h>
 
 
 #include <AzCore/Component/EntityId.h>
