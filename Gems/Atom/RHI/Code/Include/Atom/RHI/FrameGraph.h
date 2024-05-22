@@ -192,9 +192,17 @@ namespace AZ::RHI
         /// Validates the graph at the end of the building phase.
         ResultCode ValidateEnd();
 
+        /// Validates an attachment before adding it.
+        template<class T>
+        void ValidateAttachment(
+            const T& attachmentDescriptor, ScopeAttachmentUsage usage, ScopeAttachmentAccess access) const;
+
         /// Validates that an overlapping attachment has the proper access and usage before adding it.
         void ValidateOverlappingAttachment(
-            const ScopeAttachmentDescriptor& descriptor, ScopeAttachmentUsage usage, ScopeAttachmentAccess access) const;
+            AttachmentId attachmentId,
+            ScopeAttachmentUsage usage,
+            ScopeAttachmentAccess access,
+            const ScopeAttachment& scopeAttachment) const;
 
         /// Called by the FrameGraphCompiler to mark the graph as compiled.
         void SetCompiled();
@@ -264,4 +272,22 @@ namespace AZ::RHI
         bool m_isBuilding = false;
         size_t m_frameCount = 0;
     };
-}
+
+    template<class T>
+    void FrameGraph::ValidateAttachment(const T& attachmentDescriptor, ScopeAttachmentUsage usage, ScopeAttachmentAccess access) const
+    {
+        const ScopeAttachmentPtrList* scopeAttachmentList =
+            m_attachmentDatabase.FindScopeAttachmentList(m_currentScope->GetId(), attachmentDescriptor.m_attachmentId);
+        if (scopeAttachmentList)
+        {
+            for (const ScopeAttachment* attachment : *scopeAttachmentList)
+            {
+                if (attachmentDescriptor.GetViewDescriptor().OverlapsSubResource(
+                            static_cast<const T&>(attachment->GetScopeAttachmentDescriptor()).GetViewDescriptor()))
+                {
+                    ValidateOverlappingAttachment(attachmentDescriptor.m_attachmentId, usage, access, *attachment);
+                }
+            }
+        }
+    }
+} // namespace AZ::RHI
