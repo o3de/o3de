@@ -74,7 +74,7 @@
                 },
                 {
                     "Name": "DisplayMapperPass",
-                    "TemplateName": "MobileDisplayMapperTemplate",
+                    "TemplateName": "DisplayMapperTemplate",
                     "Enabled": true,
                     "Connections": [
                         {
@@ -86,13 +86,6 @@
                         },
                         {
                             "LocalSlot": "PipelineOutput",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "PipelineOutput"
-                            }
-                        },
-                        {
-                            "LocalSlot": "Output",
                             "AttachmentRef": {
                                 "Pass": "Parent",
                                 "Attachment": "PipelineOutput"

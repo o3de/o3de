@@ -581,10 +581,6 @@
                 "Path": "Passes/Mobile/PostProcessParent.pass"
             },
             {
-                "Name": "MobileDisplayMapperTemplate",
-                "Path": "Passes/Mobile/DisplayMapper.pass"
-            },
-            {
                 "Name": "KawaseShadowBlurTemplate",
                 "Path": "Passes/KawaseShadowBlur.pass"
             },

@@ -266,7 +266,6 @@
                 {
                     "Name": "CopyToSwapChain",
                     "TemplateName": "FullscreenCopyTemplate",
-                    "Enabled": false,
                     "Connections": [
                         {
                             "LocalSlot": "Input",
