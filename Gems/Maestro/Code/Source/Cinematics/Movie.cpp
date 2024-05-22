@@ -1569,7 +1569,7 @@ bool CMovieSystem::IsCapturing() const
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CMovieSystem::SerializeNodeType(AnimNodeType& animNodeType, XmlNodeRef& xmlNode, bool bLoading, const uint version, int flags)
+void CMovieSystem::SerializeNodeType(AnimNodeType& animNodeType, XmlNodeRef& xmlNode, bool bLoading, const uint version, [[maybe_unused]] int flags)
 {
     static const char* kType = "Type";
 
