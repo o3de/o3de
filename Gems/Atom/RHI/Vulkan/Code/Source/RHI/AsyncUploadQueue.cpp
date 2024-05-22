@@ -96,16 +96,14 @@ namespace AZ
             RHI::Ptr<Fence> uploadFence = Fence::Create();
             uploadFence->Init(device, RHI::FenceState::Reset);
 
-            auto signalEvent = AZStd::make_shared<SignalEvent>();
-            uploadFence->SetSignalEvent(signalEvent);
+            uploadFence->SetSignalEvent(AZStd::make_shared<SignalEvent>());
             uploadFence->SetSignalEventBitToSignal(0);
             uploadFence->SetSignalEventDependencies(1);
 
             if (request.m_fenceToSignal)
             {
                 auto fenceToSignal = static_cast<Fence*>(request.m_fenceToSignal);
-                auto signalEvent = AZStd::make_shared<SignalEvent>();
-                fenceToSignal->SetSignalEvent(signalEvent);
+                fenceToSignal->SetSignalEvent(AZStd::make_shared<SignalEvent>());
                 fenceToSignal->SetSignalEventBitToSignal(0);
                 fenceToSignal->SetSignalEventDependencies(1);
             }
@@ -200,8 +198,7 @@ namespace AZ
             RHI::Ptr<Fence> uploadFence = Fence::Create();
             uploadFence->Init(device, RHI::FenceState::Reset);
 
-            auto signalEvent = AZStd::make_shared<SignalEvent>();
-            uploadFence->SetSignalEvent(signalEvent);
+            uploadFence->SetSignalEvent(AZStd::make_shared<SignalEvent>());
             uploadFence->SetSignalEventBitToSignal(0);
             uploadFence->SetSignalEventDependencies(1);
 
@@ -485,8 +482,7 @@ namespace AZ
                 AZ_Assert(framePacket.m_stagingBuffer, "Failed to acquire staging buffer");
                 framePacket.m_fence = Fence::Create();
                 result = framePacket.m_fence->Init(device, RHI::FenceState::Signaled);
-                auto signalEvent = AZStd::make_shared<SignalEvent>();
-                framePacket.m_fence->SetSignalEvent(signalEvent);
+                framePacket.m_fence->SetSignalEvent(AZStd::make_shared<SignalEvent>());
                 framePacket.m_fence->SetSignalEventBitToSignal(0);
                 framePacket.m_fence->SetSignalEventDependencies(1);
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
