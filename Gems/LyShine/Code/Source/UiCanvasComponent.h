@@ -152,9 +152,6 @@ public: // member functions
 
     bool HandleInputEvent(const AzFramework::InputChannel::Snapshot& inputSnapshot,
         const AZ::Vector2* viewportPos = nullptr,
-#if defined(CARBONATED)
-        const AZ::Vector2* viewportSize = nullptr,
-#endif
         AzFramework::ModifierKeyMask activeModifierKeys = AzFramework::ModifierKeyMask::None) override;
     bool HandleTextEvent(const AZStd::string& textUTF8) override;
     bool HandleInputPositionalEvent(const AzFramework::InputChannel::Snapshot& inputSnapshot, AZ::Vector2 viewportPos) override;

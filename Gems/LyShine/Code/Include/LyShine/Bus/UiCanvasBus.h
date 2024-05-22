@@ -279,9 +279,6 @@ public: // member functions
     //! Handle an input event for the canvas
     virtual bool HandleInputEvent(const AzFramework::InputChannel::Snapshot& inputSnapshot,
         const AZ::Vector2* viewportPos = nullptr,
-#if defined(CARBONATED)
-        const AZ::Vector2* viewportSize = nullptr,
-#endif
         AzFramework::ModifierKeyMask activeModifierKeys = AzFramework::ModifierKeyMask::None) = 0;
 
     //! Handle a unicode text event for the canvas

@@ -1161,9 +1161,6 @@ void UiCanvasComponent::SetLocalUserIdInputFilter(AzFramework::LocalUserId local
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 bool UiCanvasComponent::HandleInputEvent(const AzFramework::InputChannel::Snapshot& inputSnapshot,
     const AZ::Vector2* viewportPos,
-#if defined(CARBONATED)
-    const AZ::Vector2* viewportSize,
-#endif
     AzFramework::ModifierKeyMask activeModifierKeys)
 {
     // Ignore input events if we're not enabled
@@ -1200,29 +1197,16 @@ bool UiCanvasComponent::HandleInputEvent(const AzFramework::InputChannel::Snapsh
         if (!m_renderToTexture && m_isPositionalInputSupported)
         {
 #if defined(CARBONATED)
-            float viewportWidth;
-            float viewportHeight;
+            UiRenderer* uiRenderer = m_renderInEditor ? GetUiRendererForEditor() : GetUiRendererForGame();
+            AZ_Assert(uiRenderer, "UiRenderer is not available");
 
-            if (viewportSize)
-            {
-                viewportWidth = viewportSize->GetX();
-                viewportHeight = viewportSize->GetY();
-            }
-            else
-            {
-                UiRenderer* uiRenderer = m_renderInEditor ? GetUiRendererForEditor() : GetUiRendererForGame();
-                AZ_Assert(uiRenderer, "UiRenderer is not available");
-
-                const AZ::Vector2 renderViewportSize = uiRenderer->GetViewportSize();
-                viewportWidth = renderViewportSize.GetX();
-                viewportHeight = renderViewportSize.GetY();
-            }
+            const AZ::Vector2 renderViewportSize = uiRenderer->GetViewportSize();
 
             // Transform this position to the scaled canvas
-            const float x_ratio = m_targetCanvasSize.GetX() / viewportWidth;
-            const float y_ratio = m_targetCanvasSize.GetY() / viewportHeight;
+            const AZ::Vector2 scaledCanvas(
+                m_targetCanvasSize.GetX() / renderViewportSize.GetX(), m_targetCanvasSize.GetY() / renderViewportSize.GetY());
 
-            const AZ::Vector2 scaledPos = (*viewportPos) * AZ::Vector2(x_ratio, y_ratio);
+            const AZ::Vector2 scaledPos = (*viewportPos) * scaledCanvas;
 
             if (HandleInputPositionalEvent(inputSnapshot, scaledPos))
 #else

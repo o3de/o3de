@@ -291,11 +291,7 @@ void UiCanvasManager::GenerateMousePositionInputEvent()
             systemCursorPositionNormalized.GetY() * m_latestViewportSize.GetY());
 
         // Handle the input event
-#if defined(CARBONATED)
-        HandleInputEventForLoadedCanvases(inputSnapshot, cursorViewportPos, m_latestViewportSize, AzFramework::ModifierKeyMask::None, true);
-#else
         HandleInputEventForLoadedCanvases(inputSnapshot, cursorViewportPos, AzFramework::ModifierKeyMask::None, true);
-#endif
     }
 }
 
@@ -700,20 +696,12 @@ bool UiCanvasManager::HandleInputEventForLoadedCanvases(const AzFramework::Input
         modifierKeyStates->GetActiveModifierKeys() :
         AzFramework::ModifierKeyMask::None;
 
-#if defined(CARBONATED)
-    bool handled = HandleInputEventForLoadedCanvases(
-        inputSnapshot, viewportPos, m_latestViewportSize, activeModifierKeys, positionData2D ? true : false);
-#else
     bool handled = HandleInputEventForLoadedCanvases(inputSnapshot, viewportPos, activeModifierKeys, positionData2D ? true : false);
-#endif
     return handled;
 }
 
 bool UiCanvasManager::HandleInputEventForLoadedCanvases(const AzFramework::InputChannel::Snapshot& inputSnapshot,
     const AZ::Vector2& viewportPos,
-#if defined(CARBONATED)
-    const AZ::Vector2& viewportSize,
-#endif
     AzFramework::ModifierKeyMask activeModifierKeys,
     bool isPositional)
 {
@@ -746,11 +734,7 @@ bool UiCanvasManager::HandleInputEventForLoadedCanvases(const AzFramework::Input
             areAnyInWorldInputCanvasesLoaded = true;
         }
 
-#if defined(CARBONATED)
-        if (canvas->HandleInputEvent(inputSnapshot, &viewportPos, &viewportSize, activeModifierKeys))
-#else
         if (canvas->HandleInputEvent(inputSnapshot, &viewportPos, activeModifierKeys))
-#endif
         {
             handled = true;
             break;
