@@ -99,6 +99,9 @@ public: // member functions
 
     //! Return the current orthographic view matrix
     AZ::Matrix4x4 GetModelViewProjectionMatrix();
+#if defined(CARBONATED)
+    AZ::Matrix4x4 GetModelViewProjectionMatrix(const AZ::Vector2& viewportSize);
+#endif
 
     //! Return the curent viewport size
     AZ::Vector2 GetViewportSize();

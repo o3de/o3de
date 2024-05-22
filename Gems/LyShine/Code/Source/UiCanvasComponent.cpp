@@ -1196,7 +1196,22 @@ bool UiCanvasComponent::HandleInputEvent(const AzFramework::InputChannel::Snapsh
     {
         if (!m_renderToTexture && m_isPositionalInputSupported)
         {
+#if defined(CARBONATED)
+            UiRenderer* uiRenderer = m_renderInEditor ? GetUiRendererForEditor() : GetUiRendererForGame();
+            AZ_Assert(uiRenderer, "UiRenderer is not available");
+
+            const AZ::Vector2 renderViewportSize = uiRenderer->GetViewportSize();
+
+            // Transform this position to the scaled canvas
+            const AZ::Vector2 scaledCanvas(
+                m_targetCanvasSize.GetX() / renderViewportSize.GetX(), m_targetCanvasSize.GetY() / renderViewportSize.GetY());
+
+            const AZ::Vector2 scaledPos = (*viewportPos) * scaledCanvas;
+
+            if (HandleInputPositionalEvent(inputSnapshot, scaledPos))
+#else
             if (HandleInputPositionalEvent(inputSnapshot, *viewportPos))
+#endif
             {
                 return true;
             }
@@ -3675,12 +3690,32 @@ void UiCanvasComponent::SetTargetCanvasSizeAndUniformScale(bool isInGame, AZ::Ve
 
     if (isInGame)
     {
+#if defined(CARBONATED)
+        m_targetCanvasSize = m_canvasSize;
+
+        const float origAspectRatio = m_targetCanvasSize.GetX() / m_targetCanvasSize.GetY();
+        const float newAspectRatio = canvasSize.GetX() / canvasSize.GetY();
+
+        // Wider
+        if (newAspectRatio > origAspectRatio)
+        {
+            // Preserve Height, alter Width into new aspect ratio
+            m_targetCanvasSize.SetX(m_targetCanvasSize.GetY() * newAspectRatio);
+        }
+        // Taller
+        else if (newAspectRatio < origAspectRatio)
+        {
+            // Preserve Width, alter Height into new aspect ratio
+            m_targetCanvasSize.SetY(m_targetCanvasSize.GetX() / newAspectRatio);
+        }
+#else
         // Set the target canvas size to the canvas size specified by the caller
         m_targetCanvasSize = canvasSize;
 
         // set the device scale
         m_deviceScale.SetX(m_targetCanvasSize.GetX() / m_canvasSize.GetX());
         m_deviceScale.SetY(m_targetCanvasSize.GetY() / m_canvasSize.GetY());
+#endif
     }
     else
     {
