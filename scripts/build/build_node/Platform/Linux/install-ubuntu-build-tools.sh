@@ -28,7 +28,7 @@ fi
 #
 UBUNTU_DISTRO="$(lsb_release -sc)"
 UBUNTU_VER="$(lsb_release -sr)"
-if [ "$UBUNTU_DISTRO" == "bionic" ] || [ "$UBUNTU_DISTRO" == "focal" ] || [ "$UBUNTU_DISTRO" == "jammy" ]
+if [ "$UBUNTU_DISTRO" == "bionic" ] || [ "$UBUNTU_DISTRO" == "focal" ] || [ "$UBUNTU_DISTRO" == "jammy" ] || [ "$UBUNTU_DISTRO" == "noble" ]
 then
     echo "Setup for Ubuntu $UBUNTU_VER LTS ($UBUNTU_DISTRO)"
 else
@@ -60,7 +60,7 @@ CMAKE_VER=3.22.1
 
 if [ $KITWARE_REPO_COUNT -eq 0 ]
 then
-    echo Adding Kitware Repository for CMake $CMAKE_VER
+    echo Adding Kitware Repository for CMake (Min version $CMAKE_VER)
 
     wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | sudo tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
     CMAKE_DEB_REPO="'deb https://apt.kitware.com/ubuntu/ $UBUNTU_DISTRO main'"
@@ -74,6 +74,10 @@ then
     then
         # Ubuntu 22.04 already has an acceptable version of cmake
         echo "Ubuntu 22.04's cmake package already at version $CMAKE_VER"
+    elif [ "$UBUNTU_DISTRO" == "noble" ]
+    then
+        # Ubuntu 24.04 already has an acceptable version of cmake
+        echo "Ubuntu 24.04's cmake package already at version 3.28"
     fi
 else
     echo  Kitware Repository repo already set
