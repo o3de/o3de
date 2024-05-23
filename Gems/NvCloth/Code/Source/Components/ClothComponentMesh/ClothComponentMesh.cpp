@@ -9,6 +9,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Math/PackedVector3.h>
+#include <AzCore/Math/PackedVector4.h>
 
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/SkinnedMesh/SkinnedMeshOverrideBus.h>
@@ -552,7 +553,7 @@ namespace NvCloth
 
             MappedBuffer<AZ::PackedVector3f> destVertices(subMesh.GetSemanticBufferAssetView(positionSemantic), numVertices, AZ::RHI::Format::R32G32B32_FLOAT);
             MappedBuffer<AZ::PackedVector3f> destNormals(subMesh.GetSemanticBufferAssetView(normalSemantic), numVertices, AZ::RHI::Format::R32G32B32_FLOAT);
-            MappedBuffer<AZ::Vector4> destTangents(subMesh.GetSemanticBufferAssetView(tangentSemantic), numVertices, AZ::RHI::Format::R32G32B32A32_FLOAT);
+            MappedBuffer<AZ::PackedVector4f> destTangents(subMesh.GetSemanticBufferAssetView(tangentSemantic), numVertices, AZ::RHI::Format::R32G32B32A32_FLOAT);
             MappedBuffer<AZ::PackedVector3f> destBitangents(subMesh.GetSemanticBufferAssetView(bitangentSemantic), numVertices, AZ::RHI::Format::R32G32B32_FLOAT);
 
             auto* destVerticesBuffer = destVertices.GetBuffer();
@@ -590,7 +591,9 @@ namespace NvCloth
                 {
                     const AZ::Vector3& renderTangent = renderTangents[renderVertexIndex];
                     destTangentsBuffer[index].Set(
-                        renderTangent,
+                        renderTangent.GetX(),
+                        renderTangent.GetY(),
+                        renderTangent.GetZ(),
                         -1.0f); // Shader function ConstructTBN inverts w to change bitangent sign, but the bitangents passed are already corrected, so passing -1.0 to counteract.
                 }
 
