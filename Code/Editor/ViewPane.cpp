@@ -787,10 +787,7 @@ void CLayoutViewPane::SetViewportFOV(const float fovDegrees)
         pRenderViewport->SetFOV(fovRadians);
 
         // if viewport camera is active, make selected fov new default
-        if (pRenderViewport->GetViewManager()->GetCameraObjectId() == GUID_NULL)
-        {
-            SandboxEditor::SetCameraDefaultFovRadians(fovRadians);
-        }
+        SandboxEditor::SetCameraDefaultFovRadians(fovRadians);
 
         OnFOVChanged(fovRadians);
     }

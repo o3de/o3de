@@ -208,7 +208,6 @@ CMovieSystem::CMovieSystem(ISystem* pSystem)
     m_pCallback = nullptr;
     m_pUser = nullptr;
     m_bPaused = false;
-    m_bEnableCameraShake = true;
     m_bCutscenesPausedInEditor = true;
     m_sequenceStopBehavior = eSSB_GotoEndTime;
     m_lastUpdateTime = AZ::Time::ZeroTimeUs;
@@ -1219,11 +1218,6 @@ void CMovieSystem::SetCameraParams(const SCameraParams& Params)
     if (m_pUser)
     {
         m_pUser->SetActiveCamera(m_ActiveCameraParams);
-    }
-
-    if (m_pCallback)
-    {
-        m_pCallback->OnSetCamera(m_ActiveCameraParams);
     }
 }
 

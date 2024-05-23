@@ -615,26 +615,6 @@ void SandboxIntegrationManager::ContextMenu_NewEntity()
 }
 
 //////////////////////////////////////////////////////////////////////////
-// Returns true if at least one non-layer entity was found.
-bool CollectEntityBoundingBoxesForZoom(const AZ::EntityId& entityId, AABB& selectionBounds)
-{
-    AABB entityBoundingBox;
-    CEntityObject* componentEntityObject = nullptr;
-    AzToolsFramework::ComponentEntityEditorRequestBus::EventResult(
-        /*result*/ componentEntityObject,
-        /*address*/ entityId,
-        &AzToolsFramework::ComponentEntityEditorRequestBus::Events::GetSandboxObject);
-
-    if (componentEntityObject)
-    {
-        componentEntityObject->GetBoundBox(entityBoundingBox);
-        selectionBounds.Add(entityBoundingBox.min);
-        selectionBounds.Add(entityBoundingBox.max);
-    }
-    return true;
-}
-
-//////////////////////////////////////////////////////////////////////////
 void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::EntityIdList& entityIds)
 {
     if (entityIds.empty())

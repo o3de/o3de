@@ -74,8 +74,6 @@ struct HitContext
     bool bOnlyGizmo;
     //! Test objects using advanced selection helpers.
     bool bUseSelectionHelpers;
-    //! an object excluded in hittest.
-    CBaseObject* pExcludedObject;
 
     // Input parameters.
 
