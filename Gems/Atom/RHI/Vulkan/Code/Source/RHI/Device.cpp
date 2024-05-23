@@ -1123,12 +1123,14 @@ namespace AZ
             // Our sparse image implementation requires the device support sparse binding and particle residency for 2d and 3d images
             // And it should use standard block shape (64k).
             // It also requires memory alias support so resources can use the same block repeatedly (this may reduce performance based on implementation)
+           const auto& copyQueue = m_commandQueueContext.GetCommandQueue(RHI::HardwareQueueClass::Copy);
             m_features.m_tiledResource = m_enabledDeviceFeatures.sparseBinding
                 && m_enabledDeviceFeatures.sparseResidencyImage2D
                 && m_enabledDeviceFeatures.sparseResidencyImage3D
                 && m_enabledDeviceFeatures.sparseResidencyAliased
                 && deviceProperties.sparseProperties.residencyStandard2DBlockShape
-                && deviceProperties.sparseProperties.residencyStandard3DBlockShape;
+                && deviceProperties.sparseProperties.residencyStandard3DBlockShape
+                && ((m_queueFamilyProperties[copyQueue.GetQueueDescriptor().m_familyIndex].queueFlags & VK_QUEUE_SPARSE_BINDING_BIT) == VK_QUEUE_SPARSE_BINDING_BIT);
 
             // Check if the Vulkan device support subgroup operations
             m_features.m_waveOperation = physicalDevice.IsFeatureSupported(DeviceFeature::SubgroupOperation);
