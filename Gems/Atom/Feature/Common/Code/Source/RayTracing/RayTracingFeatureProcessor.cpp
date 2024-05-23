@@ -774,11 +774,34 @@ namespace AZ
         {
             if (m_materialInfoBufferNeedsUpdate)
             {
-                m_materialInfoGpuBuffer.AdvanceCurrentElement();
-                m_materialInfoGpuBuffer.CreateOrResizeCurrentBufferWithElementCount<MaterialInfo>(
-                    m_subMeshCount + m_proceduralGeometryMaterialInfos.begin()->second.size());
+                Data::Instance<RPI::Buffer>& currentMaterialInfoGpuBuffer = m_materialInfoGpuBuffer.AdvanceCurrentElement();
+                uint64_t meshMaterialInfoByteCount = m_subMeshCount * sizeof(MaterialInfo);
+
+                if (currentMaterialInfoGpuBuffer == nullptr)
+                {
+                    // allocate the MaterialInfo structured buffer
+                    RPI::CommonBufferDescriptor desc;
+                    desc.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
+                    desc.m_bufferName = "RayTracingMaterialInfo";
+                    desc.m_byteCount = meshMaterialInfoByteCount;
+                    desc.m_elementSize = sizeof(MaterialInfo);
+                    currentMaterialInfoGpuBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+                }
+                else if (currentMaterialInfoGpuBuffer->GetBufferSize() < meshMaterialInfoByteCount)
+                {
+                    // resize for the new sub-mesh count
+                    currentMaterialInfoGpuBuffer->Resize(meshMaterialInfoByteCount);
+                }
+
                 m_materialInfoGpuBuffer.UpdateCurrentBufferData(m_materialInfos);
-                m_materialInfoGpuBuffer.UpdateCurrentBufferData(m_proceduralGeometryMaterialInfos, m_subMeshCount);
+
+                if (!m_proceduralGeometryMaterialInfos.empty())
+                {
+                    m_materialInfoGpuBuffer.CreateOrResizeCurrentBufferWithElementCount<MaterialInfo>(
+                        m_subMeshCount + m_proceduralGeometryMaterialInfos.begin()->second.size());
+                    m_materialInfoGpuBuffer.UpdateCurrentBufferData(m_proceduralGeometryMaterialInfos, m_subMeshCount);
+                }
+
                 m_materialInfoBufferNeedsUpdate = false;
             }
         }
