@@ -1103,7 +1103,7 @@ void UiAnimationSystem::GoToFrame(const char* seqName, float targetFrame)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void UiAnimationSystem::SerializeNodeType(EUiAnimNodeType& animNodeType, XmlNodeRef& xmlNode, bool bLoading, const uint version, int flags)
+void UiAnimationSystem::SerializeNodeType(EUiAnimNodeType& animNodeType, XmlNodeRef& xmlNode, bool bLoading, const uint version, [[maybe_unused]] int flags)
 {
     static const char* kType = "Type";
 
