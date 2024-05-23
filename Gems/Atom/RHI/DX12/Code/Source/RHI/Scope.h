@@ -45,12 +45,14 @@ namespace AZ
             //! Adds a transition barrier that will be emitted at the beginning of the scope.
             //! Can specify a state that the command list need to be before emitting the barrier.
             //! A null state means that it doesn't matter in which state the command list is.
+            //! Returns the barrier inserted. This barrier may have been merged with a previously inserted barrier.
             const D3D12_RESOURCE_TRANSITION_BARRIER& QueuePrologueTransition(
                 const D3D12_RESOURCE_TRANSITION_BARRIER& transitionBarrier,
                 const BarrierOp::CommandListState* state = nullptr);
             //! Adds a transition barrier that will be emitted at the end of the scope.
             //! Can specify a state that the command list need to be before emitting the barrier.
             //! A null state means that it doesn't matter in which state the command list is.
+            //! Returns the barrier inserted. This barrier may have been merged with a previously inserted barrier.
             const D3D12_RESOURCE_TRANSITION_BARRIER& QueueEpilogueTransition(
                 const D3D12_RESOURCE_TRANSITION_BARRIER& transitionBarrier,
                 const BarrierOp::CommandListState* state = nullptr);
@@ -63,6 +65,7 @@ namespace AZ
             //! Adds a transition barrier that will be emitted at the end of the scope before resolving.
             //! Can specify a state that the command list need to be before emitting the barrier.
             //! A null state means that it doesn't matter in which state the command list is.
+            //! Returns the barrier inserted. This barrier may have been merged with a previously inserted barrier.
             const D3D12_RESOURCE_TRANSITION_BARRIER& QueueResolveTransition(
                 const D3D12_RESOURCE_TRANSITION_BARRIER& transitionBarrier,
                 const BarrierOp::CommandListState* state = nullptr);

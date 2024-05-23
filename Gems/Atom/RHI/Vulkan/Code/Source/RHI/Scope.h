@@ -66,6 +66,7 @@ namespace AZ
             void End(CommandList& commandList) const;
 
             //! Adds a barrier for a scope attachment resource to be emitted at a later time.
+            //! Returns the barrier inserted. This barrier may have been merged with a previously inserted barrier.
             template<class T>
             const Barrier& QueueAttachmentBarrier(
                 const RHI::ScopeAttachment& attachment,
@@ -78,6 +79,7 @@ namespace AZ
             }
 
             //! Adds a barrier over a resource that is not a scope attachment that will be emitted at a later time.
+            //! Returns the barrier inserted. This barrier may have been merged with a previously inserted barrier.
             template<class T>
             const Barrier& QueueBarrier(
                 BarrierSlot slot,
