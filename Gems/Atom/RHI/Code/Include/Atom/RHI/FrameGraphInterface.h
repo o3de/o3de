@@ -129,7 +129,7 @@ namespace AZ::RHI
         AZ_DEPRECATED_MESSAGE("Deprecated. Please use UseSubpassInputAttachments with a ScopeAttachmentStage parameter")
         ResultCode UseSubpassInputAttachments(AZStd::span<const ImageScopeAttachmentDescriptor> descriptors)
         {
-            return UseSubpassInputAttachments(descriptors, ScopeAttachmentStage::Any);
+            return UseSubpassInputAttachments(descriptors, ScopeAttachmentStage::AnyGraphics);
         }
 
         //! Declares a single subpass input attachment for use on the current scope.
@@ -144,7 +144,7 @@ namespace AZ::RHI
         AZ_DEPRECATED_MESSAGE("Deprecated. Please use UseSubpassInputAttachment with a ScopeAttachmentStage parameter")
         ResultCode UseSubpassInputAttachment(const ImageScopeAttachmentDescriptor& descriptor)
         {
-            return UseSubpassInputAttachment(descriptor, ScopeAttachmentStage::Any);
+            return UseSubpassInputAttachment(descriptor, ScopeAttachmentStage::AnyGraphics);
         }
             
         //! Declares a single resolve attachment for use on the current scope.
@@ -166,7 +166,8 @@ namespace AZ::RHI
         AZ_DEPRECATED_MESSAGE("Deprecated. Please use UseDepthStencilAttachment with a ScopeAttachmentStage parameter")
         ResultCode UseDepthStencilAttachment(const ImageScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access)
         {
-            return UseDepthStencilAttachment(descriptor, access, ScopeAttachmentStage::Any);
+            return UseDepthStencilAttachment(
+                descriptor, access, ScopeAttachmentStage::EarlyFragmentTest | ScopeAttachmentStage::LateFragmentTest);
         }
             
         //! Declares a buffer shader attachment for use on the current scope.
@@ -181,7 +182,7 @@ namespace AZ::RHI
         AZ_DEPRECATED_MESSAGE("Deprecated. Please use UseShaderAttachment with a ScopeAttachmentStage parameter")
         ResultCode UseShaderAttachment(const BufferScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access)
         {
-            return UseShaderAttachment(descriptor, access, ScopeAttachmentStage::Any);
+            return UseShaderAttachment(descriptor, access, ScopeAttachmentStage::AnyGraphics);
         }
             
         //! Declares an image shader attachment for use on the current scope.
@@ -197,7 +198,7 @@ namespace AZ::RHI
         AZ_DEPRECATED_MESSAGE("Deprecated. Please use UseShaderAttachment with a ScopeAttachmentStage parameter")
         ResultCode UseShaderAttachment(const ImageScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access)
         {
-            return UseShaderAttachment(descriptor, access, ScopeAttachmentStage::Any);
+            return UseShaderAttachment(descriptor, access, ScopeAttachmentStage::AnyGraphics);
         }
             
         //! Declares a buffer copy attachment for use on the current scope.
@@ -226,7 +227,7 @@ namespace AZ::RHI
             const BufferScopeAttachmentDescriptor& descriptor)
         {
             return m_frameGraph.UseAttachment(
-                descriptor, ScopeAttachmentAccess::Read, ScopeAttachmentUsage::InputAssembly, ScopeAttachmentStage::Any);
+                descriptor, ScopeAttachmentAccess::Read, ScopeAttachmentUsage::InputAssembly, ScopeAttachmentStage::VerteInput);
         }
             
         //! Declares a query pool for use on the current scope.

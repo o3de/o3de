@@ -117,7 +117,7 @@ namespace AZ
                         scopeAttachment->GetFrameAttachment(),
                         RHI::ScopeAttachmentUsage::Copy,
                         RHI::ScopeAttachmentAccess::ReadWrite,
-                        RHI::ScopeAttachmentStage::Any,
+                        RHI::ScopeAttachmentStage::Copy,
                         scopeAttachment->GetDescriptor());
                     clearAttachment.SetBufferView(scopeAttachment->GetBufferView());
 
@@ -155,7 +155,7 @@ namespace AZ
                         scopeAttachment->GetFrameAttachment(),
                         RHI::ScopeAttachmentUsage::Copy,
                         RHI::ScopeAttachmentAccess::ReadWrite,
-                        RHI::ScopeAttachmentStage::Any,
+                        RHI::ScopeAttachmentStage::Copy,
                         scopeAttachment->GetDescriptor());
                     clearAttachment.SetImageView(scopeAttachment->GetImageView());
 
@@ -185,7 +185,7 @@ namespace AZ
                         scopeAttachment->GetFrameAttachment(),
                         RHI::ScopeAttachmentUsage::Copy,
                         RHI::ScopeAttachmentAccess::Read,
-                        RHI::ScopeAttachmentStage::Any,
+                        RHI::ScopeAttachmentStage::Copy,
                         scopeAttachment->GetDescriptor());
                     resolveSourceAttachment.SetImageView(scopeAttachment->GetImageView());
 

@@ -95,32 +95,69 @@ namespace AZ::RHI
         }
     }
 
-    const char* ToString(ScopeAttachmentStage attachmentStage)
+    AZStd::string ToString(ScopeAttachmentStage attachmentStage)
     {
-        switch (attachmentStage)
+        if (attachmentStage == ScopeAttachmentStage::Uninitialized)
         {
-            case ScopeAttachmentStage::VertexShader:
-            return "VertexShader";
-            case ScopeAttachmentStage::FragmentShader:
-                return "FragmentShader";
-            case ScopeAttachmentStage::ComputeShader:
-                return "ComputeShader";
-            case ScopeAttachmentStage::RayTracingShader:
-                return "RayTracingShader";
-            case ScopeAttachmentStage::EarlyFragmentTest:
-                return "EarlyFragmentTest";
-            case ScopeAttachmentStage::LateFragmentTest:
-                return "LateFragmentTest";
-            case ScopeAttachmentStage::AnyGraphics:
-                return "AnyGraphics";
-            case ScopeAttachmentStage::Any:
-                return "Any";
-            case ScopeAttachmentStage::Uninitialized:
-                return "Uninitialized";
-            default:
-                AZ_Assert(false, "Unkown ScopeAttachmentStage: %d", static_cast<uint32_t>(attachmentStage));
-                return "Unknown";
+            return "Uninitialized";
         }
+
+        AZStd::string stages;
+        if (CheckBitsAll(attachmentStage, ScopeAttachmentStage::VertexShader))
+        {
+            stages += "VertexShader|";
+        }
+        if (CheckBitsAll(attachmentStage, ScopeAttachmentStage::FragmentShader))
+        {
+            stages += "FragmentShader|";
+        }
+        if (CheckBitsAll(attachmentStage, ScopeAttachmentStage::ComputeShader))
+        {
+            stages += "ComputeShader|";
+        }
+        if (CheckBitsAll(attachmentStage, ScopeAttachmentStage::RayTracingShader))
+        {
+            stages += "RayTracingShader|";
+        }
+        if (CheckBitsAll(attachmentStage, ScopeAttachmentStage::EarlyFragmentTest))
+        {
+            stages += "EarlyFragmentTest|";
+        }
+        if (CheckBitsAll(attachmentStage, ScopeAttachmentStage::LateFragmentTest))
+        {
+            stages += "LateFragmentTest|";
+        }
+        if (CheckBitsAll(attachmentStage, ScopeAttachmentStage::ColorAttachmentOutput))
+        {
+            stages += "ColorAttachmentOutput|";
+        }
+        if (CheckBitsAll(attachmentStage, ScopeAttachmentStage::Copy))
+        {
+            stages += "Copy|";
+        }
+        if (CheckBitsAll(attachmentStage, ScopeAttachmentStage::Predication))
+        {
+            stages += "Predication|";
+        }
+        if (CheckBitsAll(attachmentStage, ScopeAttachmentStage::DrawIndirect))
+        {
+            stages += "DrawIndirect|";
+        }
+        if (CheckBitsAll(attachmentStage, ScopeAttachmentStage::VerteInput))
+        {
+            stages += "VerteInput|";
+        }
+        if (CheckBitsAll(attachmentStage, ScopeAttachmentStage::ShadingRate))
+        {
+            stages += "ShadingRate|";
+        }
+
+        if (!stages.empty())
+        {
+            stages.pop_back();
+        }
+
+        return stages;
     }
 
     const char* ToString(ScopeAttachmentUsage usage, ScopeAttachmentAccess acess)

@@ -109,35 +109,54 @@ namespace AZ::RHI
         //! Error value to catch uninitialized usage of this enum
         Uninitialized = 0,
 
-        //! Is used by the vertex shader
+        //! Vertex shader stage
         VertexShader = AZ_BIT(0),
 
-        //! Is used by the fragment shader
+        //! Fragment shader stage
         FragmentShader = AZ_BIT(1),
 
-        //! Is used by the compute shader
+        //! Compute shader stage
         ComputeShader = AZ_BIT(2),
 
-        //! Is used by the ray tracing shader
+        //! Ray tracing shader stage
         RayTracingShader = AZ_BIT(3),
 
-        //! Is used for early depth/stencil test
+        //! Early depth/stencil test stage
         EarlyFragmentTest = AZ_BIT(4),
 
-        //! Is used for late depth/stencil test
+        //! Late depth/stencil test stage
         LateFragmentTest = AZ_BIT(5),
+
+        //! Color attachment output stage
+        ColorAttachmentOutput = AZ_BIT(6),
+
+        //! Transfer stage
+        Copy = AZ_BIT(7),
+
+        //! Conditional rendering stage
+        Predication = AZ_BIT(8),
+
+        //! Indirect draw stage
+        DrawIndirect = AZ_BIT(9),
+
+        //! Vertex input stage
+        VerteInput = AZ_BIT(10),
+
+        //! Variable shading rate stage
+        ShadingRate = AZ_BIT(11),
 
         //! All graphics stages
         AnyGraphics = VertexShader | FragmentShader | ComputeShader | RayTracingShader,
 
         //! All stages
-        Any = AnyGraphics | EarlyFragmentTest | LateFragmentTest
+        Any = AnyGraphics | EarlyFragmentTest | LateFragmentTest | ColorAttachmentOutput | Copy | Predication | DrawIndirect |
+            VerteInput | ShadingRate
     };
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::ScopeAttachmentStage);
 
     //! Returns a string describing a usage
-    const char* ToString(ScopeAttachmentStage attachmentStage);
+    AZStd::string ToString(ScopeAttachmentStage attachmentStage);
 
     //! Returns a string describing a usage and an access
     const char* ToString(ScopeAttachmentUsage usage, ScopeAttachmentAccess acess);

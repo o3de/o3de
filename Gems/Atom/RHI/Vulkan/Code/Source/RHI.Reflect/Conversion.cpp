@@ -974,6 +974,30 @@ namespace AZ
             {
                 flags |= VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
             }
+            if (RHI::CheckBitsAll(stage, RHI::ScopeAttachmentStage::ColorAttachmentOutput))
+            {
+                flags |= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+            }
+            if (RHI::CheckBitsAll(stage, RHI::ScopeAttachmentStage::Copy))
+            {
+                flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
+            }
+            if (RHI::CheckBitsAll(stage, RHI::ScopeAttachmentStage::Predication))
+            {
+                flags |= VK_PIPELINE_STAGE_CONDITIONAL_RENDERING_BIT_EXT;
+            }
+            if (RHI::CheckBitsAll(stage, RHI::ScopeAttachmentStage::DrawIndirect))
+            {
+                flags |= VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT;
+            }
+            if (RHI::CheckBitsAll(stage, RHI::ScopeAttachmentStage::VerteInput))
+            {
+                flags |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
+            }
+            if (RHI::CheckBitsAll(stage, RHI::ScopeAttachmentStage::ShadingRate))
+            {
+                flags |= VK_PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT_EXT | VK_PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
+            }
             return flags;
         }
     }

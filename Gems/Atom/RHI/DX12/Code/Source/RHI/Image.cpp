@@ -258,7 +258,7 @@ namespace AZ
                 uint16_t planeSlice;
                 D3D12DecomposeSubresource(
                     subresourceIndex, descriptor.m_mipLevels, descriptor.m_arraySize, mipSlice, arraySlice, planeSlice);
-                range = RHI::ImageSubresourceRange(mipSlice, mipSlice + 1, arraySlice, arraySlice + 1);
+                range = RHI::ImageSubresourceRange(mipSlice, mipSlice, arraySlice, arraySlice);
                 range.m_aspectFlags = ConvertPlaneSliceToimageAspectFlags(planeSlice);
             }
 

@@ -530,7 +530,8 @@ namespace AZ::RHI
 
     ResultCode FrameGraph::UseColorAttachments(AZStd::span<const ImageScopeAttachmentDescriptor> descriptors)
     {
-        return UseAttachments(descriptors, ScopeAttachmentAccess::Write, ScopeAttachmentUsage::RenderTarget, ScopeAttachmentStage::Any);
+        return UseAttachments(
+            descriptors, ScopeAttachmentAccess::Write, ScopeAttachmentUsage::RenderTarget, ScopeAttachmentStage::ColorAttachmentOutput);
     }
 
     ResultCode FrameGraph::UseDepthStencilAttachment(
@@ -559,12 +560,12 @@ namespace AZ::RHI
 
     ResultCode FrameGraph::UseCopyAttachment(const BufferScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access)
     {
-        return UseAttachment(descriptor, access, ScopeAttachmentUsage::Copy, ScopeAttachmentStage::Any);
+        return UseAttachment(descriptor, access, ScopeAttachmentUsage::Copy, ScopeAttachmentStage::Copy);
     }
 
     ResultCode FrameGraph::UseCopyAttachment(const ImageScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access)
     {
-        return UseAttachment(descriptor, access, ScopeAttachmentUsage::Copy, ScopeAttachmentStage::Any);
+        return UseAttachment(descriptor, access, ScopeAttachmentUsage::Copy, ScopeAttachmentStage::Copy);
     }
 
     ResultCode FrameGraph::UseQueryPool(Ptr<QueryPool> queryPool, const RHI::Interval& interval, QueryPoolScopeAttachmentType type, ScopeAttachmentAccess access)

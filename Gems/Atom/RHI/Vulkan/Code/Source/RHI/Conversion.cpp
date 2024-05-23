@@ -62,11 +62,13 @@ namespace AZ
                     switch (scopeAttachment.GetScope().GetHardwareQueueClass())
                     {
                     case RHI::HardwareQueueClass::Graphics:
-                        return RHI::FilterBits(ConvertScopeAttachmentStage(scopeAttachment.GetStage()),
-                               static_cast<VkPipelineStageFlags>(
-                                   VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT |
-                                   VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT |
-                                   VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT | VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT));
+                        return RHI::FilterBits(
+                            ConvertScopeAttachmentStage(scopeAttachment.GetStage()),
+                            static_cast<VkPipelineStageFlags>(
+                                VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT |
+                                VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT |
+                                VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT | VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT |
+                                VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR));
                     case RHI::HardwareQueueClass::Compute:
                         return VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
                     default:
@@ -185,7 +187,8 @@ namespace AZ
                     VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT |
                     VK_PIPELINE_STAGE_CONDITIONAL_RENDERING_BIT_EXT | VK_PIPELINE_STAGE_SHADING_RATE_IMAGE_BIT_NV |
                     VK_PIPELINE_STAGE_TASK_SHADER_BIT_NV | VK_PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT_EXT |
-                    VK_PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR | VK_PIPELINE_STAGE_MESH_SHADER_BIT_NV;
+                    VK_PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR | VK_PIPELINE_STAGE_MESH_SHADER_BIT_NV |
+                    VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR;
                 break;
             case RHI::PipelineStateType::Dispatch:
                 flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
