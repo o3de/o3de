@@ -35,7 +35,6 @@
 #include "CommentNodeAnimator.h"
 #include "DirectorNodeAnimator.h"
 #include "ViewManager.h"
-#include "Include/IObjectManager.h"
 #include "TrackView/TrackViewDialog.h"
 #include "TrackView/TrackViewSequence.h"
 #include "TrackView/TrackViewUndo.h"

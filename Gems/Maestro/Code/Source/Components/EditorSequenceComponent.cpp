@@ -8,7 +8,6 @@
 #include "EditorSequenceComponent.h"
 #include "EditorSequenceAgentComponent.h"
 
-#include "Objects/EntityObject.h"
 #include "TrackView/TrackViewSequenceManager.h"
 #include <Maestro/Types/AnimValueType.h>
 #include <Maestro/Types/SequenceType.h>

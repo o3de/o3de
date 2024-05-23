@@ -45,7 +45,6 @@
 // Editor
 #include "TrackView/TVEventsDialog.h"
 #include "TrackView/TrackViewDialog.h"
-#include "Objects/ObjectManager.h"
 #include "Util/AutoDirectoryRestoreFileDialog.h"
 #include "TrackViewFBXImportPreviewDialog.h"
 #include "AnimationContext.h"
@@ -172,7 +171,7 @@ protected:
             if (allValidReparenting && !nodes.isEmpty())
             {
                 // By default here the drop action is a CopyAction. That is what we want in case
-                // some other random control accepts this drop (and then does nothing with the data). 
+                // some other random control accepts this drop (and then does nothing with the data).
                 // If that happens we will not receive any notifications. If the Action default was MoveAction,
                 // the dragged items in the tree would be deleted out from under us causing a crash.
                 // Since we are here, we know this drop is on the same control so we can

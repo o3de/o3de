@@ -37,7 +37,6 @@
 #endif
 
 // forward declarations.
-class CBaseObject;
 class QMenu;
 class QKeyEvent;
 struct ray_hit;
