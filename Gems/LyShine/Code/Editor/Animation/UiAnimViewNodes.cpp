@@ -1636,7 +1636,7 @@ void CUiAnimViewNodesCtrl::EndUndoTransaction()
 }
 
 //////////////////////////////////////////////////////////////////////////
-QIcon CUiAnimViewNodesCtrl::GetIconForTrack(const CUiAnimViewTrack* pTrack)
+QIcon CUiAnimViewNodesCtrl::GetIconForTrack([[maybe_unused]] const CUiAnimViewTrack* pTrack)
 {
     return QIcon(QStringLiteral(":/nodes/tvnodes-13.png"));
 }
