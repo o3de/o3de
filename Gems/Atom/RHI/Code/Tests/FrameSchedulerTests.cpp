@@ -85,12 +85,12 @@ namespace UnitTest
 
             for (const ImageUsage& usage : m_imageUsages)
             {
-                frameGraph.UseShaderAttachment(usage.m_descriptor, usage.m_access);
+                frameGraph.UseShaderAttachment(usage.m_descriptor, usage.m_access, RHI::ScopeAttachmentStage::AnyGraphics);
             }
 
             for (const BufferUsage& usage : m_bufferUsages)
             {
-                frameGraph.UseShaderAttachment(usage.m_descriptor, usage.m_access);
+                frameGraph.UseShaderAttachment(usage.m_descriptor, usage.m_access, RHI::ScopeAttachmentStage::AnyGraphics);
             }
 
             frameGraph.SetEstimatedItemCount(0);
