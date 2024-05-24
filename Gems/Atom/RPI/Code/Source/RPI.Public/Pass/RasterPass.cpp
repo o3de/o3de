@@ -188,10 +188,7 @@ namespace AZ
             {
                 const ViewPtr& view = views.front();
 
-                // Assert the view has our draw list (the view's DrawlistTags are collected from passes using its viewTag)
-                AZ_Assert(view->HasDrawListTag(m_drawListTag), "View's DrawListTags out of sync with pass'. ");
-
-                // Draw List 
+                // Draw List. May return an empty list, and that's ok.
                 viewDrawList = view->GetDrawList(m_drawListTag);
             }
 

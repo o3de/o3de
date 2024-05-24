@@ -496,6 +496,12 @@ namespace AZ
 
         void View::SortDrawList(RHI::DrawList& drawList, RHI::DrawListTag tag)
         {
+            if (!m_passesByDrawList)
+            {
+                // Nothing to sort.
+                return;
+            }
+
             // Note: it's possible that the m_passesByDrawList doesn't have a pass for the input tag.
             // This is because a View can be used for multiple render pipelines.
             // So it may contains draw list tag which exists in one render pipeline but not others.
