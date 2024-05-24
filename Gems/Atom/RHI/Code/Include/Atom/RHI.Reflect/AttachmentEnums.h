@@ -155,7 +155,7 @@ namespace AZ::RHI
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::ScopeAttachmentStage);
 
-    //! Returns a string describing a usage
+    //! Returns a string describing a stage
     AZStd::string ToString(ScopeAttachmentStage attachmentStage);
 
     //! Returns a string describing a usage and an access
