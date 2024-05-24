@@ -594,6 +594,12 @@ namespace AZ::Render
     {
         static uint32_t nameIndex = 0;
 
+        if (!m_primaryProjectedShadowmapsPass)
+        {
+            // If this pass doesn't exist, then do nothing.
+            return;
+        }
+
         // Create index table buffer.
         // [GFX TODO ATOM-14851] Should not be creating a new buffer here, just map the data or orphan with new data.
         const AZStd::string indexTableBufferName = AZStd::string::format("IndexTableBuffer(Projected) %d", nameIndex++);
