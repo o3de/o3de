@@ -891,11 +891,6 @@ void CUiAnimViewNodesCtrl::OnNMRclick(QPoint point)
             EndUndoTransaction();
         }
     }
-    else if (cmd == eMI_SelectInViewport)
-    {
-        UiAnimUndo undo("Select Animation Nodes in Viewport");
-        pSequence->SelectSelectedNodesInViewport();
-    }
     else if (cmd >= eMI_SelectSubmaterialBase && cmd < eMI_SelectSubmaterialBase + 100)
     {
         if (pAnimNode)
