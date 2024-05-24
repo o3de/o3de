@@ -79,6 +79,8 @@ namespace AZ
         MTLResourceOptions CovertCPUCahceMode(MTLCPUCacheMode cpuCahceMode);
         MTLResourceOptions CovertToResourceOptions(MTLStorageMode storageMode, MTLCPUCacheMode cpuCahceMode, MTLHazardTrackingMode hazardTrackingMode);
         MTLStorageMode GetCPUGPUMemoryMode();
+        MTLBindingAccess GetBindingAccess(RHI::ShaderInputImageAccess accessType);
+        MTLBindingAccess GetBindingAccess(RHI::ShaderInputBufferAccess accessType);
     
         void ConvertSamplerState(const RHI::SamplerState& state, MTLSamplerDescriptor* samplerDesc);
         void ConvertDepthStencilState(const RHI::DepthStencilState& depthStencil, MTLDepthStencilDescriptor* mtlDepthStencilDesc);
