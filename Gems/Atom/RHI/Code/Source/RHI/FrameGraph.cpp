@@ -118,7 +118,7 @@ namespace AZ::RHI
     }
 
     void FrameGraph::ValidateOverlappingAttachment(
-        AttachmentId attachmentId, ScopeAttachmentUsage usage, ScopeAttachmentAccess access, const ScopeAttachment& scopeAttachment) const
+        AttachmentId attachmentId, ScopeAttachmentUsage usage, [[maybe_unused]] ScopeAttachmentAccess access, const ScopeAttachment& scopeAttachment) const
     {
         // Validation for access type
         AZ_Assert(
