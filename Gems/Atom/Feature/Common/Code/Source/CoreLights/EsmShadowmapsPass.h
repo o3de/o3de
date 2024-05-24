@@ -51,10 +51,10 @@ namespace AZ
                 AZStd::array<uint32_t, 2> m_shadowmapOriginInSlice = { {0, 0 } }; // shadowmap origin in the slice of the atlas.
                 uint32_t m_shadowmapSize = static_cast<uint32_t>(ShadowmapSize::None); // width and height of shadowmap.
                 float m_lightDistanceOfCameraViewFrustum = 0.f;
-                float m_n_f_n = 0.f; // n / (f - n)
-                float m_n_f = 0.f;   // n - f
-                float m_f = 0.f;     // f
-                                     // where n: nearDepth, f: farDepth.
+                float m_nf = 0.f;  // nf
+                float m_f_n = 0.f; // f - n
+                float m_f = 0.f;   // f
+                                   // where n: nearDepth, f: farDepth.
             };
 
             virtual ~EsmShadowmapsPass() = default;

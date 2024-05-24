@@ -186,10 +186,10 @@ float ProjectedShadow::GetVisibilityEsm()
         m_shadowPosition.y >= 0 && m_shadowPosition.y * size < size - PixelMargin)
     {
         const float3 coefficients = float3(
-            ViewSrg::m_projectedFilterParams[m_shadowIndex].m_n_f_n,
-            ViewSrg::m_projectedFilterParams[m_shadowIndex].m_n_f,
+            ViewSrg::m_projectedFilterParams[m_shadowIndex].m_nf,
+            ViewSrg::m_projectedFilterParams[m_shadowIndex].m_f_n,
             ViewSrg::m_projectedFilterParams[m_shadowIndex].m_f);
-        if (coefficients.x == 0.) 
+        if (coefficients.x == 0.)
         {
             return 1.;
         }
@@ -226,8 +226,8 @@ float ProjectedShadow::GetVisibilityEsmPcf()
         m_shadowPosition.y >= 0 && m_shadowPosition.y * size < size - PixelMargin)
     {
         const float3 coefficients = float3(
-            ViewSrg::m_projectedFilterParams[m_shadowIndex].m_n_f_n,
-            ViewSrg::m_projectedFilterParams[m_shadowIndex].m_n_f,
+            ViewSrg::m_projectedFilterParams[m_shadowIndex].m_nf,
+            ViewSrg::m_projectedFilterParams[m_shadowIndex].m_f_n,
             ViewSrg::m_projectedFilterParams[m_shadowIndex].m_f);
         if (coefficients.x == 0.)
         {

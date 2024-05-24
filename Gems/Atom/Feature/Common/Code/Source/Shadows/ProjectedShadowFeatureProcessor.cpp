@@ -307,10 +307,10 @@ namespace AZ::Render
         shadowData.m_bias = nearDist * shadowProperty.m_bias * 0.01f;
         
         FilterParameter& esmData = m_shadowData.GetElement<FilterParamIndex>(shadowProperty.m_shadowId.GetIndex());
-        
+
         // Set parameters to calculate linear depth if ESM is used.
-        esmData.m_n_f_n = nearDist / (farDist - nearDist);
-        esmData.m_n_f = nearDist - farDist;
+        esmData.m_nf = nearDist * farDist;
+        esmData.m_f_n = farDist - nearDist;
         esmData.m_f = farDist;
         esmData.m_isEnabled = FilterMethodIsEsm(shadowData);
         m_filterParameterNeedsUpdate = m_filterParameterNeedsUpdate || esmData.m_isEnabled;
