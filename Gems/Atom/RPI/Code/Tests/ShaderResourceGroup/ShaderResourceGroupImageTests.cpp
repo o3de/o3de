@@ -415,4 +415,57 @@ namespace UnitTest
         EXPECT_EQ(nullptr, m_testSrg->GetImageView(m_indexImageArray, 1));
         EXPECT_EQ(nullptr, m_testSrg->GetImageView(m_indexImageArray, 2));
     }
+
+    TEST_F(ShaderResourceGroupImageTests, TestCopyShaderResourceGroupDataImage)
+    {
+        EXPECT_TRUE(m_testSrg->SetImageArray(m_indexImageArray, m_threeImages));
+        auto testSrg2 = ShaderResourceGroup::Create(m_testShaderAsset, AZ::RPI::DefaultSupervariantIndex, m_testSrgLayout->GetName());
+
+        EXPECT_TRUE(testSrg2->CopyShaderResourceGroupData(*m_testSrg));
+        EXPECT_EQ(3, testSrg2->GetImageArray(m_indexImageArray).size());
+        EXPECT_EQ(m_testSrg->GetImageArray(m_indexImageArray)[0], testSrg2->GetImageArray(m_indexImageArray)[0]);
+        EXPECT_EQ(m_testSrg->GetImageArray(m_indexImageArray)[1], testSrg2->GetImageArray(m_indexImageArray)[1]);
+        EXPECT_EQ(m_testSrg->GetImageArray(m_indexImageArray)[2], testSrg2->GetImageArray(m_indexImageArray)[2]);
+        EXPECT_EQ(m_testSrg->GetImageViewArray(m_indexImageArray)[0], testSrg2->GetImageViewArray(m_indexImageArray)[0]);
+        EXPECT_EQ(m_testSrg->GetImageViewArray(m_indexImageArray)[1], testSrg2->GetImageViewArray(m_indexImageArray)[1]);
+        EXPECT_EQ(m_testSrg->GetImageViewArray(m_indexImageArray)[2], testSrg2->GetImageViewArray(m_indexImageArray)[2]);
+    }
+
+    TEST_F(ShaderResourceGroupImageTests, TestCopyShaderResourceGroupDataImageView)
+    {
+        EXPECT_TRUE(m_testSrg->SetImageViewArray(m_indexImageArray, m_threeImageViews));
+        auto testSrg2 = ShaderResourceGroup::Create(m_testShaderAsset, AZ::RPI::DefaultSupervariantIndex, m_testSrgLayout->GetName());
+
+        EXPECT_TRUE(testSrg2->CopyShaderResourceGroupData(*m_testSrg));
+        EXPECT_EQ(3, testSrg2->GetImageViewArray(m_indexImageArray).size());
+        EXPECT_EQ(m_testSrg->GetImageArray(m_indexImageArray)[0], testSrg2->GetImageArray(m_indexImageArray)[0]);
+        EXPECT_EQ(m_testSrg->GetImageArray(m_indexImageArray)[1], testSrg2->GetImageArray(m_indexImageArray)[1]);
+        EXPECT_EQ(m_testSrg->GetImageArray(m_indexImageArray)[2], testSrg2->GetImageArray(m_indexImageArray)[2]);
+        EXPECT_EQ(m_testSrg->GetImageViewArray(m_indexImageArray)[0], testSrg2->GetImageViewArray(m_indexImageArray)[0]);
+        EXPECT_EQ(m_testSrg->GetImageViewArray(m_indexImageArray)[1], testSrg2->GetImageViewArray(m_indexImageArray)[1]);
+        EXPECT_EQ(m_testSrg->GetImageViewArray(m_indexImageArray)[2], testSrg2->GetImageViewArray(m_indexImageArray)[2]);
+    }
+
+
+    TEST_F(ShaderResourceGroupImageTests, TestPartilCopyShaderResourceGroupData)
+    {
+        RHI::Ptr<RHI::ShaderResourceGroupLayout> srgLayout2 = RHI::ShaderResourceGroupLayout::Create();
+        srgLayout2->SetName(Name("partial"));
+        srgLayout2->SetBindingSlot(0);
+        srgLayout2->AddShaderInput(RHI::ShaderInputImageDescriptor{
+            Name{ "MyImageB" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1 });
+        srgLayout2->AddShaderInput(RHI::ShaderInputImageDescriptor{
+            Name{ "MyImageC" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1 });
+        srgLayout2->Finalize();
+
+        auto testSrgShaderAsset2 = CreateTestShaderAsset(Uuid::CreateRandom(), srgLayout2);
+        auto testSrg2 = ShaderResourceGroup::Create(testSrgShaderAsset2, AZ::RPI::DefaultSupervariantIndex, srgLayout2->GetName());
+
+        EXPECT_TRUE(m_testSrg->SetImage(m_indexImageA, m_whiteImage));
+        EXPECT_TRUE(m_testSrg->SetImage(m_indexImageB, m_blackImage));
+
+        EXPECT_FALSE(testSrg2->CopyShaderResourceGroupData(*m_testSrg));
+        EXPECT_EQ(m_testSrg->GetImage(m_indexImageB), testSrg2->GetImage(RHI::ShaderInputImageIndex{ 0 }));
+        EXPECT_EQ(m_testSrg->GetImageView(m_indexImageB), testSrg2->GetImageView(RHI::ShaderInputImageIndex{ 0 }));
+    }
 }

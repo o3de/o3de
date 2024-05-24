@@ -48,6 +48,9 @@ namespace AZ
 
             Data::Instance<RPI::Shader> m_shader;
             RHI::Ptr<RHI::ShaderResourceGroupLayout> m_srgLayout;
+            Data::Instance<RPI::ShaderResourceGroup> m_sceneShaderResourceGroup = nullptr;
+            Data::Instance<RPI::ShaderResourceGroup> m_viewShaderResourceGroup = nullptr;
+
         };
     } // namespace Render
 } // namespace AZ
