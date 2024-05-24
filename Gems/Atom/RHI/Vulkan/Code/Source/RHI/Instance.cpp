@@ -229,7 +229,7 @@ namespace AZ
                 InstanceNotificationBus::Broadcast(&InstanceNotificationBus::Events::OnInstanceDestroyed);
 
                 //Using use nullptr for VkAllocationCallbacks*. Please see comments above related to Instance creation
-                GetContext().DestroyInstance(m_instance, nullptr);
+                GetContext().DestroyInstance(m_instance, VkSystemAllocator::Get());
                 m_instance = VK_NULL_HANDLE;
             }
         }

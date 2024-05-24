@@ -26,6 +26,11 @@ namespace AZ::RHI
                 ->IndexBuffer(geometry.m_IndexBuffer.GetDeviceIndexBufferView(deviceIndex));
         }
 
+        if(m_aabb.has_value())
+        {
+            descriptor.AABB(m_aabb.value());
+        }
+
         return descriptor;
     }
 
@@ -293,6 +298,7 @@ namespace AZ::RHI
 
                 if (!m_tlasBuffer->m_deviceObjects[deviceIndex])
                 {
+                    m_tlasBuffer->m_deviceObjects.clear();
                     m_tlasBuffer = nullptr;
                     return ResultCode::Fail;
                 }
@@ -328,6 +334,7 @@ namespace AZ::RHI
 
                 if (!m_tlasInstancesBuffer->m_deviceObjects[deviceIndex])
                 {
+                    m_tlasInstancesBuffer->m_deviceObjects.clear();
                     m_tlasInstancesBuffer = nullptr;
                     return false;
                 }

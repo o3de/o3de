@@ -64,6 +64,7 @@ namespace AZ
                     m_meshBufferIndices[deviceIndex] = {};
                     m_materialTextureIndices[deviceIndex] = {};
                     m_materialInfos[deviceIndex] = {};
+                    m_proceduralGeometryMaterialInfos[deviceIndex] = {};
                 }
             }
 

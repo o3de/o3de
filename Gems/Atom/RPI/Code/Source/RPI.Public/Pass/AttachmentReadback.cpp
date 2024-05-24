@@ -304,31 +304,6 @@ namespace AZ
 
         void AttachmentReadback::CopyExecute(const RHI::FrameGraphExecuteContext& context)
         {
-            uint32_t readbackBufferCurrentIndex = m_readbackBufferCurrentIndex;
-            auto deviceIndex = context.GetDeviceIndex();
-            m_fence->GetDeviceFence(deviceIndex)
-                ->WaitOnCpuAsync(
-                    [this, readbackBufferCurrentIndex, deviceIndex]()
-                    {
-                        if (m_state == ReadbackState::Reading)
-                        {
-                            if (CopyBufferData(readbackBufferCurrentIndex, deviceIndex))
-                            {
-                                m_state = ReadbackState::Success;
-                            }
-                            else
-                            {
-                                m_state = ReadbackState::Failed;
-                            }
-                        }
-                        if (m_callback)
-                        {
-                            m_callback(GetReadbackResult());
-                        }
-
-                        Reset();
-                    });
-
             for (uint16_t itemIdx = 0; itemIdx < static_cast<uint16_t>(m_readbackItems.size()); itemIdx++)
             {
                 auto& readbackItem = m_readbackItems[itemIdx];
@@ -404,27 +379,29 @@ namespace AZ
             }
 
             uint32_t readbackBufferCurrentIndex = m_readbackBufferCurrentIndex;
-            m_fence->WaitOnCpuAsync(
-                [this, readbackBufferCurrentIndex]()
-                {
-                    if (m_state == ReadbackState::Reading)
+            auto deviceIndex = context.GetDeviceIndex();
+            m_fence->GetDeviceFence(deviceIndex)
+                ->WaitOnCpuAsync(
+                    [this, readbackBufferCurrentIndex, deviceIndex]()
                     {
-                        if (CopyBufferData(readbackBufferCurrentIndex))
+                        if (m_state == ReadbackState::Reading)
                         {
-                            m_state = ReadbackState::Success;
+                            if (CopyBufferData(readbackBufferCurrentIndex, deviceIndex))
+                            {
+                                m_state = ReadbackState::Success;
+                            }
+                            else
+                            {
+                                m_state = ReadbackState::Failed;
+                            }
                         }
-                        else
+                        if (m_callback)
                         {
-                            m_state = ReadbackState::Failed;
+                            m_callback(GetReadbackResult());
                         }
-                    }
-                    if (m_callback)
-                    {
-                        m_callback(GetReadbackResult());
-                    }
 
-                    Reset();
-                });
+                        Reset();
+                    });
         }
 
         void AttachmentReadback::Reset()

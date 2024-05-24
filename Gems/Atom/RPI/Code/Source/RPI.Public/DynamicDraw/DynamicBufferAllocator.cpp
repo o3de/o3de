@@ -45,7 +45,7 @@ namespace AZ
         RHI::Ptr<DynamicBuffer> DynamicBufferAllocator::Allocate(uint32_t size, uint32_t alignment)
         {
             // m_bufferData can be invalid for Null back end
-            if (m_bufferStartAddresses.GetCurrentElement().empty())
+            if (m_bufferStartAddresses.GetCurrentElement().empty() || !m_bufferStartAddresses.GetCurrentElement().begin()->second)
             {
                 return nullptr;
             }
