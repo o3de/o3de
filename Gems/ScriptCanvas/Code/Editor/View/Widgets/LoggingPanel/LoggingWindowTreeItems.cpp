@@ -208,6 +208,7 @@ namespace ScriptCanvasEditor
         m_paletteConfiguration.SetColorPalette("MethodNodeTitlePalette");
 
         AZ::NamedEntityId entityName;
+        LoggingDataRequestBus::EventResult(entityName, m_loggingDataId, &LoggingDataRequests::FindNamedEntityId, m_graphInfo.m_runtimeEntity);
 
         m_sourceEntityName = entityName.ToString().c_str();
         m_displayName = nodeId.m_name.c_str();
@@ -217,16 +218,6 @@ namespace ScriptCanvasEditor
 
         m_inputName = "---";
         m_outputName = "---";
-
-        // Payload sent from remote tool does not serialize the execution state
-        // Without m_graphIdentifier the graph name on the log will be marked as "Unknown" this needs to be fixed
-        /*
-        if (m_graphInfo.m_executionState)
-        {
-            const auto userData = AZStd::any_cast<const ScriptCanvas::RuntimeComponentUserData>(&graphInfo.m_executionState->GetUserData());
-            m_graphIdentifier = ScriptCanvas::GraphIdentifier(m_graphInfo.m_executionState->GetAssetId(), userData->component.GetId());
-        }
-        */
 
         // GeneralAssetNotificationBus::Handler::BusConnect(GetAssetId());
     }
@@ -523,12 +514,12 @@ namespace ScriptCanvasEditor
 
     const ScriptCanvas::GraphIdentifier& ExecutionLogTreeItem::GetGraphIdentifier() const
     {
-        return m_graphIdentifier;
+        return m_graphInfo.m_graphIdentifier;
     }
 
     AZ::Data::AssetId ExecutionLogTreeItem::GetAssetId() const
     {
-        return m_graphIdentifier.m_assetId;
+        return m_graphInfo.m_graphIdentifier.m_assetId;
     }
 
     AZ::EntityId ExecutionLogTreeItem::GetScriptCanvasAssetNodeId() const

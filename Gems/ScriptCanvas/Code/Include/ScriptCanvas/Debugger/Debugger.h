@@ -70,11 +70,12 @@ namespace ScriptCanvas
             //////////////////////////////////////////////////////////////////////////
             // ExecutionNotifications
             void GraphActivated(const GraphActivation&) override;
-            void GraphDeactivated(const GraphActivation&) override;
-            bool IsGraphObserved(const ExecutionState& executionState) override;
+            void GraphDeactivated(const GraphDeactivation&) override;
+            bool IsGraphObserved(const AZ::EntityId& entityId, const GraphIdentifier& identifier) override;
             bool IsVariableObserved(const VariableId& variableId) override;
             void NodeSignaledOutput(const OutputSignal&) override;
             void NodeSignaledInput(const InputSignal&) override;
+            void GraphSignaledReturn(const ReturnSignal&) override;
             void NodeStateUpdated(const NodeStateChange&) override;
             void RuntimeError(const ExecutionState& executionState, const AZStd::string_view& description) override;
             void VariableChanged(const VariableChange&) override;

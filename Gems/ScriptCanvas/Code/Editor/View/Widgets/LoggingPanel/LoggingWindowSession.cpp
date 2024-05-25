@@ -368,6 +368,7 @@ namespace ScriptCanvasEditor
     {
         GraphCanvas::FocusConfig focusConfig;
 
+        // TODO https://github.com/o3de/o3de/issues/9192 focus broken because both scriptCanvasNodeId and graphCanvasNodeId are invalid (broken by #6394)
         AZ::EntityId scriptCanvasNodeId;
         AssetGraphSceneBus::BroadcastResult(scriptCanvasNodeId, &AssetGraphScene::FindEditorNodeIdByAssetNodeId, SourceHandle(nullptr, assetId.m_guid), assetNodeId);
 
