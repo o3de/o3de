@@ -837,7 +837,7 @@ namespace AZ
                 isReadOnlyBuffer.reserve(maxSize);
                 isReadOnlyImage.clear();
                 isReadOnlyImage.reserve(maxSize);
-                for (const ConstPtr<RHI::ResourceView> resourceView : entry.second.m_bindlessResources)
+                for (ConstPtr<RHI::ResourceView> resourceView : entry.second.m_bindlessResources)
                 {
                     RHI::BindlessResourceType type = entry.second.m_bindlessResourceType;
                     switch (type)
