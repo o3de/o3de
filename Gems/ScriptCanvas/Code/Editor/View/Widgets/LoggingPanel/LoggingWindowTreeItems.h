@@ -192,7 +192,6 @@ namespace ScriptCanvasEditor
         LoggingDataId                       m_loggingDataId;
         ScriptCanvas::NodeTypeIdentifier    m_nodeType;
         ScriptCanvas::GraphInfo             m_graphInfo;
-        ScriptCanvas::GraphIdentifier       m_graphIdentifier;
         QString                             m_sourceEntityName;
         QString                             m_graphName;
         QString                             m_relativeGraphPath;

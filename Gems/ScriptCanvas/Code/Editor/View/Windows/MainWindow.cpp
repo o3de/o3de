@@ -3561,7 +3561,7 @@ namespace ScriptCanvasEditor
         AZ::EntityId editorEntityId{};
 //         AssetTrackerRequestBus::BroadcastResult
 //             ( editorEntityId, &AssetTrackerRequests::GetEditorEntityIdFromSceneEntityId, assetId.Id(), assetNodeId);
-        // #sc_editor_asset_redux fix logger
+        // TODO https://github.com/o3de/o3de/issues/9192 broken by https://github.com/o3de/o3de/issues/6394
         return editorEntityId;
     }
 
@@ -3571,7 +3571,7 @@ namespace ScriptCanvasEditor
         AZ::EntityId sceneEntityId{};
         // AssetTrackerRequestBus::BroadcastResult
         // ( sceneEntityId, &AssetTrackerRequests::GetSceneEntityIdFromEditorEntityId, assetId.Id(), editorNodeId);
-        // #sc_editor_asset_redux fix logger
+        // TODO https://github.com/o3de/o3de/issues/9192 broken by https://github.com/o3de/o3de/issues/6394
         return sceneEntityId;
     }
 
