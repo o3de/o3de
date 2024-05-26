@@ -645,7 +645,7 @@ namespace AZ
                     continue;
                 }
 
-                const RHI::ShaderInputBufferDescriptor& otherDesc = other.m_layout->GetShaderInput(otherIndex);
+                [[maybe_unused]] const RHI::ShaderInputBufferDescriptor& otherDesc = other.m_layout->GetShaderInput(otherIndex);
                 AZ_Error(
                     "ShaderResourceGroup",
                     desc.m_access == otherDesc.m_access && desc.m_count == otherDesc.m_count &&
@@ -680,7 +680,7 @@ namespace AZ
                     continue;
                 }
 
-                const RHI::ShaderInputImageDescriptor& otherDesc = other.m_layout->GetShaderInput(otherIndex);
+                [[maybe_unused]] const RHI::ShaderInputImageDescriptor& otherDesc = other.m_layout->GetShaderInput(otherIndex);
                 AZ_Error(
                     "ShaderResourceGroup",
                     desc.m_access == otherDesc.m_access && desc.m_count == otherDesc.m_count &&
@@ -736,7 +736,7 @@ namespace AZ
                     continue;
                 }
 
-                const RHI::ShaderInputConstantDescriptor& otherDesc = other.m_layout->GetShaderInput(otherIndex);
+                [[maybe_unused]] const RHI::ShaderInputConstantDescriptor& otherDesc = other.m_layout->GetShaderInput(otherIndex);
                 AZ_Error(
                     "ShaderResourceGroup",
                     desc.m_constantByteCount == otherDesc.m_constantByteCount,
@@ -759,7 +759,8 @@ namespace AZ
                     continue;
                 }
 
-                const RHI::ShaderInputBufferUnboundedArrayDescriptor& otherDesc = other.m_layout->GetShaderInput(otherIndex);
+                [[maybe_unused]] const RHI::ShaderInputBufferUnboundedArrayDescriptor& otherDesc =
+                    other.m_layout->GetShaderInput(otherIndex);
                 AZ_Error(
                     "ShaderResourceGroup",
                     desc.m_type == otherDesc.m_type && desc.m_access == otherDesc.m_access,
@@ -790,7 +791,8 @@ namespace AZ
                     continue;
                 }
 
-                const RHI::ShaderInputImageUnboundedArrayDescriptor& otherDesc = other.m_layout->GetShaderInput(otherIndex);
+                [[maybe_unused]] const RHI::ShaderInputImageUnboundedArrayDescriptor& otherDesc =
+                    other.m_layout->GetShaderInput(otherIndex);
                 AZ_Error(
                     "ShaderResourceGroup",
                     desc.m_type == otherDesc.m_type && desc.m_access == otherDesc.m_access,
