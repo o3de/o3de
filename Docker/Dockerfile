@@ -78,6 +78,7 @@ RUN apt-get update \
             python3-pip \
             software-properties-common \
             mesa-common-dev \
+            libvulkan1 \
             sudo
 
 # Setup the 'o3de' user for this image (with a default group id, which will be updated in the entrypoint)
@@ -98,4 +99,4 @@ RUN cd $WORKSPACE \
 ENV NVIDIA_VISIBLE_DEVICES all
 ENV NVIDIA_DRIVER_CAPABILITIES all
 
-ENTRYPOINT ["/bin/bash", "-c"]
+ENTRYPOINT ["/bin/bash", "-c", "$WORKSPACE/entrypoint.sh"]
