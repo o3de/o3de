@@ -20,20 +20,46 @@ then
     exit 1
 fi
 
-$O3DE_ROOT/python/get_python.sh && \
-    $O3DE_ROOT/scripts/o3de.sh register -ep $O3DE_ROOT
+$O3DE_ROOT/python/get_python.sh 
 if [ $? -ne 0 ]
 then
     echo "Error bootstrapping O3DE from $O3DE_REPO"
     exit 1
 fi
 
-$O3DE_ROOT/python/python.sh $O3DE_ROOT/scripts/build/ci_build.py -p Linux -t installer
+export O3DE_BUILD=$WORKSPACE/build
+
+export CONFIGURATION=profile
+export OUTPUT_DIRECTORY=$O3DE_BUILD
+export O3DE_PACKAGE_TYPE=DEB
+export CMAKE_OPTIONS="-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DO3DE_INSTALL_ENGINE_NAME=o3de-sdk -DLY_STRIP_DEBUG_SYMBOLS=TRUE"
+export EXTRA_CMAKE_OPTIONS="-DLY_INSTALLER_AUTO_GEN_TAG=TRUE -DLY_INSTALLER_DOWNLOAD_URL=${INSTALLER_DOWNLOAD_URL} -DLY_INSTALLER_LICENSE_URL=${INSTALLER_DOWNLOAD_URL}/license -DO3DE_INCLUDE_INSTALL_IN_PACKAGE=TRUE"
+export CPACK_OPTIONS="-D CPACK_UPLOAD_URL=${CPACK_UPLOAD_URL}"
+export CMAKE_TARGET=all
+
+cd $O3DE_ROOT && \
+    $O3DE_ROOT/scripts/build/Platform/Linux/build_installer_linux.sh
 if [ $? -ne 0 ]
 then
-    echo "Error building O3DE installer" 
+    echo "Error building installer"
     exit 1
 fi
+
+
+su $O3DE_USER -c "sudo dpkg -i $O3DE_BUILD/CPackUploads/o3de_4.2.0.deb"
+if [ $? -ne 0 ]
+then
+    echo "Error installing O3DE for the o3de user"
+    exit 1
+fi
+
+rm -rf $O3DE_ROOT
+rm -rf $O3DE_BUILD
+rm -rf $HOME/.o3de
+rm -rf $HOME/O3DE
+
+rm -rf /home/o3de/.o3de
+rm -rf /home/o3de/O3DE
 
 exit 0
   

@@ -13,11 +13,6 @@ ARG INPUT_IMAGE=ubuntu:22.04
 # Pull in the base ubuntu docker
 FROM ${INPUT_ARCHITECTURE}/${INPUT_IMAGE}
 
-# Setup the 'o3de' user for this image (with a default group id, which will be updated in the entrypoint)
-ENV O3DE_USER=o3de 
-RUN addgroup --gid 1000 "$O3DE_USER" \
-    && adduser --gid 1000 --gecos "" --disabled-password "$O3DE_USER"
-
 ENV WORKSPACE=/data/workspace
 
 WORKDIR $WORKSPACE
@@ -72,58 +67,35 @@ RUN apt-get update \
             libxcb-xfixes0-dev \
             libxcb-xinput-dev \
             libxcb-xinput0 \
+            libxcb-icccm4-dev \
+            libxcb-image0-dev \
+            libxcb-keysyms1-dev \
+            libxcb-render-util0-dev \
             libpcre2-16-0 \
             libunwind-dev \
             libzstd-dev \
             ninja-build \
             python3-pip \
             software-properties-common \
+            mesa-common-dev \
             sudo
 
-RUN usermod -a -G sudo $O3DE_USER \
+# Setup the 'o3de' user for this image (with a default group id, which will be updated in the entrypoint)
+ENV O3DE_USER=o3de 
+
+RUN addgroup --gid 1000 "$O3DE_USER" \
+    && adduser --gid 1000 --gecos "" --disabled-password "$O3DE_USER" \
+    && usermod -a -G sudo $O3DE_USER \
     && echo "$O3DE_USER ALL=(ALL:ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/$O3DE_USER
 
 COPY build.sh $WORKSPACE/
 COPY entrypoint.sh $WORKSPACE/
 
-RUN git clone --single-branch -b $O3DE_BRANCH $O3DE_REPO $O3DE_ROOT && \
-    git -C $O3DE_ROOT lfs install && \
-    git -C $O3DE_ROOT lfs pull && \
-    git -C $O3DE_ROOT reset --hard $O3DE_COMMIT
-
-RUN $O3DE_ROOT/python/get_python.sh
-
-ENV O3DE_BUILD=$WORKSPACE/build
-
-ENV CONFIGURATION=profilesudo
-ENV OUTPUT_DIRECTORY=$O3DE_BUILD
-ENV O3DE_PACKAGE_TYPE=DEB
-ENV CMAKE_OPTIONS="-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DO3DE_INSTALL_ENGINE_NAME=o3de-sdk -DLY_STRIP_DEBUG_SYMBOLS=TRUE"
-ENV EXTRA_CMAKE_OPTIONS="-DLY_INSTALLER_AUTO_GEN_TAG=TRUE -DLY_INSTALLER_DOWNLOAD_URL=${INSTALLER_DOWNLOAD_URL} -DLY_INSTALLER_LICENSE_URL=${INSTALLER_DOWNLOAD_URL}/license -DO3DE_INCLUDE_INSTALL_IN_PACKAGE=TRUE"
-ENV CPACK_OPTIONS="-D CPACK_UPLOAD_URL=${CPACK_UPLOAD_URL}"
-ENV CMAKE_TARGET=all
-
-RUN cd $O3DE_ROOT && \
-    ./scripts/build/Platform/Linux/build_installer_linux.sh
-
-#RUN su $O3DE_USER -c "sudo dpkg -i $O3DE_BUILD/CPackUploads/o3de_4.2.0.deb"
-
-#RUN cmake -S ${O3DE_ROOT} -B ${O3DE_BUILD} -G 'Ninja Multi-Config' -DLY_DISABLE_TEST_MODULES=TRUE -DO3DE_INSTALL_ENGINE_NAME=o3de-sdk -DLY_STRIP_DEBUG_SYMBOLS=TRUE -DLY_INSTALLER_AUTO_GEN_TAG=TRUE
-
-#ENV O3DE_PACKAGE_TYPE=DEB
-#ENV 
-# RUN cmake --build ${O3DE_BUILD} --target all --config profile 
-
-
-#RUN cd $O3DE_ROOT && \
-#    python/python.sh $O3DE_ROOT/scripts/build/ci_build.py -p Linux -t installer
-
-#RUN cd $WORKSPACE \
-#   && ./build.sh \
-#   && rm build.sh
+RUN cd $WORKSPACE \
+   && ./build.sh \
+   && rm build.sh
 
 ENV NVIDIA_VISIBLE_DEVICES all
 ENV NVIDIA_DRIVER_CAPABILITIES all
 
 ENTRYPOINT ["/bin/bash", "-c"]
-#ENTRYPOINT ["/data/workspace/entrypoint.sh"]
