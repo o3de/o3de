@@ -16,7 +16,8 @@ The Docker script provides the following arguments for building the Docker image
 
 | Argument                | Description                                                                | Default
 |-------------------------|----------------------------------------------------------------------------|-------------
-| INPUT_IMAGE             | The base ubuntu docker image to base the build on                          | ubuntu:22.04
+| INPUT_IMAGE             | The base ubuntu docker image to base the build on                          | ubuntu
+| INPUT_TAG               | The base ubuntu docker image tag to base the build on                      | 22.04
 | INPUT_ARCHITECTURE      | The CPU architecture (amd64/aarch64). Will require QEMU if cross compiling | amd64
 | O3DE_REPO               | The git repo for O3DE                                                      | https://github.com/o3de/o3de
 | O3DE_BRANCH             | The branch for O3DE                                                        | development
@@ -34,8 +35,25 @@ docker build -f Dockerfile -t amd64/o3de:latest .
 ```
 
 ### From github
+
 ```
 docker build -t amd64/o3de:latest https://github.com/o3de/o3de.git#development:Docker
+```
+
+## ROS Example
+To build a Docker image that supports robotic simulations using ROS, the `INPUT_IMAGE` and `INPUT_TAG` will be overridden with the desired version of the ROS 2 distribution. To enable ROS 2 in the Docker image, the `INPUT_IMAGE` value needs to be set to `ros`, and the `INPUT_TAG` set to the appropriate [Docker distribution of ROS](https://hub.docker.com/_/ros/). The current supported versions of ROS 2 are `humble` and `jazzy`.
+
+
+### Locally (From the o3de/Docker folder)
+
+```
+docker build -f Dockerfile --build-arg INPUT_IMAGE=ros --build-arg INPUT_TAG=humble -t amd64/o3de:ros_humble .
+```
+
+### From github
+
+```
+docker build --build-arg INPUT_IMAGE=ros --build-arg INPUT_TAG=humble -t amd64/o3de:ros_humble https://github.com/o3de/o3de.git#development:Docker
 ```
 
 

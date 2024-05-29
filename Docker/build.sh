@@ -6,9 +6,7 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 
-###############################################################
-# Clone and bootstrap O3DE
-###############################################################
+# Clone O3DE and bootstrap
 echo "Cloning o3de"
 git clone --single-branch -b $O3DE_BRANCH $O3DE_REPO $O3DE_ROOT && \
     git -C $O3DE_ROOT lfs install && \
@@ -27,25 +25,8 @@ then
     exit 1
 fi
 
-
-###############################################################
-# Clone o3de-extras
-###############################################################
-
-# echo "Cloning o3de-extras"
-# su $O3DE_USER -c "git clone --single-branch -b $O3DE_EXTRAS_BRANCH $O3DE_EXTRAS_REPO $O3DE_EXTRAS_ROOT && \
-#    git -C $O3DE_EXTRAS_ROOT lfs install && \
-#    git -C $O3DE_EXTRAS_ROOT lfs pull && \
-#    git -C $O3DE_EXTRAS_ROOT reset --hard $O3DE_EXTRAS_COMMIT" $O3DE_USER 
-#if [ $? -ne 0 ]
-#then
-#    echo "Error cloning o3de-extras from $O3DE_EXTRAS_REPO"
-#    exit 1
-#fi
-
-
+# Build the installer package
 export O3DE_BUILD=$WORKSPACE/build
-
 export CONFIGURATION=profile
 export OUTPUT_DIRECTORY=$O3DE_BUILD
 export O3DE_PACKAGE_TYPE=DEB
@@ -62,6 +43,7 @@ then
     exit 1
 fi
 
+# Install from the installer package
 su $O3DE_USER -c "sudo dpkg -i $O3DE_BUILD/CPackUploads/o3de_4.2.0.deb"
 if [ $? -ne 0 ]
 then
@@ -69,15 +51,15 @@ then
     exit 1
 fi
 
-
+# Cleanup the source from github and all intermediate files
 rm -rf $O3DE_ROOT
 rm -rf $O3DE_BUILD
 rm -rf $HOME/.o3de
 rm -rf $HOME/O3DE
-
 rm -rf /home/o3de/.o3de
 rm -rf /home/o3de/O3DE
 
+# The python libraries that are linked in the engine needs to be writable during python bootstrapping for the O3DE user from the installer
 chmod -R a+w /opt/O3DE/$(ls /opt/O3DE/)/Tools/LyTestTools \
   && chmod -R a+w /opt/O3DE/$(ls /opt/O3DE/)/Tools/RemoteConsole/ly_remote_console \
   && chmod -R a+w /opt/O3DE/$(ls /opt/O3DE/)/Gems/Atom/RPI/Tools \
