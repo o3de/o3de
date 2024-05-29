@@ -4,14 +4,25 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 
-# The cpu architecture to base the docker base script from
+# The cpu architecture 
 ARG INPUT_ARCHITECTURE=amd64
 
-# The root to base the docker script base from
-ARG INPUT_IMAGE=ubuntu:22.04
+# The root docker image 
+ARG INPUT_IMAGE=ubuntu
+
+# The root docker tag 
+ARG INPUT_TAG=22.04
 
 # Pull in the base ubuntu docker
-FROM ${INPUT_ARCHITECTURE}/${INPUT_IMAGE}
+FROM ${INPUT_ARCHITECTURE}/${INPUT_IMAGE}:${INPUT_TAG}
+
+
+ARG INPUT_ARCHITECTURE
+ARG INPUT_IMAGE
+ARG INPUT_TAG
+
+ENV INPUT_IMAGE=$INPUT_IMAGE
+ENV INPUT_TAG=$INPUT_TAG
 
 ENV WORKSPACE=/data/workspace
 
@@ -37,7 +48,6 @@ ENV O3DE_ROOT=$WORKSPACE/o3de
 ENV O3DE_EXTRAS_REPO=$O3DE_EXTRAS_REPO
 ENV O3DE_EXTRAS_BRANCH=$O3DE_EXTRAS_BRANCH
 ENV O3DE_EXTRAS_COMMIT=$O3DE_EXTRAS_COMMIT
-ENV O3DE_EXTRAS_ROOT=$WORKSPACE/o3de-extras
 
 ENV LANG=en_US.UTF-8
 
@@ -80,9 +90,20 @@ RUN apt-get update \
             mesa-common-dev \
             libvulkan1 \
             sudo
+RUN if [ "$INPUT_IMAGE" == "ros" ]; then \
+     apt-get install -y ros-${ROS_DISTRO}-ackermann-msgs \
+                        ros-${ROS_DISTRO}-control-toolbox \
+                        ros-${ROS_DISTRO}-nav-msgs \
+                        ros-${ROS_DISTRO}-gazebo-msgs \
+                        ros-${ROS_DISTRO}-xacro \
+                        ros-${ROS_DISTRO}-moveit \
+                        ros-${ROS_DISTRO}-moveit-resources \
+                        ros-${ROS_DISTRO}-depth-image-proc; \
+    fi
 
 # Setup the 'o3de' user for this image (with a default group id, which will be updated in the entrypoint)
 ENV O3DE_USER=o3de 
+ENV O3DE_EXTRAS_ROOT=/home/$O3DE_USER/o3de-extras
 
 RUN addgroup --gid 1000 "$O3DE_USER" \
     && adduser --gid 1000 --gecos "" --disabled-password "$O3DE_USER" \
@@ -99,4 +120,4 @@ RUN cd $WORKSPACE \
 ENV NVIDIA_VISIBLE_DEVICES all
 ENV NVIDIA_DRIVER_CAPABILITIES all
 
-ENTRYPOINT ["/bin/bash", "-c", "$WORKSPACE/entrypoint.sh"]
+ENTRYPOINT ["/bin/bash", "-c", "/data/workspace/entrypoint.sh"]
