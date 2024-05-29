@@ -37,12 +37,7 @@ namespace AzToolsFramework
         {
             if (this->sourceModel())
             {
-                disconnect(
-                    this->sourceModel(), &QAbstractItemModel::dataChanged, this, &AssetBrowserTreeToTableProxyModel::onSourceDataChanged);
-                disconnect(this->sourceModel(), &QAbstractItemModel::layoutChanged, this, &AssetBrowserTreeToTableProxyModel::FlattenTree);
-                disconnect(this->sourceModel(), &QAbstractItemModel::modelReset, this, &AssetBrowserTreeToTableProxyModel::FlattenTree);
-                disconnect(this->sourceModel(), &QAbstractItemModel::rowsInserted, this, &AssetBrowserTreeToTableProxyModel::FlattenTree);
-                disconnect(this->sourceModel(), &QAbstractItemModel::rowsRemoved, this, &AssetBrowserTreeToTableProxyModel::FlattenTree);
+                disconnect(this->sourceModel(), nullptr, this, nullptr);
             }
         }
 

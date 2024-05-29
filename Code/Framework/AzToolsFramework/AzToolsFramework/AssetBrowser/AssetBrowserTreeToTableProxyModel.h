@@ -46,7 +46,7 @@ namespace AzToolsFramework
             void TraverseTree(const QModelIndex& parent, int& currentRow);
             QModelIndex mapToTreeModel(const QModelIndex& proxyIndex) const;
 
-            QHash<int, QModelIndex> flattenedData; // Maps proxy row to source index
+            QHash<int, QPersistentModelIndex> flattenedData; // Maps proxy row to source index
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
