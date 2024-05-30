@@ -1,0 +1,21 @@
+{
+    "gem_name": "Perforce",
+    "version": "0.0.0",
+    "display_name": "Perforce",
+    "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
+    "type": "Code",
+    "summary": "Perforce - version control system.",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+    ],
+    "icon_path": "preview.png",
+    "requirements": "",
+    "documentation_url": "",
+    "dependencies": [
+    ]
+}
