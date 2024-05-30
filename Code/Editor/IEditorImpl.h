@@ -238,12 +238,7 @@ public:
     void RegisterDocListener(IDocListener* listener) override;
     //! Unregister document notifications listener.
     void UnregisterDocListener(IDocListener* listener) override;
-    //! Retrieve interface to the source control.
-    ISourceControl* GetSourceControl() override;
-    //! Retrieve true if source control is provided and enabled in settings
-    bool IsSourceControlAvailable() override;
-    //! Only returns true if source control is both available AND currently connected and functioning
-    bool IsSourceControlConnected() override;
+
     void ReduceMemory() override;
     ESystemConfigPlatform GetEditorConfigPlatform() const override;
     void ReloadTemplates() override;
@@ -301,8 +296,6 @@ protected:
     CErrorReport* m_pErrorReport;
     //! Contains the error reports for the last loaded level.
     CErrorReport* m_pLasLoadedLevelErrorReport;
-    //! Source control interface.
-    ISourceControl* m_pSourceControl;
 
     CSelectionTreeManager* m_pSelectionTreeManager;
 

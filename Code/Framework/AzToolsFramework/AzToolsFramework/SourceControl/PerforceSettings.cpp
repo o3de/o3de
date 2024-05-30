@@ -6,10 +6,8 @@
  *
  */
 
-#include "PerforcePlugin.h"
-#include "PasswordDlg.h"
-#include <ui_settings.h> // generated
-
+#include "PerforceSettings.h"
+#include <AzToolsFramework/SourceControl/ui_PerforceSettings.h>
 
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzToolsFramework/UI/UICore/ProgressShield.hxx>
@@ -17,7 +15,7 @@
 #include <QTimer>
 #include <AzCore/std/bind/bind.h>
 
-namespace PerforceConnection
+namespace AzToolsFramework
 {
     const char* const PerforceUser = "P4USER";
     const char* const PerforceServer = "P4PORT";
@@ -25,7 +23,7 @@ namespace PerforceConnection
     const char* const PerforceCharset = "P4CHARSET";
 
     using namespace AzToolsFramework;
-    PerforceConfigDialog::PerforceConfigDialog(QWidget* parent)
+    PerforceSettings::PerforceSettings(QWidget* parent)
         : QDialog(parent)
     {
         this->setWindowFlags(Qt::Dialog
@@ -34,7 +32,7 @@ namespace PerforceConnection
         m_ui = new Ui::P4SettingsDialog();
         m_ui->setupUi(this);
 
-        {   
+        {
             SourceControlState state = SourceControlState::Disabled;
             SourceControlConnectionRequestBus::BroadcastResult(state, &SourceControlConnectionRequestBus::Events::GetSourceControlState);
 
@@ -44,7 +42,7 @@ namespace PerforceConnection
         }
     }
 
-    void PerforceConfigDialog::RetrieveSettings()
+    void PerforceSettings::RetrieveSettings()
     {
         m_retrievedSettings.insert_key(PerforceClient);
         m_retrievedSettings.insert_key(PerforceUser);
@@ -60,7 +58,7 @@ namespace PerforceConnection
             m_retrievedSettings[setting] = info;
             --numSettingsToGet;
         };
-        
+
         using SCRequestBus = AzToolsFramework::SourceControlConnectionRequestBus;
         for (const auto& kvp : m_retrievedSettings)
         {
@@ -104,7 +102,7 @@ namespace PerforceConnection
         setEnabled(true);
     }
 
-    QLineEdit* PerforceConfigDialog::GetControlForSetting(const AZStd::string& settingName) const
+    QLineEdit* PerforceSettings::GetControlForSetting(const AZStd::string& settingName) const
     {
         if (settingName == PerforceClient)
         {
@@ -125,12 +123,12 @@ namespace PerforceConnection
         return nullptr;
     }
 
-    PerforceConfigDialog::~PerforceConfigDialog()
+    PerforceSettings::~PerforceSettings()
     {
         delete m_ui;
     }
 
-    void PerforceConfigDialog::ApplyValueToControl(QLineEdit* targetControl, const SourceControlSettingInfo& value)
+    void PerforceSettings::ApplyValueToControl(QLineEdit* targetControl, const SourceControlSettingInfo& value)
     {
         if (targetControl)
         {
@@ -175,7 +173,7 @@ namespace PerforceConnection
         }
     }
 
-    void PerforceConfigDialog::on_workOnlineCheckbox_toggled(bool newState)
+    void PerforceSettings::on_workOnlineCheckbox_toggled(bool newState)
     {
         m_ui->workspaceEdit->setEnabled(false);
         m_ui->userEdit->setEnabled(false);
@@ -185,7 +183,7 @@ namespace PerforceConnection
         if (newState)
         {
             // we only fetch settings if we are working online.
-            QTimer::singleShot(0, this, &PerforceConfigDialog::RetrieveSettings);
+            QTimer::singleShot(0, this, &PerforceSettings::RetrieveSettings);
         }
         else
         {
@@ -196,7 +194,7 @@ namespace PerforceConnection
         }
     }
 
-    void PerforceConfigDialog::Apply()
+    void PerforceSettings::Apply()
     {
         bool onlineMode = m_ui->workOnlineCheckbox->isChecked();
         {
@@ -218,7 +216,7 @@ namespace PerforceConnection
         }
     }
 
-    bool PerforceConfigDialog::ApplySetting(const char* key)
+    bool PerforceSettings::ApplySetting(const char* key)
     {
         if (!m_retrievedSettings[key].IsSettable())
         {
@@ -272,7 +270,7 @@ namespace PerforceConnection
         {
             return complete;
         };
-        
+
         using SCRequestBus = AzToolsFramework::SourceControlConnectionRequestBus;
         SCRequestBus::Broadcast(&SCRequestBus::Events::SetConnectionSetting, key, newValue.c_str(), respCallback);
         ProgressShield::LegacyShowAndWait(this, tr("Applying settings"), waitForDone);
@@ -282,7 +280,7 @@ namespace PerforceConnection
 
     bool OpenPasswordDlg()
     {
-        PerforceConfigDialog dialog;
+        PerforceSettings dialog;
 
         if (dialog.exec() == QDialog::Accepted)
         {
@@ -293,4 +291,4 @@ namespace PerforceConnection
     }
 } // namespace PerforceConnection
 
-#include <moc_PasswordDlg.cpp>
+

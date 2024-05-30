@@ -44,7 +44,6 @@
 #include "Settings.h"
 #include "MainWindow.h"
 #include "CheckOutDialog.h"
-#include "ISourceControl.h"
 #include "Dialogs/Generic/UserOptions.h"
 #include "UsedResources.h"
 #include "StringHelpers.h"
@@ -1841,6 +1840,8 @@ void CFileUtil::PopulateQMenu(QWidget* caller, QMenu* menu, AZStd::string_view f
 
 void CFileUtil::PopulateQMenu(QWidget* caller, QMenu* menu, AZStd::string_view fullGamePath, bool* isSelected)
 {
+    using namespace AzToolsFramework;
+    
     // Normalize the full path so we get consistent separators
     AZStd::string fullFilePath(fullGamePath);
     AzFramework::StringFunc::Path::Normalize(fullFilePath);
@@ -1894,7 +1895,9 @@ void CFileUtil::PopulateQMenu(QWidget* caller, QMenu* menu, AZStd::string_view f
 
     action = menu->addAction(QObject::tr("Copy Path To Clipboard"), [fullPath]() { QApplication::clipboard()->setText(fullPath); });
 
-    if (fileInfo.isFile() && GetIEditor()->IsSourceControlAvailable() && nFileAttr != SCC_FILE_ATTRIBUTE_INVALID)
+    AzToolsFramework::SourceControlState sourceControlState = AzToolsFramework::SourceControlState::Disabled;
+    AzToolsFramework::SourceControlConnectionRequestBus::BroadcastResult(sourceControlState, &AzToolsFramework::SourceControlConnectionRequests::GetSourceControlState);
+    if (fileInfo.isFile() && sourceControlState == AzToolsFramework::SourceControlState::Active && nFileAttr != SCC_FILE_ATTRIBUTE_INVALID)
     {
         bool isEnableSC = nFileAttr & SCC_FILE_ATTRIBUTE_MANAGED;
         bool isInPak = nFileAttr & SCC_FILE_ATTRIBUTE_INPAK;
@@ -1928,7 +1931,10 @@ void CFileUtil::PopulateQMenu(QWidget* caller, QMenu* menu, AZStd::string_view f
 
             action = menu->addAction(QObject::tr("Get Latest Version"), [fullPath, caller]()
             {
-                if (GetIEditor()->IsSourceControlAvailable())
+
+                AzToolsFramework::SourceControlState sourceControlState = AzToolsFramework::SourceControlState::Disabled;
+                AzToolsFramework::SourceControlConnectionRequestBus::BroadcastResult(sourceControlState, &AzToolsFramework::SourceControlConnectionRequests::GetSourceControlState);
+                if (sourceControlState == AzToolsFramework::SourceControlState::Active)
                 {
                     if (!CFileUtil::GetLatestFromSourceControl(fullPath.toUtf8().data(), caller))
                     {
