@@ -112,7 +112,8 @@ namespace AZ
             RHI::ShaderHardwareStage shaderAssetType,
             const AZStd::string& tempFolderPath,
             StageDescriptor& outputDescriptor,
-            const RHI::ShaderBuildArguments& shaderBuildArguments) const
+            const RHI::ShaderBuildArguments& shaderBuildArguments,
+            [[maybe_unused]] const bool useSpecializationConstants) const
         {
             AZStd::vector<uint8_t> shaderByteCode;
 

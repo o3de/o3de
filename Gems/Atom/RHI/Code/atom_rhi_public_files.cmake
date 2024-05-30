@@ -275,4 +275,6 @@ set(FILES
     Include/Atom/RHI/XRRenderingInterface.h
     Include/Atom/RHI/DispatchRaysIndirectBuffer.h
     Include/Atom/RHI/MultiDeviceDispatchRaysIndirectBuffer.h
+    Include/Atom/RHI/SpecializationConstant.h
+    Source/RHI/SpecializationConstant.cpp
 )

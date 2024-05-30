@@ -3,6 +3,7 @@
         "debug": false,
         "preprocessor": [],
         "azslc": ["--namespace=dx"
+                , "--sc-options"
         ],
         "dxc": ["-enable-16bit-types"
         ]

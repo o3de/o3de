@@ -139,7 +139,7 @@ namespace AZ
 
             // Setup pipeline state...
             RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
-            m_shader->GetDefaultVariant().ConfigurePipelineState(pipelineStateDescriptor);
+            m_shader->GetDefaultVariant().ConfigurePipelineState(pipelineStateDescriptor, m_shader->GetDefaultShaderOptions());
 
             m_dispatchItem.m_pipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
 

@@ -33,6 +33,8 @@
 #define IID_GRAPHICS_PPV_ARGS(ppType) IID_PPV_ARGS(ppType)
 #endif
 
+#define MAKE_FOURCC(a, b, c, d) (((uint32_t)(d) << 24) | ((uint32_t)(c) << 16) | ((uint32_t)(b) << 8) | (uint32_t)(a))
+
 namespace AZ
 {
     namespace DX12

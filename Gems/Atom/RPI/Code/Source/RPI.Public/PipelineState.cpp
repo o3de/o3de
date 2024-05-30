@@ -71,11 +71,11 @@ namespace AZ
                 }
                 m_shaderVariantId = shaderOptionGroup.GetShaderVariantId();
                 shaderVariant = shader->GetVariant(m_shaderVariantId);
-                m_isShaderVariantReady = shaderVariant.IsFullyBaked();
+                m_isShaderVariantReady = shaderVariant.UseKeyFallback();
             }
 
             // Fill the descriptor with data from shader variant
-            shaderVariant.ConfigurePipelineState(m_descriptor);
+            shaderVariant.ConfigurePipelineState(m_descriptor, m_shaderVariantId);
 
             // Connect to shader reload notification bus to rebuilt pipeline state when shader or shader variant changed. 
             ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
@@ -90,11 +90,11 @@ namespace AZ
         void PipelineStateForDraw::RefreshShaderVariant()
         {
             auto shaderVariant = m_shader->GetVariant(m_shaderVariantId);
-            m_isShaderVariantReady = shaderVariant.IsFullyBaked();
+            m_isShaderVariantReady = shaderVariant.UseKeyFallback();
 
             auto multisampleState = m_descriptor.m_renderStates.m_multisampleState;
 
-            shaderVariant.ConfigurePipelineState(m_descriptor);
+            shaderVariant.ConfigurePipelineState(m_descriptor, m_shaderVariantId);
 
             // Recover multisampleState if it was set from output data
             if (m_hasOutputData)

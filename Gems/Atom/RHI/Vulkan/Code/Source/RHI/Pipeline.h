@@ -14,6 +14,7 @@
 #include <AzCore/std/containers/list.h>
 #include <RHI/PipelineLayout.h>
 #include <RHI/ShaderModule.h>
+#include <RHI/SpecializationConstantData.h>
 
 namespace AZ
 {
@@ -78,6 +79,7 @@ namespace AZ
             RHI::Ptr<PipelineLayout> m_pipelineLayout;
             AZStd::list<RHI::Ptr<ShaderModule>> m_shaderModules;
             VkPipeline m_nativePipeline = VK_NULL_HANDLE;
+            SpecializationConstantData m_specializationConstantData;
         };
     }
 }

@@ -238,6 +238,20 @@ namespace AZ
             m_currentSupervariant->m_rootShaderVariantAsset = shaderVariantAsset;
         }
 
+        void ShaderAssetCreator::SetUseSpecializationConstants(bool value)
+        {
+            if (!ValidateIsReady())
+            {
+                return;
+            }
+            if (!m_currentSupervariant)
+            {
+                ReportError("BeginSupervariant() should be called first before calling %s", __FUNCTION__);
+                return;
+            }
+            m_currentSupervariant->m_useSpecializationConstants = value;
+        }
+
         static RHI::PipelineStateType GetPipelineStateType(const Data::Asset<ShaderVariantAsset>& shaderVariantAsset)
         {
             if (shaderVariantAsset->GetShaderStageFunction(RHI::ShaderStage::Vertex) ||

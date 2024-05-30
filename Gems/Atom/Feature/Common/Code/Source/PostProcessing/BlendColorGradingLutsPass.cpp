@@ -65,10 +65,10 @@ namespace AZ
                 RPI::ShaderVariant shaderVariant = m_shader->GetVariant(shaderOption.GetShaderVariantId());
 
                 RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
-                shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
+                shaderVariant.ConfigurePipelineState(pipelineStateDescriptor, shaderOption);
 
                 ShaderVariantInfo variantInfo{
-                    shaderVariant.IsFullyBaked(),
+                    shaderVariant.UseKeyFallback(),
                     m_shader->AcquirePipelineState(pipelineStateDescriptor)
                 };
                 m_shaderVariant.push_back(AZStd::move(variantInfo));

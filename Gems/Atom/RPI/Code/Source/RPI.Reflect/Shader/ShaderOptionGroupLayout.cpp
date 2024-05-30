@@ -99,6 +99,7 @@ namespace AZ
                     ->Field("m_bitMaskNot", &ShaderOptionDescriptor::m_bitMaskNot)
                     ->Field("m_hash", &ShaderOptionDescriptor::m_hash)
                     ->Field("m_nameReflectionForValues", &ShaderOptionDescriptor::m_nameReflectionForValues)
+                    ->Field("m_specializationId", &ShaderOptionDescriptor::m_specializationId)
                     ;
             }
 
@@ -130,7 +131,8 @@ namespace AZ
                                                        uint32_t order,
                                                        const ShaderOptionValues& nameIndexList,
                                                        const Name& defaultValue,
-                                                       uint32_t cost)
+                                                       uint32_t cost,
+                                                       int specializationId)
 
             : m_name{name}
             , m_type{optionType}
@@ -138,6 +140,7 @@ namespace AZ
             , m_order{order}
             , m_costEstimate{cost}
             , m_defaultValue{defaultValue}
+            , m_specializationId{specializationId}
         {
             for (auto pair : nameIndexList)
             {   // Registers the pair in the lookup table
@@ -185,6 +188,11 @@ namespace AZ
         uint32_t ShaderOptionDescriptor::GetCostEstimate() const
         {
             return m_costEstimate;
+        }
+
+        int ShaderOptionDescriptor::GetSpecializationId() const
+        {
+            return m_specializationId;
         }
 
         ShaderVariantKey ShaderOptionDescriptor::GetBitMask() const
@@ -457,6 +465,7 @@ namespace AZ
                     ->Field("m_options", &ShaderOptionGroupLayout::m_options)
                     ->Field("m_nameReflectionForOptions", &ShaderOptionGroupLayout::m_nameReflectionForOptions)
                     ->Field("m_hash", &ShaderOptionGroupLayout::m_hash)
+                    ->Field("m_isFullySpecialized", &ShaderOptionGroupLayout::m_isFullySpecialized)
                     ;
             }
 
@@ -486,6 +495,12 @@ namespace AZ
             return m_hash;
         }
 
+        bool ShaderOptionGroupLayout::IsFullySpecialized() const
+        {
+            return m_isFullySpecialized;
+        }
+
+
         void ShaderOptionGroupLayout::Clear()
         {
             m_options.clear();
@@ -497,6 +512,13 @@ namespace AZ
         void ShaderOptionGroupLayout::Finalize()
         {
             AZStd::sort(m_options.begin(), m_options.end(), ShaderOptionDescriptor::CompareOrder);
+            m_isFullySpecialized = !AZStd::any_of(
+                m_options.begin(),
+                m_options.end(),
+                [](const ShaderOptionDescriptor& elem)
+                {
+                    return elem.GetSpecializationId() < 0;
+                });
 
             // Start with a hash of the size so that m_hash!=0 will mean the group is finalized, even if the options list is empty.
             HashValue64 hash = TypeHash64(m_options.size());

@@ -139,7 +139,8 @@ namespace AZ
                 RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout,
                 BindingDependencies& bindingDependencies,
                 RootConstantData& rootConstantData,
-                const AZStd::string& tempFolder)
+                const AZStd::string& tempFolder,
+                bool& useSpecializationConstants)
             {
                 AzslCompiler azslc(azslData.m_preprocessedFullPath,  // set the input file for eventual error messages, but the compiler won't be called on it.
                                    tempFolder);
@@ -188,7 +189,8 @@ namespace AZ
 
                 // The shader options define what options are available, what are the allowed values/range
                 // for each option and what is its default value.
-                if (!azslc.ParseOptionsPopulateOptionGroupLayout(outcomes[AzslSubProducts::options].GetValue(), shaderOptionGroupLayout))
+                if (!azslc.ParseOptionsPopulateOptionGroupLayout(
+                        outcomes[AzslSubProducts::options].GetValue(), shaderOptionGroupLayout, useSpecializationConstants))
                 {
                     AZ_Error(builderName, false, "Failed to find a valid list of shader options!");
                     return AssetBuilderSDK::ProcessJobResult_Failed;

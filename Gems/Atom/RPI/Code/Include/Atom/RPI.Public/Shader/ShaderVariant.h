@@ -29,6 +29,8 @@ namespace AZ
             //! Fills a pipeline state descriptor with settings provided by the ShaderVariant. (Note that
             //! this does not fill the InputStreamLayout or OutputAttachmentLayout as that also requires 
             //! information from the mesh data and pass system and must be done as a separate step).
+            void ConfigurePipelineState(RHI::PipelineStateDescriptor& descriptor, const ShaderVariantId& specialization) const;
+            void ConfigurePipelineState(RHI::PipelineStateDescriptor& descriptor, const ShaderOptionGroup& specialization) const;
             void ConfigurePipelineState(RHI::PipelineStateDescriptor& descriptor) const;
 
             const ShaderVariantId& GetShaderVariantId() const { return m_shaderVariantAsset->GetShaderVariantId(); }
@@ -37,6 +39,12 @@ namespace AZ
             //! variant uses dynamic branches for some shader options.
             //! If the shader variant is not fully baked, the ShaderVariantKeyFallbackValue must be correctly set when drawing.
             bool IsFullyBaked() const { return m_shaderVariantAsset->IsFullyBaked(); }
+
+            //! Returns whether the variant is using specialization constants for all of the options.
+            bool IsFullySpecialized() const { return m_shaderVariantAsset->IsFullySpecialized(); }
+
+            //! Return true if this variant needs the ShaderVariantKeyFallbackValue to be correctly set when drawing.
+            bool UseKeyFallback() const { return m_shaderVariantAsset->UseKeyFallback(); }
 
             //! Return the timestamp when this asset was built.
             //! This is used to synchronize versions of the ShaderAsset and ShaderVariantAsset, especially during hot-reload.
@@ -70,6 +78,8 @@ namespace AZ
 
             const RHI::RenderStates* m_renderStates = nullptr; // Cached from ShaderAsset.
             SupervariantIndex m_supervariantIndex;
+
+            bool m_useSpecializationConstants = false;
         };
     }
 }

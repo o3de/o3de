@@ -60,7 +60,7 @@ namespace AZ
             // load pipeline state
             RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
             const auto& shaderVariant = m_shader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
-            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
+            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor, m_shader->GetDefaultShaderOptions());
             m_pipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
 
             // load Pass Srg asset

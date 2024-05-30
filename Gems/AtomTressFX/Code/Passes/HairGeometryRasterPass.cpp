@@ -137,7 +137,7 @@ namespace AZ
 
                 const RPI::ShaderVariant& shaderVariant = m_shader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
                 RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
-                shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
+                shaderVariant.ConfigurePipelineState(pipelineStateDescriptor, m_shader->GetDefaultShaderOptions());
 
                 RPI::Scene* scene = GetScene();
                 if (!scene)

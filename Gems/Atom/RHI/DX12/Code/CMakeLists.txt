@@ -131,6 +131,8 @@ ly_add_target(
             Gem::Amd_DX12MA
             3rdParty::d3dx12
             ${AFTERMATH_BUILD_DEPENDENCY}
+        PRIVATE
+            3rdParty::OpenSSL
     COMPILE_DEFINITIONS 
         PRIVATE
             ${USE_NSIGHT_AFTERMATH_DEFINE}

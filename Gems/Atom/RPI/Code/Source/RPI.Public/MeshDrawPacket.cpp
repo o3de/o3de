@@ -376,7 +376,7 @@ namespace AZ
 #endif
 
                 RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
-                variant.ConfigurePipelineState(pipelineStateDescriptor);
+                variant.ConfigurePipelineState(pipelineStateDescriptor, shaderOptions);
 
                 // Render states need to merge the runtime variation.
                 // This allows materials to customize the render states that the shader uses.

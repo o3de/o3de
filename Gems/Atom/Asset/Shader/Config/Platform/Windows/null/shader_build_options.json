@@ -1,0 +1,5 @@
+{
+    "AddBuildArguments": {
+        "azslc": ["--sc-options"]
+    }
+}

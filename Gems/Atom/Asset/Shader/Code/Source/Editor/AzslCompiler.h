@@ -61,7 +61,7 @@ namespace AZ
             //! make sense of a --srg json document and fill up the srg data container
             bool ParseSrgPopulateSrgData(const rapidjson::Document& input, SrgDataContainer& outSrgData) const;
             //! make sense of a --option json document and fill up the shader option group layout
-            bool ParseOptionsPopulateOptionGroupLayout(const rapidjson::Document& input, RPI::Ptr<RPI::ShaderOptionGroupLayout>& shaderOptionGroupLayout) const;
+            bool ParseOptionsPopulateOptionGroupLayout(const rapidjson::Document& input, RPI::Ptr<RPI::ShaderOptionGroupLayout>& shaderOptionGroupLayout, bool& outSpecializationConstants) const;
             //! make sense of a --bindingdep json documment and fill up the binding dependencies object
             bool ParseBindingdepPopulateBindingDependencies(const rapidjson::Document& input, BindingDependencies& bindingDependencies) const;
             //! make sense of a --srg json document and fill up the root constant data
