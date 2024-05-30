@@ -1,6 +1,6 @@
 # Docker support for O3DE
 
-O3DE supports construction of a Docker image on the Linux environment.
+O3DE supports construction of a Docker image on the Linux environment. The following instructions will allow you to build and launch O3DE through a Docker container, with project data being persisted on your local machine.
 
 ## Prerequisites
 
@@ -17,41 +17,41 @@ The Docker script provides the following arguments for building the Docker image
 | Argument                | Description                                                                | Default
 |-------------------------|----------------------------------------------------------------------------|-------------
 | INPUT_IMAGE             | The base ubuntu docker image to base the build on                          | ubuntu
-| INPUT_TAG               | The base ubuntu docker image tag to base the build on                      | 22.04
+| INPUT_TAG               | The base ubuntu docker image tag to base the build on                      | jammy
 | INPUT_ARCHITECTURE      | The CPU architecture (amd64/aarch64). Will require QEMU if cross compiling | amd64
 | O3DE_REPO               | The git repo for O3DE                                                      | https://github.com/o3de/o3de
 | O3DE_BRANCH             | The branch for O3DE                                                        | development
 | O3DE_COMMIT             | The commit on the branch for O3DE (or HEAD)                                | HEAD
-| O3DE_EXTRAS_REPO        | The git repo for O3DE Extras                                               | https://github.com/o3de/o3de-extras
-| O3DE_EXTRAS_BRANCH      | The branch for O3DE Extras                                                 | development
-| O3DE_EXTRAS_COMMIT      | The commit on the branch for O3DE Extras (or HEAD)                         | HEAD
 
-## Example
+## Examples
+The following example build commands are based on the general use case for O3DE. 
 
-### Locally (From the o3de/Docker folder)
+If there are any ROS2 gem based project that will be created or used by the image, then you will need to follow the **ROS Example** section below.
 
+You can build a minimal Docker image that can create or use non-simulation projects using the `ubuntu` input image and either the `jammy` or `noble` input tag. To build a Docker image that supports robotic simulations using ROS, you must use the `ros` input image and either the `humble` or `jazzy` input tag. (Refer to the [Docker distribution of ROS](https://hub.docker.com/_/ros/))
+
+### Locally
+
+To build the Docker image from the local O3DE Docker context, run the following command from the `Docker` subfolder inside the o3de root folder.
+
+#### General
 ```
-docker build -f Dockerfile -t amd64/o3de:latest .
+docker build -f Dockerfile --build-arg INPUT_IMAGE=ubuntu --build-arg INPUT_TAG=jammy -t amd64/o3de:jammy .
 ```
-
-### From github
-
-```
-docker build -t amd64/o3de:latest https://github.com/o3de/o3de.git#development:Docker
-```
-
-## ROS Example
-To build a Docker image that supports robotic simulations using ROS, the `INPUT_IMAGE` and `INPUT_TAG` will be overridden with the desired version of the ROS 2 distribution. To enable ROS 2 in the Docker image, the `INPUT_IMAGE` value needs to be set to `ros`, and the `INPUT_TAG` set to the appropriate [Docker distribution of ROS](https://hub.docker.com/_/ros/). The current supported versions of ROS 2 are `humble` and `jazzy`.
-
-
-### Locally (From the o3de/Docker folder)
-
+#### ROS2 enabled
 ```
 docker build -f Dockerfile --build-arg INPUT_IMAGE=ros --build-arg INPUT_TAG=humble -t amd64/o3de:ros_humble .
 ```
 
 ### From github
+You can also build the Docker image from the O3DE Docker context directly from github with the following command (based on the development branch)
 
+#### General
+```
+docker build -t amd64/o3de:jammy https://github.com/o3de/o3de.git#development:Docker
+```
+
+#### ROS2 enabled
 ```
 docker build --build-arg INPUT_IMAGE=ros --build-arg INPUT_TAG=humble -t amd64/o3de:ros_humble https://github.com/o3de/o3de.git#development:Docker
 ```
@@ -80,18 +80,24 @@ These two folders will be added as part of the `docker run` argument list:
 ```
 
 ## Using the current user id and group id
-The Docker image will map the current user and group id to a Docker create user and group when running the container. This will allow reading and writing to the mapped O3DE-specific folders described earlier and will add persistence to the Docker container through the mapped folders. The user id and group id are passed to the Docker run command as two arguments: `UID` and `PID`:
+The Docker image will map the current user and group id to a Docker create user and group when running the container. This will allow reading and writing to the mapped O3DE-specific folders described earlier and will add persistence to the Docker container through the mapped folders. The user id and group id are passed to the Docker run command as two arguments: `UID` and `GID`:
 
 ```
 --env UID=$(id -u) --env GID=$(id -g)
 ```
 
 
-Putting it all together, you can launch the Docker container with the following command
+Putting it all together, you can launch the O3DE Docker container with the following command:
 
 ```
 xhost +local:root
 
-docker run --env UID=$(id -u) --env GID=$(id -g) -v "$HOME/.o3de:/home/o3de/.o3de" -v "$HOME/O3DE:/home/o3de/O3DE"  --rm --gpus all -e DISPLAY=:1 -v /tmp/.X11-unix:/tmp/.X11-unix -it amd64/o3de
+docker run --env UID=$(id -u) --env GID=$(id -g) -v "$HOME/docker/amd-o3de/manifest:/home/o3de/.o3de" -v "$HOME/docker/amd-o3de/home:/home/o3de/O3DE" --rm --gpus all -e DISPLAY=:1 -v /tmp/.X11-unix:/tmp/.X11-unix -it amd64/o3de:jammy
 ```
 
+For the ROS container based on the **ROS Humble** example, add the `ros_humble` tag.
+```
+xhost +local:root
+
+docker run --env UID=$(id -u) --env GID=$(id -g) -v "$HOME/docker/amd-o3de/manifest:/home/o3de/.o3de" -v "$HOME/docker/amd-o3de/home:/home/o3de/O3DE" --rm --gpus all -e DISPLAY=:1 -v /tmp/.X11-unix:/tmp/.X11-unix -it amd64/o3de:ros_humble
+```

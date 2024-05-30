@@ -11,7 +11,7 @@ ARG INPUT_ARCHITECTURE=amd64
 ARG INPUT_IMAGE=ubuntu
 
 # The root docker tag 
-ARG INPUT_TAG=22.04
+ARG INPUT_TAG=jammy
 
 # Pull in the base ubuntu docker
 FROM ${INPUT_ARCHITECTURE}/${INPUT_IMAGE}:${INPUT_TAG}
@@ -33,23 +33,29 @@ ARG O3DE_REPO=https://github.com/o3de/o3de
 ARG O3DE_BRANCH=development
 ARG O3DE_COMMIT=HEAD
 
-# O3DE Extras Arguments
-ARG O3DE_EXTRAS_REPO=https://github.com/o3de/o3de-extras
-ARG O3DE_EXTRAS_BRANCH=development
-ARG O3DE_EXTRAS_COMMIT=HEAD
-
 # O3DE Environment
 ENV O3DE_REPO=$O3DE_REPO
 ENV O3DE_BRANCH=$O3DE_BRANCH
 ENV O3DE_COMMIT=$O3DE_COMMIT
 ENV O3DE_ROOT=$WORKSPACE/o3de
 
-# O3DE Extras Environment Variables
-ENV O3DE_EXTRAS_REPO=$O3DE_EXTRAS_REPO
-ENV O3DE_EXTRAS_BRANCH=$O3DE_EXTRAS_BRANCH
-ENV O3DE_EXTRAS_COMMIT=$O3DE_EXTRAS_COMMIT
-
 ENV LANG=en_US.UTF-8
+
+# Validate the tag if the image is 'ubuntu'
+RUN if [ "$INPUT_IMAGE" = "ubuntu" ]; then \
+        if [ "$INPUT_TAG" != "jammy" ] && [ "$INPUT_TAG" != "nobel" ]; then \
+            echo "ERROR: Unsupported ubuntu tag: ${INPUT_TAG}. Must be either 'jammy' or 'nobel'"; \
+            exit 1;\
+        fi \
+    fi
+
+# Validate the tag if the image is 'ros'
+RUN if [ "$INPUT_IMAGE" = "ros" ]; then \
+        if [ "$INPUT_TAG" != "humble" ] && [ "$INPUT_TAG" != "jazzy" ]; then \
+            echo "ERROR: Unsupported ros tag: ${INPUT_TAG}. Must be either 'humble' or 'jazzy'"; \
+            exit 1;\
+        fi \
+    fi
 
 # Setup time zone and locale data (necessary for SSL and HTTPS packages)
 RUN apt-get update \
@@ -65,6 +71,7 @@ RUN apt-get update \
             binutils \
             clang \
             cmake \
+            cmake-qt-gui \
             git \
             git-lfs \
             libglu1-mesa-dev \
@@ -89,8 +96,13 @@ RUN apt-get update \
             software-properties-common \
             mesa-common-dev \
             libvulkan1 \
+            gedit \
+            xdg-utils \
+            desktop-file-utils \
+            nautilus \
             sudo
-RUN if [ "$INPUT_IMAGE" == "ros" ]; then \
+        
+RUN if [ "$INPUT_IMAGE" = "ros" ]; then \
      apt-get install -y ros-${ROS_DISTRO}-ackermann-msgs \
                         ros-${ROS_DISTRO}-control-toolbox \
                         ros-${ROS_DISTRO}-nav-msgs \
@@ -103,7 +115,6 @@ RUN if [ "$INPUT_IMAGE" == "ros" ]; then \
 
 # Setup the 'o3de' user for this image (with a default group id, which will be updated in the entrypoint)
 ENV O3DE_USER=o3de 
-ENV O3DE_EXTRAS_ROOT=/home/$O3DE_USER/o3de-extras
 
 RUN addgroup --gid 1000 "$O3DE_USER" \
     && adduser --gid 1000 --gecos "" --disabled-password "$O3DE_USER" \

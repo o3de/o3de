@@ -46,8 +46,15 @@ then
     echo 'Mapping of the user id was not provided on docker run. You need to provide the following arguments: -v "$HOME/.o3de:/home/o3de/.o3de" -v "$HOME/O3DE:/home/o3de/O3DE"'
     exit 1
 else
+    # Make sure ownership is correct for the mapped O3DE folders
     sudo chown $O3DE_USER:$O3DE_USER -R /home/$O3DE_USER/.o3de
     sudo chown $O3DE_USER:$O3DE_USER -R /home/$O3DE_USER/O3DE
+
+    # Prepare and set the XDG_RUNTIME_DIR value for Qt in order to launch mime applications from Project Manager
+    sudo mkdir -p /run/user/$UID
+    sudo chown $O3DE_USER:$O3DE_USER /run/user/$UID
+    sudo chmod 7700 /run/user/$UID
+    echo -e "\nexport XDG_RUNTIME_DIR=/run/user/$UID\n" >> /home/o3de/.bashrc
 fi
 
 # Bootstrap python first
