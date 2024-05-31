@@ -120,10 +120,17 @@ namespace AZ
             m_entityId = entityId;
 
             DisplayMapperComponentRequestBus::Handler::BusConnect(m_entityId);
+            OnConfigChanged();
         }
 
         void DisplayMapperComponentController::Deactivate()
         {
+            DisplayMapperFeatureProcessorInterface* fp =
+                AZ::RPI::Scene::GetFeatureProcessorForEntity<DisplayMapperFeatureProcessorInterface>(m_entityId);
+            if (fp)
+            {
+                fp->UnregisterDisplayMapperConfiguration();
+            }
             DisplayMapperComponentRequestBus::Handler::BusDisconnect(m_entityId);
 
             m_postProcessInterface = nullptr;
