@@ -1,0 +1,14 @@
+//Step 1 -> Use CreateShaderVariantListDocumentFromShader via SMC on OutputTransformMobile shader to get the shader options.
+//Step 2 -> Use ExpandOptionsFullCombinatorials via SMC and apply o_tonemapperType with value ToneMapperType::AcesFitted, ToneMapperType::AcesFilmic. o_transferFunctionType with TransferFunctionType::Gamma22. o_colorGradingEnabled with true and false. Generation Method 'Mulitply'.
+//Step 3 -> Use ExpandOptionsFullCombinatorials via SMC and apply o_tonemapperType with value ToneMapperType::Filmic. o_transferFunctionType with TransferFunctionType::None. o_colorGradingEnabled with true and false. Generation Method 'Mulitply'.
+{ 
+    "Shader" : "OutputTransformMobile.shader",
+	"Variants" : [ 
+        {"StableId": 1, "Options" : { "o_tonemapperType": "ToneMapperType::AcesFitted", "o_transferFunctionType": "TransferFunctionType::Gamma22", "o_colorGradingEnabled": "true" } },
+        {   "StableId": 2, "Options" : { "o_tonemapperType": "ToneMapperType::AcesFitted", "o_transferFunctionType": "TransferFunctionType::Gamma22", "o_colorGradingEnabled": "false" } },
+        {   "StableId": 3, "Options" : { "o_tonemapperType": "ToneMapperType::AcesFilmic", "o_transferFunctionType": "TransferFunctionType::Gamma22", "o_colorGradingEnabled": "true" } },
+        {   "StableId": 4, "Options" : { "o_tonemapperType": "ToneMapperType::AcesFilmic", "o_transferFunctionType": "TransferFunctionType::Gamma22", "o_colorGradingEnabled": "false" } },
+        {   "StableId": 5, "Options" : { "o_tonemapperType": "ToneMapperType::Filmic", "o_transferFunctionType": "TransferFunctionType::None", "o_colorGradingEnabled": "true" } },
+        {   "StableId": 6, "Options" : { "o_tonemapperType": "ToneMapperType::Filmic", "o_transferFunctionType": "TransferFunctionType::None", "o_colorGradingEnabled": "false" } }
+    ]
+}
