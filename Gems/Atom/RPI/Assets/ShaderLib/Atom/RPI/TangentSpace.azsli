@@ -11,9 +11,15 @@
 // ---------- Tangent & World Space ----------
 
 //! Utility function to convert vector from tangent space to world space
-real3 TangentSpaceToWorld(real3 vectorTS, real3 normalWS, real3 tangentWS, real3 bitangentWS)
+half3 TangentSpaceToWorld(half3 vectorTS, half3 normalWS, half3 tangentWS, half3 bitangentWS)
 {
-    return real3(vectorTS.x * tangentWS + vectorTS.y * bitangentWS + vectorTS.z * normalWS);
+    return half3(vectorTS.x * tangentWS + vectorTS.y * bitangentWS + vectorTS.z * normalWS);
+}
+
+//! Utility function to convert vector from tangent space to world space
+float3 TangentSpaceToWorld(float3 vectorTS, float3 normalWS, float3 tangentWS, float3 bitangentWS)
+{
+    return float3(vectorTS.x * tangentWS + vectorTS.y * bitangentWS + vectorTS.z * normalWS);
 }
 
 float3 TangentSpaceToWorldFp32(float3 vectorTS, float3 normalWS, float3 tangentWS, float3 bitangentWS)
@@ -22,13 +28,22 @@ float3 TangentSpaceToWorldFp32(float3 vectorTS, float3 normalWS, float3 tangentW
 }
 
 //! Utility function to convert vector from world space to tangent space
-real3 WorldSpaceToTangent(real3 vectorWS, real3 normalWS, real3 tangentWS, real3 bitangentWS)
+half3 WorldSpaceToTangent(half3 vectorWS, half3 normalWS, half3 tangentWS, half3 bitangentWS)
 {
-    real a = dot(tangentWS, vectorWS);
-    real b = dot(bitangentWS, vectorWS);
-    real c = dot(normalWS, vectorWS);
+    half a = dot(tangentWS, vectorWS);
+    half b = dot(bitangentWS, vectorWS);
+    half c = dot(normalWS, vectorWS);
 
-    return real3(a, b, c);
+    return half3(a, b, c);
+}
+
+float3 WorldSpaceToTangent(float3 vectorWS, float3 normalWS, float3 tangentWS, float3 bitangentWS)
+{
+    float a = dot(tangentWS, vectorWS);
+    float b = dot(bitangentWS, vectorWS);
+    float c = dot(normalWS, vectorWS);
+
+    return float3(a, b, c);
 }
 
 float3 WorldSpaceToTangentFp32(float3 vectorWS, float3 normalWS, float3 tangentWS, float3 bitangentWS)
