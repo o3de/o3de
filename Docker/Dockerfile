@@ -16,14 +16,10 @@ ARG INPUT_TAG=jammy
 # Pull in the base ubuntu docker
 FROM ${INPUT_ARCHITECTURE}/${INPUT_IMAGE}:${INPUT_TAG}
 
-
-ARG INPUT_ARCHITECTURE
 ARG INPUT_IMAGE
 ARG INPUT_TAG
 
 ENV INPUT_IMAGE=$INPUT_IMAGE
-ENV INPUT_TAG=$INPUT_TAG
-
 ENV WORKSPACE=/data/workspace
 
 WORKDIR $WORKSPACE
@@ -101,7 +97,8 @@ RUN apt-get update \
             desktop-file-utils \
             nautilus \
             sudo
-        
+
+# If this is a 'ros' image, add additional ros packages that are used by the current ros project templates.
 RUN if [ "$INPUT_IMAGE" = "ros" ]; then \
      apt-get install -y ros-${ROS_DISTRO}-ackermann-msgs \
                         ros-${ROS_DISTRO}-control-toolbox \
@@ -124,6 +121,7 @@ RUN addgroup --gid 1000 "$O3DE_USER" \
 COPY build.sh $WORKSPACE/
 COPY entrypoint.sh $WORKSPACE/
 
+# Run the script to clone, build, and install O3DE as an SDK installer
 RUN cd $WORKSPACE \
    && ./build.sh \
    && rm build.sh

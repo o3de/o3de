@@ -36,11 +36,11 @@ To build the Docker image from the local O3DE Docker context, run the following 
 
 #### General
 ```
-docker build -f Dockerfile --build-arg INPUT_IMAGE=ubuntu --build-arg INPUT_TAG=jammy -t amd64/o3de:jammy .
+docker build -f Dockerfile --build-arg INPUT_IMAGE=ubuntu --build-arg INPUT_TAG=jammy -t amd64/o3de:ubuntu.jammy .
 ```
 #### ROS2 enabled
 ```
-docker build -f Dockerfile --build-arg INPUT_IMAGE=ros --build-arg INPUT_TAG=humble -t amd64/o3de:ros_humble .
+docker build -f Dockerfile --build-arg INPUT_IMAGE=ros --build-arg INPUT_TAG=humble -t amd64/o3de:ros.humble .
 ```
 
 ### From github
@@ -48,12 +48,12 @@ You can also build the Docker image from the O3DE Docker context directly from g
 
 #### General
 ```
-docker build -t amd64/o3de:jammy https://github.com/o3de/o3de.git#development:Docker
+docker build -t amd64/o3de:ubuntu.jammy https://github.com/o3de/o3de.git#development:Docker
 ```
 
 #### ROS2 enabled
 ```
-docker build --build-arg INPUT_IMAGE=ros --build-arg INPUT_TAG=humble -t amd64/o3de:ros_humble https://github.com/o3de/o3de.git#development:Docker
+docker build --build-arg INPUT_IMAGE=ros --build-arg INPUT_TAG=humble -t amd64/o3de:ros.humble https://github.com/o3de/o3de.git#development:Docker
 ```
 
 
@@ -66,9 +66,9 @@ O3DE will use two folders for its runtime environment. The manifest folder (\$HO
 The following example creates these folders under a parent `docker` folder in the current user's `$HOME` directory, specific to the name of the Docker image.
 
 ```
-mkdir -p $HOME/docker/amd-o3de/manifest
+mkdir -p $HOME/docker/o3de/manifest
 
-mkdir -p $HOME/docker/amd-o3de/home
+mkdir -p $HOME/docker/o3de/home
 ```
 
 >**Note** The two folders must be created specifically for the O3DE Docker container that is being connected to. There is no version or compatibility checks in the Docker container, so normal O3DE startup in the container may fail if it does not use the same mapped folders it used during its initial launch.
@@ -76,7 +76,7 @@ mkdir -p $HOME/docker/amd-o3de/home
 These two folders will be added as part of the `docker run` argument list:
 
 ```
--v "$HOME/docker/amd-o3de/manifest:/home/o3de/.o3de" -v "$HOME/docker/amd-o3de/home:/home/o3de/O3DE"
+-v "$HOME/docker/o3de/manifest:/home/o3de/.o3de" -v "$HOME/docker/o3de/home:/home/o3de/O3DE"
 ```
 
 ## Using the current user id and group id
@@ -92,12 +92,12 @@ Putting it all together, you can launch the O3DE Docker container with the follo
 ```
 xhost +local:root
 
-docker run --env UID=$(id -u) --env GID=$(id -g) -v "$HOME/docker/amd-o3de/manifest:/home/o3de/.o3de" -v "$HOME/docker/amd-o3de/home:/home/o3de/O3DE" --rm --gpus all -e DISPLAY=:1 -v /tmp/.X11-unix:/tmp/.X11-unix -it amd64/o3de:jammy
+docker run --env UID=$(id -u) --env GID=$(id -g) -v "$HOME/docker/o3de/manifest:/home/o3de/.o3de" -v "$HOME/docker/o3de/home:/home/o3de/O3DE" --rm --gpus all -e DISPLAY=:1 -v /tmp/.X11-unix:/tmp/.X11-unix -it amd64/o3de:ubuntu.jammy
 ```
 
-For the ROS container based on the **ROS Humble** example, add the `ros_humble` tag.
+For the ROS container based on the **ROS Humble** example, add the `ros.humble` tag.
 ```
 xhost +local:root
 
-docker run --env UID=$(id -u) --env GID=$(id -g) -v "$HOME/docker/amd-o3de/manifest:/home/o3de/.o3de" -v "$HOME/docker/amd-o3de/home:/home/o3de/O3DE" --rm --gpus all -e DISPLAY=:1 -v /tmp/.X11-unix:/tmp/.X11-unix -it amd64/o3de:ros_humble
+docker run --env UID=$(id -u) --env GID=$(id -g) -v "$HOME/docker/o3de/manifest:/home/o3de/.o3de" -v "$HOME/docker/o3de/home:/home/o3de/O3DE" --rm --gpus all -e DISPLAY=:1 -v /tmp/.X11-unix:/tmp/.X11-unix -it amd64/o3de:ros.humble
 ```
