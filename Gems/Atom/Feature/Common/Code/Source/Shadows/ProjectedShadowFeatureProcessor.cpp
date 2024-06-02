@@ -836,7 +836,8 @@ namespace AZ::Render
 
         if (needsEsm)
         {
-            m_esmAtlasImage = createAtlas(RHI::Format::R16_FLOAT, RHI::ImageBindFlags::ShaderReadWrite, RHI::ImageAspectFlags::Color, "ProjectedShadowAtlasESM");
+            m_esmAtlasImage = createAtlas(
+                RHI::Format::R32_FLOAT, RHI::ImageBindFlags::ShaderReadWrite, RHI::ImageAspectFlags::Color, "ProjectedShadowAtlasESM");
             for (auto& [key, esmShadowmapsPass] : m_esmShadowmapsPasses)
             {
                 esmShadowmapsPass->SetAtlasAttachmentImage(m_esmAtlasImage);
