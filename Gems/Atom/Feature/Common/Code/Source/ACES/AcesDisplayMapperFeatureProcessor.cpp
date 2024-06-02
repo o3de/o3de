@@ -70,7 +70,6 @@ namespace AZ::Render
 
     void AcesDisplayMapperFeatureProcessor::Activate()
     {
-        GetDefaultDisplayMapperConfiguration(m_displayMapperConfiguration);
     }
 
     void AcesDisplayMapperFeatureProcessor::Deactivate()
@@ -457,8 +456,13 @@ namespace AZ::Render
         m_displayMapperConfiguration = config;
     }
 
-    DisplayMapperConfigurationDescriptor AcesDisplayMapperFeatureProcessor::GetDisplayMapperConfiguration()
+    void AcesDisplayMapperFeatureProcessor::UnregisterDisplayMapperConfiguration()
     {
-        return m_displayMapperConfiguration;
+        m_displayMapperConfiguration.reset();
+    }
+
+    const DisplayMapperConfigurationDescriptor* AcesDisplayMapperFeatureProcessor::GetDisplayMapperConfiguration()
+    {
+        return m_displayMapperConfiguration.has_value() ? &m_displayMapperConfiguration.value() : nullptr;
     }
 } // namespace AZ::Render
