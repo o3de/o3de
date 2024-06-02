@@ -220,6 +220,7 @@ namespace AZ::Render
         ShadowData& shadowData = m_shadowData.GetElement<ShadowDataIndex>(id.GetIndex());
         shadowData.m_esmExponent = exponent;
         m_deviceBufferNeedsUpdate = true;
+        m_filterParameterNeedsUpdate = true;
     }
 
     void ProjectedShadowFeatureProcessor::SetShadowFilterMethod(ShadowId id, ShadowFilterMethod method)
@@ -580,11 +581,14 @@ namespace AZ::Render
         for (const auto& shadowProperty : m_shadowProperties.GetDataVector())
         {
             FilterParameter& esmData = m_shadowData.GetElement<FilterParamIndex>(shadowProperty.m_shadowId.GetIndex());
+            ShadowData& shadowData = m_shadowData.GetElement<ShadowDataIndex>(shadowProperty.m_shadowId.GetIndex());
             if (esmData.m_isEnabled)
             {
                 anyShadowsUseEsm = true;
                 break;
             }
+            // TODO: why do we set it multiple times?
+            m_primaryEsmShadowmapsPass->SetEsmExponent(shadowData.m_esmExponent);
         }
 
         m_primaryEsmShadowmapsPass->SetEnabledComputation(anyShadowsUseEsm);

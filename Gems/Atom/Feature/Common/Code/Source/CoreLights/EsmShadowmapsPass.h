@@ -78,6 +78,8 @@ namespace AZ
             //! Sets the image to use as the output for all esm passes. This is needed so multiple pipelines in a scene can share the same resource.
             void SetAtlasAttachmentImage(Data::Instance<RPI::AttachmentImage> atlasAttachmentIamge);
 
+            void SetEsmExponent(float esmExponent);
+
         private:
             EsmShadowmapsPass() = delete;
             explicit EsmShadowmapsPass(const RPI::PassDescriptor& descriptor);
@@ -104,6 +106,7 @@ namespace AZ
             Name m_lightTypeName;
             RHI::Size m_shadowmapImageSize;
             uint16_t m_shadowmapArraySize;
+            float m_esmExponent = 5.0;
 
             Data::Instance<RPI::AttachmentImage> m_atlasAttachmentImage;
 
