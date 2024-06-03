@@ -990,7 +990,7 @@ namespace AZ
             {
                 flags |= VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT;
             }
-            if (RHI::CheckBitsAll(stage, RHI::ScopeAttachmentStage::VerteInput))
+            if (RHI::CheckBitsAll(stage, RHI::ScopeAttachmentStage::VertexInput))
             {
                 flags |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
             }

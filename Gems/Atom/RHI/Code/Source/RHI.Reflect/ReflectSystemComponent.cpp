@@ -225,7 +225,7 @@ namespace AZ::RHI
             ->Value("Copy", ScopeAttachmentStage::Copy)
             ->Value("Predication", ScopeAttachmentStage::Predication)
             ->Value("DrawIndirect", ScopeAttachmentStage::DrawIndirect)
-            ->Value("VerteInput", ScopeAttachmentStage::VerteInput)
+            ->Value("VertexInput", ScopeAttachmentStage::VertexInput)
             ->Value("ShadingRate", ScopeAttachmentStage::ShadingRate)
             ->Value("AnyGraphics", ScopeAttachmentStage::AnyGraphics)
             ->Value("Any", ScopeAttachmentStage::Any)

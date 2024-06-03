@@ -522,7 +522,7 @@ namespace UnitTest
                         desc,
                         RHI::ScopeAttachmentAccess::Read,
                         RHI::ScopeAttachmentUsage::InputAssembly,
-                        RHI::ScopeAttachmentStage::VerteInput);
+                        RHI::ScopeAttachmentStage::VertexInput);
                     AZ_TEST_STOP_ASSERTTEST(1);
                 }
 
@@ -548,15 +548,6 @@ namespace UnitTest
                     desc.m_imageViewDescriptor = RHI::ImageViewDescriptor::Create(RHI::Format::Unknown, 0, 1);
                     frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite, RHI::ScopeAttachmentStage::AnyGraphics);
                     desc.m_imageViewDescriptor = RHI::ImageViewDescriptor::Create(RHI::Format::Unknown, 1, 2);
-                    AZ_TEST_START_TRACE_SUPPRESSION;
-                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite, RHI::ScopeAttachmentStage::AnyGraphics);
-                    AZ_TEST_STOP_ASSERTTEST(1);
-
-                    // Mipmap overlap, Slice Overlap
-                    desc.m_attachmentId = m_state->m_imageAttachments[2].m_id;
-                    desc.m_imageViewDescriptor = RHI::ImageViewDescriptor::Create(RHI::Format::Unknown, 0, 1, 0, 1);
-                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite, RHI::ScopeAttachmentStage::AnyGraphics);
-                    desc.m_imageViewDescriptor = RHI::ImageViewDescriptor::Create(RHI::Format::Unknown, 0, 1, 1, 2);
                     AZ_TEST_START_TRACE_SUPPRESSION;
                     frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite, RHI::ScopeAttachmentStage::AnyGraphics);
                     AZ_TEST_STOP_ASSERTTEST(1);

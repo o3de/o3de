@@ -143,9 +143,9 @@ namespace AZ::RHI
         {
             stages += "DrawIndirect|";
         }
-        if (CheckBitsAll(attachmentStage, ScopeAttachmentStage::VerteInput))
+        if (CheckBitsAll(attachmentStage, ScopeAttachmentStage::VertexInput))
         {
-            stages += "VerteInput|";
+            stages += "VertexInput|";
         }
         if (CheckBitsAll(attachmentStage, ScopeAttachmentStage::ShadingRate))
         {

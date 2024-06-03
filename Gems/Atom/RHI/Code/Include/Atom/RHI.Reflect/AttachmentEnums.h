@@ -139,8 +139,9 @@ namespace AZ::RHI
         //! Indirect draw stage
         DrawIndirect = AZ_BIT(9),
 
-        //! Vertex input stage
-        VerteInput = AZ_BIT(10),
+        //! Vertex input stage (when vertex data is fetch from the inputs)
+        //! Runs before the Vertex Shader stage
+        VertexInput = AZ_BIT(10),
 
         //! Variable shading rate stage
         ShadingRate = AZ_BIT(11),
@@ -150,7 +151,7 @@ namespace AZ::RHI
 
         //! All stages
         Any = AnyGraphics | EarlyFragmentTest | LateFragmentTest | ColorAttachmentOutput | Copy | Predication | DrawIndirect |
-            VerteInput | ShadingRate
+            VertexInput | ShadingRate
     };
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::ScopeAttachmentStage);

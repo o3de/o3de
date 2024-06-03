@@ -124,7 +124,8 @@ namespace AZ::RHI
         AZ_Assert(
             !CheckBitsAll(access, ScopeAttachmentAccess::Write) &&
             !CheckBitsAll(scopeAttachment.GetAccess(), ScopeAttachmentAccess::Write),
-            "Invalid write access detected when adding overlapping attachment %s",
+            "When adding two overlapping attachments in a scope, neither should have write access,\
+            but a write access was detected when adding overlapping attachment %s.",
             attachmentId.GetCStr());
 
         // Validation for usage type
@@ -197,7 +198,7 @@ namespace AZ::RHI
                 case ScopeAttachmentUsage::Resolve:
                     AZ_Assert(
                         false,
-                        "Multiple usages of same type DepthStencil getting added for resource %s",
+                        "Multiple usages of same type Resolve getting added for resource %s",
                         attachmentId.GetCStr());
                     break;
                 case ScopeAttachmentUsage::RenderTarget:

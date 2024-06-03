@@ -159,7 +159,7 @@ namespace AZ::RHI
 
             for (const ScopeAttachment* scopeAttachment : *scopeAttachments)
             {
-                isValidUsage = scopeAttachment->GetUsage()== ScopeAttachmentUsage::Shader || scopeAttachment->GetUsage() == ScopeAttachmentUsage::SubpassInput;
+                isValidUsage = scopeAttachment->GetUsage() == ScopeAttachmentUsage::Shader || scopeAttachment->GetUsage() == ScopeAttachmentUsage::SubpassInput;
                 isValidAccess = scopeAttachment->GetAccess() == context.m_scopeAttachmentAccess;
 
                 if (isValidUsage && isValidAccess)

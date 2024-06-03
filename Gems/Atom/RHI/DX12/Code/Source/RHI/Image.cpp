@@ -259,7 +259,7 @@ namespace AZ
                 D3D12DecomposeSubresource(
                     subresourceIndex, descriptor.m_mipLevels, descriptor.m_arraySize, mipSlice, arraySlice, planeSlice);
                 range = RHI::ImageSubresourceRange(mipSlice, mipSlice, arraySlice, arraySlice);
-                range.m_aspectFlags = ConvertPlaneSliceToimageAspectFlags(planeSlice);
+                range.m_aspectFlags = ConvertPlaneSliceToImageAspectFlags(planeSlice);
             }
 
             m_attachmentState.Set(range, state);

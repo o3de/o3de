@@ -227,7 +227,7 @@ namespace AZ::RHI
             const BufferScopeAttachmentDescriptor& descriptor)
         {
             return m_frameGraph.UseAttachment(
-                descriptor, ScopeAttachmentAccess::Read, ScopeAttachmentUsage::InputAssembly, ScopeAttachmentStage::VerteInput);
+                descriptor, ScopeAttachmentAccess::Read, ScopeAttachmentUsage::InputAssembly, ScopeAttachmentStage::VertexInput);
         }
             
         //! Declares a query pool for use on the current scope.

@@ -846,7 +846,7 @@ namespace AZ
             }
         }
 
-        RHI::ImageAspectFlags ConvertPlaneSliceToimageAspectFlags(uint16_t planeSlice)
+        RHI::ImageAspectFlags ConvertPlaneSliceToImageAspectFlags(uint16_t planeSlice)
         {
             if (planeSlice == 0)
             {

@@ -245,18 +245,18 @@ namespace AZ
             const RHI::HardwareQueueClass hardwareQueueClass = parentScope.GetHardwareQueueClass();
             const uint32_t hardwareQueueClassIdx = static_cast<uint32_t>(hardwareQueueClass);
 
-            D3D12_RESOURCE_STATES mergedResourceState = D3D12_RESOURCE_STATE_COMMON;
+            D3D12_RESOURCE_STATES resourceState = D3D12_RESOURCE_STATE_COMMON;
             switch (scopeAttachment.GetUsage())
             {
             case RHI::ScopeAttachmentUsage::RenderTarget:
             {
-                mergedResourceState |= D3D12_RESOURCE_STATE_RENDER_TARGET;
+                resourceState |= D3D12_RESOURCE_STATE_RENDER_TARGET;
                 break;
             }
 
             case RHI::ScopeAttachmentUsage::DepthStencil:
             {
-                    mergedResourceState |= RHI::CheckBitsAny(scopeAttachment.GetAccess(), RHI::ScopeAttachmentAccess::Write)
+                    resourceState |= RHI::CheckBitsAny(scopeAttachment.GetAccess(), RHI::ScopeAttachmentAccess::Write)
                         ? D3D12_RESOURCE_STATE_DEPTH_WRITE
                         : D3D12_RESOURCE_STATE_DEPTH_READ;
                 break;
@@ -264,42 +264,42 @@ namespace AZ
 
             case RHI::ScopeAttachmentUsage::Shader:
             {
-                    mergedResourceState |= RHI::CheckBitsAny(scopeAttachment.GetAccess(), RHI::ScopeAttachmentAccess::Write)
+                    resourceState |= RHI::CheckBitsAny(scopeAttachment.GetAccess(), RHI::ScopeAttachmentAccess::Write)
                         ? ReadWriteState[hardwareQueueClassIdx]
                         : ReadState[hardwareQueueClassIdx];
                 break;
             }
             case RHI::ScopeAttachmentUsage::Copy:
             {
-                    mergedResourceState |= RHI::CheckBitsAny(scopeAttachment.GetAccess(), RHI::ScopeAttachmentAccess::Write)
+                    resourceState |= RHI::CheckBitsAny(scopeAttachment.GetAccess(), RHI::ScopeAttachmentAccess::Write)
                         ? D3D12_RESOURCE_STATE_COPY_DEST
                         : D3D12_RESOURCE_STATE_COPY_SOURCE;
                 break;
             }
             case RHI::ScopeAttachmentUsage::Resolve:
             {
-                mergedResourceState |= D3D12_RESOURCE_STATE_RESOLVE_DEST;
+                resourceState |= D3D12_RESOURCE_STATE_RESOLVE_DEST;
                 break;
             }
             case RHI::ScopeAttachmentUsage::Predication:
             {
-                mergedResourceState |= D3D12_RESOURCE_STATE_PREDICATION;
+                resourceState |= D3D12_RESOURCE_STATE_PREDICATION;
                 break;
             }
             case RHI::ScopeAttachmentUsage::Indirect:
             {
-                mergedResourceState |= D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
+                resourceState |= D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
                 break;
             }
             case RHI::ScopeAttachmentUsage::InputAssembly:
             {
-                mergedResourceState |= D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER | D3D12_RESOURCE_STATE_INDEX_BUFFER;
+                resourceState |= D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER | D3D12_RESOURCE_STATE_INDEX_BUFFER;
                 break;
             }
 #ifdef O3DE_DX12_VRS_SUPPORT
             case RHI::ScopeAttachmentUsage::ShadingRate:
             {
-                mergedResourceState |= D3D12_RESOURCE_STATE_SHADING_RATE_SOURCE;
+                resourceState |= D3D12_RESOURCE_STATE_SHADING_RATE_SOURCE;
                 break;
             }
 #endif
@@ -308,7 +308,7 @@ namespace AZ
                 AZ_Assert(false, "ScopeAttachmentUsage is Uninitialized or not supported");
                 break;
             }
-            return mergedResourceState;
+            return resourceState;
         }
 
         AZStd::optional<D3D12_RESOURCE_STATES> FrameGraphCompiler::GetDiscardResourceState(const RHI::ScopeAttachment& scopeAttachment, D3D12_RESOURCE_FLAGS bindflags)
