@@ -1,4 +1,4 @@
-# Package list for Ubuntu 22.04
+# Package list for Ubuntu 24.04
 
 # Build Tools Packages
 clang                                   # For the compiler and its dependencies
