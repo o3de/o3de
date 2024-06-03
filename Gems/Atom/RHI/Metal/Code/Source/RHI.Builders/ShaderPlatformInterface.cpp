@@ -173,7 +173,8 @@ namespace AZ
            RHI::ShaderHardwareStage shaderStage,
            const AZStd::string& tempFolderPath,
            StageDescriptor& outputDescriptor,
-           const RHI::ShaderBuildArguments& shaderBuildArguments) const
+           const RHI::ShaderBuildArguments& shaderBuildArguments,
+           [[maybe_unused]] const bool useSpecializationConstants) const
         {
             for ([[maybe_unused]] auto srgLayout : m_srgLayouts)
             {
