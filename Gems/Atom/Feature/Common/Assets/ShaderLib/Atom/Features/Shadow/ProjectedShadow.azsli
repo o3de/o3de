@@ -202,8 +202,7 @@ float ProjectedShadow::GetVisibilityEsm()
         const float esmExponent = ViewSrg::m_projectedShadows[m_shadowIndex].m_esmExponent;
         const float ratio = SampleESM(shadowmap, PassSrg::LinearSampler, uv, depth, esmExponent);
 
-        // pow() mitigates light bleeding to shadows from near shadow casters.
-        return saturate( pow(ratio, 8) );
+        return saturate(ratio);
     }
 
     return 1.;
@@ -245,12 +244,7 @@ float ProjectedShadow::GetVisibilityEsmPcf()
         static const float pcfFallbackThreshold = 1.04;
         if (ratio > pcfFallbackThreshold)
         {
-            ratio = PCFFallbackForESM(shadowmap, uv, depth, esmExponent);
-        }
-        else
-        {
-            // pow() mitigates light bleeding to shadows from near shadow casters.
-            ratio = pow(ratio, 8);
+            ratio = GetVisibilityPcf();
         }
         return saturate(ratio);
     }

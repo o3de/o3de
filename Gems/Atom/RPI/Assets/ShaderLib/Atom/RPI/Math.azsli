@@ -333,6 +333,7 @@ float3 RotateVectorByQuaternion(float3 v, float4 q)
 // where P = /  f/(n-f)    nf/(n-f)   \
 //           \    -1          0       /.
 // Then the inverse: z = n*f / ((f-n) * z_ - f). See DepthToLinearDepth.azsl. abs() here to keep positive value.
+// Here is a link showing the relationship between clip depth and linear depth: https://www.desmos.com/calculator/tx9mz0qwzb
 float PerspectiveDepthToLinear(float clipDepth, float3 coefficients)
 {
     return abs(coefficients.x / (coefficients.y * clipDepth - coefficients.z));
