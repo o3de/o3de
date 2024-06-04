@@ -102,6 +102,14 @@ namespace AZ
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::AttributesAndValues)
                         ->Attribute(Edit::Attributes::ReadOnly, &DepthOfFieldComponentConfig::ArePropertiesReadOnly)
 
+                        ->DataElement(Edit::UIHandlers::Default,
+                            &DepthOfFieldComponentConfig::m_focusedEntityId,
+                            "Focused Entity",
+                            "Entity to focus on.\n"
+                            "If unset, the screen position is used.")
+                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::AttributesAndValues)
+                        ->Attribute(Edit::Attributes::ReadOnly, &DepthOfFieldComponentConfig::IsFocusedEntityReadonly)
+
                         ->DataElement(Edit::UIHandlers::Default, &DepthOfFieldComponentConfig::m_autoFocusScreenPosition,
                             "Focus Screen Position",
                             "Values of the focus position on screen.")
