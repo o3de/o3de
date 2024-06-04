@@ -128,7 +128,7 @@ namespace AZ
                         AZ_Assert(false, "Assert here as the app is about to abort");
 #if defined(CARBONATED)
                         // we want the log messages above delivered to the log file, so we need main thread to process them
-                        // sleep time allows the main thread to deliver the temporray stored in memory log messages to the log file
+                        // sleep time allows the main thread to deliver the temporary stored in memory log messages to the log file
                         [NSThread sleepForTimeInterval: 0.2];
 #endif
                         abort();
