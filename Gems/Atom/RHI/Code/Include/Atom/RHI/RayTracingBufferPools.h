@@ -31,6 +31,7 @@ namespace AZ::RHI
         // accessors
         const RHI::Ptr<RHI::BufferPool>& GetShaderTableBufferPool() const;
         const RHI::Ptr<RHI::BufferPool>& GetScratchBufferPool() const;
+        const RHI::Ptr<RHI::BufferPool>& GetAabbStagingBufferPool() const;
         const RHI::Ptr<RHI::BufferPool>& GetBlasBufferPool() const;
         const RHI::Ptr<RHI::BufferPool>& GetTlasInstancesBufferPool() const;
         const RHI::Ptr<RHI::BufferPool>& GetTlasBufferPool() const;
@@ -43,6 +44,7 @@ namespace AZ::RHI
 
         virtual RHI::BufferBindFlags GetShaderTableBufferBindFlags() const { return RHI::BufferBindFlags::ShaderRead | RHI::BufferBindFlags::CopyRead | RHI::BufferBindFlags::RayTracingShaderTable; }
         virtual RHI::BufferBindFlags GetScratchBufferBindFlags() const { return RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingScratchBuffer; }
+        virtual RHI::BufferBindFlags GetAabbStagingBufferBindFlags() const { return RHI::BufferBindFlags::CopyRead; }
         virtual RHI::BufferBindFlags GetBlasBufferBindFlags() const { return RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingAccelerationStructure; }
         virtual RHI::BufferBindFlags GetTlasInstancesBufferBindFlags() const { return RHI::BufferBindFlags::ShaderReadWrite; }
         virtual RHI::BufferBindFlags GetTlasBufferBindFlags() const { return RHI::BufferBindFlags::RayTracingAccelerationStructure; }
@@ -51,6 +53,7 @@ namespace AZ::RHI
         bool m_initialized = false;
         RHI::Ptr<RHI::BufferPool> m_shaderTableBufferPool;
         RHI::Ptr<RHI::BufferPool> m_scratchBufferPool;
+        RHI::Ptr<RHI::BufferPool> m_aabbStagingBufferPool;
         RHI::Ptr<RHI::BufferPool> m_blasBufferPool;
         RHI::Ptr<RHI::BufferPool> m_tlasInstancesBufferPool;
         RHI::Ptr<RHI::BufferPool> m_tlasBufferPool;
