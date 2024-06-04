@@ -1469,10 +1469,10 @@ void CSystem::CreateSystemVars()
     REGISTER_STRING_CB("g_language", "", VF_NULL, "Defines which language pak is loaded", CSystem::OnLanguageCVarChanged);
 
     // adding CVAR to toggle assert verbosity level
-#if !defined(CARBONATED)
-    const int defaultAssertValue = 1;
-#else
+#if defined(CARBONATED)
     const int defaultAssertValue = Legacy::System::CVars::sys_asserts;
+#else
+    const int defaultAssertValue = 1;
 #endif
 
 #if !defined(CARBONATED)
