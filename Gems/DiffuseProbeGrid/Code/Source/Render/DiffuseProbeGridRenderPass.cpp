@@ -204,6 +204,11 @@ namespace AZ
                 diffuseProbeGrid->GetRenderObjectSrg()->Compile();
             }
 
+            if (auto viewSRG = diffuseProbeGridFeatureProcessor->GetViewSrg(m_pipeline, GetPipelineViewTag()))
+            {
+                BindSrg(viewSRG->GetRHIShaderResourceGroup());
+            }
+
             Base::CompileResources(context);
         }
 
