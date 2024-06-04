@@ -57,8 +57,40 @@ namespace AZ
                     if (m_statusAfterExecution == MTLCommandBufferStatusError)
                     {
                         const char * cbLabel = [ buffer.label UTF8String ];
+#if defined(CARBONATED)
+                        AZ_Error("RHI", false, "Command Buffer %s failed to execute", cbLabel);
+                        // this saves extended error information to the log file, NSLog below prints about the same
+                        NSArray<id<MTLCommandBufferEncoderInfo>>* infos = buffer.error.userInfo[MTLCommandBufferEncoderInfoErrorKey];
+                        for (id<MTLCommandBufferEncoderInfo> info in infos)
+                        {
+                            const char* infoLabel = [info.label UTF8String];
+                            const char* infoState = "none";
+                            switch (info.errorState)
+                            {
+                            case MTLCommandEncoderErrorStateUnknown:
+                                infoState = "unknown";
+                                break;
+                            case MTLCommandEncoderErrorStateCompleted:
+                                infoState = "completed";
+                                break;
+                            case MTLCommandEncoderErrorStateAffected:
+                                infoState = "affected";
+                                break;
+                            case MTLCommandEncoderErrorStateFaulted:
+                                infoState = "failed";
+                                break;
+                            }
+                            AZ_Printf("RHI", "Command set %s, state %s", infoLabel, infoState);
+             
+                            for (NSString *sinopsis in info.debugSignposts)
+                            {
+                                const char* infoSinopsis = [sinopsis UTF8String];
+                                AZ_Printf("RHI", "Debug sinopsis %s", infoSinopsis);
+                            }
+                        }
+#else
                         AZ_Printf("RHI", "Command Buffer %s failed to execute\n", cbLabel);
-                        
+#endif
                         int eCode = static_cast<int>(buffer.error.code);
                         switch (eCode)
                         {
@@ -94,6 +126,11 @@ namespace AZ
                         // When in cpu/gpu lockstep mode (i.e AZ_FORCE_CPU_GPU_INSYNC) we break in the main thread
                         // with proper logging and a dialog box with info related to the last executing scope before the crash
                         AZ_Assert(false, "Assert here as the app is about to abort");
+#if defined(CARBONATED)
+                        // we want the log messages above delivered to the log file, so we need main thread to process them
+                        // sleep time allows the main thread to deliver the temporary stored in memory log messages to the log file
+                        [NSThread sleepForTimeInterval: 0.2];
+#endif
                         abort();
 #endif
                     }
