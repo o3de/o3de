@@ -1472,7 +1472,7 @@ void CSystem::CreateSystemVars()
 #if !defined(CARBONATED)
     const int defaultAssertValue = 1;
 #else
-    const int defaultAssertValue = 2; // Workaround for MAD-15166: set default assert level to 2 to show assert message dialogs on any platforms
+    const int defaultAssertValue = Legacy::System::CVars::sys_asserts;
 #endif
 
 #if !defined(CARBONATED)
