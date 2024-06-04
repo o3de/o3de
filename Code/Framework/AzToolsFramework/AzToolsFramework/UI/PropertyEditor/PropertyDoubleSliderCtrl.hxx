@@ -78,7 +78,7 @@ namespace AzToolsFramework
         QWidget* GetLastInTabOrder(PropertyDoubleSliderCtrl* widget) override { return widget->GetLastInTabOrder(); }
         void UpdateWidgetInternalTabbing(PropertyDoubleSliderCtrl* widget) override { widget->UpdateTabOrder(); }
 
-        void BeforeConsumeAttributes(PropertyDoubleSliderCtrl* widget, InstanceDataNode* attrValue) override
+        void BeforeConsumeAttributes(PropertyDoubleSliderCtrl* widget, InstanceDataNode* /*attrValue*/) override
         {
             widget->ClearSavedState();
         }
