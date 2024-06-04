@@ -463,7 +463,9 @@ namespace AZ
                     // The fence wait might not be on the framegraph (wait on CPU)
                     // In this case we want wait for the current scopes dependencies (i.e. for signalling of the fence itself)
                     // If the Fence is waited-for on the framegraph at a later scope, we overwrite the dependencies later
-                    fence->SetSignalEventDependencies(currentDependencies);
+                    SignalEvent::BitSet fenceDependencies = currentDependencies;
+                    fenceDependencies.set(currentBitToSignal);
+                    fence->SetSignalEventDependencies(fenceDependencies);
                     hasSemaphoreSignal = true;
                 }
                 for (auto& semaphore : scope->GetSignalSemaphores())
