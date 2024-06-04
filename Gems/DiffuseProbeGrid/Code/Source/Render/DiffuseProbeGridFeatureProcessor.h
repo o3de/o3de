@@ -238,6 +238,9 @@ namespace AZ
             SpecularReflectionsFeatureProcessorInterface* m_specularReflectionsFeatureProcessor = nullptr;
             bool m_ssrRayTracingEnabled = false;
 
+            // Shader that contains the scene and view SRGs for precompiled shaders
+            Data::Instance<RPI::Shader> m_sceneAndViewShader;
+
             // SRG for copying the Scene SRG shader inputs
             Data::Instance<RPI::ShaderResourceGroup> m_sceneShaderResourceGroup = nullptr;
 

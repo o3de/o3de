@@ -115,10 +115,24 @@ namespace AZ
                 m_probeGridRenderData.m_srgLayout = shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Object);
                 AZ_Error("DiffuseProbeGridFeatureProcessor", m_probeGridRenderData.m_srgLayout != nullptr, "Failed to find ObjectSrg layout");
                 
-                if (auto sceneSrgLayout = shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Scene))
+
+            }
+
+            // Load the shader that contains the scene and view SRG layout that was used by the precompiled shaders.
+            // Since View and Scene can be modified by projects, we may need to copy the content to the scene and view SRGs
+            // that were used when creating the precompiled shaders (to avoid a layout mismatch).
+            m_sceneAndViewShader = RPI::LoadCriticalShader("Shaders/DiffuseGlobalIllumination/SceneAndViewSrgs.azshader");
+            if (m_sceneAndViewShader)
+            {
+                if (auto sceneSrgLayout = m_sceneAndViewShader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Scene))
                 {
-                    m_sceneShaderResourceGroup =
-                        RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), sceneSrgLayout->GetName());
+                    // No need to copy SRG if layout is the same
+                    const RHI::ShaderResourceGroupLayout* layout = RPI::RPISystemInterface::Get()->GetSceneSrgLayout().get();
+                    if (layout->GetHash() != sceneSrgLayout->GetHash())
+                    {
+                        m_sceneShaderResourceGroup = RPI::ShaderResourceGroup::Create(
+                            m_sceneAndViewShader->GetAsset(), m_sceneAndViewShader->GetSupervariantIndex(), sceneSrgLayout->GetName());
+                    }
                 }
             }
 
@@ -193,6 +207,7 @@ namespace AZ
 
             m_sceneShaderResourceGroup = nullptr;
             m_viewShaderResourceGroups.clear();
+            m_sceneAndViewShader = nullptr;
 
             Data::AssetBus::MultiHandler::BusDisconnect();
         }
@@ -838,30 +853,37 @@ namespace AZ
 
                 UpdatePasses();
             }
+            else if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Removed)
+            {
+                m_viewShaderResourceGroups.erase(renderPipeline);
+            }
             m_needUpdatePipelineStates = true;
         }
 
         void DiffuseProbeGridFeatureProcessor::OnRenderPipelinePersistentViewChanged(
             RPI::RenderPipeline* renderPipeline, RPI::PipelineViewTag viewTag, RPI::ViewPtr newView, RPI::ViewPtr previousView)
         {
-            if (m_probeGridRenderData.m_shader)
+            if (m_sceneAndViewShader)
             {
-                if (auto sceneSrgLayout = m_probeGridRenderData.m_shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::View))
+                if (auto viewSrgLayout = m_sceneAndViewShader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::View))
                 {
-                    auto& viewSRGs = m_viewShaderResourceGroups[renderPipeline];
-                    if (newView)
+                    // No need to copy view SRG data if the layout is the same
+                    const RHI::ShaderResourceGroupLayout* layout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
+                    if (layout->GetHash() != viewSrgLayout->GetHash())
                     {
-                        // Create a new SRG for the viewTag that is being added
-                        auto viewSRG = RPI::ShaderResourceGroup::Create(
-                            m_probeGridRenderData.m_shader->GetAsset(),
-                            m_probeGridRenderData.m_shader->GetSupervariantIndex(),
-                            sceneSrgLayout->GetName());
-                        viewSRGs[viewTag] = viewSRG;
-                    }
-                    else
-                    {
-                        // Remove the SRG since the view is being removed
-                        viewSRGs.erase(viewTag);
+                        auto& viewSRGs = m_viewShaderResourceGroups[renderPipeline];
+                        if (newView)
+                        {
+                            // Create a new SRG for the viewTag that is being added
+                            auto viewSRG = RPI::ShaderResourceGroup::Create(
+                                m_sceneAndViewShader->GetAsset(), m_sceneAndViewShader->GetSupervariantIndex(), viewSrgLayout->GetName());
+                            viewSRGs[viewTag] = viewSRG;
+                        }
+                        else
+                        {
+                            // Remove the SRG since the view is being removed
+                            viewSRGs.erase(viewTag);
+                        }
                     }
                 }
             }
