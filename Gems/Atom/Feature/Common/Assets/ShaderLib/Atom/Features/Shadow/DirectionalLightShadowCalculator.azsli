@@ -46,7 +46,7 @@ class DirectionalShadowCalculator
         m_worldNormal = worldNormal;
     }
 
-    void SetWorldPos(const real3 worldPos)
+    void SetWorldPos(const float3 worldPos)
     {
         m_worldPos = worldPos;
     }
@@ -84,7 +84,7 @@ class DirectionalShadowCalculator
     float3 m_shadowPosDX[ViewSrg::MaxCascadeCount];
     float3 m_shadowPosDY[ViewSrg::MaxCascadeCount];
     real3 m_worldNormal;
-    real3 m_worldPos;
+    float3 m_worldPos;
 
     bool m_receiverShadowPlaneBiasEnable;
     bool m_blendBetweenCascadesEnable;
@@ -324,6 +324,7 @@ real DirectionalShadowCalculator::SamplePcfBicubic(const real3 shadowCoord, cons
 real DirectionalShadowCalculator::GetVisibilityFromLightPcf()
 {
     real lit = 1.0;
+    
     for (int indexOfCascade = m_minCascade; indexOfCascade <= m_maxCascade && lit > 0.01; ++indexOfCascade)
     {
         lit = min(lit, SamplePcfBicubic(real3(m_shadowCoords[indexOfCascade]), indexOfCascade));
@@ -410,3 +411,4 @@ real DirectionalShadowCalculator::CalculateCascadeBlendAmount(const real3 texCoo
     const real currentPixelsBlendBandLocation = min(min(texCoord.x, texCoord.y), distanceToOneMin);
     return currentPixelsBlendBandLocation / CascadeBlendArea;
 }
+
