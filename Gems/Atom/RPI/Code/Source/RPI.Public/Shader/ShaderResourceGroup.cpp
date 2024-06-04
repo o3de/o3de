@@ -715,7 +715,7 @@ namespace AZ
                     continue;
                 }
 
-                const RHI::ShaderInputSamplerDescriptor& otherDesc = other.m_layout->GetShaderInput(otherIndex);
+                [[maybe_unused]] const RHI::ShaderInputSamplerDescriptor& otherDesc = other.m_layout->GetShaderInput(otherIndex);
                 AZ_Error(
                     "ShaderResourceGroup",
                     desc.m_count == otherDesc.m_count,
