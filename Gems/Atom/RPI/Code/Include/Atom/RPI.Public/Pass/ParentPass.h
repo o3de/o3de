@@ -58,6 +58,13 @@ namespace AZ
 
             // --- Children related functions ---
 
+            //! When PassData::m_mergeChildrenAsSubpasses is true, the ParentPass will try to merge child passes as subpasses.
+            //! Child passes do not mark themselves as mergeable, instead the ParentPass marks its children as mergeable by
+            //! calling this function.
+            //! This function makes sure @child is a RasterPass and marks it as mergeable.
+            //! if the child is NOT a RasterPass, this ParentPass clears its own flag that merges children passes.
+            void MarkChildAsSubpass(const Ptr<Pass>& child);
+
             //! Adds pass to list of children. NOTE: skipStateCheckWhenRunningTests is only used to support manual adding of passing in unit tests, do not use this variable otherwise
             void AddChild(const Ptr<Pass>& child, bool skipStateCheckWhenRunningTests = false);
 
@@ -126,6 +133,16 @@ namespace AZ
 
             // Orphans all children by clearing m_children.
             void RemoveChildren(bool calledFromDestructor = false);
+
+            //! This function will only do work if @m_flags.m_mergeChildrenAsSubpasses is true.
+            //! Will loop through all children passes, make sure they are all RasterPass type,
+            //! and create a common RHI::RenderAttachmentLayout that all subpasses should use.
+            void CreateRenderAttachmentConfigurationForSubpasses();
+
+            //! A helper function that clears m_flags.m_mergeChildrenAsSubpasses for this parent pass
+            //! and all its children.Typically called when it was requested to merge subpasses but
+            //! it was found that the subpasses are not mergeable.
+            void ClearMergeAsSubpassesFlag();
 
         private:
             // RPI::Pass overrides...

@@ -196,9 +196,9 @@ namespace AZ
                 physicalDeviceDescriptorIndexingFeatures.descriptorBindingStorageBufferUpdateAfterBind;
 
             auto bufferDeviceAddressFeatures = physicalDevice.GetPhysicalDeviceBufferDeviceAddressFeatures();
-            auto depthClipEnabled = physicalDevice.GetPhysicalDeviceDepthClipEnableFeatures();            
-            auto rayQueryFeatures = physicalDevice.GetRayQueryFeatures();            
-            auto shaderImageAtomicInt64 = physicalDevice.GetShaderImageAtomicInt64Features();            
+            auto depthClipEnabled = physicalDevice.GetPhysicalDeviceDepthClipEnableFeatures();
+            auto rayQueryFeatures = physicalDevice.GetRayQueryFeatures();
+            auto shaderImageAtomicInt64 = physicalDevice.GetShaderImageAtomicInt64Features();
 
             VkPhysicalDeviceRobustness2FeaturesEXT robustness2 = {};
             robustness2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
@@ -443,7 +443,7 @@ namespace AZ
                 bufferPoolDescriptor.m_heapMemoryLevel = RHI::HeapMemoryLevel::Host;
                 result = m_constantBufferPool->Init(*this, bufferPoolDescriptor);
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            }           
+            }
 
             SetName(GetName());
             return result;

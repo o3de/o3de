@@ -9,6 +9,7 @@
 
 #include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI.Reflect/RenderAttachmentLayout.h>
+#include <Atom/RHI.Reflect/ScopeId.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/utils.h>
@@ -152,21 +153,28 @@ namespace AZ::RHI
             RenderAttachmentEntry m_depthStencilAttachment;
             RenderAttachmentEntry m_shadingRateAttachment;
             uint32_t m_subpassIndex = 0;
+            //! ScopeId for this subpass.
+            RHI::ScopeId m_subpassScopeId;
         };
 
         RenderAttachmentLayoutBuilder();
 
         //! Adds a new subpass to the layout.
-        SubpassAttachmentLayoutBuilder* AddSubpass();
+        //! @param subpassScopeId The subpass ScopeId is only required when there are two or more subpasses.
+        //!     Once a RenderAttachmentLayout is built, the list of ScopeIds (subpasses) that use
+        //!     the same RenderAttachmentLayout will be reported to the RHI.
+        SubpassAttachmentLayoutBuilder* AddSubpass(const RHI::ScopeId * subpassScopeId = nullptr);
 
         //! Ends the building of a layout. Returns the result of the operation.
+        //! When there are two or more subpasses, the list of subpasses using the built
+        //! RenderAttachmentLayout is reported to the RHI.
         ResultCode End(RenderAttachmentLayout& builtRenderAttachmentLayout);
 
         //! Resets all previous values so the builder can be reuse.
         void Reset();
 
     private:
-        /// List of builders for each subpass.
+        //! List of builders for each subpass.
         AZStd::vector<SubpassAttachmentLayoutBuilder> m_subpassLayoutBuilders;
     };
 }

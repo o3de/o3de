@@ -13,6 +13,8 @@
 #include <memory>
 #include <Atom/RHI.Reflect/VkAllocator.h>
 
+#include "SubpassDependencies.h"
+
 namespace AZ
 {
     namespace Vulkan
@@ -565,6 +567,13 @@ namespace AZ
                         subpassDescriptor.m_preserveAttachments[subpassDescriptor.m_preserveAttachmentCount++] = attachmentIndex;
                     }
                 }
+
+            }
+
+            if (layout.m_subpassCount > 1)
+            {
+                auto subpassDependenciesPtr = SubpassDependenciesManager::BuildSubpassDependencies(layout);
+                subpassDependenciesPtr->CopySubpassDependencies(renderPassDesc.m_subpassDependencies);
             }
 
             return renderPassDesc;
@@ -588,6 +597,7 @@ namespace AZ
             }
             Base::Shutdown();
         }
-    }
-}
+
+    } // namespace Vulkan
+} // namespace AZ
 
