@@ -48,18 +48,6 @@ namespace AZ
 
             m_shaderResourceGroup = RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), m_srgLayout->GetName());
             AZ_Assert(m_shaderResourceGroup, "[DiffuseProbeGridRenderPass '%s']: Failed to create SRG", GetPathName().GetCStr());
-
-            if (auto viewSrgLayout = m_shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::View))
-            {
-                m_viewShaderResourceGroup =
-                    RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), viewSrgLayout->GetName());
-            }
-            
-            if (auto sceneSrgLayout = m_shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Scene))
-            {
-                m_sceneShaderResourceGroup =
-                    RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), sceneSrgLayout->GetName());
-            }
         }
 
         bool DiffuseProbeGridRenderPass::IsEnabled() const
@@ -104,16 +92,6 @@ namespace AZ
             params.m_scissorState = scissor;
 
             Base::FrameBeginInternal(params);
-
-            if (m_sceneShaderResourceGroup)
-            {
-                BindSrg(m_sceneShaderResourceGroup->GetRHIShaderResourceGroup());
-            }
-
-            if (m_viewShaderResourceGroup)
-            {
-                BindSrg(m_viewShaderResourceGroup->GetRHIShaderResourceGroup());
-            }
 
             // process attachment readback for RealTime grids, if raytracing is supported on this device            
             if (device->GetFeatures().m_rayTracing)
@@ -226,24 +204,9 @@ namespace AZ
                 diffuseProbeGrid->GetRenderObjectSrg()->Compile();
             }
 
-            // This pass uses precompiled shaders, so we can't use the View or Scene SRG directly because the layout
-            // may not match with the layout used when creating the precompiled shaders. We need to copy the shader inputs
-            // from the view/scene SRG into the SRG that was created from the shader asset.
-            if (m_sceneShaderResourceGroup)
+            if (auto viewSRG = diffuseProbeGridFeatureProcessor->GetViewSrg(m_pipeline, GetPipelineViewTag()))
             {
-                const auto sceneSrg = m_pipeline->GetScene()->GetShaderResourceGroup();
-                m_sceneShaderResourceGroup->CopyShaderResourceGroupData(*sceneSrg);
-                m_sceneShaderResourceGroup->Compile();
-            }
-
-            if (m_viewShaderResourceGroup)
-            {
-                RPI::ViewPtr view = GetView();
-                if (view)
-                {
-                    m_viewShaderResourceGroup->CopyShaderResourceGroupData(*view->GetShaderResourceGroup());
-                    m_viewShaderResourceGroup->Compile();
-                }
+                BindSrg(viewSRG->GetRHIShaderResourceGroup());
             }
 
             Base::CompileResources(context);

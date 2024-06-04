@@ -114,6 +114,12 @@ namespace AZ
                 m_probeGridRenderData.m_shader = shader;
                 m_probeGridRenderData.m_srgLayout = shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Object);
                 AZ_Error("DiffuseProbeGridFeatureProcessor", m_probeGridRenderData.m_srgLayout != nullptr, "Failed to find ObjectSrg layout");
+                
+                if (auto sceneSrgLayout = shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Scene))
+                {
+                    m_sceneShaderResourceGroup =
+                        RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), sceneSrgLayout->GetName());
+                }
             }
 
             if (device->GetFeatures().m_rayTracing)
@@ -184,6 +190,9 @@ namespace AZ
             {
                 m_bufferPool.reset();
             }
+
+            m_sceneShaderResourceGroup = nullptr;
+            m_viewShaderResourceGroups.clear();
 
             Data::AssetBus::MultiHandler::BusDisconnect();
         }
@@ -287,6 +296,32 @@ namespace AZ
 
                 // create the bufferview descriptor with the new number of elements
                 m_queryBufferViewDescriptor = m_queryBuffer.GetCurrentBuffer()->GetBufferViewDescriptor();
+            }
+
+            // The passes in the DiffuseProbeGrid use precompiled shaders, so we can't use the View or Scene SRG directly because the layout
+            // may not match with the layout used when creating the precompiled shaders. We need to copy the shader inputs
+            // from the view/scene SRG into the SRG that was created from the shader asset.
+            if (m_sceneShaderResourceGroup)
+            {
+                const auto sceneSrg = GetParentScene()->GetShaderResourceGroup();
+                m_sceneShaderResourceGroup->CopyShaderResourceGroupData(*sceneSrg);
+                m_sceneShaderResourceGroup->Compile();
+            }
+
+            // Copy the content from the view SRGs
+            for (const auto& pipelineEntry : m_viewShaderResourceGroups)
+            {
+                RPI::RenderPipeline* pipeline = pipelineEntry.first;
+                for (const auto& viewEntry : pipelineEntry.second)
+                {
+                    Data::Instance<RPI::ShaderResourceGroup> viewSRG = viewEntry.second;
+                    RPI::ViewPtr view = pipeline->GetFirstView(viewEntry.first);
+                    if (view)
+                    {
+                        viewSRG->CopyShaderResourceGroupData(*view->GetShaderResourceGroup());
+                        viewSRG->Compile();
+                    }
+                }
             }
         }
 
@@ -637,6 +672,26 @@ namespace AZ
             m_irradianceQueries.clear();
         }
 
+        RPI::ShaderResourceGroup* DiffuseProbeGridFeatureProcessor::GetSceneSrg() const
+        {
+            return m_sceneShaderResourceGroup.get();
+        }
+
+        RPI::ShaderResourceGroup* DiffuseProbeGridFeatureProcessor::GetViewSrg(
+            RPI::RenderPipeline* pipeline, RPI::PipelineViewTag viewTag) const
+        {
+            auto findPipelineIter = m_viewShaderResourceGroups.find(pipeline);
+            if (findPipelineIter != m_viewShaderResourceGroups.end())
+            {
+                auto findViewTagIter = findPipelineIter->second.find(viewTag);
+                if (findViewTagIter != findPipelineIter->second.end())
+                {
+                    return findViewTagIter->second.get();
+                }
+            }
+            return nullptr;
+        }
+
         void DiffuseProbeGridFeatureProcessor::CreateBoxMesh()
         {
             // vertex positions
@@ -784,6 +839,32 @@ namespace AZ
                 UpdatePasses();
             }
             m_needUpdatePipelineStates = true;
+        }
+
+        void DiffuseProbeGridFeatureProcessor::OnRenderPipelinePersistentViewChanged(
+            RPI::RenderPipeline* renderPipeline, RPI::PipelineViewTag viewTag, RPI::ViewPtr newView, RPI::ViewPtr previousView)
+        {
+            if (m_probeGridRenderData.m_shader)
+            {
+                if (auto sceneSrgLayout = m_probeGridRenderData.m_shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::View))
+                {
+                    auto& viewSRGs = m_viewShaderResourceGroups[renderPipeline];
+                    if (newView)
+                    {
+                        // Create a new SRG for the viewTag that is being added
+                        auto viewSRG = RPI::ShaderResourceGroup::Create(
+                            m_probeGridRenderData.m_shader->GetAsset(),
+                            m_probeGridRenderData.m_shader->GetSupervariantIndex(),
+                            sceneSrgLayout->GetName());
+                        viewSRGs[viewTag] = viewSRG;
+                    }
+                    else
+                    {
+                        // Remove the SRG since the view is being removed
+                        viewSRGs.erase(viewTag);
+                    }
+                }
+            }
         }
 
         void DiffuseProbeGridFeatureProcessor::AddRenderPasses(AZ::RPI::RenderPipeline* renderPipeline)
