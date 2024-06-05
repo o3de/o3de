@@ -25,6 +25,8 @@ namespace AzToolsFramework
         WidgetType* wid = static_cast<WidgetType*>(widget);
         AZ_Assert(wid, "Invalid class cast - this is not the right kind of widget!");
 
+        BeforeConsumeAttributes(wid, dataNode);
+
         InstanceDataNode* parent = dataNode->GetParent();
 
         // Function callbacks require the instance pointer to be the first non-container ancestor.
