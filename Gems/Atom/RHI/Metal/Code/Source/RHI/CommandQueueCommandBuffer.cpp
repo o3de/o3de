@@ -56,7 +56,7 @@ namespace AZ
                     m_statusAfterExecution = buffer.status;
                     if (m_statusAfterExecution == MTLCommandBufferStatusError)
                     {
-                        const char * cbLabel = [ buffer.label UTF8String ];
+                        [[maybe_unused]] const char * cbLabel = [ buffer.label UTF8String ];
 #if defined(CARBONATED)
                         AZ_Error("RHI", false, "Command Buffer %s failed to execute", cbLabel);
                         // this saves extended error information to the log file, NSLog below prints about the same
