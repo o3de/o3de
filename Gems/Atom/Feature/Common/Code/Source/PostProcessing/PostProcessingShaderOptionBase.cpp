@@ -37,7 +37,7 @@ namespace AZ
             pipelineStateDescriptor.m_inputStreamLayout = inputStreamLayout;
 
             m_shaderVariantTable[variationKey].m_pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
-            m_shaderVariantTable[variationKey].m_isFullyBaked = shaderVariant.UseKeyFallback();
+            m_shaderVariantTable[variationKey].m_isFullyBaked = !shaderVariant.UseKeyFallback();
         }
 
         void PostProcessingShaderOptionBase::UpdateShaderVariant(const AZ::RPI::ShaderOptionGroup& shaderOption)

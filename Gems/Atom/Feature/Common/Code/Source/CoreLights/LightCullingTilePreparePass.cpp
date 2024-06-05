@@ -119,8 +119,8 @@ namespace AZ
         AZ::RPI::ShaderOptionGroup LightCullingTilePreparePass::CreateShaderOptionGroup()
         {
             RPI::ShaderOptionGroup shaderOptionGroup = m_shader->CreateShaderOptionGroup();
-            shaderOptionGroup.SetUnspecifiedToDefaultValues();
             shaderOptionGroup.SetValue(m_msaaOptionName, GetMultiSampleName());
+            shaderOptionGroup.SetUnspecifiedToDefaultValues();
             return shaderOptionGroup;
         }
 
@@ -139,7 +139,7 @@ namespace AZ
             const RPI::ShaderVariant& shaderVariant = m_shader->GetVariant(shaderOptionGroup.GetShaderVariantId());
 
             //Set the fallbackkey
-            if (m_drawSrg)
+            if (shaderVariant.UseKeyFallback() && m_drawSrg)
             {
                 m_drawSrg->SetShaderVariantKeyFallbackValue(shaderOptionGroup.GetShaderVariantKeyFallbackValue());
             }

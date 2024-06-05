@@ -48,7 +48,7 @@ namespace AZ
             RPI::ShaderOptionGroup shaderOption = m_shader->CreateShaderOptionGroup();
             shaderOption.SetValue(m_optionName, m_optionValues[typeIndex]);
 
-            if (m_shaderResourceGroup)
+            if (!m_shaderVariant[typeIndex].m_isFullyBaked && m_shaderResourceGroup)
             {
                 m_shaderResourceGroup->SetShaderVariantKeyFallbackValue(shaderOption.GetShaderVariantKeyFallbackValue());
             }
@@ -110,7 +110,7 @@ namespace AZ
                 RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
                 shaderVariant.ConfigurePipelineState(pipelineStateDescriptor, shaderOption);
 
-                ShaderVariantInfo variationInfo{shaderVariant.UseKeyFallback(),
+                ShaderVariantInfo variationInfo{!shaderVariant.UseKeyFallback(),
                     m_shader->AcquirePipelineState(pipelineStateDescriptor)
                 };
                 m_shaderVariant.push_back(AZStd::move(variationInfo));

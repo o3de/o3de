@@ -52,6 +52,8 @@ namespace AZ
             using ComputeShaderReloadedCallback = AZStd::function<void(ComputePass* computePass)>;
             void SetComputeShaderReloadedCallback(ComputeShaderReloadedCallback callback);
 
+            void UpdateShaderOptions(const ShaderVariantId& shaderVariantId);
+
         protected:
             ComputePass(const PassDescriptor& descriptor, AZ::Name supervariant = AZ::Name(""));
 

@@ -472,8 +472,9 @@ namespace AZ
             if (drawSrgLayout)
             {
                 drawSrg = RPI::ShaderResourceGroup::Create(m_asset, GetSupervariantIndex(), drawSrgLayout->GetName());
-
-                if (drawSrgLayout->HasShaderVariantKeyFallbackEntry())
+                bool useFallbackKey = !shaderOptions.GetShaderOptionLayout()->IsFullySpecialized() ||
+                    !m_asset->UseSpecializationConstants(GetSupervariantIndex());
+                if (useFallbackKey && drawSrgLayout->HasShaderVariantKeyFallbackEntry())
                 {
                     drawSrg->SetShaderVariantKeyFallbackValue(shaderOptions.GetShaderVariantKeyFallbackValue());
                 }

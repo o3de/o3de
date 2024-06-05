@@ -93,7 +93,7 @@ namespace AZ
             }
 
             // If the shader variation is not fully baked, set the fallback key to use a runtime branch for the shader options
-            if (!shaderVariant.UseKeyFallback() && m_instanceSrg->HasShaderVariantKeyFallbackEntry())
+            if (shaderVariant.UseKeyFallback() && m_instanceSrg->HasShaderVariantKeyFallbackEntry())
             {
                 m_instanceSrg->SetShaderVariantKeyFallbackValue(m_shaderOptionGroup.GetShaderVariantKeyFallbackValue());
             }

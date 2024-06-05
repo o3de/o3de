@@ -60,6 +60,8 @@ namespace AZ
 
                 virtual bool IsEnabled() const override;
 
+                bool UpdateShaderOptions();
+
             protected:
                 explicit HairGeometryRasterPass(const RPI::PassDescriptor& descriptor);
 
@@ -104,6 +106,7 @@ namespace AZ
                 AZStd::unordered_set<HairRenderObject*> m_newRenderObjects;
 
                 bool m_initialized = false;
+                RPI::ShaderVariantId m_currentShaderVariantId;
             };
 
         } // namespace Hair
