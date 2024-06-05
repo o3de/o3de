@@ -80,12 +80,12 @@ namespace AZ
                                 infoState = "failed";
                                 break;
                             }
-                            AZ_Printf("RHI", "Command set %s, state %s", infoLabel, infoState);
+                            AZ_Printf("RHI", "Command set %s, state %s\n", infoLabel, infoState);
              
                             for (NSString *sinopsis in info.debugSignposts)
                             {
                                 const char* infoSinopsis = [sinopsis UTF8String];
-                                AZ_Printf("RHI", "Debug sinopsis %s", infoSinopsis);
+                                AZ_Printf("RHI", "Debug sinopsis %s\n", infoSinopsis);
                             }
                         }
 #else
