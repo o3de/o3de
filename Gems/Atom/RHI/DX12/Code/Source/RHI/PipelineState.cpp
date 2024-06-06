@@ -57,6 +57,7 @@ namespace AZ
             // Shader state.
             RHI::ConstPtr<PipelineLayout> pipelineLayout = device.AcquirePipelineLayout(*descriptor.m_pipelineLayoutDescriptor);
             pipelineStateDesc.pRootSignature = pipelineLayout->Get();
+            // Cache used for saving the patched version of the shader
             AZStd::vector<ShaderByteCode> shaderByteCodeCache;
             if (const ShaderStageFunction* vertexFunction = azrtti_cast<const ShaderStageFunction*>(descriptor.m_vertexFunction.get()))
             {
@@ -135,6 +136,7 @@ namespace AZ
 
             RHI::ConstPtr<PipelineLayout> pipelineLayout = device.AcquirePipelineLayout(*descriptor.m_pipelineLayoutDescriptor);
             pipelineStateDesc.pRootSignature = pipelineLayout->Get();
+            // Cache used for saving the patched version of the shader
             AZStd::vector<ShaderByteCode> shaderByteCodeCache;
             if (const ShaderStageFunction* computeFunction = azrtti_cast<const ShaderStageFunction*>(descriptor.m_computeFunction.get()))
             {

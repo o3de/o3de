@@ -54,7 +54,6 @@ namespace AZ
                     ->Field("StableId", &ShaderVariantAsset::m_stableId)
                     ->Field("ShaderVariantId", &ShaderVariantAsset::m_shaderVariantId)
                     ->Field("IsFullyBaked", &ShaderVariantAsset::m_isFullyBaked)
-                    ->Field("IsFullySpecialized", &ShaderVariantAsset::m_isFullySpecialized)
                     ->Field("FunctionsByStage", &ShaderVariantAsset::m_functionsByStage)
                     ;
             }
@@ -73,16 +72,6 @@ namespace AZ
         bool ShaderVariantAsset::IsFullyBaked() const
         {
             return m_isFullyBaked;
-        }
-
-        bool ShaderVariantAsset::IsFullySpecialized() const
-        {
-            return m_isFullySpecialized;
-        }
-
-        bool ShaderVariantAsset::UseKeyFallback() const
-        {
-            return !(IsFullyBaked() || IsFullySpecialized());
         }
 
         void ShaderVariantAsset::SetReady()

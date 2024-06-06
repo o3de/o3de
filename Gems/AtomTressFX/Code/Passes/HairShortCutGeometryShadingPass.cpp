@@ -65,8 +65,7 @@ namespace AZ
                 shaderOption.SetUnspecifiedToDefaultValues();
                 if (shaderOption.GetShaderVariantId() != m_currentShaderVariantId)
                 {
-                    m_currentShaderVariantId = shaderOption.GetShaderVariantId();
-                    UpdateShaderOptions();
+                    UpdateShaderOptions(shaderOption.GetShaderVariantId());
                     m_featureProcessor->ForceRebuildRenderData();
                 }
             }

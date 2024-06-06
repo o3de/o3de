@@ -65,6 +65,7 @@ namespace AZ
             void OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset) override;
             void OnShaderVariantReinitialized(const ShaderVariant& shaderVariant) override;
 
+            // Common code when updating the shader variant with new options
             void UpdateShaderOptionsCommon();
 
             RHI::Viewport m_viewportState;

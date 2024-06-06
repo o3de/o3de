@@ -51,6 +51,8 @@ namespace AZ
             const int byteCodeIndex = 0;
             newShaderStageFunction->SetByteCode(byteCodeIndex, byteCode);
 
+            // Read the json data with the specialization constants offsets.
+            // If the shader was not compiled with specialization constants this attribute will be empty.
             AZStd::string fileName;
             if (!stageDescriptor.m_extraData.empty())
             {
@@ -333,6 +335,7 @@ namespace AZ
 
             if (useSpecializationConstants)
             {
+                // Need to patch the shader so it can be used with specialization constants.
                 const auto dxscRelativePath = RHI::GetDirectXShaderCompilerPath("Builders/DirectXShaderCompiler/dxsc.exe");
 
                 AZStd::string shaderOutputCommon;
@@ -345,6 +348,9 @@ namespace AZ
                 AzFramework::StringFunc::Path::ReplaceExtension(offsetsOutput, "offsets.json");
 
                 const auto dxscCommandOptions = AZStd::string::format(
+                    //   1.sentinel    3.offsets_output   
+                    //     |    2.output    |   4.dxil-in
+                    //     |       |        |      |
                     "-sv=%lu -o=\"%s\" -f=\"%s\" \"%s\"",
                     static_cast<unsigned long>(SCSentinelValue), // 1
                     patchedShaderOutput.c_str(), // 2

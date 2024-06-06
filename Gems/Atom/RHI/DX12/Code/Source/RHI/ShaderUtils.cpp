@@ -14,6 +14,7 @@ namespace AZ::DX12
 {
     static const uint32_t FOURCC_DXBC = MAKE_FOURCC('D', 'X', 'B', 'C');
 
+    // Modify the bits in the bytecode with a new value following the VBR rules of encoding
     uint64_t TamperBits(uint8_t* byteCode, uint32_t patchVal, uint64_t offset)
     {
         constexpr uint32_t BitsPerByte = 8;
@@ -90,6 +91,7 @@ namespace AZ::DX12
                 sentinelFound);
         }
 
+        // Re-sign the shader bytecode after we patch it
         if (!SignByteCode(patched))
         {
             AZ_Error("ShaderUtils", false, "Failed to sign container");
@@ -106,6 +108,7 @@ namespace AZ::DX12
     {
         if (!shaderFunction.UseSpecializationConstants())
         {
+            // No need to patch anything
             return shaderFunction.GetByteCode();
         }
 

@@ -85,7 +85,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderOptionDescriptor>()
-                    ->Version(5)  // 5: addition of m_costEstimate field
+                    ->Version(6)  // 6: addition of m_specializationId field
                     ->Field("m_name", &ShaderOptionDescriptor::m_name)
                     ->Field("m_type", &ShaderOptionDescriptor::m_type)
                     ->Field("m_defaultValue", &ShaderOptionDescriptor::m_defaultValue)
@@ -465,7 +465,6 @@ namespace AZ
                     ->Field("m_options", &ShaderOptionGroupLayout::m_options)
                     ->Field("m_nameReflectionForOptions", &ShaderOptionGroupLayout::m_nameReflectionForOptions)
                     ->Field("m_hash", &ShaderOptionGroupLayout::m_hash)
-                    ->Field("m_isFullySpecialized", &ShaderOptionGroupLayout::m_isFullySpecialized)
                     ;
             }
 
@@ -497,9 +496,25 @@ namespace AZ
 
         bool ShaderOptionGroupLayout::IsFullySpecialized() const
         {
-            return m_isFullySpecialized;
+            return !AZStd::any_of(
+                m_options.begin(),
+                m_options.end(),
+                [](const ShaderOptionDescriptor& elem)
+                {
+                    return elem.GetSpecializationId() < 0;
+                });
         }
 
+        bool ShaderOptionGroupLayout::UseSpecializationConstants() const
+        {
+            return AZStd::any_of(
+                m_options.begin(),
+                m_options.end(),
+                [](const ShaderOptionDescriptor& elem)
+                {
+                    return elem.GetSpecializationId() >= 0;
+                });
+        }
 
         void ShaderOptionGroupLayout::Clear()
         {
@@ -512,13 +527,6 @@ namespace AZ
         void ShaderOptionGroupLayout::Finalize()
         {
             AZStd::sort(m_options.begin(), m_options.end(), ShaderOptionDescriptor::CompareOrder);
-            m_isFullySpecialized = !AZStd::any_of(
-                m_options.begin(),
-                m_options.end(),
-                [](const ShaderOptionDescriptor& elem)
-                {
-                    return elem.GetSpecializationId() < 0;
-                });
 
             // Start with a hash of the size so that m_hash!=0 will mean the group is finalized, even if the options list is empty.
             HashValue64 hash = TypeHash64(m_options.size());

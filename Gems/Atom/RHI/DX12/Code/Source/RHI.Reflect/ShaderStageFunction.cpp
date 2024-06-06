@@ -19,7 +19,7 @@ namespace AZ
             if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderStageFunction, RHI::ShaderStageFunction>()
-                    ->Version(1)
+                    ->Version(2)
                     ->Field("m_byteCodes", &ShaderStageFunction::m_byteCodes)
                     ->Field("m_specializationOffsets", &ShaderStageFunction::m_specializationOffsets);
             }

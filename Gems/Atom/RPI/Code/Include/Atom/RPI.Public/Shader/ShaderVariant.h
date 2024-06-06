@@ -26,11 +26,17 @@ namespace AZ
             virtual ~ShaderVariant();
             AZ_DEFAULT_COPY_MOVE(ShaderVariant);
 
-            //! Fills a pipeline state descriptor with settings provided by the ShaderVariant. (Note that
-            //! this does not fill the InputStreamLayout or OutputAttachmentLayout as that also requires 
+            //! Fills a pipeline state descriptor with settings provided by the ShaderVariant. 
+            //! It also configures the specialization constants if they are being used by the shader variant.
+            //! (Note that this does not fill the InputStreamLayout or OutputAttachmentLayout as that also requires 
             //! information from the mesh data and pass system and must be done as a separate step).
             void ConfigurePipelineState(RHI::PipelineStateDescriptor& descriptor, const ShaderVariantId& specialization) const;
+            //! Fills a pipeline state descriptor with settings provided by the ShaderVariant.
+            //! It also configures the specialization constants if they are being used by the shader variant.
             void ConfigurePipelineState(RHI::PipelineStateDescriptor& descriptor, const ShaderOptionGroup& specialization) const;
+            //! Fills a pipeline state descriptor with settings provided by the ShaderVariant.
+            //! Only use this function if the shader variant is not using ANY specialization constant. Otherwise
+            //! an error will be raised and the default values will be used.
             void ConfigurePipelineState(RHI::PipelineStateDescriptor& descriptor) const;
 
             const ShaderVariantId& GetShaderVariantId() const { return m_shaderVariantAsset->GetShaderVariantId(); }
@@ -41,10 +47,13 @@ namespace AZ
             bool IsFullyBaked() const { return m_shaderVariantAsset->IsFullyBaked(); }
 
             //! Returns whether the variant is using specialization constants for all of the options.
-            bool IsFullySpecialized() const { return m_shaderVariantAsset->IsFullySpecialized(); }
+            bool IsFullySpecialized() const;
+
+            //! Return true if this shader variant has at least one shader option using specialization constant.
+            bool UseSpecializationConstants() const;
 
             //! Return true if this variant needs the ShaderVariantKeyFallbackValue to be correctly set when drawing.
-            bool UseKeyFallback() const { return m_shaderVariantAsset->UseKeyFallback(); }
+            bool UseKeyFallback() const;
 
             //! Return the timestamp when this asset was built.
             //! This is used to synchronize versions of the ShaderAsset and ShaderVariantAsset, especially during hot-reload.
@@ -79,6 +88,7 @@ namespace AZ
             const RHI::RenderStates* m_renderStates = nullptr; // Cached from ShaderAsset.
             SupervariantIndex m_supervariantIndex;
 
+            // True if there's at least one shader option that is using a specialization constant.
             bool m_useSpecializationConstants = false;
         };
     }

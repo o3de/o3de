@@ -105,6 +105,12 @@ namespace AZ
             //! @remark: The "" (global) arguments are never popped, regardless of how many times this function is called.
             void PopArgumentScope();
 
+            //! Finds the shader build config files from the default locations. Returns a map where the key is the name of the scope,
+            //! and the value is a fully qualified file path.
+            //! Remarks: Posible scope names are:
+            //!     "global"
+            //!     "<platform>". Example "Android", "Windows", etc
+            //!     "<platform>.<rhi>". Example "Windows.dx12" or "Windows.vulkan".
             static AZStd::unordered_map<AZStd::string, AZ::IO::FixedMaxPath> DiscoverConfigurationFiles();
 
         private:

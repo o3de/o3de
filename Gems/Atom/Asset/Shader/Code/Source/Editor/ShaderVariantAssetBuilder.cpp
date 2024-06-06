@@ -208,6 +208,7 @@ namespace AZ
                 jobDescriptor.m_jobKey = GetShaderVariantAssetJobKey();
                 jobDescriptor.SetPlatformIdentifier(info.m_identifier.data());
 
+                // Add the content of the hashedVariantBatch file as a parameter to avoid reading it again.
                 jobDescriptor.m_jobParameters.emplace(ShaderVariantBatchJobParam, hashedVariantBatchDescriptorString);
             
                 // The ShaderVariantAssets should be built AFTER the ShaderVariantTreeAsset.
@@ -527,6 +528,7 @@ namespace AZ
                         return;
                     }
 
+                    // Check if there's a supervariant that needs to generate the variants
                     if (!usesSpecialization || !loopLocal_ShaderOptionGroupLayout->IsFullySpecialized())
                     {
                         usesVariants = true;
@@ -538,7 +540,7 @@ namespace AZ
 
             if (!usesVariants)
             {
-                // No work to do. Exit gracefully.
+                // No need to create the variant tree since all supervariants are fully specialized. Exit gracefully.
                 AZ_TracePrintf(
                     ShaderVariantAssetBuilderName,
                     "No azshadervarianttree is produced on behalf of %s because all valid RHI backends are using specialization constants for shader options.\n",
@@ -698,6 +700,8 @@ namespace AZ
                     // 3- hlsl code.
 
                     // 1- ShaderOptionsGroupLayout
+                    // The ShaderOptionsGroupLayout is the same for all platforms and supervariants, but the each supervariant
+                    // can have the use of specialization constants on or off.
                     bool usesSpecializationConstants = false;
                     shaderOptionGroupLayout = LoadShaderOptionsGroupLayoutFromShaderAssetBuilder(
                         shaderPlatformInterface,
@@ -714,6 +718,7 @@ namespace AZ
 
                     if (usesSpecializationConstants && shaderOptionGroupLayout->IsFullySpecialized())
                     {
+                        // No need to create the shader variants since all supervariants are fully specialized.
                         AZ_TracePrintf(
                             ShaderVariantAssetBuilderName,
                             "No azshaderVariant is produced on behalf of %s, super variant %s, because it's using specialization "
@@ -1018,8 +1023,7 @@ namespace AZ
             RPI::ShaderOptionGroup shaderOptions{&creationContext.m_shaderOptionGroupLayout, optionGroup.GetShaderVariantId()};
             variantCreator.Begin(
                 creationContext.m_shaderVariantAssetId, optionGroup.GetShaderVariantId(), shaderVariantStableId,
-                shaderOptions.IsFullySpecified(),
-                creationContext.m_useSpecializationConstants && creationContext.m_shaderOptionGroupLayout.IsFullySpecialized());
+                shaderOptions.IsFullySpecified());
 
             const AZStd::unordered_map<AZStd::string, RPI::ShaderStageType>& shaderEntryPoints = creationContext.m_shaderEntryPoints;
             for (const auto& shaderEntryPoint : shaderEntryPoints)

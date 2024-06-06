@@ -357,6 +357,9 @@ namespace AZ
                 }
             }
 
+            m_currentSupervariant->m_useSpecializationConstants =
+                m_currentSupervariant->m_useSpecializationConstants && m_asset->m_shaderOptionGroupLayout->UseSpecializationConstants();
+
             m_currentSupervariant = nullptr;
             return true;
         }

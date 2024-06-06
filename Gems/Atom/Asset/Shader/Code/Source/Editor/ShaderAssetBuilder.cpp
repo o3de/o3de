@@ -202,6 +202,7 @@ namespace AZ
                 response.m_sourceFileDependencyList.emplace_back(AZStd::move(includeFileDependency));
             }
 
+            // Add the shader_build_option files as source dependencies
             AZStd::unordered_map<AZStd::string, AZ::IO::FixedMaxPath> configFiles = ShaderBuildArgumentsManager::DiscoverConfigurationFiles();
             for (const auto& pair : configFiles)
             {

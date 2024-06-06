@@ -60,8 +60,6 @@ namespace AZ
 
                 virtual bool IsEnabled() const override;
 
-                bool UpdateShaderOptions();
-
             protected:
                 explicit HairGeometryRasterPass(const RPI::PassDescriptor& descriptor);
 
@@ -82,6 +80,9 @@ namespace AZ
 
                 // Scope producer functions...
                 void CompileResources(const RHI::FrameGraphCompileContext& context) override;
+
+                //! Updates the shader variant being used by the pass
+                bool UpdateShaderOptions(const RPI::ShaderVariantId& variantId);
 
             protected:
                 HairFeatureProcessor* m_featureProcessor = nullptr;

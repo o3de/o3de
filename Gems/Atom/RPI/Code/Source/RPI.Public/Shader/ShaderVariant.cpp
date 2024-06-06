@@ -139,5 +139,20 @@ namespace AZ
             ConfigurePipelineState(descriptor, ShaderOptionGroup(layout));
         }
 
+        bool ShaderVariant::IsFullySpecialized() const
+        {
+            return m_shaderAsset->IsFullySpecialized(m_supervariantIndex);
+        }
+
+        bool ShaderVariant::UseSpecializationConstants() const
+        {
+            return m_shaderAsset->UseSpecializationConstants(m_supervariantIndex);
+        }
+
+        bool ShaderVariant::UseKeyFallback() const
+        {
+            return !(IsFullyBaked() || IsFullySpecialized());
+        }
+
     } // namespace RPI
 } // namespace AZ

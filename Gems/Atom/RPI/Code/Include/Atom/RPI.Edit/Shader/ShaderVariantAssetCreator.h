@@ -32,8 +32,7 @@ namespace AZ
                 const AZ::Data::AssetId& assetId,
                 const ShaderVariantId& shaderVariantId,
                 RPI::ShaderVariantStableId stableId,
-                bool isFullyBaked,
-                bool isFullySpecialized);
+                bool isFullyBaked);
 
             //! Finalizes and assigns ownership of the asset to result, if successful. 
             //! Otherwise false is returned and result is left untouched.

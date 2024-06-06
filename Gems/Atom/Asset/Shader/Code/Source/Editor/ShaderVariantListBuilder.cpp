@@ -460,6 +460,7 @@ namespace AZ
             // As we calculate hashes for each variant, we are going to calculate the hash
             // of only the optionValues part and this will help us find variants that share the same
             // content but have different StableIds. If two variants with different StableId has the same content this will be an error.
+            // Shader variants are divided in batches using their stable id (so the division is stable).
             AZStd::unordered_map<size_t, uint32_t> hashToStableIdMap;
             AZStd::unordered_map<uint32_t, AZStd::vector<HashedVariantInfoSourceData>> hashedVariantBatches;
             HashedVariantListSourceData hashedVariantList;

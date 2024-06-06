@@ -12,8 +12,10 @@
 
 namespace AZ::RHI
 {
+    //! Holds a value for a specialization constant
     using SpecializationValue = RHI::Handle<uint32_t, struct SpecializationConstant>;
 
+    //! Supported types for specialization constants
     enum class SpecializationType : uint32_t
     {
         Integer,
@@ -21,16 +23,23 @@ namespace AZ::RHI
         Invalid
     };
 
+    //! Contains all the necessary information and value of a specialization constant
+    //! so it can be used when creating a PipelineState.
     struct SpecializationConstant
     {
         SpecializationConstant() = default;
 
+        //! Name of the constant
         Name m_name;
+        //! Id of the constant
         uint32_t m_id = 0;
+        //! Value of the constant
         SpecializationValue m_value;
+        //! Type of the constant
         SpecializationType m_type = SpecializationType::Invalid;
 
         bool operator==(const SpecializationConstant& rhs) const;
+        //! Returns a hash of the constant
         HashValue64 GetHash() const;
     };
 }

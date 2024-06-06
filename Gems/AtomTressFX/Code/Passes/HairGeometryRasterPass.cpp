@@ -90,8 +90,9 @@ namespace AZ
                 return (RPI::RasterPass::IsEnabled() && m_initialized) ? true : false;
             }
 
-            bool HairGeometryRasterPass::UpdateShaderOptions()
+            bool HairGeometryRasterPass::UpdateShaderOptions(const RPI::ShaderVariantId& variantId)
             {
+                m_currentShaderVariantId = variantId;
                 const RPI::ShaderVariant& shaderVariant = m_shader->GetVariant(m_currentShaderVariantId);
                 RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
                 shaderVariant.ConfigurePipelineState(pipelineStateDescriptor, m_currentShaderVariantId);
@@ -168,8 +169,7 @@ namespace AZ
                     }
                 }
 
-                m_currentShaderVariantId = m_shader->GetDefaultShaderOptions().GetShaderVariantId();
-                if (!UpdateShaderOptions())
+                if (!UpdateShaderOptions(m_shader->GetDefaultShaderOptions().GetShaderVariantId()))
                 {
                     AZ_Error("Hair Gem", false, "Failed to create pipeline state");
                     return false;

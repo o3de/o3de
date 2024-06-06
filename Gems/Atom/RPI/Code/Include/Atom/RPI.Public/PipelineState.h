@@ -80,6 +80,7 @@ namespace AZ
             //! Clear all the states and references
             void Shutdown();
 
+            //! Returns the id of the shader variant being used
             const ShaderVariantId& GetShaderVariantId() const;
 
         private:

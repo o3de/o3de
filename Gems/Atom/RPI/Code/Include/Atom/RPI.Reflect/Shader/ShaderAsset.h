@@ -216,7 +216,7 @@ namespace AZ
                 return GetAttribute(shaderStage, attributeName, DefaultSupervariantIndex);
             }
 
-            //! Returns if the supervariant uses specialization constants for shader options.
+            //! Returns if the supervariant uses specialization constants for at least one shader options.
             bool UseSpecializationConstants(SupervariantIndex supervariantIndex) const;
             bool UseSpecializationConstants() const
             {

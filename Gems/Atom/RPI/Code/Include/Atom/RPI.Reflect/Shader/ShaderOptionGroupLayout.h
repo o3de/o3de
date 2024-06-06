@@ -268,7 +268,12 @@ namespace AZ
 
             HashValue64 GetHash() const;
 
+            //! Returns true if all shader options of the layout are using specialization constants. Please note that each
+            //! supervariant can have specialization constants off even if the layout is IsFullySpecialized.
             bool IsFullySpecialized() const;
+
+            //! Returns true if at least one shader option is using specialization constant.
+            bool UseSpecializationConstants() const;
 
         private:
             ShaderOptionGroupLayout() = default;
@@ -288,8 +293,6 @@ namespace AZ
             using NameReflectionMapForOptions = RHI::NameIdReflectionMap<ShaderOptionIndex>;
             NameReflectionMapForOptions m_nameReflectionForOptions;
             HashValue64 m_hash = HashValue64{ 0 };
-
-            bool m_isFullySpecialized = false;
         };
     } // namespace RPI
 
