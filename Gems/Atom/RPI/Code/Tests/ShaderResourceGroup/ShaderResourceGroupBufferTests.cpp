@@ -20,8 +20,7 @@ namespace UnitTest
     using namespace AZ;
     using namespace RPI;
 
-    class ShaderResourceGroupBufferTests
-        : public RPITestFixture
+    class ShaderResourceGroupBufferTests : public RPITestFixture
     {
     protected:
         Data::Asset<ShaderAsset> m_testSrgShaderAsset;
@@ -50,9 +49,12 @@ namespace UnitTest
 
             srgLayout->SetName(Name(nameId));
             srgLayout->SetBindingSlot(0);
-            srgLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ Name{ "MyBufferA" }, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 1, 4, 1, 1});
-            srgLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ Name{ "MyBufferB" }, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 1, 4, 2, 2});
-            srgLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ Name{ "MyBufferArray" }, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 3, 4, 3, 3});
+            srgLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{
+                Name{ "MyBufferA" }, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 1, 4, 1, 1 });
+            srgLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{
+                Name{ "MyBufferB" }, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 1, 4, 2, 2 });
+            srgLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{
+                Name{ "MyBufferArray" }, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 3, 4, 3, 3 });
             srgLayout->Finalize();
 
             return srgLayout;
@@ -215,7 +217,8 @@ namespace UnitTest
 
         m_testSrg->Compile();
         EXPECT_EQ(m_shortBuffer->GetBufferView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 0));
-        EXPECT_EQ(m_mediumBuffer->GetBufferView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 1));
+        EXPECT_EQ(
+            m_mediumBuffer->GetBufferView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 1));
         EXPECT_EQ(m_longBuffer->GetBufferView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 2));
 
         // Test changing back to null...
@@ -242,9 +245,12 @@ namespace UnitTest
         EXPECT_EQ(m_threeBuffers[0], m_testSrg->GetBuffer(m_indexOfBufferArray, 0));
         EXPECT_EQ(m_threeBuffers[1], m_testSrg->GetBuffer(m_indexOfBufferArray, 1));
         EXPECT_EQ(m_threeBuffers[2], m_testSrg->GetBuffer(m_indexOfBufferArray, 2));
-        EXPECT_EQ(m_threeBuffers[0]->GetBufferView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 0));
-        EXPECT_EQ(m_threeBuffers[1]->GetBufferView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 1));
-        EXPECT_EQ(m_threeBuffers[2]->GetBufferView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 2));
+        EXPECT_EQ(
+            m_threeBuffers[0]->GetBufferView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 0));
+        EXPECT_EQ(
+            m_threeBuffers[1]->GetBufferView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 1));
+        EXPECT_EQ(
+            m_threeBuffers[2]->GetBufferView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetBufferView(m_indexOfBufferArray, 2));
 
         // Test replacing just two buffers including changing one buffer back to null...
 
@@ -457,6 +463,60 @@ namespace UnitTest
         EXPECT_EQ(nullptr, m_testSrg->GetBufferView(m_indexOfBufferArray, 0));
         EXPECT_EQ(nullptr, m_testSrg->GetBufferView(m_indexOfBufferArray, 1));
         EXPECT_EQ(nullptr, m_testSrg->GetBufferView(m_indexOfBufferArray, 2));
+    }
+
+    TEST_F(ShaderResourceGroupBufferTests, TestCopyShaderResourceGroupDataBuffer)
+    {
+        EXPECT_TRUE(m_testSrg->SetBufferArray(m_indexOfBufferArray, m_threeBuffers));
+        auto testSrg2 =
+            ShaderResourceGroup::Create(m_testSrgShaderAsset, AZ::RPI::DefaultSupervariantIndex, m_testSrgLayout->GetName());
+
+
+        EXPECT_TRUE(testSrg2->CopyShaderResourceGroupData(*m_testSrg));
+        EXPECT_EQ(3, testSrg2->GetBufferArray(m_indexOfBufferArray).size());
+        EXPECT_EQ(m_testSrg->GetBufferArray(m_indexOfBufferArray)[0], testSrg2->GetBufferArray(m_indexOfBufferArray)[0]);
+        EXPECT_EQ(m_testSrg->GetBufferArray(m_indexOfBufferArray)[1], testSrg2->GetBufferArray(m_indexOfBufferArray)[1]);
+        EXPECT_EQ(m_testSrg->GetBufferArray(m_indexOfBufferArray)[2], testSrg2->GetBufferArray(m_indexOfBufferArray)[2]);
+        EXPECT_EQ(m_testSrg->GetBufferViewArray(m_indexOfBufferArray)[0], testSrg2->GetBufferViewArray(m_indexOfBufferArray)[0]);
+        EXPECT_EQ(m_testSrg->GetBufferViewArray(m_indexOfBufferArray)[1], testSrg2->GetBufferViewArray(m_indexOfBufferArray)[1]);
+        EXPECT_EQ(m_testSrg->GetBufferViewArray(m_indexOfBufferArray)[2], testSrg2->GetBufferViewArray(m_indexOfBufferArray)[2]);
+    }
+
+    TEST_F(ShaderResourceGroupBufferTests, TestCopyShaderResourceGroupDataBufferView)
+    {
+        EXPECT_TRUE(m_testSrg->SetBufferViewArray(m_indexOfBufferArray, m_threeBufferViews));
+        auto testSrg2 = ShaderResourceGroup::Create(m_testSrgShaderAsset, AZ::RPI::DefaultSupervariantIndex, m_testSrgLayout->GetName());
+
+        EXPECT_TRUE(testSrg2->CopyShaderResourceGroupData(*m_testSrg));
+        EXPECT_EQ(3, testSrg2->GetBufferViewArray(m_indexOfBufferArray).size());
+        EXPECT_EQ(m_testSrg->GetBufferArray(m_indexOfBufferArray)[0], testSrg2->GetBufferArray(m_indexOfBufferArray)[0]);
+        EXPECT_EQ(m_testSrg->GetBufferArray(m_indexOfBufferArray)[1], testSrg2->GetBufferArray(m_indexOfBufferArray)[1]);
+        EXPECT_EQ(m_testSrg->GetBufferArray(m_indexOfBufferArray)[2], testSrg2->GetBufferArray(m_indexOfBufferArray)[2]);
+        EXPECT_EQ(m_testSrg->GetBufferViewArray(m_indexOfBufferArray)[0], testSrg2->GetBufferViewArray(m_indexOfBufferArray)[0]);
+        EXPECT_EQ(m_testSrg->GetBufferViewArray(m_indexOfBufferArray)[1], testSrg2->GetBufferViewArray(m_indexOfBufferArray)[1]);
+        EXPECT_EQ(m_testSrg->GetBufferViewArray(m_indexOfBufferArray)[2], testSrg2->GetBufferViewArray(m_indexOfBufferArray)[2]);
+    }
+
+    TEST_F(ShaderResourceGroupBufferTests, TestPartilCopyShaderResourceGroupData)
+    {
+        RHI::Ptr<RHI::ShaderResourceGroupLayout> srgLayout2 = RHI::ShaderResourceGroupLayout::Create();
+        srgLayout2->SetName(Name("partial"));
+        srgLayout2->SetBindingSlot(0);
+        srgLayout2->AddShaderInput(RHI::ShaderInputBufferDescriptor{
+            Name{ "MyBufferB" }, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 1, 4, 2, 2 });
+        srgLayout2->AddShaderInput(RHI::ShaderInputBufferDescriptor{
+            Name{ "MyBufferC" }, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 1, 4, 2, 2 });
+        srgLayout2->Finalize();
+
+        auto testSrgShaderAsset2 = CreateTestShaderAsset(Uuid::CreateRandom(), srgLayout2);
+        auto testSrg2 = ShaderResourceGroup::Create(testSrgShaderAsset2, AZ::RPI::DefaultSupervariantIndex, srgLayout2->GetName());
+
+        EXPECT_TRUE(m_testSrg->SetBuffer(m_indexOfBufferA, m_shortBuffer));
+        EXPECT_TRUE(m_testSrg->SetBuffer(m_indexOfBufferB, m_mediumBuffer));
+
+        EXPECT_FALSE(testSrg2->CopyShaderResourceGroupData(*m_testSrg));
+        EXPECT_EQ(m_testSrg->GetBuffer(m_indexOfBufferB), testSrg2->GetBuffer(RHI::ShaderInputBufferIndex{ 0 }));
+        EXPECT_EQ(m_testSrg->GetBufferView(m_indexOfBufferB), testSrg2->GetBufferView(RHI::ShaderInputBufferIndex{ 0 }));
     }
 }
 

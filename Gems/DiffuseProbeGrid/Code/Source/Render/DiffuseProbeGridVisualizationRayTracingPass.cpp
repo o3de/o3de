@@ -270,6 +270,11 @@ namespace AZ
                 diffuseProbeGrid->UpdateVisualizationRayTraceSrg(m_rayTracingShader, m_globalSrgLayout, outputImageView);
                 diffuseProbeGrid->GetVisualizationRayTraceSrg()->Compile();
             }
+
+            if (auto viewSRG = diffuseProbeGridFeatureProcessor->GetViewSrg(m_pipeline, GetPipelineViewTag()))
+            {
+                BindSrg(viewSRG->GetRHIShaderResourceGroup());
+            }
         }
     
         void DiffuseProbeGridVisualizationRayTracingPass::BuildCommandListInternal([[maybe_unused]] const RHI::FrameGraphExecuteContext& context)
