@@ -27,7 +27,7 @@ namespace AZ::Vulkan
         m_renderPassContexts.resize(groupScopes.size());
         for (uint32_t i = 0; i < groupScopes.size(); ++i)
         {
-            const Scope* scope = groupScopes[i];
+            Scope* scope = groupScopes[i];
             if (!scope->UsesRenderpass())
             {
                 continue;

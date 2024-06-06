@@ -31,6 +31,56 @@ namespace AZ
 {
     namespace Vulkan
     {
+        template<class T>
+        void AddAccessStages(T& barrier, const T& barrierToAdd)
+        {
+            barrier.srcAccessMask |= barrierToAdd.srcAccessMask;
+            barrier.dstAccessMask |= barrierToAdd.dstAccessMask;
+        }
+
+        template<class T>
+        void AddStageMasks(T& barrier, const T& barrierToAdd)
+        {
+            barrier.m_srcStageMask |= barrierToAdd.m_srcStageMask;
+            barrier.m_dstStageMask |= barrierToAdd.m_dstStageMask;
+        }
+
+        template<class T>
+        void CombineFamilyQueues(T& barrier, const T& barrierToAdd)
+        {
+            AZ_Assert(
+                barrier.srcQueueFamilyIndex == barrierToAdd.srcQueueFamilyIndex,
+                "Different source queue family when combining family queues, %d and %d",
+                barrier.srcQueueFamilyIndex,
+                barrierToAdd.srcQueueFamilyIndex);
+            barrier.dstQueueFamilyIndex = barrierToAdd.dstQueueFamilyIndex;
+        }
+
+        void AddSubresources(VkBufferMemoryBarrier& barrier, const VkBufferMemoryBarrier& barrierToAdd)
+        {
+            VkDeviceSize absoluteOffset = AZStd::max(barrier.offset + barrier.size, barrierToAdd.offset + barrierToAdd.size);
+            barrier.offset = AZStd::min(barrier.offset, barrierToAdd.offset);
+            barrier.size = absoluteOffset - barrier.offset;
+        }
+        
+        void AddSubresources(VkImageMemoryBarrier& barrier, const VkImageMemoryBarrier& barrierToAdd)
+        {
+            barrier.subresourceRange.aspectMask |= barrierToAdd.subresourceRange.aspectMask;
+            barrier.subresourceRange.baseMipLevel =
+                AZStd::min(barrier.subresourceRange.baseMipLevel, barrierToAdd.subresourceRange.baseMipLevel);
+            barrier.subresourceRange.baseArrayLayer =
+                AZStd::min(barrier.subresourceRange.baseArrayLayer, barrierToAdd.subresourceRange.baseArrayLayer);
+            barrier.subresourceRange.levelCount = AZStd::max(barrier.subresourceRange.levelCount, barrierToAdd.subresourceRange.levelCount);
+            barrier.subresourceRange.layerCount = AZStd::max(barrier.subresourceRange.layerCount, barrierToAdd.subresourceRange.layerCount);
+        }
+
+        template<class T>
+        void FilterAccessStages(T& barrier, VkAccessFlags srcSupportedFlags, VkAccessFlags dstSupportedFlags)
+        {
+            barrier.srcAccessMask = RHI::FilterBits(barrier.srcAccessMask, srcSupportedFlags);
+            barrier.dstAccessMask = RHI::FilterBits(barrier.dstAccessMask, dstSupportedFlags);
+        }
+
         Scope::Barrier::Barrier(VkMemoryBarrier barrier)
             : m_type(barrier.sType)
             , m_memoryBarrier(barrier)
@@ -46,7 +96,7 @@ namespace AZ
             , m_imageBarrier(barrier)
         {}
 
-        bool Scope::Barrier::BlocksResource(const ImageView& imageView, OverlapType overlapType) const
+        bool Scope::Barrier::Overlaps(const ImageView& imageView, OverlapType overlapType) const
         {
             if (m_type != VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER ||
                 m_imageBarrier.image != static_cast<const Image&>(imageView.GetImage()).GetNativeImage())
@@ -60,7 +110,7 @@ namespace AZ
                 m_imageBarrier.subresourceRange == vkImageSubresourceRange;
         }
 
-        bool Scope::Barrier::BlocksResource(const BufferView& bufferView, OverlapType overlapType) const
+        bool Scope::Barrier::Overlaps(const BufferView& bufferView, OverlapType overlapType) const
         {
             const BufferMemoryView* bufferMemoryView = static_cast<const Buffer&>(bufferView.GetBuffer()).GetBufferMemoryView();
             const auto& buferViewDescriptor = bufferView.GetDescriptor();
@@ -74,7 +124,63 @@ namespace AZ
             RHI::BufferSubresourceRange bufferViewRange(buferViewDescriptor);
             bufferViewRange.m_byteOffset += bufferMemoryView->GetOffset();
             return overlapType == OverlapType::Partial ? SubresourceRangeOverlaps(barrierRange, bufferViewRange) : barrierRange == bufferViewRange;
-        }        
+        }
+
+        bool Scope::Barrier::Overlaps(const Barrier& barrier, OverlapType overlapType) const
+        {
+            if (m_type != barrier.m_type)
+            {
+                return false;
+            }
+
+            switch (m_type)
+            {
+            case VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER:
+                return m_imageBarrier.image == barrier.m_imageBarrier.image &&
+                    (overlapType == OverlapType::Partial
+                         ? SubresourceRangeOverlaps(m_imageBarrier.subresourceRange, barrier.m_imageBarrier.subresourceRange)
+                         : m_imageBarrier.subresourceRange == barrier.m_imageBarrier.subresourceRange);
+            case VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER:
+            {
+                RHI::BufferSubresourceRange barrierRange(m_bufferBarrier.offset, m_bufferBarrier.size);
+                RHI::BufferSubresourceRange barrierRangeOther(barrier.m_bufferBarrier.offset, barrier.m_bufferBarrier.size);
+                return m_bufferBarrier.buffer == barrier.m_bufferBarrier.buffer &&
+                    (overlapType == OverlapType::Partial
+                        ? SubresourceRangeOverlaps(barrierRange, barrierRangeOther)
+                        : barrierRange == barrierRangeOther);
+            }
+            default:
+                return false;
+            }
+        }
+
+        void Scope::Barrier::Combine(const Barrier& other)
+        {
+            AddStageMasks(*this, other);
+            VkAccessFlags srcSupportedAccess = GetSupportedAccessFlags(m_srcStageMask);
+            VkAccessFlags dstSupportedAccess = GetSupportedAccessFlags(m_dstStageMask);
+            switch (m_type)
+            {
+            case VK_STRUCTURE_TYPE_MEMORY_BARRIER:
+                AddAccessStages(m_memoryBarrier, other.m_memoryBarrier);
+                FilterAccessStages(m_memoryBarrier, srcSupportedAccess, dstSupportedAccess);
+                break;
+            case VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER:
+                AddAccessStages(m_bufferBarrier, other.m_bufferBarrier);
+                AddSubresources(m_bufferBarrier, other.m_bufferBarrier);
+                CombineFamilyQueues(m_bufferBarrier, other.m_bufferBarrier);
+                FilterAccessStages(m_bufferBarrier, srcSupportedAccess, dstSupportedAccess);
+                break;
+            case VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER:
+                AddAccessStages(m_imageBarrier, other.m_imageBarrier);
+                AddSubresources(m_imageBarrier, other.m_imageBarrier);
+                CombineFamilyQueues(m_imageBarrier, other.m_imageBarrier);
+                FilterAccessStages(m_imageBarrier, srcSupportedAccess, dstSupportedAccess);
+                break;
+            default:
+                break;
+            }
+        }
 
         RHI::Ptr<Scope> Scope::Create()
         {
@@ -95,27 +201,6 @@ namespace AZ
         void Scope::End(CommandList& commandList) const
         {
             commandList.GetValidator().EndScope();
-        }
-
-        template<class T>
-        void AddAccessStages(T& barrier, const T& barrierToAdd)
-        {
-            barrier.srcAccessMask |= barrierToAdd.srcAccessMask;
-            barrier.dstAccessMask |= barrierToAdd.dstAccessMask;
-        }
-
-        template<class T>
-        void AddStageMasks(T& barrier, const T& barrierToAdd)
-        {
-            barrier.m_srcStageMask |= barrierToAdd.m_srcStageMask;
-            barrier.m_dstStageMask |= barrierToAdd.m_dstStageMask;
-        }
-
-        template<class T>
-        void FilterAccessStages(T& barrier, VkAccessFlags srcSupportedFlags, VkAccessFlags dstSupportedFlags)
-        {
-            barrier.srcAccessMask = RHI::FilterBits(barrier.srcAccessMask, srcSupportedFlags);
-            barrier.dstAccessMask = RHI::FilterBits(barrier.dstAccessMask, dstSupportedFlags);
         }
 
         void Scope::EmitScopeBarriers(CommandList& commandList, BarrierSlot slot) const
@@ -251,9 +336,9 @@ namespace AZ
             for (auto attachment : imageAttachments)
             {
                 haveRenderAttachments |=
-                    attachment->HasUsage(RHI::ScopeAttachmentUsage::RenderTarget) ||
-                    attachment->HasUsage(RHI::ScopeAttachmentUsage::DepthStencil) ||
-                    attachment->HasUsage(RHI::ScopeAttachmentUsage::Resolve);
+                    attachment->GetUsage() == RHI::ScopeAttachmentUsage::RenderTarget ||
+                    attachment->GetUsage() == RHI::ScopeAttachmentUsage::DepthStencil ||
+                    attachment->GetUsage() == RHI::ScopeAttachmentUsage::Resolve;
 
                 haveClearLoadOps |=
                     attachment->GetDescriptor().m_loadStoreAction.m_loadAction == RHI::AttachmentLoadAction::Clear ||
@@ -321,7 +406,7 @@ namespace AZ
             for (const auto* scopeAttachment : attachments)
             {
                 const auto& bindingDescriptor = scopeAttachment->GetDescriptor();
-                if (HasExplicitClear(*scopeAttachment, bindingDescriptor))
+                if (HasExplicitClear(*scopeAttachment))
                 {
                     clearRequests.push_back({ bindingDescriptor.m_loadStoreAction.m_clearValue, scopeAttachment->GetResourceView() });
                 }
@@ -377,8 +462,11 @@ namespace AZ
                 return false;
             }
 
-            const RHI::ScopeAttachment* scopeAttachment =
-                slot == BarrierSlot::Prologue ? barrier.m_attachment->GetPrevious() : barrier.m_attachment->GetNext();
+            const RHI::ScopeAttachment* scopeAttachment = barrier.m_attachment;
+            while (scopeAttachment != nullptr && scopeAttachment->GetScope().GetId() == GetId())
+            {
+                scopeAttachment = slot == BarrierSlot::Prologue ? scopeAttachment->GetPrevious() : scopeAttachment->GetNext();
+            }                
 
             // We don't optimize external barriers because they cause renderpass incompatiblity with the pipeline renderpass.
             // The subpass dependencies added by the optimization causes the incompatibility.
@@ -397,27 +485,23 @@ namespace AZ
                 if (barrier.m_imageBarrier.srcQueueFamilyIndex == barrier.m_imageBarrier.dstQueueFamilyIndex)
                 {
                     // Check if the barrier is a renderpass image attachment (to replace it with a subpass dependency and an automatic subpass layout transition)
-                    const AZStd::vector<RHI::ScopeAttachmentUsageAndAccess>& usagesAndAccesses = scopeAttachment->GetUsageAndAccess();
-                    for (const RHI::ScopeAttachmentUsageAndAccess& usageAndAccess : usagesAndAccesses)
+                    if (IsRenderAttachmentUsage(scopeAttachment->GetUsage()))
                     {
-                        if (IsRenderAttachmentUsage(usageAndAccess.m_usage))
+                        // Since we need to preserve the order of the barriers, and scope barriers are execute before
+                        // subpass barriers, we need to check that there's no barrier for the same resource already in the
+                        // scope barrier list.
+                        const auto& scopeBarriers = m_scopeBarriers[static_cast<uint32_t>(slot)];
+                        auto findIt = AZStd::find_if(scopeBarriers.begin(), scopeBarriers.end(), [&barrier](const auto& scopeBarrier)
                         {
-                            // Since we need to preserve the order of the barriers, and scope barriers are execute before
-                            // subpass barriers, we need to check that there's no barrier for the same resource already in the
-                            // scope barrier list.
-                            const auto& scopeBarriers = m_scopeBarriers[static_cast<uint32_t>(slot)];
-                            auto findIt = AZStd::find_if(scopeBarriers.begin(), scopeBarriers.end(), [&barrier](const auto& scopeBarrier)
-                            {
-                                return
-                                    scopeBarrier.m_type == VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER &&
-                                    scopeBarrier.m_imageBarrier.image == barrier.m_imageBarrier.image &&
-                                    SubresourceRangeOverlaps(scopeBarrier.m_imageBarrier.subresourceRange, barrier.m_imageBarrier.subresourceRange);
-                            });
+                            return
+                                scopeBarrier.m_type == VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER &&
+                                scopeBarrier.m_imageBarrier.image == barrier.m_imageBarrier.image &&
+                                SubresourceRangeOverlaps(scopeBarrier.m_imageBarrier.subresourceRange, barrier.m_imageBarrier.subresourceRange);
+                        });
 
-                            if (findIt == scopeBarriers.end())
-                            {
-                                return true;
-                            }
+                        if (findIt == scopeBarriers.end())
+                        {
+                            return true;
                         }
                     }
                 }
@@ -544,7 +628,7 @@ namespace AZ
             m_scopeBarriers[resolveIndex] = m_unoptimizedBarriers[resolveIndex];
             m_scopeBarriers[clearIndex] = m_unoptimizedBarriers[clearIndex];
             m_scopeBarriers[aliasingIndex] = m_unoptimizedBarriers[aliasingIndex];
-        }
+        }        
 
         void Scope::OnFrameCompileEnd(RHI::FrameGraph& frameGraph)
         {
@@ -604,6 +688,16 @@ namespace AZ
                     }
                 }
             }
+        }
+
+        void Scope::SetDepthStencilFullView(RHI::ConstPtr<RHI::ImageView> view)
+        {
+            m_depthStencilFullView = view;
+        }
+
+        const RHI::ImageView* Scope::GetDepthStencilFullView() const
+        {
+            return m_depthStencilFullView.get();
         }
 
         Scope::ResolveMode Scope::GetResolveMode() const

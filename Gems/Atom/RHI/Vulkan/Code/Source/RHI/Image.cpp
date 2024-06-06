@@ -524,9 +524,32 @@ namespace AZ
             m_layout.Set(range ? *range : RHI::ImageSubresourceRange(GetDescriptor()), layout);
         }
 
+        PipelineAccessFlags Image::GetPipelineAccess(const RHI::ImageSubresourceRange* range) const
+        {
+            AZStd::lock_guard<AZStd::mutex> lock(m_pipelineAccessMutex);
+            PipelineAccessFlags pipelineAccessFlags = {};
+            for (const auto& propertyRange : m_pipelineAccess.Get(range ? *range : RHI::ImageSubresourceRange(GetDescriptor())))
+            {
+                pipelineAccessFlags.m_pipelineStage |= propertyRange.m_property.m_pipelineStage;
+                pipelineAccessFlags.m_access |= propertyRange.m_property.m_access;
+            }
+            return pipelineAccessFlags;
+        }
+
+        void Image::SetPipelineAccess(const PipelineAccessFlags& pipelineAccess, const RHI::ImageSubresourceRange* range)
+        {
+            AZStd::lock_guard<AZStd::mutex> lock(m_pipelineAccessMutex);
+            m_pipelineAccess.Set(range ? *range : RHI::ImageSubresourceRange(GetDescriptor()), pipelineAccess);
+        }
+
         VkImageUsageFlags Image::GetUsageFlags() const
         {
             return m_usageFlags;
+        }
+
+        VkSharingMode Image::GetSharingMode() const
+        {
+            return m_sharingMode;
         }
 
         void Image::OnPreInit(Device& device, const RHI::ImageDescriptor& descriptor, Image::InitFlags flags)
@@ -770,6 +793,7 @@ namespace AZ
             m_sparseImageInfo = AZStd::make_unique<SparseImageInfo>();
             m_sparseImageInfo->Init(device, m_vkImage, descriptor);
             m_isOwnerOfNativeImage = true;
+            m_sharingMode = createInfo.m_vkCreateInfo.sharingMode;
 
             return result;
         }
@@ -783,6 +807,7 @@ namespace AZ
 
             ImageCreateInfo createInfo = device.BuildImageCreateInfo(descriptor);
             m_usageFlags = createInfo.m_vkCreateInfo.usage;
+            m_sharingMode = createInfo.m_vkCreateInfo.sharingMode;
 
             VkResult result = VK_SUCCESS;
             if (memoryView)
@@ -917,8 +942,10 @@ namespace AZ
 
             m_ownerQueue.Init(descriptor);
             m_layout.Init(descriptor);
+            m_pipelineAccess.Init(descriptor);
             SetLayout(VK_IMAGE_LAYOUT_UNDEFINED);
             SetInitalQueueOwner();
+            SetPipelineAccess({ VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_ACCESS_NONE });
         }
 
         bool Image::IsStreamableInternal() const
@@ -944,7 +971,6 @@ namespace AZ
                 }
             }
         }
-
     }
 }
 

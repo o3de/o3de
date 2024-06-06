@@ -63,6 +63,7 @@ namespace AZ
                     ->Field("ShaderInputArrayIndex", &PassSlot::m_shaderInputArrayIndex)
                     ->Field("SlotType", &PassSlot::m_slotType)
                     ->Field("ScopeAttachmentUsage", &PassSlot::m_scopeAttachmentUsage)
+                    ->Field("ScopeAttachmentStage", &PassSlot::m_scopeAttachmentStage)                        
                     ->Field("ImageViewDesc", &PassSlot::m_imageViewDesc)
                     ->Field("BufferViewDesc", &PassSlot::m_bufferViewDesc)
                     ->Field("LoadStoreAction", &PassSlot::m_loadStoreAction)

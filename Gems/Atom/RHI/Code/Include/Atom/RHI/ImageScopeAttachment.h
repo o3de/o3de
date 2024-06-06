@@ -30,6 +30,7 @@ namespace AZ::RHI
             FrameAttachment& attachment,
             ScopeAttachmentUsage usage,
             ScopeAttachmentAccess access,
+            ScopeAttachmentStage stage,
             const ImageScopeAttachmentDescriptor& descriptor);
 
         const ImageScopeAttachmentDescriptor& GetDescriptor() const;
@@ -53,6 +54,9 @@ namespace AZ::RHI
         void SetImageView(ConstPtr<ImageView> imageView);
 
         bool IsBeingResolved() const;
+
+        // ScopeAttachment overrides...
+        const ScopeAttachmentDescriptor& GetScopeAttachmentDescriptor() const override;
 
     private:
         ImageScopeAttachmentDescriptor m_descriptor;

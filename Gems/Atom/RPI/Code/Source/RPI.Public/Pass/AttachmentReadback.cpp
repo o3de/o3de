@@ -271,9 +271,10 @@ namespace AZ
             RHI::ImageScopeAttachmentDescriptor inputDesc{ m_attachmentId };
             inputDesc.m_imageViewDescriptor.m_aspectFlags = RHI::CheckBitsAny(RHI::GetImageAspectFlags(m_imageDescriptor.m_format), RHI::ImageAspectFlags::Depth)?
                 RHI::ImageAspectFlags::Depth:RHI::ImageAspectFlags::Color;
-            frameGraph.UseAttachment(inputDesc, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentUsage::Shader);
+            frameGraph.UseAttachment(inputDesc, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentUsage::Shader, RHI::ScopeAttachmentStage::ComputeShader);
             RHI::ImageScopeAttachmentDescriptor outputDesc{ m_copyAttachmentId };
-            frameGraph.UseAttachment(outputDesc, RHI::ScopeAttachmentAccess::Write, RHI::ScopeAttachmentUsage::Shader);
+            frameGraph.UseAttachment(
+                outputDesc, RHI::ScopeAttachmentAccess::Write, RHI::ScopeAttachmentUsage::Shader, RHI::ScopeAttachmentStage::ComputeShader);
         }
 
         void AttachmentReadback::DecomposeCompile(const RHI::FrameGraphCompileContext& context)

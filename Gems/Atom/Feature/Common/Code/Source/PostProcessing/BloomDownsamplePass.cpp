@@ -46,8 +46,20 @@ namespace AZ
         void BloomDownsamplePass::BuildOutAttachmentBinding()
         {
             RPI::Ptr<RPI::PassAttachment> outAttachment = m_ownedAttachments[0];
+            RPI::PassAttachmentBinding* outAttachmentBinding = FindAttachmentBinding(AZ::Name("Output"));
+            if (outAttachmentBinding)
+            {
+                // We use the owned attachment as mip level 0, because we can't have overlapping attachments
+                // with write access.
+                RHI::ImageViewDescriptor attachmentViewDesc;
+                attachmentViewDesc.m_mipSliceMin = 0;
+                attachmentViewDesc.m_mipSliceMax = 0;
+                outAttachmentBinding->m_shaderInputName = Name{ "m_targetMipLevel0" };
+                outAttachmentBinding->m_unifiedScopeDesc.SetAsImage(attachmentViewDesc);
+            }
 
-            for (uint16_t i = 0; i < Render::Bloom::MaxStageCount; ++i)
+            // Create the rest of mip level attachments
+            for (uint16_t i = 1; i < Render::Bloom::MaxStageCount; ++i)
             {
                 // Create bindings
 

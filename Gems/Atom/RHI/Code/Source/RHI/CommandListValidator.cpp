@@ -159,8 +159,8 @@ namespace AZ::RHI
 
             for (const ScopeAttachment* scopeAttachment : *scopeAttachments)
             {
-                isValidUsage = (scopeAttachment->HasUsage(ScopeAttachmentUsage::Shader) || scopeAttachment->HasUsage(ScopeAttachmentUsage::SubpassInput));
-                isValidAccess = (scopeAttachment->HasAccessAndUsage(ScopeAttachmentUsage::Shader, context.m_scopeAttachmentAccess) || scopeAttachment->HasAccessAndUsage(ScopeAttachmentUsage::SubpassInput, context.m_scopeAttachmentAccess));
+                isValidUsage = scopeAttachment->GetUsage() == ScopeAttachmentUsage::Shader || scopeAttachment->GetUsage() == ScopeAttachmentUsage::SubpassInput;
+                isValidAccess = scopeAttachment->GetAccess() == context.m_scopeAttachmentAccess;
 
                 if (isValidUsage && isValidAccess)
                 {
@@ -178,15 +178,15 @@ namespace AZ::RHI
             // Output mismatch for each of the scope attachments in the list
             for (const ScopeAttachment* scopeAttachment : *scopeAttachments)
             {
-                isValidUsage = (scopeAttachment->HasUsage(ScopeAttachmentUsage::Shader) || scopeAttachment->HasUsage(ScopeAttachmentUsage::SubpassInput));
-                isValidAccess = (scopeAttachment->HasAccessAndUsage(ScopeAttachmentUsage::Shader, context.m_scopeAttachmentAccess) || scopeAttachment->HasAccessAndUsage(ScopeAttachmentUsage::SubpassInput, context.m_scopeAttachmentAccess));
+                isValidUsage = scopeAttachment->GetUsage() == ScopeAttachmentUsage::Shader || scopeAttachment->GetUsage() == ScopeAttachmentUsage::SubpassInput;
+                isValidAccess = scopeAttachment->GetAccess() == context.m_scopeAttachmentAccess;
 
                 AZ_Warning("CommandListValidator", isValidUsage,
                     "[Scope '%s', SRG '%s']: Attachment '%s' is used as ['%s'], but usage needs to be 'Shader'",
                     context.m_scopeName,
                     context.m_srgName,
                     attachmentName,
-                    scopeAttachment->GetUsageTypes().c_str());
+                    scopeAttachment->GetTypeName());
 
                 AZ_Warning("CommandListValidator", isValidAccess,
                     "[Scope '%s', SRG '%s']: Attachment '%s' is marked for '%s' access, but the scope declared ['%s'] access.",
@@ -194,7 +194,7 @@ namespace AZ::RHI
                     context.m_srgName,
                     attachmentName,
                     ToString(context.m_scopeAttachmentAccess),
-                    scopeAttachment->GetAccessTypes().c_str());
+                    scopeAttachment->GetTypeName());
             }
 
             return false;

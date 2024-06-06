@@ -59,9 +59,9 @@ namespace AZ
         void FrameGraphExecuter::BeginInternal(const RHI::FrameGraph& frameGraph)
         {
             Device& device = GetDevice();
-            AZStd::vector<const Scope*> mergedScopes;
-            const Scope* scopePrev = nullptr;
-            const Scope* scopeNext = nullptr;
+            AZStd::vector<Scope*> mergedScopes;
+            Scope* scopePrev = nullptr;
+            Scope* scopeNext = nullptr;
             const AZStd::vector<RHI::Scope*>& scopes = frameGraph.GetScopes();
 
 #if defined(AZ_FORCE_CPU_GPU_INSYNC)
@@ -98,9 +98,9 @@ namespace AZ
 
             for (auto it = scopes.begin(); it != scopes.end(); ++it)
             {
-                const Scope& scope = *static_cast<const Scope*>(*it);
+                Scope& scope = *static_cast<Scope*>(*it);
                 auto nextIter = it + 1;
-                scopeNext = nextIter != scopes.end() ? static_cast<const Scope*>(*nextIter) : nullptr;
+                scopeNext = nextIter != scopes.end() ? static_cast<Scope*>(*nextIter) : nullptr;
 
                 // Reset merged hardware queue class to match current scope if empty.
                 if (mergedGroupCost == 0)

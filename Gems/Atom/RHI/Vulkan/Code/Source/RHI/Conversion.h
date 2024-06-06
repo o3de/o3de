@@ -35,7 +35,9 @@ namespace AZ
         VkAccessFlags GetResourceAccessFlags(const RHI::BufferBindFlags& bindFlags);
         VkAccessFlags GetResourceAccessFlags(const RHI::ImageBindFlags& bindFlags);
         VkImageLayout GetImageAttachmentLayout(const RHI::ImageScopeAttachment& imageScopeAttachment);
-        bool HasExplicitClear(const RHI::ScopeAttachment& scopeAttachment, const RHI::ScopeAttachmentDescriptor& descriptor);
+        bool HasExplicitClear(const RHI::ScopeAttachment& scopeAttachment);
         VmaAllocationCreateInfo GetVmaAllocationCreateInfo(const RHI::HeapMemoryLevel level);
+        VkImageLayout CombineImageLayout(VkImageLayout lhs, VkImageLayout rhs);
+        VkImageLayout FilterImageLayout(VkImageLayout layout, RHI::ImageAspectFlags aspectFlags);
     }
 }

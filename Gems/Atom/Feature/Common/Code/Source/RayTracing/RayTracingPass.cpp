@@ -54,7 +54,7 @@ namespace AZ
                 AZ_Error("PassSystem", false, "RayTracingPass [%s]: Invalid RayTracingPassData", GetPathName().GetCStr());
                 return;
             }
-
+            m_defaultShaderAttachmentStage = RHI::ScopeAttachmentStage::RayTracingShader;
             CreatePipelineState();
         }
 
@@ -303,7 +303,7 @@ namespace AZ
                     desc.m_bufferViewDescriptor = tlasBufferViewDescriptor;
                     desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
 
-                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
+                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite, RHI::ScopeAttachmentStage::RayTracingShader);
                 }
             }
         }

@@ -176,29 +176,32 @@ namespace AZ
 
             frameGraph.SetEstimatedItemCount(aznumeric_cast<uint32_t>(diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().size()));
 
+            // TLAS
+            if (!diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().empty())
+            {
+                AZ::RHI::AttachmentId tlasAttachmentId = rayTracingFeatureProcessor->GetTlasAttachmentId();
+                const RHI::Ptr<RHI::Buffer>& rayTracingTlasBuffer = rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer();
+                if (rayTracingTlasBuffer)
+                {
+                    [[maybe_unused]] RHI::ResultCode result =
+                        frameGraph.GetAttachmentDatabase().ImportBuffer(tlasAttachmentId, rayTracingTlasBuffer);
+                    AZ_Assert(result == RHI::ResultCode::Success, "Failed to import ray tracing TLAS buffer with error %d", result);
+
+                    uint32_t tlasBufferByteCount = aznumeric_cast<uint32_t>(rayTracingTlasBuffer->GetDescriptor().m_byteCount);
+                    RHI::BufferViewDescriptor tlasBufferViewDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, tlasBufferByteCount);
+
+                    RHI::BufferScopeAttachmentDescriptor desc;
+                    desc.m_attachmentId = tlasAttachmentId;
+                    desc.m_bufferViewDescriptor = tlasBufferViewDescriptor;
+                    desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
+
+                    frameGraph.UseShaderAttachment(
+                        desc, RHI::ScopeAttachmentAccess::ReadWrite, RHI::ScopeAttachmentStage::RayTracingShader);
+                }
+            }
+
             for (const auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
             {
-                // TLAS
-                {
-                    AZ::RHI::AttachmentId tlasAttachmentId = rayTracingFeatureProcessor->GetTlasAttachmentId();
-                    const RHI::Ptr<RHI::Buffer>& rayTracingTlasBuffer = rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer();
-                    if (rayTracingTlasBuffer)
-                    {
-                        [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportBuffer(tlasAttachmentId, rayTracingTlasBuffer);
-                        AZ_Assert(result == RHI::ResultCode::Success, "Failed to import ray tracing TLAS buffer with error %d", result);
-
-                        uint32_t tlasBufferByteCount = aznumeric_cast<uint32_t>(rayTracingTlasBuffer->GetDescriptor().m_byteCount);
-                        RHI::BufferViewDescriptor tlasBufferViewDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, tlasBufferByteCount);
-
-                        RHI::BufferScopeAttachmentDescriptor desc;
-                        desc.m_attachmentId = tlasAttachmentId;
-                        desc.m_bufferViewDescriptor = tlasBufferViewDescriptor;
-                        desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
-
-                        frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
-                    }
-                }
-
                 // grid data
                 {
                     RHI::BufferScopeAttachmentDescriptor desc;
@@ -206,7 +209,7 @@ namespace AZ
                     desc.m_bufferViewDescriptor = diffuseProbeGrid->GetRenderData()->m_gridDataBufferViewDescriptor;
                     desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
 
-                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read);
+                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentStage::RayTracingShader);
                 }
 
                 // probe raytrace
@@ -226,7 +229,8 @@ namespace AZ
                         desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
                     }
 
-                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
+                    frameGraph.UseShaderAttachment(
+                        desc, RHI::ScopeAttachmentAccess::ReadWrite, RHI::ScopeAttachmentStage::RayTracingShader);
                 }
 
                 // probe irradiance
@@ -247,7 +251,8 @@ namespace AZ
                         desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
                     }
 
-                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
+                    frameGraph.UseShaderAttachment(
+                        desc, RHI::ScopeAttachmentAccess::ReadWrite, RHI::ScopeAttachmentStage::RayTracingShader);
                 }
 
                 // probe distance
@@ -268,7 +273,8 @@ namespace AZ
                         desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
                     }
 
-                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
+                    frameGraph.UseShaderAttachment(
+                        desc, RHI::ScopeAttachmentAccess::ReadWrite, RHI::ScopeAttachmentStage::RayTracingShader);
                 }
 
                 // probe data
@@ -289,7 +295,8 @@ namespace AZ
                         desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
                     }
 
-                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
+                    frameGraph.UseShaderAttachment(
+                        desc, RHI::ScopeAttachmentAccess::ReadWrite, RHI::ScopeAttachmentStage::RayTracingShader);
                 }
 
                 diffuseProbeGrid->ResetTextureClearRequired();

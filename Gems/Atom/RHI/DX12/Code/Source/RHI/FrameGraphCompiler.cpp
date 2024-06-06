@@ -245,74 +245,70 @@ namespace AZ
             const RHI::HardwareQueueClass hardwareQueueClass = parentScope.GetHardwareQueueClass();
             const uint32_t hardwareQueueClassIdx = static_cast<uint32_t>(hardwareQueueClass);
 
-            const AZStd::vector<RHI::ScopeAttachmentUsageAndAccess>& usagesAndAccesses = scopeAttachment.GetUsageAndAccess();
-            D3D12_RESOURCE_STATES mergedResourceState = D3D12_RESOURCE_STATE_COMMON;
-            for (const RHI::ScopeAttachmentUsageAndAccess& usageAndAccess : usagesAndAccesses)
+            D3D12_RESOURCE_STATES resourceState = D3D12_RESOURCE_STATE_COMMON;
+            switch (scopeAttachment.GetUsage())
             {
-                switch (usageAndAccess.m_usage)
-                {
-                case RHI::ScopeAttachmentUsage::RenderTarget:
-                {
-                    mergedResourceState |= D3D12_RESOURCE_STATE_RENDER_TARGET;
-                    break;
-                }
-
-                case RHI::ScopeAttachmentUsage::DepthStencil:
-                {
-                    mergedResourceState |= RHI::CheckBitsAny(usageAndAccess.m_access, RHI::ScopeAttachmentAccess::Write) ?
-                                            D3D12_RESOURCE_STATE_DEPTH_WRITE :
-                                            D3D12_RESOURCE_STATE_DEPTH_READ;
-                    break;
-                }
-
-                case RHI::ScopeAttachmentUsage::Shader:
-                {
-                    mergedResourceState |= RHI::CheckBitsAny(usageAndAccess.m_access, RHI::ScopeAttachmentAccess::Write) ?
-                                            ReadWriteState[hardwareQueueClassIdx] :
-                                            ReadState[hardwareQueueClassIdx];
-                    break;
-                }
-                case RHI::ScopeAttachmentUsage::Copy:
-                {
-                    mergedResourceState |= RHI::CheckBitsAny(usageAndAccess.m_access, RHI::ScopeAttachmentAccess::Write) ?
-                                            D3D12_RESOURCE_STATE_COPY_DEST :
-                                            D3D12_RESOURCE_STATE_COPY_SOURCE;
-                    break;
-                }
-                case RHI::ScopeAttachmentUsage::Resolve:
-                {
-                    mergedResourceState |= D3D12_RESOURCE_STATE_RESOLVE_DEST;
-                    break;
-                }
-                case RHI::ScopeAttachmentUsage::Predication:
-                {
-                    mergedResourceState |= D3D12_RESOURCE_STATE_PREDICATION;
-                    break;
-                }
-                case RHI::ScopeAttachmentUsage::Indirect:
-                {
-                    mergedResourceState |= D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
-                    break;
-                }
-                case RHI::ScopeAttachmentUsage::InputAssembly:
-                {
-                    mergedResourceState |= D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER | D3D12_RESOURCE_STATE_INDEX_BUFFER;
-                    break;
-                }
-#ifdef O3DE_DX12_VRS_SUPPORT
-                case RHI::ScopeAttachmentUsage::ShadingRate:
-                {
-                    mergedResourceState |= D3D12_RESOURCE_STATE_SHADING_RATE_SOURCE;
-                    break;
-                }
-#endif
-                case RHI::ScopeAttachmentUsage::Uninitialized:
-                default:
-                    AZ_Assert(false, "ScopeAttachmentUsage is Uninitialized or not supported");
-                    break;
-                }
+            case RHI::ScopeAttachmentUsage::RenderTarget:
+            {
+                resourceState |= D3D12_RESOURCE_STATE_RENDER_TARGET;
+                break;
             }
-            return mergedResourceState;
+
+            case RHI::ScopeAttachmentUsage::DepthStencil:
+            {
+                    resourceState |= RHI::CheckBitsAny(scopeAttachment.GetAccess(), RHI::ScopeAttachmentAccess::Write)
+                        ? D3D12_RESOURCE_STATE_DEPTH_WRITE
+                        : D3D12_RESOURCE_STATE_DEPTH_READ;
+                break;
+            }
+
+            case RHI::ScopeAttachmentUsage::Shader:
+            {
+                    resourceState |= RHI::CheckBitsAny(scopeAttachment.GetAccess(), RHI::ScopeAttachmentAccess::Write)
+                        ? ReadWriteState[hardwareQueueClassIdx]
+                        : ReadState[hardwareQueueClassIdx];
+                break;
+            }
+            case RHI::ScopeAttachmentUsage::Copy:
+            {
+                    resourceState |= RHI::CheckBitsAny(scopeAttachment.GetAccess(), RHI::ScopeAttachmentAccess::Write)
+                        ? D3D12_RESOURCE_STATE_COPY_DEST
+                        : D3D12_RESOURCE_STATE_COPY_SOURCE;
+                break;
+            }
+            case RHI::ScopeAttachmentUsage::Resolve:
+            {
+                resourceState |= D3D12_RESOURCE_STATE_RESOLVE_DEST;
+                break;
+            }
+            case RHI::ScopeAttachmentUsage::Predication:
+            {
+                resourceState |= D3D12_RESOURCE_STATE_PREDICATION;
+                break;
+            }
+            case RHI::ScopeAttachmentUsage::Indirect:
+            {
+                resourceState |= D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
+                break;
+            }
+            case RHI::ScopeAttachmentUsage::InputAssembly:
+            {
+                resourceState |= D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER | D3D12_RESOURCE_STATE_INDEX_BUFFER;
+                break;
+            }
+#ifdef O3DE_DX12_VRS_SUPPORT
+            case RHI::ScopeAttachmentUsage::ShadingRate:
+            {
+                resourceState |= D3D12_RESOURCE_STATE_SHADING_RATE_SOURCE;
+                break;
+            }
+#endif
+            case RHI::ScopeAttachmentUsage::Uninitialized:
+            default:
+                AZ_Assert(false, "ScopeAttachmentUsage is Uninitialized or not supported");
+                break;
+            }
+            return resourceState;
         }
 
         AZStd::optional<D3D12_RESOURCE_STATES> FrameGraphCompiler::GetDiscardResourceState(const RHI::ScopeAttachment& scopeAttachment, D3D12_RESOURCE_FLAGS bindflags)
@@ -497,13 +493,13 @@ namespace AZ
                             if (previousScope)
                             {
                                 logger.LogEpilogueTransition(*previousScope);
-                                previousScope->QueueEpilogueTransition(transition, barrierState);
+                                transition = previousScope->QueueEpilogueTransition(transition, barrierState);
                             }
                         }
                         logger.SetStateBefore(transition.StateBefore);
                         transition.StateBefore = transition.StateAfter;
+                        image.SetAttachmentState(transition.StateAfter, transition.Subresource);
                     }
-                    image.SetAttachmentState(transition.StateAfter);
                 }
             }
             
@@ -519,7 +515,6 @@ namespace AZ
                 {
                     transition.StateBefore = subresourceState.m_state;
                     transition.Subresource = subresourceState.m_subresourceIndex;
-
                     /**
                      * We have all the information we need to transition the attachment. The transition
                      * is occurring between two scopes (excluding the first scope), and each scope could be
@@ -540,13 +535,13 @@ namespace AZ
                     {
                         // We can just queue the transition on the scope directly.
                         logger.LogPrologueTransition(scopeAfter);
-                        if (scopeAttachment->HasUsage(RHI::ScopeAttachmentUsage::Resolve))
+                        if (scopeAttachment->GetUsage() == RHI::ScopeAttachmentUsage::Resolve)
                         {
-                            scopeAfter.QueueResolveTransition(transition, barrierState);
+                            transition = scopeAfter.QueueResolveTransition(transition, barrierState);
                         }
                         else
                         {
-                            scopeAfter.QueuePrologueTransition(transition, barrierState);
+                            transition = scopeAfter.QueuePrologueTransition(transition, barrierState);
                         }
                     }
 
@@ -615,7 +610,7 @@ namespace AZ
                                 logger.SetStateBefore(transition.StateBefore);
                                 logger.SetStateAfter(transition.StateAfter);
                                 logger.LogPrologueTransition(scopeAfter);
-                                scopeAfter.QueuePrologueTransition(transition, barrierState);
+                                transition = scopeAfter.QueuePrologueTransition(transition, barrierState);
                             }
 
                             // Moving into copy queue.
@@ -628,14 +623,14 @@ namespace AZ
                                 // since state promotion will take care of it.
                                 logger.SetStateAfter(transitionCopy.StateAfter);
                                 logger.LogEpilogueTransition(*scopeBefore);
-                                scopeBefore->QueueEpilogueTransition(transitionCopy, barrierState);
+                                transition = scopeBefore->QueueEpilogueTransition(transitionCopy, barrierState);
                             }
 
                             // Moving between compute / graphics queue.
                             else
                             {
                                 logger.LogEpilogueTransition(*scopeBefore);
-                                scopeBefore->QueueEpilogueTransition(transition, barrierState);
+                                transition = scopeBefore->QueueEpilogueTransition(transition, barrierState);
                             }
                         }
                     }
@@ -646,13 +641,13 @@ namespace AZ
                     {
                         transition.StateBefore = transition.StateAfter;
                         transition.StateAfter = D3D12_RESOURCE_STATE_RESOLVE_SOURCE;
-                        scopeAfter.QueueResolveTransition(transition, barrierState);
+                        transition = scopeAfter.QueueResolveTransition(transition, barrierState);
                     }
+                    image.SetAttachmentState(transition.StateAfter, transition.Subresource);
                 }
 
                 scopeAttachment = scopeAttachment->GetNext();
-                image.SetAttachmentState(transition.StateAfter, &viewRange);
-                scopeBefore = &scopeAfter;
+                scopeBefore = !scopeAttachment || scopeAfter.GetId() != scopeAttachment->GetScope().GetId() ? &scopeAfter : scopeBefore;
                 logger.SetStateBefore(transition.StateBefore);
             }
 
@@ -669,8 +664,8 @@ namespace AZ
                     transition.StateAfter = D3D12_RESOURCE_STATE_COMMON;
                     logger.SetStateAfter(transition.StateAfter);
                     logger.LogEpilogueTransition(*scopeBefore);
-                    scopeBefore->QueueEpilogueTransition(transition);
-                    image.SetAttachmentState(transition.StateAfter);
+                    transition = scopeBefore->QueueEpilogueTransition(transition);
+                    image.SetAttachmentState(transition.StateAfter, transition.Subresource);
                 }
             }
         }

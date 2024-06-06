@@ -75,7 +75,7 @@ namespace AZ
             desc.m_imageViewDescriptor = m_displayMapperLut.m_lutImageViewDescriptor;
             desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::DontCare;
 
-            frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read);
+            frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentStage::FragmentShader);
 
             frameGraph.SetEstimatedItemCount(1);
         }
