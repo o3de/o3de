@@ -76,7 +76,6 @@
 #include <Editor/EditorViewportSettings.h>
 #include <Editor/EditorViewportCamera.h>
 #include <Editor/Util/PathUtil.h>
-#include <Editor/Objects/EntityObject.h>
 #include "CryEdit.h"
 #include "Undo/Undo.h"
 
@@ -85,8 +84,6 @@
 #include <QWidgetAction>
 #include <QHBoxLayout>
 #include "MainWindow.h"
-
-#include "Include/IObjectManager.h"
 
 #include <AzCore/std/algorithm.h>
 
@@ -492,11 +489,6 @@ void SandboxIntegrationManager::OnPrepareForContextReset()
     // Deselect everything.
     AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
         &AzToolsFramework::ToolsApplicationRequests::Bus::Events::SetSelectedEntities, AzToolsFramework::EntityIdList());
-
-    std::vector<CBaseObject*> objects;
-    objects.reserve(128);
-    IObjectManager* objectManager = GetIEditor()->GetObjectManager();
-    objectManager->FindObjectsOfType(OBJTYPE_AZENTITY, objects);
 }
 
 void SandboxIntegrationManager::OnActionRegistrationHook()

@@ -31,7 +31,6 @@ struct QtViewPane;
 class QMainWindow;
 struct QMetaObject;
 
-class CBaseObject;
 class CCryEditDoc;
 class CAnimationContext;
 class CTrackViewSequenceManager;
@@ -456,11 +455,6 @@ struct IEditor
     virtual CGameEngine* GetGameEngine() = 0;
     virtual CDisplaySettings* GetDisplaySettings() = 0;
     //! Create new object
-    virtual CBaseObject* NewObject(const char* typeName, const char* fileName = "", const char* name = "", float x = 0.0f, float y = 0.0f, float z = 0.0f, bool modifyDoc = true) = 0;
-    //! Delete object
-    virtual void DeleteObject(CBaseObject* obj) = 0;
-    //! Get access to object manager.
-    virtual struct IObjectManager* GetObjectManager() = 0;
     virtual CSettingsManager* GetSettingsManager() = 0;
     //! Get Music Manager.
     virtual CMusicManager* GetMusicManager() = 0;
@@ -620,9 +614,6 @@ struct IEditor
     virtual void ReloadTemplates() = 0;
     virtual void ShowStatusText(bool bEnable) = 0;
 
-    // Provides a way to extend the context menu of an object. The function gets called every time the menu is opened.
-    typedef AZStd::function<void(QMenu*, const CBaseObject*)> TContextMenuExtensionFunc;
-    virtual void RegisterObjectContextMenuExtension(TContextMenuExtensionFunc func) = 0;
 
     virtual SSystemGlobalEnvironment* GetEnv() = 0;
     virtual IImageUtil* GetImageUtil() = 0;  // Vladimir@conffx
