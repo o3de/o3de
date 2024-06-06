@@ -116,6 +116,7 @@ namespace AZ::DX12
 
     bool ShaderUtils::SignByteCode(ShaderByteCode& bytecode)
     {
+        // Original signing code from Renderdoc
         struct FileHeader
         {
             uint32_t fourcc; // "DXBC"
@@ -143,8 +144,8 @@ namespace AZ::DX12
             return false;
         }
 
-        MD5_CTX md5ctx = {};
-        MD5_Init(&md5ctx);
+        _MD5_CTX md5ctx = {};
+        _MD5_Init(&md5ctx);
 
         // the hashable data starts immediately after the hash.
         AZStd::byte* data = reinterpret_cast<AZStd::byte*>(&header->containerVersion);
@@ -157,7 +158,7 @@ namespace AZ::DX12
         // MD5 works on 64-byte chunks, process the first set of whole chunks, leaving 0-63 bytes left
         // over
         uint32_t leftoverLength = length % 64;
-        MD5_Update(&md5ctx, data, length - leftoverLength);
+        _MD5_Update(&md5ctx, data, length - leftoverLength);
 
         data += length - leftoverLength;
 
@@ -189,26 +190,28 @@ namespace AZ::DX12
         if (leftoverLength >= 56)
         {
             // pass in the leftover data padded out to 64 bytes with zeroes
-            MD5_Update(&md5ctx, data, leftoverLength);
+            _MD5_Update(&md5ctx, data, leftoverLength);
 
             block[0] = 0x80; // first padding bit is 1
-            MD5_Update(&md5ctx, block, 64 - leftoverLength);
+            _MD5_Update(&md5ctx, block, 64 - leftoverLength);
 
             // the final block contains the number of bits in the first dword, and the weird upper bits
             block[0] = numBits;
             block[15] = numBitsPart2;
 
             // process this block directly, we're replacing the call to MD5_Final here manually
-            MD5_Update(&md5ctx, block, 64);
+            _MD5_Update(&md5ctx, block, 64);
         }
         else
         {
             // the leftovers mean we can put the padding inside the final block. But first we pass the "low"
             // number of bits:
-            MD5_Update(&md5ctx, &numBits, sizeof(numBits));
+            _MD5_Update(&md5ctx, &numBits, sizeof(numBits));
 
             if (leftoverLength)
-                MD5_Update(&md5ctx, data, leftoverLength);
+            {
+                _MD5_Update(&md5ctx, data, leftoverLength);
+            }
 
             uint32_t paddingBytes = 64 - leftoverLength - 4;
 
@@ -216,15 +219,15 @@ namespace AZ::DX12
             // leftovers and the first part of the bit length above.
             block[0] = 0x80;
             // then add the remainder of the 'length' here in the final part of the block
-            memcpy(((AZStd::byte*)block) + paddingBytes - 4, &numBitsPart2, 4);
+            ::memcpy(((AZStd::byte*)block) + paddingBytes - 4, &numBitsPart2, 4);
 
-            MD5_Update(&md5ctx, block, paddingBytes);
+            _MD5_Update(&md5ctx, block, paddingBytes);
         }
 
-        header->hashValue[0] = md5ctx.A;
-        header->hashValue[1] = md5ctx.B;
-        header->hashValue[2] = md5ctx.C;
-        header->hashValue[3] = md5ctx.D;
+        header->hashValue[0] = md5ctx.a;
+        header->hashValue[1] = md5ctx.b;
+        header->hashValue[2] = md5ctx.c;
+        header->hashValue[3] = md5ctx.d;
 
         return true;
     }

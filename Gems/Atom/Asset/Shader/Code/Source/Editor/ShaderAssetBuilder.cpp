@@ -202,6 +202,14 @@ namespace AZ
                 response.m_sourceFileDependencyList.emplace_back(AZStd::move(includeFileDependency));
             }
 
+            AZStd::unordered_map<AZStd::string, AZ::IO::FixedMaxPath> configFiles = ShaderBuildArgumentsManager::DiscoverConfigurationFiles();
+            for (const auto& pair : configFiles)
+            {
+                AssetBuilderSDK::SourceFileDependency includeFileDependency;
+                includeFileDependency.m_sourceFileDependencyPath = pair.second.c_str();
+                response.m_sourceFileDependencyList.emplace_back(AZStd::move(includeFileDependency));
+            }
+
             for (const AssetBuilderSDK::PlatformInfo& platformInfo : request.m_enabledPlatforms)
             {
                 AZ_TraceContext("For platform", platformInfo.m_identifier.data());
