@@ -55,7 +55,6 @@ namespace AZ
     AZ_TYPE_INFO_SPECIALIZE(Multiplayer::MultiplayerAgentType, "{53EA1938-5FFB-4305-B50A-D20730E8639B}");
 }
 
-#pragma optimize("", off)
 
 namespace AZ::ConsoleTypeHelpers
 {
@@ -1979,4 +1978,3 @@ namespace Multiplayer
     }
     AZ_CONSOLEFREEFUNC(disconnect, AZ::ConsoleFunctorFlags::DontReplicate, "Disconnects any open multiplayer connections");
 } // namespace Multiplayer
-#pragma optimize("", on)
