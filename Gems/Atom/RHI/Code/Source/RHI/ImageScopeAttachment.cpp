@@ -19,8 +19,9 @@ namespace AZ::RHI
         FrameAttachment& attachment,
         ScopeAttachmentUsage usage,
         ScopeAttachmentAccess access,
+        ScopeAttachmentStage stage,
         const ImageScopeAttachmentDescriptor& descriptor)
-        : ScopeAttachment(scope, attachment, usage, access)
+        : ScopeAttachment(scope, attachment, usage, access, stage)
         , m_descriptor{ descriptor }
     {
         if (m_descriptor.m_loadStoreAction.m_loadAction == AttachmentLoadAction::Clear ||
@@ -47,7 +48,7 @@ namespace AZ::RHI
 
     bool ImageScopeAttachment::IsBeingResolved() const
     {
-        if(!HasUsage(ScopeAttachmentUsage::RenderTarget))
+        if(GetUsage() != ScopeAttachmentUsage::RenderTarget)
         {
             return false;
         }
@@ -91,5 +92,10 @@ namespace AZ::RHI
     ImageScopeAttachment* ImageScopeAttachment::GetNext()
     {
         return static_cast<ImageScopeAttachment*>(ScopeAttachment::GetNext());
+    }
+
+    const ScopeAttachmentDescriptor& ImageScopeAttachment::GetScopeAttachmentDescriptor() const
+    {
+        return GetDescriptor();
     }
 }

@@ -67,7 +67,7 @@ namespace AZ::RHI
             {
                 AZ_Printf(
                     "FrameGraph", "\t\t[Usage]:\t%s\n",
-                            scopeAttachment->GetUsageTypes().c_str());
+                            scopeAttachment->GetTypeName());
 
                 AZ_Printf(
                     "FrameGraph", "\t\t[Scope]:\t%s\n\n",
@@ -103,7 +103,7 @@ namespace AZ::RHI
             {
                 AZ_Printf("FrameGraph", "\t\t\t[Name: %s][Type: %s]\n",
                     scopeAttachment->GetFrameAttachment().GetId().GetCStr(),
-                    scopeAttachment->GetUsageTypes().c_str());
+                    scopeAttachment->GetTypeName());
             };
 
             if (scope->GetImageAttachments().size())
@@ -202,8 +202,8 @@ namespace AZ::RHI
                     AZStd::string transitionName = AZStd::string::format(
                         "[%s]: [%s] -> [%s]",
                         attachmentId.GetCStr(),
-                        scopeAttachmentPrev->GetUsageTypes().c_str(),
-                        scopeAttachmentCurr->GetUsageTypes().c_str());
+                        scopeAttachmentPrev->GetTypeName(),
+                        scopeAttachmentCurr->GetTypeName());
 
                     outputText += AZStd::string::format(
                         "\t\"%s\" -> \"%s\" [color=indigo, label=\"%s\", fontcolor=indigo",
@@ -225,7 +225,7 @@ namespace AZ::RHI
                         attachmentId.GetCStr(),
                         scopeAttachmentCurr->GetScope().GetId().GetCStr(),
                         attachmentId.GetCStr(),
-                        scopeAttachmentCurr->GetUsageTypes().c_str());
+                        scopeAttachmentCurr->GetTypeName());
                 }
             }
 

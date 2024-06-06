@@ -38,6 +38,7 @@ namespace AZ
             : RenderPass(descriptor)
             , m_passDescriptor(descriptor)
         {
+            m_defaultShaderAttachmentStage = RHI::ScopeAttachmentStage::FragmentShader;
             LoadShader();
         }
 

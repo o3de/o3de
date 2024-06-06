@@ -517,6 +517,9 @@ namespace AZ
             //! Optional data used during pass initialization
             AZStd::shared_ptr<PassData> m_passData = nullptr;
 
+            //! Default RHI::ScopeAttachmentStage value for all pass attachments of usage RHI::ScopeAttachmentUsage::Shader
+            RHI::ScopeAttachmentStage m_defaultShaderAttachmentStage = RHI::ScopeAttachmentStage::AnyGraphics;
+
         private:
             // Return the Timestamp result of this pass
             virtual TimestampResult GetTimestampResultInternal() const { return TimestampResult(); }

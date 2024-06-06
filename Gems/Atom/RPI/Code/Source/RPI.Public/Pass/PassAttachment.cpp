@@ -266,6 +266,7 @@ namespace AZ
             m_shaderInputArrayIndex = slot.m_shaderInputArrayIndex;
             m_slotType = slot.m_slotType;
             m_scopeAttachmentUsage = slot.m_scopeAttachmentUsage;
+            m_scopeAttachmentStage = slot.m_scopeAttachmentStage;
 
             m_unifiedScopeDesc.m_loadStoreAction = slot.m_loadStoreAction;
             if (slot.m_imageViewDesc != nullptr)

@@ -59,6 +59,8 @@ namespace AZ
             m_dispatchItem.m_arguments = dispatchArgs;
 
             LoadShader(supervariant);
+
+            m_defaultShaderAttachmentStage = RHI::ScopeAttachmentStage::ComputeShader;
         }
 
         void ComputePass::LoadShader(AZ::Name supervariant)

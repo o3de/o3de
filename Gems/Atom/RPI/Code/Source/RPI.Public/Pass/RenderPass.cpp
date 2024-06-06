@@ -235,12 +235,20 @@ namespace AZ
                     {
                     case RHI::AttachmentType::Image:
                     {
-                        frameGraph.UseAttachment(attachmentBinding.m_unifiedScopeDesc.GetAsImage(), attachmentBinding.GetAttachmentAccess(), attachmentBinding.m_scopeAttachmentUsage);
+                        frameGraph.UseAttachment(
+                            attachmentBinding.m_unifiedScopeDesc.GetAsImage(),
+                            attachmentBinding.GetAttachmentAccess(),
+                            attachmentBinding.m_scopeAttachmentUsage,
+                            attachmentBinding.m_scopeAttachmentStage);
                         break;
                     }
                     case RHI::AttachmentType::Buffer:
                     {
-                        frameGraph.UseAttachment(attachmentBinding.m_unifiedScopeDesc.GetAsBuffer(), attachmentBinding.GetAttachmentAccess(), attachmentBinding.m_scopeAttachmentUsage);
+                        frameGraph.UseAttachment(
+                            attachmentBinding.m_unifiedScopeDesc.GetAsBuffer(),
+                            attachmentBinding.GetAttachmentAccess(),
+                            attachmentBinding.m_scopeAttachmentUsage,
+                            attachmentBinding.m_scopeAttachmentStage);
                         break;
                     }
                     default:
