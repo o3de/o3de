@@ -13,6 +13,7 @@
 #include <AzCore/PlatformIncl.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4996, "-Wunknown-warning-option")
+#include <aws/core/VersionConfig.h>
 #include <aws/core/utils/logging/LogSystemInterface.h>
 AZ_POP_DISABLE_WARNING
 #else
@@ -62,13 +63,16 @@ namespace AWSNativeSDKInit
 #else
         void Log(Aws::Utils::Logging::LogLevel logLevel, const char* tag, const char* formatStr, ...);
 #endif
+
+#if (AWS_SDK_VERSION_MAJOR == 1) && (AWS_SDK_VERSION_MINOR >= 11) && (AWS_SDK_VERSION_PATCH >= 344)
         /**
          * va_list overload for Log, avoid using this as well.
          */
 #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
-        virtual void vaLog(Aws::Utils::Logging::LogLevel logLevel, const char* tag, const char* formatStr, va_list args) override { };
+        virtual void vaLog(Aws::Utils::Logging::LogLevel logLevel, const char* tag, const char* formatStr, va_list args) override;
 #else
-        virtual void vaLog(Aws::Utils::Logging::LogLevel logLevel, const char* tag, const char* formatStr, va_list args) { };
+        virtual void vaLog(Aws::Utils::Logging::LogLevel logLevel, const char* tag, const char* formatStr, va_list args);
+#endif
 #endif
 
         /**

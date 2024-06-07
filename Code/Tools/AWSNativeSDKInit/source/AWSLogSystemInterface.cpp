@@ -79,6 +79,23 @@ namespace AWSNativeSDKInit
 
     }
 
+#if (AWS_SDK_VERSION_MAJOR == 1) && (AWS_SDK_VERSION_MINOR >= 11) && (AWS_SDK_VERSION_PATCH >= 344)
+    void AWSLogSystemInterface::vaLog(Aws::Utils::Logging::LogLevel logLevel, const char* tag, const char* formatStr, va_list args)
+    {
+        if (!ShouldLog(logLevel))
+        {
+            return;
+        }
+
+        char message[MAX_MESSAGE_LENGTH];
+        va_start(args, formatStr);
+        azvsnprintf(message, MAX_MESSAGE_LENGTH, formatStr, args);
+        va_end(args);
+
+        ForwardAwsApiLogMessage(logLevel, tag, message);
+    }
+#endif
+
     /**
     * Writes the stream to the output stream.
     */
