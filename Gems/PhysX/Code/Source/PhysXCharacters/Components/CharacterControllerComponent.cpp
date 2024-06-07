@@ -387,6 +387,10 @@ namespace PhysX
         AZ_Warning("CharacterControllerComponent", index < m_characterConfig->m_materialSlots.GetSlotsCount(),
             "SetMaterial(): Invalid index %li passed for Entity %s.", index, GetEntityId().ToString().c_str());
         m_characterConfig->m_materialSlots.SetMaterialAsset(index, materialAsset);
+
+        // Re-enable physics to apply the new material - this is a bit of a hack, but it's the easiest way to ensure the material is applied
+        DisablePhysics();
+        EnablePhysics();
     }
 
     void CharacterControllerComponent::SetTag(const AZ::Crc32& tag)
