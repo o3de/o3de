@@ -26,7 +26,7 @@ The Docker script provides the following arguments for building the Docker image
 ## Examples
 The following example build commands are based on the general use case for O3DE. 
 
-If there are any ROS2 gem based project that will be created or used by the image, then you will need to follow the **ROS Example** section below.
+If there are any ROS2 gem based projects that will be created or used by the image, then you will need to follow the **ROS Example** section below.
 
 You can build a minimal Docker image that can create or use non-simulation projects using the `ubuntu` input image and either the `jammy` or `noble` input tag. To build a Docker image that supports robotic simulations using ROS, you must use the `ros` input image and either the `humble` or `jazzy` input tag. (Refer to the [Docker distribution of ROS](https://hub.docker.com/_/ros/))
 
@@ -80,7 +80,7 @@ These two folders will be added as part of the `docker run` argument list:
 ```
 
 ## Using the current user id and group id
-The Docker image will map the current user and group id to a Docker create user and group when running the container. This will allow reading and writing to the mapped O3DE-specific folders described earlier and will add persistence to the Docker container through the mapped folders. The user id and group id are passed to the Docker run command as two arguments: `UID` and `GID`:
+The Docker image will map the current user and group id to a Docker-created user and group when running the container. This will allow reading and writing to the mapped O3DE-specific folders described earlier and will add persistence to the Docker container through the mapped folders. The user id and group id are passed to the Docker run command as two arguments: `UID` and `GID`:
 
 ```
 --env UID=$(id -u) --env GID=$(id -g)
@@ -95,9 +95,11 @@ xhost +local:root
 docker run --env UID=$(id -u) --env GID=$(id -g) -v "$HOME/docker/o3de/manifest:/home/o3de/.o3de" -v "$HOME/docker/o3de/home:/home/o3de/O3DE" --rm --gpus all -e DISPLAY=:1 -v /tmp/.X11-unix:/tmp/.X11-unix -it amd64/o3de:ubuntu.jammy
 ```
 
-For the ROS container based on the **ROS Humble** example, add the `ros.humble` tag.
+For the ROS container based example, add the `ros.humble` tag.
 ```
 xhost +local:root
 
 docker run --env UID=$(id -u) --env GID=$(id -g) -v "$HOME/docker/o3de/manifest:/home/o3de/.o3de" -v "$HOME/docker/o3de/home:/home/o3de/O3DE" --rm --gpus all -e DISPLAY=:1 -v /tmp/.X11-unix:/tmp/.X11-unix -it amd64/o3de:ros.humble
 ```
+
+Once the Docker container is launched, you will be logged into the O3DE-enabled terminal. At this point, typing in `o3de` in the command line will launch the O3DE Project Manager where you will be able to create, build, and launch O3DE projects.
