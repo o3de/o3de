@@ -749,7 +749,7 @@ namespace Multiplayer
         reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetProviderTicket(packet.GetTicket().c_str());
 
         const char* levelName = AZ::Interface<AzFramework::ILevelSystemLifecycle>::Get()->GetCurrentLevelName();
-        if (!levelName || strlen(levelName) == 0)
+        if (!levelName || *levelName == '\0')
         {
             AZLOG_WARN(
                 "Server does not have a multiplayer level loaded! Make sure the server has a level loaded before accepting clients.");
