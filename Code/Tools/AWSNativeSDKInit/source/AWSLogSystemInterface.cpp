@@ -89,9 +89,7 @@ namespace AWSNativeSDKInit
         }
 
         char message[MAX_MESSAGE_LENGTH];
-        va_start(args, formatStr);
         azvsnprintf(message, MAX_MESSAGE_LENGTH, formatStr, args);
-        va_end(args);
 
         ForwardAwsApiLogMessage(logLevel, tag, message);
     }
