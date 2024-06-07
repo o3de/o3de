@@ -263,7 +263,7 @@ namespace AZ
             shaderVariant.ConfigurePipelineState(pipelineStateDescriptor, shaderVariantId);
 
             m_dispatchItem.m_pipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
-            if (shaderVariant.UseKeyFallback())
+            if (m_drawSrg && shaderVariant.UseKeyFallback())
             {
                 m_drawSrg->SetShaderVariantKeyFallbackValue(shaderVariantId.m_key);
             }

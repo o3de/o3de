@@ -7,7 +7,6 @@
                 , "--namespace=mt"
                 , "--namespace=vk"
                 , "--pad-root-const"
-                , "--sc-options"
         ],
         "dxc": ["-spirv"
               , "-enable-16bit-types"
