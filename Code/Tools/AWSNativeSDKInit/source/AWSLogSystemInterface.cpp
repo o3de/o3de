@@ -79,6 +79,7 @@ namespace AWSNativeSDKInit
 
     }
 
+#if defined(CARBONATED)
 #if (AWS_SDK_VERSION_MAJOR == 1) && (AWS_SDK_VERSION_MINOR >= 11) && (AWS_SDK_VERSION_PATCH >= 344)
     void AWSLogSystemInterface::vaLog(Aws::Utils::Logging::LogLevel logLevel, const char* tag, const char* formatStr, va_list args)
     {
@@ -94,6 +95,7 @@ namespace AWSNativeSDKInit
 
         ForwardAwsApiLogMessage(logLevel, tag, message);
     }
+#endif
 #endif
 
     /**
