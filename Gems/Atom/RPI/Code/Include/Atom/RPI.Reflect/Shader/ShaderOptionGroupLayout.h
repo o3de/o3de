@@ -293,6 +293,11 @@ namespace AZ
             using NameReflectionMapForOptions = RHI::NameIdReflectionMap<ShaderOptionIndex>;
             NameReflectionMapForOptions m_nameReflectionForOptions;
             HashValue64 m_hash = HashValue64{ 0 };
+
+            // True if all shader options are using specialization constants
+            bool m_isFullySpecialized = false;
+            // True if at least one shader options is using specialization constants
+            bool m_useSpecializationConstants = false;
         };
     } // namespace RPI
 

@@ -460,11 +460,13 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderOptionGroupLayout>()
-                    ->Version(2)
+                    ->Version(3)
                     ->Field("m_bitMask", &ShaderOptionGroupLayout::m_bitMask)
                     ->Field("m_options", &ShaderOptionGroupLayout::m_options)
                     ->Field("m_nameReflectionForOptions", &ShaderOptionGroupLayout::m_nameReflectionForOptions)
                     ->Field("m_hash", &ShaderOptionGroupLayout::m_hash)
+                    ->Field("m_isFullySpecialized", &ShaderOptionGroupLayout::m_isFullySpecialized)
+                    ->Field("m_useSpecializationConstants", &ShaderOptionGroupLayout::m_useSpecializationConstants)
                     ;
             }
 
@@ -496,24 +498,12 @@ namespace AZ
 
         bool ShaderOptionGroupLayout::IsFullySpecialized() const
         {
-            return !AZStd::any_of(
-                m_options.begin(),
-                m_options.end(),
-                [](const ShaderOptionDescriptor& elem)
-                {
-                    return elem.GetSpecializationId() < 0;
-                });
+            return m_isFullySpecialized;
         }
 
         bool ShaderOptionGroupLayout::UseSpecializationConstants() const
         {
-            return AZStd::any_of(
-                m_options.begin(),
-                m_options.end(),
-                [](const ShaderOptionDescriptor& elem)
-                {
-                    return elem.GetSpecializationId() >= 0;
-                });
+            return m_useSpecializationConstants;
         }
 
         void ShaderOptionGroupLayout::Clear()
@@ -536,6 +526,20 @@ namespace AZ
                 hash = TypeHash64(option.GetHash(), hash);
             }
             m_hash = hash;
+            m_isFullySpecialized = !AZStd::any_of(
+                m_options.begin(),
+                m_options.end(),
+                [](const ShaderOptionDescriptor& elem)
+                {
+                    return elem.GetSpecializationId() < 0;
+                });
+            m_useSpecializationConstants = AZStd::any_of(
+                m_options.begin(),
+                m_options.end(),
+                [](const ShaderOptionDescriptor& elem)
+                {
+                    return elem.GetSpecializationId() >= 0;
+                });
         }
 
         bool ShaderOptionGroupLayout::ValidateIsFinalized() const
