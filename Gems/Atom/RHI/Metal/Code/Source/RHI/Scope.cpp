@@ -94,7 +94,9 @@ namespace AZ
             
             for (RHI::ImageScopeAttachment* scopeAttachment : GetImageAttachments())
             {
-                m_isWritingToSwapChainScope = scopeAttachment->IsSwapChainAttachment() && scopeAttachment->HasUsage(RHI::ScopeAttachmentUsage::RenderTarget);
+                m_isWritingToSwapChainScope = 
+                    scopeAttachment->IsSwapChainAttachment() &&
+                    scopeAttachment->GetUsage() == RHI::ScopeAttachmentUsage::RenderTarget;
                 if(m_isWritingToSwapChainScope)
                 {
                     //The way Metal works is that we ask the drivers for the swapchain texture right before we write to it.
@@ -108,7 +110,8 @@ namespace AZ
                     {
                         frameCaptureScopeAttachment = frameCaptureScopeAttachment->GetNext();
                         if(frameCaptureScopeAttachment &&
-                           frameCaptureScopeAttachment->HasAccessAndUsage(RHI::ScopeAttachmentUsage::Copy, RHI::ScopeAttachmentAccess::Read))
+                           frameCaptureScopeAttachment->GetUsage() == RHI::ScopeAttachmentUsage::Copy &&
+                           frameCaptureScopeAttachment->GetAccess() == RHI::ScopeAttachmentAccess::Read)
                         {
                             m_isSwapChainAndFrameCaptureEnabled = true;
                             break;
@@ -164,113 +167,125 @@ namespace AZ
                 {
                     mtlStoreActionStencil = MTLStoreActionStore;
                 }
-                const AZStd::vector<RHI::ScopeAttachmentUsageAndAccess>& usagesAndAccesses = scopeAttachment->GetUsageAndAccess();
-                for (const RHI::ScopeAttachmentUsageAndAccess& usageAndAccess : usagesAndAccesses)
-                {
-                    switch (usageAndAccess.m_usage)
-                    {
-                        case RHI::ScopeAttachmentUsage::Shader:
-                        {
-                            break;
-                        }
-                        case RHI::ScopeAttachmentUsage::RenderTarget:
-                        {
-                            id<MTLTexture> renderTargetTexture = imageViewMtlTexture;
-                            m_renderPassDescriptor.colorAttachments[colorAttachmentIndex].texture = renderTargetTexture;
-                            
-                            if(!m_isWritingToSwapChainScope)
-                            {
-                                //Cubemap/cubemaparray and 3d textures have restrictions placed on them by the
-                                //drivers when creating a new texture view. Hence we cant get a view with subresource range
-                                //of the original texture. As a result in order to write into specific slice or depth plane
-                                //we specify it here. It also means that we cant write into these texturee types via a compute shader
-                                const RHI::ImageViewDescriptor& imgViewDescriptor = imageView->GetDescriptor();
-                                if(renderTargetTexture.textureType == MTLTextureTypeCube || renderTargetTexture.textureType == MTLTextureTypeCubeArray)
-                                {
-                                    m_renderPassDescriptor.colorAttachments[colorAttachmentIndex].slice = imgViewDescriptor.m_arraySliceMin;
-                                }
-                                else if(renderTargetTexture.textureType == MTLTextureType3D)
-                                {
-                                    m_renderPassDescriptor.colorAttachments[colorAttachmentIndex].depthPlane = imgViewDescriptor.m_depthSliceMin;
-                                }
-                            }
-                            
-                            MTLRenderPassColorAttachmentDescriptor* colorAttachment = m_renderPassDescriptor.colorAttachments[colorAttachmentIndex];
-                            colorAttachment.loadAction = mtlLoadAction;
-                            colorAttachment.storeAction = mtlStoreAction;
 
-                            RHI::ClearValue clearVal = bindingDescriptor.m_loadStoreAction.m_clearValue;
-                            if (mtlLoadAction == MTLLoadActionClear)
-                            {
-                                m_isClearNeeded = true;
-                                if(clearVal.m_type == RHI::ClearValueType::Vector4Float)
-                                {
-                                    colorAttachment.clearColor = MTLClearColorMake(clearVal.m_vector4Float[0], clearVal.m_vector4Float[1], clearVal.m_vector4Float[2], clearVal.m_vector4Float[3]);
-                                }
-                                else if(clearVal.m_type == RHI::ClearValueType::Vector4Uint)
-                                {
-                                    colorAttachment.clearColor = MTLClearColorMake(clearVal.m_vector4Uint[0], clearVal.m_vector4Uint[1], clearVal.m_vector4Uint[2], clearVal.m_vector4Uint[3]);
-                                }
-                            }
-                            
-                            ApplyMSAACustomPositions(imageView);
-                            attachmentsIndex[bindingDescriptor.m_attachmentId] = ResolveAttachmentData{colorAttachmentIndex, m_renderPassDescriptor, RHI::ScopeAttachmentUsage::RenderTarget, isStoreAction};
-                            colorAttachmentIndex++;
-                            break;
-                        }
-                        case RHI::ScopeAttachmentUsage::DepthStencil:
+                switch (scopeAttachment->GetUsage())
+                {
+                    case RHI::ScopeAttachmentUsage::Shader:
+                    {
+                        break;
+                    }
+                    case RHI::ScopeAttachmentUsage::RenderTarget:
+                    {
+                        id<MTLTexture> renderTargetTexture = imageViewMtlTexture;
+                        m_renderPassDescriptor.colorAttachments[colorAttachmentIndex].texture = renderTargetTexture;
+                        
+                        if(!m_isWritingToSwapChainScope)
                         {
-                            m_renderPassDescriptor.depthAttachment.texture = imageViewMtlTexture;
-                            if(IsDepthStencilMerged(imageView->GetSpecificFormat()))
+                            //Cubemap/cubemaparray and 3d textures have restrictions placed on them by the
+                            //drivers when creating a new texture view. Hence we cant get a view with subresource range
+                            //of the original texture. As a result in order to write into specific slice or depth plane
+                            //we specify it here. It also means that we cant write into these texturee types via a compute shader
+                            const RHI::ImageViewDescriptor& imgViewDescriptor = imageView->GetDescriptor();
+                            if(renderTargetTexture.textureType == MTLTextureTypeCube || renderTargetTexture.textureType == MTLTextureTypeCubeArray)
                             {
-                                m_renderPassDescriptor.stencilAttachment.texture = imageViewMtlTexture;
+                                m_renderPassDescriptor.colorAttachments[colorAttachmentIndex].slice = imgViewDescriptor.m_arraySliceMin;
                             }
-                            
+                            else if(renderTargetTexture.textureType == MTLTextureType3D)
+                            {
+                                m_renderPassDescriptor.colorAttachments[colorAttachmentIndex].depthPlane = imgViewDescriptor.m_depthSliceMin;
+                            }
+                        }
+                        
+                        MTLRenderPassColorAttachmentDescriptor* colorAttachment = m_renderPassDescriptor.colorAttachments[colorAttachmentIndex];
+                        colorAttachment.loadAction = mtlLoadAction;
+                        colorAttachment.storeAction = mtlStoreAction;
+
+                        RHI::ClearValue clearVal = bindingDescriptor.m_loadStoreAction.m_clearValue;
+                        if (mtlLoadAction == MTLLoadActionClear)
+                        {
+                            m_isClearNeeded = true;
+                            if(clearVal.m_type == RHI::ClearValueType::Vector4Float)
+                            {
+                                colorAttachment.clearColor = MTLClearColorMake(clearVal.m_vector4Float[0], clearVal.m_vector4Float[1], clearVal.m_vector4Float[2], clearVal.m_vector4Float[3]);
+                            }
+                            else if(clearVal.m_type == RHI::ClearValueType::Vector4Uint)
+                            {
+                                colorAttachment.clearColor = MTLClearColorMake(clearVal.m_vector4Uint[0], clearVal.m_vector4Uint[1], clearVal.m_vector4Uint[2], clearVal.m_vector4Uint[3]);
+                            }
+                        }
+                        
+                        ApplyMSAACustomPositions(imageView);
+                        attachmentsIndex[bindingDescriptor.m_attachmentId] = ResolveAttachmentData{colorAttachmentIndex, m_renderPassDescriptor, RHI::ScopeAttachmentUsage::RenderTarget, isStoreAction};
+                        colorAttachmentIndex++;
+                        break;
+                    }
+                    case RHI::ScopeAttachmentUsage::DepthStencil:
+                    {
+                        // We can have multiple DepthStencil attachments in order to specify depth and stencil access separately.
+                        // One attachment is depth only, and the other is stencil only.
+                        const RHI::ImageViewDescriptor& viewDescriptor = imageView->GetDescriptor();
+                        if(RHI::CheckBitsAll(viewDescriptor.m_aspectFlags, RHI::ImageAspectFlags::Depth) ||
+                           m_renderPassDescriptor.depthAttachment.texture == nil)
+                        {
                             MTLRenderPassDepthAttachmentDescriptor* depthAttachment = m_renderPassDescriptor.depthAttachment;
-                            MTLRenderPassStencilAttachmentDescriptor* stencilAttachment = m_renderPassDescriptor.stencilAttachment;
+                            depthAttachment.texture = imageViewMtlTexture;
                             depthAttachment.loadAction = mtlLoadAction;
                             depthAttachment.storeAction = mtlStoreAction;
+                            if (bindingDescriptor.m_loadStoreAction.m_clearValue.m_type == RHI::ClearValueType::DepthStencil)
+                            {
+                                m_isClearNeeded = true;
+                                depthAttachment.clearDepth = bindingDescriptor.m_loadStoreAction.m_clearValue.m_depthStencil.m_depth;
+                            }
+                        }
+                        
+                        // Set the stencil only if the format support it and we either have a null stencil or the attachment is stencil only.
+                        if(IsDepthStencilMerged(imageView->GetSpecificFormat()) &&
+                           (RHI::CheckBitsAll(viewDescriptor.m_aspectFlags, RHI::ImageAspectFlags::Stencil) ||
+                            m_renderPassDescriptor.stencilAttachment.texture == nil))
+                        {
+                            MTLRenderPassStencilAttachmentDescriptor* stencilAttachment = m_renderPassDescriptor.stencilAttachment;
+                            stencilAttachment.texture = imageViewMtlTexture;
                             stencilAttachment.loadAction = mtlLoadActionStencil;
                             stencilAttachment.storeAction = mtlStoreActionStencil;
                             if (bindingDescriptor.m_loadStoreAction.m_clearValue.m_type == RHI::ClearValueType::DepthStencil)
                             {
                                 m_isClearNeeded = true;
-                                depthAttachment.clearDepth = bindingDescriptor.m_loadStoreAction.m_clearValue.m_depthStencil.m_depth;
                                 stencilAttachment.clearStencil = bindingDescriptor.m_loadStoreAction.m_clearValue.m_depthStencil.m_stencil;
                             }
-                            ApplyMSAACustomPositions(imageView);
-                            attachmentsIndex[bindingDescriptor.m_attachmentId] = ResolveAttachmentData{-1, m_renderPassDescriptor, RHI::ScopeAttachmentUsage::DepthStencil, isStoreAction};
-                            
-                            break;
                         }
-                        case RHI::ScopeAttachmentUsage::Resolve:
-                        {
-                            auto resolveScopeAttachment = static_cast<const RHI::ResolveScopeAttachment*>(scopeAttachment);
-                            auto resolveAttachmentId = resolveScopeAttachment->GetDescriptor().m_resolveAttachmentId;
-                            AZ_Assert(attachmentsIndex.find(resolveAttachmentId) != attachmentsIndex.end(), "Failed to find resolvable attachment %s", resolveAttachmentId.GetCStr());
-                            ResolveAttachmentData resolveAttachmentData = attachmentsIndex[resolveAttachmentId];
-                            MTLRenderPassDescriptor* renderPassDesc = resolveAttachmentData.m_renderPassDesc;
+                        
+                        ApplyMSAACustomPositions(imageView);
+                        attachmentsIndex[bindingDescriptor.m_attachmentId] = ResolveAttachmentData{-1, m_renderPassDescriptor, RHI::ScopeAttachmentUsage::DepthStencil, isStoreAction};
+                        
+                        break;
+                    }
+                    case RHI::ScopeAttachmentUsage::Resolve:
+                    {
+                        auto resolveScopeAttachment = static_cast<const RHI::ResolveScopeAttachment*>(scopeAttachment);
+                        auto resolveAttachmentId = resolveScopeAttachment->GetDescriptor().m_resolveAttachmentId;
+                        AZ_Assert(attachmentsIndex.find(resolveAttachmentId) != attachmentsIndex.end(), "Failed to find resolvable attachment %s", resolveAttachmentId.GetCStr());
+                        ResolveAttachmentData resolveAttachmentData = attachmentsIndex[resolveAttachmentId];
+                        MTLRenderPassDescriptor* renderPassDesc = resolveAttachmentData.m_renderPassDesc;
 
-                            id<MTLTexture> renderTargetTexture = imageViewMtlTexture;
-                            
-                            MTLStoreAction resolveStoreAction = resolveAttachmentData.m_isStoreAction ? MTLStoreActionStoreAndMultisampleResolve : MTLStoreActionMultisampleResolve;
-                            
-                            if(resolveAttachmentData.m_attachmentUsage == RHI::ScopeAttachmentUsage::RenderTarget)
-                            {
-                                renderPassDesc.colorAttachments[resolveAttachmentData.m_colorAttachmentIndex].resolveTexture = renderTargetTexture;
-                                MTLRenderPassColorAttachmentDescriptor* colorAttachment = renderPassDesc.colorAttachments[resolveAttachmentData.m_colorAttachmentIndex];
-                                colorAttachment.storeAction = resolveStoreAction;
-                            }
-                            else if (resolveAttachmentData.m_attachmentUsage == RHI::ScopeAttachmentUsage::DepthStencil)
-                            {
-                                renderPassDesc.depthAttachment.resolveTexture = renderTargetTexture;
-                                MTLRenderPassDepthAttachmentDescriptor* depthAttachment = renderPassDesc.depthAttachment;
-                                depthAttachment.storeAction = resolveStoreAction;
-                                //Metal drivers support min/max depth resolve filters but there is no way to set them at a higher level yet.
-                            }
-                            m_isResolveNeeded = true;
-                            break;
+                        id<MTLTexture> renderTargetTexture = imageViewMtlTexture;
+                        
+                        MTLStoreAction resolveStoreAction = resolveAttachmentData.m_isStoreAction ? MTLStoreActionStoreAndMultisampleResolve : MTLStoreActionMultisampleResolve;
+                        
+                        if(resolveAttachmentData.m_attachmentUsage == RHI::ScopeAttachmentUsage::RenderTarget)
+                        {
+                            renderPassDesc.colorAttachments[resolveAttachmentData.m_colorAttachmentIndex].resolveTexture = renderTargetTexture;
+                            MTLRenderPassColorAttachmentDescriptor* colorAttachment = renderPassDesc.colorAttachments[resolveAttachmentData.m_colorAttachmentIndex];
+                            colorAttachment.storeAction = resolveStoreAction;
                         }
+                        else if (resolveAttachmentData.m_attachmentUsage == RHI::ScopeAttachmentUsage::DepthStencil)
+                        {
+                            renderPassDesc.depthAttachment.resolveTexture = renderTargetTexture;
+                            MTLRenderPassDepthAttachmentDescriptor* depthAttachment = renderPassDesc.depthAttachment;
+                            depthAttachment.storeAction = resolveStoreAction;
+                            //Metal drivers support min/max depth resolve filters but there is no way to set them at a higher level yet.
+                        }
+                        m_isResolveNeeded = true;
+                        break;
                     }
                 }
             }

@@ -153,6 +153,7 @@ namespace AZ
             D3D12_UNORDERED_ACCESS_VIEW_DESC& unorderedAccessView);
 
         uint16_t ConvertImageAspectToPlaneSlice(RHI::ImageAspect aspect);
+        RHI::ImageAspectFlags ConvertPlaneSliceToImageAspectFlags(uint16_t planeSlice);
 
         void ConvertSamplerState(const RHI::SamplerState& state, D3D12_SAMPLER_DESC& samplerDesc);
 

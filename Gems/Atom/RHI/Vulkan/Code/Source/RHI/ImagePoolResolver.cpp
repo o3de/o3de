@@ -126,6 +126,7 @@ namespace AZ
                 }
 
                 image.SetLayout(barrier.newLayout);
+                image.SetPipelineAccess({ barrier.srcAccessMask, barrier.srcAccessMask });
             }
         }
 

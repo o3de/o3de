@@ -20,7 +20,6 @@
 
 #include <LyShine/Animation/IUiAnimation.h>
 
-#include "Objects/EntityObject.h"
 #include "ViewManager.h"
 #include <Editor/Util/fastlib.h>
 

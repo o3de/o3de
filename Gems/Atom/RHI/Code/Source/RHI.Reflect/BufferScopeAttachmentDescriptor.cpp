@@ -29,4 +29,9 @@ namespace AZ::RHI
         : ScopeAttachmentDescriptor(attachmentId, bufferScopeLoadStoreAction)
         , m_bufferViewDescriptor(bufferViewDescriptor)
     {}
+
+    const BufferViewDescriptor& BufferScopeAttachmentDescriptor::GetViewDescriptor() const
+    {
+        return m_bufferViewDescriptor;
+    }
 }

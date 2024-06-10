@@ -8,7 +8,6 @@
 
 #pragma once
 
-class CBaseObjectsCache;
 class QPoint;
 struct AABB;
 class CViewport;

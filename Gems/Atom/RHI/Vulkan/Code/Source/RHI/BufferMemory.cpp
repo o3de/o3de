@@ -70,6 +70,7 @@ namespace AZ
             RHI::Ptr<VulkanMemoryAllocation> alloc = VulkanMemoryAllocation::Create();
             alloc->Init(device, vmaAlloc);
             m_memoryView = MemoryView(alloc);
+            m_sharingMode = createInfo.m_vkCreateInfo.sharingMode;
             return RHI::ResultCode::Success;
         }
 
@@ -91,6 +92,11 @@ namespace AZ
         const BufferMemory::Descriptor& BufferMemory::GetDescriptor() const
         {
             return m_descriptor;
+        }
+
+        VkSharingMode BufferMemory::GetSharingMode() const
+        {
+            return m_sharingMode;
         }
 
         size_t BufferMemory::GetSize() const

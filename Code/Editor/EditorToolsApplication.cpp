@@ -26,8 +26,6 @@
 #include "GameEngine.h"
 #include "PythonEditorFuncs.h"
 #include "TrackView/TrackViewPythonFuncs.h"
-#include "Include/IObjectManager.h"
-#include "Objects/ObjectManager.h"
 
 namespace EditorInternal
 {

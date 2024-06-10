@@ -40,14 +40,13 @@
 #include <AzToolsFramework/Thumbnails/SourceControlThumbnailBus.h>
 
 // Editor
+#include "QtUtilWin.h"
 #include "Settings.h"
 #include "MainWindow.h"
 #include "CheckOutDialog.h"
 #include "ISourceControl.h"
 #include "Dialogs/Generic/UserOptions.h"
-#include "Include/IObjectManager.h"
 #include "UsedResources.h"
-#include "Objects/BaseObject.h"
 #include "StringHelpers.h"
 #include "AutoDirectoryRestoreFileDialog.h"
 #include "EditorPreferencesDialog.h"

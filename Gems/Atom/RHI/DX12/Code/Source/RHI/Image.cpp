@@ -243,6 +243,28 @@ namespace AZ
             m_attachmentState.Set(range ? *range : RHI::ImageSubresourceRange(GetDescriptor()), state);
         }
 
+        void Image::SetAttachmentState(D3D12_RESOURCE_STATES state, uint32_t subresourceIndex)
+        {
+            const auto& descriptor = GetDescriptor();
+            RHI::ImageSubresourceRange range;
+            if (subresourceIndex == D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES)
+            {
+                range = RHI::ImageSubresourceRange(descriptor);
+            }
+            else
+            {
+                uint16_t mipSlice;
+                uint16_t arraySlice;
+                uint16_t planeSlice;
+                D3D12DecomposeSubresource(
+                    subresourceIndex, descriptor.m_mipLevels, descriptor.m_arraySize, mipSlice, arraySlice, planeSlice);
+                range = RHI::ImageSubresourceRange(mipSlice, mipSlice, arraySlice, arraySlice);
+                range.m_aspectFlags = ConvertPlaneSliceToImageAspectFlags(planeSlice);
+            }
+
+            m_attachmentState.Set(range, state);
+        }
+
         AZStd::vector<Image::SubresourceRangeAttachmentState> Image::GetAttachmentStateByRange(const RHI::ImageSubresourceRange* range /*= nullptr*/) const
         {
             return m_attachmentState.Get(range ? *range : RHI::ImageSubresourceRange(GetDescriptor()));

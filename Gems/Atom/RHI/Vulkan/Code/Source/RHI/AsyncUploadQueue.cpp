@@ -169,6 +169,7 @@ namespace AZ
             m_queue->QueueCommand(AZStd::move(command));
 
             buffer->SetOwnerQueue(m_queue->GetId());
+            buffer->SetPipelineAccess({ VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, 0 });
             auto waitEvent = [buffer]()
             {
                 buffer->SetUploadHandle(RHI::AsyncWorkHandle::Null);
@@ -404,6 +405,7 @@ namespace AZ
 
             image->SetOwnerQueue(m_queue->GetId(), &range);
             image->SetLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &range);
+            image->SetPipelineAccess({ VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, 0 });
             m_queue->QueueCommand(AZStd::move(command));
 
             auto waitEvent = [this, request, image, range]()

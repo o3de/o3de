@@ -95,6 +95,112 @@ namespace AZ::RHI
         }
     }
 
+    AZStd::string ToString(ScopeAttachmentStage attachmentStage)
+    {
+        if (attachmentStage == ScopeAttachmentStage::Uninitialized)
+        {
+            return "Uninitialized";
+        }
+
+        AZStd::string stages;
+        if (CheckBitsAll(attachmentStage, ScopeAttachmentStage::VertexShader))
+        {
+            stages += "VertexShader|";
+        }
+        if (CheckBitsAll(attachmentStage, ScopeAttachmentStage::FragmentShader))
+        {
+            stages += "FragmentShader|";
+        }
+        if (CheckBitsAll(attachmentStage, ScopeAttachmentStage::ComputeShader))
+        {
+            stages += "ComputeShader|";
+        }
+        if (CheckBitsAll(attachmentStage, ScopeAttachmentStage::RayTracingShader))
+        {
+            stages += "RayTracingShader|";
+        }
+        if (CheckBitsAll(attachmentStage, ScopeAttachmentStage::EarlyFragmentTest))
+        {
+            stages += "EarlyFragmentTest|";
+        }
+        if (CheckBitsAll(attachmentStage, ScopeAttachmentStage::LateFragmentTest))
+        {
+            stages += "LateFragmentTest|";
+        }
+        if (CheckBitsAll(attachmentStage, ScopeAttachmentStage::ColorAttachmentOutput))
+        {
+            stages += "ColorAttachmentOutput|";
+        }
+        if (CheckBitsAll(attachmentStage, ScopeAttachmentStage::Copy))
+        {
+            stages += "Copy|";
+        }
+        if (CheckBitsAll(attachmentStage, ScopeAttachmentStage::Predication))
+        {
+            stages += "Predication|";
+        }
+        if (CheckBitsAll(attachmentStage, ScopeAttachmentStage::DrawIndirect))
+        {
+            stages += "DrawIndirect|";
+        }
+        if (CheckBitsAll(attachmentStage, ScopeAttachmentStage::VertexInput))
+        {
+            stages += "VertexInput|";
+        }
+        if (CheckBitsAll(attachmentStage, ScopeAttachmentStage::ShadingRate))
+        {
+            stages += "ShadingRate|";
+        }
+
+        if (!stages.empty())
+        {
+            stages.pop_back();
+        }
+
+        return stages;
+    }
+
+    const char* ToString(ScopeAttachmentUsage usage, ScopeAttachmentAccess acess)
+    {
+        switch (usage)
+        {
+        case ScopeAttachmentUsage::RenderTarget:
+            return "RenderTarget";
+
+        case ScopeAttachmentUsage::DepthStencil:
+            return CheckBitsAny(acess, ScopeAttachmentAccess::Write) ? "DepthStencilReadWrite" : "DepthStencilRead";
+
+        case ScopeAttachmentUsage::SubpassInput:
+            return "SubpassInput";
+
+        case ScopeAttachmentUsage::Shader:
+            return CheckBitsAny(acess, ScopeAttachmentAccess::Write) ? "ShaderReadWrite" : "ShaderRead";
+
+        case ScopeAttachmentUsage::Copy:
+            return CheckBitsAny(acess, ScopeAttachmentAccess::Write) ? "CopyDest" : "CopySource";
+
+        case ScopeAttachmentUsage::Predication:
+            return "Predication";
+
+        case ScopeAttachmentUsage::InputAssembly:
+            return "InputAssembly";
+
+        case ScopeAttachmentUsage::ShadingRate:
+            return "ShadingRate";
+
+        case ScopeAttachmentUsage::Resolve:
+            return "Resolve";
+
+        case ScopeAttachmentUsage::Indirect:
+            return "Indirect";
+
+        case ScopeAttachmentUsage::Uninitialized:
+            return "Uninitialized";
+        }
+
+        return "Unknown";
+    }
+
     ScopeAttachmentAccess AdjustAccessBasedOnUsage(ScopeAttachmentAccess access, ScopeAttachmentUsage usage)
     {
         switch (usage)
@@ -108,7 +214,6 @@ namespace AZ::RHI
 
         // Remap read/write to write for DepthStencil scope attachments. This is because from a user standpoint, an attachment
         // might be an input/output to a pass (which maps to read/write) but still be used as a render target (write).
-        // We disallow read access and throw an error because having a read access on a render target is nonsensical.
         case ScopeAttachmentUsage::DepthStencil:
             if (access == ScopeAttachmentAccess::ReadWrite)
             {

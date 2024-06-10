@@ -33,7 +33,6 @@ class QMenu;
 #define GET_PLUGIN_ID_FROM_MENU_ID(ID) (((ID) & 0x000000FF))
 #define GET_UI_ELEMENT_ID_FROM_MENU_ID(ID) ((((ID) & 0x0000FF00) >> 8))
 
-class CObjectManager;
 class CUndoManager;
 class CGameEngine;
 class CErrorsDlg;
@@ -127,9 +126,6 @@ public:
     void EnableUpdate(bool enable) override { m_bUpdates = enable; };
     CGameEngine* GetGameEngine() override { return m_pGameEngine; };
     CDisplaySettings* GetDisplaySettings() override { return m_pDisplaySettings; };
-    CBaseObject* NewObject(const char* typeName, const char* fileName = "", const char* name = "", float x = 0.0f, float y = 0.0f, float z = 0.0f, bool modifyDoc = true) override;
-    void DeleteObject(CBaseObject* obj) override;
-    IObjectManager* GetObjectManager() override;
     // This will return a null pointer if CrySystem is not loaded before
     // Global Sandbox Settings are loaded from the registry before CrySystem
     // At that stage GetSettingsManager will return null and xml node in
@@ -253,9 +249,6 @@ public:
     void ReloadTemplates() override;
     void ShowStatusText(bool bEnable) override;
 
-    void OnObjectContextMenuOpened(QMenu* pMenu, const CBaseObject* pObject);
-    void RegisterObjectContextMenuExtension(TContextMenuExtensionFunc func) override;
-
     SSystemGlobalEnvironment* GetEnv() override;
     IImageUtil* GetImageUtil() override;  // Vladimir@conffx
     SEditorSettings* GetEditorSettings() override;
@@ -283,7 +276,6 @@ protected:
     IFileUtil* m_pFileUtil;
     CClassFactory* m_pClassFactory;
     CEditorCommandManager* m_pCommandManager;
-    CObjectManager* m_pObjectManager;
     CPluginManager* m_pPluginManager;
     CViewManager*   m_pViewManager;
     CUndoManager* m_pUndoManager;
@@ -329,8 +321,6 @@ protected:
     bool m_bInitialized;
     bool m_bExiting;
     static void CmdPy(IConsoleCmdArgs* pArgs);
-
-    std::vector<TContextMenuExtensionFunc> m_objectContextMenuExtensions;
 
     Editor::EditorQtApplication* const m_QtApplication = nullptr;
 

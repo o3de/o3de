@@ -31,7 +31,6 @@
 #include "Clipboard.h"
 #include "TrackViewSequenceManager.h"
 #include "TrackViewNodeFactories.h"
-#include "Include/IObjectManager.h"
 
 
 //////////////////////////////////////////////////////////////////////////

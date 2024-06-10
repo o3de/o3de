@@ -133,7 +133,7 @@ namespace AZ
             desc.m_imageViewDescriptor = m_blendedLut.m_lutImageViewDescriptor;
             desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::DontCare;
 
-            frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
+            frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite, RHI::ScopeAttachmentStage::ComputeShader);
         }
 
         void BlendColorGradingLutsPass::CompileResources(const RHI::FrameGraphCompileContext& context)
