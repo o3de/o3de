@@ -26,7 +26,7 @@ if (${PAL_TRAIT_LINUX_WINDOW_MANAGER} STREQUAL "xcb")
             3rdParty::X11::xcb_xfixes
             3rdParty::X11::xkbcommon
             3rdParty::X11::xkbcommon_X11
-            3rdParty::X11::xcb_image
+            xcb_image
             3rdParty::PNG
             xcb-xinput
     )
