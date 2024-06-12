@@ -19,8 +19,8 @@ struct FilterParameter
     uint2 m_shadowmapOriginInSlice;
     uint m_shadowmapSize;
     float m_lightDistanceOfCameraViewFrustum;
-    float m_n_f_n; // n / (f - n)
-    float m_n_f;   // n - f
+    float m_nf;    // nf
+    float m_f_n;   // f - n
     float m_f;     // f
                    // where n: nearDepth, f: farDepth.
 };
