@@ -11,6 +11,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Aabb.h>
+#include <AzCore/Math/Sphere.h>
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Name/Name.h>
@@ -39,22 +40,49 @@ namespace AzFramework
         //! Clear previously collected debug rendering lines and statistics
         virtual void ClearOcclusionViewDebugInfo() = 0;
 
-        //! Create an occlusion view using the specified name. After the view is created, the name can be used to look up the view and make
-        //! updates or queries against it. More than one occlusion view can be created at a time and used across threads.
-        virtual bool CreateOcclusionView(const AZ::Name& name) = 0;
+        //! Return true if the occlusion view exists.
+        virtual bool IsOcclusionView(const AZ::Name& viewName) const = 0;
+
+        //! Create an occlusion view using the specified viewName. After the view is created, the name can be used to look up the view and
+        //! make updates or queries against it. More than one occlusion view can be created at a time and used across threads.
+        virtual bool CreateOcclusionView(const AZ::Name& viewName) = 0;
 
         //! Destroy a previously created occlusion view.
-        virtual bool DestroyOcclusionView(const AZ::Name& name) = 0;
+        virtual bool DestroyOcclusionView(const AZ::Name& viewName) = 0;
 
         //! Updating the occlusion view to capture occlusion data from the specified camera perspective.
         virtual bool UpdateOcclusionView(
-            const AZ::Name& name, const AZ::Vector3& cameraWorldPos, const AZ::Matrix4x4& cameraWorldToClip) = 0;
+            const AZ::Name& viewName, const AZ::Vector3& cameraWorldPos, const AZ::Matrix4x4& cameraWorldToClip) = 0;
 
         //! Returns true if the entity is not occluded in the occlusion view. Otherwise, returns false.
-        virtual bool IsEntityVisibleInOcclusionView(const AZ::Name& name, const AZ::EntityId& entityId) const = 0;
+        virtual bool GetOcclusionViewEntityVisibility(const AZ::Name& viewName, const AZ::EntityId& entityId) const = 0;
 
         //! Returns true if the AABB is not occluded in the occlusion view. Otherwise, returns false.
-        virtual bool IsAabbVisibleInOcclusionView(const AZ::Name& name, const AZ::Aabb& bounds) const = 0;
+        virtual bool GetOcclusionViewAabbVisibility(const AZ::Name& viewName, const AZ::Aabb& bounds) const = 0;
+
+        //! @brief Test if target shapes are visible from the perspective of a source shape, within a volume extruded between them.
+        //! @param sourceAabb Bounding volume for the source shape defining the frame of reference for visibility tests.
+        //! @param targetAabbs Vector of bounding volumes for target shapes that will be tested for visibility.
+        //! @return A vector of flags containing the visibility state for corresponding target shapes. The size of the returned container
+        //! should match the size of the input target container unless an ever occurred.
+        virtual AZStd::vector<bool> GetOcclusionViewAabbToAabbVisibility(
+            const AZ::Name& viewName, const AZ::Aabb& sourceAabb, const AZStd::vector<AZ::Aabb>& targetAabbs) const = 0;
+
+        //! @brief Test if target shapes are visible from the perspective of a source shape, within a volume extruded between them.
+        //! @param sourceSphere Bounding volume for the source shape defining the frame of reference for visibility tests.
+        //! @param targetSpheres Vector of bounding volumes for target shapes that will be tested for visibility.
+        //! @return A vector of flags containing the visibility state for corresponding target shapes. The size of the returned container
+        //! should match the size of the input target container unless an ever occurred.
+        virtual AZStd::vector<bool> GetOcclusionViewSphereToSphereVisibility(
+            const AZ::Name& viewName, const AZ::Sphere& sourceSphere, const AZStd::vector<AZ::Sphere>& targetSpheres) const = 0;
+
+        //! @brief Test if target entities are visible from the perspective of a source entity, within a volume extruded between them.
+        //! @param sourceEntityId Id for the source entity defining the frame of reference for visibility tests.
+        //! @param targetEntityIds Vector of Ids for target entities that will be tested for visibility.
+        //! @return A vector of flags containing the visibility state for corresponding target entities. The size of the returned container
+        //! should match the size of the input target container unless an ever occurred.
+        virtual AZStd::vector<bool> GetOcclusionViewEntityToEntityVisibility(
+            const AZ::Name& viewName, const AZ::EntityId& sourceEntityId, const AZStd::vector<AZ::EntityId>& targetEntityIds) const = 0;
 
     protected:
         ~OcclusionRequests() = default;
