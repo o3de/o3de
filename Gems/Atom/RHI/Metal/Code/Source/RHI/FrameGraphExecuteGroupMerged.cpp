@@ -44,7 +44,7 @@ namespace AZ
 
                 auto& fencesToSignal = m_workRequest.m_scopeFencesToSignal;
                 fencesToSignal.reserve(fencesToSignal.size() + scope->GetFencesToSignal().size());
-                for (const RHI::Ptr<RHI::DeviceFence>& fence : scope->GetFencesToSignal())
+                for (const RHI::Ptr<RHI::Fence>& fence : scope->GetFencesToSignal())
                 {
                     fencesToSignal.push_back(&static_cast<FenceImpl&>(*fence->GetDeviceFence(scope->GetDeviceIndex())).Get());
                 }

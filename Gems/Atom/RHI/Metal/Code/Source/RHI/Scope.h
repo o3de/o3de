@@ -76,7 +76,7 @@ namespace AZ
             
             struct QueryPoolAttachment
             {
-                RHI::Ptr<QueryPool> m_pool;
+                RHI::Ptr<RHI::QueryPool> m_pool;
                 RHI::Interval m_interval;
                 RHI::ScopeAttachmentAccess m_access;
             };

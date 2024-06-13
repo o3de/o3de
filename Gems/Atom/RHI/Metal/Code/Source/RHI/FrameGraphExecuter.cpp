@@ -128,7 +128,7 @@ namespace AZ
                     mergedHardwareQueueClass = scope.GetHardwareQueueClass();
                     mergedDeviceIndex = scope.GetDeviceIndex();
                     FrameGraphExecuteGroupMerged* multiScopeContextGroup = AddGroup<FrameGraphExecuteGroupMerged>();
-                    multiScopeContextGroup->Init(static_cast<Device&>(scopePrev.GetDevice()), AZStd::move(mergedScopes), GetGroupCount());
+                    multiScopeContextGroup->Init(static_cast<Device&>(scopePrev->GetDevice()), AZStd::move(mergedScopes), GetGroupCount());
                 }
                 
                 // Attempt to merge the current scope.
@@ -165,7 +165,7 @@ namespace AZ
         void FrameGraphExecuter::ExecuteGroupInternal(RHI::FrameGraphExecuteGroup& groupBase)
         {
             FrameGraphExecuteGroupBase& group = static_cast<FrameGraphExecuteGroupBase&>(groupBase);
-            &static_cast<Device*>(groupBase->GetDevice())->GetCommandQueueContext()->ExecuteWork(group.GetHardwareQueueClass(), group.AcquireWorkRequest());
+            static_cast<Device&>(group.GetDevice()).GetCommandQueueContext().ExecuteWork(group.GetHardwareQueueClass(), group.AcquireWorkRequest());
         }
     }
 }
