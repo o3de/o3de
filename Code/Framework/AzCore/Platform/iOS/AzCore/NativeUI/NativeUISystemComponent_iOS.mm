@@ -31,6 +31,58 @@ namespace AZ
             
             NSString* nsTitle = [NSString stringWithUTF8String:title.c_str()];
             NSString* nsMessage = [NSString stringWithUTF8String:message.c_str()];
+            
+#if defined(CARBONATED)
+            void (^DisplayBlockingDialogCommon)(void) = ^{
+                UIAlertController* alert = [UIAlertController alertControllerWithTitle:nsTitle message:nsMessage preferredStyle:UIAlertControllerStyleAlert];
+                
+                for (int i = 0; i < options.size(); i++)
+                {
+                    UIAlertAction* okAction = [UIAlertAction actionWithTitle:[NSString stringWithUTF8String:options[i].c_str()] style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) { userSelection = [action.title UTF8String]; }];
+                    [alert addAction:okAction];
+                }
+                
+                UIWindow* foundWindow = nil;
+                NSArray* windows = [[UIApplication sharedApplication] windows];
+                for (UIWindow* window in windows)
+                {
+                    if (window.isKeyWindow)
+                    {
+                        foundWindow = window;
+                        break;
+                    }
+                }
+                UIViewController* rootViewController = foundWindow ? foundWindow.rootViewController : nil;
+                if (rootViewController)
+                {
+                    [rootViewController presentViewController:alert animated:YES completion:nil];
+                }
+                else
+                {
+                    userSelection = "BlockingDialog Error";
+                }
+            };
+
+            if (!NSThread.isMainThread)
+            {
+                __block dispatch_semaphore_t blockSem = dispatch_semaphore_create(0);
+                // Dialog boxes need to be triggered from the main thread.
+                CFRunLoopPerformBlock(CFRunLoopGetMain(), kCFRunLoopDefaultMode, ^(){
+                    DisplayBlockingDialogCommon();
+                    while (userSelection.empty())
+                    {
+                        CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.0, TRUE);
+                    }
+                    dispatch_semaphore_signal(blockSem);
+                });
+                // Wait till the user responds to the message box.
+                dispatch_semaphore_wait(blockSem, DISPATCH_TIME_FOREVER);
+            }
+            else
+            {
+                DisplayBlockingDialogCommon();
+            }
+#else
             UIAlertController* alert = [UIAlertController alertControllerWithTitle:nsTitle message:nsMessage preferredStyle:UIAlertControllerStyleAlert];
             
             for (int i = 0; i < options.size(); i++)
@@ -82,7 +134,7 @@ namespace AZ
             {
                 [rootViewController presentViewController:alert animated:YES completion:nil];
             }
-
+#endif
             while (userSelection.empty())
             {
                 CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.0, TRUE);
