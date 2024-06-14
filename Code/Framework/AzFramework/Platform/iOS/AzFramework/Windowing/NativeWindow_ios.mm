@@ -24,7 +24,7 @@ namespace AzFramework
         ~NativeWindowImpl_Ios() override;
         
         // NativeWindow::Implementation overrides...
-        void InitWindow(const AZStd::string& title,
+        void InitWindowInternal(const AZStd::string& title,
                         const WindowGeometry& geometry,
                         const WindowStyleMasks& styleMasks) override;
         NativeWindowHandle GetWindowHandle() const override;
@@ -44,7 +44,7 @@ namespace AzFramework
         }
     }
     
-    void NativeWindowImpl_Ios::InitWindow([[maybe_unused]]const AZStd::string& title,
+    void NativeWindowImpl_Ios::InitWindowInternal([[maybe_unused]]const AZStd::string& title,
                                           const WindowGeometry& geometry,
                                           [[maybe_unused]]const WindowStyleMasks& styleMasks)
     {
