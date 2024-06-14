@@ -40,6 +40,10 @@ namespace AzFramework
         void PumpSystemEventLoopOnce() override;
         void PumpSystemEventLoopUntilEmpty() override;
 
+#if defined(CARBONATED)
+        void OnDidRegisterForRemoteNotificationsWithDeviceToken(const AZStd::string& deviceToken) override;
+#endif
+
     private:
         ApplicationLifecycleEvents::Event m_lastEvent;
     };
@@ -96,6 +100,13 @@ namespace AzFramework
     {
         EBUS_EVENT(ApplicationLifecycleEvents::Bus, OnMobileApplicationLowMemoryWarning);
     }
+
+#if defined(CARBONATED)
+    void ApplicationIos::OnDidRegisterForRemoteNotificationsWithDeviceToken(const AZStd::string& deviceToken)
+    {
+        EBUS_EVENT(ApplicationLifecycleEvents::Bus, OnMobileDidRegisterForRemoteNotificationsWithDeviceToken, deviceToken);
+    }
+#endif
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void ApplicationIos::PumpSystemEventLoopOnce()
