@@ -251,6 +251,28 @@ namespace AZ
             D3D12_FEATURE_DATA_D3D12_OPTIONS5 options5;
             GetDevice()->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &options5, sizeof(options5));
             m_features.m_rayTracing = options5.RaytracingTier != D3D12_RAYTRACING_TIER_NOT_SUPPORTED;
+
+            if (m_features.m_rayTracing)
+            {
+                // RAYTRACE_REQUIRE_HALF16 (search for this tag to find other instances of this check for other platforms)
+                // Raytracing support currently requires support of half16 (low precision float) values in shaders.
+                // Not all raytracing-capable hardware actually supports this.
+                // When shaders are created that can instead use full precision floats we can remove this check and switch over.
+                bool supports16bitHalf = (options.MinPrecisionSupport & D3D12_SHADER_MIN_PRECISION_SUPPORT_16_BIT) != 0;
+                if (!supports16bitHalf)
+                {
+                    m_features.m_rayTracing = false;
+                    AZ_Info("Device", "Device supports raytracing but not half16 shader types - Raytracing feature disabled.");
+                }
+                else
+                {
+                    AZ_Info("Device", "Device supports raytracing and half16 shader types - Raytracing feature enabled.");
+                }
+            }
+            else
+            {
+                AZ_Info("Device", "Device does not support raytracing - Raytracing feature disabled.");
+            }
 #else
             m_features.m_rayTracing = false;
 #endif

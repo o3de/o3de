@@ -265,20 +265,22 @@ namespace AZ
 
             if (FAILED(hr))
             {
-                char* msgBuf = nullptr;
+                wchar_t* msgBuf = nullptr;
 
-                if (FormatMessage(
+                if (FormatMessageW(
                         FORMAT_MESSAGE_ALLOCATE_BUFFER |
                         FORMAT_MESSAGE_FROM_SYSTEM |
                         FORMAT_MESSAGE_IGNORE_INSERTS,
                         NULL,
                         hr,
                         MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-                        (LPTSTR) &msgBuf,
+                        (LPWSTR)&msgBuf,
                         0,
                         NULL))
                 {
-                    AZ_Assert(false, "HRESULT not a success %x, error msg = %s", hr, msgBuf);
+                    AZStd::string utf8EncodedString;
+                    AZStd::to_string(utf8EncodedString, msgBuf);
+                    AZ_Assert(false, "HRESULT not a success %x, error msg = %s", hr, utf8EncodedString.c_str());
                     LocalFree(msgBuf);
                 }
                 else

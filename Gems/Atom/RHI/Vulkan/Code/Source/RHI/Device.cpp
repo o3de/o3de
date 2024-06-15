@@ -1143,6 +1143,28 @@ namespace AZ
             {
                 // Ray tracing needs raytracing extensions and unbounded arrays to work
                 m_features.m_rayTracing = (itRayTracingExtension != deviceExtensions.end());
+
+                // RAYTRACE_REQUIRE_HALF16 (search for this tag to find other instances of this check for other platforms)
+                // Raytracing support currently requires support of half16 (low precision float) values in shaders.
+                // Not all raytracing-capable hardware actually supports this.
+                // When shaders are created that can instead use full precision floats we can remove this check and switch over.
+                if (m_features.m_rayTracing)
+                {
+                    m_features.m_rayTracing = physicalDevice.GetPhysicalDeviceFloat16Int8Features().shaderFloat16;
+                    if (m_features.m_rayTracing)
+                    {
+                        AZ_Info("Vulkan", "Device has " VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME " and shaderFloat16 support - raytracing feature enabled.")
+
+                    }
+                    else
+                    {
+                        AZ_Info("Vulkan", "Device has " VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME " but not shaderFloat16 - raytracing feature disabled.")
+                    }
+                }
+            }
+            else
+            {
+                AZ_Info("Vulkan", "Device does not have " VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME " - raytracing feature disabled.")
             }
 
             if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::FragmentShadingRate))
