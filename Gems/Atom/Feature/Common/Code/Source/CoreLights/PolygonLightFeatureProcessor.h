@@ -89,6 +89,7 @@ namespace AZ
 
             RHI::Handle<uint32_t> m_lightMeshFlag;
             bool m_deviceBufferNeedsUpdate = false;
+            bool m_polygonLightEnabled = true;
         };
     } // namespace Render
 } // namespace AZ

@@ -18,6 +18,7 @@
             "defaultValue": 1.0,
             "min": 0.0,
             "max": 1.0,
+            "optional": true,
             "connection": {
                 "type": "ShaderInput",
                 "name": "m_clearCoatFactor"
@@ -28,6 +29,7 @@
             "displayName": "    Influence Map",
             "description": "Strength factor texture",
             "type": "Image",
+            "optional": true,
             "connection": {
                 "type": "ShaderInput",
                 "name": "m_clearCoatInfluenceMap"
@@ -47,6 +49,7 @@
             "type": "Enum",
             "enumIsUv": true,
             "defaultValue": "Tiled",
+            "optional": true,
             "connection": {
                 "type": "ShaderInput",
                 "name": "m_clearCoatInfluenceMapUvIndex"
@@ -60,6 +63,7 @@
             "defaultValue": 0.0,
             "min": 0.0,
             "max": 1.0,
+            "optional": true,
             "connection": {
                 "type": "ShaderInput",
                 "name": "m_clearCoatRoughness"
@@ -70,6 +74,7 @@
             "displayName": "    Roughness Map",
             "description": "Texture for defining surface roughness",
             "type": "Image",
+            "optional": true,
             "connection": {
                 "type": "ShaderInput",
                 "name": "m_clearCoatRoughnessMap"
@@ -89,6 +94,7 @@
             "type": "Enum",
             "enumIsUv": true,
             "defaultValue": "Tiled",
+            "optional": true,
             "connection": {
                 "type": "ShaderInput",
                 "name": "m_clearCoatRoughnessMapUvIndex"
@@ -102,6 +108,7 @@
             "defaultValue": 1.0,
             "min": 0.0,
             "max": 2.0,
+            "optional": true,
             "connection": {
                 "type": "ShaderInput",
                 "name": "m_clearCoatNormalStrength"
@@ -112,6 +119,7 @@
             "displayName": "Normal Map",
             "description": "Normal map for clear coat layer, as top layer material clear coat doesn't affect by base layer normal map",
             "type": "Image",
+            "optional": true,
             "connection": {
                 "type": "ShaderInput",
                 "name": "m_clearCoatNormalMap"
@@ -130,6 +138,7 @@
             "description": "Normal map UV set",
             "type": "Enum",
             "enumIsUv": true,
+            "optional": true,
             "defaultValue": "Tiled",
             "connection": {
                 "type": "ShaderInput",

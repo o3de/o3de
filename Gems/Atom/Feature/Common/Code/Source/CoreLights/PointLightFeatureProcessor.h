@@ -79,6 +79,7 @@ namespace AZ
             RHI::Handle<uint32_t> m_lightMeshFlag;
             RHI::Handle<uint32_t> m_shadowMeshFlag;
             bool m_deviceBufferNeedsUpdate = false;
+            bool m_pointLightsEnabled = true;
 
             AZStd::array<AZ::Transform, PointLightData::NumShadowFaces> m_pointShadowTransforms;
         };

@@ -19,6 +19,8 @@ option bool o_parallax_feature_enabled;
 option bool o_parallax_highlightClipping;
 option bool o_parallax_shadow;
 
+#if ENABLE_PARALLAX
+
 // I tried to make this an enum class, but ran into some DXC bug when compiling to SPIRV.
 enum DepthResultCode
 {
@@ -433,3 +435,5 @@ PixelDepthOffset CalcPixelDepthOffset(  float depthFactor,
     pdo.m_worldPosition = worldOffsetPosition;
     return pdo;
 }
+
+#endif

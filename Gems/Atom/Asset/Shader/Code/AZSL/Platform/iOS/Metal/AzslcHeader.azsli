@@ -30,3 +30,19 @@ static const float4 s_AzslDebugColor = float4(85.0 / 255.0, 85.0 / 255.0, 85.0 /
 #define real3x3 half3x3
 #define real3x4 half3x4
 #define real4x4 half4x4
+
+#define FORCE_SMALL_SRGS
+
+#if defined(FORCE_SMALL_SRGS)
+#define ENABLE_FULLSCREEN_SHADOW 0
+#define ENABLE_LIGHT_CULLING 0
+#define ENABLE_POLYGON_LTC_LIGHTS 0
+#define ENABLE_QUAD_LIGHTS 0
+#define ENABLE_SPHERE_LIGHTS 0
+#define ENABLE_DISK_LIGHTS 0
+#define ENABLE_CAPSULE_LIGHTS 0
+#define ENABLE_QUAD_LIGHTS 0   
+#define ENABLE_CLEAR_COAT 0
+#define ENABLE_PARALLAX 0
+#define ENABLE_ESM_SHADOW 0
+#endif

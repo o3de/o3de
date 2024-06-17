@@ -50,6 +50,16 @@ namespace AZ::Render
         desc.m_elementSize = sizeof(PolygonLightData);
         desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
 
+        m_polygonLightEnabled = desc.m_srgLayout->FindShaderInputBufferIndex(Name(desc.m_bufferSrgName)).IsValid();
+        if (!m_polygonLightEnabled)
+        {
+            AZ_Warning(
+                "PolygonLightFeatureProcessor",
+                false,
+                "Could not find m_polygonLights entry in the View SRG. Disabling PolygonLightFeatureProcessor.");
+            return;
+        }
+
         m_lightBufferHandler = GpuBufferHandler(desc);
 
         // Buffer for all the polygon points for all the lights
@@ -140,6 +150,11 @@ namespace AZ::Render
         AZ_PROFILE_SCOPE(RPI, "PolygonLightFeatureProcessor: Simulate");
         AZ_UNUSED(packet);
 
+        if (!m_polygonLightEnabled)
+        {
+            return;
+        }
+
         if (m_deviceBufferNeedsUpdate)
         {
             m_lightBufferHandler.UpdateBuffer(m_lightData.GetDataVector<0>());
@@ -164,6 +179,10 @@ namespace AZ::Render
     void PolygonLightFeatureProcessor::Render(const PolygonLightFeatureProcessor::RenderPacket& packet)
     {
         AZ_PROFILE_SCOPE(RPI, "PolygonLightFeatureProcessor: Render");
+        if (!m_polygonLightEnabled)
+        {
+            return;
+        }
 
         for (const RPI::ViewPtr& view : packet.m_views)
         {

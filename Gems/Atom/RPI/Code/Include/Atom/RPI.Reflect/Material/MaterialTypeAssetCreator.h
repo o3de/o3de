@@ -59,7 +59,7 @@ namespace AZ
             //! The property will not appear in GetMaterialPropertiesLayout() until EndMaterialProperty() is called.
             //! @param materialPipelineName For internal material properties, this indicates which material pipeline the property is for.
             //!                             For main material properties, use MaterialPipelineNone.
-            void BeginMaterialProperty(const Name& materialPropertyName, MaterialPropertyDataType dataType, const AZ::Name& materialPipelineName = MaterialPipelineNone);
+            void BeginMaterialProperty(const Name& materialPropertyName, MaterialPropertyDataType dataType, const AZ::Name& materialPipelineName = MaterialPipelineNone, bool optional = false);
 
             //! Adds an output mapping from the current material property to a ShaderResourceGroup input.
             void ConnectMaterialPropertyToShaderInput(const Name& shaderInputName);
@@ -153,6 +153,7 @@ namespace AZ
             const RHI::ShaderResourceGroupLayout* m_materialShaderResourceGroupLayout = nullptr; //!< The per-material ShaderResourceGroup layout
             MaterialPropertyDescriptor m_wipMaterialProperty; //!< Material property being created. Is valid between BeginMaterialProperty() and EndMaterialProperty()
             Name m_wipMaterialPropertyPipeline; //!< Tracks which MaterialPipelinePayload the material property is being created for, if any.
+            bool m_wipMaterialPropertyOptional = false;
         };
 
     } // namespace RPI

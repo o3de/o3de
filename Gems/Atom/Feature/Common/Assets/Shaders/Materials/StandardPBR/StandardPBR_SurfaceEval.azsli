@@ -31,11 +31,12 @@ Surface EvaluateSurface_StandardPBR(
     Surface surface = EvaluateSurface_BasePBR(positionWS, vertexNormal, tangents, bitangents, uvs, isFrontFace);
 
     // ------- Parallax Clipping -------
-
+#if ENABLE_PARALLAX
     if(o_parallax_highlightClipping && isDisplacementClipped)
     {
         ApplyParallaxClippingHighlight(surface.albedo);
     }
+#endif
 
     // ------- Alpha & Clip -------
 
