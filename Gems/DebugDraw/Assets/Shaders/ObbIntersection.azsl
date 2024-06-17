@@ -74,10 +74,10 @@ void ObbIntersection()
     if (IntersectRayAABB(ObjectRayOrigin(), ObjectRayDirection(), aabbMin, aabbMax, t, normal))
     {
         ProceduralGeometryIntersectionAttributes attrib;
-        attrib.m_position = ObjectRayOrigin() + ObjectRayDirection() * t;
-        attrib.m_normal = half3(normal);
-        attrib.m_uv = half2(0, 0);
-        attrib.m_tangent = half4(1, 0, 0, 1);
+        attrib.SetPosition(ObjectRayOrigin() + ObjectRayDirection() * t);
+        attrib.SetNormal(normal);
+        attrib.SetUv(float2(0, 0));
+        attrib.SetTangent(float4(1, 0, 0, 1));
         ReportHit(t, 0, attrib);
     }
 }
