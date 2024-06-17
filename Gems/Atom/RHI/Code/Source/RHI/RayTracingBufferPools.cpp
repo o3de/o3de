@@ -31,6 +31,12 @@ namespace AZ::RHI
         return m_scratchBufferPool;
     }
 
+    const RHI::Ptr<RHI::BufferPool>& RayTracingBufferPools::GetAabbStagingBufferPool() const
+    {
+        AZ_Assert(m_initialized, "RayTracingBufferPools was not initialized");
+        return m_aabbStagingBufferPool;
+    }
+
     const RHI::Ptr<RHI::BufferPool>& RayTracingBufferPools::GetBlasBufferPool() const
     {
         AZ_Assert(m_initialized, "RayTracingBufferPools was not initialized");
@@ -78,6 +84,18 @@ namespace AZ::RHI
             m_scratchBufferPool->SetName(Name("RayTracingScratchBufferPool"));
             [[maybe_unused]] RHI::ResultCode resultCode = m_scratchBufferPool->Init(*device, bufferPoolDesc);
             AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to initialize ray tracing scratch buffer pool");
+        }
+
+        // create AABB buffer pool
+        {
+            RHI::BufferPoolDescriptor bufferPoolDesc;
+            bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
+            bufferPoolDesc.m_bindFlags = GetAabbStagingBufferBindFlags();
+
+            m_aabbStagingBufferPool = RHI::Factory::Get().CreateBufferPool();
+            m_aabbStagingBufferPool->SetName(Name("RayTracingAabbStagingBufferPool"));
+            [[maybe_unused]] RHI::ResultCode resultCode = m_aabbStagingBufferPool->Init(*device, bufferPoolDesc);
+            AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to initialize ray tracing AABB staging buffer pool");
         }
 
         // create BLAS buffer pool
