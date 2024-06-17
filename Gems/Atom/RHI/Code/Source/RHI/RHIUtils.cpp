@@ -162,6 +162,13 @@ namespace AZ::RHI
         return graphicsDevMode;
     }
 
+    const AZ::Name& GetDefaultSupervariantNameWithNoFloat16Fallback()
+    {
+        const static AZ::Name DefaultSupervariantName{ "" };
+        const static AZ::Name NoFloat16SupervariantName{ "NoFloat16" };
+        return GetRHIDevice()->GetFeatures().m_float16 ? DefaultSupervariantName : NoFloat16SupervariantName;
+    }
+
     // Pool attributes
     using JsonStringRef = rapidjson::Value::StringRefType;
     const char PoolNameAttribStr[] = "PoolName";

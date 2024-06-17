@@ -1146,6 +1146,8 @@ namespace AZ
                 m_features.m_rayTracing = (itRayTracingExtension != deviceExtensions.end());
             }
 
+            m_features.m_float16 = physicalDevice.GetPhysicalDeviceFloat16Int8Features().shaderFloat16;
+
             if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::FragmentShadingRate))
             {
                 const auto& shadingRateFeatures = physicalDevice.GetPhysicalDeviceFragmentShadingRateFeatures();
