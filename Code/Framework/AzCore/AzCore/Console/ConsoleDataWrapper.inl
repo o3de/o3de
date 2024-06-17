@@ -37,7 +37,16 @@ namespace AZ
         // Client code can supply a type for m_value that overrides the operator= function and trigger side effects
         // in the operator= function body. Doing the assignment outside the value change check avoids those side
         // effects not being triggered because AzCore believes the value wouldn't change.
+
+#if defined(CARBONATED)
+        if (!this->m_functor.PerformCommand(ConsoleTypeHelpers::ToString(rhs)))
+        {
+            this->m_value = rhs;
+        }
+#else
         this->m_value = rhs;
+#endif
+
         if (currentValue != rhs)
         {
             InvokeCallback();
