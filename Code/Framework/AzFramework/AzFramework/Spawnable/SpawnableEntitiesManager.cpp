@@ -336,7 +336,7 @@ namespace AzFramework
                 }
             }
 
-            if (ticketId != InvalidTicketId)
+            if (ticketId != InvalidTicketId && ticketId != 0) // Entities could already be despawned with ticketId assigned to 0
             {
                 SpawnableEntitiesInterface::Get()->RetrieveTicket(ticketId,
                     [optionalArgs](EntitySpawnTicket&& entitySpawnTicket)
