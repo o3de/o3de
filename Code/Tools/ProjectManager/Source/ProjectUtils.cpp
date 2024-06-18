@@ -23,6 +23,7 @@
 #include <QGuiApplication>
 #include <QProgressDialog>
 #include <QSpacerItem>
+#include <QStandardPaths>
 #include <QGridLayout>
 #include <QTextEdit>
 #include <QByteArray>
@@ -461,8 +462,22 @@ namespace O3DE::ProjectManager
             if (projectDirectory.exists())
             {
                 // Check if there is an actual project here or just force it
-                if (force || PythonBindingsInterface::Get()->GetProject(path).IsSuccess())
+                AZ::Outcome<ProjectInfo> pInfo = PythonBindingsInterface::Get()->GetProject(path);
+                if (force || pInfo.IsSuccess())
                 {
+                    //determine if we have a restricted directory to worry about
+                    if (!pInfo.GetValue().m_restricted.isEmpty())
+                    {
+                        QDir restrictedDirectory(QStandardPaths::standardLocations(QStandardPaths::HomeLocation).first());
+                        restrictedDirectory.cd("O3DE");
+                        restrictedDirectory.cd("Restricted");
+                        restrictedDirectory.cd("Projects");
+                        restrictedDirectory.cd(pInfo.GetValue().m_restricted);
+                        if (!restrictedDirectory.isEmpty())
+                        {
+                            restrictedDirectory.removeRecursively();
+                        }
+                    }
                     return projectDirectory.removeRecursively();
                 }
             }
