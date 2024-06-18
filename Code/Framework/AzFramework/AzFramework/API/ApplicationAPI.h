@@ -168,6 +168,11 @@ namespace AzFramework
 
         virtual void OnMobileApplicationWillTerminate() {}
         virtual void OnMobileApplicationLowMemoryWarning() {}
+        
+#if defined(CARBONATED)
+        // Event triggered when the application registered for remote notifications
+        virtual void OnMobileDidRegisterForRemoteNotificationsWithDeviceToken([[maybe_unused]] const AZStd::string& deviceToken) {}
+#endif
 
         // Events triggered when the application window has been
         // created/destoryed.  This is currently only supported 
