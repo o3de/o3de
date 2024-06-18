@@ -469,11 +469,10 @@ namespace O3DE::ProjectManager
                     if (!pInfo.GetValue().m_restricted.isEmpty())
                     {
                         QDir restrictedDirectory(QStandardPaths::standardLocations(QStandardPaths::HomeLocation).first());
-                        restrictedDirectory.cd("O3DE");
-                        restrictedDirectory.cd("Restricted");
-                        restrictedDirectory.cd("Projects");
-                        restrictedDirectory.cd(pInfo.GetValue().m_restricted);
-                        if (!restrictedDirectory.isEmpty())
+                        
+                        if (restrictedDirectory.cd("O3DE/Restricted/Projects") &&
+                            restrictedDirectory.cd(pInfo.GetValue().m_restricted) &&
+                            !restrictedDirectory.isEmpty())
                         {
                             restrictedDirectory.removeRecursively();
                         }
