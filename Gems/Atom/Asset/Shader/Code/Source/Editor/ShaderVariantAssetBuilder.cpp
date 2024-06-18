@@ -196,7 +196,7 @@ namespace AZ
                 jobDescriptor.m_jobKey = GetShaderVariantAssetJobKey();
                 jobDescriptor.SetPlatformIdentifier(info.m_identifier.data());
 
-                // Add the content of the hashedVariantBatch file as a parameter to avoid reading it again.
+                // Add the content of the hashedVariantInfo file as a parameter to avoid reading it again.
                 jobDescriptor.m_jobParameters.emplace(ShaderVariantInfoJobParam, hashedVariantInfoDescriptorString);
             
                 // The ShaderVariantAssets should be built AFTER the ShaderVariantTreeAsset.
