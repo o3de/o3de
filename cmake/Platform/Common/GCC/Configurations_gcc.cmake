@@ -82,7 +82,7 @@ ly_append_configurations_options(
         -O2
         -g # debug symbols
     COMPILATION_RELEASE
-        -O2
+        -Ofast
 
     LINK_NON_STATIC
         -Wl,-undefined,error
