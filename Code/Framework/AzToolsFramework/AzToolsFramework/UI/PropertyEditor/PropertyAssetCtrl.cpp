@@ -350,7 +350,11 @@ namespace AzToolsFramework
         const auto selectableAssetTypes = GetSelectableAssetTypes();
         const auto isSelectableAssetType =
             AZStd::find(selectableAssetTypes.begin(), selectableAssetTypes.end(), assetType) != selectableAssetTypes.end();
+#if defined(CARBONATED)
+        return (assetId.IsValid() && isSelectableAssetType); // do not reject an asset with the zero asset type {00000000-0000-0000-0000-000000000000} due to it could be added to GetSelectableAssetTypes() by intention, for copied asset files (e.g. for .cfg, .txt, .json, .ttf, .xml, .dat, ...)
+#else
         return (assetId.IsValid() && !assetType.IsNull() && isSelectableAssetType);
+#endif
     }
 
     bool PropertyAssetCtrl::IsCorrectMimeData(const QMimeData* pData, AZ::Data::AssetId* pAssetId, AZ::Data::AssetType* pAssetType) const
