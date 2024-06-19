@@ -207,6 +207,24 @@ namespace AZ
             m_proceduralGeometryInfoBufferNeedsUpdate = true;
         }
 
+        void RayTracingFeatureProcessor::SetProceduralGeometryMaterial(
+            const Uuid& uuid, const RayTracingFeatureProcessor::SubMeshMaterial& material)
+        {
+            if (!m_rayTracingEnabled)
+            {
+                return;
+            }
+
+            AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
+
+            if (auto it = m_proceduralGeometryLookup.find(uuid); it != m_proceduralGeometryLookup.end())
+            {
+                ConvertMaterial(m_proceduralGeometryMaterialInfos[it->second], material);
+            }
+
+            m_materialInfoBufferNeedsUpdate = true;
+        }
+
         void RayTracingFeatureProcessor::RemoveProceduralGeometry(const Uuid& uuid)
         {
             if (!m_rayTracingEnabled)

@@ -282,6 +282,11 @@ namespace AZ
             //! used together with `GetBindlessBufferIndex()` to access per-instance geometry data.
             void SetProceduralGeometryLocalInstanceIndex(const Uuid& uuid, uint32_t localInstanceIndex);
 
+            //! Sets the material of a procedural geometry instance.
+            //! \param uuid The Uuid of the procedural geometry which must have been added with `AddProceduralGeometry` before.
+            //! \param material The material of the procedural geometry instance.
+            void SetProceduralGeometryMaterial(const Uuid& uuid, const SubMeshMaterial& material);
+
             //! Removes a procedural geometry instance from the ray tracing scene.
             //! \param uuid The Uuid of the procedrual geometry which must have been added with `AddProceduralGeometry` before.
             void RemoveProceduralGeometry(const Uuid& uuid);
