@@ -1188,7 +1188,12 @@ namespace AzToolsFramework
             AzFramework::StringFunc::Path::GetFileName(m_currentAssetHint.c_str(), assetName);
         }
 
+#if defined(CARBONATED)
+        // tooltip should be assigned to a current list element which contains an asset file name
+        m_browseEdit->setToolTip(m_currentAssetHint.c_str());
+#else
         setToolTip(m_currentAssetHint.c_str());
+#endif
         
         // If no asset is selected but a default asset id is, show the default name.
         if (m_selectedAssetID.IsValid())
