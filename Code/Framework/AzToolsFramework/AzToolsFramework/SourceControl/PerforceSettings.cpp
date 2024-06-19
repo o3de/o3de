@@ -22,7 +22,6 @@ namespace AzToolsFramework
     const char* const PerforceClient = "P4CLIENT";
     const char* const PerforceCharset = "P4CHARSET";
 
-    using namespace AzToolsFramework;
     PerforceSettings::PerforceSettings(QWidget* parent)
         : QDialog(parent)
     {
