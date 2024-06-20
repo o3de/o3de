@@ -16,6 +16,7 @@
 #include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Console/ILogger.h>
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
@@ -597,14 +598,13 @@ namespace AZ
                     m_dimensions.m_imageWidth,
                     m_surfaceCapabilities.minImageExtent.width,
                     m_surfaceCapabilities.maxImageExtent.width);
-                AZ_Printf(
-                    "Vulkan", "Resizing swapchain from (%u, %u) to (%u, %u).",
+                AZLOG_DEBUG("Resizing swapchain from (%u, %u) to (%u, %u).",
                     oldWidth, oldHeight, m_dimensions.m_imageWidth, m_dimensions.m_imageHeight);
             }
 
             RHI::ResultCode result = BuildNativeSwapChain(m_dimensions);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            AZ_TracePrintf("Vulkan", "Swapchain created. Width: %u, Height: %u.\n", m_dimensions.m_imageWidth, m_dimensions.m_imageHeight);
+            AZLOG_DEBUG("Swapchain created. Width: %u, Height: %u.\n", m_dimensions.m_imageWidth, m_dimensions.m_imageHeight);
 
             // Do not recycle the semaphore because they may not ever get signaled and since
             // we can't recycle Vulkan semaphores we just delete them.
@@ -631,13 +631,13 @@ namespace AZ
                 device.GetNativeDevice(), m_nativeSwapChain, &m_dimensions.m_imageCount, m_swapchainNativeImages.data());
             AssertSuccess(vkResult);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(vkResult));
-            AZ_TracePrintf("Swapchain", "Obtained presentable images.\n");
+            AZLOG_DEBUG("Obtained presentable images.\n");
 
             // Acquire the first image
             uint32_t imageIndex = 0;
             result = AcquireNewImage(&imageIndex);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            AZ_TracePrintf("Swapchain", "Acquired the first image.\n");
+            AZLOG_DEBUG("Acquired the first image.\n");
 
             return RHI::ResultCode::Success;
         }

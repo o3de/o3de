@@ -40,9 +40,10 @@ namespace AzFramework
         m_win32Handle = nullptr;
     }
 
-    void NativeWindowImpl_Win32::InitWindow(const AZStd::string& title,
-                                            const WindowGeometry& geometry,
-                                            const WindowStyleMasks& styleMasks)
+    void NativeWindowImpl_Win32::InitWindowInternal(
+        const AZStd::string& title,
+        const WindowGeometry& geometry,
+        const WindowStyleMasks& styleMasks)
     {
         const HINSTANCE hInstance = GetModuleHandle(0);
 
@@ -380,10 +381,6 @@ namespace AzFramework
             if (m_activated)
             {
                 WindowNotificationBus::Event(m_win32Handle, &WindowNotificationBus::Events::OnWindowResized, width, height);
-                if (!m_enableCustomizedResolution)
-                {
-                    WindowNotificationBus::Event(m_win32Handle, &WindowNotificationBus::Events::OnResolutionChanged, width, height);
-                }
             }
         }
     }
