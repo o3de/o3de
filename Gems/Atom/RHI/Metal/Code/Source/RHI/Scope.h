@@ -72,6 +72,11 @@ namespace AZ
             //! Wait on all the transient resource fences associated with this scope
             void WaitOnAllResourceFences(CommandList& commandList) const;
             void WaitOnAllResourceFences(id <MTLCommandBuffer> mtlCommandBuffer) const;
+            
+            //! Accesors for the information cached in Compile phase
+            bool IsWritingToSwapChain() const;
+            bool IsRequestingSwapChain() const;
+            
         private:
             
             struct QueryPoolAttachment
@@ -126,7 +131,10 @@ namespace AZ
 
             AZStd::vector<QueryPoolAttachment> m_queryPoolAttachments;
             
-            /// Used to check if the current scope is writing to a swapchain texture
+            /// Used to check if the current scope is requesting to a swapchain texture
+            bool m_isRequestingSwapChainDrawable = false;
+            
+            /// Used to check if the current scope is writing the swapchain texture
             bool m_isWritingToSwapChainScope = false;
             
             /// Used to check if the current scope is a swapchain scope and the next scope will be used to capture the current frame
