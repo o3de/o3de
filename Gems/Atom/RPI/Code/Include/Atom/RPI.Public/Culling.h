@@ -113,7 +113,7 @@ namespace AZ
             LodData m_lodData;
 
             using FlagType = uint32_t;
-            FlagType m_prevShaderOptionFlags = 0;
+            FlagType m_prevShaderOptionFlags = ~0u; // Init to something different than 0, so it updates on first usage.
             AZStd::atomic<FlagType> m_shaderOptionFlags = 0;
             FlagType m_flags;
 

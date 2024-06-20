@@ -128,4 +128,13 @@ namespace
         &AzFramework::IosLifecycleEvents::Bus::Events::OnDidReceiveMemoryWarning);
 }
 
+#if defined(CARBONATED)
+- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)devToken
+{
+    NSString* devTokenBase64 = [devToken base64EncodedStringWithOptions:0];
+    AZStd::string deviceTokenStr = [devTokenBase64 UTF8String];
+    AzFramework::IosLifecycleEvents::Bus::Broadcast(&AzFramework::IosLifecycleEvents::Bus::Events::OnDidRegisterForRemoteNotificationsWithDeviceToken, deviceTokenStr);
+}
+#endif
+
 @end // O3DEApplicationDelegate_iOS Implementation

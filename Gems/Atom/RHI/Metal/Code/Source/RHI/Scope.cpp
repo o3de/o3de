@@ -94,8 +94,11 @@ namespace AZ
             
             for (RHI::ImageScopeAttachment* scopeAttachment : GetImageAttachments())
             {
-                m_isWritingToSwapChainScope = scopeAttachment->IsSwapChainAttachment() && scopeAttachment->HasUsage(RHI::ScopeAttachmentUsage::RenderTarget);
-                if(m_isWritingToSwapChainScope)
+                bool isWritingToSwapChainScope = scopeAttachment->IsSwapChainAttachment() && scopeAttachment->HasUsage(RHI::ScopeAttachmentUsage::RenderTarget);
+                const RHI::SwapChainFrameAttachment* swapChainFrameAttachment = (azrtti_cast<const RHI::SwapChainFrameAttachment*>(&scopeAttachment->GetFrameAttachment()));
+                
+                //Check if this scope is writing to the swapchain texture and if the swapchain attachment is valid
+                if(isWritingToSwapChainScope && swapChainFrameAttachment)
                 {
                     //The way Metal works is that we ask the drivers for the swapchain texture right before we write to it.
                     //And if we have to read from the swapchain texture we need to tell the driver this information when requesting the
@@ -115,7 +118,8 @@ namespace AZ
                         }
                     }
                     
-                    //Cache this as we will use this to request the drawable from the driver in the Execute phase (i.e Scope::Begin)
+                    //Cache the result as we will use this to request the drawable from the driver in the Execute phase (i.e Scope::Begin)
+                    m_isWritingToSwapChainScope = true;
                     m_swapChainAttachment = scopeAttachment;
                 }
                 

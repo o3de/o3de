@@ -11,6 +11,10 @@
 
 #include <AzCore/EBus/EBus.h>
 
+#if defined(CARBONATED)
+#include <AzCore/std/string/string.h>
+#endif
+
 namespace AzFramework
 {
     class IosLifecycleEvents
@@ -33,5 +37,9 @@ namespace AzFramework
 
         virtual void OnWillTerminate() {}           // Terminate
         virtual void OnDidReceiveMemoryWarning() {} // Low memory
+        
+#if defined(CARBONATED)
+        virtual void OnDidRegisterForRemoteNotificationsWithDeviceToken(const AZStd::string& deviceToken) {} // Remote Notifications
+#endif
     };
 } // namespace AzFramework
