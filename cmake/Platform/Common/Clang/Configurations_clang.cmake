@@ -54,7 +54,7 @@ ly_append_configurations_options(
         -fstack-check
 
     COMPILATION_RELEASE
-        -O2
+        -Ofast
 )
 
 if(LY_BUILD_WITH_ADDRESS_SANITIZER)

@@ -454,16 +454,6 @@ namespace AtomToolsFramework
         // The RenderViewportWidget does not currently support full screen.
     }
 
-    void RenderViewportWidget::SetEnableCustomizedResolution([[maybe_unused]]bool enable)
-    {
-        // The RenderViewportWidget does not currently support customized render resolution.
-    }
-
-    bool RenderViewportWidget::IsCustomizedResolutionEnabled() const
-    {
-        return false;
-    }
-
     AzFramework::WindowSize RenderViewportWidget::GetRenderResolution() const
     {
         // We want render resolution matches the screen's resolution

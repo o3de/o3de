@@ -119,9 +119,20 @@ namespace AZ
                 // Check if we are straddling the boundary of a fence.
                 const bool onFenceBoundaries = (scope.HasWaitFences() || (scopePrev && scopePrev->HasSignalFence())) || hasUserFencesToSignal;
 
-                // If we exceeded limits, then flush the group.
-                const bool flushMergedScopes = exceededCommandCost || exceededSwapChainLimit || hardwareQueueMismatch || onFenceBoundaries;
+                //Check if we are straddling the boundary of a scope that will request the swapchain texture
+                const bool onSwapChainBoundary = scope.IsRequestingSwapChain();
 
+                // If we exceeded limits, then flush the group.
+                const bool flushMergedScopes = exceededCommandCost || exceededSwapChainLimit || hardwareQueueMismatch || onFenceBoundaries || onSwapChainBoundary;
+                
+                const bool isWritingToSwapChain = scope.IsWritingToSwapChain();
+                //Check to ensure we are not trying to create two groups with scopes that will write to swapchain texture as
+                //this will cause a parallel race condition (groups are executed in parallel) when requesting the drawable.
+                if(!onSwapChainBoundary && isWritingToSwapChain)
+                {
+                    AZ_Assert(flushMergedScopes == false, "The scope that requests the swapchain needs to be in the same merged group as all the ones that write to it, otherwise we will have two scopes (in different groups) requesting drawable in parallel. If this assert is firing it may mean that we will need to request the swapchain drawable in Compile phase which is not the recommendation. Drawable should be requested as late in the frame as possible");
+                }
+                
                 if (flushMergedScopes && mergedScopes.size())
                 {
                     hasUserFencesToSignal = false;
@@ -132,8 +143,8 @@ namespace AZ
                     multiScopeContextGroup->Init(device, AZStd::move(mergedScopes), GetGroupCount());
                 }
                 
-                // Attempt to merge the current scope.
-                if (totalScopeCost < CommandListCostThreshold)
+                // Attempt to merge the current scope. We always merge the scopes that are writing to swapchain regardless of the cost.
+                if (totalScopeCost < CommandListCostThreshold || isWritingToSwapChain)
                 {
                     mergedScopes.push_back(&scope);
                     mergedGroupCost += totalScopeCost;

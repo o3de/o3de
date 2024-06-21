@@ -30,20 +30,25 @@ namespace AZ::Render
 
     bool MeshInstanceGroupData::UpdateShaderOptionFlags()
     {
-        uint32_t newShaderOptionFlagMask = 0;   // defaults to 0 so no shader options are specified.
+        // Shader options are either set or being unspecified (which means use the global value).
+        // We only set a shader option if ALL instances have the same value. Otherwise, we leave it unspecified.
+        uint32_t newShaderOptionFlagMask = ~0u;      // Defaults to all shaders options being specified. 
+                                                    // We only disable one if we find a different between the instances.
         uint32_t newShaderOptionFlags = m_shaderOptionFlags;
-
-        if (m_associatedInstances.size() > 0)
+        if (auto it = m_associatedInstances.begin(); it != m_associatedInstances.end())
         {
-            newShaderOptionFlags = (*m_associatedInstances.begin())->GetCullable().m_shaderOptionFlags;
-        }
-
-        for (auto modelDataInstance : m_associatedInstances)
-        {
-            // If the shader option flag of different intances are different, the mask for the flag is 0, which means the flag is unspecified.
-            newShaderOptionFlagMask = ~(newShaderOptionFlags ^ modelDataInstance->GetCullable().m_shaderOptionFlags);
-            // if the option flag has same value, keep the value.
-            newShaderOptionFlags &= modelDataInstance->GetCullable().m_shaderOptionFlags;
+            newShaderOptionFlags = (*it)->GetCullable().m_shaderOptionFlags;
+            uint32_t lastShaderOptionFlags = newShaderOptionFlags;
+            for (++it; it != m_associatedInstances.end(); ++it)
+            {
+                ModelDataInstance* modelDataInstance = *it;
+                // If the shader option flag of different intances are different, the mask for the flag is 0, which means the flag is
+                // unspecified.
+                newShaderOptionFlagMask &= ~(lastShaderOptionFlags ^ modelDataInstance->GetCullable().m_shaderOptionFlags);
+                // if the option flag has same value, keep the value.
+                lastShaderOptionFlags = modelDataInstance->GetCullable().m_shaderOptionFlags;
+                newShaderOptionFlags &= lastShaderOptionFlags;                
+            }
         }
 
         // return ture if the shader option flags or mask changed. 

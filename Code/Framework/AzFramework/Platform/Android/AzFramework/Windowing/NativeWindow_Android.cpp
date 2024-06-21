@@ -22,7 +22,7 @@ namespace AzFramework
         ~NativeWindowImpl_Android() override = default;
 
         // NativeWindow::Implementation overrides...
-        void InitWindow(const AZStd::string& title,
+        void InitWindowInternal(const AZStd::string& title,
                         const WindowGeometry& geometry,
                         const WindowStyleMasks& styleMasks) override;
         NativeWindowHandle GetWindowHandle() const override;
@@ -34,9 +34,10 @@ namespace AzFramework
         ANativeWindow* m_nativeWindow = nullptr;
     };
 
-    void NativeWindowImpl_Android::InitWindow([[maybe_unused]]const AZStd::string& title,
-                                              const WindowGeometry& geometry,
-                                              [[maybe_unused]]const WindowStyleMasks& styleMasks)
+    void NativeWindowImpl_Android::InitWindowInternal(
+        [[maybe_unused]] const AZStd::string& title,
+        const WindowGeometry& geometry,
+        [[maybe_unused]]const WindowStyleMasks& styleMasks)
     {
         m_nativeWindow = AZ::Android::Utils::GetWindow();
 
@@ -78,7 +79,7 @@ namespace AzFramework
     void NativeWindowImpl_Android::SetRenderResolution(WindowSize resolution)
     {
         WindowSize newResolution = resolution;
-        if (m_enableCustomizedResolution && m_nativeWindow)
+        if (m_nativeWindow)
         {
             // Fit the aspect ratio of the resolution so it matches the aspect ratio of the window
             // so when the window image is scaled by the OS compositor, it doesn't look stretched in any direction.
