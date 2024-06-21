@@ -23,6 +23,8 @@
 #define VsOutput        VsOutput_Skin
 #endif
 
+#define ENABLE_VERTEX_COLOR 0
+
 #include "../BasePBR/BasePBR_VertexData.azsli"
 
 struct VsInput_Skin

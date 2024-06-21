@@ -24,6 +24,7 @@
     #include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialInputs/TransmissionInput.azsli"
 
     COMMON_OPTIONS_BASE_COLOR()
+    COMMON_OPTIONS_VERTEX_COLOR()
     COMMON_OPTIONS_ROUGHNESS()
     COMMON_OPTIONS_METALLIC()
     COMMON_OPTIONS_SPECULAR_F0()
