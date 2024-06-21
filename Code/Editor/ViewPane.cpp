@@ -374,7 +374,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
                 const unsigned int width = viewportRect.width();
                 const unsigned int height = viewportRect.height();
 
-                int whGCD = gcd(width, height);
+                int whGCD = AZ::GetGCD(width, height);
                 CCustomAspectRatioDlg aspectRatioInputDialog(width / whGCD, height / whGCD, this);
 
                 if (aspectRatioInputDialog.exec() == QDialog::Accepted)

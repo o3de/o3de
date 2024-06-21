@@ -597,7 +597,6 @@ set(FILES
     Util/ImageGif.h
     Util/ImageTIF.cpp
     Util/ImageTIF.h
-    Util/Math.h
     WelcomeScreen/WelcomeScreenDialog.h
     WelcomeScreen/WelcomeScreenDialog.cpp
     WelcomeScreen/WelcomeScreenDialog.ui
