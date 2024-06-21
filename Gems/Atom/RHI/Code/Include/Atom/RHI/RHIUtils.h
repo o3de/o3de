@@ -51,6 +51,10 @@ namespace AZ::RHI
     //! Returns true if the Atom/GraphicsDevMode settings registry key is set
     bool IsGraphicsDevModeEnabled();
 
+    //! Returns the default supervariant name of an empty string if float16 is supported and the name of "NoFloat16" if float16 is not
+    //! supported. This is useful for loading the correct supervariant when a shader needs to have a version with and without float16.
+    const AZ::Name& GetDefaultSupervariantNameWithNoFloat16Fallback();
+
     //! Utility function to write captured pool data to a json document
     //! Ensure the passed pool won't be modified during the call to this function
     //! Available externally to the RHI through the RHIMemoryStatisticsInterface
