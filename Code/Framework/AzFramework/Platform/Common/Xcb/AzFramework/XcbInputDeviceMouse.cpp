@@ -13,6 +13,7 @@
 
 namespace AzFramework
 {
+
     xcb_window_t GetSystemCursorFocusWindow(xcb_connection_t* connection)
     {
         void* systemCursorFocusWindow = nullptr;
@@ -316,25 +317,30 @@ namespace AzFramework
 
     void XcbInputDeviceMouse::SetSystemCursorState(SystemCursorState systemCursorState)
     {
-        if (systemCursorState != m_systemCursorState)
-        {
-            m_systemCursorState = systemCursorState;
+        if (m_captureCursor) {
+            if (systemCursorState != m_systemCursorState) {
+                m_systemCursorState = systemCursorState;
 
-            m_focusWindow = GetSystemCursorFocusWindow(s_xcbConnection);
+                m_focusWindow = GetSystemCursorFocusWindow(s_xcbConnection);
 
-            HandleCursorState(m_focusWindow, systemCursorState);
+                HandleCursorState(m_focusWindow, systemCursorState);
+            }
+
         }
     }
 
     void XcbInputDeviceMouse::HandleCursorState(xcb_window_t window, SystemCursorState systemCursorState)
     {
-        const bool confined = (systemCursorState == SystemCursorState::ConstrainedAndHidden) ||
-            (systemCursorState == SystemCursorState::ConstrainedAndVisible);
-        const bool cursorShown = (systemCursorState == SystemCursorState::ConstrainedAndVisible) ||
-            (systemCursorState == SystemCursorState::UnconstrainedAndVisible);
+        if (m_captureCursor)
+        {
+            const bool confined = (systemCursorState == SystemCursorState::ConstrainedAndHidden) ||
+                (systemCursorState == SystemCursorState::ConstrainedAndVisible);
+            const bool cursorShown = (systemCursorState == SystemCursorState::ConstrainedAndVisible) ||
+                (systemCursorState == SystemCursorState::UnconstrainedAndVisible);
 
-        CreateBarriers(window, confined);
-        ShowCursor(window, cursorShown);
+            CreateBarriers(window, confined);
+            ShowCursor(window, cursorShown);
+        }
     }
 
     SystemCursorState XcbInputDeviceMouse::GetSystemCursorState() const
