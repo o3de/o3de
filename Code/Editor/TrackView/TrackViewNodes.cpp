@@ -2427,8 +2427,6 @@ QIcon CTrackViewNodesCtrl::TrackViewIcon(const CTrackViewTrack* pTrack)
     AnimParamType type = paramType.GetType();
     switch (type)
     {
-    case AnimParamType::FOV:
-        return QIcon(QStringLiteral(":/nodes/tvnodes-02.png"));
     case AnimParamType::Position:
         return QIcon(QStringLiteral(":/nodes/tvnodes-03.png"));
     case AnimParamType::Rotation:
@@ -2478,8 +2476,6 @@ QIcon CTrackViewNodesCtrl::TrackViewNodeIcon(AnimNodeType type)
         return QIcon(QStringLiteral(":/nodes/tvnodes-29.png"));
     case AnimNodeType::Director:
         return QIcon(QStringLiteral(":/nodes/tvnodes-27.png"));
-    case AnimNodeType::Camera:
-        return QIcon(QStringLiteral(":/nodes/tvnodes-08.png"));
     case AnimNodeType::CVar:
         return QIcon(QStringLiteral(":/nodes/tvnodes-15.png"));
     case AnimNodeType::ScriptVar:
