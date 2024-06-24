@@ -41,20 +41,20 @@ namespace AZ::RHI
     };
 
     //! Arguments used when submitting an indirect dispatch rays call into a CommandList.
-    struct DispatchRaysIndirect : public DeviceIndirectArguments
+    struct DeviceDispatchRaysIndirect : public DeviceIndirectArguments
     {
-        DispatchRaysIndirect() = default;
+        DeviceDispatchRaysIndirect() = default;
 
-        DispatchRaysIndirect(
+        DeviceDispatchRaysIndirect(
             uint32_t maxSequenceCount,
             const DeviceIndirectBufferView& indirectBuffer,
             uint64_t indirectBufferByteOffset,
             DeviceDispatchRaysIndirectBuffer* dispatchRaysIndirectBuffer)
-            : DispatchRaysIndirect(maxSequenceCount, indirectBuffer, indirectBufferByteOffset, dispatchRaysIndirectBuffer, nullptr, 0)
+            : DeviceDispatchRaysIndirect(maxSequenceCount, indirectBuffer, indirectBufferByteOffset, dispatchRaysIndirectBuffer, nullptr, 0)
         {
         }
 
-        DispatchRaysIndirect(
+        DeviceDispatchRaysIndirect(
             uint32_t maxSequenceCount,
             const DeviceIndirectBufferView& indirectBuffer,
             uint64_t indirectBufferByteOffset,
@@ -92,7 +92,7 @@ namespace AZ::RHI
         {
         }
 
-        DeviceDispatchRaysArguments(const DispatchRaysIndirect& indirect)
+        DeviceDispatchRaysArguments(const DeviceDispatchRaysIndirect& indirect)
             : m_type{ DispatchRaysType::Indirect }
             , m_indirect{ indirect }
         {
@@ -103,7 +103,7 @@ namespace AZ::RHI
             /// Arguments for a direct dispatch.
             DispatchRaysDirect m_direct;
             /// Arguments for an indirect dispatch.
-            DispatchRaysIndirect m_indirect;
+            DeviceDispatchRaysIndirect m_indirect;
         };
     };
 

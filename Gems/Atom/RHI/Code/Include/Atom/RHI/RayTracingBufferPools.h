@@ -17,7 +17,7 @@ namespace AZ::RHI
 
     //! RayTracingBufferPools
     //!
-    //! This class encapsulates all of the MultiDeviceBufferPools needed for ray tracing, freeing the application
+    //! This class encapsulates all of the BufferPools needed for ray tracing, freeing the application
     //! from setting up and managing the buffers pools individually.
     //!
     class RayTracingBufferPools : public MultiDeviceObject

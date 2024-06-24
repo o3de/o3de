@@ -26,7 +26,7 @@ namespace AZ::RHI
     template<typename T, typename NamespaceType>
     struct Handle;
 
-    using MultiDeviceDrawIndirect = IndirectArguments;
+    using DrawIndirect = IndirectArguments;
 
     //! A structure used to define the type of draw that should happen, directly passed on to the device-specific DrawItems in
     //! DrawItem::SetArguments
@@ -51,7 +51,7 @@ namespace AZ::RHI
         {
         }
 
-        DrawArguments(const MultiDeviceDrawIndirect& indirect)
+        DrawArguments(const DrawIndirect& indirect)
             : m_type{ DrawType::Indirect }
             , m_Indirect{ indirect }
         {
@@ -67,7 +67,7 @@ namespace AZ::RHI
             case DrawType::Linear:
                 return DeviceDrawArguments(m_linear);
             case DrawType::Indirect:
-                return DeviceDrawArguments(DrawIndirect{m_Indirect.m_maxSequenceCount, m_Indirect.m_indirectBufferView->GetDeviceIndirectBufferView(deviceIndex), m_Indirect.m_indirectBufferByteOffset, m_Indirect.m_countBuffer->GetDeviceBuffer(deviceIndex).get(), m_Indirect.m_countBufferByteOffset});
+                return DeviceDrawArguments(DeviceDrawIndirect{m_Indirect.m_maxSequenceCount, m_Indirect.m_indirectBufferView->GetDeviceIndirectBufferView(deviceIndex), m_Indirect.m_indirectBufferByteOffset, m_Indirect.m_countBuffer->GetDeviceBuffer(deviceIndex).get(), m_Indirect.m_countBufferByteOffset});
             default:
                 return DeviceDrawArguments();
             }
@@ -77,7 +77,7 @@ namespace AZ::RHI
         union {
             DrawIndexed m_indexed;
             DrawLinear m_linear;
-            MultiDeviceDrawIndirect m_Indirect;
+            DrawIndirect m_Indirect;
         };
     };
 

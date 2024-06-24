@@ -65,7 +65,7 @@ namespace AZ::RHI
 
     //! Arguments used when submitting an indirect dispatch call into a CommandList.
     //! The indirect dispatch arguments are the same ones as the indirect draw ones.
-    using DispatchIndirect = DeviceIndirectArguments;
+    using DeviceDispatchIndirect = DeviceIndirectArguments;
 
     enum class DispatchType : uint8_t
     {
@@ -86,7 +86,7 @@ namespace AZ::RHI
             , m_direct{ direct }
         {}
 
-        DeviceDispatchArguments(const DispatchIndirect& indirect)
+        DeviceDispatchArguments(const DeviceDispatchIndirect& indirect)
             : m_type{ DispatchType::Indirect }
             , m_indirect{ indirect }
         {}
@@ -97,7 +97,7 @@ namespace AZ::RHI
             /// Arguments for a direct dispatch.
             DispatchDirect m_direct;
             /// Arguments for an indirect dispatch.
-            DispatchIndirect m_indirect;
+            DeviceDispatchIndirect m_indirect;
         };
     };
 

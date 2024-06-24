@@ -326,7 +326,7 @@ namespace AZ
             }
             case RHI::DrawType::Indirect:
             {
-                const RHI::DrawIndirect& indirect = drawItem.m_arguments.m_indirect;
+                const RHI::DeviceDrawIndirect& indirect = drawItem.m_arguments.m_indirect;
                 const RHI::IndirectBufferLayout& layout = indirect.m_indirectBufferView->GetSignature()->GetDescriptor().m_layout;
                 decltype(context.CmdDrawIndexedIndirectCountKHR) drawIndirectCountFunctionPtr = nullptr;
                 decltype(context.CmdDrawIndexedIndirect) drawIndirectfunctionPtr = nullptr;

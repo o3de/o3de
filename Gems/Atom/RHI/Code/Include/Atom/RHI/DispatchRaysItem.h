@@ -25,21 +25,21 @@ namespace AZ::RHI
     class DeviceImageView;
     class DeviceBufferView;
 
-    struct MultiDeviceDispatchRaysIndirect : public IndirectArguments
+    struct DispatchRaysIndirect : public IndirectArguments
     {
-        MultiDeviceDispatchRaysIndirect() = default;
+        DispatchRaysIndirect() = default;
 
-        MultiDeviceDispatchRaysIndirect(
+        DispatchRaysIndirect(
             uint32_t maxSequenceCount,
             const IndirectBufferView& indirectBuffer,
             uint64_t indirectBufferByteOffset,
             DispatchRaysIndirectBuffer* dispatchRaysIndirectBuffer)
-            : MultiDeviceDispatchRaysIndirect(
+            : DispatchRaysIndirect(
                   maxSequenceCount, indirectBuffer, indirectBufferByteOffset, dispatchRaysIndirectBuffer, nullptr, 0)
         {
         }
 
-        MultiDeviceDispatchRaysIndirect(
+        DispatchRaysIndirect(
             uint32_t maxSequenceCount,
             const IndirectBufferView& indirectBuffer,
             uint64_t indirectBufferByteOffset,
@@ -71,7 +71,7 @@ namespace AZ::RHI
         {
         }
 
-        DispatchRaysArguments(const MultiDeviceDispatchRaysIndirect& indirect)
+        DispatchRaysArguments(const DispatchRaysIndirect& indirect)
             : m_type{ DispatchRaysType::Indirect }
             , m_Indirect{ indirect }
         {
@@ -85,7 +85,7 @@ namespace AZ::RHI
             case DispatchRaysType::Direct:
                 return DeviceDispatchRaysArguments(m_direct);
             case DispatchRaysType::Indirect:
-                return DeviceDispatchRaysArguments(DispatchRaysIndirect{
+                return DeviceDispatchRaysArguments(DeviceDispatchRaysIndirect{
                     m_Indirect.m_maxSequenceCount,
                     m_Indirect.m_indirectBufferView->GetDeviceIndirectBufferView(deviceIndex),
                     m_Indirect.m_indirectBufferByteOffset,
@@ -104,7 +104,7 @@ namespace AZ::RHI
             //! Arguments for a direct dispatch.
             DispatchRaysDirect m_direct;
             //! Arguments for an indirect dispatch.
-            MultiDeviceDispatchRaysIndirect m_Indirect;
+            DispatchRaysIndirect m_Indirect;
         };
     };
 

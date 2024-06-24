@@ -70,7 +70,7 @@ namespace AZ::RHI
         uint32_t m_indexOffset = 0;
     };
 
-    using DrawIndirect = DeviceIndirectArguments;
+    using DeviceDrawIndirect = DeviceIndirectArguments;
 
     enum class DrawType : uint8_t
     {
@@ -96,7 +96,7 @@ namespace AZ::RHI
         {}
 
 
-        DeviceDrawArguments(const DrawIndirect& indirect)
+        DeviceDrawArguments(const DeviceDrawIndirect& indirect)
             : m_type{ DrawType::Indirect }
             , m_indirect{ indirect }
         {}
@@ -106,7 +106,7 @@ namespace AZ::RHI
         {
             DrawIndexed m_indexed;
             DrawLinear m_linear;
-            DrawIndirect m_indirect;
+            DeviceDrawIndirect m_indirect;
         };
     };
 

@@ -187,7 +187,7 @@ namespace AZ::RHI
         using ResourceTypeMask = DeviceShaderResourceGroupData::ResourceTypeMask;
 
         // Structure to hold all the bindless views and the BindlessResourceType related to it
-        struct MultiDeviceBindlessResourceViews
+        struct BindlessResourceViews
         {
             BindlessResourceType m_bindlessResourceType = AZ::RHI::BindlessResourceType::Count;
             AZStd::vector<ConstPtr<ResourceView>> m_bindlessResources;
@@ -221,7 +221,7 @@ namespace AZ::RHI
         const uint32_t GetBindlessViewsSize() const;
 
         //! Return all the bindless views referenced indirectly  via SetBindlessViews api
-        const AZStd::unordered_map<AZStd::pair<ShaderInputBufferIndex, uint32_t>, MultiDeviceBindlessResourceViews>& GetBindlessResourceViews() const;
+        const AZStd::unordered_map<AZStd::pair<ShaderInputBufferIndex, uint32_t>, BindlessResourceViews>& GetBindlessResourceViews() const;
 
     private:
         static const ConstPtr<ImageView> s_nullImageView;
@@ -243,7 +243,7 @@ namespace AZ::RHI
         // The map below is used to manage ownership of buffer and image views that aren't bound directly to the shader, but implicitly
         // referenced through indirection constants. The key corresponds to the pair of (buffer input slot, index) where the indirection
         // constants reside (an array of indirection buffers is supported)
-        AZStd::unordered_map<AZStd::pair<ShaderInputBufferIndex, uint32_t>, MultiDeviceBindlessResourceViews> m_bindlessResourceViews;
+        AZStd::unordered_map<AZStd::pair<ShaderInputBufferIndex, uint32_t>, BindlessResourceViews> m_bindlessResourceViews;
 
         //! The backing data store of constants used only for the getters, actual storage happens in the single device SRGs.
         ConstantsData m_constantsData;

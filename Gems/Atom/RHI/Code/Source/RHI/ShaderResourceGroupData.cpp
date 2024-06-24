@@ -551,7 +551,7 @@ namespace AZ::RHI
         return aznumeric_cast<uint32_t>(m_bindlessResourceViews.size());
     }
 
-    const AZStd::unordered_map<AZStd::pair<ShaderInputBufferIndex, uint32_t>, ShaderResourceGroupData::MultiDeviceBindlessResourceViews>&
+    const AZStd::unordered_map<AZStd::pair<ShaderInputBufferIndex, uint32_t>, ShaderResourceGroupData::BindlessResourceViews>&
     ShaderResourceGroupData::GetBindlessResourceViews() const
     {
         return m_bindlessResourceViews;

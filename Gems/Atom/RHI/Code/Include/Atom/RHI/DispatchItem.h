@@ -20,7 +20,7 @@ namespace AZ::RHI
 {
     //! Arguments used when submitting an indirect dispatch call into a CommandList.
     //! The indirect dispatch arguments are the same ones as the indirect draw ones.
-    using MultiDeviceDispatchIndirect = IndirectArguments;
+    using DispatchIndirect = IndirectArguments;
 
     //! Encapsulates the arguments that are specific to a type of dispatch.
     //! It uses a union to be able to store all possible arguments.
@@ -39,7 +39,7 @@ namespace AZ::RHI
         {
         }
 
-        DispatchArguments(const MultiDeviceDispatchIndirect& indirect)
+        DispatchArguments(const DispatchIndirect& indirect)
             : m_type{ DispatchType::Indirect }
             , m_Indirect{ indirect }
         {
@@ -53,7 +53,7 @@ namespace AZ::RHI
             case DispatchType::Direct:
                 return DeviceDispatchArguments(m_direct);
             case DispatchType::Indirect:
-                return DeviceDispatchArguments(DispatchIndirect{m_Indirect.m_maxSequenceCount, m_Indirect.m_indirectBufferView->GetDeviceIndirectBufferView(deviceIndex), m_Indirect.m_indirectBufferByteOffset, m_Indirect.m_countBuffer ? m_Indirect.m_countBuffer->GetDeviceBuffer(deviceIndex).get() : nullptr, m_Indirect.m_countBufferByteOffset});
+                return DeviceDispatchArguments(DeviceDispatchIndirect{m_Indirect.m_maxSequenceCount, m_Indirect.m_indirectBufferView->GetDeviceIndirectBufferView(deviceIndex), m_Indirect.m_indirectBufferByteOffset, m_Indirect.m_countBuffer ? m_Indirect.m_countBuffer->GetDeviceBuffer(deviceIndex).get() : nullptr, m_Indirect.m_countBufferByteOffset});
             default:
                 return DeviceDispatchArguments();
             }
@@ -64,7 +64,7 @@ namespace AZ::RHI
             //! Arguments for a direct dispatch.
             DispatchDirect m_direct;
             //! Arguments for an indirect dispatch.
-            MultiDeviceDispatchIndirect m_Indirect;
+            DispatchIndirect m_Indirect;
         };
     };
 
