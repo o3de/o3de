@@ -61,7 +61,7 @@ namespace AZ
             void DrawPassInfo();
             void DrawMemoryInfo();
 #if defined (CARBONATED)
-            void DrawFramerate(bool drawFpsOnly = false);
+            void DrawFramerate(bool drawAverageOnly = false);
             static constexpr float BaseFontSize = 1.2f;
 #else
             void DrawFramerate();

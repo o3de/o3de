@@ -31,6 +31,12 @@
 
 namespace AZ::Render
 {
+#if defined (CARBONATED)
+    #define DISPLAY_INFO_USAGE "Usage: r_displayInfo [0=off/1=show/2=enhanced/3=compact/4=fps]"
+#else
+    #define DISPLAY_INFO_USAGE "Usage: r_displayInfo [0=off/1=show/2=enhanced/3=compact]"
+#endif
+
     AZ_CVAR(int, r_displayInfo, 1, [](const int& newDisplayInfoVal)->void
         {
             // Forward this event to the system component so it can update accordingly.
@@ -41,7 +47,7 @@ namespace AZ::Render
             );
         }, AZ::ConsoleFunctorFlags::DontReplicate,
         "Toggles debugging information display.\n"
-        "Usage: r_displayInfo [0=off/1=show/2=enhanced/3=compact/4=fps]" // CARBONATED: changed string parameter in macro
+        DISPLAY_INFO_USAGE
     );
     AZ_CVAR(float, r_fpsCalcInterval, 1.0f, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "The time period over which to calculate the framerate for r_displayInfo."
@@ -393,7 +399,7 @@ namespace AZ::Render
     }
 
 #if defined (CARBONATED)
-    void AtomViewportDisplayInfoSystemComponent::DrawFramerate(bool drawFpsOnly)
+    void AtomViewportDisplayInfoSystemComponent::DrawFramerate(bool drawAverageOnly)
 #else
     void AtomViewportDisplayInfoSystemComponent::DrawFramerate()
 #endif
@@ -432,7 +438,7 @@ namespace AZ::Render
         };
 
 #if defined (CARBONATED)
-        if (drawFpsOnly)
+        if (drawAverageOnly)
         {
             DrawLine(
                 AZStd::string::format(
