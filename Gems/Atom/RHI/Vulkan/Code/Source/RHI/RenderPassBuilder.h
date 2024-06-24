@@ -43,7 +43,7 @@ namespace AZ
             ~RenderPassBuilder() = default;
 
             //! Adds the attachments that are used by the Scope into the renderpass descriptor.
-            void AddScopeAttachments(const Scope& scope);
+            void AddScopeAttachments(Scope& scope);
 
             //! Builds the renderpass and framebuffer from the information collected from the scopes.
             RHI::ResultCode End(RenderPassContext& builtContext);
@@ -81,7 +81,7 @@ namespace AZ
 
             auto prologueBarrierFoundIter = AZStd::find_if(prologueBarriers.begin(), prologueBarriers.end(), [resourceView](const Scope::Barrier& barrier)
             {
-                return barrier.BlocksResource(*resourceView, Scope::OverlapType::Partial);
+                return barrier.Overlaps(*resourceView, Scope::OverlapType::Partial);
             });
 
             auto lastUseIter = m_lastSubpassResourceUse.find(resourceView);
@@ -93,7 +93,7 @@ namespace AZ
 
             auto epilogueBarrierFoundIter = AZStd::find_if(epilogueBarriers.begin(), epilogueBarriers.end(), [resourceView](const Scope::Barrier& barrier)
             {
-                return barrier.BlocksResource(*resourceView, Scope::OverlapType::Partial);
+                return barrier.Overlaps(*resourceView, Scope::OverlapType::Partial);
             });
 
             if (epilogueBarrierFoundIter != epilogueBarriers.end())

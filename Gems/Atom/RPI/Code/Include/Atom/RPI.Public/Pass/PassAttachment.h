@@ -173,6 +173,9 @@ namespace AZ
             //! ScopeAttachmentUsage used when binding the attachment with the RHI
             RHI::ScopeAttachmentUsage m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Uninitialized;
 
+            //! ScopeAttachmentStage that this binding will be used
+            RHI::ScopeAttachmentStage m_scopeAttachmentStage = RHI::ScopeAttachmentStage::Uninitialized;
+
             //! The scope descriptor to be used for this binding during rendering
             RHI::UnifiedScopeAttachmentDescriptor m_unifiedScopeDesc;
 

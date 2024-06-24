@@ -79,7 +79,6 @@
 
 #include "QtViewPaneManager.h"
 #include "ViewPane.h"
-#include "Include/IObjectManager.h"
 #include "Include/Command.h"
 #include "Commands/CommandManager.h"
 #include "SettingsManagerDialog.h"

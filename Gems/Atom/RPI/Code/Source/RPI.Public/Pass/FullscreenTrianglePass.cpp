@@ -39,6 +39,7 @@ namespace AZ
             , m_item(RHI::MultiDevice::AllDevices)
             , m_passDescriptor(descriptor)
         {
+            m_defaultShaderAttachmentStage = RHI::ScopeAttachmentStage::FragmentShader;
             LoadShader();
         }
 

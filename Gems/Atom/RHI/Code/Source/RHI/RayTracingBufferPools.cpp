@@ -16,31 +16,37 @@ namespace AZ::RHI
     const RHI::Ptr<RHI::BufferPool>& RayTracingBufferPools::GetShaderTableBufferPool() const
     {
         AZ_Assert(m_initialized, "RayTracingBufferPools was not initialized");
-        return m_ShaderTableBufferPool;
+        return m_shaderTableBufferPool;
     }
 
     const RHI::Ptr<RHI::BufferPool>& RayTracingBufferPools::GetScratchBufferPool() const
     {
         AZ_Assert(m_initialized, "RayTracingBufferPools was not initialized");
-        return m_ScratchBufferPool;
+        return m_scratchBufferPool;
+    }
+
+    const RHI::Ptr<RHI::BufferPool>& RayTracingBufferPools::GetAabbStagingBufferPool() const
+    {
+        AZ_Assert(m_initialized, "RayTracingBufferPools was not initialized");
+        return m_aabbStagingBufferPool;
     }
 
     const RHI::Ptr<RHI::BufferPool>& RayTracingBufferPools::GetBlasBufferPool() const
     {
         AZ_Assert(m_initialized, "RayTracingBufferPools was not initialized");
-        return m_BlasBufferPool;
+        return m_blasBufferPool;
     }
 
     const RHI::Ptr<RHI::BufferPool>& RayTracingBufferPools::GetTlasInstancesBufferPool() const
     {
         AZ_Assert(m_initialized, "RayTracingBufferPools was not initialized");
-        return m_TlasInstancesBufferPool;
+        return m_tlasInstancesBufferPool;
     }
 
     const RHI::Ptr<RHI::BufferPool>& RayTracingBufferPools::GetTlasBufferPool() const
     {
         AZ_Assert(m_initialized, "RayTracingBufferPools was not initialized");
-        return m_TlasBufferPool;
+        return m_tlasBufferPool;
     }
 
     void RayTracingBufferPools::Init(MultiDevice::DeviceMask deviceMask)
@@ -62,72 +68,86 @@ namespace AZ::RHI
                 return true;
             });
 
-        m_ShaderTableBufferPool = aznew RHI::BufferPool();
-        m_ShaderTableBufferPool->Init(
+        m_shaderTableBufferPool = aznew RHI::BufferPool();
+        m_shaderTableBufferPool->Init(
             deviceMask,
             [this]()
             {
                 IterateObjects<DeviceRayTracingBufferPools>(
                     [this]([[maybe_unused]] auto deviceIndex, auto deviceBufferPool)
                     {
-                        m_ShaderTableBufferPool->m_deviceObjects[deviceIndex] = deviceBufferPool->GetShaderTableBufferPool().get();
-                        m_ShaderTableBufferPool->m_descriptor = deviceBufferPool->GetShaderTableBufferPool()->GetDescriptor();
+                        m_shaderTableBufferPool->m_deviceObjects[deviceIndex] = deviceBufferPool->GetShaderTableBufferPool().get();
+                        m_shaderTableBufferPool->m_descriptor = deviceBufferPool->GetShaderTableBufferPool()->GetDescriptor();
                     });
                 return ResultCode::Success;
             });
 
-        m_ScratchBufferPool = aznew RHI::BufferPool();
-        m_ScratchBufferPool->Init(
+        m_scratchBufferPool = aznew RHI::BufferPool();
+        m_scratchBufferPool->Init(
             deviceMask,
             [this]()
             {
                 IterateObjects<DeviceRayTracingBufferPools>(
                     [this]([[maybe_unused]] auto deviceIndex, auto deviceBufferPool)
                     {
-                        m_ScratchBufferPool->m_deviceObjects[deviceIndex] = deviceBufferPool->GetScratchBufferPool().get();
-                        m_ScratchBufferPool->m_descriptor = deviceBufferPool->GetScratchBufferPool()->GetDescriptor();
+                        m_scratchBufferPool->m_deviceObjects[deviceIndex] = deviceBufferPool->GetScratchBufferPool().get();
+                        m_scratchBufferPool->m_descriptor = deviceBufferPool->GetScratchBufferPool()->GetDescriptor();
                     });
                 return ResultCode::Success;
             });
 
-        m_BlasBufferPool = aznew RHI::BufferPool();
-        m_BlasBufferPool->Init(
+        m_aabbStagingBufferPool = aznew RHI::BufferPool();
+        m_aabbStagingBufferPool->Init(
             deviceMask,
             [this]()
             {
                 IterateObjects<DeviceRayTracingBufferPools>(
                     [this]([[maybe_unused]] auto deviceIndex, auto deviceBufferPool)
                     {
-                        m_BlasBufferPool->m_deviceObjects[deviceIndex] = deviceBufferPool->GetBlasBufferPool().get();
-                        m_BlasBufferPool->m_descriptor = deviceBufferPool->GetBlasBufferPool()->GetDescriptor();
+                        m_aabbStagingBufferPool->m_deviceObjects[deviceIndex] = deviceBufferPool->GetAabbStagingBufferPool().get();
+                        m_aabbStagingBufferPool->m_descriptor = deviceBufferPool->GetAabbStagingBufferPool()->GetDescriptor();
                     });
                 return ResultCode::Success;
             });
 
-        m_TlasInstancesBufferPool = aznew RHI::BufferPool();
-        m_TlasInstancesBufferPool->Init(
+        m_blasBufferPool = aznew RHI::BufferPool();
+        m_blasBufferPool->Init(
             deviceMask,
             [this]()
             {
                 IterateObjects<DeviceRayTracingBufferPools>(
                     [this]([[maybe_unused]] auto deviceIndex, auto deviceBufferPool)
                     {
-                        m_TlasInstancesBufferPool->m_deviceObjects[deviceIndex] = deviceBufferPool->GetTlasInstancesBufferPool().get();
-                        m_TlasInstancesBufferPool->m_descriptor = deviceBufferPool->GetTlasInstancesBufferPool()->GetDescriptor();
+                        m_blasBufferPool->m_deviceObjects[deviceIndex] = deviceBufferPool->GetBlasBufferPool().get();
+                        m_blasBufferPool->m_descriptor = deviceBufferPool->GetBlasBufferPool()->GetDescriptor();
                     });
                 return ResultCode::Success;
             });
 
-        m_TlasBufferPool = aznew RHI::BufferPool();
-        m_TlasBufferPool->Init(
+        m_tlasInstancesBufferPool = aznew RHI::BufferPool();
+        m_tlasInstancesBufferPool->Init(
             deviceMask,
             [this]()
             {
                 IterateObjects<DeviceRayTracingBufferPools>(
                     [this]([[maybe_unused]] auto deviceIndex, auto deviceBufferPool)
                     {
-                        m_TlasBufferPool->m_deviceObjects[deviceIndex] = deviceBufferPool->GetTlasBufferPool().get();
-                        m_TlasBufferPool->m_descriptor = deviceBufferPool->GetTlasBufferPool()->GetDescriptor();
+                        m_tlasInstancesBufferPool->m_deviceObjects[deviceIndex] = deviceBufferPool->GetTlasInstancesBufferPool().get();
+                        m_tlasInstancesBufferPool->m_descriptor = deviceBufferPool->GetTlasInstancesBufferPool()->GetDescriptor();
+                    });
+                return ResultCode::Success;
+            });
+
+        m_tlasBufferPool = aznew RHI::BufferPool();
+        m_tlasBufferPool->Init(
+            deviceMask,
+            [this]()
+            {
+                IterateObjects<DeviceRayTracingBufferPools>(
+                    [this]([[maybe_unused]] auto deviceIndex, auto deviceBufferPool)
+                    {
+                        m_tlasBufferPool->m_deviceObjects[deviceIndex] = deviceBufferPool->GetTlasBufferPool().get();
+                        m_tlasBufferPool->m_descriptor = deviceBufferPool->GetTlasBufferPool()->GetDescriptor();
                     });
                 return ResultCode::Success;
             });

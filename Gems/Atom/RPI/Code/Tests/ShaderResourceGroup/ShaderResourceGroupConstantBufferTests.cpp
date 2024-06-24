@@ -434,4 +434,40 @@ namespace UnitTest
             AZ_TEST_STOP_ASSERTTEST(1);
         }
     }
+
+    TEST_F(ShaderResourceGroupConstantBufferTests, TestCopyShaderResourceGroupData)
+    {
+        using namespace AZ;
+        const RHI::ShaderInputConstantIndex inputIndex(4);
+
+        // Check using inputIndex
+        EXPECT_TRUE(m_srg->SetConstant(inputIndex, 51));
+
+        auto testSrg2 = RPI::ShaderResourceGroup::Create(m_shaderAsset, AZ::RPI::DefaultSupervariantIndex, m_srgLayout->GetName());
+
+        EXPECT_TRUE(testSrg2->CopyShaderResourceGroupData(*m_srg));
+        EXPECT_EQ(m_srg->GetConstant<int32_t>(inputIndex), testSrg2->GetConstant<int32_t>(inputIndex));
+    }
+
+    TEST_F(ShaderResourceGroupConstantBufferTests, TestPartialCopyShaderResourceGroupData)
+    {
+        using namespace AZ;
+
+        RHI::Ptr<RHI::ShaderResourceGroupLayout> srgLayout2 = RHI::ShaderResourceGroupLayout::Create();
+        srgLayout2->SetName(Name("partial"));
+        srgLayout2->SetBindingSlot(0);
+        srgLayout2->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name("MyUint"), 0, sizeof(uint32_t), 0, 0 });
+        srgLayout2->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name("MyBool1337"), sizeof(uint32_t), sizeof(bool), 0, 0 });
+        srgLayout2->Finalize();
+
+        auto testSrgShaderAsset2 = CreateTestShaderAsset(Uuid::CreateRandom(), srgLayout2);
+        auto testSrg2 = RPI::ShaderResourceGroup::Create(testSrgShaderAsset2, AZ::RPI::DefaultSupervariantIndex, srgLayout2->GetName());
+
+        const RHI::ShaderInputConstantIndex inputIndex(8);
+        EXPECT_TRUE(m_srg->SetConstant(inputIndex, 23));
+        EXPECT_TRUE(m_srg->SetConstant(RHI::ShaderInputConstantIndex{0}, false));
+
+        EXPECT_FALSE(testSrg2->CopyShaderResourceGroupData(*m_srg));
+        EXPECT_EQ(m_srg->GetConstant<uint32_t>(inputIndex), testSrg2->GetConstant<uint32_t>(RHI::ShaderInputConstantIndex{ 0 }));
+    }
 }

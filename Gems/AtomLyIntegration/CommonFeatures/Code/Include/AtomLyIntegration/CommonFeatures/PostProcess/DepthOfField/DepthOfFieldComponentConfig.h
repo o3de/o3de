@@ -39,7 +39,8 @@ namespace AZ
 
             bool IsCameraEntityInvalid() const { return !m_cameraEntityId.IsValid(); }
             bool ArePropertiesReadOnly() const { return !m_enabled || IsCameraEntityInvalid(); }
-            bool IsAutoFocusReadOnly() const { return !m_enableAutoFocus || ArePropertiesReadOnly(); }
+            bool IsAutoFocusReadOnly() const { return !m_enableAutoFocus || m_focusedEntityId.IsValid() || ArePropertiesReadOnly(); }
+            bool IsFocusedEntityReadonly() const { return !m_enableAutoFocus || ArePropertiesReadOnly(); }
             bool IsFocusDistanceReadOnly() const { return m_enableAutoFocus || ArePropertiesReadOnly(); }
         };
     }

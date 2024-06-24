@@ -51,7 +51,7 @@ namespace AZ
                 const AZ::Aabb& aabb = descriptor->GetAABB();
                 buffers.m_aabbBuffer = RHI::Factory::Get().CreateBuffer();
                 AZ::RHI::BufferDescriptor blasBufferDescriptor;
-                blasBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingAccelerationStructure;
+                blasBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::CopyRead | RHI::BufferBindFlags::RayTracingAccelerationStructure;
                 blasBufferDescriptor.m_byteCount = sizeof(VkAabbPositionsKHR);
                 blasBufferDescriptor.m_alignment = RHI::AlignUp(sizeof(VkAabbPositionsKHR), 8);
 
@@ -67,7 +67,7 @@ namespace AZ
                 blasBufferRequest.m_buffer = buffers.m_aabbBuffer.get();
                 blasBufferRequest.m_initialData = &rtAabb;
                 blasBufferRequest.m_descriptor = blasBufferDescriptor;
-                auto resultCode = bufferPools.GetBlasBufferPool()->InitBuffer(blasBufferRequest);
+                auto resultCode = bufferPools.GetAabbStagingBufferPool()->InitBuffer(blasBufferRequest);
                 if (resultCode != AZ::RHI::ResultCode::Success)
                 {
                     AZ_Error("RayTracing", false, "Failed to initialize BLAS buffer index buffer with error code: %d", resultCode);

@@ -298,6 +298,14 @@ namespace AZ
             AZStd::span<const uint8_t> GetConstantRaw(RHI::ShaderInputNameIndex& inputIndex) const;
             AZStd::span<const uint8_t> GetConstantRaw(RHI::ShaderInputConstantIndex inputIndex) const;
 
+            /**
+            * Copies the Shader Resource Group Data from another ShaderResourceGroup. It only copies the
+            * Shader Inputs that are present in both ShaderResourceGroups.
+            * Return true if all values from the ShaderResourceGroup were updated. False means that some
+            * shader inputs were not present in the "other" ShaderResourceGroup.
+            */
+            bool CopyShaderResourceGroupData(const ShaderResourceGroup& other);
+
         private:
             ShaderResourceGroup() = default;
 

@@ -101,6 +101,9 @@ namespace AZ
             // Set the attachment state of the image subresources. If argument "range" is nullptr, then the new state will be applied to all subresources.
             void SetAttachmentState(D3D12_RESOURCE_STATES state, const RHI::ImageSubresourceRange* range = nullptr);
 
+            // Set the attachment state of the image subresources using the subresource index.
+            void SetAttachmentState(D3D12_RESOURCE_STATES state, uint32_t subresourceIndex);
+
             // Get the attachment state of some of the subresources of the image by their RHI::ImageSubresourceRange.
             // If argument "range" is nullptr, then the state for all subresource will be return.
             AZStd::vector<SubresourceRangeAttachmentState> GetAttachmentStateByRange(const RHI::ImageSubresourceRange* range = nullptr) const;

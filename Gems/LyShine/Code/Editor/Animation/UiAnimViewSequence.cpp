@@ -16,9 +16,6 @@
 #include "UiAnimViewNodeFactories.h"
 #include "UiAnimViewSequence.h"
 #include "AnimationContext.h"
-#if UI_ANIMATION_REMOVED
-#include "Objects/EntityObject.h"
-#endif
 #include "Clipboard.h"
 
 #include "UiEditorAnimationBus.h"
@@ -488,8 +485,6 @@ void CUiAnimViewSequence::SelectSelectedNodesInViewport()
     assert(UiAnimUndo::IsRecording());
 
     CUiAnimViewAnimNodeBundle selectedNodes = GetSelectedAnimNodes();
-
-    std::vector<CBaseObject*> entitiesToBeSelected;
 
 #if UI_ANIMATION_REMOVED // lights
     const unsigned int numSelectedNodes = selectedNodes.GetCount();

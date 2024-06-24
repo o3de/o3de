@@ -214,6 +214,23 @@ namespace AZ::RHI
             ->Value("ShadingRate", ScopeAttachmentUsage::ShadingRate)
             ;
 
+        serializeContext->Enum<ScopeAttachmentStage>()
+            ->Value("VertexShader", ScopeAttachmentStage::VertexShader)
+            ->Value("FragmentShader", ScopeAttachmentStage::FragmentShader)
+            ->Value("ComputeShader", ScopeAttachmentStage::ComputeShader)
+            ->Value("RayTracingShader", ScopeAttachmentStage::RayTracingShader)
+            ->Value("EarlyFragmentTest", ScopeAttachmentStage::EarlyFragmentTest)
+            ->Value("LateFragmentTest", ScopeAttachmentStage::LateFragmentTest)
+            ->Value("ColorAttachmentOutput", ScopeAttachmentStage::ColorAttachmentOutput)
+            ->Value("Copy", ScopeAttachmentStage::Copy)
+            ->Value("Predication", ScopeAttachmentStage::Predication)
+            ->Value("DrawIndirect", ScopeAttachmentStage::DrawIndirect)
+            ->Value("VertexInput", ScopeAttachmentStage::VertexInput)
+            ->Value("ShadingRate", ScopeAttachmentStage::ShadingRate)
+            ->Value("AnyGraphics", ScopeAttachmentStage::AnyGraphics)
+            ->Value("Any", ScopeAttachmentStage::Any)
+            ;
+
         serializeContext->Enum<HardwareQueueClass>()
             ->Value("Graphics", HardwareQueueClass::Graphics)
             ->Value("Compute", HardwareQueueClass::Compute)

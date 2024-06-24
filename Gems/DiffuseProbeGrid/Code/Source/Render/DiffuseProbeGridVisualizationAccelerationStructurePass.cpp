@@ -116,7 +116,8 @@ namespace AZ
                         desc.m_bufferViewDescriptor = bufferViewDescriptor;
                         desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::DontCare;
 
-                        frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Write);
+                        frameGraph.UseShaderAttachment(
+                            desc, RHI::ScopeAttachmentAccess::Write, RHI::ScopeAttachmentStage::RayTracingShader);
                     }
 
                     // TLAS Instances buffer
@@ -136,7 +137,7 @@ namespace AZ
                         desc.m_bufferViewDescriptor = bufferViewDescriptor;
                         desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
 
-                        frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read);
+                        frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentStage::RayTracingShader);
                     }
                 }
             }

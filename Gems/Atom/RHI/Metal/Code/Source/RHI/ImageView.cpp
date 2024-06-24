@@ -30,8 +30,8 @@ namespace AZ
             
             BuildImageSubResourceRange(resourceBase);
             const RHI::ImageSubresourceRange& range = GetImageSubresourceRange();
-            NSRange levelRange = {range.m_mipSliceMin, static_cast<NSUInteger>(range.m_mipSliceMax - range.m_mipSliceMin + 1)};
-            NSRange sliceRange = {range.m_arraySliceMin, static_cast<NSUInteger>(range.m_arraySliceMax - range.m_arraySliceMin + 1)};
+            NSRange levelRange = {range.m_mipSliceMin, AZStd::min(static_cast<NSUInteger>(range.m_mipSliceMax - range.m_mipSliceMin + 1), static_cast<NSUInteger>(imgDesc.m_mipLevels))};
+            NSRange sliceRange = {range.m_arraySliceMin, AZStd::min(static_cast<NSUInteger>(range.m_arraySliceMax - range.m_arraySliceMin + 1), static_cast<NSUInteger>(imgDesc.m_arraySize))};
             
             id<MTLTexture> mtlTexture = image.GetMemoryView().GetGpuAddress<id<MTLTexture>>();
             MTLPixelFormat textureFormat = ConvertPixelFormat(image.GetDescriptor().m_format);
@@ -55,8 +55,8 @@ namespace AZ
             
             //Create a new view if the format, mip range or slice range has changed
             if( isViewFormatDifferent ||
-                levelRange.length != mtlTexture.mipmapLevelCount ||
-                sliceRange.length != textureLength)
+                levelRange.location != 0 || levelRange.length != mtlTexture.mipmapLevelCount ||
+                sliceRange.location != 0 || sliceRange.length != textureLength)
             {
                 //Protection against creating a view with an invalid format
                 //If view format is invalid use the base texture's format
@@ -89,8 +89,12 @@ namespace AZ
             if(textureView)
             {
                 m_format = textureView.pixelFormat;
-                AZ_Assert(m_format != MTLPixelFormatInvalid, "Invalid pixel format");
             }
+            else
+            {
+                m_format = textureFormat;
+            }
+            AZ_Assert(m_format != MTLPixelFormatInvalid, "Invalid pixel format");
 
             // If a depth stencil image does not have depth or aspect flag set it is probably going to be used as
             // a render target and do not need to be added to the bindless heap

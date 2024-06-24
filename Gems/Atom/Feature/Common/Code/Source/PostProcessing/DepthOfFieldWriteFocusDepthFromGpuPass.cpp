@@ -34,7 +34,7 @@ namespace AZ
             desc.m_attachmentId = m_bufferRef->GetAttachmentId();
             desc.m_bufferViewDescriptor = m_bufferRef->GetBufferViewDescriptor();
             desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::DontCare;
-            frameGraph.UseShaderAttachment(desc, AZ::RHI::ScopeAttachmentAccess::Write);
+            frameGraph.UseShaderAttachment(desc, AZ::RHI::ScopeAttachmentAccess::Write, RHI::ScopeAttachmentStage::ComputeShader);
         }
 
         void DepthOfFieldWriteFocusDepthFromGpuPass::CompileResources(const RHI::FrameGraphCompileContext& context)

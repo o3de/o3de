@@ -45,13 +45,15 @@ namespace AZ
             //! Adds a transition barrier that will be emitted at the beginning of the scope.
             //! Can specify a state that the command list need to be before emitting the barrier.
             //! A null state means that it doesn't matter in which state the command list is.
-            void QueuePrologueTransition(
+            //! Returns the barrier inserted. This barrier may have been merged with a previously inserted barrier.
+            const D3D12_RESOURCE_TRANSITION_BARRIER& QueuePrologueTransition(
                 const D3D12_RESOURCE_TRANSITION_BARRIER& transitionBarrier,
                 const BarrierOp::CommandListState* state = nullptr);
             //! Adds a transition barrier that will be emitted at the end of the scope.
             //! Can specify a state that the command list need to be before emitting the barrier.
             //! A null state means that it doesn't matter in which state the command list is.
-            void QueueEpilogueTransition(
+            //! Returns the barrier inserted. This barrier may have been merged with a previously inserted barrier.
+            const D3D12_RESOURCE_TRANSITION_BARRIER& QueueEpilogueTransition(
                 const D3D12_RESOURCE_TRANSITION_BARRIER& transitionBarrier,
                 const BarrierOp::CommandListState* state = nullptr);
             //! Adds an aliasing barrier that will be emitted at the beginning of the scope.
@@ -63,7 +65,8 @@ namespace AZ
             //! Adds a transition barrier that will be emitted at the end of the scope before resolving.
             //! Can specify a state that the command list need to be before emitting the barrier.
             //! A null state means that it doesn't matter in which state the command list is.
-            void QueueResolveTransition(
+            //! Returns the barrier inserted. This barrier may have been merged with a previously inserted barrier.
+            const D3D12_RESOURCE_TRANSITION_BARRIER& QueueResolveTransition(
                 const D3D12_RESOURCE_TRANSITION_BARRIER& transitionBarrier,
                 const BarrierOp::CommandListState* state = nullptr);
             //! Adds a transition barrier that will be emitted at the beginning of the scope before discarting resources.
@@ -103,6 +106,9 @@ namespace AZ
 
             // Returns true if nativeResource is present within m_discardResourceRequests
             bool IsInDiscardResourceRequests(ID3D12Resource* nativeResource) const;
+
+            const D3D12_RESOURCE_TRANSITION_BARRIER& QueueTransitionInternal(
+                AZStd::vector<BarrierOp>& barriers, const BarrierOp& barrierToAdd);
             
             /// A set of transition barriers for both before and after the scope.
             AZStd::vector<BarrierOp> m_prologueTransitionBarrierRequests;
@@ -125,7 +131,7 @@ namespace AZ
             const ImageView* m_shadingRateAttachment = nullptr;
 
             /// Depth stencil attachment access.
-            RHI::ScopeAttachmentAccess m_depthStencilAccess = RHI::ScopeAttachmentAccess::ReadWrite;
+            RHI::ScopeAttachmentAccess m_depthStencilAccess = RHI::ScopeAttachmentAccess::Unknown;
 
             /// Clear image requests which use render target stage.
             AZStd::vector<CommandList::ImageClearRequest> m_clearRenderTargetRequests;
@@ -144,6 +150,10 @@ namespace AZ
 
             /// The value to signal after executing this scope.
             uint64_t m_signalFenceValue = 0;
+
+            /// Holds a view with both depth and stencil aspects. Used when
+            /// merging a depth only attachment with a depth stencil attachment.
+            RHI::ConstPtr<ImageView> m_fullDepthStencilView;
         };
     }
 }

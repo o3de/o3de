@@ -424,12 +424,18 @@ namespace AZ::RHI
             //Update the indirect buffer with view indices
             if (isViewReadOnly[i])
             {
-                outIndices[i] = imageView->GetBindlessReadIndex();
+                if (outIndices)
+                {
+                    outIndices[i] = imageView->GetBindlessReadIndex();
+                }
             }
             else
             {
                 resourceType = BindlessResourceType::m_RWTexture2D;
-                outIndices[i] = imageView->GetBindlessReadWriteIndex();
+                if (outIndices)
+                {
+                    outIndices[i] = imageView->GetBindlessReadWriteIndex();
+                }
             }
             it->second.m_bindlessResourceType = resourceType;
             ++i;
@@ -471,12 +477,18 @@ namespace AZ::RHI
             //Update the indirect buffer with view indices
             if (isViewReadOnly[i])
             {
-                outIndices[i] = bufferView->GetBindlessReadIndex();
+                if (outIndices)
+                {
+                    outIndices[i] = bufferView->GetBindlessReadIndex();
+                }
             }
             else
             {
                 resourceType = BindlessResourceType::m_RWByteAddressBuffer;
-                outIndices[i] = bufferView->GetBindlessReadWriteIndex();
+                if (outIndices)
+                {
+                    outIndices[i] = bufferView->GetBindlessReadWriteIndex();
+                }
             }
             it->second.m_bindlessResourceType = resourceType;
             ++i;

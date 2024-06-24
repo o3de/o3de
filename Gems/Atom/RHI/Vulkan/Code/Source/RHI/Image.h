@@ -164,7 +164,14 @@ namespace AZ
             AZStd::vector<SubresourceRangeLayout> GetLayout(const RHI::ImageSubresourceRange* range = nullptr) const;
             void SetLayout(VkImageLayout layout, const RHI::ImageSubresourceRange* range = nullptr);
 
+            using ImagePipelineAccessProperty = RHI::ImageProperty<PipelineAccessFlags>;
+
+            PipelineAccessFlags GetPipelineAccess(const RHI::ImageSubresourceRange* range = nullptr) const;
+            void SetPipelineAccess(const PipelineAccessFlags& pipelineAccess, const RHI::ImageSubresourceRange* range = nullptr);
+
             VkImageUsageFlags GetUsageFlags() const;
+
+            VkSharingMode GetSharingMode() const;
 
             //! Flags used for initializing an image
             enum class InitFlags : uint32_t
@@ -257,8 +264,14 @@ namespace AZ
             ImageLayoutProperty m_layout;
             mutable AZStd::mutex m_layoutMutex;
 
+            // Last pipeline access to the image subresources
+            ImagePipelineAccessProperty m_pipelineAccess;
+            mutable AZStd::mutex m_pipelineAccessMutex;
+
             // Usage flags used for creating the image.
             VkImageUsageFlags m_usageFlags;
+
+            VkSharingMode m_sharingMode;
 
             // Flags used for initializing the image.
             InitFlags m_initFlags = InitFlags::None;

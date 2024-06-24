@@ -16,7 +16,6 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzCore/Component/TransformBus.h>
 
-#include "Objects/BaseObject.h"
 #include "TrackViewNode.h"
 #include "TrackViewTrack.h"
 

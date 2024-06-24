@@ -26,7 +26,6 @@
 #include "DisplaySettings.h"
 #include "EditorViewportSettings.h"
 #include "GameEngine.h"
-#include "Include/IObjectManager.h"
 #include "MainWindow.h"
 #include "MathConversion.h"
 #include "Settings.h"

@@ -26,7 +26,6 @@
 #include "Editor/Plugins/ComponentEntityEditorPlugin/SandboxIntegration.h"
 #include "ViewManager.h"
 #include "Include/HitContext.h"
-#include "Objects/ObjectManager.h"
 #include "Util/3DConnexionDriver.h"
 #include "PluginManager.h"
 #include "GameEngine.h"
@@ -173,7 +172,6 @@ QtViewport::QtViewport(QWidget* parent)
     }
     m_screenTM.SetIdentity();
 
-    m_pMouseOverObject = nullptr;
 
     m_bAdvancedSelectMode = false;
 
@@ -313,7 +311,6 @@ void QtViewport::OnDeactivate()
 //////////////////////////////////////////////////////////////////////////
 void QtViewport::ResetContent()
 {
-    m_pMouseOverObject = nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////

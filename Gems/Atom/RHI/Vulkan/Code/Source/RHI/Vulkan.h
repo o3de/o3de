@@ -41,6 +41,17 @@ namespace AZ
         using RawStringList = AZStd::vector<const char*>;
         using CpuVirtualAddress = uint8_t *;
 
+        struct PipelineAccessFlags
+        {
+            VkPipelineStageFlags m_pipelineStage = 0;
+            VkAccessFlags m_access = 0;
+
+            bool operator==(const PipelineAccessFlags& other) const
+            {
+                return m_pipelineStage == other.m_pipelineStage && m_access == other.m_access;
+            }
+        };
+
         class Device;
 
         namespace Debug

@@ -225,6 +225,29 @@ namespace AZ
             m_proceduralGeometryInfoBufferNeedsUpdate = true;
         }
 
+        void RayTracingFeatureProcessor::SetProceduralGeometryMaterial(
+            const Uuid& uuid, const RayTracingFeatureProcessor::SubMeshMaterial& material)
+        {
+            if (!m_rayTracingEnabled)
+            {
+                return;
+            }
+
+            auto deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
+
+            AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
+
+            for (auto deviceIndex{0}; deviceIndex < deviceCount; ++deviceIndex)
+            {
+                if (auto it = m_proceduralGeometryLookup.find(uuid); it != m_proceduralGeometryLookup.end())
+                {
+                    ConvertMaterial(m_proceduralGeometryMaterialInfos[deviceIndex][it->second], material, deviceIndex);
+                }
+            }
+
+            m_materialInfoBufferNeedsUpdate = true;
+        }
+
         void RayTracingFeatureProcessor::RemoveProceduralGeometry(const Uuid& uuid)
         {
             if (!m_rayTracingEnabled)

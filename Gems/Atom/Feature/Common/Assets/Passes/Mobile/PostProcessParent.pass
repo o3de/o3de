@@ -15,6 +15,25 @@
                 {
                     "Name": "Depth",
                     "SlotType": "Input"
+                },
+                // SwapChain here is only used to reference the frame height and format
+                {
+                    "Name": "PipelineOutput",
+                    "SlotType": "InputOutput"
+                },
+                // Outputs...
+                {
+                    "Name": "Output",
+                    "SlotType": "Output"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "DisplayMapperPass",
+                        "Attachment": "Output"
+                    }
                 }
             ],
             "PassRequests": [
@@ -52,6 +71,37 @@
                             }
                         }
                     ]
+                },
+                {
+                    "Name": "DisplayMapperPass",
+                    "TemplateName": "DisplayMapperTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "BloomPass",
+                                "Attachment": "InputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "PipelineOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "PipelineOutput"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "DisplayMapperPassData",
+                        "MergeLdrGradingLut": true,
+                        "DisplayMapperConfig": {
+                            "OperationType": "AcesFitted"
+                        },
+                         "OutputTransformShaderOverride": {
+                            "FilePath": "Shaders/PostProcessing/OutputTransformMobile.shader"
+                        }
+                    }
                 }
             ]
         }
