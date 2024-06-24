@@ -14,6 +14,7 @@
 #include <Atom/RHI/DeviceDispatchRaysItem.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/DevicePipelineState.h>
+#include <Atom/RHI/RHIUtils.h>
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Public/Base.h>
@@ -76,7 +77,7 @@ namespace AZ
             };
             AZStd::fixed_vector<RTShaderLib, 4> shaderLibs;
 
-            auto loadRayTracingShader = [&](auto& assetReference) -> RTShaderLib&
+            auto loadRayTracingShader = [&](auto& assetReference, const AZ::Name& supervariantName = AZ::Name("")) -> RTShaderLib&
             {
                 auto it = std::find_if(
                     shaderLibs.begin(),
@@ -91,7 +92,7 @@ namespace AZ
                 }
                 auto shaderAsset{ AZ::RPI::FindShaderAsset(assetReference.m_assetId, assetReference.m_filePath) };
                 AZ_Assert(shaderAsset.IsReady(), "Failed to load shader %s", assetReference.m_filePath.c_str());
-                auto shader{ AZ::RPI::Shader::FindOrCreate(shaderAsset) };
+                auto shader{ AZ::RPI::Shader::FindOrCreate(shaderAsset, supervariantName) };
                 auto shaderVariant{ shader->GetVariant(AZ::RPI::ShaderAsset::RootShaderVariantStableId) };
                 AZ::RHI::PipelineStateDescriptorForRayTracing pipelineStateDescriptor;
                 shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
@@ -112,7 +113,8 @@ namespace AZ
 
             if (!m_passData->m_closestHitProceduralShaderName.empty())
             {
-                auto& closestHitProceduralShaderLib{ loadRayTracingShader(m_passData->m_closestHitProceduralShaderAssetReference) };
+                auto& closestHitProceduralShaderLib{ loadRayTracingShader(
+                    m_passData->m_closestHitProceduralShaderAssetReference, AZ::RHI::GetDefaultSupervariantNameWithNoFloat16Fallback()) };
                 closestHitProceduralShaderLib.m_closestHitProceduralShaderName = m_passData->m_closestHitProceduralShaderName;
                 m_closestHitProceduralShader = closestHitProceduralShaderLib.m_shader;
             }

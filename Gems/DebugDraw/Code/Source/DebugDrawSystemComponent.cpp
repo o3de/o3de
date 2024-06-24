@@ -27,6 +27,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
 #endif // DEBUGDRAW_GEM_EDITOR
 
+#include <Atom/RHI/RHIUtils.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Scene.h>
@@ -1127,7 +1128,7 @@ namespace DebugDraw
                 AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::RayTracingFeatureProcessor>(element.m_targetEntityId);
 
             auto shaderAsset = AZ::RPI::FindShaderAsset("shaders/sphereintersection.azshader");
-            auto rayTracingShader = AZ::RPI::Shader::FindOrCreate(shaderAsset);
+            auto rayTracingShader = AZ::RPI::Shader::FindOrCreate(shaderAsset, AZ::RHI::GetDefaultSupervariantNameWithNoFloat16Fallback());
 
             AZ::RPI::CommonBufferDescriptor desc;
             desc.m_bufferName = "SpheresBuffer";
@@ -1191,7 +1192,7 @@ namespace DebugDraw
                 AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::RayTracingFeatureProcessor>(element.m_targetEntityId);
 
             auto shaderAsset = AZ::RPI::FindShaderAsset("shaders/obbintersection.azshader");
-            auto rayTracingShader = AZ::RPI::Shader::FindOrCreate(shaderAsset);
+            auto rayTracingShader = AZ::RPI::Shader::FindOrCreate(shaderAsset, AZ::RHI::GetDefaultSupervariantNameWithNoFloat16Fallback());
 
             m_obbRayTracingTypeHandle =
                 m_rayTracingFeatureProcessor->RegisterProceduralGeometryType("DebugDraw::Obb", rayTracingShader, "ObbIntersection");
