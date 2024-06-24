@@ -130,7 +130,11 @@ namespace AZ
                 //this will cause a parallel race condition (groups are executed in parallel) when requesting the drawable.
                 if(!onSwapChainBoundary && isWritingToSwapChain)
                 {
+#if defined(CARBONATED)
+                    AZ_Error("SwapChain", flushMergedScopes == false, "SwapChain concurrency error");
+#else
                     AZ_Assert(flushMergedScopes == false, "The scope that requests the swapchain needs to be in the same merged group as all the ones that write to it, otherwise we will have two scopes (in different groups) requesting drawable in parallel. If this assert is firing it may mean that we will need to request the swapchain drawable in Compile phase which is not the recommendation. Drawable should be requested as late in the frame as possible");
+#endif
                 }
                 
                 if (flushMergedScopes && mergedScopes.size())
