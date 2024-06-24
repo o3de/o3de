@@ -41,7 +41,7 @@ namespace AZ::Render
             );
         }, AZ::ConsoleFunctorFlags::DontReplicate,
         "Toggles debugging information display.\n"
-        "Usage: r_displayInfo [0=off/1=show/2=enhanced/3=compact]"
+        "Usage: r_displayInfo [0=off/1=show/2=enhanced/3=compact/4=fps]" // CARBONATED: changed string parameter in macro
     );
     AZ_CVAR(float, r_fpsCalcInterval, 1.0f, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "The time period over which to calculate the framerate for r_displayInfo."
