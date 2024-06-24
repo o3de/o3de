@@ -196,6 +196,20 @@ namespace AZ::Render
         const float lineHeight = m_fontDrawInterface->GetTextSize(m_drawParams, " ").GetY();
         m_lineSpacing = lineHeight * m_drawParams.m_lineSpacing;
 
+#if defined (CARBONATED)
+        // rescale font according to base screen resolution
+        const float fontScale = static_cast<float>(viewportContext->GetViewportSize().m_width) / 1920;
+        if (fontScale > 1.0f)
+        {
+            m_drawParams.m_scale = AZ::Vector2(BaseFontSize) * fontScale;
+        }
+
+        if (displayLevel == AtomBridge::ViewportInfoDisplayState::FpsInfo)
+        {
+            DrawFramerate(true);
+            return;
+        }
+#endif
         DrawRendererInfo();
         if (displayLevel == AtomBridge::ViewportInfoDisplayState::FullInfo)
         {
@@ -378,7 +392,11 @@ namespace AZ::Render
         );
     }
 
+#if defined (CARBONATED)
+    void AtomViewportDisplayInfoSystemComponent::DrawFramerate(bool drawFpsOnly)
+#else
     void AtomViewportDisplayInfoSystemComponent::DrawFramerate()
+#endif
     {
         AZStd::optional<AZStd::chrono::steady_clock::time_point> lastTime;
         double minFPS = DBL_MAX;
@@ -413,6 +431,17 @@ namespace AZ::Render
             return value > upperLimit ? "inf" : AZStd::string::format(format, value);
         };
 
+#if defined (CARBONATED)
+        if (drawFpsOnly)
+        {
+            DrawLine(
+                AZStd::string::format(
+                    "FPS %s",
+                    ClampedFloatDisplay(averageFPS, "%.1f").c_str()),
+                AZ::Colors::Yellow);
+            return;
+        }
+#endif
         DrawLine(
             AZStd::string::format(
                 "FPS %s [%s..%s], %sms/frame, avg over %.1fs",
