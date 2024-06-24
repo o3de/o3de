@@ -107,8 +107,18 @@ namespace AZ
 
                 // Detect if we are able to continue merging.
                 
-                // Check if the group fits into the current running merge queue. If not, we have to flush the queue.
-                const bool exceededCommandCost = (mergedGroupCost + totalScopeCost) > CommandListCostThreshold;
+                // Check if we are straddling the boundary of a scope that will request the swapchain texture.
+                const bool onSwapChainBoundary = scope.IsRequestingSwapChain();
+                
+                // Check if we are writing to the swapchain texture.
+                const bool isWritingToSwapChain = scope.IsWritingToSwapChain();
+                
+                // Once a swapchain is requested by a scope all the downstream scopes will need to be merged in the same group.
+                // This ensures that two scopes from different groups are not requesting swapchain drawable in parallel.
+                const bool overrideCommandListCost = !onSwapChainBoundary && isWritingToSwapChain;
+                
+                // Check if commandListCost applies and if the group fits into the current running merge queue. If not, we have to flush the queue.
+                const bool exceededCommandCost = !overrideCommandListCost && (mergedGroupCost + totalScopeCost) > CommandListCostThreshold;
 
                 // Check if the swap chains fit into this group.
                 const bool exceededSwapChainLimit = (mergedSwapchainCount + swapchainCount) > m_frameGraphExecuterData.m_swapChainsPerCommandList;
@@ -119,13 +129,9 @@ namespace AZ
                 // Check if we are straddling the boundary of a fence.
                 const bool onFenceBoundaries = (scope.HasWaitFences() || (scopePrev && scopePrev->HasSignalFence())) || hasUserFencesToSignal;
 
-                //Check if we are straddling the boundary of a scope that will request the swapchain texture
-                const bool onSwapChainBoundary = scope.IsRequestingSwapChain();
-
                 // If we exceeded limits, then flush the group.
                 const bool flushMergedScopes = exceededCommandCost || exceededSwapChainLimit || hardwareQueueMismatch || onFenceBoundaries || onSwapChainBoundary;
                 
-                const bool isWritingToSwapChain = scope.IsWritingToSwapChain();
                 //Check to ensure we are not trying to create two groups with scopes that will write to swapchain texture as
                 //this will cause a parallel race condition (groups are executed in parallel) when requesting the drawable.
                 if(!onSwapChainBoundary && isWritingToSwapChain)
