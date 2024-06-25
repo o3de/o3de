@@ -33,11 +33,17 @@ namespace AZ::Render
 {
 #if defined (CARBONATED)
     #define DISPLAY_INFO_USAGE "Usage: r_displayInfo [0=off/1=show/2=enhanced/3=compact/4=fps]"
+    #if defined(_RELEASE)
+        #define DISPLAY_INFO_DEFAULT 4
+    #else
+        #define DISPLAY_INFO_DEFAULT 1
+    #endif
 #else
     #define DISPLAY_INFO_USAGE "Usage: r_displayInfo [0=off/1=show/2=enhanced/3=compact]"
+    #define DISPLAY_INFO_DEFAULT 1
 #endif
 
-    AZ_CVAR(int, r_displayInfo, 1, [](const int& newDisplayInfoVal)->void
+    AZ_CVAR(int, r_displayInfo, DISPLAY_INFO_DEFAULT, [](const int& newDisplayInfoVal)->void
         {
             // Forward this event to the system component so it can update accordingly.
             // This callback only gets triggered by console commands, so this will not recurse.
@@ -203,13 +209,6 @@ namespace AZ::Render
         m_lineSpacing = lineHeight * m_drawParams.m_lineSpacing;
 
 #if defined (CARBONATED)
-        // rescale font according to base screen resolution
-        const float fontScale = static_cast<float>(viewportContext->GetViewportSize().m_width) / 1920;
-        if (fontScale > 1.0f)
-        {
-            m_drawParams.m_scale = AZ::Vector2(BaseFontSize) * fontScale;
-        }
-
         if (displayLevel == AtomBridge::ViewportInfoDisplayState::FpsInfo)
         {
             DrawFramerate(true);
