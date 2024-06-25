@@ -484,6 +484,44 @@ namespace AZ
                     // wait until swapchain has been created before setting fullscreen state
                     AzFramework::WindowSize resolution;
                     float scale = AZStd::max(static_cast<float>(r_renderScale), 0.f);
+
+#if defined(CARBONATED)
+                    if (r_resolutionMode > 0u)
+                    {
+                        resolution.m_width = static_cast<uint32_t>(r_width);
+                        resolution.m_height = static_cast<uint32_t>(r_height);
+                    }
+                    else
+                    {
+                        const auto& windowSize = m_nativeWindow->GetClientAreaSize();
+                        resolution.m_width = static_cast<uint32_t>(windowSize.m_width);
+                        resolution.m_height = static_cast<uint32_t>(windowSize.m_height);
+                    }
+
+                    // Clamp the resolution to so we don't ever have a resolution beyond a certain size.
+                    // Apply the clamp before the renderscale is applied so we have more predictable results.
+                    // We adjust width first, and then height, ensuring neither
+                    // dimensions exceeds the max.
+                    float aspect_ratio = static_cast<float>(resolution.m_width) / static_cast<float>(resolution.m_height);
+                    uint32_t maxwidth = static_cast<uint32_t>(r_maxwidth);
+                    uint32_t maxheight = static_cast<uint32_t>(r_maxheight);
+
+                    if (maxwidth > 0 && resolution.m_width > maxwidth)
+                    {
+                        resolution.m_width = maxwidth;
+                        resolution.m_height = static_cast<uint32_t>(resolution.m_width / aspect_ratio);
+                    }
+
+                    if (maxheight > 0 && resolution.m_height > maxheight)
+                    {
+                        resolution.m_height = maxheight;
+                        resolution.m_width = static_cast<uint32_t>(resolution.m_height / aspect_ratio);
+                    }
+
+                    // Finally apply the renderscale
+                    resolution.m_width = static_cast<uint32_t>(resolution.m_width * scale);
+                    resolution.m_height = static_cast<uint32_t>(resolution.m_height * scale);
+#else
                     if (r_resolutionMode > 0u)
                     {
                         resolution.m_width = static_cast<uint32_t>(r_width * scale);
@@ -494,26 +532,6 @@ namespace AZ
                         const auto& windowSize = m_nativeWindow->GetClientAreaSize();
                         resolution.m_width = static_cast<uint32_t>(windowSize.m_width * scale);
                         resolution.m_height = static_cast<uint32_t>(windowSize.m_height * scale);
-                    }
-                    
-#if defined(CARBONATED)
-                    // We clamp the width & height after the resolution mode & scale, so we don't ever have
-                    // a resolution beyond a certain size.  We adjust width first, and then height, ensuring neither
-                    // dimensions exceeds the max.
-                    float aspect_ratio = static_cast<float>(resolution.m_width) / static_cast<float>(resolution.m_height);
-                    uint32_t maxwidth = static_cast<uint32_t>(r_maxwidth);
-                    uint32_t maxheight = static_cast<uint32_t>(r_maxheight);
-                    
-                    if(maxwidth > 0 && resolution.m_width > maxwidth)
-                    {
-                        resolution.m_width = maxwidth;
-                        resolution.m_height = static_cast<uint32_t>(resolution.m_width / aspect_ratio);
-                    }
-                    
-                    if(maxheight > 0 && resolution.m_height > maxheight)
-                    {
-                        resolution.m_height = maxheight;
-                        resolution.m_width = static_cast<uint32_t>(resolution.m_height / aspect_ratio);
                     }
 #endif
                     
