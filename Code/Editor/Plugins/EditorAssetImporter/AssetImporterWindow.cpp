@@ -255,13 +255,14 @@ void AssetImporterWindow::OpenFileInternal(const AZStd::string& filePath)
         s_browseTag,
         [this, filePath]()
         {
+            // this is invoked across threads, so ensure that nothing touches the main thread that isn't thread safe.
+            // Qt objects, in particular, should talk via timers or queued connections.
             m_assetImporterDocument->LoadScene(filePath);
-
-            QTimer::singleShot(0, [&]() { UpdateSceneDisplay({}); });
+            QMetaObject::invokeMethod(this, &AssetImporterWindow::UpdateDefaultSceneDisplay, Qt::QueuedConnection);
         },
         [this]()
         {
-            QTimer::singleShot(0, [&]() { HandleAssetLoadingCompleted();});
+            QMetaObject::invokeMethod(this, &AssetImporterWindow::HandleAssetLoadingCompleted, Qt::QueuedConnection);
         }, this);
         
     QFileInfo fileInfo(filePath.c_str());
@@ -619,6 +620,11 @@ void AssetImporterWindow::OverlayLayerRemoved()
         ui->m_initialBrowseContainer->show();
         m_rootDisplay->hide();
     }
+}
+
+void AssetImporterWindow::UpdateDefaultSceneDisplay()
+{
+    UpdateSceneDisplay({});
 }
 
 void AssetImporterWindow::UpdateSceneDisplay(const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene> scene) const

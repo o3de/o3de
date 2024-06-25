@@ -12,6 +12,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Serialization/Utils.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
@@ -22,6 +23,16 @@
 
 namespace AZ::SceneAPI::Utilities
 {
+    bool IsDebugEnabled()
+    {
+        bool resultValue = false;
+        if (auto* registry = AZ::SettingsRegistry::Get())
+        {
+            registry->Get(resultValue, AZ::SceneAPI::Utilities::Key_AssetProcessorInDebugOutput);
+        }
+        return resultValue;
+    }
+
     bool SaveToJson(const AZStd::string& fileName, const DebugSceneGraph& graph);
 
     void DebugNode::Reflect(AZ::ReflectContext* context)
