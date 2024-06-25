@@ -21,15 +21,15 @@ namespace Ui {
     class P4SettingsDialog;
 } // namespace Ui
 
-namespace PerforceConnection
+namespace AzToolsFramework
 {
-    class PerforceConfigDialog
+    class PerforceSettings
         : public QDialog
     {
         Q_OBJECT
     public:
-        PerforceConfigDialog(QWidget* pParent = nullptr);
-        virtual ~PerforceConfigDialog();
+        PerforceSettings(QWidget* pParent = nullptr);
+        virtual ~PerforceSettings();
 
         bool GetWorkOffline() const;
         void SetWorkOffline(bool value);
@@ -42,7 +42,7 @@ namespace PerforceConnection
         void Apply();
 
     private:
-        Ui::P4SettingsDialog* m_ui;
+        Ui::P4SettingsDialog * m_ui;
 
         AZStd::unordered_map<AZStd::string, AzToolsFramework::SourceControlSettingInfo> m_retrievedSettings;
         AZStd::string m_charsetKey;
@@ -54,3 +54,4 @@ namespace PerforceConnection
 
     bool OpenPasswordDlg();
 } // namespace PerforceConnection
+

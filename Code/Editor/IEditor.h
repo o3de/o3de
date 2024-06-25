@@ -44,7 +44,6 @@ class CErrorReport;
 class ICommandManager;
 class CEditorCommandManager;
 class CConsoleSynchronization;
-struct ISourceControl;
 struct IEditorClassFactory;
 class CDialog;
 #if defined(AZ_PLATFORM_WINDOWS)
@@ -601,12 +600,6 @@ struct IEditor
     virtual void RegisterDocListener(IDocListener* listener) = 0;
     //! Unregister document notifications listener.
     virtual void UnregisterDocListener(IDocListener* listener) = 0;
-    //! Retrieve interface to the source control.
-    virtual ISourceControl* GetSourceControl() = 0;
-    //! Retrieve true if source control is provided and enabled in settings
-    virtual bool IsSourceControlAvailable() = 0;
-    //! Only returns true if source control is both available AND currently connected and functioning
-    virtual bool IsSourceControlConnected() = 0;
 
     virtual void ReduceMemory() = 0;
 

@@ -317,7 +317,7 @@ MainWindow::MainWindow(QWidget* parent)
     AssetImporterDragAndDropHandler* assetImporterDragAndDropHandler = new AssetImporterDragAndDropHandler(this, m_assetImporterManager);
     connect(assetImporterDragAndDropHandler, &AssetImporterDragAndDropHandler::OpenAssetImporterManager, this, &MainWindow::OnOpenAssetImporterManager);
     connect(assetImporterDragAndDropHandler, &AssetImporterDragAndDropHandler::OpenAssetImporterManagerWithSuggestedPath, this, &MainWindow::OnOpenAssetImporterManagerAtPath);
-        
+
     setFocusPolicy(Qt::StrongFocus);
 
     setAcceptDrops(true);
@@ -1140,18 +1140,8 @@ void MainWindow::ToggleConsole()
 
 void MainWindow::ConnectivityStateChanged(const AzToolsFramework::SourceControlState state)
 {
-    bool connected = false;
-    ISourceControl* pSourceControl = GetIEditor() ? GetIEditor()->GetSourceControl() : nullptr;
-    if (pSourceControl)
-    {
-        pSourceControl->SetSourceControlState(state);
-        if (state == AzToolsFramework::SourceControlState::Active || state == AzToolsFramework::SourceControlState::ConfigurationInvalid)
-        {
-            connected = true;
-        }
-    }
 
-    gSettings.enableSourceControl = connected;
+    gSettings.enableSourceControl = (state == AzToolsFramework::SourceControlState::Active || state == AzToolsFramework::SourceControlState::ConfigurationInvalid);
     gSettings.SaveEnableSourceControlFlag(false);
     gSettings.SaveSettingsRegistryFile();
 }

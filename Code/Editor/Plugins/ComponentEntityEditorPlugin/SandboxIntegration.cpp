@@ -61,7 +61,6 @@
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h>
 
-#include "ISourceControl.h"
 #include "UI/QComponentEntityEditorMainWindow.h"
 
 #include <LmbrCentral/Scripting/TagComponentBus.h>

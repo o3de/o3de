@@ -267,7 +267,6 @@ set(FILES
     Include/IKeyTimeSet.h
     Include/IPlugin.h
     Include/IPreferencesPage.h
-    Include/ISourceControl.h
     Include/ObjectEvent.h
     Util/AffineParts.cpp
     AnimationContext.cpp
