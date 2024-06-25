@@ -130,10 +130,19 @@ namespace AzToolsFramework
 
         void EditorComponentBase::SetDirty()
         {
-            if (GetEntity())
+            // Don't mark things for dirty that are not active.
+            // Entities can be inactive for a number of reasons, for example, in a prefab file
+            // being constructed on another thread, and while these might still invoke SetDirty
+            // in response to properties changing, only actualized entities should interact with
+            // the undo/redo system or the prefab change tracker for overrides, which is what
+            // marking things dirty is for.
+            if (AZ::Entity* entity = GetEntity();entity)
             {
-                AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
-                    &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, GetEntity()->GetId());
+                if (entity->GetState() == AZ::Entity::State::Active)
+                {
+                    AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entity->GetId());
+                }
+
             }
             else
             {
