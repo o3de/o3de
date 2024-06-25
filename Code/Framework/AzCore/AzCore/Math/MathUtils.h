@@ -368,7 +368,8 @@ namespace AZ
     template<typename T>
     constexpr T GetGCD(T a, T b)
     {
-        int c = a % b;
+        static_assert(std::is_integral<T>::value);
+        T c = a % b;
         while (c != 0)
         {
             a = b;
