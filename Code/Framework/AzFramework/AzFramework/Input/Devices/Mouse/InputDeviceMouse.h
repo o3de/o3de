@@ -191,7 +191,7 @@ namespace AzFramework
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Set if the cursor should be visible or hidden
-        //! \param[in] visible True if the cursor should be visible, false if it should be hidden
+        //! \param[in] captureCursor True if the cursor should be visible, false if it should be hidden
         void SetCaptureCursor(bool captureCursor);
 
     protected:
@@ -280,7 +280,7 @@ namespace AzFramework
 
             ////////////////////////////////////////////////////////////////////////////////////////////
             //! Set if the cursor should be visible or hidden
-            //! \param[in] visible True if the cursor should be visible, false if it should be hidden
+            //! \param[in] captureCursor True if the cursor should be visible, false if it should be hidden
             void SetCaptureCursor(bool captureCursor);
 
         protected:

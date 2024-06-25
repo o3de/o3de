@@ -13,7 +13,6 @@
 
 namespace AzFramework
 {
-
     xcb_window_t GetSystemCursorFocusWindow(xcb_connection_t* connection)
     {
         void* systemCursorFocusWindow = nullptr;
