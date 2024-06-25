@@ -29,6 +29,10 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Time/ITime.h>
 
+#if defined(CARBONATED)
+#include <AzCore/Console/IConsole.h>
+#endif
+
 //#define DEFENCE_CVAR_HASH_LOGGING
 
 // s should point to a buffer at least 65 chars long
@@ -1505,6 +1509,31 @@ void CXConsole::ExecuteStringInternal(const char* command, const bool bFromConso
                 continue;
             }
         }
+
+#if defined(CARBONATED)
+        AZ::IConsole* console = AZ::Interface<AZ::IConsole>::Get();
+        if (console)
+        {
+            AZ::ConsoleFunctorBase* cvarFunctor = console->FindCommand(command);
+            if (cvarFunctor)
+            {
+                AZ::CVarFixedString buffer;
+                const AZ::GetValueResult resultCode = cvarFunctor->GetValue(buffer);
+                if (resultCode == AZ::GetValueResult::Success)
+                {
+                    if (gEnv->IsEditor())
+                    {
+                        ConsoleLogInputResponse("%s=%s [  ]", command, buffer.c_str());
+                    }
+                    else
+                    {
+                        ConsoleLogInputResponse("    $3%s = $6%s $5[]$4", command, buffer.c_str());
+                    }
+                    return;
+                }
+            }
+        }
+#endif
 
         //////////////////////////////////////////
         //Check  if is a variable
