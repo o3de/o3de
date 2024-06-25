@@ -507,13 +507,13 @@ namespace AZ
                     if(maxwidth > 0 && resolution.m_width > maxwidth)
                     {
                         resolution.m_width = maxwidth;
-                        resolution.m_height = resolution.m_width / aspect_ratio;
+                        resolution.m_height = static_cast<uint32_t>(resolution.m_width / aspect_ratio);
                     }
                     
                     if(maxheight > 0 && resolution.m_height > maxheight)
                     {
                         resolution.m_height = maxheight;
-                        resolution.m_width = resolution.m_height / aspect_ratio;
+                        resolution.m_width = static_cast<uint32_t>(resolution.m_height / aspect_ratio);
                     }
 #endif
                     
