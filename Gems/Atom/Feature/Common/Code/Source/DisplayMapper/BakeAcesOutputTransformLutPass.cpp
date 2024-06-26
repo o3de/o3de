@@ -67,7 +67,7 @@ namespace AZ
             AZ_Assert(m_displayMapperLut.m_lutImage != nullptr, "BakeAcesOutputTransformLutPass unable to acquire LUT image");
 
             AZ::RHI::AttachmentId imageAttachmentId = AZ::RHI::AttachmentId("DisplayMapperLutImageAttachmentId");
-            [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(imageAttachmentId, m_displayMapperLut.m_lutImage);
+            [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(imageAttachmentId, m_displayMapperLut.m_lutImage.get());
             AZ_Error("BakeAcesOutputTransformLutPass", result == RHI::ResultCode::Success, "Failed to import compute buffer with error %d", result);
 
             RHI::ImageScopeAttachmentDescriptor desc;

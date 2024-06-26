@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/DeviceBuffer.h>
 #include <Atom/RHI/BufferProperty.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <AzCore/Memory/PoolAllocator.h>
@@ -30,9 +30,9 @@ namespace AZ
         class CommandQueue;
 
         class Buffer final
-            : public RHI::Buffer
+            : public RHI::DeviceBuffer
         {
-            using Base = RHI::Buffer;
+            using Base = RHI::DeviceBuffer;
             friend class BufferPool;
             friend class AliasedHeap;
             friend class Device;
@@ -52,12 +52,12 @@ namespace AZ
             using SubresourceRangeOwner = BufferOwnerProperty::PropertyRange;
 
             // Returns a list of queues that owns a subresource region.
-            AZStd::vector<SubresourceRangeOwner> GetOwnerQueue(const RHI::BufferView& bufferView) const;
+            AZStd::vector<SubresourceRangeOwner> GetOwnerQueue(const RHI::DeviceBufferView& bufferView) const;
             AZStd::vector<SubresourceRangeOwner> GetOwnerQueue(const RHI::BufferSubresourceRange* range = nullptr) const;
 
             // Set the owner queue of a subresource region.
             void SetOwnerQueue(const QueueId& queueId, const RHI::BufferSubresourceRange* range = nullptr);
-            void SetOwnerQueue(const QueueId& queueId, const RHI::BufferView& bufferView);
+            void SetOwnerQueue(const QueueId& queueId, const RHI::DeviceBufferView& bufferView);
 
             using ImagePipelineAccessProperty = RHI::BufferProperty<PipelineAccessFlags>;
 
@@ -85,7 +85,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::Resource
+            // RHI::DeviceResource
             void ReportMemoryUsage(RHI::MemoryStatisticsBuilder& builder) const override;
             //////////////////////////////////////////////////////////////////////////
 

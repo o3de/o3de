@@ -11,10 +11,10 @@
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameScheduler.h>
-#include <Atom/RHI/DispatchRaysItem.h>
+#include <Atom/RHI/DeviceDispatchRaysItem.h>
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RHI/RHIUtils.h>
-#include <Atom/RHI/PipelineState.h>
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Public/Base.h>
@@ -41,8 +41,7 @@ namespace AZ
             : RenderPass(descriptor)
             , m_passDescriptor(descriptor)
         {
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-            if (device->GetFeatures().m_rayTracing == false)
+            if (RHI::RHISystemInterface::Get()->GetRayTracingSupport() == RHI::MultiDevice::NoDevices)
             {
                 // raytracing is not supported on this platform
                 SetEnabled(false);
@@ -66,8 +65,6 @@ namespace AZ
 
         void RayTracingPass::CreatePipelineState()
         {
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-
             struct RTShaderLib
             {
                 AZ::Data::AssetId m_shaderAssetId;
@@ -199,8 +196,8 @@ namespace AZ
             }
 
             // create the ray tracing pipeline state object
-            m_rayTracingPipelineState = RHI::Factory::Get().CreateRayTracingPipelineState();
-            m_rayTracingPipelineState->Init(*device.get(), &descriptor);
+            m_rayTracingPipelineState = aznew RHI::RayTracingPipelineState;
+            m_rayTracingPipelineState->Init(RHI::RHISystemInterface::Get()->GetRayTracingSupport(), descriptor);
 
             // make sure the shader table rebuilds if we're hotreloading
             m_rayTracingRevision = 0;
@@ -266,11 +263,10 @@ namespace AZ
 
             if (!m_rayTracingShaderTable)
             {
-                RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
                 RHI::RayTracingBufferPools& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
 
-                m_rayTracingShaderTable = RHI::Factory::Get().CreateRayTracingShaderTable();
-                m_rayTracingShaderTable->Init(*device.get(), rayTracingBufferPools);
+                m_rayTracingShaderTable = aznew RHI::RayTracingShaderTable;
+                m_rayTracingShaderTable->Init(RHI::RHISystemInterface::Get()->GetRayTracingSupport(), rayTracingBufferPools);
             }
 
             RPI::RenderPass::FrameBeginInternal(params);
@@ -385,7 +381,7 @@ namespace AZ
                 return;
             }
 
-            RHI::DispatchRaysItem dispatchRaysItem;
+            RHI::DeviceDispatchRaysItem dispatchRaysItem;
 
             // calculate thread counts if this is a full screen raytracing pass
             if (m_passData->m_makeFullscreenPass)
@@ -419,11 +415,11 @@ namespace AZ
 
             // bind RayTracingGlobal, RayTracingScene, and View Srgs
             // [GFX TODO][ATOM-15610] Add RenderPass::SetSrgsForRayTracingDispatch
-            AZStd::vector<RHI::ShaderResourceGroup*> shaderResourceGroups = { m_shaderResourceGroup->GetRHIShaderResourceGroup() };
+            AZStd::vector<RHI::DeviceShaderResourceGroup*> shaderResourceGroups = { m_shaderResourceGroup->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get() };
 
             if (m_requiresRayTracingSceneSrg)
             {
-                shaderResourceGroups.push_back(rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup());
+                shaderResourceGroups.push_back(rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get());
             }
 
             if (m_requiresViewSrg)
@@ -431,25 +427,26 @@ namespace AZ
                 RPI::ViewPtr view = m_pipeline->GetFirstView(GetPipelineViewTag());
                 if (view)
                 {
-                    shaderResourceGroups.push_back(view->GetRHIShaderResourceGroup());
+                    shaderResourceGroups.push_back(view->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get());
                 }
             }
 
             if (m_requiresSceneSrg)
             {
-                shaderResourceGroups.push_back(scene->GetShaderResourceGroup()->GetRHIShaderResourceGroup());
+                shaderResourceGroups.push_back(scene->GetShaderResourceGroup()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get());
             }
 
             if (m_requiresRayTracingMaterialSrg)
             {
-                shaderResourceGroups.push_back(rayTracingFeatureProcessor->GetRayTracingMaterialSrg()->GetRHIShaderResourceGroup());
+                shaderResourceGroups.push_back(rayTracingFeatureProcessor->GetRayTracingMaterialSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get());
             }
 
             dispatchRaysItem.m_shaderResourceGroupCount = aznumeric_cast<uint32_t>(shaderResourceGroups.size());
             dispatchRaysItem.m_shaderResourceGroups = shaderResourceGroups.data();
-            dispatchRaysItem.m_rayTracingPipelineState = m_rayTracingPipelineState.get();
-            dispatchRaysItem.m_rayTracingShaderTable = m_rayTracingShaderTable.get();
-            dispatchRaysItem.m_globalPipelineState = m_globalPipelineState.get();
+            dispatchRaysItem.m_rayTracingPipelineState =
+                m_rayTracingPipelineState->GetDeviceRayTracingPipelineState(context.GetDeviceIndex()).get();
+            dispatchRaysItem.m_rayTracingShaderTable = m_rayTracingShaderTable->GetDeviceRayTracingShaderTable(context.GetDeviceIndex()).get();
+            dispatchRaysItem.m_globalPipelineState = m_globalPipelineState->GetDevicePipelineState(context.GetDeviceIndex()).get();
 
             // submit the DispatchRays item
             context.GetCommandList()->Submit(dispatchRaysItem);

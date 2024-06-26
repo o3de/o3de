@@ -11,10 +11,12 @@
 #include <RayTracing/RayTracingResourceList.h>
 #include <RayTracing/RayTracingIndexList.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
+#include <Atom/RHI/IndexBufferView.h>
+#include <Atom/RHI/StreamBufferView.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
 #include <Atom/RHI/RayTracingBufferPools.h>
-#include <Atom/RHI/BufferView.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/DeviceBufferView.h>
+#include <Atom/RHI/DeviceImageView.h>
 #include <Atom/RPI.Public/Buffer/RingBuffer.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/Utils/StableDynamicArray.h>
@@ -110,6 +112,7 @@ namespace AZ
             {
                 // vertex streams
                 RHI::Format m_positionFormat = RHI::Format::Unknown;
+
                 RHI::StreamBufferView m_positionVertexBufferView;
                 RHI::Ptr<RHI::BufferView> m_positionShaderBufferView;
 
@@ -492,8 +495,8 @@ namespace AZ
 
             // vector of MaterialInfo, transferred to the materialInfoGpuBuffer
             using MaterialInfoVector = AZStd::vector<MaterialInfo>;
-            MaterialInfoVector m_materialInfos;
-            MaterialInfoVector m_proceduralGeometryMaterialInfos;
+            AZStd::unordered_map<int, MaterialInfoVector> m_materialInfos;
+            AZStd::unordered_map<int, MaterialInfoVector> m_proceduralGeometryMaterialInfos;
             RPI::RingBuffer m_materialInfoGpuBuffer{ "RayTracingMaterialInfo", RPI::CommonBufferPoolType::ReadOnly, sizeof(MaterialInfo) };
 
             // update flags
@@ -520,10 +523,10 @@ namespace AZ
 
             // mesh buffer and material texture index lists, which contain the array indices of the mesh resources
             static const uint32_t NumMeshBuffersPerMesh = 6;
-            RayTracingIndexList<NumMeshBuffersPerMesh> m_meshBufferIndices;
+            AZStd::unordered_map<int, RayTracingIndexList<NumMeshBuffersPerMesh>> m_meshBufferIndices;
 
             static const uint32_t NumMaterialTexturesPerMesh = 5;
-            RayTracingIndexList<NumMaterialTexturesPerMesh> m_materialTextureIndices;
+            AZStd::unordered_map<int, RayTracingIndexList<NumMaterialTexturesPerMesh>> m_materialTextureIndices;
 
             // Gpu buffers for the mesh and material index lists
             RPI::RingBuffer m_meshBufferIndicesGpuBuffer{ "RayTracingMeshBufferIndices", RPI::CommonBufferPoolType::ReadOnly, RHI::Format::R32_UINT };
@@ -535,7 +538,7 @@ namespace AZ
             ProceduralGeometryList m_proceduralGeometry;
             AZStd::unordered_map<Uuid, size_t> m_proceduralGeometryLookup;
 
-            void ConvertMaterial(MaterialInfo& materialInfo, const SubMeshMaterial& subMeshMaterial);
+            void ConvertMaterial(MaterialInfo& materialInfo, const SubMeshMaterial& subMeshMaterial, int deviceIndex);
         };
     }
 }

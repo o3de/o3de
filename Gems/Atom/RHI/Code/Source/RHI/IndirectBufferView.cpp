@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/IndirectBufferView.h>
 #include <AzCore/std/hash.h>
 
@@ -17,18 +18,18 @@ namespace AZ::RHI
         uint32_t byteOffset,
         uint32_t byteCount,
         uint32_t byteStride)
-        : m_buffer(&buffer)
+        : m_Buffer(&buffer)
         , m_byteOffset(byteOffset)
         , m_byteCount(byteCount)
         , m_byteStride(byteStride)
-        , m_signature(&signature)
+        , m_Signature(&signature)
     {
         size_t seed = 0;
-        AZStd::hash_combine(seed, m_buffer);
+        AZStd::hash_combine(seed, m_Buffer);
         AZStd::hash_combine(seed, m_byteOffset);
         AZStd::hash_combine(seed, m_byteCount);
         AZStd::hash_combine(seed, m_byteStride);
-        AZStd::hash_combine(seed, m_signature);
+        AZStd::hash_combine(seed, m_Signature);
         m_hash = static_cast<HashValue64>(seed);
     }
 
@@ -39,7 +40,7 @@ namespace AZ::RHI
 
     const Buffer* IndirectBufferView::GetBuffer() const
     {
-        return m_buffer;
+        return m_Buffer;
     }
 
     uint32_t IndirectBufferView::GetByteOffset() const
@@ -59,6 +60,6 @@ namespace AZ::RHI
 
     const IndirectBufferSignature* IndirectBufferView::GetSignature() const
     {
-        return m_signature;
+        return m_Signature;
     }
-}
+} // namespace AZ::RHI

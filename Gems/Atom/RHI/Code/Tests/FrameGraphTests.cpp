@@ -10,6 +10,8 @@
 #include <Tests/FrameGraph.h>
 #include <Tests/Factory.h>
 #include <Tests/Device.h>
+#include <Atom/RHI/ImagePool.h>
+#include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/ImageFrameAttachment.h>
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
@@ -77,22 +79,24 @@ namespace UnitTest
 
             m_rootFactory.reset(aznew Factory());
 
-            RHI::Ptr<RHI::Device> device = MakeTestDevice();
+            m_rhiSystem.reset(aznew AZ::RHI::RHISystem);
+            m_rhiSystem->InitDevices();
+            m_rhiSystem->Init();
 
             m_state.reset(new State);
 
             {
-                m_state->m_bufferPool = RHI::Factory::Get().CreateBufferPool();
+                m_state->m_bufferPool = aznew RHI::BufferPool;
 
                 RHI::BufferPoolDescriptor desc;
                 desc.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
-                m_state->m_bufferPool->Init(*device, desc);
+                m_state->m_bufferPool->Init(RHI::MultiDevice::DefaultDevice, desc);
             }
 
             for (uint32_t i = 0; i < BufferCount; ++i)
             {
                 RHI::Ptr<RHI::Buffer> buffer;
-                buffer = RHI::Factory::Get().CreateBuffer();
+                buffer = aznew RHI::Buffer;
 
                 RHI::BufferDescriptor desc;
                 desc.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
@@ -109,17 +113,17 @@ namespace UnitTest
             }
 
             {
-                m_state->m_imagePool = RHI::Factory::Get().CreateImagePool();
+                m_state->m_imagePool = aznew RHI::ImagePool;
 
                 RHI::ImagePoolDescriptor desc;
                 desc.m_bindFlags = RHI::ImageBindFlags::ShaderReadWrite;
-                m_state->m_imagePool->Init(*device, desc);
+                m_state->m_imagePool->Init(RHI::MultiDevice::DefaultDevice, desc);
             }
 
             for (uint32_t i = 0; i < ImageCount; ++i)
             {
                 RHI::Ptr<RHI::Image> image;
-                image = RHI::Factory::Get().CreateImage();
+                image = aznew RHI::Image;
 
                 RHI::ImageDescriptor desc = RHI::ImageDescriptor::Create2D(
                     RHI::ImageBindFlags::ShaderReadWrite,
@@ -148,12 +152,14 @@ namespace UnitTest
             }
 
             m_state->m_frameGraphCompiler = RHI::Factory::Get().CreateFrameGraphCompiler();
-            m_state->m_frameGraphCompiler->Init(*device);
+            m_state->m_frameGraphCompiler->Init();
         }
 
         void TearDown() override
         {
             m_state.reset();
+            m_rhiSystem->Shutdown();
+            m_rhiSystem.reset();
             m_rootFactory.reset();
             RHITestFixture::TearDown();
         }
@@ -623,6 +629,7 @@ namespace UnitTest
         static const uint32_t ImageArrayCount = 3;
         static const uint32_t ScopeCount = 128;
 
+        AZStd::unique_ptr<AZ::RHI::RHISystem> m_rhiSystem;
         AZStd::unique_ptr<Factory> m_rootFactory;
 
         struct ImageAttachment

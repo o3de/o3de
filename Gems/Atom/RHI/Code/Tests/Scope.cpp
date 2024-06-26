@@ -21,7 +21,7 @@ namespace UnitTest
         AZ_Assert(IsActive() == false, "Is Active");
     }
 
-    void Scope::CompileInternal([[maybe_unused]] AZ::RHI::Device& device)
+    void Scope::CompileInternal()
     {
         for (const AZ::RHI::ScopeAttachment* scopeAttachment : GetAttachments())
         {

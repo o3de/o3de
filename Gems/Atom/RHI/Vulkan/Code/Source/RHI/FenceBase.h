@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/Fence.h>
+#include <Atom/RHI/DeviceFence.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <RHI/SignalEvent.h>
 

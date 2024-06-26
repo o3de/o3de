@@ -9,7 +9,7 @@
 #pragma once
 
 #include <Atom/RHI/PipelineStateDescriptor.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 
 #include <Atom/RPI.Public/Pass/RenderPass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>

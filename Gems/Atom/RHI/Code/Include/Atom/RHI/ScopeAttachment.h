@@ -9,14 +9,13 @@
 
 #include <Atom/RHI.Reflect/AttachmentId.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
-#include <Atom/RHI/ResourceView.h>
+#include <Atom/RHI/Resource.h>
 #include <AzCore/RTTI/RTTI.h>
 
 namespace AZ::RHI
 {
     class Scope;
     class FrameAttachment;
-    class SwapChain;
     struct ScopeAttachmentDescriptor;
     
     //! A ScopeAttachment is created when a FrameAttachment is "attached" to a specific scope. A single FrameAttachment
@@ -49,7 +48,7 @@ namespace AZ::RHI
 
         //! Returns the pipeline stage
         ScopeAttachmentStage GetStage() const;
-            
+
         //! Returns the resource view.
         const ResourceView* GetResourceView() const;
 

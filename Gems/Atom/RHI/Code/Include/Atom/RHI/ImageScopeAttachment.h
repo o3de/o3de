@@ -8,12 +8,12 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>
+#include <Atom/RHI/Image.h>
 #include <Atom/RHI/ScopeAttachment.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
 namespace AZ::RHI
 {
-    class ImageView;
     class ImageFrameAttachment;
 
     //! A specialization of a scope attachment for images. Provides
@@ -48,10 +48,10 @@ namespace AZ::RHI
         ImageScopeAttachment* GetNext();
 
         //! Returns the image view set on the scope attachment.
-        const ImageView* GetImageView() const;
+        const AZ::RHI::ImageView* GetImageView() const;
 
         //! Assigns an image view to the scope attachment.
-        void SetImageView(ConstPtr<ImageView> imageView);
+        void SetImageView(ConstPtr<AZ::RHI::ImageView> imageView);
 
         bool IsBeingResolved() const;
 

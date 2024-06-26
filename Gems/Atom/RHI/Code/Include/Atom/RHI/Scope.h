@@ -10,7 +10,7 @@
 #include <Atom/RHI.Reflect/ScopeId.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <Atom/RHI.Reflect/Handle.h>
-#include <Atom/RHI/ResourcePool.h>
+#include <Atom/RHI/DeviceResourcePool.h>
 #include <Atom/RHI/QueryPool.h>
 #include <Atom/RHI/Fence.h>
 #include <AzCore/std/containers/vector.h>
@@ -18,17 +18,16 @@
 
 namespace AZ::RHI
 {
-    class SwapChain;
+    class DeviceSwapChain;
     class ScopeAttachment;
     class ImageScopeAttachment;
     class BufferScopeAttachment;
     class ResolveScopeAttachment;
-    class BufferPoolBase;
-    class ImagePoolBase;
+    class DeviceBufferPoolBase;
+    class DeviceImagePoolBase;
     class ResourcePoolDatabase;
     class FrameGraph;
     class Device;
-    class QueryPool;
 
     using GraphGroupId = Handle<uint32_t>;
 
@@ -52,6 +51,15 @@ namespace AZ::RHI
 
         //! Returns whether the scope is currently active on a frame.
         bool IsActive() const;
+
+        //! Returns the index of the device the scope is running on.
+        int GetDeviceIndex() const;
+
+        //! Sets the index of the device the scope is running on.
+        void SetDeviceIndex(int deviceIndex);
+
+        //! Returns the device the scope is running on.
+        Device& GetDevice() const;
 
         //! Returns the scope id associated with this scope.
         const ScopeId& GetId() const;
@@ -112,7 +120,7 @@ namespace AZ::RHI
         const AZStd::vector<ResourcePoolResolver*>& GetResourcePoolResolves() const;
 
         //! Returns a list of swap chains which require presentation at the end of the scope.
-        const AZStd::vector<SwapChain*>& GetSwapChainsToPresent() const;
+        const AZStd::vector<DeviceSwapChain*>& GetSwapChainsToPresent() const;
 
         //! Returns a list of fences to signal on completion of the scope.
         const AZStd::vector<Ptr<Fence>>& GetFencesToSignal() const;
@@ -127,7 +135,7 @@ namespace AZ::RHI
         void Activate(const FrameGraph* frameGraph, uint32_t index, const GraphGroupId& groupId);
 
         //! Called when the scope is being compiled at the end of the graph-building phase.
-        void Compile(Device& device);
+        void Compile();
 
         //! Deactivates the scope for the current frame.
         void Deactivate();
@@ -170,7 +178,7 @@ namespace AZ::RHI
         virtual void ActivateInternal();
 
         /// Called when the scope is being compiled into platform-dependent actions (after graph compilation).
-        virtual void CompileInternal(Device& device);
+        virtual void CompileInternal();
 
         /// Called when the scope is deactivating at the end of the frame (after execution).
         virtual void DeactivateInternal();
@@ -214,6 +222,9 @@ namespace AZ::RHI
         /// Tracks whether the scope is active, which happens once per frame.
         bool m_isActive = false;
 
+        /// The device index the scope is running on.
+        int m_deviceIndex = MultiDevice::DefaultDeviceIndex;
+
         /// The cross-queue producers / consumers, indexed by hardware queue.
         AZStd::array<Scope*, HardwareQueueClassCount> m_producersByQueueLast = {{nullptr}};
         AZStd::array<Scope*, HardwareQueueClassCount> m_producersByQueue     = {{nullptr}};
@@ -238,7 +249,7 @@ namespace AZ::RHI
         AZStd::vector<ResourcePoolResolver*>     m_resourcePoolResolves;
 
         /// The set of swap chain present actions requested.
-        AZStd::vector<SwapChain*>                m_swapChainsToPresent;
+        AZStd::vector<DeviceSwapChain*>                m_swapChainsToPresent;
 
         /// The set of fences to signal on scope completion.
         AZStd::vector<Ptr<Fence>>                m_fencesToSignal;

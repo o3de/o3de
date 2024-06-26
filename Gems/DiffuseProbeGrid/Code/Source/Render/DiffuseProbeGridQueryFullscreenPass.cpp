@@ -10,7 +10,7 @@
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/FrameGraphBuilder.h>
 #include <Atom/RHI/FrameGraphInterface.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/RPIUtils.h>
@@ -223,15 +223,15 @@ namespace AZ
 
                 // submit DispatchItem
                 const uint8_t srgCount = 3;
-                AZStd::array<const RHI::ShaderResourceGroup*, 8> shaderResourceGroups =
+                AZStd::array<const RHI::DeviceShaderResourceGroup*, 8> shaderResourceGroups =
                 {
-                    diffuseProbeGrid->GetQuerySrg()->GetRHIShaderResourceGroup(),
-                    m_shaderResourceGroup->GetRHIShaderResourceGroup(),
-                    views[0]->GetRHIShaderResourceGroup()
+                    diffuseProbeGrid->GetQuerySrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get(),
+                    m_shaderResourceGroup->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get(),
+                    views[0]->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get()
                 };
 
-                RHI::DispatchItem dispatchItem;
-                dispatchItem.m_pipelineState = m_pipelineState;
+                RHI::DeviceDispatchItem dispatchItem;
+                dispatchItem.m_pipelineState = m_pipelineState->GetDevicePipelineState(context.GetDeviceIndex()).get();
                 dispatchItem.m_arguments = m_dispatchArgs;
                 dispatchItem.m_shaderResourceGroupCount = srgCount;
                 dispatchItem.m_shaderResourceGroups = shaderResourceGroups;

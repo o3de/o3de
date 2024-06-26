@@ -141,7 +141,7 @@ namespace AZ
             // Methods for assignment / access of RHI Image types.
                                     
             /// Sets one image view for the given shader input index.
-            bool SetImageView(RHI::ShaderInputNameIndex& inputIndex, const RHI::ImageView* imageView, uint32_t arrayIndex = 0);
+            bool SetImageView(RHI::ShaderInputNameIndex& inputIndex, const RHI::ImageView *imageView, uint32_t arrayIndex = 0);
             bool SetImageView(RHI::ShaderInputImageIndex inputIndex, const RHI::ImageView* imageView, uint32_t arrayIndex = 0);
 
             /// Sets an array of image view for the given shader input index.
@@ -149,7 +149,7 @@ namespace AZ
             bool SetImageViewArray(RHI::ShaderInputImageIndex inputIndex, AZStd::span<const RHI::ImageView* const> imageViews, uint32_t arrayIndex = 0);
 
             /// Sets an unbounded array of image views for the given shader input index.
-            bool SetImageViewUnboundedArray(RHI::ShaderInputImageUnboundedArrayIndex inputIndex, AZStd::span<const RHI::ImageView* const> imageViews);
+            bool SetImageViewUnboundedArray(RHI::ShaderInputImageUnboundedArrayIndex inputIndex, AZStd::span<const RHI::ImageView * const> imageViews);
 
             /// Update the indirect buffer view with the indices of all the image views which reside in the global gpu heap.
             void SetBindlessViews(
@@ -159,7 +159,7 @@ namespace AZ
                 uint32_t* outIndices,
                 AZStd::span<bool> isViewReadOnly,
                 uint32_t arrayIndex = 0);
-            
+
             /// Returns a single image view associated with the image shader input index and array offset.
             const RHI::ConstPtr<RHI::ImageView>& GetImageView(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex = 0) const;
             const RHI::ConstPtr<RHI::ImageView>& GetImageView(RHI::ShaderInputImageIndex inputIndex, uint32_t arrayIndex = 0) const;
@@ -176,7 +176,7 @@ namespace AZ
             bool SetBufferView(RHI::ShaderInputBufferIndex inputIndex, const RHI::BufferView* bufferView, uint32_t arrayIndex = 0);
 
             /// Sets an array of buffer view for the given shader input index.
-            bool SetBufferViewArray(RHI::ShaderInputNameIndex& inputIndex, AZStd::span<const RHI::BufferView* const> bufferViews, uint32_t arrayIndex = 0);
+            bool SetBufferViewArray(RHI::ShaderInputNameIndex& inputIndex, AZStd::span<const RHI::BufferView * const> bufferViews, uint32_t arrayIndex = 0);
             bool SetBufferViewArray(RHI::ShaderInputBufferIndex inputIndex, AZStd::span<const RHI::BufferView* const> bufferViews, uint32_t arrayIndex = 0);
 
             /// Sets an unbounded array of buffer views for the given shader input index.
@@ -198,7 +198,7 @@ namespace AZ
             /// Returns a span of buffer views associated with the given buffer shader input index.
             AZStd::span<const RHI::ConstPtr<RHI::BufferView>> GetBufferViewArray(RHI::ShaderInputNameIndex& inputIndex) const;
             AZStd::span<const RHI::ConstPtr<RHI::BufferView>> GetBufferViewArray(RHI::ShaderInputBufferIndex inputIndex) const;
-            
+
             //////////////////////////////////////////////////////////////////////////
             // Methods for assignment / access of RHI Sampler types.
 

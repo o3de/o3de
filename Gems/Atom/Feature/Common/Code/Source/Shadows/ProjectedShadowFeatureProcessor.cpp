@@ -783,7 +783,7 @@ namespace AZ::Render
             return;
         }
 
-        RHI::DrawPacketBuilder drawPacketBuilder;
+        RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
         drawPacketBuilder.Begin(nullptr);
         drawPacketBuilder.SetDrawArguments(RHI::DrawLinear(1, 0, 3, 0));
 

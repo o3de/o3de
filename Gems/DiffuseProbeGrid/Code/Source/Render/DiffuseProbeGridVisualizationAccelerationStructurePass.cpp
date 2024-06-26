@@ -30,8 +30,7 @@ namespace AZ
             : Pass(descriptor)
         {
             // disable this pass if we're on a platform that doesn't support raytracing
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-            if (device->GetFeatures().m_rayTracing == false || !AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED)
+            if (RHI::RHISystemInterface::Get()->GetRayTracingSupport() == RHI::MultiDevice::NoDevices || !AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED)
             {
                 SetEnabled(false);
             }
@@ -82,7 +81,6 @@ namespace AZ
 
         void DiffuseProbeGridVisualizationAccelerationStructurePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 
@@ -152,12 +150,14 @@ namespace AZ
 
             // build the visualization BLAS from the DiffuseProbeGridFeatureProcessor
             // Note: the BLAS is used by all DiffuseProbeGrid visualization TLAS objects
-            AZStd::vector<const RHI::RayTracingBlas*> changedBlasList;
+            AZStd::vector<const RHI::DeviceRayTracingBlas*> changedBlasList;
             if (m_visualizationBlasBuilt == false)
             {
-                context.GetCommandList()->BuildBottomLevelAccelerationStructure(*diffuseProbeGridFeatureProcessor->GetVisualizationBlas());
+                context.GetCommandList()->BuildBottomLevelAccelerationStructure(*diffuseProbeGridFeatureProcessor->GetVisualizationBlas()->GetDeviceRayTracingBlas(context.GetDeviceIndex()));
                 m_visualizationBlasBuilt = true;
-                changedBlasList.push_back(diffuseProbeGridFeatureProcessor->GetVisualizationBlas().get());
+                changedBlasList.push_back(diffuseProbeGridFeatureProcessor->GetVisualizationBlas()
+                                              ->GetDeviceRayTracingBlas(context.GetDeviceIndex())
+                                              .get());
             }
 
             // call BuildTopLevelAccelerationStructure for each DiffuseProbeGrid in this range
@@ -175,7 +175,7 @@ namespace AZ
                 }
 
                 // build the TLAS object
-                context.GetCommandList()->BuildTopLevelAccelerationStructure(*diffuseProbeGrid->GetVisualizationTlas(), changedBlasList);
+                context.GetCommandList()->BuildTopLevelAccelerationStructure(*diffuseProbeGrid->GetVisualizationTlas()->GetDeviceRayTracingTlas(context.GetDeviceIndex()), changedBlasList);
             }
         }
 

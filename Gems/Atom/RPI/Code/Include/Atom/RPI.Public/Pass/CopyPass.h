@@ -7,36 +7,35 @@
  */
 #pragma once
 
-#include <Atom/RHI/CopyItem.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <Atom/RHI.Reflect/Scissor.h>
 #include <Atom/RHI.Reflect/Viewport.h>
+#include <Atom/RHI/CopyItem.h>
+#include <Atom/RHI/ScopeProducer.h>
 
 #include <Atom/RPI.Reflect/Pass/CopyPassData.h>
 
-#include <Atom/RPI.Public/Pass/RenderPass.h>
+#include <Atom/RPI.Public/Pass/Pass.h>
 
 namespace AZ
 {
     namespace RPI
     {
         //! A copy pass is a leaf pass (pass with no children) used for copying images and buffers on the GPU.
-        class CopyPass
-            : public RenderPass
+        class CopyPass : public Pass
         {
             AZ_RPI_PASS(CopyPass);
 
         public:
-            AZ_RTTI(CopyPass, "{7387500D-B1BA-4916-B38C-24F5C8DAF839}", RenderPass);
+            AZ_RTTI(CopyPass, "{7387500D-B1BA-4916-B38C-24F5C8DAF839}", Pass);
             AZ_CLASS_ALLOCATOR(CopyPass, SystemAllocator);
-            virtual ~CopyPass() = default;
+            virtual ~CopyPass();
 
             static Ptr<CopyPass> Create(const PassDescriptor& descriptor);
 
         protected:
             explicit CopyPass(const PassDescriptor& descriptor);
 
-            // Sets up the copy item to perform an image to image copy
             void CopyBuffer(const RHI::FrameGraphCompileContext& context);
             void CopyImage(const RHI::FrameGraphCompileContext& context);
             void CopyBufferToImage(const RHI::FrameGraphCompileContext& context);
@@ -44,20 +43,52 @@ namespace AZ
 
             // Pass behavior overrides
             void BuildInternal() override;
+            void FrameBeginInternal(FramePrepareParams params) override;
+            void ResetInternal() override;
 
             // Scope producer functions...
-            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
-            void CompileResources(const RHI::FrameGraphCompileContext& context) override;
-            void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
+            void SetupFrameGraphDependenciesSameDevice(RHI::FrameGraphInterface frameGraph);
+            void CompileResourcesSameDevice(const RHI::FrameGraphCompileContext& context);
+            void BuildCommandListInternalSameDevice(const RHI::FrameGraphExecuteContext& context);
+            void SetupFrameGraphDependenciesDeviceToHost(RHI::FrameGraphInterface frameGraph);
+            void CompileResourcesDeviceToHost(const RHI::FrameGraphCompileContext& context);
+            void BuildCommandListInternalDeviceToHost(const RHI::FrameGraphExecuteContext& context);
+            void SetupFrameGraphDependenciesHostToDevice(RHI::FrameGraphInterface frameGraph);
+            void CompileResourcesHostToDevice(const RHI::FrameGraphCompileContext& context);
+            void BuildCommandListInternalHostToDevice(const RHI::FrameGraphExecuteContext& context);
 
             // Retrieves the copy item type based on the input and output attachment type
             RHI::CopyItemType GetCopyItemType();
 
             // The copy item submitted to the command list
-            RHI::CopyItem m_copyItem;
+            RHI::CopyItem m_copyItemSameDevice;
+            RHI::CopyItem m_copyItemDeviceToHost;
+            RHI::CopyItem m_copyItemHostToDevice;
+            AZStd::shared_ptr<AZ::RHI::ScopeProducer> m_copyScopeProducerSameDevice;
+            AZStd::shared_ptr<AZ::RHI::ScopeProducer> m_copyScopeProducerDeviceToHost;
+            AZStd::shared_ptr<AZ::RHI::ScopeProducer> m_copyScopeProducerHostToDevice;
 
             // Potential data provided by the PassRequest
             CopyPassData m_data;
+
+            RHI::HardwareQueueClass m_hardwareQueueClass = RHI::HardwareQueueClass::Graphics;
+
+            enum class CopyMode
+            {
+                SameDevice,
+                DifferentDevicesIntermediateHost,
+                Invalid
+            };
+            CopyMode m_copyMode = CopyMode::Invalid;
+
+            constexpr static int MaxFrames = RHI::Limits::Device::FrameCountMax;
+            int m_currentBufferIndex = 0;
+            AZStd::array<Data::Instance<Buffer>, MaxFrames> m_device1HostBuffer;
+            AZStd::array<Data::Instance<Buffer>, MaxFrames> m_device2HostBuffer;
+            AZStd::array<AZ::u64, MaxFrames> m_deviceHostBufferByteCount;
+            AZStd::array<Ptr<RHI::Fence>, MaxFrames> m_device1SignalFence;
+            AZStd::array<Ptr<RHI::Fence>, MaxFrames> m_device2WaitFence;
+            RHI::DeviceImageSubresourceLayout m_inputImageLayout;
         };
-    }   // namespace RPI
-}   // namespace AZ
+    } // namespace RPI
+} // namespace AZ

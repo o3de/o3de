@@ -118,8 +118,8 @@ namespace AZ
             //! Resolves multisampled attachments using a command list. ResolveMode must be ResolveMode::CommandList
             void ResolveMSAAAttachments(CommandList& commandList) const;
 
-            void SetDepthStencilFullView(RHI::ConstPtr<RHI::ImageView> view);
-            const RHI::ImageView* GetDepthStencilFullView() const;
+            void SetDepthStencilFullView(RHI::ConstPtr<ImageView> view);
+            const ImageView* GetDepthStencilFullView() const;
 
             enum class OverlapType
             {
@@ -162,7 +162,7 @@ namespace AZ
         private:
             struct QueryPoolAttachment
             {
-                RHI::Ptr<QueryPool> m_pool;
+                RHI::Ptr<RHI::QueryPool> m_pool;
                 RHI::Interval m_interval;
                 RHI::ScopeAttachmentAccess m_access;
             };
@@ -173,7 +173,7 @@ namespace AZ
             // RHI::Scope
             void ActivateInternal() override;
             void DeactivateInternal() override;
-            void CompileInternal(RHI::Device& device) override;
+            void CompileInternal() override;
             void AddQueryPoolUse(RHI::Ptr<RHI::QueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access) override;
             //////////////////////////////////////////////////////////////////////////
 
@@ -218,7 +218,7 @@ namespace AZ
 
             // Used to hold a view to the full depth and stencil when we need to merge two
             // ScopeAttachment views, one that is only depth with one that is only stencil.
-            RHI::ConstPtr<RHI::ImageView> m_depthStencilFullView;
+            RHI::ConstPtr<ImageView> m_depthStencilFullView;
         };
 
         template<class T>

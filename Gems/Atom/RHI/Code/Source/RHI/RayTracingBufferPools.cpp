@@ -6,19 +6,13 @@
  *
  */
 
-#include <Atom/RHI/RayTracingBufferPools.h>
-#include <Atom/RHI/Factory.h>
 #include <Atom/RHI/Device.h>
+#include <Atom/RHI/Factory.h>
+#include <Atom/RHI/RayTracingBufferPools.h>
+#include <Atom/RHI/RHISystemInterface.h>
 
 namespace AZ::RHI
 {
-    RHI::Ptr<RHI::RayTracingBufferPools> RayTracingBufferPools::CreateRHIRayTracingBufferPools()
-    {
-        RHI::Ptr<RHI::RayTracingBufferPools> rayTracingBufferPools = RHI::Factory::Get().CreateRayTracingBufferPools();
-        AZ_Error("RayTracingBufferPools", rayTracingBufferPools.get(), "Failed to create RHI::RayTracingBufferPools");
-        return rayTracingBufferPools;
-    }
-
     const RHI::Ptr<RHI::BufferPool>& RayTracingBufferPools::GetShaderTableBufferPool() const
     {
         AZ_Assert(m_initialized, "RayTracingBufferPools was not initialized");
@@ -55,85 +49,109 @@ namespace AZ::RHI
         return m_tlasBufferPool;
     }
 
-    void RayTracingBufferPools::Init(RHI::Ptr<RHI::Device>& device)
+    void RayTracingBufferPools::Init(MultiDevice::DeviceMask deviceMask)
     {
         if (m_initialized)
         {
             return;
         }
 
-        // create shader table buffer pool
-        {
-            RHI::BufferPoolDescriptor bufferPoolDesc;
-            bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Host;
-            bufferPoolDesc.m_bindFlags = GetShaderTableBufferBindFlags();
+        MultiDeviceObject::Init(deviceMask);
 
-            m_shaderTableBufferPool = RHI::Factory::Get().CreateBufferPool();
-            m_shaderTableBufferPool->SetName(Name("RayTracingShaderTableBufferPool"));
-            [[maybe_unused]] RHI::ResultCode resultCode = m_shaderTableBufferPool->Init(*device, bufferPoolDesc);
-            AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to initialize ray tracing shader table buffer pool");
-        }
+        // Initialize device ray tracing buffer pools
+        IterateDevices(
+            [this](int deviceIndex)
+            {
+                RHI::Ptr<RHI::Device> device = RHISystemInterface::Get()->GetDevice(deviceIndex);
+                m_deviceObjects[deviceIndex] = Factory::Get().CreateRayTracingBufferPools();
+                GetDeviceRayTracingBufferPools(deviceIndex)->Init(device);
+                return true;
+            });
 
-        // create scratch buffer pool
-        {
-            RHI::BufferPoolDescriptor bufferPoolDesc;
-            bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
-            bufferPoolDesc.m_bindFlags = GetScratchBufferBindFlags();
+        m_shaderTableBufferPool = aznew RHI::BufferPool();
+        m_shaderTableBufferPool->Init(
+            deviceMask,
+            [this]()
+            {
+                IterateObjects<DeviceRayTracingBufferPools>(
+                    [this]([[maybe_unused]] auto deviceIndex, auto deviceBufferPool)
+                    {
+                        m_shaderTableBufferPool->m_deviceObjects[deviceIndex] = deviceBufferPool->GetShaderTableBufferPool().get();
+                        m_shaderTableBufferPool->m_descriptor = deviceBufferPool->GetShaderTableBufferPool()->GetDescriptor();
+                    });
+                return ResultCode::Success;
+            });
 
-            m_scratchBufferPool = RHI::Factory::Get().CreateBufferPool();
-            m_scratchBufferPool->SetName(Name("RayTracingScratchBufferPool"));
-            [[maybe_unused]] RHI::ResultCode resultCode = m_scratchBufferPool->Init(*device, bufferPoolDesc);
-            AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to initialize ray tracing scratch buffer pool");
-        }
+        m_scratchBufferPool = aznew RHI::BufferPool();
+        m_scratchBufferPool->Init(
+            deviceMask,
+            [this]()
+            {
+                IterateObjects<DeviceRayTracingBufferPools>(
+                    [this]([[maybe_unused]] auto deviceIndex, auto deviceBufferPool)
+                    {
+                        m_scratchBufferPool->m_deviceObjects[deviceIndex] = deviceBufferPool->GetScratchBufferPool().get();
+                        m_scratchBufferPool->m_descriptor = deviceBufferPool->GetScratchBufferPool()->GetDescriptor();
+                    });
+                return ResultCode::Success;
+            });
 
-        // create AABB buffer pool
-        {
-            RHI::BufferPoolDescriptor bufferPoolDesc;
-            bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
-            bufferPoolDesc.m_bindFlags = GetAabbStagingBufferBindFlags();
+        m_aabbStagingBufferPool = aznew RHI::BufferPool();
+        m_aabbStagingBufferPool->Init(
+            deviceMask,
+            [this]()
+            {
+                IterateObjects<DeviceRayTracingBufferPools>(
+                    [this]([[maybe_unused]] auto deviceIndex, auto deviceBufferPool)
+                    {
+                        m_aabbStagingBufferPool->m_deviceObjects[deviceIndex] = deviceBufferPool->GetAabbStagingBufferPool().get();
+                        m_aabbStagingBufferPool->m_descriptor = deviceBufferPool->GetAabbStagingBufferPool()->GetDescriptor();
+                    });
+                return ResultCode::Success;
+            });
 
-            m_aabbStagingBufferPool = RHI::Factory::Get().CreateBufferPool();
-            m_aabbStagingBufferPool->SetName(Name("RayTracingAabbStagingBufferPool"));
-            [[maybe_unused]] RHI::ResultCode resultCode = m_aabbStagingBufferPool->Init(*device, bufferPoolDesc);
-            AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to initialize ray tracing AABB staging buffer pool");
-        }
+        m_blasBufferPool = aznew RHI::BufferPool();
+        m_blasBufferPool->Init(
+            deviceMask,
+            [this]()
+            {
+                IterateObjects<DeviceRayTracingBufferPools>(
+                    [this]([[maybe_unused]] auto deviceIndex, auto deviceBufferPool)
+                    {
+                        m_blasBufferPool->m_deviceObjects[deviceIndex] = deviceBufferPool->GetBlasBufferPool().get();
+                        m_blasBufferPool->m_descriptor = deviceBufferPool->GetBlasBufferPool()->GetDescriptor();
+                    });
+                return ResultCode::Success;
+            });
 
-        // create BLAS buffer pool
-        {
-            RHI::BufferPoolDescriptor bufferPoolDesc;
-            bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
-            bufferPoolDesc.m_bindFlags = GetBlasBufferBindFlags();
+        m_tlasInstancesBufferPool = aznew RHI::BufferPool();
+        m_tlasInstancesBufferPool->Init(
+            deviceMask,
+            [this]()
+            {
+                IterateObjects<DeviceRayTracingBufferPools>(
+                    [this]([[maybe_unused]] auto deviceIndex, auto deviceBufferPool)
+                    {
+                        m_tlasInstancesBufferPool->m_deviceObjects[deviceIndex] = deviceBufferPool->GetTlasInstancesBufferPool().get();
+                        m_tlasInstancesBufferPool->m_descriptor = deviceBufferPool->GetTlasInstancesBufferPool()->GetDescriptor();
+                    });
+                return ResultCode::Success;
+            });
 
-            m_blasBufferPool = RHI::Factory::Get().CreateBufferPool();
-            m_blasBufferPool->SetName(Name("RayTracingBlasBufferPool"));
-            [[maybe_unused]] RHI::ResultCode resultCode = m_blasBufferPool->Init(*device, bufferPoolDesc);
-            AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to initialize ray tracing BLAS buffer pool");
-        }
-
-        // create TLAS Instances buffer pool
-        {
-            RHI::BufferPoolDescriptor bufferPoolDesc;
-            bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
-            bufferPoolDesc.m_bindFlags = GetTlasInstancesBufferBindFlags();
-
-            m_tlasInstancesBufferPool = RHI::Factory::Get().CreateBufferPool();
-            m_tlasInstancesBufferPool->SetName(Name("RayTracingTlasInstancesBufferPool"));
-            [[maybe_unused]] RHI::ResultCode resultCode = m_tlasInstancesBufferPool->Init(*device, bufferPoolDesc);
-            AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to initialize ray tracing TLAS instances buffer pool");
-        }
-
-        // create TLAS buffer pool
-        {
-            RHI::BufferPoolDescriptor bufferPoolDesc;
-            bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
-            bufferPoolDesc.m_bindFlags = GetTlasBufferBindFlags();
-
-            m_tlasBufferPool = RHI::Factory::Get().CreateBufferPool();
-            m_tlasBufferPool->SetName(Name("RayTracingTLASBufferPool"));
-            [[maybe_unused]] RHI::ResultCode resultCode = m_tlasBufferPool->Init(*device, bufferPoolDesc);
-            AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to initialize ray tracing TLAS buffer pool");
-        }
+        m_tlasBufferPool = aznew RHI::BufferPool();
+        m_tlasBufferPool->Init(
+            deviceMask,
+            [this]()
+            {
+                IterateObjects<DeviceRayTracingBufferPools>(
+                    [this]([[maybe_unused]] auto deviceIndex, auto deviceBufferPool)
+                    {
+                        m_tlasBufferPool->m_deviceObjects[deviceIndex] = deviceBufferPool->GetTlasBufferPool().get();
+                        m_tlasBufferPool->m_descriptor = deviceBufferPool->GetTlasBufferPool()->GetDescriptor();
+                    });
+                return ResultCode::Success;
+            });
 
         m_initialized = true;
     }
-}
+} // namespace AZ::RHI

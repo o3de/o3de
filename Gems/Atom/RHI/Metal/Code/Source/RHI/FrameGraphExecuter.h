@@ -29,8 +29,6 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(FrameGraphExecuter, AZ::SystemAllocator);
 
             static RHI::Ptr<FrameGraphExecuter> Create();
-
-            Device& GetDevice() const;
         private:
             FrameGraphExecuter();
 
@@ -42,8 +40,7 @@ namespace AZ
             void ExecuteGroupInternal(RHI::FrameGraphExecuteGroup& group) override;
             void EndInternal() override {}
             
-            CommandQueueContext* m_commandQueueContext = nullptr;
-            FrameGraphExecuterData m_frameGraphExecuterData;
+            AZStd::unordered_map<int, FrameGraphExecuterData> m_frameGraphExecuterData;
 
         };
     }

@@ -9,7 +9,6 @@
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/DrawListTagRegistry.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/ShaderResourceGroup.h>
 
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 #include <Atom/RPI.Public/Pass/RasterPass.h>
@@ -265,7 +264,7 @@ namespace AZ
                 const RHI::DrawItemProperties& drawItemProperties = m_drawListView[index];
                 if (drawItemProperties.m_drawFilterMask & m_pipeline->GetDrawFilterMask())
                 {
-                    commandList->Submit(*drawItemProperties.m_item, index + indexOffset);
+                    commandList->Submit(drawItemProperties.m_Item->GetDeviceDrawItem(context.GetDeviceIndex()), index + indexOffset);
                 }
             }
         }
@@ -278,7 +277,7 @@ namespace AZ
             {
                 commandList->SetViewport(m_viewportState);
                 commandList->SetScissor(m_scissorState);
-                SetSrgsForDraw(commandList);
+                SetSrgsForDraw(context);
                 SubmitDrawItems(context, context.GetSubmitRange().m_startIndex, context.GetSubmitRange().m_endIndex, 0);
             }
         }

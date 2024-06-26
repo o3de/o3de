@@ -16,6 +16,7 @@
 namespace UnitTest
 {
     class PipelineStateTests;
+    class MultiDevicePipelineStateTests;
 }
 
 namespace AZ::RHI
@@ -100,6 +101,7 @@ namespace AZ::RHI
     class PipelineStateCache final
         : public AZStd::intrusive_base
     {
+        friend class UnitTest::MultiDevicePipelineStateTests;
     public:
         AZ_CLASS_ALLOCATOR(PipelineStateCache, SystemAllocator);
 
@@ -108,13 +110,15 @@ namespace AZ::RHI
         //! avoid a pointer indirection on access.
         static const size_t LibraryCountMax = 256;
 
-        static Ptr<PipelineStateCache> Create(Device& device);
+        static Ptr<PipelineStateCache> Create(MultiDevice::DeviceMask deviceMask);
 
         //! Resets the caches of all pipeline libraries back to empty. All internal references to pipeline states are released.
         void Reset();
 
         //! Creates an internal pipeline library instance and returns its handle.
-        PipelineLibraryHandle CreateLibrary(const PipelineLibraryData* serializedData, const AZStd::string& filePath = "");
+        PipelineLibraryHandle CreateLibrary(
+            const AZStd::unordered_map<int, ConstPtr<RHI::PipelineLibraryData>>& serializedData,
+            const AZStd::unordered_map<int, AZStd::string>& filePaths);
 
         //! Releases the pipeline library and purges it from the cache. Releases all held references to pipeline states for the library.
         void ReleaseLibrary(PipelineLibraryHandle handle);
@@ -143,7 +147,7 @@ namespace AZ::RHI
         void Compact();
 
     private:
-        PipelineStateCache(Device& device);
+        PipelineStateCache(MultiDevice::DeviceMask deviceMask);
 
         void ValidateCacheIntegrity() const;
 
@@ -151,7 +155,8 @@ namespace AZ::RHI
 
         struct PipelineStateEntry
         {
-            PipelineStateEntry(PipelineStateHash hash, ConstPtr<PipelineState> pipelineState, const PipelineStateDescriptor& descriptor);
+            PipelineStateEntry(
+                PipelineStateHash hash, ConstPtr<PipelineState> pipelineState, const PipelineStateDescriptor& descriptor);
 
             bool operator < (const PipelineStateEntry& rhs) const
             {
@@ -216,7 +221,8 @@ namespace AZ::RHI
         using ThreadLibrarySet = AZStd::array<ThreadLibraryEntry, LibraryCountMax>;
 
         //! Helper function which binary searches a pipeline state set looking for an entry which matches the requested descriptor.
-        static const PipelineState* FindPipelineState(const PipelineStateSet& pipelineStateSet, const PipelineStateDescriptor& descriptor);
+        static const PipelineState* FindPipelineState(
+            const PipelineStateSet& pipelineStateSet, const PipelineStateDescriptor& descriptor);
 
         //! Helper function which inserts an entry into the set. Returns true if the entry was inserted, or false is a duplicate entry existed.
         static bool InsertPipelineState(PipelineStateSet& pipelineStateSet, PipelineStateEntry pipelineStateEntry);
@@ -232,7 +238,7 @@ namespace AZ::RHI
         //! Resets the library without validating the handle or taking a lock.
         void ResetLibraryImpl(PipelineLibraryHandle handle);
 
-        Ptr<Device> m_device;
+        MultiDevice::DeviceMask m_deviceMask;
 
         /// Each thread owns a set of ThreadLibraryEntry elements. RHI::PipelineLibraryHandle is an
         /// index into the array.

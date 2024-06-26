@@ -30,6 +30,8 @@ namespace AZ
 
             void InitBase(Device& device, const RHI::GraphGroupId& groupId, RHI::HardwareQueueClass hardwareQueueClass);
 
+            Device& GetDevice() const;
+
             const ExecuteWorkRequest& GetWorkRequest() const;
 
             RHI::HardwareQueueClass GetHardwareQueueClass() const;
