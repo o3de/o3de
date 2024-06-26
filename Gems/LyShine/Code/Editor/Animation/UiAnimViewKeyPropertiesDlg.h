@@ -12,7 +12,6 @@
 #if !defined(Q_MOC_RUN)
 #include "UiAnimViewSequence.h"
 #include "UiAnimViewNode.h"
-#include "Plugin.h"
 #include "UiAnimViewDopeSheetBase.h"
 
 #include <QScopedPointer>

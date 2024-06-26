@@ -36,7 +36,6 @@ class CAnimationContext;
 class CTrackViewSequenceManager;
 class CGameEngine;
 class CToolBoxManager;
-class CClassFactory;
 class CMusicManager;
 struct IEditorParticleManager;
 class CEAXPresetManager;
@@ -44,7 +43,6 @@ class CErrorReport;
 class ICommandManager;
 class CEditorCommandManager;
 class CConsoleSynchronization;
-struct IEditorClassFactory;
 class CDialog;
 #if defined(AZ_PLATFORM_WINDOWS)
 class C3DConnexionDriver;
@@ -316,13 +314,6 @@ enum EModifiedModule
     eModifiedAll = -1
 };
 
-//! Class provided by editor for various registration functions.
-struct CRegistrationContext
-{
-    CEditorCommandManager* pCommandManager;
-    CClassFactory* pClassFactory;
-};
-
 //! Interface provided by editor to reach status bar functionality.
 struct IMainStatusBar
 {
@@ -371,8 +362,6 @@ struct IEditor
     virtual void DeleteThis() = 0;
     //! Access to Editor ISystem interface.
     virtual ISystem* GetSystem() = 0;
-    //! Access to class factory.
-    virtual IEditorClassFactory* GetClassFactory() = 0;
     //! Access to commands manager.
     virtual CEditorCommandManager* GetCommandManager() = 0;
     virtual ICommandManager* GetICommandManager() = 0;
@@ -522,9 +511,7 @@ struct IEditor
     virtual const QtViewPane* OpenView(QString sViewClassName, bool reuseOpen = true) = 0;
     virtual QWidget* FindView(QString viewClassName) = 0;
 
-    virtual bool CloseView(const char* sViewClassName) = 0;
     virtual bool SetViewFocus(const char* sViewClassName) = 0;
-    virtual void CloseView(const GUID& classId) = 0; // close ALL panels related to classId, used when unloading plugins.
 
     //! Opens standard color selection dialog.
     //! Initialized with the color specified in color parameter.
