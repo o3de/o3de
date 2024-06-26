@@ -23,7 +23,6 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
 
 #if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE || MATERIALPIPELINE_SHADER_HAS_GEOMETRIC_PIXEL_STAGE
 
-    #define ENABLE_VERTEX_COLOR 0
     #define VsInput VsInput_StandardMultilayerPBR
     #define VsSystemValues VsSystemValues_StandardMultilayerPBR
     #define VsOutput VsOutput_StandardMultilayerPBR

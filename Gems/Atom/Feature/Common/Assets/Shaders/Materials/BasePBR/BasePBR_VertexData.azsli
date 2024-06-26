@@ -24,7 +24,7 @@
 #endif
 
 #ifndef ENABLE_VERTEX_COLOR
-#define ENABLE_VERTEX_COLOR 1
+#define ENABLE_VERTEX_COLOR 0
 #endif
 
 
@@ -73,6 +73,6 @@ struct VsOutput_BasePBR
 
 #if ENABLE_VERTEX_COLOR
     // Optional
-    float4 color0 : UV7;
+    float4 color0 : UV7; // Using UV7 just to leave some room for non optional attributes
 #endif
 };

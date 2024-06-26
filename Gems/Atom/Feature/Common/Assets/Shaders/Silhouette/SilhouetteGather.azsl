@@ -6,8 +6,6 @@
  *
  */
 
-#define ENABLE_VERTEX_COLOR 0
-
 #include <viewsrg.srgi>
 
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
