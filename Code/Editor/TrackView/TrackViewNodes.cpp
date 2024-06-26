@@ -49,7 +49,6 @@
 #include "TrackViewFBXImportPreviewDialog.h"
 #include "AnimationContext.h"
 
-
 CTrackViewNodesCtrl::CRecord::CRecord(CTrackViewNode* pNode /*= nullptr*/)
     : m_pNode(pNode)
     , m_bVisible(false)
@@ -381,16 +380,6 @@ CTrackViewNodesCtrl::CTrackViewNodesCtrl(QWidget* hParentWnd, CTrackViewDialog* 
 
     connect(ui->searchField, &QLineEdit::textChanged, this, &CTrackViewNodesCtrl::OnFilterChange);
 
-    // legacy node icons are enumerated and stored as png files on disk
-    for (int i = 0; i <= 29; i++)
-    {
-        QIcon icon(QString(":/nodes/tvnodes-%1.png").arg(i, 2, 10, QLatin1Char('0')));
-        if (!icon.isNull())
-        {
-            m_imageList[i] = icon;
-        }
-    }
-
     m_bEditLock = false;
 
     m_arrowCursor = Qt::ArrowCursor;
@@ -460,148 +449,6 @@ void CTrackViewNodesCtrl::SetDopeSheet(CTrackViewDopeSheetBase* pDopeSheet)
 }
 
 //////////////////////////////////////////////////////////////////////////
-int CTrackViewNodesCtrl::GetIconIndexForTrack(const CTrackViewTrack* pTrack) const
-{
-    int nImage = 13; // Default
-
-    if (!pTrack)
-    {
-        return nImage;
-    }
-
-    CAnimParamType paramType = pTrack->GetParameterType();
-    AnimValueType valueType = pTrack->GetValueType();
-    AnimNodeType nodeType = pTrack->GetAnimNode()->GetType();
-
-    // If it's a track which belongs to the post-fx node,
-    // just use a default icon.
-    if (nodeType == AnimNodeType::RadialBlur
-        || nodeType == AnimNodeType::ColorCorrection
-        || nodeType == AnimNodeType::DepthOfField
-        || nodeType == AnimNodeType::ShadowSetup)
-    {
-        return nImage;
-    }
-
-    AnimParamType type = paramType.GetType();
-
-    if (type == AnimParamType::Position)
-    {
-        nImage = 3;
-    }
-    else if (type == AnimParamType::Rotation)
-    {
-        nImage = 4;
-    }
-    else if (type == AnimParamType::Scale)
-    {
-        nImage = 5;
-    }
-    else if (type == AnimParamType::Event || type == AnimParamType::TrackEvent)
-    {
-        nImage = 6;
-    }
-    else if (type == AnimParamType::Visibility)
-    {
-        nImage = 7;
-    }
-    else if (type == AnimParamType::Camera)
-    {
-        nImage = 8;
-    }
-    else if (type == AnimParamType::Sound)
-    {
-        nImage = 9;
-    }
-    else if (type == AnimParamType::Animation || type == AnimParamType::TimeRanges || valueType == AnimValueType::CharacterAnim || valueType == AnimValueType::AssetBlend)
-    {
-        nImage = 10;
-    }
-    else if (type == AnimParamType::Sequence)
-    {
-        nImage = 11;
-    }
-    else if (type == AnimParamType::Float)
-    {
-        nImage = 13;
-    }
-    else if (type == AnimParamType::Capture)
-    {
-        nImage = 25;
-    }
-    else if (type == AnimParamType::Console)
-    {
-        nImage = 15;
-    }
-    else if (type == AnimParamType::LookAt)
-    {
-        nImage = 17;
-    }
-    else if (type == AnimParamType::TimeWarp)
-    {
-        nImage = 22;
-    }
-    else if (type == AnimParamType::CommentText)
-    {
-        nImage = 23;
-    }
-    else if (type == AnimParamType::ShakeMultiplier || type == AnimParamType::TransformNoise)
-    {
-        nImage = 28;
-    }
-
-    return nImage;
-}
-
-//////////////////////////////////////////////////////////////////////////
-int CTrackViewNodesCtrl::GetIconIndexForNode(AnimNodeType type) const
-{
-    int nImage = 0;
-    if (type == AnimNodeType::AzEntity)
-    {
-        nImage = 29;
-    }
-    else if (type == AnimNodeType::Director)
-    {
-        nImage = 27;
-    }
-    else if (type == AnimNodeType::CVar)
-    {
-        nImage = 15;
-    }
-    else if (type == AnimNodeType::ScriptVar)
-    {
-        nImage = 14;
-    }
-    else if (type == AnimNodeType::Event)
-    {
-        nImage = 6;
-    }
-    else if (type == AnimNodeType::Group)
-    {
-        nImage = 1;
-    }
-    else if (type == AnimNodeType::Layer)
-    {
-        nImage = 20;
-    }
-    else if (type == AnimNodeType::Comment)
-    {
-        nImage = 23;
-    }
-    else if (type == AnimNodeType::Light)
-    {
-        nImage = 18;
-    }
-    else if (type == AnimNodeType::ShadowSetup)
-    {
-        nImage = 24;
-    }
-
-    return nImage;
-}
-
-//////////////////////////////////////////////////////////////////////////
 CTrackViewNodesCtrl::CRecord* CTrackViewNodesCtrl::AddAnimNodeRecord(CRecord* pParentRecord, CTrackViewAnimNode* animNode)
 {
     CRecord* pNewRecord = new CRecord(animNode);
@@ -618,7 +465,6 @@ CTrackViewNodesCtrl::CRecord* CTrackViewNodesCtrl::AddAnimNodeRecord(CRecord* pP
 CTrackViewNodesCtrl::CRecord* CTrackViewNodesCtrl::AddTrackRecord(CRecord* pParentRecord, CTrackViewTrack* pTrack)
 {
     CRecord* pNewTrackRecord = new CRecord(pTrack);
-    pNewTrackRecord->setSizeHint(0, QSize(30, 18));
     pNewTrackRecord->setText(0, QString::fromUtf8(pTrack->GetName().c_str()));
     UpdateTrackRecord(pNewTrackRecord, pTrack);
     pParentRecord->insertChild(GetInsertPosition(pParentRecord, pTrack), pNewTrackRecord);
@@ -737,10 +583,7 @@ void CTrackViewNodesCtrl::UpdateNodeRecord(CRecord* record)
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::UpdateTrackRecord(CRecord* record, CTrackViewTrack* pTrack)
 {
-    int nImage = GetIconIndexForTrack(pTrack);
-    assert(m_imageList.contains(nImage));
-    record->setIcon(0, m_imageList[nImage]);
-
+    record->setIcon(0, GetIconForTrack(pTrack));
     // Check if parameter is valid for non sub tracks
     CTrackViewAnimNode* animNode = pTrack->GetAnimNode();
     const bool isParamValid = pTrack->IsSubTrack() || animNode->IsParamValid(pTrack->GetParameterType());
@@ -768,9 +611,9 @@ void CTrackViewNodesCtrl::UpdateAnimNodeRecord(CRecord* record, CTrackViewAnimNo
     if (nodeType == AnimNodeType::Component)
     {
         // get the component icon from cached component icons
-        
+
         AZ::Entity* azEntity = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(azEntity, &AZ::ComponentApplicationBus::Events::FindEntity, 
+        AZ::ComponentApplicationBus::BroadcastResult(azEntity, &AZ::ComponentApplicationBus::Events::FindEntity,
                                                         static_cast<CTrackViewAnimNode*>(animNode->GetParentNode())->GetAzEntityId());
         if (azEntity)
         {
@@ -782,18 +625,14 @@ void CTrackViewNodesCtrl::UpdateAnimNodeRecord(CRecord* record, CTrackViewAnimNo
                 {
                     record->setIcon(0, findIter->second);
                 }
-            }           
-        }     
+            }
+        }
     }
     else
     {
-        // legacy node icons
-        int nNodeImage = GetIconIndexForNode(nodeType);
-        assert(m_imageList.contains(nNodeImage));
-
-        record->setIcon(0, m_imageList[nNodeImage]);
+        record->setIcon(0, TrackViewNodeIcon(nodeType));
     }
-    
+
 
     const bool disabled = animNode->IsDisabled();
     record->setData(0, CRecord::EnableRole, !disabled);
@@ -1323,7 +1162,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
         if (animNode)
         {
             unsigned int menuId = cmd - eMI_AddTrackBase;
-            
+
             if (animNode->GetType() != AnimNodeType::AzEntity)
             {
                 // add track
@@ -1334,7 +1173,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
                     animNode->CreateTrack(findIter->second);
                     undoBatch.MarkEntityDirty(animNode->GetSequence()->GetSequenceComponentEntityId());
                 }
-            }                   
+            }
         }
     }
     else if (cmd == eMI_RemoveTrack)
@@ -2560,11 +2399,108 @@ void CTrackViewNodesCtrl::EndUndoTransaction()
     UpdateDopeSheet();
 }
 
+QIcon CTrackViewNodesCtrl::TrackViewIcon(const CTrackViewTrack* pTrack)
+{
+    const QIcon defaultIcon(QStringLiteral(":/nodes/tvnodes-13.png"));
+
+    if (!pTrack)
+    {
+        return defaultIcon;
+    }
+    const CAnimParamType paramType = pTrack->GetParameterType();
+    const AnimValueType valueType = pTrack->GetValueType();
+    const AnimNodeType nodeType = pTrack->GetAnimNode()->GetType();
+
+    if (nodeType == AnimNodeType::RadialBlur || nodeType == AnimNodeType::ColorCorrection || nodeType == AnimNodeType::DepthOfField ||
+        nodeType == AnimNodeType::ShadowSetup)
+    {
+        return defaultIcon;
+    }
+
+    switch (valueType)
+    {
+    case AnimValueType::CharacterAnim:
+    case AnimValueType::AssetBlend:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-10.png"));
+    }
+
+    AnimParamType type = paramType.GetType();
+    switch (type)
+    {
+    case AnimParamType::Position:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-03.png"));
+    case AnimParamType::Rotation:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-04.png"));
+    case AnimParamType::Scale:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-05.png"));
+    case AnimParamType::Event:
+    case AnimParamType::TrackEvent:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-06.png"));
+    case AnimParamType::Visibility:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-07.png"));
+    case AnimParamType::Camera:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-08.png"));
+    case AnimParamType::Sound:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-09.png"));
+    case AnimParamType::Animation:
+    case AnimParamType::TimeRanges:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-10.png"));
+    case AnimParamType::Sequence:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-11.png"));
+    case AnimParamType::Capture:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-25.png"));
+    case AnimParamType::Console:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-15.png"));
+    case AnimParamType::LookAt:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-17.png"));
+    case AnimParamType::TimeWarp:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-22.png"));
+    case AnimParamType::CommentText:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-23.png"));
+    case AnimParamType::ShakeMultiplier:
+        [[fallthrough]];
+    case AnimParamType::TransformNoise:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-28.png"));
+    default:
+    case AnimParamType::Float:
+        break;
+    }
+    return defaultIcon;
+}
+
+QIcon CTrackViewNodesCtrl::TrackViewNodeIcon(AnimNodeType type)
+{
+    switch (type)
+    {
+    case AnimNodeType::AzEntity:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-29.png"));
+    case AnimNodeType::Director:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-27.png"));
+    case AnimNodeType::CVar:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-15.png"));
+    case AnimNodeType::ScriptVar:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-14.png"));
+    case AnimNodeType::Material:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-16.png"));
+    case AnimNodeType::Event:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-06.png"));
+    case AnimNodeType::Group:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-01.png"));
+    case AnimNodeType::Layer:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-20.png"));
+    case AnimNodeType::Comment:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-23.png"));
+    case AnimNodeType::Light:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-18.png"));
+    case AnimNodeType::ShadowSetup:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-24.png"));
+    }
+    return QIcon(QStringLiteral(":/nodes/tvnodes-21.png"));
+}
 //////////////////////////////////////////////////////////////////////////
 QIcon CTrackViewNodesCtrl::GetIconForTrack(const CTrackViewTrack* pTrack)
 {
-    int r = GetIconIndexForTrack(pTrack);
-    return m_imageList.contains(r) ? m_imageList[r] : QIcon();
+    return TrackViewIcon(pTrack);
 }
 
 //////////////////////////////////////////////////////////////////////////
