@@ -365,7 +365,6 @@ namespace AZ
             mtlTextureDesc.hazardTrackingMode = resourceDescriptor.m_mtlHazardTrackingMode;
             
             mtlTextureDesc.sampleCount = resourceDescriptor.m_sampleCount;
-            //NSLog(@"ConvertImageDescriptor %p\n", mtlTextureDesc);
             return mtlTextureDesc;
         }
     
