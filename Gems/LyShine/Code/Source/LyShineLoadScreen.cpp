@@ -60,6 +60,8 @@ namespace LyShine
         {
             return false;
         }
+
+#if !defined (CARBONATED)
         //TODO: gEnv->pRenderer is always null, fix the logic below
         AZ_ErrorOnce(nullptr, false, "NotifyGameLoadStart needs to be removed/ported to use Atom");
         return false;
@@ -90,6 +92,33 @@ namespace LyShine
 
         return m_isPlaying;
 #endif
+#else // !defined (CARBONATED)
+        if (!gEnv || !AZ::Interface<ILyShine>::Get())
+        {
+            return false;
+        }
+
+        AZ_Assert(!m_isPlaying, "LyShineLoadScreen was somehow started before the engine loaded.");
+        if (m_isPlaying)
+        {
+            return false;
+        }
+
+        if (!m_gameCanvasEntityId.IsValid())
+        {
+            // Load canvas.
+            m_gameCanvasEntityId = loadFromCfg("game_load_screen_uicanvas_path", "game_load_screen_sequence_to_auto_play");
+        }
+
+        m_isPlaying = m_gameCanvasEntityId.IsValid();
+
+        if (m_isPlaying)
+        {
+            LoadScreenUpdateNotificationBus::Handler::BusConnect();
+        }
+
+        return m_isPlaying;
+#endif // !defined (CARBONATED)
     }
 
     bool LyShineLoadScreenComponent::NotifyLevelLoadStart(bool usingLoadingThread)
@@ -100,6 +129,7 @@ namespace LyShine
             return false;
         }
 
+#if !defined (CARBONATED)
         AZ_ErrorOnce(nullptr, false, "NotifyLevelLoadStart needs to be removed/ported to use Atom");
         return false;
         //TODO: gEnv->pRenderer is always null, fix the logic below
@@ -131,6 +161,34 @@ namespace LyShine
 
         return m_isPlaying;
 #endif
+#else // !defined (CARBONATED)
+        if (!gEnv || !AZ::Interface<ILyShine>::Get())
+        {
+            return false;
+        }
+
+        AZ_Assert(!m_isPlaying, "LyShineLoadScreen was not stopped before another level load started.");
+        AZ_Assert(!m_gameCanvasEntityId.IsValid(), "LyShineLoadScreen game load canvas was not unloaded before a level load started.");
+        if (m_isPlaying || m_gameCanvasEntityId.IsValid())
+        {
+            return false;
+        }
+
+        if (!m_levelCanvasEntityId.IsValid())
+        {
+            // Load canvas.
+            m_levelCanvasEntityId = loadFromCfg("level_load_screen_uicanvas_path", "level_load_screen_sequence_to_auto_play");
+        }
+
+        m_isPlaying = m_levelCanvasEntityId.IsValid();
+
+        if (m_isPlaying)
+        {
+            LoadScreenUpdateNotificationBus::Handler::BusConnect();
+        }
+
+        return m_isPlaying;
+#endif // !defined (CARBONATED)
     }
 
     void LyShineLoadScreenComponent::NotifyLoadEnd()
@@ -141,6 +199,8 @@ namespace LyShine
     void LyShineLoadScreenComponent::UpdateAndRender([[maybe_unused]] float deltaTimeInSeconds)
     {
         AZ_Assert(m_isPlaying, "LyShineLoadScreenComponent should not be connected to LoadScreenUpdateNotificationBus while not playing");
+
+#if !defined (CARBONATED)
         AZ_ErrorOnce(nullptr, m_isPlaying && AZ::Interface<ILyShine>::Get(), "UpdateAndRender needs to be removed/ported to use Atom");
 
         //TODO: gEnv->pRenderer is always null, fix the logic below
@@ -160,6 +220,18 @@ namespace LyShine
             gEnv->pRenderer->EndFrame();
         }
 #endif
+#else // !defined (CARBONATED)
+        if (m_isPlaying && gEnv && AZ::Interface<ILyShine>::Get())
+        {
+            AZ_Assert(GetCurrentThreadId() == gEnv->mMainThreadId, "UpdateAndRender should only be called from the main thread");
+
+            // update the animation system (it sets viewport size for UiRenderer)
+            AZ::Interface<ILyShine>::Get()->Update(deltaTimeInSeconds);
+
+            // Render (it makes begin/end frames for UiRenderer)
+            AZ::Interface<ILyShine>::Get()->Render();
+        }
+#endif // !defined (CARBONATED)
     }
 
     void LyShineLoadScreenComponent::LoadThreadUpdate([[maybe_unused]] float deltaTimeInSeconds)
@@ -275,4 +347,3 @@ namespace LyShine
 } // namespace LyShine
 
 #endif // AZ_LOADSCREENCOMPONENT_ENABLED
-
