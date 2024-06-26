@@ -9,6 +9,7 @@
 
 #include "EditorDefs.h"
 
+#include "Entity/EditorEntityHelpers.h"
 #include "TrackViewSequence.h"
 
 // Qt
@@ -134,7 +135,7 @@ CTrackViewKeyHandle CTrackViewSequence::FindSingleSelectedKey()
 
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewSequence::OnEntityComponentPropertyChanged(AZ::ComponentId changedComponentId)
-{  
+{
     // find the component node for this changeComponentId if it exists
     for (int i = m_pAnimSequence->GetNodeCount(); --i >= 0;)
     {
@@ -152,7 +153,7 @@ CTrackViewTrack* CTrackViewSequence::FindTrackById(unsigned int trackId)
 {
     CTrackViewTrack* result = nullptr;
     CTrackViewTrackBundle allTracks = GetAllTracks();
-    
+
     int allTracksCount = allTracks.GetCount();
     for (int trackIndex = 0; trackIndex < allTracksCount; trackIndex++)
     {
@@ -467,7 +468,7 @@ void CTrackViewSequence::OnNodeChanged(CTrackViewNode* node, ITrackViewSequenceL
             {
                 context.Cancel();
             }
-            
+
             // deselect the node
             if (node->IsSelected())
             {
@@ -518,9 +519,9 @@ void CTrackViewSequence::OnNodeChanged(CTrackViewNode* node, ITrackViewSequenceL
     }
 
     // Mark Layer with Sequence Object as dirty for non-internal or non-UI changes
-    if (type != ITrackViewSequenceListener::eNodeChangeType_NodeOwnerChanged && 
+    if (type != ITrackViewSequenceListener::eNodeChangeType_NodeOwnerChanged &&
         type != ITrackViewSequenceListener::eNodeChangeType_Selected &&
-        type != ITrackViewSequenceListener::eNodeChangeType_Deselected && 
+        type != ITrackViewSequenceListener::eNodeChangeType_Deselected &&
         type != ITrackViewSequenceListener::eNodeChangeType_Collapsed &&
         type != ITrackViewSequenceListener::eNodeChangeType_Expanded)
     {
@@ -794,91 +795,6 @@ void CTrackViewSequence::SelectSelectedNodesInViewport()
 
     AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
         &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, entitiesToBeSelected);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CTrackViewSequence::SyncSelectedTracksToBase()
-{
-    CTrackViewAnimNodeBundle selectedNodes = GetSelectedAnimNodes();
-    bool bNothingWasSynced = true;
-
-    const unsigned int numSelectedNodes = selectedNodes.GetCount();
-    if (numSelectedNodes > 0)
-    {
-        CUndo undo("Sync selected entity nodes to base");
-
-        for (unsigned int i = 0; i < numSelectedNodes; ++i)
-        {
-            CTrackViewAnimNode* pAnimNode = selectedNodes.GetNode(i);
-            if (pAnimNode)
-            {
-                pAnimNode = GetIEditor()->GetSequenceManager()->GetActiveAnimNode(pAnimNode->GetAzEntityId());
-
-                if (pAnimNode)
-                {
-                    const Vec3 position = pAnimNode->GetPos();
-                    const Quat rotation = pAnimNode->GetRotation();
-                    const Vec3 scale = pAnimNode->GetScale();
-
-                    AZ::Transform transform = AZ::Transform::CreateIdentity();
-                    transform.SetUniformScale(LYVec3ToAZVec3(scale).GetMaxElement());
-                    transform.SetRotation(LYQuaternionToAZQuaternion(rotation));
-                    transform.SetTranslation(LYVec3ToAZVec3(position));
-
-                    AZ::TransformBus::Event(
-                        pAnimNode->GetAzEntityId(), &AZ::TransformBus::Events::SetWorldTM, transform);
-
-                    bNothingWasSynced = false;
-                }
-            }
-        }
-
-        if (bNothingWasSynced)
-        {
-            undo.Cancel();
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CTrackViewSequence::SyncSelectedTracksFromBase()
-{
-    CTrackViewAnimNodeBundle selectedNodes = GetSelectedAnimNodes();
-    bool bNothingWasSynced = true;
-
-    const unsigned int numSelectedNodes = selectedNodes.GetCount();
-    if (numSelectedNodes > 0)
-    {
-        CUndo undo("Sync selected entity nodes from base");
-
-        for (unsigned int i = 0; i < numSelectedNodes; ++i)
-        {
-            CTrackViewAnimNode* pAnimNode = selectedNodes.GetNode(i);
-            pAnimNode = GetIEditor()->GetSequenceManager()->GetActiveAnimNode(pAnimNode->GetAzEntityId());
-
-            if (pAnimNode)
-            {
-                AZ::Transform transform = AZ::Transform::CreateIdentity();
-                AZ::TransformBus::EventResult(transform, pAnimNode->GetAzEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-
-                pAnimNode->SetPos(AZVec3ToLYVec3(transform.GetTranslation()));
-                pAnimNode->SetRotation(AZQuaternionToLYQuaternion(transform.GetRotation()));
-                pAnimNode->SetScale(AZVec3ToLYVec3(AZ::Vector3(transform.GetUniformScale())));
-
-                bNothingWasSynced = false;
-            }
-        }
-
-        if (bNothingWasSynced)
-        {
-            undo.Cancel();
-        }
-    }
-
-    if (IsActive())
-    {
-        GetIEditor()->GetAnimation()->ForceAnimation();
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1261,7 +1177,7 @@ void CTrackViewSequence::OffsetSelectedKeys(const float timeOffset)
 
     CTrackViewKeyBundle selectedKeys = GetSelectedKeys();
 
-    // Set notifyListeners to false and wait until all keys 
+    // Set notifyListeners to false and wait until all keys
     // have been updated, otherwise the indexes in CTrackViewKeyHandle
     // may become invalid after sorted with a new time.
     bool notifyListeners = false;

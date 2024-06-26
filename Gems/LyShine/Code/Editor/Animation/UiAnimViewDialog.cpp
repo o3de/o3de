@@ -849,26 +849,6 @@ void CUiAnimViewDialog::OnScaleKey()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CUiAnimViewDialog::OnSyncSelectedTracksToBase()
-{
-    CUiAnimViewSequence* pSequence = m_animationContext->GetSequence();
-    if (pSequence)
-    {
-        pSequence->SyncSelectedTracksToBase();
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CUiAnimViewDialog::OnSyncSelectedTracksFromBase()
-{
-    CUiAnimViewSequence* pSequence = m_animationContext->GetSequence();
-    if (pSequence)
-    {
-        pSequence->SyncSelectedTracksFromBase();
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CUiAnimViewDialog::OnAddSequence()
 {
     if (!m_animationSystem)

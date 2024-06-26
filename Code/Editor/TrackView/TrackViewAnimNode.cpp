@@ -37,7 +37,6 @@
 #include "ViewManager.h"
 #include "TrackView/TrackViewDialog.h"
 #include "TrackView/TrackViewSequence.h"
-#include "TrackView/TrackViewUndo.h"
 #include "TrackView/TrackViewNodeFactories.h"
 
 // AzCore
@@ -1792,115 +1791,6 @@ bool CTrackViewAnimNode::IsDisabled() const
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CTrackViewAnimNode::SetPos(const Vec3& position)
-{
-    CTrackViewTrack* track = GetTrackForParameter(AnimParamType::Position);
-
-    if (track)
-    {
-        if (!GetIEditor()->GetAnimation()->IsRecording())
-        {
-            // Offset all keys by move amount.
-            Vec3 offset = m_animNode->GetOffsetPosition(position);
-            
-            track->OffsetKeyPosition(LYVec3ToAZVec3(offset));
-
-            GetSequence()->OnKeysChanged();
-        }
-        else if (AzToolsFramework::IsSelected(m_nodeEntityId))
-        {
-            CTrackViewSequence* sequence = GetSequence();
-
-            AZ_Assert(sequence, "Expected valid sequence");
-            if (sequence != nullptr)
-            {
-                const int flags = m_animNode->GetFlags();
-                // This is required because the entity movement system uses Undo to
-                // undo a previous move delta as the entity is dragged.
-                CUndo::Record(new CUndoComponentEntityTrackObject(track));
-
-                // Set the selected flag to enable record when unselected camera is moved through viewport
-                m_animNode->SetFlags(flags | eAnimNodeFlags_EntitySelected);
-                m_animNode->SetPos(sequence->GetTime(), LYVec3ToAZVec3(position));
-                m_animNode->SetFlags(flags);
-
-                // We don't want to use ScopedUndoBatch here because we don't want a separate Undo operation
-                // generate for every frame as the user moves an entity.
-                AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
-                    &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity,
-                    sequence->GetSequenceComponentEntityId()
-                );
-
-                sequence->OnKeysChanged();
-            }
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CTrackViewAnimNode::SetScale(const Vec3& scale)
-{
-    CTrackViewTrack* track = GetTrackForParameter(AnimParamType::Scale);
-
-    if (GetIEditor()->GetAnimation()->IsRecording() && AzToolsFramework::IsSelected(m_nodeEntityId) && track)
-    {
-        CTrackViewSequence* sequence = GetSequence();
-
-        AZ_Assert(sequence, "Expected valid sequence");
-        if (sequence != nullptr)
-        {
-            // This is required because the entity movement system uses Undo to
-            // undo a previous move delta as the entity is dragged.
-            CUndo::Record(new CUndoComponentEntityTrackObject(track));
-
-            m_animNode->SetScale(sequence->GetTime(), LYVec3ToAZVec3(scale));
-
-            // We don't want to use ScopedUndoBatch here because we don't want a separate Undo operation
-            // generate for every frame as the user scales an entity.
-            AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity,
-                sequence->GetSequenceComponentEntityId()
-            );
-            sequence->OnKeysChanged();
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CTrackViewAnimNode::SetRotation(const Quat& rotation)
-{
-    CTrackViewTrack* track = GetTrackForParameter(AnimParamType::Rotation);
-
-    if (GetIEditor()->GetAnimation()->IsRecording() && (AzToolsFramework::IsSelected(m_nodeEntityId)) && track)
-    {
-        CTrackViewSequence* sequence = GetSequence();
-
-        AZ_Assert(sequence, "Expected valid sequence");
-        if (sequence != nullptr)
-        {
-            const int flags = m_animNode->GetFlags();
-            // This is required because the entity movement system uses Undo to
-            // undo a previous move delta as the entity is dragged.
-            CUndo::Record(new CUndoComponentEntityTrackObject(track));
-
-            // Set the selected flag to enable record when unselected camera is moved through viewport
-            m_animNode->SetFlags(flags | eAnimNodeFlags_EntitySelected);
-            m_animNode->SetRotate(sequence->GetTime(), LYQuaternionToAZQuaternion(rotation));
-            m_animNode->SetFlags(flags);
-
-            // We don't want to use ScopedUndoBatch here because we don't want a separate Undo operation
-            // generate for every frame as the user rotates an entity.
-            AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity,
-                sequence->GetSequenceComponentEntityId()
-            );
-
-            sequence->OnKeysChanged();
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 bool CTrackViewAnimNode::IsActive()
 {
     CTrackViewSequence* pSequence = GetSequence();
@@ -2077,7 +1967,7 @@ void CTrackViewAnimNode::OnStartPlayInEditor()
     {
         AZ::EntityId remappedId;
         AzToolsFramework::EditorEntityContextRequestBus::Broadcast(&AzToolsFramework::EditorEntityContextRequestBus::Events::MapEditorIdToRuntimeId, m_animSequence->GetSequenceEntityId(), remappedId);
-            
+
         if (remappedId.IsValid())
         {
             // stash and remap the AZ::EntityId of the SequenceComponent entity to restore it when we switch back to Edit mode
@@ -2098,7 +1988,7 @@ void CTrackViewAnimNode::OnStartPlayInEditor()
             m_animNode->SetAzEntityId(remappedId);
         }
     }
-    
+
     if (m_animNode)
     {
         m_animNode->OnStartPlayInEditor();
