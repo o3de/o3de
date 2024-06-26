@@ -90,6 +90,15 @@ namespace AzFramework
         //! Generally desktop platforms support resizing, mobile platforms don't.
         virtual bool SupportsClientAreaResize() const = 0;
 
+        //! Enable custom render resolution which is different than client area size.
+        //! If custom render resolution is disabled, the render resolution is same as client area size
+        AZ_DEPRECATED_MESSAGE("Custom resolution is always enabled now. No need to use this function anymore.")
+        void SetEnableCustomizedResolution([[maybe_unused]] bool enable){}
+
+        //! If the custom render resolution is enabled.
+        AZ_DEPRECATED_MESSAGE("Custom resolution is always enabled now. No need to use this function anymore.")
+        bool IsCustomizedResolutionEnabled() const { return true; }
+
         //! Get the render resolution.
         //! If customized resolution is not enabled, it would return client area size
         virtual WindowSize GetRenderResolution() const = 0;
