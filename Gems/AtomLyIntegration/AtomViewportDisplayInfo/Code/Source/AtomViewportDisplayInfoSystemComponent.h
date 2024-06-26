@@ -60,9 +60,14 @@ namespace AZ
             void DrawCameraInfo();
             void DrawPassInfo();
             void DrawMemoryInfo();
+#if defined (CARBONATED)
+            void DrawFramerate(bool drawAverageOnly = false);
+            static constexpr float BaseFontSize = 0.85f; // 120%
+#else
             void DrawFramerate();
 
             static constexpr float BaseFontSize = 0.7f;
+#endif
 
             AZStd::string m_rendererDescription;
             AzFramework::TextDrawParameters m_drawParams;
