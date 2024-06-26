@@ -59,6 +59,8 @@ namespace AZ
             desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
             m_pointLightsEnabled = desc.m_srgLayout->FindShaderInputBufferIndex(Name(desc.m_bufferSrgName)).IsValid();
 
+            m_shadowFeatureProcessor = GetParentScene()->GetFeatureProcessor<ProjectedShadowFeatureProcessor>();
+
             if (!m_pointLightsEnabled)
             {
                 AZ_Warning(
@@ -67,7 +69,6 @@ namespace AZ
                     "Could not find m_pointLights entry in the View SRG. Disabling PointLightFeatureProcessor.");
                 return;
             }
-            m_shadowFeatureProcessor = GetParentScene()->GetFeatureProcessor<ProjectedShadowFeatureProcessor>();
 
             m_lightBufferHandler = GpuBufferHandler(desc);
 

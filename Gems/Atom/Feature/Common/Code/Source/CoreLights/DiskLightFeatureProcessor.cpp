@@ -53,6 +53,8 @@ namespace AZ
             desc.m_elementSize = sizeof(DiskLightData);
             desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
 
+            m_shadowFeatureProcessor = GetParentScene()->GetFeatureProcessor<ProjectedShadowFeatureProcessor>();
+
             m_diskLightEnabled = desc.m_srgLayout->FindShaderInputBufferIndex(Name(desc.m_bufferSrgName)).IsValid();
             if (!m_diskLightEnabled)
             {
@@ -64,7 +66,6 @@ namespace AZ
             }
 
             m_lightBufferHandler = GpuBufferHandler(desc);
-            m_shadowFeatureProcessor = GetParentScene()->GetFeatureProcessor<ProjectedShadowFeatureProcessor>();
 
             MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
             if (meshFeatureProcessor)
