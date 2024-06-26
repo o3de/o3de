@@ -116,8 +116,14 @@ namespace AZ
             {
                 // We usually won't load file during CreateJob since we want to keep the function fast. But here we have to load the
                 // material type data to find the exact material type format so we could create an accurate source dependency.
-                const auto& resolvedMaterialTypePath =
-                    MaterialUtils::PredictOriginalMaterialTypeSourcePath(AssetUtils::ResolvePathReference(materialSourcePath, materialSourceData.m_materialType));
+                const auto materialresolvedPath = AssetUtils::ResolvePathReference(materialSourcePath, materialSourceData.m_materialType);
+                const auto resolvedMaterialTypePath = MaterialUtils::PredictOriginalMaterialTypeSourcePath(materialresolvedPath);
+
+                AZ_Warning(
+                    MaterialBuilderName,
+                    AZ::StringFunc::Equal(materialresolvedPath, resolvedMaterialTypePath),
+                    "Material type is referencing an asset in the intermediate or cache folder. Please update it with the proper path %s",
+                    resolvedMaterialTypePath.c_str());
 
                 const auto& materialTypeSourceDataOutcome = MaterialUtils::LoadMaterialTypeSourceData(resolvedMaterialTypePath);
                 if (!materialTypeSourceDataOutcome)
