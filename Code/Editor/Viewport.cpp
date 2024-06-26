@@ -17,6 +17,8 @@
 // AzQtComponents
 #include <AzQtComponents/DragAndDrop/ViewportDragAndDrop.h>
 
+#include <AzCore/Math/IntersectSegment.h>
+
 // AzToolsFramework
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
@@ -1049,10 +1051,11 @@ float QtViewport::GetDistanceToLine(const Vec3& lineP1, const Vec3& lineP2, cons
     QPoint p1 = WorldToView(lineP1);
     QPoint p2 = WorldToView(lineP2);
 
-    return PointToLineDistance2D(
-        Vec3(static_cast<f32>(p1.x()), static_cast<f32>(p1.y()), 0.0f),
-        Vec3(static_cast<f32>(p2.x()), static_cast<f32>(p2.y()), 0.0f),
-        Vec3(static_cast<f32>(point.x()), static_cast<f32>(point.y()), 0.0f));
+    return AZ::Intersect::PointSegmentDistanceSq(
+       AZ::Vector3(static_cast<f32>(point.x()), static_cast<f32>(point.y()), 0.0f),
+       AZ::Vector3(static_cast<f32>(p1.x()), static_cast<f32>(p1.y()), 0.0f),
+       AZ::Vector3(static_cast<f32>(p2.x()), static_cast<f32>(p2.y()), 0.0f)
+    );
 }
 
 //////////////////////////////////////////////////////////////////////////
