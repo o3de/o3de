@@ -15,7 +15,7 @@
         {
             "NAME": "o3de-extras",
             "URL": "https://github.com/o3de/o3de-extras.git",
-            "BRANCH": "multi-device-resources"
+            "BRANCH": "development"
         }
     ]
 }
