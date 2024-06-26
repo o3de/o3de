@@ -20,6 +20,9 @@ namespace AZ
             NormalInfo = 1,
             FullInfo = 2,
             CompactInfo = 3,
+#if defined (CARBONATED)
+            FpsInfo = 4,
+#endif
             Invalid
         };
 

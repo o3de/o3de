@@ -31,7 +31,19 @@
 
 namespace AZ::Render
 {
-    AZ_CVAR(int, r_displayInfo, 1, [](const int& newDisplayInfoVal)->void
+#if defined (CARBONATED)
+    #define DISPLAY_INFO_USAGE "Usage: r_displayInfo [0=off/1=show/2=enhanced/3=compact/4=fps]"
+    #if defined(_RELEASE)
+        #define DISPLAY_INFO_DEFAULT 4
+    #else
+        #define DISPLAY_INFO_DEFAULT 1
+    #endif
+#else
+    #define DISPLAY_INFO_USAGE "Usage: r_displayInfo [0=off/1=show/2=enhanced/3=compact]"
+    #define DISPLAY_INFO_DEFAULT 1
+#endif
+
+    AZ_CVAR(int, r_displayInfo, DISPLAY_INFO_DEFAULT, [](const int& newDisplayInfoVal)->void
         {
             // Forward this event to the system component so it can update accordingly.
             // This callback only gets triggered by console commands, so this will not recurse.
@@ -41,7 +53,7 @@ namespace AZ::Render
             );
         }, AZ::ConsoleFunctorFlags::DontReplicate,
         "Toggles debugging information display.\n"
-        "Usage: r_displayInfo [0=off/1=show/2=enhanced/3=compact]"
+        DISPLAY_INFO_USAGE
     );
     AZ_CVAR(float, r_fpsCalcInterval, 1.0f, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "The time period over which to calculate the framerate for r_displayInfo."
@@ -196,6 +208,13 @@ namespace AZ::Render
         const float lineHeight = m_fontDrawInterface->GetTextSize(m_drawParams, " ").GetY();
         m_lineSpacing = lineHeight * m_drawParams.m_lineSpacing;
 
+#if defined (CARBONATED)
+        if (displayLevel == AtomBridge::ViewportInfoDisplayState::FpsInfo)
+        {
+            DrawFramerate(true);
+            return;
+        }
+#endif
         DrawRendererInfo();
         if (displayLevel == AtomBridge::ViewportInfoDisplayState::FullInfo)
         {
@@ -378,7 +397,11 @@ namespace AZ::Render
         );
     }
 
+#if defined (CARBONATED)
+    void AtomViewportDisplayInfoSystemComponent::DrawFramerate(bool drawAverageOnly)
+#else
     void AtomViewportDisplayInfoSystemComponent::DrawFramerate()
+#endif
     {
         AZStd::optional<AZStd::chrono::steady_clock::time_point> lastTime;
         double minFPS = DBL_MAX;
@@ -413,6 +436,17 @@ namespace AZ::Render
             return value > upperLimit ? "inf" : AZStd::string::format(format, value);
         };
 
+#if defined (CARBONATED)
+        if (drawAverageOnly)
+        {
+            DrawLine(
+                AZStd::string::format(
+                    "FPS %s",
+                    ClampedFloatDisplay(averageFPS, "%.1f").c_str()),
+                AZ::Colors::Yellow);
+            return;
+        }
+#endif
         DrawLine(
             AZStd::string::format(
                 "FPS %s [%s..%s], %sms/frame, avg over %.1fs",
