@@ -9,7 +9,7 @@
 #include <CoreLights/LightCullingTilePreparePass.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPIUtils.h>
@@ -47,15 +47,17 @@ namespace AZ
         {
             // Dispatch one compute shader thread per depth buffer pixel. These threads are divided into thread-groups that analyze one tile. (Typically 16x16 pixel tiles)
             RHI::CommandList* commandList = context.GetCommandList();
-            SetSrgsForDispatch(commandList);
+            SetSrgsForDispatch(context);
 
             RHI::Size resolution = GetDepthBufferDimensions();
 
-            m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = resolution.m_width;
-            m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = resolution.m_height;
-            m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
-            m_dispatchItem.m_pipelineState = m_msaaPipelineState.get();
-            commandList->Submit(m_dispatchItem);
+            auto arguments{m_dispatchItem.GetArguments()};
+            arguments.m_direct.m_totalNumberOfThreadsX = resolution.m_width;
+            arguments.m_direct.m_totalNumberOfThreadsY = resolution.m_height;
+            arguments.m_direct.m_totalNumberOfThreadsZ = 1;
+            m_dispatchItem.SetArguments(arguments);
+            m_dispatchItem.SetPipelineState(m_msaaPipelineState.get());
+            commandList->Submit(m_dispatchItem.GetDeviceDispatchItem(context.GetDeviceIndex()));
         }
 
         AZ::RHI::Size LightCullingTilePreparePass::GetDepthBufferDimensions()

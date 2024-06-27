@@ -11,8 +11,8 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <Atom/RHI/Image.h>
-#include <Atom/RHI/ImageView.h>
 #include <Atom/RHI/ImagePool.h>
+#include <Atom/RHI/DeviceImageView.h>
 
 #include <AtomCore/Instance/InstanceData.h>
 
@@ -54,7 +54,7 @@ namespace AZ
                         
             //! Updates content of a single sub-resource in the image from the CPU.
             virtual RHI::ResultCode UpdateImageContents(const RHI::ImageUpdateRequest& request);
-            
+
         protected:
             // This is a base class for a derived instance variant.
             Image();

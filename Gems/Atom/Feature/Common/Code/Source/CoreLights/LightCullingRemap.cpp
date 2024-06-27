@@ -9,7 +9,7 @@
 #include <CoreLights/LightCullingRemap.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RHI/FrameGraphInterface.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/Device.h>
@@ -74,14 +74,16 @@ namespace AZ
         {
             RHI::CommandList* commandList = context.GetCommandList();
 
-            SetSrgsForDispatch(commandList);
+            SetSrgsForDispatch(context);
 
             // Each tile gets 32 threads to process indices
-            m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = m_tileDim.m_width * m_dispatchItem.m_arguments.m_direct.m_threadsPerGroupX;
-            m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = m_tileDim.m_height;
-            m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
+            auto arguments{m_dispatchItem.GetArguments()};
+            arguments.m_direct.m_totalNumberOfThreadsX = m_tileDim.m_width * arguments.m_direct.m_threadsPerGroupX;
+            arguments.m_direct.m_totalNumberOfThreadsY = m_tileDim.m_height;
+            arguments.m_direct.m_totalNumberOfThreadsZ = 1;
+            m_dispatchItem.SetArguments(arguments);
 
-            commandList->Submit(m_dispatchItem);
+            commandList->Submit(m_dispatchItem.GetDeviceDispatchItem(context.GetDeviceIndex()));
         }
 
         void LightCullingRemap::ResetInternal()

@@ -191,6 +191,7 @@ namespace AzFramework
         , m_virtualKeyboardEnabled(true)
         , m_currentlyUpdatingInputDevices(false)
         , m_recreateInputDevicesAfterUpdate(false)
+        , m_captureMouseCursor(true)
     {
     }
 
@@ -219,6 +220,7 @@ namespace AzFramework
             settingsRegistry->Get(m_mouseEnabled, "/O3DE/InputSystem/MouseEnabled");
             settingsRegistry->Get(m_touchEnabled, "/O3DE/InputSystem/TouchEnabled");
             settingsRegistry->Get(m_virtualKeyboardEnabled, "/O3DE/InputSystem/VirtualKeyboardEnabled");
+            settingsRegistry->Get(m_captureMouseCursor, "/O3DE/InputSystem/Mouse/CaptureMouseCursor");
         }
 
         // Create all enabled input devices
@@ -307,6 +309,7 @@ namespace AzFramework
         if (m_mouse)
         {
             m_mouse->SetRawMovementSampleRate(m_mouseMovementSampleRateHertz);
+            m_mouse->SetCaptureCursor(m_captureMouseCursor);
         }
     }
 

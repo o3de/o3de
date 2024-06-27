@@ -18,7 +18,7 @@
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/CommandListValidator.h>
 #include <Atom/RHI/CommandListStates.h>
-#include <Atom/RHI/IndirectArguments.h>
+#include <Atom/RHI/DeviceIndirectArguments.h>
 #include <Atom/RHI/ObjectPool.h>
 #include <AzCore/std/containers/span.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -70,18 +70,18 @@ namespace AZ
             // RHI::CommandList
             void SetViewports(const RHI::Viewport* viewports, uint32_t count) override;
             void SetScissors(const RHI::Scissor* scissors, uint32_t count) override;
-            void SetShaderResourceGroupForDraw(const RHI::ShaderResourceGroup& shaderResourceGroup) override;
-            void SetShaderResourceGroupForDispatch(const RHI::ShaderResourceGroup& shaderResourceGroup) override;
-            void Submit(const RHI::DrawItem& drawItem, uint32_t submitIndex = 0) override;
-            void Submit(const RHI::CopyItem& copyItem, uint32_t submitIndex = 0) override;
-            void Submit(const RHI::DispatchItem& dispatchItem, uint32_t submitIndex = 0) override;
-            void Submit(const RHI::DispatchRaysItem& dispatchRaysItem, uint32_t submitIndex = 0) override;
-            void BeginPredication(const RHI::Buffer& buffer, uint64_t offset, RHI::PredicationOp operation) override;
+            void SetShaderResourceGroupForDraw(const RHI::DeviceShaderResourceGroup& shaderResourceGroup) override;
+            void SetShaderResourceGroupForDispatch(const RHI::DeviceShaderResourceGroup& shaderResourceGroup) override;
+            void Submit(const RHI::DeviceDrawItem& drawItem, uint32_t submitIndex = 0) override;
+            void Submit(const RHI::DeviceCopyItem& copyItem, uint32_t submitIndex = 0) override;
+            void Submit(const RHI::DeviceDispatchItem& dispatchItem, uint32_t submitIndex = 0) override;
+            void Submit(const RHI::DeviceDispatchRaysItem& dispatchRaysItem, uint32_t submitIndex = 0) override;
+            void BeginPredication(const RHI::DeviceBuffer& buffer, uint64_t offset, RHI::PredicationOp operation) override;
             void EndPredication() override;
-            void BuildBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas) override;
-            void UpdateBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas) override;
+            void BuildBottomLevelAccelerationStructure(const RHI::DeviceRayTracingBlas& rayTracingBlas) override;
+            void UpdateBottomLevelAccelerationStructure(const RHI::DeviceRayTracingBlas& rayTracingBlas) override;
             void BuildTopLevelAccelerationStructure(
-                const RHI::RayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::RayTracingBlas*>& changedBlasList) override;
+                const RHI::DeviceRayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::DeviceRayTracingBlas*>& changedBlasList) override;
             void SetFragmentShadingRate(
                 RHI::ShadingRate rate,
                 const RHI::ShadingRateCombinators& combinators = DefaultShadingRateCombinators) override;
@@ -190,15 +190,15 @@ namespace AZ
             template <RHI::PipelineStateType, typename Item>
             bool CommitShaderResources(const Item& item);
 
-            void SetStreamBuffers(const RHI::StreamBufferView* descriptors, uint32_t count);
-            void SetIndexBuffer(const RHI::IndexBufferView& descriptor);
+            void SetStreamBuffers(const RHI::DeviceStreamBufferView* descriptors, uint32_t count);
+            void SetIndexBuffer(const RHI::DeviceIndexBufferView& descriptor);
             void SetStencilRef(uint8_t stencilRef);
             void SetTopology(RHI::PrimitiveTopology topology);
             void CommitViewportState();
             void CommitScissorState();
             void CommitShadingRateState();
 
-            void ExecuteIndirect(const RHI::IndirectArguments& arguments);
+            void ExecuteIndirect(const RHI::DeviceIndirectArguments& arguments);
 
             RHI::CommandListValidator m_validator;
 
@@ -222,7 +222,7 @@ namespace AZ
             {
                 State() = default;
 
-                const RHI::PipelineState* m_pipelineState = nullptr;
+                const RHI::DevicePipelineState* m_pipelineState = nullptr;
 
                 // Graphics-specific state
                 AZStd::array<uint64_t, RHI::Limits::Pipeline::StreamCountMax> m_streamBufferHashes = {{}};

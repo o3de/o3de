@@ -22,6 +22,10 @@ if [[ "$OSTYPE" = *"darwin"* ]];
 then
     PAL=Mac
     ARCH=
+elif [[ "$OSTYPE" = "msys" ]];
+then
+    PAL=Windows
+    ARCH=
 else
     PAL=Linux
     ARCH=$( uname -m )
@@ -55,11 +59,18 @@ fi
 # Set the expected location of the python venv for this engine and the locations of the critical scripts/executables 
 # needed to run python within the venv properly
 PYTHON_VENV=$HOME/.o3de/Python/venv/$ENGINE_ID
-PYTHON_VENV_ACTIVATE=$PYTHON_VENV/bin/activate
-PYTHON_VENV_PYTHON=$PYTHON_VENV/bin/python
+if [[ "$OSTYPE" == "msys" ]];  #git bash on windows
+then
+    PYTHON_VENV_ACTIVATE=$PYTHON_VENV/Scripts/activate
+    PYTHON_VENV_PYTHON=$PYTHON_VENV/Scripts/python
+else
+    PYTHON_VENV_ACTIVATE=$PYTHON_VENV/bin/activate
+    PYTHON_VENV_PYTHON=$PYTHON_VENV/bin/python
+fi
+
 if [ ! -f $PYTHON_VENV_PYTHON ]
 then
-    echo "Python has not been downloaded/configured yet."    
+    echo "Python has not been downloaded/configured yet."
     echo "Try running $DIR/get_python.sh first."
     exit 1
 fi

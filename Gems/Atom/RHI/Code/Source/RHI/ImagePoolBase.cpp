@@ -9,14 +9,14 @@
 
 namespace AZ::RHI
 {
-    ResultCode ImagePoolBase::InitImage(Image* image, const ImageDescriptor& descriptor, PlatformMethod platformInitResourceMethod)
+    ResultCode ImagePoolBase::InitImage(
+        Image* image, const ImageDescriptor& descriptor, PlatformMethod platformInitResourceMethod)
     {
-            
         // The descriptor is assigned regardless of whether initialization succeeds. Descriptors are considered
         // undefined for uninitialized resources. This makes the image descriptor well defined at initialization
-        // time rather than leftover data from the previous usage.             
+        // time rather than leftover data from the previous usage.
         image->SetDescriptor(descriptor);
-            
+
         return ResourcePool::InitResource(image, platformInitResourceMethod);
     }
-}
+} // namespace AZ::RHI

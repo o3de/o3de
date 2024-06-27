@@ -148,47 +148,4 @@ enum EDrawTextFlags
     eDrawText_UseTransform = BIT(11),  // use a transform for the text
 };
 
-//////////////////////////////////////////////////////////////////////////
-// Description:
-//   This structure used in DrawText method of renderer.
-//   It provide all necessary information of how to render text on screen.
-// See also:
-//   IRenderer::Draw2dText
-struct SDrawTextInfo
-{
-    // Summary:
-    //  One of EDrawTextFlags flags.
-    // See also:
-    //  EDrawTextFlags
-    int     flags;
-    // Summary:
-    //  Text color, (r,g,b,a) all members must be specified.
-    float   color[4];
-    float xscale;
-    float yscale;
 
-    SDrawTextInfo()
-    {
-        flags = 0;
-        color[0] = color[1] = color[2] = color[3] = 1;
-        xscale = 1.0f;
-        yscale = 1.0f;
-    }
-};
-
-//////////////////////////////////////////////////////////////////////
-struct IRenderDebugListener
-{
-    virtual ~IRenderDebugListener() {}
-
-    virtual void OnDebugDraw() = 0;
-};
-
-struct DynUiPrimitive : public AZStd::intrusive_slist_node<DynUiPrimitive>
-{
-    SVF_P2F_C4B_T2F_F4B* m_vertices = nullptr;
-    uint16* m_indices = nullptr;
-    int m_numVertices = 0;
-    int m_numIndices = 0;
-};
-using DynUiPrimitiveList = AZStd::intrusive_slist<DynUiPrimitive, AZStd::slist_base_hook<DynUiPrimitive>>;

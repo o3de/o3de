@@ -67,10 +67,6 @@ QString CErrorRecord::GetErrorText() const
     {
         str += QString("\t ");
     }
-    if (pObject)
-    {
-        str += QString("\t Object=\"") + pObject->GetName() + "\"";
-    }
     return str;
 }
 
@@ -82,7 +78,6 @@ CErrorReport::CErrorReport()
     m_errors.reserve(100);
     m_bImmediateMode = true;
     m_bShowErrors = true;
-    m_pObject = nullptr;
     m_pParticle = nullptr;
 }
 
@@ -117,10 +112,6 @@ void CErrorReport::ReportError(CErrorRecord& err)
     }
     else
     {
-        if (err.pObject == nullptr && m_pObject != nullptr)
-        {
-            err.pObject = m_pObject;
-        }
         m_errors.push_back(err);
     }
     bNoRecurse = false;
@@ -226,11 +217,6 @@ void CErrorReport::SetImmediateMode(bool bEnable)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
-void CErrorReport::SetCurrentValidatorObject(CBaseObject* pObject)
-{
-    m_pObject = pObject;
-}
 
 //////////////////////////////////////////////////////////////////////////
 void CErrorReport::SetCurrentFile(const QString& file)

@@ -33,7 +33,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
         
-        RHI::ResultCode ImagePool::InitImageInternal(const RHI::ImageInitRequest& request)
+        RHI::ResultCode ImagePool::InitImageInternal(const RHI::DeviceImageInitRequest& request)
         {
             Image& image = static_cast<Image&>(*request.m_image);
             
@@ -52,7 +52,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
         
-        RHI::ResultCode ImagePool::UpdateImageContentsInternal(const RHI::ImageUpdateRequest& request)
+        RHI::ResultCode ImagePool::UpdateImageContentsInternal(const RHI::DeviceImageUpdateRequest& request)
         {
             size_t bytesTransferred = 0;
             RHI::ResultCode resultCode = GetResolver()->UpdateImage(request, bytesTransferred);
@@ -63,7 +63,7 @@ namespace AZ
             return resultCode;
         }
         
-        void ImagePool::ShutdownResourceInternal(RHI::Resource& resourceBase)
+        void ImagePool::ShutdownResourceInternal(RHI::DeviceResource& resourceBase)
         {
             if (auto* resolver = GetResolver())
             {

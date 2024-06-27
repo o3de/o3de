@@ -16,7 +16,7 @@
 #include "UiAnimViewNodeFactories.h"
 #include "AnimationContext.h"
 #include "UiAnimViewSequenceManager.h"
-#include "Objects/EntityObject.h"
+#include "Util/EditorUtils.h"
 #include "ViewManager.h"
 #include "Clipboard.h"
 

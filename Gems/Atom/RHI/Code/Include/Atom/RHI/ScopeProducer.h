@@ -61,13 +61,17 @@ namespace AZ::RHI
         friend class FrameScheduler;
     public:
         virtual ~ScopeProducer() = default;
-        ScopeProducer(const ScopeId& scopeId);
+        ScopeProducer(const ScopeId& scopeId, int deviceIndex = MultiDevice::InvalidDeviceIndex);
 
         //! Returns the scope id associated with this scope producer.
         const ScopeId& GetScopeId() const;
 
         //! Returns the scope associated with this scope producer.
         const Scope* GetScope() const;
+
+        //! Returns the device index of the device the scope should run on.
+        //! May return InvalidDeviceIndex to signal that no device index is specified.
+        virtual int GetDeviceIndex() const;
 
     protected:
 
@@ -82,9 +86,9 @@ namespace AZ::RHI
         //!  @deprecated Use InitScope instead
         void SetScopeId(const ScopeId& scopeId);
 
-        //!  Initializes the scope with a ScopeId and HardwareQueueClass. 
+        //!  Initializes the scope with a ScopeId, HardwareQueueClass and device index.
         //!  Used by classes that inherit from ScopeProducer but can't supply a ScopeId at construction.
-        void InitScope(const ScopeId& scopeId, HardwareQueueClass hardwareQueueClass = HardwareQueueClass::Graphics);
+        void InitScope(const ScopeId& scopeId, HardwareQueueClass hardwareQueueClass = HardwareQueueClass::Graphics, int deviceIndex = MultiDevice::InvalidDeviceIndex);
 
     private:
         //////////////////////////////////////////////////////////////////////////
@@ -110,5 +114,6 @@ namespace AZ::RHI
 
         ScopeId m_scopeId;
         Ptr<Scope> m_scope;
+        int m_deviceIndex{MultiDevice::InvalidDeviceIndex};
     };
 }

@@ -30,6 +30,9 @@ AZ_GFX_FLOAT_PARAM_FLOAT_OVERRIDE(float, FocusDistance, m_focusDistance)
 AZ_GFX_BOOL_PARAM(EnableAutoFocus, m_enableAutoFocus, true)
 AZ_GFX_ANY_PARAM_BOOL_OVERRIDE(bool, EnableAutoFocus, m_enableAutoFocus)
 
+AZ_GFX_COMMON_PARAM(EntityId, FocusedEntityId, m_focusedEntityId, EntityId())
+AZ_GFX_ANY_PARAM_BOOL_OVERRIDE(EntityId, FocusedEntityId, m_focusedEntityId)
+
 AZ_GFX_VEC2_PARAM(AutoFocusScreenPosition, m_autoFocusScreenPosition, AZ::Vector2(0.5f, 0.5f))
 AZ_GFX_FLOAT_PARAM_FLOAT_OVERRIDE(AZ::Vector2, AutoFocusScreenPosition, m_autoFocusScreenPosition)
 

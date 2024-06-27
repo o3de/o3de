@@ -73,9 +73,6 @@ namespace AZ
 
             virtual void BuildCommandListInternal([[maybe_unused]] const RHI::FrameGraphExecuteContext& context){};
 
-            // Binds all attachments from the pass 
-            void DeclareAttachmentsToFrameGraph(RHI::FrameGraphInterface frameGraph) const;
-
             // Declares explicitly set dependencies between passes (execute after and execute before)
             // Note most pass ordering is determined by attachments. This is only used for
             // dependencies between passes that don't have any attachments/connections in common.
@@ -97,8 +94,8 @@ namespace AZ
             void ResetSrgs();
 
             // Set srgs for pass's execution
-            void SetSrgsForDraw(RHI::CommandList* commandList);
-            void SetSrgsForDispatch(RHI::CommandList* commandList);
+            void SetSrgsForDraw(const RHI::FrameGraphExecuteContext& context);
+            void SetSrgsForDispatch(const RHI::FrameGraphExecuteContext& context);
 
             // Set PipelineViewTag associated for this pass
             // If the View bound to the tag exists,the view's srg will be collected to pass' srg bind list
@@ -143,6 +140,11 @@ namespace AZ
             TimestampResult m_timestampResult;
             // Readback results from the PipelineStatistics queries
             PipelineStatisticsResult m_statisticsResult;
+
+            // The device index the pass should run on. Can be invalid if it doesn't matter.
+            int m_deviceIndex{RHI::MultiDevice::InvalidDeviceIndex};
+            // The device index the pass ran on during the last frame, necessary to read the queries.
+            int m_lastDeviceIndex = RHI::MultiDevice::DefaultDeviceIndex;
 
             // For each ScopeProducer an instance of the ScopeQuery is created, which consists
             // of an Timestamp and PipelineStatistic query.

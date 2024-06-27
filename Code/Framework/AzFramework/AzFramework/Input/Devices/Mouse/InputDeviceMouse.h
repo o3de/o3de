@@ -189,6 +189,11 @@ namespace AzFramework
         //! \param[in] sampleRateHertz The raw movement sample rate in Hertz (cycles per second)
         void SetRawMovementSampleRate(AZ::u32 sampleRateHertz);
 
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! Set if the cursor should be visible or hidden
+        //! \param[in] captureCursor True if the cursor should be visible, false if it should be hidden
+        void SetCaptureCursor(bool captureCursor);
+
     protected:
         ////////////////////////////////////////////////////////////////////////////////////////////
         ///@{
@@ -273,6 +278,11 @@ namespace AzFramework
             //! \param[in] sampleRateHertz The raw movement sample rate in Hertz (cycles per second)
             void SetRawMovementSampleRate(AZ::u32 sampleRateHertz);
 
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            //! Set if the cursor should be visible or hidden
+            //! \param[in] captureCursor True if the cursor should be visible, false if it should be hidden
+            void SetCaptureCursor(bool captureCursor);
+
         protected:
             ////////////////////////////////////////////////////////////////////////////////////////
             //! Queue raw button events to be processed in the next call to ProcessRawEventQueues.
@@ -314,6 +324,8 @@ namespace AzFramework
             RawButtonEventQueueByIdMap   m_rawButtonEventQueuesById;   //!< Raw button events by id
             RawMovementEventQueueByIdMap m_rawMovementEventQueuesById; //!< Raw movement events by id
             LastSampleTimeArray          m_timeOfLastRawMovementSample;  //!< Time of the last raw movement sample
+        protected:
+            bool                         m_captureCursor;              //!< Should the cursor be captured?
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////

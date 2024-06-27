@@ -61,11 +61,9 @@ namespace AZ
         {
             if (m_skinnedMeshFeatureProcessor)
             {
-                RHI::CommandList* commandList = context.GetCommandList();
+                SetSrgsForDispatch(context);
 
-                SetSrgsForDispatch(commandList);
-
-                m_skinnedMeshFeatureProcessor->SubmitMorphTargetDispatchItems(commandList, context.GetSubmitRange().m_startIndex, context.GetSubmitRange().m_endIndex);
+                m_skinnedMeshFeatureProcessor->SubmitMorphTargetDispatchItems(context, context.GetSubmitRange().m_startIndex, context.GetSubmitRange().m_endIndex);
             }
         }
     }   // namespace Render

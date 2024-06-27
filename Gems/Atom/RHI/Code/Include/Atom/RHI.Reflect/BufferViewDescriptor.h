@@ -61,6 +61,9 @@ namespace AZ::RHI
 
         HashValue64 GetHash(HashValue64 seed = HashValue64{ 0 }) const;
 
+        //! Check if it overlaps with a subresource described by another BufferViewDescriptor
+        bool OverlapsSubResource(const BufferViewDescriptor& other) const;
+
         //! Number of elements from the start of the buffer to offset.
         uint32_t m_elementOffset = 0;
 

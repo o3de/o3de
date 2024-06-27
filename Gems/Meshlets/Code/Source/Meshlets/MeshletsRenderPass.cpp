@@ -7,8 +7,8 @@
  */
 
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/DrawPacketBuilder.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DeviceDrawPacketBuilder.h>
+#include <Atom/RHI/DevicePipelineState.h>
 
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/RPIUtils.h>
@@ -172,7 +172,7 @@ namespace AZ
             return m_shader;
         }
 
-        bool MeshletsRenderPass::FillDrawRequestData(RHI::DrawPacketBuilder::DrawRequest& drawRequest)
+        bool MeshletsRenderPass::FillDrawRequestData(RHI::DeviceDrawPacketBuilder::DeviceDrawRequest& drawRequest)
         {
             if (!m_pipelineState)
             {
@@ -180,13 +180,13 @@ namespace AZ
             }
 
             drawRequest.m_listTag = m_drawListTag;
-            drawRequest.m_pipelineState = m_pipelineState;
+            drawRequest.m_pipelineState = m_pipelineState->GetDevicePipelineState(context.GetDeviceIndex()).get();
 
             return true;
         }
 
         // Adding draw packets
-        bool MeshletsRenderPass::AddDrawPackets(AZStd::list<const RHI::DrawPacket*> drawPackets)
+        bool MeshletsRenderPass::AddDrawPackets(AZStd::list<const RHI::DeviceDrawPacket*> drawPackets)
         {
             bool overallSuccess = true;
 
@@ -198,7 +198,7 @@ namespace AZ
                 return false;
             }
             
-            for (const RHI::DrawPacket* drawPacket : drawPackets)
+            for (const RHI::DeviceDrawPacket* drawPacket : drawPackets)
             {
                 if (!drawPacket)
                 {   // might not be an error - the object might have just been added and the DrawPacket is

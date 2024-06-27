@@ -11,6 +11,7 @@
                     "Name": "DepthStencilTextureInput",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage": "FragmentShader",
                     "ImageViewDesc": {
                         "AspectFlags": [
                             "Depth"

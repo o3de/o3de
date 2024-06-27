@@ -88,6 +88,31 @@ namespace AZ
             return true;
         }
 
+        bool GpuBufferHandler::UpdateBuffer(const AZStd::unordered_map<int, const void*>& data, uint32_t elementCount)
+        {
+            if (!IsValid())
+            {
+                return false;
+            }
+
+            m_elementCount = elementCount;
+
+            AZ::u64 currentByteCount = m_buffer->GetBufferSize();
+            uint32_t dataSize = elementCount * m_elementSize;
+
+            if (dataSize > currentByteCount)
+            {
+                uint32_t byteCount = RHI::NextPowerOfTwo(GetMax<uint32_t>(BufferMinSize, dataSize));
+                m_buffer->Resize(byteCount);
+            }
+
+            if (dataSize > 0)
+            {
+                return m_buffer->UpdateData(data, dataSize, 0);
+            }
+            return true;
+        }
+
         void GpuBufferHandler::UpdateSrg(RPI::ShaderResourceGroup* srg) const
         {
             if (m_bufferIndex.IsValid())

@@ -27,6 +27,9 @@ namespace AZ::RHI
             const BufferViewDescriptor& bufferViewDescriptor = BufferViewDescriptor(),
             const AttachmentLoadStoreAction& bufferScopeLoadStoreAction = AttachmentLoadStoreAction());
 
+        /// Returns the descriptor for the BufferView
+        const BufferViewDescriptor& GetViewDescriptor() const;
+
         /// The buffer view associated with the binding.
         BufferViewDescriptor m_bufferViewDescriptor;
     };

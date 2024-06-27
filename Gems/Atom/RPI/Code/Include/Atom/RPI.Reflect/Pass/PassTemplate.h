@@ -91,6 +91,9 @@ namespace AZ
 
             //! Optional data to be used during pass initialization
             AZStd::shared_ptr<PassData> m_passData = nullptr;
+
+            //! Default RHI::ScopeAttachmentStage value for all pass attachments of usage RHI::ScopeAttachmentUsage::Shader
+            RHI::ScopeAttachmentStage m_defaultShaderAttachmentStage = RHI::ScopeAttachmentStage::AnyGraphics;
         };
     }   // namespace RPI
 }   // namespace AZ

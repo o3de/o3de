@@ -63,7 +63,7 @@ namespace AZ
             void SetViewportScissor(const RHI::Viewport& viewport, const RHI::Scissor& scissor);
 
             //! Sets the draw packet used for clearing a shadow viewport.
-            void SetClearShadowDrawPacket(RHI::ConstPtr<RHI::DrawPacket> clearShadowDrawPacket);
+            void SetClearShadowDrawPacket(AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> clearShadowDrawPacket);
 
         private:
             ShadowmapPass() = delete;

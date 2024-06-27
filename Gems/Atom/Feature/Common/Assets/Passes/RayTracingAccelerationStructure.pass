@@ -10,7 +10,8 @@
                 {
                     "Name": "RayTracingTLAS",
                     "SlotType": "Output",
-                    "ScopeAttachmentUsage": "Shader"
+                    "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage":  "RaytracingShader"
                 }
             ]
         }

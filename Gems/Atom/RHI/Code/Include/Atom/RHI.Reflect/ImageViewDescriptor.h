@@ -81,11 +81,15 @@ namespace AZ::RHI
         ImageViewDescriptor() = default;
         explicit ImageViewDescriptor(Format overrideFormat);
         bool operator==(const ImageViewDescriptor& other) const;
+        bool operator!=(const ImageViewDescriptor& other) const;
             
         HashValue64 GetHash(HashValue64 seed = HashValue64{ 0 }) const;
 
         // Returns true if other is the same sub resource
         bool IsSameSubResource(const ImageViewDescriptor& other) const;
+
+        //! Return true if any subresource overlaps with another ImageViewDescriptor
+        bool OverlapsSubResource(const ImageViewDescriptor& other) const;
             
         /// Minimum mip slice offset.
         uint16_t m_mipSliceMin = 0;

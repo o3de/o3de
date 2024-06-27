@@ -9,25 +9,24 @@
 
 #include <Atom/RHI/Resource.h>
 #include <Atom/RHI/ShaderResourceGroupData.h>
+#include <Atom/RHI/DeviceShaderResourceGroup.h>
 
 namespace AZ::RHI
 {
-    //! This class is a platform-independent base class for a shader resource group. It has a
-    //! pointer to the resource group pool, if the user initialized the group onto a pool.
-    class ShaderResourceGroup
-        : public Resource
+    //! This class is a platform-independent base class for a multi-device shader resource group. It has a
+    //! pointer to the multi-device resource group pool, if the user initialized the group onto a pool.
+    class ShaderResourceGroup : public Resource
     {
         friend class ShaderResourceGroupPool;
+
     public:
-        AZ_RTTI(ShaderResourceGroup, "{91B217A5-EFEC-46C5-82DA-B4C77931BC1A}", Resource);
+        AZ_CLASS_ALLOCATOR(ShaderResourceGroup, AZ::SystemAllocator, 0);
+        AZ_RTTI(ShaderResourceGroup, "{6C1B42AA-51A9-482F-9203-6415CA9373B7}", Resource);
+        AZ_RHI_MULTI_DEVICE_OBJECT_GETTER(ShaderResourceGroup);
+        ShaderResourceGroup() = default;
         virtual ~ShaderResourceGroup() override = default;
 
-        //! Defines the compilation modes for an SRG
-        enum class CompileMode : uint8_t
-        {
-            Async,  // Queues SRG compilation for later. This is the most common case.
-            Sync    // Compiles the SRG immediately. To be used carefully due to performance cost.
-        };
+        using CompileMode = DeviceShaderResourceGroup::CompileMode;
 
         //! Compiles the SRG with the provided data.
         //! When using Async compile mode, it queues a request that the parent pool compile this group (compilation is deferred).
@@ -38,10 +37,6 @@ namespace AZ::RHI
         ShaderResourceGroupPool* GetPool();
         const ShaderResourceGroupPool* GetPool() const;
 
-        //! This implementation does not report any memory usage. Platforms may
-        //! override to report more accurate usage metrics.
-        void ReportMemoryUsage(MemoryStatisticsBuilder& builder) const override;
-
         //! Returns the data currently bound on the shader resource group.
         const ShaderResourceGroupData& GetData() const;
 
@@ -51,50 +46,13 @@ namespace AZ::RHI
         //! Returns whether the group is currently queued for compilation.
         bool IsQueuedForCompile() const;
 
-        //! Resets the update mask after m_updateMaskResetLatency number of compiles
-        void DisableCompilationForAllResourceTypes();
-
-        //! Returns true if any of the resource type has been enabled for compilation.
-        bool IsAnyResourceTypeUpdated() const;
-
-        //! Returns true if a specific resource type has been enabled for compilation.
-        bool IsResourceTypeEnabledForCompilation(uint32_t resourceTypeMask) const;
-
-        //! Update the m_rhiUpdateMask for a given resource type which will ensure we will compile that type for the current frame
-        void EnableRhiResourceTypeCompilation(const ShaderResourceGroupData::ResourceTypeMask resourceTypeMask);
-
-        //! Reset the iteration counter to 0 for a resource type which will ensure that the given type will
-        //! be compiled for another m_updateMaskResetLatency number of Compile calls
-        void ResetResourceTypeIteration(const ShaderResourceGroupData::ResourceType resourceType);
-
-        //! Return the view hash stored within m_viewHash
-        HashValue64 GetViewHash(const AZ::Name& viewName);
-
-        //! Update the view hash within m_viewHash
-        void UpdateViewHash(const AZ::Name& viewName, const HashValue64 viewHash);
-            
-    protected:
-        ShaderResourceGroup() = default;
+        //! Shuts down the resource by detaching it from its parent pool.
+        void Shutdown() override final;
 
     private:
-        void SetData(const ShaderResourceGroupData& data);
+        ShaderResourceGroupData m_Data;
 
-        ShaderResourceGroupData m_data;
-
-        // The binding slot cached from the layout.
+        //! The binding slot cached from the layout.
         uint32_t m_bindingSlot = aznumeric_cast<uint32_t>(-1);
-
-        // Gates the Compile() function so that the SRG is only queued once.
-        bool m_isQueuedForCompile = false;
-            
-        // Mask used to check whether to compile a specific resource type. This mask is managed on the RHI side.
-        uint32_t m_rhiUpdateMask = 0;
-
-        // Track iteration for each resource type in order to keep compiling it for m_updateMaskResetLatency number of times
-        uint32_t m_resourceTypeIteration[static_cast<uint32_t>(ShaderResourceGroupData::ResourceType::Count)] = { 0 };
-        uint32_t m_updateMaskResetLatency = RHI::Limits::Device::FrameCountMax - 1; //we do -1 because we update after compile
-
-        // Track hash related to views. This will help ensure we compile views in case they get invalidated and partial srg compilation is enabled
-        AZStd::unordered_map<AZ::Name, HashValue64> m_viewHash;
     };
-}
+} // namespace AZ::RHI

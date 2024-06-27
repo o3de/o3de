@@ -27,7 +27,7 @@ namespace AZ::Vulkan
 
         FrameGraphExecuteGroupPrimary() = default;
 
-        void Init(Device& device, AZStd::vector<const Scope*>&& scopes);
+        void Init(Device& device, AZStd::vector<Scope*>&& scopes);
         //! Set the command list that the group will use.
         void SetPrimaryCommandList(CommandList& commandList);
         //! Set the list of renderpasses that the group will use.
@@ -38,6 +38,7 @@ namespace AZ::Vulkan
         //////////////////////////////////////////////////////////////////////////
         // FrameGraphExecuteGroup
         AZStd::span<const Scope* const> GetScopes() const override;
+        AZStd::span<Scope* const> GetScopes() override;
         AZStd::span<const RHI::Ptr<CommandList>> GetCommandLists() const override;
         //////////////////////////////////////////////////////////////////////////
 
@@ -56,7 +57,7 @@ namespace AZ::Vulkan
 
         int32_t m_lastCompletedScope = -1;
         // List of scopes in the group.
-        AZStd::vector<const Scope*> m_scopes;
+        AZStd::vector<Scope*> m_scopes;
         // Primary command list used to record the work.
         RHI::Ptr<CommandList> m_commandList;
         // List of renderpasses and framebuffers used by the scopes in the group.

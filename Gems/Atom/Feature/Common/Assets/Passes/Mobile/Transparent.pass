@@ -12,13 +12,15 @@
                     "Name": "BRDFTextureInput",
                     "ShaderInputName": "m_brdfMap",
                     "SlotType": "Input",
-                    "ScopeAttachmentUsage": "Shader"
+                    "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage": "FragmentShader"
                 },
                 {
                     "Name": "InputDepth",
                     "SlotType": "Input",
                     "ShaderInputName": "m_linearDepthTexture",
                     "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage": "FragmentShader",
                     "ImageViewDesc": {
                         "AspectFlags": [
                             "Depth"

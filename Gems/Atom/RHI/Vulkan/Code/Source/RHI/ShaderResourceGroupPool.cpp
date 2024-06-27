@@ -5,9 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/BufferView.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/DeviceBufferPool.h>
+#include <Atom/RHI/DeviceBufferView.h>
+#include <Atom/RHI/DeviceImageView.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferPool.h>
 #include <RHI/DescriptorPool.h>
@@ -71,7 +71,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode ShaderResourceGroupPool::InitGroupInternal(RHI::ShaderResourceGroup& groupBase)
+        RHI::ResultCode ShaderResourceGroupPool::InitGroupInternal(RHI::DeviceShaderResourceGroup& groupBase)
         {
             RHI::ResultCode result = RHI::ResultCode::Success;
 
@@ -102,7 +102,7 @@ namespace AZ
             Base::ShutdownInternal();
         }
 
-        RHI::ResultCode ShaderResourceGroupPool::CompileGroupInternal(RHI::ShaderResourceGroup& groupBase, const RHI::ShaderResourceGroupData& groupData)
+        RHI::ResultCode ShaderResourceGroupPool::CompileGroupInternal(RHI::DeviceShaderResourceGroup& groupBase, const RHI::DeviceShaderResourceGroupData& groupData)
         {
             auto& group = static_cast<ShaderResourceGroup&>(groupBase);
 
@@ -178,7 +178,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        void ShaderResourceGroupPool::ShutdownResourceInternal(RHI::Resource& resourceBase)
+        void ShaderResourceGroupPool::ShutdownResourceInternal(RHI::DeviceResource& resourceBase)
         {
             ShaderResourceGroup& group = static_cast<ShaderResourceGroup&>(resourceBase);
             for (size_t i = 0; i < m_descriptorSetCount; ++i)

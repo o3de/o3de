@@ -124,7 +124,7 @@ namespace AZ::Render
             return false;
         }
 
-        RHI::DrawPacketBuilder drawPacketBuilder;
+        RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
         drawPacketBuilder.Begin(nullptr);
 
         drawPacketBuilder.SetDrawArguments(mesh.m_drawArguments);

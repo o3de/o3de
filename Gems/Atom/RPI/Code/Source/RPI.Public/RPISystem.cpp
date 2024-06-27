@@ -443,8 +443,8 @@ namespace AZ
             }
 
             m_rhiSystem.Init(bindlessSrgLayout);
-            m_imageSystem.Init(m_descriptor.m_imageSystemDescriptor);
-            m_bufferSystem.Init();
+            m_imageSystem.Init(RHI::MultiDevice::AllDevices, m_descriptor.m_imageSystemDescriptor);
+            m_bufferSystem.Init(RHI::MultiDevice::AllDevices);
             m_dynamicDraw.Init(m_descriptor.m_dynamicDrawSystemDescriptor);
 
             m_passSystem.InitPassTemplates();
@@ -477,8 +477,8 @@ namespace AZ
 
             //Init rhi/image/buffer systems to match InitializeSystemAssets
             m_rhiSystem.Init();
-            m_imageSystem.Init(m_descriptor.m_imageSystemDescriptor);
-            m_bufferSystem.Init();
+            m_imageSystem.Init(RHI::MultiDevice::AllDevices, m_descriptor.m_imageSystemDescriptor);
+            m_bufferSystem.Init(RHI::MultiDevice::AllDevices);
 
             // Assets aren't actually available or needed for tests, but the m_systemAssetsInitialized flag still needs to be flipped.
             m_systemAssetsInitialized = true;

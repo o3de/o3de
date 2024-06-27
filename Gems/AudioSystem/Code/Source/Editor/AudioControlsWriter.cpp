@@ -24,7 +24,6 @@
 
 #include <IEditor.h>
 #include <Include/IFileUtil.h>
-#include <Include/ISourceControl.h>
 
 #include <QModelIndex>
 #include <QStandardItemModel>

@@ -7,24 +7,31 @@
  */
 #pragma once
 
+#include <Atom/RHI.Reflect/Base.h>
+#include <Atom/RHI/DeviceObject.h>
+#include <Atom/RHI/RayTracingPipelineState.h>
+#include <Atom/RHI/DeviceRayTracingShaderTable.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
-#include <Atom/RHI/DeviceObject.h>
-#include <Atom/RHI.Reflect/Base.h>
-#include <Atom/RHI/RayTracingPipelineState.h>
-#include <Atom/RHI/ShaderResourceGroup.h>
 
 namespace AZ::RHI
 {
     class RayTracingBufferPools;
+    class ShaderResourceGroup;
 
     //! Specifies the shader and any local root signature parameters that make up a record in the shader table
     struct RayTracingShaderTableRecord
     {
-        AZ::Name m_shaderExportName;                                    // name of the shader as described in the pipeline state
-        const RHI::ShaderResourceGroup* m_shaderResourceGroup;          // shader resource group for this shader record
+        //! name of the shader as described in the pipeline state
+        AZ::Name m_shaderExportName;
+
+        //! shader resource group for this shader record
+        const RHI::ShaderResourceGroup* m_ShaderResourceGroup;
+
         static const uint32_t InvalidKey = static_cast<uint32_t>(-1);
-        uint32_t m_key = InvalidKey;                                    // key that can be used to identify this record
+
+        //! key that can be used to identify this record
+        uint32_t m_key = InvalidKey;
     };
     using RayTracingShaderTableRecordList = AZStd::list<RayTracingShaderTableRecord>;
 
@@ -34,7 +41,7 @@ namespace AZ::RHI
     //! using the following pattern:
     //!
     //! RHI::RayTracingShaderTableDescriptor descriptor;
-    //! descriptor.Build(AZ::Name("RayTracingExampleShaderTable"), m_rayTracingPipelineState)
+    //! descriptor.Build(AZ::Name("RayTracingExampleShaderTable"), m_RayTracingPipelineState)
     //!     ->RayGenerationRecord(AZ::Name("RayGenerationShader"))
     //!     ->MissRecord(AZ::Name("MissShader"))
     //!         ->ShaderResourceGroup(missSrg)
@@ -50,75 +57,80 @@ namespace AZ::RHI
         RayTracingShaderTableDescriptor() = default;
         ~RayTracingShaderTableDescriptor() = default;
 
-        // accessors
-        const RHI::Ptr<RayTracingPipelineState>& GetPipelineState() const { return m_rayTracingPipelineState; }
+        //! Returns the device-specific DeviceRayTracingShaderTableDescriptor for the given index
+        AZStd::shared_ptr<DeviceRayTracingShaderTableDescriptor> GetDeviceRayTracingShaderTableDescriptor(int deviceIndex);
 
-        const RayTracingShaderTableRecordList& GetRayGenerationRecord() const { return m_rayGenerationRecord; }
-        RayTracingShaderTableRecordList& GetRayGenerationRecord() { return m_rayGenerationRecord; }
+        //! Accessors
+        const RHI::Ptr<RayTracingPipelineState>& GetPipelineState() const
+        {
+            return m_RayTracingPipelineState;
+        }
 
-        const RayTracingShaderTableRecordList& GetMissRecords() const { return m_missRecords; }
-        RayTracingShaderTableRecordList& GetMissRecords() { return m_missRecords; }
+        const RayTracingShaderTableRecordList& GetRayGenerationRecord() const
+        {
+            return m_RayGenerationRecord;
+        }
+        RayTracingShaderTableRecordList& GetRayGenerationRecord()
+        {
+            return m_RayGenerationRecord;
+        }
 
-        const RayTracingShaderTableRecordList& GetCallableRecords() const { return m_callableRecords; }
-        RayTracingShaderTableRecordList& GetCallableRecords() { return m_callableRecords; }
+        const RayTracingShaderTableRecordList& GetMissRecords() const
+        {
+            return m_MissRecords;
+        }
+        RayTracingShaderTableRecordList& GetMissRecords()
+        {
+            return m_MissRecords;
+        }
 
-        const RayTracingShaderTableRecordList& GetHitGroupRecords() const { return m_hitGroupRecords; }
-        RayTracingShaderTableRecordList& GetHitGroupRecords() { return m_hitGroupRecords; }
+        const RayTracingShaderTableRecordList& GetHitGroupRecords() const
+        {
+            return m_HitGroupRecords;
+        }
+        RayTracingShaderTableRecordList& GetHitGroupRecords()
+        {
+            return m_HitGroupRecords;
+        }
 
         void RemoveHitGroupRecords(uint32_t key);
 
-        // build operations
-        RayTracingShaderTableDescriptor* Build(const AZ::Name& name, const RHI::Ptr<RayTracingPipelineState>& rayTracingPipelineState);
+        //! build operations
+        RayTracingShaderTableDescriptor* Build(
+            const AZ::Name& name, RHI::Ptr<RayTracingPipelineState>& rayTracingPipelineState);
         RayTracingShaderTableDescriptor* RayGenerationRecord(const AZ::Name& name);
         RayTracingShaderTableDescriptor* MissRecord(const AZ::Name& name);
-        RayTracingShaderTableDescriptor* CallableRecord(const AZ::Name& name);
-        RayTracingShaderTableDescriptor* HitGroupRecord(const AZ::Name& name, uint32_t key = RayTracingShaderTableRecord::InvalidKey);
+        RayTracingShaderTableDescriptor* HitGroupRecord(
+            const AZ::Name& name, uint32_t key = RayTracingShaderTableRecord::InvalidKey);
         RayTracingShaderTableDescriptor* ShaderResourceGroup(const RHI::ShaderResourceGroup* shaderResourceGroup);
 
     private:
         AZ::Name m_name;
-        RHI::Ptr<RayTracingPipelineState> m_rayTracingPipelineState;
-        RayTracingShaderTableRecordList m_rayGenerationRecord;  // limited to one record, but stored as a list to simplify processing
-        RayTracingShaderTableRecordList m_missRecords;
-        RayTracingShaderTableRecordList m_callableRecords;
-        RayTracingShaderTableRecordList m_hitGroupRecords;
+        RHI::Ptr<RayTracingPipelineState> m_RayTracingPipelineState;
+        //! limited to one record, but stored as a list to simplify processing
+        RayTracingShaderTableRecordList m_RayGenerationRecord;
+        RayTracingShaderTableRecordList m_MissRecords;
+        RayTracingShaderTableRecordList m_HitGroupRecords;
 
-        RayTracingShaderTableRecord* m_buildContext = nullptr;
+        RayTracingShaderTableRecord* m_BuildContext = nullptr;
     };
 
     //! Shader Table
     //! Specifies the ray generation, miss, and hit shaders used during the ray tracing process
-    class RayTracingShaderTable
-        : public DeviceObject
+    class RayTracingShaderTable : public MultiDeviceObject
     {
     public:
+        AZ_CLASS_ALLOCATOR(RayTracingShaderTable, AZ::SystemAllocator, 0);
+        AZ_RTTI(RayTracingShaderTable, "{B448997B-A8E6-446E-A333-EFD92B486D9B}", MultiDeviceObject);
+        AZ_RHI_MULTI_DEVICE_OBJECT_GETTER(RayTracingShaderTable);
         RayTracingShaderTable() = default;
         virtual ~RayTracingShaderTable() = default;
 
-        static RHI::Ptr<RHI::RayTracingShaderTable> CreateRHIRayTracingShaderTable();
-        void Init(Device& device, const RayTracingBufferPools& rayTracingBufferPools);
+        //! Initialize all device-specific RayTracingShaderTables
+        void Init(MultiDevice::DeviceMask deviceMask, const RayTracingBufferPools& rayTracingBufferPools);
 
         //! Queues this RayTracingShaderTable to be built by the FrameScheduler.
         //! Note that the descriptor must be heap allocated, preferably using make_shared.
         void Build(const AZStd::shared_ptr<RayTracingShaderTableDescriptor> descriptor);
-
-    protected:
-
-        AZStd::shared_ptr<RayTracingShaderTableDescriptor> m_descriptor;
-        const RayTracingBufferPools* m_bufferPools = nullptr;
-
-    private:
-
-        friend class FrameScheduler;
-
-        /// Called by the FrameScheduler to validate the state prior to building
-        void Validate();
-
-        //////////////////////////////////////////////////////////////////////////
-        // Platform API
-        virtual RHI::ResultCode BuildInternal() = 0;
-        //////////////////////////////////////////////////////////////////////////
-
-        bool m_isQueuedForBuild = false;
     };
-}
+} // namespace AZ::RHI

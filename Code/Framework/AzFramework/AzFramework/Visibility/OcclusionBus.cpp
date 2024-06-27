@@ -26,8 +26,11 @@ namespace AzFramework
                 ->Event("CreateOcclusionView", &OcclusionRequestBus::Events::CreateOcclusionView)
                 ->Event("DestroyOcclusionView", &OcclusionRequestBus::Events::DestroyOcclusionView)
                 ->Event("UpdateOcclusionView", &OcclusionRequestBus::Events::UpdateOcclusionView)
-                ->Event("IsEntityVisibleInOcclusionView", &OcclusionRequestBus::Events::IsEntityVisibleInOcclusionView)
-                ->Event("IsAabbVisibleInOcclusionView", &OcclusionRequestBus::Events::IsAabbVisibleInOcclusionView)
+                ->Event("GetOcclusionViewEntityVisibility", &OcclusionRequestBus::Events::GetOcclusionViewEntityVisibility)
+                ->Event("GetOcclusionViewAabbVisibility", &OcclusionRequestBus::Events::GetOcclusionViewAabbVisibility)
+                ->Event("GetOcclusionViewAabbToAabbVisibility", &OcclusionRequestBus::Events::GetOcclusionViewAabbToAabbVisibility)
+                ->Event("GetOcclusionViewSphereToSphereVisibility", &OcclusionRequestBus::Events::GetOcclusionViewSphereToSphereVisibility)
+                ->Event("GetOcclusionViewEntityToEntityVisibility", &OcclusionRequestBus::Events::GetOcclusionViewEntityToEntityVisibility)
                 ;
         }
     }

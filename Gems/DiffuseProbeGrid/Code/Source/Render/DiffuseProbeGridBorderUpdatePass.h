@@ -9,6 +9,7 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <Atom/RHI/CommandList.h>
+#include <Atom/RHI/DispatchItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -49,8 +50,8 @@ namespace AZ
             // the data for submits in this pass are pre-built to properly handle submitting on multiple threads
             struct SubmitItem
             {
-                RHI::ShaderResourceGroup* m_shaderResourceGroup = nullptr;
-                RHI::DispatchItem m_dispatchItem;
+                RHI::ShaderResourceGroup* m_shaderResourceGroup{nullptr};
+                RHI::DispatchItem m_dispatchItem{RHI::MultiDevice::AllDevices};
             };
 
             AZStd::vector<SubmitItem> m_submitItems;

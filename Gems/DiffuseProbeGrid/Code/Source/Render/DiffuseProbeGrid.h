@@ -30,7 +30,7 @@ namespace AZ
             static const RHI::Format ProbeDataImageFormat = RHI::Format::R16G16B16A16_FLOAT;
             static const uint32_t GridDataBufferSize = 112;
 
-            RHI::Ptr<RHI::ImagePool> m_imagePool;          
+            RHI::Ptr<RHI::ImagePool> m_imagePool;
             RHI::Ptr<RHI::BufferPool> m_bufferPool;
 
             AZStd::array<RHI::StreamBufferView, 1> m_boxPositionBufferView;

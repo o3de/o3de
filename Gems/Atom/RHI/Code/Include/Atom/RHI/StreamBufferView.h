@@ -8,33 +8,31 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Format.h>
-#include <AzCore/std/containers/span.h>
+#include <Atom/RHI/DeviceStreamBufferView.h>
+#include <Atom/RHI/Buffer.h>
 #include <AzCore/Utils/TypeHash.h>
+#include <AzCore/std/containers/span.h>
 
 namespace AZ::RHI
 {
-    class Buffer;
     class InputStreamLayout;
 
-    //! Provides a view into a buffer, to be used as vertex stream. The content of the view is a contiguous
-    //! list of input vertex data. It is provided to the RHI back-end at draw time.
-    //!
-    //! Note that the buffer is further described in InputStreamLayout, through StreamChannelDescriptors
-    //! and a StreamBufferDescriptor, which is provided to the RHI back-end at PSO compile time.
-    //! - The view will be associated with one or more StreamChannelDescriptors to describe its specific content. 
-    //!   Channels maybe be stored in separate StreamBufferViews (each view having a separate StreamChannelDescriptor)
-    //!   or interleaved in a single StreamBufferView (one view having multiple StreamChannelDescriptors).
-    //! - The view will correspond to a single StreamBufferDescriptor.
+    //! Provides a view into a multi-device buffer, to be used as vertex stream. The content of the view is a contiguous
+    //! list of input vertex data. Its device-specific buffer is provided to the RHI back-end at draw time for a given device.
     class alignas(8) StreamBufferView
     {
     public:
         StreamBufferView() = default;
 
-        StreamBufferView(
-            const Buffer& buffer,
-            uint32_t byteOffset,
-            uint32_t byteCount,
-            uint32_t byteStride);
+        StreamBufferView(const Buffer& buffer, uint32_t byteOffset, uint32_t byteCount, uint32_t byteStride);
+
+        //! Returns the device-specific DeviceStreamBufferView for the given index
+        DeviceStreamBufferView GetDeviceStreamBufferView(int deviceIndex) const
+        {
+            AZ_Assert(m_Buffer, "No Buffer available\n");
+
+            return DeviceStreamBufferView(*m_Buffer->GetDeviceBuffer(deviceIndex), m_byteOffset, m_byteCount, m_byteStride);
+        }
 
         //! Returns the hash of the view. This hash is precomputed at creation time.
         HashValue64 GetHash() const;
@@ -54,12 +52,13 @@ namespace AZ::RHI
 
     private:
         HashValue64 m_hash = HashValue64{ 0 };
-        const Buffer* m_buffer = nullptr;
+        const Buffer* m_Buffer = nullptr;
         uint32_t m_byteOffset = 0;
         uint32_t m_byteCount = 0;
         uint32_t m_byteStride = 0;
     };
 
     //! Utility function for checking that the set of StreamBufferViews aligns with the InputStreamLayout
-    bool ValidateStreamBufferViews(const InputStreamLayout& inputStreamLayout, AZStd::span<const StreamBufferView> streamBufferViews);
-}
+    bool ValidateStreamBufferViews(
+        const InputStreamLayout& inputStreamLayout, AZStd::span<const StreamBufferView> streamBufferViews);
+} // namespace AZ::RHI

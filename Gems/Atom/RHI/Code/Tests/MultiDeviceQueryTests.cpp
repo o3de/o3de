@@ -8,7 +8,7 @@
 
 #include "RHITestFixture.h"
 #include <Atom/RHI/FrameEventBus.h>
-#include <Atom/RHI/MultiDeviceQueryPool.h>
+#include <Atom/RHI/QueryPool.h>
 #include <AzCore/std/containers/bitset.h>
 #include <Tests/Device.h>
 
@@ -38,32 +38,32 @@ namespace UnitTest
 
     TEST_F(MultiDeviceQueryTests, TestNoop)
     {
-        RHI::Ptr<RHI::MultiDeviceQuery> noopQuery;
-        noopQuery = aznew RHI::MultiDeviceQuery;
+        RHI::Ptr<RHI::Query> noopQuery;
+        noopQuery = aznew RHI::Query;
         AZ_TEST_ASSERT(noopQuery);
 
-        RHI::Ptr<RHI::MultiDeviceQueryPool> noopQueryPool;
-        noopQueryPool = aznew RHI::MultiDeviceQueryPool;
+        RHI::Ptr<RHI::QueryPool> noopQueryPool;
+        noopQueryPool = aznew RHI::QueryPool;
         AZ_TEST_ASSERT(noopQueryPool);
     }
 
     TEST_F(MultiDeviceQueryTests, Test)
     {
-        RHI::Ptr<RHI::MultiDeviceQuery> queryA;
-        queryA = aznew RHI::MultiDeviceQuery;
+        RHI::Ptr<RHI::Query> queryA;
+        queryA = aznew RHI::Query;
 
         queryA->SetName(Name("QueryA"));
         AZ_TEST_ASSERT(queryA->GetName().GetStringView() == "QueryA");
         AZ_TEST_ASSERT(queryA->use_count() == 1);
 
         {
-            RHI::Ptr<RHI::MultiDeviceQueryPool> queryPool;
-            queryPool = aznew RHI::MultiDeviceQueryPool;
+            RHI::Ptr<RHI::QueryPool> queryPool;
+            queryPool = aznew RHI::QueryPool;
 
             EXPECT_EQ(1, queryPool->use_count());
 
-            RHI::Ptr<RHI::MultiDeviceQuery> queryB;
-            queryB = aznew RHI::MultiDeviceQuery;
+            RHI::Ptr<RHI::Query> queryB;
+            queryB = aznew RHI::Query;
             EXPECT_EQ(1, queryB->use_count());
 
             RHI::QueryPoolDescriptor queryPoolDesc;
@@ -91,10 +91,10 @@ namespace UnitTest
             {
                 uint32_t queryIndex = 0;
 
-                const RHI::MultiDeviceQuery* queries[] = { queryA.get(), queryB.get() };
+                const RHI::Query* queries[] = { queryA.get(), queryB.get() };
 
-                queryPool->ForEach<RHI::MultiDeviceQuery>(
-                    [&queryIndex, &queries]([[maybe_unused]] RHI::MultiDeviceQuery& query)
+                queryPool->ForEach<RHI::Query>(
+                    [&queryIndex, &queries]([[maybe_unused]] RHI::Query& query)
                     {
                         AZ_UNUSED(queries); // Prevent unused warning in release builds
                         AZ_Assert(queries[queryIndex] == &query, "Queries don't match");
@@ -105,8 +105,8 @@ namespace UnitTest
             queryB->Shutdown();
             EXPECT_EQ(queryB->GetPool(), nullptr);
 
-            RHI::Ptr<RHI::MultiDeviceQueryPool> queryPoolB;
-            queryPoolB = aznew RHI::MultiDeviceQueryPool;
+            RHI::Ptr<RHI::QueryPool> queryPoolB;
+            queryPoolB = aznew RHI::QueryPool;
             queryPoolB->Init(DeviceMask, queryPoolDesc);
 
             queryPoolB->InitQuery(queryB.get());
@@ -127,14 +127,14 @@ namespace UnitTest
     TEST_F(MultiDeviceQueryTests, TestAllocations)
     {
         static const uint32_t numQueries = 10;
-        AZStd::array<RHI::Ptr<RHI::MultiDeviceQuery>, numQueries> queries;
+        AZStd::array<RHI::Ptr<RHI::Query>, numQueries> queries;
         for (auto& query : queries)
         {
-            query = aznew RHI::MultiDeviceQuery;
+            query = aznew RHI::Query;
         }
 
-        RHI::Ptr<RHI::MultiDeviceQueryPool> queryPool;
-        queryPool = aznew RHI::MultiDeviceQueryPool;
+        RHI::Ptr<RHI::QueryPool> queryPool;
+        queryPool = aznew RHI::QueryPool;
 
         RHI::QueryPoolDescriptor queryPoolDesc;
         queryPoolDesc.m_queriesCount = numQueries;
@@ -142,7 +142,7 @@ namespace UnitTest
         queryPoolDesc.m_pipelineStatisticsMask = RHI::PipelineStatisticsFlags::None;
         queryPool->Init(DeviceMask, queryPoolDesc);
 
-        AZStd::vector<RHI::MultiDeviceQuery*> queriesToInitialize(numQueries);
+        AZStd::vector<RHI::Query*> queriesToInitialize(numQueries);
         for (size_t i = 0; i < queries.size(); ++i)
         {
             queriesToInitialize[i] = queries[i].get();
@@ -150,7 +150,7 @@ namespace UnitTest
 
         RHI::ResultCode result = queryPool->InitQuery(queriesToInitialize.data(), static_cast<uint32_t>(queriesToInitialize.size()));
         EXPECT_EQ(result, RHI::ResultCode::Success);
-        auto checkSlotsFunc = [](const AZStd::vector<RHI::MultiDeviceQuery*>& queries)
+        auto checkSlotsFunc = [](const AZStd::vector<RHI::Query*>& queries)
         {
             if (queries.size() < 2)
             {
@@ -177,12 +177,12 @@ namespace UnitTest
 
         checkSlotsFunc(queriesToInitialize);
 
-        RHI::Ptr<RHI::MultiDeviceQuery> extraQuery = aznew RHI::MultiDeviceQuery;
+        RHI::Ptr<RHI::Query> extraQuery = aznew RHI::Query;
         EXPECT_EQ(queryPool->InitQuery(extraQuery.get()), RHI::ResultCode::OutOfMemory);
         AZ_TEST_ASSERT(!extraQuery->IsInitialized());
 
         AZStd::vector<uint32_t> queriesIndicesToShutdown = { 5, 6 };
-        AZStd::vector<RHI::MultiDeviceQuery*> queriesToShutdown;
+        AZStd::vector<RHI::Query*> queriesToShutdown;
         for (auto& index : queriesIndicesToShutdown)
         {
             queries[index]->Shutdown();
@@ -217,14 +217,14 @@ namespace UnitTest
     TEST_F(MultiDeviceQueryTests, TestIntervals)
     {
         static const uint32_t numQueries = 10;
-        AZStd::array<RHI::Ptr<RHI::MultiDeviceQuery>, numQueries> queries;
+        AZStd::array<RHI::Ptr<RHI::Query>, numQueries> queries;
         for (auto& query : queries)
         {
-            query = aznew RHI::MultiDeviceQuery;
+            query = aznew RHI::Query;
         }
 
-        RHI::Ptr<RHI::MultiDeviceQueryPool> queryPool;
-        queryPool = aznew RHI::MultiDeviceQueryPool;
+        RHI::Ptr<RHI::QueryPool> queryPool;
+        queryPool = aznew RHI::QueryPool;
 
         RHI::QueryPoolDescriptor queryPoolDesc;
         queryPoolDesc.m_queriesCount = numQueries;
@@ -232,7 +232,7 @@ namespace UnitTest
         queryPoolDesc.m_pipelineStatisticsMask = RHI::PipelineStatisticsFlags::None;
         queryPool->Init(DeviceMask, queryPoolDesc);
 
-        AZStd::vector<RHI::MultiDeviceQuery*> queriesToInitialize(numQueries);
+        AZStd::vector<RHI::Query*> queriesToInitialize(numQueries);
         for (size_t i = 0; i < queries.size(); ++i)
         {
             queriesToInitialize[i] = queries[i].get();
@@ -264,7 +264,7 @@ namespace UnitTest
                 RHI::Interval(queryToTest->GetHandle(deviceIndex).GetIndex(), queryToTest->GetHandle(deviceIndex).GetIndex()));
 
             AZStd::vector<RHI::Interval> intervalsToTest = { RHI::Interval(5, 5), RHI::Interval(0, 3), RHI::Interval(8, 9) };
-            AZStd::vector<RHI::MultiDeviceQuery*> queriesToTest;
+            AZStd::vector<RHI::Query*> queriesToTest;
             for (auto& interval : intervalsToTest)
             {
                 for (uint32_t i = interval.m_min; i <= interval.m_max; ++i)
@@ -288,11 +288,11 @@ namespace UnitTest
 
     TEST_F(MultiDeviceQueryTests, TestQuery)
     {
-        AZStd::array<RHI::Ptr<RHI::MultiDeviceQueryPool>, RHI::QueryTypeCount> queryPools;
+        AZStd::array<RHI::Ptr<RHI::QueryPool>, RHI::QueryTypeCount> queryPools;
         for (size_t i = 0; i < queryPools.size(); ++i)
         {
             auto& queryPool = queryPools[i];
-            queryPool = aznew RHI::MultiDeviceQueryPool;
+            queryPool = aznew RHI::QueryPool;
             RHI::QueryPoolDescriptor queryPoolDesc;
             queryPoolDesc.m_queriesCount = 1;
             queryPoolDesc.m_type = static_cast<RHI::QueryType>(i);
@@ -311,7 +311,7 @@ namespace UnitTest
 
         // Correct begin and end for occlusion
         {
-            RHI::Ptr<RHI::MultiDeviceQuery> query = aznew RHI::MultiDeviceQuery;
+            RHI::Ptr<RHI::Query> query = aznew RHI::Query;
             EXPECT_EQ(occlusionQueryPool->InitQuery(query.get()), RHI::ResultCode::Success);
             for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
             {
@@ -322,7 +322,7 @@ namespace UnitTest
 
         // Double Begin
         {
-            RHI::Ptr<RHI::MultiDeviceQuery> query = aznew RHI::MultiDeviceQuery;
+            RHI::Ptr<RHI::Query> query = aznew RHI::Query;
             occlusionQueryPool->InitQuery(query.get());
             for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
             {
@@ -334,7 +334,7 @@ namespace UnitTest
         }
         // End without Begin
         {
-            RHI::Ptr<RHI::MultiDeviceQuery> query = aznew RHI::MultiDeviceQuery;
+            RHI::Ptr<RHI::Query> query = aznew RHI::Query;
             occlusionQueryPool->InitQuery(query.get());
             for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
             {
@@ -345,7 +345,7 @@ namespace UnitTest
         }
         // End with another command list
         {
-            RHI::Ptr<RHI::MultiDeviceQuery> query = aznew RHI::MultiDeviceQuery;
+            RHI::Ptr<RHI::Query> query = aznew RHI::Query;
             occlusionQueryPool->InitQuery(query.get());
             uint64_t anotherData;
             RHI::CommandList& anotherDummyCmdList = reinterpret_cast<RHI::CommandList&>(anotherData);
@@ -359,7 +359,7 @@ namespace UnitTest
         }
         // Invalid flag
         {
-            RHI::Ptr<RHI::MultiDeviceQuery> query = aznew RHI::MultiDeviceQuery;
+            RHI::Ptr<RHI::Query> query = aznew RHI::Query;
             statisticsQueryPool->InitQuery(query.get());
             for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
             {
@@ -372,7 +372,7 @@ namespace UnitTest
         }
         // Invalid Begin for Timestamp
         {
-            RHI::Ptr<RHI::MultiDeviceQuery> query = aznew RHI::MultiDeviceQuery;
+            RHI::Ptr<RHI::Query> query = aznew RHI::Query;
             timestampQueryPool->InitQuery(query.get());
             for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
             {
@@ -383,7 +383,7 @@ namespace UnitTest
         }
         // Invalid End for Timestamp
         {
-            RHI::Ptr<RHI::MultiDeviceQuery> query = aznew RHI::MultiDeviceQuery;
+            RHI::Ptr<RHI::Query> query = aznew RHI::Query;
             timestampQueryPool->InitQuery(query.get());
             for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
             {
@@ -394,7 +394,7 @@ namespace UnitTest
         }
         // Invalid WriteTimestamp
         {
-            RHI::Ptr<RHI::MultiDeviceQuery> query = aznew RHI::MultiDeviceQuery;
+            RHI::Ptr<RHI::Query> query = aznew RHI::Query;
             occlusionQueryPool->InitQuery(query.get());
             for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
             {
@@ -405,7 +405,7 @@ namespace UnitTest
         }
         // Correct WriteTimestamp
         {
-            RHI::Ptr<RHI::MultiDeviceQuery> query = aznew RHI::MultiDeviceQuery;
+            RHI::Ptr<RHI::Query> query = aznew RHI::Query;
             timestampQueryPool->InitQuery(query.get());
             for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
             {
@@ -416,8 +416,8 @@ namespace UnitTest
 
     TEST_F(MultiDeviceQueryTests, TestQueryPoolInitialization)
     {
-        RHI::Ptr<RHI::MultiDeviceQueryPool> queryPool;
-        queryPool = aznew RHI::MultiDeviceQueryPool;
+        RHI::Ptr<RHI::QueryPool> queryPool;
+        queryPool = aznew RHI::QueryPool;
         RHI::QueryPoolDescriptor queryPoolDesc;
         queryPoolDesc.m_queriesCount = 0;
         queryPoolDesc.m_type = RHI::QueryType::Occlusion;
@@ -442,12 +442,12 @@ namespace UnitTest
 
     TEST_F(MultiDeviceQueryTests, TestResults)
     {
-        AZStd::array<RHI::Ptr<RHI::MultiDeviceQueryPool>, 2> queryPools;
+        AZStd::array<RHI::Ptr<RHI::QueryPool>, 2> queryPools;
         RHI::PipelineStatisticsFlags mask = RHI::PipelineStatisticsFlags::CInvocations | RHI::PipelineStatisticsFlags::CPrimitives |
             RHI::PipelineStatisticsFlags::IAPrimitives;
         for (auto& queryPool : queryPools)
         {
-            queryPool = aznew RHI::MultiDeviceQueryPool;
+            queryPool = aznew RHI::QueryPool;
             RHI::QueryPoolDescriptor queryPoolDesc;
             queryPoolDesc.m_queriesCount = 2;
             queryPoolDesc.m_type = RHI::QueryType::PipelineStatistics;
@@ -455,7 +455,7 @@ namespace UnitTest
             EXPECT_EQ(queryPool->Init(DeviceMask, queryPoolDesc), RHI::ResultCode::Success);
         }
 
-        RHI::Ptr<RHI::MultiDeviceQuery> query = aznew RHI::MultiDeviceQuery;
+        RHI::Ptr<RHI::Query> query = aznew RHI::Query;
         uint32_t numPipelineStatistics = RHI::CountBitsSet(static_cast<uint64_t>(mask));
         AZStd::vector<uint64_t> results(numPipelineStatistics * 2 * DeviceCount);
         // Using uninitialized query
@@ -472,7 +472,7 @@ namespace UnitTest
         AZ_TEST_STOP_ASSERTTEST(1);
 
         // Using a query from another pool
-        RHI::Ptr<RHI::MultiDeviceQuery> anotherQuery = aznew RHI::MultiDeviceQuery;
+        RHI::Ptr<RHI::Query> anotherQuery = aznew RHI::Query;
         queryPools[1]->InitQuery(anotherQuery.get());
         AZ_TEST_START_ASSERTTEST;
         EXPECT_EQ(
@@ -483,7 +483,7 @@ namespace UnitTest
         // Results count is too small
         anotherQuery->Shutdown();
         queryPools[0]->InitQuery(anotherQuery.get());
-        RHI::MultiDeviceQuery* queries[] = { query.get(), anotherQuery.get() };
+        RHI::Query* queries[] = { query.get(), anotherQuery.get() };
         AZ_TEST_START_ASSERTTEST;
         EXPECT_EQ(
             queryPools[0]->GetResults(queries, 2, results.data(), numPipelineStatistics * DeviceCount, RHI::QueryResultFlagBits::None),
@@ -498,10 +498,10 @@ namespace UnitTest
         // Unsorted queries
         {
             const size_t numQueries = 5;
-            AZStd::array<RHI::Ptr<AZ::RHI::MultiDeviceQuery>, numQueries> queries2;
+            AZStd::array<RHI::Ptr<AZ::RHI::Query>, numQueries> queries2;
             AZStd::vector<uint64_t> results2(numQueries * DeviceCount);
 
-            RHI::Ptr<RHI::MultiDeviceQueryPool> queryPool = aznew RHI::MultiDeviceQueryPool;
+            RHI::Ptr<RHI::QueryPool> queryPool = aznew RHI::QueryPool;
             RHI::QueryPoolDescriptor queryPoolDesc;
             queryPoolDesc.m_queriesCount = 5;
             queryPoolDesc.m_type = RHI::QueryType::Occlusion;
@@ -509,11 +509,11 @@ namespace UnitTest
 
             for (size_t i = 0; i < queries2.size(); ++i)
             {
-                queries2[i] = aznew RHI::MultiDeviceQuery;
+                queries2[i] = aznew RHI::Query;
                 queryPool->InitQuery(queries2[i].get());
             }
 
-            AZStd::array<RHI::MultiDeviceQuery*, numQueries> queriesPtr = {
+            AZStd::array<RHI::Query*, numQueries> queriesPtr = {
                 queries2[2].get(), queries2[0].get(), queries2[1].get(), queries2[3].get(), queries2[4].get()
             };
             EXPECT_EQ(

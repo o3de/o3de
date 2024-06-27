@@ -14,7 +14,7 @@
 #include <Atom/RPI.Public/Base.h>
 
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
-#include <Atom/Feature/Utils/MultiSparseVector.h>
+#include <Atom/Feature/Utils/SparseVector.h>
 
 #include <TerrainRenderer/TerrainMacroMaterialBus.h>
 #include <TerrainRenderer/Vector2i.h>
@@ -117,7 +117,8 @@ namespace Terrain
 
         // Macro materials stored in a grid of (MacroMaterialGridCount * MacroMaterialGridCount) where each tile in the grid covers
         // an area of (MacroMaterialGridSize * MacroMaterialGridSize) and each tile can hold MacroMaterialsPerTile macro materials
-        AZ::Render::MultiSparseVector<MacroMaterialShaderData, MacroMaterialPriority> m_materialData; // Info about the macro material itself.
+        AZ::Render::SparseVector<MacroMaterialPriority> m_materialPriorityData; // Priority info about the macro material itself.
+        AZStd::unordered_map<int, AZStd::vector<MacroMaterialShaderData>> m_materialShaderData; // Shader info about the macro material itself.
         AZStd::vector<TileMaterials> m_materialRefGridShaderData; // A grid of macro material references that covers the world.
 
         AZStd::map<AZ::EntityId, MaterialHandle> m_entityToMaterialHandle; // Used for looking up macro materials by entity id when the data isn't provided by a bus.

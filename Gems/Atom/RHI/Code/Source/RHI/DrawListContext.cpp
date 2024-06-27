@@ -52,7 +52,7 @@ namespace AZ::RHI
                 if (m_drawListMask[drawListTag.GetIndex()])
                 {
                     DrawItemProperties drawItem = drawPacket->GetDrawItemProperties(i);
-                    if (drawItem.m_item->m_enabled)
+                    if (drawItem.m_Item->GetEnabled())
                     {
                         drawItem.m_depth = depth;
                         threadListsByTag[drawListTag.GetIndex()].push_back(drawItem);
@@ -71,7 +71,7 @@ namespace AZ::RHI
 
     void DrawListContext::AddDrawItem(DrawListTag drawListTag, DrawItemProperties drawItemProperties)
     {
-        if (!drawItemProperties.m_item->m_enabled)
+        if (!drawItemProperties.m_Item->GetEnabled())
         {
             return;
         }

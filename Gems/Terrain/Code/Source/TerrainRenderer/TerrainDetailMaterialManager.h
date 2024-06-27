@@ -242,7 +242,8 @@ namespace Terrain
 
         DetailMaterialContainer m_detailMaterials;
         AZ::Render::IndexedDataVector<DetailMaterialListRegion> m_detailMaterialRegions;
-        AZ::Render::SparseVector<DetailMaterialShaderData> m_detailMaterialShaderData;
+        AZ::Render::SparseVector<size_t> m_detailMaterialShaderIndex;
+        AZStd::unordered_map<int, AZStd::vector<DetailMaterialShaderData>> m_detailMaterialShaderData;
         AZ::Render::GpuBufferHandler m_detailMaterialDataBuffer;
         uint8_t m_passthroughMaterialId = 0;
 

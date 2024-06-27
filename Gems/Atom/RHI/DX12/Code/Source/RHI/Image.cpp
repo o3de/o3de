@@ -75,7 +75,7 @@ namespace AZ
         {
             for (uint16_t mipSlice = 0; mipSlice < GetDescriptor().m_mipLevels; ++mipSlice)
             {
-                RHI::ImageSubresourceLayout& subresourceLayout = m_subresourceLayoutsPerMipChain[mipSlice];
+                RHI::DeviceImageSubresourceLayout& subresourceLayout = m_subresourceLayoutsPerMipChain[mipSlice];
 
                 RHI::ImageSubresource subresource;
                 subresource.m_mipSlice = mipSlice;
@@ -89,7 +89,7 @@ namespace AZ
 
         void Image::GetSubresourceLayoutsInternal(
             const RHI::ImageSubresourceRange& subresourceRange,
-            RHI::ImageSubresourceLayout* subresourceLayouts,
+            RHI::DeviceImageSubresourceLayout* subresourceLayouts,
             size_t* totalSizeInBytes) const
         {
             const RHI::ImageDescriptor& imageDescriptor = GetDescriptor();
@@ -102,7 +102,7 @@ namespace AZ
                 {
                     for (uint16_t mipSlice = subresourceRange.m_mipSliceMin; mipSlice <= subresourceRange.m_mipSliceMax; ++mipSlice)
                     {
-                        const RHI::ImageSubresourceLayout& subresourceLayout = m_subresourceLayoutsPerMipChain[mipSlice];
+                        const RHI::DeviceImageSubresourceLayout& subresourceLayout = m_subresourceLayoutsPerMipChain[mipSlice];
                         const uint32_t subresourceIndex = RHI::GetImageSubresourceIndex(mipSlice, arraySlice, imageDescriptor.m_mipLevels);
                         subresourceLayouts[subresourceIndex] = subresourceLayout;
                         subresourceLayouts[subresourceIndex].m_offset = byteOffset;
@@ -116,7 +116,7 @@ namespace AZ
                 {
                     for (uint16_t mipSlice = subresourceRange.m_mipSliceMin; mipSlice <= subresourceRange.m_mipSliceMax; ++mipSlice)
                     {
-                        const RHI::ImageSubresourceLayout& subresourceLayout = m_subresourceLayoutsPerMipChain[mipSlice];
+                        const RHI::DeviceImageSubresourceLayout& subresourceLayout = m_subresourceLayoutsPerMipChain[mipSlice];
                         byteOffset = RHI::AlignUp(byteOffset + subresourceLayout.m_bytesPerImage * subresourceLayout.m_size.m_depth, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
                     }
                 }
@@ -135,7 +135,7 @@ namespace AZ
         
         void Image::SetDescriptor(const RHI::ImageDescriptor& descriptor)
         {
-            RHI::Image::SetDescriptor(descriptor);
+            RHI::DeviceImage::SetDescriptor(descriptor);
 
             m_initialResourceState = D3D12_RESOURCE_STATE_COMMON;
 
@@ -241,6 +241,28 @@ namespace AZ
         void Image::SetAttachmentState(D3D12_RESOURCE_STATES state, const RHI::ImageSubresourceRange* range /*= nullptr*/)
         {
             m_attachmentState.Set(range ? *range : RHI::ImageSubresourceRange(GetDescriptor()), state);
+        }
+
+        void Image::SetAttachmentState(D3D12_RESOURCE_STATES state, uint32_t subresourceIndex)
+        {
+            const auto& descriptor = GetDescriptor();
+            RHI::ImageSubresourceRange range;
+            if (subresourceIndex == D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES)
+            {
+                range = RHI::ImageSubresourceRange(descriptor);
+            }
+            else
+            {
+                uint16_t mipSlice;
+                uint16_t arraySlice;
+                uint16_t planeSlice;
+                D3D12DecomposeSubresource(
+                    subresourceIndex, descriptor.m_mipLevels, descriptor.m_arraySize, mipSlice, arraySlice, planeSlice);
+                range = RHI::ImageSubresourceRange(mipSlice, mipSlice, arraySlice, arraySlice);
+                range.m_aspectFlags = ConvertPlaneSliceToImageAspectFlags(planeSlice);
+            }
+
+            m_attachmentState.Set(range, state);
         }
 
         AZStd::vector<Image::SubresourceRangeAttachmentState> Image::GetAttachmentStateByRange(const RHI::ImageSubresourceRange* range /*= nullptr*/) const

@@ -67,6 +67,10 @@ if [[ "$OSTYPE" = *"darwin"* ]];
 then
     PAL=Mac
     CMAKE_FOLDER_RELATIVE_TO_ROOT=CMake.app/Contents/bin
+elif [[ "$OSTYPE" == "msys" ]]; then #git bash
+    PAL=Windows
+    CMAKE_FOLDER_RELATIVE_TO_ROOT=bin
+    LINUX_HOST_ARCHITECTURE=""
 else
     PAL=Linux
     CMAKE_FOLDER_RELATIVE_TO_ROOT=bin

@@ -19,6 +19,7 @@
 
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzToolsFramework/SourceControl/PerforceConnection.h>
+#include "PerforceSettings.h"
 
 #include <QProcess>
 
@@ -303,6 +304,16 @@ namespace AzToolsFramework
             result.UpdateSettingInfo(s_perforceConn->m_command.GetOutputValue(key));
         }
         QueueSettingResponse(result);
+    }
+
+    void PerforceComponent::OpenSettings()
+    {
+        PerforceSettings dialog;
+
+        if (dialog.exec() == QDialog::Accepted)
+        {
+            dialog.Apply();
+        }
     }
 
     SourceControlFileInfo PerforceComponent::GetFileInfo(const char* filePath)

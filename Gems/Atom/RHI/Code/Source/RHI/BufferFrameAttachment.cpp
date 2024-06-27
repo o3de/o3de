@@ -8,7 +8,7 @@
 
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/DeviceBufferView.h>
 #include <Atom/RHI/Factory.h>
 
 namespace AZ::RHI

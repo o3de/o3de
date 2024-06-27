@@ -11,7 +11,6 @@
 #include <Atom/RPI.Public/GpuQuery/Query.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
-#include <Atom/RHI/RayTracingBufferPools.h>
 
 namespace AZ
 {
@@ -89,6 +88,9 @@ namespace AZ
 
             // Readback results from the PipelineStatistics queries
             AZ::RPI::PipelineStatisticsResult m_statisticsResult;
+
+            // The device index the pass ran on during the last frame, necessary to read the queries.
+            int m_lastDeviceIndex = RHI::MultiDevice::DefaultDeviceIndex;
 
             // For each ScopeProducer an instance of the ScopeQuery is created, which consists
             // of a Timestamp and PipelineStatistic query.

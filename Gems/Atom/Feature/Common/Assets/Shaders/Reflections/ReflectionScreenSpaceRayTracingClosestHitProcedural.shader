@@ -31,8 +31,32 @@
         },
         {
             "Name": "NoMSAA",
-            "AddBuildArguments": {
+            "AddBuildArguments":
+            {
                 "azslc": ["--no-ms"]
+            },
+            "RemoveBuildArguments" :
+            {
+                "azslc": ["--strip-unused-srgs"]
+            }
+        },
+        {
+            "Name": "NoFloat16",
+            "AddBuildArguments":
+            {
+                "preprocessor": ["-DNO_FLOAT_16=1"]
+            },
+            "RemoveBuildArguments":
+            {
+                "azslc": ["--strip-unused-srgs"]
+            }
+        },
+        {
+            "Name": "NoFloat16NoMSAA",
+            "AddBuildArguments":
+            {
+                "azslc": ["--no-ms"],
+                "preprocessor": ["-DNO_FLOAT_16=1"]
             },
             "RemoveBuildArguments" :
             {

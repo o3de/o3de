@@ -13,6 +13,7 @@
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshFeatureProcessorInterface.h>
 
 #include <Atom/RHI/FrameGraphInterface.h>
+#include <Atom/RHI/FrameGraphExecuteContext.h>
 
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
@@ -66,11 +67,11 @@ namespace AZ
             Data::Instance<RPI::Shader> GetSkinningShader() const;
             RPI::ShaderOptionGroup CreateSkinningShaderOptionGroup(const SkinnedMeshShaderOptions shaderOptions, SkinnedMeshShaderOptionNotificationBus::Handler& shaderReinitializedHandler);
             void OnSkinningShaderReinitialized(const Data::Instance<RPI::Shader> skinningShader);
-            void SubmitSkinningDispatchItems(RHI::CommandList* commandList, uint32_t startIndex, uint32_t endIndex);
+            void SubmitSkinningDispatchItems(const RHI::FrameGraphExecuteContext& context, uint32_t startIndex, uint32_t endIndex);
             void SetupSkinningScope(RHI::FrameGraphInterface frameGraph);
 
             Data::Instance<RPI::Shader> GetMorphTargetShader() const;
-            void SubmitMorphTargetDispatchItems(RHI::CommandList* commandList, uint32_t startIndex, uint32_t endIndex);
+            void SubmitMorphTargetDispatchItems(const RHI::FrameGraphExecuteContext& context, uint32_t startIndex, uint32_t endIndex);
             void SetupMorphTargetScope(RHI::FrameGraphInterface frameGraph);
 
         private:

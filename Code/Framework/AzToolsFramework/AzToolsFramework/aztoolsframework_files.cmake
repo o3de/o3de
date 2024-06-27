@@ -328,6 +328,9 @@ set(FILES
     SourceControl/QtSourceControlNotificationHandler.cpp
     SourceControl/QtSourceControlNotificationHandler.h
     SourceControl/SourceControlAPI.h
+    SourceControl/PerforceSettings.cpp
+    SourceControl/PerforceSettings.h
+    SourceControl/PerforceSettings.ui
     SQLite/SQLiteConnection.cpp
     SQLite/SQLiteConnection.h
     SQLite/SQLiteQuery.cpp

@@ -9,9 +9,12 @@
 
 #include <Atom/RHI.Reflect/AliasedHeapEnums.h>
 #include <Atom/RHI.Reflect/TransientAttachmentStatistics.h>
-#include <Atom/RHI/Scope.h>
-#include <Atom/RHI/Image.h>
 #include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/Image.h>
+#include <Atom/RHI/ResourcePool.h>
+#include <Atom/RHI/ObjectCache.h>
+#include <Atom/RHI/Scope.h>
+#include <Atom/RHI/DeviceTransientAttachmentPool.h>
 
 #include <AzCore/std/optional.h>
 
@@ -24,35 +27,6 @@ namespace AZ::RHI
     struct TransientImageDescriptor;
     struct TransientBufferDescriptor;
 
-    //! Describes the properties of a TransientAttachmentPool.
-    struct TransientAttachmentPoolDescriptor
-    {
-        //! Defines the maximum amount of memory the pool is allowed to consume for transient buffers.
-        //! If the budget is zero, the budget is not enforced by the RHI and reservations can grow unbounded.
-        size_t m_bufferBudgetInBytes = 0;
-        //! Defines the maximum amount of memory the pool is allowed to consume for transient images.
-        //! If the budget is zero, the budget is not enforced by the RHI and reservations can grow unbounded.
-        size_t m_imageBudgetInBytes = 0;
-        //! Defines the maximum amount of memory the pool is allowed to consume for transient rendertargets.
-        //! If the budget is zero, the budget is not enforced by the RHI and reservations can grow unbounded.
-        size_t m_renderTargetBudgetInBytes = 0;
-
-        //! Allocation parameters when using heaps for allocating transient attachments.
-        HeapAllocationParameters m_heapParameters;
-    };
-
-    //! Flags to be used when compiling transient attachment resources.
-    enum class TransientAttachmentPoolCompileFlags
-    {
-        None = 0,
-        //! Gathers memory statistics for this heap during its next Begin / End cycle.
-        GatherStatistics = AZ_BIT(1),
-        //! Doesn't allocate any resources. Used when doing a pass to calculate how much memory will be used.
-        DontAllocateResources = AZ_BIT(2)
-    };
-
-    AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::TransientAttachmentPoolCompileFlags)
-
     //! The transient attachment pool interface is used by the frame scheduler to compile the
     //! working set of transient attachments for the frame. Each scope is iterated topologically
     //! and transient resources are allocated and de-allocated. This is all done from within the
@@ -61,19 +35,18 @@ namespace AZ::RHI
     //! be re-used within a subsequent scope. The final result of this process is a set of
     //! image / buffer attachments that are backed by guaranteed memory valid *only* for the scope in
     //! which they attached.
-    class TransientAttachmentPool
-        : public DeviceObject
+    class TransientAttachmentPool : public MultiDeviceObject
     {
     public:
-        AZ_RTTI(TransientAttachmentPool, "{D4A544E9-AE4A-4BD7-9E03-646DA8D86388}");
-
+        AZ_CLASS_ALLOCATOR(TransientAttachmentPool, AZ::SystemAllocator, 0);
+        AZ_RTTI(TransientAttachmentPool, "{7CCD1108-B233-4D37-8A80-65CBB1988B22}");
+        AZ_RHI_MULTI_DEVICE_OBJECT_GETTER(TransientAttachmentPool);
+        TransientAttachmentPool() = default;
         virtual ~TransientAttachmentPool() = default;
 
-        //! Returns true if a Transient Attachment Pool is needed according to the supplied descriptor.
-        static bool NeedsTransientAttachmentPool(const TransientAttachmentPoolDescriptor& descriptor);
-
         //! Called to initialize the pool.
-        ResultCode Init(Device& device, const TransientAttachmentPoolDescriptor& descriptor);
+        ResultCode Init(
+            MultiDevice::DeviceMask deviceMask, const AZStd::unordered_map<int, TransientAttachmentPoolDescriptor>& descriptors);
 
         //! Called to shutdown the pool.
         void Shutdown();
@@ -81,28 +54,30 @@ namespace AZ::RHI
         //! This is called at the beginning of the compile phase for the current frame,
         //! before any allocations occur. The user should clear the backing allocator to
         //! a fresh state.
-        void Begin(const TransientAttachmentPoolCompileFlags flags = TransientAttachmentPoolCompileFlags::None, const TransientAttachmentStatistics::MemoryUsage* memoryHint = nullptr);
+        void Begin(
+            const TransientAttachmentPoolCompileFlags flags = TransientAttachmentPoolCompileFlags::None,
+            const TransientAttachmentStatistics::MemoryUsage* memoryHint = nullptr);
 
         //! Called when a new scope is being allocated. Scopes are allocated in submission order.
         void BeginScope(Scope& scopeBase);
 
         //! Called when an image is being activated for the first time. This class should acquire
         //! an image from the pool, configured for the provided descriptor. This may involve aliasing
-        //! from a heap, or simple object pooling.
-        virtual Image* ActivateImage(const TransientImageDescriptor& descriptor) = 0;
+        //! from a heap, or simple object pooling. Images are held in an internal cache.
+        virtual Image* ActivateImage(const TransientImageDescriptor& descriptor);
 
         //! Called when an buffer is being activated for the first time. This class should acquire
         //! an buffer from the pool, configured for the provided descriptor. This may involve aliasing
-        //! from a heap, or simple object pooling.
-        virtual Buffer* ActivateBuffer(const TransientBufferDescriptor& descriptor) = 0;
+        //! from a heap, or simple object pooling. Buffers are held in an internal cache.
+        virtual Buffer* ActivateBuffer(const TransientBufferDescriptor& descriptor);
 
         //! Called when a buffer is being de-allocated from the pool. Called during the last scope the attachment
-        //! is used, after all allocations for that scope have been processed.
-        virtual void DeactivateBuffer(const AttachmentId& attachmentId) = 0;
+        //! is used, after all allocations for that scope have been processed. It will also be removed from the cache.
+        virtual void DeactivateBuffer(const AttachmentId& attachmentId);
 
         //! Called when a image is being de-allocated from the pool. Called during the last scope the attachment
-        //! is used, after all allocations for that scope have been processed.
-        virtual void DeactivateImage(const AttachmentId& attachmentId) = 0;
+        //! is used, after all allocations for that scope have been processed. It will also be removed from the cache.
+        virtual void DeactivateImage(const AttachmentId& attachmentId);
 
         //! Called when all allocations for the current scope have completed.
         void EndScope();
@@ -111,39 +86,26 @@ namespace AZ::RHI
         void End();
 
         //! Get statistics for the pool (built during End).
-        const TransientAttachmentStatistics& GetStatistics() const;
+        AZStd::unordered_map<int, TransientAttachmentStatistics> GetStatistics() const;
 
         //! Get pool descriptor
-        const TransientAttachmentPoolDescriptor& GetDescriptor() const;
+        const AZStd::unordered_map<int, TransientAttachmentPoolDescriptor>& GetDescriptor() const;
 
         //! Get the compile flags being used during the allocation of resources.
         TransientAttachmentPoolCompileFlags GetCompileFlags() const;
 
-        static bool ValidateInitParameters(const TransientAttachmentPoolDescriptor& descriptor);
-
-    protected:
-        // Adds the stats of a list of heaps into the Pool's TransientAttachmentStatistics.
-        void CollectHeapStats(AliasedResourceTypeFlags typeMask, AZStd::span<const TransientAttachmentStatistics::Heap> heapStats);
-
-        Scope* m_currentScope = nullptr;
-        RHI::TransientAttachmentStatistics m_statistics;
-
     private:
-        //////////////////////////////////////////////////////////////////////////
-        // Platform API
+        //! Remove the entry related to the provided attachmentId from the cache as it is probably stale now
+        void RemoveFromCache(RHI::AttachmentId attachmentId);
 
-        /// Called when the pool is being initialized.
-        virtual ResultCode InitInternal(Device& device, const TransientAttachmentPoolDescriptor& descriptor) = 0;
-
-        virtual void BeginInternal(const TransientAttachmentPoolCompileFlags flags, const TransientAttachmentStatistics::MemoryUsage* memoryHint) = 0;
-        virtual void EndInternal() = 0;
-
-        /// Called when the pool is shutting down.
-        virtual void ShutdownInternal() = 0;
-
-        //////////////////////////////////////////////////////////////////////////
-
-        TransientAttachmentPoolDescriptor m_descriptor;
+        AZStd::unordered_map<int, TransientAttachmentPoolDescriptor> m_descriptors;
         TransientAttachmentPoolCompileFlags m_compileFlags = TransientAttachmentPoolCompileFlags::None;
+
+        //! Image/Buffers added as attachments to scopes are tracked in an internal cache
+        ObjectCache<Resource> m_cache;
+
+        //! This map is used to reverse look up resource hash so we can clear them out of m_cache
+        //! once they have been replaced with a new resource at a different place in the heap.
+        AZStd::unordered_map<AttachmentId, HashValue64> m_reverseLookupHash;
     };
-}
+} // namespace AZ::RHI

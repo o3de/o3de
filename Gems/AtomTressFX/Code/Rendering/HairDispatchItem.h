@@ -65,7 +65,7 @@ namespace AZ
                 RHI::DispatchItem* GetDispatchItem() { return &m_dispatchItem;  }
 
             private:
-                RHI::DispatchItem m_dispatchItem;
+                RHI::DispatchItem m_dispatchItem{RHI::MultiDevice::AllDevices};
                 RPI::Shader* m_shader;
             };
 

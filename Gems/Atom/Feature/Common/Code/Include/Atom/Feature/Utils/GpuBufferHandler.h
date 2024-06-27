@@ -9,8 +9,7 @@
 #pragma once
 
 #include <AzCore/std/string/string.h>
-#include <Atom/RHI/Buffer.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/DeviceBufferView.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
@@ -41,6 +40,7 @@ namespace AZ
             bool UpdateBuffer(const T* data, uint32_t elementCount);
             template <typename T>
             bool UpdateBuffer(const AZStd::vector<T>& data);
+            bool UpdateBuffer(const AZStd::unordered_map<int, const void*>& data, uint32_t elementCount);
 
             void UpdateSrg(RPI::ShaderResourceGroup* srg) const;
 
@@ -60,7 +60,6 @@ namespace AZ
             uint32_t m_elementCount = 0;
             uint32_t m_elementSize = 0;
         };
-
         template <typename T>
         bool GpuBufferHandler::UpdateBuffer(const T* data, uint32_t elementCount)
         {

@@ -53,7 +53,6 @@ namespace AzToolsFramework
 
         class AssetBrowserTableView
             : public QWidget
-            , public AssetBrowserComponentNotificationBus::Handler
         {
             Q_OBJECT
         public:
@@ -92,10 +91,6 @@ namespace AzToolsFramework
             QAbstractItemView::SelectionMode selectionMode() const;
 
             void SelectEntry(QString assetName);
-            //////////////////////////////////////////////////////////////////////////
-            // AssetBrowserComponentNotificationBus
-            //////////////////////////////////////////////////////////////////////////
-            void OnAssetBrowserComponentReady() override;
 
             void SetSortMode(const AssetBrowserEntry::AssetEntrySortMode mode);
             AssetBrowserEntry::AssetEntrySortMode GetSortMode() const;

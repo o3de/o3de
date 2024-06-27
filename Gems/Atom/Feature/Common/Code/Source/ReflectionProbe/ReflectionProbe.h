@@ -120,7 +120,7 @@ namespace AZ
 
             AZ_DISABLE_COPY_MOVE(ReflectionProbe);
 
-            const RHI::DrawPacket* BuildDrawPacket(
+            RHI::ConstPtr<RHI::DrawPacket> BuildDrawPacket(
                 const Data::Instance<RPI::ShaderResourceGroup>& srg,
                 const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
                 const RHI::DrawListTag& drawListTag,

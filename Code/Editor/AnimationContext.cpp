@@ -17,8 +17,6 @@
 // Editor
 #include "TrackView/TrackViewDialog.h"
 #include "ViewManager.h"
-#include "Include/IObjectManager.h"
-#include "Objects/EntityObject.h"
 
 #include <AzCore/Time/ITime.h>
 
@@ -48,27 +46,6 @@ protected:
         break;
         }
     }
-
-    void OnSetCamera(const SCameraParams& Params) override
-    {
-        // Only switch camera when in Play mode.
-        GUID camObjId = GUID_NULL;
-        if (Params.cameraEntityId.IsValid())
-        {
-            // Find owner editor entity.
-            CEntityObject* pEditorEntity = CEntityObject::FindFromEntityId(Params.cameraEntityId);
-            if (pEditorEntity)
-            {
-                camObjId = pEditorEntity->GetId();
-            }
-        }
-
-        // Switch camera in active rendering view.
-        if (GetIEditor()->GetViewManager())
-        {
-            GetIEditor()->GetViewManager()->SetCameraObjectId(camObjId);
-        }
-    };
 
     bool IsSequenceCamUsed() const override
     {
@@ -484,22 +461,6 @@ void CAnimationContext::Update()
     {
         ForceAnimation();
         m_bForceUpdateInNextFrame = false;
-    }
-
-    // If looking through camera object and recording animation, do not allow camera shake
-    if ((GetIEditor()->GetViewManager()->GetCameraObjectId() != GUID_NULL) && GetIEditor()->GetAnimation()->IsRecording())
-    {
-        if (GetIEditor()->GetMovieSystem())
-        {
-            GetIEditor()->GetMovieSystem()->EnableCameraShake(false);
-        }
-    }
-    else
-    {
-        if (GetIEditor()->GetMovieSystem())
-        {
-            GetIEditor()->GetMovieSystem()->EnableCameraShake(true);
-        }
     }
 
     if (m_paused > 0 || !(m_playing || m_bAutoRecording))

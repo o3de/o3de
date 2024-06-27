@@ -28,7 +28,7 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::FrameGraphCompiler
-            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device) override { return RHI::ResultCode::Success;}
+            RHI::ResultCode InitInternal() override { return RHI::ResultCode::Success;}
             void ShutdownInternal() override {}
             RHI::MessageOutcome CompileInternal([[maybe_unused]] const RHI::FrameGraphCompileRequest& request) override { return AZ::Success();}
             //////////////////////////////////////////////////////////////////////////

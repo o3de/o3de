@@ -324,24 +324,23 @@ float3 RotateVectorByQuaternion(float3 v, float4 q)
 
 // This converts depth in clip space of perspective projection to linear depth in [0, 1].
 // coefficients:
-//   x : n / f - n
-//   y : n - f
+//   x : n * f
+//   y : f - n
 //   z : f
 //   where n : nearDepth and f : farDepth.
 // By the definition of the perspective projection,
 //   (z_, w_)^T = P (z, w)^T
 // where P = /  f/(n-f)    nf/(n-f)   \
 //           \    -1          0       /.
-// Then inverse(P) (d, 1)^T =
-//       /         -1          \
-//       \   ((n-f)d + f) / nf /.
+// Then the inverse: z = n*f / ((f-n) * z_ - f). See DepthToLinearDepth.azsl. abs() here to keep positive value.
+// Here is a link showing the relationship between clip depth and linear depth: https://www.desmos.com/calculator/tx9mz0qwzb
 float PerspectiveDepthToLinear(float clipDepth, float3 coefficients)
 {
-    return coefficients.x * (coefficients.z / (coefficients.y * clipDepth + coefficients.z) - 1.);
+    return abs(coefficients.x / (coefficients.y * clipDepth - coefficients.z));
 }
 half PerspectiveDepthToLinear(half clipDepth, half3 coefficients)
 {
-    return coefficients.x * (coefficients.z / (coefficients.y * clipDepth + coefficients.z) - 1.);
+    return abs(coefficients.x / (coefficients.y * clipDepth - coefficients.z));
 }
 
 // ---------- Random number generators -----------

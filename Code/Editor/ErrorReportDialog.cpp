@@ -358,10 +358,6 @@ void CErrorReportDialog::CopyToClipboard()
         if (pRecord)
         {
             str += pRecord->GetErrorText();
-            if (pRecord->pObject)
-            {
-                str += QString::fromLatin1(" [Object: %1]").arg(pRecord->pObject->GetName());
-            }
             str += QString::fromLatin1("\r\n");
         }
     }
@@ -494,19 +490,8 @@ void CErrorReportDialog::keyPressEvent(QKeyEvent* event)
 //////////////////////////////////////////////////////////////////////////
 void CErrorReportDialog::OnReportItemDblClick(const QModelIndex& index)
 {
-    bool bDone = false;
     const CErrorRecord* pError = index.data(Qt::UserRole).value<const CErrorRecord*>();
-    if (pError && pError->pObject != nullptr)
-    {
-        CViewport* vp = GetIEditor()->GetActiveView();
-        if (vp)
-        {
-            vp->CenterOnSelection();
-        }
-        bDone = true;
-    }
-
-    if (!bDone && pError && GetIEditor()->GetActiveView())
+    if (pError && GetIEditor()->GetActiveView())
     {
         float x, y, z;
         if (GetPositionFromString(pError->error, &x, &y, &z))
@@ -536,13 +521,7 @@ void CErrorReportDialog::OnSortIndicatorChanged(int logicalIndex, Qt::SortOrder 
 void CErrorReportDialog::OnReportHyperlink(const QModelIndex& index)
 {
     const CErrorRecord* pError = index.data(Qt::UserRole).value<const CErrorRecord*>();
-    bool bDone = false;
-    if (pError && pError->pObject != nullptr)
-    {
-        bDone = true;
-    }
-
-    if (!bDone && pError && GetIEditor()->GetActiveView())
+    if (pError && GetIEditor()->GetActiveView())
     {
         float x, y, z;
         if (GetPositionFromString(pError->error, &x, &y, &z))

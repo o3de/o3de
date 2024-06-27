@@ -23,7 +23,7 @@ namespace UnitTest
         AZ_CLASS_ALLOCATOR(FrameGraphCompiler, AZ::SystemAllocator);
 
     private:
-        AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&) override;
+        AZ::RHI::ResultCode InitInternal() override;
 
         void ShutdownInternal() override;
 

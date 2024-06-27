@@ -12,7 +12,8 @@
                     "Name": "BRDFTextureInput",
                     "ShaderInputName": "m_brdfMap",
                     "SlotType": "Input",
-                    "ScopeAttachmentUsage": "Shader"
+                    "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage":  "FragmentShader"
                 },
                 {
                     "Name": "InputOutput",
@@ -24,6 +25,7 @@
                     "ShaderInputName": "m_directionalLightShadowmap",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage":  "FragmentShader",
                     "ImageViewDesc": {
                         "IsArray": 1
                     }
@@ -33,6 +35,7 @@
                     "ShaderInputName": "m_directionalLightExponentialShadowmap",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage": "FragmentShader",
                     "ImageViewDesc": {
                         "IsArray": 1
                     }
@@ -42,6 +45,7 @@
                     "ShaderInputName": "m_projectedShadowmaps",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage":  "FragmentShader",
                     "ImageViewDesc": {
                         "IsArray": 1
                     }
@@ -51,6 +55,7 @@
                     "ShaderInputName": "m_projectedExponentialShadowmap",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage": "FragmentShader",
                     "ImageViewDesc": {
                         "IsArray": 1
                     }
@@ -59,19 +64,22 @@
                     "Name": "TileLightData",
                     "SlotType": "Input",
                     "ShaderInputName": "m_tileLightData",
-                    "ScopeAttachmentUsage": "Shader"
+                    "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage": "FragmentShader"
                 },
                 {
                     "Name": "LightListRemapped",
                     "SlotType": "Input",
                     "ShaderInputName": "m_lightListRemapped",
-                    "ScopeAttachmentUsage": "Shader"
+                    "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage": "FragmentShader"
                 },
                 {
                     "Name": "InputLinearDepth",
                     "SlotType": "Input",
                     "ShaderInputName": "m_linearDepthTexture",
-                    "ScopeAttachmentUsage": "Shader"
+                    "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage": "FragmentShader"
                 },
                 // Input/Outputs
                 {

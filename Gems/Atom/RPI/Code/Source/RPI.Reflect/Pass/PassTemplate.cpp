@@ -30,6 +30,7 @@ namespace AZ
                     ->Field("FallbackConnections", &PassTemplate::m_fallbackConnections)
                     ->Field("PassRequests", &PassTemplate::m_passRequests)
                     ->Field("PassData", &PassTemplate::m_passData)
+                    ->Field("DefaultShaderAttachmentStage", &PassTemplate::m_defaultShaderAttachmentStage)
                     ;
             }
         }

@@ -11,7 +11,7 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/FrameGraphInterface.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
@@ -203,7 +203,7 @@ namespace AZ
                         continue;
                     }
 
-                    const RHI::DispatchItem* dispatchItem = renderObject->GetDispatchItem(m_shader.get());
+                    const auto* dispatchItem = renderObject->GetDispatchItem(m_shader.get());
                     if (!dispatchItem)
                     {
                         continue;
@@ -230,15 +230,14 @@ namespace AZ
                 // The following will bind all registered Srgs set in m_shaderResourceGroupsToBind
                 // and sends them to the command list ahead of the dispatch.
                 // This includes the PerView, PerScene and PerPass srgs (what about per draw?)
-                SetSrgsForDispatch(commandList);
+                SetSrgsForDispatch(context);
 
-                AZStd::unordered_set<const RHI::DispatchItem*>::iterator it = m_dispatchItems.begin();
+                auto it = m_dispatchItems.begin();
                 AZStd::advance(it, context.GetSubmitRange().m_startIndex);
 
                 for (uint32_t index = context.GetSubmitRange().m_startIndex; index < context.GetSubmitRange().m_endIndex; ++index, ++it)
                 {
-                    const RHI::DispatchItem* dispatchItem = *it;
-                    commandList->Submit(*dispatchItem, index);
+                    commandList->Submit((*it)->GetDeviceDispatchItem(context.GetDeviceIndex()), index);
                 }
 
                 // Clear the dispatch items. They will need to be re-populated next frame

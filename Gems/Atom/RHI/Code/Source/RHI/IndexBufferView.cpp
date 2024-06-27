@@ -6,36 +6,27 @@
  *
  */
 
+#include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/IndexBufferView.h>
 #include <AzCore/Utils/TypeHash.h>
 
 namespace AZ::RHI
 {
-    uint32_t GetIndexFormatSize(IndexFormat indexFormat)
-    {
-        switch (indexFormat)
-        {
-        case IndexFormat::Uint16:
-            return 2;
-        case IndexFormat::Uint32:
-            return 4;
-        default:
-            AZ_Error("RHI", false, "Unknown index format %d", (uint32_t)indexFormat);
-            return 4;
-        }
-    }
-
     IndexBufferView::IndexBufferView(
-        const Buffer& buffer,
-        uint32_t byteOffset,
-        uint32_t byteCount,
-        IndexFormat format)
-        : m_buffer{&buffer}
-        , m_byteOffset{byteOffset}
-        , m_byteCount{byteCount}
-        , m_format{format}
+        const Buffer& buffer, uint32_t byteOffset, uint32_t byteCount, IndexFormat format)
+        : m_Buffer{ &buffer }
+        , m_byteOffset{ byteOffset }
+        , m_byteCount{ byteCount }
+        , m_format{ format }
     {
         m_hash = TypeHash64(*this);
+    }
+
+    DeviceIndexBufferView IndexBufferView::GetDeviceIndexBufferView(int deviceIndex) const
+    {
+        AZ_Assert(m_Buffer, "No Buffer available\n");
+
+        return DeviceIndexBufferView(*m_Buffer->GetDeviceBuffer(deviceIndex), m_byteOffset, m_byteCount, m_format);
     }
 
     AZ::HashValue64 IndexBufferView::GetHash() const
@@ -45,7 +36,7 @@ namespace AZ::RHI
 
     const Buffer* IndexBufferView::GetBuffer() const
     {
-        return m_buffer;
+        return m_Buffer;
     }
 
     uint32_t IndexBufferView::GetByteOffset() const
@@ -62,4 +53,4 @@ namespace AZ::RHI
     {
         return m_format;
     }
-}
+} // namespace AZ::RHI

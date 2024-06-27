@@ -14,10 +14,10 @@
 void ClosestHitProcedural(inout PayloadData payload, ProceduralGeometryIntersectionAttributes attrib)
 {
     VertexData vertexData;
-    vertexData.m_position = attrib.m_position;
-    vertexData.m_normal = float3(attrib.m_normal);
-    vertexData.m_uv = float2(attrib.m_uv);
-    vertexData.m_tangent = float4(attrib.m_tangent);
+    vertexData.m_position = attrib.GetPosition();
+    vertexData.m_normal = attrib.GetNormal();
+    vertexData.m_uv = attrib.GetUv();
+    vertexData.m_tangent = attrib.GetTangent();
     vertexData.m_bitangent = cross(vertexData.m_normal, vertexData.m_tangent.xyz) * vertexData.m_tangent.w;
 
     ScreenSpaceClosestHitImpl(payload, vertexData, transpose(ObjectToWorld4x3()));

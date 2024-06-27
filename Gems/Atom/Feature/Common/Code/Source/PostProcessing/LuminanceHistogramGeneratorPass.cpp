@@ -11,7 +11,7 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/FrameGraphInterface.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
@@ -48,12 +48,12 @@ namespace AZ
         {
             RHI::CommandList* commandList = context.GetCommandList();
 
-            SetSrgsForDispatch(commandList);
+            SetSrgsForDispatch(context);
 
             const RHI::Size resolution = GetColorBufferResolution();
             SetTargetThreadCounts(resolution.m_width, resolution.m_height, 1);
 
-            commandList->Submit(m_dispatchItem);
+            commandList->Submit(m_dispatchItem.GetDeviceDispatchItem(context.GetDeviceIndex()));
         }
 
         void LuminanceHistogramGeneratorPass::CreateHistogramBuffer()

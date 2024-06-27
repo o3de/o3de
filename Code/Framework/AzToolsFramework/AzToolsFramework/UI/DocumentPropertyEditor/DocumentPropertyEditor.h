@@ -306,6 +306,8 @@ namespace AzToolsFramework
 
         DPERowWidget* m_rootNode = nullptr;
 
+        bool m_isBeingCleared = false;
+
         // keep pools of frequently used widgets that can be recycled for efficiency without
         // incurring the cost of creating and destroying them
         AZStd::shared_ptr<AZ::InstancePool<DPERowWidget>> m_rowPool;

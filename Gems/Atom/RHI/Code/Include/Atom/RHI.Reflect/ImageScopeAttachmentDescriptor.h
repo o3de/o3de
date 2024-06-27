@@ -27,6 +27,9 @@ namespace AZ::RHI
             const ImageViewDescriptor& imageViewDescriptor = ImageViewDescriptor(),
             const AttachmentLoadStoreAction& imageScopeLoadStoreAction = AttachmentLoadStoreAction());
 
+        /// Returns the descriptor for the ImageView
+        const ImageViewDescriptor& GetViewDescriptor() const;
+
         /// The image view associated with the binding.
         ImageViewDescriptor m_imageViewDescriptor;
     };

@@ -92,7 +92,7 @@ namespace AZ
         void DynamicPrimitiveProcessor::ProcessDynamicPrimitives(const AuxGeomBufferData* bufferData, const RPI::FeatureProcessor::RenderPacket& fpPacket)
         {
             AZ_PROFILE_SCOPE(AzRender, "DynamicPrimitiveProcessor: ProcessDynamicPrimitives");
-            RHI::DrawPacketBuilder drawPacketBuilder;
+            RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
 
             const DynamicPrimitiveData& srcPrimitives = bufferData->m_primitiveData;
             // Update the buffers for the dynamic primitives and generate draw packets for them
@@ -172,7 +172,7 @@ namespace AZ
                         RHI::DrawItemSortKey sortKey = primitive.m_blendMode == BlendMode_Off ? 0 : view->GetSortKeyForPosition(primitive.m_center);
 
 
-                        const RHI::DrawPacket* drawPacket = BuildDrawPacketForDynamicPrimitive(
+                        auto drawPacket = BuildDrawPacketForDynamicPrimitive(
                             m_primitiveBuffers,
                             pipelineState,
                             srg,
@@ -185,7 +185,7 @@ namespace AZ
                         {
                             m_drawPackets.emplace_back(drawPacket);
                             m_processSrgs.push_back(srg);
-                            view->AddDrawPacket(drawPacket);
+                            view->AddDrawPacket(drawPacket.get());
                         }
                     }
                 }
@@ -385,7 +385,7 @@ namespace AZ
             }
         }
 
-        const RHI::DrawPacket* DynamicPrimitiveProcessor::BuildDrawPacketForDynamicPrimitive(
+        RHI::ConstPtr<RHI::DrawPacket> DynamicPrimitiveProcessor::BuildDrawPacketForDynamicPrimitive(
             DynamicBufferGroup& group,
             const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
             Data::Instance<RPI::ShaderResourceGroup> srg,

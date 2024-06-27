@@ -64,6 +64,9 @@ namespace AZ::RHI
             /// The scope id used for all the contexts in this group (one context for each command list).
             ScopeId m_scopeId;
 
+            /// The index of the device the group is running on.
+            int m_deviceIndex = MultiDevice::DefaultDeviceIndex;
+
             /// The submit count for the scope
             uint32_t m_submitCount = 0;
 
@@ -88,6 +91,9 @@ namespace AZ::RHI
             /// The command list shared by all scopes in the group. This can be null if the
             /// user wishes to fill in the command list at context creation time.
             CommandList* m_commandList = nullptr;
+
+            /// The index of the device the group is running on.
+            int m_deviceIndex = MultiDevice::DefaultDeviceIndex;
 
             struct ScopeEntry
             {

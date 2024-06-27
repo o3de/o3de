@@ -11,6 +11,7 @@
                     "Name": "Input",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage": "FragmentShader",
                     "LoadStoreAction": {
                         "LoadAction": "Load",
                         "StoreAction": "DontCare",

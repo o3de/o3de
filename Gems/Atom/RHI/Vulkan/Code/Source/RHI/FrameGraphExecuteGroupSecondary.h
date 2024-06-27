@@ -35,13 +35,14 @@ namespace AZ::Vulkan
         ~FrameGraphExecuteGroupSecondary() = default;
 
         void Init(Device& device,
-            const Scope& scope,
+            Scope& scope,
             uint32_t commandListCount,
             RHI::JobPolicy globalJobPolicy);
 
         //////////////////////////////////////////////////////////////////////////
         // FrameGraphExecuteGroup
         AZStd::span<const Scope* const> GetScopes() const override;
+        AZStd::span<Scope* const> GetScopes() override;
         AZStd::span<const RHI::Ptr<CommandList>> GetCommandLists() const override;
         //////////////////////////////////////////////////////////////////////////
 
@@ -61,7 +62,7 @@ namespace AZ::Vulkan
         void EndInternal() override;
         //////////////////////////////////////////////////////////////////////////
 
-        const Scope* m_scope = nullptr;
+        Scope* m_scope = nullptr;
         AZStd::vector<RHI::Ptr<CommandList>> m_secondaryCommands;
         // Render context that contains the framebuffer that this group will use.
         RenderPassContext m_renderPassContext;

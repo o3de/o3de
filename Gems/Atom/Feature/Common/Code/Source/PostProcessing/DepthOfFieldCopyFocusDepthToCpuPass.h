@@ -51,6 +51,8 @@ namespace AZ
             Data::Instance<RPI::Buffer> m_readbackBuffer;
             RHI::CopyBufferDescriptor m_copyDescriptor;
             bool m_needsInitialize = true;
+            RHI::Ptr<RHI::Fence> m_fence;
+            float m_lastFocusDepth = 0;
         };
     }   // namespace RPI
 }   // namespace AZ

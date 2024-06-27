@@ -185,6 +185,15 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
+    void InputDeviceMouse::SetCaptureCursor(bool captureCursor)
+    {
+        if (m_pimpl)
+        {
+            m_pimpl->SetCaptureCursor(captureCursor);
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceMouse::Implementation::Implementation(InputDeviceMouse& inputDevice)
         : m_inputDevice(inputDevice)
         , m_rawMovementSampleRate()
@@ -296,5 +305,11 @@ namespace AzFramework
         {
             m_rawMovementSampleRate = static_cast<AZStd::sys_time_t>(1000000 / sampleRateHertz);
         }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void InputDeviceMouse::Implementation::SetCaptureCursor(bool captureCursor)
+    {
+        m_captureCursor = captureCursor;
     }
 } // namespace AzFramework

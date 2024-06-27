@@ -289,7 +289,7 @@ namespace AZ::Render
         drawLinear.m_instanceCount = 1;
         drawLinear.m_instanceOffset = 0;
 
-        RHI::DrawPacketBuilder drawPacketBuilder;
+        RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
         drawPacketBuilder.Begin(nullptr);
         drawPacketBuilder.SetDrawArguments(drawLinear);
         drawPacketBuilder.AddShaderResourceGroup(srg->GetRHIShaderResourceGroup());

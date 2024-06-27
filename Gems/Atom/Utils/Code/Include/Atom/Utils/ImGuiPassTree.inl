@@ -284,6 +284,12 @@ namespace AZ::Render
                     ImGui::Text("Raster pass with %d draw items", asRasterPass->GetDrawItemCount());
                 }
 
+                AZ::RPI::RenderPass* asRenderPass = azrtti_cast<AZ::RPI::RenderPass*>(pass);
+                if (AZ::RHI::RHISystemInterface::Get()->GetDeviceCount() > 1 && asRenderPass && asRenderPass->IsEnabled())
+                {
+                    ImGui::Text("Pass runs on device %d", AZStd::max(asRenderPass->ScopeProducer::GetDeviceIndex(), 0));
+                }
+
                 if (ImGui::IsItemClicked())
                 {
                     m_selectedPassPath = pass->GetPathName();

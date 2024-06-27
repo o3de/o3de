@@ -51,10 +51,9 @@ namespace AZ
             bool m_isAlwaysDynamic = false;
             bool m_useForwardPassIblSpecular = false;
             bool m_isRayTracingEnabled = true;
-            bool m_isVisible = true;
             // the ModelAsset should support ray intersection if any one of the two flags are enabled.
-            bool m_editorRayIntersection = false;       // Set to true if the config is for EditorMeshComponent so the ModelAsset always support ray intersection
-            bool m_enableRayIntersection = false;       // Set to true if a mesh need ray intersection support at runtime.
+            bool m_editorRayIntersection = false;       // Set to true if the config is for EditorMeshComponent so the ModelAsset always support ray intersection 
+            bool m_enableRayIntersection = false;       // Set to true if a mesh need ray intersection support at runtime. 
             RPI::Cullable::LodType m_lodType = RPI::Cullable::LodType::Default;
             RPI::Cullable::LodOverride m_lodOverride = aznumeric_cast<RPI::Cullable::LodOverride>(0);
             float m_minimumScreenCoverage = 1.0f / 1080.0f;
@@ -192,6 +191,7 @@ namespace AZ
             Render::MeshFeatureProcessorInterface::MeshHandle m_meshHandle;
             TransformInterface* m_transformInterface = nullptr;
             AZ::EntityComponentIdPair m_entityComponentIdPair;
+            bool m_isVisible = true;
             MeshComponentConfig m_configuration;
             AZ::Vector3 m_cachedNonUniformScale = AZ::Vector3::CreateOne();
             //! Cached bus to use to notify RenderGeometry::Intersector the entity/component has changed.
@@ -201,7 +201,7 @@ namespace AZ
             {
                 [&](const Data::Instance<RPI::Model>& model) { HandleModelChange(model); }
             };
-
+            
             MeshHandleDescriptor::ObjectSrgCreatedEvent::Handler m_objectSrgCreatedHandler
             {
                 [&](const Data::Instance<RPI::ShaderResourceGroup>& objectSrg) { HandleObjectSrgCreate(objectSrg); }

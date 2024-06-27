@@ -25,6 +25,8 @@ namespace AZ
 
             void SetDevice(Device& device);
 
+            Device& GetDevice() const;
+
             ExecuteWorkRequest&& MakeWorkRequest();
 
             RHI::HardwareQueueClass GetHardwareQueueClass() const;

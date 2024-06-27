@@ -17,7 +17,6 @@
 // Editor
 #include "TrackViewSequence.h"
 #include "TrackViewNodeFactories.h"
-#include "TrackViewUndo.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -301,15 +300,6 @@ void CTrackViewTrack::SlideKeys(const float time0, const float timeOffset)
             m_pAnimTrack->SetKeyTime(i, keyTime + timeOffset);
         }
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CTrackViewTrack::OffsetKeyPosition(const AZ::Vector3& offset)
-{
-    // Use the CUndoComponentEntityTrackObject here and not the AZ Undo system because
-    // the Editor movement system uses CUndo as part of its move function (canceling last frame of undo whilst dragging).
-    CUndo::Record(new CUndoComponentEntityTrackObject(this));
-    m_pAnimTrack->OffsetKeyPosition(offset);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -722,7 +712,7 @@ void CTrackViewTrack::OnStartPlayInEditor()
                 else if (paramType == AnimParamType::Sequence)
                 {
                     m_pAnimTrack->GetKey(i, &sequenceKey);
-                    entityIdToRemap = sequenceKey.sequenceEntityId;    
+                    entityIdToRemap = sequenceKey.sequenceEntityId;
                     key = &sequenceKey;
                 }
 
@@ -744,7 +734,7 @@ void CTrackViewTrack::OnStartPlayInEditor()
                         sequenceKey.sequenceEntityId = remappedId;
                     }
                     m_pAnimTrack->SetKey(i, key);
-                }                
+                }
             }
         }
     }

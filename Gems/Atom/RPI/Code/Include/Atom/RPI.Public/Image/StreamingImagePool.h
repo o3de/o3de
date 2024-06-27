@@ -81,8 +81,8 @@ namespace AZ
             StreamingImagePool() = default;
 
             // Standard init path from asset data.
-            static Data::Instance<StreamingImagePool> CreateInternal(RHI::Device& device, StreamingImagePoolAsset& streamingImagePoolAsset);
-            RHI::ResultCode Init(RHI::Device& device, StreamingImagePoolAsset& poolAsset);
+            static Data::Instance<StreamingImagePool> CreateInternal(RHI::MultiDevice::DeviceMask deviceMask, StreamingImagePoolAsset& streamingImagePoolAsset);
+            RHI::ResultCode Init(RHI::MultiDevice::DeviceMask deviceMask, StreamingImagePoolAsset& poolAsset);
 
             // Updates the streaming controller (ticked by the system component).
             void Update();

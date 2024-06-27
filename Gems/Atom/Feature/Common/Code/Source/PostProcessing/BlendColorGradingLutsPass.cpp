@@ -124,7 +124,7 @@ namespace AZ
             // import this attachment if it wasn't imported
             if (!frameGraph.GetAttachmentDatabase().IsAttachmentValid(imageAttachmentId))
             {
-                [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(imageAttachmentId, m_blendedLut.m_lutImage);
+                [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(imageAttachmentId, m_blendedLut.m_lutImage.get());
                 AZ_Error("BlendColorGradingLutsPass", result == RHI::ResultCode::Success, "Failed to import BlendColorGradingLutImageAttachmentId with error %d", result);
             }
 
@@ -133,7 +133,7 @@ namespace AZ
             desc.m_imageViewDescriptor = m_blendedLut.m_lutImageViewDescriptor;
             desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::DontCare;
 
-            frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
+            frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite, RHI::ScopeAttachmentStage::ComputeShader);
         }
 
         void BlendColorGradingLutsPass::CompileResources(const RHI::FrameGraphCompileContext& context)
@@ -210,7 +210,7 @@ namespace AZ
         {
             if (m_needToUpdateLut && m_blendedLut.m_lutImage && m_currentShaderVariantIndex <= LookModificationSettings::MaxBlendLuts)
             {
-                m_dispatchItem.m_pipelineState = m_shaderVariant[m_currentShaderVariantIndex].m_pipelineState;
+                m_dispatchItem.SetPipelineState(m_shaderVariant[m_currentShaderVariantIndex].m_pipelineState);
 
                 ComputePass::BuildCommandListInternal(context);
 

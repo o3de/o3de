@@ -255,6 +255,8 @@ namespace AZ
             m_features.m_rayTracing = false;
 #endif
 
+            m_features.m_float16 = (options.MinPrecisionSupport & D3D12_SHADER_MIN_PRECISION_SUPPORT_16_BIT) != 0;
+
             m_features.m_unboundedArrays = true;
 
 #ifdef O3DE_DX12_VRS_SUPPORT

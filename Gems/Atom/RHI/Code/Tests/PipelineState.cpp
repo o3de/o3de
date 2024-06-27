@@ -28,12 +28,12 @@ namespace UnitTest
     {
     }
 
-    RHI::ResultCode PipelineLibrary::MergeIntoInternal([[maybe_unused]] AZStd::span<const RHI::PipelineLibrary* const> libraries)
+    RHI::ResultCode PipelineLibrary::MergeIntoInternal([[maybe_unused]] AZStd::span<const RHI::DevicePipelineLibrary* const> libraries)
     {
         return RHI::ResultCode::Success;
     }
 
-    RHI::ResultCode PipelineState::InitInternal(RHI::Device&, [[maybe_unused]] const RHI::PipelineStateDescriptorForDraw& descriptor, [[maybe_unused]] RHI::PipelineLibrary* pipelineLibrary)
+    RHI::ResultCode PipelineState::InitInternal(RHI::Device&, [[maybe_unused]] const RHI::PipelineStateDescriptorForDraw& descriptor, [[maybe_unused]] RHI::DevicePipelineLibrary* pipelineLibrary)
     {
         // Performs 'work' to simulate compiling a pso.
 
@@ -42,7 +42,7 @@ namespace UnitTest
         return value > 0 ? RHI::ResultCode::Success : RHI::ResultCode::Fail;
     }
 
-    RHI::ResultCode PipelineState::InitInternal(RHI::Device&, [[maybe_unused]] const RHI::PipelineStateDescriptorForDispatch& descriptor, [[maybe_unused]] RHI::PipelineLibrary* pipelineLibrary)
+    RHI::ResultCode PipelineState::InitInternal(RHI::Device&, [[maybe_unused]] const RHI::PipelineStateDescriptorForDispatch& descriptor, [[maybe_unused]] RHI::DevicePipelineLibrary* pipelineLibrary)
     {
         // Performs 'work' to simulate compiling a pso.
 
@@ -51,7 +51,7 @@ namespace UnitTest
         return value > 0 ? RHI::ResultCode::Success : RHI::ResultCode::Fail;
     }
 
-    RHI::ResultCode PipelineState::InitInternal(RHI::Device&, [[maybe_unused]] const RHI::PipelineStateDescriptorForRayTracing& descriptor, [[maybe_unused]] RHI::PipelineLibrary* pipelineLibrary)
+    RHI::ResultCode PipelineState::InitInternal(RHI::Device&, [[maybe_unused]] const RHI::PipelineStateDescriptorForRayTracing& descriptor, [[maybe_unused]] RHI::DevicePipelineLibrary* pipelineLibrary)
     {
         // Performs 'work' to simulate compiling a pso.
 

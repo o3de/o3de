@@ -131,7 +131,8 @@ namespace AZ
                 RHI::SwapChainDimensions dimensions = defaultSwapChain->GetDescriptor().m_dimensions;
                 dimensions.m_imageWidth = renderSize.m_width;
                 dimensions.m_imageHeight = renderSize.m_height;
-                dimensions.m_imageFormat = GetSwapChainFormat(defaultSwapChain->GetDevice());
+                // Note: there is only one bit set in the mask, so we simply get the device index with log2
+                dimensions.m_imageFormat = GetSwapChainFormat(*RHI::RHISystemInterface::Get()->GetDevice(static_cast<int>(log2(static_cast<float>(defaultSwapChain->GetDeviceMask())))));
 
                 FillWindowState(dimensions.m_imageWidth, dimensions.m_imageHeight);
 
@@ -206,7 +207,7 @@ namespace AZ
 
         void WindowContext::CreateSwapChains(RHI::Device& device)
         {
-            RHI::Ptr<RHI::SwapChain> swapChain = RHI::Factory::Get().CreateSwapChain();
+            RHI::Ptr<RHI::SwapChain> swapChain = aznew RHI::SwapChain;
 
             RHI::SwapChainDescriptor descriptor;
 
@@ -228,7 +229,7 @@ namespace AZ
 
             AZStd::string attachmentName = AZStd::string::format("WindowContextAttachment_%p", m_windowHandle);
             descriptor.m_attachmentId = RHI::AttachmentId{ attachmentName.c_str() };
-            swapChain->Init(device, descriptor);
+            swapChain->Init(device.GetDeviceIndex(), descriptor);
             descriptor = swapChain->GetDescriptor(); // Get descriptor from swapchain because it can set different values during initialization
 
             RHI::Viewport viewport;
@@ -260,7 +261,7 @@ namespace AZ
                 AZ_Assert(numXrViews <= 2, "Atom only supports two XR views");
                 for (AZ::u32 i = 0; i < numXrViews; i++)
                 {
-                    RHI::Ptr<RHI::SwapChain> xrSwapChain = RHI::Factory::Get().CreateSwapChain();
+                    RHI::Ptr<RHI::SwapChain> xrSwapChain = aznew RHI::SwapChain;
                     RHI::SwapChainDescriptor xrDescriptor;
                     xrDescriptor.m_dimensions.m_imageWidth = xrSystem->GetSwapChainWidth(i);
                     xrDescriptor.m_dimensions.m_imageHeight = xrSystem->GetSwapChainHeight(i);
@@ -272,7 +273,7 @@ namespace AZ
 
                     const AZStd::string xrAttachmentName = AZStd::string::format("XRSwapChain_View_%i", i);
                     xrDescriptor.m_attachmentId = RHI::AttachmentId{ xrAttachmentName.c_str() };
-                    xrSwapChain->Init(device, xrDescriptor);
+                    xrSwapChain->Init(device.GetDeviceIndex(), xrDescriptor);
                     xrDescriptor = xrSwapChain->GetDescriptor(); // Get descriptor from swapchain because it can set different values during initialization
 
                     RHI::Viewport xrViewport;

@@ -33,7 +33,6 @@ class QMenu;
 #define GET_PLUGIN_ID_FROM_MENU_ID(ID) (((ID) & 0x000000FF))
 #define GET_UI_ELEMENT_ID_FROM_MENU_ID(ID) ((((ID) & 0x0000FF00) >> 8))
 
-class CObjectManager;
 class CUndoManager;
 class CGameEngine;
 class CErrorsDlg;
@@ -127,9 +126,6 @@ public:
     void EnableUpdate(bool enable) override { m_bUpdates = enable; };
     CGameEngine* GetGameEngine() override { return m_pGameEngine; };
     CDisplaySettings* GetDisplaySettings() override { return m_pDisplaySettings; };
-    CBaseObject* NewObject(const char* typeName, const char* fileName = "", const char* name = "", float x = 0.0f, float y = 0.0f, float z = 0.0f, bool modifyDoc = true) override;
-    void DeleteObject(CBaseObject* obj) override;
-    IObjectManager* GetObjectManager() override;
     // This will return a null pointer if CrySystem is not loaded before
     // Global Sandbox Settings are loaded from the registry before CrySystem
     // At that stage GetSettingsManager will return null and xml node in
@@ -242,19 +238,11 @@ public:
     void RegisterDocListener(IDocListener* listener) override;
     //! Unregister document notifications listener.
     void UnregisterDocListener(IDocListener* listener) override;
-    //! Retrieve interface to the source control.
-    ISourceControl* GetSourceControl() override;
-    //! Retrieve true if source control is provided and enabled in settings
-    bool IsSourceControlAvailable() override;
-    //! Only returns true if source control is both available AND currently connected and functioning
-    bool IsSourceControlConnected() override;
+
     void ReduceMemory() override;
     ESystemConfigPlatform GetEditorConfigPlatform() const override;
     void ReloadTemplates() override;
     void ShowStatusText(bool bEnable) override;
-
-    void OnObjectContextMenuOpened(QMenu* pMenu, const CBaseObject* pObject);
-    void RegisterObjectContextMenuExtension(TContextMenuExtensionFunc func) override;
 
     SSystemGlobalEnvironment* GetEnv() override;
     IImageUtil* GetImageUtil() override;  // Vladimir@conffx
@@ -283,7 +271,6 @@ protected:
     IFileUtil* m_pFileUtil;
     CClassFactory* m_pClassFactory;
     CEditorCommandManager* m_pCommandManager;
-    CObjectManager* m_pObjectManager;
     CPluginManager* m_pPluginManager;
     CViewManager*   m_pViewManager;
     CUndoManager* m_pUndoManager;
@@ -309,8 +296,6 @@ protected:
     CErrorReport* m_pErrorReport;
     //! Contains the error reports for the last loaded level.
     CErrorReport* m_pLasLoadedLevelErrorReport;
-    //! Source control interface.
-    ISourceControl* m_pSourceControl;
 
     CSelectionTreeManager* m_pSelectionTreeManager;
 
@@ -329,8 +314,6 @@ protected:
     bool m_bInitialized;
     bool m_bExiting;
     static void CmdPy(IConsoleCmdArgs* pArgs);
-
-    std::vector<TContextMenuExtensionFunc> m_objectContextMenuExtensions;
 
     Editor::EditorQtApplication* const m_QtApplication = nullptr;
 

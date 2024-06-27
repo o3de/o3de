@@ -95,8 +95,6 @@ protected slots:
     void OnMoveKey();
     void OnSlideKey();
     void OnScaleKey();
-    void OnSyncSelectedTracksToBase();
-    void OnSyncSelectedTracksFromBase();
     void OnAddSequence();
     void OnDelSequence();
     void OnEditSequence();

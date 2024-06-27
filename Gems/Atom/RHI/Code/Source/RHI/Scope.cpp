@@ -7,8 +7,7 @@
  */
 #include <Atom/RHI/Scope.h>
 #include <Atom/RHI/ResourcePoolDatabase.h>
-#include <Atom/RHI/ImagePoolBase.h>
-#include <Atom/RHI/BufferPoolBase.h>
+#include <Atom/RHI/DeviceImagePoolBase.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
 namespace AZ::RHI
@@ -21,6 +20,21 @@ namespace AZ::RHI
     bool Scope::IsActive() const
     {
         return m_isActive;
+    }
+
+    int Scope::GetDeviceIndex() const
+    {
+        return m_deviceIndex;
+    }
+
+    void Scope::SetDeviceIndex(int deviceIndex)
+    {
+        m_deviceIndex = deviceIndex;
+    }
+
+    Device& Scope::GetDevice() const
+    {
+        return *RHISystemInterface::Get()->GetDevice(m_deviceIndex);
     }
 
     void Scope::Init(const ScopeId& scopeId, HardwareQueueClass hardwareQueueClass)
@@ -66,10 +80,10 @@ namespace AZ::RHI
         m_isActive = true;
     }
 
-    void Scope::Compile(Device& device)
+    void Scope::Compile()
     {
         AZ_Assert(m_isActive, "Scope being compiled but is not active");
-        CompileInternal(device);
+        CompileInternal();
     }
 
     void Scope::Deactivate()
@@ -127,7 +141,7 @@ namespace AZ::RHI
 
     void Scope::InitInternal() {}
     void Scope::ActivateInternal() {}
-    void Scope::CompileInternal([[maybe_unused]] Device& device) {}
+    void Scope::CompileInternal() {}
     void Scope::DeactivateInternal() {}
     void Scope::ShutdownInternal() {}
 
@@ -213,7 +227,7 @@ namespace AZ::RHI
         return m_resourcePoolResolves;
     }
 
-    const AZStd::vector<SwapChain*>& Scope::GetSwapChainsToPresent() const
+    const AZStd::vector<DeviceSwapChain*>& Scope::GetSwapChainsToPresent() const
     {
         return m_swapChainsToPresent;
     }

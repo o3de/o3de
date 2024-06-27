@@ -12,7 +12,7 @@
 #include <AzFramework/Input/Events/InputTextEventListener.h>
 #include <AzFramework/Input/Events/InputChannelEventListener.h>
 
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RHI/StreamBufferView.h>
 
 #include <Atom/RPI.Public/Image/StreamingImage.h>

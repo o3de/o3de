@@ -40,7 +40,8 @@ namespace MiniAudio
         //! environment audio.
         bool m_autoplayOnActivate = false;
 
-        float m_volume = 1.f;
+        //! Playback volume represented as a percentage
+        float m_volume = 100.f;
 
         //! If true, follow the position of the entity.
         bool m_autoFollowEntity = false;

@@ -29,4 +29,9 @@ namespace AZ::RHI
         : ScopeAttachmentDescriptor(attachmentId, imageScopeLoadStoreAction)
         , m_imageViewDescriptor{ imageViewDescriptor }
     {}
+
+    const ImageViewDescriptor& ImageScopeAttachmentDescriptor::GetViewDescriptor() const
+    {
+        return m_imageViewDescriptor;
+    }
 }

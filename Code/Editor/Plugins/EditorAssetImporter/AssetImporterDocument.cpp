@@ -22,7 +22,6 @@
 #include <SceneAPI/SceneCore/Utilities/FileUtilities.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <IEditor.h>
-#include <ISourceControl.h>
 #include <QFile>
 #include <QWidget>
 #include <QMessageBox>

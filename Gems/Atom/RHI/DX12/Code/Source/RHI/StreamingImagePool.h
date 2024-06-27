@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/StreamingImagePool.h>
+#include <Atom/RHI/DeviceStreamingImagePool.h>
 #include <Atom/RHI/PoolAllocator.h>
 #include <RHI/CommandList.h>
 #include <RHI/HeapAllocator.h>
@@ -22,9 +22,9 @@ namespace AZ
         class StreamingImagePoolResolver;
 
         class StreamingImagePool final
-            : public RHI::StreamingImagePool
+            : public RHI::DeviceStreamingImagePool
         {
-            using Base = RHI::StreamingImagePool;
+            using Base = RHI::DeviceStreamingImagePool;
         public:
             AZ_CLASS_ALLOCATOR(StreamingImagePool, AZ::SystemAllocator);
             AZ_RTTI(StreamingImagePool, "{D168A0F2-6B81-4281-9D4D-01C784F98DDD}", Base);
@@ -39,19 +39,19 @@ namespace AZ
             StreamingImagePool() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::StreamingImagePool
+            // RHI::DeviceStreamingImagePool
             RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::StreamingImagePoolDescriptor& descriptor) override;
-            RHI::ResultCode InitImageInternal(const RHI::StreamingImageInitRequest& request) override;
-            RHI::ResultCode ExpandImageInternal(const RHI::StreamingImageExpandRequest& request) override;
-            RHI::ResultCode TrimImageInternal(RHI::Image& image, uint32_t targetMipLevel) override;
+            RHI::ResultCode InitImageInternal(const RHI::DeviceStreamingImageInitRequest& request) override;
+            RHI::ResultCode ExpandImageInternal(const RHI::DeviceStreamingImageExpandRequest& request) override;
+            RHI::ResultCode TrimImageInternal(RHI::DeviceImage& image, uint32_t targetMipLevel) override;
             RHI::ResultCode SetMemoryBudgetInternal(size_t newBudget) override;
             bool SupportTiledImageInternal() const override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::ResourcePool
+            // RHI::DeviceResourcePool
             void ShutdownInternal() override;
-            void ShutdownResourceInternal(RHI::Resource& resourceBase) override;
+            void ShutdownResourceInternal(RHI::DeviceResource& resourceBase) override;
 
             // Streaming images are either committed resource or using tiles from heap pages. So there is no fragmentation
             void ComputeFragmentation() const override {}

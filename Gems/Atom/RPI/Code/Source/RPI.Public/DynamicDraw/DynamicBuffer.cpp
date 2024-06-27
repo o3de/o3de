@@ -17,7 +17,10 @@ namespace AZ
         {
             if (m_size >= size)
             {
-                memcpy(m_address, data, size);
+                for(auto& [deviceIndex, address] : m_address)
+                {
+                    memcpy(address, data, size);
+                }
                 return true;
             }
             AZ_Assert(false, "Can't write data out of range");
@@ -29,7 +32,7 @@ namespace AZ
             return m_size;
         }
 
-        void* DynamicBuffer::GetBufferAddress()
+        const AZStd::unordered_map<int, void*>& DynamicBuffer::GetBufferAddress()
         {
             return m_address;
         }
@@ -44,7 +47,7 @@ namespace AZ
             return m_allocator->GetStreamBufferView(this, strideByteCount);
         }
 
-        void DynamicBuffer::Initialize(void* address, uint32_t size)
+        void DynamicBuffer::Initialize(const AZStd::unordered_map<int, void*>& address, uint32_t size)
         {
             m_address = address;
             m_size = size;

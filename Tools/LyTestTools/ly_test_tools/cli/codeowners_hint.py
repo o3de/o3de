@@ -26,7 +26,12 @@ def get_codeowners(target_path: pathlib.PurePath) -> (str|None, str|None, pathli
     :return: tuple of (matched_path_entry, matched_owner_aliases, found_codeowners_path) which are empty when missing
     """
     codeowners_path = find_github_codeowners(target_path)
-    matched_path, owner_aliases = get_codeowners_from(target_path, codeowners_path)
+    if codeowners_path:
+        matched_path, owner_aliases = get_codeowners_from(target_path, codeowners_path)
+    else:
+        matched_path = ""
+        owner_aliases = ""
+        codeowners_path = ""
     return matched_path, owner_aliases, codeowners_path
 
 

@@ -355,23 +355,7 @@ void SourceControlItem::InitMenu()
             UpdateMenuItems();
         }
 
-        connect(m_settingsAction, &QAction::triggered, this, [&]()
-        {
-            // LEGACY note - GetIEditor and GetSourceControl are both legacy functions
-            // but are currently the only way to actually show the source control settings.
-            // They come from an editor plugin which should be moved to a gem eventually instead.
-            // For now, the actual function of the p4 plugin (so for example, checking file status, checking out files, etc)
-            // lives in AzToolsFramework, and is always available,
-            // but the settings dialog lives in the plugin, which is not always available, on all platforms, and thus
-            // this pointer could be null despite P4 still functioning.  (For example, it can function via command line on linux,
-            // and its settings can come from the P4 ENV or P4 Client env, without having to show the GUI).  Therefore
-            // it is still valid to have m_sourceControlAvailable be true yet GetIEditor()->GetSourceControl() be null.
-            if (auto sourceControl = GetIEditor()->GetSourceControl())
-            {
-                sourceControl->ShowSettings();
-            }
-        });
-
+        connect(m_settingsAction, &QAction::triggered, this, &SourceControlItem::OnOpenSettings);
         connect(m_checkBox, &QCheckBox::stateChanged, this, [this](int state) {SetSourceControlEnabledState(state); });
     }
     else
@@ -381,7 +365,21 @@ void SourceControlItem::InitMenu()
     }
     SetText("P4V");
 }
+void SourceControlItem::OnOpenSettings() {
 
+    // LEGACY note - GetIEditor and GetSourceControl are both legacy functions
+    // but are currently the only way to actually show the source control settings.
+    // They come from an editor plugin which should be moved to a gem eventually instead.
+    // For now, the actual function of the p4 plugin (so for example, checking file status, checking out files, etc)
+    // lives in AzToolsFramework, and is always available,
+    // but the settings dialog lives in the plugin, which is not always available, on all platforms, and thus
+    // this pointer could be null despite P4 still functioning.  (For example, it can function via command line on linux,
+    // and its settings can come from the P4 ENV or P4 Client env, without having to show the GUI).  Therefore
+    // it is still valid to have m_sourceControlAvailable be true yet GetIEditor()->GetSourceControl() be null.
+    using namespace AzToolsFramework;
+    SourceControlConnectionRequestBus::Broadcast(&SourceControlConnectionRequestBus::Events::OpenSettings);
+
+}
 void SourceControlItem::SetSourceControlEnabledState(bool state)
 {
     using SCRequest = AzToolsFramework::SourceControlConnectionRequestBus;

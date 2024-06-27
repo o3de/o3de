@@ -23,6 +23,7 @@ namespace AZ
             FrameGraphExecuteGroupBase() = default;
             
             void SetDevice(Device& device);
+            Device& GetDevice() const;
             ExecuteWorkRequest&& AcquireWorkRequest();
 
             RHI::HardwareQueueClass GetHardwareQueueClass();

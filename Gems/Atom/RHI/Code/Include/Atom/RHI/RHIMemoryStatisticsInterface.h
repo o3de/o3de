@@ -37,7 +37,7 @@ namespace AZ::RHI
         // Note that you have to delete these for safety reasons, you will trip a static_assert if you do not
         AZ_DISABLE_COPY_MOVE(RHIMemoryStatisticsInterface);
 
-        virtual const RHI::TransientAttachmentStatistics* GetTransientAttachmentStatistics() const = 0;
+        virtual AZStd::unordered_map<int, TransientAttachmentStatistics> GetTransientAttachmentStatistics() const = 0;
 
         virtual const RHI::MemoryStatistics* GetMemoryStatistics() const = 0;
 

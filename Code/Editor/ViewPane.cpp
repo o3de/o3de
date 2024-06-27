@@ -374,7 +374,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
                 const unsigned int width = viewportRect.width();
                 const unsigned int height = viewportRect.height();
 
-                int whGCD = gcd(width, height);
+                int whGCD = AZ::GetGCD(width, height);
                 CCustomAspectRatioDlg aspectRatioInputDialog(width / whGCD, height / whGCD, this);
 
                 if (aspectRatioInputDialog.exec() == QDialog::Accepted)
@@ -787,10 +787,7 @@ void CLayoutViewPane::SetViewportFOV(const float fovDegrees)
         pRenderViewport->SetFOV(fovRadians);
 
         // if viewport camera is active, make selected fov new default
-        if (pRenderViewport->GetViewManager()->GetCameraObjectId() == GUID_NULL)
-        {
-            SandboxEditor::SetCameraDefaultFovRadians(fovRadians);
-        }
+        SandboxEditor::SetCameraDefaultFovRadians(fovRadians);
 
         OnFOVChanged(fovRadians);
     }

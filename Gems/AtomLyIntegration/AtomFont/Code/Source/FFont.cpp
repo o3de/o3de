@@ -42,7 +42,6 @@
 #include <AzCore/Interface/Interface.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/DrawPacket.h>
 #include <Atom/RHI/ImagePool.h>
 
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
@@ -1465,13 +1464,8 @@ bool AZ::FFont::UpdateTexture()
         return false;
     }
 
-    RHI::ImageSubresourceRange range;
-    range.m_mipSliceMin = 0;
-    range.m_mipSliceMax = 0;
-    range.m_arraySliceMin = 0;
-    range.m_arraySliceMax = 0;
     RHI::ImageSubresourceLayout layout;
-    m_fontImage->GetSubresourceLayouts(range, &layout, nullptr);
+    m_fontImage->GetSubresourceLayout(layout);
 
     RHI::ImageUpdateRequest imageUpdateReq;
     imageUpdateReq.m_image = m_fontImage.get();

@@ -63,9 +63,8 @@ private:
 // will not destroy the CryMovie track
 //
 ////////////////////////////////////////////////////////////////////////////
-class CTrackViewTrack
+class CTrackViewTrack final
     : public CTrackViewNode
-    , public ITrackViewKeyBundle
     , public AzToolsFramework::EditorEntityContextNotificationBus::Handler
 {
     friend class CTrackViewKeyHandle;
@@ -101,8 +100,8 @@ public:
     bool GetExpanded() const override;
 
     // Key getters
-    virtual unsigned int GetKeyCount() const override { return m_pAnimTrack->GetNumKeys(); }
-    virtual CTrackViewKeyHandle GetKey(unsigned int index) override;
+    virtual unsigned int GetKeyCount() const { return m_pAnimTrack->GetNumKeys(); }
+    virtual CTrackViewKeyHandle GetKey(unsigned int index);
     virtual CTrackViewKeyConstHandle GetKey(unsigned int index) const;
 
     virtual CTrackViewKeyHandle GetKeyByTime(const float time);
@@ -115,7 +114,6 @@ public:
     // Key modifications
     virtual CTrackViewKeyHandle CreateKey(const float time);
     virtual void SlideKeys(const float time0, const float timeOffset);
-    void OffsetKeyPosition(const AZ::Vector3& offset);
     void UpdateKeyDataAfterParentChanged(const AZ::Transform& oldParentWorldTM, const AZ::Transform& newParentWorldTM);
 
     // Value getters
@@ -170,13 +168,10 @@ public:
     bool UsesMute() const { return m_pAnimTrack.get() ? m_pAnimTrack->UsesMute() : false; }
 
     // Key selection
-    virtual void SelectKeys(const bool bSelected) override;
+    void SelectKeys(const bool bSelected);
 
     // Paste from XML representation with time offset
     void PasteKeys(XmlNodeRef xmlNode, const float timeOffset);
-
-    // Key types
-    virtual bool AreAllKeysOfSameType() const override { return true; }
 
     // Animation layer index
     void SetAnimationLayerIndex(const int index);
@@ -233,6 +228,7 @@ private:
     CTrackViewAnimNode* m_pTrackAnimNode;
 
     // used to stash AZ Entity ID's stored in track keys when entering/exiting AI/Physic or Ctrl-G game modes
-    AZStd::unordered_map<CAnimParamType, AZStd::vector<AZ::EntityId>> m_paramTypeToStashedEntityIdMap;  
+    AZStd::unordered_map<CAnimParamType, AZStd::vector<AZ::EntityId>> m_paramTypeToStashedEntityIdMap;
 };
+
 #endif // CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWTRACK_H

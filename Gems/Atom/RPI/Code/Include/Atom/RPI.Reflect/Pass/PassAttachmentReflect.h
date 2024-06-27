@@ -98,6 +98,9 @@ namespace AZ
             //! ScopeAttachmentUsage used when binding the slot's attachment with the RHI
             RHI::ScopeAttachmentUsage m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Uninitialized;
 
+            //! ScopeAttachmentStage that this slot will be used
+            RHI::ScopeAttachmentStage m_scopeAttachmentStage = RHI::ScopeAttachmentStage::Uninitialized;
+
             //! Optional image view descriptor to be applied to the slot. Note a PassSlot should have only
             //! a buffer or image view descriptor (or none at all, in which case a default is generated),
             //! but not both. If the user specifies both, the image descriptor will take precedence.

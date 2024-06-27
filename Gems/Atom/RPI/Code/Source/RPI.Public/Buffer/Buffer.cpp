@@ -10,7 +10,7 @@
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/Fence.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
 #include <Atom/RPI.Public/Buffer/BufferPool.h>
@@ -42,8 +42,7 @@ namespace AZ
              * pointer around at all times, and then only initialize the buffer view once.
              */
 
-            auto& factory = RHI::Factory::Get();
-            m_rhiBuffer = factory.CreateBuffer();
+            m_rhiBuffer = aznew RHI::Buffer;
             AZ_Assert(m_rhiBuffer, "Failed to acquire an buffer instance from the RHI. Is the RHI initialized?");
         }
 
@@ -140,10 +139,10 @@ namespace AZ
                     m_bufferAsset = { &bufferAsset, AZ::Data::AssetLoadBehavior::PreLoad };
 
                     AZ_PROFILE_SCOPE(RPI, "Stream Upload");
-                    m_streamFence = RHI::Factory::Get().CreateFence();
+                    m_streamFence = aznew RHI::Fence;
                     if (m_streamFence)
                     {
-                        m_streamFence->Init(m_rhiBufferPool->GetDevice(), RHI::FenceState::Reset);
+                        m_streamFence->Init(m_rhiBufferPool->GetDeviceMask(), RHI::FenceState::Reset);
                     }
 
                     RHI::BufferDescriptor bufferDescriptor = bufferAsset.GetBufferDescriptor();
@@ -164,15 +163,26 @@ namespace AZ
 
                     if (m_streamFence)
                     {
-                        m_streamFence->WaitOnCpuAsync(
-                            [this]()
-                            {
-                                // Once the uploading to gpu process is done, we shouldn't need to keep the reference of the m_bufferAsset
-                                this->m_pendingUploadMutex.lock();
-                                this->m_bufferAsset.Reset();
-                                this->m_pendingUploadMutex.unlock();
-                            });
+                        auto deviceCount{RHI::RHISystemInterface::Get()->GetDeviceCount()};
+                        auto deviceMask{m_streamFence->GetDeviceMask()};
 
+                        m_initialUploadCount = az_popcnt_u32(AZStd::to_underlying(deviceMask) & ((1 << deviceCount) - 1));
+
+                        for (auto deviceIndex{0}; deviceIndex < deviceCount; ++deviceIndex)
+                        {
+                            if (AZStd::to_underlying(deviceMask) & (1 << deviceIndex))
+                            {
+                                m_streamFence->GetDeviceFence(deviceIndex)->WaitOnCpuAsync([this]()
+                                {
+                                    if (--m_initialUploadCount == 0)
+                                    {
+                                        // Once the uploading to gpu process is done, we shouldn't need to keep the reference of the m_bufferAsset
+                                        AZStd::lock_guard<AZStd::mutex> lock(m_pendingUploadMutex);
+                                        m_bufferAsset.Reset();
+                                    }
+                                });
+                            }
+                        }
                     }
                 }
                 
@@ -196,7 +206,7 @@ namespace AZ
         void Buffer::Resize(uint64_t bufferSize)
         {
             RHI::BufferDescriptor desc = m_rhiBuffer->GetDescriptor();            
-            m_rhiBuffer = RHI::Factory::Get().CreateBuffer();
+            m_rhiBuffer = aznew RHI::Buffer;
             AZ_Assert(m_rhiBuffer, "Failed to acquire an buffer instance from the RHI. Is the RHI initialized?");
             
             desc.m_byteCount = bufferSize;
@@ -224,8 +234,8 @@ namespace AZ
             {
                 return;
             }
-               
-            m_bufferView = m_rhiBuffer->GetBufferView(m_bufferViewDescriptor);
+
+            m_bufferView = m_rhiBuffer->BuildBufferView(m_bufferViewDescriptor);
 
             if(!m_bufferView.get())
             {
@@ -233,12 +243,12 @@ namespace AZ
             }
         }
 
-        void* Buffer::Map(size_t byteCount, uint64_t byteOffset)
+        AZStd::unordered_map<int, void*> Buffer::Map(size_t byteCount, uint64_t byteOffset)
         {
             if (byteOffset + byteCount > m_rhiBuffer->GetDescriptor().m_byteCount)
             {
                 AZ_Error("Buffer", false, "Map out of range");
-                return nullptr;
+                return {};
             }
 
             RHI::BufferMapRequest request;
@@ -256,7 +266,7 @@ namespace AZ
             else
             {
                 AZ_Error("RPI::Buffer", false, "Failed to update RHI buffer. Error code: %d", result);
-                return nullptr;
+                return {};
             }
         }
 
@@ -269,7 +279,16 @@ namespace AZ
         {
             if (m_streamFence)
             {
-                m_streamFence->WaitOnCpu();
+                auto deviceCount{RHI::RHISystemInterface::Get()->GetDeviceCount()};
+                auto deviceMask{m_streamFence->GetDeviceMask()};
+
+                for (auto deviceIndex{0}; deviceIndex < deviceCount; ++deviceIndex)
+                {
+                    if (AZStd::to_underlying(deviceMask) & (1 << deviceIndex))
+                    {
+                        m_streamFence->GetDeviceFence(deviceIndex)->WaitOnCpu();
+                    }
+                }
 
                 // Guard against calling release twice on the same pointer from different threads, 
                 // which would decrement the ref count twice and result in a crash
@@ -301,7 +320,7 @@ namespace AZ
 
             return UpdateData(sourceData, sourceDataSize, 0);
         }
-        
+
         bool Buffer::UpdateData(const void* sourceData, uint64_t sourceDataSize, uint64_t bufferByteOffset)
         {
             if (sourceDataSize == 0)
@@ -309,11 +328,52 @@ namespace AZ
                 return true;
             }
 
-            if (void* buf = Map(sourceDataSize, bufferByteOffset))
+            if (auto buf = Map(sourceDataSize, bufferByteOffset); buf.size())
             {
-                memcpy(buf, sourceData, sourceDataSize);
-                Unmap();
+                auto partialResult{false};
+                for (auto& [deviceIndex, buffer] : buf)
+                {
+                    if(buffer != nullptr)
+                    {
+                        memcpy(buffer, sourceData, sourceDataSize);
+                        partialResult = true;
+                    }
+                }
+
+                if(partialResult)
+                {
+                    Unmap();
+                }
+                return partialResult;
+            }
+
+            return false;
+        }
+
+        bool Buffer::UpdateData(const AZStd::unordered_map<int, const void*> sourceData, uint64_t sourceDataSize, uint64_t bufferByteOffset)
+        {
+            if (sourceDataSize == 0)
+            {
                 return true;
+            }
+
+            if (auto buf = Map(sourceDataSize, bufferByteOffset); buf.size())
+            {
+                auto partialResult{false};
+                for (auto& [deviceIndex, source] : sourceData)
+                {
+                    if(buf[deviceIndex] != nullptr)
+                    {
+                        memcpy(buf[deviceIndex], source, sourceDataSize);
+                        partialResult = true;
+                    }
+                }
+
+                if(partialResult)
+                {
+                    Unmap();
+                }
+                return partialResult;
             }
 
             return false;

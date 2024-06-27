@@ -55,6 +55,7 @@ namespace AzToolsFramework
             using namespace AzToolsFramework::AssetBrowser;
             AssetBrowserComponentRequestBus::BroadcastResult(m_assetBrowserModel, &AssetBrowserComponentRequests::GetAssetBrowserModel);
 
+            m_treeToTableProxyModel->setSourceModel(m_assetFilterModel);
             m_tableViewProxyModel->setSourceModel(m_assetFilterModel);
             m_tableViewWidget->setSortingEnabled(false);
             m_tableViewWidget->header()->setSectionsClickable(true);
@@ -221,12 +222,10 @@ namespace AzToolsFramework
             setLayout(layout);
 
             setAcceptDrops(true);
-            AssetBrowserComponentNotificationBus::Handler::BusConnect();
         }
 
         AssetBrowserTableView::~AssetBrowserTableView()
         {
-            AssetBrowserComponentNotificationBus::Handler::BusDisconnect();
             RemoveWidgetFromActionContextHelper(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
         }
 
@@ -262,12 +261,6 @@ namespace AzToolsFramework
             default:
                 return 0;
             }
-        }
-
-        void AssetBrowserTableView::OnAssetBrowserComponentReady()
-        {
-            m_treeToTableProxyModel->setSourceModel(m_assetBrowserModel);
-            UpdateFilterInLocalFilterModel();
         }
 
         AzQtComponents::AssetFolderTableView* AssetBrowserTableView::GetTableViewWidget() const
@@ -465,7 +458,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            m_assetFilterModel->setSourceModel(m_treeToTableProxyModel);
+            m_assetFilterModel->setSourceModel(treeViewModel);
             UpdateFilterInLocalFilterModel();
 
             connect(
@@ -609,17 +602,19 @@ namespace AzToolsFramework
                     });
                 clonedFilter->AddFilter(FilterConstType(customTypeFilter));
 
-                clonedFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::None);
-                m_assetFilterModel->setSourceModel(m_treeToTableProxyModel);
+                clonedFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
                 m_assetFilterModel->SetFilter(FilterConstType(clonedFilter));
                 m_tableViewWidget->expandAll();
+                m_tableViewProxyModel->setSourceModel(m_treeToTableProxyModel);
+                m_treeToTableProxyModel->ConnectSignals();
             }
             else
             {
                 clonedFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
-                m_assetFilterModel->setSourceModel(m_assetBrowserModel);
                 m_assetFilterModel->SetFilter(FilterConstType(clonedFilter));
                 m_tableViewWidget->collapseAll();
+                m_tableViewProxyModel->setSourceModel(m_assetFilterModel);
+                m_treeToTableProxyModel->DisconnectSignals();
             }
         }
 

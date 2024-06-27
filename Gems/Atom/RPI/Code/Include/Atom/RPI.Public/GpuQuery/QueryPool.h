@@ -69,14 +69,14 @@ namespace AZ
             // Returns a span of RHI Queries depending on the indices that are provided.
             AZStd::span<const RHI::Ptr<RHI::Query>> GetRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices) const;
             // Returns an array of raw RHI Query pointers depending on the indices that are provided.
-            AZStd::vector<RHI::Query*> GetRawRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices) const;
+            AZStd::vector<AZ::RHI::DeviceQuery*> GetRawRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices, int deviceIndex) const;
 
             // Readback results from the provided RHI Query indices.
-            QueryResultCode GetQueryResultFromIndices(uint64_t* result, RHI::Interval rhiQueryIndices, RHI::QueryResultFlagBits queryResultFlag);
+            QueryResultCode GetQueryResultFromIndices(uint64_t* result, RHI::Interval rhiQueryIndices, RHI::QueryResultFlagBits queryResultFlag, int deviceIndex);
 
             // Depending on the QueryType, the method to poll data from the queries vary.
-            virtual RHI::ResultCode BeginQueryInternal(RHI::Interval rhiQueryIndices, RHI::CommandList& commandList);
-            virtual RHI::ResultCode EndQueryInternal(RHI::Interval rhiQueryIndices, RHI::CommandList& commandList);
+            virtual RHI::ResultCode BeginQueryInternal(RHI::Interval rhiQueryIndices, const RHI::FrameGraphExecuteContext& context);
+            virtual RHI::ResultCode EndQueryInternal(RHI::Interval rhiQueryIndices, const RHI::FrameGraphExecuteContext& context);
 
             // Calculate the query result size in bytes. The size of the result depends on the QueryType.
             void CalculateResultSize();

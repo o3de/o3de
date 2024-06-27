@@ -14,8 +14,6 @@
 #include "UiAnimViewSequence.h"
 #include "Animation/AnimationContext.h"
 
-#include "Objects/BaseObject.h"
-
 #include "QtUtilWin.h"
 #include <Editor/Animation/ui_UiAVSequenceProps.h>
 #include <QMessageBox>

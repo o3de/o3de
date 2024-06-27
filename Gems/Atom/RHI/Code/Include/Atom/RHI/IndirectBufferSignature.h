@@ -7,19 +7,27 @@
  */
 #pragma once
 
-#include <Atom/RHI/DeviceObject.h>
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI.Reflect/IndirectBufferLayout.h>
+#include <Atom/RHI/DeviceObject.h>
+#include <Atom/RHI/DeviceIndirectBufferSignature.h>
+
+#include <Atom/RHI/MultiDeviceObject.h>
 
 namespace AZ::RHI
 {
     class Device;
     class PipelineState;
 
+    //! A multi-device descriptor for the IndirectBufferSignature, holding both an IndirectBufferLayout (identical across
+    //! devices) as well as a PipelineState
     struct IndirectBufferSignatureDescriptor
     {
+        //! Returns the device-specific DeviceIndirectBufferSignatureDescriptor for the given index
+        DeviceIndirectBufferSignatureDescriptor GetDeviceIndirectBufferSignatureDescriptor(int deviceIndex) const;
+
+        const PipelineState* m_pipelineState{ nullptr };
         IndirectBufferLayout m_layout;
-        const PipelineState* m_pipelineState = nullptr;
     };
 
     //! The IndirectBufferSignature is an implementation object that represents
@@ -29,22 +37,25 @@ namespace AZ::RHI
     //!
     //! It also exposes implementation dependent offsets for the commands in
     //! a layout. This information is useful when writing commands into a buffer.
-    class IndirectBufferSignature :
-        public DeviceObject
+    class IndirectBufferSignature : public MultiDeviceObject
     {
-        using Base = RHI::DeviceObject;
-    public:
-        AZ_RTTI(IndirectBufferSignature, "{3A2F9DF0-589B-4E05-9205-B688EB896AEA}", Base);
-        virtual ~IndirectBufferSignature() {};
+        using Base = RHI::MultiDeviceObject;
 
-        //! Initialize an IndirectBufferSignature object.
-        //! @param device The device that will contain the signature.
+    public:
+        AZ_CLASS_ALLOCATOR(IndirectBufferSignature, AZ::SystemAllocator, 0);
+        AZ_RTTI(IndirectBufferSignature, "{3CCFF81D-DC5E-4B12-AC05-DC26D5D0C65C}", Base);
+        AZ_RHI_MULTI_DEVICE_OBJECT_GETTER(IndirectBufferSignature);
+        IndirectBufferSignature() = default;
+        virtual ~IndirectBufferSignature() = default;
+
+        //! Initialize an DeviceIndirectBufferSignature object.
+        //! @param deviceMask The deviceMask denoting all devices that will contain the signature.
         //! @param descriptor Descriptor with the necessary information for initializing the signature.
         //! @return A result code denoting the status of the call. If successful, the IndirectBufferSignature is considered
-        //!      initialized and can be used. If failure, the IndirectBufferSignature remains uninitialized.
-        ResultCode Init(Device& device, const IndirectBufferSignatureDescriptor& descriptor);
+        //! initialized and can be used. If failure, the IndirectBufferSignature remains uninitialized.
+        ResultCode Init(MultiDevice::DeviceMask deviceMask, const IndirectBufferSignatureDescriptor& descriptor);
 
-        /// Returns the stride in bytes of the command sequence defined by the provided layout.
+        //! Returns the stride in bytes of the command sequence defined by the provided layout.
         uint32_t GetByteStride() const;
 
         //! Returns the offset of the command in the position indicated by the index.
@@ -57,24 +68,9 @@ namespace AZ::RHI
 
         void Shutdown() final;
 
-    protected:
-        IndirectBufferSignature() = default;
-
     private:
-        ///////////////////////////////////////////////////////////////////
-        // Platform API
-
-        /// Called when initializing the object,
-        virtual RHI::ResultCode InitInternal(Device& device, const IndirectBufferSignatureDescriptor& descriptor) = 0;
-        /// Called when requesting the stride of the command sequence.
-        virtual uint32_t GetByteStrideInternal() const = 0;
-        /// Called when requesting the offset of a command.
-        virtual uint32_t GetOffsetInternal(IndirectCommandIndex index) const = 0;
-        /// Called when the signature is being shutdown.
-        virtual void ShutdownInternal() = 0;
-
-        ///////////////////////////////////////////////////////////////////
-
-        IndirectBufferSignatureDescriptor m_descriptor;
+        IndirectBufferSignatureDescriptor m_Descriptor;
+        static constexpr uint32_t UNINITIALIZED_VALUE{ std::numeric_limits<uint32_t>::max() };
+        uint32_t m_byteStride{ UNINITIALIZED_VALUE };
     };
-}
+} // namespace AZ::RHI

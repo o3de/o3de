@@ -6,11 +6,10 @@
  *
  */
 
-
-#include <Atom/RHI/ConstantsData.h>
-#include <Atom/RHI/DrawPacket.h>
 #include <Atom/RHI.Reflect/Scissor.h>
 #include <Atom/RHI.Reflect/Viewport.h>
+#include <Atom/RHI/ConstantsData.h>
+#include <Atom/RHI/DrawPacket.h>
 
 #include <AzCore/Memory/Memory.h>
 
@@ -18,12 +17,12 @@ namespace AZ::RHI
 {
     size_t DrawPacket::GetDrawItemCount() const
     {
-        return m_drawItemCount;
+        return m_drawItems.size();
     }
 
     s32 DrawPacket::GetDrawListIndex(DrawListTag drawListTag) const
     {
-        for (size_t i = 0; i < m_drawItemCount; ++i)
+        for (size_t i = 0; i < m_drawItems.size(); ++i)
         {
             if (GetDrawListTag(i) == drawListTag)
             {
@@ -35,7 +34,7 @@ namespace AZ::RHI
 
     DrawItem* DrawPacket::GetDrawItem(size_t index)
     {
-        return (index < m_drawItemCount) ? &m_drawItems[index] : nullptr;
+        return (index < m_drawItems.size()) ? &m_drawItems[index] : nullptr;
     }
 
     DrawItem* DrawPacket::GetDrawItem(DrawListTag drawListTag)
@@ -71,33 +70,19 @@ namespace AZ::RHI
         return m_drawListMask;
     }
 
-    void DrawPacket::operator delete(void* p, [[maybe_unused]] size_t size)
-    {
-        reinterpret_cast<const DrawPacket*>(p)->m_allocator->DeAllocate(p);
-    }
-
     void DrawPacket::SetRootConstant(uint32_t offset, const AZStd::span<uint8_t>& data)
     {
-        bool sizeValid = data.size() <= aznumeric_cast<uint32_t>(m_rootConstantSize) - offset;
-        if (sizeValid)
+        for(auto&[_, deviceDrawPacket] : m_deviceDrawPackets)
         {
-            memcpy((void*)(m_rootConstants + offset), data.data(), data.size());
-        }
-        else
-        {
-            AZ_Assert(sizeValid, "New root constants exceed the original size.");
+            deviceDrawPacket->SetRootConstant(offset, data);
         }
     }
 
     void DrawPacket::SetInstanceCount(uint32_t instanceCount)
     {
-        for (size_t drawItemIndex = 0; drawItemIndex < m_drawItemCount; ++drawItemIndex)
+        for (auto& drawItem : m_drawItems)
         {
-            const DrawItem* drawItemConst = m_drawItems + drawItemIndex;
-            // Need to mutate for mesh instancing.
-            // This should be used after cloning the draw packet from DrawPacketBuilder.
-            DrawItem* drawItem = const_cast<DrawItem*>(drawItemConst);
-            drawItem->m_arguments.m_indexed.m_instanceCount = instanceCount;
+            drawItem.SetIndexedArgumentsInstanceCount(instanceCount);
         }
     }
-}
+} // namespace AZ::RHI

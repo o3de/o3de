@@ -50,3 +50,29 @@ float3 LinearToShaper(float3 linearColor, ShaperType shaperType, float shaperBia
     }
     return linearColor;
 }
+
+
+float3 ApplyShaperLookupTable(
+    ShaperType shaperType,
+    float3 color,
+    float shaperBias,
+    float shaperScale,
+    Texture3D<float4> lutTex,
+    sampler linearSampler)
+{
+    // Convert from working color space to lut coordinates by applying the shaper function
+    float3 lutCoordinate = LinearToShaper(color, shaperType, shaperBias, shaperScale);
+
+    // Adjust coordinate to the domain excluding the outer half texel in all directions
+    uint3 outputDimensions;
+    lutTex.GetDimensions(outputDimensions.x, outputDimensions.y, outputDimensions.z);
+    float3 coordBias = 1.0 / (2.0 * outputDimensions);
+    float3 coordScale = (outputDimensions - 1.0) / outputDimensions;
+    lutCoordinate = (lutCoordinate * coordScale) + coordBias;
+
+    float3 lutColor = lutTex.Sample(linearSampler, lutCoordinate).rgb;
+
+    // Apply the inverse of the shaper function to give the color in the working color space
+    float3 finalColor = ShaperToLinear(lutColor, shaperType, shaperBias, shaperScale);
+    return finalColor;
+}

@@ -173,16 +173,7 @@ namespace AZ
             viewDescriptor.m_ignoreFrameAttachmentValidation = true;
 
             RHI::Buffer* rhiBuffer = Meshlets::SharedBufferInterface::Get()->GetBuffer()->GetRHIBuffer();
-            Data::Instance<RHI::BufferView> bufferView = RHI::Factory::Get().CreateBufferView();
-            RHI::ResultCode resultCode = bufferView->Init(*rhiBuffer, viewDescriptor);
-
-            if (resultCode != RHI::ResultCode::Success)
-            {
-                AZ_Error(warningHeader, false, "BufferView could not be retrieved for [%s]", bufferDesc.m_bufferName.GetCStr());
-                return Data::Instance<RHI::BufferView>();
-            }
-
-            return bufferView;
+            return rhiBuffer->BuildBufferView(viewDescriptor);
         }
 
         bool UtilityClass::BindBufferViewToSrg(
@@ -205,7 +196,7 @@ namespace AZ
                 return false;
             }
 
-            if (!srg->SetBufferView(bufferIndex, bufferView.get()))
+            if (!srg->SetBufferView(bufferIndex, bufferView))
             {
                 AZ_Error(warningHeader, false, "Failed to bind buffer view for [%s]", bufferDesc.m_bufferName.GetCStr());
                 return false;

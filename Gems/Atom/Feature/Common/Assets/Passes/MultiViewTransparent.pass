@@ -12,7 +12,8 @@
                     "Name": "BRDFTextureInput",
                     "ShaderInputName": "m_brdfMap",
                     "SlotType": "Input",
-                    "ScopeAttachmentUsage": "Shader"
+                    "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage": "FragmentShader"
                 },
                 {
                     "Name": "InputOutput",

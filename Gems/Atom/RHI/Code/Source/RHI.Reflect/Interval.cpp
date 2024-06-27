@@ -36,4 +36,9 @@ namespace AZ::RHI
     {
         return m_min != rhs.m_min || m_max != rhs.m_max;
     }
+
+    bool Interval::Overlaps(const Interval& rhs) const
+    {
+        return m_min <= rhs.m_max && rhs.m_min <= m_max;
+    }
 }

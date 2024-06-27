@@ -23,18 +23,9 @@
 
 namespace AZ::RHI
 {
-    ResultCode FrameGraphCompiler::Init(Device& device)
+    ResultCode FrameGraphCompiler::Init()
     {
-        if (Validation::IsEnabled())
-        {
-            if (IsInitialized())
-            {
-                AZ_Error("FrameGraphCompiler", false, "FrameGraphCompiler already initialized. Shutdown must be called first.");
-                return ResultCode::InvalidArgument;
-            }
-        }
-
-        const ResultCode resultCode = InitInternal(device);
+        const ResultCode resultCode = InitInternal();
 
         if (resultCode == ResultCode::Success)
         {
@@ -44,9 +35,6 @@ namespace AZ::RHI
 
             const uint32_t ImageViewCapacity = 128;
             m_imageViewCache.SetCapacity(ImageViewCapacity);
-
-
-            DeviceObject::Init(device);
         }
 
         return resultCode;
@@ -54,16 +42,12 @@ namespace AZ::RHI
 
     void FrameGraphCompiler::Shutdown()
     {
-        if (IsInitialized())
-        {
-            m_imageViewCache.Clear();
-            m_bufferViewCache.Clear();
-            m_imageReverseLookupHash.clear();
-            m_bufferReverseLookupHash.clear();
-               
-            ShutdownInternal();
-            DeviceObject::Shutdown();
-        }
+        m_imageViewCache.Clear();
+        m_bufferViewCache.Clear();
+        m_imageReverseLookupHash.clear();
+        m_bufferReverseLookupHash.clear();
+
+        ShutdownInternal();
     }
 
     MessageOutcome FrameGraphCompiler::ValidateCompileRequest(const FrameGraphCompileRequest& request) const
@@ -84,7 +68,7 @@ namespace AZ::RHI
             const bool hasTransientAttachments = attachmentDatabase.GetTransientBufferAttachments().size() || attachmentDatabase.GetTransientImageAttachments().size();
             if (request.m_transientAttachmentPool == nullptr && hasTransientAttachments)
             {
-                return AZ::Failure(AZStd::string("TransientAttachmentPool is null, but transient attachments are in the graph. Skipping compilation..."));
+                return AZ::Failure(AZStd::string("DeviceTransientAttachmentPool is null, but transient attachments are in the graph. Skipping compilation..."));
             }
         }
 
@@ -146,7 +130,12 @@ namespace AZ::RHI
 
             for (Scope* scope : frameGraph.GetScopes())
             {
-                scope->Compile(GetDevice());
+                if (scope->GetDeviceIndex() == MultiDevice::InvalidDeviceIndex)
+                {
+                    scope->SetDeviceIndex(MultiDevice::DefaultDeviceIndex);
+                }
+
+                scope->Compile();
             }
         }
 
@@ -178,7 +167,10 @@ namespace AZ::RHI
                 const uint32_t hardwareQueueClassIdx = static_cast<uint32_t>(consumer->GetHardwareQueueClass());
                 if (producer[hardwareQueueClassIdx])
                 {
-                    Scope::LinkProducerConsumerByQueues(producer[hardwareQueueClassIdx], consumer);
+                    if (producer[hardwareQueueClassIdx]->GetDeviceIndex() == consumer->GetDeviceIndex())
+                    {
+                        Scope::LinkProducerConsumerByQueues(producer[hardwareQueueClassIdx], consumer);
+                    }
                 }
                 producer[hardwareQueueClassIdx] = consumer;
             }
@@ -227,7 +219,10 @@ namespace AZ::RHI
 
                     if (foundEarlierConsumerOnSameQueue == false)
                     {
-                        Scope::LinkProducerConsumerByQueues(producerScopeLast, currentScope);
+                        if (producerScopeLast->GetDeviceIndex() == currentScope->GetDeviceIndex())
+                        {
+                            Scope::LinkProducerConsumerByQueues(producerScopeLast, currentScope);
+                        }
                     }
                 }
             }
@@ -625,7 +620,7 @@ namespace AZ::RHI
 
                 case Action::DeactivateBuffer:
                 {
-                    AZ_Assert(!allocateResources || transientBuffers[attachmentIndex] || IsNullRHI(), "Buffer is not active: %s", transientBufferGraphAttachments[attachmentIndex]->GetId().GetCStr());
+                    AZ_Assert(!allocateResources || transientBuffers[attachmentIndex] || IsNullRHI(), "DeviceBuffer is not active: %s", transientBufferGraphAttachments[attachmentIndex]->GetId().GetCStr());
                     BufferFrameAttachment* bufferFrameAttachment = transientBufferGraphAttachments[attachmentIndex];
                     transientAttachmentPool.DeactivateBuffer(bufferFrameAttachment->GetId());
                     transientBuffers[attachmentIndex] = nullptr;
@@ -634,7 +629,7 @@ namespace AZ::RHI
 
                 case Action::DeactivateImage:
                 {
-                    AZ_Assert(!allocateResources || transientImages[attachmentIndex] || IsNullRHI(), "Image is not active: %s", transientImageGraphAttachments[attachmentIndex]->GetId().GetCStr());
+                    AZ_Assert(!allocateResources || transientImages[attachmentIndex] || IsNullRHI(), "DeviceImage is not active: %s", transientImageGraphAttachments[attachmentIndex]->GetId().GetCStr());
                     ImageFrameAttachment* imageFrameAttachment = transientImageGraphAttachments[attachmentIndex];
                     transientAttachmentPool.DeactivateImage(imageFrameAttachment->GetId());
                     transientImages[attachmentIndex] = nullptr;
@@ -644,13 +639,13 @@ namespace AZ::RHI
                 case Action::ActivateBuffer:
                 {
                     BufferFrameAttachment* bufferFrameAttachment = transientBufferGraphAttachments[attachmentIndex];
-                    AZ_Assert(transientBuffers[attachmentIndex] == nullptr, "Buffer has been activated already. %s", bufferFrameAttachment->GetId().GetCStr());
+                    AZ_Assert(transientBuffers[attachmentIndex] == nullptr, "DeviceBuffer has been activated already. %s", bufferFrameAttachment->GetId().GetCStr());
 
                     TransientBufferDescriptor descriptor;
                     descriptor.m_attachmentId = bufferFrameAttachment->GetId();
                     descriptor.m_bufferDescriptor = bufferFrameAttachment->GetBufferDescriptor();
 
-                    Buffer* buffer = transientAttachmentPool.ActivateBuffer(descriptor);
+                    auto buffer = transientAttachmentPool.ActivateBuffer(descriptor);
                     if (allocateResources && buffer)
                     {
                         bufferFrameAttachment->SetResource(buffer);
@@ -662,7 +657,7 @@ namespace AZ::RHI
                 case Action::ActivateImage:
                 {
                     ImageFrameAttachment* imageFrameAttachment = transientImageGraphAttachments[attachmentIndex];
-                    AZ_Assert(transientImages[attachmentIndex] == nullptr, "Image has been activated already. %s", imageFrameAttachment->GetId().GetCStr());
+                    AZ_Assert(transientImages[attachmentIndex] == nullptr, "DeviceImage has been activated already. %s", imageFrameAttachment->GetId().GetCStr());
 
                     ClearValue optimizedClearValue;
 
@@ -678,7 +673,7 @@ namespace AZ::RHI
                         descriptor.m_optimizedClearValue = &optimizedClearValue;
                     }
 
-                    Image* image = transientAttachmentPool.ActivateImage(descriptor);
+                    auto image = transientAttachmentPool.ActivateImage(descriptor);
                     if (allocateResources && image)
                     {
                         imageFrameAttachment->SetResource(image);
@@ -695,12 +690,17 @@ namespace AZ::RHI
         };
 
         AZStd::optional<TransientAttachmentStatistics::MemoryUsage> memoryUsage;
-        // Check if we need to do two passes (one for calculating the size and the second one for allocating the resources)
-        if (transientAttachmentPool.GetDescriptor().m_heapParameters.m_type == HeapAllocationStrategy::MemoryHint)
+
+        for (auto& [deviceIndex, descriptor] : transientAttachmentPool.GetDescriptor())
         {
-            // First pass to calculate size needed.
-            processCommands(TransientAttachmentPoolCompileFlags::GatherStatistics | TransientAttachmentPoolCompileFlags::DontAllocateResources);
-            memoryUsage = transientAttachmentPool.GetStatistics().m_reservedMemory;
+            // Check if we need to do two passes (one for calculating the size and the second one for allocating the resources)
+            if (descriptor.m_heapParameters.m_type == HeapAllocationStrategy::MemoryHint)
+            {
+                // First pass to calculate size needed.
+                processCommands(TransientAttachmentPoolCompileFlags::GatherStatistics | TransientAttachmentPoolCompileFlags::DontAllocateResources);
+                auto statistics = transientAttachmentPool.GetDeviceTransientAttachmentPool(deviceIndex)->GetStatistics();
+                memoryUsage = statistics.m_reservedMemory;
+            }
         }
 
         // Second pass uses the information about memory usage
@@ -728,24 +728,17 @@ namespace AZ::RHI
             const ImageResourceViewData imageResourceViewData = ImageResourceViewData {image->GetName(), imageViewDescriptor};
             RemoveFromCache(imageResourceViewData, m_imageReverseLookupHash, m_imageViewCache);
             // Create a new image view instance and insert it into the cache.
-            Ptr<ImageView> imageViewPtr = Factory::Get().CreateImageView();
-            if (imageViewPtr->Init(*image, imageViewDescriptor) == ResultCode::Success)
+            Ptr<ImageView> imageViewPtr = image->BuildImageView(imageViewDescriptor);
+            imageView = imageViewPtr.get();
+            m_imageViewCache.Insert(static_cast<uint64_t>(hash), AZStd::move(imageViewPtr));
+            if (!image->GetName().IsEmpty())
             {
-                imageView = imageViewPtr.get();
-                m_imageViewCache.Insert(static_cast<uint64_t>(hash), AZStd::move(imageViewPtr));
-                if (!image->GetName().IsEmpty())
-                {
-                    m_imageReverseLookupHash.emplace(imageResourceViewData, hash);
-                }
-            }
-            else
-            {
-                AZ_Error("FrameGraphCompiler", false, "Failed to acquire an image view");
+                m_imageReverseLookupHash.emplace(imageResourceViewData, hash);
             }
         }
         return imageView;
     }
-                    
+
     BufferView* FrameGraphCompiler::GetBufferViewFromLocalCache(Buffer* buffer, const BufferViewDescriptor& bufferViewDescriptor)
     {
         const size_t baseHash = AZStd::hash<Buffer*>()(buffer);
@@ -763,19 +756,12 @@ namespace AZ::RHI
             RemoveFromCache(bufferResourceViewData, m_bufferReverseLookupHash, m_bufferViewCache);
                 
             // Create a new buffer view instance and insert it into the cache.
-            Ptr<BufferView> bufferViewPtr = Factory::Get().CreateBufferView();
-            if (bufferViewPtr->Init(*buffer, bufferViewDescriptor) == ResultCode::Success)
+            Ptr<BufferView> bufferViewPtr = buffer->BuildBufferView(bufferViewDescriptor);
+            bufferView = bufferViewPtr.get();
+            m_bufferViewCache.Insert(static_cast<uint64_t>(hash), AZStd::move(bufferViewPtr));
+            if (!buffer->GetName().IsEmpty())
             {
-                bufferView = bufferViewPtr.get();
-                m_bufferViewCache.Insert(static_cast<uint64_t>(hash), AZStd::move(bufferViewPtr));
-                if (!buffer->GetName().IsEmpty())
-                {
-                    m_bufferReverseLookupHash.emplace(bufferResourceViewData, hash);
-                }
-            }
-            else
-            {
-                AZ_Error("FrameGraphCompiler", false, "Failed to acquire an buffer view");
+                m_bufferReverseLookupHash.emplace(bufferResourceViewData, hash);
             }
         }
         return bufferView;
@@ -798,20 +784,9 @@ namespace AZ::RHI
             for (ImageScopeAttachment* node = imageAttachment->GetFirstScopeAttachment(); node != nullptr; node = node->GetNext())
             {
                 const ImageViewDescriptor& imageViewDescriptor = node->GetDescriptor().m_imageViewDescriptor;
-                    
-                ImageView* imageView = nullptr;
-                //Check image's cache first as that contains views provided by higher level code.
-                if(image->IsInResourceCache(imageViewDescriptor))
-                {
-                    imageView = image->GetImageView(imageViewDescriptor).get();
-                }
-                else
-                {
-                    //If the higher level code has not provided a view, check local frame graph compiler's local cache.
-                    //The local cache is special and was mainly added to handle transient resources. This cache adds a dependency to
-                    //the resourceview ensuring they do not get deleted at the end of the frame and recreated at the start of the next frame.
-                    imageView = GetImageViewFromLocalCache(image, imageViewDescriptor);
-                }
+
+                // Multi device image views don't have a global cache, so we always cache them
+                ImageView* imageView = GetImageViewFromLocalCache(image, imageViewDescriptor);
                      
                 node->SetImageView(imageView);
             }
@@ -831,20 +806,9 @@ namespace AZ::RHI
             for (BufferScopeAttachment* node = bufferAttachment->GetFirstScopeAttachment(); node != nullptr; node = node->GetNext())
             {
                 const BufferViewDescriptor& bufferViewDescriptor = node->GetDescriptor().m_bufferViewDescriptor;
-                    
-                BufferView* bufferView = nullptr;
-                //Check buffer's cache first as that contains views provided by higher level code.
-                if(buffer->IsInResourceCache(bufferViewDescriptor))
-                {
-                    bufferView = buffer->GetBufferView(bufferViewDescriptor).get();
-                }
-                else
-                {
-                    //If the higher level code has not provided a view, check local frame graph compiler's local cache.
-                    //The local cache is special and was mainly added to handle transient resources. This cache adds a dependency to
-                    //the resourceview ensuring they do not get deleted at the end of the frame and recreated at the start of the next frame.
-                    bufferView = GetBufferViewFromLocalCache(buffer, bufferViewDescriptor);
-                }
+
+                // Multi device buffer views don't have a global cache, so we always cache them
+                BufferView* bufferView = GetBufferViewFromLocalCache(buffer, bufferViewDescriptor);
 
                 node->SetBufferView(bufferView);
             }

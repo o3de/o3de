@@ -72,36 +72,43 @@ namespace AzToolsFramework
 
     void PropertyDoubleSliderCtrl::setSoftMinimum(double val)
     {
+        QSignalBlocker block(m_sliderCombo);
         m_sliderCombo->setSoftMinimum(val);
     }
 
     void PropertyDoubleSliderCtrl::setSoftMaximum(double val)
     {
+        QSignalBlocker block(m_sliderCombo);
         m_sliderCombo->setSoftMaximum(val);
     }
 
     void PropertyDoubleSliderCtrl::setPrefix(QString val)
     {
+        QSignalBlocker block(m_sliderCombo);
         m_sliderCombo->spinbox()->setPrefix(val);
     }
 
     void PropertyDoubleSliderCtrl::setSuffix(QString val)
     {
+        QSignalBlocker block(m_sliderCombo);
         m_sliderCombo->spinbox()->setSuffix(val);
     }
 
     void PropertyDoubleSliderCtrl::setDecimals(int decimals)
     {
+        QSignalBlocker block(m_sliderCombo);
         m_sliderCombo->setDecimals(decimals);
     }
 
     void PropertyDoubleSliderCtrl::setDisplayDecimals(int displayDecimals)
     {
+        QSignalBlocker block(m_sliderCombo);
         m_sliderCombo->spinbox()->setDisplayDecimals(displayDecimals);
     }
 
     void PropertyDoubleSliderCtrl::setCurveMidpoint(double midpoint)
     {
+        QSignalBlocker block(m_sliderCombo);
         m_sliderCombo->setCurveMidpoint(midpoint);
     }
 
@@ -147,6 +154,11 @@ namespace AzToolsFramework
     void PropertyDoubleSliderCtrl::UpdateTabOrder()
     {
         setTabOrder(GetFirstInTabOrder(), GetLastInTabOrder());
+    }
+
+    void PropertyDoubleSliderCtrl::ClearSavedState()
+    {
+        m_sliderCombo->resetLimits();
     }
 
     // a common function to eat attribs, for all int handlers:

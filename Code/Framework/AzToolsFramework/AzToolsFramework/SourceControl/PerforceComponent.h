@@ -150,6 +150,7 @@ namespace AzToolsFramework
         void EnableTrust(bool enable, AZStd::string fingerprint) override;
         void SetConnectionSetting(const char* key, const char* value, const SourceControlSettingCallback& respCallBack) override;
         void GetConnectionSetting(const char* key, const SourceControlSettingCallback& respCallBack) override;
+        void OpenSettings() override;
         SourceControlState GetSourceControlState() const override { return m_connectionState; }
         //////////////////////////////////////////////////////////////////////////
 

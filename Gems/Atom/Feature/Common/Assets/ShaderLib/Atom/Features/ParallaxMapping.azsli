@@ -331,7 +331,7 @@ ParallaxOffset AdvancedParallaxMapping(float depthFactor, float depthOffset, flo
 }
 
 // return offset in tangent space
-ParallaxOffset CalculateParallaxOffset(float depthFactor, float depthOffset, float2 uv, float dirToCameraTS, float3 dirToLightTS, inout float parallaxShadowAttenuation)
+ParallaxOffset CalculateParallaxOffset(float depthFactor, float depthOffset, float2 uv, float3 dirToCameraTS, float3 dirToLightTS, inout float parallaxShadowAttenuation)
 {
     if(o_parallax_algorithm == ParallaxAlgorithm::Basic)
     {

@@ -7,6 +7,7 @@
  */
 
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
+#include <Atom/RHI.Reflect/Interval.h>
 
 #include <AzCore/Utils/TypeHash.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -92,5 +93,14 @@ namespace AZ::RHI
             m_elementFormat == other.m_elementFormat &&
             m_overrideBindFlags == other.m_overrideBindFlags &&
             m_ignoreFrameAttachmentValidation == other.m_ignoreFrameAttachmentValidation;
+    }
+
+    bool BufferViewDescriptor::OverlapsSubResource(const BufferViewDescriptor& other) const
+    {
+        uint32_t begin = m_elementOffset * m_elementSize;
+        uint32_t end = begin + m_elementCount * m_elementSize - 1;
+        uint32_t otherBegin = other.m_elementOffset * other.m_elementSize;
+        uint32_t otherEnd = otherBegin + other.m_elementCount * other.m_elementSize - 1;
+        return Interval(begin, end).Overlaps(Interval(otherBegin, otherEnd));
     }
 }

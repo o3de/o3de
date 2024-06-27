@@ -56,11 +56,8 @@ namespace AZ
 
         void SpecularReflectionsFeatureProcessor::UpdatePasses()
         {
-            RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
-            RHI::Ptr<RHI::Device> device = rhiSystem->GetDevice();
-
             // disable raytracing if the platform does not support it
-            if (!device->GetFeatures().m_rayTracing)
+            if (RHI::RHISystemInterface::Get()->GetRayTracingSupport() == RHI::MultiDevice::NoDevices)
             {
                 m_ssrOptions.m_reflectionMethod = SSROptions::ReflectionMethod::ScreenSpace;
             }

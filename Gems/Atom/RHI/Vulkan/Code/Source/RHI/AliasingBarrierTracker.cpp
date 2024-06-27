@@ -51,8 +51,8 @@ namespace AZ
             }
 
             const auto& queueContext = m_device.GetCommandQueueContext();
-            const QueueId& oldQueueId = queueContext.GetCommandQueue(beforeResource.m_endScope->GetHardwareQueueClass()).GetId();
-            const QueueId& newQueueId = queueContext.GetCommandQueue(afterResource.m_beginScope->GetHardwareQueueClass()).GetId();
+            QueueId oldQueueId = queueContext.GetCommandQueue(beforeResource.m_endScope->GetHardwareQueueClass()).GetId();
+            QueueId newQueueId = queueContext.GetCommandQueue(afterResource.m_beginScope->GetHardwareQueueClass()).GetId();
 
             if (afterResource.m_type == RHI::AliasedResourceType::Image)
             {
@@ -86,10 +86,11 @@ namespace AZ
                     barrier.subresourceRange.levelCount = image->GetDescriptor().m_mipLevels;
                     barrier.subresourceRange.baseArrayLayer = 0;
                     barrier.subresourceRange.layerCount = image->GetDescriptor().m_arraySize;
-                    static_cast<Scope*>(afterResource.m_beginScope)->QueueBarrier(Scope::BarrierSlot::Aliasing, srcPipelineFlags, dstPipelineFlags, barrier);
+                    auto insertedBarrier = static_cast<Scope*>(afterResource.m_beginScope)->QueueBarrier(Scope::BarrierSlot::Aliasing, srcPipelineFlags, dstPipelineFlags, barrier);
 
                     image->SetLayout(barrier.newLayout);
                     image->SetOwnerQueue(newQueueId);
+                    image->SetPipelineAccess({ insertedBarrier.m_dstStageMask, insertedBarrier.m_imageBarrier.dstAccessMask});
                 }
             }
             else // Buffer
@@ -120,9 +121,10 @@ namespace AZ
                     barrier.buffer = bufferMemory->GetNativeBuffer();
                     barrier.offset = bufferMemory->GetOffset() + afterResource.m_byteOffsetMin;
                     barrier.size = afterResource.m_byteOffsetMax - afterResource.m_byteOffsetMin + 1;
-                    static_cast<Scope*>(afterResource.m_beginScope)->QueueBarrier(Scope::BarrierSlot::Aliasing, srcPipelineFlags, dstPipelineFlags, barrier);
+                    auto insertedBarrier = static_cast<Scope*>(afterResource.m_beginScope)->QueueBarrier(Scope::BarrierSlot::Aliasing, srcPipelineFlags, dstPipelineFlags, barrier);
 
                     buffer->SetOwnerQueue(newQueueId);
+                    buffer->SetPipelineAccess({ insertedBarrier.m_dstStageMask, insertedBarrier.m_imageBarrier.dstAccessMask });
                 }
             }
 

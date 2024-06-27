@@ -78,12 +78,6 @@ public:
     float GetZoom2D() const { return m_zoom2D; };
 
     //////////////////////////////////////////////////////////////////////////
-    //! Get currently active camera object id.
-    REFGUID GetCameraObjectId() const { return m_cameraObjectId; };
-    //! Sets currently active camera object id.
-    void SetCameraObjectId(REFGUID cameraObjectId) { m_cameraObjectId = cameraObjectId; };
-
-    //////////////////////////////////////////////////////////////////////////
     //! Get number of currently existing viewports.
     virtual int GetViewCount() { return static_cast<int>(m_viewports.size()); };
     //! Get viewport by index.
@@ -131,9 +125,6 @@ private:
     Vec3 m_origin2D;
     //! Zoom of 2d viewports.
     float m_zoom2D;
-
-    //! Id of camera object.
-    GUID m_cameraObjectId;
 
     int m_nGameViewports;
     bool m_bGameViewportsUpdated;

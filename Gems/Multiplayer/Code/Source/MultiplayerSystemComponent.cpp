@@ -748,6 +748,17 @@ namespace Multiplayer
     {
         reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetProviderTicket(packet.GetTicket().c_str());
 
+        const char* levelName = AZ::Interface<AzFramework::ILevelSystemLifecycle>::Get()->GetCurrentLevelName();
+        if (!levelName || *levelName == '\0')
+        {
+            AZLOG_WARN(
+                "Server does not have a multiplayer level loaded! Make sure the server has a level loaded before accepting clients.");
+            m_noServerLevelLoadedEvent.Signal();
+
+            connection->Disconnect(DisconnectReason::ServerNoLevelLoaded, TerminationEndpoint::Local);
+            return true;
+        }
+
         // Hosts will handle spawning for a player on connect
         if (GetAgentType() == MultiplayerAgentType::ClientServer
             || GetAgentType() == MultiplayerAgentType::DedicatedServer)
@@ -785,18 +796,21 @@ namespace Multiplayer
             }
             else
             {
-                AZLOG_ERROR("No IMultiplayerSpawner was available. Ensure that one is registered for usage on PlayerJoin.");
+                // There's no player spawner, maybe the level's entities aren't finished activating
+                if (!m_levelEntitiesActivated)
+                {
+                    // Remember this player, and spawn it once the level entities finish activating
+                    MultiplayerAgentDatum datum;
+                    datum.m_agentType = MultiplayerAgentType::Client;
+                    datum.m_id = connection->GetConnectionId();
+                    const uint64_t userId = packet.GetTemporaryUserId();
+                    m_playersWaitingToBeSpawned.emplace_back(userId, datum, connection);
+                }
+                else
+                {
+                    AZLOG_ERROR("No IMultiplayerSpawner was available. Ensure that one is registered for usage on PlayerJoin.");
+                }
             }
-        }
-
-        const char* levelName = AZ::Interface<AzFramework::ILevelSystemLifecycle>::Get()->GetCurrentLevelName();
-        if (!levelName || strlen(levelName) == 0)
-        {
-            AZLOG_WARN("Server does not have a multiplayer level loaded! Make sure the server has a level loaded before accepting clients.");
-            m_noServerLevelLoadedEvent.Signal();
-
-            connection->Disconnect(DisconnectReason::ServerNoLevelLoaded, TerminationEndpoint::Local);
-            return true;
         }
 
         if (connection->SendReliablePacket(MultiplayerPackets::Accept(levelName)))
@@ -1716,9 +1730,17 @@ namespace Multiplayer
             }
         }
     }
-
-    void MultiplayerSystemComponent::OnRootSpawnableReady([[maybe_unused]] AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, [[maybe_unused]] uint32_t generation)
+    void MultiplayerSystemComponent::OnRootSpawnableAssigned(
+        [[maybe_unused]] AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, [[maybe_unused]] uint32_t generation)
     {
+        m_levelEntitiesActivated = false;
+    }
+
+    void MultiplayerSystemComponent::OnRootSpawnableReady(
+        [[maybe_unused]] AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, [[maybe_unused]] uint32_t generation)
+    {
+        m_levelEntitiesActivated = true;
+
         // Ignore level loads if not in multiplayer mode
         if (m_agentType == MultiplayerAgentType::Uninitialized)
         {
@@ -1754,6 +1776,11 @@ namespace Multiplayer
         }
 
         m_playersWaitingToBeSpawned.clear();
+    }
+
+    void MultiplayerSystemComponent::OnRootSpawnableReleased([[maybe_unused]] uint32_t generation)
+    {
+        m_levelEntitiesActivated = false;
     }
 
     bool MultiplayerSystemComponent::ShouldBlockLevelLoading(const char* levelName)
@@ -1950,4 +1977,4 @@ namespace Multiplayer
         AZ::Interface<IMultiplayer>::Get()->Terminate(DisconnectReason::TerminatedByUser);
     }
     AZ_CONSOLEFREEFUNC(disconnect, AZ::ConsoleFunctorFlags::DontReplicate, "Disconnects any open multiplayer connections");
-}
+} // namespace Multiplayer

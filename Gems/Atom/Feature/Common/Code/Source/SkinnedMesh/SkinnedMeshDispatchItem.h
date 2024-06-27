@@ -13,8 +13,8 @@
 #include <SkinnedMesh/SkinnedMeshShaderOptionsCache.h>
 
 #include <Atom/RHI/DispatchItem.h>
-#include <AtomCore/Instance/Instance.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
+#include <AtomCore/Instance/Instance.h>
 
 namespace AZ
 {

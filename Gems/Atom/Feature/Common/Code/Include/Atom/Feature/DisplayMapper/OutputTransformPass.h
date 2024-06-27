@@ -11,7 +11,7 @@
 #include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
 #include <ACES/Aces.h>
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
-#include <Atom/Feature/DisplayMapper/DisplayMapperFullScreenPass.h>
+#include <Atom/Feature/DisplayMapper/ApplyShaperLookupTablePass.h>
 #include <PostProcessing/PostProcessingShaderOptionBase.h>
 
 namespace AZ
@@ -20,12 +20,13 @@ namespace AZ
     {
         static const char* const ToneMapperShaderVariantOptionName{ "o_tonemapperType" };
         static const char* const TransferFunctionShaderVariantOptionName{ "o_transferFunctionType" };
+        static const char* const LdrGradingLutShaderVariantOptionName{ "o_colorGradingEnabled" };
 
         /**
          * This pass is used to apply tonemapping and output transforms other than ACES.
          */
         class OutputTransformPass
-            : public DisplayMapperFullScreenPass
+            : public ApplyShaperLookupTablePass
             , public PostProcessingShaderOptionBase
         {
             AZ_RPI_PASS(OutputTransformPass);
@@ -55,17 +56,22 @@ namespace AZ
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
             void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
+            // Pass behavior overrides...
+            void FrameBeginInternal(FramePrepareParams params) override;
+
             void InitializeShaderVariant();
             void UpdateCurrentShaderVariant();
 
             const AZ::Name m_toneMapperShaderVariantOptionName;
             const AZ::Name m_transferFunctionShaderVariantOptionName;
+            const AZ::Name m_ldrGradingLutShaderVariantOptionName;
 
             ToneMapperType m_toneMapperType = ToneMapperType::None;
             TransferFunctionType m_transferFunctionType = TransferFunctionType::None;
 
             bool m_needToUpdateShaderVariant = false;
             RHI::ShaderInputConstantIndex m_shaderInputCinemaLimitsIndex;
+            RHI::ShaderInputNameIndex m_exposureControlBufferInputIndex = "m_exposureControl";
 
             AZ::Render::DisplayMapperParameters m_displayMapperParameters = {};
 

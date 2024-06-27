@@ -33,7 +33,7 @@ namespace AZ
             Data::Instance<Buffer> CreateBufferFromCommonPool(const CommonBufferDescriptor& descriptor) override;
             Data::Instance<Buffer> FindCommonBuffer(AZStd::string_view uniqueBufferName) override;
 
-            void Init();
+            void Init(RHI::MultiDevice::DeviceMask deviceMask);
             void Shutdown();
 
         protected:

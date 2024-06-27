@@ -37,7 +37,6 @@
 #endif
 
 // forward declarations.
-class CBaseObject;
 class QMenu;
 class QKeyEvent;
 struct ray_hit;
@@ -245,7 +244,6 @@ private:
 
     ////////////////////////////////////////////////////////////////////////
     // Private helpers...
-    void SetViewTM(const Matrix34& tm, bool bMoveOnly);
     void SetDefaultCameraNearFar();
     void RenderAll();
 
@@ -303,9 +301,6 @@ private:
     QPoint WidgetToViewport(const QPoint& point) const;
     QPoint ViewportToWidget(const QPoint& point) const;
     QSize WidgetToViewport(const QSize& size) const;
-
-
-    CBaseObject* GetCameraObject() const;
 
     void UnProjectFromScreen(float sx, float sy, float* px, float* py, float* pz) const;
     void ProjectToScreen(float ptx, float pty, float ptz, float* sx, float* sy) const;

@@ -84,7 +84,6 @@ namespace AZ
                     ->Field("UseForwardPassIBLSpecular", &MeshComponentConfig::m_useForwardPassIblSpecular)
                     ->Field("IsRayTracingEnabled", &MeshComponentConfig::m_isRayTracingEnabled)
                     ->Field("IsAlwaysDynamic", &MeshComponentConfig::m_isAlwaysDynamic)
-                    ->Field("Visibility", &MeshComponentConfig::m_isVisible)
                     ->Field("SupportRayIntersection", &MeshComponentConfig::m_enableRayIntersection)
                     ->Field("LodType", &MeshComponentConfig::m_lodType)
                     ->Field("LodOverride", &MeshComponentConfig::m_lodOverride)
@@ -212,7 +211,7 @@ namespace AZ
                     ->VirtualProperty("ExcludeFromReflectionCubeMaps", "GetExcludeFromReflectionCubeMaps", "SetExcludeFromReflectionCubeMaps")
                     ->VirtualProperty("Visibility", "GetVisibility", "SetVisibility")
                     ;
-
+                
                 behaviorContext->EBus<MeshComponentNotificationBus>("MeshComponentNotificationBus")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Category, "render")
@@ -456,11 +455,12 @@ namespace AZ
 
                 const AZ::Transform& transform =
                     m_transformInterface ? m_transformInterface->GetWorldTM() : AZ::Transform::CreateIdentity();
-                m_meshFeatureProcessor->SetVisible(m_meshHandle, m_configuration.m_isVisible);
+
                 m_meshFeatureProcessor->SetTransform(m_meshHandle, transform, m_cachedNonUniformScale);
                 m_meshFeatureProcessor->SetSortKey(m_meshHandle, m_configuration.m_sortKey);
                 m_meshFeatureProcessor->SetLightingChannelMask(m_meshHandle, m_configuration.m_lightingChannelConfig.GetLightingChannelMask());
                 m_meshFeatureProcessor->SetMeshLodConfiguration(m_meshHandle, GetMeshLodConfiguration());
+                m_meshFeatureProcessor->SetVisible(m_meshHandle, m_isVisible);
                 m_meshFeatureProcessor->SetRayTracingEnabled(m_meshHandle, meshDescriptor.m_isRayTracingEnabled);
             }
             else
@@ -547,7 +547,7 @@ namespace AZ
         {
             return m_meshFeatureProcessor ? m_meshFeatureProcessor->GetModel(m_meshHandle) : Data::Instance<RPI::Model>();
         }
-
+        
         const RPI::MeshDrawPacketLods* MeshComponentController::GetDrawPackets() const
         {
             return m_meshFeatureProcessor ? &m_meshFeatureProcessor->GetDrawPackets(m_meshHandle) : nullptr;
@@ -639,19 +639,19 @@ namespace AZ
 
         void MeshComponentController::SetVisibility(bool visible)
         {
-            if (m_meshFeatureProcessor)
+            if (m_isVisible != visible)
             {
-                m_meshFeatureProcessor->SetVisible(m_meshHandle, visible);
+                if (m_meshFeatureProcessor)
+                {
+                    m_meshFeatureProcessor->SetVisible(m_meshHandle, visible);
+                }
+                m_isVisible = visible;
             }
         }
 
         bool MeshComponentController::GetVisibility() const
         {
-            if (m_meshFeatureProcessor)
-            {
-                return m_meshFeatureProcessor->GetVisible(m_meshHandle);
-            }
-            return false;
+            return m_isVisible;
         }
 
         void MeshComponentController::SetRayTracingEnabled(bool enabled)
@@ -879,7 +879,7 @@ namespace AZ
                             }
                         }
 
-                        // Continue iterating until all shaders have been checked or a matching tag is found.
+                        // Continue iterating until all shaders have been checked or a matching tag is found. 
                         return true;
                     });
             }

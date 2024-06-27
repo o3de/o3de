@@ -50,3 +50,4 @@ ly_associate_package(PACKAGE_NAME azslc-1.8.19-rev1-windows                     
 ly_associate_package(PACKAGE_NAME SQLite-3.37.2-rev1-windows        	                TARGETS SQLite                      PACKAGE_HASH c1658c8ed5cf0e45d4a5da940c6a6d770b76e0f4f57313b70d0fd306885f015e)
 ly_associate_package(PACKAGE_NAME AwsIotDeviceSdkCpp-1.15.2-rev1-windows                TARGETS AwsIotDeviceSdkCpp          PACKAGE_HASH b03475a9f0f7a7e7c90619fba35f1a74fb2b8f4cd33fa07af99f2ae9e0c079dd)
 ly_associate_package(PACKAGE_NAME vulkan-validationlayers-1.3.261-rev1-windows          TARGETS vulkan-validationlayers     PACKAGE_HASH 79132c6379e0d167c7a2f5a8e251861759a71d92f1fb8cc3b873df821d83ae51)
+ly_associate_package(PACKAGE_NAME AWSGameLiftServerSDK-5.1.2-rev1-windows               TARGETS AWSGameLiftServerSDK        PACKAGE_HASH 253fe40ab4ea61279b61d8c653a715329bfa4081d022b37b7f2d092647dab765)

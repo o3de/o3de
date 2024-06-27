@@ -43,7 +43,7 @@ namespace AZ::RHI
         //! Returns the image assigned to this attachment. This is not guaranteed to exist
         //! until after frame graph compilation.
         const Image* GetImage() const;
-        Image* GetImage();
+        Image *GetImage();
 
         //! Returns the image descriptor for this attachment.
         const ImageDescriptor& GetImageDescriptor() const;

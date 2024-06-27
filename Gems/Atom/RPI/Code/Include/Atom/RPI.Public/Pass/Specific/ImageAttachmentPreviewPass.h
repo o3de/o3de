@@ -9,7 +9,6 @@
 
 #include <AtomCore/Instance/Instance.h>
 
-#include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/CopyItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 
@@ -135,7 +134,7 @@ namespace AZ
                 // Cached pipeline state descriptor
                 RHI::PipelineStateDescriptorForDraw m_pipelineStateDescriptor;
                 // The draw item for drawing the image preview for this type of image
-                RHI::DrawItem m_item;
+                RHI::DrawItem m_item{RHI::MultiDevice::AllDevices};
 
                 // Key to pass to the SRG when desired shader variant isn't found
                 ShaderVariantKey m_shaderVariantKeyFallback;

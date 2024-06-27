@@ -11,11 +11,9 @@
 
 namespace AZ::RHI
 {
-    SwapChainFrameAttachment::SwapChainFrameAttachment(
-        const AttachmentId& attachmentId,
-        Ptr<SwapChain> swapChain)
+    SwapChainFrameAttachment::SwapChainFrameAttachment(const AttachmentId& attachmentId, Ptr<SwapChain> swapChain)
         : ImageFrameAttachment(attachmentId, swapChain->GetCurrentImage())
-        , m_swapChain{AZStd::move(swapChain)}
+        , m_swapChain{ AZStd::move(swapChain) }
     {}
 
     SwapChain* SwapChainFrameAttachment::GetSwapChain()

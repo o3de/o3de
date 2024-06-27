@@ -96,20 +96,9 @@ private:
 
 // Abstract base class that defines common
 // operations for key bundles and tracks
-class ITrackViewKeyBundle
-{
-public:
-    virtual bool AreAllKeysOfSameType() const = 0;
-
-    virtual unsigned int GetKeyCount() const = 0;
-    virtual CTrackViewKeyHandle GetKey(unsigned int index) = 0;
-
-    virtual void SelectKeys(const bool bSelected) = 0;
-};
 
 // Represents a bundle of keys
 class CTrackViewKeyBundle
-    : public ITrackViewKeyBundle
 {
     friend class CTrackViewTrack;
     friend class CTrackViewAnimNode;
@@ -119,12 +108,12 @@ public:
         : m_bAllOfSameType(true) {}
     virtual ~CTrackViewKeyBundle() = default;
 
-    bool AreAllKeysOfSameType() const override { return m_bAllOfSameType; }
+    bool AreAllKeysOfSameType() const { return m_bAllOfSameType; }
 
-    unsigned int GetKeyCount() const override { return static_cast<unsigned int>(m_keys.size()); }
-    CTrackViewKeyHandle GetKey(unsigned int index) override { return m_keys[index]; }
+    unsigned int GetKeyCount() const { return static_cast<unsigned int>(m_keys.size()); }
+    CTrackViewKeyHandle GetKey(unsigned int index) { return m_keys[index]; }
 
-    void SelectKeys(const bool bSelected) override;
+    void SelectKeys(const bool bSelected);
 
     CTrackViewKeyHandle GetSingleSelectedKey();
 

@@ -236,7 +236,6 @@ struct IMovieCallback
     virtual ~IMovieCallback(){}
     // Called by movie system.
     virtual void OnMovieCallback(ECallbackReason reason, IAnimNode* pNode) = 0;
-    virtual void OnSetCamera(const SCameraParams& Params) = 0;
     virtual bool IsSequenceCamUsed() const = 0;
     // </interfuscator:shuffle>
 };
@@ -1256,8 +1255,6 @@ struct IMovieSystem
     // While in recording mode any changes made to node will be added as keys to tracks.
     virtual void SetRecording(bool recording) = 0;
     virtual bool IsRecording() const = 0;
-
-    virtual void EnableCameraShake(bool bEnabled) = 0;
 
     // Pause any playing sequences.
     virtual void Pause() = 0;

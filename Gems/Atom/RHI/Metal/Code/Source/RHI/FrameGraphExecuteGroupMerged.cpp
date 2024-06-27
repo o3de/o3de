@@ -37,7 +37,7 @@ namespace AZ
                 scopeEntries.push_back({ scope->GetId(), scope->GetEstimatedItemCount() });
                 
                 m_workRequest.m_swapChainsToPresent.reserve(m_workRequest.m_swapChainsToPresent.size() + scope->GetSwapChainsToPresent().size());
-                for (RHI::SwapChain* swapChain : scope->GetSwapChainsToPresent())
+                for (RHI::DeviceSwapChain* swapChain : scope->GetSwapChainsToPresent())
                 {
                     m_workRequest.m_swapChainsToPresent.push_back(static_cast<SwapChain*>(swapChain));
                 }
@@ -46,11 +46,12 @@ namespace AZ
                 fencesToSignal.reserve(fencesToSignal.size() + scope->GetFencesToSignal().size());
                 for (const RHI::Ptr<RHI::Fence>& fence : scope->GetFencesToSignal())
                 {
-                    fencesToSignal.push_back(&static_cast<FenceImpl&>(*fence).Get());
+                    fencesToSignal.push_back(&static_cast<FenceImpl&>(*fence->GetDeviceFence(scope->GetDeviceIndex())).Get());
                 }
             }
 
             InitMergedRequest request;
+            request.m_deviceIndex = device.GetDeviceIndex();
             request.m_scopeEntries = scopeEntries.data();
             request.m_scopeCount = static_cast<uint32_t>(scopeEntries.size());
             
