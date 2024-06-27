@@ -30,9 +30,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             /// Update log messages
-            virtual void WaitForAssetUpdate()
-            {
-            }
+            virtual void WaitForAssetUpdate() {}
         };
         typedef EBus<AssetLoadNotificator> AssetLoadNotificatorBus;
     }
