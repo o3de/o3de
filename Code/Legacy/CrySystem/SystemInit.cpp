@@ -1237,10 +1237,10 @@ void CSystem::CreateSystemVars()
     assert(gEnv->pConsole);
 
 #if AZ_LOADSCREENCOMPONENT_ENABLED
-    m_game_load_screen_uicanvas_path = REGISTER_STRING("game_load_screen_uicanvas_path", "", 0, "Game load screen UiCanvas path.");
+    m_game_load_screen_uicanvas_path = REGISTER_STRING("game_load_screen_uicanvas_path", "UI/Loading/Loading.uicanvas", 0, "Game load screen UiCanvas path.");
     m_level_load_screen_uicanvas_path = REGISTER_STRING("level_load_screen_uicanvas_path", "", 0, "Level load screen UiCanvas path.");
     m_game_load_screen_sequence_to_auto_play =
-        REGISTER_STRING("game_load_screen_sequence_to_auto_play", "", 0, "Game load screen UiCanvas animation sequence to play on load.");
+        REGISTER_STRING("game_load_screen_sequence_to_auto_play", "5", 0, "Game load screen UiCanvas animation sequence to play on load.");
     m_level_load_screen_sequence_to_auto_play =
         REGISTER_STRING("level_load_screen_sequence_to_auto_play", "", 0, "Level load screen UiCanvas animation sequence to play on load.");
     m_game_load_screen_sequence_fixed_fps = REGISTER_FLOAT(

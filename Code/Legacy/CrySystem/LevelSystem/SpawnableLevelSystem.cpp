@@ -263,6 +263,12 @@ namespace LegacyLevelSystem
             UnloadLevel();
         }
 
+#if defined (CARBONATED)
+    #if AZ_LOADSCREENCOMPONENT_ENABLED
+            EBUS_EVENT(LoadScreenBus, LevelStart);
+    #endif // if AZ_LOADSCREENCOMPONENT_ENABLED
+#endif
+
         gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_PREPARE, 0, 0);
         PrepareNextLevel(validLevelName.c_str());
 

@@ -188,7 +188,7 @@ void LoadScreenComponent::UpdateAndRender()
 {
     if (m_loadScreenState == LoadScreenState::Showing)
     {
-        AZ_Assert(GetCurrentThreadId() == gEnv->mMainThreadId, "UpdateAndRender should only be called from the main thread");
+        AZ_Assert(GetCurrentThreadId() == GetGlobalEnv()->mMainThreadId, "UpdateAndRender should only be called from the main thread");
 
         // Throttling.
         if (!m_previousCallTimeForUpdateAndRender.GetValue())
