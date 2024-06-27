@@ -6,6 +6,7 @@
  *
  */
 #include <RHI/FrameGraphExecuteGroupMerged.h>
+#include <RHI/Device.h>
 #include <RHI/SwapChain.h>
 
 namespace AZ
