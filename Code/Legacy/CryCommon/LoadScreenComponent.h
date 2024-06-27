@@ -11,6 +11,8 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/std/parallel/atomic.h>
+#include <AzCore/Utils/AssetLoadNotification.h>
+
 #include <CryCommon/TimeValue.h>
 
 #include <CrySystemBus.h>
@@ -32,6 +34,7 @@ class LoadScreenComponent
     : public AZ::Component
     , public CrySystemEventBus::Handler
     , public LoadScreenBus::Handler
+    , public AZ::AssetLoadNotification::AssetLoadNotificatorBus::Handler
     , public ILoadtimeCallback
 {
 public:
@@ -68,6 +71,11 @@ public:
     // ILoadtimeCallback interface implementation
     void LoadtimeUpdate(float deltaTime) override;
     void LoadtimeRender() override;
+    //////////////////////////////////////////////////////////////////////////
+
+    //////////////////////////////////////////////////////////////////////////
+    // AssetLoadNotificatorBus interface implementation
+    void WaitForAssetUpdate() override;
     //////////////////////////////////////////////////////////////////////////
 
     inline bool IsLoadingThreadEnabled() const

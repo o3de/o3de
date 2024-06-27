@@ -154,12 +154,14 @@ void LoadScreenComponent::Activate()
 {
     CrySystemEventBus::Handler::BusConnect();
     LoadScreenBus::Handler::BusConnect(GetEntityId());
+    AZ::AssetLoadNotification::AssetLoadNotificatorBus::Handler::BusConnect();
 }
 
 void LoadScreenComponent::Deactivate()
 {
-    CrySystemEventBus::Handler::BusDisconnect();
+    AZ::AssetLoadNotification::AssetLoadNotificatorBus::Handler::BusDisconnect();
     LoadScreenBus::Handler::BusDisconnect(GetEntityId());
+    CrySystemEventBus::Handler::BusDisconnect();
 }
 
 void LoadScreenComponent::OnCrySystemInitialized(ISystem& system, const SSystemInitParams&)
@@ -221,6 +223,11 @@ void LoadScreenComponent::UpdateAndRender()
             }
         }
     }
+}
+
+void LoadScreenComponent::WaitForAssetUpdate()
+{
+    UpdateAndRender();
 }
 
 void LoadScreenComponent::GameStart()
