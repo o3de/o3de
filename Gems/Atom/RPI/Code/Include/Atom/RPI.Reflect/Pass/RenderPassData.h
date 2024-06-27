@@ -32,8 +32,6 @@ namespace AZ
             RHI::ShaderDataMappings m_mappings;
 
             bool m_bindViewSrg = false;
-
-            int m_deviceIndex = RHI::MultiDevice::InvalidDeviceIndex;
         };
     } // namespace RPI
 } // namespace AZ

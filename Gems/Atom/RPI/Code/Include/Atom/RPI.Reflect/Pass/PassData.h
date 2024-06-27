@@ -51,6 +51,8 @@ namespace AZ
             PipelineGlobalConnectionList m_pipelineGlobalConnections;
 
             Name m_pipelineViewTag;
+
+            int m_deviceIndex = RHI::MultiDevice::InvalidDeviceIndex;
         };
     } // namespace RPI
 } // namespace AZ
