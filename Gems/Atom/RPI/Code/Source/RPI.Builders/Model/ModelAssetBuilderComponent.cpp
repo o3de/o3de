@@ -86,7 +86,10 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<ModelAssetBuilderComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(38);  // Pad Skinning mesh buffers to respect appropriate alignment
+                    ->Version(39);
+
+                // v38 - Pad Skinning mesh buffers to respect appropriate alignment
+                // v39 - Automatically generate missing skinning data when skinned and unskinned data is mixed
             }
         }
 
