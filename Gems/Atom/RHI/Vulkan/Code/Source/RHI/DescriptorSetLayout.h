@@ -42,7 +42,7 @@ namespace AZ
             {
                 Device* m_device = nullptr;
                 RHI::ConstPtr<RHI::ShaderResourceGroupLayout> m_shaderResouceGroupLayout;
-
+                Name m_name;
                 HashValue64 GetHash() const;
             };
 

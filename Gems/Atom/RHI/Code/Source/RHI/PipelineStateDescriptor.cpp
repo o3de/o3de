@@ -27,6 +27,16 @@ namespace AZ::RHI
         return m_type == rhs.m_type;
     }
 
+    void PipelineStateDescriptor::SetName(const Name& name)
+    {
+        m_name = name;
+    }
+
+    const Name& PipelineStateDescriptor::GetName() const
+    {
+        return m_name;
+    }
+
     PipelineStateDescriptorForDraw::PipelineStateDescriptorForDraw()
         : PipelineStateDescriptor(PipelineStateType::Draw)
     {}
@@ -107,4 +117,4 @@ namespace AZ::RHI
         return m_pipelineLayoutDescriptor == rhs.m_pipelineLayoutDescriptor &&
             m_rayTracingFunction == rhs.m_rayTracingFunction;
     }
-}
+} // namespace AZ::RHI
