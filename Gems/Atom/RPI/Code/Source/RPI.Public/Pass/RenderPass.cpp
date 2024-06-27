@@ -276,9 +276,17 @@ namespace AZ
         void RenderPass::FrameBeginInternal(FramePrepareParams params)
         {
             m_timestampResult = AZ::RPI::TimestampResult();
+
+            // the pass is potentially re-allocated amount devices dynamically in runtime so deviceIndex is updated everyframe.
+            int deviceIndex = m_deviceIndex;
+            if (deviceIndex == AZ::RHI::MultiDevice::InvalidDeviceIndex && m_parent)
+            {
+                deviceIndex = azrtti_cast<AZ::RPI::ParentPass*>(m_parent)->GetDeviceIndex();
+            }
+
             if (GetScopeId().IsEmpty())
             {
-                InitScope(RHI::ScopeId(GetPathName()), m_hardwareQueueClass, m_deviceIndex);
+                InitScope(RHI::ScopeId(GetPathName()), m_hardwareQueueClass, deviceIndex);
             }
 
             params.m_frameGraphBuilder->ImportScopeProducer(*this);

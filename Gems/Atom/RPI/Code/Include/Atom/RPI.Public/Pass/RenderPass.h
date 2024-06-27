@@ -153,6 +153,8 @@ namespace AZ
             PipelineStatisticsResult m_statisticsResult;
 
             // The device index the pass should run on. Can be invalid if it doesn't matter.
+            // Please note that the m_deviceIndex might not be the actual running device index if it is invalid
+            // because the actually running device index is specified in RenderPass::FrameBeginInternal if m_deviceIndex is invalid.
             int m_deviceIndex{RHI::MultiDevice::InvalidDeviceIndex};
             // The device index the pass ran on during the last frame, necessary to read the queries.
             int m_lastDeviceIndex = RHI::MultiDevice::DefaultDeviceIndex;
