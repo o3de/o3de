@@ -26,7 +26,8 @@ Surface EvaluateSurface_StandardPBR(
     float3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],
     bool isFrontFace,
-    bool isDisplacementClipped)
+    bool isDisplacementClipped,
+    float4 vertexColor)
 {
     Surface surface = EvaluateSurface_BasePBR(positionWS, vertexNormal, tangents, bitangents, uvs, isFrontFace);
 
@@ -88,5 +89,6 @@ Surface EvaluateSurface_StandardPBR(VsOutput IN, PixelGeometryData geoData)
         geoData.bitangents,
         geoData.uvs,
         geoData.isFrontFace,
-        geoData.isDisplacementClipped);
+        geoData.isDisplacementClipped,
+        IN.color0);
 }

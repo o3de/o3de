@@ -23,7 +23,8 @@ Surface EvaluateSurface_BasePBR(
     float3 tangents[UvSetCount],
     float3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],
-    bool isFrontFace)
+    bool isFrontFace,
+    float4 vertexColor)
 {
     Surface surface;
     surface.position = positionWS;
@@ -41,6 +42,11 @@ Surface EvaluateSurface_BasePBR(
     float2 baseColorUv = uvs[MaterialSrg::m_baseColorMapUvIndex];
     real3 sampledColor = GetBaseColorInput(MaterialSrg::m_baseColorMap, MaterialSrg::m_sampler, baseColorUv, real3(MaterialSrg::m_baseColor.rgb), o_baseColor_useTexture);
     real3 baseColor = BlendBaseColor(sampledColor, real3(MaterialSrg::m_baseColor.rgb), real(MaterialSrg::m_baseColorFactor), o_baseColorTextureBlendMode, o_baseColor_useTexture);
+    // Check to ensure the material is using vertex colors (i.e o_useVertexColor) and that the mesh supports color vertex stream (i.e o_color0_isBound)
+    if(o_useVertexColor && o_color0_isBound)
+    {
+        baseColor = BlendBaseColor(real3(vertexColor.rgb), baseColor, real(MaterialSrg::m_vertexColorFactor), o_vertexColorBlendMode, true);
+    }
     
     // ------- Metallic -------
 
@@ -72,5 +78,6 @@ Surface EvaluateSurface_BasePBR(VsOutput IN, PixelGeometryData geoData)
         geoData.tangents,
         geoData.bitangents,
         geoData.uvs,
-        geoData.isFrontFace);
+        geoData.isFrontFace,
+        IN.color0);
 }
