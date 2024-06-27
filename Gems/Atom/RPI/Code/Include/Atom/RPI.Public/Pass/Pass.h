@@ -143,6 +143,9 @@ namespace AZ
             //! Returns the number of output attachment bindings
             uint32_t GetOutputCount() const { return uint32_t(m_outputBindingIndices.size()); }
 
+            //! Returns pipeline global connections
+            const PipelineGlobalConnectionList& GetGlobalConnectionList() const { return m_pipelineGlobalConnections; };
+
             //! Returns the pass template which was used for create this pass.
             //! It may return nullptr if the pass wasn't create from a template
             const PassTemplate* GetPassTemplate() const { return m_template.get(); }
