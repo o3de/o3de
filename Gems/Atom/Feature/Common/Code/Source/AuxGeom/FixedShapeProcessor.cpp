@@ -48,15 +48,15 @@ namespace AZ
             }
         }
 
-        bool FixedShapeProcessor::Initialize(AZ::RHI::Device& rhiDevice, const AZ::RPI::Scene* scene)
+        bool FixedShapeProcessor::Initialize(RHI::MultiDevice::DeviceMask deviceMask, const AZ::RPI::Scene* scene)
         {
             RHI::BufferPoolDescriptor desc;
             desc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
             desc.m_bindFlags = RHI::BufferBindFlags::InputAssembly;
 
-            m_bufferPool = RHI::Factory::Get().CreateBufferPool();
+            m_bufferPool = aznew RHI::BufferPool;
             m_bufferPool->SetName(Name("AuxGeomFixedShapeBufferPool"));
-            RHI::ResultCode resultCode = m_bufferPool->Init(rhiDevice, desc);
+            RHI::ResultCode resultCode = m_bufferPool->Init(deviceMask, desc);
 
             if (resultCode != RHI::ResultCode::Success)
             {
@@ -132,7 +132,7 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(AzRender, "FixedShapeProcessor: ProcessObjects");
 
-            RHI::DrawPacketBuilder drawPacketBuilder;
+            RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
 
             // Draw opaque shapes with LODs. This requires a separate draw packet per shape per view that it is in (usually only one)
 
@@ -173,12 +173,12 @@ namespace AZ
                             continue;
                         }
                         LodIndex lodIndex = GetLodIndexForShape(shape.m_shapeType, view.get(), position, scale);
-                        const RHI::DrawPacket* drawPacket = BuildDrawPacketForShape(
+                        auto drawPacket = BuildDrawPacketForShape(
                             drawPacketBuilder, shape, drawStyle, bufferData->m_viewProjOverrides, pipelineState, lodIndex);
                         if (drawPacket)
                         {
                             m_drawPackets.emplace_back(drawPacket);
-                            view->AddDrawPacket(drawPacket);
+                            view->AddDrawPacket(drawPacket.get());
                         }
                     }
                 }
@@ -195,7 +195,7 @@ namespace AZ
 
                     RPI::Ptr<RPI::PipelineStateForDraw> pipelineState = GetPipelineState(pipelineStateOptions);
 
-                    const RHI::DrawPacket* drawPacket =
+                    auto drawPacket =
                         BuildDrawPacketForBox(drawPacketBuilder, box, drawStyle, bufferData->m_viewProjOverrides, pipelineState);
                     if (drawPacket)
                     {
@@ -208,7 +208,7 @@ namespace AZ
                             {
                                 continue;
                             }
-                            view->AddDrawPacket(drawPacket);
+                            view->AddDrawPacket(drawPacket.get());
                         }
                     }
                 }
@@ -253,12 +253,12 @@ namespace AZ
                         RHI::DrawItemSortKey sortKey = view->GetSortKeyForPosition(position);
                         LodIndex lodIndex = GetLodIndexForShape(shape.m_shapeType, view.get(), position, scale);
 
-                        const RHI::DrawPacket* drawPacket = BuildDrawPacketForShape(
+                        auto drawPacket = BuildDrawPacketForShape(
                             drawPacketBuilder, shape, drawStyle, bufferData->m_viewProjOverrides, pipelineState, lodIndex, sortKey);
                         if (drawPacket)
                         {
                             m_drawPackets.emplace_back(drawPacket);
-                            view->AddDrawPacket(drawPacket);
+                            view->AddDrawPacket(drawPacket.get());
                         }
                     }
                 }
@@ -285,12 +285,12 @@ namespace AZ
                             continue;
                         }
                         RHI::DrawItemSortKey sortKey = view->GetSortKeyForPosition(position);
-                        const RHI::DrawPacket* drawPacket = BuildDrawPacketForBox(
+                        auto drawPacket = BuildDrawPacketForBox(
                             drawPacketBuilder, box, drawStyle, bufferData->m_viewProjOverrides, pipelineState, sortKey);
                         if (drawPacket)
                         {
                             m_drawPackets.emplace_back(drawPacket);
-                            view->AddDrawPacket(drawPacket);
+                            view->AddDrawPacket(drawPacket.get());
                         }
                     }
                 }
@@ -1228,7 +1228,7 @@ namespace AZ
             AZ::RHI::BufferInitRequest request;
 
             // setup m_pointIndexBuffer
-            objectBuffers.m_pointIndexBuffer = AZ::RHI::Factory::Get().CreateBuffer();
+            objectBuffers.m_pointIndexBuffer = aznew RHI::Buffer;
             const auto pointIndexDataSize = static_cast<uint32_t>(meshData.m_pointIndices.size() * sizeof(uint16_t));
 
             request.m_buffer = objectBuffers.m_pointIndexBuffer.get();
@@ -1243,7 +1243,7 @@ namespace AZ
             }
 
             // setup m_lineIndexBuffer
-            objectBuffers.m_lineIndexBuffer = AZ::RHI::Factory::Get().CreateBuffer();
+            objectBuffers.m_lineIndexBuffer = aznew RHI::Buffer;
             const auto lineIndexDataSize = static_cast<uint32_t>(meshData.m_lineIndices.size() * sizeof(uint16_t));
 
             request.m_buffer = objectBuffers.m_lineIndexBuffer.get();
@@ -1258,7 +1258,7 @@ namespace AZ
             }
 
             // setup m_triangleIndexBuffer
-            objectBuffers.m_triangleIndexBuffer = AZ::RHI::Factory::Get().CreateBuffer();
+            objectBuffers.m_triangleIndexBuffer = aznew RHI::Buffer;
             const auto triangleIndexDataSize = static_cast<uint32_t>(meshData.m_triangleIndices.size() * sizeof(uint16_t));
             request.m_buffer = objectBuffers.m_triangleIndexBuffer.get();
             request.m_descriptor = AZ::RHI::BufferDescriptor{ AZ::RHI::BufferBindFlags::InputAssembly, triangleIndexDataSize };
@@ -1272,7 +1272,7 @@ namespace AZ
             }
 
             // setup m_positionBuffer
-            objectBuffers.m_positionBuffer = AZ::RHI::Factory::Get().CreateBuffer();
+            objectBuffers.m_positionBuffer = aznew RHI::Buffer;
             const auto positionDataSize = static_cast<uint32_t>(meshData.m_positions.size() * sizeof(AuxGeomPosition));
 
             request.m_buffer = objectBuffers.m_positionBuffer.get();
@@ -1286,7 +1286,7 @@ namespace AZ
             }
 
             // setup m_normalBuffer
-            objectBuffers.m_normalBuffer = AZ::RHI::Factory::Get().CreateBuffer();
+            objectBuffers.m_normalBuffer = aznew RHI::Buffer;
             const auto normalDataSize = static_cast<uint32_t>(meshData.m_normals.size() * sizeof(AuxGeomNormal));
 
             request.m_buffer = objectBuffers.m_normalBuffer.get();
@@ -1600,7 +1600,7 @@ namespace AZ
             }
         }
 
-        const RHI::DrawPacket* FixedShapeProcessor::BuildDrawPacketForShape(
+        RHI::ConstPtr<RHI::DrawPacket> FixedShapeProcessor::BuildDrawPacketForShape(
             RHI::DrawPacketBuilder& drawPacketBuilder,
             const ShapeBufferEntry& shape,
             int drawStyle,
@@ -1702,7 +1702,7 @@ namespace AZ
             }
         }
 
-        const RHI::DrawPacket* FixedShapeProcessor::BuildDrawPacketForBox(
+        RHI::ConstPtr<RHI::DrawPacket> FixedShapeProcessor::BuildDrawPacketForBox(
             RHI::DrawPacketBuilder& drawPacketBuilder,
             const BoxBufferEntry& box,
             int drawStyle,
@@ -1754,14 +1754,14 @@ namespace AZ
                 sortKey);
         }
 
-        const RHI::DrawPacket* FixedShapeProcessor::BuildDrawPacket(
+        RHI::ConstPtr<RHI::DrawPacket> FixedShapeProcessor::BuildDrawPacket(
             RHI::DrawPacketBuilder& drawPacketBuilder,
             AZ::Data::Instance<RPI::ShaderResourceGroup>& srg,
             uint32_t indexCount,
             const RHI::IndexBufferView& indexBufferView,
             const StreamBufferViewsForAllStreams& streamBufferViews,
             RHI::DrawListTag drawListTag,
-            const AZ::RHI::PipelineState* pipelineState,
+            const RHI::PipelineState* pipelineState,
             RHI::DrawItemSortKey sortKey)
         {
             RHI::DrawIndexed drawIndexed;

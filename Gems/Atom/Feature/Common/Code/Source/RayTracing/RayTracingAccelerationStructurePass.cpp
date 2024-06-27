@@ -33,8 +33,7 @@ namespace AZ
             : Pass(descriptor)
         {
             // disable this pass if we're on a platform that doesn't support raytracing
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-            if (device->GetFeatures().m_rayTracing == false)
+            if (RHI::RHISystemInterface::Get()->GetRayTracingSupport() == RHI::MultiDevice::NoDevices)
             {
                 SetEnabled(false);
             }
@@ -121,8 +120,6 @@ namespace AZ
 
         void RayTracingAccelerationStructurePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-
             RPI::Scene* scene = m_pipeline->GetScene();
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
 
@@ -177,7 +174,7 @@ namespace AZ
 
                     // create the TLAS buffers based on the descriptor
                     RHI::Ptr<RHI::RayTracingTlas>& rayTracingTlas = rayTracingFeatureProcessor->GetTlas();
-                    rayTracingTlas->CreateBuffers(*device, &tlasDescriptor, rayTracingBufferPools);
+                    rayTracingTlas->CreateBuffers(RHI::RHISystemInterface::Get()->GetRayTracingSupport(), &tlasDescriptor, rayTracingBufferPools);
 
                     // import and attach the TLAS buffer
                     const RHI::Ptr<RHI::Buffer>& rayTracingTlasBuffer = rayTracingTlas->GetTlasBuffer();
@@ -255,7 +252,7 @@ namespace AZ
             BeginScopeQuery(context);
 
             // build newly added or skinned BLAS objects
-            AZStd::vector<const AZ::RHI::RayTracingBlas*> changedBlasList;
+            AZStd::vector<const AZ::RHI::DeviceRayTracingBlas*> changedBlasList;
             RayTracingFeatureProcessor::BlasInstanceMap& blasInstances = rayTracingFeatureProcessor->GetBlasInstances();
             for (auto& blasInstance : blasInstances)
             {
@@ -265,11 +262,11 @@ namespace AZ
                     for (auto submeshIndex = 0; submeshIndex < blasInstance.second.m_subMeshes.size(); ++submeshIndex)
                     {
                         auto& submeshBlasInstance = blasInstance.second.m_subMeshes[submeshIndex];
-                        changedBlasList.push_back(submeshBlasInstance.m_blas.get());
+                        changedBlasList.push_back(submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()).get());
                         if (blasInstance.second.m_blasBuilt == false)
                         {
                             // Always build the BLAS, if it has not previously been built
-                            context.GetCommandList()->BuildBottomLevelAccelerationStructure(*submeshBlasInstance.m_blas);
+                            context.GetCommandList()->BuildBottomLevelAccelerationStructure(*submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()));
                             continue;
                         }
 
@@ -281,12 +278,14 @@ namespace AZ
                         if (isSkinnedMesh && (assetGuid + submeshIndex + m_frameCount) % SKINNED_BLAS_REBUILD_FRAME_INTERVAL != 0)
                         {
                             // Skinned mesh that simply needs an update
-                            context.GetCommandList()->UpdateBottomLevelAccelerationStructure(*submeshBlasInstance.m_blas);
+                            context.GetCommandList()->UpdateBottomLevelAccelerationStructure(
+                                *submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()));
                         }
                         else
                         {
                             // Fall back to building the BLAS in any case
-                            context.GetCommandList()->BuildBottomLevelAccelerationStructure(*submeshBlasInstance.m_blas);
+                            context.GetCommandList()->BuildBottomLevelAccelerationStructure(
+                                *submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()));
                         }
                     }
 
@@ -295,7 +294,7 @@ namespace AZ
             }
 
             // build the TLAS object
-            context.GetCommandList()->BuildTopLevelAccelerationStructure(*rayTracingFeatureProcessor->GetTlas(), changedBlasList);
+            context.GetCommandList()->BuildTopLevelAccelerationStructure(*rayTracingFeatureProcessor->GetTlas()->GetDeviceRayTracingTlas(context.GetDeviceIndex()), changedBlasList);
 
             ++m_frameCount;
 
@@ -343,6 +342,8 @@ namespace AZ
             // [GHI-16945] Feature Request - Add GPU timestamp and pipeline statistic support for scopes
             ExecuteOnTimestampQuery(endQuery);
             ExecuteOnPipelineStatisticsQuery(endQuery);
+
+            m_lastDeviceIndex = context.GetDeviceIndex();
         }
 
         void RayTracingAccelerationStructurePass::ReadbackScopeQueryResults()
@@ -352,14 +353,14 @@ namespace AZ
                 {
                   const uint32_t TimestampResultQueryCount{ 2u };
                   uint64_t timestampResult[TimestampResultQueryCount] = { 0 };
-                  query->GetLatestResult(&timestampResult, sizeof(uint64_t) * TimestampResultQueryCount);
+                  query->GetLatestResult(&timestampResult, sizeof(uint64_t) * TimestampResultQueryCount, m_lastDeviceIndex);
                   m_timestampResult = RPI::TimestampResult(timestampResult[0], timestampResult[1], RHI::HardwareQueueClass::Graphics);
                 });
 
             ExecuteOnPipelineStatisticsQuery(
                 [this](const RHI::Ptr<RPI::Query>& query)
                 {
-                  query->GetLatestResult(&m_statisticsResult, sizeof(RPI::PipelineStatisticsResult));
+                  query->GetLatestResult(&m_statisticsResult, sizeof(RPI::PipelineStatisticsResult), m_lastDeviceIndex);
                 });
         }
     }   // namespace RPI

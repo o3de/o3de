@@ -8,7 +8,7 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/sort.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/DeviceBufferView.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <Atom/RHI.Reflect/BufferDescriptor.h>
 #include <RHI/Buffer.h>
@@ -88,7 +88,7 @@ namespace AZ
             return m_ownerQueue.Get(range ? *range : RHI::BufferSubresourceRange(GetDescriptor()));
         }
 
-        AZStd::vector<Buffer::SubresourceRangeOwner> Buffer::GetOwnerQueue(const RHI::BufferView& bufferView) const
+        AZStd::vector<Buffer::SubresourceRangeOwner> Buffer::GetOwnerQueue(const RHI::DeviceBufferView& bufferView) const
         {
             auto range = RHI::BufferSubresourceRange(bufferView.GetDescriptor());
             return GetOwnerQueue(&range);
@@ -100,7 +100,7 @@ namespace AZ
             m_ownerQueue.Set(range ? *range : RHI::BufferSubresourceRange(GetDescriptor()), queueId);
         }
 
-        void Buffer::SetOwnerQueue(const QueueId& queueId, const RHI::BufferView& bufferView)
+        void Buffer::SetOwnerQueue(const QueueId& queueId, const RHI::DeviceBufferView& bufferView)
         {
             auto range = RHI::BufferSubresourceRange(bufferView.GetDescriptor());
             return SetOwnerQueue(queueId , &range);

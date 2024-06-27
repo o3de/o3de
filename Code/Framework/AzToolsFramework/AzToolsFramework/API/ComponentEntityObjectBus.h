@@ -13,8 +13,6 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorSelectionAccentSystemComponent.h>
 
-class CEntityObject;
-
 namespace AzToolsFramework
 {
     /**

@@ -44,6 +44,10 @@ namespace AZ
             {
                 m_flags.m_bindViewSrg = true;
             }
+            if (passData && passData->m_deviceIndex >= 0 && passData->m_deviceIndex < RHI::RHISystemInterface::Get()->GetDeviceCount())
+            {
+                m_deviceIndex = passData->m_deviceIndex;
+            }
         }
 
         RenderPass::~RenderPass()
@@ -191,7 +195,7 @@ namespace AZ
             m_timestampResult = AZ::RPI::TimestampResult();
             if (GetScopeId().IsEmpty())
             {
-                InitScope(RHI::ScopeId(GetPathName()), m_hardwareQueueClass);
+                InitScope(RHI::ScopeId(GetPathName()), m_hardwareQueueClass, m_deviceIndex);
             }
 
             params.m_frameGraphBuilder->ImportScopeProducer(*this);
@@ -222,41 +226,8 @@ namespace AZ
             BeginScopeQuery(context);
             BuildCommandListInternal(context);
             EndScopeQuery(context);
-        }
 
-        void RenderPass::DeclareAttachmentsToFrameGraph(RHI::FrameGraphInterface frameGraph) const
-        {
-            for (const PassAttachmentBinding& attachmentBinding : m_attachmentBindings)
-            {
-                if (attachmentBinding.GetAttachment() != nullptr &&
-                    frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentBinding.GetAttachment()->GetAttachmentId()))
-                {
-                    switch (attachmentBinding.m_unifiedScopeDesc.GetType())
-                    {
-                    case RHI::AttachmentType::Image:
-                    {
-                        frameGraph.UseAttachment(
-                            attachmentBinding.m_unifiedScopeDesc.GetAsImage(),
-                            attachmentBinding.GetAttachmentAccess(),
-                            attachmentBinding.m_scopeAttachmentUsage,
-                            attachmentBinding.m_scopeAttachmentStage);
-                        break;
-                    }
-                    case RHI::AttachmentType::Buffer:
-                    {
-                        frameGraph.UseAttachment(
-                            attachmentBinding.m_unifiedScopeDesc.GetAsBuffer(),
-                            attachmentBinding.GetAttachmentAccess(),
-                            attachmentBinding.m_scopeAttachmentUsage,
-                            attachmentBinding.m_scopeAttachmentStage);
-                        break;
-                    }
-                    default:
-                        AZ_Assert(false, "Error, trying to bind an attachment that is neither an image nor a buffer!");
-                        break;
-                    }
-                }
-            }
+            m_lastDeviceIndex = context.GetDeviceIndex();
         }
 
         void RenderPass::DeclarePassDependenciesToFrameGraph(RHI::FrameGraphInterface frameGraph) const
@@ -418,19 +389,20 @@ namespace AZ
             }
         }
 
-        void RenderPass::SetSrgsForDraw(RHI::CommandList* commandList)
+        void RenderPass::SetSrgsForDraw(const RHI::FrameGraphExecuteContext& context)
         {
             for (auto itr : m_shaderResourceGroupsToBind)
             {
-                commandList->SetShaderResourceGroupForDraw(*(itr.second));
+                context.GetCommandList()->SetShaderResourceGroupForDraw(*(itr.second->GetDeviceShaderResourceGroup(context.GetDeviceIndex())));
             }
         }
 
-        void RenderPass::SetSrgsForDispatch(RHI::CommandList* commandList)
+        void RenderPass::SetSrgsForDispatch(const RHI::FrameGraphExecuteContext& context)
         {
             for (auto itr : m_shaderResourceGroupsToBind)
             {
-                commandList->SetShaderResourceGroupForDispatch(*(itr.second));
+                context.GetCommandList()->SetShaderResourceGroupForDispatch(
+                    *(itr.second->GetDeviceShaderResourceGroup(context.GetDeviceIndex())));
             }
         }
 
@@ -574,13 +546,13 @@ namespace AZ
             {
                 const uint32_t TimestampResultQueryCount = 2u;
                 uint64_t timestampResult[TimestampResultQueryCount] = {0};
-                query->GetLatestResult(&timestampResult, sizeof(uint64_t) * TimestampResultQueryCount);
+                query->GetLatestResult(&timestampResult, sizeof(uint64_t) * TimestampResultQueryCount, m_lastDeviceIndex);
                 m_timestampResult = TimestampResult(timestampResult[0], timestampResult[1], RHI::HardwareQueueClass::Graphics);
             });
 
             ExecuteOnPipelineStatisticsQuery([this](RHI::Ptr<Query> query)
             {
-                query->GetLatestResult(&m_statisticsResult, sizeof(PipelineStatisticsResult));
+                query->GetLatestResult(&m_statisticsResult, sizeof(PipelineStatisticsResult), m_lastDeviceIndex);
             });
         }
     }   // namespace RPI

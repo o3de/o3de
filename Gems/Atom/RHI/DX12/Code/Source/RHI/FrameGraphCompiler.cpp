@@ -188,7 +188,7 @@ namespace AZ
             return aznew FrameGraphCompiler();
         }
 
-        RHI::ResultCode FrameGraphCompiler::InitInternal(RHI::Device&)
+        RHI::ResultCode FrameGraphCompiler::InitInternal()
         {
             return RHI::ResultCode::Success;
         }
@@ -371,8 +371,6 @@ namespace AZ
 #else
             ResourceTransitionLoggerNull logger(bufferFrameAttachment.GetId());
 #endif
-
-            Buffer& buffer = static_cast<Buffer&>(*bufferFrameAttachment.GetBuffer());
             RHI::BufferScopeAttachment* scopeAttachment = bufferFrameAttachment.GetFirstScopeAttachment();
 
             if (scopeAttachment == nullptr)
@@ -381,13 +379,21 @@ namespace AZ
                 return;
             }
 
+            // TODO:
+            // As the FrameGraph currently does not track ScopeAttachments per device but puts them all into one list,
+            // we currently insert transition barriers between resources on different devices.
+            // As this cannot be solved with the information at this point, we defer this until we properly handle
+            // linking between ScopeAttachments on a per-device basis
+
+            Scope& firstScope = static_cast<Scope&>(scopeAttachment->GetScope());
+            Buffer& buffer = static_cast<Buffer&>(*bufferFrameAttachment.GetBuffer()->GetDeviceBuffer(firstScope.GetDeviceIndex()));
+
             D3D12_RESOURCE_TRANSITION_BARRIER transition;
             transition.pResource = buffer.GetMemoryView().GetMemory();
             transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
             transition.StateBefore = buffer.m_initialAttachmentState;
             logger.SetStateBefore(transition.StateBefore);
 
-            Scope& firstScope = static_cast<Scope&>(scopeAttachment->GetScope());
             if (firstScope.IsResourceDiscarded(*scopeAttachment))
             {
                 auto afterState = GetDiscardResourceState(*scopeAttachment, ConvertBufferBindFlags(buffer.GetDescriptor().m_bindFlags));
@@ -445,7 +451,6 @@ namespace AZ
             ResourceTransitionLoggerNull logger(imageFrameAttachment.GetId());
 #endif
 
-            Image& image = static_cast<Image&>(*imageFrameAttachment.GetImage());
             RHI::ImageScopeAttachment* scopeAttachment = imageFrameAttachment.GetFirstScopeAttachment();
 
             if (scopeAttachment == nullptr)
@@ -453,6 +458,15 @@ namespace AZ
                 AZ_WarningOnce("RHI", false, "Imported ImageFrameAttachment isn't used in any Scope");
                 return;
             }
+
+            // TODO:
+            // As the FrameGraph currently does not track ScopeAttachments per device but puts them all into one list,
+            // we currently insert transition barriers between resources on different devices.
+            // As this cannot be solved with the information at this point, we defer this until we properly handle
+            // linking between ScopeAttachments on a per-device basis
+
+            Scope& firstScope = static_cast<Scope&>(scopeAttachment->GetScope());
+            Image& image = static_cast<Image&>(*imageFrameAttachment.GetImage()->GetDeviceImage(firstScope.GetDeviceIndex()));
 
             const BarrierOp::CommandListState* barrierState = nullptr;
             if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::Depth))
@@ -464,7 +478,6 @@ namespace AZ
             D3D12_RESOURCE_TRANSITION_BARRIER transition = {0};
             transition.pResource = image.GetMemoryView().GetMemory();
 
-            Scope& firstScope = static_cast<Scope&>(scopeAttachment->GetScope());
             //Apply appropriate pre-discard transition
             if (firstScope.IsResourceDiscarded(*scopeAttachment))
             {
@@ -672,14 +685,13 @@ namespace AZ
 
         void FrameGraphCompiler::CompileAsyncQueueFences(const RHI::FrameGraph& frameGraph)
         {
-            Device& device = static_cast<Device&>(GetDevice());
-
             AZ_PROFILE_FUNCTION(RHI);
-            CommandQueueContext& context = device.GetCommandQueueContext();
 
             for (RHI::Scope* scopeBase : frameGraph.GetScopes())
             {
                 Scope* scope = static_cast<Scope*>(scopeBase);
+                Device& device = static_cast<Device&>(scope->GetDevice());
+                CommandQueueContext& context = device.GetCommandQueueContext();
 
                 bool hasCrossQueueConsumer = false;
                 for (uint32_t hardwareQueueClassIdx = 0; hardwareQueueClassIdx < RHI::HardwareQueueClassCount; ++hardwareQueueClassIdx)

@@ -44,7 +44,7 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::FrameGraphCompiler
-            RHI::ResultCode InitInternal(RHI::Device& device) override;
+            RHI::ResultCode InitInternal() override;
             void ShutdownInternal() override;
             RHI::MessageOutcome CompileInternal(const RHI::FrameGraphCompileRequest& request) override;
             //////////////////////////////////////////////////////////////////////////
@@ -91,9 +91,9 @@ namespace AZ
         template<class ResourceScopeAttachment, class ResourceType>
         void FrameGraphCompiler::CompileScopeAttachment(ResourceScopeAttachment& scopeAttachment, ResourceType& resource)
         {
-            auto& device = static_cast<Device&>(GetDevice());
-            auto& queueContext = device.GetCommandQueueContext();
             Scope& scope = static_cast<Scope&>(scopeAttachment.GetScope());
+            auto& device = static_cast<Device&>(scope.GetDevice());
+            auto& queueContext = device.GetCommandQueueContext();
             Scope* prevScope = static_cast<Scope*>(FindPreviousScope(scopeAttachment));
 
             auto subresourceRange = GetSubresourceRange(scopeAttachment);

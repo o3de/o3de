@@ -16,9 +16,6 @@
 #include "UiAnimViewNodeFactories.h"
 #include "UiAnimViewSequence.h"
 #include "AnimationContext.h"
-#if UI_ANIMATION_REMOVED
-#include "Objects/EntityObject.h"
-#endif
 #include "Clipboard.h"
 
 #include "UiEditorAnimationBus.h"
@@ -489,8 +486,6 @@ void CUiAnimViewSequence::SelectSelectedNodesInViewport()
 
     CUiAnimViewAnimNodeBundle selectedNodes = GetSelectedAnimNodes();
 
-    std::vector<CBaseObject*> entitiesToBeSelected;
-
 #if UI_ANIMATION_REMOVED // lights
     const unsigned int numSelectedNodes = selectedNodes.GetCount();
 
@@ -536,114 +531,6 @@ void CUiAnimViewSequence::SelectSelectedNodesInViewport()
         }
     }
 #endif
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CUiAnimViewSequence::SyncSelectedTracksToBase()
-{
-    CUiAnimViewAnimNodeBundle selectedNodes = GetSelectedAnimNodes();
-    bool bNothingWasSynced = true;
-
-    const unsigned int numSelectedNodes = selectedNodes.GetCount();
-    if (numSelectedNodes > 0)
-    {
-        UiAnimUndo undo("Sync selected tracks to base");
-
-        for (unsigned int i = 0; i < numSelectedNodes; ++i)
-        {
-#if UI_ANIMATION_REMOVED    // don't support CEntityObject
-            CUiAnimViewAnimNode* pAnimNode = selectedNodes.GetNode(i);
-            CEntityObject* pEntityObject = pAnimNode->GetNodeEntity();
-
-            if (pEntityObject)
-            {
-                CUiAnimViewAnimNode* pAnimNode = CUiAnimViewSequenceManager::GetSequenceManager()->GetActiveAnimNode(pEntityObject);
-
-                if (pAnimNode)
-                {
-                    ITransformDelegate* pDelegate = pEntityObject->GetTransformDelegate();
-                    pEntityObject->SetTransformDelegate(nullptr);
-
-
-                    const Vec3 position = pAnimNode->GetPos();
-                    pEntityObject->SetPos(position);
-
-                    const Quat rotation = pAnimNode->GetRotation();
-                    pEntityObject->SetRotation(rotation);
-
-                    const Vec3 scale = pAnimNode->GetScale();
-                    pEntityObject->SetScale(scale);
-
-                    pEntityObject->SetTransformDelegate(pDelegate);
-
-                    bNothingWasSynced = false;
-                }
-            }
-#endif
-        }
-
-        if (bNothingWasSynced)
-        {
-            undo.Cancel();
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CUiAnimViewSequence::SyncSelectedTracksFromBase()
-{
-    CUiAnimViewAnimNodeBundle selectedNodes = GetSelectedAnimNodes();
-    bool bNothingWasSynced = true;
-
-    const unsigned int numSelectedNodes = selectedNodes.GetCount();
-    if (numSelectedNodes > 0)
-    {
-        UiAnimUndo undo("Sync selected tracks to base");
-
-#if UI_ANIMATION_REMOVED    // don't support CEntityObject
-        for (unsigned int i = 0; i < numSelectedNodes; ++i)
-        {
-            CUiAnimViewAnimNode* pAnimNode = selectedNodes.GetNode(i);
-            CEntityObject* pEntityObject = pAnimNode->GetNodeEntity();
-
-            if (pEntityObject)
-            {
-                CUiAnimViewAnimNode* pAnimNode = CUiAnimViewSequenceManager::GetSequenceManager()->GetActiveAnimNode(pEntityObject);
-
-                if (pAnimNode)
-                {
-                    ITransformDelegate* pDelegate = pEntityObject->GetTransformDelegate();
-                    pEntityObject->SetTransformDelegate(nullptr);
-
-                    const Vec3 position = pEntityObject->GetPos();
-                    pAnimNode->SetPos(position);
-
-                    const Quat rotation = pEntityObject->GetRotation();
-                    pAnimNode->SetRotation(rotation);
-
-                    const Vec3 scale = pEntityObject->GetScale();
-                    pEntityObject->SetScale(scale);
-
-                    pEntityObject->SetTransformDelegate(pDelegate);
-
-                    bNothingWasSynced = false;
-                }
-            }
-        }
-#endif
-
-        if (bNothingWasSynced)
-        {
-            undo.Cancel();
-        }
-    }
-
-    if (IsActive())
-    {
-        CUiAnimationContext* pAnimationContext = nullptr;
-        UiEditorAnimationBus::BroadcastResult(pAnimationContext, &UiEditorAnimationBus::Events::GetAnimationContext);
-        pAnimationContext->ForceAnimation();
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

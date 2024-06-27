@@ -9,6 +9,7 @@
 
 #include <Atom/RHI/FrameGraphAttachmentDatabase.h>
 #include <Atom/RHI/SwapChain.h>
+#include <Atom/RHI/Buffer.h>
 
 #include <Atom/RHI.Reflect/TransientImageDescriptor.h>
 #include <Atom/RHI.Reflect/TransientBufferDescriptor.h>

@@ -10,7 +10,8 @@
 #include <Atom/RHI/Scope.h>
 #include <Atom/RHI/ScopeAttachment.h>
 #include <Atom/RHI/Image.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/Resource.h>
+#include <Atom/RHI/DeviceImageView.h>
 #include <RHI/Conversion.h>
 #include <RHI/Image.h>
 #include <RHI/PhysicalDevice.h>
@@ -87,7 +88,7 @@ namespace AZ
             case RHI::ScopeAttachmentUsage::ShadingRate:
                 {
                     const Image& image =
-                        static_cast<const Image&>((static_cast<const RHI::ImageView*>(scopeAttachment.GetResourceView()))->GetImage());
+                        static_cast<const Image&>(*(static_cast<const RHI::ImageView*>(scopeAttachment.GetResourceView()))->GetImage()->GetDeviceImage(scopeAttachment.GetScope().GetDeviceIndex()));
                     return
                         RHI::CheckBitsAll(
                             image.GetUsageFlags(), static_cast<VkImageUsageFlags>(VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT))
@@ -255,7 +256,7 @@ namespace AZ
             case RHI::ScopeAttachmentUsage::ShadingRate:
                 {
                     const Image& image =
-                        static_cast<const Image&>((static_cast<const RHI::ImageView*>(scopeAttachment.GetResourceView()))->GetImage());
+                        static_cast<const Image&>(*(static_cast<const RHI::ImageView*>(scopeAttachment.GetResourceView()))->GetImage()->GetDeviceImage(scopeAttachment.GetScope().GetDeviceIndex()));
                     accessFlags |=
                         RHI::CheckBitsAll(
                             image.GetUsageFlags(), static_cast<VkImageUsageFlags>(VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT))
@@ -353,7 +354,7 @@ namespace AZ
 
         VkImageLayout GetImageAttachmentLayout(const RHI::ImageScopeAttachment& imageAttachment)
         {
-            const RHI::ImageView* imageView = imageAttachment.GetImageView();
+            const RHI::DeviceImageView* imageView = imageAttachment.GetImageView()->GetDeviceImageView(imageAttachment.GetScope().GetDeviceIndex()).get();
             auto& physicalDevice = static_cast<const PhysicalDevice&>(imageView->GetDevice().GetPhysicalDevice());
             auto imageAspects = RHI::FilterBits(imageView->GetImage().GetAspectFlags(), imageView->GetDescriptor().m_aspectFlags);
             RHI::ScopeAttachmentAccess access = imageAttachment.GetAccess();

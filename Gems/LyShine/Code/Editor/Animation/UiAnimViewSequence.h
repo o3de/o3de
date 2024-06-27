@@ -161,9 +161,6 @@ public:
     // Deletes all selected keys
     void DeleteSelectedKeys();
 
-    // Sync from/to base
-    void SyncSelectedTracksToBase();
-    void SyncSelectedTracksFromBase();
 
     // Listeners
     void AddListener(IUiAnimViewSequenceListener* pListener);

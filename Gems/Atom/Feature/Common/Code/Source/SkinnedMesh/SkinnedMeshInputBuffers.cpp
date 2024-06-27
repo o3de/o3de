@@ -58,8 +58,7 @@ namespace AZ
             return asset;
         }
 
-        RHI::BufferViewDescriptor SkinnedMeshInputLod::CreateInputViewDescriptor(
-            SkinnedMeshInputVertexStreams inputStream, RHI::Format elementFormat, const RHI::StreamBufferView& streamBufferView)
+        RHI::BufferViewDescriptor SkinnedMeshInputLod::CreateInputViewDescriptor(SkinnedMeshInputVertexStreams inputStream, RHI::Format elementFormat, const RHI::StreamBufferView &streamBufferView)
         {
             RHI::BufferViewDescriptor descriptor;
             uint32_t elementOffset = streamBufferView.GetByteOffset() / streamBufferView.GetByteStride();
@@ -114,24 +113,16 @@ namespace AZ
                     RHI::BufferViewDescriptor descriptor =
                         CreateInputViewDescriptor(streamInfo->m_enum, streamInfo->m_elementFormat, streamBufferView);
 
-                    AZ::RHI::Ptr<AZ::RHI::BufferView> bufferView = RHI::Factory::Get().CreateBufferView();
+                    AZ::RHI::Ptr<AZ::RHI::BufferView> bufferView = const_cast<RHI::Buffer*>(streamBufferView.GetBuffer())->BuildBufferView(descriptor);
                     {
                         // Initialize the buffer view
                         AZStd::string bufferViewName = AZStd::string::format(
                             "%s_lod%" PRIu32 "_mesh%" PRIu32 "_%s", modelName, lodIndex, meshIndex,
                             streamInfo->m_shaderResourceGroupName.GetCStr());
                         bufferView->SetName(Name(bufferViewName));
-                        RHI::ResultCode resultCode = bufferView->Init(*streamBufferView.GetBuffer(), descriptor);
 
-                        if (resultCode == RHI::ResultCode::Success)
-                        {
-                            // Keep track of which streams exist for the current mesh
-                            meshHasInputStream[static_cast<uint8_t>(streamInfo->m_enum)] = true;
-                        }
-                        else
-                        {
-                            AZ_Error("MorphTargetInputBuffers", false, "Failed to initialize buffer view %s.", bufferViewName.c_str());
-                        }
+                        // Keep track of which streams exist for the current mesh
+                        meshHasInputStream[static_cast<uint8_t>(streamInfo->m_enum)] = true;
                     }
 
                     // Add the buffer view along with the shader resource group name, which will be used to bind it to the srg later

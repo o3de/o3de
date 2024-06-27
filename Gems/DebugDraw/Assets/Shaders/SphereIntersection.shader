@@ -28,6 +28,17 @@
             {
                 "azslc": ["--strip-unused-srgs"]
             }
+        },
+        {
+            "Name": "NoFloat16",
+            "AddBuildArguments":
+            {
+                "preprocessor": ["-DNO_FLOAT_16=1"]
+            },
+            "RemoveBuildArguments":
+            {
+                "azslc": ["--strip-unused-srgs"]
+            }
         }
     ]
 }

@@ -1109,6 +1109,7 @@ namespace O3DE::ProjectManager
         projectInfo.m_license = Py_To_String_Optional(projectData, "license", projectInfo.m_license);
         projectInfo.m_iconPath = Py_To_String_Optional(projectData, "icon", ProjectPreviewImagePath);
         projectInfo.m_engineName = Py_To_String_Optional(projectData, "engine", projectInfo.m_engineName);
+        projectInfo.m_restricted = Py_To_String_Optional(projectData, "restricted", projectInfo.m_restricted);
         if (projectData.contains("user_tags"))
         {
             for (auto tag : projectData["user_tags"])

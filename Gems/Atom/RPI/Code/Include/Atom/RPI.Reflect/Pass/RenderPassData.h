@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI.Reflect/ShaderDataMappings.h>
 
 #include <Atom/RPI.Reflect/Pass/PassData.h>
@@ -31,6 +32,8 @@ namespace AZ
             RHI::ShaderDataMappings m_mappings;
 
             bool m_bindViewSrg = false;
+
+            int m_deviceIndex = RHI::MultiDevice::InvalidDeviceIndex;
         };
     } // namespace RPI
 } // namespace AZ

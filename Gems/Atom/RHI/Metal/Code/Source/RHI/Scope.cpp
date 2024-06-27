@@ -8,6 +8,7 @@
 
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
+#include <Atom/RHI/SwapChain.h>
 #include <RHI/CommandList.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
@@ -70,8 +71,9 @@ namespace AZ
             }
         }
     
-        void Scope::CompileInternal(RHI::Device& device)
+        void Scope::CompileInternal()
         {
+            RHI::Device& device = GetDevice();
             Device& mtlDevice = static_cast<Device&>(device);
             for (RHI::ResourcePoolResolver* resolvePolicyBase : GetResourcePoolResolves())
             {
@@ -122,7 +124,7 @@ namespace AZ
                     m_swapChainAttachment = scopeAttachment;
                 }
                 
-                const ImageView* imageView = static_cast<const ImageView*>(scopeAttachment->GetImageView());
+                const ImageView* imageView = static_cast<const ImageView*>(scopeAttachment->GetImageView()->GetDeviceImageView(GetDeviceIndex()).get());
                 const RHI::ImageScopeAttachmentDescriptor& bindingDescriptor = scopeAttachment->GetDescriptor();
                 id<MTLTexture> imageViewMtlTexture = imageView->GetMemoryView().GetGpuAddress<id<MTLTexture>>();
                 
@@ -304,8 +306,8 @@ namespace AZ
                 //here and attach it directly to the colorAttachment. The assumption here is that this scope should be the
                 //CopyToSwapChain scope. With this way if the internal resolution differs from the window resolution the compositer
                 //within the metal driver will perform the appropriate upscale/downscale at the end.
-                const RHI::SwapChain* swapChain = (azrtti_cast<const RHI::SwapChainFrameAttachment*>(&m_swapChainAttachment->GetFrameAttachment()))->GetSwapChain();
-                SwapChain* metalSwapChain = static_cast<SwapChain*>(const_cast<RHI::SwapChain*>(swapChain));
+                const RHI::DeviceSwapChain* swapChain = (azrtti_cast<const RHI::SwapChainFrameAttachment*>(&m_swapChainAttachment->GetFrameAttachment()))->GetSwapChain()->GetDeviceSwapChain(GetDeviceIndex()).get();
+                SwapChain* metalSwapChain = static_cast<SwapChain*>(const_cast<RHI::DeviceSwapChain*>(swapChain));
                 m_renderPassDescriptor.colorAttachments[0].texture = metalSwapChain->RequestDrawable(m_isSwapChainAndFrameCaptureEnabled);
             }
             
@@ -340,7 +342,7 @@ namespace AZ
                 //Attach occlusion testing related visibility buffer
                 if(queryPoolAttachment.m_pool->GetDescriptor().m_type == RHI::QueryType::Occlusion)
                 {
-                    commandList.AttachVisibilityBuffer(queryPoolAttachment.m_pool->GetVisibilityBuffer());
+                    commandList.AttachVisibilityBuffer(AZStd::static_pointer_cast<QueryPool>(queryPoolAttachment.m_pool->GetDeviceQueryPool(GetDeviceIndex()))->GetVisibilityBuffer());
                 }
             }
             
@@ -452,7 +454,7 @@ namespace AZ
     
         void Scope::AddQueryPoolUse(RHI::Ptr<RHI::QueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access)
         {
-            m_queryPoolAttachments.push_back({ AZStd::static_pointer_cast<QueryPool>(queryPool), interval, access });
+            m_queryPoolAttachments.push_back({ queryPool, interval, access });
         }
     }
 }
