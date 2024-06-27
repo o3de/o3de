@@ -75,6 +75,18 @@ namespace AZ
             m_argumentsNameStack.push("");
         }
 
+        void ShaderBuildArgumentsManager::ResolvePreprocessorIncludeAliases()
+        {
+            for (AZStd::string& argument : m_argumentsStack.top().m_preprocessorArguments)
+            {
+                if (argument.size() > 2 && argument.substr(0, 3) == "-I@")
+                {
+                    AZStd::string temp = "-I" + ResolvePathAliases(AZStd::string_view(AZStd::begin(argument) + 2, AZStd::end(argument)));
+                    argument = temp;
+                }
+            }
+        }
+
         const AZ::RHI::ShaderBuildArguments& ShaderBuildArgumentsManager::PushArgumentsInternal(const AZStd::string& name, const AZ::RHI::ShaderBuildArguments& arguments)
         {
             m_argumentsNameStack.push(name);

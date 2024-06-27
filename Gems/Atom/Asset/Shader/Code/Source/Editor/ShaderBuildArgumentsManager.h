@@ -105,6 +105,10 @@ namespace AZ
             //! @remark: The "" (global) arguments are never popped, regardless of how many times this function is called.
             void PopArgumentScope();
 
+            //! Replaces -I preprocessor arguments that have @ aliases with equivalents that have fully resolved paths
+            //! Only impacts the preprocessor arguments at the top of the stack
+            void ResolvePreprocessorIncludeAliases();
+
         private:
             friend class ::UnitTest::ShaderBuildArgumentsTests;
             void Init(AZStd::unordered_map<AZStd::string, AZ::RHI::ShaderBuildArguments> && removeBuildArgumentsMap

@@ -440,6 +440,7 @@ namespace AZ
 
                     // Run the preprocessor.
                     PreprocessorData output;
+                    buildArgsManager.ResolvePreprocessorIncludeAliases();
                     auto preprocessorArguments = AppendIncludePathsToArgumentList(buildArgsManager.GetCurrentArguments().m_preprocessorArguments, projectIncludePaths);
                     const bool preprocessorSuccess = PreprocessFile(prependedAzslFilePath, output, preprocessorArguments,  true);
                     RHI::ReportMessages(ShaderAssetBuilderName, output.diagnostics, !preprocessorSuccess);
