@@ -32,11 +32,9 @@ namespace AZ::Vulkan
             switch (specialization.m_type)
             {
             case RHI::SpecializationType::Integer:
-                {
-                    entry.size = sizeof(uint32_t);
-                    AddSpecializationValue<uint32_t>(m_specializationData, specialization.m_value);
-                    break;
-                }
+                entry.size = sizeof(uint32_t);
+                AddSpecializationValue<uint32_t>(m_specializationData, specialization.m_value);
+                break;
             case RHI::SpecializationType::Bool:
                 entry.size = sizeof(VkBool32);
                 AddSpecializationValue<VkBool32>(m_specializationData, specialization.m_value);
