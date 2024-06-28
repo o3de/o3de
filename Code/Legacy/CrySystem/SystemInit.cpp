@@ -1238,11 +1238,11 @@ void CSystem::CreateSystemVars()
 
 #if AZ_LOADSCREENCOMPONENT_ENABLED
     m_game_load_screen_uicanvas_path = REGISTER_STRING("game_load_screen_uicanvas_path", "UI/Loading/Loading.uicanvas", 0, "Game load screen UiCanvas path.");
-    m_level_load_screen_uicanvas_path = REGISTER_STRING("level_load_screen_uicanvas_path", "Levels/dlc/centralplaza/loading_screen/loading_screen.uicanvas", 0, "Level load screen UiCanvas path.");
+    m_level_load_screen_uicanvas_path = REGISTER_STRING("level_load_screen_uicanvas_path", "", 0, "Level load screen UiCanvas path.");
     m_game_load_screen_sequence_to_auto_play =
-        REGISTER_STRING("game_load_screen_sequence_to_auto_play", "5", 0, "Game load screen UiCanvas animation sequence to play on load.");
+        REGISTER_STRING("game_load_screen_sequence_to_auto_play", "", 0, "Game load screen UiCanvas animation sequence to play on load.");
     m_level_load_screen_sequence_to_auto_play =
-        REGISTER_STRING("level_load_screen_sequence_to_auto_play", "5", 0, "Level load screen UiCanvas animation sequence to play on load.");
+        REGISTER_STRING("level_load_screen_sequence_to_auto_play", "", 0, "Level load screen UiCanvas animation sequence to play on load.");
     m_game_load_screen_sequence_fixed_fps = REGISTER_FLOAT(
         "game_load_screen_sequence_fixed_fps", 60.0f, 0, "Fixed frame rate fed to updates of the game load screen sequence.");
     m_level_load_screen_sequence_fixed_fps = REGISTER_FLOAT(

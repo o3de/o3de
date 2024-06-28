@@ -12,9 +12,12 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Interface/Interface.h>
 #include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/Animation/IUiAnimation.h>
+#include <Atom/RHI/RHISystemInterface.h>
+#include <AzCore/Component/TickBus.h>
 
 namespace LyShine
 {
@@ -225,11 +228,17 @@ namespace LyShine
         {
             AZ_Assert(GetCurrentThreadId() == gEnv->mMainThreadId, "UpdateAndRender should only be called from the main thread");
 
-            // update the animation system (it sets viewport size for UiRenderer)
-            AZ::Interface<ILyShine>::Get()->Update(deltaTimeInSeconds);
-
-            // Render (it makes begin/end frames for UiRenderer)
-            AZ::Interface<ILyShine>::Get()->Render();
+            AZ::ComponentApplication* pApp = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(pApp, &AZ::ComponentApplicationBus::Events::GetApplication);
+            if (pApp)
+            {
+                AZ::SystemTickBus::ExecuteQueuedEvents();
+                AZ::SystemTickBus::Broadcast(&AZ::SystemTickEvents::OnSystemTick);
+                if (!m_gameCanvasEntityId.IsValid()) // do not process OnTick() before the game start
+                {
+                    pApp->Tick();
+                }
+            }
         }
 #endif // !defined (CARBONATED)
     }
@@ -307,8 +316,8 @@ namespace LyShine
             // No canvas specified.
             //Reset();
             //return AZ::EntityId();
-            path = "Levels/dlc/centralplaza/loading_screen/loading_screen.uicanvas";
-            path = "UI/Loading/Loading.uicanvas";
+            path = "Levels/dlc/urban_01/loading_screen/loading_screen.uicanvas";
+            //path = "UI/Loading/Loading.uicanvas";
         }
 
         AZ::EntityId canvasId = AZ::Interface<ILyShine>::Get()->LoadCanvas(path);
@@ -330,7 +339,8 @@ namespace LyShine
         if (sequence.empty())
         {
             // Nothing to auto-play.
-            return canvasId;
+            //return canvasId;
+            sequence = "seq_loading";
         }
 
         IUiAnimationSystem* animSystem = nullptr;
