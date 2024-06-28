@@ -104,6 +104,14 @@ namespace AZ
             const static AZ::Crc32 ChangeNotify = AZ_CRC("ChangeNotify", 0xf793bc19);
             const static AZ::Crc32 ClearNotify = AZ_CRC("ClearNotify", 0x88914c8c);
 
+            //! Used on supported handlers to replace the "Clear" function with your own callback.
+            //! Note that ClearNotify and ClearCallback are different.  Notify is used to tell you that it has been cleared.
+            //! Callback (currently only supported on EntityId handlers), if present, will replace the default behavior and leave
+            //! it up to the callback to make any modifications.  If you do this, you must handle any entity dirtying yourself.
+            //! The function will be invoked on the owning instance of the variable being cleared as the 'this' pointer
+            //! and must have the signature void SomeClass::somefunction();
+            const static AZ::Crc32 ClearCallback = AZ_CRC("ClearCallback", 0x3b3af425);
+
             //! Specifies a function to accept or reject a value changed in the Open 3D Engine Editor.
             //! For example, a component could reject AZ::EntityId values that reference its own entity.
             //!
@@ -196,8 +204,19 @@ namespace AZ
             //! For use with slice creation tools. See SliceCreationFlags below for details.
             const static AZ::Crc32 SliceFlags = AZ_CRC("SliceFlags", 0xa447e1fb);
 
-            //! Does the clear button in the LineEdit need to have a test for visibility.
-            const static AZ::Crc32 ShowClearButtonHandler = AZ_CRC_CE("ShowClearButtonHandler");
+            //! On controls with a clear button, this attribute specifies whether the clear button should be shown.
+            const static AZ::Crc32 ShowClearButtonHandler = AZ_CRC("ShowClearButtonHandler", 0x2ef414c9);
+
+            //! Specifies whether the picker button should be shown.
+            //! Authors - if you add this attribute to other handlers, list them here:
+            //!      EntityId handler
+            const static AZ::Crc32 ShowPickButton = AZ_CRC("ShowPickButton", 0xc40252dd);
+
+            //! Specifies whether drop onto this control should be allowed.
+            //! Used to turn off drag and drop for Transform Parents - you have to modify that via the outliner.
+            //! Authors - if you add this attribute to other handlers, list them here:
+            //!      EntityId handler
+            const static AZ::Crc32 AllowDrop = AZ_CRC("AllowDrop", 0x85424942);
 
             //! For optional use on Getter Events used for Virtual Properties
             const static AZ::Crc32 PropertyPosition = AZ_CRC("Position", 0x462ce4f5);
