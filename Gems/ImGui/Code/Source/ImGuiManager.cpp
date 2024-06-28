@@ -214,9 +214,9 @@ void ImGuiManager::Initialize()
     const AzFramework::InputDevice* mouseDevice = AzFramework::InputDeviceRequests::FindInputDevice(AzFramework::InputDeviceMouse::Id);
     m_hardwardeMouseConnected = mouseDevice && mouseDevice->IsConnected();
 
+    m_consoleKeyInputChannelId = InputDeviceKeyboard::Key::NavigationHome;
     if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())
     {
-        m_consoleKeyInputChannelId = InputDeviceKeyboard::Key::NavigationHome;
         AZStd::string consoleKeyName;
         if (settingsRegistry->Get(consoleKeyName, ImguiConsoleKeyBindingRegPath);
             const InputChannelId* consoleKey = GetAzKeyChannelId(consoleKeyName))
