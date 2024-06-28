@@ -66,6 +66,12 @@ namespace AZ
             LoadShader();
         }
 
+        void FullscreenTrianglePass::UpdateShaderOptionsCommon()
+        {
+            m_pipelineStateForDraw.UpdateSrgVariantFallback(m_shaderResourceGroup);
+            BuildDrawItem();
+        }
+
         void FullscreenTrianglePass::LoadShader()
         {
             AZ_Assert(GetPassState() != PassState::Rendering, "FullscreenTrianglePass - Reloading shader during Rendering phase!");
@@ -118,7 +124,7 @@ namespace AZ
             // Store stencil reference value for the draw call
             m_stencilRef = passData->m_stencilRef;
 
-            m_pipelineStateForDraw.Init(m_shader);
+            m_pipelineStateForDraw.Init(m_shader, m_shader->GetDefaultShaderOptions().GetShaderVariantId());
 
             UpdateSrgs();
 
@@ -189,8 +195,16 @@ namespace AZ
             if (m_shader)
             {
                 m_pipelineStateForDraw.Init(m_shader, &shaderOptions);
-                m_pipelineStateForDraw.UpdateSrgVariantFallback(m_shaderResourceGroup);
-                BuildDrawItem();
+                UpdateShaderOptionsCommon();
+            }
+        }
+
+        void FullscreenTrianglePass::UpdateShaderOptions(const ShaderVariantId& shaderVariantId)
+        {
+            if (m_shader)
+            {
+                m_pipelineStateForDraw.Init(m_shader, shaderVariantId);
+                UpdateShaderOptionsCommon();
             }
         }
 

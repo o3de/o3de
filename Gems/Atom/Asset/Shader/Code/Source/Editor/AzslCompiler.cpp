@@ -900,7 +900,10 @@ namespace AZ
             return CompileToFileAndPrepareJsonDocument(output, "--options", "options.json") == BuildResult::Success;
         }
 
-        bool AzslCompiler::ParseOptionsPopulateOptionGroupLayout(const rapidjson::Document& input, RPI::Ptr<RPI::ShaderOptionGroupLayout>& shaderOptionGroupLayout) const
+        bool AzslCompiler::ParseOptionsPopulateOptionGroupLayout(
+            const rapidjson::Document& input,
+            RPI::Ptr<RPI::ShaderOptionGroupLayout>& shaderOptionGroupLayout,
+            bool& outUseSpecializationConstants) const
         {
             auto totalBitOffset = (uint32_t) 0u;
 
@@ -932,6 +935,12 @@ namespace AZ
                     shaderOptionGroupLayout->Finalize();
                     return false;
                 };
+
+            outUseSpecializationConstants = false;
+            if (input.HasMember("specializationConstants"))
+            {
+                outUseSpecializationConstants = input["specializationConstants"].GetBool();
+            }
 
             const rapidjson::Value& shaderOptions = input["ShaderOptions"];
             AZ_Assert(shaderOptions.IsArray(), "Attribute ShaderOptions must be an array");
@@ -1037,13 +1046,20 @@ namespace AZ
                         cost = optionEntry["costImpact"].GetUint();
                     }
 
+                    int specializationId = -1;
+                    if (optionEntry.HasMember("specializationId"))
+                    {
+                        specializationId = optionEntry["specializationId"].GetInt();
+                    }
+
                     RPI::ShaderOptionDescriptor shaderOption(Name(optionName), 
                                                              optionType,
                                                              keyOffset,
                                                              order,
                                                              idIndexList,
                                                              defaultValueId,
-                                                             cost);
+                                                             cost,
+                                                             specializationId);
 
                     if (!shaderOptionGroupLayout->AddShaderOption(shaderOption))
                     {

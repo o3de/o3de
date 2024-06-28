@@ -113,7 +113,7 @@
                 {
                     // The shader hair color render target - important to have at a non-MSAA mode
                     // so that no overwork is done on sampling.
-                    "Name": "HairColorRenderTarget",
+                    "Name": "HairColorImage",
                     "SizeSource": {
                         "Source": {
                             "Pass": "Parent",
@@ -143,6 +143,13 @@
                     "AttachmentRef": {
                         "Pass": "This",
                         "Attachment": "BRDFTexture"
+                    }
+                },
+                {
+                    "LocalSlot": "HairColorRenderTarget",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "HairColorImage"
                     }
                 }
             ],

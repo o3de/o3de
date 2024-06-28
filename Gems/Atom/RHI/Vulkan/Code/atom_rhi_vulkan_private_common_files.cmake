@@ -159,4 +159,6 @@ set(FILES
     Source/RHI/Conversion.cpp
     Source/RHI/Conversion.h
     Source/RHI/WindowSurfaceBus.h
+    Source/RHI/SpecializationConstantData.cpp
+    Source/RHI/SpecializationConstantData.h
 )

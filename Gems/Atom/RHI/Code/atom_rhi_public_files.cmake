@@ -221,4 +221,6 @@ set(FILES
     Include/Atom/RHI/TagBitRegistry.h
     Include/Atom/RHI/TagRegistry.h
     Include/Atom/RHI/XRRenderingInterface.h
+    Include/Atom/RHI/SpecializationConstant.h
+    Source/RHI/SpecializationConstant.cpp
 )

@@ -71,8 +71,9 @@ namespace AZ
             void ShutdownInternal() override;
             //////////////////////////////////////////////////////////////////////////
 
-            id<MTLFunction> CompileShader(id<MTLDevice> mtlDevice, const AZStd::string_view filePath, const AZStd::string_view entryPoint, const ShaderStageFunction* shaderFunction);
-            id<MTLFunction> ExtractMtlFunction(id<MTLDevice> mtlDevice, const RHI::ShaderStageFunction* stageFunc);
+            id<MTLFunction> CompileShader(id<MTLDevice> mtlDevice, const AZStd::string_view filePath, const AZStd::string_view entryPoint, const ShaderStageFunction* shaderFunction, MTLFunctionConstantValues* constantValues);
+            id<MTLFunction> ExtractMtlFunction(id<MTLDevice> mtlDevice, const RHI::ShaderStageFunction* stageFunc, MTLFunctionConstantValues* constantValues);
+            MTLFunctionConstantValues* CreateFunctionConstantsValues(const RHI::PipelineStateDescriptor& pipelineDescriptor) const;
             
             RHI::ConstPtr<PipelineLayout> m_pipelineLayout;
             AZStd::atomic_bool m_isCompiled = {false};

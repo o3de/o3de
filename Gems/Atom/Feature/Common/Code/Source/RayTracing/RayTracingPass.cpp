@@ -96,7 +96,7 @@ namespace AZ
                 auto shader{ AZ::RPI::Shader::FindOrCreate(shaderAsset) };
                 auto shaderVariant{ shader->GetVariant(AZ::RPI::ShaderAsset::RootShaderVariantStableId) };
                 AZ::RHI::PipelineStateDescriptorForRayTracing pipelineStateDescriptor;
-                shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
+                shaderVariant.ConfigurePipelineState(pipelineStateDescriptor, shader->GetDefaultShaderOptions());
                 auto& shaderLib = shaderLibs.emplace_back();
                 shaderLib.m_shaderAssetId = assetReference.m_assetId;
                 shaderLib.m_shader = shader;

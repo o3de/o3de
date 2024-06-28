@@ -319,7 +319,7 @@ namespace AZ
 
                 shaderOption.SetValue(AZ::Name(optionName), AZ::Name(optionValues[index]));
 
-                m_shader->GetVariant(shaderOption.GetShaderVariantId()).ConfigurePipelineState(pipelineDesc);
+                m_shader->GetVariant(shaderOption.GetShaderVariantId()).ConfigurePipelineState(pipelineDesc, shaderOption);
                 pipelineDesc.m_renderAttachmentConfiguration.m_renderAttachmentLayout = attachmentsLayout;
                 pipelineDesc.m_inputStreamLayout = inputStreamLayout;
                 previewInfo.m_shaderVariantKeyFallback = shaderOption.GetShaderVariantKeyFallbackValue();
