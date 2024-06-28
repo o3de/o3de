@@ -120,7 +120,7 @@ private slots:
 private:
     void AddMenuSeperatorConditional(QMenu& menu, bool& bAppended);
     void AddGroupNodeAddItems(struct UiAnimContextMenu& contextMenu, CUiAnimViewAnimNode* pAnimNode);
-    int ShowPopupMenuSingleSelection(struct UiAnimContextMenu& contextMenu, CUiAnimViewSequence* pSequence, CUiAnimViewNode* pNode);
+    int ShowPopupMenuSingleSelection(struct UiAnimContextMenu& contextMenu, [[maybe_unused]] CUiAnimViewSequence* pSequence, CUiAnimViewNode* pNode);
     int ShowPopupMenuMultiSelection(struct UiAnimContextMenu& contextMenu);
     int ShowPopupMenu(QPoint point, const CRecord* pItemInfo);
     void EditEvents();
