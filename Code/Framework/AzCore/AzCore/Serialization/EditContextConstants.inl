@@ -104,14 +104,6 @@ namespace AZ
             const static AZ::Crc32 ChangeNotify = AZ_CRC("ChangeNotify", 0xf793bc19);
             const static AZ::Crc32 ClearNotify = AZ_CRC("ClearNotify", 0x88914c8c);
 
-            //! Used on supported handlers to replace the "Clear" function with your own callback.
-            //! Note that ClearNotify and ClearCallback are different.  Notify is used to tell you that it has been cleared.
-            //! Callback (currently only supported on EntityId handlers), if present, will replace the default behavior and leave
-            //! it up to the callback to make any modifications.  If you do this, you must handle any entity dirtying yourself.
-            //! The function will be invoked on the owning instance of the variable being cleared as the 'this' pointer
-            //! and must have the signature void SomeClass::somefunction();
-            const static AZ::Crc32 ClearCallback = AZ_CRC("ClearCallback", 0x3b3af425);
-
             //! Specifies a function to accept or reject a value changed in the Open 3D Engine Editor.
             //! For example, a component could reject AZ::EntityId values that reference its own entity.
             //!
