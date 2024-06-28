@@ -33,7 +33,8 @@ namespace AZ
             bool CompilePlatformInternal(
                 const AssetBuilderSDK::PlatformInfo& platform, const AZStd::string& shaderSourcePath, const AZStd::string& functionName,
                 RHI::ShaderHardwareStage shaderStage, const AZStd::string& tempFolderPath, StageDescriptor& outputDescriptor,
-                const RHI::ShaderBuildArguments& shaderBuildArguments) const override;
+                const RHI::ShaderBuildArguments& shaderBuildArguments,
+                const bool useSpecializationConstants) const override;
             const char* GetAzslHeader(const AssetBuilderSDK::PlatformInfo& platform) const override;
             bool BuildPipelineLayoutDescriptor(
                 RHI::Ptr<RHI::PipelineLayoutDescriptor> pipelineLayoutDescriptor,

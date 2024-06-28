@@ -16,6 +16,7 @@
 
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 namespace AZ
@@ -50,6 +51,34 @@ namespace AZ
             const int byteCodeIndex = 0;
             newShaderStageFunction->SetByteCode(byteCodeIndex, byteCode);
 
+            // Read the json data with the specialization constants offsets.
+            // If the shader was not compiled with specialization constants this attribute will be empty.
+            AZStd::string fileName;
+            if (!stageDescriptor.m_extraData.empty())
+            {
+                auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(stageDescriptor.m_extraData);
+                if (!jsonOutcome.IsSuccess())
+                {
+                    AZ_Error(DX12ShaderPlatformName, false, "%s", jsonOutcome.GetError().c_str());
+                    return nullptr;
+                }
+
+                const rapidjson::Document& doc = jsonOutcome.GetValue();
+                ShaderStageFunction::SpecializationOffsets offsets;
+                for (auto itr = doc.MemberBegin(); itr != doc.MemberEnd(); ++itr)
+                {
+                    if (!AZ::StringFunc::LooksLikeInt(itr->name.GetString()))
+                    {
+                        AZ_Error(DX12ShaderPlatformName, false, "SpecializationId %s is not an Int", itr->name.GetString());
+                        continue;
+                    }
+                    uint32_t specializationId = static_cast<uint32_t>(AZ::StringFunc::ToInt(itr->name.GetString()));
+                    uint32_t offset = itr->value.GetUint();
+                    offsets[specializationId] = offset;
+                }
+                newShaderStageFunction->SetSpecializationOffsets(byteCodeIndex, offsets);
+            }
+         
             newShaderStageFunction->Finalize();
 
             return newShaderStageFunction;
@@ -149,10 +178,11 @@ namespace AZ
             RHI::ShaderHardwareStage shaderStage,
             const AZStd::string& tempFolderPath,
             StageDescriptor& outputDescriptor,
-            const RHI::ShaderBuildArguments& shaderBuildArguments) const
+            const RHI::ShaderBuildArguments& shaderBuildArguments,
+            const bool useSpecializationConstants) const
         {
             AZStd::vector<uint8_t> shaderByteCode;
-
+            AZStd::string specializationOffsetsFile;
             // Compile HLSL shader to byte code
             bool compiledSucessfully = CompileHLSLShader(
                 shaderSourcePath,                        // shader source filepath
@@ -161,7 +191,9 @@ namespace AZ
                 shaderStage,                             // shader stage (vertex shader, pixel shader, ...)
                 shaderBuildArguments,
                 shaderByteCode,                          // compiled shader output
-                outputDescriptor.m_byProducts);          // dynamic branch count output & byproduct files
+                outputDescriptor.m_byProducts,           // dynamic branch count output & byproduct files
+                specializationOffsetsFile,               // path to the json file with the specialization offsets
+                useSpecializationConstants);             // if the shader stage it's using specialization constants
 
             if (!compiledSucessfully)
             {
@@ -174,6 +206,7 @@ namespace AZ
             {
                 outputDescriptor.m_stageType = shaderStage;
                 outputDescriptor.m_byteCode = AZStd::move(shaderByteCode);
+                outputDescriptor.m_extraData = AZStd::move(specializationOffsetsFile);
             }
             else
             {
@@ -197,7 +230,9 @@ namespace AZ
             const RHI::ShaderHardwareStage shaderStageType,
             const RHI::ShaderBuildArguments& shaderBuildArguments,
             AZStd::vector<uint8_t>& compiledShader,
-            ByProducts& byProducts) const
+            ByProducts& byProducts,
+            AZStd::string& specializationOffsetsFile,
+            const bool useSpecializationConstants) const
         {
             // Shader compiler executable
             const auto dxcRelativePath = RHI::GetDirectXShaderCompilerPath("Builders/DirectXShaderCompiler/dxc.exe");
@@ -296,6 +331,40 @@ namespace AZ
             if (!RHI::ExecuteShaderCompiler(dxcRelativePath, dxcCommandOptions, shaderSourceFile, tempFolder, "DXC"))
             {
                 return false;
+            }
+
+            if (useSpecializationConstants)
+            {
+                // Need to patch the shader so it can be used with specialization constants.
+                const auto dxscRelativePath = RHI::GetDirectXShaderCompilerPath("Builders/DirectXShaderCompiler/dxsc.exe");
+
+                AZStd::string shaderOutputCommon;
+                AzFramework::StringFunc::Path::GetFileName(shaderSourceFile.c_str(), shaderOutputCommon);
+                AzFramework::StringFunc::Path::Join(tempFolder.c_str(), shaderOutputCommon.c_str(), shaderOutputCommon);
+
+                AZStd::string patchedShaderOutput = shaderOutputCommon;
+                AzFramework::StringFunc::Path::ReplaceExtension(patchedShaderOutput, "dxil.patched.bin");
+                AZStd::string offsetsOutput = shaderOutputCommon;
+                AzFramework::StringFunc::Path::ReplaceExtension(offsetsOutput, "offsets.json");
+
+                const auto dxscCommandOptions = AZStd::string::format(
+                    //   1.sentinel    3.offsets_output   
+                    //     |    2.output    |   4.dxil-in
+                    //     |       |        |      |
+                    "-sv=%lu -o=\"%s\" -f=\"%s\" \"%s\"",
+                    static_cast<unsigned long>(SCSentinelValue), // 1
+                    patchedShaderOutput.c_str(), // 2
+                    offsetsOutput.c_str(), // 3
+                    shaderOutputFile.c_str() // 4
+                );
+
+                if (!RHI::ExecuteShaderCompiler(dxscRelativePath, dxscCommandOptions, shaderSourceFile, tempFolder, "DXSC"))
+                {
+                    return false;
+                }
+                shaderOutputFile = patchedShaderOutput;
+
+                specializationOffsetsFile = offsetsOutput;
             }
 
             auto shaderOutputFileLoadResult = AZ::RHI::LoadFileBytes(shaderOutputFile.c_str());

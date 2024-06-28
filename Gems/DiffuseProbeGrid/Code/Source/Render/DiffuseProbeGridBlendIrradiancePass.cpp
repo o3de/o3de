@@ -57,7 +57,7 @@ namespace AZ
 
                 RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
                 const auto& shaderVariant = shader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
-                shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
+                shaderVariant.ConfigurePipelineState(pipelineStateDescriptor, shader->GetDefaultShaderOptions());
                 const RHI::PipelineState* pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
                 AZ_Assert(pipelineState, "Failed to acquire pipeline state");
 

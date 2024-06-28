@@ -144,9 +144,14 @@ namespace AZ
 
             // Setup pipeline state...
             RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
-            m_shader->GetDefaultVariant().ConfigurePipelineState(pipelineStateDescriptor);
+            ShaderOptionGroup options = m_shader->GetDefaultShaderOptions();
+            m_shader->GetDefaultVariant().ConfigurePipelineState(pipelineStateDescriptor, options);
 
             m_dispatchItem.SetPipelineState(m_shader->AcquirePipelineState(pipelineStateDescriptor));
+            if (m_drawSrg && m_shader->GetDefaultVariant().UseKeyFallback())
+            {
+                m_drawSrg->SetShaderVariantKeyFallbackValue(options.GetShaderVariantKeyFallbackValue());
+            }
 
             OnShaderReloadedInternal();
 
@@ -253,6 +258,19 @@ namespace AZ
         void ComputePass::SetComputeShaderReloadedCallback(ComputeShaderReloadedCallback callback)
         {
             m_shaderReloadedCallback = callback;
+        }
+
+        void ComputePass::UpdateShaderOptions(const ShaderVariantId& shaderVariantId)
+        {
+            const ShaderVariant& shaderVariant = m_shader->GetVariant(shaderVariantId);
+            RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
+            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor, shaderVariantId);
+
+            m_dispatchItem.SetPipelineState(m_shader->AcquirePipelineState(pipelineStateDescriptor));
+            if (m_drawSrg && shaderVariant.UseKeyFallback())
+            {
+                m_drawSrg->SetShaderVariantKeyFallbackValue(shaderVariantId.m_key);
+            }
         }
 
         void ComputePass::OnShaderReloadedInternal()
