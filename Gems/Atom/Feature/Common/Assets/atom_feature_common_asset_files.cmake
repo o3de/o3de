@@ -92,6 +92,7 @@ set(FILES
     Passes/ContrastAdaptiveSharpening.pass
     Passes/ConvertToAcescg.pass
     Passes/DebugOverlayParent.pass
+    Passes/DebugRayTracingPass.pass
     Passes/DeferredFog.pass
     Passes/Depth.pass
     Passes/DepthCheckerboard.pass
