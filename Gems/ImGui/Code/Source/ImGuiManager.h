@@ -114,6 +114,7 @@ namespace ImGui
         ImGuiBroadcastState m_imGuiBroadcastState;
 
         AZ::JobCompletion* m_renderJobCompletion = nullptr;
+        AzFramework::InputChannelId m_consoleKeyInputChannelId;
 
 #if defined(LOAD_IMGUI_LIB_DYNAMICALLY)  && !defined(AZ_MONOLITHIC_BUILD)
         AZStd::unique_ptr<AZ::DynamicModuleHandle>  m_imgSharedLib;
