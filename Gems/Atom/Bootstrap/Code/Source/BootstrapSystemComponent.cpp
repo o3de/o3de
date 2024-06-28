@@ -94,6 +94,10 @@ AZ_CVAR(AZ::CVarFixedString, r_default_openxr_left_pipeline_name, "passes/XRLeft
 AZ_CVAR(AZ::CVarFixedString, r_default_openxr_right_pipeline_name, "passes/XRRightRenderPipeline.azasset", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Default openXr Right eye render pipeline name");
 AZ_CVAR(uint32_t, r_width, 1920, cvar_r_resolution_Changed, AZ::ConsoleFunctorFlags::DontReplicate, "Starting window width in pixels.");
 AZ_CVAR(uint32_t, r_height, 1080, cvar_r_resolution_Changed, AZ::ConsoleFunctorFlags::DontReplicate, "Starting window height in pixels.");
+#if defined(CARBONATED)
+AZ_CVAR(uint32_t, r_maxwidth, 0, cvar_r_resolution_Changed, AZ::ConsoleFunctorFlags::DontReplicate, "Max Width in pixels.  0 = disabled.");
+AZ_CVAR(uint32_t, r_maxheight, 0, cvar_r_resolution_Changed, AZ::ConsoleFunctorFlags::DontReplicate, "Max Height in pixels. 0 = disabled");
+#endif
 AZ_CVAR(uint32_t, r_fullscreen, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Starting fullscreen state.");
 AZ_CVAR(uint32_t, r_resolutionMode, 0, cvar_r_resolution_Changed, AZ::ConsoleFunctorFlags::DontReplicate, "0: render resolution same as window client area size, 1: render resolution use the values specified by r_width and r_height");
 AZ_CVAR(float, r_renderScale, 1.0f, cvar_r_renderScale_Changed, AZ::ConsoleFunctorFlags::DontReplicate, "Scale to apply to the window resolution.");
@@ -221,6 +225,44 @@ namespace AZ
                         }
                     }
                 }
+                
+#if defined(CARBONATED)
+                const AZStd::string maxWidthCvarName("r_maxwidth");
+                if (pCmdLine->HasSwitch(maxWidthCvarName))
+                {
+                    auto numValues = pCmdLine->GetNumSwitchValues(maxWidthCvarName);
+                    if (numValues > 0)
+                    {
+                        auto valueStr = pCmdLine->GetSwitchValue(maxWidthCvarName);
+                        if (AZ::StringFunc::LooksLikeInt(valueStr.c_str()))
+                        {
+                            auto maxwidth = AZ::StringFunc::ToInt(valueStr.c_str());
+                            if (maxwidth > 0)
+                            {
+                                r_maxwidth = maxwidth;
+                            }
+                        }
+                    }
+                }
+
+                const AZStd::string maxHeightCvarName("r_maxheight");
+                if (pCmdLine->HasSwitch(maxHeightCvarName))
+                {
+                    auto numValues = pCmdLine->GetNumSwitchValues(maxHeightCvarName);
+                    if (numValues > 0)
+                    {
+                        auto valueStr = pCmdLine->GetSwitchValue(maxHeightCvarName);
+                        if (AZ::StringFunc::LooksLikeInt(valueStr.c_str()))
+                        {
+                            auto maxheight = AZ::StringFunc::ToInt(valueStr.c_str());
+                            if (maxheight > 0)
+                            {
+                                r_maxheight = maxheight;
+                            }
+                        }
+                    }
+                }
+#endif
 
                 const AZStd::string resolutionModeCvarName("r_resolutionMode");
                 if (pCmdLine->HasSwitch(resolutionModeCvarName))
@@ -442,6 +484,44 @@ namespace AZ
                     // wait until swapchain has been created before setting fullscreen state
                     AzFramework::WindowSize resolution;
                     float scale = AZStd::max(static_cast<float>(r_renderScale), 0.f);
+
+#if defined(CARBONATED)
+                    if (r_resolutionMode > 0u)
+                    {
+                        resolution.m_width = static_cast<uint32_t>(r_width);
+                        resolution.m_height = static_cast<uint32_t>(r_height);
+                    }
+                    else
+                    {
+                        const auto& windowSize = m_nativeWindow->GetClientAreaSize();
+                        resolution.m_width = static_cast<uint32_t>(windowSize.m_width);
+                        resolution.m_height = static_cast<uint32_t>(windowSize.m_height);
+                    }
+
+                    // Clamp the resolution to so we don't ever have a resolution beyond a certain size.
+                    // Apply the clamp before the renderscale is applied so we have more predictable results.
+                    // We adjust width first, and then height, ensuring neither
+                    // dimensions exceeds the max.
+                    float aspect_ratio = static_cast<float>(resolution.m_width) / static_cast<float>(resolution.m_height);
+                    uint32_t maxwidth = static_cast<uint32_t>(r_maxwidth);
+                    uint32_t maxheight = static_cast<uint32_t>(r_maxheight);
+
+                    if (maxwidth > 0 && resolution.m_width > maxwidth)
+                    {
+                        resolution.m_width = maxwidth;
+                        resolution.m_height = static_cast<uint32_t>(resolution.m_width / aspect_ratio);
+                    }
+
+                    if (maxheight > 0 && resolution.m_height > maxheight)
+                    {
+                        resolution.m_height = maxheight;
+                        resolution.m_width = static_cast<uint32_t>(resolution.m_height / aspect_ratio);
+                    }
+
+                    // Finally apply the renderscale
+                    resolution.m_width = static_cast<uint32_t>(resolution.m_width * scale);
+                    resolution.m_height = static_cast<uint32_t>(resolution.m_height * scale);
+#else
                     if (r_resolutionMode > 0u)
                     {
                         resolution.m_width = static_cast<uint32_t>(r_width * scale);
@@ -453,6 +533,8 @@ namespace AZ
                         resolution.m_width = static_cast<uint32_t>(windowSize.m_width * scale);
                         resolution.m_height = static_cast<uint32_t>(windowSize.m_height * scale);
                     }
+#endif
+                    
                     m_nativeWindow->SetRenderResolution(resolution);
                     m_nativeWindow->SetFullScreenState(r_fullscreen);
                 }

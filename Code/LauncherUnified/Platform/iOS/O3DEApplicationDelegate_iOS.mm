@@ -135,6 +135,11 @@ namespace
     AZStd::string deviceTokenStr = [devTokenBase64 UTF8String];
     AzFramework::IosLifecycleEvents::Bus::Broadcast(&AzFramework::IosLifecycleEvents::Bus::Events::OnDidRegisterForRemoteNotificationsWithDeviceToken, deviceTokenStr);
 }
+
+- (void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error
+{
+    NSLog(@"Failed to register for remote notifications: %@", error);
+}
 #endif
 
 @end // O3DEApplicationDelegate_iOS Implementation
