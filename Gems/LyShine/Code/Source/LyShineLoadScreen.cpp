@@ -305,8 +305,10 @@ namespace LyShine
         if (path.empty())
         {
             // No canvas specified.
-            Reset();
-            return AZ::EntityId();
+            //Reset();
+            //return AZ::EntityId();
+            path = "Levels/dlc/centralplaza/loading_screen/loading_screen.uicanvas";
+            path = "UI/Loading/Loading.uicanvas";
         }
 
         AZ::EntityId canvasId = AZ::Interface<ILyShine>::Get()->LoadCanvas(path);
