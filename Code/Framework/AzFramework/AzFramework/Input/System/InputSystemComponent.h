@@ -130,5 +130,6 @@ namespace AzFramework
         // Other Variables
         bool m_currentlyUpdatingInputDevices;   //!< Are we currently updating input devices?
         bool m_recreateInputDevicesAfterUpdate; //!< Should we recreate devices after update?
+        bool m_captureMouseCursor;              //!< Should we capture the mouse cursor?
     };
 } // namespace AzFramework
