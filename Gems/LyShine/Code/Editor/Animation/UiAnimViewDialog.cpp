@@ -662,10 +662,8 @@ void CUiAnimViewDialog::UpdateActions()
     CUiAnimViewSequence* pSequence = m_animationContext->GetSequence();
     if (pSequence)
     {
-        bool bLightAnimationSetActive = (m_currentSequenceName == LIGHT_ANIMATION_SET_NAME)
-            && (pSequence->GetFlags() & IUiAnimSequence::eSeqFlags_LightAnimationSet);
 
-        if (m_bEditLock || bLightAnimationSetActive)
+        if (m_bEditLock)
         {
             m_actions[ID_TV_EDIT_SEQUENCE]->setEnabled(false);
         }

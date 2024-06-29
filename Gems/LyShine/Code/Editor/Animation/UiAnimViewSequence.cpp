@@ -328,12 +328,6 @@ void CUiAnimViewSequence::OnNodeChanged(CUiAnimViewNode* pNode, IUiAnimViewSeque
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimViewSequence::OnNodeRenamed(CUiAnimViewNode* pNode, const char* pOldName)
 {
-    bool bLightAnimationSetActive = GetFlags() & IUiAnimSequence::eSeqFlags_LightAnimationSet;
-    if (bLightAnimationSetActive)
-    {
-        UpdateLightAnimationRefs(pOldName, pNode->GetName().c_str());
-    }
-
     if (m_bNoNotifications)
     {
         return;
@@ -424,39 +418,6 @@ void CUiAnimViewSequence::DeleteSelectedNodes()
     CUiAnimViewAnimNodeBundle selectedNodes = GetSelectedAnimNodes();
     const unsigned int numSelectedNodes = selectedNodes.GetCount();
 
-#if UI_ANIMATION_REMOVED    // lights
-    // Check if any reference to the light animation to be deleted exists, and abort the removal, if any.
-    const bool bLightAnimationSetActive = GetFlags() & IUiAnimSequence::eSeqFlags_LightAnimationSet;
-    if (bLightAnimationSetActive)
-    {
-        QStringList lightNodes;
-
-        // Construct set of selected light nodes
-        for (unsigned int i = 0; i < numSelectedNodes; ++i)
-        {
-            CUiAnimViewAnimNode* pCurrentNode = selectedNodes.GetNode(i);
-            if (pCurrentNode->GetType() == eUiAnimNodeType_Light)
-            {
-                stl::push_back_unique(lightNodes, pCurrentNode->GetName());
-            }
-        }
-
-        // Check all entities if any is referencing any selected light node
-        std::vector<CBaseObject*> entityObjects;
-        GetIEditor()->GetObjectManager()->FindObjectsOfType(&CEntityObject::staticMetaObject, entityObjects);
-
-        for (size_t i = 0; i < entityObjects.size(); ++i)
-        {
-            QString lightAnimationName = static_cast<CEntityObject*>(entityObjects[i])->GetLightAnimation();
-            if (stl::find(lightNodes, lightAnimationName))
-            {
-                QMessageBox::critical(QApplication::activeWindow(), QString(), QObject::tr("The node '%1' cannot be removed since there is a light entity still using it.").arg(lightAnimationName));
-                return;
-            }
-        }
-    }
-#endif
-
     CUiAnimViewTrackBundle selectedTracks = GetSelectedTracks();
     const unsigned int numSelectedTracks = selectedTracks.GetCount();
 
@@ -482,78 +443,6 @@ void CUiAnimViewSequence::DeleteSelectedNodes()
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimViewSequence::SelectSelectedNodesInViewport()
 {
-    assert(UiAnimUndo::IsRecording());
-
-    CUiAnimViewAnimNodeBundle selectedNodes = GetSelectedAnimNodes();
-
-#if UI_ANIMATION_REMOVED // lights
-    const unsigned int numSelectedNodes = selectedNodes.GetCount();
-
-    // Also select objects that refer to light animation
-    const bool bLightAnimationSetActive = GetFlags() & IUiAnimSequence::eSeqFlags_LightAnimationSet;
-    if (bLightAnimationSetActive)
-    {
-        QStringList lightNodes;
-
-        // Construct set of selected light nodes
-        for (unsigned int i = 0; i < numSelectedNodes; ++i)
-        {
-            CUiAnimViewAnimNode* pCurrentNode = selectedNodes.GetNode(i);
-            if (pCurrentNode->GetType() == eUiAnimNodeType_Light)
-            {
-                stl::push_back_unique(lightNodes, pCurrentNode->GetName());
-            }
-        }
-
-        // Check all entities if any is referencing any selected light node
-        std::vector<CBaseObject*> entityObjects;
-        GetIEditor()->GetObjectManager()->FindObjectsOfType(&CEntityObject::staticMetaObject, entityObjects);
-
-        for (size_t i = 0; i < entityObjects.size(); ++i)
-        {
-            QString lightAnimationName = static_cast<CEntityObject*>(entityObjects[i])->GetLightAnimation();
-            if (stl::find(lightNodes, lightAnimationName))
-            {
-                stl::push_back_unique(entitiesToBeSelected, entityObjects[i]);
-            }
-        }
-    }
-    else
-    {
-        for (unsigned int i = 0; i < numSelectedNodes; ++i)
-        {
-            CUiAnimViewAnimNode* pNode = selectedNodes.GetNode(i);
-            CEntityObject* pEntity = pNode->GetNodeEntity();
-            if (pEntity)
-            {
-                stl::push_back_unique(entitiesToBeSelected, pEntity);
-            }
-        }
-    }
-#endif
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CUiAnimViewSequence::UpdateLightAnimationRefs([[maybe_unused]] const char* pOldName, [[maybe_unused]] const char* pNewName)
-{
-#if UI_ANIMATION_REMOVED    // lights
-    std::vector<CBaseObject*> entityObjects;
-    GetIEditor()->GetObjectManager()->FindObjectsOfType(&CEntityObject::staticMetaObject, entityObjects);
-    std::for_each(std::begin(entityObjects), std::end(entityObjects),
-        [&pOldName, &pNewName](CBaseObject* pBaseObject)
-        {
-            CEntityObject* pEntityObject = static_cast<CEntityObject*>(pBaseObject);
-            bool bLight = pEntityObject && pEntityObject->GetEntityClass().Compare("Light") == 0;
-            if (bLight)
-            {
-                string lightAnimation = pEntityObject->GetEntityPropertyString("lightanimation_LightAnimation");
-                if (lightAnimation == pOldName)
-                {
-                    pEntityObject->SetEntityPropertyString("lightanimation_LightAnimation", pNewName);
-                }
-            }
-        });
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////////

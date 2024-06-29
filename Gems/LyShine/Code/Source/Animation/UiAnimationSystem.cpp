@@ -50,7 +50,6 @@ void UiAnimationSystem::RegisterNodeTypes()
     REGISTER_NODE_TYPE(ColorCorrection)
     REGISTER_NODE_TYPE(DepthOfField)
     REGISTER_NODE_TYPE(ScreenFader)
-    REGISTER_NODE_TYPE(Light)
     REGISTER_NODE_TYPE(HDRSetup)
     REGISTER_NODE_TYPE(ShadowSetup)
     REGISTER_NODE_TYPE(Alembic)
@@ -1104,7 +1103,7 @@ void UiAnimationSystem::GoToFrame(const char* seqName, float targetFrame)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void UiAnimationSystem::SerializeNodeType(EUiAnimNodeType& animNodeType, XmlNodeRef& xmlNode, bool bLoading, const uint version, int flags)
+void UiAnimationSystem::SerializeNodeType(EUiAnimNodeType& animNodeType, XmlNodeRef& xmlNode, bool bLoading, const uint version, [[maybe_unused]] int flags)
 {
     static const char* kType = "Type";
 
@@ -1119,14 +1118,6 @@ void UiAnimationSystem::SerializeNodeType(EUiAnimNodeType& animNodeType, XmlNode
         // In old versions there was special code for particles
         // that is now handles by generic entity node code
         if (version == 0 && animNodeType == kOldParticleNodeType)
-        {
-            animNodeType = eUiAnimNodeType_Entity;
-            return;
-        }
-
-        // Convert light nodes that are not part of a light
-        // animation set to common entity nodes
-        if (version <= 1 && animNodeType == eUiAnimNodeType_Light && !(flags & IUiAnimSequence::eSeqFlags_LightAnimationSet))
         {
             animNodeType = eUiAnimNodeType_Entity;
             return;

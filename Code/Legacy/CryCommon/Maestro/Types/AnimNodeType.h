@@ -6,7 +6,6 @@
  *
  */
 
-
 #ifndef CRYINCLUDE_CRYCOMMON_MAESTRO_TYPES_ANIMNODETYPE_H
 #define CRYINCLUDE_CRYCOMMON_MAESTRO_TYPES_ANIMNODETYPE_H
 #pragma once
@@ -34,7 +33,7 @@ enum class AnimNodeType
     ColorCorrection           = 0x12,
     DepthOfField              = 0x13,
     ScreenFader               = 0x14,
-    Light                     = 0x15,       // Legacy Cry Light
+    // Light                     = 0x15,       // Legacy Cry Light
     // HDRSetup               = 0x16,       // deprecated Jan 2016
     ShadowSetup               = 0x17,
     Alembic                   = 0x18,       // Used in cinebox, added so nobody uses that number

@@ -63,7 +63,7 @@ enum EUiAnimNodeType
     eUiAnimNodeType_ColorCorrection         = 0x12,
     eUiAnimNodeType_DepthOfField            = 0x13,
     eUiAnimNodeType_ScreenFader             = 0x14,
-    eUiAnimNodeType_Light                   = 0x15,
+    // eUiAnimNodeType_Light                   = 0x15,
     eUiAnimNodeType_HDRSetup                = 0x16,
     eUiAnimNodeType_ShadowSetup             = 0x17,
     eUiAnimNodeType_Alembic                 = 0x18, // Used in cinebox, added so nobody uses that number
@@ -873,7 +873,7 @@ struct IUiAnimSequence
         eSeqFlags_NoSpeed              = BIT(13),  //!< Cannot modify sequence speed - TODO: add interface control if required
      // eSeqFlags_CanWarpInFixedTime   = BIT(14),  //!< @deprecated - Timewarp by scaling a fixed time step - removed July 2017
         eSeqFlags_EarlyAnimationUpdate = BIT(15),  //!< Turn the 'sys_earlyUiAnimationUpdate' on during the sequence.
-        eSeqFlags_LightAnimationSet    = BIT(16),  //!< A special unique sequence for light animations
+        // eSeqFlags_LightAnimationSet    = BIT(16),  //!< A special unique sequence for light animations
         eSeqFlags_NoMPSyncingNeeded    = BIT(17),  //!< this sequence doesn't require MP net syncing
     };
 

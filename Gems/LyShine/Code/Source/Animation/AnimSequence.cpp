@@ -339,10 +339,6 @@ void CUiAnimSequence::RemoveAll()
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimSequence::Reset(bool bSeekToStart)
 {
-    if (GetFlags() & eSeqFlags_LightAnimationSet)
-    {
-        return;
-    }
 
     m_precached = false;
     m_bResetting = true;
@@ -391,10 +387,6 @@ void CUiAnimSequence::Reset(bool bSeekToStart)
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimSequence::ResetHard()
 {
-    if (GetFlags() & eSeqFlags_LightAnimationSet)
-    {
-        return;
-    }
 
     m_bResetting = true;
 
@@ -431,7 +423,7 @@ void CUiAnimSequence::ResetHard()
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimSequence::Pause()
 {
-    if (GetFlags() & eSeqFlags_LightAnimationSet || m_bPaused)
+    if (m_bPaused)
     {
         return;
     }
@@ -449,11 +441,6 @@ void CUiAnimSequence::Pause()
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimSequence::Resume()
 {
-    if (GetFlags() & eSeqFlags_LightAnimationSet)
-    {
-        return;
-    }
-
     if (m_bPaused)
     {
         m_bPaused = false;
@@ -505,11 +492,6 @@ void CUiAnimSequence::OnStop()
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimSequence::StillUpdate()
 {
-    if (GetFlags() & eSeqFlags_LightAnimationSet)
-    {
-        return;
-    }
-
     for (AnimNodes::iterator it = m_nodes.begin(); it != m_nodes.end(); ++it)
     {
         IUiAnimNode* pAnimNode = it->get();
@@ -521,11 +503,6 @@ void CUiAnimSequence::StillUpdate()
 void CUiAnimSequence::Animate(const SUiAnimContext& ec)
 {
     assert(m_bActive);
-
-    if (GetFlags() & eSeqFlags_LightAnimationSet)
-    {
-        return;
-    }
 
     SUiAnimContext animContext = ec;
     animContext.pSequence = this;

@@ -879,7 +879,7 @@ struct IAnimSequence
         eSeqFlags_NoSpeed             = BIT(13), //!< Cannot modify sequence speed - TODO: add interface control if required
      // eSeqFlags_CanWarpInFixedTime  = BIT(14), //!< @deprecated - Timewarp by scaling a fixed time step - removed July 2017, unused
         eSeqFlags_EarlyMovieUpdate    = BIT(15), //!< Turn the 'sys_earlyMovieUpdate' on during the sequence.
-        eSeqFlags_LightAnimationSet   = BIT(16), //!< A special unique sequence for light animations
+     // eSeqFlags_LightAnimationSet   = BIT(16), //!< A special unique sequence for light animations
         eSeqFlags_NoMPSyncingNeeded   = BIT(17), //!< this sequence doesn't require MP net syncing
         eSeqFlags_DisplayAsFramesOrSeconds = BIT(18), //!< Display Start/End time as frames or seconds
     };

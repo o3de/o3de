@@ -96,7 +96,6 @@ void CMovieSystem::RegisterNodeTypes()
     REGISTER_NODE_TYPE(ColorCorrection)
     REGISTER_NODE_TYPE(DepthOfField)
     REGISTER_NODE_TYPE(ScreenFader)
-    REGISTER_NODE_TYPE(Light)
     REGISTER_NODE_TYPE(ShadowSetup)
     REGISTER_NODE_TYPE(Alembic)
     REGISTER_NODE_TYPE(GeomCache)
@@ -1570,7 +1569,7 @@ bool CMovieSystem::IsCapturing() const
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CMovieSystem::SerializeNodeType(AnimNodeType& animNodeType, XmlNodeRef& xmlNode, bool bLoading, const uint version, int flags)
+void CMovieSystem::SerializeNodeType(AnimNodeType& animNodeType, XmlNodeRef& xmlNode, bool bLoading, const uint version, [[maybe_unused]] int flags)
 {
     static const char* kType = "Type";
 
@@ -1590,13 +1589,6 @@ void CMovieSystem::SerializeNodeType(AnimNodeType& animNodeType, XmlNodeRef& xml
             return;
         }
 
-        // Convert light nodes that are not part of a light
-        // animation set to common entity nodes
-        if (version <= 1 && animNodeType == AnimNodeType::Light && !(flags & IAnimSequence::eSeqFlags_LightAnimationSet))
-        {
-            animNodeType = AnimNodeType::Entity;
-            return;
-        }
 
         if (version <= 2)
         {

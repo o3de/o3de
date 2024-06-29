@@ -538,33 +538,56 @@ namespace
 {
     static int GetNodeOrder(EUiAnimNodeType nodeType)
     {
-        assert(nodeType < eUiAnimNodeType_Num);
+        switch (nodeType)
+        {
+        case eUiAnimNodeType_Invalid:
+            return 0;
+        case eUiAnimNodeType_Director:
+            return 1;
+        case eUiAnimNodeType_Camera:
+            return 2;
+        case eUiAnimNodeType_Entity:
+            return 3;
+        case eUiAnimNodeType_Alembic:
+            return 4;
+        case eUiAnimNodeType_GeomCache:
+            return 5;
+        case eUiAnimNodeType_CVar:
+            return 6;
+        case eUiAnimNodeType_ScriptVar:
+            return 7;
+        case eUiAnimNodeType_Material:
+            return 8;
+        case eUiAnimNodeType_Event:
+            return 9;
+        case eUiAnimNodeType_Layer:
+            return 10;
+        case eUiAnimNodeType_Comment:
+            return 11;
+        case eUiAnimNodeType_RadialBlur:
+            return 12;
+        case eUiAnimNodeType_ColorCorrection:
+            return 13;
+        case eUiAnimNodeType_DepthOfField:
+            return 14;
+        case eUiAnimNodeType_ScreenFader:
+            return 15;
+        case eUiAnimNodeType_HDRSetup:
+            return 17;
+        case eUiAnimNodeType_ShadowSetup:
+            return 18;
+        case eUiAnimNodeType_Environment:
+            return 19;
+        case eUiAnimNodeType_ScreenDropsSetup:
+            return 20;
+        case eUiAnimNodeType_Group:
+            return 21;
+        default:
+            AZ_Assert(false, "Unhandled nodeType: %d", nodeType);
+            break;
+        }
 
-        static int nodeOrder[eUiAnimNodeType_Num];
-        nodeOrder[eUiAnimNodeType_Invalid] = 0;
-        nodeOrder[eUiAnimNodeType_Director] = 1;
-        nodeOrder[eUiAnimNodeType_Camera] = 2;
-        nodeOrder[eUiAnimNodeType_Entity] = 3;
-        nodeOrder[eUiAnimNodeType_Alembic] = 4;
-        nodeOrder[eUiAnimNodeType_GeomCache] = 5;
-        nodeOrder[eUiAnimNodeType_CVar] = 6;
-        nodeOrder[eUiAnimNodeType_ScriptVar] = 7;
-        nodeOrder[eUiAnimNodeType_Material] = 8;
-        nodeOrder[eUiAnimNodeType_Event] = 9;
-        nodeOrder[eUiAnimNodeType_Layer] = 10;
-        nodeOrder[eUiAnimNodeType_Comment] = 11;
-        nodeOrder[eUiAnimNodeType_RadialBlur] = 12;
-        nodeOrder[eUiAnimNodeType_ColorCorrection] = 13;
-        nodeOrder[eUiAnimNodeType_DepthOfField] = 14;
-        nodeOrder[eUiAnimNodeType_ScreenFader] = 15;
-        nodeOrder[eUiAnimNodeType_Light] = 16;
-        nodeOrder[eUiAnimNodeType_HDRSetup] = 17;
-        nodeOrder[eUiAnimNodeType_ShadowSetup] = 18;
-        nodeOrder[eUiAnimNodeType_Environment] = 19;
-        nodeOrder[eUiAnimNodeType_ScreenDropsSetup] = 20;
-        nodeOrder[eUiAnimNodeType_Group] = 21;
-
-        return nodeOrder[nodeType];
+        return 0;
     }
 }
 
