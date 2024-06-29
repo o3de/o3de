@@ -40,7 +40,6 @@
 
 // Editor
 #include "CryEdit.h"
-#include "Plugin.h"
 #include "PluginManager.h"
 #include "ViewManager.h"
 #include "DisplaySettings.h"
@@ -83,7 +82,6 @@ CEditorImpl::CEditorImpl()
     : m_operationMode(eOperationModeNone)
     , m_pSystem(nullptr)
     , m_pFileUtil(nullptr)
-    , m_pClassFactory(nullptr)
     , m_pCommandManager(nullptr)
     , m_pPluginManager(nullptr)
     , m_pViewManager(nullptr)
@@ -125,7 +123,6 @@ CEditorImpl::CEditorImpl()
     gSettings.Load();
 
     m_pErrorReport = new CErrorReport;
-    m_pClassFactory = CClassFactory::Instance();
     m_pCommandManager = new CEditorCommandManager;
     m_pEditorFileMonitor.reset(new CEditorFileMonitor());
     m_pDisplaySettings = new CDisplaySettings;
@@ -267,7 +264,6 @@ CEditorImpl::~CEditorImpl()
     SAFE_DELETE(m_pDisplaySettings)
     SAFE_DELETE(m_pToolBoxManager)
     SAFE_DELETE(m_pCommandManager)
-    SAFE_DELETE(m_pClassFactory)
     SAFE_DELETE(m_pLasLoadedLevelErrorReport)
 
     SAFE_DELETE(m_pSettingsManager);
@@ -351,10 +347,6 @@ ISystem* CEditorImpl::GetSystem()
     return m_pSystem;
 }
 
-IEditorClassFactory* CEditorImpl::GetClassFactory()
-{
-    return m_pClassFactory;
-}
 
 CCryEditDoc* CEditorImpl::GetDocument() const
 {
@@ -670,20 +662,6 @@ bool CEditorImpl::SetViewFocus(const char* sViewClassName)
         return true;
     }
     return false;
-}
-
-bool CEditorImpl::CloseView(const char* sViewClassName)
-{
-    return QtViewPaneManager::instance()->ClosePane(sViewClassName);
-}
-
-void CEditorImpl::CloseView(const GUID& classId)
-{
-    IClassDesc* found = GetClassFactory()->FindClass(classId);
-    if (found)
-    {
-        CloseView(found->ClassName().toUtf8().data());
-    }
 }
 
 bool CEditorImpl::SelectColor(QColor& color, QWidget* parent)

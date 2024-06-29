@@ -71,7 +71,6 @@ public:
 
     void SetGameEngine(CGameEngine* ge);
     void DeleteThis() override { delete this; };
-    IEditorClassFactory* GetClassFactory() override;
     CEditorCommandManager* GetCommandManager() override { return m_pCommandManager; };
     ICommandManager* GetICommandManager() override { return m_pCommandManager; }
     void ExecuteCommand(const char* sCommand, ...) override;
@@ -191,11 +190,9 @@ public:
      */
     QWidget* FindView(QString viewClassName) override;
 
-    bool CloseView(const char* sViewClassName) override;
     bool SetViewFocus(const char* sViewClassName) override;
 
     // close ALL panels related to classId, used when unloading plugins.
-    void CloseView(const GUID& classId) override;
     bool SelectColor(QColor &color, QWidget *parent = 0) override;
     void Update();
     SFileVersion GetFileVersion() override { return m_fileVersion; };
@@ -269,7 +266,6 @@ protected:
     EOperationMode m_operationMode;
     ISystem* m_pSystem;
     IFileUtil* m_pFileUtil;
-    CClassFactory* m_pClassFactory;
     CEditorCommandManager* m_pCommandManager;
     CPluginManager* m_pPluginManager;
     CViewManager*   m_pViewManager;

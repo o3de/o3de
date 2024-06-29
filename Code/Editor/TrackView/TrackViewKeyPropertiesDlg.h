@@ -14,7 +14,6 @@
 #if !defined(Q_MOC_RUN)
 #include "TrackViewSequence.h"
 #include "TrackViewNode.h"
-#include "Plugin.h"
 #include "TrackViewDopeSheetBase.h"
 
 #include <QScopedPointer>
