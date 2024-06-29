@@ -251,7 +251,6 @@ CUiAnimViewNodesCtrl::CUiAnimViewNodesCtrl(QWidget* hParentWnd, CUiAnimViewDialo
     connect(ui->treeWidget, &QTreeWidget::itemExpanded, this, &CUiAnimViewNodesCtrl::OnItemExpanded);
     connect(ui->treeWidget, &QTreeWidget::itemCollapsed, this, &CUiAnimViewNodesCtrl::OnItemExpanded);
     connect(ui->treeWidget, &QTreeWidget::itemSelectionChanged, this, &CUiAnimViewNodesCtrl::OnSelectionChanged);
-    connect(ui->treeWidget, &QTreeWidget::itemDoubleClicked, this, &CUiAnimViewNodesCtrl::OnItemDblClick);
 
     connect(ui->searchField, &QLineEdit::textChanged, this, &CUiAnimViewNodesCtrl::OnFilterChange);
 
@@ -892,11 +891,6 @@ void CUiAnimViewNodesCtrl::OnNMRclick(QPoint point)
             EndUndoTransaction();
         }
     }
-    else if (cmd == eMI_SelectInViewport)
-    {
-        UiAnimUndo undo("Select Animation Nodes in Viewport");
-        pSequence->SelectSelectedNodesInViewport();
-    }
     else if (cmd >= eMI_SelectSubmaterialBase && cmd < eMI_SelectSubmaterialBase + 100)
     {
         if (pAnimNode)
@@ -952,31 +946,6 @@ void CUiAnimViewNodesCtrl::OnNMRclick(QPoint point)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CUiAnimViewNodesCtrl::OnItemDblClick(QTreeWidgetItem* item, int)
-{
-    CRecord* pRecord = (CRecord*)item;
-    if (pRecord && pRecord->GetNode())
-    {
-        CUiAnimViewNode* pNode = pRecord->GetNode();
-
-        if (pNode->GetNodeType() == eUiAVNT_AnimNode)
-        {
-#if UI_ANIMATION_REMOVED // uses Cry Entity
-            CUiAnimViewAnimNode* pAnimNode = static_cast<CUiAnimViewAnimNode*>(pNode);
-            CEntityObject* pEntity = pAnimNode->GetNodeEntity();
-
-            if (pEntity)
-            {
-                UiAnimUndo undo("Select Object");
-                GetIEditor()->ClearSelection();
-                GetIEditor()->SelectObject(pEntity);
-            }
-#endif
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CUiAnimViewNodesCtrl::EditEvents()
 {
     CUiAVEventsDialog dlg;
@@ -1010,13 +979,6 @@ void CUiAnimViewNodesCtrl::AddGroupNodeAddItems(UiAnimContextMenu& contextMenu, 
         contextMenu.main.addAction("Add Selected UI Element(s)")->setData(eMI_AddSelectedUiElements);
         contextMenu.main.addAction("Add Event Node")->setData(eMI_AddEvent);
     }
-
-#if UI_ANIMATION_REMOVED
-    contextMenu.main.addAction("Add Comment Node")->setData(eMI_AddCommentNode);
-    contextMenu.main.addAction("Add Console Variable")->setData(eMI_AddConsoleVariable);
-    contextMenu.main.addAction("Add Script Variable")->setData(eMI_AddScriptVariable);
-    contextMenu.main.addAction("Add Material")->setData(eMI_AddMaterial);
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1054,29 +1016,10 @@ int CUiAnimViewNodesCtrl::ShowPopupMenuSingleSelection(UiAnimContextMenu& contex
         pAnimNode = pTrack->GetAnimNode();
     }
 
-#if UI_ANIMATION_REMOVED
-    // Entity
-    if (bOnNode && pAnimNode->GetEntity() != nullptr && !bIsLightAnimationSet)
+    if (bOnNode || bOnSequence || bOnTrackNotSub)
     {
-        AddMenuSeperatorConditional(contextMenu.main, bAppended);
-
-        contextMenu.main.addAction("Select In Viewport")->setData(eMI_SelectInViewport);
-
-        if (pAnimNode->GetType() == eUiAnimNodeType_Camera)
-        {
-            contextMenu.main.addAction("Set As View Camera")->setData(eMI_SetAsViewCamera);
-        }
-
+        contextMenu.main.addAction("Delete")->setData(bOnTrackNotSub ? eMI_RemoveTrack : eMI_RemoveSelected);
         bAppended = true;
-    }
-#endif
-
-    {
-        if (bOnNode || bOnSequence || bOnTrackNotSub)
-        {
-            contextMenu.main.addAction("Delete")->setData(bOnTrackNotSub ? eMI_RemoveTrack : eMI_RemoveSelected);
-            bAppended = true;
-        }
     }
 
     if (bOnTrack)
@@ -1124,21 +1067,20 @@ int CUiAnimViewNodesCtrl::ShowPopupMenuSingleSelection(UiAnimContextMenu& contex
         bAppended = true;
     }
 
-#if UI_ANIMATION_REMOVED
-    // We have removed support for saving out the custom colors per track
-    // it may be added back at some point
-    // Track color
-    if (bOnTrack)
-    {
-        AddMenuSeperatorConditional(contextMenu.main, bAppended);
-        contextMenu.main.addAction("Customize Track Color...")->setData(eMI_CustomizeTrackColor);
-        if (pTrack->HasCustomColor())
-        {
-            contextMenu.main.addAction("Clear Custom Track Color")->setData(eMI_ClearCustomTrackColor);
-        }
-        bAppended = true;
-    }
-#endif
+   // TODO: look into support track colors
+   // We have removed support for saving out the custom colors per track
+   // it may be added back at some point
+   // Track color
+   // if (bOnTrack)
+   // {
+   //     AddMenuSeperatorConditional(contextMenu.main, bAppended);
+   //     contextMenu.main.addAction("Customize Track Color...")->setData(eMI_CustomizeTrackColor);
+   //     if (pTrack->HasCustomColor())
+   //     {
+   //         contextMenu.main.addAction("Clear Custom Track Color")->setData(eMI_ClearCustomTrackColor);
+   //     }
+   //     bAppended = true;
+   // }
 
     // Track hide/unhide flags
     if (bOnNode && !pNode->IsGroupNode())

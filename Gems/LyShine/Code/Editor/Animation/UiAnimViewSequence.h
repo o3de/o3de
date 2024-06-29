@@ -155,9 +155,6 @@ public:
     // Deletes all selected nodes (re-parents childs if group node gets deleted)
     void DeleteSelectedNodes();
 
-    // Select selected nodes in viewport
-    void SelectSelectedNodesInViewport();
-
     // Deletes all selected keys
     void DeleteSelectedKeys();
 
@@ -232,8 +229,6 @@ private:
     void ForceAnimation();
 
     void CopyKeysToClipboard(XmlNodeRef& xmlNode, const bool bOnlySelectedKeys, const bool bOnlyFromSelectedTracks) override;
-
-    void UpdateLightAnimationRefs(const char* pOldName, const char* pNewName);
 
     std::deque<CUiAnimViewTrack*> GetMatchingTracks(CUiAnimViewAnimNode* pAnimNode, XmlNodeRef trackNode);
     void GetMatchedPasteLocationsRec(std::vector<TMatchedTrackLocation>& locations, CUiAnimViewNode* pCurrentNode, XmlNodeRef clipboardNode);
