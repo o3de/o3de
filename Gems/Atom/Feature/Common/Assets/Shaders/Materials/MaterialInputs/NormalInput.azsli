@@ -53,7 +53,7 @@ real2 SampleNormalXY(Texture2D map, sampler mapSampler, float2 uv, float4 uvDxDy
     sampledValue =  (sampledValue * 2) - 1;
 #endif
 
-    return sampledValue;
+    return sampledValue.xy;
 }
 
 //! Samples the normal map and returns the XY values of the normal. 

@@ -35,6 +35,7 @@
 #define ENABLE_REFLECTIONPROBE_BLENDING 0
 #define ENABLE_SPECULARAA 0
 #define ENABLE_PARALLAX 0
+#define ENABLE_MOBILEBRDF 1
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 

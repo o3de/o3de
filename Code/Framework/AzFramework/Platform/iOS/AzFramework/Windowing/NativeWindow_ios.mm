@@ -24,13 +24,15 @@ namespace AzFramework
         ~NativeWindowImpl_Ios() override;
         
         // NativeWindow::Implementation overrides...
-        void InitWindow(const AZStd::string& title,
+        void InitWindowInternal(const AZStd::string& title,
                         const WindowGeometry& geometry,
                         const WindowStyleMasks& styleMasks) override;
         NativeWindowHandle GetWindowHandle() const override;
         uint32_t GetDisplayRefreshRate() const override;
         
     private:
+        bool IsLandscape() const;
+
         UIWindow* m_nativeWindow;
         uint32_t m_mainDisplayRefreshRate = 0;
     };
@@ -44,16 +46,25 @@ namespace AzFramework
         }
     }
     
-    void NativeWindowImpl_Ios::InitWindow([[maybe_unused]]const AZStd::string& title,
+    void NativeWindowImpl_Ios::InitWindowInternal([[maybe_unused]]const AZStd::string& title,
                                           const WindowGeometry& geometry,
                                           [[maybe_unused]]const WindowStyleMasks& styleMasks)
     {
         CGRect screenBounds = [[UIScreen mainScreen] bounds];
         m_nativeWindow = [[UIWindow alloc] initWithFrame: screenBounds];
         [m_nativeWindow makeKeyAndVisible];
+        
+        // On iOS we don't set the window size, we use the OS window's' size
+        m_width = [[UIScreen mainScreen] nativeBounds].size.width;
+        m_height = [[UIScreen mainScreen] nativeBounds].size.height;
 
-        m_width = geometry.m_width;
-        m_height = geometry.m_height;
+        // The rectangle returned by nativeBounds is always in a portrait orientation.
+        // If the app is landscape, width and height must be swapped.
+        if (IsLandscape())
+        {
+            AZStd::swap(m_width, m_height);
+        }
+        
         m_mainDisplayRefreshRate = [[UIScreen mainScreen] maximumFramesPerSecond];
     }
     
@@ -65,6 +76,12 @@ namespace AzFramework
     uint32_t NativeWindowImpl_Ios::GetDisplayRefreshRate() const
     {
         return m_mainDisplayRefreshRate;
+    }
+
+    bool NativeWindowImpl_Ios::IsLandscape() const
+    {
+        UIInterfaceOrientation uiOrientation = m_nativeWindow.windowScene.interfaceOrientation;
+        return uiOrientation == UIInterfaceOrientationLandscapeLeft || uiOrientation == UIInterfaceOrientationLandscapeRight;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

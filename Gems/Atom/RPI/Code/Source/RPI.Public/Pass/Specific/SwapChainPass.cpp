@@ -109,8 +109,7 @@ namespace AZ
                 m_pipelinOutputAttachment->m_descriptor = outputImageDesc;
                 m_pipelinOutputAttachment->m_name = "PipelineOutput";
                 m_pipelinOutputAttachment->ComputePathName(GetPathName());
-                // Note: do not add m_pipelinOutputAttachment to m_ownedAttachments so it won't be imported to frame graph's attachment database. 
-                // This is because this attachment is only used for pass reference, but not used for RHI frame graph
+                m_ownedAttachments.push_back(m_pipelinOutputAttachment);
 
                 // use the intermediate attachment as pipeline's output
                 pipelineOutput->SetAttachment(m_pipelinOutputAttachment);
@@ -143,6 +142,7 @@ namespace AZ
                 RPI::Ptr<RPI::Pass> copyPass = RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
                 if (copyPass)
                 {
+                    copyPass->SetEnabled(true);
                     auto outputBinding = copyPass->FindAttachmentBinding(Name("Output"));
                     outputBinding->SetAttachment(m_swapChainAttachment);
                     // set connected binding to nullptr so it won't use the output attachment specified in the pipeline's pass template
