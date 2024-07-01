@@ -12,6 +12,7 @@
 #include <Atom/Features/PBR/LightingOptions.azsli>
 
 #include "../MaterialInputs/BaseColorInput.azsli"
+#include "../MaterialInputs/VertexColorInput.azsli"
 #include "../MaterialInputs/RoughnessInput.azsli"
 #include "../MaterialInputs/MetallicInput.azsli"
 #include "../MaterialInputs/SpecularInput.azsli"
@@ -29,6 +30,7 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 {
     // Auto-generate material SRG fields for common inputs
     COMMON_SRG_INPUTS_BASE_COLOR()
+    COMMON_SRG_INPUTS_VERTEX_COLOR()
     COMMON_SRG_INPUTS_ROUGHNESS()
     COMMON_SRG_INPUTS_METALLIC()
     COMMON_SRG_INPUTS_SPECULAR_F0()

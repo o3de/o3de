@@ -25,7 +25,9 @@ VsOutput EvaluateVertexGeometry_BasePBR(
     float4 tangent,
     float2 uv0,
     float2 uv1,
-    uint instanceId)
+    float4 color0,
+    uint instanceId,
+    bool useVertexColor0)
 {
     VsOutput output;
 
@@ -41,6 +43,17 @@ VsOutput EvaluateVertexGeometry_BasePBR(
     output.normal = normal;
     output.tangent = tangent;
 
+#if ENABLE_VERTEX_COLOR
+    if(useVertexColor0)
+    {
+        output.color0 =  color0;
+    }
+    else
+    {
+        output.color0 = float4(1,1,1,1);
+    }
+#endif
+
     // Set the instanceId on the output so the pixel shader can use it
     // since you can't use SV_InstanceID for both a vertex and a pixel shader at the same time
     output.m_instanceId = instanceId;
@@ -50,11 +63,20 @@ VsOutput EvaluateVertexGeometry_BasePBR(
 
 VsOutput EvaluateVertexGeometry_BasePBR(VsInput IN, VsSystemValues SV)
 {
+#if ENABLE_VERTEX_COLOR
+    float4 color0 = IN.m_optional_color0;
+    bool useVertexColor0 = o_color0_isBound;
+#else
+    float4 color0 = float4(1.0f, 1.0f, 1.0f, 1.0f);
+    bool useVertexColor0 = false;
+#endif
     return EvaluateVertexGeometry_BasePBR(
         IN.position,
         IN.normal,
         IN.tangent,
         IN.uv0,
         IN.uv1,
-        SV.m_instanceId);
+        color0,
+        SV.m_instanceId,
+        useVertexColor0);
 }

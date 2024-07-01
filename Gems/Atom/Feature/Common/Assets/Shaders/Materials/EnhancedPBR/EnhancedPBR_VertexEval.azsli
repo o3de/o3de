@@ -24,10 +24,11 @@ VsOutput EvaluateVertexGeometry_EnhancedPBR(
     float4 tangent,
     float2 uv0,
     float2 uv1,
-    uint instanceId)
+    uint instanceId,
+    float4 color0)
 {
     // BasePBRP
-    VsOutput output = EvaluateVertexGeometry_BasePBR(position, normal, tangent, uv0, uv1, instanceId);
+    VsOutput output = EvaluateVertexGeometry_BasePBR(position, normal, tangent, uv0, uv1, color0, instanceId, o_color0_isBound);
 
     // Detail UVs
     float2 detailUvs[UvSetCount] = { uv0, uv1 };
@@ -44,5 +45,6 @@ VsOutput EvaluateVertexGeometry_EnhancedPBR(VsInput IN, VsSystemValues SV)
         IN.tangent,
         IN.uv0,
         IN.uv1,
-        SV.m_instanceId);
+        SV.m_instanceId,
+        IN.m_optional_color0);
 }

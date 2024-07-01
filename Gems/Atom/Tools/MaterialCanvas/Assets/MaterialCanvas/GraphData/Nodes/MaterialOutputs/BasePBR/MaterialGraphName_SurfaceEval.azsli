@@ -38,6 +38,7 @@ Surface EvaluateSurface_MaterialGraphName(
     const float3 O3DE_MC_NORMAL_WS = normalWS;
     const float3 O3DE_MC_TANGENT_WS = tangents[0];
     const float3 O3DE_MC_BITANGENT_WS = bitangents[0];
+    const float4 O3DE_MC_COLOR = IN.color0;
     #define O3DE_MC_UV(index) uvs[clamp(index, 0, UvSetCount-1)];
 
     // m_placeHolder keeps MaterialSrg from being compiled out when iterating on graphs

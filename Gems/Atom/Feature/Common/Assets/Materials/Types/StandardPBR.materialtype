@@ -22,6 +22,9 @@
                 "$import": "MaterialInputs/BaseColorPropertyGroup.json"
             },
             { 
+                "$import": "MaterialInputs/VertexColorPropertyGroup.json"
+            },
+            { 
                 "$import": "MaterialInputs/MetallicPropertyGroup.json"
             },
             { 

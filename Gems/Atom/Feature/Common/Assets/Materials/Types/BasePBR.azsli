@@ -5,6 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
+#define ENABLE_VERTEX_COLOR 1
     
 //TODO(MaterialPipeline): Inline the MaterialSrg files since they aren't reused.
 //TODO(MaterialPipeline): Try removing different parts of the SRG and see how hard/easy it is to customize the surface function.
@@ -16,6 +18,7 @@
 #if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
 
     COMMON_OPTIONS_BASE_COLOR()
+    COMMON_OPTIONS_VERTEX_COLOR()
     COMMON_OPTIONS_ROUGHNESS()
     COMMON_OPTIONS_METALLIC()
     COMMON_OPTIONS_SPECULAR_F0()

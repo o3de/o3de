@@ -24,7 +24,9 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(
     real4 tangent,
     float2 uv0,
     float2 uv1,
-    uint instanceId)
+    float4 color0,
+    uint instanceId,
+    bool useVertexColor0)
 {
     const float4x4 objectToWorld = GetObjectToWorldMatrix(instanceId);
     const float3x3 objectToWorldIT = GetObjectToWorldMatrixInverseTranspose(instanceId);
@@ -42,6 +44,7 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(
     const float3 O3DE_MC_NORMAL_WS = normalWS;
     const float3 O3DE_MC_TANGENT_WS = tangentWS;
     const float3 O3DE_MC_BITANGENT_WS = bitangentWS;
+    const float4 O3DE_MC_COLOR = color0;
     #define O3DE_MC_UV(index) (index == 0 ? uv0 : uv1);
 
     // m_placeHolder keeps MaterialSrg from being compiled out when iterating on graphs
@@ -61,6 +64,15 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(
     output.normal = normal;
     output.tangent = tangent;
     output.m_instanceId = instanceId;
+    if(useVertexColor0)
+    {
+        output.color0 =  color0;
+    }
+    else
+    {
+        output.color0 = float4(1,1,1,1);
+    }
+
     return output;
 }
 
@@ -72,5 +84,7 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(VsInput IN, VsSystemValues SV)
         real4(IN.tangent),
         IN.uv0,
         IN.uv1,
-        SV.m_instanceId);
+        IN.m_optional_color0,        
+        SV.m_instanceId,
+        o_color0_isBound);
 }

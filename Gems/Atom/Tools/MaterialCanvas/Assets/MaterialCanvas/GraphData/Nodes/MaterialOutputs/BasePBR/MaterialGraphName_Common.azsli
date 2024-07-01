@@ -13,6 +13,10 @@
 #define ENABLE_PARALLAX 0
 #endif
 
+#ifndef ENABLE_VERTEX_COLOR
+#define ENABLE_VERTEX_COLOR 1
+#endif
+
 #ifndef UvSetCount
 #define UvSetCount 2
 #endif

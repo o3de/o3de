@@ -23,6 +23,15 @@
 #define VsOutput        VsOutput_BasePBR
 #endif
 
+#ifndef ENABLE_VERTEX_COLOR
+#define ENABLE_VERTEX_COLOR 0
+#endif
+
+
+#if ENABLE_VERTEX_COLOR
+option bool o_color0_isBound = false;
+#endif
+
 struct VsInput_BasePBR
 {
     // Base fields (required by the template azsli file)...
@@ -35,6 +44,12 @@ struct VsInput_BasePBR
     // Extended fields (only referenced in this azsl file)...
     float2 uv0 : UV0;
     float2 uv1 : UV1;
+
+#if ENABLE_VERTEX_COLOR
+    // This gets set automatically by the system at runtime only if it's available.
+    // There is a soft naming convention that associates this with o_color0_isBound, which will be set to true whenever o_color0_isBound is available.
+    float4 m_optional_color0 : COLOR0;
+#endif
 };
 
 struct VsSystemValues_BasePBR
@@ -55,4 +70,9 @@ struct VsOutput_BasePBR
     // Extended fields (only referenced in this azsl file)...
     float2 uvs[UvSetCount] : UV1;
     uint m_instanceId : SV_InstanceID;
+
+#if ENABLE_VERTEX_COLOR
+    // Optional
+    float4 color0 : UV7; // Using UV7 just to leave some room for non optional attributes
+#endif
 };
