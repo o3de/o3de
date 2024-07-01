@@ -284,7 +284,7 @@ namespace AZ
                     continue;
                 }
 
-                queryPoolAttachment.m_pool->ResetQueries(commandList, queryPoolAttachment.m_interval);
+                AZStd::static_pointer_cast<QueryPool>(queryPoolAttachment.m_pool->GetDeviceQueryPool(GetDeviceIndex()))->ResetQueries(commandList, queryPoolAttachment.m_interval);
             }
         }
 
@@ -413,7 +413,7 @@ namespace AZ
             }
         }
 
-        void Scope::CompileInternal(RHI::Device& deviceBase)
+        void Scope::CompileInternal()
         {
             for (RHI::ResourcePoolResolver* resolvePolicyBase : GetResourcePoolResolves())
             {
@@ -427,16 +427,17 @@ namespace AZ
             m_signalFences.reserve(signalFences.size());
             for (const auto& fence : signalFences)
             {
-                m_signalFences.push_back(AZStd::static_pointer_cast<Fence>(fence));
+                m_signalFences.push_back(AZStd::static_pointer_cast<Fence>(fence->GetDeviceFence(GetDeviceIndex())));
             }
 
             const auto& waitFences = GetFencesToWaitFor();
             m_waitFences.reserve(waitFences.size());
             for (const auto& fence : waitFences)
             {
-                m_waitFences.push_back(AZStd::static_pointer_cast<Fence>(fence));
+                m_waitFences.push_back(AZStd::static_pointer_cast<Fence>(fence->GetDeviceFence(GetDeviceIndex())));
             }
 
+            RHI::Device& deviceBase = GetDevice();
             Device& device = static_cast<Device&>(deviceBase);
             m_deviceSupportedPipelineStageFlags = device.GetCommandQueueContext().GetCommandQueue(GetHardwareQueueClass()).GetSupportedPipelineStages();
 
@@ -445,7 +446,7 @@ namespace AZ
 
         void Scope::AddQueryPoolUse(RHI::Ptr<RHI::QueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access)
         {
-            m_queryPoolAttachments.push_back({ AZStd::static_pointer_cast<QueryPool>(queryPool), interval, access });
+            m_queryPoolAttachments.push_back({ queryPool, interval, access });
         }
 
         bool Scope::CanOptimizeBarrier(const Barrier& barrier, BarrierSlot slot) const
@@ -652,8 +653,8 @@ namespace AZ
                     {
                         if (imageAttachment->GetDescriptor().m_attachmentId == resolveAttachment->GetDescriptor().m_resolveAttachmentId)
                         {
-                            auto srcImageView = static_cast<const ImageView*>(imageAttachment->GetImageView());
-                            auto dstImageView = static_cast<const ImageView*>(resolveAttachment->GetImageView());
+                            auto srcImageView = static_cast<const ImageView*>(imageAttachment->GetImageView()->GetDeviceImageView(GetDeviceIndex()).get());
+                            auto dstImageView = static_cast<const ImageView*>(resolveAttachment->GetImageView()->GetDeviceImageView(GetDeviceIndex()).get());
                             auto srcImageSubresourceRange = srcImageView->GetVkImageSubresourceRange();
                             auto dstImageSubresourceRange = dstImageView->GetVkImageSubresourceRange();
                             auto& srcImage = static_cast<const Image&>(srcImageView->GetImage());
@@ -690,12 +691,12 @@ namespace AZ
             }
         }
 
-        void Scope::SetDepthStencilFullView(RHI::ConstPtr<RHI::ImageView> view)
+        void Scope::SetDepthStencilFullView(RHI::ConstPtr<ImageView> view)
         {
             m_depthStencilFullView = view;
         }
 
-        const RHI::ImageView* Scope::GetDepthStencilFullView() const
+        const ImageView *Scope::GetDepthStencilFullView() const
         {
             return m_depthStencilFullView.get();
         }

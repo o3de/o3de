@@ -43,7 +43,7 @@ namespace AZ
             static void Reflect(AZ::ReflectContext* context);
             static void GetAssetHandlers(AssetHandlerPtrList& assetHandlers);
 
-            void Init(const ImageSystemDescriptor& desc);
+            void Init(RHI::MultiDevice::DeviceMask deviceMask, const ImageSystemDescriptor& desc);
             void Shutdown();
 
             //! Performs a streaming controller update tick, which will fetch / evict mips

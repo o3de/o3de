@@ -345,16 +345,14 @@ namespace AZ::Render
 
     void AcesDisplayMapperFeatureProcessor::InitializeImagePool()
     {
-        AZ::RHI::Factory& factory = RHI::Factory::Get();
-        m_displayMapperImagePool = factory.CreateImagePool();
+        m_displayMapperImagePool = aznew RHI::ImagePool;
         m_displayMapperImagePool->SetName(Name("DisplayMapperImagePool"));
 
         RHI::ImagePoolDescriptor   imagePoolDesc = {};
         imagePoolDesc.m_bindFlags = RHI::ImageBindFlags::ShaderReadWrite;
         imagePoolDesc.m_budgetInBytes = ImagePoolBudget;
 
-        RHI::Device* device = RHI::RHISystemInterface::Get()->GetDevice();
-        RHI::ResultCode resultCode = m_displayMapperImagePool->Init(*device, imagePoolDesc);
+        RHI::ResultCode resultCode = m_displayMapperImagePool->Init(RHI::MultiDevice::AllDevices, imagePoolDesc);
         if (resultCode != RHI::ResultCode::Success)
         {
             AZ_Error("AcesDisplayMapperFeatureProcessor", false, "Failed to initialize image pool.");
@@ -370,7 +368,7 @@ namespace AZ::Render
         }
 
         DisplayMapperLut lutResource;
-        lutResource.m_lutImage = RHI::Factory::Get().CreateImage();
+        lutResource.m_lutImage = aznew RHI::Image;
         lutResource.m_lutImage->SetName(lutName);
 
         RHI::ImageInitRequest imageRequest;
@@ -386,7 +384,7 @@ namespace AZ::Render
         }
 
         lutResource.m_lutImageViewDescriptor = RHI::ImageViewDescriptor::Create(LutFormat, 0, 0);
-        lutResource.m_lutImageView = lutResource.m_lutImage->GetImageView(lutResource.m_lutImageViewDescriptor);
+        lutResource.m_lutImageView = lutResource.m_lutImage->BuildImageView(lutResource.m_lutImageViewDescriptor);
         if (!lutResource.m_lutImageView.get())
         {
             AZ_Error("AcesDisplayMapperFeatureProcessor", false, "Failed to initialize LUT image view.");

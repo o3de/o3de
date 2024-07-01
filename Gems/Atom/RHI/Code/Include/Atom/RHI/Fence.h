@@ -7,73 +7,40 @@
  */
 #pragma once
 
-#include <Atom/RHI/DeviceObject.h>
+#include <Atom/RHI/DeviceFence.h>
+#include <Atom/RHI/MultiDeviceObject.h>
 
 namespace AZ::RHI
 {
-    enum class FenceState : uint32_t
-    {
-        Reset = 0,
-        Signaled
-    };
-
-    class Fence
-        : public DeviceObject
+    //! A multi-device synchronization primitive, holding device-specific Fences, than can be used to insert
+    //! dependencies between a queue and a host
+    class Fence : public MultiDeviceObject
     {
     public:
-        AZ_RTTI(Fence, "{D66C8B8F-226A-4018-89C1-F190A730CBC3}", Object);
-        virtual ~Fence() = 0;
+        AZ_CLASS_ALLOCATOR(Fence, AZ::SystemAllocator, 0);
+        AZ_RTTI(Fence, "{5FF150A4-2C1E-4EC6-AE36-8EBD1CE22C31}", MultiDeviceObject);
+        AZ_RHI_MULTI_DEVICE_OBJECT_GETTER(Fence);
 
-        /// Initializes the fence using the provided device and initial state.
-        ResultCode Init(Device& device, FenceState initialState);
+        Fence() = default;
+        virtual ~Fence() = default;
 
-        /// Shuts down the fence.
+        //! Initializes the multi-device fence using the provided deviceMask.
+        //! It creates on device-specific fence for each bit set in the deviceMask and
+        //! passes on the initial FenceState to each DeviceFence
+        ResultCode Init(MultiDevice::DeviceMask deviceMask, FenceState initialState);
+
+        //! Shuts down all device-specific fences.
         void Shutdown() override final;
 
-        /// Signals the fence from the calling thread.
+        //! Signals the device-specific fences managed by this class
         RHI::ResultCode SignalOnCpu();
 
-        /// Waits (blocks) for the fence on the calling thread.
-        RHI::ResultCode WaitOnCpu() const;
-
-        /// Resets the fence.
+        //! Resets the device-specific fences.
         RHI::ResultCode Reset();
-
-        /// Returns whether the fence is signaled or not.
-        FenceState GetFenceState() const;
 
         using SignalCallback = AZStd::function<void()>;
 
-        /// Spawns a dedicated thread to wait on the fence. The provided callback
-        /// is invoked when the fence completes.
-        ResultCode WaitOnCpuAsync(SignalCallback callback);
-
     protected:
         bool ValidateIsInitialized() const;
-
-        //////////////////////////////////////////////////////////////////////////
-        // Platform API
-
-        /// Called when the fence is being initialized.
-        virtual ResultCode InitInternal(Device& device, FenceState initialState) = 0;
-
-        /// Called when the PSO is being shutdown.
-        virtual void ShutdownInternal() = 0;
-
-        /// Called when the fence is being signaled on the CPU.
-        virtual void SignalOnCpuInternal() = 0;
-
-        /// Called when the fence is waiting on the CPU.
-        virtual void WaitOnCpuInternal() const = 0;
-
-        /// Called when the fence is being reset.
-        virtual void ResetInternal() = 0;
-
-        /// Called to retrieve the current fence state.
-        virtual FenceState GetFenceStateInternal() const = 0;
-
-        //////////////////////////////////////////////////////////////////////////
-
-        AZStd::thread m_waitThread;
     };
-}
+} // namespace AZ::RHI

@@ -8,70 +8,19 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Limits.h>
+#include <Atom/RHI/DeviceDispatchItem.h>
 #include <Atom/RHI/IndirectArguments.h>
-#include <AzCore/std/containers/array.h>
+#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/ShaderResourceGroup.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/std/containers/array.h>
 
 namespace AZ::RHI
 {
-    class PipelineState;
-    class ShaderResourceGroup;
-
-    //! Arguments used when submitting a (direct) dispatch call into a CommandList.
-    struct DispatchDirect
-    {
-        DispatchDirect() = default;
-
-        DispatchDirect(
-            uint32_t totalNumberOfThreadsX,
-            uint32_t totalNumberOfThreadsY,
-            uint32_t totalNumberOfThreadsZ,
-            uint16_t threadsPerGroupX,
-            uint16_t threadsPerGroupY,
-            uint16_t threadsPerGroupZ)
-            : m_totalNumberOfThreadsX(totalNumberOfThreadsX)
-            , m_totalNumberOfThreadsY(totalNumberOfThreadsY)
-            , m_totalNumberOfThreadsZ(totalNumberOfThreadsZ)
-            , m_threadsPerGroupX(threadsPerGroupX)
-            , m_threadsPerGroupY(threadsPerGroupY)
-            , m_threadsPerGroupZ(threadsPerGroupZ)
-        {}
-
-        uint16_t GetNumberOfGroupsX() const
-        {
-            return aznumeric_cast<uint16_t>(DivideAndRoundUp(m_totalNumberOfThreadsX, aznumeric_cast<uint32_t>(m_threadsPerGroupX)));
-        }
-
-        uint16_t GetNumberOfGroupsY() const
-        {
-            return aznumeric_cast<uint16_t>(DivideAndRoundUp(m_totalNumberOfThreadsY, aznumeric_cast<uint32_t>(m_threadsPerGroupY)));
-        }
-
-        uint16_t GetNumberOfGroupsZ() const
-        {
-            return aznumeric_cast<uint16_t>(DivideAndRoundUp(m_totalNumberOfThreadsZ, aznumeric_cast<uint32_t>(m_threadsPerGroupZ)));
-        }
-
-        // Different platforms require number of groups or number of threads or both in their Dispatch() call
-        uint32_t m_totalNumberOfThreadsX = 1; // = numberOfGroupsX * m_threadsPerGroupX
-        uint32_t m_totalNumberOfThreadsY = 1; // = numberOfGroupsY * m_threadsPerGroupY
-        uint32_t m_totalNumberOfThreadsZ = 1; // = numberOfGroupsZ * m_threadsPerGroupZ
-
-        // Group size (number of threads in a group) must match the declaration in the shader
-        uint16_t m_threadsPerGroupX = 1; // = m_totalNumberOfThreadsX / numberOfGroupsX
-        uint16_t m_threadsPerGroupY = 1; // = m_totalNumberOfThreadsY / numberOfGroupsY
-        uint16_t m_threadsPerGroupZ = 1; // = m_totalNumberOfThreadsZ / numberOfGroupsZ
-    };
-
     //! Arguments used when submitting an indirect dispatch call into a CommandList.
     //! The indirect dispatch arguments are the same ones as the indirect draw ones.
     using DispatchIndirect = IndirectArguments;
-
-    enum class DispatchType : uint8_t
-    {
-        Direct = 0, // A dispatch call where the arguments are pass directly to the submit function.
-        Indirect    // An indirect dispatch call that uses a buffer that contains the arguments.
-    };
 
     //! Encapsulates the arguments that are specific to a type of dispatch.
     //! It uses a union to be able to store all possible arguments.
@@ -79,52 +28,151 @@ namespace AZ::RHI
     {
         AZ_TYPE_INFO(DispatchArguments, "0A354A63-D2C5-4C59-B3E0-0800FA7FBA63");
 
-        DispatchArguments() : DispatchArguments(DispatchDirect{}) {}
+        DispatchArguments()
+            : DispatchArguments(DispatchDirect{})
+        {
+        }
 
         DispatchArguments(const DispatchDirect& direct)
             : m_type{ DispatchType::Direct }
             , m_direct{ direct }
-        {}
+        {
+        }
 
         DispatchArguments(const DispatchIndirect& indirect)
             : m_type{ DispatchType::Indirect }
-            , m_indirect{ indirect }
-        {}
+            , m_Indirect{ indirect }
+        {
+        }
+
+        //! Returns the device-specific DeviceDispatchArguments for the given index
+        DeviceDispatchArguments GetDeviceDispatchArguments(int deviceIndex) const
+        {
+            switch (m_type)
+            {
+            case DispatchType::Direct:
+                return DeviceDispatchArguments(m_direct);
+            case DispatchType::Indirect:
+                return DeviceDispatchArguments(DeviceDispatchIndirect{m_Indirect.m_maxSequenceCount, m_Indirect.m_indirectBufferView->GetDeviceIndirectBufferView(deviceIndex), m_Indirect.m_indirectBufferByteOffset, m_Indirect.m_countBuffer ? m_Indirect.m_countBuffer->GetDeviceBuffer(deviceIndex).get() : nullptr, m_Indirect.m_countBufferByteOffset});
+            default:
+                return DeviceDispatchArguments();
+            }
+        }
 
         DispatchType m_type;
-        union
-        {
-            /// Arguments for a direct dispatch.
+        union {
+            //! Arguments for a direct dispatch.
             DispatchDirect m_direct;
-            /// Arguments for an indirect dispatch.
-            DispatchIndirect m_indirect;
+            //! Arguments for an indirect dispatch.
+            DispatchIndirect m_Indirect;
         };
     };
 
     //! Encapsulates all the necessary information for doing a dispatch call.
     //! This includes all common arguments for the different dispatch type, plus
     //! arguments that are specific to a type.
-    struct DispatchItem
+    class DispatchItem
     {
-        DispatchItem() = default;
+    public:
+        DispatchItem(MultiDevice::DeviceMask deviceMask)
+            : m_deviceMask{ deviceMask }
+        {
+            auto deviceCount{ RHI::RHISystemInterface::Get()->GetDeviceCount() };
 
-        /// Arguments specific to a dispatch type.
+            for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
+            {
+                if (CheckBitsAll(AZStd::to_underlying(m_deviceMask), 1u << deviceIndex))
+                {
+                    m_deviceDispatchItems.emplace(deviceIndex, DeviceDispatchItem{});
+                }
+            }
+        }
+
+        //! Returns the device-specific DeviceDispatchItem for the given index
+        const DeviceDispatchItem& GetDeviceDispatchItem(int deviceIndex) const
+        {
+            AZ_Error(
+                "DispatchItem",
+                m_deviceDispatchItems.find(deviceIndex) != m_deviceDispatchItems.end(),
+                "No DeviceDispatchItem found for device index %d\n",
+                deviceIndex);
+
+            return m_deviceDispatchItems.at(deviceIndex);
+        }
+
+        //! Retrieve arguments specifing a dispatch type.
+        const DispatchArguments& GetArguments() const
+        {
+            return m_arguments;
+        }
+
+        //! Arguments specific to a dispatch type.
+        void SetArguments(const DispatchArguments& arguments)
+        {
+            m_arguments = arguments;
+
+            for (auto& [deviceIndex, dispatchItem] : m_deviceDispatchItems)
+            {
+                dispatchItem.m_arguments = arguments.GetDeviceDispatchArguments(deviceIndex);
+            }
+        }
+
+        //! The number of inline constants in each array.
+        void SetRootConstantSize(uint8_t rootConstantSize)
+        {
+            for (auto& [deviceIndex, dispatchItem] : m_deviceDispatchItems)
+            {
+                dispatchItem.m_rootConstantSize = rootConstantSize;
+            }
+        }
+
+        void SetPipelineState(const PipelineState* pipelineState)
+        {
+            for (auto& [deviceIndex, dispatchItem] : m_deviceDispatchItems)
+            {
+                dispatchItem.m_pipelineState = pipelineState->GetDevicePipelineState(deviceIndex).get();
+            }
+        }
+
+        //! Array of shader resource groups to bind (count must match m_shaderResourceGroupCount).
+        void SetShaderResourceGroups(
+            const AZStd::span<const ShaderResourceGroup*> shaderResourceGroups)
+        {
+            for (auto& [deviceIndex, dispatchItem] : m_deviceDispatchItems)
+            {
+                dispatchItem.m_shaderResourceGroupCount = static_cast<uint8_t>(shaderResourceGroups.size());
+                for (int i = 0; i < dispatchItem.m_shaderResourceGroupCount; ++i)
+                {
+                    dispatchItem.m_shaderResourceGroups[i] = shaderResourceGroups[i]->GetDeviceShaderResourceGroup(deviceIndex).get();
+                }
+            }
+        }
+
+        //! Unique SRG, not shared within the draw packet. This is usually a per-draw SRG, populated with the shader variant fallback
+        //! key
+        void SetUniqueShaderResourceGroup(const ShaderResourceGroup* uniqueShaderResourceGroup)
+        {
+            for (auto& [deviceIndex, dispatchItem] : m_deviceDispatchItems)
+            {
+                dispatchItem.m_uniqueShaderResourceGroup = uniqueShaderResourceGroup->GetDeviceShaderResourceGroup(deviceIndex).get();
+            }
+        }
+
+        //! Inline constants data.
+        void SetRootConstants(const uint8_t* rootConstants)
+        {
+            for (auto& [deviceIndex, dispatchItem] : m_deviceDispatchItems)
+            {
+                dispatchItem.m_rootConstants = rootConstants;
+            }
+        }
+
+    private:
+        //! A DeviceMask denoting on which devices a device-specific DeviceDispatchItem should be generated
+        MultiDevice::DeviceMask m_deviceMask{ MultiDevice::DefaultDevice };
+        //! Caching the arguments for the corresponding getter.
         DispatchArguments m_arguments;
-
-        /// The number of shader resource groups and inline constants in each array.
-        uint8_t m_shaderResourceGroupCount = 0;
-        uint8_t m_rootConstantSize = 0;
-
-        /// The pipeline state to bind.
-        const PipelineState* m_pipelineState = nullptr;
-
-        /// Array of shader resource groups to bind (count must match m_shaderResourceGroupCount).
-        AZStd::array<const ShaderResourceGroup*, Limits::Pipeline::ShaderResourceGroupCountMax> m_shaderResourceGroups = {};
-
-        /// Unique SRG, not shared within the draw packet. This is usually a per-draw SRG, populated with the shader variant fallback key
-        const ShaderResourceGroup* m_uniqueShaderResourceGroup = nullptr;
-
-        /// Inline constants data.
-        const uint8_t* m_rootConstants = nullptr;
+        //! A map of all device-specific DeviceDispatchItem, indexed by the device index
+        AZStd::unordered_map<int, DeviceDispatchItem> m_deviceDispatchItems;
     };
-}
+} // namespace AZ::RHI

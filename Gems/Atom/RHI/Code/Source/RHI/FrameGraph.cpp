@@ -6,11 +6,11 @@
  *
  */
 #include <Atom/RHI/BufferFrameAttachment.h>
-#include <Atom/RHI/BufferPoolBase.h>
+#include <Atom/RHI/DeviceBufferPoolBase.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/FrameGraph.h>
 #include <Atom/RHI/ImageFrameAttachment.h>
-#include <Atom/RHI/ImagePoolBase.h>
+#include <Atom/RHI/DeviceImagePoolBase.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/QueryPool.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
@@ -309,7 +309,7 @@ namespace AZ::RHI
         {
             if (auto* lastScope = attachment->GetLastScope())
             {
-                lastScope->m_swapChainsToPresent.push_back(attachment->GetSwapChain());
+                lastScope->m_swapChainsToPresent.push_back(attachment->GetSwapChain()->GetDeviceSwapChain().get());
             }
         }
 
@@ -607,7 +607,7 @@ namespace AZ::RHI
         m_currentScope->m_fencesToSignal.push_back(&fence);
     }
 
-    void FrameGraph::WaitFence(Fence& fence)
+    void FrameGraph::WaitFence(Fence &fence)
     {
         m_currentScope->m_fencesToWaitFor.push_back(&fence);
     }

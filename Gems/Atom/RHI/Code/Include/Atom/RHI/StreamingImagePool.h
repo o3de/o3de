@@ -10,163 +10,77 @@
 #include <Atom/RHI.Reflect/StreamingImagePoolDescriptor.h>
 #include <Atom/RHI/Image.h>
 #include <Atom/RHI/ImagePoolBase.h>
+#include <Atom/RHI/DeviceStreamingImagePool.h>
 
 #include <AzCore/std/containers/span.h>
 
-namespace AZ::RHI
+namespace AZ
 {
-    //! Represents a single subresource in an image. Image sub-resources are a 2D
-    //! grid [MipLevelCount, ArraySize] where mip slice is an axis, and array slice
-    //! is an axis.
-    struct StreamingImageSubresourceData
+    namespace RHI
     {
-        /// Data to upload for this subresource. Format must match format of the image including block / row size.
-        const void* m_data = nullptr;
-    };
+        using CompleteCallback = AZStd::function<void()>;
 
-    //! A list of sub-resources in this mip slice, one for each array slice in the array.
-    struct StreamingImageMipSlice
-    {
-        /// An array of subresource datas. The size of this array must match the array size of the image.
-        AZStd::span<const StreamingImageSubresourceData> m_subresources;
+        using StreamingImageInitRequest = StreamingImageInitRequestTemplate<Image>;
+        using StreamingImageExpandRequest = StreamingImageExpandRequestTemplate<Image>;
 
-        /// The layout of each image in the array.
-        ImageSubresourceLayout m_subresourceLayout;
-    };
-        
-    using CompleteCallback = AZStd::function<void()>;
+        class StreamingImagePool : public ImagePoolBase
+        {
+        public:
+            AZ_CLASS_ALLOCATOR(StreamingImagePool, AZ::SystemAllocator, 0);
+            AZ_RTTI(StreamingImagePool, "{466B4368-79D6-4363-91DE-3D0001159F7C}", ImagePoolBase);
+            AZ_RHI_MULTI_DEVICE_OBJECT_GETTER(StreamingImagePool);
+            StreamingImagePool() = default;
+            virtual ~StreamingImagePool() = default;
 
-    //! A structure used as an argument to StreamingImagePool::InitImage.
-    template <typename ImageClass>
-    struct StreamingImageInitRequestTemplate
-    {
-        StreamingImageInitRequestTemplate() = default;
+            //! Initializes the pool. The pool must be initialized before images can be registered with it.
+            ResultCode Init(MultiDevice::DeviceMask deviceMask, const StreamingImagePoolDescriptor& descriptor);
 
-        StreamingImageInitRequestTemplate(
-            ImageClass& image,
-            const ImageDescriptor& descriptor,
-            AZStd::span<const StreamingImageMipSlice> tailMipSlices)
-            : m_image{&image}
-            , m_descriptor{descriptor}
-            , m_tailMipSlices{tailMipSlices}
-        {}
+            //! Initializes the backing resources of an image.
+            ResultCode InitImage(const StreamingImageInitRequest& request);
 
-        /// The image to initialize.
-        ImageClass* m_image = nullptr;
+            //! Expands a streaming image with new mip chain data. The expansion can be performed
+            //! asynchronously or synchronously depends on @m_waitForUpload in @StreamingImageExpandRequest.
+            //! Upon completion, the views will be invalidated and map to the newly
+            //! streamed mip levels.
+            ResultCode ExpandImage(const StreamingImageExpandRequest& request);
 
-        /// The descriptor used to to initialize the image.
-        ImageDescriptor m_descriptor;
+            //! Trims a streaming image down to (and including) the target mip level. This occurs
+            //! immediately. The newly evicted mip levels are no longer accessible by image views
+            //! and the contents are considered undefined.
+            ResultCode TrimImage(Image& image, uint32_t targetMipLevel);
 
-        //! An array of tail mip slices to upload. This must not be empty or the call will fail.
-        //! This should only include the baseline set of mips necessary to render the image at
-        //! its lowest resolution. The uploads is performed synchronously.
-        AZStd::span<const StreamingImageMipSlice> m_tailMipSlices;
-    };
+            const StreamingImagePoolDescriptor& GetDescriptor() const override final;
 
-    //! A structure used as an argument to StreamingImagePool::ExpandImage.
-    template <typename ImageClass>
-    struct StreamingImageExpandRequestTemplate
-    {
-        StreamingImageExpandRequestTemplate() = default;
+            //! Set a callback function that is called when the pool is out of memory for new allocations
+            //! User could provide such a callback function which releases some resources from the pool
+            //! If some resources are released, the function may return true.
+            //! If nothing is released, the function should return false.
+            using LowMemoryCallback = DeviceStreamingImagePool::LowMemoryCallback;
+            void SetLowMemoryCallback(LowMemoryCallback callback);
 
-        /// The image with which to expand its mip chain.
-        ImageClass* m_image = nullptr;
+            //! Set memory budget for all device pools
+            //! Return true if the pool was set to new memory budget successfully
+            bool SetMemoryBudget(size_t newBudget);
 
-        //! A list of image mip slices used to expand the contents. The data *must*
-        //! remain valid for the duration of the upload (until m_completeCallback
-        //! is triggered).
-        AZStd::span<const StreamingImageMipSlice> m_mipSlices;
+            //! Returns the maximum memory used by one of its pools for a specific heap type.
+            const HeapMemoryUsage& GetHeapMemoryUsage(HeapMemoryLevel heapMemoryLevel) const;
 
-        /// Whether the function need to wait until the upload is finished.
-        bool m_waitForUpload = false;
-            
-        /// A function to call when the upload is complete. It will be called instantly if m_waitForUpload was set to true.
-        CompleteCallback m_completeCallback;
-    };
+            //! Return if it supports tiled image feature
+            bool SupportTiledImage() const;
 
-    using StreamingImageInitRequest = StreamingImageInitRequestTemplate<Image>;
-    using StreamingImageExpandRequest = StreamingImageExpandRequestTemplate<Image>;
+            void Shutdown() override final;
 
-    class StreamingImagePool
-        : public ImagePoolBase
-    {
-    public:
-        AZ_RTTI(StreamingImagePool, "{C9F1E40E-D852-4515-ADCC-E2D3AB4B56AB}", ImagePoolBase);
-        virtual ~StreamingImagePool() = default;
+        private:
+            using ImagePoolBase::InitImage;
+            using ResourcePool::Init;
 
-        static const uint64_t ImagePoolMininumSizeInBytes = 16ul  * 1024 * 1024;
-            
-        //! Initializes the pool. The pool must be initialized before images can be registered with it.
-        ResultCode Init(Device& device, const StreamingImagePoolDescriptor& descriptor);
+            bool ValidateInitRequest(const StreamingImageInitRequest& initRequest) const;
+            bool ValidateExpandRequest(const StreamingImageExpandRequest& expandRequest) const;
 
-        //! Initializes the backing resources of an image.
-        ResultCode InitImage(const StreamingImageInitRequest& request);
+            StreamingImagePoolDescriptor m_descriptor;
 
-        //! Expands a streaming image with new mip chain data. The expansion can be performed
-        //! asynchronously or synchronously depends on @m_waitForUpload in @StreamingImageExpandRequest. 
-        //! Upon completion, the views will be invalidated and map to the newly
-        //! streamed mip levels.
-        ResultCode ExpandImage(const StreamingImageExpandRequest& request);
-
-        //! Trims a streaming image down to (and including) the target mip level. This occurs
-        //! immediately. The newly evicted mip levels are no longer accessible by image views
-        //! and the contents are considered undefined.
-        ResultCode TrimImage(Image& image, uint32_t targetMipLevel);
-
-        const StreamingImagePoolDescriptor& GetDescriptor() const override final;
-
-        //! Set a callback function that is called when the pool is out of memory for new allocations
-        //! User could provide such a callback function which releases some resources from the pool
-        //! If some resources are released, the function may return true.
-        //! If nothing is released, the function should return false.
-        using LowMemoryCallback = AZStd::function<bool(size_t targetMemoryUsage)>;
-        void SetLowMemoryCallback(LowMemoryCallback callback);
-            
-        //! Set memory budget
-        //! Return true if the pool was set to new memory budget successfully
-        bool SetMemoryBudget(size_t newBudget);
-            
-        //! Return if it supports tiled image feature
-        bool SupportTiledImage() const;
-
-    protected:
-        StreamingImagePool() = default;
-
-        LowMemoryCallback m_memoryReleaseCallback = nullptr;
-
-    private:
-        using ResourcePool::Init;
-        using ImagePoolBase::InitImage;
-
-        bool ValidateInitRequest(const StreamingImageInitRequest& initRequest) const;
-        bool ValidateExpandRequest(const StreamingImageExpandRequest& expandRequest) const;
-
-        //////////////////////////////////////////////////////////////////////////
-        // Platform API
-
-        // Called when the pool is being initialized.
-        virtual ResultCode InitInternal(Device& device, const StreamingImagePoolDescriptor& descriptor);
-
-        // Called when an image is being initialized on the pool.
-        virtual ResultCode InitImageInternal(const StreamingImageInitRequest& request);
-
-        // Called when an image mips are being expanded.
-        virtual ResultCode ExpandImageInternal(const StreamingImageExpandRequest& request);
-
-        // Called when an image mips are being trimmed.
-        virtual ResultCode TrimImageInternal(Image& image, uint32_t targetMipLevel);
-            
-        // Called when set a new memory budget.
-        virtual ResultCode SetMemoryBudgetInternal(size_t newBudget);
-                        
-        // Return if it supports tiled image feature
-        virtual bool SupportTiledImageInternal() const;
-
-        //////////////////////////////////////////////////////////////////////////
-
-        StreamingImagePoolDescriptor m_descriptor;
-
-        // Frame mutex prevents image update requests from overlapping with frame.
-        AZStd::shared_mutex m_frameMutex;
-    };
-}
+            //! Frame mutex prevents image update requests from overlapping with frame.
+            AZStd::shared_mutex m_frameMutex;
+        };
+    } // namespace RHI
+} // namespace AZ

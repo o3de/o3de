@@ -105,7 +105,6 @@ AZ_POP_DISABLE_WARNING
 
 #include "StartupTraceHandler.h"
 #include "ToolsConfigPage.h"
-#include "Include/IObjectManager.h"
 #include "WaitProgress.h"
 
 #include "ToolBox.h"

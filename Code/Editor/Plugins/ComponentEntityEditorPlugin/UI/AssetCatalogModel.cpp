@@ -10,7 +10,6 @@
 #include "CryEdit.h"
 #include "AssetCatalogModel.h"
 
-#include <ISourceControl.h>
 #include <IEditor.h>
 #include <qevent.h>
 #include <qmimedata.h>

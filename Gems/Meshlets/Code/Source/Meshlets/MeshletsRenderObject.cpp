@@ -397,7 +397,7 @@ namespace AZ
 
                         RHI::ShaderInputBufferIndex indexHandle = meshRenderData.RenderObjectSrg->FindShaderInputBufferIndex(bufferDesc.m_paramNameInSrg);
                         bufferDesc.m_resourceShaderIndex = indexHandle.GetIndex();
-                        if (!meshRenderData.RenderObjectSrg->SetBufferView(indexHandle, meshRenderData.RenderBuffersViews[stream].get()))
+                        if (!meshRenderData.RenderObjectSrg->SetBufferView(indexHandle, meshRenderData.RenderBuffersViews[stream]))
                         {
                             AZ_Error("Meshlets", false, "Failed to bind render buffer view for %s", bufferDesc.m_bufferName.GetCStr());
                             return false;
@@ -409,7 +409,7 @@ namespace AZ
                         bufferDesc.m_viewOffsetInBytes = meshRenderData.ComputeBuffersDescriptors[mappedIdx].m_viewOffsetInBytes;
 
                         meshRenderData.IndexBufferView = RHI::IndexBufferView(
-                            meshRenderData.ComputeBuffersViews[mappedIdx]->GetBuffer(),
+                            *meshRenderData.ComputeBuffersViews[mappedIdx]->GetBuffer(),
                             bufferDesc.m_viewOffsetInBytes,
                             (uint64_t)bufferDesc.m_elementCount * bufferDesc.m_elementSize,
                             (bufferDesc.m_elementFormat == RHI::Format::R32_UINT) ? RHI::IndexFormat::Uint32 : RHI::IndexFormat::Uint16);

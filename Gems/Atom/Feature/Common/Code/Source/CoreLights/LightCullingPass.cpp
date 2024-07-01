@@ -9,35 +9,35 @@
 #include <CoreLights/LightCullingPass.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RHI/FrameGraphInterface.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/Device.h>
 
-#include <Atom/RPI.Public/Pass/PassUtils.h>
-#include <Atom/RPI.Public/RenderPipeline.h>
-#include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom/Feature/Decals/DecalFeatureProcessorInterface.h>
+#include <Atom/RHI/ImagePool.h>
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RPI.Public/Image/AttachmentImage.h>
+#include <Atom/RPI.Public/Image/AttachmentImagePool.h>
+#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
+#include <Atom/RPI.Public/Pass/PassUtils.h>
+#include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/Scene.h>
+#include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
-#include <Atom/RPI.Public/View.h>
-#include <AzCore/std/algorithm.h>
 #include <AzCore/Math/MatrixUtils.h>
-#include <Atom/RPI.Public/Scene.h>
+#include <AzCore/Math/Plane.h>
+#include <AzCore/std/algorithm.h>
+#include <CoreLights/CapsuleLightFeatureProcessor.h>
+#include <CoreLights/DiskLightFeatureProcessor.h>
+#include <CoreLights/LightCullingConstants.h>
+#include <CoreLights/PointLightFeatureProcessor.h>
+#include <CoreLights/QuadLightFeatureProcessor.h>
 #include <CoreLights/SimplePointLightFeatureProcessor.h>
 #include <CoreLights/SimpleSpotLightFeatureProcessor.h>
-#include <CoreLights/PointLightFeatureProcessor.h>
-#include <CoreLights/DiskLightFeatureProcessor.h>
-#include <CoreLights/CapsuleLightFeatureProcessor.h>
-#include <CoreLights/QuadLightFeatureProcessor.h>
-#include <Atom/Feature/Decals/DecalFeatureProcessorInterface.h>
-#include <CoreLights/LightCullingConstants.h>
-#include <AzCore/Math/Plane.h>
 #include <cmath>
-#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
-#include <Atom/RPI.Public/Image/AttachmentImagePool.h>
-#include <Atom/RHI/ImagePool.h>
-#include <Atom/RPI.Public/Image/AttachmentImage.h>
 
 namespace AZ
 {
@@ -147,14 +147,17 @@ namespace AZ
         {
             RHI::CommandList* commandList = context.GetCommandList();
 
-            SetSrgsForDispatch(commandList);
+            SetSrgsForDispatch(context);
 
             RHI::Size res = GetDepthBufferResolution();
-            m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = res.m_width;
-            m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = res.m_height;
-            m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
 
-            commandList->Submit(m_dispatchItem);
+            auto arguments{m_dispatchItem.GetArguments()};
+            arguments.m_direct.m_totalNumberOfThreadsX = res.m_width;
+            arguments.m_direct.m_totalNumberOfThreadsY = res.m_height;
+            arguments.m_direct.m_totalNumberOfThreadsZ = 1;
+            m_dispatchItem.SetArguments(arguments);
+
+            commandList->Submit(m_dispatchItem.GetDeviceDispatchItem(context.GetDeviceIndex()));
         }
 
         void LightCullingPass::ResetInternal()

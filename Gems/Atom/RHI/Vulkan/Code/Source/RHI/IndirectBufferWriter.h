@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/IndirectBufferWriter.h>
+#include <Atom/RHI/DeviceIndirectBufferWriter.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
 namespace AZ
@@ -19,9 +19,9 @@ namespace AZ
         //! the Vulkan's commands.
         //! It only supports Tier1 commands.
         class IndirectBufferWriter final
-            : public RHI::IndirectBufferWriter
+            : public RHI::DeviceIndirectBufferWriter
         {
-            using Base = RHI::IndirectBufferWriter;
+            using Base = RHI::DeviceIndirectBufferWriter;
         public:
             AZ_CLASS_ALLOCATOR(IndirectBufferWriter, AZ::ThreadPoolAllocator);
             AZ_RTTI(IndirectBufferWriter, "{089BDED9-EDF3-4C72-9B52-57926DD29BBA}", Base);
@@ -32,9 +32,9 @@ namespace AZ
             IndirectBufferWriter() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::IndirectBufferWriter
-            void SetVertexViewInternal(RHI::IndirectCommandIndex index, const RHI::StreamBufferView& view) override;
-            void SetIndexViewInternal(RHI::IndirectCommandIndex index, const RHI::IndexBufferView& view) override;
+            // RHI::DeviceIndirectBufferWriter
+            void SetVertexViewInternal(RHI::IndirectCommandIndex index, const RHI::DeviceStreamBufferView& view) override;
+            void SetIndexViewInternal(RHI::IndirectCommandIndex index, const RHI::DeviceIndexBufferView& view) override;
             void DrawInternal(RHI::IndirectCommandIndex index, const RHI::DrawLinear& arguments) override;
             void DrawIndexedInternal(RHI::IndirectCommandIndex index, const RHI::DrawIndexed& arguments) override;
             void DispatchInternal(RHI::IndirectCommandIndex index, const RHI::DispatchDirect& arguments) override;

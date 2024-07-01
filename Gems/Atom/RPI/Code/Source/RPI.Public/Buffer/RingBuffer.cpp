@@ -47,6 +47,13 @@ namespace AZ::RPI
         UpdateCurrentBufferData(data, dataSizeInBytes, 0);
     }
 
+    void RingBuffer::AdvanceCurrentBufferAndUpdateData(const AZStd::unordered_map<int, const void *> &data, u64 dataSizeInBytes)
+    {
+        AdvanceCurrentElement();
+        CreateOrResizeCurrentBuffer(dataSizeInBytes);
+        UpdateCurrentBufferData(data, dataSizeInBytes, 0);
+    }
+
     void RingBuffer::CreateOrResizeCurrentBuffer(u64 bufferSizeInBytes)
     {
         auto& currentBuffer{ GetCurrentElement() };
@@ -67,6 +74,12 @@ namespace AZ::RPI
     }
 
     void RingBuffer::UpdateCurrentBufferData(const void* data, u64 dataSizeInBytes, u64 bufferOffsetInBytes)
+    {
+        auto& currentBuffer{ GetCurrentBuffer() };
+        currentBuffer->UpdateData(data, dataSizeInBytes, bufferOffsetInBytes);
+    }
+
+    void RingBuffer::UpdateCurrentBufferData(const AZStd::unordered_map<int, const void*>& data, u64 dataSizeInBytes, u64 bufferOffsetInBytes)
     {
         auto& currentBuffer{ GetCurrentBuffer() };
         currentBuffer->UpdateData(data, dataSizeInBytes, bufferOffsetInBytes);

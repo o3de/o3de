@@ -100,6 +100,9 @@ namespace AZ::RHI
         //! If this is false, the Fence::SignalOnCpu inserts the signal command into a queue
         bool m_signalFenceFromCPU = false;
 
+        //! Whether float16 (half-precision floating-point format) support is available.
+        bool m_float16 = false;
+
         /// Additional features here.
     };
 }

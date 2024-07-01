@@ -27,10 +27,10 @@ namespace AZ
                 streamingImagePoolAsset);
         }
 
-        Data::Instance<StreamingImagePool> StreamingImagePool::CreateInternal(RHI::Device& device, StreamingImagePoolAsset& streamingImagePoolAsset)
+        Data::Instance<StreamingImagePool> StreamingImagePool::CreateInternal(RHI::MultiDevice::DeviceMask deviceMask, StreamingImagePoolAsset& streamingImagePoolAsset)
         {
             Data::Instance<StreamingImagePool> streamingImagePool = aznew StreamingImagePool();
-            const RHI::ResultCode resultCode = streamingImagePool->Init(device, streamingImagePoolAsset);
+            const RHI::ResultCode resultCode = streamingImagePool->Init(deviceMask, streamingImagePoolAsset);
 
             if (resultCode == RHI::ResultCode::Success)
             {
@@ -40,7 +40,7 @@ namespace AZ
             return nullptr;
         }
 
-        RHI::ResultCode StreamingImagePool::Init(RHI::Device& device, StreamingImagePoolAsset& poolAsset)
+        RHI::ResultCode StreamingImagePool::Init(RHI::MultiDevice::DeviceMask deviceMask, StreamingImagePoolAsset& poolAsset)
         {
             AZ_PROFILE_FUNCTION(RPI);
 
@@ -53,9 +53,9 @@ namespace AZ
                 }
             }
 
-            RHI::Ptr<RHI::StreamingImagePool> pool = RHI::Factory::Get().CreateStreamingImagePool();
+            RHI::Ptr<RHI::StreamingImagePool> pool = aznew RHI::StreamingImagePool;
 
-            const RHI::ResultCode resultCode = pool->Init(device, poolAsset.GetPoolDescriptor());
+            const RHI::ResultCode resultCode = pool->Init(deviceMask, poolAsset.GetPoolDescriptor());
 
             if (resultCode == RHI::ResultCode::Success)
             {

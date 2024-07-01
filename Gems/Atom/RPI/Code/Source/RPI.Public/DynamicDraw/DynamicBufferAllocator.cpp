@@ -37,7 +37,7 @@ namespace AZ
             for (unsigned i{ 0 }; i < m_bufferData.GetElementCount(); i++)
             {
                 m_bufferData.AdvanceCurrentElement()->Unmap();
-                m_bufferStartAddresses.AdvanceCurrentElement() = nullptr;
+                m_bufferStartAddresses.AdvanceCurrentElement().clear();
             }
         }
 
@@ -45,7 +45,7 @@ namespace AZ
         RHI::Ptr<DynamicBuffer> DynamicBufferAllocator::Allocate(uint32_t size, uint32_t alignment)
         {
             // m_bufferData can be invalid for Null back end
-            if (!m_bufferStartAddresses.GetCurrentElement())
+            if (m_bufferStartAddresses.GetCurrentElement().empty() || !m_bufferStartAddresses.GetCurrentElement().begin()->second)
             {
                 return nullptr;
             }
@@ -69,7 +69,10 @@ namespace AZ
             }
 
             RHI::Ptr<DynamicBuffer> allocatedBuffer = aznew DynamicBuffer();
-            allocatedBuffer->m_address = (uint8_t*)m_bufferStartAddresses.GetCurrentElement() + m_currentPosition;
+            for(auto [deviceIndex, address] : m_bufferStartAddresses.GetCurrentElement())
+            {
+                allocatedBuffer->m_address[deviceIndex] = (uint8_t*)address + m_currentPosition;
+            }
             allocatedBuffer->m_size = size;
             allocatedBuffer->m_allocator = this;
 
@@ -95,7 +98,9 @@ namespace AZ
 
         uint32_t DynamicBufferAllocator::GetBufferAddressOffset(RHI::Ptr<DynamicBuffer> dynamicBuffer)
         {
-            return aznumeric_cast<uint32_t>((uint8_t*)dynamicBuffer->m_address - (uint8_t*)m_bufferStartAddresses.GetCurrentElement());
+            auto it = m_bufferStartAddresses.GetCurrentElement().begin();
+
+            return aznumeric_cast<uint32_t>((uint8_t*)dynamicBuffer->m_address[it->first] - (uint8_t*)it->second);
         }
 
         void DynamicBufferAllocator::SetEnableAllocationWarning(bool enable)

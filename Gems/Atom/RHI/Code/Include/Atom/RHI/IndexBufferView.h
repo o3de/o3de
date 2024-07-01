@@ -8,30 +8,27 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Format.h>
+#include <Atom/RHI/DeviceIndexBufferView.h>
 #include <AzCore/Utils/TypeHash.h>
 
 namespace AZ::RHI
 {
     class Buffer;
 
-    enum class IndexFormat : uint32_t
-    {
-        Uint16 = 0,
-        Uint32
-    };
-
     uint32_t GetIndexFormatSize(IndexFormat indexFormat);
 
+    //! A multi-device class representing a view onto a Buffer holding indices, distinct from
+    //! actual view classes (like DeviceBufferView), there is no representation on the API level.
+    //! Its device-specific buffers are provided to the RHI back-end at draw time.
     class alignas(8) IndexBufferView
     {
     public:
         IndexBufferView() = default;
 
-        IndexBufferView(
-            const Buffer& buffer,
-            uint32_t byteOffset,
-            uint32_t byteCount,
-            IndexFormat format);
+        IndexBufferView(const Buffer& buffer, uint32_t byteOffset, uint32_t byteCount, IndexFormat format);
+
+        //! Returns the device-specific DeviceIndexBufferView for the given index
+        DeviceIndexBufferView GetDeviceIndexBufferView(int deviceIndex) const;
 
         //! Returns the hash of the view. This hash is precomputed at creation time.
         HashValue64 GetHash() const;
@@ -50,9 +47,9 @@ namespace AZ::RHI
 
     private:
         HashValue64 m_hash = HashValue64{ 0 };
-        const Buffer* m_buffer = nullptr;
+        const Buffer* m_Buffer = nullptr;
         uint32_t m_byteOffset = 0;
         uint32_t m_byteCount = 0;
         IndexFormat m_format = IndexFormat::Uint32;
     };
-}
+} // namespace AZ::RHI

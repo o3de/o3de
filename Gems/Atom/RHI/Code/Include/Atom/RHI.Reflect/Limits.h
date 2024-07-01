@@ -93,10 +93,12 @@ namespace AZ::RHI
         {
         };
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(DeviceMask);
+        constexpr DeviceMask NoDevices{ 0u };
         constexpr DeviceMask AllDevices{ static_cast<DeviceMask>(AZStd::numeric_limits<uint32_t>::max()) };
         constexpr DeviceMask DefaultDevice{ 1u };
 
         constexpr int DefaultDeviceIndex{ 0 };
+        constexpr int InvalidDeviceIndex{ -1 };
     }
 
     constexpr int InvalidIndex = AZStd::numeric_limits<int>::max();

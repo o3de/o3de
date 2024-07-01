@@ -17,8 +17,6 @@
 // Editor
 #include "TrackView/TrackViewDialog.h"
 #include "ViewManager.h"
-#include "Include/IObjectManager.h"
-#include "Objects/EntityObject.h"
 
 #include <AzCore/Time/ITime.h>
 

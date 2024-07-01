@@ -149,6 +149,8 @@ namespace AzQtComponents
         explicit SliderDoubleCombo(QWidget *parent = nullptr);
         ~SliderDoubleCombo();
 
+        void resetLimits();
+
         //! Sets the current value.
         void setValue(double value);
         //! Sets the current value.

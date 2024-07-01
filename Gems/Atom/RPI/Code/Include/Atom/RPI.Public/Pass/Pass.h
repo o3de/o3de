@@ -51,6 +51,7 @@ namespace AZ
     {
         class FrameGraphBuilder;
         class FrameGraphAttachmentInterface;
+        class FrameGraphInterface;
     }
 
     namespace RPI
@@ -191,6 +192,9 @@ namespace AZ
 
             //! Adds an attachment binding to the list of this Pass' attachment bindings
             void AddAttachmentBinding(PassAttachmentBinding attachmentBinding);
+
+            // Binds all attachments from the pass 
+            void DeclareAttachmentsToFrameGraph(RHI::FrameGraphInterface frameGraph, PassSlotType slotType = PassSlotType::Uninitialized) const;
 
             // Returns a reference to the N-th input binding, where N is the index passed to the function
             PassAttachmentBinding& GetInputBinding(uint32_t index);
