@@ -948,27 +948,50 @@ namespace AZ
             }
         }
 
+        MTLBindingAccess GetBindingAccess(RHI::ShaderInputImageAccess accessType)
+        {
+#if defined(__IPHONE_17_0) || defined(__MAC_14_0)
+            MTLBindingAccess mtlBindingAccess = MTLBindingAccessReadOnly;
+#else
+            MTLBindingAccess mtlBindingAccess = MTLArgumentAccessReadOnly;
+#endif
+            
+            if(accessType == RHI::ShaderInputImageAccess::ReadWrite)
+            {
+#if defined(__IPHONE_17_0) || defined(__MAC_14_0)
+            mtlBindingAccess = MTLBindingAccessReadWrite;
+#else
+            mtlBindingAccess = MTLArgumentAccessReadWrite;
+#endif
+            }
+            return mtlBindingAccess;
+        }
+    
+        MTLBindingAccess GetBindingAccess(RHI::ShaderInputBufferAccess accessType)
+        {
+#if defined(__IPHONE_17_0) || defined(__MAC_14_0)
+            MTLBindingAccess mtlBindingAccess = MTLBindingAccessReadOnly;
+#else
+            MTLBindingAccess mtlBindingAccess = MTLArgumentAccessReadOnly;
+#endif
+            
+            if(accessType == RHI::ShaderInputBufferAccess::ReadWrite)
+            {
+#if defined(__IPHONE_17_0) || defined(__MAC_14_0)
+            mtlBindingAccess = MTLBindingAccessReadWrite;
+#else
+            mtlBindingAccess = MTLArgumentAccessReadWrite;
+#endif
+            }
+            return mtlBindingAccess;
+        }
+    
         void ConvertImageArgumentDescriptor(MTLArgumentDescriptor* imgArgDescriptor, const RHI::ShaderInputImageDescriptor& shaderInputImage)
         {
             imgArgDescriptor.dataType = MTLDataTypeTexture;
             imgArgDescriptor.index = shaderInputImage.m_registerId;
-            switch(shaderInputImage.m_access)
-            {
-                case RHI::ShaderInputImageAccess::Read:
-                {
-                    imgArgDescriptor.access = MTLArgumentAccessReadOnly;
-                    break;
-                }
-                case RHI::ShaderInputImageAccess::ReadWrite:
-                {
-                    imgArgDescriptor.access = MTLArgumentAccessReadWrite;
-                    break;
-                }
-                default:
-                {
-                    AZ_Assert(false, "Invalid usage type.");
-                }
-            }
+            imgArgDescriptor.access = GetBindingAccess(shaderInputImage.m_access);
+
             switch(shaderInputImage.m_type)
             {
                 case RHI::ShaderInputImageType::Image1D:
@@ -1024,24 +1047,8 @@ namespace AZ
             AZ_Assert(bufferArgDescriptor, "bufferArgDescriptor is null");
             
             bufferArgDescriptor.index = shaderInputBuffer.m_registerId;
-            switch(shaderInputBuffer.m_access)
-            {
-                case RHI::ShaderInputBufferAccess::Constant:
-                case RHI::ShaderInputBufferAccess::Read:
-                {
-                    bufferArgDescriptor.access = MTLArgumentAccessReadOnly;
-                    break;
-                }
-                case RHI::ShaderInputBufferAccess::ReadWrite:
-                {
-                    bufferArgDescriptor.access = MTLArgumentAccessReadWrite;
-                    break;
-                }
-                default:
-                {
-                    AZ_Assert(false, "Invalid usage type.");
-                }
-            }
+            bufferArgDescriptor.access = GetBindingAccess(shaderInputBuffer.m_access);
+
             bufferArgDescriptor.arrayLength = shaderInputBuffer.m_count;
             
             if(shaderInputBuffer.m_type == RHI::ShaderInputBufferType::Typed)

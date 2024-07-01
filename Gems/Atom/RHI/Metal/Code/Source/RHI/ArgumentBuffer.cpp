@@ -117,6 +117,7 @@ namespace AZ
         {
             bool resourceAdded = false;
 
+            
             for (const RHI::ShaderInputBufferDescriptor& shaderInputBuffer : m_srgLayout->GetShaderInputListForBuffers())
             {
                 MTLArgumentDescriptor* bufferArgDescriptor = [[[MTLArgumentDescriptor alloc] init] autorelease];
@@ -138,7 +139,7 @@ namespace AZ
                 MTLArgumentDescriptor* samplerArgDescriptor = [[[MTLArgumentDescriptor alloc] init] autorelease];
                 samplerArgDescriptor.dataType = MTLDataTypeSampler;
                 samplerArgDescriptor.index = shaderInputSampler.m_registerId;
-                samplerArgDescriptor.access = MTLArgumentAccessReadOnly;
+                samplerArgDescriptor.access = GetBindingAccess(RHI::ShaderInputImageAccess::Read);
                 samplerArgDescriptor.arrayLength = shaderInputSampler.m_count > 1 ? shaderInputSampler.m_count:0;
                 [argBufferDecriptors addObject:samplerArgDescriptor];
                 resourceAdded = true;
@@ -149,7 +150,7 @@ namespace AZ
                 MTLArgumentDescriptor* staticSamplerArgDescriptor = [[[MTLArgumentDescriptor alloc] init] autorelease];
                 staticSamplerArgDescriptor.dataType = MTLDataTypeSampler;
                 staticSamplerArgDescriptor.index = staticSamplerInput.m_registerId;
-                staticSamplerArgDescriptor.access = MTLArgumentAccessReadOnly;
+                staticSamplerArgDescriptor.access = GetBindingAccess(RHI::ShaderInputImageAccess::Read);
                 [argBufferDecriptors addObject:staticSamplerArgDescriptor];
                 resourceAdded = true;
             }
@@ -161,7 +162,7 @@ namespace AZ
                 MTLArgumentDescriptor* constBufferArgDescriptor = [[[MTLArgumentDescriptor alloc] init] autorelease];
                 constBufferArgDescriptor.dataType = MTLDataTypePointer;
                 constBufferArgDescriptor.index = shaderInputConstant.m_registerId;
-                constBufferArgDescriptor.access = MTLArgumentAccessReadOnly;
+                constBufferArgDescriptor.access = GetBindingAccess(RHI::ShaderInputImageAccess::Read);
                 [argBufferDecriptors addObject:constBufferArgDescriptor];
                 resourceAdded = true;
             }

@@ -62,7 +62,6 @@ namespace AzFramework
         {
             m_pimpl->InitWindow(title, geometry, styleMasks);
         }
-
     }
     
     NativeWindow::~NativeWindow()
@@ -128,19 +127,6 @@ namespace AzFramework
     bool NativeWindow::SupportsClientAreaResize() const
     {
         return (m_pimpl != nullptr) && m_pimpl->SupportsClientAreaResize();
-    }
-
-    void NativeWindow::SetEnableCustomizedResolution(bool enable)
-    {
-        if (m_pimpl != nullptr)
-        {
-            m_pimpl->SetEnableCustomizedResolution(enable);
-        }
-    }
-
-    bool NativeWindow::IsCustomizedResolutionEnabled() const
-    {
-        return (m_pimpl != nullptr) && m_pimpl->IsCustomizedResolutionEnabled();
     }
 
     WindowSize NativeWindow::GetRenderResolution() const
@@ -281,6 +267,14 @@ namespace AzFramework
     // NativeWindow::Implementation class implementation
     //////////////////////////////////////////////////////////////////////////
 
+    void NativeWindow::Implementation::InitWindow(
+        const AZStd::string& title, const WindowGeometry& geometry, const WindowStyleMasks& styleMasks)
+    {
+        InitWindowInternal(title, geometry, styleMasks);
+        m_renderResolution = WindowSize(m_width, m_height);
+    }
+
+
     void NativeWindow::Implementation::Activate()
     {
         if (!m_activated)
@@ -331,63 +325,18 @@ namespace AzFramework
         return false;
     }
 
-    void NativeWindow::Implementation::SetEnableCustomizedResolution(bool enable)
-    {
-        if (m_enableCustomizedResolution != enable)
-        {
-            // If disabling customized resolution, we need to update render resolution based on client area size
-            // Note: this need to be done when m_enableCustomizedResolution is true
-            if (!enable)
-            {
-                SetRenderResolution(GetClientAreaSize());
-            }
-
-            m_enableCustomizedResolution = enable;
-
-            // after enabling customized resolution, send notification if the customized resolution is different than client area size
-            if (enable)
-            {
-                if (m_customizedRenderResolution.m_width > 0 &&
-                    m_customizedRenderResolution.m_height > 0 &&
-                    m_customizedRenderResolution != GetClientAreaSize())
-                {
-                    WindowNotificationBus::Event(GetWindowHandle(), &WindowNotificationBus::Events::OnResolutionChanged, m_customizedRenderResolution.m_width, m_customizedRenderResolution.m_height);
-                }
-            }
-        }
-    }
-
-    bool NativeWindow::Implementation::IsCustomizedResolutionEnabled() const
-    {
-        return m_enableCustomizedResolution;
-    }
-
     WindowSize NativeWindow::Implementation::GetRenderResolution() const
     {
-        if (m_enableCustomizedResolution)
-        {
-            return m_customizedRenderResolution;
-        }
-        else
-        {
-            return GetClientAreaSize();
-        }
+        return m_renderResolution;
     }
 
     void NativeWindow::Implementation::SetRenderResolution(WindowSize resolution)
     {
-        if (m_enableCustomizedResolution)
+        if (m_renderResolution != resolution)
         {
-            if (m_customizedRenderResolution != resolution)
-            {
-                m_customizedRenderResolution = resolution;
-                WindowNotificationBus::Event(GetWindowHandle(), &WindowNotificationBus::Events::OnResolutionChanged, resolution.m_width, resolution.m_height);
-            } 
-        }
-        else
-        {
-            AZ_Assert(false, "Use SetEnableCustomizedResolution(true) to enable customized render resolution first");
-        }
+            m_renderResolution = resolution;
+            WindowNotificationBus::Event(GetWindowHandle(), &WindowNotificationBus::Events::OnResolutionChanged, resolution.m_width, resolution.m_height);
+        } 
     }
 
     bool NativeWindow::Implementation::GetFullScreenState() const
