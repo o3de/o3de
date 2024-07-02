@@ -337,9 +337,13 @@ namespace ScriptCanvas
         {
 #if defined(CARBONATED)
             return
-                type == azrtti_typeid<AZ::s8>() || type == azrtti_typeid<AZ::s16>() || type == azrtti_typeid<AZ::s32>() || type == azrtti_typeid<AZ::s64>() ||
-                type == azrtti_typeid<AZ::u8>() || type == azrtti_typeid<AZ::u16>() || type == azrtti_typeid<AZ::u32>() || type == azrtti_typeid<AZ::u64>() ||
-                type == azrtti_typeid<long>() || type == azrtti_typeid<unsigned long>() || type == azrtti_typeid<float>() || type == azrtti_typeid<double>();
+                type == azrtti_typeid<AZ::s8>() || type == azrtti_typeid<AZ::s16>() ||
+                type == azrtti_typeid<AZ::s32>() || type == azrtti_typeid<AZ::s64>() ||
+                type == azrtti_typeid<AZ::u8>() || type == azrtti_typeid<AZ::u16>() ||
+                type == azrtti_typeid<AZ::u32>() || type == azrtti_typeid<AZ::u64>() ||
+                type == azrtti_typeid<long>() || type == azrtti_typeid<unsigned long>() ||
+                type == azrtti_typeid<float>() || type == azrtti_typeid<double>() ||
+                type == azrtti_typeid<char>();
 #else
             return type == azrtti_typeid<AZ::s8>() || type == azrtti_typeid<AZ::s16>() || type == azrtti_typeid<AZ::s32>() ||
                 type == azrtti_typeid<AZ::s64>() || type == azrtti_typeid<AZ::u8>() || type == azrtti_typeid<AZ::u16>() ||
