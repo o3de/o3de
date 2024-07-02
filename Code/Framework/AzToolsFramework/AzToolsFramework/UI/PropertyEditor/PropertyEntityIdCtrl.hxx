@@ -73,7 +73,12 @@ namespace AzToolsFramework
         void SetAcceptedEntityContext(AzFramework::EntityContextId contextId);
 
         void SetHasClearButton(bool value) { m_hasClearButton = value; }
+        void SetHasPickButton(bool value) { m_hasPickButton = value; }
+        void SetAllowsDrop(bool value) { m_allowsDrop = value; }
+
         bool HasClearButton() { return m_hasClearButton; }
+        bool HasPickButton() { return m_hasPickButton; }
+        bool AllowsDrop() { return m_allowsDrop; }
 
     signals:
         void OnEntityIdChanged(AZ::EntityId newEntityId);
@@ -103,6 +108,9 @@ namespace AzToolsFramework
         AZStd::list<AZStd::string> m_componentsSatisfyingServices;
 
         bool m_hasClearButton{ true };
+        bool m_hasPickButton{ true };
+        bool m_allowsDrop { true };
+
         QIcon m_pickerIcon;
     };
 

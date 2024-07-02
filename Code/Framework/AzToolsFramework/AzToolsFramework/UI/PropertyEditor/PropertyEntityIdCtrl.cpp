@@ -200,6 +200,11 @@ namespace AzToolsFramework
             return;
         }
 
+        if (!AllowsDrop())
+        {
+            return;
+        }
+
         const bool isValidDropTarget = IsCorrectMimeData(event->mimeData()) &&
             EntityIdsFromMimeData(*event->mimeData());
 
@@ -214,6 +219,11 @@ namespace AzToolsFramework
     void PropertyEntityIdCtrl::dropEvent(QDropEvent* event)
     {
         AzQtComponents::LineEdit::removeDropTargetStyle(m_entityIdLineEdit);
+
+        if (!AllowsDrop())
+        {
+            return;
+        }
 
         if (event == nullptr)
         {
@@ -344,6 +354,15 @@ namespace AzToolsFramework
         m_entityIdLineEdit->setClearButtonEnabled(HasClearButton());
         m_entityIdLineEdit->SetEntityId(newEntityId, nameOverride);
         m_componentsSatisfyingServices.clear();
+
+        if (!HasPickButton())
+        {
+            m_pickButton->hide();
+        }
+        else
+        {
+            m_pickButton->show();
+        }
 
         if (!m_requiredServices.empty() || !m_incompatibleServices.empty())
         {
@@ -537,6 +556,22 @@ namespace AzToolsFramework
             if (attrValue->Read<bool>(value))
             {
                 GUI->SetHasClearButton(value);
+            }
+        }
+        else if (attrib == AZ::Edit::Attributes::ShowPickButton)
+        {
+            bool value;
+            if (attrValue->Read<bool>(value))
+            {
+                GUI->SetHasPickButton(value);
+            }
+        }
+        else if (attrib == AZ::Edit::Attributes::AllowDrop)
+        {
+            bool value;
+            if (attrValue->Read<bool>(value))
+            {
+                GUI->SetAllowsDrop(value);
             }
         }
     }
