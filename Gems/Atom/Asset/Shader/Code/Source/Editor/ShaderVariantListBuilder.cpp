@@ -25,7 +25,7 @@ namespace AZ
 {
     namespace ShaderBuilder
     {
-        constexpr uint32_t HashedVariantBatchSize = 40;
+        constexpr uint32_t HashedVariantBatchSize = 30;
 
         AZ_TYPE_INFO_WITH_NAME_IMPL(HashedVariantListSourceData, "HashedVariantListSourceData", "{D86DA375-DD77-45F9-81D5-2E50C24C8469}");
         AZ_TYPE_INFO_WITH_NAME_IMPL(HashedVariantInfoSourceData, "HashedVariantInfoSourceData", "{6B00EFB2-D02B-4EBD-BA8C-F4C432D234FA}");
