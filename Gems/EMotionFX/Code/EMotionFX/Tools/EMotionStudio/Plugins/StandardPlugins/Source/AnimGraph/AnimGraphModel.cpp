@@ -1105,6 +1105,10 @@ namespace EMStudio
         }
 
         delete modelItemData;
+        if (m_modelItemDataSet.empty())
+        {
+            emit RemoveAll();
+        }
     }
 
     void AnimGraphModel::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
