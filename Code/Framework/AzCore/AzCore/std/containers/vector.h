@@ -592,7 +592,10 @@ namespace AZStd
         template<class InputIterator>
         AZ_FORCE_INLINE void        assign(const InputIterator& first, const InputIterator& last)
         {
-            assign_iter(first, last, is_integral<InputIterator>());
+            if (first != last)
+            {
+                assign_iter(first, last, is_integral<InputIterator>());
+            }
         }
 
         template<class R>
@@ -1224,7 +1227,10 @@ namespace AZStd
         template <class InputIterator>
         AZ_FORCE_INLINE void    construct_iter(const InputIterator& first, const InputIterator& last, const false_type& /* !is_integral<InputIterator> */)
         {
-            insert(const_iterator(AZSTD_POINTER_ITERATOR_PARAMS(m_start)), first, last);
+            if (first != last)
+            {
+                insert(const_iterator(AZSTD_POINTER_ITERATOR_PARAMS(m_start)), first, last);
+            }
         }
         //#pragma endregion
 
