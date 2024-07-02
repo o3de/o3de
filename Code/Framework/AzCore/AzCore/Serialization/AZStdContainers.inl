@@ -142,13 +142,13 @@ namespace AZ
         }
 
         template <class T>
-        AZStd::enable_if_t<std::is_pod<T>::value> InitializeDefaultIfPodType(T& t)
+        AZStd::enable_if_t<std::is_trivial<T>::value> InitializeDefaultIfPodType(T& t)
         {
             t = T{};
         }
 
         template <class T>
-        AZStd::enable_if_t<!std::is_pod<T>::value> InitializeDefaultIfPodType(T& t)
+        AZStd::enable_if_t<!std::is_trivial<T>::value> InitializeDefaultIfPodType(T& t)
         {
             (void)t;
         }
