@@ -134,6 +134,7 @@ private:
     void GoToSelectedEntitiesInViewports() override;
     bool CanGoToSelectedEntitiesInViewports() override;
     AZ::Vector3 GetWorldPositionAtViewportCenter() override;
+    AZ::Vector3 GetWorldPositionAtViewportInteraction() const override;
     void ClearRedoStack() override;
     //////////////////////////////////////////////////////////////////////////
 

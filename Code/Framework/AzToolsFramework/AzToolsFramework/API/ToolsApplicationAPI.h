@@ -871,6 +871,10 @@ namespace AzToolsFramework
         /// Returns the world-space position under the center of the render viewport.
         virtual AZ::Vector3 GetWorldPositionAtViewportCenter() { return AZ::Vector3::CreateZero(); }
 
+        //! Retrieves the position in world space corresponding to the point interacted with by the user.
+        //! Will take context menus and cursor position into account as appropriate.
+        virtual AZ::Vector3 GetWorldPositionAtViewportInteraction() const { return AZ::Vector3::CreateZero(); };
+
         /// Clears current redo stack
         virtual void ClearRedoStack() {}
     };
