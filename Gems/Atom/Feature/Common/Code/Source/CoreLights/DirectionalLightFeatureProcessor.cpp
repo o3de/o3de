@@ -683,7 +683,8 @@ namespace AZ
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to DirectionalLightFeatureProcessor::SetAffectsGI().");
 
-            m_lightData.GetData(handle.GetIndex()).m_affectsGI = affectsGI;
+            m_cachedAffectsGIValue = affectsGI;
+            m_lightData.GetData(handle.GetIndex()).m_affectsGI = affectsGI && m_lightData.GetData(handle.GetIndex()).m_isVisible;
             m_lightBufferNeedsUpdate = true;
         }
 
@@ -701,6 +702,17 @@ namespace AZ
 
             m_lightData.GetData(handle.GetIndex()).m_lightingChannelMask = lightingChannelMask;
             m_lightBufferNeedsUpdate = true;
+        }
+
+        void DirectionalLightFeatureProcessor::SetVisible(LightHandle handle, bool visible)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to DirectionalLightFeatureProcessor::SetVisible().");
+
+            m_lightData.GetData(handle.GetIndex()).m_isVisible = visible;
+            m_lightData.GetData(handle.GetIndex()).m_affectsGI = visible ? m_cachedAffectsGIValue : false;
+
+            m_lightBufferNeedsUpdate = true;
+            m_shadowBufferNeedsUpdate = true;
         }
 
         void DirectionalLightFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] RPI::RenderPipeline* pipeline,
@@ -1395,6 +1407,11 @@ namespace AZ
             ShadowProperty& property = m_shadowProperties.GetData(handle.GetIndex());
 
             const DirectionalLightData light = m_lightData.GetData(handle.GetIndex());
+            if (!light.m_isVisible)
+            {
+                return;
+            }
+
             static const Vector3 position = Vector3::CreateZero();
             const Vector3 direction = Vector3::CreateFromFloat3(light.m_direction.data());
             const auto lightTransform = Matrix3x4::CreateLookAt(position, position + direction);

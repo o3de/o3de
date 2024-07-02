@@ -21,7 +21,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<DirectionalLightComponentConfig, ComponentConfig>()
-                    ->Version(10) // Added AffectsGI
+                    ->Version(11) // Added Visible
                     ->Field("Color", &DirectionalLightComponentConfig::m_color)
                     ->Field("IntensityMode", &DirectionalLightComponentConfig::m_intensityMode)
                     ->Field("Intensity", &DirectionalLightComponentConfig::m_intensity)
@@ -49,6 +49,7 @@ namespace AZ
                     ->Field("Affects GI", &DirectionalLightComponentConfig::m_affectsGI)
                     ->Field("Affects GI Factor", &DirectionalLightComponentConfig::m_affectsGIFactor)
                     ->Field("LightingChannelConfig", &DirectionalLightComponentConfig::m_lightingChannelConfig)
+                    ->Field("Visible", &DirectionalLightComponentConfig::m_isVisible)
                     ;
             }
         }
@@ -133,6 +134,11 @@ namespace AZ
         bool DirectionalLightComponentConfig::IsEsmDisabled() const
         {
             return !m_shadowEnabled || (m_shadowFilterMethod != ShadowFilterMethod::Esm && m_shadowFilterMethod != ShadowFilterMethod::EsmPcf);
+        }
+
+        bool DirectionalLightComponentConfig::IsVisible() const
+        {
+            return m_isVisible;
         }
 
         AZ::Crc32 DirectionalLightComponentConfig::UpdateCascadeFarDepths()
