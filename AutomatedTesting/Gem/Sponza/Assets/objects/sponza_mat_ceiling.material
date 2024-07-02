@@ -16,6 +16,7 @@
             1.0
         ],
         "normal.textureMap": "../Textures/ceiling_1k_normal.png",
+        "normal.flipY": true,
         "opacity.factor": 1.0,
         "roughness.textureMap": "../Textures/ceiling_1k_roughness.png"
     }

@@ -15,6 +15,7 @@
             1.0
         ],
         "normal.textureMap": "../Textures/vaseRound_1k_normal.jpg",
+        "normal.flipY": true,
         "occlusion.diffuseTextureMap": "../Textures/vaseRound_1k_ao.png",
         "opacity.factor": 1.0,
         "parallax.factor": 0.019999999552965164,

@@ -14,6 +14,7 @@
             1.0
         ],
         "normal.textureMap": "../Textures/columnB_1k_normal.jpg",
+        "normal.flipY": true,
         "occlusion.diffuseTextureMap": "../Textures/columnB_1k_ao.png",
         "opacity.factor": 1.0,
         "parallax.factor": 0.020999999716877937,

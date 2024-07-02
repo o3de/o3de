@@ -16,6 +16,7 @@
             1.0
         ],
         "normal.textureMap": "../Textures/lion_1k_normal.jpg",
+        "normal.flipY": true,
         "opacity.factor": 1.0,
         "roughness.textureMap": "../Textures/lion_1k_roughness.png"
     }
