@@ -89,8 +89,8 @@ namespace AZ
             void ShutDown() override { };
 
         private:
-            // Content of the hashedVariantInfo file 
-            static constexpr uint32_t ShaderVariantInfoJobParam = 0;
+            // Content of the hashedVariantBatch file 
+            static constexpr uint32_t ShaderVariantBatchJobParam = 0;
 
             AZ_DISABLE_COPY_MOVE(ShaderVariantAssetBuilder);
 

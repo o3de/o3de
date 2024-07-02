@@ -76,7 +76,7 @@ namespace AZ
 
         AZStd::string ShaderVariantAssetBuilder::GetShaderVariantAssetJobKey()
         {
-            return AZStd::string::format("%s_variant", ShaderVariantAssetBuilderJobKeyPrefix);
+            return AZStd::string::format("%s_variantbatch", ShaderVariantAssetBuilderJobKeyPrefix);
         }
 
         void ShaderVariantAssetBuilder::CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response) const
@@ -147,13 +147,18 @@ namespace AZ
         }
 
 
-        // For a file with the following name: <shaderName>_<StableId>.hashedvariantinfo
+        // For a file with the following name: <shaderName>_<BatchId>.hashedvariantbatch
         // returns the absolute path that looks like: <shaderName>.hashedvariantlist
-        static AZStd::string GetHashedVariantListPathFromVariantInfoPath(const AZStd::string& hashedVariantInfoParentPath, const AZStd::string& hashedVariantInfoRelativePath)
+        static AZStd::string GetHashedVariantListPathFromVariantInfoPath(const AZStd::string& hashedVariantBatchParentPath, const AZStd::string& hashedVariantBatchRelativePath)
         {
-            size_t charPos = AZ::StringFunc::Find(hashedVariantInfoRelativePath, "_", 0, true /* reverse*/);
-            AZStd::string pathBefore_ = hashedVariantInfoRelativePath.substr(0, charPos);
-            return AZStd::string::format("%s%s%s.%s", hashedVariantInfoParentPath.c_str(), AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING, pathBefore_.c_str(), HashedVariantListSourceData::Extension);
+            size_t charPos = AZ::StringFunc::Find(hashedVariantBatchRelativePath, "_", 0, true /* reverse*/);
+            AZStd::string pathBefore_ = hashedVariantBatchRelativePath.substr(0, charPos);
+            return AZStd::string::format(
+                "%s%s%s.%s",
+                hashedVariantBatchParentPath.c_str(),
+                AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING,
+                pathBefore_.c_str(),
+                HashedVariantListSourceData::Extension);
         }
 
 
@@ -161,24 +166,31 @@ namespace AZ
                                                                [[maybe_unused]] AssetBuilderSDK::CreateJobsResponse& response) const
         {
 
-            AZStd::string hashedVariantInfoRelativePath(request.m_sourceFile.data());
-            AZStd::string hashedVariantInfoFullPath;
-            AZ::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), hashedVariantInfoFullPath, true);
+            AZStd::string hashedVariantBatchRelativePath(request.m_sourceFile.data());
+            AZStd::string hashedVariantBatchFullPath;
+            AZ::StringFunc::Path::ConstructFull(
+                request.m_watchFolder.data(), request.m_sourceFile.data(), hashedVariantBatchFullPath, true);
             
-            AZ_TracePrintf(ShaderVariantAssetBuilderName, "CreateShaderVariantJobs for Hashed Variant Info [%s]\n", hashedVariantInfoFullPath.data());
+            AZ_TracePrintf(
+                ShaderVariantAssetBuilderName,
+                "CreateShaderVariantJobs for Hashed Variant Batch [%s]\n",
+                hashedVariantBatchFullPath.data());
             
-            HashedVariantInfoSourceData hashedVariantInfoDescriptor;
-            if (!RPI::JsonUtils::LoadObjectFromFile(hashedVariantInfoFullPath, hashedVariantInfoDescriptor, AZStd::numeric_limits<size_t>::max()))
+            HashedVariantListSourceData hashedVariantBatchDescriptor;
+            if (!RPI::JsonUtils::LoadObjectFromFile(
+                    hashedVariantBatchFullPath, hashedVariantBatchDescriptor, AZStd::numeric_limits<size_t>::max()))
             {
-                AZ_Assert(false, "Failed to parse Hashed Variant Info Descriptor JSON [%s]", hashedVariantInfoFullPath.c_str());
+                AZ_Assert(false, "Failed to parse Hashed Variant Info Descriptor JSON [%s]", hashedVariantBatchFullPath.c_str());
                 response.m_result = AssetBuilderSDK::CreateJobsResultCode::Failed;
                 return;
             }
 
-            AZStd::string hashedVariantInfoDescriptorString;
-            RPI::JsonUtils::SaveObjectToJsonString(hashedVariantInfoDescriptor, hashedVariantInfoDescriptorString);
-            AZStd::string hashedVariantInfoParentPath(request.m_watchFolder.data());
-            AZStd::string hashedVariantListFullPath = GetHashedVariantListPathFromVariantInfoPath(hashedVariantInfoParentPath, hashedVariantInfoRelativePath);
+            AZStd::string hashedVariantBatchDescriptorString;
+            RPI::JsonUtils::SaveObjectToJsonString(hashedVariantBatchDescriptor, hashedVariantBatchDescriptorString);
+
+            AZStd::string hashedVariantBatchParentPath(request.m_watchFolder.data());
+            AZStd::string hashedVariantListFullPath =
+                GetHashedVariantListPathFromVariantInfoPath(hashedVariantBatchParentPath, hashedVariantBatchRelativePath);
             
             for (const AssetBuilderSDK::PlatformInfo& info : request.m_enabledPlatforms)
             {
@@ -196,8 +208,8 @@ namespace AZ
                 jobDescriptor.m_jobKey = GetShaderVariantAssetJobKey();
                 jobDescriptor.SetPlatformIdentifier(info.m_identifier.data());
 
-                // Add the content of the hashedVariantInfo file as a parameter to avoid reading it again.
-                jobDescriptor.m_jobParameters.emplace(ShaderVariantInfoJobParam, hashedVariantInfoDescriptorString);
+                // Add the content of the hashedVariantBatch file as a parameter to avoid reading it again.
+                jobDescriptor.m_jobParameters.emplace(ShaderVariantBatchJobParam, hashedVariantBatchDescriptorString);
             
                 // The ShaderVariantAssets should be built AFTER the ShaderVariantTreeAsset.
                 // With "OrderOnly" dependency, We make sure ShaderVariantTreeAsset completes before ShaderVariantAsset runs,
@@ -214,7 +226,7 @@ namespace AZ
                 AssetBuilderSDK::JobDependency shaderAssetJobDependency;
                 shaderAssetJobDependency.m_jobKey = ShaderAssetBuilder::ShaderAssetBuilderJobKey;
                 shaderAssetJobDependency.m_platformIdentifier = info.m_identifier;
-                shaderAssetJobDependency.m_sourceFile.m_sourceFileDependencyPath = hashedVariantInfoDescriptor.m_shaderPath;
+                shaderAssetJobDependency.m_sourceFile.m_sourceFileDependencyPath = hashedVariantBatchDescriptor.m_shaderPath;
                 shaderAssetJobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
                 jobDescriptor.m_jobDependencyList.emplace_back(shaderAssetJobDependency);
             
@@ -579,39 +591,41 @@ namespace AZ
         }
 
 
-        void ShaderVariantAssetBuilder::ProcessShaderVariantJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const
+        void ShaderVariantAssetBuilder::ProcessShaderVariantJob(
+            const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const
         {
             AssetBuilderSDK::JobCancelListener jobCancelListener(request.m_jobId);
 
-            AZStd::string hashedVariantInfoFullPath;
-            AZ::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), hashedVariantInfoFullPath, true);
+            AZStd::string hashedVariantBatchFullPath;
+            AZ::StringFunc::Path::ConstructFull(
+                request.m_watchFolder.data(), request.m_sourceFile.data(), hashedVariantBatchFullPath, true);
 
 
-            AZStd::string hashedVariantInfoDescriptorString;
-            if (!request.m_jobDescription.m_jobParameters.contains(ShaderVariantInfoJobParam))
+            AZStd::string hashedVariantBatchDescriptorString;
+            if (!request.m_jobDescription.m_jobParameters.contains(ShaderVariantBatchJobParam))
             {
-                AZ_Error(ShaderVariantAssetBuilderName, false, "Missing job Parameter: ShaderVariantInfoJobParam");
+                AZ_Error(ShaderVariantAssetBuilderName, false, "Missing job Parameter: ShaderVariantBatchJobParam");
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                 return;
             }
-            hashedVariantInfoDescriptorString = request.m_jobDescription.m_jobParameters.at(ShaderVariantInfoJobParam);
+            hashedVariantBatchDescriptorString = request.m_jobDescription.m_jobParameters.at(ShaderVariantBatchJobParam);
 
-            HashedVariantInfoSourceData hashedVariantInfoDescriptor;
-            if (!RPI::JsonUtils::LoadObjectFromJsonString(hashedVariantInfoDescriptorString, hashedVariantInfoDescriptor))
+            HashedVariantListSourceData hashedVariantBatchDescriptor;
+            if (!RPI::JsonUtils::LoadObjectFromJsonString(
+                    hashedVariantBatchDescriptorString, hashedVariantBatchDescriptor))
             {
-                AZ_Assert(false, "Failed to parse Hashed Variant Info Descriptor JSON [%s]", hashedVariantInfoFullPath.c_str());
+                AZ_Assert(false, "Failed to parse Hashed Variant Batch Descriptor JSON [%s]", hashedVariantBatchFullPath.c_str());
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                 return;
             }
 
-            const RPI::ShaderVariantListSourceData::VariantInfo& variantInfo = hashedVariantInfoDescriptor.m_variantInfo;
-
-            const AZStd::string& shaderSourceFileFullPath = hashedVariantInfoDescriptor.m_shaderPath;
+            const AZStd::string& shaderSourceFileFullPath = hashedVariantBatchDescriptor.m_shaderPath;
             AZStd::string shaderFileName;
             AZ::StringFunc::Path::GetFileName(shaderSourceFileFullPath.c_str(), shaderFileName);
 
             RPI::ShaderSourceData shaderSourceDescriptor;
-            AZStd::shared_ptr<ShaderFiles> sources = ShaderBuilderUtility::PrepareSourceInput(ShaderVariantAssetBuilderName, shaderSourceFileFullPath, shaderSourceDescriptor);
+            AZStd::shared_ptr<ShaderFiles> sources =
+                ShaderBuilderUtility::PrepareSourceInput(ShaderVariantAssetBuilderName, shaderSourceFileFullPath, shaderSourceDescriptor);
 
             // set the input file for eventual error messages, but the compiler won't be called on it.
             AzslCompiler azslc(sources->m_azslSourceFullPath, request.m_tempDirPath);
@@ -622,7 +636,8 @@ namespace AZ
             if (platformInterfaces.empty())
             {
                 // No work to do. Exit gracefully.
-                AZ_TracePrintf(ShaderVariantAssetBuilderName,
+                AZ_TracePrintf(
+                    ShaderVariantAssetBuilderName,
                     "No azshader is produced on behalf of %s because all valid RHI backends were disabled for this shader.\n",
                     shaderSourceFileFullPath.c_str());
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
@@ -750,34 +765,49 @@ namespace AZ
                     //! It is important to keep this refcounted pointer outside of the if block to prevent it from being destroyed.
                     RHI::Ptr<RHI::PipelineLayoutDescriptor> pipelineLayoutDescriptor;
                     if (shaderPlatformInterface->VariantCompilationRequiresSrgLayoutData())
-                    {                    
+                    {
                         RPI::ShaderResourceGroupLayoutList srgLayoutList;
                         RootConstantData rootConstantData;
                         if (!LoadSrgLayoutListFromShaderAssetBuilder(
-                            shaderPlatformInterface, request.m_platformInfo, azslc, shaderSourceFileFullPath, supervariantIndex,
-                            srgLayoutList, rootConstantData))
+                                shaderPlatformInterface,
+                                request.m_platformInfo,
+                                azslc,
+                                shaderSourceFileFullPath,
+                                supervariantIndex,
+                                srgLayoutList,
+                                rootConstantData))
                         {
                             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                             return;
                         }
-                        
+
                         BindingDependencies bindingDependencies;
                         if (!LoadBindingDependenciesFromShaderAssetBuilder(
-                            shaderPlatformInterface, request.m_platformInfo, azslc, shaderSourceFileFullPath, supervariantIndex,
-                            bindingDependencies))
+                                shaderPlatformInterface,
+                                request.m_platformInfo,
+                                azslc,
+                                shaderSourceFileFullPath,
+                                supervariantIndex,
+                                bindingDependencies))
                         {
                             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                             return;
                         }
-                        
-                        pipelineLayoutDescriptor =
-                            ShaderBuilderUtility::BuildPipelineLayoutDescriptorForApi(
-                                ShaderVariantAssetBuilderName, srgLayoutList, shaderEntryPoints, buildArgsManager.GetCurrentArguments(), rootConstantData,
-                                shaderPlatformInterface, bindingDependencies);
+
+                        pipelineLayoutDescriptor = ShaderBuilderUtility::BuildPipelineLayoutDescriptorForApi(
+                            ShaderVariantAssetBuilderName,
+                            srgLayoutList,
+                            shaderEntryPoints,
+                            buildArgsManager.GetCurrentArguments(),
+                            rootConstantData,
+                            shaderPlatformInterface,
+                            bindingDependencies);
                         if (!pipelineLayoutDescriptor)
                         {
                             AZ_Error(
-                                ShaderVariantAssetBuilderName, false, "Failed to build pipeline layout descriptor for api=[%s]",
+                                ShaderVariantAssetBuilderName,
+                                false,
+                                "Failed to build pipeline layout descriptor for api=[%s]",
                                 shaderPlatformInterface->GetAPIName().GetCStr());
                             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                             return;
@@ -800,49 +830,60 @@ namespace AZ
 
                     // Preserve the Temp folder when shaders are compiled with debug symbols
                     // or because the ShaderSourceData has m_keepTempFolder set to true.
-                    response.m_keepTempFolder |= shaderVariantCreationContext.m_shaderBuildArguments.m_generateDebugInfo
-                        || shaderSourceDescriptor.m_keepTempFolder || RHI::IsGraphicsDevModeEnabled();
+                    response.m_keepTempFolder |= shaderVariantCreationContext.m_shaderBuildArguments.m_generateDebugInfo ||
+                        shaderSourceDescriptor.m_keepTempFolder || RHI::IsGraphicsDevModeEnabled();
 
-                    AZStd::optional<RHI::ShaderPlatformInterface::ByProducts> outputByproducts;
-                    auto shaderVariantAssetOutcome = CreateShaderVariantAsset(variantInfo, shaderVariantCreationContext, outputByproducts);
-                    if (!shaderVariantAssetOutcome.IsSuccess())
+                    for (const HashedVariantInfoSourceData& hashedVariantInfoDescriptor : hashedVariantBatchDescriptor.m_hashedVariants)
                     {
-                        AZ_Error(ShaderVariantAssetBuilderName, false, "%s\n", shaderVariantAssetOutcome.GetError().c_str());
-                        response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
-                        return;
-                    }
-                    Data::Asset<RPI::ShaderVariantAsset> shaderVariantAsset = shaderVariantAssetOutcome.TakeValue();
+                        const RPI::ShaderVariantListSourceData::VariantInfo& variantInfo = hashedVariantInfoDescriptor.m_variantInfo;
 
-
-                    // Time to save the asset in the tmp folder so it ends up in the Cache folder.
-                    const uint32_t productSubID = RPI::ShaderVariantAsset::MakeAssetProductSubId(
-                        shaderPlatformInterface->GetAPIUniqueIndex(), supervariantIndex.GetIndex(),
-                        shaderVariantAsset->GetStableId());
-                    AssetBuilderSDK::JobProduct assetProduct;
-                    if (!SerializeOutShaderVariantAsset(shaderVariantAsset, shaderStemNamePrefix,
-                            request.m_tempDirPath, *shaderPlatformInterface, productSubID,
-                            assetProduct))
-                    {
-                        response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
-                        return;
-                    }
-                    response.m_outputProducts.push_back(assetProduct);
-
-                    if (outputByproducts)
-                    {
-                        // add byproducts as job output products:
-                        uint32_t subProductType = RPI::ShaderVariantAsset::ShaderVariantAssetSubProductType;
-                        for (const AZStd::string& byproduct : outputByproducts.value().m_intermediatePaths)
+                        AZStd::optional<RHI::ShaderPlatformInterface::ByProducts> outputByproducts;
+                        auto shaderVariantAssetOutcome =
+                            CreateShaderVariantAsset(variantInfo, shaderVariantCreationContext, outputByproducts);
+                        if (!shaderVariantAssetOutcome.IsSuccess())
                         {
-                            AssetBuilderSDK::JobProduct jobProduct;
-                            jobProduct.m_productFileName = byproduct;
-                            jobProduct.m_productAssetType = Uuid::CreateName("DebugInfoByProduct-PdbOrDxilTxt");
-                            jobProduct.m_productSubID = RPI::ShaderVariantAsset::MakeAssetProductSubId(
-                                shaderPlatformInterface->GetAPIUniqueIndex(), supervariantIndex.GetIndex(), shaderVariantAsset->GetStableId(),
-                                subProductType++);
-                            response.m_outputProducts.push_back(AZStd::move(jobProduct));
+                            AZ_Error(ShaderVariantAssetBuilderName, false, "%s\n", shaderVariantAssetOutcome.GetError().c_str());
+                            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
+                            return;
+                        }
+                        Data::Asset<RPI::ShaderVariantAsset> shaderVariantAsset = shaderVariantAssetOutcome.TakeValue();
+
+                        // Time to save the asset in the tmp folder so it ends up in the Cache folder.
+                        const uint32_t productSubID = RPI::ShaderVariantAsset::MakeAssetProductSubId(
+                            shaderPlatformInterface->GetAPIUniqueIndex(), supervariantIndex.GetIndex(), shaderVariantAsset->GetStableId());
+                        AssetBuilderSDK::JobProduct assetProduct;
+                        if (!SerializeOutShaderVariantAsset(
+                                shaderVariantAsset,
+                                shaderStemNamePrefix,
+                                request.m_tempDirPath,
+                                *shaderPlatformInterface,
+                                productSubID,
+                                assetProduct))
+                        {
+                            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
+                            return;
+                        }
+                        response.m_outputProducts.push_back(assetProduct);
+
+                        if (outputByproducts)
+                        {
+                            // add byproducts as job output products:
+                            uint32_t subProductType = RPI::ShaderVariantAsset::ShaderVariantAssetSubProductType;
+                            for (const AZStd::string& byproduct : outputByproducts.value().m_intermediatePaths)
+                            {
+                                AssetBuilderSDK::JobProduct jobProduct;
+                                jobProduct.m_productFileName = byproduct;
+                                jobProduct.m_productAssetType = Uuid::CreateName("DebugInfoByProduct-PdbOrDxilTxt");
+                                jobProduct.m_productSubID = RPI::ShaderVariantAsset::MakeAssetProductSubId(
+                                    shaderPlatformInterface->GetAPIUniqueIndex(),
+                                    supervariantIndex.GetIndex(),
+                                    shaderVariantAsset->GetStableId(),
+                                    subProductType++);
+                                response.m_outputProducts.push_back(AZStd::move(jobProduct));
+                            }
                         }
                     }
+
                     buildArgsManager.PopArgumentScope(); // Pop the supervariant build arguments.
                 } // End of supervariant for block
 
