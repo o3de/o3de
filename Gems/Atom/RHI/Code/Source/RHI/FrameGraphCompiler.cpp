@@ -111,6 +111,14 @@ namespace AZ::RHI
 
         FrameGraph& frameGraph = *request.m_frameGraph;
 
+        for (Scope* scope : frameGraph.GetScopes())
+        {
+            if (scope->GetDeviceIndex() == MultiDevice::InvalidDeviceIndex)
+            {
+                scope->SetDeviceIndex(MultiDevice::DefaultDeviceIndex);
+            }
+        }
+
         /// [Phase 1] Compiles the cross-queue scope graph.
         CompileQueueCentricScopeGraph(frameGraph, request.m_compileFlags);
 
@@ -130,11 +138,6 @@ namespace AZ::RHI
 
             for (Scope* scope : frameGraph.GetScopes())
             {
-                if (scope->GetDeviceIndex() == MultiDevice::InvalidDeviceIndex)
-                {
-                    scope->SetDeviceIndex(MultiDevice::DefaultDeviceIndex);
-                }
-
                 scope->Compile();
             }
         }
