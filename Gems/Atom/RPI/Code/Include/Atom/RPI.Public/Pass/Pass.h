@@ -532,6 +532,9 @@ namespace AZ
             //! Default RHI::ScopeAttachmentStage value for all pass attachments of usage RHI::ScopeAttachmentUsage::Shader
             RHI::ScopeAttachmentStage m_defaultShaderAttachmentStage = RHI::ScopeAttachmentStage::AnyGraphics;
 
+            // The device index the pass should run on. Can be invalid if it doesn't matter.
+            int m_deviceIndex{ AZ::RHI::MultiDevice::InvalidDeviceIndex };
+
         private:
             // Return the Timestamp result of this pass
             virtual TimestampResult GetTimestampResultInternal() const { return TimestampResult(); }
@@ -648,9 +651,6 @@ namespace AZ
 
             // Used to track what phases of build/initialization the pass is queued for
             PassQueueState m_queueState = PassQueueState::NoQueue;
-
-            // The device index the pass should run on. Can be invalid if it doesn't matter.
-            int m_deviceIndex{ AZ::RHI::MultiDevice::InvalidDeviceIndex };
         };
 
         //! Struct used to return results from Pass hierarchy validation

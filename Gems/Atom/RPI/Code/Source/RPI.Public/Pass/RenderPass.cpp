@@ -43,10 +43,6 @@ namespace AZ
             {
                 m_flags.m_bindViewSrg = true;
             }
-            if (passData && passData->m_deviceIndex >= 0 && passData->m_deviceIndex < RHI::RHISystemInterface::Get()->GetDeviceCount())
-            {
-                m_deviceIndex = passData->m_deviceIndex;
-            }
         }
 
         RenderPass::~RenderPass()
@@ -278,15 +274,9 @@ namespace AZ
             m_timestampResult = AZ::RPI::TimestampResult();
 
             // the pass is potentially re-allocated amount devices dynamically in runtime so deviceIndex is updated everyframe.
-            int deviceIndex = m_deviceIndex;
-            if (deviceIndex == AZ::RHI::MultiDevice::InvalidDeviceIndex && m_parent)
-            {
-                deviceIndex = azrtti_cast<AZ::RPI::ParentPass*>(m_parent)->GetDeviceIndex();
-            }
-
             if (GetScopeId().IsEmpty())
             {
-                InitScope(RHI::ScopeId(GetPathName()), m_hardwareQueueClass, deviceIndex);
+                InitScope(RHI::ScopeId(GetPathName()), m_hardwareQueueClass, Pass::GetDeviceIndex());
             }
 
             params.m_frameGraphBuilder->ImportScopeProducer(*this);
