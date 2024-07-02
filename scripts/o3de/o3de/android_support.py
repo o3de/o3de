@@ -61,8 +61,9 @@ else:
 
 ASSET_MODE_LOOSE = 'LOOSE'
 ASSET_MODE_PAK = 'PAK'
+ASSET_MODE_NONE = 'NONE'
 
-ASSET_MODES = [ASSET_MODE_LOOSE, ASSET_MODE_PAK]
+ASSET_MODES = [ASSET_MODE_LOOSE, ASSET_MODE_PAK, ASSET_MODE_NONE]
 
 BUILD_CONFIGURATIONS = ['Debug', 'Profile', 'Release']
 ANDROID_ARCH = 'arm64-v8a'
@@ -149,8 +150,8 @@ SETTINGS_SIGNING_KEY_PASSWORD   = register_setting(key='signconfig.key.password'
 
 # General O3DE build and deployment options
 SETTINGS_ASSET_MODE             = register_setting(key='asset.mode',
-                                                   description='The asset mode to determine how the assets are stored in the target APK. Valid values are LOOSE and PAK.',
-                                                   restricted_regex=f'({ASSET_MODE_LOOSE}|{ASSET_MODE_PAK})',
+                                                   description=f"The asset mode to determine how the assets are stored in the target APK. Valid values are {','.join(ASSET_MODES)}.",
+                                                   restricted_regex=f'({ASSET_MODE_LOOSE}|{ASSET_MODE_PAK}|{ASSET_MODE_NONE})',
                                                    restricted_regex_description=f"Valid values are {','.join(ASSET_MODES)}.")
 
 SETTINGS_STRIP_DEBUG            = register_setting(key='strip.debug',
