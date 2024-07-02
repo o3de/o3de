@@ -322,10 +322,19 @@ namespace AZ
             {
                 // Create a native window only if it's a launcher (or standalone)
                 // LY editor create its own window which we can get its handle through AzFramework::WindowSystemNotificationBus::Handler's OnWindowCreated() function
+
+                // Query the application type to determine if this is a headless application
                 AZ::ApplicationTypeQuery appType;
                 ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
-                if (appType.IsHeadless())
+
+                // Check for any Registry Setting override for the flag to create the native window or not. 
+                const auto* settingsRegistry = AZ::SettingsRegistry::Get();
+                if (settingsRegistry)
                 {
+                    settingsRegistry->Get(m_createNativeWindow, "/O3DE/Atom/Bootstrap/CreateNativeWindow");
+                }
+
+                if (appType.IsHeadless() || !m_createNativeWindow )                {
                     m_nativeWindow = nullptr;
                 }
                 else if (!appType.IsValid() || appType.IsGame())
@@ -432,6 +441,18 @@ namespace AZ
                     if (m_createDefaultScene)
                     {
                         CreateDefaultRenderPipeline();
+                    }
+                }
+                else
+                {
+                    AZ::ApplicationTypeQuery appType;
+                    ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+                    if (!appType.IsHeadless())
+                    {
+                        // Unless we are in headless mode, the application multisamplestate needs to be set and initialized
+                        // so that the shader's SuperVariant name is set and the scene's render pipelines and re-initialized
+                        AZ::RHI::MultisampleState multisampleState;
+                        AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(multisampleState);
                     }
                 }
             }

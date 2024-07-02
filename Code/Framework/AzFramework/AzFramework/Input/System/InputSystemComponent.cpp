@@ -17,6 +17,7 @@
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 #include <AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard.h>
 
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -221,6 +222,17 @@ namespace AzFramework
             settingsRegistry->Get(m_touchEnabled, "/O3DE/InputSystem/TouchEnabled");
             settingsRegistry->Get(m_virtualKeyboardEnabled, "/O3DE/InputSystem/VirtualKeyboardEnabled");
             settingsRegistry->Get(m_captureMouseCursor, "/O3DE/InputSystem/Mouse/CaptureMouseCursor");
+
+            bool captureMouseCursor{ true };
+            settingsRegistry->Get(captureMouseCursor, "/O3DE/InputSystem/Mouse/CaptureMouseCursor");
+
+            bool nativeWindowEnabled{ true };
+            settingsRegistry->Get(nativeWindowEnabled, "/O3DE/Atom/Bootstrap/CreateNativeWindow");
+
+            AZ::ApplicationTypeQuery appType;
+            AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+
+            m_captureMouseCursor = (captureMouseCursor && (nativeWindowEnabled || appType.IsEditor()));
         }
 
         // Create all enabled input devices
