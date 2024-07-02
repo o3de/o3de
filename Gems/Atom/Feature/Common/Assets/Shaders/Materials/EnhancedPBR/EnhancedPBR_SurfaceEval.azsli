@@ -28,7 +28,8 @@ Surface EvaluateSurface_EnhancedPBR(
     bool isFrontFace,
     bool isDisplacementClipped,
     float4 uvDxDy,
-    bool customDerivatives)
+    bool customDerivatives,
+    float4 vertexColor)
 {
     Surface surface;
     surface.position = positionWS;
@@ -73,6 +74,7 @@ Surface EvaluateSurface_EnhancedPBR(
     real3 baseColor = GetDetailedBaseColorInput(
         MaterialSrg::m_baseColorMap,             MaterialSrg::m_sampler, baseColorUv, o_baseColor_useTexture,        real3(MaterialSrg::m_baseColor),  real(MaterialSrg::m_baseColorFactor), o_baseColorTextureBlendMode,
         MaterialSrg::m_detail_baseColor_texture, MaterialSrg::m_sampler, detailUv,    o_detail_baseColor_useTexture, detailLayerBaseColorFactor, uvDxDy, customDerivatives);
+    baseColor = BlendVertexColor(baseColor, real3(vertexColor.rgb));
     
     // ------- Parallax Clipping -------
 
@@ -175,8 +177,34 @@ Surface EvaluateSurface_EnhancedPBR(
     return surface;
 }
 
-// helper function to keep compatible with the previous version
+// Helper functions to keep compatible with the previous version
 // because dxc compiler doesn't allow default parameters on functions with overloads
+Surface EvaluateSurface_EnhancedPBR(
+    float3 positionWS,
+    real3 normalWS,
+    float3 tangents[UvSetCount],
+    float3 bitangents[UvSetCount],
+    float2 uvs[UvSetCount],
+    float2 detailUvs[UvSetCount],
+    bool isFrontFace,
+    bool isDisplacementClipped,
+    float4 uvDxDy,
+    bool customDerivatives)
+{
+    return EvaluateSurface_EnhancedPBR(
+            positionWS,
+            normalWS,
+            tangents,
+            bitangents,
+            uvs,
+            detailUvs,
+            isFrontFace,
+            isDisplacementClipped,
+            uvDxDy,
+            customDerivatives,
+            float4(1.0f, 1.0f, 1.0f, 1.0f));
+}
+
 Surface EvaluateSurface_EnhancedPBR(
     float3 positionWS,
     real3 normalWS,
@@ -212,7 +240,8 @@ Surface EvaluateSurface_EnhancedPBR(VsOutput IN, PixelGeometryData geoData, floa
         geoData.isFrontFace,
         geoData.isDisplacementClipped,
         uvDxDy,
-        customDerivatives);
+        customDerivatives,
+        GetVertexColor(IN));
 }
 
 Surface EvaluateSurface_EnhancedPBR(VsOutput IN, PixelGeometryData geoData)
@@ -227,5 +256,6 @@ Surface EvaluateSurface_EnhancedPBR(VsOutput IN, PixelGeometryData geoData)
         geoData.isFrontFace,
         geoData.isDisplacementClipped,
         float4(0.0f, 0.0f, 0.0f, 0.0f),
-        false);
+        false,
+        GetVertexColor(IN));
 }

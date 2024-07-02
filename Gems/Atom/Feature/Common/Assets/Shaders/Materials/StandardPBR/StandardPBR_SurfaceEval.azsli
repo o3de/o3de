@@ -91,6 +91,30 @@ Surface EvaluateSurface_StandardPBR(
     float3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],
     bool isFrontFace,
+    bool isDisplacementClipped,
+    float4 uvDxDy,
+    bool customDerivatives)
+{
+    return EvaluateSurface_StandardPBR(
+        positionWS,
+        vertexNormal,
+        tangents,
+        bitangents,
+        uvs,
+        isFrontFace,
+        isDisplacementClipped,
+        uvDxDy,
+        customDerivatives,
+        float4(1.0f, 1.0f, 1.0f, 1.0f));
+}
+
+Surface EvaluateSurface_StandardPBR(
+    float3 positionWS,
+    real3 vertexNormal,
+    float3 tangents[UvSetCount],
+    float3 bitangents[UvSetCount],
+    float2 uvs[UvSetCount],
+    bool isFrontFace,
     bool isDisplacementClipped)
 {
     return EvaluateSurface_StandardPBR(
@@ -102,8 +126,7 @@ Surface EvaluateSurface_StandardPBR(
         isFrontFace,
         isDisplacementClipped,
         float4(0.0f, 0.0f, 0.0f, 0.0f),
-        false,
-        float4(1.0f, 1.0f, 1.0f, 1.0f));
+        false);
 }
 
 Surface EvaluateSurface_StandardPBR(VsOutput IN, PixelGeometryData geoData, float4 uvDxDy, bool customDerivatives)
@@ -118,7 +141,7 @@ Surface EvaluateSurface_StandardPBR(VsOutput IN, PixelGeometryData geoData, floa
         geoData.isDisplacementClipped,
         uvDxDy,
         customDerivatives,
-        IN.color0);
+        GetVertexColor(IN));
 }
 
 Surface EvaluateSurface_StandardPBR(VsOutput IN, PixelGeometryData geoData)
@@ -133,5 +156,5 @@ Surface EvaluateSurface_StandardPBR(VsOutput IN, PixelGeometryData geoData)
         geoData.isDisplacementClipped,
         float4(0.0f, 0.0f, 0.0f, 0.0f),
         false,
-        IN.color0);
+        GetVertexColor(IN));
 }

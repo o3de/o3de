@@ -27,7 +27,6 @@
 #define ENABLE_VERTEX_COLOR 0
 #endif
 
-
 #if ENABLE_VERTEX_COLOR
 option bool o_color0_isBound = false;
 #endif

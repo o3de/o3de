@@ -25,10 +25,11 @@ VsOutput EvaluateVertexGeometry_EnhancedPBR(
     float2 uv0,
     float2 uv1,
     uint instanceId,
+    bool useVertexColor,
     float4 color0)
 {
     // BasePBRP
-    VsOutput output = EvaluateVertexGeometry_BasePBR(position, normal, tangent, uv0, uv1, color0, instanceId, o_color0_isBound);
+    VsOutput output = EvaluateVertexGeometry_BasePBR(position, normal, tangent, uv0, uv1, instanceId, useVertexColor, color0);
 
     // Detail UVs
     float2 detailUvs[UvSetCount] = { uv0, uv1 };
@@ -37,8 +38,14 @@ VsOutput EvaluateVertexGeometry_EnhancedPBR(
     return output;
 }
 
+// Helper functions to keep compatible with the previous version
+// because dxc compiler doesn't allow default parameters on functions with overloads
 VsOutput EvaluateVertexGeometry_EnhancedPBR(VsInput IN, VsSystemValues SV)
 {
+    float4 color0;
+    bool useVertexColor0;
+    GetVertexColor(IN, color0, useVertexColor0);
+
     return EvaluateVertexGeometry_EnhancedPBR(
         IN.position,
         IN.normal,
@@ -46,5 +53,25 @@ VsOutput EvaluateVertexGeometry_EnhancedPBR(VsInput IN, VsSystemValues SV)
         IN.uv0,
         IN.uv1,
         SV.m_instanceId,
-        IN.m_optional_color0);
+        useVertexColor0,
+        color0);
+}
+
+VsOutput EvaluateVertexGeometry_EnhancedPBR(
+    float3 position,
+    float3 normal,
+    float4 tangent,
+    float2 uv0,
+    float2 uv1,
+    uint instanceId)
+{
+    return EvaluateVertexGeometry_EnhancedPBR(
+        position,
+        normal,
+        tangent,
+        uv0,
+        uv1,
+        instanceId,
+        false,
+        float4(1.0f, 1.0f, 1.0f, 1.0f));
 }
