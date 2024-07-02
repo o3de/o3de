@@ -220,7 +220,7 @@ namespace AZ
 
             VkResult vkResult = device.GetContext().CreateAccelerationStructureKHR(
                 device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &buffers.m_accelerationStructure);
-            AssertSuccess(vkResult);
+            VK_RESULT_ASSERT(vkResult);
 
             buffers.m_buildInfo.dstAccelerationStructure = buffers.m_accelerationStructure;
 

@@ -45,7 +45,7 @@ namespace AZ
             VkMemoryRequirements memReq = m_descriptor.m_memoryRequirements;
             memReq.size = descriptor.m_budgetInBytes;
             VkResult vkResult = vmaAllocateMemory(device.GetVmaAllocator(), &memReq, &allocInfo, &vmaAllocation, nullptr);
-            AssertSuccess(vkResult);
+            VK_RESULT_ASSERT(vkResult);
             RHI::ResultCode result = ConvertResult(vkResult);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
@@ -128,6 +128,6 @@ namespace AZ
         const AliasedHeap::Descriptor& AliasedHeap::GetDescriptor() const
         {
             return m_descriptor;
-        }        
+        }
     }
 }

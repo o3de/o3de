@@ -667,8 +667,8 @@ namespace AZ
                 beginInfo.pInheritanceInfo = nullptr;
             }
 
-            VkResult vkResult = static_cast<Device&>(GetDevice()).GetContext().BeginCommandBuffer(m_nativeCommandBuffer, &beginInfo);
-            AssertSuccess(vkResult);
+            [[maybe_unused]] VkResult vkResult = static_cast<Device&>(GetDevice()).GetContext().BeginCommandBuffer(m_nativeCommandBuffer, &beginInfo);
+            VK_RESULT_ASSERT(vkResult);
         }
 
         void CommandList::EndCommandBuffer()
@@ -677,7 +677,8 @@ namespace AZ
 
             m_state.m_framebuffer = nullptr;
             m_state.m_subpassIndex = 0;
-            AssertSuccess(static_cast<Device&>(GetDevice()).GetContext().EndCommandBuffer(m_nativeCommandBuffer));
+            [[maybe_unused]] VkResult vkResult = static_cast<Device&>(GetDevice()).GetContext().EndCommandBuffer(m_nativeCommandBuffer);
+            VK_RESULT_ASSERT(vkResult);
             m_isUpdating = false;
         }
 
@@ -773,7 +774,7 @@ namespace AZ
             VkResult vkResult = static_cast<Device&>(GetDevice())
                                     .GetContext()
                                     .AllocateCommandBuffers(m_descriptor.m_device->GetNativeDevice(), &allocInfo, &m_nativeCommandBuffer);
-            AssertSuccess(vkResult);
+            VK_RESULT_ASSERT(vkResult);
             return ConvertResult(vkResult);
         }
 
