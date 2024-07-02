@@ -29,7 +29,7 @@ namespace AZ
             void AsyncOperationProcessingHandler::BeginProcessing()
             {
                 emit StatusMessageUpdated("Waiting for background processes to complete...");
-                // Note that hte use of a QThread instead of an AZStd::thread is intentional here, as signals, slots, timers, and other parts
+                // Note that the use of a QThread instead of an AZStd::thread is intentional here, as signals, slots, timers, and other parts
                 // of Qt will cause weird behavior and crashes if invoked from a non-QThread.  Qt tries its best to compensate, but without
                 // a QThread as context, it may not correctly be able to invoke cross-thread event queues, or safely store objects in QThreadStorage.
                 m_thread = QThread::create(
