@@ -44,6 +44,9 @@ namespace AZ::RHI
             const PipelineStateDescriptor& descriptor,
             PipelineLibrary* pipelineLibrary = nullptr);
 
+        //! Preinitializes a pipeline state to allow for safe usage with multi-threaded DrawPacket creation
+        void PreInitialize(MultiDevice::DeviceMask deviceMask);
+
         PipelineStateType GetType() const;
 
     private:
