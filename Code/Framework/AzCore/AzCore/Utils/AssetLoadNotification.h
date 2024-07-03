@@ -12,7 +12,7 @@
 
 #include <AzCore/PlatformDef.h>
 #include <AzCore/base.h>
-#include <AzCore/EBus/Ebus.h>
+#include <AzCore/EBus/EBus.h>
 
 namespace AZ
 {

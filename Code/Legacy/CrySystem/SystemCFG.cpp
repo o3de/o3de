@@ -446,6 +446,7 @@ void CSystem::OnLoadConfigurationEntry(const char* szKey, const char* szValue, [
 
         azConsoleProcessed = static_cast<bool>(console->PerformCommand(command.c_str()));
     }
+
 #if defined(CARBONATED)
     // When azConsoleProcessed is true, it means that the signal ConsoleCommandInvokedEvent was sent from the PerformCommand/DispatchCommand.
     // Unfortunately, in O3DE this signal can have zero number of subscribers and can do nothing.

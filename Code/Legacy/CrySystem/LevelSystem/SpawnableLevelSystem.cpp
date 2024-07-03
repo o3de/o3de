@@ -25,7 +25,6 @@
 #include <AzCore/Script/ScriptSystemBus.h>
 #include <AzCore/Time/ITime.h>
 
-
 namespace LegacyLevelSystem
 {
     constexpr AZStd::string_view DeferredLoadLevelKey = "/O3DE/Runtime/SpawnableLevelSystem/DeferredLoadLevel";
