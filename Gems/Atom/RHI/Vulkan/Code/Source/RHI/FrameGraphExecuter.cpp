@@ -68,9 +68,9 @@ namespace AZ
             // we can be sure about the work gpu was working on before the crash.
             for (auto it = scopes.begin(); it != scopes.end(); ++it)
             {
-                const Scope& scope = *static_cast<const Scope*>(*it);
+                Scope& scope = *static_cast<Scope*>(*it);
                 auto nextIter = it + 1;
-                scopeNext = nextIter != scopes.end() ? static_cast<const Scope*>(*nextIter) : nullptr;
+                scopeNext = nextIter != scopes.end() ? static_cast<Scope*>(*nextIter) : nullptr;
                 const bool subpassGroup = (scopeNext && scopeNext->GetFrameGraphGroupId() == scope.GetFrameGraphGroupId()) ||
                                           (scopePrev && scopePrev->GetFrameGraphGroupId() == scope.GetFrameGraphGroupId());
                 
