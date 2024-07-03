@@ -63,8 +63,8 @@
 // Scriptable Ebus Registration
 #include "Events/ReflectScriptableEvents.h"
 
-// LoadScreen component
 #if defined(CARBONATED)
+// LoadScreen component
 #include <LoadScreenComponent.h>
 #endif
 

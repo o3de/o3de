@@ -19,7 +19,7 @@ namespace AZ
     namespace AssetLoadNotification
     {
         /*
-        * Log notification to update queued log messages
+        * AssetLoad notification to update loading screen stuff
         */
         class AssetLoadNotificator : public EBusTraits
         {
@@ -29,7 +29,7 @@ namespace AZ
             static const EBusHandlerPolicy HandlerPolicy = EBusHandlerPolicy::Single;
             //////////////////////////////////////////////////////////////////////////
 
-            /// Update log messages
+            /// Update loading screen stuff
             virtual void WaitForAssetUpdate() {}
         };
         typedef EBus<AssetLoadNotificator> AssetLoadNotificatorBus;

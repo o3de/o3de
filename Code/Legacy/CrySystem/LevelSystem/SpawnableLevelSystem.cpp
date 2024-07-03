@@ -24,7 +24,6 @@
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Script/ScriptSystemBus.h>
 #include <AzCore/Time/ITime.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 
 
 namespace LegacyLevelSystem
@@ -267,10 +266,11 @@ namespace LegacyLevelSystem
 
 #if defined (CARBONATED)
 #if AZ_LOADSCREENCOMPONENT_ENABLED
+        // load level config file
         AZStd::string levelFolderPath;
-        AzFramework::StringFunc::Path::GetFolderPath(validLevelName.c_str(), levelFolderPath);
+        AZ::StringFunc::Path::GetFolderPath(validLevelName.c_str(), levelFolderPath);
         GetISystem()->LoadConfiguration(AZStd::string::format("%s/level.cfg", levelFolderPath.c_str()).c_str());
-
+        // level start event (we could not call it before UnloadLevel() call)
         EBUS_EVENT(LoadScreenBus, LevelStart);
 #endif // if AZ_LOADSCREENCOMPONENT_ENABLED
 #endif

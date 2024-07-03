@@ -12,12 +12,15 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
-#include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Interface/Interface.h>
 #include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/Animation/IUiAnimation.h>
+
+#if defined (CARBONATED)
+#include <AzCore/Component/ComponentApplication.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <AzCore/Component/TickBus.h>
+#endif
 
 namespace LyShine
 {
@@ -356,3 +359,4 @@ namespace LyShine
 } // namespace LyShine
 
 #endif // AZ_LOADSCREENCOMPONENT_ENABLED
+
