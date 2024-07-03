@@ -18,8 +18,6 @@ namespace AZ::RHI
     AZStd::shared_ptr<DeviceRayTracingShaderTableDescriptor> RayTracingShaderTableDescriptor::GetDeviceRayTracingShaderTableDescriptor(
         int deviceIndex)
     {
-        AZ_Assert(m_RayTracingPipelineState, "No RayTracingPipelineState available\n");
-
         AZStd::shared_ptr<DeviceRayTracingShaderTableDescriptor> descriptor = AZStd::make_shared<DeviceRayTracingShaderTableDescriptor>();
 
         if (m_RayTracingPipelineState)
