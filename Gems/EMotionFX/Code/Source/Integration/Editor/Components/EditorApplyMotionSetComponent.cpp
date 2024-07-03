@@ -118,6 +118,13 @@ namespace EMotionFX
             {
                 AZ::Data::AssetBus::MultiHandler::BusConnect(m_motionSetAsset.GetId());
                 m_motionSetAsset.QueueLoad();
+#if defined(CARBONATED)
+                // The method QueueLoad() calls the async methods inside for load and the component changes in OnAssetReady() will be applied after some time.
+                // But all component changes on ChangeNotify event should be completed within this OnMotionSetAssetSelected() method.
+                // In this case the changes will be serialized properly/fully when we will save this component.
+                m_motionSetAsset.BlockUntilLoadComplete();
+                m_derivedMotionSetAsset.BlockUntilLoadComplete(); // m_derivedMotionSetAsset loading is started within m_motionSetAsset loading
+#endif
             }
 #if defined(CARBONATED)
             else
