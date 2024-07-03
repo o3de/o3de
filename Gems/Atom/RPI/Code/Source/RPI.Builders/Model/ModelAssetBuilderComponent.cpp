@@ -62,7 +62,6 @@ static constexpr AZStd::string_view MismatchedVertexLayoutsAreErrorsKey{ "/O3DE/
   */
 #define AZ_RPI_MESHES_SHARE_COMMON_BUFFERS
 
-
 namespace AZ
 {
     class Aabb;
@@ -348,23 +347,27 @@ namespace AZ
             lodAssets.resize(sourceMeshContentListsByLod.size());
 
             // in debug mode, start by outputting the lods we intend to actually export
+            // do not do so if AZ_ENABLE_TRACING is not defined, since this would be creating variables and loops
+            // for no reason, since AZ_Info is a no-op.
+#if defined(AZ_ENABLE_TRACING)
             if (AZ::SceneAPI::Utilities::IsDebugEnabled())
             {
-                AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "Model '%s' will be exported with %zu LODs\n", m_modelName.c_str(), sourceMeshContentListsByLod.size());
+                AZ_Info(s_builderName, "Model '%s' will be exported with %zu LODs\n", m_modelName.c_str(), sourceMeshContentListsByLod.size());
                 for (size_t lodIndex = 0; lodIndex < sourceMeshContentListsByLod.size(); ++lodIndex)
                 {
-                    AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "  LOD %zu\n", lodIndex);
+                    AZ_Info(s_builderName, "  LOD %zu\n", lodIndex);
                     for (const SourceMeshContent& sourceMesh : sourceMeshContentListsByLod[lodIndex])
                     {
-                        AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "    SOURCE MESH '%s' - parent '%s'\n", sourceMesh.m_name.GetCStr(), sourceMesh.m_parentName.c_str());
-                        AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "       # Vertices:    %zu\n", sourceMesh.m_meshData->GetVertexCount());
-                        AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "       # Faces:       %zu\n", sourceMesh.m_meshData->GetFaceCount());
-                        AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "       # Is Morphed:  %s\n",  sourceMesh.m_isMorphed ? "true" : "false");
-                        AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "       # Cloth Data:  %zu\n", sourceMesh.m_meshClothData.size());
-                        AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "       # Skin  Data:  %zu\n", sourceMesh.m_skinData.size());
+                        AZ_Info(s_builderName, "    SOURCE MESH '%s' - parent '%s'\n", sourceMesh.m_name.GetCStr(), sourceMesh.m_parentName.c_str());
+                        AZ_Info(s_builderName, "       # Vertices:    %zu\n", sourceMesh.m_meshData->GetVertexCount());
+                        AZ_Info(s_builderName, "       # Faces:       %zu\n", sourceMesh.m_meshData->GetFaceCount());
+                        AZ_Info(s_builderName, "       # Is Morphed:  %s\n",  sourceMesh.m_isMorphed ? "true" : "false");
+                        AZ_Info(s_builderName, "       # Cloth Data:  %zu\n", sourceMesh.m_meshClothData.size());
+                        AZ_Info(s_builderName, "       # Skin  Data:  %zu\n", sourceMesh.m_skinData.size());
                     }
                 }
             }
+#endif // AZ_ENABLE_TRACING
 
             // Joint name to joint index map used for the skinning influences.
             AZStd::unordered_map<AZStd::string, uint16_t> jointNameToIndexMap;
@@ -398,7 +401,7 @@ namespace AZ
 
                 if (AZ::SceneAPI::Utilities::IsDebugEnabled())
                 {
-                    AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "  Creating LOD %d\n", lodIndex);
+                    AZ_Info(s_builderName, "  Creating LOD %d\n", lodIndex);
                 }
 
                 {
@@ -419,7 +422,7 @@ namespace AZ
                     AZStd::shared_ptr<const SceneAPI::SceneData::StaticMeshAdvancedRule> staticMeshAdvancedRule = context.m_group.GetRuleContainerConst().FindFirstByType<SceneAPI::SceneData::StaticMeshAdvancedRule>();
                     if (staticMeshAdvancedRule && !staticMeshAdvancedRule->MergeMeshes())
                     {
-                        AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "        Merging meshes disabled by advanced mesh rule.\n");
+                        AZ_Info(s_builderName, "        Merging meshes disabled by advanced mesh rule.\n");
                         // If the merge meshes option is disabled in the advanced mesh rule, don't merge meshes
                         canMergeMeshes = false;
                     }
@@ -434,31 +437,30 @@ namespace AZ
                                 // If we keep track of the ordering changes in MergeMeshesByMaterialUid and then re-mapped the MORPHTARGET_VERTEXINDICES buffer
                                 // we could potentially enable merging meshes that are morphed. But for now, disable merging.
                                 canMergeMeshes = false;
-                                AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "   Scene contains morph data, disabling mesh merge.\n");
+                                AZ_Info(s_builderName, "   Scene contains morph data, disabling mesh merge.\n");
                                 break;
                             }
                         }
                     }
-
+#if defined(AZ_ENABLE_TRACING)
                     auto printProductMesh = [&](const ProductMeshContent& productMesh)
                     {
-                        AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "      Mesh '%s'\n", productMesh.m_name.GetCStr());
-                        AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "         # Indices: %zu\n", productMesh.m_indices.size());
-                        AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "         # Positions: %zu\n", productMesh.m_positions.size());
-                        AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "         # Normals: %zu\n", productMesh.m_normals.size());
-                        AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "         # Tangents: %zu\n", productMesh.m_tangents.size());
-                        AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "         # Bitangents: %zu\n", productMesh.m_bitangents.size());
-                        AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "         # UV sets: %zu\n", productMesh.m_uvSets.size());
-                        AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "         # Color sets: %zu\n", productMesh.m_colorSets.size());
-                        AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "         # Cloth floats: %zu\n", productMesh.m_clothData.size());
-                        AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "         # Material UID: %" PRIu64 "\n", productMesh.m_materialUid);
-                        AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "         # Skin Influences Per Vertex: %" PRIu32 "\n", productMesh.m_influencesPerVertex);
-                        AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "         # Skin Joint Indices: %zu\n", productMesh.m_skinJointIndices.size());
-                        AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "         # Skin Weights: %zu\n", productMesh.m_skinWeights.size());
-                        AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "         # Morph Target Data Size: %zu\n", productMesh.m_morphTargetVertexData.size());
-                        AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "         # Can Be Merged fn returns: %s\n", productMesh.CanBeMerged() ? "true" : "false");
+                        AZ_Info(s_builderName, "      Mesh '%s'\n", productMesh.m_name.GetCStr());
+                        AZ_Info(s_builderName, "         # Indices: %zu\n", productMesh.m_indices.size());
+                        AZ_Info(s_builderName, "         # Positions: %zu\n", productMesh.m_positions.size());
+                        AZ_Info(s_builderName, "         # Normals: %zu\n", productMesh.m_normals.size());
+                        AZ_Info(s_builderName, "         # Tangents: %zu\n", productMesh.m_tangents.size());
+                        AZ_Info(s_builderName, "         # Bitangents: %zu\n", productMesh.m_bitangents.size());
+                        AZ_Info(s_builderName, "         # UV sets: %zu\n", productMesh.m_uvSets.size());
+                        AZ_Info(s_builderName, "         # Color sets: %zu\n", productMesh.m_colorSets.size());
+                        AZ_Info(s_builderName, "         # Cloth floats: %zu\n", productMesh.m_clothData.size());
+                        AZ_Info(s_builderName, "         # Material UID: %" PRIu64 "\n", productMesh.m_materialUid);
+                        AZ_Info(s_builderName, "         # Skin Influences Per Vertex: %" PRIu32 "\n", productMesh.m_influencesPerVertex);
+                        AZ_Info(s_builderName, "         # Skin Joint Indices: %zu\n", productMesh.m_skinJointIndices.size());
+                        AZ_Info(s_builderName, "         # Skin Weights: %zu\n", productMesh.m_skinWeights.size());
+                        AZ_Info(s_builderName, "         # Morph Target Data Size: %zu\n", productMesh.m_morphTargetVertexData.size());
+                        AZ_Info(s_builderName, "         # Can Be Merged fn returns: %s\n", productMesh.CanBeMerged() ? "true" : "false");
                     };
-
 
                     auto printProductListFn = [&](const char* introMessage)
                     {
@@ -474,10 +476,11 @@ namespace AZ
                     };
 
                     printProductListFn("  Product list --- Before merging meshes:\n");
+#endif // AZ_ENABLE_TRACING
 
                     if (canMergeMeshes)
                     {
-                        AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "        Merging meshes...");
+                        AZ_Info(s_builderName, "        Merging meshes...");
 
                         productMeshListOutcome = MergeMeshesByMaterialUid(lodMeshes);
 
@@ -486,7 +489,10 @@ namespace AZ
                             return AZ::SceneAPI::Events::ProcessingResult::Failure;
                         }
                         lodMeshes = productMeshListOutcome.GetValue();
+
+#if defined(AZ_ENABLE_TRACING)
                         printProductListFn("  Product list --- After merging meshes:\n");
+#endif
                     }
                     else
                     {
@@ -502,11 +508,13 @@ namespace AZ
                     ProductMeshContent mergedMesh;
                     MergeMeshesToCommonBuffers(lodMeshes, mergedMesh, lodMeshViews);
 
+#if defined(AZ_ENABLE_TRACING)
                     if (AZ::SceneAPI::Utilities::IsDebugEnabled())
                     {
                         AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "Final Common buffer merged content:\n");
                         printProductMesh(mergedMesh);
                     }
+#endif
 
                     BufferAssetView indexBuffer;
                     AZStd::vector<ModelLodAsset::Mesh::StreamBufferInfo> streamBuffers;
@@ -576,10 +584,12 @@ namespace AZ
                 if (AZ::SceneAPI::Utilities::IsDebugEnabled())
                 {
                     AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "Skinning influences found. Creating skin meta-asset with this data:\n");
+#if defined(AZ_ENABLE_TRACING)
                     for (const auto& joint : jointNameToIndexMap)
                     {
                         AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "  Joint '%s' has index %" PRIu16 "\n", joint.first.c_str(), joint.second);
                     }
+#endif
                 }
                 SkinMetaAssetCreator skinCreator;
                 skinCreator.Begin(SkinMetaAsset::ConstructAssetId(modelAssetId, modelAssetName));
@@ -944,11 +954,11 @@ namespace AZ
                         productMesh.m_skinJointIndices.reserve(vertexCount * productMesh.m_influencesPerVertex);
                         productMesh.m_skinWeights.reserve(vertexCount * productMesh.m_influencesPerVertex);
                         hasSkinData = true;
-                        
+
                         if (AZ::SceneAPI::Utilities::IsDebugEnabled())
                         {
                             AZ_Info(s_builderName, "Source mesh '%s' has no skin data, but others in the same merge do.  Will Synthesize skin data.", sourceMesh.m_name.GetCStr());
-                            AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "    Reserved space for: %" PRIu32 " influences per vertex\n", productMesh.m_influencesPerVertex);
+                            AZ_Info(s_builderName, "    Reserved space for: %" PRIu32 " influences per vertex\n", productMesh.m_influencesPerVertex);
                         }
                     }
 
@@ -1066,12 +1076,12 @@ namespace AZ
                         if (AZ::SceneAPI::Utilities::IsDebugEnabled())
                         {
                             AZ_Info(s_builderName, "  Aligning Buffers for mesh '%s' with vertexCount %zu\n", productMesh.m_name.GetCStr(), vertexCount);
-                            AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "  Before:      %zu positions\n", positions.size());
-                            AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "               %zu normals\n", normals.size());
-                            AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "               %zu tangents\n", tangents.size());
-                            AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "               %zu bitangents\n", bitangents.size());
-                            AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "               %zu skinJointIndices\n", skinJointIndices.size());
-                            AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "               %zu skinWeights\n", skinWeights.size());
+                            AZ_Info(s_builderName, "  Before:      %zu positions\n", positions.size());
+                            AZ_Info(s_builderName, "               %zu normals\n", normals.size());
+                            AZ_Info(s_builderName, "               %zu tangents\n", tangents.size());
+                            AZ_Info(s_builderName, "               %zu bitangents\n", bitangents.size());
+                            AZ_Info(s_builderName, "               %zu skinJointIndices\n", skinJointIndices.size());
+                            AZ_Info(s_builderName, "               %zu skinWeights\n", skinWeights.size());
                         }
 
                         RPI::ModelAssetHelpers::AlignStreamBuffer(positions, vertexCount, PositionFormat, SkinnedMeshBufferAlignment);
