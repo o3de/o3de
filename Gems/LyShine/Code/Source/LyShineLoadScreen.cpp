@@ -314,9 +314,8 @@ namespace LyShine
         if (path.empty())
         {
             // No canvas specified.
-            //Reset();
-            //return AZ::EntityId();
-            path = "levels/dlc/centralplaza/loading_screen/loading_screen.uicanvas";
+            Reset();
+            return AZ::EntityId();
         }
 
         AZ::EntityId canvasId = AZ::Interface<ILyShine>::Get()->LoadCanvas(path);
@@ -338,8 +337,7 @@ namespace LyShine
         if (sequence.empty())
         {
             // Nothing to auto-play.
-            //return canvasId;
-            sequence = "seq_loading";
+            return canvasId;
         }
 
         IUiAnimationSystem* animSystem = nullptr;
