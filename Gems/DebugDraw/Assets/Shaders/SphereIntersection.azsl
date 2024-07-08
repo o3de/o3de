@@ -9,7 +9,7 @@
 #include <Atom/Features/RayTracing/RayTracingIntersectionAttributes.azsli>
 #include <Atom/Features/RayTracing/RayTracingSrgs.azsli>
 #include <Atom/Features/RayTracing/RayTracingSceneUtils.azsli>
-#include <Atom/Features/Bindless.azsli>
+#include <Atom/RPI/Math.azsli>
 
 // https://gamedev.stackexchange.com/a/96487
 bool IntersectRaySphere(float3 p, float3 d, float3 center, float radius, out float t)
@@ -47,6 +47,13 @@ float3 ExtractScale(float3x4 m)
     return float3(sx, sy, sz);
 }
 
+float2 NormalToAzimuthElevation(float3 normal)
+{
+    float azimuth = atan2(normal.y, normal.x); // Azimuth in range [-PI, PI]
+    float elevation = asin(normal.z); // Elevation in range [-PI/2, PI/2]
+    return float2(azimuth / TWO_PI + 0.5f, elevation / PI + 0.5f);
+}
+
 [shader("intersection")]
 void SphereIntersection()
 {
@@ -67,10 +74,13 @@ void SphereIntersection()
     float t;
     if (IntersectRaySphere(WorldRayOrigin(), WorldRayDirection(), sphereCenterWS, sphereRadiusWS, t))
     {
+        float3 position = ObjectRayOrigin() + ObjectRayDirection() * t;
+        float3 normal = normalize(position - sphereCenter);
+
         ProceduralGeometryIntersectionAttributes attrib;
-        attrib.SetPosition(ObjectRayOrigin() + ObjectRayDirection() * t);
-        attrib.SetNormal(normalize(attrib.m_position - sphereCenter));
-        attrib.SetUv(float2(0, 0));
+        attrib.SetPosition(position);
+        attrib.SetNormal(normal);
+        attrib.SetUv(NormalToAzimuthElevation(normal));
         attrib.SetTangent(float4(1, 0, 0, 1));
         ReportHit(t, 0, attrib);
     }
