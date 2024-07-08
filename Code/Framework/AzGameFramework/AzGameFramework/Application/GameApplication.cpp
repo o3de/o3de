@@ -143,7 +143,7 @@ namespace AzGameFramework
             }
             else
             {
-                m_consoleMode = isConsoleMode;
+                m_consoleMode = false;
             }
         }
 
