@@ -223,9 +223,11 @@ namespace AzFramework
             settingsRegistry->Get(m_virtualKeyboardEnabled, "/O3DE/InputSystem/VirtualKeyboardEnabled");
             settingsRegistry->Get(m_captureMouseCursor, "/O3DE/InputSystem/Mouse/CaptureMouseCursor");
 
+            // Check if option to capture the mouse cursor is set or not.
             bool captureMouseCursor{ true };
             settingsRegistry->Get(captureMouseCursor, "/O3DE/InputSystem/Mouse/CaptureMouseCursor");
 
+            // Make sure that we only disable capturing the mouse (if specified) when we are running in either headless mode or console mode.
             AZ::ApplicationTypeQuery appType;
             AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
 

@@ -99,57 +99,52 @@ namespace AzGameFramework
 
     void GameApplication::StartCommon(AZ::Entity* systemEntity)
     {
-        if (!this->m_headless && m_consoleModeSupported)
+        if (!this->m_headless)
         {
-            bool isConsoleMode = false;
+            bool isConsoleMode{ false };
 
             // If we are not in headless-mode, its still possible to be in console-only mode,
             // where a native client window will not be created (on platforms that support 
-            // setting console mode at runtime). There are 3 possible triggers for console mode
+            // setting console mode at runtime). There are 2 possible triggers for console mode
 
-            // 1. Settings registry : If the registry setting '/O3DE/Launcher/Bootstrap/CreateNativeWindow' is specified and set to false
-            constexpr const char* regSettingCreateNativeWindow = "/O3DE/Launcher/Bootstrap/CreateNativeWindow";
-            bool createNativeWindow = true;
-            const auto* settingsRegistry = AZ::SettingsRegistry::Get();
-            if (settingsRegistry->Get(createNativeWindow, regSettingCreateNativeWindow))
+            // 1. Settings registry : If the registry setting '/O3DE/Launcher/Bootstrap/ConsoleMode' is specified and set to true
+            if (const auto* settingsRegistry = AZ::SettingsRegistry::Get())
             {
-                if (!createNativeWindow)
-                {
-                    isConsoleMode = true;
-                }
+                settingsRegistry->Get(isConsoleMode, "/O3DE/Launcher/Bootstrap/ConsoleMode");
             }
 
-            if (!isConsoleMode)
+            // 2. Either '-console-mode' or 'rhi=null' is specified in the command-line argument
+            const AzFramework::CommandLine* commandLine{ nullptr };
+            constexpr const char* commandSwitchConsoleOnly = "console-mode";
+            constexpr const char* commandSwitchRhi = "rhi";
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetApplicationCommandLine);
+            AZ_Assert(commandLine, "Unable to query application command line to evaluate console-mode switches.");
+            if (commandLine)
             {
-                const AzFramework::CommandLine* commandLine{ nullptr };
-                AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetApplicationCommandLine);
-                AZ_Assert(commandLine, "Unable to query application command line.");
-                if (commandLine)
+                if (commandLine->HasSwitch(commandSwitchConsoleOnly))
                 {
-                    constexpr const char* commandSwitchConsoleOnly = "console-mode";
-                    constexpr const char* commandSwitchRhi = "rhi";
-
-                    // 2. '-console-only' command line argument was set
-                    if (commandLine->HasSwitch(commandSwitchConsoleOnly))
+                    isConsoleMode = true;
+                } 
+                else if (size_t switchCount = commandLine->GetNumSwitchValues(commandSwitchRhi); switchCount > 0)
+                {
+                    auto rhiValue = commandLine->GetSwitchValue(commandSwitchRhi, switchCount - 1);
+                    if (rhiValue.compare("null")==0)
                     {
                         isConsoleMode = true;
-                    } 
-                    // 3. '-rhi=null' is specified in the command line
-                    else if (size_t switchCount = commandLine->GetNumSwitchValues(commandSwitchRhi); switchCount > 0)
-                    {
-                        auto rhiValue = commandLine->GetSwitchValue(commandSwitchRhi, switchCount - 1);
-                        if (rhiValue.compare("null")==0)
-                        {
-                            isConsoleMode = true;
-                        }
                     }
                 }
             }
-            if (isConsoleMode)
+
+            AZ_Warning("Launcher", (isConsoleMode && !m_consoleModeSupported), "Console-mode was requested but not supported on this platform\n");
+            if (isConsoleMode && m_consoleModeSupported)
             {
-                AZ_Printf("GameApplication", "Console only mode enabled.");
+                AZ_Info("Launcher", "Console only mode enabled.\n");
+                m_consoleMode = true;
             }
-            m_consoleMode = isConsoleMode;
+            else
+            {
+                m_consoleMode = isConsoleMode;
+            }
         }
 
         AzFramework::Application::StartCommon(systemEntity);
