@@ -14,6 +14,22 @@ struct PayloadData
     float3 m_color;
 };
 
+// This enum must be the same as in RayTracingDebugConstants.h
+enum class RayTracingDebugViewMode
+{
+    InstanceIndex,
+    InstanceID,
+    PrimitiveIndex,
+    Barycentrics,
+    Normals,
+    UVs,
+};
+
+RayTracingDebugViewMode GetRayTracingDebugViewMode()
+{
+    return (RayTracingDebugViewMode)RayTracingSceneSrg::m_debugViewMode;
+}
+
 float3 Float3FromRGB(uint r, uint g, uint b)
 {
     return float3(r / 255.f, g / 255.f, b / 255.f);

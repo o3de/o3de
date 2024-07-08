@@ -45,6 +45,15 @@ namespace AZ::Render
                     ->ClassElement(Edit::ClassElements::EditorData, "")
                     ->DataElement(Edit::UIHandlers::CheckBox, &RayTracingDebugComponentConfig::m_enabled, "Enable Ray Tracing Debugging", "Enable Ray Tracing Debugging.")
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::EntireTree)
+                    ->DataElement(Edit::UIHandlers::ComboBox, &RayTracingDebugComponentConfig::m_debugViewMode, "View mode", "What property to output to the view")
+                        ->EnumAttribute(RayTracingDebugViewMode::InstanceIndex, "Instance Index")
+                        ->EnumAttribute(RayTracingDebugViewMode::InstanceID, "Instance ID")
+                        ->EnumAttribute(RayTracingDebugViewMode::PrimitiveIndex, "Primitive Index")
+                        ->EnumAttribute(RayTracingDebugViewMode::Barycentrics, "Barycentric Coordinates")
+                        ->EnumAttribute(RayTracingDebugViewMode::Normals, "Normals")
+                        ->EnumAttribute(RayTracingDebugViewMode::UVs, "UV Coordinates")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                        ->Attribute(Edit::Attributes::Visibility, &RayTracingDebugComponentConfig::GetEnabled)
                 ;
                 // clang-format on
             }

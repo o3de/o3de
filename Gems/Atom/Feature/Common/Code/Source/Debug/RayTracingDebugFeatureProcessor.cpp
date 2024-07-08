@@ -8,8 +8,7 @@
 
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Debug/RayTracingDebugFeatureProcessor.h>
-
-#include <Atom/RPI.Public/Pass/PassFilter.h>
+#include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ::Render
 {
@@ -55,6 +54,7 @@ namespace AZ::Render
         EnableSceneNotification();
         FeatureProcessor::Deactivate();
 
+        m_sceneSrg = nullptr;
         m_settings.reset();
     }
 
@@ -62,6 +62,38 @@ namespace AZ::Render
     {
         m_pipeline = pipeline;
         FeatureProcessor::AddRenderPasses(pipeline);
+    }
+
+    void RayTracingDebugFeatureProcessor::Render(const RPI::FeatureProcessor::RenderPacket& packet)
+    {
+        if (!m_rayTracingPass)
+        {
+            return;
+        }
+
+        if (m_rayTracingPass->IsEnabled() != m_settings->GetEnabled())
+        {
+            m_rayTracingPass->SetEnabled(m_settings->GetEnabled());
+        }
+
+        if (!m_sceneSrg && m_settings->GetEnabled())
+        {
+            m_sceneSrg = GetParentScene()->GetFeatureProcessor<RayTracingFeatureProcessor>()->GetRayTracingSceneSrg();
+        }
+
+        if (m_sceneSrg && m_settings->GetEnabled())
+        {
+            if (!m_sceneSrg->SetConstant(m_debugOptionsIndex, m_settings->GetDebugViewMode()))
+            {
+                AZ_ErrorOnce(
+                    "RayTracingDebugFeatureProcessor",
+                    m_debugOptionsIndex.IsValid(),
+                    "Failed to find shader input index for '%s' in the ray tracing scene SRG.",
+                    m_debugOptionsIndex.GetNameForDebug().GetCStr());
+            }
+        }
+
+        FeatureProcessor::Render(packet);
     }
 
     void RayTracingDebugFeatureProcessor::AddOrRemoveDebugPass()

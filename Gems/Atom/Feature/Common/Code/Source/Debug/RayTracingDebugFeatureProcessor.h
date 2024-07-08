@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/Feature/Debug/RayTracingDebugFeatureProcessorInterface.h>
+#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Debug/RayTracingDebugSettings.h>
 
 namespace AZ::Render
@@ -30,13 +31,16 @@ namespace AZ::Render
         void Activate() override;
         void Deactivate() override;
         void AddRenderPasses(RPI::RenderPipeline* pipeline) override;
+        void Render(const RenderPacket& packet) override;
 
     private:
         void AddOrRemoveDebugPass();
 
         AZStd::unique_ptr<RayTracingDebugSettings> m_settings;
+        Data::Instance<RPI::ShaderResourceGroup> m_sceneSrg;
         RPI::RenderPipeline* m_pipeline{ nullptr };
         RPI::Ptr<RPI::Pass> m_rayTracingPass;
         int m_debugComponentCount{ 0 };
+        RHI::ShaderInputNameIndex m_debugOptionsIndex{ "m_debugViewMode" };
     };
 } // namespace AZ::Render

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/Feature/Debug/RayTracingDebugConstants.h>
 #include <AzCore/RTTI/RTTI.h>
 
 namespace AZ::Render

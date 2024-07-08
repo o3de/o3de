@@ -11,3 +11,5 @@
 
 // Whether to turn on ray tracing debugging
 AZ_GFX_BOOL_PARAM(Enabled, m_enabled, true)
+
+AZ_GFX_COMMON_PARAM(RayTracingDebugViewMode, DebugViewMode, m_debugViewMode, RayTracingDebugViewMode::InstanceIndex)
