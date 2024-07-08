@@ -10,8 +10,26 @@
 #include <Atom/Features/RayTracing/RayTracingSrgs.azsli>
 #include <RayTracingDebugCommon.azsli>
 
+float3 GetNormalColor(float3 normal)
+{
+    return normal * 0.5f + 0.5f;
+}
+
+float3 GetUVColor(float2 uv)
+{
+    return float3(uv, 0.f);
+}
+
 [shader("closesthit")]
 void ClosestHitProcedural(inout PayloadData payload, ProceduralGeometryIntersectionAttributes attrib)
 {
-    payload.m_color = GetRandomColor(InstanceIndex());
+    switch (GetRayTracingDebugViewMode())
+    {
+    case RayTracingDebugViewMode::InstanceID:     payload.SetColor(GetRandomColor(InstanceID()));       break;
+    case RayTracingDebugViewMode::InstanceIndex:  payload.SetColor(GetRandomColor(InstanceIndex()));    break;
+    case RayTracingDebugViewMode::PrimitiveIndex: payload.SetColor(GetRandomColor(PrimitiveIndex()));   break;
+    case RayTracingDebugViewMode::Normals:        payload.SetColor(GetNormalColor(attrib.GetNormal())); break;
+    case RayTracingDebugViewMode::UVs:            payload.SetColor(GetUVColor(attrib.GetUv()));         break;
+    default: break;
+    }
 }

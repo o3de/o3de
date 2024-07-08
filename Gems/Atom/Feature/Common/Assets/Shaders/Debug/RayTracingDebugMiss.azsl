@@ -12,5 +12,5 @@
 [shader("miss")]
 void Miss(inout PayloadData payload)
 {
-    payload.m_color = float3(0, 0, 0);
+    payload.SetColor(float3(0, 0, 0));
 }

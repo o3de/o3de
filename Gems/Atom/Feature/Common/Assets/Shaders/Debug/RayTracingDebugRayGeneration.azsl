@@ -22,10 +22,18 @@ void RayGeneration()
     RayDesc ray;
     ray.Origin = ViewSrg::m_worldPosition;
     ray.Direction = rayDir;
-    ray.TMin = 0.01f;
-    ray.TMax = 10000;
-    PayloadData payload;
+    ray.TMin = 0.f;
+    ray.TMax = RayTracingGlobalSrg::m_maxRayLength;
+    PayloadData payload = (PayloadData)0;
     TraceRay(RayTracingSceneSrg::m_scene, RAY_FLAG_NONE, 0xFF, 0, 1, 0, ray, payload);
 
-    RayTracingGlobalSrg::m_fallbackColor[pixelCoords] = float4(payload.m_color, 1);
+    if (payload.m_colorSet)
+    {
+        RayTracingGlobalSrg::m_fallbackColor[pixelCoords] = float4(payload.m_color, 1);
+    }
+    else
+    {
+        float grayscale = (pixelCoords.x / 8 % 2) ^ (pixelCoords.y / 8 % 2) ? 0.75f : 1.f;
+        RayTracingGlobalSrg::m_fallbackColor[pixelCoords] = float4(grayscale, grayscale, grayscale, 1.f);
+    }
 }

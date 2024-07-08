@@ -111,7 +111,8 @@ namespace AZ::Render
                 return;
             }
             // m_pipeline->AddPassBefore(m_rayTracingPass, Name{ "AuxGeomPass" });
-            m_pipeline->AddPassAfter(m_rayTracingPass, Name{ "PostProcessPass" });
+            // m_pipeline->AddPassAfter(m_rayTracingPass, Name{ "PostProcessPass" });
+            m_pipeline->AddPassAfter(m_rayTracingPass, Name{ "AuxGeomPass" });
         }
 
         if (shouldRemovePass)
