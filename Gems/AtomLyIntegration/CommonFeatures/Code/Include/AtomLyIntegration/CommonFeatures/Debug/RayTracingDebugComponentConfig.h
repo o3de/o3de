@@ -21,9 +21,19 @@ namespace AZ::Render
 
         static void Reflect(ReflectContext* context);
 
+        // clang-format off
+        // Generate members
+        #include <Atom/Feature/ParamMacros/StartParamMembers.inl>
+        #include <Atom/Feature/Debug/RayTracingDebugParams.inl>
+        #include <Atom/Feature/ParamMacros/EndParams.inl>
+
+        // Generate Getters/Setters
+        #include <Atom/Feature/ParamMacros/StartParamFunctions.inl>
+        #include <Atom/Feature/Debug/RayTracingDebugParams.inl>
+        #include <Atom/Feature/ParamMacros/EndParams.inl>
+        // clang-format on
+
         void CopySettingsFrom(RayTracingDebugSettingsInterface* settings);
         void CopySettingsTo(RayTracingDebugSettingsInterface* settings);
-
-        bool m_enabled{ true };
     };
 } // namespace AZ::Render

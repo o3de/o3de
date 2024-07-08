@@ -22,6 +22,13 @@ namespace AZ::Render
         virtual ~RayTracingDebugRequests()
         {
         }
+
+        // clang-format off
+        // Generate virtual getters and setters
+        #include <Atom/Feature/ParamMacros/StartParamFunctionsVirtual.inl>
+        #include <Atom/Feature/Debug/RayTracingDebugParams.inl>
+        #include <Atom/Feature/ParamMacros/EndParams.inl>
+        // clang-format on
     };
 
     using RayTracingDebugRequestBus = AZ::EBus<RayTracingDebugRequests>;

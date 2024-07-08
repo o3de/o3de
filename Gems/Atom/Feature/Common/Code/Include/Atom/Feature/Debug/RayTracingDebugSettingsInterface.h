@@ -17,7 +17,11 @@ namespace AZ::Render
     public:
         AZ_RTTI(RayTracingDebugSettingsInterface, "{E1C76937-7F82-4553-87AA-D6DC8885DC56}");
 
-        virtual bool GetEnabled() const = 0;
-        virtual void SetEnabled(bool enabled) = 0;
+        // clang-format off
+        // Generate virtual getter and setter functions
+        #include <Atom/Feature/ParamMacros/StartParamFunctionsVirtual.inl>
+        #include <Atom/Feature/Debug/RayTracingDebugParams.inl>
+        #include <Atom/Feature/ParamMacros/EndParams.inl>
+        // clang-format on
     };
 } // namespace AZ::Render

@@ -18,7 +18,12 @@ namespace AZ::Render
             // clang-format off
             serializeContext->Class<RayTracingDebugComponentConfig, ComponentConfig>()
                 ->Version(0)
-                ->Field("Enabled", &RayTracingDebugComponentConfig::m_enabled)
+                // Auto-gen serialize context code
+                #define SERIALIZE_CLASS RayTracingDebugComponentConfig
+                #include <Atom/Feature/ParamMacros/StartParamSerializeContext.inl>
+                #include <Atom/Feature/Debug/RayTracingDebugParams.inl>
+                #include <Atom/Feature/ParamMacros/EndParams.inl>
+                #undef SERIALIZE_CLASS
             ;
             // clang-format on
         }
@@ -26,11 +31,33 @@ namespace AZ::Render
 
     void RayTracingDebugComponentConfig::CopySettingsFrom(RayTracingDebugSettingsInterface* settings)
     {
-        m_enabled = settings->GetEnabled();
+        if (!settings)
+        {
+            return;
+        }
+
+        // clang-format off
+        #define COPY_SOURCE settings
+        #include <Atom/Feature/ParamMacros/StartParamCopySettingsFrom.inl>
+        #include <Atom/Feature/Debug/RayTracingDebugParams.inl>
+        #include <Atom/Feature/ParamMacros/EndParams.inl>
+        #undef COPY_SOURCE
+        // clang-format on
     }
 
     void RayTracingDebugComponentConfig::CopySettingsTo(RayTracingDebugSettingsInterface* settings)
     {
-        settings->SetEnabled(m_enabled);
+        if (!settings)
+        {
+            return;
+        }
+
+        // clang-format off
+        #define COPY_TARGET settings
+        #include <Atom/Feature/ParamMacros/StartParamCopySettingsTo.inl>
+        #include <Atom/Feature/Debug/RayTracingDebugParams.inl>
+        #include <Atom/Feature/ParamMacros/EndParams.inl>
+        #undef COPY_TARGET
+        // clang-format on
     }
 } // namespace AZ::Render

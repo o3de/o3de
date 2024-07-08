@@ -29,6 +29,13 @@ namespace AZ::Render
         void SetConfiguration(const RayTracingDebugComponentConfig& config);
         const RayTracingDebugComponentConfig& GetConfiguration() const;
 
+        // clang-format off
+        // Generate function override declarations (functions definitions in .cpp)
+        #include <Atom/Feature/ParamMacros/StartParamFunctionsOverride.inl>
+        #include <Atom/Feature/Debug/RayTracingDebugParams.inl>
+        #include <Atom/Feature/ParamMacros/EndParams.inl>
+        // clang-format on
+
     private:
         void OnConfigurationChanged();
 
