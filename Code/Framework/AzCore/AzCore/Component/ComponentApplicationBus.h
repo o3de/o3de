@@ -44,6 +44,7 @@ namespace AZ
         bool IsGame() const;
         bool IsHeadless() const;
         bool IsValid() const;
+        bool IsConsoleMode() const;
 
         enum class Masks
         {
@@ -52,6 +53,7 @@ namespace AZ
             Tool = 1 << 1,
             Game = 1 << 2,
             Headless = 1 << 3,
+            ConsoleMode = 1 << 4,
         };
         Masks m_maskValue = Masks::Invalid;
     };
@@ -62,6 +64,7 @@ namespace AZ
     inline bool ApplicationTypeQuery::IsTool() const { return (m_maskValue & Masks::Tool) == Masks::Tool; }
     inline bool ApplicationTypeQuery::IsGame() const { return (m_maskValue & Masks::Game) == Masks::Game; }
     inline bool ApplicationTypeQuery::IsHeadless() const { return (m_maskValue & Masks::Headless) == Masks::Headless; }
+    inline bool ApplicationTypeQuery::IsConsoleMode() const { return (m_maskValue & Masks::ConsoleMode) == Masks::ConsoleMode; }
     inline bool ApplicationTypeQuery::IsValid() const { return m_maskValue != Masks::Invalid; }
 
     using EntityAddedEvent = AZ::Event<AZ::Entity*>;

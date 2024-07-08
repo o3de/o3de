@@ -226,13 +226,10 @@ namespace AzFramework
             bool captureMouseCursor{ true };
             settingsRegistry->Get(captureMouseCursor, "/O3DE/InputSystem/Mouse/CaptureMouseCursor");
 
-            bool nativeWindowEnabled{ true };
-            settingsRegistry->Get(nativeWindowEnabled, "/O3DE/Atom/Bootstrap/CreateNativeWindow");
-
             AZ::ApplicationTypeQuery appType;
             AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
 
-            m_captureMouseCursor = (captureMouseCursor && (nativeWindowEnabled || appType.IsEditor()));
+            m_captureMouseCursor = (captureMouseCursor && (!appType.IsHeadless() && !appType.IsConsoleMode()) || appType.IsEditor());
         }
 
         // Create all enabled input devices

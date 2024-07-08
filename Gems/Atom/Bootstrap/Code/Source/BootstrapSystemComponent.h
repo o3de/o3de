@@ -133,7 +133,6 @@ namespace AZ
 
                 bool m_createDefaultScene = true;
                 bool m_defaultSceneReady = false;
-                bool m_createNativeWindow = true;
 
                 // Maps AZ scenes to RPI scene weak pointers to allow looking up a ScenePtr instead of a raw Scene*
                 AZStd::unordered_map<AzFramework::Scene*, AZStd::weak_ptr<AZ::RPI::Scene>> m_azSceneToAtomSceneMap;

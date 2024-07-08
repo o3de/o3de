@@ -327,14 +327,8 @@ namespace AZ
                 AZ::ApplicationTypeQuery appType;
                 ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
 
-                // Check for any Registry Setting override for the flag to create the native window or not. 
-                const auto* settingsRegistry = AZ::SettingsRegistry::Get();
-                if (settingsRegistry)
+                if (appType.IsHeadless() || appType.IsConsoleMode())
                 {
-                    settingsRegistry->Get(m_createNativeWindow, "/O3DE/Atom/Bootstrap/CreateNativeWindow");
-                }
-
-                if (appType.IsHeadless() || !m_createNativeWindow )                {
                     m_nativeWindow = nullptr;
                 }
                 else if (!appType.IsValid() || appType.IsGame())
