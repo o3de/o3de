@@ -31,7 +31,7 @@ namespace AZ::RHI
 
     void PipelineState::PreInitialize(MultiDevice::DeviceMask deviceMask)
     {
-        int deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
+        const int deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
 
         for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
         {
@@ -63,10 +63,12 @@ namespace AZ::RHI
             [this, &descriptor, &pipelineLibrary, &resultCode](int deviceIndex)
             {
                 auto* device = RHISystemInterface::Get()->GetDevice(deviceIndex);
+
                 if(!m_deviceObjects.contains(deviceIndex))
                 {
                     m_deviceObjects[deviceIndex] = Factory::Get().CreatePipelineState();
                 }
+
                 switch (descriptor.GetType())
                 {
                 case PipelineStateType::Draw:
