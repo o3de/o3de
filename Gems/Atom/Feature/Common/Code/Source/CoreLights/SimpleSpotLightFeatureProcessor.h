@@ -25,7 +25,7 @@ namespace AZ
 
     namespace Render
     {
-        static const uint8_t MaxGoboTextureCount = 5;
+        static const uint8_t MaxGoboTextureCount = 4;
 
         struct SimpleSpotLightData
         {

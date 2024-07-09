@@ -153,15 +153,21 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
         surface.CalculateRoughnessA();
     }
 
+#if ENABLE_CLEAR_COAT
     // Clear Coat
     surface.clearCoat.InitializeToZero();
+#endif
 
     // ------- LightingData -------
 
     LightingData lightingData;
 
     // Light iterator
+#if ENABLE_LIGHT_CULLING
     lightingData.tileIterator.Init(input.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+#else
+    lightingData.tileIterator.Init();
+#endif
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
 
     // Shadow, Occlusion

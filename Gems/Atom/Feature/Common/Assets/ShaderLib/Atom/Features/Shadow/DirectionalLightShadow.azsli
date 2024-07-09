@@ -9,13 +9,17 @@
 #pragma once
 
 #ifndef ENABLE_SHADOWS
-#define ENABLE_SHADOWS              1
+#define ENABLE_SHADOWS                  1
 #endif
 
 #if ENABLE_SHADOWS
 
 #ifndef ENABLE_FULLSCREEN_SHADOW
-#define ENABLE_FULLSCREEN_SHADOW              1
+#define ENABLE_FULLSCREEN_SHADOW        1
+#endif
+
+#ifndef ENABLE_ESM_SHADOW
+#define ENABLE_ESM_SHADOW               1
 #endif
 
 #include <scenesrg.srgi>
@@ -48,6 +52,8 @@ class DirectionalLightShadow
 
     static DirectionalShadowCalculator MakeShadowCalculator(uint lightIndex, float3 worldPos, real3 normalVector);
 
+    static float GetFullScreenShadowVisibility(float4 screenUv);
+
     //! This alters the input color to visualize which cascade is being used
     //! and whether PCF is used as a fallback in ESM+PCF mode or not.
     static real3 AddDebugColoring(real3 color, uint lightIndex, real3 worldPos, real3 normalVector);
@@ -71,7 +77,11 @@ DirectionalShadowCalculator DirectionalLightShadow::MakeShadowCalculator(uint li
 {
     DirectionalShadowCalculator calc;
     calc.SetBlendBetweenCascadesEnable(o_blend_between_cascades_enable);
+#if ENABLE_ESM_SHADOW
     calc.SetShadowmaps(PassSrg::m_directionalLightShadowmap, PassSrg::m_directionalLightExponentialShadowmap);
+#else
+    calc.SetShadowmaps(PassSrg::m_directionalLightShadowmap);
+#endif
     calc.SetReceiverShadowPlaneBiasEnable(o_directional_shadow_receiver_plane_bias_enable);
     calc.SetWorldNormal(normalVector);
     calc.SetLightIndex(lightIndex);
@@ -81,6 +91,15 @@ DirectionalShadowCalculator DirectionalLightShadow::MakeShadowCalculator(uint li
     return calc;
 }
 
+float DirectionalLightShadow::GetFullScreenShadowVisibility(float4 screenUv)
+{
+    #if ENABLE_FULLSCREEN_SHADOW
+        return PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy, 0)).x;
+    #else
+        return 0;
+    #endif
+}
+
 float2 DirectionalLightShadow::GetVisibilityThickTransmission(uint lightIndex, real3 worldPos, real3 normalVector, float4 screenUv)
 {
     float visibility;
@@ -88,7 +107,7 @@ float2 DirectionalLightShadow::GetVisibilityThickTransmission(uint lightIndex, r
     
     if (UseFullscreenShadows())
     {
-        visibility = PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy, 0)).x;
+        visibility = GetFullScreenShadowVisibility(screenUv);
 
         // Compute shadow coords for call to GetThickness below
         calc.ComputeShadowCoords();
@@ -110,12 +129,13 @@ float2 DirectionalLightShadow::GetVisibilityThinTransmission(uint lightIndex, re
 
     if (UseFullscreenShadows())
     {
-        visibility = PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy, 0)).x;
+        visibility = GetFullScreenShadowVisibility(screenUv);
     }
     else
     {    
         visibility = calc.GetVisibility();
     }
+
 
     // Apply transmission shrink factor for thin transmission materials and recalculate shadow coords
     // This way the shrink factor only gets applied to the thickness/transmission factor and not to the default shadows
@@ -131,7 +151,7 @@ real DirectionalLightShadow::GetVisibility(uint lightIndex, float3 worldPos, rea
 {
     if (UseFullscreenShadows())
     {
-        return real(PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy, 0)).x);
+        return real(GetFullScreenShadowVisibility(screenUv));
     }
     else
     {

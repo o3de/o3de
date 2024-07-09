@@ -439,7 +439,8 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
             real3 blendMaskValues = GetApplicableBlendMaskValues(blendSource, uvs[MaterialSrg::m_blendMaskUvIndex], vertexBlendMask);
             return MakeDebugSurface(positionWS, normalWS, real3(blendMaskValues));
         }
-    
+
+#if ENABLE_PARALLAX    
         if(o_debugDrawMode == DebugDrawMode::Displacement)
         {
             real startDepth = real(-MaterialSrg::m_displacementMax);
@@ -448,6 +449,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
             real height = 1 - saturate(depth);
             return MakeDebugSurface(positionWS, normalWS, real3(height,height,height));
         }
+#endif
     
         if(o_debugDrawMode == DebugDrawMode::FinalBlendWeights)
         {
@@ -538,11 +540,12 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
         real specularF0Factor = BlendLayers(lightingInputLayer1.m_specularF0Factor, lightingInputLayer2.m_specularF0Factor, lightingInputLayer3.m_specularF0Factor, blendWeights);
         real metallic = BlendLayers(lightingInputLayer1.m_metallic, lightingInputLayer2.m_metallic, lightingInputLayer3.m_metallic, blendWeights);
     
+    #if ENABLE_PARALLAX
         if(o_parallax_highlightClipping && isDisplacementClipped)
         {
             ApplyParallaxClippingHighlight(baseColor);
         }
-
+    #endif
         surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
 
         surface.roughnessLinear = BlendLayers(lightingInputLayer1.m_roughness, lightingInputLayer2.m_roughness, lightingInputLayer3.m_roughness, blendWeights);

@@ -314,7 +314,9 @@ real3 GetBlendWeights(LayerBlendSource blendSource, real3 blendMaskValues, real3
     return blendWeights;
 }
 
+#if ENABLE_PARALLAX
 float3 GetLayerDepthValues(float2 uv, float2 uv_ddx, float2 uv_ddy);
+#endif
 
 //! Return the final blend weights to be used for rendering, based on the available data and configuration.
 //! Note this will sample the displacement maps in the case of LayerBlendSource::Displacement. If you have already
@@ -325,6 +327,7 @@ real3 GetBlendWeights(LayerBlendSource blendSource, float2 uv, real3 blendMaskVe
     
     real3 blendMaskValues = GetApplicableBlendMaskValues(blendSource, uv, blendMaskVertexColors);
 
+#if ENABLE_PARALLAX
     if(blendSource == LayerBlendSource::Displacement ||
        blendSource == LayerBlendSource::Displacement_With_BlendMaskTexture ||
        blendSource == LayerBlendSource::Displacement_With_BlendMaskVertexColors)
@@ -342,6 +345,7 @@ real3 GetBlendWeights(LayerBlendSource blendSource, float2 uv, real3 blendMaskVe
             layerDepthValues = ApplyBlendMaskToDepthValues(blendMaskValues, layerDepthValues, GetSubMinDisplacement() - real(MaterialSrg::m_displacementBlendDistance));
         }
     }
+#endif
     
     return GetBlendWeights(blendSource, blendMaskValues, layerDepthValues, real(MaterialSrg::m_displacementBlendDistance));
 }
@@ -360,7 +364,7 @@ real3 BlendLayers(real3 layer1, real3 layer2, real3 layer3, real3 blendWeights)
 }
 
 // ------ Parallax Utilities ----------------------------------------
-
+#if ENABLE_PARALLAX
 //! Returns the depth values for each layer.
 float3 GetLayerDepthValues(float2 uv, float2 uv_ddx, float2 uv_ddy)
 {
@@ -485,3 +489,4 @@ DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
 
     return DepthResultAbsolute(float(depth));
 }
+#endif
