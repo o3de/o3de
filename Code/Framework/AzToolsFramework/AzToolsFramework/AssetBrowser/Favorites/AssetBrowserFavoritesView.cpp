@@ -11,6 +11,7 @@
 #include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoritesModel.h>
 #include <AzToolsFramework/AssetBrowser/Favorites/FavoritesEntryDelegate.h>
 #include <AzToolsFramework/AssetBrowser/Favorites/SearchAssetBrowserFavoriteItem.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 
 #include <QHeaderView>
 #include <QMenu>
@@ -48,6 +49,7 @@ namespace AzToolsFramework
 
             connect(m_delegate.data(), &EntryDelegate::RenameEntry, this, &AssetBrowserFavoritesView::AfterRename);
             connect(this, &QTreeView::customContextMenuRequested, this, &AssetBrowserFavoritesView::OnContextMenu);
+            connect(selectionModel(), &QItemSelectionModel::selectionChanged, this, &AssetBrowserFavoritesView::SelectionChanged);
 
             connect(this, &QTreeView::expanded, this, &AssetBrowserFavoritesView::expanded);
             connect(this, &QTreeView::collapsed, this, &AssetBrowserFavoritesView::collapsed);
@@ -229,6 +231,24 @@ namespace AzToolsFramework
             {
                 m_favoritesModel->EnableSearchItems();
             }
+        }
+
+        
+        void AssetBrowserFavoritesView::SelectionChanged(const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
+        {
+            // if we select 1 thing, give the previewer a chance to view it.
+            if (selected.size() == 1)
+            {
+                auto* favorite = selected.indexes()[0].data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserFavoriteItem*>();
+                if ((favorite)&&(favorite->GetFavoriteType() == AssetBrowserFavoriteItem::FavoriteType::AssetBrowserEntry))
+                {
+                    const EntryAssetBrowserFavoriteItem* entryItem = static_cast<const EntryAssetBrowserFavoriteItem*>(favorite);
+                    AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, entryItem->GetEntry());
+                    return;
+                }
+            }
+
+            AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::ClearPreview);
         }
 
         AssetBrowserFavoritesModel* AssetBrowserFavoritesView::GetModel()

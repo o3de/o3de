@@ -1057,10 +1057,23 @@ void AzAssetBrowserWindow::SetFavoritesWindowHeight(int height)
     m_ui->m_leftsplitter->setSizes(sizes);
 }
 
-void AzAssetBrowserWindow::SelectionChanged([[maybe_unused]] const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
+void AzAssetBrowserWindow::SelectionChanged(const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
 {
     OnFilterCriteriaChanged();
-}
 
+    // if we select 1 thing, give the previewer a chance to view it.
+    if (selected.size() == 1)
+    {
+        auto* entry = selected.indexes()[0].data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+        if (entry)
+        {
+            AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, entry);
+            return;
+        }
+    }
+    // if we get here, we have no selection or multiple selection, clear preview.
+    // Note the above code SHOULD early return if more cases appear.
+    AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::ClearPreview);
+}
 
 #include <AzAssetBrowser/moc_AzAssetBrowserWindow.cpp>
