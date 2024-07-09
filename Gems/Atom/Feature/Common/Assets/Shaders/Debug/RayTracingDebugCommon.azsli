@@ -8,16 +8,10 @@
 
 #pragma once
 
-class PayloadData
+struct PayloadData
 {
-    bool m_colorSet;
+    bool m_noData;
     float3 m_color;
-
-    void SetColor(float3 color)
-    {
-        m_color = color;
-        m_colorSet = true;
-    }
 };
 
 // This enum must be the same as in RayTracingDebugConstants.h

@@ -110,8 +110,6 @@ namespace AZ::Render
                 AZ_Assert(false, "Failed to create DebugRayTracingPass");
                 return;
             }
-            // m_pipeline->AddPassBefore(m_rayTracingPass, Name{ "AuxGeomPass" });
-            // m_pipeline->AddPassAfter(m_rayTracingPass, Name{ "PostProcessPass" });
             m_pipeline->AddPassAfter(m_rayTracingPass, Name{ "AuxGeomPass" });
         }
 

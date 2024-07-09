@@ -38,12 +38,12 @@ void ClosestHit(inout PayloadData payload, BuiltInTriangleIntersectionAttributes
 {
     switch (GetRayTracingDebugViewMode())
     {
-    case RayTracingDebugViewMode::InstanceID:     payload.SetColor(GetRandomColor(InstanceID()));             break;
-    case RayTracingDebugViewMode::InstanceIndex:  payload.SetColor(GetRandomColor(InstanceIndex()));          break;
-    case RayTracingDebugViewMode::PrimitiveIndex: payload.SetColor(GetRandomColor(PrimitiveIndex()));         break;
-    case RayTracingDebugViewMode::Barycentrics:   payload.SetColor(GetBarycentricColor(attrib.barycentrics)); break;
-    case RayTracingDebugViewMode::Normals:        payload.SetColor(GetNormalColor(attrib.barycentrics));      break;
-    case RayTracingDebugViewMode::UVs:            payload.SetColor(GetUVColor(attrib.barycentrics));          break;
-    default: break;
+    case RayTracingDebugViewMode::InstanceID:     payload.m_color = GetRandomColor(InstanceID());             break;
+    case RayTracingDebugViewMode::InstanceIndex:  payload.m_color = GetRandomColor(InstanceIndex());          break;
+    case RayTracingDebugViewMode::PrimitiveIndex: payload.m_color = GetRandomColor(PrimitiveIndex());         break;
+    case RayTracingDebugViewMode::Barycentrics:   payload.m_color = GetBarycentricColor(attrib.barycentrics); break;
+    case RayTracingDebugViewMode::Normals:        payload.m_color = GetNormalColor(attrib.barycentrics);      break;
+    case RayTracingDebugViewMode::UVs:            payload.m_color = GetUVColor(attrib.barycentrics);          break;
+    default:                                      payload.m_noData = true;                                    break;
     }
 }

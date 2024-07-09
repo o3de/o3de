@@ -27,7 +27,7 @@ void RayGeneration()
     PayloadData payload = (PayloadData)0;
     TraceRay(RayTracingSceneSrg::m_scene, RAY_FLAG_NONE, 0xFF, 0, 1, 0, ray, payload);
 
-    if (payload.m_colorSet)
+    if (!payload.m_noData)
     {
         RayTracingGlobalSrg::m_fallbackColor[pixelCoords] = float4(payload.m_color, 1);
     }

@@ -12,6 +12,7 @@
 
 namespace AZ::Render
 {
+    // The view modes of the ray tracing debug view
     // This enum must be the same as in RayTracingDebugCommon.azsli
     enum class RayTracingDebugViewMode : u32
     {

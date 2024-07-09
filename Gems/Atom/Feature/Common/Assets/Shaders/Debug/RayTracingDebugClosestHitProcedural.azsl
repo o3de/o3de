@@ -25,11 +25,11 @@ void ClosestHitProcedural(inout PayloadData payload, ProceduralGeometryIntersect
 {
     switch (GetRayTracingDebugViewMode())
     {
-    case RayTracingDebugViewMode::InstanceID:     payload.SetColor(GetRandomColor(InstanceID()));       break;
-    case RayTracingDebugViewMode::InstanceIndex:  payload.SetColor(GetRandomColor(InstanceIndex()));    break;
-    case RayTracingDebugViewMode::PrimitiveIndex: payload.SetColor(GetRandomColor(PrimitiveIndex()));   break;
-    case RayTracingDebugViewMode::Normals:        payload.SetColor(GetNormalColor(attrib.GetNormal())); break;
-    case RayTracingDebugViewMode::UVs:            payload.SetColor(GetUVColor(attrib.GetUv()));         break;
-    default: break;
+    case RayTracingDebugViewMode::InstanceID:     payload.m_color = GetRandomColor(InstanceID());       break;
+    case RayTracingDebugViewMode::InstanceIndex:  payload.m_color = GetRandomColor(InstanceIndex());    break;
+    case RayTracingDebugViewMode::PrimitiveIndex: payload.m_color = GetRandomColor(PrimitiveIndex());   break;
+    case RayTracingDebugViewMode::Normals:        payload.m_color = GetNormalColor(attrib.GetNormal()); break;
+    case RayTracingDebugViewMode::UVs:            payload.m_color = GetUVColor(attrib.GetUv());         break;
+    default:                                      payload.m_noData = true;                              break;
     }
 }

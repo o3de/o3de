@@ -12,6 +12,7 @@
 
 namespace AZ::Render
 {
+    // The settings class for the ray tracing debug view
     class RayTracingDebugSettings final : public RayTracingDebugSettingsInterface
     {
     public:
