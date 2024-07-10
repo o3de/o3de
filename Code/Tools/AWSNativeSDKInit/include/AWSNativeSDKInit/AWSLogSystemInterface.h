@@ -64,6 +64,15 @@ namespace AWSNativeSDKInit
 #endif
 
         /**
+        * va_list overload for Log, avoid using this as well.
+        */
+#if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
+        void vaLog(Aws::Utils::Logging::LogLevel logLevel, const char* tag, const char* formatStr, va_list args) override;
+#else
+        void vaLog(Aws::Utils::Logging::LogLevel logLevel, const char* tag, const char* formatStr, va_list args);
+#endif
+
+        /**
         * Writes the stream to the output stream.
         */
 #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
