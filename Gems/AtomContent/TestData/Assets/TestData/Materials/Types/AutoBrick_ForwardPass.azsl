@@ -7,6 +7,9 @@
  */
 
 #define FORCE_OPAQUE 1
+#ifndef ENABLE_PARALLAX
+#define ENABLE_PARALLAX 1
+#endif
 
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
@@ -120,6 +123,7 @@ void GetSurfaceShape(float2 uv, out float depth, out float3 normal)
     }
 }
 
+#if ENABLE_PARALLAX
 // Callback function for ParallaxMapping.azsli
 DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
 {
@@ -128,6 +132,7 @@ DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
     GetSurfaceShape(uv, depth, normal);
     return DepthResultNormalized(depth);
 }
+#endif
 
 ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
 {
@@ -143,7 +148,7 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
           0,0,1 };
           
     float depthOffset = 0.0;
-
+#if ENABLE_PARALLAX
     ParallaxOffset tangentOffset = GetParallaxOffset( AutoBrickSrg::m_lineDepth,
                                                       depthOffset,
                                                       IN.m_uv,
@@ -154,6 +159,7 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
                                                       identityUvMatrix);
     
     IN.m_uv += tangentOffset.m_offsetTS.xy;
+ #endif
  
     float3 baseColor = float3(1,1,1);
     const float noise = AutoBrickSrg::m_noise.Sample(AutoBrickSrg::m_sampler, IN.m_uv).r;
@@ -189,15 +195,21 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
     const float specularF0Factor = 0.5f;
     surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
 
+#if ENABLE_CLEAR_COAT
     // Clear Coat
     surface.clearCoat.InitializeToZero();
+#endif
 
     // ------- LightingData -------
 
     LightingData lightingData;
 
     // Light iterator
+#if ENABLE_LIGHT_CULLING
     lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+#else
+    lightingData.tileIterator.Init();
+#endif
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
 
     // Shadow

@@ -69,6 +69,7 @@ namespace AZ
             RHI::Handle<uint32_t> m_lightLtcMeshFlag;
             RHI::Handle<uint32_t> m_lightApproxMeshFlag;
             bool m_deviceBufferNeedsUpdate = false;
+            bool m_quadLightEnabled = true;
         };
     } // namespace Render
 } // namespace AZ

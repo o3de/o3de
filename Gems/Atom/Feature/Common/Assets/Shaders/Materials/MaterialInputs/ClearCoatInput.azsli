@@ -33,6 +33,11 @@ option bool prefix##o_clearCoat_factor_useTexture;    \
 option bool prefix##o_clearCoat_roughness_useTexture; \
 option bool prefix##o_clearCoat_normal_useTexture;
 
+#if defined(FORCE_SMALL_SRGS) && !ENABLE_CLEAR_COAT
+    #undef COMMON_SRG_INPUTS_CLEAR_COAT
+    #define COMMON_SRG_INPUTS_CLEAR_COAT(prefix) 
+#endif
+
 void GetClearCoatInputs(Texture2D influenceMap, float2 influenceUV, real clearCoatFactor, bool useInfluenceMap,
                         Texture2D roughnessMap, float2 roughnessUV, real roughness, bool useRoughnessMap,
                         Texture2D normalMap, float2 normalUV, real3 normal, bool useNormalMap, real normalStrength,

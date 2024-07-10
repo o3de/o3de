@@ -22,7 +22,11 @@
 void InitializeLightingData_BasePBR(inout Surface surface, float4 screenPosition, inout LightingData lightingData)
 {
     // Light iterator
+#if ENABLE_LIGHT_CULLING
     lightingData.tileIterator.Init(screenPosition, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+#else
+    lightingData.tileIterator.Init();
+#endif
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
     
     // Diffuse and Specular response (used in IBL calculations)

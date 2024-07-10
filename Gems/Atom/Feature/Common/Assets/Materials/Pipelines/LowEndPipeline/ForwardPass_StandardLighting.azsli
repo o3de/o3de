@@ -19,8 +19,9 @@
 #define OUTPUT_SUBSURFACE 0
 #define ENABLE_TRANSMISSION 0
 #define ENABLE_SHADER_DEBUGGING 1
+#ifndef ENABLE_CLEAR_COAT
 #define ENABLE_CLEAR_COAT 1
-
+#endif
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include MATERIAL_TYPE_AZSLI_FILE_PATH

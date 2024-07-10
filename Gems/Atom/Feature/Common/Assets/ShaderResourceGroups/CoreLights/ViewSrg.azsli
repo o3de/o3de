@@ -73,9 +73,10 @@ partial ShaderResourceGroup ViewSrg
     Buffer<uint> m_visibleSimpleSpotLightIndices;
     uint m_visibleSimpleSpotLightCount;
     
-    static const uint MaxGoboTextureCount = 5;
+    static const uint MaxGoboTextureCount = 4;
     Texture2D<float> m_goboTextures[MaxGoboTextureCount];
 
+#if !defined(FORCE_SMALL_SRGS) || ENABLE_SPHERE_LIGHTS
     // Point lights (sphere lights)
 
     struct PointLight
@@ -92,6 +93,7 @@ partial ShaderResourceGroup ViewSrg
 
     StructuredBuffer<PointLight> m_pointLights;
     uint m_pointLightCount;
+#endif
     Buffer<uint> m_visibleSimplePointLightIndices;
     uint m_visibleSimplePointLightCount;
 
@@ -153,6 +155,7 @@ partial ShaderResourceGroup ViewSrg
 
     StructuredBuffer<FilterParameter> m_esmsDirectional;
 
+#if !defined(FORCE_SMALL_SRGS) || ENABLE_DISK_LIGHTS
     // Disk Lights
     
     struct DiskLight
@@ -174,7 +177,9 @@ partial ShaderResourceGroup ViewSrg
 
     StructuredBuffer<DiskLight> m_diskLights;
     uint m_diskLightCount;
-    
+#endif
+
+#if !defined(FORCE_SMALL_SRGS) || ENABLE_CAPSULE_LIGHTS    
     // Capsule Lights
     
     struct CapsuleLight
@@ -192,7 +197,9 @@ partial ShaderResourceGroup ViewSrg
 
     StructuredBuffer<CapsuleLight> m_capsuleLights;
     uint m_capsuleLightCount;
-    
+#endif
+
+#if !defined(FORCE_SMALL_SRGS) || ENABLE_QUAD_LIGHTS    
     // Quad Lights
     
     struct QuadLight
@@ -212,7 +219,9 @@ partial ShaderResourceGroup ViewSrg
 
     StructuredBuffer<QuadLight> m_quadLights;
     uint m_quadLightCount;
-    
+#endif
+
+#if !defined(FORCE_SMALL_SRGS) || ENABLE_POLYGON_LTC_LIGHTS    
     // Polygon Lights
 
     struct PolygonLight
@@ -237,4 +246,5 @@ partial ShaderResourceGroup ViewSrg
     {
         return index & 0x0000FFFF;
     }
+#endif
 }

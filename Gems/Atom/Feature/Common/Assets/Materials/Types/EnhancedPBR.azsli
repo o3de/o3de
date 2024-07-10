@@ -45,11 +45,13 @@
         return ShouldHandleParallax() || o_normal_useTexture || (o_clearCoat_enabled && o_clearCoat_normal_useTexture) || o_detail_normal_useTexture;
     }
     
+#if ENABLE_PARALLAX
     // Callback function for ParallaxMapping.azsli
     DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
     {
         return SampleDepthFromHeightmap(MaterialSrg::m_heightmap, MaterialSrg::m_sampler, uv, uv_ddx, uv_ddy);
     }
+#endif
 
     #include <Atom/Feature/Common/Assets/Shaders/Materials/EnhancedPBR/EnhancedPBR_VertexData.azsli>
     #include <Atom/Feature/Common/Assets/Shaders/Materials/EnhancedPBR/EnhancedPBR_VertexEval.azsli>
@@ -79,11 +81,13 @@
         return ShouldHandleParallax();
     }
     
+#if ENABLE_PARALLAX
     // Callback function for ParallaxMapping.azsli
     DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
     {
         return SampleDepthFromHeightmap(MaterialSrg::m_heightmap, MaterialSrg::m_sampler, uv, uv_ddx, uv_ddy);
     }
+#endif
     
     #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexData.azsli>
     #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexEval.azsli>

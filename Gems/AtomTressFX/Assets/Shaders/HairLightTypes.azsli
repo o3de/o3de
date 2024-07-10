@@ -275,6 +275,7 @@ void ApplyAllSimpleSpotLights(Surface surface, inout LightingData lightingData)
 //==============================================================================
 //                              Point Light 
 //==============================================================================
+#if ENABLE_SPHERE_LIGHTS
 void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingData lightingData)
 {
     float3 posToLight = light.m_position - surface.position;
@@ -328,12 +329,13 @@ void ApplyAllPointLights(Surface surface, inout LightingData lightingData)
         ApplyPointLight(light, surface, lightingData);
     }
 }
-
+#endif
 //==============================================================================
 //                             Disk Lights
 //==============================================================================
-#include <Atom/Features/PBR/Lights/DiskLight.azsli>
 
+#include <Atom/Features/PBR/Lights/DiskLight.azsli>
+#if ENABLE_DISK_LIGHTS
 void ApplyAllDiskLights(Surface surface, inout LightingData lightingData)
 {    
     SetNormalAndUpdateLightingParams(surface.tangent, lightingData.dirToCamera, surface, lightingData);
@@ -343,7 +345,7 @@ void ApplyAllDiskLights(Surface surface, inout LightingData lightingData)
         ApplyDiskLight(light, surface, lightingData);
     }
 }
-
+#endif
 //==============================================================================
 //                            Directional Lights
 //==============================================================================
@@ -480,8 +482,12 @@ void ApplyLighting(inout Surface surface, inout LightingData lightingData, float
 
     if (o_enableAreaLights)
     {
+#if ENABLE_SPHERE_LIGHTS
         ApplyAllPointLights(surface, lightingData);
+#endif
+#if ENABLE_DISK_LIGHTS
         ApplyAllDiskLights(surface, lightingData);
+#endif
     }
 
     if (o_enableIBL)
