@@ -41,7 +41,7 @@ namespace AzGameFramework
         //! Set the headless state of the game application. This is determined at compile time
         void SetHeadless(bool headless);
 
-        //! Set the flag indicating if console-only mode is supported. This is determine based on the platform support for it.
+        //! Set the flag indicating if console-only mode is supported. This is determined based on the platform that supports it.
         void SetConsoleModeSupported(bool supported);
 
     protected:
