@@ -73,7 +73,7 @@ namespace AZ::RHI
 
         DispatchRaysArguments(const DispatchRaysIndirect& indirect)
             : m_type{ DispatchRaysType::Indirect }
-            , m_Indirect{ indirect }
+            , m_indirect{ indirect }
         {
         }
 
@@ -86,14 +86,14 @@ namespace AZ::RHI
                 return DeviceDispatchRaysArguments(m_direct);
             case DispatchRaysType::Indirect:
                 return DeviceDispatchRaysArguments(DeviceDispatchRaysIndirect{
-                    m_Indirect.m_maxSequenceCount,
-                    m_Indirect.m_indirectBufferView->GetDeviceIndirectBufferView(deviceIndex),
-                    m_Indirect.m_indirectBufferByteOffset,
-                    m_Indirect.m_dispatchRaysIndirectBuffer
-                        ? m_Indirect.m_dispatchRaysIndirectBuffer->GetDeviceDispatchRaysIndirectBuffer(deviceIndex).get()
+                    m_indirect.m_maxSequenceCount,
+                    m_indirect.m_indirectBufferView->GetDeviceIndirectBufferView(deviceIndex),
+                    m_indirect.m_indirectBufferByteOffset,
+                    m_indirect.m_dispatchRaysIndirectBuffer
+                        ? m_indirect.m_dispatchRaysIndirectBuffer->GetDeviceDispatchRaysIndirectBuffer(deviceIndex).get()
                         : nullptr,
-                    m_Indirect.m_countBuffer ? m_Indirect.m_countBuffer->GetDeviceBuffer(deviceIndex).get() : nullptr,
-                    m_Indirect.m_countBufferByteOffset });
+                    m_indirect.m_countBuffer ? m_indirect.m_countBuffer->GetDeviceBuffer(deviceIndex).get() : nullptr,
+                    m_indirect.m_countBufferByteOffset });
             default:
                 return DeviceDispatchRaysArguments();
             }
@@ -104,7 +104,7 @@ namespace AZ::RHI
             //! Arguments for a direct dispatch.
             DispatchRaysDirect m_direct;
             //! Arguments for an indirect dispatch.
-            DispatchRaysIndirect m_Indirect;
+            DispatchRaysIndirect m_indirect;
         };
     };
 

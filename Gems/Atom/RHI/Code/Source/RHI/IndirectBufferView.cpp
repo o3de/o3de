@@ -18,18 +18,18 @@ namespace AZ::RHI
         uint32_t byteOffset,
         uint32_t byteCount,
         uint32_t byteStride)
-        : m_Buffer(&buffer)
+        : m_buffer(&buffer)
         , m_byteOffset(byteOffset)
         , m_byteCount(byteCount)
         , m_byteStride(byteStride)
-        , m_Signature(&signature)
+        , m_signature(&signature)
     {
         size_t seed = 0;
-        AZStd::hash_combine(seed, m_Buffer);
+        AZStd::hash_combine(seed, m_buffer);
         AZStd::hash_combine(seed, m_byteOffset);
         AZStd::hash_combine(seed, m_byteCount);
         AZStd::hash_combine(seed, m_byteStride);
-        AZStd::hash_combine(seed, m_Signature);
+        AZStd::hash_combine(seed, m_signature);
         m_hash = static_cast<HashValue64>(seed);
     }
 
@@ -40,7 +40,7 @@ namespace AZ::RHI
 
     const Buffer* IndirectBufferView::GetBuffer() const
     {
-        return m_Buffer;
+        return m_buffer;
     }
 
     uint32_t IndirectBufferView::GetByteOffset() const
@@ -60,6 +60,6 @@ namespace AZ::RHI
 
     const IndirectBufferSignature* IndirectBufferView::GetSignature() const
     {
-        return m_Signature;
+        return m_signature;
     }
 } // namespace AZ::RHI

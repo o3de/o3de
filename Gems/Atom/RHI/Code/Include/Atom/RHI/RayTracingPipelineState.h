@@ -58,7 +58,7 @@ namespace AZ::RHI
 
         const RHI::PipelineState* GetPipelineState() const
         {
-            return m_PipelineState;
+            return m_pipelineState;
         }
 
         const RayTracingShaderLibraryVector& GetShaderLibraries() const
@@ -96,7 +96,7 @@ namespace AZ::RHI
         RayTracingPipelineStateDescriptor* HitGroup(const AZ::Name& name);
 
     private:
-        const RHI::PipelineState* m_PipelineState = nullptr;
+        const RHI::PipelineState* m_pipelineState = nullptr;
         DeviceRayTracingPipelineStateDescriptor m_descriptor;
     };
 
@@ -113,7 +113,7 @@ namespace AZ::RHI
 
         const RayTracingPipelineStateDescriptor& GetDescriptor() const
         {
-            return m_Descriptor;
+            return m_descriptor;
         }
 
         //! Initialize all device-specific RayTracingPipelineStates
@@ -123,6 +123,6 @@ namespace AZ::RHI
         //! explicit shutdown is not allowed for this type
         void Shutdown() override final;
 
-        RayTracingPipelineStateDescriptor m_Descriptor;
+        RayTracingPipelineStateDescriptor m_descriptor;
     };
 } // namespace AZ::RHI

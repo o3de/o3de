@@ -29,9 +29,9 @@ namespace AZ::RHI
         //! Returns the device-specific DeviceStreamBufferView for the given index
         DeviceStreamBufferView GetDeviceStreamBufferView(int deviceIndex) const
         {
-            AZ_Assert(m_Buffer, "No Buffer available\n");
+            AZ_Assert(m_buffer, "No Buffer available\n");
 
-            return DeviceStreamBufferView(*m_Buffer->GetDeviceBuffer(deviceIndex), m_byteOffset, m_byteCount, m_byteStride);
+            return DeviceStreamBufferView(*m_buffer->GetDeviceBuffer(deviceIndex), m_byteOffset, m_byteCount, m_byteStride);
         }
 
         //! Returns the hash of the view. This hash is precomputed at creation time.
@@ -52,7 +52,7 @@ namespace AZ::RHI
 
     private:
         HashValue64 m_hash = HashValue64{ 0 };
-        const Buffer* m_Buffer = nullptr;
+        const Buffer* m_buffer = nullptr;
         uint32_t m_byteOffset = 0;
         uint32_t m_byteCount = 0;
         uint32_t m_byteStride = 0;

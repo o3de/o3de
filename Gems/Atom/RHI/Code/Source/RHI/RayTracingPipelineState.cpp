@@ -15,13 +15,13 @@ namespace AZ::RHI
     DeviceRayTracingPipelineStateDescriptor RayTracingPipelineStateDescriptor::GetDeviceRayTracingPipelineStateDescriptor(
         int deviceIndex) const
     {
-        AZ_Assert(m_PipelineState, "No PipelineState available\n");
+        AZ_Assert(m_pipelineState, "No PipelineState available\n");
 
         DeviceRayTracingPipelineStateDescriptor descriptor{ m_descriptor };
 
-        if (m_PipelineState)
+        if (m_pipelineState)
         {
-            descriptor.m_pipelineState = m_PipelineState->GetDevicePipelineState(deviceIndex).get();
+            descriptor.m_pipelineState = m_pipelineState->GetDevicePipelineState(deviceIndex).get();
         }
 
         return descriptor;
@@ -54,7 +54,7 @@ namespace AZ::RHI
     RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::PipelineState(
         const RHI::PipelineState* pipelineState)
     {
-        m_PipelineState = pipelineState;
+        m_pipelineState = pipelineState;
         return this;
     }
 
@@ -108,7 +108,7 @@ namespace AZ::RHI
     ResultCode RayTracingPipelineState::Init(
         MultiDevice::DeviceMask deviceMask, const RayTracingPipelineStateDescriptor& descriptor)
     {
-        m_Descriptor = descriptor;
+        m_descriptor = descriptor;
 
         MultiDeviceObject::Init(deviceMask);
 
@@ -120,7 +120,7 @@ namespace AZ::RHI
                 auto device = RHISystemInterface::Get()->GetDevice(deviceIndex);
                 m_deviceObjects[deviceIndex] = Factory::Get().CreateRayTracingPipelineState();
 
-                auto descriptor{ m_Descriptor.GetDeviceRayTracingPipelineStateDescriptor(deviceIndex) };
+                auto descriptor{ m_descriptor.GetDeviceRayTracingPipelineStateDescriptor(deviceIndex) };
                 resultCode = GetDeviceRayTracingPipelineState(deviceIndex)->Init(*device, &descriptor);
                 return resultCode == ResultCode::Success;
             });

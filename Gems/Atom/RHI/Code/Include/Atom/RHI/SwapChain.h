@@ -93,7 +93,7 @@ namespace AZ::RHI
         struct InitImageRequest
         {
             //! Pointer to the image to initialize.
-            Image* m_Image = nullptr;
+            Image* m_image = nullptr;
 
             //! Index of the image in the swap chain.
             uint32_t m_imageIndex = 0;
@@ -120,7 +120,7 @@ namespace AZ::RHI
         SwapChainDescriptor m_descriptor;
 
         //! Images corresponding to each image in the swap chain.
-        AZStd::vector<Ptr<Image>> m_Images;
+        AZStd::vector<Ptr<Image>> m_images;
 
         //! Cache the XR system at initialization time
         RHI::XRRenderingInterface* m_xrSystem = nullptr;

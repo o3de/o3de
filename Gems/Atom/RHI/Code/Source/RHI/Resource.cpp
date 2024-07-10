@@ -53,7 +53,7 @@ namespace AZ::RHI
 
     void Resource::SetPool(ResourcePool* bufferPool)
     {
-        m_Pool = bufferPool;
+        m_pool = bufferPool;
 
         const bool isValidPool = bufferPool != nullptr;
         if (isValidPool)
@@ -71,12 +71,12 @@ namespace AZ::RHI
 
     const ResourcePool* Resource::GetPool() const
     {
-        return m_Pool;
+        return m_pool;
     }
 
     ResourcePool* Resource::GetPool()
     {
-        return m_Pool;
+        return m_pool;
     }
 
     void Resource::SetFrameAttachment(FrameAttachment* frameAttachment)
@@ -105,7 +105,7 @@ namespace AZ::RHI
     void Resource::Shutdown()
     {
         // Shutdown is delegated to the parent pool if this resource is registered on one.
-        if (m_Pool)
+        if (m_pool)
         {
             AZ_Error(
                 "Resource",
@@ -114,7 +114,7 @@ namespace AZ::RHI
                 "to shutdown a resource while it is being used as an Attachment. The "
                 "behavior is undefined.");
 
-            m_Pool->ShutdownResource(this);
+            m_pool->ShutdownResource(this);
         }
         MultiDeviceObject::Shutdown();
     }
