@@ -336,11 +336,11 @@ namespace AZ::RHI
                 {
                     m_tlasInstancesBuffer->m_deviceObjects.clear();
                     m_tlasInstancesBuffer = nullptr;
-                    return false;
+                    return ResultCode::Fail;
                 }
 
                 m_tlasInstancesBuffer->SetDescriptor(m_tlasInstancesBuffer->GetDeviceBuffer(deviceIndex)->GetDescriptor());
-                return true;
+                return ResultCode::Success;
             });
         return m_tlasInstancesBuffer;
     }
