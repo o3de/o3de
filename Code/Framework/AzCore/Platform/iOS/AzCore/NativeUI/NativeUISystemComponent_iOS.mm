@@ -135,7 +135,7 @@ namespace AZ
                 static constexpr int WaitMainThreadMs = 3000;
                 while (dispatch_semaphore_wait(blockSem, DISPATCH_TIME_NOW))
                 {
-                    [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+                    [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1.0/30]];
                     // If we did not enter the main thread and the given time elapsed, exit the wait cycle
                     if (!mainThreadRunning && TimeSince(start).count() > WaitMainThreadMs)
                     {
