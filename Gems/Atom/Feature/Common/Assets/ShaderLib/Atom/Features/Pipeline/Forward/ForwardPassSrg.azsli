@@ -14,11 +14,16 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 {
     // [GFX TODO][ATOM-2012] adapt to multiple shadowmaps
     Texture2DArray<float> m_directionalLightShadowmap;
-    Texture2DArray<float> m_directionalLightExponentialShadowmap;
     Texture2DArray<float> m_projectedShadowmaps;
+#if !defined(FORCE_SMALL_SRGS) || ENABLE_ESM_SHADOW
+    Texture2DArray<float> m_directionalLightExponentialShadowmap;
     Texture2DArray<float> m_projectedExponentialShadowmap;
+#endif
     Texture2D m_brdfMap;
+
+#if !defined(FORCE_SMALL_SRGS) || ENABLE_FULLSCREEN_SHADOW
     Texture2D<float> m_fullscreenShadow;
+#endif
 
     Sampler LinearSampler
     {
@@ -40,8 +45,10 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         AddressW = Clamp;
     };
     
+#if !defined(FORCE_SMALL_SRGS) || ENABLE_LIGHT_CULLING
     Texture2D<uint4> m_tileLightData;
     StructuredBuffer<uint> m_lightListRemapped;
+#endif
     Texture2D<float> m_linearDepthTexture;
 
     // Whether the m_linearDepthTexture is linear depth or original depth

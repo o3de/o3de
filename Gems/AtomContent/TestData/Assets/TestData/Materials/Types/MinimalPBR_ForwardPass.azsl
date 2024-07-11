@@ -84,15 +84,21 @@ ForwardPassOutput MinimalPBR_MainPassPS(VSOutput IN)
     float specularF0Factor = 0.5f;
     surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
 
+#if ENABLE_CLEAR_COAT
     // Clear Coat
     surface.clearCoat.InitializeToZero();
+#endif
 
     // ------- LightingData -------
 
     LightingData lightingData;
 
     // Light iterator
+#if ENABLE_LIGHT_CULLING
     lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+#else
+    lightingData.tileIterator.Init();
+#endif
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
 
 

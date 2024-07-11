@@ -166,7 +166,11 @@ void MainCS(uint3 thread_id : SV_GroupThreadID, uint3 group_id : SV_GroupID, uin
     calc.SetFilterMode((ShadowFilterMethod)PassSrg::m_constantData.m_filterMode);
     calc.SetFilteringSampleCount((ShadowFilterSampleCount)PassSrg::m_constantData.m_filteringSampleCountMode);
     calc.SetBlendBetweenCascadesEnable(PassSrg::m_constantData.m_blendBetweenCascadesEnable);
+#if ENABLE_ESM_SHADOW
     calc.SetShadowmaps(PassSrg::m_directionalShadowmaps, PassSrg::m_directionalShadowmapsESM);
+#else
+    calc.SetShadowmaps(PassSrg::m_directionalShadowmaps);
+#endif
     calc.SetWorldPos(positionWS);
 
     PassSrg::m_fullscreenShadowOutput[dispatch_id.xy] = calc.GetVisibility();
@@ -187,7 +191,11 @@ PSOutput MainPS(VSOutput IN)
     calc.SetFilterMode((ShadowFilterMethod)PassSrg::m_constantData.m_filterMode);
     calc.SetFilteringSampleCount((ShadowFilterSampleCount)PassSrg::m_constantData.m_filteringSampleCountMode);
     calc.SetBlendBetweenCascadesEnable(PassSrg::m_constantData.m_blendBetweenCascadesEnable);
+#if ENABLE_ESM_SHADOW
     calc.SetShadowmaps(PassSrg::m_directionalShadowmaps, PassSrg::m_directionalShadowmapsESM);
+#else
+    calc.SetShadowmaps(PassSrg::m_directionalShadowmaps);
+#endif
     calc.SetWorldPos(positionWS);
 
     PSOutput OUT;
