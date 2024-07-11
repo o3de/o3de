@@ -508,6 +508,8 @@ namespace AZ
                 response.m_outputProducts.emplace_back(AZStd::move(product));
             }
 
+            // We batch the generation of shader variants because there's some work that is common for every shader variant
+            // generation. This way we save some work when building hundreads of variants.
             HashedVariantListSourceData hashedVariantBatch;
             hashedVariantBatch.m_shaderPath = hashedVariantList.m_shaderPath;
             for (auto& batch : hashedVariantBatches)
