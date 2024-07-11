@@ -14,6 +14,8 @@
 
 namespace AZ::Render
 {
+    //! FeatureProcessor for handling debug ray tracing information, such as adding/removing the ray tracing debug pass to the render
+    //! pipeline and uploading the debug configuration data to the GPU
     class RayTracingDebugFeatureProcessor : public RayTracingDebugFeatureProcessorInterface
     {
     public:
@@ -34,10 +36,15 @@ namespace AZ::Render
         void Render(const RenderPacket& packet) override;
 
     private:
-        void AddOrRemoveDebugPass();
+        // Adds the debug ray tracing pass to the pipeline (The debug ray tracing pass is not part of the main pipeline and is only added if
+        // a "Debug Ray Tracing" level component is added to the scene).
+        void AddDebugPass();
+
+        // Removes the debug ray tracing pass from the pipeline.
+        void RemoveDebugPass();
 
         AZStd::unique_ptr<RayTracingDebugSettings> m_settings;
-        Data::Instance<RPI::ShaderResourceGroup> m_sceneSrg;
+        Data::Instance<RPI::ShaderResourceGroup> m_sceneSrg; // The ray tracing scene SRG (RayTracingSceneSrg)
         RPI::RenderPipeline* m_pipeline{ nullptr };
         RPI::Ptr<RPI::Pass> m_rayTracingPass;
         int m_debugComponentCount{ 0 };

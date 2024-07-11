@@ -16,7 +16,7 @@ namespace AZ::Render
     {
         RayTracingDebugComponentConfig::Reflect(context);
 
-        if (auto serializeContext{ azrtti_cast<SerializeContext*>(context) })
+        if (auto* serializeContext{ azrtti_cast<SerializeContext*>(context) })
         {
             // clang-format off
             serializeContext->Class<RayTracingDebugComponentController>()
@@ -26,7 +26,7 @@ namespace AZ::Render
             // clang-format on
         }
 
-        if (auto behaviorContext{ azrtti_cast<BehaviorContext*>(context) })
+        if (auto* behaviorContext{ azrtti_cast<BehaviorContext*>(context) })
         {
             // clang-format off
             behaviorContext->EBus<RayTracingDebugRequestBus>("RayTracingDebugRequestBus")

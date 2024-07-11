@@ -13,7 +13,7 @@ namespace AZ::Render
 {
     void RayTracingDebugComponentConfig::Reflect(ReflectContext* context)
     {
-        if (auto serializeContext{ azrtti_cast<SerializeContext*>(context) })
+        if (auto* serializeContext{ azrtti_cast<SerializeContext*>(context) })
         {
             // clang-format off
             serializeContext->Class<RayTracingDebugComponentConfig, ComponentConfig>()

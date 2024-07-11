@@ -14,7 +14,7 @@ namespace AZ::Render
 {
     void RayTracingDebugFeatureProcessor::Reflect(ReflectContext* context)
     {
-        if (auto serializeContext{ azrtti_cast<SerializeContext*>(context) })
+        if (auto* serializeContext{ azrtti_cast<SerializeContext*>(context) })
         {
             // clang-format off
             serializeContext->Class<RayTracingDebugFeatureProcessor, RPI::FeatureProcessor>()
@@ -31,14 +31,20 @@ namespace AZ::Render
 
     void RayTracingDebugFeatureProcessor::OnRayTracingDebugComponentAdded()
     {
+        if (m_debugComponentCount == 0)
+        {
+            AddDebugPass();
+        }
         m_debugComponentCount++;
-        AddOrRemoveDebugPass();
     }
 
     void RayTracingDebugFeatureProcessor::OnRayTracingDebugComponentRemoved()
     {
         m_debugComponentCount--;
-        AddOrRemoveDebugPass();
+        if (m_debugComponentCount == 0)
+        {
+            RemoveDebugPass();
+        }
     }
 
     void RayTracingDebugFeatureProcessor::Activate()
@@ -96,24 +102,21 @@ namespace AZ::Render
         FeatureProcessor::Render(packet);
     }
 
-    void RayTracingDebugFeatureProcessor::AddOrRemoveDebugPass()
+    void RayTracingDebugFeatureProcessor::AddDebugPass()
     {
-        bool shouldAddPass{ !m_rayTracingPass && m_debugComponentCount > 0 };
-        bool shouldRemovePass{ m_rayTracingPass && m_debugComponentCount == 0 };
-
-        if (shouldAddPass)
+        m_rayTracingPass =
+            RPI::PassSystemInterface::Get()->CreatePassFromTemplate(Name{ "DebugRayTracingPassTemplate" }, Name{ "DebugRayTracingPass" });
+        if (!m_rayTracingPass)
         {
-            m_rayTracingPass = RPI::PassSystemInterface::Get()->CreatePassFromTemplate(
-                Name{ "DebugRayTracingPassTemplate" }, Name{ "DebugRayTracingPass" });
-            if (!m_rayTracingPass)
-            {
-                AZ_Assert(false, "Failed to create DebugRayTracingPass");
-                return;
-            }
-            m_pipeline->AddPassAfter(m_rayTracingPass, Name{ "AuxGeomPass" });
+            AZ_Assert(false, "Failed to create DebugRayTracingPass");
+            return;
         }
+        m_pipeline->AddPassAfter(m_rayTracingPass, Name{ "AuxGeomPass" });
+    }
 
-        if (shouldRemovePass)
+    void RayTracingDebugFeatureProcessor::RemoveDebugPass()
+    {
+        if (m_rayTracingPass)
         {
             m_rayTracingPass->QueueForRemoval();
             m_rayTracingPass.reset();
