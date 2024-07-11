@@ -8,6 +8,10 @@
 
 #pragma once
 
+#ifndef ENABLE_VERTEX_COLOR
+#define ENABLE_VERTEX_COLOR 0
+#endif
+
 #ifndef VsOutput
 #define VsOutput        VsOutput_EnhancedPBR
 #endif
@@ -39,8 +43,10 @@
         float2 uvs[UvSetCount] : UV1;
         float2 detailUvs[UvSetCount] : UV3;
 
+#if ENABLE_VERTEX_COLOR
         // Optional
         float4 color0 : UV7; // Using UV7 just to leave some room for non optional attributes
+#endif
     };
 
 #endif
