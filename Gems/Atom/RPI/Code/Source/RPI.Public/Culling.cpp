@@ -487,7 +487,7 @@ namespace AZ
                 AzFramework::OcclusionRequestBus::EventResult(
                     result,
                     worklistData->m_sceneEntityContextId,
-                    &AzFramework::OcclusionRequestBus::Events::IsAabbVisibleInOcclusionView,
+                    &AzFramework::OcclusionRequestBus::Events::GetOcclusionViewAabbVisibility,
                     worklistData->m_view->GetName(),
                     visibleEntry->m_boundingVolume);
 
