@@ -39,11 +39,22 @@ namespace AZ
 
     struct ApplicationTypeQuery
     {
+        //! Signals if the application is the Editor.
         bool IsEditor() const;
+
+        //! Signals if the application is the tool application, i.e. AssetProcessor.
         bool IsTool() const;
+
+        //! Signals if the application is a game or server launcher.
         bool IsGame() const;
+
+        //! Signals if the application is running headless (console application with no graphics rendering capability enabled).
         bool IsHeadless() const;
+
+        //! Signals if the application is valid or not. This means the application has not been categorized as any one of Editor, Tool, or Game.
         bool IsValid() const;
+
+        //! Signals if the application is running in console mode where the native client window is not created but still (optionally) supports graphics rendering.
         bool IsConsoleMode() const;
 
         enum class Masks

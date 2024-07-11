@@ -111,17 +111,28 @@ namespace AzGameFramework
             if (const auto* settingsRegistry = AZ::SettingsRegistry::Get())
             {
                 settingsRegistry->Get(isConsoleMode, "/O3DE/Launcher/Bootstrap/ConsoleMode");
+
+                // The null renderer can also be set in the settings registry for the RPI
+                bool isRPINullRenderer{ false };
+                if (settingsRegistry->Get(isRPINullRenderer, "/O3DE/Atom/RPI/Initialization/NullRenderer"))
+                {
+                    if (isRPINullRenderer)
+                    {
+                        isConsoleMode = true;
+                    }
+                }
             }
 
             // 2. Either '-console-mode' or 'rhi=null' is specified in the command-line argument
             const AzFramework::CommandLine* commandLine{ nullptr };
             constexpr const char* commandSwitchConsoleOnly = "console-mode";
+            constexpr const char* commandSwitchNullRenderer = "NullRenderer";
             constexpr const char* commandSwitchRhi = "rhi";
             AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetApplicationCommandLine);
             AZ_Assert(commandLine, "Unable to query application command line to evaluate console-mode switches.");
             if (commandLine)
             {
-                if (commandLine->HasSwitch(commandSwitchConsoleOnly))
+                if (commandLine->HasSwitch(commandSwitchConsoleOnly) || commandLine->HasSwitch(commandSwitchNullRenderer))
                 {
                     isConsoleMode = true;
                 } 
