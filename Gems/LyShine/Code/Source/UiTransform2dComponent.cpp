@@ -72,9 +72,9 @@ namespace
         // Note that the name of the new element has to be the same as the name of the old element
         // because we have no version conversion for data patches. The bool to enum conversion happens
         // to work out for the data patches because the bool value of 1 maps to the correct int value.
-        const char* scaleToDeviceName = "ScaleToDevice";
+        constexpr const char* ScaleToDeviceName = "ScaleToDevice";
 
-        int index = classElement.FindElement(AZ_CRC(scaleToDeviceName));
+        int index = classElement.FindElement(AZ_CRC_CE(ScaleToDeviceName));
         if (index != -1)
         {
             AZ::SerializeContext::DataElementNode& elementNode = classElement.GetSubElement(index);
@@ -84,7 +84,7 @@ namespace
             if (!elementNode.GetData(oldData))
             {
                 // Error, old subElement was not a bool or not valid
-                AZ_Error("Serialization", false, "Cannot get bool data for element %s.", scaleToDeviceName);
+                AZ_Error("Serialization", false, "Cannot get bool data for element %s.", ScaleToDeviceName);
                 return false;
             }
 
@@ -92,11 +92,11 @@ namespace
             classElement.RemoveElement(index);
 
             // Add a new element for the new data.
-            int newElementIndex = classElement.AddElement<int>(context, scaleToDeviceName);
+            int newElementIndex = classElement.AddElement<int>(context, ScaleToDeviceName);
             if (newElementIndex == -1)
             {
                 // Error adding the new sub element
-                AZ_Error("Serialization", false, "AddElement failed for converted element %s", scaleToDeviceName);
+                AZ_Error("Serialization", false, "AddElement failed for converted element %s", ScaleToDeviceName);
                 return false;
             }
 

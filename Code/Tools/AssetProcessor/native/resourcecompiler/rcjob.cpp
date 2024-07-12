@@ -407,7 +407,7 @@ namespace AssetProcessor
 
 #if defined(AZ_ENABLE_TRACING)
         QString sourceFullPath(builderParams.m_processJobRequest.m_fullPath.c_str());
-        auto failReason = builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.find(AZ_CRC(AssetProcessor::AutoFailReasonKey));
+        auto failReason = builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.find(AZ_CRC_CE(AssetProcessor::AutoFailReasonKey));
         if (failReason != builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.end())
         {
             // you are allowed to have many lines in your fail reason.
@@ -426,7 +426,7 @@ namespace AssetProcessor
             // obvious from the output in other ways)
             AZ_TracePrintf("Debug", "(auto-failed)\n");
         }
-        auto failLogFile = builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.find(AZ_CRC(AssetProcessor::AutoFailLogFile));
+        auto failLogFile = builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.find(AZ_CRC_CE(AssetProcessor::AutoFailLogFile));
         if (failLogFile != builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.end())
         {
             AzToolsFramework::Logging::LogLine::ParseLog(failLogFile->second.c_str(), failLogFile->second.size(),
@@ -458,7 +458,7 @@ namespace AssetProcessor
         // applications reading log file will find it.
         AZ_Error(AssetBuilderSDK::ErrorWindow, false, "Builder indicated that the job has failed.\n");
 
-        if (builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.find(AZ_CRC(AssetProcessor::AutoFailOmitFromDatabaseKey)) != builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.end())
+        if (builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.find(AZ_CRC_CE(AssetProcessor::AutoFailOmitFromDatabaseKey)) != builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.end())
         {
             // we don't add Auto-fail jobs to the database if they have asked to be emitted.
             builderParams.m_rcJob->m_jobDetails.m_jobEntry.m_addToDatabase = false;

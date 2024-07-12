@@ -5918,11 +5918,11 @@ namespace AssetProcessor
         jobdetail.m_critical = true;
         jobdetail.m_priority = INT_MAX; // front of the queue.
         // the new lines make it easier to copy and paste the file names.
-        jobdetail.m_jobParam[AZ_CRC(AutoFailReasonKey)] = autoFailReason;
+        jobdetail.m_jobParam[AZ_CRC_CE(AutoFailReasonKey)] = autoFailReason;
 
         if(!jobLog.empty())
         {
-            jobdetail.m_jobParam[AZ_CRC(AutoFailLogFile)] = jobLog;
+            jobdetail.m_jobParam[AZ_CRC_CE(AutoFailLogFile)] = jobLog;
         }
 
         // this is a failure, so make sure that the system that is tracking files
