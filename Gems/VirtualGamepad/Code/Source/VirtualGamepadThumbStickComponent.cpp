@@ -30,15 +30,15 @@ namespace VirtualGamepad
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void VirtualGamepadThumbStickComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("VirtualGamepadThumbStickService"));
-        provided.push_back(AZ_CRC("UiInteractableService"));
+        provided.push_back(AZ_CRC_CE("VirtualGamepadThumbStickService"));
+        provided.push_back(AZ_CRC_CE("UiInteractableService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void VirtualGamepadThumbStickComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("VirtualGamepadThumbStickService"));
-        incompatible.push_back(AZ_CRC("UiInteractableService"));
+        incompatible.push_back(AZ_CRC_CE("VirtualGamepadThumbStickService"));
+        incompatible.push_back(AZ_CRC_CE("UiInteractableService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

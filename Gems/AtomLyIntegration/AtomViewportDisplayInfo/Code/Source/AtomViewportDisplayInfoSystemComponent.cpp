@@ -71,12 +71,12 @@ namespace AZ::Render
 
     void AtomViewportDisplayInfoSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ViewportDisplayInfoService"));
+        provided.push_back(AZ_CRC_CE("ViewportDisplayInfoService"));
     }
 
     void AtomViewportDisplayInfoSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("ViewportDisplayInfoService"));
+        incompatible.push_back(AZ_CRC_CE("ViewportDisplayInfoService"));
     }
 
     void AtomViewportDisplayInfoSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

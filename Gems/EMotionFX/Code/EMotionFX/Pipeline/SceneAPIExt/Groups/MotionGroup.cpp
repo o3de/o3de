@@ -193,9 +193,9 @@ namespace EMotionFX
                             AZ::SerializeContext::DataElementNode& currentRuleNode = sharedPointerNode.GetSubElement(0);
                             if (currentRuleNode.GetId() == azrtti_typeid<Rule::MotionCompressionSettingsRule>())
                             {
-                                currentRuleNode.FindSubElementAndGetData(AZ_CRC("maxTranslationError"), translationError);
-                                currentRuleNode.FindSubElementAndGetData(AZ_CRC("maxRotationError"), rotationError);
-                                currentRuleNode.FindSubElementAndGetData(AZ_CRC("maxScaleError"), scaleError);
+                                currentRuleNode.FindSubElementAndGetData(AZ_CRC_CE("maxTranslationError"), translationError);
+                                currentRuleNode.FindSubElementAndGetData(AZ_CRC_CE("maxRotationError"), rotationError);
+                                currentRuleNode.FindSubElementAndGetData(AZ_CRC_CE("maxScaleError"), scaleError);
 
                                 // Create the motion sampling rule.
                                 AZStd::shared_ptr<Rule::MotionSamplingRule> motionSamplingRule = AZStd::make_shared<Rule::MotionSamplingRule>();

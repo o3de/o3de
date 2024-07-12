@@ -74,7 +74,7 @@ namespace
         // the flag on. So the markup would stop working.
 
         // Just for safety check that the flag doesn't already exist
-        int index = classElement.FindElement(AZ_CRC("MarkupEnabled"));
+        int index = classElement.FindElement(AZ_CRC_CE("MarkupEnabled"));
         if (index == -1)
         {
             // The element does not exist (it really never should at this version)
@@ -176,7 +176,7 @@ namespace
         AZ::SerializeContext& context,
         AZ::SerializeContext::DataElementNode& classElement)
     {
-        int index = classElement.FindElement(AZ_CRC("WrapTextSetting"));
+        int index = classElement.FindElement(AZ_CRC_CE("WrapTextSetting"));
         if (index != -1)
         {
             AZ::SerializeContext::DataElementNode& wrapTextSettingNode = classElement.GetSubElement(index);
@@ -202,7 +202,7 @@ namespace
                 }
 
                 // If ShrinkToFit doesn't exist yet, add it
-                index = classElement.FindElement(AZ_CRC("ShrinkToFit"));
+                index = classElement.FindElement(AZ_CRC_CE("ShrinkToFit"));
                 if (index == -1)
                 {
                     index = classElement.AddElement<int>(context, "ShrinkToFit");
@@ -241,7 +241,7 @@ namespace
         AZ::SerializeContext& context,
         AZ::SerializeContext::DataElementNode& classElement)
     {
-        int index = classElement.FindElement(AZ_CRC("OverflowMode"));
+        int index = classElement.FindElement(AZ_CRC_CE("OverflowMode"));
         if (index != -1)
         {
             AZ::SerializeContext::DataElementNode& overflowModeSettingNode = classElement.GetSubElement(index);

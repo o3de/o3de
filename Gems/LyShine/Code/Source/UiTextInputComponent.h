@@ -130,15 +130,15 @@ protected:  // static member functions
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("UiInteractableService"));
-        provided.push_back(AZ_CRC("UiNavigationService"));
-        provided.push_back(AZ_CRC("UiStateActionsService"));
+        provided.push_back(AZ_CRC_CE("UiNavigationService"));
+        provided.push_back(AZ_CRC_CE("UiStateActionsService"));
     }
 
     static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC_CE("UiInteractableService"));
-        incompatible.push_back(AZ_CRC("UiNavigationService"));
-        incompatible.push_back(AZ_CRC("UiStateActionsService"));
+        incompatible.push_back(AZ_CRC_CE("UiNavigationService"));
+        incompatible.push_back(AZ_CRC_CE("UiStateActionsService"));
     }
 
     static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

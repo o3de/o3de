@@ -193,7 +193,7 @@ public:  // static member functions
 
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("UiParticleEmitterService"));
+        provided.push_back(AZ_CRC_CE("UiParticleEmitterService"));
         provided.push_back(AZ_CRC_CE("UiVisualService"));
     }
 

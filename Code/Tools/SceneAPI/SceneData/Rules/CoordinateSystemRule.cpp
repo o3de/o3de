@@ -195,7 +195,7 @@ namespace AZ::SceneAPI::SceneData
                 if (currentRuleNode.GetId() == oldCoordSysRuleId)
                 {
                     int targetCoordinateSystem = 0;
-                    currentRuleNode.FindSubElementAndGetData(AZ_CRC("targetCoordinateSystem"), targetCoordinateSystem);
+                    currentRuleNode.FindSubElementAndGetData(AZ_CRC_CE("targetCoordinateSystem"), targetCoordinateSystem);
 
                     AZStd::shared_ptr<CoordinateSystemRule> coordSysRule = AZStd::make_shared<CoordinateSystemRule>();
                     coordSysRule->SetTargetCoordinateSystem(static_cast<AZ::SceneAPI::DataTypes::ICoordinateSystemRule::CoordinateSystem>(targetCoordinateSystem));

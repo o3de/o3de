@@ -134,7 +134,7 @@ namespace AZ
             //! Allow or disallow clearing the asset
             const static AZ::Crc32 AllowClearAsset = AZ_CRC_CE("AllowClearAsset");
             // Show the name of the asset that was produced from the source asset
-            const static AZ::Crc32 ShowProductAssetFileName = AZ_CRC("ShowProductAssetFileName");
+            const static AZ::Crc32 ShowProductAssetFileName = AZ_CRC_CE("ShowProductAssetFileName");
             //! Regular expression pattern filter for source files
             const static AZ::Crc32 SourceAssetFilterPattern = AZ_CRC_CE("SourceAssetFilterPattern");
 

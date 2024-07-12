@@ -52,12 +52,12 @@ public:  // static member functions
 
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("UiFitToContentService"));
+        provided.push_back(AZ_CRC_CE("UiFitToContentService"));
     }
 
     static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("UiFitToContentService"));
+        incompatible.push_back(AZ_CRC_CE("UiFitToContentService"));
     }
 
     static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

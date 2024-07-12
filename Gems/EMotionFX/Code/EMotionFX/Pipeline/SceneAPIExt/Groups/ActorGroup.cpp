@@ -163,7 +163,7 @@ namespace EMotionFX
                 if (version < 2)
                 {
                     result = result && classElement.AddElementWithData<AZ::Uuid>(context, "id", AZ::Uuid::CreateNull()) != -1;
-                    classElement.RemoveElementByName(AZ_CRC("autoCreateTrajectoryNode"));
+                    classElement.RemoveElementByName(AZ_CRC_CE("autoCreateTrajectoryNode"));
                 }
 
                 if (version < 3)
@@ -183,7 +183,7 @@ namespace EMotionFX
 
                 if (version < 6)
                 {
-                    classElement.RemoveElementByName(AZ_CRC("nodeSelectionList"));
+                    classElement.RemoveElementByName(AZ_CRC_CE("nodeSelectionList"));
                 }
 
                 return result;

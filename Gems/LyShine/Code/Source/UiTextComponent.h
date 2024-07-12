@@ -344,13 +344,13 @@ public:  // static member functions
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("UiVisualService"));
-        provided.push_back(AZ_CRC("UiTextService"));
+        provided.push_back(AZ_CRC_CE("UiTextService"));
     }
 
     static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC_CE("UiVisualService"));
-        incompatible.push_back(AZ_CRC("UiTextService"));
+        incompatible.push_back(AZ_CRC_CE("UiTextService"));
     }
 
     static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

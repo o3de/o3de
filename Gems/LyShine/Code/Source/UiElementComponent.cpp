@@ -1918,7 +1918,7 @@ bool UiElementComponent::VersionConverter(AZ::SerializeContext& context,
     {
         // Version 3 added the persistent member m_childEntityIdOrder with replaces m_children
         // Find the "Children" element that we will be replacing.
-        int childrenIndex = classElement.FindElement(AZ_CRC("Children"));
+        int childrenIndex = classElement.FindElement(AZ_CRC_CE("Children"));
         if (childrenIndex != -1)
         {
             AZ::SerializeContext::DataElementNode& childrenElementNode = classElement.GetSubElement(childrenIndex);
@@ -1949,7 +1949,7 @@ bool UiElementComponent::VersionConverter(AZ::SerializeContext& context,
             }
 
             // remove the old m_children persistent member
-            classElement.RemoveElementByName(AZ_CRC("Children"));
+            classElement.RemoveElementByName(AZ_CRC_CE("Children"));
         }
     }
 

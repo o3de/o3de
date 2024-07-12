@@ -465,7 +465,7 @@ namespace AzFramework
             AZ_RTTI(AssetDependencyInfoRequest, "{2365EEA3-D8A6-41E4-9C9F-2113D5617230}",
                     AzFramework::AssetSystem::BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
-            static constexpr unsigned int MessageType = AZ_CRC("AssetProcessor::AssetDependencyInfoRequest");
+            static constexpr unsigned int MessageType = AZ_CRC_CE("AssetProcessor::AssetDependencyInfoRequest");
 
             AssetDependencyInfoRequest() = default;
 

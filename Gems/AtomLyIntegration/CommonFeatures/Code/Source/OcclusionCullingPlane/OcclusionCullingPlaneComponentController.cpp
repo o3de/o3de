@@ -68,7 +68,7 @@ namespace AZ
 
         void OcclusionCullingPlaneComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("TransformService"));
+            required.push_back(AZ_CRC_CE("TransformService"));
         }
 
         OcclusionCullingPlaneComponentController::OcclusionCullingPlaneComponentController(const OcclusionCullingPlaneComponentConfig& config)

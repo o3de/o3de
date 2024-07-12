@@ -60,7 +60,7 @@ namespace AZ
 
         void PhysicalSkyComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("TransformService"));
+            required.push_back(AZ_CRC_CE("TransformService"));
         }
 
         PhysicalSkyComponentController::PhysicalSkyComponentController(const PhysicalSkyComponentConfig& config)

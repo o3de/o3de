@@ -53,7 +53,7 @@ namespace UnitTest
                 {
                     editContext->Class<LeatherBootsComponent>("Leather Boots", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"));
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
                 }
             }
         }
@@ -90,7 +90,7 @@ namespace UnitTest
                 {
                     editContext->Class<WoolSocksComponent>("Wool Socks", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"));
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
                 }
             }
         }
@@ -124,7 +124,7 @@ namespace UnitTest
                 {
                     editContext->Class<HatesSocksComponent>("Hates Socks", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"));
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
                 }
             }
         }
@@ -157,7 +157,7 @@ namespace UnitTest
                 {
                     editContext->Class<BlueJeansComponent>("Blue Jeans", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"));
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
                 }
             }
         }
@@ -192,7 +192,7 @@ namespace UnitTest
                 {
                     editContext->Class<WhiteBriefsComponent>("White Briefs", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"));
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
                 }
             }
         }
@@ -226,7 +226,7 @@ namespace UnitTest
                 {
                     editContext->Class<HeartBoxersComponent>("Heart Boxers", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"));
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
                 }
             }
         }
@@ -260,7 +260,7 @@ namespace UnitTest
                 {
                     editContext->Class<KnifeSheathComponent>("Knife Sheath", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"));
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
                 }
             }
         }
@@ -767,7 +767,7 @@ namespace UnitTest
         ASSERT_EQ(pendingComponentInfo.m_validComponentsThatAreIncompatible.size(), 0);
         ASSERT_EQ(pendingComponentInfo.m_pendingComponentsWithRequiredServices.size(), 0);
         // And that missing service should be the BeltService
-        ASSERT_EQ(pendingComponentInfo.m_missingRequiredServices[0], AZ_CRC("BeltService"));
+        ASSERT_EQ(pendingComponentInfo.m_missingRequiredServices[0], AZ_CRC_CE("BeltService"));
 
         // Entity 1 should remain untouched
         ASSERT_EQ(2, m_entity1Counter.GetCount());
@@ -800,7 +800,7 @@ namespace UnitTest
         ASSERT_EQ(pendingComponentInfo.m_validComponentsThatAreIncompatible.size(), 0);
         ASSERT_EQ(pendingComponentInfo.m_pendingComponentsWithRequiredServices.size(), 0);
         // And that missing service should be the "UnderwearService"
-        ASSERT_EQ(pendingComponentInfo.m_missingRequiredServices[0], AZ_CRC("UnderwearService"));
+        ASSERT_EQ(pendingComponentInfo.m_missingRequiredServices[0], AZ_CRC_CE("UnderwearService"));
 
         outcome = AzToolsFramework::AddComponents<WhiteBriefsComponent>::ToEntities(m_entity1);
 
@@ -1173,12 +1173,12 @@ namespace UnitTest
 
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
             {
-                provided.push_back(AZ_CRC("ValidComponentService"));
+                provided.push_back(AZ_CRC_CE("ValidComponentService"));
             }
 
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
             {
-                incompatible.push_back(AZ_CRC("ValidComponentService"));
+                incompatible.push_back(AZ_CRC_CE("ValidComponentService"));
             }
 
             static void Reflect(ReflectContext* reflection)
@@ -1214,12 +1214,12 @@ namespace UnitTest
 
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
             {
-                provided.push_back(AZ_CRC("HiddenComponentService"));
+                provided.push_back(AZ_CRC_CE("HiddenComponentService"));
             }
 
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
             {
-                incompatible.push_back(AZ_CRC("HiddenComponentService"));
+                incompatible.push_back(AZ_CRC_CE("HiddenComponentService"));
             }
 
             static void Reflect(ReflectContext* reflection)

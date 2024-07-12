@@ -59,12 +59,12 @@ protected: // member functions
 
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("UiRadioButtonGroupService"));
+        provided.push_back(AZ_CRC_CE("UiRadioButtonGroupService"));
     }
 
     static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("UiRadioButtonGroupService"));
+        incompatible.push_back(AZ_CRC_CE("UiRadioButtonGroupService"));
     }
 
     static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

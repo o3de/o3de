@@ -819,11 +819,11 @@ bool UiInteractableComponent::VersionConverter(AZ::SerializeContext& context,
     // - Need to move the navigation settings into a sub element UiNavigationSettings
     if (classElement.GetVersion() <= 1)
     {
-        int navModeIndex = classElement.FindElement(AZ_CRC("NavigationMode"));
-        int navUpIndex = classElement.FindElement(AZ_CRC("OnUpEntity"));
-        int navDownIndex = classElement.FindElement(AZ_CRC("OnDownEntity"));
-        int navLeftIndex = classElement.FindElement(AZ_CRC("OnLeftEntity"));
-        int navRightIndex = classElement.FindElement(AZ_CRC("OnRightEntity"));
+        int navModeIndex = classElement.FindElement(AZ_CRC_CE("NavigationMode"));
+        int navUpIndex = classElement.FindElement(AZ_CRC_CE("OnUpEntity"));
+        int navDownIndex = classElement.FindElement(AZ_CRC_CE("OnDownEntity"));
+        int navLeftIndex = classElement.FindElement(AZ_CRC_CE("OnLeftEntity"));
+        int navRightIndex = classElement.FindElement(AZ_CRC_CE("OnRightEntity"));
 
         if (navModeIndex == -1 || navUpIndex == -1 || navDownIndex == -1 || navLeftIndex == -1 || navRightIndex == -1)
         {

@@ -56,7 +56,7 @@ namespace LUAEditor
         m_gui->propertyEditor->setObjectName("m_gui->propertyEditor");
         m_gui->propertyEditor->setMinimumHeight(500);
         m_gui->propertyEditor->setMaximumHeight(1000);
-        m_gui->propertyEditor->SetSavedStateKey(AZ_CRC("LuaIDE_SyntaxStyleSettings"));
+        m_gui->propertyEditor->SetSavedStateKey(AZ_CRC_CE("LuaIDE_SyntaxStyleSettings"));
 
         setModal(false);
 

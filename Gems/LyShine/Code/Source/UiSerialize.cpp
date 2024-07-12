@@ -589,7 +589,7 @@ namespace UiSerialize
                 AZ::SerializeContext::DataElementNode& dstBaseClassElement = srcClassElement.GetSubElement(interactableBaseClassIndex);
                 stateActionsIndex = dstBaseClassElement.FindElement(AZ_CRC(stateActionsElementName));
                 AZ::SerializeContext::DataElementNode& dstStateActionsNode = dstBaseClassElement.GetSubElement(stateActionsIndex);
-                colorIndex = dstStateActionsNode.FindElement(AZ_CRC("element"));
+                colorIndex = dstStateActionsNode.FindElement(AZ_CRC_CE("element"));
                 AZ::SerializeContext::DataElementNode& dstColorNode = dstStateActionsNode.GetSubElement(colorIndex);
 
                 if (!LyShine::ConvertSubElementFromVector3ToAzColor(context, dstColorNode, "Color"))

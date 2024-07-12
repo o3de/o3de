@@ -39,12 +39,12 @@ namespace AtomImGuiTools
 
     void AtomImGuiToolsSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("AtomImGuiToolsService"));
+        provided.push_back(AZ_CRC_CE("AtomImGuiToolsService"));
     }
 
     void AtomImGuiToolsSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("AtomImGuiToolsService"));
+        incompatible.push_back(AZ_CRC_CE("AtomImGuiToolsService"));
     }
 
     void AtomImGuiToolsSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

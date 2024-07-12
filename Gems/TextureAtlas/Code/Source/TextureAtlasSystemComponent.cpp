@@ -60,13 +60,13 @@ namespace TextureAtlasNamespace
 
     void TextureAtlasSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("TextureAtlasService"));
+        provided.push_back(AZ_CRC_CE("TextureAtlasService"));
     }
 
     void
         TextureAtlasSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("TextureAtlasService"));
+        incompatible.push_back(AZ_CRC_CE("TextureAtlasService"));
     }
 
     void TextureAtlasSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

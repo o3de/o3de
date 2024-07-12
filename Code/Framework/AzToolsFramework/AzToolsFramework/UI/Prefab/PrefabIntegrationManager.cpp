@@ -1354,7 +1354,7 @@ namespace AzToolsFramework
                 PrefabSaveHandler::GenerateSuggestedFilenameFromEntities(prefabRootEntities, suggestedName);
 
                 if (!PrefabSaveHandler::QueryUserForPrefabSaveLocation(
-                        suggestedName, targetDirectory, AZ_CRC("PrefabUserSettings"), activeWindow, prefabName, prefabFilePath))
+                        suggestedName, targetDirectory, AZ_CRC_CE("PrefabUserSettings"), activeWindow, prefabName, prefabFilePath))
                 {
                     // User canceled prefab creation, or error prevented continuation.
                     return;

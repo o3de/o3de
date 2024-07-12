@@ -29,7 +29,7 @@ namespace
         AZ::SerializeContext& context,
         AZ::SerializeContext::DataElementNode& classElement)
     {
-        int index = classElement.FindElement(AZ_CRC("Frame Delay"));
+        int index = classElement.FindElement(AZ_CRC_CE("Frame Delay"));
         if (index != -1)
         {
             AZ::SerializeContext::DataElementNode& frameDelayNode = classElement.GetSubElement(index);
@@ -45,7 +45,7 @@ namespace
             classElement.RemoveElement(index);
 
             // If Framerate doesn't exist yet, add it
-            index = classElement.FindElement(AZ_CRC("Framerate"));
+            index = classElement.FindElement(AZ_CRC_CE("Framerate"));
             if (index == -1)
             {
                 index = classElement.AddElement<float>(context, "Framerate");
@@ -78,7 +78,7 @@ namespace
         AZ::SerializeContext::DataElementNode& classElement)
     {
         // If Framerate Unit doesn't exist yet, add it
-        int index = classElement.FindElement(AZ_CRC("Framerate Unit"));
+        int index = classElement.FindElement(AZ_CRC_CE("Framerate Unit"));
         if (index == -1)
         {
             index = classElement.AddElement<int>(context, "Framerate Unit");
@@ -184,7 +184,7 @@ void UiFlipbookAnimationComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Flipbook.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Flipbook.svg")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI"))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
             ;
 

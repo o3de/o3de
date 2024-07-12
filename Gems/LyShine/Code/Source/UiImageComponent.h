@@ -137,8 +137,8 @@ public:  // static member functions
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("UiVisualService"));
-        provided.push_back(AZ_CRC("UiImageService"));
-        provided.push_back(AZ_CRC("UiIndexableImageService"));
+        provided.push_back(AZ_CRC_CE("UiImageService"));
+        provided.push_back(AZ_CRC_CE("UiIndexableImageService"));
     }
 
     static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)

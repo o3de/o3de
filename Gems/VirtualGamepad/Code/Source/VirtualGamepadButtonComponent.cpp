@@ -23,13 +23,13 @@ namespace VirtualGamepad
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void VirtualGamepadButtonComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("VirtualGamepadButtonService"));
+        provided.push_back(AZ_CRC_CE("VirtualGamepadButtonService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void VirtualGamepadButtonComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("VirtualGamepadButtonService"));
+        incompatible.push_back(AZ_CRC_CE("VirtualGamepadButtonService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

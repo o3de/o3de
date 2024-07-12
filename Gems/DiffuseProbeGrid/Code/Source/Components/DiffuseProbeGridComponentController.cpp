@@ -93,7 +93,7 @@ namespace AZ
         void DiffuseProbeGridComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
             required.push_back(AZ_CRC_CE("BoxShapeService"));
-            required.push_back(AZ_CRC("TransformService"));
+            required.push_back(AZ_CRC_CE("TransformService"));
         }
 
         DiffuseProbeGridComponentController::DiffuseProbeGridComponentController(const DiffuseProbeGridComponentConfig& config)

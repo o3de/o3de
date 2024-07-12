@@ -54,12 +54,12 @@ protected: // member functions
 
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("UiDropdownOptionService"));
+        provided.push_back(AZ_CRC_CE("UiDropdownOptionService"));
     }
 
     static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("UiDropdownOptionService"));
+        incompatible.push_back(AZ_CRC_CE("UiDropdownOptionService"));
     }
 
     static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
