@@ -247,7 +247,7 @@ namespace AZ
             shaderModel.HighestShaderModel = D3D_HIGHEST_SHADER_MODEL;
             if (FAILED(GetDevice()->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModel, sizeof(shaderModel))))
             {
-                AZ_Trace("DX12", "Failed to check feature D3D12_FEATURE_SHADER_MODEL");
+                AZ_Warning("DX12",  false, "Failed to check feature D3D12_FEATURE_SHADER_MODEL");
                 m_features.m_waveOperation = false;
             }
             else
