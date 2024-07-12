@@ -60,7 +60,7 @@ namespace LyShineEditor
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void LyShineEditorSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("LyShineService", 0xae98ab29));
+        required.push_back(AZ_CRC_CE("LyShineService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

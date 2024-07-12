@@ -30,8 +30,8 @@ namespace VirtualGamepad
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void VirtualGamepadSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("InputSystemService", 0x5438d51a));
-        required.push_back(AZ_CRC("LyShineService", 0xae98ab29));
+        required.push_back(AZ_CRC_CE("InputSystemService"));
+        required.push_back(AZ_CRC_CE("LyShineService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

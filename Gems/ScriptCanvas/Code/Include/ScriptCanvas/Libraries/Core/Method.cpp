@@ -36,14 +36,14 @@ namespace MethodCPP
         if (rootElementNode.GetVersion() < MethodCPP::eVersion::PluralizeResults)
         {
             SlotId resultSlotId;
-            if (!rootElementNode.GetChildData(AZ_CRC("resultSlotID", 0xb527ade6), resultSlotId))
+            if (!rootElementNode.GetChildData(AZ_CRC_CE("resultSlotID"), resultSlotId))
             {
                 AZ_Error("ScriptCanvas", false, "Failed to read resultSlotID from Method node data");
                 return false;
             }
 
             rootElementNode.AddElementWithData(context, "resultSlotIDs", AZStd::vector<SlotId> { resultSlotId });
-            rootElementNode.RemoveElementByName(AZ_CRC("resultSlotID", 0xb527ade6));
+            rootElementNode.RemoveElementByName(AZ_CRC_CE("resultSlotID"));
         }
 
         return true;

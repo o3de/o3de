@@ -31,7 +31,7 @@ namespace AZ
                         ->Attribute(
                             AZ::Edit::Attributes::ViewportIcon,
                             "Icons/Components/Viewport/Component_Placeholder.svg") // Create better icons for this effect
-                        ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                        ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(Edit::Attributes::AutoExpand, true)
                         ->Attribute(
                             Edit::Attributes::HelpPageURL,

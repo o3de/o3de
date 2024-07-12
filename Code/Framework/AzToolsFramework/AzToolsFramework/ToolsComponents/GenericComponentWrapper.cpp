@@ -52,7 +52,7 @@ namespace AzToolsFramework
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::RuntimeExportCallback, &ExportTemplateComponent)
                         ->DataElement("", &GenericComponentWrapper::m_template, "m_template", "")
-                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20));
+                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"));
                 }
             }
         }

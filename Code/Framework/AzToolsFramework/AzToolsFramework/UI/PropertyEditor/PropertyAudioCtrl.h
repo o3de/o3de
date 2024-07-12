@@ -113,7 +113,7 @@ namespace AzToolsFramework
 
         AZ::u32 GetHandlerName() const override
         {
-            return AZ_CRC("AudioControl", 0x16e7ca6e);
+            return AZ_CRC_CE("AudioControl");
         }
 
         bool IsDefaultHandler() const override

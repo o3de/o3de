@@ -29,7 +29,7 @@ namespace Gestures
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void GesturesSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("InputSystemService", 0x5438d51a));
+        required.push_back(AZ_CRC_CE("InputSystemService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

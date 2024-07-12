@@ -55,7 +55,7 @@ namespace EMotionFX
 
     AZ::u32 AnimGraphNodeNameHandler::GetHandlerName() const
     {
-        return AZ_CRC("AnimGraphNodeName", 0x15120d7d);
+        return AZ_CRC_CE("AnimGraphNodeName");
     }
 
 

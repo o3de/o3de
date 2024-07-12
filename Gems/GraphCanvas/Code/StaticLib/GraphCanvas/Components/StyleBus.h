@@ -30,7 +30,7 @@ namespace GraphCanvas
         class StyleHelper;
     }
 
-    static const AZ::Crc32 StyledGraphicItemServiceCrc = AZ_CRC("GraphCanvas_StyledGraphicItemService", 0xeae4cdf4);
+    static const AZ::Crc32 StyledGraphicItemServiceCrc = AZ_CRC_CE("GraphCanvas_StyledGraphicItemService");
 
     ///////////////////////////////////////////////////////////////////////////////////
     //! StyledEntityRequests

@@ -400,7 +400,7 @@ namespace AzToolsFramework
                 AZ_WarningOnce("AzToolsFramework", false, "Failed to read 'ComboBoxEditable' attribute from property '%s' into generic combo box", debugName);
             }
         }
-        else if (attrib == AZ_CRC("Warning", 0x404e9cc6))
+        else if (attrib == AZ_CRC_CE("Warning"))
         {
             AZStd::string warningText;
             if (attrReader->Read<AZStd::string>(warningText))

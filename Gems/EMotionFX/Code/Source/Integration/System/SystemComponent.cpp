@@ -429,26 +429,26 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         void SystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("EMotionFXAnimationService", 0x3f8a6369));
+            provided.push_back(AZ_CRC_CE("EMotionFXAnimationService"));
         }
 
         //////////////////////////////////////////////////////////////////////////
         void SystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("EMotionFXAnimationService", 0x3f8a6369));
+            incompatible.push_back(AZ_CRC_CE("EMotionFXAnimationService"));
         }
 
         //////////////////////////////////////////////////////////////////////////
         void SystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
+            required.push_back(AZ_CRC_CE("AssetDatabaseService"));
         }
 
         //////////////////////////////////////////////////////////////////////////
         void SystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("AssetCatalogService", 0xc68ffc57));
-            dependent.push_back(AZ_CRC("JobsService", 0xd5ab5a50));
+            dependent.push_back(AZ_CRC_CE("AssetCatalogService"));
+            dependent.push_back(AZ_CRC_CE("JobsService"));
         }
 
         //////////////////////////////////////////////////////////////////////////

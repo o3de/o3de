@@ -474,7 +474,7 @@ void UiInteractableComponent::Reflect(AZ::ReflectContext* context)
             editInfo->DataElement("CheckBox", &UiInteractableComponent::m_isHandlingEvents, "Input enabled",
                 "When checked, this interactable will handle events.\n"
                 "When unchecked, this interactable is drawn in the Disabled state.")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
 
             editInfo->DataElement("CheckBox", &UiInteractableComponent::m_isHandlingMultiTouchEvents, "Multi-touch input enabled",
                 "When checked, this interactable will handle all multi-touch input events.\n"

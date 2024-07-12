@@ -64,9 +64,9 @@ protected: // member functions
 
     static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("UiElementService", 0x3dca7ad4));
-        required.push_back(AZ_CRC("UiTransformService", 0x3a838e34));
-        required.push_back(AZ_CRC("UiInteractableService", 0x1d474c98));
+        required.push_back(AZ_CRC_CE("UiElementService"));
+        required.push_back(AZ_CRC_CE("UiTransformService"));
+        required.push_back(AZ_CRC_CE("UiInteractableService"));
     }
 
     static void Reflect(AZ::ReflectContext* context);

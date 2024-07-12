@@ -69,7 +69,7 @@ protected: // member functions
 
     static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("UiElementService", 0x3dca7ad4));
+        required.push_back(AZ_CRC_CE("UiElementService"));
     }
 
     static void Reflect(AZ::ReflectContext* context);

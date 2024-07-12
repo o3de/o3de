@@ -172,17 +172,17 @@ namespace AZ
 
         void CommonSystemComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("CommonService", 0x6398eec4));
+            provided.push_back(AZ_CRC_CE("CommonService"));
         }
 
         void CommonSystemComponent::GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("CommonService", 0x6398eec4));
+            incompatible.push_back(AZ_CRC_CE("CommonService"));
         }
 
         void CommonSystemComponent::GetRequiredServices(ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("RPISystem", 0xf2add773));
+            required.push_back(AZ_CRC_CE("RPISystem"));
         }
 
         void CommonSystemComponent::GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent)

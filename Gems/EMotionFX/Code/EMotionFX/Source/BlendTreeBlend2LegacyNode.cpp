@@ -484,7 +484,7 @@ namespace EMotionFX
         if (rootElementNode.GetVersion() < 3)
         {
             // Changed base class from AnimGraphNode to BlendTreeBlend2NodeBase
-            const int currentBaseClass1Index = rootElementNode.FindElement(AZ_CRC("BaseClass1", 0xd4925735));
+            const int currentBaseClass1Index = rootElementNode.FindElement(AZ_CRC_CE("BaseClass1"));
             if (currentBaseClass1Index >= 0)
             {
                 // If AnimGraphNode is the BaseClass1, move it to be a child of BlendTreeBlend2NodeBase
@@ -500,7 +500,7 @@ namespace EMotionFX
                     newBaseClass1.AddElement(currentBaseClass1Copy);
 
                     // Move the members: syncMode, eventMode, extractionMode and mask to the newBaseClass1
-                    static const AZStd::vector<AZ::u32> membersToMove = { AZ_CRC("syncMode", 0x64ef27e2), AZ_CRC("eventMode", 0xcb6e9b82), AZ_CRC("extractionMode", 0xbce1ceb4), AZ_CRC("mask", 0x7f6fc330) };
+                    static const AZStd::vector<AZ::u32> membersToMove = { AZ_CRC_CE("syncMode"), AZ_CRC_CE("eventMode"), AZ_CRC_CE("extractionMode"), AZ_CRC_CE("mask") };
 
                     for (const AZ::u32 member : membersToMove)
                     {

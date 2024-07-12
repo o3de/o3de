@@ -2616,14 +2616,14 @@ namespace AzToolsFramework
             case AddressRootType::RootAtComponentsContainer:
             {
                 // Insert a node to represent the Components container.
-                outAddress.push_back(AZ_CRC("Components", 0xee48f5fd));
+                outAddress.push_back(AZ_CRC_CE("Components"));
             }
             break;
             case AddressRootType::RootAtEntity:
             {
                 // Insert a node to represent the Components container, and another to represent the entity root.
-                outAddress.push_back(AZ_CRC("Components", 0xee48f5fd));
-                outAddress.push_back(AZ_CRC("AZ::Entity", 0x1fd61e11));
+                outAddress.push_back(AZ_CRC_CE("Components"));
+                outAddress.push_back(AZ_CRC_CE("AZ::Entity"));
             }
             break;
             }

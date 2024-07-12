@@ -47,12 +47,12 @@ namespace AzToolsFramework
 
         void EditorInspectorComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("EditorInspectorService", 0xc7357f25));
+            services.push_back(AZ_CRC_CE("EditorInspectorService"));
         }
 
         void EditorInspectorComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("EditorInspectorService", 0xc7357f25));
+            services.push_back(AZ_CRC_CE("EditorInspectorService"));
         }
 
         bool EditorInspectorComponent::SerializationConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
@@ -61,7 +61,7 @@ namespace AzToolsFramework
             if (classElement.GetVersion() <= 1)
             {
                 // Convert the vector of component ids to an array of order entries
-                auto componentOrderArrayElement = classElement.FindSubElement(AZ_CRC("ComponentOrderArray", 0x22bd99f7));
+                auto componentOrderArrayElement = classElement.FindSubElement(AZ_CRC_CE("ComponentOrderArray"));
                 if (!componentOrderArrayElement)
                 {
                     return false;
@@ -82,7 +82,7 @@ namespace AzToolsFramework
                 AZ_Error("EditorInspectorComponent", componentOrderArray.size() == componentOrderArrayElement->GetNumSubElements(), "Unable to get all the expected elements for the old component order array");
 
                 // Get rid of the old array
-                classElement.RemoveElementByName(AZ_CRC("ComponentOrderArray", 0x22bd99f7));
+                classElement.RemoveElementByName(AZ_CRC_CE("ComponentOrderArray"));
 
                 // Add a new empty array (unable to use AddElementWithData, fails stating that AZStd::vector is not registered)
                 int newArrayElementIndex = classElement.AddElement<ComponentOrderEntryArray>(context, "ComponentOrderEntryArray");

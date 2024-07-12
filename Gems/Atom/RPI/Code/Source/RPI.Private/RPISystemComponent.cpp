@@ -65,7 +65,7 @@ namespace AZ
 
         void RPISystemComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("RPISystem", 0xf2add773));
+            provided.push_back(AZ_CRC_CE("RPISystem"));
         }
 
         void RPISystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)

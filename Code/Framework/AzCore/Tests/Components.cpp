@@ -314,14 +314,14 @@ namespace UnitTest
         void GetProvidedServices(DependencyArrayType& provided, const Component* instance) const override
         {
             (void)instance;
-            provided.push_back(AZ_CRC("ServiceA", 0x808b9021));
+            provided.push_back(AZ_CRC_CE("ServiceA"));
         }
         void GetDependentServices(DependencyArrayType& dependent, const Component* instance) const override
         {
             (void)instance;
             if (m_isDependent)
             {
-                dependent.push_back(AZ_CRC("ServiceD", 0xf0e164ae));
+                dependent.push_back(AZ_CRC_CE("ServiceD"));
             }
         }
         void Reflect(ReflectContext* /*reflection*/) const override {}
@@ -341,9 +341,9 @@ namespace UnitTest
         void Activate() override {}
         void Deactivate() override {}
 
-        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC("ServiceB", 0x1982c19b)); }
-        static void GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent) { dependent.push_back(AZ_CRC("ServiceE", 0x87e65438)); }
-        static void GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible) { incompatible.push_back(AZ_CRC("ServiceF", 0x1eef0582)); }
+        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC_CE("ServiceB")); }
+        static void GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent) { dependent.push_back(AZ_CRC_CE("ServiceE")); }
+        static void GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible) { incompatible.push_back(AZ_CRC_CE("ServiceF")); }
         static void Reflect(ReflectContext* /*reflection*/)  {}
     };
 
@@ -359,7 +359,7 @@ namespace UnitTest
         void Activate() override {}
         void Deactivate() override {}
 
-        static void GetRequiredServices(ComponentDescriptor::DependencyArrayType& required) { required.push_back(AZ_CRC("ServiceB", 0x1982c19b)); }
+        static void GetRequiredServices(ComponentDescriptor::DependencyArrayType& required) { required.push_back(AZ_CRC_CE("ServiceB")); }
         static void Reflect(ReflectContext* /*reflection*/) {}
     };
 
@@ -375,7 +375,7 @@ namespace UnitTest
         void Activate() override {}
         void Deactivate() override {}
 
-        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC("ServiceD", 0xf0e164ae)); }
+        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC_CE("ServiceD")); }
         static void Reflect(ReflectContext* /*reflection*/) {}
     };
     //////////////////////////////////////////////////////////////////////////
@@ -391,8 +391,8 @@ namespace UnitTest
         void Activate() override {}
         void Deactivate() override {}
 
-        static void GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent) { dependent.push_back(AZ_CRC("ServiceD", 0xf0e164ae)); dependent.push_back(AZ_CRC("ServiceA", 0x808b9021)); }
-        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC("ServiceE", 0x87e65438)); }
+        static void GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent) { dependent.push_back(AZ_CRC_CE("ServiceD")); dependent.push_back(AZ_CRC_CE("ServiceA")); }
+        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC_CE("ServiceE")); }
         static void Reflect(ReflectContext* /*reflection*/) {}
     };
     //////////////////////////////////////////////////////////////////////////
@@ -409,7 +409,7 @@ namespace UnitTest
         void Activate() override {}
         void Deactivate() override {}
 
-        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC("ServiceE", 0x87e65438)); }
+        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC_CE("ServiceE")); }
         static void Reflect(ReflectContext* /*reflection*/) {}
     };
     //////////////////////////////////////////////////////////////////////////
@@ -425,8 +425,8 @@ namespace UnitTest
         void Activate() override {}
         void Deactivate() override {}
 
-        static void GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible) { incompatible.push_back(AZ_CRC("ServiceA", 0x808b9021)); }
-        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC("ServiceF", 0x1eef0582)); }
+        static void GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible) { incompatible.push_back(AZ_CRC_CE("ServiceA")); }
+        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC_CE("ServiceF")); }
         static void Reflect(ReflectContext* /*reflection*/) {}
     };
     //////////////////////////////////////////////////////////////////////////
@@ -1127,17 +1127,17 @@ namespace UnitTest
         systemEntity->Init();
         systemEntity->Activate();
 
-        AZStd::intrusive_ptr<MyUserSettings> myGlobalUserSettings = UserSettings::CreateFind<MyUserSettings>(AZ_CRC("MyUserSettings", 0x65286904), UserSettings::CT_GLOBAL);
+        AZStd::intrusive_ptr<MyUserSettings> myGlobalUserSettings = UserSettings::CreateFind<MyUserSettings>(AZ_CRC_CE("MyUserSettings"), UserSettings::CT_GLOBAL);
         AZ_TEST_ASSERT(myGlobalUserSettings);
         myGlobalUserSettings->m_intOption1 = 10;
-        AZStd::intrusive_ptr<MyUserSettings> storedGlobalSettings = UserSettings::CreateFind<MyUserSettings>(AZ_CRC("MyUserSettings", 0x65286904), UserSettings::CT_GLOBAL);
+        AZStd::intrusive_ptr<MyUserSettings> storedGlobalSettings = UserSettings::CreateFind<MyUserSettings>(AZ_CRC_CE("MyUserSettings"), UserSettings::CT_GLOBAL);
         AZ_TEST_ASSERT(myGlobalUserSettings == storedGlobalSettings);
         AZ_TEST_ASSERT(storedGlobalSettings->m_intOption1 == 10);
 
-        AZStd::intrusive_ptr<MyUserSettings> myLocalUserSettings = UserSettings::CreateFind<MyUserSettings>(AZ_CRC("MyUserSettings", 0x65286904), UserSettings::CT_LOCAL);
+        AZStd::intrusive_ptr<MyUserSettings> myLocalUserSettings = UserSettings::CreateFind<MyUserSettings>(AZ_CRC_CE("MyUserSettings"), UserSettings::CT_LOCAL);
         AZ_TEST_ASSERT(myLocalUserSettings);
         myLocalUserSettings->m_intOption1 = 20;
-        AZStd::intrusive_ptr<MyUserSettings> storedLocalSettings = UserSettings::CreateFind<MyUserSettings>(AZ_CRC("MyUserSettings", 0x65286904), UserSettings::CT_LOCAL);
+        AZStd::intrusive_ptr<MyUserSettings> storedLocalSettings = UserSettings::CreateFind<MyUserSettings>(AZ_CRC_CE("MyUserSettings"), UserSettings::CT_LOCAL);
         AZ_TEST_ASSERT(myLocalUserSettings == storedLocalSettings);
         AZ_TEST_ASSERT(storedLocalSettings->m_intOption1 == 20);
 
@@ -1146,23 +1146,23 @@ namespace UnitTest
         systemEntity->Deactivate();
 
         // Deactivate() should have cleared all the registered user options
-        storedGlobalSettings = UserSettings::Find<MyUserSettings>(AZ_CRC("MyUserSettings", 0x65286904), UserSettings::CT_GLOBAL);
+        storedGlobalSettings = UserSettings::Find<MyUserSettings>(AZ_CRC_CE("MyUserSettings"), UserSettings::CT_GLOBAL);
         AZ_TEST_ASSERT(!storedGlobalSettings);
-        storedLocalSettings = UserSettings::Find<MyUserSettings>(AZ_CRC("MyUserSettings", 0x65286904), UserSettings::CT_LOCAL);
+        storedLocalSettings = UserSettings::Find<MyUserSettings>(AZ_CRC_CE("MyUserSettings"), UserSettings::CT_LOCAL);
         AZ_TEST_ASSERT(!storedLocalSettings);
 
         systemEntity->Activate();
 
         // Verify that upon re-activation, we successfully loaded all settings saved during deactivation
-        storedGlobalSettings = UserSettings::Find<MyUserSettings>(AZ_CRC("MyUserSettings", 0x65286904), UserSettings::CT_GLOBAL);
+        storedGlobalSettings = UserSettings::Find<MyUserSettings>(AZ_CRC_CE("MyUserSettings"), UserSettings::CT_GLOBAL);
         AZ_TEST_ASSERT(storedGlobalSettings);
-        myGlobalUserSettings = UserSettings::CreateFind<MyUserSettings>(AZ_CRC("MyUserSettings", 0x65286904), UserSettings::CT_GLOBAL);
+        myGlobalUserSettings = UserSettings::CreateFind<MyUserSettings>(AZ_CRC_CE("MyUserSettings"), UserSettings::CT_GLOBAL);
         AZ_TEST_ASSERT(myGlobalUserSettings == storedGlobalSettings);
         AZ_TEST_ASSERT(storedGlobalSettings->m_intOption1 == 10);
 
-        storedLocalSettings = UserSettings::Find<MyUserSettings>(AZ_CRC("MyUserSettings", 0x65286904), UserSettings::CT_LOCAL);
+        storedLocalSettings = UserSettings::Find<MyUserSettings>(AZ_CRC_CE("MyUserSettings"), UserSettings::CT_LOCAL);
         AZ_TEST_ASSERT(storedLocalSettings);
-        myLocalUserSettings = UserSettings::CreateFind<MyUserSettings>(AZ_CRC("MyUserSettings", 0x65286904), UserSettings::CT_LOCAL);
+        myLocalUserSettings = UserSettings::CreateFind<MyUserSettings>(AZ_CRC_CE("MyUserSettings"), UserSettings::CT_LOCAL);
         AZ_TEST_ASSERT(myLocalUserSettings == storedLocalSettings);
         AZ_TEST_ASSERT(storedLocalSettings->m_intOption1 == 20);
 

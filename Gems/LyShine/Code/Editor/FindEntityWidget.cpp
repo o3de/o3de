@@ -31,7 +31,7 @@ namespace
 {
     bool AppearsInUiComponentMenu(const AZ::SerializeContext::ClassData& classData)
     {
-        return AzToolsFramework::AppearsInAddComponentMenu(classData, AZ_CRC("UI", 0x27ff46b0));
+        return AzToolsFramework::AppearsInAddComponentMenu(classData, AZ_CRC_CE("UI"));
     }
 }
 

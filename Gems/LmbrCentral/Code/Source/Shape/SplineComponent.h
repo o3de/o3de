@@ -89,22 +89,22 @@ namespace LmbrCentral
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("SplineService", 0x2b674d3c));
-            provided.push_back(AZ_CRC("VariableVertexContainerService", 0x70c58740));
-            provided.push_back(AZ_CRC("FixedVertexContainerService", 0x83f1bbf2));
+            provided.push_back(AZ_CRC_CE("SplineService"));
+            provided.push_back(AZ_CRC_CE("VariableVertexContainerService"));
+            provided.push_back(AZ_CRC_CE("FixedVertexContainerService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("SplineService", 0x2b674d3c));
-            incompatible.push_back(AZ_CRC("VariableVertexContainerService", 0x70c58740));
-            incompatible.push_back(AZ_CRC("FixedVertexContainerService", 0x83f1bbf2));
+            incompatible.push_back(AZ_CRC_CE("SplineService"));
+            incompatible.push_back(AZ_CRC_CE("VariableVertexContainerService"));
+            incompatible.push_back(AZ_CRC_CE("FixedVertexContainerService"));
             incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+            required.push_back(AZ_CRC_CE("TransformService"));
         }
 
         static void Reflect(AZ::ReflectContext* context);

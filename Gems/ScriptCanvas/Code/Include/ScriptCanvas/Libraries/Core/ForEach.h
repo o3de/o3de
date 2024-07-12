@@ -60,7 +60,7 @@ namespace ScriptCanvas
                 static const size_t k_keySlotIndex;
                 static const size_t k_valueSlotIndex;
 
-                static AZ::Crc32 GetContainerGroupId() { return AZ_CRC("ContainerGroup", 0xb81ed451); }
+                static AZ::Crc32 GetContainerGroupId() { return AZ_CRC_CE("ContainerGroup"); }
 
                 void AddPropertySlotsFromType(const Data::Type& dataType);
 

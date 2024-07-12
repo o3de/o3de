@@ -191,13 +191,13 @@ void UiFlipbookAnimationComponent::Reflect(AZ::ReflectContext* context)
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiFlipbookAnimationComponent::m_startFrame, "Start frame", "Frame to start at")
                 ->Attribute("EnumValues", &UiFlipbookAnimationComponent::PopulateIndexStringList)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiFlipbookAnimationComponent::OnStartFrameChange)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
             ;
 
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiFlipbookAnimationComponent::m_endFrame, "End frame", "Frame to end at")
                 ->Attribute("EnumValues", &UiFlipbookAnimationComponent::PopulateIndexStringList)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiFlipbookAnimationComponent::OnEndFrameChange)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
             ;
 
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiFlipbookAnimationComponent::m_loopStartFrame, "Loop start frame", "Frame to start looping from")
@@ -208,14 +208,14 @@ void UiFlipbookAnimationComponent::Reflect(AZ::ReflectContext* context)
                 ->EnumAttribute(UiFlipbookAnimationInterface::LoopType::None, "None")
                 ->EnumAttribute(UiFlipbookAnimationInterface::LoopType::Linear, "Linear")
                 ->EnumAttribute(UiFlipbookAnimationInterface::LoopType::PingPong, "PingPong")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c))
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
             ;
 
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiFlipbookAnimationComponent::m_framerateUnit, "Framerate unit", "Unit of measurement for framerate")
                 ->EnumAttribute(UiFlipbookAnimationInterface::FramerateUnits::FPS, "FPS")
                 ->EnumAttribute(UiFlipbookAnimationInterface::FramerateUnits::SecondsPerFrame, "Seconds Per Frame")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiFlipbookAnimationComponent::OnFramerateUnitChange)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c))
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ;
 
             editInfo->DataElement(0, &UiFlipbookAnimationComponent::m_framerate, "Framerate", "Determines transition speed between frames")

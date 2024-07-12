@@ -204,7 +204,7 @@ namespace ScriptCanvasEditor
 
     void Workspace::Save()
     {
-        auto workspace = AZ::UserSettings::CreateFind<EditorSettings::EditorWorkspace>(AZ_CRC("ScriptCanvasEditorWindowState", 0x10c47d36), AZ::UserSettings::CT_LOCAL);
+        auto workspace = AZ::UserSettings::CreateFind<EditorSettings::EditorWorkspace>(AZ_CRC_CE("ScriptCanvasEditorWindowState"), AZ::UserSettings::CT_LOCAL);
         if (workspace)
         {
             workspace->Init(m_mainWindow->saveState(), m_mainWindow->saveGeometry());
@@ -270,7 +270,7 @@ namespace ScriptCanvasEditor
     void Workspace::Restore()
     {
 
-        auto workspace = AZ::UserSettings::Find<EditorSettings::EditorWorkspace>(AZ_CRC("ScriptCanvasEditorWindowState", 0x10c47d36), AZ::UserSettings::CT_LOCAL);
+        auto workspace = AZ::UserSettings::Find<EditorSettings::EditorWorkspace>(AZ_CRC_CE("ScriptCanvasEditorWindowState"), AZ::UserSettings::CT_LOCAL);
         if (workspace)
         {
             workspace->Restore(qobject_cast<QMainWindow*>(m_mainWindow));
@@ -642,7 +642,7 @@ namespace ScriptCanvasEditor
 
         UINotificationBus::Broadcast(&UINotifications::MainWindowCreationEvent, this);
 
-        m_userSettings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL);
+        m_userSettings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC_CE("ScriptCanvasPreviewSettings"), AZ::UserSettings::CT_LOCAL);
         if (m_userSettings)
         {
             m_allowAutoSave = m_userSettings->m_autoSaveConfig.m_enabled;

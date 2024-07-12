@@ -182,7 +182,7 @@ namespace SerializeTestClasses {
                 for (int i = 0; i < classElement.GetNumSubElements(); )
                 {
                     AZ::SerializeContext::DataElementNode& elementNode = classElement.GetSubElement(i);
-                    if (elementNode.GetName() == AZ_CRC("dataMix", 0x041bcc8d))
+                    if (elementNode.GetName() == AZ_CRC_CE("dataMix"))
                     {
                         classElement.RemoveElement(i);
                         continue;
@@ -193,7 +193,7 @@ namespace SerializeTestClasses {
                         for (int j = 0; j < elementNode.GetNumSubElements(); ++j)
                         {
                             AZ::SerializeContext::DataElementNode& dataNode = elementNode.GetSubElement(j);
-                            if (dataNode.GetName() == AZ_CRC("data", 0xadf3f363))
+                            if (dataNode.GetName() == AZ_CRC_CE("data"))
                             {
                                 float data;
                                 bool result = dataNode.GetData(data);
@@ -783,7 +783,7 @@ namespace SerializeTestClasses
                 for (int i = 0; i < classElement.GetNumSubElements(); )
                 {
                     AZ::SerializeContext::DataElementNode& elementNode = classElement.GetSubElement(i);
-                    if (elementNode.GetName() == AZ_CRC("textData", 0xf322c69d))
+                    if (elementNode.GetName() == AZ_CRC_CE("textData"))
                     {
                         AZStd::string text;
                         bool result = elementNode.GetData(text);
@@ -797,7 +797,7 @@ namespace SerializeTestClasses
                         }
                         classElement.RemoveElement(i);
                     }
-                    else if (elementNode.GetName() == AZ_CRC("emptyTextData", 0x61d55942))
+                    else if (elementNode.GetName() == AZ_CRC_CE("emptyTextData"))
                     {
                         AZStd::string text;
                         bool result = elementNode.GetData(text);
@@ -806,7 +806,7 @@ namespace SerializeTestClasses
 
                         classElement.RemoveElement(i);
                     }
-                    else if (elementNode.GetName() == AZ_CRC("vectorInt", 0xe61292a9))
+                    else if (elementNode.GetName() == AZ_CRC_CE("vectorInt"))
                     {
                         int memberIdx = classElement.AddElement<AZStd::vector<int> >(context, "vectorInt2");
                         if (memberIdx != -1)
@@ -827,7 +827,7 @@ namespace SerializeTestClasses
                         }
                         classElement.RemoveElement(i);
                     }
-                    else if (elementNode.GetName() == AZ_CRC("vectorIntVector", 0xd9c44f0b))
+                    else if (elementNode.GetName() == AZ_CRC_CE("vectorIntVector"))
                     {
                         // add a new element
                         int newListIntList = classElement.AddElement<AZStd::list<AZStd::list<int> > >(context, "listIntList");
@@ -858,21 +858,21 @@ namespace SerializeTestClasses
                         }
                         classElement.RemoveElement(i);
                     }
-                    else if (elementNode.GetName() == AZ_CRC("emptyInitTextData", 0x17b55a4f)
-                            || elementNode.GetName() == AZ_CRC("listInt", 0x4fbe090a)
-                            || elementNode.GetName() == AZ_CRC("setInt", 0x62eb1299)
+                    else if (elementNode.GetName() == AZ_CRC_CE("emptyInitTextData")
+                            || elementNode.GetName() == AZ_CRC_CE("listInt")
+                            || elementNode.GetName() == AZ_CRC_CE("setInt")
                             || elementNode.GetName() == AZ_CRC("usetInt")
                             || elementNode.GetName() == AZ_CRC("umultisetInt")
-                            || elementNode.GetName() == AZ_CRC("mapIntFloat", 0xb558ac3f)
+                            || elementNode.GetName() == AZ_CRC_CE("mapIntFloat")
                             || elementNode.GetName() == AZ_CRC("umapIntFloat")
                             || elementNode.GetName() == AZ_CRC("umultimapIntFloat")
-                            || elementNode.GetName() == AZ_CRC("byteStream", 0xda272a22)
-                            || elementNode.GetName() == AZ_CRC("bitSet", 0x9dd4d1cb)
-                            || elementNode.GetName() == AZ_CRC("sharedPtr", 0x033de7f0)
-                            || elementNode.GetName() == AZ_CRC("intrusivePtr", 0x20733e45)
-                            || elementNode.GetName() == AZ_CRC("uniquePtr", 0xdb6f5bd3)
-                            || elementNode.GetName() == AZ_CRC("forwardListInt", 0xf54c1600)
-                            || elementNode.GetName() == AZ_CRC("fixedVectorInt", 0xf7108293)
+                            || elementNode.GetName() == AZ_CRC_CE("byteStream")
+                            || elementNode.GetName() == AZ_CRC_CE("bitSet")
+                            || elementNode.GetName() == AZ_CRC_CE("sharedPtr")
+                            || elementNode.GetName() == AZ_CRC_CE("intrusivePtr")
+                            || elementNode.GetName() == AZ_CRC_CE("uniquePtr")
+                            || elementNode.GetName() == AZ_CRC_CE("forwardListInt")
+                            || elementNode.GetName() == AZ_CRC_CE("fixedVectorInt")
                             || elementNode.GetName() == AZ_CRC("vectorEnum"))
                     {
                         classElement.RemoveElement(i);
@@ -2567,7 +2567,7 @@ TEST_F(SerializeBasicTest, BasicTypeTest_Succeed)
 
                         AZ::SerializeContext::VersionConverter converter = [](AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement) -> bool
                         {
-                            const int idx = classElement.FindElement(AZ_CRC("Pointer", 0x320468a8));
+                            const int idx = classElement.FindElement(AZ_CRC_CE("Pointer"));
                             classElement.GetSubElement(idx).Convert<SimpleDerivedClass2>(context);
                             return true;
                         };
@@ -2722,10 +2722,10 @@ TEST_F(SerializeBasicTest, BasicTypeTest_Succeed)
                 : public DataOverlayProviderBus::Handler
             {
             public:
-                static DataOverlayProviderId    GetProviderId() { return AZ_CRC("DataOverlayProviderExample", 0x60dafdbd); }
-                static u32                      GetIntToken() { return AZ_CRC("int_data", 0xd74868f3); }
-                static u32                      GetVectorToken() { return AZ_CRC("vector_data", 0x0aca20c0); }
-                static u32                      GetPointerToken() { return AZ_CRC("pointer_data", 0xa46a746e); }
+                static DataOverlayProviderId    GetProviderId() { return AZ_CRC_CE("DataOverlayProviderExample"); }
+                static u32                      GetIntToken() { return AZ_CRC_CE("int_data"); }
+                static u32                      GetVectorToken() { return AZ_CRC_CE("vector_data"); }
+                static u32                      GetPointerToken() { return AZ_CRC_CE("pointer_data"); }
 
                 DataOverlayProviderExample()
                 {
@@ -4127,18 +4127,18 @@ namespace UnitTest
                     EXPECT_EQ( 2, classData->m_editData->m_elements.size() );
                     EXPECT_EQ( 0, strcmp(classData->m_editData->m_elements.front().m_description, "Special data group") );
                     EXPECT_EQ( 1, classData->m_editData->m_elements.front().m_attributes.size() );
-                    EXPECT_TRUE(classData->m_editData->m_elements.front().m_attributes[0].first == AZ_CRC("Callback", 0x79f97426) );
+                    EXPECT_TRUE(classData->m_editData->m_elements.front().m_attributes[0].first == AZ_CRC_CE("Callback") );
                 }
                 else if (classElement && classElement->m_editData && strcmp(classElement->m_editData->m_description, "Type") == 0)
                 {
                     EXPECT_EQ( 2, classElement->m_editData->m_attributes.size() );
                     // Number of options attribute
-                    EXPECT_EQ(classElement->m_editData->m_attributes[0].first, AZ_CRC("NumOptions", 0x90274abc));
+                    EXPECT_EQ(classElement->m_editData->m_attributes[0].first, AZ_CRC_CE("NumOptions"));
                     Edit::AttributeData<int>* intData = azrtti_cast<Edit::AttributeData<int>*>(classElement->m_editData->m_attributes[0].second);
                     EXPECT_TRUE(intData != nullptr);
                     EXPECT_EQ( 3, intData->Get(instance) );
                     // Get options attribute
-                    EXPECT_EQ( classElement->m_editData->m_attributes[1].first, AZ_CRC("Options", 0xd035fa87));
+                    EXPECT_EQ( classElement->m_editData->m_attributes[1].first, AZ_CRC_CE("Options"));
                     Edit::AttributeFunction<int(int)>* funcData = azrtti_cast<Edit::AttributeFunction<int(int)>*>(classElement->m_editData->m_attributes[1].second);
                     EXPECT_TRUE(funcData != nullptr);
                     EXPECT_EQ( 20, funcData->Invoke(instance, 10) );
@@ -4371,7 +4371,7 @@ namespace UnitTest
                     {
                         AZ::SerializeContext::DataElementNode& elementNode = classElement.GetSubElement(i);
 
-                        if (elementNode.GetName() == AZ_CRC("m_textData", 0xfc7870e5))
+                        if (elementNode.GetName() == AZ_CRC_CE("m_textData"))
                         {
                             bool result = elementNode.GetData(newData);
                             EXPECT_TRUE(result);
@@ -4383,7 +4383,7 @@ namespace UnitTest
                     for (int i = 0; i < classElement.GetNumSubElements(); ++i)
                     {
                         AZ::SerializeContext::DataElementNode& elementNode = classElement.GetSubElement(i);
-                        if (elementNode.GetName() == AZ_CRC("m_newTextData", 0x3feafc3d))
+                        if (elementNode.GetName() == AZ_CRC_CE("m_newTextData"))
                         {
                             elementNode.SetData(context, newData);
                             break;

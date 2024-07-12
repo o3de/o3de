@@ -118,12 +118,12 @@ namespace ImageProcessingAtom
 
     void BuilderPluginComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ImagerBuilderPluginService", 0x6dc0db6e));
+        provided.push_back(AZ_CRC_CE("ImagerBuilderPluginService"));
     }
 
     void BuilderPluginComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("ImagerBuilderPluginService", 0x6dc0db6e));
+        incompatible.push_back(AZ_CRC_CE("ImagerBuilderPluginService"));
     }
 
     IImageObjectPtr BuilderPluginComponent::LoadImage(const AZStd::string& filePath)

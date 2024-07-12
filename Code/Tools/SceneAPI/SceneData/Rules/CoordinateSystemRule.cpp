@@ -168,14 +168,14 @@ namespace AZ::SceneAPI::SceneData
     bool CoordinateSystemRule::ConvertLegacyCoordinateSystemRule(AZ::SerializeContext& serializeContext,
         AZ::SerializeContext::DataElementNode& classElement)
     {
-        AZ::SerializeContext::DataElementNode* ruleContainerNode = classElement.FindSubElement(AZ_CRC("rules", 0x899a993c));
+        AZ::SerializeContext::DataElementNode* ruleContainerNode = classElement.FindSubElement(AZ_CRC_CE("rules"));
         if (!ruleContainerNode)
         {
             AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "Can't find rule container.\n");
             return false;
         }
 
-        AZ::SerializeContext::DataElementNode* rulesNode = ruleContainerNode->FindSubElement(AZ_CRC("rules", 0x899a993c));
+        AZ::SerializeContext::DataElementNode* rulesNode = ruleContainerNode->FindSubElement(AZ_CRC_CE("rules"));
         if (!rulesNode)
         {
             AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "Can't find rules within rule container.\n");

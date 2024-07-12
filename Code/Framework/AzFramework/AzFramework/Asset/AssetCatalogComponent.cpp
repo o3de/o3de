@@ -25,7 +25,7 @@ namespace AzFramework
         if (classElement.GetVersion() == 1)
         {
             // Old asset path field is gone.
-            const int assetRootIndex = classElement.FindElement(AZ_CRC("AssetRoot", 0x3195232d));
+            const int assetRootIndex = classElement.FindElement(AZ_CRC_CE("AssetRoot"));
             if (assetRootIndex >= 0)
             {
                 classElement.RemoveElement(assetRootIndex);
