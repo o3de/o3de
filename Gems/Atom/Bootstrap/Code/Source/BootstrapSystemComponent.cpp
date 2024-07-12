@@ -327,9 +327,18 @@ namespace AZ
                 AZ::ApplicationTypeQuery appType;
                 ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
 
-                if (appType.IsHeadless() || appType.IsConsoleMode())
+                if (appType.IsHeadless())
                 {
                     m_nativeWindow = nullptr;
+                }
+                else if (appType.IsConsoleMode())
+                {
+                    m_nativeWindow = nullptr;
+
+                    // Unless we are in headless mode, the application multisamplestate needs to be set and initialized
+                    // so that the shader's SuperVariant name is set and the scene's render pipelines and re-initialized
+                    AZ::RHI::MultisampleState multisampleState;
+                    AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(multisampleState);
                 }
                 else if (!appType.IsValid() || appType.IsGame())
                 {
