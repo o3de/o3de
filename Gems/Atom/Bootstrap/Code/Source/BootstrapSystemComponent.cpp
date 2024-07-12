@@ -335,8 +335,8 @@ namespace AZ
                 {
                     m_nativeWindow = nullptr;
 
-                    // Unless we are in headless mode, the application multisamplestate needs to be set and initialized
-                    // so that the shader's SuperVariant name is set and the scene's render pipelines and re-initialized
+                    // If we are running without a native window, the application multisamplestate still needs to be set and
+                    // initialized so that the shader's SuperVariant name is set and the scene's render pipelines are re-initialized
                     AZ::RHI::MultisampleState multisampleState;
                     AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(multisampleState);
                 }
