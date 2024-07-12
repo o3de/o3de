@@ -12,6 +12,9 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
 #include <CryCommon/TimeValue.h>
+#ifdef CARBONATED
+#include <AzCore/Utils/AssetLoadNotification.h>
+#endif
 
 namespace LegacyLevelSystem
 {
@@ -20,6 +23,9 @@ class SpawnableLevelSystem
         : public ILevelSystem
         , public AzFramework::RootSpawnableNotificationBus::Handler
         , AzFramework::LevelSystemLifecycleInterface::Registrar
+#ifdef CARBONATED
+        , public AZ::AssetLoadNotification::AssetLoadNotificatorBus::Handler
+#endif
     {
     public:
         explicit SpawnableLevelSystem(ISystem* pSystem);
@@ -53,6 +59,11 @@ class SpawnableLevelSystem
         const char* GetCurrentLevelName() const override;
         bool IsLevelLoaded() const override;
         //! @}
+
+#ifdef CARBONATED
+        // AssetLoadNotificatorBus interface implementation
+        void WaitForAssetUpdate() override;
+#endif
 
     private:
         void OnRootSpawnableAssigned(AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, uint32_t generation) override;

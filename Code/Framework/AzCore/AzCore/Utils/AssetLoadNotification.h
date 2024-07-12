@@ -26,7 +26,7 @@ namespace AZ
         public:
             //////////////////////////////////////////////////////////////////////////
             // EBusTraits overrides
-            static const EBusHandlerPolicy HandlerPolicy = EBusHandlerPolicy::Single;
+            static const EBusHandlerPolicy HandlerPolicy = EBusHandlerPolicy::Multiple;
             //////////////////////////////////////////////////////////////////////////
 
             /// Update loading screen stuff

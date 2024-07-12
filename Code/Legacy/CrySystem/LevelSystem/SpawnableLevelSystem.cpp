@@ -271,6 +271,7 @@ namespace LegacyLevelSystem
         GetISystem()->LoadConfiguration(AZStd::string::format("%s/level.cfg", levelFolderPath.c_str()).c_str());
         // level start event (we could not call it before UnloadLevel() call)
         EBUS_EVENT(LoadScreenBus, LevelStart);
+        AZ::AssetLoadNotification::AssetLoadNotificatorBus::Handler::BusConnect();
 #endif // if AZ_LOADSCREENCOMPONENT_ENABLED
 #endif
 
@@ -283,6 +284,11 @@ namespace LegacyLevelSystem
             OnLoadingComplete(validLevelName.c_str());
         }
 
+#if defined (CARBONATED)
+#if AZ_LOADSCREENCOMPONENT_ENABLED
+        AZ::AssetLoadNotification::AssetLoadNotificatorBus::Handler::BusDisconnect();
+#endif // if AZ_LOADSCREENCOMPONENT_ENABLED
+#endif
         return result;
     }
 
@@ -530,6 +536,15 @@ namespace LegacyLevelSystem
         AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
             &AzFramework::LevelSystemLifecycleNotifications::OnLoadingProgress, levelName, progressAmount);
     }
+
+#ifdef CARBONATED
+    void SpawnableLevelSystem::WaitForAssetUpdate()
+    {
+        int progressAmount = 50;
+        OnLoadingProgress(m_lastLevelName.c_str(), progressAmount);
+        AZ_TracePrintf("LevelSystem", "Level load - progress amount: '%i'\n", progressAmount);
+    }
+#endif
 
     //------------------------------------------------------------------------
     void SpawnableLevelSystem::OnUnloadComplete(const char* levelName)
