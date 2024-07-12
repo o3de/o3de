@@ -14,6 +14,7 @@
 #include <CryCommon/TimeValue.h>
 #ifdef CARBONATED
 #include <AzCore/Utils/AssetLoadNotification.h>
+#include <AzFramework/Spawnable/SpawnableEntitiesManager.h>
 #endif
 
 namespace LegacyLevelSystem
@@ -86,6 +87,10 @@ class SpawnableLevelSystem
         AZStd::string m_lastLevelName;
         float m_fLastLevelLoadTime{0.0f};
         float m_fLastTime{0.0f};
+#ifdef CARBONATED
+        float m_fFilteredProgress{0.0f};
+        int m_prevNumOfTickets;
+#endif
 
         bool m_bLevelLoaded{false};
         bool m_levelLoadFailed{false};

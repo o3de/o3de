@@ -360,6 +360,9 @@ namespace AzFramework
         result->m_spawnable = AZStd::move(spawnable);
         result->m_ticketId = idCounter++;
 
+#ifdef CARBONATED
+        m_statistic.m_numOfRequestedTickets++;
+#endif
         m_totalTickets++;
         m_ticketsPendingRegistration++;
         AZ_Assert(
@@ -1308,6 +1311,9 @@ namespace AzFramework
                 "Attempting to decrement the number of entity spawn tickets pending registration while there are no registrations pending "
                 "in the SpawnableEntitiesManager.");
             m_ticketsPendingRegistration--;
+#ifdef CARBONATED
+            m_statistic.m_numOfProcessedTickets++;
+#endif
             return CommandResult::Executed;
         }
         else

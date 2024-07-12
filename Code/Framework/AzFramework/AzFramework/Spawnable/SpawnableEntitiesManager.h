@@ -97,6 +97,16 @@ namespace AzFramework
 
         CommandQueueStatus ProcessQueue(CommandQueuePriority priority);
 
+#ifdef CARBONATED
+        // statistic
+        struct Statistic
+        {
+            int m_numOfRequestedTickets = 0;
+            int m_numOfProcessedTickets = 0;
+        };
+        const Statistic& GetStatistic() { return m_statistic; }
+#endif
+
     protected:
         enum class CommandResult : bool
         {
@@ -341,6 +351,9 @@ namespace AzFramework
         void InitializeEntityIdMappingsWithExternalRemapper(
             const Spawnable::EntityList& entities, EntityIdMap& idMap, AZStd::unordered_set<AZ::EntityId>& previouslySpawned,
             const EntityIdToEntityIdMap& customEntityIdMapper);
+
+        // statistic
+        Statistic m_statistic;
 #endif
 // Gruber patch end. // LVB. // Support unique instances
 

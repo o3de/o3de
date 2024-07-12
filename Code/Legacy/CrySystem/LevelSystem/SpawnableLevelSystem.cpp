@@ -272,6 +272,9 @@ namespace LegacyLevelSystem
         // level start event (we could not call it before UnloadLevel() call)
         EBUS_EVENT(LoadScreenBus, LevelStart);
         AZ::AssetLoadNotification::AssetLoadNotificatorBus::Handler::BusConnect();
+        // proges bar init
+        m_fFilteredProgress = 0.f;
+        m_prevNumOfTickets = (azrtti_cast<AzFramework::SpawnableEntitiesManager*>(AzFramework::SpawnableEntitiesInterface::Get()))->GetStatistic().m_numOfRequestedTickets;
 #endif // if AZ_LOADSCREENCOMPONENT_ENABLED
 #endif
 
@@ -540,9 +543,27 @@ namespace LegacyLevelSystem
 #ifdef CARBONATED
     void SpawnableLevelSystem::WaitForAssetUpdate()
     {
-        int progressAmount = 50;
+        // begin - progress calculation
+        // based on LY method CLevelSystem::OnLoadingProgress (\Gems\CryLegacy\Code\Source\CryAction\LevelSystem.cpp)
+        float fProgress = (float)(azrtti_cast<AzFramework::SpawnableEntitiesManager*>(AzFramework::SpawnableEntitiesInterface::Get()))->GetStatistic().m_numOfRequestedTickets +100 - m_prevNumOfTickets;
+
+        const AZ::TimeMs timeMs = AZ::GetRealElapsedTimeMs();
+        const float curTime = AZ::TimeMsToSeconds(timeMs);
+
+        m_fFilteredProgress = min(m_fFilteredProgress, fProgress);
+
+        const float fFrameTime = curTime - m_fLastTime;
+
+        const float t = AZStd::clamp(fFrameTime * .25f, 0.0001f, 1.0f);
+
+        m_fFilteredProgress = fProgress * t + m_fFilteredProgress * (1.f - t);
+
+        m_fLastTime = curTime;
+        // end - progress calculation
+
+        const int progressAmount = (int)m_fFilteredProgress;
         OnLoadingProgress(m_lastLevelName.c_str(), progressAmount);
-        AZ_TracePrintf("LevelSystem", "Level load - progress amount: '%i'\n", progressAmount);
+        AZ_TracePrintf("LevelSystem", "Level load - progress amount: '%i' (%f)\n", progressAmount, fProgress);
     }
 #endif
 
