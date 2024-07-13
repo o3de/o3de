@@ -244,7 +244,7 @@ namespace AZ
 
             // Check support of wive operation
             D3D12_FEATURE_DATA_SHADER_MODEL shaderModel;
-            shaderModel.HighestShaderModel = D3D_HIGHEST_SHADER_MODEL;
+            shaderModel.HighestShaderModel = D3D_SHADER_MODEL_6_0;
             if (FAILED(GetDevice()->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModel, sizeof(shaderModel))))
             {
                 AZ_Warning("DX12",  false, "Failed to check feature D3D12_FEATURE_SHADER_MODEL");
