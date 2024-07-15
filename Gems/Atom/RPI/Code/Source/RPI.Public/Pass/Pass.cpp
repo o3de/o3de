@@ -121,7 +121,16 @@ namespace AZ
         {
             if (m_deviceIndex == AZ::RHI::MultiDevice::InvalidDeviceIndex && m_parent)
             {
-                return m_parent->GetDeviceIndex();
+                return m_flags.m_parentDeviceIndexCached ? m_parentDeviceIndex : m_parent->GetDeviceIndex();
+            }
+            return m_deviceIndex;
+        }
+
+        int Pass::RecursiveGetDeviceIndex() const
+        {
+            if (m_deviceIndex == AZ::RHI::MultiDevice::InvalidDeviceIndex && m_parent)
+            {
+                return m_parent->RecursiveGetDeviceIndex();
             }
             return m_deviceIndex;
         }
@@ -173,6 +182,9 @@ namespace AZ
                 m_treeDepth = m_parent->m_treeDepth + 1;
                 m_path = ConcatPassName(m_parent->m_path, m_name);
                 m_flags.m_partOfHierarchy = m_parent->m_flags.m_partOfHierarchy;
+
+                m_parentDeviceIndex = m_parent->RecursiveGetDeviceIndex();
+                m_flags.m_parentDeviceIndexCached = true;
 
                 if (m_state == PassState::Orphaned)
                 {

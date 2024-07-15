@@ -411,6 +411,9 @@ namespace AZ
                 RHI::ImageBindFlags bindFlags = RHI::ImageBindFlags::Color | RHI::ImageBindFlags::ShaderReadWrite,
                 RHI::ImageAspectFlags aspectFlags = RHI::ImageAspectFlags::Color);
 
+            // Recursively get device index ignoring the cached parent device index
+            int RecursiveGetDeviceIndex() const;
+
             // --- Protected Members ---
 
             const Name PassNameThis{"This"};
@@ -495,6 +498,9 @@ namespace AZ
 
                         // Whether this pass contains a binding that is referenced globally through the pipeline
                         uint64_t m_containsGlobalReference : 1;
+                        
+                        // Whether this pass already cached parent pass's device index
+                        uint64_t m_parentDeviceIndexCached : 1;
 
                         // If this is a parent pass, indicates whether the child passes should be merged as subpasses.
                         // If this is a child pass, indicates whether it is a subpass.
@@ -651,6 +657,9 @@ namespace AZ
 
             // Used to track what phases of build/initialization the pass is queued for
             PassQueueState m_queueState = PassQueueState::NoQueue;
+
+            // Cache the parent pass's device index to prevent recursively fetching it every time
+            int m_parentDeviceIndex = AZ::RHI::MultiDevice::InvalidDeviceIndex;
         };
 
         //! Struct used to return results from Pass hierarchy validation
