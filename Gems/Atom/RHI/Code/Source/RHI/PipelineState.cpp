@@ -69,6 +69,12 @@ namespace AZ::RHI
                     m_deviceObjects[deviceIndex] = Factory::Get().CreatePipelineState();
                 }
 
+
+                if (const auto& name = GetName(); !name.IsEmpty())
+                {
+                    m_deviceObjects[deviceIndex]->SetName(name);
+                }
+
                 switch (descriptor.GetType())
                 {
                 case PipelineStateType::Draw:

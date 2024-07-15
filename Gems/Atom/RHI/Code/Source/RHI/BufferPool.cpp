@@ -124,6 +124,12 @@ namespace AZ::RHI
                         auto* device = RHISystemInterface::Get()->GetDevice(deviceIndex);
 
                         m_deviceObjects[deviceIndex] = Factory::Get().CreateBufferPool();
+
+                        if (const auto& name = GetName(); !name.IsEmpty())
+                        {
+                            m_deviceObjects[deviceIndex]->SetName(name);
+                        }
+
                         result = GetDeviceBufferPool(deviceIndex)->Init(*device, descriptor);
 
                         return result == ResultCode::Success;
@@ -159,6 +165,11 @@ namespace AZ::RHI
                     if (!initRequest.m_buffer->m_deviceObjects.contains(deviceIndex))
                     {
                         initRequest.m_buffer->m_deviceObjects[deviceIndex] = Factory::Get().CreateBuffer();
+                    }
+
+                    if (const auto& name = initRequest.m_buffer->GetName(); !name.IsEmpty())
+                    {
+                        initRequest.m_buffer->m_deviceObjects[deviceIndex]->SetName(name);
                     }
 
                     DeviceBufferInitRequest bufferInitRequest(

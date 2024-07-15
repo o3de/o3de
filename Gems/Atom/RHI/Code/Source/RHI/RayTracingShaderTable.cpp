@@ -120,6 +120,11 @@ namespace AZ::RHI
                 auto device = RHISystemInterface::Get()->GetDevice(deviceIndex);
                 m_deviceObjects[deviceIndex] = Factory::Get().CreateRayTracingShaderTable();
 
+                if (const auto& name = GetName(); !name.IsEmpty())
+                {
+                    m_deviceObjects[deviceIndex]->SetName(name);
+                }
+
                 auto deviceBufferPool{ bufferPools.GetDeviceRayTracingBufferPools(deviceIndex).get() };
 
                 GetDeviceRayTracingShaderTable(deviceIndex)->Init(*device, *deviceBufferPool);

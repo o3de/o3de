@@ -201,6 +201,11 @@ namespace AZ::RHI
                 auto device = RHISystemInterface::Get()->GetDevice(deviceIndex);
                 this->m_deviceObjects[deviceIndex] = Factory::Get().CreateRayTracingBlas();
 
+                if (const auto& name = GetName(); !name.IsEmpty())
+                {
+                    m_deviceObjects[deviceIndex]->SetName(name);
+                }
+
                 auto deviceDescriptor{ descriptor->GetDeviceRayTracingBlasDescriptor(deviceIndex) };
 
                 resultCode = GetDeviceRayTracingBlas(deviceIndex)
@@ -256,6 +261,11 @@ namespace AZ::RHI
                 auto deviceRayTracingTlas{Factory::Get().CreateRayTracingTlas()};
                 this->m_deviceObjects[deviceIndex] = deviceRayTracingTlas;
 
+                if (const auto& name = GetName(); !name.IsEmpty())
+                {
+                    m_deviceObjects[deviceIndex]->SetName(name);
+                }
+
                 auto deviceDescriptor{ descriptor->GetDeviceRayTracingTlasDescriptor(deviceIndex) };
 
                 resultCode = deviceRayTracingTlas->CreateBuffers(
@@ -298,6 +308,11 @@ namespace AZ::RHI
             {
                 m_tlasBuffer->m_deviceObjects[deviceIndex] = deviceRayTracingTlas->GetTlasBuffer();
 
+                if (const auto& name = m_tlasBuffer->GetName(); !name.IsEmpty())
+                {
+                    m_tlasBuffer->m_deviceObjects[deviceIndex]->SetName(name);
+                }
+
                 if (!m_tlasBuffer->m_deviceObjects[deviceIndex])
                 {
                     m_tlasBuffer->m_deviceObjects.clear();
@@ -333,6 +348,11 @@ namespace AZ::RHI
             [this](int deviceIndex, auto deviceRayTracingTlas)
             {
                 m_tlasInstancesBuffer->m_deviceObjects[deviceIndex] = deviceRayTracingTlas->GetTlasBuffer();
+
+                if (const auto& name = m_tlasInstancesBuffer->GetName(); !name.IsEmpty())
+                {
+                    m_tlasInstancesBuffer->m_deviceObjects[deviceIndex]->SetName(name);
+                }
 
                 if (!m_tlasInstancesBuffer->m_deviceObjects[deviceIndex])
                 {

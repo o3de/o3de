@@ -83,6 +83,12 @@ namespace AZ::RHI
                         auto* device = RHISystemInterface::Get()->GetDevice(deviceIndex);
 
                         m_deviceObjects[deviceIndex] = Factory::Get().CreateStreamingImagePool();
+
+                        if (const auto& name = GetName(); !name.IsEmpty())
+                        {
+                            m_deviceObjects[deviceIndex]->SetName(name);
+                        }
+
                         result = GetDeviceStreamingImagePool(deviceIndex)->Init(*device, descriptor);
 
                         return result == ResultCode::Success;
@@ -121,6 +127,12 @@ namespace AZ::RHI
                 return IterateObjects<DeviceStreamingImagePool>([&initRequest](auto deviceIndex, auto deviceStreamingImagePool)
                 {
                     initRequest.m_image->m_deviceObjects[deviceIndex] = Factory::Get().CreateImage();
+
+                    if (const auto& name = initRequest.m_image->GetName(); !name.IsEmpty())
+                    {
+                        initRequest.m_image->m_deviceObjects[deviceIndex]->SetName(name);
+                    }
+
                     DeviceStreamingImageInitRequest streamingImageInitRequest(
                         *initRequest.m_image->GetDeviceImage(deviceIndex), initRequest.m_descriptor, initRequest.m_tailMipSlices);
                     return deviceStreamingImagePool->InitImage(streamingImageInitRequest);

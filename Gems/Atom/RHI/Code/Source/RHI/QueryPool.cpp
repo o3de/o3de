@@ -57,6 +57,12 @@ namespace AZ::RHI
                         auto* device = RHISystemInterface::Get()->GetDevice(deviceIndex);
 
                         m_deviceObjects[deviceIndex] = Factory::Get().CreateQueryPool();
+
+                        if (const auto& name = GetName(); !name.IsEmpty())
+                        {
+                            m_deviceObjects[deviceIndex]->SetName(name);
+                        }
+
                         resultCode = GetDeviceQueryPool(deviceIndex)->Init(*device, descriptor);
                         return resultCode == ResultCode::Success;
                     });
@@ -102,6 +108,11 @@ namespace AZ::RHI
             for (auto index{ 0u }; index < queryCount; ++index)
             {
                 queries[index]->m_deviceObjects[deviceIndex] = deviceQueries[index];
+
+                if (const auto& name = queries[index]->GetName(); !name.IsEmpty())
+                {
+                    queries[index]->m_deviceObjects[deviceIndex]->SetName(name);
+                }
             }
 
             return resultCode;

@@ -57,6 +57,12 @@ namespace AZ::RHI
                         auto* device = RHISystemInterface::Get()->GetDevice(deviceIndex);
 
                         m_deviceObjects[deviceIndex] = Factory::Get().CreateSwapChain();
+
+                        if (const auto& name = GetName(); !name.IsEmpty())
+                        {
+                            m_deviceObjects[deviceIndex]->SetName(name);
+                        }
+
                         result = GetDeviceSwapChain(deviceIndex)->Init(*device, descriptor);
                         nativeDimensions = GetDeviceSwapChain(deviceIndex)->GetDescriptor().m_dimensions;
 
@@ -139,6 +145,11 @@ namespace AZ::RHI
                     IterateObjects<DeviceSwapChain>([this, imageIdx](auto deviceIndex, auto deviceSwapChain)
                     {
                         m_images[imageIdx]->m_deviceObjects[deviceIndex] = deviceSwapChain->GetImage(imageIdx);
+
+                        if (const auto& name = m_Images[imageIdx]->GetName(); !name.IsEmpty())
+                        {
+                            m_Images[imageIdx]->m_deviceObjects[deviceIndex]->SetName(name);
+                        }
                     });
 
                     return result;

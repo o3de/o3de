@@ -64,6 +64,12 @@ namespace AZ::RHI
             {
                 RHI::Ptr<RHI::Device> device = RHISystemInterface::Get()->GetDevice(deviceIndex);
                 m_deviceObjects[deviceIndex] = Factory::Get().CreateRayTracingBufferPools();
+
+                if (const auto& name = GetName(); !name.IsEmpty())
+                {
+                    m_deviceObjects[deviceIndex]->SetName(name);
+                }
+
                 GetDeviceRayTracingBufferPools(deviceIndex)->Init(device);
                 return true;
             });

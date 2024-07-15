@@ -42,6 +42,11 @@ namespace AZ::RHI
 
                 m_deviceObjects[deviceIndex] = Factory::Get().CreateTransientAttachmentPool();
 
+                if (const auto& name = GetName(); !name.IsEmpty())
+                {
+                    m_deviceObjects[deviceIndex]->SetName(name);
+                }
+
                 resultCode = GetDeviceTransientAttachmentPool(deviceIndex)->Init(*device, m_descriptors[deviceIndex]);
 
                 return resultCode == ResultCode::Success;
@@ -153,6 +158,11 @@ namespace AZ::RHI
                 {
                     image->m_deviceObjects[deviceIndex] = deviceImage;
                     image->SetDescriptor(deviceImage->GetDescriptor());
+
+                    if (const auto& name = image->GetName(); !name.IsEmpty())
+                    {
+                        image->m_deviceObjects[deviceIndex]->SetName(name);
+                    }
                 }
                 else
                 {
@@ -213,6 +223,11 @@ namespace AZ::RHI
                 {
                     buffer->m_deviceObjects[deviceIndex] = deviceBuffer;
                     buffer->SetDescriptor(deviceBuffer->GetDescriptor());
+
+                    if (const auto& name = buffer->GetName(); !name.IsEmpty())
+                    {
+                        buffer->m_deviceObjects[deviceIndex]->SetName(name);
+                    }
                 }
                 else
                 {

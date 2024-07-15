@@ -120,6 +120,11 @@ namespace AZ::RHI
                 auto device = RHISystemInterface::Get()->GetDevice(deviceIndex);
                 m_deviceObjects[deviceIndex] = Factory::Get().CreateRayTracingPipelineState();
 
+                if (const auto& name = GetName(); !name.IsEmpty())
+                {
+                    m_deviceObjects[deviceIndex]->SetName(name);
+                }
+
                 auto descriptor{ m_descriptor.GetDeviceRayTracingPipelineStateDescriptor(deviceIndex) };
                 resultCode = GetDeviceRayTracingPipelineState(deviceIndex)->Init(*device, &descriptor);
                 return resultCode == ResultCode::Success;
