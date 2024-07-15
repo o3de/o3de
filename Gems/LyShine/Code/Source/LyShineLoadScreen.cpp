@@ -320,6 +320,7 @@ namespace LyShine
             Reset();
             return AZ::EntityId();
         }
+        AZStd::to_lower(path.begin(), path.end());
 
         AZ::EntityId canvasId = AZ::Interface<ILyShine>::Get()->LoadCanvas(path);
         AZ_Warning("LoadScreenComponent", canvasId.IsValid(), "Can't load canvas: %s", path.c_str());
