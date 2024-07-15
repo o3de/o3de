@@ -398,6 +398,7 @@ namespace AZ
             m_limits.m_maxConstantBufferSize = m_metalDevice.maxBufferLength;
             m_limits.m_maxBufferSize = m_metalDevice.maxBufferLength;
  
+            m_features.m_swapchainScalingFlags = RHI::ScalingFlags::Stretch;
             AZ_Assert(m_metalDevice.argumentBuffersSupport >= MTLArgumentBuffersTier1, "Atom needs Argument buffer support to run");
         }
 

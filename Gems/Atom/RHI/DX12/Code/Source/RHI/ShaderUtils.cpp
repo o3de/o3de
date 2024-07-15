@@ -7,6 +7,7 @@
  */
 
 #include <RHI/ShaderUtils.h>
+#include <RHI/DX12.h>
 #include <openssl/md5.h>
 #include <Atom/RHI.Reflect/DX12/ShaderStageFunction.h>
 

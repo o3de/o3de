@@ -230,6 +230,7 @@ namespace AZ
             m_features.m_indirectDrawCountBufferSupported = true;
             m_features.m_indirectDispatchCountBufferSupported = true;
             m_features.m_indirectDrawStartInstanceLocationSupported = true;
+            m_features.m_signalFenceFromCPU = true;
 
             // DXGI_SCALING_ASPECT_RATIO_STRETCH is only compatible with CreateSwapChainForCoreWindow or CreateSwapChainForComposition,
             // not Win32 window handles and associated methods (cannot find an MSDN source for that)
@@ -244,8 +245,16 @@ namespace AZ
 
             // Check support of wive operation
             D3D12_FEATURE_DATA_SHADER_MODEL shaderModel;
-            GetDevice()->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModel, sizeof(shaderModel));
-            m_features.m_waveOperation = shaderModel.HighestShaderModel >= D3D_SHADER_MODEL_6_0;
+            shaderModel.HighestShaderModel = D3D_SHADER_MODEL_6_0;
+            if (FAILED(GetDevice()->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModel, sizeof(shaderModel))))
+            {
+                AZ_Warning("DX12",  false, "Failed to check feature D3D12_FEATURE_SHADER_MODEL");
+                m_features.m_waveOperation = false;
+            }
+            else
+            {
+                m_features.m_waveOperation = shaderModel.HighestShaderModel >= D3D_SHADER_MODEL_6_0;
+            }
 
 #ifdef AZ_DX12_DXR_SUPPORT
             D3D12_FEATURE_DATA_D3D12_OPTIONS5 options5;
@@ -299,8 +308,6 @@ namespace AZ
                     RHI::ShadingRateFlags::Rate4x2 |
                     RHI::ShadingRateFlags::Rate4x4;
             }
-
-            m_features.m_signalFenceFromCPU = true;
 
             m_limits.m_shadingRateTileSize = RHI::Size(options6.ShadingRateImageTileSize, options6.ShadingRateImageTileSize, 1);
 #endif

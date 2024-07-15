@@ -50,6 +50,8 @@ namespace AZ
             const Color& GetColor() const override;
             void SetColor(const Color& color) override;
             float GetIntensity() const override;
+            PhotometricUnit GetIntensityMode() const override;
+            void SetIntensityMode(PhotometricUnit unit) override;
             void SetIntensity(float intensity, PhotometricUnit unit) override;
             void SetIntensity(float intensity) override;
             float GetAngularDiameter() const override;

@@ -102,8 +102,18 @@ namespace AZ
 
                 // Detect if we are able to continue merging.
                 
-                // Check if the group fits into the current running merge queue. If not, we have to flush the queue.
-                const bool exceededCommandCost = (mergedGroupCost + totalScopeCost) > CommandListCostThreshold;
+                // Check if we are straddling the boundary of a scope that will request the swapchain texture.
+                const bool onSwapChainBoundary = scope.IsRequestingSwapChain();
+                
+                // Check if we are writing to the swapchain texture.
+                const bool isWritingToSwapChain = scope.IsWritingToSwapChain();
+                
+                // Once a swapchain is requested by a scope all the downstream scopes will need to be merged in the same group.
+                // This ensures that two scopes from different groups are not requesting swapchain drawable in parallel.
+                const bool overrideCommandListCost = !onSwapChainBoundary && isWritingToSwapChain;
+                
+                // Check if commandListCost applies and if the group fits into the current running merge queue. If not, we have to flush the queue.
+                const bool exceededCommandCost = !overrideCommandListCost && (mergedGroupCost + totalScopeCost) > CommandListCostThreshold;
 
                 // Check if the swap chains fit into this group.
                 const bool exceededSwapChainLimit = (mergedSwapchainCount + swapchainCount) > m_frameGraphExecuterData[scope.GetDeviceIndex()].m_swapChainsPerCommandList;
@@ -119,7 +129,14 @@ namespace AZ
 
                 // If we exceeded limits, then flush the group.
                 const bool flushMergedScopes = exceededCommandCost || exceededSwapChainLimit || hardwareQueueMismatch || onFenceBoundaries || deviceMismatch;
-
+                
+                //Check to ensure we are not trying to create two groups with scopes that will write to swapchain texture as
+                //this will cause a parallel race condition (groups are executed in parallel) when requesting the drawable.
+                if(!onSwapChainBoundary && isWritingToSwapChain)
+                {
+                    AZ_Assert(flushMergedScopes == false, "The scope that requests the swapchain needs to be in the same merged group as all the ones that write to it, otherwise we will have two scopes (in different groups) requesting drawable in parallel. If this assert is firing it may mean that we will need to request the swapchain drawable in Compile phase which is not the recommendation. Drawable should be requested as late in the frame as possible");
+                }
+                
                 if (flushMergedScopes && mergedScopes.size())
                 {
                     hasUserFencesToSignal = false;
@@ -131,8 +148,8 @@ namespace AZ
                     multiScopeContextGroup->Init(static_cast<Device&>(scopePrev->GetDevice()), AZStd::move(mergedScopes), GetGroupCount());
                 }
                 
-                // Attempt to merge the current scope.
-                if (totalScopeCost < CommandListCostThreshold)
+                // Attempt to merge the current scope. We always merge the scopes that are writing to swapchain regardless of the cost.
+                if (totalScopeCost < CommandListCostThreshold || isWritingToSwapChain)
                 {
                     mergedScopes.push_back(&scope);
                     mergedGroupCost += totalScopeCost;

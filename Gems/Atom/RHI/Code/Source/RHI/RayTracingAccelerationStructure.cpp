@@ -26,6 +26,8 @@ namespace AZ::RHI
                 ->IndexBuffer(geometry.m_IndexBuffer.GetDeviceIndexBufferView(deviceIndex));
         }
 
+        descriptor.BuildFlags(m_BuildFlags);
+
         if(m_aabb.has_value())
         {
             descriptor.AABB(m_aabb.value());
@@ -336,11 +338,11 @@ namespace AZ::RHI
                 {
                     m_tlasInstancesBuffer->m_deviceObjects.clear();
                     m_tlasInstancesBuffer = nullptr;
-                    return false;
+                    return ResultCode::Fail;
                 }
 
                 m_tlasInstancesBuffer->SetDescriptor(m_tlasInstancesBuffer->GetDeviceBuffer(deviceIndex)->GetDescriptor());
-                return true;
+                return ResultCode::Success;
             });
         return m_tlasInstancesBuffer;
     }
