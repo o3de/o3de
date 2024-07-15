@@ -10,16 +10,65 @@
 
 #import <UIKit/UIKit.h>
 
+#if defined(CARBONATED)
+#include <chrono>
+#endif
+
 namespace AZ
 {
     namespace NativeUI
     {
-#if defined(CARBONATED) // TODO : implement for platform
+#if defined(CARBONATED)
+        // TODO : implement for platform
         bool NativeUISystem::IsDisplayingBlockingDialog() const
         {
             return false;
         }
+    
+        template <
+            class result_t   = std::chrono::milliseconds,
+            class clock_t    = std::chrono::steady_clock,
+            class duration_t = std::chrono::milliseconds
+        >
+        auto TimeSince(std::chrono::time_point<clock_t, duration_t> const& start)
+        {
+            return std::chrono::duration_cast<result_t>(clock_t::now() - start);
+        }
+    
+        static void OnDeadlock(NSString* nsTitle, NSString* nsMessage)
+        {
+            // Save the popup data into a file and abort the application.
+            // The file will be located in the Documents dir and can be fetched to Mac as a part of the app container.
+            NSDate* date = [NSDate date];
+            NSDateFormatter* formatter = [[NSDateFormatter alloc] init];
+            NSTimeZone* destinationTimeZone = [NSTimeZone systemTimeZone];
+            formatter.timeZone = destinationTimeZone;
+            [formatter setDateStyle:NSDateFormatterLongStyle];
+            [formatter setDateFormat:@"MM-dd-yyyy hh.mma"];
+            NSString* dateString = [formatter stringFromDate:date];
+            
+            // Include the date in the file name to not overwrite previous artifacts.
+            NSString* fileName = [NSString stringWithFormat:@"BlockingDialogAborted %@.txt", dateString];
+            
+            NSArray* allPaths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+            NSString* documentsDirectory = [allPaths objectAtIndex:0];
+            NSString* pathForLog = [documentsDirectory stringByAppendingPathComponent:fileName];
+
+            // Redirect NSLog messages to the file.
+            freopen([pathForLog cStringUsingEncoding:NSASCIIStringEncoding], "a+", stderr);
+            
+            // These messages go to the file.
+            NSLog(@"BlockingDialog failed to display at %@", dateString);
+            
+            NSLog(@"Title: %@", nsTitle);
+            NSLog(@"Message: %@\n", nsMessage);
+            
+            NSLog(@"App terminated");
+            
+            abort();
+        }
 #endif
+    
         AZStd::string NativeUISystem::DisplayBlockingDialog(const AZStd::string& title, const AZStd::string& message, const AZStd::vector<AZStd::string>& options) const
         {
             if (m_mode == NativeUI::Mode::DISABLED)
@@ -28,6 +77,8 @@ namespace AZ
             }
 
             __block AZStd::string userSelection = "";
+            
+            __block bool mainThreadRunning = false;
             
             NSString* nsTitle = [NSString stringWithUTF8String:title.c_str()];
             NSString* nsMessage = [NSString stringWithUTF8String:message.c_str()];
@@ -55,6 +106,7 @@ namespace AZ
                 UIViewController* rootViewController = foundWindow ? foundWindow.rootViewController : nil;
                 if (rootViewController)
                 {
+                    mainThreadRunning = true;
                     [rootViewController presentViewController:alert animated:YES completion:nil];
                 }
                 else
@@ -66,6 +118,9 @@ namespace AZ
             if (!NSThread.isMainThread)
             {
                 __block dispatch_semaphore_t blockSem = dispatch_semaphore_create(0);
+                
+                const auto start = std::chrono::steady_clock::now();
+                
                 // Dialog boxes need to be triggered from the main thread.
                 CFRunLoopPerformBlock(CFRunLoopGetMain(), kCFRunLoopDefaultMode, ^(){
                     DisplayBlockingDialogCommon();
@@ -75,8 +130,19 @@ namespace AZ
                     }
                     dispatch_semaphore_signal(blockSem);
                 });
+                
                 // Wait till the user responds to the message box.
-                dispatch_semaphore_wait(blockSem, DISPATCH_TIME_FOREVER);
+                static constexpr int WaitMainThreadMs = 3000;
+                while (dispatch_semaphore_wait(blockSem, DISPATCH_TIME_NOW))
+                {
+                    [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1.0/30]];
+                    // If we did not enter the main thread and the given time elapsed, exit the wait cycle
+                    if (!mainThreadRunning && TimeSince(start).count() > WaitMainThreadMs)
+                    {
+                        userSelection = "Timeout";
+                        break;
+                    }
+                }
             }
             else
             {
@@ -140,7 +206,14 @@ namespace AZ
                 CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.0, TRUE);
             }
             
+            if (!NSThread.isMainThread && !mainThreadRunning)
+            {
+                // Probably, deadlock detected.
+                OnDeadlock(nsTitle, nsMessage);
+            }
+            
             return userSelection;
         }
     }
 }
+
