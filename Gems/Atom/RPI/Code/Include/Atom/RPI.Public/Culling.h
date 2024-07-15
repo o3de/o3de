@@ -68,6 +68,9 @@ namespace AZ
                 //! Set to all 0's if you don't want to hide the object from any Views.
                 RPI::View::UsageFlags m_hideFlags = RPI::View::UsageNone;
 
+                //! ID of the entity owning this cullable (optional)
+                AZ::EntityId m_entityId{ AZ::EntityId::InvalidEntityId };
+
                 //! UUID and type of the component that owns this cullable (optional)
                 AZ::Uuid m_componentUuid = AZ::Uuid::CreateNull();
                 uint32_t m_componentType = 0;
