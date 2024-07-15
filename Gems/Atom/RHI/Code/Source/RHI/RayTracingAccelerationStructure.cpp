@@ -26,6 +26,8 @@ namespace AZ::RHI
                 ->IndexBuffer(geometry.m_IndexBuffer.GetDeviceIndexBufferView(deviceIndex));
         }
 
+        descriptor.BuildFlags(m_BuildFlags);
+
         if(m_aabb.has_value())
         {
             descriptor.AABB(m_aabb.value());
