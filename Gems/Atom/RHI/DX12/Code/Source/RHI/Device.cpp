@@ -230,6 +230,7 @@ namespace AZ
             m_features.m_indirectDrawCountBufferSupported = true;
             m_features.m_indirectDispatchCountBufferSupported = true;
             m_features.m_indirectDrawStartInstanceLocationSupported = true;
+            m_features.m_signalFenceFromCPU = true;
 
             // DXGI_SCALING_ASPECT_RATIO_STRETCH is only compatible with CreateSwapChainForCoreWindow or CreateSwapChainForComposition,
             // not Win32 window handles and associated methods (cannot find an MSDN source for that)
@@ -307,8 +308,6 @@ namespace AZ
                     RHI::ShadingRateFlags::Rate4x2 |
                     RHI::ShadingRateFlags::Rate4x4;
             }
-
-            m_features.m_signalFenceFromCPU = true;
 
             m_limits.m_shadingRateTileSize = RHI::Size(options6.ShadingRateImageTileSize, options6.ShadingRateImageTileSize, 1);
 #endif
