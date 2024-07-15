@@ -67,7 +67,6 @@ namespace LyShine
             return false;
         }
 
-#if !defined (CARBONATED)
         //TODO: gEnv->pRenderer is always null, fix the logic below
         AZ_ErrorOnce(nullptr, false, "NotifyGameLoadStart needs to be removed/ported to use Atom");
         return false;
@@ -98,33 +97,6 @@ namespace LyShine
 
         return m_isPlaying;
 #endif
-#else // !defined (CARBONATED)
-        if (!gEnv || !AZ::Interface<ILyShine>::Get())
-        {
-            return false;
-        }
-
-        AZ_Assert(!m_isPlaying, "LyShineLoadScreen was somehow started before the engine loaded.");
-        if (m_isPlaying)
-        {
-            return false;
-        }
-
-        if (!m_gameCanvasEntityId.IsValid())
-        {
-            // Load canvas.
-            m_gameCanvasEntityId = loadFromCfg("game_load_screen_uicanvas_path", "game_load_screen_sequence_to_auto_play");
-        }
-
-        m_isPlaying = m_gameCanvasEntityId.IsValid();
-
-        if (m_isPlaying)
-        {
-            LoadScreenUpdateNotificationBus::Handler::BusConnect();
-        }
-
-        return m_isPlaying;
-#endif // !defined (CARBONATED)
     }
 
     bool LyShineLoadScreenComponent::NotifyLevelLoadStart(bool usingLoadingThread)
