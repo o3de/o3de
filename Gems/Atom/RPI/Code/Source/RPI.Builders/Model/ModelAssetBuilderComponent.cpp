@@ -62,7 +62,6 @@ static constexpr AZStd::string_view MismatchedVertexLayoutsAreErrorsKey{ "/O3DE/
   */
 #define AZ_RPI_MESHES_SHARE_COMMON_BUFFERS
 
-
 namespace AZ
 {
     class Aabb;
@@ -86,7 +85,10 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<ModelAssetBuilderComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(38);  // Pad Skinning mesh buffers to respect appropriate alignment
+                    ->Version(39);
+
+                // v38 - Pad Skinning mesh buffers to respect appropriate alignment
+                // v39 - Automatically generate missing skinning data when skinned and unskinned data is mixed
             }
         }
 
@@ -293,6 +295,7 @@ namespace AZ
                     // this process transparent for the end-asset generated, the name assigned to the source mesh
                     // content will not include the "_optimized" prefix or the group name.
                     sourceMesh.m_name = sceneGraph.GetNodeName(originalUnoptimizedMeshIndex).GetName();
+                    sourceMesh.m_parentName = sceneGraph.GetNodeName(sceneGraph.GetNodeParent(originalUnoptimizedMeshIndex)).GetName();
 
                     // Add the MeshData to the source mesh
                     AddToMeshContent(viewIt.second, sourceMesh);
@@ -343,6 +346,29 @@ namespace AZ
             AZStd::vector<Data::Asset<ModelLodAsset>> lodAssets;
             lodAssets.resize(sourceMeshContentListsByLod.size());
 
+            // in debug mode, start by outputting the lods we intend to actually export
+            // do not do so if AZ_ENABLE_TRACING is not defined, since this would be creating variables and loops
+            // for no reason, since AZ_Info is a no-op.
+#if defined(AZ_ENABLE_TRACING)
+            if (AZ::SceneAPI::Utilities::IsDebugEnabled())
+            {
+                AZ_Info(s_builderName, "Model '%s' will be exported with %zu LODs\n", m_modelName.c_str(), sourceMeshContentListsByLod.size());
+                for (size_t lodIndex = 0; lodIndex < sourceMeshContentListsByLod.size(); ++lodIndex)
+                {
+                    AZ_Info(s_builderName, "  LOD %zu\n", lodIndex);
+                    for (const SourceMeshContent& sourceMesh : sourceMeshContentListsByLod[lodIndex])
+                    {
+                        AZ_Info(s_builderName, "    SOURCE MESH '%s' - parent '%s'\n", sourceMesh.m_name.GetCStr(), sourceMesh.m_parentName.c_str());
+                        AZ_Info(s_builderName, "       # Vertices:    %zu\n", sourceMesh.m_meshData->GetVertexCount());
+                        AZ_Info(s_builderName, "       # Faces:       %zu\n", sourceMesh.m_meshData->GetFaceCount());
+                        AZ_Info(s_builderName, "       # Is Morphed:  %s\n",  sourceMesh.m_isMorphed ? "true" : "false");
+                        AZ_Info(s_builderName, "       # Cloth Data:  %zu\n", sourceMesh.m_meshClothData.size());
+                        AZ_Info(s_builderName, "       # Skin  Data:  %zu\n", sourceMesh.m_skinData.size());
+                    }
+                }
+            }
+#endif // AZ_ENABLE_TRACING
+
             // Joint name to joint index map used for the skinning influences.
             AZStd::unordered_map<AZStd::string, uint16_t> jointNameToIndexMap;
 
@@ -373,6 +399,11 @@ namespace AZ
                 AZStd::string lodAssetName = GetAssetFullName(ModelLodAsset::TYPEINFO_Uuid());
                 lodAssetCreator.Begin(CreateAssetId(lodAssetName));
 
+                if (AZ::SceneAPI::Utilities::IsDebugEnabled())
+                {
+                    AZ_Info(s_builderName, "  Creating LOD %d\n", lodIndex);
+                }
+
                 {
                     AZ::Outcome<ProductMeshContentList> productMeshListOutcome =
                         SourceMeshListToProductMeshList(context, sourceMeshContentList, jointNameToIndexMap, morphTargetMetaCreator);
@@ -391,6 +422,7 @@ namespace AZ
                     AZStd::shared_ptr<const SceneAPI::SceneData::StaticMeshAdvancedRule> staticMeshAdvancedRule = context.m_group.GetRuleContainerConst().FindFirstByType<SceneAPI::SceneData::StaticMeshAdvancedRule>();
                     if (staticMeshAdvancedRule && !staticMeshAdvancedRule->MergeMeshes())
                     {
+                        AZ_Info(s_builderName, "        Merging meshes disabled by advanced mesh rule.\n");
                         // If the merge meshes option is disabled in the advanced mesh rule, don't merge meshes
                         canMergeMeshes = false;
                     }
@@ -405,13 +437,51 @@ namespace AZ
                                 // If we keep track of the ordering changes in MergeMeshesByMaterialUid and then re-mapped the MORPHTARGET_VERTEXINDICES buffer
                                 // we could potentially enable merging meshes that are morphed. But for now, disable merging.
                                 canMergeMeshes = false;
+                                AZ_Info(s_builderName, "   Scene contains morph data, disabling mesh merge.\n");
                                 break;
                             }
                         }
                     }
+#if defined(AZ_ENABLE_TRACING)
+                    auto printProductMesh = [&](const ProductMeshContent& productMesh)
+                    {
+                        AZ_Info(s_builderName, "      Mesh '%s'\n", productMesh.m_name.GetCStr());
+                        AZ_Info(s_builderName, "         # Indices: %zu\n", productMesh.m_indices.size());
+                        AZ_Info(s_builderName, "         # Positions: %zu\n", productMesh.m_positions.size());
+                        AZ_Info(s_builderName, "         # Normals: %zu\n", productMesh.m_normals.size());
+                        AZ_Info(s_builderName, "         # Tangents: %zu\n", productMesh.m_tangents.size());
+                        AZ_Info(s_builderName, "         # Bitangents: %zu\n", productMesh.m_bitangents.size());
+                        AZ_Info(s_builderName, "         # UV sets: %zu\n", productMesh.m_uvSets.size());
+                        AZ_Info(s_builderName, "         # Color sets: %zu\n", productMesh.m_colorSets.size());
+                        AZ_Info(s_builderName, "         # Cloth floats: %zu\n", productMesh.m_clothData.size());
+                        AZ_Info(s_builderName, "         # Material UID: %" PRIu64 "\n", productMesh.m_materialUid);
+                        AZ_Info(s_builderName, "         # Skin Influences Per Vertex: %" PRIu32 "\n", productMesh.m_influencesPerVertex);
+                        AZ_Info(s_builderName, "         # Skin Joint Indices: %zu\n", productMesh.m_skinJointIndices.size());
+                        AZ_Info(s_builderName, "         # Skin Weights: %zu\n", productMesh.m_skinWeights.size());
+                        AZ_Info(s_builderName, "         # Morph Target Data Size: %zu\n", productMesh.m_morphTargetVertexData.size());
+                        AZ_Info(s_builderName, "         # Can Be Merged fn returns: %s\n", productMesh.CanBeMerged() ? "true" : "false");
+                    };
+
+                    auto printProductListFn = [&](const char* introMessage)
+                    {
+                        if (AZ::SceneAPI::Utilities::IsDebugEnabled())
+                        {
+                            AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "%s", introMessage);
+                            // loop over the productMeshListOutcome and output the contents in debug trace
+                            for (const ProductMeshContent& mesh : lodMeshes)
+                            {
+                                printProductMesh(mesh);
+                            }
+                        }
+                    };
+
+                    printProductListFn("  Product list --- Before merging meshes:\n");
+#endif // AZ_ENABLE_TRACING
 
                     if (canMergeMeshes)
                     {
+                        AZ_Info(s_builderName, "        Merging meshes...");
+
                         productMeshListOutcome = MergeMeshesByMaterialUid(lodMeshes);
 
                         if (!productMeshListOutcome.IsSuccess())
@@ -419,6 +489,15 @@ namespace AZ
                             return AZ::SceneAPI::Events::ProcessingResult::Failure;
                         }
                         lodMeshes = productMeshListOutcome.GetValue();
+
+#if defined(AZ_ENABLE_TRACING)
+                        printProductListFn("  Product list --- After merging meshes:\n");
+#endif
+                    }
+                    else
+                    {
+                        AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "        Mesh merging is diabled.");
+
                     }
 
 #if defined(AZ_RPI_MESHES_SHARE_COMMON_BUFFERS)
@@ -428,6 +507,14 @@ namespace AZ
 
                     ProductMeshContent mergedMesh;
                     MergeMeshesToCommonBuffers(lodMeshes, mergedMesh, lodMeshViews);
+
+#if defined(AZ_ENABLE_TRACING)
+                    if (AZ::SceneAPI::Utilities::IsDebugEnabled())
+                    {
+                        AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "Final Common buffer merged content:\n");
+                        printProductMesh(mergedMesh);
+                    }
+#endif
 
                     BufferAssetView indexBuffer;
                     AZStd::vector<ModelLodAsset::Mesh::StreamBufferInfo> streamBuffers;
@@ -494,6 +581,16 @@ namespace AZ
             // Fill the skin meta asset
             if (!jointNameToIndexMap.empty())
             {
+                if (AZ::SceneAPI::Utilities::IsDebugEnabled())
+                {
+                    AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "Skinning influences found. Creating skin meta-asset with this data:\n");
+#if defined(AZ_ENABLE_TRACING)
+                    for (const auto& joint : jointNameToIndexMap)
+                    {
+                        AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "  Joint '%s' has index %" PRIu16 "\n", joint.first.c_str(), joint.second);
+                    }
+#endif
+                }
                 SkinMetaAssetCreator skinCreator;
                 skinCreator.Begin(SkinMetaAsset::ConstructAssetId(modelAssetId, modelAssetName));
 
@@ -609,10 +706,15 @@ namespace AZ
             // will have a 1-1 relationship with the source data. This ensures morph target indices
             // don't need to be re-mapped, as long as the meshes aren't merged later
             // We just can't output a mesh that has faces with multiple materials.
+
+            bool generateMissingSkinningData = false;
+
             for (size_t i = 0; i < sourceMeshList.size(); ++i)
             {
                 const SourceMeshContent& sourceMeshContent = sourceMeshList[i];
                 FacesByMaterialUid& productsByMaterialUid = productList[i];
+
+                generateMissingSkinningData = generateMissingSkinningData || (!sourceMeshContent.m_skinData.empty());
 
                 meshTransforms.push_back(sourceMeshContent.m_worldTransform);
 
@@ -652,6 +754,14 @@ namespace AZ
             {
                 m_skinRuleSettings.m_maxInfluencesPerVertex = skinRule->GetMaxWeightsPerVertex();
                 m_skinRuleSettings.m_weightThreshold = skinRule->GetWeightThreshold();
+
+                // in addition, if we have a skin rule on this specific mesh group assume the intention is for skinning
+                // This will cause it to treat meshes parented to bones (instead of skinned to bones) still as skinned meshes,
+                // and generate appropriate data such that they can follow those bones around.  This is one way to make it so that
+                // a scene that contains entirely rigid objects arranged in a heirarchy by parenting instead of skinning can still be
+                // animated as if it is an actor with skin weights, if desired - just add a Skin rule to any mesh group you want to
+                // export as a skin.
+                generateMissingSkinningData = true;
             }
 
             
@@ -805,7 +915,7 @@ namespace AZ
                         clothData.reserve(vertexCount * ClothDataFloatsPerVert);
                     }
 
-                    const bool hasSkinData = !sourceMesh.m_skinData.empty();
+                    bool hasSkinData = !sourceMesh.m_skinData.empty();
                     if (hasSkinData)
                     {
                         // Skinned meshes require that positions, normals, tangents, bitangents, all exist and have the same number
@@ -827,6 +937,29 @@ namespace AZ
                         const uint32_t totalInfluences = productMesh.m_influencesPerVertex * aznumeric_cast<uint32_t>(vertexCount);
                         productMesh.m_skinJointIndices.reserve(totalInfluences);
                         productMesh.m_skinWeights.reserve(totalInfluences);
+                    }
+                    else if (generateMissingSkinningData)
+                    {
+                        // Another issue is that while everything in input sourceMeshList is represents one logical output mesh (split by
+                        // material UID), and may be merged into one actual mesh (per material id), some input sub-meshes might have
+                        // skinning data and some might not. Artists can use their DCC tools to attach meshes directly bones via parenting,
+                        // for example. The meshes will not have any skin weight or index data, but will still be expected to move as if
+                        // they are skinned to the bone they are parented to.  To handle this, when we encounter any mesh that has skinning
+                        // data in the input list, we will make sure that EVERY mesh in the output list of this function has skinning data,
+                        // and synthesize it if its missing.
+
+                        // Note that the shader eventually used only handles odd numbers of weights, because it packs them as uint16s into
+                        // the lower and upper half of a uint32
+                        productMesh.m_influencesPerVertex = 2;
+                        productMesh.m_skinJointIndices.reserve(vertexCount * productMesh.m_influencesPerVertex);
+                        productMesh.m_skinWeights.reserve(vertexCount * productMesh.m_influencesPerVertex);
+                        hasSkinData = true;
+
+                        if (AZ::SceneAPI::Utilities::IsDebugEnabled())
+                        {
+                            AZ_Info(s_builderName, "Source mesh '%s' has no skin data, but others in the same merge do.  Will Synthesize skin data.", sourceMesh.m_name.GetCStr());
+                            AZ_Info(s_builderName, "    Reserved space for: %" PRIu32 " influences per vertex\n", productMesh.m_influencesPerVertex);
+                        }
                     }
 
                     for (const auto& itr : oldToNewIndices)
@@ -928,7 +1061,9 @@ namespace AZ
                         // Gather skinning influences
                         if (hasSkinData)
                         {
-                            // Warn about excess of skin influences once per-source mesh.
+                            // Copy the vertex skinning data from the source mesh, to the product mesh.
+                            // this populates the productMesh.m_skinJointIndices and productMesh.m_skinWeights arrays as well as creates the
+                            // jointNameToIndexMap.
                             GatherVertexSkinningInfluences(sourceMesh, productMesh, jointNameToIndexMap, oldIndex);
                         }
                     }// for each vertex in old to new indices
@@ -938,6 +1073,17 @@ namespace AZ
                     // We also need to align to 16 and 12 byte boundary in order to respect RGB32 and RGBA32 buffer views.
                     if (hasSkinData)
                     {
+                        if (AZ::SceneAPI::Utilities::IsDebugEnabled())
+                        {
+                            AZ_Info(s_builderName, "  Aligning Buffers for mesh '%s' with vertexCount %zu\n", productMesh.m_name.GetCStr(), vertexCount);
+                            AZ_Info(s_builderName, "  Before:      %zu positions\n", positions.size());
+                            AZ_Info(s_builderName, "               %zu normals\n", normals.size());
+                            AZ_Info(s_builderName, "               %zu tangents\n", tangents.size());
+                            AZ_Info(s_builderName, "               %zu bitangents\n", bitangents.size());
+                            AZ_Info(s_builderName, "               %zu skinJointIndices\n", skinJointIndices.size());
+                            AZ_Info(s_builderName, "               %zu skinWeights\n", skinWeights.size());
+                        }
+
                         RPI::ModelAssetHelpers::AlignStreamBuffer(positions, vertexCount, PositionFormat, SkinnedMeshBufferAlignment);
                         RPI::ModelAssetHelpers::AlignStreamBuffer(normals, vertexCount, NormalFormat, SkinnedMeshBufferAlignment);
                         RPI::ModelAssetHelpers::AlignStreamBuffer(tangents, vertexCount, TangentFormat, SkinnedMeshBufferAlignment);
@@ -948,6 +1094,18 @@ namespace AZ
                             skinJointIndices, totalVertexInfluences, SkinIndicesFormat, SkinnedMeshBufferAlignment);
                         RPI::ModelAssetHelpers::AlignStreamBuffer(
                             skinWeights, totalVertexInfluences, SkinWeightFormat, SkinnedMeshBufferAlignment);
+
+                        if (AZ::SceneAPI::Utilities::IsDebugEnabled())
+                        {
+                            AZ_Info(s_builderName, "  Aligning Buffers for mesh '%s' with vertexCount %zu\n", productMesh.m_name.GetCStr(), vertexCount);
+                            AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "  After:       %zu positions\n", positions.size());
+                            AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "               %zu normals\n", normals.size());
+                            AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "               %zu tangents\n", tangents.size());
+                            AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "               %zu bitangents\n", bitangents.size());
+                            AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "               %zu skinJointIndices\n", skinJointIndices.size());
+                            AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "               %zu skinWeights\n", skinWeights.size());
+                        }
+                        
                     }
 
                     // A morph target that only influenced one source mesh might be split over multiple product meshes
@@ -1055,43 +1213,73 @@ namespace AZ
             AZStd::vector<uint16_t>& skinJointIndices = productMesh.m_skinJointIndices;
             AZStd::vector<float>& skinWeights = productMesh.m_skinWeights;
 
-            size_t numInfluencesAdded = 0;
-            for (const auto& skinData : sourceMesh.m_skinData)
+            if (!sourceMesh.m_skinData.empty())
             {
-                const size_t numSkinInfluences = skinData->GetLinkCount(vertexIndex);
-
-                for (size_t influenceIndex = 0; influenceIndex < numSkinInfluences; ++influenceIndex)
+                size_t numInfluencesAdded = 0;
+                for (const auto& skinData : sourceMesh.m_skinData)
                 {
-                    const AZ::SceneAPI::DataTypes::ISkinWeightData::Link& link = skinData->GetLink(vertexIndex, influenceIndex);
+                    const size_t numSkinInfluences = skinData->GetLinkCount(vertexIndex);
 
-                    const float weight = link.weight;
-                    const AZStd::string& boneName = skinData->GetBoneName(link.boneId);
-
-                    // The bone id is a local bone id to the mesh. Since there could be multiple meshes, we store a global index to this asset,
-                    // which is guaranteed to be unique. Later we will translate those indices back using the skinmetadata.
-                    if (!jointNameToIndexMap.contains(boneName))
+                    for (size_t influenceIndex = 0; influenceIndex < numSkinInfluences; ++influenceIndex)
                     {
-                        jointNameToIndexMap[boneName] = aznumeric_caster(jointNameToIndexMap.size());
-                    }
-                    const AZ::u16 jointIndex = jointNameToIndexMap[boneName];
+                        const AZ::SceneAPI::DataTypes::ISkinWeightData::Link& link = skinData->GetLink(vertexIndex, influenceIndex);
 
-                    // Add skin influence
-                    if (weight > m_skinRuleSettings.m_weightThreshold)
-                    {
-                        if (numInfluencesAdded < productMesh.m_influencesPerVertex)
+                        const float weight = link.weight;
+                        const AZStd::string& boneName = skinData->GetBoneName(link.boneId);
+
+                        // The bone id is a local bone id to the mesh. Since there could be multiple meshes, we store a global index to this
+                        // asset, which is guaranteed to be unique. Later we will translate those indices back using the skinmetadata.
+                        if (!jointNameToIndexMap.contains(boneName))
                         {
-                            skinJointIndices.push_back(jointIndex);
-                            skinWeights.push_back(weight);
-                            numInfluencesAdded++;
+                            jointNameToIndexMap[boneName] = aznumeric_caster(jointNameToIndexMap.size());
+                        }
+                        const AZ::u16 jointIndex = jointNameToIndexMap[boneName];
+
+                        // Add skin influence
+                        if (weight > m_skinRuleSettings.m_weightThreshold)
+                        {
+                            if (numInfluencesAdded < productMesh.m_influencesPerVertex)
+                            {
+                                skinJointIndices.push_back(jointIndex);
+                                skinWeights.push_back(weight);
+                                numInfluencesAdded++;
+                            }
                         }
                     }
                 }
-            }
 
-            for (size_t influenceIndex = numInfluencesAdded; influenceIndex < productMesh.m_influencesPerVertex; ++influenceIndex)
+                for (size_t influenceIndex = numInfluencesAdded; influenceIndex < productMesh.m_influencesPerVertex; ++influenceIndex)
+                {
+                    skinJointIndices.push_back(0);
+                    skinWeights.push_back(0.0f);
+                }
+            }
+            else 
             {
-                skinJointIndices.push_back(0);
-                skinWeights.push_back(0.0f);
+                // if we trigger this 'else' it means that we have been asked to synthesize skinning data for a mesh that contains none,
+                // since this function is not going to get called except in the case where we're building a skinned object anyway.
+                if (!jointNameToIndexMap.contains(sourceMesh.m_parentName))
+                {
+                    jointNameToIndexMap[sourceMesh.m_parentName] = aznumeric_caster(jointNameToIndexMap.size());
+                }
+                const AZ::u16 jointIndex = jointNameToIndexMap[sourceMesh.m_parentName];
+
+                for (size_t influenceIndex = 0; influenceIndex < productMesh.m_influencesPerVertex; ++influenceIndex)
+                {
+                    // Handles the possible future case where more than 1 influence is requested per vertex, which would be required
+                    // if there is ever a desire to merge multiple skinned meshes that have different skinning influences per vertex
+                    // by normalizing them to the same number of influences per vertex so that their streams are compatible.
+                    if (influenceIndex == 0)
+                    {
+                        skinJointIndices.push_back(jointIndex);
+                        skinWeights.push_back(1.0f);
+                    }
+                    else
+                    {
+                        skinJointIndices.push_back(0);
+                        skinWeights.push_back(0.0f);
+                    }
+                }
             }
         }
 
