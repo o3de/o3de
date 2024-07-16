@@ -482,7 +482,10 @@ namespace TextureAtlasBuilder
             {
                 AZStd::string ext;
                 AzFramework::StringFunc::Path::GetExtension(candidates[i].c_str(), ext, false);
-                if (ext != "dds")
+
+                bool extensionSupported = false;
+                ImageProcessingAtom::ImageBuilderRequestBus::BroadcastResult(extensionSupported, &ImageProcessingAtom::ImageBuilderRequestBus::Events::IsExtensionSupported, ext.c_str());
+                if (extensionSupported)
                 {
                     bool duplicate = false;
                     for (size_t j = 0; j < paths.size() && !duplicate; ++j)
@@ -592,12 +595,19 @@ namespace TextureAtlasBuilder
             {
                 AZStd::string child = (entry.filePath().toStdString()).c_str();
                 AZStd::string ext;
+
                 bool isDir = !AzFramework::StringFunc::Path::GetExtension(child.c_str(), ext, false);
                 if (isDir)
                 {
                     AddFolderContents(paths, child, valid);
+                    continue;
                 }
-                else if (ext != "dds")
+
+                // Not a directory - add the file if it's a support image extension
+                bool extensionSupported = false;
+                ImageProcessingAtom::ImageBuilderRequestBus::BroadcastResult(extensionSupported, &ImageProcessingAtom::ImageBuilderRequestBus::Events::IsExtensionSupported, ext.c_str());
+
+                if (extensionSupported)    
                 {
                     AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::NormalizePathKeepCase, child);
                     bool duplicate = false;
@@ -1052,7 +1062,7 @@ namespace TextureAtlasBuilder
                 return;
             }
 
-            response.m_outputProducts.push_back(outProducts[0]);
+            response.m_outputProducts.insert(response.m_outputProducts.end(), outProducts.begin(), outProducts.end());
 
             // The texatlasidx file is a data file that indicates where the original parts are inside the atlas, 
             // and this would usually imply that it refers to its dds file in some way or needs it to function.
