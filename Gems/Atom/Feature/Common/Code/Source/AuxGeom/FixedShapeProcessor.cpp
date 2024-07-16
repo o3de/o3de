@@ -53,10 +53,11 @@ namespace AZ
             RHI::BufferPoolDescriptor desc;
             desc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
             desc.m_bindFlags = RHI::BufferBindFlags::InputAssembly;
+            desc.m_deviceMask = deviceMask;
 
             m_bufferPool = aznew RHI::BufferPool;
             m_bufferPool->SetName(Name("AuxGeomFixedShapeBufferPool"));
-            RHI::ResultCode resultCode = m_bufferPool->Init(deviceMask, desc);
+            RHI::ResultCode resultCode = m_bufferPool->Init(desc);
 
             if (resultCode != RHI::ResultCode::Success)
             {

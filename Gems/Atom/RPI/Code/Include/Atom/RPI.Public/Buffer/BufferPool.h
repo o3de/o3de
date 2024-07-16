@@ -45,8 +45,8 @@ namespace AZ
             BufferPool() = default;
 
             // Standard asset creation path.
-            static Data::Instance<BufferPool> CreateInternal(RHI::MultiDevice::DeviceMask deviceMask, ResourcePoolAsset& poolAsset);
-            RHI::ResultCode Init(RHI::MultiDevice::DeviceMask deviceMask, ResourcePoolAsset& poolAsset);
+            static Data::Instance<BufferPool> CreateInternal(ResourcePoolAsset& poolAsset);
+            RHI::ResultCode Init(ResourcePoolAsset& poolAsset);
 
             RHI::Ptr<RHI::BufferPool> m_pool;
         };

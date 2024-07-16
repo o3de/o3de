@@ -28,11 +28,10 @@ namespace AZ
                 resourcePoolAsset);
         }
 
-        Data::Instance<AttachmentImagePool> AttachmentImagePool::CreateInternal(
-            RHI::MultiDevice::DeviceMask deviceMask, ResourcePoolAsset& poolAsset)
+        Data::Instance<AttachmentImagePool> AttachmentImagePool::CreateInternal(ResourcePoolAsset& poolAsset)
         {
             Data::Instance<AttachmentImagePool> imagePool = aznew AttachmentImagePool();
-            RHI::ResultCode resultCode = imagePool->Init(deviceMask, poolAsset);
+            RHI::ResultCode resultCode = imagePool->Init(poolAsset);
 
             if (resultCode == RHI::ResultCode::Success)
             {
@@ -42,7 +41,7 @@ namespace AZ
             return nullptr;
         }
 
-        RHI::ResultCode AttachmentImagePool::Init(RHI::MultiDevice::DeviceMask deviceMask, ResourcePoolAsset& poolAsset)
+        RHI::ResultCode AttachmentImagePool::Init(ResourcePoolAsset& poolAsset)
         {
             RHI::Ptr<RHI::ImagePool> imagePool = aznew RHI::ImagePool;
             if (!imagePool)
@@ -59,7 +58,7 @@ namespace AZ
             }
 
             imagePool->SetName(AZ::Name(poolAsset.GetPoolName()));
-            RHI::ResultCode resultCode = imagePool->Init(deviceMask, *desc);
+            RHI::ResultCode resultCode = imagePool->Init(*desc);
             if (resultCode == RHI::ResultCode::Success)
             {
                 m_pool = imagePool;

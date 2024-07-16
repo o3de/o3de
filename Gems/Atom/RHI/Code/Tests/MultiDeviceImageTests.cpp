@@ -61,7 +61,7 @@ namespace UnitTest
 
             RHI::ImagePoolDescriptor imagePoolDesc;
             imagePoolDesc.m_bindFlags = RHI::ImageBindFlags::Color;
-            imagePool->Init(DeviceMask, imagePoolDesc);
+            imagePool->Init(imagePoolDesc);
 
             ASSERT_TRUE(imageA->IsInitialized() == false);
             ASSERT_TRUE(imageB->IsInitialized() == false);
@@ -116,7 +116,7 @@ namespace UnitTest
 
             RHI::Ptr<RHI::ImagePool> imagePoolB;
             imagePoolB = aznew RHI::ImagePool;
-            imagePoolB->Init(DeviceMask, imagePoolDesc);
+            imagePoolB->Init(imagePoolDesc);
 
             initRequest.m_image = imageB.get();
             initRequest.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::Color, 8, 8, RHI::Format::R8G8B8A8_UNORM_SRGB);
@@ -145,7 +145,7 @@ namespace UnitTest
 
             RHI::ImagePoolDescriptor imagePoolDesc;
             imagePoolDesc.m_bindFlags = RHI::ImageBindFlags::Color;
-            imagePool->Init(DeviceMask, imagePoolDesc);
+            imagePool->Init(imagePoolDesc);
 
             RHI::Ptr<RHI::Image> image;
             image = aznew RHI::Image;
@@ -249,7 +249,7 @@ namespace UnitTest
             m_imagePool = aznew RHI::ImagePool;
             RHI::ImagePoolDescriptor imagePoolDesc;
             imagePoolDesc.m_bindFlags = GetParam().imageBindFlags;
-            m_imagePool->Init(DeviceMask, imagePoolDesc);
+            m_imagePool->Init(imagePoolDesc);
 
             RHI::ImageDescriptor imageDescriptor;
             imageDescriptor.m_bindFlags = GetParam().imageBindFlags;

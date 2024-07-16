@@ -32,7 +32,7 @@ namespace AZ::RHI
         virtual ~ImagePool() = default;
 
         //! Initializes the pool. The pool must be initialized before images can be registered with it.
-        ResultCode Init(MultiDevice::DeviceMask deviceMask, const ImagePoolDescriptor& descriptor);
+        ResultCode Init(const ImagePoolDescriptor& descriptor);
 
         //! Initializes an image onto the pool. The pool provides backing GPU resources to the image.
         ResultCode InitImage(const ImageInitRequest& request);

@@ -35,8 +35,9 @@ namespace AZ::RHI
         QueryPool() = default;
         virtual ~QueryPool() override = default;
 
-        //!  Initialize the QueryPool by initializing all device-specific QueryPools for each device mentioned in the deviceMask.
-        ResultCode Init(MultiDevice::DeviceMask deviceMask, const QueryPoolDescriptor& descriptor);
+        //!  Initialize the QueryPool by initializing all device-specific QueryPools for each device mentioned in the descriptor's
+        //!  deviceMask.
+        ResultCode Init(const QueryPoolDescriptor& descriptor);
 
         //! Initialize a query from the pool (one device-specific query for each DeviceQueryPool).
         //! When initializing multiple queries use the other version of InitQuery

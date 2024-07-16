@@ -63,9 +63,10 @@ namespace UnitTest
         MultiDeviceDrawPacketData(SimpleLcgRandom& random)
         {
             RHI::BufferPoolDescriptor bufferPoolDesc;
+            bufferPoolDesc.m_deviceMask = LocalDeviceMask;
             m_bufferPool = aznew RHI::BufferPool;
             m_bufferEmpty = aznew RHI::Buffer;
-            m_bufferPool->Init(LocalDeviceMask, bufferPoolDesc);
+            m_bufferPool->Init(bufferPoolDesc);
             RHI::BufferInitRequest request;
             request.m_buffer = m_bufferEmpty.get();
             request.m_descriptor = RHI::BufferDescriptor{};

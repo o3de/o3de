@@ -131,7 +131,7 @@ namespace AZ
             assetHandlers.emplace_back(MakeAssetHandler<StreamingImagePoolAssetHandler>());
         }
 
-        void ImageSystem::Init(RHI::MultiDevice::DeviceMask deviceMask, const ImageSystemDescriptor& desc)
+        void ImageSystem::Init(const ImageSystemDescriptor& desc)
         {
             // Register attachment image instance database.
             {
@@ -145,9 +145,9 @@ namespace AZ
 
             {
                 Data::InstanceHandler<AttachmentImagePool> handler;
-                handler.m_createFunction = [deviceMask](Data::AssetData* poolAsset)
+                handler.m_createFunction = [](Data::AssetData* poolAsset)
                 {
-                    return AttachmentImagePool::CreateInternal(deviceMask, *(azrtti_cast<ResourcePoolAsset*>(poolAsset)));
+                    return AttachmentImagePool::CreateInternal(*(azrtti_cast<ResourcePoolAsset*>(poolAsset)));
                 };
                 Data::InstanceDatabase<AttachmentImagePool>::Create(azrtti_typeid<ResourcePoolAsset>(), handler);
             }
@@ -165,9 +165,10 @@ namespace AZ
 
             {
                 Data::InstanceHandler<StreamingImagePool> handler;
-                handler.m_createFunction = [this, deviceMask](Data::AssetData* poolAsset)
+                handler.m_createFunction = [this](Data::AssetData* poolAsset)
                 {
-                    Data::Instance<StreamingImagePool> instance = StreamingImagePool::CreateInternal(deviceMask, *(azrtti_cast<StreamingImagePoolAsset*>(poolAsset)));
+                    Data::Instance<StreamingImagePool> instance =
+                        StreamingImagePool::CreateInternal(*(azrtti_cast<StreamingImagePoolAsset*>(poolAsset)));
                     if (instance)
                     {
                         m_activeStreamingPoolMutex.lock();

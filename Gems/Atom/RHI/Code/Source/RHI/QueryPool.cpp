@@ -15,7 +15,7 @@
 
 namespace AZ::RHI
 {
-    ResultCode QueryPool::Init(MultiDevice::DeviceMask deviceMask, const QueryPoolDescriptor& descriptor)
+    ResultCode QueryPool::Init(const QueryPoolDescriptor& descriptor)
     {
         if (Validation::IsEnabled())
         {
@@ -41,7 +41,7 @@ namespace AZ::RHI
         }
 
         auto resultCode = ResourcePool::Init(
-            deviceMask,
+            descriptor.m_deviceMask,
             [this, &descriptor]()
             {
                 // Assign the descriptor prior to initialization. Technically, the descriptor is undefined

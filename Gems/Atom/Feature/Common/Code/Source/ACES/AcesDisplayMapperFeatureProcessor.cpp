@@ -352,7 +352,7 @@ namespace AZ::Render
         imagePoolDesc.m_bindFlags = RHI::ImageBindFlags::ShaderReadWrite;
         imagePoolDesc.m_budgetInBytes = ImagePoolBudget;
 
-        RHI::ResultCode resultCode = m_displayMapperImagePool->Init(RHI::MultiDevice::AllDevices, imagePoolDesc);
+        RHI::ResultCode resultCode = m_displayMapperImagePool->Init(imagePoolDesc);
         if (resultCode != RHI::ResultCode::Success)
         {
             AZ_Error("AcesDisplayMapperFeatureProcessor", false, "Failed to initialize image pool.");
