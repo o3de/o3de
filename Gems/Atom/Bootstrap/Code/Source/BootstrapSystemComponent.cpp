@@ -322,11 +322,23 @@ namespace AZ
             {
                 // Create a native window only if it's a launcher (or standalone)
                 // LY editor create its own window which we can get its handle through AzFramework::WindowSystemNotificationBus::Handler's OnWindowCreated() function
+
+                // Query the application type to determine if this is a headless application
                 AZ::ApplicationTypeQuery appType;
                 ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+
                 if (appType.IsHeadless())
                 {
                     m_nativeWindow = nullptr;
+                }
+                else if (appType.IsConsoleMode())
+                {
+                    m_nativeWindow = nullptr;
+
+                    // If we are running without a native window, the application multisamplestate still needs to be set and
+                    // initialized so that the shader's SuperVariant name is set and the scene's render pipelines are re-initialized
+                    AZ::RHI::MultisampleState multisampleState;
+                    AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(multisampleState);
                 }
                 else if (!appType.IsValid() || appType.IsGame())
                 {

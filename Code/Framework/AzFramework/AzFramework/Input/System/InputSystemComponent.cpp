@@ -17,6 +17,7 @@
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 #include <AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard.h>
 
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -221,6 +222,16 @@ namespace AzFramework
             settingsRegistry->Get(m_touchEnabled, "/O3DE/InputSystem/TouchEnabled");
             settingsRegistry->Get(m_virtualKeyboardEnabled, "/O3DE/InputSystem/VirtualKeyboardEnabled");
             settingsRegistry->Get(m_captureMouseCursor, "/O3DE/InputSystem/Mouse/CaptureMouseCursor");
+
+            // Check if option to capture the mouse cursor is set or not.
+            bool captureMouseCursor{ true };
+            settingsRegistry->Get(captureMouseCursor, "/O3DE/InputSystem/Mouse/CaptureMouseCursor");
+
+            // Make sure that we only disable capturing the mouse (if specified) when we are running in either headless mode or console mode.
+            AZ::ApplicationTypeQuery appType;
+            AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+
+            m_captureMouseCursor = (captureMouseCursor && (!appType.IsHeadless() && !appType.IsConsoleMode()) || appType.IsEditor());
         }
 
         // Create all enabled input devices
