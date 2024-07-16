@@ -40,13 +40,13 @@ class DirectionalLightShadow
 
     //! Calculates visibility ratio of the surface from the light origin. Should be called from fragment shaders.
     //! Returns lit ratio from the light (1.0 is fully visible, 0.0 is fully shadowed).
-    static real GetVisibility(uint lightIndex, real3 worldPos, real3 normalVector, float4 screenUv);
+    static real GetVisibility(uint lightIndex, float3 worldPos, real3 normalVector, float4 screenUv);
 
     static float2 GetVisibilityThickTransmission(uint lightIndex, real3 worldPos, real3 normalVector, float4 screenUv);
 
     static float2 GetVisibilityThinTransmission(uint lightIndex, real3 worldPos, real3 normalVector, float4 screenUv, real shrinkFactor);
 
-    static DirectionalShadowCalculator MakeShadowCalculator(uint lightIndex, real3 worldPos, real3 normalVector);
+    static DirectionalShadowCalculator MakeShadowCalculator(uint lightIndex, float3 worldPos, real3 normalVector);
 
     //! This alters the input color to visualize which cascade is being used
     //! and whether PCF is used as a fallback in ESM+PCF mode or not.
@@ -67,7 +67,7 @@ bool DirectionalLightShadow::UseFullscreenShadows()
 #endif
 }
 
-DirectionalShadowCalculator DirectionalLightShadow::MakeShadowCalculator(uint lightIndex, real3 worldPos, real3 normalVector)
+DirectionalShadowCalculator DirectionalLightShadow::MakeShadowCalculator(uint lightIndex, float3 worldPos, real3 normalVector)
 {
     DirectionalShadowCalculator calc;
     calc.SetBlendBetweenCascadesEnable(o_blend_between_cascades_enable);
@@ -127,7 +127,7 @@ float2 DirectionalLightShadow::GetVisibilityThinTransmission(uint lightIndex, re
     return float2(visibility, thickness);
 }
 
-real DirectionalLightShadow::GetVisibility(uint lightIndex, real3 worldPos, real3 normalVector, float4 screenUv)
+real DirectionalLightShadow::GetVisibility(uint lightIndex, float3 worldPos, real3 normalVector, float4 screenUv)
 {
     if (UseFullscreenShadows())
     {

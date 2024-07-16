@@ -25,7 +25,6 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 #include "SandboxIntegration.h"
-#include "Include/IEditorClassFactory.h"
 
 namespace ComponentEntityEditorPluginInternal
 {
@@ -44,7 +43,6 @@ namespace ComponentEntityEditorPluginInternal
 
     void UnregisterSandboxObjects()
     {
-        GetIEditor()->GetClassFactory()->UnregisterClass("ComponentEntity");
     }
 
 

@@ -71,7 +71,7 @@ namespace AZ
             RingBuffer m_bufferData{ "DynamicBufferAllocator", CommonBufferPoolType::DynamicInputAssembly, 1 };
 
             // The CPU address of the mapped buffer per frame
-            RHI::FrameCountMaxRingBuffer<void*> m_bufferStartAddresses;
+            RHI::FrameCountMaxRingBuffer<AZStd::unordered_map<int, void*>> m_bufferStartAddresses;
         };
     } // namespace RPI
 } // namespace AZ

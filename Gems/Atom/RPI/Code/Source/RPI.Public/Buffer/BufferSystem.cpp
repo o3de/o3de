@@ -34,10 +34,8 @@ namespace AZ
             assetHandlers.emplace_back(MakeAssetHandler<BufferAssetHandler>());
         }
 
-        void BufferSystem::Init()
+        void BufferSystem::Init(RHI::MultiDevice::DeviceMask deviceMask)
         {
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-
             {
                 Data::InstanceHandler<Buffer> handler;
                 handler.m_createFunction = [](Data::AssetData* bufferAsset)
@@ -49,9 +47,9 @@ namespace AZ
 
             {
                 Data::InstanceHandler<BufferPool> handler;
-                handler.m_createFunction = [device](Data::AssetData* poolAsset)
+                handler.m_createFunction = [deviceMask](Data::AssetData* poolAsset)
                 {
-                    return BufferPool::CreateInternal(*device, *(azrtti_cast<ResourcePoolAsset*>(poolAsset)));
+                    return BufferPool::CreateInternal(deviceMask, *(azrtti_cast<ResourcePoolAsset*>(poolAsset)));
                 };
                 Data::InstanceDatabase<BufferPool>::Create(azrtti_typeid<ResourcePoolAsset>(), handler);
             }
@@ -86,16 +84,15 @@ namespace AZ
 
             return m_commonPools[index];
         }
-        
+
         bool BufferSystem::CreateCommonBufferPool(CommonBufferPoolType poolType)
         {
             if (!m_initialized)
             {
                 return false;
             }
-            auto* device = RHI::RHISystemInterface::Get()->GetDevice();
-            
-            RHI::Ptr<RHI::BufferPool> bufferPool = RHI::Factory::Get().CreateBufferPool();
+
+            RHI::Ptr<RHI::BufferPool> bufferPool = aznew RHI::BufferPool;
 
             RHI::BufferPoolDescriptor bufferPoolDesc;
             switch (poolType)
@@ -119,6 +116,11 @@ namespace AZ
                 bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::CopyWrite;
                 bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Host;
                 bufferPoolDesc.m_hostMemoryAccess = RHI::HostMemoryAccess::Read;
+                break;
+            case CommonBufferPoolType::Staging:
+                bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::CopyRead;
+                bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Host;
+                bufferPoolDesc.m_hostMemoryAccess = RHI::HostMemoryAccess::Write;
                 break;
             case CommonBufferPoolType::ReadWrite:
                 // Add CopyRead flag too since it's often we need to read back GPU attachment buffers.
@@ -150,7 +152,7 @@ namespace AZ
             }
 
             bufferPool->SetName(Name(AZStd::string::format("RPI::CommonBufferPool_%i", static_cast<uint32_t>(poolType))));
-            RHI::ResultCode resultCode = bufferPool->Init(*device, bufferPoolDesc);
+            RHI::ResultCode resultCode = bufferPool->Init(RHI::MultiDevice::AllDevices, bufferPoolDesc);
             if (resultCode != RHI::ResultCode::Success)
             {
                 AZ_Error("BufferSystem", false, "Failed to create buffer pool: %d", poolType);

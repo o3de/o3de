@@ -6,6 +6,7 @@
  *
  */
 #include <Atom/RHI/Factory.h>
+#include <RHI/Device.h>
 #include <RHI/FrameGraphExecuteGroupPrimary.h>
 #include <RHI/Scope.h>
 #include <RHI/SwapChain.h>
@@ -14,7 +15,7 @@ namespace AZ::Vulkan
 {
     void FrameGraphExecuteGroupPrimary::Init(
         Device& device,
-        AZStd::vector<const Scope*>&& scopes)
+        AZStd::vector<Scope*>&& scopes)
     {
         AZ_Assert(!scopes.empty(), "Empty list of scopes for Merged group");
         // Use the max graphGroup id as the id of the execute group.
@@ -35,7 +36,7 @@ namespace AZ::Vulkan
         {
             scopeEntries.push_back({ scope->GetId(), scope->GetEstimatedItemCount() });
             swapChainsToPresent.reserve(swapChainsToPresent.size() + scope->GetSwapChainsToPresent().size());
-            for (RHI::SwapChain* swapChain : scope->GetSwapChainsToPresent())
+            for (RHI::DeviceSwapChain* swapChain : scope->GetSwapChainsToPresent())
             {
                 swapChainsToPresent.push_back(static_cast<SwapChain*>(swapChain));
             }
@@ -51,6 +52,7 @@ namespace AZ::Vulkan
         }
 
         InitMergedRequest request;
+        request.m_deviceIndex = device.GetDeviceIndex();
         request.m_scopeEntries = scopeEntries.data();
         request.m_scopeCount = static_cast<uint32_t>(scopeEntries.size());
         Base::Init(request);
@@ -128,6 +130,11 @@ namespace AZ::Vulkan
     }
 
     AZStd::span<const Scope* const> FrameGraphExecuteGroupPrimary::GetScopes() const
+    {
+        return m_scopes;
+    }
+
+    AZStd::span<Scope* const> FrameGraphExecuteGroupPrimary::GetScopes()
     {
         return m_scopes;
     }

@@ -49,7 +49,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
             litRatio = DirectionalLightShadow::GetVisibility(shadowIndex, real3(surface.position), surface.vertexNormal, screenUv);
         }
 #else 
-        litRatio = DirectionalLightShadow::GetVisibility(shadowIndex, real3(surface.position), surface.vertexNormal, screenUv);
+        litRatio = DirectionalLightShadow::GetVisibility(shadowIndex, surface.position, surface.vertexNormal, screenUv);
 #endif // ENABLE_TRANSMISSION
 
     }

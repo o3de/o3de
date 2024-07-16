@@ -9,7 +9,6 @@
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/DrawListTagRegistry.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/ShaderResourceGroup.h>
 
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 #include <Atom/RPI.Public/Pass/RasterPass.h>
@@ -188,10 +187,7 @@ namespace AZ
             {
                 const ViewPtr& view = views.front();
 
-                // Assert the view has our draw list (the view's DrawlistTags are collected from passes using its viewTag)
-                AZ_Assert(view->HasDrawListTag(m_drawListTag), "View's DrawListTags out of sync with pass'. ");
-
-                // Draw List 
+                // Draw List. May return an empty list, and that's ok.
                 viewDrawList = view->GetDrawList(m_drawListTag);
             }
 
@@ -268,7 +264,7 @@ namespace AZ
                 const RHI::DrawItemProperties& drawItemProperties = m_drawListView[index];
                 if (drawItemProperties.m_drawFilterMask & m_pipeline->GetDrawFilterMask())
                 {
-                    commandList->Submit(*drawItemProperties.m_item, index + indexOffset);
+                    commandList->Submit(drawItemProperties.m_item->GetDeviceDrawItem(context.GetDeviceIndex()), index + indexOffset);
                 }
             }
         }
@@ -281,7 +277,7 @@ namespace AZ
             {
                 commandList->SetViewport(m_viewportState);
                 commandList->SetScissor(m_scissorState);
-                SetSrgsForDraw(commandList);
+                SetSrgsForDraw(context);
                 SubmitDrawItems(context, context.GetSubmitRange().m_startIndex, context.GetSubmitRange().m_endIndex, 0);
             }
         }

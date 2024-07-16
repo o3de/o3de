@@ -28,9 +28,10 @@ Surface EvaluateSurface_StandardPBR(
     bool isFrontFace,
     bool isDisplacementClipped,
     float4 uvDxDy,
-    bool customDerivatives)
+    bool customDerivatives,
+    float4 vertexColor)
 {
-    Surface surface = EvaluateSurface_BasePBR(positionWS, vertexNormal, tangents, bitangents, uvs, isFrontFace, uvDxDy, customDerivatives);
+    Surface surface = EvaluateSurface_BasePBR(positionWS, vertexNormal, tangents, bitangents, uvs, isFrontFace, uvDxDy, customDerivatives, vertexColor);
 
     // ------- Parallax Clipping -------
 
@@ -90,6 +91,30 @@ Surface EvaluateSurface_StandardPBR(
     float3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],
     bool isFrontFace,
+    bool isDisplacementClipped,
+    float4 uvDxDy,
+    bool customDerivatives)
+{
+    return EvaluateSurface_StandardPBR(
+        positionWS,
+        vertexNormal,
+        tangents,
+        bitangents,
+        uvs,
+        isFrontFace,
+        isDisplacementClipped,
+        uvDxDy,
+        customDerivatives,
+        float4(1.0f, 1.0f, 1.0f, 1.0f));
+}
+
+Surface EvaluateSurface_StandardPBR(
+    float3 positionWS,
+    real3 vertexNormal,
+    float3 tangents[UvSetCount],
+    float3 bitangents[UvSetCount],
+    float2 uvs[UvSetCount],
+    bool isFrontFace,
     bool isDisplacementClipped)
 {
     return EvaluateSurface_StandardPBR(
@@ -115,7 +140,8 @@ Surface EvaluateSurface_StandardPBR(VsOutput IN, PixelGeometryData geoData, floa
         geoData.isFrontFace,
         geoData.isDisplacementClipped,
         uvDxDy,
-        customDerivatives);
+        customDerivatives,
+        GetVertexColor(IN));
 }
 
 Surface EvaluateSurface_StandardPBR(VsOutput IN, PixelGeometryData geoData)
@@ -129,5 +155,6 @@ Surface EvaluateSurface_StandardPBR(VsOutput IN, PixelGeometryData geoData)
         geoData.isFrontFace,
         geoData.isDisplacementClipped,
         float4(0.0f, 0.0f, 0.0f, 0.0f),
-        false);
+        false,
+        GetVertexColor(IN));
 }

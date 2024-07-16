@@ -41,21 +41,7 @@ PSOutput MainPS(VSOutput IN)
 
     ShaperType shaperType = (ShaperType)PassSrg::m_shaperType;
 
-    // Convert from working color space to lut coordinates by applying the shaper function
-    float3 lutCoordinate = LinearToShaper(color, shaperType, PassSrg::m_shaperBias, PassSrg::m_shaperScale);
-
-    // Adjust coordinate to the domain excluding the outer half texel in all directions
-    uint3 outputDimensions;
-    PassSrg::m_lut.GetDimensions(outputDimensions.x, outputDimensions.y, outputDimensions.z);
-    float3 coordBias = 1.0 / (2.0 * outputDimensions);
-    float3 coordScale = (outputDimensions - 1.0) / outputDimensions;
-    lutCoordinate = (lutCoordinate * coordScale) + coordBias;
-
-    float3 lutColor = PassSrg::m_lut.Sample(PassSrg::LinearSampler, lutCoordinate).rgb;
-
-    // Apply the inverse of the shaper function to give the color in the working color space
-    float3 finalColor = ShaperToLinear(lutColor, shaperType, PassSrg::m_shaperBias, PassSrg::m_shaperScale);
-
+    float3 finalColor = ApplyShaperLookupTable(shaperType, color, PassSrg::m_shaperBias, PassSrg::m_shaperScale, PassSrg::m_lut, PassSrg::LinearSampler);
     OUT.m_color.rgb = finalColor;
     OUT.m_color.a = 1.0;
 

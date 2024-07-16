@@ -63,6 +63,10 @@ namespace AZ
             m_flags.m_pipelineStatisticsQueryEnabled = false;
 
             m_template = descriptor.m_passTemplate;
+            if (m_template)
+            {
+                m_defaultShaderAttachmentStage = m_template->m_defaultShaderAttachmentStage;
+            }
 
             if (descriptor.m_passRequest != nullptr)
             {
@@ -223,6 +227,13 @@ namespace AZ
         void Pass::AddAttachmentBinding(PassAttachmentBinding attachmentBinding)
         {
             auto index = static_cast<uint8_t>(m_attachmentBindings.size());
+            if (attachmentBinding.m_scopeAttachmentStage == RHI::ScopeAttachmentStage::Uninitialized)
+            {
+                attachmentBinding.m_scopeAttachmentStage = attachmentBinding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::Shader
+                    ? m_defaultShaderAttachmentStage
+                    : RHI::ScopeAttachmentStage::Any;
+            }
+
             // Add the binding. This will assert if the fixed size array is full.
             m_attachmentBindings.push_back(attachmentBinding);
 
@@ -825,6 +836,44 @@ namespace AZ
                 for (Pass* pass : m_parent->m_executeBeforePasses)
                 {
                     m_executeBeforePasses.push_back(pass);
+                }
+            }
+        }
+
+        void Pass::DeclareAttachmentsToFrameGraph(RHI::FrameGraphInterface frameGraph, PassSlotType slotType) const
+        {
+            for (const PassAttachmentBinding& attachmentBinding : m_attachmentBindings)
+            {
+                if(slotType == PassSlotType::Uninitialized || slotType == attachmentBinding.m_slotType)
+                {
+                    if (attachmentBinding.GetAttachment() != nullptr &&
+                        frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentBinding.GetAttachment()->GetAttachmentId()))
+                    {
+                        switch (attachmentBinding.m_unifiedScopeDesc.GetType())
+                        {
+                        case RHI::AttachmentType::Image:
+                            {
+                                frameGraph.UseAttachment(
+                                    attachmentBinding.m_unifiedScopeDesc.GetAsImage(),
+                                    attachmentBinding.GetAttachmentAccess(),
+                                    attachmentBinding.m_scopeAttachmentUsage,
+                                    attachmentBinding.m_scopeAttachmentStage);
+                                break;
+                            }
+                        case RHI::AttachmentType::Buffer:
+                            {
+                                frameGraph.UseAttachment(
+                                    attachmentBinding.m_unifiedScopeDesc.GetAsBuffer(),
+                                    attachmentBinding.GetAttachmentAccess(),
+                                    attachmentBinding.m_scopeAttachmentUsage,
+                                    attachmentBinding.m_scopeAttachmentStage);
+                                break;
+                            }
+                        default:
+                            AZ_Assert(false, "Error, trying to bind an attachment that is neither an image nor a buffer!");
+                            break;
+                        }
+                    }
                 }
             }
         }

@@ -29,7 +29,7 @@ namespace AZ::RHI
     //! or just one (potentially preferred) adapter
     enum class InitDevicesFlags : uint32_t
     {
-        SingleDevice = 0,
+        Device = 0,
         MultiDevice
     };
 
@@ -67,13 +67,14 @@ namespace AZ::RHI
         //! Add a new virtual device (referencing the same physical device as an existing device marked by deviceIndexToVirtualize)
         [[nodiscard]] AZStd::optional<int> AddVirtualDevice(int deviceIndexToVirtualize = MultiDevice::DefaultDeviceIndex) override;
         int GetDeviceCount() override;
+        MultiDevice::DeviceMask GetRayTracingSupport() override;
         RHI::DrawListTagRegistry* GetDrawListTagRegistry() override;
         RHI::PipelineStateCache* GetPipelineStateCache() override;
         void ModifyFrameSchedulerStatisticsFlags(RHI::FrameSchedulerStatisticsFlags statisticsFlags, bool enableFlags) override;
         double GetCpuFrameTime() const override;
-        const RHI::TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const override;
+        const AZStd::unordered_map<int, TransientAttachmentPoolDescriptor>* GetTransientAttachmentPoolDescriptor() const override;
         ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor(int deviceIndex = MultiDevice::DefaultDeviceIndex) const override;
-        void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable) override;
+        void QueueRayTracingShaderTableForBuild(DeviceRayTracingShaderTable* rayTracingShaderTable) override;
         XRRenderingInterface* GetXRSystem() const override;
         void SetDrawListTagEnabledByDefault(DrawListTag drawListTag, bool enabled) override;
         const AZStd::vector<DrawListTag>& GetDrawListTagsDisabledByDefault() const override;
@@ -82,15 +83,15 @@ namespace AZ::RHI
 
         //////////////////////////////////////////////////////////////////////////
         // RHIMemoryStatisticsInterface Overrides
-        const RHI::TransientAttachmentStatistics* GetTransientAttachmentStatistics() const override;
+        AZStd::unordered_map<int, TransientAttachmentStatistics> GetTransientAttachmentStatistics() const override;
         const RHI::MemoryStatistics* GetMemoryStatistics() const override;
         void WriteResourcePoolInfoToJson(
-            const AZStd::vector<RHI::MemoryStatistics::Pool>& pools, 
+            const AZStd::vector<RHI::MemoryStatistics::Pool>& pools,
             rapidjson::Document& doc) const override;
         AZ::Outcome<void, AZStd::string> LoadResourcePoolInfoFromJson(
-            AZStd::vector<RHI::MemoryStatistics::Pool>& pools, 
-            AZStd::vector<RHI::MemoryStatistics::Heap>& heaps, 
-            rapidjson::Document& doc, 
+            AZStd::vector<RHI::MemoryStatistics::Pool>& pools,
+            AZStd::vector<RHI::MemoryStatistics::Heap>& heaps,
+            rapidjson::Document& doc,
             const AZStd::string& fileName) const override;
         void TriggerResourcePoolAllocInfoDump() const override;
         //////////////////////////////////////////////////////////////////////////

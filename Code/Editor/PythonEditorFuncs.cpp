@@ -29,7 +29,6 @@
 #include "GameEngine.h"
 #include "ViewManager.h"
 #include "GenericSelectItemDialog.h"
-#include "Objects/BaseObject.h"
 #include "Commands/CommandManager.h"
 
 AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);

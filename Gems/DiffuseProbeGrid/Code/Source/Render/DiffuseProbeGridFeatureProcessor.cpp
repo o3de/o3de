@@ -20,7 +20,7 @@
 #include <Atom/Feature/SpecularReflections/SpecularReflectionsFeatureProcessorInterface.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 
 // This component invokes shaders based on Nvidia's RTX-GI SDK.
@@ -48,8 +48,7 @@ namespace AZ
                 return;
             }
 
-            RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
-            RHI::Ptr<RHI::Device> device = rhiSystem->GetDevice();
+            auto rayTracingDeviceMask = RHI::RHISystemInterface::Get()->GetRayTracingSupport();
 
             m_diffuseProbeGrids.reserve(InitialProbeGridAllocationSize);
             m_realTimeDiffuseProbeGrids.reserve(InitialProbeGridAllocationSize);
@@ -58,9 +57,9 @@ namespace AZ
             desc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
             desc.m_bindFlags = RHI::BufferBindFlags::InputAssembly;
 
-            m_bufferPool = RHI::Factory::Get().CreateBufferPool();
+            m_bufferPool = aznew RHI::BufferPool;
             m_bufferPool->SetName(Name("DiffuseProbeGridBoxBufferPool"));
-            [[maybe_unused]] RHI::ResultCode resultCode = m_bufferPool->Init(*device, desc);
+            [[maybe_unused]] RHI::ResultCode resultCode = m_bufferPool->Init(RHI::MultiDevice::AllDevices, desc);
             AZ_Error("DiffuseProbeGridFeatureProcessor", resultCode == RHI::ResultCode::Success, "Failed to initialize buffer pool");
 
             // create box mesh vertices and indices
@@ -71,9 +70,9 @@ namespace AZ
                 RHI::ImagePoolDescriptor imagePoolDesc;
                 imagePoolDesc.m_bindFlags = RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead;
 
-                m_probeGridRenderData.m_imagePool = RHI::Factory::Get().CreateImagePool();
+                m_probeGridRenderData.m_imagePool = aznew RHI::ImagePool;
                 m_probeGridRenderData.m_imagePool->SetName(Name("DiffuseProbeGridRenderImageData"));
-                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_imagePool->Init(*device, imagePoolDesc);
+                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_imagePool->Init(RHI::MultiDevice::AllDevices, imagePoolDesc);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize output image pool");
             }
 
@@ -82,9 +81,9 @@ namespace AZ
                 RHI::BufferPoolDescriptor bufferPoolDesc;
                 bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
 
-                m_probeGridRenderData.m_bufferPool = RHI::Factory::Get().CreateBufferPool();
+                m_probeGridRenderData.m_bufferPool = aznew RHI::BufferPool;
                 m_probeGridRenderData.m_bufferPool->SetName(Name("DiffuseProbeGridRenderBufferData"));
-                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_bufferPool->Init(*device, bufferPoolDesc);
+                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_bufferPool->Init(RHI::MultiDevice::AllDevices, bufferPoolDesc);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize output buffer pool");
             }
 
@@ -114,13 +113,33 @@ namespace AZ
                 m_probeGridRenderData.m_shader = shader;
                 m_probeGridRenderData.m_srgLayout = shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Object);
                 AZ_Error("DiffuseProbeGridFeatureProcessor", m_probeGridRenderData.m_srgLayout != nullptr, "Failed to find ObjectSrg layout");
+                
+
             }
 
-            if (device->GetFeatures().m_rayTracing)
+            // Load the shader that contains the scene and view SRG layout that was used by the precompiled shaders.
+            // Since View and Scene can be modified by projects, we may need to copy the content to the scene and view SRGs
+            // that were used when creating the precompiled shaders (to avoid a layout mismatch).
+            m_sceneAndViewShader = RPI::LoadCriticalShader("Shaders/DiffuseGlobalIllumination/SceneAndViewSrgs.azshader");
+            if (m_sceneAndViewShader)
+            {
+                if (auto sceneSrgLayout = m_sceneAndViewShader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Scene))
+                {
+                    // No need to copy SRG if layout is the same
+                    const RHI::ShaderResourceGroupLayout* layout = RPI::RPISystemInterface::Get()->GetSceneSrgLayout().get();
+                    if (layout->GetHash() != sceneSrgLayout->GetHash())
+                    {
+                        m_sceneShaderResourceGroup = RPI::ShaderResourceGroup::Create(
+                            m_sceneAndViewShader->GetAsset(), m_sceneAndViewShader->GetSupervariantIndex(), sceneSrgLayout->GetName());
+                    }
+                }
+            }
+
+            if (rayTracingDeviceMask != RHI::MultiDevice::NoDevices)
             {
                 // initialize the buffer pools for the DiffuseProbeGrid visualization
-                m_visualizationBufferPools = RHI::RayTracingBufferPools::CreateRHIRayTracingBufferPools();
-                m_visualizationBufferPools->Init(device);
+                m_visualizationBufferPools = aznew RHI::RayTracingBufferPools;
+                m_visualizationBufferPools->Init(rayTracingDeviceMask);
 
                 // load probe visualization model, the BLAS will be created in OnAssetReady()
 
@@ -184,6 +203,10 @@ namespace AZ
             {
                 m_bufferPool.reset();
             }
+
+            m_sceneShaderResourceGroup = nullptr;
+            m_viewShaderResourceGroups.clear();
+            m_sceneAndViewShader = nullptr;
 
             Data::AssetBus::MultiHandler::BusDisconnect();
         }
@@ -287,6 +310,32 @@ namespace AZ
 
                 // create the bufferview descriptor with the new number of elements
                 m_queryBufferViewDescriptor = m_queryBuffer.GetCurrentBuffer()->GetBufferViewDescriptor();
+            }
+
+            // The passes in the DiffuseProbeGrid use precompiled shaders, so we can't use the View or Scene SRG directly because the layout
+            // may not match with the layout used when creating the precompiled shaders. We need to copy the shader inputs
+            // from the view/scene SRG into the SRG that was created from the shader asset.
+            if (m_sceneShaderResourceGroup)
+            {
+                const auto sceneSrg = GetParentScene()->GetShaderResourceGroup();
+                m_sceneShaderResourceGroup->CopyShaderResourceGroupData(*sceneSrg);
+                m_sceneShaderResourceGroup->Compile();
+            }
+
+            // Copy the content from the view SRGs
+            for (const auto& pipelineEntry : m_viewShaderResourceGroups)
+            {
+                RPI::RenderPipeline* pipeline = pipelineEntry.first;
+                for (const auto& viewEntry : pipelineEntry.second)
+                {
+                    Data::Instance<RPI::ShaderResourceGroup> viewSRG = viewEntry.second;
+                    RPI::ViewPtr view = pipeline->GetFirstView(viewEntry.first);
+                    if (view)
+                    {
+                        viewSRG->CopyShaderResourceGroupData(*view->GetShaderResourceGroup());
+                        viewSRG->Compile();
+                    }
+                }
             }
         }
 
@@ -450,8 +499,7 @@ namespace AZ
 
         bool DiffuseProbeGridFeatureProcessor::CanBakeTextures()
         {
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-            return device->GetFeatures().m_rayTracing;
+            return RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices;
         }
 
         void DiffuseProbeGridFeatureProcessor::BakeTextures(
@@ -637,6 +685,26 @@ namespace AZ
             m_irradianceQueries.clear();
         }
 
+        RPI::ShaderResourceGroup* DiffuseProbeGridFeatureProcessor::GetSceneSrg() const
+        {
+            return m_sceneShaderResourceGroup.get();
+        }
+
+        RPI::ShaderResourceGroup* DiffuseProbeGridFeatureProcessor::GetViewSrg(
+            RPI::RenderPipeline* pipeline, RPI::PipelineViewTag viewTag) const
+        {
+            auto findPipelineIter = m_viewShaderResourceGroups.find(pipeline);
+            if (findPipelineIter != m_viewShaderResourceGroups.end())
+            {
+                auto findViewTagIter = findPipelineIter->second.find(viewTag);
+                if (findViewTagIter != findPipelineIter->second.end())
+                {
+                    return findViewTagIter->second.get();
+                }
+            }
+            return nullptr;
+        }
+
         void DiffuseProbeGridFeatureProcessor::CreateBoxMesh()
         {
             // vertex positions
@@ -721,7 +789,7 @@ namespace AZ
 
             // create index buffer
             AZ::RHI::BufferInitRequest request;
-            m_boxIndexBuffer = AZ::RHI::Factory::Get().CreateBuffer();
+            m_boxIndexBuffer = aznew RHI::Buffer;
             request.m_buffer = m_boxIndexBuffer.get();
             request.m_descriptor = AZ::RHI::BufferDescriptor{ AZ::RHI::BufferBindFlags::InputAssembly, m_boxIndices.size() * sizeof(uint16_t) };
             request.m_initialData = m_boxIndices.data();
@@ -740,7 +808,7 @@ namespace AZ
             m_probeGridRenderData.m_boxIndexCount = numIndices;
 
             // create position buffer
-            m_boxPositionBuffer = AZ::RHI::Factory::Get().CreateBuffer();
+            m_boxPositionBuffer = aznew RHI::Buffer;
             request.m_buffer = m_boxPositionBuffer.get();
             request.m_descriptor = AZ::RHI::BufferDescriptor{ AZ::RHI::BufferBindFlags::InputAssembly, m_boxPositions.size() * sizeof(Position) };
             request.m_initialData = m_boxPositions.data();
@@ -783,7 +851,40 @@ namespace AZ
 
                 UpdatePasses();
             }
+            else if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Removed)
+            {
+                m_viewShaderResourceGroups.erase(renderPipeline);
+            }
             m_needUpdatePipelineStates = true;
+        }
+
+        void DiffuseProbeGridFeatureProcessor::OnRenderPipelinePersistentViewChanged(
+            RPI::RenderPipeline* renderPipeline, RPI::PipelineViewTag viewTag, RPI::ViewPtr newView, RPI::ViewPtr previousView)
+        {
+            if (m_sceneAndViewShader)
+            {
+                if (auto viewSrgLayout = m_sceneAndViewShader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::View))
+                {
+                    // No need to copy view SRG data if the layout is the same
+                    const RHI::ShaderResourceGroupLayout* layout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
+                    if (layout->GetHash() != viewSrgLayout->GetHash())
+                    {
+                        auto& viewSRGs = m_viewShaderResourceGroups[renderPipeline];
+                        if (newView)
+                        {
+                            // Create a new SRG for the viewTag that is being added
+                            auto viewSRG = RPI::ShaderResourceGroup::Create(
+                                m_sceneAndViewShader->GetAsset(), m_sceneAndViewShader->GetSupervariantIndex(), viewSrgLayout->GetName());
+                            viewSRGs[viewTag] = viewSRG;
+                        }
+                        else
+                        {
+                            // Remove the SRG since the view is being removed
+                            viewSRGs.erase(viewTag);
+                        }
+                    }
+                }
+            }
         }
 
         void DiffuseProbeGridFeatureProcessor::AddRenderPasses(AZ::RPI::RenderPipeline* renderPipeline)
@@ -878,8 +979,7 @@ namespace AZ
         void DiffuseProbeGridFeatureProcessor::UpdatePasses()
         {
             // disable the DiffuseProbeGridUpdatePass if the platform does not support raytracing
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-            if (device->GetFeatures().m_rayTracing == false)
+            if (RHI::RHISystemInterface::Get()->GetRayTracingSupport() == RHI::MultiDevice::NoDevices)
             {
                 RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("DiffuseProbeGridUpdatePass"), GetParentScene());
                 RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
@@ -954,10 +1054,11 @@ namespace AZ
             ;
 
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-            m_visualizationBlas = AZ::RHI::RayTracingBlas::CreateRHIRayTracingBlas();
-            if (device->GetFeatures().m_rayTracing)
+            m_visualizationBlas = aznew RHI::RayTracingBlas;
+            auto deviceMask = RHI::RHISystemInterface::Get()->GetRayTracingSupport();
+            if (deviceMask != RHI::MultiDevice::NoDevices)
             {
-                m_visualizationBlas->CreateBuffers(*device, &blasDescriptor, *m_visualizationBufferPools);
+                m_visualizationBlas->CreateBuffers(deviceMask, &blasDescriptor, *m_visualizationBufferPools);
             }
         }
 

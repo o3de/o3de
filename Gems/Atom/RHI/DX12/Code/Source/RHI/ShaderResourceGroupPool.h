@@ -10,7 +10,7 @@
 #include <RHI/ShaderResourceGroup.h>
 #include <RHI/MemorySubAllocator.h>
 #include <Atom/RHI/FrameEventBus.h>
-#include <Atom/RHI/ShaderResourceGroupPool.h>
+#include <Atom/RHI/DeviceShaderResourceGroupPool.h>
 
 namespace AZ
 {
@@ -22,9 +22,9 @@ namespace AZ
         class DescriptorContext;
 
         class ShaderResourceGroupPool final
-            : public RHI::ShaderResourceGroupPool
+            : public RHI::DeviceShaderResourceGroupPool
         {
-            using Base = RHI::ShaderResourceGroupPool;
+            using Base = RHI::DeviceShaderResourceGroupPool;
         public:
             AZ_CLASS_ALLOCATOR(ShaderResourceGroupPool, AZ::SystemAllocator);
 
@@ -36,10 +36,10 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // Platform API
             RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::ShaderResourceGroupPoolDescriptor& descriptor) override;
-            RHI::ResultCode InitGroupInternal(RHI::ShaderResourceGroup& groupBase) override;
+            RHI::ResultCode InitGroupInternal(RHI::DeviceShaderResourceGroup& groupBase) override;
             void ShutdownInternal() override;
-            RHI::ResultCode CompileGroupInternal(RHI::ShaderResourceGroup& groupBase, const RHI::ShaderResourceGroupData& groupData) override;
-            void ShutdownResourceInternal(RHI::Resource& resourceBase) override;
+            RHI::ResultCode CompileGroupInternal(RHI::DeviceShaderResourceGroup& groupBase, const RHI::DeviceShaderResourceGroupData& groupData) override;
+            void ShutdownResourceInternal(RHI::DeviceResource& resourceBase) override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
@@ -48,23 +48,23 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             void UpdateViewsDescriptorTable(DescriptorTable descriptorTable,
-                                            RHI::ShaderResourceGroup& group,
-                                            const RHI::ShaderResourceGroupData& groupData,
+                                            RHI::DeviceShaderResourceGroup& group,
+                                            const RHI::DeviceShaderResourceGroupData& groupData,
                                             bool forceUpdateViews = false);
-            void UpdateSamplersDescriptorTable(DescriptorTable descriptorTable, RHI::ShaderResourceGroup& group, const RHI::ShaderResourceGroupData& groupData);
-            void UpdateUnboundedArrayDescriptorTables(ShaderResourceGroup& group, const RHI::ShaderResourceGroupData& groupData);
+            void UpdateSamplersDescriptorTable(DescriptorTable descriptorTable, RHI::DeviceShaderResourceGroup& group, const RHI::DeviceShaderResourceGroupData& groupData);
+            void UpdateUnboundedArrayDescriptorTables(ShaderResourceGroup& group, const RHI::DeviceShaderResourceGroupData& groupData);
 
             //! Update all the buffer views for the unbounded array
             void UpdateUnboundedBuffersDescTable(
                 DescriptorTable descriptorTable,
-                const RHI::ShaderResourceGroupData& groupData,
+                const RHI::DeviceShaderResourceGroupData& groupData,
                 uint32_t shaderInputIndex,
                 RHI::ShaderInputBufferAccess bufferAccess);
 
             //! Update all the image views for the unbounded array
             void UpdateUnboundedImagesDescTable(
                 DescriptorTable descriptorTable,
-                const RHI::ShaderResourceGroupData& groupData,
+                const RHI::DeviceShaderResourceGroupData& groupData,
                 uint32_t shaderInputIndex,
                 RHI::ShaderInputImageAccess imageAccess,
                 RHI::ShaderInputImageType imageType);
@@ -98,7 +98,7 @@ namespace AZ
             template<typename T, typename U>
             AZStd::vector<DescriptorHandle> GetUAVsFromImageViews(const AZStd::span<const RHI::ConstPtr<T>>& bufferViews, D3D12_UAV_DIMENSION dimension);
 
-            AZStd::vector<DescriptorHandle> GetCBVsFromBufferViews(const AZStd::span<const RHI::ConstPtr<RHI::BufferView>>& bufferViews);
+            AZStd::vector<DescriptorHandle> GetCBVsFromBufferViews(const AZStd::span<const RHI::ConstPtr<RHI::DeviceBufferView>>& bufferViews);
 
             MemoryPoolSubAllocator m_constantAllocator;
             DescriptorContext* m_descriptorContext = nullptr;

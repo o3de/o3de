@@ -59,6 +59,7 @@ namespace AZ
 
             const VkBuffer GetNativeBuffer();
             const Descriptor& GetDescriptor() const;
+            VkSharingMode GetSharingMode() const;
 
             size_t GetSize() const;
 
@@ -78,6 +79,7 @@ namespace AZ
             Descriptor m_descriptor;
             VkBuffer m_vkBuffer = VK_NULL_HANDLE;
             MemoryView m_memoryView;
+            VkSharingMode m_sharingMode = VK_SHARING_MODE_MAX_ENUM;
         };
     }
 }

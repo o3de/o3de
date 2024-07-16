@@ -1926,7 +1926,7 @@ namespace AssetProcessor
         {
             m_queuedExamination = true;
             QTimer::singleShot(0, this, SLOT(ProcessFilesToExamineQueue()));
-            Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + m_filesToExamine.size() + m_numOfJobsToAnalyze);
+            Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + m_filesToExamine.size() + m_numOfJobsToAnalyze, AnalysisExtraInfo());
         }
     }
 
@@ -2858,7 +2858,7 @@ namespace AssetProcessor
             if (elapsedTimer.elapsed() >= MILLISECONDS_BETWEEN_CREATE_JOBS_STATUS_UPDATE)
             {
                 int remainingInSwapped = swapped.size() - i;
-                Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + remainingInSwapped + m_numOfJobsToAnalyze);
+                Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + remainingInSwapped + m_numOfJobsToAnalyze, AnalysisExtraInfo());
                 elapsedTimer.restart();
             }
 
@@ -3205,7 +3205,7 @@ namespace AssetProcessor
             if (!m_quitRequested && m_AssetProcessorIsBusy)
             {
                 m_AssetProcessorIsBusy = false;
-                Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + m_filesToExamine.size() + m_numOfJobsToAnalyze);
+                Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + m_filesToExamine.size() + m_numOfJobsToAnalyze, AnalysisExtraInfo());
                 Q_EMIT AssetProcessorManagerIdleState(true);
             }
 
@@ -3213,7 +3213,14 @@ namespace AssetProcessor
             {
                 // report these metrics only once per session.
                 m_reportedAnalysisMetrics = true;
-                AZ_TracePrintf(ConsoleChannel, "Builder optimization: %i / %i files required full analysis, %i sources found but not processed by anyone\n", m_numSourcesNeedingFullAnalysis, m_numTotalSourcesFound, m_numSourcesNotHandledByAnyBuilder);
+                AZ_TracePrintf(
+                    ConsoleChannel,
+                    "Builder optimization: %i / %i files required full analysis, %i sources found but not processed by anyone. %i override "
+                    "collisions.\n",
+                    m_numSourcesNeedingFullAnalysis,
+                    m_numTotalSourcesFound,
+                    m_numSourcesNotHandledByAnyBuilder,
+                    m_numOverrides);
             }
 
             m_dependencyCache = {};
@@ -3230,7 +3237,7 @@ namespace AssetProcessor
             int numWorkRemainingNow = m_activeFiles.size() + m_filesToExamine.size();
             // total (GUI Shown) of work remaining (including jobs to do later)
             int numTotalWorkRemaining = numWorkRemainingNow + m_numOfJobsToAnalyze;
-            Q_EMIT NumRemainingJobsChanged(numTotalWorkRemaining);
+            Q_EMIT NumRemainingJobsChanged(numTotalWorkRemaining, AnalysisExtraInfo());
 
             // wake up if there's work to do and we haven't scheduled to do it.
             if ((!m_alreadyScheduledUpdate) && (numWorkRemainingNow > 0))
@@ -3391,7 +3398,9 @@ namespace AssetProcessor
         m_AssetProcessorIsBusy = true;
         m_activeFiles.push_back(newEntry);
         m_alreadyActiveFiles.insert(normalizedFullFile);
-        Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + m_filesToExamine.size() + m_numOfJobsToAnalyze);
+
+
+        Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + m_filesToExamine.size() + m_numOfJobsToAnalyze, AnalysisExtraInfo());
 
         if (!m_alreadyScheduledUpdate)
         {
@@ -3536,6 +3545,8 @@ namespace AssetProcessor
         [[maybe_unused]] int processedFileCount = 0;
 
         AssetProcessor::StatsCapture::BeginCaptureStat("InitialFileAssessment");
+        m_totalScannerFilesToAssess = filePaths.size();
+        m_scannerFilesAssessed = 0;
 
         for (const AssetFileInfo& fileInfo : filePaths)
         {
@@ -3560,18 +3571,30 @@ namespace AssetProcessor
                         }
                     }
 
+                    ++m_scannerFilesAssessed;
                     continue;
                 }
             }
 
-            processedFileCount++;
             AssessFileInternal(fileInfo.m_filePath, false, true);
+            ++m_scannerFilesAssessed;
+            ++processedFileCount;
         }
 
         if (m_allowModtimeSkippingFeature)
         {
             AZ_TracePrintf(AssetProcessor::DebugChannel, "%d files reported from scanner.  %d unchanged files skipped, %d files processed\n", filePaths.size(), filePaths.size() - processedFileCount, processedFileCount);
         }
+
+        AZ_Printf(
+            "AssetProcessor",
+            "Assessing files from scanner complete. Total files: %i. Assets with new builders: %i. Unregistered/new files: %i. Old timestamps: %i. "
+            "Modified dependencies: %i.\n",
+            m_scannerFilesAssessed,
+            m_assetsNeedingProcessing_BuildersChanged,
+            m_assetsNeedingProcessing_NewFile,
+            m_assetsNeedingProcessing_TimeStampChanged,
+            m_assetsNeedingProcessing_DependenciesChanged);
 
         AssetProcessor::StatsCapture::EndCaptureStat("InitialFileAssessment");
 
@@ -3625,6 +3648,7 @@ namespace AssetProcessor
         // We can only do this if the builders haven't changed however, as they can register to watch files that were previously not processed
         if (m_buildersAddedOrRemoved)
         {
+            ++m_assetsNeedingProcessing_BuildersChanged;
             return false;
         }
 
@@ -3633,6 +3657,7 @@ namespace AssetProcessor
         if (fileItr == m_fileModTimes.end())
         {
             // File has not been processed before
+            ++m_assetsNeedingProcessing_NewFile;
             return false;
         }
 
@@ -3645,6 +3670,7 @@ namespace AssetProcessor
         {
             // Don't bother with any further checks (particularly hashing), this file hasn't been seen before
             // There should never be a case where we have recorded a hash but not a modtime
+            ++m_assetsNeedingProcessing_NewFile;
             return false;
         }
 
@@ -3652,8 +3678,10 @@ namespace AssetProcessor
 
         if (databaseModTime != thisModTime)
         {
+            ++m_assetsNeedingProcessing_TimeStampChanged;
+
             // File timestamp has changed since last time
-            // Check if the contents have changed or if its just a timestamp mismatch
+            // Check if the contents have changed or if it's just a timestamp mismatch
 
             auto hashItr = m_fileHashes.find(fileInfo.m_filePath.toUtf8().constData());
 
@@ -3702,6 +3730,7 @@ namespace AssetProcessor
                 if(dependencyFingerprint != currentFingerprint)
                 {
                     // Dependencies have changed
+                    ++m_assetsNeedingProcessing_DependenciesChanged;
                     return false;
                 }
                 // Success - we can skip this file, nothing has changed!
@@ -3709,7 +3738,6 @@ namespace AssetProcessor
                 // Remove it from the list of to-be-processed files, otherwise the AP will assume the file was deleted
                 // Note that this means any files that *were* deleted are already handled by CheckMissingFiles
                 m_sourceFilesInDatabase.erase(sourceFileItr);
-
                 return true;
             }
         }
@@ -3718,7 +3746,6 @@ namespace AssetProcessor
             // File is a non-tracked file, aka a file that no builder cares about.
             // The fact that it has a matching modtime means we've already seen this file and attempted to process it
             // If it were a new, unprocessed source file, there would be no modtime stored
-
             return true;
         }
 
@@ -3850,7 +3877,7 @@ namespace AssetProcessor
                 // Update the remaining job status occasionally
                 if (elapsedTimer.elapsed() >= MILLISECONDS_BETWEEN_PROCESS_JOBS_STATUS_UPDATE)
                 {
-                    Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + m_filesToExamine.size() + m_numOfJobsToAnalyze);
+                    Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + m_filesToExamine.size() + m_numOfJobsToAnalyze, AnalysisExtraInfo());
                     elapsedTimer.restart();
                 }
             }
@@ -3883,7 +3910,7 @@ namespace AssetProcessor
             QueueIdleCheck();
         }
 
-        Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + m_filesToExamine.size() + m_numOfJobsToAnalyze);
+        Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + m_filesToExamine.size() + m_numOfJobsToAnalyze, AnalysisExtraInfo());
     }
 
     void AssetProcessorManager::ProcessJob(JobDetails& job)
@@ -4706,6 +4733,10 @@ namespace AssetProcessor
                         false, // Wildcard dependencies never come from an AssetId
                         "");
                     newDependencies.push_back(AZStd::move(newDependencyEntry));
+                }
+                else
+                {
+                    ++m_numOverrides;
                 }
             }
 
@@ -6179,5 +6210,24 @@ namespace AssetProcessor
             m_delayProcessMetadataQueued = true;
             QTimer::singleShot(minWaitTime, this, SLOT(DelayedMetadataFileCheck()));
         }
+    }
+
+    QString AssetProcessorManager::AnalysisExtraInfo() const
+    {
+        if (m_scannerFilesAssessed == m_totalScannerFilesToAssess)
+        {
+            return "";
+        }
+
+        QLocale locale(QLocale::English, QLocale::UnitedStates); // Locale for formatting (US English uses commas)
+        QString extraInfo = QString("Assessing %1 of %2: %3 assets with modified builders, %4 unregistered/new, %5 outdated timestamps, %6 "
+                                    "with modified dependencies.")
+                                .arg(locale.toString(m_scannerFilesAssessed))
+                                .arg(locale.toString(m_totalScannerFilesToAssess))
+                                .arg(locale.toString(m_assetsNeedingProcessing_BuildersChanged))
+                                .arg(locale.toString(m_assetsNeedingProcessing_NewFile))
+                                .arg(locale.toString(m_assetsNeedingProcessing_TimeStampChanged))
+                                .arg(locale.toString(m_assetsNeedingProcessing_DependenciesChanged));
+        return extraInfo;
     }
 } // namespace AssetProcessor

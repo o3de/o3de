@@ -8,6 +8,7 @@
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/ImageFrameAttachment.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
+#include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
 #include <RHI/BufferView.h>
 #include <RHI/Conversion.h>
@@ -49,7 +50,7 @@ namespace AZ
             m_usedAttachmentsPerSubpass.resize(m_subpassCount);
         }
 
-        void RenderPassBuilder::AddScopeAttachments(const Scope& scope)
+        void RenderPassBuilder::AddScopeAttachments(Scope& scope)
         {
             if (!scope.UsesRenderpass())
             {
@@ -81,10 +82,7 @@ namespace AZ
             AZStd::vector<RenderAttachment> renderAttachments;
             for (const auto* scopeAttachment : scope.GetImageAttachments())
             {
-                for (const RHI::ScopeAttachmentUsageAndAccess& usageAndAccess : scopeAttachment->GetUsageAndAccess())
-                {
-                    renderAttachments.emplace_back(RenderAttachment{ scopeAttachment, usageAndAccess.m_usage });
-                }
+                renderAttachments.emplace_back(RenderAttachment{ scopeAttachment, scopeAttachment->GetUsage() });
             }
 
             // This is the same order that the RHI::RenderAttachmentLayoutBuilder uses.
@@ -120,7 +118,7 @@ namespace AZ
                 const RHI::ImageScopeAttachmentDescriptor& bindingDescriptor = scopeAttachment->GetDescriptor();
                 const RHI::ImageFrameAttachment& imageFrameAttachment = scopeAttachment->GetFrameAttachment();
                 const RHI::ImageDescriptor& imageDescriptor = imageFrameAttachment.GetImageDescriptor();
-                const ImageView* attachmentImageView = static_cast<const ImageView*>(scopeAttachment->GetImageView());
+                const ImageView* attachmentImageView = static_cast<const ImageView*>(scopeAttachment->GetImageView()->GetDeviceImageView(scope.GetDeviceIndex()).get());
                 const RHI::Format imageViewFormat = attachmentImageView->GetFormat();
                 auto scopeAttachmentId = scopeAttachment->GetDescriptor().m_attachmentId;
                 AZ_Assert(imageViewFormat != RHI::Format::Unknown, "Invalid image view format.");
@@ -145,7 +143,7 @@ namespace AZ
                         attachmentBinding.m_initialLayout = GetInitialLayout(scope, *scopeAttachment);
                         attachmentBinding.m_finalLayout = finalLayout;
                         attachmentBinding.m_multisampleState = imageDescriptor.m_multisampleState;
-                        m_framebufferDesc.m_attachmentImageViews.push_back(static_cast<const ImageView*>(scopeAttachment->GetImageView()));
+                        m_framebufferDesc.m_attachmentImageViews.push_back(static_cast<const ImageView*>(scopeAttachment->GetImageView()->GetDeviceImageView(scope.GetDeviceIndex()).get()));
                         m_clearValues.push_back(bindingDescriptor.m_loadStoreAction.m_clearValue);
                     }
                     else
@@ -175,6 +173,7 @@ namespace AZ
                 case RHI::ScopeAttachmentUsage::DepthStencil:
                 {
                     auto layout = GetImageAttachmentLayout(*scopeAttachment);
+                    auto initialLayout = GetInitialLayout(scope, *scopeAttachment);
                     auto finalLayout = GetFinalLayout(scope, *scopeAttachment);
                     auto findIter = m_attachmentsMap.find(scopeAttachmentId);
                     uint32_t attachmentIndex = 0;
@@ -184,21 +183,58 @@ namespace AZ
                         RenderPass::AttachmentBinding& attachmentBinding = m_renderpassDesc.m_attachments[attachmentIndex];
                         attachmentBinding.m_format = imageViewFormat;
                         attachmentBinding.m_loadStoreAction = bindingDescriptor.m_loadStoreAction;
-                        attachmentBinding.m_initialLayout = GetInitialLayout(scope, *scopeAttachment);
+                        attachmentBinding.m_initialLayout = initialLayout;
                         attachmentBinding.m_finalLayout = finalLayout;
                         attachmentBinding.m_multisampleState = imageDescriptor.m_multisampleState;
-                        m_framebufferDesc.m_attachmentImageViews.push_back(static_cast<const ImageView*>(scopeAttachment->GetImageView()));
+                        m_framebufferDesc.m_attachmentImageViews.push_back(static_cast<const ImageView*>(scopeAttachment->GetImageView()->GetDeviceImageView(scope.GetDeviceIndex()).get()));
                         m_clearValues.push_back(bindingDescriptor.m_loadStoreAction.m_clearValue);
                     }
                     else
                     {
+                        // Since we can have a depth only, or stencil only attachment, we combine any previous image layout with the new one
                         attachmentIndex = findIter->second;
+                        const ImageView* depthImageView = m_framebufferDesc.m_attachmentImageViews[attachmentIndex];
+                        RenderPass::AttachmentBinding& attachmentBinding = m_renderpassDesc.m_attachments[attachmentIndex];
+                        // We filter the layout first to get the depth only or stencil only layout so we can combine them.
+                        // It's not valid to use the depth only or stencil only layout for the renderpasses initial
+                        // and final layout (when the image has a depth/stencil format), so we must filter it.
+                        attachmentBinding.m_initialLayout = CombineImageLayout(
+                            FilterImageLayout(attachmentBinding.m_initialLayout, depthImageView->GetDescriptor().m_aspectFlags),
+                            FilterImageLayout(initialLayout, attachmentImageView->GetDescriptor().m_aspectFlags));
+                        attachmentBinding.m_finalLayout = CombineImageLayout(
+                            FilterImageLayout(attachmentBinding.m_finalLayout, depthImageView->GetDescriptor().m_aspectFlags),
+                            FilterImageLayout(finalLayout, attachmentImageView->GetDescriptor().m_aspectFlags));
+                        // Check if the current depth/stencil image has both aspect masks
+                        if (!RHI::CheckBitsAll(depthImageView->GetDescriptor().m_aspectFlags, RHI::ImageAspectFlags::DepthStencil))
+                        {
+                            // Handle the case with multiple ScopeAttachmentUsage::DepthStencil attachments.
+                            // One for the Depth and another for the Stencil, with different access.
+                            // Need to create a new ImageView that has both depth and stencil.
+                            AZ_Assert(
+                                !RHI::CheckBitsAll(attachmentImageView->GetDescriptor().m_aspectFlags, RHI::ImageAspectFlags::DepthStencil),
+                                "Multiple DepthStencil attachments detected. ScopeAttachment %s in Scope %s",
+                                scopeAttachmentId.GetCStr(),
+                                scope.GetId().GetCStr());
+                            RHI::ImageViewDescriptor descriptor = depthImageView->GetDescriptor();
+                            descriptor.m_aspectFlags |= scopeAttachment->GetImageView()->GetDescriptor().m_aspectFlags;
+                            auto fullDepthStencil = scope.GetDepthStencilFullView();
+                            // Check if we need to create a new depth stencil image view or we can reuse the one saved in the scope
+                            if (!fullDepthStencil || &fullDepthStencil->GetImage() != &depthImageView->GetImage() ||
+                                fullDepthStencil->GetDescriptor() != descriptor)
+                            {
+                                RHI::Ptr<ImageView> fullDepthStencilPtr = ImageView::Create();
+                                fullDepthStencilPtr->Init(depthImageView->GetImage(), descriptor);
+                                scope.SetDepthStencilFullView(fullDepthStencilPtr);
+                                fullDepthStencil = fullDepthStencilPtr.get();
+                            }
+                            m_framebufferDesc.m_attachmentImageViews[attachmentIndex] = static_cast<const ImageView*>(fullDepthStencil);
+                        }
                     }
 
                     subpassDescriptor.m_depthStencilAttachment = RenderPass::SubpassAttachment{ attachmentIndex, layout };
                     m_renderpassDesc.m_attachments[attachmentIndex].m_finalLayout = finalLayout;
                     setAttachmentStoreActionFunc(attachmentIndex, bindingDescriptor.m_loadStoreAction);
-                    m_lastSubpassResourceUse[attachmentImageView] = subpassIndex;
+                    m_lastSubpassResourceUse[m_framebufferDesc.m_attachmentImageViews[attachmentIndex]] = subpassIndex;
                     m_attachmentsMap[scopeAttachmentId] = attachmentIndex;
                     usedAttachments.set(attachmentIndex);
                     break;
@@ -222,7 +258,7 @@ namespace AZ
                         attachmentBinding.m_finalLayout = finalLayout;
                         attachmentBinding.m_multisampleState = imageDescriptor.m_multisampleState;
 
-                        m_framebufferDesc.m_attachmentImageViews.push_back(static_cast<const ImageView*>(scopeAttachment->GetImageView()));
+                        m_framebufferDesc.m_attachmentImageViews.push_back(static_cast<const ImageView*>(scopeAttachment->GetImageView()->GetDeviceImageView(scope.GetDeviceIndex()).get()));
                         m_clearValues.push_back(bindingDescriptor.m_loadStoreAction.m_clearValue);
                     }
                     else
@@ -270,7 +306,7 @@ namespace AZ
                         attachmentBinding.m_initialLayout = GetInitialLayout(scope, *scopeAttachment);
                         attachmentBinding.m_finalLayout = finalLayout;
                         attachmentBinding.m_multisampleState = imageDescriptor.m_multisampleState;
-                        m_framebufferDesc.m_attachmentImageViews.push_back(static_cast<const ImageView*>(scopeAttachment->GetImageView()));
+                        m_framebufferDesc.m_attachmentImageViews.push_back(static_cast<const ImageView*>(scopeAttachment->GetImageView()->GetDeviceImageView(scope.GetDeviceIndex()).get()));
                     }
                     else
                     {
@@ -299,7 +335,7 @@ namespace AZ
             for (size_t index = 0; index < scope.GetBufferAttachments().size(); ++index)
             {
                 const RHI::BufferScopeAttachment* scopeAttachment = scope.GetBufferAttachments()[index];
-                const BufferView* bufferView = static_cast<const BufferView*>(scopeAttachment->GetBufferView());
+                const BufferView* bufferView = static_cast<const BufferView*>(scopeAttachment->GetBufferView()->GetDeviceBufferView(scope.GetDeviceIndex()).get());
                 AddResourceDependency(subpassIndex, scope, bufferView);
             }
         }
@@ -379,12 +415,12 @@ namespace AZ
             // Calculate the initial layout of an image attachment from a list of barriers.
             // The initial layout is the old layout of the first barrier of the image (it's the layout
             // that the image will be before starting the renderpass).
-            const ImageView* imageView = static_cast<const ImageView*>(attachment.GetImageView());
+            const ImageView* imageView = static_cast<const ImageView*>(attachment.GetImageView()->GetDeviceImageView(scope.GetDeviceIndex()).get());
             auto& barriers = scope.m_subpassBarriers[static_cast<uint32_t>(Scope::BarrierSlot::Prologue)];
 
             auto findIt = AZStd::find_if(barriers.begin(), barriers.end(), [imageView](const Scope::Barrier& barrier)
             {
-                return barrier.BlocksResource(*imageView, Scope::OverlapType::Complete);
+                return barrier.Overlaps(*imageView, Scope::OverlapType::Complete);
             });
 
             // If we don't find any barrier for the image attachment, then the image will already be in the layout
@@ -397,12 +433,12 @@ namespace AZ
             // Calculate the final layout of an image attachment from a list of barriers.
             // The final layout is the new layout of the last barrier of the image (it's the layout
             // that the image will transition before ending the renderpass).
-            const ImageView* imageView = static_cast<const ImageView*>(attachment.GetImageView());
+            const ImageView* imageView = static_cast<const ImageView*>(attachment.GetImageView()->GetDeviceImageView(scope.GetDeviceIndex()).get());
             auto& barriers = scope.m_subpassBarriers[static_cast<uint32_t>(Scope::BarrierSlot::Epilogue)];
 
             auto findIt = AZStd::find_if(barriers.rbegin(), barriers.rend(), [imageView](const Scope::Barrier& barrier)
             {
-                return barrier.BlocksResource(*imageView, Scope::OverlapType::Complete);
+                    return barrier.Overlaps(*imageView, Scope::OverlapType::Complete);
             });
 
             // If we don't find any barrier for the image attachment, then the image will stay in the same layout.

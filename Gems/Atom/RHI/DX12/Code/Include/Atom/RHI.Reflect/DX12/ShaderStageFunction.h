@@ -33,6 +33,12 @@ namespace AZ
         using ShaderByteCode = AZStd::vector<uint8_t>;
         using ShaderByteCodeView = AZStd::span<const uint8_t>;
 
+        //! Sentinel value used when patching shaders for specialization constants
+        constexpr uint32_t SCSentinelValue = 0x45678900;
+        //! Mask that marks which bytes are used for the sentinel and which
+        //! ones are used for the specialization constant id.
+        constexpr uint64_t SCSentinelMask = 0xffffffffffffff00;
+
         /**
          * A set of indices used to access physical sub-stages within a virtual stage.
          */
@@ -60,6 +66,12 @@ namespace AZ
             /// Returns the assigned byte code.
             ShaderByteCodeView GetByteCode(uint32_t subStageIndex = 0) const;
 
+            using SpecializationOffsets = AZStd::unordered_map<uint32_t, uint32_t>;
+            void SetSpecializationOffsets(uint32_t subStageIndex, const SpecializationOffsets& offsets);
+            const SpecializationOffsets& GetSpecializationOffsets(uint32_t subStageIndex = 0) const;
+
+            bool UseSpecializationConstants(uint32_t subStageIndex = 0) const;
+
         private:
             ShaderStageFunction() = default;
             ShaderStageFunction(RHI::ShaderStage shaderStage);
@@ -74,6 +86,7 @@ namespace AZ
             ///////////////////////////////////////////////////////////////////
 
             AZStd::array<ShaderByteCode, ShaderSubStageCountMax> m_byteCodes;
+            AZStd::array<SpecializationOffsets, ShaderSubStageCountMax> m_specializationOffsets;
         };
     }
 }

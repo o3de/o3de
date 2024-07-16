@@ -165,7 +165,9 @@ namespace Multiplayer
 
         //! AzFramework::RootSpawnableNotificationBus::Handler
         //! @{
+        void OnRootSpawnableAssigned(AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, uint32_t generation) override;
         void OnRootSpawnableReady(AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, uint32_t generation) override;
+        void OnRootSpawnableReleased(uint32_t generation) override;
         //! @}
 
         //! AzFramework::LevelLoadBlockerBus::Handler overrides.
@@ -245,6 +247,7 @@ namespace Multiplayer
 
         AZStd::vector<PlayerWaitingToBeSpawned> m_playersWaitingToBeSpawned;
         bool m_blockClientLoadLevel = true;
+        bool m_levelEntitiesActivated = false;
 
         AZStd::unordered_map<AzNetworking::ConnectionId, MultiplayerPackets::Connect> m_originalConnectPackets;
 

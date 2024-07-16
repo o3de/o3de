@@ -34,7 +34,7 @@ namespace AZ
             AZ_Assert(anySrgInitParams, "Invalid SrgInitParams");
             auto srgInitParams = AZStd::any_cast<ShaderResourceGroup::SrgInitParams>(*anySrgInitParams);
 
-            Data::Instance<ShaderResourceGroupPool> srgPool = aznew ShaderResourceGroupPool();
+            Data::Instance<ShaderResourceGroupPool> srgPool = aznew ShaderResourceGroupPool;
             const RHI::ResultCode resultCode = srgPool->Init(shaderAsset, srgInitParams.m_supervariantIndex, srgInitParams.m_srgName);
             if (resultCode != RHI::ResultCode::Success)
             {
@@ -47,9 +47,7 @@ namespace AZ
         RHI::ResultCode ShaderResourceGroupPool::Init(
             ShaderAsset& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName)
         {
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-
-            m_pool = RHI::Factory::Get().CreateShaderResourceGroupPool();
+            m_pool = aznew RHI::ShaderResourceGroupPool;
             if (!m_pool)
             {
                 AZ_Error("ShaderResourceGroupPool", false, "Failed to create RHI::ShaderResourceGroupPool");
@@ -60,14 +58,14 @@ namespace AZ
             poolDescriptor.m_layout = shaderAsset.FindShaderResourceGroupLayout(srgName, supervariantIndex).get();
 
             m_pool->SetName(AZ::Name(AZStd::string::format("%s_%s",shaderAsset.GetName().GetCStr(),srgName.GetCStr())));
- 
-            const RHI::ResultCode resultCode = m_pool->Init(*device, poolDescriptor);
+
+            const RHI::ResultCode resultCode = m_pool->Init(RHI::MultiDevice::AllDevices, poolDescriptor);
             return resultCode;
         }
 
         RHI::Ptr<RHI::ShaderResourceGroup> ShaderResourceGroupPool::CreateRHIShaderResourceGroup()
         {
-            RHI::Ptr<RHI::ShaderResourceGroup> srg = RHI::Factory::Get().CreateShaderResourceGroup();
+            RHI::Ptr<RHI::ShaderResourceGroup> srg = aznew RHI::ShaderResourceGroup();
             AZ_Error("ShaderResourceGroupPool", srg, "Failed to create RHI::ShaderResourceGroup");
 
             if (srg)

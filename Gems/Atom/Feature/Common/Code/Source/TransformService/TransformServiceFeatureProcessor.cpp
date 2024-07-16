@@ -133,9 +133,15 @@ namespace AZ
 
         void TransformServiceFeatureProcessor::UpdateSceneSrg(RPI::ShaderResourceGroup *sceneSrg)
         {
-            sceneSrg->SetBufferView(m_objectToWorldBufferIndex, m_objectToWorldBuffer->GetBufferView());
-            sceneSrg->SetBufferView(m_objectToWorldInverseTransposeBufferIndex, m_objectToWorldInverseTransposeBuffer->GetBufferView());
-            sceneSrg->SetBufferView(m_objectToWorldHistoryBufferIndex, m_objectToWorldHistoryBuffer->GetBufferView());
+            sceneSrg->SetBufferView(
+                m_objectToWorldBufferIndex,
+                m_objectToWorldBuffer->GetBufferView());
+            sceneSrg->SetBufferView(
+                m_objectToWorldInverseTransposeBufferIndex,
+                m_objectToWorldInverseTransposeBuffer->GetBufferView());
+            sceneSrg->SetBufferView(
+                m_objectToWorldHistoryBufferIndex,
+                m_objectToWorldHistoryBuffer->GetBufferView());
         }
 
         void TransformServiceFeatureProcessor::OnBeginPrepareRender()

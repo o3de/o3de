@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/Image.h>
+#include <Atom/RHI/DeviceImage.h>
 #include <Atom/RHI/ImageProperty.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
@@ -110,9 +110,9 @@ namespace AZ
         };
 
         class Image final
-            : public RHI::Image
+            : public RHI::DeviceImage
         {
-            using Base = RHI::Image;
+            using Base = RHI::DeviceImage;
             friend class ImagePool;
             friend class StreamingImagePool;
             friend class AliasedHeap;
@@ -154,9 +154,9 @@ namespace AZ
             using SubresourceRangeOwner = ImageOwnerProperty::PropertyRange;
 
             AZStd::vector<SubresourceRangeOwner> GetOwnerQueue(const RHI::ImageSubresourceRange* range = nullptr) const;
-            AZStd::vector<SubresourceRangeOwner> GetOwnerQueue(const RHI::ImageView& view) const;
+            AZStd::vector<SubresourceRangeOwner> GetOwnerQueue(const RHI::DeviceImageView& view) const;
             void SetOwnerQueue(const QueueId& queueId, const RHI::ImageSubresourceRange* range = nullptr);
-            void SetOwnerQueue(const QueueId& queueId, const RHI::ImageView& view);
+            void SetOwnerQueue(const QueueId& queueId, const RHI::DeviceImageView& view);
 
             using ImageLayoutProperty = RHI::ImageProperty<VkImageLayout>;
             using SubresourceRangeLayout = ImageLayoutProperty::PropertyRange;
@@ -164,7 +164,14 @@ namespace AZ
             AZStd::vector<SubresourceRangeLayout> GetLayout(const RHI::ImageSubresourceRange* range = nullptr) const;
             void SetLayout(VkImageLayout layout, const RHI::ImageSubresourceRange* range = nullptr);
 
+            using ImagePipelineAccessProperty = RHI::ImageProperty<PipelineAccessFlags>;
+
+            PipelineAccessFlags GetPipelineAccess(const RHI::ImageSubresourceRange* range = nullptr) const;
+            void SetPipelineAccess(const PipelineAccessFlags& pipelineAccess, const RHI::ImageSubresourceRange* range = nullptr);
+
             VkImageUsageFlags GetUsageFlags() const;
+
+            VkSharingMode GetSharingMode() const;
 
             //! Flags used for initializing an image
             enum class InitFlags : uint32_t
@@ -200,21 +207,21 @@ namespace AZ
             RHI::ResultCode TrimImage(StreamingImagePool& imagePool, uint16_t targetMipLevel, bool updateMemoryBind);
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::Image
+            // RHI::DeviceImage
             void SetDescriptor(const RHI::ImageDescriptor& descriptor) override;
             bool IsStreamableInternal() const override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::Resource
+            // RHI::DeviceResource
             void ReportMemoryUsage(RHI::MemoryStatisticsBuilder& builder) const override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::Image
+            // RHI::DeviceImage
             void GetSubresourceLayoutsInternal(
                 const RHI::ImageSubresourceRange& subresourceRange,
-                RHI::ImageSubresourceLayout* subresourceLayouts,
+                RHI::DeviceImageSubresourceLayout* subresourceLayouts,
                 size_t* totalSizeInBytes) const override;
             //////////////////////////////////////////////////////////////////////////
 
@@ -257,8 +264,14 @@ namespace AZ
             ImageLayoutProperty m_layout;
             mutable AZStd::mutex m_layoutMutex;
 
+            // Last pipeline access to the image subresources
+            ImagePipelineAccessProperty m_pipelineAccess;
+            mutable AZStd::mutex m_pipelineAccessMutex;
+
             // Usage flags used for creating the image.
             VkImageUsageFlags m_usageFlags;
+
+            VkSharingMode m_sharingMode;
 
             // Flags used for initializing the image.
             InitFlags m_initFlags = InitFlags::None;
