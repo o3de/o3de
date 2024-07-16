@@ -14,7 +14,7 @@ namespace AZ::RHI
 {
     IndexBufferView::IndexBufferView(
         const Buffer& buffer, uint32_t byteOffset, uint32_t byteCount, IndexFormat format)
-        : m_Buffer{ &buffer }
+        : m_buffer{ &buffer }
         , m_byteOffset{ byteOffset }
         , m_byteCount{ byteCount }
         , m_format{ format }
@@ -24,9 +24,9 @@ namespace AZ::RHI
 
     DeviceIndexBufferView IndexBufferView::GetDeviceIndexBufferView(int deviceIndex) const
     {
-        AZ_Assert(m_Buffer, "No Buffer available\n");
+        AZ_Assert(m_buffer, "No Buffer available\n");
 
-        return DeviceIndexBufferView(*m_Buffer->GetDeviceBuffer(deviceIndex), m_byteOffset, m_byteCount, m_format);
+        return DeviceIndexBufferView(*m_buffer->GetDeviceBuffer(deviceIndex), m_byteOffset, m_byteCount, m_format);
     }
 
     AZ::HashValue64 IndexBufferView::GetHash() const
@@ -36,7 +36,7 @@ namespace AZ::RHI
 
     const Buffer* IndexBufferView::GetBuffer() const
     {
-        return m_Buffer;
+        return m_buffer;
     }
 
     uint32_t IndexBufferView::GetByteOffset() const

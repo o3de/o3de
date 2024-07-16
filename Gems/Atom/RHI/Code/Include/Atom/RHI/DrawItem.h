@@ -53,7 +53,7 @@ namespace AZ::RHI
 
         DrawArguments(const DrawIndirect& indirect)
             : m_type{ DrawType::Indirect }
-            , m_Indirect{ indirect }
+            , m_indirect{ indirect }
         {
         }
 
@@ -67,7 +67,7 @@ namespace AZ::RHI
             case DrawType::Linear:
                 return DeviceDrawArguments(m_linear);
             case DrawType::Indirect:
-                return DeviceDrawArguments(DeviceDrawIndirect{m_Indirect.m_maxSequenceCount, m_Indirect.m_indirectBufferView->GetDeviceIndirectBufferView(deviceIndex), m_Indirect.m_indirectBufferByteOffset, m_Indirect.m_countBuffer->GetDeviceBuffer(deviceIndex).get(), m_Indirect.m_countBufferByteOffset});
+                return DeviceDrawArguments(DeviceDrawIndirect{m_indirect.m_maxSequenceCount, m_indirect.m_indirectBufferView->GetDeviceIndirectBufferView(deviceIndex), m_indirect.m_indirectBufferByteOffset, m_indirect.m_countBuffer->GetDeviceBuffer(deviceIndex).get(), m_indirect.m_countBufferByteOffset});
             default:
                 return DeviceDrawArguments();
             }
@@ -77,7 +77,7 @@ namespace AZ::RHI
         union {
             DrawIndexed m_indexed;
             DrawLinear m_linear;
-            DrawIndirect m_Indirect;
+            DrawIndirect m_indirect;
         };
     };
 
@@ -280,7 +280,7 @@ namespace AZ::RHI
     {
         bool operator==(const DrawItemProperties& rhs) const
         {
-            return m_Item == rhs.m_Item && m_sortKey == rhs.m_sortKey && m_depth == rhs.m_depth &&
+            return m_item == rhs.m_item && m_sortKey == rhs.m_sortKey && m_depth == rhs.m_depth &&
                 m_drawFilterMask == rhs.m_drawFilterMask;
         }
 
@@ -297,15 +297,15 @@ namespace AZ::RHI
         //! Returns the device-specific DeviceDrawItemProperties for the given index
         DeviceDrawItemProperties GetDeviceDrawItemProperties(int deviceIndex) const
         {
-            AZ_Assert(m_Item, "Not initialized with DrawItem\n");
+            AZ_Assert(m_item, "Not initialized with DrawItem\n");
 
-            DeviceDrawItemProperties result{ &m_Item->GetDeviceDrawItem(deviceIndex), m_sortKey, m_drawFilterMask, m_depth };
+            DeviceDrawItemProperties result{ &m_item->GetDeviceDrawItem(deviceIndex), m_sortKey, m_drawFilterMask, m_depth };
 
             return result;
         }
 
         //! A pointer to the draw item
-        const DrawItem* m_Item = nullptr;
+        const DrawItem* m_item = nullptr;
         //! A sorting key of this draw item which is used for sorting draw items in DrawList
         //! Check RHI::SortDrawList() function for detail
         DrawItemSortKey m_sortKey = 0;

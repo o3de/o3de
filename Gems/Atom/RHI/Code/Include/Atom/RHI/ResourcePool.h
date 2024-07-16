@@ -95,14 +95,14 @@ namespace AZ::RHI
 
         //! The registry of resources initialized on the pool, guarded by a shared_mutex.
         mutable AZStd::shared_mutex m_registryMutex;
-        AZStd::unordered_set<Resource*> m_Registry;
+        AZStd::unordered_set<Resource*> m_registry;
     };
 
     template<typename ResourceType>
     void ResourcePool::ForEach(AZStd::function<void(ResourceType&)> callback)
     {
         AZStd::shared_lock<AZStd::shared_mutex> lock(m_registryMutex);
-        for (Resource* resourceBase : m_Registry)
+        for (Resource* resourceBase : m_registry)
         {
             ResourceType* resourceType = azrtti_cast<ResourceType*>(resourceBase);
             if (resourceType)
@@ -116,7 +116,7 @@ namespace AZ::RHI
     void ResourcePool::ForEach(AZStd::function<void(const ResourceType&)> callback) const
     {
         AZStd::shared_lock<AZStd::shared_mutex> lock(m_registryMutex);
-        for (const Resource* resourceBase : m_Registry)
+        for (const Resource* resourceBase : m_registry)
         {
             const ResourceType* resourceType = azrtti_cast<const ResourceType*>(resourceBase);
             if (resourceType)
