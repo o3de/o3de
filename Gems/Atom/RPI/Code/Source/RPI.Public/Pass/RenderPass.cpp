@@ -171,14 +171,15 @@ namespace AZ
         void RenderPass::SetRenderAttachmentLayout(
             const AZStd::shared_ptr<RHI::RenderAttachmentLayout>& renderAttachmentLayout, uint32_t subpassIndex)
         {
-            AZ_Error("RasterPass", m_subpassIndex == subpassIndex,
-                     "%s Error at pass '%s': Was expecting subpassIndex=%u, instead got=%u.\n", __FUNCTION__,
-                     GetName().GetCStr(), m_subpassIndex, subpassIndex);
-            // We throw an assert, in addition to reporting the error, because this is most likely a programming error
-            // and not a runtime error.
-            AZ_Assert(m_subpassIndex == subpassIndex,
-                "Error at pass '%s': Was expecting subpassIndex=%u, instead got=%u.\n",
-                GetName().GetCStr(),  m_subpassIndex, subpassIndex);
+            if (m_subpassIndex != subpassIndex)
+            {
+                AZ_Error("RasterPass", false, "%s Error at pass '%s': Was expecting subpassIndex=%u, instead got=%u.\n",
+                         __FUNCTION__, GetName().GetCStr(), m_subpassIndex, subpassIndex);
+                // We throw an assert, in addition to reporting the error, because this is most likely a programming error
+                // and not a runtime error.
+                AZ_Assert(false, "Error at pass '%s': Was expecting subpassIndex=%u, instead got=%u.\n",
+                          GetName().GetCStr(), m_subpassIndex, subpassIndex);
+            }
 
             m_renderAttachmentLayout = renderAttachmentLayout;
         }
