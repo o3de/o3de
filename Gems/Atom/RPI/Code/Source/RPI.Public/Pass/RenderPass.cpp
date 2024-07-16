@@ -64,12 +64,16 @@ namespace AZ
             auto* layoutBuilder = builder.AddSubpass();
 
             const bool success = BuildSubpassLayout(*layoutBuilder);
-            AZ_Assert(success, "Failed to add subpass layout for pass '%s'", GetName().GetCStr());
-
+            if (!success)
+            {
+                AZ_Assert(false, "Failed to add subpass layout for pass '%s'", GetName().GetCStr());
+            }
             auto renderAttachmentLayout = AZStd::make_shared<RHI::RenderAttachmentLayout>();
             const RHI::ResultCode resultCode = builder.End(*renderAttachmentLayout.get());
-            AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to build subpass layout for pass '%s'", GetName().GetCStr());
-
+            if (resultCode != RHI::ResultCode::Success)
+            {
+                AZ_Assert(false, "Failed to build subpass layout for pass '%s'", GetName().GetCStr());
+            }
             constexpr uint32_t subpassIndex = 0;
             SetRenderAttachmentLayout(renderAttachmentLayout, subpassIndex);
 
