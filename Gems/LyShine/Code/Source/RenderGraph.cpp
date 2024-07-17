@@ -177,7 +177,7 @@ namespace LyShine
 
         uint16 vertex_index_start = (uint16)m_combinedVertices.size();
 
-        // Add the vertices at the
+        // Add the vertices at the end of the combined buffer.  We need to update the vertex indices with their new offset separately.
         m_combinedVertices.insert(m_combinedVertices.end(), primitive->m_vertices, primitive->m_vertices + primitive->m_numVertices);
 
         for (int i = 0; i < primitive->m_numIndices; i++)
