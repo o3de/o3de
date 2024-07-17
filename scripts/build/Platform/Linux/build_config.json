@@ -46,6 +46,34 @@
       "test_profile_unity_arm64"
     ]
   },
+  "profile_ubuntu24_nounity_pipe": {
+    "TAGS": [
+      "periodic-incremental-daily",
+      "periodic-clean-weekly-internal"
+    ],
+    "PIPELINE_ENV": {
+      "NODE_LABEL": "linux-ubuntu-24"
+    },
+    "steps": [
+      "profile_nounity",
+      "asset_profile_nounity",
+      "test_profile_nounity"
+    ]
+  },
+  "profile_ubuntu24_arm64_unity_pipe": {
+    "TAGS": [
+      "periodic-incremental-daily-internal",
+      "periodic-clean-weekly-internal"
+    ],
+    "PIPELINE_ENV": {
+      "NODE_LABEL": "linux-ubuntu-24-arm"
+    },
+    "steps": [
+      "profile_unity",
+      "asset_profile_unity",
+      "test_profile_unity_arm64"
+    ]
+  },
   "metrics": {
     "TAGS": [
       "weekly"
