@@ -550,7 +550,7 @@ namespace LegacyLevelSystem
         }
         else
         {
-            m_queuedAssetsCount = min(m_queuedAssetsCountMax, m_queuedAssetsCount + static_cast<int>(AZ::Data::AssetBus::QueuedEventCount()));
+            m_queuedAssetsCount = min(m_queuedAssetsCountMax, m_queuedAssetsCount + static_cast<int>(AZ::Data::AssetBus::QueuedEventCount()) + 1);
         }
 
         // begin - progress calculation
@@ -564,14 +564,14 @@ namespace LegacyLevelSystem
 
         const float fFrameTime = curTime - m_fLastTime;
 
-        const float t = AZStd::clamp(fFrameTime, 0.0001f, 1.0f);
+        const float t = AZStd::clamp(fFrameTime * .25f, 0.0001f, 1.0f);
 
         m_fFilteredProgress = fProgress * t + m_fFilteredProgress * (1.f - t);
 
         m_fLastTime = curTime;
         // end - progress calculation
 
-        const int progressAmount = static_cast<int>(m_fFilteredProgress);
+        const int progressAmount = max(1, static_cast<int>(m_fFilteredProgress));
         OnLoadingProgress(m_lastLevelName.c_str(), progressAmount);
         AZ_TracePrintf("LevelSystem", "Level load - progress amount: %i%%  (%i/%i)", progressAmount, m_queuedAssetsCount, m_queuedAssetsCountMax);
     }
