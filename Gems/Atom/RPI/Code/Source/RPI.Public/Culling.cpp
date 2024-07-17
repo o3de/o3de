@@ -483,16 +483,37 @@ namespace AZ
             // Perform occlusion tests using OcclusionRequestBus if it is connected to the entity context ID for this scene.
             if (!worklistData->m_sceneEntityContextId.IsNull())
             {
-                bool result = true;
-                AzFramework::OcclusionRequestBus::EventResult(
-                    result,
+                AzFramework::OcclusionState state = AzFramework::OcclusionState::Unknown;
+                const auto& viewName = worklistData->m_view->GetName();
+
+                AzFramework::OcclusionRequestBus::Event(
                     worklistData->m_sceneEntityContextId,
-                    &AzFramework::OcclusionRequestBus::Events::GetOcclusionViewAabbVisibility,
-                    worklistData->m_view->GetName(),
-                    visibleEntry->m_boundingVolume);
+                    [&](AzFramework::OcclusionRequestBus::Events* handler)
+                    {
+                        // An occlusion culling system might precompute visibility data for static objects or entities in a scene. If the
+                        // system that implements OcclusionRequestBus supports that behavior then we want to perform an initial visibility
+                        // test using the entity ID. This can avoid potentially more expensive dynamic tests, like those against an
+                        // occlusion buffer.
+                        if (visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable)
+                        {
+                            auto cullable = static_cast<RPI::Cullable*>(visibleEntry->m_userData);
+                            if (cullable && cullable->m_cullData.m_entityId.IsValid())
+                            {
+                                state = handler->GetOcclusionViewEntityVisibility(viewName, cullable->m_cullData.m_entityId);
+                            }
+                        }
+
+                        // Entries that don't meet the above criteria or return an inconclusive or partially visible state will perform a
+                        // dynamic, bounding box visibility test. One entity can have multiple visibility entries that may need to be tested
+                        // individually. If the entire entity is hidden, no further testing is required.
+                        if (state != AzFramework::OcclusionState::Hidden)
+                        {
+                            state = handler->GetOcclusionViewAabbVisibility(viewName, visibleEntry->m_boundingVolume);
+                        }
+                    });
 
                 // Return immediately to bypass MaskedOcclusionCulling
-                return result;
+                return state != AzFramework::OcclusionState::Hidden;
             }
 
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
