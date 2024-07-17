@@ -9,6 +9,7 @@
 
 #include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI.Reflect/RenderAttachmentLayout.h>
+#include <Atom/RHI.Reflect/ScopeId.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/utils.h>
@@ -75,6 +76,8 @@ namespace AZ::RHI
         public:
             SubpassAttachmentLayoutBuilder(uint32_t subpassIndex);
 
+            uint32_t GetSubpassIndex() const;
+
             //! Adds the use of a new render target with resolve information.
             SubpassAttachmentLayoutBuilder* RenderTargetAttachment(
                 Format format,
@@ -108,17 +111,26 @@ namespace AZ::RHI
             SubpassAttachmentLayoutBuilder* DepthStencilAttachment(
                 Format format,
                 const AZ::Name& name = {},
-                const AttachmentLoadStoreAction& loadStoreAction = AttachmentLoadStoreAction());
+                const AttachmentLoadStoreAction& loadStoreAction = AttachmentLoadStoreAction(),
+                AZ::RHI::ScopeAttachmentAccess scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write,
+                AZ::RHI::ScopeAttachmentStage scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::EarlyFragmentTest |
+                                                                     AZ::RHI::ScopeAttachmentStage::LateFragmentTest);
 
             //! Adds the use of a previously added depth/stencil attachment. The "name" attachment must
             // be already be added as by a previous pass.
             SubpassAttachmentLayoutBuilder* DepthStencilAttachment(
                 const AZ::Name name = {},
-                const AttachmentLoadStoreAction& loadStoreAction = AttachmentLoadStoreAction());
+                const AttachmentLoadStoreAction& loadStoreAction = AttachmentLoadStoreAction(),
+                AZ::RHI::ScopeAttachmentAccess scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write,
+                AZ::RHI::ScopeAttachmentStage scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::EarlyFragmentTest |
+                                                                    AZ::RHI::ScopeAttachmentStage::LateFragmentTest);
 
             //! Adds the use of a previously added depth/stencil attachment.
             SubpassAttachmentLayoutBuilder* DepthStencilAttachment(
-                const AttachmentLoadStoreAction& loadStoreAction);
+                const AttachmentLoadStoreAction& loadStoreAction,
+                AZ::RHI::ScopeAttachmentAccess scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write,
+                AZ::RHI::ScopeAttachmentStage scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::EarlyFragmentTest |
+                                                                     AZ::RHI::ScopeAttachmentStage::LateFragmentTest);
 
             // Adds the use of a subpass input attachment. The "name" attachment must
             // be already be added as by a previous pass.
@@ -139,12 +151,28 @@ namespace AZ::RHI
                 Format m_format = Format::Unknown;
                 AttachmentLoadStoreAction m_loadStoreAction;
                 AZ::Name m_resolveName;
+                //! The following two flags are only relevant when there are more than one subpasses
+                //! that will be merged.
+                //! The scope attachment access as defined in the pass template, which will be used
+                //! to accurately define the subpass dependencies.
+                AZ::RHI::ScopeAttachmentAccess m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Unknown;
+                //! The scope attachment stage as defined in the pass template, which will be used
+                //! to accurately define the subpass dependencies.
+                AZ::RHI::ScopeAttachmentStage m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::Uninitialized;
             };
 
             struct SubpassAttachmentEntry
             {
                 AZ::Name m_name;
                 RHI::ImageAspectFlags m_imageAspects = RHI::ImageAspectFlags::None;
+                //! The following two flags are only relevant when there are more than one subpasses
+                //! that will be merged.
+                //! The scope attachment access as defined in the pass template, which will be used
+                //! to accurately define the subpass dependencies.
+                AZ::RHI::ScopeAttachmentAccess m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Unknown;
+                //! The scope attachment stage as defined in the pass template, which will be used
+                //! to accurately define the subpass dependencies.
+                AZ::RHI::ScopeAttachmentStage m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::Uninitialized;
             };
 
             AZStd::fixed_vector<RenderAttachmentEntry, RHI::Limits::Pipeline::AttachmentColorCountMax> m_renderTargetAttachments;
@@ -166,7 +194,7 @@ namespace AZ::RHI
         void Reset();
 
     private:
-        /// List of builders for each subpass.
+        //! List of builders for each subpass.
         AZStd::vector<SubpassAttachmentLayoutBuilder> m_subpassLayoutBuilders;
     };
 }

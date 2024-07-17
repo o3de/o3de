@@ -399,6 +399,176 @@ namespace AZ
                 StructureTypeTraits<VkSubpassDependency2, VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2>>;
         }
 
+        //! The purpose of this helper class is to reduce the complexity of the function
+        //! RenderPass::ConvertRenderAttachmentLayout() regarding the definition of the
+        //! Subpass Dependencies.
+        //! It is expected that an instance of this class to be declared in the stack
+        //! of the function RenderPass::ConvertRenderAttachmentLayout().
+        class SubpassDependencyHelper final
+        {
+            struct SrcDstPipelineStageFlags
+            {
+                PipelineAccessFlags m_srcPipelineAccessFlags;
+                PipelineAccessFlags m_dstPipelineAccessFlags;
+            };
+            using PipelineStageFlagsList = AZStd::vector<SrcDstPipelineStageFlags>; // Indexed by attachment index.
+
+        public:
+            SubpassDependencyHelper() = delete;
+            ~SubpassDependencyHelper() = default;
+            SubpassDependencyHelper(RenderPass::Descriptor& renderPassDesc)
+                : m_renderPassDescriptor(renderPassDesc)
+            {
+                m_subpassCount = renderPassDesc.m_subpassCount;
+                AZ_Assert(m_subpassCount > 0, "Invalid Subpass Count from Render Pass Descriptor.");
+
+                // Subpass dependencies only matter when there's more than one subpass.
+                // The usage of this helper class will be a no-op.
+                if (m_subpassCount < 2)
+                {
+                    return;
+                }
+
+                m_srcPipelineAccessFlags.resize(renderPassDesc.m_attachmentCount);
+            }
+
+            //! Marks the beginning of a new subpass.
+            void AddSubpassPipelineStageFlags(uint32_t currentSubpassIndex)
+            {
+                if (m_subpassCount < 2) // Subpass dependencies only matter when there's more than one subpass.
+                {
+                    return;
+                }
+
+                m_subpassesPipelineStageFlagsList.push_back({});
+                AZ_Assert(m_currentSubpassIndex != currentSubpassIndex, "The new subpass index can not be the same as the current subpass index");
+                m_currentSubpassIndex = currentSubpassIndex;
+            }
+
+            //! Adds a subpass dependency to @m_renderPassDescriptor when applicable.
+            void AddSubpassDependency(const uint32_t attachmentIndex,
+                                      const AZ::RHI::ScopeAttachmentUsage scopeAttachmentUsage,
+                                      const AZ::RHI::ScopeAttachmentStage scopeAttachmentStage,
+                                      const AZ::RHI::ScopeAttachmentAccess scopeAttachmentAccess,
+                                      const VkImageUsageFlags shadingRateAttachmentUsageFlags = 0 /* Only relevant for shading rate attachment usage*/)
+            {
+                if (m_subpassCount < 2) // Subpass dependencies only matter when there's more than one subpass.
+                {
+                    return;
+                }
+
+                const uint32_t dstSubpassIndex = m_currentSubpassIndex;
+
+                SrcDstPipelineStageFlags srcDstPipelineStageFlags;
+                srcDstPipelineStageFlags.m_srcPipelineAccessFlags = m_srcPipelineAccessFlags[attachmentIndex];
+                srcDstPipelineStageFlags.m_dstPipelineAccessFlags.m_pipelineStage = GetResourcePipelineStateFlags(scopeAttachmentUsage, scopeAttachmentStage, AZ::RHI::HardwareQueueClass::Graphics, shadingRateAttachmentUsageFlags);
+                srcDstPipelineStageFlags.m_dstPipelineAccessFlags.m_access = GetResourceAccessFlags(scopeAttachmentAccess, scopeAttachmentUsage);
+
+                // Resize if necessary.
+                if ((attachmentIndex + 1) >= m_subpassesPipelineStageFlagsList[dstSubpassIndex].size())
+                {
+                    m_subpassesPipelineStageFlagsList[dstSubpassIndex].resize(attachmentIndex + 1);
+                }
+                m_subpassesPipelineStageFlagsList[dstSubpassIndex][attachmentIndex] = srcDstPipelineStageFlags;
+
+                //! For this attachment, its Destination pipeline access flags will become the Source pipeline access flags
+                //! for some future subpass where this attachment may be referenced.
+                m_srcPipelineAccessFlags[attachmentIndex] = srcDstPipelineStageFlags.m_dstPipelineAccessFlags;
+
+                auto lastUseIter = m_lastSubpassAttachmentUse.find(attachmentIndex);
+                if (lastUseIter == m_lastSubpassAttachmentUse.end())
+                {
+                    // No need to declare subpass depencies for external dependencies as those will be handled
+                    // by the framegraph.
+                    m_lastSubpassAttachmentUse[attachmentIndex] = dstSubpassIndex;
+                    return;
+                }
+                uint32_t srcSubpassIndex = lastUseIter->second;
+                m_lastSubpassAttachmentUse[attachmentIndex] = dstSubpassIndex;
+
+                // Resolve attachments only depend on their MSAA attachment of this subpass.
+                // so no need to add the resource dependency, BUT one thing to keep in mind is that
+                // resolve attachments can't be referenced in the following subpass (+1), but they could
+                // be referenced in the subpasses (+2, or +3, etc).
+                if (scopeAttachmentUsage == AZ::RHI::ScopeAttachmentUsage::Resolve)
+                {
+                    return;
+                }
+
+                m_renderPassDescriptor.m_subpassDependencies.emplace_back();
+                VkSubpassDependency& dependency = m_renderPassDescriptor.m_subpassDependencies.back();
+                dependency = {};
+                dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+                dependency.srcSubpass = srcSubpassIndex;
+                dependency.srcStageMask = srcDstPipelineStageFlags.m_srcPipelineAccessFlags.m_pipelineStage;
+                dependency.srcAccessMask = srcDstPipelineStageFlags.m_srcPipelineAccessFlags.m_access;
+                dependency.dstSubpass = dstSubpassIndex;
+                dependency.dstStageMask = srcDstPipelineStageFlags.m_dstPipelineAccessFlags.m_pipelineStage;
+                dependency.dstAccessMask = srcDstPipelineStageFlags.m_dstPipelineAccessFlags.m_access;
+            }
+
+        private:
+            //! The output of this helper class will be stored in @m_renderPassDescriptor.m_subpassDependencies.
+            RenderPass::Descriptor& m_renderPassDescriptor;
+
+            uint32_t m_subpassCount; // Cached from @m_renderPassDescriptor.
+            uint32_t m_currentSubpassIndex = aznumeric_cast<uint32_t>(-1);
+            AZStd::vector<PipelineAccessFlags> m_srcPipelineAccessFlags; // Indexed by attachment index.
+            AZStd::vector<PipelineStageFlagsList> m_subpassesPipelineStageFlagsList; // Indexed by subpass index.
+            //! For a given attachment (by index), we record here the last Subpass (by Index) where
+            //! it was utilized. 
+            using AttachmentIndex = uint32_t;
+            using SubpassIndex = uint32_t;
+            AZStd::unordered_map<AttachmentIndex, SubpassIndex> m_lastSubpassAttachmentUse;
+        }; //class SubpassDependencyHelper
+
+        void RenderPass::Descriptor::MergeSubpassDependencies()
+        {
+            if ( (m_subpassCount < 2) || (m_subpassDependencies.size() < 2) )
+            {
+                return;
+            }
+
+            //! Only two bits are active at a time. One for Source Subpass, the other for Destination Subpass 
+            using SubpassPairMask = uint32_t;
+            AZStd::unordered_map<SubpassPairMask, VkSubpassDependency> uniqueDependencies;
+            for (const auto& subpassDependency : m_subpassDependencies)
+            {
+                SubpassPairMask subpassPairMask = (1 << subpassDependency.srcSubpass) | (1 << subpassDependency.dstSubpass);
+                auto iter = uniqueDependencies.find(subpassPairMask);
+                if (iter == uniqueDependencies.end())
+                {
+                    uniqueDependencies[subpassPairMask] = subpassDependency;
+                    continue;
+                }
+                VkSubpassDependency& mergedDependency = iter->second;
+                mergedDependency.srcAccessMask |= subpassDependency.srcAccessMask;
+                mergedDependency.srcStageMask |= subpassDependency.srcStageMask;
+                mergedDependency.dstAccessMask |= subpassDependency.dstAccessMask;
+                mergedDependency.dstStageMask |= subpassDependency.dstStageMask;
+            }
+
+            // Collect all unique dependencies in vector form with consistent order using increasing
+            // subpass indices.
+            AZStd::vector<VkSubpassDependency> mergedDependencies;
+            mergedDependencies.reserve(uniqueDependencies.size());
+            for (uint32_t srcSubpass = 0; srcSubpass < m_subpassCount; srcSubpass++)
+            {
+                for (uint32_t dstSubpass = srcSubpass + 1; dstSubpass < m_subpassCount; dstSubpass++)
+                {
+                    SubpassPairMask subpassPairMask = (1 << srcSubpass) | (1 << dstSubpass);
+                    const auto iter = uniqueDependencies.find(subpassPairMask);
+                    if (iter == uniqueDependencies.end())
+                    {
+                        continue;
+                    }
+                    mergedDependencies.push_back(iter->second);
+                }
+            }
+
+            AZStd::swap(m_subpassDependencies, mergedDependencies);
+        }
+
         RenderPass::AttachmentLoadStoreAction::AttachmentLoadStoreAction(const RHI::AttachmentLoadStoreAction& loadStoreAction)
         {
             *this = loadStoreAction;
@@ -489,8 +659,11 @@ namespace AZ
             }
 
             renderPassDesc.m_subpassCount = layout.m_subpassCount;
+            SubpassDependencyHelper subpassDependencyHelper(renderPassDesc);
             for (uint32_t subpassIndex = 0; subpassIndex < layout.m_subpassCount; ++subpassIndex)
             {
+                subpassDependencyHelper.AddSubpassPipelineStageFlags(subpassIndex);
+
                 AZStd::bitset<RHI::Limits::Pipeline::RenderAttachmentCountMax> usedAttachments;
                 const auto& subpassLayout = layout.m_subpassLayouts[subpassIndex];
                 auto& subpassDescriptor = renderPassDesc.m_subpassDescriptors[subpassIndex];
@@ -502,45 +675,77 @@ namespace AZ
                         subpassLayout.m_depthStencilDescriptor.m_attachmentIndex,
                         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
                     usedAttachments.set(subpassLayout.m_depthStencilDescriptor.m_attachmentIndex);
+
+                    subpassDependencyHelper.AddSubpassDependency(subpassLayout.m_depthStencilDescriptor.m_attachmentIndex,
+                        AZ::RHI::ScopeAttachmentUsage::DepthStencil,
+                        subpassLayout.m_depthStencilDescriptor.m_scopeAttachmentStage,
+                        subpassLayout.m_depthStencilDescriptor.m_scopeAttachmentAccess);
                 }
 
                 for (uint32_t colorAttachmentIndex = 0; colorAttachmentIndex < subpassLayout.m_rendertargetCount; ++colorAttachmentIndex)
                 {
+                    const auto& renderAttachmentDescriptor = subpassLayout.m_rendertargetDescriptors[colorAttachmentIndex];
+
                     RenderPass::SubpassAttachment& subpassAttachment = subpassDescriptor.m_rendertargetAttachments[colorAttachmentIndex];
-                    subpassAttachment.m_attachmentIndex = subpassLayout.m_rendertargetDescriptors[colorAttachmentIndex].m_attachmentIndex;
+                    subpassAttachment.m_attachmentIndex = renderAttachmentDescriptor.m_attachmentIndex;
                     subpassAttachment.m_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
                     usedAttachments.set(subpassAttachment.m_attachmentIndex);
+
+                    subpassDependencyHelper.AddSubpassDependency(subpassAttachment.m_attachmentIndex,
+                        AZ::RHI::ScopeAttachmentUsage::RenderTarget,
+                        renderAttachmentDescriptor.m_scopeAttachmentStage,
+                        renderAttachmentDescriptor.m_scopeAttachmentAccess);
+
                     RenderPass::SubpassAttachment& resolveSubpassAttachment = subpassDescriptor.m_resolveAttachments[colorAttachmentIndex];
-                    resolveSubpassAttachment.m_attachmentIndex = subpassLayout.m_rendertargetDescriptors[colorAttachmentIndex].m_resolveAttachmentIndex;
+                    resolveSubpassAttachment.m_attachmentIndex = renderAttachmentDescriptor.m_resolveAttachmentIndex;
                     resolveSubpassAttachment.m_layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
                     if (resolveSubpassAttachment.IsValid())
                     {
                         // Set the number of samples for resolve attachments to 1.
                         renderPassDesc.m_attachments[resolveSubpassAttachment.m_attachmentIndex].m_multisampleState.m_samples = 1;
                         usedAttachments.set(resolveSubpassAttachment.m_attachmentIndex);
+
+                        subpassDependencyHelper.AddSubpassDependency(
+                            resolveSubpassAttachment.m_attachmentIndex,
+                            AZ::RHI::ScopeAttachmentUsage::Resolve,
+                            AZ::RHI::ScopeAttachmentStage::Any, // stage is irrelevant for Resolve.
+                            AZ::RHI::ScopeAttachmentAccess::Write); // access is irrelevant for Resolve.
                     }
                 }
 
                 for (uint32_t inputAttachmentIndex = 0; inputAttachmentIndex < subpassLayout.m_subpassInputCount; ++inputAttachmentIndex)
                 {
+                    const auto& inputAttachmentDescriptor = subpassLayout.m_subpassInputDescriptors[inputAttachmentIndex];
+
+                    const auto& firstSubpassDepthStencilDescriptor = layout.m_subpassLayouts[0].m_depthStencilDescriptor;
+                    bool isDepthStencil = (firstSubpassDepthStencilDescriptor.m_attachmentIndex == inputAttachmentDescriptor.m_attachmentIndex);
+
                     RenderPass::SubpassAttachment& subpassAttachment = subpassDescriptor.m_subpassInputAttachments[inputAttachmentIndex];
-                    subpassAttachment.m_attachmentIndex = subpassLayout.m_subpassInputDescriptors[inputAttachmentIndex].m_attachmentIndex;
-                    subpassAttachment.m_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                    subpassAttachment.m_imageAspectFlags =
-                        ConvertImageAspectFlags(subpassLayout.m_subpassInputDescriptors[inputAttachmentIndex].m_aspectFlags);
+                    subpassAttachment.m_attachmentIndex = inputAttachmentDescriptor.m_attachmentIndex;
+                    subpassAttachment.m_layout = isDepthStencil ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                    subpassAttachment.m_imageAspectFlags = ConvertImageAspectFlags(inputAttachmentDescriptor.m_aspectFlags);
                     usedAttachments.set(subpassAttachment.m_attachmentIndex);
+
+                    subpassDependencyHelper.AddSubpassDependency(
+                        subpassAttachment.m_attachmentIndex,
+                        AZ::RHI::ScopeAttachmentUsage::SubpassInput,
+                        inputAttachmentDescriptor.m_scopeAttachmentStage,
+                        inputAttachmentDescriptor.m_scopeAttachmentAccess);
                 }
 
                 if (subpassLayout.m_shadingRateDescriptor.IsValid())
                 {
+                    VkImageUsageFlags shadingRateAttachmentUsageFlags = 0;
                     VkImageLayout imageLayout;
                     switch (device.GetImageShadingRateMode())
                     {
                     case Device::ShadingRateImageMode::DensityMap:
                         imageLayout = VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT;
+                        shadingRateAttachmentUsageFlags = VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT;
                         break;
                     case Device::ShadingRateImageMode::ImageAttachment:
                         imageLayout = VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR;
+                        shadingRateAttachmentUsageFlags = VK_IMAGE_USAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
                         break;
                     default:
                         AZ_Assert(false, "Invalid image shading rate mode %d", device.GetImageShadingRateMode());
@@ -555,6 +760,13 @@ namespace AZ
                     usedAttachments.set(subpassLayout.m_shadingRateDescriptor.m_attachmentIndex);
                     renderPassDesc.m_attachments[subpassLayout.m_shadingRateDescriptor.m_attachmentIndex].m_loadStoreAction =
                         subpassLayout.m_shadingRateDescriptor.m_loadStoreAction;
+
+                    subpassDependencyHelper.AddSubpassDependency(
+                        subpassLayout.m_shadingRateDescriptor.m_attachmentIndex,
+                        AZ::RHI::ScopeAttachmentUsage::ShadingRate,
+                        AZ::RHI::ScopeAttachmentStage::ShadingRate,
+                        AZ::RHI::ScopeAttachmentAccess::Unknown, // access is Irrelevant for shading rate attachments.
+                        shadingRateAttachmentUsageFlags);
                 }
 
                 // [GFX_TODO][ATOM-3948] Implement preserve attachments. For now preserve all attachments.
@@ -565,7 +777,10 @@ namespace AZ
                         subpassDescriptor.m_preserveAttachments[subpassDescriptor.m_preserveAttachmentCount++] = attachmentIndex;
                     }
                 }
+
             }
+
+            renderPassDesc.MergeSubpassDependencies();
 
             return renderPassDesc;
         }
@@ -588,6 +803,7 @@ namespace AZ
             }
             Base::Shutdown();
         }
-    }
-}
+
+    } // namespace Vulkan
+} // namespace AZ
 

@@ -51,6 +51,9 @@ namespace AZ
         protected:
             FullscreenTrianglePass(const PassDescriptor& descriptor);
 
+            //! RenderPass override.
+            bool CanBecomeSubpass() override { return true; }
+
             // Pass behavior overrides...
             void InitializeInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
