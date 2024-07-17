@@ -490,6 +490,10 @@ namespace AZ
                     worklistData->m_sceneEntityContextId,
                     [&](AzFramework::OcclusionRequestBus::Events* handler)
                     {
+                        // An occlusion culling system might precompute visibility data for static objects or entities in a scene. If the
+                        // system that implements OcclusionRequestBus supports that behavior then we want to perform an initial visibility
+                        // test using the entity ID. This can avoid potentially more expensive dynamic tests, like those against an
+                        // occlusion buffer.
                         if (visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable)
                         {
                             auto cullable = static_cast<RPI::Cullable*>(visibleEntry->m_userData);
@@ -499,6 +503,9 @@ namespace AZ
                             }
                         }
 
+                        // Entries that don't meet the above criteria or return an inconclusive or partially visible state will perform a
+                        // dynamic, bounding box visibility test. One entity can have multiple visibility entries that may need to be tested
+                        // individually. If the entire entity is hidden, no further testing is required.
                         if (state != AzFramework::OcclusionState::Hidden)
                         {
                             state = handler->GetOcclusionViewAabbVisibility(viewName, visibleEntry->m_boundingVolume);
