@@ -159,10 +159,9 @@ namespace LyShine
         drawSrg->Compile();
         
         // Add the indexed primitives to the dynamic draw context for drawing
-        //
-        // [LYSHINE_ATOM_TODO][ATOM-15073] Combine into a single DrawIndexed call to take advantage of the draw call
-        // optimization done by this RenderGraph. This option will be added to DynamicDrawContext. For
-        // now we combine the vertices ourselves during AddPrimitive
+        // TODO (GHI 17444): Vertex data for primitives is currently merged within AddPrimitive and then passed to 
+        // DynamicDrawContext. This can probably be further optimized whereby we dont waste extra memory and 
+        // provide the primitives directly to DynamicDrawContext to be added to its Ring buffer memory. 
         dynamicDraw->DrawIndexed(&m_combinedVertices[0], (uint32_t)m_combinedVertices.size(), &m_combinedIndices[0],  (uint32_t)m_combinedIndices.size(), AZ::RHI::IndexFormat::Uint16, drawSrg);
 
         uiRenderer->SetBaseState(prevBaseState);
