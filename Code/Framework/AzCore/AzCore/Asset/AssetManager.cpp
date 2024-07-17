@@ -345,7 +345,6 @@ namespace AZ::Data
                     constexpr int MaxWaitBetweenDispatchMs = 1;
                     while (!m_waitEvent.try_acquire_for(AZStd::chrono::milliseconds(MaxWaitBetweenDispatchMs)))
                     {
-                        AssetManager::Instance().DispatchEvents();
 // Gruber patch begin // AE -- update log while waiting for assets
 #if defined(CARBONATED)
                         // if we are here then it is the main thread, let deliver the log messages
@@ -354,6 +353,7 @@ namespace AZ::Data
                         AZ::AssetLoadNotification::AssetLoadNotificatorBus::Broadcast(&AZ::AssetLoadNotification::AssetLoadNotificatorBus::Events::WaitForAssetUpdate);
 #endif
 // Gruber patch end // AE -- update log while waiting for assets
+                        AssetManager::Instance().DispatchEvents();
                     }
                 }
                 else

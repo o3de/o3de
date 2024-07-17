@@ -67,6 +67,7 @@ namespace LyShine
             return false;
         }
 
+#if !defined (CARBONATED)
         //TODO: gEnv->pRenderer is always null, fix the logic below
         AZ_ErrorOnce(nullptr, false, "NotifyGameLoadStart needs to be removed/ported to use Atom");
         return false;
@@ -96,6 +97,9 @@ namespace LyShine
         }
 
         return m_isPlaying;
+#endif
+#else
+        return false;
 #endif
     }
 
@@ -292,7 +296,9 @@ namespace LyShine
             Reset();
             return AZ::EntityId();
         }
+#if defined (CARBONATED)
         AZStd::to_lower(path.begin(), path.end());
+#endif
 
         AZ::EntityId canvasId = AZ::Interface<ILyShine>::Get()->LoadCanvas(path);
         AZ_Warning("LoadScreenComponent", canvasId.IsValid(), "Can't load canvas: %s", path.c_str());

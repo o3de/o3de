@@ -89,7 +89,8 @@ class SpawnableLevelSystem
         float m_fLastTime{0.0f};
 #ifdef CARBONATED
         float m_fFilteredProgress{0.0f};
-        int m_prevNumOfTickets;
+        int m_queuedAssetsCount{ 0 };
+        int m_queuedAssetsCountMax{ 0 };
 #endif
 
         bool m_bLevelLoaded{false};
