@@ -603,7 +603,7 @@ namespace TextureAtlasBuilder
                     continue;
                 }
 
-                // Not a directory - add the file if it's a support image extension
+                // Not a directory - add the file if it supports an image extension
                 bool extensionSupported = false;
                 ImageProcessingAtom::ImageBuilderRequestBus::BroadcastResult(extensionSupported, &ImageProcessingAtom::ImageBuilderRequestBus::Events::IsExtensionSupported, ext.c_str());
 
