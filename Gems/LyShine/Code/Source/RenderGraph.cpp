@@ -189,14 +189,16 @@ namespace LyShine
         m_primitives.push_back(*primitive);
 
 #if defined(CARBONATED)
-        uint16 vertex_index_start = (uint16)m_combinedVertices.size();
+        uint16 vertex_start = aznumeric_caster(m_combinedVertices.size());
+        uint16 index_start = aznumeric_caster(m_combinedIndices.size());
 
-        // Add the vertices at the
+        // Add the vertices at the end of the combined buffer.  We need to update the vertex indices with their new offset separately.
         m_combinedVertices.insert(m_combinedVertices.end(), primitive->m_vertices, primitive->m_vertices + primitive->m_numVertices);
+        m_combinedIndices.resize_no_construct(m_combinedIndices.size() + primitive->m_numIndices);
 
         for (int i = 0; i < primitive->m_numIndices; i++)
         {
-            m_combinedIndices.push_back(vertex_index_start + primitive->m_indices[i]);
+            m_combinedIndices[index_start + i] = vertex_start + primitive->m_indices[i];
         }
 #endif
 
