@@ -97,6 +97,10 @@ namespace ImageProcessingAtom
         PresetName GetDefaultAlphaPreset() override;
         bool IsValidPreset(PresetName presetName) override;
 
+#if defined(CARBONATED)
+        bool IsExtensionSupported(const char* extension) override;
+#endif
+
         ////////////////////////////////////////////////////////////////////////
 
     private:
