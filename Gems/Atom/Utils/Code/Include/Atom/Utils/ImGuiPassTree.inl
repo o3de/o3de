@@ -86,6 +86,8 @@ namespace AZ::Render
                 }
             }
 
+            Scriptable_ImGui::Checkbox("Expand All Passes", &m_expandAllPasses);
+
             if (m_showAttachments)
             {
                 Scriptable_ImGui::SliderFloat2("Color Range", m_attachmentColorTranformRange, 0.0f, 1.0f);
@@ -272,7 +274,8 @@ namespace AZ::Render
             else
             {
                 // Draw the pass as a tree node which has attachments as its children
-                ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_DefaultOpen
+                ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick 
+                    | (m_expandAllPasses ? ImGuiTreeNodeFlags_DefaultOpen : 0)
                     | ((m_selectedPassPath == pass->GetPathName()) ? ImGuiTreeNodeFlags_Selected : 0);
 
                 bool nodeOpen = Scriptable_ImGui::TreeNodeEx(pass->GetName().GetCStr(), flags);
@@ -308,7 +311,8 @@ namespace AZ::Render
         else
         {
             // For a ParentPasse, draw it as a tree node 
-            ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_DefaultOpen
+            ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick
+                | (m_expandAllPasses ? ImGuiTreeNodeFlags_DefaultOpen : 0)
                 | ((m_selectedPassPath == pass->GetPathName()) ? ImGuiTreeNodeFlags_Selected : 0);
 
             bool nodeOpen = ImGui::TreeNodeEx(pass->GetName().GetCStr(), flags);
