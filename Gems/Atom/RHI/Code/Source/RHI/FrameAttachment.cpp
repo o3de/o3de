@@ -50,42 +50,89 @@ namespace AZ::RHI
         return m_resource.get();
     }
 
-    void FrameAttachment::SetResource(Ptr<Resource> resource)
+    void FrameAttachment::SetResource(Ptr<Resource> resource, int deviceIndex)
     {
-        AZ_Assert(!m_resource, "A resource has already been assigned to this frame attachment.");
+        AZ_Assert(!m_resource || (m_resource == resource), "A different resource has already been assigned to this frame attachment.");
         AZ_Assert(resource, "Assigning a null resource to attachment %s.", m_attachmentId.GetCStr());
         m_resource = AZStd::move(resource);
-        m_resource->SetFrameAttachment(this);
+        m_resource->SetFrameAttachment(this, deviceIndex);
     }
 
-    const ScopeAttachment* FrameAttachment::GetFirstScopeAttachment() const
+    const ScopeAttachment* FrameAttachment::GetFirstScopeAttachment(int deviceIndex) const
     {
-        return m_firstScopeAttachment;
+        auto it = m_firstScopeAttachments.find(deviceIndex);
+
+        if (it == m_firstScopeAttachments.end())
+        {
+            return nullptr;
+        }
+
+        return it->second;
     }
 
-    ScopeAttachment* FrameAttachment::GetFirstScopeAttachment()
+    ScopeAttachment* FrameAttachment::GetFirstScopeAttachment(int deviceIndex)
     {
-        return m_firstScopeAttachment;
+        auto it = m_firstScopeAttachments.find(deviceIndex);
+
+        if (it == m_firstScopeAttachments.end())
+        {
+            return nullptr;
+        }
+
+        return it->second;
     }
 
-    const ScopeAttachment* FrameAttachment::GetLastScopeAttachment() const
+    const ScopeAttachment* FrameAttachment::GetLastScopeAttachment(int deviceIndex) const
     {
-        return m_lastScopeAttachment;
+        auto it = m_lastScopeAttachments.find(deviceIndex);
+
+        if (it == m_lastScopeAttachments.end())
+        {
+            return nullptr;
+        }
+
+        return it->second;
     }
 
-    ScopeAttachment* FrameAttachment::GetLastScopeAttachment()
+    ScopeAttachment* FrameAttachment::GetLastScopeAttachment(int deviceIndex)
     {
-        return m_lastScopeAttachment;
+        auto it = m_lastScopeAttachments.find(deviceIndex);
+
+        if (it == m_lastScopeAttachments.end())
+        {
+            return nullptr;
+        }
+
+        return it->second;
     }
 
-    Scope* FrameAttachment::GetLastScope() const
+    bool FrameAttachment::HasScopeAttachments() const
     {
-        return m_lastScope;
+        return !m_firstScopeAttachments.empty();
     }
 
-    Scope* FrameAttachment::GetFirstScope() const
+    Scope* FrameAttachment::GetLastScope(int deviceIndex) const
     {
-        return m_firstScope;
+        auto it = m_lastScopes.find(deviceIndex);
+
+        if (it == m_lastScopes.end())
+        {
+            return nullptr;
+        }
+
+        return it->second;
+    }
+
+    Scope* FrameAttachment::GetFirstScope(int deviceIndex) const
+    {
+        auto it = m_firstScopes.find(deviceIndex);
+
+        if (it == m_firstScopes.end())
+        {
+            return nullptr;
+        }
+
+        return it->second;
     }
 
     HardwareQueueClassMask FrameAttachment::GetSupportedQueueMask() const

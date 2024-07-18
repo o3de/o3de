@@ -255,7 +255,14 @@ namespace AZ::RHI
             RHI_PROFILE_SCOPE_VERBOSE("FrameScheduler: PrepareProducers: Scope %s", scopeProducer->GetScopeId().GetCStr());
 
             auto scope = scopeProducer->GetScope();
-            scope->SetDeviceIndex(scopeProducer->GetDeviceIndex());
+            auto deviceIndex = scopeProducer->GetDeviceIndex();
+
+            if (deviceIndex == MultiDevice::InvalidDeviceIndex)
+            {
+                deviceIndex = MultiDevice::DefaultDeviceIndex;
+            }
+
+            scope->SetDeviceIndex(deviceIndex);
 
             m_frameGraph->BeginScope(*scope);
             scopeProducer->SetupFrameGraphDependencies(*m_frameGraph);

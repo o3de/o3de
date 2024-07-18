@@ -37,24 +37,24 @@ namespace AZ::RHI
         }
     }
 
-    const ImageScopeAttachment* ImageFrameAttachment::GetFirstScopeAttachment() const
+    const ImageScopeAttachment* ImageFrameAttachment::GetFirstScopeAttachment(int deviceIndex) const
     {
-        return static_cast<const ImageScopeAttachment*>(FrameAttachment::GetFirstScopeAttachment());
+        return static_cast<const ImageScopeAttachment*>(FrameAttachment::GetFirstScopeAttachment(deviceIndex));
     }
 
-    ImageScopeAttachment* ImageFrameAttachment::GetFirstScopeAttachment()
+    ImageScopeAttachment* ImageFrameAttachment::GetFirstScopeAttachment(int deviceIndex)
     {
-        return static_cast<ImageScopeAttachment*>(FrameAttachment::GetFirstScopeAttachment());
+        return static_cast<ImageScopeAttachment*>(FrameAttachment::GetFirstScopeAttachment(deviceIndex));
     }
 
-    const ImageScopeAttachment* ImageFrameAttachment::GetLastScopeAttachment() const
+    const ImageScopeAttachment* ImageFrameAttachment::GetLastScopeAttachment(int deviceIndex) const
     {
-        return static_cast<const ImageScopeAttachment*>(FrameAttachment::GetLastScopeAttachment());
+        return static_cast<const ImageScopeAttachment*>(FrameAttachment::GetLastScopeAttachment(deviceIndex));
     }
 
-    ImageScopeAttachment* ImageFrameAttachment::GetLastScopeAttachment()
+    ImageScopeAttachment* ImageFrameAttachment::GetLastScopeAttachment(int deviceIndex)
     {
-        return static_cast<ImageScopeAttachment*>(FrameAttachment::GetLastScopeAttachment());
+        return static_cast<ImageScopeAttachment*>(FrameAttachment::GetLastScopeAttachment(deviceIndex));
     }
 
     const ImageDescriptor& ImageFrameAttachment::GetImageDescriptor() const
@@ -72,14 +72,14 @@ namespace AZ::RHI
         return static_cast<Image*>(GetResource());
     }
 
-    ClearValue ImageFrameAttachment::GetOptimizedClearValue() const
+    ClearValue ImageFrameAttachment::GetOptimizedClearValue(int deviceIndex) const
     {
         if (m_hasClearValueOverride)
         {
             return m_clearValueOverride;
         }
 
-        const ScopeAttachment* bindingNode = GetFirstScopeAttachment();
+        const ScopeAttachment* bindingNode = GetFirstScopeAttachment(deviceIndex);
         while (bindingNode)
         {
             const ImageScopeAttachmentDescriptor& binding = static_cast<const ImageScopeAttachment&>(*bindingNode).GetDescriptor();

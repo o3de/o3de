@@ -92,22 +92,16 @@ namespace AZ::RHI
 
     void TransientAttachmentPool::BeginScope(Scope& scopeBase)
     {
-        // TODO: Only call for the correct device as given by the scopeBase
-        IterateObjects<DeviceTransientAttachmentPool>(
-            [&scopeBase](auto /*deviceIndex*/, auto deviceTransientAttachmentPool)
-            {
-                deviceTransientAttachmentPool->BeginScope(scopeBase);
-            });
+        m_currentScope = &scopeBase;
+
+        GetDeviceTransientAttachmentPool(m_currentScope->GetDeviceIndex())->BeginScope(scopeBase);
     }
 
     void TransientAttachmentPool::EndScope()
     {
-        // TODO: Only call for the correct device as given by the scopeBase
-        IterateObjects<DeviceTransientAttachmentPool>(
-            [](auto /*deviceIndex*/, auto deviceTransientAttachmentPool)
-            {
-                deviceTransientAttachmentPool->EndScope();
-            });
+        GetDeviceTransientAttachmentPool(m_currentScope->GetDeviceIndex())->EndScope();
+
+        m_currentScope = nullptr;
     }
 
     void TransientAttachmentPool::End()
@@ -140,7 +134,7 @@ namespace AZ::RHI
             RHI::Ptr<Image> imagePtr = aznew Image();
             image = imagePtr.get();
 
-            imagePtr->Init(GetDeviceMask());
+            imagePtr->Init(MultiDevice::DeviceMask{ 0 });
 
             imagePtr->SetName(descriptor.m_attachmentId);
             m_cache.Insert(static_cast<uint64_t>(hash), AZStd::move(imagePtr));
@@ -150,29 +144,28 @@ namespace AZ::RHI
             }
         }
 
-        IterateObjects<DeviceTransientAttachmentPool>(
-            [&image, &descriptor](auto deviceIndex, auto deviceTransientAttachmentPool)
-            {
-                auto deviceImage{ deviceTransientAttachmentPool->ActivateImage(descriptor) };
-                if (deviceImage)
-                {
-                    image->m_deviceObjects[deviceIndex] = deviceImage;
-                    image->SetDescriptor(deviceImage->GetDescriptor());
+        auto deviceIndex = m_currentScope->GetDeviceIndex();
+        auto deviceTransientAttachmentPool = GetDeviceTransientAttachmentPool(deviceIndex);
 
-                    if (const auto& name = image->GetName(); !name.IsEmpty())
-                    {
-                        image->m_deviceObjects[deviceIndex]->SetName(name);
-                    }
-                }
-                else
-                {
-                    if (auto potentialDeviceImage{ image->m_deviceObjects.find(deviceIndex) };
-                        potentialDeviceImage != image->m_deviceObjects.end())
-                    {
-                        image->m_deviceObjects.erase(potentialDeviceImage);
-                    }
-                }
-            });
+        auto deviceImage{ deviceTransientAttachmentPool->ActivateImage(descriptor) };
+        if (deviceImage)
+        {
+            image->m_deviceObjects[deviceIndex] = deviceImage;
+            image->SetDescriptor(deviceImage->GetDescriptor());
+            image->Init(image->GetDeviceMask() | MultiDevice::DeviceMask(1 << deviceIndex));
+
+            if (const auto& name = image->GetName(); !name.IsEmpty())
+            {
+                image->m_deviceObjects[deviceIndex]->SetName(name);
+            }
+        }
+        else
+        {
+            if (auto potentialDeviceImage{ image->m_deviceObjects.find(deviceIndex) }; potentialDeviceImage != image->m_deviceObjects.end())
+            {
+                image->m_deviceObjects.erase(potentialDeviceImage);
+            }
+        }
 
         if (image->m_deviceObjects.empty())
         {
@@ -205,7 +198,7 @@ namespace AZ::RHI
             RHI::Ptr<Buffer> bufferPtr = aznew Buffer();
             buffer = bufferPtr.get();
 
-            bufferPtr->Init(GetDeviceMask());
+            bufferPtr->Init(MultiDevice::DeviceMask{ 0 });
 
             bufferPtr->SetName(descriptor.m_attachmentId);
             m_cache.Insert(static_cast<uint64_t>(hash), AZStd::move(bufferPtr));
@@ -215,29 +208,29 @@ namespace AZ::RHI
             }
         }
 
-        IterateObjects<DeviceTransientAttachmentPool>(
-            [&buffer, &descriptor](auto deviceIndex, auto deviceTransientAttachmentPool)
-            {
-                auto deviceBuffer{ deviceTransientAttachmentPool->ActivateBuffer(descriptor) };
-                if (deviceBuffer)
-                {
-                    buffer->m_deviceObjects[deviceIndex] = deviceBuffer;
-                    buffer->SetDescriptor(deviceBuffer->GetDescriptor());
+        auto deviceIndex = m_currentScope->GetDeviceIndex();
+        auto deviceTransientAttachmentPool = GetDeviceTransientAttachmentPool(deviceIndex);
 
-                    if (const auto& name = buffer->GetName(); !name.IsEmpty())
-                    {
-                        buffer->m_deviceObjects[deviceIndex]->SetName(name);
-                    }
-                }
-                else
-                {
-                    if (auto potentialDeviceBuffer{ buffer->m_deviceObjects.find(deviceIndex) };
-                        potentialDeviceBuffer != buffer->m_deviceObjects.end())
-                    {
-                        buffer->m_deviceObjects.erase(potentialDeviceBuffer);
-                    }
-                }
-            });
+        auto deviceBuffer{ deviceTransientAttachmentPool->ActivateBuffer(descriptor) };
+        if (deviceBuffer)
+        {
+            buffer->m_deviceObjects[deviceIndex] = deviceBuffer;
+            buffer->SetDescriptor(deviceBuffer->GetDescriptor());
+            buffer->Init(buffer->GetDeviceMask() | MultiDevice::DeviceMask(1 << deviceIndex));
+
+            if (const auto& name = buffer->GetName(); !name.IsEmpty())
+            {
+                buffer->m_deviceObjects[deviceIndex]->SetName(name);
+            }
+        }
+        else
+        {
+            if (auto potentialDeviceBuffer{ buffer->m_deviceObjects.find(deviceIndex) };
+                potentialDeviceBuffer != buffer->m_deviceObjects.end())
+            {
+                buffer->m_deviceObjects.erase(potentialDeviceBuffer);
+            }
+        }
 
         if (buffer->m_deviceObjects.empty())
         {
@@ -251,20 +244,12 @@ namespace AZ::RHI
 
     void TransientAttachmentPool::DeactivateBuffer(const AttachmentId& attachmentId)
     {
-        IterateObjects<DeviceTransientAttachmentPool>(
-            [&attachmentId](auto /*deviceIndex*/, auto deviceTransientAttachmentPool)
-            {
-                deviceTransientAttachmentPool->DeactivateBuffer(attachmentId);
-            });
+        GetDeviceTransientAttachmentPool(m_currentScope->GetDeviceIndex())->DeactivateBuffer(attachmentId);
     }
 
     void TransientAttachmentPool::DeactivateImage(const AttachmentId& attachmentId)
     {
-        IterateObjects<DeviceTransientAttachmentPool>(
-            [&attachmentId](auto /*deviceIndex*/, auto deviceTransientAttachmentPool)
-            {
-                deviceTransientAttachmentPool->DeactivateImage(attachmentId);
-            });
+        GetDeviceTransientAttachmentPool(m_currentScope->GetDeviceIndex())->DeactivateImage(attachmentId);
     }
 
     AZStd::unordered_map<int, TransientAttachmentStatistics> TransientAttachmentPool::GetStatistics() const

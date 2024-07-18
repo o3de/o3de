@@ -7,8 +7,11 @@
  */
 #pragma once
 
-#include <Atom/RHI.Reflect/AttachmentId.h>
+#include <AzCore/std/containers/unordered_map.h>
+
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
+#include <Atom/RHI.Reflect/AttachmentId.h>
+#include <Atom/RHI.Reflect/Limits.h>
 
 namespace AZ::RHI
 {
@@ -40,19 +43,22 @@ namespace AZ::RHI
         AttachmentLifetimeType GetLifetimeType() const;
 
         /// Returns the first scope attachment in the linked list.
-        const ScopeAttachment* GetFirstScopeAttachment() const;
-        ScopeAttachment* GetFirstScopeAttachment();
+        const ScopeAttachment* GetFirstScopeAttachment(int deviceIndex) const;
+        ScopeAttachment* GetFirstScopeAttachment(int deviceIndex);
 
         /// Returns the last scope attachment in the linked list.
-        const ScopeAttachment* GetLastScopeAttachment() const;
-        ScopeAttachment* GetLastScopeAttachment();
+        const ScopeAttachment* GetLastScopeAttachment(int deviceIndex) const;
+        ScopeAttachment* GetLastScopeAttachment(int deviceIndex);
+
+        /// Returns whether there are any scope attachments at all.
+        bool HasScopeAttachments() const;
 
         //! Returns the first / last scope associated with the lifetime of this attachment.
         //! The guarantee is that the attachment is not used by any scope with index prior to GetFirstScope
         //! or any scope with index after GetLastScope. It does not, however, guarantee that the attachment
         //! is actually used by either scope. The scope attachment list must be traversed to determine usage.
-        Scope* GetFirstScope() const;
-        Scope* GetLastScope() const;
+        Scope* GetFirstScope(int deviceIndex) const;
+        Scope* GetLastScope(int deviceIndex) const;
 
         /// Returns the mask of all the hardware queues that this attachment is used on.
         HardwareQueueClassMask GetUsedQueueMask() const;
@@ -61,7 +67,7 @@ namespace AZ::RHI
         HardwareQueueClassMask GetSupportedQueueMask() const;
 
         /// [Internal] Assigns the resource. This may only be done once.
-        void SetResource(Ptr<Resource> resource);
+        void SetResource(Ptr<Resource> resource, int deviceIndex = MultiDevice::InvalidDeviceIndex);
 
     protected:
         FrameAttachment(
@@ -78,9 +84,9 @@ namespace AZ::RHI
         AttachmentLifetimeType m_lifetimeType;
         HardwareQueueClassMask m_usedQueueMask = HardwareQueueClassMask::None;
         HardwareQueueClassMask m_supportedQueueMask = HardwareQueueClassMask::None;
-        ScopeAttachment* m_firstScopeAttachment = nullptr;
-        ScopeAttachment* m_lastScopeAttachment = nullptr;
-        Scope* m_firstScope = nullptr;
-        Scope* m_lastScope = nullptr;
+        AZStd::unordered_map<int, ScopeAttachment*> m_firstScopeAttachments;
+        AZStd::unordered_map<int, ScopeAttachment*> m_lastScopeAttachments;
+        AZStd::unordered_map<int, Scope*> m_firstScopes;
+        AZStd::unordered_map<int, Scope*> m_lastScopes;
     };
 }

@@ -79,22 +79,22 @@ namespace AZ::RHI
         return m_pool;
     }
 
-    void Resource::SetFrameAttachment(FrameAttachment* frameAttachment)
+    void Resource::SetFrameAttachment(FrameAttachment* frameAttachment, int deviceIndex)
     {
-        if (Validation::IsEnabled())
-        {
-            // The frame attachment has tight control over lifecycle here.
-            [[maybe_unused]] const bool isAttach = (!m_frameAttachment && frameAttachment);
-            [[maybe_unused]] const bool isDetach = (m_frameAttachment && !frameAttachment);
-            AZ_Assert(isAttach || isDetach, "The frame attachment for resource '%s' was not assigned properly.", GetName().GetCStr());
-        }
-
         m_frameAttachment = frameAttachment;
 
-        IterateObjects<DeviceResource>([frameAttachment]([[maybe_unused]] auto deviceIndex, auto deviceResource)
+        if (deviceIndex >= 0)
         {
-            deviceResource->SetFrameAttachment(frameAttachment);
-        });
+            GetDeviceObject<DeviceResource>(deviceIndex)->SetFrameAttachment(frameAttachment);
+        }
+        else
+        {
+            IterateObjects<DeviceResource>(
+                [frameAttachment]([[maybe_unused]] auto deviceIndex, auto deviceResource)
+                {
+                    deviceResource->SetFrameAttachment(frameAttachment);
+                });
+        }
     }
 
     const FrameAttachment* Resource::GetFrameAttachment() const

@@ -182,24 +182,32 @@ namespace AZ::RHI
     {
         ScopeAttachmentType* scopeAttachment = aznew ScopeAttachmentType(scope, attachment, AZStd::forward<Args&&>(arguments)...);
 
-        if (attachment.m_firstScopeAttachment == nullptr)
+        auto deviceIndex = scope.GetDeviceIndex();
+
+        AZ_Error("FrameGraph", deviceIndex >= 0, "Scope '%s' has an invalid device index.", scope.GetId().GetCStr());
+
+        auto it = attachment.m_firstScopeAttachments.find(deviceIndex);
+
+        if (it == attachment.m_firstScopeAttachments.end())
         {
             // First element in the linked list. Trivial assignment.
-            attachment.m_firstScopeAttachment = scopeAttachment;
-            attachment.m_firstScope = &scope;
+            attachment.m_firstScopeAttachments[deviceIndex] = scopeAttachment;
+            attachment.m_firstScopes[deviceIndex] = &scope;
         }
         else
         {
+            auto* lastScopeAttachment = attachment.m_lastScopeAttachments[deviceIndex];
+
             // Link tail.next to node.
-            attachment.m_lastScopeAttachment->m_next = scopeAttachment;
+            lastScopeAttachment->m_next = scopeAttachment;
 
             // Link node.prev to tail.
-            scopeAttachment->m_prev = attachment.m_lastScopeAttachment;
+            scopeAttachment->m_prev = lastScopeAttachment;
         }
 
         // Assign node to be the new tail.
-        attachment.m_lastScopeAttachment = scopeAttachment;
-        attachment.m_lastScope = &scope;
+        attachment.m_lastScopeAttachments[deviceIndex] = scopeAttachment;
+        attachment.m_lastScopes[deviceIndex] = &scope;
 
         const HardwareQueueClassMask queueMaskBit = GetHardwareQueueClassMask(scope.GetHardwareQueueClass());
 
