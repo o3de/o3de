@@ -448,7 +448,7 @@ namespace ScriptCanvas
                 PopulateNodeType();
 
                 // this is the only case where the subgraph id should not be modified
-                AZ::Data::AssetId interfaceAssetId(assetId.m_guid, AZ_CRC("SubgraphInterface", 0xdfe6dc72));
+                AZ::Data::AssetId interfaceAssetId(assetId.m_guid, AZ_CRC_CE("SubgraphInterface"));
                 auto asset = AZ::Data::AssetManager::Instance().GetAsset<SubgraphInterfaceAsset>(interfaceAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
                 asset.BlockUntilLoadComplete();
                 
@@ -486,7 +486,7 @@ namespace ScriptCanvas
                     return IsFunctionCallNodeOutOfDateResult::EvaluateAfterLocalDefinition;
                 }
 
-                AZ::Data::AssetId interfaceAssetId(m_asset.GetId().m_guid, AZ_CRC("SubgraphInterface", 0xdfe6dc72));
+                AZ::Data::AssetId interfaceAssetId(m_asset.GetId().m_guid, AZ_CRC_CE("SubgraphInterface"));
                 if (interfaceAssetId != m_asset.GetId())
                 {
                     AZ_Warning("ScriptCanvas", false, "FunctionCallNode %s wasn't saved out with the proper sub id", m_prettyName.data());
@@ -514,7 +514,7 @@ namespace ScriptCanvas
 
             UpdateResult FunctionCallNode::OnUpdateNode()
             {
-                AZ::Data::AssetId interfaceAssetId(m_asset.GetId().m_guid, AZ_CRC("SubgraphInterface", 0xdfe6dc72));
+                AZ::Data::AssetId interfaceAssetId(m_asset.GetId().m_guid, AZ_CRC_CE("SubgraphInterface"));
                 AZ::Data::Asset<SubgraphInterfaceAsset> assetData = AZ::Data::AssetManager::Instance().GetAsset<SubgraphInterfaceAsset>(interfaceAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
                 assetData.BlockUntilLoadComplete();
 
@@ -829,7 +829,7 @@ namespace ScriptCanvas
 
             void FunctionCallNode::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
             {
-                AZ::Data::AssetId interfaceAssetId(m_asset.GetId().m_guid, AZ_CRC("SubgraphInterface", 0xdfe6dc72));
+                AZ::Data::AssetId interfaceAssetId(m_asset.GetId().m_guid, AZ_CRC_CE("SubgraphInterface"));
                 m_asset = asset;
                 AZ::Data::Asset<SubgraphInterfaceAsset> assetData = AZ::Data::AssetManager::Instance().GetAsset<SubgraphInterfaceAsset>(interfaceAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
                 m_asset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::NoLoad);

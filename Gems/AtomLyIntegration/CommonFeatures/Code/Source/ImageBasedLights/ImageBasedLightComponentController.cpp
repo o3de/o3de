@@ -50,12 +50,12 @@ namespace AZ
 
         void ImageBasedLightComponentController::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ImageBasedLightService", 0x80c48204));
+            provided.push_back(AZ_CRC_CE("ImageBasedLightService"));
         }
 
         void ImageBasedLightComponentController::GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("ImageBasedLightService", 0x80c48204));
+            incompatible.push_back(AZ_CRC_CE("ImageBasedLightService"));
         }
 
         ImageBasedLightComponentController::ImageBasedLightComponentController(const ImageBasedLightComponentConfig& config)

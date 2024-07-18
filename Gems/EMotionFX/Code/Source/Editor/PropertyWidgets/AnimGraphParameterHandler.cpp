@@ -241,7 +241,7 @@ namespace EMotionFX
 
     AZ::u32 AnimGraphSingleParameterHandler::GetHandlerName() const
     {
-        return AZ_CRC("AnimGraphParameter", 0x778af55a);
+        return AZ_CRC_CE("AnimGraphParameter");
     }
 
 
@@ -270,7 +270,7 @@ namespace EMotionFX
             }
         }
 
-        if (attrib == AZ_CRC("AnimGraph", 0x0d53d4b3))
+        if (attrib == AZ_CRC_CE("AnimGraph"))
         {
             attrValue->Read<AnimGraph*>(m_animGraph);
             GUI->SetAnimGraph(m_animGraph);
@@ -302,7 +302,7 @@ namespace EMotionFX
 
     AZ::u32 AnimGraphSingleNumberParameterHandler::GetHandlerName() const
     {
-        return AZ_CRC("AnimGraphNumberParameter", 0x8023eba9);
+        return AZ_CRC_CE("AnimGraphNumberParameter");
     }
 
     QWidget* AnimGraphSingleNumberParameterHandler::CreateGUI(QWidget* parent)
@@ -336,7 +336,7 @@ namespace EMotionFX
 
     AZ::u32 AnimGraphSingleVector2ParameterHandler::GetHandlerName() const
     {
-        return AZ_CRC("AnimGraphVector2Parameter", 0x151dfae7);
+        return AZ_CRC_CE("AnimGraphVector2Parameter");
     }
 
     QWidget* AnimGraphSingleVector2ParameterHandler::CreateGUI(QWidget* parent)
@@ -363,7 +363,7 @@ namespace EMotionFX
 
     AZ::u32 AnimGraphMultipleParameterHandler::GetHandlerName() const
     {
-        return AZ_CRC("AnimGraphMultipleParameter", 0x4d5e082c);
+        return AZ_CRC_CE("AnimGraphMultipleParameter");
     }
 
 
@@ -392,7 +392,7 @@ namespace EMotionFX
             }
         }
 
-        if (attrib == AZ_CRC("AnimGraph", 0x0d53d4b3))
+        if (attrib == AZ_CRC_CE("AnimGraph"))
         {
             attrValue->Read<AnimGraph*>(m_animGraph);
             GUI->SetAnimGraph(m_animGraph);

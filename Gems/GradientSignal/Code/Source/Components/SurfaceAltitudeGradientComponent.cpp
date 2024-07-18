@@ -40,7 +40,7 @@ namespace GradientSignal
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(0, &SurfaceAltitudeGradientConfig::m_shapeEntityId, "Pin To Shape Entity Id", "Shape bounds override min/max altitude if specified.")
-                    ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC("ShapeService", 0xe86aa5fe))
+                    ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("ShapeService"))
                     ->DataElement(0, &SurfaceAltitudeGradientConfig::m_altitudeMin, "Altitude Min", "Minimum acceptable surface altitude.")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &SurfaceAltitudeGradientConfig::IsShapeValid)
                     ->DataElement(0, &SurfaceAltitudeGradientConfig::m_altitudeMax, "Altitude Max", "Maximum acceptable surface altitude.")
@@ -101,13 +101,13 @@ namespace GradientSignal
 
     void SurfaceAltitudeGradientComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("GradientService", 0x21c18d23));
+        services.push_back(AZ_CRC_CE("GradientService"));
     }
 
     void SurfaceAltitudeGradientComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("GradientService", 0x21c18d23));
-        services.push_back(AZ_CRC("GradientTransformService", 0x8c8c5ecc));
+        services.push_back(AZ_CRC_CE("GradientService"));
+        services.push_back(AZ_CRC_CE("GradientTransformService"));
     }
 
     void SurfaceAltitudeGradientComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& services)

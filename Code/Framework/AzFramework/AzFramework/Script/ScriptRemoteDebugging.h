@@ -17,50 +17,50 @@
  * sits on the target running the VM and communicates with the remote debugger
  * through the IRemoteTools interface.
  *
- * To communicate with the agent, send TM messages to AZ_CRC("ScriptDebugAgent").
- * The agent will respond by sending TM messages to AZ_CRC("ScriptDebugger").
+ * To communicate with the agent, send TM messages to AZ_CRC_CE("ScriptDebugAgent").
+ * The agent will respond by sending TM messages to AZ_CRC_CE("ScriptDebugger").
  * See the comments in TargetManagementAPI.h" for information on how to send TM
  * messages.
  *
  * Valid commands and agent's responses:
  *  Commands that can be sent at any time:
- *      AZ_CRC("AttachDebugger")
- *          AZ_CRC("DebuggerAttached")
- *          AZ_CRC("DebuggerRefused")
- *      AZ_CRC("EnumContexts")
+ *      AZ_CRC_CE("AttachDebugger")
+ *          AZ_CRC_CE("DebuggerAttached")
+ *          AZ_CRC_CE("DebuggerRefused")
+ *      AZ_CRC_CE("EnumContexts")
  *          AZ_CRC(EnumContextsResult")
  *  Commands that can be sent when attached:
- *      AZ_CRC("DetachDebugger")
- *          AZ_CRC("DebuggerDetached") *** can also be sent to current debugger if another debugger is attaching
- *      AZ_CRC("AddBreakpoint")
- *          AZ_CRC("BreakpointAdded")
- *          AZ_CRC("BreakpointHit") *** sent when a breakpoint hits
- *      AZ_CRC("RemoveBreakpoint")
- *          AZ_CRC("BreakpointRemoved")
- *      AZ_CRC("EnumRegisteredGlobals")
- *          AZ_CRC("EnumRegisteredGlobalsResult")
- *      AZ_CRC("EnumRegisteredClasses")
- *          AZ_CRC("EnumRegisteredClassesResult")
- *      AZ_CRC("GetValue")
- *          AZ_CRC("GetValueResult")
+ *      AZ_CRC_CE("DetachDebugger")
+ *          AZ_CRC_CE("DebuggerDetached") *** can also be sent to current debugger if another debugger is attaching
+ *      AZ_CRC_CE("AddBreakpoint")
+ *          AZ_CRC_CE("BreakpointAdded")
+ *          AZ_CRC_CE("BreakpointHit") *** sent when a breakpoint hits
+ *      AZ_CRC_CE("RemoveBreakpoint")
+ *          AZ_CRC_CE("BreakpointRemoved")
+ *      AZ_CRC_CE("EnumRegisteredGlobals")
+ *          AZ_CRC_CE("EnumRegisteredGlobalsResult")
+ *      AZ_CRC_CE("EnumRegisteredClasses")
+ *          AZ_CRC_CE("EnumRegisteredClassesResult")
+ *      AZ_CRC_CE("GetValue")
+ *          AZ_CRC_CE("GetValueResult")
  *  Commands that can only be sent while NOT on a breakpoint
- *      AZ_CRC("ExecuteScript")
- *          AZ_CRC("ExecutionCompleted")
+ *      AZ_CRC_CE("ExecuteScript")
+ *          AZ_CRC_CE("ExecutionCompleted")
  *  Commands that can only be sent while sitting on a breakpoint
- *      AZ_CRC("GetCallstack")
- *          AZ_CRC("CallstackResult")
- *      AZ_CRC("EnumLocals")
- *          AZ_CRC("EnumLocalsResult")
- *      AZ_CRC("SetValue")
- *          AZ_CRC("SetValueResult")
- *      AZ_CRC("StepOver")
- *          AZ_CRC("Ack")
- *      AZ_CRC("StepIn")
- *          AZ_CRC("Ack")
- *      AZ_CRC("StepOut")
- *          AZ_CRC("Ack")
- *      AZ_CRC("Continue")
- *          AZ_CRC("Ack")
+ *      AZ_CRC_CE("GetCallstack")
+ *          AZ_CRC_CE("CallstackResult")
+ *      AZ_CRC_CE("EnumLocals")
+ *          AZ_CRC_CE("EnumLocalsResult")
+ *      AZ_CRC_CE("SetValue")
+ *          AZ_CRC_CE("SetValueResult")
+ *      AZ_CRC_CE("StepOver")
+ *          AZ_CRC_CE("Ack")
+ *      AZ_CRC_CE("StepIn")
+ *          AZ_CRC_CE("Ack")
+ *      AZ_CRC_CE("StepOut")
+ *          AZ_CRC_CE("Ack")
+ *      AZ_CRC_CE("Continue")
+ *          AZ_CRC_CE("Ack")
  */
 
 namespace AzFramework

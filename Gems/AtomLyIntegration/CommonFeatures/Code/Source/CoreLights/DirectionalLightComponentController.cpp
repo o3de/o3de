@@ -126,18 +126,18 @@ namespace AZ
 
         void DirectionalLightComponentController::GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+            dependent.push_back(AZ_CRC_CE("TransformService"));
         }
 
         void DirectionalLightComponentController::GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("DirectionalLightService", 0x5270619f));
+            incompatible.push_back(AZ_CRC_CE("DirectionalLightService"));
             incompatible.push_back(AZ_CRC_CE("NonUniformScaleComponent"));
         }
 
         void DirectionalLightComponentController::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("DirectionalLightService", 0x5270619f));
+            provided.push_back(AZ_CRC_CE("DirectionalLightService"));
         }
 
         DirectionalLightComponentController::DirectionalLightComponentController(const DirectionalLightComponentConfig& config)

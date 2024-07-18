@@ -513,7 +513,7 @@ void MainWindow::Activate()
 
     //Log View
     m_loggingPanel = ui->LoggingPanel;
-    m_loggingPanel->SetStorageID(AZ_CRC("AssetProcessor::LogPanel", 0x75baa468));
+    m_loggingPanel->SetStorageID(AZ_CRC_CE("AssetProcessor::LogPanel"));
 
     connect(ui->logButton, &QPushButton::clicked, this, &MainWindow::DesktopOpenJobLogs);
 

@@ -30,8 +30,8 @@ namespace Vegetation
 
             if (classElement.GetVersion() < 2)
             {
-                classElement.RemoveElementByName(AZ_CRC("FilerTypeLevel", 0x246c4e16));
-                classElement.RemoveElementByName(AZ_CRC("SortType", 0xdd2117e6));
+                classElement.RemoveElementByName(AZ_CRC_CE("FilerTypeLevel"));
+                classElement.RemoveElementByName(AZ_CRC_CE("SortType"));
             }
             return true;
         }
@@ -58,7 +58,7 @@ namespace Vegetation
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, s_viewportIcon)
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, s_helpUrl)
                     ->Attribute(AZ::Edit::Attributes::Category, s_categoryName)
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Level", 0x9aeacc13))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Level"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->UIElement(AZ::Edit::UIHandlers::Button, "")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDebugComponent::OnDumpDataToFile)

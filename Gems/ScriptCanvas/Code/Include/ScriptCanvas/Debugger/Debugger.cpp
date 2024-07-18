@@ -191,7 +191,7 @@ namespace ScriptCanvas
             {
                 SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("service is rejecting the message");
                 // \todo send a connection denied message
-                // remoteToolsInterface->SendRemoteToolsMessage(sender, Message::Acknowledge(0, AZ_CRC("AccessDenied", 0xde72ce21)));
+                // remoteToolsInterface->SendRemoteToolsMessage(sender, Message::Acknowledge(0, AZ_CRC_CE("AccessDenied")));
             }
         }
 
@@ -258,17 +258,17 @@ namespace ScriptCanvas
 
         void ServiceComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ScriptCanvasDebugService", 0x7ece424b));
+            provided.push_back(AZ_CRC_CE("ScriptCanvasDebugService"));
         }
 
         void ServiceComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("ScriptCanvasDebugService", 0x7ece424b));
+            incompatible.push_back(AZ_CRC_CE("ScriptCanvasDebugService"));
         }
 
         void ServiceComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("ScriptCanvasService", 0x41fd58f3));
+            dependent.push_back(AZ_CRC_CE("ScriptCanvasService"));
         }
 
         void ServiceComponent::Reflect(AZ::ReflectContext* context)

@@ -567,12 +567,12 @@ namespace AzFramework
 
     void OctreeSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("OctreeService"));
+        provided.push_back(AZ_CRC_CE("OctreeService"));
     }
 
     void OctreeSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("OctreeService"));
+        incompatible.push_back(AZ_CRC_CE("OctreeService"));
     }
 
     OctreeSystemComponent::OctreeSystemComponent()        

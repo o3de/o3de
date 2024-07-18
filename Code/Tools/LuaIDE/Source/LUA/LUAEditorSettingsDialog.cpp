@@ -46,7 +46,7 @@ namespace LUAEditor
         }
 
 
-        AZStd::intrusive_ptr<SyntaxStyleSettings> syntaxStyleSettings = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC("LUA Editor Text Settings", 0xb6e15565), AZ::UserSettings::CT_GLOBAL);
+        AZStd::intrusive_ptr<SyntaxStyleSettings> syntaxStyleSettings = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC_CE("LUA Editor Text Settings"), AZ::UserSettings::CT_GLOBAL);
 
         // Store a copy to revert if needed.
         m_originalSettings = *syntaxStyleSettings;
@@ -56,7 +56,7 @@ namespace LUAEditor
         m_gui->propertyEditor->setObjectName("m_gui->propertyEditor");
         m_gui->propertyEditor->setMinimumHeight(500);
         m_gui->propertyEditor->setMaximumHeight(1000);
-        m_gui->propertyEditor->SetSavedStateKey(AZ_CRC("LuaIDE_SyntaxStyleSettings"));
+        m_gui->propertyEditor->SetSavedStateKey(AZ_CRC_CE("LuaIDE_SyntaxStyleSettings"));
 
         setModal(false);
 
@@ -99,7 +99,7 @@ namespace LUAEditor
 
     void LUAEditorSettingsDialog::OnCancel()
     {
-        AZStd::intrusive_ptr<SyntaxStyleSettings> syntaxStyleSettings = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC("LUA Editor Text Settings", 0xb6e15565), AZ::UserSettings::CT_GLOBAL);
+        AZStd::intrusive_ptr<SyntaxStyleSettings> syntaxStyleSettings = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC_CE("LUA Editor Text Settings"), AZ::UserSettings::CT_GLOBAL);
 
         // Revert the stored copy, no changes will be stored.
         *syntaxStyleSettings = m_originalSettings;

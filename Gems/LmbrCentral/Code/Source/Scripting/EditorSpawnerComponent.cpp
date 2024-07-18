@@ -39,7 +39,7 @@ namespace LmbrCentral
                     ->Attribute(AZ::Edit::Attributes::Category, "Gameplay")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Spawner.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Spawner.svg")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorSpawnerComponent::m_sliceAsset, "Dynamic slice", "The slice to spawn")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSpawnerComponent::SliceAssetChanged)

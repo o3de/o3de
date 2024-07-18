@@ -754,11 +754,11 @@ namespace ScriptCanvasTests
         {
             if (condition)
             {
-                ExecutionOut(AZ_CRC("BranchTrue", 0xd49f121c), true, AZStd::string("called the true version!"));
+                ExecutionOut(AZ_CRC_CE("BranchTrue"), true, AZStd::string("called the true version!"));
             }
             else
             {
-                ExecutionOut(AZ_CRC("BranchFalse", 0xaceca8bc), false, AZStd::string("called the false version!"), AZ::Vector3(1, 2, 3));
+                ExecutionOut(AZ_CRC_CE("BranchFalse"), false, AZStd::string("called the false version!"), AZ::Vector3(1, 2, 3));
             }
         }
 

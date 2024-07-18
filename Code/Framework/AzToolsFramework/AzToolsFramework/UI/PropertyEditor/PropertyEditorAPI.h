@@ -295,7 +295,7 @@ namespace AzToolsFramework
         // like this, which will cause the property manager to be ready first:
         // virtual void GetRequiredServices(DependencyArrayType& required) const
         //{
-        //      required.push_back(AZ_CRC("PropertyManagerService"));
+        //      required.push_back(AZ_CRC_CE("PropertyManagerService"));
         //}
 
         virtual void RegisterPropertyType(PropertyHandlerBase* pHandler) = 0;

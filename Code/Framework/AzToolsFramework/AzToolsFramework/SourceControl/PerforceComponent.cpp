@@ -133,13 +133,13 @@ namespace AzToolsFramework
 
     void PerforceComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("SourceControlService", 0x67f338fd));
-        provided.push_back(AZ_CRC("PerforceService", 0x74b25961));
+        provided.push_back(AZ_CRC_CE("SourceControlService"));
+        provided.push_back(AZ_CRC_CE("PerforceService"));
     }
 
     void PerforceComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("PerforceService", 0x74b25961));
+        incompatible.push_back(AZ_CRC_CE("PerforceService"));
     }
 
     void PerforceComponent::GetFileInfo(const char* fullFilePath, const SourceControlResponseCallback& respCallback)

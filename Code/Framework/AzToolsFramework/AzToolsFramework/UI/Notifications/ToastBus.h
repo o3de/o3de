@@ -42,7 +42,7 @@ namespace AzToolsFramework
     /**
     * An EBus used to hide or show toast notifications.  Generally, these request are handled by a
     * ToastNotificationsView that has been created with a specific ToastRequestBusId
-    * e.g. AZ_CRC("ExampleToastNotificationView")
+    * e.g. AZ_CRC_CE("ExampleToastNotificationView")
     */
     class ToastRequests
         : public AZ::EBusTraits

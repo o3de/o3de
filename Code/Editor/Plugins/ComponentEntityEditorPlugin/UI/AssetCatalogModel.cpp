@@ -157,7 +157,7 @@ AssetCatalogModel::AssetCatalogModel(QObject* parent)
 
                     if (!assetType.IsNull())
                     {
-                        const AZ::Edit::Attribute* iconAttribute = element->FindAttribute(AZ_CRC("Icon"));
+                        const AZ::Edit::Attribute* iconAttribute = element->FindAttribute(AZ_CRC_CE("Icon"));
                         if (iconAttribute)
                         {
                             auto* iconAttributeData = azdynamic_cast<const AZ::Edit::AttributeData<const char*>*>(iconAttribute);

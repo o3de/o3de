@@ -234,7 +234,7 @@ bool UiSliceManager::MakeNewSlice(
     {
         AZStd::string suggestedName = "UISlice";
         UiElementBus::EventResult(suggestedName, orderedEntityList[0], &UiElementBus::Events::GetName);
-        if (!AzToolsFramework::SliceUtilities::QueryUserForSliceFilename(suggestedName, targetDirectory, AZ_CRC("UISliceUserSettings", 0x4f30f608), activeWindow, sliceName, sliceFilePath))
+        if (!AzToolsFramework::SliceUtilities::QueryUserForSliceFilename(suggestedName, targetDirectory, AZ_CRC_CE("UISliceUserSettings"), activeWindow, sliceName, sliceFilePath))
         {
             // User cancelled slice creation or error prevented continuation (related warning dialog boxes, if necessary, already done at this point)
             return false;

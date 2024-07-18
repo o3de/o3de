@@ -167,12 +167,12 @@ namespace LUAEditor
 
         //AzToolsFramework::RegisterAssetType(AzToolsFramework::RegisteredAssetType(ContextID, AZ::ScriptAsset::StaticAssetType(), "Script", ".lua", true, 0));
 
-        m_pBreakpointSavedState = AZ::UserSettings::CreateFind<BreakpointSavedState>(AZ_CRC("BreakpointSavedState", 0xbb65be3a), AZ::UserSettings::CT_LOCAL);
+        m_pBreakpointSavedState = AZ::UserSettings::CreateFind<BreakpointSavedState>(AZ_CRC_CE("BreakpointSavedState"), AZ::UserSettings::CT_LOCAL);
 
         AzToolsFramework::MainWindowDescription desc;
         desc.name = "LUA Editor";
         desc.ContextID = ContextID;
-        desc.hotkeyDesc = AzToolsFramework::HotkeyDescription(AZ_CRC("LUAOpenEditor", 0x5870cf6d), "Ctrl+Shift+L", "Open LUA Editor", "General", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW);
+        desc.hotkeyDesc = AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUAOpenEditor"), "Ctrl+Shift+L", "Open LUA Editor", "General", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW);
         AzToolsFramework::FrameworkMessages::Bus::Broadcast(&AzToolsFramework::FrameworkMessages::Bus::Events::AddComponentInfo, desc);
 
         LegacyFramework::IPCCommandBus::BroadcastResult(
@@ -222,7 +222,7 @@ namespace LUAEditor
 
     void Context::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("AssetProcessorToolsConnection", 0x734669bc));
+        required.push_back(AZ_CRC_CE("AssetProcessorToolsConnection"));
     }
 
     void Context::ApplicationDeactivated()
@@ -317,14 +317,14 @@ namespace LUAEditor
             if (allowed)
             {
                 m_pLUAEditorMainWindow->hide();
-                auto newState = AZ::UserSettings::CreateFind<LUAEditorContextSavedState>(AZ_CRC("LUA EDITOR CONTEXT STATE", 0xc20c7427), AZ::UserSettings::CT_LOCAL);
+                auto newState = AZ::UserSettings::CreateFind<LUAEditorContextSavedState>(AZ_CRC_CE("LUA EDITOR CONTEXT STATE"), AZ::UserSettings::CT_LOCAL);
                 newState->m_MainEditorWindowIsVisible = false;
             }
         }
     }
     void Context::ApplicationCensus()
     {
-        auto newState = AZ::UserSettings::CreateFind<LUAEditorContextSavedState>(AZ_CRC("LUA EDITOR CONTEXT STATE", 0xc20c7427), AZ::UserSettings::CT_LOCAL);
+        auto newState = AZ::UserSettings::CreateFind<LUAEditorContextSavedState>(AZ_CRC_CE("LUA EDITOR CONTEXT STATE"), AZ::UserSettings::CT_LOCAL);
         AzToolsFramework::FrameworkMessages::Bus::Broadcast(
             &AzToolsFramework::FrameworkMessages::Bus::Events::ApplicationCensusReply, newState->m_MainEditorWindowIsVisible);
     }
@@ -465,7 +465,7 @@ namespace LUAEditor
                 AZ_TracePrintf(LUAEditorDebugName, "ProcessReloadCheck inspecting assetId '%s' '%s'\n", info.m_assetId.c_str(), info.m_assetName.c_str());
             }
 
-            auto newState = AZ::UserSettings::CreateFind<LUAEditorMainWindowSavedState>(AZ_CRC("LUA EDITOR MAIN WINDOW STATE", 0xa181bc4a), AZ::UserSettings::CT_LOCAL);
+            auto newState = AZ::UserSettings::CreateFind<LUAEditorMainWindowSavedState>(AZ_CRC_CE("LUA EDITOR MAIN WINDOW STATE"), AZ::UserSettings::CT_LOCAL);
 
             // Check to see if it is unmodified and the setting is set to auto-reload unmodified files
             bool shouldAutoReload = newState->m_bAutoReloadUnmodifiedFiles && !info.m_bIsModified;
@@ -669,24 +669,24 @@ namespace LUAEditor
         typedef AzToolsFramework::FrameworkMessages::Bus HotkeyBus;
         // register our hotkeys so that they exist in the preferences panel even if we're not open:
 
-        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUAFind", 0xc62d8078),                    "Ctrl+F",           "Find",                                 "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
-        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUAQuickFindLocal", 0x115cbcda),          "Ctrl+F3",          "Quick Find Local",                     "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
-        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUAQuickFindLocalReverse", 0xdd8a0c22),   "Ctrl+Shift+F3",    "Quick Find Local (Reverse)",           "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
-        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUAFindInFiles", 0xdaebdfdd),             "Ctrl+Shift+F",     "Find In Files",                        "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
-        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUAReplace", 0x1fd5510c),                 "Ctrl+R",           "Replace",                              "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
-        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUAReplaceInFiles", 0x38b609e0),          "Ctrl+Shift+R",     "Replace In Files",                     "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
-        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUAGoToLine", 0xb6603f27),                "Ctrl+G",           "Go to line number...",                 "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
-        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUAFold", 0xf0969e48),                    "Alt+0",            "Fold Source Functions",                "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
-        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUAUnfold", 0x36934ecd),                  "Alt+Shift+0",      "Unfold Source Functions",              "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
-        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUACloseAllExceptCurrent", 0x0076409a),   "Ctrl+Alt+F4",      "Close All Windows Except Current",     "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
-        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUACloseAll", 0xf732678f),                "Ctrl+Shift+F4",    "Close All Windows",                    "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
-        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUAComment", 0x873c2725),                 "Ctrl+K",           "Comment Selected Block",               "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
-        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUAUncomment", 0x9190cf18),               "Ctrl+Shift+K",     "Uncomment Selected Block",             "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUAFind"),                    "Ctrl+F",           "Find",                                 "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUAQuickFindLocal"),          "Ctrl+F3",          "Quick Find Local",                     "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUAQuickFindLocalReverse"),   "Ctrl+Shift+F3",    "Quick Find Local (Reverse)",           "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUAFindInFiles"),             "Ctrl+Shift+F",     "Find In Files",                        "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUAReplace"),                 "Ctrl+R",           "Replace",                              "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUAReplaceInFiles"),          "Ctrl+Shift+R",     "Replace In Files",                     "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUAGoToLine"),                "Ctrl+G",           "Go to line number...",                 "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUAFold"),                    "Alt+0",            "Fold Source Functions",                "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUAUnfold"),                  "Alt+Shift+0",      "Unfold Source Functions",              "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUACloseAllExceptCurrent"),   "Ctrl+Alt+F4",      "Close All Windows Except Current",     "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUACloseAll"),                "Ctrl+Shift+F4",    "Close All Windows",                    "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUAComment"),                 "Ctrl+K",           "Comment Selected Block",               "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUAUncomment"),               "Ctrl+Shift+K",     "Uncomment Selected Block",             "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
 
-        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUALinesUpTranspose", 0xafc899ef),        "Ctrl+Shift+Up",    "Transpose Lines Up",                   "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
-        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUALinesDnTranspose", 0xf9d733bf),        "Ctrl+Shift+Down",  "Transpose Lines Down",                 "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUALinesUpTranspose"),        "Ctrl+Shift+Up",    "Transpose Lines Up",                   "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUALinesDnTranspose"),        "Ctrl+Shift+Down",  "Transpose Lines Down",                 "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
 
-        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUAResetZoom", 0xbe0787ad),               "Ctrl+0",           "Reset Default Zoom",                   "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUAResetZoom"),               "Ctrl+0",           "Reset Default Zoom",                   "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
 
         bool GUIMode = true;
         LegacyFramework::FrameworkApplicationMessages::Bus::BroadcastResult(
@@ -824,7 +824,7 @@ namespace LUAEditor
     void Context::ProvisionalShowAndFocus(bool forcedShow, bool forcedHide)
     {
         // main view will auto persist (load)
-        auto newState = AZ::UserSettings::CreateFind<LUAEditorContextSavedState>(AZ_CRC("LUA EDITOR CONTEXT STATE", 0xc20c7427), AZ::UserSettings::CT_LOCAL);
+        auto newState = AZ::UserSettings::CreateFind<LUAEditorContextSavedState>(AZ_CRC_CE("LUA EDITOR CONTEXT STATE"), AZ::UserSettings::CT_LOCAL);
 
         if (forcedShow)
         {

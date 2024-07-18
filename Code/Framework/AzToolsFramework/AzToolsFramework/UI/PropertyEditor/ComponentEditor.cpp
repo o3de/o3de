@@ -182,7 +182,7 @@ namespace AzToolsFramework
             setContentWidget(m_propertyEditor);
         }
 
-        m_savedKeySeed = AZ_CRC("WorldEditorEntityEditor_Component", 0x926c865f);
+        m_savedKeySeed = AZ_CRC_CE("WorldEditorEntityEditor_Component");
         connect(this, &AzQtComponents::Card::expandStateChanged, this, &ComponentEditor::OnExpanderChanged);
         connect(GetHeader(), &ComponentEditorHeader::OnContextMenuClicked, this, &ComponentEditor::OnContextMenuClicked);
         connect(GetHeader(), &ComponentEditorHeader::iconLabelClicked, this, &ComponentEditor::OnIconLabelClicked);
@@ -878,7 +878,7 @@ namespace AzToolsFramework
                         AZ::u32 visibilityValue;
                         if (reader.Read<AZ::u32>(visibilityValue))
                         {
-                            if (visibilityValue == AZ_CRC("PropertyVisibility_Hide", 0x32ab90f7))
+                            if (visibilityValue == AZ_CRC_CE("PropertyVisibility_Hide"))
                             {
                                 visible = false;
                             }

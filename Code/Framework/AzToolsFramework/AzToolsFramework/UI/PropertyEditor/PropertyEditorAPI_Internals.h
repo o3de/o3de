@@ -120,7 +120,7 @@ namespace AzToolsFramework
         virtual void RegisterWithPropertySystem(AZ::DocumentPropertyEditor::PropertyEditorSystemInterface* /*system*/) {}
 
         // you need to define this.
-        virtual AZ::u32 GetHandlerName() const = 0;  // AZ_CRC("IntSlider")
+        virtual AZ::u32 GetHandlerName() const = 0;  // AZ_CRC_CE("IntSlider")
 
         // specify true if you want the user to be able to either specify no handler or specify "Default" as the handler.
         // and still get your handler.

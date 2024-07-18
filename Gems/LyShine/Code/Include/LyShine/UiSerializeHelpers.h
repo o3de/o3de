@@ -436,12 +436,12 @@ namespace LyShine
         if (index != -1)
         {
             AZ::SerializeContext::DataElementNode& simpleAssetRefNode = classElement.GetSubElement(index);
-            index = simpleAssetRefNode.FindElement(AZ_CRC("BaseClass1", 0xd4925735));
+            index = simpleAssetRefNode.FindElement(AZ_CRC_CE("BaseClass1"));
 
             if (index != -1)
             {
                 AZ::SerializeContext::DataElementNode& baseClassNode = simpleAssetRefNode.GetSubElement(index);
-                index = baseClassNode.FindElement(AZ_CRC("AssetPath", 0x2c355179));
+                index = baseClassNode.FindElement(AZ_CRC_CE("AssetPath"));
 
                 if (index != -1)
                 {
@@ -483,7 +483,7 @@ namespace LyShine
     inline AZ::SerializeContext::DataElementNode* FindComponentNode(AZ::SerializeContext::DataElementNode& entityNode, const AZ::Uuid& uuid)
     {
         // get the component vector node
-        int componentsIndex = entityNode.FindElement(AZ_CRC("Components", 0xee48f5fd));
+        int componentsIndex = entityNode.FindElement(AZ_CRC_CE("Components"));
         if (componentsIndex == -1)
         {
             return nullptr;

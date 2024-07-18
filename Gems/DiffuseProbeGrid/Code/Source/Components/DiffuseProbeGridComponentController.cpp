@@ -76,24 +76,24 @@ namespace AZ
 
         void DiffuseProbeGridComponentController::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+            dependent.push_back(AZ_CRC_CE("TransformService"));
         }
 
         void DiffuseProbeGridComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("DiffuseProbeGridService", 0x63d32042));
+            provided.push_back(AZ_CRC_CE("DiffuseProbeGridService"));
         }
 
         void DiffuseProbeGridComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("DiffuseProbeGridService", 0x63d32042));
+            incompatible.push_back(AZ_CRC_CE("DiffuseProbeGridService"));
             incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         void DiffuseProbeGridComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("BoxShapeService", 0x946a0032));
-            required.push_back(AZ_CRC("TransformService"));
+            required.push_back(AZ_CRC_CE("BoxShapeService"));
+            required.push_back(AZ_CRC_CE("TransformService"));
         }
 
         DiffuseProbeGridComponentController::DiffuseProbeGridComponentController(const DiffuseProbeGridComponentConfig& config)

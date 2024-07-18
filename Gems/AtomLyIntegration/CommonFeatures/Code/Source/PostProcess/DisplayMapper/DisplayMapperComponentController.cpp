@@ -97,12 +97,12 @@ namespace AZ
 
         void DisplayMapperComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ToneMapperService", 0xb8f814e8));
+            provided.push_back(AZ_CRC_CE("ToneMapperService"));
         }
 
         void DisplayMapperComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("ToneMapperService", 0xb8f814e8));
+            incompatible.push_back(AZ_CRC_CE("ToneMapperService"));
         }
 
         void DisplayMapperComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

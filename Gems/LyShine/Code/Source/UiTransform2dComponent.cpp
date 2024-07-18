@@ -72,9 +72,9 @@ namespace
         // Note that the name of the new element has to be the same as the name of the old element
         // because we have no version conversion for data patches. The bool to enum conversion happens
         // to work out for the data patches because the bool value of 1 maps to the correct int value.
-        const char* scaleToDeviceName = "ScaleToDevice";
+        constexpr const char* ScaleToDeviceName = "ScaleToDevice";
 
-        int index = classElement.FindElement(AZ_CRC(scaleToDeviceName));
+        int index = classElement.FindElement(AZ_CRC_CE(ScaleToDeviceName));
         if (index != -1)
         {
             AZ::SerializeContext::DataElementNode& elementNode = classElement.GetSubElement(index);
@@ -84,7 +84,7 @@ namespace
             if (!elementNode.GetData(oldData))
             {
                 // Error, old subElement was not a bool or not valid
-                AZ_Error("Serialization", false, "Cannot get bool data for element %s.", scaleToDeviceName);
+                AZ_Error("Serialization", false, "Cannot get bool data for element %s.", ScaleToDeviceName);
                 return false;
             }
 
@@ -92,11 +92,11 @@ namespace
             classElement.RemoveElement(index);
 
             // Add a new element for the new data.
-            int newElementIndex = classElement.AddElement<int>(context, scaleToDeviceName);
+            int newElementIndex = classElement.AddElement<int>(context, ScaleToDeviceName);
             if (newElementIndex == -1)
             {
                 // Error adding the new sub element
-                AZ_Error("Serialization", false, "AddElement failed for converted element %s", scaleToDeviceName);
+                AZ_Error("Serialization", false, "AddElement failed for converted element %s", ScaleToDeviceName);
                 return false;
             }
 
@@ -1266,30 +1266,30 @@ void UiTransform2dComponent::Reflect(AZ::ReflectContext* context)
                 "there is a single anchor point that the element is offset from.\n"
                 "If they are apart, then there are two anchor points and as the parent changes size\n"
                 "this element will change size also")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshAttributesAndValues", 0xcbc2147c)) // Refresh attributes for scale to device mode
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues")) // Refresh attributes for scale to device mode
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
                 ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
                 ->Attribute(AZ::Edit::Attributes::Suffix, "%")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show) // needed because sub-elements are hidden
                 ->Attribute(AZ::Edit::Attributes::ReadOnly, &UiTransform2dComponent::IsControlledByParent)
-                ->Attribute(AZ_CRC("LayoutFitterType", 0x7c009203), &UiTransform2dComponent::GetLayoutFitterType)
+                ->Attribute(AZ_CRC_CE("LayoutFitterType"), &UiTransform2dComponent::GetLayoutFitterType)
                 ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &UiTransform2dComponent::GetAnchorPropertyLabel);
 
             editInfo->DataElement("Offset", &UiTransform2dComponent::m_offsets, "Offsets",
                 "The offsets (in pixels) from the anchors.\n"
                 "When anchors are together, the offset to the pivot plus the size is displayed.\n"
                 "When they are apart, the offsets to each edge of the element's rect are displayed")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshValues", 0x28e720d4))
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshValues"))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiTransform2dComponent::IsNotControlledByParent)
-                ->Attribute(AZ_CRC("LayoutFitterType", 0x7c009203), &UiTransform2dComponent::GetLayoutFitterType)
+                ->Attribute(AZ_CRC_CE("LayoutFitterType"), &UiTransform2dComponent::GetLayoutFitterType)
                 ->Attribute(AZ::Edit::Attributes::Min, -AZ::Constants::MaxFloatBeforePrecisionLoss)
                 ->Attribute(AZ::Edit::Attributes::Max, AZ::Constants::MaxFloatBeforePrecisionLoss);
 
             editInfo->DataElement("Pivot", &UiTransform2dComponent::m_pivot, "Pivot",
                 "Rotation and scaling happens around the pivot point.\n"
                 "If the anchors are together then the offsets specify the offset from the anchor to the pivot")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshValues", 0x28e720d4))
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshValues"))
                 ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
                 ->Attribute(AZ::Edit::Attributes::Min, -AZ::Constants::MaxFloatBeforePrecisionLoss)
                 ->Attribute(AZ::Edit::Attributes::Max, AZ::Constants::MaxFloatBeforePrecisionLoss);
@@ -1324,7 +1324,7 @@ void UiTransform2dComponent::Reflect(AZ::ReflectContext* context)
                 ->EnumAttribute(UiTransformInterface::ScaleToDeviceMode::ScaleXOnly,         "Stretch to fit X (non-uniformly)")
                 ->EnumAttribute(UiTransformInterface::ScaleToDeviceMode::ScaleYOnly,         "Stretch to fit Y (non-uniformly)")
                 ->Attribute("Warning", &UiTransform2dComponent::GetScaleToDeviceModeWarningTooltipText)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshAttributesAndValues", 0xcbc2147c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"));
         }
     }
 

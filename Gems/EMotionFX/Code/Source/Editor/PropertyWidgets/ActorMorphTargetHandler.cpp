@@ -162,7 +162,7 @@ namespace EMotionFX
 
     AZ::u32 ActorSingleMorphTargetHandler::GetHandlerName() const
     {
-        return AZ_CRC("ActorMorphTargetName", 0xed53e3a5);
+        return AZ_CRC_CE("ActorMorphTargetName");
     }
 
 
@@ -217,7 +217,7 @@ namespace EMotionFX
 
     AZ::u32 ActorMultiMorphTargetHandler::GetHandlerName() const
     {
-        return AZ_CRC("ActorMorphTargetNames", 0xbd5fcb8f);
+        return AZ_CRC_CE("ActorMorphTargetNames");
     }
 } // namespace EMotionFX
 

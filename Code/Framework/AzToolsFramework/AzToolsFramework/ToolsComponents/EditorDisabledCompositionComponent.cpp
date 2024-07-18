@@ -122,12 +122,12 @@ namespace AzToolsFramework
 
         void EditorDisabledCompositionComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("EditorDisabledCompositionService", 0x277e3445));
+            services.push_back(AZ_CRC_CE("EditorDisabledCompositionService"));
         }
 
         void EditorDisabledCompositionComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("EditorDisabledCompositionService", 0x277e3445));
+            services.push_back(AZ_CRC_CE("EditorDisabledCompositionService"));
         }
 
         void EditorDisabledCompositionComponent::GetDisabledComponents(AZ::Entity::ComponentArrayType& components)

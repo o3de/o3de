@@ -39,7 +39,7 @@ namespace UnitTest
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("SortOrderTestFirstService"));
+            services.push_back(AZ_CRC_CE("SortOrderTestFirstService"));
         }
     };
 
@@ -66,7 +66,7 @@ namespace UnitTest
         }
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("SortOrderTestSecondService"));
+            services.push_back(AZ_CRC_CE("SortOrderTestSecondService"));
         }
     };
 
@@ -93,7 +93,7 @@ namespace UnitTest
         }
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("SortOrderTestThirdService"));
+            services.push_back(AZ_CRC_CE("SortOrderTestThirdService"));
         }
     };
 
@@ -122,7 +122,7 @@ namespace UnitTest
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("SortOrderTestFirstService"));
+            services.push_back(AZ_CRC_CE("SortOrderTestFirstService"));
         }
     };
 
@@ -151,7 +151,7 @@ namespace UnitTest
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("SortOrderTestSecondService"));
+            services.push_back(AZ_CRC_CE("SortOrderTestSecondService"));
         }
     };
 
@@ -180,8 +180,8 @@ namespace UnitTest
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("SortOrderTestThirdService"));
-            services.push_back(AZ_CRC("SortOrderTestSecondService"));
+            services.push_back(AZ_CRC_CE("SortOrderTestThirdService"));
+            services.push_back(AZ_CRC_CE("SortOrderTestSecondService"));
         }
     };
 
@@ -270,7 +270,7 @@ namespace UnitTest
         // here to wrap components that provide services.
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("TestWrapperService"));
+            services.push_back(AZ_CRC_CE("TestWrapperService"));
         }
     private:
         AZ::Component* m_wrappedComponent = nullptr;
@@ -376,8 +376,8 @@ namespace UnitTest
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("DuplicatedService"));
-            services.push_back(AZ_CRC("DuplicatedService"));
+            services.push_back(AZ_CRC_CE("DuplicatedService"));
+            services.push_back(AZ_CRC_CE("DuplicatedService"));
         }
     };
 
@@ -406,7 +406,7 @@ namespace UnitTest
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("DuplicatedService"));
+            services.push_back(AZ_CRC_CE("DuplicatedService"));
         }
     };
 
@@ -435,7 +435,7 @@ namespace UnitTest
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("DuplicatedService"));
+            services.push_back(AZ_CRC_CE("DuplicatedService"));
         }
     };
 

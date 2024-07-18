@@ -48,19 +48,19 @@ namespace LyShineEditor
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void LyShineEditorSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("UiCanvasEditorService"));
+        provided.push_back(AZ_CRC_CE("UiCanvasEditorService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void LyShineEditorSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("UiCanvasEditorService"));
+        incompatible.push_back(AZ_CRC_CE("UiCanvasEditorService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void LyShineEditorSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("LyShineService", 0xae98ab29));
+        required.push_back(AZ_CRC_CE("LyShineService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

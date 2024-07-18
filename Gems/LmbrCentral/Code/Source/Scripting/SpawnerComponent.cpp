@@ -135,7 +135,7 @@ namespace LmbrCentral
     //=========================================================================
     void SpawnerComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("SpawnerService", 0xd2f1d7a3));
+        provided.push_back(AZ_CRC_CE("SpawnerService"));
     }
 
     //=========================================================================
@@ -146,7 +146,7 @@ namespace LmbrCentral
     //=========================================================================
     void SpawnerComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+        dependent.push_back(AZ_CRC_CE("TransformService"));
     }
 
     //=========================================================================

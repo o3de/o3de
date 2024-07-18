@@ -54,19 +54,19 @@ protected: // member functions
 
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("UiDropdownOptionService"));
+        provided.push_back(AZ_CRC_CE("UiDropdownOptionService"));
     }
 
     static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("UiDropdownOptionService"));
+        incompatible.push_back(AZ_CRC_CE("UiDropdownOptionService"));
     }
 
     static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("UiElementService", 0x3dca7ad4));
-        required.push_back(AZ_CRC("UiTransformService", 0x3a838e34));
-        required.push_back(AZ_CRC("UiInteractableService", 0x1d474c98));
+        required.push_back(AZ_CRC_CE("UiElementService"));
+        required.push_back(AZ_CRC_CE("UiTransformService"));
+        required.push_back(AZ_CRC_CE("UiInteractableService"));
     }
 
     static void Reflect(AZ::ReflectContext* context);

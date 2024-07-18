@@ -37,7 +37,7 @@ namespace Vegetation
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, s_viewportIcon)
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, s_helpUrl)
                     ->Attribute(AZ::Edit::Attributes::Category, s_categoryName)
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorMeshBlockerComponent::m_drawDebugBounds, "Draw Debug Bounds", "Show the settings to debug the mesh blocker")
                     ;

@@ -1337,7 +1337,7 @@ namespace AZ
                         {
                             AZ::SerializeContext::ClassElement dynamicElementData;
                             dynamicElementData.m_name = "m_data";
-                            dynamicElementData.m_nameCrc = AZ_CRC("m_data", 0x335cc942);
+                            dynamicElementData.m_nameCrc = AZ_CRC_CE("m_data");
                             dynamicElementData.m_typeId = dynamicFieldDesc->m_typeId;
                             dynamicElementData.m_dataSize = sizeof(void*);
                             dynamicElementData.m_offset = reinterpret_cast<size_t>(&(reinterpret_cast<AZ::DynamicSerializableField const volatile*>(0)->m_data));

@@ -28,36 +28,36 @@ namespace Vegetation
             if (classElement.GetVersion() < 4)
             {
                 AZ::Vector3 positionMin(-0.3f, -0.3f, 0.0f);
-                if (classElement.GetChildData(AZ_CRC("PositionMin", 0x1abef6a6), positionMin))
+                if (classElement.GetChildData(AZ_CRC_CE("PositionMin"), positionMin))
                 {
-                    classElement.RemoveElementByName(AZ_CRC("PositionMin", 0x1abef6a6));
+                    classElement.RemoveElementByName(AZ_CRC_CE("PositionMin"));
                     classElement.AddElementWithData(context, "PositionMinX", (float)positionMin.GetX());
                     classElement.AddElementWithData(context, "PositionMinY", (float)positionMin.GetY());
                     classElement.AddElementWithData(context, "PositionMinZ", (float)positionMin.GetZ());
                 }
 
                 AZ::Vector3 positionMax(0.3f, 0.3f, 0.0f);
-                if (classElement.GetChildData(AZ_CRC("PositionMax", 0x26b3c9ff), positionMax))
+                if (classElement.GetChildData(AZ_CRC_CE("PositionMax"), positionMax))
                 {
-                    classElement.RemoveElementByName(AZ_CRC("PositionMax", 0x26b3c9ff));
+                    classElement.RemoveElementByName(AZ_CRC_CE("PositionMax"));
                     classElement.AddElementWithData(context, "PositionMaxX", (float)positionMax.GetX());
                     classElement.AddElementWithData(context, "PositionMaxY", (float)positionMax.GetY());
                     classElement.AddElementWithData(context, "PositionMaxZ", (float)positionMax.GetZ());
                 }
 
                 AZ::Vector3 rotationMin(0.0f, 0.0f, -180.0f);
-                if (classElement.GetChildData(AZ_CRC("RotationMin", 0xf556391b), rotationMin))
+                if (classElement.GetChildData(AZ_CRC_CE("RotationMin"), rotationMin))
                 {
-                    classElement.RemoveElementByName(AZ_CRC("RotationMin", 0xf556391b));
+                    classElement.RemoveElementByName(AZ_CRC_CE("RotationMin"));
                     classElement.AddElementWithData(context, "RotationMinX", (float)rotationMin.GetX());
                     classElement.AddElementWithData(context, "RotationMinY", (float)rotationMin.GetY());
                     classElement.AddElementWithData(context, "RotationMinZ", (float)rotationMin.GetZ());
                 }
 
                 AZ::Vector3 rotationMax(0.0f, 0.0f, 180.0f);
-                if (classElement.GetChildData(AZ_CRC("RotationMax", 0xc95b0642), rotationMax))
+                if (classElement.GetChildData(AZ_CRC_CE("RotationMax"), rotationMax))
                 {
-                    classElement.RemoveElementByName(AZ_CRC("RotationMax", 0xc95b0642));
+                    classElement.RemoveElementByName(AZ_CRC_CE("RotationMax"));
                     classElement.AddElementWithData(context, "RotationMaxX", (float)rotationMax.GetX());
                     classElement.AddElementWithData(context, "RotationMaxY", (float)rotationMax.GetY());
                     classElement.AddElementWithData(context, "RotationMaxZ", (float)rotationMax.GetZ());
@@ -65,7 +65,7 @@ namespace Vegetation
             }
             if (classElement.GetVersion() < 5)
             {
-                classElement.RemoveElementByName(AZ_CRC("RadiusMax", 0x5e90f2ea));
+                classElement.RemoveElementByName(AZ_CRC_CE("RadiusMax"));
             }
             if (classElement.GetVersion() < 7)
             {
@@ -78,7 +78,7 @@ namespace Vegetation
             {
                 // Spawner type was briefly stored as a display string instead of a TypeId.
                 AZStd::string spawnerType;
-                if (classElement.GetChildData(AZ_CRC("SpawnerType", 0xbabb9f23), spawnerType))
+                if (classElement.GetChildData(AZ_CRC_CE("SpawnerType"), spawnerType))
                 {
                     AZ::TypeId newSpawnerType = azrtti_typeid<EmptyInstanceSpawner>();
                     if (spawnerType == "Legacy Vegetation")
@@ -86,7 +86,7 @@ namespace Vegetation
                         AZ_Error("Dynamic Vegetation", false, "Replacing legacy vegetation spawner with an empty instance spawner");
                     }
 
-                    classElement.RemoveElementByName(AZ_CRC("SpawnerType", 0xbabb9f23));
+                    classElement.RemoveElementByName(AZ_CRC_CE("SpawnerType"));
                     classElement.AddElementWithData(context, "SpawnerType", newSpawnerType);
                 }
             }

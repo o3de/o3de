@@ -60,12 +60,12 @@ namespace UnitTest
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("InspectorTestService1"));
+            services.push_back(AZ_CRC_CE("InspectorTestService1"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("InspectorTestService1"));
+            services.push_back(AZ_CRC_CE("InspectorTestService1"));
         }
 
         ~Inspector_TestComponent1() override
@@ -116,7 +116,7 @@ namespace UnitTest
                     editContext->Class<Inspector_TestComponent2>("InspectorTestComponent2", "Component 2 for AZ Tools Framework Unit Tests")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AddableByUser, true)
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::Category, "Inspector Test Components")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Tag.png")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Tag.png")
@@ -129,12 +129,12 @@ namespace UnitTest
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("InspectorTestService2"));
+            services.push_back(AZ_CRC_CE("InspectorTestService2"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("InspectorTestService2"));
+            services.push_back(AZ_CRC_CE("InspectorTestService2"));
         }
 
         ~Inspector_TestComponent2() override
@@ -197,12 +197,12 @@ namespace UnitTest
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("InspectorTestService3"));
+            services.push_back(AZ_CRC_CE("InspectorTestService3"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("InspectorTestService3"));
+            services.push_back(AZ_CRC_CE("InspectorTestService3"));
         }
 
         ~Inspector_TestComponent3() override

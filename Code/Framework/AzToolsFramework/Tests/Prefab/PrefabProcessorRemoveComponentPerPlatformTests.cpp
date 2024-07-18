@@ -24,7 +24,7 @@ namespace UnitTest
 
     const char* PlatformTag = "platform_1";
     const char* EntityName = "entity_1";
-    const AZ::Crc32 ComponentService = AZ_CRC("good_service");
+    const AZ::Crc32 ComponentService = AZ_CRC_CE("good_service");
 
     class KeepThisComponent : public AZ::Component
     {

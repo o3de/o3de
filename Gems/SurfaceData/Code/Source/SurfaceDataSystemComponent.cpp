@@ -96,12 +96,12 @@ namespace SurfaceData
 
     void SurfaceDataSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("SurfaceDataSystemService", 0x1d44d25f));
+        provided.push_back(AZ_CRC_CE("SurfaceDataSystemService"));
     }
 
     void SurfaceDataSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("SurfaceDataSystemService", 0x1d44d25f));
+        incompatible.push_back(AZ_CRC_CE("SurfaceDataSystemService"));
     }
 
     void SurfaceDataSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

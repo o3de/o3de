@@ -79,7 +79,7 @@ void UiSpawnerComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Spawner.svg")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Spawner.svg")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             editInfo->DataElement(0, &UiSpawnerComponent::m_sliceAsset, "Dynamic slice", "The slice to spawn");
@@ -106,13 +106,13 @@ void UiSpawnerComponent::Reflect(AZ::ReflectContext* context)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiSpawnerComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
 {
-    provided.push_back(AZ_CRC("SpawnerService", 0xd2f1d7a3));
+    provided.push_back(AZ_CRC_CE("SpawnerService"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiSpawnerComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
 {
-    dependent.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+    dependent.push_back(AZ_CRC_CE("TransformService"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

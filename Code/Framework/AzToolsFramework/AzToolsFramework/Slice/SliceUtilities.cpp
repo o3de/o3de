@@ -2214,7 +2214,7 @@ namespace AzToolsFramework
                     }
                 }
 
-                auto settings = AZ::UserSettings::CreateFind<SliceUserSettings>(AZ_CRC("SliceUserSettings", 0x055b32eb), AZ::UserSettings::CT_LOCAL);
+                auto settings = AZ::UserSettings::CreateFind<SliceUserSettings>(AZ_CRC_CE("SliceUserSettings"), AZ::UserSettings::CT_LOCAL);
                 if (settings->m_autoNumber)
                 {
                     AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();

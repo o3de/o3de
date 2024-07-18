@@ -29,7 +29,7 @@ namespace AWSCore
                 editContext->Class<AWSScriptBehaviorsComponent>("AWSScriptBehaviors", "Provides ScriptCanvas functions for calling AWS")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Scripting")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("AWS"))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("AWS"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

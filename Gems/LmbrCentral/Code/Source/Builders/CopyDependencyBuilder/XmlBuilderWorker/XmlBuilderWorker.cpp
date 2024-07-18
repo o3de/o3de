@@ -439,8 +439,8 @@ namespace CopyDependencyBuilder
         // We've already iterate through all the schemas and found source dependencies in CreateJobs
         // Retrieve the matched schemas from the job parameters in ProcessJob to avoid redundant work
         const auto& paramMap = request.m_jobDescription.m_jobParameters;
-        auto startIter = paramMap.find(AZ_CRC("sourceDependencyStartPoint", 0xdfa24dde));
-        auto sourceNumIter = paramMap.find(AZ_CRC("sourceDependenciesNum", 0xf52e721a));
+        auto startIter = paramMap.find(AZ_CRC_CE("sourceDependencyStartPoint"));
+        auto sourceNumIter = paramMap.find(AZ_CRC_CE("sourceDependenciesNum"));
         if (startIter != paramMap.end() && sourceNumIter != paramMap.end())
         {
             int startPoint = AzFramework::StringFunc::ToInt(startIter->second.c_str());
