@@ -119,6 +119,8 @@ namespace AZ
 
         int Pass::GetDeviceIndex() const
         {
+            AZ_Assert(m_state != PassState::Uninitialized && m_state != PassState::Reset,
+                "Getting device index before building might return a wrong result since its parent pass is not yet ready.");
             if (m_deviceIndex == AZ::RHI::MultiDevice::InvalidDeviceIndex && m_parent)
             {
                 return m_flags.m_parentDeviceIndexCached ? m_parentDeviceIndex : m_parent->GetDeviceIndex();
