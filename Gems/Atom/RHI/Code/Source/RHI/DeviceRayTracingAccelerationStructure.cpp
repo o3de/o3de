@@ -53,7 +53,7 @@ namespace AZ::RHI
 
     DeviceRayTracingBlasDescriptor* DeviceRayTracingBlasDescriptor::BuildFlags(const RHI::RayTracingAccelerationStructureBuildFlags &buildFlags)
     {
-        AZ_Assert(m_buildContext, "BuildFlags property can only be added to a Geometry entry");
+        AZ_Assert(m_buildContext || m_aabb, "BuildFlags property can only be added to a Geometry or AABB entry");
         m_buildFlags = buildFlags;
         return this;
     }
