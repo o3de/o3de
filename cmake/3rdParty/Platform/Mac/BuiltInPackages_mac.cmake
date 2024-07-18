@@ -20,7 +20,7 @@ ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform               
 # platform-specific:
 ly_associate_package(PACKAGE_NAME expat-2.4.2-rev2-mac                              TARGETS expat                       PACKAGE_HASH 70f195977a17b08a4dc8687400fd7f2589e3b414d4961b562129166965b6f658)
 ly_associate_package(PACKAGE_NAME assimp-5.2.5-rev1-mac                             TARGETS assimplib                   PACKAGE_HASH 0c96f5bd230a6e8e432a3693a6bae540ad75665eb0187b8525cf63398673ca67)
-ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.7.2308-o3de-rev1-mac   TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH 72a27691ce8b413df43eb7fcc41b04c04568507fb715db6a66ea8b782f07e210)
+ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.7.2308-o3de-rev2-mac   TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH bdbf069d5704cf16079e60421857bda150ba6eed69900d03ac7ffefc2335cda3)
 ly_associate_package(PACKAGE_NAME SPIRVCross-1.3.275.0-rev1-mac                     TARGETS SPIRVCross                  PACKAGE_HASH 5ad9629f677c42847daf8b097728323685d7018d3ac8af0508d1bd0727a81304)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev3-mac                            TARGETS TIFF                        PACKAGE_HASH c2615ccdadcc0e1d6c5ed61e5965c4d3a82193d206591b79b805c3b3ff35a4bf)
 ly_associate_package(PACKAGE_NAME freetype-2.11.1-rev1-mac                          TARGETS Freetype                    PACKAGE_HASH b66107d3499f2e9c072bd88db26e0e5c1b8013128699393c6a8495afca3d2548)
