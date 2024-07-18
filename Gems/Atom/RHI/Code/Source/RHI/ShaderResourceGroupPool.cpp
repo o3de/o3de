@@ -37,11 +37,6 @@ namespace AZ::RHI
 
                         m_deviceObjects[deviceIndex] = Factory::Get().CreateShaderResourceGroupPool();
 
-                        if (const auto& name = GetName(); !name.IsEmpty())
-                        {
-                            m_deviceObjects[deviceIndex]->SetName(name);
-                        }
-
                         GetDeviceShaderResourceGroupPool(deviceIndex)->Init(*device, descriptor);
 
                         return true;
@@ -75,11 +70,6 @@ namespace AZ::RHI
                 return IterateObjects<DeviceShaderResourceGroupPool>([this, &group](auto deviceIndex, [[maybe_unused]] auto deviceShaderResourceGroupPool)
                 {
                     group.m_deviceObjects[deviceIndex] = Factory::Get().CreateShaderResourceGroup();
-
-                    if (const auto& name = group.GetName(); !name.IsEmpty())
-                    {
-                        group.m_deviceObjects[deviceIndex]->SetName(name);
-                    }
 
                     return GetDeviceShaderResourceGroupPool(deviceIndex)->InitGroup(*group.GetDeviceShaderResourceGroup(deviceIndex));
                 });

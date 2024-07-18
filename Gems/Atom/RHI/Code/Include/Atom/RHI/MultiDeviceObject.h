@@ -38,9 +38,6 @@ namespace AZ::RHI
         //! Returns whether the device object is initialized.
         bool IsInitialized() const;
 
-        //! Pass on name to DeviceObjects
-        virtual void SetName(const Name& name);
-
         //! Returns the device this object is associated with. It is only permitted to call
         //! this method when the object is initialized.
         MultiDevice::DeviceMask GetDeviceMask() const;
@@ -161,6 +158,9 @@ namespace AZ::RHI
     private:
         //! Returns the number of initialized devices
         int GetDeviceCount() const;
+
+        //! Pass on name to DeviceObjects
+        virtual void SetNameInternal(const AZStd::string_view& name) override;
 
         //! A bitmask denoting on which devices an object is present/valid/allocated
         MultiDevice::DeviceMask m_deviceMask{ 0u };

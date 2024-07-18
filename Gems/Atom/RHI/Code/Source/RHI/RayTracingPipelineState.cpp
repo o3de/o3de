@@ -120,11 +120,6 @@ namespace AZ::RHI
                 auto device = RHISystemInterface::Get()->GetDevice(deviceIndex);
                 m_deviceObjects[deviceIndex] = Factory::Get().CreateRayTracingPipelineState();
 
-                if (const auto& name = GetName(); !name.IsEmpty())
-                {
-                    m_deviceObjects[deviceIndex]->SetName(name);
-                }
-
                 auto descriptor{ m_descriptor.GetDeviceRayTracingPipelineStateDescriptor(deviceIndex) };
                 resultCode = GetDeviceRayTracingPipelineState(deviceIndex)->Init(*device, &descriptor);
                 return resultCode == ResultCode::Success;
@@ -135,6 +130,11 @@ namespace AZ::RHI
             // Reset already initialized device-specific DeviceRayTracingPipelineState and set deviceMask to 0
             m_deviceObjects.clear();
             MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
+        }
+
+        if (const auto& name = GetName(); !name.IsEmpty())
+        {
+            SetName(name);
         }
 
         return resultCode;

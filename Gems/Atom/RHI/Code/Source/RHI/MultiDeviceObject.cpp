@@ -26,15 +26,14 @@ namespace AZ::RHI
         m_deviceMask = deviceMask;
     }
 
-    void MultiDeviceObject::SetName(const Name& name)
+    void MultiDeviceObject::SetNameInternal(const AZStd::string_view& name)
     {
         IterateObjects<DeviceObject>(
             [&name]([[maybe_unused]] auto deviceIndex, auto deviceObject)
             {
-                deviceObject->SetName(name);
+                AZStd::string deviceName{ AZStd::string{ name } + AZStd::to_string(deviceIndex) };
+                deviceObject->SetName(Name(deviceName));
             });
-
-        Object::SetName(name);
     }
 
     void MultiDeviceObject::Shutdown()

@@ -100,6 +100,11 @@ namespace AZ::RHI
 
         ResultCode resultCode = platformInitMethod();
 
+        if (const auto& name = GetName(); !name.IsEmpty())
+        {
+            SetName(name);
+        }
+
         return resultCode;
     }
 
@@ -135,6 +140,11 @@ namespace AZ::RHI
         {
             resource->Init(GetDeviceMask());
             Register(*resource);
+
+            if (const auto& name = resource->GetName(); !name.IsEmpty())
+            {
+                resource->SetName(name);
+            }
         }
         return resultCode;
     }

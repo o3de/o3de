@@ -42,11 +42,6 @@ namespace AZ::RHI
 
                 m_deviceObjects[deviceIndex] = Factory::Get().CreateTransientAttachmentPool();
 
-                if (const auto& name = GetName(); !name.IsEmpty())
-                {
-                    m_deviceObjects[deviceIndex]->SetName(name);
-                }
-
                 resultCode = GetDeviceTransientAttachmentPool(deviceIndex)->Init(*device, m_descriptors[deviceIndex]);
 
                 return resultCode == ResultCode::Success;
@@ -57,6 +52,11 @@ namespace AZ::RHI
             // Reset already initialized device-specific TransientAttachmentPools and set deviceMask to 0
             m_deviceObjects.clear();
             MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
+        }
+
+        if (const auto& name = GetName(); !name.IsEmpty())
+        {
+            SetName(name);
         }
 
         return resultCode;

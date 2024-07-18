@@ -69,12 +69,6 @@ namespace AZ::RHI
                     m_deviceObjects[deviceIndex] = Factory::Get().CreatePipelineState();
                 }
 
-
-                if (const auto& name = GetName(); !name.IsEmpty())
-                {
-                    m_deviceObjects[deviceIndex]->SetName(name);
-                }
-
                 switch (descriptor.GetType())
                 {
                 case PipelineStateType::Draw:
@@ -132,6 +126,11 @@ namespace AZ::RHI
             // Only reset the device mask but the the device-specific PipelineStates, as other
             // threads might be using them already
             MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
+        }
+
+        if (const auto& name = GetName(); !name.IsEmpty())
+        {
+            SetName(name);
         }
 
         return resultCode;

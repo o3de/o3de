@@ -201,11 +201,6 @@ namespace AZ::RHI
                 auto device = RHISystemInterface::Get()->GetDevice(deviceIndex);
                 this->m_deviceObjects[deviceIndex] = Factory::Get().CreateRayTracingBlas();
 
-                if (const auto& name = GetName(); !name.IsEmpty())
-                {
-                    m_deviceObjects[deviceIndex]->SetName(name);
-                }
-
                 auto deviceDescriptor{ descriptor->GetDeviceRayTracingBlasDescriptor(deviceIndex) };
 
                 resultCode = GetDeviceRayTracingBlas(deviceIndex)
@@ -220,6 +215,11 @@ namespace AZ::RHI
             // Reset already initialized device-specific DeviceRayTracingBlas and set deviceMask to 0
             m_deviceObjects.clear();
             MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
+        }
+
+        if (const auto& name = GetName(); !name.IsEmpty())
+        {
+            SetName(name);
         }
 
         return resultCode;
@@ -261,11 +261,6 @@ namespace AZ::RHI
                 auto deviceRayTracingTlas{Factory::Get().CreateRayTracingTlas()};
                 this->m_deviceObjects[deviceIndex] = deviceRayTracingTlas;
 
-                if (const auto& name = GetName(); !name.IsEmpty())
-                {
-                    m_deviceObjects[deviceIndex]->SetName(name);
-                }
-
                 auto deviceDescriptor{ descriptor->GetDeviceRayTracingTlasDescriptor(deviceIndex) };
 
                 resultCode = deviceRayTracingTlas->CreateBuffers(
@@ -278,6 +273,11 @@ namespace AZ::RHI
             // Reset already initialized device-specific DeviceRayTracingTlas and set deviceMask to 0
             m_deviceObjects.clear();
             MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
+        }
+
+        if (const auto& name = GetName(); !name.IsEmpty())
+        {
+            SetName(name);
         }
 
         // Each call to CreateBuffers advances m_currentBufferIndex internally, reset buffers to always receive currently active
@@ -308,11 +308,6 @@ namespace AZ::RHI
             {
                 m_tlasBuffer->m_deviceObjects[deviceIndex] = deviceRayTracingTlas->GetTlasBuffer();
 
-                if (const auto& name = m_tlasBuffer->GetName(); !name.IsEmpty())
-                {
-                    m_tlasBuffer->m_deviceObjects[deviceIndex]->SetName(name);
-                }
-
                 if (!m_tlasBuffer->m_deviceObjects[deviceIndex])
                 {
                     m_tlasBuffer->m_deviceObjects.clear();
@@ -323,6 +318,11 @@ namespace AZ::RHI
                 m_tlasBuffer->SetDescriptor(m_tlasBuffer->GetDeviceBuffer(deviceIndex)->GetDescriptor());
                 return ResultCode::Success;
             });
+
+        if (const auto& name = m_tlasBuffer->GetName(); !name.IsEmpty())
+        {
+            m_tlasBuffer->SetName(name);
+        }
 
         return m_tlasBuffer;
     }
@@ -349,11 +349,6 @@ namespace AZ::RHI
             {
                 m_tlasInstancesBuffer->m_deviceObjects[deviceIndex] = deviceRayTracingTlas->GetTlasBuffer();
 
-                if (const auto& name = m_tlasInstancesBuffer->GetName(); !name.IsEmpty())
-                {
-                    m_tlasInstancesBuffer->m_deviceObjects[deviceIndex]->SetName(name);
-                }
-
                 if (!m_tlasInstancesBuffer->m_deviceObjects[deviceIndex])
                 {
                     m_tlasInstancesBuffer->m_deviceObjects.clear();
@@ -364,6 +359,11 @@ namespace AZ::RHI
                 m_tlasInstancesBuffer->SetDescriptor(m_tlasInstancesBuffer->GetDeviceBuffer(deviceIndex)->GetDescriptor());
                 return ResultCode::Success;
             });
+
+        if (const auto& name = m_tlasInstancesBuffer->GetName(); !name.IsEmpty())
+        {
+            m_tlasInstancesBuffer->SetName(name);
+        }
         return m_tlasInstancesBuffer;
     }
 } // namespace AZ::RHI

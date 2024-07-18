@@ -55,11 +55,6 @@ namespace AZ::RHI
 
                 m_deviceObjects[deviceIndex] = Factory::Get().CreatePipelineLibrary();
 
-                if (const auto& name = GetName(); !name.IsEmpty())
-                {
-                    m_deviceObjects[deviceIndex]->SetName(name);
-                }
-
                 resultCode = GetDevicePipelineLibrary(deviceIndex)->Init(*device, descriptor.GetDevicePipelineLibraryDescriptor(deviceIndex));
 
                 return resultCode == ResultCode::Success;
@@ -72,6 +67,10 @@ namespace AZ::RHI
             MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
         }
 
+        if (const auto& name = GetName(); !name.IsEmpty())
+        {
+            SetName(name);
+        }
 
         return resultCode;
     }

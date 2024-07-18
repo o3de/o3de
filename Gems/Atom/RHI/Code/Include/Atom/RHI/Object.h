@@ -22,7 +22,7 @@ namespace AZ::RHI
         virtual ~Object() = default;
 
         //! Sets the name of the object.
-        virtual void SetName(const Name& name);
+        void SetName(const Name& name);
 
         //! Returns the name set on the object by SetName
         const Name& GetName() const;

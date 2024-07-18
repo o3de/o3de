@@ -30,11 +30,6 @@ namespace AZ::RHI
 
                         m_deviceObjects[deviceIndex] = Factory::Get().CreateImagePool();
 
-                        if (const auto& name = GetName(); !name.IsEmpty())
-                        {
-                            m_deviceObjects[deviceIndex]->SetName(name);
-                        }
-
                         GetDeviceImagePool(deviceIndex)->Init(*device, descriptor);
 
                         return true;
@@ -80,11 +75,6 @@ namespace AZ::RHI
                     if (!initRequest.m_image->m_deviceObjects.contains(deviceIndex))
                     {
                         initRequest.m_image->m_deviceObjects[deviceIndex] = Factory::Get().CreateImage();
-                    }
-
-                    if (const auto& name = initRequest.m_image->GetName(); !name.IsEmpty())
-                    {
-                        initRequest.m_image->m_deviceObjects[deviceIndex]->SetName(name);
                     }
 
                     DeviceImageInitRequest imageInitRequest(
