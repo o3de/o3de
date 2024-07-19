@@ -11,6 +11,7 @@
 #include <Atom/RHI/FrameGraphAttachmentDatabase.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <AzCore/IO/SystemFile.h>
 
 namespace AZ::RHI
