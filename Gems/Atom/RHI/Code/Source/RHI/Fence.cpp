@@ -50,6 +50,7 @@ namespace AZ::RHI
                 auto* device = RHISystemInterface::Get()->GetDevice(deviceIndex);
 
                 m_deviceObjects[deviceIndex] = Factory::Get().CreateFence();
+
                 resultCode = GetDeviceFence(deviceIndex)->Init(*device, initialState);
 
                 return resultCode == ResultCode::Success;
@@ -60,6 +61,11 @@ namespace AZ::RHI
             // Reset already initialized device-specific Fences and set deviceMask to 0
             m_deviceObjects.clear();
             MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
+        }
+
+        if (const auto& name = GetName(); !name.IsEmpty())
+        {
+            SetName(name);
         }
 
         return resultCode;

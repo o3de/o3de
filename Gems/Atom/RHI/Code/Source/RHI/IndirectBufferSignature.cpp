@@ -39,6 +39,7 @@ namespace AZ::RHI
                 auto device = RHISystemInterface::Get()->GetDevice(deviceIndex);
 
                 m_deviceObjects[deviceIndex] = Factory::Get().CreateIndirectBufferSignature();
+
                 resultCode = GetDeviceIndirectBufferSignature(deviceIndex)->Init(
                     *device, descriptor.GetDeviceIndirectBufferSignatureDescriptor(deviceIndex));
 
@@ -50,6 +51,11 @@ namespace AZ::RHI
 
                 return resultCode == ResultCode::Success;
             });
+
+        if (const auto& name = GetName(); !name.IsEmpty())
+        {
+            SetName(name);
+        }
 
         m_descriptor = descriptor;
 

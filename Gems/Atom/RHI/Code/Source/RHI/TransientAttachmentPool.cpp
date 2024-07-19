@@ -54,6 +54,11 @@ namespace AZ::RHI
             MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
         }
 
+        if (const auto& name = GetName(); !name.IsEmpty())
+        {
+            SetName(name);
+        }
+
         return resultCode;
     }
 
@@ -153,6 +158,11 @@ namespace AZ::RHI
                 {
                     image->m_deviceObjects[deviceIndex] = deviceImage;
                     image->SetDescriptor(deviceImage->GetDescriptor());
+
+                    if (const auto& name = image->GetName(); !name.IsEmpty())
+                    {
+                        image->m_deviceObjects[deviceIndex]->SetName(name);
+                    }
                 }
                 else
                 {
@@ -213,6 +223,11 @@ namespace AZ::RHI
                 {
                     buffer->m_deviceObjects[deviceIndex] = deviceBuffer;
                     buffer->SetDescriptor(deviceBuffer->GetDescriptor());
+
+                    if (const auto& name = buffer->GetName(); !name.IsEmpty())
+                    {
+                        buffer->m_deviceObjects[deviceIndex]->SetName(name);
+                    }
                 }
                 else
                 {

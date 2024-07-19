@@ -159,6 +159,9 @@ namespace AZ::RHI
         //! Returns the number of initialized devices
         int GetDeviceCount() const;
 
+        //! Pass on name to DeviceObjects
+        virtual void SetNameInternal(const AZStd::string_view& name) override;
+
         //! A bitmask denoting on which devices an object is present/valid/allocated
         MultiDevice::DeviceMask m_deviceMask{ 0u };
     };
