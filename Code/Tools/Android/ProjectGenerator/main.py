@@ -34,6 +34,13 @@ class TkApp(tk.Tk):
         x, y = self.winfo_pointerx(), self.winfo_pointery()
         self.geometry(f"+{x}+{y}")
 
+        # Set the padding for all label frames
+        self._frame_pad_x = 4
+        self._frame_pad_y = 4
+
+        # Set the main widget's column 1 as the target expand column
+        self.columnconfigure(0, weight=1)
+
         self._config = config
         self._config_file_path_var = tk.StringVar()
         self._config_file_path_var.set(config_file_path)
@@ -41,113 +48,128 @@ class TkApp(tk.Tk):
         self._init_load_save_ui()
         self._init_keystore_settings_ui()
         self._init_sdk_settings_ui()
+
+        # Add the project generation button.
+        btn = tk.Button(self, text="Generate Project", command=self.on_generate_project_button)
+        btn.grid()
+
         self._init_report_ui()
 
 
     def _init_load_save_ui(self):
-        frame = tk.Frame(self)
-        frame.pack()
 
-        buttons_frame = tk.Frame(frame)
-        buttons_frame.pack()
-        btn = tk.Button(buttons_frame, text="Load Settings", command=self.on_load_settings_button)
-        btn.pack(padx=20, side=tk.LEFT)
-        btn = tk.Button(buttons_frame, text="Save Settings", command=self.on_save_settings_button)
-        btn.pack(padx=20, side=tk.RIGHT)
-        lbl = tk.Label(frame, textvariable=self._config_file_path_var)
-        lbl.pack()
+        apg_settings_frame = tk.LabelFrame(self, text="Android Project Generator Settings")
+        apg_settings_frame.columnconfigure(0, weight=0)
+        apg_settings_frame.columnconfigure(1, weight=1)
+        apg_settings_frame.grid(padx=self._frame_pad_x, pady=self._frame_pad_y, ipadx=2, ipady=2, sticky=tk.EW)
+
+        self._config_file_path_var, _, row_number = self._add_label_entry(apg_settings_frame,
+                                                                         "Config Path",
+                                                                          self._config_file_path_var.get(),
+                                                                          entry_colspan=1,
+                                                                          label_width=28,
+                                                                          entry_read_only=True)
+
+        btn = tk.Button(apg_settings_frame, text="Load", command=self.on_load_settings_button)
+        btn.grid(row=row_number, column=2, padx=2, sticky=tk.E)
+
+        btn = tk.Button(apg_settings_frame, text="Save", command=self.on_save_settings_button)
+        btn.grid(row=row_number, column=3, padx=2, sticky=tk.E)
 
 
     def _init_keystore_settings_ui(self):
         # Create a button widget with an event handler.
-        keystore_frame = tk.Frame(self)
-        keystore_frame.pack(expand=False, fill=tk.X)
-
-        lbl = tk.Label(keystore_frame, text="============ Keystore Settings ============")
-        lbl.pack()
+        keystore_frame = tk.LabelFrame(self, text="Keystore Settings")
+        keystore_frame.columnconfigure(0, weight=1)
+        keystore_frame.grid(padx=self._frame_pad_x, pady=self._frame_pad_y, sticky=tk.EW)
 
         # Let's add the fields that make the Distinguished Name.
-        dn_frame = tk.Frame(keystore_frame)
-        dn_frame.pack(expand=True, fill=tk.X)
-        self._init_keystore_distinguished_name_ui(dn_frame)
+        self._init_keystore_distinguished_name_ui(keystore_frame, 0)
 
         # Now let's add the rest of the keystore fields.
+        keystore_details_frame = tk.LabelFrame(keystore_frame)
+        keystore_details_frame.columnconfigure(0, weight=0)
+        keystore_details_frame.columnconfigure(1, weight=1)
+
+        keystore_details_frame.grid(padx=self._frame_pad_x, pady=self._frame_pad_y,row=1, column=0, sticky=tk.EW)
         ks_data = self._config.keystore_settings
-        self._keystore_validity_days_var = self._add_label_entry(keystore_frame, "Validity Days", ks_data.validity_days)[0]
-        self._keystore_key_size_var = self._add_label_entry(keystore_frame, "Key Size", ks_data.key_size)[0]
-        self._keystore_app_key_alias_var = self._add_label_entry(keystore_frame, "App Key Alias", ks_data.key_alias)[0]
-        self._keystore_app_key_password_var = self._add_label_entry(keystore_frame, "App Key Password", ks_data.key_password)[0]
-        self._keystore_keystore_password_var = self._add_label_entry(keystore_frame, "Keystore Password", ks_data.keystore_password)[0]
-        self._keystore_file_var, _, row_frame =  self._add_label_entry(keystore_frame, "Keystore File", ks_data.keystore_file)
-        btn = tk.Button(row_frame, text="...", command=self.on_select_keystore_file_button)
-        btn.pack(side=tk.LEFT)
+        self._keystore_validity_days_var = self._add_label_entry(keystore_details_frame, "Validity Days", ks_data.validity_days, entry_colspan=3, label_width=28)[0]
+        self._keystore_key_size_var = self._add_label_entry(keystore_details_frame, "Key Size", ks_data.key_size, entry_colspan=3)[0]
+        self._keystore_app_key_alias_var = self._add_label_entry(keystore_details_frame, "App Key Alias", ks_data.key_alias, entry_colspan=3)[0]
+        self._keystore_app_key_password_var = self._add_label_entry(keystore_details_frame, "App Key Password", ks_data.key_password, entry_colspan=3)[0]
+        self._keystore_keystore_password_var = self._add_label_entry(keystore_details_frame, "Keystore Password", ks_data.keystore_password, entry_colspan=3)[0]
+        self._keystore_file_var, _, row_number =  self._add_label_entry(keystore_details_frame, "Keystore File", ks_data.keystore_file)
+        btn = tk.Button(keystore_details_frame, text="...", command=self.on_select_keystore_file_button)
+        btn.grid(row=row_number, column=3)
 
         btn = tk.Button(keystore_frame, text="Create Keystore", command=self.on_create_keystore_button)
-        btn.pack()
+        btn.grid()
 
 
-    def _init_keystore_distinguished_name_ui(self, parent_frame: tk.Frame):
-        tk.Label(parent_frame, text="Distinguished Name Settings:").pack(anchor=tk.W)
-        spaceStr = "        "
+    def _init_keystore_distinguished_name_ui(self, parent_frame: tk.Frame, row:int):
+        dn_frame = tk.LabelFrame(parent_frame, text='Distinguished Name Settings')
+        dn_frame.columnconfigure(0, weight=0)
+        dn_frame.columnconfigure(1, weight=1)
+        dn_frame.grid(padx=self._frame_pad_x, pady=self._frame_pad_y,row=row, sticky=tk.EW)
+
         ks_data = self._config.keystore_settings
-        self._dn_country_code_var = self._add_label_entry(parent_frame, f"{spaceStr}Country Code", ks_data.dn_country_code)[0]
-        self._dn_company_var = self._add_label_entry(parent_frame, f"{spaceStr}Company (aka Organization)", ks_data.dn_organization)[0]
-        self._dn_organizational_unit_var = self._add_label_entry(parent_frame, f"{spaceStr}Organizational Unit", ks_data.dn_organizational_unit)[0]
-        self._dn_app_name_var = self._add_label_entry(parent_frame, f"{spaceStr}App Name (aka Common Name)", ks_data.dn_common_name)[0]
+        self._dn_country_code_var = self._add_label_entry(dn_frame, f"Country Code", ks_data.dn_country_code, label_width=28)[0]
+        self._dn_company_var = self._add_label_entry(dn_frame, f"Company (aka Organization)", ks_data.dn_organization)[0]
+        self._dn_organizational_unit_var = self._add_label_entry(dn_frame, f"Organizational Unit", ks_data.dn_organizational_unit)[0]
+        self._dn_app_name_var = self._add_label_entry(dn_frame, f"App Name (aka Common Name)", ks_data.dn_common_name)[0]
 
 
     def _init_sdk_settings_ui(self):
-        sdk_frame = tk.Frame(self)
-        sdk_frame.pack(expand=False, fill=tk.X)
-        lbl = tk.Label(sdk_frame, text="========= Android SDK/NDK Settings ========")
-        lbl.pack()
+        sdk_frame = tk.LabelFrame(self, text="Android SDK/NDK Settings")
+        sdk_frame.columnconfigure(0, weight=0)
+        sdk_frame.columnconfigure(1, weight=1)
+        sdk_frame.grid(padx=self._frame_pad_x, pady=self._frame_pad_y,sticky=tk.EW)
+
         cf = self._config
-        self._android_ndk_version_var = self._add_label_entry(sdk_frame, "NDK Version", cf.android_ndk_version)[0]
-        self._android_sdk_api_level_var = self._add_label_entry(sdk_frame, "SDK API Level", cf.android_sdk_api_level)[0]
-        self._android_sdk_path_var, _, row_frame = self._add_label_entry(sdk_frame, "SDK Path", cf.android_sdk_path)
-        btn = tk.Button(row_frame, text="...", command=self.on_select_sdk_path_button)
-        btn.pack(side=tk.LEFT)
+        self._android_ndk_version_var = self._add_label_entry(sdk_frame, "NDK Version", cf.android_ndk_version, entry_colspan=3, label_width=28)[0]
+        self._android_sdk_api_level_var = self._add_label_entry(sdk_frame, "SDK API Level", cf.android_sdk_api_level, entry_colspan=3)[0]
+        self._android_sdk_path_var, _, row_number = self._add_label_entry(sdk_frame, "SDK Path", cf.android_sdk_path)
+        sdk_path_btn = tk.Button(sdk_frame, text="...", command=self.on_select_sdk_path_button)
+        sdk_path_btn.grid(row=row_number, column=2)
+
         # Add the meta quest project checkbox
-        self._android_quest_flag_var = self._add_checkbox(sdk_frame, "This is a Meta Quest project", cf.is_meta_quest_project)[0]
-        # Add the project generation button.
-        btn = tk.Button(sdk_frame, text="Generate Project", command=self.on_generate_project_button)
-        btn.pack()
+        self._android_quest_flag_var, _, row_number = self._add_checkbox(sdk_frame, "This is a Meta Quest project", cf.is_meta_quest_project)
 
 
-    def _add_label_entry(self, parent_frame: tk.Frame, lbl_name: str, default_value: str = "") -> tuple[tk.StringVar, tk.Entry, tk.Frame]:
+    def _add_label_entry(self, parent_frame: tk.Frame, lbl_name: str, default_value: str = "", entry_colspan=1, label_width=None, entry_read_only=False) -> tuple[tk.StringVar, tk.Entry, int]:
         """
         Returns the tuple (string_var, entry, row_frame),
         where  @string_var is the TK StringVar bound to the Entry widget,
                @entry is the Entry widget,
-               @row_frame is the parent Frame that owns @entry widget.
+               @row The grid row number of inserted entry.
         """
-        row_frame = tk.Frame(parent_frame)
-        row_frame.pack(padx=5, pady=2, expand=True, fill=tk.X)
-        lbl = tk.Label(row_frame, text=lbl_name)
-        lbl.pack(side=tk.LEFT, anchor=tk.W)
-        entry = tk.Entry(row_frame, justify='right')
-        entry.pack(side=tk.LEFT, expand=True, fill=tk.X)
+        lbl = tk.Label(parent_frame, text=lbl_name, anchor=tk.W, width=label_width)
+        lbl.grid(column=0, padx=5, pady=2, sticky=tk.W)
+        row = lbl.grid_info().get("row")
+
+        entry = tk.Entry(parent_frame, justify='right',state=tk.DISABLED if entry_read_only else tk.NORMAL)
+        entry.grid(row=row, column=1, padx=5, pady=2, sticky=tk.EW, columnspan=entry_colspan)
+
         string_var = tk.StringVar()
         string_var.set(default_value)
         entry["textvariable"] = string_var
-        return string_var, entry, row_frame
+        return string_var, entry, row
 
 
-    def _add_checkbox(self, parent_frame: tk.Frame, lbl_name: str, default_value: bool = False) -> tuple[tk.BooleanVar, tk.Checkbutton, tk.Frame]:
+    def _add_checkbox(self, parent_frame: tk.Frame, lbl_name: str, default_value: bool = False) -> tuple[tk.BooleanVar, tk.Checkbutton, int]:
         """
         Returns the tuple (BooleanVar, check_box, row_frame),
         where  @BooleanVar is the TK BooleanVar bound to the CheckBox widget,
                @check_box is the Checkbutton widget,
-               @row_frame is the parent Frame that owns @check_box widget.
+               @row The grid row number of inserted entry.
         """
-        row_frame = tk.Frame(parent_frame)
-        row_frame.pack(padx=5, pady=2, expand=True, fill=tk.X)
         bool_var = tk.BooleanVar()
         bool_var.set(default_value)
         # Create a Checkbutton widget and bind it to the variable.
-        checkbutton = tk.Checkbutton(row_frame, text=lbl_name, variable=bool_var)
-        checkbutton.pack(side=tk.LEFT, anchor=tk.W)
-        return bool_var, checkbutton, row_frame
+        checkbutton = tk.Checkbutton(parent_frame, text=lbl_name, variable=bool_var)
+        checkbutton.grid(sticky=tk.W)
+        row_number = checkbutton.grid_info().get("row")
+        return bool_var, checkbutton, row_number
 
 
     def _init_report_ui(self):
@@ -156,14 +178,20 @@ class TkApp(tk.Tk):
         all the stdout and stderr string produced by all subprocess invoked
         by this application.
         """
-        lbl = tk.Label(self, text="============ Operations Report ============")
-        lbl.pack()
-        self._report_text_widget = tk.Text(self, wrap=tk.WORD, borderwidth=2, relief=tk.SUNKEN)
-        self._report_scrollbar_widget = tk.Scrollbar(self, orient=tk.VERTICAL, command=self._report_text_widget.yview)
+        operations_report_frame = tk.LabelFrame(self, text="Operations Report")
+        operations_report_frame.columnconfigure(0, weight=1)
+        operations_report_frame.rowconfigure(0, weight=1)
+        operations_report_frame.grid(padx=self._frame_pad_x, pady=self._frame_pad_y,sticky=tk.NSEW)
+
+        last_row = operations_report_frame.grid_info().get("row")
+        self.rowconfigure(last_row, weight=1)
+
+        self._report_text_widget = tk.Text(operations_report_frame, wrap=tk.WORD, borderwidth=2, relief=tk.SUNKEN)
+        self._report_scrollbar_widget = tk.Scrollbar(operations_report_frame, orient=tk.VERTICAL, command=self._report_text_widget.yview)
         # Configure the Text widget and the Scrollbar widget.
         self._report_text_widget.configure(yscrollcommand=self._report_scrollbar_widget.set)
-        self._report_text_widget.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        self._report_scrollbar_widget.pack(side=tk.RIGHT, fill=tk.Y)
+        self._report_text_widget.grid(sticky=tk.NSEW)
+        self._report_scrollbar_widget.grid(row=0, column=1,sticky=tk.NSEW)
 
 
     def _get_time_now_str(self) -> str:

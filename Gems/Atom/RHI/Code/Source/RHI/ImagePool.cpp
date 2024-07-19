@@ -29,6 +29,7 @@ namespace AZ::RHI
                         auto* device = RHISystemInterface::Get()->GetDevice(deviceIndex);
 
                         m_deviceObjects[deviceIndex] = Factory::Get().CreateImagePool();
+
                         GetDeviceImagePool(deviceIndex)->Init(*device, descriptor);
 
                         return true;

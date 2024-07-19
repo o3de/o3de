@@ -76,8 +76,14 @@ namespace UnitTest
                 [this](int deviceIndex)
                 {
                     this->m_psoEmpty->m_deviceObjects[deviceIndex] = RHI::Factory::Get().CreatePipelineState();
+
                     return true;
                 });
+
+            if (const auto& name = this->m_psoEmpty->GetName(); !name.IsEmpty())
+            {
+                this->m_psoEmpty->SetName(name);
+            }
 
             for (auto& srg : m_srgs)
             {
@@ -87,8 +93,14 @@ namespace UnitTest
                     [&srg](int deviceIndex)
                     {
                         srg->m_deviceObjects[deviceIndex] = RHI::Factory::Get().CreateShaderResourceGroup();
+
                         return true;
                     });
+
+                if (const auto& name = srg->GetName(); !name.IsEmpty())
+                {
+                    srg->SetName(name);
+                }
             }
 
             unsigned int* data = reinterpret_cast<unsigned int*>(m_rootConstants.data());

@@ -37,6 +37,7 @@ namespace AZ
 
             bool m_shouldPreviewAttachment = false;
             bool m_showAttachments = false;
+            bool m_expandAllPasses = true;
 
             AZ::RPI::Pass* m_selectedPass = nullptr;
             AZ::RPI::Pass* m_lastSelectedPass = nullptr;
