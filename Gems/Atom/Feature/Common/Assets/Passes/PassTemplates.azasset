@@ -513,6 +513,10 @@
                 "Path": "Passes/DebugOverlayParent.pass"
             },
             {
+                "Name": "DebugRayTracingPassTemplate",
+                "Path": "Passes/DebugRayTracingPass.pass"
+            },
+            {
                 "Name": "UIParentTemplate",
                 "Path": "Passes/UIParent.pass"
             },

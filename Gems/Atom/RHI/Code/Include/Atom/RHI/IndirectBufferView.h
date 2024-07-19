@@ -35,8 +35,8 @@ namespace AZ::RHI
         //! The mutex stops the default generation
         IndirectBufferView(const IndirectBufferView& other)
             : m_hash{ other.m_hash }
-            , m_Buffer{ other.m_Buffer }
-            , m_Signature{ other.m_Signature }
+            , m_buffer{ other.m_buffer }
+            , m_signature{ other.m_signature }
             , m_byteOffset{ other.m_byteOffset }
             , m_byteCount{ other.m_byteCount }
             , m_byteStride{ other.m_byteStride }
@@ -46,8 +46,8 @@ namespace AZ::RHI
         IndirectBufferView& operator=(const IndirectBufferView& other)
         {
             this->m_hash = other.m_hash;
-            this->m_Buffer = other.m_Buffer;
-            this->m_Signature = other.m_Signature;
+            this->m_buffer = other.m_buffer;
+            this->m_signature = other.m_signature;
             this->m_byteOffset = other.m_byteOffset;
             this->m_byteCount = other.m_byteCount;
             this->m_byteStride = other.m_byteStride;
@@ -60,8 +60,8 @@ namespace AZ::RHI
         //! Returns the device-specific DeviceIndirectBufferView for the given index
         const DeviceIndirectBufferView& GetDeviceIndirectBufferView(int deviceIndex) const
         {
-            AZ_Error("IndirectBufferView", m_Signature, "No IndirectBufferSignature available\n");
-            AZ_Error("IndirectBufferView", m_Buffer, "No Buffer available\n");
+            AZ_Error("IndirectBufferView", m_signature, "No IndirectBufferSignature available\n");
+            AZ_Error("IndirectBufferView", m_buffer, "No Buffer available\n");
 
             AZStd::lock_guard lock(m_bufferViewMutex);
             auto iterator{ m_cache.find(deviceIndex) };
@@ -71,8 +71,8 @@ namespace AZ::RHI
                 auto [new_iterator, inserted]{ m_cache.insert(AZStd::make_pair(
                     deviceIndex,
                     DeviceIndirectBufferView(
-                        *m_Buffer->GetDeviceBuffer(deviceIndex),
-                        *m_Signature->GetDeviceIndirectBufferSignature(deviceIndex),
+                        *m_buffer->GetDeviceBuffer(deviceIndex),
+                        *m_signature->GetDeviceIndirectBufferSignature(deviceIndex),
                         m_byteOffset,
                         m_byteCount,
                         m_byteStride))) };
@@ -106,8 +106,8 @@ namespace AZ::RHI
 
     private:
         HashValue64 m_hash = HashValue64{ 0 };
-        const IndirectBufferSignature* m_Signature = nullptr;
-        const Buffer* m_Buffer = nullptr;
+        const IndirectBufferSignature* m_signature = nullptr;
+        const Buffer* m_buffer = nullptr;
         uint32_t m_byteOffset = 0;
         uint32_t m_byteCount = 0;
         uint32_t m_byteStride = 0;

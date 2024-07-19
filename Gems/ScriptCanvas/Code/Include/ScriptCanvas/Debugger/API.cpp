@@ -12,8 +12,8 @@ namespace ScriptCanvas
 {
     namespace Debugger
     {
-        const AZ::u64 k_serviceNotificationsMsgSlotId = AZ_CRC("ScriptCanvasDebugServiceNotifications", 0xfd4305e9);
-        const AZ::u64 k_clientRequestsMsgSlotId = AZ_CRC("ScriptCanvasDebugClientRequests", 0x435d9a15);
+        const AZ::u64 k_serviceNotificationsMsgSlotId = AZ_CRC_CE("ScriptCanvasDebugServiceNotifications");
+        const AZ::u64 k_clientRequestsMsgSlotId = AZ_CRC_CE("ScriptCanvasDebugClientRequests");
 
         AZ::Outcome<void, AZStd::string> IsTargetConnectable(const AzFramework::RemoteToolsEndpointInfo& target)
         {

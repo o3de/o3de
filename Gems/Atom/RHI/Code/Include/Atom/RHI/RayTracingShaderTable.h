@@ -26,7 +26,7 @@ namespace AZ::RHI
         AZ::Name m_shaderExportName;
 
         //! shader resource group for this shader record
-        const RHI::ShaderResourceGroup* m_ShaderResourceGroup;
+        const RHI::ShaderResourceGroup* m_shaderResourceGroup;
 
         static const uint32_t InvalidKey = static_cast<uint32_t>(-1);
 
@@ -41,7 +41,7 @@ namespace AZ::RHI
     //! using the following pattern:
     //!
     //! RHI::RayTracingShaderTableDescriptor descriptor;
-    //! descriptor.Build(AZ::Name("RayTracingExampleShaderTable"), m_RayTracingPipelineState)
+    //! descriptor.Build(AZ::Name("RayTracingExampleShaderTable"), m_rayTracingPipelineState)
     //!     ->RayGenerationRecord(AZ::Name("RayGenerationShader"))
     //!     ->MissRecord(AZ::Name("MissShader"))
     //!         ->ShaderResourceGroup(missSrg)
@@ -63,34 +63,34 @@ namespace AZ::RHI
         //! Accessors
         const RHI::Ptr<RayTracingPipelineState>& GetPipelineState() const
         {
-            return m_RayTracingPipelineState;
+            return m_rayTracingPipelineState;
         }
 
         const RayTracingShaderTableRecordList& GetRayGenerationRecord() const
         {
-            return m_RayGenerationRecord;
+            return m_rayGenerationRecord;
         }
         RayTracingShaderTableRecordList& GetRayGenerationRecord()
         {
-            return m_RayGenerationRecord;
+            return m_rayGenerationRecord;
         }
 
         const RayTracingShaderTableRecordList& GetMissRecords() const
         {
-            return m_MissRecords;
+            return m_missRecords;
         }
         RayTracingShaderTableRecordList& GetMissRecords()
         {
-            return m_MissRecords;
+            return m_missRecords;
         }
 
         const RayTracingShaderTableRecordList& GetHitGroupRecords() const
         {
-            return m_HitGroupRecords;
+            return m_hitGroupRecords;
         }
         RayTracingShaderTableRecordList& GetHitGroupRecords()
         {
-            return m_HitGroupRecords;
+            return m_hitGroupRecords;
         }
 
         void RemoveHitGroupRecords(uint32_t key);
@@ -106,13 +106,13 @@ namespace AZ::RHI
 
     private:
         AZ::Name m_name;
-        RHI::Ptr<RayTracingPipelineState> m_RayTracingPipelineState;
+        RHI::Ptr<RayTracingPipelineState> m_rayTracingPipelineState;
         //! limited to one record, but stored as a list to simplify processing
-        RayTracingShaderTableRecordList m_RayGenerationRecord;
-        RayTracingShaderTableRecordList m_MissRecords;
-        RayTracingShaderTableRecordList m_HitGroupRecords;
+        RayTracingShaderTableRecordList m_rayGenerationRecord;
+        RayTracingShaderTableRecordList m_missRecords;
+        RayTracingShaderTableRecordList m_hitGroupRecords;
 
-        RayTracingShaderTableRecord* m_BuildContext = nullptr;
+        RayTracingShaderTableRecord* m_buildContext = nullptr;
     };
 
     //! Shader Table

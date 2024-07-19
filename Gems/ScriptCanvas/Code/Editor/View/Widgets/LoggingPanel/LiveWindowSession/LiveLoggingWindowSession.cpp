@@ -144,7 +144,7 @@ namespace ScriptCanvasEditor
 
     AZStd::intrusive_ptr<LiveLoggingUserSettings> LiveLoggingUserSettings::FindSettingsInstance()
     {
-        return AZ::UserSettings::CreateFind<LiveLoggingUserSettings>(AZ_CRC("ScriptCanvas::LiveLoggingUserSettings", 0xc79efe7b), AZ::UserSettings::CT_LOCAL);
+        return AZ::UserSettings::CreateFind<LiveLoggingUserSettings>(AZ_CRC_CE("ScriptCanvas::LiveLoggingUserSettings"), AZ::UserSettings::CT_LOCAL);
     }
 
     void LiveLoggingUserSettings::Reflect(AZ::ReflectContext* reflectContext)

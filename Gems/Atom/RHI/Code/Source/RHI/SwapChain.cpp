@@ -94,25 +94,25 @@ namespace AZ::RHI
     void SwapChain::ShutdownImages()
     {
         // Shutdown existing set of images.
-        uint32_t imageSize = aznumeric_cast<uint32_t>(m_Images.size());
+        uint32_t imageSize = aznumeric_cast<uint32_t>(m_images.size());
         for (uint32_t imageIdx = 0; imageIdx < imageSize; ++imageIdx)
         {
-            m_Images[imageIdx]->Shutdown();
+            m_images[imageIdx]->Shutdown();
         }
 
-        m_Images.clear();
+        m_images.clear();
     }
 
     ResultCode SwapChain::InitImages()
     {
         ResultCode resultCode = ResultCode::Success;
 
-        m_Images.reserve(m_descriptor.m_dimensions.m_imageCount);
+        m_images.reserve(m_descriptor.m_dimensions.m_imageCount);
 
         // If the new display mode has more buffers, add them.
         for (uint32_t i = 0; i < m_descriptor.m_dimensions.m_imageCount; ++i)
         {
-            m_Images.emplace_back(aznew Image());
+            m_images.emplace_back(aznew Image());
         }
 
         InitImageRequest request;
@@ -126,11 +126,11 @@ namespace AZ::RHI
 
         for (uint32_t imageIdx = 0; imageIdx < m_descriptor.m_dimensions.m_imageCount; ++imageIdx)
         {
-            request.m_Image = m_Images[imageIdx].get();
+            request.m_image = m_images[imageIdx].get();
             request.m_imageIndex = imageIdx;
 
             resultCode = ImagePoolBase::InitImage(
-                request.m_Image,
+                request.m_image,
                 imageDescriptor,
                 [this, imageIdx]()
                 {
@@ -138,7 +138,7 @@ namespace AZ::RHI
 
                     IterateObjects<DeviceSwapChain>([this, imageIdx](auto deviceIndex, auto deviceSwapChain)
                     {
-                        m_Images[imageIdx]->m_deviceObjects[deviceIndex] = deviceSwapChain->GetImage(imageIdx);
+                        m_images[imageIdx]->m_deviceObjects[deviceIndex] = deviceSwapChain->GetImage(imageIdx);
                     });
 
                     return result;
@@ -254,24 +254,28 @@ namespace AZ::RHI
 
     uint32_t SwapChain::GetImageCount() const
     {
-        return aznumeric_cast<uint32_t>(m_Images.size());
+        return aznumeric_cast<uint32_t>(m_images.size());
     }
 
     Image* SwapChain::GetCurrentImage() const
     {
         if (m_descriptor.m_isXrSwapChain)
         {
-            return m_Images[m_xrSystem->GetCurrentImageIndex(m_descriptor.m_xrSwapChainIndex)].get();
+#if defined (AZ_FORCE_CPU_GPU_INSYNC)
+            return m_images[0].get();
+#else
+            return m_images[m_xrSystem->GetCurrentImageIndex(m_descriptor.m_xrSwapChainIndex)].get();
+#endif
         }
         AZ_Error("Swapchain", !m_deviceObjects.empty(), "No device swapchain image available.");
         // Note: Taking the current swapchain image index from the first device swap chain if there are multiple
         auto currentImageIndex{ AZStd::static_pointer_cast<DeviceSwapChain>(m_deviceObjects.begin()->second)->GetCurrentImageIndex() };
-        return m_Images[currentImageIndex].get();
+        return m_images[currentImageIndex].get();
     }
 
     Image* SwapChain::GetImage(uint32_t index) const
     {
-        return m_Images[index].get();
+        return m_images[index].get();
     }
 
     void SwapChain::Present()

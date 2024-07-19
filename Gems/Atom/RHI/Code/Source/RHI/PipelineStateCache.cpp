@@ -376,6 +376,8 @@ namespace AZ::RHI
             // but don't initialize it yet. We can safely allocate the 'empty' instance and cache it.
             pipelineState = aznew PipelineState;
 
+            pipelineState->PreInitialize(m_deviceMask);
+
             [[maybe_unused]] bool success =
                 InsertPipelineState(pendingCache, PipelineStateEntry(pipelineStateHash, pipelineState, descriptor));
             AZ_Assert(success, "PipelineStateEntry already exists in the pending cache.");

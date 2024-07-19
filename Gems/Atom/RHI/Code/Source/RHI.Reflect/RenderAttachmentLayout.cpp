@@ -16,10 +16,13 @@ namespace AZ::RHI
         if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
         {
             serializeContext->Class<RenderAttachmentDescriptor>()
-                ->Version(0)
+                ->Version(1) // Added ScopeAttachmentAccess and ScopeAttachmentStage.
                 ->Field("AttachmentIndex", &RenderAttachmentDescriptor::m_attachmentIndex)
                 ->Field("ResolveAttachmentIndex", &RenderAttachmentDescriptor::m_resolveAttachmentIndex)
-                ->Field("AttachmentLoadStore", &RenderAttachmentDescriptor::m_loadStoreAction);
+                ->Field("AttachmentLoadStore", &RenderAttachmentDescriptor::m_loadStoreAction)
+                ->Field("ScopeAttachmentAccess", &RenderAttachmentDescriptor::m_scopeAttachmentAccess)
+                ->Field("ScopeAttachmentStage", &RenderAttachmentDescriptor::m_scopeAttachmentStage)
+                ;
         }
     }
 
@@ -32,7 +35,10 @@ namespace AZ::RHI
     {
         return (m_attachmentIndex == other.m_attachmentIndex)
             && (m_resolveAttachmentIndex == other.m_resolveAttachmentIndex)
-            && (m_loadStoreAction == other.m_loadStoreAction);
+            && (m_loadStoreAction == other.m_loadStoreAction)
+            && (m_scopeAttachmentAccess == other.m_scopeAttachmentAccess)
+            && (m_scopeAttachmentStage == other.m_scopeAttachmentStage)
+            ;
     }
 
     bool RenderAttachmentDescriptor::operator!=(const RenderAttachmentDescriptor& other) const
@@ -211,15 +217,22 @@ namespace AZ::RHI
         if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
         {
             serializeContext->Class<SubpassInputDescriptor>()
-                ->Version(0)
+                ->Version(1) // Added ScopeAttachmentAccess and ScopeAttachmentStage.
                 ->Field("RenderAttachmentIndex", &SubpassInputDescriptor::m_attachmentIndex)
-                ->Field("AspectFlags", &SubpassInputDescriptor::m_aspectFlags);
+                ->Field("AspectFlags", &SubpassInputDescriptor::m_aspectFlags)
+                ->Field("ScopeAttachmentAccess", &SubpassInputDescriptor::m_scopeAttachmentAccess)
+                ->Field("ScopeAttachmentStage", &SubpassInputDescriptor::m_scopeAttachmentStage)
+                ;
         }
     }
 
     bool SubpassInputDescriptor::operator==(const SubpassInputDescriptor& other) const
     {
-        return (m_attachmentIndex == other.m_attachmentIndex) && (m_aspectFlags == other.m_aspectFlags);
+        return (m_attachmentIndex == other.m_attachmentIndex)
+            && (m_aspectFlags == other.m_aspectFlags)
+            && (m_scopeAttachmentAccess == other.m_scopeAttachmentAccess)
+            && (m_scopeAttachmentStage == other.m_scopeAttachmentStage)
+            ;
     }
 
     bool SubpassInputDescriptor::operator!=(const SubpassInputDescriptor& other) const

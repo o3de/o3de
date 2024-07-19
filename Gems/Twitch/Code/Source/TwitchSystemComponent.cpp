@@ -670,12 +670,12 @@ namespace Twitch
 
     void TwitchSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("TwitchService"));
+        provided.push_back(AZ_CRC_CE("TwitchService"));
     }
 
     void TwitchSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("TwitchService"));
+        incompatible.push_back(AZ_CRC_CE("TwitchService"));
     }
 
     void TwitchSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

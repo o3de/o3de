@@ -311,7 +311,7 @@ namespace AZ
                 if (m_attachmentType == RHI::AttachmentType::Image)
                 {
                     // copy image to read back buffer since only buffer can be accessed by host
-                    const auto image = readbackItem.m_copyItem.m_Image.m_sourceImage;
+                    const auto image = readbackItem.m_copyItem.m_image.m_sourceImage;
                     if (!image)
                     {
                         AZ_Warning(
@@ -553,7 +553,7 @@ namespace AZ
                         uint8_t* const destBegin = readbackItem.m_dataBuffer->data();
                         // The source image WAS the destination when the copy item transferred data from GPU to CPU
                         // this explains why the name srcBytesPerRow for these memcpy operations.
-                        const auto srcBytesPerRow = readbackItem.m_copyItem.m_ImageToBuffer.m_destinationBytesPerRow;
+                        const auto srcBytesPerRow = readbackItem.m_copyItem.m_imageToBuffer.m_destinationBytesPerRow;
                         for (uint32_t row = 0; row < rowCount; ++row)
                         {
                             void* dest = destBegin + row * imageLayout.m_bytesPerRow;

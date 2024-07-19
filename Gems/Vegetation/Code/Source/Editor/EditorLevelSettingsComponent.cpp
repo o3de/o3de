@@ -37,7 +37,7 @@ namespace Vegetation
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, s_viewportIcon)
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, s_helpUrl)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Level", 0x9aeacc13))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Level"))
                     ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorLevelSettingsComponent::m_useEditorMaxInstanceProcessTimeMicroseconds, "Override Instance Time Slicing", "Use a max instance process time (in microseconds) for the Editor")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorLevelSettingsComponent::ConfigurationChanged)
                     ->DataElement(0, &EditorLevelSettingsComponent::m_editorMaxInstanceProcessTimeMicroseconds, "Editor Instance Time Slicing", "The timeout maximum number of microseconds to process the vegetation instance construction & removal operations while in the Editor.")

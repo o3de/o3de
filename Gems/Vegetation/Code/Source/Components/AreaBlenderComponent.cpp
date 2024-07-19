@@ -45,7 +45,7 @@ namespace Vegetation
                     ->DataElement(0, &AreaBlenderConfig::m_vegetationAreaIds, "Vegetation Areas", "Ordered list of vegetation areas.")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
-                    ->ElementAttribute(AZ::Edit::Attributes::RequiredService, AZ_CRC("VegetationAreaService", 0x6a859504));
+                    ->ElementAttribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("VegetationAreaService"));
                 ;
             }
         }

@@ -43,7 +43,7 @@ namespace AzToolsFramework
 
         void ThumbnailerNullComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("ThumbnailerService", 0x65422b97));
+            services.push_back(AZ_CRC_CE("ThumbnailerService"));
         }
 
         void ThumbnailerNullComponent::RegisterThumbnailProvider(AzToolsFramework::Thumbnailer::SharedThumbnailProvider /*provider*/)

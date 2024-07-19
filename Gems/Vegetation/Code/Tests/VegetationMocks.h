@@ -611,8 +611,8 @@ namespace UnitTest
         static void Reflect(AZ::ReflectContext* reflect) { AZ_UNUSED(reflect); }
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
-            provided.push_back(AZ_CRC("VegetationDescriptorProviderService", 0x62e51209));
+            provided.push_back(AZ_CRC_CE("ShapeService"));
+            provided.push_back(AZ_CRC_CE("VegetationDescriptorProviderService"));
         }
     };
 
@@ -628,7 +628,7 @@ namespace UnitTest
         static void Reflect(AZ::ReflectContext* reflect) { AZ_UNUSED(reflect); }
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("VegetationAreaService", 0x6a859504));
+            provided.push_back(AZ_CRC_CE("VegetationAreaService"));
         }
     };
 
@@ -644,7 +644,7 @@ namespace UnitTest
         static void Reflect(AZ::ReflectContext* reflect) { AZ_UNUSED(reflect); }
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("MeshService", 0x71d8a455));
+            provided.push_back(AZ_CRC_CE("MeshService"));
         }
     };
 }

@@ -50,7 +50,7 @@ namespace AZ::RHI
         void Shutdown() override final;
 
     private:
-        ShaderResourceGroupData m_Data;
+        ShaderResourceGroupData m_data;
 
         //! The binding slot cached from the layout.
         uint32_t m_bindingSlot = aznumeric_cast<uint32_t>(-1);

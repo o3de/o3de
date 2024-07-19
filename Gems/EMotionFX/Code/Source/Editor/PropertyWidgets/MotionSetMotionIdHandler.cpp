@@ -436,7 +436,7 @@ namespace EMotionFX
 
     AZ::u32 MotionIdRandomSelectionWeightsHandler::GetHandlerName() const
     {
-        return AZ_CRC("MotionSetMotionIdsRandomSelectionWeights", 0xc882da3c);
+        return AZ_CRC_CE("MotionSetMotionIdsRandomSelectionWeights");
     }
 
 
@@ -497,7 +497,7 @@ namespace EMotionFX
 
     AZ::u32 MotionSetMultiMotionIdHandler::GetHandlerName() const
     {
-        return AZ_CRC("MotionSetMotionIds", 0x8695c0fa);
+        return AZ_CRC_CE("MotionSetMotionIds");
     }
 
 

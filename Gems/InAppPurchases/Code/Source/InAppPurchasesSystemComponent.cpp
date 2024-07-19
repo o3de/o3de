@@ -102,12 +102,12 @@ namespace InAppPurchases
 
     void SystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("InAppPurchasesService"));
+        provided.push_back(AZ_CRC_CE("InAppPurchasesService"));
     }
 
     void SystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("InAppPurchasesService"));
+        incompatible.push_back(AZ_CRC_CE("InAppPurchasesService"));
     }
 
     void SystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

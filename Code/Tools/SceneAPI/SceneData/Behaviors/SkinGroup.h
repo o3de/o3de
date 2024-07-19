@@ -28,8 +28,8 @@ namespace AZ
             public:
                 AZ_COMPONENT(SkinGroup, "{348566F7-7113-4CEB-ADF8-C1CC686CD3BD}", SceneCore::BehaviorComponent);
 
-                static Crc32 s_skinVirtualType;
-                static const char* s_skinVirtualTypeName;
+                constexpr static const char* s_skinVirtualTypeName = "Skin";
+                constexpr static Crc32 s_skinVirtualType = AZ_CRC_CE(s_skinVirtualTypeName);
 
                 ~SkinGroup() override = default;
 

@@ -124,13 +124,13 @@ namespace AzFramework
         ////////////////////////////////////////////////////////////////////////////////////////
         void StreamingInstallSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("StreamingInstallService", 0xb3cf7bef));
+            provided.push_back(AZ_CRC_CE("StreamingInstallService"));
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////
         void StreamingInstallSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("StreamingInstallService", 0xb3cf7bef));
+            incompatible.push_back(AZ_CRC_CE("StreamingInstallService"));
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////

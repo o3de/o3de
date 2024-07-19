@@ -37,7 +37,7 @@ namespace ScriptCanvas
         // SlotName
         if (classElement.GetVersion() <= 6)
         {
-            auto slotNameElements = AZ::Utils::FindDescendantElements(context, classElement, AZStd::vector<AZ::Crc32>{AZ_CRC("id", 0xbf396750), AZ_CRC("m_name", 0xc08c4427)});
+            auto slotNameElements = AZ::Utils::FindDescendantElements(context, classElement, AZStd::vector<AZ::Crc32>{AZ_CRC_CE("id"), AZ_CRC_CE("m_name")});
             AZStd::string slotName;
             if (slotNameElements.empty() || !slotNameElements.front()->GetData(slotName))
             {
@@ -50,7 +50,7 @@ namespace ScriptCanvas
         // Index fields
         if (classElement.GetVersion() <= 8)
         {
-            classElement.RemoveElementByName(AZ_CRC("index", 0x80736701));
+            classElement.RemoveElementByName(AZ_CRC_CE("index"));
         }
 
         // Dynamic Type Fields
@@ -60,7 +60,7 @@ namespace ScriptCanvas
         }
         else if (classElement.GetVersion() < 11)
         {
-            AZ::SerializeContext::DataElementNode* subElement = classElement.FindSubElement(AZ_CRC("dataTypeOverride", 0x7f1765d9));
+            AZ::SerializeContext::DataElementNode* subElement = classElement.FindSubElement(AZ_CRC_CE("dataTypeOverride"));
 
             int enumValue = 0;
             if (subElement->GetData(enumValue))
@@ -75,7 +75,7 @@ namespace ScriptCanvas
                 }
             }
 
-            classElement.RemoveElementByName(AZ_CRC("dataTypeOverride", 0x7f1765d9));
+            classElement.RemoveElementByName(AZ_CRC_CE("dataTypeOverride"));
         }
         
         // DisplayDataType
@@ -87,7 +87,7 @@ namespace ScriptCanvas
         // Descriptor
         if (classElement.GetVersion() <= 13)
         {
-            AZ::SerializeContext::DataElementNode* subElement = classElement.FindSubElement(AZ_CRC("type", 0x8cde5729));
+            AZ::SerializeContext::DataElementNode* subElement = classElement.FindSubElement(AZ_CRC_CE("type"));
 
             int enumValue = 0;
             if (subElement && subElement->GetData(enumValue))
@@ -102,13 +102,13 @@ namespace ScriptCanvas
                 classElement.AddElementWithData(context, "IsLatent", isLatent);
             }
 
-            classElement.RemoveElementByName(AZ_CRC("type", 0x8cde5729));
+            classElement.RemoveElementByName(AZ_CRC_CE("type"));
         }
 
         // DataType
         if (classElement.GetVersion() <= 15)
         {
-            AZ::SerializeContext::DataElementNode* subElement = classElement.FindSubElement(AZ_CRC("Descriptor", 0x03927602));
+            AZ::SerializeContext::DataElementNode* subElement = classElement.FindSubElement(AZ_CRC_CE("Descriptor"));
 
             Slot::DataType dataType = Slot::DataType::NoData;
 
@@ -126,7 +126,7 @@ namespace ScriptCanvas
         // This data field wasn't actually being initalized correctly So need to re-version convert.
         else if (classElement.GetVersion() <= 17)
         {            
-            AZ::SerializeContext::DataElementNode* subElement = classElement.FindSubElement(AZ_CRC("Descriptor", 0x03927602));
+            AZ::SerializeContext::DataElementNode* subElement = classElement.FindSubElement(AZ_CRC_CE("Descriptor"));
 
             Slot::DataType dataType = Slot::DataType::NoData;
 
@@ -139,25 +139,25 @@ namespace ScriptCanvas
                 }
             }
 
-            classElement.RemoveElementByName(AZ_CRC("DataType", 0x8539af66));
+            classElement.RemoveElementByName(AZ_CRC_CE("DataType"));
             classElement.AddElementWithData(context, "DataType", dataType);
         }
 
         if (classElement.GetVersion() <= 17)
         {
-            classElement.RemoveElementByName(AZ_CRC("nodeId", 0x9ce63325));
+            classElement.RemoveElementByName(AZ_CRC_CE("nodeId"));
         }
 
         if (classElement.GetVersion() <= SlotVersion::CorrectDynamicDataTypeForExecution)
         {
-            AZ::SerializeContext::DataElementNode* subElement = classElement.FindSubElement(AZ_CRC("Descriptor", 0x03927602));
+            AZ::SerializeContext::DataElementNode* subElement = classElement.FindSubElement(AZ_CRC_CE("Descriptor"));
 
             SlotDescriptor slotDescriptor;
             if (subElement && subElement->GetData(slotDescriptor))
             {
                 if (slotDescriptor.IsExecution())
                 {
-                    classElement.RemoveElementByName(AZ_CRC("DynamicTypeOverride", 0x4652de8e));
+                    classElement.RemoveElementByName(AZ_CRC_CE("DynamicTypeOverride"));
                     classElement.AddElementWithData(context, "DynamicTypeOverride", DynamicDataType::None);
                 }
             }

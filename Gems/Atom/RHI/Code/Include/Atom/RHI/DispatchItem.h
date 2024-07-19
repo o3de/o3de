@@ -41,7 +41,7 @@ namespace AZ::RHI
 
         DispatchArguments(const DispatchIndirect& indirect)
             : m_type{ DispatchType::Indirect }
-            , m_Indirect{ indirect }
+            , m_indirect{ indirect }
         {
         }
 
@@ -53,7 +53,7 @@ namespace AZ::RHI
             case DispatchType::Direct:
                 return DeviceDispatchArguments(m_direct);
             case DispatchType::Indirect:
-                return DeviceDispatchArguments(DeviceDispatchIndirect{m_Indirect.m_maxSequenceCount, m_Indirect.m_indirectBufferView->GetDeviceIndirectBufferView(deviceIndex), m_Indirect.m_indirectBufferByteOffset, m_Indirect.m_countBuffer ? m_Indirect.m_countBuffer->GetDeviceBuffer(deviceIndex).get() : nullptr, m_Indirect.m_countBufferByteOffset});
+                return DeviceDispatchArguments(DeviceDispatchIndirect{m_indirect.m_maxSequenceCount, m_indirect.m_indirectBufferView->GetDeviceIndirectBufferView(deviceIndex), m_indirect.m_indirectBufferByteOffset, m_indirect.m_countBuffer ? m_indirect.m_countBuffer->GetDeviceBuffer(deviceIndex).get() : nullptr, m_indirect.m_countBufferByteOffset});
             default:
                 return DeviceDispatchArguments();
             }
@@ -64,7 +64,7 @@ namespace AZ::RHI
             //! Arguments for a direct dispatch.
             DispatchDirect m_direct;
             //! Arguments for an indirect dispatch.
-            DispatchIndirect m_Indirect;
+            DispatchIndirect m_indirect;
         };
     };
 

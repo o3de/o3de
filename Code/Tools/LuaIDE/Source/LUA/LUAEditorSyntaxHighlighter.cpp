@@ -551,7 +551,7 @@ namespace LUAEditor
     void LUASyntaxHighlighter::BuildRegExes()
     {
         auto colors =
-            AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC("LUA Editor Text Settings", 0xb6e15565), AZ::UserSettings::CT_GLOBAL);
+            AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC_CE("LUA Editor Text Settings"), AZ::UserSettings::CT_GLOBAL);
 
         // Match against ; : , . = * - + /
         {
@@ -625,7 +625,7 @@ namespace LUAEditor
         m_machine->SetOnIncFoldLevel([](int) {});
         m_machine->SetOnDecFoldLevel([](int) {});
 
-        auto colors = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC("LUA Editor Text Settings", 0xb6e15565), AZ::UserSettings::CT_GLOBAL);
+        auto colors = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC_CE("LUA Editor Text Settings"), AZ::UserSettings::CT_GLOBAL);
 
         const HighlightedWords::LUAKeywordsType* keywords = nullptr;
         HighlightedWords::Bus::BroadcastResult(keywords, &HighlightedWords::Bus::Events::GetLUAKeywords);
@@ -819,7 +819,7 @@ namespace LUAEditor
         const HighlightedWords::LUAKeywordsType* libraryFuncs = nullptr;
         HighlightedWords::Bus::BroadcastResult(libraryFuncs, &HighlightedWords::Bus::Events::GetLUALibraryFunctions);
 
-        auto syntaxSettings = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC("LUA Editor Text Settings", 0xb6e15565), AZ::UserSettings::CT_GLOBAL);
+        auto syntaxSettings = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC_CE("LUA Editor Text Settings"), AZ::UserSettings::CT_GLOBAL);
         auto font = syntaxSettings->GetFont();
 
         QList<QTextEdit::ExtraSelection> list;

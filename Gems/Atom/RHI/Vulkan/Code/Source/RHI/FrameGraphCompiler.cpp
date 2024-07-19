@@ -381,7 +381,7 @@ namespace AZ
                 // or the destination and source queue are the same. In all the other cases a semaphore will
                 // provide the memory and execution dependency needed.
                 VkImageLayout finalLayout = newLayout;
-                VkPipelineStageFlags finalStageFlags = dstAccessFlags;
+                VkPipelineStageFlags finalStageFlags = dstPipelineStageFlags;
                 VkAccessFlags finalAccessFlags = dstAccessFlags;
                 RHI::ImageSubresourceRange finalRange = subresourceRange;
                 if (imageBarrier.oldLayout != imageBarrier.newLayout ||

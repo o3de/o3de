@@ -20,36 +20,36 @@ namespace AZ::RHI
     {
         AZStd::shared_ptr<DeviceRayTracingShaderTableDescriptor> descriptor = AZStd::make_shared<DeviceRayTracingShaderTableDescriptor>();
 
-        if (m_RayTracingPipelineState)
+        if (m_rayTracingPipelineState)
         {
-            descriptor->Build(m_name, m_RayTracingPipelineState->GetDeviceRayTracingPipelineState(deviceIndex));
+            descriptor->Build(m_name, m_rayTracingPipelineState->GetDeviceRayTracingPipelineState(deviceIndex));
         }
 
-        for (const auto& rayGenerationRecord : m_RayGenerationRecord)
+        for (const auto& rayGenerationRecord : m_rayGenerationRecord)
         {
             descriptor->RayGenerationRecord(rayGenerationRecord.m_shaderExportName);
-            if (rayGenerationRecord.m_ShaderResourceGroup)
+            if (rayGenerationRecord.m_shaderResourceGroup)
             {
                 descriptor->ShaderResourceGroup(
-                    rayGenerationRecord.m_ShaderResourceGroup->GetDeviceShaderResourceGroup(deviceIndex).get());
+                    rayGenerationRecord.m_shaderResourceGroup->GetDeviceShaderResourceGroup(deviceIndex).get());
             }
         }
 
-        for (const auto& missRecord : m_MissRecords)
+        for (const auto& missRecord : m_missRecords)
         {
             descriptor->MissRecord(missRecord.m_shaderExportName);
-            if (missRecord.m_ShaderResourceGroup)
+            if (missRecord.m_shaderResourceGroup)
             {
-                descriptor->ShaderResourceGroup(missRecord.m_ShaderResourceGroup->GetDeviceShaderResourceGroup(deviceIndex).get());
+                descriptor->ShaderResourceGroup(missRecord.m_shaderResourceGroup->GetDeviceShaderResourceGroup(deviceIndex).get());
             }
         }
 
-        for (const auto& hitGroupRecord : m_HitGroupRecords)
+        for (const auto& hitGroupRecord : m_hitGroupRecords)
         {
             descriptor->HitGroupRecord(hitGroupRecord.m_shaderExportName, hitGroupRecord.m_key);
-            if (hitGroupRecord.m_ShaderResourceGroup)
+            if (hitGroupRecord.m_shaderResourceGroup)
             {
-                descriptor->ShaderResourceGroup(hitGroupRecord.m_ShaderResourceGroup->GetDeviceShaderResourceGroup(deviceIndex).get());
+                descriptor->ShaderResourceGroup(hitGroupRecord.m_shaderResourceGroup->GetDeviceShaderResourceGroup(deviceIndex).get());
             }
         }
 
@@ -58,14 +58,14 @@ namespace AZ::RHI
 
     void RayTracingShaderTableDescriptor::RemoveHitGroupRecords(uint32_t key)
     {
-        for (RayTracingShaderTableRecordList::iterator itHitGroup = m_HitGroupRecords.begin();
-             itHitGroup != m_HitGroupRecords.end();
+        for (RayTracingShaderTableRecordList::iterator itHitGroup = m_hitGroupRecords.begin();
+             itHitGroup != m_hitGroupRecords.end();
              ++itHitGroup)
         {
             RayTracingShaderTableRecord& record = *itHitGroup;
             if (record.m_key == key)
             {
-                m_HitGroupRecords.erase(itHitGroup);
+                m_hitGroupRecords.erase(itHitGroup);
             }
         }
     }
@@ -74,39 +74,39 @@ namespace AZ::RHI
         const AZ::Name& name, RHI::Ptr<RayTracingPipelineState>& rayTracingPipelineState)
     {
         m_name = name;
-        m_RayTracingPipelineState = rayTracingPipelineState;
+        m_rayTracingPipelineState = rayTracingPipelineState;
         return this;
     }
 
     RayTracingShaderTableDescriptor* RayTracingShaderTableDescriptor::RayGenerationRecord(const AZ::Name& name)
     {
-        AZ_Assert(m_RayGenerationRecord.empty(), "Ray generation record already added");
-        m_RayGenerationRecord.emplace_back(RayTracingShaderTableRecord{ name });
-        m_BuildContext = &m_RayGenerationRecord.back();
+        AZ_Assert(m_rayGenerationRecord.empty(), "Ray generation record already added");
+        m_rayGenerationRecord.emplace_back(RayTracingShaderTableRecord{ name });
+        m_buildContext = &m_rayGenerationRecord.back();
         return this;
     }
 
     RayTracingShaderTableDescriptor* RayTracingShaderTableDescriptor::MissRecord(const AZ::Name& name)
     {
-        m_MissRecords.emplace_back(RayTracingShaderTableRecord{ name });
-        m_BuildContext = &m_MissRecords.back();
+        m_missRecords.emplace_back(RayTracingShaderTableRecord{ name });
+        m_buildContext = &m_missRecords.back();
         return this;
     }
 
     RayTracingShaderTableDescriptor* RayTracingShaderTableDescriptor::HitGroupRecord(
         const AZ::Name& name, uint32_t key /* = RayTracingShaderTableRecord::InvalidKey */)
     {
-        m_HitGroupRecords.emplace_back(RayTracingShaderTableRecord{ name, nullptr, key });
-        m_BuildContext = &m_HitGroupRecords.back();
+        m_hitGroupRecords.emplace_back(RayTracingShaderTableRecord{ name, nullptr, key });
+        m_buildContext = &m_hitGroupRecords.back();
         return this;
     }
 
     RayTracingShaderTableDescriptor* RayTracingShaderTableDescriptor::ShaderResourceGroup(
         const RHI::ShaderResourceGroup* shaderResourceGroup)
     {
-        AZ_Assert(m_BuildContext, "ShaderResourceGroup can only be added to a shader table record");
-        AZ_Assert(m_BuildContext->m_ShaderResourceGroup == nullptr, "Records can only have one ShaderResourceGroup");
-        m_BuildContext->m_ShaderResourceGroup = shaderResourceGroup;
+        AZ_Assert(m_buildContext, "ShaderResourceGroup can only be added to a shader table record");
+        AZ_Assert(m_buildContext->m_shaderResourceGroup == nullptr, "Records can only have one ShaderResourceGroup");
+        m_buildContext->m_shaderResourceGroup = shaderResourceGroup;
         return this;
     }
 

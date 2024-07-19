@@ -11,10 +11,12 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Aabb.h>
-#include <AzCore/Math/Sphere.h>
 #include <AzCore/Math/Matrix4x4.h>
+#include <AzCore/Math/Sphere.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Name/Name.h>
+#include <AzCore/Preprocessor/Enum.h>
+#include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 
@@ -25,6 +27,14 @@ namespace AZ
 
 namespace AzFramework
 {
+    AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(
+        OcclusionState,
+        uint32_t,
+        Unknown, //! The object state cannot be determined.
+        Hidden, //! The object is completely occluded or hidden.
+        Visible //! The object is completely or partially visible.
+    );
+
     //! @brief OcclusionRequests provides an interface for integrating with occlusion culling systems. Use the interface to create
     //! occlusion views that configure the camera state and context for making occlusion queries. Creating multiple occlusion views
     //! also allows queries to be made across multiple threads.
@@ -71,40 +81,46 @@ namespace AzFramework
         //! @brief Determine if an entity is visible within the specified occlusion view.
         //! @param viewName Unique name of the view to query for entity visibility
         //! @param entityId ID of the entity to test for visibility
-        //! @return true if the given entity is visible within the specified view, otherwise false. 
-        virtual bool GetOcclusionViewEntityVisibility(const AZ::Name& viewName, const AZ::EntityId& entityId) const = 0;
+        //! @return OcclusionState value classifying the entity as unknown, hidden, or visible.
+        virtual OcclusionState GetOcclusionViewEntityVisibility(const AZ::Name& viewName, const AZ::EntityId& entityId) const = 0;
 
         //! @brief Determine if an AABB is visible within the specified occlusion view.
         //! @param viewName Unique name of the view to query for AABB visibility
         //! @param bounds World AABB to test for visibility
-        //! @return true if the given AABB is visible within the specified view, otherwise false. 
-        virtual bool GetOcclusionViewAabbVisibility(const AZ::Name& viewName, const AZ::Aabb& bounds) const = 0;
+        //! @return OcclusionState value classifying the AABB as unknown, hidden, or visible.
+        virtual OcclusionState GetOcclusionViewAabbVisibility(const AZ::Name& viewName, const AZ::Aabb& bounds) const = 0;
 
-        //! @brief Test if target bounding volumes are visible from the perspective of a source bounding volume, within a volume extruded between them.
+        //! @brief Test if target bounding volumes are visible from the perspective of a source bounding volume, within a volume extruded
+        //! between them.
         //! @param viewName Unique name of the view to query
         //! @param sourceAabb Source bounding volume defining the frame of reference for visibility tests.
         //! @param targetAabbs Vector of target bounding volumes that will be tested for visibility.
-        //! @return A vector of flags containing the visibility state for corresponding target bounding volumes. The size of the returned container
-        //! should match the size of the input target container unless an error occurred, in which case an empty vector is returned.
-        virtual AZStd::vector<bool> GetOcclusionViewAabbToAabbVisibility(
+        //! @return A vector of OcclusionState values classifying the input target bounds as unknown, hidden, or visible. The size of the
+        //! returned container should match the size of the input target container unless an error occurred, in which case an empty vector
+        //! is returned.
+        virtual AZStd::vector<OcclusionState> GetOcclusionViewAabbToAabbVisibility(
             const AZ::Name& viewName, const AZ::Aabb& sourceAabb, const AZStd::vector<AZ::Aabb>& targetAabbs) const = 0;
 
-        //! @brief Test if target bounding volumes are visible from the perspective of a source bounding volume, within a volume extruded between them.
+        //! @brief Test if target bounding volumes are visible from the perspective of a source bounding volume, within a volume extruded
+        //! between them.
         //! @param viewName Unique name of the view to query
         //! @param sourceSphere Source bounding volume for the frame of reference for visibility tests.
         //! @param targetSpheres Vector of target bounding volumes that will be tested for visibility.
-        //! @return A vector of flags containing the visibility state for corresponding target bounding volumes. The size of the returned container
-        //! should match the size of the input target container unless an error occurred, in which case an empty vector is returned.
-        virtual AZStd::vector<bool> GetOcclusionViewSphereToSphereVisibility(
+        //! @return A vector of OcclusionState values classifying the input target bounds as unknown, hidden, or visible. The size of the
+        //! returned container should match the size of the input target container unless an error occurred, in which case an empty vector
+        //! is returned.
+        virtual AZStd::vector<OcclusionState> GetOcclusionViewSphereToSphereVisibility(
             const AZ::Name& viewName, const AZ::Sphere& sourceSphere, const AZStd::vector<AZ::Sphere>& targetSpheres) const = 0;
 
-        //! @brief Test if target entity AABBs are visible from the perspective of a source entity AABB, within a volume extruded between them.
+        //! @brief Test if target entity AABBs are visible from the perspective of a source entity AABB, within a volume extruded between
+        //! them.
         //! @param viewName Unique name of the view to query
         //! @param sourceEntityId Id for the source entity defining the frame of reference for visibility tests.
         //! @param targetEntityIds Vector of target entity Ids that will be tested for visibility.
-        //! @return A vector of flags containing the visibility state for corresponding target entities. The size of the returned container
-        //! should match the size of the input target container unless an error occurred, in which case an empty vector is returned.
-        virtual AZStd::vector<bool> GetOcclusionViewEntityToEntityVisibility(
+        //! @return A vector of OcclusionState values classifying the input target entities as unknown, hidden, or visible. The size of the
+        //! returned container should match the size of the input target container unless an error occurred, in which case an empty vector
+        //! is returned.
+        virtual AZStd::vector<OcclusionState> GetOcclusionViewEntityToEntityVisibility(
             const AZ::Name& viewName, const AZ::EntityId& sourceEntityId, const AZStd::vector<AZ::EntityId>& targetEntityIds) const = 0;
 
     protected:
@@ -112,6 +128,8 @@ namespace AzFramework
     };
 
     using OcclusionRequestBus = AZ::EBus<OcclusionRequests>;
+
+    AZ_TYPE_INFO_SPECIALIZE(OcclusionState, "{1F6EE4E1-FD5C-4D80-AC72-E2C6C5E4A53F}");
 } // namespace AzFramework
 
 DECLARE_EBUS_EXTERN(AzFramework::OcclusionRequests);

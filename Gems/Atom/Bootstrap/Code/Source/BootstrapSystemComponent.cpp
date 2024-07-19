@@ -165,29 +165,29 @@ namespace AZ
 
             void BootstrapSystemComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
             {
-                provided.push_back(AZ_CRC("BootstrapSystemComponent", 0xb8f32711));
+                provided.push_back(AZ_CRC_CE("BootstrapSystemComponent"));
             }
 
             void BootstrapSystemComponent::GetRequiredServices(ComponentDescriptor::DependencyArrayType& required)
             {
-                required.push_back(AZ_CRC("RPISystem", 0xf2add773));
-                required.push_back(AZ_CRC("SceneSystemComponentService", 0xd8975435));
+                required.push_back(AZ_CRC_CE("RPISystem"));
+                required.push_back(AZ_CRC_CE("SceneSystemComponentService"));
             }
 
             void BootstrapSystemComponent::GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent)
             {
-                dependent.push_back(AZ_CRC("ImGuiSystemComponent", 0x2f08b9a7));
-                dependent.push_back(AZ_CRC("PrimitiveSystemComponent", 0xc860fa59));
-                dependent.push_back(AZ_CRC("MeshSystemComponent", 0x21e5bbb6));
-                dependent.push_back(AZ_CRC("CoreLightsService", 0x91932ef6));
-                dependent.push_back(AZ_CRC("DynamicDrawService", 0x023c1673));
-                dependent.push_back(AZ_CRC("CommonService", 0x6398eec4));
+                dependent.push_back(AZ_CRC_CE("ImGuiSystemComponent"));
+                dependent.push_back(AZ_CRC_CE("PrimitiveSystemComponent"));
+                dependent.push_back(AZ_CRC_CE("MeshSystemComponent"));
+                dependent.push_back(AZ_CRC_CE("CoreLightsService"));
+                dependent.push_back(AZ_CRC_CE("DynamicDrawService"));
+                dependent.push_back(AZ_CRC_CE("CommonService"));
                 dependent.push_back(AZ_CRC_CE("HairService"));
             }
 
             void BootstrapSystemComponent::GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible)
             {
-                incompatible.push_back(AZ_CRC("BootstrapSystemComponent", 0xb8f32711));
+                incompatible.push_back(AZ_CRC_CE("BootstrapSystemComponent"));
             }
 
             BootstrapSystemComponent::BootstrapSystemComponent()

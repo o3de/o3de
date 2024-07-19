@@ -516,7 +516,7 @@ void UiDropdownComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiDropdown.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiDropdown.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             // Elements group
@@ -545,7 +545,7 @@ void UiDropdownComponent::Reflect(AZ::ReflectContext* context)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
                 editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiDropdownComponent::m_expandOnHover, "Expand on Hover", "Whether this dropdown should be expanded upon hover, and collapse upon exit.")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
 
                 editInfo->DataElement(0, &UiDropdownComponent::m_waitTime, "Wait Time", "How long the dropdown should wait before expanding on hover or collapsing on exit.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiDropdownComponent::GetExpandOnHover);

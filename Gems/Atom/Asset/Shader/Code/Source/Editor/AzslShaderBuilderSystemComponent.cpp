@@ -53,12 +53,12 @@ namespace AZ
 
         void AzslShaderBuilderSystemComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("AzslShaderBuilderService", 0x09315a40));
+            provided.push_back(AZ_CRC_CE("AzslShaderBuilderService"));
         }
 
         void AzslShaderBuilderSystemComponent::GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("AzslShaderBuilderService", 0x09315a40));
+            incompatible.push_back(AZ_CRC_CE("AzslShaderBuilderService"));
         }
 
         void AzslShaderBuilderSystemComponent::GetRequiredServices(ComponentDescriptor::DependencyArrayType& required)
@@ -68,7 +68,7 @@ namespace AZ
 
         void AzslShaderBuilderSystemComponent::GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("AssetCatalogService", 0xc68ffc57));
+            dependent.push_back(AZ_CRC_CE("AssetCatalogService"));
         }
 
         void AzslShaderBuilderSystemComponent::Init()

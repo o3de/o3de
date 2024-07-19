@@ -26,7 +26,7 @@ namespace AZ::RHI
 
     void RenderDocSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("GraphicsProfilerService"));
+        provided.push_back(AZ_CRC_CE("GraphicsProfilerService"));
     }
 
     void RenderDocSystemComponent::Activate()

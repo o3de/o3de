@@ -644,7 +644,7 @@ namespace UnitTest
         {
             auto allEntitiesValidFunction = [](AZ::EntityId) { return true; };
             m_dataFlags = AZStd::make_unique<AZ::SliceComponent::DataFlagsPerEntity>(allEntitiesValidFunction);
-            m_addressOfSetFlag.push_back(AZ_CRC("Components"));
+            m_addressOfSetFlag.push_back(AZ_CRC_CE("Components"));
             m_valueOfSetFlag = AZ::DataPatch::Flag::ForceOverrideSet;
             m_entityIdToGoMissing = AZ::Entity::MakeId();
             m_entityIdToRemain = AZ::Entity::MakeId();
@@ -773,9 +773,9 @@ namespace UnitTest
         // Now modify the root slice to prevent override of the component's m_int value.
         {
             AZ::DataPatch::AddressType address;
-            address.push_back(AZ_CRC("Components"));
+            address.push_back(AZ_CRC_CE("Components"));
             address.push_back(componentId1InRootSlice);
-            address.push_back(AZ_CRC("int"));
+            address.push_back(AZ_CRC_CE("int"));
 
             rootSliceComponent->SetEntityDataFlagsAtAddress(entityId1InRootSlice, address, AZ::DataPatch::Flag::PreventOverrideSet);
 

@@ -106,7 +106,7 @@ namespace Maestro
                         ->Attribute(AZ::Edit::Attributes::Category, "Cinematics")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Sequence.png")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Sequence.png")
-                      //->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
+                      //->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AddableByUser, false)     // SequenceAgents are only added by TrackView
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

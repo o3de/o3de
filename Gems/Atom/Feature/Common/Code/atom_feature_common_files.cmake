@@ -125,6 +125,9 @@ set(FILES
     Source/CubeMapCapture/CubeMapCapture.cpp
     Source/CubeMapCapture/CubeMapRenderer.h
     Source/CubeMapCapture/CubeMapRenderer.cpp
+    Source/Debug/RayTracingDebugFeatureProcessor.h
+    Source/Debug/RayTracingDebugFeatureProcessor.cpp
+    Source/Debug/RayTracingDebugSettings.h
     Source/Debug/RenderDebugFeatureProcessor.h
     Source/Debug/RenderDebugFeatureProcessor.cpp
     Source/Debug/RenderDebugSettings.h

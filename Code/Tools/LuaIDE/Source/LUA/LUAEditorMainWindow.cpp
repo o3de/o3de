@@ -134,7 +134,7 @@ namespace LUAEditor
 
         m_gui->localsTreeView->SetOperatingMode(WATCHES_MODE_LOCALS);
 
-        m_gui->m_logPanel->SetStorageID(AZ_CRC("LUA Editor Log Panel", 0x6d7ea8a5));
+        m_gui->m_logPanel->SetStorageID(AZ_CRC_CE("LUA Editor Log Panel"));
         connect(m_gui->m_logPanel, &AzToolsFramework::LogPanel::BaseLogPanel::TabsReset, this, &LUAEditorMainWindow::OnLogTabsReset);
 
         //m_lastProgramCounterAssetId = "";
@@ -213,12 +213,12 @@ namespace LUAEditor
 
         connect(m_gui->actionAutocomplete, SIGNAL(triggered(bool)), this, SLOT(OnAutocompleteChanged(bool)));
 
-        auto newState = AZ::UserSettings::CreateFind<LUAEditorMainWindowSavedState>(AZ_CRC("LUA EDITOR MAIN WINDOW STATE", 0xa181bc4a), AZ::UserSettings::CT_LOCAL);
+        auto newState = AZ::UserSettings::CreateFind<LUAEditorMainWindowSavedState>(AZ_CRC_CE("LUA EDITOR MAIN WINDOW STATE"), AZ::UserSettings::CT_LOCAL);
         m_gui->actionAutoReloadUnmodifiedFiles->setChecked(newState->m_bAutoReloadUnmodifiedFiles);
 
         connect(m_gui->actionAutoReloadUnmodifiedFiles, &QAction::triggered, this, [](bool newValue)
         {
-            auto newState = AZ::UserSettings::CreateFind<LUAEditorMainWindowSavedState>(AZ_CRC("LUA EDITOR MAIN WINDOW STATE", 0xa181bc4a), AZ::UserSettings::CT_LOCAL);
+            auto newState = AZ::UserSettings::CreateFind<LUAEditorMainWindowSavedState>(AZ_CRC_CE("LUA EDITOR MAIN WINDOW STATE"), AZ::UserSettings::CT_LOCAL);
             newState->m_bAutoReloadUnmodifiedFiles = newValue;
         });
 
@@ -246,23 +246,23 @@ namespace LUAEditor
             using namespace AzToolsFramework;
             typedef FrameworkMessages::Bus HotkeyBus;
 
-            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC("LUALinesUpTranspose", 0xafc899ef), m_gui->actionLinesUpTranspose);
-            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC("LUALinesDnTranspose", 0xf9d733bf), m_gui->actionLinesDnTranspose);
-            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC("GeneralOpenAssetBrowser", 0xa15ceb44), m_gui->actionOpen);
-            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC("LUAFind", 0xc62d8078), m_gui->actionFind);
-            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC("LUAQuickFindLocal", 0x115cbcda), m_gui->actionFindLocal);
-            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC("LUAQuickFindLocalReverse", 0xdd8a0c22), m_gui->actionFindLocalReverse);
-            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC("LUAFindInFiles", 0xdaebdfdd), m_gui->actionFindInAllOpen);
-            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC("LUAReplace", 0x1fd5510c), m_gui->actionReplace);
-            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC("LUAReplaceInFiles", 0x38b609e0), m_gui->actionReplaceInAllOpen);
-            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC("LUAGoToLine", 0xb6603f27), m_gui->actionGoToLine);
-            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC("LUAFold", 0xf0969e48), m_gui->actionFoldAll);
-            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC("LUAUnfold", 0x36934ecd), m_gui->actionUnfoldAll);
-            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC("LUACloseAllExceptCurrent", 0x0076409a), m_gui->actionCloseAllExcept);
-            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC("LUACloseAll", 0xf732678f), m_gui->actionCloseAll);
-            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC("LUAComment", 0x873c2725), m_gui->actionComment_Selected_Block);
-            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC("LUAUncomment", 0x9190cf18), m_gui->actionUnComment_Selected_Block);
-            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC("LUAResetZoom", 0xbe0787ad), m_gui->actionResetZoom);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUALinesUpTranspose"), m_gui->actionLinesUpTranspose);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUALinesDnTranspose"), m_gui->actionLinesDnTranspose);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("GeneralOpenAssetBrowser"), m_gui->actionOpen);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUAFind"), m_gui->actionFind);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUAQuickFindLocal"), m_gui->actionFindLocal);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUAQuickFindLocalReverse"), m_gui->actionFindLocalReverse);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUAFindInFiles"), m_gui->actionFindInAllOpen);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUAReplace"), m_gui->actionReplace);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUAReplaceInFiles"), m_gui->actionReplaceInAllOpen);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUAGoToLine"), m_gui->actionGoToLine);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUAFold"), m_gui->actionFoldAll);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUAUnfold"), m_gui->actionUnfoldAll);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUACloseAllExceptCurrent"), m_gui->actionCloseAllExcept);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUACloseAll"), m_gui->actionCloseAll);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUAComment"), m_gui->actionComment_Selected_Block);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUAUncomment"), m_gui->actionUnComment_Selected_Block);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC_CE("LUAResetZoom"), m_gui->actionResetZoom);
         }
 
         //m_StoredTabAssetId = AZ::Uuid::CreateNull();
@@ -1584,7 +1584,7 @@ namespace LUAEditor
     {
         // build state and store it.
 
-        auto newState = AZ::UserSettings::CreateFind<LUAEditorMainWindowSavedState>(AZ_CRC("LUA EDITOR MAIN WINDOW STATE", 0xa181bc4a), AZ::UserSettings::CT_LOCAL);
+        auto newState = AZ::UserSettings::CreateFind<LUAEditorMainWindowSavedState>(AZ_CRC_CE("LUA EDITOR MAIN WINDOW STATE"), AZ::UserSettings::CT_LOCAL);
         newState->Init(saveState(), saveGeometry());
 
         newState->m_bAutocompleteEnabled = m_bAutocompleteEnabled;
@@ -1614,7 +1614,7 @@ namespace LUAEditor
 
         m_gui->m_logPanel->SaveState();
 
-        auto savedState = AZ::UserSettings::CreateFind<AzToolsFramework::MainWindowSavedState>(AZ_CRC("INNER_LUA_WINDOW", 0x52741396), AZ::UserSettings::CT_LOCAL);
+        auto savedState = AZ::UserSettings::CreateFind<AzToolsFramework::MainWindowSavedState>(AZ_CRC_CE("INNER_LUA_WINDOW"), AZ::UserSettings::CT_LOCAL);
         if (savedState)
         {
             // restore state.
@@ -1636,7 +1636,7 @@ namespace LUAEditor
         }
 
         // load the state from our state block:
-        auto pEditorMainSavedState = AZ::UserSettings::Find<LUAEditorMainWindowSavedState>(AZ_CRC("LUA EDITOR MAIN WINDOW STATE", 0xa181bc4a), AZ::UserSettings::CT_LOCAL);
+        auto pEditorMainSavedState = AZ::UserSettings::Find<LUAEditorMainWindowSavedState>(AZ_CRC_CE("LUA EDITOR MAIN WINDOW STATE"), AZ::UserSettings::CT_LOCAL);
         if (pEditorMainSavedState)
         {
             QByteArray editorGeomData((const char*)pEditorMainSavedState->m_windowGeometry.data(), (int)pEditorMainSavedState->m_windowGeometry.size());
@@ -1658,7 +1658,7 @@ namespace LUAEditor
             m_bAutocompleteEnabled = pEditorMainSavedState->m_bAutocompleteEnabled;
             OnAutocompleteChanged(m_bAutocompleteEnabled);
 
-            auto pWindowSavedState = AZ::UserSettings::Find<AzToolsFramework::MainWindowSavedState>(AZ_CRC("INNER_LUA_WINDOW", 0x52741396), AZ::UserSettings::CT_LOCAL);
+            auto pWindowSavedState = AZ::UserSettings::Find<AzToolsFramework::MainWindowSavedState>(AZ_CRC_CE("INNER_LUA_WINDOW"), AZ::UserSettings::CT_LOCAL);
             if (pWindowSavedState)
             {
                 // restore state.

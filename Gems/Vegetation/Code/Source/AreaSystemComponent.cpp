@@ -52,7 +52,7 @@ namespace Vegetation
         {
             if (classElement.GetVersion() < 4)
             {
-                classElement.RemoveElementByName(AZ_CRC("ThreadSleepTimeMs", 0x9e86f79d));
+                classElement.RemoveElementByName(AZ_CRC_CE("ThreadSleepTimeMs"));
             }
             return true;
         }
@@ -274,19 +274,19 @@ namespace Vegetation
 
     void AreaSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationAreaSystemService", 0x36da2b62));
+        services.push_back(AZ_CRC_CE("VegetationAreaSystemService"));
     }
 
     void AreaSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationAreaSystemService", 0x36da2b62));
+        services.push_back(AZ_CRC_CE("VegetationAreaSystemService"));
     }
 
     void AreaSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationDebugSystemService", 0x8cac3d67));
-        services.push_back(AZ_CRC("VegetationInstanceSystemService", 0x823a6007));
-        services.push_back(AZ_CRC("SurfaceDataSystemService", 0x1d44d25f));
+        services.push_back(AZ_CRC_CE("VegetationDebugSystemService"));
+        services.push_back(AZ_CRC_CE("VegetationInstanceSystemService"));
+        services.push_back(AZ_CRC_CE("SurfaceDataSystemService"));
     }
 
     void AreaSystemComponent::Reflect(AZ::ReflectContext* context)

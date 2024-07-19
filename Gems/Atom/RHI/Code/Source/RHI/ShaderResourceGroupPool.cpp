@@ -78,7 +78,7 @@ namespace AZ::RHI
             const ShaderResourceGroupLayout* layout = GetLayout();
 
             // Pre-initialize the data so that we can build view diffs later.
-            group.m_Data = ShaderResourceGroupData(GetDeviceMask(), layout);
+            group.m_data = ShaderResourceGroupData(GetDeviceMask(), layout);
 
             // Cache off the binding slot for one less indirection.
             group.m_bindingSlot = layout->GetBindingSlot();

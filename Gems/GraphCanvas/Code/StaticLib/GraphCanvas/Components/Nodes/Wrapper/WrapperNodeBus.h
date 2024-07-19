@@ -18,7 +18,7 @@ class QMimeData;
 
 namespace GraphCanvas
 {
-    static const AZ::Crc32 WrapperNodeLayoutServiceCrc = AZ_CRC("GraphCanvas_WrapperNodeLayoutService", 0x4033e2f5);
+    static const AZ::Crc32 WrapperNodeLayoutServiceCrc = AZ_CRC_CE("GraphCanvas_WrapperNodeLayoutService");
 
     // WrappedNodeConfiguration
     // This contains the configuration required to display the Wrapped node inside of the WrapperNode.

@@ -80,11 +80,11 @@ namespace AZ
                 {
                     editContext->Class<LodRule>("Level of Detail", "Set up the level of detail for the meshes in this group.")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
-                            ->Attribute(AZ_CRC("AutoExpand", 0x306ff5c0), true)
+                            ->Attribute(AZ_CRC_CE("AutoExpand"), true)
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                         ->DataElement(Edit::UIHandlers::Default, &LodRule::m_nodeSelectionLists, "Lod Meshes", "Select the meshes to assign to each level of detail.")
-                            ->ElementAttribute(AZ_CRC("FilterName", 0xf49ce62e), "Lod meshes")
-                            ->ElementAttribute(AZ_CRC("FilterType", 0x2661cf01), DataTypes::IMeshData::TYPEINFO_Uuid());
+                            ->ElementAttribute(AZ_CRC_CE("FilterName"), "Lod meshes")
+                            ->ElementAttribute(AZ_CRC_CE("FilterType"), DataTypes::IMeshData::TYPEINFO_Uuid());
                 }
             }
         } // namespace SceneData

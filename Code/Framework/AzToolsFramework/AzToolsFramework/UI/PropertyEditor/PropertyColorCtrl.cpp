@@ -330,7 +330,7 @@ namespace AzToolsFramework
 
     void AZColorPropertyHandler::ConsumeAttribute(PropertyColorCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName)
     {
-        if (attrib == AZ_CRC("AlphaChannel", 0xa0cab5cf))
+        if (attrib == AZ_CRC_CE("AlphaChannel"))
         {
             bool alphaChannel;
             if (attrValue->Read<bool>(alphaChannel))
@@ -346,7 +346,7 @@ namespace AzToolsFramework
         // Unlike other property editors that are configured through a collection of attributes attributes, PropertyColorCtrl uses a single ColorEditorConfiguration
         // attribute that encompasses many settings. This is because ColorEditorConfiguration's settings are closely related to each other, and if a widget needs
         // to set one of these settings, it likely needs to set all of the settings. So it's less cumbersome to just group them all together.
-        else if (attrib == AZ_CRC("ColorEditorConfiguration", 0xc8b9510e))
+        else if (attrib == AZ_CRC_CE("ColorEditorConfiguration"))
         {
             ColorEditorConfiguration config;
             if (attrValue->Read<ColorEditorConfiguration>(config))

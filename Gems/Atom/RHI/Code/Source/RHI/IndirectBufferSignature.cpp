@@ -51,7 +51,7 @@ namespace AZ::RHI
                 return resultCode == ResultCode::Success;
             });
 
-        m_Descriptor = descriptor;
+        m_descriptor = descriptor;
 
         return resultCode;
     }
@@ -73,7 +73,7 @@ namespace AZ::RHI
                 return 0;
             }
 
-            if (index.GetIndex() >= m_Descriptor.m_layout.GetCommands().size())
+            if (index.GetIndex() >= m_descriptor.m_layout.GetCommands().size())
             {
                 AZ_Assert(false, "Index %d is greater than the number of commands on the layout", index.GetIndex());
                 return 0;
@@ -99,12 +99,12 @@ namespace AZ::RHI
 
     const IndirectBufferSignatureDescriptor& IndirectBufferSignature::GetDescriptor() const
     {
-        return m_Descriptor;
+        return m_descriptor;
     }
 
     const AZ::RHI::IndirectBufferLayout& IndirectBufferSignature::GetLayout() const
     {
-        return m_Descriptor.m_layout;
+        return m_descriptor.m_layout;
     }
 
     void IndirectBufferSignature::Shutdown()

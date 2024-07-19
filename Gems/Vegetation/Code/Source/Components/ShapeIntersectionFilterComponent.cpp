@@ -44,7 +44,7 @@ namespace Vegetation
                     ->EnumAttribute(FilterStage::PreProcess, "PreProcess")
                     ->EnumAttribute(FilterStage::PostProcess, "PostProcess")
                     ->DataElement(0, &ShapeIntersectionFilterConfig::m_shapeEntityId, "Shape Entity Id", "Entity with shape component to test intersection.")
-                    ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC("ShapeService", 0xe86aa5fe))
+                    ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("ShapeService"))
                     ;
 
             }
@@ -65,18 +65,18 @@ namespace Vegetation
 
     void ShapeIntersectionFilterComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationFilterService", 0x9f97cc97));
-        services.push_back(AZ_CRC("VegetationShapeInersectionFilterService", 0x36dcda80));
+        services.push_back(AZ_CRC_CE("VegetationFilterService"));
+        services.push_back(AZ_CRC_CE("VegetationShapeInersectionFilterService"));
     }
 
     void ShapeIntersectionFilterComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationShapeInersectionFilterService", 0x36dcda80));
+        services.push_back(AZ_CRC_CE("VegetationShapeInersectionFilterService"));
     }
 
     void ShapeIntersectionFilterComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationAreaService", 0x6a859504));
+        services.push_back(AZ_CRC_CE("VegetationAreaService"));
     }
 
     void ShapeIntersectionFilterComponent::Reflect(AZ::ReflectContext* context)

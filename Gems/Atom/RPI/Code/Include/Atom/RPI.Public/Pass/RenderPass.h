@@ -12,6 +12,7 @@
 #include <Atom/RHI.Reflect/RenderAttachmentLayout.h>
 #include <Atom/RHI/DrawList.h>
 #include <Atom/RHI/ScopeProducer.h>
+#include <Atom/RHI.Reflect/RenderAttachmentLayoutBuilder.h>
 
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
@@ -45,9 +46,9 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(RenderPass, SystemAllocator);
             virtual ~RenderPass();
 
-            //! Build and return RenderAttachmentConfiguration of this pass from its render attachments
+            //! Returns the RenderAttachmentConfiguration of this pass from its render attachments
             //! This function usually need to be called after pass attachments rebuilt to reflect latest layout
-            RHI::RenderAttachmentConfiguration GetRenderAttachmentConfiguration() const;
+            RHI::RenderAttachmentConfiguration GetRenderAttachmentConfiguration();
 
             //! Get MultisampleState of this pass from its output attachments
             RHI::MultisampleState GetMultisampleState() const;
@@ -61,10 +62,20 @@ namespace AZ
 
             // Add a srg to srg list to be bound for this pass
             void BindSrg(const RHI::ShaderResourceGroup* srg);
-            
 
         protected:
             explicit RenderPass(const PassDescriptor& descriptor);
+
+            //! Can instances of this class be merged as subpasses?
+            virtual bool CanBecomeSubpass() { return false; }
+
+            //! Builds Subpass Attachment Layout data into @subpassLayoutBuilder.
+            //! @returns true if successful.
+            bool BuildSubpassLayout(RHI::RenderAttachmentLayoutBuilder::SubpassAttachmentLayoutBuilder& subpassLayoutBuilder);
+
+            //! Sets the final RenderAttachmentLayout that this RasterPass should use.
+            //! @param subpassIndex Used for validation purposes. It should match the current value of @m_subpassIndex.
+            void SetRenderAttachmentLayout(const AZStd::shared_ptr<RHI::RenderAttachmentLayout>& renderAttachmentLayout, uint32_t subpassIndex);
 
             // RHI::ScopeProducer overrides...
             void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
@@ -153,6 +164,16 @@ namespace AZ
             // List of all ShaderResourceGroups to be bound during rendering or computing
             // Derived classed may call BindSrg function to add other srgs the list
             AZStd::unordered_map<uint8_t, const RHI::ShaderResourceGroup*> m_shaderResourceGroupsToBind;
+
+            //! The following variables are only relevant when this RenderPass will be merged by the RHI
+            //! as a subpass (upon request from an instance of ParentPass).
+
+            //! Stores the RenderAttachmentLayout that should be used when GetRenderAttachmentConfiguration() is called.
+            //! If this pointer is invalid when GetRenderAttachmentConfiguration() is called then the pass will build
+            //! the RanderAttachmentLayout at that moment.
+            AZStd::shared_ptr<RHI::RenderAttachmentLayout> m_renderAttachmentLayout;
+            //! Stores the Subpass Index for this subpass.
+            uint32_t m_subpassIndex = 0;
         };
     }   // namespace RPI
 }   // namespace AZ

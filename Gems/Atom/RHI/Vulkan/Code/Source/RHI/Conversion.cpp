@@ -44,9 +44,13 @@ namespace AZ
             return vkFlags;
         }
 
-        VkPipelineStageFlags GetResourcePipelineStateFlags(const RHI::ScopeAttachment& scopeAttachment)
+        VkPipelineStageFlags GetResourcePipelineStateFlags(
+            AZ::RHI::ScopeAttachmentUsage scopeAttachmentUsage,
+            AZ::RHI::ScopeAttachmentStage scopeAttachmentStage,
+            AZ::RHI::HardwareQueueClass scopeQueueClass,
+            VkImageUsageFlags shadingRateAttachmentUsageFlags)
         {
-            switch (scopeAttachment.GetUsage())
+            switch (scopeAttachmentUsage)
             {
             case RHI::ScopeAttachmentUsage::RenderTarget:
                 return VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -54,17 +58,29 @@ namespace AZ
                 return VK_PIPELINE_STAGE_TRANSFER_BIT;
             case RHI::ScopeAttachmentUsage::DepthStencil:
                 return RHI::FilterBits(
-                    ConvertScopeAttachmentStage(scopeAttachment.GetStage()),
+                    ConvertScopeAttachmentStage(scopeAttachmentStage),
                     static_cast<VkPipelineStageFlags>(
                         VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT));
             case RHI::ScopeAttachmentUsage::SubpassInput:
+                {
+                    AZ_Assert(scopeQueueClass == RHI::HardwareQueueClass::Graphics,
+                        "SubpassInput attachment usage is only supported by the Graphics Queue Class.");
+                    // REMARK, We remove VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR in this filter because
+                    // when using subpasses only stages for the raster pipeline are supported.
+                    return RHI::FilterBits(
+                            ConvertScopeAttachmentStage(scopeAttachmentStage),
+                            static_cast<VkPipelineStageFlags>(
+                                VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT |
+                                VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT |
+                                VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT | VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT));
+                }
             case RHI::ScopeAttachmentUsage::Shader:
                 {
-                    switch (scopeAttachment.GetScope().GetHardwareQueueClass())
+                    switch (scopeQueueClass)
                     {
                     case RHI::HardwareQueueClass::Graphics:
                         return RHI::FilterBits(
-                            ConvertScopeAttachmentStage(scopeAttachment.GetStage()),
+                            ConvertScopeAttachmentStage(scopeAttachmentStage),
                             static_cast<VkPipelineStageFlags>(
                                 VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT |
                                 VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT |
@@ -87,11 +103,11 @@ namespace AZ
                 return VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
             case RHI::ScopeAttachmentUsage::ShadingRate:
                 {
-                    const Image& image =
-                        static_cast<const Image&>(*(static_cast<const RHI::ImageView*>(scopeAttachment.GetResourceView()))->GetImage()->GetDeviceImage(scopeAttachment.GetScope().GetDeviceIndex()));
+                    AZ_Assert(shadingRateAttachmentUsageFlags != 0, "shading Rate Attachment UsageFlags can not be 0");
                     return
                         RHI::CheckBitsAll(
-                            image.GetUsageFlags(), static_cast<VkImageUsageFlags>(VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT))
+                               shadingRateAttachmentUsageFlags,
+                               static_cast<VkImageUsageFlags>(VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT))
                         ? VK_PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT_EXT
                         : VK_PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
                 }
@@ -99,6 +115,21 @@ namespace AZ
                 break;
             }
             return {};
+        }
+
+        VkPipelineStageFlags GetResourcePipelineStateFlags(const RHI::ScopeAttachment& scopeAttachment)
+        {
+            VkImageUsageFlags shadingRateAttachmentUsageFlags = 0;
+            if (scopeAttachment.GetUsage() == RHI::ScopeAttachmentUsage::ShadingRate)
+            {
+                const RHI::ImageView* imageView = static_cast<const RHI::ImageView*>(scopeAttachment.GetResourceView());
+                const int deviceIndex = scopeAttachment.GetScope().GetDeviceIndex();
+                const Image& image = static_cast<const Image&>(*imageView->GetImage()->GetDeviceImage(deviceIndex));
+                shadingRateAttachmentUsageFlags = image.GetUsageFlags();
+            }
+            return GetResourcePipelineStateFlags(
+                scopeAttachment.GetUsage(), scopeAttachment.GetStage(), scopeAttachment.GetScope().GetHardwareQueueClass(),
+                shadingRateAttachmentUsageFlags);
         }
 
         VkPipelineStageFlags GetResourcePipelineStateFlags(const RHI::BufferBindFlags& bindFlags)
@@ -202,11 +233,13 @@ namespace AZ
             return flags;
         }
 
-        VkAccessFlags GetResourceAccessFlags(const RHI::ScopeAttachment& scopeAttachment)
+        VkAccessFlags GetResourceAccessFlags(
+            AZ::RHI::ScopeAttachmentAccess access,
+            AZ::RHI::ScopeAttachmentUsage scopeAttachmentUsage,
+            VkImageUsageFlags shadingRateAttachmentUsageFlags)
         {
             VkAccessFlags accessFlags = {};
-            RHI::ScopeAttachmentAccess access = scopeAttachment.GetAccess();
-            switch (scopeAttachment.GetUsage())
+            switch (scopeAttachmentUsage)
             {
             case RHI::ScopeAttachmentUsage::RenderTarget:
                 accessFlags |= RHI::CheckBitsAny(access, RHI::ScopeAttachmentAccess::Write)
@@ -228,6 +261,11 @@ namespace AZ
                     : accessFlags;
                 break;
             case RHI::ScopeAttachmentUsage::SubpassInput:
+                // QCOMM is particularly restrictive about this:
+                // Starting from the second subpass where the input_attachments field is used,
+                // the dstAccessMask must be set to VK_ACCESS_INPUT_ATTACHMENT_READ_BIT.
+                accessFlags = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+                break;
             case RHI::ScopeAttachmentUsage::Shader:
                 accessFlags |= RHI::CheckBitsAny(access, RHI::ScopeAttachmentAccess::Write)
                     ? VK_ACCESS_SHADER_WRITE_BIT
@@ -255,11 +293,10 @@ namespace AZ
                 break;
             case RHI::ScopeAttachmentUsage::ShadingRate:
                 {
-                    const Image& image =
-                        static_cast<const Image&>(*(static_cast<const RHI::ImageView*>(scopeAttachment.GetResourceView()))->GetImage()->GetDeviceImage(scopeAttachment.GetScope().GetDeviceIndex()));
+                    AZ_Assert(shadingRateAttachmentUsageFlags != 0, "shading Rate Attachment UsageFlags can not be 0");
                     accessFlags |=
-                        RHI::CheckBitsAll(
-                            image.GetUsageFlags(), static_cast<VkImageUsageFlags>(VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT))
+                        RHI::CheckBitsAll(shadingRateAttachmentUsageFlags,
+                                          static_cast<VkImageUsageFlags>(VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT))
                         ? VK_ACCESS_FRAGMENT_DENSITY_MAP_READ_BIT_EXT
                         : VK_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT_KHR;
                     break;
@@ -268,6 +305,19 @@ namespace AZ
                 break;
             }
             return accessFlags;
+        }
+
+        VkAccessFlags GetResourceAccessFlags(const RHI::ScopeAttachment& scopeAttachment)
+        {
+            VkImageUsageFlags shadingRateAttachmentUsageFlags = 0;
+            if (scopeAttachment.GetUsage() == RHI::ScopeAttachmentUsage::ShadingRate)
+            {
+                const RHI::ImageView* imageView = static_cast<const RHI::ImageView*>(scopeAttachment.GetResourceView());
+                const int deviceIndex = scopeAttachment.GetScope().GetDeviceIndex();
+                const Image& image = static_cast<const Image&>(*imageView->GetImage()->GetDeviceImage(deviceIndex));
+                shadingRateAttachmentUsageFlags = image.GetUsageFlags();
+            }
+            return GetResourceAccessFlags(scopeAttachment.GetAccess(), scopeAttachment.GetUsage(), shadingRateAttachmentUsageFlags);
         }
 
         VkAccessFlags GetResourceAccessFlags(const RHI::BufferBindFlags& bindFlags)
@@ -404,13 +454,14 @@ namespace AZ
                         {
                             if (RHI::CheckBitsAll(imageAspects, RHI::ImageAspectFlags::Depth))
                             {
-                                return VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL;
+                                //TODO: [GHI 18108] Why VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL instead of VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL
+                                return VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
                             }
                             else if (RHI::CheckBitsAll(imageAspects, RHI::ImageAspectFlags::Stencil))
                             {
                                 return VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL;
                             }
-                        }                        
+                        }
                         
                         return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                     }

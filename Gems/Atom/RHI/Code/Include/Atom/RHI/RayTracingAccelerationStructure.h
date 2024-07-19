@@ -29,8 +29,8 @@ namespace AZ::RHI
     struct RayTracingGeometry
     {
         RHI::Format m_vertexFormat = RHI::Format::Unknown;
-        RHI::StreamBufferView m_VertexBuffer;
-        RHI::IndexBufferView m_IndexBuffer;
+        RHI::StreamBufferView m_vertexBuffer;
+        RHI::IndexBufferView m_indexBuffer;
     };
     using RayTracingGeometryVector = AZStd::vector<RayTracingGeometry>;
 
@@ -58,16 +58,16 @@ namespace AZ::RHI
         //! Accessors
         const RayTracingGeometryVector& GetGeometries() const
         {
-            return m_Geometries;
+            return m_geometries;
         }
         RayTracingGeometryVector& GetGeometries()
         {
-            return m_Geometries;
+            return m_geometries;
         }
 
         [[nodiscard]] const RayTracingAccelerationStructureBuildFlags& GetBuildFlags() const
         {
-            return m_BuildFlags;
+            return m_buildFlags;
         }
 
         //! Build operations
@@ -80,10 +80,10 @@ namespace AZ::RHI
         RayTracingBlasDescriptor* BuildFlags(const RHI::RayTracingAccelerationStructureBuildFlags& buildFlags);
 
     private:
-        RayTracingGeometryVector m_Geometries;
+        RayTracingGeometryVector m_geometries;
         AZStd::optional<AZ::Aabb> m_aabb;
-        RayTracingGeometry* m_BuildContext = nullptr;
-        RayTracingAccelerationStructureBuildFlags m_BuildFlags = AZ::RHI::RayTracingAccelerationStructureBuildFlags::FAST_TRACE;
+        RayTracingGeometry* m_buildContext = nullptr;
+        RayTracingAccelerationStructureBuildFlags m_buildFlags = AZ::RHI::RayTracingAccelerationStructureBuildFlags::FAST_TRACE;
     };
 
     //! RayTracingBlas
@@ -108,7 +108,7 @@ namespace AZ::RHI
         bool IsValid() const;
 
     private:
-        RayTracingBlasDescriptor m_Descriptor;
+        RayTracingBlasDescriptor m_descriptor;
     };
 
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -128,7 +128,7 @@ namespace AZ::RHI
         AZ::Transform m_transform = AZ::Transform::CreateIdentity();
         AZ::Vector3 m_nonUniformScale = AZ::Vector3::CreateOne();
         bool m_transparent = false;
-        RHI::Ptr<RHI::RayTracingBlas> m_Blas;
+        RHI::Ptr<RHI::RayTracingBlas> m_blas;
     };
     using MultiDeviceRayTracingTlasInstanceVector = AZStd::vector<RayTracingTlasInstance>;
 
@@ -162,20 +162,20 @@ namespace AZ::RHI
         //! Accessors
         const MultiDeviceRayTracingTlasInstanceVector& GetInstances() const
         {
-            return m_Instances;
+            return m_instances;
         }
         MultiDeviceRayTracingTlasInstanceVector& GetInstances()
         {
-            return m_Instances;
+            return m_instances;
         }
 
         const RHI::Ptr<RHI::Buffer>& GetInstancesBuffer() const
         {
-            return m_InstancesBuffer;
+            return m_instancesBuffer;
         }
         RHI::Ptr<RHI::Buffer>& GetInstancesBuffer()
         {
-            return m_InstancesBuffer;
+            return m_instancesBuffer;
         }
 
         uint32_t GetNumInstancesInBuffer() const
@@ -197,11 +197,11 @@ namespace AZ::RHI
         RayTracingTlasDescriptor* NumInstances(uint32_t numInstancesInBuffer);
 
     private:
-        MultiDeviceRayTracingTlasInstanceVector m_Instances;
-        RayTracingTlasInstance* m_BuildContext = nullptr;
+        MultiDeviceRayTracingTlasInstanceVector m_instances;
+        RayTracingTlasInstance* m_buildContext = nullptr;
 
         //! externally created Instances buffer, cannot be combined with other Instances
-        RHI::Ptr<RHI::Buffer> m_InstancesBuffer;
+        RHI::Ptr<RHI::Buffer> m_instancesBuffer;
         uint32_t m_numInstancesInBuffer = 0;
     };
 
@@ -231,7 +231,7 @@ namespace AZ::RHI
         //! Safe-guard access to creation of buffers cache during parallel access
         mutable AZStd::mutex m_tlasBufferMutex;
         mutable AZStd::mutex m_tlasInstancesBufferMutex;
-        RayTracingTlasDescriptor m_Descriptor;
+        RayTracingTlasDescriptor m_descriptor;
         mutable RHI::Ptr<RHI::Buffer> m_tlasBuffer;
         mutable RHI::Ptr<RHI::Buffer> m_tlasInstancesBuffer;
     };

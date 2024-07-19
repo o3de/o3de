@@ -238,7 +238,9 @@ namespace AZ
 
         void RasterPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
-            RenderPass::SetupFrameGraphDependencies(frameGraph);
+            DeclareAttachmentsToFrameGraph(frameGraph);
+            DeclarePassDependenciesToFrameGraph(frameGraph);
+            AddScopeQueryToFrameGraph(frameGraph);
             frameGraph.SetEstimatedItemCount(static_cast<uint32_t>(m_drawListView.size()));
         }
 
@@ -264,7 +266,7 @@ namespace AZ
                 const RHI::DrawItemProperties& drawItemProperties = m_drawListView[index];
                 if (drawItemProperties.m_drawFilterMask & m_pipeline->GetDrawFilterMask())
                 {
-                    commandList->Submit(drawItemProperties.m_Item->GetDeviceDrawItem(context.GetDeviceIndex()), index + indexOffset);
+                    commandList->Submit(drawItemProperties.m_item->GetDeviceDrawItem(context.GetDeviceIndex()), index + indexOffset);
                 }
             }
         }
@@ -281,6 +283,5 @@ namespace AZ
                 SubmitDrawItems(context, context.GetSubmitRange().m_startIndex, context.GetSubmitRange().m_endIndex, 0);
             }
         }
-
     }   // namespace RPI
 }   // namespace AZ

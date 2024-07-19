@@ -76,7 +76,7 @@ namespace AZ::RHI
         void SetFrameAttachment(FrameAttachment* frameAttachment);
 
         //! The parent pool this resource is registered with.
-        ResourcePool* m_Pool = nullptr;
+        ResourcePool* m_pool = nullptr;
 
         //! The current frame attachment registered on this resource.
         FrameAttachment* m_frameAttachment = nullptr;

@@ -69,7 +69,7 @@ namespace AZ::RHI
         void Shutdown() final;
 
     private:
-        IndirectBufferSignatureDescriptor m_Descriptor;
+        IndirectBufferSignatureDescriptor m_descriptor;
         static constexpr uint32_t UNINITIALIZED_VALUE{ std::numeric_limits<uint32_t>::max() };
         uint32_t m_byteStride{ UNINITIALIZED_VALUE };
     };

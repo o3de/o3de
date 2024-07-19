@@ -13,13 +13,13 @@ namespace AZ::RHI
 {
     ResourcePool::~ResourcePool()
     {
-        AZ_Assert(m_Registry.empty(), "ResourceType pool was not properly shutdown.");
+        AZ_Assert(m_registry.empty(), "ResourceType pool was not properly shutdown.");
     }
 
     uint32_t ResourcePool::GetResourceCount() const
     {
         AZStd::shared_lock<AZStd::shared_mutex> lock(m_registryMutex);
-        return static_cast<uint32_t>(m_Registry.size());
+        return static_cast<uint32_t>(m_registry.size());
     }
 
     bool ResourcePool::ValidateIsRegistered(const Resource* resource) const
@@ -74,7 +74,7 @@ namespace AZ::RHI
         resource.SetPool(this);
 
         AZStd::unique_lock<AZStd::shared_mutex> lock(m_registryMutex);
-        m_Registry.emplace(&resource);
+        m_registry.emplace(&resource);
     }
 
     void ResourcePool::Unregister(Resource& resource)
@@ -82,7 +82,7 @@ namespace AZ::RHI
         resource.SetPool(nullptr);
 
         AZStd::unique_lock<AZStd::shared_mutex> lock(m_registryMutex);
-        m_Registry.erase(&resource);
+        m_registry.erase(&resource);
     }
 
     ResultCode ResourcePool::Init(MultiDevice::DeviceMask deviceMask, const PlatformMethod& platformInitMethod)
@@ -108,12 +108,12 @@ namespace AZ::RHI
         // Multiple shutdown is allowed for pools.
         if (IsInitialized())
         {
-            for (Resource* resource : m_Registry)
+            for (Resource* resource : m_registry)
             {
                 resource->SetPool(nullptr);
                 resource->Shutdown();
             }
-            m_Registry.clear();
+            m_registry.clear();
             MultiDeviceObject::Shutdown();
         }
     }

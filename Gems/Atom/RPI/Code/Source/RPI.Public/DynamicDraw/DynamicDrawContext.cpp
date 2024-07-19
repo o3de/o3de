@@ -723,7 +723,7 @@ namespace AZ
 
                 RHI::DrawItemProperties drawItemProperties;
                 drawItemProperties.m_sortKey = drawItemInfo.m_sortKey;
-                drawItemProperties.m_Item = &drawItemInfo.m_drawItem;
+                drawItemProperties.m_item = &drawItemInfo.m_drawItem;
                 drawItemProperties.m_drawFilterMask = m_drawFilter;
                 m_cachedDrawList.emplace_back(drawItemProperties);
             }
