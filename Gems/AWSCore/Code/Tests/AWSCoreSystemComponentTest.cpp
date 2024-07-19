@@ -11,6 +11,7 @@
 #include <AzCore/Jobs/JobManagerBus.h>
 #include <AzCore/Jobs/JobCancelGroup.h>
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/Console/Console.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -79,10 +80,24 @@ protected:
 
         m_entity = aznew AZ::Entity();
         m_coreSystemsComponent.reset(m_entity->CreateComponent<AWSCoreSystemComponent>());
+
+        if (!AZ::Interface<AZ::IConsole>::Get())
+        {
+            m_console = AZStd::make_unique<AZ::Console>();
+            m_console->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
+            AZ::Interface<AZ::IConsole>::Register(m_console.get());
+        }
+
     }
 
     void TearDown() override
     {
+        if (m_console)
+        {
+            AZ::Interface<AZ::IConsole>::Unregister(m_console.get());
+            m_console.reset();
+        }
+
         m_entity->RemoveComponent(m_coreSystemsComponent.get());
         m_coreSystemsComponent.reset();
         delete m_entity;
@@ -100,6 +115,9 @@ public:
     AZStd::unique_ptr<AWSCoreSystemComponent> m_coreSystemsComponent;
     AZ::Entity* m_entity;
     AWSCoreNotificationsBusMock m_notifications;
+
+private:
+    AZStd::unique_ptr<AZ::Console> m_console;
 };
 
 TEST_F(AWSCoreSystemComponentTest, ComponentActivateTest)
