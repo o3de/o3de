@@ -40,48 +40,21 @@ namespace GraphSerializationCpp
         }
     }
 
-    class EntityIdMapper
-    {
-    public:
-        EntityIdMapper()
-        {
-            m_newIdsByOld[AZ::EntityId()] = AZ::EntityId();
-            m_newIdsByOld[ScriptCanvas::GraphOwnerId] = ScriptCanvas::GraphOwnerId;
-            m_newIdsByOld[ScriptCanvas::UniqueId] = ScriptCanvas::UniqueId;
-        }
-
-        AZ::EntityId GetNewId(const AZ::EntityId& old)
-        {
-            if (auto iter = m_newIdsByOld.find(old); iter != m_newIdsByOld.end())
-            {
-                return iter->second;
-            }
-            else
-            {
-                const AZ::EntityId newId = AZ::Entity::MakeId();
-                m_newIdsByOld.insert(AZStd::make_pair(old, newId));
-                return newId;
-            }
-        }
-
-    private:
-        AZStd::unordered_map<AZ::EntityId, AZ::EntityId> m_newIdsByOld;
-    };
-
     // Create new EntityIds for all EntityIds found in the SC Entity/Component objects
     // and map all old Ids to the new ones. This way, no Entity activation/deactivation, or
     // bus communication via EntityId will be handled by multiple or incorrect objects on
     // possible multiple instantiations of graphs.
     //
     // EntityIds contained in variable (those set to self or the graph unique id, will be ignored)
-    void MakeGraphComponentEntityIdsUnique(AZ::Entity& entity, AZ::SerializeContext& serializeContext)
+    void MakeGraphComponentEntityIdsUnique(
+        AZ::Entity& entity, AZ::SerializeContext& serializeContext, AZStd::unordered_map<AZ::EntityId, AZ::EntityId>& oldIdToNewIdOut)
     {
-        AZStd::unordered_map<AZ::EntityId, AZ::EntityId> remappedIds;
-        remappedIds[AZ::EntityId()] = AZ::EntityId();
-        remappedIds[ScriptCanvas::GraphOwnerId] = ScriptCanvas::GraphOwnerId;
-        remappedIds[ScriptCanvas::UniqueId] = ScriptCanvas::UniqueId;
+        oldIdToNewIdOut.clear();
+        oldIdToNewIdOut[AZ::EntityId()] = AZ::EntityId();
+        oldIdToNewIdOut[ScriptCanvas::GraphOwnerId] = ScriptCanvas::GraphOwnerId;
+        oldIdToNewIdOut[ScriptCanvas::UniqueId] = ScriptCanvas::UniqueId;
 
-        AZ::IdUtils::Remapper<AZ::EntityId>::GenerateNewIdsAndFixRefs(&entity, remappedIds, &serializeContext);
+        AZ::IdUtils::Remapper<AZ::EntityId>::GenerateNewIdsAndFixRefs(&entity, oldIdToNewIdOut, &serializeContext);
     }
 }
 
@@ -192,7 +165,7 @@ namespace ScriptCanvas
 
         if (makeUniqueEntities == MakeInternalGraphEntitiesUnique::Yes)
         {
-            MakeGraphComponentEntityIdsUnique(*entity, *serializeContext);
+            MakeGraphComponentEntityIdsUnique(*entity, *serializeContext, result.m_originalIdsToNewIds);
         }
 
         graph->MarkOwnership(*result.m_graphDataPtr);
