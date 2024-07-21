@@ -10,8 +10,6 @@
 #include <QGraphicsItem>
 #include <QScopedValueRollback>
 
-#include <AzCore/Asset/AssetManagerBus.h>
-
 #include <GraphCanvas/Components/Nodes/NodeTitleBus.h>
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/Slots/SlotBus.h>
@@ -271,7 +269,8 @@ namespace ScriptCanvasEditor
             return;
         }
 
-        // TODO https://github.com/o3de/o3de/issues/9192 need to get the source graph path from the relative fn_compiled_scriptcanvas and open it
+        // TODO https://github.com/o3de/o3de/issues/9192 need to get the source graph path from the relative fn_compiled_scriptcanvas and open it via a bus which leads to MainWindow::OpenFile
+        // See QuerySourceByProductID, maybe should be made available in AssetManagerBus
 
         m_assetId = assetId;
         m_assetNodeId = executionItem->GetScriptCanvasAssetNodeId();
