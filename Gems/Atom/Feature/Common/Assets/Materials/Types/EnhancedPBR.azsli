@@ -8,6 +8,8 @@
 
 #pragma once
 
+#define ENABLE_VERTEX_COLOR 1
+
 //TODO(MaterialPipeline): Inline the MaterialSrg files since they aren't reused.
 //TODO(MaterialPipeline): Try removing different parts of the SRG and see how hard/easy it is to customize the surface function.
 #include <Atom/Feature/Common/Assets/Shaders/Materials/EnhancedPBR/EnhancedPBR_MaterialSrg.azsli>
@@ -24,6 +26,7 @@
     #include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialInputs/TransmissionInput.azsli"
 
     COMMON_OPTIONS_BASE_COLOR()
+    COMMON_OPTIONS_VERTEX_COLOR()
     COMMON_OPTIONS_ROUGHNESS()
     COMMON_OPTIONS_METALLIC()
     COMMON_OPTIONS_SPECULAR_F0()
