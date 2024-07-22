@@ -12,10 +12,10 @@
 
 namespace AZ::RHI
 {
-    ResultCode ImagePool::Init(MultiDevice::DeviceMask deviceMask, const ImagePoolDescriptor& descriptor)
+    ResultCode ImagePool::Init(const ImagePoolDescriptor& descriptor)
     {
         return ResourcePool::Init(
-            deviceMask,
+            descriptor.m_deviceMask,
             [this, &descriptor]()
             {
                 // Assign the descriptor prior to initialization. Technically, the descriptor is undefined

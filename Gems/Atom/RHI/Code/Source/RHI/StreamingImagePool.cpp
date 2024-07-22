@@ -62,12 +62,12 @@ namespace AZ::RHI
         return true;
     }
 
-    ResultCode StreamingImagePool::Init(MultiDevice::DeviceMask deviceMask, const StreamingImagePoolDescriptor& descriptor)
+    ResultCode StreamingImagePool::Init(const StreamingImagePoolDescriptor& descriptor)
     {
         AZ_PROFILE_FUNCTION(RHI);
 
         return ResourcePool::Init(
-            deviceMask,
+            descriptor.m_deviceMask,
             [this, &descriptor]()
             {
                 // Assign the descriptor prior to initialization. Technically, the descriptor is undefined

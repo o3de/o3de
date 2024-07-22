@@ -100,10 +100,10 @@ namespace AZ::RHI
         return true;
     }
 
-    ResultCode BufferPool::Init(MultiDevice::DeviceMask deviceMask, const BufferPoolDescriptor& descriptor)
+    ResultCode BufferPool::Init(const BufferPoolDescriptor& descriptor)
     {
         return ResourcePool::Init(
-            deviceMask,
+            descriptor.m_deviceMask,
             [this, &descriptor]()
             {
                 if (!ValidatePoolDescriptor(descriptor))

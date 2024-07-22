@@ -56,7 +56,7 @@ namespace UnitTest
             m_bufferPool = aznew AZ::RHI::BufferPool;
             RHI::BufferPoolDescriptor poolDesc;
             poolDesc.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
-            m_bufferPool->Init(DeviceMask, poolDesc);
+            m_bufferPool->Init(poolDesc);
 
             m_buffer = aznew AZ::RHI::Buffer;
             RHI::BufferInitRequest initRequest;

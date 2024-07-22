@@ -70,7 +70,7 @@ namespace UnitTest
             queryPoolDesc.m_queriesCount = 2;
             queryPoolDesc.m_type = RHI::QueryType::Occlusion;
             queryPoolDesc.m_pipelineStatisticsMask = RHI::PipelineStatisticsFlags::None;
-            queryPool->Init(DeviceMask, queryPoolDesc);
+            queryPool->Init(queryPoolDesc);
 
             EXPECT_FALSE(queryA->IsInitialized());
             EXPECT_FALSE(queryB->IsInitialized());
@@ -107,7 +107,7 @@ namespace UnitTest
 
             RHI::Ptr<RHI::QueryPool> queryPoolB;
             queryPoolB = aznew RHI::QueryPool;
-            queryPoolB->Init(DeviceMask, queryPoolDesc);
+            queryPoolB->Init(queryPoolDesc);
 
             queryPoolB->InitQuery(queryB.get());
             EXPECT_EQ(queryB->GetPool(), queryPoolB.get());
@@ -140,7 +140,7 @@ namespace UnitTest
         queryPoolDesc.m_queriesCount = numQueries;
         queryPoolDesc.m_type = RHI::QueryType::Occlusion;
         queryPoolDesc.m_pipelineStatisticsMask = RHI::PipelineStatisticsFlags::None;
-        queryPool->Init(DeviceMask, queryPoolDesc);
+        queryPool->Init(queryPoolDesc);
 
         AZStd::vector<RHI::Query*> queriesToInitialize(numQueries);
         for (size_t i = 0; i < queries.size(); ++i)
@@ -230,7 +230,7 @@ namespace UnitTest
         queryPoolDesc.m_queriesCount = numQueries;
         queryPoolDesc.m_type = RHI::QueryType::Occlusion;
         queryPoolDesc.m_pipelineStatisticsMask = RHI::PipelineStatisticsFlags::None;
-        queryPool->Init(DeviceMask, queryPoolDesc);
+        queryPool->Init(queryPoolDesc);
 
         AZStd::vector<RHI::Query*> queriesToInitialize(numQueries);
         for (size_t i = 0; i < queries.size(); ++i)
@@ -299,7 +299,7 @@ namespace UnitTest
             queryPoolDesc.m_pipelineStatisticsMask = queryPoolDesc.m_type == RHI::QueryType::PipelineStatistics
                 ? RHI::PipelineStatisticsFlags::CInvocations
                 : RHI::PipelineStatisticsFlags::None;
-            queryPool->Init(DeviceMask, queryPoolDesc);
+            queryPool->Init(queryPoolDesc);
         }
 
         auto& occlusionQueryPool = queryPools[static_cast<uint32_t>(RHI::QueryType::Occlusion)];
@@ -424,19 +424,19 @@ namespace UnitTest
         queryPoolDesc.m_pipelineStatisticsMask = RHI::PipelineStatisticsFlags::None;
         // Count of 0
         AZ_TEST_START_ASSERTTEST;
-        EXPECT_EQ(queryPool->Init(DeviceMask, queryPoolDesc), RHI::ResultCode::InvalidArgument);
+        EXPECT_EQ(queryPool->Init(queryPoolDesc), RHI::ResultCode::InvalidArgument);
         AZ_TEST_STOP_ASSERTTEST(1);
 
         // valid m_pipelineStatisticsMask for Occlusion QueryType
         queryPoolDesc.m_queriesCount = 1;
         queryPoolDesc.m_pipelineStatisticsMask = RHI::PipelineStatisticsFlags::CInvocations;
-        EXPECT_EQ(queryPool->Init(DeviceMask, queryPoolDesc), RHI::ResultCode::Success);
+        EXPECT_EQ(queryPool->Init(queryPoolDesc), RHI::ResultCode::Success);
 
         // invalid m_pipelineStatisticsMask for PipelineStatistics QueryType
         queryPoolDesc.m_type = RHI::QueryType::PipelineStatistics;
         queryPoolDesc.m_pipelineStatisticsMask = RHI::PipelineStatisticsFlags::None;
         AZ_TEST_START_ASSERTTEST;
-        EXPECT_EQ(queryPool->Init(DeviceMask, queryPoolDesc), RHI::ResultCode::InvalidArgument);
+        EXPECT_EQ(queryPool->Init(queryPoolDesc), RHI::ResultCode::InvalidArgument);
         AZ_TEST_STOP_ASSERTTEST(1);
     }
 
@@ -452,7 +452,7 @@ namespace UnitTest
             queryPoolDesc.m_queriesCount = 2;
             queryPoolDesc.m_type = RHI::QueryType::PipelineStatistics;
             queryPoolDesc.m_pipelineStatisticsMask = mask;
-            EXPECT_EQ(queryPool->Init(DeviceMask, queryPoolDesc), RHI::ResultCode::Success);
+            EXPECT_EQ(queryPool->Init(queryPoolDesc), RHI::ResultCode::Success);
         }
 
         RHI::Ptr<RHI::Query> query = aznew RHI::Query;
@@ -505,7 +505,7 @@ namespace UnitTest
             RHI::QueryPoolDescriptor queryPoolDesc;
             queryPoolDesc.m_queriesCount = 5;
             queryPoolDesc.m_type = RHI::QueryType::Occlusion;
-            EXPECT_EQ(queryPool->Init(DeviceMask, queryPoolDesc), RHI::ResultCode::Success);
+            EXPECT_EQ(queryPool->Init(queryPoolDesc), RHI::ResultCode::Success);
 
             for (size_t i = 0; i < queries2.size(); ++i)
             {

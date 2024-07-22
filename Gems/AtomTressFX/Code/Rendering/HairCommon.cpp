@@ -132,7 +132,7 @@ namespace AZ
             Data::Instance<RHI::ImagePool> UtilityClass::CreateImagePool(RHI::ImagePoolDescriptor& imagePoolDesc)
             {
                 Data::Instance<RHI::ImagePool> imagePool = aznew RHI::ImagePool;
-                RHI::ResultCode result = imagePool->Init(RHI::MultiDevice::AllDevices, imagePoolDesc);
+                RHI::ResultCode result = imagePool->Init(imagePoolDesc);
                 if (result != RHI::ResultCode::Success)
                 {
                     AZ_Error("CreateImagePool", false, "Failed to create or initialize image pool");
