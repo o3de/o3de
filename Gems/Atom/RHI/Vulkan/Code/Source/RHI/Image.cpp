@@ -192,11 +192,8 @@ namespace AZ
                 {
                     // find the offset base on bound blocks
                     VkOffset3D offset;
+                    // The offset need to modulo over the blockCountPerRow/PerColumn to ensure it stays in the boundary
                     offset.x = (boundBlockCount % blockCountPerRow) * imageGranularity.width;
-                    // the offset.y need to consider 3D texture case. Consider the example if we have 64x64x64(width,height,layer) 3d
-                    // texture and the block size is 16x16x16. When boundBlockCount is 20, without (% blockCountPerColumn), we would get
-                    // offset.y to (20/4 *16) = 80. The later extent.height = mipSize.m_height-offset.y = ((unsigned)64-80) will be a huge
-                    // positive number, thus led to error in sparse Binding.
                     offset.y = ((boundBlockCount / blockCountPerRow) % blockCountPerColumn) * imageGranularity.height;
                     offset.z = (boundBlockCount / (blockCountPerRow * blockCountPerColumn)) * imageGranularity.depth;
 
