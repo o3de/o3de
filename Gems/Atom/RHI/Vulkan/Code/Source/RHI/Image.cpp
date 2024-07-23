@@ -192,8 +192,9 @@ namespace AZ
                 {
                     // find the offset base on bound blocks
                     VkOffset3D offset;
+                    // The offset need to modulo over the blockCountPerRow/PerColumn to ensure it stays in the boundary
                     offset.x = (boundBlockCount % blockCountPerRow) * imageGranularity.width;
-                    offset.y = (boundBlockCount / blockCountPerRow) * imageGranularity.height;
+                    offset.y = ((boundBlockCount / blockCountPerRow) % blockCountPerColumn) * imageGranularity.height;
                     offset.z = (boundBlockCount / (blockCountPerRow * blockCountPerColumn)) * imageGranularity.depth;
 
                     // only update the width of the extent 
