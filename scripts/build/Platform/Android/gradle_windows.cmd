@@ -93,8 +93,8 @@ IF EXIST "%TMP%\o3de_gradle_ar" (
     RMDIR /S /Q "%TMP%\o3de_gradle_ar"
 )
 ECHO Creating a minimal project for the native build process
-ECHO %PYTHON% %O3DE_PATH%\scripts\o3de.py create-project -pp "%TMP%\o3de_gradle_ar" -pn GradleTest -tn MinimalProject
-CALL %PYTHON% %O3DE_PATH%\scripts\o3de.py create-project -pp "%TMP%\o3de_gradle_ar" -pn GradleTest -tn MinimalProject
+ECHO %PYTHON% %O3DE_PATH%\scripts\o3de.bat create-project -pp "%TMP%\o3de_gradle_ar" -pn GradleTest -tn MinimalProject
+CALL %PYTHON% %O3DE_PATH%\scripts\o3de.bat create-project -pp "%TMP%\o3de_gradle_ar" -pn GradleTest -tn MinimalProject
 
 REM Optionally sign the APK if we are generating an APK 
 SET GENERATE_SIGNED_APK=false

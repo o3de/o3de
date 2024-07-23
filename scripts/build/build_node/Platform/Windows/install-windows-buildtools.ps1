@@ -16,7 +16,7 @@ Write-Host "Install Java (for Android)"
 choco install corretto17jdk -y --ia INSTALLDIR="c:\jdk17" # Custom directory to handle cases where whitespace in the path is not quote wrapped
 
 Write-Host "Set JDK_PATH for Android"
-[Environment]::SetEnvironmentVariable("JDK_PATH", "c:\jdk17", [EnvironmentVariableTarget]::Machine)
+[Environment]::SetEnvironmentVariable("JDK_PATH", "c:\jdk17\jdk17.0.12_7", [EnvironmentVariableTarget]::Machine)
     
 Write-Host "Set Java path for Jenkins node agent"
 [Environment]::SetEnvironmentVariable("JENKINS_JAVA_CMD", "c:\jdk11", [EnvironmentVariableTarget]::Machine)
