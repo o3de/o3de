@@ -223,8 +223,11 @@ float3 CalculateLighting(
     screenPositionForLighting.xy = (screenPositionForLighting.xy * 0.5 + 0.5) * dimensions;
 
     // Light iterator - required for the init but the culling is not used yet.
+#if ENABLE_LIGHT_CULLING
     lightingData.tileIterator.Init(screenCoords, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
-
+#else
+    lightingData.tileIterator.Init();
+#endif
     // The normal assignment will be overriden afterwards per light
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
 

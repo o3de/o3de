@@ -25,10 +25,12 @@ partial ShaderResourceGroup SceneSrg
     StructuredBuffer<DirectionalLight> m_directionalLights;
     uint m_directionalLightCount;
     
+#if !defined(FORCE_SMALL_SRGS) || ENABLE_POLYGON_LTC_LIGHTS || ENABLE_QUAD_LIGHTS
     // Look up textures for linear transform cosine area lights.
     Texture2D<float4> m_ltcMatrix;
     Texture2D<float2> m_ltcAmplification;
-    
+#endif
+
     // Hardware PCF comparison sampler that is used when sampling the shadow maps
     SamplerComparisonState m_hwPcfSampler
     {

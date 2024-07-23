@@ -25,12 +25,18 @@ float       prefix##m_heightmapOffset;
 #define COMMON_OPTIONS_PARALLAX(prefix) \
 option bool prefix##o_useHeightmap; 
 
+#if defined(FORCE_SMALL_SRGS) && !ENABLE_PARALLAX
+    #undef COMMON_SRG_INPUTS_PARALLAX
+    #define COMMON_SRG_INPUTS_PARALLAX(prefix)
+#endif
+
 void GetParallaxInput(float3 normal, float3 tangent, float3 bitangent, float heightmapScale, float heightmapOffset,
                       float4x4 objectWorldMatrix, real3x3 uvMatrix, real3x3 uvMatrixInverse,
                       inout float2 uv, inout float3 worldPosition, inout float depthNDC, inout float depthCS, out bool isClipped)
 {
     isClipped = false;
 
+#if ENABLE_PARALLAX
     if(o_parallax_feature_enabled)
     {
         float3 dirToCamera;
@@ -75,6 +81,7 @@ void GetParallaxInput(float3 normal, float3 tangent, float3 bitangent, float hei
             worldPosition = pdo.m_worldPosition;
         }
     }
+#endif
 }
 
 void GetParallaxInput(float3 normal, float3 tangent, float3 bitangent, float heightmapScale, float heightmapOffset,

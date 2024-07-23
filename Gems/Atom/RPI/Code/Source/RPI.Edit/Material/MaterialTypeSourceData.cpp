@@ -692,7 +692,8 @@ namespace AZ
             const Name& propertyId,
             const MaterialPropertySourceData& propertySourceData) const
         {
-            materialTypeAssetCreator.BeginMaterialProperty(propertyId, propertySourceData.m_dataType, materialPipelineName);
+            materialTypeAssetCreator.BeginMaterialProperty(
+                propertyId, propertySourceData.m_dataType, materialPipelineName, propertySourceData.m_optional);
 
             if (propertySourceData.m_dataType == MaterialPropertyDataType::Enum)
             {

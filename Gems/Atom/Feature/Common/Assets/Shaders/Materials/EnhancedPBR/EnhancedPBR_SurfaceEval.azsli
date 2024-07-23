@@ -68,11 +68,12 @@ Surface EvaluateSurface_EnhancedPBR(
         MaterialSrg::m_detail_baseColor_texture, MaterialSrg::m_sampler, detailUv,    o_detail_baseColor_useTexture, detailLayerBaseColorFactor);
     
     // ------- Parallax Clipping -------
-
+#if ENABLE_PARALLAX
     if(o_parallax_highlightClipping && isDisplacementClipped)
     {
         ApplyParallaxClippingHighlight(baseColor);
     }
+#endif
 
     // ------- Alpha & Clip -------
 

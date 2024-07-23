@@ -14,7 +14,9 @@
 #define OUTPUT_SUBSURFACE 1
 #define ENABLE_TRANSMISSION 1
 #define ENABLE_SHADER_DEBUGGING 1
+#ifndef ENABLE_CLEAR_COAT
 #define ENABLE_CLEAR_COAT 1
+#endif
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 

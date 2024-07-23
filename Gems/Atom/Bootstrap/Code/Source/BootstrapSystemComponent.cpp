@@ -515,7 +515,7 @@ namespace AZ
                     if (maxheight > 0 && resolution.m_height > maxheight)
                     {
                         resolution.m_height = maxheight;
-                        resolution.m_width = static_cast<uint32_t>(resolution.m_height / aspect_ratio);
+                        resolution.m_width = static_cast<uint32_t>(resolution.m_height * aspect_ratio);
                     }
 
                     // Finally apply the renderscale

@@ -289,6 +289,13 @@ namespace ImageProcessingAtom
         return ImageProcessingAtom::BuilderSettingManager::Instance()->IsValidPreset(presetName);
     }
 
+#if defined(CARBONATED)
+    bool BuilderPluginComponent::IsExtensionSupported(const char* extension)
+    {
+        return ImageProcessingAtom::IsExtensionSupported(extension);
+    }
+#endif
+
     void ImageBuilderWorker::ShutDown()
     {
         // it is important to note that this will be called on a different thread than your process job thread

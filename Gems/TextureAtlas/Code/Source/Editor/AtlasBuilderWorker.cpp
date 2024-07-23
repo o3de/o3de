@@ -482,7 +482,13 @@ namespace TextureAtlasBuilder
             {
                 AZStd::string ext;
                 AzFramework::StringFunc::Path::GetExtension(candidates[i].c_str(), ext, false);
+#if defined(CARBONATED)
+                bool extensionSupported = false;
+                ImageProcessingAtom::ImageBuilderRequestBus::BroadcastResult(extensionSupported, &ImageProcessingAtom::ImageBuilderRequestBus::Events::IsExtensionSupported, ext.c_str());
+                if (extensionSupported)
+#else
                 if (ext != "dds")
+#endif
                 {
                     bool duplicate = false;
                     for (size_t j = 0; j < paths.size() && !duplicate; ++j)
@@ -592,12 +598,24 @@ namespace TextureAtlasBuilder
             {
                 AZStd::string child = (entry.filePath().toStdString()).c_str();
                 AZStd::string ext;
+
                 bool isDir = !AzFramework::StringFunc::Path::GetExtension(child.c_str(), ext, false);
                 if (isDir)
                 {
                     AddFolderContents(paths, child, valid);
+#if defined(CARBONATED)
+                    continue;
+#endif
                 }
+
+#if defined(CARBONATED)
+                bool extensionSupported = false;
+                ImageProcessingAtom::ImageBuilderRequestBus::BroadcastResult(extensionSupported, &ImageProcessingAtom::ImageBuilderRequestBus::Events::IsExtensionSupported, ext.c_str());
+
+                if (extensionSupported)    
+#else
                 else if (ext != "dds")
+#endif
                 {
                     AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::NormalizePathKeepCase, child);
                     bool duplicate = false;
@@ -1052,7 +1070,11 @@ namespace TextureAtlasBuilder
                 return;
             }
 
+#if defined(CARBONATED)
+            response.m_outputProducts.insert(response.m_outputProducts.end(), outProducts.begin(), outProducts.end());
+#else
             response.m_outputProducts.push_back(outProducts[0]);
+#endif
 
             // The texatlasidx file is a data file that indicates where the original parts are inside the atlas, 
             // and this would usually imply that it refers to its dds file in some way or needs it to function.

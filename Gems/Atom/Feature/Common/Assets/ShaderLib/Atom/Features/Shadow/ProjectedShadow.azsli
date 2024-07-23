@@ -14,6 +14,10 @@
 
 #if ENABLE_SHADOWS
 
+#ifndef ENABLE_ESM_SHADOW
+#define ENABLE_ESM_SHADOW               1
+#endif
+
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
 #include <Atom/Features/Shadow/ShadowmapAtlasLib.azsli>
@@ -171,6 +175,7 @@ float ProjectedShadow::GetVisibilityPcf()
 
 float ProjectedShadow::GetVisibilityEsm()
 {
+#if ENABLE_ESM_SHADOW
     static const float PixelMargin = 1.5; // avoiding artifact on the edge of shadowmap.
 
     const uint size = ViewSrg::m_projectedFilterParams[m_shadowIndex].m_shadowmapSize;
@@ -205,12 +210,13 @@ float ProjectedShadow::GetVisibilityEsm()
         // pow() mitigates light bleeding to shadows from near shadow casters.
         return saturate( pow(ratio, 8) );
     }
-
+#endif
     return 1.;
 }
 
 float ProjectedShadow::GetVisibilityEsmPcf()
 {
+#if ENABLE_ESM_SHADOW
     static const float PixelMargin = 1.5; // avoiding artifact on the edge of shadowmap;
 
     const uint size = ViewSrg::m_projectedFilterParams[m_shadowIndex].m_shadowmapSize;
@@ -254,7 +260,7 @@ float ProjectedShadow::GetVisibilityEsmPcf()
         }
         return saturate(ratio);
     }
-
+#endif
     return 1.;
 }
 

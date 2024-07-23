@@ -45,6 +45,7 @@ namespace AZ
                 static constexpr const char enumValues[] = "enumValues";
                 static constexpr const char enumIsUv[] = "enumIsUv";
                 static constexpr const char vectorLabels[] = "vectorLabels";
+                static constexpr const char optional[] = "optional";
             }
 
             static const AZStd::string_view AcceptedFields[] =
@@ -64,7 +65,8 @@ namespace AZ
                 Field::connection,
                 Field::enumValues,
                 Field::enumIsUv,
-                Field::vectorLabels
+                Field::vectorLabels,
+                Field::optional
             };
         }
 
@@ -282,6 +284,8 @@ namespace AZ
 
             result.Combine(ContinueLoadingFromJsonObjectField(&property->m_enumIsUv, azrtti_typeid<bool>(), inputValue, Field::enumIsUv, context));
 
+            result.Combine(ContinueLoadingFromJsonObjectField(&property->m_optional, azrtti_typeid<bool>(), inputValue, Field::optional, context));
+
             if (result.GetProcessing() == JsonSerializationResult::Processing::Completed)
             {
                 return context.Report(result, "Successfully loaded property definition.");
@@ -440,6 +444,11 @@ namespace AZ
 
             const bool defaultEnumIsUv = false;
             result.Combine(ContinueStoringToJsonObjectField(outputValue, Field::enumIsUv, &property->m_enumIsUv, &defaultEnumIsUv, azrtti_typeid(property->m_enumIsUv), context));
+
+            const bool defaultOptional = false;
+            result.Combine(ContinueStoringToJsonObjectField(
+                outputValue, Field::optional, &property->m_optional, &defaultOptional, azrtti_typeid(property->m_optional), context));
+
 
             if (result.GetProcessing() == JsonSerializationResult::Processing::Completed)
             {
