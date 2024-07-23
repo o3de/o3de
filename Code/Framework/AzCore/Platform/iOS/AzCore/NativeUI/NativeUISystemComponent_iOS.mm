@@ -61,8 +61,8 @@ namespace AZ
             freopen([pathForLog cStringUsingEncoding:NSASCIIStringEncoding], "a+", stderr);
             
             // These messages go to the file.
-            NSLog(@"Main thread is locked (waits for a semaphore or else) when another thread requests a blocking popup display at %@"
-                        @"This is likely an assertion. The popup might be fialed to display, the app might crash"
+            NSLog(@"Main thread is locked (waits for a semaphore or else) when another thread requests a blocking popup display at %@."
+                        @" This is likely an assertion. The popup might be fialed to display, the app might crash"
                             , dateString);
 
             NSLog(@"Dialog title: %@", nsTitle);
