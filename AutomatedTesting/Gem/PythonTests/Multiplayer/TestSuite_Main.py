@@ -40,7 +40,7 @@ class TestAutomation(EditorTestSuite):
 
         def __init__(self):
             super(test_Multiplayer_BasicConnectivity_Connects, self).__init__()
-            self.timeout = 60.0 * 10.0 # increase timeout to ~10 minutes to accomidate for slow server startup
+            self.timeout = 60.0 * 15.0 # increase timeout to ~15 minutes to accommodate for slow server startup
         
         @classmethod
         def setup(cls, instance, request, workspace):
