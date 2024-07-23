@@ -12,6 +12,8 @@ set(FILES
     Include/AtomLyIntegration/CommonFeatures/CoreLights/CoreLightsConstants.h
     Include/AtomLyIntegration/CommonFeatures/CoreLights/DirectionalLightBus.h
     Include/AtomLyIntegration/CommonFeatures/CoreLights/DirectionalLightComponentConfig.h
+    Include/AtomLyIntegration/CommonFeatures/Debug/RayTracingDebugBus.h
+    Include/AtomLyIntegration/CommonFeatures/Debug/RayTracingDebugComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/Debug/RenderDebugBus.h
     Include/AtomLyIntegration/CommonFeatures/Debug/RenderDebugComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/Decals/DecalBus.h

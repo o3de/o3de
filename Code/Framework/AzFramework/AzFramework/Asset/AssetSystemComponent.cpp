@@ -336,12 +336,12 @@ namespace AzFramework
 
         void AssetSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("AssetProcessorConnection", 0xf0cd75cd));
+            provided.push_back(AZ_CRC_CE("AssetProcessorConnection"));
         }
 
         void AssetSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("AssetProcessorConnection", 0xf0cd75cd));
+            incompatible.push_back(AZ_CRC_CE("AssetProcessorConnection"));
         }
 
         void AssetSystemComponent::EnableSocketConnection()

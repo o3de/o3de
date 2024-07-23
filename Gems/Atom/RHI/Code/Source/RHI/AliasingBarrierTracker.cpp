@@ -6,9 +6,9 @@
  *
  */
 #include <Atom/RHI/AliasingBarrierTracker.h>
-#include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/Image.h>
 #include <Atom/RHI/Scope.h>
+#include <Atom/RHI/DeviceBuffer.h>
 
 namespace AZ::RHI
 {

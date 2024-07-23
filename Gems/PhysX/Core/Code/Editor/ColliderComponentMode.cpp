@@ -377,7 +377,7 @@ namespace PhysX
         return azrtti_typeid<ColliderComponentMode>();
     }
 
-    void RefreshUI()
+    void RefreshUI(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
         /// The reason this is in a free function is because ColliderComponentMode
         /// privately inherits from ToolsApplicationNotificationBus. Trying to invoke
@@ -386,14 +386,16 @@ namespace PhysX
         /// Using the global namespace operator :: should have fixed that, except there
         /// is a bug in the microsoft compiler meaning it doesn't work. So this is a work around.
         AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
-            &AzToolsFramework::ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
+            &AzToolsFramework::ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplayForComponent, 
+            entityComponentIdPair,
+            AzToolsFramework::Refresh_Values);
     }
 
     void ColliderComponentMode::ResetCurrentMode()
     {
         m_subModes[m_subMode]->ResetValues(GetEntityComponentIdPair());
         m_subModes[m_subMode]->Refresh(GetEntityComponentIdPair());
-        RefreshUI();
+        RefreshUI(GetEntityComponentIdPair());
     }
 
     AZStd::vector<AzToolsFramework::ViewportUi::ClusterId> ColliderComponentMode::PopulateViewportUiImpl()

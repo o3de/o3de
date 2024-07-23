@@ -35,7 +35,7 @@ namespace AZ
                                 ->Attribute(Edit::Attributes::Category, "Graphics/Mesh")
                                 ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
                                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.svg")
-                                ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                                ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                                 ->Attribute(Edit::Attributes::AutoExpand, true)
                             ;
                         

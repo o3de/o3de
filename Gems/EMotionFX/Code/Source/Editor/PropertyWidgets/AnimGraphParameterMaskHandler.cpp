@@ -27,7 +27,7 @@ namespace EMotionFX
 
     AZ::u32 AnimGraphParameterMaskHandler::GetHandlerName() const
     {
-        return AZ_CRC("AnimGraphParameterMask", 0x67dd0993);
+        return AZ_CRC_CE("AnimGraphParameterMask");
     }
 
     QWidget* AnimGraphParameterMaskHandler::CreateGUI(QWidget* parent)

@@ -13,6 +13,7 @@
 #include <AzCore/std/functional.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <SceneAPI/SceneUI/SceneUIConfiguration.h>
+#include <QThread>
 #endif
 
 namespace AZStd
@@ -34,14 +35,14 @@ namespace AZ
                 ~AsyncOperationProcessingHandler() override = default;
                 void BeginProcessing() override;
 
-            private:
+            private Q_SLOTS:
                 void OnBackgroundOperationComplete();
 
             private:
                 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
                 AZStd::function<void()> m_operationToRun;
                 AZStd::function<void()> m_onComplete;
-                AZStd::unique_ptr<AZStd::thread> m_thread;
+                QThread* m_thread = nullptr;
                 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
             };
         }

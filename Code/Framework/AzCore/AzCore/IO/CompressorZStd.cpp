@@ -36,7 +36,7 @@ namespace AZ::IO
 
     AZ::u32 CompressorZStd::TypeId()
     {
-        return AZ_CRC("ZStd", 0x72fd505e);
+        return AZ_CRC_CE("ZStd");
     }
 
     bool CompressorZStd::ReadHeaderAndData(CompressorStream* stream, AZ::u8* data, unsigned int dataSize)

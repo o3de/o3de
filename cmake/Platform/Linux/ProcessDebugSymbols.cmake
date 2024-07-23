@@ -71,6 +71,8 @@ execute_process(COMMAND
 # Step 3: Re-link the debug information file from stemp 1 (For 'DETACH' actions)
 if (${DEBUG_SYMBOL_OPTION} STREQUAL "DETACH")
 
+    execute_process(COMMAND ${GNU_OBJCOPY} --remove-section=.gnu_debuglink ${STRIP_TARGET})
+
     execute_process(COMMAND 
                         ${GNU_OBJCOPY} --add-gnu-debuglink=${filename_only}.${DEBUG_SYMBOL_EXT} ${STRIP_TARGET}
                     WORKING_DIRECTORY 

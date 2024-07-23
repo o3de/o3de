@@ -51,6 +51,7 @@ namespace AZ
     {
         class FrameGraphBuilder;
         class FrameGraphAttachmentInterface;
+        class FrameGraphInterface;
     }
 
     namespace RPI
@@ -191,6 +192,9 @@ namespace AZ
 
             //! Adds an attachment binding to the list of this Pass' attachment bindings
             void AddAttachmentBinding(PassAttachmentBinding attachmentBinding);
+
+            // Binds all attachments from the pass 
+            void DeclareAttachmentsToFrameGraph(RHI::FrameGraphInterface frameGraph, PassSlotType slotType = PassSlotType::Uninitialized) const;
 
             // Returns a reference to the N-th input binding, where N is the index passed to the function
             PassAttachmentBinding& GetInputBinding(uint32_t index);
@@ -488,6 +492,11 @@ namespace AZ
 
                         // Whether this pass contains a binding that is referenced globally through the pipeline
                         uint64_t m_containsGlobalReference : 1;
+
+                        // If this is a parent pass, indicates whether the child passes should be merged as subpasses.
+                        // If this is a child pass, indicates whether it is a subpass.
+                        // Please read about PassData::m_mergeChildrenAsSubpasses for more details.
+                        uint64_t m_mergeChildrenAsSubpasses : 1;
                     };
                     uint64_t m_allFlags = 0;
                 };
@@ -516,6 +525,9 @@ namespace AZ
 
             //! Optional data used during pass initialization
             AZStd::shared_ptr<PassData> m_passData = nullptr;
+
+            //! Default RHI::ScopeAttachmentStage value for all pass attachments of usage RHI::ScopeAttachmentUsage::Shader
+            RHI::ScopeAttachmentStage m_defaultShaderAttachmentStage = RHI::ScopeAttachmentStage::AnyGraphics;
 
         private:
             // Return the Timestamp result of this pass

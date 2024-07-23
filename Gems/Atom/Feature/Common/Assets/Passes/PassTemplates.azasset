@@ -513,6 +513,10 @@
                 "Path": "Passes/DebugOverlayParent.pass"
             },
             {
+                "Name": "DebugRayTracingPassTemplate",
+                "Path": "Passes/DebugRayTracingPass.pass"
+            },
+            {
                 "Name": "UIParentTemplate",
                 "Path": "Passes/UIParent.pass"
             },
@@ -579,6 +583,10 @@
             {
                 "Name": "MobilePostProcessParentTemplate",
                 "Path": "Passes/Mobile/PostProcessParent.pass"
+            },
+            {
+                "Name": "MobileDisplayMapperTemplate",
+                "Path": "Passes/Mobile/DisplayMapper.pass"
             },
             {
                 "Name": "KawaseShadowBlurTemplate",

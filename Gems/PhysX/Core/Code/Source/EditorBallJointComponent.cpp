@@ -203,9 +203,7 @@ namespace PhysX
             m_swingLimit.m_standardLimitConfig.m_inComponentMode = value;
             m_config.m_inComponentMode = value;
 
-            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay
-                , AzToolsFramework::Refresh_EntireTree);
+            InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
         }
     }
 

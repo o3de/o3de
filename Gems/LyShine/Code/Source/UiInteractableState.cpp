@@ -406,10 +406,10 @@ void UiInteractableStateSprite::Reflect(AZ::ReflectContext* context)
             editInfo->DataElement("ComboBox", &UiInteractableStateSprite::m_targetEntity, "Target", "The target element.")
                 ->Attribute("EnumValues", &UiInteractableStateSprite::PopulateTargetEntityList)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiInteractableStateSprite::OnTargetElementChange)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
             editInfo->DataElement("Sprite", &UiInteractableStateSprite::m_spritePathname, "Sprite", "The sprite.")
                 ->Attribute("ChangeNotify", &UiInteractableStateSprite::OnSpritePathnameChange)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiInteractableStateSprite::m_spriteSheetCellIndex, "Index", "Sprite-sheet index. Defines which cell in a sprite-sheet is displayed.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiInteractableStateSprite::IsSpriteSheet)
                 ->Attribute("EnumValues", &UiInteractableStateSprite::PopulateIndexStringList);
@@ -658,7 +658,7 @@ void UiInteractableStateFont::Reflect(AZ::ReflectContext* context)
                 ->Attribute("EnumValues", &UiInteractableStateFont::PopulateTargetEntityList);
             editInfo->DataElement("SimpleAssetRef", &UiInteractableStateFont::m_fontFilename, "Font path", "The font asset pathname.")
                 ->Attribute("ChangeNotify", &UiInteractableStateFont::OnFontPathnameChange)
-                ->Attribute("ChangeNotify", AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute("ChangeNotify", AZ_CRC_CE("RefreshEntireTree"));
             editInfo->DataElement("ComboBox", &UiInteractableStateFont::m_fontEffectIndex, "Font effect", "The font effect (from font file).")
                 ->Attribute("EnumValues", &UiInteractableStateFont::PopulateFontEffectList);
         }

@@ -182,13 +182,13 @@ namespace EMotionFX
     template<class T>
     AZ::u32 ActorJointElementHandlerImpl<T>::GetHandlerName() const
     {
-        return AZ_CRC("ActorJointElement", 0xedc8946c);
+        return AZ_CRC_CE("ActorJointElement");
     }
 
     template<>
     AZ::u32 ActorJointElementHandlerImpl<AZStd::pair<AZStd::string, float>>::GetHandlerName() const
     {
-        return AZ_CRC("ActorWeightedJointElement", 0xe84566a0);
+        return AZ_CRC_CE("ActorWeightedJointElement");
     }
 
     template<class T>
@@ -216,7 +216,7 @@ namespace EMotionFX
 
     AZ::u32 ActorSingleJointHandler::GetHandlerName() const
     {
-        return AZ_CRC("ActorNode", 0x35d9eb50);
+        return AZ_CRC_CE("ActorNode");
     }
 
     QWidget* ActorSingleJointHandler::CreateGUI(QWidget* parent)
@@ -264,7 +264,7 @@ namespace EMotionFX
 
     AZ::u32 ActorMultiJointHandler::GetHandlerName() const
     {
-        return AZ_CRC("ActorNodes", 0x70504714);
+        return AZ_CRC_CE("ActorNodes");
     }
 
     QWidget* ActorMultiJointHandler::CreateGUI(QWidget* parent)
@@ -313,7 +313,7 @@ namespace EMotionFX
 
     AZ::u32 ActorMultiWeightedJointHandler::GetHandlerName() const
     {
-        return AZ_CRC("ActorWeightedNodes", 0x689c0537);
+        return AZ_CRC_CE("ActorWeightedNodes");
     }
 
     QWidget* ActorMultiWeightedJointHandler::CreateGUI(QWidget* parent)

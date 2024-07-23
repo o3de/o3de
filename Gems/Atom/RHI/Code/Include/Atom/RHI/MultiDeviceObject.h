@@ -16,9 +16,9 @@ namespace UnitTest
     struct MultiDeviceDrawPacketData;
 }
 
-#define AZ_RHI_MULTI_DEVICE_OBJECT_GETTER(Type) AZ_FORCE_INLINE Ptr<Type> GetDevice##Type(int deviceIndex) const \
+#define AZ_RHI_MULTI_DEVICE_OBJECT_GETTER(Type) AZ_FORCE_INLINE Ptr<Device##Type> GetDevice##Type(int deviceIndex) const \
 { \
-    return GetDeviceObject<Type>(deviceIndex); \
+    return GetDeviceObject<Device##Type>(deviceIndex); \
 }
 
 namespace AZ::RHI
@@ -158,6 +158,9 @@ namespace AZ::RHI
     private:
         //! Returns the number of initialized devices
         int GetDeviceCount() const;
+
+        //! Pass on name to DeviceObjects
+        virtual void SetNameInternal(const AZStd::string_view& name) override;
 
         //! A bitmask denoting on which devices an object is present/valid/allocated
         MultiDevice::DeviceMask m_deviceMask{ 0u };

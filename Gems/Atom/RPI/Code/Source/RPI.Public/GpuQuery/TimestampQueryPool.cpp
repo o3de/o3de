@@ -6,6 +6,8 @@
  *
  */
 
+#include <Atom/RHI/FrameGraphExecuteContext.h>
+
 #include <Atom/RPI.Public/GpuQuery/TimestampQueryPool.h>
 
 namespace AZ
@@ -24,20 +26,20 @@ namespace AZ
             return AZStd::unique_ptr<QueryPool>(aznew TimestampQueryPool(queryCount, RhiQueriesPerTimestampResult, RHI::QueryType::Timestamp, RHI::PipelineStatisticsFlags::None));
         }
 
-        RHI::ResultCode TimestampQueryPool::BeginQueryInternal(RHI::Interval rhiQueryIndices, RHI::CommandList& commandList)
+        RHI::ResultCode TimestampQueryPool::BeginQueryInternal(RHI::Interval rhiQueryIndices, const RHI::FrameGraphExecuteContext& context)
         {
             AZStd::span<const RHI::Ptr<RHI::Query>> rhiQueryArray = GetRhiQueryArray();
             AZ::RHI::Ptr<AZ::RHI::Query> beginQuery = rhiQueryArray[rhiQueryIndices.m_min];
 
-            return beginQuery->WriteTimestamp(commandList);
+            return beginQuery->GetDeviceQuery(context.GetDeviceIndex())->WriteTimestamp(*context.GetCommandList());
         }
 
-        RHI::ResultCode TimestampQueryPool::EndQueryInternal(RHI::Interval rhiQueryIndices, RHI::CommandList& commandList)
+        RHI::ResultCode TimestampQueryPool::EndQueryInternal(RHI::Interval rhiQueryIndices, const RHI::FrameGraphExecuteContext& context)
         {
             AZStd::span<const RHI::Ptr<RHI::Query>> rhiQueryArray = GetRhiQueryArray();
             AZ::RHI::Ptr<AZ::RHI::Query> endQuery = rhiQueryArray[rhiQueryIndices.m_max];
 
-            return endQuery->WriteTimestamp(commandList);
+            return endQuery->GetDeviceQuery(context.GetDeviceIndex())->WriteTimestamp(*context.GetCommandList());
         }
     };  // Namespace RPI
 };  // Namespace AZ

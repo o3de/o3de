@@ -10,7 +10,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/DeviceDrawItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 
@@ -59,7 +59,6 @@ namespace AZ
 
             // Scope producer functions...
             void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
-            void CompileResources(const RHI::FrameGraphCompileContext& context) override;
 
             //! Set the binding indices of all members of the SRG
             void SetSrgBindIndices();
@@ -76,9 +75,6 @@ namespace AZ
             // When a component is not present we want to fall back to the default settings and
             // actively pass them to the shader.
             DeferredFogSettings m_fallbackSettings;
-
-            // Shader options for variant generation (texture and layer activation in this case)
-            AZ::RPI::ShaderVariantKey m_ShaderOptions;
 
             // Fog mode option name
             const AZ::Name m_fogModeOptionName;

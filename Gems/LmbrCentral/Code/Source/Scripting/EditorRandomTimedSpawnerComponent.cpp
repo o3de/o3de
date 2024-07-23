@@ -58,7 +58,7 @@ namespace LmbrCentral
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/RandomTimedSpawner.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/RandomTimedSpawner.svg")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorRandomTimedSpawnerComponent::m_config, "m_config", "No Description")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
@@ -71,23 +71,23 @@ namespace LmbrCentral
 
     void EditorRandomTimedSpawnerComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("RandomTimedSpawnerService", 0x56f2fa36));
+        provided.push_back(AZ_CRC_CE("RandomTimedSpawnerService"));
     }
     void EditorRandomTimedSpawnerComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         //Only compatible with Box and Cylinder shapes 
-        incompatible.push_back(AZ_CRC("CapsuleShapeService", 0x9bc1122c));
-        incompatible.push_back(AZ_CRC("SphereShapeService", 0x90c8dc80));
-        incompatible.push_back(AZ_CRC("CompoundShapeService", 0x4f7c640a));
-        incompatible.push_back(AZ_CRC("TubeShapeService", 0x3fe791b4));
-        incompatible.push_back(AZ_CRC("PrismShapeService", 0x8dbfb417));
-        incompatible.push_back(AZ_CRC("PolygonPrismShapeService", 0x1cbc4ed4));
+        incompatible.push_back(AZ_CRC_CE("CapsuleShapeService"));
+        incompatible.push_back(AZ_CRC_CE("SphereShapeService"));
+        incompatible.push_back(AZ_CRC_CE("CompoundShapeService"));
+        incompatible.push_back(AZ_CRC_CE("TubeShapeService"));
+        incompatible.push_back(AZ_CRC_CE("PrismShapeService"));
+        incompatible.push_back(AZ_CRC_CE("PolygonPrismShapeService"));
     }
     void EditorRandomTimedSpawnerComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
-        required.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
-        required.push_back(AZ_CRC("SpawnerService", 0xd2f1d7a3));
+        required.push_back(AZ_CRC_CE("TransformService"));
+        required.push_back(AZ_CRC_CE("ShapeService"));
+        required.push_back(AZ_CRC_CE("SpawnerService"));
     }
 
     void EditorRandomTimedSpawnerComponent::Activate()

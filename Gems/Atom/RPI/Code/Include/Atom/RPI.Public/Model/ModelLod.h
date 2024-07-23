@@ -12,7 +12,8 @@
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Public/Model/UvStreamTangentBitmask.h>
 
-#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/IndexBufferView.h>
+#include <Atom/RHI/StreamBufferView.h>
 
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI.Reflect/Limits.h>

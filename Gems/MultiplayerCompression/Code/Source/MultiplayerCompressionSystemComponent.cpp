@@ -38,12 +38,12 @@ namespace MultiplayerCompression
 
     void MultiplayerCompressionSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("MultiplayerCompressionService"));
+        provided.push_back(AZ_CRC_CE("MultiplayerCompressionService"));
     }
 
     void MultiplayerCompressionSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("MultiplayerCompressionService"));
+        incompatible.push_back(AZ_CRC_CE("MultiplayerCompressionService"));
     }
 
     MultiplayerCompressionSystemComponent::MultiplayerCompressionSystemComponent()

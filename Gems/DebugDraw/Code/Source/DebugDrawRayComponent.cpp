@@ -62,7 +62,7 @@ namespace DebugDraw
 
     void DebugDrawRayComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("DebugDrawRayService", 0xdd79b586));
+        provided.push_back(AZ_CRC_CE("DebugDrawRayService"));
     }
 
     void DebugDrawRayComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)

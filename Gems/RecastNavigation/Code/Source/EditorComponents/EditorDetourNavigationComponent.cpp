@@ -28,7 +28,7 @@ namespace RecastNavigation
                 editContext->Class<EditorDetourNavigationComponent>("Detour Navigation Component",
                     "[Calculates paths within an associated navigation mesh.]")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorDetourNavigationComponent::m_navQueryEntityId,
                         "Navigation Mesh", "Entity with Recast Navigation Mesh component")

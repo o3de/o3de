@@ -65,12 +65,12 @@ namespace AudioSystemGem
 
     void AudioSystemGemSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("AudioSystemGemService"));
+        provided.push_back(AZ_CRC_CE("AudioSystemGemService"));
     }
 
     void AudioSystemGemSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("AudioSystemGemService"));
+        incompatible.push_back(AZ_CRC_CE("AudioSystemGemService"));
     }
 
     void AudioSystemGemSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

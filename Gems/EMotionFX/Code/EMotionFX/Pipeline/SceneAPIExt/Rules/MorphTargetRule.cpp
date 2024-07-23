@@ -61,7 +61,7 @@ namespace EMotionFX
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute("AutoExpand", true)
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                            ->DataElement(AZ_CRC("ManifestName", 0x5215b349), &MorphTargetRule::m_morphTargets, "Select morph targets",
+                            ->DataElement(AZ_CRC_CE("ManifestName"), &MorphTargetRule::m_morphTargets, "Select morph targets",
                             "Select 1 or more meshes to include in the actor as morph targets.")
                             ->Attribute("FilterName", "morph targets")
                             ->Attribute("FilterType", AZ::SceneAPI::DataTypes::IBlendShapeData::TYPEINFO_Uuid())
@@ -149,8 +149,8 @@ namespace EMotionFX
                 {
                     editContext->Class<MorphTargetRuleReadOnly>("Morph Targets", "This should be hidden!")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
-                        ->DataElement(AZ_CRC("ManifestName", 0x5215b349), &MorphTargetRuleReadOnly::m_descriptionText, "Morph target motions",
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
+                        ->DataElement(AZ_CRC_CE("ManifestName"), &MorphTargetRuleReadOnly::m_descriptionText, "Morph target motions",
                             "Morph targets involved in motion.")
                             ->Attribute("ReadOnly", true);
                 }

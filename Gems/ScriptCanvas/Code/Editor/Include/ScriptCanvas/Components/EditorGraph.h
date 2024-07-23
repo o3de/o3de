@@ -133,7 +133,7 @@ namespace ScriptCanvasEditor
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
             ScriptCanvas::Graph::GetProvidedServices(provided);
-            provided.push_back(AZ_CRC("EditorScriptCanvasService", 0x975114ff));
+            provided.push_back(AZ_CRC_CE("EditorScriptCanvasService"));
         }
 
         static void GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -143,7 +143,7 @@ namespace ScriptCanvasEditor
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
             ScriptCanvas::Graph::GetIncompatibleServices(incompatible);
-            incompatible.push_back(AZ_CRC("EditorScriptCanvasService", 0x975114ff));
+            incompatible.push_back(AZ_CRC_CE("EditorScriptCanvasService"));
         }
 
         // SceneCounterRequestBus

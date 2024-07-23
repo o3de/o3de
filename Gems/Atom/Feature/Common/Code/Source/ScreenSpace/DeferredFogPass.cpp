@@ -11,7 +11,7 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/FrameGraphInterface.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
@@ -209,35 +209,37 @@ namespace AZ
 
         void DeferredFogPass::UpdateShaderOptions()
         {
-            RPI::ShaderOptionGroup shaderOption = m_shader->CreateShaderOptionGroup();
+            RPI::ShaderOptionGroup shaderOptions = m_shader->CreateShaderOptionGroup();
             DeferredFogSettings* fogSettings = GetPassFogSettings();
 
             // [TODO][ATOM-13659] - AZ::Name all over our code base should use init with string and
             // hash key for the iterations themselves.
-            shaderOption.SetValue(AZ::Name("o_enableFogLayer"),
+            shaderOptions.SetValue(
+                AZ::Name("o_enableFogLayer"),
                 r_fogLayerSupport && fogSettings->GetEnableFogLayerShaderOption() ? AZ::Name("true") : AZ::Name("false"));
-            shaderOption.SetValue(AZ::Name("o_useNoiseTexture"),
+            shaderOptions.SetValue(
+                AZ::Name("o_useNoiseTexture"),
                 r_fogTurbulenceSupport && fogSettings->GetUseNoiseTextureShaderOption() ? AZ::Name("true") : AZ::Name("false"));
             switch (fogSettings->GetFogMode())
             {
             case FogMode::Linear:
-                shaderOption.SetValue(m_fogModeOptionName, AZ::Name("FogMode::LinearMode"));
+                shaderOptions.SetValue(m_fogModeOptionName, AZ::Name("FogMode::LinearMode"));
                 break;
             case FogMode::Exponential:
-                shaderOption.SetValue(m_fogModeOptionName, AZ::Name("FogMode::ExponentialMode"));
+                shaderOptions.SetValue(m_fogModeOptionName, AZ::Name("FogMode::ExponentialMode"));
                 break;
             case FogMode::ExponentialSquared:
-                shaderOption.SetValue(m_fogModeOptionName, AZ::Name("FogMode::ExponentialSquaredMode"));
+                shaderOptions.SetValue(m_fogModeOptionName, AZ::Name("FogMode::ExponentialSquaredMode"));
                 break;
             default:
                 AZ_Error("DeferredFogPass", false, "Invalid fog mode %d", fogSettings->GetFogMode());
                 break;
             }
-
-            // The following method returns the specified options, as well as fall back values for all 
-            // non-specified options.  If all were set you can use the method GetShaderVariantKey that is 
-            // cheaper but will not make sure the populated values has the default fall back for any unset bit.
-            m_ShaderOptions = shaderOption.GetShaderVariantKeyFallbackValue();
+            shaderOptions.SetUnspecifiedToDefaultValues();
+            if (m_pipelineStateForDraw.GetShaderVariantId() != shaderOptions.GetShaderVariantId())
+            {
+                FullscreenTrianglePass::UpdateShaderOptions(shaderOptions.GetShaderVariantId());
+            }
         }
 
         void DeferredFogPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
@@ -248,25 +250,10 @@ namespace AZ
             DeferredFogSettings* fogSettings = GetPassFogSettings();
 
             UpdateEnable(fogSettings);
-
             // Update and set the per pass shader options - this will update the current required
             // shader variant and if doesn't exist, it will be created via the compile stage
-            if (m_shaderResourceGroup->HasShaderVariantKeyFallbackEntry())
-            {
-                UpdateShaderOptions();
-            }
-
+            UpdateShaderOptions();
             SetSrgConstants();
-        }
-  
-        void DeferredFogPass::CompileResources(const RHI::FrameGraphCompileContext& context)
-        {
-            if (m_shaderResourceGroup->HasShaderVariantKeyFallbackEntry())
-            {
-                m_shaderResourceGroup->SetShaderVariantKeyFallbackValue(m_ShaderOptions);
-            }
-
-            FullscreenTrianglePass::CompileResources(context);
         }
     }   // namespace Render
 }   // namespace AZ

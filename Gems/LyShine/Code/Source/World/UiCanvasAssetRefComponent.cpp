@@ -175,7 +175,7 @@ void UiCanvasAssetRefComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/UiCanvasAssetRef.svg")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/UiCanvasAssetRef.svg")
                 ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/ui/canvas-asset-ref/")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c));
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
 
             editInfo->DataElement("CanvasAssetRef", &UiCanvasAssetRefComponent::m_canvasAssetRef,
                 "Canvas pathname", "The pathname of the canvas.")
@@ -185,7 +185,7 @@ void UiCanvasAssetRefComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute("EditCallback", &UiCanvasAssetRefComponent::LaunchUIEditor);
             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCanvasAssetRefComponent::m_isAutoLoad,
                 "Load automatically", "When checked, the canvas is loaded when this component is activated.")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCanvasAssetRefComponent::m_shouldLoadDisabled,
                 "Load in disabled state", "When checked and loading automatically, the canvas is loaded in a disabled state.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiCanvasAssetRefComponent::m_isAutoLoad);

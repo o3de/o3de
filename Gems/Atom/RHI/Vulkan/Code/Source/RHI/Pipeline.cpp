@@ -32,6 +32,7 @@ namespace AZ
             }
 
             Base::Init(*descriptor.m_device);
+            m_specializationConstantData.Init(*descriptor.m_pipelineDescritor);
 
             RHI::ResultCode result = InitInternal(descriptor, *layout);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
@@ -91,6 +92,7 @@ namespace AZ
                 device.GetContext().DestroyPipeline(device.GetNativeDevice(), m_nativePipeline, VkSystemAllocator::Get());
                 m_nativePipeline = VK_NULL_HANDLE;
             }
+            m_specializationConstantData.Shutdown();
             Base::Shutdown();
         }
 
@@ -137,7 +139,7 @@ namespace AZ
             createInfo.stage = stageBits;
             createInfo.module = shaderModule->GetNativeShaderModule();
             createInfo.pName = shaderModule->GetEntryFunctionName().c_str();
-            createInfo.pSpecializationInfo = nullptr;
+            createInfo.pSpecializationInfo = m_specializationConstantData.GetVkSpecializationInfo();
         }
     }
 }

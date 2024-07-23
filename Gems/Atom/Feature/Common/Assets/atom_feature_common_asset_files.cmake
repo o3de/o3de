@@ -92,6 +92,7 @@ set(FILES
     Passes/ContrastAdaptiveSharpening.pass
     Passes/ConvertToAcescg.pass
     Passes/DebugOverlayParent.pass
+    Passes/DebugRayTracingPass.pass
     Passes/DeferredFog.pass
     Passes/Depth.pass
     Passes/DepthCheckerboard.pass
@@ -357,6 +358,15 @@ set(FILES
     Shaders/Checkerboard/CheckerboardColorResolveCS.shader
     Shaders/ColorGrading/LutGeneration.azsl
     Shaders/ColorGrading/LutGeneration.shader
+    Shaders/Debug/RayTracingDebugClosestHit.azsl
+    Shaders/Debug/RayTracingDebugClosestHit.shader
+    Shaders/Debug/RayTracingDebugClosestHitProcedural.azsl
+    Shaders/Debug/RayTracingDebugClosestHitProcedural.shader
+    Shaders/Debug/RayTracingDebugCommon.azsli
+    Shaders/Debug/RayTracingDebugMiss.azsl
+    Shaders/Debug/RayTracingDebugMiss.shader
+    Shaders/Debug/RayTracingDebugRayGeneration.azsl
+    Shaders/Debug/RayTracingDebugRayGeneration.shader
     Shaders/Depth/DepthPass.azsl
     Shaders/Depth/DepthPass.shader
     Shaders/DiffuseGlobalIllumination/DiffuseGlobalFullscreen.azsl

@@ -46,11 +46,12 @@ namespace ScriptCanvas
         RuntimeComponent() = default;
 
         void TakeRuntimeDataOverrides(RuntimeDataOverrides&& overrideData);
+        const RuntimeDataOverrides& GetRuntimeDataOverrides() const;
 
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ScriptCanvasRuntimeService", 0x776e1e3a));
+            provided.push_back(AZ_CRC_CE("ScriptCanvasRuntimeService"));
         }
 
         void Activate() override;

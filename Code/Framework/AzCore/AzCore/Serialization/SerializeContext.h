@@ -65,7 +65,7 @@ namespace AZ::SerializeContextAttributes
 {
     // Attribute used to set an override function on a SerializeContext::ClassData attribute array
     // which can be used to override the ObjectStream WriteElement call to write out reflected data differently
-    static const AZ::Crc32 ObjectStreamWriteElementOverride = AZ_CRC("ObjectStreamWriteElementOverride", 0x35eb659f);
+    static const AZ::Crc32 ObjectStreamWriteElementOverride = AZ_CRC_CE("ObjectStreamWriteElementOverride");
 }
 namespace AZ
 {
@@ -1122,7 +1122,7 @@ namespace AZ::Serialize
         /// Return default element generic name (used by most containers).
         static inline const char* GetDefaultElementName() { return "element"; }
         /// Return default element generic name crc (used by most containers).
-        static inline u32 GetDefaultElementNameCrc() { return AZ_CRC("element", 0x41405e39); }
+        static inline u32 GetDefaultElementNameCrc() { return AZ_CRC_CE("element"); }
 
         // Returns default element generic name unless overridden by an IDataContainer
         virtual const char* GetElementName([[maybe_unused]] int index = 0) { return GetDefaultElementName(); }

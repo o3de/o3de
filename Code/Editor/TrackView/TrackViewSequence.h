@@ -90,7 +90,6 @@ class CTrackViewSequence
     // Undo friends
     friend class CUndoAnimNodeReparent;
     friend class CUndoTrackObject;
-    friend class CUndoComponentEntityTrackObject;
 
 public:
     CTrackViewSequence(IAnimSequence* pSequence);
@@ -184,9 +183,6 @@ public:
     // Deletes all selected keys
     void DeleteSelectedKeys();
 
-    // Sync from/to base
-    void SyncSelectedTracksToBase();
-    void SyncSelectedTracksFromBase();
 
     // Listeners
     void AddListener(ITrackViewSequenceListener* pListener);

@@ -101,6 +101,11 @@ namespace AZ
                 AZStd::array<SubpassDescriptor, RHI::Limits::Pipeline::SubpassCountMax> m_subpassDescriptors;
                 //! Dependencies of the resources between the subpasses.
                 AZStd::vector<VkSubpassDependency> m_subpassDependencies;
+                //! Necessary to avoid validation errors when Vulkan compares
+                //! the VkRenderPass of the PipelineStateObject vs the VkRenderPass of the VkCmdBeginRenderPass.
+                //! Even if the subpass dependencies are identical but they differ in order, it'd trigger validation errors.
+                //! To make the order irrelevant, the solution is to merge the bitflags. 
+                void MergeSubpassDependencies();
             };
 
             RHI::ResultCode Init(const Descriptor& descriptor);

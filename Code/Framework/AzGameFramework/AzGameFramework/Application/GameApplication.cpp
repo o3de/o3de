@@ -92,9 +92,72 @@ namespace AzGameFramework
     {
         m_headless = headless;
     }
+    void GameApplication::SetConsoleModeSupported(bool supported)
+    {
+        m_consoleModeSupported = supported;
+    }
 
     void GameApplication::StartCommon(AZ::Entity* systemEntity)
     {
+        if (!this->m_headless)
+        {
+            bool isConsoleMode{ false };
+
+            // If we are not in headless-mode, its still possible to be in console-only mode,
+            // where a native client window will not be created (on platforms that support 
+            // setting console mode at runtime). There are 2 possible triggers for console mode
+
+            // 1. Settings registry : If the registry setting '/O3DE/Launcher/Bootstrap/ConsoleMode' is specified and set to true
+            if (const auto* settingsRegistry = AZ::SettingsRegistry::Get())
+            {
+                settingsRegistry->Get(isConsoleMode, "/O3DE/Launcher/Bootstrap/ConsoleMode");
+
+                // The null renderer can also be set in the settings registry for the RPI
+                bool isRPINullRenderer{ false };
+                if (settingsRegistry->Get(isRPINullRenderer, "/O3DE/Atom/RPI/Initialization/NullRenderer"))
+                {
+                    if (isRPINullRenderer)
+                    {
+                        isConsoleMode = true;
+                    }
+                }
+            }
+
+            // 2. Either '-console-mode' or 'rhi=null' is specified in the command-line argument
+            const AzFramework::CommandLine* commandLine{ nullptr };
+            constexpr const char* commandSwitchConsoleOnly = "console-mode";
+            constexpr const char* commandSwitchNullRenderer = "NullRenderer";
+            constexpr const char* commandSwitchRhi = "rhi";
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetApplicationCommandLine);
+            AZ_Assert(commandLine, "Unable to query application command line to evaluate console-mode switches.");
+            if (commandLine)
+            {
+                if (commandLine->HasSwitch(commandSwitchConsoleOnly) || commandLine->HasSwitch(commandSwitchNullRenderer))
+                {
+                    isConsoleMode = true;
+                } 
+                else if (size_t switchCount = commandLine->GetNumSwitchValues(commandSwitchRhi); switchCount > 0)
+                {
+                    auto rhiValue = commandLine->GetSwitchValue(commandSwitchRhi, switchCount - 1);
+                    if (rhiValue.compare("null")==0)
+                    {
+                        isConsoleMode = true;
+                    }
+                }
+            }
+
+            AZ_Warning("Launcher", (isConsoleMode && !m_consoleModeSupported), "Console-mode was requested but not supported on this platform\n");
+            if (isConsoleMode && m_consoleModeSupported)
+            {
+                AZ_Info("Launcher", "Console only mode enabled.\n");
+                m_consoleMode = true;
+            }
+            else
+            {
+                m_consoleMode = false;
+            }
+        }
+
         AzFramework::Application::StartCommon(systemEntity);
     }
 
@@ -148,6 +211,10 @@ namespace AzGameFramework
         if (m_headless)
         {
             appType.m_maskValue |= AZ::ApplicationTypeQuery::Masks::Headless;
+        }
+        if (m_consoleMode && m_consoleModeSupported)
+        {
+            appType.m_maskValue |= AZ::ApplicationTypeQuery::Masks::ConsoleMode;
         }
     };
 

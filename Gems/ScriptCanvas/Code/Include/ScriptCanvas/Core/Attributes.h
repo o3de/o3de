@@ -15,45 +15,45 @@ namespace ScriptCanvas
     {
         namespace Slot
         {
-            const static AZ::Crc32 Type = AZ_CRC("SlotType", 0x53811c3e);
+            const static AZ::Crc32 Type = AZ_CRC_CE("SlotType");
         }
 
         namespace Node
         {
-            const static AZ::Crc32 TitlePaletteOverride = AZ_CRC("TitlePaletteOverride", 0x2faad537);
+            const static AZ::Crc32 TitlePaletteOverride = AZ_CRC_CE("TitlePaletteOverride");
 
             //! ScriptCanvas needs to know whether some nodes should be executed as soon as the graph is 
             //! activated. This is the case of the OnGraphStart event, but it's valid for any nodes
             //! that need to process without an explicit execution in signal.
-            const static AZ::Crc32 GraphEntryPoint = AZ_CRC("ScriptCanvasGraphEntryPoint", 0xa3702458);
+            const static AZ::Crc32 GraphEntryPoint = AZ_CRC_CE("ScriptCanvasGraphEntryPoint");
 
-            const static AZ::Crc32 NodeType = AZ_CRC("ScriptCanvasNodeType", 0xfe591c34);
+            const static AZ::Crc32 NodeType = AZ_CRC_CE("ScriptCanvasNodeType");
         }
 
         namespace UIHandlers
         {
-            const static AZ::Crc32 GenericLineEdit = AZ_CRC("GenericLineEdit", 0xf6133796);            
+            const static AZ::Crc32 GenericLineEdit = AZ_CRC_CE("GenericLineEdit");
         }
 
         namespace NodePalette
         {
             // Attribute that can be used to store a function which creates a custom NodePaletteTreeItem
-            const static AZ::Crc32 TreeItemOverride = AZ_CRC("TreeItemOverride", 0xd457505c);
+            const static AZ::Crc32 TreeItemOverride = AZ_CRC_CE("TreeItemOverride");
         }
         
-        const static AZ::Crc32 StringToProperty = AZ_CRC("StringToProperty", 0x3e76c0a2);
-        const static AZ::Crc32 PropertyToString = AZ_CRC("PropertyToString", 0x323fc400);        
+        const static AZ::Crc32 StringToProperty = AZ_CRC_CE("StringToProperty");
+        const static AZ::Crc32 PropertyToString = AZ_CRC_CE("PropertyToString");
 
-        const static AZ::Crc32 Input = AZ_CRC("Input", 0xd82832d7);
-        const static AZ::Crc32 Output = AZ_CRC("Output", 0xccde149e);
-        const static AZ::Crc32 Setter = AZ_CRC("Setter", 0x7c825e44);
-        const static AZ::Crc32 Getter = AZ_CRC("Getter", 0xe4c51ec9);
-        const static AZ::Crc32 AutoExpose = AZ_CRC("AutoExpose", 0xb29a8440);
-        const static AZ::Crc32 Contract  = AZ_CRC("Contract", 0xe98f2859);
+        const static AZ::Crc32 Input = AZ_CRC_CE("Input");
+        const static AZ::Crc32 Output = AZ_CRC_CE("Output");
+        const static AZ::Crc32 Setter = AZ_CRC_CE("Setter");
+        const static AZ::Crc32 Getter = AZ_CRC_CE("Getter");
+        const static AZ::Crc32 AutoExpose = AZ_CRC_CE("AutoExpose");
+        const static AZ::Crc32 Contract  = AZ_CRC_CE("Contract");
 
-        const static AZ::Crc32 AllowSetterSlot  = AZ_CRC("AllowSetterSlot", 0xfe7e175b);
-        const static AZ::Crc32 AllowGetterSlot  = AZ_CRC("AllowGetterSlot", 0xd03b36c9);
-        const static AZ::Crc32 ShowSetterByDefault  = AZ_CRC("ShowSetterByDefault", 0x482bc9f4);
-        const static AZ::Crc32 ShowGetterByDefault  = AZ_CRC("ShowGetterByDefault", 0x863533d8);
+        const static AZ::Crc32 AllowSetterSlot  = AZ_CRC_CE("AllowSetterSlot");
+        const static AZ::Crc32 AllowGetterSlot  = AZ_CRC_CE("AllowGetterSlot");
+        const static AZ::Crc32 ShowSetterByDefault  = AZ_CRC_CE("ShowSetterByDefault");
+        const static AZ::Crc32 ShowGetterByDefault  = AZ_CRC_CE("ShowGetterByDefault");
     }
 }

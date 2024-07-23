@@ -298,7 +298,7 @@ namespace AzToolsFramework
                 typeUuid = dataNode->GetClassMetadata()->m_typeId;
             }
 
-            m_handlerName = AZ_CRC("Default", 0xe35e00df);
+            m_handlerName = AZ_CRC_CE("Default");
 
             if (dataNode->GetElementEditMetadata())
             {
@@ -306,7 +306,7 @@ namespace AzToolsFramework
             }
 
             // If we're an enum type under the hood, our default handler should be the enum ComboBox handler
-            if (!m_handlerName || m_handlerName == AZ_CRC("Default", 0xe35e00df))
+            if (!m_handlerName || m_handlerName == AZ_CRC_CE("Default"))
             {
                 auto elementMetadata = dataNode->GetElementMetadata();
                 if (elementMetadata)
@@ -789,7 +789,7 @@ namespace AzToolsFramework
             {
                 for (const AZ::Edit::ElementData& element : classEditData->m_elements)
                 {
-                    if (element.m_elementId == AZ_CRC("EditorData", 0xf44f1a1d))
+                    if (element.m_elementId == AZ_CRC_CE("EditorData"))
                     {
                         for (const AZ::Edit::AttributePair& attrPair : element.m_attributes)
                         {
@@ -917,7 +917,7 @@ namespace AzToolsFramework
         QString* descriptionOut/*=nullptr*/, bool* foundDescriptionOut/*=nullptr*/)
     {
         // Attribute types you are allowed to update at runtime
-        if (attributeName == AZ_CRC("ForbidExpansion", 0x966ad11a))
+        if (attributeName == AZ_CRC_CE("ForbidExpansion"))
         {
             m_forbidExpansion = true;
         }
@@ -1007,7 +1007,7 @@ namespace AzToolsFramework
                 reader.Read<bool>(m_containerEditable);
             }
         }
-        else if ((initial) && (attributeName == AZ_CRC("Handler", 0x939715cd)))
+        else if ((initial) && (attributeName == AZ_CRC_CE("Handler")))
         {
             AZ::u32 elementId = 0;
             if (reader.Read<AZ::u32>(elementId))

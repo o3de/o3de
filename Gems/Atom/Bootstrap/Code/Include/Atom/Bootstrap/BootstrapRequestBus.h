@@ -27,6 +27,7 @@ namespace AZ::Render::Bootstrap
         virtual void SwitchRenderPipeline(const AZ::RPI::RenderPipelineDescriptor& newRenderPipelineDesc, AZ::RPI::ViewportContextPtr viewportContext) = 0;
         virtual void SwitchAntiAliasing(const AZStd::string& newAntiAliasing, AZ::RPI::ViewportContextPtr viewportContext) = 0;
         virtual void SwitchMultiSample(const uint16_t newSampleCount, AZ::RPI::ViewportContextPtr viewportContext) = 0;
+        virtual void RefreshWindowResolution() = 0;
 
     protected:
         ~Request() = default;

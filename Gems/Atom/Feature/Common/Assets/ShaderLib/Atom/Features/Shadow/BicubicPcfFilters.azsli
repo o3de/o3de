@@ -23,7 +23,7 @@
 //--------------------------------------------------------------------------------------------------
 
 // Margin to avoid counting samples past the shadows bounds as being in shadow.
-static const real DepthMargin = 1.0 - 1e-6;
+static const real DepthMargin = 1.0 - 1e-3;
 
 struct SampleShadowMapBicubicParameters
 {

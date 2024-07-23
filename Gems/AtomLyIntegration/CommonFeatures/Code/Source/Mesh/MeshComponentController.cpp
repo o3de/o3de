@@ -84,7 +84,6 @@ namespace AZ
                     ->Field("UseForwardPassIBLSpecular", &MeshComponentConfig::m_useForwardPassIblSpecular)
                     ->Field("IsRayTracingEnabled", &MeshComponentConfig::m_isRayTracingEnabled)
                     ->Field("IsAlwaysDynamic", &MeshComponentConfig::m_isAlwaysDynamic)
-                    ->Field("Visibility", &MeshComponentConfig::m_isVisible)
                     ->Field("SupportRayIntersection", &MeshComponentConfig::m_enableRayIntersection)
                     ->Field("LodType", &MeshComponentConfig::m_lodType)
                     ->Field("LodOverride", &MeshComponentConfig::m_lodOverride)
@@ -212,7 +211,7 @@ namespace AZ
                     ->VirtualProperty("ExcludeFromReflectionCubeMaps", "GetExcludeFromReflectionCubeMaps", "SetExcludeFromReflectionCubeMaps")
                     ->VirtualProperty("Visibility", "GetVisibility", "SetVisibility")
                     ;
-
+                
                 behaviorContext->EBus<MeshComponentNotificationBus>("MeshComponentNotificationBus")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Category, "render")
@@ -442,6 +441,7 @@ namespace AZ
 
                 m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
                 MeshHandleDescriptor meshDescriptor;
+                meshDescriptor.m_entityId = m_entityComponentIdPair.GetEntityId();
                 meshDescriptor.m_modelAsset = m_configuration.m_modelAsset;
                 meshDescriptor.m_customMaterials = ConvertToCustomMaterialMap(materials);
                 meshDescriptor.m_useForwardPassIblSpecular = m_configuration.m_useForwardPassIblSpecular;
@@ -456,11 +456,12 @@ namespace AZ
 
                 const AZ::Transform& transform =
                     m_transformInterface ? m_transformInterface->GetWorldTM() : AZ::Transform::CreateIdentity();
-                m_meshFeatureProcessor->SetVisible(m_meshHandle, m_configuration.m_isVisible);
+
                 m_meshFeatureProcessor->SetTransform(m_meshHandle, transform, m_cachedNonUniformScale);
                 m_meshFeatureProcessor->SetSortKey(m_meshHandle, m_configuration.m_sortKey);
                 m_meshFeatureProcessor->SetLightingChannelMask(m_meshHandle, m_configuration.m_lightingChannelConfig.GetLightingChannelMask());
                 m_meshFeatureProcessor->SetMeshLodConfiguration(m_meshHandle, GetMeshLodConfiguration());
+                m_meshFeatureProcessor->SetVisible(m_meshHandle, m_isVisible);
                 m_meshFeatureProcessor->SetRayTracingEnabled(m_meshHandle, meshDescriptor.m_isRayTracingEnabled);
             }
             else
@@ -547,7 +548,7 @@ namespace AZ
         {
             return m_meshFeatureProcessor ? m_meshFeatureProcessor->GetModel(m_meshHandle) : Data::Instance<RPI::Model>();
         }
-
+        
         const RPI::MeshDrawPacketLods* MeshComponentController::GetDrawPackets() const
         {
             return m_meshFeatureProcessor ? &m_meshFeatureProcessor->GetDrawPackets(m_meshHandle) : nullptr;
@@ -639,19 +640,19 @@ namespace AZ
 
         void MeshComponentController::SetVisibility(bool visible)
         {
-            if (m_meshFeatureProcessor)
+            if (m_isVisible != visible)
             {
-                m_meshFeatureProcessor->SetVisible(m_meshHandle, visible);
+                if (m_meshFeatureProcessor)
+                {
+                    m_meshFeatureProcessor->SetVisible(m_meshHandle, visible);
+                }
+                m_isVisible = visible;
             }
         }
 
         bool MeshComponentController::GetVisibility() const
         {
-            if (m_meshFeatureProcessor)
-            {
-                return m_meshFeatureProcessor->GetVisible(m_meshHandle);
-            }
-            return false;
+            return m_isVisible;
         }
 
         void MeshComponentController::SetRayTracingEnabled(bool enabled)
@@ -800,6 +801,7 @@ namespace AZ
                 // Copy the index and position data into the visible geometry structure.
                 AzFramework::VisibleGeometry visibleGeometry;
                 visibleGeometry.m_transform = AZ::Matrix4x4::CreateFromTransform(m_transformInterface->GetWorldTM());
+                visibleGeometry.m_transform *= AZ::Matrix4x4::CreateScale(m_cachedNonUniformScale);
 
                 // Reserve space for indices and copy data, assuming stride between elements is 0.
                 visibleGeometry.m_indices.resize_no_construct(indexBufferViewDesc.m_elementCount);
@@ -879,7 +881,7 @@ namespace AZ
                             }
                         }
 
-                        // Continue iterating until all shaders have been checked or a matching tag is found.
+                        // Continue iterating until all shaders have been checked or a matching tag is found. 
                         return true;
                     });
             }

@@ -863,7 +863,7 @@ namespace EMotionFX
             // Developer code and APIs with exclusionary terms will be deprecated as we introduce replacements across this project's related
             // codebases and APIs. Please note, some instances have been retained in the current version to provide backward compatibility
             // for assets/materials created prior to the change. These will be deprecated in the future.
-            int index = classElement.FindElement(AZ_CRC("syncMasterMotionId", 0xfaec9599));
+            int index = classElement.FindElement(AZ_CRC_CE("syncMasterMotionId"));
             if (index > 0)
             {
                 AZStd::string oldValue;
@@ -919,17 +919,17 @@ namespace EMotionFX
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendSpace1DNode::m_calculationMethod, "Calculation method", "Calculation method.")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendSpace1DNode::Reinit)
-            ->DataElement(AZ_CRC("BlendSpaceEvaluator", 0x9a3f7d07), &BlendSpace1DNode::m_evaluatorType, "Evaluator", "Evaluator for the motions.")
+            ->DataElement(AZ_CRC_CE("BlendSpaceEvaluator"), &BlendSpace1DNode::m_evaluatorType, "Evaluator", "Evaluator for the motions.")
             ->Attribute(AZ::Edit::Attributes::Visibility, &BlendSpace1DNode::GetEvaluatorVisibility)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendSpace1DNode::Reinit)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendSpace1DNode::m_syncMode)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-            ->DataElement(AZ_CRC("BlendSpaceMotion", 0x9be98fb7), &BlendSpace1DNode::m_syncLeaderMotionId, "Sync Leader Motion", "The leader motion used for motion synchronization.")
+            ->DataElement(AZ_CRC_CE("BlendSpaceMotion"), &BlendSpace1DNode::m_syncLeaderMotionId, "Sync Leader Motion", "The leader motion used for motion synchronization.")
             ->Attribute(AZ::Edit::Attributes::Visibility, &BlendSpace1DNode::GetSyncOptionsVisibility)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendSpace1DNode::Reinit)
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendSpace1DNode::m_eventFilterMode)
-            ->DataElement(AZ_CRC("BlendSpaceMotionContainer", 0x8025d37d), &BlendSpace1DNode::m_motions, "Motions", "Source motions for blend space")
+            ->DataElement(AZ_CRC_CE("BlendSpaceMotionContainer"), &BlendSpace1DNode::m_motions, "Motions", "Source motions for blend space")
             ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendSpace1DNode::Reinit)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)

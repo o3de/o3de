@@ -39,7 +39,7 @@ namespace LmbrCentral
         void InvalidateCache(InvalidateShapeCacheReason reason);
 
         // ShapeComponentRequestsBus::Handler
-        AZ::Crc32 GetShapeType() const override { return AZ_CRC("Sphere", 0x55f96687); }
+        AZ::Crc32 GetShapeType() const override { return AZ_CRC_CE("Sphere"); }
         AZ::Aabb GetEncompassingAabb() const override;
         void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const override;
         bool IsPointInside(const AZ::Vector3& point) const  override;

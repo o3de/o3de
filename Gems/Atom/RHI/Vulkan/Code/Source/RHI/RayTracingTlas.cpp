@@ -13,8 +13,8 @@
 #include <RHI/BufferView.h>
 #include <RHI/Device.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/RayTracingBufferPools.h>
+#include <Atom/RHI/DeviceBufferPool.h>
+#include <Atom/RHI/DeviceRayTracingBufferPools.h>
 #include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
@@ -26,15 +26,14 @@ namespace AZ
             return aznew RayTracingTlas;
         }
 
-        RHI::ResultCode RayTracingTlas::CreateBuffersInternal(RHI::Device& deviceBase, const RHI::RayTracingTlasDescriptor* descriptor, const RHI::RayTracingBufferPools& bufferPools)
+        RHI::ResultCode RayTracingTlas::CreateBuffersInternal(RHI::Device& deviceBase, const RHI::DeviceRayTracingTlasDescriptor* descriptor, const RHI::DeviceRayTracingBufferPools& bufferPools)
         {
             auto& device = static_cast<Device&>(deviceBase);
             auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
             const VkPhysicalDeviceAccelerationStructurePropertiesKHR& accelerationStructureProperties = physicalDevice.GetPhysicalDeviceAccelerationStructureProperties();
                         
             // advance to the next buffer
-            m_currentBufferIndex = (m_currentBufferIndex + 1) % BufferCount;
-            TlasBuffers& buffers = m_buffers[m_currentBufferIndex];
+            TlasBuffers& buffers = m_buffers.AdvanceCurrentElement();
 
             if (buffers.m_accelerationStructure)
             {
@@ -43,7 +42,7 @@ namespace AZ
                 buffers.m_accelerationStructure = nullptr;
             }
 
-            const RHI::RayTracingTlasInstanceVector& instances = descriptor->GetInstances();
+            const RHI::DeviceRayTracingTlasInstanceVector& instances = descriptor->GetInstances();
             if (instances.empty())
             {
                 // no instances in the scene, clear the TLAS buffers
@@ -65,7 +64,7 @@ namespace AZ
                 tlasInstancesBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingAccelerationStructure;
                 tlasInstancesBufferDescriptor.m_byteCount = instanceDescsSizeInBytes;
                 
-                AZ::RHI::BufferInitRequest tlasInstancesBufferRequest;
+                AZ::RHI::DeviceBufferInitRequest tlasInstancesBufferRequest;
                 tlasInstancesBufferRequest.m_buffer = buffers.m_tlasInstancesBuffer.get();
                 tlasInstancesBufferRequest.m_descriptor = tlasInstancesBufferDescriptor;
                 [[maybe_unused]] RHI::ResultCode resultCode = bufferPools.GetTlasInstancesBufferPool()->InitBuffer(tlasInstancesBufferRequest);
@@ -74,8 +73,8 @@ namespace AZ
                 BufferMemoryView* tlasInstancesMemoryView = static_cast<Buffer*>(buffers.m_tlasInstancesBuffer.get())->GetBufferMemoryView();
                 tlasInstancesMemoryView->SetName("TLAS Instance");
                 
-                RHI::BufferMapResponse mapResponse;
-                resultCode = bufferPools.GetTlasInstancesBufferPool()->MapBuffer(RHI::BufferMapRequest(*buffers.m_tlasInstancesBuffer, 0, instanceDescsSizeInBytes), mapResponse);
+                RHI::DeviceBufferMapResponse mapResponse;
+                resultCode = bufferPools.GetTlasInstancesBufferPool()->MapBuffer(RHI::DeviceBufferMapRequest(*buffers.m_tlasInstancesBuffer, 0, instanceDescsSizeInBytes), mapResponse);
                 AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to map TLAS instances buffer");
                 VkAccelerationStructureInstanceKHR* mappedData = reinterpret_cast<VkAccelerationStructureInstanceKHR*>(mapResponse.m_data);
 
@@ -84,7 +83,7 @@ namespace AZ
                 // create each VkAccelerationStructureInstanceKHR structure
                 for (uint32_t i = 0; i < instances.size(); ++i)
                 {
-                    const RHI::RayTracingTlasInstance& instance = instances[i];
+                    const RHI::DeviceRayTracingTlasInstance& instance = instances[i];
             
                     mappedData[i].instanceCustomIndex = instance.m_instanceID;
                     mappedData[i].instanceShaderBindingTableRecordOffset = instance.m_hitGroupIndex;
@@ -161,7 +160,7 @@ namespace AZ
             scratchBufferDescriptor.m_byteCount = buildSizesInfo.buildScratchSize;
             scratchBufferDescriptor.m_alignment = accelerationStructureProperties.minAccelerationStructureScratchOffsetAlignment;
             
-            AZ::RHI::BufferInitRequest scratchBufferRequest;
+            AZ::RHI::DeviceBufferInitRequest scratchBufferRequest;
             scratchBufferRequest.m_buffer = buffers.m_scratchBuffer.get();
             scratchBufferRequest.m_descriptor = scratchBufferDescriptor;
             [[maybe_unused]] RHI::ResultCode resultCode = bufferPools.GetScratchBufferPool()->InitBuffer(scratchBufferRequest);
@@ -176,7 +175,7 @@ namespace AZ
             tlasBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::RayTracingAccelerationStructure;
             tlasBufferDescriptor.m_byteCount = buildSizesInfo.accelerationStructureSize;
             
-            AZ::RHI::BufferInitRequest tlasBufferRequest;
+            AZ::RHI::DeviceBufferInitRequest tlasBufferRequest;
             tlasBufferRequest.m_buffer = buffers.m_tlasBuffer.get();
             tlasBufferRequest.m_descriptor = tlasBufferDescriptor;
             resultCode = bufferPools.GetTlasBufferPool()->InitBuffer(tlasBufferRequest);

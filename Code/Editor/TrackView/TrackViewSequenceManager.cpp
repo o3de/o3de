@@ -22,8 +22,6 @@
 // Editor
 #include "AnimationContext.h"
 #include "GameEngine.h"
-#include "Include/IObjectManager.h"
-#include "Objects/ObjectManager.h"
 
 
 ////////////////////////////////////////////////////////////////////////////

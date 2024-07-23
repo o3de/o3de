@@ -49,7 +49,7 @@ namespace AzToolsFramework
     {
         namespace Internal
         {
-            const AZ::u32 ParentEntityCRC = AZ_CRC("Parent Entity", 0x5b1b276c);
+            const AZ::u32 ParentEntityCRC = AZ_CRC_CE("Parent Entity");
 
             // Decompose a transform into euler angles in degrees, uniform scale, and translation.
             void DecomposeTransform(const AZ::Transform& transform, AZ::Vector3& translation, AZ::Vector3& rotation, float& scale)
@@ -64,14 +64,14 @@ namespace AzToolsFramework
                 if (classElement.GetVersion() < 6)
                 {
                     // In v6, "Slice Transform" became slice-relative.
-                    const int sliceRelTransformIdx = classElement.FindElement(AZ_CRC("Slice Transform", 0x4f156fd1));
+                    const int sliceRelTransformIdx = classElement.FindElement(AZ_CRC_CE("Slice Transform"));
                     if (sliceRelTransformIdx >= 0)
                     {
                     // Convert slice-relative transform/root to standard parent-child relationship.
-                    const int sliceRootIdx = classElement.FindElement(AZ_CRC("Slice Root", 0x9f115e1f));
+                    const int sliceRootIdx = classElement.FindElement(AZ_CRC_CE("Slice Root"));
                     const int parentIdx = classElement.FindElement(ParentEntityCRC);
-                    const int editorTransformIdx = classElement.FindElement(AZ_CRC("Transform Data", 0xf0a2bb50));
-                    const int cachedTransformIdx = classElement.FindElement(AZ_CRC("Cached World Transform", 0x571fab30));
+                    const int editorTransformIdx = classElement.FindElement(AZ_CRC_CE("Transform Data"));
+                    const int cachedTransformIdx = classElement.FindElement(AZ_CRC_CE("Cached World Transform"));
 
                     if (editorTransformIdx >= 0 && sliceRootIdx >= 0 && parentIdx >= 0)
                     {
@@ -85,7 +85,7 @@ namespace AzToolsFramework
                         {
                             // If the entity already has a parent assigned, we don't need to fix anything up.
                             // We only need to convert slice root to parent for non-child entities.
-                            const int parentIdValueIdx = parentElement.FindElement(AZ_CRC("id", 0xbf396750));
+                            const int parentIdValueIdx = parentElement.FindElement(AZ_CRC_CE("id"));
                             AZ::u64 parentId = 0;
                             if (parentIdValueIdx >= 0)
                             {
@@ -93,7 +93,7 @@ namespace AzToolsFramework
                             }
 
                             AZ::EntityId sliceRootId;
-                            const int entityIdValueIdx = sliceRootElement.FindElement(AZ_CRC("id", 0xbf396750));
+                            const int entityIdValueIdx = sliceRootElement.FindElement(AZ_CRC_CE("id"));
 
                             if (entityIdValueIdx < 0)
                             {
@@ -128,8 +128,8 @@ namespace AzToolsFramework
                             }
 
                             // Finally, remove old fields.
-                            classElement.RemoveElementByName(AZ_CRC("Slice Transform", 0x4f156fd1));
-                            classElement.RemoveElementByName(AZ_CRC("Slice Root", 0x9f115e1f));
+                            classElement.RemoveElementByName(AZ_CRC_CE("Slice Transform"));
+                            classElement.RemoveElementByName(AZ_CRC_CE("Slice Root"));
                             }
                         }
                         }
@@ -160,7 +160,7 @@ namespace AzToolsFramework
                     // However, some data may have been exported with this field present, so
                     // remove it if its found, but only in this version which the change was present in, so that
                     // future re-additions of it won't remove it (as long as they bump the version number.)
-                    classElement.RemoveElementByName(AZ_CRC("InterpolateScale", 0x9d00b831));
+                    classElement.RemoveElementByName(AZ_CRC_CE("InterpolateScale"));
                 }
 
                 if (classElement.GetVersion() < 10)
@@ -303,21 +303,12 @@ namespace AzToolsFramework
                 {
                     boundsUnion->OnTransformUpdated(GetEntity());
                 }
-                // Fire a property changed notification for this component
+                // Fire a property changed notification for this component.  This will cascade to updating the UI.  It is not
+                // necessary to notify the UI directly.
                 if (const AZ::Component* component = entity->FindComponent<Components::TransformComponent>())
                 {
                     PropertyEditorEntityChangeNotificationBus::Event(
                         GetEntityId(), &PropertyEditorEntityChangeNotifications::OnEntityComponentPropertyChanged, component->GetId());
-                }
-
-                // Refresh the property editor if we're selected
-                bool selected = false;
-                ToolsApplicationRequestBus::BroadcastResult(
-                    selected, &AzToolsFramework::ToolsApplicationRequests::IsSelected, GetEntityId());
-                if (selected)
-                {
-                    ToolsApplicationEvents::Bus::Broadcast(
-                        &ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
                 }
             }
         }
@@ -1048,9 +1039,7 @@ namespace AzToolsFramework
         // This is called when our transform changes static state.
         AZ::u32 TransformComponent::StaticChangedInspector()
         {
-            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay,
-                AzToolsFramework::PropertyModificationRefreshLevel::Refresh_EntireTree);
+            InvalidatePropertyDisplay(AzToolsFramework::PropertyModificationRefreshLevel::Refresh_EntireTree);
            
             if (GetEntity())
             {
@@ -1119,12 +1108,12 @@ namespace AzToolsFramework
 
         void TransformComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+            provided.push_back(AZ_CRC_CE("TransformService"));
         }
 
         void TransformComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+            incompatible.push_back(AZ_CRC_CE("TransformService"));
         }
 
         void TransformComponent::PasteOverComponent(const TransformComponent* sourceComponent, TransformComponent* destinationComponent)
@@ -1320,7 +1309,7 @@ namespace AzToolsFramework
                         SetDirty();
                     }
 
-                    AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
+                    InvalidatePropertyDisplay(AzToolsFramework::Refresh_Values);
                 });
                 resetAction->setEnabled(!m_editorTransform.m_locked && !parentEntityIsReadOnly);
 
@@ -1332,7 +1321,7 @@ namespace AzToolsFramework
                         m_editorTransform.m_locked = !m_editorTransform.m_locked;
                         SetDirty();
                     }
-                    AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+                    InvalidatePropertyDisplay(AzToolsFramework::Refresh_AttributesAndValues);
                 });
                 lockAction->setEnabled(!parentEntityIsReadOnly);
             }

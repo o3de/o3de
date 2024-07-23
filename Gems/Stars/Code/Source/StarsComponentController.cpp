@@ -40,18 +40,18 @@ namespace AZ::Render
 
     void StarsComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("StarsService"));
+        provided.push_back(AZ_CRC_CE("StarsService"));
     }
 
     void StarsComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("StarsService"));
+        incompatible.push_back(AZ_CRC_CE("StarsService"));
         incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     void StarsComponentController::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC("TransformService"));
+        dependent.push_back(AZ_CRC_CE("TransformService"));
     }
 
     StarsComponentController::StarsComponentController(const StarsComponentConfig& config)

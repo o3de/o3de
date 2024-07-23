@@ -69,18 +69,18 @@ namespace Vegetation
 
     void SlopeAlignmentModifierComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationModifierService", 0xc551fca6));
-        services.push_back(AZ_CRC("VegetationAlignmentModifierService", 0xdf9ddf2b));
+        services.push_back(AZ_CRC_CE("VegetationModifierService"));
+        services.push_back(AZ_CRC_CE("VegetationAlignmentModifierService"));
     }
 
     void SlopeAlignmentModifierComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationAlignmentModifierService", 0xdf9ddf2b));
+        services.push_back(AZ_CRC_CE("VegetationAlignmentModifierService"));
     }
 
     void SlopeAlignmentModifierComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationAreaService", 0x6a859504));
+        services.push_back(AZ_CRC_CE("VegetationAreaService"));
     }
 
     void SlopeAlignmentModifierComponent::Reflect(AZ::ReflectContext* context)

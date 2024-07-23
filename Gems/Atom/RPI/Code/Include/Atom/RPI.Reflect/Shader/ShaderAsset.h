@@ -216,6 +216,20 @@ namespace AZ
                 return GetAttribute(shaderStage, attributeName, DefaultSupervariantIndex);
             }
 
+            //! Returns if the supervariant uses specialization constants for at least one shader options.
+            bool UseSpecializationConstants(SupervariantIndex supervariantIndex) const;
+            bool UseSpecializationConstants() const
+            {
+                return UseSpecializationConstants(DefaultSupervariantIndex);
+            }
+
+            //! Returns true if the supervariant is fully specialized (all shader options are specialization constants)
+            bool IsFullySpecialized(SupervariantIndex supervariantIndex) const;
+            bool IsFullySpecialized() const
+            {
+                return IsFullySpecialized(DefaultSupervariantIndex);
+            }
+
         private:
             ///////////////////////////////////////////////////////////////////
             /// ShaderVariantFinderNotificationBus overrides
@@ -242,6 +256,7 @@ namespace AZ
                 RHI::RenderStates m_renderStates;
                 RHI::ShaderStageAttributeMapList m_attributeMaps;
                 Data::Asset<ShaderVariantAsset> m_rootShaderVariantAsset;
+                bool m_useSpecializationConstants = false;
             };
 
             //! Container of shader data that is specific to an RHI API.
@@ -313,6 +328,9 @@ namespace AZ
             mutable AZStd::shared_mutex m_variantTreeMutex;
 
             bool m_shaderVariantTreeLoadWasRequested = false;
+
+            //! True if all supervariants are fully specialized
+            bool m_isFullySpecialized = false;
         };
 
         class ShaderAssetHandler final

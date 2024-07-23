@@ -13,8 +13,6 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorSelectionAccentSystemComponent.h>
 
-class CEntityObject;
-
 namespace AzToolsFramework
 {
     /**
@@ -25,9 +23,6 @@ namespace AzToolsFramework
     {
     public:
         virtual ~ComponentEntityEditorRequests() {}
-
-        /// Retrieve sandbox object associated with the entity.
-        virtual CEntityObject* GetSandboxObject() = 0;
 
         /// Returns true if the object is highlighted.
         virtual bool IsSandboxObjectHighlighted() = 0;

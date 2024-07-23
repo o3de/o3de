@@ -16,7 +16,12 @@ namespace AZ
         {
             m_device = &device;
         }
-        
+
+        AZ::Metal::Device& AZ::Metal::FrameGraphExecuteGroupBase::GetDevice() const
+        {
+            return *m_device;
+        }
+
         ExecuteWorkRequest&& FrameGraphExecuteGroupBase::AcquireWorkRequest()
         {
             return AZStd::move(m_workRequest);

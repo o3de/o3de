@@ -122,7 +122,7 @@ void PropertyAnchorCtrl::ConsumeAttribute(AZ::u32 attrib, AzToolsFramework::Prop
         }
         return;
     }
-    else if (attrib == AZ_CRC("LayoutFitterType", 0x7c009203))
+    else if (attrib == AZ_CRC_CE("LayoutFitterType"))
     {
         UiLayoutFitterInterface::FitType fitType = UiLayoutFitterInterface::FitType::None;
         if (attrValue->Read<UiLayoutFitterInterface::FitType>(fitType))

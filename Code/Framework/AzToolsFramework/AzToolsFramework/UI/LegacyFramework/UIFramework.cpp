@@ -261,7 +261,7 @@ namespace AzToolsFramework
         FrameworkMessages::Bus::Broadcast(
             &FrameworkMessages::Bus::Events::RegisterHotkey,
             AzToolsFramework::HotkeyDescription(
-                AZ_CRC("GeneralOpenAssetBrowser", 0xa15ceb44),
+                AZ_CRC_CE("GeneralOpenAssetBrowser"),
                 "Alt+Shift+O",
                 "Open Asset Browser",
                 "General",
