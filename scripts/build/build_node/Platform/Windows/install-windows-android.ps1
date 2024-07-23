@@ -16,7 +16,7 @@ $androidSdkUrl = "https://dl.google.com/android/repository/commandlinetools-win-
 $androidSdkChecksum = '4d6931209eebb1bfb7c7e8b240a6a3cb3ab24479ea294f3539429574b1eec862'
 $androidSdkInstallDir = "C:\AndroidSdk\"
 Install-ChocolateyZipPackage $androidSdkPackageName $androidSdkUrl $androidSdkInstallDir -Checksum $androidSdkChecksum -ChecksumType 'sha256'
-[Environment]::SetEnvironmentVariable("ANDROID_SDK_ROOT", "C:\AndroidSdk\", [EnvironmentVariableTarget]::Machine)
+[Environment]::SetEnvironmentVariable("ANDROID_SDK_ROOT", "C:\AndroidSdk", [EnvironmentVariableTarget]::Machine)
 
 # Set package versions
 $android_packages = '"platforms;android-28" "platforms;android-29" "platforms;android-30"'
