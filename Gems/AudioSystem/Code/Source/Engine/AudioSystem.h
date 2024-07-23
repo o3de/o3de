@@ -107,8 +107,7 @@ namespace Audio
 
         bool m_bSystemInitialized;
 
-        using duration_ms = AZStd::chrono::duration<float, AZStd::milli>;
-        const duration_ms m_targetUpdatePeriod = AZStd::chrono::milliseconds(4);
+        const AZStd::chrono::microseconds m_targetUpdatePeriod = AZStd::chrono::microseconds(4000); // 4 milliseconds
 
         CAudioTranslationLayer m_oATL;
         CAudioThread m_audioSystemThread;

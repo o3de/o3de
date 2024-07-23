@@ -239,12 +239,15 @@ namespace Audio
 
         if (!handleBlockingRequest)
         {
-            auto endUpdateTime = AZStd::chrono::steady_clock::now();      // stamp the end time
-            auto elapsedUpdateTime = AZStd::chrono::duration_cast<duration_ms>(endUpdateTime - startUpdateTime);
+            auto endUpdateTime = AZStd::chrono::steady_clock::now();  // stamp the end time
+            auto elapsedUpdateTime = AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(endUpdateTime - startUpdateTime);
             if (elapsedUpdateTime < m_targetUpdatePeriod)
             {
+                // Adding sleep before try_aquire in order to save CPU time
+                // Try_Aquire is a busy-wait, so a small try_acquire reduces the load on the audio thread
                 AZ_PROFILE_SCOPE(Audio, "Wait Remaining Time in Update Period");
-                m_processingEvent.try_acquire_for(m_targetUpdatePeriod - elapsedUpdateTime);
+                AZStd::this_thread::sleep_for(m_targetUpdatePeriod - elapsedUpdateTime);
+                m_processingEvent.try_acquire_for(AZStd::chrono::microseconds(100));  // 0.1 milliseconds
             }
         }
     }
