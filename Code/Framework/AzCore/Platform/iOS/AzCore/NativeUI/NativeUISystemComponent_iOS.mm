@@ -48,7 +48,7 @@ namespace AZ
             NSString* dateString = [formatter stringFromDate:date];
             
             // Include the date in the file name to not overwrite previous artifacts.
-            NSString* fileName = [NSString stringWithFormat:@"BlockingDialogAborted %@.txt", dateString];
+            NSString* fileName = [NSString stringWithFormat:@"BlockingDialogDeadlock %@.txt", dateString];
             
             NSArray* allPaths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
             NSString* documentsDirectory = [allPaths objectAtIndex:0];
@@ -58,14 +58,18 @@ namespace AZ
             freopen([pathForLog cStringUsingEncoding:NSASCIIStringEncoding], "a+", stderr);
             
             // These messages go to the file.
-            NSLog(@"BlockingDialog failed to display at %@", dateString);
+            NSLog(@"BlockingDialog might be failed to display at %@", dateString);
             
             NSLog(@"Title: %@", nsTitle);
             NSLog(@"Message: %@\n", nsMessage);
             
+            // There is no perfect solution because we do not know how the blocker thread handles the issue after the asserton
+            // abort() is commented out because we assume the asserted thread handles the issue well so the main thread is unblocked later.
+            // If there is a crash in the asserted thread then the app just crashes. From user perspective it is  similar to abort call.
+            /*
             NSLog(@"App terminated");
-            
             abort();
+            */
         }
 #endif
     
@@ -79,18 +83,32 @@ namespace AZ
             __block AZStd::string userSelection = "";
             
             __block bool mainThreadRunning = false;
-            
+            __block bool postActionPopup = false;
+
             NSString* nsTitle = [NSString stringWithUTF8String:title.c_str()];
             NSString* nsMessage = [NSString stringWithUTF8String:message.c_str()];
             
 #if defined(CARBONATED)
+            // these 3 can be used later after this call is over
+            [nsTitle retain];
+            [nsMessage retain];
+            AZStd::vector<AZStd::string>* pOptionsCopy = new AZStd::vector<AZStd::string>(options);
+            
             void (^DisplayBlockingDialogCommon)(void) = ^{
                 UIAlertController* alert = [UIAlertController alertControllerWithTitle:nsTitle message:nsMessage preferredStyle:UIAlertControllerStyleAlert];
                 
-                for (int i = 0; i < options.size(); i++)
+                if (postActionPopup)
                 {
-                    UIAlertAction* okAction = [UIAlertAction actionWithTitle:[NSString stringWithUTF8String:options[i].c_str()] style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) { userSelection = [action.title UTF8String]; }];
+                    UIAlertAction* okAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) { userSelection = [action.title UTF8String]; }];
                     [alert addAction:okAction];
+                }
+                else
+                {
+                    for (int i = 0; i < pOptionsCopy->size(); i++)
+                    {
+                        UIAlertAction* okAction = [UIAlertAction actionWithTitle:[NSString stringWithUTF8String:(*pOptionsCopy)[i].c_str()] style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) { userSelection = [action.title UTF8String]; }];
+                        [alert addAction:okAction];
+                    }
                 }
                 
                 UIWindow* foundWindow = nil;
@@ -113,6 +131,10 @@ namespace AZ
                 {
                     userSelection = "BlockingDialog Error";
                 }
+                
+                [nsTitle release];
+                [nsMessage release];
+                delete pOptionsCopy;
             };
 
             if (!NSThread.isMainThread)
@@ -132,7 +154,7 @@ namespace AZ
                 });
                 
                 // Wait till the user responds to the message box.
-                static constexpr int WaitMainThreadMs = 3000;
+                static constexpr int WaitMainThreadMs = 2000;
                 while (dispatch_semaphore_wait(blockSem, DISPATCH_TIME_NOW))
                 {
                     [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1.0/30]];
@@ -209,6 +231,7 @@ namespace AZ
             if (!NSThread.isMainThread && !mainThreadRunning)
             {
                 // Probably, deadlock detected.
+                postActionPopup = true;  // there is no need to display all the buttons, the assert is likely already ignored
                 OnDeadlock(nsTitle, nsMessage);
             }
             
