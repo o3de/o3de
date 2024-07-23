@@ -354,7 +354,6 @@ namespace AZ
                     m_clearBufferRequests.push_back(request);
 
                     isFullClear = bufferView->IsFullView();
-                    break;
                 }
 
                 CompileAttachmentInternal(isFullClear, *scopeAttachment, bufferView->GetMemory());
