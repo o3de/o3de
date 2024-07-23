@@ -66,7 +66,7 @@ namespace UnitTest
 
             RHI::BufferPoolDescriptor bufferPoolDesc;
             bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::Constant;
-            bufferPool->Init(DeviceMask, bufferPoolDesc);
+            bufferPool->Init(bufferPoolDesc);
 
             AZStd::vector<uint8_t> testData(32);
             for (uint32_t i = 0; i < 32; ++i)
@@ -140,7 +140,7 @@ namespace UnitTest
 
             RHI::Ptr<AZ::RHI::BufferPool> bufferPoolB;
             bufferPoolB = aznew AZ::RHI::BufferPool;
-            bufferPoolB->Init(DeviceMask, bufferPoolDesc);
+            bufferPoolB->Init(bufferPoolDesc);
 
             initRequest.m_buffer = bufferB.get();
             initRequest.m_descriptor = RHI::BufferDescriptor(RHI::BufferBindFlags::Constant, 16);
@@ -170,7 +170,7 @@ namespace UnitTest
 
             RHI::BufferPoolDescriptor bufferPoolDesc;
             bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::Constant;
-            bufferPool->Init(DeviceMask, bufferPoolDesc);
+            bufferPool->Init(bufferPoolDesc);
 
             RHI::Ptr<RHI::Buffer> buffer;
             buffer = aznew RHI::Buffer;
@@ -253,7 +253,7 @@ namespace UnitTest
             m_bufferPool = aznew AZ::RHI::BufferPool;
             RHI::BufferPoolDescriptor bufferPoolDesc;
             bufferPoolDesc.m_bindFlags = GetParam().bufferBindFlags;
-            m_bufferPool->Init(DeviceMask, bufferPoolDesc);
+            m_bufferPool->Init(bufferPoolDesc);
 
             m_buffer = aznew RHI::Buffer;
             RHI::BufferInitRequest initRequest;
@@ -499,7 +499,7 @@ namespace UnitTest
 
         RHI::BufferPoolDescriptor bufferPoolDesc;
         bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::Constant;
-        bufferPool->Init(DeviceMask, bufferPoolDesc);
+        bufferPool->Init(bufferPoolDesc);
 
         RHI::Ptr<RHI::Buffer> buffer;
         buffer = aznew RHI::Buffer;

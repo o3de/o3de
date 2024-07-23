@@ -33,7 +33,7 @@ namespace AZ
             virtual ~StreamingImagePool() = default;
 
             //! Initializes the pool. The pool must be initialized before images can be registered with it.
-            ResultCode Init(MultiDevice::DeviceMask deviceMask, const StreamingImagePoolDescriptor& descriptor);
+            ResultCode Init(const StreamingImagePoolDescriptor& descriptor);
 
             //! Initializes the backing resources of an image.
             ResultCode InitImage(const StreamingImageInitRequest& request);

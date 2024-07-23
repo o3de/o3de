@@ -34,7 +34,7 @@ namespace AZ
             assetHandlers.emplace_back(MakeAssetHandler<BufferAssetHandler>());
         }
 
-        void BufferSystem::Init(RHI::MultiDevice::DeviceMask deviceMask)
+        void BufferSystem::Init()
         {
             {
                 Data::InstanceHandler<Buffer> handler;
@@ -47,9 +47,9 @@ namespace AZ
 
             {
                 Data::InstanceHandler<BufferPool> handler;
-                handler.m_createFunction = [deviceMask](Data::AssetData* poolAsset)
+                handler.m_createFunction = [](Data::AssetData* poolAsset)
                 {
-                    return BufferPool::CreateInternal(deviceMask, *(azrtti_cast<ResourcePoolAsset*>(poolAsset)));
+                    return BufferPool::CreateInternal(*(azrtti_cast<ResourcePoolAsset*>(poolAsset)));
                 };
                 Data::InstanceDatabase<BufferPool>::Create(azrtti_typeid<ResourcePoolAsset>(), handler);
             }
@@ -152,7 +152,7 @@ namespace AZ
             }
 
             bufferPool->SetName(Name(AZStd::string::format("RPI::CommonBufferPool_%i", static_cast<uint32_t>(poolType))));
-            RHI::ResultCode resultCode = bufferPool->Init(RHI::MultiDevice::AllDevices, bufferPoolDesc);
+            RHI::ResultCode resultCode = bufferPool->Init(bufferPoolDesc);
             if (resultCode != RHI::ResultCode::Success)
             {
                 AZ_Error("BufferSystem", false, "Failed to create buffer pool: %d", poolType);

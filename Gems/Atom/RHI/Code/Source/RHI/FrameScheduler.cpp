@@ -64,7 +64,7 @@ namespace AZ::RHI
             return resultCode;
         }
 
-        RHI::MultiDevice::DeviceMask transientAttachmentPoolDeviceMask{0};
+        RHI::MultiDevice::DeviceMask transientAttachmentPoolDeviceMask{ 0 };
 
         for (auto& [deviceIndex, transientAttachmentPoolDescriptor] : descriptor.m_transientAttachmentPoolDescriptors)
         {
@@ -77,7 +77,8 @@ namespace AZ::RHI
         if (transientAttachmentPoolDeviceMask != static_cast<RHI::MultiDevice::DeviceMask>(0))
         {
             m_transientAttachmentPool = aznew TransientAttachmentPool();
-            resultCode = m_transientAttachmentPool->Init(transientAttachmentPoolDeviceMask, descriptor.m_transientAttachmentPoolDescriptors);
+            resultCode =
+                m_transientAttachmentPool->Init(transientAttachmentPoolDeviceMask, descriptor.m_transientAttachmentPoolDescriptors);
 
             if (resultCode != ResultCode::Success)
             {

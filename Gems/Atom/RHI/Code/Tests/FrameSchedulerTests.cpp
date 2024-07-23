@@ -171,7 +171,8 @@ namespace UnitTest
 
                 RHI::BufferPoolDescriptor desc;
                 desc.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
-                m_state->m_bufferPool->Init(RHI::MultiDevice::DefaultDevice, desc);
+                desc.m_deviceMask = RHI::MultiDevice::DefaultDevice;
+                m_state->m_bufferPool->Init(desc);
             }
 
             for (uint32_t i = 0; i < ImportedBufferCount; ++i)
@@ -197,7 +198,7 @@ namespace UnitTest
 
                 RHI::ImagePoolDescriptor desc;
                 desc.m_bindFlags = RHI::ImageBindFlags::ShaderReadWrite;
-                m_state->m_imagePool->Init(RHI::MultiDevice::AllDevices, desc);
+                m_state->m_imagePool->Init(desc);
             }
 
             for (uint32_t i = 0; i < ImportedImageCount; ++i)

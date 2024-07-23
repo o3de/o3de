@@ -34,7 +34,7 @@ namespace AZ::RHI
         virtual ~ShaderResourceGroupPool() override = default;
 
         //! Initializes the shader resource group pool for all devices noted in the deviceMask.
-        ResultCode Init(MultiDevice::DeviceMask deviceMask, const ShaderResourceGroupPoolDescriptor& descriptor);
+        ResultCode Init(const ShaderResourceGroupPoolDescriptor& descriptor);
 
         //! Initializes the resource group and associates it with the pool. The resource
         //! group must be updated on this pool.

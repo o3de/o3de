@@ -59,7 +59,7 @@ namespace AZ
 
             m_pool->SetName(AZ::Name(AZStd::string::format("%s_%s",shaderAsset.GetName().GetCStr(),srgName.GetCStr())));
 
-            const RHI::ResultCode resultCode = m_pool->Init(RHI::MultiDevice::AllDevices, poolDescriptor);
+            const RHI::ResultCode resultCode = m_pool->Init(poolDescriptor);
             return resultCode;
         }
 

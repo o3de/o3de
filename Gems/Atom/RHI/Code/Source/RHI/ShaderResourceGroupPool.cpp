@@ -14,8 +14,7 @@
 
 namespace AZ::RHI
 {
-    ResultCode ShaderResourceGroupPool::Init(
-        MultiDevice::DeviceMask deviceMask, const ShaderResourceGroupPoolDescriptor& descriptor)
+    ResultCode ShaderResourceGroupPool::Init(const ShaderResourceGroupPoolDescriptor& descriptor)
     {
         if (Validation::IsEnabled())
         {
@@ -27,7 +26,7 @@ namespace AZ::RHI
         }
 
         ResultCode resultCode = ResourcePool::Init(
-            deviceMask,
+            descriptor.m_deviceMask,
             [this, &descriptor]()
             {
                 IterateDevices(

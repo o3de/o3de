@@ -59,7 +59,7 @@ namespace AZ
 
             m_bufferPool = aznew RHI::BufferPool;
             m_bufferPool->SetName(Name("DiffuseProbeGridBoxBufferPool"));
-            [[maybe_unused]] RHI::ResultCode resultCode = m_bufferPool->Init(RHI::MultiDevice::AllDevices, desc);
+            [[maybe_unused]] RHI::ResultCode resultCode = m_bufferPool->Init(desc);
             AZ_Error("DiffuseProbeGridFeatureProcessor", resultCode == RHI::ResultCode::Success, "Failed to initialize buffer pool");
 
             // create box mesh vertices and indices
@@ -72,7 +72,7 @@ namespace AZ
 
                 m_probeGridRenderData.m_imagePool = aznew RHI::ImagePool;
                 m_probeGridRenderData.m_imagePool->SetName(Name("DiffuseProbeGridRenderImageData"));
-                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_imagePool->Init(RHI::MultiDevice::AllDevices, imagePoolDesc);
+                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_imagePool->Init(imagePoolDesc);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize output image pool");
             }
 
@@ -83,7 +83,7 @@ namespace AZ
 
                 m_probeGridRenderData.m_bufferPool = aznew RHI::BufferPool;
                 m_probeGridRenderData.m_bufferPool->SetName(Name("DiffuseProbeGridRenderBufferData"));
-                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_bufferPool->Init(RHI::MultiDevice::AllDevices, bufferPoolDesc);
+                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_bufferPool->Init(bufferPoolDesc);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize output buffer pool");
             }
 
