@@ -35,6 +35,9 @@ namespace AZ
             return std::chrono::duration_cast<result_t>(clock_t::now() - start);
         }
     
+        // There is no perfect solution because we do not know how the blocker thread handles the issue after the asserton.
+        // We assume the asserted thread handles the issue well so the main thread is unblocked later.
+        // If there is a crash in the asserted thread then the app just crashes. From user perspective it is  similar to an abort call.
         static void OnDeadlock(NSString* nsTitle, NSString* nsMessage)
         {
             // Save the popup data into a file and abort the application.
@@ -58,18 +61,12 @@ namespace AZ
             freopen([pathForLog cStringUsingEncoding:NSASCIIStringEncoding], "a+", stderr);
             
             // These messages go to the file.
-            NSLog(@"BlockingDialog might be failed to display at %@", dateString);
-            
-            NSLog(@"Title: %@", nsTitle);
-            NSLog(@"Message: %@\n", nsMessage);
-            
-            // There is no perfect solution because we do not know how the blocker thread handles the issue after the asserton
-            // abort() is commented out because we assume the asserted thread handles the issue well so the main thread is unblocked later.
-            // If there is a crash in the asserted thread then the app just crashes. From user perspective it is  similar to abort call.
-            /*
-            NSLog(@"App terminated");
-            abort();
-            */
+            NSLog(@"Main thread is locked (waits for a semaphore or else) when another thread requests a blocking popup display at %@"
+                        @"This is likely an assertion. The popup might be fialed to display, the app might crash"
+                            , dateString);
+
+            NSLog(@"Dialog title: %@", nsTitle);
+            NSLog(@"Dialog message: %@\n", nsMessage);
         }
 #endif
     
