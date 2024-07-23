@@ -123,6 +123,8 @@ namespace AzToolsFramework
                     DuplicateEntries();
                 });
             addAction(duplicateAction);
+
+            connect(this, &QAbstractItemView::clicked, this, &AssetBrowserTreeView::itemClicked);
         }
 
         AssetBrowserTreeView::~AssetBrowserTreeView()
@@ -592,8 +594,27 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeView::selectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
         {
+            AZ_TracePrintf("ITEM", "selectionChanged (entry)");
+            m_selectionChangedSinceClick = true;
+
             QTreeView::selectionChanged(selected, deselected);
             Q_EMIT selectionChangedSignal(selected, deselected);
+
+            AZ_TracePrintf("ITEM", "selectionChanged (exit)");
+
+        }
+
+        void AssetBrowserTreeView::itemClicked([[maybe_unused]] const QModelIndex& index)
+        {
+            // if we click on an item and selection wasn't changed, then reselect the current item so that it shows up in
+            // any related previewers.
+            bool didSelectionChange = m_selectionChangedSinceClick;
+            m_selectionChangedSinceClick = false;
+            if (!didSelectionChange)
+            {
+                // just refresh the UI and make sure it shows what is already selected.
+                Q_EMIT selectionChangedSignal(selectionModel()->selection(), {});
+            }
         }
 
         void AssetBrowserTreeView::setModel(QAbstractItemModel* model)

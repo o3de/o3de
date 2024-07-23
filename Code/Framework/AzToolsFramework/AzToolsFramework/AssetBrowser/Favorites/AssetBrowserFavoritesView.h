@@ -60,13 +60,17 @@ namespace AzToolsFramework
 
         protected Q_SLOTS:
             void SelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+            void ItemClicked(const QModelIndex& index);
 
         private:
             QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserFavoritesModel> m_favoritesModel;
             QScopedPointer<FavoritesEntryDelegate> m_delegate;
             int m_currentHeight = 0;
+            bool m_selectionChangedSinceLastClick = false;
 
             void OnContextMenu(const QPoint& point);
+
+            void NotifySelection(const QItemSelection& selected);
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

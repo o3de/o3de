@@ -1062,13 +1062,39 @@ void AzAssetBrowserWindow::SelectionChanged(const QItemSelection& selected, [[ma
     OnFilterCriteriaChanged();
 
     // if we select 1 thing, give the previewer a chance to view it.
-    if (selected.size() == 1)
+    QModelIndexList selectedIndices = selected.indexes();
+
+    // Note that the selected indices might be different columns of the same rows.  Its still a valid "single selection"
+    // if there is only one unique row, even if there's more than 1 column
+    // we also don't care to actually count how many rows there are that are unique, we just need to know if there is exactly
+    // one row, so we can stop after finding more than one.
+
+    int numberOfuniqueRows = 0;
+    int lastSeenRow = -1;
+    for (const auto& element : selectedIndices)
     {
-        auto* entry = selected.indexes()[0].data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
-        if (entry)
+        if (element.row() != lastSeenRow)
         {
-            AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, entry);
-            return;
+            lastSeenRow = element.row();
+            numberOfuniqueRows++;
+            if (numberOfuniqueRows > 1)
+            {
+                break;
+            }
+        }
+    }
+    
+    if (numberOfuniqueRows == 1)
+    {
+        QModelIndex selectedIndex = selectedIndices[0];
+        if (selectedIndex.isValid())
+        {
+            auto* entry = selectedIndex.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+            if (entry)
+            {
+                AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, entry);
+                return;
+            }
         }
     }
     // if we get here, we have no selection or multiple selection, clear preview.

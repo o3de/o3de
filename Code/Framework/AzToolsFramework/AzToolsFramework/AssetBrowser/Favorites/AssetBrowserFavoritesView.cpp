@@ -53,6 +53,7 @@ namespace AzToolsFramework
 
             connect(this, &QTreeView::expanded, this, &AssetBrowserFavoritesView::expanded);
             connect(this, &QTreeView::collapsed, this, &AssetBrowserFavoritesView::collapsed);
+            connect(this, &QAbstractItemView::clicked, this, &AssetBrowserFavoritesView::ItemClicked);
 
             m_currentHeight = this->height();
         }
@@ -236,19 +237,44 @@ namespace AzToolsFramework
         
         void AssetBrowserFavoritesView::SelectionChanged(const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
         {
-            // if we select 1 thing, give the previewer a chance to view it.
-            if (selected.size() == 1)
+            m_selectionChangedSinceLastClick = true;
+            NotifySelection(selected);
+        }
+
+        void AssetBrowserFavoritesView::NotifySelection(const QItemSelection& selected)
+        {
+            // if we select 1 thing, give the previewer a chance to view it.  Favorites is a cell-by-cell selection
+            // so it won't select an entire row, ie, every selection will be its own row so its not necessary to count rows, as that will
+            // be the same as the count of the selected indexes.
+            QModelIndexList selectedIndexes = selected.indexes();
+            if (selectedIndexes.size() == 1)
             {
-                auto* favorite = selected.indexes()[0].data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserFavoriteItem*>();
-                if ((favorite)&&(favorite->GetFavoriteType() == AssetBrowserFavoriteItem::FavoriteType::AssetBrowserEntry))
+                const QModelIndex index = selectedIndexes[0];
+                if (index.isValid())
                 {
-                    const EntryAssetBrowserFavoriteItem* entryItem = static_cast<const EntryAssetBrowserFavoriteItem*>(favorite);
-                    AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, entryItem->GetEntry());
-                    return;
+                    auto* favorite = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserFavoriteItem*>();
+                    if ((favorite)&&(favorite->GetFavoriteType() == AssetBrowserFavoriteItem::FavoriteType::AssetBrowserEntry))
+                    {
+                        const EntryAssetBrowserFavoriteItem* entryItem = static_cast<const EntryAssetBrowserFavoriteItem*>(favorite);
+                        AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, entryItem->GetEntry());
+                        return;
+                    }
                 }
             }
 
             AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::ClearPreview);
+        }
+
+        void AssetBrowserFavoritesView::ItemClicked([[maybe_unused]] const QModelIndex& index)
+        {
+            // if we click on an item and selection wasn't changed, then reselect the current item so that it shows up in
+            // any related previewers.
+            bool didSelectionChange = m_selectionChangedSinceLastClick;
+            m_selectionChangedSinceLastClick = false;
+            if (!didSelectionChange)
+            {
+                NotifySelection(selectionModel()->selection());
+            }
         }
 
         AssetBrowserFavoritesModel* AssetBrowserFavoritesView::GetModel()

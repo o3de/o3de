@@ -31,18 +31,20 @@ namespace AzQtComponents
 
     protected Q_SLOTS:
         void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
+        void onClickedView(const QModelIndex& idx);
 
     signals:
         void tableRootIndexChanged(const QModelIndex& idx);
         void showInTableFolderTriggered(const QModelIndex& idx);
         void rowDeselected();
         void selectionChangedSignal(const QItemSelection& selected, const QItemSelection& deselected);
-
+        
     protected:
         void mousePressEvent(QMouseEvent* event) override;
         void mouseDoubleClickEvent(QMouseEvent* event) override;
 
     private:
         bool m_showSearchResultsMode = false;
+        bool m_selectionChangedSinceClick = false;
     };
 }
