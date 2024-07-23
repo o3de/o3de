@@ -30,7 +30,7 @@ import ly_test_tools.environment.process_utils as process_utils
 
 # also note that the editor stops trying to connect the moment it is successful so its better for automated testing to set this to a very
 # large number rather than a borderline number.  10.5 seconds of still not appearing should be a very high confidence indicator that the 
-# server is not going to appear even on a very busy machine, and its better to have a reliable indicator of failure than to have a borderline
+# server is not going to appear even on a very busy machine, and it's better to have a reliable indicator of failure than to have a borderline
 # wait time that could be failing just because it's a busy machine.
 MULIPLAYER_SERVER_RECONNECT_ATTEMPTS = 35
 
