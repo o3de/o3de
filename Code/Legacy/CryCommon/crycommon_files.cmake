@@ -83,6 +83,8 @@ set(FILES
     Linux_Win32Wrapper.h
     LinuxSpecific.h
     LoadScreenBus.h
+    LoadScreenComponent.cpp
+    LoadScreenComponent.h
     MacSpecific.h
     platform.h
     platform_impl.cpp

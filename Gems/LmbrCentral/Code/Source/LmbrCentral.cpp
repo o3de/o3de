@@ -63,6 +63,11 @@
 // Scriptable Ebus Registration
 #include "Events/ReflectScriptableEvents.h"
 
+#if defined(CARBONATED)
+// LoadScreen component
+#include <LoadScreenComponent.h>
+#endif
+
 // Shape components
 #include "Shape/SphereShapeComponent.h"
 #include "Shape/DiskShapeComponent.h"
@@ -212,6 +217,11 @@ namespace LmbrCentral
             PolygonPrismShapeDebugDisplayComponent::CreateDescriptor(),
             TubeShapeDebugDisplayComponent::CreateDescriptor(),
             AssetSystemDebugComponent::CreateDescriptor(),
+#if defined(CARBONATED)
+#if AZ_LOADSCREENCOMPONENT_ENABLED
+            LoadScreenComponent::CreateDescriptor(),
+#endif // if AZ_LOADSCREENCOMPONENT_ENABLED
+#endif
             });
 
         // This is an internal Amazon gem, so register it's components for metrics tracking, otherwise the name of the component won't get sent back.
@@ -238,6 +248,11 @@ namespace LmbrCentral
                    azrtti_typeid<AudioSystemComponent>(),
                    azrtti_typeid<BundlingSystemComponent>(),
                    azrtti_typeid<AssetSystemDebugComponent>(),
+#if defined(CARBONATED)
+#if AZ_LOADSCREENCOMPONENT_ENABLED
+                   azrtti_typeid<LoadScreenComponent>(),
+#endif // if AZ_LOADSCREENCOMPONENT_ENABLED
+#endif
         };
     }
 

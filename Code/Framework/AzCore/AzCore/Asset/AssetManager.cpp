@@ -30,11 +30,10 @@
 #include <cinttypes>
 #include <utility>
 #include <AzCore/Serialization/ObjectStream.h>
-// Gruber patch begin // AE -- update log while waiting for assets
 #if defined(CARBONATED)
-#include <AzCore/Utils/LogNotification.h>
+#include <AzCore/Utils/LogNotification.h> // AE -- update log while waiting for assets
+#include <AzCore/Utils/AssetLoadNotification.h> // update subscribers while waiting for assets
 #endif
-// Gruber patch end // AE -- update log while waiting for assets
 
 // Set this to 1 to enable debug logging for asset loads/unloads
 #define ENABLE_ASSET_DEBUGGING 0
@@ -335,6 +334,7 @@ namespace AZ::Data
         void Wait()
         {
             AZ_PROFILE_SCOPE(AzCore, "WaitForAsset - %s", m_assetData.GetHint().c_str());
+            int currentWaitForAssetUpdate = 0;
 
             // Continue to loop until the load completes.  (Most of the time in the loop will be spent in a thread-blocking state)
             while (!m_loadCompleted)
@@ -344,15 +344,23 @@ namespace AZ::Data
                     // The event will wake up either when the load finishes, a load job is queued for processing, or every
                     // N milliseconds to see if it should dispatch events.
                     constexpr int MaxWaitBetweenDispatchMs = 1;
+                    constexpr int MaxWaitForAssetUpdateMs = 20;
                     while (!m_waitEvent.try_acquire_for(AZStd::chrono::milliseconds(MaxWaitBetweenDispatchMs)))
                     {
-                        AssetManager::Instance().DispatchEvents();
 // Gruber patch begin // AE -- update log while waiting for assets
 #if defined(CARBONATED)
                         // if we are here then it is the main thread, let deliver the log messages
                         AZ::LogNotification::LogNotificatorBus::Broadcast(&AZ::LogNotification::LogNotificatorBus::Events::Update);
+                        // update subscribers while waiting for assets
+                        currentWaitForAssetUpdate += MaxWaitBetweenDispatchMs;
+                        if (currentWaitForAssetUpdate > MaxWaitForAssetUpdateMs)
+                        {
+                            currentWaitForAssetUpdate = 0;
+                            AZ::AssetLoadNotification::AssetLoadNotificatorBus::Broadcast(&AZ::AssetLoadNotification::AssetLoadNotificatorBus::Events::WaitForAssetUpdate);
+                        }
 #endif
 // Gruber patch end // AE -- update log while waiting for assets
+                        AssetManager::Instance().DispatchEvents();
                     }
                 }
                 else

@@ -16,6 +16,12 @@
 #include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/Animation/IUiAnimation.h>
 
+#if defined (CARBONATED)
+#include <AzCore/Component/ComponentApplication.h>
+#include <Atom/RHI/RHISystemInterface.h>
+#include <AzCore/Component/TickBus.h>
+#endif
+
 namespace LyShine
 {
     void LyShineLoadScreenComponent::Reflect(AZ::ReflectContext* context)
@@ -60,6 +66,10 @@ namespace LyShine
         {
             return false;
         }
+
+#if defined (CARBONATED)
+        return false;
+#else
         //TODO: gEnv->pRenderer is always null, fix the logic below
         AZ_ErrorOnce(nullptr, false, "NotifyGameLoadStart needs to be removed/ported to use Atom");
         return false;
@@ -90,6 +100,7 @@ namespace LyShine
 
         return m_isPlaying;
 #endif
+#endif // defined (CARBONATED)
     }
 
     bool LyShineLoadScreenComponent::NotifyLevelLoadStart(bool usingLoadingThread)
@@ -100,6 +111,34 @@ namespace LyShine
             return false;
         }
 
+#if defined (CARBONATED)
+        if (!gEnv || !AZ::Interface<ILyShine>::Get())
+        {
+            return false;
+        }
+
+        AZ_Assert(!m_isPlaying, "LyShineLoadScreen was not stopped before another level load started.");
+        AZ_Assert(!m_gameCanvasEntityId.IsValid(), "LyShineLoadScreen game load canvas was not unloaded before a level load started.");
+        if (m_isPlaying || m_gameCanvasEntityId.IsValid())
+        {
+            return false;
+        }
+
+        if (!m_levelCanvasEntityId.IsValid())
+        {
+            // Load canvas.
+            m_levelCanvasEntityId = loadFromCfg("level_load_screen_uicanvas_path", "level_load_screen_sequence_to_auto_play");
+        }
+
+        m_isPlaying = m_levelCanvasEntityId.IsValid();
+
+        if (m_isPlaying)
+        {
+            LoadScreenUpdateNotificationBus::Handler::BusConnect();
+        }
+
+        return m_isPlaying;
+#else
         AZ_ErrorOnce(nullptr, false, "NotifyLevelLoadStart needs to be removed/ported to use Atom");
         return false;
         //TODO: gEnv->pRenderer is always null, fix the logic below
@@ -131,6 +170,7 @@ namespace LyShine
 
         return m_isPlaying;
 #endif
+#endif // defined (CARBONATED)
     }
 
     void LyShineLoadScreenComponent::NotifyLoadEnd()
@@ -141,6 +181,25 @@ namespace LyShine
     void LyShineLoadScreenComponent::UpdateAndRender([[maybe_unused]] float deltaTimeInSeconds)
     {
         AZ_Assert(m_isPlaying, "LyShineLoadScreenComponent should not be connected to LoadScreenUpdateNotificationBus while not playing");
+
+#if defined (CARBONATED)
+        if (m_isPlaying && gEnv && AZ::Interface<ILyShine>::Get())
+        {
+            AZ_Assert(GetCurrentThreadId() == gEnv->mMainThreadId, "UpdateAndRender should only be called from the main thread");
+
+            AZ::ComponentApplication* pApp = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(pApp, &AZ::ComponentApplicationBus::Events::GetApplication);
+            if (pApp)
+            {
+                AZ::SystemTickBus::ExecuteQueuedEvents();
+                AZ::SystemTickBus::Broadcast(&AZ::SystemTickEvents::OnSystemTick);
+                if (!m_gameCanvasEntityId.IsValid()) // do not process OnTick() before the game start
+                {
+                    pApp->Tick();
+                }
+            }
+        }
+#else
         AZ_ErrorOnce(nullptr, m_isPlaying && AZ::Interface<ILyShine>::Get(), "UpdateAndRender needs to be removed/ported to use Atom");
 
         //TODO: gEnv->pRenderer is always null, fix the logic below
@@ -160,6 +219,7 @@ namespace LyShine
             gEnv->pRenderer->EndFrame();
         }
 #endif
+#endif // defined (CARBONATED)
     }
 
     void LyShineLoadScreenComponent::LoadThreadUpdate([[maybe_unused]] float deltaTimeInSeconds)
@@ -236,6 +296,9 @@ namespace LyShine
             Reset();
             return AZ::EntityId();
         }
+#if defined (CARBONATED)
+        AZStd::to_lower(path.begin(), path.end());
+#endif
 
         AZ::EntityId canvasId = AZ::Interface<ILyShine>::Get()->LoadCanvas(path);
         AZ_Warning("LoadScreenComponent", canvasId.IsValid(), "Can't load canvas: %s", path.c_str());

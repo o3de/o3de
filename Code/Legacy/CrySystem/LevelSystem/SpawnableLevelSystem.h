@@ -12,6 +12,10 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
 #include <CryCommon/TimeValue.h>
+#ifdef CARBONATED
+#include <AzCore/Utils/AssetLoadNotification.h>
+#include <AzFramework/Spawnable/SpawnableEntitiesManager.h>
+#endif
 
 namespace LegacyLevelSystem
 {
@@ -20,6 +24,9 @@ class SpawnableLevelSystem
         : public ILevelSystem
         , public AzFramework::RootSpawnableNotificationBus::Handler
         , AzFramework::LevelSystemLifecycleInterface::Registrar
+#ifdef CARBONATED
+        , public AZ::AssetLoadNotification::AssetLoadNotificatorBus::Handler
+#endif
     {
     public:
         explicit SpawnableLevelSystem(ISystem* pSystem);
@@ -54,6 +61,11 @@ class SpawnableLevelSystem
         bool IsLevelLoaded() const override;
         //! @}
 
+#ifdef CARBONATED
+        // AssetLoadNotificatorBus interface implementation
+        void WaitForAssetUpdate() override;
+#endif
+
     private:
         void OnRootSpawnableAssigned(AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, uint32_t generation) override;
         void OnRootSpawnableReleased(uint32_t generation) override;
@@ -75,6 +87,11 @@ class SpawnableLevelSystem
         AZStd::string m_lastLevelName;
         float m_fLastLevelLoadTime{0.0f};
         float m_fLastTime{0.0f};
+#ifdef CARBONATED
+        float m_fFilteredProgress{0.0f};
+        int m_queuedAssetsCount{ 0 };
+        int m_queuedAssetsCountMax{ 0 };
+#endif
 
         bool m_bLevelLoaded{false};
         bool m_levelLoadFailed{false};

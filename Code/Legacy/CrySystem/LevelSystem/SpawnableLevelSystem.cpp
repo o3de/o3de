@@ -263,6 +263,19 @@ namespace LegacyLevelSystem
             UnloadLevel();
         }
 
+#if defined (CARBONATED)
+#if AZ_LOADSCREENCOMPONENT_ENABLED
+        // load the level config file
+        AZStd::string levelFolderPath;
+        AZ::StringFunc::Path::GetFolderPath(validLevelName.c_str(), levelFolderPath);
+        GetISystem()->LoadConfiguration(AZStd::string::format("%s/level.cfg", levelFolderPath.c_str()).c_str());
+        // level start event (we could not call it before UnloadLevel() call)
+        EBUS_EVENT(LoadScreenBus, LevelStart);
+        AZ::AssetLoadNotification::AssetLoadNotificatorBus::Handler::BusConnect();
+        // progress bar init
+        m_fFilteredProgress = 0.f;
+#endif // if AZ_LOADSCREENCOMPONENT_ENABLED
+#endif
         gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_PREPARE, 0, 0);
         PrepareNextLevel(validLevelName.c_str());
 
@@ -272,6 +285,11 @@ namespace LegacyLevelSystem
             OnLoadingComplete(validLevelName.c_str());
         }
 
+#if defined (CARBONATED)
+#if AZ_LOADSCREENCOMPONENT_ENABLED
+        AZ::AssetLoadNotification::AssetLoadNotificatorBus::Handler::BusDisconnect();
+#endif // if AZ_LOADSCREENCOMPONENT_ENABLED
+#endif
         return result;
     }
 
@@ -329,6 +347,9 @@ namespace LegacyLevelSystem
 // Gruber patch begin. // LVB
 #ifdef CARBONATED
             rootSpawnable.QueueLoad();
+            // when we call AssetBus::QueuedEventCount() immediately after Asset::QueueLoad(), it returns the number of level assets for loading
+            m_queuedAssetsCountMax = static_cast<int>(AZ::Data::AssetBus::QueuedEventCount());
+            m_queuedAssetsCount = -1;
             rootSpawnable.BlockUntilLoadComplete();
 #endif
 // Gruber patch end. // LVB
@@ -519,6 +540,42 @@ namespace LegacyLevelSystem
         AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
             &AzFramework::LevelSystemLifecycleNotifications::OnLoadingProgress, levelName, progressAmount);
     }
+
+#if defined (CARBONATED)
+    void SpawnableLevelSystem::WaitForAssetUpdate()
+    {
+        if (m_queuedAssetsCount < 0)
+        {
+            m_queuedAssetsCount = 0; // skip evaluation before the first asset loading diaptch 
+        }
+        else
+        {
+            m_queuedAssetsCount = min(m_queuedAssetsCountMax, m_queuedAssetsCount + static_cast<int>(AZ::Data::AssetBus::QueuedEventCount()) + 1);
+        }
+
+        // begin - progress calculation
+        // based on LY method CLevelSystem::OnLoadingProgress (\Gems\CryLegacy\Code\Source\CryAction\LevelSystem.cpp)
+        const float fProgress = m_queuedAssetsCountMax > 0 ? (float)(m_queuedAssetsCount * 100) / m_queuedAssetsCountMax : 0.0f;
+
+        const AZ::TimeMs timeMs = AZ::GetRealElapsedTimeMs();
+        const float curTime = AZ::TimeMsToSeconds(timeMs);
+
+        m_fFilteredProgress = min(m_fFilteredProgress, fProgress);
+
+        const float fFrameTime = curTime - m_fLastTime;
+
+        const float t = AZStd::clamp(fFrameTime * .25f, 0.0001f, 1.0f);
+
+        m_fFilteredProgress = fProgress * t + m_fFilteredProgress * (1.f - t);
+
+        m_fLastTime = curTime;
+        // end - progress calculation
+
+        const int progressAmount = max(1, static_cast<int>(m_fFilteredProgress));
+        OnLoadingProgress(m_lastLevelName.c_str(), progressAmount);
+        AZ_TracePrintf("LevelSystem", "Level load - progress amount: %i%%  (%i/%i)", progressAmount, m_queuedAssetsCount, m_queuedAssetsCountMax);
+    }
+#endif
 
     //------------------------------------------------------------------------
     void SpawnableLevelSystem::OnUnloadComplete(const char* levelName)
