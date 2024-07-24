@@ -58,7 +58,6 @@ namespace AzToolsFramework
                     const QItemSelection& selected,
                     const QItemSelection& deselected)
                 {
-                    m_selectionChangedSinceLastClick = true;
                     Q_EMIT selectionChangedSignal(selected, deselected);
                 });
 
@@ -68,12 +67,10 @@ namespace AzToolsFramework
                 this,
                 [this](const QModelIndex& index)
                 {
-                    bool wasSelectionChangedSinceLastClick = m_selectionChangedSinceLastClick;
-                    m_selectionChangedSinceLastClick = false;
-
                     auto indexData = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
                     emit entryClicked(indexData);
-                    if (!wasSelectionChangedSinceLastClick)
+                    // if we click on an index that is already selected, refresh the selection so that other views update.
+                    if (m_thumbnailViewWidget->selectionModel()->isSelected(index))
                     {
                         // user clicked on the same entry as before, so make sure that the associated item is previewed
                         // in case they clicked on something else on the GUI and it was lost.

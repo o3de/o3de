@@ -71,21 +71,17 @@ namespace AzQtComponents
 
     void AssetFolderTableView::selectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
     {
-        m_selectionChangedSinceClick = true;
         TableView::selectionChanged(selected, deselected);
         Q_EMIT selectionChangedSignal(selected, deselected);
 
     }
 
-    void AssetFolderTableView::onClickedView([[maybe_unused]] const QModelIndex& index)
+    void AssetFolderTableView::onClickedView(const QModelIndex& index)
     {
         // if we click on an item and selection wasn't changed, then reselect the current item so that it shows up in
         // any related previewers.
-        bool didSelectionChange = m_selectionChangedSinceClick;
-        m_selectionChangedSinceClick = false;
-        if (!didSelectionChange)
+        if (selectionModel()->isSelected(index))
         {
-            // just refresh the UI and make sure it shows what is already selected.
             Q_EMIT selectionChangedSignal(selectionModel()->selection(), {});
         }
     }

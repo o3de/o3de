@@ -91,7 +91,6 @@ namespace AzToolsFramework
             void HandleTreeViewSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
             void UpdateFilterInLocalFilterModel();
             QString m_name;
-            bool m_selectionChangedSinceLastClick = false;
             bool m_isActiveView = false;
         };
 

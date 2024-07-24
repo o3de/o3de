@@ -1069,22 +1069,7 @@ void AzAssetBrowserWindow::SelectionChanged(const QItemSelection& selected, [[ma
     // we also don't care to actually count how many rows there are that are unique, we just need to know if there is exactly
     // one row, so we can stop after finding more than one.
 
-    int numberOfuniqueRows = 0;
-    int lastSeenRow = -1;
-    for (const auto& element : selectedIndices)
-    {
-        if (element.row() != lastSeenRow)
-        {
-            lastSeenRow = element.row();
-            numberOfuniqueRows++;
-            if (numberOfuniqueRows > 1)
-            {
-                break;
-            }
-        }
-    }
-    
-    if (numberOfuniqueRows == 1)
+    if (QtUtil::ModelIndexListHasExactlyOneRow(selectedIndices))
     {
         QModelIndex selectedIndex = selectedIndices[0];
         if (selectedIndex.isValid())

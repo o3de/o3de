@@ -163,8 +163,6 @@ namespace AzToolsFramework
             QModelIndex m_indexToSelectAfterUpdate;
             AZStd::string m_fileToSelectAfterUpdate;
 
-            bool m_selectionChangedSinceClick = false;
-
             bool SelectProduct(const QModelIndex& idxParent, AZ::Data::AssetId assetID);
             bool SelectEntry(const QModelIndex& idxParent, const AZStd::vector<AZStd::string>& entryPathTokens, const uint32_t lastFolderIndex = 0, const uint32_t entryPathIndex = 0, bool useDisplayName = false);
 

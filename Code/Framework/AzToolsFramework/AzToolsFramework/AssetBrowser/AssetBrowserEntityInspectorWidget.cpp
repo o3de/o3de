@@ -312,8 +312,11 @@ namespace AzToolsFramework
             // however, in an effort to make it forward compatible, I assume we will get more than this and extend in the future
             // for example, if someone wants to implement a "folder" or "root" or "gem folder" previewer, at least we call this function
             // and give it the option to return and clear.
-            if (selectedEntry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Source &&
-                selectedEntry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Product)
+            const auto entryType = selectedEntry->GetEntryType();
+            bool canBePreviewed = (entryType == AssetBrowserEntry::AssetEntryType::Source) ||
+                                  (entryType == AssetBrowserEntry::AssetEntryType::Product);
+
+            if (!canBePreviewed)
             {
                 ClearPreview();
                 return;

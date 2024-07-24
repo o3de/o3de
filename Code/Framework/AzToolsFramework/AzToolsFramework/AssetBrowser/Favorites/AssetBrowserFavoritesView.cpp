@@ -237,7 +237,6 @@ namespace AzToolsFramework
         
         void AssetBrowserFavoritesView::SelectionChanged(const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
         {
-            m_selectionChangedSinceLastClick = true;
             NotifySelection(selected);
         }
 
@@ -262,16 +261,15 @@ namespace AzToolsFramework
                 }
             }
 
+            // note that if we don't early return above, we must clear the preview, as we have selected multiple items, or 0 items.
             AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::ClearPreview);
         }
 
-        void AssetBrowserFavoritesView::ItemClicked([[maybe_unused]] const QModelIndex& index)
+        void AssetBrowserFavoritesView::ItemClicked(const QModelIndex& index)
         {
-            // if we click on an item and selection wasn't changed, then reselect the current item so that it shows up in
-            // any related previewers.
-            bool didSelectionChange = m_selectionChangedSinceLastClick;
-            m_selectionChangedSinceLastClick = false;
-            if (!didSelectionChange)
+            // if we click on an item that was already selected, notify anyway, as we want the behavior to be that
+            // it refreshes the gui when you do that.
+            if (selectionModel()->isSelected(index))
             {
                 NotifySelection(selectionModel()->selection());
             }

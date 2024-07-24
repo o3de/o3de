@@ -45,6 +45,5 @@ namespace AzQtComponents
 
     private:
         bool m_showSearchResultsMode = false;
-        bool m_selectionChangedSinceClick = false;
     };
 }

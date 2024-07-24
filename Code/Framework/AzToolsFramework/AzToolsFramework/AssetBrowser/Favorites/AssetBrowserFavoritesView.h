@@ -66,7 +66,6 @@ namespace AzToolsFramework
             QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserFavoritesModel> m_favoritesModel;
             QScopedPointer<FavoritesEntryDelegate> m_delegate;
             int m_currentHeight = 0;
-            bool m_selectionChangedSinceLastClick = false;
 
             void OnContextMenu(const QPoint& point);
 
