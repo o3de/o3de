@@ -6,6 +6,9 @@
  *
  */
 
+#include <AzCore/Asset/AssetSerializer.h>
+#include <AzCore/Preprocessor/Enum.h>
+#include <AzCore/Preprocessor/EnumReflectUtils.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Visibility/OcclusionBus.h>
@@ -14,10 +17,19 @@ DECLARE_EBUS_INSTANTIATION(AzFramework::OcclusionRequests);
 
 namespace AzFramework
 {
+    AZ_ENUM_DEFINE_REFLECT_UTILITIES(OcclusionState);
+
     void OcclusionRequests::Reflect(AZ::ReflectContext* context)
     {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            OcclusionStateReflect(*serializeContext);
+        }
+
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
+            OcclusionStateReflect(*behaviorContext);
+
             behaviorContext->EBus<OcclusionRequestBus>("OcclusionRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Visibility")
