@@ -113,10 +113,10 @@ namespace AZ
 
             BufferMemoryView memoryView = BufferMemoryView(bufferMemory);
 
+            buffer->SetDescriptor(bufferDescriptor);
             result = buffer->Init(GetVulkanRHIDevice(), bufferDescriptor, memoryView);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
-            buffer->SetDescriptor(bufferDescriptor);
             return RHI::ResultCode::Success;
         }
 
