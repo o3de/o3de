@@ -26,12 +26,12 @@ namespace AZ::RHI
                 ->IndexBuffer(geometry.m_indexBuffer.GetDeviceIndexBufferView(deviceIndex));
         }
 
-        descriptor.BuildFlags(m_buildFlags);
-
         if(m_aabb.has_value())
         {
             descriptor.AABB(m_aabb.value());
         }
+
+        descriptor.BuildFlags(m_buildFlags);
 
         return descriptor;
     }
@@ -79,7 +79,7 @@ namespace AZ::RHI
 
     RayTracingBlasDescriptor* RayTracingBlasDescriptor::BuildFlags(const RHI::RayTracingAccelerationStructureBuildFlags &buildFlags)
     {
-        AZ_Assert(m_buildContext, "BuildFlags property can only be added to a Geometry entry");
+        AZ_Assert(m_buildContext || m_aabb, "BuildFlags property can only be added to a Geometry or AABB entry");
         m_buildFlags = buildFlags;
         return this;
     }
