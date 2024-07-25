@@ -270,7 +270,7 @@ namespace LegacyLevelSystem
         AZ::StringFunc::Path::GetFolderPath(validLevelName.c_str(), levelFolderPath);
         GetISystem()->LoadConfiguration(AZStd::string::format("%s/level.cfg", levelFolderPath.c_str()).c_str());
         // level start event (we could not call it before UnloadLevel() call)
-        EBUS_EVENT(LoadScreenBus, LevelStart);
+        EBUS_EVENT(LoadScreenBus, LevelStart, validLevelName);
         AZ::AssetLoadNotification::AssetLoadNotificatorBus::Handler::BusConnect();
         // progress bar init
         m_fFilteredProgress = 0.f;

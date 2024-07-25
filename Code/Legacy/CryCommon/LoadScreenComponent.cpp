@@ -8,6 +8,7 @@
 #if defined(CARBONATED)
 
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Time/ITime.h>
@@ -42,10 +43,15 @@ namespace
 
 #if defined(CARBONATED)
     static const char* const s_levelLoadScreenUiCanvasPath = "level_load_screen_uicanvas_path";
+    static const char* const s_levelLoadScreenSequenceToAutoPlay = "level_load_screen_sequence_to_auto_play";
 
-    static const char* const s_globalLevelFixedFpsCvarName = "global_level_load_screen_sequence_fixed_fps";
-    static const char* const s_globalLevelMaxFpsCvarName = "global_level_load_screen_max_fps";
-    static const char* const s_globalLevelMinimumLoadTimeCvarName = "global_level_load_screen_minimum_time";
+    static const char* const s_defaultLevelLoadScreenUiCanvasPath = "default_level_load_screen_uicanvas_path";
+    static const char* const s_defaultLevelFixedFpsCvarName = "default_level_load_screen_sequence_fixed_fps";
+    static const char* const s_defaultLevelMaxFpsCvarName = "default_level_load_screen_max_fps";
+    static const char* const s_defaultLevelMinimumLoadTimeCvarName = "default_level_load_screen_minimum_time";
+    static const char* const s_defaultLevelLoadScreenSequenceToAutoPlay = "default_level_load_screen_sequence_to_auto_play";
+
+    static const char* const s_listOfLevelsWithoutLoadScreen = "list_of_levels_without_load_screen";
 #endif
 }
 
@@ -263,7 +269,11 @@ void LoadScreenComponent::GameStart()
     }
 }
 
+#if defined(CARBONATED)
+void LoadScreenComponent::LevelStart(const AZStd::string& levelName)
+#else
 void LoadScreenComponent::LevelStart()
+#endif
 {
     if (m_loadScreenState == LoadScreenState::None)
     {
@@ -271,8 +281,31 @@ void LoadScreenComponent::LevelStart()
         SSystemGlobalEnvironment* pGEnv = GetGlobalEnv();
         if (pGEnv && pGEnv->pConsole)
         {
+            AZStd::vector<AZStd::string> levelNamesForExclude;
+            ICVar* disabledLevelsVar = pGEnv->pConsole->GetCVar(s_listOfLevelsWithoutLoadScreen);
+            AZStd::string disabledLevels = disabledLevelsVar ? disabledLevelsVar->GetString() : "";
+            if (disabledLevels != "")
+            {
+                AZ::StringFunc::Tokenize(AZStd::string_view(disabledLevels), levelNamesForExclude, ",");
+            }
+
+            bool disabledLoadingScreen = false;
+            for (const auto& nameForExclude : levelNamesForExclude)
+            {
+                if (levelName.contains(nameForExclude))
+                {
+                    disabledLoadingScreen = true;
+                    break;
+                }
+            }
+
+            if (disabledLoadingScreen)
+            {
+                return;
+            }
+
             ICVar* levelPathVar = pGEnv->pConsole->GetCVar(s_levelLoadScreenUiCanvasPath);
-            AZStd::string levelPath = levelPathVar ? levelPathVar->GetString() : "";
+            const AZStd::string levelPath = levelPathVar ? levelPathVar->GetString() : "";
 
             if (levelPath != "")
             {
@@ -280,10 +313,22 @@ void LoadScreenComponent::LevelStart()
             }
             else
             {
-                LoadConfigSettings(s_globalLevelFixedFpsCvarName, s_globalLevelMaxFpsCvarName, s_globalLevelMinimumLoadTimeCvarName);
+                ICVar* defaultLevelPathVar = pGEnv->pConsole->GetCVar(s_defaultLevelLoadScreenUiCanvasPath);
+                const AZStd::string defaultLevelPath = defaultLevelPathVar ? defaultLevelPathVar->GetString() : "";
+                if (defaultLevelPath != "")
+                {
+                    LoadConfigSettings(s_defaultLevelFixedFpsCvarName, s_defaultLevelMaxFpsCvarName, s_defaultLevelMinimumLoadTimeCvarName);
+                    levelPathVar->Set(defaultLevelPath.c_str());
+                    // replace missed values to default
+                    ICVar* sequenceVar = pGEnv->pConsole->GetCVar(s_levelLoadScreenSequenceToAutoPlay);
+                    ICVar* defaultSequenceVar = pGEnv->pConsole->GetCVar(s_defaultLevelLoadScreenSequenceToAutoPlay);
+                    if (defaultSequenceVar && sequenceVar)
+                    {
+                        sequenceVar->Set(defaultSequenceVar->GetString());
+                    }
+                }           
             }
         }
-
 #else
         LoadConfigSettings(s_levelFixedFpsCvarName, s_levelMaxFpsCvarName, s_levelMinimumLoadTimeCvarName);
 #endif
