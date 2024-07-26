@@ -319,9 +319,12 @@ namespace AZ::RHI
                 return ResultCode::Success;
             });
 
-        if (const auto& name = m_tlasBuffer->GetName(); !name.IsEmpty())
+        if (m_tlasBuffer)
         {
-            m_tlasBuffer->SetName(name);
+            if (const auto& name = m_tlasBuffer->GetName(); !name.IsEmpty())
+            {
+                m_tlasBuffer->SetName(name);
+            }
         }
 
         return m_tlasBuffer;
@@ -360,10 +363,14 @@ namespace AZ::RHI
                 return ResultCode::Success;
             });
 
-        if (const auto& name = m_tlasInstancesBuffer->GetName(); !name.IsEmpty())
+        if (m_tlasInstancesBuffer)
         {
-            m_tlasInstancesBuffer->SetName(name);
+            if (const auto& name = m_tlasInstancesBuffer->GetName(); !name.IsEmpty())
+            {
+                m_tlasInstancesBuffer->SetName(name);
+            }
         }
+
         return m_tlasInstancesBuffer;
     }
 } // namespace AZ::RHI
