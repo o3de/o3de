@@ -656,7 +656,50 @@ namespace AZ
                 renderPassDesc.m_attachments[index].m_initialLayout = VK_IMAGE_LAYOUT_GENERAL;
                 renderPassDesc.m_attachments[index].m_finalLayout = VK_IMAGE_LAYOUT_GENERAL;
                 renderPassDesc.m_attachments[index].m_multisampleState = multisampleState;
+                renderPassDesc.m_attachments[index].m_loadStoreAction = RHI::AttachmentLoadStoreAction(
+                    {},
+                    RHI::AttachmentLoadAction::DontCare,
+                    RHI::AttachmentStoreAction::DontCare,
+                    RHI::AttachmentLoadAction::DontCare,
+                    RHI::AttachmentStoreAction::DontCare);
             }
+
+            auto setLayoutFunc = [&](RHI::RenderAttachmentExtras* extras,
+                                      RenderPass::SubpassAttachment& subpassAttachment)
+            {
+                if (const RenderAttachmentLayout* extraInfo = azrtti_cast<const RenderAttachmentLayout*>(extras))
+                {
+                    subpassAttachment.m_layout = extraInfo->m_layout;
+                }
+            };
+
+            auto setAttachmentLoadStoreActionFunc =
+                [&](const uint32_t attachmentIndex, const RHI::AttachmentLoadStoreAction& loadStoreAction)
+            {
+                auto& attachmentLoadStoreAction = renderPassDesc.m_attachments[attachmentIndex].m_loadStoreAction;
+                AZ_Assert(
+                    attachmentLoadStoreAction.m_loadAction == loadStoreAction.m_loadAction ||
+                        attachmentLoadStoreAction.m_loadAction == RHI::AttachmentLoadAction::DontCare,
+                    "Trying to use load action %d when load action is alreay %d",
+                    loadStoreAction.m_loadAction,
+                    attachmentLoadStoreAction.m_loadAction);
+                attachmentLoadStoreAction.m_loadAction = loadStoreAction.m_loadAction;
+                attachmentLoadStoreAction.m_storeAction = loadStoreAction.m_storeAction != RHI::AttachmentStoreAction::DontCare
+                    ? loadStoreAction.m_storeAction
+                    : attachmentLoadStoreAction.m_storeAction;
+
+                AZ_Assert(
+                    attachmentLoadStoreAction.m_loadActionStencil == loadStoreAction.m_loadActionStencil ||
+                        attachmentLoadStoreAction.m_loadActionStencil ==
+                        RHI::AttachmentLoadAction::DontCare,
+                    "Trying to use stencil load action %d when stencilload action is alreay %d",
+                    loadStoreAction.m_loadActionStencil,
+                    attachmentLoadStoreAction.m_loadActionStencil);
+                attachmentLoadStoreAction.m_loadActionStencil = loadStoreAction.m_loadActionStencil;
+                attachmentLoadStoreAction.m_storeActionStencil = loadStoreAction.m_storeActionStencil != RHI::AttachmentStoreAction::Store
+                    ? loadStoreAction.m_storeActionStencil
+                    : attachmentLoadStoreAction.m_storeActionStencil;
+            };
 
             renderPassDesc.m_subpassCount = layout.m_subpassCount;
             SubpassDependencyHelper subpassDependencyHelper(renderPassDesc);
@@ -676,8 +719,15 @@ namespace AZ
                         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
                     usedAttachments.set(subpassLayout.m_depthStencilDescriptor.m_attachmentIndex);
 
+                    setLayoutFunc(
+                        subpassLayout.m_depthStencilDescriptor.m_extras,
+                        subpassDescriptor.m_depthStencilAttachment);
+
+                    setAttachmentLoadStoreActionFunc(
+                        subpassLayout.m_depthStencilDescriptor.m_attachmentIndex, subpassLayout.m_depthStencilDescriptor.m_loadStoreAction);
+
                     subpassDependencyHelper.AddSubpassDependency(subpassLayout.m_depthStencilDescriptor.m_attachmentIndex,
-                        AZ::RHI::ScopeAttachmentUsage::DepthStencil,
+                        RHI::ScopeAttachmentUsage::DepthStencil,
                         subpassLayout.m_depthStencilDescriptor.m_scopeAttachmentStage,
                         subpassLayout.m_depthStencilDescriptor.m_scopeAttachmentAccess);
                 }
@@ -691,6 +741,13 @@ namespace AZ
                     subpassAttachment.m_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
                     usedAttachments.set(subpassAttachment.m_attachmentIndex);
 
+                    setLayoutFunc(
+                        renderAttachmentDescriptor.m_extras,
+                        subpassAttachment);
+
+                    setAttachmentLoadStoreActionFunc(
+                        renderAttachmentDescriptor.m_attachmentIndex, renderAttachmentDescriptor.m_loadStoreAction);
+
                     subpassDependencyHelper.AddSubpassDependency(subpassAttachment.m_attachmentIndex,
                         AZ::RHI::ScopeAttachmentUsage::RenderTarget,
                         renderAttachmentDescriptor.m_scopeAttachmentStage,
@@ -702,7 +759,10 @@ namespace AZ
                     if (resolveSubpassAttachment.IsValid())
                     {
                         // Set the number of samples for resolve attachments to 1.
-                        renderPassDesc.m_attachments[resolveSubpassAttachment.m_attachmentIndex].m_multisampleState.m_samples = 1;
+                        auto& resolveAttachmentDesc = renderPassDesc.m_attachments[resolveSubpassAttachment.m_attachmentIndex];
+                        resolveAttachmentDesc.m_multisampleState.m_samples = 1;
+                        resolveAttachmentDesc.m_loadStoreAction.m_loadAction = RHI::AttachmentLoadAction::DontCare;
+                        resolveAttachmentDesc.m_loadStoreAction.m_storeAction = RHI::AttachmentStoreAction::Store;
                         usedAttachments.set(resolveSubpassAttachment.m_attachmentIndex);
 
                         subpassDependencyHelper.AddSubpassDependency(
@@ -725,6 +785,10 @@ namespace AZ
                     subpassAttachment.m_layout = isDepthStencil ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                     subpassAttachment.m_imageAspectFlags = ConvertImageAspectFlags(inputAttachmentDescriptor.m_aspectFlags);
                     usedAttachments.set(subpassAttachment.m_attachmentIndex);
+
+                    setLayoutFunc(
+                        inputAttachmentDescriptor.m_extras,
+                        subpassAttachment);
 
                     subpassDependencyHelper.AddSubpassDependency(
                         subpassAttachment.m_attachmentIndex,
@@ -760,6 +824,14 @@ namespace AZ
                     usedAttachments.set(subpassLayout.m_shadingRateDescriptor.m_attachmentIndex);
                     renderPassDesc.m_attachments[subpassLayout.m_shadingRateDescriptor.m_attachmentIndex].m_loadStoreAction =
                         subpassLayout.m_shadingRateDescriptor.m_loadStoreAction;
+
+                    setLayoutFunc(
+                        subpassLayout.m_shadingRateDescriptor.m_extras,
+                        subpassDescriptor.m_fragmentShadingRateAttachment);
+
+                    setAttachmentLoadStoreActionFunc(
+                        subpassLayout.m_shadingRateDescriptor.m_attachmentIndex,
+                        subpassLayout.m_shadingRateDescriptor.m_loadStoreAction);
 
                     subpassDependencyHelper.AddSubpassDependency(
                         subpassLayout.m_shadingRateDescriptor.m_attachmentIndex,
