@@ -20,8 +20,9 @@ namespace AZ::RHI
     class Resource;
 
     //! FrameAttachment is the base class for all attachments stored in the frame graph. Attachments
-    //! are "attached" to scopes via ScopeAttachment instances. These scope attachments form a linked list
-    //! from the first to last scope. FrameAttachments are associated with a unique AttachmentId.
+    //! can be used on multiple devices at the same time. They are "attached" to scopes via
+    //! ScopeAttachment instances. These scope attachments form a linked list per device from the
+    //! first to last scope on each device. FrameAttachments are associated with a unique AttachmentId.
     //!
     //! FrameAttachments are rebuilt every frame, and are created through the FrameGraph.
     class FrameAttachment
@@ -42,18 +43,21 @@ namespace AZ::RHI
         /// Returns the attachment lifetime type.
         AttachmentLifetimeType GetLifetimeType() const;
 
-        /// Returns the first scope attachment in the linked list.
+        /// Returns the first scope attachment in the linked list of a specific device or nullptr if no Scope
+        /// uses this attachment on the given device.
         const ScopeAttachment* GetFirstScopeAttachment(int deviceIndex) const;
         ScopeAttachment* GetFirstScopeAttachment(int deviceIndex);
 
-        /// Returns the last scope attachment in the linked list.
+        /// Returns the last scope attachment in the linked list of a specific device or nullptr if no Scope
+        /// uses this attachment on the given device.
         const ScopeAttachment* GetLastScopeAttachment(int deviceIndex) const;
         ScopeAttachment* GetLastScopeAttachment(int deviceIndex);
 
         /// Returns whether there are any scope attachments at all.
         bool HasScopeAttachments() const;
 
-        //! Returns the first / last scope associated with the lifetime of this attachment.
+        //! Returns the first / last scope associated with the lifetime of this attachment of a specific
+        //! device or nullptr if no Scope uses this attachment on the given device.
         //! The guarantee is that the attachment is not used by any scope with index prior to GetFirstScope
         //! or any scope with index after GetLastScope. It does not, however, guarantee that the attachment
         //! is actually used by either scope. The scope attachment list must be traversed to determine usage.

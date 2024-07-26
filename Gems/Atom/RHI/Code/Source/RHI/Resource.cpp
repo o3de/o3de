@@ -89,6 +89,8 @@ namespace AZ::RHI
         }
         else
         {
+            // If we don't get a valid device index, we must assume that the resource may be used on
+            // any device, so we set it for all of them.
             IterateObjects<DeviceResource>(
                 [frameAttachment]([[maybe_unused]] auto deviceIndex, auto deviceResource)
                 {

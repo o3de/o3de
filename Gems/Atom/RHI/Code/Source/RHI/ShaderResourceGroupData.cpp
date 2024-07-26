@@ -103,7 +103,7 @@ namespace AZ::RHI
                 for (int imageIndex = 0; imageIndex < imageViews.size(); ++imageIndex)
                 {
                     deviceImageViews[imageIndex] = imageViews[imageIndex]
-                        ? (int(imageViews[imageIndex]->GetImage()->GetDeviceMask()) & 1 << deviceIndex
+                        ? (imageViews[imageIndex]->GetImage()->IsDeviceSet(deviceIndex)
                                ? imageViews[imageIndex]->GetDeviceImageView(deviceIndex).get()
                                : nullptr)
                         : nullptr;
@@ -146,7 +146,7 @@ namespace AZ::RHI
                 for (int imageIndex = 0; imageIndex < imageViews.size(); ++imageIndex)
                 {
                     deviceImageViews[imageIndex] = imageViews[imageIndex]
-                        ? (int(imageViews[imageIndex]->GetImage()->GetDeviceMask()) & 1 << deviceIndex
+                        ? (imageViews[imageIndex]->GetImage()->IsDeviceSet(deviceIndex)
                                ? imageViews[imageIndex]->GetDeviceImageView(deviceIndex).get()
                                : nullptr)
                         : nullptr;
@@ -194,7 +194,7 @@ namespace AZ::RHI
                 for (int bufferIndex = 0; bufferIndex < bufferViews.size(); ++bufferIndex)
                 {
                     deviceBufferViews[bufferIndex] = bufferViews[bufferIndex]
-                        ? (int(bufferViews[bufferIndex]->GetBuffer()->GetDeviceMask()) & 1 << deviceIndex
+                        ? (bufferViews[bufferIndex]->GetBuffer()->IsDeviceSet(deviceIndex)
                                ? bufferViews[bufferIndex]->GetDeviceBufferView(deviceIndex).get()
                                : nullptr)
                         : nullptr;
@@ -237,7 +237,7 @@ namespace AZ::RHI
                 for (int bufferIndex = 0; bufferIndex < bufferViews.size(); ++bufferIndex)
                 {
                     deviceBufferViews[bufferIndex] = bufferViews[bufferIndex]
-                        ? (int(bufferViews[bufferIndex]->GetBuffer()->GetDeviceMask()) & 1 << deviceIndex
+                        ? (bufferViews[bufferIndex]->GetBuffer()->IsDeviceSet(deviceIndex)
                                ? bufferViews[bufferIndex]->GetDeviceBufferView(deviceIndex).get()
                                : nullptr)
                         : nullptr;
