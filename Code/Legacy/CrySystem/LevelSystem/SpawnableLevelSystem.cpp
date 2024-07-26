@@ -546,11 +546,16 @@ namespace LegacyLevelSystem
     {
         if (m_queuedAssetsCount < 0)
         {
-            m_queuedAssetsCount = 0; // skip evaluation before the first asset loading diaptch 
+            m_queuedAssetsCount = 1; // skip evaluation before the first asset loading diaptch 
         }
         else
         {
-            m_queuedAssetsCount = min(m_queuedAssetsCountMax, m_queuedAssetsCount + static_cast<int>(AZ::Data::AssetBus::QueuedEventCount()) + 1);
+            m_queuedAssetsCount += static_cast<int>(AZ::Data::AssetBus::QueuedEventCount()) + 1;
+        }
+
+        if (m_queuedAssetsCountMax <= m_queuedAssetsCount)
+        {
+            m_queuedAssetsCountMax = m_queuedAssetsCount + 1;
         }
 
         // begin - progress calculation
