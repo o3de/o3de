@@ -361,9 +361,11 @@ namespace O3DE::ProjectManager
         menu->addAction(tr("Edit Project Settings..."), this, [this]() { emit EditProject(m_projectInfo.m_path); });
         menu->addAction(tr("Configure Gems..."), this, [this]() { emit EditProjectGems(m_projectInfo.m_path); });
         menu->addAction(tr("Build"), this, [this]() { emit BuildProject(m_projectInfo); });
+        menu->addAction(tr("Export"), this, [this](){ emit ExportProject(m_projectInfo);});
         menu->addAction(tr("Open CMake GUI..."), this, [this]() { emit OpenCMakeGUI(m_projectInfo); });
         menu->addAction(tr("Open Android Project Generator..."), this, [this]() { emit OpenAndroidProjectGenerator(m_projectInfo.m_path); });
-
+        //TODO: when wiring up the configuration panel, add this menu option in!
+        // menu->addAction(tr("Open Project Export Settings..."), this, [this]() { emit OpenProjectExportSettings(m_projectInfo.m_path); });
         menu->addSeparator();
         menu->addAction(tr("Open Project folder..."), this, [this]()
         { 
@@ -469,6 +471,12 @@ namespace O3DE::ProjectManager
         case ProjectButtonState::BuildFailed:
             ShowBuildFailedState();
             break;
+        case ProjectButtonState::Exporting:
+            ShowExportingState();
+            break;
+        case ProjectButtonState::ExportFailed:
+            ShowExportFailedState();
+            break;
         case ProjectButtonState::NotDownloaded:
             ShowNotDownloadedState();
             break;
@@ -523,6 +531,15 @@ namespace O3DE::ProjectManager
         ShowMessage(tr("Building Project..."));
     }
 
+    void ProjectButton::ShowExportingState()
+    {
+        m_projectImageLabel->GetShowLogsButton()->show();
+
+        SetProjectExporting(true);
+
+        ShowMessage(tr("Exporting Project..."));
+    }
+
     void ProjectButton::ShowBuildFailedState()
     {
         ShowBuildButton();
@@ -533,6 +550,17 @@ namespace O3DE::ProjectManager
         m_projectImageLabel->GetShowLogsButton()->setVisible(!m_projectInfo.m_logUrl.isEmpty());
 
         ShowWarning(tr("Failed to build"));
+    }
+
+    void ProjectButton::ShowExportFailedState()
+    {
+        ShowBuildButton();
+        
+        SetProjectExporting(false);
+
+        m_projectImageLabel->GetShowLogsButton()->setVisible(!m_projectInfo.m_logUrl.isEmpty());
+
+        ShowWarning(tr("Failed to export"));
     }
 
     void ProjectButton::ShowNotDownloadedState()
@@ -714,6 +742,24 @@ namespace O3DE::ProjectManager
         buildingAnimation->setVisible(isBuilding);
 
         m_projectMenuButton->setVisible(!isBuilding);
+    }
+
+    void ProjectButton::SetProjectExporting(bool isExporting)
+    {
+        m_isProjectExporting = isExporting;
+
+        QLabel* exportingAnimation = m_projectImageLabel->GetBuildingAnimationLabel();
+
+        if (isExporting)
+        {
+            SetLaunchingEnabled(false);
+            m_projectImageLabel->GetActionCancelButton()->show();
+        }
+
+        exportingAnimation->movie()->setPaused(!isExporting);
+        exportingAnimation->setVisible(isExporting);
+
+        m_projectMenuButton->setVisible(!isExporting);
     }
 
     void ProjectButton::HideContextualLabelButtonWidgets()

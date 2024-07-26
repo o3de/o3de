@@ -194,6 +194,7 @@ namespace O3DE::ProjectManager
         connect(projectButton, &ProjectButton::RemoveProject, this, &ProjectsScreen::HandleRemoveProject);
         connect(projectButton, &ProjectButton::DeleteProject, this, &ProjectsScreen::HandleDeleteProject);
         connect(projectButton, &ProjectButton::BuildProject, this, &ProjectsScreen::QueueBuildProject);
+        connect(projectButton, &ProjectButton::ExportProject, this, &ProjectsScreen::QueueExportProject);
         connect(projectButton, &ProjectButton::OpenCMakeGUI, this, 
             [this](const ProjectInfo& projectInfo)
             {
@@ -331,9 +332,21 @@ namespace O3DE::ProjectManager
                         m_currentBuilder->SetProjectButton(buildProjectIter->second);
                     }
                 }
+            } else if (m_currentExporter)
+            {
+                AZ::IO::Path exportProjectPath = AZ::IO::Path(m_currentExporter->GetProjectInfo().m_path.toUtf8().constData());
+                if (!exportProjectPath.empty())
+                {
+                    //Setup export button
+                    auto exportProjectIter = m_projectButtons.find(exportProjectPath);
+                    if (exportProjectIter != m_projectButtons.end())
+                    {
+                        m_currentExporter->SetProjectButton(exportProjectIter->second);
+                    }
+                }
             }
 
-            // Let the user can cancel builds for projects in the build queue
+            // Let the user can cancel builds for projects in the build queue and in the export queue
             for (const ProjectInfo& project : m_buildQueue)
             {
                 auto projectIter = m_projectButtons.find(project.m_path.toUtf8().constData());
@@ -345,6 +358,20 @@ namespace O3DE::ProjectManager
                         {
                             UnqueueBuildProject(project);
                             SuggestBuildProjectMsg(project, false);
+                        });
+                }
+            }
+
+            for (const ProjectInfo& project : m_exportQueue)
+            {
+                auto projectIter = m_projectButtons.find(project.m_path.toUtf8().constData());
+                if (projectIter != m_projectButtons.end())
+                {
+                    projectIter->second->SetProjectButtonAction(
+                        tr("Cancel queued export"),
+                        [this, project]
+                        {
+                            UnqueueExportProject(project);
                         });
                 }
             }
@@ -733,6 +760,29 @@ namespace O3DE::ProjectManager
         UpdateIfCurrentScreen();
     }
 
+    void ProjectsScreen::QueueExportProject(const ProjectInfo& projectInfo, bool skipDialogBox)
+    {
+        if (!ExportQueueContainsProject(projectInfo.m_path))
+        {
+            if (m_exportQueue.empty() && !m_currentExporter)
+            {
+                StartProjectExport(projectInfo, skipDialogBox);
+                //Projects Content should be reset in function
+            }
+            else
+            {
+                m_exportQueue.append(projectInfo);
+                UpdateIfCurrentScreen();
+            }
+        }
+    }
+
+    void ProjectsScreen::UnqueueExportProject(const ProjectInfo& projectInfo)
+    {
+        m_exportQueue.removeAll(projectInfo);
+        UpdateIfCurrentScreen();
+    }
+
     void ProjectsScreen::StartProjectDownload(const QString& projectName, const QString& destinationPath, bool queueBuild)
     {
         m_downloadController->AddObjectDownload(projectName, destinationPath, DownloadController::DownloadObjectType::Project);
@@ -924,6 +974,34 @@ namespace O3DE::ProjectManager
         return displayFirstTimeContent;
     }
 
+    bool ProjectsScreen::StartProjectExport(const ProjectInfo& projectInfo, bool skipDialogBox)
+    {
+        bool proceedToExport = skipDialogBox;
+        if (!proceedToExport)
+        {
+            QMessageBox::StandardButton buildProject = QMessageBox::information(
+                this,
+                tr("Exporting \"%1\"").arg(projectInfo.GetProjectDisplayName()),
+                tr("Ready to export \"%1\"?").arg(projectInfo.GetProjectDisplayName()),
+                QMessageBox::No | QMessageBox::Yes);
+
+            proceedToExport = buildProject == QMessageBox::Yes;
+        }
+
+        if (proceedToExport)
+        {
+            m_currentExporter = new ProjectExportController(projectInfo, nullptr, this);
+            UpdateWithProjects(GetAllProjects());
+            connect(m_currentExporter, &ProjectExportController::Done, this, &ProjectsScreen::ProjectExportDone);
+            m_currentExporter->Start();
+        }
+        else
+        {
+            return false;
+        }
+        return true;
+    }
+
     bool ProjectsScreen::StartProjectBuild(const ProjectInfo& projectInfo, bool skipDialogBox)
     {
         if (ProjectUtils::FindSupportedCompiler(this))
@@ -989,6 +1067,29 @@ namespace O3DE::ProjectManager
         UpdateIfCurrentScreen();
     }
 
+    void ProjectsScreen::ProjectExportDone(bool success)
+    {
+        ProjectInfo currentExportProject;
+        if (!success)
+        {
+            currentExportProject = m_currentExporter->GetProjectInfo();
+        }
+
+        delete m_currentExporter;
+        m_currentExporter = nullptr;
+
+        if (!m_exportQueue.empty())
+        {
+            while (!StartProjectExport(m_exportQueue.front()) && m_exportQueue.size() > 1)
+            {
+                m_exportQueue.pop_front();
+            }
+            m_exportQueue.pop_front();
+        }
+
+        UpdateIfCurrentScreen();
+    }
+
     QList<ProjectInfo>::iterator ProjectsScreen::RequiresBuildProjectIterator(const QString& projectPath)
     {
         QString nativeProjPath(QDir::toNativeSeparators(projectPath));
@@ -1016,6 +1117,20 @@ namespace O3DE::ProjectManager
             }
         }
 
+        return false;
+    }
+
+    bool ProjectsScreen::ExportQueueContainsProject(const QString& projectPath)
+    {
+        const AZ::IO::PathView path { projectPath.toUtf8().constData() };
+
+        for (const ProjectInfo& project : m_exportQueue)
+        {
+            if (AZ::IO::PathView(project.m_path.toUtf8().constData()) == path)
+            {
+                return true;
+            }
+        }
         return false;
     }
 

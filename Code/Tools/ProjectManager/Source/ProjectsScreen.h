@@ -30,6 +30,7 @@ QT_FORWARD_DECLARE_CLASS(QFileSystemWatcher)
 namespace O3DE::ProjectManager
 {
     QT_FORWARD_DECLARE_CLASS(ProjectBuilderController);
+    QT_FORWARD_DECLARE_CLASS(ProjectExportController);
     QT_FORWARD_DECLARE_CLASS(ProjectButton);
     QT_FORWARD_DECLARE_CLASS(DownloadController);
 
@@ -65,11 +66,15 @@ namespace O3DE::ProjectManager
         void QueueBuildProject(const ProjectInfo& projectInfo, bool skipDialogBox = false);
         void UnqueueBuildProject(const ProjectInfo& projectInfo);
 
+        void QueueExportProject(const ProjectInfo& projectInfo, bool skipDialogBox = false);
+        void UnqueueExportProject(const ProjectInfo& projectInfo);
+
         void StartProjectDownload(const QString& projectName, const QString& destinationPath, bool queueBuild);
         void HandleDownloadProgress(const QString& projectName, DownloadController::DownloadObjectType objectType, int bytesDownloaded, int totalBytes);
         void HandleDownloadResult(const QString& projectName, bool succeeded);
 
         void ProjectBuildDone(bool success = true);
+        void ProjectExportDone(bool success = false);
 
         void paintEvent(QPaintEvent* event) override;
 
@@ -90,6 +95,11 @@ namespace O3DE::ProjectManager
         bool BuildQueueContainsProject(const QString& projectPath);
         bool WarnIfInBuildQueue(const QString& projectPath);
 
+        //note: export queue logic is temporary stub. once implemented we will decide if scaling back is needed
+        bool StartProjectExport(const ProjectInfo& projectInof, bool skipDialogBox = false);
+        bool ExportQueueContainsProject(const QString& projectPath);
+        bool WarnIfInExportQueue(const QString& projectPath);
+
         QAction* m_createNewProjectAction = nullptr;
         QAction* m_addExistingProjectAction = nullptr;
         QAction* m_addRemoteProjectAction = nullptr;
@@ -102,7 +112,9 @@ namespace O3DE::ProjectManager
         AZStd::unordered_map<AZ::IO::Path, ProjectButton*> m_projectButtons;
         QList<ProjectInfo> m_requiresBuild;
         QQueue<ProjectInfo> m_buildQueue;
+        QQueue<ProjectInfo> m_exportQueue;
         ProjectBuilderController* m_currentBuilder = nullptr;
+        ProjectExportController* m_currentExporter = nullptr;
         DownloadController* m_downloadController = nullptr;
 
         inline constexpr static int s_contentMargins = 80;

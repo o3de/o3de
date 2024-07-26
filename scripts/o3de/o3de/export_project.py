@@ -363,12 +363,27 @@ def _export_script(export_script_path: pathlib.Path, project_path: pathlib.Path,
 
     return execute_python_script(validated_export_script_path, o3de_context)
 
+def _ui_export(project_path: pathlib.Path) -> int:
+    logging.basicConfig(format=utils.LOG_FORMAT)
+    logging.getLogger().setLevel(args.log_level)
+    
+    export_config = get_export_project_config(project_path=project_path)
+    export_script = pathlib.Path(export_config.get_value('option.default.export.script'))
+    
+    return _export_script(export_script, project_path, [])
+
 # Export Script entry point
 def _run_export_script(args: argparse, passthru_args: list) -> int:
     logging.basicConfig(format=utils.LOG_FORMAT)
     logging.getLogger().setLevel(args.log_level)
     
-    return _export_script(args.export_script, args.project_path, passthru_args)
+    if args.export_script is None:
+        export_config = get_project_export_config_from_args(args)[0]
+        export_script = pathlib.Path(export_config.get_value('option.default.export.script'))
+    else:
+        export_script = args.export_script
+    
+    return _export_script(export_script, args.project_path, passthru_args)
 
 
 def get_project_export_config_from_args(args: argparse) -> (command_utils.O3DEConfig, str):
@@ -473,7 +488,7 @@ def configure_project_export_options(args: argparse) -> int:
 
 # Argument handling
 def add_parser_args(parser) -> None:
-    parser.add_argument('-es', '--export-script', type=pathlib.Path, required=True, help="An external Python script to run")
+    parser.add_argument('-es', '--export-script', type=pathlib.Path, required=False, help="An external Python script to run")
     parser.add_argument('-pp', '--project-path', type=pathlib.Path, required=False, default=pathlib.Path(os.getcwd()),
                         help="Project to export. If not supplied, it will be the current working directory.")
     
@@ -836,35 +851,43 @@ def bundle_assets(ctx: O3DEScriptExportContext,
                                                                 '--project-path', ctx.project_path,
                                                                 '--allowOverwrites']
         for seed in seedlist_paths:
-            gen_game_asset_list_command.extend(["--seedListFile", str(seed)])
+            if seed.is_absolute():
+                abs_seed = seed
+            else:
+                abs_seed = ctx.project_path / seed
+            gen_game_asset_list_command.extend(["--seedListFile", str(abs_seed)])
         
         for seed in seedfile_paths:
-            gen_game_asset_list_command.extend(["--addSeed", str(seed)])
+            if seed.is_absolute():
+                abs_seed = seed
+            else:
+                abs_seed = ctx.project_path / seed
+            gen_game_asset_list_command.extend(["--addSeed", str(abs_seed)])
 
         ret = process_command(gen_game_asset_list_command,
-                            cwd=ctx.engine_path if engine_centric else ctx.project_path)
+                              cwd=ctx.engine_path if engine_centric else ctx.project_path)
         if ret != 0:
             raise RuntimeError(f"Error generating game assets lists for {game_asset_list_path}")
 
         gen_engine_asset_list_command = [asset_bundler_batch_path, "assetLists",
-                                                                "--assetListFile", engine_asset_list_path,
-                                                                '--platform', selected_platform,
-                                                                '--project-path', ctx.project_path,
-                                                                "--allowOverwrites",
-                                                                "--addDefaultSeedListFiles"]
+                                                                   "--assetListFile", engine_asset_list_path,
+                                                                   '--platform', selected_platform,
+                                                                   '--project-path', ctx.project_path,
+                                                                   "--allowOverwrites",
+                                                                   "--addDefaultSeedListFiles"]
         ret = process_command(gen_engine_asset_list_command,
-                            cwd=ctx.engine_path if engine_centric else ctx.project_path)
+                              cwd=ctx.engine_path if engine_centric else ctx.project_path)
         if ret != 0:
             raise RuntimeError(f"Error generating engine assets lists for {engine_asset_list_path}")
 
         # Generate the bundles. We will place it in the project directory for now, since the files need to be copied multiple times (one for each separate launcher distribution)
         gen_game_bundle_command = [asset_bundler_batch_path, "bundles",
-                                                            "--maxSize", str(max_bundle_size),
-                                                            "--platform",  selected_platform,
-                                                            '--project-path', ctx.project_path,
-                                                            "--allowOverwrites",
-                                                            "--outputBundlePath", bundles_path / f"game_{selected_platform}.pak",
-                                                            "--assetListFile", game_asset_list_path]
+                                                             "--maxSize", str(max_bundle_size),
+                                                             "--platform",  selected_platform,
+                                                             '--project-path', ctx.project_path,
+                                                             "--allowOverwrites",
+                                                             "--outputBundlePath", bundles_path / f"game_{selected_platform}.pak",
+                                                             "--assetListFile", game_asset_list_path]
         ret = process_command(gen_game_bundle_command,
                             cwd=ctx.engine_path if engine_centric else ctx.project_path)
         if ret != 0:
@@ -1116,7 +1139,7 @@ SETTINGS_OPTION_FAIL_ON_ASSET_ERR = register_setting(key='option.fail.on.asset.e
 
 SETTINGS_SEED_LIST_PATHS          = register_setting(key='seedlist.paths',
                                                      description='List of seed list paths (relative to the project folder) used for asset bundling. Multiple paths are separated by semi-colon (;).',
-                                                     default='')
+                                                     default='AssetBundling/SeedLists/DefaultLevel.seed')
 SETTINGS_SEED_FILE_PATHS          = register_setting(key='seedfile.paths',
                                                      description='List of seed file paths (relative to the project folder) used for asset bundling. Multiple paths are separated by semi-colon (;).',
                                                      default='')
@@ -1167,7 +1190,7 @@ SETTINGS_DEFAULT_ASSET_BUNDLING_PATH = register_setting(key='asset.bundling.path
 SETTINGS_MAX_BUNDLE_SIZE = register_setting(key='max.size',
                                             description='The maximum size of a given asset bundle.',
                                             default="2048",
-                                            restricted_regex=f'([0-9]+)',
+                                            restricted_regex=f'(^[0-9]+$)',
                                             restricted_regex_description=f'Value must be a whole number.')
 
 SETTINGS_OPTION_BUILD_GAME_LAUNCHER  = register_setting(key='option.build.game.launcher',
@@ -1200,6 +1223,19 @@ SETTINGS_OPTION_BUILD_MONOLITHICALLY = register_setting(key='option.build.monoli
                                                         is_boolean=True,
                                                         default='True')
 
+SETTINGS_OPTION_KILL_PRIOR_PROCESSES = register_setting(key='option.processes.kill',
+                                                        description='Before running the export process, this will kill all currently running O3DE processes.',
+                                                        is_boolean=True,
+                                                        default='False')
+
+SETTINGS_DEFAULT_EXPORT_SCRIPT = register_setting(key='option.default.export.script',
+                                                  description='The default export script to execute.',
+                                                  default='export_source_built_project.py')
+
+SETTINGS_DEFAULT_OUTPUT_PATH = register_setting(key='option.default.output.path',
+                                                description='The default target export path.',
+                                                default='build/export')
+
 def get_export_project_config(project_path: pathlib.Path or None) -> command_utils.O3DEConfig:
     """
     Create a project export configuration a project. If a project name is provided, then attempt to look for the project and use its
@@ -1209,6 +1245,7 @@ def get_export_project_config(project_path: pathlib.Path or None) -> command_uti
     :param project_path:    The path to the registered O3DE project to look for its project-specific setting. If None, only use the global settings.
     :return: The project export configuration object
     """
+    print(project_path)
     return command_utils.O3DEConfig(project_path=project_path,
                                     settings_filename=PROJECT_EXPORT_SETTINGS_FILE,
                                     settings_section_name=PROJECT_EXPORT_SECTION_NAME,
