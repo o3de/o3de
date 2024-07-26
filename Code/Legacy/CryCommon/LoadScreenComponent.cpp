@@ -8,7 +8,6 @@
 #if defined(CARBONATED)
 
 #include <AzFramework/API/ApplicationAPI.h>
-#include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Time/ITime.h>

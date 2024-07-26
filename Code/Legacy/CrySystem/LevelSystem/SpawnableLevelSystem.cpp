@@ -539,7 +539,6 @@ namespace LegacyLevelSystem
     }
 
 #if defined (CARBONATED)
-
     bool SpawnableLevelSystem::ApplyLevelLoadScreenConfig(const char* levelName) const
     {
         AZStd::vector<AZStd::string> levelNamesForExclude;
