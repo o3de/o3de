@@ -62,6 +62,7 @@ class SpawnableLevelSystem
         //! @}
 
 #ifdef CARBONATED
+        bool ApplyLevelLoadScreenConfig(const char* levelName) const;
         // AssetLoadNotificatorBus interface implementation
         void WaitForAssetUpdate() override;
 #endif

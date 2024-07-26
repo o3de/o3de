@@ -26,11 +26,7 @@ public:
     virtual void GameStart() = 0;
 
     //! Invoked when the level load screen should become visible.
-#if defined (CARBONATED)    
-    virtual void LevelStart(const AZStd::string& levelName) = 0;
-#else
     virtual void LevelStart() = 0;
-#endif
 
     //! Invoked when the load screen should be paused.
     virtual void Pause() = 0;

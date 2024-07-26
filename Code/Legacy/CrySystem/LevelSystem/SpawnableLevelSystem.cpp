@@ -265,12 +265,9 @@ namespace LegacyLevelSystem
 
 #if defined (CARBONATED)
 #if AZ_LOADSCREENCOMPONENT_ENABLED
-        // load the level config file
-        AZStd::string levelFolderPath;
-        AZ::StringFunc::Path::GetFolderPath(validLevelName.c_str(), levelFolderPath);
-        GetISystem()->LoadConfiguration(AZStd::string::format("%s/level.cfg", levelFolderPath.c_str()).c_str());
+        ApplyLevelLoadScreenConfig(validLevelName.c_str());
         // level start event (we could not call it before UnloadLevel() call)
-        EBUS_EVENT(LoadScreenBus, LevelStart, validLevelName);
+        EBUS_EVENT(LoadScreenBus, LevelStart);
         AZ::AssetLoadNotification::AssetLoadNotificatorBus::Handler::BusConnect();
         // progress bar init
         m_fFilteredProgress = 0.f;
@@ -542,6 +539,40 @@ namespace LegacyLevelSystem
     }
 
 #if defined (CARBONATED)
+
+    bool SpawnableLevelSystem::ApplyLevelLoadScreenConfig(const char* levelName) const
+    {
+        AZStd::vector<AZStd::string> levelNamesForExclude;
+        ICVar* disabledLevelsVar = gEnv->pConsole->GetCVar("list_of_levels_without_load_screen");
+        const AZStd::string disabledLevels = disabledLevelsVar ? disabledLevelsVar->GetString() : "";
+        if (disabledLevels != "")
+        {
+            AZ::StringFunc::Tokenize(AZStd::string_view(disabledLevels), levelNamesForExclude, ",");
+        }
+
+        const AZStd::string levelNameStr(levelName);
+        for (const auto& nameForExclude : levelNamesForExclude)
+        {
+            if (levelNameStr.contains(nameForExclude))
+            {
+                return false; // level does not have a load screen
+            }
+        }
+
+        AZStd::string levelFolderPath;
+        AZ::StringFunc::Path::GetFolderPath(levelName, levelFolderPath);
+        // load the default load screen config file
+        ICVar* defaultLoadScreenCfgVar = gEnv->pConsole->GetCVar("default_load_screen_config_file");
+        const AZStd::string defaultLoadScreenCfg = defaultLoadScreenCfgVar ? defaultLoadScreenCfgVar->GetString() : "";
+        if (defaultLoadScreenCfg != "")
+        {
+            GetISystem()->LoadConfiguration(defaultLoadScreenCfg.c_str());
+        }
+        // load the level config file
+        GetISystem()->LoadConfiguration(AZStd::string::format("%s/level.cfg", levelFolderPath.c_str()).c_str());
+        return true;
+    }
+
     void SpawnableLevelSystem::WaitForAssetUpdate()
     {
         if (m_queuedAssetsCount < 0)

@@ -1265,14 +1265,10 @@ void CSystem::CreateSystemVars()
         "there is no limit.");
 
 #if defined(CARBONATED)
-    REGISTER_STRING("default_level_load_screen_uicanvas_path", "", 0, "Default level load screen UiCanvas path.");
-    REGISTER_STRING("default_level_load_screen_sequence_to_auto_play", "", 0, "Default level load screen UiCanvas animation sequence to play on load.");
-    REGISTER_FLOAT("default_level_load_screen_sequence_fixed_fps", 10.0f, 0, "Default fixed frame rate fed to updates of the level load screen sequence.");
-    REGISTER_FLOAT("default_level_load_screen_max_fps", 30.0f, 0, "Default max frame rate to update the level load screen sequence.");
-    REGISTER_FLOAT("default_level_load_screen_minimum_time", 0.0f, 0, "Default minimum amount of time to show the level load screen.");
+    REGISTER_STRING("default_load_screen_config_file", "", 0, "Default Load Screen Config File.");
     REGISTER_STRING("list_of_levels_without_load_screen", "", 0, "Comma separated list of levels without the level load screen.");
 #endif
-    
+   
 #endif // if AZ_LOADSCREENCOMPONENT_ENABLED
 
     REGISTER_INT("cvDoVerboseWindowTitle", 0, VF_NULL, "");

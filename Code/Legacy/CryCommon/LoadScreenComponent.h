@@ -60,11 +60,7 @@ public:
     // LoadScreenBus interface implementation
     void UpdateAndRender() override;
     void GameStart() override;
-#if defined(CARBONATED)
-    void LevelStart(const AZStd::string& levelName) override;
-#else
     void LevelStart() override;
-#endif
     void Pause() override;
     void Resume() override;
     void Stop() override;

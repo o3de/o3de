@@ -296,6 +296,7 @@ namespace LyShine
             Reset();
             return AZ::EntityId();
         }
+
 #if defined (CARBONATED)
         AZStd::to_lower(path.begin(), path.end());
 #endif
