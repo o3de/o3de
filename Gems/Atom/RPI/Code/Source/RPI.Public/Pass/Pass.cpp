@@ -65,6 +65,7 @@ namespace AZ
             m_flags.m_enabled = true;
             m_flags.m_timestampQueryEnabled = false;
             m_flags.m_pipelineStatisticsQueryEnabled = false;
+            m_flags.m_parentDeviceIndexCached = false;
 
             m_template = descriptor.m_passTemplate;
             if (m_template)
@@ -128,15 +129,6 @@ namespace AZ
             return m_deviceIndex;
         }
 
-        int Pass::RecursiveGetDeviceIndex() const
-        {
-            if (m_deviceIndex == AZ::RHI::MultiDevice::InvalidDeviceIndex && m_parent)
-            {
-                return m_parent->RecursiveGetDeviceIndex();
-            }
-            return m_deviceIndex;
-        }
-
         void Pass::SetEnabled(bool enabled)
         {
             m_flags.m_enabled = enabled;
@@ -185,7 +177,7 @@ namespace AZ
                 m_path = ConcatPassName(m_parent->m_path, m_name);
                 m_flags.m_partOfHierarchy = m_parent->m_flags.m_partOfHierarchy;
 
-                m_parentDeviceIndex = m_parent->RecursiveGetDeviceIndex();
+                m_parentDeviceIndex = m_parent->GetDeviceIndex();
                 m_flags.m_parentDeviceIndexCached = true;
 
                 if (m_state == PassState::Orphaned)

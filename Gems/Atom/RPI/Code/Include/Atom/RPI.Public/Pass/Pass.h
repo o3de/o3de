@@ -411,9 +411,6 @@ namespace AZ
                 RHI::ImageBindFlags bindFlags = RHI::ImageBindFlags::Color | RHI::ImageBindFlags::ShaderReadWrite,
                 RHI::ImageAspectFlags aspectFlags = RHI::ImageAspectFlags::Color);
 
-            // Recursively get device index ignoring the cached parent device index
-            int RecursiveGetDeviceIndex() const;
-
             // --- Protected Members ---
 
             const Name PassNameThis{"This"};
@@ -539,7 +536,7 @@ namespace AZ
             RHI::ScopeAttachmentStage m_defaultShaderAttachmentStage = RHI::ScopeAttachmentStage::AnyGraphics;
 
             // The device index the pass should run on. Can be invalid if it doesn't matter.
-            int m_deviceIndex{ AZ::RHI::MultiDevice::InvalidDeviceIndex };
+            int m_deviceIndex = AZ::RHI::MultiDevice::InvalidDeviceIndex;
 
         private:
             // Return the Timestamp result of this pass
