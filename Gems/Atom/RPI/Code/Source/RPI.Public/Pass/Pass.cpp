@@ -129,6 +129,20 @@ namespace AZ
             return m_deviceIndex;
         }
 
+        bool Pass::SetDeviceIndex(int deviceIndex)
+        {
+            const int deviceCount = AZ::RHI::RHISystemInterface::Get()->GetDeviceCount();
+            if (deviceIndex < AZ::RHI::MultiDevice::InvalidDeviceIndex || deviceIndex >= deviceCount)
+            {
+                AZ_Error("Pass", false, "Device index should be at least -1(RHI::MultiDevice::InvalidDeviceIndex) and less than current device count %d.", deviceCount);
+                return false;
+            }
+
+            m_deviceIndex = deviceIndex;
+            OnHierarchyChange();
+            return true;
+        }
+
         void Pass::SetEnabled(bool enabled)
         {
             m_flags.m_enabled = enabled;

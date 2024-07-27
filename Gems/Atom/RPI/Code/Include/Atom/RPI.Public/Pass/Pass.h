@@ -150,6 +150,9 @@ namespace AZ
             //! Get the device index of this pass
             int GetDeviceIndex() const;
 
+            //! Set the device index of this pass (and potentially affects its child's)
+            bool SetDeviceIndex(int deviceIndex);
+
             //! Enable/disable this pass
             //! If the pass is disabled, it (and any children if it's a ParentPass) won't be rendered.  
             void SetEnabled(bool enabled);
