@@ -15,6 +15,7 @@
 #include "xml.h"
 #include <algorithm>
 #include <stdio.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzFramework/Archive/IArchive.h>
 #include <CryCommon/Cry_Color.h>
 #include "XMLBinaryReader.h"
@@ -26,30 +27,7 @@
 
 #include "System.h"
 
-#if AZ_TRAIT_OS_PLATFORM_APPLE || defined(AZ_PLATFORM_LINUX)
-#include <clocale>
-#include <locale>
-
-class LocaleResetter
-{
-public:
-    LocaleResetter()
-    {
-        m_oldLocale = std::setlocale(LC_NUMERIC, "C");
-    }
-    ~LocaleResetter()
-    {
-        std::setlocale(LC_NUMERIC, m_oldLocale);
-    }
-
-private:
-    char* m_oldLocale;
-};
-#define SCOPED_LOCALE_RESETTER LocaleResetter l
-#else
-// noop on Windows
-#define SCOPED_LOCALE_RESETTER
-#endif
+#define SCOPED_LOCALE_RESETTER AZ::Locale::ScopedSerializationLocale localeResetter;
 
 // Global counter for memory allocated in XML string pools.
 size_t CSimpleStringPool::g_nTotalAllocInXmlStringPools = 0;
@@ -444,6 +422,7 @@ bool CXmlNode::getAttr(const char* key, float& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
+        SCOPED_LOCALE_RESETTER;
         value = (float)atof(svalue);
         return true;
     }
@@ -455,6 +434,7 @@ bool CXmlNode::getAttr(const char* key, double& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
+        SCOPED_LOCALE_RESETTER;
         value = atof(svalue);
         return true;
     }
@@ -557,6 +537,7 @@ bool CXmlNode::getAttr(const char* key, ColorB& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
+        SCOPED_LOCALE_RESETTER;
         unsigned int r, g, b, a = 255;
         int numFound = azsscanf(svalue, "%u,%u,%u,%u", &r, &g, &b, &a);
         if (numFound == 3 || numFound == 4)

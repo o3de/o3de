@@ -20,6 +20,7 @@
 #include "Include/IObjectManager.h"
 #include "Objects/EntityObject.h"
 
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/Time/ITime.h>
 
 //////////////////////////////////////////////////////////////////////////
@@ -640,7 +641,11 @@ void CAnimationContext::GoToFrameCmd(IConsoleCmdArgs* pArgs)
         return;
     }
 
+    // console commands are in the invariant locale, for atof()
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
     float targetFrame = (float)atof(pArgs->GetArg(1));
+    scopedLocale.Deactivate();
+
     if (pSeq->GetTimeRange().start > targetFrame || targetFrame > pSeq->GetTimeRange().end)
     {
         gEnv->pLog->LogError("GoToFrame: requested time %f is outside the range of sequence %s (%f, %f)", targetFrame, pSeq->GetName().c_str(), pSeq->GetTimeRange().start, pSeq->GetTimeRange().end);

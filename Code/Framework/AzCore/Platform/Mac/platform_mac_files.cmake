@@ -60,6 +60,9 @@ set(FILES
     ../Common/UnixLike/AzCore/PlatformIncl_UnixLike.h
     AzCore/Platform_Mac.cpp
     AzCore/PlatformIncl_Platform.h
+    AzCore/Serialization/Locale_Platform.h
+    ../Common/Apple/AzCore/Serialization/Locale_Apple.h
+    ../Common/Apple/AzCore/Serialization/Locale_Apple.cpp
     ../Common/UnixLike/AzCore/Settings/CommandLineParser_UnixLike.cpp
     ../Common/UnixLike/AzCore/Socket/AzSocket_fwd_UnixLike.h
     ../Common/UnixLike/AzCore/Socket/AzSocket_UnixLike.cpp

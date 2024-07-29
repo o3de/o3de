@@ -15,6 +15,7 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/Script/lua/lua.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/RTTI/AttributeReader.h>
 
@@ -103,6 +104,9 @@ namespace ScriptContextCpp
     // remove Lua packgage.loadlib immediately after loading libraries to prevent use of unsafe function
     void OpenLuaLibraries(lua_State* m_lua)
     {
+        // LUA Must execute in the "C" Locale.
+        AZ::Locale::ScopedSerializationLocale scopedLocale;
+
         // Lua:
         luaL_openlibs(m_lua);
         // Lua:
@@ -585,6 +589,11 @@ namespace AZ
         //=========================================================================
         bool LuaSafeCall(lua_State* lua, int numParams, int numResults)
         {
+            // Lua must execute in the "C" Locale.  this does mean that the scoped locale will
+            // bleed into any C++ calls that the pcall actually calls back into, but it is also the assumption
+            // that any C++ calls that lua makes are also in the "C" locale.
+            AZ::Locale::ScopedSerializationLocale scopedLocale;
+
             // Can't do LSV here because of multiple return values
 
             // Index the error handler should end up in
@@ -622,6 +631,7 @@ namespace AZ
         //=========================================================================
         int Class__Index(lua_State* l)
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale;
             LSV_BEGIN(l, 1);
 
             // calling format __index(table,key)
@@ -709,6 +719,7 @@ namespace AZ
 
         int Class__IndexAllowNil(lua_State* l)
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale;
             LSV_BEGIN(l, 1);
 
             // calling format __index(table,key)
@@ -788,6 +799,7 @@ namespace AZ
         //=========================================================================
         int Class__NewIndex(lua_State* l)
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale;
             LSV_BEGIN(l, 0);
 
             // calling format __index(table,key,value)
@@ -1208,24 +1220,28 @@ namespace AZ
     //////////////////////////////////////////////////////////////////////////
     void ScriptValue<float>::StackPush(lua_State* l, float value)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale;
         lua_pushnumber(l, value);
     }
 
     //////////////////////////////////////////////////////////////////////////
     float ScriptValue<float>::StackRead(lua_State* l, int stackIndex)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale;
         return azlua_checknumber<float>(l, stackIndex);
     }
 
     //////////////////////////////////////////////////////////////////////////
     void ScriptValue<double>::StackPush(lua_State* l, double value)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale;
         lua_pushnumber(l, static_cast<lua_Number>(value));
     }
 
     //////////////////////////////////////////////////////////////////////////
     double ScriptValue<double>::StackRead(lua_State* l, int stackIndex)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale;
         return lua_tonumber(l, stackIndex);
     }
 
@@ -2414,6 +2430,8 @@ LUA_API const Node* lua_getDummyNode()
                 typedef T ValueType;
                 static bool FromStack(lua_State* lua, int stackIndex, BehaviorArgument& value, BehaviorClass* valueClass, ScriptContext::StackVariableAllocator* tempAllocator)
                 {
+                    AZ::Locale::ScopedSerializationLocale scopedLocale;
+
                     value.m_typeId = AzTypeInfo<ValueType>::Uuid(); // we should probably store const &
                     if (value.m_value == nullptr)
                     {
@@ -2434,6 +2452,8 @@ LUA_API const Node* lua_getDummyNode()
                 }
                 static void ToStack(lua_State* lua, BehaviorArgument& value)
                 {
+                    AZ::Locale::ScopedSerializationLocale scopedLocale;
+
                     void* valueAddress = value.GetValueAddress();
                     ValueType actualValue = *reinterpret_cast<ValueType*>(valueAddress);
 
@@ -5483,6 +5503,13 @@ LUA_API const Node* lua_getDummyNode()
             //////////////////////////////////////////////////////////////////////////
             void BindTo(BehaviorContext* behaviorContext)
             {
+                // LUA Must execute in the "C" Locale.  We add this around this root
+                // call so that it doesn't have to be added to every function call inside.
+                // It only truly matters around parsing of float values (commas versus periods)
+                // so it doesn't need to be absolutely everywhere.  Just when its possible for
+                // such code to be encountered.
+                AZ::Locale::ScopedSerializationLocale scopedLocale;
+
                 LSV_BEGIN(m_lua, 0);
 
                 if (m_context)
@@ -5609,6 +5636,8 @@ LUA_API const Node* lua_getDummyNode()
             /// execute all script loaded though load function, plus the one you supply as string
             bool Execute(const char* script = nullptr, const char* dbgName = nullptr, size_t dataSize = 0)
             {
+                AZ::Locale::ScopedSerializationLocale scopedLocale;
+
                 LSV_BEGIN(m_lua, 0);
 
                 if (script)
@@ -5640,6 +5669,7 @@ LUA_API const Node* lua_getDummyNode()
             // Load a stream as a function (module)
             bool LoadFromStream(IO::GenericStream* stream, const char* debugName, const char* mode, lua_State* lua)
             {
+                AZ::Locale::ScopedSerializationLocale scopedLocale;
                 LSV_BEGIN(m_lua, 1);
 
                 using namespace Internal;
