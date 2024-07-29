@@ -198,8 +198,9 @@ namespace AZ::RHI
         SubpassAttachmentLayoutBuilder* AddSubpass();
 
         //! Ends the building of a layout. Returns the result of the operation.
+        //! @param outAttachmentNames Optional parameter to collect the names of the render attachments when building the RenderAttachmentLayout.
         ResultCode End(
-            RenderAttachmentLayout& builtRenderAttachmentLayout, AZStd::array<AZ::Name, Limits::Pipeline::RenderAttachmentCountMax>* attachmentNames = nullptr);
+            RenderAttachmentLayout& builtRenderAttachmentLayout, AZStd::array<AZ::Name, Limits::Pipeline::RenderAttachmentCountMax>* outAttachmentNames = nullptr);
 
         //! Resets all previous values so the builder can be reuse.
         void Reset();
