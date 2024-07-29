@@ -7,8 +7,11 @@
  */
 #pragma once
 
-#include <Atom/RHI.Reflect/AttachmentId.h>
+#include <AzCore/std/containers/unordered_map.h>
+
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
+#include <Atom/RHI.Reflect/AttachmentId.h>
+#include <Atom/RHI.Reflect/Limits.h>
 
 namespace AZ::RHI
 {
@@ -17,8 +20,9 @@ namespace AZ::RHI
     class Resource;
 
     //! FrameAttachment is the base class for all attachments stored in the frame graph. Attachments
-    //! are "attached" to scopes via ScopeAttachment instances. These scope attachments form a linked list
-    //! from the first to last scope. FrameAttachments are associated with a unique AttachmentId.
+    //! can be used on multiple devices at the same time. They are "attached" to scopes via
+    //! ScopeAttachment instances. These scope attachments form a linked list per device from the
+    //! first to last scope on each device. FrameAttachments are associated with a unique AttachmentId.
     //!
     //! FrameAttachments are rebuilt every frame, and are created through the FrameGraph.
     class FrameAttachment
@@ -39,20 +43,26 @@ namespace AZ::RHI
         /// Returns the attachment lifetime type.
         AttachmentLifetimeType GetLifetimeType() const;
 
-        /// Returns the first scope attachment in the linked list.
-        const ScopeAttachment* GetFirstScopeAttachment() const;
-        ScopeAttachment* GetFirstScopeAttachment();
+        /// Returns the first scope attachment in the linked list of a specific device or nullptr if no Scope
+        /// uses this attachment on the given device.
+        const ScopeAttachment* GetFirstScopeAttachment(int deviceIndex) const;
+        ScopeAttachment* GetFirstScopeAttachment(int deviceIndex);
 
-        /// Returns the last scope attachment in the linked list.
-        const ScopeAttachment* GetLastScopeAttachment() const;
-        ScopeAttachment* GetLastScopeAttachment();
+        /// Returns the last scope attachment in the linked list of a specific device or nullptr if no Scope
+        /// uses this attachment on the given device.
+        const ScopeAttachment* GetLastScopeAttachment(int deviceIndex) const;
+        ScopeAttachment* GetLastScopeAttachment(int deviceIndex);
 
-        //! Returns the first / last scope associated with the lifetime of this attachment.
+        /// Returns whether there are any scope attachments at all.
+        bool HasScopeAttachments() const;
+
+        //! Returns the first / last scope associated with the lifetime of this attachment of a specific
+        //! device or nullptr if no Scope uses this attachment on the given device.
         //! The guarantee is that the attachment is not used by any scope with index prior to GetFirstScope
         //! or any scope with index after GetLastScope. It does not, however, guarantee that the attachment
         //! is actually used by either scope. The scope attachment list must be traversed to determine usage.
-        Scope* GetFirstScope() const;
-        Scope* GetLastScope() const;
+        Scope* GetFirstScope(int deviceIndex) const;
+        Scope* GetLastScope(int deviceIndex) const;
 
         /// Returns the mask of all the hardware queues that this attachment is used on.
         HardwareQueueClassMask GetUsedQueueMask() const;
@@ -61,7 +71,7 @@ namespace AZ::RHI
         HardwareQueueClassMask GetSupportedQueueMask() const;
 
         /// [Internal] Assigns the resource. This may only be done once.
-        void SetResource(Ptr<Resource> resource);
+        void SetResource(Ptr<Resource> resource, int deviceIndex = MultiDevice::InvalidDeviceIndex);
 
     protected:
         FrameAttachment(
@@ -73,14 +83,19 @@ namespace AZ::RHI
         FrameAttachment(FrameAttachment&&) = delete;
 
     private:
+        struct ScopeInfo
+        {
+            ScopeAttachment* m_firstScopeAttachment{ nullptr };
+            ScopeAttachment* m_lastScopeAttachment{ nullptr };
+            Scope* m_firstScope{ nullptr };
+            Scope* m_lastScope{ nullptr };
+        };
+
         AttachmentId m_attachmentId;
         Ptr<Resource> m_resource;
         AttachmentLifetimeType m_lifetimeType;
         HardwareQueueClassMask m_usedQueueMask = HardwareQueueClassMask::None;
         HardwareQueueClassMask m_supportedQueueMask = HardwareQueueClassMask::None;
-        ScopeAttachment* m_firstScopeAttachment = nullptr;
-        ScopeAttachment* m_lastScopeAttachment = nullptr;
-        Scope* m_firstScope = nullptr;
-        Scope* m_lastScope = nullptr;
+        AZStd::unordered_map<int, ScopeInfo> m_scopeInfos;
     };
 }

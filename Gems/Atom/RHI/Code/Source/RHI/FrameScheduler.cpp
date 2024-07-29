@@ -255,26 +255,22 @@ namespace AZ::RHI
             RHI_PROFILE_SCOPE_VERBOSE("FrameScheduler: PrepareProducers: Scope %s", scopeProducer->GetScopeId().GetCStr());
 
             auto scope = scopeProducer->GetScope();
-            scope->SetDeviceIndex(scopeProducer->GetDeviceIndex());
+            auto deviceIndex = scopeProducer->GetDeviceIndex();
+
+            if (deviceIndex == MultiDevice::InvalidDeviceIndex)
+            {
+                deviceIndex = MultiDevice::DefaultDeviceIndex;
+            }
+
+            scope->SetDeviceIndex(deviceIndex);
 
             m_frameGraph->BeginScope(*scope);
             scopeProducer->SetupFrameGraphDependencies(*m_frameGraph);
                 
-            // All scopes depend on the root scopes.
-            auto deviceCount{RHI::RHISystemInterface::Get()->GetDeviceCount()};
-            for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
+            // All scopes depend on their device root scope.
+            if (scopeProducer->GetScopeId() != GetRootScopeId(deviceIndex))
             {
-                if (((AZStd::to_underlying(m_deviceMask) >> deviceIndex) & 1) == 0)
-                {
-                    continue;
-                }
-
-                //? If the deviceIndex of the Scope was known at this point,
-                //? we could only insert dependencies accordingly
-                if (scopeProducer->GetScopeId() != GetRootScopeId(deviceIndex))
-                {
-                    m_frameGraph->ExecuteAfter(GetRootScopeId(deviceIndex));
-                }
+                m_frameGraph->ExecuteAfter(GetRootScopeId(deviceIndex));
             }
 
             m_frameGraph->EndScope();

@@ -64,20 +64,20 @@ namespace AZ::RHI
         //! Called when an image is being activated for the first time. This class should acquire
         //! an image from the pool, configured for the provided descriptor. This may involve aliasing
         //! from a heap, or simple object pooling. Images are held in an internal cache.
-        virtual Image* ActivateImage(const TransientImageDescriptor& descriptor);
+        Image* ActivateImage(const TransientImageDescriptor& descriptor);
 
         //! Called when an buffer is being activated for the first time. This class should acquire
         //! an buffer from the pool, configured for the provided descriptor. This may involve aliasing
         //! from a heap, or simple object pooling. Buffers are held in an internal cache.
-        virtual Buffer* ActivateBuffer(const TransientBufferDescriptor& descriptor);
+        Buffer* ActivateBuffer(const TransientBufferDescriptor& descriptor);
 
         //! Called when a buffer is being de-allocated from the pool. Called during the last scope the attachment
         //! is used, after all allocations for that scope have been processed. It will also be removed from the cache.
-        virtual void DeactivateBuffer(const AttachmentId& attachmentId);
+        void DeactivateBuffer(const AttachmentId& attachmentId);
 
         //! Called when a image is being de-allocated from the pool. Called during the last scope the attachment
         //! is used, after all allocations for that scope have been processed. It will also be removed from the cache.
-        virtual void DeactivateImage(const AttachmentId& attachmentId);
+        void DeactivateImage(const AttachmentId& attachmentId);
 
         //! Called when all allocations for the current scope have completed.
         void EndScope();
@@ -98,6 +98,7 @@ namespace AZ::RHI
         //! Remove the entry related to the provided attachmentId from the cache as it is probably stale now
         void RemoveFromCache(RHI::AttachmentId attachmentId);
 
+        Scope* m_currentScope = nullptr;
         AZStd::unordered_map<int, TransientAttachmentPoolDescriptor> m_descriptors;
         TransientAttachmentPoolCompileFlags m_compileFlags = TransientAttachmentPoolCompileFlags::None;
 
