@@ -205,6 +205,7 @@ namespace O3DE::ProjectManager
                 }
             });
         connect(projectButton, &ProjectButton::OpenAndroidProjectGenerator, this, &ProjectsScreen::HandleOpenAndroidProjectGenerator);
+        connect(projectButton, &ProjectButton::OpenProjectExportSettings, this, &ProjectsScreen::HandleOpenProjectExportSettings);
 
         return projectButton;
     }
@@ -707,6 +708,47 @@ namespace O3DE::ProjectManager
                 QMessageBox::Ok);
         }
         
+    }
+
+    void ProjectsScreen::HandleOpenProjectExportSettings(const QString& projectPath)
+    {
+        AZ::Outcome<EngineInfo> engineInfoResult = PythonBindingsInterface::Get()->GetProjectEngine(projectPath);
+        AZ::Outcome projectBuildPathResult = ProjectUtils::GetProjectBuildPath(projectPath);
+
+        auto engineInfo = engineInfoResult.TakeValue();
+        auto buildPath = projectBuildPathResult.TakeValue();
+
+        QString projectName = tr("Project");
+        auto getProjectResult = PythonBindingsInterface::Get()->GetProject(projectPath);
+        if (getProjectResult)
+        {
+            projectName = getProjectResult.GetValue().m_displayName;
+        }
+
+        const QString pythonPath = ProjectUtils::GetPythonExecutablePath(engineInfo.m_path);
+        const QString o3dePath = QString("%1/scripts/o3de.py").arg(engineInfo.m_path);
+
+
+        // Let's start the python script.
+        QProcess process;
+        process.setProgram(pythonPath);
+        const QStringList commandArgs{ o3dePath, "export-project", "-pp", projectPath, "--configure" };
+
+        process.setArguments(commandArgs);
+
+        // It's important to dump the command details in the application log so the user
+        // would know how to spawn the Android Project Generator from the command terminal
+        // in case of errors and debugging is required.
+        const QString commandArgsStr = QString("%1 %2").arg(pythonPath, commandArgs.join(" "));
+        AZ_Printf(
+            "ProjectManager",
+            "Will start the Android Project Generator with the following command:\n%s\n",
+            commandArgsStr.toUtf8().constData());
+
+        if (!process.startDetached())
+        {
+            QMessageBox::warning(this, tr("Tool Error"), tr("Failed to start o3de.py from path %1").arg(o3dePath), QMessageBox::Ok);
+        }
     }
 
     void ProjectsScreen::SuggestBuildProjectMsg(const ProjectInfo& projectInfo, bool showMessage)

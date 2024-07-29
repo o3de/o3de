@@ -61,6 +61,9 @@ namespace O3DE::ProjectManager
         void HandleRemoveProject(const QString& projectPath);
         void HandleDeleteProject(const QString& projectPath);
         void HandleOpenAndroidProjectGenerator(const QString& projectPath);
+        void HandleOpenProjectExportSettings(const QString& projectPath);
+
+
 
         void SuggestBuildProject(const ProjectInfo& projectInfo);
         void QueueBuildProject(const ProjectInfo& projectInfo, bool skipDialogBox = false);

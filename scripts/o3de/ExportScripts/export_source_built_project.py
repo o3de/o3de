@@ -249,7 +249,6 @@ def export_standalone_parse_args(o3de_context: exp.O3DEScriptExportContext, expo
                             help='Path that describes the final resulting Release Directory path location.',
                             default=default_output_path)
         
-        # archive.output.format / SETTINGS_ARCHIVE_OUTPUT_FORMAT
         default_archive_output_format = export_config.get_value(key=exp.SETTINGS_ARCHIVE_OUTPUT_FORMAT.key,
                                                                 default=exp.SETTINGS_ARCHIVE_OUTPUT_FORMAT.default)
         parser.add_argument('-a', '--archive-output',  type=str,

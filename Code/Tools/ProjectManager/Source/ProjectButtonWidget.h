@@ -144,6 +144,7 @@ namespace O3DE::ProjectManager
         void RemoveProject(const QString& projectName);
         void DeleteProject(const QString& projectName);
         void BuildProject(const ProjectInfo& projectInfo, bool skipDialogBox = false);
+        void OpenProjectExportSettings(const QString& projectPath);
         void OpenCMakeGUI(const ProjectInfo& projectInfo);
         void OpenAndroidProjectGenerator(const QString& projectPath);
 

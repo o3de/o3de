@@ -19,6 +19,7 @@ import shutil
 import subprocess
 
 from o3de import command_utils, manifest, utils
+from o3de.ui import export_project as export_project_ui
 from typing import List
 from enum import IntEnum
 
@@ -383,6 +384,13 @@ def _run_export_script(args: argparse, passthru_args: list) -> int:
     else:
         export_script = args.export_script
     
+    if args.configure:
+        export_config = get_export_project_config(args.project_path)
+        project_info = manifest.get_project_json_data(project_path=args.project_path)
+        is_o3de_sdk = project_info.get('engine') == 'o3de-sdk'
+        export_project_ui.MainWindow(export_config, is_o3de_sdk).configure_settings()
+        return 0
+    
     return _export_script(export_script, args.project_path, passthru_args)
 
 
@@ -491,7 +499,7 @@ def add_parser_args(parser) -> None:
     parser.add_argument('-es', '--export-script', type=pathlib.Path, required=False, help="An external Python script to run")
     parser.add_argument('-pp', '--project-path', type=pathlib.Path, required=False, default=pathlib.Path(os.getcwd()),
                         help="Project to export. If not supplied, it will be the current working directory.")
-    
+    parser.add_argument('--configure', default=False, action='store_true', help='Configure the project export settings')
     parser.add_argument('-ll', '--log-level', default='ERROR',
                         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
                         help="Set the log level")

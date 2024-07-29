@@ -364,8 +364,7 @@ namespace O3DE::ProjectManager
         menu->addAction(tr("Export"), this, [this](){ emit ExportProject(m_projectInfo);});
         menu->addAction(tr("Open CMake GUI..."), this, [this]() { emit OpenCMakeGUI(m_projectInfo); });
         menu->addAction(tr("Open Android Project Generator..."), this, [this]() { emit OpenAndroidProjectGenerator(m_projectInfo.m_path); });
-        //TODO: when wiring up the configuration panel, add this menu option in!
-        // menu->addAction(tr("Open Project Export Settings..."), this, [this]() { emit OpenProjectExportSettings(m_projectInfo.m_path); });
+        menu->addAction(tr("Open Project Export Settings..."), this, [this]() { emit OpenProjectExportSettings(m_projectInfo.m_path); });
         menu->addSeparator();
         menu->addAction(tr("Open Project folder..."), this, [this]()
         { 
@@ -555,7 +554,7 @@ namespace O3DE::ProjectManager
     void ProjectButton::ShowExportFailedState()
     {
         ShowBuildButton();
-        
+
         SetProjectExporting(false);
 
         m_projectImageLabel->GetShowLogsButton()->setVisible(!m_projectInfo.m_logUrl.isEmpty());
