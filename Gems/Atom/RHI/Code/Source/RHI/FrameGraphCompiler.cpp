@@ -289,7 +289,7 @@ namespace AZ::RHI
                 {
                     if (Scope* foundScope = firstScope->FindCapableCrossQueueProducer(mostCapableQueueUsage))
                     {
-                        transientImage->m_firstScopes[deviceIndex] = foundScope;
+                        transientImage->m_scopeInfos[deviceIndex].m_firstScope = foundScope;
                         continue;
                     }
 
@@ -430,16 +430,16 @@ namespace AZ::RHI
                         // the beginning and end of the async interval.
                         if (!isAliasingAllowed)
                         {
-                            auto deviceIndex{ scope->GetDeviceIndex() };
+                            auto& scopeInfo{ frameAttachment.m_scopeInfos[scope->GetDeviceIndex()] };
 
-                            if (frameAttachment.m_firstScopes[deviceIndex]->GetIndex() > interval.m_indexFirst)
+                            if (scopeInfo.m_firstScope->GetIndex() > interval.m_indexFirst)
                             {
-                                frameAttachment.m_firstScopes[deviceIndex] = scopes[interval.m_indexFirst];
+                                scopeInfo.m_firstScope = scopes[interval.m_indexFirst];
                             }
 
-                            if (frameAttachment.m_lastScopes[deviceIndex]->GetIndex() < interval.m_indexLast)
+                            if (scopeInfo.m_lastScope->GetIndex() < interval.m_indexLast)
                             {
-                                frameAttachment.m_lastScopes[deviceIndex] = scopes[interval.m_indexLast];
+                                scopeInfo.m_lastScope = scopes[interval.m_indexLast];
                             }
                         }
                     }

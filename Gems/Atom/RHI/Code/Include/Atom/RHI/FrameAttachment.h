@@ -83,14 +83,19 @@ namespace AZ::RHI
         FrameAttachment(FrameAttachment&&) = delete;
 
     private:
+        struct ScopeInfo
+        {
+            ScopeAttachment* m_firstScopeAttachment{ nullptr };
+            ScopeAttachment* m_lastScopeAttachment{ nullptr };
+            Scope* m_firstScope{ nullptr };
+            Scope* m_lastScope{ nullptr };
+        };
+
         AttachmentId m_attachmentId;
         Ptr<Resource> m_resource;
         AttachmentLifetimeType m_lifetimeType;
         HardwareQueueClassMask m_usedQueueMask = HardwareQueueClassMask::None;
         HardwareQueueClassMask m_supportedQueueMask = HardwareQueueClassMask::None;
-        AZStd::unordered_map<int, ScopeAttachment*> m_firstScopeAttachments;
-        AZStd::unordered_map<int, ScopeAttachment*> m_lastScopeAttachments;
-        AZStd::unordered_map<int, Scope*> m_firstScopes;
-        AZStd::unordered_map<int, Scope*> m_lastScopes;
+        AZStd::unordered_map<int, ScopeInfo> m_scopeInfos;
     };
 }

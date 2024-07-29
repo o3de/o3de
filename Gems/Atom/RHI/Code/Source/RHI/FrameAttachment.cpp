@@ -60,79 +60,79 @@ namespace AZ::RHI
 
     const ScopeAttachment* FrameAttachment::GetFirstScopeAttachment(int deviceIndex) const
     {
-        auto it = m_firstScopeAttachments.find(deviceIndex);
+        auto it = m_scopeInfos.find(deviceIndex);
 
-        if (it == m_firstScopeAttachments.end())
+        if (it == m_scopeInfos.end())
         {
             return nullptr;
         }
 
-        return it->second;
+        return it->second.m_firstScopeAttachment;
     }
 
     ScopeAttachment* FrameAttachment::GetFirstScopeAttachment(int deviceIndex)
     {
-        auto it = m_firstScopeAttachments.find(deviceIndex);
+        auto it = m_scopeInfos.find(deviceIndex);
 
-        if (it == m_firstScopeAttachments.end())
+        if (it == m_scopeInfos.end())
         {
             return nullptr;
         }
 
-        return it->second;
+        return it->second.m_firstScopeAttachment;
     }
 
     const ScopeAttachment* FrameAttachment::GetLastScopeAttachment(int deviceIndex) const
     {
-        auto it = m_lastScopeAttachments.find(deviceIndex);
+        auto it = m_scopeInfos.find(deviceIndex);
 
-        if (it == m_lastScopeAttachments.end())
+        if (it == m_scopeInfos.end())
         {
             return nullptr;
         }
 
-        return it->second;
+        return it->second.m_lastScopeAttachment;
     }
 
     ScopeAttachment* FrameAttachment::GetLastScopeAttachment(int deviceIndex)
     {
-        auto it = m_lastScopeAttachments.find(deviceIndex);
+        auto it = m_scopeInfos.find(deviceIndex);
 
-        if (it == m_lastScopeAttachments.end())
+        if (it == m_scopeInfos.end())
         {
             return nullptr;
         }
 
-        return it->second;
+        return it->second.m_lastScopeAttachment;
     }
 
     bool FrameAttachment::HasScopeAttachments() const
     {
-        return !m_firstScopeAttachments.empty();
+        return !m_scopeInfos.empty();
     }
 
     Scope* FrameAttachment::GetLastScope(int deviceIndex) const
     {
-        auto it = m_lastScopes.find(deviceIndex);
+        auto it = m_scopeInfos.find(deviceIndex);
 
-        if (it == m_lastScopes.end())
+        if (it == m_scopeInfos.end())
         {
             return nullptr;
         }
 
-        return it->second;
+        return it->second.m_lastScope;
     }
 
     Scope* FrameAttachment::GetFirstScope(int deviceIndex) const
     {
-        auto it = m_firstScopes.find(deviceIndex);
+        auto it = m_scopeInfos.find(deviceIndex);
 
-        if (it == m_firstScopes.end())
+        if (it == m_scopeInfos.end())
         {
             return nullptr;
         }
 
-        return it->second;
+        return it->second.m_firstScope;
     }
 
     HardwareQueueClassMask FrameAttachment::GetSupportedQueueMask() const
