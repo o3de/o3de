@@ -126,6 +126,11 @@ namespace AZ::RHI
 
                 return true;
             });
+
+        if (const auto& name = GetName(); !name.IsEmpty())
+        {
+            SetName(name);
+        }
     }
 
     void RayTracingShaderTable::Build(const AZStd::shared_ptr<RayTracingShaderTableDescriptor> descriptor)

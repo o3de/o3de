@@ -34,12 +34,12 @@ namespace AZ::RHI
         BufferFrameAttachment(const TransientBufferDescriptor& descriptor);
 
         /// Returns the first scope attachment in the linked list.
-        const BufferScopeAttachment* GetFirstScopeAttachment() const;
-        BufferScopeAttachment* GetFirstScopeAttachment();
+        const BufferScopeAttachment* GetFirstScopeAttachment(int deviceIndex) const;
+        BufferScopeAttachment* GetFirstScopeAttachment(int deviceIndex);
 
         /// Returns the last scope attachment in the linked list.
-        const BufferScopeAttachment* GetLastScopeAttachment() const;
-        BufferScopeAttachment* GetLastScopeAttachment();
+        const BufferScopeAttachment* GetLastScopeAttachment(int deviceIndex) const;
+        BufferScopeAttachment* GetLastScopeAttachment(int deviceIndex);
 
         /// Returns the buffer resource assigned to this attachment. This is not guaranteed to exist
         /// until after frame graph compilation.

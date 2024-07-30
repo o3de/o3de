@@ -33,8 +33,8 @@
                 {
                     "LocalSlot": "ColorInputOutput",
                     "AttachmentRef": {
-                        "Pass": "PostProcessPass",
-                        "Attachment": "Output"
+                        "Pass": "AuxGeomPass",
+                        "Attachment": "ColorInputOutput"
                     }
                 }
             ],

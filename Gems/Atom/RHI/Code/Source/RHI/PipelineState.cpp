@@ -128,6 +128,11 @@ namespace AZ::RHI
             MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
         }
 
+        if (const auto& name = GetName(); !name.IsEmpty())
+        {
+            SetName(name);
+        }
+
         return resultCode;
     }
 

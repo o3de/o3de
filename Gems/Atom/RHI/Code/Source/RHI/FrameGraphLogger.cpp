@@ -11,6 +11,7 @@
 #include <Atom/RHI/FrameGraphAttachmentDatabase.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <AzCore/IO/SystemFile.h>
 
 namespace AZ::RHI
@@ -56,24 +57,29 @@ namespace AZ::RHI
             FrameAttachment& attachment = *attachments[i];
             AZ_Printf("FrameGraph", "\t[Attachment]:\t%s\n", attachment.GetId().GetCStr());
 
-            Scope* scopeFirst = attachment.GetFirstScope();
-            Scope* scopeLast = attachment.GetLastScope();
-
-            AZ_Printf("FrameGraph", "\t[Attachment]:\tFirst Scope: %s\n", scopeFirst->GetId().GetCStr());
-            AZ_Printf("FrameGraph", "\t[Attachment]:\t Last Scope: %s\n\n", scopeLast->GetId().GetCStr());
-
-            const ScopeAttachment* scopeAttachment = attachment.GetFirstScopeAttachment();
-            while (scopeAttachment)
+            for (int deviceIndex{ 0 }; deviceIndex < RHISystemInterface::Get()->GetDeviceCount(); ++deviceIndex)
             {
-                AZ_Printf(
-                    "FrameGraph", "\t\t[Usage]:\t%s\n",
-                            scopeAttachment->GetTypeName());
+                Scope* scopeFirst = attachment.GetFirstScope(deviceIndex);
+                Scope* scopeLast = attachment.GetLastScope(deviceIndex);
 
-                AZ_Printf(
-                    "FrameGraph", "\t\t[Scope]:\t%s\n\n",
-                    scopeAttachment->GetScope().GetId().GetCStr());
+                if (!scopeFirst)
+                {
+                    continue;
+                }
 
-                scopeAttachment = scopeAttachment->GetNext();
+                AZ_Printf("FrameGraph", "\t[Attachment]:\t[Device %d]\tFirst Scope: %s\n", deviceIndex, scopeFirst->GetId().GetCStr());
+                AZ_Printf("FrameGraph", "\t[Attachment]:\t[Device %d]\tLast Scope: %s\n\n", deviceIndex, scopeLast->GetId().GetCStr());
+
+                const ScopeAttachment* scopeAttachment = attachment.GetFirstScopeAttachment(deviceIndex);
+
+                while (scopeAttachment)
+                {
+                    AZ_Printf("FrameGraph", "\t\t\t[Usage]:\t%s\n", scopeAttachment->GetTypeName());
+
+                    AZ_Printf("FrameGraph", "\t\t\t[Scope]:\t%s\n\n", scopeAttachment->GetScope().GetId().GetCStr());
+
+                    scopeAttachment = scopeAttachment->GetNext();
+                }
             }
         }
 

@@ -439,7 +439,7 @@ namespace AZ
         void CopyPass::SetupFrameGraphDependenciesHostToDevice(RHI::FrameGraphInterface frameGraph)
         {
             DeclareAttachmentsToFrameGraph(frameGraph, PassSlotType::Output);
-            frameGraph.ExecuteAfter(m_copyScopeProducerHostToDevice->GetScopeId());
+            frameGraph.ExecuteAfter(m_copyScopeProducerDeviceToHost->GetScopeId());
             for (Pass* pass : m_executeBeforePasses)
             {
                 RenderPass* renderPass = azrtti_cast<RenderPass*>(pass);

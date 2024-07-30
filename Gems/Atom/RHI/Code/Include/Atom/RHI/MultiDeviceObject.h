@@ -38,6 +38,14 @@ namespace AZ::RHI
         //! Returns whether the device object is initialized.
         bool IsInitialized() const;
 
+        //! Helper method to check if a device index is set in the device mask.
+        //! Note: A bit may be set but a device object may not actually exist,
+        //! e.g. if the device index is bigger than the device count.
+        AZ_FORCE_INLINE bool IsDeviceSet(int deviceIndex) const
+        {
+            return AZStd::to_underlying(m_deviceMask) & 1u << deviceIndex;
+        }
+
         //! Returns the device this object is associated with. It is only permitted to call
         //! this method when the object is initialized.
         MultiDevice::DeviceMask GetDeviceMask() const;
@@ -158,6 +166,9 @@ namespace AZ::RHI
     private:
         //! Returns the number of initialized devices
         int GetDeviceCount() const;
+
+        //! Pass on name to DeviceObjects
+        virtual void SetNameInternal(const AZStd::string_view& name) override;
 
         //! A bitmask denoting on which devices an object is present/valid/allocated
         MultiDevice::DeviceMask m_deviceMask{ 0u };

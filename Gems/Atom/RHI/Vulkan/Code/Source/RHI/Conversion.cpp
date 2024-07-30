@@ -405,7 +405,6 @@ namespace AZ
         VkImageLayout GetImageAttachmentLayout(const RHI::ImageScopeAttachment& imageAttachment)
         {
             const RHI::DeviceImageView* imageView = imageAttachment.GetImageView()->GetDeviceImageView(imageAttachment.GetScope().GetDeviceIndex()).get();
-            auto& physicalDevice = static_cast<const PhysicalDevice&>(imageView->GetDevice().GetPhysicalDevice());
             auto imageAspects = RHI::FilterBits(imageView->GetImage().GetAspectFlags(), imageView->GetDescriptor().m_aspectFlags);
             RHI::ScopeAttachmentAccess access = imageAttachment.GetAccess();
             switch (imageAttachment.GetUsage())
@@ -450,17 +449,9 @@ namespace AZ
                             imageAttachment.GetDescriptor().m_attachmentId.GetCStr(),
                             imageAttachment.GetScope().GetId().GetCStr());
 
-                        if (physicalDevice.IsFeatureSupported(DeviceFeature::SeparateDepthStencil))
+                        if (RHI::CheckBitsAny(imageAspects, RHI::ImageAspectFlags::DepthStencil))
                         {
-                            if (RHI::CheckBitsAll(imageAspects, RHI::ImageAspectFlags::Depth))
-                            {
-                                //TODO: [GHI 18108] Why VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL instead of VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL
-                                return VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-                            }
-                            else if (RHI::CheckBitsAll(imageAspects, RHI::ImageAspectFlags::Stencil))
-                            {
-                                return VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL;
-                            }
+                            return VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
                         }
                         
                         return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -557,6 +548,22 @@ namespace AZ
                 isSameFunc(VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL))
             {
                 return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL;
+            }
+            // We always add both depth and stencil aspects for image layouts, even when dealing with depth only or stencil only layouts.
+            // Using a depth only or stencil only layouts requires an extension and more complicated logic.
+            else if (
+                isSameFunc(VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL) ||
+                isSameFunc(VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL))   
+            {
+                return VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+            }
+            // We always add both depth and stencil aspects for image layouts, even when dealing with depth only or stencil only layouts.
+            // Using a depth only or stencil only layouts requires an extension and more complicated logic.
+            else if (
+                isSameFunc(VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL) ||
+                isSameFunc(VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL))  
+            {
+                return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
             }
 
             return lhs;

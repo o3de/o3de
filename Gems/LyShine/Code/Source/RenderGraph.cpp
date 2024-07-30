@@ -51,6 +51,9 @@ namespace LyShine
     {
         m_textures[0].m_texture = texture;
         m_textures[0].m_isClampTextureMode = isClampTextureMode;
+
+        m_combinedVertices.reserve(1024);
+        m_combinedIndices.reserve(1024);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -70,12 +73,18 @@ namespace LyShine
         m_textures[0].m_isClampTextureMode = isClampTextureMode;
         m_textures[1].m_texture = maskTexture;
         m_textures[1].m_isClampTextureMode = isClampTextureMode;
+
+        m_combinedVertices.reserve(1024);
+        m_combinedIndices.reserve(1024);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     PrimitiveListRenderNode::~PrimitiveListRenderNode()
     {
         m_primitives.clear();
+
+        m_combinedVertices.clear();
+        m_combinedIndices.clear();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -148,16 +157,12 @@ namespace LyShine
         drawSrg->SetConstant(uiShaderData.m_viewProjInputIndex, modelViewProjMat);
 
         drawSrg->Compile();
-
+        
         // Add the indexed primitives to the dynamic draw context for drawing
-        //
-        // [LYSHINE_ATOM_TODO][ATOM-15073] Combine into a single DrawIndexed call to take advantage of the draw call
-        // optimization done by this RenderGraph. This option will be added to DynamicDrawContext. For
-        // now we could combine the vertices ourselves
-        for (const LyShine::UiPrimitive& primitive : m_primitives)
-        {
-            dynamicDraw->DrawIndexed(primitive.m_vertices, primitive.m_numVertices, primitive.m_indices, primitive.m_numIndices, AZ::RHI::IndexFormat::Uint16, drawSrg);
-        }
+        // TODO (GHI 17444): Vertex data for primitives is currently merged within AddPrimitive and then passed to 
+        // DynamicDrawContext. This can probably be further optimized whereby we dont waste extra memory and 
+        // provide the primitives directly to DynamicDrawContext to be added to its Ring buffer memory. 
+        dynamicDraw->DrawIndexed(&m_combinedVertices[0], (uint32_t)m_combinedVertices.size(), &m_combinedIndices[0],  (uint32_t)m_combinedIndices.size(), AZ::RHI::IndexFormat::Uint16, drawSrg);
 
         uiRenderer->SetBaseState(prevBaseState);
     }
@@ -168,6 +173,18 @@ namespace LyShine
         // always clear the next pointer before adding to list
         primitive->m_next = nullptr;
         m_primitives.push_back(*primitive);
+
+        uint16 vertex_start = aznumeric_caster(m_combinedVertices.size());
+        uint16 index_start = aznumeric_caster(m_combinedIndices.size());
+
+        // Add the vertices at the end of the combined buffer.  We need to update the vertex indices with their new offset separately.
+        m_combinedVertices.insert(m_combinedVertices.end(), primitive->m_vertices, primitive->m_vertices + primitive->m_numVertices);
+        m_combinedIndices.resize_no_construct(m_combinedIndices.size() + primitive->m_numIndices);
+
+        for (int i = 0; i < primitive->m_numIndices; i++)
+        {
+            m_combinedIndices[index_start + i] = vertex_start + primitive->m_indices[i];
+        }
 
         m_totalNumVertices += primitive->m_numVertices;
         m_totalNumIndices += primitive->m_numIndices;

@@ -48,7 +48,7 @@ namespace AZ::RHI
         //!  @param descriptor The descriptor containing properties used to initialize the pool.
         //!  @return A result code denoting the status of the call. If successful, the pool is considered
         //!      initialized and is able to service buffer requests. If failure, the pool remains uninitialized.
-        ResultCode Init(MultiDevice::DeviceMask deviceMask, const BufferPoolDescriptor& descriptor);
+        ResultCode Init(const BufferPoolDescriptor& descriptor);
 
         //! Initializes a buffer instance created from this pool. The buffer must be in an uninitialized
         //! state, or the call will fail. To re-use an existing buffer instance, first call Shutdown

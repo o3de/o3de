@@ -46,8 +46,8 @@ namespace AZ
             AttachmentImagePool() = default;
 
             // Standard asset creation path.
-            static Data::Instance<AttachmentImagePool> CreateInternal(RHI::MultiDevice::DeviceMask deviceMask, ResourcePoolAsset& poolAsset);
-            RHI::ResultCode Init(RHI::MultiDevice::DeviceMask deviceMask, ResourcePoolAsset& poolAsset);
+            static Data::Instance<AttachmentImagePool> CreateInternal(ResourcePoolAsset& poolAsset);
+            RHI::ResultCode Init(ResourcePoolAsset& poolAsset);
 
             /// The RHI image pool instance.
             RHI::Ptr<RHI::ImagePool> m_pool;

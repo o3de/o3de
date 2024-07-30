@@ -100,10 +100,10 @@ namespace AZ::RHI
         return true;
     }
 
-    ResultCode BufferPool::Init(MultiDevice::DeviceMask deviceMask, const BufferPoolDescriptor& descriptor)
+    ResultCode BufferPool::Init(const BufferPoolDescriptor& descriptor)
     {
         return ResourcePool::Init(
-            deviceMask,
+            descriptor.m_deviceMask,
             [this, &descriptor]()
             {
                 if (!ValidatePoolDescriptor(descriptor))
@@ -124,6 +124,7 @@ namespace AZ::RHI
                         auto* device = RHISystemInterface::Get()->GetDevice(deviceIndex);
 
                         m_deviceObjects[deviceIndex] = Factory::Get().CreateBufferPool();
+
                         result = GetDeviceBufferPool(deviceIndex)->Init(*device, descriptor);
 
                         return result == ResultCode::Success;

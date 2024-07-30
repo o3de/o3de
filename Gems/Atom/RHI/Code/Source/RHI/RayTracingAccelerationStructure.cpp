@@ -26,12 +26,12 @@ namespace AZ::RHI
                 ->IndexBuffer(geometry.m_indexBuffer.GetDeviceIndexBufferView(deviceIndex));
         }
 
-        descriptor.BuildFlags(m_buildFlags);
-
         if(m_aabb.has_value())
         {
             descriptor.AABB(m_aabb.value());
         }
+
+        descriptor.BuildFlags(m_buildFlags);
 
         return descriptor;
     }
@@ -79,7 +79,7 @@ namespace AZ::RHI
 
     RayTracingBlasDescriptor* RayTracingBlasDescriptor::BuildFlags(const RHI::RayTracingAccelerationStructureBuildFlags &buildFlags)
     {
-        AZ_Assert(m_buildContext, "BuildFlags property can only be added to a Geometry entry");
+        AZ_Assert(m_buildContext || m_aabb, "BuildFlags property can only be added to a Geometry or AABB entry");
         m_buildFlags = buildFlags;
         return this;
     }
@@ -217,6 +217,11 @@ namespace AZ::RHI
             MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
         }
 
+        if (const auto& name = GetName(); !name.IsEmpty())
+        {
+            SetName(name);
+        }
+
         return resultCode;
     }
 
@@ -270,6 +275,11 @@ namespace AZ::RHI
             MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
         }
 
+        if (const auto& name = GetName(); !name.IsEmpty())
+        {
+            SetName(name);
+        }
+
         // Each call to CreateBuffers advances m_currentBufferIndex internally, reset buffers to always receive currently active
         m_tlasBuffer.reset();
         m_tlasInstancesBuffer.reset();
@@ -309,6 +319,14 @@ namespace AZ::RHI
                 return ResultCode::Success;
             });
 
+        if (m_tlasBuffer)
+        {
+            if (const auto& name = m_tlasBuffer->GetName(); !name.IsEmpty())
+            {
+                m_tlasBuffer->SetName(name);
+            }
+        }
+
         return m_tlasBuffer;
     }
 
@@ -344,6 +362,15 @@ namespace AZ::RHI
                 m_tlasInstancesBuffer->SetDescriptor(m_tlasInstancesBuffer->GetDeviceBuffer(deviceIndex)->GetDescriptor());
                 return ResultCode::Success;
             });
+
+        if (m_tlasInstancesBuffer)
+        {
+            if (const auto& name = m_tlasInstancesBuffer->GetName(); !name.IsEmpty())
+            {
+                m_tlasInstancesBuffer->SetName(name);
+            }
+        }
+
         return m_tlasInstancesBuffer;
     }
 } // namespace AZ::RHI

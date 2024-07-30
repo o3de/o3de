@@ -77,7 +77,7 @@ namespace AZ
                 m_rhiQueryPool = aznew RHI::QueryPool();
                 AZStd::string poolName = AZStd::string::format("%sQueryPool", GetQueryTypeString(queryType));
                 m_rhiQueryPool->SetName(AZ::Name(poolName));
-                [[maybe_unused]] auto result = m_rhiQueryPool->Init(RHI::MultiDevice::AllDevices, queryPoolDesc);
+                [[maybe_unused]] auto result = m_rhiQueryPool->Init(queryPoolDesc);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to create the query pool");
             }
 

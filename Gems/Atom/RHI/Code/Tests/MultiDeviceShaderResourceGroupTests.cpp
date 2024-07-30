@@ -202,11 +202,11 @@ namespace UnitTest
                     descriptor.m_layout = srgLayout.get();
 
                     ASSERT_FALSE(srgPool->IsInitialized());
-                    srgPool->Init(DeviceMask, descriptor);
+                    srgPool->Init(descriptor);
                     ASSERT_TRUE(srgPool->IsInitialized());
                     srgPool->Shutdown();
                     ASSERT_FALSE(srgPool->IsInitialized());
-                    srgPool->Init(DeviceMask, descriptor);
+                    srgPool->Init(descriptor);
                     ASSERT_TRUE(srgPool->IsInitialized());
                     ASSERT_TRUE(srgPool->use_count() == 1);
 
@@ -310,7 +310,7 @@ namespace UnitTest
             RHI::ShaderResourceGroupPoolDescriptor descriptor;
             descriptor.m_budgetInBytes = 16;
             descriptor.m_layout = srgLayout.get();
-            srgPool->Init(DeviceMask, descriptor);
+            srgPool->Init(descriptor);
 
             RHI::Ptr<RHI::ShaderResourceGroup> srg = aznew AZ::RHI::ShaderResourceGroup;
             srgPool->InitGroup(*srg);
@@ -495,7 +495,7 @@ namespace UnitTest
 
             RHI::ShaderResourceGroupPoolDescriptor descriptor;
             descriptor.m_layout = srgLayout.get();
-            srgPool->Init(DeviceMask, descriptor);
+            srgPool->Init(descriptor);
 
             RHI::Ptr<RHI::ShaderResourceGroup> srg = aznew AZ::RHI::ShaderResourceGroup;
             srgPool->InitGroup(*srg);

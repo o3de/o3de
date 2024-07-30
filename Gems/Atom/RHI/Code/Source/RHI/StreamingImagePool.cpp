@@ -62,12 +62,12 @@ namespace AZ::RHI
         return true;
     }
 
-    ResultCode StreamingImagePool::Init(MultiDevice::DeviceMask deviceMask, const StreamingImagePoolDescriptor& descriptor)
+    ResultCode StreamingImagePool::Init(const StreamingImagePoolDescriptor& descriptor)
     {
         AZ_PROFILE_FUNCTION(RHI);
 
         return ResourcePool::Init(
-            deviceMask,
+            descriptor.m_deviceMask,
             [this, &descriptor]()
             {
                 // Assign the descriptor prior to initialization. Technically, the descriptor is undefined
@@ -83,6 +83,7 @@ namespace AZ::RHI
                         auto* device = RHISystemInterface::Get()->GetDevice(deviceIndex);
 
                         m_deviceObjects[deviceIndex] = Factory::Get().CreateStreamingImagePool();
+
                         result = GetDeviceStreamingImagePool(deviceIndex)->Init(*device, descriptor);
 
                         return result == ResultCode::Success;
@@ -121,6 +122,7 @@ namespace AZ::RHI
                 return IterateObjects<DeviceStreamingImagePool>([&initRequest](auto deviceIndex, auto deviceStreamingImagePool)
                 {
                     initRequest.m_image->m_deviceObjects[deviceIndex] = Factory::Get().CreateImage();
+
                     DeviceStreamingImageInitRequest streamingImageInitRequest(
                         *initRequest.m_image->GetDeviceImage(deviceIndex), initRequest.m_descriptor, initRequest.m_tailMipSlices);
                     return deviceStreamingImagePool->InitImage(streamingImageInitRequest);

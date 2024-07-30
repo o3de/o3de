@@ -63,9 +63,10 @@ namespace UnitTest
         MultiDeviceDrawPacketData(SimpleLcgRandom& random)
         {
             RHI::BufferPoolDescriptor bufferPoolDesc;
+            bufferPoolDesc.m_deviceMask = LocalDeviceMask;
             m_bufferPool = aznew RHI::BufferPool;
             m_bufferEmpty = aznew RHI::Buffer;
-            m_bufferPool->Init(LocalDeviceMask, bufferPoolDesc);
+            m_bufferPool->Init(bufferPoolDesc);
             RHI::BufferInitRequest request;
             request.m_buffer = m_bufferEmpty.get();
             request.m_descriptor = RHI::BufferDescriptor{};
@@ -76,8 +77,14 @@ namespace UnitTest
                 [this](int deviceIndex)
                 {
                     this->m_psoEmpty->m_deviceObjects[deviceIndex] = RHI::Factory::Get().CreatePipelineState();
+
                     return true;
                 });
+
+            if (const auto& name = this->m_psoEmpty->GetName(); !name.IsEmpty())
+            {
+                this->m_psoEmpty->SetName(name);
+            }
 
             for (auto& srg : m_srgs)
             {
@@ -87,8 +94,14 @@ namespace UnitTest
                     [&srg](int deviceIndex)
                     {
                         srg->m_deviceObjects[deviceIndex] = RHI::Factory::Get().CreateShaderResourceGroup();
+
                         return true;
                     });
+
+                if (const auto& name = srg->GetName(); !name.IsEmpty())
+                {
+                    srg->SetName(name);
+                }
             }
 
             unsigned int* data = reinterpret_cast<unsigned int*>(m_rootConstants.data());
