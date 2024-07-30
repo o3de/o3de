@@ -908,7 +908,9 @@ namespace EMStudio
                 }
                 if (!m_shiftPressed)
                 {
+#if defined(CARBONATED)
                     bool allNodesInGroupSelected = false;
+#endif
                     // check the node we're clicking on
                     if (!m_controlPressed)
                     {
@@ -926,7 +928,12 @@ namespace EMStudio
                         // requires clearing the selection first. Otherwise, the user would need to click
                         // empty space outside the group to clear the selection before being able to select
                         // the single node.
+#if defined(CARBONATED)
                         if (nodeGroup)
+#else
+                        bool allNodesInGroupSelected = false;
+                        if (nodeGroup && node)
+#endif
                         {
                             allNodesInGroupSelected = true;
                             for (size_t n = 0; n < nodeGroup->GetNumNodes(); n++)
@@ -959,7 +966,12 @@ namespace EMStudio
                         m_plugin->GetAnimGraphModel().GetSelectionModel().select(
                             node->GetModelIndex(), QItemSelectionModel::Select | QItemSelectionModel::Rows);
                     }
+
+#if defined(CARBONATED)
                     else if (nodeGroup && !allNodesInGroupSelected)
+#else
+                    else if (nodeGroup)
+#endif
                     {
                         SelectNodesInGroup(nodeGroup);
                     }
