@@ -96,7 +96,7 @@ namespace AZ
             
             for (RHI::ImageScopeAttachment* scopeAttachment : GetImageAttachments())
             {
-                m_isWritingToSwapChainScope = 
+                bool isWritingToSwapChainScope = 
                     scopeAttachment->IsSwapChainAttachment() &&
                     scopeAttachment->GetUsage() == RHI::ScopeAttachmentUsage::RenderTarget;
                 const RHI::SwapChainFrameAttachment* swapChainFrameAttachment = (azrtti_cast<const RHI::SwapChainFrameAttachment*>(&scopeAttachment->GetFrameAttachment()));
