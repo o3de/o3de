@@ -7,4 +7,4 @@
  */
 #pragma once
 
-#include "../../../Common/Apple/AzCore/Serialization/Locale_Apple.h"
+#include "../../../Common/UnixLike/AzCore/Serialization/Locale_UnixLike.h"

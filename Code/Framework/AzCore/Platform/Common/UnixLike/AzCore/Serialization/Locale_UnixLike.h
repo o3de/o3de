@@ -6,3 +6,21 @@
  *
  */
 #pragma once
+
+#include <locale.h>
+
+namespace AZ
+{
+    namespace Locale
+    {
+        class ScopedSerializationLocale_Platform
+        {
+            public:
+                void Activate();
+                void Deactivate();
+            private:
+                locale_t m_createdLocale;
+                bool m_isActive = false;
+        };
+    }
+}

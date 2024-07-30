@@ -32,6 +32,7 @@ namespace AZ::Locale
 
         // if we get here, we made some sort of change, and must set the locale and also remember to reset it back.
         setlocale(LC_ALL, "C");
+        m_isActive = true;
     }
 
     void ScopedSerializationLocale_Platform::Deactivate()
