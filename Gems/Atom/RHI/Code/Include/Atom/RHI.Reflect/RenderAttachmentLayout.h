@@ -55,7 +55,7 @@ namespace AZ::RHI
         //! The scope attachment stage as defined in the pass template, which will be used
         //! to accurately define the subpass dependencies.
         AZ::RHI::ScopeAttachmentStage m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::Uninitialized;
-        //! Extra data that can be pass for platform specific operations.
+        //! Extra data that can be passed for platform specific operations.
         RenderAttachmentExtras* m_extras = nullptr;
     };
 
