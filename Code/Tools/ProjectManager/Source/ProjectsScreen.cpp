@@ -807,6 +807,12 @@ namespace O3DE::ProjectManager
 
     void ProjectsScreen::QueueExportProject(const ProjectInfo& projectInfo, bool skipDialogBox)
     {
+        auto requiredIter = RequiresBuildProjectIterator(projectInfo.m_path);
+        if (requiredIter != m_requiresBuild.end())
+        {
+            m_requiresBuild.erase(requiredIter);
+        }
+        
         if (!ExportQueueContainsProject(projectInfo.m_path))
         {
             if (m_exportQueue.empty() && !m_currentExporter)
