@@ -627,7 +627,7 @@ namespace O3DE::ProjectManager
 
     void ProjectButton::SetContextualText(const QString& text)
     {
-        if (m_currentState == ProjectButtonState::Building)
+        if (m_currentState == ProjectButtonState::Building || m_currentState == ProjectButtonState::Exporting)
         {
             // Don't update for empty build progress messages
             if (!text.isEmpty())

@@ -15,7 +15,10 @@
 
 namespace O3DE::ProjectManager
 {
-    
+    QString ProjectExportWorker::GetO3DECLIString() const
+    {
+        return QString("scripts/o3de.sh");
+    }
     AZ::Outcome<QStringList, QString> ProjectExportWorker::ConstructKillProcessCommandArguments(const QString& pidToKill) const
     {
         return AZ::Success(QStringList{"kill", "-9", pidToKill});

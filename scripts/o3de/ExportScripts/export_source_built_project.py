@@ -142,8 +142,6 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                                           engine_centric,
                                           logger)
 
-    print("Building assets", should_build_tools)
-
     # Generate the bundle
     expected_bundles_path = eutil.build_and_bundle_assets(ctx,
                                                           should_build_all_assets,
@@ -357,8 +355,6 @@ def export_standalone_run_command(o3de_context, args, export_config: command_uti
                                                                  enable_attribute='build_tools',
                                                                  disable_attribute='skip_build_tools')    
 
-    print("Are we building tools? " + ("Yes" if option_build_tools else "No"))
-
     fail_on_asset_errors = export_config.get_parsed_boolean_option(parsed_args=args,
                                                                    key=exp.SETTINGS_OPTION_FAIL_ON_ASSET_ERR.key,
                                                                    enable_attribute='fail_on_asset_errors',
@@ -455,7 +451,6 @@ if "o3de_context" in globals():
             project_name, project_path = command_utils.resolve_project_name_and_path()
             export_config = exp.get_export_project_config(project_path=project_path)
         else:
-            print("check existing context")
             export_config = exp.get_export_project_config(project_path=o3de_context.project_path)
     except command_utils.O3DEConfigError:
         o3de_logger.debug(f"No project detected at {os.getcwd()}, getting default settings from global config instead.")

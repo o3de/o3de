@@ -233,7 +233,7 @@ def process_command(args: list,
     return utils.CLICommand(args, cwd, logging.getLogger(), env=env).run()
 
 
-def execute_python_script(target_script_path: pathlib.Path or str, o3de_context: O3DEScriptExportContext = None) -> int:
+def execute_python_script(target_script_path: pathlib.Path or str, o3de_context: O3DEScriptExportContext = None, logger=None) -> int:
     """
     Execute a new python script, using new or existing O3DEScriptExportContexts to streamline communication between multiple scripts
     :param target_script_path: The path to the python script to run.
@@ -246,8 +246,10 @@ def execute_python_script(target_script_path: pathlib.Path or str, o3de_context:
     utils.prepend_to_system_path(target_script_path)
 
     logging.info(f"Begin loading script '{target_script_path}'...")
+    if not logger:
+        logger = logging.getLogger()
     
-    return utils.load_and_execute_script(target_script_path, o3de_context = o3de_context, o3de_logger=logging.getLogger())
+    return utils.load_and_execute_script(target_script_path, o3de_context = o3de_context, o3de_logger=logger)
 
 
 
@@ -305,7 +307,7 @@ def extract_cmake_custom_args(arg_list: List[str])->tuple:
     return export_process_args, cmake_configure_args, cmake_build_args
 
 
-def _export_script(export_script_path: pathlib.Path, project_path: pathlib.Path, passthru_args: list) -> int:
+def _export_script(export_script_path: pathlib.Path, project_path: pathlib.Path, passthru_args: list, logger=None) -> int:
     if export_script_path.suffix != '.py':
         logging.error(f"Invalid export script type for '{export_script_path}'. Please provide a file path to an existing python script with '.py' extension.")
         return 1
@@ -362,16 +364,20 @@ def _export_script(export_script_path: pathlib.Path, project_path: pathlib.Path,
                                            cmake_additional_configure_args=cmake_configure_args,
                                            cmake_additional_build_args=cmake_build_args)
 
-    return execute_python_script(validated_export_script_path, o3de_context)
+    return execute_python_script(validated_export_script_path, o3de_context, logger=logger)
 
 def _ui_export(project_path: pathlib.Path) -> int:
-    logging.basicConfig(format=utils.LOG_FORMAT)
-    logging.getLogger().setLevel(args.log_level)
+    logger = logging.getLogger()    
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.INFO)
+    formatter =  logging.Formatter(utils.UI_MSG_FORMAT)
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
     
     export_config = get_export_project_config(project_path=project_path)
     export_script = pathlib.Path(export_config.get_value('option.default.export.script'))
     
-    return _export_script(export_script, project_path, [])
+    return _export_script(export_script, project_path, [], logger=logger)
 
 # Export Script entry point
 def _run_export_script(args: argparse, passthru_args: list) -> int:
@@ -1253,7 +1259,6 @@ def get_export_project_config(project_path: pathlib.Path or None) -> command_uti
     :param project_path:    The path to the registered O3DE project to look for its project-specific setting. If None, only use the global settings.
     :return: The project export configuration object
     """
-    print(project_path)
     return command_utils.O3DEConfig(project_path=project_path,
                                     settings_filename=PROJECT_EXPORT_SETTINGS_FILE,
                                     settings_section_name=PROJECT_EXPORT_SECTION_NAME,

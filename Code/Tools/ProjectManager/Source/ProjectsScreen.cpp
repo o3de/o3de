@@ -14,6 +14,7 @@
 #include <PythonBindings.h>
 #include <ProjectUtils.h>
 #include <ProjectBuilderController.h>
+#include <ProjectExportController.h>
 #include <ScreensCtrl.h>
 #include <SettingsInterface.h>
 #include <AddRemoteProjectDialog.h>
@@ -333,7 +334,9 @@ namespace O3DE::ProjectManager
                         m_currentBuilder->SetProjectButton(buildProjectIter->second);
                     }
                 }
-            } else if (m_currentExporter)
+            }
+
+            if (m_currentExporter)
             {
                 AZ::IO::Path exportProjectPath = AZ::IO::Path(m_currentExporter->GetProjectInfo().m_path.toUtf8().constData());
                 if (!exportProjectPath.empty())
