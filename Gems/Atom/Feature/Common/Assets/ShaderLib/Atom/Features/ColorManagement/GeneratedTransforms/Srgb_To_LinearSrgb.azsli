@@ -11,5 +11,5 @@
 real3 Srgb_To_LinearSrgb(real3 color)
 {
     // Copied from CryFx's ToAccurateLinear()
-    return (color.xyz < 0.04045) ? color.xyz / 12.92h : pow((color.xyz + real3(0.055, 0.055, 0.055)) / real3(1.055, 1.055, 1.055), 2.4);
+    return select((color.xyz < 0.04045), color.xyz / 12.92h, pow((color.xyz + real3(0.055, 0.055, 0.055)) / real3(1.055, 1.055, 1.055), 2.4));
 }

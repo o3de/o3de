@@ -790,7 +790,7 @@ float3 OutputDeviceTransform(const float3 oces, OutputTransformParameters otPara
         // LDR mode, clamp 0/1 and encode with given gamma value for the OETF
         linearCV = clamp(linearCV, 0., 1.);
 
-        outputCV = outputCV > 0.0f ? pow(linearCV, 1.0f / otParams.gamma) : 0.0f;
+        outputCV = select(outputCV > 0.0f, pow(linearCV, 1.0f / otParams.gamma), 0.0f);
     }
 
     return outputCV;
