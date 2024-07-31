@@ -8,6 +8,7 @@
 #include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
+#include <Atom/RHI/RHISystemInterface.h>
 
 namespace AZ::RHI
 {
@@ -33,7 +34,7 @@ namespace AZ::RHI
 
     Ptr<BufferView> Buffer::BuildBufferView(const BufferViewDescriptor& bufferViewDescriptor)
     {
-        return aznew BufferView{ this, bufferViewDescriptor };
+        return aznew BufferView{ this, bufferViewDescriptor, GetDeviceMask() };
     }
 
     const HashValue64 Buffer::GetHash() const
@@ -67,6 +68,23 @@ namespace AZ::RHI
     const RHI::Ptr<RHI::DeviceBufferView> BufferView::GetDeviceBufferView(int deviceIndex) const
     {
         AZStd::lock_guard lock(m_bufferViewMutex);
+
+        if (m_buffer->GetDeviceMask() != m_deviceMask)
+        {
+            m_deviceMask = m_buffer->GetDeviceMask();
+
+            for (auto checkDeviceIndex{ 0 }; checkDeviceIndex < RHISystemInterface::Get()->GetDeviceCount(); ++checkDeviceIndex)
+            {
+                if (!m_buffer->IsDeviceSet(checkDeviceIndex))
+                {
+                    if (auto it{ m_cache.find(checkDeviceIndex) }; it != m_cache.end())
+                    {
+                        m_cache.erase(it);
+                    }
+                }
+            }
+        }
+
         auto iterator{ m_cache.find(deviceIndex) };
         if (iterator == m_cache.end())
         {

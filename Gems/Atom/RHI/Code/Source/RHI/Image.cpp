@@ -46,7 +46,7 @@ namespace AZ::RHI
 
     Ptr<ImageView> Image::BuildImageView(const ImageViewDescriptor& imageViewDescriptor)
     {
-        return aznew ImageView{ this, imageViewDescriptor };
+        return aznew ImageView{ this, imageViewDescriptor, GetDeviceMask() };
     }
 
     uint32_t Image::GetResidentMipLevel() const
@@ -107,6 +107,23 @@ namespace AZ::RHI
     const RHI::Ptr<RHI::DeviceImageView> ImageView::GetDeviceImageView(int deviceIndex) const
     {
         AZStd::lock_guard lock(m_imageViewMutex);
+
+        if (m_image->GetDeviceMask() != m_deviceMask)
+        {
+            m_deviceMask = m_image->GetDeviceMask();
+
+            for (auto checkDeviceIndex{ 0 }; checkDeviceIndex < RHISystemInterface::Get()->GetDeviceCount(); ++checkDeviceIndex)
+            {
+                if (!m_image->IsDeviceSet(checkDeviceIndex))
+                {
+                    if (auto it{ m_cache.find(checkDeviceIndex) }; it != m_cache.end())
+                    {
+                        m_cache.erase(it);
+                    }
+                }
+            }
+        }
+
         auto iterator{ m_cache.find(deviceIndex) };
         if (iterator == m_cache.end())
         {
