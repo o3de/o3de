@@ -63,12 +63,14 @@ namespace AZ::DX12
     }
 
     ShaderByteCode ShaderUtils::PatchShaderFunction(
-        const ShaderStageFunction& shaderFunction, const RHI::PipelineStateDescriptor& descriptor)
+        const ShaderStageFunction& shaderFunction,
+        uint32_t subStageIndex,
+        const RHI::PipelineStateDescriptor& descriptor)
     {
-        ShaderByteCode patched(shaderFunction.GetByteCode().size());
-        ::memcpy(patched.data(), shaderFunction.GetByteCode().data(), patched.size());
+        ShaderByteCode patched(shaderFunction.GetByteCode(subStageIndex).size());
+        ::memcpy(patched.data(), shaderFunction.GetByteCode(subStageIndex).data(), patched.size());
         const AZStd::vector<RHI::SpecializationConstant>& specializationConstants = descriptor.m_specializationData;
-        for (const auto& element : shaderFunction.GetSpecializationOffsets())
+        for (const auto& element : shaderFunction.GetSpecializationOffsets(subStageIndex))
         {
             auto findIter = AZStd::find_if(
                 specializationConstants.begin(),
@@ -103,6 +105,7 @@ namespace AZ::DX12
 
     ShaderByteCodeView ShaderUtils::PatchShaderFunction(
         const ShaderStageFunction& shaderFunction,
+        uint32_t subStageIndex,
         const RHI::PipelineStateDescriptor& descriptor,
         AZStd::vector<ShaderByteCode>& patchedShaderContainer)
     {
@@ -112,7 +115,7 @@ namespace AZ::DX12
             return shaderFunction.GetByteCode();
         }
 
-        ShaderByteCode patchedShader = PatchShaderFunction(shaderFunction, descriptor);
+        ShaderByteCode patchedShader = PatchShaderFunction(shaderFunction, subStageIndex, descriptor);
         patchedShaderContainer.emplace_back(AZStd::move(patchedShader));
         return patchedShaderContainer.back();
     }

@@ -340,7 +340,7 @@ namespace AZ
             if (useSpecializationConstants)
             {
                 // Need to patch the shader so it can be used with specialization constants.
-                const auto dxscRelativePath = RHI::GetDirectXShaderCompilerPath("Builders/DirectXShaderCompiler/dxsc.exe");
+                const auto dxscRelativePath = "Builders/DirectXShaderCompiler/dxsc.exe";
 
                 AZStd::string shaderOutputCommon;
                 AzFramework::StringFunc::Path::GetFileName(shaderSourceFile.c_str(), shaderOutputCommon);

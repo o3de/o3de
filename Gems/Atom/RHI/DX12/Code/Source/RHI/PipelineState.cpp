@@ -62,19 +62,21 @@ namespace AZ
             if (const ShaderStageFunction* vertexFunction = azrtti_cast<const ShaderStageFunction*>(descriptor.m_vertexFunction.get()))
             {
                 pipelineStateDesc.VS =
-                    D3D12BytecodeFromView(ShaderUtils::PatchShaderFunction(*vertexFunction, descriptor, shaderByteCodeCache));
+                    D3D12BytecodeFromView(ShaderUtils::PatchShaderFunction(*vertexFunction, 0, descriptor, shaderByteCodeCache));
             }
 
             if (const ShaderStageFunction* tessellationFunction = azrtti_cast<const ShaderStageFunction*>(descriptor.m_tessellationFunction.get()))
             {
-                pipelineStateDesc.HS = D3D12BytecodeFromView(tessellationFunction->GetByteCode(ShaderSubStage::TessellationHull));
-                pipelineStateDesc.DS = D3D12BytecodeFromView(tessellationFunction->GetByteCode(ShaderSubStage::TessellationDomain));
+                pipelineStateDesc.HS = D3D12BytecodeFromView(ShaderUtils::PatchShaderFunction(
+                    *tessellationFunction, ShaderSubStage::TessellationHull, descriptor, shaderByteCodeCache));
+                pipelineStateDesc.DS = D3D12BytecodeFromView(ShaderUtils::PatchShaderFunction(
+                    *tessellationFunction, ShaderSubStage::TessellationDomain, descriptor, shaderByteCodeCache));
             }
 
             if (const ShaderStageFunction* fragmentFunction = azrtti_cast<const ShaderStageFunction*>(descriptor.m_fragmentFunction.get()))
             {
                 pipelineStateDesc.PS =
-                    D3D12BytecodeFromView(ShaderUtils::PatchShaderFunction(*fragmentFunction, descriptor, shaderByteCodeCache));
+                    D3D12BytecodeFromView(ShaderUtils::PatchShaderFunction(*fragmentFunction, 0, descriptor, shaderByteCodeCache));
             }
 
             const RHI::RenderAttachmentConfiguration& renderAttachmentConfiguration = descriptor.m_renderAttachmentConfiguration;
@@ -141,7 +143,7 @@ namespace AZ
             if (const ShaderStageFunction* computeFunction = azrtti_cast<const ShaderStageFunction*>(descriptor.m_computeFunction.get()))
             {
                 pipelineStateDesc.CS =
-                    D3D12BytecodeFromView(ShaderUtils::PatchShaderFunction(*computeFunction, descriptor, shaderByteCodeCache));
+                    D3D12BytecodeFromView(ShaderUtils::PatchShaderFunction(*computeFunction, 0, descriptor, shaderByteCodeCache));
             }
 
             PipelineLibrary* pipelineLibrary = static_cast<PipelineLibrary*>(pipelineLibraryBase);

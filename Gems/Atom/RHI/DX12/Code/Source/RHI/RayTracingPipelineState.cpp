@@ -60,7 +60,7 @@ namespace AZ
             {
                 const ShaderStageFunction* rayTracingFunction = azrtti_cast<const ShaderStageFunction*>(shaderLibrary.m_descriptor.m_rayTracingFunction.get());
                 ShaderByteCodeView byteCode =
-                    ShaderUtils::PatchShaderFunction(*rayTracingFunction, shaderLibrary.m_descriptor, patchedShaderCache);
+                    ShaderUtils::PatchShaderFunction(*rayTracingFunction, 0, shaderLibrary.m_descriptor, patchedShaderCache);
 
                 D3D12_DXIL_LIBRARY_DESC libraryDesc = {};
                 libraryDesc.DXILLibrary = D3D12_SHADER_BYTECODE{ byteCode.data(), byteCode.size() };
