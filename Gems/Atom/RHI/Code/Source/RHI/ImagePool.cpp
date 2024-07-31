@@ -70,17 +70,33 @@ namespace AZ::RHI
             initRequest.m_descriptor,
             [this, &initRequest]()
             {
-                ResultCode result = IterateObjects<DeviceImagePool>([&initRequest](auto deviceIndex, auto deviceImagePool)
-                {
-                    if (!initRequest.m_image->m_deviceObjects.contains(deviceIndex))
-                    {
-                        initRequest.m_image->m_deviceObjects[deviceIndex] = Factory::Get().CreateImage();
-                    }
+                initRequest.m_image->Init(GetDeviceMask() & initRequest.m_deviceMask);
 
-                    DeviceImageInitRequest imageInitRequest(
-                        *initRequest.m_image->GetDeviceImage(deviceIndex), initRequest.m_descriptor, initRequest.m_optimizedClearValue);
-                    return deviceImagePool->InitImage(imageInitRequest);
-                });
+                ResultCode result = IterateObjects<DeviceImagePool>(
+                    [&initRequest](auto deviceIndex, auto deviceImagePool)
+                    {
+                        bool createImage = ((AZStd::to_underlying(initRequest.m_image->GetDeviceMask()) >> deviceIndex) & 1) == 1;
+
+                        if (!initRequest.m_image->m_deviceObjects.contains(deviceIndex))
+                        {
+                            if (createImage)
+                            {
+                                initRequest.m_image->m_deviceObjects[deviceIndex] = Factory::Get().CreateImage();
+
+                                DeviceImageInitRequest imageInitRequest(
+                                    *initRequest.m_image->GetDeviceImage(deviceIndex),
+                                    initRequest.m_descriptor,
+                                    initRequest.m_optimizedClearValue);
+                                return deviceImagePool->InitImage(imageInitRequest);
+                            }
+                        }
+                        else if (!createImage)
+                        {
+                            initRequest.m_image->m_deviceObjects.erase(deviceIndex);
+                        }
+
+                        return ResultCode::Success;
+                    });
 
                 if (result != ResultCode::Success)
                 {
@@ -90,6 +106,44 @@ namespace AZ::RHI
                 }
 
                 return result;
+            });
+    }
+
+    ResultCode ImagePool::UpdateImageDeviceMask(const ImageDeviceMaskRequest& request)
+    {
+        return IterateObjects<DeviceImagePool>(
+            [this, &request](auto deviceIndex, auto deviceImagePool)
+            {
+                bool createImage = ((AZStd::to_underlying(GetDeviceMask() & request.m_deviceMask) >> deviceIndex) & 1) == 1;
+
+                if (!request.m_image->m_deviceObjects.contains(deviceIndex))
+                {
+                    if (createImage)
+                    {
+                        request.m_image->m_deviceObjects[deviceIndex] = Factory::Get().CreateImage();
+
+                        DeviceImageInitRequest imageInitRequest(
+                            *request.m_image->GetDeviceImage(deviceIndex), request.m_image->m_descriptor, request.m_optimizedClearValue);
+                        auto result = deviceImagePool->InitImage(imageInitRequest);
+
+                        if (result == ResultCode::Success)
+                        {
+                            request.m_image->Init(
+                                MultiDevice::DeviceMask(AZStd::to_underlying(request.m_image->GetDeviceMask()) | (1 << deviceIndex)));
+                        }
+
+                        return result;
+                    }
+                }
+                else if (!createImage)
+                {
+                    request.m_image->Init(
+                        MultiDevice::DeviceMask(AZStd::to_underlying(request.m_image->GetDeviceMask()) & (~(1 << deviceIndex))));
+                    request.m_image->m_deviceObjects.erase(deviceIndex);
+                    return ResultCode::Success;
+                }
+
+                return ResultCode::Success;
             });
     }
 

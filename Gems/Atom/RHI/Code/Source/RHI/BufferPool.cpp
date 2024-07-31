@@ -155,20 +155,75 @@ namespace AZ::RHI
             initRequest.m_descriptor,
             [this, &initRequest]()
             {
-                return IterateObjects<DeviceBufferPool>([&initRequest](auto deviceIndex, auto deviceBufferPool)
-                {
-                    if (!initRequest.m_buffer->m_deviceObjects.contains(deviceIndex))
-                    {
-                        initRequest.m_buffer->m_deviceObjects[deviceIndex] = Factory::Get().CreateBuffer();
-                    }
+                initRequest.m_buffer->Init(GetDeviceMask() & initRequest.m_deviceMask);
 
-                    DeviceBufferInitRequest bufferInitRequest(
-                        *initRequest.m_buffer->GetDeviceBuffer(deviceIndex), initRequest.m_descriptor, initRequest.m_initialData);
-                    return deviceBufferPool->InitBuffer(bufferInitRequest);
-                });
+                return IterateObjects<DeviceBufferPool>(
+                    [&initRequest](auto deviceIndex, auto deviceBufferPool)
+                    {
+                        bool createBuffer = ((AZStd::to_underlying(initRequest.m_buffer->GetDeviceMask()) >> deviceIndex) & 1) == 1;
+
+                        if (!initRequest.m_buffer->m_deviceObjects.contains(deviceIndex))
+                        {
+                            if (createBuffer)
+                            {
+                                initRequest.m_buffer->m_deviceObjects[deviceIndex] = Factory::Get().CreateBuffer();
+                                DeviceBufferInitRequest bufferInitRequest(
+                                    *initRequest.m_buffer->GetDeviceBuffer(deviceIndex),
+                                    initRequest.m_descriptor,
+                                    initRequest.m_initialData);
+                                return deviceBufferPool->InitBuffer(bufferInitRequest);
+                            }
+                        }
+                        else if (!createBuffer)
+                        {
+                            initRequest.m_buffer->m_deviceObjects.erase(deviceIndex);
+                        }
+
+                        return ResultCode::Success;
+                    });
             });
 
         return resultCode;
+    }
+
+    ResultCode BufferPool::UpdateBufferDeviceMask(const BufferDeviceMaskRequest& request)
+    {
+        AZ_PROFILE_FUNCTION(RHI);
+
+        return IterateObjects<DeviceBufferPool>(
+            [&request, this](auto deviceIndex, auto deviceBufferPool)
+            {
+                bool createBuffer = ((AZStd::to_underlying(GetDeviceMask() & request.m_deviceMask) >> deviceIndex) & 1) == 1;
+
+                if (!request.m_buffer->m_deviceObjects.contains(deviceIndex))
+                {
+                    if (createBuffer)
+                    {
+                        request.m_buffer->m_deviceObjects[deviceIndex] = Factory::Get().CreateBuffer();
+
+                        DeviceBufferInitRequest bufferInitRequest(
+                            *request.m_buffer->GetDeviceBuffer(deviceIndex), request.m_buffer->m_descriptor, request.m_initialData);
+                        auto result = deviceBufferPool->InitBuffer(bufferInitRequest);
+
+                        if (result == ResultCode::Success)
+                        {
+                            request.m_buffer->Init(
+                                MultiDevice::DeviceMask(AZStd::to_underlying(request.m_buffer->GetDeviceMask()) | (1 << deviceIndex)));
+                        }
+
+                        return result;
+                    }
+                }
+                else if (!createBuffer)
+                {
+                    request.m_buffer->Init(
+                        MultiDevice::DeviceMask(AZStd::to_underlying(request.m_buffer->GetDeviceMask()) & ~(1 << deviceIndex)));
+                    request.m_buffer->m_deviceObjects.erase(deviceIndex);
+                    return ResultCode::Success;
+                }
+
+                return ResultCode::Success;
+            });
     }
 
     ResultCode BufferPool::OrphanBuffer(Buffer& buffer)
@@ -186,7 +241,7 @@ namespace AZ::RHI
         AZ_PROFILE_SCOPE(RHI, "BufferPool::OrphanBuffer");
 
         buffer.Invalidate();
-        buffer.Init(GetDeviceMask());
+        buffer.Init(MultiDevice::NoDevices);
 
         return ResultCode::Success;
     }

@@ -15,22 +15,18 @@
 namespace AZ::RHI
 {
     //! @brief The data structure used to initialize an RHI::DeviceImage on an RHI::DeviceImagePool.
-    template <typename ImageClass>
-    struct ImageInitRequestTemplate
+    struct DeviceImageInitRequest
     {
-        ImageInitRequestTemplate() = default;
+        DeviceImageInitRequest() = default;
 
-        ImageInitRequestTemplate(
-            ImageClass& image,
-            const ImageDescriptor& descriptor,
-            const ClearValue* optimizedClearValue = nullptr)
-            : m_image{&image}
-            , m_descriptor{descriptor}
-            , m_optimizedClearValue{optimizedClearValue}
+        DeviceImageInitRequest(DeviceImage& image, const ImageDescriptor& descriptor, const ClearValue* optimizedClearValue = nullptr)
+            : m_image{ &image }
+            , m_descriptor{ descriptor }
+            , m_optimizedClearValue{ optimizedClearValue }
         {}
 
         /// The image to initialize.
-        ImageClass* m_image = nullptr;
+        DeviceImage* m_image = nullptr;
 
         /// The descriptor used to initialize the image.
         ImageDescriptor m_descriptor;
@@ -63,7 +59,6 @@ namespace AZ::RHI
         ImageSubresourceLayoutClass m_sourceSubresourceLayout;
     };
 
-    using DeviceImageInitRequest = ImageInitRequestTemplate<DeviceImage>;
     using DeviceImageUpdateRequest = ImageUpdateRequestTemplate<DeviceImage, DeviceImageSubresourceLayout>;
 
     //! DeviceImagePool is a pool of images that will be bound as attachments to the frame scheduler.
