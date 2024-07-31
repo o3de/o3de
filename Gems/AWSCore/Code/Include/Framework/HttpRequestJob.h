@@ -183,8 +183,7 @@ namespace AWSCore
         {
             AZ_UNUSED(response);
         };
-
-    private:
+        
         /// Runs the HTTP request on the Job's thread.
         void Process() override;
 
