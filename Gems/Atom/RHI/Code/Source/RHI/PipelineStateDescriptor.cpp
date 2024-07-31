@@ -102,7 +102,7 @@ namespace AZ::RHI
             m_tessellationFunction == rhs.m_tessellationFunction &&
             m_inputStreamLayout == rhs.m_inputStreamLayout &&
             m_renderAttachmentConfiguration == rhs.m_renderAttachmentConfiguration &&
-			m_specializationData == rhs.m_specializationData;
+            m_specializationData == rhs.m_specializationData;
     }
 
     bool PipelineStateDescriptorForDispatch::operator == (const PipelineStateDescriptorForDispatch& rhs) const
