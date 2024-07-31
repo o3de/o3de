@@ -28,6 +28,7 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 // Folder in which levels are stored
 static const char kNewLevelDialog_LevelsFolder[] = "Levels";
 static constexpr const char* RegistryKey_CustomTemplatePaths = "/O3DE/Preferences/Prefab/CustomTemplatePaths";
+static constexpr const char* DefaultTemplate = "Default_Level.prefab";
 
 class LevelFolderValidator : public QValidator
 {
@@ -139,6 +140,7 @@ void CNewLevelDialog::InitTemplateListWidget() const
     // Get all prefab files.
     const QStringList fileFilter = {"*.prefab"};
     QStringList allTemplateFiles;
+    int defaultItem = 0;
     for(const QString& path: templatePaths)
     {
         QDir projectTemplateDirectory(path);
@@ -147,6 +149,10 @@ void CNewLevelDialog::InitTemplateListWidget() const
         const QStringList projectTemplateFiles = projectTemplateDirectory.entryList(QDir::Files);
         for (const QString& fileName: projectTemplateFiles)
         {
+            if (fileName.compare(QString::fromUtf8(DefaultTemplate), Qt::CaseInsensitive) == 0)
+            {
+                defaultItem = allTemplateFiles.size();
+            }
             allTemplateFiles.push_back(projectTemplateDirectory.filePath(fileName));
         }
     }
@@ -168,11 +174,30 @@ void CNewLevelDialog::InitTemplateListWidget() const
     ui->listTemplates->setViewMode(QListWidget::IconMode);
     ui->listTemplates->setIconSize(iconSize);
     ui->listTemplates->setDragDropMode(QAbstractItemView::NoDragDrop);
+    if (ui->listTemplates->count() > 0)
+    {
+        ui->listTemplates->setCurrentRow(defaultItem);
+    }
 }
 
 QString CNewLevelDialog::GetTemplateName() const
 {
-    const QString name = ui->listTemplates->currentItem()->data(Qt::UserRole).toString();
+    const auto* item = ui->listTemplates->currentItem();
+    if (item == nullptr)
+    {
+        if (ui->listTemplates->count() > 0)
+        {
+            // for safety, return the 0th item.
+            return ui->listTemplates->item(0)->data(Qt::UserRole).toString();
+        }
+        else
+        {
+            // if we have no templates at all, return an empty string.
+            return QString();
+        }
+    }
+
+    const QString name =item->data(Qt::UserRole).toString();
     return name;
 }
 
