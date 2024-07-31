@@ -184,7 +184,11 @@ namespace AWSCore
             AZ_UNUSED(response);
         };
 
+#if defined(CARBONATED)
+        // ... 
+#else
     private:
+#endif
         /// Runs the HTTP request on the Job's thread.
         void Process() override;
 
