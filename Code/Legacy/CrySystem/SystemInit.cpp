@@ -1264,8 +1264,7 @@ void CSystem::CreateSystemVars()
         "Minimum amount of time to show the level load screen. Important to prevent short loads from flashing the load screen. 0 means "
         "there is no limit.");
 #if defined(CARBONATED)
-    REGISTER_STRING("default_load_screen_config_file", "", 0, "Default Load Screen Config File.");
-    REGISTER_STRING("list_of_levels_without_load_screen", "", 0, "Comma separated list of levels without the level load screen.");
+    REGISTER_STRING("default_level_config_file", "", 0, "Default Load Screen Config File.");
 #endif   
 #endif // if AZ_LOADSCREENCOMPONENT_ENABLED
 

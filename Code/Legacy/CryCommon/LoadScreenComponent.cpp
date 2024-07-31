@@ -42,6 +42,10 @@ namespace
 
 #if defined(CARBONATED)
     static const char* const s_levelLoadScreenUiCanvasPath = "level_load_screen_uicanvas_path";
+
+    static const char* const s_globalLevelFixedFpsCvarName = "global_level_load_screen_sequence_fixed_fps";
+    static const char* const s_globalLevelMaxFpsCvarName = "global_level_load_screen_max_fps";
+    static const char* const s_globalLevelMinimumLoadTimeCvarName = "global_level_load_screen_minimum_time";
 #endif
 }
 
@@ -268,7 +272,7 @@ void LoadScreenComponent::LevelStart()
         if (pGEnv && pGEnv->pConsole)
         {
             ICVar* levelPathVar = pGEnv->pConsole->GetCVar(s_levelLoadScreenUiCanvasPath);
-            const AZStd::string levelPath = levelPathVar ? levelPathVar->GetString() : "";
+            AZStd::string levelPath = levelPathVar ? levelPathVar->GetString() : "";
 
             if (levelPath != "")
             {
@@ -276,8 +280,7 @@ void LoadScreenComponent::LevelStart()
             }
             else
             {
-                // this level does not contain the load screen
-                return;
+                LoadConfigSettings(s_globalLevelFixedFpsCvarName, s_globalLevelMaxFpsCvarName, s_globalLevelMinimumLoadTimeCvarName);
             }
         }
 #else

@@ -183,7 +183,7 @@ namespace LyShine
         AZ_Assert(m_isPlaying, "LyShineLoadScreenComponent should not be connected to LoadScreenUpdateNotificationBus while not playing");
 
 #if defined (CARBONATED)
-        if (m_isPlaying && gEnv && AZ::Interface<ILyShine>::Get())
+        if (m_isPlaying && gEnv && gEnv->pGame && AZ::Interface<ILyShine>::Get())
         {
             AZ_Assert(GetCurrentThreadId() == gEnv->mMainThreadId, "UpdateAndRender should only be called from the main thread");
 

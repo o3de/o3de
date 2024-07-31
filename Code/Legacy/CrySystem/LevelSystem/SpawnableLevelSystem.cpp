@@ -541,27 +541,10 @@ namespace LegacyLevelSystem
 #if defined (CARBONATED)
     bool SpawnableLevelSystem::ApplyLevelLoadScreenConfig(const char* levelName) const
     {
-        AZStd::vector<AZStd::string> levelNamesForExclude;
-        ICVar* disabledLevelsVar = gEnv->pConsole->GetCVar("list_of_levels_without_load_screen");
-        const AZStd::string disabledLevels = disabledLevelsVar ? disabledLevelsVar->GetString() : "";
-        if (disabledLevels != "")
-        {
-            AZ::StringFunc::Tokenize(AZStd::string_view(disabledLevels), levelNamesForExclude, ",");
-        }
-
-        const AZStd::string levelNameStr(levelName);
-        for (const auto& nameForExclude : levelNamesForExclude)
-        {
-            if (levelNameStr.contains(nameForExclude))
-            {
-                return false; // level does not have a load screen
-            }
-        }
-
         AZStd::string levelFolderPath;
         AZ::StringFunc::Path::GetFolderPath(levelName, levelFolderPath);
         // load the default load screen config file
-        ICVar* defaultLoadScreenCfgVar = gEnv->pConsole->GetCVar("default_load_screen_config_file");
+        ICVar* defaultLoadScreenCfgVar = gEnv->pConsole->GetCVar("default_level_config_file");
         const AZStd::string defaultLoadScreenCfg = defaultLoadScreenCfgVar ? defaultLoadScreenCfgVar->GetString() : "";
         if (defaultLoadScreenCfg != "")
         {
