@@ -696,7 +696,8 @@ namespace AZ
                     loadStoreAction.m_loadActionStencil,
                     attachmentLoadStoreAction.m_loadActionStencil);
                 attachmentLoadStoreAction.m_loadActionStencil = loadStoreAction.m_loadActionStencil;
-                attachmentLoadStoreAction.m_storeActionStencil = loadStoreAction.m_storeActionStencil != RHI::AttachmentStoreAction::Store
+                attachmentLoadStoreAction.m_storeActionStencil =
+                    loadStoreAction.m_storeActionStencil != RHI::AttachmentStoreAction::DontCare
                     ? loadStoreAction.m_storeActionStencil
                     : attachmentLoadStoreAction.m_storeActionStencil;
             };
