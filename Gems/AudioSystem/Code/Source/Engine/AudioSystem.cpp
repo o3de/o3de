@@ -240,7 +240,7 @@ namespace Audio
         if (!handleBlockingRequest)
         {
             auto endUpdateTime = AZStd::chrono::steady_clock::now();      // stamp the end time
-            auto elapsedUpdateTime = AZStd::chrono::duration_cast<duration_ms>(endUpdateTime - startUpdateTime);
+            auto elapsedUpdateTime = AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(endUpdateTime - startUpdateTime);
             if (elapsedUpdateTime < m_targetUpdatePeriod)
             {
                 AZ_PROFILE_SCOPE(Audio, "Wait Remaining Time in Update Period");
