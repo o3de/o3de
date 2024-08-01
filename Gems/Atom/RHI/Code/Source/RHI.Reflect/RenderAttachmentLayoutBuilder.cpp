@@ -17,7 +17,9 @@ namespace AZ::RHI
         Reset();
     }
 
-    ResultCode RenderAttachmentLayoutBuilder::End(RenderAttachmentLayout& builtRenderAttachmentLayout)
+    ResultCode RenderAttachmentLayoutBuilder::End(
+        RenderAttachmentLayout& builtRenderAttachmentLayout,
+        AZStd::array<AZ::Name, Limits::Pipeline::RenderAttachmentCountMax>* attachmentNames)
     {
         auto& renderAttachmentFormats = builtRenderAttachmentLayout.m_attachmentFormats;
         Format depthStencilFormat = Format::Unknown;
@@ -112,7 +114,8 @@ namespace AZ::RHI
                 subpassLayout.m_rendertargetDescriptors[i] = RenderAttachmentDescriptor{ attachmentIndex, resolveAttachmentIndex,
                                                                                          renderTargetAttachment.m_loadStoreAction,
                                                                                          renderTargetAttachment.m_scopeAttachmentAccess,
-                                                                                         renderTargetAttachment.m_scopeAttachmentStage};
+                                                                                         renderTargetAttachment.m_scopeAttachmentStage,
+                                                                                         renderTargetAttachment.m_extras};
             }
 
             if (!builder.m_depthStencilAttachment.m_name.IsEmpty())
@@ -155,7 +158,8 @@ namespace AZ::RHI
                 subpassLayout.m_depthStencilDescriptor = RenderAttachmentDescriptor{ attachmentIndex, resolveAttachmentIndex,
                                                 builder.m_depthStencilAttachment.m_loadStoreAction,
                                                 builder.m_depthStencilAttachment.m_scopeAttachmentAccess,
-                                                builder.m_depthStencilAttachment.m_scopeAttachmentStage};
+                                                builder.m_depthStencilAttachment.m_scopeAttachmentStage,
+                                                builder.m_depthStencilAttachment.m_extras};
             }
 
             // Add the subpass inputs.
@@ -175,7 +179,8 @@ namespace AZ::RHI
                     SubpassInputDescriptor{ attachmentIndex,
                                             builder.m_subpassInputAttachments[i].m_imageAspects,
                                             builder.m_subpassInputAttachments[i].m_scopeAttachmentAccess,
-                                            builder.m_subpassInputAttachments[i].m_scopeAttachmentStage};
+                                            builder.m_subpassInputAttachments[i].m_scopeAttachmentStage,
+                                            builder.m_subpassInputAttachments[i].m_extras};
             }
 
             // Add the shading rate attachment.
@@ -204,7 +209,17 @@ namespace AZ::RHI
                                                                                     InvalidRenderAttachmentIndex,
                                                                                     builder.m_shadingRateAttachment.m_loadStoreAction,
                                                                                     builder.m_shadingRateAttachment.m_scopeAttachmentAccess,
-                                                                                    builder.m_shadingRateAttachment.m_scopeAttachmentStage};
+                                                                                    builder.m_shadingRateAttachment.m_scopeAttachmentStage,
+                                                                                    builder.m_shadingRateAttachment.m_extras};
+            }
+        }
+
+        if (attachmentNames)
+        {
+            auto& namesArray = *attachmentNames;
+            for (const auto& attachment : renderAttachmentsMap)
+            {
+                namesArray[attachment.second] = attachment.first;
             }
         }
 
@@ -222,6 +237,11 @@ namespace AZ::RHI
         auto& newLayoutBuilder = m_subpassLayoutBuilders.back();
         return &newLayoutBuilder;
     }
+
+    uint32_t RenderAttachmentLayoutBuilder::GetSubpassCount() const
+    {
+        return aznumeric_caster(m_subpassLayoutBuilders.size());
+    }
         
     RenderAttachmentLayoutBuilder::SubpassAttachmentLayoutBuilder::SubpassAttachmentLayoutBuilder(uint32_t subpassIndex)
         : m_subpassIndex(subpassIndex)
@@ -236,7 +256,8 @@ namespace AZ::RHI
         Format format,
         const AZ::Name& name /*= {}*/,
         const AttachmentLoadStoreAction& loadStoreAction /*= AttachmentLoadStoreAction()*/,            
-        bool resolve /*= false*/)
+        bool resolve /*= false*/,
+        RenderAttachmentExtras* extras /*= nullptr*/)
     {
         AZ::Name attachmentName = name;
         if (attachmentName.IsEmpty())
@@ -245,7 +266,13 @@ namespace AZ::RHI
             attachmentName = AZStd::string::format("Color%zu_Subpass%d", m_renderTargetAttachments.size(), m_subpassIndex);
         }
 
-        m_renderTargetAttachments.push_back({ attachmentName, format, loadStoreAction, {}, AZ::RHI::ScopeAttachmentAccess::Write, AZ::RHI::ScopeAttachmentStage::ColorAttachmentOutput });
+        m_renderTargetAttachments.push_back({ attachmentName,
+                                              format,
+                                              loadStoreAction,
+                                              {},
+                                              AZ::RHI::ScopeAttachmentAccess::Write,
+                                              AZ::RHI::ScopeAttachmentStage::ColorAttachmentOutput,
+                                              extras });
         if (resolve)
         {
             return ResolveAttachment(attachmentName);
@@ -271,9 +298,10 @@ namespace AZ::RHI
     RenderAttachmentLayoutBuilder::SubpassAttachmentLayoutBuilder* RenderAttachmentLayoutBuilder::SubpassAttachmentLayoutBuilder::RenderTargetAttachment(
         const AZ::Name& name,
         const AttachmentLoadStoreAction& loadStoreAction /*= AttachmentLoadStoreAction()*/,
-        bool resolve /*= false*/)
+        bool resolve /*= false*/,
+        RenderAttachmentExtras* extras /*= nullptr*/)
     {
-        return RenderTargetAttachment(Format::Unknown, name, loadStoreAction, resolve);
+        return RenderTargetAttachment(Format::Unknown, name, loadStoreAction, resolve, extras);
     }
 
     RenderAttachmentLayoutBuilder::SubpassAttachmentLayoutBuilder* RenderAttachmentLayoutBuilder::SubpassAttachmentLayoutBuilder::ResolveAttachment(
@@ -307,12 +335,18 @@ namespace AZ::RHI
         const AZ::Name& name /*= {}*/,
         const AttachmentLoadStoreAction& loadStoreAction /*= AttachmentLoadStoreAction()*/,
         AZ::RHI::ScopeAttachmentAccess scopeAttachmentAccess,
-        AZ::RHI::ScopeAttachmentStage scopeAttachmentStage)
+        AZ::RHI::ScopeAttachmentStage scopeAttachmentStage,
+        RenderAttachmentExtras* extras /*= nullptr*/)
     {
         AZ_Assert(m_depthStencilAttachment.m_format == Format::Unknown || format == m_depthStencilAttachment.m_format, "DepthStencil format has already been set");
         // Assign a temp name if it's empty.
-        m_depthStencilAttachment = RenderAttachmentEntry{
-            name.IsEmpty() ? AZ::Name("DepthStencil") : name, format, loadStoreAction, {}, scopeAttachmentAccess, scopeAttachmentStage
+        m_depthStencilAttachment = RenderAttachmentEntry{ name.IsEmpty() ? AZ::Name("DepthStencil") : name,
+                                                          format,
+                                                          loadStoreAction,
+                                                          {},
+                                                          scopeAttachmentAccess,
+                                                          scopeAttachmentStage,
+                                                          extras
         };
         return this;
     }
@@ -321,32 +355,37 @@ namespace AZ::RHI
         const AZ::Name name /*= {}*/,
         const AttachmentLoadStoreAction& loadStoreAction /*= AttachmentLoadStoreAction()*/,
         AZ::RHI::ScopeAttachmentAccess scopeAttachmentAccess,
-        AZ::RHI::ScopeAttachmentStage scopeAttachmentStage)
+        AZ::RHI::ScopeAttachmentStage scopeAttachmentStage,
+        RenderAttachmentExtras* extras /*= nullptr*/)
     {
         return DepthStencilAttachment(
-            m_depthStencilAttachment.m_format, name, loadStoreAction, scopeAttachmentAccess, scopeAttachmentStage);
+            m_depthStencilAttachment.m_format, name, loadStoreAction, scopeAttachmentAccess, scopeAttachmentStage, extras);
     }
 
     RenderAttachmentLayoutBuilder::SubpassAttachmentLayoutBuilder* RenderAttachmentLayoutBuilder::SubpassAttachmentLayoutBuilder::DepthStencilAttachment(
             const AttachmentLoadStoreAction& loadStoreAction,
             AZ::RHI::ScopeAttachmentAccess scopeAttachmentAccess,
-            AZ::RHI::ScopeAttachmentStage scopeAttachmentStage)
+            AZ::RHI::ScopeAttachmentStage scopeAttachmentStage,
+            RenderAttachmentExtras* extras /*= nullptr*/)
     {
-        return DepthStencilAttachment(m_depthStencilAttachment.m_format, {}, loadStoreAction, scopeAttachmentAccess, scopeAttachmentStage);
+        return DepthStencilAttachment(
+            m_depthStencilAttachment.m_format, {}, loadStoreAction, scopeAttachmentAccess, scopeAttachmentStage, extras);
     }
 
     RenderAttachmentLayoutBuilder::SubpassAttachmentLayoutBuilder* RenderAttachmentLayoutBuilder::SubpassAttachmentLayoutBuilder::SubpassInputAttachment(
         const AZ::Name& name,
-        RHI::ImageAspectFlags aspectFlags)
+        RHI::ImageAspectFlags aspectFlags,
+        RenderAttachmentExtras* extras /*= nullptr*/)
     {
-        m_subpassInputAttachments.push_back(
-            SubpassAttachmentEntry{ name, aspectFlags, AZ::RHI::ScopeAttachmentAccess::Read, AZ::RHI::ScopeAttachmentStage::FragmentShader });
+        m_subpassInputAttachments.push_back(SubpassAttachmentEntry{
+            name, aspectFlags, AZ::RHI::ScopeAttachmentAccess::Read, AZ::RHI::ScopeAttachmentStage::FragmentShader, extras });
         return this;
     }
 
     RenderAttachmentLayoutBuilder::SubpassAttachmentLayoutBuilder* RenderAttachmentLayoutBuilder::SubpassAttachmentLayoutBuilder::ShadingRateAttachment(
         Format format,
-        const AZ::Name& name /*= {}*/)
+        const AZ::Name& name /*= {}*/,
+        RenderAttachmentExtras* extras /*= nullptr*/)
     {
         AZ_Assert(
             m_shadingRateAttachment.m_format == Format::Unknown || format == m_shadingRateAttachment.m_format,
@@ -359,6 +398,7 @@ namespace AZ::RHI
             {},
             AZ::RHI::ScopeAttachmentAccess::Read,
             AZ::RHI::ScopeAttachmentStage::ShadingRate,
+            extras
         };
         m_shadingRateAttachment.m_loadStoreAction.m_storeAction = AttachmentStoreAction::DontCare;
         return this;
