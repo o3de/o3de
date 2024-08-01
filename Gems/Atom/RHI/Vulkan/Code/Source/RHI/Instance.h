@@ -60,6 +60,9 @@ namespace AZ
             //! Retuns the list of instance extensions loaded by the Vulkan instance.
             const RawStringList& GetLoadedExtensions() const;
 
+            //! Returns the App Info used for creting the instance.
+            const VkApplicationInfo& GetVkAppInfo() const;
+
         private:
             RHI::PhysicalDeviceList EnumerateSupportedDevices(uint32_t minVersion) const;
             void ShutdownNativeInstance();
@@ -71,6 +74,7 @@ namespace AZ
             RHI::PhysicalDeviceList m_supportedDevices;
             VkInstanceCreateInfo m_instanceCreateInfo = {};
             VkApplicationInfo m_appInfo = {};
+            uint32_t m_instanceVersion = 0;
 
 #if defined(USE_NSIGHT_AFTERMATH)
             GpuCrashTracker m_gpuCrashHandler;
