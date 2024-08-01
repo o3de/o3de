@@ -79,30 +79,39 @@ namespace AZ
 #if defined(AZ_VULKAN_USE_DEBUG_LABELS)
             m_descriptor.m_optionalExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif
-            
-            uint32_t apiVersion = VK_API_VERSION_1_0;
-            // vkEnumerateInstanceVersion is a Vulkan 1.1 function 
+
+            uint32_t appApiVersion = VK_API_VERSION_1_0;
+            m_instanceVersion = VK_API_VERSION_1_0;
+            // vkEnumerateInstanceVersion is a Vulkan 1.1 function
             // so if it's not available we assume Vulkan 1.0
-            if (GetContext().EnumerateInstanceVersion && GetContext().EnumerateInstanceVersion(&apiVersion) != VK_SUCCESS)
+            if (GetContext().EnumerateInstanceVersion)
             {
-                AZ_Warning("Vulkan", false, "Failed to get instance version.");
-                return false;
+                if (GetContext().EnumerateInstanceVersion(&m_instanceVersion) != VK_SUCCESS)
+                {
+                    AZ_Warning("Vulkan", false, "Failed to get instance version.");
+                    return false;
+                }
+                // Vulkan 1.0 implementations were required to return VK_ERROR_INCOMPATIBLE_DRIVER if apiVersion was larger than 1.0.
+                // As long as the instance supports at least Vulkan 1.1, an application can use different versions of Vulkan with an
+                // instance than it does with a device or physical device.
+                // This version is the highest version of Vulkan that the application is designed to use.
+                appApiVersion = VK_API_VERSION_1_3;
             }
 
             AZStd::vector<uint32_t> minVersions = { s_minVulkanSupportedVersion };
-            AZStd::vector<uint32_t> maxVersions = { apiVersion };
+            AZStd::vector<uint32_t> maxVersions = { m_instanceVersion };
             InstanceRequirementBus::Broadcast(&InstanceRequirementBus::Events::CollectMinMaxVulkanAPIVersions, minVersions, maxVersions);
             uint32_t minVersion = *AZStd::minmax_element(minVersions.begin(), minVersions.end()).second;
             uint32_t maxVersion = *AZStd::minmax_element(maxVersions.begin(), maxVersions.end()).first;
-            if (apiVersion < minVersion)
+            if (m_instanceVersion < minVersion)
             {
                 AZ_Warning(
                     "Vulkan", 
                     false, 
-                    "The current Vulkan version (%d.%d.%d) is lower that the minimun required (%d.%d.%d).",
-                    VK_VERSION_MAJOR(apiVersion),
-                    VK_VERSION_MINOR(apiVersion),
-                    VK_VERSION_PATCH(apiVersion),
+                    "The current instance Vulkan version (%d.%d.%d) is lower that the minimun required (%d.%d.%d).",
+                    VK_VERSION_MAJOR(m_instanceVersion),
+                    VK_VERSION_MINOR(m_instanceVersion),
+                    VK_VERSION_PATCH(m_instanceVersion),
                     VK_VERSION_MAJOR(minVersion),
                     VK_VERSION_MINOR(minVersion),
                     VK_VERSION_PATCH(minVersion));
@@ -110,17 +119,17 @@ namespace AZ
                 return false;
             }                
 
-            if (apiVersion > maxVersion)
+            if (m_instanceVersion > maxVersion)
             {
                 // The max API version is the the maximum Vulkan Instance API version that the runtime has been tested on and is known to support.
                 // Newer Vulkan Instance API versions might work if they are compatible.
                 AZ_Warning(
                     "Vulkan",
                     false,
-                    "The current Vulkan version (%d.%d.%d) is higher than the maximun tested version (%d.%d.%d).",
-                    VK_VERSION_MAJOR(apiVersion),
-                    VK_VERSION_MINOR(apiVersion),
-                    VK_VERSION_PATCH(apiVersion),
+                    "The current instance Vulkan version (%d.%d.%d) is higher than the maximun tested version (%d.%d.%d).",
+                    VK_VERSION_MAJOR(m_instanceVersion),
+                    VK_VERSION_MINOR(m_instanceVersion),
+                    VK_VERSION_PATCH(m_instanceVersion),
                     VK_VERSION_MAJOR(maxVersion),
                     VK_VERSION_MINOR(maxVersion),
                     VK_VERSION_PATCH(maxVersion));
@@ -134,7 +143,8 @@ namespace AZ
             }
             
             m_appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-            m_appInfo.apiVersion = apiVersion;
+            m_appInfo.apiVersion = appApiVersion;
+            m_appInfo.pEngineName = "O3DE";
 
             m_instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
             m_instanceCreateInfo.pApplicationInfo = &m_appInfo;
@@ -359,6 +369,10 @@ namespace AZ
             }
 
             return m_descriptor.m_requiredExtensions;
+        }
+        const VkApplicationInfo& Instance::GetVkAppInfo() const
+        {
+            return m_appInfo;
         }
     }
 }
