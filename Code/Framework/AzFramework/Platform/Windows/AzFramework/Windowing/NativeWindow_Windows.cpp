@@ -16,6 +16,8 @@
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/string/conversions.h>
 
+#include <dbt.h>
+
 namespace AzFramework
 {
     const wchar_t* NativeWindowImpl_Win32::s_defaultClassName = L"O3DEWin32Class";
@@ -386,6 +388,12 @@ namespace AzFramework
             shouldBubbleEventUp = true;
             break;
         }
+        case WM_DEVICECHANGE:
+            if (wParam == DBT_DEVNODES_CHANGED)
+            {
+                // If any device changes were detected, broadcast to the input device notification
+                AzFramework::RawInputNotificationBusWindows::Broadcast(&AzFramework::RawInputNotificationsWindows::OnRawInputDeviceChangeEvent);
+            }
         default:
             shouldBubbleEventUp = true;
             break;
