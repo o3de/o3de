@@ -334,7 +334,8 @@ namespace AZ::Data
         void Wait()
         {
             AZ_PROFILE_SCOPE(AzCore, "WaitForAsset - %s", m_assetData.GetHint().c_str());
-            int currentWaitForAssetUpdate = 0;
+            constexpr int MaxWaitForAssetUpdateMs = 20;
+            int currentWaitForAssetUpdate = MaxWaitForAssetUpdateMs;
 
             // Continue to loop until the load completes.  (Most of the time in the loop will be spent in a thread-blocking state)
             while (!m_loadCompleted)
@@ -344,7 +345,6 @@ namespace AZ::Data
                     // The event will wake up either when the load finishes, a load job is queued for processing, or every
                     // N milliseconds to see if it should dispatch events.
                     constexpr int MaxWaitBetweenDispatchMs = 1;
-                    constexpr int MaxWaitForAssetUpdateMs = 20;
                     while (!m_waitEvent.try_acquire_for(AZStd::chrono::milliseconds(MaxWaitBetweenDispatchMs)))
                     {
 // Gruber patch begin // AE -- update log while waiting for assets
@@ -353,7 +353,7 @@ namespace AZ::Data
                         AZ::LogNotification::LogNotificatorBus::Broadcast(&AZ::LogNotification::LogNotificatorBus::Events::Update);
                         // update subscribers while waiting for assets
                         currentWaitForAssetUpdate += MaxWaitBetweenDispatchMs;
-                        if (currentWaitForAssetUpdate > MaxWaitForAssetUpdateMs)
+                        if (currentWaitForAssetUpdate >= MaxWaitForAssetUpdateMs)
                         {
                             currentWaitForAssetUpdate = 0;
                             AZ::AssetLoadNotification::AssetLoadNotificatorBus::Broadcast(&AZ::AssetLoadNotification::AssetLoadNotificatorBus::Events::WaitForAssetUpdate);

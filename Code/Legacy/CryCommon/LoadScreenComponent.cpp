@@ -283,7 +283,6 @@ void LoadScreenComponent::LevelStart()
                 LoadConfigSettings(s_globalLevelFixedFpsCvarName, s_globalLevelMaxFpsCvarName, s_globalLevelMinimumLoadTimeCvarName);
             }
         }
-
 #else
         LoadConfigSettings(s_levelFixedFpsCvarName, s_levelMaxFpsCvarName, s_levelMinimumLoadTimeCvarName);
 #endif

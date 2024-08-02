@@ -265,10 +265,7 @@ namespace LegacyLevelSystem
 
 #if defined (CARBONATED)
 #if AZ_LOADSCREENCOMPONENT_ENABLED
-        // load the level config file
-        AZStd::string levelFolderPath;
-        AZ::StringFunc::Path::GetFolderPath(validLevelName.c_str(), levelFolderPath);
-        GetISystem()->LoadConfiguration(AZStd::string::format("%s/level.cfg", levelFolderPath.c_str()).c_str());
+        ApplyLevelLoadScreenConfig(validLevelName.c_str());
         // level start event (we could not call it before UnloadLevel() call)
         EBUS_EVENT(LoadScreenBus, LevelStart);
         AZ::AssetLoadNotification::AssetLoadNotificatorBus::Handler::BusConnect();
@@ -542,15 +539,36 @@ namespace LegacyLevelSystem
     }
 
 #if defined (CARBONATED)
+    bool SpawnableLevelSystem::ApplyLevelLoadScreenConfig(const char* levelName) const
+    {
+        AZStd::string levelFolderPath;
+        AZ::StringFunc::Path::GetFolderPath(levelName, levelFolderPath);
+        // load the default load screen config file
+        ICVar* defaultLoadScreenCfgVar = gEnv->pConsole->GetCVar("default_level_config_file");
+        const AZStd::string defaultLoadScreenCfg = defaultLoadScreenCfgVar ? defaultLoadScreenCfgVar->GetString() : "";
+        if (defaultLoadScreenCfg != "")
+        {
+            GetISystem()->LoadConfiguration(defaultLoadScreenCfg.c_str());
+        }
+        // load the level config file
+        GetISystem()->LoadConfiguration(AZStd::string::format("%s/level.cfg", levelFolderPath.c_str()).c_str());
+        return true;
+    }
+
     void SpawnableLevelSystem::WaitForAssetUpdate()
     {
         if (m_queuedAssetsCount < 0)
         {
-            m_queuedAssetsCount = 0; // skip evaluation before the first asset loading diaptch 
+            m_queuedAssetsCount = 1; // skip evaluation before the first asset loading diaptch 
         }
         else
         {
-            m_queuedAssetsCount = min(m_queuedAssetsCountMax, m_queuedAssetsCount + static_cast<int>(AZ::Data::AssetBus::QueuedEventCount()) + 1);
+            m_queuedAssetsCount += static_cast<int>(AZ::Data::AssetBus::QueuedEventCount()) + 1;
+        }
+
+        if (m_queuedAssetsCountMax <= m_queuedAssetsCount)
+        {
+            m_queuedAssetsCountMax = m_queuedAssetsCount + 1;
         }
 
         // begin - progress calculation
