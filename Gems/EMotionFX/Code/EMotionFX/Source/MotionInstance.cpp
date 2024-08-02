@@ -527,7 +527,10 @@ namespace EMotionFX
     {
         // make sure the inputs are valid
         AZ_Assert(blendTimeInSeconds >= 0.0f, "Blend time has to be greater than zero.");
+#if defined(CARBONATED)
+#else
         AZ_Assert(targetWeight >= 0.0f && targetWeight <= 1.0f, "Target weight has to be between 0 and 1.");
+#endif
         m_targetWeight = AZ::GetClamp(targetWeight, 0.0f, 1.0f);
 
         if (blendTimeInSeconds > 0.0f)
