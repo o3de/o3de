@@ -28,7 +28,7 @@ $build_tools = '"build-tools;30.0.2" "build-tools;34.0.0" "tools"'
 $ndk = '"ndk;21.4.7075529" "ndk;23.1.7779620" "ndk;25.1.8937393" "ndk;25.2.9519653"'
 
 Write-Host "Installing Android SDK packages"
-$sdkmanager = "C:\AndroidSdk\cmdline-tools\bin\sdkmanager.bat"
+$sdkmanager = "$androidSdkLatestDir\bin\sdkmanager.bat"
 Start-Process -FilePath $sdkmanager -ArgumentList $android_packages -NoNewWindow -Wait
 Start-Process -FilePath $sdkmanager -ArgumentList $googleplay_packages -NoNewWindow -Wait
 Start-Process -FilePath $sdkmanager -ArgumentList $build_tools -NoNewWindow -Wait
