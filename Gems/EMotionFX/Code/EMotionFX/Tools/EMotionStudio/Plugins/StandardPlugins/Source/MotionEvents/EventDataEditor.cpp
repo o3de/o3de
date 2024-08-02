@@ -97,7 +97,7 @@ namespace EMStudio
                 {
                     if (element.m_elementId == AZ::Edit::ClassElements::EditorData)
                     {
-                        const AZ::Attribute* attribute = AZ::FindAttribute(AZ_CRC("Creatable", 0x47bff8c4), element.m_attributes);
+                        const AZ::Attribute* attribute = AZ::FindAttribute(AZ_CRC_CE("Creatable"), element.m_attributes);
                         if (!attribute)
                         {
                             continue;

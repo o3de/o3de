@@ -41,6 +41,7 @@ namespace GradientSignal
         StreamingImagePropertyAssetCtrl(QWidget* parent = nullptr);
 
         void PickAssetSelectionFromDialog(AssetSelectionModel& selection, QWidget* parent) override;
+        bool CanAcceptAsset(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType) const override;
 
     public Q_SLOTS:
         void OnAutocomplete(const QModelIndex& index) override;

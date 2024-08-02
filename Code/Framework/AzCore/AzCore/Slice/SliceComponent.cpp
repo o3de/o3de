@@ -33,7 +33,7 @@ namespace AZ
         {
             if (classElement.GetVersion() < 2)
             {
-                const int instancesIndex = classElement.FindElement(AZ_CRC("Instances", 0x7a270069));
+                const int instancesIndex = classElement.FindElement(AZ_CRC_CE("Instances"));
                 if (instancesIndex > -1)
                 {
                     auto& instancesElement = classElement.GetSubElement(instancesIndex);
@@ -265,7 +265,7 @@ namespace AZ
 
             // Make the addressing relative to InstantiatedContainer (entityDataFlags are relative to the individual entity)
             DataPatch::AddressType addressPrefix;
-            addressPrefix.push_back(AZ_CRC("Entities", 0x50ec64e5));
+            addressPrefix.push_back(AZ_CRC_CE("Entities"));
             addressPrefix.push_back(static_cast<u64>(toEntityId));
 
             for (auto& addressFlagsPair : entityDataFlags)
@@ -610,7 +610,7 @@ namespace AZ
         {
             // Make the addressing relative to InstantiatedContainer (m_dataFlags stores flags relative to the individual entity)
             DataPatch::AddressType addressPrefix;
-            addressPrefix.push_back(AZ_CRC("Entities", 0x50ec64e5));
+            addressPrefix.push_back(AZ_CRC_CE("Entities"));
             addressPrefix.push_back(static_cast<u64>(baseIdInstanceIdPair.first));
 
             for (auto& addressDataFlagsPair : m_dataFlags.GetEntityDataFlags(baseIdInstanceIdPair.second))
@@ -3074,7 +3074,7 @@ namespace AZ
     //=========================================================================
     void SliceComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("Prefab", 0xa60af5fc));
+        provided.push_back(AZ_CRC_CE("Prefab"));
     }
 
     //=========================================================================
@@ -3082,7 +3082,7 @@ namespace AZ
     //=========================================================================
     void SliceComponent::GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
+        dependent.push_back(AZ_CRC_CE("AssetDatabaseService"));
     }
 
     /**

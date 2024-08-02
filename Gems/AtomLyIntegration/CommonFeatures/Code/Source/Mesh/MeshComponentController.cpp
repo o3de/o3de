@@ -84,6 +84,7 @@ namespace AZ
                     ->Field("UseForwardPassIBLSpecular", &MeshComponentConfig::m_useForwardPassIblSpecular)
                     ->Field("IsRayTracingEnabled", &MeshComponentConfig::m_isRayTracingEnabled)
                     ->Field("IsAlwaysDynamic", &MeshComponentConfig::m_isAlwaysDynamic)
+                    ->Field("SupportRayIntersection", &MeshComponentConfig::m_enableRayIntersection)
                     ->Field("LodType", &MeshComponentConfig::m_lodType)
                     ->Field("LodOverride", &MeshComponentConfig::m_lodOverride)
                     ->Field("MinimumScreenCoverage", &MeshComponentConfig::m_minimumScreenCoverage)
@@ -440,6 +441,7 @@ namespace AZ
 
                 m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
                 MeshHandleDescriptor meshDescriptor;
+                meshDescriptor.m_entityId = m_entityComponentIdPair.GetEntityId();
                 meshDescriptor.m_modelAsset = m_configuration.m_modelAsset;
                 meshDescriptor.m_customMaterials = ConvertToCustomMaterialMap(materials);
                 meshDescriptor.m_useForwardPassIblSpecular = m_configuration.m_useForwardPassIblSpecular;
@@ -447,6 +449,7 @@ namespace AZ
                 meshDescriptor.m_isRayTracingEnabled = m_configuration.m_isRayTracingEnabled;
                 meshDescriptor.m_excludeFromReflectionCubeMaps = m_configuration.m_excludeFromReflectionCubeMaps;
                 meshDescriptor.m_isAlwaysDynamic = m_configuration.m_isAlwaysDynamic;
+                meshDescriptor.m_supportRayIntersection = m_configuration.m_enableRayIntersection || m_configuration.m_editorRayIntersection;
                 meshDescriptor.m_modelChangedEventHandler = m_modelChangedEventHandler;
                 meshDescriptor.m_objectSrgCreatedHandler = m_objectSrgCreatedHandler;
                 m_meshHandle = m_meshFeatureProcessor->AcquireMesh(meshDescriptor);
@@ -798,6 +801,7 @@ namespace AZ
                 // Copy the index and position data into the visible geometry structure.
                 AzFramework::VisibleGeometry visibleGeometry;
                 visibleGeometry.m_transform = AZ::Matrix4x4::CreateFromTransform(m_transformInterface->GetWorldTM());
+                visibleGeometry.m_transform *= AZ::Matrix4x4::CreateScale(m_cachedNonUniformScale);
 
                 // Reserve space for indices and copy data, assuming stride between elements is 0.
                 visibleGeometry.m_indices.resize_no_construct(indexBufferViewDesc.m_elementCount);

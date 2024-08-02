@@ -451,7 +451,7 @@ namespace O3DE::ProjectManager
 
     void ProjectsScreen::HandleAddProjectButton()
     {
-        QString title{ QObject::tr("Select Project Directory") };
+        QString title{ QObject::tr("Select Project File") };
         QString defaultPath;
 
         // get the default path to look for new projects in
@@ -461,12 +461,13 @@ namespace O3DE::ProjectManager
             defaultPath = engineInfoResult.GetValue().m_defaultProjectsFolder;
         }
 
-        QString path = QDir::toNativeSeparators(QFileDialog::getExistingDirectory(this, title, defaultPath));
+        QString path = QDir::toNativeSeparators(QFileDialog::getOpenFileName(this, title, defaultPath, ProjectUtils::ProjectJsonFilename.data()));
         if (!path.isEmpty())
         {
             // RegisterProject will check compatibility and prompt user to continue if issues found
             // it will also handle detailed error messaging
-            if(ProjectUtils::RegisterProject(path, this))
+            path.remove(ProjectUtils::ProjectJsonFilename.data());
+            if (ProjectUtils::RegisterProject(path, this))
             {
                 // notify the user the project was added successfully
                 emit ChangeScreenRequest(ProjectManagerScreen::Projects);

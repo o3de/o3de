@@ -28,7 +28,7 @@ namespace AzFramework
     NativeWindowImpl_Win32::NativeWindowImpl_Win32()
     {
         // Attempt to load GetDpiForWindow from user32 at runtime, available on Windows 10+ versions >= 1607
-        if (auto user32module = AZ::DynamicModuleHandle::Create("user32"); user32module->Load(false))
+        if (auto user32module = AZ::DynamicModuleHandle::Create("user32"); user32module->Load())
         {
             m_getDpiFunction = user32module->GetFunction<GetDpiForWindowType>("GetDpiForWindow");
         }
@@ -66,9 +66,10 @@ namespace AzFramework
         }
     }
 
-    void NativeWindowImpl_Win32::InitWindow(const AZStd::string& title,
-                                            const WindowGeometry& geometry,
-                                            const WindowStyleMasks& styleMasks)
+    void NativeWindowImpl_Win32::InitWindowInternal(
+        const AZStd::string& title,
+        const WindowGeometry& geometry,
+        const WindowStyleMasks& styleMasks)
     {
         const HINSTANCE hInstance = GetModuleHandle(0);
 
@@ -409,10 +410,6 @@ namespace AzFramework
             if (m_activated)
             {
                 WindowNotificationBus::Event(m_win32Handle, &WindowNotificationBus::Events::OnWindowResized, width, height);
-                if (!m_enableCustomizedResolution)
-                {
-                    WindowNotificationBus::Event(m_win32Handle, &WindowNotificationBus::Events::OnResolutionChanged, width, height);
-                }
             }
         }
     }

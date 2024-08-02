@@ -43,7 +43,7 @@ void PropertyHandlerEntityIdComboBox::ConsumeAttribute(PropertyEntityIdComboBoxC
 {
     (void)debugName;
 
-    if (attrib == AZ_CRC("EnumValue", 0xe4f32eed))
+    if (attrib == AZ_CRC_CE("EnumValue"))
     {
         AZStd::pair<AZ::EntityId, AZStd::string>  guiEnumValue;
         AZStd::pair<AZ::EntityId, AZStd::string>  enumValue;

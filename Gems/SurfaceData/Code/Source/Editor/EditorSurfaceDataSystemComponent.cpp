@@ -83,17 +83,17 @@ namespace SurfaceData
 
     void EditorSurfaceDataSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("SurfaceDataTagProviderService", 0x21e6b583));
+        provided.push_back(AZ_CRC_CE("SurfaceDataTagProviderService"));
     }
 
     void EditorSurfaceDataSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("SurfaceDataTagProviderService", 0x21e6b583));
+        incompatible.push_back(AZ_CRC_CE("SurfaceDataTagProviderService"));
     }
 
     void EditorSurfaceDataSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("SurfaceDataSystemService", 0x1d44d25f));
+        required.push_back(AZ_CRC_CE("SurfaceDataSystemService"));
     }
 
     void EditorSurfaceDataSystemComponent::Init()

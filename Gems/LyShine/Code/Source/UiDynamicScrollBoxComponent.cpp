@@ -743,7 +743,7 @@ void UiDynamicScrollBoxComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiDynamicScrollBox.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiDynamicScrollBox.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_autoRefreshOnPostActivate, "Refresh on activate",
@@ -754,7 +754,7 @@ void UiDynamicScrollBoxComponent::Reflect(AZ::ReflectContext* context)
 
             editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_variableItemElementSize, "Variable element size",
                 "Whether elements in the list can vary in size. If not, the element size is fixed and is determined by the prototype element.")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
 
             editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_autoCalculateItemElementSize, "Auto calc element size",
                 "Whether element sizes should be auto calculated or whether they should be requested.")
@@ -774,7 +774,7 @@ void UiDynamicScrollBoxComponent::Reflect(AZ::ReflectContext* context)
 
             editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_hasSections, "Enabled",
                 "Whether the list should be divided into sections with headers.")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
 
             editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_headerPrototypeElement, "Prototype header",
                 "The prototype element to be used for the section headers in the list.")
@@ -787,7 +787,7 @@ void UiDynamicScrollBoxComponent::Reflect(AZ::ReflectContext* context)
             editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_variableHeaderElementSize, "Variable header size",
                 "Whether headers in the list can vary in size. If not, the header size is fixed and is determined by the prototype element.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiDynamicScrollBoxComponent::m_hasSections)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
 
             editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_autoCalculateHeaderElementSize, "Auto calc header size",
                 "Whether header sizes should be auto calculated or whether they should be requested.")

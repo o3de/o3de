@@ -50,13 +50,16 @@ namespace AzToolsFramework
             return AssetEntryType::Root;
         }
 
-        void RootAssetBrowserEntry::Update(const char* enginePath)
+
+        void RootAssetBrowserEntry::PrepareForReset()
         {
             RemoveChildren();
-
             auto entryCache = EntryCache::GetInstance();
             entryCache->Clear();
+        }
 
+        void RootAssetBrowserEntry::Update(const char* enginePath)
+        {
             m_enginePath = AZ::IO::Path(enginePath).LexicallyNormal();
             m_projectPath = AZ::IO::Path(AZ::Utils::GetProjectPath()).LexicallyNormal();
             SetFullPath(m_enginePath);

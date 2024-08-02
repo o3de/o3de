@@ -55,6 +55,8 @@ namespace AZ
             Data::Asset<RPI::StreamingImageAsset> GetCubemapAsset() const override;
             void SetCubemapAsset(const Data::Asset<RPI::StreamingImageAsset>& cubemapAsset) override;
             void SetCubemapAssetPath(const AZStd::string& path) override;
+            void SetCubemapAssetId(AZ::Data::AssetId) override;
+            AZ::Data::AssetId GetCubemapAssetId() const override;
             AZStd::string GetCubemapAssetPath() const override;
             void SetExposure(float exposure) override;
             float GetExposure() const override;

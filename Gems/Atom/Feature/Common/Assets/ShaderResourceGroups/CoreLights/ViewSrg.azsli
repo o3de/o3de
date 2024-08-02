@@ -28,10 +28,10 @@ partial ShaderResourceGroup ViewSrg
         uint2 m_shadowmapOriginInSlice;
         uint m_shadowmapSize;
         float m_lightDistanceOfCameraViewFrustum;
-        float m_n_f_n; // n / (f - n)
-        float m_n_f;   // n - f
-        float m_f;     // f
-                       // where n: nearDepth, f: farDepth.
+        float m_nf;  // n*f
+        float m_f_n; // f - n
+        float m_f;   // f
+                     // where n: nearDepth, f: farDepth.
     };
 
     // Simple Point Lights 
@@ -45,6 +45,7 @@ partial ShaderResourceGroup ViewSrg
         bool m_affectsGI;
         uint m_lightingChannelMask;
         float2 m_padding;
+        [[pad_to(16)]]  // Here to ensure we pad the struct to 16 in case someone adds incorrect padding
     };
 
     StructuredBuffer<SimplePointLight> m_simplePointLights;
@@ -54,21 +55,28 @@ partial ShaderResourceGroup ViewSrg
 
     struct SimpleSpotLight
     {
+        float4x4 m_viewProjectionMatrix;    // Light's view projection matrix. Used to calculate uv for gobo 
         float3 m_position;
         float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
         float3 m_direction;
         float m_cosInnerConeAngle; // cosine of the outer cone angle
         float3 m_rgbIntensityCandelas;
         float m_cosOuterConeAngle; // cosine of the inner cone angle
+        uint m_shadowIndex;
+        uint m_goboTexIndex;
         float m_affectsGIFactor;
         bool m_affectsGI;
         uint m_lightingChannelMask;
-        float1 m_padding;
+        [[pad_to(16)]] // Here to ensure we pad the struct to 16 in case someone adds incorrect padding
     };
 
     StructuredBuffer<SimpleSpotLight> m_simpleSpotLights;
     uint m_simpleSpotLightCount;
-
+    Buffer<uint> m_visibleSimpleSpotLightIndices;
+    uint m_visibleSimpleSpotLightCount;
+    
+    static const uint MaxGoboTextureCount = 5;
+    Texture2D<float> m_goboTextures[MaxGoboTextureCount];
 
     // Point lights (sphere lights)
 
@@ -87,6 +95,8 @@ partial ShaderResourceGroup ViewSrg
 
     StructuredBuffer<PointLight> m_pointLights;
     uint m_pointLightCount;
+    Buffer<uint> m_visibleSimplePointLightIndices;
+    uint m_visibleSimplePointLightCount;
 
     // Projected Shadows
 
@@ -125,7 +135,7 @@ partial ShaderResourceGroup ViewSrg
         uint m_cascadeCount;
         float m_shadowBias; 
         float m_normalShadowBias; 
-        uint m_filteringSampleCount;
+        uint m_filteringSampleCountMode;
         uint m_debugFlags;
         uint m_shadowFilterMethod;
         float m_far_minus_near;

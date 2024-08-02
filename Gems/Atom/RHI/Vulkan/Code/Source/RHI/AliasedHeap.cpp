@@ -63,7 +63,7 @@ namespace AZ
             Base::ShutdownInternal();
         }
 
-        void AliasedHeap::ShutdownResourceInternal(RHI::Resource& resource)
+        void AliasedHeap::ShutdownResourceInternal(RHI::DeviceResource& resource)
         {
             if (Buffer* buffer = azrtti_cast<Buffer*>(&resource))
             {
@@ -77,7 +77,7 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode AliasedHeap::InitImageInternal(const RHI::ImageInitRequest& request, size_t heapOffset)
+        RHI::ResultCode AliasedHeap::InitImageInternal(const RHI::DeviceImageInitRequest& request, size_t heapOffset)
         {
             Image* image = static_cast<Image*>(request.m_image);
             RHI::ImageDescriptor imageDescriptor = request.m_descriptor;
@@ -96,7 +96,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode AliasedHeap::InitBufferInternal(const RHI::BufferInitRequest& request, size_t heapOffset)
+        RHI::ResultCode AliasedHeap::InitBufferInternal(const RHI::DeviceBufferInitRequest& request, size_t heapOffset)
         {
             Buffer* buffer = static_cast<Buffer*>(request.m_buffer);
             RHI::BufferDescriptor bufferDescriptor = request.m_descriptor;
@@ -113,10 +113,10 @@ namespace AZ
 
             BufferMemoryView memoryView = BufferMemoryView(bufferMemory);
 
+            buffer->SetDescriptor(bufferDescriptor);
             result = buffer->Init(GetVulkanRHIDevice(), bufferDescriptor, memoryView);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
-            buffer->SetDescriptor(bufferDescriptor);
             return RHI::ResultCode::Success;
         }
 

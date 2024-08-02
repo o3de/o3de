@@ -8,51 +8,112 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/BufferDescriptor.h>
+#include <Atom/RHI.Reflect/BufferViewDescriptor.h>
+#include <Atom/RHI/DeviceBuffer.h>
+#include <Atom/RHI/DeviceBufferView.h>
 #include <Atom/RHI/Resource.h>
-#include <Atom/RHI/BufferView.h>
 
 namespace AZ::RHI
 {
-    class MemoryStatisticsBuilder;
     class BufferFrameAttachment;
     struct BufferViewDescriptor;
-    
-    //! A buffer corresponds to a region of linear memory and used for rendering operations. The user
-    //! manages the lifecycle of a buffer through a BufferPool.
-    class Buffer
-        : public Resource
+    class BufferView;
+
+    //! A Buffer holds all Buffers across multiple devices.
+    //! The buffer descriptor will be shared across all the buffers.
+    //! The user manages the lifecycle of a Buffer through a BufferPool
+    class Buffer : public Resource
     {
         using Base = Resource;
         friend class BufferPoolBase;
+        friend class BufferPool;
+        friend class RayTracingTlas;
+        friend class TransientAttachmentPool;
+
     public:
-        AZ_RTTI(Buffer, "{3C918323-F39C-4DC6-BEE9-BC220DBA9414}", Resource);
+        AZ_CLASS_ALLOCATOR(Buffer, AZ::SystemAllocator, 0);
+        AZ_RTTI(Buffer, "{8B8A544D-7819-4677-9C47-943B821DE619}", Resource);
+        AZ_RHI_MULTI_DEVICE_OBJECT_GETTER(Buffer);
+        Buffer() = default;
         virtual ~Buffer() = default;
 
         const BufferDescriptor& GetDescriptor() const;
-            
-        //! This implementation estimates memory usage using the descriptor. Platforms may
-        //! override to report more accurate usage metrics.
-        void ReportMemoryUsage(MemoryStatisticsBuilder& builder) const override;
 
-        /// Returns the buffer frame attachment if the buffer is currently attached.
+        //! Returns the buffer frame attachment if the buffer is currently attached.
         const BufferFrameAttachment* GetFrameAttachment() const;
 
-        Ptr<BufferView> GetBufferView(const BufferViewDescriptor& bufferViewDescriptor);
+        Ptr<BufferView> BuildBufferView(const BufferViewDescriptor& bufferViewDescriptor);
 
-        // Get the hash associated with the Buffer
+        //! Get the hash associated with the Buffer
         const HashValue64 GetHash() const;
 
-    protected:
-        Buffer() = default;
+        //! Shuts down the resource by detaching it from its parent pool.
+        void Shutdown() override final;
 
+        //! Returns true if the DeviceResourceView is in the cache of all single device buffers
+        bool IsInResourceCache(const BufferViewDescriptor& bufferViewDescriptor);
+
+    protected:
         void SetDescriptor(const BufferDescriptor& descriptor);
 
     private:
+        void Invalidate();
 
-        // The RHI descriptor for this buffer.
+        //! The RHI descriptor for this Buffer.
         BufferDescriptor m_descriptor;
-
-        // A debug reference count to track use of map / unmap operations.
-        AZStd::atomic_int m_mapRefCount = {0};
     };
-}
+
+    //! A BufferView is a light-weight representation of a view onto a multi-device buffer.
+    //! It holds a raw pointer to a multi-device buffer as well as a BufferViewDescriptor
+    //! Using both, single-device BufferViews can be retrieved
+    class BufferView : public ResourceView
+    {
+    public:
+        AZ_RTTI(BufferView, "{AB366B8F-F1B7-45C6-A0D8-475D4834FAD2}", ResourceView);
+        virtual ~BufferView() = default;
+
+        BufferView(const RHI::Buffer* buffer, BufferViewDescriptor descriptor)
+            : m_buffer{ buffer }
+            , m_descriptor{ descriptor }
+        {
+        }
+
+        //! Given a device index, return the corresponding DeviceBufferView for the selected device
+        const RHI::Ptr<RHI::DeviceBufferView> GetDeviceBufferView(int deviceIndex) const;
+
+        //! Return the contained multi-device buffer
+        const RHI::Buffer* GetBuffer() const
+        {
+            return m_buffer.get();
+        }
+
+        //! Return the contained BufferViewDescriptor
+        const BufferViewDescriptor& GetDescriptor() const
+        {
+            return m_descriptor;
+        }
+
+        const Resource* GetResource() const override
+        {
+            return m_buffer.get();
+        }
+
+        const DeviceResourceView* GetDeviceResourceView(int deviceIndex) const override
+        {
+            return GetDeviceBufferView(deviceIndex).get();
+        }
+
+    private:
+        //! Safe-guard access to DeviceBufferView cache during parallel access
+        mutable AZStd::mutex m_bufferViewMutex;
+        //! A raw pointer to a multi-device buffer
+        ConstPtr<RHI::Buffer> m_buffer;
+        //! The corresponding BufferViewDescriptor for this view.
+        BufferViewDescriptor m_descriptor;
+        //! DeviceBufferView cache
+        //! This cache is necessary as the caller receives raw pointers from the ResourceCache, 
+        //! which now, with multi-device objects in use, need to be held in memory as long as
+        //! the multi-device view is held.
+        mutable AZStd::unordered_map<int, Ptr<RHI::DeviceBufferView>> m_cache;
+    };
+} // namespace AZ::RHI

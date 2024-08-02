@@ -90,7 +90,8 @@ namespace AZ
                                    uint32_t order,
                                    const ShaderOptionValues& nameIndexList,
                                    const Name& defaultValue = {},
-                                   uint32_t cost = 0);
+                                   uint32_t cost = 0,
+                                   int specializationId = -1);
 
             AZ_DEFAULT_COPY_MOVE(ShaderOptionDescriptor);
 
@@ -104,6 +105,9 @@ namespace AZ
             uint32_t GetOrder() const;
 
             uint32_t GetCostEstimate() const;
+
+            //! Return the specialization id. -1 if this option can't be specialize.
+            int GetSpecializationId() const;
 
             //! Returns the mask comprising bits specific to this option.
             ShaderVariantKey GetBitMask() const;
@@ -192,6 +196,7 @@ namespace AZ
             uint32_t m_bitCount = 0;
             uint32_t m_order = 0;          //!< The order (or rank) of the shader option dictates its priority. Lower order (rank) is higher priority.
             uint32_t m_costEstimate = 0;
+            int m_specializationId = -1; //< Specialization id. A value of -1 means no specialization.
             ShaderVariantKey m_bitMask;
             ShaderVariantKey m_bitMaskNot;
 
@@ -263,6 +268,13 @@ namespace AZ
 
             HashValue64 GetHash() const;
 
+            //! Returns true if all shader options of the layout are using specialization constants. Please note that each
+            //! supervariant can have specialization constants off even if the layout is IsFullySpecialized.
+            bool IsFullySpecialized() const;
+
+            //! Returns true if at least one shader option is using specialization constant.
+            bool UseSpecializationConstants() const;
+
         private:
             ShaderOptionGroupLayout() = default;
 
@@ -281,6 +293,11 @@ namespace AZ
             using NameReflectionMapForOptions = RHI::NameIdReflectionMap<ShaderOptionIndex>;
             NameReflectionMapForOptions m_nameReflectionForOptions;
             HashValue64 m_hash = HashValue64{ 0 };
+
+            // True if all shader options are using specialization constants
+            bool m_isFullySpecialized = false;
+            // True if at least one shader options is using specialization constants
+            bool m_useSpecializationConstants = false;
         };
     } // namespace RPI
 

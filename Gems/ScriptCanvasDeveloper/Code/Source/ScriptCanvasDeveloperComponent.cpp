@@ -49,7 +49,7 @@ namespace ScriptCanvas::Developer
 
     void SystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ScriptCanvasDeveloperService", 0xd2edba67));
+        provided.push_back(AZ_CRC_CE("ScriptCanvasDeveloperService"));
     }
 
 

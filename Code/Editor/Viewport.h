@@ -18,9 +18,8 @@
 #include "IPostRenderer.h"
 #include "Include/IDisplayViewport.h"
 #include "Include/SandboxAPI.h"
-
-#include <QMenu>
 #include <QPointer>
+#include <QMenu>
 
 #if defined(Q_OS_WIN)
 #include <QtWinExtras/qwinfunctions.h>
@@ -36,11 +35,9 @@ namespace AzQtComponents
 }
 
 // forward declarations.
-class CBaseObject;
 class CCryEditDoc;
 class CLayoutViewPane;
 class CViewManager;
-class CBaseObjectsCache;
 struct HitContext;
 class CImageEx;
 class QMenu;
@@ -563,7 +560,6 @@ protected:
     QCursor m_hCurrCursor;
 
     //! Mouse is over this object.
-    CBaseObject* m_pMouseOverObject;
     QString m_cursorStr;
     QString m_cursorSupplementaryStr;
 

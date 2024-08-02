@@ -18,6 +18,16 @@
 #include <AzCore/std/time.h>
 #include <ScriptCanvas/Execution/ExecutionStateDeclarations.h>
 
+#if defined(SC_EXECUTION_TRACE_ENABLED)
+#define SC_EXECUTION_TRACE_THREAD_BEGUN(arg) ;
+#define SC_EXECUTION_TRACE_THREAD_ENDED(arg) ;
+#define SC_EXECUTION_TRACE_GRAPH_ACTIVATED(arg) ScriptCanvas::ExecutionNotificationsBus::Broadcast(&ScriptCanvas::ExecutionNotifications::GraphActivated, arg);
+#define SC_EXECUTION_TRACE_GRAPH_DEACTIVATED(arg) ScriptCanvas::ExecutionNotificationsBus::Broadcast(&ScriptCanvas::ExecutionNotifications::GraphDeactivated, arg);
+#define SC_EXECUTION_TRACE_SIGNAL_INPUT(node, arg) if (IsGraphObserved(node.GetGraphEntityId(), node.GetGraphIdentifier())) { ScriptCanvas::ExecutionNotificationsBus::Broadcast(&ScriptCanvas::ExecutionNotifications::NodeSignaledInput, arg); }
+#define SC_EXECUTION_TRACE_SIGNAL_OUTPUT(node, arg) if (IsGraphObserved(node.GetGraphEntityId(), node.GetGraphIdentifier())) { ScriptCanvas::ExecutionNotificationsBus::Broadcast(&ScriptCanvas::ExecutionNotifications::NodeSignaledOutput, arg); }
+#define SC_EXECUTION_TRACE_VARIABLE_CHANGE(id, arg) if (IsVariableObserved(id)) { ScriptCanvas::ExecutionNotificationsBus::Broadcast(&ScriptCanvas::ExecutionNotifications::VariableChanged, arg); } 
+#define SC_EXECUTION_TRACE_ANNOTATE_NODE(node, arg) if (IsGraphObserved(node.GetGraphEntityId(), node.GetGraphIdentifier())) { ScriptCanvas::ExecutionNotificationsBus::Broadcast(&ScriptCanvas::ExecutionNotifications::AnnotateNode, arg); }
+#else
 #define SC_EXECUTION_TRACE_THREAD_BEGUN(arg) ;
 #define SC_EXECUTION_TRACE_THREAD_ENDED(arg) ;
 #define SC_EXECUTION_TRACE_GRAPH_ACTIVATED(arg) ;
@@ -26,6 +36,7 @@
 #define SC_EXECUTION_TRACE_SIGNAL_OUTPUT(node, arg) ;
 #define SC_EXECUTION_TRACE_VARIABLE_CHANGE(id, arg) ;
 #define SC_EXECUTION_TRACE_ANNOTATE_NODE(node, arg) ;
+#endif
 
 namespace AZ
 {

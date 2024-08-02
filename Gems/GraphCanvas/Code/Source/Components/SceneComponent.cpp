@@ -1033,7 +1033,7 @@ namespace GraphCanvas
     {
         if (classElement.GetVersion() == 1)
         {
-            AZ::Crc32 typeId = AZ_CRC("Type", 0x8cde5729);
+            AZ::Crc32 typeId = AZ_CRC_CE("Type");
 
             AZ::SerializeContext::DataElementNode* dataNode = classElement.FindSubElement(typeId);
 

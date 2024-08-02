@@ -116,7 +116,7 @@ namespace AZ
 
         void ImageAttachmentCopy::BuildCommandList(const RHI::FrameGraphExecuteContext& context)
         {
-            context.GetCommandList()->Submit(m_copyItem);
+            context.GetCommandList()->Submit(m_copyItem.GetDeviceCopyItem(context.GetDeviceIndex()));
         }
 
         Ptr<ImageAttachmentPreviewPass> ImageAttachmentPreviewPass::Create(const PassDescriptor& descriptor)
@@ -234,7 +234,7 @@ namespace AZ
                 // unbind previous binded image views
                 m_passSrg->SetImageView(previewInfo.m_imageInput, nullptr, 0);
 
-                previewInfo.m_item.m_pipelineState = nullptr;
+                previewInfo.m_item.SetPipelineState(nullptr);
                 previewInfo.m_imageCount = 0;
             }
             m_passSrgChanged = true;
@@ -324,7 +324,7 @@ namespace AZ
 
                 shaderOption.SetValue(AZ::Name(optionName), AZ::Name(optionValues[index]));
 
-                m_shader->GetVariant(shaderOption.GetShaderVariantId()).ConfigurePipelineState(pipelineDesc);
+                m_shader->GetVariant(shaderOption.GetShaderVariantId()).ConfigurePipelineState(pipelineDesc, shaderOption);
                 pipelineDesc.m_renderAttachmentConfiguration.m_renderAttachmentLayout = attachmentsLayout;
                 pipelineDesc.m_inputStreamLayout = inputStreamLayout;
                 previewInfo.m_shaderVariantKeyFallback = shaderOption.GetShaderVariantKeyFallbackValue();
@@ -417,7 +417,7 @@ namespace AZ
                 RHI::ImageAspectFlags::Depth : RHI::ImageAspectFlags::Color;
 
             auto scopeAttachmentDesc = RHI::ImageScopeAttachmentDescriptor{ m_imageAttachmentId, imageViewDesc};
-            frameGraph.UseAttachment(scopeAttachmentDesc, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentUsage::Shader);
+            frameGraph.UseAttachment(scopeAttachmentDesc, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentUsage::Shader, RHI::ScopeAttachmentStage::FragmentShader);
 
             // output attachment
             frameGraph.UseColorAttachment(RHI::ImageScopeAttachmentDescriptor{ m_outputColorAttachment->GetAttachmentId() });
@@ -445,7 +445,7 @@ namespace AZ
                 }
                 else
                 {
-                    const RHI::ImageDescriptor& desc = inputImageView->GetImage().GetDescriptor();
+                    const RHI::ImageDescriptor& desc = inputImageView->GetImage()->GetDescriptor();
                     aspectRatio = desc.m_size.m_width / static_cast<float>(desc.m_size.m_height);
 
                     if (desc.m_dimension == RHI::ImageDimension::Image2D)
@@ -482,11 +482,11 @@ namespace AZ
                 RHI::Format outputFormat = outputImageView->GetDescriptor().m_overrideFormat;
                 if (outputFormat == RHI::Format::Unknown)
                 {
-                    outputFormat = outputImageView->GetImage().GetDescriptor().m_format;
+                    outputFormat = outputImageView->GetImage()->GetDescriptor().m_format;
                 }
                 
                 // Base viewport and scissor off of output attachment
-                RHI::Size targetImageSize = outputImageView->GetImage().GetDescriptor().m_size;
+                RHI::Size targetImageSize = outputImageView->GetImage()->GetDescriptor().m_size;
 
                 float width = m_size.GetX() * targetImageSize.m_width;
                 float height = m_size.GetY() * targetImageSize.m_height;
@@ -524,14 +524,14 @@ namespace AZ
                         continue;
                     }
                     previewInfo.m_pipelineStateDescriptor.m_renderAttachmentConfiguration.m_renderAttachmentLayout.m_attachmentFormats[0] = outputFormat;
-                    previewInfo.m_pipelineStateDescriptor.m_renderStates.m_multisampleState = outputImageView->GetImage().GetDescriptor().m_multisampleState;
+                    previewInfo.m_pipelineStateDescriptor.m_renderStates.m_multisampleState = outputImageView->GetImage()->GetDescriptor().m_multisampleState;
 
                     // draw each image by using instancing
                     RHI::DrawLinear drawLinear;
                     drawLinear.m_vertexCount = 4;
                     drawLinear.m_instanceCount = previewInfo.m_imageCount;
-                    previewInfo.m_item.m_arguments = RHI::DrawArguments(drawLinear);
-                    previewInfo.m_item.m_pipelineState = m_shader->AcquirePipelineState(previewInfo.m_pipelineStateDescriptor);
+                    previewInfo.m_item.SetArguments(RHI::DrawArguments(drawLinear));
+                    previewInfo.m_item.SetPipelineState(m_shader->AcquirePipelineState(previewInfo.m_pipelineStateDescriptor));
                 }
             }
         }
@@ -544,7 +544,7 @@ namespace AZ
             commandList->SetScissor(m_scissor);
 
             // submit srg
-            commandList->SetShaderResourceGroupForDraw(*m_passSrg->GetRHIShaderResourceGroup());
+            commandList->SetShaderResourceGroupForDraw(*m_passSrg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()));
 
             // submit draw call
             for (uint32_t index = context.GetSubmitRange().m_startIndex; index < context.GetSubmitRange().m_endIndex; ++index)
@@ -552,7 +552,7 @@ namespace AZ
                 const ImageTypePreviewInfo& previewInfo = m_imageTypePreviewInfo[index];
                 if (previewInfo.m_imageCount > 0)
                 {
-                    commandList->Submit(previewInfo.m_item, index);
+                    commandList->Submit(previewInfo.m_item.GetDeviceDrawItem(context.GetDeviceIndex()), index);
                 }
             }
         }

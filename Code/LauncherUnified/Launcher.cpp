@@ -445,6 +445,12 @@ namespace O3DELauncher
         gameApplication.SetHeadless(false);
 #endif // O3DE_HEADLESS_SERVER
 
+#if AZ_TRAIT_CONSOLE_MODE_SUPPORT
+        gameApplication.SetConsoleModeSupported(true);
+#else
+        gameApplication.SetConsoleModeSupported(false);
+#endif // AZ_TRAIT_CONSOLE_MODE_SUPPORT
+
         // Finally add the "launcher" specialization tag into the Settings Registry
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddSpecialization(*settingsRegistry, LauncherFilenameTag);
 
@@ -563,7 +569,7 @@ namespace O3DELauncher
     #if !defined(AZ_MONOLITHIC_BUILD)
         constexpr const char* crySystemLibraryName = AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX  "CrySystem" AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION;
         AZStd::unique_ptr<AZ::DynamicModuleHandle> crySystemLibrary = AZ::DynamicModuleHandle::Create(crySystemLibraryName);
-        if (crySystemLibrary->Load(true))
+        if (crySystemLibrary->Load(AZ::DynamicModuleHandle::LoadFlags::InitFuncRequired))
         {
             PFNCREATESYSTEMINTERFACE CreateSystemInterface =
                 crySystemLibrary->GetFunction<PFNCREATESYSTEMINTERFACE>("CreateSystemInterface");

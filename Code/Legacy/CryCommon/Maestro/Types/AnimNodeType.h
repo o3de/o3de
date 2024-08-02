@@ -22,7 +22,7 @@ enum class AnimNodeType
     Invalid                   = 0x00,
     Entity                    = 0x01,       // Legacy Cry Entities (CE is AzEntity)
     Director                  = 0x02,
-    Camera                    = 0x03,       // Legacy Cry Camera Object
+    //Camera                    = 0x03,       // Legacy Cry Camera Object
     CVar                      = 0x04,
     ScriptVar                 = 0x05,
     Material                  = 0x06,

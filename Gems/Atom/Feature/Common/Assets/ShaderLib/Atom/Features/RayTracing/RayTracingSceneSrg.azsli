@@ -53,16 +53,19 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
     // simple spot lights
     struct SimpleSpotLight
     {
+        float4x4 m_viewProjectionMatrix;    // Light's view projection matrix. Used to calculate uv for gobo 
         float3 m_position;
         float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
         float3 m_direction;
         float m_cosInnerConeAngle; // cosine of the outer cone angle
         float3 m_rgbIntensityCandelas;
         float m_cosOuterConeAngle; // cosine of the inner cone angle
+        uint m_shadowIndex;
+        uint m_goboTexIndex;
         float m_affectsGIFactor;
         bool m_affectsGI;
         uint m_lightingChannelMask;
-        float m_padding;
+        [[pad_to(16)]] // Here to ensure we pad the struct to 16 in case someone adds incorrect padding
     };
 
     StructuredBuffer<SimpleSpotLight> m_simpleSpotLights;
@@ -202,6 +205,9 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
     #define MESH_BUFFER_FLAG_TANGENT        (1 << 0)
     #define MESH_BUFFER_FLAG_BITANGENT      (1 << 1)
     #define MESH_BUFFER_FLAG_UV             (1 << 2)
+
+    // Specifies which debug visualization to use (value must be from RayTracingDebugViewMode enum)
+    uint m_debugViewMode;
 
 #if !USE_BINDLESS_SRG
     // Unbounded array of mesh stream buffers:

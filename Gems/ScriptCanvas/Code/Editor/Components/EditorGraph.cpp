@@ -130,13 +130,13 @@ namespace ScriptCanvasEditor
 
         if (rootDataElementNode.GetVersion() < 7)
         {
-            rootDataElementNode.RemoveElementByName(AZ_CRC("m_pureDataNodesConvertedToVariables", 0x8823e2c4));
+            rootDataElementNode.RemoveElementByName(AZ_CRC_CE("m_pureDataNodesConvertedToVariables"));
         }
 
         // Always check and remove this unused field to keep asset clean
-        if (rootDataElementNode.FindElement(AZ_CRC("unitTestNodesConverted", 0x4389126a)) != -1)
+        if (rootDataElementNode.FindElement(AZ_CRC_CE("unitTestNodesConverted")) != -1)
         {
-            rootDataElementNode.RemoveElementByName(AZ_CRC("unitTestNodesConverted", 0x4389126a));
+            rootDataElementNode.RemoveElementByName(AZ_CRC_CE("unitTestNodesConverted"));
         }
         return true;
     }
@@ -1451,6 +1451,28 @@ namespace ScriptCanvasEditor
             else if (slotType.IS_A(ScriptCanvas::Data::Type::AssetId()))
             {
                 dataInterface = aznew ScriptCanvasAssetIdDataInterface(scriptCanvasNodeId, scriptCanvasSlotId);
+                if (ScriptCanvas::Nodes::Core::Method* method = azrtti_cast<ScriptCanvas::Nodes::Core::Method*>(slot->GetNode()))
+                {
+                    // Try to find the AssetType attribute
+                    if (AZ::Attribute* assetTypeAttribute = FindAttribute(AZ::Script::Attributes::AssetType, method->GetMethod()->m_attributes))
+                    {
+                        AZ::AttributeReader attributeReader(nullptr, assetTypeAttribute);
+                        AZ::Data::AssetType assetType;
+                        attributeReader.Read<AZ::Data::AssetType>(assetType);
+                        ScriptCanvasAssetIdDataInterface* assetIdinterface = static_cast<ScriptCanvasAssetIdDataInterface*>(dataInterface);
+                        assetIdinterface->SetAssetType(assetType);
+                    }
+
+                    if (AZ::Attribute* sourceAssetFilterAttribute = FindAttribute(AZ::Edit::Attributes::SourceAssetFilterPattern, method->GetMethod()->m_attributes))
+                    {
+                        AZ::AttributeReader attributeReader(nullptr, sourceAssetFilterAttribute);
+                        AZStd::string filterPattern;
+                        attributeReader.Read<AZStd::string>(filterPattern);
+                        ScriptCanvasAssetIdDataInterface* assetIdinterface = static_cast<ScriptCanvasAssetIdDataInterface*>(dataInterface);
+                        assetIdinterface->SetStringFilter(filterPattern);
+                    }
+                }
+
                 GraphCanvas::GraphCanvasRequestBus::BroadcastResult(dataDisplay, &GraphCanvas::GraphCanvasRequests::CreateAssetIdNodePropertyDisplay, static_cast<GraphCanvas::AssetIdDataInterface*>(dataInterface));
             }
             else if (slotType.IS_A(ScriptCanvas::Data::Type::BehaviorContextObject(ScriptCanvas::GraphScopedVariableId::TYPEINFO_Uuid())))

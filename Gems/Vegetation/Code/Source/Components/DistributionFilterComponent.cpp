@@ -47,8 +47,8 @@ namespace Vegetation
                     ->UIElement("GradientPreviewer", "Previewer")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                    ->Attribute(AZ_CRC("GradientSampler", 0xaec97010), &DistributionFilterConfig::GetSampler)
-                    ->Attribute(AZ_CRC("GradientFilter", 0x99bf0362), &DistributionFilterConfig::GetFilterFunc)
+                    ->Attribute(AZ_CRC_CE("GradientSampler"), &DistributionFilterConfig::GetSampler)
+                    ->Attribute(AZ_CRC_CE("GradientFilter"), &DistributionFilterConfig::GetFilterFunc)
                     ->EndGroup()
 
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DistributionFilterConfig::m_filterStage, "Filter Stage", "Determines if filter is applied before (PreProcess) or after (PostProcess) modifiers.")
@@ -96,18 +96,18 @@ namespace Vegetation
 
     void DistributionFilterComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationFilterService", 0x9f97cc97));
-        services.push_back(AZ_CRC("VegetationDistributionFilterService", 0x700e73eb));
+        services.push_back(AZ_CRC_CE("VegetationFilterService"));
+        services.push_back(AZ_CRC_CE("VegetationDistributionFilterService"));
     }
 
     void DistributionFilterComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationDistributionFilterService", 0x700e73eb));
+        services.push_back(AZ_CRC_CE("VegetationDistributionFilterService"));
     }
 
     void DistributionFilterComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationAreaService", 0x6a859504));
+        services.push_back(AZ_CRC_CE("VegetationAreaService"));
     }
 
     void DistributionFilterComponent::Reflect(AZ::ReflectContext* context)

@@ -37,13 +37,13 @@ namespace GameState
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void GameStateSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("GameStateService"));
+        provided.push_back(AZ_CRC_CE("GameStateService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void GameStateSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("GameStateService"));
+        incompatible.push_back(AZ_CRC_CE("GameStateService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

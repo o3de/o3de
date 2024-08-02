@@ -327,7 +327,7 @@ namespace Terrain
         desc.m_imageViewDescriptor = clipmap->GetImageView()->GetDescriptor();
         desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
         desc.m_attachmentId = clipmap->GetAttachmentId();
-        frameGraph.UseShaderAttachment(desc, access);
+        frameGraph.UseShaderAttachment(desc, access, AZ::RHI::ScopeAttachmentStage::ComputeShader);
     }
 
     void TerrainClipmapManager::QueryMacroClipmapStackSize()

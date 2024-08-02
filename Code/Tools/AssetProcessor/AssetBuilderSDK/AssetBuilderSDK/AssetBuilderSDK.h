@@ -109,7 +109,7 @@ namespace AssetBuilderSDK
     namespace ComponentTags
     {
         //! Components with the AssetBuilder tag in their reflect data's attributes as AZ::Edit::Attributes::SystemComponetTags will automatically be created on AssetBuilder startup
-        const static AZ::Crc32 AssetBuilder = AZ_CRC("AssetBuilder", 0xc739c7d7);
+        const static AZ::Crc32 AssetBuilder = AZ_CRC_CE("AssetBuilder");
     }
 
     extern const char* const ErrorWindow; //Use this window name to log error messages.

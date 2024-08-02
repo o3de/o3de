@@ -50,9 +50,6 @@
 #include "ToolBox.h"
 #include "MainWindow.h"
 #include "Settings.h"
-#include "Include/IObjectManager.h"
-#include "Include/ISourceControl.h"
-#include "Objects/ObjectManager.h"
 
 #include "EditorFileMonitor.h"
 #include "MainStatusBar.h"
@@ -85,9 +82,7 @@ CEditorImpl::CEditorImpl()
     : m_operationMode(eOperationModeNone)
     , m_pSystem(nullptr)
     , m_pFileUtil(nullptr)
-    , m_pClassFactory(nullptr)
     , m_pCommandManager(nullptr)
-    , m_pObjectManager(nullptr)
     , m_pPluginManager(nullptr)
     , m_pViewManager(nullptr)
     , m_pUndoManager(nullptr)
@@ -106,7 +101,6 @@ CEditorImpl::CEditorImpl()
     , m_pMusicManager(nullptr)
     , m_pErrorReport(nullptr)
     , m_pLasLoadedLevelErrorReport(nullptr)
-    , m_pSourceControl(nullptr)
     , m_pSelectionTreeManager(nullptr)
     , m_pConsoleSync(nullptr)
     , m_pSettingsManager(nullptr)
@@ -129,14 +123,12 @@ CEditorImpl::CEditorImpl()
     gSettings.Load();
 
     m_pErrorReport = new CErrorReport;
-    m_pClassFactory = CClassFactory::Instance();
     m_pCommandManager = new CEditorCommandManager;
     m_pEditorFileMonitor.reset(new CEditorFileMonitor());
     m_pDisplaySettings = new CDisplaySettings;
     m_pDisplaySettings->LoadRegistry();
     m_pPluginManager = new CPluginManager;
 
-    m_pObjectManager = new CObjectManager;
     m_pViewManager = new CViewManager;
     m_pUndoManager = new CUndoManager;
     m_pToolBoxManager = new CToolBoxManager;
@@ -212,10 +204,6 @@ void CEditorImpl::UnloadPlugins()
     AZ::Data::AssetBus::ExecuteQueuedEvents();
     AZ::TickBus::ExecuteQueuedEvents();
 
-    // first, stop anyone from accessing plugins that provide things like source control.
-    // note that m_psSourceControl is re-queried
-    m_pSourceControl = nullptr;
-
     // Send this message to ensure that any widgets queued for deletion will get deleted before their
     // plugin containing their vtable is unloaded. If not, access violations can occur
     QCoreApplication::sendPostedEvents(Q_NULLPTR, QEvent::DeferredDelete);
@@ -261,10 +249,8 @@ CEditorImpl::~CEditorImpl()
 {
     gSettings.Save();
     m_bExiting = true; // Can't save level after this point (while Crash)
-    SAFE_RELEASE(m_pSourceControl);
 
     SAFE_DELETE(m_pViewManager)
-    SAFE_DELETE(m_pObjectManager) // relies on prefab manager
 
     SAFE_DELETE(m_pPluginManager)
     SAFE_DELETE(m_pAnimationContext) // relies on undo manager
@@ -278,7 +264,6 @@ CEditorImpl::~CEditorImpl()
     SAFE_DELETE(m_pDisplaySettings)
     SAFE_DELETE(m_pToolBoxManager)
     SAFE_DELETE(m_pCommandManager)
-    SAFE_DELETE(m_pClassFactory)
     SAFE_DELETE(m_pLasLoadedLevelErrorReport)
 
     SAFE_DELETE(m_pSettingsManager);
@@ -317,8 +302,6 @@ void CEditorImpl::SetGameEngine(CGameEngine* ge)
     InitializeEditorCommonISystem(m_pSystem);
 
     m_templateRegistry.LoadTemplates("Editor");
-    m_pObjectManager->LoadClassTemplates("Editor");
-    m_pObjectManager->RegisterCVars();
 
     m_pAnimationContext->Init();
 }
@@ -364,10 +347,6 @@ ISystem* CEditorImpl::GetSystem()
     return m_pSystem;
 }
 
-IEditorClassFactory* CEditorImpl::GetClassFactory()
-{
-    return m_pClassFactory;
-}
 
 CCryEditDoc* CEditorImpl::GetDocument() const
 {
@@ -561,39 +540,6 @@ RefCoordSys CEditorImpl::GetReferenceCoordSys()
     return m_refCoordsSys;
 }
 
-CBaseObject* CEditorImpl::NewObject(const char* typeName, const char* fileName, const char* name, float x, float y, float z, bool modifyDoc)
-{
-    CUndo undo("Create new object");
-
-    IEditor* editor = GetIEditor();
-    if (modifyDoc)
-    {
-        editor->SetModifiedFlag();
-        editor->SetModifiedModule(eModifiedBrushes);
-    }
-    CBaseObject* object = editor->GetObjectManager()->NewObject(typeName, nullptr, fileName, name);
-    if (!object)
-    {
-        return nullptr;
-    }
-
-    object->SetPos(Vec3(x, y, z));
-
-    return object;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CEditorImpl::DeleteObject(CBaseObject* obj)
-{
-    SetModifiedFlag();
-    GetIEditor()->SetModifiedModule(eModifiedBrushes);
-    GetObjectManager()->DeleteObject(obj);
-}
-
-IObjectManager* CEditorImpl::GetObjectManager()
-{
-    return m_pObjectManager;
-};
 
 CSettingsManager* CEditorImpl::GetSettingsManager()
 {
@@ -716,20 +662,6 @@ bool CEditorImpl::SetViewFocus(const char* sViewClassName)
         return true;
     }
     return false;
-}
-
-bool CEditorImpl::CloseView(const char* sViewClassName)
-{
-    return QtViewPaneManager::instance()->ClosePane(sViewClassName);
-}
-
-void CEditorImpl::CloseView(const GUID& classId)
-{
-    IClassDesc* found = GetClassFactory()->FindClass(classId);
-    if (found)
-    {
-        CloseView(found->ClassName().toUtf8().data());
-    }
 }
 
 bool CEditorImpl::SelectColor(QColor& color, QWidget* parent)
@@ -969,7 +901,7 @@ bool CEditorImpl::ExecuteConsoleApp(const QString& CommandLine, QString& OutputT
 
     // Wait for the process to finish
     process.waitForFinished();
-    
+
     OutputText += process.readAllStandardOutput();
     OutputText += process.readAllStandardError();
 
@@ -1235,55 +1167,6 @@ void CEditorImpl::UnregisterNotifyListener(IEditorNotifyListener* listener)
     listener->m_bIsRegistered = false;
 }
 
-ISourceControl* CEditorImpl::GetSourceControl()
-{
-    AZStd::scoped_lock lock(m_pluginMutex);
-
-    if (m_pSourceControl)
-    {
-        return m_pSourceControl;
-    }
-
-    IEditorClassFactory* classFactory = GetIEditor() ? GetIEditor()->GetClassFactory() : nullptr;
-    if (classFactory)
-    {
-        std::vector<IClassDesc*> classes;
-        classFactory->GetClassesBySystemID(ESYSTEM_CLASS_SCM_PROVIDER, classes);
-        for (int i = 0; i < classes.size(); i++)
-        {
-            IClassDesc* pClass = classes[i];
-            ISourceControl* pSCM = nullptr;
-            HRESULT hRes = pClass->QueryInterface(__az_uuidof(ISourceControl), (void**)&pSCM);
-            if (!FAILED(hRes) && pSCM)
-            {
-                m_pSourceControl = pSCM;
-                return m_pSourceControl;
-            }
-        }
-    }
-
-    return nullptr;
-}
-
-bool CEditorImpl::IsSourceControlAvailable()
-{
-    if ((gSettings.enableSourceControl) && (GetSourceControl()))
-    {
-        return true;
-    }
-
-    return false;
-}
-
-bool CEditorImpl::IsSourceControlConnected()
-{
-    if ((gSettings.enableSourceControl) && (GetSourceControl()) && (GetSourceControl()->GetConnectivityState() == ISourceControl::Connected))
-    {
-        return true;
-    }
-
-    return false;
-}
 
 void CEditorImpl::ShowStatusText(bool bEnable)
 {
@@ -1294,7 +1177,6 @@ void CEditorImpl::ReduceMemory()
 {
     GetIEditor()->GetUndoManager()->ClearRedoStack();
     GetIEditor()->GetUndoManager()->ClearUndoStack();
-    GetIEditor()->GetObjectManager()->SendEvent(EVENT_FREE_GAME_DATA);
 
 #if defined(AZ_PLATFORM_WINDOWS)
     HANDLE hHeap = GetProcessHeap();
@@ -1344,19 +1226,6 @@ void CEditorImpl::CmdPy(IConsoleCmdArgs* pArgs)
     {
         AZ_Warning("python", false, "EditorPythonRunnerRequestBus has no handlers");
     }
-}
-
-void CEditorImpl::OnObjectContextMenuOpened(QMenu* pMenu, const CBaseObject* pObject)
-{
-    for (auto it : m_objectContextMenuExtensions)
-    {
-        it(pMenu, pObject);
-    }
-}
-
-void CEditorImpl::RegisterObjectContextMenuExtension(TContextMenuExtensionFunc func)
-{
-    m_objectContextMenuExtensions.push_back(func);
 }
 
 // Vladimir@Conffx

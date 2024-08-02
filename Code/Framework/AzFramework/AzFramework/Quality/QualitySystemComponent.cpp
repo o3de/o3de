@@ -372,12 +372,12 @@ namespace AzFramework
 
     void QualitySystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("QualitySystemComponentService"));
+        provided.push_back(AZ_CRC_CE("QualitySystemComponentService"));
     }
 
     void QualitySystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("QualitySystemComponentService"));
+        incompatible.push_back(AZ_CRC_CE("QualitySystemComponentService"));
     }
 
     void QualitySystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)

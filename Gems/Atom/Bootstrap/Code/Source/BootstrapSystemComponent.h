@@ -72,6 +72,7 @@ namespace AZ
                 void SwitchRenderPipeline(const AZ::RPI::RenderPipelineDescriptor& newRenderPipelineDesc, AZ::RPI::ViewportContextPtr viewportContext) override;
                 void SwitchAntiAliasing(const AZStd::string& newAntiAliasing, AZ::RPI::ViewportContextPtr viewportContext) override;
                 void SwitchMultiSample(const uint16_t newSampleCount, AZ::RPI::ViewportContextPtr viewportContext) override;
+                void RefreshWindowResolution() override;
 
             protected:
                 // Component overrides ...
@@ -80,6 +81,7 @@ namespace AZ
 
                 // WindowNotificationBus::Handler overrides ...
                 void OnWindowClosed() override;
+                void OnWindowResized(uint32_t width, uint32_t height) override;
 
                 // TickBus::Handler overrides ...
                 void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
@@ -110,8 +112,6 @@ namespace AZ
                     AZStd::string_view xrPipelineName,
                     AZ::RPI::ViewType viewType,
                     AZ::RHI::MultisampleState& multisampleState);
-
-                AzFramework::WindowSize GetWindowResolution() const;
 
                 AzFramework::Scene::RemovalEvent::Handler m_sceneRemovalHandler;
 

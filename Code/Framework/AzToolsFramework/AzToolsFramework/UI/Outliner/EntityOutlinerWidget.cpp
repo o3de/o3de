@@ -875,10 +875,12 @@ namespace AzToolsFramework
 
     void EntityOutlinerWidget::OnSelectEntity(const AZ::EntityId& entityId, bool selected)
     {
+        bool selectionChanged = false;
         if (selected)
         {
             if (m_entitiesSelectedByOutliner.find(entityId) == m_entitiesSelectedByOutliner.end())
             {
+                selectionChanged = true;
                 m_entitiesToSelect.insert(entityId);
                 m_entitiesToDeselect.erase(entityId);
             }
@@ -887,11 +889,15 @@ namespace AzToolsFramework
         {
             if (m_entitiesDeselectedByOutliner.find(entityId) == m_entitiesDeselectedByOutliner.end())
             {
+                selectionChanged = true;
                 m_entitiesToSelect.erase(entityId);
                 m_entitiesToDeselect.insert(entityId);
             }
         }
-        QueueUpdateSelection();
+        if (selectionChanged)
+        {
+            QueueUpdateSelection();
+        }
     }
 
     void EntityOutlinerWidget::OnEnableSelectionUpdates(bool enable)

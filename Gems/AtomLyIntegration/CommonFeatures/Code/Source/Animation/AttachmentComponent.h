@@ -153,18 +153,18 @@ namespace AZ
 
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
             {
-                provided.push_back(AZ_CRC("AttachmentService", 0x5aaa7b63));
+                provided.push_back(AZ_CRC_CE("AttachmentService"));
             }
 
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
             {
-                incompatible.push_back(AZ_CRC("AttachmentService", 0x5aaa7b63));
+                incompatible.push_back(AZ_CRC_CE("AttachmentService"));
                 incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
             }
 
             static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
             {
-                required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+                required.push_back(AZ_CRC_CE("TransformService"));
             }
 
             ~AttachmentComponent() override = default;

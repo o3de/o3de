@@ -54,7 +54,7 @@ namespace ScriptCanvasEditor
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ScriptCanvasService", 0x41fd58f3));
+            provided.push_back(AZ_CRC_CE("ScriptCanvasService"));
         }
 
         static void Reflect(AZ::ReflectContext* context);

@@ -27,13 +27,13 @@ namespace AZ::Vulkan
         m_renderPassContexts.resize(groupScopes.size());
         for (uint32_t i = 0; i < groupScopes.size(); ++i)
         {
-            const Scope* scope = groupScopes[i];
+            Scope* scope = groupScopes[i];
             if (!scope->UsesRenderpass())
             {
                 continue;
             }
 
-            RenderPassBuilder builder(device, 1);
+            RenderPassBuilder builder(device);
             builder.AddScopeAttachments(*scope);
             // This will update the m_renderPassContexts with the proper renderpass and framebuffer.
             RHI::ResultCode result = builder.End(m_renderPassContexts[i]);

@@ -1267,7 +1267,7 @@ namespace UnitTest
             ObjectToPatch targetObj;
 
             DataPatch::AddressType forceOverrideAddress;
-            forceOverrideAddress.emplace_back(AZ_CRC("m_intValue"));
+            forceOverrideAddress.emplace_back(AZ_CRC_CE("m_intValue"));
 
             DataPatch::FlagsMap sourceFlagsMap;
 
@@ -1285,7 +1285,7 @@ namespace UnitTest
             ObjectToPatch targetObj;
 
             DataPatch::AddressType forceOverrideAddress;
-            forceOverrideAddress.emplace_back(AZ_CRC("m_intValue"));
+            forceOverrideAddress.emplace_back(AZ_CRC_CE("m_intValue"));
 
             DataPatch::FlagsMap sourceFlagsMap;
 
@@ -1309,7 +1309,7 @@ namespace UnitTest
             targetObj.m_intValue = 43;
 
             DataPatch::AddressType forceOverrideAddress;
-            forceOverrideAddress.emplace_back(AZ_CRC("m_intValue"));
+            forceOverrideAddress.emplace_back(AZ_CRC_CE("m_intValue"));
 
             DataPatch::FlagsMap sourceFlagsMap;
             sourceFlagsMap.emplace(forceOverrideAddress, DataPatch::Flag::PreventOverrideSet);
@@ -1336,7 +1336,7 @@ namespace UnitTest
 
             // create flags that prevent m_intValue from being patched
             DataPatch::AddressType forceOverrideAddress;
-            forceOverrideAddress.emplace_back(AZ_CRC("m_intValue"));
+            forceOverrideAddress.emplace_back(AZ_CRC_CE("m_intValue"));
 
             DataPatch::FlagsMap sourceFlagsMap;
             sourceFlagsMap.emplace(forceOverrideAddress, DataPatch::Flag::PreventOverrideSet);
@@ -1362,7 +1362,7 @@ namespace UnitTest
 
             // create flags that prevent m_intValue from being patched, but put them on the target instead of source
             DataPatch::AddressType forceOverrideAddress;
-            forceOverrideAddress.emplace_back(AZ_CRC("m_intValue"));
+            forceOverrideAddress.emplace_back(AZ_CRC_CE("m_intValue"));
 
             DataPatch::FlagsMap sourceFlagsMap;
 
@@ -2656,14 +2656,14 @@ namespace UnitTest
                     if (rootElement.GetVersion() < 2)
                     {
                         AZStd::string stringField;
-                        if (!rootElement.GetChildData(AZ_CRC("InnerBaseStringField"), stringField))
+                        if (!rootElement.GetChildData(AZ_CRC_CE("InnerBaseStringField"), stringField))
                         {
                             AZ_Error("PatchingTest", false, "Unable to retrieve 'InnerBaseStringField' data for %u version of the InnerObjectFieldConverterClass",
                                 rootElement.GetVersion());
                             return false;
                         }
 
-                        rootElement.RemoveElementByName(AZ_CRC("InnerBaseStringField"));
+                        rootElement.RemoveElementByName(AZ_CRC_CE("InnerBaseStringField"));
                         rootElement.AddElementWithData(context, "InnerBaseIntField", static_cast<int64_t>(stringField.size()));
                     }
 

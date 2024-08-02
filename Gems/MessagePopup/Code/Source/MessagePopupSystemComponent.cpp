@@ -89,13 +89,13 @@ namespace MessagePopup
     //-------------------------------------------------------------------------
     void MessagePopupSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("MessagePopupSystemComponentService"));
+        provided.push_back(AZ_CRC_CE("MessagePopupSystemComponentService"));
     }
 
     //-------------------------------------------------------------------------
     void MessagePopupSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("MessagePopupSystemComponentService"));
+        incompatible.push_back(AZ_CRC_CE("MessagePopupSystemComponentService"));
     }
 
     //-------------------------------------------------------------------------

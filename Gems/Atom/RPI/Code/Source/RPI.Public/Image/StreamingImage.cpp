@@ -51,7 +51,8 @@ namespace AZ
             imageDescriptor.m_size = imageSize;
             imageDescriptor.m_format = imageFormat;
 
-            const RHI::ImageSubresourceLayout imageSubresourceLayout = RHI::GetImageSubresourceLayout(imageDescriptor, RHI::ImageSubresource{});
+            const RHI::DeviceImageSubresourceLayout imageSubresourceLayout =
+                RHI::GetImageSubresourceLayout(imageDescriptor, RHI::ImageSubresource{});
 
             const size_t expectedImageDataSize = imageSubresourceLayout.m_bytesPerImage * imageDescriptor.m_size.m_depth;
             if (expectedImageDataSize != imageDataSize)
@@ -149,7 +150,10 @@ namespace AZ
 
             if (resultCode == RHI::ResultCode::Success)
             {
-                m_imageView = m_image->GetImageView(imageAsset.GetImageViewDescriptor());
+                // Set rhi image name
+                m_imageAsset = { &imageAsset, AZ::Data::AssetLoadBehavior::PreLoad };
+                m_image->SetName(Name(m_imageAsset.GetHint()));
+                m_imageView = m_image->BuildImageView(imageAsset.GetImageViewDescriptor());
                 if(!m_imageView.get())
                 {
                    AZ_Error("Image", false, "Failed to initialize RHI image view. This is not a recoverable error and is likely a bug.");
@@ -177,13 +181,9 @@ namespace AZ
                 m_mipChainState.m_maskReady |= mipChainBit;
 
                 // Take references on dependent assets
-                m_imageAsset = { &imageAsset, AZ::Data::AssetLoadBehavior::PreLoad };
                 m_rhiPool = rhiPool;
                 m_pool = pool;
                 m_pool->AttachImage(this);
-
-                // Set rhi image name
-                m_image->SetName(Name(m_imageAsset.GetHint()));
 
                 // queue expand mipmaps if it's not managed by the streaming controller
                 if (!m_streamingController)
@@ -236,7 +236,7 @@ namespace AZ
 
         StreamingImage::~StreamingImage()
         {
-            Shutdown(); 
+            Shutdown();
         }
 
         void StreamingImage::SetTargetMip(uint16_t targetMipLevel)

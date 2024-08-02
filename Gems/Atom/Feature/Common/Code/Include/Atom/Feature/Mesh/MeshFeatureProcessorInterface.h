@@ -114,12 +114,14 @@ namespace AZ
             {
             }
 
+            AZ::EntityId m_entityId{ AZ::EntityId::InvalidEntityId };
             Data::Asset<RPI::ModelAsset> m_modelAsset;
             bool m_isRayTracingEnabled = true;
             bool m_useForwardPassIblSpecular = false;
             bool m_isAlwaysDynamic = false;
             bool m_excludeFromReflectionCubeMaps = false;
             bool m_isSkinnedMesh = false;
+            bool m_supportRayIntersection = false;
 
             CustomMaterialMap m_customMaterials;
 

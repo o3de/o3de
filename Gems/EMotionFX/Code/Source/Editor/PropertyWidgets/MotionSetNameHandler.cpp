@@ -17,7 +17,7 @@ namespace EMotionFX
 
     AZ::u32 MotionSetNameHandler::GetHandlerName() const
     {
-        return AZ_CRC("MotionSetName", 0xcf534ea6);
+        return AZ_CRC_CE("MotionSetName");
     }
 
 
@@ -45,7 +45,7 @@ namespace EMotionFX
                 GUI->setEnabled(!value);
             }
         }
-        else if (attrib == AZ_CRC("MotionSetAsset", 0xd4e88984))
+        else if (attrib == AZ_CRC_CE("MotionSetAsset"))
         {
             AZ::Data::Asset<Integration::MotionSetAsset>* value;
             if (attrValue->Read<AZ::Data::Asset<Integration::MotionSetAsset>*>(value))

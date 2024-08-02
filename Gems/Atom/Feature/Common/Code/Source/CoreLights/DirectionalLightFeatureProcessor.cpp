@@ -33,6 +33,9 @@ namespace AZ
     namespace Render
     {
         AZ_CVAR(bool, r_excludeItemsInSmallerShadowCascades, true, nullptr, ConsoleFunctorFlags::Null, "Set to true to exclude drawing items to a directional shadow cascade that are already covered by a smaller cascade.");
+        
+        AZ_CVAR(int, r_directionalShadowFilteringMethod, -1, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Cvar to override directional shadow filtering mode. -1 = Default settings from Editor, 0 = None, 1 = Pcf, 2 = Esm, 3 = EsmPcf.");
+        AZ_CVAR(int, r_directionalShadowFilteringSampleCountMode, -1, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Cvar to override directional shadow sample count mode. -1 = Default settings from Editor, 0 = PcfTap4, 1 = PcfTap9, 2 = PcfTap16");
 
         // --- Camera Configuration ---
 
@@ -207,11 +210,27 @@ namespace AZ
             {
                 SetFullscreenPassSettings();
 
-                const uint32_t shadowFilterMethod = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_shadowFilterMethod;
+                const auto& shadowData = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex());
+
+                uint32_t shadowFilterMethod = shadowData.m_shadowFilterMethod;
+                if(r_directionalShadowFilteringMethod >= 0)
+                {
+                    shadowFilterMethod = r_directionalShadowFilteringMethod;
+                }
                 RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(m_directionalShadowFilteringMethodName, AZ::RPI::ShaderOptionValue{shadowFilterMethod});
+
+                uint32_t shadowFilteringSampleCountMode = shadowData.m_filteringSampleCountMode;
+                if(r_directionalShadowFilteringSampleCountMode >= 0)
+                {
+                    shadowFilteringSampleCountMode = r_directionalShadowFilteringSampleCountMode;
+                }
+                
+                RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(
+                    m_directionalShadowFilteringSamplecountName, AZ::RPI::ShaderOptionValue{ shadowFilteringSampleCountMode });
+                
                 RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(m_directionalShadowReceiverPlaneBiasEnableName, AZ::RPI::ShaderOptionValue{ m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex()).m_isReceiverPlaneBiasEnabled });
 
-                const uint32_t cascadeCount = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_cascadeCount;
+                const uint32_t cascadeCount = shadowData.m_cascadeCount;
 
                 RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(m_BlendBetweenCascadesEnableName, AZ::RPI::ShaderOptionValue{cascadeCount > 1 && m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex()).m_blendBetweenCascades });
 
@@ -326,8 +345,12 @@ namespace AZ
                     }
 
                     m_shadowBufferHandlers.at(view.get()).UpdateSrg(viewSrg);
-                    m_esmParameterBufferHandlers.at(view.get()).UpdateBuffer(m_esmParameterData.at(view.get()).GetDataVector());
-                    m_esmParameterBufferHandlers.at(view.get()).UpdateSrg(viewSrg);
+                    auto itr = m_esmParameterBufferHandlers.find(view.get());
+                    if (itr != m_esmParameterBufferHandlers.end())
+                    {
+                        itr->second.UpdateBuffer(m_esmParameterData.at(view.get()).GetDataVector());
+                        itr->second.UpdateSrg(viewSrg);
+                    }
                     viewSrg->SetConstant(m_shadowIndexDirectionalLightIndex, rawShadowIndex);
                 }
             }
@@ -591,9 +614,21 @@ namespace AZ
                 AZ_Warning(FeatureProcessorName, false, "Sampling count exceed the limit.");
                 count = Shadow::MaxPcfSamplingCount;
             }
+
+            //Remap the count value to an enum value associated with that count.
+            ShadowFilterSampleCount samplingCountMode = ShadowFilterSampleCount::PcfTap16;
+            if (count <= 4)
+            {
+                samplingCountMode = ShadowFilterSampleCount::PcfTap4;
+            }
+            else if (count <= 9)
+            {
+                samplingCountMode = ShadowFilterSampleCount::PcfTap9;
+            }
+
             for (auto& it : m_shadowData)
             {
-                it.second.GetData(handle.GetIndex()).m_filteringSampleCount = count;
+                it.second.GetData(handle.GetIndex()).m_filteringSampleCountMode = static_cast<uint32_t>(samplingCountMode);
             }
             m_shadowBufferNeedsUpdate = true;
         }
@@ -1262,7 +1297,11 @@ namespace AZ
 
             // Update ESM parameter buffer which is attached to
             // both of Forward Pass and ESM Shadowmaps Pass.
-            m_esmParameterBufferHandlers.at(cameraView).UpdateBuffer(m_esmParameterData.at(cameraView).GetDataVector());
+            auto itr = m_esmParameterBufferHandlers.find(cameraView);
+            if (itr != m_esmParameterBufferHandlers.end())
+            {
+                itr->second.UpdateBuffer(m_esmParameterData.at(cameraView).GetDataVector());
+            }
 
             // Create index table buffer.
             const RPI::RenderPipelineId cameraPipelineId = m_renderPipelineIdsForPersistentView.at(cameraView).front();
@@ -1495,8 +1534,12 @@ namespace AZ
 
             // Set parameter to convert to emphasize from minYSegment to maxYSegment
             // to mitigate Peter-Panning.
-            m_esmParameterData.at(cameraView).GetData(cascadeIndex).m_lightDistanceOfCameraViewFrustum =
-                (minYSegment - minY) / (maxYSegment - minY);
+            auto itr = m_esmParameterData.find(cameraView);
+            if (itr != m_esmParameterData.end())
+            {
+                itr->second.GetData(cascadeIndex).m_lightDistanceOfCameraViewFrustum =
+                    (minYSegment - minY) / (maxYSegment - minY);
+            }
 
             // Set coefficient of slope bias to remove shadow acne.
             // Slope bias is shadowmapTexelDiameter * tan(theta) / depthRange
@@ -1764,11 +1807,14 @@ namespace AZ
 
             if (m_fullscreenShadowPass)
             {
-                const uint32_t shadowFilterMethod = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_shadowFilterMethod;
-                const uint32_t cascadeCount = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_cascadeCount;
+                const auto& shadowData = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex());
+                const uint32_t shadowFilterMethod = shadowData.m_shadowFilterMethod;
+                const uint32_t filteringSampleCountMode = shadowData.m_filteringSampleCountMode;
+                const uint32_t cascadeCount = shadowData.m_cascadeCount;
                 m_fullscreenShadowPass->SetLightRawIndex(m_shadowProperties.GetRawIndex(m_shadowingLightHandle.GetIndex()));
                 m_fullscreenShadowPass->SetBlendBetweenCascadesEnable(cascadeCount > 1 && shadowProperty.m_blendBetweenCascades);
                 m_fullscreenShadowPass->SetFilterMethod(static_cast<ShadowFilterMethod>(shadowFilterMethod));
+                m_fullscreenShadowPass->SetFilteringSampleCountMode(static_cast<ShadowFilterSampleCount>(filteringSampleCountMode));
                 m_fullscreenShadowPass->SetReceiverShadowPlaneBiasEnable(shadowProperty.m_isReceiverPlaneBiasEnabled);
             }
 

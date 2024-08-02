@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <Atom/RHI/RHIMemoryStatisticsInterface.h>
+#include <Atom/RHI.Profiler/GraphicsProfilerBus.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <AzFramework/Components/ConsoleBus.h>
 #include <ImGuiBus.h>
@@ -38,12 +39,12 @@ namespace AtomImGuiTools
 
     void AtomImGuiToolsSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("AtomImGuiToolsService"));
+        provided.push_back(AZ_CRC_CE("AtomImGuiToolsService"));
     }
 
     void AtomImGuiToolsSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("AtomImGuiToolsService"));
+        incompatible.push_back(AZ_CRC_CE("AtomImGuiToolsService"));
     }
 
     void AtomImGuiToolsSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -97,10 +98,10 @@ namespace AtomImGuiTools
         }
         if (m_showTransientAttachmentProfiler)
         {
-            auto* transientStats = AZ::RHI::RHIMemoryStatisticsInterface::Get()->GetTransientAttachmentStatistics();
-            if (transientStats)
+            auto transientStats = AZ::RHI::RHIMemoryStatisticsInterface::Get()->GetTransientAttachmentStatistics();
+            if (!transientStats.empty())
             {
-                m_showTransientAttachmentProfiler = m_imguiTransientAttachmentProfiler.Draw(*transientStats);
+                m_showTransientAttachmentProfiler = m_imguiTransientAttachmentProfiler.Draw(transientStats);
             }
         }
 
@@ -111,6 +112,11 @@ namespace AtomImGuiTools
     {
         if (ImGui::BeginMenu("Atom Tools"))
         {
+            if (ImGui::MenuItem("Dump loaded Asset info", ""))
+            {
+                AZ::Data::AssetManager::Instance().DumpLoadedAssetsInfo();
+            }
+
             ImGui::MenuItem("Pass Viewer", "", &m_showPassTree);
             ImGui::MenuItem("Gpu Profiler", "", &m_showGpuProfiler);
             if (ImGui::MenuItem("Transient Attachment Profiler", "", &m_showTransientAttachmentProfiler))
@@ -128,6 +134,10 @@ namespace AtomImGuiTools
                 {
                     m_imguiMaterialDetails.CloseDialog();
                 }
+            }
+            if (ImGui::MenuItem("Trigger GPU Capture", "", false, AZ::RHI::GraphicsProfilerBus::HasHandlers()))
+            {
+                AZ::RHI::GraphicsProfilerBus::Broadcast(&AZ::RHI::GraphicsProfilerBus::Events::TriggerCapture);
             }
             ImGui::EndMenu();
         }

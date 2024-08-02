@@ -40,7 +40,8 @@
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
 #include <ColorGrading/LutGenerationPass.h>
-#include <Debug/RenderDebugFeatureProcessor.h> 
+#include <Debug/RayTracingDebugFeatureProcessor.h>
+#include <Debug/RenderDebugFeatureProcessor.h>
 #include <Silhouette/SilhouetteFeatureProcessor.h>
 #include <PostProcess/PostProcessFeatureProcessor.h>
 #include <PostProcessing/BlendColorGradingLutsPass.h>
@@ -145,6 +146,7 @@ namespace AZ
             ImGuiPassData::Reflect(context);
             RayTracingPassData::Reflect(context);
             TaaPassData::Reflect(context);
+            RayTracingDebugFeatureProcessor::Reflect(context);
             RenderDebugFeatureProcessor::Reflect(context);
             SplashScreenFeatureProcessor::Reflect(context);
             SplashScreenSettings::Reflect(context);
@@ -172,17 +174,17 @@ namespace AZ
 
         void CommonSystemComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("CommonService", 0x6398eec4));
+            provided.push_back(AZ_CRC_CE("CommonService"));
         }
 
         void CommonSystemComponent::GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("CommonService", 0x6398eec4));
+            incompatible.push_back(AZ_CRC_CE("CommonService"));
         }
 
         void CommonSystemComponent::GetRequiredServices(ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("RPISystem", 0xf2add773));
+            required.push_back(AZ_CRC_CE("RPISystem"));
         }
 
         void CommonSystemComponent::GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent)
@@ -207,6 +209,7 @@ namespace AZ
                 AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<PostProcessFeatureProcessor, PostProcessFeatureProcessorInterface>();
                 AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<AcesDisplayMapperFeatureProcessor, DisplayMapperFeatureProcessorInterface>();
                 AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<ProjectedShadowFeatureProcessor, ProjectedShadowFeatureProcessorInterface>();
+                AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<RayTracingDebugFeatureProcessor, RayTracingDebugFeatureProcessorInterface>();
                 AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<RenderDebugFeatureProcessor, RenderDebugFeatureProcessorInterface>();
                 AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<ReflectionProbeFeatureProcessor, ReflectionProbeFeatureProcessorInterface>();
                 AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<SpecularReflectionsFeatureProcessor, SpecularReflectionsFeatureProcessorInterface>();
@@ -358,6 +361,7 @@ namespace AZ
                 AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<SkyBoxFeatureProcessor>();
                 AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<SkyAtmosphereFeatureProcessor>();
                 AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<OcclusionCullingPlaneFeatureProcessor>();
+                AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<RayTracingDebugFeatureProcessor>();
                 AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<RenderDebugFeatureProcessor>();
                 AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<SplashScreenFeatureProcessor>();
                 AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<SilhouetteFeatureProcessor>();

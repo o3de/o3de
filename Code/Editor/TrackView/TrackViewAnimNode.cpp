@@ -35,10 +35,8 @@
 #include "CommentNodeAnimator.h"
 #include "DirectorNodeAnimator.h"
 #include "ViewManager.h"
-#include "Include/IObjectManager.h"
 #include "TrackView/TrackViewDialog.h"
 #include "TrackView/TrackViewSequence.h"
-#include "TrackView/TrackViewUndo.h"
 #include "TrackView/TrackViewNodeFactories.h"
 
 // AzCore
@@ -490,7 +488,7 @@ CTrackViewAnimNode* CTrackViewAnimNode::CreateSubNode(
     CTrackViewAnimNode* newNode = animNodeFactory.BuildAnimNode(m_animSequence, newAnimNode, this);
 
     // Make sure that camera and entity nodes get created with an owner
-    AZ_Assert((animNodeType != AnimNodeType::Camera && animNodeType != AnimNodeType::Entity), "Entity node should have valid owner.");
+    AZ_Assert((animNodeType != AnimNodeType::Entity), "Entity node should have valid owner.");
 
     newNode->SetNodeEntityId(owner);
     newAnimNode->SetNodeOwner(newNode);
@@ -1290,17 +1288,6 @@ void CTrackViewAnimNode::AddCurrentLayer()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CTrackViewAnimNode::SetAsViewCamera()
-{
-    assert (GetType() == AnimNodeType::Camera);
-
-    if (GetType() == AnimNodeType::Camera)
-    {
-        AZ_Error("CTrackViewAnimNode", false, "Legacy cameras are no longer supported.  Unable to set view camera.");
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 unsigned int CTrackViewAnimNode::GetParamCount() const
 {
     return m_animNode ? m_animNode->GetParamCount() : 0;
@@ -1804,115 +1791,6 @@ bool CTrackViewAnimNode::IsDisabled() const
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CTrackViewAnimNode::SetPos(const Vec3& position)
-{
-    CTrackViewTrack* track = GetTrackForParameter(AnimParamType::Position);
-
-    if (track)
-    {
-        if (!GetIEditor()->GetAnimation()->IsRecording())
-        {
-            // Offset all keys by move amount.
-            Vec3 offset = m_animNode->GetOffsetPosition(position);
-            
-            track->OffsetKeyPosition(offset);
-
-            GetSequence()->OnKeysChanged();
-        }
-        else if (AzToolsFramework::IsSelected(m_nodeEntityId))
-        {
-            CTrackViewSequence* sequence = GetSequence();
-
-            AZ_Assert(sequence, "Expected valid sequence");
-            if (sequence != nullptr)
-            {
-                const int flags = m_animNode->GetFlags();
-                // This is required because the entity movement system uses Undo to
-                // undo a previous move delta as the entity is dragged.
-                CUndo::Record(new CUndoComponentEntityTrackObject(track));
-
-                // Set the selected flag to enable record when unselected camera is moved through viewport
-                m_animNode->SetFlags(flags | eAnimNodeFlags_EntitySelected);
-                m_animNode->SetPos(sequence->GetTime(), position);
-                m_animNode->SetFlags(flags);
-                    
-                // We don't want to use ScopedUndoBatch here because we don't want a separate Undo operation
-                // generate for every frame as the user moves an entity.
-                AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
-                    &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, 
-                    sequence->GetSequenceComponentEntityId()
-                );                    
-
-                sequence->OnKeysChanged();
-            }
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CTrackViewAnimNode::SetScale(const Vec3& scale)
-{
-    CTrackViewTrack* track = GetTrackForParameter(AnimParamType::Scale);
-
-    if (GetIEditor()->GetAnimation()->IsRecording() && AzToolsFramework::IsSelected(m_nodeEntityId) && track)
-    {
-        CTrackViewSequence* sequence = GetSequence();
-
-        AZ_Assert(sequence, "Expected valid sequence");
-        if (sequence != nullptr)
-        {
-            // This is required because the entity movement system uses Undo to
-            // undo a previous move delta as the entity is dragged.
-            CUndo::Record(new CUndoComponentEntityTrackObject(track));
-
-            m_animNode->SetScale(sequence->GetTime(), scale);
-
-            // We don't want to use ScopedUndoBatch here because we don't want a separate Undo operation
-            // generate for every frame as the user scales an entity.
-            AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity,
-                sequence->GetSequenceComponentEntityId()
-            );
-            sequence->OnKeysChanged();
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CTrackViewAnimNode::SetRotation(const Quat& rotation)
-{
-    CTrackViewTrack* track = GetTrackForParameter(AnimParamType::Rotation);
-
-    if (GetIEditor()->GetAnimation()->IsRecording() && (AzToolsFramework::IsSelected(m_nodeEntityId)) && track)
-    {
-        CTrackViewSequence* sequence = GetSequence();
-
-        AZ_Assert(sequence, "Expected valid sequence");
-        if (sequence != nullptr)
-        {
-            const int flags = m_animNode->GetFlags();
-            // This is required because the entity movement system uses Undo to
-            // undo a previous move delta as the entity is dragged.
-            CUndo::Record(new CUndoComponentEntityTrackObject(track));
-
-            // Set the selected flag to enable record when unselected camera is moved through viewport
-            m_animNode->SetFlags(flags | eAnimNodeFlags_EntitySelected);
-            m_animNode->SetRotate(sequence->GetTime(), rotation);
-            m_animNode->SetFlags(flags);
-
-            // We don't want to use ScopedUndoBatch here because we don't want a separate Undo operation
-            // generate for every frame as the user rotates an entity.
-            AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity,
-                sequence->GetSequenceComponentEntityId()
-            );
-
-            sequence->OnKeysChanged();
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 bool CTrackViewAnimNode::IsActive()
 {
     CTrackViewSequence* pSequence = GetSequence();
@@ -2089,7 +1967,7 @@ void CTrackViewAnimNode::OnStartPlayInEditor()
     {
         AZ::EntityId remappedId;
         AzToolsFramework::EditorEntityContextRequestBus::Broadcast(&AzToolsFramework::EditorEntityContextRequestBus::Events::MapEditorIdToRuntimeId, m_animSequence->GetSequenceEntityId(), remappedId);
-            
+
         if (remappedId.IsValid())
         {
             // stash and remap the AZ::EntityId of the SequenceComponent entity to restore it when we switch back to Edit mode
@@ -2110,7 +1988,7 @@ void CTrackViewAnimNode::OnStartPlayInEditor()
             m_animNode->SetAzEntityId(remappedId);
         }
     }
-    
+
     if (m_animNode)
     {
         m_animNode->OnStartPlayInEditor();
@@ -2379,92 +2257,12 @@ CTrackViewAnimNode* CTrackViewAnimNode::AddComponent(const AZ::Component* compon
     return retNewComponentNode;
 }
 
-//////////////////////////////////////////////////////////////////////////
-void CTrackViewAnimNode::MatrixInvalidated()
-{
-}
-
-//////////////////////////////////////////////////////////////////////////
-Vec3 CTrackViewAnimNode::GetTransformDelegatePos(const Vec3& basePos) const
-{
-    const Vec3 position = GetPos();
-
-    return Vec3(CheckTrackAnimated(AnimParamType::PositionX) ? position.x : basePos.x,
-        CheckTrackAnimated(AnimParamType::PositionY) ? position.y : basePos.y,
-        CheckTrackAnimated(AnimParamType::PositionZ) ? position.z : basePos.z);
-}
-
-//////////////////////////////////////////////////////////////////////////
-Quat CTrackViewAnimNode::GetTransformDelegateRotation(const Quat& baseRotation) const
-{
-    if (!CheckTrackAnimated(AnimParamType::Rotation))
-    {
-        return baseRotation;
-    }
-
-    // Pass the sequence time to get the rotation from the
-    // track data if it is present. We don't want to go all the way out
-    // to the current rotation in component transform because that would mean
-    // we are going from Quat to Euler and then back to Quat and that could lead
-    // to the data drifting away from the original value.
-    Quat nodeRotation = GetRotation(GetSequenceConst()->GetTime());
-
-    const Ang3 angBaseRotation(baseRotation);
-    const Ang3 angNodeRotation(nodeRotation);
-    return Quat(Ang3(CheckTrackAnimated(AnimParamType::RotationX) ? angNodeRotation.x : angBaseRotation.x,
-            CheckTrackAnimated(AnimParamType::RotationY) ? angNodeRotation.y : angBaseRotation.y,
-            CheckTrackAnimated(AnimParamType::RotationZ) ? angNodeRotation.z : angBaseRotation.z));
-}
-
-//////////////////////////////////////////////////////////////////////////
-Vec3 CTrackViewAnimNode::GetTransformDelegateScale(const Vec3& baseScale) const
-{
-    const Vec3 scale = GetScale();
-
-    return Vec3(CheckTrackAnimated(AnimParamType::ScaleX) ? scale.x : baseScale.x,
-        CheckTrackAnimated(AnimParamType::ScaleY) ? scale.y : baseScale.y,
-        CheckTrackAnimated(AnimParamType::ScaleZ) ? scale.z : baseScale.z);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CTrackViewAnimNode::SetTransformDelegatePos(const Vec3& position)
-{
-    SetPos(position);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CTrackViewAnimNode::SetTransformDelegateRotation(const Quat& rotation)
-{
-    SetRotation(rotation);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CTrackViewAnimNode::SetTransformDelegateScale(const Vec3& scale)
-{
-    SetScale(scale);
-}
-
 bool CTrackViewAnimNode::IsTransformAnimParamTypeDelegated(const AnimParamType animParamType) const
 {
     const bool delegated = (GetIEditor()->GetAnimation()->IsRecording() && AzToolsFramework::IsSelected(m_nodeEntityId) &&
                              GetTrackForParameter(animParamType)) ||
         CheckTrackAnimated(animParamType);
     return delegated;
-}
-
-bool CTrackViewAnimNode::IsPositionDelegated() const
-{
-    return IsTransformAnimParamTypeDelegated(AnimParamType::Position);
-}
-
-bool CTrackViewAnimNode::IsRotationDelegated() const
-{
-    return IsTransformAnimParamTypeDelegated(AnimParamType::Rotation);
-}
-
-bool CTrackViewAnimNode::IsScaleDelegated() const
-{
-    return IsTransformAnimParamTypeDelegated(AnimParamType::Scale);
 }
 
 void CTrackViewAnimNode::OnEntityDestruction([[maybe_unused]] const AZ::EntityId& entityId)
@@ -2538,10 +2336,10 @@ void CTrackViewAnimNode::OnParentChanged(AZ::EntityId oldParent, AZ::EntityId ne
     }
 }
 
-void CTrackViewAnimNode::OnParentTransformWillChange(AZ::Transform oldTransform, AZ::Transform newTransform) 
-{ 
-    // Only used in circumstances where modified keys are required, but OnParentChanged 
-    // message will not be received for some reason, e.g. node being cloned in memory 
+void CTrackViewAnimNode::OnParentTransformWillChange(AZ::Transform oldTransform, AZ::Transform newTransform)
+{
+    // Only used in circumstances where modified keys are required, but OnParentChanged
+    // message will not be received for some reason, e.g. node being cloned in memory
     UpdateKeyDataAfterParentChanged(oldTransform, newTransform);
 
     CTrackViewSequence* sequence = GetSequence();

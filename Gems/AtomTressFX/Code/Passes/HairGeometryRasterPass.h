@@ -20,7 +20,7 @@ namespace AZ
 {
     namespace RHI
     {
-        struct DrawItem;
+        class DrawItem;
     }
 
     namespace Render
@@ -81,6 +81,9 @@ namespace AZ
                 // Scope producer functions...
                 void CompileResources(const RHI::FrameGraphCompileContext& context) override;
 
+                //! Updates the shader variant being used by the pass
+                bool UpdateShaderOptions(const RPI::ShaderVariantId& variantId);
+
             protected:
                 HairFeatureProcessor* m_featureProcessor = nullptr;
 
@@ -104,6 +107,7 @@ namespace AZ
                 AZStd::unordered_set<HairRenderObject*> m_newRenderObjects;
 
                 bool m_initialized = false;
+                RPI::ShaderVariantId m_currentShaderVariantId;
             };
 
         } // namespace Hair

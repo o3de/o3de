@@ -1075,12 +1075,12 @@ namespace AzToolsFramework
 
         void EditorEntityActionComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("EntityCompositionRequests", 0x29838b44));
+            provided.push_back(AZ_CRC_CE("EntityCompositionRequests"));
         }
 
         void EditorEntityActionComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("EntityCompositionRequests", 0x29838b44));
+            incompatible.push_back(AZ_CRC_CE("EntityCompositionRequests"));
         }
 
         void EditorEntityActionComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& /*required*/)

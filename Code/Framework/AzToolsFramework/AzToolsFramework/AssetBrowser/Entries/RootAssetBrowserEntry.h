@@ -71,6 +71,7 @@ namespace AzToolsFramework
 
             bool IsInitialUpdate() const;
             void SetInitialUpdate(bool newValue);
+            void PrepareForReset();
 
         protected:
             void UpdateChildPaths(AssetBrowserEntry* child) const override;

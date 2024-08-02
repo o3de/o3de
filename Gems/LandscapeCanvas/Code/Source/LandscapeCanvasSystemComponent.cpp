@@ -301,12 +301,12 @@ namespace LandscapeCanvas
 
     void LandscapeCanvasSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("LandscapeCanvasService", 0x31668887));
+        provided.push_back(AZ_CRC_CE("LandscapeCanvasService"));
     }
 
     void LandscapeCanvasSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("LandscapeCanvasService", 0x31668887));
+        incompatible.push_back(AZ_CRC_CE("LandscapeCanvasService"));
     }
 
     void LandscapeCanvasSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

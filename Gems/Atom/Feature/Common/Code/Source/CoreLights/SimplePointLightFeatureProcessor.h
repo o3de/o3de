@@ -12,7 +12,7 @@
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/CoreLights/SimplePointLightFeatureProcessorInterface.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
-#include <Atom/Feature/Utils/IndexedDataVector.h>
+#include <Atom/Feature/Utils/MultiIndexedDataVector.h>
 
 namespace AZ
 {
@@ -30,7 +30,7 @@ namespace AZ
 
             static void Reflect(AZ::ReflectContext* context);
 
-            struct ShaderData
+            struct SimplePointLightData
             {
                 AZStd::array<float, 3> m_position = { { 0.0f, 0.0f, 0.0f } };
                 float m_invAttenuationRadiusSquared = 0.0f; // Inverse of the distance at which this light no longer has an effect, squared. Also used for falloff calculations.
@@ -68,16 +68,31 @@ namespace AZ
             const Data::Instance<RPI::Buffer> GetLightBuffer() const;
             uint32_t GetLightCount()const;
 
+            // SceneNotificationBus::Handler overrides...
+            void OnRenderPipelinePersistentViewChanged(
+                RPI::RenderPipeline* renderPipeline,
+                RPI::PipelineViewTag viewTag,
+                RPI::ViewPtr newView,
+                RPI::ViewPtr previousView) override;
+
         private:
             SimplePointLightFeatureProcessor(const SimplePointLightFeatureProcessor&) = delete;
+            // Cull the lights for a view using the CPU.
+            void CullLights(const RPI::ViewPtr& view);
 
             static constexpr const char* FeatureProcessorName = "SimplePointLightFeatureProcessor";
 
-            using LightContainer = IndexedDataVector<ShaderData>;
-            LightContainer m_lightData;
+            MultiIndexedDataVector<SimplePointLightData, AZ::Sphere> m_lightData;
             GpuBufferHandler m_lightBufferHandler;
+            RHI::Handle<uint32_t> m_lightMeshFlag;
             bool m_deviceBufferNeedsUpdate = false;
 
+            // Handlers to GPU buffer that are being used for CPU culling visibility.
+            AZStd::vector<GpuBufferHandler> m_visiblePointLightsBufferHandlers;
+            // Number of buffers being used for visibility in the current frame.
+            uint32_t m_visiblePointLightsBufferUsedCount = 0;
+            // Map of views -> pipelines in that view that need CPU culling (i.e. no GPU culling pass)
+            AZStd::unordered_map<const RPI::View*, AZStd::vector<const RPI::RenderPipeline*>> m_cpuCulledPipelinesPerView;
         };
     } // namespace Render
 } // namespace AZ

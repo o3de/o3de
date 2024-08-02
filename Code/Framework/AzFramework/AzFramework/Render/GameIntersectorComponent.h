@@ -32,7 +32,7 @@ namespace AzFramework
 
             static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
             {
-                dependent.push_back(AZ_CRC("GameEntityContextService", 0xa6f2c885));
+                dependent.push_back(AZ_CRC_CE("GameEntityContextService"));
             }
 
         private:

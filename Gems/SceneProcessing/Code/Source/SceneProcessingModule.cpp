@@ -79,12 +79,12 @@ namespace AZ
 
             void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
             {
-                provided.push_back(AZ_CRC("SceneConfiguration", 0x2a3785fb));
+                provided.push_back(AZ_CRC_CE("SceneConfiguration"));
             }
 
             void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
             {
-                incompatible.push_back(AZ_CRC("SceneConfiguration", 0x2a3785fb));
+                incompatible.push_back(AZ_CRC_CE("SceneConfiguration"));
             }
 
         protected:
@@ -95,7 +95,7 @@ namespace AZ
                     module = DynamicModuleHandle::Create(name);
                     if (module)
                     {
-                        module->Load(false);
+                        module->Load();
                         auto init = module->GetFunction<InitializeDynamicModuleFunction>(InitializeDynamicModuleFunctionName);
                         if (init)
                         {

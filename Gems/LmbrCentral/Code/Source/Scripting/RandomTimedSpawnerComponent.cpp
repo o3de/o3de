@@ -47,20 +47,20 @@ namespace LmbrCentral
 
     void RandomTimedSpawnerComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("RandomTimedSpawnerService", 0x56f2fa36));
+        provided.push_back(AZ_CRC_CE("RandomTimedSpawnerService"));
     }
     void RandomTimedSpawnerComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         //Only compatible with Box and Cylinder shapes
-        incompatible.push_back(AZ_CRC("CapsuleShapeService", 0x9bc1122c));
-        incompatible.push_back(AZ_CRC("SphereShapeService", 0x90c8dc80));
-        incompatible.push_back(AZ_CRC("CompoundShapeService", 0x4f7c640a));
+        incompatible.push_back(AZ_CRC_CE("CapsuleShapeService"));
+        incompatible.push_back(AZ_CRC_CE("SphereShapeService"));
+        incompatible.push_back(AZ_CRC_CE("CompoundShapeService"));
     }
     void RandomTimedSpawnerComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
-        required.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
-        required.push_back(AZ_CRC("SpawnerService", 0xd2f1d7a3));
+        required.push_back(AZ_CRC_CE("TransformService"));
+        required.push_back(AZ_CRC_CE("ShapeService"));
+        required.push_back(AZ_CRC_CE("SpawnerService"));
     }
 
     void RandomTimedSpawnerComponent::Activate()

@@ -323,9 +323,7 @@ namespace AZ
             m_controller.OnConfigChanged();
 
             m_generatedLutAbsolutePath = resolvedOutputFilePath + AZStd::string(".azasset");
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-                &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
-                AzToolsFramework::PropertyModificationRefreshLevel::Refresh_EntireTree);
+            InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
 
             EditorHDRColorGradingNotificationBus::Event(GetEntityId(), &EditorHDRColorGradingNotificationBus::Handler::OnGenerateLutCompleted, m_generatedLutAbsolutePath);
         }

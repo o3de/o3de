@@ -119,7 +119,7 @@ namespace EMotionFX
     //---------------------------------------------------------------------------------------------------------------------------------------------------------
     AZ::u32 SimulatedObjectSelectionHandler::GetHandlerName() const
     {
-        return AZ_CRC("SimulatedObjectSelection", 0x846970e2);
+        return AZ_CRC_CE("SimulatedObjectSelection");
     }
 
     QWidget* SimulatedObjectSelectionHandler::CreateGUI(QWidget* parent)

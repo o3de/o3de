@@ -206,6 +206,11 @@ namespace AZ
             }
             return nullptr;
         }
+
+        uint32_t RPISystem::GetNumScenes() const
+        {
+            return aznumeric_cast<uint32_t>(m_scenes.size());
+        }
         
         ScenePtr RPISystem::GetDefaultScene() const
         {

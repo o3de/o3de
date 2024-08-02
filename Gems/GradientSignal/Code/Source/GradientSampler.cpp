@@ -47,7 +47,7 @@ namespace GradientSignal
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(0, &GradientSampler::m_gradientId, "Gradient Entity Id", "Entity with attached gradient component")
-                    ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC("GradientService", 0x21c18d23))
+                    ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("GradientService"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientSampler::ChangeNotify)
                     ->Attribute(AZ::Edit::Attributes::ChangeValidate, &GradientSampler::ValidatePotentialEntityId)
 
@@ -100,7 +100,7 @@ namespace GradientSignal
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                     ->UIElement("GradientPreviewer", "Previewer")
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                    ->Attribute(AZ_CRC("GradientSampler", 0xaec97010), &GradientSampler::GetSampler)
+                    ->Attribute(AZ_CRC_CE("GradientSampler"), &GradientSampler::GetSampler)
                     ;
             }
         }

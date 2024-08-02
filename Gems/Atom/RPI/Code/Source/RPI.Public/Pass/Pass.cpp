@@ -63,6 +63,10 @@ namespace AZ
             m_flags.m_pipelineStatisticsQueryEnabled = false;
 
             m_template = descriptor.m_passTemplate;
+            if (m_template)
+            {
+                m_defaultShaderAttachmentStage = m_template->m_defaultShaderAttachmentStage;
+            }
 
             if (descriptor.m_passRequest != nullptr)
             {
@@ -223,6 +227,13 @@ namespace AZ
         void Pass::AddAttachmentBinding(PassAttachmentBinding attachmentBinding)
         {
             auto index = static_cast<uint8_t>(m_attachmentBindings.size());
+            if (attachmentBinding.m_scopeAttachmentStage == RHI::ScopeAttachmentStage::Uninitialized)
+            {
+                attachmentBinding.m_scopeAttachmentStage = attachmentBinding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::Shader
+                    ? m_defaultShaderAttachmentStage
+                    : RHI::ScopeAttachmentStage::Any;
+            }
+
             // Add the binding. This will assert if the fixed size array is full.
             m_attachmentBindings.push_back(attachmentBinding);
 
@@ -829,6 +840,69 @@ namespace AZ
             }
         }
 
+        void Pass::DeclareAttachmentsToFrameGraph(RHI::FrameGraphInterface frameGraph, PassSlotType slotType) const
+        {
+            for (size_t slotIndex = 0; slotIndex < m_attachmentBindings.size(); ++slotIndex)
+            {
+                const auto& attachmentBinding = m_attachmentBindings[slotIndex];
+                if(slotType == PassSlotType::Uninitialized || slotType == attachmentBinding.m_slotType)
+                {
+                    if (attachmentBinding.GetAttachment() != nullptr &&
+                        frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentBinding.GetAttachment()->GetAttachmentId()))
+                    {
+                        switch (attachmentBinding.m_unifiedScopeDesc.GetType())
+                        {
+                        case RHI::AttachmentType::Image:
+                            {
+                                AZ::RHI::ImageScopeAttachmentDescriptor imageScopeAttachmentDescriptor =
+                                    attachmentBinding.m_unifiedScopeDesc.GetAsImage();
+                                if (attachmentBinding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::SubpassInput)
+                                {
+                                    AZ_Assert(
+                                        m_flags.m_mergeChildrenAsSubpasses,
+                                        "SubpassInputs are only allowed in RenderPasses that are mergeable as subpass.");
+                                    frameGraph.UseSubpassInputAttachment(
+                                        imageScopeAttachmentDescriptor, attachmentBinding.m_scopeAttachmentStage);
+                                }
+                                else if (attachmentBinding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::Resolve)
+                                {
+                                    // A Resolve attachment must be declared immediately after the RenderTarget it is supposed to resolve.
+                                    // This particular requirement was already validated during BuildSubpassLayout().
+                                    const auto& renderTargetBinding = m_attachmentBindings[slotIndex - 1];
+                                    RHI::ResolveScopeAttachmentDescriptor resolveDescriptor;
+                                    resolveDescriptor.m_attachmentId = attachmentBinding.GetAttachment()->GetAttachmentId();
+                                    resolveDescriptor.m_loadStoreAction = attachmentBinding.m_unifiedScopeDesc.m_loadStoreAction;
+                                    resolveDescriptor.m_resolveAttachmentId = renderTargetBinding.GetAttachment()->GetAttachmentId();
+                                    frameGraph.UseResolveAttachment(resolveDescriptor);
+                                }
+                                else
+                                {
+                                    frameGraph.UseAttachment(
+                                        imageScopeAttachmentDescriptor,
+                                        attachmentBinding.GetAttachmentAccess(),
+                                        attachmentBinding.m_scopeAttachmentUsage,
+                                        attachmentBinding.m_scopeAttachmentStage);
+                                }
+                                break;
+                            }
+                        case RHI::AttachmentType::Buffer:
+                            {
+                                frameGraph.UseAttachment(
+                                    attachmentBinding.m_unifiedScopeDesc.GetAsBuffer(),
+                                    attachmentBinding.GetAttachmentAccess(),
+                                    attachmentBinding.m_scopeAttachmentUsage,
+                                    attachmentBinding.m_scopeAttachmentStage);
+                                break;
+                            }
+                        default:
+                            AZ_Assert(false, "Error, trying to bind an attachment that is neither an image nor a buffer!");
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
         void Pass::SetupInputsFromTemplate()
         {
             if (m_template)
@@ -1038,6 +1112,26 @@ namespace AZ
             for (PassAttachmentBinding& binding : m_attachmentBindings)
             {
                 UpdateConnectedBinding(binding);
+            }
+        }
+
+        void Pass::UpdateConnectedInputBindings()
+        {
+            for (uint8_t idx : m_inputBindingIndices)
+            {
+                UpdateConnectedBinding(m_attachmentBindings[idx]);
+            }
+            for (uint8_t idx : m_inputOutputBindingIndices)
+            {
+                UpdateConnectedBinding(m_attachmentBindings[idx]);
+            }
+        }
+
+        void Pass::UpdateConnectedOutputBindings()
+        {
+            for (uint8_t idx : m_outputBindingIndices)
+            {
+                UpdateConnectedBinding(m_attachmentBindings[idx]);
             }
         }
 

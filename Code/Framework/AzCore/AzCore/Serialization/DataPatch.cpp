@@ -1952,13 +1952,13 @@ namespace AZ
         // Find all pair elements within the legacy DataPatch
         AZStd::vector<AZ::SerializeContext::DataElementNode*> pairElements = Utils::FindDescendantElements(context,
             dataPatchElement,
-            AZStd::vector<AZ::Crc32>({ AZ_CRC("m_patch", 0xaedc2952), AZ_CRC("element", 0x41405e39) }));
+            AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("m_patch"), AZ_CRC_CE("element") }));
 
         for (AZ::SerializeContext::DataElementNode* pairElement : pairElements)
         {
             // Pull out the first and second elements from each pair
-            AZ::SerializeContext::DataElementNode* first = pairElement->FindSubElement(AZ_CRC("value1", 0xa2756c5a));
-            AZ::SerializeContext::DataElementNode* second = pairElement->FindSubElement(AZ_CRC("value2", 0x3b7c3de0));
+            AZ::SerializeContext::DataElementNode* first = pairElement->FindSubElement(AZ_CRC_CE("value1"));
+            AZ::SerializeContext::DataElementNode* second = pairElement->FindSubElement(AZ_CRC_CE("value2"));
 
             if (!first || !second)
             {
@@ -2048,7 +2048,7 @@ namespace AZ
         AZ_PROFILE_FUNCTION(AzCore);
         // Pull the targetClassId value out of the class element before it gets cleared when converting the DataPatch TypeId
         AZ::TypeId targetClassTypeId;
-        if (!classElement.GetChildData(AZ_CRC("m_targetClassId", 0xcabab9dc), targetClassTypeId))
+        if (!classElement.GetChildData(AZ_CRC_CE("m_targetClassId"), targetClassTypeId))
         {
             AZStd::string errorMessage = "Unable to retrieve data from the TypeId field m_targetClassId in the OldDataPatch class";
 

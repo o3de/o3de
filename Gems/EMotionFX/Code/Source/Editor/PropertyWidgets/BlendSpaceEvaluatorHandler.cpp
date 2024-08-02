@@ -86,7 +86,7 @@ namespace EMotionFX
 
     AZ::u32 BlendSpaceEvaluatorHandler::GetHandlerName() const
     {
-        return AZ_CRC("BlendSpaceEvaluator", 0x9a3f7d07);
+        return AZ_CRC_CE("BlendSpaceEvaluator");
     }
 
 

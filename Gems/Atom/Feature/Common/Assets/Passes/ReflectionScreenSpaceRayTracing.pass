@@ -132,8 +132,8 @@
                             "Attachment": "DepthStencilInput"
                         },
                         "Multipliers": {
-                            "WidthMultiplier": "0.5",
-                            "HeightMultiplier": "0.5"
+                            "WidthMultiplier": 0.5,
+                            "HeightMultiplier": 0.5
                         }
                     },
                     "ImageDescriptor": {
@@ -152,8 +152,8 @@
                             "Attachment": "DepthStencilInput"
                         },
                         "Multipliers": {
-                            "WidthMultiplier": "0.5",
-                            "HeightMultiplier": "0.5"
+                            "WidthMultiplier": 0.5,
+                            "HeightMultiplier": 0.5
                         }
                     },
                     "ImageDescriptor": {
@@ -172,8 +172,8 @@
                             "Attachment": "DepthStencilInput"
                         },
                         "Multipliers": {
-                            "WidthMultiplier": "0.5",
-                            "HeightMultiplier": "0.5"
+                            "WidthMultiplier": 0.5,
+                            "HeightMultiplier": 0.5
                         }
                     },
                     "ImageDescriptor": {

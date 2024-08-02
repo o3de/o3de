@@ -27,6 +27,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
 #endif // DEBUGDRAW_GEM_EDITOR
 
+#include <Atom/RHI/RHIUtils.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Scene.h>
@@ -88,17 +89,17 @@ namespace DebugDraw
 
     void DebugDrawSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("DebugDrawService", 0x651d8874));
+        provided.push_back(AZ_CRC_CE("DebugDrawService"));
     }
 
     void DebugDrawSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("DebugDrawService", 0x651d8874));
+        incompatible.push_back(AZ_CRC_CE("DebugDrawService"));
     }
 
     void DebugDrawSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("RPISystem", 0xf2add773));
+        required.push_back(AZ_CRC_CE("RPISystem"));
     }
 
     void DebugDrawSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -505,7 +506,7 @@ namespace DebugDraw
         #endif // DEBUGDRAW_GEM_EDITOR
 
         // Draw text elements and remove any that are expired
-        int numScreenTexts = 0;
+        float currentOnScreenY = 20.f; // Initial shift down for the 1st line, then recalculate shifts down for next lines accounting for textElement.m_fontScale
         AZ::EntityId lastTargetEntityId;
 
         for (auto& textElement : m_activeTexts)
@@ -514,8 +515,20 @@ namespace DebugDraw
             debugDisplay.SetColor(textColor);
             if (textElement.m_drawMode == DebugDrawTextElement::DrawMode::OnScreen)
             {
-                debugDisplay.Draw2dTextLabel(100.0f, 20.f + ((float)numScreenTexts * 15.0f), 1.4f, textElement.m_text.c_str() );
-                ++numScreenTexts;
+                if (textElement.m_useOnScreenCoordinates)
+                {
+                    // Reuse textElement.m_worldLocation for 2D OnScreen positioning.
+                    debugDisplay.Draw2dTextLabel(textElement.m_worldLocation.GetX(),textElement.m_worldLocation.GetY(),textElement.m_fontScale
+                        , textElement.m_text.c_str(), textElement.m_bCenter);
+                }
+                else
+                {
+                    // Hardcoded 2D OnScreen positioning as in original code. Note original code below with constant shifts.
+                    debugDisplay.Draw2dTextLabel(100.0f, currentOnScreenY, textElement.m_fontScale, textElement.m_text.c_str());
+                    // Prepare the shift down for a next line assuming default m_textSizeFactor = 12.0f + line gap. 
+                    // Could be more precise if Draw2dTextLabel() returned drawn text size with current viewport settings.
+                    currentOnScreenY += textElement.m_fontScale * 14.0f + 2.0f; 
+                }
             }
             else if (textElement.m_drawMode == DebugDrawTextElement::DrawMode::InWorld)
             {
@@ -1065,7 +1078,34 @@ namespace DebugDraw
         AZ::TickRequestBus::BroadcastResult(newText.m_activateTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
     }
 
-    void DebugDrawSystemComponent::CreateTextEntryForComponent(const AZ::EntityId& componentEntityId, const DebugDrawTextElement& element)
+    void DebugDrawSystemComponent::DrawScaledTextOnScreen(const AZStd::string& text, float fontScale, const AZ::Color& color, float duration)
+    {
+        AZStd::lock_guard<AZStd::mutex> locker(m_activeTextsMutex);
+        DebugDrawTextElement& newText = m_activeTexts.emplace_back();
+        newText.m_drawMode = DebugDrawTextElement::DrawMode::OnScreen;
+        newText.m_text = text;
+        newText.m_fontScale = fontScale;
+        newText.m_color = color;
+        newText.m_duration = duration;
+        AZ::TickRequestBus::BroadcastResult(newText.m_activateTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
+    }
+
+    void DebugDrawSystemComponent::DrawScaledTextOnScreenPos(float x, float y, const AZStd::string& text, float fontScale, const AZ::Color& color, float duration, bool bCenter)
+    {
+        AZStd::lock_guard<AZStd::mutex> locker(m_activeTextsMutex);
+        DebugDrawTextElement& newText = m_activeTexts.emplace_back();
+        newText.m_drawMode = DebugDrawTextElement::DrawMode::OnScreen;
+        newText.m_text = text;
+        newText.m_fontScale = fontScale;
+        newText.m_color = color;
+        newText.m_duration = duration;
+        newText.m_bCenter = bCenter;
+        newText.m_useOnScreenCoordinates = true;
+        newText.m_worldLocation.Set(x, y, 1.f);
+        AZ::TickRequestBus::BroadcastResult(newText.m_activateTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
+    }
+
+    void DebugDrawSystemComponent::DebugDrawSystemComponent::CreateTextEntryForComponent(const AZ::EntityId& componentEntityId, const DebugDrawTextElement& element)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeTextsMutex);
         m_activeTexts.push_back(element);
@@ -1088,7 +1128,7 @@ namespace DebugDraw
                 AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::RayTracingFeatureProcessor>(element.m_targetEntityId);
 
             auto shaderAsset = AZ::RPI::FindShaderAsset("shaders/sphereintersection.azshader");
-            auto rayTracingShader = AZ::RPI::Shader::FindOrCreate(shaderAsset);
+            auto rayTracingShader = AZ::RPI::Shader::FindOrCreate(shaderAsset, AZ::RHI::GetDefaultSupervariantNameWithNoFloat16Fallback());
 
             AZ::RPI::CommonBufferDescriptor desc;
             desc.m_bufferName = "SpheresBuffer";
@@ -1103,7 +1143,7 @@ namespace DebugDraw
                 "DebugDraw::Sphere",
                 rayTracingShader,
                 "SphereIntersection",
-                m_spheresRayTracingIndicesBuffer->GetBufferView()->GetBindlessReadIndex());
+                m_spheresRayTracingIndicesBuffer->GetBufferView()->GetDeviceBufferView(AZ::RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex());
         }
 
         element.m_localInstanceIndex = m_spheresRayTracingIndices.AddEntry(0);
@@ -1113,7 +1153,7 @@ namespace DebugDraw
         {
             m_spheresRayTracingIndicesBuffer->Resize(requiredSizeInBytes);
             m_rayTracingFeatureProcessor->SetProceduralGeometryTypeBindlessBufferIndex(
-                m_sphereRayTracingTypeHandle.GetWeakHandle(), m_spheresRayTracingIndicesBuffer->GetBufferView()->GetBindlessReadIndex());
+                m_sphereRayTracingTypeHandle.GetWeakHandle(), m_spheresRayTracingIndicesBuffer->GetBufferView()->GetDeviceBufferView(AZ::RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex());
 
             // Need to copy all existing data to resized buffer
             AZStd::vector<float> radii(m_spheresRayTracingIndices.GetIndexList().size());
@@ -1152,7 +1192,7 @@ namespace DebugDraw
                 AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::RayTracingFeatureProcessor>(element.m_targetEntityId);
 
             auto shaderAsset = AZ::RPI::FindShaderAsset("shaders/obbintersection.azshader");
-            auto rayTracingShader = AZ::RPI::Shader::FindOrCreate(shaderAsset);
+            auto rayTracingShader = AZ::RPI::Shader::FindOrCreate(shaderAsset, AZ::RHI::GetDefaultSupervariantNameWithNoFloat16Fallback());
 
             m_obbRayTracingTypeHandle =
                 m_rayTracingFeatureProcessor->RegisterProceduralGeometryType("DebugDraw::Obb", rayTracingShader, "ObbIntersection");

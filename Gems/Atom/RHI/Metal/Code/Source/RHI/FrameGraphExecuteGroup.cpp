@@ -31,7 +31,7 @@ namespace AZ
             m_workRequest.m_signalFenceValue = scope.GetSignalFenceValue();            
             m_workRequest.m_commandLists.resize(commandListCount);
             m_workRequest.m_swapChainsToPresent.reserve(scope.GetSwapChainsToPresent().size());
-            for (RHI::SwapChain* swapChain : scope.GetSwapChainsToPresent())
+            for (RHI::DeviceSwapChain* swapChain : scope.GetSwapChainsToPresent())
             {
                 m_workRequest.m_swapChainsToPresent.push_back(static_cast<SwapChain*>(swapChain));
             }
@@ -40,11 +40,12 @@ namespace AZ
             fencesToSignal.reserve(scope.GetFencesToSignal().size());
             for (const RHI::Ptr<RHI::Fence>& fence : scope.GetFencesToSignal())
             {
-                fencesToSignal.push_back(&static_cast<FenceImpl&>(*fence).Get());
+                fencesToSignal.push_back(&static_cast<FenceImpl&>(*fence->GetDeviceFence(scope.GetDeviceIndex())).Get());
             }
             
             InitRequest request;
             request.m_scopeId = scope.GetId();
+            request.m_deviceIndex = scope.GetDeviceIndex();
             request.m_submitCount = scope.GetEstimatedItemCount();
             request.m_commandLists = reinterpret_cast<RHI::CommandList* const*>(m_workRequest.m_commandLists.data());
             request.m_commandListCount = commandListCount;
@@ -113,7 +114,12 @@ namespace AZ
             RHI::FrameGraphExecuteContext& context,
             AZ::u32 contextIndex)
         {
-            m_scope->End(*static_cast<CommandList*>(context.GetCommandList()), context.GetCommandListIndex(), context.GetCommandListCount());
+            //For non-merged groups we handle signalling fences related to aliased resources at the end of the group within
+            //FrameGraphExecuteGroup::EndInternal. The reason for this is that you can only signal fences once the parallel
+            //encoders (within FrameGraphExecuteGroup) are flushed. Hence we can not signal at the end of the context itself
+            //as it is still in the middle of encoding work for active scope
+            const bool signalFencesForAliasedResources = false;
+            m_scope->End(*static_cast<CommandList*>(context.GetCommandList()), signalFencesForAliasedResources);
             static_cast<CommandList*>(context.GetCommandList())->Close();
         }
     }

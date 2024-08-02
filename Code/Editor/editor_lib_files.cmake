@@ -228,8 +228,6 @@ set(FILES
     res/water.bmp
     res/work_in_progress_icon.ico
     res/MannFileManagerImageList.bmp
-    Plugin.cpp
-    Plugin.h
     PluginManager.cpp
     PluginManager.h
     IEditor.h
@@ -262,17 +260,12 @@ set(FILES
     Include/HitContext.h
     Include/ICommandManager.h
     Include/IDisplayViewport.h
-    Include/IEditorClassFactory.h
     Include/ILogFile.h
     Include/IKeyTimeSet.h
-    Include/IObjectManager.h
     Include/IPlugin.h
     Include/IPreferencesPage.h
-    Include/ISourceControl.h
     Include/ObjectEvent.h
     Util/AffineParts.cpp
-    Objects/BaseObject.cpp
-    Objects/BaseObject.h
     AnimationContext.cpp
     AnimationContext.h
     AzAssetBrowser/AzAssetBrowserRequestHandler.cpp
@@ -392,9 +385,7 @@ set(FILES
     EditorFileMonitor.cpp
     EditorFileMonitor.h
     Include/IEditorFileMonitor.h
-    GameExporter.cpp
     GameResourcesExporter.cpp
-    GameExporter.h
     GameResourcesExporter.h
     DocMultiArchive.h
     FBXExporterDialog.h
@@ -408,15 +399,6 @@ set(FILES
     LevelIndependentFileMan.h
     LogFileImpl.cpp
     LogFileImpl.h
-    Objects/ClassDesc.h
-    Objects/ObjectLoader.cpp
-    Objects/ObjectLoader.h
-    Objects/ObjectManager.cpp
-    Objects/ObjectManager.h
-    Objects/ObjectManagerLegacyUndo.cpp
-    Objects/ObjectManagerLegacyUndo.h
-    Objects/EntityObject.cpp
-    Objects/EntityObject.h
     PythonEditorFuncs.cpp
     PythonEditorFuncs.h
     QtUI/WaitCursor.h
@@ -424,8 +406,6 @@ set(FILES
     Settings.cpp
     SettingsManager.cpp
     SettingsManagerDialog.cpp
-    PreferencesStdPages.h
-    PreferencesStdPages.cpp
     EditorPreferencesPageGeneral.h
     EditorPreferencesPageGeneral.cpp
     EditorPreferencesPageFiles.h
@@ -479,8 +459,6 @@ set(FILES
     TrackView/TrackViewPythonFuncs.cpp
     TrackView/TrackViewSequenceManager.cpp
     TrackView/TrackViewSequenceManager.h
-    TrackView/TrackViewUndo.cpp
-    TrackView/TrackViewUndo.h
     TrackView/CommentNodeAnimator.cpp
     TrackView/DirectorNodeAnimator.cpp
     TrackView/CommentNodeAnimator.h
@@ -611,7 +589,6 @@ set(FILES
     Util/ImageGif.h
     Util/ImageTIF.cpp
     Util/ImageTIF.h
-    Util/Math.h
     WelcomeScreen/WelcomeScreenDialog.h
     WelcomeScreen/WelcomeScreenDialog.cpp
     WelcomeScreen/WelcomeScreenDialog.ui

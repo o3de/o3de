@@ -220,6 +220,7 @@ namespace AZ::Render
         ShadowData& shadowData = m_shadowData.GetElement<ShadowDataIndex>(id.GetIndex());
         shadowData.m_esmExponent = exponent;
         m_deviceBufferNeedsUpdate = true;
+        m_filterParameterNeedsUpdate = true;
     }
 
     void ProjectedShadowFeatureProcessor::SetShadowFilterMethod(ShadowId id, ShadowFilterMethod method)
@@ -307,10 +308,10 @@ namespace AZ::Render
         shadowData.m_bias = nearDist * shadowProperty.m_bias * 0.01f;
         
         FilterParameter& esmData = m_shadowData.GetElement<FilterParamIndex>(shadowProperty.m_shadowId.GetIndex());
-        
+
         // Set parameters to calculate linear depth if ESM is used.
-        esmData.m_n_f_n = nearDist / (farDist - nearDist);
-        esmData.m_n_f = nearDist - farDist;
+        esmData.m_nf = nearDist * farDist;
+        esmData.m_f_n = farDist - nearDist;
         esmData.m_f = farDist;
         esmData.m_isEnabled = FilterMethodIsEsm(shadowData);
         m_filterParameterNeedsUpdate = m_filterParameterNeedsUpdate || esmData.m_isEnabled;
@@ -573,7 +574,6 @@ namespace AZ::Render
     {
         if (m_primaryEsmShadowmapsPass == nullptr)
         {
-            AZ_Error("ProjectedShadowFeatureProcessor", false, "Cannot find a required pass.");
             return;
         }
 
@@ -581,11 +581,14 @@ namespace AZ::Render
         for (const auto& shadowProperty : m_shadowProperties.GetDataVector())
         {
             FilterParameter& esmData = m_shadowData.GetElement<FilterParamIndex>(shadowProperty.m_shadowId.GetIndex());
+            ShadowData& shadowData = m_shadowData.GetElement<ShadowDataIndex>(shadowProperty.m_shadowId.GetIndex());
             if (esmData.m_isEnabled)
             {
                 anyShadowsUseEsm = true;
                 break;
             }
+            // TODO: why do we set it multiple times?
+            m_primaryEsmShadowmapsPass->SetEsmExponent(shadowData.m_esmExponent);
         }
 
         m_primaryEsmShadowmapsPass->SetEnabledComputation(anyShadowsUseEsm);
@@ -594,9 +597,10 @@ namespace AZ::Render
     void ProjectedShadowFeatureProcessor::SetFilterParameterToPass()
     {
         static uint32_t nameIndex = 0;
-        if (m_primaryProjectedShadowmapsPass == nullptr || m_primaryEsmShadowmapsPass == nullptr)
+
+        if (!m_primaryProjectedShadowmapsPass)
         {
-            AZ_Error("ProjectedShadowFeatureProcessor", false, "Cannot find a required pass.");
+            // If this pass doesn't exist, then do nothing.
             return;
         }
 
@@ -607,8 +611,11 @@ namespace AZ::Render
 
         m_filterParamBufferHandler.UpdateBuffer(m_shadowData.GetRawData<FilterParamIndex>(), static_cast<uint32_t>(m_shadowData.GetSize()));
 
-        m_primaryEsmShadowmapsPass->SetShadowmapIndexTableBuffer(indexTableBuffer);
-        m_primaryEsmShadowmapsPass->SetFilterParameterBuffer(m_filterParamBufferHandler.GetBuffer());
+        if (m_primaryEsmShadowmapsPass)
+        {
+            m_primaryEsmShadowmapsPass->SetShadowmapIndexTableBuffer(indexTableBuffer);
+            m_primaryEsmShadowmapsPass->SetFilterParameterBuffer(m_filterParamBufferHandler.GetBuffer());
+        }
     }
 
     void ProjectedShadowFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& /*packet*/)
@@ -776,7 +783,7 @@ namespace AZ::Render
             return;
         }
 
-        RHI::DrawPacketBuilder drawPacketBuilder;
+        RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
         drawPacketBuilder.Begin(nullptr);
         drawPacketBuilder.SetDrawArguments(RHI::DrawLinear(1, 0, 3, 0));
 
@@ -839,7 +846,8 @@ namespace AZ::Render
 
         if (needsEsm)
         {
-            m_esmAtlasImage = createAtlas(RHI::Format::R16_FLOAT, RHI::ImageBindFlags::ShaderReadWrite, RHI::ImageAspectFlags::Color, "ProjectedShadowAtlasESM");
+            m_esmAtlasImage = createAtlas(
+                RHI::Format::R32_FLOAT, RHI::ImageBindFlags::ShaderReadWrite, RHI::ImageAspectFlags::Color, "ProjectedShadowAtlasESM");
             for (auto& [key, esmShadowmapsPass] : m_esmShadowmapsPasses)
             {
                 esmShadowmapsPass->SetAtlasAttachmentImage(m_esmAtlasImage);

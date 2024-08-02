@@ -2160,7 +2160,7 @@ namespace AzToolsFramework
                     }
                     else
                     {
-                        auto attribute = classElement->FindAttribute(AZ_CRC("KeyType", 0x15bc5303));
+                        auto attribute = classElement->FindAttribute(AZ_CRC_CE("KeyType"));
                         auto attributeData = azrtti_cast<AZ::AttributeData<AZ::TypeId>*>(attribute);
                         AZ_Assert(attributeData, "KeyType must be defined for keyed containers");
                         auto keyId = attributeData->Get(dataPtr);

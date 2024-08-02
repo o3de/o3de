@@ -83,7 +83,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
         uint instanceId,
         bool useVertexBlendMask)
     {
-        VsOutput output = EvaluateVertexGeometry_BasePBR(position, normal, tangent, uv0, uv1, instanceId);
+        VsOutput output = EvaluateVertexGeometry_BasePBR(position, normal, tangent, uv0, uv1, float4(1.0f, 1.0f, 1.0f, 1.0f), instanceId, false);
 
         if(useVertexBlendMask)
         {
@@ -119,7 +119,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
 
     class PixelGeometryData_StandardMultilayerPBR : PixelGeometryData_StandardPBR
     {
-        float3 m_vertexBlendMask;
+        real3 m_vertexBlendMask;
     };
     
     #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_PixelGeometryEval.azsli>
@@ -137,19 +137,20 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
         float2 uvs[UvSetCount],
         bool isFrontFace,
         real4x4 objectToWorld,
-        float3 vertexBlendMask)
+        real3 vertexBlendMask)
     {
         PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normalWS, tangentWS, bitangentWS, uvs, isFrontFace);
 
         geoData.isDisplacementClipped = false;
         geoData.m_vertexBlendMask = vertexBlendMask;
 
+#if ENABLE_PARALLAX
         if(ShouldHandleParallax())
         {
             MultilayerSetPixelDepth(vertexBlendMask, geoData.positionWS, geoData.vertexNormal, geoData.tangents, geoData.bitangents,
                 geoData.uvs, isFrontFace, objectToWorld, positionSV.z, positionSV.w, geoData.isDisplacementClipped);
         }
-
+#endif
         return geoData;
     }
     
@@ -170,7 +171,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
             IN.uvs,
             isFrontFace,
             objectToWorld,
-            IN.m_blendMask);
+            real3(IN.m_blendMask));
     }
     
     bool CanHandleParallax()
@@ -256,9 +257,9 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
 
         float2 m_vertexUv[UvSetCount];
         float3x3 m_uvMatrix;
-        real3 m_normal;
-        real3 m_tangents[UvSetCount];
-        real3 m_bitangents[UvSetCount];
+        float3 m_normal;
+        float3 m_tangents[UvSetCount];
+        float3 m_bitangents[UvSetCount];
 
         sampler m_sampler;
 
@@ -421,23 +422,23 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
 
     Surface EvaluateSurface_StandardMultilayerPBR(
         float3 positionWS,
-        real3 normalWS,
-        real3 tangents[UvSetCount],
-        real3 bitangents[UvSetCount],
+        float3 normalWS,
+        float3 tangents[UvSetCount],
+        float3 bitangents[UvSetCount],
         float2 uvs[UvSetCount],
         bool isFrontFace,
         bool isDisplacementClipped,
-        float3 vertexBlendMask,
+        real3 vertexBlendMask,
         float4 uvDxDy,
         bool customDerivatives)
-    {        
+    {
         LayerBlendSource blendSource = GetFinalLayerBlendSource();
         
         // ------- Debug Modes -------
 
         if(o_debugDrawMode == DebugDrawMode::BlendMask)
         {
-            float3 blendMaskValues = GetApplicableBlendMaskValues(blendSource, uvs[MaterialSrg::m_blendMaskUvIndex], vertexBlendMask, uvDxDy, customDerivatives);
+            real3 blendMaskValues = GetApplicableBlendMaskValues(blendSource, uvs[MaterialSrg::m_blendMaskUvIndex], vertexBlendMask, uvDxDy, customDerivatives);
             return MakeDebugSurface(positionWS, normalWS, real3(blendMaskValues));
         }
     
@@ -452,7 +453,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
     
         if(o_debugDrawMode == DebugDrawMode::FinalBlendWeights)
         {
-            float3 blendWeights;
+            real3 blendWeights;
             if (customDerivatives)
             {
                 blendWeights = GetBlendWeights(blendSource, uvs[MaterialSrg::m_blendMaskUvIndex], vertexBlendMask, uvDxDy, customDerivatives);
@@ -596,12 +597,12 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
     Surface EvaluateSurface_StandardMultilayerPBR(
         float3 positionWS,
         real3 normalWS,
-        real3 tangents[UvSetCount],
-        real3 bitangents[UvSetCount],
+        float3 tangents[UvSetCount],
+        float3 bitangents[UvSetCount],
         float2 uvs[UvSetCount],
         bool isFrontFace,
         bool isDisplacementClipped,
-        float3 vertexBlendMask)
+        real3 vertexBlendMask)
     {
         return EvaluateSurface_StandardMultilayerPBR(
             positionWS,

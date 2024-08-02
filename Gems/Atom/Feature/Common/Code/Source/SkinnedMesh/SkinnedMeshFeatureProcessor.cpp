@@ -446,29 +446,30 @@ namespace AZ
             }
         }
 
-        void SkinnedMeshFeatureProcessor::SubmitSkinningDispatchItems(RHI::CommandList* commandList, uint32_t startIndex, uint32_t endIndex)
+        void SkinnedMeshFeatureProcessor::SubmitSkinningDispatchItems(const RHI::FrameGraphExecuteContext& context, uint32_t startIndex, uint32_t endIndex)
         {
             AZStd::lock_guard lock(m_dispatchItemMutex);
 
-            AZStd::unordered_set<const RHI::DispatchItem*>::iterator it = m_skinningDispatches.begin();
+            auto it = m_skinningDispatches.begin();
             AZStd::advance(it, startIndex);
             for (uint32_t index = startIndex; index < endIndex; ++index, ++it)
             {
-                const RHI::DispatchItem* dispatchItem = *it;
-                commandList->Submit(*dispatchItem, index);
+                const auto* dispatchItem = *it;
+                context.GetCommandList()->Submit(dispatchItem->GetDeviceDispatchItem(context.GetDeviceIndex()), index);
             }
         }
 
-        void SkinnedMeshFeatureProcessor::SubmitMorphTargetDispatchItems(RHI::CommandList* commandList, uint32_t startIndex, uint32_t endIndex)
+        void SkinnedMeshFeatureProcessor::SubmitMorphTargetDispatchItems(
+            const RHI::FrameGraphExecuteContext& context, uint32_t startIndex, uint32_t endIndex)
         {
             AZStd::lock_guard lock(m_dispatchItemMutex);
 
-            AZStd::unordered_set<const RHI::DispatchItem*>::iterator it = m_morphTargetDispatches.begin();
+            auto it = m_morphTargetDispatches.begin();
             AZStd::advance(it, startIndex);
             for (uint32_t index = startIndex; index < endIndex; ++index, ++it)
             {
-                const RHI::DispatchItem* dispatchItem = *it;
-                commandList->Submit(*dispatchItem, index);
+                const auto* dispatchItem = *it;
+                context.GetCommandList()->Submit(dispatchItem->GetDeviceDispatchItem(context.GetDeviceIndex()), index);
             }
         }
 

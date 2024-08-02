@@ -19,8 +19,9 @@ namespace AZ
             if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderStageFunction, RHI::ShaderStageFunction>()
-                    ->Version(1)
-                    ->Field("m_byteCodes", &ShaderStageFunction::m_byteCodes);
+                    ->Version(2)
+                    ->Field("m_byteCodes", &ShaderStageFunction::m_byteCodes)
+                    ->Field("m_specializationOffsets", &ShaderStageFunction::m_specializationOffsets);
             }
         }
 
@@ -42,6 +43,21 @@ namespace AZ
         ShaderByteCodeView ShaderStageFunction::GetByteCode(uint32_t subStageIndex) const
         {
             return ShaderByteCodeView(m_byteCodes[subStageIndex]);
+        }
+
+        void ShaderStageFunction::SetSpecializationOffsets(uint32_t subStageIndex, const SpecializationOffsets& offsets)
+        {
+            m_specializationOffsets[subStageIndex] = offsets;
+        }
+
+        const ShaderStageFunction::SpecializationOffsets& ShaderStageFunction::GetSpecializationOffsets(uint32_t subStageIndex) const
+        {
+            return m_specializationOffsets[subStageIndex];
+        }
+
+        bool ShaderStageFunction::UseSpecializationConstants(uint32_t subStageIndex) const
+        {
+            return !GetSpecializationOffsets(subStageIndex).empty();
         }
 
         RHI::ResultCode ShaderStageFunction::FinalizeInternal()
