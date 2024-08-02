@@ -221,7 +221,11 @@ namespace AZ::RHI
         Clear,
 
         //! The attachment contents are undefined. Use when writing to entire contents of view.
-        DontCare
+        DontCare,
+
+        //! The attachment contents will be undefined inside the current scope and the resource is not accessed.
+        //! Will fallback to a Load op if the platform doesn't support it.
+        None
     };
 
     //! Describes the action the hardware should use when storing an attachment after a scope.
@@ -231,7 +235,12 @@ namespace AZ::RHI
         Store = 0,
 
         //! The attachment contents can be undefined after the current scope.
-        DontCare
+        DontCare,
+
+        //! The attachment contents are read only. This avoid any write back operations.
+        //! If values are written this behaves identically to the DontCare op.
+        //! Will fallback to a Store op if the platform doesn't support it.
+        None
     };
 
     //! Describes the type of data the attachment represents

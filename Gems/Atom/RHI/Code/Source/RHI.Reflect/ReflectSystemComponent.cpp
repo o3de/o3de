@@ -249,11 +249,13 @@ namespace AZ::RHI
             ->Value("Load", AttachmentLoadAction::Load)
             ->Value("Clear", AttachmentLoadAction::Clear)
             ->Value("DontCare", AttachmentLoadAction::DontCare)
+            ->Value("None", AttachmentLoadAction::None)
             ;
 
         serializeContext->Enum<AttachmentStoreAction>()
             ->Value("Store", AttachmentStoreAction::Store)
             ->Value("DontCare", AttachmentStoreAction::DontCare)
+            ->Value("None", AttachmentStoreAction::None)
             ;
 
         serializeContext->Enum<AttachmentType>()
