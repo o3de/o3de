@@ -15,10 +15,11 @@ $androidSdkVersion = '11076708_latest'
 $androidSdkUrl = "https://dl.google.com/android/repository/commandlinetools-win-$androidSdkVersion.zip"
 $androidSdkChecksum = '4d6931209eebb1bfb7c7e8b240a6a3cb3ab24479ea294f3539429574b1eec862'
 $androidSdkInstallDir = "C:\AndroidSdk\cmdline-tools"
+$androidSdkLatestDir = "$androidSdkInstallDir\latest"
 Install-ChocolateyZipPackage $androidSdkPackageName $androidSdkUrl $androidSdkInstallDir -Checksum $androidSdkChecksum -ChecksumType 'sha256'
 [Environment]::SetEnvironmentVariable("ANDROID_SDK_ROOT", "C:\AndroidSdk", [EnvironmentVariableTarget]::Machine)
-# Rename the Android SDK folder 'cmdline-tools' to match what the command line tools looks like normally in a fulll AndroidSDK install
-Rename-Item -Path "C:\AndroidSdk\cmdline-tools\cmdline-tools" "C:\AndroidSdk\cmdline-tools\latest"
+# Rename the Android SDK folder 'cmdline-tools' to match what the command line tools looks like normally in a full AndroidSDK install
+Rename-Item -Path "$androidSdkInstallDir\cmdline-tools" "$androidSdkLatestDir"
 
 # Set package versions
 $android_packages = '"platforms;android-28" "platforms;android-29" "platforms;android-30"'
