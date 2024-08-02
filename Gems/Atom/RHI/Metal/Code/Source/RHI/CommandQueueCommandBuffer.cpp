@@ -134,6 +134,22 @@ namespace AZ
                         abort();
 #endif
                     }
+#if defined(CARBONATED)
+                    else
+                    {
+                        CFTimeInterval begin = buffer.GPUStartTime;
+                        CFTimeInterval end = buffer.GPUEndTime;
+                        RHI::Device* pDevice = RHI::RHISystemInterface::Get()->GetDevice();
+                        pDevice->CommandBufferCompleted(static_cast<const void*>(buffer), begin, end);
+                        /*
+                        {
+                            const double t = double(clock_gettime_nsec_np(CLOCK_UPTIME_RAW)) / 1000000000.0;
+                            AZ_Info("GPUtime", "buffer done at %f, start %f, stop %f, dt %f, current device frame %u, buffer %p",
+                                            t, begin, end, end - begin, pDevice->GetFrameCounter(), static_cast<const void*>(buffer));
+                        }
+                        */
+                    }
+#endif
                 }
             }];
             
@@ -142,6 +158,11 @@ namespace AZ
             //Only when this CB is committed and release is called on it this will it get reclaimed.
             [m_mtlCommandBuffer retain];
             AZ_Assert(m_mtlCommandBuffer != nil, "Could not create the command buffer");
+            
+#if defined(CARBONATED)
+            RHI::RHISystemInterface::Get()->GetDevice()->RegisterCommandBuffer(static_cast<void*>(m_mtlCommandBuffer));
+#endif
+            
             return m_mtlCommandBuffer;
         }
     
@@ -177,6 +198,10 @@ namespace AZ
         {
             if(isCommitNeeded)
             {
+#if defined(CARBONATED)
+                RHI::Device* pDevice = RHI::RHISystemInterface::Get()->GetDevice();
+                pDevice->MarkCommandBufferCommit(static_cast<const void*>(m_mtlCommandBuffer));
+#endif
                 [m_mtlCommandBuffer commit];
 #if defined (AZ_FORCE_CPU_GPU_INSYNC)
                 // Wait for the gpu to finish executing the work related to the command buffer

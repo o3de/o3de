@@ -130,10 +130,268 @@ namespace AZ::RHI
         if (ValidateIsInitialized() && ValidateIsNotInFrame())
         {
             m_isInFrame = true;
+#if defined(CARBONATED)
+            m_FrameTimeLock.lock();
+            
+            // calculate pervious frame GPU time if it is ready, because we do not calculate it on command buffer completion
+            if (m_frameCommandIndex >= 0)
+            {
+                FrameCommands& fc = m_frameCommands[m_frameCommandIndex];
+                if (fc.m_commands.size() == 0)  // if all the buffers are completed
+                {
+                    m_FrameGPUTime = fc.CalculateTime();
+                    m_FrameGPUSumTime = fc.m_sumTime;
+                    m_FrameGPUWaitTime = fc.m_waitTime;
+                    m_FrameGPUWaitAvgTime = fc.m_waitTime / fc.m_numBuffers;
+                    m_FrameGPUEndMaxTime = fc.m_endMaxTime;
+                    /*{
+                        const double t = double(clock_gettime_nsec_np(CLOCK_UPTIME_RAW)) / 1000000000.0;
+                        AZ_Info("GPUtime", "Get GPU data at %f on frame CHANGE for frame %u as %f / %f", t, fc.m_frameNumber, m_FrameGPUTime, m_FrameGPUSumTime);
+                    }*/
+                }
+            }
+
+            m_frameCounter++;
+            m_frameCommandIndex = (m_frameCommandIndex + 1) % m_frameCommands.array_size;
+            m_frameCommands[m_frameCommandIndex].Init(m_frameCounter);
+            /*{
+                const double t = double(clock_gettime_nsec_np(CLOCK_UPTIME_RAW)) / 1000000000.0;
+                AZ_Info("GPUtime", "begin frame at %f, frame num %u", t, m_frameCounter);
+            }*/
+            m_FrameTimeLock.unlock();
+#endif
             return BeginFrameInternal();
         }
         return ResultCode::InvalidOperation;
     }
+
+#if defined(CARBONATED)
+    void Device::RegisterCommandBuffer(const void* buffer)
+    {
+        if (!m_statsEnabled)
+        {
+            return;
+        }
+
+        m_FrameTimeLock.lock();
+        
+        if (m_frameCommandIndex >= 0)  // if frames started
+        {
+            m_frameCommands[m_frameCommandIndex].RegisterCommandBuffer(buffer);
+            /*{
+                const double t = double(clock_gettime_nsec_np(CLOCK_UPTIME_RAW)) / 1000000000.0;
+                AZ_Info("GPUtime", "Register command buffer %p for frame %u at %f", buffer, m_frameCommands[m_frameCommandIndex].m_frameNumber, t);
+            }*/
+        }
+        m_FrameTimeLock.unlock();
+    }
+
+    void Device::MarkCommandBufferCommit(const void* buffer)
+    {
+        if (!m_statsEnabled)
+        {
+            return;
+        }
+
+        m_FrameTimeLock.lock();
+        
+        if (m_frameCommandIndex >= 0)  // if frames started
+        {
+            bool found = false;
+            for (int i = m_frameCommandIndex, j = 0; j < m_frameCommands.array_size; j++, i = (i + m_frameCommands.array_size - 1) % m_frameCommands.array_size)
+            {
+                FrameCommands& fc = m_frameCommands[i];
+                for (int ib = 0; ib < fc.m_commands.size(); ib++)
+                {
+                    if (buffer == fc.m_commands[ib].m_buffer)
+                    {
+                        found = true;
+
+                        fc.m_commands[ib].m_commitTime = TimeInterval::GetTimeSec();
+                        break;
+                    }
+                }
+                if (found)
+                {
+                    break;
+                }
+            }
+            if (!found)
+            {
+                AZ_Error("GPUtime", false, "Command buffer %p is not found to commit", buffer);
+            }
+        }
+                
+        m_FrameTimeLock.unlock();
+    }
+
+    void Device::CommandBufferCompleted(const void* buffer, double begin, double end)
+    {
+        if (!m_statsEnabled)
+        {
+            return;
+        }
+
+        m_FrameTimeLock.lock();
+        
+        if (m_frameCommandIndex >= 0)  // if frames started
+        {
+            bool found = false;
+            for (int i = m_frameCommandIndex, j = 0; j < m_frameCommands.array_size; j++, i = (i + m_frameCommands.array_size - 1) % m_frameCommands.array_size)
+            {
+                FrameCommands& fc = m_frameCommands[i];
+                for (int ib = 0; ib < fc.m_commands.size(); ib++)
+                {
+                    if (buffer == fc.m_commands[ib].m_buffer)
+                    {
+                        found = true;
+                        if (end - begin > 0.0000005)  // there are zero execution time buffers, which we ignore
+                        {
+                            //AZ_Info("GPUtime", "Add interval %f %f (%f) to frame %u", begin, end, end - begin, fc.m_frameNumber);
+                            fc.RegisterInterval(fc.m_commands[ib].m_commitTime, begin, end);
+                        }
+                        fc.m_commands.erase(fc.m_commands.begin() + ib);  // the same address can be used in another frame
+                        if (fc.m_commands.size() == 0)  // if all the buffers are completed
+                        {
+                            if (i != m_frameCommandIndex)   // do not calculate time for the current frame yet because there might be more buffers created later
+                            {
+                                m_FrameGPUTime = fc.CalculateTime();
+                                m_FrameGPUSumTime = fc.m_sumTime;
+                                m_FrameGPUWaitTime = fc.m_waitTime;
+                                m_FrameGPUWaitAvgTime = fc.m_waitTime / fc.m_numBuffers;
+                                m_FrameGPUEndMaxTime = fc.m_endMaxTime;
+                                /*{
+                                    const double t = double(clock_gettime_nsec_np(CLOCK_UPTIME_RAW)) / 1000000000.0;
+                                    AZ_Info("GPUtime", "Get GPU data at %f for frame %u as %f / %f", t, fc.m_frameNumber, m_FrameGPUTime, m_FrameGPUSumTime);
+                                }*/
+                            }
+                            /*else
+                            {
+                                const double t = double(clock_gettime_nsec_np(CLOCK_UPTIME_RAW)) / 1000000000.0;
+                                AZ_Info("GPUtime", "Do NOT get GPU data at %f for frame %u because frame is likely incomplete", t, fc.m_frameNumber);
+                            }*/
+                        }
+                        break;
+                    }
+                    if (found)
+                    {
+                        break;
+                    }
+                }
+            }
+            if (!found)
+            {
+                AZ_Error("GPUtime", false, "Command buffer %p is not found to complete", buffer);
+            }
+        }
+        
+        m_FrameTimeLock.unlock();
+    }
+
+    double Device::GetGPUFrameTime()
+    {
+        if (!m_statsEnabled)
+        {
+            return 0.0;
+        }
+        m_FrameTimeLock.lock();
+        const double result = m_FrameGPUTime;
+        m_FrameTimeLock.unlock();
+        return result;
+    }
+    double Device::GetGPUSumFrameTime()
+    {
+        if (!m_statsEnabled)
+        {
+            return 0.0;
+        }
+        m_FrameTimeLock.lock();
+        const double result = m_FrameGPUSumTime;
+        m_FrameTimeLock.unlock();
+        return result;
+    }
+    double Device::GetGPUWaitFrameTime()
+    {
+        if (!m_statsEnabled)
+        {
+            return 0.0;
+        }
+        m_FrameTimeLock.lock();
+        const double result = m_FrameGPUWaitTime;
+        m_FrameTimeLock.unlock();
+        return result;
+    }
+    double Device::GetGPUWaitAvgFrameTime()
+    {
+        if (!m_statsEnabled)
+        {
+            return 0.0;
+        }
+        m_FrameTimeLock.lock();
+        const double result = m_FrameGPUWaitAvgTime;
+        m_FrameTimeLock.unlock();
+        return result;
+    }
+    double Device::GetGPUEndMaxFrameTime()
+    {
+        if (!m_statsEnabled)
+        {
+            return 0.0;
+        }
+        m_FrameTimeLock.lock();
+        const double result = m_FrameGPUEndMaxTime;
+        m_FrameTimeLock.unlock();
+        return result;
+    }
+    bool Device::GetFrameCommandMetrics(FrameCommandMetrics& frameCommandMetrics)
+    {
+        const int frameIndex = m_frameCommandIndex;
+        frameCommandMetrics.Init();
+        if (frameIndex < 0 || frameIndex >= 4)
+        {
+            return false;
+        }
+        m_FrameTimeLock.lock();
+        const FrameCommands& frameCommand = m_frameCommands[frameIndex];
+        for (int iv = 0; iv < frameCommand.m_intervals.size(); iv++)
+        {
+            FrameCommandMetrics::FrameInterval interval;
+            interval.m_begin = frameCommand.m_intervals[iv].m_begin;
+            interval.m_end = frameCommand.m_intervals[iv].m_end;
+            frameCommandMetrics.m_intervals.push_back(interval);
+        }
+        for (int iv = 0; iv < frameCommand.m_rawIntervals.size(); iv++)
+        {
+            FrameCommandMetrics::FrameInterval rawInterval;
+            rawInterval.m_begin = frameCommand.m_rawIntervals[iv].m_begin;
+            rawInterval.m_end = frameCommand.m_rawIntervals[iv].m_end;
+            frameCommandMetrics.m_rawIntervals.push_back(rawInterval);
+        }
+        m_FrameTimeLock.unlock();
+        return true;
+    }
+    void Device::EnableGatheringStats()
+    {
+        m_statsEnabled = true;  // assume all the variables are reset in the constructor or via DisableGatheringStats
+    }
+    void Device::DisableGatheringStats()
+    {
+        if (!m_statsEnabled)
+        {
+            return;
+        }
+        m_statsEnabled = false;
+        
+        // reset all the variables
+        m_frameCounter = 0;
+        m_frameCommandIndex = -1;
+        m_FrameGPUTime = 0.0;
+        m_FrameGPUSumTime = 0.0;
+        m_FrameGPUWaitTime = 0.0;
+        m_FrameGPUWaitAvgTime = 0.0;
+        m_FrameGPUEndMaxTime = 0.0;
+    }
+#endif
 
     ResultCode Device::EndFrame()
     {

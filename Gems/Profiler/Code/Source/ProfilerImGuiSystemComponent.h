@@ -51,6 +51,9 @@ namespace Profiler
 #if defined(IMGUI_ENABLED)
         // ProfilerImGuiRequests interface implementation
         void ShowCpuProfilerWindow(bool& keepDrawing) override;
+#if defined (CARBONATED)
+        void AddExternalProfilerTimingData(const ProfilerExternalTimingData& externalTimingData) override;
+#endif
 
         // ImGuiUpdateListenerBus overrides
         void OnImGuiUpdate() override;

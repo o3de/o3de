@@ -127,7 +127,16 @@ namespace MCore
         Thread(const AZStd::function<void()>& threadFunction)         { Init(threadFunction); }
         ~Thread() {}
 
+#if defined(CARBONATED)
+        void Init(const AZStd::function<void()>& threadFunction)
+        {
+            AZStd::thread_desc threadDesc;
+            threadDesc.m_name = "EMotionFX";
+            m_thread = AZStd::thread(threadDesc, threadFunction);
+        }
+#else
         void Init(const AZStd::function<void()>& threadFunction)      { m_thread = AZStd::thread(threadFunction); }
+#endif
         void Join()         { m_thread.join(); }
 
     private:

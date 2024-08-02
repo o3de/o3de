@@ -49,6 +49,7 @@ set(FILES
     Source/RHI/DrawPacket.cpp
     Source/RHI/DrawPacketBuilder.cpp
     Include/Atom/RHI/Device.h
+    Include/Atom/RHI/DeviceAddon.h
     Include/Atom/RHI/DeviceBusTraits.h
     Include/Atom/RHI/DeviceObject.h
     Include/Atom/RHI/MultiDeviceObject.h

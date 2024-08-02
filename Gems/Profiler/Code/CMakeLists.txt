@@ -21,6 +21,7 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
+            Gem::Atom_RHI.Profiler
 )
 
 ly_add_target(

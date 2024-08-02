@@ -20,6 +20,10 @@
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/Time/ITime.h>
 
+#if defined(CARBONATED)
+#include <Profiler/ProfilerImGuiBus.h>
+#endif
+
 #include <imgui/imgui.h>
 
 namespace Profiler
@@ -99,6 +103,9 @@ namespace Profiler
 
         //! Draws the overall CPU profiling window, defaults to the statistical view
         void Draw(bool& keepDrawing);
+#if defined (CARBONATED)
+        void AddExternalTimingEntries(const ProfilerExternalTimingData& externalTimingData);
+#endif
 
     private:
         static constexpr float RowHeight = 35.0f;
@@ -231,6 +238,10 @@ namespace Profiler
 
         // Last captured CPU timing statistics
         AZStd::vector<CpuTimingEntry> m_cpuTimingStatisticsWhenPause;
+
+#if defined (CARBONATED)
+        ProfilerExternalTimingData m_externalTimingData;
+#endif
 
         AZ::IO::FixedMaxPath m_lastCapturedFilePath;
 

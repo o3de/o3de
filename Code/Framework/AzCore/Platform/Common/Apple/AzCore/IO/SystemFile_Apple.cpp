@@ -173,6 +173,8 @@ namespace AZ::IO
                 // Normally if the return value is -1 errno has been set to an error
             } while (m_redirectState < RedirectState::DisconnectedPipe);
         };
-        m_flushThread = AZStd::thread(PumpReadQueue);
+        AZStd::thread_desc threadDesc;
+        threadDesc.m_name = "PumpReadQueue";
+        m_flushThread = AZStd::thread(threadDesc, PumpReadQueue);
     }
 } // namespace AZ::IO

@@ -239,7 +239,9 @@ namespace Profiler
             m_cpuDataSerializationThread.join();
         }
 
-        auto thread = AZStd::thread(threadIoFunction);
+        AZStd::thread_desc threadDesc;
+        threadDesc.m_name = "ProfilerSystemComponent";
+        auto thread = AZStd::thread(threadDesc, threadIoFunction);
         m_cpuDataSerializationThread = AZStd::move(thread);
 
         return true;

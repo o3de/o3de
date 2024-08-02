@@ -61,4 +61,5 @@
 */Gems/PhysX/Code/Source/System/PhysXSystem.cpp
 */Gems/SaveData/Code/Tests/SaveDataTest.cpp
 */Gems/WhiteBox/Code/Source/Rendering/Legacy/WhiteBoxLegacyRenderMesh.cpp
+*/Gems/Atom/RHI/Code/Include/Atom/RHI/DeviceAddon.h
 */restricted/*/Code/Framework/AzCore/AzCore/AzCore_Traits_*.h

@@ -16,6 +16,10 @@
 #include <AzCore/Serialization/EditContextConstants.inl>
 
 #include <AzFramework/Components/ConsoleBus.h>
+#if defined (CARBONATED)
+#include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/Device.h>
+#endif
 
 namespace Profiler
 {
@@ -103,6 +107,18 @@ namespace Profiler
     void ProfilerImGuiSystemComponent::ShowCpuProfilerWindow(bool& keepDrawing)
     {
         m_imguiCpuProfiler.Draw(keepDrawing);
+#if defined (CARBONATED)
+        if (!keepDrawing)
+        {
+            AZ::RHI::Device* pDevice = AZ::RHI::RHISystemInterface::Get()->GetDevice();
+            pDevice->DisableGatheringStats();
+        }
+#endif
+    }
+
+    void ProfilerImGuiSystemComponent::AddExternalProfilerTimingData(const ProfilerExternalTimingData& externalTimingData)
+    {
+        m_imguiCpuProfiler.AddExternalTimingEntries(externalTimingData);
     }
 
     void ProfilerImGuiSystemComponent::OnImGuiUpdate()
@@ -120,6 +136,13 @@ namespace Profiler
             if (ImGui::MenuItem("CPU", "", &m_showCpuProfiler))
             {
                 AZ::Debug::ProfilerSystemInterface::Get()->SetActive(m_showCpuProfiler);
+#if defined (CARBONATED)
+                if (m_showCpuProfiler)
+                {
+                    AZ::RHI::Device* pDevice = AZ::RHI::RHISystemInterface::Get()->GetDevice();
+                    pDevice->EnableGatheringStats();
+                }
+#endif
             }
             ImGui::EndMenu();
         }

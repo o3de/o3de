@@ -58,7 +58,9 @@ namespace AWSMetrics
 
         // Start a separate thread to monitor and consume the metrics queue.
         // Avoid using the job system since the worker is long-running over multiple frames
-        m_monitorThread = AZStd::thread(AZStd::bind(&MetricsManager::MonitorMetricsQueue, this));
+        AZStd::thread_desc threadDesc;
+        threadDesc.m_name = "MonitorMetrics";
+        m_monitorThread = AZStd::thread(AZStd::bind(&MetricsManager::MonitorMetricsQueue, this), threadDesc);
     }
 
     void MetricsManager::MonitorMetricsQueue()
