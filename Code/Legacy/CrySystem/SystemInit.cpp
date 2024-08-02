@@ -1268,6 +1268,7 @@ void CSystem::CreateSystemVars()
     REGISTER_STRING("global_level_load_screen_sequence_to_auto_play", "", 0, "Global level load screen UiCanvas animation sequence to play on load.");
     REGISTER_FLOAT("global_level_load_screen_sequence_fixed_fps", 60.0f, 0, "Global fixed frame rate fed to updates of the level load screen sequence.");
     REGISTER_FLOAT("global_level_load_screen_max_fps", 30.0f, 0, "Global max frame rate to update the level load screen sequence.");
+    REGISTER_FLOAT("global_level_load_screen_minimum_time", 0.0f, 0, "Global minimum amount of time to show the level load screen.");
 #endif   
 #endif // if AZ_LOADSCREENCOMPONENT_ENABLED
 
