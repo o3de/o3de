@@ -29,6 +29,7 @@ $ndk = '"ndk;21.4.7075529" "ndk;23.1.7779620" "ndk;25.1.8937393" "ndk;25.2.95196
 
 Write-Host "Installing Android SDK packages"
 $sdkmanager = "$androidSdkLatestDir\bin\sdkmanager.bat"
+Start-Process -FilePath $sdkmanager -ArgumentList "--licenses" -NoNewWindow -Wait # Accept all licenses manually
 Start-Process -FilePath $sdkmanager -ArgumentList $android_packages -NoNewWindow -Wait
 Start-Process -FilePath $sdkmanager -ArgumentList $googleplay_packages -NoNewWindow -Wait
 Start-Process -FilePath $sdkmanager -ArgumentList $build_tools -NoNewWindow -Wait
