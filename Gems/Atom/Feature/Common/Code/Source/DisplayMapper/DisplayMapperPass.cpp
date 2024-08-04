@@ -206,8 +206,8 @@ namespace AZ
             RPI::PassSlot& inSlot = passTemplate->m_slots[0];
             inSlot.m_name = "Input";
             inSlot.m_slotType = RPI::PassSlotType::Input;
-            inSlot.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
-            inSlot.m_loadStoreAction.m_loadAction = RHI::AttachmentLoadAction::DontCare;
+            inSlot.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::SubpassInput;
+            inSlot.m_loadStoreAction.m_loadAction = RHI::AttachmentLoadAction::Load;
 
             RPI::PassSlot& outSlot = passTemplate->m_slots[1];
             outSlot.m_name = "Output";

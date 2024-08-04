@@ -61,7 +61,7 @@ namespace AZ
             // Queue the resource buffer barrier into the provided scope.
             void QueueResourceBarrier(
                 Scope& scope,
-                const RHI::ScopeAttachment& scopeAttachment,
+                RHI::ScopeAttachment& scopeAttachment,
                 Buffer& buffer,
                 const RHI::BufferSubresourceRange& range,
                 const Scope::BarrierSlot slot,
@@ -71,7 +71,7 @@ namespace AZ
             // Queue the resource barrier into the provided scope.
             void QueueResourceBarrier(
                 Scope& scope,
-                const RHI::ScopeAttachment& scopeAttachment,
+                RHI::ScopeAttachment& scopeAttachment,
                 Image& image,
                 const RHI::ImageSubresourceRange& range,
                 const Scope::BarrierSlot slot,
@@ -86,6 +86,9 @@ namespace AZ
             void CompileSemaphoreSynchronization(const RHI::FrameGraph& frameGraph);
 
             RHI::Scope* FindPreviousScope(RHI::ScopeAttachment& scopeAttachment) const;
+
+            // Optimize queued barriers of scopes.
+            void OptimizeBarriers(const RHI::FrameGraphCompileRequest& request);
         };
 
         template<class ResourceScopeAttachment, class ResourceType>

@@ -41,6 +41,7 @@ namespace AZ
             : RenderPass(descriptor)
             , m_passDescriptor(descriptor)
         {
+            m_flags.m_canBeSubpass = false;
             if (RHI::RHISystemInterface::Get()->GetRayTracingSupport() == RHI::MultiDevice::NoDevices)
             {
                 // raytracing is not supported on this platform

@@ -623,6 +623,7 @@ namespace AZ
                             if (targetBlendStates.contains(static_cast<uint32_t>(i)))
                             {
                                 renderStates.m_blendState.m_targets[i] = targetBlendStates.at(static_cast<uint32_t>(i));
+                                renderStates.m_blendState.m_independentBlendEnable = true;
                             }
                             // We have to ensure this actually has data before applying it, otherwise this would stomp any
                             // data in the "BlendState" or "TargetBlendStates" with default values.

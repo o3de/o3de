@@ -1,0 +1,137 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "MobileSubpass2ParentPassTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                // Outputs...
+                // SwapChain here is only used to reference the frame height and format
+                {
+                    "Name": "PipelineOutput",
+                    "SlotType": "InputOutput"
+                },
+                {
+                    "Name": "LightingInputOutput",
+                    "SlotType": "InputOutput"
+                },
+                {
+                    "Name": "DepthStencilInputOutput",
+                    "SlotType": "InputOutput"
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "DisplayMapperPass",
+                    "TemplateName": "MobileDisplayMapperTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "LightingInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "PipelineOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "PipelineOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Output",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "PipelineOutput"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "DisplayMapperPassData",
+                        "MergeLdrGradingLut": true,
+                        "DisplayMapperConfig": {
+                            "OperationType": "AcesFitted"
+                        },
+                         "OutputTransformShaderOverride": {
+                            "FilePath": "Shaders/PostProcessing/OutputTransformMobile.shader"
+                        }
+                    }
+                },
+                {
+                    "Name": "AuxGeomPass",
+                    "TemplateName": "AuxGeomPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "ColorInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "DisplayMapperPass",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthStencilInputOutput"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "auxgeom",
+                        "BindViewSrg": true
+                    }
+                },
+                {
+                    "Name": "UIPass",
+                    "TemplateName": "UIParentTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "DepthInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthStencilInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputOutput",
+                            "AttachmentRef": {
+                                "Pass": "DisplayMapperPass",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "CopyToSwapChain",
+                    "TemplateName": "FullscreenCopyTemplate",
+                    "Enabled": false,
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "DisplayMapperPass",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Output",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "PipelineOutput"
+                            }
+                        }
+                    ]
+                }          
+            ],
+            "PassData": {
+                "MergeChildrenAsSubpasses": true
+            }
+        }
+    }
+}

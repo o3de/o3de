@@ -32,7 +32,7 @@ namespace AZ::RHI
             constexpr uint32_t DrawFilterTagCountMax = 32;
             constexpr uint32_t MultiSampleCustomLocationsCountMax = 16;
             constexpr uint32_t MultiSampleCustomLocationGridSize = 16;
-            constexpr uint32_t SubpassCountMax = 10;
+            constexpr uint32_t SubpassCountMax = 13;
             constexpr uint32_t RenderAttachmentCountMax = 2 * AttachmentColorCountMax + 2; // RenderAttachments + ResolveAttachments + DepthStencilAttachment +  ShadingRateAttachment
             constexpr uint32_t UnboundedArraySize = 100000u;
         }

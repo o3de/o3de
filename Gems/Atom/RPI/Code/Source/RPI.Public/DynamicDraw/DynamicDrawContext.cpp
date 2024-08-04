@@ -15,7 +15,7 @@
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 #include <Atom/RPI.Public/Pass/RasterPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
-
+#include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 
 namespace AZ
@@ -94,6 +94,11 @@ namespace AZ
         {
             InitShaderWithVariant(shader, nullptr);
             m_supportShaderVariants = true;
+        }
+
+        DynamicDrawContext::~DynamicDrawContext()
+        {
+            SceneNotificationBus::Handler::BusDisconnect();
         }
 
         void DynamicDrawContext::InitShaderWithVariant(Data::Asset<ShaderAsset> shaderAsset, const ShaderOptionList* optionAndValues)
@@ -231,6 +236,7 @@ namespace AZ
             m_scene = scene;
             m_pass = nullptr;
             m_drawFilter = RHI::DrawFilterMaskDefaultValue;
+            SceneNotificationBus::Handler::BusConnect(m_scene->GetId());
                         
             ReInit();
         }
@@ -252,6 +258,7 @@ namespace AZ
             m_scene = pipeline->GetScene();
             m_pass = nullptr;
             m_drawFilter = pipeline->GetDrawFilterMask();
+            SceneNotificationBus::Handler::BusConnect(m_scene->GetId());
             
             ReInit();
         }
@@ -268,6 +275,7 @@ namespace AZ
             m_scene = nullptr;
             m_pass = pass;
             m_drawFilter = RHI::DrawFilterMaskDefaultValue;
+            SceneNotificationBus::Handler::BusDisconnect();
 
             ReInit();
         }
@@ -821,6 +829,12 @@ namespace AZ
             }
 
             return m_rhiPipelineState;
+        }
+
+        void DynamicDrawContext::OnPipelineStateLookupRebuilt()
+        {
+            m_cachedRhiPipelineStates.clear();
+            EndInit();
         }
     }
 }

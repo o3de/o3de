@@ -548,6 +548,7 @@ namespace AZ
 
         void ImGuiPass::InitializeInternal()
         {
+            Base::InitializeInternal();
             if (!m_imguiInitialized)
             {
                 InitializeImGui();
@@ -557,8 +558,6 @@ namespace AZ
             // Set output format and finalize pipeline state
             m_pipelineState->SetOutputFromPass(this);
             m_pipelineState->Finalize();
-
-            Base::InitializeInternal();
         }
 
         void ImGuiPass::FrameBeginInternal(FramePrepareParams params)

@@ -50,6 +50,12 @@ namespace AZ
 
             const RHI::Size& GetSize() const;
 
+            //! Returns a list with image views of the framebuffer.
+            const AZStd::vector<RHI::ConstPtr<ImageView>>& GetImageViews() const;
+            //! Returns the index of the image view that correspons to one used by the ImageScopeAttachment.
+            //! If not found an empty optional is returned.
+            AZStd::optional<uint32_t> FindImageViewIndex(RHI::ImageScopeAttachment& scopeAttachment) const;
+
         private:
             Framebuffer() = default;
 

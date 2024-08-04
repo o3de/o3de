@@ -60,5 +60,9 @@ namespace AZ
         VkImageLayout FilterImageLayout(VkImageLayout layout, RHI::ImageAspectFlags aspectFlags);
         VkAttachmentLoadOp ConvertAttachmentLoadAction(RHI::AttachmentLoadAction loadAction, const Device& device);
         VkAttachmentStoreOp ConvertAttachmentStoreAction(RHI::AttachmentStoreAction storeAction, const Device& device);
+        RHI::AttachmentLoadAction CombineLoadOp(RHI::AttachmentLoadAction currentOp, RHI::AttachmentLoadAction newOp);
+        RHI::AttachmentStoreAction CombineStoreOp(RHI::AttachmentStoreAction currentOp, RHI::AttachmentStoreAction newOp);
+        BarrierTypeFlags ConvertBarrierType(VkStructureType type);
+
     }
 }

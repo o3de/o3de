@@ -46,7 +46,7 @@ namespace AZ::RHI
         //! Position of the resolve attachment in layout (if it resolves).
         uint32_t m_resolveAttachmentIndex = InvalidRenderAttachmentIndex;
         //! Load and store action of the attachment.
-        AttachmentLoadStoreAction m_loadStoreAction;
+        AttachmentLoadStoreAction m_loadStoreAction = AttachmentLoadStoreAction();
         //! The following two flags are only relevant when there are more than one subpasses
         //! that will be merged.
         //! The scope attachment access as defined in the pass template, which will be used
@@ -80,6 +80,8 @@ namespace AZ::RHI
         //! The scope attachment stage as defined in the pass template, which will be used
         //! to accurately define the subpass dependencies.
         AZ::RHI::ScopeAttachmentStage m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::Uninitialized;
+        //! Load and store action of the attachment.
+        AttachmentLoadStoreAction m_loadStoreAction = AttachmentLoadStoreAction();
         //! Extra data that can be passed for platform specific operations.
         RenderAttachmentExtras* m_extras = nullptr;
     };
@@ -99,7 +101,7 @@ namespace AZ::RHI
         //! Number of subpass input attachments in the subpass.
         uint32_t m_subpassInputCount = 0;
         //! List of render targets used by the subpass.
-        AZStd::array<RenderAttachmentDescriptor, Limits::Pipeline::AttachmentColorCountMax> m_rendertargetDescriptors;
+        AZStd::array<RenderAttachmentDescriptor, Limits::Pipeline::AttachmentColorCountMax> m_rendertargetDescriptors = { {} };
         //! List of subpass inputs used by the subpass.
         AZStd::array<SubpassInputDescriptor, Limits::Pipeline::AttachmentColorCountMax> m_subpassInputDescriptors = { {} };
         //! Descriptor of the depth/stencil attachment. If not used, the attachment index is InvalidRenderAttachmentIndex.

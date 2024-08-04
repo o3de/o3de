@@ -48,33 +48,7 @@ namespace AZ
 
             RHI::RHISystemInterface::Get()->SetDrawListTagEnabledByDefault(m_drawListTag, rasterData->m_enableDrawItemsByDefault);
 
-            // Get the shader asset that contains the SRG Layout.
-            Data::Asset<ShaderAsset> shaderAsset;
-            if (rasterData->m_passSrgShaderReference.m_assetId.IsValid())
-            {
-                shaderAsset = AssetUtils::LoadAssetById<ShaderAsset>(rasterData->m_passSrgShaderReference.m_assetId, AssetUtils::TraceLevel::Error);
-            }
-            else if (!rasterData->m_passSrgShaderReference.m_filePath.empty())
-            {
-                shaderAsset = AssetUtils::LoadAssetByProductPath<ShaderAsset>(
-                    rasterData->m_passSrgShaderReference.m_filePath.c_str(), AssetUtils::TraceLevel::Error);
-            }
-
-            if (shaderAsset)
-            {
-                const auto srgLayout = shaderAsset->FindShaderResourceGroupLayout(SrgBindingSlot::Pass);
-                if (srgLayout)
-                {
-                    m_shaderResourceGroup = ShaderResourceGroup::Create(shaderAsset, srgLayout->GetName());
-
-                    AZ_Assert(
-                        m_shaderResourceGroup, "[RasterPass '%s']: Failed to create SRG from shader asset '%s'", GetPathName().GetCStr(),
-                        rasterData->m_passSrgShaderReference.m_filePath.data());
-
-                    PassUtils::BindDataMappingsToSrg(descriptor, m_shaderResourceGroup.get());
-                }
-            }
-
+            LoadShaderResourceGroup();
 
             if (!rasterData->m_overrideScissor.IsNull())
             {
@@ -175,6 +149,17 @@ namespace AZ
             RenderPass::FrameBeginInternal(params);
         }
 
+        void RasterPass::InitializeInternal()
+        {
+            BuildRenderAttachmentConfiguration();
+            if (m_shaderResourceGroup &&
+                m_shaderResourceGroup->GetShaderAsset()->GetSupervariantIndex(GetSuperVariantName()) != m_shaderResourceGroup->GetSupervariantIndex())
+            {
+                LoadShaderResourceGroup();
+            }
+            RenderPass::InitializeInternal();
+        }
+
         void RasterPass::UpdateDrawList()
         {
              // DrawLists from dynamic draw
@@ -267,6 +252,46 @@ namespace AZ
                 if (drawItemProperties.m_drawFilterMask & m_pipeline->GetDrawFilterMask())
                 {
                     commandList->Submit(drawItemProperties.m_item->GetDeviceDrawItem(context.GetDeviceIndex()), index + indexOffset);
+                }
+            }
+        }
+
+        void RasterPass::LoadShaderResourceGroup()
+        {
+            const RasterPassData* rasterData = azrtti_cast<const RasterPassData*>(m_passData.get());
+            if (!rasterData)
+            {
+                return;
+            }
+
+            // Get the shader asset that contains the SRG Layout.
+            Data::Asset<ShaderAsset> shaderAsset;
+            if (rasterData->m_passSrgShaderReference.m_assetId.IsValid())
+            {
+                shaderAsset =
+                    AssetUtils::LoadAssetById<ShaderAsset>(rasterData->m_passSrgShaderReference.m_assetId, AssetUtils::TraceLevel::Error);
+            }
+            else if (!rasterData->m_passSrgShaderReference.m_filePath.empty())
+            {
+                shaderAsset = AssetUtils::LoadAssetByProductPath<ShaderAsset>(
+                    rasterData->m_passSrgShaderReference.m_filePath.c_str(), AssetUtils::TraceLevel::Error);
+            }
+
+            if (shaderAsset)
+            {
+                SupervariantIndex superVariantIndex = shaderAsset->GetSupervariantIndex(GetSuperVariantName());
+                const auto srgLayout = shaderAsset->FindShaderResourceGroupLayout(SrgBindingSlot::Pass, superVariantIndex);
+                if (srgLayout)
+                {
+                    m_shaderResourceGroup = ShaderResourceGroup::Create(shaderAsset, superVariantIndex, srgLayout->GetName());
+
+                    AZ_Assert(
+                        m_shaderResourceGroup,
+                        "[RasterPass '%s']: Failed to create SRG from shader asset '%s'",
+                        GetPathName().GetCStr(),
+                        rasterData->m_passSrgShaderReference.m_filePath.data());
+
+                    PassUtils::BindDataMappingsToSrg(GetPassDescriptor(), m_shaderResourceGroup.get());
                 }
             }
         }
