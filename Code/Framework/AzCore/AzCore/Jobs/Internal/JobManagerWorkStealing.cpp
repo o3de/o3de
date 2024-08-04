@@ -15,6 +15,7 @@
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/fixed_string.h>
+#include <AzCore/std/chrono/chrono.h>
 
 #include <AzCore/Debug/Profiler.h>
 
@@ -262,8 +263,8 @@ void JobManagerWorkStealing::PrintStats()
     {
         ThreadInfo* info = m_threads[i];
 
-        int jobTime = aznumeric_cast<int>(info->m_jobTime.count());
-        int stealTime = aznumeric_cast<int>(info->m_stealTime.count());
+        const int jobTime = aznumeric_cast<int>(info->m_jobTime.count());
+        const int stealTime = aznumeric_cast<int>(info->m_stealTime.count());
 
         AZ_Printf("JobManagerWorkStealing", " %d:      %5d          %5d           %5d         %5d            %5d           %5d         %5d",
             i, info->m_globalJobs, info->m_jobsForked, info->m_jobsDone, info->m_jobsStolen, jobTime, stealTime, jobTime + stealTime);
