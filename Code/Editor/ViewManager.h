@@ -45,6 +45,10 @@ public:
     //! Find viewport at Screen point.
     CViewport* GetViewportAtPoint(const QPoint& point) const;
 
+    //! Retrieves the position in world space corresponding to the point clicked by the user.
+    //! Will take context menus and cursor position into account as appropriate.
+    AZ::Vector3 GetClickPositionInViewportSpace() const;
+
     void SelectViewport(CViewport* pViewport);
     CViewport* GetSelectedViewport() const { return m_pSelectedView; }
 
