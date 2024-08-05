@@ -157,7 +157,9 @@ namespace AZ
                         break;
                     }
                 default:
-                    break;
+                    // Image attachment is not a render attachment, so we do not add it to the m_framebufferAttachments list.
+                    // Continue to the next attachment.
+                    continue;
                 }
 
                 auto insertResult = m_framebufferAttachments.insert(AZStd::make_pair(scopeAttachmentId, framebufferInfo));
