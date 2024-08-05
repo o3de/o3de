@@ -118,6 +118,15 @@ void QtViewport::dropEvent(QDropEvent* event)
         ViewportDragContext context;
         BuildDragDropContext(context, GetViewportId(), event->pos());
         DragAndDropEventsBus::Event(DragAndDropContexts::EditorViewport, &DragAndDropEvents::Drop, event, context);
+        if (event->isAccepted())
+        {
+            // send focus to whatever window accepted it.  Its not necessarily this window, as it might be a child embedded in it.
+            QWidget* widget = qApp->widgetAt(event->pos());
+            if (widget)
+            {
+                widget->setFocus(Qt::MouseFocusReason);
+            }
+        }
     }
 }
 
