@@ -340,6 +340,12 @@ namespace AZ
             //! This is used to determine if the RayTracingPipelineState needs to be recreated.
             uint32_t GetProceduralGeometryTypeRevision() const { return m_proceduralGeometryTypeRevision; }
 
+            //! Provide access to the mutex protecting the blasBuilt flag
+            AZStd::mutex& GetBlasBuiltMutex()
+            {
+                return m_blasBuiltMutex;
+            }
+
             uint32_t GetSkinnedMeshCount() const
             {
                 return m_skinnedMeshCount;
@@ -382,8 +388,8 @@ namespace AZ
                 uint32_t m_count = 0;
                 AZStd::vector<SubMeshBlasInstance> m_subMeshes;
 
-                // flag indicating if the Blas objects in the sub-mesh list are built
-                bool m_blasBuilt = false;
+                // Flags indicating if the Blas objects in the sub-mesh list are already built
+                RHI::MultiDevice::DeviceMask m_blasBuilt = RHI::MultiDevice::NoDevices;
                 bool m_isSkinnedMesh = false;
             };
 
@@ -442,6 +448,9 @@ namespace AZ
 
             // mutex for the mesh and BLAS lists
             AZStd::mutex m_mutex;
+
+            // mutex for the m_blasBuilt flag manipulation
+            AZStd::mutex m_blasBuiltMutex;
 
             // structure for data in the m_meshInfoBuffer, shaders that use the buffer must match this type
             struct MeshInfo

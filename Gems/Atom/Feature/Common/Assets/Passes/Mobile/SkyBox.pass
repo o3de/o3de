@@ -14,8 +14,13 @@
                 },
                 {
                     "Name": "SkyBoxDepth",
-                    "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "DepthStencil"
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "DepthStencil",
+                    "LoadStoreAction": {
+                        "StoreAction": "None",
+                        "LoadActionStencil": "None",
+                        "StoreActionStencil": "None"
+                    }
                 }
             ],
             "PassData": {

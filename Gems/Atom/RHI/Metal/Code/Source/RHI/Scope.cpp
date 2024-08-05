@@ -96,7 +96,7 @@ namespace AZ
             
             for (RHI::ImageScopeAttachment* scopeAttachment : GetImageAttachments())
             {
-                m_isWritingToSwapChainScope = 
+                bool isWritingToSwapChainScope = 
                     scopeAttachment->IsSwapChainAttachment() &&
                     scopeAttachment->GetUsage() == RHI::ScopeAttachmentUsage::RenderTarget;
                 const RHI::SwapChainFrameAttachment* swapChainFrameAttachment = (azrtti_cast<const RHI::SwapChainFrameAttachment*>(&scopeAttachment->GetFrameAttachment()));
@@ -145,9 +145,12 @@ namespace AZ
                 const bool isClearActionStencil = bindingDescriptor.m_loadStoreAction.m_loadActionStencil == RHI::AttachmentLoadAction::Clear;
                 
                 const bool isLoadAction         = bindingDescriptor.m_loadStoreAction.m_loadAction == RHI::AttachmentLoadAction::Load;
-                
-                const bool isStoreAction         = bindingDescriptor.m_loadStoreAction.m_storeAction == RHI::AttachmentStoreAction::Store;
-                const bool isStoreActionStencil  = bindingDescriptor.m_loadStoreAction.m_storeActionStencil == RHI::AttachmentStoreAction::Store;
+
+                // Metal doesn't support RHI::AttachmentStoreAction::None so we treat it as RHI::AttachmentStoreAction::Store
+                const bool isStoreAction = bindingDescriptor.m_loadStoreAction.m_storeAction == RHI::AttachmentStoreAction::Store ||
+                    bindingDescriptor.m_loadStoreAction.m_storeAction == RHI::AttachmentStoreAction::None;
+                const bool isStoreActionStencil  = bindingDescriptor.m_loadStoreAction.m_storeActionStencil == RHI::AttachmentStoreAction::Store ||
+                    bindingDescriptor.m_loadStoreAction.m_storeActionStencil == RHI::AttachmentStoreAction::None;
                 
                 
                 MTLLoadAction mtlLoadAction = MTLLoadActionDontCare;

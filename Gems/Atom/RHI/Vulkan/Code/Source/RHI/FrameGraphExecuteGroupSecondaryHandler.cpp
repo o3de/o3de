@@ -18,7 +18,7 @@ namespace AZ::Vulkan
         Device& device, const AZStd::vector<RHI::FrameGraphExecuteGroup*>& executeGroups)
     {
         // We first need to build the renderpass that will be used by all groups.
-        RenderPassBuilder builder(device, static_cast<uint32_t>(executeGroups.size()));
+        RenderPassBuilder builder(device);
         AZStd::string name = executeGroups.size() > 1 ? "[Merged]" : "";
         for (auto executeGroupBase : executeGroups)
         {

@@ -57,7 +57,7 @@ namespace AZ::Render
 
     void RayTracingDebugFeatureProcessor::Deactivate()
     {
-        EnableSceneNotification();
+        DisableSceneNotification();
         FeatureProcessor::Deactivate();
 
         m_sceneSrg = nullptr;

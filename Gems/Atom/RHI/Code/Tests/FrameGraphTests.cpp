@@ -41,10 +41,10 @@ namespace UnitTest
             ASSERT_TRUE(&scopeAttachment->GetScope() == scope);
 
             const RHI::BufferFrameAttachment& attachment = scopeAttachment->GetFrameAttachment();
-            ASSERT_TRUE(attachment.GetFirstScope() == scope);
-            ASSERT_TRUE(attachment.GetLastScope() == scope);
-            ASSERT_TRUE(attachment.GetFirstScopeAttachment() == scopeAttachment);
-            ASSERT_TRUE(attachment.GetLastScopeAttachment() == scopeAttachment);
+            ASSERT_TRUE(attachment.GetFirstScope(scope->GetDeviceIndex()) == scope);
+            ASSERT_TRUE(attachment.GetLastScope(scope->GetDeviceIndex()) == scope);
+            ASSERT_TRUE(attachment.GetFirstScopeAttachment(scope->GetDeviceIndex()) == scopeAttachment);
+            ASSERT_TRUE(attachment.GetLastScopeAttachment(scope->GetDeviceIndex()) == scopeAttachment);
 
             if (buffer)
             {
@@ -62,10 +62,10 @@ namespace UnitTest
             ASSERT_TRUE(&scopeAttachment->GetScope() == scope);
 
             const RHI::ImageFrameAttachment& attachment = scopeAttachment->GetFrameAttachment();
-            ASSERT_TRUE(attachment.GetFirstScope() == scope);
-            ASSERT_TRUE(attachment.GetLastScope() == scope);
-            ASSERT_TRUE(attachment.GetFirstScopeAttachment() == scopeAttachment);
-            ASSERT_TRUE(attachment.GetLastScopeAttachment() == scopeAttachment);
+            ASSERT_TRUE(attachment.GetFirstScope(scope->GetDeviceIndex()) == scope);
+            ASSERT_TRUE(attachment.GetLastScope(scope->GetDeviceIndex()) == scope);
+            ASSERT_TRUE(attachment.GetFirstScopeAttachment(scope->GetDeviceIndex()) == scopeAttachment);
+            ASSERT_TRUE(attachment.GetLastScopeAttachment(scope->GetDeviceIndex()) == scopeAttachment);
 
             if (image)
             {
@@ -440,9 +440,10 @@ namespace UnitTest
                 for (const RHI::FrameAttachment* attachment : attachmentDatabase.GetAttachments())
                 {
                     const RHI::ScopeAttachment* scopeAttachmentPrev = nullptr;
-                    for (const RHI::ScopeAttachment* scopeAttachment = attachment->GetFirstScopeAttachment();
-                        scopeAttachment;
-                        scopeAttachment = scopeAttachment->GetNext())
+                    for (const RHI::ScopeAttachment* scopeAttachment =
+                             attachment->GetFirstScopeAttachment(RHI::MultiDevice::DefaultDeviceIndex);
+                         scopeAttachment;
+                         scopeAttachment = scopeAttachment->GetNext())
                     {
                         ASSERT_TRUE(&scopeAttachment->GetFrameAttachment() == attachment);
                         ASSERT_TRUE(scopeAttachment->GetPrevious() == scopeAttachmentPrev);

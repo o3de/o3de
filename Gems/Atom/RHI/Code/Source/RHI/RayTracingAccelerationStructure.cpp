@@ -26,12 +26,12 @@ namespace AZ::RHI
                 ->IndexBuffer(geometry.m_indexBuffer.GetDeviceIndexBufferView(deviceIndex));
         }
 
-        descriptor.BuildFlags(m_buildFlags);
-
         if(m_aabb.has_value())
         {
             descriptor.AABB(m_aabb.value());
         }
+
+        descriptor.BuildFlags(m_buildFlags);
 
         return descriptor;
     }
@@ -79,7 +79,7 @@ namespace AZ::RHI
 
     RayTracingBlasDescriptor* RayTracingBlasDescriptor::BuildFlags(const RHI::RayTracingAccelerationStructureBuildFlags &buildFlags)
     {
-        AZ_Assert(m_buildContext, "BuildFlags property can only be added to a Geometry entry");
+        AZ_Assert(m_buildContext || m_aabb, "BuildFlags property can only be added to a Geometry or AABB entry");
         m_buildFlags = buildFlags;
         return this;
     }
@@ -319,9 +319,12 @@ namespace AZ::RHI
                 return ResultCode::Success;
             });
 
-        if (const auto& name = m_tlasBuffer->GetName(); !name.IsEmpty())
+        if (m_tlasBuffer)
         {
-            m_tlasBuffer->SetName(name);
+            if (const auto& name = m_tlasBuffer->GetName(); !name.IsEmpty())
+            {
+                m_tlasBuffer->SetName(name);
+            }
         }
 
         return m_tlasBuffer;
@@ -360,10 +363,14 @@ namespace AZ::RHI
                 return ResultCode::Success;
             });
 
-        if (const auto& name = m_tlasInstancesBuffer->GetName(); !name.IsEmpty())
+        if (m_tlasInstancesBuffer)
         {
-            m_tlasInstancesBuffer->SetName(name);
+            if (const auto& name = m_tlasInstancesBuffer->GetName(); !name.IsEmpty())
+            {
+                m_tlasInstancesBuffer->SetName(name);
+            }
         }
+
         return m_tlasInstancesBuffer;
     }
 } // namespace AZ::RHI

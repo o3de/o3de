@@ -29,11 +29,13 @@ namespace AZ
             void Reset();
 
         private:
-            void DrawTreeView(AZ::RPI::Pass* rootPass);
+            void DrawTreeView(AZ::RPI::Pass* rootPass, const AZStd::unordered_set<Name>& filteredPassNames);
 
             void ReadbackCallback(const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult);
 
             void DrawPassAttachments(AZ::RPI::Pass* pass);
+
+            bool GetFilteredPassNames(AZ::RPI::Pass* pass, AZStd::unordered_set<Name>& filteredPassNames) const;
 
             bool m_shouldPreviewAttachment = false;
             bool m_showAttachments = false;
@@ -54,6 +56,8 @@ namespace AZ
             AZStd::string m_engineRoot;
             
             AZStd::string m_attachmentReadbackInfo;
+
+            ImGuiTextFilter m_passFilter;
         };
     }
 }

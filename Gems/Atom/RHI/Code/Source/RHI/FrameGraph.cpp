@@ -104,7 +104,7 @@ namespace AZ::RHI
             /// Validate that every attachment was used.
             for (FrameAttachment* attachment : m_attachmentDatabase.GetAttachments())
             {
-                if (attachment->GetFirstScopeAttachment() == nullptr)
+                if (!attachment->HasScopeAttachments())
                 {
                     //We allow the rendering to continue even if an attachment is not used.
                     AZ_WarningOnce(
@@ -308,9 +308,10 @@ namespace AZ::RHI
             */
         for (SwapChainFrameAttachment* attachment : m_attachmentDatabase.GetSwapChainAttachments())
         {
-            if (auto* lastScope = attachment->GetLastScope())
+            auto* swapChain = attachment->GetSwapChain()->GetDeviceSwapChain().get();
+            if (auto* lastScope = attachment->GetLastScope(swapChain->GetDevice().GetDeviceIndex()))
             {
-                lastScope->m_swapChainsToPresent.push_back(attachment->GetSwapChain()->GetDeviceSwapChain().get());
+                lastScope->m_swapChainsToPresent.push_back(swapChain);
             }
         }
 
@@ -370,7 +371,7 @@ namespace AZ::RHI
         }
 
         // TODO:[ATOM-1267] Replace with writer / reader dependencies.
-        if (Scope* producer = frameAttachment.GetLastScope())
+        if (Scope* producer = frameAttachment.GetLastScope(m_currentScope->GetDeviceIndex()))
         {
             // If there's a last scope, we are at a scope subpass that is NOT the first subpass
             if (usage == ScopeAttachmentUsage::SubpassInput)
@@ -417,7 +418,7 @@ namespace AZ::RHI
 #endif
 
         // TODO:[ATOM-1267] Replace with writer / reader dependencies.
-        if (Scope* producer = frameAttachment.GetLastScope())
+        if (Scope* producer = frameAttachment.GetLastScope(m_currentScope->GetDeviceIndex()))
         {
             InsertEdge(*producer, *m_currentScope);
         }
@@ -451,7 +452,7 @@ namespace AZ::RHI
         }
 
         // TODO:[ATOM-1267] Replace with writer / reader dependencies.
-        if (Scope* producer = frameAttachment.GetLastScope())
+        if (Scope* producer = frameAttachment.GetLastScope(m_currentScope->GetDeviceIndex()))
         {
             InsertEdge(*producer, *m_currentScope);
         }
