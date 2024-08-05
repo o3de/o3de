@@ -32,6 +32,11 @@ namespace AZ
             return m_format;
         }
 
+        RHI::ImageAspectFlags ImageView::GetAspectFlags() const
+        {
+            return m_aspectFlags;
+        }
+
         const RHI::ImageSubresourceRange& ImageView::GetImageSubresourceRange() const
         {
             return m_imageSubresourceRange;
@@ -83,7 +88,8 @@ namespace AZ
             }
             m_format = viewFormat;
 
-            VkImageAspectFlags aspectFlags = ConvertImageAspectFlags(RHI::FilterBits(viewDescriptor.m_aspectFlags, image.GetAspectFlags()));
+            m_aspectFlags = RHI::FilterBits(viewDescriptor.m_aspectFlags, image.GetAspectFlags());
+            VkImageAspectFlags aspectFlags = ConvertImageAspectFlags(m_aspectFlags);
             VkImageViewCreateFlags createFlags = 0;
             if (RHI::CheckBitsAll(image.GetUsageFlags(), static_cast<VkImageUsageFlags>(VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT)) &&
                 device.GetFeatures().m_dynamicShadingRateImage)

@@ -32,6 +32,7 @@ namespace AZ
 
             VkImageView GetNativeImageView() const;
             RHI::Format GetFormat() const;
+            RHI::ImageAspectFlags GetAspectFlags() const;
             const RHI::ImageSubresourceRange& GetImageSubresourceRange() const;
             const VkImageSubresourceRange& GetVkImageSubresourceRange() const;
 
@@ -61,6 +62,7 @@ namespace AZ
 
             VkImageView m_vkImageView = VK_NULL_HANDLE;
             RHI::Format m_format = RHI::Format::Unknown;
+            RHI::ImageAspectFlags m_aspectFlags = RHI::ImageAspectFlags::All;
             RHI::ImageSubresourceRange m_imageSubresourceRange;
             VkImageSubresourceRange m_vkImageSubResourceRange;
 

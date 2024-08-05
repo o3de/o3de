@@ -9,6 +9,7 @@
 #include <RHI/FrameGraphCompiler.h>
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <RHI/Buffer.h>
 #include <RHI/CommandQueueContext.h>
 #include <RHI/Conversions.h>

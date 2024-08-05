@@ -13,6 +13,7 @@
 #include <Atom/RHI/Resource.h>
 #include <Atom/RHI/DeviceImageView.h>
 #include <RHI/Conversion.h>
+#include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/PhysicalDevice.h>
 
@@ -405,7 +406,6 @@ namespace AZ
         VkImageLayout GetImageAttachmentLayout(const RHI::ImageScopeAttachment& imageAttachment)
         {
             const RHI::DeviceImageView* imageView = imageAttachment.GetImageView()->GetDeviceImageView(imageAttachment.GetScope().GetDeviceIndex()).get();
-            auto& physicalDevice = static_cast<const PhysicalDevice&>(imageView->GetDevice().GetPhysicalDevice());
             auto imageAspects = RHI::FilterBits(imageView->GetImage().GetAspectFlags(), imageView->GetDescriptor().m_aspectFlags);
             RHI::ScopeAttachmentAccess access = imageAttachment.GetAccess();
             switch (imageAttachment.GetUsage())
@@ -450,17 +450,9 @@ namespace AZ
                             imageAttachment.GetDescriptor().m_attachmentId.GetCStr(),
                             imageAttachment.GetScope().GetId().GetCStr());
 
-                        if (physicalDevice.IsFeatureSupported(DeviceFeature::SeparateDepthStencil))
+                        if (RHI::CheckBitsAny(imageAspects, RHI::ImageAspectFlags::DepthStencil))
                         {
-                            if (RHI::CheckBitsAll(imageAspects, RHI::ImageAspectFlags::Depth))
-                            {
-                                //TODO: [GHI 18108] Why VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL instead of VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL
-                                return VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-                            }
-                            else if (RHI::CheckBitsAll(imageAspects, RHI::ImageAspectFlags::Stencil))
-                            {
-                                return VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL;
-                            }
+                            return VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
                         }
                         
                         return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -558,6 +550,22 @@ namespace AZ
             {
                 return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL;
             }
+            // We always add both depth and stencil aspects for image layouts, even when dealing with depth only or stencil only layouts.
+            // Using a depth only or stencil only layouts requires an extension and more complicated logic.
+            else if (
+                isSameFunc(VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL) ||
+                isSameFunc(VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL))   
+            {
+                return VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+            }
+            // We always add both depth and stencil aspects for image layouts, even when dealing with depth only or stencil only layouts.
+            // Using a depth only or stencil only layouts requires an extension and more complicated logic.
+            else if (
+                isSameFunc(VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL) ||
+                isSameFunc(VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL))  
+            {
+                return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            }
 
             return lhs;
         }
@@ -613,6 +621,44 @@ namespace AZ
             }
 
             return layout;
+        }
+
+        VkAttachmentLoadOp ConvertAttachmentLoadAction(RHI::AttachmentLoadAction loadAction, const Device& device)
+        {
+            const auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
+            switch (loadAction)
+            {
+            case RHI::AttachmentLoadAction::Load:
+                return VK_ATTACHMENT_LOAD_OP_LOAD;
+            case RHI::AttachmentLoadAction::Clear:
+                return VK_ATTACHMENT_LOAD_OP_CLEAR;
+            case RHI::AttachmentLoadAction::DontCare:
+                return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            case RHI::AttachmentLoadAction::None:
+                return physicalDevice.IsFeatureSupported(DeviceFeature::LoadNoneOp) ? VK_ATTACHMENT_LOAD_OP_NONE_EXT
+                                                                                    : VK_ATTACHMENT_LOAD_OP_LOAD;
+            default:
+                AZ_Assert(false, "AttachmentLoadAction is illegal.");
+                return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            }
+        }
+
+        VkAttachmentStoreOp ConvertAttachmentStoreAction(RHI::AttachmentStoreAction storeAction, const Device& device)
+        {
+            const auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
+            switch (storeAction)
+            {
+            case RHI::AttachmentStoreAction::Store:
+                return VK_ATTACHMENT_STORE_OP_STORE;
+            case RHI::AttachmentStoreAction::DontCare:
+                return VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            case RHI::AttachmentStoreAction::None:
+                return physicalDevice.IsFeatureSupported(DeviceFeature::StoreNoneOp) ? VK_ATTACHMENT_STORE_OP_NONE
+                                                                                     : VK_ATTACHMENT_STORE_OP_STORE;
+            default:
+                AZ_Assert(false, "AttachmentStoreAction is illegal.");
+                return VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            }
         }
     }
 }

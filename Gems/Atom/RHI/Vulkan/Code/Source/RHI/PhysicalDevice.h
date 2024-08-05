@@ -35,6 +35,8 @@ namespace AZ
             BufferDeviceAddress,
             SubgroupOperation,
             MemoryBudget,
+            LoadNoneOp,
+            StoreNoneOp,
             Count // Must be last
         };
 
@@ -63,6 +65,7 @@ namespace AZ
             FragmentDensityMap,
             Renderpass2,
             TimelineSempahore,
+            LoadStoreOpNone,
             Count
         };
 

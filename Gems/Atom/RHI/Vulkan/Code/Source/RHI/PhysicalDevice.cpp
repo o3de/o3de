@@ -299,6 +299,10 @@ namespace AZ
                 static_cast<size_t>(DeviceFeature::MemoryBudget),
                 VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_memory_budget) && m_deviceProperties.vendorID != VendorID_Intel);
             m_features.set(static_cast<size_t>(DeviceFeature::SubgroupOperation), (majorVersion >= 1 && minorVersion >= 1));
+            m_features.set(static_cast<size_t>(DeviceFeature::LoadNoneOp), VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_load_store_op_none));
+            m_features.set(
+                static_cast<size_t>(DeviceFeature::StoreNoneOp),
+                VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_load_store_op_none) || (majorVersion >= 1 && minorVersion >= 3));
         }
 
         RawStringList PhysicalDevice::FilterSupportedOptionalExtensions()
@@ -331,6 +335,7 @@ namespace AZ
                 VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME,
                 VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME,
                 VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
+                VK_EXT_LOAD_STORE_OP_NONE_EXTENSION_NAME
             } };
 
             [[maybe_unused]] uint32_t optionalExtensionCount = aznumeric_cast<uint32_t>(optionalExtensions.size());

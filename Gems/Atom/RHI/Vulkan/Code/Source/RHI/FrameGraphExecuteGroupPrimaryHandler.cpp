@@ -33,7 +33,7 @@ namespace AZ::Vulkan
                 continue;
             }
 
-            RenderPassBuilder builder(device, 1);
+            RenderPassBuilder builder(device);
             builder.AddScopeAttachments(*scope);
             // This will update the m_renderPassContexts with the proper renderpass and framebuffer.
             RHI::ResultCode result = builder.End(m_renderPassContexts[i]);
