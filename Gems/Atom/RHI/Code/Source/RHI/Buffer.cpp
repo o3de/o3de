@@ -96,6 +96,10 @@ namespace AZ::RHI
                 return new_iterator->second;
             }
         }
+        else if (&iterator->second->GetBuffer() != m_buffer->GetDeviceBuffer(deviceIndex).get())
+        {
+            iterator->second = m_buffer->GetDeviceBuffer(deviceIndex)->GetBufferView(m_descriptor);
+        }
 
         return iterator->second;
     }

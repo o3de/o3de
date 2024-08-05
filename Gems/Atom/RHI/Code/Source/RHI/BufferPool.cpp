@@ -167,6 +167,7 @@ namespace AZ::RHI
                             if (createBuffer)
                             {
                                 initRequest.m_buffer->m_deviceObjects[deviceIndex] = Factory::Get().CreateBuffer();
+
                                 DeviceBufferInitRequest bufferInitRequest(
                                     *initRequest.m_buffer->GetDeviceBuffer(deviceIndex),
                                     initRequest.m_descriptor,
@@ -174,9 +175,20 @@ namespace AZ::RHI
                                 return deviceBufferPool->InitBuffer(bufferInitRequest);
                             }
                         }
-                        else if (!createBuffer)
+                        else
                         {
-                            initRequest.m_buffer->m_deviceObjects.erase(deviceIndex);
+                            if (createBuffer)
+                            {
+                                DeviceBufferInitRequest bufferInitRequest(
+                                    *initRequest.m_buffer->GetDeviceBuffer(deviceIndex),
+                                    initRequest.m_descriptor,
+                                    initRequest.m_initialData);
+                                return deviceBufferPool->InitBuffer(bufferInitRequest);
+                            }
+                            else
+                            {
+                                initRequest.m_buffer->m_deviceObjects.erase(deviceIndex);
+                            }
                         }
 
                         return ResultCode::Success;

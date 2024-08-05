@@ -139,9 +139,20 @@ namespace AZ::RHI
                                 return deviceStreamingImagePool->InitImage(streamingImageInitRequest);
                             }
                         }
-                        else if (!createImage)
+                        else
                         {
-                            initRequest.m_image->m_deviceObjects.erase(deviceIndex);
+                            if (createImage)
+                            {
+                                DeviceStreamingImageInitRequest streamingImageInitRequest(
+                                    *initRequest.m_image->GetDeviceImage(deviceIndex),
+                                    initRequest.m_descriptor,
+                                    initRequest.m_tailMipSlices);
+                                return deviceStreamingImagePool->InitImage(streamingImageInitRequest);
+                            }
+                            else
+                            {
+                                initRequest.m_image->m_deviceObjects.erase(deviceIndex);
+                            }
                         }
 
                         return ResultCode::Success;

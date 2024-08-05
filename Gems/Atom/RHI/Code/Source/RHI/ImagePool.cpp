@@ -90,9 +90,20 @@ namespace AZ::RHI
                                 return deviceImagePool->InitImage(imageInitRequest);
                             }
                         }
-                        else if (!createImage)
+                        else
                         {
-                            initRequest.m_image->m_deviceObjects.erase(deviceIndex);
+                            if (createImage)
+                            {
+                                DeviceImageInitRequest imageInitRequest(
+                                    *initRequest.m_image->GetDeviceImage(deviceIndex),
+                                    initRequest.m_descriptor,
+                                    initRequest.m_optimizedClearValue);
+                                return deviceImagePool->InitImage(imageInitRequest);
+                            }
+                            else
+                            {
+                                initRequest.m_image->m_deviceObjects.erase(deviceIndex);
+                            }
                         }
 
                         return ResultCode::Success;

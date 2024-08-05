@@ -135,6 +135,10 @@ namespace AZ::RHI
                 return new_iterator->second;
             }
         }
+        else if (&iterator->second->GetImage() != m_image->GetDeviceImage(deviceIndex).get())
+        {
+            iterator->second = m_image->GetDeviceImage(deviceIndex)->GetImageView(m_descriptor);
+        }
 
         return iterator->second;
     }
