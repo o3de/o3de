@@ -17,7 +17,7 @@ namespace AZ
 {
     AZStd::string Vector3ToString(const Vector3& v)
     {
-        AZ::Locale::ScopedSerializationLocale locale; // colors<--->string should be intepreted in the "C" Locale.
+        AZ::Locale::ScopedSerializationLocale locale; // Vector3 <---> string interpreted in the "C" Locale.
 
         return AZStd::string::format("(x=%.7f,y=%.7f,z=%.7f)", static_cast<float>(v.GetX()), static_cast<float>(v.GetY()), static_cast<float>(v.GetZ()));
     }
@@ -25,7 +25,7 @@ namespace AZ
 
     AZStd::string Vector4ToString(const Vector4& v)
     {
-        AZ::Locale::ScopedSerializationLocale locale; // colors<--->string should be intepreted in the "C" Locale.
+        AZ::Locale::ScopedSerializationLocale locale; // Vector4 <---> string interpreted in the "C" Locale.
 
         return AZStd::string::format("(x=%.7f,y=%.7f,z=%.7f,w=%.7f)", static_cast<float>(v.GetX()), static_cast<float>(v.GetY()), static_cast<float>(v.GetZ()), static_cast<float>(v.GetW()));
     }
@@ -33,7 +33,7 @@ namespace AZ
 
     AZStd::string QuaternionToString(const Quaternion& v)
     {
-        AZ::Locale::ScopedSerializationLocale locale; // colors<--->string should be intepreted in the "C" Locale.
+        AZ::Locale::ScopedSerializationLocale locale; // Quaternion <---> string should be interpreted in the "C" Locale.
 
         return AZStd::string::format("(x=%.7f,y=%.7f,z=%.7f,w=%.7f)", static_cast<float>(v.GetX()), static_cast<float>(v.GetY()), static_cast<float>(v.GetZ()), static_cast<float>(v.GetW()));
     }

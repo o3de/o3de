@@ -27,8 +27,6 @@
 
 #include "System.h"
 
-#define SCOPED_LOCALE_RESETTER AZ::Locale::ScopedSerializationLocale localeResetter;
-
 // Global counter for memory allocated in XML string pools.
 size_t CSimpleStringPool::g_nTotalAllocInXmlStringPools = 0;
 
@@ -274,7 +272,7 @@ void CXmlNode::setAttr(const char* key, unsigned int value)
 void CXmlNode::setAttr(const char* key, float value)
 {
     char str[128];
-    SCOPED_LOCALE_RESETTER;
+    AZ::Locale::ScopedSerializationLocale localeResetter;
     sprintf_s(str, FLOAT_FMT, value);
     setAttr(key, str);
 }
@@ -282,7 +280,7 @@ void CXmlNode::setAttr(const char* key, float value)
 void CXmlNode::setAttr(const char* key, double value)
 {
     char str[128];
-    SCOPED_LOCALE_RESETTER;
+    AZ::Locale::ScopedSerializationLocale localeResetter;
     sprintf_s(str, DOUBLE_FMT, value);
     setAttr(key, str);
 }
@@ -313,21 +311,21 @@ void CXmlNode::setAttr(const char* key, uint64 value, bool useHexFormat)
 void CXmlNode::setAttr(const char* key, const Ang3& value)
 {
     char str[128];
-    SCOPED_LOCALE_RESETTER;
+    AZ::Locale::ScopedSerializationLocale localeResetter;
     sprintf_s(str, FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT, value.x, value.y, value.z);
     setAttr(key, str);
 }
 void CXmlNode::setAttr(const char* key, const Vec3& value)
 {
     char str[128];
-    SCOPED_LOCALE_RESETTER;
+    AZ::Locale::ScopedSerializationLocale localeResetter;
     sprintf_s(str, FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT, value.x, value.y, value.z);
     setAttr(key, str);
 }
 void CXmlNode::setAttr(const char* key, const Vec4& value)
 {
     char str[128];
-    SCOPED_LOCALE_RESETTER;
+    AZ::Locale::ScopedSerializationLocale localeResetter;
     sprintf_s(str, FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT, value.x, value.y, value.z, value.w);
     setAttr(key, str);
 }
@@ -335,7 +333,7 @@ void CXmlNode::setAttr(const char* key, const Vec4& value)
 void CXmlNode::setAttr(const char* key, const Vec2& value)
 {
     char str[128];
-    SCOPED_LOCALE_RESETTER;
+    AZ::Locale::ScopedSerializationLocale localeResetter;
     sprintf_s(str, FLOAT_FMT "," FLOAT_FMT, value.x, value.y);
     setAttr(key, str);
 }
@@ -343,7 +341,7 @@ void CXmlNode::setAttr(const char* key, const Vec2& value)
 void CXmlNode::setAttr(const char* key, const Quat& value)
 {
     char str[128];
-    SCOPED_LOCALE_RESETTER;
+    AZ::Locale::ScopedSerializationLocale localeResetter;
     sprintf_s(str, FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT, value.w, value.v.x, value.v.y, value.v.z);
     setAttr(key, str);
 }
@@ -422,7 +420,7 @@ bool CXmlNode::getAttr(const char* key, float& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        SCOPED_LOCALE_RESETTER;
+        AZ::Locale::ScopedSerializationLocale localeResetter;
         value = (float)atof(svalue);
         return true;
     }
@@ -434,7 +432,7 @@ bool CXmlNode::getAttr(const char* key, double& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        SCOPED_LOCALE_RESETTER;
+        AZ::Locale::ScopedSerializationLocale localeResetter;
         value = atof(svalue);
         return true;
     }
@@ -446,7 +444,7 @@ bool CXmlNode::getAttr(const char* key, Ang3& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        SCOPED_LOCALE_RESETTER;
+        AZ::Locale::ScopedSerializationLocale localeResetter;
         float x, y, z;
         if (azsscanf(svalue, "%f,%f,%f", &x, &y, &z) == 3)
         {
@@ -463,7 +461,7 @@ bool CXmlNode::getAttr(const char* key, Vec3& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        SCOPED_LOCALE_RESETTER;
+        AZ::Locale::ScopedSerializationLocale localeResetter;
         float x, y, z;
         if (azsscanf(svalue, "%f,%f,%f", &x, &y, &z) == 3)
         {
@@ -480,7 +478,7 @@ bool CXmlNode::getAttr(const char* key, Vec4& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        SCOPED_LOCALE_RESETTER;
+        AZ::Locale::ScopedSerializationLocale localeResetter;
         float x, y, z, w;
         if (azsscanf(svalue, "%f,%f,%f,%f", &x, &y, &z, &w) == 4)
         {
@@ -498,7 +496,7 @@ bool CXmlNode::getAttr(const char* key, Vec2& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        SCOPED_LOCALE_RESETTER;
+        AZ::Locale::ScopedSerializationLocale localeResetter;
         float x, y;
         if (azsscanf(svalue, "%f,%f", &x, &y) == 2)
         {
@@ -515,7 +513,7 @@ bool CXmlNode::getAttr(const char* key, Quat& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        SCOPED_LOCALE_RESETTER;
+        AZ::Locale::ScopedSerializationLocale localeResetter;
         float w, x, y, z;
         if (azsscanf(svalue, "%f,%f,%f,%f", &w, &x, &y, &z) == 4)
         {
@@ -537,7 +535,7 @@ bool CXmlNode::getAttr(const char* key, ColorB& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        SCOPED_LOCALE_RESETTER;
+        AZ::Locale::ScopedSerializationLocale localeResetter;
         unsigned int r, g, b, a = 255;
         int numFound = azsscanf(svalue, "%u,%u,%u,%u", &r, &g, &b, &a);
         if (numFound == 3 || numFound == 4)
