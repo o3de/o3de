@@ -30,7 +30,11 @@
                 {
                     "Name": "DepthStencil",
                     "SlotType": "Input",
-                    "ScopeAttachmentUsage": "DepthStencil"
+                    "ScopeAttachmentUsage": "DepthStencil",
+                    "LoadStoreAction": {
+                        "StoreAction": "None",
+                        "StoreActionStencil": "None"
+                    }
                 },
                 // Input/Outputs
                 {

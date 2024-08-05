@@ -168,10 +168,10 @@ namespace AZ
                         SetStructureType(desc, VkAttachmentDescriptionTraits::struct_type, special_());
                         desc.format = ConvertFormat(binding.m_format);
                         desc.samples = ConvertSampleCount(binding.m_multisampleState.m_samples);
-                        desc.loadOp = ConvertAttachmentLoadAction(binding.m_loadStoreAction.m_loadAction);
-                        desc.storeOp = ConvertAttachmentStoreAction(binding.m_loadStoreAction.m_storeAction);
-                        desc.stencilLoadOp = ConvertAttachmentLoadAction(binding.m_loadStoreAction.m_loadActionStencil);
-                        desc.stencilStoreOp = ConvertAttachmentStoreAction(binding.m_loadStoreAction.m_storeActionStencil);
+                        desc.loadOp = ConvertAttachmentLoadAction(binding.m_loadStoreAction.m_loadAction, m_device);
+                        desc.storeOp = ConvertAttachmentStoreAction(binding.m_loadStoreAction.m_storeAction, m_device);
+                        desc.stencilLoadOp = ConvertAttachmentLoadAction(binding.m_loadStoreAction.m_loadActionStencil, m_device);
+                        desc.stencilStoreOp = ConvertAttachmentStoreAction(binding.m_loadStoreAction.m_storeActionStencil, m_device);
                         desc.initialLayout = binding.m_initialLayout;
                         desc.finalLayout = binding.m_finalLayout;
                     }
