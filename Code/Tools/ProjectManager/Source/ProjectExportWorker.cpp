@@ -40,7 +40,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    QString ProjectExportWorker::GetLogFilePath() const
+    AZ::Outcome<QString, QString> ProjectExportWorker::GetLogFilePath() const
     {
         QDir logFilePath(m_projectInfo.m_path);
         // Make directories if they aren't on disk
@@ -49,7 +49,7 @@ namespace O3DE::ProjectManager
             bool madeDirectory = logFilePath.mkpath(ProjectBuildPathPostfix);
             if (!madeDirectory)
             {
-                return QString("");
+                return AZ::Failure("Unable to make log directory for project build path");
             }
             logFilePath.cd(ProjectBuildPathPostfix);
         }
@@ -58,11 +58,11 @@ namespace O3DE::ProjectManager
             bool madeDirectory = logFilePath.mkpath(ProjectBuildPathCmakeFiles);
             if (!madeDirectory)
             {
-                return QString("");
+                return AZ::Failure("Unable to make log directory for cmake files path");
             }
             logFilePath.cd(ProjectBuildPathCmakeFiles);
         }
-        return logFilePath.filePath(ProjectExportErrorLogName);
+        return AZ::Success(logFilePath.filePath(ProjectExportErrorLogName));
     }
 
     void ProjectExportWorker::QStringToAZTracePrint([[maybe_unused]] const QString& error)
@@ -72,17 +72,20 @@ namespace O3DE::ProjectManager
 
     AZ::Outcome<void, QString> ProjectExportWorker::ExportProjectForPlatform()
     {
-        QString logFilePath = GetLogFilePath();
-        if(logFilePath == "")
+        AZ::Outcome<QString, QString> logFilePathQuery = GetLogFilePath();
+        if(!logFilePathQuery.IsSuccess())
         {
-            QStringToAZTracePrint(LogPathFailureMsg);
-            return AZ::Failure(LogPathFailureMsg);
+            QString errorMessage = tr("%1: %2").arg(LogPathFailureMsg).arg(logFilePathQuery.GetError());
+            QStringToAZTracePrint(errorMessage);
+            return AZ::Failure(errorMessage);
         }
+        QString logFilePath = logFilePathQuery.GetValue();
         QFile logFile(logFilePath);
         if (!logFile.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate))
         {
-            QStringToAZTracePrint(LogOpenFailureMsg);
-            return AZ::Failure(LogOpenFailureMsg);
+            QString errorMessage = tr("%1: %2").arg(LogOpenFailureMsg).arg(logFilePath);
+            QStringToAZTracePrint(errorMessage);
+            return AZ::Failure(errorMessage);
         }
 
         EngineInfo engineInfo;
@@ -202,7 +205,7 @@ namespace O3DE::ProjectManager
 
         if (m_exportProjectProcess->exitStatus() != QProcess::ExitStatus::NormalExit || m_exportProjectProcess->exitCode() != 0)
         {
-            QString error = tr("Building project failed. See log for details. %1").arg(logFilePath);
+            QString error = tr("Exporting launcher for project failed. See log for details. %1").arg(logFilePath);
             QStringToAZTracePrint(error);
             return AZ::Failure(error);
         }

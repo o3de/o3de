@@ -10,6 +10,7 @@
 #include <ProjectManagerDefs.h>
 #include <ProjectUtils.h>
 #include <ProjectManager_Traits_Platform.h>
+#include <ProjectExportController.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 #include <AzCore/IO/SystemFile.h>
@@ -541,7 +542,7 @@ namespace O3DE::ProjectManager
 
         SetProjectExporting(true);
 
-        ShowMessage(tr("Exporting Project..."));
+        ShowMessage(tr("Exporting Launcher..."));
     }
 
     void ProjectButton::ShowBuildFailedState()
@@ -564,7 +565,7 @@ namespace O3DE::ProjectManager
 
         m_projectImageLabel->GetShowLogsButton()->setVisible(!m_projectInfo.m_logUrl.isEmpty());
 
-        ShowWarning(tr("Export Project Failed."));
+        ShowWarning(tr(ProjectExportController::LauncherExportFailedMessage));
     }
 
     void ProjectButton::ShowNotDownloadedState()

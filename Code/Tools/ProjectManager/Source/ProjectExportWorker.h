@@ -32,7 +32,7 @@ namespace O3DE::ProjectManager
         explicit ProjectExportWorker(const ProjectInfo& projectInfo);
         ~ProjectExportWorker() = default;
 
-        QString GetLogFilePath() const;
+        AZ::Outcome<QString, QString> GetLogFilePath() const;
 
     public slots:
         void ExportProject();

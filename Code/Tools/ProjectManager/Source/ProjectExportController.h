@@ -32,6 +32,7 @@ namespace O3DE::ProjectManager
         const ProjectInfo& GetProjectInfo() const;
 
         inline constexpr static int s_maxDisplayedBuiltOutputChars = 25;
+        inline static const char * LauncherExportFailedMessage = "Launcher failed to export.";
 
     public slots:
         void Start();

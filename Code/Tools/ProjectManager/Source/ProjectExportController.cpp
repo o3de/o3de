@@ -56,7 +56,11 @@ namespace O3DE::ProjectManager
         if (projectButton)
         {
             projectButton->SetProjectButtonAction(tr("Cancel"), [this] { HandleCancel(); });
-            projectButton->SetBuildLogsLink(QUrl::fromLocalFile(m_worker->GetLogFilePath()));
+            AZ::Outcome<QString, QString> logFilePathQuery = m_worker->GetLogFilePath();
+            if (logFilePathQuery.IsSuccess())
+            {
+                projectButton->SetBuildLogsLink(QUrl::fromLocalFile(logFilePathQuery.GetValue()));
+            }
             projectButton->SetState(ProjectButtonState::Exporting);
 
             if (!m_lastLine.isEmpty())
@@ -85,30 +89,46 @@ namespace O3DE::ProjectManager
     {
         if (!result.isEmpty())
         {
+            AZ::Outcome<QString, QString> logFilePathQuery = m_worker->GetLogFilePath();
             if (result.contains(tr("log")))
             {
                 QMessageBox::StandardButton openLog = QMessageBox::critical(
                     m_parent,
-                    tr("Project Failed to Export!"),
+                    tr(LauncherExportFailedMessage),
                     result + tr("\n\nWould you like to view log?"),
                     QMessageBox::No | QMessageBox::Yes);
 
                 if (openLog == QMessageBox::Yes)
                 {
                     // Open application assigned to this file type
-                    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(m_worker->GetLogFilePath())))
+                    if (!logFilePathQuery.IsSuccess() || !QDesktopServices::openUrl(QUrl::fromLocalFile(logFilePathQuery.GetValue())))
                     {
                         qDebug() << "QDesktopServices::openUrl failed to open " << m_projectInfo.m_logUrl.toString() << "\n";
                     }
                 }
-                m_projectInfo.m_logUrl = QUrl::fromLocalFile(m_worker->GetLogFilePath());
+                
+                if (logFilePathQuery.IsSuccess())
+                {
+                    m_projectInfo.m_logUrl = QUrl::fromLocalFile(logFilePathQuery.GetValue());
+                }
             }
             else
             {
-                QMessageBox::critical(m_parent,
-                                      tr("Project Failed to Export!\nYou can check the logs in the following directory:\n%1")
-                                        .arg(m_worker->GetLogFilePath()),
+                if (logFilePathQuery.IsSuccess())
+                {
+                    QMessageBox::critical(m_parent,
+                                      tr("%1\nYou can check the logs in the following directory:\n%2")
+                                        .arg(LauncherExportFailedMessage)
+                                        .arg(logFilePathQuery.GetValue()),
                                       result);
+                }
+                else
+                {
+                    QMessageBox::critical(m_parent,
+                                      tr("%1\nNo logs are available at this time.")
+                                        .arg(LauncherExportFailedMessage),
+                                      result);
+                }
             }
 
             emit Done(false);
