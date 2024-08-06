@@ -28,7 +28,7 @@ namespace AZ
 
         AZStd::unique_ptr<RHI::AliasingBarrierTracker> AliasedHeap::CreateBarrierTrackerInternal()
         {
-            return AZStd::make_unique<AliasingBarrierTracker>(GetVulkanRHIDevice());
+            return AZStd::make_unique<AliasingBarrierTracker>(GetVulkanRHIDevice(), GetDescriptor().m_budgetInBytes);
         }
 
         RHI::ResultCode AliasedHeap::InitInternal(RHI::Device& rhiDevice, const RHI::AliasedHeapDescriptor& descriptor)

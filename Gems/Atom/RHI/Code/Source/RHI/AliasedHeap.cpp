@@ -212,6 +212,7 @@ namespace AZ::RHI
         {
             // Now that we have the begin and end scope we can add the resource to the tracker.
             AliasedResource aliasedResource;
+            aliasedResource.m_attachmentId = attachmentId;
             aliasedResource.m_beginScope = attachmentData.m_activateScope;
             aliasedResource.m_endScope = &scope;
             aliasedResource.m_resource = attachmentData.m_resource;

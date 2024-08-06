@@ -227,36 +227,77 @@ namespace AZ
         VkImageLayout RenderPassBuilder::GetInitialLayout(const Scope& scope, const RHI::ImageScopeAttachment& attachment) const
         {
             // Calculate the initial layout of an image attachment from a list of barriers.
-            // The initial layout is the old layout of the first barrier of the image (it's the layout
-            // that the image will be before starting the renderpass).
+            // The initial layout is a combination of the resource barriers.
             const ImageView* imageView = static_cast<const ImageView*>(attachment.GetImageView()->GetDeviceImageView(scope.GetDeviceIndex()).get());
-            auto& barriers = scope.m_subpassBarriers[static_cast<uint32_t>(Scope::BarrierSlot::Prologue)];
-
-            auto findIt = AZStd::find_if(barriers.begin(), barriers.end(), [imageView](const Scope::Barrier& barrier)
+            auto& barriers = scope.m_globalBarriers[static_cast<uint32_t>(Scope::BarrierSlot::Prologue)];
+            auto isEqual = [imageView](const Scope::Barrier& barrier)
             {
-                return barrier.Overlaps(*imageView, Scope::OverlapType::Complete);
-            });
+                return barrier.Overlaps(*imageView, Scope::OverlapType::Partial);
+            };
+
+            // Combine all the layouts of all the barriers that are using the resource.
+            auto it = AZStd::find_if(barriers.begin(), barriers.end(), isEqual);
+            if (it != barriers.end())
+            {
+                VkImageLayout layout = it->m_imageBarrier.oldLayout;
+                VkImageAspectFlags aspectFlags = it->m_imageBarrier.subresourceRange.aspectMask;
+                for (it = AZStd::find_if(it + 1, barriers.end(), isEqual);
+                     it != barriers.end();
+                     it = AZStd::find_if(it + 1, barriers.end(), isEqual))
+                {
+                    // To properly combine them we first need to remove the layout of the unused aspects.
+                    layout = CombineImageLayout(
+                        FilterImageLayout(
+                            layout,
+                            ConvertImageAspectFlags(aspectFlags)),
+                        FilterImageLayout(
+                            it->m_imageBarrier.oldLayout,
+                            ConvertImageAspectFlags(it->m_imageBarrier.subresourceRange.aspectMask)));
+                    aspectFlags |= it->m_imageBarrier.subresourceRange.aspectMask;
+                }
+
+                return layout;
+            }
 
             // If we don't find any barrier for the image attachment, then the image will already be in the layout
             // it needs before starting the renderpass.
-            return findIt != barriers.end() ? findIt->m_imageBarrier.oldLayout : GetImageAttachmentLayout(attachment);
+            return GetImageAttachmentLayout(attachment);
         }
 
         VkImageLayout RenderPassBuilder::GetFinalLayout(const Scope& scope, const RHI::ImageScopeAttachment& attachment) const
         {
             // Calculate the final layout of an image attachment from a list of barriers.
-            // The final layout is the new layout of the last barrier of the image (it's the layout
-            // that the image will transition before ending the renderpass).
+            // The final layout is a combination of the resource barriers.
             const ImageView* imageView = static_cast<const ImageView*>(attachment.GetImageView()->GetDeviceImageView(scope.GetDeviceIndex()).get());
-            auto& barriers = scope.m_subpassBarriers[static_cast<uint32_t>(Scope::BarrierSlot::Epilogue)];
+            auto& barriers = scope.m_globalBarriers[static_cast<uint32_t>(Scope::BarrierSlot::Epilogue)];
 
-            auto findIt = AZStd::find_if(barriers.rbegin(), barriers.rend(), [imageView](const Scope::Barrier& barrier)
+            auto isEqual = [imageView](const Scope::Barrier& barrier)
             {
-                    return barrier.Overlaps(*imageView, Scope::OverlapType::Complete);
-            });
+                return barrier.Overlaps(*imageView, Scope::OverlapType::Partial);
+            };
+
+            // Combine all the layouts of all the barriers that are using the resource.
+            auto it = AZStd::find_if(barriers.begin(), barriers.end(), isEqual);
+            if (it != barriers.end())
+            {
+                VkImageLayout layout = it->m_imageBarrier.newLayout;
+                VkImageAspectFlags aspectFlags = it->m_imageBarrier.subresourceRange.aspectMask;
+                for (it = AZStd::find_if(it + 1, barriers.end(), isEqual); it != barriers.end();
+                     it = AZStd::find_if(it + 1, barriers.end(), isEqual))
+                {
+                    // To properly combine them we first need to remove the layout of the unused aspects.
+                    layout = CombineImageLayout(
+                        FilterImageLayout(layout, ConvertImageAspectFlags(aspectFlags)),
+                        FilterImageLayout(
+                            it->m_imageBarrier.newLayout, ConvertImageAspectFlags(it->m_imageBarrier.subresourceRange.aspectMask)));
+                    aspectFlags |= it->m_imageBarrier.subresourceRange.aspectMask;
+                }
+
+                return layout;
+            }
 
             // If we don't find any barrier for the image attachment, then the image will stay in the same layout.
-            return findIt != barriers.rend() ? findIt->m_imageBarrier.newLayout : GetImageAttachmentLayout(attachment);
+            return GetImageAttachmentLayout(attachment);
         }
     }
 }
