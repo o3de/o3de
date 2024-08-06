@@ -70,7 +70,7 @@ namespace WhiteBox
         m_renderMesh->UpdateTransform(world);
     }
 
-    void WhiteBoxComponent::GetVisibleGeometry(
+    void WhiteBoxComponent::BuildVisibleGeometry(
         [[maybe_unused]] const AZ::Aabb& bounds, AzFramework::VisibleGeometryContainer& geometryContainer) const
     {
         // Convert the white box render data into visible geometry data

@@ -806,7 +806,7 @@ namespace WhiteBox
         return m_localAabb.value();
     }
 
-    void EditorWhiteBoxComponent::GetVisibleGeometry(const AZ::Aabb& bounds, AzFramework::VisibleGeometryContainer& geometryContainer) const
+    void EditorWhiteBoxComponent::BuildVisibleGeometry(const AZ::Aabb& bounds, AzFramework::VisibleGeometryContainer& geometryContainer) const
     {
         // Only add the white box geometry if its bounds overlap the input bounds
         if (bounds.IsValid() && !bounds.Overlaps(GetWorldBounds()))

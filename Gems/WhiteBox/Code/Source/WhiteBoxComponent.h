@@ -52,7 +52,7 @@ namespace WhiteBox
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
         // AzFramework::VisibleGeometryRequestBus::Handler overrides ...
-        void GetVisibleGeometry(const AZ::Aabb& bounds, AzFramework::VisibleGeometryContainer& geometryContainer) const override;
+        void BuildVisibleGeometry(const AZ::Aabb& bounds, AzFramework::VisibleGeometryContainer& geometryContainer) const override;
 
         WhiteBoxRenderData m_whiteBoxRenderData; //!< Intermediate format to store White Box render data.
         AZStd::unique_ptr<RenderMeshInterface> m_renderMesh; //!< The render mesh to use for White Box rendering.

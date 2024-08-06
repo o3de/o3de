@@ -76,7 +76,7 @@ namespace WhiteBox
         AZ::Aabb GetLocalBounds() const override;
 
         // AzFramework::VisibleGeometryRequestBus::Handler overrides ...
-        void GetVisibleGeometry(const AZ::Aabb& bounds, AzFramework::VisibleGeometryContainer& geometryContainer) const override;
+        void BuildVisibleGeometry(const AZ::Aabb& bounds, AzFramework::VisibleGeometryContainer& geometryContainer) const override;
 
         //! Returns if the component currently has an instance of RenderMeshInterface.
         bool HasRenderMesh() const;
