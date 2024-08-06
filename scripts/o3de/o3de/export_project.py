@@ -1178,7 +1178,12 @@ SETTINGS_OPTION_BUILD_TOOLS       = register_setting(key='option.build.tools',
 
 SETTINGS_DEFAULT_ANDROID_BUILD_PATH = register_setting(key='default.android.build.path',
                                                        description='Designates where the android build files are generated.',
-                                                       default='build/game_android')
+                                                       default='build/android')
+
+SETTINGS_ANDROID_DEPLOY = register_setting(key='option.android.deploy',
+                                           description='Upon completing export, immediately attempt to deploy to a locally connected Android device. Useful for testing.',
+                                           is_boolean=True,
+                                           default='False')
 
 SETTINGS_DEFAULT_IOS_BUILD_PATH = register_setting(key='default.ios.build.path',
                                                    description='Designates where the iOS build files are generated.',

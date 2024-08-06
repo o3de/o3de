@@ -141,9 +141,10 @@ def export_source_android_parse_args(o3de_context: exp.O3DEScriptExportContext,
 
     parser.add_argument('--deploy-to-android',action='store_true',help='At completion of build, deploy to a connected android device.')
  
+    default_android_build_path = pathlib.Path(export_config.get_value(key=exp.SETTINGS_DEFAULT_ANDROID_BUILD_PATH.key, default=android.DEFAULT_ANDROID_BUILD_FOLDER))
     parser.add_argument('-abp', '--android-build-path', type=str, 
                                           help=f"The location to write the android project scripts to. Default: '{android.DEFAULT_ANDROID_BUILD_FOLDER}'", 
-                                          default=android.DEFAULT_ANDROID_BUILD_FOLDER) 
+                                          default=default_android_build_path) 
 
     asset_mode = android_config.get_value(android_support.SETTINGS_ASSET_MODE.key, default=android_support.ASSET_MODE_LOOSE)
     parser.add_argument('--asset-mode', type=str,
@@ -185,6 +186,11 @@ def export_source_android_run_command(o3de_context: exp.O3DEScriptExportContext,
                                                                           enable_attribute='engine_centric',
                                                                           disable_attribute='project_centric')
     
+    option_android_deploy = export_config.get_parsed_boolean_option(parsed_args=args,
+                                                                    key=exp.SETTINGS_ANDROID_DEPLOY.key,
+                                                                    enable_attribute='deploy_to_android',
+                                                                    disable_attribute='no_deploy_to_android')
+    
     target_android_project_path = pathlib.Path(args.android_build_path)
 
     if not target_android_project_path.is_absolute():
@@ -212,7 +218,7 @@ def export_source_android_run_command(o3de_context: exp.O3DEScriptExportContext,
                                       tools_build_path=args.tools_build_path,
                                       max_bundle_size=args.max_bundle_size,
                                       fail_on_asset_errors=fail_on_asset_errors,
-                                      deploy_to_device=args.deploy_to_android,
+                                      deploy_to_device=option_android_deploy,
                                       logger=o3de_logger)
     except exp.ExportProjectError as err:
         print(err)
