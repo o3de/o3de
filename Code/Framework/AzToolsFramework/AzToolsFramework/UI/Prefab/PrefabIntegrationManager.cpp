@@ -1371,26 +1371,43 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::ContextMenu_InstantiatePrefab()
         {
-            AZStd::string prefabFilePath;
-            bool hasUserSelectedValidSourceFile = PrefabSaveHandler::QueryUserForPrefabFilePath(prefabFilePath);
+            EntityIdList selectedEntities;
+            ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &ToolsApplicationRequests::GetSelectedEntities);
 
-            if (hasUserSelectedValidSourceFile)
+            // Can't instantiate as child of multiple entities.
+            if (selectedEntities.size() > 1)
             {
-                AZ::EntityId parentId;
-                AZ::Vector3 position = AZ::Vector3::CreateZero();
+                return;
+            }
 
-                EntityIdList selectedEntities;
-                ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &ToolsApplicationRequests::GetSelectedEntities);
-                // if one entity is selected, instantiate prefab as its child and place it at same position as parent
+            // Can't instantiate under a closed container or a read-only entity.
+            if (selectedEntities.size() == 1)
+            {
+                AZ::EntityId selectedEntityId = selectedEntities.front();
+                bool selectedEntityIsReadOnly = m_readOnlyEntityPublicInterface->IsReadOnly(selectedEntityId);
+                auto containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
+
+                if (!containerEntityInterface || !containerEntityInterface->IsContainerOpen(selectedEntityId) || selectedEntityIsReadOnly)
+                {
+                    return;
+                }
+            }
+
+            // Retrieve the cursor position before querying for file path so it is retrieved correctly.
+            AZ::Vector3 position = AZ::Vector3::CreateZero();
+            EditorRequestBus::BroadcastResult(position, &EditorRequestBus::Events::GetWorldPositionAtViewportInteraction);
+
+            // Query for the prefab to instantiate.
+            AZStd::string prefabFilePath;
+            if (PrefabSaveHandler::QueryUserForPrefabFilePath(prefabFilePath))
+            {
+                AZ::EntityId parentId = AZ::EntityId();
+
+                // When a single entity is selected, instance is created as its child.
                 if (selectedEntities.size() == 1)
                 {
+                    // Set the selected entity as the parent.
                     parentId = selectedEntities.front();
-                    AZ::TransformBus::EventResult(position, parentId, &AZ::TransformInterface::GetWorldTranslation);
-                }
-                // otherwise instantiate it at root level and center of viewport
-                else
-                {
-                    EditorRequestBus::BroadcastResult(position, &EditorRequestBus::Events::GetWorldPositionAtViewportCenter);
                 }
 
                 auto createPrefabOutcome = s_prefabPublicInterface->InstantiatePrefab(prefabFilePath, parentId, position);

@@ -367,6 +367,17 @@ AZ::Vector3 SandboxIntegrationManager::GetWorldPositionAtViewportCenter()
     return AZ::Vector3::CreateZero();
 }
 
+AZ::Vector3 SandboxIntegrationManager::GetWorldPositionAtViewportInteraction() const
+{
+    const auto& iEditor = GetIEditor();
+    if (const auto& viewManager = (iEditor != nullptr) ? iEditor->GetViewManager() : nullptr)
+    {
+        return viewManager->GetClickPositionInViewportSpace();
+    }
+
+    return AZ::Vector3::CreateZero();
+}
+
 void SandboxIntegrationManager::ClearRedoStack()
 {
     // We have two separate undo systems that are assumed to be kept in sync,
@@ -524,6 +535,8 @@ void SandboxIntegrationManager::OnActionRegistrationHook()
             actionProperties,
             [this]()
             {
+                AZ::Vector3 worldPosition = GetWorldPositionAtViewportInteraction();
+
                 AzToolsFramework::EntityIdList selectedEntities;
                 AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
                     selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
@@ -531,7 +544,7 @@ void SandboxIntegrationManager::OnActionRegistrationHook()
                 // when nothing is selected, entity is created at root level.
                 if (selectedEntities.empty())
                 {
-                    ContextMenu_NewEntity();
+                    CreateNewEntityAtPosition(worldPosition);
                 }
                 // when a single entity is selected, entity is created as its child.
                 else if (selectedEntities.size() == 1)
@@ -542,8 +555,9 @@ void SandboxIntegrationManager::OnActionRegistrationHook()
 
                     if (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) && !selectedEntityIsReadOnly)
                     {
-                        AzToolsFramework::EditorRequestBus::Broadcast(
-                            &AzToolsFramework::EditorRequestBus::Handler::CreateNewEntityAsChild, selectedEntityId);
+                        AZ::Transform entityTransform = AZ::Transform::CreateIdentity();
+                        AZ::TransformBus::EventResult(entityTransform, selectedEntityId, &AZ::TransformBus::Events::GetWorldTM);
+                        CreateNewEntityAtPosition(entityTransform.GetInverse().TransformPoint(worldPosition), selectedEntityId);
                     }
                 }
             }
