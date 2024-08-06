@@ -68,6 +68,10 @@ namespace AZ
             //! Use ConstDescriptor() to access read-only InputStreamLayout
             RHI::InputStreamLayout& InputStreamLayout();
 
+            //! Updates the current shader variant id.
+            //! It sets this pipeline state to dirty whenever it's called.
+            void UpdateShaderVaraintId(const ShaderVariantId& shaderVariantId);
+
             const RHI::PipelineStateDescriptorForDraw& ConstDescriptor() const;
 
             //! Get the shader which is associated with this PipelineState
