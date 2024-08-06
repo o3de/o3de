@@ -69,7 +69,7 @@ namespace O3DE::ProjectManager
         void QueueBuildProject(const ProjectInfo& projectInfo, bool skipDialogBox = false);
         void UnqueueBuildProject(const ProjectInfo& projectInfo);
 
-        void QueueExportProject(const ProjectInfo& projectInfo, bool skipDialogBox = false);
+        void QueueExportProject(const ProjectInfo& projectInfo, const QString& exportScript, bool skipDialogBox = false);
         void UnqueueExportProject(const ProjectInfo& projectInfo);
 
         void StartProjectDownload(const QString& projectName, const QString& destinationPath, bool queueBuild);
@@ -98,7 +98,6 @@ namespace O3DE::ProjectManager
         bool BuildQueueContainsProject(const QString& projectPath);
         bool WarnIfInBuildQueue(const QString& projectPath);
 
-        //note: export queue logic is temporary stub. once implemented we will decide if scaling back is needed
         bool StartProjectExport(const ProjectInfo& projectInfo, bool skipDialogBox = false);
         bool ExportQueueContainsProject(const QString& projectPath);
         bool WarnIfInExportQueue(const QString& projectPath);

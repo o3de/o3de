@@ -361,7 +361,8 @@ namespace O3DE::ProjectManager
         menu->addAction(tr("Edit Project Settings..."), this, [this]() { emit EditProject(m_projectInfo.m_path); });
         menu->addAction(tr("Configure Gems..."), this, [this]() { emit EditProjectGems(m_projectInfo.m_path); });
         menu->addAction(tr("Build"), this, [this]() { emit BuildProject(m_projectInfo); });
-        menu->addAction(tr("Export Launcher"), this, [this](){ emit ExportProject(m_projectInfo);});
+        QMenu* exportMenu = menu->addMenu(tr("Export Launcher"));
+        exportMenu->addAction(tr("PC"), this, [this](){ emit ExportProject(m_projectInfo, "export_source_built_project.py");});
         menu->addAction(tr("Open CMake GUI..."), this, [this]() { emit OpenCMakeGUI(m_projectInfo); });
         menu->addAction(tr("Open Android Project Generator..."), this, [this]() { emit OpenAndroidProjectGenerator(m_projectInfo.m_path); });
         menu->addAction(tr("Open Project Export Settings..."), this, [this]() { emit OpenProjectExportSettings(m_projectInfo.m_path); });

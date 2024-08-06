@@ -117,7 +117,8 @@ namespace O3DE::ProjectManager
         m_exportProjectProcess->setWorkingDirectory(m_projectInfo.m_path);
 
         
-        QStringList exportArgs = {"export-project","--project-path", m_projectInfo.m_path};
+        QStringList exportArgs = {"export-project", "--export-script", m_projectInfo.m_currentExportScript,
+                                                    "--project-path", m_projectInfo.m_path};
         QString commandProgram = QDir(engineInfo.m_path).filePath(GetO3DECLIString());
 
         m_exportProjectProcess->start(commandProgram, exportArgs);

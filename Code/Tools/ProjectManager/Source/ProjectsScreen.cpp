@@ -810,7 +810,7 @@ namespace O3DE::ProjectManager
         UpdateIfCurrentScreen();
     }
 
-    void ProjectsScreen::QueueExportProject(const ProjectInfo& projectInfo, bool skipDialogBox)
+    void ProjectsScreen::QueueExportProject(const ProjectInfo& projectInfo, const QString& exportScript, bool skipDialogBox)
     {
         auto requiredIter = RequiresBuildProjectIterator(projectInfo.m_path);
         if (requiredIter != m_requiresBuild.end())
@@ -822,7 +822,9 @@ namespace O3DE::ProjectManager
         {
             if (m_exportQueue.empty() && !m_currentExporter)
             {
-                StartProjectExport(projectInfo, skipDialogBox);
+                ProjectInfo info = projectInfo;
+                info.m_currentExportScript = exportScript;
+                StartProjectExport(info, skipDialogBox);
                 //Projects Content should be reset in function
             }
             else
