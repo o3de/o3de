@@ -46,13 +46,20 @@ namespace O3DE::ProjectManager
         // Make directories if they aren't on disk
         if (!logFilePath.cd(ProjectBuildPathPostfix))
         {
-            logFilePath.mkpath(ProjectBuildPathPostfix);
+            bool madeDirectory = logFilePath.mkpath(ProjectBuildPathPostfix);
+            if (!madeDirectory)
+            {
+                return QString("");
+            }
             logFilePath.cd(ProjectBuildPathPostfix);
-
         }
         if (!logFilePath.cd(ProjectBuildPathCmakeFiles))
         {
-            logFilePath.mkpath(ProjectBuildPathCmakeFiles);
+            bool madeDirectory = logFilePath.mkpath(ProjectBuildPathCmakeFiles);
+            if (!madeDirectory)
+            {
+                return QString("");
+            }
             logFilePath.cd(ProjectBuildPathCmakeFiles);
         }
         return logFilePath.filePath(ProjectExportErrorLogName);
@@ -60,25 +67,22 @@ namespace O3DE::ProjectManager
 
     void ProjectExportWorker::QStringToAZTracePrint([[maybe_unused]] const QString& error)
     {
-        AZ_TracePrintf("Project Manager", error.toStdString().c_str());
+        AZ_Trace("Project Manager", error.toStdString().c_str());
     }
 
-    //TODO: update this code to just run the desired worker process with the project path argument
     AZ::Outcome<void, QString> ProjectExportWorker::ExportProjectForPlatform()
     {
-        // Check if we are trying to cancel task
-        if (QThread::currentThread()->isInterruptionRequested())
+        QString logFilePath = GetLogFilePath();
+        if(logFilePath == "")
         {
-            QStringToAZTracePrint(ExportCancelled);
-            return AZ::Failure(ExportCancelled);
+            QStringToAZTracePrint(LogPathFailureMsg);
+            return AZ::Failure(LogPathFailureMsg);
         }
-
-        QFile logFile(GetLogFilePath());
+        QFile logFile(logFilePath);
         if (!logFile.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate))
         {
-            QString error = tr("Failed to open log file.");
-            QStringToAZTracePrint(error);
-            return AZ::Failure(error);
+            QStringToAZTracePrint(LogOpenFailureMsg);
+            return AZ::Failure(LogOpenFailureMsg);
         }
 
         EngineInfo engineInfo;
@@ -96,12 +100,6 @@ namespace O3DE::ProjectManager
         }
 
         QTextStream logStream(&logFile);
-        if (QThread::currentThread()->isInterruptionRequested())
-        {
-            logFile.close();
-            QStringToAZTracePrint(ExportCancelled);
-            return AZ::Failure(ExportCancelled);
-        }
 
         UpdateProgress(tr("Setting Up Environment"));
 
@@ -109,7 +107,7 @@ namespace O3DE::ProjectManager
         if (!currentEnvironmentRequest.IsSuccess())
         {
             QStringToAZTracePrint(currentEnvironmentRequest.GetError());
-            return AZ::Failure(currentEnvironmentRequest.GetError());
+            return currentEnvironmentRequest;
         }
 
         
@@ -154,13 +152,15 @@ namespace O3DE::ProjectManager
                 }
                 auto killProcessArguments = killProcessArgumentsResult.GetValue();
 
-
                 QProcess killExportProcess;
-
-
                 killExportProcess.setProcessChannelMode(QProcess::MergedChannels);
                 killExportProcess.start(killProcessArguments.front(), killProcessArguments.mid(1));
-                killExportProcess.waitForFinished();
+                bool finishedKilling = killExportProcess.waitForFinished();
+
+                if (!finishedKilling)
+                {
+                    killExportProcess.kill();
+                }
 
                 logStream << "Killing Project Export.";
                 logStream << killExportProcess.readAllStandardOutput();
@@ -171,9 +171,37 @@ namespace O3DE::ProjectManager
             }
         }
 
+        //check for edge case where a single wait cycle causes premature termination of the loop
+        //force the interruption in this case
+        if (m_exportProjectProcess->waitForReadyRead(MaxExportTimeMSecs))
+        {
+            // QProcess is unable to kill its child processes so we need to ask the operating system to do that for us
+            auto killProcessArgumentsResult = ConstructKillProcessCommandArguments(QString::number(m_exportProjectProcess->processId()));
+            if (!killProcessArgumentsResult.IsSuccess())
+            {
+                return AZ::Failure(killProcessArgumentsResult.GetError());
+            }
+            auto killProcessArguments = killProcessArgumentsResult.GetValue();
+
+            QProcess killExportProcess;
+            killExportProcess.setProcessChannelMode(QProcess::MergedChannels);
+            killExportProcess.start(killProcessArguments.front(), killProcessArguments.mid(1));
+            bool finishedKilling = killExportProcess.waitForFinished();
+
+            if (!finishedKilling)
+            {
+                killExportProcess.kill();
+            }
+
+            logStream << "Project Export took too long to respond. Terminating...";
+            logStream << killExportProcess.readAllStandardOutput();
+            m_exportProjectProcess->kill();
+            logFile.close();
+        }
+
         if (m_exportProjectProcess->exitStatus() != QProcess::ExitStatus::NormalExit || m_exportProjectProcess->exitCode() != 0)
         {
-            QString error = tr("Building project failed. See log for details.");
+            QString error = tr("Building project failed. See log for details. %1").arg(logFilePath);
             QStringToAZTracePrint(error);
             return AZ::Failure(error);
         }

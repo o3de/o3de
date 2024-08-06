@@ -342,8 +342,8 @@ namespace O3DE::ProjectManager
                 if (!exportProjectPath.empty())
                 {
                     //Setup export button
-                    auto exportProjectIter = m_projectButtons.find(exportProjectPath);
-                    if (exportProjectIter != m_projectButtons.end())
+                    if (auto exportProjectIter = m_projectButtons.find(exportProjectPath);
+                        exportProjectIter != m_projectButtons.end())
                     {
                         m_currentExporter->SetProjectButton(exportProjectIter->second);
                     }
@@ -727,6 +727,11 @@ namespace O3DE::ProjectManager
         {
             projectName = getProjectResult.GetValue().m_displayName;
         }
+        else
+        {
+            QMessageBox::warning(this, tr("Tool Error"), tr("Failed to retrieve project information/"), QMessageBox::Ok);
+            return;
+        }
 
         const QString pythonPath = ProjectUtils::GetPythonExecutablePath(engineInfo.m_path);
         const QString o3dePath = QString("%1/scripts/o3de.py").arg(engineInfo.m_path);
@@ -740,12 +745,12 @@ namespace O3DE::ProjectManager
         process.setArguments(commandArgs);
 
         // It's important to dump the command details in the application log so the user
-        // would know how to spawn the Android Project Generator from the command terminal
+        // would know how to spawn the Export Configuration Panel from the command terminal
         // in case of errors and debugging is required.
         const QString commandArgsStr = QString("%1 %2").arg(pythonPath, commandArgs.join(" "));
         AZ_Printf(
             "ProjectManager",
-            "Will start the Android Project Generator with the following command:\n%s\n",
+            "Will start the Export Configuration Panel with the following command:\n%s\n",
             commandArgsStr.toUtf8().constData());
 
         if (!process.startDetached())
@@ -812,7 +817,7 @@ namespace O3DE::ProjectManager
         {
             m_requiresBuild.erase(requiredIter);
         }
-        
+
         if (!ExportQueueContainsProject(projectInfo.m_path))
         {
             if (m_exportQueue.empty() && !m_currentExporter)
@@ -1033,7 +1038,7 @@ namespace O3DE::ProjectManager
             QMessageBox::StandardButton buildProject = QMessageBox::information(
                 this,
                 tr("Exporting \"%1\"").arg(projectInfo.GetProjectDisplayName()),
-                tr("Ready to export \"%1\"?").arg(projectInfo.GetProjectDisplayName()),
+                tr("Ready to export \"%1\"? Please ensure you have configured the export settings before proceeding.").arg(projectInfo.GetProjectDisplayName()),
                 QMessageBox::No | QMessageBox::Yes);
 
             proceedToExport = buildProject == QMessageBox::Yes;
@@ -1041,9 +1046,9 @@ namespace O3DE::ProjectManager
 
         if (proceedToExport)
         {
-            m_currentExporter = new ProjectExportController(projectInfo, nullptr, this);
+            m_currentExporter = AZStd::make_unique<ProjectExportController>(projectInfo, nullptr, this);
             UpdateWithProjects(GetAllProjects());
-            connect(m_currentExporter, &ProjectExportController::Done, this, &ProjectsScreen::ProjectExportDone);
+            connect(m_currentExporter.get(), &ProjectExportController::Done, this, &ProjectsScreen::ProjectExportDone);
             m_currentExporter->Start();
         }
         else
@@ -1126,8 +1131,7 @@ namespace O3DE::ProjectManager
             currentExportProject = m_currentExporter->GetProjectInfo();
         }
 
-        delete m_currentExporter;
-        m_currentExporter = nullptr;
+        m_currentExporter.reset();
 
         if (!m_exportQueue.empty())
         {

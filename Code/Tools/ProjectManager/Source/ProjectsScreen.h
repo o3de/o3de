@@ -99,7 +99,7 @@ namespace O3DE::ProjectManager
         bool WarnIfInBuildQueue(const QString& projectPath);
 
         //note: export queue logic is temporary stub. once implemented we will decide if scaling back is needed
-        bool StartProjectExport(const ProjectInfo& projectInof, bool skipDialogBox = false);
+        bool StartProjectExport(const ProjectInfo& projectInfo, bool skipDialogBox = false);
         bool ExportQueueContainsProject(const QString& projectPath);
         bool WarnIfInExportQueue(const QString& projectPath);
 
@@ -117,7 +117,7 @@ namespace O3DE::ProjectManager
         QQueue<ProjectInfo> m_buildQueue;
         QQueue<ProjectInfo> m_exportQueue;
         ProjectBuilderController* m_currentBuilder = nullptr;
-        ProjectExportController* m_currentExporter = nullptr;
+        AZStd::unique_ptr<ProjectExportController> m_currentExporter;
         DownloadController* m_downloadController = nullptr;
 
         inline constexpr static int s_contentMargins = 80;

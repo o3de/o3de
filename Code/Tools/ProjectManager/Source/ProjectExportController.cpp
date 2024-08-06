@@ -105,8 +105,10 @@ namespace O3DE::ProjectManager
             }
             else
             {
-                QMessageBox::critical(m_parent, tr("Project Failed to Export!"), result);
-                m_projectInfo.m_logUrl = QUrl::fromLocalFile(m_worker->GetLogFilePath());
+                QMessageBox::critical(m_parent,
+                                      tr("Project Failed to Export!\nYou can check the logs in the following directory:\n%1")
+                                        .arg(m_worker->GetLogFilePath()),
+                                      result);
             }
 
             emit Done(false);
