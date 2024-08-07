@@ -306,10 +306,6 @@ class MainWindow(tkp.Tk):
                                   label_text="Server Project File Patterns",
                                   config_key='additional.server.project.file.pattern.to.copy')
 
-        self.add_simple_text_entry(parent=general_settings_frame,
-                                   label_text='Max Size',
-                                   config_key='max.size')
-
         self.add_multi_text_entry(parent=general_settings_frame,
                                   label_text="Output Path",
                                   config_key='option.default.output.path')
@@ -368,10 +364,6 @@ class MainWindow(tkp.Tk):
         project_asset_bundling_options_frame.columnconfigure(1, weight=1)
         project_asset_bundling_options_frame.grid(padx=4, sticky=tk.EW)
 
-        self.add_labeled_checkbox(parent=project_asset_bundling_options_frame,
-                                  label_text='Allow Registry Overrides',
-                                  config_key='option.allow.registry.overrides')
-
         
         self.add_labeled_checkbox(parent=project_asset_bundling_options_frame,
                                   label_text='Build Assets',
@@ -400,6 +392,10 @@ class MainWindow(tkp.Tk):
         self.add_multi_text_entry(parent=project_asset_bundling_options_frame,
                                   label_text="Level Names",
                                   config_key='default.level.names')
+        
+        self.add_simple_text_entry(parent=project_asset_bundling_options_frame,
+                                   label_text='Max Size',
+                                   config_key='max.size')
 
         self.add_simple_text_entry(parent=project_asset_bundling_options_frame,
                                    label_text='Asset Bundling Path',
@@ -436,6 +432,10 @@ class MainWindow(tkp.Tk):
         self.add_labeled_checkbox(parent=pc_build_options_frame,
                                   label_text="Build Monolithic",
                                   config_key='option.build.monolithic')
+        
+        self.add_labeled_checkbox(parent=pc_build_options_frame,
+                                  label_text='Allow Asset Processor Registry Overrides',
+                                  config_key='option.allow.registry.overrides')
         
         self.add_simple_text_entry(parent=pc_build_options_frame,
                                    label_text=f'{os_name} Launcher Build Path',
