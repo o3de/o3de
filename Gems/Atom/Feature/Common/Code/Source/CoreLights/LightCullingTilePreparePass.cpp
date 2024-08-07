@@ -85,8 +85,8 @@ namespace AZ
 
         void LightCullingTilePreparePass::ChooseShaderVariant()
         {
-            const AZ::RPI::ShaderVariant& shaderVariant = CreateShaderVariant();
-            CreatePipelineStateFromShaderVariant(shaderVariant);
+            auto [shaderVariant, shaderOptions] = CreateShaderVariant();
+            CreatePipelineStateFromShaderVariant(shaderVariant, shaderOptions);
         }
 
         AZ::Name LightCullingTilePreparePass::GetMultiSampleName()
@@ -119,30 +119,31 @@ namespace AZ
         AZ::RPI::ShaderOptionGroup LightCullingTilePreparePass::CreateShaderOptionGroup()
         {
             RPI::ShaderOptionGroup shaderOptionGroup = m_shader->CreateShaderOptionGroup();
-            shaderOptionGroup.SetUnspecifiedToDefaultValues();
             shaderOptionGroup.SetValue(m_msaaOptionName, GetMultiSampleName());
+            shaderOptionGroup.SetUnspecifiedToDefaultValues();
             return shaderOptionGroup;
         }
 
-        void LightCullingTilePreparePass::CreatePipelineStateFromShaderVariant(const RPI::ShaderVariant& shaderVariant)
+        void LightCullingTilePreparePass::CreatePipelineStateFromShaderVariant(
+            const RPI::ShaderVariant& shaderVariant, const RPI::ShaderOptionGroup& shaderOptions)
         {
             AZ::RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
-            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
+            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor, shaderOptions);
             m_msaaPipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
             AZ_Error("LightCulling", m_msaaPipelineState, "Failed to acquire pipeline state for shader");
         }
 
-        const AZ::RPI::ShaderVariant& LightCullingTilePreparePass::CreateShaderVariant()
+        AZStd::pair<const AZ::RPI::ShaderVariant&, RPI::ShaderOptionGroup> LightCullingTilePreparePass::CreateShaderVariant()
         {
             RPI::ShaderOptionGroup shaderOptionGroup = CreateShaderOptionGroup();
             const RPI::ShaderVariant& shaderVariant = m_shader->GetVariant(shaderOptionGroup.GetShaderVariantId());
 
             //Set the fallbackkey
-            if (m_drawSrg)
+            if (shaderVariant.UseKeyFallback() && m_drawSrg)
             {
                 m_drawSrg->SetShaderVariantKeyFallbackValue(shaderOptionGroup.GetShaderVariantKeyFallbackValue());
             }
-            return shaderVariant;
+            return { shaderVariant, shaderOptionGroup };
         }
 
         void LightCullingTilePreparePass::SetConstantData()

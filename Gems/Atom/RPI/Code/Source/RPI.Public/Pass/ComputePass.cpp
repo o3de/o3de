@@ -139,9 +139,14 @@ namespace AZ
 
             // Setup pipeline state...
             RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
-            m_shader->GetDefaultVariant().ConfigurePipelineState(pipelineStateDescriptor);
+            ShaderOptionGroup options = m_shader->GetDefaultShaderOptions();
+            m_shader->GetDefaultVariant().ConfigurePipelineState(pipelineStateDescriptor, options);
 
             m_dispatchItem.m_pipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
+            if (m_drawSrg && m_shader->GetDefaultVariant().UseKeyFallback())
+            {
+                m_drawSrg->SetShaderVariantKeyFallbackValue(options.GetShaderVariantKeyFallbackValue());
+            }
 
             ShaderReloadNotificationBus::Handler::BusDisconnect();
             ShaderReloadNotificationBus::Handler::BusConnect(passData->m_shaderReference.m_assetId);
@@ -240,6 +245,19 @@ namespace AZ
         void ComputePass::OnShaderVariantReinitialized(const ShaderVariant&)
         {
             LoadShader();
+        }
+
+        void ComputePass::UpdateShaderOptions(const ShaderVariantId& shaderVariantId)
+        {
+            const ShaderVariant& shaderVariant = m_shader->GetVariant(shaderVariantId);
+            RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
+            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor, shaderVariantId);
+
+            m_dispatchItem.m_pipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
+            if (m_drawSrg && shaderVariant.UseKeyFallback())
+            {
+                m_drawSrg->SetShaderVariantKeyFallbackValue(shaderVariantId.m_key);
+            }
         }
 
     }   // namespace RPI

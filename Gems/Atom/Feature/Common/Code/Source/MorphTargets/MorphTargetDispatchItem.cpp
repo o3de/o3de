@@ -65,13 +65,13 @@ namespace AZ
                 return false;
             }
 
-            if (!shaderVariant.IsFullyBaked() && m_instanceSrg->HasShaderVariantKeyFallbackEntry())
+            if (shaderVariant.UseKeyFallback() && m_instanceSrg->HasShaderVariantKeyFallbackEntry())
             {
                 m_instanceSrg->SetShaderVariantKeyFallbackValue(shaderOptionGroup.GetShaderVariantKeyFallbackValue());
             }
 
             RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
-            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
+            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor, shaderOptionGroup);
 
 
             InitRootConstants(pipelineStateDescriptor.m_pipelineLayoutDescriptor->GetRootConstantsLayout());

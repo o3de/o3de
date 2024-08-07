@@ -13,6 +13,7 @@
 #include <Atom/RHI.Reflect/ShaderStageFunction.h>
 #include <AzCore/Utils/TypeHash.h>
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
+#include <Atom/RHI/SpecializationConstant.h>
 
 namespace AZ::RHI
 {
@@ -38,15 +39,20 @@ namespace AZ::RHI
         PipelineStateType GetType() const;
 
         //! Returns the hash of the pipeline state descriptor contents.
-        virtual HashValue64 GetHash() const = 0;
+        HashValue64 GetHash() const;
 
         bool operator == (const PipelineStateDescriptor& rhs) const;
 
         //! The pipeline layout describing the shader resource bindings.
         ConstPtr<PipelineLayoutDescriptor> m_pipelineLayoutDescriptor = nullptr;
 
+        //! Values for specialization constants.
+        AZStd::vector<SpecializationConstant> m_specializationData;
+
     protected:
         PipelineStateDescriptor(PipelineStateType pipelineStateType);
+
+        virtual HashValue64 GetHashInternal() const = 0;
 
     private:
         PipelineStateType m_type = PipelineStateType::Count;
@@ -69,7 +75,7 @@ namespace AZ::RHI
         PipelineStateDescriptorForDispatch();
 
         /// Computes the hash value for this descriptor.
-        HashValue64 GetHash() const override;
+        HashValue64 GetHashInternal() const override;
 
         bool operator == (const PipelineStateDescriptorForDispatch& rhs) const;
 
@@ -91,7 +97,7 @@ namespace AZ::RHI
         PipelineStateDescriptorForDraw();
 
         /// Computes the hash value for this descriptor.
-        HashValue64 GetHash() const override;
+        HashValue64 GetHashInternal() const override;
 
         bool operator == (const PipelineStateDescriptorForDraw& rhs) const;
 
@@ -124,7 +130,7 @@ namespace AZ::RHI
         PipelineStateDescriptorForRayTracing();
 
         //! Computes the hash value for this descriptor.
-        HashValue64 GetHash() const override;
+        HashValue64 GetHashInternal() const override;
 
         bool operator == (const PipelineStateDescriptorForRayTracing& rhs) const;
 

@@ -82,6 +82,16 @@ ly_add_target(
 )
 
 ly_add_target(
+    NAME OpenSSL_md5 STATIC
+    NAMESPACE Gem
+    FILES_CMAKE
+        openssl_md5_files.cmake
+    INCLUDE_DIRECTORIES
+        INTERFACE
+            ../External/md5
+)
+
+ly_add_target(
     NAME Atom_RHI_DX12.Reflect STATIC
     NAMESPACE Gem
     FILES_CMAKE
@@ -122,6 +132,8 @@ ly_add_target(
             Gem::Amd_DX12MA
             3rdParty::d3dx12
             ${AFTERMATH_BUILD_DEPENDENCY}
+        PRIVATE
+            Gem::OpenSSL_md5
     COMPILE_DEFINITIONS 
         PRIVATE
             ${USE_NSIGHT_AFTERMATH_DEFINE}

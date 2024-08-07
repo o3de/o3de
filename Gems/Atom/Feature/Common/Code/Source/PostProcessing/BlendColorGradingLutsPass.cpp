@@ -65,10 +65,10 @@ namespace AZ
                 RPI::ShaderVariant shaderVariant = m_shader->GetVariant(shaderOption.GetShaderVariantId());
 
                 RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
-                shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
+                shaderVariant.ConfigurePipelineState(pipelineStateDescriptor, shaderOption);
 
                 ShaderVariantInfo variantInfo{
-                    shaderVariant.IsFullyBaked(),
+                    !shaderVariant.UseKeyFallback(),
                     m_shader->AcquirePipelineState(pipelineStateDescriptor)
                 };
                 m_shaderVariant.push_back(AZStd::move(variantInfo));
@@ -91,11 +91,10 @@ namespace AZ
                 m_currentShaderVariantIndex = m_numSourceLuts;
             }
 
-            auto shaderOption = m_shader->CreateShaderOptionGroup();
-            shaderOption.SetValue(m_numSourceLutsShaderVariantOptionName, RPI::ShaderOptionValue{ m_numSourceLuts });
-
             if (!m_shaderVariant[m_currentShaderVariantIndex].m_isFullyBaked)
             {
+                auto shaderOption = m_shader->CreateShaderOptionGroup();
+                shaderOption.SetValue(m_numSourceLutsShaderVariantOptionName, RPI::ShaderOptionValue{ m_numSourceLuts });
                 m_currentShaderVariantKeyFallbackValue = shaderOption.GetShaderVariantKeyFallbackValue();
             }
             m_needToUpdateShaderVariant = false;
@@ -196,7 +195,7 @@ namespace AZ
                     m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut4ShaperScaleIndex, m_colorGradingShaperParams[3].m_scale);
                 }
 
-                if (m_shaderResourceGroup->HasShaderVariantKeyFallbackEntry())
+                if (!m_shaderVariant[m_currentShaderVariantIndex].m_isFullyBaked && m_shaderResourceGroup->HasShaderVariantKeyFallbackEntry())
                 {
                     m_shaderResourceGroup->SetShaderVariantKeyFallbackValue(m_currentShaderVariantKeyFallbackValue);
                 }

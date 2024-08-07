@@ -38,6 +38,7 @@ namespace AZ
             //! Initialize the pipeline state from a shader and one of its shader variant
             //! The previous data will be reset
             void Init(const Data::Instance<Shader>& shader, const ShaderOptionList* optionAndValues = nullptr);
+            void Init(const Data::Instance<Shader>& shader, const ShaderVariantId& shaderVariantId);
 
             //! Update the pipeline state descriptor for the specified scene
             //! This is usually called when Scene's render pipelines changed
@@ -67,6 +68,10 @@ namespace AZ
             //! Use ConstDescriptor() to access read-only InputStreamLayout
             RHI::InputStreamLayout& InputStreamLayout();
 
+            //! Updates the current shader variant id.
+            //! It sets this pipeline state to dirty whenever it's called.
+            void UpdateShaderVaraintId(const ShaderVariantId& shaderVariantId);
+
             const RHI::PipelineStateDescriptorForDraw& ConstDescriptor() const;
 
             //! Get the shader which is associated with this PipelineState
@@ -78,6 +83,9 @@ namespace AZ
 
             //! Clear all the states and references
             void Shutdown();
+
+            //! Returns the id of the shader variant being used
+            const ShaderVariantId& GetShaderVariantId() const;
 
         private:
             ///////////////////////////////////////////////////////////////////

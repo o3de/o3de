@@ -46,6 +46,9 @@ namespace AZ
             //! Return the shader
             Data::Instance<Shader> GetShader() const;
 
+            //! Updates the shader variant being used by the pass
+            void UpdateShaderOptions(const ShaderVariantId& shaderVariantId);
+
         protected:
             ComputePass(const PassDescriptor& descriptor, AZ::Name supervariant = AZ::Name(""));
 

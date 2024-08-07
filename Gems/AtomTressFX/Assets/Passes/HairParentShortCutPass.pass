@@ -194,13 +194,6 @@
                             }
                         },
                         {
-                            "LocalSlot": "InverseAlphaRTOutput",
-                            "AttachmentRef": {
-                                "Pass": "This",
-                                "Attachment": "InverseAlphaRTOutput"
-                            }
-                        },
-                        {
                             "LocalSlot": "HairDepthsTextureArray",
                             "AttachmentRef": {
                                 "Pass": "This",
@@ -237,13 +230,6 @@
                     "TemplateName": "HairShortCutGeometryShadingPassTemplate",
                     "Enabled": true,
                     "Connections": [
-                        {
-                            "LocalSlot": "HairColorRenderTarget",
-                            "AttachmentRef": {
-                                "Pass": "This",
-                                "Attachment": "HairColorRenderTarget"
-                            }
-                        },
                         {
                             // The final render target - this is MSAA mode RT - would it be cheaper to
                             // use non-MSAA and then copy?

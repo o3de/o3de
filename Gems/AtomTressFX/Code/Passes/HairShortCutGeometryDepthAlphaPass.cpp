@@ -35,14 +35,18 @@ namespace AZ
 
             void HairShortCutGeometryDepthAlphaPass::BuildInternal()
             {
-                RasterPass::BuildInternal();    // change this to call parent if the method exists
+                HairGeometryRasterPass::BuildInternal(); // change this to call parent if the method exists
 
                 if (!AcquireFeatureProcessor())
                 {
                     return;
                 }
+            }
 
+            void HairShortCutGeometryDepthAlphaPass::InitializeInternal()
+            {
                 LoadShaderAndPipelineState();
+                HairGeometryRasterPass::InitializeInternal();
             }
 
         } // namespace Hair

@@ -141,8 +141,8 @@ AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> UiRenderer::CreateDynamicDrawContext(
         { "TEXCOORD", AZ::RHI::Format::R32G32_FLOAT },
         { "BLENDINDICES", AZ::RHI::Format::R16G16_UINT } }
     );
-    dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::StencilState
-        | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode);
+    dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::StencilState | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode |
+        AZ::RPI::DynamicDrawContext::DrawStateOptions::ShaderVariant);
 
     dynamicDraw->SetOutputScope(m_scene);
     dynamicDraw->EndInit();
@@ -263,8 +263,8 @@ AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> UiRenderer::CreateDynamicDrawContextFo
         { "TEXCOORD", AZ::RHI::Format::R32G32_FLOAT },
         { "BLENDINDICES", AZ::RHI::Format::R16G16_UINT } }
     );
-    dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::StencilState
-        | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode);
+    dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::StencilState | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode |
+        AZ::RPI::DynamicDrawContext::DrawStateOptions::ShaderVariant);
 
     dynamicDraw->SetOutputScope(rttPass);
     dynamicDraw->InitDrawListTag(rttPass->GetDrawListTag());
