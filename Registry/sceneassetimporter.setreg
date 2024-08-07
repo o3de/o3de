@@ -13,7 +13,8 @@
                     ".glb",
                     ".usd",
                     ".usda",
-                    ".usdz"
+                    ".usdz",
+                    ".usdc"
                 ]
             },
             "MaterialConverter": 
