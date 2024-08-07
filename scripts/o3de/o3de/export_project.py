@@ -1180,6 +1180,16 @@ SETTINGS_DEFAULT_ANDROID_BUILD_PATH = register_setting(key='default.android.buil
                                                        description='Designates where the android build files are generated.',
                                                        default='build/android')
 
+#note: we are duplicating this setting specifically to reduce dependency on android_support for the android parameter configuration
+ASSET_MODE_LOOSE = 'LOOSE'
+ASSET_MODE_PAK = 'PAK'
+ASSET_MODES = [ASSET_MODE_LOOSE, ASSET_MODE_PAK]
+SETTINGS_ANDROID_ASSET_MODE                 = register_setting(key='option.android.assets.mode',
+                                                   description='The asset mode to determine how the assets are stored in the target APK. Valid values are LOOSE and PAK.',
+                                                   restricted_regex=f'({ASSET_MODE_LOOSE}|{ASSET_MODE_PAK})',
+                                                   restricted_regex_description=f"Valid values are {','.join(ASSET_MODES)}.",
+                                                   default=ASSET_MODE_PAK)
+
 SETTINGS_ANDROID_DEPLOY = register_setting(key='option.android.deploy',
                                            description='Upon completing export, immediately attempt to deploy to a locally connected Android device. Useful for testing.',
                                            is_boolean=True,

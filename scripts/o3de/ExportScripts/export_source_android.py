@@ -146,11 +146,11 @@ def export_source_android_parse_args(o3de_context: exp.O3DEScriptExportContext,
                                           help=f"The location to write the android project scripts to. Default: '{android.DEFAULT_ANDROID_BUILD_FOLDER}'", 
                                           default=default_android_build_path) 
 
-    asset_mode = android_config.get_value(android_support.SETTINGS_ASSET_MODE.key, default=android_support.ASSET_MODE_LOOSE)
+    asset_mode = android_config.get_value(exp.SETTINGS_ANDROID_ASSET_MODE.key, default=exp.ASSET_MODE_LOOSE)
     parser.add_argument('--asset-mode', type=str,
                                             help=f"The mode of asset deployment to use. "
                                                  f" Default: {asset_mode}",
-                                            choices=android_support.ASSET_MODES,
+                                            choices=exp.ASSET_MODES,
                                             default=asset_mode)
 
     if o3de_context is None:
