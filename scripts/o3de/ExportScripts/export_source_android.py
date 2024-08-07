@@ -126,8 +126,7 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
         
 
 def export_source_android_parse_args(o3de_context: exp.O3DEScriptExportContext,
-                                     export_config: command_utils.O3DEConfig,
-                                     android_config: command_utils.O3DEConfig):
+                                     export_config: command_utils.O3DEConfig):
     parser = argparse.ArgumentParser(
                     prog=f'o3de.py export-project -es {__file__}',
                     description="Exports a project as an Android APK that is optionally deployed to an android device. "
@@ -146,7 +145,7 @@ def export_source_android_parse_args(o3de_context: exp.O3DEScriptExportContext,
                                           help=f"The location to write the android project scripts to. Default: '{android.DEFAULT_ANDROID_BUILD_FOLDER}'", 
                                           default=default_android_build_path) 
 
-    asset_mode = android_config.get_value(exp.SETTINGS_ANDROID_ASSET_MODE.key, default=exp.ASSET_MODE_LOOSE)
+    asset_mode = export_config.get_value(exp.SETTINGS_ANDROID_ASSET_MODE.key, default=exp.ASSET_MODE_LOOSE)
     parser.add_argument('--asset-mode', type=str,
                                             help=f"The mode of asset deployment to use. "
                                                  f" Default: {asset_mode}",
@@ -250,7 +249,7 @@ if "o3de_context" in globals():
         android_config = android_support.get_android_config(project_path=None)
         
 
-    args = export_source_android_parse_args(o3de_context, export_config, android_config)
+    args = export_source_android_parse_args(o3de_context, export_config)
 
     export_source_android_run_command(o3de_context, args, export_config, o3de_logger)
     o3de_logger.info(f"Finished exporting android project to {args.android_build_path}")
