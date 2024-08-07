@@ -5,9 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
-#include <Atom/RHI/Buffer.h>
 
 namespace AZ::RHI
 {
@@ -80,5 +80,20 @@ namespace AZ::RHI
         }
 
         return iterator->second;
+    }
+
+    AZStd::unordered_map<int, uint32_t> BufferView::GetBindlessReadIndex() const
+    {
+        AZStd::unordered_map<int, uint32_t> result;
+
+        MultiDeviceObject::IterateDevices(
+            m_buffer->GetDeviceMask(),
+            [this, &result](int deviceIndex)
+            {
+                result[deviceIndex] = GetDeviceBufferView(deviceIndex)->GetBindlessReadIndex();
+                return true;
+            });
+
+        return result;
     }
 } // namespace AZ::RHI

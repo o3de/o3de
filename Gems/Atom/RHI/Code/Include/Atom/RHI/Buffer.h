@@ -93,6 +93,8 @@ namespace AZ::RHI
             return m_descriptor;
         }
 
+        AZStd::unordered_map<int, uint32_t> GetBindlessReadIndex() const;
+
         const Resource* GetResource() const override
         {
             return m_buffer.get();

@@ -179,8 +179,8 @@ namespace UnitTest
 
         AZ_TEST_START_ASSERTTEST;
         EXPECT_EQ(empty->MergeInto({}), RHI::ResultCode::InvalidOperation);
-        EXPECT_EQ(empty->GetSerializedData(), nullptr);
-        AZ_TEST_STOP_ASSERTTEST(2);
+        EXPECT_TRUE(empty->GetSerializedDataMap().empty());
+        AZ_TEST_STOP_ASSERTTEST(1);
     }
 
     TEST_F(MultiDevicePipelineStateTests, PipelineLibrary_Init_Test)

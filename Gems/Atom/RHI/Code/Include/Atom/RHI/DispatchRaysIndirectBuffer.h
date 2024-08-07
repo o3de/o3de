@@ -11,7 +11,6 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/RayTracingShaderTable.h>
-#include <Atom/RHI/RHISystemInterface.h>
 
 namespace AZ
 {
@@ -27,15 +26,13 @@ namespace AZ
             DispatchRaysIndirectBuffer(MultiDevice::DeviceMask deviceMask)
                 : m_deviceMask{ deviceMask }
             {
-                auto deviceCount{ RHI::RHISystemInterface::Get()->GetDeviceCount() };
-
-                for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
-                {
-                    if (CheckBitsAll(AZStd::to_underlying(m_deviceMask), 1u << deviceIndex))
+                MultiDeviceObject::IterateDevices(
+                    m_deviceMask,
+                    [this](int deviceIndex)
                     {
                         m_deviceDispatchRaysIndirectBuffers.emplace(deviceIndex, Factory::Get().CreateDispatchRaysIndirectBuffer());
-                    }
-                }
+                        return true;
+                    });
             }
 
             Ptr<DeviceDispatchRaysIndirectBuffer> GetDeviceDispatchRaysIndirectBuffer(int deviceIndex) const
