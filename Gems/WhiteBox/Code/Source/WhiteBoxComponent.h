@@ -14,6 +14,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/Transform.h>
+#include <AzFramework/Visibility/VisibleGeometryBus.h>
 
 namespace WhiteBox
 {
@@ -24,6 +25,7 @@ namespace WhiteBox
         : public AZ::Component
         , public WhiteBoxComponentRequestBus::Handler
         , private AZ::TransformNotificationBus::Handler
+        , public AzFramework::VisibleGeometryRequestBus::Handler
     {
     public:
         AZ_COMPONENT(WhiteBoxComponent, "{6CFD4D82-FA68-4C18-BE67-43FC2B755B64}", AZ::Component)
@@ -48,6 +50,9 @@ namespace WhiteBox
 
         // TransformNotificationBus ...
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
+
+        // AzFramework::VisibleGeometryRequestBus::Handler overrides ...
+        void BuildVisibleGeometry(const AZ::Aabb& bounds, AzFramework::VisibleGeometryContainer& geometryContainer) const override;
 
         WhiteBoxRenderData m_whiteBoxRenderData; //!< Intermediate format to store White Box render data.
         AZStd::unique_ptr<RenderMeshInterface> m_renderMesh; //!< The render mesh to use for White Box rendering.
