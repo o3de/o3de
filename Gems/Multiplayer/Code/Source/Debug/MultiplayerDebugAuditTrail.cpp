@@ -124,9 +124,9 @@ namespace Multiplayer
                                 AZStd::string::format(nodeTitle, elem->m_name.c_str()).c_str(),
                                 (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_SpanFullWidth));
                             ImGui::TableNextColumn();
-                            ImGui::Text("%hu", elem->m_inputId);
+                            ImGui::Text("%hu", static_cast<uint16_t>(elem->m_inputId));
                             ImGui::TableNextColumn();
-                            ImGui::Text("%d", elem->m_hostFrameId);
+                            ImGui::Text("%d", static_cast<uint32_t>(elem->m_hostFrameId));
                             ImGui::TableNextColumn();
                             ImGui::Text("%s", cliServValues.first.c_str());
                             ImGui::TableNextColumn();
@@ -141,9 +141,10 @@ namespace Multiplayer
                     {
                         atRootLevel = false;
                         ImGui::TableNextColumn();
-                        ImGui::Text("%hu", elem->m_inputId);
+                        ImGui::Text("%hu", static_cast<uint16_t>(elem->m_inputId));
                         ImGui::TableNextColumn();
-                        ImGui::Text("%d", elem->m_hostFrameId);
+                        ImGui::Text("%d", static_cast<uint32_t>(elem->m_hostFrameId));
+
                         ImGui::TableNextColumn();
                         ImGui::TableNextColumn();
 
@@ -198,9 +199,9 @@ namespace Multiplayer
                     else
                     {
                         ImGui::TableNextColumn();
-                        ImGui::Text("%hu", elem->m_inputId);
+                        ImGui::Text("%hu", static_cast<uint16_t>(elem->m_inputId));
                         ImGui::TableNextColumn();
-                        ImGui::Text("%d", elem->m_hostFrameId);
+                        ImGui::Text("%d", static_cast<uint32_t>(elem->m_hostFrameId));
                         ImGui::TableNextColumn();
                         ImGui::TableNextColumn();
                         ImGui::TableNextRow();
