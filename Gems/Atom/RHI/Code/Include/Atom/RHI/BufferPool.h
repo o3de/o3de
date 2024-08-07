@@ -23,36 +23,7 @@ namespace AZ::RHI
         AZStd::unordered_map<int, void*> m_data;
     };
 
-    struct BufferInitRequest
-    {
-        BufferInitRequest() = default;
-
-        BufferInitRequest(
-            Buffer& buffer,
-            const BufferDescriptor& descriptor,
-            const void* initialData = nullptr,
-            MultiDevice::DeviceMask deviceMask = MultiDevice::AllDevices)
-            : m_buffer{ &buffer }
-            , m_descriptor{ descriptor }
-            , m_initialData{ initialData }
-            , m_deviceMask{ deviceMask }
-        {
-        }
-
-        /// The buffer to initialize. The buffer must be in an uninitialized state.
-        Buffer* m_buffer = nullptr;
-
-        /// The descriptor used to initialize the buffer.
-        BufferDescriptor m_descriptor;
-
-        /// [Optional] Initial data used to initialize the buffer.
-        const void* m_initialData = nullptr;
-
-        /// The device mask used for the buffer.
-        /// Note: Only devices in the mask of the buffer pool will be considered.
-        MultiDevice::DeviceMask m_deviceMask = MultiDevice::AllDevices;
-    };
-
+    //! A structure used as an argument to BufferPool::UpdateBufferDeviceMask.
     struct BufferDeviceMaskRequest
     {
         BufferDeviceMaskRequest() = default;
@@ -74,6 +45,25 @@ namespace AZ::RHI
 
         /// [Optional] Initial data used to initialize new device buffers with.
         const void* m_initialData = nullptr;
+    };
+
+    //! A structure used as an argument to BufferPool::InitBuffer.
+    struct BufferInitRequest : public BufferDeviceMaskRequest
+    {
+        BufferInitRequest() = default;
+
+        BufferInitRequest(
+            Buffer& buffer,
+            const BufferDescriptor& descriptor,
+            const void* initialData = nullptr,
+            MultiDevice::DeviceMask deviceMask = MultiDevice::AllDevices)
+            : BufferDeviceMaskRequest{ buffer, deviceMask, initialData }
+            , m_descriptor{ descriptor }
+        {
+        }
+
+        /// The descriptor used to initialize the buffer.
+        BufferDescriptor m_descriptor;
     };
 
     using BufferMapRequest = BufferMapRequestTemplate<Buffer>;

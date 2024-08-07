@@ -15,38 +15,7 @@
 
 namespace AZ::RHI
 {
-    struct ImageInitRequest
-    {
-        ImageInitRequest() = default;
-
-        ImageInitRequest(
-            Image& image,
-            const ImageDescriptor& descriptor,
-            const ClearValue* optimizedClearValue = nullptr,
-            MultiDevice::DeviceMask deviceMask = MultiDevice::AllDevices)
-            : m_image{ &image }
-            , m_descriptor{ descriptor }
-            , m_optimizedClearValue{ optimizedClearValue }
-            , m_deviceMask{ deviceMask }
-        {
-        }
-
-        /// The image to initialize.
-        Image* m_image = nullptr;
-
-        /// The descriptor used to initialize the image.
-        ImageDescriptor m_descriptor;
-
-        /// An optional, optimized clear value for the image. Certain
-        /// platforms may use this value to perform fast clears when this
-        /// clear value is used.
-        const ClearValue* m_optimizedClearValue = nullptr;
-
-        /// The device mask used for the image.
-        /// Note: Only devices in the mask of the image pool will be considered.
-        MultiDevice::DeviceMask m_deviceMask = MultiDevice::AllDevices;
-    };
-
+    //! @brief The data structure used to update the device mask of an RHI::Image.
     struct ImageDeviceMaskRequest
     {
         ImageDeviceMaskRequest() = default;
@@ -70,6 +39,25 @@ namespace AZ::RHI
         /// platforms may use this value to perform fast clears when this
         /// clear value is used.
         const ClearValue* m_optimizedClearValue = nullptr;
+    };
+
+    //! @brief The data structure used to initialize an RHI::Image on an RHI::ImagePool.
+    struct ImageInitRequest : public ImageDeviceMaskRequest
+    {
+        ImageInitRequest() = default;
+
+        ImageInitRequest(
+            Image& image,
+            const ImageDescriptor& descriptor,
+            const ClearValue* optimizedClearValue = nullptr,
+            MultiDevice::DeviceMask deviceMask = MultiDevice::AllDevices)
+            : ImageDeviceMaskRequest{ image, deviceMask, optimizedClearValue }
+            , m_descriptor{ descriptor }
+        {
+        }
+
+        /// The descriptor used to initialize the image.
+        ImageDescriptor m_descriptor;
     };
 
     using ImageUpdateRequest = ImageUpdateRequestTemplate<Image, ImageSubresourceLayout>;

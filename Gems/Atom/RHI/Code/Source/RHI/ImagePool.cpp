@@ -75,35 +75,30 @@ namespace AZ::RHI
                 ResultCode result = IterateObjects<DeviceImagePool>(
                     [&initRequest](auto deviceIndex, auto deviceImagePool)
                     {
-                        bool createImage = ((AZStd::to_underlying(initRequest.m_image->GetDeviceMask()) >> deviceIndex) & 1) == 1;
+                        bool initImage = ((AZStd::to_underlying(initRequest.m_image->GetDeviceMask()) >> deviceIndex) & 1) == 1;
 
                         if (!initRequest.m_image->m_deviceObjects.contains(deviceIndex))
                         {
-                            if (createImage)
+                            if (initImage)
                             {
                                 initRequest.m_image->m_deviceObjects[deviceIndex] = Factory::Get().CreateImage();
-
-                                DeviceImageInitRequest imageInitRequest(
-                                    *initRequest.m_image->GetDeviceImage(deviceIndex),
-                                    initRequest.m_descriptor,
-                                    initRequest.m_optimizedClearValue);
-                                return deviceImagePool->InitImage(imageInitRequest);
                             }
                         }
                         else
                         {
-                            if (createImage)
-                            {
-                                DeviceImageInitRequest imageInitRequest(
-                                    *initRequest.m_image->GetDeviceImage(deviceIndex),
-                                    initRequest.m_descriptor,
-                                    initRequest.m_optimizedClearValue);
-                                return deviceImagePool->InitImage(imageInitRequest);
-                            }
-                            else
+                            if (!initImage)
                             {
                                 initRequest.m_image->m_deviceObjects.erase(deviceIndex);
                             }
+                        }
+
+                        if (initImage)
+                        {
+                            DeviceImageInitRequest imageInitRequest(
+                                *initRequest.m_image->GetDeviceImage(deviceIndex),
+                                initRequest.m_descriptor,
+                                initRequest.m_optimizedClearValue);
+                            return deviceImagePool->InitImage(imageInitRequest);
                         }
 
                         return ResultCode::Success;

@@ -124,35 +124,28 @@ namespace AZ::RHI
                 ResultCode result = IterateObjects<DeviceStreamingImagePool>(
                     [&initRequest](auto deviceIndex, auto deviceStreamingImagePool)
                     {
-                        bool createImage = ((AZStd::to_underlying(initRequest.m_image->GetDeviceMask()) >> deviceIndex) & 1) == 1;
+                        bool initImage = ((AZStd::to_underlying(initRequest.m_image->GetDeviceMask()) >> deviceIndex) & 1) == 1;
 
                         if (!initRequest.m_image->m_deviceObjects.contains(deviceIndex))
                         {
-                            if (createImage)
+                            if (initImage)
                             {
                                 initRequest.m_image->m_deviceObjects[deviceIndex] = Factory::Get().CreateImage();
-
-                                DeviceStreamingImageInitRequest streamingImageInitRequest(
-                                    *initRequest.m_image->GetDeviceImage(deviceIndex),
-                                    initRequest.m_descriptor,
-                                    initRequest.m_tailMipSlices);
-                                return deviceStreamingImagePool->InitImage(streamingImageInitRequest);
                             }
                         }
                         else
                         {
-                            if (createImage)
-                            {
-                                DeviceStreamingImageInitRequest streamingImageInitRequest(
-                                    *initRequest.m_image->GetDeviceImage(deviceIndex),
-                                    initRequest.m_descriptor,
-                                    initRequest.m_tailMipSlices);
-                                return deviceStreamingImagePool->InitImage(streamingImageInitRequest);
-                            }
-                            else
+                            if (!initImage)
                             {
                                 initRequest.m_image->m_deviceObjects.erase(deviceIndex);
                             }
+                        }
+
+                        if (initImage)
+                        {
+                            DeviceStreamingImageInitRequest streamingImageInitRequest(
+                                *initRequest.m_image->GetDeviceImage(deviceIndex), initRequest.m_descriptor, initRequest.m_tailMipSlices);
+                            return deviceStreamingImagePool->InitImage(streamingImageInitRequest);
                         }
 
                         return ResultCode::Success;

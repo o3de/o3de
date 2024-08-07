@@ -160,35 +160,28 @@ namespace AZ::RHI
                 return IterateObjects<DeviceBufferPool>(
                     [&initRequest](auto deviceIndex, auto deviceBufferPool)
                     {
-                        bool createBuffer = ((AZStd::to_underlying(initRequest.m_buffer->GetDeviceMask()) >> deviceIndex) & 1) == 1;
+                        bool initBuffer = ((AZStd::to_underlying(initRequest.m_buffer->GetDeviceMask()) >> deviceIndex) & 1) == 1;
 
                         if (!initRequest.m_buffer->m_deviceObjects.contains(deviceIndex))
                         {
-                            if (createBuffer)
+                            if (initBuffer)
                             {
                                 initRequest.m_buffer->m_deviceObjects[deviceIndex] = Factory::Get().CreateBuffer();
-
-                                DeviceBufferInitRequest bufferInitRequest(
-                                    *initRequest.m_buffer->GetDeviceBuffer(deviceIndex),
-                                    initRequest.m_descriptor,
-                                    initRequest.m_initialData);
-                                return deviceBufferPool->InitBuffer(bufferInitRequest);
                             }
                         }
                         else
                         {
-                            if (createBuffer)
-                            {
-                                DeviceBufferInitRequest bufferInitRequest(
-                                    *initRequest.m_buffer->GetDeviceBuffer(deviceIndex),
-                                    initRequest.m_descriptor,
-                                    initRequest.m_initialData);
-                                return deviceBufferPool->InitBuffer(bufferInitRequest);
-                            }
-                            else
+                            if (!initBuffer)
                             {
                                 initRequest.m_buffer->m_deviceObjects.erase(deviceIndex);
                             }
+                        }
+
+                        if (initBuffer)
+                        {
+                            DeviceBufferInitRequest bufferInitRequest(
+                                *initRequest.m_buffer->GetDeviceBuffer(deviceIndex), initRequest.m_descriptor, initRequest.m_initialData);
+                            return deviceBufferPool->InitBuffer(bufferInitRequest);
                         }
 
                         return ResultCode::Success;

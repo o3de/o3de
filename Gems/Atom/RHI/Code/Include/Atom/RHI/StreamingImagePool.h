@@ -20,39 +20,7 @@ namespace AZ
     {
         using CompleteCallback = AZStd::function<void()>;
 
-        //! A structure used as an argument to StreamingImagePool::InitImage.
-        struct StreamingImageInitRequest
-        {
-            StreamingImageInitRequest() = default;
-
-            StreamingImageInitRequest(
-                Image& image,
-                const ImageDescriptor& descriptor,
-                AZStd::span<const StreamingImageMipSlice> tailMipSlices,
-                MultiDevice::DeviceMask deviceMask = MultiDevice::AllDevices)
-                : m_image{ &image }
-                , m_descriptor{ descriptor }
-                , m_tailMipSlices{ tailMipSlices }
-                , m_deviceMask{ deviceMask }
-            {
-            }
-
-            /// The image to initialize.
-            Image* m_image = nullptr;
-
-            /// The descriptor used to to initialize the image.
-            ImageDescriptor m_descriptor;
-
-            //! An array of tail mip slices to upload. This must not be empty or the call will fail.
-            //! This should only include the baseline set of mips necessary to render the image at
-            //! its lowest resolution. The uploads is performed synchronously.
-            AZStd::span<const StreamingImageMipSlice> m_tailMipSlices;
-
-            /// The device mask used for the image.
-            /// Note: Only devices in the mask of the image pool will be considered.
-            MultiDevice::DeviceMask m_deviceMask = MultiDevice::AllDevices;
-        };
-
+        //! A structure used as an argument to StreamingImagePool::UpdateImageDeviceMask.
         struct StreamingImageDeviceMaskRequest
         {
             StreamingImageDeviceMaskRequest() = default;
@@ -78,6 +46,25 @@ namespace AZ
             /// The device mask used for the image.
             /// Note: Only devices in the mask of the image pool will be considered.
             MultiDevice::DeviceMask m_deviceMask = MultiDevice::AllDevices;
+        };
+
+        //! A structure used as an argument to StreamingImagePool::InitImage.
+        struct StreamingImageInitRequest : public StreamingImageDeviceMaskRequest
+        {
+            StreamingImageInitRequest() = default;
+
+            StreamingImageInitRequest(
+                Image& image,
+                const ImageDescriptor& descriptor,
+                AZStd::span<const StreamingImageMipSlice> tailMipSlices,
+                MultiDevice::DeviceMask deviceMask = MultiDevice::AllDevices)
+                : StreamingImageDeviceMaskRequest{ image, tailMipSlices, deviceMask }
+                , m_descriptor{ descriptor }
+            {
+            }
+
+            /// The descriptor used to to initialize the image.
+            ImageDescriptor m_descriptor;
         };
 
         using StreamingImageExpandRequest = StreamingImageExpandRequestTemplate<Image>;

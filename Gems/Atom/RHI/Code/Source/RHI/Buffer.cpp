@@ -8,7 +8,6 @@
 #include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
-#include <Atom/RHI/RHISystemInterface.h>
 
 namespace AZ::RHI
 {
@@ -73,16 +72,16 @@ namespace AZ::RHI
         {
             m_deviceMask = m_buffer->GetDeviceMask();
 
-            for (auto checkDeviceIndex{ 0 }; checkDeviceIndex < RHISystemInterface::Get()->GetDeviceCount(); ++checkDeviceIndex)
-            {
-                if (!m_buffer->IsDeviceSet(checkDeviceIndex))
+            MultiDeviceObject::IterateDevices(
+                m_deviceMask,
+                [this](int deviceIndex)
                 {
-                    if (auto it{ m_cache.find(checkDeviceIndex) }; it != m_cache.end())
+                    if (auto it{ m_cache.find(deviceIndex) }; it != m_cache.end())
                     {
                         m_cache.erase(it);
                     }
-                }
-            }
+                    return true;
+                });
         }
 
         auto iterator{ m_cache.find(deviceIndex) };
