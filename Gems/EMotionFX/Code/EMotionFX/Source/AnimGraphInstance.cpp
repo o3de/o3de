@@ -33,6 +33,18 @@ namespace EMotionFX
     AnimGraphInstance::AnimGraphInstance(AnimGraph* animGraph, ActorInstance* actorInstance, MotionSet* motionSet, const InitSettings* initSettings)
         : BaseObject()
     {
+#if defined (CARBONATED)
+        AZStd::string animGraphName = "[missed]";
+        if (animGraph)
+        {
+            AzFramework::StringFunc::Path::GetFileName(animGraph->GetFileName(), animGraphName);
+        }
+        AZ_Printf("EMotionFX", "Create AnimGraphInstance: motionSet=%s actorInstance=%s animGraph=%s"
+            , motionSet ? motionSet->GetName() : "[missed]"
+            , actorInstance && actorInstance->GetActor() ? actorInstance->GetActor()->GetName() : "[missed]"
+            , animGraphName.c_str());
+#endif
+
         // register at the animgraph
         animGraph->AddAnimGraphInstance(this);
         animGraph->Lock();

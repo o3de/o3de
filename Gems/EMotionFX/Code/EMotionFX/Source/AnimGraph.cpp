@@ -1120,6 +1120,12 @@ namespace EMotionFX
 
             AZ_Printf("EMotionFX", "Loaded anim graph from buffer in %.1f ms (Deserialization %.1f ms, Initialization %.1f ms).", deserializeTimeInMs + initTimeInMs, deserializeTimeInMs, initTimeInMs);
         }
+#if defined (CARBONATED)
+        else
+        {
+            AZ_Error("EMotionFX", false, "Anim graph was not loaded from buffer!");
+        }
+#endif
 
         return animGraph;
     }
