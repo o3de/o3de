@@ -87,6 +87,7 @@ namespace O3DE::ProjectManager
 
     void ProjectExportController::HandleResults(const QString& result)
     {
+        bool success = true;
         if (!result.isEmpty())
         {
             AZ::Outcome<QString, QString> logFilePathQuery = m_worker->GetLogFilePath();
@@ -101,7 +102,11 @@ namespace O3DE::ProjectManager
                 if (openLog == QMessageBox::Yes)
                 {
                     // Open application assigned to this file type
-                    if (!logFilePathQuery.IsSuccess() || !QDesktopServices::openUrl(QUrl::fromLocalFile(logFilePathQuery.GetValue())))
+                    if (!logFilePathQuery.IsSuccess())
+                    {
+                        qDebug() << "Failed to retrieve desired log file path" << "\n";
+                    }
+                    else if (!QDesktopServices::openUrl(QUrl::fromLocalFile(logFilePathQuery.GetValue())))
                     {
                         qDebug() << "QDesktopServices::openUrl failed to open " << m_projectInfo.m_logUrl.toString() << "\n";
                     }
@@ -131,11 +136,10 @@ namespace O3DE::ProjectManager
                 }
             }
 
-            emit Done(false);
-            return;
+            success = false;
         }
 
-        emit Done(true);
+        emit Done(success);
     }
 
     void ProjectExportController::HandleCancel()

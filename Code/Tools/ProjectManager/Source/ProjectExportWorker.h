@@ -23,9 +23,9 @@ namespace O3DE::ProjectManager
     {
         // QProcess::waitForFinished uses -1 to indicate that the process should not timeout
         static constexpr int MaxExportTimeMSecs = -1;
-        inline static const QString ExportCancelled = QObject::tr("Export Cancelled.");
-        inline static const QString LogOpenFailureMsg = QObject::tr("Failed to open log file.");
-        inline static const QString LogPathFailureMsg = QObject::tr("Failed to retrieve log file path.");
+        inline static const char * ExportCancelled =   "Export Cancelled.";
+        inline static const char * LogOpenFailureMsg = "Failed to open log file.";
+        inline static const char * LogPathFailureMsg = "Failed to retrieve log file path.";
         Q_OBJECT
 
     public:
@@ -47,7 +47,7 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QStringList, QString> ConstructKillProcessCommandArguments(const QString& pidToKill) const;
         QString GetO3DECLIString() const;
         QProcess* m_exportProjectProcess = nullptr;
-        ProjectInfo m_projectInfo;
+        const ProjectInfo& m_projectInfo;
         QString exportScript;
     };
 } // namespace O3DE::ProjectManager

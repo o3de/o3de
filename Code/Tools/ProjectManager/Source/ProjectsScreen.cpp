@@ -729,7 +729,7 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            QMessageBox::warning(this, tr("Tool Error"), tr("Failed to retrieve project information/"), QMessageBox::Ok);
+            QMessageBox::warning(this, tr("Tool Error"), tr("Failed to retrieve project information."), QMessageBox::Ok);
             return;
         }
 

@@ -46,19 +46,21 @@ namespace O3DE::ProjectManager
         // Make directories if they aren't on disk
         if (!logFilePath.cd(ProjectBuildPathPostfix))
         {
-            bool madeDirectory = logFilePath.mkpath(ProjectBuildPathPostfix);
-            if (!madeDirectory)
+            if (!logFilePath.mkpath(ProjectBuildPathPostfix))
             {
-                return AZ::Failure("Unable to make log directory for project build path");
+                QString errorMessage = QString("Unable to make log directory '%1' for project build path")
+                                        .arg(logFilePath.absoluteFilePath(ProjectBuildPathPostfix).toUtf8().constData());
+                return AZ::Failure(errorMessage);
             }
             logFilePath.cd(ProjectBuildPathPostfix);
         }
         if (!logFilePath.cd(ProjectBuildPathCmakeFiles))
         {
-            bool madeDirectory = logFilePath.mkpath(ProjectBuildPathCmakeFiles);
-            if (!madeDirectory)
+            if (!logFilePath.mkpath(ProjectBuildPathCmakeFiles))
             {
-                return AZ::Failure("Unable to make log directory for cmake files path");
+                QString errorMessage = QString("Unable to make log directory '%1' for cmake files path")
+                                        .arg(logFilePath.absoluteFilePath(ProjectBuildPathCmakeFiles).toUtf8().constData());
+                return AZ::Failure(errorMessage);
             }
             logFilePath.cd(ProjectBuildPathCmakeFiles);
         }
@@ -75,7 +77,7 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QString, QString> logFilePathQuery = GetLogFilePath();
         if(!logFilePathQuery.IsSuccess())
         {
-            QString errorMessage = tr("%1: %2").arg(LogPathFailureMsg).arg(logFilePathQuery.GetError());
+            QString errorMessage = QString("%1: %2").arg(tr(LogPathFailureMsg)).arg(logFilePathQuery.GetError());
             QStringToAZTracePrint(errorMessage);
             return AZ::Failure(errorMessage);
         }
@@ -83,7 +85,7 @@ namespace O3DE::ProjectManager
         QFile logFile(logFilePath);
         if (!logFile.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate))
         {
-            QString errorMessage = tr("%1: %2").arg(LogOpenFailureMsg).arg(logFilePath);
+            QString errorMessage = QString("%1: %2").arg(tr(LogOpenFailureMsg)).arg(logFilePath);
             QStringToAZTracePrint(errorMessage);
             return AZ::Failure(errorMessage);
         }
@@ -161,13 +163,14 @@ namespace O3DE::ProjectManager
                 killExportProcess.start(killProcessArguments.front(), killProcessArguments.mid(1));
                 bool finishedKilling = killExportProcess.waitForFinished();
 
+                logStream << "Killing Project Export.";
+                logStream << killExportProcess.readAllStandardOutput();
+
                 if (!finishedKilling)
                 {
                     killExportProcess.kill();
                 }
 
-                logStream << "Killing Project Export.";
-                logStream << killExportProcess.readAllStandardOutput();
                 m_exportProjectProcess->kill();
                 logFile.close();
                 QStringToAZTracePrint(ExportCancelled);
