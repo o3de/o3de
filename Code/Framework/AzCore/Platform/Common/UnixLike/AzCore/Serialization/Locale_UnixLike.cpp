@@ -11,8 +11,6 @@
 
 namespace AZ::Locale
 {
-    constexpr const locale_t NULL_LOCALE = ((locale_t)0);
-
     void ScopedSerializationLocale_Platform::Activate()
     {
         if (m_isActive)
@@ -38,5 +36,4 @@ namespace AZ::Locale
             m_isActive = false;
         }
     }
-
 } // namespace AZ::Locale
