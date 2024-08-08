@@ -374,7 +374,7 @@ def _ui_export(project_path: pathlib.Path) -> int:
     logger = logging.getLogger()    
     ch = logging.StreamHandler()
     ch.setLevel(logging.INFO)
-    formatter =  logging.Formatter(utils.UI_MSG_FORMAT)
+    formatter = logging.Formatter(utils.UI_MSG_FORMAT)
     ch.setFormatter(formatter)
     logger.addHandler(ch)
     

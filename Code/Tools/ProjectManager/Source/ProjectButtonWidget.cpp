@@ -759,7 +759,7 @@ namespace O3DE::ProjectManager
             m_projectImageLabel->GetActionCancelButton()->show();
         }
 
-        if (QLabel* exportingAnimation; exportingAnimation = m_projectImageLabel->GetBuildingAnimationLabel())
+        if (QLabel* exportingAnimation = m_projectImageLabel->GetBuildingAnimationLabel())
         {
             exportingAnimation->movie()->setPaused(!isExporting);
             exportingAnimation->setVisible(isExporting);

@@ -28,6 +28,7 @@
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -350,7 +351,7 @@ namespace O3DE::ProjectManager
                 }
             }
 
-            // Let the user can cancel builds for projects in the build queue and in the export queue
+            // Let the user cancel builds for projects in the build queue and in the export queue
             for (const ProjectInfo& project : m_buildQueue)
             {
                 auto projectIter = m_projectButtons.find(project.m_path.toUtf8().constData());

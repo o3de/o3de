@@ -43,7 +43,7 @@ def test_export_android_parse_args_should_run_with_output(tmpdir):
         test_export_config = exp.get_export_project_config(project_path=None)
         test_android_config = android_support.get_android_config(project_path=None)
 
-        expa.export_source_android_parse_args(mock_ctx, test_export_config, test_android_config)
+        expa.export_source_android_parse_args(mock_ctx, test_export_config)
 
 
 @pytest.mark.parametrize("seedlists, seedfiles, levelnames, gamefile_patterns, serverfile_patterns, project_patterns",[
@@ -90,7 +90,7 @@ def test_export_standalone_multipart_args(tmpdir, seedlists, seedfiles, levelnam
             mock_ctx.args += ['-sf', sf]
             verify_seedfiles += [pathlib.Path(sf)]
 
-        args = expa.export_source_android_parse_args(mock_ctx, test_export_config, test_android_config)
+        args = expa.export_source_android_parse_args(mock_ctx, test_export_config)
 
         assert 'level_names' in args and getattr(args, 'level_names')  == levelnames
 
@@ -215,7 +215,7 @@ def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, d
                     else:
                         mock_ctx.args += ['--engine-centric']
 
-                args = expa.export_source_android_parse_args(mock_ctx, test_export_config, test_android_config)
+                args = expa.export_source_android_parse_args(mock_ctx, test_export_config)
 
                 assert getattr(args, 'android_build_path') == tmpdir/'output'
                 assert getattr(args, 'config') == check_build_config

@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 #if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>

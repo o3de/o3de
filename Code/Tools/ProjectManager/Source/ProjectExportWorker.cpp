@@ -151,7 +151,7 @@ namespace O3DE::ProjectManager
             if (QThread::currentThread()->isInterruptionRequested())
             {
                 // QProcess is unable to kill its child processes so we need to ask the operating system to do that for us
-                auto killProcessArgumentsResult = ConstructKillProcessCommandArguments(QString::number(m_exportProjectProcess->processId()));
+                AZ::Outcome<QStringList, QString> killProcessArgumentsResult = ConstructKillProcessCommandArguments(QString::number(m_exportProjectProcess->processId()));
                 if (!killProcessArgumentsResult.IsSuccess())
                 {
                     return AZ::Failure(killProcessArgumentsResult.GetError());

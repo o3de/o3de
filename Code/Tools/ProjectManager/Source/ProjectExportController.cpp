@@ -122,7 +122,7 @@ namespace O3DE::ProjectManager
                 if (logFilePathQuery.IsSuccess())
                 {
                     QMessageBox::critical(m_parent,
-                                      tr("%1\nYou can check the logs in the following directory:\n%2")
+                                      QString("%1\nYou can check the logs in the following directory:\n%2")
                                         .arg(LauncherExportFailedMessage)
                                         .arg(logFilePathQuery.GetValue()),
                                       result);
@@ -130,8 +130,9 @@ namespace O3DE::ProjectManager
                 else
                 {
                     QMessageBox::critical(m_parent,
-                                      tr("%1\nNo logs are available at this time.")
-                                        .arg(LauncherExportFailedMessage),
+                                      QString("%1\nNo logs are available at this time. Unable to create the folders to hold the logs.\n%2")
+                                        .arg(LauncherExportFailedMessage)
+                                        .arg(logFilePathQuery.GetError()),
                                       result);
                 }
             }
