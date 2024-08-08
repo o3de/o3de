@@ -60,7 +60,6 @@ struct AABB;
 struct IErrorReport; // Vladimir@conffx
 struct IFileUtil;  // Vladimir@conffx
 struct IEditorLog;  // Vladimir@conffx
-struct IImageUtil;  // Vladimir@conffx
 struct IEditorParticleUtils;  // Leroy@conffx
 struct ILogFile; // Vladimir@conffx
 
@@ -596,7 +595,6 @@ struct IEditor
 
 
     virtual SSystemGlobalEnvironment* GetEnv() = 0;
-    virtual IImageUtil* GetImageUtil() = 0;  // Vladimir@conffx
     virtual SEditorSettings* GetEditorSettings() = 0;
 
     virtual ILogFile* GetLogFile() = 0;  // Vladimir@conffx
