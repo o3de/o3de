@@ -95,25 +95,6 @@ namespace AZ::RHI
         ResultCode MergeInto(AZStd::span<const PipelineLibrary* const> librariesToMerge);
 
         //! Serializes the platform-specific data and returns it as a new PipelineLibraryData instance
-        //! for a specific device 
-        //! @param deviceIndex Denotes from which device the serialized data should be retrieved
-        ConstPtr<PipelineLibraryData> GetSerializedData(int deviceIndex = RHI::MultiDevice::DefaultDeviceIndex) const
-        {
-            if (m_deviceObjects.contains(deviceIndex))
-            {
-                return GetDevicePipelineLibrary(deviceIndex)->GetSerializedData();
-            }
-            else
-            {
-                AZ_Error(
-                    "PipelineLibrary",
-                    false,
-                    "PipelineLibrary is not initialized. This operation is only permitted on an initialized library.");
-                return nullptr;
-            }
-        }
-
-        //! Serializes the platform-specific data and returns it as a new PipelineLibraryData instance
         //! for a specific device
         //! @param deviceIndex Denotes from which device the serialized data should be retrieved
         auto GetSerializedDataMap() const

@@ -41,7 +41,7 @@ namespace AZ::RHI
         m_deviceMask = static_cast<MultiDevice::DeviceMask>(0u);
     }
 
-    int MultiDeviceObject::GetDeviceCount() const
+    int MultiDeviceObject::GetDeviceCount()
     {
         return RHI::RHISystemInterface::Get()->GetDeviceCount();
     }

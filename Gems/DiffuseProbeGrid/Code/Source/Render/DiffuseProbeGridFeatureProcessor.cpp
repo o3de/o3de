@@ -1053,7 +1053,6 @@ namespace AZ
                 ->IndexBuffer(m_visualizationIB)
             ;
 
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
             m_visualizationBlas = aznew RHI::RayTracingBlas;
             auto deviceMask = RHI::RHISystemInterface::Get()->GetRayTracingSupport();
             if (deviceMask != RHI::MultiDevice::NoDevices)

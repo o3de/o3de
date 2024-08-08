@@ -153,7 +153,7 @@ namespace AZ
             PipelineStatisticsResult m_statisticsResult;
 
             // The device index the pass ran on during the last frame, necessary to read the queries.
-            int m_lastDeviceIndex = RHI::MultiDevice::DefaultDeviceIndex;
+            int m_lastDeviceIndex = RHI::MultiDevice::InvalidDeviceIndex;
 
             // For each ScopeProducer an instance of the ScopeQuery is created, which consists
             // of an Timestamp and PipelineStatistic query.

@@ -195,12 +195,26 @@ namespace AZ
 
         RPI::TimestampResult RayTracingAccelerationStructurePass::GetTimestampResultInternal() const
         {
-            return m_timestampResults.at(RHI::MultiDevice::DefaultDeviceIndex);
+            RPI::TimestampResult result{};
+
+            for (auto& [deviceIndex, timestampResult] : m_timestampResults)
+            {
+                result.Add(timestampResult);
+            }
+
+            return result;
         }
 
         RPI::PipelineStatisticsResult RayTracingAccelerationStructurePass::GetPipelineStatisticsResultInternal() const
         {
-            return m_statisticsResults.at(RHI::MultiDevice::DefaultDeviceIndex);
+            RPI::PipelineStatisticsResult result{};
+
+            for (auto& [deviceIndex, statisticsResult] : m_statisticsResults)
+            {
+                result += statisticsResult;
+            }
+
+            return result;
         }
 
         void RayTracingAccelerationStructurePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
