@@ -352,6 +352,9 @@ class MainWindow(tkp.Tk):
                                 label_text='Project Build Configuration',
                                 config_key='project.build.config',
                                 choices=build_config_choices)
+        self.add_labeled_checkbox(parent=project_build_options_frame,
+                                  label_text="Open Output Directory in File Explorer",
+                                  config_key='option.output.opendir')
         
     def init_asset_bundling_options(self, parent):
         """

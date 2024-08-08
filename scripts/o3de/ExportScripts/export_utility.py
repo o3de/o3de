@@ -147,6 +147,13 @@ def create_common_export_params_and_config(parser, export_config):
                                                                  "The tools must be already available at the location specified by the '--tools-build-path' argument.")
     
     export_config.add_boolean_argument(parser=parser,
+                                       key=exp.SETTINGS_OPTION_OPEN_OUTPUT_DIRECTORY.key,
+                                       enable_override_arg=['-od', '--open-output-dir'],
+                                       enable_override_desc='At the end of the export process, open the output directory in the user\'s file explorer.',
+                                       disable_override_arg=['-nod', '--no-open-output-dir'],
+                                       disable_override_desc='Do not open the output directory in the user\'s file explorer.')
+
+    export_config.add_boolean_argument(parser=parser,
                                            key=exp.SETTINGS_OPTION_FAIL_ON_ASSET_ERR.key,
                                            enable_override_arg=['-foa', '--fail-on-asset-errors'],
                                            enable_override_desc='Fail the export if there are errors during the building of assets. (Only relevant if assets are set to be built).',

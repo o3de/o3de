@@ -23,9 +23,6 @@ namespace O3DE::ProjectManager
     {
         // QProcess::waitForFinished uses -1 to indicate that the process should not timeout
         static constexpr int MaxExportTimeMSecs = -1;
-        inline static const char * ExportCancelled =   "Export Cancelled.";
-        inline static const char * LogOpenFailureMsg = "Failed to open log file.";
-        inline static const char * LogPathFailureMsg = "Failed to retrieve log file path.";
         Q_OBJECT
 
     public:

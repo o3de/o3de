@@ -729,7 +729,7 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            QMessageBox::warning(this, tr("Tool Error"), tr("Failed to retrieve project information."), QMessageBox::Ok);
+            QMessageBox::critical(this, tr("Tool Error"), tr("Failed to retrieve project information."), QMessageBox::Ok);
             return;
         }
 
@@ -755,7 +755,7 @@ namespace O3DE::ProjectManager
 
         if (!process.startDetached())
         {
-            QMessageBox::warning(this, tr("Tool Error"), tr("Failed to start o3de.py from path %1").arg(o3dePath), QMessageBox::Ok);
+            QMessageBox::critical(this, tr("Tool Error"), tr("Failed to start o3de.py from path %1").arg(o3dePath), QMessageBox::Ok);
         }
     }
 

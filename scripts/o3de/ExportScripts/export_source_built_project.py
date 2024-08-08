@@ -11,6 +11,7 @@ import glob
 import logging
 import os
 import sys
+import webbrowser
 
 import o3de.export_project as exp
 import export_utility as eutil
@@ -48,6 +49,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                               fail_on_asset_errors: bool = False,
                               engine_centric: bool = False,
                               kill_o3de_processes_before_running: bool = False,
+                              open_output_dir: bool = True,
                               logger: logging.Logger|None = None) -> None:
     """
     This function serves as the generic, general workflow for project exports. The steps in this code will generate
@@ -221,6 +223,9 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                                             export_layout=export_layout,
                                             archive_output_format=archive_output_format,
                                             logger=logger)
+    
+    if open_output_dir:
+        webbrowser.open(str(output_path))
 
 
 def export_standalone_parse_args(o3de_context: exp.O3DEScriptExportContext, export_config: command_utils.O3DEConfig):
@@ -399,6 +404,11 @@ def export_standalone_run_command(o3de_context, args, export_config: command_uti
                                                                           enable_attribute='kill_processes',
                                                                           disable_attribute='no_kill_processes')
 
+    option_open_output_dir = export_config.get_parsed_boolean_option(parsed_args=args,
+                                                                     key=exp.SETTINGS_OPTION_OPEN_OUTPUT_DIRECTORY.key,
+                                                                     enable_attribute='open_output_dir',
+                                                                     disable_attribute='no_open_output_dir')
+
     if args.quiet:
         o3de_logger.setLevel(logging.ERROR)
     else:
@@ -432,6 +442,7 @@ def export_standalone_run_command(o3de_context, args, export_config: command_uti
                                   archive_output_format=args.archive_output,
                                   monolithic_build=option_build_monolithically,
                                   kill_o3de_processes_before_running=option_kill_prior_processes,
+                                  open_output_dir=option_open_output_dir,
                                   logger=o3de_logger)
     except exp.ExportProjectError as err:
         print(err)

@@ -77,7 +77,7 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QString, QString> logFilePathQuery = GetLogFilePath();
         if(!logFilePathQuery.IsSuccess())
         {
-            QString errorMessage = QString("%1: %2").arg(tr(LogPathFailureMsg)).arg(logFilePathQuery.GetError());
+            QString errorMessage = QString("%1: %2").arg(tr(ErrorMessages::LogPathFailureMsg)).arg(logFilePathQuery.GetError());
             QStringToAZTracePrint(errorMessage);
             return AZ::Failure(errorMessage);
         }
@@ -85,7 +85,7 @@ namespace O3DE::ProjectManager
         QFile logFile(logFilePath);
         if (!logFile.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate))
         {
-            QString errorMessage = QString("%1: %2").arg(tr(LogOpenFailureMsg)).arg(logFilePath);
+            QString errorMessage = QString("%1: %2").arg(tr(ErrorMessages::LogOpenFailureMsg)).arg(logFilePath);
             QStringToAZTracePrint(errorMessage);
             return AZ::Failure(errorMessage);
         }
@@ -173,8 +173,8 @@ namespace O3DE::ProjectManager
 
                 m_exportProjectProcess->kill();
                 logFile.close();
-                QStringToAZTracePrint(ExportCancelled);
-                return AZ::Failure(ExportCancelled);
+                QStringToAZTracePrint(ErrorMessages::ExportCancelled);
+                return AZ::Failure(ErrorMessages::ExportCancelled);
             }
         }
 
