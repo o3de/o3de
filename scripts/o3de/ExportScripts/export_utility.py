@@ -145,13 +145,6 @@ def create_common_export_params_and_config(parser, export_config):
                                            disable_override_arg=['-sbt', '--skip-build-tools'],
                                            disable_override_desc="Skip the building of the O3DE toolchain executables (AssetBundlerBatch, AssetProcessorBatch) as part of the export process. "
                                                                  "The tools must be already available at the location specified by the '--tools-build-path' argument.")
-    
-    export_config.add_boolean_argument(parser=parser,
-                                       key=exp.SETTINGS_OPTION_OPEN_OUTPUT_DIRECTORY.key,
-                                       enable_override_arg=['-od', '--open-output-dir'],
-                                       enable_override_desc='At the end of the export process, open the output directory in the user\'s file explorer.',
-                                       disable_override_arg=['-nod', '--no-open-output-dir'],
-                                       disable_override_desc='Do not open the output directory in the user\'s file explorer.')
 
     export_config.add_boolean_argument(parser=parser,
                                            key=exp.SETTINGS_OPTION_FAIL_ON_ASSET_ERR.key,

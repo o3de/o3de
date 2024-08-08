@@ -1176,11 +1176,6 @@ SETTINGS_OPTION_BUILD_TOOLS       = register_setting(key='option.build.tools',
                                                      is_boolean=True,
                                                      default='False')
 
-SETTINGS_OPTION_OPEN_OUTPUT_DIRECTORY = register_setting(key='option.output.opendir',
-                                                         description='At the end of the export process, open the respective output directory',
-                                                         is_boolean=True,
-                                                         default='True')
-
 SETTINGS_DEFAULT_ANDROID_BUILD_PATH = register_setting(key='default.android.build.path',
                                                        description='Designates where the android build files are generated.',
                                                        default='build/android')

@@ -19,7 +19,6 @@ import os
 import pathlib
 import re
 import sys
-import webbrowser
 
 
 from typing import List
@@ -41,7 +40,6 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
                                   max_bundle_size: int,
                                   fail_on_asset_errors: bool,
                                   deploy_to_device: bool,
-                                  open_output_dir: bool,
                                   logger: logging.Logger|None) -> None:
     if not logger:
         logger = logging.getLogger()
@@ -126,8 +124,7 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
         except FileNotFoundError:
             logger.error("Unable to open build.gradle file. Aborting deployment...")
     
-    if open_output_dir:
-        webbrowser.open(target_android_project_path)
+    logger.info(f"Exporting finished. Output Android Project generated at {target_android_project_path}")
         
 
 def export_source_android_parse_args(o3de_context: exp.O3DEScriptExportContext,
@@ -195,11 +192,6 @@ def export_source_android_run_command(o3de_context: exp.O3DEScriptExportContext,
                                                                     enable_attribute='deploy_to_android',
                                                                     disable_attribute='no_deploy_to_android')
     
-    option_open_output_dir = export_config.get_parsed_boolean_option(parsed_args=args,
-                                                                     key=exp.SETTINGS_OPTION_OPEN_OUTPUT_DIRECTORY.key,
-                                                                     enable_attribute='open_output_dir',
-                                                                     disable_attribute='no_open_output_dir')
-    
     target_android_project_path = pathlib.Path(args.android_build_path)
 
     if not target_android_project_path.is_absolute():
@@ -209,8 +201,6 @@ def export_source_android_run_command(o3de_context: exp.O3DEScriptExportContext,
         o3de_logger.setLevel(logging.ERROR)
     else:
         o3de_logger.setLevel(logging.INFO)
-
-    
 
     try:
         export_source_android_project(ctx=o3de_context,
@@ -228,7 +218,6 @@ def export_source_android_run_command(o3de_context: exp.O3DEScriptExportContext,
                                       max_bundle_size=args.max_bundle_size,
                                       fail_on_asset_errors=fail_on_asset_errors,
                                       deploy_to_device=option_android_deploy,
-                                      open_output_dir=option_open_output_dir,
                                       logger=o3de_logger)
     except exp.ExportProjectError as err:
         print(err)
