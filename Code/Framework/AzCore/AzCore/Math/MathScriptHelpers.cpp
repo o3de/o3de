@@ -11,23 +11,30 @@
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Transform.h>
+#include <AzCore/Serialization/Locale.h>
 
 namespace AZ
 {
     AZStd::string Vector3ToString(const Vector3& v)
     {
+        AZ::Locale::ScopedSerializationLocale locale; // Vector3 <---> string interpreted in the "C" Locale.
+
         return AZStd::string::format("(x=%.7f,y=%.7f,z=%.7f)", static_cast<float>(v.GetX()), static_cast<float>(v.GetY()), static_cast<float>(v.GetZ()));
     }
 
 
     AZStd::string Vector4ToString(const Vector4& v)
     {
+        AZ::Locale::ScopedSerializationLocale locale; // Vector4 <---> string interpreted in the "C" Locale.
+
         return AZStd::string::format("(x=%.7f,y=%.7f,z=%.7f,w=%.7f)", static_cast<float>(v.GetX()), static_cast<float>(v.GetY()), static_cast<float>(v.GetZ()), static_cast<float>(v.GetW()));
     }
 
 
     AZStd::string QuaternionToString(const Quaternion& v)
     {
+        AZ::Locale::ScopedSerializationLocale locale; // Quaternion <---> string should be interpreted in the "C" Locale.
+
         return AZStd::string::format("(x=%.7f,y=%.7f,z=%.7f,w=%.7f)", static_cast<float>(v.GetX()), static_cast<float>(v.GetY()), static_cast<float>(v.GetZ()), static_cast<float>(v.GetW()));
     }
 
@@ -119,6 +126,8 @@ namespace AZ
 
     size_t FloatArrayTextSerializer::DataToText(const float* floats, size_t numFloats, char* textBuffer, size_t textBufferSize, bool isDataBigEndian)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // for printf-ing floats to be invariant
+
         size_t numWritten = 0;
         for (size_t i = 0; i < numFloats; ++i)
         {
@@ -147,6 +156,8 @@ namespace AZ
 
     size_t FloatArrayTextSerializer::TextToData(const char* text, float* floats, size_t numFloats, bool isDataBigEndian)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // for parsing floats via strtod to be invariant
+
         size_t nextNumberIndex = 0;
         while (text != nullptr && nextNumberIndex < numFloats)
         {

@@ -27,6 +27,7 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/Math/Crc.h>
 
 #define MAX_CELL_COUNT 32
@@ -937,6 +938,9 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
             return (true);
         }
     }
+
+    // Use the invariant culture while loading files from disk
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
 
     ListAndClearProblemLabels();
 
