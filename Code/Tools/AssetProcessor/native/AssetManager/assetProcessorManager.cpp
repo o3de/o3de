@@ -3271,6 +3271,7 @@ namespace AssetProcessor
         // If this file is already in the remaining jobs queue, no need to assess it all over again.
         if (m_remainingJobsForEachSourceFile.find(absolutePath.c_str()) != m_remainingJobsForEachSourceFile.end())
         {
+            AZ_TracePrintf(AssetProcessor::DebugChannel, "AssessFileInternal: Skipping %s, already queued for job\n", absolutePath.c_str());
             return;
         }
 
