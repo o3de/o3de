@@ -450,6 +450,13 @@ namespace EMotionFX
         }
 
         Motion* motion = entry->GetMotion();
+#if defined (CARBONATED)
+        if (!motion && !entry->GetLoadingFailed())
+        {
+            AZ_Printf("EMotionFX", "Try to reload motion '%s' for motion set '%s'. Attempts left %i.", entry->GetFilename(), GetName(), entry->GetLoadAttempts());
+            loadOnDemand = true;
+        }
+#endif
         if (loadOnDemand)
         {
             motion = LoadMotion(entry);
@@ -539,7 +546,6 @@ namespace EMotionFX
             if (!motion)
             {
 #if defined (CARBONATED)
-                // do not disable to reload missed motion
                 AZ_Printf("EMotionFX", "Failed to load motion '%s' for motion set '%s'.", entry->GetFilename(), GetName());
 #endif
                 entry->SetLoadingFailed(true);
