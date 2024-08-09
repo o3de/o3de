@@ -3243,6 +3243,7 @@ namespace AssetProcessor
         }
 
         QString normalizedFullFile = AssetUtilities::NormalizeFilePath(fullFile);
+        AZ::IO::FixedMaxPath absolutePath(normalizedFullFile.toUtf8().constData());
 
         if (!fromScanner) // the scanner already does exclusion and doesn't need to deal with metafiles.
         {
@@ -3267,13 +3268,18 @@ namespace AssetProcessor
             }
         }
 
+        // If this file is already in the remaining jobs queue, no need to assess it all over again.
+        if (m_remainingJobsForEachSourceFile.find(absolutePath.c_str()) != m_remainingJobsForEachSourceFile.end())
+        {
+            return;
+        }
+
         if (!isDelete && IsInIntermediateAssetsFolder(normalizedFullFile) && !m_knownFolders.contains(normalizedFullFile))
         {
             // Make a special case check for MetadataManager files
             // An update to one of these types of files needs to cause a re-process of the intermediate file.
             // Converting a metadata file to the real file normally happens later in the processing but needs to be done
-            // up front for intermediates to avoid bypassing this whole block - which stops processing intermediates before they're recorded in the database.
-            AZ::IO::FixedMaxPath absolutePath(normalizedFullFile.toUtf8().constData());
+            // up front for intermediates to avoid bypassing this whole block - which stops processing intermediates before they're recorded in the database.            
 
             if (absolutePath.Extension() == AzToolsFramework::MetadataManager::MetadataFileExtension)
             {
@@ -3674,38 +3680,44 @@ namespace AssetProcessor
         {
             // File is a source file that has been processed before
             AZStd::string fingerprintFromDatabase = sourceFileItr->m_analysisFingerprint.toUtf8().data();
+            if (fingerprintFromDatabase.empty())
+            {
+                // No recorded fingerprint
+                return false;
+            }
+
             AZStd::string_view builderEntries(fingerprintFromDatabase.begin() + s_lengthOfUuid + 1, fingerprintFromDatabase.end());
             AZStd::string_view dependencyFingerprint(fingerprintFromDatabase.begin(), fingerprintFromDatabase.begin() + s_lengthOfUuid);
             int numBuildersEmittingSourceDependencies = 0;
 
-            if (!fingerprintFromDatabase.empty() && AreBuildersUnchanged(builderEntries, numBuildersEmittingSourceDependencies))
+            // Check for updated builders
+            if (!AreBuildersUnchanged(builderEntries, numBuildersEmittingSourceDependencies))
             {
-                // Builder(s) have not changed since last time
-                AZStd::string currentFingerprint = ComputeRecursiveDependenciesFingerprint(sourceFileItr->m_sourceAssetReference);
-
-                if(dependencyFingerprint != currentFingerprint)
-                {
-                    // Dependencies have changed
-                    ++m_assetsNeedingProcessing_DependenciesChanged;
-                    return false;
-                }
-                // Success - we can skip this file, nothing has changed!
-
-                // Remove it from the list of to-be-processed files, otherwise the AP will assume the file was deleted
-                // Note that this means any files that *were* deleted are already handled by CheckMissingFiles
-                m_sourceFilesInDatabase.erase(sourceFileItr);
-                return true;
+                ++m_assetsNeedingProcessing_BuildersChanged;
+                return false;
             }
-        }
-        else
-        {
-            // File is a non-tracked file, aka a file that no builder cares about.
-            // The fact that it has a matching modtime means we've already seen this file and attempted to process it
-            // If it were a new, unprocessed source file, there would be no modtime stored
+
+            // Check for updated fingerprint
+            AZStd::string currentFingerprint = ComputeRecursiveDependenciesFingerprint(sourceFileItr->m_sourceAssetReference);
+            if (dependencyFingerprint != currentFingerprint)
+            {
+                // Dependencies have changed
+                ++m_assetsNeedingProcessing_DependenciesChanged;
+                return false;
+            }
+
+            // Success - we can skip this file, nothing has changed!
+
+            // Remove it from the list of to-be-processed files, otherwise the AP will assume the file was deleted
+            // Note that this means any files that *were* deleted are already handled by CheckMissingFiles
+            m_sourceFilesInDatabase.erase(sourceFileItr);
             return true;
         }
 
-        return false;
+        // File is a non-tracked file, aka a file that no builder cares about.
+        // The fact that it has a matching modtime means we've already seen this file and attempted to process it
+        // If it were a new, unprocessed source file, there would be no modtime stored
+        return true;
     }
 
     void AssetProcessorManager::AssessDeletedFile(QString filePath)
