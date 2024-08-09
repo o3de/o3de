@@ -94,7 +94,6 @@ namespace EMotionFX
              */
 #if defined (CARBONATED)
             bool GetLoadingFailed() const { return m_loadAttempts <= 0; }
-            int GetLoadAttempts() const { return m_loadAttempts; }
 #else
             bool GetLoadingFailed() const                                                                       { return m_loadFailed; }
 #endif
