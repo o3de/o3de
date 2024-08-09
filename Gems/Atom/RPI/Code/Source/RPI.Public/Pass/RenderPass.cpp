@@ -274,7 +274,7 @@ namespace AZ
             m_timestampResult = AZ::RPI::TimestampResult();
 
             // the pass may potentially migrate between devices dynamically at runtime so the deviceIndex is updated every frame.
-            if (GetScopeId().IsEmpty())
+            if (GetScopeId().IsEmpty() || (ScopeProducer::GetDeviceIndex() != Pass::GetDeviceIndex()))
             {
                 InitScope(RHI::ScopeId(GetPathName()), m_hardwareQueueClass, Pass::GetDeviceIndex());
             }
