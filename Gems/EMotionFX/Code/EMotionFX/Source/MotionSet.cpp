@@ -74,7 +74,11 @@ namespace EMotionFX
 
     MotionSet::MotionEntry::MotionEntry()
         : m_motion(nullptr)
+#if defined (CARBONATED)
+        , m_loadAttempts(MaxAttemptsToLoad)
+#else
         , m_loadFailed(false)
+#endif
     {
     }
 
@@ -83,7 +87,11 @@ namespace EMotionFX
         : m_id(motionId)
         , m_filename(fileName)
         , m_motion(motion)
+#if defined (CARBONATED)
+        , m_loadAttempts(MaxAttemptsToLoad)
+#else
         , m_loadFailed(false)
+#endif
     {
     }
 
@@ -533,9 +541,8 @@ namespace EMotionFX
 #if defined (CARBONATED)
                 // do not disable to reload missed motion
                 AZ_Printf("EMotionFX", "Failed to load motion '%s' for motion set '%s'.", entry->GetFilename(), GetName());
-#else
-                entry->SetLoadingFailed(true);
 #endif
+                entry->SetLoadingFailed(true);
             }
 #if defined (CARBONATED)
             else
