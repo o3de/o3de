@@ -55,7 +55,7 @@ namespace MaterialCanvas
         InitMaterialCanvasResources();
 
         QApplication::setOrganizationName("O3DE");
-        QApplication::setApplicationName("O3DE Material Canvas (Preview)");
+        QApplication::setApplicationName("O3DE Material Canvas");
         QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
 
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
@@ -147,6 +147,13 @@ namespace MaterialCanvas
         // Instantiate the dynamic node manager to register all dynamic node configurations and data types used in this tool
         m_dynamicNodeManager.reset(aznew AtomToolsFramework::DynamicNodeManager(m_toolId));
 
+        // Creating default sampler state with settings common to pre-existing material types.
+        AZ::RHI::SamplerState defaultSamplerState{};
+        defaultSamplerState.m_filterMin = AZ::RHI::FilterMode::Linear;
+        defaultSamplerState.m_filterMag = AZ::RHI::FilterMode::Linear;
+        defaultSamplerState.m_filterMip = AZ::RHI::FilterMode::Linear;
+        defaultSamplerState.m_anisotropyMax = 16;
+
         // Register all data types required by Material Canvas nodes with the dynamic node manager
         m_dynamicNodeManager->RegisterDataTypes({
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("bool"), bool{}, "bool"),
@@ -162,8 +169,8 @@ namespace MaterialCanvas
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float4x4"), AZStd::array<AZ::Vector4, 4>{ AZ::Vector4(1.0f, 0.0f, 0.0f, 0.0f), AZ::Vector4(0.0f, 1.0f, 0.0f, 0.0f), AZ::Vector4(0.0f, 0.0f, 1.0f, 0.0f), AZ::Vector4(0.0f, 0.0f, 0.0f, 1.0f) }, "float4x4"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("color"), AZ::Color::CreateOne(), "color"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("string"), AZStd::string{}, "string"),
-            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("image"), AZ::Data::Asset<AZ::RPI::StreamingImageAsset>{AZ::Data::AssetLoadBehavior::NoLoad}, "image"),
-            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("sampler"), AZ::RHI::SamplerState{}, "sampler"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("image"), AZ::Data::Asset<AZ::RPI::StreamingImageAsset>{ AZ::Data::AssetLoadBehavior::NoLoad }, "image"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("sampler"), defaultSamplerState, "sampler"),
         });
 
         // Search the project and gems for dynamic node configurations and register them with the manager
@@ -190,6 +197,12 @@ namespace MaterialCanvas
         m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyConnectionName", editData);
         m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyGroupName", editData);
         m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyGroup", editData);
+
+        editData = {};
+        editData.m_elementId = AZ::Edit::UIHandlers::ComboBox;
+        AtomToolsFramework::AddEditDataAttribute(
+            editData, AZ::Edit::Attributes::StringList, AZStd::vector<AZStd::string>{ "", "0", "1", "2", "3", "4" });
+        m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyMinVectorSize", editData);
 
         editData = {};
         editData.m_elementId = AZ::Edit::UIHandlers::ComboBox;

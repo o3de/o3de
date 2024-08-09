@@ -10,6 +10,7 @@
 #include <Atom/RHI.Reflect/Metal/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/Metal/ShaderStageFunction.h>
 #include <Atom/RHI.Reflect/ShaderStageFunction.h>
+#include <Atom/RHI/Factory.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
 #include <RHI/PipelineState.h>
@@ -20,6 +21,19 @@ namespace AZ
 {
     namespace Metal
     {
+        void RasterizerState::UpdateHash()
+        {
+            HashValue64 seed = HashValue64{ 0 };
+            seed = TypeHash64(m_cullMode, seed);
+            seed = TypeHash64(m_depthBias, seed);
+            seed = TypeHash64(m_depthSlopeScale, seed);
+            seed = TypeHash64(m_depthBiasClamp, seed);
+            seed = TypeHash64(m_frontFaceWinding, seed);
+            seed = TypeHash64(m_triangleFillMode, seed);
+            seed = TypeHash64(m_depthClipMode, seed);
+            m_hash = seed;
+        }
+    
         RHI::Ptr<PipelineState> PipelineState::Create()
         {
             return aznew PipelineState;
@@ -55,7 +69,7 @@ namespace AZ
             return m_primitiveTopology;
         }
         
-        id<MTLFunction> PipelineState::CompileShader(id<MTLDevice> mtlDevice, const AZStd::string_view sourceStr, const AZStd::string_view entryPoint, const ShaderStageFunction* shaderFunction)
+        id<MTLFunction> PipelineState::CompileShader(id<MTLDevice> mtlDevice, const AZStd::string_view sourceStr, const AZStd::string_view entryPoint, const ShaderStageFunction* shaderFunction, MTLFunctionConstantValues* constantValues)
         {
             id<MTLFunction> pFunction = nullptr;
             NSString* source = [[NSString alloc] initWithCString : sourceStr.data() encoding: NSASCIIStringEncoding];
@@ -78,17 +92,25 @@ namespace AZ
             {
                 dispatch_data_t dispatchByteCodeData = dispatch_data_create(shaderByteCode, byteCodeLength, NULL, DISPATCH_DATA_DESTRUCTOR_DEFAULT);
                 lib = [mtlDevice newLibraryWithData:dispatchByteCodeData error:&error];
+                dispatch_release(dispatchByteCodeData);
             }
             else
             {
-                //In case byte code was not generated try to create the lib with source code
-                MTLCompileOptions* compileOptions = [MTLCompileOptions alloc];
-                compileOptions.fastMathEnabled = YES;
-                compileOptions.languageVersion = MTLLanguageVersion2_2;
-                lib = [mtlDevice newLibraryWithSource:source
-                                               options:compileOptions
-                                                 error:&error];
-                [compileOptions release];
+                if(!sourceStr.empty())
+                {
+                    //In case byte code was not generated try to create the lib with source code
+                    MTLCompileOptions* compileOptions = [MTLCompileOptions alloc];
+                    compileOptions.fastMathEnabled = YES;
+                    compileOptions.languageVersion = MTLLanguageVersion2_2;
+                    lib = [mtlDevice newLibraryWithSource:source
+                                                  options:compileOptions
+                                                    error:&error];
+                    [compileOptions release];
+                }
+                else
+                {
+                    AZ_Assert(false, "Shader source is not added by default. It can be added by enabling /O3DE/Atom/RHI/GraphicsDevMode via settings registry and re-building the shader.");
+                }
             }
             
             if (error)
@@ -103,7 +125,9 @@ namespace AZ
             if (lib)
             {
                 NSString* entryPointStr = [[NSString alloc] initWithCString : entryPoint.data() encoding: NSASCIIStringEncoding];
-                pFunction = [lib newFunctionWithName:entryPointStr];
+                pFunction = [lib newFunctionWithName:entryPointStr constantValues:constantValues error:&error];
+                [entryPointStr release];
+                entryPointStr = nil;
                 [lib release];
                 lib = nil;
             }
@@ -117,7 +141,7 @@ namespace AZ
         
         RHI::ResultCode PipelineState::InitInternal(RHI::Device& deviceBase,
                                                     const RHI::PipelineStateDescriptorForDraw& descriptor,
-                                                    RHI::PipelineLibrary* pipelineLibraryBase)
+                                                    RHI::DevicePipelineLibrary* pipelineLibraryBase)
         {
             NSError* error = 0;
             Device& device = static_cast<Device&>(deviceBase);
@@ -146,9 +170,11 @@ namespace AZ
             [vertexDescriptor release];
             vertexDescriptor = nil;
             
-            m_renderPipelineDesc.vertexFunction = ExtractMtlFunction(device.GetMtlDevice(), descriptor.m_vertexFunction.get());
+            MTLFunctionConstantValues* constantValues = CreateFunctionConstantsValues(descriptor);
+            
+            m_renderPipelineDesc.vertexFunction = ExtractMtlFunction(device.GetMtlDevice(), descriptor.m_vertexFunction.get(), constantValues);
             AZ_Assert(m_renderPipelineDesc.vertexFunction, "Vertex mtlFuntion can not be null");
-            m_renderPipelineDesc.fragmentFunction = ExtractMtlFunction(device.GetMtlDevice(), descriptor.m_fragmentFunction.get());
+            m_renderPipelineDesc.fragmentFunction = ExtractMtlFunction(device.GetMtlDevice(), descriptor.m_fragmentFunction.get(), constantValues);
             
             RHI::Format depthStencilFormat = attachmentsConfiguration.GetDepthStencilFormat();
             if(descriptor.m_renderStates.m_depthStencilState.m_stencil.m_enable || IsDepthStencilMerged(depthStencilFormat))
@@ -187,7 +213,24 @@ namespace AZ
                 m_graphicsPipelineState = [device.GetMtlDevice() newRenderPipelineStateWithDescriptor:m_renderPipelineDesc options : MTLPipelineOptionBufferTypeInfo reflection : &ref error : &error];
             }
             
-            AZ_Assert(m_graphicsPipelineState, "Could not create Pipeline object!.");
+            if(m_graphicsPipelineState==nil)
+            {
+                if (RHI::Validation::IsEnabled())
+                {
+                    NSLog(@" error => %@ ", [error userInfo] );
+                }
+                AZ_Assert(false, "Could not create Pipeline object!.");
+            }
+            //We keep the descriptors alive in case we want to build the PSO cache. Delete them otherwise.
+            if (!r_enablePsoCaching)
+            {
+                [m_renderPipelineDesc release];
+                m_renderPipelineDesc = nil;
+            }
+            
+            [constantValues release];
+            constantValues = nil;
+             
             m_pipelineStateMultiSampleState = descriptor.m_renderStates.m_multisampleState;
             
             //Cache the rasterizer state
@@ -211,14 +254,15 @@ namespace AZ
 
         RHI::ResultCode PipelineState::InitInternal(RHI::Device& deviceBase,
                                                     const RHI::PipelineStateDescriptorForDispatch& descriptor,
-                                                    RHI::PipelineLibrary* pipelineLibraryBase)
+                                                    RHI::DevicePipelineLibrary* pipelineLibraryBase)
         {
             Device& device = static_cast<Device&>(deviceBase);
             NSError* error = 0;
             m_computePipelineDesc = [[MTLComputePipelineDescriptor alloc] init];
             RHI::ConstPtr<PipelineLayout> pipelineLayout = device.AcquirePipelineLayout(*descriptor.m_pipelineLayoutDescriptor);
             AZ_Assert(pipelineLayout, "PipelineLayout can not be null");
-            m_computePipelineDesc.computeFunction = ExtractMtlFunction(device.GetMtlDevice(), descriptor.m_computeFunction.get());
+            MTLFunctionConstantValues* constantValues = CreateFunctionConstantsValues(descriptor);
+            m_computePipelineDesc.computeFunction = ExtractMtlFunction(device.GetMtlDevice(), descriptor.m_computeFunction.get(), constantValues);
             AZ_Assert(m_computePipelineDesc.computeFunction, "Compute mtlFuntion can not be null");
             
             PipelineLibrary* pipelineLibrary = static_cast<PipelineLibrary*>(pipelineLibraryBase);
@@ -234,6 +278,16 @@ namespace AZ
             
             AZ_Assert(m_computePipelineState, "Could not create Pipeline object!.");
             
+            //We keep the descriptors alive in case we want to build the PSO cache. Delete them otherwise.
+            if (!r_enablePsoCaching)
+            {
+                [m_computePipelineDesc release];
+                m_computePipelineDesc = nil;
+            }
+                                                                       
+            [constantValues release];
+            constantValues = nil;
+            
             if (m_computePipelineState)
             {
                 m_pipelineLayout = AZStd::move(pipelineLayout);
@@ -247,14 +301,14 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode PipelineState::InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForRayTracing& descriptor, RHI::PipelineLibrary* pipelineLibrary)
+        RHI::ResultCode PipelineState::InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForRayTracing& descriptor, RHI::DevicePipelineLibrary* pipelineLibrary)
         {
             // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
             AZ_Assert(false, "Not implemented");
             return RHI::ResultCode::Fail;
         }
 
-        id<MTLFunction> PipelineState::ExtractMtlFunction(id<MTLDevice> mtlDevice, const RHI::ShaderStageFunction* stageFunc)
+        id<MTLFunction> PipelineState::ExtractMtlFunction(id<MTLDevice> mtlDevice, const RHI::ShaderStageFunction* stageFunc, MTLFunctionConstantValues* constantValues)
         {
             // set the bound shader state settings
             if (stageFunc)
@@ -263,13 +317,39 @@ namespace AZ
                 AZStd::string_view strView(shaderFunction->GetSourceCode());
                 
                 id<MTLFunction> mtlFunction = nil;
-                mtlFunction = CompileShader(mtlDevice, strView, shaderFunction->GetEntryFunctionName(), shaderFunction);
+                mtlFunction = CompileShader(mtlDevice, strView, shaderFunction->GetEntryFunctionName(), shaderFunction, constantValues);
 
                 return mtlFunction;
             }
             
             return nil;
         }
+    
+        MTLFunctionConstantValues* PipelineState::CreateFunctionConstantsValues(const RHI::PipelineStateDescriptor& pipelineDescriptor) const
+        {
+            MTLFunctionConstantValues* constantValues = [[MTLFunctionConstantValues alloc] init];
+            for(const auto& specializationData : pipelineDescriptor.m_specializationData)
+            {
+                uint32_t value = specializationData.m_value.GetIndex();
+                MTLDataType type;
+                switch(specializationData.m_type)
+                {
+                    case RHI::SpecializationType::Integer:
+                        type = MTLDataTypeInt;
+                        break;
+                    case RHI::SpecializationType::Bool:
+                        type = MTLDataTypeBool;
+                        break;
+                    default:
+                        AZ_Assert(false, "Invalid specialization type %d", specializationData.m_type);
+                        type = MTLDataTypeInt;
+                        break;
+                }
+                [constantValues setConstantValue:&value type:type atIndex:specializationData.m_id];
+            }
+            return constantValues;
+        }
+    
         void PipelineState::ShutdownInternal()
         {
             if (m_graphicsPipelineState)

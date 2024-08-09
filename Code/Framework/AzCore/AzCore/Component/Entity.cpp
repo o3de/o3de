@@ -675,9 +675,17 @@ namespace AZ
 
     void Entity::OnNameChanged() const
     {
-        EntityBus::Event(GetId(), &EntityBus::Events::OnEntityNameChanged, m_name);
-        EntitySystemBus::Broadcast(&EntitySystemBus::Events::OnEntityNameChanged, GetId(), m_name);
+        // we only emit on these busses if the entity is active.  This prevents OnEntityNameChanged happening on inactive entities
+        // when for example, another thread is constructing a prefab.  It also prevents spam of these functions from situations where
+        // inactive entities are being constructed or modified in place, such as in undo/redo or scene compilation.
+        // In general, only active entities should have any bearing on the actual scene, such as showing up in the Scene Outliner.
+        if (m_state == State::Active)
+        {
+            EntityBus::Event(GetId(), &EntityBus::Events::OnEntityNameChanged, m_name);
+            EntitySystemBus::Broadcast(&EntitySystemBus::Events::OnEntityNameChanged, GetId(), m_name);
+        }
     }
+
 
     bool Entity::CanAddRemoveComponents() const
     {
@@ -705,7 +713,7 @@ namespace AZ
             for (int i = 0; i < classElement.GetNumSubElements(); ++i)
             {
                 AZ::SerializeContext::DataElementNode& elementNode = classElement.GetSubElement(i);
-                if (elementNode.GetName() == AZ_CRC("Id", 0xbf396750))
+                if (elementNode.GetName() == AZ_CRC_CE("Id"))
                 {
                     u64 oldEntityId;
                     if (elementNode.GetData(oldEntityId))
@@ -748,7 +756,7 @@ namespace AZ
             for (int i = 0; i < classElement.GetNumSubElements(); ++i)
             {
                 AZ::SerializeContext::DataElementNode& elementNode = classElement.GetSubElement(i);
-                if (elementNode.GetName() == AZ_CRC("m_refId", 0xb7853eda))
+                if (elementNode.GetName() == AZ_CRC_CE("m_refId"))
                 {
                     u64 oldEntityId;
                     if (elementNode.GetData(oldEntityId))
@@ -1331,7 +1339,7 @@ namespace AZ
             processInfo.m_processId = AZ::Platform::GetCurrentProcessId();
             processInfo.m_startTime = AZStd::GetTimeUTCMilliSecond();
             AZ::u32 signature = AZ::Crc32(&processInfo, sizeof(processInfo));
-            processSignature = Environment::CreateVariable<AZ::u32>(AZ_CRC("MachineProcessSignature", 0x47681763), signature);
+            processSignature = Environment::CreateVariable<AZ::u32>(AZ_CRC_CE("MachineProcessSignature"), signature);
         }
         return *processSignature;
     }
@@ -1363,7 +1371,7 @@ namespace AZ
 
         if (!counter)
         {
-            counter = Environment::CreateVariable<AZStd::atomic_uint>(AZ_CRC("EntityIdMonotonicCounter", 0xbe691c64), 1);
+            counter = Environment::CreateVariable<AZStd::atomic_uint>(AZ_CRC_CE("EntityIdMonotonicCounter"), 1);
         }
 
         AZ::u64 count = counter->fetch_add(1);

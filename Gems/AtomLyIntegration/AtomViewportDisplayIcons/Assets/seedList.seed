@@ -7,7 +7,7 @@
             "assetId": {
                 "guid": "{7B093FA3-A834-5061-9ADD-C6DCA97A4B60}"
             },
-            "platformFlags": 3,
+            "platformFlags": 255,
             "pathHint": "shaders/texturedicon.azshader"
         }
     ]

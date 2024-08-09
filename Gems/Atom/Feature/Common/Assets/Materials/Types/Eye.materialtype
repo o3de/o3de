@@ -71,6 +71,19 @@
                         }
                     },
                     {
+                        "name": "irisUvScale",
+                        "displayName": "Iris UV Scale",
+                        "description": "UV multiplier for the Iris Texture",
+                        "type": "float",
+                        "defaultValue": 1,
+                        "min": 0.0,
+                        "softMax": 10,
+                        "connection": {
+                            "type": "ShaderInput",
+                            "name": "m_irisUvScale"
+                        }
+                    },
+                    {
                         "name": "innerEyeIOR",
                         "displayName": "IOR Inner Eye",
                         "description": "Index of Refraction (IOR) of the watery fluid between the cornea and the iris (aqueous humor). Also referred as refraction strength/factor.",

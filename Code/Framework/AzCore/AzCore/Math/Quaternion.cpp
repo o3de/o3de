@@ -152,6 +152,11 @@ namespace AZ
                 AZ_Error("Script", false, "Quaternion.Set only supports Set(number), Set(number, number, number, number), Set(Vector3, number)");
             }
         }
+
+        Quaternion CreateFromValues(float x, float y, float z, float w)
+        {
+            return Quaternion(x, y, z, w);
+        }
     }
 
 
@@ -228,7 +233,7 @@ namespace AZ
                     Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)->
                 Method("InvertFast", &Quaternion::InvertFast)->
                     Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)->
-                Method("GetInverseFull", &Quaternion::GetInverseFull)->                
+                Method("GetInverseFull", &Quaternion::GetInverseFull)->
                 Method("InvertFull", &Quaternion::InvertFull)->
                     Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)->
                 Method("Dot", &Quaternion::Dot)->
@@ -256,7 +261,8 @@ namespace AZ
                 Method("CreateFromAxisAngle", &Quaternion::CreateFromAxisAngle)->
                 Method("CreateFromScaledAxisAngle", &Quaternion::CreateFromScaledAxisAngle)->
                 Method("CreateShortestArc", &Quaternion::CreateShortestArc)->
-                Method("CreateFromEulerAnglesDegrees", &Quaternion::CreateFromEulerAnglesDegrees)
+                Method("CreateFromEulerAnglesDegrees", &Quaternion::CreateFromEulerAnglesDegrees)->
+                Method("CreateFromValues", &Internal::CreateFromValues)
                 ;
         }
     }

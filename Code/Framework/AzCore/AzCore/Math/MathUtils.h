@@ -363,6 +363,22 @@ namespace AZ
         return a > b ? a : b;
     }
 
+    //! Return the gcd of 2 values.
+    //! \note we don't use names like clamp, min and max because many implementations define it as a macro.
+    template<typename T>
+    constexpr T GetGCD(T a, T b)
+    {
+        static_assert(std::is_integral<T>::value);
+        T c = a % b;
+        while (c != 0)
+        {
+            a = b;
+            b = c;
+            c = a % b;
+        }
+        return b;
+    }
+
     //! Returns a linear interpolation between 2 values.
     template<typename T>
     constexpr T Lerp(const T& a, const T& b, float t)

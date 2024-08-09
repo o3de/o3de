@@ -83,6 +83,8 @@ set(FILES
     Device/DeviceAttributeInterface.h
     Device/DeviceAttributeRAM.cpp
     Device/DeviceAttributeRAM.h
+    Device/DeviceAttributeGPUModel.cpp
+    Device/DeviceAttributeGPUModel.h
     Device/DeviceAttributesSystemComponent.cpp
     Device/DeviceAttributesSystemComponent.h
     Viewport/ViewportBus.h
@@ -110,7 +112,6 @@ set(FILES
     Viewport/ClickDetector.h
     Viewport/ClickDetector.cpp
     Viewport/CursorState.h
-    Viewport/DisplayContextRequestBus.h
     Entity/BehaviorEntity.cpp
     Entity/BehaviorEntity.h
     Entity/GameEntityContextComponent.cpp

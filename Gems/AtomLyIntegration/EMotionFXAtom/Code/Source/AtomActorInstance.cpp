@@ -617,6 +617,7 @@ namespace AZ::Render
                     }
                 }
             }
+            UpdateLightingChannelMask();
         }
     }
 
@@ -673,15 +674,15 @@ namespace AZ::Render
         {
             MeshHandleDescriptor meshDescriptor;
             meshDescriptor.m_modelAsset = m_skinnedMeshInstance->m_model->GetModelAsset();
-
+            meshDescriptor.m_customMaterials = ConvertToCustomMaterialMap(materials);
             meshDescriptor.m_isRayTracingEnabled = m_rayTracingEnabled;
             meshDescriptor.m_isAlwaysDynamic = true;
             meshDescriptor.m_excludeFromReflectionCubeMaps = true;
             meshDescriptor.m_isSkinnedMesh = true;
+            meshDescriptor.m_supportRayIntersection = true; // we need to keep the buffer data in order to initialize the actor.
 
-            m_meshHandle = AZStd::make_shared<MeshFeatureProcessorInterface::MeshHandle>(
-                m_meshFeatureProcessor->AcquireMesh(meshDescriptor, ConvertToCustomMaterialMap(materials)));
-            m_meshFeatureProcessor->ConnectObjectSrgCreatedEventHandler(*m_meshHandle, m_objectSrgCreatedHandler);
+            meshDescriptor.m_objectSrgCreatedHandler = m_objectSrgCreatedHandler;
+            m_meshHandle = AZStd::make_shared<MeshFeatureProcessorInterface::MeshHandle>(m_meshFeatureProcessor->AcquireMesh(meshDescriptor));
         }
 
         // If render proxies already exist, they will be auto-freed
@@ -813,6 +814,26 @@ namespace AZ::Render
     void AtomActorInstance::HandleObjectSrgCreate(const Data::Instance<RPI::ShaderResourceGroup>& objectSrg)
     {
         MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnObjectSrgCreated, objectSrg);
+    }
+
+    void AtomActorInstance::UpdateLightingChannelMask()
+    {
+        if (m_meshHandle)
+        {
+            const AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>>& objectSrgs =
+                m_meshFeatureProcessor->GetObjectSrgs(*m_meshHandle);
+            for (auto& objectSrg : objectSrgs)
+            {
+                RHI::ShaderInputConstantIndex lightingChannelMaskIndex =
+                    objectSrg->FindShaderInputConstantIndex(AZ::Name("m_lightingChannelMask"));
+                if (lightingChannelMaskIndex.IsValid())
+                {
+                    objectSrg->SetConstant(lightingChannelMaskIndex, m_actorInstance->GetLightingChannelMask());
+                }
+            }
+            m_meshFeatureProcessor->SetLightingChannelMask(*m_meshHandle, m_actorInstance->GetLightingChannelMask());
+            m_meshFeatureProcessor->QueueObjectSrgForCompile(*m_meshHandle);
+        }
     }
 
     const MeshFeatureProcessorInterface::MeshHandle* AtomActorInstance::GetMeshHandle() const

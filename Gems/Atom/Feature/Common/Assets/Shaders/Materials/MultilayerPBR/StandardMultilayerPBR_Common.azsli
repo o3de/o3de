@@ -121,7 +121,7 @@ option bool o_blendMask_isBound;
 // ------ Blend Utilities ----------------------------------------
 // This is mainly used to pass extra data to the GetDepth callback function during the parallax depth search.
 // But since we have it, we use it in some other functions as well rather than passing it around.
-static float3 s_blendMaskFromVertexStream;
+static real3 s_blendMaskFromVertexStream;
 
 // TODO: Consider storing the result of GetFinalLayerBlendSource() in a static similar to s_blendMaskFromVertexStream. That might give better performance when variants aren't used.
 
@@ -176,10 +176,12 @@ LayerBlendSource GetFinalLayerBlendSource()
 //! @param blendSource indicates where to get the blend mask from
 //! @param blendMaskUv for sampling a blend mask texture, if that's the blend source
 //! @param blendMaskVertexColors the vertex color values to use for the blend mask, if that's the blend source
+//! @param uvDxDy for sampling the textures if derivatives are customized
+//! @param customDerivatives whether or not using customized derivatives
 //! @return the blend mask values, or 0 if there is no blend mask
-float3 GetApplicableBlendMaskValues(LayerBlendSource blendSource, float2 blendMaskUv, float3 blendMaskVertexColors)
+real3 GetApplicableBlendMaskValues(LayerBlendSource blendSource, float2 blendMaskUv, float3 blendMaskVertexColors, float4 uvDxDy = float4(0.0, 0.0, 0.0, 0.0), bool customDerivatives = false)
 {
-    float3 blendSourceValues = float3(0,0,0);
+    real3 blendSourceValues = real3(0,0,0);
 
     if(o_layer2_enabled || o_layer3_enabled)
     {
@@ -187,11 +189,18 @@ float3 GetApplicableBlendMaskValues(LayerBlendSource blendSource, float2 blendMa
         {
             case LayerBlendSource::Displacement:
                 // In this case the blend mask has no effect, returning (1,1,1) disables any impact of the mask.
-                blendSourceValues = float3(1,1,1);
+                blendSourceValues = real3(1,1,1);
                 break;
             case LayerBlendSource::BlendMaskTexture:
             case LayerBlendSource::Displacement_With_BlendMaskTexture:
-                blendSourceValues = MaterialSrg::m_blendMaskTexture.Sample(MaterialSrg::m_sampler, blendMaskUv).rgb;
+                if (customDerivatives)
+                {
+                    blendSourceValues = real3(MaterialSrg::m_blendMaskTexture.SampleGrad(MaterialSrg::m_sampler, blendMaskUv, uvDxDy.xy, uvDxDy.zw).rgb);
+                }
+                else
+                {
+                    blendSourceValues = real3(MaterialSrg::m_blendMaskTexture.Sample(MaterialSrg::m_sampler, blendMaskUv).rgb);
+                }
                 break;
             case LayerBlendSource::BlendMaskVertexColors:
             case LayerBlendSource::Displacement_With_BlendMaskVertexColors:
@@ -216,13 +225,13 @@ float3 GetApplicableBlendMaskValues(LayerBlendSource blendSource, float2 blendMa
 }
 
 //! When dealing with masks for displacement-based blending, we sometimes need to push the value below the min displacement to make it disappear.
-float GetSubMinDisplacement()
+real GetSubMinDisplacement()
 {
-    return MaterialSrg::m_displacementMin - 0.001;
+    return real(MaterialSrg::m_displacementMin) - 0.001;
     //return MaterialSrg::m_displacementMin - max(MaterialSrg::m_displacementBlendDistance, 0.001);
 }
 
-float3 ApplyBlendMaskToDepthValues(float3 blendMaskValues, float3 layerDepthValues, float zeroMaskDisplacement);
+real3 ApplyBlendMaskToDepthValues(real3 blendMaskValues, real3 layerDepthValues, real zeroMaskDisplacement);
 
 //! Return the final blend weights to be used for rendering, based on the available data and configuration.
 //! @param blendSource - indicates where to get the blend mask from
@@ -236,9 +245,9 @@ float3 ApplyBlendMaskToDepthValues(float3 blendMaskValues, float3 layerDepthValu
 //!         layer1 = r
 //!         layer2 = g
 //!         layer3 = b
-float3 GetBlendWeights(LayerBlendSource blendSource, float3 blendMaskValues, float3 layerDepthValues, float layerDepthBlendDistance)
+real3 GetBlendWeights(LayerBlendSource blendSource, real3 blendMaskValues, real3 layerDepthValues, real layerDepthBlendDistance)
 {
-    float3 blendWeights;
+    real3 blendWeights;
     
     if(o_layer2_enabled || o_layer3_enabled)
     {
@@ -249,9 +258,9 @@ float3 GetBlendWeights(LayerBlendSource blendSource, float3 blendMaskValues, flo
             // Calculate the blend weights based on displacement values...
 
             // The inputs are depth values, but we change them to height values to make the code a bit more intuitive.
-            float3 layerHeightValues = -layerDepthValues;
+            real3 layerHeightValues = -layerDepthValues;
 
-            float highestPoint = layerHeightValues.x;
+            real highestPoint = layerHeightValues.x;
             if(o_layer2_enabled)
             {
                 highestPoint = max(highestPoint, layerHeightValues.y);
@@ -263,7 +272,7 @@ float3 GetBlendWeights(LayerBlendSource blendSource, float3 blendMaskValues, flo
             
             if(layerDepthBlendDistance > 0.0001)
             {
-                float lowestVisiblePoint = highestPoint - layerDepthBlendDistance;
+                real lowestVisiblePoint = highestPoint - layerDepthBlendDistance;
                 blendWeights = smoothstep(lowestVisiblePoint, highestPoint, layerHeightValues);
             
                 if(!o_layer2_enabled)
@@ -278,7 +287,7 @@ float3 GetBlendWeights(LayerBlendSource blendSource, float3 blendMaskValues, flo
             }
             else
             {
-                blendWeights = float3(layerHeightValues.x >= highestPoint ? 1.0 : 0.0,
+                blendWeights = real3(layerHeightValues.x >= highestPoint ? 1.0 : 0.0,
                                         layerHeightValues.y >= highestPoint && o_layer2_enabled ? 1.0 : 0.0,
                                         layerHeightValues.z >= highestPoint && o_layer3_enabled ? 1.0 : 0.0);
             }
@@ -308,7 +317,7 @@ float3 GetBlendWeights(LayerBlendSource blendSource, float3 blendMaskValues, flo
     }
     else
     {
-        blendWeights = float3(1,0,0);
+        blendWeights = real3(1,0,0);
     }
 
     return blendWeights;
@@ -319,11 +328,11 @@ float3 GetLayerDepthValues(float2 uv, float2 uv_ddx, float2 uv_ddy);
 //! Return the final blend weights to be used for rendering, based on the available data and configuration.
 //! Note this will sample the displacement maps in the case of LayerBlendSource::Displacement. If you have already
 //! the layer depth values, use the GetBlendWeights() overload that takes layerDepthValues instead.
-float3 GetBlendWeights(LayerBlendSource blendSource, float2 uv, float3 blendMaskVertexColors)
+real3 GetBlendWeights(LayerBlendSource blendSource, float2 uv, float3 blendMaskVertexColors, float4 uvDxDy, bool customDerivatives)
 {
-    float3 layerDepthValues = float3(0,0,0);
+    real3 layerDepthValues = real3(0,0,0);
     
-    float3 blendMaskValues = GetApplicableBlendMaskValues(blendSource, uv, blendMaskVertexColors);
+    real3 blendMaskValues = GetApplicableBlendMaskValues(blendSource, uv, blendMaskVertexColors, uvDxDy, customDerivatives);
 
     if(blendSource == LayerBlendSource::Displacement ||
        blendSource == LayerBlendSource::Displacement_With_BlendMaskTexture ||
@@ -333,28 +342,28 @@ float3 GetBlendWeights(LayerBlendSource blendSource, float2 uv, float3 blendMask
            LayerBlendSource::Displacement_With_BlendMaskTexture == blendSource || 
            LayerBlendSource::Displacement_With_BlendMaskVertexColors == blendSource;
            
-        layerDepthValues = GetLayerDepthValues(uv, ddx_fine(uv), ddy_fine(uv));
+        layerDepthValues = real3(GetLayerDepthValues(uv, ddx_fine(uv), ddy_fine(uv)));
 
         if(useBlendMask)
         {
             // Unlike the GetDepth() callback used for parallax, we don't just shift the values toward GetSubMinDisplacement(),
             // we shift extra to ensure that completely masked-out layers are not blended onto upper layers.
-            layerDepthValues = ApplyBlendMaskToDepthValues(blendMaskValues, layerDepthValues, GetSubMinDisplacement() - MaterialSrg::m_displacementBlendDistance);
+            layerDepthValues = ApplyBlendMaskToDepthValues(blendMaskValues, layerDepthValues, GetSubMinDisplacement() - real(MaterialSrg::m_displacementBlendDistance));
         }
     }
     
-    return GetBlendWeights(blendSource, blendMaskValues, layerDepthValues, MaterialSrg::m_displacementBlendDistance);
+    return GetBlendWeights(blendSource, blendMaskValues, layerDepthValues, real(MaterialSrg::m_displacementBlendDistance));
 }
 
-float BlendLayers(float layer1, float layer2, float layer3, float3 blendWeights)
+real BlendLayers(real layer1, real layer2, real layer3, real3 blendWeights)
 {
-    return dot(float3(layer1, layer2, layer3), blendWeights);
+    return dot(real3(layer1, layer2, layer3), blendWeights);
 }
-float2 BlendLayers(float2 layer1, float2 layer2, float2 layer3, float3 blendWeights)
+real2 BlendLayers(real2 layer1, real2 layer2, real2 layer3, real3 blendWeights)
 {
     return layer1 * blendWeights.r + layer2 * blendWeights.g + layer3 * blendWeights.b;
 }
-float3 BlendLayers(float3 layer1, float3 layer2, float3 layer3, float3 blendWeights)
+real3 BlendLayers(real3 layer1, real3 layer2, real3 layer3, real3 blendWeights)
 {
     return layer1 * blendWeights.r + layer2 * blendWeights.g + layer3 * blendWeights.b;
 }
@@ -429,7 +438,7 @@ float3 GetLayerDepthValues(float2 uv, float2 uv_ddx, float2 uv_ddy)
 //! @param layerDepthValues layer depth values as returned by GetLayerDepthValues()
 //! @param zeroMaskDisplacement the target displacement value that corresponds to a mask value of 0
 //! @return new layer depth values that have been adjusted according to the layerMaskValues
-float3 ApplyBlendMaskToDepthValues(float3 blendMaskValues, float3 layerDepthValues, float zeroMaskDisplacement)
+real3 ApplyBlendMaskToDepthValues(real3 blendMaskValues, real3 layerDepthValues, real zeroMaskDisplacement)
 {
     if(o_layer2_enabled || o_layer3_enabled)
     {        
@@ -437,13 +446,13 @@ float3 ApplyBlendMaskToDepthValues(float3 blendMaskValues, float3 layerDepthValu
 
         if(o_layer2_enabled)
         {
-            float dropoffRange = MaterialSrg::m_layer2_m_heightmapOffset - zeroMaskDisplacement;
+            real dropoffRange = real(MaterialSrg::m_layer2_m_heightmapOffset) - zeroMaskDisplacement;
             layerDepthValues.g += dropoffRange * (1-blendMaskValues.r);
         }
         
         if(o_layer3_enabled)
         {
-            float dropoffRange = MaterialSrg::m_layer3_m_heightmapOffset - zeroMaskDisplacement;
+            real dropoffRange = real(MaterialSrg::m_layer3_m_heightmapOffset) - zeroMaskDisplacement;
             layerDepthValues.b += dropoffRange * (1-blendMaskValues.g);
         }
     }
@@ -456,12 +465,12 @@ DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
 {
     LayerBlendSource blendSource = GetFinalLayerBlendSource();
 
-    float3 layerDepthValues = GetLayerDepthValues(uv, uv_ddx, uv_ddy);
+    real3 layerDepthValues = real3(GetLayerDepthValues(uv, uv_ddx, uv_ddy));
     
     // Note, when the blend source uses the blend mask from the vertex colors, parallax will not be able to blend correctly between layers. It will end up using the same blend mask values
     // for every UV position when searching for the intersection. This leads to smearing artifacts at the transition point, but these won't be as noticeable if
     // you have a small depth factor relative to the size of the blend transition.
-    float3 blendMaskValues = GetApplicableBlendMaskValues(blendSource, uv, s_blendMaskFromVertexStream);
+    real3 blendMaskValues = GetApplicableBlendMaskValues(blendSource, uv, s_blendMaskFromVertexStream);
         
     bool useBlendMask = 
        LayerBlendSource::Displacement_With_BlendMaskTexture == blendSource || 
@@ -478,10 +487,10 @@ DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
     // When blending the depth together, we don't use MaterialSrg::m_displacementBlendDistance. The intention is that m_displacementBlendDistance
     // is for transitioning the appearance of the surface itself, but we still want a distinct change in the heightmap. If someday we want to 
     // support smoothly blending the depth as well, there is a bit more work to do to get it to play nice with the blend mask code in GetLayerDepthValues().
-    float layerDepthBlendDistance = 0.0f;
-    float3 blendWeightValues = GetBlendWeights(blendSource, blendMaskValues, layerDepthValues, layerDepthBlendDistance);
+    real layerDepthBlendDistance = 0.0;
+    real3 blendWeightValues = GetBlendWeights(blendSource, blendMaskValues, layerDepthValues, layerDepthBlendDistance);
     
-    float depth = BlendLayers(layerDepthValues.r, layerDepthValues.g, layerDepthValues.b, blendWeightValues);
+    real depth = BlendLayers(layerDepthValues.r, layerDepthValues.g, layerDepthValues.b, blendWeightValues);
 
-    return DepthResultAbsolute(depth);
+    return DepthResultAbsolute(float(depth));
 }

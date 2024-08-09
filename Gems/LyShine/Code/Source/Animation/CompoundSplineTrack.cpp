@@ -354,8 +354,9 @@ void UiCompoundSplineTrack::SetValue(float time, const AZ::Color& value, bool bD
 }
 
 //////////////////////////////////////////////////////////////////////////
-void UiCompoundSplineTrack::OffsetKeyPosition(const Vec3& offset)
+void UiCompoundSplineTrack::OffsetKeyPosition(const AZ::Vector3& offset)
 {
+    AZ_Assert(m_nDimensions == 3, "expect 3 subtracks found %d", m_nDimensions);
     if (m_nDimensions == 3)
     {
         for (int i = 0; i < 3; i++)
@@ -368,14 +369,10 @@ void UiCompoundSplineTrack::OffsetKeyPosition(const Vec3& offset)
                 float time = pSubTrack->GetKeyTime(k);
                 float value = 0;
                 pSubTrack->GetValue(time, value);
-                value = value + offset[i];
+                value = value + offset.GetElement(i);
                 pSubTrack->SetValue(time, value);
             }
         }
-    }
-    else
-    {
-        assert(0);
     }
 }
 

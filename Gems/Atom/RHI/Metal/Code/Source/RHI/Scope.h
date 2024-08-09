@@ -49,8 +49,7 @@ namespace AZ
 
             void End(
                 CommandList& commandList,
-                AZ::u32 commandListIndex,
-                AZ::u32 commandListCount) const;
+                bool signalFencesForAliasedResources) const;
             
             MTLRenderPassDescriptor* GetRenderPassDescriptor() const;
             
@@ -73,11 +72,16 @@ namespace AZ
             //! Wait on all the transient resource fences associated with this scope
             void WaitOnAllResourceFences(CommandList& commandList) const;
             void WaitOnAllResourceFences(id <MTLCommandBuffer> mtlCommandBuffer) const;
+            
+            //! Accesors for the information cached in Compile phase
+            bool IsWritingToSwapChain() const;
+            bool IsRequestingSwapChain() const;
+            
         private:
             
             struct QueryPoolAttachment
             {
-                RHI::Ptr<QueryPool> m_pool;
+                RHI::Ptr<RHI::QueryPool> m_pool;
                 RHI::Interval m_interval;
                 RHI::ScopeAttachmentAccess m_access;
             };
@@ -88,7 +92,7 @@ namespace AZ
             // RHI::Scope
             void InitInternal() override;
             void DeactivateInternal() override;
-            void CompileInternal(RHI::Device& device) override;
+            void CompileInternal() override;
             void AddQueryPoolUse(RHI::Ptr<RHI::QueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access) override;
             //////////////////////////////////////////////////////////////////////////
             
@@ -127,7 +131,10 @@ namespace AZ
 
             AZStd::vector<QueryPoolAttachment> m_queryPoolAttachments;
             
-            /// Used to check if the current scope is writing to a swapchain texture
+            /// Used to check if the current scope is requesting to a swapchain texture
+            bool m_isRequestingSwapChainDrawable = false;
+            
+            /// Used to check if the current scope is writing the swapchain texture
             bool m_isWritingToSwapChainScope = false;
             
             /// Used to check if the current scope is a swapchain scope and the next scope will be used to capture the current frame

@@ -104,8 +104,13 @@ namespace AZ
 
             //! Check if the material slot contains an explicit material asset override
             //! @param materialAssignmentId ID of material slot.
-            //! @returns true if a valid material asset has been assigned. 
+            //! @returns true if a valid material asset has been assigned.
             virtual bool IsMaterialAssetIdOverridden(const MaterialAssignmentId& materialAssignmentId) const = 0;
+
+            //! Check if the material slot contains any overridden property values
+            //! @param materialAssignmentId ID of material slot.
+            //! @returns true if any property values have been overridden on this material slot.
+            virtual bool HasPropertiesOverridden(const MaterialAssignmentId& materialAssignmentId) const = 0;
 
             //! Set a material property override value wrapped by an AZStd::any
             //! @param materialAssignmentId ID of material slot.

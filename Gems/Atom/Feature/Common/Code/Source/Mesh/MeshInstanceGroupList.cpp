@@ -8,10 +8,72 @@
 
 #include <Mesh/MeshInstanceGroupList.h>
 #include <AzCore/std/numeric.h>
+#include <Atom/Feature/Mesh/MeshFeatureProcessor.h> 
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
 namespace AZ::Render
 {
+    bool MeshInstanceGroupData::UpdateDrawPacket(const RPI::Scene& parentScene, bool forceUpdate)
+    {
+        if (m_drawPacket.Update(parentScene, forceUpdate))
+        {
+            // Clear any cached draw packets, since they need to be re-created
+            m_perViewDrawPackets.clear();
+            for (auto modelDataInstance : m_associatedInstances)
+            {
+                modelDataInstance->HandleDrawPacketUpdate();
+            }
+            return true;
+        }
+        return false;
+    }
+
+    bool MeshInstanceGroupData::UpdateShaderOptionFlags()
+    {
+        // Shader options are either set or being unspecified (which means use the global value).
+        // We only set a shader option if ALL instances have the same value. Otherwise, we leave it unspecified.
+        uint32_t newShaderOptionFlagMask = ~0u;      // Defaults to all shaders options being specified. 
+                                                    // We only disable one if we find a different between the instances.
+        uint32_t newShaderOptionFlags = m_shaderOptionFlags;
+        if (auto it = m_associatedInstances.begin(); it != m_associatedInstances.end())
+        {
+            newShaderOptionFlags = (*it)->GetCullable().m_shaderOptionFlags;
+            uint32_t lastShaderOptionFlags = newShaderOptionFlags;
+            for (++it; it != m_associatedInstances.end(); ++it)
+            {
+                ModelDataInstance* modelDataInstance = *it;
+                // If the shader option flag of different intances are different, the mask for the flag is 0, which means the flag is
+                // unspecified.
+                newShaderOptionFlagMask &= ~(lastShaderOptionFlags ^ modelDataInstance->GetCullable().m_shaderOptionFlags);
+                // if the option flag has same value, keep the value.
+                lastShaderOptionFlags = modelDataInstance->GetCullable().m_shaderOptionFlags;
+                newShaderOptionFlags &= lastShaderOptionFlags;                
+            }
+        }
+
+        // return ture if the shader option flags or mask changed. 
+        if (newShaderOptionFlags != m_shaderOptionFlags || newShaderOptionFlagMask != m_shaderOptionFlagMask)
+        {
+            m_shaderOptionFlags = newShaderOptionFlags;
+            m_shaderOptionFlagMask = newShaderOptionFlagMask;
+            return true;
+        }
+        return false;
+    }
+
+    void MeshInstanceGroupData::AddAssociatedInstance(ModelDataInstance* instance)
+    {
+        AZStd::scoped_lock<AZStd::mutex> scopedLock(m_eventLock);
+        m_associatedInstances.insert(instance);
+
+    }
+
+    void MeshInstanceGroupData::RemoveAssociatedInstance(ModelDataInstance* instance)
+    {
+        AZStd::scoped_lock<AZStd::mutex> scopedLock(m_eventLock);
+        m_associatedInstances.erase(instance);
+    }
+
     MeshInstanceGroupList::InsertResult MeshInstanceGroupList::Add(const MeshInstanceGroupKey& key)
     {
         // It is not safe to have multiple threads Add and/or Remove at the same time

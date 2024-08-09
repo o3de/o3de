@@ -46,12 +46,12 @@ namespace AzToolsFramework
 
         void EditorEntityIconComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("EditorEntityIconService", 0x94dff5d7));
+            services.push_back(AZ_CRC_CE("EditorEntityIconService"));
         }
 
         void EditorEntityIconComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("EditorEntityIconService", 0x94dff5d7));
+            services.push_back(AZ_CRC_CE("EditorEntityIconService"));
         }
 
         EditorEntityIconComponent::~EditorEntityIconComponent()

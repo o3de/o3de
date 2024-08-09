@@ -18,6 +18,7 @@
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/PrefabUndoCache.h>
+#include <AzCore/Math/Transform.h>
 
 class QString;
 
@@ -39,6 +40,8 @@ namespace AzToolsFramework
             AZ_CLASS_ALLOCATOR(PrefabPublicHandler, AZ::SystemAllocator);
             AZ_RTTI(PrefabPublicHandler, "{35802943-6B60-430F-9DED-075E3A576A25}", PrefabPublicInterface);
 
+            PrefabPublicHandler();
+
             void RegisterPrefabPublicHandlerInterface();
             void UnregisterPrefabPublicHandlerInterface();
 
@@ -47,7 +50,10 @@ namespace AzToolsFramework
             CreatePrefabResult CreatePrefabAndSaveToDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
             CreatePrefabResult CreatePrefabInMemory(const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
             InstantiatePrefabResult InstantiatePrefab(
+                AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Transform& transform) override;
+            InstantiatePrefabResult InstantiatePrefab(
                 AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Vector3& position) override;
+
             PrefabOperationResult SavePrefab(AZ::IO::Path filePath) override;
             PrefabEntityResult CreateEntity(AZ::EntityId parentId, const AZ::Vector3& position) override;
             
@@ -67,8 +73,11 @@ namespace AzToolsFramework
             DuplicatePrefabResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) override;
 
             PrefabOperationResult DetachPrefab(const AZ::EntityId& containerEntityId) override;
+            PrefabOperationResult DetachPrefabAndRemoveContainerEntity(const AZ::EntityId& containerEntityId) override;
 
         private:
+            PrefabOperationResult DetachPrefabImpl(const AZ::EntityId& containerEntityId, bool keepContainerEntity);
+
             PrefabOperationResult DeleteFromInstance(const EntityIdList& entityIds);
             PrefabOperationResult RetrieveAndSortPrefabEntitiesAndInstances(
                 const EntityList& inputEntities,
@@ -212,6 +221,8 @@ namespace AzToolsFramework
             PrefabFocusHandler m_prefabFocusHandler;
 
             uint64_t m_newEntityCounter = 1;
+
+            bool m_isRunningInEditor = true;
         };
     } // namespace Prefab
 } // namespace AzToolsFramework

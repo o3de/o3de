@@ -7,14 +7,16 @@
  */
 
 #include <AzCore/Asset/AssetTypeInfoBus.h>
+#include <AzQtComponents/Components/Widgets/CardHeader.h>
+#include <AzQtComponents/Components/Widgets/SegmentBar.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntityInspectorWidget.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
-#include <AzQtComponents/Components/Widgets/CardHeader.h>
-#include <AzQtComponents/Components/Widgets/SegmentBar.h>
+#include <QAction>
 #include <QDesktopServices>
 #include <QDir>
+#include <QMenu>
 #include <QPushButton>
 #include <QSplitter>
 #include <QUrl>
@@ -25,6 +27,95 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
+        class DependentAssetTreeWidgetItem : public QTreeWidgetItem
+        {
+        public:
+            DependentAssetTreeWidgetItem(const AssetBrowserEntry* assetBrowserEntry, QTreeWidgetItem* parent)
+                : m_assetBrowserEntry(assetBrowserEntry)
+                , QTreeWidgetItem(parent)
+            {}
+
+            explicit DependentAssetTreeWidgetItem(QTreeWidget* treeView)
+                : m_assetBrowserEntry(nullptr)
+                , QTreeWidgetItem(treeView)
+            {}
+
+            const AssetBrowserEntry* m_assetBrowserEntry;
+        };
+
+        class DependentAssetTreeWidget : public QTreeWidget
+        {
+        public:
+            explicit DependentAssetTreeWidget(QWidget* parent = nullptr)
+                : QTreeWidget(parent)
+            {
+                setContextMenuPolicy(Qt::CustomContextMenu);
+
+                connect(this, &QTreeWidget::customContextMenuRequested, this, &DependentAssetTreeWidget::OnContextMenu);
+            }
+
+            ~DependentAssetTreeWidget() override = default;
+
+        private:
+            void mouseDoubleClickEvent([[maybe_unused]] QMouseEvent* ev) override
+            {
+                if (const AssetBrowserEntry* assetBrowserEntry = GetSelectedAssetBrowserEntry())
+                {
+                    BrowseToAsset(*assetBrowserEntry);
+                }
+            }
+
+            void OnContextMenu(const QPoint& point)
+            {
+                const AssetBrowserEntry* assetBrowserEntry = GetSelectedAssetBrowserEntry();
+                if (!assetBrowserEntry)
+                {
+                    return;
+                }
+
+                QMenu menu(this);
+                menu.addAction(
+                    QObject::tr("Browse to asset"),
+                    [assetBrowserEntry]()
+                    {
+                        BrowseToAsset(*assetBrowserEntry);
+                    });
+                menu.exec(mapToGlobal(point));
+            }
+
+            const AssetBrowserEntry* GetSelectedAssetBrowserEntry() const
+            {
+                const QModelIndexList selection = selectedIndexes();
+                if (selection.isEmpty())
+                {
+                    return nullptr;
+                }
+
+                const auto* item = static_cast<const DependentAssetTreeWidgetItem*>(selection.first().internalPointer());
+                return item->m_assetBrowserEntry;
+            }
+
+            static void BrowseToAsset(const AssetBrowserEntry& assetBrowserEntry)
+            {
+                // Product asset path is located in the cached folder not discoverable by asset browser
+                // so we resolve the source path instead
+                auto path = assetBrowserEntry.GetFullPath();
+                if (assetBrowserEntry.GetEntryType() == AssetBrowserEntry::AssetEntryType::Product)
+                {
+                    const auto* productItem = static_cast<const ProductAssetBrowserEntry*>(&assetBrowserEntry);
+                    if (const SourceAssetBrowserEntry* source = SourceAssetBrowserEntry::GetSourceByUuid(productItem->GetAssetId().m_guid))
+                    {
+                        path = source->GetFullPath();
+                    }
+                }
+
+                AssetBrowserInteractionNotificationBus::Broadcast(
+                        &AssetBrowserInteractionNotificationBus::Events::SelectAsset,
+                        nullptr,
+                        path);
+            }
+        };
+
         AssetBrowserEntityInspectorWidget::AssetBrowserEntityInspectorWidget(QWidget* parent)
             : QWidget(parent)
             , m_databaseConnection(aznew AssetDatabase::AssetDatabaseConnection)
@@ -107,7 +198,7 @@ namespace AzToolsFramework
             cardLayout->addItem(bottomSpacer);
 
             // Create a tree view for the data inside the depends assets card
-            m_dependentProducts = new QTreeWidget(m_dependentAssetsCard);
+            m_dependentProducts = new DependentAssetTreeWidget(m_dependentAssetsCard);
             m_dependentProducts->setColumnCount(1);
             m_dependentProducts->setHeaderHidden(true);
             m_dependentProducts->setMinimumHeight(0);
@@ -368,7 +459,7 @@ namespace AzToolsFramework
                 m_dependentAssetsCard->show();
                 m_dependentAssetsCard->setExpanded(true);
                 PopulateSourceDependencies(sourceEntry, productChildren);
-                const auto headerItem = new QTreeWidgetItem(m_dependentProducts);
+                const auto headerItem = new DependentAssetTreeWidgetItem(m_dependentProducts);
                 headerItem->setText(0, QObject::tr("Product Assets"));
                 headerItem->setFont(0, m_headerFont);
                 headerItem->setExpanded(true);
@@ -538,7 +629,7 @@ namespace AzToolsFramework
         {
             if (!sourceUuids.empty())
             {
-                const auto headerItem = new QTreeWidgetItem(m_dependentProducts);
+                const auto headerItem = new DependentAssetTreeWidgetItem(m_dependentProducts);
                 headerItem->setFont(0, m_headerFont);
                 headerItem->setExpanded(false);
                 if (isOutgoing)
@@ -563,7 +654,7 @@ namespace AzToolsFramework
         {
             if (!dependencyUuids.empty())
             {
-                const auto headerItem = new QTreeWidgetItem(m_dependentProducts);
+                const auto headerItem = new DependentAssetTreeWidgetItem(m_dependentProducts);
                 headerItem->setFont(0, m_headerFont);
                 headerItem->setExpanded(true);
                 if (isOutgoing)
@@ -585,11 +676,12 @@ namespace AzToolsFramework
             }
         }
 
-        void AssetBrowserEntityInspectorWidget::AddAssetBrowserEntryToTree(const AssetBrowserEntry* entry, QTreeWidgetItem* headerItem)
+        void AssetBrowserEntityInspectorWidget::AddAssetBrowserEntryToTree(
+            const AssetBrowserEntry* entry, DependentAssetTreeWidgetItem* headerItem)
         {
             if (entry)
             {
-                const auto item = new QTreeWidgetItem(headerItem);
+                const auto item = new DependentAssetTreeWidgetItem(entry, headerItem);
                 const auto entryName = QString::fromUtf8(entry->GetName().c_str(), static_cast<int>(entry->GetName().size()));
                 item->setText(0, entryName);
                 item->setToolTip(0, entryName);

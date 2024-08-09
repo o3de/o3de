@@ -18,7 +18,7 @@ namespace AZ::Vulkan
 {
     void FrameGraphExecuteGroupSecondary::Init(
         Device& device,
-        const Scope& scope,
+        Scope& scope,
         uint32_t commandListCount,
         RHI::JobPolicy globalJobPolicy)
     {
@@ -27,7 +27,7 @@ namespace AZ::Vulkan
         m_secondaryCommands.resize(commandListCount);
 
         m_workRequest.m_swapChainsToPresent.reserve(scope.GetSwapChainsToPresent().size());
-        for (RHI::SwapChain* swapchainBase : scope.GetSwapChainsToPresent())
+        for (RHI::DeviceSwapChain* swapchainBase : scope.GetSwapChainsToPresent())
         {
             m_workRequest.m_swapChainsToPresent.emplace_back(static_cast<SwapChain*>(swapchainBase));
         }
@@ -35,9 +35,11 @@ namespace AZ::Vulkan
         m_workRequest.m_semaphoresToWait = scope.GetWaitSemaphores();
         m_workRequest.m_semaphoresToSignal = scope.GetSignalSemaphores();
         m_workRequest.m_fencesToSignal = scope.GetSignalFences();
-            
+        m_workRequest.m_fencesToWaitFor = scope.GetWaitFences();
+
         InitRequest request;
         request.m_scopeId = scope.GetId();
+        request.m_deviceIndex = scope.GetDeviceIndex();
         request.m_submitCount = scope.GetEstimatedItemCount();
         request.m_commandLists = reinterpret_cast<RHI::CommandList*const*>(m_secondaryCommands.data());
         request.m_commandListCount = commandListCount;
@@ -85,6 +87,11 @@ namespace AZ::Vulkan
     AZStd::span<const Scope* const> FrameGraphExecuteGroupSecondary::GetScopes() const
     {
         return AZStd::span<const Scope* const>(&m_scope, 1);
+    }
+
+    AZStd::span<Scope* const> FrameGraphExecuteGroupSecondary::GetScopes()
+    {
+        return AZStd::span<Scope* const>(&m_scope, 1);
     }
 
     AZStd::span<const RHI::Ptr<CommandList>> FrameGraphExecuteGroupSecondary::GetCommandLists() const

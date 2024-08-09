@@ -786,6 +786,7 @@ namespace AZ
             
                 // Collect transient views from each feature processor
                 FeatureProcessor::PrepareViewsPacket prepareViewPacket;
+                prepareViewPacket.m_persistentViews = persistentViews;
                 AZStd::vector<AZStd::pair<PipelineViewTag, ViewPtr>> transientViews;
                 for (auto& fp : m_featureProcessors)
                 {

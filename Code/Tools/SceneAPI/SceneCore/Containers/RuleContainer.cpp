@@ -94,11 +94,11 @@ namespace AZ
                 if (editContext)
                 {
                     editContext->Class<RuleContainer>("Rule Container", "Description.")
-                        ->DataElement(AZ_CRC("ManifestVector", 0x895aa9aa), &RuleContainer::m_rules, "", "Add or remove entries to fine-tune source file processing.")
+                        ->DataElement(AZ_CRC_CE("ManifestVector"), &RuleContainer::m_rules, "", "Add or remove entries to fine-tune source file processing.")
                             ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
-                            ->Attribute(AZ_CRC("CollectionName", 0xbbc1c898), "Modifiers")
-                            ->Attribute(AZ_CRC("ObjectTypeName", 0x6559e0c0), "Modifier")
-                            ->ElementAttribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_Hide", 0x32ab90f7));
+                            ->Attribute(AZ_CRC_CE("CollectionName"), "Modifiers")
+                            ->Attribute(AZ_CRC_CE("ObjectTypeName"), "Modifier")
+                            ->ElementAttribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_Hide"));
                 }
             }
 
@@ -107,7 +107,7 @@ namespace AZ
             // groups now have a RuleContainer as a member. This version converter converts from groups holding the vector
             bool RuleContainer::VectorToRuleContainerConverter(SerializeContext& context, SerializeContext::DataElementNode& classElement)
             {
-                int elementIndex = classElement.FindElement(AZ_CRC("rules", 0x899a993c));
+                int elementIndex = classElement.FindElement(AZ_CRC_CE("rules"));
                 if (elementIndex >= 0)
                 {
                     AZ::SerializeContext::DataElementNode& rulesElement = classElement.GetSubElement(elementIndex);

@@ -100,7 +100,7 @@ namespace AZ::RHI
         if (BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context))
         {
             behaviorContext->Class<Handle<T, NamespaceType>>()
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "RHI")
                 ->Attribute(AZ::Script::Attributes::Module, "rhi")
                 ->Method("IsValid", &Handle<T, NamespaceType>::IsValid)

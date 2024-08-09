@@ -51,7 +51,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<RenderPassData, PassData>()
-                    ->Version(1)
+                    ->Version(2)
                     ->Field("BindViewSrg", &RenderPassData::m_bindViewSrg)
                     ->Field("ShaderDataMappings", &RenderPassData::m_mappings);
             }
@@ -92,9 +92,12 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<PassData>()
-                    ->Version(1)
+                    ->Version(3)
+
+                    ->Field("DeviceIndex", &PassData::m_deviceIndex)
                     ->Field("PipelineViewTag", &PassData::m_pipelineViewTag)
-                    ->Field("PipelineGlobalConnections", &PassData::m_pipelineGlobalConnections);
+                    ->Field("PipelineGlobalConnections", &PassData::m_pipelineGlobalConnections)
+                    ->Field("MergeChildrenAsSubpasses", &PassData::m_mergeChildrenAsSubpasses);
             }
         }
 
@@ -149,9 +152,10 @@ namespace AZ
                     ->Field("ImageSourceOrigin", &CopyPassData::m_imageSourceOrigin)
                     ->Field("ImageDestinationSubresource", &CopyPassData::m_imageDestinationSubresource)
                     ->Field("ImageDestinationOrigin", &CopyPassData::m_imageDestinationOrigin)
+                    ->Field("SourceDeviceIndex", &CopyPassData::m_sourceDeviceIndex)
+                    ->Field("DestinationDeviceIndex", &CopyPassData::m_destinationDeviceIndex)
                     ->Field("CloneInput", &CopyPassData::m_cloneInput)
-                    ->Field("UseCopyQueue", &CopyPassData::m_useCopyQueue)
-                    ;
+                    ->Field("UseCopyQueue", &CopyPassData::m_useCopyQueue);
             }
         }
 

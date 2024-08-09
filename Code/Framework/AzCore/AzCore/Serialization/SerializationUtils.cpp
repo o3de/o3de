@@ -527,6 +527,32 @@ namespace AZ::Utils
         return ptr;
     }
 
+    bool InspectSerializedFile(
+        const char* filePath,
+        SerializeContext* sc,
+        const ObjectStream::ClassReadyCB& classCallback,
+        Data::AssetFilterCB assetFilterCallback)
+    {
+        AZ::IO::FileIOStream stream(filePath, AZ::IO::OpenMode::ModeRead);
+        if (!stream.IsOpen())
+        {
+            AZ_Error("Verify", false, "File '%s' could not be opened.", filePath);
+            return false;
+        }
+
+        ObjectStream::FilterDescriptor filter;
+        // By default, never load dependencies. That's another file that would need to be processed
+        // separately from this one.
+        filter.m_assetCB = assetFilterCallback;
+        if (!ObjectStream::LoadBlocking(&stream, *sc, classCallback, filter))
+        {
+            AZ_Printf("Verify", "Failed to deserialize '%s'\n", filePath);
+            return false;
+        }
+
+        return true;
+    }
+
     AZ::Attribute* FindEditOrSerializeContextAttribute(AZ::AttributeId attributeId, const AZ::SerializeContext::ClassData* classData,
         const AZ::SerializeContext::ClassElement* classElement, const AZ::Edit::ClassData* editClassData, const AZ::Edit::ElementData* elementEditData)
     {
@@ -598,4 +624,5 @@ namespace AZ::Utils
         const AZ::Edit::ElementData* elementEditData = classElement != nullptr ? classElement->m_editData : nullptr;
         return FindEditOrSerializeContextAttribute(attributeId, classData, classElement, editClassData, elementEditData);
     }
+
 } // namespace AZ::Utils

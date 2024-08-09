@@ -83,6 +83,8 @@ namespace AzToolsFramework
         void SetFilterString(AZStd::string filterString);
         void InvalidateAll(const char* filter = nullptr);
         void QueuePropertyEditorInvalidation(PropertyModificationRefreshLevel refreshLevel);
+        void QueuePropertyEditorInvalidationForComponent(AZ::EntityComponentIdPair entityComponentIdPair, PropertyModificationRefreshLevel refreshLevel);
+        
         void CancelQueuedRefresh();
         void PreventRefresh(bool shouldPrevent);
         void contextMenuEvent(QContextMenuEvent *event) override;
@@ -155,8 +157,8 @@ namespace AzToolsFramework
         AzQtComponents::CardNotification* CreateNotificationForConflictingComponents(const QString& message, const AZ::Entity::ComponentArrayType& conflictingComponents);
         AzQtComponents::CardNotification* CreateNotificationForMissingComponents(
             const QString& message,
-            AZStd::span<const AZ::ComponentServiceType> services,
-            AZStd::span<const AZ::ComponentServiceType> incompatibleServices);
+            const AZ::ComponentDescriptor::DependencyArrayType& services,
+            const AZ::ComponentDescriptor::DependencyArrayType& incompatibleServices);
 
         AzQtComponents::CardNotification* CreateNotificationForWarningComponents(const QString& message);
 

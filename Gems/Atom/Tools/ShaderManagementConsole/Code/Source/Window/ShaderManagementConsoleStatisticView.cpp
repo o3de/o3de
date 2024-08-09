@@ -117,7 +117,7 @@ namespace ShaderManagementConsole
         ShaderManagementConsoleRequestBus::BroadcastResult(
             materialAssetIdList, &ShaderManagementConsoleRequestBus::Events::GetAllMaterialAssetIds);
 
-        QString materialList = "";
+        QString materialList;
 
         QProgressDialog progressDialog(AzToolsFramework::GetActiveWindow());
         progressDialog.setWindowModality(Qt::WindowModal);
@@ -167,7 +167,7 @@ namespace ShaderManagementConsole
 
         progressDialog.close();
 
-        if (materialList != "")
+        if (!materialList.isEmpty())
         {
             QMessageBox msgBox(AzToolsFramework::GetActiveWindow());
             QString message = QString(tr("%2 materials used %1. Show details for the complete list."))

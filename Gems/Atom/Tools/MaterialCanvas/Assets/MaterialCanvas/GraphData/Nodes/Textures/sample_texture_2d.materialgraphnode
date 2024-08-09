@@ -9,8 +9,11 @@
         "titlePaletteName": "TexturingNodeTitlePalette",
         "description": "Look up a value on a 2d texture",
         "settings": {
+            "includePaths": [
+                "Atom/Features/ColorManagement/TransformColor.azsli"
+            ],
             "instructions": [
-                "SLOTTYPE(outColor) outColor = MaterialSrg::inValue.Sample(MaterialSrg::inSampler, (float2)inUV);"
+                "SLOTTYPE(outColor) outColor = TransformColor4(MaterialSrg::inValue.Sample(MaterialSrg::inSampler, (float2)inUV), inColorSpaceFrom, inColorSpaceTo);"
             ]
         },
         "propertySlots": [
@@ -53,6 +56,58 @@
                     ],
                     "materialPropertySrgMember": [
                         "STANDARD_SRG_MEMBER"
+                    ]
+                }
+            },
+            {
+                "name": "inColorSpaceFrom",
+                "displayName": "Color Space From",
+                "description": "Indicates the source color space of the texture being sampled.",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": "ColorSpaceId::LinearSRGB"
+                },
+                "enumValues": [
+                    "ColorSpaceId::SRGB",
+                    "ColorSpaceId::LinearSRGB",
+                    "ColorSpaceId::ACEScc",
+                    "ColorSpaceId::ACEScg",
+                    "ColorSpaceId::ACES2065",
+                    "ColorSpaceId::XYZ"
+                ],
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "settings": {
+                    "instructions": [
+                        "const ColorSpaceId SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inColorSpaceTo",
+                "displayName": "Color Space To",
+                "description": "Indicates the target color space of the color samples from the texture.",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": "ColorSpaceId::ACEScg"
+                },
+                "enumValues": [
+                    "ColorSpaceId::SRGB",
+                    "ColorSpaceId::LinearSRGB",
+                    "ColorSpaceId::ACEScc",
+                    "ColorSpaceId::ACEScg",
+                    "ColorSpaceId::ACES2065",
+                    "ColorSpaceId::XYZ"
+                ],
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "settings": {
+                    "instructions": [
+                        "const ColorSpaceId SLOTNAME = SLOTVALUE;"
                     ]
                 }
             },

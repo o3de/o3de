@@ -71,13 +71,13 @@ namespace BarrierInput
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void BarrierInputSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("BarrierInputService"));
+        provided.push_back(AZ_CRC_CE("BarrierInputService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void BarrierInputSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("BarrierInputService"));
+        incompatible.push_back(AZ_CRC_CE("BarrierInputService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -23,6 +23,10 @@
             "isTemplated": false
         },
         {
+            "file": ".command_settings",
+            "isTemplated": false
+        },
+        {
             "file": "CMakeLists.txt",
             "isTemplated": true
         },
@@ -139,6 +143,10 @@
             "isTemplated": true
         },
         {
+            "file": "Levels/DefaultLevel/DefaultLevel.prefab",
+            "isTemplated": false
+        },
+        {
             "file": "Platform/Android/android_project.cmake",
             "isTemplated": true
         },
@@ -183,7 +191,11 @@
             "isTemplated": true
         },
         {
-            "file": "Resources/LegacyLogoLauncher.bmp",
+            "file": "Resources/Splash.bmp",
+            "isTemplated": false
+        },
+        {
+            "file": "Registry/load_level.setreg",
             "isTemplated": false
         },
         {
@@ -195,48 +207,48 @@
             "isTemplated": false
         },
         {
-            "file": "Resources/Platform/Mac/Images.xcassets/AppIcon.appiconset/Contents.json",
-            "isTemplated": false
+            "file": "Resources/Platform/Mac/Images.xcassets/${Name}AppIcon.appiconset/Contents.json",
+            "isTemplated": true
         },
         {
-            "file": "Resources/Platform/Mac/Images.xcassets/AppIcon.appiconset/icon_128_2x.png",
-            "isTemplated": false
+            "file": "Resources/Platform/Mac/Images.xcassets/${Name}AppIcon.appiconset/icon_128_2x.png",
+            "isTemplated": true
         },
         {
-            "file": "Resources/Platform/Mac/Images.xcassets/AppIcon.appiconset/icon_128.png",
-            "isTemplated": false
+            "file": "Resources/Platform/Mac/Images.xcassets/${Name}AppIcon.appiconset/icon_128.png",
+            "isTemplated": true
         },
         {
-            "file": "Resources/Platform/Mac/Images.xcassets/AppIcon.appiconset/icon_16.png",
-            "isTemplated": false
+            "file": "Resources/Platform/Mac/Images.xcassets/${Name}AppIcon.appiconset/icon_16.png",
+            "isTemplated": true
         },
         {
-            "file": "Resources/Platform/Mac/Images.xcassets/AppIcon.appiconset/icon_16_2x.png",
-            "isTemplated": false
+            "file": "Resources/Platform/Mac/Images.xcassets/${Name}AppIcon.appiconset/icon_16_2x.png",
+            "isTemplated": true
         },
         {
-            "file": "Resources/Platform/Mac/Images.xcassets/AppIcon.appiconset/icon_256_2x.png",
-            "isTemplated": false
+            "file": "Resources/Platform/Mac/Images.xcassets/${Name}AppIcon.appiconset/icon_256_2x.png",
+            "isTemplated": true
         },
         {
-            "file": "Resources/Platform/Mac/Images.xcassets/AppIcon.appiconset/icon_256.png",
-            "isTemplated": false
+            "file": "Resources/Platform/Mac/Images.xcassets/${Name}AppIcon.appiconset/icon_256.png",
+            "isTemplated": true
         },
         {
-            "file": "Resources/Platform/Mac/Images.xcassets/AppIcon.appiconset/icon_32.png",
-            "isTemplated": false
+            "file": "Resources/Platform/Mac/Images.xcassets/${Name}AppIcon.appiconset/icon_32.png",
+            "isTemplated": true
         },
         {
-            "file": "Resources/Platform/Mac/Images.xcassets/AppIcon.appiconset/icon_32_2x.png",
-            "isTemplated": false
+            "file": "Resources/Platform/Mac/Images.xcassets/${Name}AppIcon.appiconset/icon_32_2x.png",
+            "isTemplated": true
         },
         {
-            "file": "Resources/Platform/Mac/Images.xcassets/AppIcon.appiconset/icon_512.png",
-            "isTemplated": false
+            "file": "Resources/Platform/Mac/Images.xcassets/${Name}AppIcon.appiconset/icon_512.png",
+            "isTemplated": true
         },
         {
-            "file": "Resources/Platform/Mac/Images.xcassets/AppIcon.appiconset/icon_512_2x.png",
-            "isTemplated": false
+            "file": "Resources/Platform/Mac/Images.xcassets/${Name}AppIcon.appiconset/icon_512_2x.png",
+            "isTemplated": true
         },
         {
             "file": "Resources/Platform/Mac/Info.plist",
@@ -275,60 +287,60 @@
             "isTemplated": false
         },
         {
-            "file": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset/Contents.json",
-            "isTemplated": false
+            "file": "Resources/Platform/iOS/Images.xcassets/${Name}AppIcon.appiconset/Contents.json",
+            "isTemplated": true
         },
         {
-            "file": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset/iPadAppIcon152x152.png",
-            "isTemplated": false
+            "file": "Resources/Platform/iOS/Images.xcassets/${Name}AppIcon.appiconset/iPadAppIcon152x152.png",
+            "isTemplated": true
         },
         {
-            "file": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset/iPadAppIcon76x76.png",
-            "isTemplated": false
+            "file": "Resources/Platform/iOS/Images.xcassets/${Name}AppIcon.appiconset/iPadAppIcon76x76.png",
+            "isTemplated": true
         },
         {
-            "file": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset/iPadProAppIcon167x167.png",
-            "isTemplated": false
+            "file": "Resources/Platform/iOS/Images.xcassets/${Name}AppIcon.appiconset/iPadProAppIcon167x167.png",
+            "isTemplated": true
         },
         {
-            "file": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset/iPadSettingsIcon29x29.png",
-            "isTemplated": false
+            "file": "Resources/Platform/iOS/Images.xcassets/${Name}AppIcon.appiconset/iPadSettingsIcon29x29.png",
+            "isTemplated": true
         },
         {
-            "file": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset/iPadSettingsIcon58x58.png",
-            "isTemplated": false
+            "file": "Resources/Platform/iOS/Images.xcassets/${Name}AppIcon.appiconset/iPadSettingsIcon58x58.png",
+            "isTemplated": true
         },
         {
-            "file": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset/iPadSpotlightIcon40x40.png",
-            "isTemplated": false
+            "file": "Resources/Platform/iOS/Images.xcassets/${Name}AppIcon.appiconset/iPadSpotlightIcon40x40.png",
+            "isTemplated": true
         },
         {
-            "file": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset/iPadSpotlightIcon80x80.png",
-            "isTemplated": false
+            "file": "Resources/Platform/iOS/Images.xcassets/${Name}AppIcon.appiconset/iPadSpotlightIcon80x80.png",
+            "isTemplated": true
         },
         {
-            "file": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset/iPhoneAppIcon120x120.png",
-            "isTemplated": false
+            "file": "Resources/Platform/iOS/Images.xcassets/${Name}AppIcon.appiconset/iPhoneAppIcon120x120.png",
+            "isTemplated": true
         },
         {
-            "file": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset/iPhoneAppIcon180x180.png",
-            "isTemplated": false
+            "file": "Resources/Platform/iOS/Images.xcassets/${Name}AppIcon.appiconset/iPhoneAppIcon180x180.png",
+            "isTemplated": true
         },
         {
-            "file": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset/iPhoneSettingsIcon58x58.png",
-            "isTemplated": false
+            "file": "Resources/Platform/iOS/Images.xcassets/${Name}AppIcon.appiconset/iPhoneSettingsIcon58x58.png",
+            "isTemplated": true
         },
         {
-            "file": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset/iPhoneSettingsIcon87x87.png",
-            "isTemplated": false
+            "file": "Resources/Platform/iOS/Images.xcassets/${Name}AppIcon.appiconset/iPhoneSettingsIcon87x87.png",
+            "isTemplated": true
         },
         {
-            "file": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset/iPhoneSpotlightIcon120x120.png",
-            "isTemplated": false
+            "file": "Resources/Platform/iOS/Images.xcassets/${Name}AppIcon.appiconset/iPhoneSpotlightIcon120x120.png",
+            "isTemplated": true
         },
         {
-            "file": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset/iPhoneSpotlightIcon80x80.png",
-            "isTemplated": false
+            "file": "Resources/Platform/iOS/Images.xcassets/${Name}AppIcon.appiconset/iPhoneSpotlightIcon80x80.png",
+            "isTemplated": true
         },
         {
             "file": "Resources/Platform/iOS/Info.plist",
@@ -351,6 +363,19 @@
             "isTemplated": false
         },
         {
+            "file": "export.bat",
+            "isTemplated": true
+        },
+        {
+            "file": "export.sh",
+            "isTemplated": true,
+            "isExecutable": true
+        },
+        {
+            "file": "AssetBundling/SeedLists/DefaultLevel.seed",
+            "isTemplated": false
+        },
+        {
             "file": "game.cfg",
             "isTemplated": false
         },
@@ -364,6 +389,12 @@
         }
     ],
     "createDirectories": [
+        {
+            "dir": "AssetBundling"
+        },
+        {
+            "dir": "AssetBundling/SeedLists"
+        },
         {
             "dir": "Assets"
         },
@@ -407,7 +438,10 @@
             "dir": "Gem/Source"
         },
         {
-            "dir": "Config"
+            "dir": "Levels"
+        },
+        {
+            "dir": "Levels/DefaultLevel"
         },
         {
             "dir": "Platform"
@@ -443,7 +477,7 @@
             "dir": "Resources/Platform/Mac/Images.xcassets"
         },
         {
-            "dir": "Resources/Platform/Mac/Images.xcassets/AppIcon.appiconset"
+            "dir": "Resources/Platform/Mac/Images.xcassets/${Name}AppIcon.appiconset"
         },
         {
             "dir": "Resources/Platform/iOS"
@@ -455,7 +489,7 @@
             "dir": "Resources/Platform/iOS/Images.xcassets/LaunchImage.launchimage"
         },
         {
-            "dir": "Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset"
+            "dir": "Resources/Platform/iOS/Images.xcassets/${Name}AppIcon.appiconset"
         },
         {
             "dir": "ShaderLib"

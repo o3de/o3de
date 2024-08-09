@@ -22,8 +22,7 @@ namespace AZ::Render
     {
         if (GetLightHandle().IsValid())
         {
-            GetFeatureProcessor()->SetPosition(GetLightHandle(), GetTransform().GetTranslation());
-            GetFeatureProcessor()->SetDirection(GetLightHandle(), GetTransform().GetBasisZ());
+            GetFeatureProcessor()->SetTransform(GetLightHandle(), GetTransform());
         }
     }
 
@@ -118,4 +117,80 @@ namespace AZ::Render
 
         return Aabb::CreateFromMinMax(Vector3(-radius, -radius, 0.0f), Vector3(radius, radius, height));
     }
+
+    void SimpleSpotLightDelegate::SetEnableShadow(bool enabled)
+    {
+        Base::SetEnableShadow(enabled);
+
+        if (GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetShadowsEnabled(GetLightHandle(), enabled);
+        }
+    }
+
+    void SimpleSpotLightDelegate::SetShadowBias(float bias)
+    {
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetShadowBias(GetLightHandle(), bias);
+        }
+    }
+
+    void SimpleSpotLightDelegate::SetNormalShadowBias(float bias)
+    {
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetNormalShadowBias(GetLightHandle(), bias);
+        }
+    }
+
+    void SimpleSpotLightDelegate::SetShadowmapMaxSize(ShadowmapSize size)
+    {
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetShadowmapMaxResolution(GetLightHandle(), size);
+        }
+    }
+
+    void SimpleSpotLightDelegate::SetShadowFilterMethod(ShadowFilterMethod method)
+    {
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetShadowFilterMethod(GetLightHandle(), method);
+        }
+    }
+
+    void SimpleSpotLightDelegate::SetFilteringSampleCount(uint32_t count)
+    {
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetFilteringSampleCount(GetLightHandle(), static_cast<uint16_t>(count));
+        }
+    }
+
+    void SimpleSpotLightDelegate::SetEsmExponent(float exponent)
+    {
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetEsmExponent(GetLightHandle(), exponent);
+        }
+    }
+
+    void SimpleSpotLightDelegate::SetShadowCachingMode(AreaLightComponentConfig::ShadowCachingMode cachingMode)
+    {
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetUseCachedShadows(
+                GetLightHandle(), cachingMode == AreaLightComponentConfig::ShadowCachingMode::UpdateOnChange);
+        }
+    }
+
+    void SimpleSpotLightDelegate::SetGoboTexture(AZ::Data::Instance<AZ::RPI::Image> goboTexture)
+    {
+        if (GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetGoboTexture(GetLightHandle(), goboTexture);
+        }
+    }
+
 } // namespace AZ::Render

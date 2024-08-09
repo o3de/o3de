@@ -66,6 +66,7 @@
             "PassRequests": [
                 {
                     "Name": "SMAA1xApplyLinearHDRColorPass",
+                    "Enabled": false,
                     "TemplateName": "SMAA1xApplyLinearHDRColorTemplate",
                     "Connections": [
                         {

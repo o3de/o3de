@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/CopyItem.h>
 #include <Atom/RHI/DispatchItem.h>
 #include <Atom/RHI/ScopeProducer.h>
@@ -122,7 +121,7 @@ namespace AZ
             void DecomposeExecute(const RHI::FrameGraphExecuteContext& context);
 
             // copy data from the read back buffer (m_readbackBuffer) to the data buffer (m_dataBuffer)
-            bool CopyBufferData(uint32_t readbackBufferIndex);
+            bool CopyBufferData(uint32_t readbackBufferIndex, int deviceIndex);
 
             // Get read back data in a structure
             struct ReadbackItem;

@@ -77,17 +77,19 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<MeshComponentConfig>()
-                    ->Version(3, &MeshComponentControllerVersionUtility::VersionConverter)
+                    ->Version(4, &MeshComponentControllerVersionUtility::VersionConverter)
                     ->Field("ModelAsset", &MeshComponentConfig::m_modelAsset)
                     ->Field("SortKey", &MeshComponentConfig::m_sortKey)
                     ->Field("ExcludeFromReflectionCubeMaps", &MeshComponentConfig::m_excludeFromReflectionCubeMaps)
                     ->Field("UseForwardPassIBLSpecular", &MeshComponentConfig::m_useForwardPassIblSpecular)
                     ->Field("IsRayTracingEnabled", &MeshComponentConfig::m_isRayTracingEnabled)
                     ->Field("IsAlwaysDynamic", &MeshComponentConfig::m_isAlwaysDynamic)
+                    ->Field("SupportRayIntersection", &MeshComponentConfig::m_enableRayIntersection)
                     ->Field("LodType", &MeshComponentConfig::m_lodType)
                     ->Field("LodOverride", &MeshComponentConfig::m_lodOverride)
                     ->Field("MinimumScreenCoverage", &MeshComponentConfig::m_minimumScreenCoverage)
-                    ->Field("QualityDecayRate", &MeshComponentConfig::m_qualityDecayRate);
+                    ->Field("QualityDecayRate", &MeshComponentConfig::m_qualityDecayRate)
+                    ->Field("LightingChannelConfig", &MeshComponentConfig::m_lightingChannelConfig);
             }
         }
 
@@ -158,7 +160,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<MeshComponentController>()
-                    ->Version(0)
+                    ->Version(1)
                     ->Field("Configuration", &MeshComponentController::m_configuration);
             }
 
@@ -279,6 +281,8 @@ namespace AZ
             AzFramework::RenderGeometry::IntersectionRequestBus::Handler::BusConnect({ entityId, entityContextId });
             AzFramework::RenderGeometry::IntersectionNotificationBus::Bind(m_intersectionNotificationBus, entityContextId);
 
+            LightingChannelMaskChanged();
+
             // Buses must be connected before RegisterModel in case requests are made as a result of HandleModelChange
             RegisterModel();
         }
@@ -335,6 +339,14 @@ namespace AZ
             if (m_meshFeatureProcessor)
             {
                 m_meshFeatureProcessor->SetTransform(m_meshHandle, m_transformInterface->GetWorldTM(), m_cachedNonUniformScale);
+            }
+        }
+
+        void MeshComponentController::LightingChannelMaskChanged()
+        {
+            if (m_meshFeatureProcessor)
+            {
+                m_meshFeatureProcessor->SetLightingChannelMask(m_meshHandle, m_configuration.m_lightingChannelConfig.GetLightingChannelMask());
             }
         }
 
@@ -395,10 +407,10 @@ namespace AZ
             return false;
         }
 
-        void MeshComponentController::HandleModelChange(Data::Instance<RPI::Model> model)
+        void MeshComponentController::HandleModelChange(const AZ::Data::Instance<AZ::RPI::Model>& model)
         {
             Data::Asset<RPI::ModelAsset> modelAsset = m_meshFeatureProcessor->GetModelAsset(m_meshHandle);
-            if (model && modelAsset)
+            if (model && modelAsset.IsReady())
             {
                 const AZ::EntityId entityId = m_entityComponentIdPair.GetEntityId();
                 m_configuration.m_modelAsset = modelAsset;
@@ -429,27 +441,28 @@ namespace AZ
 
                 m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
                 MeshHandleDescriptor meshDescriptor;
+                meshDescriptor.m_entityId = m_entityComponentIdPair.GetEntityId();
                 meshDescriptor.m_modelAsset = m_configuration.m_modelAsset;
+                meshDescriptor.m_customMaterials = ConvertToCustomMaterialMap(materials);
                 meshDescriptor.m_useForwardPassIblSpecular = m_configuration.m_useForwardPassIblSpecular;
                 meshDescriptor.m_requiresCloneCallback = RequiresCloning;
                 meshDescriptor.m_isRayTracingEnabled = m_configuration.m_isRayTracingEnabled;
                 meshDescriptor.m_excludeFromReflectionCubeMaps = m_configuration.m_excludeFromReflectionCubeMaps;
                 meshDescriptor.m_isAlwaysDynamic = m_configuration.m_isAlwaysDynamic;
-                m_meshHandle = m_meshFeatureProcessor->AcquireMesh(meshDescriptor, ConvertToCustomMaterialMap(materials));
-                m_meshFeatureProcessor->ConnectModelChangeEventHandler(m_meshHandle, m_changeEventHandler);
-                m_meshFeatureProcessor->ConnectObjectSrgCreatedEventHandler(m_meshHandle, m_objectSrgCreatedHandler);
+                meshDescriptor.m_supportRayIntersection = m_configuration.m_enableRayIntersection || m_configuration.m_editorRayIntersection;
+                meshDescriptor.m_modelChangedEventHandler = m_modelChangedEventHandler;
+                meshDescriptor.m_objectSrgCreatedHandler = m_objectSrgCreatedHandler;
+                m_meshHandle = m_meshFeatureProcessor->AcquireMesh(meshDescriptor);
 
                 const AZ::Transform& transform =
                     m_transformInterface ? m_transformInterface->GetWorldTM() : AZ::Transform::CreateIdentity();
 
                 m_meshFeatureProcessor->SetTransform(m_meshHandle, transform, m_cachedNonUniformScale);
                 m_meshFeatureProcessor->SetSortKey(m_meshHandle, m_configuration.m_sortKey);
+                m_meshFeatureProcessor->SetLightingChannelMask(m_meshHandle, m_configuration.m_lightingChannelConfig.GetLightingChannelMask());
                 m_meshFeatureProcessor->SetMeshLodConfiguration(m_meshHandle, GetMeshLodConfiguration());
                 m_meshFeatureProcessor->SetVisible(m_meshHandle, m_isVisible);
                 m_meshFeatureProcessor->SetRayTracingEnabled(m_meshHandle, meshDescriptor.m_isRayTracingEnabled);
-                // [GFX TODO] This should happen automatically. m_changeEventHandler should be passed to AcquireMesh
-                // If the model instance or asset already exists, announce a model change to let others know it's loaded.
-                HandleModelChange(m_meshFeatureProcessor->GetModel(m_meshHandle));
             }
             else
             {
@@ -704,7 +717,7 @@ namespace AZ
             return Aabb::CreateNull();
         }
 
-        void MeshComponentController::GetVisibleGeometry(
+        void MeshComponentController::BuildVisibleGeometry(
             const AZ::Aabb& bounds, AzFramework::VisibleGeometryContainer& geometryContainer) const
         {
             // Only include data for this entity if it is within bounds. This could possibly be done per sub mesh.
@@ -788,6 +801,7 @@ namespace AZ
                 // Copy the index and position data into the visible geometry structure.
                 AzFramework::VisibleGeometry visibleGeometry;
                 visibleGeometry.m_transform = AZ::Matrix4x4::CreateFromTransform(m_transformInterface->GetWorldTM());
+                visibleGeometry.m_transform *= AZ::Matrix4x4::CreateScale(m_cachedNonUniformScale);
 
                 // Reserve space for indices and copy data, assuming stride between elements is 0.
                 visibleGeometry.m_indices.resize_no_construct(indexBufferViewDesc.m_elementCount);

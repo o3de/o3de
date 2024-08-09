@@ -41,33 +41,30 @@ namespace AZ
             AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
         }
 
-        void SharedThumbnail::LoadThread()
+        void SharedThumbnail::Load()
         {
             m_state = State::Loading;
             AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::QueueEvent(
                 m_assetInfo.m_assetType, &AzToolsFramework::Thumbnailer::ThumbnailerRendererRequests::RenderThumbnail, m_key,
                 SharedThumbnailSize);
-
-            // wait for response from thumbnail renderer
-            m_renderWait.acquire();
         }
 
         void SharedThumbnail::ThumbnailRendered(const QPixmap& thumbnailImage)
         {
             m_pixmap = thumbnailImage;
             m_state = State::Ready;
-            m_renderWait.release();
+            QueueThumbnailUpdated();
         }
 
         void SharedThumbnail::ThumbnailFailedToRender()
         {
             m_state = State::Failed;
-            m_renderWait.release();
+            QueueThumbnailUpdated();
         }
 
         void SharedThumbnail::OnCatalogAssetChanged([[maybe_unused]] const AZ::Data::AssetId& assetId)
         {
-            if (m_assetInfo.m_assetId == assetId && m_state == State::Ready)
+            if (m_assetInfo.m_assetId == assetId && (m_state == State::Ready || m_state == State::Failed))
             {
                 m_state = State::Unloaded;
                 Load();

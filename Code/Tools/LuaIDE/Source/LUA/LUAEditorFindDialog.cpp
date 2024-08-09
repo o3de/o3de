@@ -78,12 +78,12 @@ namespace LUAEditor
         m_gui->searchAndReplaceGroupBox->setChecked(false);
         m_gui->regularExpressionCheckBox->setChecked(false);
 
-        auto pState = AZ::UserSettings::CreateFind<LUAEditorInternal::FindSavedState>(AZ_CRC("FindInCurrent", 0xba0962af), AZ::UserSettings::CT_LOCAL);
+        auto pState = AZ::UserSettings::CreateFind<LUAEditorInternal::FindSavedState>(AZ_CRC_CE("FindInCurrent"), AZ::UserSettings::CT_LOCAL);
         m_gui->wrapCheckBox->setChecked((pState ? pState->m_findWrap : true));
 
         connect(m_gui->wrapCheckBox, &QCheckBox::stateChanged, this, [](int newState)
         {
-            auto pState = AZ::UserSettings::CreateFind<LUAEditorInternal::FindSavedState>(AZ_CRC("FindInCurrent", 0xba0962af), AZ::UserSettings::CT_LOCAL);
+            auto pState = AZ::UserSettings::CreateFind<LUAEditorInternal::FindSavedState>(AZ_CRC_CE("FindInCurrent"), AZ::UserSettings::CT_LOCAL);
             pState->m_findWrap = (newState == Qt::Checked);
         });
 
@@ -201,7 +201,7 @@ namespace LUAEditor
     {
         if (m_bAnyDocumentsOpen)
         {
-            auto pState = AZ::UserSettings::CreateFind<LUAEditorInternal::FindSavedState>(m_bWasFindInAll ? AZ_CRC("LUAFindInAny", 0x9b85f4f9) : AZ_CRC("FindInCurrent", 0xba0962af), AZ::UserSettings::CT_LOCAL);
+            auto pState = AZ::UserSettings::CreateFind<LUAEditorInternal::FindSavedState>(m_bWasFindInAll ? AZ_CRC_CE("LUAFindInAny") : AZ_CRC_CE("FindInCurrent"), AZ::UserSettings::CT_LOCAL);
             pState->m_lastSearchInFilesMode = m_gui->searchWhereComboBox->currentIndex();
         }
     }
@@ -212,7 +212,7 @@ namespace LUAEditor
         // restore prior global mode:
         if (m_bAnyDocumentsOpen)
         {
-            auto pState = AZ::UserSettings::Find<LUAEditorInternal::FindSavedState>(findInAny ? AZ_CRC("LUAFindInAny", 0x9b85f4f9) : AZ_CRC("FindInCurrent", 0xba0962af), AZ::UserSettings::CT_LOCAL);
+            auto pState = AZ::UserSettings::Find<LUAEditorInternal::FindSavedState>(findInAny ? AZ_CRC_CE("LUAFindInAny") : AZ_CRC_CE("FindInCurrent"), AZ::UserSettings::CT_LOCAL);
             if (pState)
             {
                 m_gui->searchWhereComboBox->setCurrentIndex(pState->m_lastSearchInFilesMode); // theres three options!

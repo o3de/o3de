@@ -20,15 +20,18 @@ namespace AZ
         : public DynamicModuleHandle
     {
     public:
-        DynamicModuleHandleWindows(const char* fullFileName)
+        DynamicModuleHandleWindows(const char* fullFileName, bool correctModuleName)
             : DynamicModuleHandle(fullFileName)
             , m_handle(nullptr)
         {
-            // Ensure filename ends in ".dll"
-            // Otherwise filenames like "gem.1.0.0" fail to load (.0 is assumed to be the extension).
-            if (!m_fileName.ends_with(AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION))
+            if (correctModuleName)
             {
-                m_fileName += AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION;
+                // Ensure filename ends in ".dll"
+                // Otherwise filenames like "gem.1.0.0" fail to load (.0 is assumed to be the extension).
+                if (!m_fileName.ends_with(AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION))
+                {
+                    m_fileName += AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION;
+                }
             }
 
             AZ::IO::PathView modulePathView{ m_fileName };
@@ -87,7 +90,7 @@ namespace AZ
             Unload();
         }
 
-        LoadStatus LoadModule() override
+        LoadStatus LoadModule(LoadFlags flags) override
         {
             if (IsLoaded())
             {
@@ -101,9 +104,12 @@ namespace AZ
             errno_t wcharResult = mbstowcs_s(&numCharsConverted, fileNameW, m_fileName.c_str(), AZ_ARRAY_SIZE(fileNameW) - 1);
             if (wcharResult == 0)
             {
-                // If module already open, return false, it was not loaded.
-                alreadyLoaded = NULL != GetModuleHandleW(fileNameW);
-                m_handle = LoadLibraryW(fileNameW);
+                alreadyLoaded = GetModuleHandleExW(0, fileNameW, &m_handle);
+                if (m_handle == nullptr && !CheckBitsAny(flags, LoadFlags::NoLoad))
+                {
+                    // Note: Windows LoadLibrary has no concept of specifying that the module symbols are global or local
+                    m_handle = LoadLibraryW(fileNameW);
+                }
             }
             else
             {
@@ -150,12 +156,12 @@ namespace AZ
             return reinterpret_cast<void*>(::GetProcAddress(m_handle, functionName));
         }
 
-        HMODULE m_handle;
+        HMODULE m_handle = nullptr;
     };
 
     // Implement the module creation function
-    AZStd::unique_ptr<DynamicModuleHandle> DynamicModuleHandle::Create(const char* fullFileName)
+    AZStd::unique_ptr<DynamicModuleHandle> DynamicModuleHandle::Create(const char* fullFileName, bool correctModuleName /*= true*/)
     {
-        return AZStd::unique_ptr<DynamicModuleHandle>(new DynamicModuleHandleWindows(fullFileName));
+        return AZStd::unique_ptr<DynamicModuleHandle>(new DynamicModuleHandleWindows(fullFileName, correctModuleName));
     }
 } // namespace AZ

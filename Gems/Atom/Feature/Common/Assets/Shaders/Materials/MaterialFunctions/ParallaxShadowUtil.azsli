@@ -17,11 +17,11 @@
 //! @param heightmapScale inout scale to adjust
 //! @param heightmapOffset inout offset to adjust
 //! @param shadowFactor 0-1 multiplier, where 1 is no-op and 0 squashes the displacement down to its lowest point.
- void AdjustParallaxShadowCaster(inout real heightmapScale, inout real heightmapOffset, real shadowFactor)
+ void AdjustParallaxShadowCaster(inout float heightmapScale, inout float heightmapOffset, float shadowFactor)
  {
 #if SHADOWMAP
-    real newHeightmapScale = heightmapScale * shadowFactor;
-    real newHeightmapOffset = newHeightmapScale - heightmapScale + heightmapOffset;
+    float newHeightmapScale = heightmapScale * shadowFactor;
+    float newHeightmapOffset = newHeightmapScale - heightmapScale + heightmapOffset;
     heightmapScale = newHeightmapScale;
     heightmapOffset = newHeightmapOffset;
 #endif

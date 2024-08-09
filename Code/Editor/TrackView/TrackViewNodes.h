@@ -113,6 +113,9 @@ public:
 
     void Update();
 
+    static QIcon TrackViewIcon(const CTrackViewTrack* track);
+    static QIcon TrackViewNodeIcon(AnimNodeType type);
+
 protected:
     void paintEvent(QPaintEvent* event) override;
     void keyPressEvent(QKeyEvent* event) override;
@@ -137,14 +140,11 @@ private:
     int ShowPopupMenu(QPoint point, const CRecord* pItemInfo);
 
     bool FillAddTrackMenu(struct STrackMenuTreeNode& menuAddTrack, const CTrackViewAnimNode* pAnimNode);
-    
+
     void CreateAddTrackMenuRec(QMenu& parent, const QString& name, CTrackViewAnimNode* animNode, struct STrackMenuTreeNode& node, unsigned int& currentId);
-    
+
     void SetPopupMenuLock(QMenu* menu);
     void CreateSetAnimationLayerPopupMenu(QMenu& menuSetLayer, CTrackViewTrack* pTrack) const;
-
-    int GetIconIndexForTrack(const CTrackViewTrack* pTrack) const;
-    int GetIconIndexForNode(AnimNodeType type) const;
 
     void AddNodeRecord(CRecord* pParentRecord, CTrackViewNode* pNode);
     CRecord* AddTrackRecord(CRecord* pParentRecord, CTrackViewTrack* pTrack);
@@ -202,7 +202,6 @@ private:
     std::unordered_map<unsigned int, CAnimParamType> m_menuParamTypeMap;
     std::unordered_map<const CTrackViewNode*, CRecord*> m_nodeToRecordMap;
 
-    QMap<int, QIcon> m_imageList;
     QScopedPointer<Ui::CTrackViewNodesCtrl> ui;
 
     //! Cached map of component icons.

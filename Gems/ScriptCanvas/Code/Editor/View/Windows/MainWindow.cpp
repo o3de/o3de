@@ -204,7 +204,7 @@ namespace ScriptCanvasEditor
 
     void Workspace::Save()
     {
-        auto workspace = AZ::UserSettings::CreateFind<EditorSettings::EditorWorkspace>(AZ_CRC("ScriptCanvasEditorWindowState", 0x10c47d36), AZ::UserSettings::CT_LOCAL);
+        auto workspace = AZ::UserSettings::CreateFind<EditorSettings::EditorWorkspace>(AZ_CRC_CE("ScriptCanvasEditorWindowState"), AZ::UserSettings::CT_LOCAL);
         if (workspace)
         {
             workspace->Init(m_mainWindow->saveState(), m_mainWindow->saveGeometry());
@@ -270,7 +270,7 @@ namespace ScriptCanvasEditor
     void Workspace::Restore()
     {
 
-        auto workspace = AZ::UserSettings::Find<EditorSettings::EditorWorkspace>(AZ_CRC("ScriptCanvasEditorWindowState", 0x10c47d36), AZ::UserSettings::CT_LOCAL);
+        auto workspace = AZ::UserSettings::Find<EditorSettings::EditorWorkspace>(AZ_CRC_CE("ScriptCanvasEditorWindowState"), AZ::UserSettings::CT_LOCAL);
         if (workspace)
         {
             workspace->Restore(qobject_cast<QMainWindow*>(m_mainWindow));
@@ -582,6 +582,8 @@ namespace ScriptCanvasEditor
 
         m_bookmarkDockWidget = aznew GraphCanvas::BookmarkDockWidget(ScriptCanvasEditor::AssetEditorId, this);
 
+        m_graphOutlinerDockWidget = aznew GraphCanvas::GraphOutlinerDockWidget(ScriptCanvasEditor::AssetEditorId, this);
+
         QObject::connect(m_variableDockWidget, &VariableDockWidget::OnVariableSelectionChanged, this, &MainWindow::OnVariableSelectionChanged);
 
         // This needs to happen after the node palette is created, because we scrape for the variable data from inside
@@ -640,7 +642,7 @@ namespace ScriptCanvasEditor
 
         UINotificationBus::Broadcast(&UINotifications::MainWindowCreationEvent, this);
 
-        m_userSettings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL);
+        m_userSettings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC_CE("ScriptCanvasPreviewSettings"), AZ::UserSettings::CT_LOCAL);
         if (m_userSettings)
         {
             m_allowAutoSave = m_userSettings->m_autoSaveConfig.m_enabled;
@@ -659,6 +661,7 @@ namespace ScriptCanvasEditor
         connect(m_minimap, &QDockWidget::visibilityChanged, this, &MainWindow::OnViewVisibilityChanged);
         connect(m_propertyGrid, &QDockWidget::visibilityChanged, this, &MainWindow::OnViewVisibilityChanged);
         connect(m_bookmarkDockWidget, &QDockWidget::visibilityChanged, this, &MainWindow::OnViewVisibilityChanged);
+        connect(m_graphOutlinerDockWidget, &QDockWidget::visibilityChanged, this, &MainWindow::OnViewVisibilityChanged);
         connect(m_variableDockWidget, &QDockWidget::visibilityChanged, this, &MainWindow::OnViewVisibilityChanged);
         connect(m_loggingWindow, &QDockWidget::visibilityChanged, this, &MainWindow::OnViewVisibilityChanged);
         connect(m_validationDockWidget, &QDockWidget::visibilityChanged, this, &MainWindow::OnViewVisibilityChanged);
@@ -772,6 +775,7 @@ namespace ScriptCanvasEditor
 
         // View menu
         connect(ui->action_ViewNodePalette, &QAction::triggered, this, &MainWindow::OnViewNodePalette);
+        connect(ui->action_ViewGraphOutliner, &QAction::triggered, this, &MainWindow::OnViewGraphOutliner);
         connect(ui->action_ViewMiniMap, &QAction::triggered, this, &MainWindow::OnViewMiniMap);
 
         connect(ui->action_ViewProperties, &QAction::triggered, this, &MainWindow::OnViewProperties);
@@ -1184,6 +1188,9 @@ namespace ScriptCanvasEditor
         {
             m_tabBar->setCurrentIndex(outTabIndex);
             SetActiveAsset(scriptCanvasAsset);
+
+            EnableOpenDocumentActions(true);
+
             return AZ::Success(outTabIndex);
         }
 
@@ -1207,6 +1214,9 @@ namespace ScriptCanvasEditor
         GraphCanvas::GraphId graphCanvasGraphId = GetGraphCanvasGraphId(scriptCanvasAsset.Get()->GetScriptCanvasId());
         GraphCanvas::AssetEditorNotificationBus::Event(ScriptCanvasEditor::AssetEditorId, &GraphCanvas::AssetEditorNotifications::OnGraphLoaded, graphCanvasGraphId);
         GeneralAssetNotificationBus::Event(fileAssetId, &GeneralAssetNotifications::OnAssetVisualized);
+
+        EnableOpenDocumentActions(true);
+
         return AZ::Success(outTabIndex);
     }
 
@@ -2767,6 +2777,13 @@ namespace ScriptCanvasEditor
             m_nodePalette->show();
         }
 
+        if (m_graphOutlinerDockWidget)
+        {
+            addDockWidget(Qt::LeftDockWidgetArea, m_graphOutlinerDockWidget);
+            m_graphOutlinerDockWidget->setFloating(false);
+            m_graphOutlinerDockWidget->show();
+        }
+
         if (m_variableDockWidget)
         {
             addDockWidget(Qt::RightDockWidgetArea, m_variableDockWidget);
@@ -2893,6 +2910,14 @@ namespace ScriptCanvasEditor
         if (m_nodePalette)
         {
             m_nodePalette->toggleViewAction()->trigger();
+        }
+    }
+
+    void MainWindow::OnViewGraphOutliner()
+    {
+        if (m_graphOutlinerDockWidget)
+        {
+            m_graphOutlinerDockWidget->toggleViewAction()->trigger();
         }
     }
 
@@ -3041,6 +3066,12 @@ namespace ScriptCanvasEditor
 
     void MainWindow::UpdateViewMenu()
     {
+        if (ui->action_ViewGraphOutliner->isChecked() != m_graphOutlinerDockWidget->isVisible())
+        {
+            QSignalBlocker signalBlocker(ui->action_ViewGraphOutliner);
+            ui->action_ViewGraphOutliner->setChecked(m_graphOutlinerDockWidget->isVisible());
+        }
+
         if (ui->action_ViewBookmarks->isChecked() != m_bookmarkDockWidget->isVisible())
         {
             QSignalBlocker signalBlocker(ui->action_ViewBookmarks);
@@ -3975,14 +4006,6 @@ namespace ScriptCanvasEditor
 
         for (const AZ::EntityId& entityId : selectedEntityIds)
         {
-            bool isLayerEntity = false;
-            AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(isLayerEntity, entityId, &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-
-            if (isLayerEntity)
-            {
-                continue;
-            }
-
             AZ::NamedEntityId namedEntityId(entityId);
 
             QAction* actionElement = new QAction(namedEntityId.GetName().data(), m_selectedEntityMenu);
@@ -4010,44 +4033,12 @@ namespace ScriptCanvasEditor
         AzToolsFramework::EntityIdList selectedEntityIds;
         AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(selectedEntityIds, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
 
-        auto selectedEntityIdIter = selectedEntityIds.begin();
-
-        bool isLayerAmbiguous = false;
-        AZ::EntityId targetLayer;
-
-        while (selectedEntityIdIter != selectedEntityIds.end())
-        {
-            bool isLayerEntity = false;
-            AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(isLayerEntity, (*selectedEntityIdIter), &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-
-            if (isLayerEntity)
-            {
-                if (targetLayer.IsValid())
-                {
-                    isLayerAmbiguous = true;
-                }
-
-                targetLayer = (*selectedEntityIdIter);
-
-                selectedEntityIdIter = selectedEntityIds.erase(selectedEntityIdIter);
-            }
-            else
-            {
-                ++selectedEntityIdIter;
-            }
-        }
-
         if (selectedEntityIds.empty())
         {
             AZ::EntityId createdId;
             AzToolsFramework::EditorRequests::Bus::BroadcastResult(createdId, &AzToolsFramework::EditorRequests::CreateNewEntity, AZ::EntityId());
 
             selectedEntityIds.emplace_back(createdId);
-
-            if (targetLayer.IsValid() && !isLayerAmbiguous)
-            {
-                AZ::TransformBus::Event(createdId, &AZ::TransformBus::Events::SetParent, targetLayer);
-            }
         }
 
         for (const AZ::EntityId& entityId : selectedEntityIds)
@@ -4075,14 +4066,6 @@ namespace ScriptCanvasEditor
 
     void MainWindow::AssignGraphToEntityImpl(const AZ::EntityId& entityId)
     {
-        bool isLayerEntity = false;
-        AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(isLayerEntity, entityId, &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-
-        if (isLayerEntity)
-        {
-            return;
-        }
-
         EditorScriptCanvasComponentRequests* firstRequestBus = nullptr;
         EditorScriptCanvasComponentRequests* firstEmptyRequestBus = nullptr;
 
@@ -4454,6 +4437,7 @@ namespace ScriptCanvasEditor
         }
 
         m_tabBar->setEnabled(false);
+        m_graphOutlinerDockWidget->setEnabled(false);
         m_bookmarkDockWidget->setEnabled(false);
         m_variableDockWidget->setEnabled(false);
         m_propertyGrid->DisableGrid();
@@ -4479,6 +4463,7 @@ namespace ScriptCanvasEditor
         }
 
         m_tabBar->setEnabled(true);
+        m_graphOutlinerDockWidget->setEnabled(true);
         m_bookmarkDockWidget->setEnabled(true);
         m_variableDockWidget->setEnabled(true);
         m_propertyGrid->EnableGrid();

@@ -14,7 +14,7 @@
 #include <Atom/RHI.Reflect/ResolveScopeAttachmentDescriptor.h>
 #include <Atom/RHI.Reflect/ScopeId.h>
 
-#include <Atom/RHI/BufferPoolBase.h>
+#include <Atom/RHI/DeviceBufferPoolBase.h>
 #include <Atom/RHI/FrameGraphAttachmentDatabase.h>
 #include <Atom/RHI/Scope.h>
 
@@ -26,10 +26,8 @@ namespace AZ::RHI
     class ImageScopeAttachment;
     class BufferScopeAttachment;
     class ResolveScopeAttachment;
-    class SwapChain;
-    class ResourcePool;
     class QueryPool;
-    class Fence;
+    class DeviceFence;
     struct Interval;
 
     //! The frame graph is a graph of scopes, where edges are derived from attachment usage. It can be visualized as a sparse 2D grid.
@@ -95,21 +93,45 @@ namespace AZ::RHI
         void BeginScope(Scope& scope);
 
         // See RHI::FrameGraphInterface for detailed comments
-        ResultCode UseAttachment(const BufferScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access, ScopeAttachmentUsage usage);
-        ResultCode UseAttachment(const ImageScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access, ScopeAttachmentUsage usage);
-        ResultCode UseAttachments(AZStd::span<const ImageScopeAttachmentDescriptor> descriptors, ScopeAttachmentAccess access, ScopeAttachmentUsage usage);
+        ResultCode UseAttachment(
+            const BufferScopeAttachmentDescriptor& descriptor,
+            ScopeAttachmentAccess access,
+            ScopeAttachmentUsage usage,
+            ScopeAttachmentStage stage);
+        ResultCode UseAttachment(
+            const ImageScopeAttachmentDescriptor& descriptor,
+            ScopeAttachmentAccess access,
+            ScopeAttachmentUsage usage,
+            ScopeAttachmentStage stage);
+        ResultCode UseAttachments(
+            AZStd::span<const ImageScopeAttachmentDescriptor> descriptors,
+            ScopeAttachmentAccess access,
+            ScopeAttachmentUsage usage,
+            ScopeAttachmentStage stage);
         ResultCode UseResolveAttachment(const ResolveScopeAttachmentDescriptor& descriptor);
         ResultCode UseColorAttachments(AZStd::span<const ImageScopeAttachmentDescriptor> descriptors);
-        ResultCode UseDepthStencilAttachment(const ImageScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access);
-        ResultCode UseSubpassInputAttachments(AZStd::span<const ImageScopeAttachmentDescriptor> descriptors);
-        ResultCode UseShaderAttachment(const BufferScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access);
-        ResultCode UseShaderAttachment(const ImageScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access);
+        ResultCode UseDepthStencilAttachment(
+            const ImageScopeAttachmentDescriptor& descriptor,
+            ScopeAttachmentAccess access,
+            ScopeAttachmentStage stage);
+        ResultCode UseSubpassInputAttachments(
+            AZStd::span<const ImageScopeAttachmentDescriptor> descriptors,
+            ScopeAttachmentStage stage);
+        ResultCode UseShaderAttachment(
+            const BufferScopeAttachmentDescriptor& descriptor,
+            ScopeAttachmentAccess access,
+            ScopeAttachmentStage stage);
+        ResultCode UseShaderAttachment(
+            const ImageScopeAttachmentDescriptor& descriptor,
+            ScopeAttachmentAccess access,
+            ScopeAttachmentStage stage);
         ResultCode UseCopyAttachment(const BufferScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access);
         ResultCode UseCopyAttachment(const ImageScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access);
         ResultCode UseQueryPool(Ptr<QueryPool> queryPool, const RHI::Interval& interval, QueryPoolScopeAttachmentType type, ScopeAttachmentAccess access);
         void ExecuteAfter(const ScopeId& scopeId);
         void ExecuteBefore(const ScopeId& scopeId);
         void SignalFence(Fence& fence);
+        void WaitFence(Fence& fence);
         void SetEstimatedItemCount(uint32_t itemCount);
         void SetHardwareQueueClass(HardwareQueueClass hardwareQueueClass);
 
@@ -123,9 +145,9 @@ namespace AZ::RHI
         //! Subpass input attachments are image views that can be used for pixel local load operations inside a fragment shader.
         //! This means that framebuffer attachments written in one subpass can be read from at the exact same pixel
         //! in subsequent subpasses. Certain platform have optimization for this type of attachments.             
-        ResultCode UseSubpassInputAttachment(const ImageScopeAttachmentDescriptor& descriptor)
+        ResultCode UseSubpassInputAttachment(const ImageScopeAttachmentDescriptor& descriptor, ScopeAttachmentStage stage)
         {
-            return UseSubpassInputAttachments({ &descriptor, 1 });
+            return UseSubpassInputAttachments({ &descriptor, 1 }, stage);
         }
 
         //! Ends building of the current scope.
@@ -168,6 +190,18 @@ namespace AZ::RHI
         /// Validates the graph at the end of the building phase.
         ResultCode ValidateEnd();
 
+        /// Validates an attachment before adding it.
+        template<class T>
+        void ValidateAttachment(
+            const T& attachmentDescriptor, ScopeAttachmentUsage usage, ScopeAttachmentAccess access) const;
+
+        /// Validates that an overlapping attachment has the proper access and usage before adding it.
+        void ValidateOverlappingAttachment(
+            AttachmentId attachmentId,
+            ScopeAttachmentUsage usage,
+            ScopeAttachmentAccess access,
+            const ScopeAttachment& scopeAttachment) const;
+
         /// Called by the FrameGraphCompiler to mark the graph as compiled.
         void SetCompiled();
 
@@ -175,6 +209,7 @@ namespace AZ::RHI
             ImageFrameAttachment& frameAttachment,
             ScopeAttachmentUsage usage,
             ScopeAttachmentAccess access,
+            ScopeAttachmentStage stage,
             const ImageScopeAttachmentDescriptor& descriptor);
 
         void UseAttachmentInternal(
@@ -185,9 +220,13 @@ namespace AZ::RHI
             BufferFrameAttachment& frameAttachment,
             ScopeAttachmentUsage usage,
             ScopeAttachmentAccess access,
+            ScopeAttachmentStage stage,
             const BufferScopeAttachmentDescriptor& descriptor);
 
-        ResultCode TopologicalSort();            
+
+        //! @param requiresSortForSubpasses If true, a second sort is executed after the topological sort
+        //!        that makes sure subpasses get grouped consecutively.
+        ResultCode TopologicalSort(bool requiresSortForSubpasses);            
             
         // The type of edge connection between two node graphs.
         enum class GraphEdgeType : uint16_t
@@ -233,5 +272,27 @@ namespace AZ::RHI
         bool m_isCompiled = false;
         bool m_isBuilding = false;
         size_t m_frameCount = 0;
+        //! Becomes true if the Graph contains Subpasses.
+        //! This will be used as a hint for the Topological Sort to do a second sort
+        //! that groups Subpasses consecutively.
+        bool m_requiresSortForSubpasses = false;
     };
-}
+
+    template<class T>
+    void FrameGraph::ValidateAttachment(const T& attachmentDescriptor, ScopeAttachmentUsage usage, ScopeAttachmentAccess access) const
+    {
+        const ScopeAttachmentPtrList* scopeAttachmentList =
+            m_attachmentDatabase.FindScopeAttachmentList(m_currentScope->GetId(), attachmentDescriptor.m_attachmentId);
+        if (scopeAttachmentList)
+        {
+            for (const ScopeAttachment* attachment : *scopeAttachmentList)
+            {
+                if (attachmentDescriptor.GetViewDescriptor().OverlapsSubResource(
+                            static_cast<const T&>(attachment->GetScopeAttachmentDescriptor()).GetViewDescriptor()))
+                {
+                    ValidateOverlappingAttachment(attachmentDescriptor.m_attachmentId, usage, access, *attachment);
+                }
+            }
+        }
+    }
+} // namespace AZ::RHI

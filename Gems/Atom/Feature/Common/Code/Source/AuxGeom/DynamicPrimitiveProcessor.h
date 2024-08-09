@@ -8,11 +8,9 @@
 
 #pragma once
 
-#include <Atom/RHI/Buffer.h>
-#include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/IndexBufferView.h>
 #include <Atom/RHI/StreamBufferView.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RHI/DrawList.h>
 
 #include <Atom/RHI.Reflect/InputStreamLayout.h>
@@ -88,7 +86,7 @@ namespace AZ
                 StreamBufferViewsForAllStreams m_streamBufferViews;
             };
 
-            using DrawPackets = AZStd::vector<AZStd::unique_ptr<const RHI::DrawPacket>>;
+            using DrawPackets = AZStd::vector<AZ::RHI::ConstPtr<RHI::DrawPacket>>;
 
             struct ShaderData
             {
@@ -113,7 +111,7 @@ namespace AZ
         private: // functions
 
             //!Uses the given drawPacketBuilder to build a draw packet with given data and returns it
-            const RHI::DrawPacket* BuildDrawPacketForDynamicPrimitive(
+            RHI::ConstPtr<RHI::DrawPacket> BuildDrawPacketForDynamicPrimitive(
                 DynamicBufferGroup& group,
                 const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
                 Data::Instance<RPI::ShaderResourceGroup> srg,

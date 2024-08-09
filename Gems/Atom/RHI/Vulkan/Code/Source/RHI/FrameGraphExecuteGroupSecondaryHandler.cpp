@@ -18,11 +18,11 @@ namespace AZ::Vulkan
         Device& device, const AZStd::vector<RHI::FrameGraphExecuteGroup*>& executeGroups)
     {
         // We first need to build the renderpass that will be used by all groups.
-        RenderPassBuilder builder(device, static_cast<uint32_t>(executeGroups.size()));
+        RenderPassBuilder builder(device);
         AZStd::string name = executeGroups.size() > 1 ? "[Merged]" : "";
         for (auto executeGroupBase : executeGroups)
         {
-            const FrameGraphExecuteGroupSecondary* executeGroup = static_cast<const FrameGraphExecuteGroupSecondary*>(executeGroupBase);
+            FrameGraphExecuteGroupSecondary* executeGroup = static_cast<FrameGraphExecuteGroupSecondary*>(executeGroupBase);
             AZ_Assert(executeGroup, "Invalid execute group on FrameGraphExecuteGroupHandler");
             AZ_Assert(executeGroup->GetScopes().size() == 1, "Incorrect number of scopes (%d) in group on FrameGraphExecuteGroupHandler", executeGroup->GetScopes().size());
             auto* scope = executeGroup->GetScopes()[0];

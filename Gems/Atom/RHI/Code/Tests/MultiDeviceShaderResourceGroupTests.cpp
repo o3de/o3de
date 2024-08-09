@@ -9,9 +9,9 @@
 #include "RHITestFixture.h"
 #include <Atom/RHI.Reflect/ReflectSystemComponent.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/MultiDeviceShaderResourceGroup.h>
-#include <Atom/RHI/MultiDeviceShaderResourceGroupData.h>
-#include <Atom/RHI/MultiDeviceShaderResourceGroupPool.h>
+#include <Atom/RHI/ShaderResourceGroup.h>
+#include <Atom/RHI/ShaderResourceGroupData.h>
+#include <Atom/RHI/ShaderResourceGroupPool.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Matrix4x4.h>
@@ -192,27 +192,27 @@ namespace UnitTest
             RHI::ConstPtr<RHI::ShaderResourceGroupLayout> srgLayout = CreateLayout();
 
             {
-                RHI::Ptr<RHI::MultiDeviceShaderResourceGroup> srgA = aznew AZ::RHI::MultiDeviceShaderResourceGroup;
+                RHI::Ptr<RHI::ShaderResourceGroup> srgA = aznew AZ::RHI::ShaderResourceGroup;
 
                 {
-                    RHI::Ptr<RHI::MultiDeviceShaderResourceGroupPool> srgPool = aznew AZ::RHI::MultiDeviceShaderResourceGroupPool;
+                    RHI::Ptr<RHI::ShaderResourceGroupPool> srgPool = aznew AZ::RHI::ShaderResourceGroupPool;
 
                     RHI::ShaderResourceGroupPoolDescriptor descriptor;
                     descriptor.m_budgetInBytes = 16;
                     descriptor.m_layout = srgLayout.get();
 
                     ASSERT_FALSE(srgPool->IsInitialized());
-                    srgPool->Init(DeviceMask, descriptor);
+                    srgPool->Init(descriptor);
                     ASSERT_TRUE(srgPool->IsInitialized());
                     srgPool->Shutdown();
                     ASSERT_FALSE(srgPool->IsInitialized());
-                    srgPool->Init(DeviceMask, descriptor);
+                    srgPool->Init(descriptor);
                     ASSERT_TRUE(srgPool->IsInitialized());
                     ASSERT_TRUE(srgPool->use_count() == 1);
 
                     ASSERT_TRUE(srgLayout->use_count() == (3 + DeviceCount));
 
-                    RHI::Ptr<RHI::MultiDeviceShaderResourceGroup> srgB = aznew AZ::RHI::MultiDeviceShaderResourceGroup;
+                    RHI::Ptr<RHI::ShaderResourceGroup> srgB = aznew AZ::RHI::ShaderResourceGroup;
                     ASSERT_TRUE(srgA->GetPool() == nullptr);
 
                     srgPool->InitGroup(*srgA);
@@ -238,10 +238,10 @@ namespace UnitTest
                     {
                         uint32_t srgIndex = 0;
 
-                        const RHI::MultiDeviceShaderResourceGroup* srgs[] = { srgA.get(), srgB.get() };
+                        const RHI::ShaderResourceGroup* srgs[] = { srgA.get(), srgB.get() };
 
-                        srgPool->ForEach<RHI::MultiDeviceShaderResourceGroup>(
-                            [&srgIndex, &srgs](const RHI::MultiDeviceShaderResourceGroup& srg)
+                        srgPool->ForEach<RHI::ShaderResourceGroup>(
+                            [&srgIndex, &srgs](const RHI::ShaderResourceGroup& srg)
                             {
                                 ASSERT_TRUE(srgs[srgIndex] == &srg);
                                 srgIndex++;
@@ -254,7 +254,7 @@ namespace UnitTest
             }
 
             ASSERT_TRUE(srgLayout->use_count() == 1);
-            RHI::Ptr<RHI::MultiDeviceShaderResourceGroup> noopShaderResourceGroup = aznew AZ::RHI::MultiDeviceShaderResourceGroup;
+            RHI::Ptr<RHI::ShaderResourceGroup> noopShaderResourceGroup = aznew AZ::RHI::ShaderResourceGroup;
         }
 
         void TestShaderResourceGroupReflection(const RHI::ConstPtr<RHI::ShaderResourceGroupLayout>& srgLayout)
@@ -305,17 +305,17 @@ namespace UnitTest
             RHI::ShaderInputConstantIndex matrix3x4Index = srgLayout->FindShaderInputConstantIndex(Name("m_matrix3x4"));
             ASSERT_TRUE(matrix3x4Index.GetIndex() == 6);
 
-            RHI::Ptr<RHI::MultiDeviceShaderResourceGroupPool> srgPool = aznew AZ::RHI::MultiDeviceShaderResourceGroupPool;
+            RHI::Ptr<RHI::ShaderResourceGroupPool> srgPool = aznew AZ::RHI::ShaderResourceGroupPool;
 
             RHI::ShaderResourceGroupPoolDescriptor descriptor;
             descriptor.m_budgetInBytes = 16;
             descriptor.m_layout = srgLayout.get();
-            srgPool->Init(DeviceMask, descriptor);
+            srgPool->Init(descriptor);
 
-            RHI::Ptr<RHI::MultiDeviceShaderResourceGroup> srg = aznew AZ::RHI::MultiDeviceShaderResourceGroup;
+            RHI::Ptr<RHI::ShaderResourceGroup> srg = aznew AZ::RHI::ShaderResourceGroup;
             srgPool->InitGroup(*srg);
 
-            RHI::MultiDeviceShaderResourceGroupData srgData(*srg);
+            RHI::ShaderResourceGroupData srgData(*srg);
 
             float floatValue = 1.234f;
             srgData.SetConstant(floatValueIndex, floatValue);
@@ -346,47 +346,38 @@ namespace UnitTest
             // Write the last one as a single value with an offset.
             srgData.SetConstantRaw(nestedDataIndex, &nestedData[15], sizeof(NestedData) * 15, sizeof(NestedData));
 
-            for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
-            {
-                float floatValueResult = srgData.GetDeviceShaderResourceGroupData(deviceIndex).GetConstant<float>(floatValueIndex);
-                EXPECT_EQ(floatValueResult, floatValue);
-            }
+            float floatValueResult = srgData.GetConstant<float>(floatValueIndex);
+            EXPECT_EQ(floatValueResult, floatValue);
 
             const auto ValidateFloat4Values = [&]()
             {
-                for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
-                {
-                    AZStd::span<const float> float4ValueResult =
-                        srgData.GetDeviceShaderResourceGroupData(deviceIndex).GetConstantArray<float>(float4ValueIndex);
-                    EXPECT_EQ(float4ValueResult.size(), 4);
-                    EXPECT_EQ(float4ValueResult[0], float4Values[0]);
-                    EXPECT_EQ(float4ValueResult[1], float4Values[1]);
-                    EXPECT_EQ(float4ValueResult[2], float4Values[2]);
-                    EXPECT_EQ(float4ValueResult[3], float4Values[3]);
-                }
+                AZStd::span<const float> float4ValueResult =
+                    srgData.GetConstantArray<float>(float4ValueIndex);
+                EXPECT_EQ(float4ValueResult.size(), 4);
+                EXPECT_EQ(float4ValueResult[0], float4Values[0]);
+                EXPECT_EQ(float4ValueResult[1], float4Values[1]);
+                EXPECT_EQ(float4ValueResult[2], float4Values[2]);
+                EXPECT_EQ(float4ValueResult[3], float4Values[3]);
             };
 
-            for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
+            AZStd::span<const uint32_t> uintValuesResult =
+                srgData.GetConstantArray<uint32_t>(uintValueIndex);
+            EXPECT_EQ(uintValuesResult.size(), 3);
+            EXPECT_EQ(uintValuesResult[0], uintValues[0]);
+            EXPECT_EQ(uintValuesResult[1], uintValues[1]);
+            EXPECT_EQ(uintValuesResult[2], uintValues[2]);
+
+            AZStd::span<const NestedData> nestedDataResult =
+                srgData.GetConstantArray<NestedData>(nestedDataIndex);
+            EXPECT_EQ(nestedDataResult.size(), 16);
+
+            ValidateFloat4Values();
+
+            for (uint32_t i = 0; i < 16; ++i)
             {
-                AZStd::span<const uint32_t> uintValuesResult =
-                    srgData.GetDeviceShaderResourceGroupData(deviceIndex).GetConstantArray<uint32_t>(uintValueIndex);
-                EXPECT_EQ(uintValuesResult.size(), 3);
-                EXPECT_EQ(uintValuesResult[0], uintValues[0]);
-                EXPECT_EQ(uintValuesResult[1], uintValues[1]);
-                EXPECT_EQ(uintValuesResult[2], uintValues[2]);
-
-                AZStd::span<const NestedData> nestedDataResult =
-                    srgData.GetDeviceShaderResourceGroupData(deviceIndex).GetConstantArray<NestedData>(nestedDataIndex);
-                EXPECT_EQ(nestedDataResult.size(), 16);
-
-                ValidateFloat4Values();
-
-                for (uint32_t i = 0; i < 16; ++i)
-                {
-                    EXPECT_EQ(nestedDataResult[i].m_x, nestedData[i].m_x);
-                    EXPECT_EQ(nestedDataResult[i].m_y, nestedData[i].m_y);
-                    EXPECT_EQ(nestedDataResult[i].m_z, nestedData[i].m_z);
-                }
+                EXPECT_EQ(nestedDataResult[i].m_x, nestedData[i].m_x);
+                EXPECT_EQ(nestedDataResult[i].m_y, nestedData[i].m_y);
+                EXPECT_EQ(nestedDataResult[i].m_z, nestedData[i].m_z);
             }
 
             // SetConstant Matrix tests
@@ -397,60 +388,52 @@ namespace UnitTest
             // SetConstant matrix of type Matrix3x3
             const AZ::Matrix3x3& mat3x3Values = AZ::Matrix3x3::CreateFromRowMajorFloat9(matrixValue);
             srgData.SetConstant(matrix3x3Index, mat3x3Values);
-            for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
-                EXPECT_EQ(srgData.GetDeviceShaderResourceGroupData(deviceIndex).GetConstant<AZ::Matrix3x3>(matrix3x3Index), mat3x3Values);
+            EXPECT_EQ(srgData.GetConstant<AZ::Matrix3x3>(matrix3x3Index), mat3x3Values);
 
             // SetConstant matrix of type Matrix3x4
             const AZ::Matrix3x4& mat3x4Values = AZ::Matrix3x4::CreateFromRowMajorFloat12(matrixValue);
             srgData.SetConstant(matrix3x4Index, mat3x4Values);
-            for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
-                EXPECT_EQ(srgData.GetDeviceShaderResourceGroupData(deviceIndex).GetConstant<AZ::Matrix3x4>(matrix3x4Index), mat3x4Values);
+            EXPECT_EQ(srgData.GetConstant<AZ::Matrix3x4>(matrix3x4Index), mat3x4Values);
 
             // SetConstant matrix of type Matrix4x4
             const AZ::Matrix4x4& mat4x4Values = AZ::Matrix4x4::CreateFromRowMajorFloat16(matrixValue);
             srgData.SetConstant(matrix4x4Index, mat4x4Values);
-            for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
-                EXPECT_EQ(srgData.GetDeviceShaderResourceGroupData(deviceIndex).GetConstant<AZ::Matrix4x4>(matrix4x4Index), mat4x4Values);
+            EXPECT_EQ(srgData.GetConstant<AZ::Matrix4x4>(matrix4x4Index), mat4x4Values);
 
             // Reset the constant matrix3x4Index with identity
             srgData.SetConstant(matrix3x4Index, AZ::Matrix3x4::CreateIdentity());
 
             // SetConstant matrix rows, sets 3 rows from 4x4 matrix (which becomes 3x4 matrix)
             srgData.SetConstantMatrixRows(matrix3x4Index, mat4x4Values, 3);
-            for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
-                EXPECT_EQ(srgData.GetDeviceShaderResourceGroupData(deviceIndex).GetConstant<AZ::Matrix3x4>(matrix3x4Index), mat3x4Values);
+            EXPECT_EQ(srgData.GetConstant<AZ::Matrix3x4>(matrix3x4Index), mat3x4Values);
 
             // Reset the constant matrix3x3Index with identity
             srgData.SetConstant(matrix3x3Index, AZ::Matrix3x3::CreateIdentity());
 
             srgData.SetConstantMatrixRows(matrix3x3Index, mat3x3Values, 3);
-            for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
-                EXPECT_EQ(srgData.GetDeviceShaderResourceGroupData(deviceIndex).GetConstant<AZ::Matrix3x3>(matrix3x3Index), mat3x3Values);
+            EXPECT_EQ(srgData.GetConstant<AZ::Matrix3x3>(matrix3x3Index), mat3x3Values);
 
             // Reset the constant matrix4x4Index with identity
             srgData.SetConstant(matrix4x4Index, AZ::Matrix4x4::CreateIdentity());
 
             srgData.SetConstantMatrixRows(matrix4x4Index, mat4x4Values, 4);
-            for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
-                EXPECT_EQ(srgData.GetDeviceShaderResourceGroupData(deviceIndex).GetConstant<AZ::Matrix4x4>(matrix4x4Index), mat4x4Values);
+            EXPECT_EQ(srgData.GetConstant<AZ::Matrix4x4>(matrix4x4Index), mat4x4Values);
 
             // SetConstant
             {
                 // Attempt to a larger amount of data than is supported.
                 AZ_TEST_START_ASSERTTEST;
                 srgData.SetConstant(floatValueIndex, AZ::Vector4::CreateOne());
-                AZ_TEST_STOP_ASSERTTEST(DeviceCount);
+                AZ_TEST_STOP_ASSERTTEST(DeviceCount + 1);
 
-                for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
-                    EXPECT_EQ(srgData.GetDeviceShaderResourceGroupData(deviceIndex).GetConstant<float>(floatValueIndex), floatValue);
+                EXPECT_EQ(srgData.GetConstant<float>(floatValueIndex), floatValue);
 
                 // Attempt to assign a smaller amount of data than is supported.
                 AZ_TEST_START_ASSERTTEST;
                 srgData.SetConstant(floatValueIndex, uint8_t(0));
-                AZ_TEST_STOP_ASSERTTEST(DeviceCount);
+                AZ_TEST_STOP_ASSERTTEST(DeviceCount + 1);
 
-                for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
-                    EXPECT_EQ(srgData.GetDeviceShaderResourceGroupData(deviceIndex).GetConstant<float>(floatValueIndex), floatValue);
+                EXPECT_EQ(srgData.GetConstant<float>(floatValueIndex), floatValue);
             }
 
             // SetConstant (ArrayIndex)
@@ -458,7 +441,7 @@ namespace UnitTest
                 // Assign index that overflows array.
                 AZ_TEST_START_ASSERTTEST;
                 srgData.SetConstant(float4ValueIndex, 5.0f, 5);
-                AZ_TEST_STOP_ASSERTTEST(DeviceCount);
+                AZ_TEST_STOP_ASSERTTEST(DeviceCount + 1);
 
                 ValidateFloat4Values();
 
@@ -472,7 +455,7 @@ namespace UnitTest
 
                 AZ_TEST_START_ASSERTTEST;
                 srgData.SetConstant(float4ValueIndex, Test(), 1);
-                AZ_TEST_STOP_ASSERTTEST(DeviceCount);
+                AZ_TEST_STOP_ASSERTTEST(DeviceCount + 1);
 
                 ValidateFloat4Values();
 
@@ -488,7 +471,7 @@ namespace UnitTest
                 float float6Values[] = { 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f };
                 AZ_TEST_START_ASSERTTEST;
                 srgData.SetConstantArray<float>(float4ValueIndex, { float6Values, AZ_ARRAY_SIZE(float6Values) });
-                AZ_TEST_STOP_ASSERTTEST(DeviceCount);
+                AZ_TEST_STOP_ASSERTTEST(DeviceCount + 1);
 
                 ValidateFloat4Values();
 
@@ -496,7 +479,7 @@ namespace UnitTest
                 float float1Value[] = { 5.0f };
                 AZ_TEST_START_ASSERTTEST;
                 srgData.SetConstantArray<float>(float4ValueIndex, { float1Value, AZ_ARRAY_SIZE(float1Value) });
-                AZ_TEST_STOP_ASSERTTEST(DeviceCount);
+                AZ_TEST_STOP_ASSERTTEST(DeviceCount + 1);
 
                 ValidateFloat4Values();
             }
@@ -506,18 +489,18 @@ namespace UnitTest
     namespace MultiDevice
     {
 
-        RHI::MultiDeviceShaderResourceGroupData PrepareSRGData(const RHI::ConstPtr<RHI::ShaderResourceGroupLayout>& srgLayout)
+        RHI::ShaderResourceGroupData PrepareSRGData(const RHI::ConstPtr<RHI::ShaderResourceGroupLayout>& srgLayout)
         {
-            RHI::Ptr<RHI::MultiDeviceShaderResourceGroupPool> srgPool = aznew AZ::RHI::MultiDeviceShaderResourceGroupPool;
+            RHI::Ptr<RHI::ShaderResourceGroupPool> srgPool = aznew AZ::RHI::ShaderResourceGroupPool;
 
             RHI::ShaderResourceGroupPoolDescriptor descriptor;
             descriptor.m_layout = srgLayout.get();
-            srgPool->Init(DeviceMask, descriptor);
+            srgPool->Init(descriptor);
 
-            RHI::Ptr<RHI::MultiDeviceShaderResourceGroup> srg = aznew AZ::RHI::MultiDeviceShaderResourceGroup;
+            RHI::Ptr<RHI::ShaderResourceGroup> srg = aznew AZ::RHI::ShaderResourceGroup;
             srgPool->InitGroup(*srg);
 
-            RHI::MultiDeviceShaderResourceGroupData srgData(*srg);
+            RHI::ShaderResourceGroupData srgData(*srg);
             return srgData;
         }
 
@@ -530,7 +513,7 @@ namespace UnitTest
             const RHI::ShaderInputConstantIndex vector4index = srgLayout->FindShaderInputConstantIndex(Name("m_vector4"));
             EXPECT_EQ(vector4index.GetIndex(), 9);
 
-            RHI::MultiDeviceShaderResourceGroupData srgData = PrepareSRGData(srgLayout);
+            RHI::ShaderResourceGroupData srgData = PrepareSRGData(srgLayout);
 
             const float vector2values[2] = { 1.0f, 2.0f };
             const Vector2 vector2 = Vector2::CreateFromFloat2(vector2values);
@@ -542,31 +525,19 @@ namespace UnitTest
             const Vector4 vector4 = Vector4::CreateFromFloat4(vector4values);
 
             EXPECT_TRUE(srgData.SetConstant(vector2index, vector2));
-            for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
-            {
-                AZStd::span<const uint8_t> resultVector2 =
-                    srgData.GetDeviceShaderResourceGroupData(deviceIndex).GetConstantRaw(vector2index);
-                const Vector2 vector2result = *reinterpret_cast<const Vector2*>(resultVector2.data());
-                EXPECT_EQ(vector2result, vector2);
-            }
+            AZStd::span<const uint8_t> resultVector2 = srgData.GetConstantRaw(vector2index);
+            const Vector2 vector2result = *reinterpret_cast<const Vector2*>(resultVector2.data());
+            EXPECT_EQ(vector2result, vector2);
 
             EXPECT_TRUE(srgData.SetConstant(vector3index, vector3));
-            for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
-            {
-                AZStd::span<const uint8_t> resutVector3 =
-                    srgData.GetDeviceShaderResourceGroupData(deviceIndex).GetConstantRaw(vector3index);
-                const Vector3 vector3result = *reinterpret_cast<const Vector3*>(resutVector3.data());
-                EXPECT_EQ(vector3result, vector3);
-            }
+            AZStd::span<const uint8_t> resutVector3 = srgData.GetConstantRaw(vector3index);
+            const Vector3 vector3result = *reinterpret_cast<const Vector3*>(resutVector3.data());
+            EXPECT_EQ(vector3result, vector3);
 
             EXPECT_TRUE(srgData.SetConstant(vector4index, vector4));
-            for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
-            {
-                AZStd::span<const uint8_t> resutVector4 =
-                    srgData.GetDeviceShaderResourceGroupData(deviceIndex).GetConstantRaw(vector4index);
-                const Vector4 vector4result = *reinterpret_cast<const Vector4*>(resutVector4.data());
-                EXPECT_EQ(vector4result, vector4);
-            }
+            AZStd::span<const uint8_t> resutVector4 = srgData.GetConstantRaw(vector4index);
+            const Vector4 vector4result = *reinterpret_cast<const Vector4*>(resutVector4.data());
+            EXPECT_EQ(vector4result, vector4);
         }
         void TestSetConstantVectorsInvalidCase(const RHI::ConstPtr<RHI::ShaderResourceGroupLayout>& srgLayout)
         {
@@ -577,7 +548,7 @@ namespace UnitTest
             const RHI::ShaderInputConstantIndex vector4index = srgLayout->FindShaderInputConstantIndex(Name("m_vector4"));
             EXPECT_EQ(vector4index.GetIndex(), 9);
 
-            RHI::MultiDeviceShaderResourceGroupData srgData = PrepareSRGData(srgLayout);
+            RHI::ShaderResourceGroupData srgData = PrepareSRGData(srgLayout);
 
             const float vector2values[2] = { 1.0f, 2.0f };
             const Vector2 vector2 = Vector2::CreateFromFloat2(vector2values);
@@ -593,40 +564,30 @@ namespace UnitTest
 
             AZ_TEST_START_ASSERTTEST;
             EXPECT_FALSE(srgData.SetConstant(vector2index, vector3));
-            AZ_TEST_STOP_ASSERTTEST(DeviceCount);
-            for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
-            {
-                AZStd::span<const uint8_t> resutV3 = srgData.GetDeviceShaderResourceGroupData(deviceIndex).GetConstantRaw(vector2index);
-                const Vector3 v3result = *reinterpret_cast<const Vector3*>(resutV3.data());
-                EXPECT_NE(v3result, vector3);
-            }
+            AZ_TEST_STOP_ASSERTTEST(DeviceCount + 1);
+            AZStd::span<const uint8_t> resutV3 = srgData.GetConstantRaw(vector2index);
+            const Vector3 v3result = *reinterpret_cast<const Vector3*>(resutV3.data());
+            EXPECT_NE(v3result, vector3);
 
             // Reset constant vector3index to zero
             EXPECT_TRUE(srgData.SetConstant(vector3index, vector3.CreateZero()));
 
             AZ_TEST_START_ASSERTTEST;
             EXPECT_FALSE(srgData.SetConstant(vector3index, vector4));
-            AZ_TEST_STOP_ASSERTTEST(DeviceCount);
-            for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
-            {
-                AZStd::span<const uint8_t> resutV4 = srgData.GetDeviceShaderResourceGroupData(deviceIndex).GetConstantRaw(vector3index);
-                const Vector4 v4result = *reinterpret_cast<const Vector4*>(resutV4.data());
-                EXPECT_NE(v4result, vector4);
-            }
+            AZ_TEST_STOP_ASSERTTEST(DeviceCount + 1);
+            AZStd::span<const uint8_t> resutV4 = srgData.GetConstantRaw(vector3index);
+            const Vector4 v4result = *reinterpret_cast<const Vector4*>(resutV4.data());
+            EXPECT_NE(v4result, vector4);
 
             // Reset constant vector4index to zero
             EXPECT_TRUE(srgData.SetConstant(vector4index, vector4.CreateZero()));
 
             AZ_TEST_START_ASSERTTEST;
             EXPECT_FALSE(srgData.SetConstant(vector4index, vector3));
-            AZ_TEST_STOP_ASSERTTEST(DeviceCount);
-            for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
-            {
-                AZStd::span<const uint8_t> resutV3FromIndex4 =
-                    srgData.GetDeviceShaderResourceGroupData(deviceIndex).GetConstantRaw(vector4index);
-                const Vector4 v4resultFromIndex4 = *reinterpret_cast<const Vector4*>(resutV3FromIndex4.data());
-                EXPECT_NE(v4resultFromIndex4, vector4);
-            }
+            AZ_TEST_STOP_ASSERTTEST(DeviceCount + 1);
+            AZStd::span<const uint8_t> resutV3FromIndex4 = srgData.GetConstantRaw(vector4index);
+            const Vector4 v4resultFromIndex4 = *reinterpret_cast<const Vector4*>(resutV3FromIndex4.data());
+            EXPECT_NE(v4resultFromIndex4, vector4);
         }
 
         void TestGetConstantVectorsValidCase(const RHI::ConstPtr<RHI::ShaderResourceGroupLayout>& srgLayout)
@@ -638,7 +599,7 @@ namespace UnitTest
             const RHI::ShaderInputConstantIndex vector4index = srgLayout->FindShaderInputConstantIndex(Name("m_vector4"));
             EXPECT_EQ(vector4index.GetIndex(), 9);
 
-            RHI::MultiDeviceShaderResourceGroupData srgData = PrepareSRGData(srgLayout);
+            RHI::ShaderResourceGroupData srgData = PrepareSRGData(srgLayout);
 
             const float vector2values[2] = { 1.0f, 2.0f };
             const Vector2 vector2 = Vector2::CreateFromFloat2(vector2values);
@@ -650,25 +611,16 @@ namespace UnitTest
             const Vector4 vector4 = Vector4::CreateFromFloat4(vector4values);
 
             EXPECT_TRUE(srgData.SetConstantRaw(vector2index, &vector2, 8));
-            for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
-            {
-                const Vector2 vector2result = srgData.GetDeviceShaderResourceGroupData(deviceIndex).GetConstant<Vector2>(vector2index);
-                EXPECT_EQ(vector2result, vector2);
-            }
+            const Vector2 vector2result = srgData.GetConstant<Vector2>(vector2index);
+            EXPECT_EQ(vector2result, vector2);
 
             EXPECT_TRUE(srgData.SetConstantRaw(vector3index, &vector3, 12));
-            for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
-            {
-                const Vector3 vector3result = srgData.GetDeviceShaderResourceGroupData(deviceIndex).GetConstant<Vector3>(vector3index);
-                EXPECT_EQ(vector3result, vector3);
-            }
+            const Vector3 vector3result = srgData.GetConstant<Vector3>(vector3index);
+            EXPECT_EQ(vector3result, vector3);
 
             EXPECT_TRUE(srgData.SetConstantRaw(vector4index, &vector4, 16));
-            for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
-            {
-                const Vector4 vector4result = srgData.GetDeviceShaderResourceGroupData(deviceIndex).GetConstant<Vector4>(vector4index);
-                EXPECT_EQ(vector4result, vector4);
-            }
+            const Vector4 vector4result = srgData.GetConstant<Vector4>(vector4index);
+            EXPECT_EQ(vector4result, vector4);
         }
         void TestGetConstantVectorsInvalidCase(const RHI::ConstPtr<RHI::ShaderResourceGroupLayout>& srgLayout)
         {
@@ -679,7 +631,7 @@ namespace UnitTest
             const RHI::ShaderInputConstantIndex vector4index = srgLayout->FindShaderInputConstantIndex(Name("m_vector4"));
             EXPECT_EQ(vector4index.GetIndex(), 9);
 
-            RHI::MultiDeviceShaderResourceGroupData srgData = PrepareSRGData(srgLayout);
+            RHI::ShaderResourceGroupData srgData = PrepareSRGData(srgLayout);
 
             const float vector2values[2] = { 1.0f, 2.0f };
             const Vector2 vector2 = Vector2::CreateFromFloat2(vector2values);
@@ -692,34 +644,22 @@ namespace UnitTest
 
             // Invalid cases for GetConstant
             EXPECT_TRUE(srgData.SetConstantRaw(vector2index, &vector2, 8));
-            for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
-            {
-                AZ_TEST_START_ASSERTTEST;
-                const Vector3 invalidVector3result =
-                    srgData.GetDeviceShaderResourceGroupData(deviceIndex).GetConstant<Vector3>(vector2index);
-                EXPECT_NE(invalidVector3result, vector3);
-                AZ_TEST_STOP_ASSERTTEST(1);
-            }
+            AZ_TEST_START_ASSERTTEST;
+            const Vector3 invalidVector3result = srgData.GetConstant<Vector3>(vector2index);
+            EXPECT_NE(invalidVector3result, vector3);
+            AZ_TEST_STOP_ASSERTTEST(1);
 
             EXPECT_TRUE(srgData.SetConstantRaw(vector3index, &vector3, 12));
-            for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
-            {
-                AZ_TEST_START_ASSERTTEST;
-                const Vector4 invalidVector4result =
-                    srgData.GetDeviceShaderResourceGroupData(deviceIndex).GetConstant<Vector4>(vector3index);
-                EXPECT_NE(invalidVector4result, vector4);
-                AZ_TEST_STOP_ASSERTTEST(1);
-            }
+            AZ_TEST_START_ASSERTTEST;
+            const Vector4 invalidVector4result = srgData.GetConstant<Vector4>(vector3index);
+            EXPECT_NE(invalidVector4result, vector4);
+            AZ_TEST_STOP_ASSERTTEST(1);
 
             EXPECT_TRUE(srgData.SetConstantRaw(vector4index, &vector4, 16));
-            for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
-            {
-                AZ_TEST_START_ASSERTTEST;
-                const Vector2 invalidVector2result =
-                    srgData.GetDeviceShaderResourceGroupData(deviceIndex).GetConstant<Vector2>(vector4index);
-                EXPECT_NE(invalidVector2result, vector2);
-                AZ_TEST_STOP_ASSERTTEST(1);
-            }
+            AZ_TEST_START_ASSERTTEST;
+            const Vector2 invalidVector2result = srgData.GetConstant<Vector2>(vector4index);
+            EXPECT_NE(invalidVector2result, vector2);
+            AZ_TEST_STOP_ASSERTTEST(1);
         }
 
         TEST_F(MultiDeviceShaderResourceGroupTests, TestShaderResourceGroupLayout)

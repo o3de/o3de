@@ -116,3 +116,4 @@ ly_add_pytest(
     EXCLUDE_TEST_RUN_TARGET_FROM_IDE
 )
 
+add_subdirectory(ExportScripts)

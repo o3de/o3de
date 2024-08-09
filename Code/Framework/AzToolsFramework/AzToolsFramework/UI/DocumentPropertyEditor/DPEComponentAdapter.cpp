@@ -38,37 +38,20 @@ namespace AZ::DocumentPropertyEditor
     {
         if (m_componentId == componentId)
         {
-            m_queuedRefreshLevel = AzToolsFramework::PropertyModificationRefreshLevel::Refresh_Values;
-            QPointer<QObject> stillAlive(&m_stillAlive);
-            QTimer::singleShot(
-                0,
-                [this, stillAlive]()
-                {
-                    // make sure the component adapter still exists by the time this refresh resolves
-                    if (stillAlive)
-                    {
-                        DoRefresh();
-                    }
-                });
+            RequestRefresh(AzToolsFramework::PropertyModificationRefreshLevel::Refresh_Values);
         }
     }
 
     void ComponentAdapter::InvalidatePropertyDisplay(AzToolsFramework::PropertyModificationRefreshLevel level)
     {
-        if (level > m_queuedRefreshLevel)
+        RequestRefresh(level);
+    }
+
+    void ComponentAdapter::InvalidatePropertyDisplayForComponent(AZ::EntityComponentIdPair entityComponentIdPair, AzToolsFramework::PropertyModificationRefreshLevel level)
+    {
+        if ((entityComponentIdPair.GetEntityId() == m_entityId) && (entityComponentIdPair.GetComponentId() == m_componentId))
         {
-            m_queuedRefreshLevel = level;
-            QPointer<QObject> stillAlive(&m_stillAlive);
-            QTimer::singleShot(
-                0,
-                [this, stillAlive]()
-                {
-                    // make sure the component adapter still exists by the time this refresh resolves
-                    if (stillAlive)
-                    {
-                        DoRefresh();
-                    }
-                });
+            RequestRefresh(level);
         }
     }
 
@@ -76,18 +59,21 @@ namespace AZ::DocumentPropertyEditor
     {
         if (level > m_queuedRefreshLevel)
         {
-            m_queuedRefreshLevel = level;
-            QPointer<QObject> stillAlive(&m_stillAlive);
-            QTimer::singleShot(
-                0,
-                [this, stillAlive]()
-                {
-                    // make sure the component adapter still exists by the time this refresh resolves
-                    if (stillAlive)
+            if (m_queuedRefreshLevel == AzToolsFramework::PropertyModificationRefreshLevel::Refresh_None)
+            {
+                QPointer<QObject> stillAlive(&m_stillAlive);
+                QTimer::singleShot(
+                    0,
+                    [this, stillAlive]()
                     {
-                        DoRefresh();
-                    }
-                });
+                        // make sure the component adapter still exists by the time this refresh resolves
+                        if (stillAlive)
+                        {
+                            DoRefresh();
+                        }
+                    });
+            }
+            m_queuedRefreshLevel = level;
         }
     }
 
@@ -126,17 +112,11 @@ namespace AZ::DocumentPropertyEditor
 
     void ComponentAdapter::DoRefresh()
     {
-        if (!IsComponentValid())
+        if (IsComponentValid())
         {
-            return;
+            m_queuedRefreshLevel = AzToolsFramework::PropertyModificationRefreshLevel::Refresh_None;
+            NotifyResetDocument();
         }
-
-        if (m_queuedRefreshLevel == AzToolsFramework::PropertyModificationRefreshLevel::Refresh_None)
-        {
-            return;
-        }
-        m_queuedRefreshLevel = AzToolsFramework::PropertyModificationRefreshLevel::Refresh_None;
-        NotifyResetDocument();
     }
 
     Dom::Value ComponentAdapter::HandleMessage(const AdapterMessage& message)

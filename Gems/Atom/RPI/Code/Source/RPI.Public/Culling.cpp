@@ -483,21 +483,42 @@ namespace AZ
             // Perform occlusion tests using OcclusionRequestBus if it is connected to the entity context ID for this scene.
             if (!worklistData->m_sceneEntityContextId.IsNull())
             {
-                bool result = true;
-                AzFramework::OcclusionRequestBus::EventResult(
-                    result,
+                AzFramework::OcclusionState state = AzFramework::OcclusionState::Unknown;
+                const auto& viewName = worklistData->m_view->GetName();
+
+                AzFramework::OcclusionRequestBus::Event(
                     worklistData->m_sceneEntityContextId,
-                    &AzFramework::OcclusionRequestBus::Events::IsAabbVisibleInOcclusionView,
-                    worklistData->m_view->GetName(),
-                    visibleEntry->m_boundingVolume);
+                    [&](AzFramework::OcclusionRequestBus::Events* handler)
+                    {
+                        // An occlusion culling system might precompute visibility data for static objects or entities in a scene. If the
+                        // system that implements OcclusionRequestBus supports that behavior then we want to perform an initial visibility
+                        // test using the entity ID. This can avoid potentially more expensive dynamic tests, like those against an
+                        // occlusion buffer.
+                        if (visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable)
+                        {
+                            auto cullable = static_cast<RPI::Cullable*>(visibleEntry->m_userData);
+                            if (cullable && cullable->m_cullData.m_entityId.IsValid())
+                            {
+                                state = handler->GetOcclusionViewEntityVisibility(viewName, cullable->m_cullData.m_entityId);
+                            }
+                        }
+
+                        // Entries that don't meet the above criteria or return an inconclusive or partially visible state will perform a
+                        // dynamic, bounding box visibility test. One entity can have multiple visibility entries that may need to be tested
+                        // individually. If the entire entity is hidden, no further testing is required.
+                        if (state != AzFramework::OcclusionState::Hidden)
+                        {
+                            state = handler->GetOcclusionViewAabbVisibility(viewName, visibleEntry->m_boundingVolume);
+                        }
+                    });
 
                 // Return immediately to bypass MaskedOcclusionCulling
-                return result;
+                return state != AzFramework::OcclusionState::Hidden;
             }
 
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
             MaskedOcclusionCulling* maskedOcclusionCulling = worklistData->m_view->GetMaskedOcclusionCulling();
-            if (!maskedOcclusionCulling)
+            if (!maskedOcclusionCulling || !worklistData->m_view->GetMaskedOcclusionCullingDirty())
             {
                 return true;
             }
@@ -605,6 +626,7 @@ namespace AZ
                 // frustum cull occlusion planes
                 using VisibleOcclusionPlane = AZStd::pair<OcclusionPlane, float>;
                 AZStd::vector<VisibleOcclusionPlane> visibleOccluders;
+                visibleOccluders.reserve(m_occlusionPlanes.size());
                 for (const auto& occlusionPlane : m_occlusionPlanes)
                 {
                     if (ShapeIntersection::Overlaps(frustum, occlusionPlane.m_aabb))
@@ -613,7 +635,7 @@ namespace AZ
                         float depth = (view.GetWorldToViewMatrix() * occlusionPlane.m_aabb.GetMin()).GetZ();
                         depth = AZStd::min(depth, (view.GetWorldToViewMatrix() * occlusionPlane.m_aabb.GetMax()).GetZ());
 
-                        visibleOccluders.push_back(AZStd::make_pair(occlusionPlane, depth));
+                        visibleOccluders.emplace_back(occlusionPlane, depth);
                     }
                 }
 
@@ -623,13 +645,14 @@ namespace AZ
                     return LHS.second > RHS.second;
                 });
 
-                for (const VisibleOcclusionPlane& occlusionPlane: visibleOccluders)
+                bool anyVisible = false;
+                for (const VisibleOcclusionPlane& occlusionPlane : visibleOccluders)
                 {
                     // convert to clip-space
-                    Vector4 projectedBL = view.GetWorldToClipMatrix() * Vector4(occlusionPlane.first.m_cornerBL);
-                    Vector4 projectedTL = view.GetWorldToClipMatrix() * Vector4(occlusionPlane.first.m_cornerTL);
-                    Vector4 projectedTR = view.GetWorldToClipMatrix() * Vector4(occlusionPlane.first.m_cornerTR);
-                    Vector4 projectedBR = view.GetWorldToClipMatrix() * Vector4(occlusionPlane.first.m_cornerBR);
+                    const Vector4 projectedBL = view.GetWorldToClipMatrix() * Vector4(occlusionPlane.first.m_cornerBL);
+                    const Vector4 projectedTL = view.GetWorldToClipMatrix() * Vector4(occlusionPlane.first.m_cornerTL);
+                    const Vector4 projectedTR = view.GetWorldToClipMatrix() * Vector4(occlusionPlane.first.m_cornerTR);
+                    const Vector4 projectedBR = view.GetWorldToClipMatrix() * Vector4(occlusionPlane.first.m_cornerBR);
 
                     // store to float array
                     float verts[16];
@@ -638,10 +661,20 @@ namespace AZ
                     projectedTR.StoreToFloat4(&verts[8]);
                     projectedBR.StoreToFloat4(&verts[12]);
 
-                    static uint32_t indices[6] = { 0, 1, 2, 2, 3, 0 };
+                    static constexpr const uint32_t indices[6] = { 0, 1, 2, 2, 3, 0 };
 
                     // render into the occlusion buffer, specifying BACKFACE_NONE so it functions as a double-sided occluder
-                    maskedOcclusionCulling->RenderTriangles(verts, indices, 2, nullptr, MaskedOcclusionCulling::BACKFACE_NONE);
+                    if (static_cast<MaskedOcclusionCulling*>(maskedOcclusionCulling)
+                            ->RenderTriangles(verts, indices, 2, nullptr, MaskedOcclusionCulling::BACKFACE_NONE) ==
+                        MaskedOcclusionCulling::CullingResult::VISIBLE)
+                    {
+                        anyVisible = true;
+                    }
+                }
+
+                if (anyVisible)
+                {
+                    view.SetMaskedOcclusionCullingDirty(true);
                 }
             }
 #endif

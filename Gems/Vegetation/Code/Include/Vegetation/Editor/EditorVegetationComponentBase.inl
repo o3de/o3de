@@ -61,7 +61,7 @@ namespace Vegetation
 
         for (int i = 0; i < level; ++i)
         {
-            searchNode = searchNode->FindSubElement(AZ_CRC("BaseClass1", 0xd4925735));
+            searchNode = searchNode->FindSubElement(AZ_CRC_CE("BaseClass1"));
 
             if (searchNode == nullptr)
             {
@@ -98,14 +98,14 @@ namespace Vegetation
                 return false;
             }
 
-            if (!classElement.FindSubElementAndGetData(AZ_CRC("Configuration", 0xa5e2a5d7), configData))
+            if (!classElement.FindSubElementAndGetData(AZ_CRC_CE("Configuration"), configData))
             {
                 AZ_Error("Vegetation", false, "Failed to find and get data for Configuration element")
                     return false;
             }
 
-            if (!classElement.RemoveElementByName(AZ_CRC("Configuration", 0xa5e2a5d7))
-                || !classElement.RemoveElementByName(AZ_CRC("BaseClass1", 0xd4925735)))
+            if (!classElement.RemoveElementByName(AZ_CRC_CE("Configuration"))
+                || !classElement.RemoveElementByName(AZ_CRC_CE("BaseClass1")))
             {
                 AZ_Error("Vegetation", false, "Failed to remove Configuration or BaseClass1 element");
                 return false;
@@ -123,8 +123,8 @@ namespace Vegetation
                 return false;
             }
 
-            auto* editorComponentBaseElement = editorWrappedComponentBase->FindSubElement(AZ_CRC("BaseClass1", 0xd4925735));
-            auto* configElement = editorWrappedComponentBase->FindSubElement(AZ_CRC("Configuration", 0xa5e2a5d7));
+            auto* editorComponentBaseElement = editorWrappedComponentBase->FindSubElement(AZ_CRC_CE("BaseClass1"));
+            auto* configElement = editorWrappedComponentBase->FindSubElement(AZ_CRC_CE("Configuration"));
 
             if (!editorComponentBaseElement || !configElement)
             {

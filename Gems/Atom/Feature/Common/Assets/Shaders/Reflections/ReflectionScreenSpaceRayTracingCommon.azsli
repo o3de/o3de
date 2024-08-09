@@ -16,10 +16,7 @@
 #include <Atom/Features/PBR/MaterialUtils.azsli>
 #include <Atom/Features/Shadow/NormalOffsetShadows.azsli>
 #include <Atom/Features/SrgSemantics.azsli>
-#include <viewsrg.srgi>
-#include <scenesrg.srgi>
-#include <Atom/Features/RayTracing/RayTracingSceneSrg.azsli>
-#include <Atom/Features/RayTracing/RayTracingMaterialSrg.azsli>
+#include <Atom/Features/RayTracing/RayTracingSrgs.azsli>
 #include <Atom/Features/RayTracing/RayTracingSceneUtils.azsli>
 #include <Atom/Features/RayTracing/RayTracingMaterialUtils.azsli>
 #include "ReflectionCommon.azsli"
@@ -36,35 +33,15 @@ struct PayloadData
     bool   m_obstructed;
     bool   m_offScreen;
     bool   m_lightVisibilityTrace;
+    bool   m_wasIntersectionShader;
 };
 
-ShaderResourceGroup RayTracingGlobalSrg : SRG_RayTracingGlobal
+enum class ReflectionMethod
 {
-    Texture2DMS<float>    m_depth;
-    Texture2DMS<float4>   m_normal;       // RGB10 = Normal (Encoded), A2 = Flags
-    Texture2DMS<float4>   m_specularF0;   // RGB8 = SpecularF0, A8 = Roughness
-    Texture2D<float2>     m_brdfMap;
-    RWTexture2D<float4>   m_hitCoords;
-    RWTexture2D<float4>   m_fallbackColor;
-    RWTexture2D<float4>   m_fallbackAlbedo;
-    RWTexture2D<float4>   m_fallbackPosition;
-    RWTexture2D<float4>   m_fallbackNormal;
-
-    float m_invOutputScale;
-    float m_maxRayLength;
-    float m_maxRoughness;
-    bool  m_rayTraceFallbackData;
-    bool  m_rayTraceFallbackSpecular;
-
-    Sampler PointSampler
-    {
-        MinFilter = Point;
-        MagFilter = Point;
-        MipFilter = Point;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
+    ScreenSpace,
+    Hybrid,
+    HybridWithFallback,
+    RayTracing
 };
 
 struct RayTracingLightingData
@@ -695,4 +672,16 @@ float3 GetIblSpecular(
     }
 
     return outSpecular;
+}
+
+bool IsRayTracingFallbackEnabled()
+{
+    ReflectionMethod reflectionMethod = (ReflectionMethod)RayTracingGlobalSrg::m_reflectionMethod;
+    return reflectionMethod == ReflectionMethod::HybridWithFallback || reflectionMethod == ReflectionMethod::RayTracing;
+}
+
+bool IsRayTracingOverrideEnabled()
+{
+    ReflectionMethod reflectionMethod = (ReflectionMethod)RayTracingGlobalSrg::m_reflectionMethod;
+    return reflectionMethod == ReflectionMethod::RayTracing;
 }

@@ -47,6 +47,8 @@ namespace AzToolsFramework
             , m_dbReady(false)
             , m_waitingForMore(false)
             , m_disposed(false)
+            , m_isResetting(false)
+            , m_changesApplied(false)
             , m_assetBrowserModel(aznew AssetBrowserModel)
             , m_changeset(new AssetEntryChangeset(m_databaseConnection, m_rootEntry))
         {
@@ -82,7 +84,7 @@ namespace AzToolsFramework
             AZ_Assert(socketConn, "AzToolsFramework::AssetBrowser::AssetBrowserComponent requires a valid socket conection!");
             if (socketConn)
             {
-                m_cbHandle = socketConn->AddMessageHandler(AZ_CRC("FileProcessor::FileInfosNotification", 0x001c43f5),
+                m_cbHandle = socketConn->AddMessageHandler(AZ_CRC_CE("FileProcessor::FileInfosNotification"),
                     [this](unsigned int /*typeId*/, unsigned int /*serial*/, const void* buffer, unsigned int bufferSize)
                 {
                     HandleFileInfoNotification(buffer, bufferSize);
@@ -125,17 +127,17 @@ namespace AzToolsFramework
 
         void AssetBrowserComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType & services)
         {
-            services.push_back(AZ_CRC("AssetBrowserService", 0x1e54fffb));
+            services.push_back(AZ_CRC_CE("AssetBrowserService"));
         }
 
         void AssetBrowserComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("ThumbnailerService", 0x65422b97));
+            required.push_back(AZ_CRC_CE("ThumbnailerService"));
         }
 
         void AssetBrowserComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("AssetBrowserService", 0x1e54fffb));
+            incompatible.push_back(AZ_CRC_CE("AssetBrowserService"));
         }
 
         void AssetBrowserComponent::OnDatabaseInitialized()
@@ -173,6 +175,13 @@ namespace AzToolsFramework
             {
                 m_entriesReady = true;
                 AssetBrowserComponentNotificationBus::Broadcast(&AssetBrowserComponentNotifications::OnAssetBrowserComponentReady);
+            }
+
+            if (m_isResetting && m_changesApplied)
+            {
+                m_isResetting = false;
+                m_changesApplied = false;
+                m_assetBrowserModel->EndReset();
             }
         }
 
@@ -390,6 +399,11 @@ namespace AzToolsFramework
 
         void AssetBrowserComponent::PopulateAssets()
         {
+            // populating the assets is a complete reset of the model.
+            m_isResetting = true;
+            m_changesApplied = false;
+            m_assetBrowserModel->BeginReset();
+            m_rootEntry->PrepareForReset();
             m_changeset->PopulateEntries();
             NotifyUpdateThread();
         }
@@ -414,6 +428,7 @@ namespace AzToolsFramework
                 if (m_dbReady)
                 {
                     m_changeset->Update();
+                    m_changesApplied = true;
                 }
             }
         }

@@ -9,6 +9,7 @@
 
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Component/TransformBus.h>
 
 #include <AzFramework/Components/CameraBus.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
@@ -159,8 +160,25 @@ namespace AZ
             float focusDistance = 0.0f;
             if (m_enableAutoFocus)
             {
-                focusDistance = m_viewNear + m_normalizedFocusDistanceForAutoFocus * (m_viewFar - m_viewNear);
-                focusDistance = GetClamp(focusDistance, m_viewNear, m_viewFar);
+                if (m_focusedEntityId.IsValid())
+                {
+                    AZ::Vector3 focusPosition;
+                    AZ::TransformBus::EventResult(focusPosition, m_focusedEntityId, &AZ::TransformBus::Events::GetWorldTranslation);
+
+                    AZ::Transform cameraTransform;
+                    AZ::TransformBus::EventResult(cameraTransform, m_cameraEntityId, &AZ::TransformBus::Events::GetWorldTM);
+
+                    AZ::Vector3 cameraPosition = cameraTransform.GetTranslation();
+                    AZ::Vector3 forward = cameraTransform.GetBasisY();
+
+                    focusDistance = forward.Dot(focusPosition - cameraPosition);
+                    focusDistance = GetClamp(focusDistance, m_viewNear, m_viewFar);
+                }
+                else
+                {
+                    focusDistance = m_viewNear + m_normalizedFocusDistanceForAutoFocus * (m_viewFar - m_viewNear);
+                    focusDistance = GetClamp(focusDistance, m_viewNear, m_viewFar);
+                }
             }
             else
             {
@@ -323,6 +341,12 @@ namespace AZ
         {
             m_enableAutoFocus = enableAutoFocus;
         }
+
+        void DepthOfFieldSettings::SetFocusedEntityId(EntityId focusedEntityId)
+        {
+            m_focusedEntityId = focusedEntityId;
+        }
+
 
         void DepthOfFieldSettings::SetAutoFocusScreenPosition(Vector2 screenPosition)
         {

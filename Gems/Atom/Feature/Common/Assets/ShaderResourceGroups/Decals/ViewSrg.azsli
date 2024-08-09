@@ -24,10 +24,14 @@ partial ShaderResourceGroup ViewSrg
         uint m_sortKeyPacked;
         uint m_textureArrayIndex;
         uint m_textureIndex;
+        float3 m_decalColor;
+        float m_decalColorFactor;
+        [[pad_to(16)]]
     };
 
     StructuredBuffer<Decal> m_decals; 
-    
+    Buffer<uint> m_visibleDecalIndices; 
+
     // Each texture array stores all the decals for one size permutation.
     // e.g. m_decalTextureArray0 might store 24 textures @128x128, 
     // m_decalTextureArray1 might store 16 * 256x256 
@@ -45,5 +49,6 @@ partial ShaderResourceGroup ViewSrg
     Texture2DArray<float4> m_decalTextureArrayNormalMaps3;
     Texture2DArray<float4> m_decalTextureArrayNormalMaps4;
 
-    uint m_decalCount;  
+    uint m_decalCount;
+    uint m_visibleDecalCount;
 }

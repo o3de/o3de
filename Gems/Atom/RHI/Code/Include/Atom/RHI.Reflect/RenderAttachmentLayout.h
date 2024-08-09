@@ -14,6 +14,7 @@
 #include <AzCore/Utils/TypeHash.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/span.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 
 namespace AZ
 {
@@ -23,6 +24,12 @@ namespace AZ
 namespace AZ::RHI
 {
     static const uint32_t InvalidRenderAttachmentIndex = Limits::Pipeline::RenderAttachmentCountMax;
+    //! Base class for extra data to be used when building a RenderAttachmentLayout
+    struct RenderAttachmentExtras
+    {
+        AZ_RTTI(RenderAttachmentExtras, "{0A50E3A8-78B6-4B7A-86CD-D0AB0108743E}");
+        virtual ~RenderAttachmentExtras() = default;
+    };
 
     //! Describes one render attachment that is part of a layout.
     struct RenderAttachmentDescriptor
@@ -40,6 +47,16 @@ namespace AZ::RHI
         uint32_t m_resolveAttachmentIndex = InvalidRenderAttachmentIndex;
         //! Load and store action of the attachment.
         AttachmentLoadStoreAction m_loadStoreAction;
+        //! The following two flags are only relevant when there are more than one subpasses
+        //! that will be merged.
+        //! The scope attachment access as defined in the pass template, which will be used
+        //! to accurately define the subpass dependencies.
+        AZ::RHI::ScopeAttachmentAccess m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Unknown;
+        //! The scope attachment stage as defined in the pass template, which will be used
+        //! to accurately define the subpass dependencies.
+        AZ::RHI::ScopeAttachmentStage m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::Uninitialized;
+        //! Extra data that can be passed for platform specific operations.
+        RenderAttachmentExtras* m_extras = nullptr;
     };
 
     //! Describes a subpass input attachment.
@@ -55,6 +72,16 @@ namespace AZ::RHI
         uint32_t m_attachmentIndex = 0;
         //! Aspects that are used by the input (needed by some implementations, like Vulkan, when creating a renderpass with a subpass input)
         RHI::ImageAspectFlags m_aspectFlags = RHI::ImageAspectFlags::None;
+        //! The following two flags are only relevant when there are more than one subpasses
+        //! that will be merged.
+        //! The scope attachment access as defined in the pass template, which will be used
+        //! to accurately define the subpass dependencies.
+        AZ::RHI::ScopeAttachmentAccess m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Unknown;
+        //! The scope attachment stage as defined in the pass template, which will be used
+        //! to accurately define the subpass dependencies.
+        AZ::RHI::ScopeAttachmentStage m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::Uninitialized;
+        //! Extra data that can be passed for platform specific operations.
+        RenderAttachmentExtras* m_extras = nullptr;
     };
 
     //! Describes the attachments of one subpass as part of a render target layout.

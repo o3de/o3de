@@ -114,7 +114,7 @@ namespace AZ
                     }
                     return true;
                 };
-                if (!Utilities::InspectSerializedFile(filePath.c_str(), convertSettings.m_serializeContext, callback))
+                if (!AZ::Utils::InspectSerializedFile(filePath.c_str(), convertSettings.m_serializeContext, callback))
                 {
                     AZ_Warning("Convert", false, "Failed to load '%s'. File may not contain an object stream.", filePath.c_str());
                     result = false;

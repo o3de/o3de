@@ -34,6 +34,14 @@ namespace AZ
             //! @param color directional light's color
             virtual void SetColor(const Color& color) = 0;
 
+            //! Gets the intensity mode of a directional light
+            //! @return directional light's intensity mode
+            virtual PhotometricUnit GetIntensityMode() const = 0;
+
+            //! Sets the intensity mode of a directional light
+            //! @param directional light's intensity mode
+            virtual void SetIntensityMode(PhotometricUnit intensityMode) = 0;
+
             //! Gets a directional light's intensity. This value is independent from its color.
             //! @return directional light's intensity
             virtual float GetIntensity() const = 0;
@@ -216,9 +224,11 @@ namespace AZ
             virtual void SetAffectsGIFactor(float affectsGIFactor) = 0;
 
             //! Bind to this event to be notified whenever at least one of the
-            //! configuration properties of the Directional Light Component changes.
-            //! REMARK: This event won't be signaled when the Set*() functions are called
-            //! on a particular directional light, instead, this event will be signaled only
+            //! Returns the lighting channel mask
+            virtual uint32_t GetLightingChannelMask() const = 0;
+
+            //! Sets the lighting channel mask
+            virtual void SetLightingChannelMask(uint32_t lightingChannelMask) = 0;
             //! when the user modifies the component properties in the Inspector panel. 
             virtual void BindConfigurationChangedEventHandler(DirectionalLightConfigurationChangedEvent::Handler& configurationChangedHandler) = 0;
         };

@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <RHI/PipelineLayout.h>
 #include <Metal/Metal.h>
 
@@ -18,17 +18,20 @@ namespace AZ
         class ShaderStageFunction;
         struct RasterizerState
         {
-            MTLCullMode         m_cullMode;
-            float               m_depthBias;
-            float               m_depthSlopeScale;
-            float               m_depthBiasClamp;
-            MTLWinding          m_frontFaceWinding;
-            MTLTriangleFillMode m_triangleFillMode;
-            MTLDepthClipMode    m_depthClipMode;
+            MTLCullMode         m_cullMode = MTLCullModeNone;
+            float               m_depthBias = 0.0f;
+            float               m_depthSlopeScale = 0.0f;
+            float               m_depthBiasClamp = 0.0f;
+            MTLWinding          m_frontFaceWinding = MTLWindingClockwise;
+            MTLTriangleFillMode m_triangleFillMode = MTLTriangleFillModeFill;
+            MTLDepthClipMode    m_depthClipMode = MTLDepthClipModeClip;
+            HashValue64         m_hash = HashValue64{ 0 };
+            
+            void UpdateHash();
         };
 
         class PipelineState final
-            : public RHI::PipelineState
+            : public RHI::DevicePipelineState
         {
         public:
             AZ_CLASS_ALLOCATOR(PipelineState, AZ::SystemAllocator);
@@ -61,15 +64,16 @@ namespace AZ
             PipelineState() = default;
             
             //////////////////////////////////////////////////////////////////////////
-            // RHI::PipelineState
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForDraw& descriptor, RHI::PipelineLibrary* pipelineLibrary) override;
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForDispatch& descriptor, RHI::PipelineLibrary* pipelineLibrary) override;
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForRayTracing& descriptor, RHI::PipelineLibrary* pipelineLibrary) override;
+            // RHI::DevicePipelineState
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForDraw& descriptor, RHI::DevicePipelineLibrary* pipelineLibrary) override;
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForDispatch& descriptor, RHI::DevicePipelineLibrary* pipelineLibrary) override;
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForRayTracing& descriptor, RHI::DevicePipelineLibrary* pipelineLibrary) override;
             void ShutdownInternal() override;
             //////////////////////////////////////////////////////////////////////////
 
-            id<MTLFunction> CompileShader(id<MTLDevice> mtlDevice, const AZStd::string_view filePath, const AZStd::string_view entryPoint, const ShaderStageFunction* shaderFunction);
-            id<MTLFunction> ExtractMtlFunction(id<MTLDevice> mtlDevice, const RHI::ShaderStageFunction* stageFunc);
+            id<MTLFunction> CompileShader(id<MTLDevice> mtlDevice, const AZStd::string_view filePath, const AZStd::string_view entryPoint, const ShaderStageFunction* shaderFunction, MTLFunctionConstantValues* constantValues);
+            id<MTLFunction> ExtractMtlFunction(id<MTLDevice> mtlDevice, const RHI::ShaderStageFunction* stageFunc, MTLFunctionConstantValues* constantValues);
+            MTLFunctionConstantValues* CreateFunctionConstantsValues(const RHI::PipelineStateDescriptor& pipelineDescriptor) const;
             
             RHI::ConstPtr<PipelineLayout> m_pipelineLayout;
             AZStd::atomic_bool m_isCompiled = {false};

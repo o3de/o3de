@@ -56,11 +56,11 @@ namespace AZ
 
         void SpecularReflectionsFeatureProcessor::UpdatePasses()
         {
-            RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
-            RHI::Ptr<RHI::Device> device = rhiSystem->GetDevice();
-
             // disable raytracing if the platform does not support it
-            m_ssrOptions.m_rayTracing &= device->GetFeatures().m_rayTracing;
+            if (RHI::RHISystemInterface::Get()->GetRayTracingSupport() == RHI::MultiDevice::NoDevices)
+            {
+                m_ssrOptions.m_reflectionMethod = SSROptions::ReflectionMethod::ScreenSpace;
+            }
 
             // determine size multiplier to pass to the shaders
             float sizeMultiplier = m_ssrOptions.m_halfResolution ? 0.5f : 1.0f;
@@ -121,9 +121,9 @@ namespace AZ
                 AZ::RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this, sizeMultiplier](AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
                     {
                         // enable/disable
-                        pass->SetEnabled(m_ssrOptions.m_rayTracing);
+                        pass->SetEnabled(m_ssrOptions.IsRayTracingEnabled());
 
-                        if (m_ssrOptions.m_rayTracing)
+                        if (m_ssrOptions.IsRayTracingEnabled())
                         {
                             // options
                             RayTracingPass* rayTracingPass = azrtti_cast<RayTracingPass*>(pass);
@@ -133,7 +133,7 @@ namespace AZ
 
                             rayTracingPassSrg->SetConstant(m_invOutputScaleNameIndex, 1.0f / m_ssrOptions.GetOutputScale());
                             rayTracingPassSrg->SetConstant(m_maxRoughnessNameIndex, m_ssrOptions.m_maxRoughness);
-                            rayTracingPassSrg->SetConstant(m_rayTraceFallbackDataNameIndex, m_ssrOptions.m_rayTraceFallbackData);
+                            rayTracingPassSrg->SetConstant(m_reflectionMethodNameIndex, m_ssrOptions.m_reflectionMethod);
                             rayTracingPassSrg->SetConstant(m_rayTraceFallbackSpecularNameIndex, m_ssrOptions.m_rayTraceFallbackSpecular);
 
                             // size multiplier

@@ -76,7 +76,7 @@ namespace AZ::Render
 
     void SkyAtmosphereComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("SkyAtmosphereService"));
+        provided.push_back(AZ_CRC_CE("SkyAtmosphereService"));
     }
 
     void SkyAtmosphereComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
@@ -86,7 +86,7 @@ namespace AZ::Render
 
     void SkyAtmosphereComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TransformService"));
+        required.push_back(AZ_CRC_CE("TransformService"));
     }
 
     SkyAtmosphereComponentController::SkyAtmosphereComponentController(const SkyAtmosphereComponentConfig& config)

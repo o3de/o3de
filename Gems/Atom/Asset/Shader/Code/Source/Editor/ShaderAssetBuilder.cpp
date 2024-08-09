@@ -202,6 +202,15 @@ namespace AZ
                 response.m_sourceFileDependencyList.emplace_back(AZStd::move(includeFileDependency));
             }
 
+            // Add the shader_build_option files as source dependencies
+            AZStd::unordered_map<AZStd::string, AZ::IO::FixedMaxPath> configFiles = ShaderBuildArgumentsManager::DiscoverConfigurationFiles();
+            for (const auto& pair : configFiles)
+            {
+                AssetBuilderSDK::SourceFileDependency includeFileDependency;
+                includeFileDependency.m_sourceFileDependencyPath = pair.second.c_str();
+                response.m_sourceFileDependencyList.emplace_back(AZStd::move(includeFileDependency));
+            }
+
             for (const AssetBuilderSDK::PlatformInfo& platformInfo : request.m_enabledPlatforms)
             {
                 AZ_TraceContext("For platform", platformInfo.m_identifier.data());
@@ -218,9 +227,8 @@ namespace AZ
                 jobDescriptor.m_critical = false;
                 jobDescriptor.m_jobKey = ShaderAssetBuilderJobKey;
                 jobDescriptor.SetPlatformIdentifier(platformInfo.m_identifier.c_str());
-
-                response.m_createJobOutputs.push_back(jobDescriptor);
-            }  // for all request.m_enabledPlatforms
+                response.m_createJobOutputs.emplace_back(AZStd::move(jobDescriptor));
+            } // for all request.m_enabledPlatforms
 
             AZ_Printf(
                 ShaderAssetBuilderName, "CreateJobs for %s took %llu milliseconds", shaderAssetSourceFileFullPath.c_str(),
@@ -498,9 +506,14 @@ namespace AZ
                     RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout = RPI::ShaderOptionGroupLayout::Create();
                     BindingDependencies bindingDependencies;
                     RootConstantData rootConstantData;
+                    bool usesSpecializationConstants = false;
                     AssetBuilderSDK::ProcessJobResultCode azslJsonReadResult = ShaderBuilderUtility::PopulateAzslDataFromJsonFiles(
                         ShaderAssetBuilderName, subProductsPaths, azslData, srgLayoutList,
-                        shaderOptionGroupLayout, bindingDependencies, rootConstantData, request.m_tempDirPath);
+                        shaderOptionGroupLayout,
+                        bindingDependencies,
+                        rootConstantData,
+                        request.m_tempDirPath,
+                        usesSpecializationConstants);
                     if (azslJsonReadResult != AssetBuilderSDK::ProcessJobResult_Success)
                     {
                         response.m_resultCode = azslJsonReadResult;
@@ -508,6 +521,7 @@ namespace AZ
                     }
 
                     shaderAssetCreator.SetSrgLayoutList(srgLayoutList);
+                    shaderAssetCreator.SetUseSpecializationConstants(usesSpecializationConstants);
 
                     if (!finalShaderOptionGroupLayout)
                     {
@@ -666,7 +680,8 @@ namespace AZ
                         variantAssetId,
                         superVariantAzslinStemName,
                         hlslFullPath,
-                        hlslSourceCode};
+                        hlslSourceCode,
+                        usesSpecializationConstants };
 
                     // Preserve the Temp folder when shaders are compiled with debug symbols
                     // or because the ShaderSourceData has m_keepTempFolder set to true.

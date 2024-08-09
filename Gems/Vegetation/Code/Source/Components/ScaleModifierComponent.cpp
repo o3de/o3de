@@ -70,18 +70,18 @@ namespace Vegetation
 
     void ScaleModifierComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationModifierService", 0xc551fca6));
-        services.push_back(AZ_CRC("VegetationScaleModifierService", 0xc84d9b8c));
+        services.push_back(AZ_CRC_CE("VegetationModifierService"));
+        services.push_back(AZ_CRC_CE("VegetationScaleModifierService"));
     }
 
     void ScaleModifierComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationScaleModifierService", 0xc84d9b8c));
+        services.push_back(AZ_CRC_CE("VegetationScaleModifierService"));
     }
 
     void ScaleModifierComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationAreaService", 0x6a859504));
+        services.push_back(AZ_CRC_CE("VegetationAreaService"));
     }
 
     void ScaleModifierComponent::Reflect(AZ::ReflectContext* context)

@@ -17,6 +17,10 @@
 #define ENABLE_PARALLAX 0
 #endif
 
+#ifndef ENABLE_VERTEX_COLOR
+#define ENABLE_VERTEX_COLOR 1
+#endif
+
 #ifndef UvSetCount
 #define UvSetCount 2
 #endif
@@ -39,6 +43,9 @@
 #include <Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/ParallaxDepth.azsli>
 COMMON_OPTIONS_PARALLAX()
 #endif
+ 
+// O3DE_GENERATED_INCLUDES_BEGIN
+// O3DE_GENERATED_INCLUDES_END
 
 option bool o_normal_override_enabled = false;
 option bool o_opacity_affects_specular_factor = true;
@@ -53,9 +60,6 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     // O3DE_GENERATED_MATERIAL_SRG_BEGIN
     // O3DE_GENERATED_MATERIAL_SRG_END
 }
- 
-// O3DE_GENERATED_INCLUDES_BEGIN
-// O3DE_GENERATED_INCLUDES_END
 
 // O3DE_GENERATED_CLASSES_BEGIN
 // O3DE_GENERATED_CLASSES_END
@@ -111,6 +115,28 @@ bool NeedsTangentFrame()
     
 void EvaluateSurface(VsOutput IN, PixelGeometryData geoData)
 {
+    const float3 bitangent = cross((float3)IN.normal, (float3)IN.tangent);
+    const float3 O3DE_MC_POSITION = (float3)IN.position;
+    const float3 O3DE_MC_NORMAL = (float3)IN.normal;
+    const float3 O3DE_MC_TANGENT = (float3)IN.tangent;
+    const float3 O3DE_MC_BITANGENT = (float3)bitangent;
+    const float3 O3DE_MC_POSITION_WS = geoData.positionWS;
+    const float3 O3DE_MC_NORMAL_WS = geoData.vertexNormal;
+    const float3 O3DE_MC_TANGENT_WS = geoData.tangents[0];
+    const float3 O3DE_MC_BITANGENT_WS = geoData.bitangents[0];
+    #define O3DE_MC_UV(index) geoData.uvs[clamp(index, 0, UvSetCount-1)];
+
+    // m_placeHolder keeps MaterialSrg from being compiled out when iterating on graphs
+    const bool placeHolder = MaterialSrg::m_placeHolder;
+
+    // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inAlpha, inOpacityFactor
+    real inAlpha = 1.0;
+    real inOpacityFactor = 1.0;
+    // O3DE_GENERATED_INSTRUCTIONS_END
+
+    #undef O3DE_MC_UV
+
+    CheckClipping((real)inAlpha, (real)inOpacityFactor);
 }
 
 #else

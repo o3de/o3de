@@ -264,14 +264,14 @@ namespace AzToolsFramework
                         AZStd::vector<AZ::Crc32> classEntityTypes;
                         if (reader.Read<AZ::Crc32>(classEntityType))
                         {
-                            if (classEntityType == AZ_CRC("Game", 0x232b318c))
+                            if (classEntityType == AZ_CRC_CE("Game"))
                             {
                                 return true;
                             }
                         }
                         else if (reader.Read<AZStd::vector<AZ::Crc32>>(classEntityTypes))
                         {
-                            if (AZStd::find(classEntityTypes.begin(), classEntityTypes.end(), AZ_CRC("Game", 0x232b318c)) != classEntityTypes.end())
+                            if (AZStd::find(classEntityTypes.begin(), classEntityTypes.end(), AZ_CRC_CE("Game")) != classEntityTypes.end())
                             {
                                 return true;
                             }
@@ -293,12 +293,12 @@ namespace AzToolsFramework
 
     inline bool AppearsInLayerComponentMenu(const AZ::SerializeContext::ClassData& classData)
     {
-        return AppearsInAddComponentMenu(classData, AZ_CRC("Layer", 0xe4db211a));
+        return AppearsInAddComponentMenu(classData, AZ_CRC_CE("Layer"));
     }
 
     inline bool AppearsInLevelComponentMenu(const AZ::SerializeContext::ClassData& classData)
     {
-        return AppearsInAddComponentMenu(classData, AZ_CRC("Level", 0x9aeacc13));
+        return AppearsInAddComponentMenu(classData, AZ_CRC_CE("Level"));
     }
 
     inline bool AppearsInAnyComponentMenu(const AZ::SerializeContext::ClassData& classData)

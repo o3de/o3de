@@ -462,6 +462,23 @@
                 }
             },
             {
+                "name": "inOpacityFactor",
+                "displayName": "Opacity Factor",
+                "description": "Opacity Factor",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float",
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 1.0
+                },
+                "allowNameSubstitution": false,
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
                 "name": "inDiffuseAmbientOcclusion",
                 "displayName": "Diffuse Ambient Occlusion",
                 "description": "Diffuse Ambient Occlusion",

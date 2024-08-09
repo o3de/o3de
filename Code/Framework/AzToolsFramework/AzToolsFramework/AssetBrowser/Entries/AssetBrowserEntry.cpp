@@ -123,6 +123,9 @@ namespace AzToolsFramework
             child->m_parentAssetEntry = nullptr;
             AssetBrowserModelRequestBus::Broadcast(&AssetBrowserModelRequests::EndRemoveEntry);
             AssetBrowserModelNotificationBus::Broadcast(&AssetBrowserModelNotifications::EntryRemoved, childToRemove.get());
+
+            // before we allow the destructor of AssetBrowserEntry to run, we must remove its children, etc.
+            childToRemove->RemoveChildren();
         }
 
         void AssetBrowserEntry::RemoveChildren()
@@ -170,6 +173,16 @@ namespace AzToolsFramework
             return m_name;
         }
 
+        const AZ::u32 AssetBrowserEntry::GetGroupNameCrc() const
+        {
+            return m_groupNameCrc;
+        }
+
+        const QString& AssetBrowserEntry::GetGroupName() const
+        {
+            return m_groupName;
+        }
+
         const QString& AssetBrowserEntry::GetDisplayName() const
         {
             return m_displayName;
@@ -190,16 +203,8 @@ namespace AzToolsFramework
             return m_visiblePath.Native();
         }
 
-        const AZStd::string AssetBrowserEntry::GetFullPath() const
+        const AZStd::string& AssetBrowserEntry::GetFullPath() const
         {
-            // the full path could use a decoding:
-            if (AZ::IO::FileIOBase* instance = AZ::IO::FileIOBase::GetInstance())
-            {
-                char resolvedPath[AZ_MAX_PATH_LEN] = { 0 };
-                instance->ResolvePath(m_fullPath.Native().c_str(), resolvedPath, AZ_MAX_PATH_LEN);
-                return AZStd::string(resolvedPath);
-            }
-
             return m_fullPath.Native();
         }
 
@@ -227,9 +232,17 @@ namespace AzToolsFramework
         {
             m_fullPath = fullPath;
 
-            // Update the entryType string.
-            m_entryType = "";
+            // the full path could use a decoding:
+            if (AZ::IO::FileIOBase* instance = AZ::IO::FileIOBase::GetInstance())
+            {
+                char resolvedPath[AZ_MAX_PATH_LEN] = { 0 };
+                if (instance->ResolvePath(fullPath.Native().c_str(), resolvedPath, AZ_MAX_PATH_LEN))
+                {
+                    m_fullPath = resolvedPath;
+                }
+            }
 
+            // Update the entryType string.
             switch (GetEntryType())
             {
             case AssetBrowserEntry::AssetEntryType::Root:
@@ -243,6 +256,9 @@ namespace AzToolsFramework
                 break;
             case AssetBrowserEntry::AssetEntryType::Product:
                 m_entryType = tr("Product");
+                break;
+            default:
+                m_entryType = "";
                 break;
             }
         }
@@ -314,6 +330,35 @@ namespace AzToolsFramework
             }
         }
 
+        void AssetBrowserEntry::VisitUp(const AZStd::function<bool(const AssetBrowserEntry*)>& visitorFn) const
+        {
+            if (!visitorFn)
+            {
+                return;
+            }
+
+            for (auto entry = this; entry && entry->GetEntryType() != AssetEntryType::Root; entry = entry->GetParent())
+            {
+                if (!visitorFn(entry))
+                {
+                    return;
+                }
+            }
+        }
+
+        void AssetBrowserEntry::VisitDown(const AZStd::function<bool(const AssetBrowserEntry*)>& visitorFn) const
+        {
+            if (!visitorFn || !visitorFn(this))
+            {
+                return;
+            }
+
+            for (auto child : m_children)
+            {
+                child->VisitDown(visitorFn);
+            }
+        }
+
         const AssetBrowserEntry* AssetBrowserEntry::GetChild(int index) const
         {
             if (index < m_children.size())
@@ -346,10 +391,10 @@ namespace AzToolsFramework
         {
             if (m_thumbnailKey)
             {
-                disconnect(m_thumbnailKey.data(), &ThumbnailKey::ThumbnailUpdatedSignal, this, &AssetBrowserEntry::ThumbnailUpdated);
+                disconnect(m_thumbnailKey.data(), nullptr, this, nullptr);
             }
             m_thumbnailKey = thumbnailKey;
-            connect(m_thumbnailKey.data(), &ThumbnailKey::ThumbnailUpdatedSignal, this, &AssetBrowserEntry::ThumbnailUpdated);
+            connect(m_thumbnailKey.data(), &ThumbnailKey::ThumbnailUpdated, this, &AssetBrowserEntry::SetThumbnailDirty);
         }
 
         SharedThumbnailKey AssetBrowserEntry::GetThumbnailKey() const
@@ -369,7 +414,7 @@ namespace AzToolsFramework
             SetThumbnailKey(CreateThumbnailKey());
         }
 
-        void AssetBrowserEntry::ThumbnailUpdated()
+        void AssetBrowserEntry::SetThumbnailDirty()
         {
             if (EntryCache* cache = EntryCache::GetInstance())
             {
@@ -396,13 +441,14 @@ namespace AzToolsFramework
         bool AssetBrowserEntry::lessThan(const AssetBrowserEntry* other, const AssetEntrySortMode sortMode, const QCollator& collator) const
         {
             // folders should always come first
-            if (azrtti_istypeof<const FolderAssetBrowserEntry*>(this) && azrtti_istypeof<const SourceAssetBrowserEntry*>(other))
-            {
-                return false;
-            }
-            if (azrtti_istypeof<const SourceAssetBrowserEntry*>(this) && azrtti_istypeof<const FolderAssetBrowserEntry*>(other))
+            if (GetEntryType() == AssetEntryType::Folder && other->GetEntryType() != AssetEntryType::Folder)
             {
                 return true;
+            }
+
+            if (GetEntryType() != AssetEntryType::Folder && other->GetEntryType() == AssetEntryType::Folder)
+            {
+                return false;
             }
 
             switch (sortMode)

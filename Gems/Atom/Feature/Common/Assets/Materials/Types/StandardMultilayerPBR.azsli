@@ -83,7 +83,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
         uint instanceId,
         bool useVertexBlendMask)
     {
-        VsOutput output = EvaluateVertexGeometry_BasePBR(position, normal, tangent, uv0, uv1, instanceId);
+        VsOutput output = EvaluateVertexGeometry_BasePBR(position, normal, tangent, uv0, uv1, float4(1.0f, 1.0f, 1.0f, 1.0f), instanceId, false);
 
         if(useVertexBlendMask)
         {
@@ -119,7 +119,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
 
     class PixelGeometryData_StandardMultilayerPBR : PixelGeometryData_StandardPBR
     {
-        float3 m_vertexBlendMask;
+        real3 m_vertexBlendMask;
     };
     
     #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_PixelGeometryEval.azsli>
@@ -137,19 +137,20 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
         float2 uvs[UvSetCount],
         bool isFrontFace,
         real4x4 objectToWorld,
-        float3 vertexBlendMask)
+        real3 vertexBlendMask)
     {
         PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normalWS, tangentWS, bitangentWS, uvs, isFrontFace);
 
         geoData.isDisplacementClipped = false;
         geoData.m_vertexBlendMask = vertexBlendMask;
 
+#if ENABLE_PARALLAX
         if(ShouldHandleParallax())
         {
             MultilayerSetPixelDepth(vertexBlendMask, geoData.positionWS, geoData.vertexNormal, geoData.tangents, geoData.bitangents,
                 geoData.uvs, isFrontFace, objectToWorld, positionSV.z, positionSV.w, geoData.isDisplacementClipped);
         }
-
+#endif
         return geoData;
     }
     
@@ -170,7 +171,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
             IN.uvs,
             isFrontFace,
             objectToWorld,
-            IN.m_blendMask);
+            real3(IN.m_blendMask));
     }
     
     bool CanHandleParallax()
@@ -256,9 +257,9 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
 
         float2 m_vertexUv[UvSetCount];
         float3x3 m_uvMatrix;
-        real3 m_normal;
-        real3 m_tangents[UvSetCount];
-        real3 m_bitangents[UvSetCount];
+        float3 m_normal;
+        float3 m_tangents[UvSetCount];
+        float3 m_bitangents[UvSetCount];
 
         sampler m_sampler;
 
@@ -303,7 +304,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
 
     //! Processes the set of Standard material inputs for a single layer.
     //! The FILL_STANDARD_MATERIAL_INPUTS() macro below can be used to fill the StandardMaterialInputs struct.
-    ProcessedMaterialInputs ProcessStandardMaterialInputs(StandardMaterialInputs inputs)
+    ProcessedMaterialInputs ProcessStandardMaterialInputs(StandardMaterialInputs inputs, float4 uvDxDy = float4(0.0f, 0.0f, 0.0f, 0.0f), bool customDerivatives = false)
     {
         ProcessedMaterialInputs result;
     
@@ -312,17 +313,17 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
         transformedUv[1] = inputs.m_vertexUv[1];
     
         real3x3 normalUvMatrix = inputs.m_normalMapUvIndex == 0 ? real3x3(inputs.m_uvMatrix) : real3x3(CreateIdentity3x3());
-        result.m_normalTS = GetNormalInputTS(inputs.m_normalMap, inputs.m_sampler, transformedUv[inputs.m_normalMapUvIndex], inputs.m_flipNormalX, inputs.m_flipNormalY, normalUvMatrix, inputs.m_normal_useTexture, real(inputs.m_normalFactor));
+        result.m_normalTS = GetNormalInputTS(inputs.m_normalMap, inputs.m_sampler, transformedUv[inputs.m_normalMapUvIndex], inputs.m_flipNormalX, inputs.m_flipNormalY, normalUvMatrix, inputs.m_normal_useTexture, real(inputs.m_normalFactor), uvDxDy, customDerivatives);
     
-        real3 sampledBaseColor = GetBaseColorInput(inputs.m_baseColorMap, inputs.m_sampler, transformedUv[inputs.m_baseColorMapUvIndex], real3(inputs.m_baseColor.rgb), inputs.m_baseColor_useTexture);
+        real3 sampledBaseColor = GetBaseColorInput(inputs.m_baseColorMap, inputs.m_sampler, transformedUv[inputs.m_baseColorMapUvIndex], real3(inputs.m_baseColor.rgb), inputs.m_baseColor_useTexture, uvDxDy, customDerivatives);
         result.m_baseColor = BlendBaseColor(sampledBaseColor, real3(inputs.m_baseColor.rgb), real(inputs.m_baseColorFactor), inputs.m_baseColorTextureBlendMode, inputs.m_baseColor_useTexture);
-        result.m_specularF0Factor = GetSpecularInput(inputs.m_specularF0Map, inputs.m_sampler, transformedUv[inputs.m_specularF0MapUvIndex], real(inputs.m_specularF0Factor), inputs.m_specularF0_useTexture);
-        result.m_metallic = GetMetallicInput(inputs.m_metallicMap, inputs.m_sampler, transformedUv[inputs.m_metallicMapUvIndex], real(inputs.m_metallicFactor), inputs.m_metallic_useTexture);
-        result.m_roughness = GetRoughnessInput(inputs.m_roughnessMap, MaterialSrg::m_sampler, transformedUv[inputs.m_roughnessMapUvIndex], real(inputs.m_roughnessFactor), real(inputs.m_roughnessLowerBound), real(inputs.m_roughnessUpperBound), inputs.m_roughness_useTexture);
+        result.m_specularF0Factor = GetSpecularInput(inputs.m_specularF0Map, inputs.m_sampler, transformedUv[inputs.m_specularF0MapUvIndex], real(inputs.m_specularF0Factor), inputs.m_specularF0_useTexture, uvDxDy, customDerivatives);
+        result.m_metallic = GetMetallicInput(inputs.m_metallicMap, inputs.m_sampler, transformedUv[inputs.m_metallicMapUvIndex], real(inputs.m_metallicFactor), inputs.m_metallic_useTexture, uvDxDy, customDerivatives);
+        result.m_roughness = GetRoughnessInput(inputs.m_roughnessMap, MaterialSrg::m_sampler, transformedUv[inputs.m_roughnessMapUvIndex], real(inputs.m_roughnessFactor), real(inputs.m_roughnessLowerBound), real(inputs.m_roughnessUpperBound), inputs.m_roughness_useTexture, uvDxDy, customDerivatives);
 
-        result.m_emissiveLighting = GetEmissiveInput(inputs.m_emissiveMap, inputs.m_sampler, transformedUv[inputs.m_emissiveMapUvIndex], real(inputs.m_emissiveIntensity), real3(inputs.m_emissiveColor.rgb), 0.0, 1.0, inputs.m_emissiveEnabled, inputs.m_emissive_useTexture);
-        result.m_diffuseAmbientOcclusion = GetOcclusionInput(inputs.m_diffuseOcclusionMap, inputs.m_sampler, transformedUv[inputs.m_diffuseOcclusionMapUvIndex], real(inputs.m_diffuseOcclusionFactor), inputs.m_diffuseOcclusion_useTexture);
-        result.m_specularOcclusion = GetOcclusionInput(inputs.m_specularOcclusionMap, MaterialSrg::m_sampler, transformedUv[inputs.m_specularOcclusionMapUvIndex], real(inputs.m_specularOcclusionFactor), inputs.m_specularOcclusion_useTexture);
+        result.m_emissiveLighting = GetEmissiveInput(inputs.m_emissiveMap, inputs.m_sampler, transformedUv[inputs.m_emissiveMapUvIndex], real(inputs.m_emissiveIntensity), real3(inputs.m_emissiveColor.rgb), 0.0, 1.0, inputs.m_emissiveEnabled, inputs.m_emissive_useTexture, uvDxDy, customDerivatives);
+        result.m_diffuseAmbientOcclusion = GetOcclusionInput(inputs.m_diffuseOcclusionMap, inputs.m_sampler, transformedUv[inputs.m_diffuseOcclusionMapUvIndex], real(inputs.m_diffuseOcclusionFactor), inputs.m_diffuseOcclusion_useTexture, uvDxDy, customDerivatives);
+        result.m_specularOcclusion = GetOcclusionInput(inputs.m_specularOcclusionMap, MaterialSrg::m_sampler, transformedUv[inputs.m_specularOcclusionMapUvIndex], real(inputs.m_specularOcclusionFactor), inputs.m_specularOcclusion_useTexture, uvDxDy, customDerivatives);
     
     #if ENABLE_CLEAR_COAT
         result.m_clearCoat.InitializeToZero();
@@ -335,7 +336,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
                                 inputs.m_clearCoatNormalMap,    transformedUv[inputs.m_clearCoatNormalMapUvIndex], inputs.m_normal, inputs.m_clearCoat_normal_useTexture, real(inputs.m_clearCoatNormalStrength),
                                 clearCoatUvMatrix, inputs.m_tangents[inputs.m_clearCoatNormalMapUvIndex], inputs.m_bitangents[inputs.m_clearCoatNormalMapUvIndex],
                                 inputs.m_sampler, inputs.m_isFrontFace,
-                                result.m_clearCoat.factor, result.m_clearCoat.roughness, result.m_clearCoat.normal);
+                                result.m_clearCoat.factor, result.m_clearCoat.roughness, result.m_clearCoat.normal, uvDxDy, customDerivatives);
         }
     #endif
 
@@ -421,21 +422,23 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
 
     Surface EvaluateSurface_StandardMultilayerPBR(
         float3 positionWS,
-        real3 normalWS,
-        real3 tangents[UvSetCount],
-        real3 bitangents[UvSetCount],
+        float3 normalWS,
+        float3 tangents[UvSetCount],
+        float3 bitangents[UvSetCount],
         float2 uvs[UvSetCount],
         bool isFrontFace,
         bool isDisplacementClipped,
-        float3 vertexBlendMask)
-    {        
+        real3 vertexBlendMask,
+        float4 uvDxDy,
+        bool customDerivatives)
+    {
         LayerBlendSource blendSource = GetFinalLayerBlendSource();
         
         // ------- Debug Modes -------
 
         if(o_debugDrawMode == DebugDrawMode::BlendMask)
         {
-            float3 blendMaskValues = GetApplicableBlendMaskValues(blendSource, uvs[MaterialSrg::m_blendMaskUvIndex], vertexBlendMask);
+            real3 blendMaskValues = GetApplicableBlendMaskValues(blendSource, uvs[MaterialSrg::m_blendMaskUvIndex], vertexBlendMask, uvDxDy, customDerivatives);
             return MakeDebugSurface(positionWS, normalWS, real3(blendMaskValues));
         }
     
@@ -450,14 +453,31 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
     
         if(o_debugDrawMode == DebugDrawMode::FinalBlendWeights)
         {
-            float3 blendWeights = GetBlendWeights(blendSource, uvs[MaterialSrg::m_blendMaskUvIndex], vertexBlendMask);
+            real3 blendWeights;
+            if (customDerivatives)
+            {
+                blendWeights = GetBlendWeights(blendSource, uvs[MaterialSrg::m_blendMaskUvIndex], vertexBlendMask, uvDxDy, customDerivatives);
+            }
+            else
+            {
+                blendWeights = GetBlendWeights(blendSource, uvs[MaterialSrg::m_blendMaskUvIndex], vertexBlendMask, float4(0.0f, 0.0f, 0.0f, 0.0f), false);
+            }
             return MakeDebugSurface(positionWS, normalWS, real3(blendWeights));
         }
 
         // ------- Calculate Layer Blend Mask Values -------
     
         // Now that any parallax has been calculated, we calculate the blend factors for any layers that are impacted by the parallax.
-        real3 blendWeights = (GetBlendWeights(blendSource, uvs[MaterialSrg::m_blendMaskUvIndex], vertexBlendMask));
+        real3 blendWeights;
+        if (customDerivatives)
+        {
+            blendWeights = real3(GetBlendWeights(blendSource, uvs[MaterialSrg::m_blendMaskUvIndex], vertexBlendMask, uvDxDy, customDerivatives));
+        }
+        else
+        {
+            blendWeights = real3(GetBlendWeights(blendSource, uvs[MaterialSrg::m_blendMaskUvIndex], vertexBlendMask, float4(0.0f, 0.0f, 0.0f, 0.0f), false));
+        }
+        
         
         // ------- Layer 1 (base layer) -----------
 
@@ -467,7 +487,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
             StandardMaterialInputs inputs;
             FILL_STANDARD_MATERIAL_INPUTS(inputs, MaterialSrg::m_layer1_, o_layer1_, blendWeights.r)
             FILL_STANDARD_MATERIAL_INPUTS_CLEAR_COAT(inputs, MaterialSrg::m_layer1_, o_layer1_, blendWeights.r)
-            lightingInputLayer1 = ProcessStandardMaterialInputs(inputs);
+            lightingInputLayer1 = ProcessStandardMaterialInputs(inputs, uvDxDy, customDerivatives);
         }
         else
         {
@@ -483,7 +503,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
             StandardMaterialInputs inputs;
             FILL_STANDARD_MATERIAL_INPUTS(inputs, MaterialSrg::m_layer2_, o_layer2_, blendWeights.g)
             FILL_STANDARD_MATERIAL_INPUTS_CLEAR_COAT(inputs, MaterialSrg::m_layer2_, o_layer2_, blendWeights.g)
-            lightingInputLayer2 = ProcessStandardMaterialInputs(inputs);
+            lightingInputLayer2 = ProcessStandardMaterialInputs(inputs, uvDxDy, customDerivatives);
         }
         else
         {
@@ -499,7 +519,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
             StandardMaterialInputs inputs;
             FILL_STANDARD_MATERIAL_INPUTS(inputs, MaterialSrg::m_layer3_, o_layer3_, blendWeights.b)
             FILL_STANDARD_MATERIAL_INPUTS_CLEAR_COAT(inputs, MaterialSrg::m_layer3_, o_layer3_, blendWeights.b)
-            lightingInputLayer3 = ProcessStandardMaterialInputs(inputs);
+            lightingInputLayer3 = ProcessStandardMaterialInputs(inputs, uvDxDy, customDerivatives);
         }
         else
         {
@@ -572,6 +592,46 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
         return surface;
     }
 
+    // helper function to keep compatible with the previous version
+    // because dxc compiler doesn't allow default parameters on functions with overloads
+    Surface EvaluateSurface_StandardMultilayerPBR(
+        float3 positionWS,
+        real3 normalWS,
+        float3 tangents[UvSetCount],
+        float3 bitangents[UvSetCount],
+        float2 uvs[UvSetCount],
+        bool isFrontFace,
+        bool isDisplacementClipped,
+        real3 vertexBlendMask)
+    {
+        return EvaluateSurface_StandardMultilayerPBR(
+            positionWS,
+            normalWS,
+            tangents,
+            bitangents,
+            uvs,
+            isFrontFace,
+            isDisplacementClipped,
+            vertexBlendMask,
+            float4(0.0f, 0.0f, 0.0f, 0.0f),
+            false);
+    }
+
+    Surface EvaluateSurface_StandardMultilayerPBR(VsOutput IN, PixelGeometryData geoData, float4 uvDxDy, bool customDerivatives)
+    {
+        return EvaluateSurface_StandardMultilayerPBR(
+            geoData.positionWS,
+            geoData.vertexNormal,
+            geoData.tangents,
+            geoData.bitangents,
+            geoData.uvs,
+            geoData.isFrontFace,
+            geoData.isDisplacementClipped,
+            geoData.m_vertexBlendMask,
+            uvDxDy,
+            customDerivatives);
+    }
+
     Surface EvaluateSurface_StandardMultilayerPBR(VsOutput IN, PixelGeometryData geoData)
     {
         return EvaluateSurface_StandardMultilayerPBR(
@@ -582,7 +642,9 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
             geoData.uvs,
             geoData.isFrontFace,
             geoData.isDisplacementClipped,
-            geoData.m_vertexBlendMask);
+            geoData.m_vertexBlendMask,
+            float4(0.0f, 0.0f, 0.0f, 0.0f),
+            false);
     }
 
 #elif MATERIALPIPELINE_SHADER_HAS_GEOMETRIC_PIXEL_STAGE

@@ -346,7 +346,7 @@ namespace AssetProcessor
                         if (!registryDir.exists())
                         {
                             QString absPath = registryDir.absolutePath();
-                            [[maybe_unused]] bool makeDirResult = AZ::IO::SystemFile::CreateDir(absPath.toUtf8().constData());
+                            [[maybe_unused]] AZ::IO::Result makeDirResult = AZ::IO::FileIOBase::GetInstance()->CreatePath(absPath.toUtf8().constData());
                             AZ_Warning(AssetProcessor::ConsoleChannel, makeDirResult, "Failed create folder %s", platformCacheDir.toUtf8().constData());
                         }
 
@@ -944,7 +944,7 @@ namespace AssetProcessor
                 assetInfo.m_assetId = assetId;
                 assetInfo.m_assetType = assetType;
                 assetInfo.m_relativePath = sourceAsset.RelativePath().c_str();
-                assetInfo.m_sizeBytes = AZ::IO::SystemFile::Length(sourceAsset.AbsolutePath().c_str());
+                AZ::IO::FileIOBase::GetInstance()->Size(sourceAsset.AbsolutePath().c_str(), assetInfo.m_sizeBytes);
                 rootFilePath = sourceAsset.ScanFolderPath().c_str();
 
                 return true;
@@ -1198,8 +1198,7 @@ namespace AssetProcessor
                     assetInfo.m_relativePath = entry.m_sourceName;
                     AZStd::string absolutePath;
                     AzFramework::StringFunc::Path::Join(scanEntry.m_scanFolder.c_str(), assetInfo.m_relativePath.c_str(), absolutePath);
-                    assetInfo.m_sizeBytes = AZ::IO::SystemFile::Length(absolutePath.c_str());
-
+                    AZ::IO::FileIOBase::GetInstance()->Size(absolutePath.c_str(), assetInfo.m_sizeBytes);
                     assetInfo.m_assetType = AZ::Uuid::CreateNull(); // most source files don't have a type!
 
                     // Go through the list of source assets and see if this asset's file path matches any of the filters
@@ -1241,7 +1240,7 @@ namespace AssetProcessor
             assetInfo.m_assetId = partialId;
             assetInfo.m_assetType = AZ::Uuid::CreateNull(); // most source files don't have a type!
             assetInfo.m_relativePath = sourceAsset.RelativePath().c_str();
-            assetInfo.m_sizeBytes = AZ::IO::SystemFile::Length(sourceAsset.AbsolutePath().c_str());
+            AZ::IO::FileIOBase::GetInstance()->Size(sourceAsset.AbsolutePath().c_str(), assetInfo.m_sizeBytes);
 
             // if the type has registered with a typeid, then supply it here
             AZStd::lock_guard<AZStd::mutex> lock(m_sourceAssetTypesMutex);
@@ -1715,7 +1714,17 @@ namespace AssetProcessor
         AssetId legacyMapping = registryToUse.GetAssetIdByLegacyAssetId(assetId);
         if (legacyMapping.IsValid())
         {
-            return GetProductAssetInfo(platformName, legacyMapping);
+            AZ::Data::AssetInfo legacyAssetInfo = GetProductAssetInfo(platformName, legacyMapping);
+            AZ_Error(
+                "O3DE_DEPRECATION_NOTICE(GHI-17861)",
+                legacyAssetInfo.m_assetType == AZ::Data::s_invalidAssetType,
+                "Deprecated asset id warning! GetProductAssetInfo could not find asset id \"%s\" and so fell back to using the legacy "
+                "asset id. \"%s\". Please look up these asset ids in AssetProcessor and recreate the asset in order to generate a new "
+                "asset id.",
+                assetId.ToFixedString().c_str(),
+                legacyMapping.ToFixedString().c_str());
+
+            return legacyAssetInfo;
         }
 
         return AssetInfo(); // not found!
@@ -1736,7 +1745,7 @@ namespace AssetProcessor
                         assetInfo.m_assetId = id;
                         assetInfo.m_assetType = pair.second;
                         assetInfo.m_relativePath = sourceAsset.RelativePath().c_str();
-                        assetInfo.m_sizeBytes = AZ::IO::SystemFile::Length(sourceAsset.AbsolutePath().c_str());
+                        AZ::IO::FileIOBase::GetInstance()->Size(sourceAsset.AbsolutePath().c_str(), assetInfo.m_sizeBytes);
 
                         return true;
                     }
@@ -1786,7 +1795,7 @@ namespace AssetProcessor
             {
                 assetInfo.m_relativePath = sourceAsset.RelativePath().c_str();
                 assetInfo.m_assetId = foundSourceUUID->second;
-                assetInfo.m_sizeBytes = AZ::IO::SystemFile::Length(sourceAsset.AbsolutePath().c_str());
+                AZ::IO::FileIOBase::GetInstance()->Size(sourceAsset.AbsolutePath().c_str(), assetInfo.m_sizeBytes);
                 assetInfo.m_assetType = AZ::Uuid::CreateNull(); // most source files don't have a type!
 
                 // Go through the list of source assets and see if this asset's file path matches any of the filters
@@ -1811,7 +1820,9 @@ namespace AssetProcessor
     bool AssetCatalog::GetUncachedSourceInfoFromDatabaseNameAndWatchFolder(const SourceAssetReference& sourceAsset, AZ::Data::AssetInfo& assetInfo)
     {
         // Make sure the source file exists first
-        if (!AZ::IO::SystemFile::Exists(sourceAsset.AbsolutePath().c_str()))
+        AZ::IO::FileIOBase* io = AZ::IO::FileIOBase::GetInstance();
+        AZ_Assert(io, "Expected a FileIO Interface");
+        if (!io->Exists(sourceAsset.AbsolutePath().c_str()))
         {
             return false;
         }
@@ -1827,7 +1838,7 @@ namespace AssetProcessor
 
         assetInfo.m_assetId = sourceAssetId;
         assetInfo.m_relativePath = sourceAsset.RelativePath().c_str();
-        assetInfo.m_sizeBytes = AZ::IO::SystemFile::Length(sourceAsset.AbsolutePath().c_str());
+        io->Size(sourceAsset.AbsolutePath().c_str(), assetInfo.m_sizeBytes);
         assetInfo.m_assetType = AZ::Uuid::CreateNull();
 
         // Go through the list of source assets and see if this asset's file path matches any of the filters

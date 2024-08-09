@@ -20,6 +20,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonSerializationSettings.h>
+#include <AzCore/Serialization/Utils.h>
 #include <AzCore/Settings/TextParser.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/algorithm.h>
@@ -207,7 +208,7 @@ namespace AZ::SerializeContextTools
                     result = false;
                 }
             };
-            if (!Utilities::InspectSerializedFile(filePath.c_str(), sc, callback))
+            if (!AZ::Utils::InspectSerializedFile(filePath.c_str(), sc, callback))
             {
                 result = false;
                 continue;

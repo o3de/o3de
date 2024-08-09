@@ -26,10 +26,8 @@
 #include "DisplaySettings.h"
 #include "EditorViewportSettings.h"
 #include "GameEngine.h"
-#include "Include/IObjectManager.h"
 #include "MainWindow.h"
 #include "MathConversion.h"
-#include "Objects/SelectionGroup.h"
 #include "Settings.h"
 #include "UsedResources.h"
 #include "ViewPane.h"
@@ -202,7 +200,7 @@ void CViewportTitleDlg::OnMenuAspectRatioCustom()
     const unsigned int width = viewportRect.width();
     const unsigned int height = viewportRect.height();
 
-    int whGCD = gcd(width, height);
+    int whGCD = AZ::GetGCD(width, height);
     CCustomAspectRatioDlg aspectRatioInputDialog(width / whGCD, height / whGCD, this);
 
     if (aspectRatioInputDialog.exec() == QDialog::Accepted)

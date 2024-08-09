@@ -41,10 +41,11 @@ namespace AZ
             
             m_state.m_pipelineState = nullptr;
             m_state.m_pipelineLayout = nullptr;
-            m_state.m_streamsHash = AZ::HashValue64{0};
-            m_state.m_indicesHash = AZ::HashValue64{0};
+            m_state.m_rasterizerStateHash = AZ::HashValue64{0};
+            m_state.m_depthStencilStateHash = 0;
             m_state.m_stencilRef = -1;
-
+            AZStd::fill(m_state.m_streamsHashes.begin(), m_state.m_streamsHashes.end(), AZ::HashValue64{0});
+            
             CommandListBase::Reset();
         }
 
@@ -59,7 +60,7 @@ namespace AZ
             CommandListBase::FlushEncoder();
         }
 
-        void CommandList::Submit(const RHI::CopyItem& copyItem, uint32_t submitIndex)
+        void CommandList::Submit(const RHI::DeviceCopyItem& copyItem, uint32_t submitIndex)
         {
             ValidateSubmitIndex(submitIndex);
             CreateEncoder(CommandEncoderType::Blit);
@@ -69,7 +70,7 @@ namespace AZ
             {
                 case RHI::CopyItemType::Buffer:
                 {
-                    const RHI::CopyBufferDescriptor& descriptor = copyItem.m_buffer;
+                    const RHI::DeviceCopyBufferDescriptor& descriptor = copyItem.m_buffer;
                     const auto* sourceBuffer = static_cast<const Buffer*>(descriptor.m_sourceBuffer);
                     const auto* destinationBuffer = static_cast<const Buffer*>(descriptor.m_destinationBuffer);
 
@@ -84,7 +85,7 @@ namespace AZ
                 }
                 case RHI::CopyItemType::Image:
                 {
-                    const RHI::CopyImageDescriptor& descriptor = copyItem.m_image;
+                    const RHI::DeviceCopyImageDescriptor& descriptor = copyItem.m_image;
                     const Image* sourceImage = static_cast<const Image*>(descriptor.m_sourceImage);
                     const Image* destinationImage = static_cast<const Image*>(descriptor.m_destinationImage);
 
@@ -115,7 +116,7 @@ namespace AZ
                 }
                 case RHI::CopyItemType::BufferToImage:
                 {
-                    const RHI::CopyBufferToImageDescriptor& descriptor = copyItem.m_bufferToImage;
+                    const RHI::DeviceCopyBufferToImageDescriptor& descriptor = copyItem.m_bufferToImage;
                     const Buffer* sourceBuffer = static_cast<const Buffer*>(descriptor.m_sourceBuffer);
                     const Image* destinationImage = static_cast<const Image*>(descriptor.m_destinationImage);
 
@@ -144,7 +145,7 @@ namespace AZ
                 }
                 case RHI::CopyItemType::ImageToBuffer:
                 {
-                    const RHI::CopyImageToBufferDescriptor& descriptor = copyItem.m_imageToBuffer;
+                    const RHI::DeviceCopyImageToBufferDescriptor& descriptor = copyItem.m_imageToBuffer;
                     const auto* sourceImage = static_cast<const Image*>(descriptor.m_sourceImage);
                     const auto* destinationBuffer = static_cast<const Buffer*>(descriptor.m_destinationBuffer);
 
@@ -178,7 +179,7 @@ namespace AZ
             }
         }
 
-        void CommandList::Submit(const RHI::DispatchItem& dispatchItem, uint32_t submitIndex)
+        void CommandList::Submit(const RHI::DeviceDispatchItem& dispatchItem, uint32_t submitIndex)
         {
             AZ_PROFILE_FUNCTION(RHI);
 
@@ -201,7 +202,7 @@ namespace AZ
 
         }
 
-        void CommandList::Submit(const RHI::DispatchRaysItem& dispatchRaysItem, uint32_t submitIndex)
+        void CommandList::Submit(const RHI::DeviceDispatchRaysItem& dispatchRaysItem, uint32_t submitIndex)
         {
             ValidateSubmitIndex(submitIndex);
 
@@ -427,7 +428,7 @@ namespace AZ
         }
 
         CommandList::ResourceProperties CommandList::GetResourceInfo(RHI::BindlessResourceType resourceType,
-                                                                    const RHI::ResourceView* resourceView)
+                                                                    const RHI::DeviceResourceView* resourceView)
         {
             id<MTLResource> mtlResourceView = nil;
             bool isReadOnlyResource = false;
@@ -582,7 +583,7 @@ namespace AZ
             }
         }
 
-        void CommandList::Submit(const RHI::DrawItem& drawItem, uint32_t submitIndex)
+        void CommandList::Submit(const RHI::DeviceDrawItem& drawItem, uint32_t submitIndex)
         {
             AZ_PROFILE_FUNCTION(RHI);
 
@@ -630,11 +631,7 @@ namespace AZ
                 case RHI::DrawType::Indexed:
                 {
                     const RHI::DrawIndexed& indexed = drawItem.m_arguments.m_indexed;
-
-                    const RHI::IndexBufferView& indexBuffDescriptor = *drawItem.m_indexBufferView;
-                    AZ::HashValue64 indicesHash = indexBuffDescriptor.GetHash();
-
-                    m_state.m_indicesHash = indicesHash;
+                    const RHI::DeviceIndexBufferView& indexBuffDescriptor = *drawItem.m_indexBufferView;
                     const Buffer * buff = static_cast<const Buffer*>(indexBuffDescriptor.GetBuffer());
                     id<MTLBuffer> mtlBuff = buff->GetMemoryView().GetGpuAddress<id<MTLBuffer>>();
                     MTLIndexType mtlIndexType = (indexBuffDescriptor.GetIndexFormat() == RHI::IndexFormat::Uint16) ?
@@ -697,8 +694,11 @@ namespace AZ
                     {
                         id<MTLRenderCommandEncoder> renderEncoder = GetEncoder<id<MTLRenderCommandEncoder>>();
                         SetRasterizerState(pipelineState->GetRasterizerState());
-                        if(pipelineState->GetDepthStencilState())
+                        
+                        id<MTLDepthStencilState> mtlDSstate = pipelineState->GetDepthStencilState();
+                        if(mtlDSstate && m_state.m_depthStencilStateHash != mtlDSstate.hash)
                         {
+                            m_state.m_depthStencilStateHash = mtlDSstate.hash;
                             [renderEncoder setDepthStencilState: pipelineState->GetDepthStencilState()];
                         }
                         [renderEncoder setRenderPipelineState: pipelineState->GetGraphicsPipelineState()];
@@ -741,21 +741,23 @@ namespace AZ
             }
         }
 
-        void CommandList::SetStreamBuffers(const RHI::StreamBufferView* streams, uint32_t count)
+        void CommandList::SetStreamBuffers(const RHI::DeviceStreamBufferView* streams, uint32_t count)
         {
-            uint16_t bufferArrayLen = 0;
-            AZStd::array<id<MTLBuffer>, METAL_MAX_ENTRIES_BUFFER_ARG_TABLE> mtlStreamBuffers;
-            AZStd::array<NSUInteger, METAL_MAX_ENTRIES_BUFFER_ARG_TABLE> mtlStreamBufferOffsets;
-
-            AZ::HashValue64 streamsHash = AZ::HashValue64{0};
+            bool needsBinding = false;
             for (uint32_t i = 0; i < count; ++i)
             {
-                streamsHash = AZ::TypeHash64(streams[i].GetHash(), streamsHash);
+                if (m_state.m_streamsHashes[i] != streams[i].GetHash())
+                {
+                    m_state.m_streamsHashes[i] = streams[i].GetHash();
+                    needsBinding = true;
+                }
             }
-
-            if (streamsHash != m_state.m_streamsHash)
+            
+            AZStd::array<id<MTLBuffer>, METAL_MAX_ENTRIES_BUFFER_ARG_TABLE> mtlStreamBuffers;
+            AZStd::array<NSUInteger, METAL_MAX_ENTRIES_BUFFER_ARG_TABLE> mtlStreamBufferOffsets;
+            if (needsBinding)
             {
-                m_state.m_streamsHash = streamsHash;
+                uint16_t bufferArrayLen = 0;
                 AZ_Assert(count <= METAL_MAX_ENTRIES_BUFFER_ARG_TABLE , "Slots needed cannot exceed METAL_MAX_ENTRIES_BUFFER_ARG_TABLE");
 
                 NSRange range = {METAL_MAX_ENTRIES_BUFFER_ARG_TABLE - count, count};
@@ -781,20 +783,24 @@ namespace AZ
 
         void CommandList::SetRasterizerState(const RasterizerState& rastState)
         {
-            id<MTLRenderCommandEncoder> renderEncoder = GetEncoder<id<MTLRenderCommandEncoder>>();
-            [renderEncoder setCullMode: rastState.m_cullMode];
-            [renderEncoder setDepthBias: rastState.m_depthBias slopeScale: rastState.m_depthSlopeScale clamp: rastState.m_depthBiasClamp];
-            [renderEncoder setFrontFacingWinding: rastState.m_frontFaceWinding];
-            [renderEncoder setTriangleFillMode: rastState.m_triangleFillMode];
-            [renderEncoder setDepthClipMode: rastState.m_depthClipMode];
+            if (m_state.m_rasterizerStateHash != rastState.m_hash)
+            {
+                m_state.m_rasterizerStateHash = rastState.m_hash;
+                id<MTLRenderCommandEncoder> renderEncoder = GetEncoder<id<MTLRenderCommandEncoder>>();
+                [renderEncoder setCullMode: rastState.m_cullMode];
+                [renderEncoder setDepthBias: rastState.m_depthBias slopeScale: rastState.m_depthSlopeScale clamp: rastState.m_depthBiasClamp];
+                [renderEncoder setFrontFacingWinding: rastState.m_frontFaceWinding];
+                [renderEncoder setTriangleFillMode: rastState.m_triangleFillMode];
+                [renderEncoder setDepthClipMode: rastState.m_depthClipMode];
+            }
         }
 
-        void CommandList::SetShaderResourceGroupForDraw(const RHI::ShaderResourceGroup& shaderResourceGroup)
+        void CommandList::SetShaderResourceGroupForDraw(const RHI::DeviceShaderResourceGroup& shaderResourceGroup)
         {
             SetShaderResourceGroup<RHI::PipelineStateType::Draw>(static_cast<const ShaderResourceGroup*>(&shaderResourceGroup));
         }
 
-        void CommandList::SetShaderResourceGroupForDispatch(const RHI::ShaderResourceGroup& shaderResourceGroup)
+        void CommandList::SetShaderResourceGroupForDispatch(const RHI::DeviceShaderResourceGroup& shaderResourceGroup)
         {
             SetShaderResourceGroup<RHI::PipelineStateType::Dispatch>(static_cast<const ShaderResourceGroup*>(&shaderResourceGroup));
         }
@@ -890,20 +896,20 @@ namespace AZ
             m_state.m_scissorState.m_isDirty = false;
         }
 
-        void CommandList::BuildBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas)
+        void CommandList::BuildBottomLevelAccelerationStructure(const RHI::DeviceRayTracingBlas& rayTracingBlas)
         {
             // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
             AZ_Assert(false, "Not implemented");
         }
 
-        void CommandList::UpdateBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas)
+        void CommandList::UpdateBottomLevelAccelerationStructure(const RHI::DeviceRayTracingBlas& rayTracingBlas)
         {
             // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
             AZ_Assert(false, "Not implemented");
         }
 
         void CommandList::BuildTopLevelAccelerationStructure(
-            const RHI::RayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::RayTracingBlas*>& changedBlasList)
+            const RHI::DeviceRayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::DeviceRayTracingBlas*>& changedBlasList)
         {
             // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
             AZ_Assert(false, "Not implemented");

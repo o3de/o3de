@@ -177,7 +177,7 @@ namespace AtomToolsFramework
             {
             case AssetBrowserEntry::AssetEntryType::Folder:
                 {
-                    if (const auto& path = entry->GetFullPath(); !path.empty() && !IsPathIgnored(path))
+                    if (const auto& path = entry->GetFullPath(); !IsPathIgnored(path))
                     {
                         return m_showEmptyFolders;
                     }
@@ -188,7 +188,7 @@ namespace AtomToolsFramework
 
             case AssetBrowserEntry::AssetEntryType::Source:
                 {
-                    if (const auto& path = entry->GetFullPath(); !path.empty() && !IsPathIgnored(path))
+                    if (const auto& path = entry->GetFullPath(); !IsPathIgnored(path))
                     {
                         // Filter assets against supported extensions instead of using asset type comparisons
                         if (m_fileTypeFiltersEnabled)
@@ -225,13 +225,12 @@ namespace AtomToolsFramework
 
         // The custom filter uses a lambda or function pointer instead of combining complicated filter logic operations. The filter must
         // propagate down in order to support showing and hiding empty folders.
-        CustomFilter* customFilter = new CustomFilter(filterFn);
+        QSharedPointer<CustomFilter> customFilter(new CustomFilter(filterFn));
         customFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
 
         QSharedPointer<CompositeFilter> finalFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::AND));
-        finalFilter->AddFilter(FilterConstType(customFilter));
         finalFilter->AddFilter(m_ui->m_searchWidget->GetFilter());
-
+        finalFilter->AddFilter(customFilter);
         return finalFilter;
     }
 

@@ -43,7 +43,6 @@ namespace AzToolsFramework
 {
     struct ViewPaneOptions;
     class EntityPropertyEditor;
-    class PreemptiveUndoCache;
 
     namespace UndoSystem
     {
@@ -61,15 +60,14 @@ namespace AzToolsFramework
     //! Return true to accept this type of component.
     using ComponentFilter = AZStd::function<bool(const AZ::SerializeContext::ClassData&)>;
 
-    // when a property is modified, we attempt to retrieve the value that comes out in response to the Property Modification function that you may supply
-    // if you return anything other than Refresh_None, the tree may be queued for update:
+    //! Controls how much to rebuild the property display when a change is made
     enum PropertyModificationRefreshLevel : int
     {
-        Refresh_None,
-        Refresh_Values,
-        Refresh_AttributesAndValues,
-        Refresh_EntireTree,
-        Refresh_EntireTree_NewContent,
+        Refresh_None,                   //! No refresh is required
+        Refresh_Values,                 //! Repopulate the values from components into the UI
+        Refresh_AttributesAndValues,    //! In addition to the above, also check if attributes such as visibility have changed
+        Refresh_EntireTree,             //! Discard the entire UI and rebuild it from scratch
+        Refresh_EntireTree_NewContent,  //! In addition to the above, scroll to the bottom of the view.
     };
 
     /**
@@ -156,9 +154,18 @@ namespace AzToolsFramework
         virtual void OnEndUndo(const char* /*label*/, bool /*changed*/) {}
 
         /*!
-         * Notify property UI to refresh the property tree.
+         * Notify property UI to refresh the property tree.  Note that this will go out to every
+         * property UI control in every window in the entire application.
+         * Use InvalidatePropertyDisplayForComponent() instead when possible for faster results.
          */
         virtual void InvalidatePropertyDisplay(PropertyModificationRefreshLevel /*level*/) {}
+
+        /*!
+         * Notify property UI to refresh the properties displayed for a specific component.
+         * You should prefer to use this call over the above one, except in circumstances where
+         * you need to refresh every UI element in every property tree in every window in the entire application.
+         */
+        virtual void InvalidatePropertyDisplayForComponent(AZ::EntityComponentIdPair /*entityComponentIdPair*/, PropertyModificationRefreshLevel /*level*/) {}
 
         /*!
          * Process source control status for the specified file.
@@ -331,11 +338,6 @@ namespace AzToolsFramework
         virtual void EndUndoBatch() = 0;
 
         /*!
-         * Retrieves the preemptive undo cache for the application.
-         */
-        virtual PreemptiveUndoCache* GetUndoCache() = 0;
-
-        /*!
          * \return true if the entity (or entities) can be edited/modified.
          */
         virtual bool IsEntityEditable(AZ::EntityId entityId) = 0;
@@ -453,18 +455,6 @@ namespace AzToolsFramework
         * Deletes all entities in the provided list, as well as their transform descendants.
         */
         virtual void DeleteEntitiesAndAllDescendants(const EntityIdList& entities) = 0;
-
-        virtual bool DetachEntities(const AZStd::vector<AZ::EntityId>& entitiesToDetach, AZStd::vector<AZStd::pair<AZ::EntityId, AZ::SliceComponent::EntityRestoreInfo>>& restoreInfos) = 0;
-
-        /*!
-        * \brief Detaches the supplied subslices from their owning slice instance
-        * \param subsliceRootList A list of SliceInstanceAddresses paired with a mapping from the sub slices asset entityId's to the owing slice instance's live entityIds
-                                  See SliceComponent::GetMappingBetweenSubsliceAndSourceInstanceEntityIds for a helper to acquire this mapping
-        * \param restoreInfos A list of EntityRestoreInfo's to be filled with information on how to restore the entities in the subslices back to their original state before this operation
-        * \return Returns true on operation success, false otherwise
-        */
-        virtual bool DetachSubsliceInstances(const AZ::SliceComponent::SliceInstanceEntityIdRemapList& subsliceRootList,
-            AZStd::vector<AZStd::pair<AZ::EntityId, AZ::SliceComponent::EntityRestoreInfo>>& restoreInfos) = 0;
 
         /*!
         * \brief Finds the Common root of an entity list; Also finds the top level entities in a given list of active entities (who share the common root)
@@ -778,11 +768,8 @@ namespace AzToolsFramework
         //! Spawn asset browser for the appropriate asset types.
         virtual void BrowseForAssets(AssetBrowser::AssetSelectionModel& /*selection*/) = 0;
 
-        /// Creates editor-side representation of an underlying entity.
-        virtual void CreateEditorRepresentation(AZ::Entity* /*entity*/) { }
-
-        /// Destroys editor-side representation of a given entity.
-        virtual bool DestroyEditorRepresentation(AZ::EntityId /*entityId*/, bool /*deleteAZEntity*/) { return false; }
+        /// Adds the components that are required for editor representation to the entity.
+        virtual void CreateEditorRepresentation(AZ::Entity* /*entity*/) {}
 
         /// Clone selected entities/slices.
         virtual void CloneSelection(bool& /*handled*/) {}
@@ -884,7 +871,9 @@ namespace AzToolsFramework
         /// Returns the world-space position under the center of the render viewport.
         virtual AZ::Vector3 GetWorldPositionAtViewportCenter() { return AZ::Vector3::CreateZero(); }
 
-        virtual void InstantiateSliceFromAssetId(const AZ::Data::AssetId& /*assetId*/) {}
+        //! Retrieves the position in world space corresponding to the point interacted with by the user.
+        //! Will take context menus and cursor position into account as appropriate.
+        virtual AZ::Vector3 GetWorldPositionAtViewportInteraction() const { return AZ::Vector3::CreateZero(); };
 
         /// Clears current redo stack
         virtual void ClearRedoStack() {}

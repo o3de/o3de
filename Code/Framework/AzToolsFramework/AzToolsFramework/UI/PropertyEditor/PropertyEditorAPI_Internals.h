@@ -120,7 +120,7 @@ namespace AzToolsFramework
         virtual void RegisterWithPropertySystem(AZ::DocumentPropertyEditor::PropertyEditorSystemInterface* /*system*/) {}
 
         // you need to define this.
-        virtual AZ::u32 GetHandlerName() const = 0;  // AZ_CRC("IntSlider")
+        virtual AZ::u32 GetHandlerName() const = 0;  // AZ_CRC_CE("IntSlider")
 
         // specify true if you want the user to be able to either specify no handler or specify "Default" as the handler.
         // and still get your handler.
@@ -170,7 +170,7 @@ namespace AzToolsFramework
     protected:
         // we automatically take care of the rest:
         // --------------------- Internal Implementation ------------------------------
-        virtual void ResetGUIToDefaults_Internal(QWidget* widget) = 0;
+        virtual bool ResetGUIToDefaults_Internal(QWidget* widget) = 0;
         virtual void ConsumeAttributes_Internal(QWidget* widget, InstanceDataNode* attrValue) = 0;
         virtual void WriteGUIValuesIntoProperty_Internal(QWidget* widget, InstanceDataNode* t) = 0;
         virtual void WriteGUIValuesIntoTempProperty_Internal(QWidget* widget, void* tempValue, const AZ::Uuid& propertyType, AZ::SerializeContext* serializeContext) = 0;
@@ -206,7 +206,20 @@ namespace AzToolsFramework
         {
             if (m_widget)
             {
-                m_widget->deleteLater();
+                // Detect whether this is being run in the Editor or during a Unit Test.
+                AZ::ApplicationTypeQuery appType;
+                AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+                if (appType.IsValid() && !appType.IsEditor())
+                {
+                    // In Unit Tests, immediately delete the widget to prevent triggering the leak detection mechanism.
+                    delete m_widget;
+                    m_widget = nullptr;
+                }
+                else
+                {
+                    // In the Editor, use deleteLater as it is more stable.
+                    m_widget->deleteLater();
+                }
             }
             IndividualPropertyHandlerEditNotifications::Bus::Handler::BusDisconnect();
         }
@@ -436,21 +449,20 @@ namespace AzToolsFramework
                 m_proxyClassElement.m_genericClassInfo = serializeContext->FindGenericClassInfo(typeId);
             }
 
-            if (m_widget)
-            {
-                // Reset widget's attributes before reading in new values
-                m_rpeHandler.ResetGUIToDefaults_Internal(m_widget);
-            }
-
             m_rpeHandler.ConsumeAttributes_Internal(GetWidget(), &m_proxyNode);
             m_rpeHandler.ReadValuesIntoGUI_Internal(GetWidget(), &m_proxyNode);
 
             m_domNode = node;
         }
 
-        void PrepareWidgetForReuse() override
+        bool ResetToDefaults() override
         {
-            // No action is needed because the widget already gets reset each time a value is set from DOM
+            if (m_widget)
+            {
+                // Reset widget's attributes before reading in new values
+                return m_rpeHandler.ResetGUIToDefaults_Internal(m_widget);
+            }
+            return false;
         }
 
         QWidget* GetFirstInTabOrder() override
@@ -638,20 +650,24 @@ namespace AzToolsFramework
     public:
         typedef WidgetType widget_t;
 
-        // Resets widget attributes for reuse.
-        virtual void ResetGUIToDefaults([[maybe_unused]] WidgetType* widget) {}
+        // Resets widget attributes for reuse; returns true if widget was reset
+        // if you return false, the widget will be destroyed and recreated on each reuse, so implementing this
+        // can improve response speed and reduce flicker.  On the other hand, actually resetting a really complicated
+        // widget can involve cleaning out unexpected amounts of hidden state in a tree of child widgets, which themselves
+        // may have complicated hidden state, so implement it with care and test it extensively.
+        virtual bool ResetGUIToDefaults([[maybe_unused]] WidgetType* widget)
+        {
+            return false;
+        }
+
+        // see documentation in PropertyEditorAPI.h in @ref class PropertyHandler
+        virtual void BeforeConsumeAttributes(WidgetType* widget, InstanceDataNode* attrValue) = 0;
 
         // this will be called in order to initialize your gui.  Your class will be fed one attribute at a time
         // you can interpret the attributes as you wish - use attrValue->Read<int>() for example, to interpret it as an int.
         // all attributes can either be a flat value, or a function which returns that same type.  In the case of the function
         // it will be called on the first instance.
-        virtual void ConsumeAttribute(WidgetType* widget, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName)
-        {
-            (void)widget;
-            (void)attrib;
-            (void)attrValue;
-            (void)debugName;
-        }
+        virtual void ConsumeAttribute(WidgetType* widget, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) = 0;
 
         // provides an option to specify reading parent element attributes.
         // This allows parent elements to override attributes of their children if needed.
@@ -685,10 +701,10 @@ namespace AzToolsFramework
 
     protected:
         // ---------------- INTERNAL -----------------------------
-        virtual void ResetGUIToDefaults_Internal(QWidget* widget) override
+        virtual bool ResetGUIToDefaults_Internal(QWidget* widget) override
         {
             WidgetType* wid = static_cast<WidgetType*>(widget);
-            ResetGUIToDefaults(wid);
+            return ResetGUIToDefaults(wid);
         }
 
         virtual void ConsumeAttributes_Internal(QWidget* widget, InstanceDataNode* dataNode) override;

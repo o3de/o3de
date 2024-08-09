@@ -35,6 +35,8 @@ namespace AZ
             BufferDeviceAddress,
             SubgroupOperation,
             MemoryBudget,
+            LoadNoneOp,
+            StoreNoneOp,
             Count // Must be last
         };
 
@@ -62,6 +64,8 @@ namespace AZ
             FragmentShadingRate,
             FragmentDensityMap,
             Renderpass2,
+            TimelineSempahore,
+            LoadStoreOpNone,
             Count
         };
 
@@ -104,7 +108,8 @@ namespace AZ
             const VkPhysicalDeviceFragmentDensityMapFeaturesEXT& GetPhysicalDeviceFragmentDensityMapFeatures() const;
             const VkPhysicalDeviceFragmentDensityMapPropertiesEXT& GetPhysicalDeviceFragmentDensityMapProperties() const;
             const VkPhysicalDeviceFragmentShadingRatePropertiesKHR& GetPhysicalDeviceFragmentShadingRateProperties() const;
-            
+            const VkPhysicalDeviceTimelineSemaphoreFeatures& GetPhysicalDeviceTimelineSemaphoreFeatures() const;
+
             VkFormatProperties GetFormatProperties(RHI::Format format, bool raiseAsserts = true) const;
             StringList GetDeviceLayerNames() const;
             StringList GetDeviceExtensionNames(const char* layerName = nullptr) const;
@@ -147,6 +152,7 @@ namespace AZ
             VkPhysicalDeviceFragmentDensityMapFeaturesEXT m_fragmentDensityMapFeatures{};
             VkPhysicalDeviceFragmentDensityMapPropertiesEXT m_fragmentDensityMapProperties{};
             VkPhysicalDeviceFragmentShadingRatePropertiesKHR m_fragmentShadingRateProperties{};
+            VkPhysicalDeviceTimelineSemaphoreFeatures m_timelineSemaphoreFeatures{};
         };
     }
 }

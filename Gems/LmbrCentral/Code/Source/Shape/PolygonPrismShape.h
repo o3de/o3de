@@ -58,7 +58,7 @@ namespace LmbrCentral
         void InvalidateCache(InvalidateShapeCacheReason reason);
 
         // ShapeComponent::Handler
-        AZ::Crc32 GetShapeType() const override { return AZ_CRC("PolygonPrism", 0xd6b50036); }
+        AZ::Crc32 GetShapeType() const override { return AZ_CRC_CE("PolygonPrism"); }
         AZ::Aabb GetEncompassingAabb() const override;
         void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const override;
         bool IsPointInside(const AZ::Vector3& point) const override;

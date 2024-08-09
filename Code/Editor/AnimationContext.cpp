@@ -17,9 +17,6 @@
 // Editor
 #include "TrackView/TrackViewDialog.h"
 #include "ViewManager.h"
-#include "Objects/SelectionGroup.h"
-#include "Include/IObjectManager.h"
-#include "Objects/EntityObject.h"
 
 #include <AzCore/Time/ITime.h>
 
@@ -49,27 +46,6 @@ protected:
         break;
         }
     }
-
-    void OnSetCamera(const SCameraParams& Params) override
-    {
-        // Only switch camera when in Play mode.
-        GUID camObjId = GUID_NULL;
-        if (Params.cameraEntityId.IsValid())
-        {
-            // Find owner editor entity.
-            CEntityObject* pEditorEntity = CEntityObject::FindFromEntityId(Params.cameraEntityId);
-            if (pEditorEntity)
-            {
-                camObjId = pEditorEntity->GetId();
-            }
-        }
-
-        // Switch camera in active rendering view.
-        if (GetIEditor()->GetViewManager())
-        {
-            GetIEditor()->GetViewManager()->SetCameraObjectId(camObjId);
-        }
-    };
 
     bool IsSequenceCamUsed() const override
     {
@@ -252,7 +228,7 @@ void CAnimationContext::SetSequence(CTrackViewSequence* sequence, bool force, bo
     {
         // If this was a sequence that was selected by the user in Track View
         // and it was "No Sequence" clear the m_mostRecentSequenceId so the sequence
-        // will not be reselected at unwanted events like a slice reload or an undo operation.
+        // will not be reselected at unwanted events like an undo operation.
         m_mostRecentSequenceId.SetInvalid();
     }
 
@@ -307,7 +283,6 @@ void CAnimationContext::SetTime(float t)
     m_currTime = t;
     m_fRecordingCurrTime = t;
     ForceAnimation();
-    UpdateAnimatedLights();
 
     NotifyTimeChangedListenersUsingCurrTime();
 }
@@ -488,22 +463,6 @@ void CAnimationContext::Update()
         m_bForceUpdateInNextFrame = false;
     }
 
-    // If looking through camera object and recording animation, do not allow camera shake
-    if ((GetIEditor()->GetViewManager()->GetCameraObjectId() != GUID_NULL) && GetIEditor()->GetAnimation()->IsRecording())
-    {
-        if (GetIEditor()->GetMovieSystem())
-        {
-            GetIEditor()->GetMovieSystem()->EnableCameraShake(false);
-        }
-    }
-    else
-    {
-        if (GetIEditor()->GetMovieSystem())
-        {
-            GetIEditor()->GetMovieSystem()->EnableCameraShake(true);
-        }
-    }
-
     if (m_paused > 0 || !(m_playing || m_bAutoRecording))
     {
         if (m_pSequence)
@@ -573,19 +532,11 @@ void CAnimationContext::Update()
         }
     }
 
-    if (m_bAutoRecording)
-    {
-        // This is auto recording mode.
-        // Send sync with physics event to all selected entities.
-        GetIEditor()->GetSelection()->SendEvent(EVENT_PHYSICS_GETSTATE);
-    }
-
     if (fabs(m_lastTimeChangedNotificationTime - m_currTime) > 0.001f)
     {
         NotifyTimeChangedListenersUsingCurrTime();
     }
 
-    UpdateAnimatedLights();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -679,34 +630,6 @@ void CAnimationContext::OnPostRender()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
-void CAnimationContext::UpdateAnimatedLights()
-{
-    bool bLightAnimationSetActive = m_pSequence && (m_pSequence->GetFlags() & IAnimSequence::eSeqFlags_LightAnimationSet);
-    if (bLightAnimationSetActive == false)
-    {
-        return;
-    }
-
-    std::vector<CBaseObject*> entityObjects;
-    GetIEditor()->GetObjectManager()->FindObjectsOfType(&CEntityObject::staticMetaObject, entityObjects);
-    std::for_each(std::begin(entityObjects), std::end(entityObjects),
-        [this](CBaseObject* pBaseObject)
-        {
-            CEntityObject* pEntityObject = static_cast<CEntityObject*>(pBaseObject);
-            bool bLight = pEntityObject && pEntityObject->GetEntityClass().compare("Light") == 0;
-            if (bLight)
-            {
-                bool bTimeScrubbing = pEntityObject->GetEntityPropertyBool("bTimeScrubbingInTrackView");
-                if (bTimeScrubbing)
-                {
-                    pEntityObject->SetEntityPropertyFloat("_fTimeScrubbed", m_currTime);
-                }
-            }
-        });
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CAnimationContext::BeginUndoTransaction()
 {
     m_bSavedRecordingState = m_recording;

@@ -80,6 +80,63 @@ macro(o3de_gem_setup default_gem_name)
     o3de_pal_dir(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 endmacro()
 
+# get_all_gem_dependencies
+#
+# Determine all of the gem dependencies (recursively) for a given gem.
+#
+# \arg:gem_name(STRING) - Gem name whose "dependencies" will be queried from its gem.json
+# \arg:output_resolved_gem_names(LIST) - The updated list of resolved gem name dependencies
+function(get_all_gem_dependencies gem_name output_resolved_gem_names)
+
+    get_property(gem_dependencies GLOBAL PROPERTY GEM_DEPENDENCIES_"${gem_name}")
+    if (gem_dependencies)
+        # The gem dependency for ${gem_name} has been calculated, return the cached property
+        set(${output_resolved_gem_names} ${gem_dependencies} PARENT_SCOPE)
+        return()
+    else()
+        # The gem dependency for ${gem_name} has not been calculated. 
+        # First read in the dependencies from the gem.json if possible
+
+        # Strip out any possible version specifier in order to lookup the gem path based on the cached
+        # global property "@GEMROOT:${gem_name}"
+        unset(gem_name_only)
+        o3de_get_name_and_version_specifier(${gem_name} gem_name_only ignore_spec_op ignore_spec_version)
+        get_property(gem_path GLOBAL PROPERTY "@GEMROOT:${gem_name_only}@")
+        if(NOT gem_path)
+            message(FATAL_ERROR "Unable to locate gem path for Gem \"${gem_name_only}\"."
+                    " Is the gem registered in either the ~/.o3de/o3de_manifest.json, ${LY_ROOT_FOLDER}/engine.json,"
+                    " any project.json or any gem.json which itself is registered?")
+        endif()
+
+        o3de_read_json_array(gem_dependencies "${gem_path}/gem.json" "dependencies")
+
+        # Keep track of the visited gems to prevent any dependency cycles that can
+        # cause a possible infinite recursion when evaluating the gem dependencies' dependency
+        list(APPEND get_all_gem_dependencies_visited ${gem_name})
+
+        # Iterate and recursively collect dependent gem names
+        unset(all_dependent_gem_names)
+        foreach(dependent_gem_name IN LISTS gem_dependencies)
+            unset(dependent_gem_names)
+
+            # Recursively check a depend gem only if it has not been visited yet
+            unset(visited_index)
+            list(FIND get_all_gem_dependencies_visited ${dependent_gem_name} visited_index)
+            if (visited_index LESS 0)
+                get_all_gem_dependencies(${dependent_gem_name} dependent_gem_names)
+                list(APPEND all_dependent_gem_names ${dependent_gem_names})
+            endif()
+        endforeach()
+        list(APPEND gem_dependencies ${all_dependent_gem_names})
+        list(REMOVE_DUPLICATES gem_dependencies)
+
+        # Update the cached value and set the results
+        set_property(GLOBAL PROPERTY GEM_DEPENDENCIES_"${gem_name}" ${gem_dependencies})
+        set(${output_resolved_gem_names} ${gem_dependencies} PARENT_SCOPE)
+    endif()
+
+endfunction()
+
 # o3de_find_ancestor_gem_root:Searches for the nearest gem root from input source_dir
 #
 # \arg:source_dir(FILEPATH) - Filepath to walk upwards from to locate a gem.json
@@ -87,7 +144,7 @@ endmacro()
 # \return:output_gem_name - The name of the gem read from the gem.json
 function(o3de_find_ancestor_gem_root output_gem_module_root output_gem_name source_dir)
     unset(${output_gem_module_root} PARENT_SCOPE)
-
+    
     if(source_dir)
         set(candidate_gem_path ${source_dir})
         # Locate the root of the gem by finding the gem.json location
@@ -110,6 +167,9 @@ function(o3de_find_ancestor_gem_root output_gem_module_root output_gem_name sour
         # Update source_dir if the gem root path exists
         set(source_dir ${candidate_gem_path})
         o3de_read_json_key(gem_name ${candidate_gem_json_path} "gem_name")
+
+        unset(gem_provided_service)
+        o3de_read_optional_json_key(gem_provided_service ${candidate_gem_json_path} "provided_unique_service")
     endif()
 
     # Set the gem module root output directory to the location with the gem.json file within it or
@@ -120,6 +180,12 @@ function(o3de_find_ancestor_gem_root output_gem_module_root output_gem_name sour
     if(gem_name)
         set(${output_gem_name} ${gem_name} PARENT_SCOPE)
     endif()
+
+    if (gem_provided_service)
+        # Track any (optional) provided unique service that this gem provides
+        set_property(GLOBAL PROPERTY LY_GEM_PROVIDED_SERVICE_"${gem_name}" "${gem_provided_unique_service}")
+    endif()
+
 endfunction()
 
 # o3de_add_variant_dependencies_for_gem_dependencies
@@ -149,9 +215,9 @@ function(o3de_add_variant_dependencies_for_gem_dependencies)
         " any project.json or any gem.json which itself is registered?")
     endif()
 
-     # Open gem.json and read "dependencies" array
-     unset(gem_dependencies)
-     o3de_read_json_array(gem_dependencies "${gem_path}/gem.json" "dependencies")
+    # Open gem.json and read "dependencies" array
+    unset(gem_dependencies)
+    get_all_gem_dependencies(${gem_name} gem_dependencies)
 
     foreach(variant IN LISTS gem_variants)
         set(gem_variant_target "${gem_name}.${variant}")
@@ -371,10 +437,19 @@ function(ly_enable_gems)
     # Remove any version specifiers before looking for variants
     # e.g. "Atom==1.2.3" becomes "Atom"
     unset(GEM_NAMES)
+    unset(additional_dependent_gems)
     foreach(gem_name_with_version_specifier IN LISTS ly_enable_gems_GEMS)
         o3de_get_name_and_version_specifier(${gem_name_with_version_specifier} gem_name spec_op spec_version)
         list(APPEND GEM_NAMES "${gem_name}")
+        # In addition to the gems enabled, collect each of the enabled gem's dependencies as well
+        unset(gem_dependencies_for_gem)
+        get_all_gem_dependencies(${gem_name} gem_dependencies_for_gem)
+        list(APPEND additional_dependent_gems ${gem_dependencies_for_gem})
     endforeach()
+
+    # Update the gems that were enabled to include all of the gem's dependent gems as well
+    list(APPEND GEM_NAMES "${additional_dependent_gems}")
+    list(REMOVE_DUPLICATES GEM_NAMES)
     set(ly_enable_gems_GEMS ${GEM_NAMES})
 
     # all the actual work has to be done later.
@@ -515,5 +590,32 @@ function(ly_enable_gems_delayed)
                     GEM_DEPENDENCIES ${gem_dependencies})
             endforeach()
         endforeach()
+
+        # Make sure that there are no targets that have dependencies on multiple gems that provide the same unique service
+        foreach(project ${enable_gem_projects})
+
+            # Skip __NOPROJECT__ since the gems won't be loaded anyways
+            if (project STREQUAL "__NOPROJECT__")
+                continue()
+            endif()
+
+            # Get the enabled gems for ${project} and track any unique service
+            get_property(enabled_gems_for_project GLOBAL PROPERTY LY_DELAYED_ENABLE_GEMS_"${project}")
+            unset(identified_unique_services)
+            foreach(dep_gem ${enabled_gems_for_project})
+                get_property(gem_provided_unique_service GLOBAL PROPERTY LY_GEM_PROVIDED_SERVICE_"${dep_gem}")
+                if (gem_provided_unique_service)
+                    get_property(servicing_gem GLOBAL PROPERTY unique_service_"${project}"_"${gem_provided_unique_service}")
+                    if ((servicing_gem) AND (NOT "${dep_gem}" STREQUAL "${servicing_gem}"))
+                        message(FATAL_ERROR "Target '${project}' detected conflicting gems that provide the same service '${gem_provided_unique_service}': "
+                                            "${dep_gem}, ${servicing_gem}. Disable one of these gems or any gem that has a dependency for one of these "
+                                             "gems to continue.")
+                    else()
+                        set_property(GLOBAL PROPERTY unique_service_"${project}"_"${gem_provided_unique_service}" ${dep_gem})
+                    endif()
+                endif()
+            endforeach()
+        endforeach()
+
     endforeach()
 endfunction()

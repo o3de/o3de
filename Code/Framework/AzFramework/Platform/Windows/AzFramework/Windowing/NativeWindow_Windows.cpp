@@ -9,11 +9,14 @@
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Windows.h>
 #include <AzFramework/Windowing/NativeWindow.h>
 #include <AzFramework/Windowing/NativeWindow_Windows.h>
+#include <AzFramework/Windowing/Resources.h>
 
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/string/conversions.h>
+
+#include <dbt.h>
 
 namespace AzFramework
 {
@@ -27,7 +30,7 @@ namespace AzFramework
     NativeWindowImpl_Win32::NativeWindowImpl_Win32()
     {
         // Attempt to load GetDpiForWindow from user32 at runtime, available on Windows 10+ versions >= 1607
-        if (auto user32module = AZ::DynamicModuleHandle::Create("user32"); user32module->Load(false))
+        if (auto user32module = AZ::DynamicModuleHandle::Create("user32"); user32module->Load())
         {
             m_getDpiFunction = user32module->GetFunction<GetDpiForWindowType>("GetDpiForWindow");
         }
@@ -40,9 +43,35 @@ namespace AzFramework
         m_win32Handle = nullptr;
     }
 
-    void NativeWindowImpl_Win32::InitWindow(const AZStd::string& title,
-                                            const WindowGeometry& geometry,
-                                            const WindowStyleMasks& styleMasks)
+    void DrawSplash(HWND hWnd)
+    {
+        const HINSTANCE hInstance = GetModuleHandle(0);
+        auto hImage = (HBITMAP)LoadImageA(hInstance, MAKEINTRESOURCEA(IDB_SPLASH1), IMAGE_BITMAP, 0, 0, 0);
+        if (hImage)
+        {
+            HDC hDC = GetDC(hWnd);
+            HDC hDCBitmap = CreateCompatibleDC(hDC);
+            BITMAP bm;
+
+            GetObjectA(hImage, sizeof(bm), &bm);
+            SelectObject(hDCBitmap, hImage);
+
+            RECT Rect;
+            GetWindowRect(hWnd, &Rect);
+
+            DWORD x = ((Rect.right - Rect.left) - bm.bmWidth) >> 1;
+            DWORD y = ((Rect.bottom - Rect.top) - bm.bmHeight) >> 1;
+            BitBlt(hDC, x, y, bm.bmWidth, bm.bmHeight, hDCBitmap, 0, 0, SRCCOPY);
+
+            DeleteObject(hImage);
+            DeleteDC(hDCBitmap);
+        }
+    }
+
+    void NativeWindowImpl_Win32::InitWindowInternal(
+        const AZStd::string& title,
+        const WindowGeometry& geometry,
+        const WindowStyleMasks& styleMasks)
     {
         const HINSTANCE hInstance = GetModuleHandle(0);
 
@@ -58,7 +87,7 @@ namespace AzFramework
             windowClass.hInstance = hInstance;
             windowClass.hIcon = LoadIcon(hInstance, IDI_APPLICATION);
             windowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
-            windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+            windowClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
             windowClass.lpszMenuName = NULL;
             windowClass.lpszClassName = s_defaultClassName;
             windowClass.hIconSm = LoadIcon(hInstance, IDI_APPLICATION);
@@ -118,6 +147,7 @@ namespace AzFramework
             // This will result in a WM_SIZE message which will send the OnWindowResized notification
             ShowWindow(m_win32Handle, SW_SHOW);
             UpdateWindow(m_win32Handle);
+            DrawSplash(m_win32Handle);
         }
     }
 
@@ -358,6 +388,12 @@ namespace AzFramework
             shouldBubbleEventUp = true;
             break;
         }
+        case WM_DEVICECHANGE:
+            if (wParam == DBT_DEVNODES_CHANGED)
+            {
+                // If any device changes were detected, broadcast to the input device notification
+                AzFramework::RawInputNotificationBusWindows::Broadcast(&AzFramework::RawInputNotificationsWindows::OnRawInputDeviceChangeEvent);
+            }
         default:
             shouldBubbleEventUp = true;
             break;
@@ -377,13 +413,11 @@ namespace AzFramework
             m_width = width;
             m_height = height;
 
+            DrawSplash(m_win32Handle);
+
             if (m_activated)
             {
                 WindowNotificationBus::Event(m_win32Handle, &WindowNotificationBus::Events::OnWindowResized, width, height);
-                if (!m_enableCustomizedResolution)
-                {
-                    WindowNotificationBus::Event(m_win32Handle, &WindowNotificationBus::Events::OnResolutionChanged, width, height);
-                }
             }
         }
     }

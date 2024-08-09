@@ -17,6 +17,9 @@
 #include <AzCore/Math/Obb.h>
 #include <AzCore/std/containers/fixed_vector.h>
 
+// Enable this define to print the shader variants used by MeshDrawPacket every time the draw packet get rebuilt.
+// Note: the log can be extremely long if there are too many mesh instances (for example, >5K).  
+// #define DEBUG_MESH_SHADERVARIANTS
 
 namespace AZ
 {
@@ -79,6 +82,8 @@ namespace AZ
             const ModelLod::Mesh& GetMesh() const;
             const ShaderList& GetActiveShaderList() const { return m_activeShaders; }
 
+            void DebugOutputShaderVariants();
+
         private:
             bool DoUpdate(const Scene& parentScene);
             void ForValidShaderOptionName(const Name& shaderOptionName, const AZStd::function<bool(const ShaderCollection::Item&, ShaderOptionIndex)>& callback);
@@ -114,6 +119,9 @@ namespace AZ
             // Tracks whether the Material has change since the DrawPacket was last built
             Material::ChangeId m_materialChangeId = Material::DEFAULT_CHANGE_ID;
 
+            // A handler which is called when a shader variant of the material is ready 
+            Material::OnMaterialShaderVariantReadyEvent::Handler m_shaderVariantHandler;
+
             // Set the sort key for the draw packet
             RHI::DrawItemSortKey m_sortKey = 0;
 
@@ -133,6 +141,12 @@ namespace AZ
 
             //! A flag to indicate if the DrawPacket need to be rebuild when updating
             bool m_needUpdate = true;
+
+#ifdef DEBUG_MESH_SHADERVARIANTS
+            // For debug shader variants
+            // The list of shader variant asset names used by the DrawPackets
+            AZStd::vector<AZStd::string_view> m_shaderVariantNames;
+#endif
         };
         
         using MeshDrawPacketList = AZStd::vector<RPI::MeshDrawPacket>;

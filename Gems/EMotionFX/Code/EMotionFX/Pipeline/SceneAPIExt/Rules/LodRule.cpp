@@ -100,8 +100,8 @@ namespace EMotionFX
                             AZ::Edit::UIHandlers::Default, &LodRule::m_nodeSelectionLists, "Skeleton",
                             "Select the joints to assign to each level of detail.")
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "Additional LOD")
-                            ->ElementAttribute(AZ::Edit::UIHandlers::Handler, AZ_CRC("LODTreeSelection", 0x25c27718))
-                            ->ElementAttribute(AZ_CRC("FilterType", 0x2661cf01), azrtti_typeid<SceneDataTypes::IBoneData>());
+                            ->ElementAttribute(AZ::Edit::UIHandlers::Handler, AZ_CRC_CE("LODTreeSelection"))
+                            ->ElementAttribute(AZ_CRC_CE("FilterType"), azrtti_typeid<SceneDataTypes::IBoneData>());
                 }
             }
         }

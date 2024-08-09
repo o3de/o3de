@@ -66,6 +66,9 @@ namespace AZ
             RHI::DrawListMask GetDrawListMask() const { return m_drawListMask; }
             void Reset();
 
+            //! Prints the draw list mask for this view. Useful for printf debugging.
+            void PrintDrawListMask();
+
             RHI::ShaderResourceGroup* GetRHIShaderResourceGroup() const;
 
             Data::Instance<RPI::ShaderResourceGroup> GetShaderResourceGroup();
@@ -176,6 +179,8 @@ namespace AZ
 
             //! Returns the masked occlusion culling interface
             MaskedOcclusionCulling* GetMaskedOcclusionCulling();
+            void SetMaskedOcclusionCullingDirty(bool dirty);
+            bool GetMaskedOcclusionCullingDirty() const;
 
             //! This is called by RenderPipeline when this view is added to the pipeline.
             void OnAddToRenderPipeline();
@@ -262,6 +267,7 @@ namespace AZ
 
             // Masked Occlusion Culling interface
             MaskedOcclusionCulling* m_maskedOcclusionCulling = nullptr;
+            AZStd::atomic_bool m_maskedOcclusionCullingDirty = true;
 
             AZStd::atomic_uint32_t m_andFlags{ 0xFFFFFFFF };
             AZStd::atomic_uint32_t m_orFlags { 0x00000000 };

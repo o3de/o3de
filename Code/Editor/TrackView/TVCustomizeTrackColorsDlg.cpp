@@ -47,7 +47,6 @@ namespace
 {
     const STrackEntry g_trackEntries[] = {
         // Color for tracks
-        { AnimParamType::FOV, "FOV", QColor(220, 220, 220) },
         { AnimParamType::Position, "Pos", QColor(90, 150, 90) },
         { AnimParamType::Rotation, "Rot", QColor(90, 150, 90) },
         { AnimParamType::Scale, "Scale", QColor(90, 150, 90) },
@@ -363,7 +362,7 @@ bool CTVCustomizeTrackColorsDlg::Import(const QString& fullPath)
         // Get the entry index for this param type.
         const STrackEntry* pEntry = std::find_if(g_trackEntries, g_trackEntries + arraysize(g_trackEntries),
                 [=](const STrackEntry& entry)
-        { 
+        {
             return entry.paramType == paramType;
         });
         int entryIndex = static_cast<int>(pEntry - g_trackEntries);

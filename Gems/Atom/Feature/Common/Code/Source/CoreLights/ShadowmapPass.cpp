@@ -108,6 +108,8 @@ namespace AZ
             RHI::AttachmentLoadStoreAction action;
             action.m_clearValue = RHI::ClearValue::CreateDepth(1.f);
             action.m_loadAction = m_clearEnabled ? RHI::AttachmentLoadAction::Clear : RHI::AttachmentLoadAction::DontCare;
+            action.m_loadActionStencil = RHI::AttachmentLoadAction::None;
+            action.m_storeActionStencil = RHI::AttachmentStoreAction::None;
             binding.m_unifiedScopeDesc = RHI::UnifiedScopeAttachmentDescriptor(attachmentId, imageViewDescriptor, action);
 
             Base::BuildInternal();
@@ -201,7 +203,7 @@ namespace AZ
                 if (startIndex == 0)
                 {
                     RHI::CommandList* commandList = context.GetCommandList();
-                    commandList->Submit(*m_clearShadowDrawPacket->GetDrawItemProperties(0).m_item, 0);
+                    commandList->Submit(m_clearShadowDrawPacket->GetDrawItemProperties(0).m_item->GetDeviceDrawItem(context.GetDeviceIndex()), 0);
                 }
                 else
                 {

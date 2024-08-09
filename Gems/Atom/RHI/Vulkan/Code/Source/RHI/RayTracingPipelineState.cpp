@@ -7,9 +7,10 @@
  */
 
 #include <RHI/RayTracingPipelineState.h>
+#include <RHI/Device.h>
+#include <RHI/SpecializationConstantData.h>
 #include <Atom/RHI.Reflect/SamplerState.h>
 #include <Atom/RHI.Reflect/Vulkan/ShaderStageFunction.h>
-#include <RHI/Device.h>
 #include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
@@ -21,7 +22,7 @@ namespace AZ
             return aznew RayTracingPipelineState;
         }
 
-        RHI::ResultCode RayTracingPipelineState::InitInternal(RHI::Device& deviceBase, const RHI::RayTracingPipelineStateDescriptor* descriptor)
+        RHI::ResultCode RayTracingPipelineState::InitInternal(RHI::Device& deviceBase, const RHI::DeviceRayTracingPipelineStateDescriptor* descriptor)
         {
             Device &device = static_cast<Device&>(deviceBase);
             auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
@@ -37,11 +38,14 @@ namespace AZ
             // process shader libraries into shader stages and groups
             AZStd::vector<VkPipelineShaderStageCreateInfo> stages;
             AZStd::vector<VkRayTracingShaderGroupCreateInfoKHR> groups;
-            m_shaderModules.reserve(descriptor->GetShaderLibraries().size());
-            for (const RHI::RayTracingShaderLibrary& shaderLibrary : descriptor->GetShaderLibraries())
-            {
-                const ShaderStageFunction* rayTracingFunction = azrtti_cast<const ShaderStageFunction*>(shaderLibrary.m_descriptor.m_rayTracingFunction.get());
+            AZStd::vector<SpecializationConstantData> specializationDataVector(descriptor->GetShaderLibraries().size());
 
+            m_shaderModules.reserve(descriptor->GetShaderLibraries().size());
+            const auto& libraries = descriptor->GetShaderLibraries();
+            for (uint32_t i = 0; i < libraries.size(); ++i)
+            {
+                const RHI::RayTracingShaderLibrary& shaderLibrary = libraries[i];
+                const ShaderStageFunction* rayTracingFunction = azrtti_cast<const ShaderStageFunction*>(shaderLibrary.m_descriptor.m_rayTracingFunction.get());
                 VkShaderModule& shaderModule = m_shaderModules.emplace_back();
                 VkShaderModuleCreateInfo moduleCreateInfo = {};
                 moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -50,9 +54,13 @@ namespace AZ
                 device.GetContext().CreateShaderModule(
                     device.GetNativeDevice(), &moduleCreateInfo, VkSystemAllocator::Get(), &shaderModule);
 
+                SpecializationConstantData& specializationData = specializationDataVector[i];
+                specializationData.Init(shaderLibrary.m_descriptor);
+
                 VkPipelineShaderStageCreateInfo stageCreateInfo = {};
                 stageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
                 stageCreateInfo.module = shaderModule;
+                stageCreateInfo.pSpecializationInfo = specializationData.GetVkSpecializationInfo();
 
                 // ray generation
                 if (!shaderLibrary.m_rayGenerationShaderName.IsEmpty())
@@ -117,6 +125,17 @@ namespace AZ
 
                     hitStageIndices.insert(AZStd::pair<AZStd::string_view, uint32_t>(shaderLibrary.m_anyHitShaderName.GetStringView(), aznumeric_cast<uint32_t>(stages.size() - 1)));
                 }
+
+                // intersection
+                if (!shaderLibrary.m_intersectionShaderName.IsEmpty())
+                {
+                    VkPipelineShaderStageCreateInfo intersectionCreateInfo = stageCreateInfo;
+                    intersectionCreateInfo.stage = VK_SHADER_STAGE_INTERSECTION_BIT_KHR;
+                    intersectionCreateInfo.pName = shaderLibrary.m_intersectionShaderName.GetCStr();
+                    stages.push_back(intersectionCreateInfo);
+
+                    hitStageIndices.insert(AZStd::pair<AZStd::string_view, uint32_t>(shaderLibrary.m_intersectionShaderName.GetStringView(), aznumeric_cast<uint32_t>(stages.size() - 1)));
+                }
             }
 
             // create group entries for the hit group shaders, using the hitStageIndices map to retrieve the stage index for the shader
@@ -124,6 +143,7 @@ namespace AZ
             {
                 uint32_t closestHitShaderIndex = VK_SHADER_UNUSED_KHR;
                 uint32_t anytHitShaderIndex = VK_SHADER_UNUSED_KHR;
+                uint32_t intersectionShaderIndex = VK_SHADER_UNUSED_KHR;
 
                 if (!hitGroup.m_closestHitShaderName.IsEmpty())
                 {
@@ -141,16 +161,26 @@ namespace AZ
                     anytHitShaderIndex = itStage->second;
                 }
 
+                if (!hitGroup.m_intersectionShaderName.IsEmpty())
+                {
+                    HitStageIndexMap::iterator itStage = hitStageIndices.find(hitGroup.m_intersectionShaderName.GetCStr());
+                    AZ_Assert(itStage != hitStageIndices.end(), "HitGroup specified an unknown IntersectionShader");
+
+                    intersectionShaderIndex = itStage->second;
+                }
+
                 AZ_Assert(closestHitShaderIndex != VK_SHADER_UNUSED_KHR || anytHitShaderIndex != VK_SHADER_UNUSED_KHR, "HitGroup must specify at least one hit shader");
 
                 VkRayTracingShaderGroupCreateInfoKHR groupCreateInfo = {};
                 groupCreateInfo.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
                 groupCreateInfo.pNext = nullptr;
-                groupCreateInfo.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
+                groupCreateInfo.type = hitGroup.m_intersectionShaderName.IsEmpty()
+                    ? VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR
+                    : VK_RAY_TRACING_SHADER_GROUP_TYPE_PROCEDURAL_HIT_GROUP_KHR;
                 groupCreateInfo.generalShader = VK_SHADER_UNUSED_KHR;
                 groupCreateInfo.closestHitShader = closestHitShaderIndex;
                 groupCreateInfo.anyHitShader = anytHitShaderIndex;
-                groupCreateInfo.intersectionShader = VK_SHADER_UNUSED_KHR;
+                groupCreateInfo.intersectionShader = intersectionShaderIndex;
                 groups.push_back(groupCreateInfo);
 
                 shaderGroupNames.push_back(hitGroup.m_hitGroupName.GetStringView());

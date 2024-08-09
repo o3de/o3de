@@ -42,7 +42,7 @@ namespace AZ
                         ->Attribute(Edit::Attributes::Category, "Graphics/Lighting")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg") // [GFX TODO][ATOM-1998] create icons.
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.svg") // [GFX TODO][ATOM-1998] create icons.
-                        ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                        ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(Edit::Attributes::AutoExpand, true)
                         ->Attribute(Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/directional-light/") // [GFX TODO][ATOM-1998] create page
                         ;
@@ -75,6 +75,10 @@ namespace AZ
                             ->Attribute(Edit::Attributes::Max, 5.0f)
                             ->Attribute(Edit::Attributes::SoftMax, 1.0f)
                             ->Attribute(Edit::Attributes::Suffix, " deg")
+                            
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &DirectionalLightComponentConfig::m_lightingChannelConfig, "Lighting Channels", "")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
+                            
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Shadow")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->DataElement(Edit::UIHandlers::Default, &DirectionalLightComponentConfig::m_shadowEnabled, "Enable Shadow", "Enable Shadow for this directional light. Only one directional light can have shadow")

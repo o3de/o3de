@@ -15,6 +15,7 @@ set(FILES
     Include/Atom/Feature/ColorGrading/LutResolution.h
     Include/Atom/Feature/CoreLights/CoreLightsConstants.h
     Include/Atom/Feature/CoreLights/LightCommon.h
+    Source/CoreLights/LightCommon.cpp
     Include/Atom/Feature/CubeMapCapture/CubeMapCaptureFeatureProcessorInterface.h
     Include/Atom/Feature/DisplayMapper/AcesOutputTransformPass.h
     Include/Atom/Feature/DisplayMapper/AcesOutputTransformLutPass.h
@@ -27,6 +28,7 @@ set(FILES
     Include/Atom/Feature/ImGui/ImGuiUtils.h
     Include/Atom/Feature/ImGui/SystemBus.h
     Include/Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessor.h
+    Include/Atom/Feature/LightingChannel/LightingChannelConfiguration.h
     Include/Atom/Feature/LookupTable/LookupTableAsset.h
     Include/Atom/Feature/Mesh/MeshFeatureProcessor.h
     Include/Atom/Feature/Mesh/ModelReloaderSystemInterface.h
@@ -112,6 +114,7 @@ set(FILES
     Source/CoreLights/ShadowmapAtlas.cpp
     Source/CoreLights/ShadowmapPass.h
     Source/CoreLights/ShadowmapPass.cpp
+    Source/CoreLights/SpotLightUtils.h
     Source/Checkerboard/CheckerboardColorResolvePass.cpp
     Source/Checkerboard/CheckerboardColorResolvePass.h
     Source/Checkerboard/CheckerboardPass.cpp
@@ -122,6 +125,9 @@ set(FILES
     Source/CubeMapCapture/CubeMapCapture.cpp
     Source/CubeMapCapture/CubeMapRenderer.h
     Source/CubeMapCapture/CubeMapRenderer.cpp
+    Source/Debug/RayTracingDebugFeatureProcessor.h
+    Source/Debug/RayTracingDebugFeatureProcessor.cpp
+    Source/Debug/RayTracingDebugSettings.h
     Source/Debug/RenderDebugFeatureProcessor.h
     Source/Debug/RenderDebugFeatureProcessor.cpp
     Source/Debug/RenderDebugSettings.h
@@ -144,6 +150,7 @@ set(FILES
     Source/ImGui/ImGuiSystemComponent.cpp
     Source/ImGui/ImGuiSystemComponent.h
     Source/ImageBasedLights/ImageBasedLightFeatureProcessor.cpp
+    Source/LightingChannel/LightingChannelConfiguration.cpp
     Source/LookupTable/LookupTableAsset.cpp
     Source/Material/ConvertEmissiveUnitFunctor.cpp
     Source/Material/ConvertEmissiveUnitFunctor.h
@@ -177,6 +184,8 @@ set(FILES
     Source/OcclusionCullingPlane/OcclusionCullingPlaneFeatureProcessor.cpp
     Source/OcclusionCullingPlane/OcclusionCullingPlane.h
     Source/OcclusionCullingPlane/OcclusionCullingPlane.cpp
+    Source/Silhouette/SilhouetteFeatureProcessor.cpp
+    Source/Silhouette/SilhouetteFeatureProcessor.h
     Source/PostProcess/PostProcessBase.cpp
     Source/PostProcess/PostProcessBase.h
     Source/PostProcess/PostProcessFeatureProcessor.cpp

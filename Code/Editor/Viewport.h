@@ -18,9 +18,8 @@
 #include "IPostRenderer.h"
 #include "Include/IDisplayViewport.h"
 #include "Include/SandboxAPI.h"
-
-#include <QMenu>
 #include <QPointer>
+#include <QMenu>
 
 #if defined(Q_OS_WIN)
 #include <QtWinExtras/qwinfunctions.h>
@@ -36,12 +35,9 @@ namespace AzQtComponents
 }
 
 // forward declarations.
-class CBaseObject;
-struct DisplayContext;
 class CCryEditDoc;
 class CLayoutViewPane;
 class CViewManager;
-class CBaseObjectsCache;
 struct HitContext;
 class CImageEx;
 class QMenu;
@@ -206,8 +202,6 @@ public:
     //! Center viewport on selection.
     virtual void CenterOnSelection() = 0;
     virtual void CenterOnAABB(const AABB& aabb) = 0;
-
-    virtual void CenterOnSliceInstance() = 0;
 
     /** Set ID of this viewport
     */
@@ -417,8 +411,6 @@ public:
     void CenterOnSelection() override {}
     void CenterOnAABB([[maybe_unused]] const AABB& aabb) override {}
 
-    void CenterOnSliceInstance() override {}
-
     //! Performs hit testing of 2d point in view to find which object hit.
     bool HitTest(const QPoint& point, HitContext& hitInfo) override;
 
@@ -568,7 +560,6 @@ protected:
     QCursor m_hCurrCursor;
 
     //! Mouse is over this object.
-    CBaseObject* m_pMouseOverObject;
     QString m_cursorStr;
     QString m_cursorSupplementaryStr;
 

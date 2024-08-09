@@ -16,7 +16,9 @@
 class LightingData
 {
     LightCullingTileIterator tileIterator;
-    
+        
+    uint lightingChannels;
+
     // Lighting outputs
     real3 diffuseLighting;
     real3 specularLighting;
@@ -55,7 +57,7 @@ class LightingData
     real diffuseAmbientOcclusion;
     real specularOcclusion;
 
-    void Init(real3 positionWS, real3 normal, real roughnessLinear);
+    void Init(real3 positionWS, real3 normal, real roughnessLinear, float3 viewPosition);
     void CalculateMultiscatterCompensation(real3 specularF0, bool enabled);
     void FinalizeLighting();
     void FinalizeLighting(real3 transmissionTint);
@@ -63,7 +65,7 @@ class LightingData
     real GetSpecularNdotV() { return NdotV; }
 };
 
-void LightingData::Init(real3 positionWS, real3 normal, real roughnessLinear)
+void LightingData::Init(real3 positionWS, real3 normal, real roughnessLinear, float3 viewPosition)
 {
     diffuseLighting = real3(0.0, 0.0, 0.0);
     specularLighting = real3(0.0, 0.0, 0.0);
@@ -72,8 +74,10 @@ void LightingData::Init(real3 positionWS, real3 normal, real roughnessLinear)
     emissiveLighting = real3(0.0, 0.0, 0.0);
     diffuseAmbientOcclusion = 1.0;
     specularOcclusion = 1.0;
+    
+    lightingChannels = 0xFFFFFFFF;
 
-    dirToCamera = normalize(real3(ViewSrg::m_worldPosition.xyz) - positionWS);
+    dirToCamera = normalize(viewPosition - positionWS);
 
     // sample BRDF map (indexed by smoothness values rather than roughness)
     NdotV = saturate(dot(normal, dirToCamera));
@@ -89,6 +93,7 @@ void LightingData::CalculateMultiscatterCompensation(real3 specularF0, bool enab
 void LightingData::FinalizeLighting()
 {
     specularLighting *= specularOcclusion;
+    diffuseLighting *= diffuseAmbientOcclusion;
 
     if(!IsSpecularLightingEnabled())
     {

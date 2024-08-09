@@ -140,7 +140,6 @@ namespace AtomToolsFramework
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &GraphViewSettings::m_groupDoubleClickCollapseEnabled, "Group Double Click Collapse Enabled", "Toggle if groups can be expanded or collapsed by double clicking")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &GraphViewSettings::m_bookmarkViewportControlEnabled, "Bookmark Viewport Control Enabled", "Will cause the bookmarks to force the viewport into the state determined by the bookmark type\nBookmark Anchors - The viewport that exists when the bookmark is created.\nNode Groups - The area the Node Group covers")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &GraphViewSettings::m_allowNodeDisabling, "Allow Node Disabling", "Toggle support for enabling and disabling nodes")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &GraphViewSettings::m_allowDataReferenceSlots, "Allow Data Reference Slots", "")
                     ;
             }

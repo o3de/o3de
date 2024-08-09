@@ -29,7 +29,7 @@ namespace AZ::RHI
     //! or just one (potentially preferred) adapter
     enum class InitDevicesFlags : uint32_t
     {
-        SingleDevice = 0,
+        Device = 0,
         MultiDevice
     };
 
@@ -38,9 +38,9 @@ namespace AZ::RHI
         , public RHIMemoryStatisticsInterface
     {
     public:
-        //! This function just initializes the native device and RHI::Device as a result.
-        //! We can use this device to then query for device capabilities.
-        ResultCode InitDevices(InitDevicesFlags initializationVariant = InitDevicesFlags::SingleDevice);
+        //! This function just initializes the native devices and RHI::Device as a result.
+        //! We can use these devices to then query for device capabilities.
+        ResultCode InitDevices(int deviceCount = 1);
 
         //! This function initializes the rest of the RHI/RHI backend.
         //! bindlessSrgLayout in this case is layout associated with the bindless srg (Bindless.azsli).
@@ -59,35 +59,41 @@ namespace AZ::RHI
 
         //! Get/Set functions for the number of active pipelines in use in a frame 
         void SetNumActiveRenderPipelines(uint16_t numActiveRenderPipelines);
-        uint16_t GetNumActiveRenderPipelines() const;
+        uint16_t GetNumActiveRenderPipelines() const override;
 
         //////////////////////////////////////////////////////////////////////////
         // RHISystemInterface Overrides
         RHI::Device* GetDevice(int deviceIndex = MultiDevice::DefaultDeviceIndex) override;
+        const RHI::Device* GetDevice(int deviceIndex = MultiDevice::DefaultDeviceIndex) const override;
+        //! Add a new virtual device (referencing the same physical device as an existing device marked by deviceIndexToVirtualize)
+        [[nodiscard]] AZStd::optional<int> AddVirtualDevice(int deviceIndexToVirtualize = MultiDevice::DefaultDeviceIndex) override;
         int GetDeviceCount() override;
+        MultiDevice::DeviceMask GetRayTracingSupport() override;
         RHI::DrawListTagRegistry* GetDrawListTagRegistry() override;
         RHI::PipelineStateCache* GetPipelineStateCache() override;
         void ModifyFrameSchedulerStatisticsFlags(RHI::FrameSchedulerStatisticsFlags statisticsFlags, bool enableFlags) override;
         double GetCpuFrameTime() const override;
-        const RHI::TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const override;
+        const AZStd::unordered_map<int, TransientAttachmentPoolDescriptor>* GetTransientAttachmentPoolDescriptor() const override;
         ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor(int deviceIndex = MultiDevice::DefaultDeviceIndex) const override;
-        void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable) override;
+        void QueueRayTracingShaderTableForBuild(DeviceRayTracingShaderTable* rayTracingShaderTable) override;
         XRRenderingInterface* GetXRSystem() const override;
         void SetDrawListTagEnabledByDefault(DrawListTag drawListTag, bool enabled) override;
         const AZStd::vector<DrawListTag>& GetDrawListTagsDisabledByDefault() const override;
+        bool GpuMarkersEnabled() const override;
+        bool CanMergeSubpasses() const override;
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
         // RHIMemoryStatisticsInterface Overrides
-        const RHI::TransientAttachmentStatistics* GetTransientAttachmentStatistics() const override;
+        AZStd::unordered_map<int, TransientAttachmentStatistics> GetTransientAttachmentStatistics() const override;
         const RHI::MemoryStatistics* GetMemoryStatistics() const override;
         void WriteResourcePoolInfoToJson(
-            const AZStd::vector<RHI::MemoryStatistics::Pool>& pools, 
+            const AZStd::vector<RHI::MemoryStatistics::Pool>& pools,
             rapidjson::Document& doc) const override;
         AZ::Outcome<void, AZStd::string> LoadResourcePoolInfoFromJson(
-            AZStd::vector<RHI::MemoryStatistics::Pool>& pools, 
-            AZStd::vector<RHI::MemoryStatistics::Heap>& heaps, 
-            rapidjson::Document& doc, 
+            AZStd::vector<RHI::MemoryStatistics::Pool>& pools,
+            AZStd::vector<RHI::MemoryStatistics::Heap>& heaps,
+            rapidjson::Document& doc,
             const AZStd::string& fileName) const override;
         void TriggerResourcePoolAllocInfoDump() const override;
         //////////////////////////////////////////////////////////////////////////
@@ -95,7 +101,7 @@ namespace AZ::RHI
     private:
 
         //! Enumerates the Physical devices and picks one (or multiple) to be used to initialize the RHI::Device(s) with
-        ResultCode InitInternalDevices(InitDevicesFlags initializationVariant);
+        ResultCode InitInternalDevices(int deviceCount);
 
         AZStd::vector<DrawListTag> m_drawListTagsDisabledByDefault;
         AZStd::vector<RHI::Ptr<RHI::Device>> m_devices;
@@ -107,5 +113,6 @@ namespace AZ::RHI
 
         //Used for better verbosity related to gpu markers
         uint16_t m_numActiveRenderPipelines = 0;
+        bool m_gpuMarkersEnabled = true;
     };
 }

@@ -91,6 +91,9 @@ namespace O3DELauncher
     //! This function returns the build system target name
     AZStd::string_view GetBuildTargetName();
 
+    //! This function returns whether its the Generic launcher or not (for Script-Only mode)
+    bool IsGenericLauncher();
+
     //////////////////////////////////////////////////////////////////////////
     // The following functions are defined per launcher type (e.g. Client/Server/Unified)
     //////////////////////////////////////////////////////////////////////////
@@ -107,7 +110,4 @@ namespace O3DELauncher
     //! Returns the SettingsRegistry specialization tag
     //! that can be used to load settings for the specific launcher
     const char* GetLauncherTypeSpecialization();
-
-    //! Indicates if the application is running completely headless (no GUI)
-    bool IsHeadless();
 }

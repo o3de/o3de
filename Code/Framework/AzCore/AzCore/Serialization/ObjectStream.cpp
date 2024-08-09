@@ -602,7 +602,7 @@ namespace AZ
                             }
                         }
                     }
-                    else if (parentClassInfo->m_typeId == SerializeTypeInfo<DynamicSerializableField>::GetUuid() && element.m_nameCrc == AZ_CRC("m_data", 0x335cc942))   // special case for dynamic-typed fields
+                    else if (parentClassInfo->m_typeId == SerializeTypeInfo<DynamicSerializableField>::GetUuid() && element.m_nameCrc == AZ_CRC_CE("m_data"))   // special case for dynamic-typed fields
                     {
                         DynamicSerializableField* fieldContainer = reinterpret_cast<DynamicSerializableField*>(parentClassPtr);
                         fieldContainer->m_typeId = classData->m_typeId;

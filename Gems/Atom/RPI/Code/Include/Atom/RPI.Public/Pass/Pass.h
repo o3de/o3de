@@ -51,6 +51,7 @@ namespace AZ
     {
         class FrameGraphBuilder;
         class FrameGraphAttachmentInterface;
+        class FrameGraphInterface;
     }
 
     namespace RPI
@@ -146,6 +147,12 @@ namespace AZ
             //! It may return nullptr if the pass wasn't create from a template
             const PassTemplate* GetPassTemplate() const { return m_template.get(); }
 
+            //! Get the device index of this pass
+            int GetDeviceIndex() const;
+
+            //! Set the device index of this pass (and potentially affects its child's)
+            bool SetDeviceIndex(int deviceIndex);
+
             //! Enable/disable this pass
             //! If the pass is disabled, it (and any children if it's a ParentPass) won't be rendered.  
             void SetEnabled(bool enabled);
@@ -191,6 +198,9 @@ namespace AZ
 
             //! Adds an attachment binding to the list of this Pass' attachment bindings
             void AddAttachmentBinding(PassAttachmentBinding attachmentBinding);
+
+            // Binds all attachments from the pass 
+            void DeclareAttachmentsToFrameGraph(RHI::FrameGraphInterface frameGraph, PassSlotType slotType = PassSlotType::Uninitialized) const;
 
             // Returns a reference to the N-th input binding, where N is the index passed to the function
             PassAttachmentBinding& GetInputBinding(uint32_t index);
@@ -307,7 +317,7 @@ namespace AZ
             PassState GetPassState() const { return m_state; }
 
             // Update all bindings on this pass that are connected to bindings on other passes
-            void UpdateConnectedBindings();
+            virtual void UpdateConnectedBindings();
 
             // Update input and input/output bindings on this pass that are connected to bindings on other passes
             void UpdateConnectedInputBindings();
@@ -399,6 +409,11 @@ namespace AZ
             // Setup ImageAttachmentCopy
             void UpdateAttachmentCopy(FramePrepareParams params);
 
+            // Update Imported Attachment
+            bool UpdateImportedAttachmentImage(Ptr<PassAttachment>& attachment, 
+                RHI::ImageBindFlags bindFlags = RHI::ImageBindFlags::Color | RHI::ImageBindFlags::ShaderReadWrite,
+                RHI::ImageAspectFlags aspectFlags = RHI::ImageAspectFlags::Color);
+
             // --- Protected Members ---
 
             const Name PassNameThis{"This"};
@@ -483,6 +498,14 @@ namespace AZ
 
                         // Whether this pass contains a binding that is referenced globally through the pipeline
                         uint64_t m_containsGlobalReference : 1;
+                        
+                        // Whether this pass already cached parent pass's device index
+                        uint64_t m_parentDeviceIndexCached : 1;
+
+                        // If this is a parent pass, indicates whether the child passes should be merged as subpasses.
+                        // If this is a child pass, indicates whether it is a subpass.
+                        // Please read about PassData::m_mergeChildrenAsSubpasses for more details.
+                        uint64_t m_mergeChildrenAsSubpasses : 1;
                     };
                     uint64_t m_allFlags = 0;
                 };
@@ -511,6 +534,12 @@ namespace AZ
 
             //! Optional data used during pass initialization
             AZStd::shared_ptr<PassData> m_passData = nullptr;
+
+            //! Default RHI::ScopeAttachmentStage value for all pass attachments of usage RHI::ScopeAttachmentUsage::Shader
+            RHI::ScopeAttachmentStage m_defaultShaderAttachmentStage = RHI::ScopeAttachmentStage::AnyGraphics;
+
+            // The device index the pass should run on. Can be invalid if it doesn't matter.
+            int m_deviceIndex = AZ::RHI::MultiDevice::InvalidDeviceIndex;
 
         private:
             // Return the Timestamp result of this pass
@@ -628,6 +657,9 @@ namespace AZ
 
             // Used to track what phases of build/initialization the pass is queued for
             PassQueueState m_queueState = PassQueueState::NoQueue;
+
+            // Cache the parent pass's device index to prevent recursively fetching it every time
+            int m_parentDeviceIndex = AZ::RHI::MultiDevice::InvalidDeviceIndex;
         };
 
         //! Struct used to return results from Pass hierarchy validation

@@ -71,7 +71,8 @@ namespace AZ
                 RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout,
                 BindingDependencies& bindingDependencies,
                 RootConstantData& rootConstantData,
-                const AZStd::string& tempFolder);
+                const AZStd::string& tempFolder,
+                bool& useSpecializationConstants);
 
 
             RHI::ShaderHardwareStage ToAssetBuilderShaderType(RPI::ShaderStageType stageType);

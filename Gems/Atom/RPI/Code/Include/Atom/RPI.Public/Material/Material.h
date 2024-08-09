@@ -131,6 +131,8 @@ namespace AZ
             //! Do not set this in the shipping runtime unless you know what you are doing.
             void SetPsoHandlingOverride(MaterialPropertyPsoHandling psoHandlingOverride);
 
+            Data::Instance<RPI::ShaderResourceGroup> GetShaderResourceGroup();
+
             const RHI::ShaderResourceGroup* GetRHIShaderResourceGroup() const;
 
             const Data::Asset<MaterialAsset>& GetAsset() const;
@@ -140,6 +142,10 @@ namespace AZ
 
             //! Returns whether the material has property changes that have not been compiled yet.
             bool NeedsCompile() const;
+
+            using OnMaterialShaderVariantReadyEvent = AZ::Event<>;
+            //! Connect a handler to listen to the event that a shader variant asset of the shaders used by this material is ready
+            void ConnectEvent(OnMaterialShaderVariantReadyEvent::Handler& handler);
 
         private:
             Material() = default;
@@ -154,6 +160,9 @@ namespace AZ
             void OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset) override;
             void OnShaderVariantReinitialized(const ShaderVariant& shaderVariant) override;
             ///////////////////////////////////////////////////////////////////
+
+            //! Helper function to reinitialize the material while preserving property values.
+            void ReInitKeepPropertyValues();
 
             //! Helper function for setting the value of a shader constant input, allowing for specialized handling of specific types,
             //! converting to the native type before passing to the ShaderResourceGroup.
@@ -215,6 +224,8 @@ namespace AZ
             bool m_isInitializing = false;
 
             MaterialPropertyPsoHandling m_psoHandling = MaterialPropertyPsoHandling::Warning;
+
+            OnMaterialShaderVariantReadyEvent m_shaderVariantReadyEvent;
         };
 
     } // namespace RPI

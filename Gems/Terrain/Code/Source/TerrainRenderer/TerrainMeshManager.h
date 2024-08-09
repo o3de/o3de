@@ -252,6 +252,7 @@ namespace Terrain
         void OnTerrainDataDestroyBegin() override;
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
+        void ClearSectorBuffers();
         bool UpdateGridSize(float distanceToFirstLod);
         void BuildDrawPacket(Sector& sector);
         void BuildRtSector(Sector& sector, uint32_t lodLevel);

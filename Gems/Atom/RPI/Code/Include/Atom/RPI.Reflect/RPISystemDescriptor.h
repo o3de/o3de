@@ -21,8 +21,8 @@ namespace AZ
         {
             AZ_TYPE_INFO(DynamicDrawSystemDescriptor, "{BC1F1C0A-4A87-4D30-A331-BE8358A23F6D}");
 
-            //! The maxinum size of pool which is used to allocate dynamic buffers for dynamic draw system
-            uint32_t m_dynamicBufferPoolSize = 3 * 16 * 1024 * 1024;
+            //! The maxinum size of pool which is used to allocate dynamic buffers for dynamic draw system per frame
+            uint32_t m_dynamicBufferPoolSize = 16 * 1024 * 1024;
         };
 
         struct RPISystemDescriptor final

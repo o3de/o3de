@@ -22,30 +22,33 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Console/IConsoleTypes.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
-#include <AzToolsFramework/Undo/UndoSystem.h>
+
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/API/EntityPropertyEditorNotificationBus.h>
 #include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
-#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
+#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityBus.h>
 #include <AzToolsFramework/FocusMode/FocusModeNotificationBus.h>
 #include <AzToolsFramework/ToolsComponents/ComponentMimeData.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponentBus.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+#include <AzToolsFramework/Undo/UndoSystem.h>
+
 #include <AzQtComponents/Components/O3DEStylesheet.h>
 
-#include <QtWidgets/QWidget>
-#include <QtGui/QIcon>
 #include <QComboBox>
+#include <QtGui/QIcon>
+#include <QtWidgets/QWidget>
 #endif
 
 class QLabel;
-class QSpacerItem;
 class QMenu;
 class QMimeData;
+class QSpacerItem;
 class QStandardItem;
 
 namespace Ui
@@ -62,14 +65,14 @@ namespace AZ
 
 namespace AzToolsFramework
 {
-    class ActionManagerInterface;
     class ComponentEditor;
     class ComponentPaletteWidget;
     class ComponentModeCollectionInterface;
-    struct SourceControlFileInfo;
-    class ReadOnlyEntityPublicInterface;
-    class FocusModeInterface;
     class ContainerEntityInterface;
+    class FocusModeInterface;
+    class MenuManagerInterface;
+    class ReadOnlyEntityPublicInterface;
+    struct SourceControlFileInfo;
  
     namespace AssetBrowser
     {
@@ -117,6 +120,7 @@ namespace AzToolsFramework
         , private ToolsApplicationEvents::Bus::Handler
         , public IPropertyEditorNotify
         , public AzToolsFramework::EditorEntityContextNotificationBus::Handler
+        , public AzToolsFramework::EntityPropertyEditorNotificationBus::Handler
         , public AzToolsFramework::EntityPropertyEditorRequestBus::Handler
         , public AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler
         , private AzToolsFramework::ViewportEditorModeNotificationsBus::Handler
@@ -210,9 +214,8 @@ namespace AzToolsFramework
 
         struct SharedComponentInfo
         {
-            SharedComponentInfo(AZ::Component* component, AZ::Component* sliceReferenceComponent);
+            SharedComponentInfo(AZ::Component* component);
             AZ::Entity::ComponentArrayType m_instances;
-            AZ::Component* m_sliceReferenceComponent;
         };
 
         using SharedComponentArray = AZStd::vector<SharedComponentInfo>;
@@ -224,6 +227,7 @@ namespace AzToolsFramework
             const AzToolsFramework::EntityIdList& newlySelectedEntities,
             const AzToolsFramework::EntityIdList& newlyDeselectedEntities) override;
         void InvalidatePropertyDisplay(PropertyModificationRefreshLevel level) override;
+        void InvalidatePropertyDisplayForComponent(AZ::EntityComponentIdPair componentId, PropertyModificationRefreshLevel level) override;
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
@@ -261,8 +265,14 @@ namespace AzToolsFramework
         // EntityPropertEditorRequestBus overrides ...
         void GetSelectedAndPinnedEntities(EntityIdList& selectedEntityIds) override;
         void GetSelectedEntities(EntityIdList& selectedEntityIds) override;
+        void GetSelectedComponents(AZStd::unordered_set<AZ::EntityComponentIdPair>& selectedComponentEntityIds) override;
         void SetNewComponentId(AZ::ComponentId componentId) override;
         void VisitComponentEditors(const VisitComponentEditorsCallback& callback) const override;
+
+        // EntityPropertyEditorNotificationBus overrides ...
+        void OnComponentSelectionChanged(
+            EntityPropertyEditor* entityPropertyEditor,
+            const AZStd::unordered_set<AZ::EntityComponentIdPair>& selectedEntityComponentIds) override;
 
         // TickBus overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
@@ -300,17 +310,14 @@ namespace AzToolsFramework
         bool AreComponentsRemovable(AZStd::span<AZ::Component* const> components) const;
         static AZStd::optional<int> GetFixedComponentListIndex(const AZ::Component* component);
         static bool IsComponentDraggable(const AZ::Component* component);
+        bool AllowAnyComponentModification() const;
         bool AreComponentsDraggable(AZStd::span<AZ::Component* const> components) const;
         bool AreComponentsCopyable(AZStd::span<AZ::Component* const> components) const;
 
         void AddMenuOptionsForComponents(QMenu& menu, const QPoint& position);
         void AddMenuOptionsForFields(InstanceDataNode* fieldNode, InstanceDataNode* componentNode, const AZ::SerializeContext::ClassData* componentClassData, QMenu& menu);
-        void AddMenuOptionsForRevert(InstanceDataNode* fieldNode, InstanceDataNode* componentNode, const AZ::SerializeContext::ClassData* componentClassData, QMenu& menu);
 
         bool HasAnyVisibleElements(const InstanceDataNode& node);
-
-        void ContextMenuActionPullFieldData(AZ::Component* parentComponent, InstanceDataNode* fieldNode);
-        void ContextMenuActionSetDataFlag(InstanceDataNode* node, AZ::DataPatch::Flag flag, bool additive);
 
         void GenerateRowWidgetIndexMapToChildIndex(PropertyRowWidget* parent, int destIndex);
         void ContextMenuActionMoveItemUp(ComponentEditor* componentEditor, PropertyRowWidget* rowWidget);
@@ -331,9 +338,6 @@ namespace AzToolsFramework
         // \param rootType type of root the address should be adjusted to. See \ref AddressRootType.
         // \param outAddress output parameter to be populated with the adjusted node address.
         void CalculateAndAdjustNodeAddress(const InstanceDataNode& componentFieldNode, AddressRootType rootType, InstanceDataNode::Address& outAddress) const;
-
-        // Custom function for comparing values of InstanceDataNodes
-        bool InstanceNodeValueHasNoPushableChange(const InstanceDataNode* sourceNode, const InstanceDataNode* targetNode);
 
         // Custom function for determining whether InstanceDataNodes are read-only
         bool QueryInstanceDataNodeReadOnlyStatus(const InstanceDataNode* node);
@@ -404,7 +408,7 @@ namespace AzToolsFramework
         QAction* m_actionToMoveComponentsTop = nullptr;
         QAction* m_actionToMoveComponentsBottom = nullptr;
 
-        AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
+        AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
 
         void CreateActions();
         void UpdateActions();
@@ -450,8 +454,6 @@ namespace AzToolsFramework
         bool IsMoveComponentsUpAllowed() const;
         bool IsMoveComponentsDownAllowed() const;
 
-        void ResetToSlice();
-
         bool DoesOwnFocus() const;
         AZ::u32 GetHeightOfRowAndVisibleChildren(const PropertyRowWidget* row) const;
         QRect GetWidgetAndVisibleChildrenGlobalRect(const PropertyRowWidget* widget) const;
@@ -476,9 +478,11 @@ namespace AzToolsFramework
         AZStd::span<AZ::Component* const> GetSelectedComponents() const;
         const AZStd::unordered_map<AZ::EntityId, AZ::Entity::ComponentArrayType>& GetSelectedComponentsByEntityId() const;
         void UpdateSelectionCache();
+        void NotifySelectionChanges();
 
         ComponentEditorVector m_selectedComponentEditors;
         AZ::Entity::ComponentArrayType m_selectedComponents;
+        AZStd::unordered_set<AZ::EntityComponentIdPair> m_selectedEntityComponentIds;
         AZStd::unordered_map<AZ::EntityId, AZ::Entity::ComponentArrayType> m_selectedComponentsByEntityId;
 
         void SaveComponentEditorState();
@@ -605,8 +609,9 @@ namespace AzToolsFramework
         enum class InspectorLayout
         {
             Entity = 0,                     // All selected entities are regular entities.
-            Level,                          // The selected entity is the prefab container entity for the level prefab, or the slice level entity.
+            Level,                          // The selected entity is the prefab container entity for the level prefab.
             ContainerEntityOfFocusedPrefab, // The selected entity is the prefab container entity for the focused prefab.
+            ContainerEntity,                // The selected entity is the prefab container entity for a prefab that is not the focused prefab.
             Invalid                         // Other entities are selected alongside the level prefab container entity.
         };
 
@@ -618,6 +623,9 @@ namespace AzToolsFramework
         bool m_shouldScrollToNewComponents;
         bool m_shouldScrollToNewComponentsQueued;
 
+        int m_savedVerticalScroll = -1;
+        int m_savedHorizontalScroll = -1;
+
         AZStd::string m_filterString;
 
         // IDs of entities currently bound to this property editor.
@@ -627,9 +635,6 @@ namespace AzToolsFramework
         // Tracks if a custom filter has been set. A comparison operator is not available for
         // the filter, so it can't be checked if it's the default filter.
         bool m_customFilterSet = false;
-
-        // Pointer to entity that first entity is compared against for the purpose of rendering deltas vs. slice in the property grid.
-        AZStd::unique_ptr<AZ::Entity> m_sliceCompareToEntity;
 
         // Temporary buffer to use when calculating a data patch address.
         AZ::DataPatch::AddressType m_dataPatchAddressBuffer;
@@ -645,7 +650,6 @@ namespace AzToolsFramework
         // Prefab interfaces
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
         Prefab::InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;
-        bool m_prefabsAreEnabled = false;
 
         ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
         bool m_selectionContainsReadOnlyEntity = false;
@@ -697,8 +701,6 @@ namespace AzToolsFramework
         void ClearSearchFilter();
 
         void OpenPinnedInspector();
-
-        bool SelectedEntitiesAreFromSameSourceSliceEntity() const;
 
         void DragStopped();
 

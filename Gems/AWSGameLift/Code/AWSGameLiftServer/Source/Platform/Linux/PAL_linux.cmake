@@ -10,11 +10,11 @@ set(PAL_TRAIT_AWSGAMELIFTSERVER_SUPPORTED TRUE)
 
 if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
 
-    ly_associate_package(PACKAGE_NAME AWSGameLiftServerSDK-5.0.0-rev3-linux            TARGETS AWSGameLiftServerSDK        PACKAGE_HASH 2e51bbd06c67fe6f7dda99b8b59a742a0a6ca73151992be705de474d5253ed50)
+    ly_associate_package(PACKAGE_NAME AWSGameLiftServerSDK-5.1.2-rev1-linux            TARGETS AWSGameLiftServerSDK        PACKAGE_HASH 47324479faf2e42f9783462c53ac787273da6fc37912a795f47d8ac14d872a9e)
 
 elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
 
-    ly_associate_package(PACKAGE_NAME AWSGameLiftServerSDK-5.0.0-rev3-linux-aarch64    TARGETS AWSGameLiftServerSDK        PACKAGE_HASH 7513a501f074544e05bc49c66849648c1cb8ae544a6c397d94b1d967e9f362ac)
+    ly_associate_package(PACKAGE_NAME AWSGameLiftServerSDK-5.1.2-rev1-linux-aarch64    TARGETS AWSGameLiftServerSDK        PACKAGE_HASH 16804a3975db609856e2d638d95913dade4a3066367082c78969adf2edfc5882)
 
 else()
 

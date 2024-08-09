@@ -26,12 +26,12 @@ namespace GraphCanvas
             // Component
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
             {
-                provided.push_back(AZ_CRC("GraphCanvas_ColorPaletteManagerService", 0x6495addb));
+                provided.push_back(AZ_CRC_CE("GraphCanvas_ColorPaletteManagerService"));
             }
 
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
             {
-                incompatible.push_back(AZ_CRC("GraphCanvas_ColorPaletteManagerService", 0x6495addb));
+                incompatible.push_back(AZ_CRC_CE("GraphCanvas_ColorPaletteManagerService"));
             }
 
             static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)

@@ -20,7 +20,7 @@ namespace AZ
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<EditorDeferredFogComponent, BaseClass>()
-                    ->Version(1);
+                    ->Version(2);
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
@@ -30,7 +30,7 @@ namespace AZ
                         ->Attribute(Edit::Attributes::Category, "Graphics/Environment")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg") // [GFX TODO ATOM-2672][PostFX] need to create icons for PostProcessing.
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.svg") // [GFX TODO ATOM-2672][PostFX] need to create icons for PostProcessing.
-                        ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                        ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(Edit::Attributes::AutoExpand, true)
                         ->Attribute(Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/deferred-fog/") // [TODO][ATOM-13427] Create Wiki for Deferred Fog
                         ;
@@ -53,9 +53,27 @@ namespace AZ
                             "Enable Deferred Fog.")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
+                        ->DataElement(Edit::UIHandlers::CheckBox, &DeferredFogComponentConfig::m_enableFogLayerShaderOption,
+                            "Enable Fog Layer",
+                            "Enable Fog Layer")
+                            ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+
+                         ->DataElement(Edit::UIHandlers::CheckBox, &DeferredFogComponentConfig::m_useNoiseTextureShaderOption,
+                            "Enable Turbulence Properties",
+                            "Enable Turbulence Properties")
+                            ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+
                         ->DataElement(AZ::Edit::UIHandlers::Color, &DeferredFogComponentConfig::m_fogColor,
                             "Fog Color", "The fog color.")
-                           ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+
+                        ->DataElement(Edit::UIHandlers::ComboBox, &DeferredFogComponentConfig::m_fogMode,
+                            "Fog Mode",
+                            "Which formula to use for calculating the fog.")
+                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<Render::FogMode>())
+
+                        ->ClassElement(Edit::ClassElements::Group, "Distance")
+                            ->Attribute(Edit::Attributes::AutoExpand, true)
 
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &DeferredFogComponentConfig::m_fogStartDistance,
                             "Fog Start Distance", "The distance from the viewer when the fog starts")
@@ -66,20 +84,40 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &DeferredFogComponentConfig::m_fogEndDistance,
-                            "Fog End Distance", "At what distance from the viewer does the fog take over and mask the background scene out")
-                            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                            "Fog End Distance", "At what distance from the viewer does the fog take over and mask the background scene out.")
+                            ->Attribute(AZ::Edit::Attributes::Min, &DeferredFogComponentConfig::m_fogStartDistance)
                             ->Attribute(AZ::Edit::Attributes::Max, 5000.0f)
                             ->Attribute(AZ::Edit::Attributes::SoftMin, 0.0f)
                             ->Attribute(AZ::Edit::Attributes::SoftMax, 100.0f)
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                            ->Attribute(Edit::Attributes::Visibility, &DeferredFogComponentConfig::SupportsFogEnd)
+
+                        ->ClassElement(Edit::ClassElements::Group, "Density Control")
+                            ->Attribute(Edit::Attributes::AutoExpand, true)
+
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &DeferredFogComponentConfig::m_fogDensity,
+                            "Fog Density",
+                            "Density of the fog that can range from 0.0 to 1.0")
+                            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                            ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
+                            ->Attribute(AZ::Edit::Attributes::SoftMin, 0.0f)
+                            ->Attribute(AZ::Edit::Attributes::SoftMax, 1.0f)
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                            ->Attribute(Edit::Attributes::Visibility, &DeferredFogComponentConfig::SupportsFogDensity)
+
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &DeferredFogComponentConfig::m_fogDensityClamp,
+                            "Fog Density Clamp",
+                            "The maximum density that the fog can reach. This enables the sky, horizon, and other bright, distant objects to be visible through dense fog.")
+                            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                            ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
+                            ->Attribute(AZ::Edit::Attributes::SoftMin, 0.0f)
+                            ->Attribute(AZ::Edit::Attributes::SoftMax, 1.0f)
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
                         // Fog layer properties
-                        ->DataElement(Edit::UIHandlers::CheckBox,
-                            &DeferredFogComponentConfig::m_enableFogLayerShaderOption,
-                            "Enable Fog Layer",
-                            "Enable Fog Layer")
-                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-
+                        ->ClassElement(Edit::ClassElements::Group, "Fog Layer")
+                            ->Attribute(Edit::Attributes::AutoExpand, true)
+                            ->Attribute(Edit::Attributes::Visibility, &DeferredFogComponentConfig::GetEnableFogLayerShaderOption)
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &DeferredFogComponentConfig::m_fogMinHeight,
                             "Fog Bottom Height", "The height at which the fog layer starts")
                             ->Attribute(AZ::Edit::Attributes::Min, -5000.0f)
@@ -87,6 +125,7 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::SoftMin, -100.0f)
                             ->Attribute(AZ::Edit::Attributes::SoftMax, 1000.0f)
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+
 
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &DeferredFogComponentConfig::m_fogMaxHeight,
                             "Fog Max Height", "The height of the fog layer top")
@@ -97,12 +136,9 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
                         // Fog turbulence properties
-                        ->DataElement(Edit::UIHandlers::CheckBox,
-                            &DeferredFogComponentConfig::m_useNoiseTextureShaderOption,
-                            "Enable Turbulence Properties",
-                            "Enable Turbulence Properties")
-                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-
+                        ->ClassElement(Edit::ClassElements::Group, "Turbulence")
+                            ->Attribute(Edit::Attributes::AutoExpand, true)
+                            ->Attribute(Edit::Attributes::Visibility, &DeferredFogComponentConfig::GetUseNoiseTextureShaderOption)
                         ->DataElement(AZ::Edit::UIHandlers::LineEdit, &DeferredFogComponentConfig::m_noiseTexture,
                             "Noise Texture", "The noise texture used for creating the fog turbulence")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)

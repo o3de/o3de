@@ -45,6 +45,10 @@ public:
     //! Find viewport at Screen point.
     CViewport* GetViewportAtPoint(const QPoint& point) const;
 
+    //! Retrieves the position in world space corresponding to the point clicked by the user.
+    //! Will take context menus and cursor position into account as appropriate.
+    AZ::Vector3 GetClickPositionInViewportSpace() const;
+
     void SelectViewport(CViewport* pViewport);
     CViewport* GetSelectedViewport() const { return m_pSelectedView; }
 
@@ -76,12 +80,6 @@ public:
     /** Get zoom factor of 2d viewports.
     */
     float GetZoom2D() const { return m_zoom2D; };
-
-    //////////////////////////////////////////////////////////////////////////
-    //! Get currently active camera object id.
-    REFGUID GetCameraObjectId() const { return m_cameraObjectId; };
-    //! Sets currently active camera object id.
-    void SetCameraObjectId(REFGUID cameraObjectId) { m_cameraObjectId = cameraObjectId; };
 
     //////////////////////////////////////////////////////////////////////////
     //! Get number of currently existing viewports.
@@ -131,9 +129,6 @@ private:
     Vec3 m_origin2D;
     //! Zoom of 2d viewports.
     float m_zoom2D;
-
-    //! Id of camera object.
-    GUID m_cameraObjectId;
 
     int m_nGameViewports;
     bool m_bGameViewportsUpdated;

@@ -16,6 +16,7 @@
 #include "../MaterialInputs/UvSetCount.azsli"
 #include "../MaterialInputs/SubsurfaceInput.azsli"
 #include "../MaterialInputs/TransmissionInput.azsli"
+#include "../MaterialInputs/OcclusionInput.azsli"
 
 #include <Atom/Features/SrgSemantics.azsli>
 
@@ -30,6 +31,7 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     COMMON_SRG_INPUTS_ROUGHNESS(m_sclera_)
     COMMON_SRG_INPUTS_SPECULAR_F0()
     COMMON_SRG_INPUTS_DUAL_SPECULAR()
+    COMMON_SRG_INPUTS_OCCLUSION()
 
     Sampler m_sampler
     {
@@ -76,6 +78,7 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     float m_irisDepth; //Distance from the center of the Eye to the center of the Iris-XZ plane.
     float m_eyeIrisRadius; // Radius of the Iris, measured from the center of the Pupil (imagine a Circle in the XZ plane).
     float m_limbusSize;
+    float m_irisUvScale;
 
     // Index of refraction of the Inner Eye. This is the sequence
     // of mediums the light has to travel: Air -> Cornea -> Aqueus Humor -> Pupil/Iris Plane.

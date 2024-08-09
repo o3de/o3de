@@ -362,6 +362,8 @@ namespace O3DE::ProjectManager
         menu->addAction(tr("Configure Gems..."), this, [this]() { emit EditProjectGems(m_projectInfo.m_path); });
         menu->addAction(tr("Build"), this, [this]() { emit BuildProject(m_projectInfo); });
         menu->addAction(tr("Open CMake GUI..."), this, [this]() { emit OpenCMakeGUI(m_projectInfo); });
+        menu->addAction(tr("Open Android Project Generator..."), this, [this]() { emit OpenAndroidProjectGenerator(m_projectInfo.m_path); });
+
         menu->addSeparator();
         menu->addAction(tr("Open Project folder..."), this, [this]()
         { 

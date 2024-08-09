@@ -10,25 +10,25 @@
             "Slots": [
                 {
                     "Name": "AlbedoInput",
-                    "SlotType": "InputOutput",
+                    "SlotType": "Input",
                     "ShaderInputName": "m_albedo",
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
                     "Name": "NormalInput",
-                    "SlotType": "InputOutput",
+                    "SlotType": "Input",
                     "ShaderInputName": "m_normal",
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
                     "Name": "PositionInput",
-                    "SlotType": "InputOutput",
+                    "SlotType": "Input",
                     "ShaderInputName": "m_queryPositions",
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
                     "Name": "DirectionInput",
-                    "SlotType": "InputOutput",
+                    "SlotType": "Input",
                     "ShaderInputName": "m_queryDirections",
                     "ScopeAttachmentUsage": "Shader"
                 },

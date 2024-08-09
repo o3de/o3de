@@ -6,6 +6,7 @@
  *
  */
 #include <Atom/RHI/Factory.h>
+#include <RHI/Device.h>
 #include <RHI/FrameGraphExecuteGroupPrimary.h>
 #include <RHI/Scope.h>
 #include <RHI/SwapChain.h>
@@ -14,7 +15,7 @@ namespace AZ::Vulkan
 {
     void FrameGraphExecuteGroupPrimary::Init(
         Device& device,
-        AZStd::vector<const Scope*>&& scopes)
+        AZStd::vector<Scope*>&& scopes)
     {
         AZ_Assert(!scopes.empty(), "Empty list of scopes for Merged group");
         // Use the max graphGroup id as the id of the execute group.
@@ -35,20 +36,23 @@ namespace AZ::Vulkan
         {
             scopeEntries.push_back({ scope->GetId(), scope->GetEstimatedItemCount() });
             swapChainsToPresent.reserve(swapChainsToPresent.size() + scope->GetSwapChainsToPresent().size());
-            for (RHI::SwapChain* swapChain : scope->GetSwapChainsToPresent())
+            for (RHI::DeviceSwapChain* swapChain : scope->GetSwapChainsToPresent())
             {
                 swapChainsToPresent.push_back(static_cast<SwapChain*>(swapChain));
             }
             const auto& waitSemaphores = scope->GetWaitSemaphores();
             const auto& signalSemaphores = scope->GetSignalSemaphores();
             const auto& signalFences = scope->GetSignalFences();
+            const auto& waitFences = scope->GetWaitFences();
 
             m_workRequest.m_semaphoresToWait.insert(m_workRequest.m_semaphoresToWait.end(), waitSemaphores.begin(), waitSemaphores.end());
             m_workRequest.m_semaphoresToSignal.insert(m_workRequest.m_semaphoresToSignal.end(), signalSemaphores.begin(), signalSemaphores.end());
             m_workRequest.m_fencesToSignal.insert(m_workRequest.m_fencesToSignal.end(), signalFences.begin(), signalFences.end());
+            m_workRequest.m_fencesToWaitFor.insert(m_workRequest.m_fencesToWaitFor.end(), waitFences.begin(), waitFences.end());
         }
 
         InitMergedRequest request;
+        request.m_deviceIndex = device.GetDeviceIndex();
         request.m_scopeEntries = scopeEntries.data();
         request.m_scopeCount = static_cast<uint32_t>(scopeEntries.size());
         Base::Init(request);
@@ -126,6 +130,11 @@ namespace AZ::Vulkan
     }
 
     AZStd::span<const Scope* const> FrameGraphExecuteGroupPrimary::GetScopes() const
+    {
+        return m_scopes;
+    }
+
+    AZStd::span<Scope* const> FrameGraphExecuteGroupPrimary::GetScopes()
     {
         return m_scopes;
     }

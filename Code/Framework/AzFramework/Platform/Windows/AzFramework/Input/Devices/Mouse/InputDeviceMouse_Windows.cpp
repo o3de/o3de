@@ -131,7 +131,7 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void InputDeviceMouseWindows::SetSystemCursorState(SystemCursorState systemCursorState)
     {
-        if (systemCursorState != m_systemCursorState)
+        if (m_captureCursor && systemCursorState != m_systemCursorState)
         {
             m_systemCursorState = systemCursorState;
             RefreshSystemCursorClippingConstraint();

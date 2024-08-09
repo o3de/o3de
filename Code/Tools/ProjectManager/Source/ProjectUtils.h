@@ -20,11 +20,15 @@
 #include <AzCore/Dependency/Dependency.h>
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/Outcome/Outcome.h>
+#include <AzCore/std/string/string_view.h>
 
 namespace O3DE::ProjectManager
 {
     namespace ProjectUtils
     {
+        static constexpr AZStd::string_view EngineJsonFilename = "engine.json";
+        static constexpr AZStd::string_view ProjectJsonFilename = "project.json";
+
         bool RegisterProject(const QString& path, QWidget* parent = nullptr);
         bool UnregisterProject(const QString& path, QWidget* parent = nullptr);
         bool CopyProjectDialog(const QString& origPath, ProjectInfo& newProjectInfo, QWidget* parent = nullptr);
@@ -75,6 +79,7 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QString, QString> GetProjectBuildPath(const QString& projectPath);
         AZ::Outcome<void, QString> OpenCMakeGUI(const QString& projectPath);
         AZ::Outcome<QString, QString> RunGetPythonScript(const QString& enginePath);
+        QString GetPythonExecutablePath(const QString& enginePath);
 
         QString GetDefaultProjectPath();
         QString GetDefaultTemplatePath();

@@ -93,7 +93,7 @@ public:
         {
             return false; // allow AZCore to do its default behavior.
         }
-        gEnv->pLog->LogError("(%s) - %s", window, message);
+
         AZStd::string_view windowView = window;
         if (!windowView.empty())
         {

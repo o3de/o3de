@@ -58,6 +58,7 @@ set(FILES
     Tests/MultiDeviceImageTests.cpp
     Tests/MultiDeviceIndirectBufferTests.cpp
     Tests/MultiDeviceShaderResourceGroupTests.cpp
+    Tests/MultiDeviceDrawPacketTests.cpp
 )
 
 set(SKIP_UNITY_BUILD_INCLUSION_FILES

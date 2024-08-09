@@ -79,9 +79,8 @@ namespace Terrain
         
         m_meshMovedFlag = m_parentScene->GetViewTagBitRegistry().AcquireTag(AZ::Render::MeshCommon::MeshMovedName);
 
-        AZ::RHI::Ptr<AZ::RHI::Device> rhiDevice = AZ::RHI::RHISystemInterface::Get()->GetDevice();
         m_rayTracingFeatureProcessor = m_parentScene->GetFeatureProcessor<AZ::Render::RayTracingFeatureProcessor>();
-        m_rayTracingEnabled = rhiDevice->GetFeatures().m_rayTracing && m_rayTracingFeatureProcessor;
+        m_rayTracingEnabled = (AZ::RHI::RHISystemInterface::Get()->GetRayTracingSupport() != AZ::RHI::MultiDevice::NoDevices) && m_rayTracingFeatureProcessor;
 
         m_isInitialized = true;
     }
@@ -152,16 +151,22 @@ namespace Terrain
         return m_isInitialized;
     }
 
+    void TerrainMeshManager::ClearSectorBuffers()
+    {
+        // RemoveRayTracedMeshes() needs to be called first since it uses pointers into the sector data stored in m_sectorLods.
+        RemoveRayTracedMeshes();
+        m_candidateSectors.clear();
+        m_sectorsThatNeedSrgCompiled.clear();
+        m_sectorLods.clear();
+    }
+
     void TerrainMeshManager::Reset()
     {
         if (m_meshMovedFlag.IsValid())
         {
             m_parentScene->GetViewTagBitRegistry().ReleaseTag(m_meshMovedFlag);
         }
-        m_candidateSectors.clear();
-        m_sectorsThatNeedSrgCompiled.clear();
-        RemoveRayTracedMeshes();
-        m_sectorLods.clear();
+        ClearSectorBuffers();
         m_xyPositions.clear();
         m_cachedDrawData.clear();
 
@@ -170,6 +175,10 @@ namespace Terrain
 
     void TerrainMeshManager::RemoveRayTracedMeshes()
     {
+        AZ_Assert(m_rayTracedItems.empty() || !m_sectorLods.empty(),
+            "RemoveRayTracedMeshes() is being called after the underlying sector data has been deleted. "
+            "The pointers stored in it are no longer valid.");
+
         for (RayTracedItem& item : m_rayTracedItems)
         {
             if (auto& rtData = item.m_sector->m_rtData; rtData)
@@ -293,7 +302,7 @@ namespace Terrain
 
     void TerrainMeshManager::BuildDrawPacket(Sector& sector)
     {
-        AZ::RHI::DrawPacketBuilder drawPacketBuilder;
+        AZ::RHI::DrawPacketBuilder drawPacketBuilder{AZ::RHI::MultiDevice::AllDevices};
         uint32_t indexCount = m_indexBuffer->GetBufferViewDescriptor().m_elementCount;
         drawPacketBuilder.Begin(nullptr);
         drawPacketBuilder.SetDrawArguments(AZ::RHI::DrawIndexed(1, 0, 0, indexCount, 0));
@@ -325,7 +334,7 @@ namespace Terrain
             {
                 // If the DrawSrg exists we must create and bind it, otherwise the CommandList will fail validation for SRG being null
                 drawSrg = AZ::RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), drawData.m_drawSrgLayout->GetName());
-                if (!drawData.m_shaderVariant.IsFullyBaked() && drawData.m_drawSrgLayout->HasShaderVariantKeyFallbackEntry())
+                if (drawData.m_shaderVariant.UseKeyFallback() && drawData.m_drawSrgLayout->HasShaderVariantKeyFallbackEntry())
                 {
                     drawSrg->SetShaderVariantKeyFallbackValue(drawData.m_shaderOptions.GetShaderVariantKeyFallbackValue());
                 }
@@ -394,12 +403,12 @@ namespace Terrain
 
             subMesh.m_positionFormat = positionsBufferFormat;
             subMesh.m_positionVertexBufferView = positionsVertexBufferView;
-            subMesh.m_positionShaderBufferView = rhiPositionsBuffer.GetBufferView(positionsBufferDescriptor);
+            subMesh.m_positionShaderBufferView = rhiPositionsBuffer.BuildBufferView(positionsBufferDescriptor);
             subMesh.m_normalFormat = normalsBufferFormat;
             subMesh.m_normalVertexBufferView = normalsVertexBufferView;
-            subMesh.m_normalShaderBufferView = rhiNormalsBuffer.GetBufferView(normalsBufferDescriptor);
+            subMesh.m_normalShaderBufferView = rhiNormalsBuffer.BuildBufferView(normalsBufferDescriptor);
             subMesh.m_indexBufferView = AZ::RHI::IndexBufferView(rhiIndexBuffer, indexBufferByteOffset, indexBufferByteCount, indexBufferFormat);
-            subMesh.m_baseColor = AZ::Color::CreateFromVector3(AZ::Vector3(0.18f));
+            subMesh.m_material.m_baseColor = AZ::Color::CreateFromVector3(AZ::Vector3(0.18f));
 
             AZ::RHI::BufferViewDescriptor indexBufferDescriptor;
             indexBufferDescriptor.m_elementOffset = indexBufferByteOffset / indexElementSize;
@@ -407,7 +416,7 @@ namespace Terrain
             indexBufferDescriptor.m_elementSize = indexElementSize;
             indexBufferDescriptor.m_elementFormat = AZ::RHI::Format::R32_UINT;
 
-            subMesh.m_indexShaderBufferView = rhiIndexBuffer.GetBufferView(indexBufferDescriptor);
+            subMesh.m_indexShaderBufferView = rhiIndexBuffer.BuildBufferView(indexBufferDescriptor);
 
             meshGroup.m_mesh.m_assetId = AZ::Data::AssetId(meshGroup.m_id);
             float xyScale = (m_gridSize * m_sampleSpacing) * (1 << lodLevel);
@@ -441,10 +450,7 @@ namespace Terrain
         // Add one sector of wiggle room so to avoid thrashing updates when going back and forth over a boundary.
         m_1dSectorCount += 1;
 
-        m_sectorLods.clear();
-        m_candidateSectors.clear();
-        m_sectorsThatNeedSrgCompiled.clear();
-        RemoveRayTracedMeshes();
+        ClearSectorBuffers();
 
         const uint8_t lodCount = aznumeric_cast<uint8_t>(AZStd::ceilf(log2f(AZStd::GetMax(1.0f, m_config.m_renderDistance / m_config.m_firstLodDistance)) + 1.0f));
         m_sectorLods.reserve(lodCount);
@@ -608,7 +614,7 @@ namespace Terrain
                 const AZ::RPI::ShaderVariant& variant = shader->GetVariant(finalVariantId);
 
                 AZ::RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
-                variant.ConfigurePipelineState(pipelineStateDescriptor);
+                variant.ConfigurePipelineState(pipelineStateDescriptor, shaderOptions);
 
                 AZ::RHI::InputStreamLayoutBuilder layoutBuilder;
                 layoutBuilder.AddBuffer()->Channel(AZ::RHI::ShaderSemantic{ "POSITION", 0 }, XYPositionFormat);
@@ -654,10 +660,7 @@ namespace Terrain
 
     void TerrainMeshManager::OnTerrainDataDestroyBegin()
     {
-        m_sectorLods.clear();
-        m_candidateSectors.clear();
-        m_sectorsThatNeedSrgCompiled.clear();
-        RemoveRayTracedMeshes();
+        ClearSectorBuffers();
         m_rebuildSectors = true;
     }
 

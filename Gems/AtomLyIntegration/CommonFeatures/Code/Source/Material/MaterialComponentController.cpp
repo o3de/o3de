@@ -58,6 +58,7 @@ namespace AZ
                     ->Event("GetMaterialAssetId", &MaterialComponentRequestBus::Events::GetMaterialAssetId, "GetMaterialOverride")
                     ->Event("ClearMaterialAssetId", &MaterialComponentRequestBus::Events::ClearMaterialAssetId, "ClearMaterialOverride")
                     ->Event("IsMaterialAssetIdOverridden", &MaterialComponentRequestBus::Events::IsMaterialAssetIdOverridden)
+                    ->Event("HasPropertiesOverridden", &MaterialComponentRequestBus::Events::HasPropertiesOverridden)
                     ->Event("SetPropertyValue", &MaterialComponentRequestBus::Events::SetPropertyValue, "SetPropertyOverride")
                         ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)
                     ->Event("SetPropertyValueBool", &MaterialComponentRequestBus::Events::SetPropertyValueT<bool>, "SetPropertyOverrideBool")
@@ -579,6 +580,12 @@ namespace AZ
             return materialIt != m_configuration.m_materials.end() && materialIt->second.m_materialAsset.GetId().IsValid();
         }
 
+        bool MaterialComponentController::HasPropertiesOverridden(const MaterialAssignmentId& materialAssignmentId) const
+        {
+            const auto materialIt = m_configuration.m_materials.find(materialAssignmentId);
+            return materialIt != m_configuration.m_materials.end() && !materialIt->second.m_propertyOverrides.empty();
+        }
+
         void MaterialComponentController::SetPropertyValue(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const AZStd::any& value)
         {
             auto& materialAssignment = m_configuration.m_materials[materialAssignmentId];
@@ -761,7 +768,7 @@ namespace AZ
             }
 
             // If any valid, already has said was found then read the rest of the material values from it
-            if (materialAsset.IsReady())
+            if (materialAsset.IsReady() && materialAsset->GetMaterialTypeAsset().IsReady())
             {
                 const auto layout = materialAsset->GetMaterialPropertiesLayout();
                 for (size_t propertyIndex = 0; propertyIndex < layout->GetPropertyCount(); ++propertyIndex)

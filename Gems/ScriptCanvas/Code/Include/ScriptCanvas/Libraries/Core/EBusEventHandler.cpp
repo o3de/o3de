@@ -675,7 +675,7 @@ namespace ScriptCanvas
             {
                 if (rootElement.GetVersion() == 0)
                 {
-                    auto element = rootElement.FindSubElement(AZ_CRC("m_eventName", 0x5c560197));
+                    auto element = rootElement.FindSubElement(AZ_CRC_CE("m_eventName"));
 
                     AZStd::string eventName;
                     if (element->GetData(eventName))

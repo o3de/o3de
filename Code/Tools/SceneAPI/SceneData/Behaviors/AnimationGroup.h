@@ -49,7 +49,7 @@ namespace AZ
 
                 bool SceneHasAnimationGroup(const Containers::Scene& scene) const;
 
-                static const int s_animationsPreferredTabOrder;
+                static constexpr int s_animationsPreferredTabOrder{ 2 };
             };
         } // namespace Behaviors
     } // namespace SceneAPI

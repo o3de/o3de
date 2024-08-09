@@ -33,23 +33,23 @@ namespace AZ::RHI
         ImageFrameAttachment(const TransientImageDescriptor& descriptor);
 
         //! Returns the first scope attachment in the linked list.
-        const ImageScopeAttachment* GetFirstScopeAttachment() const;
-        ImageScopeAttachment* GetFirstScopeAttachment();
+        const ImageScopeAttachment* GetFirstScopeAttachment(int deviceIndex) const;
+        ImageScopeAttachment* GetFirstScopeAttachment(int deviceIndex);
 
         //! Returns the last scope attachment in the linked list.
-        const ImageScopeAttachment* GetLastScopeAttachment() const;
-        ImageScopeAttachment* GetLastScopeAttachment();
+        const ImageScopeAttachment* GetLastScopeAttachment(int deviceIndex) const;
+        ImageScopeAttachment* GetLastScopeAttachment(int deviceIndex);
 
         //! Returns the image assigned to this attachment. This is not guaranteed to exist
         //! until after frame graph compilation.
         const Image* GetImage() const;
-        Image* GetImage();
+        Image *GetImage();
 
         //! Returns the image descriptor for this attachment.
         const ImageDescriptor& GetImageDescriptor() const;
 
         //! Returns an optimized clear value for the image by traversing the usage chain.
-        ClearValue GetOptimizedClearValue() const;
+        ClearValue GetOptimizedClearValue(int deviceIndex) const;
 
     private:
         ImageDescriptor m_imageDescriptor;

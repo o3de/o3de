@@ -29,7 +29,7 @@
    <bool>true</bool>
   </property>
   <property name="windowTitle">
-   <string>Script Canvas (PREVIEW)</string>
+   <string>Script Canvas</string>
   </property>
   <property name="toolButtonStyle">
    <enum>Qt::ToolButtonIconOnly</enum>
@@ -121,6 +121,7 @@
     <addaction name="action_ViewProperties"/>
     <addaction name="action_ViewDebugger"/>
     <addaction name="action_ViewCommandLine"/>
+	<addaction name="action_ViewGraphOutliner"/>
     <addaction name="action_ViewLog"/>
     <addaction name="action_ViewBookmarks"/>
     <addaction name="action_ViewMiniMap"/>
@@ -454,6 +455,25 @@
     <string>Graph Preferences</string>
    </property>
   </action>
+
+   <action name="action_ViewGraphOutliner">
+     <property name="checkable">
+       <bool>true</bool>
+     </property>
+     <property name="checked">
+       <bool>true</bool>
+     </property>
+     <property name="text">
+       <string>GraphOutliner</string>
+     </property>
+     <property name="shortcut">
+       <string>Ctrl+F</string>
+     </property>
+     <property name="autoRepeat">
+       <bool>false</bool>
+     </property>
+   </action>
+
   <action name="action_ViewBookmarks">
    <property name="checkable">
     <bool>true</bool>

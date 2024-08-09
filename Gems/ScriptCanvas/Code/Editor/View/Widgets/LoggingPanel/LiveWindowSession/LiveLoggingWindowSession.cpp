@@ -9,6 +9,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <EditorCoreAPI.h>
+#include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <IEditor.h>
 
 #include <Editor/View/Widgets/LoggingPanel/LiveWindowSession/LiveLoggingWindowSession.h>
@@ -143,7 +144,7 @@ namespace ScriptCanvasEditor
 
     AZStd::intrusive_ptr<LiveLoggingUserSettings> LiveLoggingUserSettings::FindSettingsInstance()
     {
-        return AZ::UserSettings::CreateFind<LiveLoggingUserSettings>(AZ_CRC("ScriptCanvas::LiveLoggingUserSettings", 0xc79efe7b), AZ::UserSettings::CT_LOCAL);
+        return AZ::UserSettings::CreateFind<LiveLoggingUserSettings>(AZ_CRC_CE("ScriptCanvas::LiveLoggingUserSettings"), AZ::UserSettings::CT_LOCAL);
     }
 
     void LiveLoggingUserSettings::Reflect(AZ::ReflectContext* reflectContext)
@@ -525,7 +526,8 @@ namespace ScriptCanvasEditor
 
         for (const auto& graphIdentifier : registrationSet)
         {
-            captureInfo.m_graphs.insert(graphIdentifier.m_assetId);
+            // Graphs capture is using runtime asset subID, need this conversion else comparison won't match
+            captureInfo.m_graphs.insert(AZ::Data::AssetId(graphIdentifier.m_assetId.m_guid, ScriptCanvas::RuntimeDataSubId));
         }
     }
 

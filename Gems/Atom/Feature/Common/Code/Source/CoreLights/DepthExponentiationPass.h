@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RPI.Public/Pass/ComputePass.h>
 #include <CoreLights/Shadow.h>
 

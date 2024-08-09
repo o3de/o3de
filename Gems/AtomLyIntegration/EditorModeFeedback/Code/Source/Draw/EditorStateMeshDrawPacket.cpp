@@ -124,7 +124,7 @@ namespace AZ::Render
             return false;
         }
 
-        RHI::DrawPacketBuilder drawPacketBuilder;
+        RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
         drawPacketBuilder.Begin(nullptr);
 
         drawPacketBuilder.SetDrawArguments(mesh.m_drawArguments);
@@ -190,7 +190,7 @@ namespace AZ::Render
             const RPI::ShaderVariant& variant = shader->GetVariant(finalVariantId);
 
             RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
-            variant.ConfigurePipelineState(pipelineStateDescriptor);
+            variant.ConfigurePipelineState(pipelineStateDescriptor, shaderOptions);
 
             // Render states need to merge the runtime variation.
             // This allows materials to customize the render states that the shader uses.
@@ -221,7 +221,7 @@ namespace AZ::Render
                 // If the DrawSrg exists we must create and bind it, otherwise the CommandList will fail validation for SRG being null
                 drawSrg = RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), drawSrgLayout->GetName());
 
-                if (!variant.IsFullyBaked() && drawSrgLayout->HasShaderVariantKeyFallbackEntry())
+                if (variant.UseKeyFallback() && drawSrgLayout->HasShaderVariantKeyFallbackEntry())
                 {
                     drawSrg->SetShaderVariantKeyFallbackValue(shaderOptions.GetShaderVariantKeyFallbackValue());
                 }

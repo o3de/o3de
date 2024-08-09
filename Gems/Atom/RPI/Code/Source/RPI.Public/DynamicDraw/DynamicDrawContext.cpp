@@ -179,7 +179,6 @@ namespace AZ
         {
             AZ_Warning("RPI", m_pipelineState, "Failed to initialize shader for DynamicDrawContext");
             AZ_Warning("RPI", m_drawListTag.IsValid(), "DynamicDrawContext doesn't have a valid DrawListTag");
-
             if (!m_drawListTag.IsValid() || m_pipelineState == nullptr)
             {
                 return;
@@ -298,13 +297,12 @@ namespace AZ
 
         ShaderVariantId DynamicDrawContext::UseShaderVariant(const ShaderOptionList& optionAndValues)
         {
-            AZ_Assert(m_initialized && m_supportShaderVariants, "DynamicDrawContext is not initialized or unable to support shader variants. "
-                "Check if it was initialized with InitShaderWithVariant");
-
             ShaderVariantId variantId;
 
-            if (!m_supportShaderVariants)
+            if (!m_initialized || !m_supportShaderVariants)
             {
+                AZ_WarningOnce("DynamicDrawContext", false, "%s DynamicDrawContext is not initialized or unable to support shader variants. "
+                                                            "Check if it was initialized with InitShaderWithVariant", __FUNCTION__);
                 return variantId;
             }
 
@@ -446,8 +444,13 @@ namespace AZ
 
         void DynamicDrawContext::SetShaderVariant(ShaderVariantId shaderVariantId)
         {
-            AZ_Assert( m_initialized && m_supportShaderVariants, "DynamicDrawContext is not initialized or unable to support shader variants. "
-                "Check if it was initialized with InitShaderWithVariant");
+            if (!m_initialized || !m_supportShaderVariants)
+            {
+                AZ_WarningOnce("DynamicDrawContext", false, "%s DynamicDrawContext is not initialized or unable to support shader variants. "
+                                                            "Check if it was initialized with InitShaderWithVariant.\n", __FUNCTION__);
+                return;
+            }
+
             m_currentShaderVariantId = shaderVariantId;
         }
 
@@ -455,7 +458,7 @@ namespace AZ
         {
             if (!m_initialized)
             {
-                AZ_Assert(false, "DynamicDrawContext isn't initialized");
+                AZ_WarningOnce("DynamicDrawContext", false, "%s This function has been disabled because of failed initialization.\n", __FUNCTION__);
                 return;
             }
             
@@ -491,23 +494,22 @@ namespace AZ
                 return;
             }
 
-            DrawItemInfo drawItemInfo;
+            DrawItemInfo drawItemInfo{{RHI::MultiDevice::AllDevices}};
             RHI::DrawItem& drawItem = drawItemInfo.m_drawItem;
 
             // Draw argument
             RHI::DrawIndexed drawIndexed;
             drawIndexed.m_indexCount = indexCount;
             drawIndexed.m_instanceCount = 1;
-            drawItem.m_arguments = drawIndexed;
+            drawItem.SetArguments(drawIndexed);
 
             // Get RHI pipeline state from cached RHI pipeline states based on current draw state options
-            drawItem.m_pipelineState = GetCurrentPipelineState();
+            drawItem.SetPipelineState(GetCurrentPipelineState());
 
             // Write data to vertex buffer and set up stream buffer views for DrawItem
             // The stream buffer view need to be cached before the frame is end
             vertexBuffer->Write(vertexData, vertexDataSize);
             m_cachedStreamBufferViews.push_back(vertexBuffer->GetStreamBufferView(m_perVertexDataSize));
-            drawItem.m_streamBufferViewCount = 1;
             drawItemInfo.m_vertexBufferViewIndex = static_cast<BufferViewIndexType>(m_cachedStreamBufferViews.size() - 1);
 
             // Write data to index buffer and set up index buffer view for DrawItem
@@ -518,42 +520,39 @@ namespace AZ
             // Setup per context srg if it exists
             if (m_srgPerContext)
             {
-                drawItem.m_shaderResourceGroupCount = 1;
-                drawItem.m_shaderResourceGroups = m_srgGroups;
+                drawItem.SetShaderResourceGroups(m_srgGroups, 1);
             }
 
             // Setup per draw srg
             if (drawSrg)
             {
-                drawItem.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup();
+                drawItem.SetUniqueShaderResourceGroup(drawSrg->GetRHIShaderResourceGroup());
             }
 
             // Set scissor per draw if scissor is enabled.
             if (m_useScissor)
             {
-                drawItem.m_scissorsCount = 1;
-                drawItem.m_scissors = &m_scissor;
+                drawItem.SetScissors(&m_scissor, 1);
             }
 
             // Set viewport per draw if viewport is enabled.
             if (m_useViewport)
             {
-                drawItem.m_viewportsCount = 1;
-                drawItem.m_viewports = &m_viewport;
+                drawItem.SetViewports(&m_viewport, 1);
             }
 
             // Set stencil reference. Used when stencil is enabled.
-            drawItem.m_stencilRef = m_stencilRef;
+            drawItem.SetStencilRef(m_stencilRef);
 
             drawItemInfo.m_sortKey = m_sortKey++;
-            m_cachedDrawItems.emplace_back(drawItemInfo);
+            m_cachedDrawItems.emplace_back(AZStd::move(drawItemInfo));
         }
 
         void DynamicDrawContext::DrawLinear(const void* vertexData, uint32_t vertexCount, Data::Instance<ShaderResourceGroup> drawSrg)
         {
             if (!m_initialized)
             {
-                AZ_Assert(false, "DynamicDrawContext isn't initialized");
+                AZ_WarningOnce("DynamicDrawContext", false, "%s This function has been disabled because of failed initialization.\n", __FUNCTION__);
                 return;
             }
 
@@ -585,54 +584,50 @@ namespace AZ
                 return;
             }
 
-            DrawItemInfo drawItemInfo;
+            DrawItemInfo drawItemInfo{{RHI::MultiDevice::AllDevices}};
             RHI::DrawItem& drawItem = drawItemInfo.m_drawItem;
 
             // Draw argument
             RHI::DrawLinear drawLinear;
             drawLinear.m_instanceCount = 1;
             drawLinear.m_vertexCount = vertexCount;
-            drawItem.m_arguments = drawLinear;
+            drawItem.SetArguments(drawLinear);
 
             // Get RHI pipeline state from cached RHI pipeline states based on current draw state options
-            drawItem.m_pipelineState = GetCurrentPipelineState();
+            drawItem.SetPipelineState(GetCurrentPipelineState());
 
             // Write data to vertex buffer and set up stream buffer views for DrawItem
             // The stream buffer view need to be cached before the frame is end
             vertexBuffer->Write(vertexData, vertexDataSize);
             m_cachedStreamBufferViews.push_back(vertexBuffer->GetStreamBufferView(m_perVertexDataSize));
-            drawItem.m_streamBufferViewCount = 1;
             drawItemInfo.m_vertexBufferViewIndex = uint32_t(m_cachedStreamBufferViews.size() - 1);
 
             // Setup per context srg if it exists
             if (m_srgPerContext)
             {
-                drawItem.m_shaderResourceGroupCount = 1;
-                drawItem.m_shaderResourceGroups = m_srgGroups;
+                drawItem.SetShaderResourceGroups(m_srgGroups, 1);
             }
 
             // Setup per draw srg
             if (drawSrg)
             {
-                drawItem.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup();
+                drawItem.SetUniqueShaderResourceGroup(drawSrg->GetRHIShaderResourceGroup());
             }
 
             // Set scissor per draw if scissor is enabled.
             if (m_useScissor)
             {
-                drawItem.m_scissorsCount = 1;
-                drawItem.m_scissors = &m_scissor;
+                drawItem.SetScissors(&m_scissor, 1);
             }
 
             // Set viewport per draw if viewport is enabled.
             if (m_useViewport)
             {
-                drawItem.m_viewportsCount = 1;
-                drawItem.m_viewports = &m_viewport;
+                drawItem.SetViewports(&m_viewport, 1);
             }
 
             drawItemInfo.m_sortKey = m_sortKey++;
-            m_cachedDrawItems.emplace_back(drawItemInfo);
+            m_cachedDrawItems.emplace_back(AZStd::move(drawItemInfo));
         }
 
         Data::Instance<ShaderResourceGroup> DynamicDrawContext::NewDrawSrg()
@@ -718,12 +713,12 @@ namespace AZ
             {
                 if (drawItemInfo.m_indexBufferViewIndex != InvalidIndex)
                 {
-                    drawItemInfo.m_drawItem.m_indexBufferView = &m_cachedIndexBufferViews[drawItemInfo.m_indexBufferViewIndex];
+                    drawItemInfo.m_drawItem.SetIndexBufferView(&m_cachedIndexBufferViews[drawItemInfo.m_indexBufferViewIndex]);
                 }
 
                 if (drawItemInfo.m_vertexBufferViewIndex != InvalidIndex)
                 {
-                    drawItemInfo.m_drawItem.m_streamBufferViews = &m_cachedStreamBufferViews[drawItemInfo.m_vertexBufferViewIndex];
+                    drawItemInfo.m_drawItem.SetStreamBufferViews(&m_cachedStreamBufferViews[drawItemInfo.m_vertexBufferViewIndex], 1);
                 }
 
                 RHI::DrawItemProperties drawItemProperties;

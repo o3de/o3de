@@ -30,6 +30,7 @@ namespace AZ::RHI
             FrameAttachment& attachment,
             ScopeAttachmentUsage usage,
             ScopeAttachmentAccess access,
+            ScopeAttachmentStage stage,
             const BufferScopeAttachmentDescriptor& descriptor);
 
         const BufferScopeAttachmentDescriptor& GetDescriptor() const;
@@ -47,10 +48,13 @@ namespace AZ::RHI
         BufferScopeAttachment* GetNext();
 
         /// Returns the buffer view set on the scope attachment.
-        const BufferView* GetBufferView() const;
+        const AZ::RHI::BufferView* GetBufferView() const;
 
         /// Assigns a buffer view to the scope attachment.
         void SetBufferView(ConstPtr<BufferView> bufferView);
+
+        // ScopeAttachment overrides...
+        const ScopeAttachmentDescriptor& GetScopeAttachmentDescriptor() const override;
 
     private:
         BufferScopeAttachmentDescriptor m_descriptor;

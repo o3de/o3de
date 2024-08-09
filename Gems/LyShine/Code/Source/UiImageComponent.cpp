@@ -1001,14 +1001,14 @@ void UiImageComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiImage.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiImage.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_spriteType, "SpriteType", "The sprite type.")
                 ->EnumAttribute(UiImageInterface::SpriteType::SpriteAsset, "Sprite/Texture asset")
                 ->EnumAttribute(UiImageInterface::SpriteType::RenderTarget, "Render target")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorSpriteTypeChange)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
             editInfo->DataElement("Sprite", &UiImageComponent::m_spritePathname, "Sprite path", "The sprite path. Can be overridden by another component such as an interactable.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSpriteTypeAsset)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorSpritePathnameChange);
@@ -1035,7 +1035,7 @@ void UiImageComponent::Reflect(AZ::ReflectContext* context)
                 ->EnumAttribute(UiImageInterface::ImageType::Tiled, "Tiled")
                 ->EnumAttribute(UiImageInterface::ImageType::StretchedToFit, "Stretched To Fit")
                 ->EnumAttribute(UiImageInterface::ImageType::StretchedToFill, "Stretched To Fill")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c))
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorImageTypeChange);
             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiImageComponent::m_fillCenter, "Fill Center", "Sliced image center is filled.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSliced)
@@ -1057,7 +1057,7 @@ void UiImageComponent::Reflect(AZ::ReflectContext* context)
                 ->EnumAttribute(UiImageComponent::FillType::Radial, "Radial")
                 ->EnumAttribute(UiImageComponent::FillType::RadialCorner, "RadialCorner")
                 ->EnumAttribute(UiImageComponent::FillType::RadialEdge, "RadialEdge")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c))
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorRenderSettingChange);
             editInfo->DataElement(AZ::Edit::UIHandlers::Slider, &UiImageComponent::m_fillAmount, "Fill Amount", "The amount of the image to be filled.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsFilled)

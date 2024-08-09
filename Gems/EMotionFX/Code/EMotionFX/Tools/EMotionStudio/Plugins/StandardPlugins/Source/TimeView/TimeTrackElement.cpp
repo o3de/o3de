@@ -13,7 +13,6 @@
 #include <QPaintEvent>
 #include <MysticQt/Source/MysticQtConfig.h>
 
-#include <MCore/Source/Color.h>
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/Algorithms.h>
 

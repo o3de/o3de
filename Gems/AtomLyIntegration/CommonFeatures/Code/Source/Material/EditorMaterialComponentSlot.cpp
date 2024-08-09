@@ -167,7 +167,17 @@ namespace AZ
 
         AZStd::vector<char> EditorMaterialComponentSlot::GetPreviewPixmapData() const
         {
+            // Don't display a custom image if there is no material asset assigned to this slot.
             if (!GetActiveAssetId().IsValid())
+            {
+                return {};
+            }
+
+            // Don't display a custom image if no properties have been overridden. It will fall back to the default thumbnail.
+            bool hasPropertiesOverridden = false;
+            MaterialComponentRequestBus::EventResult(
+                hasPropertiesOverridden, m_entityId, &MaterialComponentRequestBus::Events::HasPropertiesOverridden, m_id);
+            if (!hasPropertiesOverridden)
             {
                 return {};
             }
@@ -278,14 +288,18 @@ namespace AZ
 
         void EditorMaterialComponentSlot::ExportMaterial(const AZStd::string& exportPath, bool overwrite)
         {
+            EditorMaterialComponentExporter::ProgressDialog progressDialog("Generating materials", "Generating material...", 1);
+
             EditorMaterialComponentExporter::ExportItem exportItem(GetDefaultAssetId(), GetLabel(), exportPath);
             exportItem.SetOverwrite(overwrite);
 
             if (EditorMaterialComponentExporter::ExportMaterialSourceData(exportItem))
             {
-                if (const auto& assetIdOutcome = AZ::RPI::AssetUtils::MakeAssetId(exportItem.GetExportPath(), 0))
+                const AZ::Data::AssetInfo assetInfo = progressDialog.ProcessItem(exportItem);
+                if (assetInfo.m_assetId.IsValid())
                 {
-                    SetAssetId(assetIdOutcome.GetValue());
+                    SetAssetId(assetInfo.m_assetId);
+                    progressDialog.CompleteItem();
                 }
             }
         }
@@ -450,11 +464,6 @@ namespace AZ
             }
         }
 
-        void EditorMaterialComponentSlot::OnAssetReady(Data::Asset<Data::AssetData> asset)
-        {
-            UpdatePreview();
-        }
-
         void EditorMaterialComponentSlot::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
         {
             UpdatePreview();
@@ -463,6 +472,15 @@ namespace AZ
         void EditorMaterialComponentSlot::UpdatePreview() const
         {
             m_updatePreview = false;
+
+            bool hasPropertiesOverridden = false;
+            MaterialComponentRequestBus::EventResult(
+                hasPropertiesOverridden, m_entityId, &MaterialComponentRequestBus::Events::HasPropertiesOverridden, m_id);
+            if (!hasPropertiesOverridden)
+            {
+                return;
+            }
+
             EditorMaterialSystemComponentRequestBus::Broadcast(
                 &EditorMaterialSystemComponentRequestBus::Events::RenderMaterialPreview, m_entityId, m_id);
         }

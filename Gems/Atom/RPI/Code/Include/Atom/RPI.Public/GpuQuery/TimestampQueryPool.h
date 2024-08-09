@@ -30,8 +30,8 @@ namespace AZ
 
         protected:
             // RPI::QueryPool overrides...
-            RHI::ResultCode BeginQueryInternal(RHI::Interval rhiQueryIndices, RHI::CommandList& commandList);
-            RHI::ResultCode EndQueryInternal(RHI::Interval rhiQueryIndices, RHI::CommandList& commandList);
+            RHI::ResultCode BeginQueryInternal(RHI::Interval rhiQueryIndices, const RHI::FrameGraphExecuteContext& context);
+            RHI::ResultCode EndQueryInternal(RHI::Interval rhiQueryIndices, const RHI::FrameGraphExecuteContext& context);
 
         private:
             TimestampQueryPool(uint32_t queryCapacity, uint32_t queriesPerResult, RHI::QueryType queryType, RHI::PipelineStatisticsFlags statisticsFlags);

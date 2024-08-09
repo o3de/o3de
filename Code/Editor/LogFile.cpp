@@ -71,7 +71,6 @@ SANDBOX_API void ErrorV(const char* format, va_list argList)
     QString str = "####-ERROR-####: ";
     str += szBuffer;
 
-    //CLogFile::WriteLine( str );
     CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_ERROR, "%s", str.toUtf8().data());
 
     if (!CCryEditApp::instance()->IsInTestMode() && !CCryEditApp::instance()->IsInExportMode() && !CCryEditApp::instance()->IsInLevelLoadTestMode())

@@ -138,7 +138,6 @@ namespace EMotionFX
         const char* GetPaletteName() const override;
         AnimGraphObject::ECategory GetPaletteCategory() const override;
 
-        uint32 GetVisualColor() const;
         bool GetIsStateTransitionNode() const;
 
         void SetPriority(AZ::u32 priority);

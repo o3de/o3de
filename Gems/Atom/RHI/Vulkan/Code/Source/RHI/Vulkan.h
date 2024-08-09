@@ -30,8 +30,8 @@ namespace AZ
         {
             enum class BufferBindFlags : uint32_t;
         }
-        class BufferView;
-        class ImageView;
+        class DeviceBufferView;
+        class DeviceImageView;
         struct BufferSubresourceRange;
     }
 
@@ -40,6 +40,17 @@ namespace AZ
         using StringList = AZStd::vector<AZStd::string>;
         using RawStringList = AZStd::vector<const char*>;
         using CpuVirtualAddress = uint8_t *;
+
+        struct PipelineAccessFlags
+        {
+            VkPipelineStageFlags m_pipelineStage = 0;
+            VkAccessFlags m_access = 0;
+
+            bool operator==(const PipelineAccessFlags& other) const
+            {
+                return m_pipelineStage == other.m_pipelineStage && m_access == other.m_access;
+            }
+        };
 
         class Device;
 
@@ -117,9 +128,9 @@ namespace AZ
 
         RawStringList FilterList(const RawStringList& source, const StringList& filter);
 
-        bool ResourceViewOverlaps(const RHI::BufferView& lhs, const RHI::BufferView& rhs);
+        bool ResourceViewOverlaps(const RHI::DeviceBufferView& lhs, const RHI::DeviceBufferView& rhs);
 
-        bool ResourceViewOverlaps(const RHI::ImageView& lhs, const RHI::ImageView& rhs);
+        bool ResourceViewOverlaps(const RHI::DeviceImageView& lhs, const RHI::DeviceImageView& rhs);
 
         bool SubresourceRangeOverlaps(const VkImageSubresourceRange& lhs, const VkImageSubresourceRange& rhs);
 
@@ -128,6 +139,32 @@ namespace AZ
         bool IsRenderAttachmentUsage(RHI::ScopeAttachmentUsage usage);
 
         bool operator==(const VkImageSubresourceRange& lhs, const VkImageSubresourceRange& rhs);
+
+        /// Appends a list of Vulkan structs to end of the "next" chain
+        template<class T>
+        void AppendVkStruct(T& init, const AZStd::vector<void*>& nextStructs)
+        {
+            VkBaseOutStructure* baseStruct = reinterpret_cast<VkBaseOutStructure*>(&init);
+            // Find the last struct in the chain
+            while (baseStruct->pNext)
+            {
+                baseStruct = baseStruct->pNext;
+            }
+
+            // Add the new structs to the chain
+            for (void* nextStruct : nextStructs)
+            {
+                baseStruct->pNext = reinterpret_cast<VkBaseOutStructure*>(nextStruct);
+                baseStruct = baseStruct->pNext;
+            }
+        }
+
+        /// Appends a Vulkan struct to end of the "next" chain
+        template<class T>
+        void AppendVkStruct(T& init, void* nextStruct)
+        {
+            AppendVkStruct(init, AZStd::vector<void*>{ nextStruct });
+        }
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(VkImageLayout);
     }

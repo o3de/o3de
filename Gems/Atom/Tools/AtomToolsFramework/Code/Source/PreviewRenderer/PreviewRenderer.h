@@ -15,6 +15,7 @@
 #include <AtomToolsFramework/PreviewRenderer/PreviewRendererCaptureRequest.h>
 #include <AtomToolsFramework/PreviewRenderer/PreviewRendererInterface.h>
 #include <AtomToolsFramework/PreviewRenderer/PreviewerFeatureProcessorProviderBus.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzFramework/Entity/GameEntityContextComponent.h>
 #include <PreviewRenderer/PreviewRendererState.h>
 
@@ -24,6 +25,7 @@ namespace AtomToolsFramework
     class PreviewRenderer final
         : public PreviewRendererInterface
         , public PreviewerFeatureProcessorProviderBus::Handler
+        , public AZ::SystemTickBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR(PreviewRenderer, AZ::SystemAllocator);
@@ -52,6 +54,9 @@ namespace AtomToolsFramework
         void EndCapture();
 
     private:
+        //! AZ::SystemTickBus::Handler interface overrides...
+        void OnSystemTick() override;
+
         //! AZ::Render::PreviewerFeatureProcessorProviderBus::Handler interface overrides...
         void GetRequiredFeatureProcessors(AZStd::vector<AZStd::string>& featureProcessors) const override;
 

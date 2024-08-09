@@ -136,11 +136,17 @@ namespace AZ
                 AAssetManager* mgr = GetAssetManager();
                 if (mgr)
                 {
-                    AAsset* asset = AAssetManager_open(mgr, "engine.json", AASSET_MODE_UNKNOWN);
-                    if (asset)
+                    // The assets folder in an APK will have either 'engine.json' (LOOSE mode) or 'engine_android.pak' (PAK Mode)
+                    const char* asset_marker_files[] = { "engine.json", "engine_android.pak" };
+                    AAsset* asset = nullptr;
+                    for (const char* asset_marker : asset_marker_files)
                     {
-                        AAsset_close(asset);
-                        return GetApkAssetsPrefix();
+                        asset = AAssetManager_open(mgr, asset_marker, AASSET_MODE_UNKNOWN);
+                        if (asset)
+                        {
+                            AAsset_close(asset);
+                            return GetApkAssetsPrefix();
+                        }
                     }
                 }
 

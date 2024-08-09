@@ -64,14 +64,14 @@ namespace LmbrCentral
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
-            provided.push_back(AZ_CRC("CompoundShapeService", 0x4f7c640a));
+            provided.push_back(AZ_CRC_CE("ShapeService"));
+            provided.push_back(AZ_CRC_CE("CompoundShapeService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
-            incompatible.push_back(AZ_CRC("CompoundShapeService", 0x4f7c640a));
+            incompatible.push_back(AZ_CRC_CE("ShapeService"));
+            incompatible.push_back(AZ_CRC_CE("CompoundShapeService"));
             incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 

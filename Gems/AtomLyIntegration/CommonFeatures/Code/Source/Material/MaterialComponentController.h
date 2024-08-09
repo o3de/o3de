@@ -66,6 +66,7 @@ namespace AZ
             AZ::Data::AssetId GetMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) const override;
             void ClearMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) override;
             bool IsMaterialAssetIdOverridden(const MaterialAssignmentId& materialAssignmentId) const override;
+            bool HasPropertiesOverridden(const MaterialAssignmentId& materialAssignmentId) const override;
             void SetPropertyValue(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const AZStd::any& value) override;
             AZStd::any GetPropertyValue(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const override;
             void ClearPropertyValue(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) override;

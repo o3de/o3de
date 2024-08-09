@@ -416,7 +416,15 @@ namespace AtomToolsFramework
 
         if (IsCompileGraphQueued())
         {
-            CompileGraph();
+            if (m_compileGraphQueueTime <= AZStd::chrono::steady_clock::now())
+            {
+                if (CompileGraph())
+                {
+                    const AZ::u64 intervalMs =
+                        GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/QueueGraphCompileIntervalMs", (AZ::u64)500);
+                    m_compileGraphQueueTime = AZStd::chrono::steady_clock::now() + AZStd::chrono::milliseconds(intervalMs);
+                }
+            }
         }
     }
 
