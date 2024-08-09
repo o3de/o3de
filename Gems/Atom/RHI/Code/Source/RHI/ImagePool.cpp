@@ -75,30 +75,22 @@ namespace AZ::RHI
                 ResultCode result = IterateObjects<DeviceImagePool>(
                     [&initRequest](auto deviceIndex, auto deviceImagePool)
                     {
-                        bool initImage = ((AZStd::to_underlying(initRequest.m_image->GetDeviceMask()) >> deviceIndex) & 1) == 1;
-
-                        if (!initRequest.m_image->m_deviceObjects.contains(deviceIndex))
+                        if (CheckBit(initRequest.m_image->GetDeviceMask(), deviceIndex))
                         {
-                            if (initImage)
+                            if (!initRequest.m_image->m_deviceObjects.contains(deviceIndex))
                             {
                                 initRequest.m_image->m_deviceObjects[deviceIndex] = Factory::Get().CreateImage();
                             }
-                        }
-                        else
-                        {
-                            if (!initImage)
-                            {
-                                initRequest.m_image->m_deviceObjects.erase(deviceIndex);
-                            }
-                        }
 
-                        if (initImage)
-                        {
                             DeviceImageInitRequest imageInitRequest(
                                 *initRequest.m_image->GetDeviceImage(deviceIndex),
                                 initRequest.m_descriptor,
                                 initRequest.m_optimizedClearValue);
                             return deviceImagePool->InitImage(imageInitRequest);
+                        }
+                        else
+                        {
+                            initRequest.m_image->m_deviceObjects.erase(deviceIndex);
                         }
 
                         return ResultCode::Success;
@@ -118,13 +110,11 @@ namespace AZ::RHI
     ResultCode ImagePool::UpdateImageDeviceMask(const ImageDeviceMaskRequest& request)
     {
         return IterateObjects<DeviceImagePool>(
-            [this, &request](auto deviceIndex, auto deviceImagePool)
+            [&request](auto deviceIndex, auto deviceImagePool)
             {
-                bool createImage = ((AZStd::to_underlying(GetDeviceMask() & request.m_deviceMask) >> deviceIndex) & 1) == 1;
-
-                if (!request.m_image->m_deviceObjects.contains(deviceIndex))
+                if (CheckBit(request.m_deviceMask, deviceIndex))
                 {
-                    if (createImage)
+                    if (!request.m_image->m_deviceObjects.contains(deviceIndex))
                     {
                         request.m_image->m_deviceObjects[deviceIndex] = Factory::Get().CreateImage();
 
@@ -134,19 +124,16 @@ namespace AZ::RHI
 
                         if (result == ResultCode::Success)
                         {
-                            request.m_image->Init(
-                                MultiDevice::DeviceMask(AZStd::to_underlying(request.m_image->GetDeviceMask()) | (1 << deviceIndex)));
+                            request.m_image->Init(SetBit(request.m_image->GetDeviceMask(), deviceIndex));
                         }
 
                         return result;
                     }
                 }
-                else if (!createImage)
+                else
                 {
-                    request.m_image->Init(
-                        MultiDevice::DeviceMask(AZStd::to_underlying(request.m_image->GetDeviceMask()) & (~(1 << deviceIndex))));
+                    request.m_image->Init(ResetBit(request.m_image->GetDeviceMask(), deviceIndex));
                     request.m_image->m_deviceObjects.erase(deviceIndex);
-                    return ResultCode::Success;
                 }
 
                 return ResultCode::Success;

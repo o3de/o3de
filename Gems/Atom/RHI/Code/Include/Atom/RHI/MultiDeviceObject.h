@@ -41,17 +41,9 @@ namespace AZ::RHI
         //! Helper method to check if a device index is set in the device mask.
         //! Note: A bit may be set but a device object may not actually exist,
         //! e.g. if the device index is bigger than the device count.
-        static AZ_FORCE_INLINE bool IsDeviceSet(MultiDevice::DeviceMask deviceMask, int deviceIndex)
-        {
-            return (AZStd::to_underlying(deviceMask) >> deviceIndex) & 1u;
-        }
-
-        //! Helper method to check if a device index is set in the device mask.
-        //! Note: A bit may be set but a device object may not actually exist,
-        //! e.g. if the device index is bigger than the device count.
         AZ_FORCE_INLINE bool IsDeviceSet(int deviceIndex) const
         {
-            return IsDeviceSet(m_deviceMask, deviceIndex);
+            return CheckBit(m_deviceMask, deviceIndex);
         }
 
         //! Helper method that will iterate over all available devices in a device mask and call the provided callback
@@ -69,7 +61,7 @@ namespace AZ::RHI
 
             for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
             {
-                if (IsDeviceSet(deviceMask, deviceIndex))
+                if (CheckBit(deviceMask, deviceIndex))
                 {
                     if (!callback(deviceIndex))
                     {

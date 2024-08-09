@@ -160,28 +160,20 @@ namespace AZ::RHI
                 return IterateObjects<DeviceBufferPool>(
                     [&initRequest](auto deviceIndex, auto deviceBufferPool)
                     {
-                        bool initBuffer = ((AZStd::to_underlying(initRequest.m_buffer->GetDeviceMask()) >> deviceIndex) & 1) == 1;
-
-                        if (!initRequest.m_buffer->m_deviceObjects.contains(deviceIndex))
+                        if (CheckBit(initRequest.m_buffer->GetDeviceMask(), deviceIndex))
                         {
-                            if (initBuffer)
+                            if (!initRequest.m_buffer->m_deviceObjects.contains(deviceIndex))
                             {
                                 initRequest.m_buffer->m_deviceObjects[deviceIndex] = Factory::Get().CreateBuffer();
                             }
-                        }
-                        else
-                        {
-                            if (!initBuffer)
-                            {
-                                initRequest.m_buffer->m_deviceObjects.erase(deviceIndex);
-                            }
-                        }
 
-                        if (initBuffer)
-                        {
                             DeviceBufferInitRequest bufferInitRequest(
                                 *initRequest.m_buffer->GetDeviceBuffer(deviceIndex), initRequest.m_descriptor, initRequest.m_initialData);
                             return deviceBufferPool->InitBuffer(bufferInitRequest);
+                        }
+                        else
+                        {
+                            initRequest.m_buffer->m_deviceObjects.erase(deviceIndex);
                         }
 
                         return ResultCode::Success;
@@ -196,13 +188,11 @@ namespace AZ::RHI
         AZ_PROFILE_FUNCTION(RHI);
 
         return IterateObjects<DeviceBufferPool>(
-            [&request, this](auto deviceIndex, auto deviceBufferPool)
+            [&request](auto deviceIndex, auto deviceBufferPool)
             {
-                bool createBuffer = ((AZStd::to_underlying(GetDeviceMask() & request.m_deviceMask) >> deviceIndex) & 1) == 1;
-
-                if (!request.m_buffer->m_deviceObjects.contains(deviceIndex))
+                if (CheckBit(request.m_deviceMask, deviceIndex))
                 {
-                    if (createBuffer)
+                    if (!request.m_buffer->m_deviceObjects.contains(deviceIndex))
                     {
                         request.m_buffer->m_deviceObjects[deviceIndex] = Factory::Get().CreateBuffer();
 
@@ -212,19 +202,16 @@ namespace AZ::RHI
 
                         if (result == ResultCode::Success)
                         {
-                            request.m_buffer->Init(
-                                MultiDevice::DeviceMask(AZStd::to_underlying(request.m_buffer->GetDeviceMask()) | (1 << deviceIndex)));
+                            request.m_buffer->Init(SetBit(request.m_buffer->GetDeviceMask(), deviceIndex));
                         }
 
                         return result;
                     }
                 }
-                else if (!createBuffer)
+                else
                 {
-                    request.m_buffer->Init(
-                        MultiDevice::DeviceMask(AZStd::to_underlying(request.m_buffer->GetDeviceMask()) & ~(1 << deviceIndex)));
+                    request.m_buffer->Init(ResetBit(request.m_buffer->GetDeviceMask(), deviceIndex));
                     request.m_buffer->m_deviceObjects.erase(deviceIndex);
-                    return ResultCode::Success;
                 }
 
                 return ResultCode::Success;
