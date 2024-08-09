@@ -69,6 +69,9 @@ namespace EMotionFX
                 AZStd::string assetFilename;
                 AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetFilename, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset.GetId());
                 AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
+#if defined (CARBONATED)
+                AZ_Printf("EMotionFX", "Loaded anim graph '%s'.", assetFilename.c_str());
+#endif
                 if (!projectPath.empty())
                 {
                     AZ::IO::FixedMaxPathString filename{ (projectPath / assetFilename).LexicallyNormal().FixedMaxPathStringAsPosix() };

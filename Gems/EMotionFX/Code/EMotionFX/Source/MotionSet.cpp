@@ -858,8 +858,18 @@ namespace EMotionFX
             result->InitAfterLoading();
 
             const float loadTimeInMs = loadTimer.GetDeltaTimeInSeconds() * 1000.0f;
+#if defined (CARBONATED)
+            AZ_Printf("EMotionFX", "Loaded motion set '%s' from buffer in %.1f ms.", result->GetName(), loadTimeInMs);
+#else
             AZ_Printf("EMotionFX", "Loaded motion set from buffer in %.1f ms.", loadTimeInMs);
+#endif
         }
+#if defined (CARBONATED)
+        else
+        {
+            AZ_Error("EMotionFX", false, "Motion set was not loaded from buffer!");
+        }
+#endif
 
         return result;
     }

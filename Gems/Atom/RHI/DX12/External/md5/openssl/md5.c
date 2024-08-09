@@ -39,6 +39,8 @@
 
 #include "md5.h"
 
+#include <string.h>
+
 /*
  * The basic MD5 functions.
  *
