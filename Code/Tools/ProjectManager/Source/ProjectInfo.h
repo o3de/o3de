@@ -64,7 +64,7 @@ namespace O3DE::ProjectManager
         // Used as temp variable for replace images
         QString m_newPreviewImagePath;
         QString m_newBackgroundImagePath;
-
+        QString m_currentExportScript;
         bool m_remote = false;
 
         //! Used in project creation
