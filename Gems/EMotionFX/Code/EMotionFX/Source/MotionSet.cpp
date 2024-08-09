@@ -453,7 +453,6 @@ namespace EMotionFX
 #if defined (CARBONATED)
         if (!motion && !entry->GetLoadingFailed())
         {
-            AZ_Printf("EMotionFX", "Try to reload motion '%s' for motion set '%s'. Attempts left %i.", entry->GetFilename(), GetName(), entry->GetLoadAttempts());
             loadOnDemand = true;
         }
 #endif
@@ -556,6 +555,7 @@ namespace EMotionFX
                 AZ_Printf("EMotionFX", "Loaded motion '%s' for motion set '%s'.", entry->GetFilename(), GetName());
             }
 #endif
+
             entry->SetMotion(motion);
         }
 
