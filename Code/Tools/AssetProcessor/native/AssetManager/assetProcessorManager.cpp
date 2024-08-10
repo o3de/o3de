@@ -1866,18 +1866,26 @@ namespace AssetProcessor
                 // or if its in the "currently being examined" list.  The latter is likely to be the smaller list,
                 // so we check it first.  Both of those are absolute paths, so we convert to absolute path before
                 // searching those lists:
+
                 if (m_filesToExamine.find(absolutePath) != m_filesToExamine.end())
                 {
                     // its already in the file to examine queue.
                     continue;
                 }
+
                 if (m_alreadyActiveFiles.find(absolutePath) != m_alreadyActiveFiles.end())
                 {
                     // its already been picked up by a file monitoring / scanning step.
                     continue;
                 }
 
-                AssessFileInternal(absolutePath, false);
+                if (source.m_causedBy.find("file:" + absolutePath) != source.m_causedBy.end())
+                {
+                    // cyclic dependency, ignore
+                    continue;
+                }
+
+                AssessFileInternal(absolutePath, false, false, "file:" + normalizedFilePath);
             }
         }
 
@@ -3235,7 +3243,7 @@ namespace AssetProcessor
     // during startup, and should avoid logging, sleeping, or doing
     // any more work than is necessary (Log only in error or uncommon
     // circumstances).
-    void AssetProcessorManager::AssessFileInternal(QString fullFile, bool isDelete, bool fromScanner)
+    void AssetProcessorManager::AssessFileInternal(QString fullFile, bool isDelete, bool fromScanner, QString causedBy)
     {
         if (m_quitRequested)
         {
@@ -3266,13 +3274,6 @@ namespace AssetProcessor
                     m_metaFilesWhichActuallyExistOnDisk.clear(); // invalidate the map, force a recompuation later.
                 }
             }
-        }
-
-        // If this file is already in the remaining jobs queue, no need to assess it all over again.
-        if (m_remainingJobsForEachSourceFile.find(absolutePath.c_str()) != m_remainingJobsForEachSourceFile.end())
-        {
-            AZ_TracePrintf(AssetProcessor::DebugChannel, "AssessFileInternal: Skipping %s, already queued for job\n", absolutePath.c_str());
-            return;
         }
 
         if (!isDelete && IsInIntermediateAssetsFolder(normalizedFullFile) && !m_knownFolders.contains(normalizedFullFile))
@@ -3357,6 +3358,9 @@ namespace AssetProcessor
                 m_activeFiles.erase(entryIt);
             }
         }
+
+        if (causedBy != "")
+            newEntry.m_causedBy.insert(causedBy);
 
         m_AssetProcessorIsBusy = true;
         m_activeFiles.push_back(newEntry);
