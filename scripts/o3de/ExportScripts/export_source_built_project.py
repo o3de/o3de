@@ -47,6 +47,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                               archive_output_format: str = "none",
                               fail_on_asset_errors: bool = False,
                               engine_centric: bool = False,
+                              kill_o3de_processes_before_running: bool = False,
                               logger: logging.Logger|None = None) -> None:
     """
     This function serves as the generic, general workflow for project exports. The steps in this code will generate
@@ -128,7 +129,8 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     eutil.process_level_names(ctx, preprocessed_seedfile_paths, level_names, selected_platform)
 
     # Make sure there are no running processes for the current project before continuing
-    exp.kill_existing_processes(ctx.project_name)
+    if kill_o3de_processes_before_running:
+        exp.kill_existing_processes(ctx.project_name)
 
     tools_build_path = eutil.handle_tools(ctx,
                                           should_build_tools,
@@ -219,7 +221,8 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                                             export_layout=export_layout,
                                             archive_output_format=archive_output_format,
                                             logger=logger)
-
+    
+    logger.info(f"Exporting finished. Output Launchers were generated at {output_path}")
 
 def export_standalone_parse_args(o3de_context: exp.O3DEScriptExportContext, export_config: command_utils.O3DEConfig):
 
@@ -233,9 +236,17 @@ def export_standalone_parse_args(o3de_context: exp.O3DEScriptExportContext, expo
         )
         eutil.create_common_export_params_and_config(parser, export_config)
         
-        parser.add_argument('-out', '--output-path', type=pathlib.Path, required=True, help='Path that describes the final resulting Release Directory path location.')
+        default_output_path = pathlib.Path(export_config.get_value(key=exp.SETTINGS_DEFAULT_OUTPUT_PATH.key,
+                                                                   default=exp.SETTINGS_DEFAULT_OUTPUT_PATH.default))
+        if not default_output_path.is_absolute():
+            default_output_path = pathlib.Path(o3de_context.project_path) / default_output_path
 
-        # archive.output.format / SETTINGS_ARCHIVE_OUTPUT_FORMAT
+        parser.add_argument('-out', '--output-path',
+                            type=pathlib.Path,
+                            required=False,
+                            help='Path that describes the final resulting Output Directory path location.',
+                            default=default_output_path)
+        
         default_archive_output_format = export_config.get_value(key=exp.SETTINGS_ARCHIVE_OUTPUT_FORMAT.key,
                                                                 default=exp.SETTINGS_ARCHIVE_OUTPUT_FORMAT.default)
         parser.add_argument('-a', '--archive-output',  type=str,
@@ -384,6 +395,11 @@ def export_standalone_run_command(o3de_context, args, export_config: command_uti
                                                                           enable_attribute='monolithic',
                                                                           disable_attribute='non_monolithic')
 
+    option_kill_prior_processes = export_config.get_parsed_boolean_option(parsed_args=args,
+                                                                          key=exp.SETTINGS_OPTION_KILL_PRIOR_PROCESSES.key,
+                                                                          enable_attribute='kill_processes',
+                                                                          disable_attribute='no_kill_processes')
+
     if args.quiet:
         o3de_logger.setLevel(logging.ERROR)
     else:
@@ -416,6 +432,7 @@ def export_standalone_run_command(o3de_context, args, export_config: command_uti
                                   launcher_build_path=args.launcher_build_path,
                                   archive_output_format=args.archive_output,
                                   monolithic_build=option_build_monolithically,
+                                  kill_o3de_processes_before_running=option_kill_prior_processes,
                                   logger=o3de_logger)
     except exp.ExportProjectError as err:
         print(err)
@@ -428,6 +445,7 @@ if "o3de_context" in globals():
     global o3de_logger
 
     # Resolve the export config
+    export_config = None
     try:
         if o3de_context is None:
             project_name, project_path = command_utils.resolve_project_name_and_path()
@@ -439,6 +457,7 @@ if "o3de_context" in globals():
         project_name = None
         export_config = exp.get_export_project_config(project_path=None)
 
+    assert export_config
     args = export_standalone_parse_args(o3de_context, export_config)
 
     export_standalone_run_command(o3de_context, args, export_config, o3de_logger)
