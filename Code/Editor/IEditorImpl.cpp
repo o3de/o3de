@@ -1237,12 +1237,3 @@ SEditorSettings* CEditorImpl::GetEditorSettings()
     return &gSettings;
 }
 
-QMimeData* CEditorImpl::CreateQMimeData() const
-{
-    return new QMimeData();
-}
-
-void CEditorImpl::DestroyQMimeData(QMimeData* data) const
-{
-    delete data;
-}
