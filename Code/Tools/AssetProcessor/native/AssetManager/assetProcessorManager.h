@@ -130,7 +130,9 @@ namespace AssetProcessor
             bool m_isFromScanner = false;
             AZStd::chrono::steady_clock::time_point m_initialProcessTime{};
 
+#if defined(CARBONATED)
             QString m_fromDependencyChain;
+#endif
 
             FileEntry() = default;
 
@@ -373,7 +375,11 @@ namespace AssetProcessor
     private:
         template <class R>
         bool Recv(unsigned int connId, QByteArray payload, R& request);
-        void AssessFileInternal(QString fullFile, bool isDelete, bool fromScanner = false, QString causedBy = "");
+#if defined(CARBONATED)
+        void AssessFileInternal(QString fullFile, bool isDelete, bool fromScanner = false, QString fromDependencyChain = "");
+#else
+        void AssessFileInternal(QString fullFile, bool isDelete, bool fromScanner = false);
+#endif
         void CheckSource(const FileEntry& source);
         void CheckMissingJobs(const SourceAssetReference& sourceAsset, const ScanFolderInfo* scanFolder, const AZStd::vector<JobDetails>& jobsThisTime);
         void CheckDeletedProductFile(QString normalizedPath);
