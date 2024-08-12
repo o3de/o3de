@@ -32,7 +32,7 @@ namespace AZ::RHI
 
             for (auto deviceIndex { 0 }; deviceIndex < deviceCount; ++deviceIndex)
             {
-                if (CheckBit(AZStd::to_underlying(deviceMask), static_cast<u8>(deviceIndex)))
+                if (CheckBit(deviceMask, deviceIndex))
                 {
                     m_devicePipelineLibraryDescriptors[deviceIndex] = {
                         serializedData.contains(deviceIndex) ? serializedData.at(deviceIndex) : nullptr,

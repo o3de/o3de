@@ -15,22 +15,18 @@ namespace AZ::RHI
     class DeviceFence;
 
     //! A structure used as an argument to DeviceBufferPool::InitBuffer.
-    template <typename BufferClass>
-    struct BufferInitRequestTemplate
+    struct DeviceBufferInitRequest
     {
-        BufferInitRequestTemplate() = default;
+        DeviceBufferInitRequest() = default;
 
-        BufferInitRequestTemplate(
-            BufferClass& buffer,
-            const BufferDescriptor& descriptor,
-            const void* initialData = nullptr)
-            : m_buffer{&buffer}
-            , m_descriptor{descriptor}
-            , m_initialData{initialData}
-            {}
+        DeviceBufferInitRequest(DeviceBuffer& buffer, const BufferDescriptor& descriptor, const void* initialData = nullptr)
+            : m_buffer{ &buffer }
+            , m_descriptor{ descriptor }
+            , m_initialData{ initialData }
+        {}
 
         /// The buffer to initialize. The buffer must be in an uninitialized state.
-        BufferClass* m_buffer = nullptr;
+        DeviceBuffer* m_buffer = nullptr;
 
         /// The descriptor used to initialize the buffer.
         BufferDescriptor m_descriptor;
@@ -89,7 +85,6 @@ namespace AZ::RHI
         const void* m_sourceData = nullptr;
     };
 
-    using DeviceBufferInitRequest = BufferInitRequestTemplate<DeviceBuffer>;
     using DeviceBufferMapRequest = BufferMapRequestTemplate<DeviceBuffer>;
     using DeviceBufferStreamRequest = BufferStreamRequestTemplate<DeviceBuffer, DeviceFence>;
 
