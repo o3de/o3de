@@ -74,7 +74,11 @@ namespace EMotionFX
 
     MotionSet::MotionEntry::MotionEntry()
         : m_motion(nullptr)
+#if defined (CARBONATED)
+        , m_loadAttempts(MaxAttemptsToLoad)
+#else
         , m_loadFailed(false)
+#endif
     {
     }
 
@@ -83,7 +87,11 @@ namespace EMotionFX
         : m_id(motionId)
         , m_filename(fileName)
         , m_motion(motion)
+#if defined (CARBONATED)
+        , m_loadAttempts(MaxAttemptsToLoad)
+#else
         , m_loadFailed(false)
+#endif
     {
     }
 
@@ -442,6 +450,12 @@ namespace EMotionFX
         }
 
         Motion* motion = entry->GetMotion();
+#if defined (CARBONATED)
+        if (!motion && !entry->GetLoadingFailed())
+        {
+            loadOnDemand = true;
+        }
+#endif
         if (loadOnDemand)
         {
             motion = LoadMotion(entry);
@@ -530,8 +544,17 @@ namespace EMotionFX
             // Mark that we already tried to load this motion, so that we don't retry this next time.
             if (!motion)
             {
+#if defined (CARBONATED)
+                AZ_Printf("EMotionFX", "Failed to load motion '%s' for motion set '%s'.", entry->GetFilename(), GetName());
+#endif
                 entry->SetLoadingFailed(true);
             }
+#if defined (CARBONATED)
+            else
+            {
+                AZ_Printf("EMotionFX", "Loaded motion '%s' for motion set '%s'.", entry->GetFilename(), GetName());
+            }
+#endif
 
             entry->SetMotion(motion);
         }

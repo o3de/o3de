@@ -92,14 +92,22 @@ namespace EMotionFX
              * It is possible that the motion pointer is nullptr, but that this was because loading failed, rather than not having tried to load before.
              * @result Returns true when loading failed before, otherwise false is returned.
              */
+#if defined (CARBONATED)
+            bool GetLoadingFailed() const { return m_loadAttempts <= 0; }
+#else
             bool GetLoadingFailed() const                                                                       { return m_loadFailed; }
+#endif
 
             /**
              * Set the flag that specifies whether loading failed or not.
              * This flag is used to skip trying to reload the motion on demand when it is nullptr and failed to load before.
              * @param failed Set to true to skip trying to reload on demand again.
              */
+#if defined (CARBONATED)            
+            void SetLoadingFailed(bool failed) { m_loadAttempts = static_cast<int8_t>(failed ? std::max(m_loadAttempts - 1, 0) : MaxAttemptsToLoad); }
+#else
             void SetLoadingFailed(bool failed)                                                                  { m_loadFailed = failed; }
+#endif
 
             /**
              * Reset the entry motion so that it will reload it next time automatically.
@@ -124,7 +132,12 @@ namespace EMotionFX
             AZStd::string   m_filename;     /**< The local filename of the motion. */
             AZStd::string   m_id;           /**< The motion name. */
             Motion*         m_motion;       /**< A pointer to the motion. */
+#if defined (CARBONATED)
+            static constexpr int8_t MaxAttemptsToLoad = 5;
+            int8_t          m_loadAttempts;
+#else
             bool            m_loadFailed;   /**< Did the last load attempt fail? */
+#endif
 
             void SetId(const AZStd::string& id);
         };
