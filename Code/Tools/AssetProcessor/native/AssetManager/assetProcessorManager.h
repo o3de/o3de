@@ -130,7 +130,7 @@ namespace AssetProcessor
             bool m_isFromScanner = false;
             AZStd::chrono::steady_clock::time_point m_initialProcessTime{};
 
-            QSet<QString> m_causedBy;
+            QString m_fromDependencyChain;
 
             FileEntry() = default;
 

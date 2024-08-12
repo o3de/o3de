@@ -1879,13 +1879,13 @@ namespace AssetProcessor
                     continue;
                 }
 
-                if (source.m_causedBy.find("file:" + absolutePath) != source.m_causedBy.end())
+                if (source.m_fromDependencyChain.contains(absolutePath))
                 {
                     // cyclic dependency, ignore
                     continue;
                 }
 
-                AssessFileInternal(absolutePath, false, false, "file:" + normalizedFilePath);
+                AssessFileInternal(absolutePath, false, false, source.m_fromDependencyChain + QString(";") + absolutePath);
             }
         }
 
@@ -3243,7 +3243,7 @@ namespace AssetProcessor
     // during startup, and should avoid logging, sleeping, or doing
     // any more work than is necessary (Log only in error or uncommon
     // circumstances).
-    void AssetProcessorManager::AssessFileInternal(QString fullFile, bool isDelete, bool fromScanner, QString causedBy)
+    void AssetProcessorManager::AssessFileInternal(QString fullFile, bool isDelete, bool fromScanner, QString fromDependencyChain)
     {
         if (m_quitRequested)
         {
@@ -3344,6 +3344,7 @@ namespace AssetProcessor
         }
 
         FileEntry newEntry(normalizedFullFile, isDelete, fromScanner);
+        newEntry.m_fromDependencyChain = fromDependencyChain;
 
         if (m_alreadyActiveFiles.find(normalizedFullFile) != m_alreadyActiveFiles.end())
         {
@@ -3358,9 +3359,6 @@ namespace AssetProcessor
                 m_activeFiles.erase(entryIt);
             }
         }
-
-        if (causedBy != "")
-            newEntry.m_causedBy.insert(causedBy);
 
         m_AssetProcessorIsBusy = true;
         m_activeFiles.push_back(newEntry);
