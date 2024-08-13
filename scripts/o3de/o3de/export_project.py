@@ -1182,7 +1182,7 @@ SETTINGS_ADDITIONAL_PROJECT_FILE_PATTERN = register_setting(key='additional.proj
 SETTINGS_OPTION_BUILD_TOOLS       = register_setting(key='option.build.tools',
                                                      description='The option to build O3DE toolchain executables. This will build AssetBundlerBatch and AssetProcessorBatch.',
                                                      is_boolean=True,
-                                                     default='False')
+                                                     default='True')
 
 SETTINGS_DEFAULT_ANDROID_BUILD_PATH = register_setting(key='default.android.build.path',
                                                        description='Designates where the android build files are generated.',

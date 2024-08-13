@@ -208,7 +208,7 @@ namespace O3DE::ProjectManager
 
         if (m_exportProjectProcess->exitStatus() != QProcess::ExitStatus::NormalExit || m_exportProjectProcess->exitCode() != 0)
         {
-            QString error = tr("Exporting launcher for project failed. See log for details. %1").arg(logFilePath);
+            QString error = tr("Exporting project failed. See log for details. %1").arg(logFilePath);
             QStringToAZTracePrint(error);
             return AZ::Failure(error);
         }
