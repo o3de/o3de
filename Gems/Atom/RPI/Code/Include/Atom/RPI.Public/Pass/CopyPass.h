@@ -85,7 +85,7 @@ namespace AZ
             int m_currentBufferIndex = 0;
             AZStd::array<Data::Instance<Buffer>, MaxFrames> m_device1HostBuffer;
             AZStd::array<Data::Instance<Buffer>, MaxFrames> m_device2HostBuffer;
-            AZStd::array<AZ::u64, MaxFrames> m_deviceHostBufferByteCount;
+            AZStd::array<AZ::u64, MaxFrames> m_deviceHostBufferByteCount{};
             AZStd::array<Ptr<RHI::Fence>, MaxFrames> m_device1SignalFence;
             AZStd::array<Ptr<RHI::Fence>, MaxFrames> m_device2WaitFence;
             RHI::DeviceImageSubresourceLayout m_inputImageLayout;
