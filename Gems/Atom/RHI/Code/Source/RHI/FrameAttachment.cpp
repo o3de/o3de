@@ -26,7 +26,17 @@ namespace AZ::RHI
     {
         if (m_resource)
         {
-            m_resource->SetFrameAttachment(nullptr);
+            if (m_lifetimeType == AttachmentLifetimeType::Imported)
+            {
+                m_resource->SetFrameAttachment(nullptr);
+            }
+            else
+            {
+                for (auto& [deviceIndex, scopeInfo] : m_scopeInfos)
+                {
+                    m_resource->SetFrameAttachment(nullptr, deviceIndex);
+                }
+            }
         }
     }
 

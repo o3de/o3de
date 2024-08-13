@@ -52,6 +52,9 @@ namespace AZ
 
             Name m_pipelineViewTag;
 
+            int m_deviceIndex = RHI::MultiDevice::InvalidDeviceIndex;
+
+
             //! Only applicable for ParentPass.
             //! If set to "true" then:
             //! 0- You may get performance benefits if the GPU is a Tiled Based Rasterizer and the RHI supports TBR (like Vulkan).

@@ -56,11 +56,16 @@ namespace AZ
             {
                 PassUtils::ExtractPipelineGlobalConnections(m_passData, m_pipelineGlobalConnections);
                 m_viewTag = m_passData->m_pipelineViewTag;
+                if (m_passData->m_deviceIndex >= 0 && m_passData->m_deviceIndex < RHI::RHISystemInterface::Get()->GetDeviceCount())
+                {
+                    m_deviceIndex = m_passData->m_deviceIndex;
+                }
             }
 
             m_flags.m_enabled = true;
             m_flags.m_timestampQueryEnabled = false;
             m_flags.m_pipelineStatisticsQueryEnabled = false;
+            m_flags.m_parentDeviceIndexCached = false;
 
             m_template = descriptor.m_passTemplate;
             if (m_template)
@@ -113,6 +118,29 @@ namespace AZ
             return desc;
         }
 
+        int Pass::GetDeviceIndex() const
+        {
+            if (m_deviceIndex == AZ::RHI::MultiDevice::InvalidDeviceIndex && m_parent)
+            {
+                return m_flags.m_parentDeviceIndexCached ? m_parentDeviceIndex : m_parent->GetDeviceIndex();
+            }
+            return m_deviceIndex;
+        }
+
+        bool Pass::SetDeviceIndex(int deviceIndex)
+        {
+            const int deviceCount = AZ::RHI::RHISystemInterface::Get()->GetDeviceCount();
+            if (deviceIndex < AZ::RHI::MultiDevice::InvalidDeviceIndex || deviceIndex >= deviceCount)
+            {
+                AZ_Error("Pass", false, "Device index should be at least -1(RHI::MultiDevice::InvalidDeviceIndex) and less than current device count %d.", deviceCount);
+                return false;
+            }
+
+            m_deviceIndex = deviceIndex;
+            OnHierarchyChange();
+            return true;
+        }
+
         void Pass::SetEnabled(bool enabled)
         {
             m_flags.m_enabled = enabled;
@@ -160,6 +188,9 @@ namespace AZ
                 m_treeDepth = m_parent->m_treeDepth + 1;
                 m_path = ConcatPassName(m_parent->m_path, m_name);
                 m_flags.m_partOfHierarchy = m_parent->m_flags.m_partOfHierarchy;
+
+                m_parentDeviceIndex = m_parent->GetDeviceIndex();
+                m_flags.m_parentDeviceIndexCached = true;
 
                 if (m_state == PassState::Orphaned)
                 {

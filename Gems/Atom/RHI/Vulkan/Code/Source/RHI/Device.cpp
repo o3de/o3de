@@ -586,7 +586,9 @@ namespace AZ
             if (!m_asyncUploadQueue)
             {
                 m_asyncUploadQueue = aznew AsyncUploadQueue();
-                AsyncUploadQueue::Descriptor asyncUploadQueueDescriptor(RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_asyncQueueStagingBufferSizeInBytes);
+                AsyncUploadQueue::Descriptor asyncUploadQueueDescriptor(RHI::RHISystemInterface::Get()
+                                                                            ->GetPlatformLimitsDescriptor(GetDeviceIndex())
+                                                                            ->m_platformDefaultValues.m_asyncQueueStagingBufferSizeInBytes);
                 asyncUploadQueueDescriptor.m_device = this;
                 m_asyncUploadQueue->Init(asyncUploadQueueDescriptor);
             }

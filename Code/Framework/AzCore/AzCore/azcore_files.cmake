@@ -86,7 +86,6 @@ set(FILES
     Debug/PerformanceCollector.h
     Debug/PerformanceCollector.cpp
     Debug/Profiler.cpp
-    Debug/Profiler.inl
     Debug/Profiler.h
     Debug/ProfilerBus.h
     Debug/ProfilerReflection.cpp

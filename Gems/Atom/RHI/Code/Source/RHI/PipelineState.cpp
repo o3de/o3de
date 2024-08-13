@@ -31,15 +31,13 @@ namespace AZ::RHI
 
     void PipelineState::PreInitialize(MultiDevice::DeviceMask deviceMask)
     {
-        const int deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
-
-        for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
-        {
-            if ((AZStd::to_underlying(deviceMask) >> deviceIndex) & 1)
+        MultiDeviceObject::IterateDevices(
+            deviceMask,
+            [this](int deviceIndex)
             {
                 m_deviceObjects[deviceIndex] = Factory::Get().CreatePipelineState();
-            }
-        }
+                return true;
+            });
     }
 
     ResultCode PipelineState::Init(

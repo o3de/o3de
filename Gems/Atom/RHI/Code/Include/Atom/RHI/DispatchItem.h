@@ -12,7 +12,6 @@
 #include <Atom/RHI/IndirectArguments.h>
 #include <Atom/RHI/PipelineState.h>
 #include <Atom/RHI/ShaderResourceGroup.h>
-#include <Atom/RHI/RHISystemInterface.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/std/containers/array.h>
 
@@ -77,15 +76,13 @@ namespace AZ::RHI
         DispatchItem(MultiDevice::DeviceMask deviceMask)
             : m_deviceMask{ deviceMask }
         {
-            auto deviceCount{ RHI::RHISystemInterface::Get()->GetDeviceCount() };
-
-            for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
-            {
-                if (CheckBitsAll(AZStd::to_underlying(m_deviceMask), 1u << deviceIndex))
+            MultiDeviceObject::IterateDevices(
+                m_deviceMask,
+                [this](int deviceIndex)
                 {
                     m_deviceDispatchItems.emplace(deviceIndex, DeviceDispatchItem{});
-                }
-            }
+                    return true;
+                });
         }
 
         //! Returns the device-specific DeviceDispatchItem for the given index

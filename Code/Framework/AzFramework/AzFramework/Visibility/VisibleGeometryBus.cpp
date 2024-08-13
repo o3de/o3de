@@ -53,7 +53,7 @@ namespace AzFramework
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Visibility")
                 ->Attribute(AZ::Script::Attributes::Module, "visibility")
-                ->Event("GetVisibleGeometry", &VisibleGeometryRequestBus::Events::GetVisibleGeometry)
+                ->Event("BuildVisibleGeometry", &VisibleGeometryRequestBus::Events::BuildVisibleGeometry, "GetVisibleGeometry")
                 ;
         }
     }

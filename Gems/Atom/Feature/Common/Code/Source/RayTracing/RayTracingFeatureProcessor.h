@@ -206,7 +206,7 @@ namespace AZ
                 Name m_name;
                 Data::Instance<RPI::Shader> m_intersectionShader;
                 Name m_intersectionShaderName;
-                uint32_t m_bindlessBufferIndex;
+                AZStd::unordered_map<int, uint32_t> m_bindlessBufferIndices;
                 int m_instanceCount = 0;
             };
             using ProceduralGeometryTypeHandle = StableDynamicArrayHandle<ProceduralGeometryType>;
@@ -244,16 +244,16 @@ namespace AZ
                 const AZStd::string& name,
                 const Data::Instance<RPI::Shader>& intersectionShader,
                 const AZStd::string& intersectionShaderName,
-                uint32_t bindlessBufferIndex = static_cast<uint32_t>(-1));
+                const AZStd::unordered_map<int, uint32_t>& bindlessBufferIndices = {});
 
-            //! Sets the bindlessBufferIndex of a procedural geometry type. This is necessary if the buffer, whose bindless read index was
+            //! Sets the bindlessBufferIndices of a procedural geometry type. This is necessary if the buffer, whose bindless read index was
             //! passed to `RegisterProceduralGeometryType`, is resized or recreated.
             //! \param geometryTypeHandle A weak handle of a procedural geometry type (obtained by calling `.GetWeakHandle()` on the handle
             //! returned by `RegisterProceduralGeometryType`.
-            //! \param bindlessBufferIndex A single 32-bit value which can be queried in the intersection shader with
+            //! \param bindlessBufferIndices A single 32-bit value which can be queried in the intersection shader with
             //! `GetBindlessBufferIndex()`.
             void SetProceduralGeometryTypeBindlessBufferIndex(
-                ProceduralGeometryTypeWeakHandle geometryTypeHandle, uint32_t bindlessBufferIndex);
+                ProceduralGeometryTypeWeakHandle geometryTypeHandle, const AZStd::unordered_map<int, uint32_t>& bindlessBufferIndices);
 
             //! Adds a procedural geometry to the ray tracing scene.
             //! \param geometryTypeHandle A weak handle of a procedural geometry type (obtained by calling `.GetWeakHandle()` on the handle
@@ -471,7 +471,7 @@ namespace AZ
 
             // vector of MeshInfo, transferred to the meshInfoGpuBuffer
             using MeshInfoVector = AZStd::vector<MeshInfo>;
-            MeshInfoVector m_meshInfos;
+            AZStd::unordered_map<int, MeshInfoVector> m_meshInfos;
             RPI::RingBuffer m_meshInfoGpuBuffer{ "RayTracingMeshInfo", RPI::CommonBufferPoolType::ReadOnly, sizeof(MeshInfo) };
             RPI::RingBuffer m_proceduralGeometryInfoGpuBuffer{ "ProceduralGeometryInfo", RPI::CommonBufferPoolType::ReadOnly, RHI::Format::R32G32_UINT };
 
