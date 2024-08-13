@@ -1180,7 +1180,7 @@ SETTINGS_ADDITIONAL_PROJECT_FILE_PATTERN = register_setting(key='additional.proj
                                                             default='')
 
 SETTINGS_OPTION_BUILD_TOOLS       = register_setting(key='option.build.tools',
-                                                     description='The option to build O3DE toolchain executables. This will build AssetBundlerBatch and AssetProcessorBatch.',
+                                                     description='The option to build O3DE toolchain executables. This will build AssetBundlerBatch and AssetProcessorBatch. Unnecessary when using engine as SDK since tools are prebuilt.',
                                                      is_boolean=True,
                                                      default='True')
 
