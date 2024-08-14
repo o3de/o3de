@@ -201,7 +201,7 @@ namespace MaterialCanvas
                   "/O3DE/AtomToolsFramework/GraphCompiler/CompileOnEdit",
                   "Enable Compile On Edit",
                   "If enabled, shaders and materials will automatically be generated whenever a material graph is edited.",
-                  true),
+                  false),
               AtomToolsFramework::CreateSettingsPropertyValue(
                   "/O3DE/Atom/MaterialCanvas/Viewport/ClearMaterialOnCompileGraphStarted",
                   "Clear Viewport Material When Compiling Starts",
