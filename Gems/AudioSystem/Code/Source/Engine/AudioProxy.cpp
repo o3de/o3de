@@ -203,6 +203,11 @@ namespace Audio
         }
         else
         {
+#if defined (CARBONATED)
+            if (Audio::CVars::s_PositionUpdateThreshold <= 0.f      // <-- no gating
+                || !refPosition.GetPositionVec().IsClose(m_oPosition.GetPositionVec(), Audio::CVars::s_PositionUpdateThreshold))
+            {
+#endif
             // If a SetPosition is queued during init, don't need to check threshold.
             m_oPosition = refPosition;
 
@@ -212,6 +217,9 @@ namespace Audio
 
             setPosition.m_position = refPosition;
             TryEnqueueRequest(AZStd::move(setPosition));
+#if defined (CARBONATED)
+            }
+#endif
         }
     }
 
