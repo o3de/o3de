@@ -138,7 +138,7 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            AZ::Outcome<QString> expectedOutputPathQuery = m_worker->GetExpectedOutputPath();
+            AZ::Outcome<QString, QString> expectedOutputPathQuery = m_worker->GetExpectedOutputPath();
 
             if (expectedOutputPathQuery.IsSuccess())
             {

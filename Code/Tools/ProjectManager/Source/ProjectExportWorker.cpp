@@ -68,13 +68,19 @@ namespace O3DE::ProjectManager
         return AZ::Success(logFilePath.filePath(ProjectExportErrorLogName));
     }
 
-    AZ::Outcome<QString> ProjectExportWorker::GetExpectedOutputPath() const
+    AZ::Outcome<QString, QString> ProjectExportWorker::GetExpectedOutputPath() const
     {
-        if (!m_expectedOutputDir.isEmpty())
+        if (m_expectedOutputDir.isEmpty())
         {
-            return AZ::Success(m_expectedOutputDir);
+            return AZ::Failure(tr("Project Export output folder not detected in the output logs."));
         }
-        return AZ::Failure();
+
+        if (!QDir(m_expectedOutputDir).isAbsolute())
+        {
+            return AZ::Failure(tr("Project Export output folder %s is invalid.").arg(m_expectedOutputDir));
+        }
+
+        return AZ::Success(m_expectedOutputDir);
     }
 
     void ProjectExportWorker::QStringToAZTracePrint([[maybe_unused]] const QString& error)
@@ -225,31 +231,17 @@ namespace O3DE::ProjectManager
             return AZ::Failure(error);
         }
 
-        // Fetch the output directory if the process was successful
-        // All standardized O3DE scripts end with a log line stating the output directory in quotes as the last word
+        // Fetch the output directory from the logs if the process was successful
         // Use regex to collect that directory, and collect the slice of the word surrounded in quotes
-        QString exportOutputLastLine = exportOutput.split('\n', Qt::SkipEmptyParts).takeLast();
-
-        QRegExp quotedDirRegex("'.*'");
-        int pos = quotedDirRegex.indexIn(exportOutputLastLine);
+        
+        QRegExp quotedDirRegex("Project exported to '([^']*)'\\.");
+        int pos = quotedDirRegex.indexIn(exportOutput);
         if (pos > -1)
         {
-            QStringList entries = quotedDirRegex.capturedTexts();
-            QString outputDirQuoted = entries.takeLast();
-            QString outputDir = outputDirQuoted.mid(1, outputDirQuoted.size()-2);
-            if (QDir(outputDir).isAbsolute())
-            {
-                m_expectedOutputDir = outputDir;
-                return AZ::Success();
-            }
-            else
-            {
-                m_expectedOutputDir = "";
-            }
+            m_expectedOutputDir = quotedDirRegex.cap(1);
         }
         
-        QString error = tr("Failed to find output path from latest export task!");
-        return AZ::Failure(error);
+        return AZ::Success();
     }
 
 } // namespace O3DE::ProjectManager

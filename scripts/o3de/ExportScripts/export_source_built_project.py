@@ -222,7 +222,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                                             archive_output_format=archive_output_format,
                                             logger=logger)
     
-    logger.info(f"Exporting finished. Output Launchers were generated at '{output_path}'")
+    logger.info(f"Project exported to '{output_path}'.")
 
 def export_standalone_parse_args(o3de_context: exp.O3DEScriptExportContext, export_config: command_utils.O3DEConfig):
 
@@ -461,5 +461,5 @@ if "o3de_context" in globals():
     args = export_standalone_parse_args(o3de_context, export_config)
 
     export_standalone_run_command(o3de_context, args, export_config, o3de_logger)
-    o3de_logger.info(f"Finished exporting project to '{args.output_path}'")
+    o3de_logger.info(f"Finished exporting.")
     sys.exit(0)

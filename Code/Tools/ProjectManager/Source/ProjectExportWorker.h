@@ -30,7 +30,7 @@ namespace O3DE::ProjectManager
         ~ProjectExportWorker() = default;
 
         AZ::Outcome<QString, QString> GetLogFilePath() const;
-        AZ::Outcome<QString> GetExpectedOutputPath() const;
+        AZ::Outcome<QString, QString> GetExpectedOutputPath() const;
 
 
     public slots:
