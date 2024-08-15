@@ -62,7 +62,7 @@ namespace AZ::RHI
         m_rhiUpdateMask |= sourceUpdateMask;
         for (uint32_t i = 0; i < static_cast<uint32_t>(DeviceShaderResourceGroupData::ResourceType::Count); i++)
         {
-            if (RHI::CheckBit(sourceUpdateMask, static_cast<AZ::u8>(i)))
+            if (CheckBit(sourceUpdateMask, i))
             {
                 m_resourceTypeIteration[i] = 0;
             }
@@ -73,7 +73,7 @@ namespace AZ::RHI
     {
         for (uint32_t i = 0; i < static_cast<uint32_t>(DeviceShaderResourceGroupData::ResourceType::Count); i++)
         {
-            if (RHI::CheckBit(m_rhiUpdateMask, static_cast<AZ::u8>(i)))
+            if (CheckBit(m_rhiUpdateMask, i))
             {
                 //Ensure that a SRG update is alive for m_updateMaskResetLatency times
                 //after SRG compile is called. This is because SRGs are triple buffered

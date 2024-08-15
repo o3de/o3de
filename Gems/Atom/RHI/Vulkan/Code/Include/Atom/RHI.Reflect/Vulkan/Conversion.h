@@ -48,8 +48,6 @@ namespace AZ
         VkBlendOp ConvertBlendOp(const RHI::BlendOp blendOp);
         VkColorComponentFlags ConvertComponentFlags(uint8_t flags);
         VkSampleCountFlagBits ConvertSampleCount(uint16_t samples);
-        VkAttachmentLoadOp ConvertAttachmentLoadAction(RHI::AttachmentLoadAction loadAction);
-        VkAttachmentStoreOp ConvertAttachmentStoreAction(RHI::AttachmentStoreAction storeAction);
         void FillClearValue(const RHI::ClearValue& rhiClearValue, VkClearValue& vulkanClearValue);
         VkFilter ConvertFilterMode(RHI::FilterMode filterMode);
         VkSamplerAddressMode ConvertAddressMode(RHI::AddressMode addressMode);

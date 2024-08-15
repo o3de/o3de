@@ -38,15 +38,13 @@ namespace AZ::RHI
         m_bufferViews.resize(layout->GetGroupSizeForBuffers());
         m_samplers.resize(layout->GetGroupSizeForSamplers());
 
-        auto deviceCount{ RHI::RHISystemInterface::Get()->GetDeviceCount() };
-
-        for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
-        {
-            if (CheckBitsAll((AZStd::to_underlying(m_deviceMask) >> deviceIndex), 1u))
+        MultiDeviceObject::IterateDevices(
+            m_deviceMask,
+            [this, layout](int deviceIndex)
             {
                 m_deviceShaderResourceGroupDatas[deviceIndex] = DeviceShaderResourceGroupData(layout);
-            }
-        }
+                return true;
+            });
     }
 
     void ShaderResourceGroupData::ResetViews()

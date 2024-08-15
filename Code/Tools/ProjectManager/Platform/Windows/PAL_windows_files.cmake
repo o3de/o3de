@@ -8,6 +8,7 @@
 
 set(FILES
     ProjectBuilderWorker_windows.cpp
+    ProjectExportWorker_windows.cpp
     ProjectUtils_windows.cpp
     ProjectManagerDefs_windows.cpp
     ProjectManager_Traits_Platform.h

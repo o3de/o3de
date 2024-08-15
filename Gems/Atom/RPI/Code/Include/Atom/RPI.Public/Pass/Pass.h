@@ -147,6 +147,12 @@ namespace AZ
             //! It may return nullptr if the pass wasn't create from a template
             const PassTemplate* GetPassTemplate() const { return m_template.get(); }
 
+            //! Get the device index of this pass
+            int GetDeviceIndex() const;
+
+            //! Set the device index of this pass (and potentially affects its child's)
+            bool SetDeviceIndex(int deviceIndex);
+
             //! Enable/disable this pass
             //! If the pass is disabled, it (and any children if it's a ParentPass) won't be rendered.  
             void SetEnabled(bool enabled);
@@ -492,6 +498,9 @@ namespace AZ
 
                         // Whether this pass contains a binding that is referenced globally through the pipeline
                         uint64_t m_containsGlobalReference : 1;
+                        
+                        // Whether this pass already cached parent pass's device index
+                        uint64_t m_parentDeviceIndexCached : 1;
 
                         // If this is a parent pass, indicates whether the child passes should be merged as subpasses.
                         // If this is a child pass, indicates whether it is a subpass.
@@ -528,6 +537,9 @@ namespace AZ
 
             //! Default RHI::ScopeAttachmentStage value for all pass attachments of usage RHI::ScopeAttachmentUsage::Shader
             RHI::ScopeAttachmentStage m_defaultShaderAttachmentStage = RHI::ScopeAttachmentStage::AnyGraphics;
+
+            // The device index the pass should run on. Can be invalid if it doesn't matter.
+            int m_deviceIndex = AZ::RHI::MultiDevice::InvalidDeviceIndex;
 
         private:
             // Return the Timestamp result of this pass
@@ -645,6 +657,9 @@ namespace AZ
 
             // Used to track what phases of build/initialization the pass is queued for
             PassQueueState m_queueState = PassQueueState::NoQueue;
+
+            // Cache the parent pass's device index to prevent recursively fetching it every time
+            int m_parentDeviceIndex = AZ::RHI::MultiDevice::InvalidDeviceIndex;
         };
 
         //! Struct used to return results from Pass hierarchy validation

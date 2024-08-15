@@ -72,9 +72,10 @@ namespace AZ::RHI
         AZ_RTTI(BufferView, "{AB366B8F-F1B7-45C6-A0D8-475D4834FAD2}", ResourceView);
         virtual ~BufferView() = default;
 
-        BufferView(const RHI::Buffer* buffer, BufferViewDescriptor descriptor)
+        BufferView(const RHI::Buffer* buffer, BufferViewDescriptor descriptor, MultiDevice::DeviceMask deviceMask)
             : m_buffer{ buffer }
             , m_descriptor{ descriptor }
+            , m_deviceMask{ deviceMask }
         {
         }
 
@@ -93,6 +94,8 @@ namespace AZ::RHI
             return m_descriptor;
         }
 
+        AZStd::unordered_map<int, uint32_t> GetBindlessReadIndex() const;
+
         const Resource* GetResource() const override
         {
             return m_buffer.get();
@@ -110,6 +113,8 @@ namespace AZ::RHI
         ConstPtr<RHI::Buffer> m_buffer;
         //! The corresponding BufferViewDescriptor for this view.
         BufferViewDescriptor m_descriptor;
+        //! The device mask of the buffer stored for comparison to figure out when cache entries need to be freed.
+        mutable MultiDevice::DeviceMask m_deviceMask = MultiDevice::AllDevices;
         //! DeviceBufferView cache
         //! This cache is necessary as the caller receives raw pointers from the ResourceCache, 
         //! which now, with multi-device objects in use, need to be held in memory as long as

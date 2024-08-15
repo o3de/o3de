@@ -1037,8 +1037,11 @@ void AzAssetBrowserRequestHandler::DoDropItemView(bool& accepted, AzQtComponents
     }
 }
 
-// There are two paths for generating entities by dragging and dropping from the asset browser.
-// This logic handles dropping them into the viewport. Dropping them in the outliner is handled by OutlinerListModel::DropMimeDataAssets.
+// There are multiple paths for generating entities by dragging and dropping from the asset browser.
+// This logic handles dropping them into the viewport.
+// Dropping them in the outliner is handled by OutlinerListModel::DropMimeDataAssets.
+// There's also a higher priority listener for dropping things containing prefabs, by instantiating the prefab.
+// This is used just when there's no higher priority listener to handle basic drops.
 void AzAssetBrowserRequestHandler::Drop(QDropEvent* event, AzQtComponents::DragAndDropContextBase& context)
 {
     using namespace AzToolsFramework;

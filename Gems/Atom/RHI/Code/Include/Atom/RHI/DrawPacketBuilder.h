@@ -12,7 +12,6 @@
 #include <Atom/RHI.Reflect/Viewport.h>
 #include <Atom/RHI/DeviceDrawPacketBuilder.h>
 #include <Atom/RHI/DrawPacket.h>
-#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/DeviceStreamBufferView.h>
 
 namespace AZ
@@ -64,16 +63,13 @@ namespace AZ::RHI
         explicit DrawPacketBuilder(RHI::MultiDevice::DeviceMask deviceMask)
             : m_deviceMask{ deviceMask }
         {
-            auto deviceCount{ RHI::RHISystemInterface::Get()->GetDeviceCount() };
-
-            for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
-            {
-                // cast to u8 to prevent warning
-                if (RHI::CheckBit(AZStd::to_underlying(m_deviceMask), static_cast<AZ::u8>(deviceIndex)))
+            MultiDeviceObject::IterateDevices(
+                m_deviceMask,
+                [this](int deviceIndex)
                 {
                     m_deviceDrawPacketBuilders.emplace(deviceIndex, DeviceDrawPacketBuilder());
-                }
-            }
+                    return true;
+                });
         }
 
         DrawPacketBuilder(const DrawPacketBuilder& other);

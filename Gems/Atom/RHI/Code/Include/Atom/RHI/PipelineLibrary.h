@@ -32,7 +32,7 @@ namespace AZ::RHI
 
             for (auto deviceIndex { 0 }; deviceIndex < deviceCount; ++deviceIndex)
             {
-                if (CheckBit(AZStd::to_underlying(deviceMask), static_cast<u8>(deviceIndex)))
+                if (CheckBit(deviceMask, deviceIndex))
                 {
                     m_devicePipelineLibraryDescriptors[deviceIndex] = {
                         serializedData.contains(deviceIndex) ? serializedData.at(deviceIndex) : nullptr,
@@ -93,25 +93,6 @@ namespace AZ::RHI
         //! extracting the corresponding DevicePipelineLibrary(ies) from librariesToMerge and passing them on.
         //! @param librariesToMerge A span of libraries to merge into this library
         ResultCode MergeInto(AZStd::span<const PipelineLibrary* const> librariesToMerge);
-
-        //! Serializes the platform-specific data and returns it as a new PipelineLibraryData instance
-        //! for a specific device 
-        //! @param deviceIndex Denotes from which device the serialized data should be retrieved
-        ConstPtr<PipelineLibraryData> GetSerializedData(int deviceIndex = RHI::MultiDevice::DefaultDeviceIndex) const
-        {
-            if (m_deviceObjects.contains(deviceIndex))
-            {
-                return GetDevicePipelineLibrary(deviceIndex)->GetSerializedData();
-            }
-            else
-            {
-                AZ_Error(
-                    "PipelineLibrary",
-                    false,
-                    "PipelineLibrary is not initialized. This operation is only permitted on an initialized library.");
-                return nullptr;
-            }
-        }
 
         //! Serializes the platform-specific data and returns it as a new PipelineLibraryData instance
         //! for a specific device

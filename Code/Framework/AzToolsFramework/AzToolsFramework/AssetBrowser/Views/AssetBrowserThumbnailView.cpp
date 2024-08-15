@@ -58,19 +58,6 @@ namespace AzToolsFramework
                     const QItemSelection& selected,
                     const QItemSelection& deselected)
                 {
-                    auto selectedIndexes = m_thumbnailViewWidget->selectionModel()->selectedIndexes();
-                    if (selectedIndexes.size() == 1)
-                    {
-                        auto indexData = selectedIndexes.at(0).data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
-                        if (indexData->GetEntryType() != AssetBrowserEntry::AssetEntryType::Folder)
-                        {
-                            AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, indexData);
-                        }
-                    }
-                    else
-                    {
-                        AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::ClearPreview);
-                    }
                     Q_EMIT selectionChangedSignal(selected, deselected);
                 });
 
@@ -82,6 +69,13 @@ namespace AzToolsFramework
                 {
                     auto indexData = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
                     emit entryClicked(indexData);
+                    // if we click on an index that is already selected, refresh the selection so that other views update.
+                    if (m_thumbnailViewWidget->selectionModel()->isSelected(index))
+                    {
+                        // user clicked on the same entry as before, so make sure that the associated item is previewed
+                        // in case they clicked on something else on the GUI and it was lost.
+                        Q_EMIT selectionChangedSignal(m_thumbnailViewWidget->selectionModel()->selection(), {});
+                    }
                 });
 
             connect(
