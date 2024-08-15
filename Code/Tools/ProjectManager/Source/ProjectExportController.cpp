@@ -158,6 +158,10 @@ namespace O3DE::ProjectManager
                     }
                 }
             }
+            else
+            {
+                qDebug() << "Failed to retrieve output path from recent export task:\n" << expectedOutputPathQuery.GetError() << "\n";
+            }
         }
         emit Done(success);
     }
