@@ -65,6 +65,7 @@ namespace O3DE::ProjectManager
         QString m_newPreviewImagePath;
         QString m_newBackgroundImagePath;
         QString m_currentExportScript;
+        QString m_expectedOutputDir;
         bool m_remote = false;
 
         //! Used in project creation

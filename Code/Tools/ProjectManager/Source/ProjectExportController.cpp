@@ -27,9 +27,6 @@ namespace O3DE::ProjectManager
         m_worker = new ProjectExportWorker(m_projectInfo);
         m_worker->moveToThread(&m_workerThread);
 
-        // Remove key here in case Project Manager crashed while building because that causes HandleResults to not be called
-        SettingsInterface::Get()->SetProjectBuiltSuccessfully(m_projectInfo, false);
-
         connect(&m_workerThread, &QThread::finished, m_worker, &ProjectExportWorker::deleteLater);
         connect(&m_workerThread, &QThread::started, m_worker, &ProjectExportWorker::ExportProject);
         connect(m_worker, &ProjectExportWorker::Done, this, &ProjectExportController::HandleResults);
@@ -139,7 +136,29 @@ namespace O3DE::ProjectManager
 
             success = false;
         }
+        else
+        {
+            AZ::Outcome<QString> expectedOutputPathQuery = m_worker->GetExpectedOutputPath();
 
+            if (expectedOutputPathQuery.IsSuccess())
+            {
+                //Export was successful, show the expected output path
+                QMessageBox::StandardButton openOutputDir = QMessageBox::information(
+                        m_parent,
+                        tr("Project exported successfully!"),
+                        tr("Would you like to view the exported files?"),
+                        QMessageBox::No | QMessageBox::Yes);
+
+                if (openOutputDir == QMessageBox::Yes)
+                {
+                    QString expectedOutputPath = expectedOutputPathQuery.GetValue();
+                    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(expectedOutputPath)))
+                    {
+                        qDebug() << "QDesktopServices::openUrl failed to open " << expectedOutputPath << "\n";
+                    }
+                }
+            }
+        }
         emit Done(success);
     }
 

@@ -13,6 +13,7 @@
 
 #include <QDir>
 #include <QFile>
+#include <QRegExp>
 #include <QProcess>
 #include <QProcessEnvironment>
 #include <QTextStream>
@@ -65,6 +66,15 @@ namespace O3DE::ProjectManager
             logFilePath.cd(ProjectBuildPathCmakeFiles);
         }
         return AZ::Success(logFilePath.filePath(ProjectExportErrorLogName));
+    }
+
+    AZ::Outcome<QString> ProjectExportWorker::GetExpectedOutputPath() const
+    {
+        if (!m_expectedOutputDir.isEmpty())
+        {
+            return AZ::Success(m_expectedOutputDir);
+        }
+        return AZ::Failure();
     }
 
     void ProjectExportWorker::QStringToAZTracePrint([[maybe_unused]] const QString& error)
@@ -134,9 +144,11 @@ namespace O3DE::ProjectManager
             return AZ::Failure(error);
         }
 
+        QString exportOutput;
+
         while (m_exportProjectProcess->waitForReadyRead(MaxExportTimeMSecs))
         {
-            QString exportOutput = m_exportProjectProcess->readAllStandardOutput();
+            exportOutput = m_exportProjectProcess->readAllStandardOutput();
 
             logStream << exportOutput;
             logStream.flush();
@@ -213,7 +225,31 @@ namespace O3DE::ProjectManager
             return AZ::Failure(error);
         }
 
-        return AZ::Success();
+        // Fetch the output directory if the process was successful
+        // All standardized O3DE scripts end with a log line stating the output directory in quotes as the last word
+        // Use regex to collect that directory, and collect the slice of the word surrounded in quotes
+        QString exportOutputLastLine = exportOutput.split('\n', Qt::SkipEmptyParts).takeLast();
+
+        QRegExp quotedDirRegex("'.*'");
+        int pos = quotedDirRegex.indexIn(exportOutputLastLine);
+        if (pos > -1)
+        {
+            QStringList entries = quotedDirRegex.capturedTexts();
+            QString outputDirQuoted = entries.takeLast();
+            QString outputDir = outputDirQuoted.mid(1, outputDirQuoted.size()-2);
+            if (QDir(outputDir).isAbsolute())
+            {
+                m_expectedOutputDir = outputDir;
+                return AZ::Success();
+            }
+            else
+            {
+                m_expectedOutputDir = "";
+            }
+        }
+        
+        QString error = tr("Failed to find output path from latest export task!");
+        return AZ::Failure(error);
     }
 
 } // namespace O3DE::ProjectManager

@@ -124,7 +124,7 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
         except FileNotFoundError:
             logger.error("Unable to open build.gradle file. Aborting deployment...")
     
-    logger.info(f"Exporting finished. Output Android Project generated at {target_android_project_path}")
+    logger.info(f"Exporting finished. Output Android Project generated at '{target_android_project_path}'")
         
 
 def export_source_android_parse_args(o3de_context: exp.O3DEScriptExportContext,
@@ -252,5 +252,5 @@ if "o3de_context" in globals():
     args = export_source_android_parse_args(o3de_context, export_config)
 
     export_source_android_run_command(o3de_context, args, export_config, o3de_logger)
-    o3de_logger.info(f"Finished exporting android project to {args.android_build_path}")
+    o3de_logger.info(f"Finished exporting android project to '{args.android_build_path}'")
     sys.exit(0)
