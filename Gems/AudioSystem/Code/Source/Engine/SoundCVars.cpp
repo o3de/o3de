@@ -132,7 +132,7 @@ namespace Audio::CVars
         "Usage: s_AudioObjectPoolSize=" AZ_TRAIT_AUDIOSYSTEM_AUDIO_OBJECT_POOL_SIZE_DEFAULT_TEXT "\n");
 
 #if defined (CARBONATED)
-    AZ_CVAR(float, s_PositionUpdateThreshold, 1.0f,
+    AZ_CVAR(float, s_PositionUpdateThreshold, 0.6f,
         nullptr, AZ::ConsoleFunctorFlags::Null,
         "An audio object needs to move by this distance in order to issue a position update to the audio system.\n"
         "Usage: s_PositionUpdateThreshold=5.0\n");
