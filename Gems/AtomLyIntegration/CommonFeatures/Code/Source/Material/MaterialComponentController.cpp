@@ -19,6 +19,47 @@ namespace AZ
 {
     namespace Render
     {
+        class MaterialComponentNotificationBusHandler
+            : public MaterialComponentNotificationBus::Handler
+            , public AZ::BehaviorEBusHandler
+        {
+        public:
+            AZ_EBUS_BEHAVIOR_BINDER(
+                MaterialComponentNotificationBusHandler,
+                "{1214402D-D4E7-4592-8D21-9FB92405E8B0}",
+                AZ::SystemAllocator,
+                OnMaterialsEdited,
+                OnMaterialSlotLayoutChanged,
+                OnMaterialsCreated,
+                OnMaterialsUpdated,
+                OnMaterialPropertiesUpdated);
+
+            void OnMaterialsEdited() override
+            {
+                Call(FN_OnMaterialsEdited);
+            }
+
+            void OnMaterialSlotLayoutChanged() override
+            {
+                Call(FN_OnMaterialSlotLayoutChanged);
+            }
+
+            void OnMaterialsCreated(const MaterialAssignmentMap& materials) override
+            {
+                Call(FN_OnMaterialsCreated, materials);
+            }
+
+            void OnMaterialsUpdated(const MaterialAssignmentMap& materials) override
+            {
+                Call(FN_OnMaterialsUpdated, materials);
+            }
+
+            void OnMaterialPropertiesUpdated(const MaterialAssignmentMap& materials) override
+            {
+                Call(FN_OnMaterialPropertiesUpdated, materials);
+            }
+        };
+
         void MaterialComponentController::Reflect(ReflectContext* context)
         {
             MaterialComponentConfig::Reflect(context);
@@ -91,6 +132,9 @@ namespace AZ
                     ->Event("SetPropertyValues", &MaterialComponentRequestBus::Events::SetPropertyValues, "SetPropertyOverrides")
                     ->Event("GetPropertyValues", &MaterialComponentRequestBus::Events::GetPropertyValues, "GetPropertyOverrides")
                     ;
+
+                  behaviorContext->EBus<MaterialComponentNotificationBus>("MaterialComponentNotificationBus")
+                    ->Handler<MaterialComponentNotificationBusHandler>();
             }
         }
 
