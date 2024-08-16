@@ -935,6 +935,8 @@ function(ly_setup_assets)
                     # it is not already in the list, so it is unique to this gem folder.
                     list(APPEND external_subdir_files ${check_file})
                 endif()
+            else()
+                list(APPEND external_subdir_files ${check_file})                
             endif()
         endforeach()
 
