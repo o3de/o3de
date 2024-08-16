@@ -66,7 +66,7 @@ namespace AZ
             //! This is the Id used to bind the attachment with the RHI
             RHI::AttachmentId m_path;
 
-            //! A descriptor of the attachment image
+            //! A descriptor of the attachment buffer or image
             RHI::UnifiedAttachmentDescriptor m_descriptor;
 
             //! Whether the attachment is transient or not

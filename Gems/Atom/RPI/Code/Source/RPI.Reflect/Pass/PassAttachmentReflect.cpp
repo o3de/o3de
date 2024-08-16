@@ -180,6 +180,7 @@ namespace AZ
                 serializeContext->Class<PassImageAttachmentDesc, PassAttachmentDesc>()
                     ->Version(0)
                     ->Field("ImageDescriptor", &PassImageAttachmentDesc::m_imageDescriptor)
+                    ->Field("ImageViewDescriptor", &PassImageAttachmentDesc::m_imageViewDescriptor)
                     ->Field("GenerateFullMipChain", &PassImageAttachmentDesc::m_generateFullMipChain)
                     ->Field("FormatFallbacks", &PassImageAttachmentDesc::m_formatFallbacks)
                     ;
@@ -195,6 +196,7 @@ namespace AZ
                 serializeContext->Class<PassBufferAttachmentDesc, PassAttachmentDesc>()
                     ->Version(0)
                     ->Field("BufferDescriptor", &PassBufferAttachmentDesc::m_bufferDescriptor)
+                    ->Field("BufferViewDescriptor", &PassBufferAttachmentDesc::m_bufferViewDescriptor)
                     ;
             }
         }
