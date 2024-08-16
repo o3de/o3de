@@ -131,10 +131,17 @@ namespace Audio::CVars
         "The number of audio objects to preallocate in a pool.\n"
         "Usage: s_AudioObjectPoolSize=" AZ_TRAIT_AUDIOSYSTEM_AUDIO_OBJECT_POOL_SIZE_DEFAULT_TEXT "\n");
 
+#if defined (CARBONATED)
+    AZ_CVAR(float, s_PositionUpdateThreshold, 0.6f,
+        nullptr, AZ::ConsoleFunctorFlags::Null,
+        "An audio object needs to move by this distance in order to issue a position update to the audio system.\n"
+        "Usage: s_PositionUpdateThreshold=5.0\n");
+#else
     AZ_CVAR(float, s_PositionUpdateThreshold, 0.1f,
         nullptr, AZ::ConsoleFunctorFlags::Null,
         "An audio object needs to move by this distance in order to issue a position update to the audio system.\n"
         "Usage: s_PositionUpdateThreshold=5.0\n");
+#endif
 
     AZ_CVAR(float, s_VelocityTrackingThreshold, 0.1f,
         nullptr, AZ::ConsoleFunctorFlags::Null,
