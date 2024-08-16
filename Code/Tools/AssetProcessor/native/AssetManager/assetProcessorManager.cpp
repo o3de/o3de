@@ -1866,18 +1866,30 @@ namespace AssetProcessor
                 // or if its in the "currently being examined" list.  The latter is likely to be the smaller list,
                 // so we check it first.  Both of those are absolute paths, so we convert to absolute path before
                 // searching those lists:
+
                 if (m_filesToExamine.find(absolutePath) != m_filesToExamine.end())
                 {
                     // its already in the file to examine queue.
                     continue;
                 }
+
                 if (m_alreadyActiveFiles.find(absolutePath) != m_alreadyActiveFiles.end())
                 {
                     // its already been picked up by a file monitoring / scanning step.
                     continue;
                 }
 
+#if defined(CARBONATED)
+                if (source.m_fromDependencyChain.contains(absolutePath))
+                {
+                    AZ_Trace(AssetProcessor::DebugChannel, "Ignoring dependant file: " AZ_STRING_FORMAT " - cyclic dependency detected\n", AZ_STRING_ARG(absolutePath));
+                    continue;
+                }
+
+                AssessFileInternal(absolutePath, false, false, normalizedFilePath + QString(";") + source.m_fromDependencyChain);
+#else
                 AssessFileInternal(absolutePath, false);
+#endif
             }
         }
 
@@ -3235,7 +3247,11 @@ namespace AssetProcessor
     // during startup, and should avoid logging, sleeping, or doing
     // any more work than is necessary (Log only in error or uncommon
     // circumstances).
+#if defined(CARBONATED)
+    void AssetProcessorManager::AssessFileInternal(QString fullFile, bool isDelete, bool fromScanner, QString fromDependencyChain)
+#else
     void AssetProcessorManager::AssessFileInternal(QString fullFile, bool isDelete, bool fromScanner)
+#endif
     {
         if (m_quitRequested)
         {
@@ -3336,6 +3352,9 @@ namespace AssetProcessor
         }
 
         FileEntry newEntry(normalizedFullFile, isDelete, fromScanner);
+#if defined(CARBONATED)
+        newEntry.m_fromDependencyChain = fromDependencyChain;
+#endif
 
         if (m_alreadyActiveFiles.find(normalizedFullFile) != m_alreadyActiveFiles.end())
         {
@@ -3674,10 +3693,43 @@ namespace AssetProcessor
         {
             // File is a source file that has been processed before
             AZStd::string fingerprintFromDatabase = sourceFileItr->m_analysisFingerprint.toUtf8().data();
+
+#if defined(CARBONATED)
+            if (fingerprintFromDatabase.empty())
+            {
+                // No recorded fingerprint
+                return false;
+            }
+#endif
+
             AZStd::string_view builderEntries(fingerprintFromDatabase.begin() + s_lengthOfUuid + 1, fingerprintFromDatabase.end());
             AZStd::string_view dependencyFingerprint(fingerprintFromDatabase.begin(), fingerprintFromDatabase.begin() + s_lengthOfUuid);
             int numBuildersEmittingSourceDependencies = 0;
 
+#if defined(CARBONATED)
+            // Check for updated builders
+            if (!AreBuildersUnchanged(builderEntries, numBuildersEmittingSourceDependencies))
+            {
+                ++m_assetsNeedingProcessing_BuildersChanged;
+                return false;
+            }
+
+            // Check for updated fingerprint
+            AZStd::string currentFingerprint = ComputeRecursiveDependenciesFingerprint(sourceFileItr->m_sourceAssetReference);
+            if (dependencyFingerprint != currentFingerprint)
+            {
+                // Dependencies have changed
+                ++m_assetsNeedingProcessing_DependenciesChanged;
+                return false;
+            }
+
+            // Success - we can skip this file, nothing has changed!
+
+            // Remove it from the list of to-be-processed files, otherwise the AP will assume the file was deleted
+            // Note that this means any files that *were* deleted are already handled by CheckMissingFiles
+            m_sourceFilesInDatabase.erase(sourceFileItr);
+            return true;
+#else
             if (!fingerprintFromDatabase.empty() && AreBuildersUnchanged(builderEntries, numBuildersEmittingSourceDependencies))
             {
                 // Builder(s) have not changed since last time
@@ -3696,7 +3748,14 @@ namespace AssetProcessor
                 m_sourceFilesInDatabase.erase(sourceFileItr);
                 return true;
             }
+#endif
         }
+#if defined(CARBONATED)
+        // File is a non-tracked file, aka a file that no builder cares about.
+        // The fact that it has a matching modtime means we've already seen this file and attempted to process it
+        // If it were a new, unprocessed source file, there would be no modtime stored
+        return true;
+#else
         else
         {
             // File is a non-tracked file, aka a file that no builder cares about.
@@ -3706,6 +3765,7 @@ namespace AssetProcessor
         }
 
         return false;
+#endif
     }
 
     void AssetProcessorManager::AssessDeletedFile(QString filePath)
