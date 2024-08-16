@@ -21,6 +21,7 @@ namespace AZ::RHI
     //! Describes the use of an Aliased Resource.
     struct AliasedResource
     {
+        AttachmentId m_attachmentId;    //< Id of the attachment being aliased.
         Scope* m_beginScope = nullptr;  ///< Scope when the resource begins being used.
         Scope* m_endScope = nullptr;    ///< Scope when the resource ends being used.
         DeviceResource* m_resource = nullptr; ///< DeviceResource being aliased.
@@ -54,6 +55,8 @@ namespace AZ::RHI
         //////////////////////////////////////////////////////////////////////////
         // Functions that must be implemented by each RHI.
 
+        //! Implementation specific AddResource. Optional.
+        virtual void AddResourceInternal(const AliasedResource& resourceNew);
         //! Implementation specific reset logic. Optional.
         virtual void ResetInternal();
         //! Implementation specific end logic. Optional.

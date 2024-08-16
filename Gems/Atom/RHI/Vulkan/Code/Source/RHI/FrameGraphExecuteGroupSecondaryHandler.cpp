@@ -90,7 +90,6 @@ namespace AZ::Vulkan
         commandList->BeginDebugLabel(scope->GetMarkerLabel().data());
 
         // First emit all scope barriers outside of the renderpass.
-        EmitScopeBarriers(*commandList, Scope::BarrierSlot::Aliasing);
         ProcessClearRequests(*commandList);
         EmitScopeBarriers(*commandList, Scope::BarrierSlot::Prologue);
         // Reset the RHI QueryPools.

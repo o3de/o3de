@@ -105,6 +105,7 @@ namespace AZ::RHI
         {
             m_resources.push_back(resourceNew);
         }
+        AddResourceInternal(resourceNew);
     }
 
     void AliasingBarrierTracker::End()
@@ -112,6 +113,7 @@ namespace AZ::RHI
         EndInternal();
     }
 
+    void AliasingBarrierTracker::AddResourceInternal([[maybe_unused]] const AliasedResource& resourceNew) {}
     void AliasingBarrierTracker::ResetInternal() {}
     void AliasingBarrierTracker::EndInternal() {}
 

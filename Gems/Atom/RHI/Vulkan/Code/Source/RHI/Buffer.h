@@ -59,7 +59,7 @@ namespace AZ
             void SetOwnerQueue(const QueueId& queueId, const RHI::BufferSubresourceRange* range = nullptr);
             void SetOwnerQueue(const QueueId& queueId, const RHI::DeviceBufferView& bufferView);
 
-            using ImagePipelineAccessProperty = RHI::BufferProperty<PipelineAccessFlags>;
+            using BufferPipelineAccessProperty = RHI::BufferProperty<PipelineAccessFlags>;
 
             PipelineAccessFlags GetPipelineAccess(const RHI::BufferSubresourceRange* range = nullptr) const;
             void SetPipelineAccess(const PipelineAccessFlags& pipelineAccess, const RHI::BufferSubresourceRange* range = nullptr);
@@ -98,7 +98,7 @@ namespace AZ
             mutable AZStd::mutex m_ownerQueueMutex;
 
             // Last pipeline access to the image subresources
-            ImagePipelineAccessProperty m_pipelineAccess;
+            BufferPipelineAccessProperty m_pipelineAccess;
             mutable AZStd::mutex m_pipelineAccessMutex;
 
             RHI::AsyncWorkHandle m_uploadHandle;
