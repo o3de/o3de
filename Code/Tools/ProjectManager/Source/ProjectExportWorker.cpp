@@ -13,6 +13,7 @@
 
 #include <QDir>
 #include <QFile>
+#include <QRegExp>
 #include <QProcess>
 #include <QProcessEnvironment>
 #include <QTextStream>
@@ -65,6 +66,21 @@ namespace O3DE::ProjectManager
             logFilePath.cd(ProjectBuildPathCmakeFiles);
         }
         return AZ::Success(logFilePath.filePath(ProjectExportErrorLogName));
+    }
+
+    AZ::Outcome<QString, QString> ProjectExportWorker::GetExpectedOutputPath() const
+    {
+        if (m_expectedOutputDir.isEmpty())
+        {
+            return AZ::Failure(tr("Project Export output folder not detected in the output logs."));
+        }
+
+        if (!QDir(m_expectedOutputDir).isAbsolute())
+        {
+            return AZ::Failure(tr("Project Export output folder %s is invalid.").arg(m_expectedOutputDir));
+        }
+
+        return AZ::Success(m_expectedOutputDir);
     }
 
     void ProjectExportWorker::QStringToAZTracePrint([[maybe_unused]] const QString& error)
@@ -134,9 +150,11 @@ namespace O3DE::ProjectManager
             return AZ::Failure(error);
         }
 
+        QString exportOutput;
+
         while (m_exportProjectProcess->waitForReadyRead(MaxExportTimeMSecs))
         {
-            QString exportOutput = m_exportProjectProcess->readAllStandardOutput();
+            exportOutput = m_exportProjectProcess->readAllStandardOutput();
 
             logStream << exportOutput;
             logStream.flush();
@@ -213,6 +231,16 @@ namespace O3DE::ProjectManager
             return AZ::Failure(error);
         }
 
+        // Fetch the output directory from the logs if the process was successful
+        // Use regex to collect that directory, and collect the slice of the word surrounded in quotes
+        
+        QRegExp quotedDirRegex("Project exported to '([^']*)'\\.");
+        int pos = quotedDirRegex.indexIn(exportOutput);
+        if (pos > -1)
+        {
+            m_expectedOutputDir = quotedDirRegex.cap(1);
+        }
+        
         return AZ::Success();
     }
 
