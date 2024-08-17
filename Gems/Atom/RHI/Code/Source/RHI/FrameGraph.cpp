@@ -667,6 +667,9 @@ namespace AZ::RHI
             }
         }
 
+        AZStd::vector<AZStd::pair<Scope*, uint16_t>> preSortScopes;
+        preSortScopes.reserve(m_graphNodes.size());
+
         // Process nodes that don't have any producers left (they have already been processed).
         // They get added to the unblockedNodes vector in a topological manner.
         while (!unblockedNodes.empty())
@@ -676,15 +679,8 @@ namespace AZ::RHI
             const uint16_t producerGroupId = producerNodeId.m_groupId;
             unblockedNodes.pop_back();
 
-            const uint32_t scopeIndexNext = aznumeric_caster(m_scopes.size());
-
             Scope* scope = m_graphNodes[producerIndex].m_scope;
-            // Activate the scope in topological order.
-            Scope::ActivationFlags activationFlags = m_graphNodes[producerIndex].m_scopeGroupId.IsEmpty()
-                ? Scope::ActivationFlags::None
-                : Scope::ActivationFlags::Subpass;
-            scope->Activate(this, scopeIndexNext, GraphGroupId(producerGroupId), activationFlags);
-            m_scopes.push_back(scope);
+            preSortScopes.push_back(AZStd::make_pair(scope, producerGroupId));
 
             // Go through all the edges of this node, find the consumer nodes that are fully sorted and add them to the unblockedNodes.
             for (const uint32_t edgeIndex : graphEdges[producerIndex])
@@ -721,17 +717,24 @@ namespace AZ::RHI
         //     [3] "XRRightPipeline_-10.MultiViewForwardPass"
         //     [4] "XRRightPipeline_-10.MultiViewSkyBoxPass"
         AZStd::stable_sort(
-            m_scopes.begin(),
-            m_scopes.end(),
-            [](const AZ::RHI::Scope* a, const AZ::RHI::Scope* b)
+            preSortScopes.begin(),
+            preSortScopes.end(),
+            [](const auto& lhs, const auto& rhs)
             {
-                return (a->GetFrameGraphGroupId() < b->GetFrameGraphGroupId());
+                // Sort by group id
+                return (lhs.second < rhs.second);
             });
 
-        // Need to update the scope index since we ordered the scopes.
-        for (uint32_t i = 0; i < m_scopes.size(); ++i)
+        // Activate the scope in topological order.
+        m_scopes.resize(preSortScopes.size());
+        for (uint32_t scopeIndex = 0; scopeIndex < preSortScopes.size(); ++scopeIndex)
         {
-            m_scopes[i]->SetIndex(i);
+            Scope* scope = preSortScopes[scopeIndex].first;
+            m_scopes[scopeIndex] = scope;
+            Scope::ActivationFlags activationFlags = m_graphNodes[scope->m_graphNodeIndex.GetIndex()].m_scopeGroupId.IsEmpty()
+                ? Scope::ActivationFlags::None
+                : Scope::ActivationFlags::Subpass;
+            scope->Activate(this, scopeIndex, GraphGroupId(preSortScopes[scopeIndex].second), activationFlags);
         }
         ////////////////////////////////////////////////////////////////
 

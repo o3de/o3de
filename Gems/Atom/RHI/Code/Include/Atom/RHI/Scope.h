@@ -198,9 +198,6 @@ namespace AZ::RHI
 
         //////////////////////////////////////////////////////////////////////////
 
-        /// Set the scope index
-        void SetIndex(uint32_t index);
-
         /// Scope name
         ScopeId m_id;
 

@@ -73,7 +73,7 @@ namespace AZ::RHI
     void Scope::Activate(const FrameGraph* frameGraph, uint32_t index, const GraphGroupId& groupId, ActivationFlags activationFlags)
     {
         AZ_Assert(m_isActive == false, "Scope was previously active.");
-        SetIndex(index);
+        m_index = decltype(m_index)(index);
         m_frameGraph = frameGraph;
         m_graphGroupId = groupId;
         m_activationFlags = activationFlags;
@@ -147,11 +147,6 @@ namespace AZ::RHI
     void Scope::DeactivateInternal() {}
     void Scope::ShutdownInternal()
     {
-    }
-
-    void Scope::SetIndex(uint32_t index)
-    {
-        m_index = decltype(m_index)(index);
     }
 
     const ScopeId& Scope::GetId() const
