@@ -147,7 +147,6 @@ public:
     MOCK_METHOD0(ReloadTemplates, void());
     MOCK_METHOD1(ShowStatusText, void(bool ));
     MOCK_METHOD0(GetEnv, SSystemGlobalEnvironment* ());
-    MOCK_METHOD0(GetImageUtil, IImageUtil* ());
     MOCK_METHOD0(GetEditorSettings, SEditorSettings* ());
     MOCK_METHOD0(GetLogFile, ILogFile* ());
     MOCK_METHOD0(UnloadPlugins, void());
