@@ -467,6 +467,35 @@ namespace AZStd
         return AZStd::move(this->m_storage.m_value);
     }
 
+#if defined(CARBONATED)
+    template<class T, class E>
+    template<bool Enable, enable_if_t<Enable>*>
+    constexpr void expected<T, E>::operator*() const & noexcept
+    {
+        AZ_Assert(has_value(), "expected doesn't have a value, void will be returned");
+    }
+
+    template<class T, class E>
+    template<bool Enable, enable_if_t<Enable>*>
+    constexpr void expected<T, E>::operator*() const && noexcept
+    {
+        AZ_Assert(has_value(), "expected doesn't have a value, void will be returned");
+    }
+
+    template<class T, class E>
+    template<bool Enable, enable_if_t<Enable>*>
+    constexpr void expected<T, E>::operator*() & noexcept
+    {
+        AZ_Assert(has_value(), "expected doesn't have a value, void will be returned");
+    }
+
+    template<class T, class E>
+    template<bool Enable, enable_if_t<Enable>*>
+    constexpr void expected<T, E>::operator*() && noexcept
+    {
+        AZ_Assert(has_value(), "expected doesn't have a value, void will be returned");
+    }
+#else
     //! expected<void, E> specialization value observers
     template<class T, class E>
     template<bool Enable, enable_if_t<Enable>*>
@@ -474,6 +503,7 @@ namespace AZStd
     {
         AZ_Assert(has_value(), "expected doesn't have a value, void will be returned");
     }
+#endif
 
     template<class T, class E>
     template<bool Enable, enable_if_t<Enable>*>

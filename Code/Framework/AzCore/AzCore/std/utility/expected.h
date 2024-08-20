@@ -237,9 +237,24 @@ namespace AZStd
         template<bool Enable = !is_void_v<T>>
         constexpr auto value() && -> enable_if_t<Enable, add_rvalue_reference_t<T>>;
 
+#if defined(CARBONATED)
         // Overloads when T is a void type
         template<bool Enable = is_void_v<T>, enable_if_t<Enable>* = nullptr>
-        constexpr void operator*() const noexcept;
+        constexpr void operator*() const& noexcept;
+
+        template<bool Enable = is_void_v<T>, enable_if_t<Enable>* = nullptr>
+        constexpr void operator*() const&& noexcept;
+
+        template<bool Enable = is_void_v<T>, enable_if_t<Enable>* = nullptr>
+        constexpr void operator*() & noexcept;
+
+        template<bool Enable = is_void_v<T>, enable_if_t<Enable>* = nullptr>
+        constexpr void operator*() && noexcept;
+#else
+        // Overloads when T is a void type
+       template<bool Enable = is_void_v<T>, enable_if_t<Enable>* = nullptr>
+       constexpr void operator*() const noexcept;
+#endif
 
         template<bool Enable = is_void_v<T>, enable_if_t<Enable>* = nullptr>
         constexpr void value() const&;
