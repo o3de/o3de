@@ -150,9 +150,6 @@ void HierarchyClipboard::CopySelectedItemsToClipboard(HierarchyWidget* widget,
     // XML -> Clipboard.
     if (!xml.empty())
     {
-        IEditor* pEditor = GetIEditor();
-        AZ_Assert(pEditor, "Failed to get IEditor");
-
         QMimeData* mimeData = new QMimeData();
         {
             // Concatenate all the data we need into a single QByteArray.
