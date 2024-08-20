@@ -137,7 +137,7 @@ namespace AZ
                 {
                     fence = new RHI::Fence();
                     AZ_Assert(fence != nullptr, "CopyPass failed to create a fence");
-                    [[maybe_unused]] auto result = fence->Init(RHI::MultiDevice::AllDevices, RHI::FenceState::Signaled);
+                    [[maybe_unused]] auto result = fence->Init(RHI::MultiDevice::AllDevices, RHI::FenceState::Signaled, true);
                     AZ_Assert(result == RHI::ResultCode::Success, "CopyPass failed to init fence");
                 }
 

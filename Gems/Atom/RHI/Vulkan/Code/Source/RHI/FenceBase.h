@@ -27,8 +27,6 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(FenceBase, AZ::ThreadPoolAllocator);
             AZ_RTTI(FenceBase, "{AAAD0A37-5F85-4A68-9464-06EDAC6D62B0}", RHI::DeviceObject);
 
-            ~FenceBase() = default;
-
             void SetSignalEvent(const AZStd::shared_ptr<AZ::Vulkan::SignalEvent>& signalEvent);
             void SetSignalEventBitToSignal(int bitToSignal);
             void SetSignalEventDependencies(AZ::Vulkan::SignalEvent::BitSet dependencies);
@@ -46,7 +44,8 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////
             // Interface
             virtual RHI::ResultCode InitInternal(RHI::Device& device, RHI::FenceState initialState);
-            virtual void ShutdownInternal();
+            virtual void ShutdownInternal() = 0;
+            virtual void Shutdown();
             virtual void SignalOnCpuInternal() = 0;
             virtual void WaitOnCpuInternal() const = 0;
             virtual void ResetInternal() = 0;

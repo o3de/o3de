@@ -247,6 +247,9 @@ namespace AZ
         void RayTracingPipelineState::ShutdownInternal()
         {
             Device& device = static_cast<Device&>(GetDevice());
+
+            device.GetContext().DestroyPipeline(device.GetNativeDevice(), m_pipeline, VkSystemAllocator::Get());
+
             for (auto& shaderModule : m_shaderModules)
             {
                 device.GetContext().DestroyShaderModule(device.GetNativeDevice(), shaderModule, VkSystemAllocator::Get());

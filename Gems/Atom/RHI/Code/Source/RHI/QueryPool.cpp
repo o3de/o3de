@@ -258,11 +258,6 @@ namespace AZ::RHI
 
     void QueryPool::Shutdown()
     {
-        IterateObjects<DeviceQueryPool>([]([[maybe_unused]] auto deviceIndex, auto deviceQueryPool)
-        {
-            deviceQueryPool->Shutdown();
-        });
-
         ResourcePool::Shutdown();
     }
 

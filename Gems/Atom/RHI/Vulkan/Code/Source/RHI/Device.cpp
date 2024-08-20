@@ -419,7 +419,7 @@ namespace AZ
             SwapChainSemaphoreAllocator::Descriptor swapChainSemaphoreAllocDescriptor;
             swapChainSemaphoreAllocDescriptor.m_device = this;
             swapChainSemaphoreAllocDescriptor.m_collectLatency = RHI::Limits::Device::FrameCountMax;
-            m_swapChaiSemaphoreAllocator.Init(swapChainSemaphoreAllocDescriptor);
+            m_swapChainSemaphoreAllocator.Init(swapChainSemaphoreAllocDescriptor);
 
             m_imageMemoryRequirementsCache.SetInitFunction([](auto& cache) { cache.set_capacity(MemoryRequirementsCacheSize); });
             m_bufferMemoryRequirementsCache.SetInitFunction([](auto& cache) { cache.set_capacity(MemoryRequirementsCacheSize); });
@@ -573,7 +573,7 @@ namespace AZ
 
         SwapChainSemaphoreAllocator& Device::GetSwapChainSemaphoreAllocator()
         {
-            return m_swapChaiSemaphoreAllocator;
+            return m_swapChainSemaphoreAllocator;
         }
 
         const AZStd::vector<VkQueueFamilyProperties>& Device::GetQueueFamilyProperties() const
@@ -680,15 +680,16 @@ namespace AZ
             m_descriptorSetLayoutCache.first.Clear();
             m_samplerCache.first.Clear();
             m_pipelineLayoutCache.first.Clear();
-            m_semaphoreAllocator.Shutdown();
 
-            // Make sure this is last to flush any objects released in the above calls.
-            m_releaseQueue.Shutdown();
-
-            // The Objects in the release-queue need the command / upload queues for shutting down
             m_asyncUploadQueue.reset();
-            m_commandListAllocator.Shutdown();
             m_commandQueueContext.Shutdown();
+            m_commandListAllocator.Shutdown();
+
+            m_semaphoreAllocator.Shutdown();
+            m_swapChainSemaphoreAllocator.Shutdown();
+
+            // Flush any objects released in the above calls.
+            m_releaseQueue.Shutdown();
         }
 
         void Device::ShutdownInternal()
@@ -759,6 +760,7 @@ namespace AZ
             m_commandQueueContext.End();
             m_commandListAllocator.Collect();
             m_semaphoreAllocator.Collect();
+            m_swapChainSemaphoreAllocator.Collect();
             m_bindlessDescriptorPool.GarbageCollect();
         }
 

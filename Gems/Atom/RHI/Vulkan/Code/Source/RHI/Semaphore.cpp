@@ -89,8 +89,6 @@ namespace AZ
                 device.GetContext().DestroySemaphore(device.GetNativeDevice(), m_nativeSemaphore, VkSystemAllocator::Get());
                 m_nativeSemaphore = VK_NULL_HANDLE;
             }
-            // Signal any pending threads.
-            SignalEvent();
             Base::Shutdown();
         }
     }

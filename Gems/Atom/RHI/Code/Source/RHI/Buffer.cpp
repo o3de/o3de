@@ -45,11 +45,6 @@ namespace AZ::RHI
 
     void Buffer::Shutdown()
     {
-        IterateObjects<DeviceBuffer>([]([[maybe_unused]] auto deviceIndex, auto deviceBuffer)
-        {
-            deviceBuffer->Shutdown();
-        });
-
         Resource::Shutdown();
     }
 
