@@ -248,9 +248,6 @@ public:
     void UnloadPlugins() override;
     void LoadPlugins() override;
 
-    QMimeData* CreateQMimeData() const override;
-    void DestroyQMimeData(QMimeData* data) const override;
-
 protected:
 
     AZStd::string LoadProjectIdFromProjectData();

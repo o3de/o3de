@@ -81,8 +81,6 @@ public:
     MOCK_METHOD0(GetActiveView, class CViewport* ());
     MOCK_METHOD1(SetActiveView, void(CViewport*));
     MOCK_METHOD0(GetFileMonitor, struct IEditorFileMonitor* ());
-    MOCK_CONST_METHOD0(CreateQMimeData, QMimeData* ());
-    MOCK_CONST_METHOD1(DestroyQMimeData, void(QMimeData*));
     MOCK_METHOD0(GetLevelIndependentFileMan, class CLevelIndependentFileMan* ());
     MOCK_METHOD2(UpdateViews, void(int , const AABB* ));
     MOCK_METHOD0(ResetViews, void());
