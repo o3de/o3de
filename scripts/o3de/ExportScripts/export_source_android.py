@@ -46,6 +46,8 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
         logger.setLevel(logging.ERROR)
 
     is_installer_sdk = manifest.is_sdk_engine(engine_path=ctx.engine_path)
+    if is_installer_sdk:
+        raise exp.ExportProjectError("Exporting Android projects is not supported in from the SDK version of O3DE")
 
     android_arg_parser = argparse.ArgumentParser()
     android_subparser = android_arg_parser.add_subparsers(title="Android sub-commands")

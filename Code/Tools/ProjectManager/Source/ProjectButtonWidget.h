@@ -186,6 +186,7 @@ namespace O3DE::ProjectManager
         bool m_isProjectBuilding = false;
         bool m_isProjectExporting = false;
         bool m_canLaunch = true;
+        bool m_isEngineSDK = false;
 
         ProjectButtonState m_currentState = ProjectButtonState::ReadyToLaunch;
     };

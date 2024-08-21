@@ -298,6 +298,10 @@ namespace O3DE::ProjectManager
         m_projectImageLabel->setAlignment(Qt::AlignCenter);
         vLayout->addWidget(m_projectImageLabel);
 
+        // Determine if the project's engine is the installed SDK or a source engine.
+        // Certain features may be only supported in the source engine.
+        m_isEngineSDK = projectInfo.m_engineName.compare("o3de-sdk") == 0;
+
         QString projectPreviewPath = QDir(m_projectInfo.m_path).filePath(m_projectInfo.m_iconPath);
         QFileInfo doesPreviewExist(projectPreviewPath);
         if (!doesPreviewExist.exists() || !doesPreviewExist.isFile())
@@ -366,11 +370,19 @@ namespace O3DE::ProjectManager
         menu->addSeparator();
         QMenu* exportMenu = menu->addMenu(tr("Export Launcher"));
         exportMenu->addAction(AZ_TRAIT_PROJECT_MANAGER_HOST_PLATFORM_NAME , this, [this](){ emit ExportProject(m_projectInfo, "export_source_built_project.py");});
-        exportMenu->addAction(tr("Android"), this, [this](){ emit ExportProject(m_projectInfo, "export_source_android.py"); });
+        if (!m_isEngineSDK)
+        {
+            exportMenu->addAction(tr("Android"), this, [this](){ emit ExportProject(m_projectInfo, "export_source_android.py"); });
+        }
+
         menu->addAction(tr("Open Export Settings..."), this, [this]() { emit OpenProjectExportSettings(m_projectInfo.m_path); });
         menu->addSeparator();
         menu->addAction(tr("Open CMake GUI..."), this, [this]() { emit OpenCMakeGUI(m_projectInfo); });
-        menu->addAction(tr("Open Android Project Generator..."), this, [this]() { emit OpenAndroidProjectGenerator(m_projectInfo.m_path); });
+        if (!m_isEngineSDK)
+        {
+            menu->addAction(tr("Open Android Project Generator..."), this, [this]() { emit OpenAndroidProjectGenerator(m_projectInfo.m_path); });
+        }
+
         menu->addSeparator();
         menu->addAction(tr("Open Project folder..."), this, [this]()
         { 
