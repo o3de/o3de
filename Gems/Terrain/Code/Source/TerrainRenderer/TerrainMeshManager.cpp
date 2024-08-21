@@ -303,11 +303,13 @@ namespace Terrain
 
     void TerrainMeshManager::BuildDrawPacket(Sector& sector)
     {
-        AZ::RHI::DrawPacketBuilder drawPacketBuilder;
         uint32_t indexCount = m_indexBuffer->GetBufferViewDescriptor().m_elementCount;
+        sector.m_meshBuffers.SetDrawArguments(AZ::RHI::DrawIndexed(1, 0, 0, indexCount, 0));
+        sector.m_meshBuffers.SetIndexBufferView(m_indexBufferView);
+
+        AZ::RHI::DrawPacketBuilder drawPacketBuilder;
         drawPacketBuilder.Begin(nullptr);
-        drawPacketBuilder.SetDrawArguments(AZ::RHI::DrawIndexed(1, 0, 0, indexCount, 0));
-        drawPacketBuilder.SetIndexBufferView(m_indexBufferView);
+        drawPacketBuilder.SetMeshBuffers(&sector.m_meshBuffers);
         drawPacketBuilder.AddShaderResourceGroup(sector.m_srg->GetRHIShaderResourceGroup());
         drawPacketBuilder.AddShaderResourceGroup(m_materialInstance->GetRHIShaderResourceGroup());
 
@@ -320,7 +322,6 @@ namespace Terrain
             AZ::RHI::DrawPacketBuilder::DrawRequest drawRequest;
             drawRequest.m_listTag = drawData.m_drawListTag;
             drawRequest.m_pipelineState = drawData.m_pipelineState;
-            drawRequest.m_streamBufferViews = sector.m_streamBufferViews;
             drawRequest.m_stencilRef = AZ::Render::StencilRefs::UseDiffuseGIPass | AZ::Render::StencilRefs::UseIBLSpecularPass;
 
             if (drawData.m_materialPipelineName != AZ::RPI::MaterialPipelineNone)
@@ -359,8 +360,11 @@ namespace Terrain
         uint32_t lowerLodIndexCount = indexCount / 4;
         for (uint32_t i = 0; i < 4; ++i)
         {
+            sector.m_quadrantMeshBuffers[i] = sector.m_meshBuffers;
+            sector.m_quadrantMeshBuffers[i].SetDrawArguments( AZ::RHI::DrawIndexed(1, 0, 0, lowerLodIndexCount, lowerLodIndexCount * i) );
+
             AZ::RHI::DrawPacketBuilder quadrantDrawPacketBuilder = commonQuadrantDrawPacketBuilder;
-            quadrantDrawPacketBuilder.SetDrawArguments(AZ::RHI::DrawIndexed(1, 0, 0, lowerLodIndexCount, lowerLodIndexCount * i));
+            quadrantDrawPacketBuilder.SetMeshBuffers(&sector.m_quadrantMeshBuffers[i]);
             sector.m_rhiDrawPacketQuadrant[i] = quadrantDrawPacketBuilder.End();
         }
     }
@@ -477,20 +481,22 @@ namespace Terrain
                 sector.m_srg = AZ::RPI::ShaderResourceGroup::Create(shaderAsset, materialAsset->GetObjectSrgLayout()->GetName());
 
                 sector.m_heightsNormalsBuffer = CreateMeshBufferInstance(sizeof(HeightNormalVertex), m_gridVerts2D);
-                sector.m_streamBufferViews[StreamIndex::XYPositions] = CreateStreamBufferView(m_xyPositionsBuffer);
-                sector.m_streamBufferViews[StreamIndex::Heights] = CreateStreamBufferView(sector.m_heightsNormalsBuffer);
-                sector.m_streamBufferViews[StreamIndex::Normals] = CreateStreamBufferView(sector.m_heightsNormalsBuffer, AZ::RHI::GetFormatSize(HeightFormat));
+                sector.m_meshBuffers.ClearStreamBufferViews();
+                sector.m_meshBuffers.GetStreamBufferViews().resize(StreamIndex::Count);
+                sector.m_meshBuffers.GetStreamBufferViews()[StreamIndex::XYPositions] = CreateStreamBufferView(m_xyPositionsBuffer);
+                sector.m_meshBuffers.GetStreamBufferViews()[StreamIndex::Heights] = CreateStreamBufferView(sector.m_heightsNormalsBuffer);
+                sector.m_meshBuffers.GetStreamBufferViews()[StreamIndex::Normals] = CreateStreamBufferView(sector.m_heightsNormalsBuffer, AZ::RHI::GetFormatSize(HeightFormat));
 
                 if (m_config.m_clodEnabled)
                 {
                     sector.m_lodHeightsNormalsBuffer = CreateMeshBufferInstance(sizeof(HeightNormalVertex), m_gridVerts2D);
-                    sector.m_streamBufferViews[StreamIndex::LodHeights] = CreateStreamBufferView(sector.m_lodHeightsNormalsBuffer);
-                    sector.m_streamBufferViews[StreamIndex::LodNormals] = CreateStreamBufferView(sector.m_lodHeightsNormalsBuffer, AZ::RHI::GetFormatSize(HeightFormat));
+                    sector.m_meshBuffers.GetStreamBufferViews()[StreamIndex::LodHeights] = CreateStreamBufferView(sector.m_lodHeightsNormalsBuffer);
+                    sector.m_meshBuffers.GetStreamBufferViews()[StreamIndex::LodNormals] = CreateStreamBufferView(sector.m_lodHeightsNormalsBuffer, AZ::RHI::GetFormatSize(HeightFormat));
                 }
                 else
                 {
-                    sector.m_streamBufferViews[StreamIndex::LodHeights] = CreateStreamBufferView(m_dummyLodHeightsNormalsBuffer);
-                    sector.m_streamBufferViews[StreamIndex::LodNormals] = CreateStreamBufferView(m_dummyLodHeightsNormalsBuffer, AZ::RHI::GetFormatSize(HeightFormat));
+                    sector.m_meshBuffers.GetStreamBufferViews()[StreamIndex::LodHeights] = CreateStreamBufferView(m_dummyLodHeightsNormalsBuffer);
+                    sector.m_meshBuffers.GetStreamBufferViews()[StreamIndex::LodNormals] = CreateStreamBufferView(m_dummyLodHeightsNormalsBuffer, AZ::RHI::GetFormatSize(HeightFormat));
                 }
 
                 BuildDrawPacket(sector);

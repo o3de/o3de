@@ -45,7 +45,7 @@ namespace AZ
             }
 
             // We have a single stream (position and color are interleaved in the vertex buffer)
-            m_primitiveBuffers.m_streamBufferViews.resize(1);
+            m_meshBuffers.GetStreamBufferViews().resize(1);
 
             m_scene = scene;
             InitShader();
@@ -100,8 +100,8 @@ namespace AZ
             {
                 // Update the buffers for all dynamic primitives in this frame's data
                 // There is just one index buffer and one vertex buffer for all dynamic primitives
-                if (!UpdateIndexBuffer(srcPrimitives.m_indexBuffer, m_primitiveBuffers)
-                    || !UpdateVertexBuffer(srcPrimitives.m_vertexBuffer, m_primitiveBuffers))
+                if (!UpdateIndexBuffer(srcPrimitives.m_indexBuffer, m_meshBuffers)
+                    || !UpdateVertexBuffer(srcPrimitives.m_vertexBuffer, m_meshBuffers))
                 {
                     // Skip adding render data if failed to update buffers
                     // Note, the error would be already reported inside the Update* functions
@@ -111,7 +111,7 @@ namespace AZ
                 // Validate the stream buffer views for all stream layout's if necessary
                 for (int primitiveType = 0; primitiveType < PrimitiveType_Count; ++primitiveType)
                 {
-                    ValidateStreamBufferViews(m_primitiveBuffers.m_streamBufferViews, m_streamBufferViewsValidatedForLayout, primitiveType);
+                    ValidateStreamBufferViews(m_meshBuffers.GetStreamBufferViews(), m_streamBufferViewsValidatedForLayout, primitiveType);
                 }
 
                 // Loop over all the primitives and use one draw call for each AuxGeom API call
@@ -173,7 +173,7 @@ namespace AZ
 
 
                         const RHI::DrawPacket* drawPacket = BuildDrawPacketForDynamicPrimitive(
-                            m_primitiveBuffers,
+                            m_meshBuffers,
                             pipelineState,
                             srg,
                             primitive.m_indexCount,
@@ -192,7 +192,7 @@ namespace AZ
             }
         }
 
-        bool DynamicPrimitiveProcessor::UpdateIndexBuffer(const IndexBuffer& source, DynamicBufferGroup& group)
+        bool DynamicPrimitiveProcessor::UpdateIndexBuffer(const IndexBuffer& source, RHI::MeshBuffers& meshBuffers)
         {
             const size_t sourceByteSize = source.size() * sizeof(AuxGeomIndex);
             
@@ -203,11 +203,11 @@ namespace AZ
                 return false;
             }
             dynamicBuffer->Write(source.data(), static_cast<uint32_t>(sourceByteSize));
-            group.m_indexBufferView = dynamicBuffer->GetIndexBufferView(RHI::IndexFormat::Uint32);
+            meshBuffers.SetIndexBufferView(dynamicBuffer->GetIndexBufferView(RHI::IndexFormat::Uint32));
             return true;
         }
 
-        bool DynamicPrimitiveProcessor::UpdateVertexBuffer(const VertexBuffer& source, DynamicBufferGroup& group)
+        bool DynamicPrimitiveProcessor::UpdateVertexBuffer(const VertexBuffer& source, RHI::MeshBuffers& meshBuffers)
         {
             const size_t sourceByteSize = source.size() * sizeof(AuxGeomDynamicVertex);
 
@@ -218,11 +218,11 @@ namespace AZ
                 return false;
             }
             dynamicBuffer->Write(source.data(), static_cast<uint32_t>(sourceByteSize));
-            group.m_streamBufferViews[0] = dynamicBuffer->GetStreamBufferView(sizeof(AuxGeomDynamicVertex));
+            meshBuffers.GetStreamBufferViews()[0] = dynamicBuffer->GetStreamBufferView(sizeof(AuxGeomDynamicVertex));
             return true;
         }
 
-        void DynamicPrimitiveProcessor::ValidateStreamBufferViews(StreamBufferViewsForAllStreams& streamBufferViews, bool* isValidated, int primitiveType)
+        void DynamicPrimitiveProcessor::ValidateStreamBufferViews(AZStd::span<const RHI::StreamBufferView> streamBufferViews, bool* isValidated, int primitiveType)
         {
             if (!isValidated[primitiveType])
             {
@@ -386,7 +386,7 @@ namespace AZ
         }
 
         const RHI::DrawPacket* DynamicPrimitiveProcessor::BuildDrawPacketForDynamicPrimitive(
-            DynamicBufferGroup& group,
+            RHI::MeshBuffers& meshBuffers,
             const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
             Data::Instance<RPI::ShaderResourceGroup> srg,
             uint32_t indexCount,
@@ -400,14 +400,12 @@ namespace AZ
             drawIndexed.m_vertexOffset = 0; // indices are offsets from the start of vertex buffer
 
             drawPacketBuilder.Begin(nullptr);
-            drawPacketBuilder.SetDrawArguments(drawIndexed);
-            drawPacketBuilder.SetIndexBufferView(group.m_indexBufferView);
+            drawPacketBuilder.SetMeshBuffers(&meshBuffers);
             drawPacketBuilder.AddShaderResourceGroup(srg->GetRHIShaderResourceGroup());
 
             RHI::DrawPacketBuilder::DrawRequest drawRequest;
             drawRequest.m_listTag = m_shaderData.m_drawListTag;
             drawRequest.m_pipelineState = pipelineState->GetRHIPipelineState();
-            drawRequest.m_streamBufferViews = group.m_streamBufferViews;
             drawRequest.m_sortKey = sortKey;
             drawPacketBuilder.AddDrawItem(drawRequest);
 

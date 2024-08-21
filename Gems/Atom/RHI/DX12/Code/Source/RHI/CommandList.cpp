@@ -29,6 +29,8 @@
 #include <Atom/RHI/IndirectArguments.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
+#include <Atom/RHI.Reflect/Bits.h>
+
 #include <RHI/DispatchRaysIndirectBuffer.h>
 
 // Conditionally disable timing at compile-time based on profile policy
@@ -564,13 +566,19 @@ namespace AZ
         {
             ValidateSubmitIndex(submitIndex);
 
+            if (drawItem.m_meshBuffers == nullptr)
+            {
+                AZ_Assert(false, "DrawItem being submitted without mesh buffers, i.e. without draw arguments, index buffer or stream buffers!");
+                return;
+            }
+
             if (!CommitShaderResources<RHI::PipelineStateType::Draw>(drawItem))
             {
                 AZ_Warning("CommandList", false, "Failed to bind shader resources for draw item. Skipping.");
                 return;
             }
 
-            SetStreamBuffers(drawItem.m_streamBufferViews, drawItem.m_streamBufferViewCount);
+            SetStreamBuffers(*drawItem.m_meshBuffers, drawItem.m_streamIndexInterval);
             SetStencilRef(drawItem.m_stencilRef);
 
             RHI::CommandListScissorState scissorState;
@@ -591,14 +599,14 @@ namespace AZ
             CommitViewportState();
             CommitShadingRateState();
 
-            switch (drawItem.m_arguments.m_type)
+            switch (drawItem.m_meshBuffers->GetDrawArguments().m_type)
             {
             case RHI::DrawType::Indexed:
             {
-                AZ_Assert(drawItem.m_indexBufferView, "Index buffer view is null!");
+                AZ_Assert(drawItem.m_meshBuffers->GetIndexBufferView().GetBuffer(), "Index buffer view is null!");
 
-                const RHI::DrawIndexed& indexed = drawItem.m_arguments.m_indexed;
-                SetIndexBuffer(*drawItem.m_indexBufferView);
+                const RHI::DrawIndexed& indexed = drawItem.m_meshBuffers->GetDrawArguments().m_indexed;
+                SetIndexBuffer(drawItem.m_meshBuffers->GetIndexBufferView());
 
                 GetCommandList()->DrawIndexedInstanced(
                     indexed.m_indexCount,
@@ -611,7 +619,7 @@ namespace AZ
 
             case RHI::DrawType::Linear:
             {
-                const RHI::DrawLinear& linear = drawItem.m_arguments.m_linear;
+                const RHI::DrawLinear& linear = drawItem.m_meshBuffers->GetDrawArguments().m_linear;
                 GetCommandList()->DrawInstanced(
                     linear.m_vertexCount,
                     linear.m_instanceCount,
@@ -622,18 +630,18 @@ namespace AZ
 
             case RHI::DrawType::Indirect:
             {
-                const auto& indirect = drawItem.m_arguments.m_indirect;
+                const auto& indirect = drawItem.m_meshBuffers->GetDrawArguments().m_indirect;
                 const RHI::IndirectBufferLayout& layout = indirect.m_indirectBufferView->GetSignature()->GetDescriptor().m_layout;
                 if (layout.GetType() == RHI::IndirectBufferLayoutType::IndexedDraw)
                 {
-                    AZ_Assert(drawItem.m_indexBufferView, "Index buffer view is null!");
-                    SetIndexBuffer(*drawItem.m_indexBufferView);
+                    AZ_Assert(drawItem.m_meshBuffers->GetIndexBufferView().GetBuffer(), "Index buffer view is null!");
+                    SetIndexBuffer(drawItem.m_meshBuffers->GetIndexBufferView());
                 }
                 ExecuteIndirect(indirect);
                 break;
             }
             default:
-                AZ_Assert(false, "Invalid draw type %d", drawItem.m_arguments.m_type);
+                AZ_Assert(false, "Invalid draw type %d", drawItem.m_meshBuffers->GetDrawArguments().m_type);
                 break;
             }
 
@@ -858,15 +866,17 @@ namespace AZ
             );
         }
 
-        void CommandList::SetStreamBuffers(const RHI::StreamBufferView* streams, uint32_t count)
+        void CommandList::SetStreamBuffers(const RHI::MeshBuffers& meshBuffers, RHI::MeshBuffers::Interval streamIndexInterval)
         {
+            RHI::MeshBuffers::StreamIterator streamIter = meshBuffers.CreateStreamIterator(streamIndexInterval);
+
             bool needsBinding = false;
 
-            for (uint32_t i = 0; i < count; ++i)
+            for (u8 index = 0; !streamIter.HasEnded(); ++streamIter, ++index)
             {
-                if (m_state.m_streamBufferHashes[i] != static_cast<uint64_t>(streams[i].GetHash()))
+                if (m_state.m_streamBufferHashes[index] != static_cast<uint64_t>(streamIter->GetHash()))
                 {
-                    m_state.m_streamBufferHashes[i] = static_cast<uint64_t>(streams[i].GetHash());
+                    m_state.m_streamBufferHashes[index] = static_cast<uint64_t>(streamIter->GetHash());
                     needsBinding = true;
                 }
             }
@@ -874,15 +884,16 @@ namespace AZ
             if (needsBinding)
             {
                 D3D12_VERTEX_BUFFER_VIEW views[RHI::Limits::Pipeline::StreamCountMax];
+                streamIter.Reset();
 
-                for (uint32_t i = 0; i < count; ++i)
+                for (u8 i = 0; !streamIter.HasEnded(); ++streamIter, ++i)
                 {
-                    if (streams[i].GetBuffer())
+                    if (streamIter->GetBuffer())
                     {
-                        const Buffer* buffer = static_cast<const Buffer*>(streams[i].GetBuffer());
-                        views[i].BufferLocation = buffer->GetMemoryView().GetGpuAddress() + streams[i].GetByteOffset();
-                        views[i].SizeInBytes = streams[i].GetByteCount();
-                        views[i].StrideInBytes = streams[i].GetByteStride();
+                        const Buffer* buffer = static_cast<const Buffer*>(streamIter->GetBuffer());
+                        views[i].BufferLocation = buffer->GetMemoryView().GetGpuAddress() + streamIter->GetByteOffset();
+                        views[i].SizeInBytes = streamIter->GetByteCount();
+                        views[i].StrideInBytes = streamIter->GetByteStride();
                     }
                     else
                     {
@@ -890,7 +901,7 @@ namespace AZ
                     }
                 }
 
-                GetCommandList()->IASetVertexBuffers(0, count, views);
+                GetCommandList()->IASetVertexBuffers(0, streamIndexInterval.size(), views);
             }
         }
 

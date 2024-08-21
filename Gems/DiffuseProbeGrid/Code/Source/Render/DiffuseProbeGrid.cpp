@@ -84,21 +84,13 @@ namespace AZ
                         m_sortKey = sortKey;
 
                         RHI::DrawPacketBuilder drawPacketBuilder;
-
-                        RHI::DrawIndexed drawIndexed;
-                        drawIndexed.m_indexCount = aznumeric_cast<uint32_t>(m_renderData->m_boxIndexCount);
-                        drawIndexed.m_indexOffset = 0;
-                        drawIndexed.m_vertexOffset = 0;
-
                         drawPacketBuilder.Begin(nullptr);
-                        drawPacketBuilder.SetDrawArguments(drawIndexed);
-                        drawPacketBuilder.SetIndexBufferView(m_renderData->m_boxIndexBufferView);
+                        drawPacketBuilder.SetMeshBuffers(&m_renderData->m_meshBuffers);
                         drawPacketBuilder.AddShaderResourceGroup(m_renderObjectSrg->GetRHIShaderResourceGroup());
 
                         RHI::DrawPacketBuilder::DrawRequest drawRequest;
                         drawRequest.m_listTag = m_renderData->m_drawListTag;
                         drawRequest.m_pipelineState = m_renderData->m_pipelineState->GetRHIPipelineState();
-                        drawRequest.m_streamBufferViews = m_renderData->m_boxPositionBufferView;
                         drawRequest.m_sortKey = m_sortKey;
                         drawPacketBuilder.AddDrawItem(drawRequest);
 

@@ -276,7 +276,7 @@ namespace AZ
             }
 
             SetStencilRef(drawItem.m_stencilRef);
-            SetStreamBuffers(drawItem.m_streamBufferViews, drawItem.m_streamBufferViewCount);
+            SetStreamBuffers(*drawItem.m_meshBuffers, drawItem.m_streamIndexInterval);
 
             RHI::CommandListScissorState scissorState;
             if (drawItem.m_scissorsCount)
@@ -298,14 +298,14 @@ namespace AZ
 
             const auto& context = static_cast<Device&>(GetDevice()).GetContext();
 
-            switch (drawItem.m_arguments.m_type)
+            switch (drawItem.m_meshBuffers->GetDrawArguments().m_type)
             {
             case RHI::DrawType::Indexed:
             {
-                AZ_Assert(drawItem.m_indexBufferView, "IndexBufferView is null.");
+                AZ_Assert(drawItem.m_meshBuffers->GetIndexBufferView().GetBuffer(), "IndexBufferView is null.");
 
-                const RHI::DrawIndexed& indexed = drawItem.m_arguments.m_indexed;
-                SetIndexBuffer(*drawItem.m_indexBufferView);
+                const RHI::DrawIndexed& indexed = drawItem.m_meshBuffers->GetDrawArguments().m_indexed;
+                SetIndexBuffer(drawItem.m_meshBuffers->GetIndexBufferView());
 
                 context.CmdDrawIndexed(
                     m_nativeCommandBuffer,
@@ -318,7 +318,7 @@ namespace AZ
             }
             case RHI::DrawType::Linear:
             {
-                const RHI::DrawLinear& linear = drawItem.m_arguments.m_linear;
+                const RHI::DrawLinear& linear = drawItem.m_meshBuffers->GetDrawArguments().m_linear;
 
                 context.CmdDraw(
                     m_nativeCommandBuffer, linear.m_vertexCount, linear.m_instanceCount, linear.m_vertexOffset, linear.m_instanceOffset);
@@ -326,7 +326,7 @@ namespace AZ
             }
             case RHI::DrawType::Indirect:
             {
-                const RHI::DrawIndirect& indirect = drawItem.m_arguments.m_indirect;
+                const RHI::DrawIndirect& indirect = drawItem.m_meshBuffers->GetDrawArguments().m_indirect;
                 const RHI::IndirectBufferLayout& layout = indirect.m_indirectBufferView->GetSignature()->GetDescriptor().m_layout;
                 decltype(context.CmdDrawIndexedIndirectCountKHR) drawIndirectCountFunctionPtr = nullptr;
                 decltype(context.CmdDrawIndexedIndirect) drawIndirectfunctionPtr = nullptr;
@@ -337,7 +337,7 @@ namespace AZ
                     drawIndirectfunctionPtr = context.CmdDrawIndirect;
                     break;
                 case RHI::IndirectBufferLayoutType::IndexedDraw:
-                    SetIndexBuffer(*drawItem.m_indexBufferView);
+                    SetIndexBuffer(drawItem.m_meshBuffers->GetIndexBufferView());
                     drawIndirectCountFunctionPtr = context.CmdDrawIndexedIndirectCountKHR;
                     drawIndirectfunctionPtr = context.CmdDrawIndexedIndirect;
                     break;
@@ -827,14 +827,16 @@ namespace AZ
             }
         }
 
-        void CommandList::SetStreamBuffers(const RHI::StreamBufferView* streams, uint32_t count)
+        void CommandList::SetStreamBuffers(const RHI::MeshBuffers& meshBuffers, RHI::MeshBuffers::Interval streamIndexInterval)
         {
+            RHI::MeshBuffers::StreamIterator streamIter = meshBuffers.CreateStreamIterator(streamIndexInterval);
             RHI::Interval interval = InvalidInterval;
-            for (uint32_t index = 0; index < count; ++index)
+
+            for (u8 index = 0; !streamIter.HasEnded(); ++streamIter, ++index)
             {
-                if (m_state.m_streamBufferHashes[index] != static_cast<uint64_t>(streams[index].GetHash()))
+                if (m_state.m_streamBufferHashes[index] != static_cast<uint64_t>(streamIter->GetHash()))
                 {
-                    m_state.m_streamBufferHashes[index] = static_cast<uint64_t>(streams[index].GetHash());
+                    m_state.m_streamBufferHashes[index] = static_cast<uint64_t>(streamIter->GetHash());
                     interval.m_min = AZStd::min<uint32_t>(interval.m_min, index);
                     interval.m_max = AZStd::max<uint32_t>(interval.m_max, index);
                 }
@@ -842,22 +844,22 @@ namespace AZ
 
             if (interval != InvalidInterval)
             {
-                uint32_t numBuffers = interval.m_max - interval.m_min + 1;
-                AZStd::fixed_vector<VkBuffer, RHI::Limits::Pipeline::StreamCountMax> nativeBuffers(numBuffers, VK_NULL_HANDLE);
-                AZStd::fixed_vector<VkDeviceSize, RHI::Limits::Pipeline::StreamCountMax> offsets(numBuffers, 0);
-                for (uint32_t i = 0; i < numBuffers; ++i)
+                uint32_t numBuffers = interval.m_max - interval.m_min;
+                AZStd::fixed_vector<VkBuffer, RHI::Limits::Pipeline::StreamCountMax> nativeBuffers;
+                AZStd::fixed_vector<VkDeviceSize, RHI::Limits::Pipeline::StreamCountMax> offsets;
+
+                for (u8 i = (u8)interval.m_min; i <= (u8)interval.m_max; ++i)
                 {
-                    const RHI::StreamBufferView& bufferView = streams[i + interval.m_min];
-                    if (bufferView.GetBuffer())
+                    if (streamIter[i].GetBuffer())
                     {
-                        const auto* bufferMemoryView = static_cast<const Buffer*>(bufferView.GetBuffer())->GetBufferMemoryView();
-                        nativeBuffers[i] = bufferMemoryView->GetNativeBuffer();
-                        offsets[i] = bufferMemoryView->GetOffset() + bufferView.GetByteOffset();
+                        const auto* bufferMemoryView = static_cast<const Buffer*>(streamIter[i].GetBuffer())->GetBufferMemoryView();
+                        nativeBuffers.push_back(bufferMemoryView->GetNativeBuffer());
+                        offsets.push_back(bufferMemoryView->GetOffset() + streamIter[i].GetByteOffset());
                     }
                     else
                     {
-                        nativeBuffers[i] = VK_NULL_HANDLE;
-                        offsets[i] = 0;
+                        nativeBuffers.push_back(VK_NULL_HANDLE);
+                        offsets.push_back(0);
                     }
                 }
 

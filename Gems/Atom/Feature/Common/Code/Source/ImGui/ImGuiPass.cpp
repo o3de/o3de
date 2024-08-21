@@ -594,8 +594,9 @@ namespace AZ
             uint32_t drawCount = UpdateImGuiResources();
             frameGraph.SetEstimatedItemCount(drawCount);
 
-            m_draws.clear();
-            m_draws.reserve(drawCount);
+            m_drawInfos.NextBuffer();
+            m_drawInfos.Get().clear();
+            m_drawInfos.Get().reserve(drawCount);
         }
 
         void ImGuiPass::CompileResources([[maybe_unused]] const RHI::FrameGraphCompileContext& context)
@@ -638,10 +639,15 @@ namespace AZ
                             }
                         }
 
-                        m_draws.push_back(
+                        RHI::MeshBuffers meshBuffer;
+                        meshBuffer.SetDrawArguments(RHI::DrawIndexed(1, index, vertexOffset, drawCmd.ElemCount, indexOffset));
+                        meshBuffer.SetIndexBufferView(m_indexBufferView);
+                        meshBuffer.AddStreamBufferView(m_vertexBufferView[0]);
+                        meshBuffer.AddStreamBufferView(m_vertexBufferView[1]);
+
+                        m_drawInfos.Get().push_back(
                             {
-                                // Instance offset is used to index to the correct texture in the shader
-                                RHI::DrawIndexed(1, index, vertexOffset, drawCmd.ElemCount, indexOffset),
+                                meshBuffer,
                                 RHI::Scissor(
                                     static_cast<int32_t>(drawCmd.ClipRect.x),
                                     static_cast<int32_t>(drawCmd.ClipRect.y),
@@ -679,13 +685,10 @@ namespace AZ
             for (uint32_t i = context.GetSubmitRange().m_startIndex; i < context.GetSubmitRange().m_endIndex; ++i)
             {
                 RHI::DrawItem drawItem;
-                drawItem.m_arguments = m_draws.at(i).m_drawIndexed;
+                drawItem.m_meshBuffers = &m_drawInfos.Get().at(i).m_meshBuffers;
                 drawItem.m_pipelineState = m_pipelineState->GetRHIPipelineState();
-                drawItem.m_indexBufferView = &m_indexBufferView;
-                drawItem.m_streamBufferViewCount = 2;
-                drawItem.m_streamBufferViews = m_vertexBufferView.data();
                 drawItem.m_scissorsCount = 1;
-                drawItem.m_scissors = &m_draws.at(i).m_scissor;
+                drawItem.m_scissors = &m_drawInfos.Get().at(i).m_scissor;
 
                 context.GetCommandList()->Submit(drawItem, i);
             }

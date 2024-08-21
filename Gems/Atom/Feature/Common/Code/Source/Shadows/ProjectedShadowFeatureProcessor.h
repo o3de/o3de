@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <Atom/RHI/MeshBuffers.h>
+
 #include <Atom/Feature/Shadows/ProjectedShadowFeatureProcessorInterface.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
 #include <Atom/Feature/Utils/IndexedDataVector.h>
@@ -153,6 +155,8 @@ namespace AZ::Render
 
         RHI::ShaderInputNameIndex m_shadowmapAtlasSizeIndex{ "m_shadowmapAtlasSize" };
         RHI::ShaderInputNameIndex m_invShadowmapAtlasSizeIndex{ "m_invShadowmapAtlasSize" };
+
+        RHI::MeshBuffers m_meshBuffers;
 
         bool m_deviceBufferNeedsUpdate = false;
         bool m_shadowmapPassNeedsUpdate = true;

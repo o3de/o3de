@@ -129,8 +129,17 @@ namespace AZ
 
             struct DrawInfo
             {
-                RHI::DrawIndexed m_drawIndexed;
+                RHI::MeshBuffers m_meshBuffers;
                 RHI::Scissor m_scissor;
+            };
+
+            struct BufferedDrawInfos
+            {
+                static constexpr u32 DrawInfoBuffering = 3;
+                AZStd::vector<DrawInfo> m_drawInfos[DrawInfoBuffering];
+                u8 m_currentIndex = 0;
+                void NextBuffer() { m_currentIndex = (m_currentIndex + 1) % DrawInfoBuffering; }
+                AZStd::vector<DrawInfo>& Get() { return m_drawInfos[m_currentIndex]; }
             };
 
             //! Updates the index and vertex buffers, and returns the total number of draw items.
@@ -153,7 +162,7 @@ namespace AZ
 
             RHI::IndexBufferView m_indexBufferView;
             AZStd::array<RHI::StreamBufferView, 2> m_vertexBufferView; // For vertex buffer and instance data
-            AZStd::vector<DrawInfo> m_draws;
+            BufferedDrawInfos m_drawInfos;
             Data::Instance<RPI::StreamingImage> m_fontAtlas;
 
             AZStd::vector<ImDrawData> m_drawData;

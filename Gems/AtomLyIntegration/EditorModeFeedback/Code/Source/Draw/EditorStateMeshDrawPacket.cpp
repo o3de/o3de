@@ -115,8 +115,8 @@ namespace AZ::Render
 
     bool EditorStateMeshDrawPacket::DoUpdate(const RPI::Scene& parentScene)
     {
-        const auto meshes = m_modelLod->GetMeshes();
-        const RPI::ModelLod::Mesh& mesh = meshes[m_modelLodMeshIndex];
+        auto meshes = m_modelLod->GetMeshes();
+        RPI::ModelLod::Mesh& mesh = meshes[m_modelLodMeshIndex];
 
         if (!m_material)
         {
@@ -127,8 +127,7 @@ namespace AZ::Render
         RHI::DrawPacketBuilder drawPacketBuilder;
         drawPacketBuilder.Begin(nullptr);
 
-        drawPacketBuilder.SetDrawArguments(mesh.m_drawArguments);
-        drawPacketBuilder.SetIndexBufferView(mesh.m_indexBufferView);
+        drawPacketBuilder.SetMeshBuffers(&mesh);
         drawPacketBuilder.AddShaderResourceGroup(m_objectSrg->GetRHIShaderResourceGroup());
         drawPacketBuilder.AddShaderResourceGroup(m_material->GetRHIShaderResourceGroup());
 
@@ -198,13 +197,12 @@ namespace AZ::Render
             RHI::MergeStateInto(renderStatesOverlay, pipelineStateDescriptor.m_renderStates);
 
             streamBufferViewsPerShader.emplace_back();
-            auto& streamBufferViews = streamBufferViewsPerShader.back();
-
             RPI::UvStreamTangentBitmask uvStreamTangentBitmask;
+            RHI::MeshBuffers::Interval streamIndexInterval;
 
             if (!m_modelLod->GetStreamsForMesh(
                 pipelineStateDescriptor.m_inputStreamLayout,
-                streamBufferViews,
+                streamIndexInterval,
                 &uvStreamTangentBitmask,
                 shader->GetInputContract(),
                 m_modelLodMeshIndex,
@@ -252,7 +250,7 @@ namespace AZ::Render
             RHI::DrawPacketBuilder::DrawRequest drawRequest;
             drawRequest.m_listTag = m_drawListTag;
             drawRequest.m_pipelineState = pipelineState;
-            drawRequest.m_streamBufferViews = streamBufferViews;
+            drawRequest.m_streamIndexInterval = streamIndexInterval;
             drawRequest.m_stencilRef = m_stencilRef;
             drawRequest.m_sortKey = m_sortKey;
             if (drawSrg)

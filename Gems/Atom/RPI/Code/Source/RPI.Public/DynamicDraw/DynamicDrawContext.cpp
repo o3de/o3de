@@ -497,26 +497,31 @@ namespace AZ
             DrawItemInfo drawItemInfo;
             RHI::DrawItem& drawItem = drawItemInfo.m_drawItem;
 
-            // Draw argument
+            // --- Mesh Buffers ---
+
+            RHI::MeshBuffers newMeshBuffers;
+
             RHI::DrawIndexed drawIndexed;
             drawIndexed.m_indexCount = indexCount;
             drawIndexed.m_instanceCount = 1;
-            drawItem.m_arguments = drawIndexed;
-
-            // Get RHI pipeline state from cached RHI pipeline states based on current draw state options
-            drawItem.m_pipelineState = GetCurrentPipelineState();
+            newMeshBuffers.SetDrawArguments(drawIndexed);
 
             // Write data to vertex buffer and set up stream buffer views for DrawItem
             // The stream buffer view need to be cached before the frame is end
             vertexBuffer->Write(vertexData, vertexDataSize);
-            m_cachedStreamBufferViews.push_back(vertexBuffer->GetStreamBufferView(m_perVertexDataSize));
-            drawItem.m_streamBufferViewCount = 1;
-            drawItemInfo.m_vertexBufferViewIndex = static_cast<BufferViewIndexType>(m_cachedStreamBufferViews.size() - 1);
+            newMeshBuffers.AddStreamBufferView(vertexBuffer->GetStreamBufferView(m_perVertexDataSize));
 
             // Write data to index buffer and set up index buffer view for DrawItem
             indexBuffer->Write(indexData, indexDataSize);
-            m_cachedIndexBufferViews.push_back(indexBuffer->GetIndexBufferView(indexFormat));
-            drawItemInfo.m_indexBufferViewIndex = static_cast<BufferViewIndexType>(m_cachedIndexBufferViews.size() - 1);
+            newMeshBuffers.SetIndexBufferView(indexBuffer->GetIndexBufferView(indexFormat));
+
+            drawItemInfo.m_cachedIndex = static_cast<u32>(m_cachedMeshBuffers.size());
+            m_cachedMeshBuffers.emplace_back(AZStd::move(newMeshBuffers));
+
+            // --- PSO & SRG ---
+
+            // Get RHI pipeline state from cached RHI pipeline states based on current draw state options
+            drawItem.m_pipelineState = GetCurrentPipelineState();
 
             // Setup per context srg if it exists
             if (m_srgPerContext)
@@ -530,6 +535,8 @@ namespace AZ
             {
                 drawItem.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup();
             }
+
+            // --- Scissor & Viewport ---
 
             // Set scissor per draw if scissor is enabled.
             if (m_useScissor)
@@ -591,21 +598,28 @@ namespace AZ
             DrawItemInfo drawItemInfo;
             RHI::DrawItem& drawItem = drawItemInfo.m_drawItem;
 
-            // Draw argument
+            // --- Mesh Buffers ---
+
+            RHI::MeshBuffers newMeshBuffers;
+
             RHI::DrawLinear drawLinear;
             drawLinear.m_instanceCount = 1;
             drawLinear.m_vertexCount = vertexCount;
-            drawItem.m_arguments = drawLinear;
+            newMeshBuffers.SetDrawArguments(drawLinear);
 
-            // Get RHI pipeline state from cached RHI pipeline states based on current draw state options
-            drawItem.m_pipelineState = GetCurrentPipelineState();
 
             // Write data to vertex buffer and set up stream buffer views for DrawItem
             // The stream buffer view need to be cached before the frame is end
             vertexBuffer->Write(vertexData, vertexDataSize);
-            m_cachedStreamBufferViews.push_back(vertexBuffer->GetStreamBufferView(m_perVertexDataSize));
-            drawItem.m_streamBufferViewCount = 1;
-            drawItemInfo.m_vertexBufferViewIndex = uint32_t(m_cachedStreamBufferViews.size() - 1);
+            newMeshBuffers.AddStreamBufferView(vertexBuffer->GetStreamBufferView(m_perVertexDataSize));
+
+            drawItemInfo.m_cachedIndex = static_cast<u32>(m_cachedMeshBuffers.size());
+            m_cachedMeshBuffers.emplace_back(AZStd::move(newMeshBuffers));
+
+            // --- PSO & SRG ---
+
+            // Get RHI pipeline state from cached RHI pipeline states based on current draw state options
+            drawItem.m_pipelineState = GetCurrentPipelineState();
 
             // Setup per context srg if it exists
             if (m_srgPerContext)
@@ -619,6 +633,8 @@ namespace AZ
             {
                 drawItem.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup();
             }
+
+            // --- Scissor & Viewport ---
 
             // Set scissor per draw if scissor is enabled.
             if (m_useScissor)
@@ -719,14 +735,10 @@ namespace AZ
 
             for (auto& drawItemInfo : m_cachedDrawItems)
             {
-                if (drawItemInfo.m_indexBufferViewIndex != InvalidIndex)
+                if (drawItemInfo.m_cachedIndex != InvalidIndex)
                 {
-                    drawItemInfo.m_drawItem.m_indexBufferView = &m_cachedIndexBufferViews[drawItemInfo.m_indexBufferViewIndex];
-                }
-
-                if (drawItemInfo.m_vertexBufferViewIndex != InvalidIndex)
-                {
-                    drawItemInfo.m_drawItem.m_streamBufferViews = &m_cachedStreamBufferViews[drawItemInfo.m_vertexBufferViewIndex];
+                    // Get the pointer to mesh buffers here after we've built all the mesh buffers and won't be resizing the array
+                    drawItemInfo.m_drawItem.m_meshBuffers = &m_cachedMeshBuffers[drawItemInfo.m_cachedIndex];
                 }
 
                 RHI::DrawItemProperties drawItemProperties;
@@ -765,8 +777,7 @@ namespace AZ
         {
             m_sortKey = 0;
             m_cachedDrawItems.clear();
-            m_cachedStreamBufferViews.clear();
-            m_cachedIndexBufferViews.clear();
+            m_cachedMeshBuffers.clear();
             m_cachedDrawList.clear();
             m_nextDrawSrgIdx = 0;
             m_drawFinalized = false;

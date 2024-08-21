@@ -1300,37 +1300,37 @@ namespace AZ
             }
 
             // Setup point index buffer view
-            objectBuffers.m_pointIndexCount = static_cast<uint32_t>(meshData.m_pointIndices.size());
-            AZ::RHI::IndexBufferView pointIndexBufferView =
+            u32 pointIndexCount = static_cast<uint32_t>(meshData.m_pointIndices.size());
+            objectBuffers.m_pointMeshBuffers.SetDrawArguments(RHI::DrawIndexed{ 0, 0, 0, pointIndexCount, 0 });
+            objectBuffers.m_pointMeshBuffers.SetIndexBufferView(
             {
                 *objectBuffers.m_pointIndexBuffer,
                 0,
-                static_cast<uint32_t>(objectBuffers.m_pointIndexCount * sizeof(uint16_t)),
+                static_cast<uint32_t>(pointIndexCount * sizeof(uint16_t)),
                 AZ::RHI::IndexFormat::Uint16,
-            };
-            objectBuffers.m_pointIndexBufferView = pointIndexBufferView;
+            });
 
             // Setup line index buffer view
-            objectBuffers.m_lineIndexCount = static_cast<uint32_t>(meshData.m_lineIndices.size());
-            AZ::RHI::IndexBufferView lineIndexBufferView =
+            u32 lineIndexCount = static_cast<uint32_t>(meshData.m_lineIndices.size());
+            objectBuffers.m_lineMeshBuffers.SetDrawArguments(RHI::DrawIndexed{ 0, 0, 0, lineIndexCount, 0 });
+            objectBuffers.m_lineMeshBuffers.SetIndexBufferView(
             {
                 *objectBuffers.m_lineIndexBuffer,
                 0,
-                static_cast<uint32_t>(objectBuffers.m_lineIndexCount * sizeof(uint16_t)),
+                static_cast<uint32_t>(lineIndexCount * sizeof(uint16_t)),
                 AZ::RHI::IndexFormat::Uint16,
-            };
-            objectBuffers.m_lineIndexBufferView = lineIndexBufferView;
+            });
 
             // Setup triangle index buffer view
-            objectBuffers.m_triangleIndexCount = static_cast<uint32_t>(meshData.m_triangleIndices.size());
-            AZ::RHI::IndexBufferView triangleIndexBufferView =
+            u32 triangleIndexCount = static_cast<uint32_t>(meshData.m_triangleIndices.size());
+            objectBuffers.m_lineMeshBuffers.SetDrawArguments(RHI::DrawIndexed{ 0, 0, 0, triangleIndexCount, 0 });
+            objectBuffers.m_triangleMeshBuffers.SetIndexBufferView(
             {
                 *objectBuffers.m_triangleIndexBuffer,
                 0,
-                static_cast<uint32_t>(objectBuffers.m_triangleIndexCount * sizeof(uint16_t)),
+                static_cast<uint32_t>(triangleIndexCount * sizeof(uint16_t)),
                 AZ::RHI::IndexFormat::Uint16,
-            };
-            objectBuffers.m_triangleIndexBufferView = triangleIndexBufferView;
+            });
 
             // Setup vertex buffer view
             const auto positionCount = static_cast<uint32_t>(meshData.m_positions.size());
@@ -1356,14 +1356,25 @@ namespace AZ
                 normalSize,
             };
 
-            objectBuffers.m_streamBufferViews = { positionBufferView };
-            objectBuffers.m_streamBufferViewsWithNormals = { positionBufferView, normalBufferView };
+            objectBuffers.m_pointMeshBuffers.AddStreamBufferView(positionBufferView);
+            objectBuffers.m_pointMeshBuffers.AddIndirectionIndex(0);
+
+            objectBuffers.m_lineMeshBuffers.AddStreamBufferView(positionBufferView);
+            objectBuffers.m_lineMeshBuffers.AddIndirectionIndex(0);
+
+            objectBuffers.m_triangleMeshBuffers.AddStreamBufferView(positionBufferView);
+            objectBuffers.m_triangleMeshBuffers.AddStreamBufferView(normalBufferView);
+            objectBuffers.m_triangleMeshBuffers.AddIndirectionIndex(0);
+            objectBuffers.m_triangleMeshBuffers.AddIndirectionIndex(1);
+
+            RHI::MeshBuffers::Interval positionInterval{ 0, 1};
+            RHI::MeshBuffers::Interval positionAndNormalInterval{ 0, 2};
 
             // Validate for each draw style
-            AZ::RHI::ValidateStreamBufferViews(m_objectStreamLayout[DrawStyle_Point], objectBuffers.m_streamBufferViews);
-            AZ::RHI::ValidateStreamBufferViews(m_objectStreamLayout[DrawStyle_Line], objectBuffers.m_streamBufferViews);
-            AZ::RHI::ValidateStreamBufferViews(m_objectStreamLayout[DrawStyle_Solid], objectBuffers.m_streamBufferViews);
-            AZ::RHI::ValidateStreamBufferViews(m_objectStreamLayout[DrawStyle_Shaded], objectBuffers.m_streamBufferViewsWithNormals);
+            AZ::RHI::ValidateStreamBufferViews(m_objectStreamLayout[DrawStyle_Point], objectBuffers.m_pointMeshBuffers, positionInterval);
+            AZ::RHI::ValidateStreamBufferViews(m_objectStreamLayout[DrawStyle_Line], objectBuffers.m_lineMeshBuffers, positionInterval);
+            AZ::RHI::ValidateStreamBufferViews(m_objectStreamLayout[DrawStyle_Solid], objectBuffers.m_triangleMeshBuffers, positionInterval);
+            AZ::RHI::ValidateStreamBufferViews(m_objectStreamLayout[DrawStyle_Shaded], objectBuffers.m_triangleMeshBuffers, positionAndNormalInterval);
 
             return true;
         }
@@ -1559,45 +1570,22 @@ namespace AZ
             destPipelineState->Finalize();
         }
 
-        const AZ::RHI::IndexBufferView& FixedShapeProcessor::GetShapeIndexBufferView(AuxGeomShapeType shapeType, int drawStyle, LodIndex lodIndex) const
+        RHI::MeshBuffers* FixedShapeProcessor::GetMeshBuffers(AuxGeomShapeType shapeType, int drawStyle, LodIndex lodIndex)
         {
-            switch(drawStyle)
+            switch (drawStyle)
             {
-                case DrawStyle_Point:
-                    return m_shapes[shapeType].m_lodBuffers[lodIndex].m_pointIndexBufferView;
-                case DrawStyle_Line:
-                    return m_shapes[shapeType].m_lodBuffers[lodIndex].m_lineIndexBufferView;
-                case DrawStyle_Solid: [[fallthrough]];
-                case DrawStyle_Shaded:
-                    return m_shapes[shapeType].m_lodBuffers[lodIndex].m_triangleIndexBufferView;
-                default:
-                    AZ_Assert(false, "Unknown AuxGeom Draw Style %d.", drawStyle);
-                    return m_shapes[shapeType].m_lodBuffers[lodIndex].m_triangleIndexBufferView; // default to triangle since it should be drawable for any draw style
+            case DrawStyle_Point:
+                return &m_shapes[shapeType].m_lodBuffers[lodIndex].m_pointMeshBuffers;
+            case DrawStyle_Line:
+                return &m_shapes[shapeType].m_lodBuffers[lodIndex].m_lineMeshBuffers;
+            case DrawStyle_Solid: // intentional fall through
+            case DrawStyle_Shaded:
+                return &m_shapes[shapeType].m_lodBuffers[lodIndex].m_triangleMeshBuffers;
+            default:
+                AZ_Assert(false, "Unknown AuxGeom Draw Style %d.", drawStyle);
+                return &m_shapes[shapeType].m_lodBuffers[lodIndex].m_triangleMeshBuffers; // default to triangle since it should be drawable for any draw style
             }
-        }
 
-        const FixedShapeProcessor::StreamBufferViewsForAllStreams& FixedShapeProcessor::GetShapeStreamBufferViews(AuxGeomShapeType shapeType, LodIndex lodIndex, int drawStyle) const
-        {
-            return (drawStyle == DrawStyle_Shaded)
-                ? m_shapes[shapeType].m_lodBuffers[lodIndex].m_streamBufferViewsWithNormals
-                : m_shapes[shapeType].m_lodBuffers[lodIndex].m_streamBufferViews;
-        }
-
-        uint32_t FixedShapeProcessor::GetShapeIndexCount(AuxGeomShapeType shapeType, int drawStyle, LodIndex lodIndex)
-        {
-            switch(drawStyle)
-            {
-                case DrawStyle_Point:
-                    return m_shapes[shapeType].m_lodBuffers[lodIndex].m_pointIndexCount;
-                case DrawStyle_Line:
-                    return m_shapes[shapeType].m_lodBuffers[lodIndex].m_lineIndexCount;
-                case DrawStyle_Solid: // intentional fall through
-                case DrawStyle_Shaded:
-                    return m_shapes[shapeType].m_lodBuffers[lodIndex].m_triangleIndexCount;
-                default:
-                    AZ_Assert(false, "Unknown AuxGeom Draw Style %d.", drawStyle);
-                    return m_shapes[shapeType].m_lodBuffers[lodIndex].m_triangleIndexCount; // default to triangle since it should be drawable for any draw style
-            }
         }
 
         const RHI::DrawPacket* FixedShapeProcessor::BuildDrawPacketForShape(
@@ -1649,56 +1637,30 @@ namespace AZ
             m_processSrgs.push_back(srg);
             if (m_shapes[shape.m_shapeType].m_lodBuffers.size() > 0)
             {
-                uint32_t indexCount = GetShapeIndexCount(shape.m_shapeType, drawStyle, lodIndex);
-                auto& indexBufferView = GetShapeIndexBufferView(shape.m_shapeType, drawStyle, lodIndex);
-                auto& streamBufferViews = GetShapeStreamBufferViews(shape.m_shapeType, lodIndex, drawStyle);
+                RHI::MeshBuffers* meshBuffers = GetMeshBuffers(shape.m_shapeType, drawStyle, lodIndex);
                 auto& drawListTag = shaderData.m_drawListTag;
 
                 return BuildDrawPacket(
-                    drawPacketBuilder, srg, indexCount, indexBufferView, streamBufferViews, drawListTag,
-                    pipelineState->GetRHIPipelineState(), sortKey);
+                    drawPacketBuilder, srg, meshBuffers, drawListTag,
+                    pipelineState->GetRHIPipelineState(), sortKey, drawStyle);
             }
             return nullptr;
         }
 
-        const AZ::RHI::IndexBufferView& FixedShapeProcessor::GetBoxIndexBufferView(int drawStyle) const
+        RHI::MeshBuffers* FixedShapeProcessor::GetBoxMeshBuffers(int drawStyle)
         {
-            switch(drawStyle)
+            switch (drawStyle)
             {
-                case DrawStyle_Point:
-                    return m_boxBuffers.m_pointIndexBufferView;
-                case DrawStyle_Line:
-                    return m_boxBuffers.m_lineIndexBufferView;
-                case DrawStyle_Solid: // intentional fall through
-                case DrawStyle_Shaded:
-                    return m_boxBuffers.m_triangleIndexBufferView;
-                default:
-                    AZ_Assert(false, "Unknown AuxGeom Draw Style %d.", drawStyle);
-                    return m_boxBuffers.m_triangleIndexBufferView; // default to triangle since it should be drawable for any draw style
-            }
-        }
-
-        const FixedShapeProcessor::StreamBufferViewsForAllStreams& FixedShapeProcessor::GetBoxStreamBufferViews(int drawStyle) const
-        {
-            return (drawStyle == DrawStyle_Shaded)
-                ? m_boxBuffers.m_streamBufferViewsWithNormals
-                : m_boxBuffers.m_streamBufferViews;
-        }
-
-        uint32_t FixedShapeProcessor::GetBoxIndexCount(int drawStyle)
-        {
-            switch(drawStyle)
-            {
-                case DrawStyle_Point:
-                    return m_boxBuffers.m_pointIndexCount;
-                case DrawStyle_Line:
-                    return m_boxBuffers.m_lineIndexCount;
-                case DrawStyle_Solid: // intentional fall through
-                case DrawStyle_Shaded:
-                    return m_boxBuffers.m_triangleIndexCount;
-                default:
-                    AZ_Assert(false, "Unknown AuxGeom Draw Style %d.", drawStyle);
-                    return m_boxBuffers.m_triangleIndexCount; // default to triangle since it should be drawable for any draw style
+            case DrawStyle_Point:
+                return &m_boxBuffers.m_pointMeshBuffers;
+            case DrawStyle_Line:
+                return &m_boxBuffers.m_lineMeshBuffers;
+            case DrawStyle_Solid: // intentional fall through
+            case DrawStyle_Shaded:
+                return &m_boxBuffers.m_triangleMeshBuffers;
+            default:
+                AZ_Assert(false, "Unknown AuxGeom Draw Style %d.", drawStyle);
+                return &m_boxBuffers.m_triangleMeshBuffers; // default to triangle since it should be drawable for any draw style
             }
         }
 
@@ -1744,40 +1706,33 @@ namespace AZ
             srg->Compile();
             m_processSrgs.push_back(srg);
 
-            uint32_t indexCount = GetBoxIndexCount(drawStyle);
-            auto& indexBufferView = GetBoxIndexBufferView(drawStyle);
-            auto& streamBufferViews = GetBoxStreamBufferViews(drawStyle);
+            RHI::MeshBuffers* meshBuffers = GetBoxMeshBuffers(drawStyle);
             auto& drawListTag = shaderData.m_drawListTag;
 
-            return BuildDrawPacket(
-                drawPacketBuilder, srg, indexCount, indexBufferView, streamBufferViews, drawListTag, pipelineState->GetRHIPipelineState(),
-                sortKey);
+            return BuildDrawPacket(drawPacketBuilder, srg, meshBuffers,
+                drawListTag, pipelineState->GetRHIPipelineState(), sortKey, drawStyle);
         }
 
         const RHI::DrawPacket* FixedShapeProcessor::BuildDrawPacket(
             RHI::DrawPacketBuilder& drawPacketBuilder,
             AZ::Data::Instance<RPI::ShaderResourceGroup>& srg,
-            uint32_t indexCount,
-            const RHI::IndexBufferView& indexBufferView,
-            const StreamBufferViewsForAllStreams& streamBufferViews,
+            RHI::MeshBuffers* meshBuffers,
             RHI::DrawListTag drawListTag,
             const AZ::RHI::PipelineState* pipelineState,
-            RHI::DrawItemSortKey sortKey)
+            RHI::DrawItemSortKey sortKey,
+            int drawStyle)
         {
-            RHI::DrawIndexed drawIndexed;
-            drawIndexed.m_indexCount = indexCount;
-            drawIndexed.m_indexOffset = 0;
-            drawIndexed.m_vertexOffset = 0;
-
             drawPacketBuilder.Begin(nullptr);
-            drawPacketBuilder.SetDrawArguments(drawIndexed);
-            drawPacketBuilder.SetIndexBufferView(indexBufferView);
+            drawPacketBuilder.SetMeshBuffers(meshBuffers);
             drawPacketBuilder.AddShaderResourceGroup(srg->GetRHIShaderResourceGroup());
+
+            RHI::MeshBuffers::Interval positionInterval{ 0, 1 };
+            RHI::MeshBuffers::Interval positionAndNormalInterval{ 0, 2 };
 
             RHI::DrawPacketBuilder::DrawRequest drawRequest;
             drawRequest.m_listTag = drawListTag;
+            drawRequest.m_streamIndexInterval = (drawStyle == DrawStyle_Shaded) ? positionAndNormalInterval : positionInterval;
             drawRequest.m_pipelineState = pipelineState;
-            drawRequest.m_streamBufferViews = streamBufferViews;
             drawRequest.m_sortKey = sortKey;
             drawPacketBuilder.AddDrawItem(drawRequest);
 

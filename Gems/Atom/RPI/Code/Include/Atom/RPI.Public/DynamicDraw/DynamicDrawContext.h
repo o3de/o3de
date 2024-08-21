@@ -266,21 +266,18 @@ namespace AZ
             RHI::DrawFilterMask m_drawFilter = RHI::DrawFilterMaskDefaultValue;
 
             // Cached draw data
-            AZStd::vector<RHI::StreamBufferView> m_cachedStreamBufferViews;
-            AZStd::vector<RHI::IndexBufferView> m_cachedIndexBufferViews;
+            AZStd::vector<RHI::MeshBuffers> m_cachedMeshBuffers;
             AZStd::vector<Data::Instance<ShaderResourceGroup>> m_cachedDrawSrg;
 
             uint32_t m_nextDrawSrgIdx = 0;
             
             // structure includes DrawItem and stream and index buffer index
-            using BufferViewIndexType = uint32_t;
-            static const BufferViewIndexType InvalidIndex = static_cast<BufferViewIndexType>(-1);
+            static constexpr u32 InvalidIndex = static_cast<u32>(-1);
             struct DrawItemInfo
             {
                 RHI::DrawItem m_drawItem;
                 RHI::DrawItemSortKey m_sortKey = 0;
-                BufferViewIndexType m_vertexBufferViewIndex = InvalidIndex;
-                BufferViewIndexType m_indexBufferViewIndex = InvalidIndex;
+                u32 m_cachedIndex = InvalidIndex;
             };
             AZStd::vector<DrawItemInfo> m_cachedDrawItems;
 

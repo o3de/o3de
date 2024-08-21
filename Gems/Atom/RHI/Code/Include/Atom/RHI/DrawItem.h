@@ -8,6 +8,8 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Limits.h>
+#include <Atom/RHI/DrawArguments.h>
+#include <Atom/RHI/MeshBuffers.h>
 #include <Atom/RHI/StreamBufferView.h>
 #include <Atom/RHI/IndexBufferView.h>
 #include <Atom/RHI/IndirectBufferView.h>
@@ -25,91 +27,6 @@ namespace AZ::RHI
     template <typename T , typename NamespaceType>
     struct Handle;
 
-    struct DrawLinear
-    {
-        DrawLinear() = default;
-
-        DrawLinear(
-            uint32_t instanceCount,
-            uint32_t instanceOffset,
-            uint32_t vertexCount,
-            uint32_t vertexOffset)
-            : m_instanceCount(instanceCount)
-            , m_instanceOffset(instanceOffset)
-            , m_vertexCount(vertexCount)
-            , m_vertexOffset(vertexOffset)
-        {}
-
-        uint32_t m_instanceCount = 1;
-        uint32_t m_instanceOffset = 0;
-        uint32_t m_vertexCount = 0;
-        uint32_t m_vertexOffset = 0;
-    };
-
-    struct DrawIndexed
-    {
-        DrawIndexed() = default;
-
-        DrawIndexed(
-            uint32_t instanceCount,
-            uint32_t instanceOffset,
-            uint32_t vertexOffset,
-            uint32_t indexCount,
-            uint32_t indexOffset)
-            : m_instanceCount(instanceCount)
-            , m_instanceOffset(instanceOffset)
-            , m_vertexOffset(vertexOffset)
-            , m_indexCount(indexCount)
-            , m_indexOffset(indexOffset)
-        {}
-
-        uint32_t m_instanceCount = 1;
-        uint32_t m_instanceOffset = 0;
-        uint32_t m_vertexOffset = 0;
-        uint32_t m_indexCount = 0;
-        uint32_t m_indexOffset = 0;
-    };
-
-    using DrawIndirect = IndirectArguments;
-
-    enum class DrawType : uint8_t
-    {
-        Indexed = 0,
-        Linear,
-        Indirect
-    };
-
-    struct DrawArguments
-    {
-        AZ_TYPE_INFO(DrawArguments, "B8127BDE-513E-4D5C-98C2-027BA1DE9E6E");
-
-        DrawArguments() : DrawArguments(DrawIndexed{}) {}
-
-        DrawArguments(const DrawIndexed& indexed)
-            : m_type{DrawType::Indexed}
-            , m_indexed{indexed}
-        {}
-
-        DrawArguments(const DrawLinear& linear)
-            : m_type{DrawType::Linear}
-            , m_linear{linear}
-        {}
-
-
-        DrawArguments(const DrawIndirect& indirect)
-            : m_type{ DrawType::Indirect }
-            , m_indirect{ indirect }
-        {}
-
-        DrawType m_type;
-        union
-        {
-            DrawIndexed m_indexed;
-            DrawLinear m_linear;
-            DrawIndirect m_indirect;
-        };
-    };
-
     // A DrawItem corresponds to one draw of one mesh in one pass. Multiple draw items are bundled
     // in a DrawPacket, which corresponds to multiple draws of one mesh in multiple passes.
     // NOTE: Do not rely solely on default member initialization here, as DrawItems are bulk allocated for
@@ -119,14 +36,12 @@ namespace AZ::RHI
     {
         DrawItem() = default;
 
-        DrawArguments m_arguments;
-
-        uint8_t m_stencilRef = 0;
-        uint8_t m_streamBufferViewCount = 0;
-        uint8_t m_shaderResourceGroupCount = 0;
-        uint8_t m_rootConstantSize = 0;
-        uint8_t m_scissorsCount = 0;
-        uint8_t m_viewportsCount = 0;
+        RHI::MeshBuffers::Interval m_streamIndexInterval;
+        u8  m_stencilRef = 0;
+        u8  m_shaderResourceGroupCount = 0;
+        u8  m_rootConstantSize = 0;
+        u8  m_scissorsCount = 0;
+        u8  m_viewportsCount = 0;
 
         union
         {
@@ -138,16 +53,17 @@ namespace AZ::RHI
 
                 bool m_enabled : 1;     // Whether the Draw Item should render
             };
-            uint8_t m_allFlags = 1;     //< Update default value if you add flags. Also update in DrawPacketBuilder::End()
+            u8 m_allFlags = 1;     //< Update default value if you add flags. Also update in DrawPacketBuilder::End()
         };
 
+        // --- Mesh ---
+
+        /// Contains the geometry data to be used during rendering
+        const MeshBuffers* m_meshBuffers = nullptr;
+
+        // --- Shader ---
+
         const PipelineState* m_pipelineState = nullptr;
-
-        /// The index buffer used when drawing with an indexed draw call.
-        const IndexBufferView* m_indexBufferView = nullptr;
-
-        /// Array of stream buffers to bind (count must match m_streamBufferViewCount).
-        const StreamBufferView* m_streamBufferViews = nullptr;
 
         /// Array of shader resource groups to bind (count must match m_shaderResourceGroupCount).
         const ShaderResourceGroup* const* m_shaderResourceGroups = nullptr;
@@ -156,7 +72,9 @@ namespace AZ::RHI
         const ShaderResourceGroup* m_uniqueShaderResourceGroup = nullptr;
 
         /// Array of root constants to bind (count must match m_rootConstantSize).
-        const uint8_t* m_rootConstants = nullptr;
+        const u8* m_rootConstants = nullptr;
+
+        // --- Scissor and Viewport ---
 
         /// List of scissors to be applied to this draw item only. Scissor will be restore to the previous state
         /// after the DrawItem has been processed.
@@ -170,7 +88,7 @@ namespace AZ::RHI
     using DrawItemSortKey = AZ::s64;
 
     // A filter associate to a DrawItem which can be used to filter the DrawItem when submitting to command list
-    using DrawFilterTag = Handle<uint8_t, DefaultNamespaceType>;
+    using DrawFilterTag = Handle<u8, DefaultNamespaceType>;
     using DrawFilterMask = uint32_t; // AZStd::bitset's impelmentation is too expensive.
     constexpr uint32_t DrawFilterMaskDefaultValue = uint32_t(-1);  // Default all bit to 1.
     static_assert(sizeof(DrawFilterMask) * 8 >= Limits::Pipeline::DrawFilterTagCountMax, "DrawFilterMask doesn't have enough bits for maximum tag count");

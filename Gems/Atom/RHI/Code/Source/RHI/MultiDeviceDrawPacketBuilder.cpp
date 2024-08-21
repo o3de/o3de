@@ -19,20 +19,20 @@ namespace AZ::RHI
     DrawPacketBuilder::DrawRequest MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest::
         GetDeviceDrawRequest(int deviceIndex)
     {
-        if (!m_deviceStreamBufferViews.contains(deviceIndex))
-        {
-            // We need to hold the memory for the single-device StreamBufferViews
-            AZStd::vector<StreamBufferView> deviceStreamBufferView;
-            for (auto& mdStreamBufferView : m_streamBufferViews)
-            {
-                deviceStreamBufferView.emplace_back(mdStreamBufferView.GetDeviceStreamBufferView(deviceIndex));
-            }
-            m_deviceStreamBufferViews.emplace(deviceIndex, AZStd::move(deviceStreamBufferView));
-        }
+        // if (!m_deviceStreamBufferViews.contains(deviceIndex))
+        // {
+        //     // We need to hold the memory for the single-device StreamBufferViews
+        //     AZStd::vector<StreamBufferView> deviceStreamBufferView;
+        //     for (auto& mdStreamBufferView : m_streamBufferViews)
+        //     {
+        //         deviceStreamBufferView.emplace_back(mdStreamBufferView.GetDeviceStreamBufferView(deviceIndex));
+        //     }
+        //     m_deviceStreamBufferViews.emplace(deviceIndex, AZStd::move(deviceStreamBufferView));
+        // }
         return DrawPacketBuilder::DrawRequest{
                 m_listTag,
                 m_stencilRef,
-                m_deviceStreamBufferViews.at(deviceIndex),
+                m_streamIndexInterval,
                 m_uniqueShaderResourceGroup ? m_uniqueShaderResourceGroup->GetDeviceShaderResourceGroup(deviceIndex).get() : nullptr,
                 m_pipelineState ? m_pipelineState->GetDevicePipelineState(deviceIndex).get() : nullptr,
                 m_sortKey,
@@ -41,26 +41,15 @@ namespace AZ::RHI
 
     MultiDeviceDrawPacketBuilder::MultiDeviceDrawPacketBuilder(const MultiDeviceDrawPacketBuilder& other)
     {
-        m_deviceMask = other.m_deviceMask;
-
-        m_drawRequests = other.m_drawRequests;
-
-        m_drawPacketInFlight = aznew MultiDeviceDrawPacket;
-        if (other.m_drawPacketInFlight)
-        {
-            m_drawPacketInFlight->m_drawListMask = other.m_drawPacketInFlight->m_drawListMask;
-        }
-
-        m_deviceDrawPacketBuilders = other.m_deviceDrawPacketBuilders;
+        *this = other;
     }
 
     MultiDeviceDrawPacketBuilder& MultiDeviceDrawPacketBuilder::operator=(const MultiDeviceDrawPacketBuilder& other)
     {
         m_deviceMask = other.m_deviceMask;
-
         m_drawRequests = other.m_drawRequests;
-
         m_drawPacketInFlight = aznew MultiDeviceDrawPacket;
+
         if (other.m_drawPacketInFlight)
         {
             m_drawPacketInFlight->m_drawListMask = other.m_drawPacketInFlight->m_drawListMask;
@@ -86,19 +75,12 @@ namespace AZ::RHI
         }
     }
 
-    void MultiDeviceDrawPacketBuilder::SetDrawArguments(const MultiDeviceDrawArguments& drawArguments)
+    void MultiDeviceDrawPacketBuilder::SetMeshBuffers(MultiDeviceMeshBuffers* multiMeshBuffers)
     {
+        m_multiMeshBuffers = multiMeshBuffers;
         for (auto& [deviceIndex, deviceDrawPacketBuilder] : m_deviceDrawPacketBuilders)
         {
-            deviceDrawPacketBuilder.SetDrawArguments(drawArguments.GetDeviceDrawArguments(deviceIndex));
-        }
-    }
-
-    void MultiDeviceDrawPacketBuilder::SetIndexBufferView(const MultiDeviceIndexBufferView& indexBufferView)
-    {
-        for (auto& [deviceIndex, deviceDrawPacketBuilder] : m_deviceDrawPacketBuilders)
-        {
-            deviceDrawPacketBuilder.SetIndexBufferView(indexBufferView.GetDeviceIndexBufferView(deviceIndex));
+            deviceDrawPacketBuilder.SetMeshBuffers(multiMeshBuffers->GetDeviceMeshBuffers(deviceIndex));
         }
     }
 
@@ -176,6 +158,7 @@ namespace AZ::RHI
             m_drawPacketInFlight->m_deviceDrawPackets[deviceIndex] = deviceDrawPacketBuilder.End();
         }
 
+        m_drawPacketInFlight->m_multiMeshBuffers = m_multiMeshBuffers;
         m_drawPacketInFlight->m_drawListTags.resize_no_construct(m_drawRequests.size());
         m_drawPacketInFlight->m_drawFilterMasks.resize_no_construct(m_drawRequests.size());
         m_drawPacketInFlight->m_drawItemSortKeys.resize_no_construct(m_drawRequests.size());
@@ -222,6 +205,7 @@ namespace AZ::RHI
 
         auto drawRequestCount{ original->m_drawListTags.size() };
         m_drawPacketInFlight->m_drawListMask = original->m_drawListMask;
+        m_drawPacketInFlight->m_multiMeshBuffers = original->m_multiMeshBuffers;
         m_drawPacketInFlight->m_drawListTags.resize_no_construct(drawRequestCount);
         m_drawPacketInFlight->m_drawFilterMasks.resize_no_construct(drawRequestCount);
         m_drawPacketInFlight->m_drawItemSortKeys.resize_no_construct(drawRequestCount);

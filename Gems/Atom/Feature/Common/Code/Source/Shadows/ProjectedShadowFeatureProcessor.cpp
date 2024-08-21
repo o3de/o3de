@@ -773,9 +773,11 @@ namespace AZ::Render
             return;
         }
 
+        m_meshBuffers.SetDrawArguments(RHI::DrawLinear(1, 0, 3, 0));
+
         RHI::DrawPacketBuilder drawPacketBuilder;
         drawPacketBuilder.Begin(nullptr);
-        drawPacketBuilder.SetDrawArguments(RHI::DrawLinear(1, 0, 3, 0));
+        drawPacketBuilder.SetMeshBuffers(&m_meshBuffers);
 
         RHI::DrawPacketBuilder::DrawRequest drawRequest;
         drawRequest.m_listTag = m_clearShadowShader->GetDrawListTag();

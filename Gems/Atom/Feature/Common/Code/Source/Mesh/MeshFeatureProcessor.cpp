@@ -2153,14 +2153,6 @@ namespace AZ
             static const RHI::Format BitangentStreamFormat = RHI::Format::R32G32B32_FLOAT;
             static const RHI::Format UVStreamFormat = RHI::Format::R32G32_FLOAT;
 
-            RHI::InputStreamLayoutBuilder layoutBuilder;
-            layoutBuilder.AddBuffer()->Channel(PositionSemantic, PositionStreamFormat);
-            layoutBuilder.AddBuffer()->Channel(NormalSemantic, NormalStreamFormat);
-            layoutBuilder.AddBuffer()->Channel(UVSemantic, UVStreamFormat);
-            layoutBuilder.AddBuffer()->Channel(TangentSemantic, TangentStreamFormat);
-            layoutBuilder.AddBuffer()->Channel(BitangentSemantic, BitangentStreamFormat);
-            RHI::InputStreamLayout inputStreamLayout = layoutBuilder.End();
-
             RPI::ShaderInputContract::StreamChannelInfo positionStreamChannelInfo;
             positionStreamChannelInfo.m_semantic = RHI::ShaderSemantic(AZ::Name(PositionSemantic));
             positionStreamChannelInfo.m_componentCount = RHI::GetFormatComponentCount(PositionStreamFormat);
@@ -2211,10 +2203,12 @@ namespace AZ
                 }
 
                 // retrieve vertex/index buffers
-                RPI::ModelLod::StreamBufferViewList streamBufferViews;
+                RHI::InputStreamLayout inputStreamLayout;
+                RHI::MeshBuffers::Interval streamIndexInterval;
+
                 [[maybe_unused]] bool result = modelLod->GetStreamsForMesh(
                     inputStreamLayout,
-                    streamBufferViews,
+                    streamIndexInterval,
                     nullptr,
                     shaderInputContract,
                     meshIndex,
@@ -2224,32 +2218,34 @@ namespace AZ
 
                 // The code below expects streams for positions, normals, tangents, bitangents, and uvs.
                 constexpr size_t NumExpectedStreams = 5;
-                if (streamBufferViews.size() < NumExpectedStreams)
+                if (streamIndexInterval.size() < NumExpectedStreams)
                 {
                     AZ_Warning("MeshFeatureProcessor", false, "Model is missing one or more expected streams "
                         "(positions, normals, tangents, bitangents, uvs), skipping the raytracing data generation.");
                     continue;
                 }
 
+                RHI::MeshBuffers::StreamIterator streamIter = mesh.CreateStreamIterator(streamIndexInterval);
+
                 // note that the element count is the size of the entire buffer, even though this mesh may only
                 // occupy a portion of the vertex buffer.  This is necessary since we are accessing it using
                 // a ByteAddressBuffer in the raytracing shaders and passing the byte offset to the shader in a constant buffer.
-                uint32_t positionBufferByteCount = static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamBufferViews[0].GetBuffer())->GetDescriptor().m_byteCount);
+                uint32_t positionBufferByteCount = static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamIter[0].GetBuffer())->GetDescriptor().m_byteCount);
                 RHI::BufferViewDescriptor positionBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, positionBufferByteCount);
 
-                uint32_t normalBufferByteCount = static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamBufferViews[1].GetBuffer())->GetDescriptor().m_byteCount);
+                uint32_t normalBufferByteCount = static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamIter[1].GetBuffer())->GetDescriptor().m_byteCount);
                 RHI::BufferViewDescriptor normalBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, normalBufferByteCount);
 
-                uint32_t tangentBufferByteCount = static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamBufferViews[2].GetBuffer())->GetDescriptor().m_byteCount);
+                uint32_t tangentBufferByteCount = static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamIter[2].GetBuffer())->GetDescriptor().m_byteCount);
                 RHI::BufferViewDescriptor tangentBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, tangentBufferByteCount);
 
-                uint32_t bitangentBufferByteCount = static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamBufferViews[3].GetBuffer())->GetDescriptor().m_byteCount);
+                uint32_t bitangentBufferByteCount = static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamIter[3].GetBuffer())->GetDescriptor().m_byteCount);
                 RHI::BufferViewDescriptor bitangentBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, bitangentBufferByteCount);
 
-                uint32_t uvBufferByteCount = static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamBufferViews[4].GetBuffer())->GetDescriptor().m_byteCount);
+                uint32_t uvBufferByteCount = static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamIter[4].GetBuffer())->GetDescriptor().m_byteCount);
                 RHI::BufferViewDescriptor uvBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, uvBufferByteCount);
 
-                const RHI::IndexBufferView& indexBufferView = mesh.m_indexBufferView;
+                const RHI::IndexBufferView& indexBufferView = mesh.GetIndexBufferView();
                 uint32_t indexElementSize = indexBufferView.GetIndexFormat() == RHI::IndexFormat::Uint16 ? 2 : 4;
                 uint32_t indexElementCount = (uint32_t)indexBufferView.GetBuffer()->GetDescriptor().m_byteCount / indexElementSize;
                 RHI::BufferViewDescriptor indexBufferDescriptor;
@@ -2262,39 +2258,39 @@ namespace AZ
                 RayTracingFeatureProcessor::SubMesh subMesh;
                 RayTracingFeatureProcessor::SubMeshMaterial& subMeshMaterial = subMesh.m_material;
                 subMesh.m_positionFormat = PositionStreamFormat;
-                subMesh.m_positionVertexBufferView = streamBufferViews[0];
-                subMesh.m_positionShaderBufferView = const_cast<RHI::Buffer*>(streamBufferViews[0].GetBuffer())->GetBufferView(positionBufferDescriptor);
+                subMesh.m_positionVertexBufferView = streamIter[0];
+                subMesh.m_positionShaderBufferView = const_cast<RHI::Buffer*>(streamIter[0].GetBuffer())->GetBufferView(positionBufferDescriptor);
 
                 subMesh.m_normalFormat = NormalStreamFormat;
-                subMesh.m_normalVertexBufferView = streamBufferViews[1];
-                subMesh.m_normalShaderBufferView = const_cast<RHI::Buffer*>(streamBufferViews[1].GetBuffer())->GetBufferView(normalBufferDescriptor);
+                subMesh.m_normalVertexBufferView = streamIter[1];
+                subMesh.m_normalShaderBufferView = const_cast<RHI::Buffer*>(streamIter[1].GetBuffer())->GetBufferView(normalBufferDescriptor);
 
                 if (tangentBufferByteCount > 0)
                 {
                     subMesh.m_bufferFlags |= RayTracingSubMeshBufferFlags::Tangent;
                     subMesh.m_tangentFormat = TangentStreamFormat;
-                    subMesh.m_tangentVertexBufferView = streamBufferViews[2];
-                    subMesh.m_tangentShaderBufferView = const_cast<RHI::Buffer*>(streamBufferViews[2].GetBuffer())->GetBufferView(tangentBufferDescriptor);
+                    subMesh.m_tangentVertexBufferView = streamIter[2];
+                    subMesh.m_tangentShaderBufferView = const_cast<RHI::Buffer*>(streamIter[2].GetBuffer())->GetBufferView(tangentBufferDescriptor);
                 }
 
                 if (bitangentBufferByteCount > 0)
                 {
                     subMesh.m_bufferFlags |= RayTracingSubMeshBufferFlags::Bitangent;
                     subMesh.m_bitangentFormat = BitangentStreamFormat;
-                    subMesh.m_bitangentVertexBufferView = streamBufferViews[3];
-                    subMesh.m_bitangentShaderBufferView = const_cast<RHI::Buffer*>(streamBufferViews[3].GetBuffer())->GetBufferView(bitangentBufferDescriptor);
+                    subMesh.m_bitangentVertexBufferView = streamIter[3];
+                    subMesh.m_bitangentShaderBufferView = const_cast<RHI::Buffer*>(streamIter[3].GetBuffer())->GetBufferView(bitangentBufferDescriptor);
                 }
 
                 if (uvBufferByteCount > 0)
                 {
                     subMesh.m_bufferFlags |= RayTracingSubMeshBufferFlags::UV;
                     subMesh.m_uvFormat = UVStreamFormat;
-                    subMesh.m_uvVertexBufferView = streamBufferViews[4];
-                    subMesh.m_uvShaderBufferView = const_cast<RHI::Buffer*>(streamBufferViews[4].GetBuffer())->GetBufferView(uvBufferDescriptor);
+                    subMesh.m_uvVertexBufferView = streamIter[4];
+                    subMesh.m_uvShaderBufferView = const_cast<RHI::Buffer*>(streamIter[4].GetBuffer())->GetBufferView(uvBufferDescriptor);
                 }
 
-                subMesh.m_indexBufferView = mesh.m_indexBufferView;
-                subMesh.m_indexShaderBufferView = const_cast<RHI::Buffer*>(mesh.m_indexBufferView.GetBuffer())->GetBufferView(indexBufferDescriptor);
+                subMesh.m_indexBufferView = mesh.GetIndexBufferView();
+                subMesh.m_indexShaderBufferView = const_cast<RHI::Buffer*>(mesh.GetIndexBufferView().GetBuffer())->GetBufferView(indexBufferDescriptor);
 
                 // add material data
                 if (material)

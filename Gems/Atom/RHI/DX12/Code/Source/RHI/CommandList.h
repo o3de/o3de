@@ -19,6 +19,7 @@
 #include <Atom/RHI/CommandListValidator.h>
 #include <Atom/RHI/CommandListStates.h>
 #include <Atom/RHI/IndirectArguments.h>
+#include <Atom/RHI/MeshBuffers.h>
 #include <Atom/RHI/ObjectPool.h>
 #include <AzCore/std/containers/span.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -190,7 +191,7 @@ namespace AZ
             template <RHI::PipelineStateType, typename Item>
             bool CommitShaderResources(const Item& item);
 
-            void SetStreamBuffers(const RHI::StreamBufferView* descriptors, uint32_t count);
+            void SetStreamBuffers(const RHI::MeshBuffers& meshBuffers, RHI::MeshBuffers::Interval streamIndexInterval);
             void SetIndexBuffer(const RHI::IndexBufferView& descriptor);
             void SetStencilRef(uint8_t stencilRef);
             void SetTopology(RHI::PrimitiveTopology topology);
@@ -295,6 +296,7 @@ namespace AZ
             {
                 if (!pipelineState->IsInitialized())
                 {
+                    AZ_Warning("CommandList", false, "Pipeline State is not initialized.");
                     return false;
                 }
 

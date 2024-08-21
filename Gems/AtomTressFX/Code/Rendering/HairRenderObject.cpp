@@ -597,7 +597,7 @@ namespace AZ
                 AZ_Error("Hair Gem", result == RHI::ResultCode::Success, "Failed to initialize index buffer - error [%d]", result);
 
                 // create index buffer view
-                m_indexBufferView = RHI::IndexBufferView(*m_indexBuffer.get(), 0, indexBufferSize, RHI::IndexFormat::Uint32 );
+                m_meshBuffers.SetIndexBufferView(RHI::IndexBufferView(*m_indexBuffer.get(), 0, indexBufferSize, RHI::IndexFormat::Uint32));
  
                 return true;
             }
@@ -1140,13 +1140,10 @@ namespace AZ
                     numPrimsToRender *= 3;
                 }
 
-                drawIndexed.m_indexCount = numPrimsToRender;
-                drawIndexed.m_indexOffset = 0;
-                drawIndexed.m_vertexOffset = 0;
+                m_meshBuffers.SetDrawArguments(RHI::DrawIndexed{ 0, 0, 0, numPrimsToRender, 0 });
 
                 drawPacketBuilder.Begin(nullptr);
-                drawPacketBuilder.SetDrawArguments(drawIndexed);
-                drawPacketBuilder.SetIndexBufferView(m_indexBufferView);
+                drawPacketBuilder.SetMeshBuffers(&m_meshBuffers);
 
                 RPI::ShaderResourceGroup* renderMaterialSrg = m_hairRenderSrg.get();
                 RPI::ShaderResourceGroup* simSrg = m_dynamicHairData.GetSimSrgForRaster().get();

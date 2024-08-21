@@ -11,6 +11,7 @@
 #include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/IndexBufferView.h>
+#include <Atom/RHI/MeshBuffers.h>
 #include <Atom/RHI/StreamBufferView.h>
 #include <Atom/RHI/PipelineState.h>
 
@@ -87,22 +88,16 @@ namespace AZ
             //! We store a struct of this type for each fixed object geometry (both shapes and boxes)
             struct ObjectBuffers
             {
-                uint32_t m_pointIndexCount;
+                RHI::MeshBuffers m_pointMeshBuffers;
+                RHI::MeshBuffers m_lineMeshBuffers;
+                RHI::MeshBuffers m_triangleMeshBuffers;
+
                 AZ::RHI::Ptr<AZ::RHI::Buffer> m_pointIndexBuffer;
-                AZ::RHI::IndexBufferView m_pointIndexBufferView;
-
-                uint32_t m_lineIndexCount;
                 AZ::RHI::Ptr<AZ::RHI::Buffer> m_lineIndexBuffer;
-                AZ::RHI::IndexBufferView m_lineIndexBufferView;
-
-                uint32_t m_triangleIndexCount;
                 AZ::RHI::Ptr<AZ::RHI::Buffer> m_triangleIndexBuffer;
-                AZ::RHI::IndexBufferView m_triangleIndexBufferView;
 
                 AZ::RHI::Ptr<AZ::RHI::Buffer> m_positionBuffer;
                 AZ::RHI::Ptr<AZ::RHI::Buffer> m_normalBuffer;
-                StreamBufferViewsForAllStreams m_streamBufferViews;
-                StreamBufferViewsForAllStreams m_streamBufferViewsWithNormals;
             };
 
             // This is a temporary structure used when building object meshes. The data is then copied into RHI buffers.
@@ -173,9 +168,8 @@ namespace AZ
             void InitPipelineState(const PipelineStateOptions& options);
             RPI::Ptr<RPI::PipelineStateForDraw>& GetPipelineState(const PipelineStateOptions& pipelineStateOptions);
 
-            const AZ::RHI::IndexBufferView& GetShapeIndexBufferView(AuxGeomShapeType shapeType, int drawStyle, LodIndex lodIndex) const;
-            const StreamBufferViewsForAllStreams& GetShapeStreamBufferViews(AuxGeomShapeType shapeType, LodIndex lodIndex, int drawStyle) const;
-            uint32_t GetShapeIndexCount(AuxGeomShapeType shapeType, int drawStyle, LodIndex lodIndex);
+            RHI::MeshBuffers* GetMeshBuffers(AuxGeomShapeType shapeType, int drawStyle, LodIndex lodIndex);
+            RHI::MeshBuffers* GetBoxMeshBuffers(int drawStyle);
 
             //! Uses the given drawPacketBuilder to build a draw packet for given shape and state and returns it
             const RHI::DrawPacket* BuildDrawPacketForShape(
@@ -186,10 +180,6 @@ namespace AZ
                 const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
                 LodIndex lodIndex,
                 RHI::DrawItemSortKey sortKey = 0);
-
-            const AZ::RHI::IndexBufferView& GetBoxIndexBufferView(int drawStyle) const;
-            const StreamBufferViewsForAllStreams& GetBoxStreamBufferViews(int drawStyle) const;
-            uint32_t GetBoxIndexCount(int drawStyle);
 
             //! Uses the given drawPacketBuilder to build a draw packet for given box and state and returns it
             const RHI::DrawPacket* BuildDrawPacketForBox(
@@ -204,12 +194,11 @@ namespace AZ
             const RHI::DrawPacket* BuildDrawPacket(
                 RHI::DrawPacketBuilder& drawPacketBuilder,
                 AZ::Data::Instance<RPI::ShaderResourceGroup>& srg,
-                uint32_t indexCount,
-                const RHI::IndexBufferView& indexBufferView,
-                const StreamBufferViewsForAllStreams& streamBufferViews,
+                RHI::MeshBuffers* meshBuffers,
                 RHI::DrawListTag drawListTag,
                 const AZ::RHI::PipelineState* pipelineState,
-                RHI::DrawItemSortKey sortKey);
+                RHI::DrawItemSortKey sortKey,
+                int drawStyle);
 
         private: // data
 

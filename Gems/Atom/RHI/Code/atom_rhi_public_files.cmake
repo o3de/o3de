@@ -46,23 +46,28 @@ set(FILES
     Include/Atom/RHI/DispatchItem.h
     Include/Atom/RHI/MultiDeviceDispatchItem.h
     Include/Atom/RHI/DrawFilterTagRegistry.h
+    Include/Atom/RHI/DrawArguments.h
     Include/Atom/RHI/DrawItem.h
     Include/Atom/RHI/MultiDeviceDrawItem.h
     Include/Atom/RHI/DrawList.h
     Include/Atom/RHI/DrawListTagRegistry.h
     Include/Atom/RHI/DrawListContext.h
     Include/Atom/RHI/DrawPacket.h
+    Include/Atom/RHI/MeshBuffers.h
     Include/Atom/RHI/MultiDeviceDrawPacket.h
     Include/Atom/RHI/DrawPacketBuilder.h
     Include/Atom/RHI/MultiDeviceDrawPacketBuilder.h
     Include/Atom/RHI/IndirectArguments.h
     Include/Atom/RHI/MultiDeviceIndirectArguments.h
+    Include/Atom/RHI/MultiDeviceMeshBuffers.h
+    Include/Atom/RHI/MultiDeviceDrawArguments.h
     Source/RHI/CommandList.cpp
     Source/RHI/CommandListValidator.cpp
     Source/RHI/ConstantsData.cpp
     Source/RHI/DrawList.cpp
     Source/RHI/DrawListContext.cpp
     Source/RHI/DrawPacket.cpp
+    Source/RHI/MeshBuffers.cpp
     Source/RHI/MultiDeviceDrawPacket.cpp
     Source/RHI/DrawPacketBuilder.cpp
     Source/RHI/MultiDeviceDrawPacketBuilder.cpp

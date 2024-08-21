@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RHI/DrawPacket.h>
+#include <Atom/RHI/MeshBuffers.h>
 #include <Atom/RHI.Reflect/Scissor.h>
 #include <Atom/RHI.Reflect/Viewport.h>
 
@@ -30,10 +31,9 @@ namespace AZ::RHI
             DrawListTag m_listTag;
 
             //! The stencil ref value used for this draw item.
-            uint8_t m_stencilRef = 0;
+            u8 m_stencilRef = 0;
 
-            //! The array of stream buffers to bind for this draw item.
-            AZStd::span<const StreamBufferView> m_streamBufferViews;
+            RHI::MeshBuffers::Interval m_streamIndexInterval = {};
 
             //! Shader resource group unique for this draw request
             const ShaderResourceGroup* m_uniqueShaderResourceGroup = nullptr;
@@ -55,9 +55,7 @@ namespace AZ::RHI
 
         void Begin(IAllocator* allocator);
 
-        void SetDrawArguments(const DrawArguments& drawArguments);
-
-        void SetIndexBufferView(const IndexBufferView& indexBufferView);
+        void SetMeshBuffers(MeshBuffers* meshBuffers);
 
         void SetRootConstants(AZStd::span<const uint8_t> rootConstants);
 
@@ -84,11 +82,10 @@ namespace AZ::RHI
     private:
         void ClearData();
 
-        IAllocator* m_allocator = nullptr;
-        DrawArguments m_drawArguments;
         DrawListMask m_drawListMask = 0;
-        size_t m_streamBufferViewCount = 0;
-        IndexBufferView m_indexBufferView;
+
+        IAllocator* m_allocator = nullptr;
+        MeshBuffers* m_meshBuffers = nullptr;
         AZStd::fixed_vector<DrawRequest, DrawItemCountMax> m_drawRequests;
         AZStd::fixed_vector<const ShaderResourceGroup*, Limits::Pipeline::ShaderResourceGroupCountMax> m_shaderResourceGroups;
         AZStd::span<const uint8_t> m_rootConstants;

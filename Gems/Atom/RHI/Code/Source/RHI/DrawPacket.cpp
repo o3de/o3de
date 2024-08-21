@@ -91,13 +91,6 @@ namespace AZ::RHI
 
     void DrawPacket::SetInstanceCount(uint32_t instanceCount)
     {
-        for (size_t drawItemIndex = 0; drawItemIndex < m_drawItemCount; ++drawItemIndex)
-        {
-            const DrawItem* drawItemConst = m_drawItems + drawItemIndex;
-            // Need to mutate for mesh instancing.
-            // This should be used after cloning the draw packet from DrawPacketBuilder.
-            DrawItem* drawItem = const_cast<DrawItem*>(drawItemConst);
-            drawItem->m_arguments.m_indexed.m_instanceCount = instanceCount;
-        }
+        m_meshBuffers->SetIndexInstanceCount(instanceCount);
     }
 }

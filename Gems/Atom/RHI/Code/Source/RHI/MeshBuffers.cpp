@@ -1,0 +1,62 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Atom/RHI/MeshBuffers.h>
+#include <Atom/RHI.Reflect/InputStreamLayout.h>
+
+namespace AZ::RHI
+{
+
+    bool ValidateStreamBufferViews(const InputStreamLayout& inputStreamLayout, RHI::MeshBuffers& meshBuffers, RHI::MeshBuffers::Interval streamIndexInterval)
+    {
+        bool ok = true;
+
+        if (Validation::IsEnabled())
+        {
+            if (!inputStreamLayout.IsFinalized())
+            {
+                AZ_Error("InputStreamLayout", false, "InputStreamLayout is not finalized.");
+                ok = false;
+            }
+
+            size_t streamCount = 0;
+
+            for (MeshBuffers::StreamIterator it(&meshBuffers, streamIndexInterval); !it.HasEnded(); ++it, ++streamCount)
+            {
+
+                auto bufferDescriptors = inputStreamLayout.GetStreamBuffers();
+                auto& bufferDescriptor = bufferDescriptors[streamCount];
+                auto& bufferView = *it;
+
+                // It can be valid to have a null buffer if this stream is not actually used by the shader, which can be the case for streams marked optional.
+                if (bufferView.GetBuffer() == nullptr)
+                {
+                    continue;
+                }
+
+                if (bufferDescriptor.m_byteStride != bufferView.GetByteStride())
+                {
+                    AZ_Error("InputStreamLayout", false, "InputStreamLayout's buffer[%d] has stride=%d but StreamBufferView[%d] has stride=%d.",
+                        streamCount, bufferDescriptor.m_byteStride, streamCount, bufferView.GetByteStride());
+                    ok = false;
+                }
+            }
+
+            if (streamCount != inputStreamLayout.GetStreamBuffers().size())
+            {
+                AZ_Error("InputStreamLayout", false, "InputStreamLayout references %d stream buffers but %d StreamBufferViews passed the mask check.",
+                    inputStreamLayout.GetStreamBuffers().size(), streamCount);
+                ok = false;
+            }
+
+        }
+
+        return ok;
+    }
+
+}
