@@ -99,11 +99,7 @@ namespace
 
         void PumpEventLoopOnce() override
         {
-#if defined(CARBONATED)
             PumpEvents(&ALooper_pollOnce);
-#else
-            PumpEvents(&ALooper_pollAll);
-#endif
         }
 
         void SetAppState(android_app* appState)
