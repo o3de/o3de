@@ -292,7 +292,7 @@ def generate_android_project(args: argparse) -> int:
         project_settings, android_settings = android_support.read_android_settings_for_project(resolved_project_path)
 
         # Generating android projects from an install O3DE SDK is not supported yet
-        if manifest.is_sdk_engine():
+        if manifest.is_sdk_engine(engine_path=ENGINE_PATH):
             raise android_support.AndroidToolError("Exporting Android projects is not supported in from the SDK version of O3DE")
 
         # Perform validation on the config and the environment
