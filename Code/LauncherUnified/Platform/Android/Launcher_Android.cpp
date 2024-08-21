@@ -89,7 +89,11 @@ namespace
             bool continueRunning = true;
             while (continueRunning) 
             {
+#if defined(CARBONATED)
+                continueRunning = PumpEvents(&ALooper_pollOnce);
+#else
                 continueRunning = PumpEvents(&ALooper_pollAll);
+#endif
             }
         }
 
