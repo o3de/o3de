@@ -89,13 +89,21 @@ namespace
             bool continueRunning = true;
             while (continueRunning) 
             {
+#if defined(CARBONATED)
                 continueRunning = PumpEvents(&ALooper_pollOnce);
+#else
+                continueRunning = PumpEvents(&ALooper_pollAll);
+#endif
             }
         }
 
         void PumpEventLoopOnce() override
         {
+#if defined(CARBONATED)
             PumpEvents(&ALooper_pollOnce);
+#else
+            PumpEvents(&ALooper_pollAll);
+#endif
         }
 
         void SetAppState(android_app* appState)
