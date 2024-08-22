@@ -406,6 +406,7 @@
       "nightly-installer"
     ],
     "steps": [
+      "install_mono_22_release",
       "installer"
     ]
   },
