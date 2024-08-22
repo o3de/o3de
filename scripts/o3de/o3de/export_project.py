@@ -30,6 +30,8 @@ except:
 # Check if tix is installed or not
 tkinter_tix_installed = True
 try:
+    # `tix` won't be detected with a simple import, it won't raise an exception until
+    # tk attempts to create an object
     import tkinter.tix as tkp
 
     class CheckTix(tkp.Tk):
@@ -40,7 +42,6 @@ try:
     CheckTix().destroy()
 
 except Exception as e:
-    print(e)
     tkinter_tix_installed = False
 
 from typing import List
