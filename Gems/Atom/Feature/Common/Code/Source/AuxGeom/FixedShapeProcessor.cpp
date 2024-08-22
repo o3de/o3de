@@ -1301,7 +1301,7 @@ namespace AZ
 
             // Setup point index buffer view
             u32 pointIndexCount = static_cast<uint32_t>(meshData.m_pointIndices.size());
-            objectBuffers.m_pointMeshBuffers.SetDrawArguments(RHI::DrawIndexed{ 0, 0, 0, pointIndexCount, 0 });
+            objectBuffers.m_pointMeshBuffers.SetDrawArguments(RHI::DrawIndexed{ 1, 0, 0, pointIndexCount, 0 });
             objectBuffers.m_pointMeshBuffers.SetIndexBufferView(
             {
                 *objectBuffers.m_pointIndexBuffer,
@@ -1312,7 +1312,7 @@ namespace AZ
 
             // Setup line index buffer view
             u32 lineIndexCount = static_cast<uint32_t>(meshData.m_lineIndices.size());
-            objectBuffers.m_lineMeshBuffers.SetDrawArguments(RHI::DrawIndexed{ 0, 0, 0, lineIndexCount, 0 });
+            objectBuffers.m_lineMeshBuffers.SetDrawArguments(RHI::DrawIndexed{ 1, 0, 0, lineIndexCount, 0 });
             objectBuffers.m_lineMeshBuffers.SetIndexBufferView(
             {
                 *objectBuffers.m_lineIndexBuffer,
@@ -1323,7 +1323,7 @@ namespace AZ
 
             // Setup triangle index buffer view
             u32 triangleIndexCount = static_cast<uint32_t>(meshData.m_triangleIndices.size());
-            objectBuffers.m_lineMeshBuffers.SetDrawArguments(RHI::DrawIndexed{ 0, 0, 0, triangleIndexCount, 0 });
+            objectBuffers.m_triangleMeshBuffers.SetDrawArguments(RHI::DrawIndexed{ 1, 0, 0, triangleIndexCount, 0 });
             objectBuffers.m_triangleMeshBuffers.SetIndexBufferView(
             {
                 *objectBuffers.m_triangleIndexBuffer,
@@ -1357,24 +1357,20 @@ namespace AZ
             };
 
             objectBuffers.m_pointMeshBuffers.AddStreamBufferView(positionBufferView);
-            objectBuffers.m_pointMeshBuffers.AddIndirectionIndex(0);
-
             objectBuffers.m_lineMeshBuffers.AddStreamBufferView(positionBufferView);
-            objectBuffers.m_lineMeshBuffers.AddIndirectionIndex(0);
-
             objectBuffers.m_triangleMeshBuffers.AddStreamBufferView(positionBufferView);
             objectBuffers.m_triangleMeshBuffers.AddStreamBufferView(normalBufferView);
-            objectBuffers.m_triangleMeshBuffers.AddIndirectionIndex(0);
-            objectBuffers.m_triangleMeshBuffers.AddIndirectionIndex(1);
 
-            RHI::MeshBuffers::Interval positionInterval{ 0, 1};
-            RHI::MeshBuffers::Interval positionAndNormalInterval{ 0, 2};
+            RHI::MeshBuffers::StreamBufferIndices streamIndices;
+            streamIndices.AddIndex(0);  // Positions
 
             // Validate for each draw style
-            AZ::RHI::ValidateStreamBufferViews(m_objectStreamLayout[DrawStyle_Point], objectBuffers.m_pointMeshBuffers, positionInterval);
-            AZ::RHI::ValidateStreamBufferViews(m_objectStreamLayout[DrawStyle_Line], objectBuffers.m_lineMeshBuffers, positionInterval);
-            AZ::RHI::ValidateStreamBufferViews(m_objectStreamLayout[DrawStyle_Solid], objectBuffers.m_triangleMeshBuffers, positionInterval);
-            AZ::RHI::ValidateStreamBufferViews(m_objectStreamLayout[DrawStyle_Shaded], objectBuffers.m_triangleMeshBuffers, positionAndNormalInterval);
+            AZ::RHI::ValidateStreamBufferViews(m_objectStreamLayout[DrawStyle_Point], objectBuffers.m_pointMeshBuffers, streamIndices);
+            AZ::RHI::ValidateStreamBufferViews(m_objectStreamLayout[DrawStyle_Line], objectBuffers.m_lineMeshBuffers, streamIndices);
+            AZ::RHI::ValidateStreamBufferViews(m_objectStreamLayout[DrawStyle_Solid], objectBuffers.m_triangleMeshBuffers, streamIndices);
+
+            streamIndices.AddIndex(1);  // Normals
+            AZ::RHI::ValidateStreamBufferViews(m_objectStreamLayout[DrawStyle_Shaded], objectBuffers.m_triangleMeshBuffers, streamIndices);
 
             return true;
         }
@@ -1726,12 +1722,17 @@ namespace AZ
             drawPacketBuilder.SetMeshBuffers(meshBuffers);
             drawPacketBuilder.AddShaderResourceGroup(srg->GetRHIShaderResourceGroup());
 
-            RHI::MeshBuffers::Interval positionInterval{ 0, 1 };
-            RHI::MeshBuffers::Interval positionAndNormalInterval{ 0, 2 };
+            RHI::MeshBuffers::StreamBufferIndices streamIndices;
+            streamIndices.AddIndex(0);          // Positions
+
+            if (drawStyle == DrawStyle_Shaded)
+            {
+                streamIndices.AddIndex(1);          // Normals
+            }
 
             RHI::DrawPacketBuilder::DrawRequest drawRequest;
             drawRequest.m_listTag = drawListTag;
-            drawRequest.m_streamIndexInterval = (drawStyle == DrawStyle_Shaded) ? positionAndNormalInterval : positionInterval;
+            drawRequest.m_streamIndices = streamIndices;
             drawRequest.m_pipelineState = pipelineState;
             drawRequest.m_sortKey = sortKey;
             drawPacketBuilder.AddDrawItem(drawRequest);

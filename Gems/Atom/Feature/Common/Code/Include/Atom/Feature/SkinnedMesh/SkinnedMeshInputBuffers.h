@@ -115,7 +115,7 @@ namespace AZ
                 uint32_t meshIndex,
                 const RHI::InputStreamLayout& inputLayout,
                 RPI::ModelLod::Mesh& mesh,
-                RHI::MeshBuffers::Interval streamIndexInterval,
+                const RHI::MeshBuffers::StreamBufferIndices& streamIndices,
                 const char* modelName);
 
             void CreateOutputOffsets(

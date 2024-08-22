@@ -298,6 +298,7 @@ namespace AZ
 
             RHI::DrawPacketBuilder::DrawRequest drawRequest;
             drawRequest.m_listTag = drawListTag;
+            drawRequest.m_streamIndices = m_reflectionRenderData->m_meshBuffers.GetFullStreamBufferIndices();
             drawRequest.m_pipelineState = pipelineState->GetRHIPipelineState();
             drawRequest.m_stencilRef = static_cast<uint8_t>(stencilRef);
             drawRequest.m_sortKey = m_sortKey;

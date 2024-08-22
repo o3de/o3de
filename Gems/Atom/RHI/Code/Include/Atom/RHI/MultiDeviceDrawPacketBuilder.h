@@ -38,8 +38,8 @@ namespace AZ::RHI
             //! The stencil ref value used for this draw item.
             uint8_t m_stencilRef{};
 
-            //! The interval of stream indices used to iterate through the StreamBufferViews in MeshBuffers
-            RHI::MeshBuffers::Interval m_streamIndexInterval;
+            //! Indices of which MeshBuffer StreamBufferViews to use
+            RHI::MeshBuffers::StreamBufferIndices m_streamIndices;
 
             //! Shader resource group unique for this draw request
             const MultiDeviceShaderResourceGroup* m_uniqueShaderResourceGroup{};

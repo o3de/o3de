@@ -191,7 +191,7 @@ namespace AZ
             template <RHI::PipelineStateType, typename Item>
             bool CommitShaderResources(const Item& item);
 
-            void SetStreamBuffers(const RHI::MeshBuffers& meshBuffers, RHI::MeshBuffers::Interval streamIndexInterval);
+            void SetStreamBuffers(const RHI::MeshBuffers& meshBuffers, const RHI::MeshBuffers::StreamBufferIndices& streamIndices);
             void SetIndexBuffer(const RHI::IndexBufferView& descriptor);
             void SetStencilRef(uint8_t stencilRef);
             void SetTopology(RHI::PrimitiveTopology topology);

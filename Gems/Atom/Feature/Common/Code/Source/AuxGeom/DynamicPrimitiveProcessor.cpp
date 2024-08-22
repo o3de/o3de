@@ -405,6 +405,7 @@ namespace AZ
 
             RHI::DrawPacketBuilder::DrawRequest drawRequest;
             drawRequest.m_listTag = m_shaderData.m_drawListTag;
+            drawRequest.m_streamIndices = meshBuffers.GetFullStreamBufferIndices();
             drawRequest.m_pipelineState = pipelineState->GetRHIPipelineState();
             drawRequest.m_sortKey = sortKey;
             drawPacketBuilder.AddDrawItem(drawRequest);

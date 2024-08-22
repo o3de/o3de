@@ -92,7 +92,7 @@ namespace AZ
             uint32_t meshIndex,
             const RHI::InputStreamLayout& inputLayout,
             RPI::ModelLod::Mesh& mesh,
-            RHI::MeshBuffers::Interval streamIndexInterval,
+            const RHI::MeshBuffers::StreamBufferIndices& streamIndices,
             const char* modelName)
         {
             SkinnedSubMeshProperties& skinnedSubMesh = m_meshes[meshIndex];
@@ -103,7 +103,7 @@ namespace AZ
             HasInputStreamArray meshHasInputStream{ false };
 
             u8 meshStreamIndex = 0;
-            RHI::MeshBuffers::StreamIterator streamIter = mesh.CreateStreamIterator(streamIndexInterval);
+            RHI::MeshBuffers::StreamIterator streamIter = mesh.CreateStreamIterator(streamIndices);
 
             // Create a buffer view for each input stream in the current mesh
             for (; !streamIter.HasEnded(); ++streamIter)
@@ -237,15 +237,15 @@ namespace AZ
 
                 // Get all of the streams potentially used as input to the skinning compute shader
                 RHI::InputStreamLayout inputLayout;
-                RHI::MeshBuffers::Interval streamIndexInterval;
+                RHI::MeshBuffers::StreamBufferIndices streamIndices;
                 bool success = modelLod->GetStreamsForMesh(
-                    inputLayout, streamIndexInterval, nullptr,
+                    inputLayout, streamIndices, nullptr,
                     SkinnedMeshVertexStreamPropertyInterface::Get()->GetComputeShaderInputContract(), meshIndex);
 
                 AZ_Assert( success, "SkinnedMeshInputLod failed to get Streams for model '%s'", modelAsset.GetHint().c_str());
 
                 HasInputStreamArray meshHasInputStream = CreateInputBufferViews(lodIndex, meshIndex, inputLayout,
-                    mesh, streamIndexInterval, modelAsset->GetName().GetCStr());
+                    mesh, streamIndices, modelAsset->GetName().GetCStr());
 
                 CreateOutputOffsets(meshIndex, meshHasInputStream, currentMeshOffsetFromStreamStart);
 

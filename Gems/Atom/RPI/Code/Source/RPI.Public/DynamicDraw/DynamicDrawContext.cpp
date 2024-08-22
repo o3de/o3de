@@ -515,6 +515,7 @@ namespace AZ
             indexBuffer->Write(indexData, indexDataSize);
             newMeshBuffers.SetIndexBufferView(indexBuffer->GetIndexBufferView(indexFormat));
 
+            drawItem.m_streamIndices = newMeshBuffers.GetFullStreamBufferIndices();
             drawItemInfo.m_cachedIndex = static_cast<u32>(m_cachedMeshBuffers.size());
             m_cachedMeshBuffers.emplace_back(AZStd::move(newMeshBuffers));
 

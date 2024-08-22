@@ -259,7 +259,7 @@ namespace AZ
 
         bool ModelLod::GetStreamsForMesh(
             RHI::InputStreamLayout& layoutOut,
-            RHI::MeshBuffers::Interval& streamIndexIntervalOut,
+            RHI::MeshBuffers::StreamBufferIndices& streamIndicesOut,
             UvStreamTangentBitmask* uvStreamTangentBitmaskOut,
             const ShaderInputContract& contract,
             size_t meshIndex,
@@ -269,7 +269,7 @@ namespace AZ
             RHI::InputStreamLayoutBuilder layoutBuilder;
             Mesh& mesh = m_meshes[meshIndex];
             bool success = true;
-            streamIndexIntervalOut.start = mesh.GetNextIndirectionIndex();
+            streamIndicesOut.Reset();
 
             // Searching for the first UV in the mesh, so it can be used to paired with tangent/bitangent stream
             auto firstUv = FindFirstUvStreamFromMesh(meshIndex);
@@ -299,14 +299,15 @@ namespace AZ
                         //
                         // The stride value does not seem to matter, just the Format type. Still, we use GetFormatSize to set an accurate stride.
 
+                        RHI::Format dummyStreamFormat = RHI::Format::R32G32B32A32_FLOAT;
+                        layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, dummyStreamFormat);
+
                         if (!mesh.HasDummyStreamBufferView())
                         {
-                            RHI::Format dummyStreamFormat = RHI::Format::R32G32B32A32_FLOAT;
-                            layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, dummyStreamFormat);
                             RHI::StreamBufferView dummyBuffer{ *mesh.GetIndexBufferView().GetBuffer(), 0, 0, RHI::GetFormatSize(dummyStreamFormat)};
                             mesh.AddDummyStreamBufferView(dummyBuffer);
                         }
-                        mesh.AddIndirectionIndex(mesh.GetDummyStreamBufferIndex());
+                        streamIndicesOut.AddIndex(mesh.GetDummyStreamBufferIndex());
                     }
                     else
                     {
@@ -332,17 +333,15 @@ namespace AZ
 
                         // Note, don't use iter->m_semantic as it can be a UV name matching.
                         layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, iter->m_format);
-                        mesh.AddIndirectionIndex((u8)iterIndex);
+                        streamIndicesOut.AddIndex((u8)iterIndex);
                     }
                 }
             }
 
-            streamIndexIntervalOut.end = mesh.GetNextIndirectionIndex();
-
             if (success)
             {
                 layoutOut = layoutBuilder.End();
-                success &= RHI::ValidateStreamBufferViews(layoutOut, mesh, streamIndexIntervalOut);
+                success &= RHI::ValidateStreamBufferViews(layoutOut, mesh, streamIndicesOut);
             }
 
             return success;

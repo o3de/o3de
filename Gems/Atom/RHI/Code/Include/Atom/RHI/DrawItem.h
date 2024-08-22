@@ -36,7 +36,7 @@ namespace AZ::RHI
     {
         DrawItem() = default;
 
-        RHI::MeshBuffers::Interval m_streamIndexInterval;
+        RHI::MeshBuffers::StreamBufferIndices m_streamIndices;
         u8  m_stencilRef = 0;
         u8  m_shaderResourceGroupCount = 0;
         u8  m_rootConstantSize = 0;

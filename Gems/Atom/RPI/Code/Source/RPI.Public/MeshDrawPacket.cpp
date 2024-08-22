@@ -377,11 +377,11 @@ namespace AZ
                 RHI::MergeStateInto(renderStatesOverlay, pipelineStateDescriptor.m_renderStates);
 
                 UvStreamTangentBitmask uvStreamTangentBitmask;
-                RHI::MeshBuffers::Interval streamIndexInterval;
+                RHI::MeshBuffers::StreamBufferIndices streamIndices;
 
                 if (!m_modelLod->GetStreamsForMesh(
                     pipelineStateDescriptor.m_inputStreamLayout,
-                    streamIndexInterval,
+                    streamIndices,
                     &uvStreamTangentBitmask,
                     shader->GetInputContract(),
                     m_modelLodMeshIndex,
@@ -445,7 +445,7 @@ namespace AZ
                 RHI::DrawPacketBuilder::DrawRequest drawRequest;
                 drawRequest.m_listTag = drawListTag;
                 drawRequest.m_pipelineState = pipelineState;
-                drawRequest.m_streamIndexInterval = streamIndexInterval;
+                drawRequest.m_streamIndices = streamIndices;
                 drawRequest.m_stencilRef = m_stencilRef;
                 drawRequest.m_sortKey = m_sortKey;
                 if (drawSrg)

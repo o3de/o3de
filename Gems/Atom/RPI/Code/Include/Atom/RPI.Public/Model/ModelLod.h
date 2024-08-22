@@ -109,7 +109,7 @@ namespace AZ
             // @param materialUvNameMap the UV name map that came from a MaterialTypeAsset, which defines the default set of material shader stream names.
             bool GetStreamsForMesh(
                 RHI::InputStreamLayout& layoutOut,
-                RHI::MeshBuffers::Interval& streamIndexIntervalOut,
+                RHI::MeshBuffers::StreamBufferIndices& streamIndicesOut,
                 UvStreamTangentBitmask* uvStreamTangentBitmaskOut,
                 const ShaderInputContract& contract,
                 size_t meshIndex,

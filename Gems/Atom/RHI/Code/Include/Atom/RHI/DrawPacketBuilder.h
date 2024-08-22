@@ -33,7 +33,7 @@ namespace AZ::RHI
             //! The stencil ref value used for this draw item.
             u8 m_stencilRef = 0;
 
-            RHI::MeshBuffers::Interval m_streamIndexInterval = {};
+            RHI::MeshBuffers::StreamBufferIndices m_streamIndices;
 
             //! Shader resource group unique for this draw request
             const ShaderResourceGroup* m_uniqueShaderResourceGroup = nullptr;

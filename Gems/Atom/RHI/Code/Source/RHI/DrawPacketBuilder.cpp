@@ -232,7 +232,7 @@ namespace AZ::RHI
 
             DrawItem& drawItem = drawItems[i];
             drawItem.m_enabled = !drawListTagDisabled;
-            drawItem.m_streamIndexInterval = drawRequest.m_streamIndexInterval;
+            drawItem.m_streamIndices = drawRequest.m_streamIndices;
             drawItem.m_meshBuffers = m_meshBuffers;
             drawItem.m_stencilRef = drawRequest.m_stencilRef;
             drawItem.m_shaderResourceGroupCount = drawPacket->m_shaderResourceGroupCount;
@@ -279,7 +279,7 @@ namespace AZ::RHI
         {
             const DrawItem* drawItem = original->m_drawItems + i;
             DrawRequest drawRequest;
-            drawRequest.m_streamIndexInterval = drawItem->m_streamIndexInterval;
+            drawRequest.m_streamIndices = drawItem->m_streamIndices;
             drawRequest.m_drawFilterMask = *(original->m_drawFilterMasks + i);
             drawRequest.m_listTag = *(original->m_drawListTags + i);
             drawRequest.m_pipelineState = drawItem->m_pipelineState;

@@ -12,7 +12,8 @@
 namespace AZ::RHI
 {
 
-    bool ValidateStreamBufferViews(const InputStreamLayout& inputStreamLayout, RHI::MeshBuffers& meshBuffers, RHI::MeshBuffers::Interval streamIndexInterval)
+    bool ValidateStreamBufferViews(const InputStreamLayout& inputStreamLayout, RHI::MeshBuffers& meshBuffers,
+        const RHI::MeshBuffers::StreamBufferIndices& streamIndices)
     {
         bool ok = true;
 
@@ -20,15 +21,14 @@ namespace AZ::RHI
         {
             if (!inputStreamLayout.IsFinalized())
             {
-                AZ_Error("InputStreamLayout", false, "InputStreamLayout is not finalized.");
+                AZ_Assert(false, "InputStreamLayout is not finalized.");
                 ok = false;
             }
 
             size_t streamCount = 0;
 
-            for (MeshBuffers::StreamIterator it(&meshBuffers, streamIndexInterval); !it.HasEnded(); ++it, ++streamCount)
+            for (MeshBuffers::StreamIterator it(&meshBuffers, streamIndices); !it.HasEnded(); ++it, ++streamCount)
             {
-
                 auto bufferDescriptors = inputStreamLayout.GetStreamBuffers();
                 auto& bufferDescriptor = bufferDescriptors[streamCount];
                 auto& bufferView = *it;
@@ -41,7 +41,7 @@ namespace AZ::RHI
 
                 if (bufferDescriptor.m_byteStride != bufferView.GetByteStride())
                 {
-                    AZ_Error("InputStreamLayout", false, "InputStreamLayout's buffer[%d] has stride=%d but StreamBufferView[%d] has stride=%d.",
+                    AZ_Assert(false, "InputStreamLayout's buffer[%d] has stride=%d but StreamBufferView[%d] has stride=%d.",
                         streamCount, bufferDescriptor.m_byteStride, streamCount, bufferView.GetByteStride());
                     ok = false;
                 }
@@ -49,7 +49,7 @@ namespace AZ::RHI
 
             if (streamCount != inputStreamLayout.GetStreamBuffers().size())
             {
-                AZ_Error("InputStreamLayout", false, "InputStreamLayout references %d stream buffers but %d StreamBufferViews passed the mask check.",
+                AZ_Assert(false, "InputStreamLayout references %d stream buffers but %d StreamBufferViews passed the mask check.",
                     inputStreamLayout.GetStreamBuffers().size(), streamCount);
                 ok = false;
             }

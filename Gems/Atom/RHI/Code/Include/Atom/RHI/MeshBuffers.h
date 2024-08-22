@@ -10,54 +10,69 @@
 #include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI/DrawArguments.h>
 #include <Atom/RHI/IndexBufferView.h>
-#include <Atom/RHI/IndirectBufferView.h>
 #include <Atom/RHI/StreamBufferView.h>
-#include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/vector.h>
 
 namespace AZ::RHI
 {
-    class PipelineState;
-    class ShaderResourceGroup;
-    struct Scissor;
-    struct Viewport;
-    struct DefaultNamespaceType;
-    // Forward declaration to
-    template <typename T , typename NamespaceType>
-    struct Handle;
-
+    class InputStreamLayout;
 
     class MeshBuffers
     {
     public:
 
-        struct Interval
+        class StreamBufferIndices
         {
-            Interval() = default;
-            Interval(u8 st, u8 en)
-                : start(st)
-                , end(en)
-            { }
-            u8 start = 0xFF;
-            u8 end = 0;
-            u8 size() { return end - start; }
-            bool IsValid() { return start <= end; }
+            u8 m_count = 0;
+            u8 m_indices[RHI::Limits::Pipeline::StreamCountMax / 2];
+
+        public:
+            void AddIndex(u8 index)
+            {
+                AZ_Assert(m_count < RHI::Limits::Pipeline::StreamCountMax, "Adding %d stream buffer indices, but the max count only allows for %d",
+                    m_count, RHI::Limits::Pipeline::StreamCountMax);
+
+                u8 newPosition = m_count / 2;
+                bool needsShift = (m_count % 2) == 1;
+                if (needsShift)
+                {
+                    m_indices[newPosition] |= index << 4;
+                }
+                else
+                {
+                    m_indices[newPosition] = index & 0xF;
+                }
+                ++m_count;
+            }
+
+            u8 GetIndex(u8 position) const
+            {
+                AZ_Assert(position < m_count, "Accessing index %d but only have %d indices", position, m_count);
+
+                bool needsShift = (position % 2) == 1;
+                u8 fullValue = m_indices[position / 2];
+                u8 halfValue = needsShift ? fullValue >> 4 : fullValue;
+                halfValue &= 0xF;
+                return halfValue;
+            }
+
+            u8 GetCount() const { return m_count; }
+            void Reset() { m_count = 0; }
         };
 
         class StreamIterator {
         private:
             const MeshBuffers* m_meshBuffers;
-            Interval m_interval;
-            u8 m_current;
+            const StreamBufferIndices& m_indices;
+            u8 m_current = 0;
         public:
-            StreamIterator(const MeshBuffers* meshBuffers, Interval interval)
+            StreamIterator(const MeshBuffers* meshBuffers, const StreamBufferIndices& indices)
                 : m_meshBuffers(meshBuffers)
-                , m_interval(interval)
-                , m_current(interval.start)
+                , m_indices(indices)
             {}
 
-            bool HasEnded() const {  return m_current >= m_interval.end; }
-            void Reset() { m_current = m_interval.start; }
+            bool HasEnded() const { return m_current >= m_indices.GetCount(); }
+            void Reset() { m_current = 0; }
 
             StreamIterator& operator++()
             {
@@ -75,20 +90,20 @@ namespace AZ::RHI
 
             const StreamBufferView& operator*()
             {
-                return m_meshBuffers->GetStreamBufferViewUsingIndirection(m_current);
+                return m_meshBuffers->GetStreamBufferView(m_indices.GetIndex(m_current));
             }
 
             const StreamBufferView* operator->()
             {
-                return &m_meshBuffers->GetStreamBufferViewUsingIndirection(m_current);
+                return &m_meshBuffers->GetStreamBufferView(m_indices.GetIndex(m_current));
             }
 
-            const StreamBufferView& operator[](u8 idx) const
+            const StreamBufferView& operator[](u16 idx) const
             {
-                AZ_Assert(idx < (m_interval.end - m_interval.start), "Index %d exceeds interval. Interval Start [%d] - Interval End [%d] - Interval Range [%]",
-                    idx, m_interval.start, m_interval.end, m_interval.end - m_interval.start);
+                AZ_Assert((u8)idx < m_indices.GetCount(), "Index %d exceeds number of indices (%d) for stream buffer views",
+                    idx, m_indices.GetCount());
 
-                return m_meshBuffers->GetStreamBufferViewUsingIndirection(m_interval.start + idx);
+                return m_meshBuffers->GetStreamBufferView(m_indices.GetIndex((u8)idx));
             }
 
         };
@@ -112,18 +127,11 @@ namespace AZ::RHI
         {
             m_streamBufferViews.clear();
             m_dummyStreamBufferIndex = InvalidStreamBufferIndex;
-            m_streamViewIndirection.clear();
         }
         void AddStreamBufferView(StreamBufferView streamBufferView) { m_streamBufferViews.emplace_back(streamBufferView); }
         const StreamBufferView& GetStreamBufferView(u8 idx) const { return m_streamBufferViews[idx]; }
         AZStd::vector<StreamBufferView>& GetStreamBufferViews() { return m_streamBufferViews; }
         const AZStd::vector<StreamBufferView>& GetStreamBufferViews() const { return m_streamBufferViews; }
-
-        const StreamBufferView& GetStreamBufferViewUsingIndirection(u8 indirectionIdx) const
-        {
-            u8 streamBufferViewIdx = m_streamViewIndirection[indirectionIdx];
-            return m_streamBufferViews[streamBufferViewIdx];
-        }
 
         bool HasDummyStreamBufferView() const { return m_dummyStreamBufferIndex != InvalidStreamBufferIndex; }
         u8 GetDummyStreamBufferIndex() const { return m_dummyStreamBufferIndex; }
@@ -141,24 +149,30 @@ namespace AZ::RHI
             m_streamBufferViews.emplace_back(streamBufferView);
         }
 
-        u8 GetNextIndirectionIndex() { return (u8)m_streamViewIndirection.size(); }
-        void AddIndirectionIndex(u8 indirectionIndex) { m_streamViewIndirection.push_back(indirectionIndex); }
-
-        StreamIterator CreateStreamIterator(Interval interval) const { return StreamIterator(this, interval); }
+        StreamIterator CreateStreamIterator(const StreamBufferIndices& indices) const { return StreamIterator(this, indices); }
 
         void SetIndexInstanceCount(u32 count) { m_drawArguments.m_indexed.m_instanceCount = count; }
+
+        StreamBufferIndices GetFullStreamBufferIndices() const
+        {
+            StreamBufferIndices streamIndices;
+            for (size_t idx = 0; idx < m_streamBufferViews.size(); ++idx)
+            {
+                streamIndices.AddIndex((u8)idx);
+            }
+            return streamIndices;
+        }
 
     private:
 
         DrawArguments m_drawArguments;
         IndexBufferView m_indexBufferView;
         AZStd::vector<StreamBufferView> m_streamBufferViews;
-        AZStd::vector<u8> m_streamViewIndirection;
 
         static constexpr u8 InvalidStreamBufferIndex = 0xFF;
         u8 m_dummyStreamBufferIndex = InvalidStreamBufferIndex;
     };
 
     bool ValidateStreamBufferViews(const InputStreamLayout& inputStreamLayout, RHI::MeshBuffers& meshBuffers,
-        RHI::MeshBuffers::Interval streamIndexInterval);
+        const RHI::MeshBuffers::StreamBufferIndices& streamIndices);
 }

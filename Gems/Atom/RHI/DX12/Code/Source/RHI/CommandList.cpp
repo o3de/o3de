@@ -578,7 +578,7 @@ namespace AZ
                 return;
             }
 
-            SetStreamBuffers(*drawItem.m_meshBuffers, drawItem.m_streamIndexInterval);
+            SetStreamBuffers(*drawItem.m_meshBuffers, drawItem.m_streamIndices);
             SetStencilRef(drawItem.m_stencilRef);
 
             RHI::CommandListScissorState scissorState;
@@ -866,9 +866,9 @@ namespace AZ
             );
         }
 
-        void CommandList::SetStreamBuffers(const RHI::MeshBuffers& meshBuffers, RHI::MeshBuffers::Interval streamIndexInterval)
+        void CommandList::SetStreamBuffers(const RHI::MeshBuffers& meshBuffers, const RHI::MeshBuffers::StreamBufferIndices& streamIndices)
         {
-            RHI::MeshBuffers::StreamIterator streamIter = meshBuffers.CreateStreamIterator(streamIndexInterval);
+            RHI::MeshBuffers::StreamIterator streamIter = meshBuffers.CreateStreamIterator(streamIndices);
 
             bool needsBinding = false;
 
@@ -901,7 +901,7 @@ namespace AZ
                     }
                 }
 
-                GetCommandList()->IASetVertexBuffers(0, streamIndexInterval.size(), views);
+                GetCommandList()->IASetVertexBuffers(0, streamIndices.GetCount(), views);
             }
         }
 

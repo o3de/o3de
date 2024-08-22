@@ -19,6 +19,7 @@ namespace AZ::RHI
     DrawPacketBuilder::DrawRequest MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest::
         GetDeviceDrawRequest(int deviceIndex)
     {
+        // AKM_MARKER
         // if (!m_deviceStreamBufferViews.contains(deviceIndex))
         // {
         //     // We need to hold the memory for the single-device StreamBufferViews
@@ -32,7 +33,7 @@ namespace AZ::RHI
         return DrawPacketBuilder::DrawRequest{
                 m_listTag,
                 m_stencilRef,
-                m_streamIndexInterval,
+                m_streamIndices,
                 m_uniqueShaderResourceGroup ? m_uniqueShaderResourceGroup->GetDeviceShaderResourceGroup(deviceIndex).get() : nullptr,
                 m_pipelineState ? m_pipelineState->GetDevicePipelineState(deviceIndex).get() : nullptr,
                 m_sortKey,

@@ -2204,11 +2204,11 @@ namespace AZ
 
                 // retrieve vertex/index buffers
                 RHI::InputStreamLayout inputStreamLayout;
-                RHI::MeshBuffers::Interval streamIndexInterval;
+                RHI::MeshBuffers::StreamBufferIndices streamIndices;
 
                 [[maybe_unused]] bool result = modelLod->GetStreamsForMesh(
                     inputStreamLayout,
-                    streamIndexInterval,
+                    streamIndices,
                     nullptr,
                     shaderInputContract,
                     meshIndex,
@@ -2218,14 +2218,14 @@ namespace AZ
 
                 // The code below expects streams for positions, normals, tangents, bitangents, and uvs.
                 constexpr size_t NumExpectedStreams = 5;
-                if (streamIndexInterval.size() < NumExpectedStreams)
+                if (streamIndices.GetCount() < NumExpectedStreams)
                 {
                     AZ_Warning("MeshFeatureProcessor", false, "Model is missing one or more expected streams "
                         "(positions, normals, tangents, bitangents, uvs), skipping the raytracing data generation.");
                     continue;
                 }
 
-                RHI::MeshBuffers::StreamIterator streamIter = mesh.CreateStreamIterator(streamIndexInterval);
+                RHI::MeshBuffers::StreamIterator streamIter = mesh.CreateStreamIterator(streamIndices);
 
                 // note that the element count is the size of the entire buffer, even though this mesh may only
                 // occupy a portion of the vertex buffer.  This is necessary since we are accessing it using

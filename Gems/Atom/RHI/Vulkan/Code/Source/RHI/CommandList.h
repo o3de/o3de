@@ -163,7 +163,7 @@ namespace AZ
             RHI::ResultCode BuildNativeCommandBuffer();
 
             void SetShaderResourceGroup(const RHI::ShaderResourceGroup& shaderResourceGroup, RHI::PipelineStateType type);
-            void SetStreamBuffers(const RHI::MeshBuffers& meshBuffers, RHI::MeshBuffers::Interval streamIndexInterval);
+            void SetStreamBuffers(const RHI::MeshBuffers& meshBuffers, const RHI::MeshBuffers::StreamBufferIndices& streamIndices);
             void SetIndexBuffer(const RHI::IndexBufferView& indexBufferView);
             void SetStencilRef(uint8_t stencilRef);
             void BindPipeline(const PipelineState* pipelineState);

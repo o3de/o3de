@@ -269,6 +269,12 @@ namespace AZ
         {
             ValidateSubmitIndex(submitIndex);
 
+            if (drawItem.m_meshBuffers == nullptr)
+            {
+                AZ_Assert(false, "DrawItem being submitted without mesh buffers, i.e. without draw arguments, index buffer or stream buffers!");
+                return;
+            }
+
             if (!CommitShaderResource(drawItem))
             {
                 AZ_Warning("CommandList", false, "Failed to bind shader resources for draw item. Skipping.");
@@ -276,7 +282,7 @@ namespace AZ
             }
 
             SetStencilRef(drawItem.m_stencilRef);
-            SetStreamBuffers(*drawItem.m_meshBuffers, drawItem.m_streamIndexInterval);
+            SetStreamBuffers(*drawItem.m_meshBuffers, drawItem.m_streamIndices);
 
             RHI::CommandListScissorState scissorState;
             if (drawItem.m_scissorsCount)
@@ -827,9 +833,9 @@ namespace AZ
             }
         }
 
-        void CommandList::SetStreamBuffers(const RHI::MeshBuffers& meshBuffers, RHI::MeshBuffers::Interval streamIndexInterval)
+        void CommandList::SetStreamBuffers(const RHI::MeshBuffers& meshBuffers, const RHI::MeshBuffers::StreamBufferIndices& streamIndices)
         {
-            RHI::MeshBuffers::StreamIterator streamIter = meshBuffers.CreateStreamIterator(streamIndexInterval);
+            RHI::MeshBuffers::StreamIterator streamIter = meshBuffers.CreateStreamIterator(streamIndices);
             RHI::Interval interval = InvalidInterval;
 
             for (u8 index = 0; !streamIter.HasEnded(); ++streamIter, ++index)
