@@ -65,7 +65,7 @@ namespace AZ
         {
             /// Default color used for debug labels.
             const AZ::Color DefaultLabelColor = AZ::Color::CreateFromRgba(0, 255, 0, 255);
-            
+
             enum class DebugMessageTypeFlag
             {
                 Info = AZ_BIT(0),
@@ -112,14 +112,7 @@ namespace AZ
                 return result;\
             }
 
-        /// Checks whether the result is successful; if not, it break program execution.
-        inline void AssertSuccess([[maybe_unused]] VkResult result)
-        {
-            if (result != VK_SUCCESS)
-            {
-                AZ_Assert(false, "ASSERT: Vulkan API method failed: %s", GetResultString(result));
-            }
-        }
+        #define VK_RESULT_ASSERT(result) AZ_Assert((result) == VK_SUCCESS ,"ASSERT: Vulkan API method failed: %s", AZ::Vulkan::GetResultString(result))
 
         /// Checks whether the result is successful; if not, reports the error and returns false. Otherwise, returns true.
         bool IsSuccess(VkResult result);

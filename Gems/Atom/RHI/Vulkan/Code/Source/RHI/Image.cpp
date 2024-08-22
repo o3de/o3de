@@ -786,8 +786,7 @@ namespace AZ
 
             const VkResult vkResult =
                 device.GetContext().CreateImage(device.GetNativeDevice(), &createInfo.m_vkCreateInfo, VkSystemAllocator::Get(), &m_vkImage);
-
-            AssertSuccess(vkResult);
+            VK_RESULT_ASSERT(vkResult);
             RHI::ResultCode result = ConvertResult(vkResult);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
@@ -852,7 +851,7 @@ namespace AZ
             }
 
             m_isOwnerOfNativeImage = true;
-            AssertSuccess(result);
+            VK_RESULT_ASSERT(result);
             return ConvertResult(result);
         }
 
