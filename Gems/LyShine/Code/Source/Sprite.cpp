@@ -8,6 +8,7 @@
 #include "Sprite.h"
 #include <CryPath.h>
 #include <ISerialize.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <LyShine/Bus/Sprite/UiSpriteBus.h>
@@ -144,6 +145,8 @@ namespace
     //! Example XML string data: "1.0 2.0"
     void SerializeAzVector2(TSerialize ser, const char* attributeName, AZ::Vector2& azVec2)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale;
+
         if (ser.IsReading())
         {
             AZStd::string stringVal;

@@ -63,6 +63,9 @@ set(FILES
     AzCore/Platform_Windows.cpp
     AzCore/PlatformIncl_Platform.h
     AzCore/PlatformIncl_Windows.h
+    AzCore/Serialization/Locale_Platform.h
+    ../Common/WinAPI/AzCore/Serialization/Locale_WinAPI.h
+    ../Common/WinAPI/AzCore/Serialization/Locale_WinAPI.cpp
     ../Common/WinAPI/AzCore/Settings/CommandLineParser_WinAPI.cpp
     ../Common/WinAPI/AzCore/Socket/AzSocket_fwd_WinAPI.h
     ../Common/WinAPI/AzCore/Socket/AzSocket_WinAPI.cpp
