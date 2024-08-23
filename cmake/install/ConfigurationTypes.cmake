@@ -19,12 +19,7 @@ set(CMAKE_CONFIGURATION_TYPES "" CACHE STRING "" FORCE)
 # root CMakeLists.txt. Even LY_MONOLITHIC_GAME is declared after, but since is a passed cache variable, and
 # default is the same as undeclared, we can use it at this point.
 if(LY_MONOLITHIC_GAME)
-    if(ANDROID_PLATFORM STREQUAL "")
-        set(LY_BUILD_PERMUTATION Monolithic)
-    else()
-        set(LY_BUILD_PERMUTATION Monolithic/${ANDROID_PLATFORM})
-    endif()
-    message("Setting permutation to ${LY_BUILD_PERMUTATION}")
+    set(LY_BUILD_PERMUTATION Monolithic)
 else()
     set(LY_BUILD_PERMUTATION Default)
 endif()

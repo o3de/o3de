@@ -41,12 +41,7 @@ define_property(TARGET PROPERTY LY_INSTALL_GENERATE_RUN_TARGET
 
 ly_set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME CORE)
 if(LY_MONOLITHIC_GAME)
-    if(ANDROID_PLATFORM STREQUAL "")
-        set(LY_BUILD_PERMUTATION Monolithic)
-    else()
-        set(LY_BUILD_PERMUTATION Monolithic/${ANDROID_PLATFORM})
-    endif()
-    message("Setting permutation to ${LY_BUILD_PERMUTATION}")
+    set(LY_BUILD_PERMUTATION Monolithic)
 else()
     set(LY_BUILD_PERMUTATION Default)
 endif()
