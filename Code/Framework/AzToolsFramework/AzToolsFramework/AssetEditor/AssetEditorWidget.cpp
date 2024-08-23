@@ -218,7 +218,6 @@ namespace AzToolsFramework
 
         AssetEditorWidget::~AssetEditorWidget()
         {
-            AZ::SystemTickBus::Handler::BusDisconnect();
         }
 
         void AssetEditorWidget::SaveAll()
@@ -248,14 +247,6 @@ namespace AzToolsFramework
                     {
                         return;
                     }
-                }
-
-                // Close them.
-                for (int tabIndex = m_tabs->count() - 1; tabIndex >= 0; tabIndex--)
-                {
-                    AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->widget(tabIndex));
-                    m_tabs->removeTab(tabIndex);
-                    delete tab;
                 }
 
                 CloseOnNextTick();
@@ -485,16 +476,21 @@ namespace AzToolsFramework
             }
         }
 
-        void AssetEditorWidget::OnSystemTick()
-        {
-            parentWidget()->parentWidget()->close();
-            AZ::SystemTickBus::Handler::BusDisconnect();
-        }
-
         void AssetEditorWidget::CloseOnNextTick()
         {
             // Close the window on the next tick so that the parent widgets finish processing any current event correctly.
-            AZ::SystemTickBus::Handler::BusConnect();
+            QTimer::singleShot(0, this, [this]()
+            {
+                    // Close tabs
+                for (int tabIndex = m_tabs->count() - 1; tabIndex >= 0; tabIndex--)
+                {
+                    AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->widget(tabIndex));
+                    m_tabs->removeTab(tabIndex);
+                    tab->deleteLater();
+                }
+
+                parentWidget()->parentWidget()->close();
+            });
         }
 
         void AssetEditorWidget::CloseTabAndContainerIfEmpty(AssetEditorTab* tab)
