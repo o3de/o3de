@@ -45,12 +45,18 @@ set(FILES
     Source/RHI/Fence.h
     Source/RHI/FrameGraphCompiler.cpp
     Source/RHI/FrameGraphCompiler.h
-    Source/RHI/FrameGraphExecuteGroup.cpp
-    Source/RHI/FrameGraphExecuteGroup.h
     Source/RHI/FrameGraphExecuteGroupBase.cpp
     Source/RHI/FrameGraphExecuteGroupBase.h
-    Source/RHI/FrameGraphExecuteGroupMerged.cpp
-    Source/RHI/FrameGraphExecuteGroupMerged.h
+    Source/RHI/FrameGraphExecuteGroupHandler.cpp
+    Source/RHI/FrameGraphExecuteGroupHandler.h
+    Source/RHI/FrameGraphExecuteGroupPrimary.cpp
+    Source/RHI/FrameGraphExecuteGroupPrimary.h
+    Source/RHI/FrameGraphExecuteGroupPrimaryHandler.cpp
+    Source/RHI/FrameGraphExecuteGroupPrimaryHandler.h
+    Source/RHI/FrameGraphExecuteGroupSecondary.cpp
+    Source/RHI/FrameGraphExecuteGroupSecondary.h
+    Source/RHI/FrameGraphExecuteGroupSecondaryHandler.cpp
+    Source/RHI/FrameGraphExecuteGroupSecondaryHandler.h
     Source/RHI/FrameGraphExecuter.cpp
     Source/RHI/FrameGraphExecuter.h
     Source/RHI/Image.cpp
@@ -113,4 +119,6 @@ set(FILES
     Source/RHI/MetalViewController.mm
     Source/RHI/BindlessArgumentBuffer.cpp
     Source/RHI/BindlessArgumentBuffer.h
+    Source/RHI/RenderPassBuilder.cpp
+    Source/RHI/RenderPassBuilder.h
 )

@@ -103,7 +103,7 @@ namespace AZ
                 }
             }
             
-            id <MTLCommandBuffer> workRequestCommandBuffer = request.m_commandBuffer->GetMtlCommandBuffer();
+            id<MTLCommandBuffer> workRequestCommandBuffer = request.m_commandBuffer->GetMtlCommandBuffer();
             CommandQueueContext& context = device.GetCommandQueueContext();
             const FenceSet& compiledFences = context.GetCompiledFences();
             
@@ -128,9 +128,9 @@ namespace AZ
                          compiledFences.GetFence(GetDescriptor().m_hardwareQueueClass).SignalFromGpu(workRequestCommandBuffer, request.m_signalFenceValue);
                      }
 
-                     for (Fence* fence : request.m_scopeFencesToSignal)
+                     for (RHI::Ptr<FenceImpl> fence : request.m_scopeFencesToSignal)
                      {
-                         fence->SignalFromGpu(workRequestCommandBuffer);
+                         fence->Get().SignalFromGpu(workRequestCommandBuffer);
                      }
                      
                      {

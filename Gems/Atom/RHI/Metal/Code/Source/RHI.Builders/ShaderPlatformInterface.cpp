@@ -13,6 +13,7 @@
 #include <Atom/RHI.Reflect/Metal/Base.h>
 #include <Atom/RHI.Reflect/Metal/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/Metal/ShaderStageFunction.h>
+#include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI/RHIUtils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
@@ -334,7 +335,7 @@ namespace AZ
             // Run spirv cross
             if (!RHI::ExecuteShaderCompiler(spirvCrossRelativePath, spirvCrossCommandOptions, shaderSpirvOutputFile, tempFolder, "SpirvCross"))
             {
-                AZ_Error(MetalShaderPlatformName, false, "SPIRV-Cross failed to cross compil to metal source.");
+                AZ_Error(MetalShaderPlatformName, false, "SPIRV-Cross failed to cross compile to metal source.");
                 spirvOutFileStream.Close();
                 return false;
             }
@@ -349,7 +350,7 @@ namespace AZ
                 byProducts.m_intermediatePaths.emplace(AZStd::move(shaderMSLOutputFile));   // .msl metal out of sv-cross
             }
 
-            bool compileMetalSL = CreateMetalLib(MetalShaderPlatformName, shaderSourceFile, tempFolder, compiledByteCode, sourceMetalShader, platform, shaderBuildArguments, isGraphicsDevModeEnabled);
+            bool compileMetalSL = CreateMetalLib(MetalShaderPlatformName, shaderSourceFile, tempFolder, compiledByteCode, sourceMetalShader, platform, shaderBuildArguments, isGraphicsDevModeEnabled, shaderType);
             if (!compileMetalSL)
             {
                 AZ_Error(MetalShaderPlatformName, false, "Failed to create bytecode");
@@ -389,7 +390,8 @@ namespace AZ
                                                      AZStd::vector<char>& sourceMetalShader,
                                                      const AssetBuilderSDK::PlatformInfo& platform,
                                                      const RHI::ShaderBuildArguments& shaderBuildArguments,
-                                                     const bool isGraphicsDevModeEnabled) const
+                                                     const bool isGraphicsDevModeEnabled,
+                                                     RHI::ShaderHardwareStage shaderStageType) const
         {
             AZStd::string inputMetalFile = RHI::BuildFileNameWithExtension(shaderSourceFile, tempFolder, "metal");
 
@@ -401,6 +403,7 @@ namespace AZ
             }
 
             AZStd::string mtlSource = AZStd::string(sourceMetalShader.begin(), sourceMetalShader.end());
+            UpdateMetalSource(mtlSource, shaderStageType);
             sourceMtlfileStream.Write(mtlSource.size(), mtlSource.data());
             sourceMtlfileStream.Close();
 
@@ -439,6 +442,75 @@ namespace AZ
             fileStream.Close();
 
             return true;
+        }
+    
+        void ShaderPlatformInterface::UpdateMetalSource(AZStd::string& metalSource, RHI::ShaderHardwareStage shaderStageType) const
+        {
+            if(shaderStageType != RHI::ShaderHardwareStage::Fragment)
+            {
+                return;
+            }
+            
+            // Base function constant id so it doesn't clash with function constant id's for shader options
+            constexpr int BaseFunctionConstantId = 1000;
+            constexpr int BaseInputAttachmentId = 100;
+            int functionConstantId = BaseFunctionConstantId;
+            AZStd::bitset<RHI::Limits::Pipeline::AttachmentColorCountMax> foundColorAttachments;
+            AZStd::bitset<RHI::Limits::Pipeline::AttachmentColorCountMax> foundInputAttachments;
+            AZStd::string functionConstants = "\n";
+            const char* colorFindString = "[[color(";
+            const char* endFindString = ")";
+            for(auto findPos = metalSource.find(colorFindString);
+                findPos != AZStd::string::npos;
+                findPos = metalSource.find(colorFindString, findPos + 1))
+            {
+                int colorIndex = -1;
+                auto endColorPos = metalSource.find(endFindString, findPos);
+                AZ_Assert(endColorPos != AZStd::string::npos, "Could not find end of [[color(X)]]");
+                endColorPos += ::strlen(endFindString);
+                size_t len = endColorPos - findPos;
+                azsscanf(metalSource.substr(findPos, len).c_str(), "[[color(%d)", &colorIndex);
+                AZ_Assert(colorIndex >= 0, "Invalid index for color attachment %d", colorIndex);
+                AZStd::string constantString;
+                int inputAttachmentIndex = colorIndex - BaseInputAttachmentId;
+                if (colorIndex < BaseInputAttachmentId)
+                {
+                    constantString = AZStd::string::format("[[color(colorAttachment%d_tmp)", colorIndex);
+                }
+                else
+                {
+                    constantString = AZStd::string::format("[[color(inputAttachment%d_tmp)", inputAttachmentIndex);
+                }
+                metalSource.replace(findPos, len, constantString);
+                if (inputAttachmentIndex >= 0)
+                {
+                    if(!foundInputAttachments.test(inputAttachmentIndex))
+                    {
+                        functionConstants.append(AZStd::string::format("constant int inputAttachment%d [[function_constant(%d)]];\n", inputAttachmentIndex, functionConstantId));
+                        functionConstants.append(AZStd::string::format("constant int inputAttachment%d_tmp = is_function_constant_defined(inputAttachment%d) ? inputAttachment%d : %d;\n", inputAttachmentIndex, inputAttachmentIndex, inputAttachmentIndex, inputAttachmentIndex));
+                        functionConstantId++;
+                        foundInputAttachments.set(inputAttachmentIndex);
+                    }
+                }
+                else if (!foundColorAttachments.test(colorIndex))
+                {
+                    functionConstants.append(AZStd::string::format("constant int colorAttachment%d [[function_constant(%d)]];\n", colorIndex, functionConstantId));
+                    functionConstants.append(AZStd::string::format("constant int colorAttachment%d_tmp = is_function_constant_defined(colorAttachment%d) ? colorAttachment%d : %d;\n", colorIndex, colorIndex, colorIndex, colorIndex));
+                    functionConstantId++;
+                    foundColorAttachments.set(colorIndex);
+                }
+                
+            }
+            
+            if(foundColorAttachments.any())
+            {
+                AZStd::string startOfShaderTag = "using namespace metal;";
+                const size_t startOfShaderPos = metalSource.find(startOfShaderTag);
+                if (startOfShaderPos != AZStd::string::npos)
+                {
+                    metalSource.insert(startOfShaderPos + startOfShaderTag.length() + 1, functionConstants);
+                }
+            }
         }
 
         bool ShaderPlatformInterface::AddUnusedResources(AZStd::vector<char>& compiledShader) const
@@ -626,6 +698,8 @@ namespace AZ
                             textureType = "texturecube_array";
                             break;
                         }
+                        case RHI::ShaderInputImageType::SubpassInput:
+                            continue;
                         default:
                         {
                             AZ_Assert(false, "Invalid texture type.");

@@ -400,6 +400,8 @@ namespace AZ
  
             m_features.m_swapchainScalingFlags = RHI::ScalingFlags::Stretch;
             AZ_Assert(m_metalDevice.argumentBuffersSupport >= MTLArgumentBuffersTier1, "Atom needs Argument buffer support to run");
+            
+            m_features.m_subpassInputSupport = RHI::SubpassInputSupportType::Color;
         }
 
         CommandList* Device::AcquireCommandList(RHI::HardwareQueueClass hardwareQueueClass)

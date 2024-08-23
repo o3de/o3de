@@ -15,35 +15,62 @@ namespace AZ
     namespace Metal
     {
         class Device;
+        class CommandQueueCommandBuffer;
+        class FrameGraphExecuteGroupHandler;
+        
         class FrameGraphExecuteGroupBase
             : public RHI::FrameGraphExecuteGroup
         {
             using Base = RHI::FrameGraphExecuteGroup;
         public:
             FrameGraphExecuteGroupBase() = default;
-            
-            void SetDevice(Device& device);
+
+            using CallbackFunc = AZStd::function<void(const FrameGraphExecuteGroupBase* groupBase)>;
+            void InitBase(
+                Device& device,
+                const RHI::GraphGroupId& groupId,
+                RHI::HardwareQueueClass hardwareQueueClass);
+
             Device& GetDevice() const;
             ExecuteWorkRequest&& AcquireWorkRequest();
 
             RHI::HardwareQueueClass GetHardwareQueueClass();
             
+            const RHI::GraphGroupId& GetGroupId() const;
+            
+            //! Set the command buffer that the group will use.
+            void SetCommandBuffer(RHI::Ptr<CommandQueueCommandBuffer> commandBuffer);
+            
+            void SetHandler(FrameGraphExecuteGroupHandler* handler);
+            
+            virtual AZStd::span<const Scope* const> GetScopes() const = 0;
+            virtual AZStd::span<Scope* const> GetScopes() = 0;
+            
         protected:
+            void BeginInternal() override;
+            void EndInternal() override;
+            void BeginContextInternal(
+                RHI::FrameGraphExecuteContext& context,
+                uint32_t contextIndex) override;
+            void EndContextInternal(
+                RHI::FrameGraphExecuteContext& context,
+                uint32_t contextIndex) override;
+
             CommandList* AcquireCommandList() const;
-            void FlushAutoreleasePool();
-            void CreateAutoreleasePool();
             
             //! Go through all the wait fences across all queues and encode them if needed
-            void EncodeWaitEvents();
+            void EncodeWaitEvents() const;
             
             ExecuteWorkRequest m_workRequest;
-            
-            //! Command Buffer associated with this group. It will allocate encoders out of the queue related to m_hardwareQueueClass
-            CommandQueueCommandBuffer m_commandBuffer;
             RHI::HardwareQueueClass m_hardwareQueueClass = RHI::HardwareQueueClass::Graphics;
+            RHI::Ptr<CommandQueueCommandBuffer> m_commandBuffer;
+            
         private:
             Device* m_device = nullptr;
-            NSAutoreleasePool* m_autoreleasePool = nullptr;
+            RHI::GraphGroupId m_groupId;
+            FrameGraphExecuteGroupHandler* m_handler = nullptr;
+            NSAutoreleasePool* m_groupAutoreleasePool = nullptr;
+            AZStd::vector<NSAutoreleasePool*> m_contextAutoreleasePools;
         };
     }
 }

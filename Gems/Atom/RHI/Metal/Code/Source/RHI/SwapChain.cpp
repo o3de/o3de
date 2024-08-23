@@ -188,6 +188,7 @@ namespace AZ
         id<MTLTexture> SwapChain::RequestDrawable(bool isFrameCaptureEnabled)
         {
             AZ_PROFILE_SCOPE(RHI, "SwapChain::RequestDrawable");
+            AZStd::lock_guard<AZStd::mutex> lock(m_drawablesMutex);
             m_metalView.metalLayer.framebufferOnly = !isFrameCaptureEnabled;
             const uint32_t currentImageIndex = GetCurrentImageIndex();
             if(m_drawables[currentImageIndex])

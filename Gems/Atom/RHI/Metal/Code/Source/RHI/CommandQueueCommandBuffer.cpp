@@ -15,6 +15,10 @@ namespace AZ
     {
         CommandQueueCommandBuffer::~CommandQueueCommandBuffer()
         {
+            if (m_mtlParallelEncoder)
+            {
+                [m_mtlParallelEncoder release];
+            }
         }
     
         void CommandQueueCommandBuffer::Init(id<MTLCommandQueue> hwQueue)
@@ -115,6 +119,7 @@ namespace AZ
                 //Create the parallel encoder which will be used to create all the sub render encoders.
                 m_mtlParallelEncoder = [m_mtlCommandBuffer parallelRenderCommandEncoderWithDescriptor:renderPassDescriptor];
                 AZ_Assert(m_mtlParallelEncoder != nil, "Could not create the ParallelRenderCommandEncoder");
+                [m_mtlParallelEncoder retain];
             }
             
             //Each context will get a sub render encoder.
@@ -124,6 +129,7 @@ namespace AZ
                 renderCommandEncoder.label = [NSString stringWithCString:scopeName encoding:NSUTF8StringEncoding];
             }
             AZ_Assert(renderCommandEncoder != nil, "Could not create the RenderCommandEncoder");
+            [renderCommandEncoder retain];
             return renderCommandEncoder;
         }
 
@@ -132,6 +138,7 @@ namespace AZ
             if (m_mtlParallelEncoder)
             {
                 [m_mtlParallelEncoder endEncoding];
+                [m_mtlParallelEncoder release];
                 m_mtlParallelEncoder = nil;
             }
         }

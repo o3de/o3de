@@ -1393,12 +1393,13 @@ namespace AZ
             {
                 subpassInputSupported = renderPipeline->SubpassMergingSupported();
             }
-
+            
+            RHI::SubpassInputSupportType supportTypes = RHI::RHISystemInterface::Get()->GetDevice()->GetFeatures().m_subpassInputSupport;
             if (!subpassInputSupported)
             {
-                ReplaceSubpassInputs();
+                supportTypes = RHI::SubpassInputSupportType::None;
             }
-
+            ReplaceSubpassInputs(supportTypes);
             OnBuildFinishedInternal();
 
             m_flags.m_hasSubpassInput = AZStd::any_of(
@@ -1755,18 +1756,29 @@ namespace AZ
             return AZ::Name(m_flags.m_hasSubpassInput ? RPI::SubpassInputSupervariantName : "");
         }
 
-        void Pass::ReplaceSubpassInputs()
+        void Pass::ReplaceSubpassInputs(RHI::SubpassInputSupportType supportTypes)
         {
+            m_flags.m_hasSubpassInput = false;
             for (size_t slotIndex = 0; slotIndex < m_attachmentBindings.size(); ++slotIndex)
             {
                 PassAttachmentBinding& binding = m_attachmentBindings[slotIndex];
                 if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::SubpassInput)
                 {
-                    binding.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
-                    continue;
+                    const RHI::ImageViewDescriptor& descriptor = binding.m_unifiedScopeDesc.GetImageViewDescriptor();
+                    if ((RHI::CheckBitsAny(descriptor.m_aspectFlags, RHI::ImageAspectFlags::Color) &&
+                         RHI::CheckBitsAny(supportTypes, RHI::SubpassInputSupportType::Color)) ||
+                        (RHI::CheckBitsAny(descriptor.m_aspectFlags, RHI::ImageAspectFlags::DepthStencil) &&
+                         RHI::CheckBitsAny(supportTypes, RHI::SubpassInputSupportType::DepthStencil)))
+                    {
+                        m_flags.m_hasSubpassInput = true;
+                    }
+                    else
+                    {
+                        binding.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
+                        continue;
+                    }
                 }
             }
-            m_flags.m_hasSubpassInput = false;
         }
 
         void Pass::PrintIndent(AZStd::string& stringOutput, uint32_t indent) const
