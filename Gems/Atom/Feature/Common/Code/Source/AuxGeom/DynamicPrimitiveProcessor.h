@@ -65,7 +65,7 @@ namespace AZ
             void Release();
 
             //! Process the list of primitives in the buffer data and add them to the views in the feature processor packet
-            void ProcessDynamicPrimitives(const AuxGeomBufferData* bufferData, const RPI::FeatureProcessor::RenderPacket& fpPacket);
+            void ProcessDynamicPrimitives(AuxGeomBufferData* bufferData, const RPI::FeatureProcessor::RenderPacket& fpPacket);
 
             //! Prepare frame.
             void PrepareFrame();
@@ -109,16 +109,14 @@ namespace AZ
                 RHI::MeshBuffers& meshBuffers,
                 const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
                 Data::Instance<RPI::ShaderResourceGroup> srg,
-                uint32_t indexCount,
-                uint32_t indexOffset,
                 RHI::DrawPacketBuilder& drawPacketBuilder,
                 RHI::DrawItemSortKey sortKey = 0);
 
             // Update a dynamic index buffer, given the data from draw requests
-            bool UpdateIndexBuffer(const IndexBuffer& indexSource, RHI::MeshBuffers& meshBuffers);
+            bool UpdateIndexBuffer(const IndexBuffer& indexSource);
 
             // Update a dynamic vertex buffer, given the data from draw requests
-            bool UpdateVertexBuffer(const VertexBuffer& source, RHI::MeshBuffers& meshBuffers);
+            bool UpdateVertexBuffer(const VertexBuffer& source);
 
             // Validate the given stream buffer views for the layout used for the given prim type (uses isValidated flags to see if necessary)
             void ValidateStreamBufferViews(AZStd::span<const RHI::StreamBufferView> streamBufferViews, bool* isValidated, int primitiveType);

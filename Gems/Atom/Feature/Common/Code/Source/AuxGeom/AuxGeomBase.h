@@ -13,6 +13,7 @@
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Color.h>
 
+#include <Atom/RHI/MeshBuffers.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
 
 namespace AZ
@@ -116,6 +117,7 @@ namespace AZ
         //! Each dynamic primitive drawn through the AuxGeom draw interface is stored in the scene data as an instance of this struct
         struct PrimitiveBufferEntry
         {
+            RHI::MeshBuffers        m_meshBuffers;
             AZ::Vector3             m_center;       // used for depth sorting blended draws
             AuxGeomPrimitiveType    m_primitiveType;
             AuxGeomDepthReadType    m_depthReadType;
