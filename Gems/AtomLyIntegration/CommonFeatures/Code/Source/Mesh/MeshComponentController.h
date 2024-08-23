@@ -50,6 +50,9 @@ namespace AZ
             bool m_isAlwaysDynamic = false;
             bool m_useForwardPassIblSpecular = false;
             bool m_isRayTracingEnabled = true;
+#if defined(CARBONATED)
+            bool m_visibility = true;
+#endif
             // the ModelAsset should support ray intersection if any one of the two flags are enabled.
             bool m_editorRayIntersection = false;       // Set to true if the config is for EditorMeshComponent so the ModelAsset always support ray intersection 
             bool m_enableRayIntersection = false;       // Set to true if a mesh need ray intersection support at runtime. 
