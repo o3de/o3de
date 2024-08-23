@@ -422,8 +422,8 @@ namespace AZ
                 }
                 else if (RHI::CheckBitsAll(imageAspects, RHI::ImageAspectFlags::Depth))
                 {
-                    return RHI::CheckBitsAny(access, RHI::ScopeAttachmentAccess::Write) ? VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL
-                                                                                        : VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+                    return RHI::CheckBitsAny(access, RHI::ScopeAttachmentAccess::Write) ? VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL
+                                                                                        : VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL;
                 }
                 else
                 {
