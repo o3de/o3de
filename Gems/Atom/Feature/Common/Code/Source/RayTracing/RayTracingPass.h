@@ -7,12 +7,14 @@
  */
 #pragma once
 
-#include <AzCore/Memory/SystemAllocator.h>
+#include <Atom/RHI/DispatchRaysIndirectBuffer.h>
+#include <Atom/RHI/DispatchRaysItem.h>
 #include <Atom/RHI/RayTracingPipelineState.h>
 #include <Atom/RHI/RayTracingShaderTable.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
+#include <AzCore/Memory/SystemAllocator.h>
 
 namespace AZ
 {
@@ -42,6 +44,7 @@ namespace AZ
 
             // Pass overrides
             bool IsEnabled() const override;
+            void BuildInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
             // Scope producer functions
@@ -64,6 +67,18 @@ namespace AZ
             RPI::PassDescriptor m_passDescriptor;
             const RayTracingPassData* m_passData = nullptr;
 
+            Name m_fullscreenSizeSourceSlot;
+            bool m_fullscreenDispatch = false;
+            RPI::PassAttachmentBinding* m_fullscreenSizeSourceBinding = nullptr;
+
+            bool m_indirectDispatch = false;
+            Name m_indirectDispatchBufferSlot;
+            RPI::PassAttachmentBinding* m_indirectDispatchRaysBufferBinding = nullptr;
+            RHI::Ptr<RHI::IndirectBufferSignature> m_indirectDispatchRaysBufferSignature;
+            RHI::IndirectBufferView m_indirectDispatchRaysBufferView;
+            RHI::Ptr<RHI::DispatchRaysIndirectBuffer> m_dispatchRaysIndirectBuffer;
+            uint32_t m_dispatchRaysShaderTableRevision{ std::numeric_limits<uint32_t>::max() };
+
             // revision number of the ray tracing TLAS when the shader table was built
             uint32_t m_rayTracingRevision = 0;
             uint32_t m_proceduralGeometryTypeRevision = 0;
@@ -82,6 +97,8 @@ namespace AZ
             bool m_requiresRayTracingMaterialSrg = false;
             bool m_requiresRayTracingSceneSrg = false;
             float m_maxRayLength = 1e27f;
+
+            AZ::RHI::DispatchRaysItem m_dispatchRaysItem{ AZ::RHI::MultiDevice::AllDevices };
         };
     }   // namespace RPI
 }   // namespace AZ

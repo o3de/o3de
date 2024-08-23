@@ -6,26 +6,34 @@
  *
  */
 
-#include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/Asset/AssetManagerBus.h>
 #include <Atom/RHI/CommandList.h>
+#include <Atom/RHI/DeviceDispatchRaysItem.h>
+#include <Atom/RHI/DevicePipelineState.h>
+#include <Atom/RHI/DispatchRaysItem.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameScheduler.h>
-#include <Atom/RHI/DeviceDispatchRaysItem.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RHI/RHIUtils.h>
-#include <Atom/RPI.Reflect/Pass/PassTemplate.h>
-#include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Reflect/Pass/PassTemplate.h>
+#include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
+#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Asset/AssetManagerBus.h>
+#include <RayTracing/RayTracingFeatureProcessor.h>
 #include <RayTracing/RayTracingPass.h>
 #include <RayTracing/RayTracingPassData.h>
-#include <RayTracing/RayTracingFeatureProcessor.h>
+
+#ifndef INDIRECT_RENDERING_INCLUDE_GUARD_FOR_MISSING_INCLUDE_GUARD
+#define INDIRECT_RENDERING_INCLUDE_GUARD_FOR_MISSING_INCLUDE_GUARD
+using uint = uint32_t;
+using uint4 = uint[4];
+#include "../../../Feature/Common/Assets/ShaderLib/Atom/Features/IndirectRendering.azsli"
+#endif
 
 namespace AZ
 {
@@ -54,6 +62,21 @@ namespace AZ
                 AZ_Error("PassSystem", false, "RayTracingPass [%s]: Invalid RayTracingPassData", GetPathName().GetCStr());
                 return;
             }
+
+            m_indirectDispatch = m_passData->m_indirectDispatch;
+            m_indirectDispatchBufferSlot = m_passData->m_indirectDispatchBufferSlot;
+
+            m_fullscreenDispatch = m_passData->m_fullscreenDispatch;
+            m_fullscreenSizeSourceSlot = m_passData->m_fullscreenSizeSourceSlot;
+
+            [[maybe_unused]] auto activeDispatchOptionCount = m_indirectDispatch + m_fullscreenDispatch;
+
+            AZ_Assert(
+                activeDispatchOptionCount <= 1,
+                "[RaytracingPass '%s']: Only one of the OSC dispatch options (indirect, fullscreen, cacheBlockCount) can be "
+                "active.",
+                GetPathName().GetCStr());
+
             m_defaultShaderAttachmentStage = RHI::ScopeAttachmentStage::RayTracingShader;
             CreatePipelineState();
         }
@@ -252,6 +275,94 @@ namespace AZ
             return true;
         }
 
+        void RayTracingPass::BuildInternal()
+        {
+            if (m_indirectDispatch)
+            {
+                if (!m_indirectDispatchRaysBufferSignature)
+                {
+                    AZ::RHI::IndirectBufferLayout bufferLayout;
+                    bufferLayout.AddIndirectCommand(AZ::RHI::IndirectCommandDescriptor(AZ::RHI::IndirectCommandType::DispatchRays));
+
+                    if (!bufferLayout.Finalize())
+                    {
+                        AZ_Assert(false, "Fail to finalize Indirect Layout");
+                    }
+
+                    m_indirectDispatchRaysBufferSignature = aznew AZ::RHI::IndirectBufferSignature();
+                    AZ::RHI::IndirectBufferSignatureDescriptor signatureDescriptor{};
+                    signatureDescriptor.m_layout = bufferLayout;
+                    [[maybe_unused]] auto result =
+                        m_indirectDispatchRaysBufferSignature->Init(AZ::RHI::MultiDevice::AllDevices, signatureDescriptor);
+
+                    AZ_Assert(result == AZ::RHI::ResultCode::Success, "Fail to initialize Indirect Buffer Signature");
+                }
+
+                m_indirectDispatchRaysBufferBinding = nullptr;
+                if (!m_indirectDispatchBufferSlot.IsEmpty())
+                {
+                    m_indirectDispatchRaysBufferBinding = FindAttachmentBinding(m_indirectDispatchBufferSlot);
+                    AZ_Assert(
+                        m_indirectDispatchRaysBufferBinding->m_scopeAttachmentUsage == AZ::RHI::ScopeAttachmentUsage::Indirect,
+                        "[RaytracingPass '%s']: Indirect dispatch buffer slot %s needs "
+                        "ScopeAttachmentUsage::Indirect.",
+                        GetPathName().GetCStr(),
+                        m_indirectDispatchBufferSlot.GetCStr())
+                }
+                else
+                {
+                    for (auto& binding : m_attachmentBindings)
+                    {
+                        if (binding.m_scopeAttachmentUsage == AZ::RHI::ScopeAttachmentUsage::Indirect)
+                        {
+                            m_indirectDispatchRaysBufferBinding = &binding;
+                            break;
+                        }
+                    }
+                }
+
+                AZ_Assert(
+                    m_indirectDispatchRaysBufferBinding,
+                    "[RaytracingPass '%s']: No valid indirect dispatch buffer slot found.",
+                    GetPathName().GetCStr());
+
+                if (!m_dispatchRaysIndirectBuffer)
+                {
+                    m_dispatchRaysIndirectBuffer = aznew AZ::RHI::DispatchRaysIndirectBuffer{ AZ::RHI::MultiDevice::AllDevices };
+                    m_dispatchRaysIndirectBuffer->Init(
+                        AZ::RPI::BufferSystemInterface::Get()->GetCommonBufferPool(AZ::RPI::CommonBufferPoolType::Indirect).get());
+                }
+            }
+            else if (m_fullscreenDispatch)
+            {
+                m_fullscreenSizeSourceBinding = nullptr;
+                if (!m_fullscreenSizeSourceSlot.IsEmpty())
+                {
+                    m_fullscreenSizeSourceBinding = FindAttachmentBinding(m_fullscreenSizeSourceSlot);
+                    AZ_Assert(
+                        m_fullscreenSizeSourceBinding,
+                        "[RaytracingPass '%s']: Fullscreen size source slot %s not found.",
+                        GetPathName().GetCStr(),
+                        m_fullscreenSizeSourceSlot.GetCStr());
+                }
+                else
+                {
+                    if (GetOutputCount() > 0)
+                    {
+                        m_fullscreenSizeSourceBinding = &GetOutputBinding(0);
+                    }
+                    else if (!m_fullscreenSizeSourceBinding && GetInputOutputCount() > 0)
+                    {
+                        m_fullscreenSizeSourceBinding = &GetInputOutputBinding(0);
+                    }
+                    AZ_Assert(
+                        m_fullscreenSizeSourceBinding,
+                        "[RaytracingPass '%s']: No valid Output or InputOutput slot as a fullscreen size source found.",
+                        GetPathName().GetCStr());
+                }
+            }
+        }
+
         void RayTracingPass::FrameBeginInternal(FramePrepareParams params)
         {
             RPI::Scene* scene = m_pipeline->GetScene();
@@ -311,6 +422,65 @@ namespace AZ
             RPI::Scene* scene = m_pipeline->GetScene();
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
             AZ_Assert(rayTracingFeatureProcessor, "RayTracingPass requires the RayTracingFeatureProcessor");
+
+            if (m_indirectDispatch)
+            {
+                if (m_indirectDispatchRaysBufferBinding)
+                {
+                    auto& attachment{ m_indirectDispatchRaysBufferBinding->GetAttachment() };
+                    AZ_Assert(
+                        attachment,
+                        "[RayTracingPass '%s']: Indirect dispatch buffer slot %s has no attachment.",
+                        GetPathName().GetCStr(),
+                        m_indirectDispatchRaysBufferBinding->m_name.GetCStr());
+
+                    if (attachment)
+                    {
+                        auto* indirectDispatchBuffer{ context.GetBuffer(attachment->GetAttachmentId()) };
+                        m_indirectDispatchRaysBufferView = AZ::RHI::IndirectBufferView{ *indirectDispatchBuffer,
+                                                                                        *m_indirectDispatchRaysBufferSignature,
+                                                                                        0,
+                                                                                        sizeof(DispatchRaysIndirectCommand),
+                                                                                        sizeof(DispatchRaysIndirectCommand) };
+
+                        RHI::DispatchRaysIndirect dispatchRaysArgs(
+                            1, m_indirectDispatchRaysBufferView, 0, m_dispatchRaysIndirectBuffer.get());
+
+                        m_dispatchRaysItem.SetArguments(dispatchRaysArgs);
+                    }
+                }
+            }
+            else if (m_fullscreenDispatch)
+            {
+                auto& attachment = m_fullscreenSizeSourceBinding->GetAttachment();
+                AZ_Assert(
+                    attachment,
+                    "[RaytracingPass '%s']: Slot %s has no attachment for fullscreen size source.",
+                    GetPathName().GetCStr(),
+                    m_fullscreenSizeSourceBinding->m_name.GetCStr());
+                AZ::RHI::DispatchRaysDirect dispatchRaysArgs;
+                if (attachment)
+                {
+                    AZ_Assert(
+                        attachment->GetAttachmentType() == AZ::RHI::AttachmentType::Image,
+                        "[RaytracingPass '%s']: Slot %s must be an image for fullscreen size source.",
+                        GetPathName().GetCStr(),
+                        m_fullscreenSizeSourceBinding->m_name.GetCStr());
+
+                    auto imageDescriptor = context.GetImageDescriptor(attachment->GetAttachmentId());
+                    dispatchRaysArgs.m_width = imageDescriptor.m_size.m_width;
+                    dispatchRaysArgs.m_height = imageDescriptor.m_size.m_height;
+                    dispatchRaysArgs.m_depth = imageDescriptor.m_size.m_depth;
+                }
+                m_dispatchRaysItem.SetArguments(dispatchRaysArgs);
+            }
+            else
+            {
+                AZ::RHI::DispatchRaysDirect dispatchRaysArgs{ m_passData->m_threadCountX,
+                                                              m_passData->m_threadCountY,
+                                                              m_passData->m_threadCountZ };
+                m_dispatchRaysItem.SetArguments(dispatchRaysArgs);
+            }
 
             if (m_shaderResourceGroup != nullptr)
             {
@@ -381,38 +551,6 @@ namespace AZ
                 return;
             }
 
-            RHI::DeviceDispatchRaysItem dispatchRaysItem;
-
-            // calculate thread counts if this is a full screen raytracing pass
-            if (m_passData->m_makeFullscreenPass)
-            {
-                RPI::PassAttachment* outputAttachment = nullptr;
-
-                if (GetOutputCount() > 0)
-                {
-                    outputAttachment = GetOutputBinding(0).GetAttachment().get();
-                }
-                else if (GetInputOutputCount() > 0)
-                {
-                    outputAttachment = GetInputOutputBinding(0).GetAttachment().get();
-                }
-
-                AZ_Assert(outputAttachment != nullptr, "[RayTracingPass '%s']: A fullscreen RayTracing pass must have a valid output or input/output.", GetPathName().GetCStr());
-                AZ_Assert(outputAttachment->GetAttachmentType() == RHI::AttachmentType::Image, "[RayTracingPass '%s']: The output of a fullscreen RayTracing pass must be an image.", GetPathName().GetCStr());
-
-                RHI::Size imageSize = outputAttachment->m_descriptor.m_image.m_size;
-
-                dispatchRaysItem.m_arguments.m_direct.m_width = imageSize.m_width;
-                dispatchRaysItem.m_arguments.m_direct.m_height = imageSize.m_height;
-                dispatchRaysItem.m_arguments.m_direct.m_depth = imageSize.m_depth;
-            }
-            else
-            {
-                dispatchRaysItem.m_arguments.m_direct.m_width = m_passData->m_threadCountX;
-                dispatchRaysItem.m_arguments.m_direct.m_height = m_passData->m_threadCountY;
-                dispatchRaysItem.m_arguments.m_direct.m_depth = m_passData->m_threadCountZ;
-            }
-
             // bind RayTracingGlobal, RayTracingScene, and View Srgs
             // [GFX TODO][ATOM-15610] Add RenderPass::SetSrgsForRayTracingDispatch
             AZStd::vector<RHI::DeviceShaderResourceGroup*> shaderResourceGroups = { m_shaderResourceGroup->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get() };
@@ -441,15 +579,18 @@ namespace AZ
                 shaderResourceGroups.push_back(rayTracingFeatureProcessor->GetRayTracingMaterialSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get());
             }
 
-            dispatchRaysItem.m_shaderResourceGroupCount = aznumeric_cast<uint32_t>(shaderResourceGroups.size());
-            dispatchRaysItem.m_shaderResourceGroups = shaderResourceGroups.data();
-            dispatchRaysItem.m_rayTracingPipelineState =
+            auto deviceDispatchRaysItem = m_dispatchRaysItem.GetDeviceDispatchRaysItem(context.GetDeviceIndex());
+
+            deviceDispatchRaysItem.m_shaderResourceGroupCount = aznumeric_cast<uint32_t>(shaderResourceGroups.size());
+            deviceDispatchRaysItem.m_shaderResourceGroups = shaderResourceGroups.data();
+            deviceDispatchRaysItem.m_rayTracingPipelineState =
                 m_rayTracingPipelineState->GetDeviceRayTracingPipelineState(context.GetDeviceIndex()).get();
-            dispatchRaysItem.m_rayTracingShaderTable = m_rayTracingShaderTable->GetDeviceRayTracingShaderTable(context.GetDeviceIndex()).get();
-            dispatchRaysItem.m_globalPipelineState = m_globalPipelineState->GetDevicePipelineState(context.GetDeviceIndex()).get();
+            deviceDispatchRaysItem.m_rayTracingShaderTable =
+                m_rayTracingShaderTable->GetDeviceRayTracingShaderTable(context.GetDeviceIndex()).get();
+            deviceDispatchRaysItem.m_globalPipelineState = m_globalPipelineState->GetDevicePipelineState(context.GetDeviceIndex()).get();
 
             // submit the DispatchRays item
-            context.GetCommandList()->Submit(dispatchRaysItem);
+            context.GetCommandList()->Submit(deviceDispatchRaysItem);
         }
 
         void RayTracingPass::OnShaderReinitialized([[maybe_unused]] const RPI::Shader& shader)
