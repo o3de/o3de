@@ -178,11 +178,6 @@ namespace AZ::RHI
 
     void ImagePool::Shutdown()
     {
-        IterateObjects<DeviceImagePool>([]([[maybe_unused]] auto deviceIndex, auto deviceImagePool)
-        {
-            deviceImagePool->Shutdown();
-        });
-
         ResourcePool::Shutdown();
     }
 } // namespace AZ::RHI

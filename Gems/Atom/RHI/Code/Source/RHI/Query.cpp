@@ -22,11 +22,6 @@ namespace AZ::RHI
 
     void Query::Shutdown()
     {
-        IterateObjects<DeviceQuery>([]([[maybe_unused]] auto deviceIndex, auto deviceQuery)
-        {
-            deviceQuery->Shutdown();
-        });
-
         Resource::Shutdown();
     }
 } // namespace AZ::RHI

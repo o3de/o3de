@@ -303,11 +303,6 @@ namespace AZ::RHI
 
     void StreamingImagePool::Shutdown()
     {
-        IterateObjects<DeviceStreamingImagePool>([]([[maybe_unused]] auto deviceIndex, auto deviceStreamingImagePool)
-        {
-            deviceStreamingImagePool->Shutdown();
-        });
-
         ResourcePool::Shutdown();
     }
 } // namespace AZ::RHI

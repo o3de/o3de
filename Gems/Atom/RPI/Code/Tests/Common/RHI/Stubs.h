@@ -242,7 +242,10 @@ namespace UnitTest
             AZ_CLASS_ALLOCATOR(Fence, AZ::SystemAllocator);
 
         private:
-            AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, AZ::RHI::FenceState) override { return AZ::RHI::ResultCode::Success; }
+            AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, AZ::RHI::FenceState, [[maybe_unused]] bool usedForWaitingOnDevice) override
+            {
+                return AZ::RHI::ResultCode::Success;
+            }
             void ShutdownInternal() override {}
             void SignalOnCpuInternal() override {}
             void WaitOnCpuInternal() const override {};

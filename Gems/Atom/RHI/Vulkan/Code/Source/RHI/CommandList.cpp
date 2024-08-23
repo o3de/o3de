@@ -5,8 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/std/containers/vector.h>
+#include <Atom/RHI.Reflect/IndirectBufferLayout.h>
+#include <Atom/RHI/DeviceDispatchRaysItem.h>
+#include <Atom/RHI/DeviceIndirectBufferSignature.h>
 #include <AzCore/std/containers/fixed_vector.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/parallel/lock.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferView.h>
@@ -23,18 +26,16 @@
 #include <RHI/PipelineLayout.h>
 #include <RHI/PipelineLibrary.h>
 #include <RHI/PipelineState.h>
-#include <RHI/RayTracingBlas.h>
-#include <RHI/RayTracingTlas.h>
-#include <RHI/RayTracingPipelineState.h>
-#include <RHI/RayTracingShaderTable.h>
 #include <RHI/Query.h>
 #include <RHI/QueryPool.h>
+#include <RHI/RayTracingAccelerationStructure.h>
+#include <RHI/RayTracingBlas.h>
+#include <RHI/RayTracingPipelineState.h>
+#include <RHI/RayTracingShaderTable.h>
+#include <RHI/RayTracingTlas.h>
 #include <RHI/RenderPass.h>
 #include <RHI/ShaderResourceGroup.h>
 #include <RHI/SwapChain.h>
-#include <Atom/RHI/DeviceIndirectBufferSignature.h>
-#include <Atom/RHI.Reflect/IndirectBufferLayout.h>
-#include <Atom/RHI/DeviceDispatchRaysItem.h>
 
 namespace AZ
 {
@@ -1161,7 +1162,7 @@ namespace AZ
             // Set the build mode to update the acceleration structure
             VkAccelerationStructureBuildGeometryInfoKHR tempBuildInfo = blasBuffers.m_buildInfo;
             tempBuildInfo.mode = VK_BUILD_ACCELERATION_STRUCTURE_MODE_UPDATE_KHR;
-            tempBuildInfo.srcAccelerationStructure = blasBuffers.m_accelerationStructure;
+            tempBuildInfo.srcAccelerationStructure = blasBuffers.m_accelerationStructure->GetNativeAccelerationStructure();
 
             const auto& context = dynamic_cast<Device&>(GetDevice()).GetContext();
 

@@ -5,18 +5,19 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <Atom/RHI.Reflect/BufferDescriptor.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
+#include <Atom/RHI/DeviceBufferView.h>
+#include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/sort.h>
-#include <Atom/RHI/DeviceBufferView.h>
-#include <Atom/RHI/MemoryStatisticsBuilder.h>
-#include <Atom/RHI.Reflect/BufferDescriptor.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferPool.h>
-#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
-#include <RHI/MemoryView.h>
 #include <RHI/Device.h>
+#include <RHI/MemoryView.h>
 #include <RHI/Queue.h>
+#include <RHI/RayTracingAccelerationStructure.h>
 #include <RHI/ReleaseContainer.h>
 
 namespace AZ
@@ -157,10 +158,10 @@ namespace AZ
             AZ_Assert(RHI::CheckBitsAll(GetDescriptor().m_bindFlags, RHI::BufferBindFlags::RayTracingAccelerationStructure),
                 "GetNativeAccelerationStructure() is only valid for buffers with the RayTracingAccelerationStructure bind flag");
 
-            return m_nativeAccelerationStructure;
+            return m_nativeAccelerationStructure->GetNativeAccelerationStructure();
         }
 
-        void Buffer::SetNativeAccelerationStructure(const VkAccelerationStructureKHR& accelerationStructure)
+        void Buffer::SetNativeAccelerationStructure(const RHI::Ptr<RayTracingAccelerationStructure>& accelerationStructure)
         {
             AZ_Assert(RHI::CheckBitsAll(GetDescriptor().m_bindFlags, RHI::BufferBindFlags::RayTracingAccelerationStructure),
                 "SetNativeAccelerationStructure() is only valid for buffers with the RayTracingAccelerationStructure bind flag");
