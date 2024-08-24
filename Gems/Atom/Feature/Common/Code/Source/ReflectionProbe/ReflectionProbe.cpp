@@ -279,7 +279,7 @@ namespace AZ
         }
 
         const RHI::DrawPacket* ReflectionProbe::BuildDrawPacket(
-            [[maybe_unused]] const Data::Instance<RPI::ShaderResourceGroup>& srg,
+            const Data::Instance<RPI::ShaderResourceGroup>& srg,
             const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
             const RHI::DrawListTag& drawListTag,
             uint32_t stencilRef)

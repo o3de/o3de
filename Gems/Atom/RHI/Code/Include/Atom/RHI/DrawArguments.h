@@ -17,20 +17,20 @@ namespace AZ::RHI
         DrawLinear() = default;
 
         DrawLinear(
-            uint32_t instanceCount,
-            uint32_t instanceOffset,
-            uint32_t vertexCount,
-            uint32_t vertexOffset)
+            u32 instanceCount,
+            u32 instanceOffset,
+            u32 vertexCount,
+            u32 vertexOffset)
             : m_instanceCount(instanceCount)
             , m_instanceOffset(instanceOffset)
             , m_vertexCount(vertexCount)
             , m_vertexOffset(vertexOffset)
         {}
 
-        uint32_t m_instanceCount = 1;
-        uint32_t m_instanceOffset = 0;
-        uint32_t m_vertexCount = 0;
-        uint32_t m_vertexOffset = 0;
+        u32 m_instanceCount = 1;
+        u32 m_instanceOffset = 0;
+        u32 m_vertexCount = 0;
+        u32 m_vertexOffset = 0;
     };
 
     struct DrawIndexed
@@ -38,11 +38,11 @@ namespace AZ::RHI
         DrawIndexed() = default;
 
         DrawIndexed(
-            uint32_t instanceCount,
-            uint32_t instanceOffset,
-            uint32_t vertexOffset,
-            uint32_t indexCount,
-            uint32_t indexOffset)
+            u32 instanceCount,
+            u32 instanceOffset,
+            u32 vertexOffset,
+            u32 indexCount,
+            u32 indexOffset)
             : m_instanceCount(instanceCount)
             , m_instanceOffset(instanceOffset)
             , m_vertexOffset(vertexOffset)
@@ -50,11 +50,11 @@ namespace AZ::RHI
             , m_indexOffset(indexOffset)
         {}
 
-        uint32_t m_instanceCount = 1;
-        uint32_t m_instanceOffset = 0;
-        uint32_t m_vertexOffset = 0;
-        uint32_t m_indexCount = 0;
-        uint32_t m_indexOffset = 0;
+        u32 m_instanceCount = 1;
+        u32 m_instanceOffset = 0;
+        u32 m_vertexOffset = 0;
+        u32 m_indexCount = 0;
+        u32 m_indexOffset = 0;
     };
 
     using DrawIndirect = IndirectArguments;

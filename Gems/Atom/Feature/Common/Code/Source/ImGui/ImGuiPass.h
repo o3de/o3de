@@ -133,12 +133,17 @@ namespace AZ
                 RHI::Scissor m_scissor;
             };
 
+            // Wrapper around AZStd::vector<DrawInfo> to implement double/triple buffering
             struct BufferedDrawInfos
             {
-                static constexpr u32 DrawInfoBuffering = 3;
+                static constexpr u32 DrawInfoBuffering = 2;
                 AZStd::vector<DrawInfo> m_drawInfos[DrawInfoBuffering];
                 u8 m_currentIndex = 0;
+
+                // Move to the next DrawInfo list in a ring buffer fashion
                 void NextBuffer() { m_currentIndex = (m_currentIndex + 1) % DrawInfoBuffering; }
+
+                // Get the current DrawInfo list
                 AZStd::vector<DrawInfo>& Get() { return m_drawInfos[m_currentIndex]; }
             };
 
@@ -162,6 +167,8 @@ namespace AZ
 
             RHI::IndexBufferView m_indexBufferView;
             AZStd::array<RHI::StreamBufferView, 2> m_vertexBufferView; // For vertex buffer and instance data
+
+            // List of DrawInfos that can be double or triple buffered
             BufferedDrawInfos m_drawInfos;
             Data::Instance<RPI::StreamingImage> m_fontAtlas;
 

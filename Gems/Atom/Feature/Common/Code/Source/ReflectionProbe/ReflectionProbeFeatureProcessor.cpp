@@ -634,7 +634,7 @@ namespace AZ
             };
 
             m_reflectionRenderData.m_meshBuffers.SetIndexBufferView(indexBufferView);
-            m_reflectionRenderData.m_meshBuffers.SetDrawArguments(RHI::DrawIndexed{ 0, 0, 0, numIndices, 0 });
+            m_reflectionRenderData.m_meshBuffers.SetDrawArguments(RHI::DrawIndexed{ 1, 0, 0, numIndices, 0 });
 
             // create position buffer
             m_boxPositionBuffer = AZ::RHI::Factory::Get().CreateBuffer();

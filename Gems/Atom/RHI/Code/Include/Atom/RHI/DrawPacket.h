@@ -84,7 +84,7 @@ namespace AZ::RHI
         void operator delete(void* p, size_t size);
 
         //! Update the root constant at the specified interval. The same root constants are shared by all draw items in the draw packet
-        void SetRootConstant(uint32_t offset, const AZStd::span<uint8_t>& data);
+        void SetRootConstant(uint32_t offset, const AZStd::span<u8>& data);
 
         //! Set the instance count in all draw items.
         void SetInstanceCount(uint32_t instanceCount);
@@ -99,17 +99,17 @@ namespace AZ::RHI
         // The bit-mask of all active filter tags.
         DrawListMask m_drawListMask = 0;
 
-        uint8_t  m_drawItemCount = 0;
-        uint8_t  m_shaderResourceGroupCount = 0;
-        uint8_t  m_uniqueShaderResourceGroupCount = 0;
-        uint8_t  m_rootConstantSize = 0;
-        uint8_t  m_scissorsCount = 0;
-        uint8_t  m_viewportsCount = 0;
+        u8  m_drawItemCount = 0;
+        u8  m_shaderResourceGroupCount = 0;
+        u8  m_uniqueShaderResourceGroupCount = 0;
+        u8  m_rootConstantSize = 0;
+        u8  m_scissorsCount = 0;
+        u8  m_viewportsCount = 0;
 
         // List of draw items.
         DrawItem* m_drawItems = nullptr;
 
-        // Contains the geometry data to be used during rendering
+        // Contains DrawArguments and geometry buffer views used during rendering
         MeshBuffers* m_meshBuffers = nullptr;
 
         // List of draw item sort keys associated with the draw item index.
@@ -128,7 +128,7 @@ namespace AZ::RHI
         const ShaderResourceGroup* const* m_uniqueShaderResourceGroups = nullptr;
 
         // List of inline constants shared by all draw items.
-        const uint8_t* m_rootConstants = nullptr;
+        const u8* m_rootConstants = nullptr;
 
         // Optional list of scissors to be used by all draw items.
         const Scissor* m_scissors = nullptr;

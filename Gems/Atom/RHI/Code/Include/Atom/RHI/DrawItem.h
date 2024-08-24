@@ -36,7 +36,9 @@ namespace AZ::RHI
     {
         DrawItem() = default;
 
+        /// Indices of the StreamBufferViews this DrawItem will use
         RHI::MeshBuffers::StreamBufferIndices m_streamIndices;
+
         u8  m_stencilRef = 0;
         u8  m_shaderResourceGroupCount = 0;
         u8  m_rootConstantSize = 0;
@@ -56,9 +58,9 @@ namespace AZ::RHI
             u8 m_allFlags = 1;     //< Update default value if you add flags. Also update in DrawPacketBuilder::End()
         };
 
-        // --- Mesh ---
+        // --- Geometry ---
 
-        /// Contains the geometry data to be used during rendering
+        /// Contains DrawArguments and geometry buffer views used during rendering
         const MeshBuffers* m_meshBuffers = nullptr;
 
         // --- Shader ---
@@ -89,8 +91,8 @@ namespace AZ::RHI
 
     // A filter associate to a DrawItem which can be used to filter the DrawItem when submitting to command list
     using DrawFilterTag = Handle<u8, DefaultNamespaceType>;
-    using DrawFilterMask = uint32_t; // AZStd::bitset's impelmentation is too expensive.
-    constexpr uint32_t DrawFilterMaskDefaultValue = uint32_t(-1);  // Default all bit to 1.
+    using DrawFilterMask = u32; // AZStd::bitset's impelmentation is too expensive.
+    constexpr u32 DrawFilterMaskDefaultValue = u32(-1);  // Default all bit to 1.
     static_assert(sizeof(DrawFilterMask) * 8 >= Limits::Pipeline::DrawFilterTagCountMax, "DrawFilterMask doesn't have enough bits for maximum tag count");
 
     struct DrawItemProperties

@@ -89,6 +89,7 @@ namespace AZ::RHI
         //! The bit-mask of all active filter tags.
         DrawListMask m_drawListMask{};
 
+        //! Collection of per-device MeshBuffers
         MultiDeviceMeshBuffers* m_multiMeshBuffers;
 
         //! List of draw items.

@@ -20,6 +20,10 @@ namespace AZ
 
 namespace AZ::RHI
 {
+    //! DrawPachetBuilder builds a DrawPacket and its DrawItems contiguously in memory for cache efficiency
+    //! Start by calling DrawPacketBuilder::Begin( )
+    //! Then Set the necessary data and add a DrawRequest for each DrawItem
+    //! Finalize the DrawPacket with a call to DrawPacketBuilder::End( )
     class DrawPacketBuilder
     {
     public:
@@ -33,6 +37,7 @@ namespace AZ::RHI
             //! The stencil ref value used for this draw item.
             u8 m_stencilRef = 0;
 
+            //! Indices of the StreamBufferViews the DrawItem will use
             RHI::MeshBuffers::StreamBufferIndices m_streamIndices;
 
             //! Shader resource group unique for this draw request
@@ -85,6 +90,8 @@ namespace AZ::RHI
         DrawListMask m_drawListMask = 0;
 
         IAllocator* m_allocator = nullptr;
+
+        //! Contains DrawArguments and geometry buffer views used during rendering
         MeshBuffers* m_meshBuffers = nullptr;
         AZStd::fixed_vector<DrawRequest, DrawItemCountMax> m_drawRequests;
         AZStd::fixed_vector<const ShaderResourceGroup*, Limits::Pipeline::ShaderResourceGroupCountMax> m_shaderResourceGroups;

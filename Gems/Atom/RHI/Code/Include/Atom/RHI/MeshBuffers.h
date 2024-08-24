@@ -17,10 +17,24 @@ namespace AZ::RHI
 {
     class InputStreamLayout;
 
+    //! MeshBuffers hold draw arguments and geometry index/stream buffer views used for rendering DrawPackets/DrawItems
+    //! 
     class MeshBuffers
     {
+        DrawArguments m_drawArguments;
+        IndexBufferView m_indexBufferView;
+        AZStd::vector<StreamBufferView> m_streamBufferViews;
+
+        //! Dummy StreamBufferView is used when shader requires an options stream that has not been provided by the user
+        static constexpr u8 InvalidStreamBufferIndex = 0xFF;
+        u8 m_dummyStreamBufferIndex = InvalidStreamBufferIndex;
+
     public:
 
+        //! This container holds a list of indices into a MeshBuffer's stream buffer views
+        //! This allows DrawItems to only the stream buffers it needs (and in the order its shader needs them)
+        //! Each index is four bits, such that each u8 in this class holds two indices for better memory efficiency
+        //! To iterate through stream buffer views with these indices, use the StreamIterator class below
         class StreamBufferIndices
         {
             u8 m_count = 0;
@@ -34,6 +48,7 @@ namespace AZ::RHI
 
                 u8 newPosition = m_count / 2;
                 bool needsShift = (m_count % 2) == 1;
+
                 if (needsShift)
                 {
                     m_indices[newPosition] |= index << 4;
@@ -56,22 +71,29 @@ namespace AZ::RHI
                 return halfValue;
             }
 
-            u8 GetCount() const { return m_count; }
+            u8 Size() const { return m_count; }
             void Reset() { m_count = 0; }
         };
 
-        class StreamIterator {
-        private:
+        //! Helper class to conveniently iterate through stream buffer views using the StreamBufferIndices class above
+        //! Takes as input MeshBuffers* and StreamBufferIndices, then can be used to iterate with ++ operators
+        //! It also supports direct indexing via myStreamIter[idx] syntax
+        class StreamIterator
+        {
             const MeshBuffers* m_meshBuffers;
             const StreamBufferIndices& m_indices;
             u8 m_current = 0;
+
         public:
             StreamIterator(const MeshBuffers* meshBuffers, const StreamBufferIndices& indices)
                 : m_meshBuffers(meshBuffers)
                 , m_indices(indices)
             {}
 
-            bool HasEnded() const { return m_current >= m_indices.GetCount(); }
+            //! Use this in your for loop to check if the iterator has reached the end
+            bool HasEnded() const { return m_current >= m_indices.Size(); }
+
+            //! Can be used to reset the iterator if you want to use it for subsequent loops
             void Reset() { m_current = 0; }
 
             StreamIterator& operator++()
@@ -88,24 +110,26 @@ namespace AZ::RHI
                 return temp;
             }
 
+            //! Used to access the current StreamBufferView
             const StreamBufferView& operator*()
             {
                 return m_meshBuffers->GetStreamBufferView(m_indices.GetIndex(m_current));
             }
 
+            //! Used to access the current StreamBufferView
             const StreamBufferView* operator->()
             {
                 return &m_meshBuffers->GetStreamBufferView(m_indices.GetIndex(m_current));
             }
 
+            //! Used for direct indexing, irrespective of the current iterator progress
             const StreamBufferView& operator[](u16 idx) const
             {
-                AZ_Assert((u8)idx < m_indices.GetCount(), "Index %d exceeds number of indices (%d) for stream buffer views",
-                    idx, m_indices.GetCount());
+                AZ_Assert((u8)idx < m_indices.Size(), "Passed index %d exceeds number of indices (%d) for stream buffer views",
+                    idx, m_indices.Size());
 
                 return m_meshBuffers->GetStreamBufferView(m_indices.GetIndex((u8)idx));
             }
-
         };
 
         friend class StreamIterator;
@@ -117,11 +141,17 @@ namespace AZ::RHI
             ClearStreamBufferViews();
         }
 
+        // --- DrawArguments ---
+
         void SetDrawArguments(DrawArguments drawArguments) { m_drawArguments = drawArguments; }
         const DrawArguments& GetDrawArguments() const { return m_drawArguments; }
 
+        // --- IndexBufferView ---
+
         void SetIndexBufferView(IndexBufferView indexBufferView) { m_indexBufferView = indexBufferView; }
         const IndexBufferView& GetIndexBufferView() const { return m_indexBufferView; }
+
+        // --- StreamBufferView ---
 
         void ClearStreamBufferViews()
         {
@@ -130,8 +160,11 @@ namespace AZ::RHI
         }
         void AddStreamBufferView(StreamBufferView streamBufferView) { m_streamBufferViews.emplace_back(streamBufferView); }
         const StreamBufferView& GetStreamBufferView(u8 idx) const { return m_streamBufferViews[idx]; }
+
         AZStd::vector<StreamBufferView>& GetStreamBufferViews() { return m_streamBufferViews; }
         const AZStd::vector<StreamBufferView>& GetStreamBufferViews() const { return m_streamBufferViews; }
+
+        // --- Dummy StreamBufferView ---
 
         bool HasDummyStreamBufferView() const { return m_dummyStreamBufferIndex != InvalidStreamBufferIndex; }
         u8 GetDummyStreamBufferIndex() const { return m_dummyStreamBufferIndex; }
@@ -149,10 +182,13 @@ namespace AZ::RHI
             m_streamBufferViews.emplace_back(streamBufferView);
         }
 
+        //! Helper function to conveniently create a StreamIterator
         StreamIterator CreateStreamIterator(const StreamBufferIndices& indices) const { return StreamIterator(this, indices); }
 
+        //! Sets the intance count on the indexed draw. Used for instancing.
         void SetIndexInstanceCount(u32 count) { m_drawArguments.m_indexed.m_instanceCount = count; }
 
+        //! Helper function that provides indices to all the StreamBufferViews. Useful when MeshBuffers where created for a single DrawItem
         StreamBufferIndices GetFullStreamBufferIndices() const
         {
             StreamBufferIndices streamIndices;
@@ -162,17 +198,9 @@ namespace AZ::RHI
             }
             return streamIndices;
         }
-
-    private:
-
-        DrawArguments m_drawArguments;
-        IndexBufferView m_indexBufferView;
-        AZStd::vector<StreamBufferView> m_streamBufferViews;
-
-        static constexpr u8 InvalidStreamBufferIndex = 0xFF;
-        u8 m_dummyStreamBufferIndex = InvalidStreamBufferIndex;
     };
 
+    //! Validates the stream buffer views in a MeshBuffers
     bool ValidateStreamBufferViews(const InputStreamLayout& inputStreamLayout, RHI::MeshBuffers& meshBuffers,
         const RHI::MeshBuffers::StreamBufferIndices& streamIndices);
 }

@@ -901,7 +901,7 @@ namespace AZ
                     }
                 }
 
-                GetCommandList()->IASetVertexBuffers(0, streamIndices.GetCount(), views);
+                GetCommandList()->IASetVertexBuffers(0, streamIndices.Size(), views);
             }
         }
 
