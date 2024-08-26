@@ -519,7 +519,11 @@ function(ly_setup_subdirectory absolute_target_source_dir)
     # 1. Create the base CMakeLists.txt that will just include a cmake file per platform
     string(CONFIGURE [[
 @cmake_copyright_comment@
-include(Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+if(LY_MONOLITHIC_GAME)
+    include(Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake OPTIONAL)
+else()
+    include(Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+endif()
 ]] subdirectory_cmakelist_content @ONLY)
 
     # Store off the generated CMakeLists.txt into a DIRECTORY property based on the subdirectory being visited
@@ -1025,7 +1029,11 @@ function(ly_setup_assets)
                     @cmake_copyright_comment@
                     o3de_read_json_key(GEM_TYPE ${CMAKE_CURRENT_SOURCE_DIR}/gem.json "type")
                     if (GEM_TYPE STREQUAL "Asset")
-                        include(Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+                        if(LY_MONOLITHIC_GAME)
+                            include(Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake OPTIONAL)                    
+                        else()
+                            include(Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+                        endif()
                     endif()
                     ]] subdirectory_cmakelist_content @ONLY)
                     
