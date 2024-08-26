@@ -237,7 +237,7 @@ namespace AzToolsFramework
             }
             Q_EMIT filterChanged();
 
-            // Note that becuase the data we are filtering over is massive (all assets) its way faster
+            // Note that because the data we are filtering over is massive (all assets) its way faster
             // to reset the model than it is to try to incrementally apply filters here, which can cause many more
             // messages like "row added / row removed" to be sent to the view.
             beginResetModel();
