@@ -7,6 +7,6 @@
 #
 
 ly_install_directory(
-	DIRECTORIES
-		java
+    DIRECTORIES
+        java
 )

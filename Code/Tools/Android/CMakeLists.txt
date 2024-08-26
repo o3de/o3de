@@ -7,7 +7,7 @@
 #
 
 ly_install_directory(
-	DIRECTORIES
-		ProjectBuilder
-		ProjectGenerator
+    DIRECTORIES
+        ProjectBuilder
+        ProjectGenerator
 )
