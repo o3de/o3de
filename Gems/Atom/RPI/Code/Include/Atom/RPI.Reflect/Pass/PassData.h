@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RHI.Reflect/Limits.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/std/containers/vector.h>

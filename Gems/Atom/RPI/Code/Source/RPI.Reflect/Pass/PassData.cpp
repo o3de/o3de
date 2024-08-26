@@ -6,18 +6,18 @@
  *
  */
 
-#include <AzCore/Serialization/SerializeContext.h>
+#include <Atom/RPI.Reflect/Pass/PassData.h>
 
 #include <Atom/RPI.Reflect/Pass/ComputePassData.h>
 #include <Atom/RPI.Reflect/Pass/CopyPassData.h>
 #include <Atom/RPI.Reflect/Pass/DownsampleMipChainPassData.h>
 #include <Atom/RPI.Reflect/Pass/EnvironmentCubeMapPassData.h>
 #include <Atom/RPI.Reflect/Pass/FullscreenTrianglePassData.h>
-#include <Atom/RPI.Reflect/Pass/PassData.h>
 #include <Atom/RPI.Reflect/Pass/RasterPassData.h>
 #include <Atom/RPI.Reflect/Pass/RenderPassData.h>
 #include <Atom/RPI.Reflect/Pass/RenderToTexturePassData.h>
 #include <Atom/RPI.Reflect/Pass/SlowClearPassData.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
 {
