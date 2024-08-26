@@ -52,6 +52,17 @@ namespace AZ
             m_duration = (end1 > end2 ? end1 : end2) - m_begin;
         }
 
+        void TimestampResult::AddDuration(const TimestampResult& extent)
+        {
+            // Use the begin extent if our own begin is unset
+            if (m_begin == 0)
+            {
+                m_begin = extent.m_begin;
+            }
+
+            m_duration += extent.m_duration;
+        }
+
         // --- PipelineStatisticsResult ---
 
         PipelineStatisticsResult::PipelineStatisticsResult(AZStd::span<const PipelineStatisticsResult>&& statisticsResultArray)
