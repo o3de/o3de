@@ -470,8 +470,7 @@
     ],
     "steps": [
       "install_mono_release",
-      "install_mono_android_api_31_profile",
-      "install_mono_android_api_31_release",
+      "install_mono_android_api_24_release",
       "installer",
       "installer_test"
     ]

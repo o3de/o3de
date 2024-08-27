@@ -433,7 +433,6 @@
     ],
     "steps": [
       "install_mono_22_release",
-      "install_mono_android_api_24_profile",
       "install_mono_android_api_24_release",
       "installer"
     ]
