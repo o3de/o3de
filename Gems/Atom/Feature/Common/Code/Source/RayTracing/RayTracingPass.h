@@ -46,6 +46,7 @@ namespace AZ
             bool IsEnabled() const override;
             void BuildInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
+            void FrameEndInternal() override;
 
             // Scope producer functions
             void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
@@ -60,27 +61,24 @@ namespace AZ
             // load the raytracing shaders and setup pipeline states
             void CreatePipelineState();
 
-            // helper for loading a shader from a shader asset reference
-            Data::Instance<RPI::Shader> LoadShader(const RPI::AssetReference& shaderAssetReference);
-
             // pass data
             RPI::PassDescriptor m_passDescriptor;
             const RayTracingPassData* m_passData = nullptr;
 
-            Name m_fullscreenSizeSourceSlot;
+            Name m_fullscreenSizeSourceSlotName;
             bool m_fullscreenDispatch = false;
             RPI::PassAttachmentBinding* m_fullscreenSizeSourceBinding = nullptr;
 
             bool m_indirectDispatch = false;
-            Name m_indirectDispatchBufferSlot;
+            Name m_indirectDispatchBufferSlotName;
             RPI::PassAttachmentBinding* m_indirectDispatchRaysBufferBinding = nullptr;
             RHI::Ptr<RHI::IndirectBufferSignature> m_indirectDispatchRaysBufferSignature;
             RHI::IndirectBufferView m_indirectDispatchRaysBufferView;
             RHI::Ptr<RHI::DispatchRaysIndirectBuffer> m_dispatchRaysIndirectBuffer;
-            uint32_t m_dispatchRaysShaderTableRevision{ std::numeric_limits<uint32_t>::max() };
 
             // revision number of the ray tracing TLAS when the shader table was built
-            uint32_t m_rayTracingRevision = 0;
+            uint32_t m_rayTracingShaderTableRevision{ std::numeric_limits<uint32_t>::max() };
+            uint32_t m_dispatchRaysShaderTableRevision{ std::numeric_limits<uint32_t>::max() };
             uint32_t m_proceduralGeometryTypeRevision = 0;
 
             // raytracing shaders, pipeline states, and shader table
@@ -92,13 +90,20 @@ namespace AZ
             RHI::Ptr<RHI::RayTracingPipelineState> m_rayTracingPipelineState;
             RHI::ConstPtr<RHI::PipelineState> m_globalPipelineState;
             RHI::Ptr<RHI::RayTracingShaderTable> m_rayTracingShaderTable;
+
+            // [GFX TODO][ATOM-15610] Add RenderPass::SetSrgsForRayTracingDispatch
+            // Remove this as soon as we can use the RenderPass::BindSrg() for raytracing
+            AZStd::vector<RHI::ShaderResourceGroup*> m_rayTracingSRGsToBind;
+
             bool m_requiresViewSrg = false;
             bool m_requiresSceneSrg = false;
             bool m_requiresRayTracingMaterialSrg = false;
             bool m_requiresRayTracingSceneSrg = false;
             float m_maxRayLength = 1e27f;
 
-            AZ::RHI::DispatchRaysItem m_dispatchRaysItem{ AZ::RHI::MultiDevice::AllDevices };
+            RHI::ShaderInputNameIndex m_maxRayLengthInputIndex = "m_maxRayLength";
+
+            RHI::DispatchRaysItem m_dispatchRaysItem;
         };
     }   // namespace RPI
 }   // namespace AZ

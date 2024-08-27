@@ -28,8 +28,8 @@
 #include <RayTracing/RayTracingPass.h>
 #include <RayTracing/RayTracingPassData.h>
 
-#ifndef INDIRECT_RENDERING_INCLUDE_GUARD_FOR_MISSING_INCLUDE_GUARD
-#define INDIRECT_RENDERING_INCLUDE_GUARD_FOR_MISSING_INCLUDE_GUARD
+#ifndef INDIRECT_RENDERING_INCLUDE_GUARD
+#define INDIRECT_RENDERING_INCLUDE_GUARD
 using uint = uint32_t;
 using uint4 = uint[4];
 #include "../../../Feature/Common/Assets/ShaderLib/Atom/Features/IndirectRendering.azsli"
@@ -48,6 +48,7 @@ namespace AZ
         RayTracingPass::RayTracingPass(const RPI::PassDescriptor& descriptor)
             : RenderPass(descriptor)
             , m_passDescriptor(descriptor)
+            , m_dispatchRaysItem(RHI::MultiDevice::AllDevices)
         {
             if (RHI::RHISystemInterface::Get()->GetRayTracingSupport() == RHI::MultiDevice::NoDevices)
             {
@@ -64,17 +65,14 @@ namespace AZ
             }
 
             m_indirectDispatch = m_passData->m_indirectDispatch;
-            m_indirectDispatchBufferSlot = m_passData->m_indirectDispatchBufferSlot;
+            m_indirectDispatchBufferSlotName = m_passData->m_indirectDispatchBufferSlotName;
 
             m_fullscreenDispatch = m_passData->m_fullscreenDispatch;
-            m_fullscreenSizeSourceSlot = m_passData->m_fullscreenSizeSourceSlot;
-
-            [[maybe_unused]] auto activeDispatchOptionCount = m_indirectDispatch + m_fullscreenDispatch;
+            m_fullscreenSizeSourceSlotName = m_passData->m_fullscreenSizeSourceSlotName;
 
             AZ_Assert(
-                activeDispatchOptionCount <= 1,
-                "[RaytracingPass '%s']: Only one of the OSC dispatch options (indirect, fullscreen, cacheBlockCount) can be "
-                "active.",
+                !(m_indirectDispatch && m_fullscreenDispatch),
+                "[RaytracingPass '%s']: Only one of the dispatch options (indirect, fullscreen) can be active",
                 GetPathName().GetCStr());
 
             m_defaultShaderAttachmentStage = RHI::ScopeAttachmentStage::RayTracingShader;
@@ -88,6 +86,9 @@ namespace AZ
 
         void RayTracingPass::CreatePipelineState()
         {
+            m_rayTracingShaderTable.reset();
+            m_maxRayLengthInputIndex.Reset();
+
             struct RTShaderLib
             {
                 AZ::Data::AssetId m_shaderAssetId;
@@ -222,8 +223,12 @@ namespace AZ
             m_rayTracingPipelineState = aznew RHI::RayTracingPipelineState;
             m_rayTracingPipelineState->Init(RHI::RHISystemInterface::Get()->GetRayTracingSupport(), descriptor);
 
+            // register the ray tracing and global pipeline state object with the dispatch-item
+            m_dispatchRaysItem.SetRayTracingPipelineState(m_rayTracingPipelineState.get());
+            m_dispatchRaysItem.SetPipelineState(m_globalPipelineState.get());
+
             // make sure the shader table rebuilds if we're hotreloading
-            m_rayTracingRevision = 0;
+            m_rayTracingShaderTableRevision = 0;
 
             // store the max ray length
             m_maxRayLength = m_passData->m_maxRayLength;
@@ -234,23 +239,6 @@ namespace AZ
             RPI::ShaderReloadNotificationBus::MultiHandler::BusConnect(m_passData->m_closestHitProceduralShaderAssetReference.m_assetId);
             RPI::ShaderReloadNotificationBus::MultiHandler::BusConnect(m_passData->m_missShaderAssetReference.m_assetId);
             RPI::ShaderReloadNotificationBus::MultiHandler::BusConnect(m_passData->m_intersectionShaderAssetReference.m_assetId);
-        }
-
-        Data::Instance<RPI::Shader> RayTracingPass::LoadShader(const RPI::AssetReference& shaderAssetReference)
-        {
-            Data::Asset<RPI::ShaderAsset> shaderAsset;
-            if (shaderAssetReference.m_assetId.IsValid())
-            {
-                shaderAsset = RPI::FindShaderAsset(shaderAssetReference.m_assetId, shaderAssetReference.m_filePath);
-            }
-
-            if (!shaderAsset.IsReady())
-            {
-                AZ_Error("PassSystem", false, "RayTracingPass [%s]: Failed to load shader asset [%s]", GetPathName().GetCStr(), shaderAssetReference.m_filePath.data());
-                return nullptr;
-            }
-
-            return RPI::Shader::FindOrCreate(shaderAsset);
         }
 
         bool RayTracingPass::IsEnabled() const
@@ -299,15 +287,21 @@ namespace AZ
                 }
 
                 m_indirectDispatchRaysBufferBinding = nullptr;
-                if (!m_indirectDispatchBufferSlot.IsEmpty())
+                if (!m_indirectDispatchBufferSlotName.IsEmpty())
                 {
-                    m_indirectDispatchRaysBufferBinding = FindAttachmentBinding(m_indirectDispatchBufferSlot);
-                    AZ_Assert(
-                        m_indirectDispatchRaysBufferBinding->m_scopeAttachmentUsage == AZ::RHI::ScopeAttachmentUsage::Indirect,
-                        "[RaytracingPass '%s']: Indirect dispatch buffer slot %s needs "
-                        "ScopeAttachmentUsage::Indirect.",
-                        GetPathName().GetCStr(),
-                        m_indirectDispatchBufferSlot.GetCStr())
+                    m_indirectDispatchRaysBufferBinding = FindAttachmentBinding(m_indirectDispatchBufferSlotName);
+                    AZ_Assert(m_indirectDispatchRaysBufferBinding,
+                            "[RaytracingPass '%s']: Indirect dispatch buffer slot %s not found.",
+                            GetPathName().GetCStr(),
+                            m_indirectDispatchBufferSlotName.GetCStr());
+                    if (m_indirectDispatchRaysBufferBinding)
+                    {
+                        AZ_Assert(
+                            m_indirectDispatchRaysBufferBinding->m_scopeAttachmentUsage == AZ::RHI::ScopeAttachmentUsage::Indirect,
+                            "[RaytracingPass '%s']: Indirect dispatch buffer slot %s needs ScopeAttachmentUsage::Indirect.",
+                            GetPathName().GetCStr(),
+                            m_indirectDispatchBufferSlotName.GetCStr())
+                    }
                 }
                 else
                 {
@@ -319,12 +313,12 @@ namespace AZ
                             break;
                         }
                     }
-                }
-
-                AZ_Assert(
-                    m_indirectDispatchRaysBufferBinding,
+                    AZ_Assert(m_indirectDispatchRaysBufferBinding,
                     "[RaytracingPass '%s']: No valid indirect dispatch buffer slot found.",
                     GetPathName().GetCStr());
+                }
+
+
 
                 if (!m_dispatchRaysIndirectBuffer)
                 {
@@ -336,14 +330,14 @@ namespace AZ
             else if (m_fullscreenDispatch)
             {
                 m_fullscreenSizeSourceBinding = nullptr;
-                if (!m_fullscreenSizeSourceSlot.IsEmpty())
+                if (!m_fullscreenSizeSourceSlotName.IsEmpty())
                 {
-                    m_fullscreenSizeSourceBinding = FindAttachmentBinding(m_fullscreenSizeSourceSlot);
+                    m_fullscreenSizeSourceBinding = FindAttachmentBinding(m_fullscreenSizeSourceSlotName);
                     AZ_Assert(
-                        m_fullscreenSizeSourceBinding,
-                        "[RaytracingPass '%s']: Fullscreen size source slot %s not found.",
-                        GetPathName().GetCStr(),
-                        m_fullscreenSizeSourceSlot.GetCStr());
+                            m_fullscreenSizeSourceBinding,
+                            "[RaytracingPass '%s']: Fullscreen size source slot %s not found.",
+                            GetPathName().GetCStr(),
+                            m_fullscreenSizeSourceSlotName.GetCStr());
                 }
                 else
                 {
@@ -372,14 +366,6 @@ namespace AZ
                 return;
             }
 
-            if (!m_rayTracingShaderTable)
-            {
-                RHI::RayTracingBufferPools& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
-
-                m_rayTracingShaderTable = aznew RHI::RayTracingShaderTable;
-                m_rayTracingShaderTable->Init(RHI::RHISystemInterface::Get()->GetRayTracingSupport(), rayTracingBufferPools);
-            }
-
             RPI::RenderPass::FrameBeginInternal(params);
         }
 
@@ -405,7 +391,8 @@ namespace AZ
                     }
 
                     uint32_t tlasBufferByteCount = aznumeric_cast<uint32_t>(rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer()->GetDescriptor().m_byteCount);
-                    RHI::BufferViewDescriptor tlasBufferViewDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, tlasBufferByteCount);
+                    RHI::BufferViewDescriptor tlasBufferViewDescriptor =
+                        RHI::BufferViewDescriptor::CreateRayTracingTLAS(tlasBufferByteCount);
 
                     RHI::BufferScopeAttachmentDescriptor desc;
                     desc.m_attachmentId = tlasAttachmentId;
@@ -482,18 +469,6 @@ namespace AZ
                 m_dispatchRaysItem.SetArguments(dispatchRaysArgs);
             }
 
-            if (m_shaderResourceGroup != nullptr)
-            {
-                auto constantIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_maxRayLength"));
-                if (constantIndex.IsValid())
-                {
-                    m_shaderResourceGroup->SetConstant(constantIndex, m_maxRayLength);
-                }
-
-                BindPassSrg(context, m_shaderResourceGroup);
-                m_shaderResourceGroup->Compile();
-            }
-
             uint32_t proceduralGeometryTypeRevision = rayTracingFeatureProcessor->GetProceduralGeometryTypeRevision();
             if (m_proceduralGeometryTypeRevision != proceduralGeometryTypeRevision)
             {
@@ -506,11 +481,12 @@ namespace AZ
                 m_proceduralGeometryTypeRevision = proceduralGeometryTypeRevision;
             }
 
-            uint32_t rayTracingRevision = rayTracingFeatureProcessor->GetRevision();
-            if (m_rayTracingRevision != rayTracingRevision)
+            if (!m_rayTracingShaderTable || m_rayTracingShaderTableRevision != rayTracingFeatureProcessor->GetRevision())
             {
                 // scene changed, need to rebuild the shader table
-                m_rayTracingRevision = rayTracingRevision;
+                m_rayTracingShaderTableRevision = rayTracingFeatureProcessor->GetRevision();
+                m_rayTracingShaderTable = aznew AZ::RHI::RayTracingShaderTable();
+                m_rayTracingShaderTable->Init(AZ::RHI::MultiDevice::AllDevices, rayTracingFeatureProcessor->GetBufferPools());
 
                 AZStd::shared_ptr<RHI::RayTracingShaderTableDescriptor> descriptor = AZStd::make_shared<RHI::RayTracingShaderTableDescriptor>();
 
@@ -534,6 +510,46 @@ namespace AZ
                 }
 
                 m_rayTracingShaderTable->Build(descriptor);
+
+                // register the shader-table with the dispatch item
+                m_dispatchRaysItem.SetRayTracingPipelineState(m_rayTracingPipelineState.get());
+                m_dispatchRaysItem.SetRayTracingShaderTable(m_rayTracingShaderTable.get());
+            }
+
+            // Collect and register the Srgs (RayTracingGlobal, RayTracingScene, ViewSrg, SceneSrg and RayTracingMaterialSrg)
+            // The more consistent way would be to call BindSrg() of the RenderPass, and then call
+            // SetSrgsForDispatchRays() in BuildCommandListInternal, but that function doesn't exist.
+            // [GFX TODO][ATOM-15610] Add RenderPass::SetSrgsForRayTracingDispatch
+            if (m_shaderResourceGroup != nullptr)
+            {
+                m_shaderResourceGroup->SetConstant(m_maxRayLengthInputIndex, m_maxRayLength);
+                BindPassSrg(context, m_shaderResourceGroup);
+                m_shaderResourceGroup->Compile();
+                m_rayTracingSRGsToBind.push_back(m_shaderResourceGroup->GetRHIShaderResourceGroup());
+            }
+
+            if (m_requiresRayTracingSceneSrg)
+            {
+                m_rayTracingSRGsToBind.push_back(rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup());
+            }
+
+            if (m_requiresViewSrg)
+            {
+                RPI::ViewPtr view = m_pipeline->GetFirstView(GetPipelineViewTag());
+                if (view)
+                {
+                    m_rayTracingSRGsToBind.push_back(view->GetShaderResourceGroup()->GetRHIShaderResourceGroup());
+                }
+            }
+
+            if (m_requiresSceneSrg)
+            {
+                m_rayTracingSRGsToBind.push_back(scene->GetShaderResourceGroup()->GetRHIShaderResourceGroup());
+            }
+
+            if (m_requiresRayTracingMaterialSrg)
+            {
+                m_rayTracingSRGsToBind.push_back(rayTracingFeatureProcessor->GetRayTracingMaterialSrg()->GetRHIShaderResourceGroup());
             }
         }
 
@@ -543,54 +559,40 @@ namespace AZ
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
             AZ_Assert(rayTracingFeatureProcessor, "RayTracingPass requires the RayTracingFeatureProcessor");
 
-            if (!rayTracingFeatureProcessor ||
-                !rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer() ||
-                !rayTracingFeatureProcessor->HasGeometry() ||
-                !m_rayTracingShaderTable)
+            if (!rayTracingFeatureProcessor || !rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer() ||
+                !rayTracingFeatureProcessor->HasGeometry() || !m_rayTracingShaderTable)
             {
                 return;
             }
 
-            // bind RayTracingGlobal, RayTracingScene, and View Srgs
-            // [GFX TODO][ATOM-15610] Add RenderPass::SetSrgsForRayTracingDispatch
-            AZStd::vector<RHI::DeviceShaderResourceGroup*> shaderResourceGroups = { m_shaderResourceGroup->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get() };
-
-            if (m_requiresRayTracingSceneSrg)
+            if (m_dispatchRaysShaderTableRevision != m_rayTracingShaderTableRevision)
             {
-                shaderResourceGroups.push_back(rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get());
-            }
-
-            if (m_requiresViewSrg)
-            {
-                RPI::ViewPtr view = m_pipeline->GetFirstView(GetPipelineViewTag());
-                if (view)
+                m_dispatchRaysShaderTableRevision = m_rayTracingShaderTableRevision;
+                if (m_dispatchRaysIndirectBuffer)
                 {
-                    shaderResourceGroups.push_back(view->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get());
+                    m_dispatchRaysIndirectBuffer->Build(m_rayTracingShaderTable.get());
                 }
             }
 
-            if (m_requiresSceneSrg)
-            {
-                shaderResourceGroups.push_back(scene->GetShaderResourceGroup()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get());
-            }
-
-            if (m_requiresRayTracingMaterialSrg)
-            {
-                shaderResourceGroups.push_back(rayTracingFeatureProcessor->GetRayTracingMaterialSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get());
-            }
-
-            auto deviceDispatchRaysItem = m_dispatchRaysItem.GetDeviceDispatchRaysItem(context.GetDeviceIndex());
-
-            deviceDispatchRaysItem.m_shaderResourceGroupCount = aznumeric_cast<uint32_t>(shaderResourceGroups.size());
-            deviceDispatchRaysItem.m_shaderResourceGroups = shaderResourceGroups.data();
-            deviceDispatchRaysItem.m_rayTracingPipelineState =
-                m_rayTracingPipelineState->GetDeviceRayTracingPipelineState(context.GetDeviceIndex()).get();
-            deviceDispatchRaysItem.m_rayTracingShaderTable =
-                m_rayTracingShaderTable->GetDeviceRayTracingShaderTable(context.GetDeviceIndex()).get();
-            deviceDispatchRaysItem.m_globalPipelineState = m_globalPipelineState->GetDevicePipelineState(context.GetDeviceIndex()).get();
+            // TODO: change this to BindSrgsForDispatchRays() as soon as it exists
+            // IMPORTANT: The data in shaderResourceGroups must be sorted by (entry)->GetBindingSlot() (FrequencyId value in SRG source file
+            // from SrgSemantics.azsli) in order for them to be correctly assigned by Vulkan
+            AZStd::sort(
+                m_rayTracingSRGsToBind.begin(),
+                m_rayTracingSRGsToBind.end(),
+                [](const auto& lhs, const auto& rhs)
+                {
+                    return lhs->GetBindingSlot() < rhs->GetBindingSlot();
+                });
+            m_dispatchRaysItem.SetShaderResourceGroups(m_rayTracingSRGsToBind.data(), static_cast<uint32_t>(m_rayTracingSRGsToBind.size()));
 
             // submit the DispatchRays item
-            context.GetCommandList()->Submit(deviceDispatchRaysItem);
+            context.GetCommandList()->Submit(m_dispatchRaysItem.GetDeviceDispatchRaysItem(context.GetDeviceIndex()));
+        }
+
+        void RayTracingPass::FrameEndInternal()
+        {
+            m_rayTracingSRGsToBind.clear();
         }
 
         void RayTracingPass::OnShaderReinitialized([[maybe_unused]] const RPI::Shader& shader)
