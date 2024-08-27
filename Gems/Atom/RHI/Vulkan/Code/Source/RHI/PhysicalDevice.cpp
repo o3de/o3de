@@ -277,8 +277,8 @@ namespace AZ
 
         void PhysicalDevice::LoadSupportedFeatures(const GladVulkanContext& context)
         {
-            uint32_t majorVersion = VK_VERSION_MAJOR(m_deviceProperties.apiVersion);
-            uint32_t minorVersion = VK_VERSION_MINOR(m_deviceProperties.apiVersion);
+            uint32_t majorVersion = VK_VERSION_MAJOR(GetVulkanVersion());
+            uint32_t minorVersion = VK_VERSION_MINOR(GetVulkanVersion());
 
             m_features.reset();
             m_features.set(static_cast<size_t>(DeviceFeature::Compatible2dArrayTexture), (majorVersion >= 1 && minorVersion >= 1) || VK_DEVICE_EXTENSION_SUPPORTED(context, KHR_maintenance1));
@@ -361,6 +361,11 @@ namespace AZ
             }
 
             return filteredOptionalExtensions;
+        }
+
+        uint32_t PhysicalDevice::GetVulkanVersion() const
+        {
+            return m_vulkanVersion;
         }
 
         void PhysicalDevice::Init(VkPhysicalDevice vkPhysicalDevice)
@@ -500,6 +505,9 @@ namespace AZ
 
             m_descriptor.m_heapSizePerLevel[static_cast<size_t>(RHI::HeapMemoryLevel::Device)] = static_cast<size_t>(memsize_device);
             m_descriptor.m_heapSizePerLevel[static_cast<size_t>(RHI::HeapMemoryLevel::Host)] = static_cast<size_t>(memsize_host);
+            // We need to consider the application's vulkan version, since we cannot use a higher version than that, even though
+            // the physical device might support a higher one.
+            m_vulkanVersion = AZStd::min(Instance::GetInstance().GetVkAppInfo().apiVersion, m_deviceProperties.apiVersion);
         }
 
         void PhysicalDevice::Shutdown()

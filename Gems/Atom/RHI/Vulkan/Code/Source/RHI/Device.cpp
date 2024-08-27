@@ -165,9 +165,9 @@ namespace AZ
                 queueCreationInfo.push_back(queueCreateInfo);
             }
 
-            const auto& physicalProperties = physicalDevice.GetPhysicalDeviceProperties();
-            uint32_t majorVersion = VK_VERSION_MAJOR(physicalProperties.apiVersion);
-            uint32_t minorVersion = VK_VERSION_MINOR(physicalProperties.apiVersion);
+            uint32_t physicalDeviceVersion = physicalDevice.GetVulkanVersion();
+            uint32_t majorVersion = VK_VERSION_MAJOR(physicalDeviceVersion);
+            uint32_t minorVersion = VK_VERSION_MINOR(physicalDeviceVersion);
 
             // unbounded array functionality
             VkPhysicalDeviceDescriptorIndexingFeaturesEXT descriptorIndexingFeatures = {};
@@ -1289,7 +1289,6 @@ namespace AZ
         RHI::ResultCode Device::InitVmaAllocator(RHI::PhysicalDevice & physicalDeviceBase)
         {
             auto& physicalDevice = static_cast<Vulkan::PhysicalDevice&>(physicalDeviceBase);
-            const auto& physicalProperties = physicalDevice.GetPhysicalDeviceProperties();
 
             auto& context = GetContext();
             // We pass the function pointers from the Glad context since we already loaded them.
@@ -1329,8 +1328,7 @@ namespace AZ
             allocatorInfo.physicalDevice = physicalDevice.GetNativePhysicalDevice();
             allocatorInfo.device = m_nativeDevice;
             allocatorInfo.instance = instance.GetNativeInstance();
-            // Current version for glad function pointers. Update this value when updating GLAD.
-            allocatorInfo.vulkanApiVersion = AZStd::min(physicalProperties.apiVersion, VK_API_VERSION_1_3);
+            allocatorInfo.vulkanApiVersion = physicalDevice.GetVulkanVersion();
             allocatorInfo.pVulkanFunctions = &vulkanFunctions;
             allocatorInfo.pAllocationCallbacks = VkSystemAllocator::Get();
 
