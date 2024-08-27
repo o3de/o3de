@@ -530,8 +530,8 @@ namespace AZ
                     RHI::DrawLinear drawLinear;
                     drawLinear.m_vertexCount = 4;
                     drawLinear.m_instanceCount = previewInfo.m_imageCount;
-                    previewInfo.m_meshBuffers.SetDrawArguments(drawLinear);
-                    previewInfo.m_item.m_meshBuffers = &previewInfo.m_meshBuffers;
+                    previewInfo.m_geometryView.SetDrawArguments(drawLinear);
+                    previewInfo.m_item.m_geometryView = &previewInfo.m_geometryView;
                     previewInfo.m_item.m_pipelineState = m_shader->AcquirePipelineState(previewInfo.m_pipelineStateDescriptor);
                 }
             }

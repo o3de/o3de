@@ -112,12 +112,12 @@ namespace AZ::Render
 
     void StarsFeatureProcessor::UpdateDrawPacket()
     {
-        if (m_meshBuffers.GetStreamBufferViews().size() == 0)
+        if (m_geometryView.GetStreamBufferViews().size() == 0)
         {
             return;
         }
 
-        if(m_meshPipelineState && m_drawSrg && m_meshBuffers.GetStreamBufferView(0).GetByteCount() != 0)
+        if(m_meshPipelineState && m_drawSrg && m_geometryView.GetStreamBufferView(0).GetByteCount() != 0)
         {
             m_drawPacket = BuildDrawPacket();
         }
@@ -171,8 +171,8 @@ namespace AZ::Render
             m_starsVertexBuffer->UpdateData(m_starsMeshData.data(), bufferSize);
         }
 
-        m_meshBuffers.ClearStreamBufferViews();
-        m_meshBuffers.AddStreamBufferView( RHI::StreamBufferView(*m_starsVertexBuffer->GetRHIBuffer(), 0, bufferSize, elementSize) );
+        m_geometryView.ClearStreamBufferViews();
+        m_geometryView.AddStreamBufferView( RHI::StreamBufferView(*m_starsVertexBuffer->GetRHIBuffer(), 0, bufferSize, elementSize) );
 
         UpdateDrawPacket();
     }
@@ -284,11 +284,11 @@ namespace AZ::Render
 
     RHI::ConstPtr<RHI::DrawPacket> StarsFeatureProcessor::BuildDrawPacket()
     {
-        m_meshBuffers.SetDrawArguments(RHI::DrawLinear{ 0, 0, m_numStarsVertices, 0 });
+        m_geometryView.SetDrawArguments(RHI::DrawLinear{ 0, 0, m_numStarsVertices, 0 });
 
         RHI::DrawPacketBuilder drawPacketBuilder;
         drawPacketBuilder.Begin(nullptr);
-        drawPacketBuilder.SetMeshBuffers(&m_meshBuffers);
+        drawPacketBuilder.SetGeometryView(&m_geometryView);
         drawPacketBuilder.AddShaderResourceGroup(m_drawSrg->GetRHIShaderResourceGroup());
 
         RHI::DrawPacketBuilder::DrawRequest drawRequest;

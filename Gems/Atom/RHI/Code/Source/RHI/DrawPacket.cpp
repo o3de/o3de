@@ -91,6 +91,6 @@ namespace AZ::RHI
 
     void DrawPacket::SetInstanceCount(uint32_t instanceCount)
     {
-        m_meshBuffers->SetIndexInstanceCount(instanceCount);
+        m_geometryView->SetIndexInstanceCount(instanceCount);
     }
 }

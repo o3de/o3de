@@ -13,7 +13,7 @@
 
 #include <Atom/RHI/BufferView.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
-#include <Atom/RHI/MeshBuffers.h>
+#include <Atom/RHI/GeometryView.h>
 
 // Hair specific
 #include <TressFX/AMD_TressFX.h>
@@ -382,7 +382,7 @@ namespace AZ
  
                 //! Index buffer for the render pass via draw calls - naming was kept
                 Data::Instance<RHI::Buffer> m_indexBuffer;
-                RHI::MeshBuffers m_meshBuffers;
+                RHI::GeometryView m_geometryView;
                 //-------------------------------------------------------------------
 
                 AZStd::mutex m_mutex;

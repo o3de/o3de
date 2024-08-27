@@ -266,7 +266,7 @@ namespace AZ
             RHI::DrawFilterMask m_drawFilter = RHI::DrawFilterMaskDefaultValue;
 
             // Cached draw data
-            AZStd::vector<RHI::MeshBuffers> m_cachedMeshBuffers;
+            AZStd::vector<RHI::GeometryView> m_cachedGeometryViews;
             AZStd::vector<Data::Instance<ShaderResourceGroup>> m_cachedDrawSrg;
 
             uint32_t m_nextDrawSrgIdx = 0;

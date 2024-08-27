@@ -9,7 +9,7 @@
 #pragma once
 
 #include <Atom/RHI/DrawList.h>
-#include <Atom/RHI/MeshBuffers.h>
+#include <Atom/RHI/GeometryView.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 
 // Predefinition for unit test friend class
@@ -110,7 +110,7 @@ namespace AZ::RHI
         DrawItem* m_drawItems = nullptr;
 
         // Contains DrawArguments and geometry buffer views used during rendering
-        MeshBuffers* m_meshBuffers = nullptr;
+        GeometryView* m_geometryView = nullptr;
 
         // List of draw item sort keys associated with the draw item index.
         const DrawItemSortKey* m_drawItemSortKeys = nullptr;

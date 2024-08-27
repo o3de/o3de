@@ -69,7 +69,10 @@ namespace AZ::RHI
         //! Set the instance count in all draw items.
         void SetInstanceCount(uint32_t instanceCount);
 
-        void SetMultiDeviceMeshBuffers(MultiDeviceMeshBuffers* multiMeshBuffers) { m_multiMeshBuffers = multiMeshBuffers; }
+        void SetMultiDeviceGeometryView(MultiDeviceGeometryView* multiDeviceGeometryView)
+        {
+            m_multiDeviceGeometryView = multiDeviceGeometryView;
+        }
 
         const DrawPacket* GetDeviceDrawPacket(int deviceIndex) const
         {
@@ -89,8 +92,8 @@ namespace AZ::RHI
         //! The bit-mask of all active filter tags.
         DrawListMask m_drawListMask{};
 
-        //! Collection of per-device MeshBuffers
-        MultiDeviceMeshBuffers* m_multiMeshBuffers;
+        //! Collection of per-device GeometryView
+        MultiDeviceGeometryView* m_multiDeviceGeometryView;
 
         //! List of draw items.
         AZStd::vector<MultiDeviceDrawItem> m_drawItems;

@@ -639,7 +639,7 @@ namespace AZ
                             }
                         }
 
-                        RHI::MeshBuffers meshBuffer;
+                        RHI::GeometryView meshBuffer;
                         meshBuffer.SetDrawArguments(RHI::DrawIndexed(1, index, vertexOffset, drawCmd.ElemCount, indexOffset));
                         meshBuffer.SetIndexBufferView(m_indexBufferView);
                         meshBuffer.AddStreamBufferView(m_vertexBufferView[0]);
@@ -684,12 +684,13 @@ namespace AZ
 
             for (uint32_t i = context.GetSubmitRange().m_startIndex; i < context.GetSubmitRange().m_endIndex; ++i)
             {
+                DrawInfo& drawInfo = m_drawInfos.Get().at(i);
                 RHI::DrawItem drawItem;
-                drawItem.m_meshBuffers = &m_drawInfos.Get().at(i).m_meshBuffers;
-                drawItem.m_streamIndices = drawItem.m_meshBuffers->GetFullStreamBufferIndices();
+                drawItem.m_geometryView = &drawInfo.m_geometryView;
+                drawItem.m_streamIndices = drawInfo.m_geometryView.GetFullStreamBufferIndices();
                 drawItem.m_pipelineState = m_pipelineState->GetRHIPipelineState();
                 drawItem.m_scissorsCount = 1;
-                drawItem.m_scissors = &m_drawInfos.Get().at(i).m_scissor;
+                drawItem.m_scissors = &drawInfo.m_scissor;
 
                 context.GetCommandList()->Submit(drawItem, i);
             }

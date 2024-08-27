@@ -13,7 +13,7 @@
 #include <Atom/RHI/MultiDeviceIndexBufferView.h>
 #include <Atom/RHI/MultiDeviceIndirectArguments.h>
 #include <Atom/RHI/MultiDeviceIndirectBufferView.h>
-#include <Atom/RHI/MultiDeviceMeshBuffers.h>
+#include <Atom/RHI/MultiDeviceGeometryView.h>
 #include <Atom/RHI/MultiDevicePipelineState.h>
 #include <Atom/RHI/MultiDeviceShaderResourceGroup.h>
 #include <Atom/RHI/MultiDeviceStreamBufferView.h>
@@ -86,9 +86,9 @@ namespace AZ::RHI
             }
         }
 
-        void SetMeshBuffers(const MultiDeviceMeshBuffers* multiMeshBuffers)
+        void SetGeometryView(const MultiDeviceGeometryView* multiDeviceGeometryView)
         {
-            m_multiMeshBuffers = multiMeshBuffers;
+            m_multiDeviceGeometryView = multiDeviceGeometryView;
         }
 
         //! Shader Resource Groups
@@ -175,9 +175,9 @@ namespace AZ::RHI
         //! This additional cache is needed since device-specific ShaderResourceGroups are provided as a ShaderResourceGroup**,
         //! which are then locally cached in a vector (per device) and the device-specific DrawItem holds a pointer to this vector's data.
         AZStd::unordered_map<int, AZStd::vector<ShaderResourceGroup*>> m_deviceShaderResourceGroups;
-        //! A class that wraps a map of all device-specific MeshBuffers, indexed by the device index
-        //! This additional cache is needed since device-specific MeshBuffers are provided as MeshBuffers* to the DrawPacket & DrawItem
-        const MultiDeviceMeshBuffers* m_multiMeshBuffers;
+        //! A class that wraps a map of all device-specific GeometryView, indexed by the device index
+        //! This additional cache is needed since device-specific GeometryView are provided as GeometryView* to the DrawPacket & DrawItem
+        const MultiDeviceGeometryView* m_multiDeviceGeometryView;
     };
 
     struct MultiDeviceDrawItemProperties

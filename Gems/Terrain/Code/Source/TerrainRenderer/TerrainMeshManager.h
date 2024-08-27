@@ -153,7 +153,7 @@ namespace Terrain
 
         struct Sector
         {
-            AZ::RHI::MeshBuffers m_meshBuffers;
+            AZ::RHI::GeometryView m_geometryView;
             AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_srg;
             AZ::Aabb m_aabb = AZ::Aabb::CreateNull();
             AZStd::array<AZ::Aabb, 4> m_quadrantAabbs;
@@ -162,7 +162,7 @@ namespace Terrain
             // When drawing, either the m_rhiDrawPacket will be used, or some number of the m_rhiDrawPacketQuadrants
             AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> m_rhiDrawPacket;
             AZStd::array<AZ::RHI::ConstPtr<AZ::RHI::DrawPacket>, 4> m_rhiDrawPacketQuadrant;
-            AZStd::array<AZ::RHI::MeshBuffers, 4> m_quadrantMeshBuffers;
+            AZStd::array<AZ::RHI::GeometryView, 4> m_quadrantGeometryViews;
 
             AZ::Data::Instance<AZ::RPI::Buffer> m_heightsNormalsBuffer;
             AZ::Data::Instance<AZ::RPI::Buffer> m_lodHeightsNormalsBuffer;

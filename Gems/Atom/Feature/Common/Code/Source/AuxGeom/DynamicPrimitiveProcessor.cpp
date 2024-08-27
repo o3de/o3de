@@ -45,7 +45,7 @@ namespace AZ
             }
 
             // We have a single stream (position and color are interleaved in the vertex buffer)
-            m_meshBuffers.GetStreamBufferViews().resize(1);
+            m_geometryView.GetStreamBufferViews().resize(1);
 
             m_scene = scene;
             InitShader();
@@ -111,7 +111,7 @@ namespace AZ
                 // Validate the stream buffer views for all stream layout's if necessary
                 for (int primitiveType = 0; primitiveType < PrimitiveType_Count; ++primitiveType)
                 {
-                    ValidateStreamBufferViews(m_meshBuffers.GetStreamBufferViews(), m_streamBufferViewsValidatedForLayout, primitiveType);
+                    ValidateStreamBufferViews(m_geometryView.GetStreamBufferViews(), m_streamBufferViewsValidatedForLayout, primitiveType);
                 }
 
                 // Loop over all the primitives and use one draw call for each AuxGeom API call
@@ -167,15 +167,15 @@ namespace AZ
                         srg = m_shaderData.m_defaultSRG;
                     }
 
-                    primitive.m_meshBuffers = m_meshBuffers;
-                    primitive.m_meshBuffers.SetDrawArguments(RHI::DrawIndexed(1, 0, 0, primitive.m_indexCount, primitive.m_indexOffset));
+                    primitive.m_geometryView = m_geometryView;
+                    primitive.m_geometryView.SetDrawArguments(RHI::DrawIndexed(1, 0, 0, primitive.m_indexCount, primitive.m_indexOffset));
 
                     for (auto& view : auxGeomViews)
                     {
                         RHI::DrawItemSortKey sortKey = primitive.m_blendMode == BlendMode_Off ? 0 : view->GetSortKeyForPosition(primitive.m_center);
 
                         const RHI::DrawPacket* drawPacket = BuildDrawPacketForDynamicPrimitive(
-                            primitive.m_meshBuffers,
+                            primitive.m_geometryView,
                             pipelineState,
                             srg,
                             drawPacketBuilder,
@@ -203,7 +203,7 @@ namespace AZ
                 return false;
             }
             dynamicBuffer->Write(source.data(), static_cast<uint32_t>(sourceByteSize));
-            m_meshBuffers.SetIndexBufferView(dynamicBuffer->GetIndexBufferView(RHI::IndexFormat::Uint32));
+            m_geometryView.SetIndexBufferView(dynamicBuffer->GetIndexBufferView(RHI::IndexFormat::Uint32));
             return true;
         }
 
@@ -218,7 +218,7 @@ namespace AZ
                 return false;
             }
             dynamicBuffer->Write(source.data(), static_cast<uint32_t>(sourceByteSize));
-            m_meshBuffers.GetStreamBufferViews()[0] = dynamicBuffer->GetStreamBufferView(sizeof(AuxGeomDynamicVertex));
+            m_geometryView.GetStreamBufferViews()[0] = dynamicBuffer->GetStreamBufferView(sizeof(AuxGeomDynamicVertex));
             return true;
         }
 
@@ -386,19 +386,19 @@ namespace AZ
         }
 
         const RHI::DrawPacket* DynamicPrimitiveProcessor::BuildDrawPacketForDynamicPrimitive(
-            RHI::MeshBuffers& meshBuffers,
+            RHI::GeometryView& geometryView,
             const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
             Data::Instance<RPI::ShaderResourceGroup> srg,
             RHI::DrawPacketBuilder& drawPacketBuilder,
             RHI::DrawItemSortKey sortKey)
         {
             drawPacketBuilder.Begin(nullptr);
-            drawPacketBuilder.SetMeshBuffers(&meshBuffers);
+            drawPacketBuilder.SetGeometryView(&geometryView);
             drawPacketBuilder.AddShaderResourceGroup(srg->GetRHIShaderResourceGroup());
 
             RHI::DrawPacketBuilder::DrawRequest drawRequest;
             drawRequest.m_listTag = m_shaderData.m_drawListTag;
-            drawRequest.m_streamIndices = meshBuffers.GetFullStreamBufferIndices();
+            drawRequest.m_streamIndices = geometryView.GetFullStreamBufferIndices();
             drawRequest.m_pipelineState = pipelineState->GetRHIPipelineState();
             drawRequest.m_sortKey = sortKey;
             drawPacketBuilder.AddDrawItem(drawRequest);

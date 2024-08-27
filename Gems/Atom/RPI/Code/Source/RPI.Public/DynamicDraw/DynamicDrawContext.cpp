@@ -499,25 +499,25 @@ namespace AZ
 
             // --- Mesh Buffers ---
 
-            RHI::MeshBuffers newMeshBuffers;
+            RHI::GeometryView newGeometryView;
 
             RHI::DrawIndexed drawIndexed;
             drawIndexed.m_indexCount = indexCount;
             drawIndexed.m_instanceCount = 1;
-            newMeshBuffers.SetDrawArguments(drawIndexed);
+            newGeometryView.SetDrawArguments(drawIndexed);
 
             // Write data to vertex buffer and set up stream buffer views for DrawItem
             // The stream buffer view need to be cached before the frame is end
             vertexBuffer->Write(vertexData, vertexDataSize);
-            newMeshBuffers.AddStreamBufferView(vertexBuffer->GetStreamBufferView(m_perVertexDataSize));
+            newGeometryView.AddStreamBufferView(vertexBuffer->GetStreamBufferView(m_perVertexDataSize));
 
             // Write data to index buffer and set up index buffer view for DrawItem
             indexBuffer->Write(indexData, indexDataSize);
-            newMeshBuffers.SetIndexBufferView(indexBuffer->GetIndexBufferView(indexFormat));
+            newGeometryView.SetIndexBufferView(indexBuffer->GetIndexBufferView(indexFormat));
 
-            drawItem.m_streamIndices = newMeshBuffers.GetFullStreamBufferIndices();
-            drawItemInfo.m_cachedIndex = static_cast<u32>(m_cachedMeshBuffers.size());
-            m_cachedMeshBuffers.emplace_back(AZStd::move(newMeshBuffers));
+            drawItem.m_streamIndices = newGeometryView.GetFullStreamBufferIndices();
+            drawItemInfo.m_cachedIndex = static_cast<u32>(m_cachedGeometryViews.size());
+            m_cachedGeometryViews.emplace_back(AZStd::move(newGeometryView));
 
             // --- PSO & SRG ---
 
@@ -601,21 +601,21 @@ namespace AZ
 
             // --- Mesh Buffers ---
 
-            RHI::MeshBuffers newMeshBuffers;
+            RHI::GeometryView newGeometryView;
 
             RHI::DrawLinear drawLinear;
             drawLinear.m_instanceCount = 1;
             drawLinear.m_vertexCount = vertexCount;
-            newMeshBuffers.SetDrawArguments(drawLinear);
+            newGeometryView.SetDrawArguments(drawLinear);
 
 
             // Write data to vertex buffer and set up stream buffer views for DrawItem
             // The stream buffer view need to be cached before the frame is end
             vertexBuffer->Write(vertexData, vertexDataSize);
-            newMeshBuffers.AddStreamBufferView(vertexBuffer->GetStreamBufferView(m_perVertexDataSize));
+            newGeometryView.AddStreamBufferView(vertexBuffer->GetStreamBufferView(m_perVertexDataSize));
 
-            drawItemInfo.m_cachedIndex = static_cast<u32>(m_cachedMeshBuffers.size());
-            m_cachedMeshBuffers.emplace_back(AZStd::move(newMeshBuffers));
+            drawItemInfo.m_cachedIndex = static_cast<u32>(m_cachedGeometryViews.size());
+            m_cachedGeometryViews.emplace_back(AZStd::move(newGeometryView));
 
             // --- PSO & SRG ---
 
@@ -739,7 +739,7 @@ namespace AZ
                 if (drawItemInfo.m_cachedIndex != InvalidIndex)
                 {
                     // Get the pointer to mesh buffers here after we've built all the mesh buffers and won't be resizing the array
-                    drawItemInfo.m_drawItem.m_meshBuffers = &m_cachedMeshBuffers[drawItemInfo.m_cachedIndex];
+                    drawItemInfo.m_drawItem.m_geometryView = &m_cachedGeometryViews[drawItemInfo.m_cachedIndex];
                 }
 
                 RHI::DrawItemProperties drawItemProperties;
@@ -778,7 +778,7 @@ namespace AZ
         {
             m_sortKey = 0;
             m_cachedDrawItems.clear();
-            m_cachedMeshBuffers.clear();
+            m_cachedGeometryViews.clear();
             m_cachedDrawList.clear();
             m_nextDrawSrgIdx = 0;
             m_drawFinalized = false;

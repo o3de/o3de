@@ -178,9 +178,9 @@ namespace AZ
             // that generates a full-screen triangle completely from vertex ids.
             RHI::DrawLinear draw = RHI::DrawLinear();
             draw.m_vertexCount = 3;
-            m_meshBuffers.SetDrawArguments(draw);
+            m_geometryView.SetDrawArguments(draw);
 
-            m_item.m_meshBuffers = &m_meshBuffers;
+            m_item.m_geometryView = &m_geometryView;
             m_item.m_pipelineState = m_pipelineStateForDraw.Finalize();
             m_item.m_stencilRef = static_cast<uint8_t>(m_stencilRef);
         }

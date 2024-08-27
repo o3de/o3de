@@ -22,9 +22,9 @@ namespace AZ::RHI
         m_allocator = allocator ? allocator : &AllocatorInstance<SystemAllocator>::Get();
     }
 
-    void DrawPacketBuilder::SetMeshBuffers(MeshBuffers* meshBuffers)
+    void DrawPacketBuilder::SetGeometryView(GeometryView* geometryView)
     {
-        m_meshBuffers = meshBuffers;
+        m_geometryView = geometryView;
     }
 
     void DrawPacketBuilder::SetRootConstants(AZStd::span<const uint8_t> rootConstants)
@@ -152,7 +152,7 @@ namespace AZ::RHI
 
         auto drawPacket = new (allocationData) DrawPacket();
         drawPacket->m_allocator = m_allocator;
-        drawPacket->m_meshBuffers = m_meshBuffers;
+        drawPacket->m_geometryView = m_geometryView;
         drawPacket->m_drawListMask = m_drawListMask;
 
         if (shaderResourceGroupsOffset.IsValid())
@@ -233,7 +233,7 @@ namespace AZ::RHI
             DrawItem& drawItem = drawItems[i];
             drawItem.m_enabled = !drawListTagDisabled;
             drawItem.m_streamIndices = drawRequest.m_streamIndices;
-            drawItem.m_meshBuffers = m_meshBuffers;
+            drawItem.m_geometryView = m_geometryView;
             drawItem.m_stencilRef = drawRequest.m_stencilRef;
             drawItem.m_shaderResourceGroupCount = drawPacket->m_shaderResourceGroupCount;
             drawItem.m_rootConstantSize = drawPacket->m_rootConstantSize;
@@ -266,7 +266,7 @@ namespace AZ::RHI
     DrawPacket* DrawPacketBuilder::Clone(const DrawPacket* original)
     {
         Begin(original->m_allocator);
-        SetMeshBuffers(original->m_meshBuffers);
+        SetGeometryView(original->m_geometryView);
         SetRootConstants(AZStd::span<const uint8_t>(original->m_rootConstants, original->m_rootConstantSize));
         SetScissors(AZStd::span<const Scissor>(original->m_scissors, original->m_scissorsCount));
         SetViewports(AZStd::span<const Viewport>(original->m_viewports, original->m_viewportsCount));

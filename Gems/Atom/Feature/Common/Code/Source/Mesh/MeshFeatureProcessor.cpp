@@ -2204,7 +2204,7 @@ namespace AZ
 
                 // retrieve vertex/index buffers
                 RHI::InputStreamLayout inputStreamLayout;
-                RHI::MeshBuffers::StreamBufferIndices streamIndices;
+                RHI::GeometryView::StreamBufferIndices streamIndices;
 
                 [[maybe_unused]] bool result = modelLod->GetStreamsForMesh(
                     inputStreamLayout,
@@ -2225,7 +2225,7 @@ namespace AZ
                     continue;
                 }
 
-                RHI::MeshBuffers::StreamIterator streamIter = mesh.CreateStreamIterator(streamIndices);
+                RHI::GeometryView::StreamIterator streamIter = mesh.CreateStreamIterator(streamIndices);
 
                 // note that the element count is the size of the entire buffer, even though this mesh may only
                 // occupy a portion of the vertex buffer.  This is necessary since we are accessing it using

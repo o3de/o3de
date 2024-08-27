@@ -566,7 +566,7 @@ namespace AZ
         {
             ValidateSubmitIndex(submitIndex);
 
-            if (drawItem.m_meshBuffers == nullptr)
+            if (drawItem.m_geometryView == nullptr)
             {
                 AZ_Assert(false, "DrawItem being submitted without mesh buffers, i.e. without draw arguments, index buffer or stream buffers!");
                 return;
@@ -578,7 +578,7 @@ namespace AZ
                 return;
             }
 
-            SetStreamBuffers(*drawItem.m_meshBuffers, drawItem.m_streamIndices);
+            SetStreamBuffers(*drawItem.m_geometryView, drawItem.m_streamIndices);
             SetStencilRef(drawItem.m_stencilRef);
 
             RHI::CommandListScissorState scissorState;
@@ -599,14 +599,14 @@ namespace AZ
             CommitViewportState();
             CommitShadingRateState();
 
-            switch (drawItem.m_meshBuffers->GetDrawArguments().m_type)
+            switch (drawItem.m_geometryView->GetDrawArguments().m_type)
             {
             case RHI::DrawType::Indexed:
             {
-                AZ_Assert(drawItem.m_meshBuffers->GetIndexBufferView().GetBuffer(), "Index buffer view is null!");
+                AZ_Assert(drawItem.m_geometryView->GetIndexBufferView().GetBuffer(), "Index buffer view is null!");
 
-                const RHI::DrawIndexed& indexed = drawItem.m_meshBuffers->GetDrawArguments().m_indexed;
-                SetIndexBuffer(drawItem.m_meshBuffers->GetIndexBufferView());
+                const RHI::DrawIndexed& indexed = drawItem.m_geometryView->GetDrawArguments().m_indexed;
+                SetIndexBuffer(drawItem.m_geometryView->GetIndexBufferView());
 
                 GetCommandList()->DrawIndexedInstanced(
                     indexed.m_indexCount,
@@ -619,7 +619,7 @@ namespace AZ
 
             case RHI::DrawType::Linear:
             {
-                const RHI::DrawLinear& linear = drawItem.m_meshBuffers->GetDrawArguments().m_linear;
+                const RHI::DrawLinear& linear = drawItem.m_geometryView->GetDrawArguments().m_linear;
                 GetCommandList()->DrawInstanced(
                     linear.m_vertexCount,
                     linear.m_instanceCount,
@@ -630,18 +630,18 @@ namespace AZ
 
             case RHI::DrawType::Indirect:
             {
-                const auto& indirect = drawItem.m_meshBuffers->GetDrawArguments().m_indirect;
+                const auto& indirect = drawItem.m_geometryView->GetDrawArguments().m_indirect;
                 const RHI::IndirectBufferLayout& layout = indirect.m_indirectBufferView->GetSignature()->GetDescriptor().m_layout;
                 if (layout.GetType() == RHI::IndirectBufferLayoutType::IndexedDraw)
                 {
-                    AZ_Assert(drawItem.m_meshBuffers->GetIndexBufferView().GetBuffer(), "Index buffer view is null!");
-                    SetIndexBuffer(drawItem.m_meshBuffers->GetIndexBufferView());
+                    AZ_Assert(drawItem.m_geometryView->GetIndexBufferView().GetBuffer(), "Index buffer view is null!");
+                    SetIndexBuffer(drawItem.m_geometryView->GetIndexBufferView());
                 }
                 ExecuteIndirect(indirect);
                 break;
             }
             default:
-                AZ_Assert(false, "Invalid draw type %d", drawItem.m_meshBuffers->GetDrawArguments().m_type);
+                AZ_Assert(false, "Invalid draw type %d", drawItem.m_geometryView->GetDrawArguments().m_type);
                 break;
             }
 
@@ -866,9 +866,9 @@ namespace AZ
             );
         }
 
-        void CommandList::SetStreamBuffers(const RHI::MeshBuffers& meshBuffers, const RHI::MeshBuffers::StreamBufferIndices& streamIndices)
+        void CommandList::SetStreamBuffers(const RHI::GeometryView& geometryBufferViews, const RHI::GeometryView::StreamBufferIndices& streamIndices)
         {
-            RHI::MeshBuffers::StreamIterator streamIter = meshBuffers.CreateStreamIterator(streamIndices);
+            RHI::GeometryView::StreamIterator streamIter = geometryBufferViews.CreateStreamIterator(streamIndices);
 
             bool needsBinding = false;
 

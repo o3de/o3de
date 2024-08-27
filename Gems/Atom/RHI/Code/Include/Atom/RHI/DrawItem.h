@@ -9,7 +9,7 @@
 
 #include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI/DrawArguments.h>
-#include <Atom/RHI/MeshBuffers.h>
+#include <Atom/RHI/GeometryView.h>
 #include <Atom/RHI/StreamBufferView.h>
 #include <Atom/RHI/IndexBufferView.h>
 #include <Atom/RHI/IndirectBufferView.h>
@@ -36,8 +36,8 @@ namespace AZ::RHI
     {
         DrawItem() = default;
 
-        /// Indices of the StreamBufferViews this DrawItem will use
-        RHI::MeshBuffers::StreamBufferIndices m_streamIndices;
+        /// Indices of the StreamBufferViews in the GeometryView that this DrawItem will use
+        RHI::GeometryView::StreamBufferIndices m_streamIndices;
 
         u8  m_stencilRef = 0;
         u8  m_shaderResourceGroupCount = 0;
@@ -61,7 +61,7 @@ namespace AZ::RHI
         // --- Geometry ---
 
         /// Contains DrawArguments and geometry buffer views used during rendering
-        const MeshBuffers* m_meshBuffers = nullptr;
+        const GeometryView* m_geometryView = nullptr;
 
         // --- Shader ---
 

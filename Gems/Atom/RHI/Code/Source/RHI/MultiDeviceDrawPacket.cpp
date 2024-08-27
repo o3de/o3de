@@ -80,6 +80,6 @@ namespace AZ::RHI
 
     void MultiDeviceDrawPacket::SetInstanceCount(uint32_t instanceCount)
     {
-        m_multiMeshBuffers->SetIndexedArgumentsInstanceCount(instanceCount);
+        m_multiDeviceGeometryView->SetIndexedArgumentsInstanceCount(instanceCount);
     }
 } // namespace AZ::RHI

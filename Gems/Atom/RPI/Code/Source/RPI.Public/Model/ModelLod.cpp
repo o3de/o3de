@@ -259,7 +259,7 @@ namespace AZ
 
         bool ModelLod::GetStreamsForMesh(
             RHI::InputStreamLayout& layoutOut,
-            RHI::MeshBuffers::StreamBufferIndices& streamIndicesOut,
+            RHI::GeometryView::StreamBufferIndices& streamIndicesOut,
             UvStreamTangentBitmask* uvStreamTangentBitmaskOut,
             const ShaderInputContract& contract,
             size_t meshIndex,

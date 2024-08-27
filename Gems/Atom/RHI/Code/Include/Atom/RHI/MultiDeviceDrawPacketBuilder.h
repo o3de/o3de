@@ -39,7 +39,7 @@ namespace AZ::RHI
             uint8_t m_stencilRef{};
 
             //! Indices of which MeshBuffer StreamBufferViews to use
-            RHI::MeshBuffers::StreamBufferIndices m_streamIndices;
+            RHI::GeometryView::StreamBufferIndices m_streamIndices;
 
             //! Shader resource group unique for this draw request
             const MultiDeviceShaderResourceGroup* m_uniqueShaderResourceGroup{};
@@ -87,8 +87,8 @@ namespace AZ::RHI
         //! initializes the multi-device DrawPacket which will be returned after calling End()
         void Begin(IAllocator* allocator);
 
-        //! Passes the MeshBuffers to all single-device DrawPacketBuilders
-        void SetMeshBuffers(MultiDeviceMeshBuffers* multiMeshBuffers);
+        //! Passes the GeometryView to all single-device DrawPacketBuilders
+        void SetGeometryView(MultiDeviceGeometryView* multiDeviceGeometryView);
 
         //! Passes the RootConstants to all single-device DrawPacketBuilders
         void SetRootConstants(AZStd::span<const uint8_t> rootConstants);
@@ -128,7 +128,7 @@ namespace AZ::RHI
 
         RHI::Ptr<MultiDeviceDrawPacket> m_drawPacketInFlight;
 
-        MultiDeviceMeshBuffers* m_multiMeshBuffers;
+        MultiDeviceGeometryView* m_multiDeviceGeometryView;
 
         //! A map of single-device DrawPacketBuilder, indexed by the device index
         AZStd::unordered_map<int, DrawPacketBuilder> m_deviceDrawPacketBuilders;

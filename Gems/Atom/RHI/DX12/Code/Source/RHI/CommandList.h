@@ -19,7 +19,7 @@
 #include <Atom/RHI/CommandListValidator.h>
 #include <Atom/RHI/CommandListStates.h>
 #include <Atom/RHI/IndirectArguments.h>
-#include <Atom/RHI/MeshBuffers.h>
+#include <Atom/RHI/GeometryView.h>
 #include <Atom/RHI/ObjectPool.h>
 #include <AzCore/std/containers/span.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -191,7 +191,7 @@ namespace AZ
             template <RHI::PipelineStateType, typename Item>
             bool CommitShaderResources(const Item& item);
 
-            void SetStreamBuffers(const RHI::MeshBuffers& meshBuffers, const RHI::MeshBuffers::StreamBufferIndices& streamIndices);
+            void SetStreamBuffers(const RHI::GeometryView& geometryView, const RHI::GeometryView::StreamBufferIndices& streamIndices);
             void SetIndexBuffer(const RHI::IndexBufferView& descriptor);
             void SetStencilRef(uint8_t stencilRef);
             void SetTopology(RHI::PrimitiveTopology topology);

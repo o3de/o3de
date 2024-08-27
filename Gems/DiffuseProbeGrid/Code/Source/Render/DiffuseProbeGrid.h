@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI/DrawPacketBuilder.h>
-#include <Atom/RHI/MeshBuffers.h>
+#include <Atom/RHI/GeometryView.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/PipelineState.h>
@@ -34,7 +34,7 @@ namespace AZ
             RHI::Ptr<RHI::ImagePool> m_imagePool;          
             RHI::Ptr<RHI::BufferPool> m_bufferPool;
 
-            RHI::MeshBuffers m_meshBuffers;
+            RHI::GeometryView m_geometryView;
 
             // image views
             RHI::ImageViewDescriptor m_probeRayTraceImageViewDescriptor;

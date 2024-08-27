@@ -269,7 +269,7 @@ namespace AZ
         {
             ValidateSubmitIndex(submitIndex);
 
-            if (drawItem.m_meshBuffers == nullptr)
+            if (drawItem.m_geometryView == nullptr)
             {
                 AZ_Assert(false, "DrawItem being submitted without mesh buffers, i.e. without draw arguments, index buffer or stream buffers!");
                 return;
@@ -282,7 +282,7 @@ namespace AZ
             }
 
             SetStencilRef(drawItem.m_stencilRef);
-            SetStreamBuffers(*drawItem.m_meshBuffers, drawItem.m_streamIndices);
+            SetStreamBuffers(*drawItem.m_geometryView, drawItem.m_streamIndices);
 
             RHI::CommandListScissorState scissorState;
             if (drawItem.m_scissorsCount)
@@ -304,14 +304,14 @@ namespace AZ
 
             const auto& context = static_cast<Device&>(GetDevice()).GetContext();
 
-            switch (drawItem.m_meshBuffers->GetDrawArguments().m_type)
+            switch (drawItem.m_geometryView->GetDrawArguments().m_type)
             {
             case RHI::DrawType::Indexed:
             {
-                AZ_Assert(drawItem.m_meshBuffers->GetIndexBufferView().GetBuffer(), "IndexBufferView is null.");
+                AZ_Assert(drawItem.m_geometryView->GetIndexBufferView().GetBuffer(), "IndexBufferView is null.");
 
-                const RHI::DrawIndexed& indexed = drawItem.m_meshBuffers->GetDrawArguments().m_indexed;
-                SetIndexBuffer(drawItem.m_meshBuffers->GetIndexBufferView());
+                const RHI::DrawIndexed& indexed = drawItem.m_geometryView->GetDrawArguments().m_indexed;
+                SetIndexBuffer(drawItem.m_geometryView->GetIndexBufferView());
 
                 context.CmdDrawIndexed(
                     m_nativeCommandBuffer,
@@ -324,7 +324,7 @@ namespace AZ
             }
             case RHI::DrawType::Linear:
             {
-                const RHI::DrawLinear& linear = drawItem.m_meshBuffers->GetDrawArguments().m_linear;
+                const RHI::DrawLinear& linear = drawItem.m_geometryView->GetDrawArguments().m_linear;
 
                 context.CmdDraw(
                     m_nativeCommandBuffer, linear.m_vertexCount, linear.m_instanceCount, linear.m_vertexOffset, linear.m_instanceOffset);
@@ -332,7 +332,7 @@ namespace AZ
             }
             case RHI::DrawType::Indirect:
             {
-                const RHI::DrawIndirect& indirect = drawItem.m_meshBuffers->GetDrawArguments().m_indirect;
+                const RHI::DrawIndirect& indirect = drawItem.m_geometryView->GetDrawArguments().m_indirect;
                 const RHI::IndirectBufferLayout& layout = indirect.m_indirectBufferView->GetSignature()->GetDescriptor().m_layout;
                 decltype(context.CmdDrawIndexedIndirectCountKHR) drawIndirectCountFunctionPtr = nullptr;
                 decltype(context.CmdDrawIndexedIndirect) drawIndirectfunctionPtr = nullptr;
@@ -343,7 +343,7 @@ namespace AZ
                     drawIndirectfunctionPtr = context.CmdDrawIndirect;
                     break;
                 case RHI::IndirectBufferLayoutType::IndexedDraw:
-                    SetIndexBuffer(drawItem.m_meshBuffers->GetIndexBufferView());
+                    SetIndexBuffer(drawItem.m_geometryView->GetIndexBufferView());
                     drawIndirectCountFunctionPtr = context.CmdDrawIndexedIndirectCountKHR;
                     drawIndirectfunctionPtr = context.CmdDrawIndexedIndirect;
                     break;
@@ -833,9 +833,9 @@ namespace AZ
             }
         }
 
-        void CommandList::SetStreamBuffers(const RHI::MeshBuffers& meshBuffers, const RHI::MeshBuffers::StreamBufferIndices& streamIndices)
+        void CommandList::SetStreamBuffers(const RHI::GeometryView& geometryView, const RHI::GeometryView::StreamBufferIndices& streamIndices)
         {
-            RHI::MeshBuffers::StreamIterator streamIter = meshBuffers.CreateStreamIterator(streamIndices);
+            RHI::GeometryView::StreamIterator streamIter = geometryView.CreateStreamIterator(streamIndices);
             RHI::Interval interval = InvalidInterval;
 
             for (u8 index = 0; !streamIter.HasEnded(); ++streamIter, ++index)

@@ -633,8 +633,8 @@ namespace AZ
                 AZ::RHI::IndexFormat::Uint16,
             };
 
-            m_reflectionRenderData.m_meshBuffers.SetIndexBufferView(indexBufferView);
-            m_reflectionRenderData.m_meshBuffers.SetDrawArguments(RHI::DrawIndexed{ 1, 0, 0, numIndices, 0 });
+            m_reflectionRenderData.m_geometryView.SetIndexBufferView(indexBufferView);
+            m_reflectionRenderData.m_geometryView.SetDrawArguments(RHI::DrawIndexed{ 1, 0, 0, numIndices, 0 });
 
             // create position buffer
             m_boxPositionBuffer = AZ::RHI::Factory::Get().CreateBuffer();
@@ -652,10 +652,10 @@ namespace AZ
                 (uint32_t)(m_boxPositions.size() * sizeof(Position)),
                 sizeof(Position),
             };
-            m_reflectionRenderData.m_meshBuffers.ClearStreamBufferViews();
-            m_reflectionRenderData.m_meshBuffers.AddStreamBufferView(positionBufferView);
+            m_reflectionRenderData.m_geometryView.ClearStreamBufferViews();
+            m_reflectionRenderData.m_geometryView.AddStreamBufferView(positionBufferView);
 
-            AZ::RHI::ValidateStreamBufferViews(m_boxStreamLayout, m_reflectionRenderData.m_meshBuffers.GetStreamBufferViews());
+            AZ::RHI::ValidateStreamBufferViews(m_boxStreamLayout, m_reflectionRenderData.m_geometryView.GetStreamBufferViews());
         }
 
         void ReflectionProbeFeatureProcessor::LoadShader(

@@ -76,12 +76,12 @@ namespace AZ::RHI
         }
     }
 
-    void MultiDeviceDrawPacketBuilder::SetMeshBuffers(MultiDeviceMeshBuffers* multiMeshBuffers)
+    void MultiDeviceDrawPacketBuilder::SetGeometryView(MultiDeviceGeometryView* multiDeviceGeometryView)
     {
-        m_multiMeshBuffers = multiMeshBuffers;
+        m_multiDeviceGeometryView = multiDeviceGeometryView;
         for (auto& [deviceIndex, deviceDrawPacketBuilder] : m_deviceDrawPacketBuilders)
         {
-            deviceDrawPacketBuilder.SetMeshBuffers(multiMeshBuffers->GetDeviceMeshBuffers(deviceIndex));
+            deviceDrawPacketBuilder.SetGeometryView(multiDeviceGeometryView->GetDeviceGeometryView(deviceIndex));
         }
     }
 
@@ -159,7 +159,7 @@ namespace AZ::RHI
             m_drawPacketInFlight->m_deviceDrawPackets[deviceIndex] = deviceDrawPacketBuilder.End();
         }
 
-        m_drawPacketInFlight->m_multiMeshBuffers = m_multiMeshBuffers;
+        m_drawPacketInFlight->m_multiDeviceGeometryView = m_multiDeviceGeometryView;
         m_drawPacketInFlight->m_drawListTags.resize_no_construct(m_drawRequests.size());
         m_drawPacketInFlight->m_drawFilterMasks.resize_no_construct(m_drawRequests.size());
         m_drawPacketInFlight->m_drawItemSortKeys.resize_no_construct(m_drawRequests.size());
@@ -206,7 +206,7 @@ namespace AZ::RHI
 
         auto drawRequestCount{ original->m_drawListTags.size() };
         m_drawPacketInFlight->m_drawListMask = original->m_drawListMask;
-        m_drawPacketInFlight->m_multiMeshBuffers = original->m_multiMeshBuffers;
+        m_drawPacketInFlight->m_multiDeviceGeometryView = original->m_multiDeviceGeometryView;
         m_drawPacketInFlight->m_drawListTags.resize_no_construct(drawRequestCount);
         m_drawPacketInFlight->m_drawFilterMasks.resize_no_construct(drawRequestCount);
         m_drawPacketInFlight->m_drawItemSortKeys.resize_no_construct(drawRequestCount);

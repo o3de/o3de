@@ -9,7 +9,7 @@
 #pragma once
 
 #include <Atom/RHI/DrawPacket.h>
-#include <Atom/RHI/MeshBuffers.h>
+#include <Atom/RHI/GeometryView.h>
 #include <Atom/RHI.Reflect/Scissor.h>
 #include <Atom/RHI.Reflect/Viewport.h>
 
@@ -38,7 +38,7 @@ namespace AZ::RHI
             u8 m_stencilRef = 0;
 
             //! Indices of the StreamBufferViews the DrawItem will use
-            RHI::MeshBuffers::StreamBufferIndices m_streamIndices;
+            RHI::GeometryView::StreamBufferIndices m_streamIndices;
 
             //! Shader resource group unique for this draw request
             const ShaderResourceGroup* m_uniqueShaderResourceGroup = nullptr;
@@ -60,7 +60,7 @@ namespace AZ::RHI
 
         void Begin(IAllocator* allocator);
 
-        void SetMeshBuffers(MeshBuffers* meshBuffers);
+        void SetGeometryView(GeometryView* geometryView);
 
         void SetRootConstants(AZStd::span<const uint8_t> rootConstants);
 
@@ -92,7 +92,7 @@ namespace AZ::RHI
         IAllocator* m_allocator = nullptr;
 
         //! Contains DrawArguments and geometry buffer views used during rendering
-        MeshBuffers* m_meshBuffers = nullptr;
+        GeometryView* m_geometryView = nullptr;
         AZStd::fixed_vector<DrawRequest, DrawItemCountMax> m_drawRequests;
         AZStd::fixed_vector<const ShaderResourceGroup*, Limits::Pipeline::ShaderResourceGroupCountMax> m_shaderResourceGroups;
         AZStd::span<const uint8_t> m_rootConstants;

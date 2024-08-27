@@ -85,7 +85,7 @@ namespace AZ
 
                         RHI::DrawPacketBuilder drawPacketBuilder;
                         drawPacketBuilder.Begin(nullptr);
-                        drawPacketBuilder.SetMeshBuffers(&m_renderData->m_meshBuffers);
+                        drawPacketBuilder.SetGeometryView(&m_renderData->m_geometryView);
                         drawPacketBuilder.AddShaderResourceGroup(m_renderObjectSrg->GetRHIShaderResourceGroup());
 
                         RHI::DrawPacketBuilder::DrawRequest drawRequest;

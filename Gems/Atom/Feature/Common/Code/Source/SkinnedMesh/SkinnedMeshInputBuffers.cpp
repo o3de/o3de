@@ -92,7 +92,7 @@ namespace AZ
             uint32_t meshIndex,
             const RHI::InputStreamLayout& inputLayout,
             RPI::ModelLod::Mesh& mesh,
-            const RHI::MeshBuffers::StreamBufferIndices& streamIndices,
+            const RHI::GeometryView::StreamBufferIndices& streamIndices,
             const char* modelName)
         {
             SkinnedSubMeshProperties& skinnedSubMesh = m_meshes[meshIndex];
@@ -102,10 +102,12 @@ namespace AZ
             // Keep track of whether or not an input stream exists
             HasInputStreamArray meshHasInputStream{ false };
 
-            RHI::MeshBuffers::StreamIterator streamIter = mesh.CreateStreamIterator(streamIndices);
+            // Loop variables
+            RHI::GeometryView::StreamIterator streamIter = mesh.CreateStreamIterator(streamIndices);
+            u8 meshStreamIndex = 0;
 
             // Create a buffer view for each input stream in the current mesh
-            for (u8 meshStreamIndex = 0; !streamIter.HasEnded(); ++streamIter, ++meshStreamIndex)
+            for (; !streamIter.HasEnded(); ++streamIter, ++meshStreamIndex)
             {
                 // Get the semantic from the input layout, and use that to get the SkinnedMeshStreamInfo
                 const SkinnedMeshVertexStreamInfo* streamInfo = SkinnedMeshVertexStreamPropertyInterface::Get()->GetInputStreamInfo(
@@ -235,7 +237,7 @@ namespace AZ
 
                 // Get all of the streams potentially used as input to the skinning compute shader
                 RHI::InputStreamLayout inputLayout;
-                RHI::MeshBuffers::StreamBufferIndices streamIndices;
+                RHI::GeometryView::StreamBufferIndices streamIndices;
                 [[maybe_unused]] bool success = modelLod->GetStreamsForMesh(
                     inputLayout, streamIndices, nullptr,
                     SkinnedMeshVertexStreamPropertyInterface::Get()->GetComputeShaderInputContract(), meshIndex);

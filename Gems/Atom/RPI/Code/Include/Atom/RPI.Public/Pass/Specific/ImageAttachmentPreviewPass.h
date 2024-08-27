@@ -137,7 +137,7 @@ namespace AZ
                 // The draw item for drawing the image preview for this type of image
                 RHI::DrawItem m_item;
 
-                RHI::MeshBuffers m_meshBuffers;
+                RHI::GeometryView m_geometryView;
 
                 // Key to pass to the SRG when desired shader variant isn't found
                 ShaderVariantKey m_shaderVariantKeyFallback;

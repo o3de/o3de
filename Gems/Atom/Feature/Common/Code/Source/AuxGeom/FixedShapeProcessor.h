@@ -11,7 +11,7 @@
 #include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/IndexBufferView.h>
-#include <Atom/RHI/MeshBuffers.h>
+#include <Atom/RHI/GeometryView.h>
 #include <Atom/RHI/StreamBufferView.h>
 #include <Atom/RHI/PipelineState.h>
 
@@ -88,9 +88,9 @@ namespace AZ
             //! We store a struct of this type for each fixed object geometry (both shapes and boxes)
             struct ObjectBuffers
             {
-                RHI::MeshBuffers m_pointMeshBuffers;
-                RHI::MeshBuffers m_lineMeshBuffers;
-                RHI::MeshBuffers m_triangleMeshBuffers;
+                RHI::GeometryView m_pointGeometryView;
+                RHI::GeometryView m_lineGeometryView;
+                RHI::GeometryView m_triangleGeometryView;
 
                 AZ::RHI::Ptr<AZ::RHI::Buffer> m_pointIndexBuffer;
                 AZ::RHI::Ptr<AZ::RHI::Buffer> m_lineIndexBuffer;
@@ -168,8 +168,9 @@ namespace AZ
             void InitPipelineState(const PipelineStateOptions& options);
             RPI::Ptr<RPI::PipelineStateForDraw>& GetPipelineState(const PipelineStateOptions& pipelineStateOptions);
 
-            RHI::MeshBuffers* GetMeshBuffers(AuxGeomShapeType shapeType, int drawStyle, LodIndex lodIndex);
-            RHI::MeshBuffers* GetBoxMeshBuffers(int drawStyle);
+            RHI::GeometryView* GetGeometryView(ObjectBuffers& objectBuffers, int drawStyle);
+            RHI::GeometryView* GetGeometryView(AuxGeomShapeType shapeType, int drawStyle, LodIndex lodIndex);
+            RHI::GeometryView* GetBoxGeometryView(int drawStyle);
 
             //! Uses the given drawPacketBuilder to build a draw packet for given shape and state and returns it
             const RHI::DrawPacket* BuildDrawPacketForShape(
@@ -194,7 +195,7 @@ namespace AZ
             const RHI::DrawPacket* BuildDrawPacket(
                 RHI::DrawPacketBuilder& drawPacketBuilder,
                 AZ::Data::Instance<RPI::ShaderResourceGroup>& srg,
-                RHI::MeshBuffers* meshBuffers,
+                RHI::GeometryView* geometryView,
                 RHI::DrawListTag drawListTag,
                 const AZ::RHI::PipelineState* pipelineState,
                 RHI::DrawItemSortKey sortKey,

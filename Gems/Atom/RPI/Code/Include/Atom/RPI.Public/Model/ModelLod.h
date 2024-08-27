@@ -13,7 +13,7 @@
 #include <Atom/RPI.Public/Model/UvStreamTangentBitmask.h>
 
 #include <Atom/RHI/DrawItem.h>
-#include <Atom/RHI/MeshBuffers.h>
+#include <Atom/RHI/GeometryView.h>
 
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI.Reflect/Limits.h>
@@ -63,7 +63,7 @@ namespace AZ
             using StreamInfoList = AZStd::fixed_vector<StreamBufferInfo, RHI::Limits::Pipeline::StreamCountMax>;
 
             //! Mesh data associated with a specific material.
-            struct Mesh final : public RHI::MeshBuffers
+            struct Mesh final : public RHI::GeometryView
             {
                 StreamInfoList m_streamInfo;
 
@@ -109,7 +109,7 @@ namespace AZ
             // @param materialUvNameMap the UV name map that came from a MaterialTypeAsset, which defines the default set of material shader stream names.
             bool GetStreamsForMesh(
                 RHI::InputStreamLayout& layoutOut,
-                RHI::MeshBuffers::StreamBufferIndices& streamIndicesOut,
+                RHI::GeometryView::StreamBufferIndices& streamIndicesOut,
                 UvStreamTangentBitmask* uvStreamTangentBitmaskOut,
                 const ShaderInputContract& contract,
                 size_t meshIndex,

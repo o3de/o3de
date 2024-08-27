@@ -387,12 +387,12 @@ namespace AZ
                     subMesh.m_bitangentShaderBufferView.get() ? subMesh.m_bitangentShaderBufferView->GetBindlessReadIndex() : InvalidIndex,
                     subMesh.m_uvShaderBufferView.get() ? subMesh.m_uvShaderBufferView->GetBindlessReadIndex() : InvalidIndex
 #else
-                    m_meshBuffers.AddResource(subMesh.m_indexShaderBufferView.get()),
-                    m_meshBuffers.AddResource(subMesh.m_positionShaderBufferView.get()),
-                    m_meshBuffers.AddResource(subMesh.m_normalShaderBufferView.get()),
-                    m_meshBuffers.AddResource(subMesh.m_tangentShaderBufferView.get()),
-                    m_meshBuffers.AddResource(subMesh.m_bitangentShaderBufferView.get()),
-                    m_meshBuffers.AddResource(subMesh.m_uvShaderBufferView.get())
+                    m_geometryView.AddResource(subMesh.m_indexShaderBufferView.get()),
+                    m_geometryView.AddResource(subMesh.m_positionShaderBufferView.get()),
+                    m_geometryView.AddResource(subMesh.m_normalShaderBufferView.get()),
+                    m_geometryView.AddResource(subMesh.m_tangentShaderBufferView.get()),
+                    m_geometryView.AddResource(subMesh.m_bitangentShaderBufferView.get()),
+                    m_geometryView.AddResource(subMesh.m_uvShaderBufferView.get())
 #endif
                 });
 
@@ -471,12 +471,12 @@ namespace AZ
                     m_materialTextureIndices.RemoveEntry(materialInfo.m_textureStartIndex);
 
 #if !USE_BINDLESS_SRG
-                    m_meshBuffers.RemoveResource(subMesh.m_indexShaderBufferView.get());
-                    m_meshBuffers.RemoveResource(subMesh.m_positionShaderBufferView.get());
-                    m_meshBuffers.RemoveResource(subMesh.m_normalShaderBufferView.get());
-                    m_meshBuffers.RemoveResource(subMesh.m_tangentShaderBufferView.get());
-                    m_meshBuffers.RemoveResource(subMesh.m_bitangentShaderBufferView.get());
-                    m_meshBuffers.RemoveResource(subMesh.m_uvShaderBufferView.get());
+                    m_geometryView.RemoveResource(subMesh.m_indexShaderBufferView.get());
+                    m_geometryView.RemoveResource(subMesh.m_positionShaderBufferView.get());
+                    m_geometryView.RemoveResource(subMesh.m_normalShaderBufferView.get());
+                    m_geometryView.RemoveResource(subMesh.m_tangentShaderBufferView.get());
+                    m_geometryView.RemoveResource(subMesh.m_bitangentShaderBufferView.get());
+                    m_geometryView.RemoveResource(subMesh.m_uvShaderBufferView.get());
 
                     m_materialTextures.RemoveResource(subMesh.m_baseColorImageView.get());
                     m_materialTextures.RemoveResource(subMesh.m_normalImageView.get());
@@ -523,7 +523,7 @@ namespace AZ
                     m_materialTextureIndices.Reset();
 
 #if !USE_BINDLESS_SRG
-                    m_meshBuffers.Reset();
+                    m_geometryView.Reset();
                     m_materialTextures.Reset();
 #endif
                 }
@@ -835,7 +835,7 @@ namespace AZ
                     }
                     else
                     {
-                        resolvedMeshBufferIndices[resolvedMeshBufferIndex++] = m_meshBuffers.GetIndirectionList()[meshBufferIndex];
+                        resolvedMeshBufferIndices[resolvedMeshBufferIndex++] = m_geometryView.GetIndirectionList()[meshBufferIndex];
                     }
                 }
 
@@ -994,8 +994,8 @@ namespace AZ
             }
 
 #if !USE_BINDLESS_SRG
-            RHI::ShaderInputBufferUnboundedArrayIndex bufferUnboundedArrayIndex = srgLayout->FindShaderInputBufferUnboundedArrayIndex(AZ::Name("m_meshBuffers"));
-            m_rayTracingSceneSrg->SetBufferViewUnboundedArray(bufferUnboundedArrayIndex, m_meshBuffers.GetResourceList());
+            RHI::ShaderInputBufferUnboundedArrayIndex bufferUnboundedArrayIndex = srgLayout->FindShaderInputBufferUnboundedArrayIndex(AZ::Name("m_geometryView"));
+            m_rayTracingSceneSrg->SetBufferViewUnboundedArray(bufferUnboundedArrayIndex, m_geometryView.GetResourceList());
 #endif
             m_rayTracingSceneSrg->Compile();
         }

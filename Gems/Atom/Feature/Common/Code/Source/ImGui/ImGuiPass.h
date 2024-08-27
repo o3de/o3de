@@ -129,7 +129,7 @@ namespace AZ
 
             struct DrawInfo
             {
-                RHI::MeshBuffers m_meshBuffers;
+                RHI::GeometryView m_geometryView;
                 RHI::Scissor m_scissor;
             };
 

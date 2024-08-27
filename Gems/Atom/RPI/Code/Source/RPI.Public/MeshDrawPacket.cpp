@@ -260,7 +260,7 @@ namespace AZ
 
             RHI::DrawPacketBuilder drawPacketBuilder;
             drawPacketBuilder.Begin(nullptr);
-            drawPacketBuilder.SetMeshBuffers(&mesh);
+            drawPacketBuilder.SetGeometryView(&mesh);
             drawPacketBuilder.AddShaderResourceGroup(m_objectSrg->GetRHIShaderResourceGroup());
             drawPacketBuilder.AddShaderResourceGroup(m_material->GetRHIShaderResourceGroup());
 
@@ -377,7 +377,7 @@ namespace AZ
                 RHI::MergeStateInto(renderStatesOverlay, pipelineStateDescriptor.m_renderStates);
 
                 UvStreamTangentBitmask uvStreamTangentBitmask;
-                RHI::MeshBuffers::StreamBufferIndices streamIndices;
+                RHI::GeometryView::StreamBufferIndices streamIndices;
 
                 if (!m_modelLod->GetStreamsForMesh(
                     pipelineStateDescriptor.m_inputStreamLayout,

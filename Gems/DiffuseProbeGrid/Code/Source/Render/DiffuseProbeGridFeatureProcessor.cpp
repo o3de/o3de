@@ -752,8 +752,8 @@ namespace AZ
                 sizeof(indices),
                 AZ::RHI::IndexFormat::Uint16,
             };
-            m_probeGridRenderData.m_meshBuffers.SetIndexBufferView(indexBufferView);
-            m_probeGridRenderData.m_meshBuffers.SetDrawArguments(RHI::DrawIndexed{ 0, 0, 0, numIndices, 0 });
+            m_probeGridRenderData.m_geometryView.SetIndexBufferView(indexBufferView);
+            m_probeGridRenderData.m_geometryView.SetDrawArguments(RHI::DrawIndexed{ 0, 0, 0, numIndices, 0 });
 
             // create position buffer
             m_boxPositionBuffer = AZ::RHI::Factory::Get().CreateBuffer();
@@ -771,10 +771,10 @@ namespace AZ
                 (uint32_t)(m_boxPositions.size() * sizeof(Position)),
                 sizeof(Position),
             };
-            m_probeGridRenderData.m_meshBuffers.ClearStreamBufferViews();
-            m_probeGridRenderData.m_meshBuffers.AddStreamBufferView(positionBufferView);
+            m_probeGridRenderData.m_geometryView.ClearStreamBufferViews();
+            m_probeGridRenderData.m_geometryView.AddStreamBufferView(positionBufferView);
 
-            AZ::RHI::ValidateStreamBufferViews(m_boxStreamLayout, m_probeGridRenderData.m_meshBuffers.GetStreamBufferViews());
+            AZ::RHI::ValidateStreamBufferViews(m_boxStreamLayout, m_probeGridRenderData.m_geometryView.GetStreamBufferViews());
         }
 
         void DiffuseProbeGridFeatureProcessor::OnRenderPipelineChanged(RPI::RenderPipeline* renderPipeline,
@@ -946,7 +946,7 @@ namespace AZ
 
             // retrieve vertex/index buffers
             RHI::InputStreamLayout inputStreamLayout;
-            RHI::MeshBuffers::StreamBufferIndices streamIndices;
+            RHI::GeometryView::StreamBufferIndices streamIndices;
             [[maybe_unused]] bool result = modelLod->GetStreamsForMesh(
                 inputStreamLayout,
                 streamIndices,
@@ -955,7 +955,7 @@ namespace AZ
                 0);
             AZ_Assert(result, "Failed to retrieve DiffuseProbeGrid visualization mesh stream buffer views");
 
-            RHI::MeshBuffers::StreamIterator streamIter = mesh.CreateStreamIterator(streamIndices);
+            RHI::GeometryView::StreamIterator streamIter = mesh.CreateStreamIterator(streamIndices);
 
             m_visualizationVB = streamIter[0];
             m_visualizationIB = mesh.GetIndexBufferView();

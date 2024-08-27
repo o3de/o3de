@@ -12,7 +12,7 @@
 #include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/DrawList.h>
 #include <Atom/RHI/IndexBufferView.h>
-#include <Atom/RHI/MeshBuffers.h>
+#include <Atom/RHI/GeometryView.h>
 #include <Atom/RHI/PipelineState.h>
 #include <Atom/RHI/StreamBufferView.h>
 
@@ -106,7 +106,7 @@ namespace AZ
 
             //!Uses the given drawPacketBuilder to build a draw packet with given data and returns it
             const RHI::DrawPacket* BuildDrawPacketForDynamicPrimitive(
-                RHI::MeshBuffers& meshBuffers,
+                RHI::GeometryView& geometryView,
                 const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
                 Data::Instance<RPI::ShaderResourceGroup> srg,
                 RHI::DrawPacketBuilder& drawPacketBuilder,
@@ -143,7 +143,7 @@ namespace AZ
             ShaderData m_shaderData;
 
             // Buffers for all primitives
-            RHI::MeshBuffers m_meshBuffers;
+            RHI::GeometryView m_geometryView;
 
             // Flags to see if stream buffer views have been validated for a prim type's layout
             bool m_streamBufferViewsValidatedForLayout[PrimitiveType_Count];
