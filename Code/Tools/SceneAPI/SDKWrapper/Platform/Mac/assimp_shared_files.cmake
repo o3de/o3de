@@ -6,10 +6,10 @@
 #
 #
 
-# Platform specific files for Linux
-# i.e. ../Source/Linux/RecastNavigationLinux.cpp
-#      ../Source/Linux/RecastNavigationLinux.h
-#      ../Include/Linux/RecastNavigationLinux.h
+# Platform specific files for Mac
+# i.e. ../Source/Mac/AssimpMac.cpp
+#      ../Source/Mac/AssimpMac.h
+#      ../Include/Mac/AssimpMac.h
 
 set(FILES
 )

@@ -6,9 +6,10 @@
 #
 #
 
-# Turn off warnings for RecastNavigation::Detour library
-set_property(
-    DIRECTORY
-    APPEND
-    PROPERTY COMPILE_OPTIONS -w
+# Platform specific files for Linux
+# i.e. ../Source/Linux/AssimpLinux.cpp
+#      ../Source/Linux/AssimpLinux.h
+#      ../Include/Linux/AssimpLinux.h
+
+set(FILES
 )

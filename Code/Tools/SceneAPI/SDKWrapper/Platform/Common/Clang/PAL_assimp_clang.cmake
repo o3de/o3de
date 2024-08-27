@@ -6,10 +6,9 @@
 #
 #
 
-# Platform specific files for iOS
-# i.e. ../Source/iOS/RecastNavigationiOS.cpp
-#      ../Source/iOS/RecastNavigationiOS.h
-#      ../Include/iOS/RecastNavigationiOS.h
-
-set(FILES
+# Turn off warnings for AssImp library
+set_property(
+    DIRECTORY
+    APPEND
+    PROPERTY COMPILE_OPTIONS -Wno-everything
 )

@@ -7,9 +7,9 @@
 #
 
 # Platform specific files for Android
-# i.e. ../Source/Android/RecastNavigationAndroid.cpp
-#      ../Source/Android/RecastNavigationAndroid.h
-#      ../Include/Android/RecastNavigationAndroid.h
+# i.e. ../Source/Android/AssimpAndroid.cpp
+#      ../Source/Android/AssimpAndroid.h
+#      ../Include/Android/AssimpAndroid.h
 
 set(FILES
 )

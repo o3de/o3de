@@ -6,10 +6,10 @@
 #
 #
 
-# Platform specific files for Mac
-# i.e. ../Source/Mac/RecastNavigationMac.cpp
-#      ../Source/Mac/RecastNavigationMac.h
-#      ../Include/Mac/RecastNavigationMac.h
+# Platform specific files for iOS
+# i.e. ../Source/iOS/AssimpiOS.cpp
+#      ../Source/iOS/AssimpiOS.h
+#      ../Include/iOS/AssimpiOS.h
 
 set(FILES
 )

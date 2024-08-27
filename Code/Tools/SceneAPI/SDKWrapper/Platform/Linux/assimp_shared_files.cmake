@@ -6,10 +6,10 @@
 #
 #
 
-# Platform specific files for iOS
-# i.e. ../Source/iOS/RecastNavigationiOS.cpp
-#      ../Source/iOS/RecastNavigationiOS.h
-#      ../Include/iOS/RecastNavigationiOS.h
+# Platform specific files for Linux
+# i.e. ../Source/Linux/AssimpLinux.cpp
+#      ../Source/Linux/AssimpLinux.h
+#      ../Include/Linux/AssimpLinux.h
 
 set(FILES
 )

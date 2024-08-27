@@ -6,9 +6,9 @@
 #
 #
 
-# Turn off warnings for RecastNavigation::Detour library
+# Turn off warnings for Assimp library
 set_property(
     DIRECTORY
     APPEND
-    PROPERTY COMPILE_OPTIONS -Wno-everything
+    PROPERTY COMPILE_OPTIONS -w
 )

@@ -7,9 +7,9 @@
 #
 
 # Platform specific files for Windows
-# i.e. ../Source/Windows/RecastNavigationWindows.cpp
-#      ../Source/Windows/RecastNavigationWindows.h
-#      ../Include/Windows/RecastNavigationWindows.h
+# i.e. ../Source/Windows/AssimpWindows.cpp
+#      ../Source/Windows/AssimpWindows.h
+#      ../Include/Windows/AssimpWindows.h
 
 set(FILES
 )
