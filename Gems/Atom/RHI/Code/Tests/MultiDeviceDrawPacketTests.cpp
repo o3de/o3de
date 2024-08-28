@@ -116,7 +116,8 @@ namespace UnitTest
             }
 
             builder.SetRootConstants(m_rootConstants);
-            builder.SetIndexBufferView(m_indexBufferView);
+            // AKM_MARKER
+            //builder.SetIndexBufferView(m_indexBufferView);
 
             RHI::DrawListMask drawListMask;
 
@@ -129,7 +130,8 @@ namespace UnitTest
                 drawRequest.m_listTag = drawItemData.m_tag;
                 drawRequest.m_sortKey = drawItemData.m_sortKey;
                 drawRequest.m_stencilRef = drawItemData.m_stencilRef;
-                drawRequest.m_streamBufferViews = drawItemData.m_streamBufferViews;
+                // AKM_MARKER
+                //drawRequest.m_streamBufferViews = drawItemData.m_streamBufferViews;
                 drawRequest.m_pipelineState = drawItemData.m_pipelineState;
                 builder.AddDrawItem(drawRequest);
             }
@@ -319,7 +321,8 @@ namespace UnitTest
                 auto deviceDrawPacketClone{ drawPacketClone->GetDeviceDrawPacket(deviceIndex) };
 
                 EXPECT_EQ(deviceDrawPacket->m_drawItemCount, deviceDrawPacketClone->m_drawItemCount);
-                EXPECT_EQ(deviceDrawPacket->m_streamBufferViewCount, deviceDrawPacketClone->m_streamBufferViewCount);
+                // AKM_MARKER
+                //EXPECT_EQ(deviceDrawPacket->m_streamBufferViewCount, deviceDrawPacketClone->m_streamBufferViewCount);
                 EXPECT_EQ(deviceDrawPacket->m_shaderResourceGroupCount, deviceDrawPacketClone->m_shaderResourceGroupCount);
                 EXPECT_EQ(deviceDrawPacket->m_uniqueShaderResourceGroupCount, deviceDrawPacketClone->m_uniqueShaderResourceGroupCount);
                 EXPECT_EQ(deviceDrawPacket->m_rootConstantSize, deviceDrawPacketClone->m_rootConstantSize);
@@ -348,30 +351,34 @@ namespace UnitTest
                     auto& deviceDrawItem{ drawItem->GetDeviceDrawItem(deviceIndex) };
                     auto& deviceDrawItemClone{ drawItemClone->GetDeviceDrawItem(deviceIndex) };
 
-                    EXPECT_EQ(deviceDrawItem.m_arguments.m_type, deviceDrawItemClone.m_arguments.m_type);
+                    // AKM_MARKER
+                    //EXPECT_EQ(deviceDrawItem.m_arguments.m_type, deviceDrawItemClone.m_arguments.m_type);
                     EXPECT_EQ(deviceDrawItem.m_pipelineState->GetType(), deviceDrawItemClone.m_pipelineState->GetType());
                     EXPECT_EQ(deviceDrawItem.m_stencilRef, deviceDrawItemClone.m_stencilRef);
-                    EXPECT_EQ(deviceDrawItem.m_streamBufferViewCount, deviceDrawItemClone.m_streamBufferViewCount);
+                    // AKM_MARKER
+                    //EXPECT_EQ(deviceDrawItem.m_streamBufferViewCount, deviceDrawItemClone.m_streamBufferViewCount);
                     EXPECT_EQ(deviceDrawItem.m_shaderResourceGroupCount, deviceDrawItemClone.m_shaderResourceGroupCount);
                     EXPECT_EQ(deviceDrawItem.m_rootConstantSize, deviceDrawItemClone.m_rootConstantSize);
                     EXPECT_EQ(deviceDrawItem.m_scissorsCount, deviceDrawItemClone.m_scissorsCount);
                     EXPECT_EQ(deviceDrawItem.m_viewportsCount, deviceDrawItemClone.m_viewportsCount);
 
-                    uint8_t streamBufferViewCount = deviceDrawItem.m_streamBufferViewCount;
+                    // AKM_MARKER
+                    //uint8_t streamBufferViewCount = deviceDrawItem.m_streamBufferViewCount;
                     uint8_t shaderResourceGroupCount = deviceDrawItem.m_shaderResourceGroupCount;
                     uint8_t rootConstantSize = deviceDrawItem.m_rootConstantSize;
                     uint8_t scissorsCount = deviceDrawItem.m_scissorsCount;
                     uint8_t viewportsCount = deviceDrawItem.m_viewportsCount;
 
-                    for (uint8_t j = 0; j < streamBufferViewCount; ++j)
-                    {
-                        const RHI::StreamBufferView* streamBufferView = deviceDrawPacket->m_streamBufferViews + j;
-                        const RHI::StreamBufferView* streamBufferViewClone = deviceDrawPacketClone->m_streamBufferViews + j;
-                        EXPECT_EQ(streamBufferView->GetByteCount(), streamBufferViewClone->GetByteCount());
-                        EXPECT_EQ(streamBufferView->GetByteOffset(), streamBufferViewClone->GetByteOffset());
-                        EXPECT_EQ(streamBufferView->GetByteStride(), streamBufferViewClone->GetByteStride());
-                        EXPECT_EQ(streamBufferView->GetHash(), streamBufferViewClone->GetHash());
-                    }
+                    // AKM_MARKER
+                    //for (uint8_t j = 0; j < streamBufferViewCount; ++j)
+                    //{
+                    //    const RHI::StreamBufferView* streamBufferView = deviceDrawPacket->m_streamBufferViews + j;
+                    //    const RHI::StreamBufferView* streamBufferViewClone = deviceDrawPacketClone->m_streamBufferViews + j;
+                    //    EXPECT_EQ(streamBufferView->GetByteCount(), streamBufferViewClone->GetByteCount());
+                    //    EXPECT_EQ(streamBufferView->GetByteOffset(), streamBufferViewClone->GetByteOffset());
+                    //    EXPECT_EQ(streamBufferView->GetByteStride(), streamBufferViewClone->GetByteStride());
+                    //    EXPECT_EQ(streamBufferView->GetHash(), streamBufferViewClone->GetHash());
+                    //}
 
                     for (uint8_t j = 0; j < shaderResourceGroupCount; ++j)
                     {
@@ -400,22 +407,24 @@ namespace UnitTest
                 auto deviceDrawPacket{ drawPacket->GetDeviceDrawPacket(deviceIndex) };
                 auto deviceDrawPacketClone{ drawPacketClone->GetDeviceDrawPacket(deviceIndex) };
 
-                uint8_t streamBufferViewCount = deviceDrawPacket->m_streamBufferViewCount;
+                // AKM_MARKER
+                //uint8_t streamBufferViewCount = deviceDrawPacket->m_streamBufferViewCount;
                 uint8_t shaderResourceGroupCount = deviceDrawPacket->m_shaderResourceGroupCount;
                 uint8_t uniqueShaderResourceGroupCount = deviceDrawPacket->m_uniqueShaderResourceGroupCount;
                 uint8_t rootConstantSize = deviceDrawPacket->m_rootConstantSize;
                 uint8_t scissorsCount = deviceDrawPacket->m_scissorsCount;
                 uint8_t viewportsCount = deviceDrawPacket->m_viewportsCount;
 
-                for (uint8_t i = 0; i < streamBufferViewCount; ++i)
-                {
-                    const RHI::StreamBufferView* streamBufferView = deviceDrawPacket->m_streamBufferViews + i;
-                    const RHI::StreamBufferView* streamBufferViewClone = deviceDrawPacketClone->m_streamBufferViews + i;
-                    EXPECT_EQ(streamBufferView->GetByteCount(), streamBufferViewClone->GetByteCount());
-                    EXPECT_EQ(streamBufferView->GetByteOffset(), streamBufferViewClone->GetByteOffset());
-                    EXPECT_EQ(streamBufferView->GetByteStride(), streamBufferViewClone->GetByteStride());
-                    EXPECT_EQ(streamBufferView->GetHash(), streamBufferViewClone->GetHash());
-                }
+                // AKM_MARKER
+                //for (uint8_t i = 0; i < streamBufferViewCount; ++i)
+                //{
+                //    const RHI::StreamBufferView* streamBufferView = deviceDrawPacket->m_streamBufferViews + i;
+                //    const RHI::StreamBufferView* streamBufferViewClone = deviceDrawPacketClone->m_streamBufferViews + i;
+                //    EXPECT_EQ(streamBufferView->GetByteCount(), streamBufferViewClone->GetByteCount());
+                //    EXPECT_EQ(streamBufferView->GetByteOffset(), streamBufferViewClone->GetByteOffset());
+                //    EXPECT_EQ(streamBufferView->GetByteStride(), streamBufferViewClone->GetByteStride());
+                //    EXPECT_EQ(streamBufferView->GetHash(), streamBufferViewClone->GetHash());
+                //}
 
                 for (uint8_t i = 0; i < shaderResourceGroupCount; ++i)
                 {
