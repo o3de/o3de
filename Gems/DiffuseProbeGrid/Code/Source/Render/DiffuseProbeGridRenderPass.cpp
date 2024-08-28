@@ -201,7 +201,10 @@ namespace AZ
                 // (see ValidateSetImageView() of ShaderResourceGroupData.cpp)
                 diffuseProbeGrid->UpdateRenderObjectSrg();
 
-                diffuseProbeGrid->GetRenderObjectSrg()->Compile();
+                if (!diffuseProbeGrid->GetRenderObjectSrg()->IsQueuedForCompile())
+                {
+                    diffuseProbeGrid->GetRenderObjectSrg()->Compile();
+                }
             }
 
             if (auto viewSRG = diffuseProbeGridFeatureProcessor->GetViewSrg(m_pipeline, GetPipelineViewTag()))

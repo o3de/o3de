@@ -162,7 +162,10 @@ namespace AZ
                 // (see ValidateSetImageView() in ShaderResourceGroupData.cpp)
                 DiffuseProbeGridShader& shader = m_shaders[diffuseProbeGrid->GetNumRaysPerProbe().m_index];
                 diffuseProbeGrid->UpdateClassificationSrg(shader.m_shader, shader.m_srgLayout);
-                diffuseProbeGrid->GetClassificationSrg()->Compile();
+                if (!diffuseProbeGrid->GetClassificationSrg()->IsQueuedForCompile())
+                {
+                    diffuseProbeGrid->GetClassificationSrg()->Compile();
+                }
             }
         }
 
