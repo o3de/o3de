@@ -121,4 +121,6 @@ set(FILES
     Source/RHI/BindlessArgumentBuffer.h
     Source/RHI/RenderPassBuilder.cpp
     Source/RHI/RenderPassBuilder.h
+    Source/RHI/ClearAttachments.cpp
+    Source/RHI/ClearAttachments.h
 )

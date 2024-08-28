@@ -24,12 +24,12 @@ namespace AZ
             AZStd::vector<CommandList*> m_commandLists;
 
             /// A set of scope fences to signal after executing the command lists.
-            AZStd::vector<RHI::Ptr<FenceImpl>> m_scopeFencesToSignal;
+            AZStd::vector<Fence*> m_scopeFencesToSignal;
             
             static constexpr uint64_t FenceValueNull = 0;
 
             //! Metal command buffer associated with this work request
-            RHI::Ptr<CommandQueueCommandBuffer> m_commandBuffer;
+            CommandQueueCommandBuffer* m_commandBuffer = nullptr;
             
             /// A set of fence values for each queue class to wait on
             /// before execution. Will ignore if null.

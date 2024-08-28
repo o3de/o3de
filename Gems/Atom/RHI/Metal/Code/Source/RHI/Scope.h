@@ -93,6 +93,8 @@ namespace AZ
             void AddQueryPoolUse(RHI::Ptr<RHI::QueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access) override;
             //////////////////////////////////////////////////////////////////////////
             
+            bool IsFirstUsage(const RHI::ScopeAttachment* scopeAttachment) const;
+
             RenderPassContext m_renderPassContext;
                         
             /// The list of fences to wait before executing this scope.

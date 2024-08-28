@@ -28,14 +28,13 @@ namespace AZ
             m_executeGroups = executeGroups;
             m_hardwareQueueClass = static_cast<FrameGraphExecuteGroupBase*>(executeGroups.back())->GetHardwareQueueClass();
             
-            m_commandBuffer = aznew CommandQueueCommandBuffer;
-            m_commandBuffer->Init(device.GetCommandQueueContext().GetCommandQueue(m_hardwareQueueClass).GetPlatformQueue());
-            m_commandBuffer->AcquireMTLCommandBuffer();
-            m_workRequest.m_commandBuffer = m_commandBuffer;
+            m_commandBuffer.Init(device.GetCommandQueueContext().GetCommandQueue(m_hardwareQueueClass).GetPlatformQueue());
+            m_commandBuffer.AcquireMTLCommandBuffer();
+            m_workRequest.m_commandBuffer = &m_commandBuffer;
             for(auto* rhiGroup : m_executeGroups)
             {
                 FrameGraphExecuteGroupBase* group = static_cast<FrameGraphExecuteGroupBase*>(rhiGroup);
-                group->SetCommandBuffer(m_commandBuffer);
+                group->SetCommandBuffer(&m_commandBuffer);
                 group->SetHandler(this);
             }
             return InitInternal(device, executeGroups);

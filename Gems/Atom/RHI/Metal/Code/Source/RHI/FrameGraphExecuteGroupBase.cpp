@@ -62,7 +62,7 @@ namespace AZ
             }
         }
     
-        void FrameGraphExecuteGroupBase::SetCommandBuffer(RHI::Ptr<CommandQueueCommandBuffer> commandBuffer)
+        void FrameGraphExecuteGroupBase::SetCommandBuffer(CommandQueueCommandBuffer* commandBuffer)
         {
             m_commandBuffer = commandBuffer;
         }

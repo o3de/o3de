@@ -128,9 +128,9 @@ namespace AZ
                          compiledFences.GetFence(GetDescriptor().m_hardwareQueueClass).SignalFromGpu(workRequestCommandBuffer, request.m_signalFenceValue);
                      }
 
-                     for (RHI::Ptr<FenceImpl> fence : request.m_scopeFencesToSignal)
+                     for (Fence* fence : request.m_scopeFencesToSignal)
                      {
-                         fence->Get().SignalFromGpu(workRequestCommandBuffer);
+                         fence->SignalFromGpu(workRequestCommandBuffer);
                      }
                      
                      {

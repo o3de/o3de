@@ -37,7 +37,7 @@ namespace AZ::Metal
         fencesToSignal.reserve(scope.GetFencesToSignal().size());
         for (const RHI::Ptr<RHI::Fence>& fence : scope.GetFencesToSignal())
         {
-            fencesToSignal.push_back(AZStd::static_pointer_cast<FenceImpl>(fence->GetDeviceFence(scope.GetDeviceIndex())));
+            fencesToSignal.push_back(&static_cast<FenceImpl&>(*fence->GetDeviceFence(scope.GetDeviceIndex())).Get());
         }
         
         InitRequest request;

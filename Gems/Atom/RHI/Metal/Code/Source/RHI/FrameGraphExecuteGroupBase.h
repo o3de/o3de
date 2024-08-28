@@ -39,7 +39,7 @@ namespace AZ
             const RHI::GraphGroupId& GetGroupId() const;
             
             //! Set the command buffer that the group will use.
-            void SetCommandBuffer(RHI::Ptr<CommandQueueCommandBuffer> commandBuffer);
+            void SetCommandBuffer(CommandQueueCommandBuffer* commandBuffer);
             
             void SetHandler(FrameGraphExecuteGroupHandler* handler);
             
@@ -63,7 +63,7 @@ namespace AZ
             
             ExecuteWorkRequest m_workRequest;
             RHI::HardwareQueueClass m_hardwareQueueClass = RHI::HardwareQueueClass::Graphics;
-            RHI::Ptr<CommandQueueCommandBuffer> m_commandBuffer;
+            CommandQueueCommandBuffer* m_commandBuffer = nullptr;
             
         private:
             Device* m_device = nullptr;

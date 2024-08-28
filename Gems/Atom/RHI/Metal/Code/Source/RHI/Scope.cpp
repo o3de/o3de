@@ -72,6 +72,20 @@ namespace AZ
             //allow us to use the driver to clear a render target or do a msaa resolve within a scope with no draw work.
             return attachmentDescriptor != nil && (attachmentDescriptor.resolveTexture != nil || attachmentDescriptor.loadAction == MTLLoadActionClear);
         }
+    
+        bool Scope::IsFirstUsage(const RHI::ScopeAttachment* scopeAttachment) const
+        {
+            while (scopeAttachment != nullptr && scopeAttachment->GetScope().GetId() == GetId())
+            {
+                scopeAttachment = scopeAttachment->GetPrevious();
+            }
+
+            if (!scopeAttachment || scopeAttachment->GetScope().GetFrameGraphGroupId() != GetFrameGraphGroupId())
+            {
+                return true;
+            }
+            return false;
+        }
 
         void Scope::Begin(
             CommandList& commandList,
@@ -89,6 +103,59 @@ namespace AZ
                 for (RHI::ResourcePoolResolver* resolvePolicyBase : GetResourcePoolResolves())
                 {
                     static_cast<ResourcePoolResolver*>(resolvePolicyBase)->Resolve(commandList);
+                }
+                
+                if (RHI::CheckBitsAll(GetActivationFlags(), RHI::Scope::ActivationFlags::Subpass))
+                {
+                    AZStd::vector<ClearAttachments::ClearData> clearAttachmentData;
+                    for (auto imageAttachment : GetImageAttachments())
+                    {
+                        const auto& loadStoreAction = imageAttachment->GetScopeAttachmentDescriptor().m_loadStoreAction;
+                        bool clear = loadStoreAction.m_loadAction == RHI::AttachmentLoadAction::Clear;
+                        bool clearStencil = loadStoreAction.m_loadActionStencil == RHI::AttachmentLoadAction::Clear;
+                        if (clear || clearStencil)
+                        {
+                            if (!IsFirstUsage(imageAttachment))
+                            {
+                                if (imageAttachment->GetUsage() == RHI::ScopeAttachmentUsage::RenderTarget)
+                                {
+                                    const ImageView* imageView = static_cast<const ImageView*>(imageAttachment->GetImageView()->GetDeviceImageView(GetDeviceIndex()).get());
+                                    id<MTLTexture> imageViewMtlTexture = imageView->GetMemoryView().GetGpuAddress<id<MTLTexture>>();
+                                    
+                                    ClearAttachments::ClearData& data = clearAttachmentData.emplace_back();
+                                    data.m_clearValue = loadStoreAction.m_clearValue;
+                                    data.m_imageAspects = RHI::ImageAspectFlags::Color;
+                                    for(uint32_t i = 0; i < RHI::Limits::Pipeline::AttachmentColorCountMax; ++i)
+                                    {
+                                        if (m_renderPassContext.m_renderPassDescriptor.colorAttachments[i].texture == imageViewMtlTexture)
+                                        {
+                                            data.m_attachmentIndex = i;
+                                            break;
+                                        }
+                                    }
+                                    AZ_Assert(data.m_attachmentIndex < RHI::Limits::Pipeline::AttachmentColorCountMax, "Attachment index not found for image attachent %s", imageAttachment->GetDescriptor().m_attachmentId.GetCStr());
+                                }
+                                else if (imageAttachment->GetUsage() == RHI::ScopeAttachmentUsage::DepthStencil)
+                                {
+                                    ClearAttachments::ClearData& data = clearAttachmentData.emplace_back();
+                                    data.m_clearValue = loadStoreAction.m_clearValue;
+                                    if (clear)
+                                    {
+                                        data.m_imageAspects |= RHI::ImageAspectFlags::Depth;
+                                    }
+                                    if (clearStencil)
+                                    {
+                                        data.m_imageAspects |= RHI::ImageAspectFlags::Stencil;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (!clearAttachmentData.empty())
+                    {
+                        static_cast<Device&>(GetDevice()).ClearRenderAttachments(commandList, m_renderPassContext.m_renderPassDescriptor, clearAttachmentData);
+                    }
                 }
             }
               

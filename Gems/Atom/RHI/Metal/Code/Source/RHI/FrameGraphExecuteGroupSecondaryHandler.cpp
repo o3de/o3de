@@ -46,14 +46,14 @@ namespace AZ::Metal
 
     void FrameGraphExecuteGroupSecondaryHandler::EndInternal()
     {
-        m_commandBuffer->FlushParallelEncoder();
+        m_commandBuffer.FlushParallelEncoder();
         for (auto executeGroupBase : m_executeGroups)
         {
             FrameGraphExecuteGroupSecondary* executeGroup = static_cast<FrameGraphExecuteGroupSecondary*>(executeGroupBase);
             AddWorkRequest(executeGroup->AcquireWorkRequest());
             executeGroup->EncodeAllSignalEvents();
         }
-        m_workRequest.m_commandBuffer = m_commandBuffer;
+        m_workRequest.m_commandBuffer = &m_commandBuffer;
     }
 
     void FrameGraphExecuteGroupSecondaryHandler::BeginGroupInternal([[maybe_unused]] const FrameGraphExecuteGroupBase* group)

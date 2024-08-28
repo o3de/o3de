@@ -51,6 +51,7 @@ namespace AZ
             m_eventListener = [[MTLSharedEventListener alloc] init];
 
             InitFeatures();
+            RHI::RHISystemNotificationBus::Handler::BusConnect();
             return RHI::ResultCode::Success;
         }
 
@@ -107,11 +108,14 @@ namespace AZ
             m_asyncUploadQueue.Shutdown();
             m_stagingBufferPool.reset();
             m_nullDescriptorManager.Shutdown();
+            m_clearAttachments.Shutdown();
             m_bindlessArgumentBuffer.GarbageCollect();
         }
 
         void Device::ShutdownInternal()
         {
+            RHI::RHISystemNotificationBus::Handler::BusDisconnect();
+            
             m_argumentBufferConstantsAllocator.Shutdown();
             m_argumentBufferAllocator.Shutdown();
             m_releaseQueue.Shutdown();
@@ -467,6 +471,16 @@ namespace AZ
         BindlessArgumentBuffer& Device::GetBindlessArgumentBuffer()
         {
             return m_bindlessArgumentBuffer;
+        }
+    
+        RHI::ResultCode Device::ClearRenderAttachments(CommandList& commandList, MTLRenderPassDescriptor* renderpassDesc, const AZStd::vector<ClearAttachments::ClearData>& clearAttachmentData)
+        {
+            return m_clearAttachments.Clear(commandList, renderpassDesc, clearAttachmentData);
+        }
+    
+        void Device::OnRHISystemInitialized()
+        {
+            m_clearAttachments.Init(*this);
         }
     }
 }

@@ -12,7 +12,7 @@
         "dxc": ["-spirv"
               , "-enable-16bit-types"
         ],
-        "spirv-cross": ["--msl-framebuffer-fetch"],
+        "spirv-cross": ["--msl-framebuffer-fetch", "--msl-version 20300"],
         "metalair": ["-sdk", "macosx", "metal" // For xcrun
                    , "-fpreserve-invariance"
                    , "-c"

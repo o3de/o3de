@@ -64,7 +64,7 @@ namespace AZ
             RHI::HardwareQueueClass m_hardwareQueueClass = RHI::HardwareQueueClass::Graphics;
             AZStd::vector<RHI::FrameGraphExecuteGroup*> m_executeGroups;
             bool m_isExecuted = false;
-            RHI::Ptr<CommandQueueCommandBuffer> m_commandBuffer;
+            CommandQueueCommandBuffer m_commandBuffer;
             AZStd::atomic_bool m_hasBegun{false};
         };
     }
