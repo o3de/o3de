@@ -497,7 +497,7 @@ namespace AZ
             DrawItemInfo drawItemInfo;
             RHI::DrawItem& drawItem = drawItemInfo.m_drawItem;
 
-            // --- Mesh Buffers ---
+            // --- Geometry View ---
 
             RHI::GeometryView newGeometryView;
 
@@ -599,7 +599,7 @@ namespace AZ
             DrawItemInfo drawItemInfo;
             RHI::DrawItem& drawItem = drawItemInfo.m_drawItem;
 
-            // --- Mesh Buffers ---
+            // --- Geometry View ---
 
             RHI::GeometryView newGeometryView;
 
@@ -738,7 +738,7 @@ namespace AZ
             {
                 if (drawItemInfo.m_cachedIndex != InvalidIndex)
                 {
-                    // Get the pointer to mesh buffers here after we've built all the mesh buffers and won't be resizing the array
+                    // Get the pointer to geometry view here after we've built all the mesh buffers and won't be resizing the array
                     drawItemInfo.m_drawItem.m_geometryView = &m_cachedGeometryViews[drawItemInfo.m_cachedIndex];
                 }
 

@@ -38,7 +38,7 @@ namespace AZ::RHI
             //! The stencil ref value used for this draw item.
             uint8_t m_stencilRef{};
 
-            //! Indices of which MeshBuffer StreamBufferViews to use
+            //! Indices of which GeometryView StreamBufferViews to use
             RHI::GeometryView::StreamBufferIndices m_streamIndices;
 
             //! Shader resource group unique for this draw request
@@ -54,11 +54,6 @@ namespace AZ::RHI
             //! We use a mask because the same item could be reused in multiple pipelines. For example, a simple
             //! depth pre-pass could be present in multiple pipelines.
             DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
-
-            //! A map of all device-specific StreamBufferViews, indexed by the device index
-            //! This additional cache is needed since device-specific StreamBufferViews are returned as objects
-            //! and the device-specific DrawItem holds a pointer to it.
-            AZStd::unordered_map<int, AZStd::vector<StreamBufferView>> m_deviceStreamBufferViews;
         };
 
         explicit MultiDeviceDrawPacketBuilder(RHI::MultiDevice::DeviceMask deviceMask)

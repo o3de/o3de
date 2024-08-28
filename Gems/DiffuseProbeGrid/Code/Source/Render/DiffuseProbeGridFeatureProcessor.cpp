@@ -753,7 +753,7 @@ namespace AZ
                 AZ::RHI::IndexFormat::Uint16,
             };
             m_probeGridRenderData.m_geometryView.SetIndexBufferView(indexBufferView);
-            m_probeGridRenderData.m_geometryView.SetDrawArguments(RHI::DrawIndexed{ 0, 0, 0, numIndices, 0 });
+            m_probeGridRenderData.m_geometryView.SetDrawArguments(RHI::DrawIndexed{ 1, 0, 0, numIndices, 0 });
 
             // create position buffer
             m_boxPositionBuffer = AZ::RHI::Factory::Get().CreateBuffer();

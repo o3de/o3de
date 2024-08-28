@@ -639,15 +639,15 @@ namespace AZ
                             }
                         }
 
-                        RHI::GeometryView meshBuffer;
-                        meshBuffer.SetDrawArguments(RHI::DrawIndexed(1, index, vertexOffset, drawCmd.ElemCount, indexOffset));
-                        meshBuffer.SetIndexBufferView(m_indexBufferView);
-                        meshBuffer.AddStreamBufferView(m_vertexBufferView[0]);
-                        meshBuffer.AddStreamBufferView(m_vertexBufferView[1]);
+                        RHI::GeometryView geometryView;
+                        geometryView.SetDrawArguments(RHI::DrawIndexed(1, index, vertexOffset, drawCmd.ElemCount, indexOffset));
+                        geometryView.SetIndexBufferView(m_indexBufferView);
+                        geometryView.AddStreamBufferView(m_vertexBufferView[0]);
+                        geometryView.AddStreamBufferView(m_vertexBufferView[1]);
 
                         m_drawInfos.Get().push_back(
                             {
-                                meshBuffer,
+                                geometryView,
                                 RHI::Scissor(
                                     static_cast<int32_t>(drawCmd.ClipRect.x),
                                     static_cast<int32_t>(drawCmd.ClipRect.y),

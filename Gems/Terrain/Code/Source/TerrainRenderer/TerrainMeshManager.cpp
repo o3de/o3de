@@ -322,6 +322,7 @@ namespace Terrain
             AZ::RHI::DrawPacketBuilder::DrawRequest drawRequest;
             drawRequest.m_listTag = drawData.m_drawListTag;
             drawRequest.m_pipelineState = drawData.m_pipelineState;
+            drawRequest.m_streamIndices = sector.m_geometryView.GetFullStreamBufferIndices();
             drawRequest.m_stencilRef = AZ::Render::StencilRefs::UseDiffuseGIPass | AZ::Render::StencilRefs::UseIBLSpecularPass;
 
             if (drawData.m_materialPipelineName != AZ::RPI::MaterialPipelineNone)

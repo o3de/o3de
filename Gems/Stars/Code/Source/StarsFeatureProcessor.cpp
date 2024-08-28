@@ -284,7 +284,7 @@ namespace AZ::Render
 
     RHI::ConstPtr<RHI::DrawPacket> StarsFeatureProcessor::BuildDrawPacket()
     {
-        m_geometryView.SetDrawArguments(RHI::DrawLinear{ 0, 0, m_numStarsVertices, 0 });
+        m_geometryView.SetDrawArguments(RHI::DrawLinear{ 1, 0, m_numStarsVertices, 0 });
 
         RHI::DrawPacketBuilder drawPacketBuilder;
         drawPacketBuilder.Begin(nullptr);
@@ -294,6 +294,7 @@ namespace AZ::Render
         RHI::DrawPacketBuilder::DrawRequest drawRequest;
         drawRequest.m_listTag = m_drawListTag;
         drawRequest.m_pipelineState = m_meshPipelineState->GetRHIPipelineState();
+        drawRequest.m_streamIndices = m_geometryView.GetFullStreamBufferIndices();
         drawPacketBuilder.AddDrawItem(drawRequest);
         return drawPacketBuilder.End();
     }

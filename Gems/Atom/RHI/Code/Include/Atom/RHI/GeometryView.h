@@ -30,7 +30,7 @@ namespace AZ::RHI
 
     public:
 
-        //! This container holds a list of indices into a MeshBuffer's stream buffer views
+        //! This container holds a list of indices into a GeometryView's stream buffer views
         //! This allows DrawItems to only the stream buffers it needs (and in the order its shader needs them)
         //! Each index is four bits, such that each u8 in this class holds two indices for better memory efficiency
         //! To iterate through stream buffer views with these indices, use the StreamIterator class below

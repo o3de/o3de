@@ -271,7 +271,7 @@ namespace AZ
 
             if (drawItem.m_geometryView == nullptr)
             {
-                AZ_Assert(false, "DrawItem being submitted without mesh buffers, i.e. without draw arguments, index buffer or stream buffers!");
+                AZ_Assert(false, "DrawItem being submitted without GeometryView, i.e. without draw arguments, index buffer or stream buffers!");
                 return;
             }
 
@@ -850,7 +850,7 @@ namespace AZ
 
             if (interval != InvalidInterval)
             {
-                uint32_t numBuffers = interval.m_max - interval.m_min;
+                uint32_t numBuffers = interval.m_max - interval.m_min + 1;
                 AZStd::fixed_vector<VkBuffer, RHI::Limits::Pipeline::StreamCountMax> nativeBuffers;
                 AZStd::fixed_vector<VkDeviceSize, RHI::Limits::Pipeline::StreamCountMax> offsets;
 

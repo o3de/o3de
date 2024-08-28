@@ -29,8 +29,6 @@
 #include <Atom/RHI/IndirectArguments.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
-#include <Atom/RHI.Reflect/Bits.h>
-
 #include <RHI/DispatchRaysIndirectBuffer.h>
 
 // Conditionally disable timing at compile-time based on profile policy
@@ -568,7 +566,7 @@ namespace AZ
 
             if (drawItem.m_geometryView == nullptr)
             {
-                AZ_Assert(false, "DrawItem being submitted without mesh buffers, i.e. without draw arguments, index buffer or stream buffers!");
+                AZ_Assert(false, "DrawItem being submitted without GeometryView, i.e. without draw arguments, index buffer or stream buffers!");
                 return;
             }
 
