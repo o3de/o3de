@@ -790,7 +790,7 @@ endif()
         string(APPEND builtinpackages "${builtin_packages_inject_code}\n")
     endif()
 
-    set(permutation_builtin_file ${CMAKE_CURRENT_BINARY_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}${LY_HOST_ARCHITECTURE_NAME_EXTENSION}.cmake)
+    set(permutation_builtin_file ${CMAKE_CURRENT_BINARY_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}${LY_ARCHITECTURE_NAME_EXTENSION}.cmake)
     file(GENERATE OUTPUT ${permutation_builtin_file}
         CONTENT "${builtinpackages}"
     )
