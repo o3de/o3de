@@ -12,7 +12,12 @@
 #include <AzFramework/XcbInterface.h>
 #include <AzFramework/XcbNativeWindow.h>
 
+#include <png.h>
 #include <xcb/xcb.h>
+#include <xcb/xcb_image.h>
+#ifdef SPLASH_IMAGE_EXISTS
+#include <Splash.h>
+#endif
 
 namespace AzFramework
 {
@@ -55,6 +60,12 @@ namespace AzFramework
         m_xcbRootScreen = xcb_setup_roots_iterator(xcbSetup).data;
         xcb_window_t xcbParentWindow = m_xcbRootScreen->root;
 
+        m_xcbGraphicContext = xcb_generate_id(m_xcbConnection);
+        uint32_t gc_mask = XCB_GC_FOREGROUND | XCB_GC_GRAPHICS_EXPOSURES;
+        uint32_t gc_values[2] = { m_xcbRootScreen->black_pixel, 0 };
+
+        xcb_create_gc(m_xcbConnection, m_xcbGraphicContext, xcbParentWindow, gc_mask, gc_values);
+
         // Create an XCB window from the connection
         m_xcbWindow = xcb_generate_id(m_xcbConnection);
 
@@ -68,7 +79,8 @@ namespace AzFramework
         uint32_t eventMask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
 
         const uint32_t interestedEvents = XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_KEY_PRESS | XCB_EVENT_MASK_KEY_RELEASE |
-            XCB_EVENT_MASK_FOCUS_CHANGE | XCB_EVENT_MASK_PROPERTY_CHANGE;
+            XCB_EVENT_MASK_FOCUS_CHANGE | XCB_EVENT_MASK_PROPERTY_CHANGE | XCB_EVENT_MASK_EXPOSURE;
+
         uint32_t valueList[] = { m_xcbRootScreen->black_pixel, interestedEvents };
 
         xcb_void_cookie_t xcbCheckResult;
@@ -219,6 +231,132 @@ namespace AzFramework
         }
     }
 
+
+    // This function will draw the splash image if one is set
+    // otherwise it will return without doing anything
+    void XcbNativeWindow::DrawSplash()
+    {
+#if SPLASH_IMAGE_EXISTS
+
+        constexpr unsigned int bytesPerPixel = 4;
+        constexpr unsigned int bitDepthXCB = 24;
+
+        struct DataHandle
+        {
+            const png_byte* data;
+            const png_size_t size;
+        };
+
+        struct ReadDataHandle
+        {
+            const DataHandle data;
+            png_size_t offset;
+        };
+
+        auto ReadDataFromInputStream = [](
+            png_structp pngPtr,
+            png_byte* rawData,
+            png_size_t readLength)
+        {
+            ReadDataHandle* handle = static_cast<ReadDataHandle*>(png_get_io_ptr(pngPtr));
+            const png_byte* pngSrc = handle->data.data + handle->offset;
+
+            memcpy(rawData, pngSrc, readLength);
+            handle->offset += readLength;
+        };
+
+        png_structp pngPointer = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+        png_infop pngInfoPointer = png_create_info_struct(pngPointer);
+
+        ReadDataHandle handle = { { Splash_png, Splash_png_len }, 0 };
+
+        png_set_read_fn(pngPointer, &handle, ReadDataFromInputStream);
+        png_read_info(pngPointer, pngInfoPointer);
+
+        int width = png_get_image_width(pngPointer, pngInfoPointer);
+        int height = png_get_image_height(pngPointer, pngInfoPointer);
+
+        AZStd::unique_ptr<png_bytep[]> rowPointers = AZStd::make_unique<png_bytep[]>(height);
+
+        for (int y = 0; y < height; y++)
+        {
+            rowPointers[y] = (png_byte*)azmalloc(png_get_rowbytes(pngPointer, pngInfoPointer));
+        }
+        png_read_image(pngPointer, rowPointers.get());
+
+        unsigned int stride = width * bytesPerPixel;
+        uint8_t* data = (uint8_t*)malloc(height * stride); // for parity with free in xcb_image_destroy
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                png_bytep px = &(rowPointers[y][x * bytesPerPixel]);
+                int pixelIndex = (x + y * width) * bytesPerPixel; // 3 bytes per pixel (RGB), 1 byte padding
+                data[pixelIndex + 0] = px[2]; // R
+                data[pixelIndex + 1] = px[1]; // G
+                data[pixelIndex + 2] = px[0]; // B
+            }
+            azfree(rowPointers[y]);
+        }
+
+        xcb_void_cookie_t cookie;
+        xcb_pixmap_t pixmap = xcb_generate_id(m_xcbConnection);
+        cookie = xcb_create_pixmap_checked(m_xcbConnection, m_xcbRootScreen->root_depth, pixmap, m_xcbWindow, width, height);
+        if (xcb_generic_error_t* error = xcb_request_check(m_xcbConnection, cookie))
+        {
+            AZ_Printf("XCB window init", "Error in xcb_create_pixmap: %d\n", error->error_code);
+            free(error); // normal free for malloc/free parity as xcb uses malloc
+            free(data);
+            return;
+        }
+        xcb_image_t* image =
+            xcb_image_create_native(
+                m_xcbConnection,
+                width,
+                height,
+                XCB_IMAGE_FORMAT_Z_PIXMAP,
+                bitDepthXCB,
+                data,
+                width * height * bytesPerPixel,
+                data);
+        xcb_image_put(m_xcbConnection, pixmap, m_xcbGraphicContext, image, 0, 0, 0);
+        xcb_image_destroy(image); // also frees data
+        xcb_flush(m_xcbConnection);
+
+        xcb_generic_event_t* event;
+        bool drawn = false;
+        while (!drawn)
+        {
+            event = xcb_wait_for_event(m_xcbConnection);
+            switch (event->response_type & ~0x80)
+            {
+            case XCB_EXPOSE: {
+                xcb_expose_event_t* exposeEvent = (xcb_expose_event_t*)event;
+                xcb_copy_area(
+                    m_xcbConnection,
+                    pixmap,
+                    m_xcbWindow,
+                    m_xcbGraphicContext,
+                    exposeEvent->x,
+                    exposeEvent->y,
+                    (m_width - width) / 2,
+                    (m_height - height) / 2,
+                    exposeEvent->width,
+                    exposeEvent->height);
+                xcb_flush(m_xcbConnection);
+                drawn = true;
+            }
+            default:
+                break;
+            }
+            free(event);
+        }
+
+        xcb_free_pixmap(m_xcbConnection, pixmap);
+#endif
+    }
+
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void XcbNativeWindow::Activate()
     {
@@ -226,10 +364,10 @@ namespace AzFramework
 
         if (!m_activated) // nothing to do if window was already activated
         {
-            m_activated = true;
-
             xcb_map_window(m_xcbConnection, m_xcbWindow);
             xcb_flush(m_xcbConnection);
+            DrawSplash();
+            m_activated = true;
         }
     }
 
