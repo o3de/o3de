@@ -219,7 +219,7 @@ protected:
 
     void SetHorizontalExtent(int min, int max);
 
-    virtual void SendNotifyEvent(unsigned int nEvent) = 0;
+    virtual void SendNotifyEvent(const uint32_t nEvent) = 0;
 
     virtual void SelectRectangle(const QRect& rc, bool bSelect);
     //////////////////////////////////////////////////////////////////////////
@@ -384,7 +384,7 @@ protected:
 
     void DrawTangentHandle(QPainter* pDC, int nSpline, int nKey, int nDimension);
 
-    void SendNotifyEvent(unsigned int nEvent) override;
+    void SendNotifyEvent(const uint32_t nEvent) override;
 
     void captureMouseImpl() override { grabMouse(); }
     void releaseMouseImpl() override { releaseMouse(); }

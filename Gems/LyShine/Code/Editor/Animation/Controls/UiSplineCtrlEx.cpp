@@ -2609,7 +2609,7 @@ void AbstractSplineWidget::SelectAll()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void SplineWidget::SendNotifyEvent(unsigned int nEvent)
+void SplineWidget::SendNotifyEvent(const uint32_t nEvent)
 {
     if (nEvent == SPLN_BEFORE_CHANGE)
     {
