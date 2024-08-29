@@ -24,6 +24,7 @@
             ],
             "PassRequests": [
                 {
+                    // Subpass group that contains the Transparent and Fog passes
                     "Name": "Subpass2",
                     "TemplateName": "MobileSubpass2ParentPassTemplate",
                     "Connections": [
@@ -44,6 +45,8 @@
                     ]
                 },
                 {
+                    // This can't be merge because it's sampling the Silhouette gather pass
+                    // from multiple locations.
                     "Name": "SilhouettePass",
                     "TemplateName": "SilhouettePassTemplate",
                     "Enabled": false,
@@ -86,6 +89,8 @@
                     ]
                 },               
                 {
+                    // Subpass group that contains the DisplayMapper, UI, LYShine, AuxGeom and CopyToSwapChain passes.
+                    // This could merge with the previous subpass group if no other passes in between are enabled.
                     "Name": "Subpass3",
                     "TemplateName": "MobileSubpass3ParentPassTemplate",
                     "Connections": [

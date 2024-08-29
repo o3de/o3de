@@ -33,7 +33,7 @@ namespace AZ
         RenderPass::RenderPass(const PassDescriptor& descriptor)
             : Pass(descriptor)
         {
-            m_flags.m_canBeSubpass = true;
+            m_flags.m_canBecomeASubpass = true;
             // Read view tag from pass data
             const RenderPassData* passData = PassUtils::GetPassData<RenderPassData>(descriptor);
             if (passData)
@@ -43,7 +43,7 @@ namespace AZ
                     SetPipelineViewTag(passData->m_pipelineViewTag);
                 }
                 m_flags.m_bindViewSrg = passData->m_bindViewSrg;
-                m_flags.m_canBeSubpass = passData->m_canBeSubpass;
+                m_flags.m_canBecomeASubpass = passData->m_canBecomeASubpass;
             }
         }
 
@@ -53,7 +53,7 @@ namespace AZ
 
         bool RenderPass::CanBecomeSubpass() const
         {
-            return m_flags.m_canBeSubpass;
+            return m_flags.m_canBecomeASubpass;
         }
 
         RHI::RenderAttachmentConfiguration RenderPass::GetRenderAttachmentConfiguration()

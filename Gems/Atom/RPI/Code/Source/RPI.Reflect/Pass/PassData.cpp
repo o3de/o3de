@@ -98,7 +98,7 @@ namespace AZ
                     ->Field("PipelineViewTag", &PassData::m_pipelineViewTag)
                     ->Field("PipelineGlobalConnections", &PassData::m_pipelineGlobalConnections)
                     ->Field("MergeChildrenAsSubpasses", &PassData::m_mergeChildrenAsSubpasses)
-                    ->Field("CanBeSubpass", &PassData::m_canBeSubpass)
+                    ->Field("CanBeSubpass", &PassData::m_canBecomeASubpass)
                     ;
             }
         }

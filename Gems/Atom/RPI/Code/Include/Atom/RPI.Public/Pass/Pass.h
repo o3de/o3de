@@ -401,7 +401,8 @@ namespace AZ
             void OnInitializationFinished();
             virtual void OnInitializationFinishedInternal() { };
 
-            // Called after the pass has finished building.
+            // Called after the pass has finished building. Allows passes to do operations that involve all attachments being added
+            // or all children being built (e.g. creating a RenderAttachmentConfiguration that includes the children).
             void OnBuildFinished();
             virtual void OnBuildFinishedInternal() { };
 
@@ -525,7 +526,7 @@ namespace AZ
                         uint64_t m_mergeChildrenAsSubpasses : 1;
 
                         // If the pass can be included as a subpass.
-                        uint64_t m_canBeSubpass : 1;
+                        uint64_t m_canBecomeASubpass : 1;
 
                         // If the pass is using a subpass input attachment.
                         uint64_t m_hasSubpassInput : 1;

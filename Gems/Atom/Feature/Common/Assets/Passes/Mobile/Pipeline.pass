@@ -59,6 +59,7 @@
                         }
                     ]
                 },
+                // First subpass group that contains the Forward, Skybox, Silhoutte gather and Resolve passes
                 {
                     "Name": "Subpass1",
                     "TemplateName": "MobileSubpass1ParentPassTemplate",
@@ -86,6 +87,8 @@
                         }
                     ]
                 },
+                // This parent contains two subpass groups plus all the other passes. The subpass groups could be merged into one
+                // if no extra passes between them are enabled.
                 {
                     "Name": "Subpasses",
                     "TemplateName": "SubpassesParentTemplate",

@@ -64,7 +64,7 @@ namespace AZ
             bool m_mergeChildrenAsSubpasses = false;
 
             //! If the pass can be used as a subpass.
-            bool m_canBeSubpass = true;
+            bool m_canBecomeASubpass = true;
         };
     } // namespace RPI
 } // namespace AZ
