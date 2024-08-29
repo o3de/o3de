@@ -1129,8 +1129,7 @@ namespace AZ
             m_features.m_indirectDrawCountBufferSupported = physicalDevice.IsFeatureSupported(DeviceFeature::DrawIndirectCount);
             m_features.m_indirectDispatchCountBufferSupported = false;
             m_features.m_indirectDrawStartInstanceLocationSupported = m_enabledDeviceFeatures.drawIndirectFirstInstance == VK_TRUE;
-            m_features.m_renderTargetSubpassInputSupport = RHI::SubpassInputSupportType::Native;
-            m_features.m_depthStencilSubpassInputSupport = RHI::SubpassInputSupportType::Native;
+            m_features.m_subpassInputSupport = RHI::SubpassInputSupportType::Color | RHI::SubpassInputSupportType::DepthStencil;
 
             const VkPhysicalDeviceProperties& deviceProperties = physicalDevice.GetPhysicalDeviceProperties();
             // Our sparse image implementation requires the device support sparse binding and particle residency for 2d and 3d images
