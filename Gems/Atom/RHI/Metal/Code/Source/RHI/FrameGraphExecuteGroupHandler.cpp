@@ -9,7 +9,7 @@
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
 #include <Atom/RHI/SwapChain.h>
-#include <RHI/FrameGraphExecuteGroupBase.h>
+#include <RHI/FrameGraphExecuteGroup.h>
 #include <RHI/FrameGraphExecuteGroupHandler.h>
 #include <RHI/Device.h>
 #include <RHI/SwapChain.h>
@@ -23,14 +23,14 @@ namespace AZ
         {
             m_device = &device;
             m_executeGroups = executeGroups;
-            m_hardwareQueueClass = static_cast<FrameGraphExecuteGroupBase*>(executeGroups.back())->GetHardwareQueueClass();
+            m_hardwareQueueClass = static_cast<FrameGraphExecuteGroup*>(executeGroups.back())->GetHardwareQueueClass();
             
             m_commandBuffer.Init(device.GetCommandQueueContext().GetCommandQueue(m_hardwareQueueClass).GetPlatformQueue());
             m_commandBuffer.AcquireMTLCommandBuffer();
             m_workRequest.m_commandBuffer = &m_commandBuffer;
             for(auto* rhiGroup : m_executeGroups)
             {
-                FrameGraphExecuteGroupBase* group = static_cast<FrameGraphExecuteGroupBase*>(rhiGroup);
+                FrameGraphExecuteGroup* group = static_cast<FrameGraphExecuteGroup*>(rhiGroup);
                 group->SetCommandBuffer(&m_commandBuffer);
                 group->SetHandler(this);
             }
@@ -97,7 +97,7 @@ namespace AZ
             {
                 // Metal requires you to request for swapchain drawable as late as possible in the frame. Hence we call for the drawable
                 // here and attach it directly to the colorAttachment.
-                uint32_t deviceIndex = static_cast<FrameGraphExecuteGroupBase*>(m_executeGroups.front())->GetScopes().front()->GetDeviceIndex();
+                uint32_t deviceIndex = static_cast<FrameGraphExecuteGroup*>(m_executeGroups.front())->GetScopes().front()->GetDeviceIndex();
                 const RHI::DeviceSwapChain* swapChain = context.m_swapChainAttachment->GetSwapChain()->GetDeviceSwapChain(deviceIndex).get();
                 SwapChain* metalSwapChain = static_cast<SwapChain*>(const_cast<RHI::DeviceSwapChain*>(swapChain));
                 bool needsImageView = false;
@@ -117,7 +117,7 @@ namespace AZ
              }
         }
     
-        void FrameGraphExecuteGroupHandler::BeginGroup(const FrameGraphExecuteGroupBase* group)
+        void FrameGraphExecuteGroupHandler::BeginGroup(const FrameGraphExecuteGroup* group)
         {
             if(!m_hasBegun.exchange(true))
             {
@@ -126,7 +126,7 @@ namespace AZ
             BeginGroupInternal(group);
         }
     
-        void FrameGraphExecuteGroupHandler::EndGroup(const FrameGraphExecuteGroupBase* group)
+        void FrameGraphExecuteGroupHandler::EndGroup(const FrameGraphExecuteGroup* group)
         {
             EndGroupInternal(group);
         }

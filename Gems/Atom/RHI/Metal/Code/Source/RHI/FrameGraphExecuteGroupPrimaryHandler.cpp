@@ -34,17 +34,18 @@ namespace AZ::Metal
 
         // Set the renderpass contexts.
         group->SetRenderPasscontexts(m_renderPassContexts);
+        m_commandBuffer.GetMtlCommandBuffer().label = [NSString stringWithCString:"MergedGroupCB" encoding:NSUTF8StringEncoding];
         return RHI::ResultCode::Success;
     }
 
     void FrameGraphExecuteGroupPrimaryHandler::EndInternal()
     {
         AZ_Assert(m_executeGroups.size() == 1, "Too many execute groups when initializing context");
-        FrameGraphExecuteGroupBase* group = static_cast<FrameGraphExecuteGroupBase*>(m_executeGroups.back());
+        FrameGraphExecuteGroup* group = static_cast<FrameGraphExecuteGroup*>(m_executeGroups.back());
         AddWorkRequest(group->AcquireWorkRequest());
     }
 
-    void FrameGraphExecuteGroupPrimaryHandler::BeginGroupInternal([[maybe_unused]] const FrameGraphExecuteGroupBase* group)
+    void FrameGraphExecuteGroupPrimaryHandler::BeginGroupInternal([[maybe_unused]] const FrameGraphExecuteGroup* group)
     {
         // There's only one group so this should be call once.
         for (auto& context : m_renderPassContexts)

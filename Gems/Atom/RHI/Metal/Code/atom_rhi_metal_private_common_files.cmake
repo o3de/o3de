@@ -45,8 +45,8 @@ set(FILES
     Source/RHI/Fence.h
     Source/RHI/FrameGraphCompiler.cpp
     Source/RHI/FrameGraphCompiler.h
-    Source/RHI/FrameGraphExecuteGroupBase.cpp
-    Source/RHI/FrameGraphExecuteGroupBase.h
+    Source/RHI/FrameGraphExecuteGroup.cpp
+    Source/RHI/FrameGraphExecuteGroup.h
     Source/RHI/FrameGraphExecuteGroupHandler.cpp
     Source/RHI/FrameGraphExecuteGroupHandler.h
     Source/RHI/FrameGraphExecuteGroupPrimary.cpp

@@ -19,7 +19,6 @@ namespace AZ::Metal
         // We first need to build the renderpass that will be used by all groups.
         RenderPassBuilder builder;
         builder.Init();
-        AZStd::string name = executeGroups.size() > 1 ? "[Merged]" : "";
         for (auto executeGroupBase : executeGroups)
         {
             FrameGraphExecuteGroupSecondary* executeGroup = static_cast<FrameGraphExecuteGroupSecondary*>(executeGroupBase);
@@ -27,7 +26,6 @@ namespace AZ::Metal
             AZ_Assert(executeGroup->GetScopes().size() == 1, "Incorrect number of scopes (%d) in group on FrameGraphExecuteGroupHandler", executeGroup->GetScopes().size());
             auto* scope = static_cast<Scope*>(executeGroup->GetScopes()[0]);
             builder.AddScopeAttachments(scope);
-            name = AZStd::string::format("%s;%s", name.c_str(), scope->GetName().GetCStr());
         }
 
         builder.End(m_renderPassContext);
@@ -40,7 +38,8 @@ namespace AZ::Metal
             executeGroup->SetRenderContext(m_renderPassContext);
             executeGroup->EncondeAllWaitEvents();
         }
-
+        const char* label = executeGroups.size() > 1 ? "SubpassGroupCB" : "GroupCB";
+        m_commandBuffer.GetMtlCommandBuffer().label = [NSString stringWithCString:label encoding:NSUTF8StringEncoding];
         return RHI::ResultCode::Success;
     }
 
@@ -56,7 +55,7 @@ namespace AZ::Metal
         m_workRequest.m_commandBuffer = &m_commandBuffer;
     }
 
-    void FrameGraphExecuteGroupSecondaryHandler::BeginGroupInternal([[maybe_unused]] const FrameGraphExecuteGroupBase* group)
+    void FrameGraphExecuteGroupSecondaryHandler::BeginGroupInternal([[maybe_unused]] const FrameGraphExecuteGroup* group)
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_m_secondaryEncodersMutex);
         if (!m_secondaryEncodersCreated)

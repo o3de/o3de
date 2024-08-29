@@ -9,7 +9,7 @@
 #include <Atom/RHI/FrameGraph.h>
 #include <RHI/Device.h>
 #include <RHI/FrameGraphExecuter.h>
-#include <RHI/FrameGraphExecuteGroupBase.h>
+#include <RHI/FrameGraphExecuteGroup.h>
 #include <RHI/FrameGraphExecuteGroupPrimary.h>
 #include <RHI/FrameGraphExecuteGroupPrimaryHandler.h>
 #include <RHI/FrameGraphExecuteGroupSecondary.h>
@@ -192,7 +192,7 @@ namespace AZ
             uint32_t initGroupIndex = 0;
             for (uint32_t i = 0; i < groups.size(); ++i)
             {
-                const FrameGraphExecuteGroupBase* group = static_cast<const FrameGraphExecuteGroupBase*>(groups[i].get());
+                const FrameGraphExecuteGroup* group = static_cast<const FrameGraphExecuteGroup*>(groups[i].get());
                 if (groupId != group->GetGroupId())
                 {
                     groupRefs.clear();
@@ -217,7 +217,7 @@ namespace AZ
 
         void FrameGraphExecuter::ExecuteGroupInternal(RHI::FrameGraphExecuteGroup& groupBase)
         {
-            FrameGraphExecuteGroupBase& group = static_cast<FrameGraphExecuteGroupBase&>(groupBase);
+            FrameGraphExecuteGroup& group = static_cast<FrameGraphExecuteGroup&>(groupBase);
             auto findIter = m_groupHandlers.find(group.GetGroupId());
             AZ_Assert(findIter != m_groupHandlers.end(), "Could not find group handler for groupId %d", group.GetGroupId().GetIndex());
             FrameGraphExecuteGroupHandler* handler = findIter->second.get();
@@ -250,7 +250,7 @@ namespace AZ
                 static_cast<FrameGraphExecuteGroupHandler*>(aznew FrameGraphExecuteGroupPrimaryHandler) :
                 static_cast<FrameGraphExecuteGroupHandler*>(aznew FrameGraphExecuteGroupSecondaryHandler));
 
-            handler->Init(static_cast<FrameGraphExecuteGroupBase*>(groups.front())->GetDevice(), groups);
+            handler->Init(static_cast<FrameGraphExecuteGroup*>(groups.front())->GetDevice(), groups);
             m_groupHandlers.insert({ groupId, AZStd::move(handler) });
         }
     }

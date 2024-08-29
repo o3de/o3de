@@ -30,7 +30,7 @@ namespace AZ::Metal
         //////////////////////////////////////////////////////////////////////////
         // FrameGraphExecuteGroupHandler
         RHI::ResultCode InitInternal(Device& device, const AZStd::vector<RHI::FrameGraphExecuteGroup*>& executeGroups) override;
-        void BeginGroupInternal(const FrameGraphExecuteGroupBase* group) override;
+        void BeginGroupInternal(const FrameGraphExecuteGroup* group) override;
         void BeginInternal() override {}
         void EndInternal() override;
         //////////////////////////////////////////////////////////////////////////

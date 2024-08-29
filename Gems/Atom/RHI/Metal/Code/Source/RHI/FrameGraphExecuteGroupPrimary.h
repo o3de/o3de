@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <RHI/FrameGraphExecuteGroupBase.h>
+#include <RHI/FrameGraphExecuteGroup.h>
 #include <RHI/RenderPassBuilder.h>
 
 namespace AZ::Metal
@@ -18,9 +18,9 @@ namespace AZ::Metal
     //! The renderpasses (if needed) are created by the FrameGraphExecuteGroupPrimaryHandler but they
     //! are managed (start and end) by the class itself.
     class FrameGraphExecuteGroupPrimary final
-        : public FrameGraphExecuteGroupBase
+        : public FrameGraphExecuteGroup
     {
-        using Base = FrameGraphExecuteGroupBase;
+        using Base = FrameGraphExecuteGroup;
     public:
         AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroupPrimary, AZ::PoolAllocator);
         AZ_RTTI(FrameGraphExecuteGroupPrimary, "{1D5D2D6F-F4E6-4EF0-8E55-3E4E201B6358}", Base);
@@ -30,8 +30,6 @@ namespace AZ::Metal
         void Init(Device& device, AZStd::vector<Scope*>&& scopes);
         //! Set the list of renderpasses that the group will use.
         void SetRenderPasscontexts(AZStd::span<const RenderPassContext> renderPassContexts);
-        //! Set the name of the commandlist the group will use
-        void SetName(const Name& name);
 
         //////////////////////////////////////////////////////////////////////////
         // FrameGraphExecuteGroup
@@ -57,6 +55,5 @@ namespace AZ::Metal
         AZStd::vector<Scope*> m_scopes;
         // List of renderpasses used by the scopes in the group.
         AZStd::span<const RenderPassContext> m_renderPassContexts;
-        NSString* m_cbLabel = nullptr;
     };
 }

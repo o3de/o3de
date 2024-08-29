@@ -26,7 +26,6 @@ namespace AZ::Metal
 
         Base::InitBase(device, groupId, scopes.back()->GetHardwareQueueClass());
         
-        m_cbLabel = [NSString stringWithCString:"FrameGraph Merged Group" encoding:NSUTF8StringEncoding];
         m_scopes = AZStd::move(scopes);
         m_workRequest.m_commandLists.resize(1);
         
@@ -66,7 +65,6 @@ namespace AZ::Metal
     {
         Base::BeginInternal();
         id <MTLCommandBuffer> mtlCommandBuffer = m_commandBuffer->GetMtlCommandBuffer();
-        mtlCommandBuffer.label = m_cbLabel;
         m_workRequest.m_commandBuffer = m_commandBuffer;
         
         //Encode any wait events at the start of the group. This should grab the wait fence across all queues from the top
@@ -128,9 +126,5 @@ namespace AZ::Metal
     void FrameGraphExecuteGroupPrimary::SetRenderPasscontexts(AZStd::span<const RenderPassContext> renderPassContexts)
     {
         m_renderPassContexts = renderPassContexts;
-    }
-
-    void FrameGraphExecuteGroupPrimary::SetName(const Name& name)
-    {
     }
 }

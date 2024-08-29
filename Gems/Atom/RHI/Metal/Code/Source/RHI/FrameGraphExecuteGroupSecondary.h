@@ -9,7 +9,7 @@
 
 #include <RHI/CommandList.h>
 #include <RHI/CommandQueue.h>
-#include <RHI/FrameGraphExecuteGroupBase.h>
+#include <RHI/FrameGraphExecuteGroup.h>
 #include <RHI/RenderPassBuilder.h>
 
 namespace AZ::Metal
@@ -22,9 +22,9 @@ namespace AZ::Metal
     //! Execute group for one scope that uses multiple encoders to
     //! record it's work. Renderpass (if needed) are handled by the FrameGraphExecuteGroupSecondaryHandler.
     class FrameGraphExecuteGroupSecondary final
-        : public FrameGraphExecuteGroupBase
+        : public FrameGraphExecuteGroup
     {
-        using Base = FrameGraphExecuteGroupBase;
+        using Base = FrameGraphExecuteGroup;
 
     public:
         AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroupSecondary, AZ::SystemAllocator);
