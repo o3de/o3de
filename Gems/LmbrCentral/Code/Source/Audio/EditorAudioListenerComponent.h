@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
-
+#include <AzCore/Math/Vector3.h>
 
 namespace LmbrCentral
 {
@@ -31,17 +31,17 @@ namespace LmbrCentral
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("AudioListenerService", 0x258675de));
+            provided.push_back(AZ_CRC_CE("AudioListenerService"));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+            required.push_back(AZ_CRC_CE("TransformService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("AudioListenerService", 0x258675de));
+            incompatible.push_back(AZ_CRC_CE("AudioListenerService"));
         }
 
         static void Reflect(AZ::ReflectContext* context);

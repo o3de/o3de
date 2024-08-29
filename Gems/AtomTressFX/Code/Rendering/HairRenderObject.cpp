@@ -124,13 +124,7 @@ namespace AZ
                         streamDesc.m_elementFormat, RHI::BufferBindFlags::ShaderRead    // No need for ReadWrite in the raster fill
                     );
 
-                    m_readBuffersViews[index] = RHI::Factory::Get().CreateBufferView();
-                    RHI::ResultCode resultCode = m_readBuffersViews[index]->Init(*rhiBuffer, viewDescriptor);
-                    if (resultCode != RHI::ResultCode::Success)
-                    {
-                        AZ_Error("Hair Gem", false, "Read BufferView could not be retrieved for [%s]", streamDesc.m_bufferName.GetCStr());
-                        return false;
-                    }
+                    m_readBuffersViews[index] = rhiBuffer->BuildBufferView(viewDescriptor);
 
                     // Buffer binding into the raster srg
                     RHI::ShaderInputBufferIndex indexHandle = m_simSrgForRaster->FindShaderInputBufferIndex(streamDesc.m_paramNameInSrg);
@@ -259,13 +253,7 @@ namespace AZ
                         streamDesc.m_elementFormat, RHI::BufferBindFlags::ShaderReadWrite
                     );
 
-                    m_dynamicBuffersViews[stream] = RHI::Factory::Get().CreateBufferView();
-                    RHI::ResultCode resultCode = m_dynamicBuffersViews[stream]->Init(*rhiBuffer, viewDescriptor);
-                    if (resultCode != RHI::ResultCode::Success)
-                    {
-                        AZ_Error("Hair Gem", false, "Dynamic BufferView could not be retrieved for [%s]", streamDesc.m_bufferName.GetCStr());
-                        return false;
-                    }
+                    m_dynamicBuffersViews[stream] = rhiBuffer->BuildBufferView(viewDescriptor);
                 }
 
                 m_initialized = true;
@@ -578,7 +566,7 @@ namespace AZ
 
                 RHI::BufferInitRequest request;
                 uint32_t indexBufferSize = m_TotalIndices * sizeof(uint32_t);
-                m_indexBuffer = RHI::Factory::Get().CreateBuffer();
+                m_indexBuffer = aznew RHI::Buffer;
                 request.m_buffer = m_indexBuffer.get();
                 request.m_descriptor = RHI::BufferDescriptor{
                     RHI::BufferBindFlags::ShaderRead | RHI::BufferBindFlags::InputAssembly,
@@ -1120,7 +1108,7 @@ namespace AZ
 
             bool HairRenderObject::BuildDrawPacket(RPI::Shader* geometryShader, RHI::DrawPacketBuilder::DrawRequest& drawRequest)
             {
-                RHI::DrawPacketBuilder drawPacketBuilder;
+                RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
                 RHI::DrawIndexed drawIndexed;
 
                 uint32_t numPrimsToRender = m_TotalIndices;
@@ -1158,7 +1146,7 @@ namespace AZ
                 drawPacketBuilder.AddShaderResourceGroup(simSrg->GetRHIShaderResourceGroup());
                 drawPacketBuilder.AddDrawItem(drawRequest);
 
-                const RHI::DrawPacket* drawPacket = drawPacketBuilder.End();
+                auto drawPacket = drawPacketBuilder.End();
                 if (!drawPacket)
                 {
                     AZ_Error("Hair Gem", false, "Failed to build the hair DrawPacket.");
@@ -1169,7 +1157,6 @@ namespace AZ
                 auto iter = m_geometryDrawPackets.find(geometryShader);
                 if (iter != m_geometryDrawPackets.end())
                 {
-                    delete iter->second;
                     iter->second = drawPacket;
                 }
                 else
@@ -1187,7 +1174,7 @@ namespace AZ
                 {
                     return nullptr;
                 }
-                return iter->second;
+                return iter->second.get();
             }
 
             const RHI::DispatchItem* HairRenderObject::GetDispatchItem(RPI::Shader* computeShader)

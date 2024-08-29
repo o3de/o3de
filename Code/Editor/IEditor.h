@@ -31,13 +31,11 @@ struct QtViewPane;
 class QMainWindow;
 struct QMetaObject;
 
-class CBaseObject;
 class CCryEditDoc;
 class CAnimationContext;
 class CTrackViewSequenceManager;
 class CGameEngine;
 class CToolBoxManager;
-class CClassFactory;
 class CMusicManager;
 struct IEditorParticleManager;
 class CEAXPresetManager;
@@ -45,8 +43,6 @@ class CErrorReport;
 class ICommandManager;
 class CEditorCommandManager;
 class CConsoleSynchronization;
-struct ISourceControl;
-struct IEditorClassFactory;
 class CDialog;
 #if defined(AZ_PLATFORM_WINDOWS)
 class C3DConnexionDriver;
@@ -56,7 +52,6 @@ class CDisplaySettings;
 class CLevelIndependentFileMan;
 class CSelectionTreeManager;
 struct SEditorSettings;
-class CGameExporter;
 class IAWSResourceManager;
 
 struct ISystem;
@@ -65,7 +60,6 @@ struct AABB;
 struct IErrorReport; // Vladimir@conffx
 struct IFileUtil;  // Vladimir@conffx
 struct IEditorLog;  // Vladimir@conffx
-struct IImageUtil;  // Vladimir@conffx
 struct IEditorParticleUtils;  // Leroy@conffx
 struct ILogFile; // Vladimir@conffx
 
@@ -319,13 +313,6 @@ enum EModifiedModule
     eModifiedAll = -1
 };
 
-//! Class provided by editor for various registration functions.
-struct CRegistrationContext
-{
-    CEditorCommandManager* pCommandManager;
-    CClassFactory* pClassFactory;
-};
-
 //! Interface provided by editor to reach status bar functionality.
 struct IMainStatusBar
 {
@@ -374,8 +361,6 @@ struct IEditor
     virtual void DeleteThis() = 0;
     //! Access to Editor ISystem interface.
     virtual ISystem* GetSystem() = 0;
-    //! Access to class factory.
-    virtual IEditorClassFactory* GetClassFactory() = 0;
     //! Access to commands manager.
     virtual CEditorCommandManager* GetCommandManager() = 0;
     virtual ICommandManager* GetICommandManager() = 0;
@@ -457,11 +442,6 @@ struct IEditor
     virtual CGameEngine* GetGameEngine() = 0;
     virtual CDisplaySettings* GetDisplaySettings() = 0;
     //! Create new object
-    virtual CBaseObject* NewObject(const char* typeName, const char* fileName = "", const char* name = "", float x = 0.0f, float y = 0.0f, float z = 0.0f, bool modifyDoc = true) = 0;
-    //! Delete object
-    virtual void DeleteObject(CBaseObject* obj) = 0;
-    //! Get access to object manager.
-    virtual struct IObjectManager* GetObjectManager() = 0;
     virtual CSettingsManager* GetSettingsManager() = 0;
     //! Get Music Manager.
     virtual CMusicManager* GetMusicManager() = 0;
@@ -476,15 +456,6 @@ struct IEditor
     virtual void SetActiveView(CViewport* viewport) = 0;
     virtual struct IEditorFileMonitor* GetFileMonitor() = 0;
 
-    //! QMimeData is used by the Qt clipboard.
-    //! IMPORTANT: Any QMimeData allocated for the clipboard will be deleted
-    //! when the editor exists. If a QMimeData is allocated by a different
-    //! memory allocator (for example, in a different DLL) than the one used
-    //! by the main editor, a crash will occur on exit, if data is left in
-    //! the clipboard. The solution is to enfore all allocations of QMimeData
-    //! using CreateQMimeData().
-    virtual QMimeData* CreateQMimeData() const = 0;
-    virtual void DestroyQMimeData(QMimeData* data) const = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Access for CLevelIndependentFileMan
@@ -530,9 +501,7 @@ struct IEditor
     virtual const QtViewPane* OpenView(QString sViewClassName, bool reuseOpen = true) = 0;
     virtual QWidget* FindView(QString viewClassName) = 0;
 
-    virtual bool CloseView(const char* sViewClassName) = 0;
     virtual bool SetViewFocus(const char* sViewClassName) = 0;
-    virtual void CloseView(const GUID& classId) = 0; // close ALL panels related to classId, used when unloading plugins.
 
     //! Opens standard color selection dialog.
     //! Initialized with the color specified in color parameter.
@@ -608,12 +577,6 @@ struct IEditor
     virtual void RegisterDocListener(IDocListener* listener) = 0;
     //! Unregister document notifications listener.
     virtual void UnregisterDocListener(IDocListener* listener) = 0;
-    //! Retrieve interface to the source control.
-    virtual ISourceControl* GetSourceControl() = 0;
-    //! Retrieve true if source control is provided and enabled in settings
-    virtual bool IsSourceControlAvailable() = 0;
-    //! Only returns true if source control is both available AND currently connected and functioning
-    virtual bool IsSourceControlConnected() = 0;
 
     virtual void ReduceMemory() = 0;
 
@@ -621,12 +584,8 @@ struct IEditor
     virtual void ReloadTemplates() = 0;
     virtual void ShowStatusText(bool bEnable) = 0;
 
-    // Provides a way to extend the context menu of an object. The function gets called every time the menu is opened.
-    typedef AZStd::function<void(QMenu*, const CBaseObject*)> TContextMenuExtensionFunc;
-    virtual void RegisterObjectContextMenuExtension(TContextMenuExtensionFunc func) = 0;
 
     virtual SSystemGlobalEnvironment* GetEnv() = 0;
-    virtual IImageUtil* GetImageUtil() = 0;  // Vladimir@conffx
     virtual SEditorSettings* GetEditorSettings() = 0;
 
     virtual ILogFile* GetLogFile() = 0;  // Vladimir@conffx

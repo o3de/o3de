@@ -27,7 +27,7 @@ namespace GraphCanvas
     {
         if (classElement.GetVersion() <= 3)
         {
-            AZ::Crc32 positionId = AZ_CRC("Position", 0x462ce4f5);
+            AZ::Crc32 positionId = AZ_CRC_CE("Position");
 
             GeometrySaveData saveData;
 

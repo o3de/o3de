@@ -18,34 +18,34 @@ AZ_CVAR_EXTERNED(bool, r_enablePsoCaching);
 
 namespace AZ::RHI
 {
-    class Buffer;
-    class BufferPool;
-    class BufferView;
+    class DeviceBuffer;
+    class DeviceBufferPool;
+    class DeviceBufferView;
     class Device;
-    class DispatchRaysIndirectBuffer;
-    class Image;
-    class ImagePool;
-    class ImageView;
-    class IndirectBufferSignature;
-    class IndirectBufferWriter;
-    class Fence;
+    class DeviceDispatchRaysIndirectBuffer;
+    class DeviceImage;
+    class DeviceImagePool;
+    class DeviceImageView;
+    class DeviceIndirectBufferSignature;
+    class DeviceIndirectBufferWriter;
+    class DeviceFence;
     class FrameGraphCompiler;
     class FrameGraphExecuter;
-    class PipelineState;
-    class PipelineLibrary;
-    class Query;
-    class QueryPool;
+    class DevicePipelineState;
+    class DevicePipelineLibrary;
+    class DeviceQuery;
+    class DeviceQueryPool;
     class Scope;
-    class ShaderResourceGroup;
-    class ShaderResourceGroupPool;
-    class StreamingImagePool;
-    class SwapChain;
-    class TransientAttachmentPool;
-    class RayTracingBufferPools;
-    class RayTracingBlas;
-    class RayTracingTlas;
-    class RayTracingPipelineState;
-    class RayTracingShaderTable;
+    class DeviceShaderResourceGroup;
+    class DeviceShaderResourceGroupPool;
+    class DeviceStreamingImagePool;
+    class DeviceSwapChain;
+    class DeviceTransientAttachmentPool;
+    class DeviceRayTracingBufferPools;
+    class DeviceRayTracingBlas;
+    class DeviceRayTracingTlas;
+    class DeviceRayTracingPipelineState;
+    class DeviceRayTracingShaderTable;
 
     //! Priority of a Factory. The lower the number the higher the priority.
     //! Used when there's multiple factories available and the user hasn't define
@@ -139,60 +139,60 @@ namespace AZ::RHI
         //! in an uninitialized state; the operation simply allocates the memory for the appropriate
         //! platform type and returns the pointer.
 
-        virtual Ptr<Buffer> CreateBuffer() = 0;
+        virtual Ptr<DeviceBuffer> CreateBuffer() = 0;
 
-        virtual Ptr<BufferPool> CreateBufferPool() = 0;
+        virtual Ptr<DeviceBufferPool> CreateBufferPool() = 0;
 
-        virtual Ptr<BufferView> CreateBufferView() = 0;
+        virtual Ptr<DeviceBufferView> CreateBufferView() = 0;
 
         virtual Ptr<Device> CreateDevice() = 0;
 
-        virtual Ptr<Fence> CreateFence() = 0;
+        virtual Ptr<DeviceFence> CreateFence() = 0;
 
         virtual Ptr<FrameGraphCompiler> CreateFrameGraphCompiler() = 0;
 
         virtual Ptr<FrameGraphExecuter> CreateFrameGraphExecuter() = 0;
 
-        virtual Ptr<Image> CreateImage() = 0;
+        virtual Ptr<DeviceImage> CreateImage() = 0;
 
-        virtual Ptr<ImagePool> CreateImagePool() = 0;
+        virtual Ptr<DeviceImagePool> CreateImagePool() = 0;
 
-        virtual Ptr<ImageView> CreateImageView() = 0;
+        virtual Ptr<DeviceImageView> CreateImageView() = 0;
 
-        virtual Ptr<StreamingImagePool> CreateStreamingImagePool() = 0;
+        virtual Ptr<DeviceStreamingImagePool> CreateStreamingImagePool() = 0;
 
-        virtual Ptr<PipelineState> CreatePipelineState() = 0;
+        virtual Ptr<DevicePipelineState> CreatePipelineState() = 0;
 
-        virtual Ptr<PipelineLibrary> CreatePipelineLibrary() = 0;
+        virtual Ptr<DevicePipelineLibrary> CreatePipelineLibrary() = 0;
 
         virtual Ptr<Scope> CreateScope() = 0;
 
-        virtual Ptr<ShaderResourceGroup> CreateShaderResourceGroup() = 0;
+        virtual Ptr<DeviceShaderResourceGroup> CreateShaderResourceGroup() = 0;
 
-        virtual Ptr<ShaderResourceGroupPool> CreateShaderResourceGroupPool() = 0;
+        virtual Ptr<DeviceShaderResourceGroupPool> CreateShaderResourceGroupPool() = 0;
 
-        virtual Ptr<SwapChain> CreateSwapChain() = 0;
+        virtual Ptr<DeviceSwapChain> CreateSwapChain() = 0;
 
-        virtual Ptr<TransientAttachmentPool> CreateTransientAttachmentPool() = 0;
+        virtual Ptr<DeviceTransientAttachmentPool> CreateTransientAttachmentPool() = 0;
 
-        virtual Ptr<QueryPool> CreateQueryPool() = 0;
+        virtual Ptr<DeviceQueryPool> CreateQueryPool() = 0;
 
-        virtual Ptr<Query> CreateQuery() = 0;
+        virtual Ptr<DeviceQuery> CreateQuery() = 0;
 
-        virtual Ptr<IndirectBufferSignature> CreateIndirectBufferSignature() = 0;
+        virtual Ptr<DeviceIndirectBufferSignature> CreateIndirectBufferSignature() = 0;
 
-        virtual Ptr<IndirectBufferWriter> CreateIndirectBufferWriter() = 0;
+        virtual Ptr<DeviceIndirectBufferWriter> CreateIndirectBufferWriter() = 0;
 
-        virtual Ptr<RayTracingBufferPools> CreateRayTracingBufferPools() = 0;
+        virtual Ptr<DeviceRayTracingBufferPools> CreateRayTracingBufferPools() = 0;
 
-        virtual Ptr<RayTracingBlas> CreateRayTracingBlas() = 0;
+        virtual Ptr<DeviceRayTracingBlas> CreateRayTracingBlas() = 0;
 
-        virtual Ptr<RayTracingTlas> CreateRayTracingTlas() = 0;
+        virtual Ptr<DeviceRayTracingTlas> CreateRayTracingTlas() = 0;
 
-        virtual Ptr<RayTracingPipelineState> CreateRayTracingPipelineState() = 0;
+        virtual Ptr<DeviceRayTracingPipelineState> CreateRayTracingPipelineState() = 0;
 
-        virtual Ptr<RayTracingShaderTable> CreateRayTracingShaderTable() = 0;
+        virtual Ptr<DeviceRayTracingShaderTable> CreateRayTracingShaderTable() = 0;
 
-        virtual Ptr<DispatchRaysIndirectBuffer> CreateDispatchRaysIndirectBuffer() = 0;
+        virtual Ptr<DeviceDispatchRaysIndirectBuffer> CreateDispatchRaysIndirectBuffer() = 0;
     };
 } // namespace AZ::RHI

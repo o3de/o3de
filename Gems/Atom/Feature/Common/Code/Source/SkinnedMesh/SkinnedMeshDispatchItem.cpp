@@ -17,7 +17,7 @@
 #include <Atom/RPI.Public/RPIUtils.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/DeviceBufferView.h>
 
 #include <limits>
 
@@ -36,7 +36,8 @@ namespace AZ
             SkinnedMeshFeatureProcessor* skinnedMeshFeatureProcessor,
             MorphTargetInstanceMetaData morphTargetInstanceMetaData,
             float morphTargetDeltaIntegerEncoding)
-            : m_inputBuffers(inputBuffers)
+            : m_dispatchItem(RHI::MultiDevice::AllDevices)
+            , m_inputBuffers(inputBuffers)
             , m_outputBufferOffsetsInBytes(outputBufferOffsetsInBytes)
             , m_positionHistoryBufferOffsetInBytes(positionHistoryOutputBufferOffsetInBytes)
             , m_lodIndex(lodIndex)
@@ -76,7 +77,7 @@ namespace AZ
             const RPI::ShaderVariant& shaderVariant = m_skinningShader->GetVariant(m_shaderOptionGroup.GetShaderVariantId());
 
             RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
-            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
+            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor, m_shaderOptionGroup);
 
             auto perInstanceSrgLayout = m_skinningShader->FindShaderResourceGroupLayout(AZ::Name{ "InstanceSrg" });
             if (!perInstanceSrgLayout)
@@ -93,7 +94,7 @@ namespace AZ
             }
 
             // If the shader variation is not fully baked, set the fallback key to use a runtime branch for the shader options
-            if (!shaderVariant.IsFullyBaked() && m_instanceSrg->HasShaderVariantKeyFallbackEntry())
+            if (shaderVariant.UseKeyFallback() && m_instanceSrg->HasShaderVariantKeyFallbackEntry())
             {
                 m_instanceSrg->SetShaderVariantKeyFallbackValue(m_shaderOptionGroup.GetShaderVariantKeyFallbackValue());
             }
@@ -195,10 +196,10 @@ namespace AZ
             m_instanceSrg->SetConstant(totalNumberOfThreadsXIndex, xThreads);
 
             m_instanceSrg->Compile();
-            m_dispatchItem.m_uniqueShaderResourceGroup = m_instanceSrg->GetRHIShaderResourceGroup();
-            m_dispatchItem.m_pipelineState = m_skinningShader->AcquirePipelineState(pipelineStateDescriptor);
+            m_dispatchItem.SetUniqueShaderResourceGroup(m_instanceSrg->GetRHIShaderResourceGroup());
+            m_dispatchItem.SetPipelineState(m_skinningShader->AcquirePipelineState(pipelineStateDescriptor));
 
-            auto& arguments = m_dispatchItem.m_arguments.m_direct;
+            RHI::DispatchDirect arguments;
             const auto outcome = RPI::GetComputeShaderNumThreads(m_skinningShader->GetAsset(), arguments);
             if (!outcome.IsSuccess())
             {
@@ -208,6 +209,8 @@ namespace AZ
             arguments.m_totalNumberOfThreadsX = xThreads;
             arguments.m_totalNumberOfThreadsY = yThreads;
             arguments.m_totalNumberOfThreadsZ = 1;
+
+            m_dispatchItem.SetArguments(arguments);
 
             return true;
         }

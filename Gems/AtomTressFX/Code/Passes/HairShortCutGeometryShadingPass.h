@@ -14,7 +14,7 @@ namespace AZ
 {
     namespace RHI
     {
-        struct DrawItem;
+        class DrawItem;
     }
 
     namespace Render
@@ -59,9 +59,9 @@ namespace AZ
 
                 // Pass behavior overrides
                 void BuildInternal() override;
+                void InitializeInternal() override;
 
                 HairGlobalSettings m_hairGlobalSettings;
-                AZ::RPI::ShaderVariantKey m_shaderOptions;
             };
 
         } // namespace Hair

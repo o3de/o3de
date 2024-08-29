@@ -462,15 +462,15 @@ namespace AZ
             RPI::ViewPtr newView,
             RPI::ViewPtr previousView)
         {
-            Render::LightCommon::CacheGPUCullingPipelineInfo(
+            Render::LightCommon::CacheCPUCulledPipelineInfo(
                 renderPipeline,
-                newView, previousView, m_hasGPUCulling);
+                newView, previousView, m_cpuCulledPipelinesPerView);
         }
 
         void SimpleSpotLightFeatureProcessor::CullLights(const RPI::ViewPtr& view)
         {
             if (!AZ::RHI::CheckBitsAll(view->GetUsageFlags(), RPI::View::UsageFlags::UsageCamera) ||
-                Render::LightCommon::HasGPUCulling(GetParentScene(), view, m_hasGPUCulling))
+                !Render::LightCommon::NeedsCPUCulling(view, m_cpuCulledPipelinesPerView))
             {
                 return;
             }

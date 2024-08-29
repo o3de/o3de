@@ -43,6 +43,7 @@ namespace AZ
             const AZStd::string& m_shaderStemNamePrefix; //<shaderName>-<supervariantName>
             const AZStd::string& m_hlslSourcePath;
             const AZStd::string& m_hlslSourceContent;
+            const bool m_useSpecializationConstants = false;
         };
 
 
@@ -88,6 +89,9 @@ namespace AZ
             void ShutDown() override { };
 
         private:
+            // Content of the hashedVariantBatch file 
+            static constexpr uint32_t ShaderVariantBatchJobParam = 0;
+
             AZ_DISABLE_COPY_MOVE(ShaderVariantAssetBuilder);
 
             static constexpr uint32_t ShaderSourceFilePathJobParam = 1;

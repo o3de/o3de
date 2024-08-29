@@ -398,6 +398,7 @@ namespace AZ
             m_limits.m_maxConstantBufferSize = m_metalDevice.maxBufferLength;
             m_limits.m_maxBufferSize = m_metalDevice.maxBufferLength;
  
+            m_features.m_swapchainScalingFlags = RHI::ScalingFlags::Stretch;
             AZ_Assert(m_metalDevice.argumentBuffersSupport >= MTLArgumentBuffersTier1, "Atom needs Argument buffer support to run");
         }
 
@@ -440,7 +441,7 @@ namespace AZ
             
             RHI::Ptr<Buffer> stagingBuffer = Buffer::Create();
             RHI::BufferDescriptor bufferDesc(bufferBindFlags, byteCount);
-            RHI::BufferInitRequest initRequest(*stagingBuffer, bufferDesc);
+            RHI::DeviceBufferInitRequest initRequest(*stagingBuffer, bufferDesc);
             const RHI::ResultCode result = m_stagingBufferPool->InitBuffer(initRequest);
             if (result != RHI::ResultCode::Success)
             {

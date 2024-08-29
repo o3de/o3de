@@ -35,13 +35,14 @@ namespace AZ
             friend class RenderPassBuilder;
 
         public:
+            struct Barrier;
+
             AZ_RTTI(Scope, "328CA015-A73A-4A64-8C10-798C021575B3", Base);
             AZ_CLASS_ALLOCATOR(Scope, AZ::SystemAllocator);
 
             enum class BarrierSlot : uint32_t
             {
-                Aliasing = 0,   // First to be executed in the scope.
-                Clear,
+                Clear = 0,      // First to be executed in the scope.
                 Prologue,
                 Epilogue,
                 Resolve,        // Last to be executed in the scope.
@@ -64,26 +65,16 @@ namespace AZ
             void End(CommandList& commandList) const;
 
             //! Adds a barrier for a scope attachment resource to be emitted at a later time.
+            //! Returns the barrier inserted. This barrier may have been merged with a previously inserted barrier.
             template<class T>
-            void QueueAttachmentBarrier(
+            const Barrier QueueAttachmentBarrier(
                 const RHI::ScopeAttachment& attachment,
                 BarrierSlot slot,
                 const VkPipelineStageFlags src,
                 const VkPipelineStageFlags dst,
                 const T& barrier)
             {
-                QueueBarrierInternal(&attachment, slot, src, dst, barrier);
-            }
-
-            //! Adds a barrier over a resource that is not a scope attachment that will be emitted at a later time.
-            template<class T>
-            void QueueBarrier(
-                BarrierSlot slot,
-                const VkPipelineStageFlags src,
-                const VkPipelineStageFlags dst,
-                const T& barrier)
-            {
-                QueueBarrierInternal(nullptr, slot, src, dst, barrier);
+                return QueueBarrierInternal(&attachment, slot, src, dst, barrier);
             }
 
             //! Execute the queued barriers into the provided commandlist.
@@ -114,7 +105,9 @@ namespace AZ
             //! Resolves multisampled attachments using a command list. ResolveMode must be ResolveMode::CommandList
             void ResolveMSAAAttachments(CommandList& commandList) const;
 
-        private:
+            void SetDepthStencilFullView(RHI::ConstPtr<ImageView> view);
+            const ImageView* GetDepthStencilFullView() const;
+
             enum class OverlapType
             {
                 Partial = 0,
@@ -141,17 +134,26 @@ namespace AZ
                 };
 
                 // Checks if the image barrier affects the imageView
-                bool BlocksResource(const ImageView& imageView, OverlapType overlapType) const;
+                bool Overlaps(const ImageView& imageView, OverlapType overlapType) const;
 
                 // Checks if the buffer barrier affects the bufferView
-                bool BlocksResource(const BufferView& bufferView, OverlapType overlapType) const;
+                bool Overlaps(const BufferView& bufferView, OverlapType overlapType) const;
+
+                bool Overlaps(const Barrier& barrier, OverlapType overlapType) const;
+
+                void Combine(const Barrier& rhs);
+
+                // Returns false if the barrier is not needed because is a read after read access with no
+                // ownership transfer or layout transition.
+                bool IsNeeded() const;
             };
 
             using BarrierList = AZStd::array<AZStd::vector<Barrier>, BarrierSlotCount>;
 
+        private:
             struct QueryPoolAttachment
             {
-                RHI::Ptr<QueryPool> m_pool;
+                RHI::Ptr<RHI::QueryPool> m_pool;
                 RHI::Interval m_interval;
                 RHI::ScopeAttachmentAccess m_access;
             };
@@ -162,7 +164,7 @@ namespace AZ
             // RHI::Scope
             void ActivateInternal() override;
             void DeactivateInternal() override;
-            void CompileInternal(RHI::Device& device) override;
+            void CompileInternal() override;
             void AddQueryPoolUse(RHI::Ptr<RHI::QueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access) override;
             //////////////////////////////////////////////////////////////////////////
 
@@ -175,7 +177,7 @@ namespace AZ
             bool CanOptimizeBarrier(const Barrier& barrier, BarrierSlot slot) const;
 
             template<class T>
-            void QueueBarrierInternal(
+            const Barrier QueueBarrierInternal(
                 const RHI::ScopeAttachment* attachment,
                 BarrierSlot slot,
                 const VkPipelineStageFlags src,
@@ -184,13 +186,16 @@ namespace AZ
 
             // Converts barriers to implicit subpass barriers if possible.
             void OptimizeBarriers();
+            
+            void OptimizeBarrier(const Barrier& unoptimizedBarrier, BarrierSlot slot);
+            void BuildGlobalBarriers(BarrierSlot slot);
 
             // List of barriers that are not yet optimized.
             BarrierList m_unoptimizedBarriers;
             // List of barriers that must be execute outside the renderpass.
             BarrierList m_scopeBarriers;
-            // List of barriers that are part of the subpass.
-            BarrierList m_subpassBarriers;
+            // List of barriers that are merged as a global memory barrier.
+            BarrierList m_globalBarriers;
 
             AZStd::vector<Semaphore::WaitSemaphore> m_waitSemaphores;
             AZStd::vector<RHI::Ptr<Semaphore>> m_signalSemaphores;
@@ -204,10 +209,14 @@ namespace AZ
             ResolveMode m_resolveMode = ResolveMode::None;
             AZStd::vector<CommandList::ResourceClearRequest> m_imageClearRequests;
             AZStd::vector<CommandList::ResourceClearRequest> m_bufferClearRequests;
+
+            // Used to hold a view to the full depth and stencil when we need to merge two
+            // ScopeAttachment views, one that is only depth with one that is only stencil.
+            RHI::ConstPtr<ImageView> m_depthStencilFullView;
         };
 
         template<class T>
-        void Scope::QueueBarrierInternal(
+        const Scope::Barrier Scope::QueueBarrierInternal(
             const RHI::ScopeAttachment* attachment,
             BarrierSlot slot,
             const VkPipelineStageFlags src,
@@ -220,8 +229,49 @@ namespace AZ
             barrier.m_dstStageMask = dst;
             barrier.m_srcStageMask = src;
 
-            m_unoptimizedBarriers[static_cast<uint32_t>(slot)].push_back(barrier);
-        }
+            if (!barrier.IsNeeded())
+            {
+                // If the barrier is not needed, we add the source access to the destination access,
+                // so future barriers can synchronize properly. E.g. a read after read barrier needs
+                // future barriers to synchronize with both read accesses (the first and the second read accesses). 
+                barrier.m_dstStageMask |= barrier.m_srcStageMask;
+                switch (barrier.m_type)
+                {
+                case VK_STRUCTURE_TYPE_MEMORY_BARRIER:
+                    barrier.m_memoryBarrier.dstAccessMask |= barrier.m_memoryBarrier.srcAccessMask;
+                    break;
+                case VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER:
+                    barrier.m_bufferBarrier.dstAccessMask |= barrier.m_bufferBarrier.srcAccessMask;
+                    break;
+                case VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER:
+                    barrier.m_imageBarrier.dstAccessMask |= barrier.m_imageBarrier.srcAccessMask;
+                    break;
+                default:
+                    break;
+                }
+                return barrier;
+            }
 
+            auto& unoptimizedBarriers = m_unoptimizedBarriers[static_cast<uint32_t>(slot)];
+            auto findIt = AZStd::find_if(
+                unoptimizedBarriers.begin(),
+                unoptimizedBarriers.end(),
+                [&](const Barrier& element)
+                {
+                    return element.Overlaps(barrier, OverlapType::Partial);
+                });
+
+            if (findIt != unoptimizedBarriers.end())
+            {
+                Barrier& mergedBarrier = *findIt;
+                mergedBarrier.Combine(barrier);
+                return mergedBarrier;
+            }
+            else
+            {
+                unoptimizedBarriers.push_back(barrier);
+                return unoptimizedBarriers.back();
+            }
+        }
     } // namespace Vulkan
 }

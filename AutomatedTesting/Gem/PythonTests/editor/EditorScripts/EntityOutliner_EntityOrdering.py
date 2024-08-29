@@ -31,8 +31,6 @@ def EntityOutliner_EntityOrdering():
     """
 
     from PySide2 import QtCore
-
-    import azlmbr.legacy.general as general
     
     import editor_python_test_tools.hydra_editor_utils as hydra
     import pyside_utils
@@ -75,8 +73,6 @@ def EntityOutliner_EntityOrdering():
 
     # Creates an entity from the outliner context menu
     def create_entity():
-        # Make sure no entity is selected
-        general.clear_selection()
         # Create entity
         pyside_utils.trigger_context_menu_entry(
             entity_outliner, "Create entity", index=get_root_prefab_container_index()

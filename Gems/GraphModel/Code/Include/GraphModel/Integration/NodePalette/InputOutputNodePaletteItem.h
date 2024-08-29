@@ -33,7 +33,7 @@ namespace GraphModelIntegration
 
         //! Constructor
         //! \param nodeName Name of the node that will show up in the Palette
-        //! \param editorId Unique name of the client system editor (ex: AZ_CRC("ShaderCanvas", 0x0a1dff96))
+        //! \param editorId Unique name of the client system editor (ex: AZ_CRC_CE("ShaderCanvas"))
         //! \param dataType The type of data that the InputGraphNode or OutputGraphNode will represent
         InputOutputNodePaletteItem(AZStd::string_view nodeName, GraphCanvas::EditorId editorId, GraphModel::DataTypePtr dataType)
             : DraggableNodePaletteTreeItem(nodeName, editorId)

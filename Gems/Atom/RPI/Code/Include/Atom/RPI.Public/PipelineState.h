@@ -9,7 +9,7 @@
 #pragma once
 
 #include <Atom/RHI/PipelineStateDescriptor.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 
 #include <Atom/RPI.Public/Pass/RenderPass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -38,6 +38,7 @@ namespace AZ
             //! Initialize the pipeline state from a shader and one of its shader variant
             //! The previous data will be reset
             void Init(const Data::Instance<Shader>& shader, const ShaderOptionList* optionAndValues = nullptr);
+            void Init(const Data::Instance<Shader>& shader, const ShaderVariantId& shaderVariantId);
 
             //! Update the pipeline state descriptor for the specified scene
             //! This is usually called when Scene's render pipelines changed
@@ -78,6 +79,9 @@ namespace AZ
 
             //! Clear all the states and references
             void Shutdown();
+
+            //! Returns the id of the shader variant being used
+            const ShaderVariantId& GetShaderVariantId() const;
 
         private:
             ///////////////////////////////////////////////////////////////////

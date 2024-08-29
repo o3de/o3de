@@ -25,7 +25,7 @@ namespace EMotionFX
 
     // constructor
     NodeMap::NodeMap()
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_sourceActor            = nullptr;
     }

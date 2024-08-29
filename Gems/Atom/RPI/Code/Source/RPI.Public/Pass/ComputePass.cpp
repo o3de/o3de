@@ -12,7 +12,7 @@
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameScheduler.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 
 #include <Atom/RPI.Reflect/Pass/ComputePassData.h>
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
@@ -42,6 +42,7 @@ namespace AZ
 
         ComputePass::ComputePass(const PassDescriptor& descriptor, AZ::Name supervariant)
             : RenderPass(descriptor)
+            , m_dispatchItem(RHI::MultiDevice::AllDevices)
             , m_passDescriptor(descriptor)
         {
             const ComputePassData* passData = PassUtils::GetPassData<ComputePassData>(m_passDescriptor);
@@ -56,9 +57,11 @@ namespace AZ
             dispatchArgs.m_totalNumberOfThreadsX = passData->m_totalNumberOfThreadsX;
             dispatchArgs.m_totalNumberOfThreadsY = passData->m_totalNumberOfThreadsY;
             dispatchArgs.m_totalNumberOfThreadsZ = passData->m_totalNumberOfThreadsZ;
-            m_dispatchItem.m_arguments = dispatchArgs;
+            m_dispatchItem.SetArguments(dispatchArgs);
 
             LoadShader(supervariant);
+
+            m_defaultShaderAttachmentStage = RHI::ScopeAttachmentStage::ComputeShader;
         }
 
         void ComputePass::LoadShader(AZ::Name supervariant)
@@ -119,9 +122,10 @@ namespace AZ
             const bool compileDrawSrg = false; // The SRG will be compiled in CompileResources()
             m_drawSrg = m_shader->CreateDefaultDrawSrg(compileDrawSrg);
 
-            if (m_dispatchItem.m_arguments.m_type == RHI::DispatchType::Direct)
+            if (m_dispatchItem.GetArguments().m_type == RHI::DispatchType::Direct)
             {
-                const auto outcome = RPI::GetComputeShaderNumThreads(m_shader->GetAsset(), m_dispatchItem.m_arguments.m_direct);
+                auto arguments = m_dispatchItem.GetArguments();
+                const auto outcome = RPI::GetComputeShaderNumThreads(m_shader->GetAsset(), arguments.m_direct);
                 if (!outcome.IsSuccess())
                 {
                     AZ_Error(
@@ -133,15 +137,21 @@ namespace AZ
                         passData->m_shaderReference.m_filePath.data(),
                         outcome.GetError().c_str());
                 }
+                m_dispatchItem.SetArguments(arguments);
             }
 
             m_isFullscreenPass = passData->m_makeFullscreenPass;
 
             // Setup pipeline state...
             RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
-            m_shader->GetDefaultVariant().ConfigurePipelineState(pipelineStateDescriptor);
+            ShaderOptionGroup options = m_shader->GetDefaultShaderOptions();
+            m_shader->GetDefaultVariant().ConfigurePipelineState(pipelineStateDescriptor, options);
 
-            m_dispatchItem.m_pipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
+            m_dispatchItem.SetPipelineState(m_shader->AcquirePipelineState(pipelineStateDescriptor));
+            if (m_drawSrg && m_shader->GetDefaultVariant().UseKeyFallback())
+            {
+                m_drawSrg->SetShaderVariantKeyFallbackValue(options.GetShaderVariantKeyFallbackValue());
+            }
 
             OnShaderReloadedInternal();
 
@@ -169,9 +179,9 @@ namespace AZ
         {
             RHI::CommandList* commandList = context.GetCommandList();
 
-            SetSrgsForDispatch(commandList);
+            SetSrgsForDispatch(context);
 
-            commandList->Submit(m_dispatchItem);
+            commandList->Submit(m_dispatchItem.GetDeviceDispatchItem(context.GetDeviceIndex()));
         }
 
         void ComputePass::MatchDimensionsToOutput()
@@ -201,10 +211,11 @@ namespace AZ
 
         void ComputePass::SetTargetThreadCounts(uint32_t targetThreadCountX, uint32_t targetThreadCountY, uint32_t targetThreadCountZ)
         {
-            auto& arguments = m_dispatchItem.m_arguments.m_direct;
-            arguments.m_totalNumberOfThreadsX = targetThreadCountX;
-            arguments.m_totalNumberOfThreadsY = targetThreadCountY;
-            arguments.m_totalNumberOfThreadsZ = targetThreadCountZ;
+            auto arguments{m_dispatchItem.GetArguments()};
+            arguments.m_direct.m_totalNumberOfThreadsX = targetThreadCountX;
+            arguments.m_direct.m_totalNumberOfThreadsY = targetThreadCountY;
+            arguments.m_direct.m_totalNumberOfThreadsZ = targetThreadCountZ;
+            m_dispatchItem.SetArguments(arguments);
         }
 
         Data::Instance<ShaderResourceGroup> ComputePass::GetShaderResourceGroup() const
@@ -247,6 +258,19 @@ namespace AZ
         void ComputePass::SetComputeShaderReloadedCallback(ComputeShaderReloadedCallback callback)
         {
             m_shaderReloadedCallback = callback;
+        }
+
+        void ComputePass::UpdateShaderOptions(const ShaderVariantId& shaderVariantId)
+        {
+            const ShaderVariant& shaderVariant = m_shader->GetVariant(shaderVariantId);
+            RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
+            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor, shaderVariantId);
+
+            m_dispatchItem.SetPipelineState(m_shader->AcquirePipelineState(pipelineStateDescriptor));
+            if (m_drawSrg && shaderVariant.UseKeyFallback())
+            {
+                m_drawSrg->SetShaderVariantKeyFallbackValue(shaderVariantId.m_key);
+            }
         }
 
         void ComputePass::OnShaderReloadedInternal()

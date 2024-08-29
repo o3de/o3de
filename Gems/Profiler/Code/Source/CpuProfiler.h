@@ -141,7 +141,7 @@ namespace Profiler
         void Shutdown();
 
         //! AZ::Debug::Profiler overrides...
-        void BeginRegion(const AZ::Debug::Budget* budget, const char* eventName, size_t eventNameArgCount, ...) final override;
+        void BeginRegion(const AZ::Debug::Budget* budget, const char* eventName, ...) final override;
         void EndRegion(const AZ::Debug::Budget* budget) final override;
 
         //! Get the last frame's TimeRegionMap

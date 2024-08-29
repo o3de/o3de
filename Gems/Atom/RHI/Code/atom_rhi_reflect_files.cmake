@@ -62,6 +62,7 @@ set(FILES
     Source/RHI.Reflect/PhysicalDeviceDescriptor.cpp
     Include/Atom/RHI.Reflect/PhysicalDeviceDriverInfoSerializer.h
     Source/RHI.Reflect/PhysicalDeviceDriverInfoSerializer.cpp
+    Include/Atom/RHI.Reflect/FrameCountMaxRingBuffer.h
     Include/Atom/RHI.Reflect/InputStreamLayout.h
     Include/Atom/RHI.Reflect/InputStreamLayoutBuilder.h
     Include/Atom/RHI.Reflect/MultisampleState.h

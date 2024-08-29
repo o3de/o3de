@@ -66,7 +66,7 @@ namespace AZ
             //! This is the Id used to bind the attachment with the RHI
             RHI::AttachmentId m_path;
 
-            //! A descriptor of the attachment image
+            //! A descriptor of the attachment buffer or image
             RHI::UnifiedAttachmentDescriptor m_descriptor;
 
             //! Whether the attachment is transient or not
@@ -172,6 +172,9 @@ namespace AZ
 
             //! ScopeAttachmentUsage used when binding the attachment with the RHI
             RHI::ScopeAttachmentUsage m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Uninitialized;
+
+            //! ScopeAttachmentStage that this binding will be used
+            RHI::ScopeAttachmentStage m_scopeAttachmentStage = RHI::ScopeAttachmentStage::Uninitialized;
 
             //! The scope descriptor to be used for this binding during rendering
             RHI::UnifiedScopeAttachmentDescriptor m_unifiedScopeDesc;

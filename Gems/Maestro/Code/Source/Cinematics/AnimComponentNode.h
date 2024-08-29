@@ -65,9 +65,9 @@ public:
 
     void SetNodeOwner(IAnimNodeOwner* pOwner) override;
 
-    void SetPos(float time, const Vec3& pos) override;
-    void SetRotate(float time, const Quat& quat) override;
-    void SetScale(float time, const Vec3& scale) override;
+    void SetPos(float time, const AZ::Vector3& pos) override;
+    void SetRotate(float time, const AZ::Quaternion& quat) override;
+    void SetScale(float time, const AZ::Vector3& scale) override;
 
     Vec3 GetPos() override;
     Quat GetRotate() override;
@@ -125,6 +125,10 @@ private:
     void ConvertBetweenWorldAndLocalPosition(Vec3& position, ETransformSpaceConversionDirection conversionDirection) const;
     void ConvertBetweenWorldAndLocalRotation(Quat& rotation, ETransformSpaceConversionDirection conversionDirection) const;
     void ConvertBetweenWorldAndLocalScale(Vec3& scale, ETransformSpaceConversionDirection conversionDirection) const;
+
+    AZ::Vector3 TransformFromWorldToLocalPosition(const AZ::Vector3& position) const;
+    AZ::Quaternion TransformFromWorldToLocalRotation(const AZ::Quaternion& rotation) const;
+    AZ::Vector3 TransformFromWorldToLocalScale(const AZ::Vector3& scale) const;
 
     // Utility function to query the units for a track and set the track multiplier if needed. Returns true if track multiplier was set.
     bool SetTrackMultiplier(IAnimTrack* track) const;

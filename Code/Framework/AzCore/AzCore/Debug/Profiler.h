@@ -74,7 +74,7 @@ namespace AZ::Debug
         Profiler() = default;
         virtual ~Profiler() = default;
 
-        virtual void BeginRegion(const Budget* budget, const char* eventName, size_t eventNameArgCount, ...) = 0;
+        virtual void BeginRegion(const Budget* budget, const char* eventName, ...) = 0;
         virtual void EndRegion(const Budget* budget) = 0;
 
         template<typename T>
@@ -85,13 +85,10 @@ namespace AZ::Debug
     class ProfileScope
     {
     public:
-        template<typename... T>
-        static void BeginRegion(Budget* budget, const char* eventName, T const&... args);
+        static void BeginRegion(Budget* budget, const char* eventName, ...);
         static void EndRegion(Budget* budget);
 
-        template<typename... T>
-        ProfileScope(Budget* budget, const char* eventName, T const&... args);
-
+        ProfileScope(Budget* budget, const char* eventName, ...);
         ~ProfileScope();
 
     private:
@@ -101,5 +98,3 @@ namespace AZ::Debug
         static AZStd::optional<Profiler*> m_cachedProfiler;
     };
 } // namespace AZ::Debug
-
-#include <AzCore/Debug/Profiler.inl>

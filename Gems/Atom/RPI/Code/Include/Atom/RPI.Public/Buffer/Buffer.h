@@ -10,7 +10,6 @@
 
 #include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/BufferView.h>
 #include <Atom/RHI/Fence.h>
 
 #include <Atom/RHI.Reflect/AttachmentId.h>
@@ -57,6 +56,9 @@ namespace AZ
             //! Update buffer's content with sourceData at an offset of bufferByteOffset
             bool UpdateData(const void* sourceData, uint64_t sourceDataSizeInBytes, uint64_t bufferByteOffset = 0);
 
+            //! Update buffer's content with sourceData for each device at an offset of bufferByteOffset
+            bool UpdateData(const AZStd::unordered_map<int, const void*> sourceData, uint64_t sourceDataSizeInBytes, uint64_t bufferByteOffset = 0);
+
             //! Reallocate a new block of memory for this buffer. The previous allocated
             //! memory will be discarded once the GPU is done using it. This only works
             //! for buffers with host heap memory level.
@@ -66,7 +68,9 @@ namespace AZ
             //! This function is only used for buffer created in host such as dynamic buffer which content is rewritten every frame
             bool OrphanAndUpdateData(const void* sourceData, uint64_t sourceDataSizeInBytes);
 
-            void* Map(size_t byteCount, uint64_t byteOffset);
+            //! Maps all buffers in the underlying multi-device buffer and returns a vector
+            //! with mapped addresses, one per device.
+            AZStd::unordered_map<int, void*> Map(size_t byteCount, uint64_t byteOffset);
             void Unmap();
 
             //! Get attachment id if this buffer is used as scope attachment
@@ -103,9 +107,13 @@ namespace AZ
             // Only held until the streaming upload is complete.
             Data::Asset<BufferAsset> m_bufferAsset;
 
+            // Note: The order of these members is important: The streamFence-destructor potentially uses m_pendingUploadMutex,
+            // so we need to make sure the mutex isn't destroyed before the fence
+
             // Tracks the streaming upload of the buffer.
-            RHI::Ptr<RHI::Fence> m_streamFence;
             AZStd::mutex m_pendingUploadMutex;
+            RHI::Ptr<RHI::Fence> m_streamFence;
+            AZStd::atomic_int m_initialUploadCount{0};
 
             RHI::BufferViewDescriptor m_bufferViewDescriptor;
 

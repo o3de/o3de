@@ -893,24 +893,8 @@ from itertools import product
 def test_export_standalone_parse_args_should_require_output(tmpdir):
     # Test Data
     test_project_name, test_project_path, test_engine_path = setup_local_export_config_test(tmpdir)
-
-    with pytest.raises(SystemExit):
-        with patch('o3de.manifest.get_o3de_folder') as mock_get_o3de_folder,\
-             patch('o3de.export_project.get_default_asset_platform', return_value='pc') as mock_get_asset_platform:
-
-            mock_get_o3de_folder.return_value = pathlib.Path(tmpdir.join('.o3de').realpath())
-
-            mock_ctx = create_autospec(O3DEScriptExportContext)
-            mock_ctx.project_path = test_project_path
-            mock_ctx.engine_path = test_engine_path
-            mock_ctx.project_name = test_project_name
-
-            test_export_config = exp.get_export_project_config(project_path=None)
-
-            # Since we are not specifying arguments, output path is missing. This should cause an error
-            export_standalone_parse_args(mock_ctx, test_export_config)
     
-    #this should run fine however
+    #this should run fine, note that all parameters are considered optional except for project-path now
     with patch('o3de.manifest.get_o3de_folder') as mock_get_o3de_folder,\
          patch('o3de.export_project.get_default_asset_platform', return_value='pc') as mock_get_asset_platform:
         
@@ -1212,6 +1196,7 @@ def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, d
                                     launcher_build_path=args.launcher_build_path,
                                     archive_output_format=check_archive_format,
                                     monolithic_build=check_mono,
+                                    kill_o3de_processes_before_running=False,
                                     logger=mock_logger)
                     mock_export_func.reset_mock()
 
@@ -1312,4 +1297,5 @@ def test_export_standalone_multipart_args(tmpdir, seedlists, seedfiles, levelnam
                         launcher_build_path=pathlib.PurePath('LauncherBuilds/Packages'),
                         archive_output_format='none',
                         monolithic_build=False,
+                        kill_o3de_processes_before_running=False,
                         logger=mock_logger)

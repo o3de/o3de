@@ -13,7 +13,7 @@
 #include <AzCore/std/containers/vector.h>
 
 #include <EMotionFX/Source/EMotionFXConfig.h>
-#include <EMotionFX/Source/BaseObject.h>
+#include <MCore/Source/RefCounted.h>
 #include <EMotionFX/Source/Motion.h>
 #include <EMotionFX/Source/Pose.h>
 #include <EMotionFX/Source/PlayBackInfo.h>
@@ -38,7 +38,7 @@ namespace EMotionFX
      * all with unique play positions and speeds, etc.
      */
     class EMFX_API MotionInstance
-        : public BaseObject
+        : public MCore::RefCounted
     {
         AZ_CLASS_ALLOCATOR_DECL
         friend class RepositioningLayerPass;

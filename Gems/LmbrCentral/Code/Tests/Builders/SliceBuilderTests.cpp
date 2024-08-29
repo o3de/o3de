@@ -583,7 +583,7 @@ namespace UnitTest
         {
             if (m_enableServiceDependency)
             {
-                required.push_back(AZ_CRC("SomeService", 0x657d5763));
+                required.push_back(AZ_CRC_CE("SomeService"));
             }
         }
 

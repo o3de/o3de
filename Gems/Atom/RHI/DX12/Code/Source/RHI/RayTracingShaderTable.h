@@ -7,7 +7,8 @@
  */
 #pragma once
 
-#include <Atom/RHI/RayTracingShaderTable.h>
+#include <Atom/RHI/DeviceRayTracingShaderTable.h>
+#include <Atom/RHI.Reflect/FrameCountMaxRingBuffer.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
@@ -19,7 +20,7 @@ namespace AZ
         class Buffer;
 
         class RayTracingShaderTable final
-            : public RHI::RayTracingShaderTable
+            : public RHI::DeviceRayTracingShaderTable
         {
         public:
             AZ_CLASS_ALLOCATOR(RayTracingShaderTable, AZ::SystemAllocator);
@@ -44,31 +45,28 @@ namespace AZ
                 uint32_t m_hitGroupTableStride = 0;
             };
 
-            const ShaderTableBuffers& GetBuffers() const { return m_buffers[m_currentBufferIndex]; }
+            const ShaderTableBuffers& GetBuffers() const { return m_buffers.GetCurrentElement(); }
 
         private:
 
             RayTracingShaderTable() = default;
 
 #ifdef AZ_DX12_DXR_SUPPORT
-            uint32_t FindLargestRecordSize(const RHI::RayTracingShaderTableRecordList& recordList);
+            uint32_t FindLargestRecordSize(const RHI::DeviceRayTracingShaderTableRecordList& recordList);
             RHI::Ptr<Buffer> BuildTable(RHI::Device& deviceBase,
-                                        const RHI::RayTracingBufferPools& bufferPools,
-                                        const RHI::RayTracingShaderTableRecordList& recordList,
+                                        const RHI::DeviceRayTracingBufferPools& bufferPools,
+                                        const RHI::DeviceRayTracingShaderTableRecordList& recordList,
                                         uint32_t shaderRecordSize,
                                         AZStd::wstring shaderTableName,
                                         Microsoft::WRL::ComPtr<ID3D12StateObjectProperties>& stateObjectProperties);
 #endif
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::RayTracingShaderTable
+            // RHI::DeviceRayTracingShaderTable
             RHI::ResultCode BuildInternal() override;
             //////////////////////////////////////////////////////////////////////////
 
-            static const uint32_t BufferCount = AZ::RHI::Limits::Device::FrameCountMax;
-            ShaderTableBuffers m_buffers[BufferCount];
-
-            uint32_t m_currentBufferIndex = 0;
+            RHI::FrameCountMaxRingBuffer<ShaderTableBuffers> m_buffers;
         };
     }
 }

@@ -20,7 +20,6 @@
 #include <EMotionFX/Source/ActorInstance.h>
 
 #include <MathConversion.h>
-#include <IRenderAuxGeom.h>
 
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
@@ -92,7 +91,7 @@ namespace EMotionFX
                 constexpr AZStd::array defaultSampleRate {140.0f, 60.0f, 45.0f, 25.0f, 15.0f, 10.0f};
                 m_lodSampleRates.resize(numLODs, 10.0f);
 
-                // Do not copy more than what fits in defaultSampleRates or numLODs. 
+                // Do not copy more than what fits in defaultSampleRates or numLODs.
                 size_t copyCount = std::min(defaultSampleRate.size(), numLODs);
                 AZStd::copy(begin(defaultSampleRate), begin(defaultSampleRate) + copyCount, begin(m_lodSampleRates));
             }

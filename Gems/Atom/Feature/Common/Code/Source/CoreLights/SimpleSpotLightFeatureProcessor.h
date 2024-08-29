@@ -135,7 +135,7 @@ namespace AZ
             // Number of buffers being used for visibility in the current frame.
             uint32_t m_visibleSpotLightsBufferUsedCount = 0;
             // Views that have a GPU culling pass per render pipeline.
-            AZStd::unordered_set<AZStd::pair<const RPI::RenderPipeline*, const RPI::View*>> m_hasGPUCulling;
+            AZStd::unordered_map<const RPI::View*, AZStd::vector<const RPI::RenderPipeline*>> m_cpuCulledPipelinesPerView;
         };
     } // namespace Render
 } // namespace AZ

@@ -16,9 +16,7 @@ namespace AZ
             : m_EventHandle(nullptr)
             , m_name(name)
         {
-            AZStd::wstring nameW;
-            AZStd::to_wstring(nameW, name);
-            m_EventHandle = CreateEvent(nullptr, false, false, nameW.c_str());
+            m_EventHandle = CreateEvent(nullptr, false, false, nullptr);
         }
 
         FenceEvent::~FenceEvent()
@@ -144,7 +142,7 @@ namespace AZ
             return aznew FenceImpl();
         }
 
-        RHI::ResultCode FenceImpl::InitInternal(RHI::Device& deviceBase, RHI::FenceState initialState)
+        RHI::ResultCode FenceImpl::InitInternal(RHI::Device& deviceBase, RHI::FenceState initialState, [[maybe_unused]] bool usedForWaitingOnDevice)
         {
             return m_fence.Init(static_cast<Device&>(deviceBase).GetDevice(), initialState);
         }

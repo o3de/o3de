@@ -278,7 +278,7 @@ namespace AZ
             m_bakeExposure = bakeExposure;
         }
 
-        const RHI::DrawPacket* ReflectionProbe::BuildDrawPacket(
+        RHI::ConstPtr<RHI::DrawPacket> ReflectionProbe::BuildDrawPacket(
             const Data::Instance<RPI::ShaderResourceGroup>& srg,
             const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
             const RHI::DrawListTag& drawListTag,
@@ -291,7 +291,7 @@ namespace AZ
                 return nullptr;
             }
 
-            RHI::DrawPacketBuilder drawPacketBuilder;
+            RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
             drawPacketBuilder.Begin(nullptr);
             drawPacketBuilder.SetGeometryView(&m_reflectionRenderData->m_geometryView);
             drawPacketBuilder.AddShaderResourceGroup(srg->GetRHIShaderResourceGroup());

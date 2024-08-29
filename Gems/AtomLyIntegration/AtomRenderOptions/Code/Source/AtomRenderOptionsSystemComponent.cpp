@@ -31,17 +31,17 @@ namespace AZ::Render
 
     void AtomRenderOptionsSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("AtomRenderOptionsService"));
+        provided.push_back(AZ_CRC_CE("AtomRenderOptionsService"));
     }
 
     void AtomRenderOptionsSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("AtomRenderOptionsService"));
+        incompatible.push_back(AZ_CRC_CE("AtomRenderOptionsService"));
     }
 
     void AtomRenderOptionsSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("RPISystem", 0xf2add773));
+        required.push_back(AZ_CRC_CE("RPISystem"));
     }
 
     void AtomRenderOptionsSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)

@@ -206,6 +206,9 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
     #define MESH_BUFFER_FLAG_BITANGENT      (1 << 1)
     #define MESH_BUFFER_FLAG_UV             (1 << 2)
 
+    // Specifies which debug visualization to use (value must be from RayTracingDebugViewMode enum)
+    uint m_debugViewMode;
+
 #if !USE_BINDLESS_SRG
     // Unbounded array of mesh stream buffers:
     // Note 1: Index, Position, and Normal stream buffers are guaranteed to be valid for each mesh

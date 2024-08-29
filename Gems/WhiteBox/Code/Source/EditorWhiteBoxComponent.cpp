@@ -12,6 +12,7 @@
 #include "EditorWhiteBoxComponentMode.h"
 #include "EditorWhiteBoxComponentModeBus.h"
 #include "Rendering/WhiteBoxNullRenderMesh.h"
+#include "Rendering/WhiteBoxRenderDataUtil.h"
 #include "Rendering/WhiteBoxRenderMeshInterface.h"
 #include "Util/WhiteBoxEditorUtil.h"
 #include "WhiteBoxComponent.h"
@@ -309,6 +310,7 @@ namespace WhiteBox
         EditorWhiteBoxComponentNotificationBus::Handler::BusConnect(entityComponentIdPair);
         AZ::TransformNotificationBus::Handler::BusConnect(entityId);
         AzFramework::BoundsRequestBus::Handler::BusConnect(entityId);
+        AzFramework::VisibleGeometryRequestBus::Handler::BusConnect(entityId);
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(entityId);
         AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(entityId);
         AzToolsFramework::EditorVisibilityNotificationBus::Handler::BusConnect(entityId);
@@ -336,6 +338,7 @@ namespace WhiteBox
         AzToolsFramework::EditorVisibilityNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusDisconnect();
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
+        AzFramework::VisibleGeometryRequestBus::Handler::BusDisconnect();
         AzFramework::BoundsRequestBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         EditorWhiteBoxComponentRequestBus::Handler::BusDisconnect();
@@ -801,6 +804,27 @@ namespace WhiteBox
         }
 
         return m_localAabb.value();
+    }
+
+    void EditorWhiteBoxComponent::BuildVisibleGeometry(const AZ::Aabb& bounds, AzFramework::VisibleGeometryContainer& geometryContainer) const
+    {
+        // Only add the white box geometry if its bounds overlap the input bounds
+        if (bounds.IsValid() && !bounds.Overlaps(GetWorldBounds()))
+        {
+            return;
+        }
+
+        // Extract white box geometry data to convert to visible geometry vertices and indices
+        const WhiteBoxRenderData renderData =
+            CreateWhiteBoxRenderData(*const_cast<EditorWhiteBoxComponent*>(this)->GetWhiteBoxMesh(), m_material);
+
+        // Convert the white box render data into visible geometry data
+        const AzFramework::VisibleGeometry geometry = BuildVisibleGeometryFromWhiteBoxRenderData(GetEntityId(), renderData);
+
+        if (!geometry.m_indices.empty() && !geometry.m_vertices.empty())
+        {
+            geometryContainer.push_back(geometry);
+        }
     }
 
     bool EditorWhiteBoxComponent::EditorSelectionIntersectRayViewport(

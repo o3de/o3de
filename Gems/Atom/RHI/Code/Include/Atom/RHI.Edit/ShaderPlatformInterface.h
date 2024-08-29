@@ -93,6 +93,7 @@ namespace AZ::RHI
             AZStd::string m_entryFunctionName;
 
             ByProducts m_byProducts;  //!< Optional; used for debug information
+            AZStd::string m_extraData; //!< Optional; extra data that can be pass for creating the Stage function.
         };
 
         //! @apiUniqueIndex See GetApiUniqueIndex() for details.
@@ -123,7 +124,8 @@ namespace AZ::RHI
             ShaderHardwareStage shaderStage,
             const AZStd::string& tempFolderPath,
             StageDescriptor& outputDescriptor,
-            const RHI::ShaderBuildArguments& shaderBuildArguments) const = 0;
+            const RHI::ShaderBuildArguments& shaderBuildArguments,
+            const bool useSpecializationConstants) const = 0;
 
         //! Query whether the shaders are set to build with debug information
         virtual bool BuildHasDebugInfo(const RHI::ShaderBuildArguments& shaderBuildArguments) const

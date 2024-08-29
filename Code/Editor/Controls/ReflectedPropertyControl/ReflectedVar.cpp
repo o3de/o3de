@@ -73,12 +73,12 @@ void ReflectedVarInit::setupReflection(AZ::SerializeContext* serializeContext)
         ec->Class< CReflectedVarUser >("VarUser", "")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &CReflectedVarUser::varName)
-            ->Attribute(AZ::Edit::Attributes::Handler, AZ_CRC("ePropertyUser", 0x65b972c0))
+            ->Attribute(AZ::Edit::Attributes::Handler, AZ_CRC_CE("ePropertyUser"))
             ;
 
         ec->Class< CReflectedVarColor >("VarColor", "")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
+            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
             ->DataElement(AZ::Edit::UIHandlers::Color, &CReflectedVarColor::m_color, "Color", "")
             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &CReflectedVarColor::varName)
             ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &CReflectedVarColor::description)
@@ -92,7 +92,7 @@ void ReflectedVarInit::setupReflection(AZ::SerializeContext* serializeContext)
 
         ec->Class< CPropertyContainer >("PropertyContainer", "")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
+            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
             ->DataElement(AZ::Edit::UIHandlers::Default, &CPropertyContainer::m_properties, "Properties", "")
             ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &CPropertyContainer::varName)
@@ -139,7 +139,7 @@ void CReflectedVarAny<T>::reflect(AZ::SerializeContext* serializeContext)
     {
         ec->Class< CReflectedVarAny<T> >("VarAny", "")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
+            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
             ->DataElement(AZ::Edit::UIHandlers::Default, &CReflectedVarAny<T>::m_value, "Value", "")
             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &CReflectedVarAny<T>::varName)
             ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &CReflectedVarAny<T>::description)
@@ -171,7 +171,7 @@ void CReflectedVarRanged<T, R>::reflect(AZ::SerializeContext* serializeContext)
     {
         ec->Class< CReflectedVarRanged<T, R> >("VarAny", "")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
+            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
             ->DataElement(AZ::Edit::UIHandlers::Slider, &CReflectedVarRanged<T, R>::m_value, "Value", "")
             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &CReflectedVarRanged<T, R>::varName)
             ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &CReflectedVarRanged<T, R>::description)
@@ -206,7 +206,7 @@ void CReflectedVarEnum<T>::reflect(AZ::SerializeContext* serializeContext)
     {
         ec->Class< CReflectedVarEnum<T> >("Enum Variable", "")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
+            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &CReflectedVarEnum<T>::m_selectedEnumName, "Value", "")
             ->Attribute(AZ::Edit::Attributes::StringList, &CReflectedVarEnum<T>::GetEnums)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CReflectedVarEnum<T>::OnEnumChanged)
@@ -248,9 +248,9 @@ AZ::u32 CReflectedVarSpline::handler()
     switch (m_propertyType)
     {
     case ePropertyFloatCurve:
-        return AZ_CRC("ePropertyFloatCurve", 0x7440ccce);
+        return AZ_CRC_CE("ePropertyFloatCurve");
     case ePropertyColorCurve:
-        return AZ_CRC("ePropertyColorCurve", 0xa30da4ec);
+        return AZ_CRC_CE("ePropertyColorCurve");
     default:
         AZ_Assert(false, "CReflectedVarSpline property type must be ePropertyFloatCurve or ePropertyColorCurve");
         return AZ::Edit::UIHandlers::Default;
@@ -263,28 +263,28 @@ AZ::u32 CReflectedVarGenericProperty::handler()
     switch (m_propertyType)
     {
     case ePropertyShader:
-        return AZ_CRC("ePropertyShader", 0xc40932f1);
+        return AZ_CRC_CE("ePropertyShader");
     case ePropertyEquip:
-        return AZ_CRC("ePropertyEquip", 0x66ffd290);
+        return AZ_CRC_CE("ePropertyEquip");
     case ePropertyDeprecated0:
-        return AZ_CRC("ePropertyCustomAction", 0x4ffa5ba5);
+        return AZ_CRC_CE("ePropertyCustomAction");
     case ePropertyGameToken:
-        return AZ_CRC("ePropertyGameToken", 0x34855b6f);
+        return AZ_CRC_CE("ePropertyGameToken");
     case ePropertyMissionObj:
-        return AZ_CRC("ePropertyMissionObj", 0x4a2d0dc8);
+        return AZ_CRC_CE("ePropertyMissionObj");
     case ePropertySequence:
-        return AZ_CRC("ePropertySequence", 0xdd1c7d44);
+        return AZ_CRC_CE("ePropertySequence");
     case ePropertySequenceId:
-        return AZ_CRC("ePropertySequenceId", 0x05983dcc);
+        return AZ_CRC_CE("ePropertySequenceId");
     case ePropertyLocalString:
-        return AZ_CRC("ePropertyLocalString", 0x0cd9609a);
+        return AZ_CRC_CE("ePropertyLocalString");
     case ePropertyLightAnimation:
-        return AZ_CRC("ePropertyLightAnimation", 0x277097da);
+        return AZ_CRC_CE("ePropertyLightAnimation");
     case ePropertyParticleName:
-        return AZ_CRC("ePropertyParticleName", 0xf44c7133);
+        return AZ_CRC_CE("ePropertyParticleName");
     default:
         AZ_Assert(false, "No property handlers defined for the property type");
-        return AZ_CRC("Default", 0xe35e00df);
+        return AZ_CRC_CE("Default");
     }
 }
 

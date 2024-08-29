@@ -16,6 +16,7 @@
 
 #include <Atom/RHI/DrawListTagRegistry.h>
 #include <Atom/RHI/PipelineLibrary.h>
+#include <Atom/RHI/PipelineState.h>
 
 #include <AtomCore/Instance/InstanceData.h>
 #include <AzCore/IO/SystemFile.h>
@@ -168,7 +169,7 @@ namespace AZ
 
             void Shutdown();
 
-            ConstPtr<RHI::PipelineLibraryData> LoadPipelineLibrary() const;
+            AZStd::unordered_map<int, ConstPtr<RHI::PipelineLibraryData>> LoadPipelineLibrary() const;
             void SavePipelineLibrary() const;
             
             const ShaderVariant& GetVariantInternal(ShaderVariantStableId shaderVariantStableId);
@@ -210,8 +211,7 @@ namespace AZ
             RHI::DrawListTag m_drawListTag;
 
             //! PipelineLibrary file name
-            char m_pipelineLibraryPath[AZ_MAX_PATH_LEN] = { 0 };
-
+            AZStd::unordered_map<int, AZStd::string> m_pipelineLibraryPaths;
         };
     }
 }

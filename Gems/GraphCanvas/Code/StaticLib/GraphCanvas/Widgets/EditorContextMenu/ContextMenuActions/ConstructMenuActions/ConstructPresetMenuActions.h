@@ -76,7 +76,7 @@ namespace GraphCanvas
 
         static ActionGroupId GetCreateConstructContextMenuActionGroupId()
         {
-            return AZ_CRC("CreateConstructActionGroup", 0x33ff526b);
+            return AZ_CRC_CE("CreateConstructActionGroup");
         }
 
         ActionGroupId GetActionGroupId() const override

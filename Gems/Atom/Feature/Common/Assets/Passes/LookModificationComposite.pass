@@ -21,7 +21,10 @@
                 {
                     "Name": "Output",
                     "SlotType": "Output",
-                    "ScopeAttachmentUsage": "RenderTarget"
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare"
+                    }
                 }
             ],
             "ImageAttachments": [

@@ -56,11 +56,8 @@ namespace AZ
 
         void SpecularReflectionsFeatureProcessor::UpdatePasses()
         {
-            RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
-            RHI::Ptr<RHI::Device> device = rhiSystem->GetDevice();
-
             // disable raytracing if the platform does not support it
-            if (!device->GetFeatures().m_rayTracing)
+            if (RHI::RHISystemInterface::Get()->GetRayTracingSupport() == RHI::MultiDevice::NoDevices)
             {
                 m_ssrOptions.m_reflectionMethod = SSROptions::ReflectionMethod::ScreenSpace;
             }
@@ -88,7 +85,6 @@ namespace AZ
                         for (const auto& attachmentName : attachmentNames)
                         {
                             RPI::PassAttachmentBinding* attachmentBinding = pass->FindAttachmentBinding(attachmentName);
-                            AZ_Assert(attachmentBinding, "Failed to retrieve attachment binding [%s] on ReflectionScreenSpacePass", attachmentName.GetCStr());
 
                             if (attachmentBinding)
                             {
@@ -144,7 +140,6 @@ namespace AZ
                             for (const auto& attachmentName : attachmentNames)
                             {
                                 RPI::PassAttachmentBinding* attachmentBinding = pass->FindAttachmentBinding(attachmentName);
-                                AZ_Assert(attachmentBinding, "Failed to retrieve attachment binding [%s] on ReflectionScreenSpaceRayTracingPass", attachmentName.GetCStr());
 
                                 if (attachmentBinding)
                                 {
@@ -174,7 +169,6 @@ namespace AZ
                         for (const auto& attachmentName : attachmentNames)
                         {
                             RPI::PassAttachmentBinding* attachmentBinding = pass->FindAttachmentBinding(attachmentName);
-                            AZ_Assert(attachmentBinding, "Failed to retrieve attachment binding [%s] on ReflectionScreenSpaceTracePass", attachmentName.GetCStr());
 
                             if (attachmentBinding)
                             {
@@ -200,8 +194,7 @@ namespace AZ
                     {
                         // size multiplier
                         RPI::PassAttachmentBinding* attachmentBinding = pass->FindAttachmentBinding(AZ::Name("DownsampledDepthLinearInputOutput"));
-                        AZ_Assert(attachmentBinding, "Failed to retrieve attachment binding [DownsampledDepthLinearInputOutput] on ReflectionScreenSpaceDownsampleDepthLinearPass");
-            
+
                         if (attachmentBinding)
                         {
                             RPI::Ptr<RPI::PassAttachment> attachment = attachmentBinding->GetAttachment();
@@ -228,7 +221,6 @@ namespace AZ
                         for (const auto& attachmentName : attachmentNames)
                         {
                             RPI::PassAttachmentBinding* attachmentBinding = pass->FindAttachmentBinding(attachmentName);
-                            AZ_Assert(attachmentBinding, "Failed to retrieve attachment binding [%s] on ReflectionScreenSpaceFilterPass", attachmentName.GetCStr());
 
                             if (attachmentBinding)
                             {

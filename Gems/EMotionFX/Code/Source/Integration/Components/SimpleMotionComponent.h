@@ -72,20 +72,20 @@ namespace EMotionFX
 
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
             {
-                provided.push_back(AZ_CRC("EMotionFXSimpleMotionService", 0xea7a05d8));
+                provided.push_back(AZ_CRC_CE("EMotionFXSimpleMotionService"));
             }
             static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
             {
-                dependent.push_back(AZ_CRC("MeshService", 0x71d8a455));
+                dependent.push_back(AZ_CRC_CE("MeshService"));
             }
             static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
             {
-                required.push_back(AZ_CRC("EMotionFXActorService", 0xd6e8f48d));
+                required.push_back(AZ_CRC_CE("EMotionFXActorService"));
             }
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
             {
-                incompatible.push_back(AZ_CRC("EMotionFXAnimGraphService", 0x9ec3c819));
-                incompatible.push_back(AZ_CRC("EMotionFXSimpleMotionService", 0xea7a05d8));
+                incompatible.push_back(AZ_CRC_CE("EMotionFXAnimGraphService"));
+                incompatible.push_back(AZ_CRC_CE("EMotionFXSimpleMotionService"));
                 incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
             }
             static void Reflect(AZ::ReflectContext* /*context*/);

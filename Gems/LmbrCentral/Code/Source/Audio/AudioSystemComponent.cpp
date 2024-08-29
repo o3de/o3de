@@ -90,14 +90,14 @@ namespace LmbrCentral
     // static
     void AudioSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("AudioSystemService", 0xfbb9b542));
+        provided.push_back(AZ_CRC_CE("AudioSystemService"));
     }
 
     ////////////////////////////////////////////////////////////////////////
     // static
     void AudioSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("AudioSystemService", 0xfbb9b542));
+        incompatible.push_back(AZ_CRC_CE("AudioSystemService"));
     }
 
     ////////////////////////////////////////////////////////////////////////

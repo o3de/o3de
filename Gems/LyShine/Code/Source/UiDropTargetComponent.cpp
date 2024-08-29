@@ -186,7 +186,7 @@ void UiDropTargetComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiDropTarget.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiDropTarget.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             // Navigation settings

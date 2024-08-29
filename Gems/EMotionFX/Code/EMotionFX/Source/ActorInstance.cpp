@@ -41,7 +41,7 @@ namespace EMotionFX
     AZ_CLASS_ALLOCATOR_IMPL(ActorInstance, ActorInstanceAllocator)
 
     ActorInstance::ActorInstance(Actor* actor, AZ::Entity* entity, uint32 threadIndex)
-        : BaseObject()
+        : RefCounted()
         , m_entity(entity)
         , m_ragdollInstance(nullptr)
     {

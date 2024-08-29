@@ -66,12 +66,12 @@ namespace AzToolsFramework
 
         void EditorEntitySortComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("EditorChildEntitySortService", 0x916caa82));
+            services.push_back(AZ_CRC_CE("EditorChildEntitySortService"));
         }
 
         void EditorEntitySortComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("EditorChildEntitySortService", 0x916caa82));
+            services.push_back(AZ_CRC_CE("EditorChildEntitySortService"));
         }
 
         bool EditorEntitySortComponent::SerializationConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
@@ -80,7 +80,7 @@ namespace AzToolsFramework
             if (classElement.GetVersion() <= 1)
             {
                 // Convert the vector of entity ids to an array of order entries
-                auto entityOrderArrayElement = classElement.FindSubElement(AZ_CRC("ChildEntityOrderArray", 0xc37d344b));
+                auto entityOrderArrayElement = classElement.FindSubElement(AZ_CRC_CE("ChildEntityOrderArray"));
                 if (!entityOrderArrayElement)
                 {
                     return false;
@@ -102,7 +102,7 @@ namespace AzToolsFramework
                 AZ_Error("EditorEntitySortComponent", entityOrderArray.size() == entityOrderArrayElement->GetNumSubElements(), "Unable to get all the expected elements for the old entity order array");
 
                 // Get rid of the old array
-                classElement.RemoveElementByName(AZ_CRC("ChildEntityOrderArray", 0xc37d344b));
+                classElement.RemoveElementByName(AZ_CRC_CE("ChildEntityOrderArray"));
 
                 // Add a new empty array (unable to use AddElementWithData, fails stating that AZStd::vector is not registered)
                 int newArrayElementIndex = classElement.AddElement<EntityOrderEntryArray>(context, "ChildEntityOrderEntryArray");

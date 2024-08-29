@@ -420,7 +420,7 @@ namespace AZ
                 m_classData.m_dataConverter = &m_dataConverter;
 
                 // Create the ObjectStreamWriteOverrideCB in the current module
-                m_classData.m_attributes.emplace_back(AZ_CRC("ObjectStreamWriteElementOverride", 0x35eb659f), CreateModuleAttribute(&ObjectStreamWriter));
+                m_classData.m_attributes.emplace_back(AZ_CRC_CE("ObjectStreamWriteElementOverride"), CreateModuleAttribute(&ObjectStreamWriter));
             }
 
             SerializeContext::ClassData* GetClassData() override

@@ -62,18 +62,18 @@ namespace AZ::Render
 
     void AtomViewportDisplayIconsSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ViewportDisplayIconsService"));
+        provided.push_back(AZ_CRC_CE("ViewportDisplayIconsService"));
     }
 
     void AtomViewportDisplayIconsSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("ViewportDisplayIconsService"));
+        incompatible.push_back(AZ_CRC_CE("ViewportDisplayIconsService"));
     }
 
     void AtomViewportDisplayIconsSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("RPISystem", 0xf2add773));
-        required.push_back(AZ_CRC("AtomBridgeService", 0x92d990b5));
+        required.push_back(AZ_CRC_CE("RPISystem"));
+        required.push_back(AZ_CRC_CE("AtomBridgeService"));
     }
 
     void AtomViewportDisplayIconsSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)

@@ -356,7 +356,7 @@ namespace EMotionFX
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ_CRC("ActorNodes", 0x70504714), &BlendTreeMaskNode::Mask::m_jointNames, "Mask", "The mask to apply.")
+                    ->DataElement(AZ_CRC_CE("ActorNodes"), &BlendTreeMaskNode::Mask::m_jointNames, "Mask", "The mask to apply.")
                         ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::HideChildren)
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &BlendTreeMaskNode::Mask::GetMaskName)

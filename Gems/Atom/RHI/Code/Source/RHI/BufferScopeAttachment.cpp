@@ -8,7 +8,7 @@
 
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/BufferFrameAttachment.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/DeviceBuffer.h>
 
 namespace AZ::RHI
 {
@@ -17,8 +17,9 @@ namespace AZ::RHI
         FrameAttachment& attachment,
         ScopeAttachmentUsage usage,
         ScopeAttachmentAccess access,
+        ScopeAttachmentStage stage,
         const BufferScopeAttachmentDescriptor& descriptor)
-        : ScopeAttachment(scope, attachment, usage, access)
+        : ScopeAttachment(scope, attachment, usage, access, stage)
         , m_descriptor{descriptor}
     {
         AZ_Assert(
@@ -45,6 +46,11 @@ namespace AZ::RHI
     void BufferScopeAttachment::SetBufferView(ConstPtr<BufferView> bufferView)
     {
         SetResourceView(AZStd::move(bufferView));
+    }
+
+    const ScopeAttachmentDescriptor& BufferScopeAttachment::GetScopeAttachmentDescriptor() const
+    {
+        return GetDescriptor();
     }
 
     const BufferFrameAttachment& BufferScopeAttachment::GetFrameAttachment() const

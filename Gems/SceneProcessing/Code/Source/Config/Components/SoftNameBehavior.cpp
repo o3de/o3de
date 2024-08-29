@@ -53,7 +53,7 @@ namespace AZ
 
         void SoftNameBehavior::GetVirtualTypeName(AZStd::string& name, Crc32 type)
         {
-            if (type == AZ_CRC("Ignore", 0x0d88d6e2))
+            if (type == AZ_CRC_CE("Ignore"))
             {
                 name = "Ignore";
             }
@@ -62,9 +62,9 @@ namespace AZ
         void SoftNameBehavior::GetAllVirtualTypes(SceneAPI::Events::GraphMetaInfo::VirtualTypesSet& types)
         {
             // Add types that aren't handled by one specific behavior and have a more global utility.
-            if (types.find(AZ_CRC("Ignore", 0x0d88d6e2)) == types.end())
+            if (types.find(AZ_CRC_CE("Ignore")) == types.end())
             {
-                types.insert(AZ_CRC("Ignore", 0x0d88d6e2));
+                types.insert(AZ_CRC_CE("Ignore"));
             }
         }
 

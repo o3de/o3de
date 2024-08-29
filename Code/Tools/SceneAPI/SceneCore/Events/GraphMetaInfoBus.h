@@ -43,7 +43,7 @@ namespace AZ
 
                 inline static Crc32 GetIgnoreVirtualType()
                 {
-                    static Crc32 s_ignoreVirtualType = AZ_CRC("Ignore", 0x0d88d6e2);
+                    static Crc32 s_ignoreVirtualType = AZ_CRC_CE("Ignore");
                     return s_ignoreVirtualType;
                 }
 

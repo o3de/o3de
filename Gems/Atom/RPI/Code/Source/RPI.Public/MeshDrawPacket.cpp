@@ -258,7 +258,7 @@ namespace AZ
 
             ShaderReloadDebugTracker::ScopedSection reloadSection("MeshDrawPacket::DoUpdate");
 
-            RHI::DrawPacketBuilder drawPacketBuilder;
+            RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
             drawPacketBuilder.Begin(nullptr);
             drawPacketBuilder.SetGeometryView(&mesh);
             drawPacketBuilder.AddShaderResourceGroup(m_objectSrg->GetRHIShaderResourceGroup());
@@ -369,7 +369,7 @@ namespace AZ
 #endif
 
                 RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
-                variant.ConfigurePipelineState(pipelineStateDescriptor);
+                variant.ConfigurePipelineState(pipelineStateDescriptor, shaderOptions);
 
                 // Render states need to merge the runtime variation.
                 // This allows materials to customize the render states that the shader uses.

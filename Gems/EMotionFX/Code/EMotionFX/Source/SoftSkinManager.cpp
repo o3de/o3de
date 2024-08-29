@@ -19,7 +19,7 @@ namespace EMotionFX
 
     // constructor
     SoftSkinManager::SoftSkinManager()
-        : BaseObject()
+        : MCore::RefCounted()
     {
     }
 

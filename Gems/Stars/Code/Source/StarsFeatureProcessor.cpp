@@ -286,7 +286,7 @@ namespace AZ::Render
     {
         m_geometryView.SetDrawArguments(RHI::DrawLinear{ 1, 0, m_numStarsVertices, 0 });
 
-        RHI::DrawPacketBuilder drawPacketBuilder;
+        RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
         drawPacketBuilder.Begin(nullptr);
         drawPacketBuilder.SetGeometryView(&m_geometryView);
         drawPacketBuilder.AddShaderResourceGroup(m_drawSrg->GetRHIShaderResourceGroup());

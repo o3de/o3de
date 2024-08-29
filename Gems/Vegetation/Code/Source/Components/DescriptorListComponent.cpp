@@ -146,12 +146,12 @@ namespace Vegetation
 
     void DescriptorListComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationDescriptorProviderService", 0x62e51209));
+        services.push_back(AZ_CRC_CE("VegetationDescriptorProviderService"));
     }
 
     void DescriptorListComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationDescriptorProviderService", 0x62e51209));
+        services.push_back(AZ_CRC_CE("VegetationDescriptorProviderService"));
     }
 
     void DescriptorListComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& services)

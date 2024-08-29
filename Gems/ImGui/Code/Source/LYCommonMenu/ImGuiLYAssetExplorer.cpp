@@ -15,7 +15,6 @@
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/string/conversions.h>
-#include <IRenderAuxGeom.h>
 #include <IConsole.h>
 
 #include "ImGuiColorDefines.h"

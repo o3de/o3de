@@ -30,8 +30,8 @@ namespace AZ
         {
             enum class BufferBindFlags : uint32_t;
         }
-        class BufferView;
-        class ImageView;
+        class DeviceBufferView;
+        class DeviceImageView;
         struct BufferSubresourceRange;
     }
 
@@ -40,6 +40,24 @@ namespace AZ
         using StringList = AZStd::vector<AZStd::string>;
         using RawStringList = AZStd::vector<const char*>;
         using CpuVirtualAddress = uint8_t *;
+
+        struct PipelineAccessFlags
+        {
+            VkPipelineStageFlags m_pipelineStage = 0;
+            VkAccessFlags m_access = 0;
+
+            bool operator==(const PipelineAccessFlags& other) const
+            {
+                return m_pipelineStage == other.m_pipelineStage && m_access == other.m_access;
+            }
+
+            PipelineAccessFlags& operator|=(const PipelineAccessFlags& other)
+            {
+                m_pipelineStage |= other.m_pipelineStage;
+                m_access |= other.m_access;
+                return *this;
+            }
+        };
 
         class Device;
 
@@ -117,15 +135,18 @@ namespace AZ
 
         RawStringList FilterList(const RawStringList& source, const StringList& filter);
 
-        bool ResourceViewOverlaps(const RHI::BufferView& lhs, const RHI::BufferView& rhs);
+        bool ResourceViewOverlaps(const RHI::DeviceBufferView& lhs, const RHI::DeviceBufferView& rhs);
 
-        bool ResourceViewOverlaps(const RHI::ImageView& lhs, const RHI::ImageView& rhs);
+        bool ResourceViewOverlaps(const RHI::DeviceImageView& lhs, const RHI::DeviceImageView& rhs);
 
         bool SubresourceRangeOverlaps(const VkImageSubresourceRange& lhs, const VkImageSubresourceRange& rhs);
 
         bool SubresourceRangeOverlaps(const RHI::BufferSubresourceRange& lhs, const RHI::BufferSubresourceRange& rhs);
 
         bool IsRenderAttachmentUsage(RHI::ScopeAttachmentUsage usage);
+
+        /// Return true if the flags only included read accesses.
+        bool IsReadOnlyAccess(VkAccessFlags access);
 
         bool operator==(const VkImageSubresourceRange& lhs, const VkImageSubresourceRange& rhs);
 

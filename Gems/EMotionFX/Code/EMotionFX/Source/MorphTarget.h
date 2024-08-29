@@ -11,7 +11,7 @@
 // include the required headers
 #include <AzCore/Math/Quaternion.h>
 #include "EMotionFXConfig.h"
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 #include "EMotionFXManager.h"
 #include <MCore/Source/StringIdPool.h>
 
@@ -30,7 +30,8 @@ namespace EMotionFX
      * Morph targets apply additive modifications to nodes or meshes or anything else.
      */
     class EMFX_API MorphTarget
-        : public BaseObject
+        : public MCore::RefCounted
+
     {
         AZ_CLASS_ALLOCATOR_DECL
 

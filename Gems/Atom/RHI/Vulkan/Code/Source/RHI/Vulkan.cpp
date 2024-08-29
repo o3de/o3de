@@ -149,7 +149,7 @@ namespace AZ
             return x1 < y2 && y1 < x2;
         }
 
-        bool ResourceViewOverlaps(const RHI::BufferView& lhs, const RHI::BufferView& rhs)
+        bool ResourceViewOverlaps(const RHI::DeviceBufferView& lhs, const RHI::DeviceBufferView& rhs)
         {
             auto const& lhsBufferMemoryView = static_cast<const Buffer&>(lhs.GetBuffer()).GetBufferMemoryView();
             auto const& rhsBufferMemoryView = static_cast<const Buffer&>(rhs.GetBuffer()).GetBufferMemoryView();
@@ -167,7 +167,7 @@ namespace AZ
             return Overlaps(lhsBegin, lhsEnd, rhsBegin, rhsEnd);
         }
 
-        bool ResourceViewOverlaps(const RHI::ImageView& lhs, const RHI::ImageView& rhs)
+        bool ResourceViewOverlaps(const RHI::DeviceImageView& lhs, const RHI::DeviceImageView& rhs)
         {
             auto const& lhsImage = static_cast<const Image&>(lhs.GetImage());
             auto const& rhsImage = static_cast<const Image&>(rhs.GetImage());
@@ -206,6 +206,18 @@ namespace AZ
             default:
                 return false;
             }
+        }
+
+        bool IsReadOnlyAccess(VkAccessFlags access)
+        {
+            return !RHI::CheckBitsAny(
+                access,
+                VkAccessFlags(VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+                    VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+                    VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_HOST_WRITE_BIT | VK_ACCESS_MEMORY_WRITE_BIT |
+                    VK_ACCESS_TRANSFORM_FEEDBACK_WRITE_BIT_EXT | VK_ACCESS_TRANSFORM_FEEDBACK_COUNTER_WRITE_BIT_EXT |
+                    VK_ACCESS_CONDITIONAL_RENDERING_READ_BIT_EXT | VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR |
+                    VK_ACCESS_COMMAND_PREPROCESS_WRITE_BIT_NV | VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_NV));
         }
 
         bool operator==(const VkImageSubresourceRange& lhs, const VkImageSubresourceRange& rhs)

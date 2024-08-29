@@ -19,6 +19,11 @@ namespace AZ
             m_hardwareQueueClass = hardwareQueueClass;
         }
 
+        Device& FrameGraphExecuteGroup::GetDevice() const
+        {
+            return *m_device;
+        }
+
         const ExecuteWorkRequest& FrameGraphExecuteGroup::GetWorkRequest() const
         {
             return m_workRequest;

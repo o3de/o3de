@@ -361,7 +361,7 @@ namespace AzToolsFramework
 
         unsigned FileInfosNotificationMessage::GetMessageType() const
         {
-            static unsigned int messageType = AZ_CRC("FileProcessor::FileInfosNotification", 0x001c43f5);
+            static unsigned int messageType = AZ_CRC_CE("FileProcessor::FileInfosNotification");
             return messageType;
         }
 

@@ -107,7 +107,7 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
 
         editContext->Class<CEditorPreferencesPage_General>("General Editor Preferences", "Class for handling General Editor Preferences")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
+            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_generalSettings, "General Settings", "General Editor Preferences")
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_levelSaveSettings, "Prefab Settings", "General Prefab Settings")
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_messaging, "Messaging", "Messaging")

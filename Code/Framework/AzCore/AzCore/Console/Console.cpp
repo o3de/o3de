@@ -10,6 +10,7 @@
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/Json/JsonSerializationSettings.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/Settings/CommandLine.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
@@ -438,6 +439,9 @@ namespace AZ
         ConsoleFunctorFlags requiredClear
     )
     {
+        // incoming commands are assumed to be in the "C" locale as they might be from portable data files
+        AZ::Locale::ScopedSerializationLocale scopedLocale;
+
         bool result = false;
         ConsoleFunctorFlags flags = ConsoleFunctorFlags::Null;
 

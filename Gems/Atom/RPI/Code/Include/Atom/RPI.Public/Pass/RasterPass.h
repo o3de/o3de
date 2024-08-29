@@ -19,7 +19,8 @@ namespace AZ
 {
     namespace RPI
     {
-        //! A RasterPass is a leaf pass (pass with no children) that is used for rasterization.
+        //! A RasterPass is a leaf pass (pass with no children) that is used for rasterization
+        //! and it is required to have a valid @m_drawListTag at runtime.
         class RasterPass
             : public RenderPass
         {
@@ -47,6 +48,9 @@ namespace AZ
 
         protected:
             explicit RasterPass(const PassDescriptor& descriptor);
+
+            //! RenderPass override.
+            bool CanBecomeSubpass() override { return true; }
 
             // Pass behavior overrides
             void Validate(PassValidationResults& validationResults) override;
@@ -86,6 +90,7 @@ namespace AZ
             bool m_overrideScissorSate = false;
             bool m_overrideViewportState = false;
             uint32_t m_drawItemCount = 0;
+
         };
     }   // namespace RPI
 }   // namespace AZ

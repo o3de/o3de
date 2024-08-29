@@ -130,13 +130,13 @@ namespace ScriptCanvasEditor
 
         if (rootDataElementNode.GetVersion() < 7)
         {
-            rootDataElementNode.RemoveElementByName(AZ_CRC("m_pureDataNodesConvertedToVariables", 0x8823e2c4));
+            rootDataElementNode.RemoveElementByName(AZ_CRC_CE("m_pureDataNodesConvertedToVariables"));
         }
 
         // Always check and remove this unused field to keep asset clean
-        if (rootDataElementNode.FindElement(AZ_CRC("unitTestNodesConverted", 0x4389126a)) != -1)
+        if (rootDataElementNode.FindElement(AZ_CRC_CE("unitTestNodesConverted")) != -1)
         {
-            rootDataElementNode.RemoveElementByName(AZ_CRC("unitTestNodesConverted", 0x4389126a));
+            rootDataElementNode.RemoveElementByName(AZ_CRC_CE("unitTestNodesConverted"));
         }
         return true;
     }
@@ -1459,8 +1459,8 @@ namespace ScriptCanvasEditor
                         AZ::AttributeReader attributeReader(nullptr, assetTypeAttribute);
                         AZ::Data::AssetType assetType;
                         attributeReader.Read<AZ::Data::AssetType>(assetType);
-                        ScriptCanvasAssetIdDataInterface* interface = static_cast<ScriptCanvasAssetIdDataInterface*>(dataInterface);
-                        interface->SetAssetType(assetType);
+                        ScriptCanvasAssetIdDataInterface* assetIdinterface = static_cast<ScriptCanvasAssetIdDataInterface*>(dataInterface);
+                        assetIdinterface->SetAssetType(assetType);
                     }
 
                     if (AZ::Attribute* sourceAssetFilterAttribute = FindAttribute(AZ::Edit::Attributes::SourceAssetFilterPattern, method->GetMethod()->m_attributes))
@@ -1468,8 +1468,8 @@ namespace ScriptCanvasEditor
                         AZ::AttributeReader attributeReader(nullptr, sourceAssetFilterAttribute);
                         AZStd::string filterPattern;
                         attributeReader.Read<AZStd::string>(filterPattern);
-                        ScriptCanvasAssetIdDataInterface* interface = static_cast<ScriptCanvasAssetIdDataInterface*>(dataInterface);
-                        interface->SetStringFilter(filterPattern);
+                        ScriptCanvasAssetIdDataInterface* assetIdinterface = static_cast<ScriptCanvasAssetIdDataInterface*>(dataInterface);
+                        assetIdinterface->SetStringFilter(filterPattern);
                     }
                 }
 

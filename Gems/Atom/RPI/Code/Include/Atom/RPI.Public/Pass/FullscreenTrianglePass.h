@@ -10,7 +10,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/DeviceDrawItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 
 #include <Atom/RPI.Public/Pass/RenderPass.h>
@@ -46,9 +46,13 @@ namespace AZ
 
             //! Updates the shader options used in this pass
             void UpdateShaderOptions(const ShaderOptionList& shaderOptions);
+            void UpdateShaderOptions(const ShaderVariantId& shaderVariantId);
 
         protected:
             FullscreenTrianglePass(const PassDescriptor& descriptor);
+
+            //! RenderPass override.
+            bool CanBecomeSubpass() override { return true; }
 
             // Pass behavior overrides...
             void InitializeInternal() override;
@@ -63,6 +67,9 @@ namespace AZ
             void OnShaderReinitialized(const Shader& shader) override;
             void OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset) override;
             void OnShaderVariantReinitialized(const ShaderVariant& shaderVariant) override;
+
+            // Common code when updating the shader variant with new options
+            void UpdateShaderOptionsCommon();
 
             RHI::Viewport m_viewportState;
             RHI::Scissor m_scissorState;

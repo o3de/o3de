@@ -494,7 +494,7 @@ namespace AZ
                 return;
             }
 
-            DrawItemInfo drawItemInfo;
+            DrawItemInfo drawItemInfo{{RHI::MultiDevice::AllDevices}};
             RHI::DrawItem& drawItem = drawItemInfo.m_drawItem;
 
             // --- Geometry View ---
@@ -522,19 +522,18 @@ namespace AZ
             // --- PSO & SRG ---
 
             // Get RHI pipeline state from cached RHI pipeline states based on current draw state options
-            drawItem.m_pipelineState = GetCurrentPipelineState();
+            drawItem.SetPipelineState(GetCurrentPipelineState());
 
             // Setup per context srg if it exists
             if (m_srgPerContext)
             {
-                drawItem.m_shaderResourceGroupCount = 1;
-                drawItem.m_shaderResourceGroups = m_srgGroups;
+                drawItem.SetShaderResourceGroups(m_srgGroups, 1);
             }
 
             // Setup per draw srg
             if (drawSrg)
             {
-                drawItem.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup();
+                drawItem.SetUniqueShaderResourceGroup(drawSrg->GetRHIShaderResourceGroup());
             }
 
             // --- Scissor & Viewport ---
@@ -542,19 +541,17 @@ namespace AZ
             // Set scissor per draw if scissor is enabled.
             if (m_useScissor)
             {
-                drawItem.m_scissorsCount = 1;
-                drawItem.m_scissors = &m_scissor;
+                drawItem.SetScissors(&m_scissor, 1);
             }
 
             // Set viewport per draw if viewport is enabled.
             if (m_useViewport)
             {
-                drawItem.m_viewportsCount = 1;
-                drawItem.m_viewports = &m_viewport;
+                drawItem.SetViewports(&m_viewport, 1);
             }
 
             // Set stencil reference. Used when stencil is enabled.
-            drawItem.m_stencilRef = m_stencilRef;
+            drawItem.SetStencilRef(m_stencilRef);
 
             drawItemInfo.m_sortKey = m_sortKey++;
             m_cachedDrawItems.emplace_back(AZStd::move(drawItemInfo));
@@ -596,7 +593,7 @@ namespace AZ
                 return;
             }
 
-            DrawItemInfo drawItemInfo;
+            DrawItemInfo drawItemInfo{{RHI::MultiDevice::AllDevices}};
             RHI::DrawItem& drawItem = drawItemInfo.m_drawItem;
 
             // --- Geometry View ---
@@ -607,7 +604,6 @@ namespace AZ
             drawLinear.m_instanceCount = 1;
             drawLinear.m_vertexCount = vertexCount;
             newGeometryView.SetDrawArguments(drawLinear);
-
 
             // Write data to vertex buffer and set up stream buffer views for DrawItem
             // The stream buffer view need to be cached before the frame is end
@@ -620,19 +616,18 @@ namespace AZ
             // --- PSO & SRG ---
 
             // Get RHI pipeline state from cached RHI pipeline states based on current draw state options
-            drawItem.m_pipelineState = GetCurrentPipelineState();
+            drawItem.SetPipelineState(GetCurrentPipelineState());
 
             // Setup per context srg if it exists
             if (m_srgPerContext)
             {
-                drawItem.m_shaderResourceGroupCount = 1;
-                drawItem.m_shaderResourceGroups = m_srgGroups;
+                drawItem.SetShaderResourceGroups(m_srgGroups, 1);
             }
 
             // Setup per draw srg
             if (drawSrg)
             {
-                drawItem.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup();
+                drawItem.SetUniqueShaderResourceGroup(drawSrg->GetRHIShaderResourceGroup());
             }
 
             // --- Scissor & Viewport ---
@@ -640,15 +635,13 @@ namespace AZ
             // Set scissor per draw if scissor is enabled.
             if (m_useScissor)
             {
-                drawItem.m_scissorsCount = 1;
-                drawItem.m_scissors = &m_scissor;
+                drawItem.SetScissors(&m_scissor, 1);
             }
 
             // Set viewport per draw if viewport is enabled.
             if (m_useViewport)
             {
-                drawItem.m_viewportsCount = 1;
-                drawItem.m_viewports = &m_viewport;
+                drawItem.SetViewports(&m_viewport, 1);
             }
 
             drawItemInfo.m_sortKey = m_sortKey++;

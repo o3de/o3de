@@ -72,7 +72,7 @@ namespace UnitTest
             bounds = m_GetLocalBounds;
         }
 
-        AZ::Crc32 m_GetShapeType = AZ_CRC("MockShapeComponentHandler", 0x5189d279);
+        AZ::Crc32 m_GetShapeType = AZ_CRC_CE("MockShapeComponentHandler");
         AZ::Crc32 GetShapeType() const override
         {
             return m_GetShapeType;
@@ -107,7 +107,7 @@ namespace UnitTest
         static void Reflect(AZ::ReflectContext* reflect) { AZ_UNUSED(reflect); }
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
+            provided.push_back(AZ_CRC_CE("ShapeService"));
         }
     };
 

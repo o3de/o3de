@@ -682,6 +682,38 @@ namespace AZ
             return RPI::StreamingImage::FindOrCreate(streamingImageAsset);
         }
 
+        // Find a format for formats with two planars (DepthStencil) based on its ImageView's aspect flag
+        RHI::Format FindFormatForAspect(RHI::Format format, RHI::ImageAspect imageAspect)
+        {
+            RHI::ImageAspectFlags imageAspectFlags = RHI::GetImageAspectFlags(format);
+
+            // only need to convert if the source contains two aspects
+            if (imageAspectFlags == RHI::ImageAspectFlags::DepthStencil)
+            {
+                switch (imageAspect)
+                {
+                case RHI::ImageAspect::Stencil:
+                    return RHI::Format::R8_UINT;
+                case RHI::ImageAspect::Depth:
+                {
+                    switch (format)
+                    {
+                    case RHI::Format::D32_FLOAT_S8X24_UINT:
+                        return RHI::Format::R32_FLOAT;
+                    case RHI::Format::D24_UNORM_S8_UINT:
+                        return RHI::Format::R32_UINT;
+                    case RHI::Format::D16_UNORM_S8_UINT:
+                        return RHI::Format::R16_UNORM;
+                    default:
+                        AZ_Assert(false, "Unknown DepthStencil format. Please update this function");
+                        return RHI::Format::R32_FLOAT;
+                    }
+                }
+                }
+            }
+            return format;
+        }
+
         //! A helper function for GetComputeShaderNumThreads(), to consolidate error messages, etc.
         static bool GetAttributeArgumentByIndex(
             const Data::Asset<ShaderAsset>& shaderAsset,

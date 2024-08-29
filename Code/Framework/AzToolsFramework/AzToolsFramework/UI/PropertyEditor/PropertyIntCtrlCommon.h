@@ -204,7 +204,7 @@ namespace AzToolsFramework
                 AZ_WarningOnce("AzToolsFramework", false, "Failed to read 'Step' attribute from property '%s' into widget", debugName);
             }
         }
-        else if (attrib == AZ_CRC("Multiplier", 0xa49aa95b))
+        else if (attrib == AZ_CRC_CE("Multiplier"))
         {
             if (attrValue->Read<AZ::s64>(value))
             {
@@ -227,7 +227,7 @@ namespace AzToolsFramework
                 AZ_WarningOnce("AzToolsFramework", false, "Failed to read 'Suffix' attribute from property '%s' into widget", debugName);
             }
         }
-        else if (attrib == AZ_CRC("Prefix", 0x93b1868e))
+        else if (attrib == AZ_CRC_CE("Prefix"))
         {
             AZStd::string stringValue;
             if (attrValue->Read<AZStd::string>(stringValue))

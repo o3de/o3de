@@ -9,7 +9,6 @@
 
 #include <AtomCore/Instance/Instance.h>
 
-#include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/CopyItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 
@@ -135,7 +134,7 @@ namespace AZ
                 // Cached pipeline state descriptor
                 RHI::PipelineStateDescriptorForDraw m_pipelineStateDescriptor;
                 // The draw item for drawing the image preview for this type of image
-                RHI::DrawItem m_item;
+                RHI::DrawItem m_item{RHI::MultiDevice::AllDevices};
 
                 RHI::GeometryView m_geometryView;
 

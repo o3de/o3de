@@ -55,7 +55,7 @@ public:
     //If we're an unnamed container, just show our children in flat list.  Otherwise show the container name with children underneath
     AZ::u32 GetVisibility() const
     {
-        return m_varName.empty() ? AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20) : AZ_CRC("PropertyVisibility_Show", 0xa43c82dd);
+        return m_varName.empty() ? AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly") : AZ_CRC_CE("PropertyVisibility_Show");
     }
 
     void SetAutoExpand(bool autoExpand) { m_autoExpand = autoExpand; }

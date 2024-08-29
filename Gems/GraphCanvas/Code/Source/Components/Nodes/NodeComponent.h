@@ -50,13 +50,13 @@ namespace GraphCanvas
         // AZ::Component
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("GraphCanvas_NodeService", 0xcc0f32cc));
-            provided.push_back(AZ_CRC("GraphCanvas_SceneMemberService", 0xe9759a2d));
+            provided.push_back(AZ_CRC_CE("GraphCanvas_NodeService"));
+            provided.push_back(AZ_CRC_CE("GraphCanvas_SceneMemberService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("GraphCanvas_NodeService", 0xcc0f32cc));
+            incompatible.push_back(AZ_CRC_CE("GraphCanvas_NodeService"));
         }
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -66,7 +66,7 @@ namespace GraphCanvas
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("GraphCanvas_GeometryService", 0x80981600));
+            required.push_back(AZ_CRC_CE("GraphCanvas_GeometryService"));
             required.push_back(StyledGraphicItemServiceCrc);
         }
 

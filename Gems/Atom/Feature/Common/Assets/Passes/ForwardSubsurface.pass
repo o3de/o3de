@@ -6,6 +6,7 @@
         "PassTemplate": {
             "Name": "ForwardSubsurfacePassTemplate",
             "PassClass": "RasterPass",
+            "DefaultShaderAttachmentStage": "FragmentShader",
             "Slots": [
                 // Inputs...
                 {

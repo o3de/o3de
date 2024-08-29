@@ -18,7 +18,7 @@
 #include <SceneAPI/SceneCore/Events/ExportEventContext.h>
 #include <SceneAPI/SceneCore/Events/ExportProductList.h>
 
-#include <MCore/Source/MemoryObject.h>
+#include <MCore/Source/RefCounted.h>
 #include <EMotionFX/Pipeline/RCExt/Actor/ActorBuilder.h>
 #include <EMotionFX/Pipeline/RCExt/Actor/ActorGroupExporter.h>
 #include <EMotionFX/Pipeline/RCExt/ExportContexts.h>

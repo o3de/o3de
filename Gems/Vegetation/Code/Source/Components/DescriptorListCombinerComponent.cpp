@@ -38,7 +38,7 @@ namespace Vegetation
                     ->DataElement(0, &DescriptorListCombinerConfig::m_descriptorProviders, "Descriptor Providers", "Ordered list of descriptor providers.")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
-                    ->ElementAttribute(AZ::Edit::Attributes::RequiredService, AZ_CRC("VegetationDescriptorProviderService", 0x62e51209));
+                    ->ElementAttribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("VegetationDescriptorProviderService"));
                 ;
             }
         }
@@ -97,12 +97,12 @@ namespace Vegetation
 
     void DescriptorListCombinerComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationDescriptorProviderService", 0x62e51209));
+        services.push_back(AZ_CRC_CE("VegetationDescriptorProviderService"));
     }
 
     void DescriptorListCombinerComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationDescriptorProviderService", 0x62e51209));
+        services.push_back(AZ_CRC_CE("VegetationDescriptorProviderService"));
     }
 
     void DescriptorListCombinerComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& services)

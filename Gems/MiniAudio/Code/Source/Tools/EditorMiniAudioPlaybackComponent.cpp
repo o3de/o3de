@@ -32,7 +32,7 @@ namespace MiniAudio
                 editContext->Class<EditorMiniAudioPlaybackComponent>("MiniAudio Playback", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "MiniAudio")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
 
@@ -61,7 +61,7 @@ namespace MiniAudio
                     ->Class<MiniAudioPlaybackComponentConfig>(
                         "MiniAudioPlaybackComponent Config", "[Configuration for MiniAudioPlaybackComponent]")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
                     ->DataElement(
