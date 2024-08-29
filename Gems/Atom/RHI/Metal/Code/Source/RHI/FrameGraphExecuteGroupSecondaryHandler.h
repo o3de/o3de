@@ -13,11 +13,11 @@
 namespace AZ::Metal
 {
     //! Handler for a list of ExecuteGroupSecondary that are part of the same graph group.
-    //! All the execute groups share the same renderpass (if they use one) and each of 
-    //! the groups correspond to a subpass of the renderpass (if they use one). Also each 
-    //! execute group uses one or more secondary command list to record their work.
-    //! The handler owns the primary command list that will execute the secondary command
-    //! lists of each execute group.
+    //! All the execute groups share the same renderpass and each of 
+    //! the groups correspond to a subpass of the renderpass. Also each 
+    //! execute group uses one or more sub encoders to record their work.
+    //! One parallel encoder will be used for creating the sub encoders
+    //! of each execute group.
     class FrameGraphExecuteGroupSecondaryHandler final
         : public FrameGraphExecuteGroupHandler
     {

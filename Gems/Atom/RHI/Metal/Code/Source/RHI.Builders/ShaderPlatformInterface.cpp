@@ -446,13 +446,22 @@ namespace AZ
     
         void ShaderPlatformInterface::UpdateMetalSource(AZStd::string& metalSource, RHI::ShaderHardwareStage shaderStageType) const
         {
+            // In order to support subpasses on Metal we need to be able to change the index for a color output in the fragment shader.
+            // For example, you have 1 pass that is rendering to color0 and color1, and another pass rendering to also color0 and color1 (but
+            // not to the same textures). If we merge the two passes, and both are sharing one color attachment, then we would have 3 color
+            // attachments for both passes. Because of the rearrangement of the color attachments, the shaders of the second pass would need to
+            // output to color1 and color2 for example, hence we would need to change the indices for the outputs that were specified in the shader.
+            // Luckyly Metal supports using function specialization for specifiying the color index of an output at runtime.
             if(shaderStageType != RHI::ShaderHardwareStage::Fragment)
             {
                 return;
             }
             
             // Base function constant id so it doesn't clash with function constant id's for shader options
+            // We don't really care about the id because at runtime we use the name for updating the constant.
             constexpr int BaseFunctionConstantId = 1000;
+            // We need a way to identify an input attachment from a normal color output (to transform it to a function specialization).
+            // After SPIR-V cross they both look the same. We use an offset for input attachments to differentiate them.
             constexpr int BaseInputAttachmentId = 100;
             int functionConstantId = BaseFunctionConstantId;
             AZStd::bitset<RHI::Limits::Pipeline::AttachmentColorCountMax> foundColorAttachments;
@@ -482,6 +491,8 @@ namespace AZ
                     constantString = AZStd::string::format("[[color(inputAttachment%d_tmp)", inputAttachmentIndex);
                 }
                 metalSource.replace(findPos, len, constantString);
+                // We use 2 constants. One is the function specialization, and the other is a normal constant that has a default value
+                // since Metal doesn't support default values for function specialization.
                 if (inputAttachmentIndex >= 0)
                 {
                     if(!foundInputAttachments.test(inputAttachmentIndex))
@@ -504,6 +515,7 @@ namespace AZ
             
             if(foundColorAttachments.any())
             {
+                // Insert the function specialization at the top of the shader
                 AZStd::string startOfShaderTag = "using namespace metal;";
                 const size_t startOfShaderPos = metalSource.find(startOfShaderTag);
                 if (startOfShaderPos != AZStd::string::npos)
@@ -699,6 +711,7 @@ namespace AZ
                             break;
                         }
                         case RHI::ShaderInputImageType::SubpassInput:
+                            // SubpassInputs do not use a texture. The value is read from the framebuffer directly.
                             continue;
                         default:
                         {

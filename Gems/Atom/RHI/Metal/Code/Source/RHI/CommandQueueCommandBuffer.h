@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#include <Atom/RHI/Object.h>
 #include <Atom/RHI.Reflect/Limits.h>
 #include <Metal/Metal.h>
 
@@ -15,8 +14,7 @@ namespace AZ
 {
     namespace Metal
     {        
-        class CommandQueueCommandBuffer 
-            : public RHI::Object
+        class CommandQueueCommandBuffer
         {
         public:
             CommandQueueCommandBuffer() = default;

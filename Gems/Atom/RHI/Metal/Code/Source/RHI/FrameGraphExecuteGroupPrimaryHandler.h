@@ -12,10 +12,9 @@
 
 namespace AZ::Metal
 {
-    //! Handler for one ExecuteGroupPrimary (contains one or more scopes).
-    //! The handler is in charge of creating renderpasses and framebuffers that
+    //! Handler for one ExecuteGroupPrimary (which contains one or more scopes).
+    //! The handler is in charge of creating renderpasses that
     //! each scope in the execute group will use. These are not shared among scopes.
-    //! It also contains the primary command list that each scope uses for recording its work.
     class FrameGraphExecuteGroupPrimaryHandler final
         : public FrameGraphExecuteGroupHandler
     {
@@ -36,7 +35,7 @@ namespace AZ::Metal
         void EndInternal() override;
         //////////////////////////////////////////////////////////////////////////
 
-        // List of renderpasses and framebuffers used by the execute group.
+        // List of renderpasses used by the execute group.
         AZStd::vector<RenderPassContext> m_renderPassContexts;
     };
 }

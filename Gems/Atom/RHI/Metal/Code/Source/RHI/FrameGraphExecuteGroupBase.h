@@ -35,12 +35,14 @@ namespace AZ
             ExecuteWorkRequest&& AcquireWorkRequest();
 
             RHI::HardwareQueueClass GetHardwareQueueClass();
-            
+
+            //! Returns the group id of this FrameGraphExecuteGroup (used for subpass grouping)
             const RHI::GraphGroupId& GetGroupId() const;
             
             //! Set the command buffer that the group will use.
             void SetCommandBuffer(CommandQueueCommandBuffer* commandBuffer);
-            
+
+            //! Set the FrameGraphExecuteGroupHandler that this group belongs.
             void SetHandler(FrameGraphExecuteGroupHandler* handler);
             
             virtual AZStd::span<const Scope* const> GetScopes() const = 0;
@@ -69,7 +71,9 @@ namespace AZ
             Device* m_device = nullptr;
             RHI::GraphGroupId m_groupId;
             FrameGraphExecuteGroupHandler* m_handler = nullptr;
+            //! Autorelease pool for the group
             NSAutoreleasePool* m_groupAutoreleasePool = nullptr;
+            //! Autorelease pool for each context used (may be a different thread from the group)
             AZStd::vector<NSAutoreleasePool*> m_contextAutoreleasePools;
         };
     }

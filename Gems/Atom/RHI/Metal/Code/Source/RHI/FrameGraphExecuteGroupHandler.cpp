@@ -21,9 +21,6 @@ namespace AZ
         RHI::ResultCode FrameGraphExecuteGroupHandler::Init(
             Device& device, const AZStd::vector<RHI::FrameGraphExecuteGroup*>& executeGroups)
         {
-            //Create the autorelease pool to ensure command buffer is not leaked
-            //CreateAutoreleasePool();
-            
             m_device = &device;
             m_executeGroups = executeGroups;
             m_hardwareQueueClass = static_cast<FrameGraphExecuteGroupBase*>(executeGroups.back())->GetHardwareQueueClass();
@@ -42,7 +39,6 @@ namespace AZ
     
         void FrameGraphExecuteGroupHandler::Shutdown()
         {
-            //FlushAutoreleasePool();
             m_device = nullptr;
             m_executeGroups.clear();
             m_isExecuted = false;
@@ -96,12 +92,11 @@ namespace AZ
     
         void FrameGraphExecuteGroupHandler::UpdateSwapChain(RenderPassContext &context)
         {
+            // Check if the renderpass is using the swapchain texture
             if(context.m_swapChainAttachment)
             {
-                //Metal requires you to request for swapchain drawable as late as possible in the frame. Hence we call for the drawable
-                //here and attach it directly to the colorAttachment. The assumption here is that this scope should be the
-                //CopyToSwapChain scope. With this way if the internal resolution differs from the window resolution the compositer
-                //within the metal driver will perform the appropriate upscale/downscale at the end.
+                // Metal requires you to request for swapchain drawable as late as possible in the frame. Hence we call for the drawable
+                // here and attach it directly to the colorAttachment.
                 uint32_t deviceIndex = static_cast<FrameGraphExecuteGroupBase*>(m_executeGroups.front())->GetScopes().front()->GetDeviceIndex();
                 const RHI::DeviceSwapChain* swapChain = context.m_swapChainAttachment->GetSwapChain()->GetDeviceSwapChain(deviceIndex).get();
                 SwapChain* metalSwapChain = static_cast<SwapChain*>(const_cast<RHI::DeviceSwapChain*>(swapChain));
@@ -116,6 +111,7 @@ namespace AZ
                         break;
                     }
                 }
+                // This call may block if the presentation system doesn't have any drawables available.
                 id<MTLTexture> drawableTexture = metalSwapChain->RequestDrawable(needsImageView);
                 context.m_renderPassDescriptor.colorAttachments[context.m_swapChainAttachmentIndex].texture = drawableTexture;
              }

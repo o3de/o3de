@@ -41,10 +41,14 @@ namespace AZ
             void Shutdown();
             void End();
 
+            //! Returns true if all FrameGraphExecuteGroup of this handler have finished.
             bool IsComplete() const;
+            //! Returns true if the work has been submitted to the queue.
             bool IsExecuted() const;
 
+            //! Callback from a FrameGraphExecuteGroup signaling that has begun it's execution.
             void BeginGroup(const FrameGraphExecuteGroupBase* group);
+            //! Callback from a FrameGraphExecuteGroup signaling that has ended it's execution.
             void EndGroup(const FrameGraphExecuteGroupBase* group);
 
         protected:
@@ -54,9 +58,9 @@ namespace AZ
             virtual void BeginGroupInternal(const FrameGraphExecuteGroupBase* group) {}
             virtual void EndGroupInternal(const FrameGraphExecuteGroupBase* group) {}
 
+            //! Adds the workRequest to the handler's workRequest.
             void AddWorkRequest(const ExecuteWorkRequest& workRequest);
-            void FlushAutoreleasePool();
-            void CreateAutoreleasePool();
+            //! Request the next drawable from the Swapchain and updates the MTLRenderPassDescriptor
             void UpdateSwapChain(RenderPassContext& context);
 
             Device* m_device = nullptr;

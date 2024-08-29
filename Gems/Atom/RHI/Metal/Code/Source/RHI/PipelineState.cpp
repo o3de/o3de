@@ -155,6 +155,8 @@ namespace AZ
             RHI::Format depthStencilFormat = RHI::Format::Unknown;
             m_attachmentIndexToColorIndex.fill(-1);
             int currentColorIndex = 0;
+            // Initialize all used color attachments (by all subpasses) and only enable the ones used in this subpass.
+            // Also collect the format for the depth/stencil if one is being used.
             for (uint32_t subpassIndex = 0; subpassIndex < attachmentLayout.m_subpassCount; ++subpassIndex)
             {
                 const RHI::SubpassRenderAttachmentLayout& subpassLayout = attachmentLayout.m_subpassLayouts[subpassIndex];
@@ -176,7 +178,10 @@ namespace AZ
                     colorDescriptor.blendingEnabled = false;
                 }
             }
-            
+
+            // Enable the color attachments used by the subpass.
+            // Also translates the proper color index for the blending state (since index 0 may now be index 3
+            // due to merging passes)
             const RHI::SubpassRenderAttachmentLayout& subpassLayout = attachmentLayout.m_subpassLayouts[attachmentsConfiguration.m_subpassIndex];
             for(uint32_t subpassAttachmentIndex = 0; subpassAttachmentIndex < subpassLayout.m_rendertargetCount; ++subpassAttachmentIndex)
             {
@@ -211,7 +216,7 @@ namespace AZ
                 m_renderPipelineDesc.stencilAttachmentPixelFormat = ConvertPixelFormat(depthStencilFormat);
             }
             
-            //Depthstencil state
+            // Depthstencil state
             if(descriptor.m_renderStates.m_depthStencilState.m_depth.m_enable || IsDepthStencilMerged(depthStencilFormat))
             {
                 m_renderPipelineDesc.depthAttachmentPixelFormat = ConvertPixelFormat(depthStencilFormat);
@@ -379,6 +384,8 @@ namespace AZ
             
             if(const RHI::PipelineStateDescriptorForDraw* drawPipelineDescriptor = azrtti_cast<const RHI::PipelineStateDescriptorForDraw*>(&pipelineDescriptor))
             {
+                // Set the function specialization values for the color and input attachments according to the attachments of the renderpass.
+                // This is needed in order to support merging of passes as subpasses. See Metal::ShaderPlatformInterface
                 const RHI::RenderAttachmentConfiguration& renderAttachmentConfiguration = drawPipelineDescriptor->m_renderAttachmentConfiguration;
                 const RHI::SubpassRenderAttachmentLayout& subpassLayout = renderAttachmentConfiguration.m_renderAttachmentLayout.m_subpassLayouts[renderAttachmentConfiguration.m_subpassIndex];
                 for (uint32_t i = 0; i < subpassLayout.m_rendertargetCount; ++i)

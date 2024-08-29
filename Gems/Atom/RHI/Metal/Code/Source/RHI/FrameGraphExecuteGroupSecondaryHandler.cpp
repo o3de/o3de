@@ -61,8 +61,11 @@ namespace AZ::Metal
         AZStd::lock_guard<AZStd::mutex> lock(m_m_secondaryEncodersMutex);
         if (!m_secondaryEncodersCreated)
         {
+            // We delay as much as possible getting the next drawable from the swapchain
             UpdateSwapChain(m_renderPassContext);
-            
+
+            // Since the parallel encoder needs the renderpass, only after updating the renderpass with the swapchain
+            // texture we can create the secondary encoders.
             // Create all the render encoders before in order to establish order. This is because MTLCommandBuffer
             // always match the execution order of the sub render encoders to the order in which they were created.
             for (auto executeGroupBase : m_executeGroups)

@@ -11,7 +11,6 @@
 #include <Atom/RHI/ObjectCollector.h>
 #include <Atom/RHI/DeviceBufferPool.h>
 #include <Atom/RHI/DeviceSwapChain.h>
-#include <Atom/RHI/RHISystemInterface.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -39,7 +38,6 @@ namespace AZ
     {
         class Device final
             : public RHI::Device
-            , public RHI::RHISystemNotificationBus::Handler
         {
             using Base = RHI::Device;
         public:
@@ -160,10 +158,6 @@ namespace AZ
             
             RHI::ResultCode ClearRenderAttachments(CommandList& commandList, MTLRenderPassDescriptor* renderpassDesc, const AZStd::vector<ClearAttachments::ClearData>& clearAttachmentData);
             
-        protected:
-            // RHI::RHISystemNotificationBus::Handler overrides...
-            void OnRHISystemInitialized() override;
-           
         private:
             Device();
             
@@ -214,7 +208,8 @@ namespace AZ
             // This object helps manage the global bindless argument buffer that stores
             // all the bindless views
             BindlessArgumentBuffer m_bindlessArgumentBuffer;
-            
+
+            // Used for clearing attachments when using subpasses.
             ClearAttachments m_clearAttachments;
         };
     }

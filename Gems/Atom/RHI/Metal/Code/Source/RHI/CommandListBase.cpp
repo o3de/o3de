@@ -212,6 +212,7 @@ namespace AZ
                     AZ_Assert(false, "Encoder Type not supported");
                 }
             }
+            // We need the encoder to survive the autorelease pool when using a parallel encoder
             [m_encoder retain];
             m_encoder.label = m_encoderScopeName;
             AZ_Assert(m_encoder != nil, "Could not create the encoder");

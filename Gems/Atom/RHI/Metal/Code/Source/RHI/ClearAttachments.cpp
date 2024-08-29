@@ -17,6 +17,8 @@
 #include <Atom/RHI.Reflect/RenderAttachmentLayout.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 
+// Metal shader used for doing the clearing.
+// It uses a full screen triangle as geometry and push constants for the clearing values.
 const char* MetalShaderSource = R"(
 #include <metal_stdlib>
 using namespace metal;
@@ -71,7 +73,7 @@ namespace AZ::Metal
     {
         RHI::DeviceObject::Init(device);
         
-        // No streams required
+        // No streams required. We calculate the vertices positions in the vertex shader.
         RHI::InputStreamLayout inputStreamLayout;
         inputStreamLayout.SetTopology(RHI::PrimitiveTopology::TriangleList);
         inputStreamLayout.Finalize();
@@ -150,7 +152,9 @@ namespace AZ::Metal
         {
             return RHI::ResultCode::InvalidArgument;
         }
-        
+
+        // Need to build a RHI::RenderAttachmentConfiguration and RHI::RenderStates from the
+        // MTLRenderPassDescriptor for the PipelineStateDescriptor.
         PushConstants pushConstants{};
         uint32_t stencilRef = 0;
         RHI::RenderStates renderStates;
@@ -197,6 +201,7 @@ namespace AZ::Metal
         {
             if (clearData.m_attachmentIndex < RHI::Limits::Pipeline::AttachmentColorCountMax)
             {
+                // Enable the writing to the color attachment that needs clearing.
                 RHI::TargetBlendState& blendState = renderStates.m_blendState.m_targets[clearData.m_attachmentIndex];
                 blendState.m_enable = 1;
                 blendState.m_writeMask = 0xF;
@@ -206,6 +211,7 @@ namespace AZ::Metal
             {
                 if (RHI::CheckBitsAll(clearData.m_imageAspects, RHI::ImageAspectFlags::Depth))
                 {
+                    // Enable depth write so we can write the clear value
                     RHI::DepthState& depthState = renderStates.m_depthStencilState.m_depth;
                     depthState.m_enable = 1;
                     pushConstants.m_depth = clearData.m_clearValue.m_depthStencil.m_depth;
@@ -213,6 +219,7 @@ namespace AZ::Metal
                 
                 if (RHI::CheckBitsAll(clearData.m_imageAspects, RHI::ImageAspectFlags::Stencil))
                 {
+                    // Enable stencil writing so we can write the clear value
                     RHI::StencilState& stencilState = renderStates.m_depthStencilState.m_stencil;
                     stencilState.m_enable = 1;
                     stencilState.m_frontFace.m_failOp = RHI::StencilOp::Replace;
@@ -227,7 +234,8 @@ namespace AZ::Metal
                 }
             }
         }
-        
+
+        // Check the pipeline cache for the pipeline state
         const RHI::PipelineState* pipelineState = nullptr;
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_pipelineCacheMutex);
@@ -243,6 +251,7 @@ namespace AZ::Metal
             
             if (!pipelineState)
             {
+                // Need to compile a new PipelineState
                 RHI::Ptr<RHI::PipelineState> pipelineStatePtr = aznew RHI::PipelineState;
                 RHI::ResultCode result = pipelineStatePtr->Init(static_cast<RHI::MultiDevice::DeviceMask>((1 << GetDevice().GetDeviceIndex())), pipelineDescriptor);
                 if(result != RHI::ResultCode::Success)

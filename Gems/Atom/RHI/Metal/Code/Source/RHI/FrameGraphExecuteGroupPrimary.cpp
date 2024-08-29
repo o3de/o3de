@@ -30,8 +30,8 @@ namespace AZ::Metal
         m_scopes = AZStd::move(scopes);
         m_workRequest.m_commandLists.resize(1);
         
-        //We split scopes based on fence boundary and hence we only neeed to wait for any relevant
-        //fences on the top scope and signal fence for the last scope.
+        // We split scopes based on fence boundary and hence we only neeed to wait for any relevant
+        // fences on the top scope and signal fence for the last scope.
         m_workRequest.m_waitFenceValues = m_scopes.front()->GetWaitFences();
         m_workRequest.m_signalFenceValue = m_scopes.back()->GetSignalFenceValue();
         

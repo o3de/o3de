@@ -86,6 +86,7 @@ namespace AZ
                                 const bool isGraphicsDevModeEnabled,
                                 RHI::ShaderHardwareStage shaderStageType) const;
             
+            // Updates the metal shader for using subpass inputs
             void UpdateMetalSource(AZStd::string& metalSource, RHI::ShaderHardwareStage shaderStageType) const;
             
             using ArgBufferEntries = AZStd::pair<AZStd::string, uint32_t>;

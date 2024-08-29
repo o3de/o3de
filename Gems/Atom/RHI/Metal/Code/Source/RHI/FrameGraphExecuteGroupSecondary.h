@@ -19,8 +19,8 @@ namespace AZ::Metal
     class SwapChain;
     struct RenderPassContext;
 
-    //! Execute group for one scope that uses one or more secondary command lists to
-    //! record it's work. Renderpass and framebuffers (if needed) are handled by the FrameGraphExecuteGroupSecondaryHandler.
+    //! Execute group for one scope that uses multiple encoders to
+    //! record it's work. Renderpass (if needed) are handled by the FrameGraphExecuteGroupSecondaryHandler.
     class FrameGraphExecuteGroupSecondary final
         : public FrameGraphExecuteGroupBase
     {
@@ -45,13 +45,18 @@ namespace AZ::Metal
         //////////////////////////////////////////////////////////////////////////
 
         //! Set the render context and subpass that will be used by this execute group.
+        //! This render context is the same for all other FrameGraphExecuteGroupSecondary of the handler.
         void SetRenderContext(const RenderPassContext& renderPassContext);
 
+        //! Returns the scope of this group. There's only one scope.
         const Scope* GetScope() const;
-        
+
+        //! Encodes all wait events for the group and the scope
         void EncondeAllWaitEvents() const;
+        //! Encodes all signal events for the group and the scope
         void EncodeAllSignalEvents() const;
-        
+
+        //! Creates the sub encoders that will be used for recording the work of the scope.
         void CreateSecondaryEncoders();
 
     private:
@@ -69,7 +74,7 @@ namespace AZ::Metal
 
         Scope* m_scope = nullptr;
         
-        // Render context that contains the framebuffer that this group will use.
+        // Render context that contains the renderpass that this group will use.
         RenderPassContext m_renderPassContext;
 
         struct SubEncoderData
@@ -78,7 +83,7 @@ namespace AZ::Metal
             id <MTLCommandEncoder> m_subRenderEncoder;
         };
         
-        //Container to hold commandlist and render encoder to be used per contextId.
+        // Container to hold commandlist and render encoder to be used per contextId.
         AZStd::vector<SubEncoderData > m_subRenderEncoders;
     };
 }

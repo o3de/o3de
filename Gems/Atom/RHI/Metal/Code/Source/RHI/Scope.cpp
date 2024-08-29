@@ -107,6 +107,10 @@ namespace AZ
                 
                 if (RHI::CheckBitsAll(GetActivationFlags(), RHI::Scope::ActivationFlags::Subpass))
                 {
+                    // When merging passes as subpasses, we may need to clear at the beginning of the subpass.
+                    // We may not be able to use the clear load action, because there's another subpass before that
+                    // is using the attachment. Metal doesn't provide a way of clearing a render attachment mid pass
+                    // so we use a full screen triangle to do the clearing.
                     AZStd::vector<ClearAttachments::ClearData> clearAttachmentData;
                     for (auto imageAttachment : GetImageAttachments())
                     {
@@ -115,8 +119,10 @@ namespace AZ
                         bool clearStencil = loadStoreAction.m_loadActionStencil == RHI::AttachmentLoadAction::Clear;
                         if (clear || clearStencil)
                         {
+                            // Check if there's another scope before this that is using the attachment
                             if (!IsFirstUsage(imageAttachment))
                             {
+                                // We can't use load clear action, so we have to do manual clearing.
                                 if (imageAttachment->GetUsage() == RHI::ScopeAttachmentUsage::RenderTarget)
                                 {
                                     const ImageView* imageView = static_cast<const ImageView*>(imageAttachment->GetImageView()->GetDeviceImageView(GetDeviceIndex()).get());

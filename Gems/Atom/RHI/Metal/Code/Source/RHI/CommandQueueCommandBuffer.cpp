@@ -119,6 +119,7 @@ namespace AZ
                 //Create the parallel encoder which will be used to create all the sub render encoders.
                 m_mtlParallelEncoder = [m_mtlCommandBuffer parallelRenderCommandEncoderWithDescriptor:renderPassDescriptor];
                 AZ_Assert(m_mtlParallelEncoder != nil, "Could not create the ParallelRenderCommandEncoder");
+                // We need the parallel encoder to survive until all FrameExecuteGroups have finished.
                 [m_mtlParallelEncoder retain];
             }
             

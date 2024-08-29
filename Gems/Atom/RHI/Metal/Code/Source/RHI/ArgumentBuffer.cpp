@@ -128,6 +128,7 @@ namespace AZ
 
             for (const RHI::ShaderInputImageDescriptor& shaderInputImage : m_srgLayout->GetShaderInputListForImages())
             {
+                // SubpassInputs do not use a texture in the SRG for Metal.
                 if (shaderInputImage.m_type != RHI::ShaderInputImageType::SubpassInput)
                 {
                     MTLArgumentDescriptor* imgArgDescriptor = [[[MTLArgumentDescriptor alloc] init] autorelease];

@@ -184,8 +184,7 @@ namespace AZ
             }
 #endif
             // Create the handlers to manage the execute groups.
-            // Handlers manage one or multiple execute groups by creating a shared renderpass/framebuffer
-            // or advancing the subpass if needed.
+            // Handlers manage one or multiple execute groups by creating a shared renderpass.
             auto groups = GetGroups();
             AZStd::vector<RHI::FrameGraphExecuteGroup*> groupRefs;
             groupRefs.reserve(groups.size());

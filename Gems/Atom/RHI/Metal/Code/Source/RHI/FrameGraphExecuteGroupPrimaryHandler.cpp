@@ -46,6 +46,7 @@ namespace AZ::Metal
 
     void FrameGraphExecuteGroupPrimaryHandler::BeginGroupInternal([[maybe_unused]] const FrameGraphExecuteGroupBase* group)
     {
+        // There's only one group so this should be call once.
         for (auto& context : m_renderPassContexts)
         {
             UpdateSwapChain(context);
