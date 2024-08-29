@@ -21,19 +21,16 @@ FetchContent_Declare(
     GIT_TAG "d41b6b253d215a003ed6cfd7db197dbe7e7e8206"
 )
 
-message(WARNING "Gene ${CMAKE_MODULE_PATH}")
-
 set(ASSIMP_BUILD_ZLIB OFF)
-set(ASSIMP_BUILD_ASSIMP_TOOLS ON)
+set(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
 set(ASSIMP_BUILD_USD_IMPORTER ON)
-set(ASSIMP_WARNINGS_AS_ERRORS OFF)
+set(ASSIMP_WARNINGS_AS_ERRORS OFF)  # No sure why this doesn't work. Warnings are still treated as error; need to add warning disabled commandline parameters to PAL_assimp_msvc.cmake
+set(ASSIMP_BUILD_TESTS OFF)
 set(ASSIMP_INSTALL OFF)  # Disable since we're using Assimp as a sub module
 
-get_property(
-    compile_options
-    DIRECTORY
-    PROPERTY COMPILE_OPTIONS
-)
+# Clear O3DE's CXX_FLAGS before building Assimp, then restore them after 
+set(CMAKE_CXX_FLAGS_OLD "${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "")
 
 include(Platform/${PAL_PLATFORM_NAME}/PAL_assimp_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
@@ -54,15 +51,13 @@ find_package(zlib REQUIRED)
 
 #target_link_libraries(assimp PRIVATE zlib)
 
+message("Gene CMAKE_CXX_FLAGS before Fetch: ${CMAKE_CXX_FLAGS}")
 
 FetchContent_MakeAvailable(assimp)
 
 # Restore compile options
-set_property(
-    DIRECTORY
-    PROPERTY COMPILE_OPTIONS ${compile_options}
-)
-unset(compile_options)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_OLD}")
+
 
 # Reenable warnings as errors
 #set(COMPILE_WARNING_AS_ERROR ON CACHE BOOL "" FORCE)

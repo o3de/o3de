@@ -7,9 +7,5 @@
 #
 
 # Set compiler options specific to this compiler
-message("Gene COMPILE_OPTIONS: ${COMPILE_OPTIONS}")
- set_property(
-    DIRECTORY
-    APPEND_STRING
-    PROPERTY COMPILE_OPTIONS "/EHsc /wd4777"
-)
+message("Gene CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /wd4777 /wd5032")
