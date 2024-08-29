@@ -81,7 +81,7 @@ namespace AZ
                     const PhysicalDevice& physicalDevice = static_cast<const PhysicalDevice&>(m_device.GetPhysicalDevice());
                     m_collectSubpassMergeInfo = descriptor.m_subpassCount > 1 &&
                         physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::SubpassMergeFeedback);
-#if AZ_LOG_SUBPASS_MERGE_FEEDBACK
+#if !AZ_LOG_SUBPASS_MERGE_FEEDBACK
                     m_collectSubpassMergeInfo = false;
 #endif
                     m_descriptor = &descriptor;

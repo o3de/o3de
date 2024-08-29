@@ -46,7 +46,7 @@ namespace AZ
             : Pass(descriptor)
         {
             m_flags.m_createChildren = true;
-            m_flags.m_canBeSubpass = true;
+            m_flags.m_canBecomeASubpass = true;
             UpdateFlagsFromPassData();
             AZ_Warning(
                 "ParentPass",
@@ -382,7 +382,7 @@ namespace AZ
                 {                   
                     m_flags.m_mergeChildrenAsSubpasses = RHI::RHISystemInterface::Get()->CanMergeSubpasses();
                 }
-                m_flags.m_canBeSubpass = m_passData->m_canBeSubpass;
+                m_flags.m_canBecomeASubpass = m_passData->m_canBecomeASubpass;
             }
         }
 
@@ -664,7 +664,7 @@ namespace AZ
 
         bool ParentPass::CanBecomeSubpass() const
         {
-            if (!m_flags.m_canBeSubpass)
+            if (!m_flags.m_canBecomeASubpass)
             {
                 return false;
             }
@@ -676,17 +676,17 @@ namespace AZ
                     continue;
                 }
 
-                bool canBeSubpass = false;
+                bool canBecomeASubpass = false;
                 if (RenderPass* renderChild = azrtti_cast<RenderPass*>(m_children[i].get()))
                 {
-                    canBeSubpass = renderChild->CanBecomeSubpass();
+                    canBecomeASubpass = renderChild->CanBecomeSubpass();
                 }
                 else if (ParentPass* parentChild = azrtti_cast<ParentPass*>(m_children[i].get()))
                 {
-                    canBeSubpass = parentChild->CanBecomeSubpass();
+                    canBecomeASubpass = parentChild->CanBecomeSubpass();
                 }
 
-                if (!canBeSubpass)
+                if (!canBecomeASubpass)
                 {
                     return false;
                 }
