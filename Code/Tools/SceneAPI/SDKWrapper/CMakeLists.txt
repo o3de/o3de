@@ -34,33 +34,24 @@ set(CMAKE_CXX_FLAGS "")
 
 include(Platform/${PAL_PLATFORM_NAME}/PAL_assimp_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
-# Temporarily disable warnings as errors from TinyUSDZ (Assimp library dependency)
-#set(COMPILE_WARNING_AS_ERROR OFF CACHE BOOL "" FORCE)
-
 # Include compiler settings for Assimp libraries
 include(Platform/Common/${PAL_TRAIT_COMPILER_ID}/PAL_assimp_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake)
 
-#set_property(
-#    DIRECTORY
-#    APPEND
-#    PROPERTY COMPILE_DEFINITIONS DT_POLYREF64
-#)
-
 # Assimp requires ZLIB
 find_package(zlib REQUIRED)
-
-#target_link_libraries(assimp PRIVATE zlib)
-
-message("Gene CMAKE_CXX_FLAGS before Fetch: ${CMAKE_CXX_FLAGS}")
 
 FetchContent_MakeAvailable(assimp)
 
 # Restore compile options
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_OLD}")
 
-
-# Reenable warnings as errors
-#set(COMPILE_WARNING_AS_ERROR ON CACHE BOOL "" FORCE)
+# Place external assimp under SDKWrapper target.
+get_property(sdkwrapper_target_root GLOBAL PROPERTY "@GEMROOT:${gem_name}@")
+ly_get_engine_relative_source_dir(${sdkwrapper_target_root} relative_sdkwrapper_target_root)
+set(assimpLibraries assimp)
+foreach(assimpLibrary ${assimpLibraries})
+    set_property(TARGET ${assimpLibrary} PROPERTY FOLDER "${relative_sdkwrapper_target_root}/External")
+endforeach()
 
 
 ly_add_target(
