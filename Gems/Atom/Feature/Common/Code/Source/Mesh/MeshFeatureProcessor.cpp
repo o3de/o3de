@@ -2204,7 +2204,7 @@ namespace AZ
 
                 // retrieve vertex/index buffers
                 RHI::InputStreamLayout inputStreamLayout;
-                RHI::GeometryView::StreamBufferIndices streamIndices;
+                RHI::StreamBufferIndices streamIndices;
 
                 [[maybe_unused]] bool result = modelLod->GetStreamsForMesh(
                     inputStreamLayout,
@@ -2225,7 +2225,7 @@ namespace AZ
                     continue;
                 }
 
-                RHI::GeometryView::StreamIterator streamIter = mesh.CreateStreamIterator(streamIndices);
+                auto streamIter = mesh.CreateStreamIterator(streamIndices);
 
                 // note that the element count is the size of the entire buffer, even though this mesh may only
                 // occupy a portion of the vertex buffer.  This is necessary since we are accessing it using
@@ -2259,18 +2259,18 @@ namespace AZ
                 RayTracingFeatureProcessor::SubMeshMaterial& subMeshMaterial = subMesh.m_material;
                 subMesh.m_positionFormat = PositionStreamFormat;
                 subMesh.m_positionVertexBufferView = streamIter[0];
-                subMesh.m_positionShaderBufferView = const_cast<RHI::Buffer*>(streamIter[0].GetBuffer())->GetBufferView(positionBufferDescriptor);
+                subMesh.m_positionShaderBufferView = const_cast<RHI::Buffer*>(streamIter[0].GetBuffer())->BuildBufferView(positionBufferDescriptor);
 
                 subMesh.m_normalFormat = NormalStreamFormat;
                 subMesh.m_normalVertexBufferView = streamIter[1];
-                subMesh.m_normalShaderBufferView = const_cast<RHI::Buffer*>(streamIter[1].GetBuffer())->GetBufferView(normalBufferDescriptor);
+                subMesh.m_normalShaderBufferView = const_cast<RHI::Buffer*>(streamIter[1].GetBuffer())->BuildBufferView(normalBufferDescriptor);
 
                 if (tangentBufferByteCount > 0)
                 {
                     subMesh.m_bufferFlags |= RayTracingSubMeshBufferFlags::Tangent;
                     subMesh.m_tangentFormat = TangentStreamFormat;
                     subMesh.m_tangentVertexBufferView = streamIter[2];
-                    subMesh.m_tangentShaderBufferView = const_cast<RHI::Buffer*>(streamIter[2].GetBuffer())->GetBufferView(tangentBufferDescriptor);
+                    subMesh.m_tangentShaderBufferView = const_cast<RHI::Buffer*>(streamIter[2].GetBuffer())->BuildBufferView(tangentBufferDescriptor);
                 }
 
                 if (bitangentBufferByteCount > 0)
@@ -2278,7 +2278,7 @@ namespace AZ
                     subMesh.m_bufferFlags |= RayTracingSubMeshBufferFlags::Bitangent;
                     subMesh.m_bitangentFormat = BitangentStreamFormat;
                     subMesh.m_bitangentVertexBufferView = streamIter[3];
-                    subMesh.m_bitangentShaderBufferView = const_cast<RHI::Buffer*>(streamIter[3].GetBuffer())->GetBufferView(bitangentBufferDescriptor);
+                    subMesh.m_bitangentShaderBufferView = const_cast<RHI::Buffer*>(streamIter[3].GetBuffer())->BuildBufferView(bitangentBufferDescriptor);
                 }
 
                 if (uvBufferByteCount > 0)
@@ -2286,11 +2286,11 @@ namespace AZ
                     subMesh.m_bufferFlags |= RayTracingSubMeshBufferFlags::UV;
                     subMesh.m_uvFormat = UVStreamFormat;
                     subMesh.m_uvVertexBufferView = streamIter[4];
-                    subMesh.m_uvShaderBufferView = const_cast<RHI::Buffer*>(streamIter[4].GetBuffer())->GetBufferView(uvBufferDescriptor);
+                    subMesh.m_uvShaderBufferView = const_cast<RHI::Buffer*>(streamIter[4].GetBuffer())->BuildBufferView(uvBufferDescriptor);
                 }
 
                 subMesh.m_indexBufferView = mesh.GetIndexBufferView();
-                subMesh.m_indexShaderBufferView = const_cast<RHI::Buffer*>(mesh.GetIndexBufferView().GetBuffer())->GetBufferView(indexBufferDescriptor);
+                subMesh.m_indexShaderBufferView = const_cast<RHI::Buffer*>(mesh.GetIndexBufferView().GetBuffer())->BuildBufferView(indexBufferDescriptor);
 
                 // add material data
                 if (material)

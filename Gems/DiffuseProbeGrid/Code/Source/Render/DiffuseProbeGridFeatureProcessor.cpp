@@ -1030,7 +1030,7 @@ namespace AZ
 
             // retrieve vertex/index buffers
             RHI::InputStreamLayout inputStreamLayout;
-            RHI::GeometryView::StreamBufferIndices streamIndices;
+            RHI::StreamBufferIndices streamIndices;
             [[maybe_unused]] bool result = modelLod->GetStreamsForMesh(
                 inputStreamLayout,
                 streamIndices,
@@ -1039,7 +1039,7 @@ namespace AZ
                 0);
             AZ_Assert(result, "Failed to retrieve DiffuseProbeGrid visualization mesh stream buffer views");
 
-            RHI::GeometryView::StreamIterator streamIter = mesh.CreateStreamIterator(streamIndices);
+            auto streamIter = mesh.CreateStreamIterator(streamIndices);
 
             m_visualizationVB = streamIter[0];
             m_visualizationIB = mesh.GetIndexBufferView();

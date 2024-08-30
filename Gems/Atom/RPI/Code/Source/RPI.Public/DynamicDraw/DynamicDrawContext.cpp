@@ -515,7 +515,7 @@ namespace AZ
             indexBuffer->Write(indexData, indexDataSize);
             newGeometryView.SetIndexBufferView(indexBuffer->GetIndexBufferView(indexFormat));
 
-            drawItem.m_streamIndices = newGeometryView.GetFullStreamBufferIndices();
+            drawItem.SetStreamIndices(newGeometryView.GetFullStreamBufferIndices());
             drawItemInfo.m_cachedIndex = static_cast<u32>(m_cachedGeometryViews.size());
             m_cachedGeometryViews.emplace_back(AZStd::move(newGeometryView));
 
@@ -732,7 +732,7 @@ namespace AZ
                 if (drawItemInfo.m_cachedIndex != InvalidIndex)
                 {
                     // Get the pointer to geometry view here after we've built all the mesh buffers and won't be resizing the array
-                    drawItemInfo.m_drawItem.m_geometryView = &m_cachedGeometryViews[drawItemInfo.m_cachedIndex];
+                    drawItemInfo.m_drawItem.SetGeometryView(&m_cachedGeometryViews[drawItemInfo.m_cachedIndex]);
                 }
 
                 RHI::DrawItemProperties drawItemProperties;

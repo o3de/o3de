@@ -377,7 +377,7 @@ namespace AZ
                 RHI::MergeStateInto(renderStatesOverlay, pipelineStateDescriptor.m_renderStates);
 
                 UvStreamTangentBitmask uvStreamTangentBitmask;
-                RHI::GeometryView::StreamBufferIndices streamIndices;
+                RHI::StreamBufferIndices streamIndices;
 
                 if (!m_modelLod->GetStreamsForMesh(
                     pipelineStateDescriptor.m_inputStreamLayout,

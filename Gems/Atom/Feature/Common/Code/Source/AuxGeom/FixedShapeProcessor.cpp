@@ -1362,7 +1362,7 @@ namespace AZ
             objectBuffers.m_triangleGeometryView.AddStreamBufferView(positionBufferView);
             objectBuffers.m_triangleGeometryView.AddStreamBufferView(normalBufferView);
 
-            RHI::GeometryView::StreamBufferIndices streamIndices;
+            RHI::StreamBufferIndices streamIndices;
             streamIndices.AddIndex(0);  // Positions
 
             // Validate for each draw style
@@ -1715,7 +1715,7 @@ namespace AZ
             drawPacketBuilder.SetGeometryView(geometryView);
             drawPacketBuilder.AddShaderResourceGroup(srg->GetRHIShaderResourceGroup());
 
-            RHI::GeometryView::StreamBufferIndices streamIndices;
+            RHI::StreamBufferIndices streamIndices;
             streamIndices.AddIndex(0);          // Positions
 
             if (drawStyle == DrawStyle_Shaded)

@@ -60,9 +60,8 @@ set(FILES
     Include/Atom/RHI/DrawPacketBuilder.h
     Include/Atom/RHI/DeviceIndirectArguments.h
     Include/Atom/RHI/IndirectArguments.h
-    Include/Atom/RHI/MultiDeviceIndirectArguments.h
-    Include/Atom/RHI/MultiDeviceGeometryView.h
-    Include/Atom/RHI/MultiDeviceDrawArguments.h
+    Include/Atom/RHI/DeviceGeometryView.h
+    Include/Atom/RHI/DeviceDrawArguments.h
     Source/RHI/CommandList.cpp
     Source/RHI/CommandListValidator.cpp
     Source/RHI/ConstantsData.cpp

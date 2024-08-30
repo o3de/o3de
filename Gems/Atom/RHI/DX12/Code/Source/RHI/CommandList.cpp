@@ -864,9 +864,9 @@ namespace AZ
             );
         }
 
-        void CommandList::SetStreamBuffers(const RHI::GeometryView& geometryBufferViews, const RHI::GeometryView::StreamBufferIndices& streamIndices)
+        void CommandList::SetStreamBuffers(const RHI::DeviceGeometryView& geometryBufferViews, const RHI::StreamBufferIndices& streamIndices)
         {
-            RHI::GeometryView::StreamIterator streamIter = geometryBufferViews.CreateStreamIterator(streamIndices);
+            auto streamIter = geometryBufferViews.CreateStreamIterator(streamIndices);
 
             bool needsBinding = false;
 

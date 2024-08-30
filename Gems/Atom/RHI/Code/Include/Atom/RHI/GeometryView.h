@@ -8,18 +8,24 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Limits.h>
+#include <Atom/RHI/DeviceGeometryView.h>
 #include <Atom/RHI/DrawArguments.h>
 #include <Atom/RHI/IndexBufferView.h>
+#include <Atom/RHI/IndirectBufferView.h>
 #include <Atom/RHI/StreamBufferView.h>
+#include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/vector.h>
 
 namespace AZ::RHI
 {
-    class InputStreamLayout;
-
-    //! GeometryView hold draw arguments and geometry index/stream buffer views used for rendering DrawPackets/DrawItems
+    //! GeometryView is a multi-device class that holds a map of device-specific GeometryView. It also
+    //! holds a DrawArguments, IndexBufferView and a vector of StreamBufferViews,
+    //! which if edited will set the underlying data on the device-specific GeometryView.
     class GeometryView
     {
+        //! A map of single-device DrawPackets, index by the device index
+        AZStd::unordered_map<int, DeviceGeometryView> m_geometryViews;
+
         DrawArguments m_drawArguments;
         IndexBufferView m_indexBufferView;
         AZStd::vector<StreamBufferView> m_streamBufferViews;
@@ -29,139 +35,130 @@ namespace AZ::RHI
         u8 m_dummyStreamBufferIndex = InvalidStreamBufferIndex;
 
     public:
+        friend class StreamIterator<GeometryView, StreamBufferView>;
 
-        //! This container holds a list of indices into a GeometryView's stream buffer views
-        //! This allows DrawItems to only the stream buffers it needs (and in the order its shader needs them)
-        //! Each index is four bits, such that each u8 in this class holds two indices for better memory efficiency
-        //! To iterate through stream buffer views with these indices, use the StreamIterator class below
-        class StreamBufferIndices
+        inline DeviceGeometryView* GetDeviceGeometryView(int deviceIndex)
         {
-            u8 m_count = 0;
-            u8 m_indices[RHI::Limits::Pipeline::StreamCountMax / 2];
-
-        public:
-            void AddIndex(u8 index)
+            if (!m_geometryViews.contains(deviceIndex))
             {
-                AZ_Assert(m_count < RHI::Limits::Pipeline::StreamCountMax, "Adding %d stream buffer indices, but the max count only allows for %d",
-                    m_count, RHI::Limits::Pipeline::StreamCountMax);
-
-                u8 newPosition = m_count / 2;
-                bool needsShift = (m_count % 2) == 1;
-
-                if (needsShift)
+                DeviceGeometryView newGeometryView;
+                newGeometryView.SetDrawArguments( m_drawArguments.GetDeviceDrawArguments(deviceIndex) );
+                if (m_indexBufferView.IsValid())
                 {
-                    m_indices[newPosition] |= index << 4;
+                    newGeometryView.SetIndexBufferView(m_indexBufferView.GetDeviceIndexBufferView(deviceIndex));
                 }
-                else
+                for (StreamBufferView& stream : m_streamBufferViews)
                 {
-                    m_indices[newPosition] = index & 0xF;
+                    newGeometryView.AddStreamBufferView(stream.GetDeviceStreamBufferView(deviceIndex));
                 }
-                ++m_count;
+                newGeometryView.m_dummyStreamBufferIndex = m_dummyStreamBufferIndex;
+                m_geometryViews.emplace(deviceIndex, newGeometryView);
             }
 
-            u8 GetIndex(u8 position) const
-            {
-                AZ_Assert(position < m_count, "Accessing index %d but only have %d indices", position, m_count);
-
-                bool needsShift = (position % 2) == 1;
-                u8 fullValue = m_indices[position / 2];
-                u8 halfValue = needsShift ? fullValue >> 4 : fullValue;
-                halfValue &= 0xF;
-                return halfValue;
-            }
-
-            u8 Size() const { return m_count; }
-            void Reset() { m_count = 0; }
-        };
-
-        //! Helper class to conveniently iterate through stream buffer views using the StreamBufferIndices class above
-        //! Takes as input GeometryView* and StreamBufferIndices, then can be used to iterate with ++ operators
-        //! It also supports direct indexing via myStreamIter[idx] syntax
-        class StreamIterator
-        {
-            const GeometryView* m_geometryView;
-            const StreamBufferIndices& m_indices;
-            u8 m_current = 0;
-
-        public:
-            StreamIterator(const GeometryView* geometryView, const StreamBufferIndices& indices)
-                : m_geometryView(geometryView)
-                , m_indices(indices)
-            {}
-
-            //! Use this in your for loop to check if the iterator has reached the end
-            bool HasEnded() const { return m_current >= m_indices.Size(); }
-
-            //! Can be used to reset the iterator if you want to use it for subsequent loops
-            void Reset() { m_current = 0; }
-
-            StreamIterator& operator++()
-            {
-                if (!HasEnded()) {
-                    ++m_current;
-                }
-                return *this;
-            }
-            StreamIterator operator++(int)
-            {
-                StreamIterator temp = *this;
-                ++(*this);
-                return temp;
-            }
-
-            //! Used to access the current StreamBufferView
-            const StreamBufferView& operator*()
-            {
-                return m_geometryView->GetStreamBufferView(m_indices.GetIndex(m_current));
-            }
-
-            //! Used to access the current StreamBufferView
-            const StreamBufferView* operator->()
-            {
-                return &m_geometryView->GetStreamBufferView(m_indices.GetIndex(m_current));
-            }
-
-            //! Used for direct indexing, irrespective of the current iterator progress
-            const StreamBufferView& operator[](u16 idx) const
-            {
-                AZ_Assert((u8)idx < m_indices.Size(), "Passed index %d exceeds number of indices (%d) for stream buffer views",
-                    idx, m_indices.Size());
-
-                return m_geometryView->GetStreamBufferView(m_indices.GetIndex((u8)idx));
-            }
-        };
-
-        friend class StreamIterator;
+            return &m_geometryViews[deviceIndex];
+        }
 
         void Reset()
         {
             m_drawArguments = DrawArguments{};
             m_indexBufferView = IndexBufferView{};
-            ClearStreamBufferViews();
+            m_streamBufferViews.clear();
+            m_dummyStreamBufferIndex = InvalidStreamBufferIndex;
+            for (auto& [deviceIndex, geometryView] : m_geometryViews)
+            {
+                geometryView.Reset();
+            }
         }
 
-        // --- DrawArguments ---
+        // --- Draw Arguments ---
 
-        void SetDrawArguments(DrawArguments drawArguments) { m_drawArguments = drawArguments; }
-        const DrawArguments& GetDrawArguments() const { return m_drawArguments; }
+        inline const DrawArguments& GetDrawArguments() const { return m_drawArguments; }
 
-        // --- IndexBufferView ---
+        inline void SetDrawArguments(DrawArguments drawArguments)
+        {
+            m_drawArguments = drawArguments;
+            for (auto& [deviceIndex, geometryView] : m_geometryViews)
+            {
+                geometryView.SetDrawArguments( drawArguments.GetDeviceDrawArguments(deviceIndex) );
+            }
+        }
 
-        void SetIndexBufferView(IndexBufferView indexBufferView) { m_indexBufferView = indexBufferView; }
-        const IndexBufferView& GetIndexBufferView() const { return m_indexBufferView; }
+        inline void SetIndexInstanceCount(uint32_t instanceCount)
+        {
+            m_drawArguments.m_indexed.m_instanceCount = instanceCount;
+            for (auto& [deviceIndex, geometryView] : m_geometryViews)
+            {
+                geometryView.SetIndexInstanceCount(instanceCount);
+            }
+        }
 
-        // --- StreamBufferView ---
+        // --- Index Buffer View ---
+
+        inline const IndexBufferView& GetIndexBufferView() const { return m_indexBufferView; }
+
+        inline void SetIndexBufferView(IndexBufferView indexBufferView)
+        {
+            m_indexBufferView = indexBufferView;
+            for (auto& [deviceIndex, geometryView] : m_geometryViews)
+            {
+                geometryView.SetIndexBufferView( indexBufferView.GetDeviceIndexBufferView(deviceIndex) );
+            }
+        }
+
+        // --- Stream Buffer Views ---
+
+        const StreamBufferView& GetStreamBufferView(u8 idx) const { return m_streamBufferViews[idx]; }
+        AZStd::vector<StreamBufferView>& GetStreamBufferViews() { return m_streamBufferViews; }
+        const AZStd::vector<StreamBufferView>& GetStreamBufferViews() const { return m_streamBufferViews; }
+
+        inline void SetStreamBufferViews(const AZStd::vector<StreamBufferView>& streamBufferViews)
+        {
+            m_streamBufferViews = streamBufferViews;
+            for (auto& [deviceIndex, geometryView] : m_geometryViews)
+            {
+                geometryView.ClearStreamBufferViews();
+                for (StreamBufferView& stream : m_streamBufferViews)
+                {
+                    geometryView.AddStreamBufferView(stream.GetDeviceStreamBufferView(deviceIndex));
+                }
+            }
+        }
+
+        inline void AddStreamBufferView(StreamBufferView streamBufferView)
+        {
+            m_streamBufferViews.push_back(streamBufferView);
+            for (auto& [deviceIndex, geometryView] : m_geometryViews)
+            {
+                geometryView.AddStreamBufferView(streamBufferView.GetDeviceStreamBufferView(deviceIndex));
+            }
+        }
 
         void ClearStreamBufferViews()
         {
             m_streamBufferViews.clear();
             m_dummyStreamBufferIndex = InvalidStreamBufferIndex;
+            for (auto& [deviceIndex, geometryView] : m_geometryViews)
+            {
+                geometryView.ClearStreamBufferViews();
+            }
         }
-        void AddStreamBufferView(StreamBufferView streamBufferView) { m_streamBufferViews.emplace_back(streamBufferView); }
-        const StreamBufferView& GetStreamBufferView(u8 idx) const { return m_streamBufferViews[idx]; }
 
-        AZStd::vector<StreamBufferView>& GetStreamBufferViews() { return m_streamBufferViews; }
-        const AZStd::vector<StreamBufferView>& GetStreamBufferViews() const { return m_streamBufferViews; }
+        //! Helper function that provides indices to all the StreamBufferViews. Useful when GeometryViews are created purposely for a single DrawItem
+        StreamBufferIndices GetFullStreamBufferIndices() const
+        {
+            StreamBufferIndices streamIndices;
+            for (size_t idx = 0; idx < m_streamBufferViews.size(); ++idx)
+            {
+                streamIndices.AddIndex((u8)idx);
+            }
+            return streamIndices;
+        }
+
+        //! Helper function to conveniently create a StreamIterator
+        StreamIterator<GeometryView, StreamBufferView> CreateStreamIterator(const StreamBufferIndices& indices) const
+        {
+            return StreamIterator<GeometryView, StreamBufferView>(this, indices);
+        }
 
         // --- Dummy StreamBufferView ---
 
@@ -174,32 +171,21 @@ namespace AZ::RHI
             AZ_Assert(HasDummyStreamBufferView(), "Calling GetDummyStreamBufferView but no dummy view is set. Application will likely crash.");
             return m_streamBufferViews[m_dummyStreamBufferIndex];
         }
+
         void AddDummyStreamBufferView(StreamBufferView streamBufferView)
         {
             AZ_Assert(!HasDummyStreamBufferView(), "Calling AddDummyStreamBufferView but dummy view is already set.");
             m_dummyStreamBufferIndex = (u8)m_streamBufferViews.size();
             m_streamBufferViews.emplace_back(streamBufferView);
-        }
-
-        //! Helper function to conveniently create a StreamIterator
-        StreamIterator CreateStreamIterator(const StreamBufferIndices& indices) const { return StreamIterator(this, indices); }
-
-        //! Sets the intance count on the indexed draw. Used for instancing.
-        void SetIndexInstanceCount(u32 count) { m_drawArguments.m_indexed.m_instanceCount = count; }
-
-        //! Helper function that provides indices to all the StreamBufferViews. Useful when GeometryView are created purposely for a single DrawItem
-        StreamBufferIndices GetFullStreamBufferIndices() const
-        {
-            StreamBufferIndices streamIndices;
-            for (size_t idx = 0; idx < m_streamBufferViews.size(); ++idx)
+            for (auto& [deviceIndex, geometryView] : m_geometryViews)
             {
-                streamIndices.AddIndex((u8)idx);
+                geometryView.AddDummyStreamBufferView(streamBufferView.GetDeviceStreamBufferView(deviceIndex));
             }
-            return streamIndices;
         }
     };
 
     //! Validates the stream buffer views in a GeometryView
     bool ValidateStreamBufferViews(const InputStreamLayout& inputStreamLayout, RHI::GeometryView& geometryView,
-        const RHI::GeometryView::StreamBufferIndices& streamIndices);
+        const RHI::StreamBufferIndices& streamIndices);
+
 }

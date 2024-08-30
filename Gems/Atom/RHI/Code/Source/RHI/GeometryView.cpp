@@ -13,7 +13,7 @@ namespace AZ::RHI
 {
 
     bool ValidateStreamBufferViews(const InputStreamLayout& inputStreamLayout, RHI::GeometryView& geometryView,
-        const RHI::GeometryView::StreamBufferIndices& streamIndices)
+        const RHI::StreamBufferIndices& streamIndices)
     {
         bool ok = true;
 
@@ -26,12 +26,13 @@ namespace AZ::RHI
             }
 
             size_t streamCount = 0;
+            auto streamIter = geometryView.CreateStreamIterator(streamIndices);
 
-            for (GeometryView::StreamIterator it(&geometryView, streamIndices); !it.HasEnded(); ++it, ++streamCount)
+            for (; !streamIter.HasEnded(); ++streamIter, ++streamCount)
             {
                 auto bufferDescriptors = inputStreamLayout.GetStreamBuffers();
                 auto& bufferDescriptor = bufferDescriptors[streamCount];
-                auto& bufferView = *it;
+                auto& bufferView = *streamIter;
 
                 // It can be valid to have a null buffer if this stream is not actually used by the shader, which can be the case for streams marked optional.
                 if (bufferView.GetBuffer() == nullptr)

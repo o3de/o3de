@@ -43,7 +43,7 @@ namespace AZ::RHI
             u8 m_stencilRef = 0;
 
             //! Indices of the StreamBufferViews the DrawItem will use
-            RHI::GeometryView::StreamBufferIndices m_streamIndices;
+            RHI::StreamBufferIndices m_streamIndices;
 
             //! Shader resource group unique for this draw request
             const ShaderResourceGroup* m_uniqueShaderResourceGroup{};
@@ -58,11 +58,6 @@ namespace AZ::RHI
             //! We use a mask because the same item could be reused in multiple pipelines. For example, a simple
             //! depth pre-pass could be present in multiple pipelines.
             DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
-
-            //! A map of all device-specific StreamBufferViews, indexed by the device index
-            //! This additional cache is needed since device-specific StreamBufferViews are returned as objects
-            //! and the device-specific DeviceDrawItem holds a pointer to it.
-            AZStd::unordered_map<int, AZStd::vector<DeviceStreamBufferView>> m_deviceStreamBufferViews;
         };
 
         explicit DrawPacketBuilder(RHI::MultiDevice::DeviceMask deviceMask)
@@ -88,6 +83,7 @@ namespace AZ::RHI
         //! initializes the multi-device DeviceDrawPacket which will be returned after calling End()
         void Begin(IAllocator* allocator);
 
+        //! Passes the GeometryView to all single-device DrawPacketBuilders
         void SetGeometryView(GeometryView* geometryView);
 
         //! Passes the RootConstants to all single-device DrawPacketBuilders
@@ -127,6 +123,8 @@ namespace AZ::RHI
         AZStd::fixed_vector<DrawRequest, DeviceDrawPacketBuilder::DrawItemCountMax> m_drawRequests;
 
         RHI::Ptr<DrawPacket> m_drawPacketInFlight;
+
+        GeometryView* m_geometryView;
 
         //! A map of single-device DeviceDrawPacketBuilder, indexed by the device index
         AZStd::unordered_map<int, DeviceDrawPacketBuilder> m_deviceDrawPacketBuilders;

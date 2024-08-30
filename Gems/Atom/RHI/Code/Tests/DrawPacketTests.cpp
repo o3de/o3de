@@ -89,7 +89,7 @@ namespace UnitTest
             EXPECT_EQ(drawItem->m_geometryView, drawItemData.m_geometryView);
 
             // Ordered Stream Indices (see matching comment in DrawItemData constructor)
-            RHI::GeometryView::StreamIterator streamIter = drawItem->m_geometryView->CreateStreamIterator(drawItem->m_streamIndices);
+            auto streamIter = drawItem->m_geometryView->CreateStreamIterator(drawItem->m_streamIndices);
             for (u8 i = 0; !streamIter.HasEnded(); ++i, ++streamIter)
             {
                 EXPECT_EQ(drawItem->m_geometryView->GetStreamBufferView(i), *streamIter);

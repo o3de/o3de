@@ -8,92 +8,63 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Limits.h>
+#include <Atom/RHI/DeviceDrawArguments.h>
 #include <Atom/RHI/IndirectArguments.h>
 
 namespace AZ::RHI
 {
-    struct DrawLinear
-    {
-        DrawLinear() = default;
-
-        DrawLinear(
-            u32 instanceCount,
-            u32 instanceOffset,
-            u32 vertexCount,
-            u32 vertexOffset)
-            : m_instanceCount(instanceCount)
-            , m_instanceOffset(instanceOffset)
-            , m_vertexCount(vertexCount)
-            , m_vertexOffset(vertexOffset)
-        {}
-
-        u32 m_instanceCount = 1;
-        u32 m_instanceOffset = 0;
-        u32 m_vertexCount = 0;
-        u32 m_vertexOffset = 0;
-    };
-
-    struct DrawIndexed
-    {
-        DrawIndexed() = default;
-
-        DrawIndexed(
-            u32 instanceCount,
-            u32 instanceOffset,
-            u32 vertexOffset,
-            u32 indexCount,
-            u32 indexOffset)
-            : m_instanceCount(instanceCount)
-            , m_instanceOffset(instanceOffset)
-            , m_vertexOffset(vertexOffset)
-            , m_indexCount(indexCount)
-            , m_indexOffset(indexOffset)
-        {}
-
-        u32 m_instanceCount = 1;
-        u32 m_instanceOffset = 0;
-        u32 m_vertexOffset = 0;
-        u32 m_indexCount = 0;
-        u32 m_indexOffset = 0;
-    };
-
     using DrawIndirect = IndirectArguments;
 
-    enum class DrawType : uint8_t
-    {
-        Indexed = 0,
-        Linear,
-        Indirect
-    };
-
+    //! A structure used to define the type of draw that should happen, directly passed on to the device-specific DrawItems in
+    //! DrawItem::SetArguments
     struct DrawArguments
     {
         AZ_TYPE_INFO(DrawArguments, "B8127BDE-513E-4D5C-98C2-027BA1DE9E6E");
 
-        DrawArguments() : DrawArguments(DrawIndexed{}) {}
+        DrawArguments()
+            : DrawArguments(DrawIndexed{})
+        {
+        }
 
         DrawArguments(const DrawIndexed& indexed)
-            : m_type{DrawType::Indexed}
-            , m_indexed{indexed}
-        {}
+            : m_type{ DrawType::Indexed }
+            , m_indexed{ indexed }
+        {
+        }
 
         DrawArguments(const DrawLinear& linear)
-            : m_type{DrawType::Linear}
-            , m_linear{linear}
-        {}
-
+            : m_type{ DrawType::Linear }
+            , m_linear{ linear }
+        {
+        }
 
         DrawArguments(const DrawIndirect& indirect)
             : m_type{ DrawType::Indirect }
-            , m_indirect{ indirect }
-        {}
+            , m_mdIndirect{ indirect }
+        {
+        }
+
+        //! Returns the device-specific DeviceDrawArguments for the given index
+        DeviceDrawArguments GetDeviceDrawArguments(int deviceIndex) const
+        {
+            switch (m_type)
+            {
+            case DrawType::Indexed:
+                return DeviceDrawArguments(m_indexed);
+            case DrawType::Linear:
+                return DeviceDrawArguments(m_linear);
+            case DrawType::Indirect:
+                return DeviceDrawArguments(DeviceDrawIndirect{ m_mdIndirect.m_maxSequenceCount, m_mdIndirect.m_indirectBufferView->GetDeviceIndirectBufferView(deviceIndex), m_mdIndirect.m_indirectBufferByteOffset, m_mdIndirect.m_countBuffer->GetDeviceBuffer(deviceIndex).get(), m_mdIndirect.m_countBufferByteOffset });
+            default:
+                return DeviceDrawArguments();
+            }
+        }
 
         DrawType m_type;
-        union
-        {
+        union {
             DrawIndexed m_indexed;
             DrawLinear m_linear;
-            DrawIndirect m_indirect;
+            DrawIndirect m_mdIndirect;
         };
     };
 }

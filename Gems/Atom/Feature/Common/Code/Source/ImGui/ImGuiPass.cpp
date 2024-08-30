@@ -685,25 +685,10 @@ namespace AZ
             for (uint32_t i = context.GetSubmitRange().m_startIndex; i < context.GetSubmitRange().m_endIndex; ++i)
             {
                 DrawInfo& drawInfo = m_drawInfos.Get().at(i);
-                RHI::DrawItem drawItem;
-                drawItem.m_geometryView = &drawInfo.m_geometryView;
+                RHI::DeviceDrawItem drawItem;
+                drawItem.m_geometryView = drawInfo.m_geometryView.GetDeviceGeometryView(context.GetDeviceIndex());
                 drawItem.m_streamIndices = drawInfo.m_geometryView.GetFullStreamBufferIndices();
                 drawItem.m_pipelineState = m_pipelineState->GetRHIPipelineState()->GetDevicePipelineState(context.GetDeviceIndex()).get();
-
-                // AKM_MARKER
-				// auto indexBufferView{m_indexBufferView.GetDeviceIndexBufferView(context.GetDeviceIndex())};
-                // AZStd::array<RHI::DeviceStreamBufferView, 2> vertexBufferView{
-                //     m_vertexBufferView[0].GetDeviceStreamBufferView(context.GetDeviceIndex()),
-                //     m_vertexBufferView[1].GetDeviceStreamBufferView(context.GetDeviceIndex())
-                // };
-				// 
-                // RHI::DeviceDrawItem drawItem;
-                // drawItem.m_arguments = m_draws.at(i).m_drawIndexed;
-                // drawItem.m_pipelineState = m_pipelineState->GetRHIPipelineState()->GetDevicePipelineState(context.GetDeviceIndex()).get();
-                // drawItem.m_indexBufferView = &indexBufferView;
-                // drawItem.m_streamBufferViewCount = 2;
-                // drawItem.m_streamBufferViews = vertexBufferView.data();
-
                 drawItem.m_scissorsCount = 1;
                 drawItem.m_scissors = &drawInfo.m_scissor;
 

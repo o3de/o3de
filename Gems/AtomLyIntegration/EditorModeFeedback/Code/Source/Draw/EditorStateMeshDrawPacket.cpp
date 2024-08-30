@@ -198,7 +198,7 @@ namespace AZ::Render
 
             streamBufferViewsPerShader.emplace_back();
             RPI::UvStreamTangentBitmask uvStreamTangentBitmask;
-            RHI::GeometryView::StreamBufferIndices streamIndices;
+            RHI::StreamBufferIndices streamIndices;
 
             if (!m_modelLod->GetStreamsForMesh(
                 pipelineStateDescriptor.m_inputStreamLayout,

@@ -11,7 +11,7 @@
 #include <Atom/RHI/CommandListValidator.h>
 #include <Atom/RHI/CommandListStates.h>
 #include <Atom/RHI/DeviceObject.h>
-#include <Atom/RHI/GeometryView.h>
+#include <Atom/RHI/DeviceGeometryView.h>
 #include <Atom/RHI/PipelineStateDescriptor.h>
 #include <Atom/RHI/Resource.h>
 #include <Atom/RHI/DeviceRayTracingAccelerationStructure.h>
@@ -164,7 +164,7 @@ namespace AZ
             RHI::ResultCode BuildNativeCommandBuffer();
 
             void SetShaderResourceGroup(const RHI::DeviceShaderResourceGroup& shaderResourceGroup, RHI::PipelineStateType type);
-            void SetStreamBuffers(const RHI::GeometryView& geometryView, const RHI::GeometryView::StreamBufferIndices& streamIndices);
+            void SetStreamBuffers(const RHI::DeviceGeometryView& geometryView, const RHI::StreamBufferIndices& streamIndices);
             void SetIndexBuffer(const RHI::DeviceIndexBufferView& indexBufferView);
             void SetStencilRef(uint8_t stencilRef);
             void BindPipeline(const PipelineState* pipelineState);

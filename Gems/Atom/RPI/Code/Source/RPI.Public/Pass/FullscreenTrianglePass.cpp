@@ -188,7 +188,7 @@ namespace AZ
             draw.m_vertexCount = 3;
             m_geometryView.SetDrawArguments(draw);
 
-            m_item.m_geometryView = &m_geometryView;
+            m_item.SetGeometryView(& m_geometryView);
             m_item.SetPipelineState(m_pipelineStateForDraw.Finalize());
             m_item.SetStencilRef(static_cast<uint8_t>(m_stencilRef));
         }

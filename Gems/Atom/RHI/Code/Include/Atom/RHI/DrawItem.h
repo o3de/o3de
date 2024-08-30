@@ -9,7 +9,6 @@
 
 #include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI/DeviceDrawItem.h>
-#include <Atom/RHI/DrawArguments.h>
 #include <Atom/RHI/GeometryView.h>
 #include <Atom/RHI/IndexBufferView.h>
 #include <Atom/RHI/IndirectArguments.h>
@@ -28,11 +27,6 @@ namespace AZ::RHI
     template<typename T, typename NamespaceType>
     struct Handle;
 
-    // A DrawItem corresponds to one draw of one mesh in one pass. Multiple draw items are bundled
-    // in a DrawPacket, which corresponds to multiple draws of one mesh in multiple passes.
-    // NOTE: Do not rely solely on default member initialization here, as DrawItems are bulk allocated for
-    // DrawPackets and their memory aliased in DrawPacketBuilder. Any default values should also be specified
-    // in the DrawPacketBuilder::End() function (see DrawPacketBuilder.cpp)
     struct DrawItem
     {
         friend class DrawPacketBuilder;
@@ -75,22 +69,6 @@ namespace AZ::RHI
             }
         }
 
-        void SetArguments(const DrawArguments& arguments)
-        {
-            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
-            {
-                drawItem->m_arguments = arguments.GetDeviceDrawArguments(deviceIndex);
-            }
-        }
-
-        void SetIndexedArgumentsInstanceCount(uint32_t instanceCount)
-        {
-            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
-            {
-                drawItem->m_arguments.m_indexed.m_instanceCount = instanceCount;
-            }
-        }
-
         void SetStencilRef(uint8_t stencilRef)
         {
             for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
@@ -104,41 +82,6 @@ namespace AZ::RHI
             for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
             {
                 drawItem->m_pipelineState = pipelineState ? pipelineState->GetDevicePipelineState(deviceIndex).get() : nullptr;
-            }
-        }
-
-        //! The index buffer used when drawing with an indexed draw call.
-        void SetIndexBufferView(const IndexBufferView* indexBufferView)
-        {
-            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
-            {
-                m_deviceIndexBufferView.emplace(deviceIndex, indexBufferView->GetDeviceIndexBufferView(deviceIndex));
-            }
-
-            // Done extra so memory is not moved around any more during map resize
-            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
-            {
-                drawItem->m_indexBufferView = &m_deviceIndexBufferView[deviceIndex];
-            }
-        }
-
-        //! Array of stream buffers to bind (count must match m_streamBufferViewCount).
-        void SetStreamBufferViews(const StreamBufferView* streamBufferViews, uint32_t streamBufferViewCount)
-        {
-            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
-            {
-                drawItem->m_streamBufferViewCount = static_cast<uint8_t>(streamBufferViewCount);
-
-                auto [it, insertOK]{ m_deviceStreamBufferViews.emplace(deviceIndex, AZStd::vector<DeviceStreamBufferView>{}) };
-
-                auto& [index, deviceStreamBufferView]{ *it };
-
-                for (auto i = 0u; i < streamBufferViewCount; ++i)
-                {
-                    deviceStreamBufferView.emplace_back(streamBufferViews[i].GetDeviceStreamBufferView(deviceIndex));
-                }
-
-                drawItem->m_streamBufferViews = deviceStreamBufferView.data();
             }
         }
 
@@ -205,18 +148,43 @@ namespace AZ::RHI
             }
         }
 
+        void SetGeometryView(RHI::GeometryView* geometryView)
+        {
+            m_geometryView = geometryView;
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
+            {
+                drawItem->m_geometryView = geometryView->GetDeviceGeometryView(deviceIndex);
+            }
+        }
+
+        void SetStreamIndices(RHI::StreamBufferIndices streamIndices)
+        {
+            m_streamIndices = streamIndices;
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
+            {
+                drawItem->m_streamIndices = streamIndices;
+            }
+        }
+
     private:
         bool m_enabled{ true };
-        /// Indices of the StreamBufferViews in the GeometryView that this DrawItem will use
-        RHI::GeometryView::StreamBufferIndices m_streamIndices;
+
+        //! A class that wraps a map of all device-specific GeometryView, indexed by the device index
+        const RHI::GeometryView* m_geometryView;
+
+        //! Indices of the StreamBufferViews in the GeometryView that this DrawItem will use
+        RHI::StreamBufferIndices m_streamIndices;
 
         MultiDevice::DeviceMask m_deviceMask{ MultiDevice::DefaultDevice };
+
         //! A map of all device-specific DrawItems, indexed by the device index
         AZStd::unordered_map<int, DeviceDrawItem> m_deviceDrawItems;
+
         //! A map of pointers to device-specific DrawItems, indexed by the device index
         //! These pointers may point to m_deviceDrawItems (in case of direct usage of a DeviceDrawItem)
         //! or may point to DrawItems in linear memory (when allocated via a DrawPacket)
         AZStd::unordered_map<int, DeviceDrawItem*> m_deviceDrawItemPtrs;
+
         //! A map of all device-specific ShaderResourceGroups, indexed by the device index
         //! This additional cache is needed since device-specific ShaderResourceGroups are provided as a DeviceShaderResourceGroup**,
         //! which are then locally cached in a vector (per device) and the device-specific DeviceDrawItem holds a pointer to this vector's data.
