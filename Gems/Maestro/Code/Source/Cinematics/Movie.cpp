@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -1409,6 +1410,12 @@ void CMovieSystem::GoToFrameCmd(IConsoleCmdArgs* pArgs)
         return;
     }
 
+    // Console commands are always interpreted in the culture invariant locale because
+    // they often come from files (as in, .cfg files) which need to be portable.  We set the scoped locale
+    // to the invariant locale here so that atof() functions in that locale regardless of app locale.
+
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
+
     const char* pSeqName = pArgs->GetArg(1);
     float targetFrame = (float)atof(pArgs->GetArg(2));
 
@@ -1441,6 +1448,8 @@ void CMovieSystem::PlaySequencesCmd(IConsoleCmdArgs* pArgs)
 
 void CMovieSystem::GoToFrame(const char* seqName, float targetFrame)
 {
+    AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
+
     assert(seqName != NULL);
 
     if (gEnv->IsEditor() && gEnv->IsEditorGameMode() == false)

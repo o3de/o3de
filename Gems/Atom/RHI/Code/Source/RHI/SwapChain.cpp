@@ -300,10 +300,6 @@ namespace AZ::RHI
 
     void SwapChain::Shutdown()
     {
-        IterateObjects<DeviceSwapChain>([]([[maybe_unused]] auto deviceIndex, auto deviceSwapChain)
-        {
-            deviceSwapChain->Shutdown();
-        });
         ResourcePool::Shutdown();
     }
 } // namespace AZ::RHI

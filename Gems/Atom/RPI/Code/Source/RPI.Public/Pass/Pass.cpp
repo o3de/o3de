@@ -19,18 +19,18 @@
 
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
-#include <Atom/RPI.Reflect/Image/Image.h>
+#include <Atom/RPI.Public/Image/AttachmentImagePool.h>
+#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
-#include <Atom/RPI.Public/Pass/PassLibrary.h>
 #include <Atom/RPI.Public/Pass/PassDefines.h>
+#include <Atom/RPI.Public/Pass/PassLibrary.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/Pass/Specific/ImageAttachmentPreviewPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
-#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
-#include <Atom/RPI.Public/Image/AttachmentImagePool.h>
+#include <Atom/RPI.Reflect/Image/Image.h>
 
 #include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
 #include <Atom/RPI.Reflect/Pass/PassRequest.h>
@@ -1848,6 +1848,48 @@ namespace AZ
                     }
                 }
                 AZ_Printf("PassSystem", stringOutput.c_str());
+            }
+        }
+
+        void Pass::ChangeConnection(const Name& localSlot, Pass* pass, const Name& attachment)
+        {
+            bool connectionFound(false);
+
+            for (auto& connection : m_request.m_connections)
+            {
+                if (connection.m_localSlot == localSlot)
+                {
+                    connection.m_attachmentRef.m_pass = pass->GetName();
+                    connection.m_attachmentRef.m_attachment = attachment;
+                    connectionFound = true;
+                    break;
+                }
+            }
+
+            // if the connection is not yet present, we add it to the request so that it will be recreated
+            // when the pass system updates
+            if (!connectionFound)
+            {
+                m_request.m_connections.emplace_back(PassConnection{ localSlot, { pass->GetName(), attachment } });
+            }
+
+            auto attachmentBinding = FindAttachmentBinding(localSlot);
+
+            if (attachmentBinding)
+            {
+                auto otherAttachmentBinding = pass->FindAttachmentBinding(attachment);
+
+                if (otherAttachmentBinding)
+                {
+                    attachmentBinding->m_connectedBinding = otherAttachmentBinding;
+                    attachmentBinding->UpdateConnection(false);
+                }
+                else
+                {
+                    // if the pass we should attach to has been newly created and not yet built,
+                    // we can queue ourself to build as well to establish the connection in the next frame
+                    QueueForBuildAndInitialization();
+                }
             }
         }
 

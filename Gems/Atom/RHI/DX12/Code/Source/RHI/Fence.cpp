@@ -142,7 +142,7 @@ namespace AZ
             return aznew FenceImpl();
         }
 
-        RHI::ResultCode FenceImpl::InitInternal(RHI::Device& deviceBase, RHI::FenceState initialState)
+        RHI::ResultCode FenceImpl::InitInternal(RHI::Device& deviceBase, RHI::FenceState initialState, [[maybe_unused]] bool usedForWaitingOnDevice)
         {
             return m_fence.Init(static_cast<Device&>(deviceBase).GetDevice(), initialState);
         }

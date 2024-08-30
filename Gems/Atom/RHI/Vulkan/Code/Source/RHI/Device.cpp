@@ -165,9 +165,9 @@ namespace AZ
                 queueCreationInfo.push_back(queueCreateInfo);
             }
 
-            const auto& physicalProperties = physicalDevice.GetPhysicalDeviceProperties();
-            uint32_t majorVersion = VK_VERSION_MAJOR(physicalProperties.apiVersion);
-            uint32_t minorVersion = VK_VERSION_MINOR(physicalProperties.apiVersion);
+            uint32_t physicalDeviceVersion = physicalDevice.GetVulkanVersion();
+            uint32_t majorVersion = VK_VERSION_MAJOR(physicalDeviceVersion);
+            uint32_t minorVersion = VK_VERSION_MINOR(physicalDeviceVersion);
 
             // unbounded array functionality
             VkPhysicalDeviceDescriptorIndexingFeaturesEXT descriptorIndexingFeatures = {};
@@ -429,7 +429,7 @@ namespace AZ
             SwapChainSemaphoreAllocator::Descriptor swapChainSemaphoreAllocDescriptor;
             swapChainSemaphoreAllocDescriptor.m_device = this;
             swapChainSemaphoreAllocDescriptor.m_collectLatency = RHI::Limits::Device::FrameCountMax;
-            m_swapChaiSemaphoreAllocator.Init(swapChainSemaphoreAllocDescriptor);
+            m_swapChainSemaphoreAllocator.Init(swapChainSemaphoreAllocDescriptor);
 
             m_imageMemoryRequirementsCache.SetInitFunction([](auto& cache) { cache.set_capacity(MemoryRequirementsCacheSize); });
             m_bufferMemoryRequirementsCache.SetInitFunction([](auto& cache) { cache.set_capacity(MemoryRequirementsCacheSize); });
@@ -583,7 +583,7 @@ namespace AZ
 
         SwapChainSemaphoreAllocator& Device::GetSwapChainSemaphoreAllocator()
         {
-            return m_swapChaiSemaphoreAllocator;
+            return m_swapChainSemaphoreAllocator;
         }
 
         const AZStd::vector<VkQueueFamilyProperties>& Device::GetQueueFamilyProperties() const
@@ -690,15 +690,16 @@ namespace AZ
             m_descriptorSetLayoutCache.first.Clear();
             m_samplerCache.first.Clear();
             m_pipelineLayoutCache.first.Clear();
-            m_semaphoreAllocator.Shutdown();
 
-            // Make sure this is last to flush any objects released in the above calls.
-            m_releaseQueue.Shutdown();
-
-            // The Objects in the release-queue need the command / upload queues for shutting down
             m_asyncUploadQueue.reset();
-            m_commandListAllocator.Shutdown();
             m_commandQueueContext.Shutdown();
+            m_commandListAllocator.Shutdown();
+
+            m_semaphoreAllocator.Shutdown();
+            m_swapChainSemaphoreAllocator.Shutdown();
+
+            // Flush any objects released in the above calls.
+            m_releaseQueue.Shutdown();
         }
 
         void Device::ShutdownInternal()
@@ -769,6 +770,7 @@ namespace AZ
             m_commandQueueContext.End();
             m_commandListAllocator.Collect();
             m_semaphoreAllocator.Collect();
+            m_swapChainSemaphoreAllocator.Collect();
             m_bindlessDescriptorPool.GarbageCollect();
         }
 
@@ -1297,7 +1299,6 @@ namespace AZ
         RHI::ResultCode Device::InitVmaAllocator(RHI::PhysicalDevice & physicalDeviceBase)
         {
             auto& physicalDevice = static_cast<Vulkan::PhysicalDevice&>(physicalDeviceBase);
-            const auto& physicalProperties = physicalDevice.GetPhysicalDeviceProperties();
 
             auto& context = GetContext();
             // We pass the function pointers from the Glad context since we already loaded them.
@@ -1337,8 +1338,7 @@ namespace AZ
             allocatorInfo.physicalDevice = physicalDevice.GetNativePhysicalDevice();
             allocatorInfo.device = m_nativeDevice;
             allocatorInfo.instance = instance.GetNativeInstance();
-            // Current version for glad function pointers. Update this value when updating GLAD.
-            allocatorInfo.vulkanApiVersion = AZStd::min(physicalProperties.apiVersion, VK_API_VERSION_1_3);
+            allocatorInfo.vulkanApiVersion = physicalDevice.GetVulkanVersion();
             allocatorInfo.pVulkanFunctions = &vulkanFunctions;
             allocatorInfo.pAllocationCallbacks = VkSystemAllocator::Get();
 

@@ -12,7 +12,6 @@ set(FILES
     Include/IErrorReport.h
     Include/IFileUtil.h
     Include/EditorCoreAPI.h
-    Include/IImageUtil.h
     Controls/ReflectedPropertyControl/ReflectedPropertyCtrl.qrc
     Controls/ReflectedPropertyControl/ReflectedPropertyCtrl.cpp
     Controls/ReflectedPropertyControl/ReflectedPropertyCtrl.h

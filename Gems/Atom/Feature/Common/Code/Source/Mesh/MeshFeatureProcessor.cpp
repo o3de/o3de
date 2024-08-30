@@ -1663,11 +1663,11 @@ namespace AZ
                 m_parent->QueueInit(model);
                 m_parent->m_modelChangedEvent.Signal(AZStd::move(model));
 
-                if (m_parent->m_flags.m_keepBufferAssetsInMemory)
-                {
-                    model->GetModelAsset()->AddRefBufferAssets();
-                }
-                else
+                // we always start out with a refcount of 1
+                model->GetModelAsset()->AddRefBufferAssets();
+
+                // if we don't want to keep them, this will drop the refcount to 0.
+                if (!m_parent->m_flags.m_keepBufferAssetsInMemory)
                 {
                     model->GetModelAsset()->ReleaseRefBufferAssets();
                 }

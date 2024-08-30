@@ -61,9 +61,10 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        void FenceBase::ShutdownInternal()
+        void FenceBase::Shutdown()
         {
-            SignalEvent();
+            ShutdownInternal();
+            Base::Shutdown();
         }
     } // namespace Vulkan
 } // namespace AZ

@@ -40,8 +40,10 @@
 #define LEFT_BORDER_OFFSET 40
 
 #ifndef NM_CLICK
-#define NM_CLICK (-2)
-#define NM_RCLICK (-5)
+// from commctrl.h
+#define NM_FIRST (0U - 0U)
+#define NM_CLICK (NM_FIRST - 2)
+#define NM_RCLICK (NM_FIRST - 5)
 #endif
 
 const float AbstractSplineWidget::threshold = 0.015f;
@@ -2607,7 +2609,7 @@ void AbstractSplineWidget::SelectAll()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void SplineWidget::SendNotifyEvent(int nEvent)
+void SplineWidget::SendNotifyEvent(const uint32_t nEvent)
 {
     if (nEvent == SPLN_BEFORE_CHANGE)
     {

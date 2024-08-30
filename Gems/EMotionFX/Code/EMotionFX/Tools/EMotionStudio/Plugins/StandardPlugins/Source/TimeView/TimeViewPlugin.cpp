@@ -7,6 +7,7 @@
 
 #include <Editor/InspectorBus.h>
 #include <AzCore/Math/MathUtils.h>
+#include <AzCore/Serialization/Locale.h>
 #include "TimeViewPlugin.h"
 #include "TrackDataHeaderWidget.h"
 #include "TrackDataWidget.h"
@@ -1469,6 +1470,8 @@ namespace EMStudio
 
     void TimeViewPlugin::MotionEventChanged(TimeTrackElement* element, double startTime, double endTime)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
+
         if (element == nullptr)
         {
             return;
