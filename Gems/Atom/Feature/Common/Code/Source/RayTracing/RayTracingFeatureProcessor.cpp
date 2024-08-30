@@ -424,27 +424,7 @@ namespace AZ
 
                 for (auto& [deviceIndex, meshInfos] : m_meshInfos)
                 {
-					// AKM_MARKER No idea WTF is going on here...
-// <<<<<<< HEAD
-// #if USE_BINDLESS_SRG
-//                     subMesh.m_indexShaderBufferView.get() ? subMesh.m_indexShaderBufferView->GetBindlessReadIndex() : InvalidIndex,
-//                     subMesh.m_positionShaderBufferView.get() ? subMesh.m_positionShaderBufferView->GetBindlessReadIndex() : InvalidIndex,
-//                     subMesh.m_normalShaderBufferView.get() ? subMesh.m_normalShaderBufferView->GetBindlessReadIndex() : InvalidIndex,
-//                     subMesh.m_tangentShaderBufferView.get() ? subMesh.m_tangentShaderBufferView->GetBindlessReadIndex() : InvalidIndex,
-//                     subMesh.m_bitangentShaderBufferView.get() ? subMesh.m_bitangentShaderBufferView->GetBindlessReadIndex() : InvalidIndex,
-//                     subMesh.m_uvShaderBufferView.get() ? subMesh.m_uvShaderBufferView->GetBindlessReadIndex() : InvalidIndex
-// #else
-//                     m_geometryView.AddResource(subMesh.m_indexShaderBufferView.get()),
-//                     m_geometryView.AddResource(subMesh.m_positionShaderBufferView.get()),
-//                     m_geometryView.AddResource(subMesh.m_normalShaderBufferView.get()),
-//                     m_geometryView.AddResource(subMesh.m_tangentShaderBufferView.get()),
-//                     m_geometryView.AddResource(subMesh.m_bitangentShaderBufferView.get()),
-//                     m_geometryView.AddResource(subMesh.m_uvShaderBufferView.get())
-// #endif
-//                 });
-// =======
                     MeshInfo& meshInfo = meshInfos[subMesh.m_globalIndex];
-//>>>>>>> development
 
                     worldInvTranspose3x4.StoreToRowMajorFloat12(meshInfo.m_worldInvTranspose.data());
                     meshInfo.m_bufferFlags = subMesh.m_bufferFlags;
