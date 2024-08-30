@@ -233,6 +233,7 @@ namespace AZ::RHI
             DeviceDrawItem& drawItem = drawItems[i];
             drawItem.m_enabled = !drawListTagDisabled;
             drawItem.m_geometryView = m_geometryView;
+            drawItem.m_streamIndices = drawRequest.m_streamIndices;
             drawItem.m_stencilRef = drawRequest.m_stencilRef;
             drawItem.m_shaderResourceGroupCount = drawPacket->m_shaderResourceGroupCount;
             drawItem.m_rootConstantSize = drawPacket->m_rootConstantSize;
