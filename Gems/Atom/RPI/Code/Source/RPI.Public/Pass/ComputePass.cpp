@@ -25,12 +25,9 @@
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
-#ifndef INDIRECT_RENDERING_INCLUDE_GUARD
-#define INDIRECT_RENDERING_INCLUDE_GUARD
 using uint = uint32_t;
 using uint4 = uint[4];
 #include "../../../Feature/Common/Assets/ShaderLib/Atom/Features/IndirectRendering.azsli"
-#endif
 
 namespace AZ
 {
