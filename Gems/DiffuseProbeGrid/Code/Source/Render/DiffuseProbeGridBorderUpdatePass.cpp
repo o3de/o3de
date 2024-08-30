@@ -160,11 +160,22 @@ namespace AZ
                 // (see line ValidateSetImageView() in ShaderResourceGroupData.cpp)
                 diffuseProbeGrid->UpdateBorderUpdateSrgs(m_rowShader, m_rowSrgLayout, m_columnShader, m_columnSrgLayout);
 
-                diffuseProbeGrid->GetBorderUpdateRowIrradianceSrg()->Compile();
-                diffuseProbeGrid->GetBorderUpdateColumnIrradianceSrg()->Compile();
-                diffuseProbeGrid->GetBorderUpdateRowDistanceSrg()->Compile();
-                diffuseProbeGrid->GetBorderUpdateColumnDistanceSrg()->Compile();
-
+                if (!diffuseProbeGrid->GetBorderUpdateRowIrradianceSrg()->IsQueuedForCompile())
+                {
+                    diffuseProbeGrid->GetBorderUpdateRowIrradianceSrg()->Compile();
+                }
+                if(!diffuseProbeGrid->GetBorderUpdateColumnIrradianceSrg()->IsQueuedForCompile())
+                {
+                    diffuseProbeGrid->GetBorderUpdateColumnIrradianceSrg()->Compile();
+                }
+                if (!diffuseProbeGrid->GetBorderUpdateRowDistanceSrg()->IsQueuedForCompile())
+                {
+                    diffuseProbeGrid->GetBorderUpdateRowDistanceSrg()->Compile();
+                }
+                if (!diffuseProbeGrid->GetBorderUpdateColumnDistanceSrg()->IsQueuedForCompile())
+                {
+                    diffuseProbeGrid->GetBorderUpdateColumnDistanceSrg()->Compile();
+                }
                 // setup the submit items now to properly handle submitting on multiple threads
                 uint32_t probeCountX;
                 uint32_t probeCountY;

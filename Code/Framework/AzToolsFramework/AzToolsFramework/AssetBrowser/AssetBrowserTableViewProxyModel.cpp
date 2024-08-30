@@ -26,7 +26,24 @@ namespace AzToolsFramework
 
         QVariant AssetBrowserTableViewProxyModel::data(const QModelIndex& index, int role) const
         {
-            auto assetBrowserEntry = mapToSource(index).data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+            if (!index.isValid())
+            {
+                return QVariant();
+            }
+
+            QModelIndex currentIndex = mapToSource(index);
+            if (!currentIndex.isValid())
+            {
+                return QVariant(); 
+            }
+
+            QVariant entryVariant = currentIndex.data(AssetBrowserModel::Roles::EntryRole);
+            if (!entryVariant.isValid())
+            {
+                return QVariant(); // table might be temporarily empty or busy repopulating.
+            }
+
+            auto assetBrowserEntry = entryVariant.value<const AssetBrowserEntry*>();
             AZ_Assert(assetBrowserEntry, "Couldn't fetch asset entry for the given index.");
             if (!assetBrowserEntry)
             {

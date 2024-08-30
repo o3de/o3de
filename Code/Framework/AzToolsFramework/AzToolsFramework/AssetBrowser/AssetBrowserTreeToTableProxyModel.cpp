@@ -107,7 +107,11 @@ namespace AzToolsFramework
         {
             Q_UNUSED(topLeft);
             Q_UNUSED(bottomRight);
-            Q_UNUSED(roles);
+            // we dont' need to consider refiltering or flattening if the role which changed is just the thumbnail icon.
+            if (roles.contains(Qt::DecorationRole))
+            {
+                return;
+            }
             FlattenTree();
         }
 
