@@ -1,0 +1,39 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+#pragma once
+
+#include <Atom/RHI/DeviceRayTracingAccelerationStructure.h>
+#include <Atom/RHI/DeviceRayTracingBufferPools.h>
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+
+namespace AZ
+{
+    namespace WebGPU
+    {
+        class Buffer;
+
+        class RayTracingBlas final
+            : public RHI::DeviceRayTracingBlas
+        {
+        public:
+            AZ_CLASS_ALLOCATOR(RayTracingBlas, AZ::SystemAllocator);
+
+            static RHI::Ptr<RayTracingBlas> Create();
+
+            // RHI::DeviceRayTracingBlas overrides...
+            virtual bool IsValid() const override { return true; }
+
+        private:
+            RayTracingBlas() = default;
+
+            // RHI::DeviceRayTracingBlas overrides...
+            RHI::ResultCode CreateBuffersInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::DeviceRayTracingBlasDescriptor* descriptor, [[maybe_unused]] const RHI::DeviceRayTracingBufferPools& rayTracingBufferPools) override {return RHI::ResultCode::Success;}
+        };
+    }
+}
