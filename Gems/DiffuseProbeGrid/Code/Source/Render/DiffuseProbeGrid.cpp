@@ -89,6 +89,7 @@ namespace AZ
                         drawPacketBuilder.AddShaderResourceGroup(m_renderObjectSrg->GetRHIShaderResourceGroup());
 
                         RHI::DrawPacketBuilder::DrawRequest drawRequest;
+                        drawRequest.m_streamIndices = m_renderData->m_geometryView.GetFullStreamBufferIndices();
                         drawRequest.m_listTag = m_renderData->m_drawListTag;
                         drawRequest.m_pipelineState = m_renderData->m_pipelineState->GetRHIPipelineState();
                         drawRequest.m_sortKey = m_sortKey;
