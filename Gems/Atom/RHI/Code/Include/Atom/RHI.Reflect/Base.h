@@ -117,6 +117,7 @@ namespace AZ::RHI
         DX12,
         Vulkan,
         Metal,
+        WebGPU
     };
 
     using APIType = Crc32;

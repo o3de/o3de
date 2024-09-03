@@ -43,5 +43,5 @@ namespace AZ
 #if defined(O3DE_GEM_NAME)
 AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Builders), AZ::Null::BuilderModule)
 #else
-AZ_DECLARE_MODULE_CLASS(Gem_Atom_RHI_Null_Builders, AZ::Null::BuilderModule)
+AZ_DECLARE_MODULE_CLASS(Gem_Atom_RHI_WebGPU_Builders, AZ::Null::BuilderModule)
 #endif
