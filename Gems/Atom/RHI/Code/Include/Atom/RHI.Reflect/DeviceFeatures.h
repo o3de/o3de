@@ -103,6 +103,9 @@ namespace AZ::RHI
         //! Whether float16 (half-precision floating-point format) support is available.
         bool m_float16 = false;
 
+        //! Whether resource aliasing is supported.
+        bool m_resourceAliasing = true;
+
         /// Additional features here.
     };
 }

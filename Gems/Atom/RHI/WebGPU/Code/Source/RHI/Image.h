@@ -10,38 +10,51 @@
 #include <Atom/RHI/DeviceImage.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
-namespace AZ
+namespace AZ::WebGPU
 {
-    namespace WebGPU
-    {
-        class Image final
-            : public RHI::DeviceImage
-        {
-            using Base = RHI::DeviceImage;
-        public:
-            AZ_CLASS_ALLOCATOR(Image, AZ::ThreadPoolAllocator);
-            AZ_RTTI(Image, "{7D518841-59D5-4545-BFD9-9824ECD52664}", Base);
-            ~Image() = default;
-            
-            static RHI::Ptr<Image> Create();
-  
-        private:
-            Image() = default;
+    class Device;
 
-            //////////////////////////////////////////////////////////////////////////
-            // RHI::Object
-            void SetNameInternal([[maybe_unused]] const AZStd::string_view& name) override {}
-            //////////////////////////////////////////////////////////////////////////
+    class Image final
+        : public RHI::DeviceImage
+    {
+        using Base = RHI::DeviceImage;
+        friend class SwapChain;
+        friend class AliasedHeap;
+
+    public:
+        AZ_CLASS_ALLOCATOR(Image, AZ::ThreadPoolAllocator);
+        AZ_RTTI(Image, "{7D518841-59D5-4545-BFD9-9824ECD52664}", Base);
+        ~Image();
             
-            //////////////////////////////////////////////////////////////////////////
-            // RHI::DeviceImage
-            void GetSubresourceLayoutsInternal(
-                [[maybe_unused]] const RHI::ImageSubresourceRange& subresourceRange,
-                [[maybe_unused]] RHI::DeviceImageSubresourceLayout* subresourceLayouts,
-                [[maybe_unused]] size_t* totalSizeInBytes) const override
-            {
-            }
-            //////////////////////////////////////////////////////////////////////////
-        };
-    }
+        static RHI::Ptr<Image> Create();
+
+        wgpu::Texture& GetNativeTexture();
+        const wgpu::Texture& GetNativeTexture() const;
+  
+    private:
+        Image() = default;
+        RHI::ResultCode Init(Device& device, wgpu::Texture& image, const RHI::ImageDescriptor& descriptor);
+        RHI::ResultCode Init(Device& device, const RHI::ImageDescriptor& descriptor);
+        void Invalidate();
+
+        //////////////////////////////////////////////////////////////////////////
+        // RHI::Object
+        void SetNameInternal([[maybe_unused]] const AZStd::string_view& name) override {}
+        //////////////////////////////////////////////////////////////////////////
+            
+        //////////////////////////////////////////////////////////////////////////
+        // RHI::DeviceImage
+        void GetSubresourceLayoutsInternal(
+            [[maybe_unused]] const RHI::ImageSubresourceRange& subresourceRange,
+            [[maybe_unused]] RHI::DeviceImageSubresourceLayout* subresourceLayouts,
+            [[maybe_unused]] size_t* totalSizeInBytes) const override
+        {
+        }
+        //////////////////////////////////////////////////////////////////////////
+
+        void SetNativeTexture(wgpu::Texture& texture);
+
+        //! Native texture
+        wgpu::Texture m_wgpuTexture = nullptr;
+    };
 }

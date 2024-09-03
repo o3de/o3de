@@ -45,6 +45,15 @@ namespace AZ
             
         private:
             ShaderPlatformInterface() = delete;
+            bool CompileHLSLShader(
+                const AZStd::string& shaderSourceFile,
+                const AZStd::string& tempFolder,
+                const AZStd::string& entryPoint,
+                const RHI::ShaderHardwareStage shaderAssetType,
+                const RHI::ShaderBuildArguments& shaderBuildArguments,
+                AZStd::vector<uint8_t>& compiledShader,
+                const AssetBuilderSDK::PlatformInfo& platform,
+                ByProducts& byProducts) const;
 
             const Name m_apiName{APINameString};
         };

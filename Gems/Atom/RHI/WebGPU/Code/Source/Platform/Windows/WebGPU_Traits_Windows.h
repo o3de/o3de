@@ -6,3 +6,5 @@
  *
  */
 #pragma once
+
+#define AZ_TRAIT_ATOM_SHADERBUILDER_DXC "Builders/DirectXShaderCompiler/dxc.exe"

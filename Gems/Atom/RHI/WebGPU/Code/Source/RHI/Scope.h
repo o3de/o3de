@@ -10,29 +10,28 @@
 
 #include <Atom/RHI/Scope.h>
 
-namespace AZ
+namespace AZ::WebGPU
 {
-    namespace WebGPU
+    class Scope final
+        : public RHI::Scope
     {
-        class Scope final
-            : public RHI::Scope
-        {
-            using Base = RHI::Scope;
-        public:
-            AZ_RTTI(Scope, "{D88CE6EC-D0E9-498B-B471-4035F5CF065C}", Base);
-            AZ_CLASS_ALLOCATOR(Scope, AZ::SystemAllocator);
+        using Base = RHI::Scope;
+    public:
+        AZ_RTTI(Scope, "{D88CE6EC-D0E9-498B-B471-4035F5CF065C}", Base);
+        AZ_CLASS_ALLOCATOR(Scope, AZ::SystemAllocator);
 
-            static RHI::Ptr<Scope> Create();
+        static RHI::Ptr<Scope> Create();
+        bool HasSignalFence() const;
+        bool HasWaitFences() const;
 
-        private: 
-            Scope() = default;
+    private: 
+        Scope() = default;
 
-            //////////////////////////////////////////////////////////////////////////
-            // RHI::Scope
-            void DeactivateInternal() override {}
-            void CompileInternal() override {}
-            void AddQueryPoolUse([[maybe_unused]] RHI::Ptr<RHI::QueryPool> queryPool, [[maybe_unused]] const RHI::Interval& interval, [[maybe_unused]] RHI::ScopeAttachmentAccess access) override {}
-            //////////////////////////////////////////////////////////////////////////
-        };
-    }
+        //////////////////////////////////////////////////////////////////////////
+        // RHI::Scope
+        void DeactivateInternal() override {}
+        void CompileInternal() override {}
+        void AddQueryPoolUse([[maybe_unused]] RHI::Ptr<RHI::QueryPool> queryPool, [[maybe_unused]] const RHI::Interval& interval, [[maybe_unused]] RHI::ScopeAttachmentAccess access) override {}
+        //////////////////////////////////////////////////////////////////////////
+    };
 }

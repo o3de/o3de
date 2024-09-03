@@ -118,11 +118,6 @@ namespace AZ::RHI
 
     VirtualAddress FreeListAllocator::Allocate(size_t byteCount, size_t byteAlignment)
     {
-        if (byteCount == 0)
-        {
-            return VirtualAddress::CreateNull();
-        }
-
         byteAlignment = AZStd::max<size_t>(byteAlignment, m_descriptor.m_alignmentInBytes);
 
         FindNodeRequest request;

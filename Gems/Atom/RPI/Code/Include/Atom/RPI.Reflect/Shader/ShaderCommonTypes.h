@@ -15,7 +15,7 @@ namespace AZ
     namespace RPI
     {
         // Common bit positions for ShaderAsset and ShaderVariantAsset product SubIds.
-        static constexpr uint32_t RhiIndexBitPosition = 30;
+        static constexpr uint32_t RhiIndexBitPosition = 29;
         static constexpr uint32_t RhiIndexNumBits = 32 - RhiIndexBitPosition;
         static constexpr uint32_t RhiIndexMaxValue = (1 << RhiIndexNumBits) - 1;
 

@@ -33,7 +33,7 @@ namespace AZ
         static constexpr uint32_t SubProductTypeNumBits = SupervariantIndexBitPosition - SubProductTypeBitPosition;
         [[maybe_unused]] static constexpr uint32_t SubProductTypeMaxValue = (1 << SubProductTypeNumBits) - 1;
 
-        static_assert(RhiIndexMaxValue == RHI::Limits::APIType::PerPlatformApiUniqueIndexMax);
+        static_assert(RhiIndexMaxValue >= RHI::Limits::APIType::PerPlatformApiUniqueIndexMax);
 
         uint32_t ShaderAsset::MakeProductAssetSubId(
             uint32_t rhiApiUniqueIndex, uint32_t supervariantIndex, uint32_t subProductType)

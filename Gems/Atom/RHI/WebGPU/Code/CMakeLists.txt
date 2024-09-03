@@ -9,6 +9,8 @@
 o3de_pal_dir(pal_include_dir ${CMAKE_CURRENT_LIST_DIR}/Include/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
+find_package(Dawn REQUIRED)
+
 ly_add_target(
     NAME ${gem_name}.Reflect STATIC
     NAMESPACE Gem
@@ -29,6 +31,7 @@ ly_add_target(
     NAMESPACE Gem
     FILES_CMAKE
         atom_rhi_webgpu_private_common_files.cmake
+        ${pal_source_dir}/platform_private_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             .
@@ -43,6 +46,7 @@ ly_add_target(
             AZ::AzFramework
             AZ::AtomCore
             Gem::Atom_RHI.Public
+            dawn::webgpu_dawn
 )
 
 ly_add_target(

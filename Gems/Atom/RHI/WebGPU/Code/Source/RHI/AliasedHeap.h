@@ -9,31 +9,44 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <Atom/RHI/AliasedHeap.h>
+#include <Atom/RHI/AliasingBarrierTracker.h>
 
-
-namespace AZ
+namespace AZ::WebGPU
 {
-    namespace WebGPU
+    //! No op barrier tracker. Since WebGPU doesn't support aliasing, we don't need to track barriers
+    class NoBarrierAliasingBarrierTracker : public RHI::AliasingBarrierTracker
     {
-        class AliasedHeap final
-            : public RHI::AliasedHeap
+    private:
+        //////////////////////////////////////////////////////////////////////////
+        // RHI::AliasingBarrierTracker
+        void AppendBarrierInternal(
+            [[maybe_unused]] const RHI::AliasedResource& resourceBefore,
+            [[maybe_unused]] const RHI::AliasedResource& resourceAfter) override
         {
-            using Base = RHI::AliasedHeap;
-        public:
-            AZ_CLASS_ALLOCATOR(AliasedHeap, AZ::SystemAllocator);
-            AZ_RTTI(AliasedHeap, "{D832F0CA-C298-4048-B753-9FE42E22EA7E}", Base);
-            
-            static RHI::Ptr<AliasedHeap> Create();                       
-        private:
-            AliasedHeap() = default;
+        }
+        //////////////////////////////////////////////////////////////////////////
+    };
 
-            //////////////////////////////////////////////////////////////////////////
-            // RHI::AliasedHeap
-            AZStd::unique_ptr<RHI::AliasingBarrierTracker> CreateBarrierTrackerInternal() override { return nullptr;}
-            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::AliasedHeapDescriptor& descriptor) override { return RHI::ResultCode::Success;}
-            RHI::ResultCode InitImageInternal([[maybe_unused]] const RHI::DeviceImageInitRequest& request, [[maybe_unused]] size_t heapOffset) override { return RHI::ResultCode::Success;}
-            RHI::ResultCode InitBufferInternal([[maybe_unused]] const RHI::DeviceBufferInitRequest& request, [[maybe_unused]] size_t heapOffset) override { return RHI::ResultCode::Success;}
-            //////////////////////////////////////////////////////////////////////////
-        };
-    }
+    //! Since aliasing is not supported for WebGPU, this heap doesn't really share any memory
+    //! between the resources. Each resource has it's own memory, managed by the wgpu resource.
+    class AliasedHeap final
+        : public RHI::AliasedHeap
+    {
+        using Base = RHI::AliasedHeap;
+    public:
+        AZ_CLASS_ALLOCATOR(AliasedHeap, AZ::SystemAllocator);
+        AZ_RTTI(AliasedHeap, "{D832F0CA-C298-4048-B753-9FE42E22EA7E}", Base);
+            
+        static RHI::Ptr<AliasedHeap> Create();
+    private:
+        AliasedHeap() = default;
+
+        //////////////////////////////////////////////////////////////////////////
+        // RHI::AliasedHeap
+        AZStd::unique_ptr<RHI::AliasingBarrierTracker> CreateBarrierTrackerInternal() override;
+        RHI::ResultCode InitInternal(RHI::Device& device, const RHI::AliasedHeapDescriptor& descriptor) override;
+        RHI::ResultCode InitImageInternal(const RHI::DeviceImageInitRequest& request, size_t heapOffset) override;
+        RHI::ResultCode InitBufferInternal(const RHI::DeviceBufferInitRequest& request, size_t heapOffset) override;
+        //////////////////////////////////////////////////////////////////////////
+    };
 }

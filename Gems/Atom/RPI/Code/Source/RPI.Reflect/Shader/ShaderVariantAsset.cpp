@@ -31,9 +31,9 @@ namespace AZ
             static constexpr uint32_t StableIdNumBits = SubProductTypeBitPosition - StableIdBitPosition;
             [[maybe_unused]] static constexpr uint32_t StableIdMaxValue = (1 << StableIdNumBits) - 1;
 
-            static_assert(RhiIndexMaxValue == RHI::Limits::APIType::PerPlatformApiUniqueIndexMax);
+            static_assert(RhiIndexMaxValue >= RHI::Limits::APIType::PerPlatformApiUniqueIndexMax);
 
-            // The 2 Most significant bits encode the the RHI::API unique index.
+            // The 3 Most significant bits encode the the RHI::API unique index.
             AZ_Assert(rhiApiUniqueIndex <= RhiIndexMaxValue, "Invalid rhiApiUniqueIndex [%u]", rhiApiUniqueIndex);
             AZ_Assert(supervariantIndex <= SupervariantIndexMaxValue, "Invalid supervariantIndex [%u]", supervariantIndex);
             AZ_Assert(subProductType <= SubProductTypeMaxValue, "Invalid subProductType [%u]", subProductType);

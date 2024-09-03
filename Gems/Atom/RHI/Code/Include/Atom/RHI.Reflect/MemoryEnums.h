@@ -14,7 +14,7 @@ namespace AZ::RHI
     //! Describes the memory requirements for allocating a resource.
     struct ResourceMemoryRequirements
     {
-        size_t m_alignmentInBytes = 0;
+        size_t m_alignmentInBytes = 1;
         size_t m_sizeInBytes = 0;
     };
 
