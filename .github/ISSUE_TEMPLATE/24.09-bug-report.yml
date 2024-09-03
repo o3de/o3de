@@ -1,6 +1,7 @@
 name: 24.09 Release Bug Report
 description: Template for submitting a bug for the 24.09 O3DE Release
-title: '24.09 Release - BUG REPORT NAME'
+title: '24.09 Release - BUG NAME'
+labels: "kind/bug-2409"
 assignees:
   - Ulrick28
 body:
@@ -15,7 +16,7 @@ body:
 - type: textarea
   id: assets-required
   attributes:
-    label: Bug Description
+    label: Assets-Required
     description: "Please provide sample assets needed to reproduce the issue, either as an 
     [attachment](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/attaching-files) 
     or as a link to a public asset in Github."
