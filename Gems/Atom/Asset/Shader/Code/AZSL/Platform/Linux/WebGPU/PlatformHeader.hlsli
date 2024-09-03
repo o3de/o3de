@@ -6,4 +6,4 @@
  *
  */
 
-// Platform defines specific for this platform (Vulkan) only:
+// Platform defines specific for this platform (WebGPU) only:

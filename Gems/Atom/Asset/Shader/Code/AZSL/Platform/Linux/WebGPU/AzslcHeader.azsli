@@ -15,7 +15,7 @@
 #define UNBOUNDED_SIZE
 
 
- // Full floats for null rhi
+ // Full floats for WebGPU rhi
  #define real float
  #define real2 float2
  #define real3 float3
