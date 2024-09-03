@@ -1,7 +1,7 @@
 name: 24.09 Release Bug Report
 description: Template for submitting a bug for the 24.09 O3DE Release
 title: '24.09 Release - BUG NAME'
-labels: "kind/bug-2409"
+labels: "kind/bug-2409,needs-triage,needs-sig"
 assignees:
   - Ulrick28
 body:
