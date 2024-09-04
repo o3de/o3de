@@ -334,7 +334,6 @@ void CXmlNode::setAttr(const char* key, const Vec4& value)
 void CXmlNode::setAttr(const char* key, const AZ::Vector2& value)
 {
     char str[128];
-    SCOPED_LOCALE_RESETTER;
     sprintf_s(str, FLOAT_FMT "," FLOAT_FMT, value.GetX(), value.GetY());
     setAttr(key, str);
 }
@@ -342,7 +341,6 @@ void CXmlNode::setAttr(const char* key, const AZ::Vector2& value)
 void CXmlNode::setAttr(const char* key, const AZ::Vector3& value)
 {
     char str[128];
-    SCOPED_LOCALE_RESETTER;
     sprintf_s(str, FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT, value.GetX(), value.GetY(), value.GetZ());
     setAttr(key, str);
 }
@@ -350,7 +348,6 @@ void CXmlNode::setAttr(const char* key, const AZ::Vector3& value)
 void CXmlNode::setAttr(const char* key, const AZ::Vector4& value)
 {
     char str[128];
-    SCOPED_LOCALE_RESETTER;
     sprintf_s(str, FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT, value.GetX(), value.GetY(), value.GetZ(), value.GetW());
     setAttr(key, str);
 }
@@ -358,7 +355,6 @@ void CXmlNode::setAttr(const char* key, const AZ::Vector4& value)
 void CXmlNode::setAttr(const char* key, const AZ::Quaternion& value)
 {
     char str[128];
-    SCOPED_LOCALE_RESETTER;
     sprintf_s(str, FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT, value.GetW(), value.GetX(), value.GetY(), value.GetZ());
     setAttr(key, str);
 }
@@ -528,7 +524,6 @@ bool CXmlNode::getAttr(const char* key, AZ::Vector2& value) const {
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        SCOPED_LOCALE_RESETTER;
         float x, y;
         if (azsscanf(svalue, "%f,%f", &x, &y) == 2)
         {
@@ -558,7 +553,6 @@ bool CXmlNode::getAttr(const char* key, AZ::Vector4& value) const {
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        SCOPED_LOCALE_RESETTER;
         float x, y, z, w;
         if (azsscanf(svalue, "%f,%f,%f,%f", &x, &y, &z, &w) == 4)
         {
@@ -574,7 +568,6 @@ bool CXmlNode::getAttr(const char* key, AZ::Quaternion& value) const {
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        SCOPED_LOCALE_RESETTER;
         float w, x, y, z;
         if (azsscanf(svalue, "%f,%f,%f,%f", &w, &x, &y, &z) == 4)
         {
@@ -1813,7 +1806,4 @@ void CXmlNodePool::OnRelease(int iRefCount, void* pThis)
         }
     }
 }
-
-#undef SCOPED_LOCALE_RESETTER
-
 
