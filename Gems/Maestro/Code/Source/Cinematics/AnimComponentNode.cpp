@@ -766,7 +766,7 @@ void CAnimComponentNode::InitializeTrackDefaultValue(IAnimTrack* pTrack, const C
                     Maestro::SequenceComponentRequestBus::Event(m_pSequence->GetSequenceEntityId(), &Maestro::SequenceComponentRequestBus::Events::GetAnimatedPropertyValue, defaultValue, GetParentAzEntityId(), address);
                     defaultValue.GetValue(vector3Value);
 
-                    pTrack->SetValue(0, Vec3(vector3Value.GetX(), vector3Value.GetY(), vector3Value.GetZ()), true);
+                    pTrack->SetValue(0, vector3Value, true);
                     break;
                 }
                 case AnimValueType::Quat:
