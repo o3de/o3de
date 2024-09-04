@@ -789,29 +789,23 @@ namespace AzFramework
 
     void TransformComponent::OnEntityDeactivated([[maybe_unused]] const AZ::EntityId& parentEntityId)
     {
+        AZ_Assert(parentEntityId == m_parentId, "We expect to receive notifications only from the current parent!");
+        m_parentTM = nullptr;
+        m_parentActive = false;
+
 #if defined(CARBONATED)
         if (!IsNetworkControlled())
         {
-            AZ_Assert(parentEntityId == m_parentId, "We expect to receive notifications only from the current parent!");
-            m_parentTM = nullptr;
-            m_parentActive = false;
-            ComputeLocalTM();
-            
+            ComputeLocalTM();            
             UpdateReplicaChunk();
         }
         else
         {
             // If this transform is network controlled, then the localTM is updated by the network,
             // so update m_parentTM and compute worldTM instead.
-            AZ_Assert(parentEntityId == m_parentId, "We expect to receive notifications only from the current parent!");
-            m_parentTM = nullptr;
-            m_parentActive = false;
             ComputeWorldTM();
         }
 #else
-        AZ_Assert(parentEntityId == m_parentId, "We expect to receive notifications only from the current parent!");
-        m_parentTM = nullptr;
-        m_parentActive = false;
         ComputeLocalTM();
 #endif
     }

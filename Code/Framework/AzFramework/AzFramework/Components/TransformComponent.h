@@ -251,13 +251,14 @@ namespace AzFramework
         AZ::InterpolationMode                   m_interpolatePosition;      ///< Interpolation mode for net-synced position updates
         AZ::InterpolationMode                   m_interpolateRotation;      ///< Interpolation mode for net-synced rotation updates
 
-        bool m_isClientSimulated;
         //////////////////////////////////////////////////////////////////////////////
         // Feedback from corresponding replica chunk
         void OnNewPositionData(const AZ::Vector3&, const GridMate::TimeContext&);
         void OnNewRotationData(const AZ::Quaternion&, const GridMate::TimeContext&);
         void OnNewScaleData(const AZ::Vector3&, const GridMate::TimeContext&);
         //////////////////////////////////////////////////////////////////////////////
+
+        AZ::Transform GetInterpolatedTransform(unsigned int localTime);
 
     private:
 
@@ -268,11 +269,13 @@ namespace AzFramework
         void CreateRotationSample();
         void CreateSamples();
 
+    private:
+
+        bool m_isClientSimulated = false;
+
         AZStd::unique_ptr<AZ::Sample<AZ::Vector3>>    m_netTargetTranslation;
         AZStd::unique_ptr<AZ::Sample<AZ::Quaternion>> m_netTargetRotation;
         AZ::Vector3 m_netTargetScale;
-
-        AZ::Transform GetInterpolatedTransform(unsigned int localTime);
         //////////////////////////////////////////////////////////////////////////////
 #endif  
 
