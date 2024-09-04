@@ -91,6 +91,11 @@ namespace ImGui
 
         ImGuiContext* m_imguiContext = nullptr;
         DisplayState m_clientMenuBarState = DisplayState::Hidden;
+        
+#if defined(CARBONATED)
+        // True when the current on-screen keyboard is owned by ImGui.
+        bool m_textEntryOwned {};
+#endif
 
         // ImGui Resolution Settings
         ImGuiResolutionMode m_resolutionMode = ImGuiResolutionMode::MatchRenderResolution;

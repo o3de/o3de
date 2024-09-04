@@ -450,6 +450,7 @@ namespace AZ
                 m_meshFeatureProcessor->SetMeshLodConfiguration(m_meshHandle, GetMeshLodConfiguration());
 #if defined(CARBONATED)
                 m_meshFeatureProcessor->SetVisible(m_meshHandle, m_configuration.m_visibility);
+                m_isVisible = m_configuration.m_visibility;
 #else
                 m_meshFeatureProcessor->SetVisible(m_meshHandle, m_isVisible);
 #endif

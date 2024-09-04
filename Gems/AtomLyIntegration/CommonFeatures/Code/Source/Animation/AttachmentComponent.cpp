@@ -219,13 +219,13 @@ namespace AZ
         void BoneFollower::BindTargetBone()
         {
 #if defined(CARBONATED)
-            AZ::Entity* ownerEntity = nullptr;
+            /* AZ::Entity* ownerEntity = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(ownerEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_ownerId);
             AZ_TracePrintf(
                 "BoneFollower",
                 "BoneFollower: Bind Target Bone %s :: %s",
                 m_targetBoneName.c_str(),
-                ownerEntity ? ownerEntity->GetName().c_str() : "");
+                ownerEntity ? ownerEntity->GetName().c_str() : ""); */
 #endif
             m_targetBoneId = -1;
             LmbrCentral::SkeletalHierarchyRequestBus::EventResult(
@@ -318,13 +318,13 @@ namespace AZ
         void BoneFollower::Reattach(bool detachFirst)
         {
 #ifdef AZ_ENABLE_TRACING
-            AZ::Entity* ownerEntity = nullptr;
+            /* AZ::Entity* ownerEntity = nullptr;
             AZ::Entity* targetEntity = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(ownerEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_ownerId);
             AZ::ComponentApplicationBus::BroadcastResult(targetEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_targetId);
             AZ_TracePrintf(
                 "BoneFollower", "Reattaching entity '%s' to entity '%s'", ownerEntity ? ownerEntity->GetName().c_str() : "",
-                targetEntity ? targetEntity->GetName().c_str() : "");
+                targetEntity ? targetEntity->GetName().c_str() : ""); */
 #endif
 
             if (m_targetId.IsValid() && detachFirst)
