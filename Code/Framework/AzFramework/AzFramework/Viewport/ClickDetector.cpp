@@ -13,7 +13,7 @@
 
 namespace AzFramework
 {
-    ClickDetector::ClickDetector()
+    ClickDetector::ClickDetector() : m_detectionState(DetectionState::Nil)
     {
         m_timeNowFn = []
         {
