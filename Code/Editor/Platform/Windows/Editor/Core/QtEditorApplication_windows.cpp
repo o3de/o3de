@@ -141,7 +141,7 @@ namespace Editor
             {
                 return filterInputEvents;
             }
-#endif // defined(CARBONATED)
+#endif
 
             // allow all other Qt event types to pass through
             // which are needed for focusing, etc.

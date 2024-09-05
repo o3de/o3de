@@ -247,7 +247,7 @@ void LoadScreenComponent::GameStart()
             {
                 m_loadScreenState = LoadScreenState::ShowingMultiThreaded;
 
-                AZ_ErrorOnce(nullptr, false, "StartLoadtimePlayback for loading thread is not supported as unused for the current game");
+                AZ_ErrorOnce(AZ::Debug::Trace::GetDefaultSystemWindow(), false, "StartLoadtimePlayback for loading thread is not supported as unused for the current game");
                 //FIXME: GetGlobalEnv()->pRenderer->StartLoadtimePlayback(this);
             }
             else
@@ -298,7 +298,7 @@ void LoadScreenComponent::LevelStart()
             {
                 m_loadScreenState = LoadScreenState::ShowingMultiThreaded;
 
-                AZ_ErrorOnce(nullptr, false, "StartLoadtimePlayback for loading thread is not supported as unused for the current game");
+                AZ_ErrorOnce(AZ::Debug::Trace::GetDefaultSystemWindow(), false, "StartLoadtimePlayback for loading thread is not supported as unused for the current game");
                 //FIXME: GetGlobalEnv()->pRenderer->StartLoadtimePlayback(this);
             }
             else
@@ -365,7 +365,7 @@ void LoadScreenComponent::Stop()
     if (m_loadScreenState == LoadScreenState::ShowingMultiThreaded)
     {
         // This will block until the other thread completes.
-        AZ_ErrorOnce(nullptr, false, "StopLoadtimePlayback for loading thread is not supported as unused for the current game");
+        AZ_ErrorOnce(AZ::Debug::Trace::GetDefaultSystemWindow(), false, "StopLoadtimePlayback for loading thread is not supported as unused for the current game");
         // FIXME: GetGlobalEnv()->pRenderer->StopLoadtimePlayback();
     }
 

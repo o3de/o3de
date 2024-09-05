@@ -32,13 +32,7 @@ namespace AZ
             static void SetInstance(LuaMaterialBehaviorContext* instance);
 
             LuaMaterialBehaviorContext();
-
-            AZ::BehaviorContext* GetBehaviorContext();
-
-        private:
             void ReflectScriptContext(AZ::BehaviorContext* behaviorContext);
-
-            AZStd::unique_ptr<AZ::BehaviorContext> m_sriptBehaviorContext;
         };
 
         namespace LuaMaterialFunctorAPI

@@ -463,10 +463,6 @@ namespace AZ
                 m_meshFeatureProcessor->SetLightingChannelMask(m_meshHandle, m_configuration.m_lightingChannelConfig.GetLightingChannelMask());
                 m_meshFeatureProcessor->SetMeshLodConfiguration(m_meshHandle, GetMeshLodConfiguration());
                 m_meshFeatureProcessor->SetRayTracingEnabled(m_meshHandle, meshDescriptor.m_isRayTracingEnabled);
-#if defined(CARBONATED)
-                m_meshFeatureProcessor->SetVisible(m_meshHandle, m_configuration.m_visibility);
-                m_isVisible = m_configuration.m_visibility;
-#endif
             }
             else
             {
@@ -648,10 +644,6 @@ namespace AZ
             {
                 m_meshFeatureProcessor->SetVisible(m_meshHandle, visible);
             }
-
-#if defined(CARBONATED)
-            m_configuration.m_visibility = visible;
-#endif
         }
 
         bool MeshComponentController::GetVisibility() const

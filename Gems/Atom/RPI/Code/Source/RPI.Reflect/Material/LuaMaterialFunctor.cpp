@@ -58,8 +58,6 @@ namespace AZ
 
         LuaMaterialBehaviorContext::LuaMaterialBehaviorContext()
         {
-            m_sriptBehaviorContext = AZStd::make_unique<AZ::BehaviorContext>();
-            ReflectScriptContext(m_sriptBehaviorContext.get());
         }
 
         void LuaMaterialBehaviorContext::ReflectScriptContext(AZ::BehaviorContext* behaviorContext)
@@ -76,11 +74,6 @@ namespace AZ
             LuaMaterialFunctorAPI::EditorContext::Reflect(behaviorContext);
         }
 
-        AZ::BehaviorContext* LuaMaterialBehaviorContext::GetBehaviorContext()
-        {
-            return m_sriptBehaviorContext.get();
-        }
-
         void LuaMaterialFunctor::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
@@ -94,14 +87,12 @@ namespace AZ
 
             if (auto behaviorContext = azrtti_cast<BehaviorContext*>(context))
             {
-                ReflectScriptContext(behaviorContext);
+                LuaMaterialBehaviorContext::GetInstance()->ReflectScriptContext(behaviorContext);
             }
         }
 
         LuaMaterialFunctor::LuaMaterialFunctor() = default;
 
-        void LuaMaterialFunctor::ReflectScriptContext(AZ::BehaviorContext* behaviorContext)
-        {
         const AZStd::vector<char>& LuaMaterialFunctor::GetScriptBuffer() const
         {
             if (!m_scriptBuffer.empty())

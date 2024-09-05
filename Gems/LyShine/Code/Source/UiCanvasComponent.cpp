@@ -79,6 +79,14 @@ public:
     }
     
     void OnActionMultitouch(AZ::EntityId entityId, const LyShine::ActionName& actionName, const AZ::Vector2& position, int multitouchIndex) override
+    {
+        Call(FN_OnActionMultitouch, entityId, actionName, position, multitouchIndex);
+    }
+
+    void OnEnableStateChanged(AZ::EntityId canvasEntityId, bool enabled) override
+    {
+        Call(FN_OnEnableStateChanged, canvasEntityId, enabled);
+    }
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

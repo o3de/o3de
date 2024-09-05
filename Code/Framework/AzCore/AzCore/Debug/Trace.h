@@ -192,10 +192,6 @@ namespace AZ
             void Output(const char* window, const char* message) override;
             void OutputToRawAndDebugger(const char* window, const char* message) override;
 
-#if defined(CARBONATED) 
-            void OutputToRawAndDebugger(const char* window, const char* message) override;
-#endif
-
             /// Called by output to handle the actual output, does not interact with ebus or allow interception
             void RawOutput(const char* window, const char* message) override;
 

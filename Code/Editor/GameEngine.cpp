@@ -37,11 +37,9 @@
 
 // CryCommon
 #include <CryCommon/MainThreadRenderRequestBus.h>
-// carbonated begin (akostin/mp226): IEditorGame* to dispatch notifications to NetContext
-#if defined(CARBONATED)
+#if defined(CARBONATED) // (akostin/mp226): IEditorGame* to dispatch notifications to NetContext
 #include <CryCommon/IEditorGameEvents.h>
 #endif
-//carbonated end
 
 // Editor
 #include "CryEdit.h"
@@ -51,7 +49,7 @@
 #include "MainWindow.h"
 #include "Include/IObjectManager.h"
 
-#if defined(CARBONATED) // aefimov MAD-10299 assert modal dialog fix
+#if defined(CARBONATED)  // aefimov MAD-10299 assert modal dialog fix
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/NativeUI/NativeUIRequests.h>
 #endif
@@ -233,11 +231,9 @@ CGameEngine::CGameEngine()
     : m_bIgnoreUpdates(false)
     , m_ePendingGameMode(ePGM_NotPending)
     , m_modalWindowDismisser(nullptr)
-    // carbonated begin (akostin/mp226): IEditorGame* to dispatch notifications to NetContext
-#if defined(CARBONATED)
+#if defined(CARBONATED) // (akostin/mp226): IEditorGame* to dispatch notifications to NetContext
     , m_pEditorGame(nullptr)
 #endif
-    // carbonated end
 
 AZ_POP_DISABLE_WARNING
 {
@@ -446,11 +442,9 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
 
 bool CGameEngine::InitGame(const char*)
 {
-    // carbonated begin (akostin/mp226): broadcast OnCryEditorGameInitialize
-#if defined(CARBONATED)
+#if defined(CARBONATED) // (akostin/mp226): broadcast OnCryEditorGameInitialize
     CrySystemEventBus::Broadcast(&CrySystemEventBus::Events::OnCryEditorGameInitialize);
 #endif
-    // carbonated end
 
     m_pISystem->ExecuteCommandLine();
 
@@ -722,7 +716,7 @@ void CGameEngine::Update()
         return;
     }
 
-#if defined(CARBONATED) // aefimov MAD-10299 assert modal dialog fix
+#if defined(CARBONATED)  // aefimov MAD-10299 assert modal dialog fix
     if (gEnv->IsEditor())
     {
         bool result = false;
@@ -819,8 +813,7 @@ void CGameEngine::OnEditorNotifyEvent(EEditorNotifyEvent event)
     break;
     }
 
-    // carbonated begin (akostin/mp226): IEditorGame* to dispatch notifications to NetContext
-#if defined(CARBONATED)
+#if defined(CARBONATED) // (akostin/mp226): IEditorGame* to dispatch notifications to NetContext
     if (!m_pEditorGame)
     {
         EditorGameRequestBus::BroadcastResult(m_pEditorGame, &EditorGameRequestBus::Events::GetEditorGame);
@@ -863,7 +856,6 @@ void CGameEngine::OnEditorNotifyEvent(EEditorNotifyEvent event)
     break;
     }
 #endif
-    // carbonated end
 }
 
 void CGameEngine::OnAreaModified([[maybe_unused]] const AABB& modifiedArea)

@@ -10,6 +10,10 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Interface/Interface.h>
 
+#if defined(CARBONATED)
+#include <AzCore/std/string/string.h>
+#endif
+
 namespace Profiler
 {
 #if defined (CARBONATED)

@@ -222,7 +222,7 @@ def get_incompatible_objects_for_engine(object_json_data:dict, engine_json_data:
     if not compatible_engines and not engine_api_version_specifiers:
         return set() 
 
-    engine_name = engine_json_data['engine_name']
+    engine_name = engine_json_data['engine_name'].split('.')[0] # CARBONATED - trim the qualifier, anything after the period
     engine_version = engine_json_data.get('version')
 
     incompatible_objects = set()

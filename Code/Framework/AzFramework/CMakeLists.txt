@@ -61,26 +61,6 @@ ly_add_target(
             AZ::AzFramework
 )
 
-ly_add_target(
-    NAME AzFramework.NativeUI STATIC
-    NAMESPACE AZ
-    FILES_CMAKE
-        AzFramework/azframework_nativeui_files.cmake
-        ${pal_dir}/platform_nativeui_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
-    PLATFORM_INCLUDE_FILES
-        ${pal_dir}/platform_nativeui_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
-    INCLUDE_DIRECTORIES
-        PUBLIC
-            .
-            ${pal_dir}
-        PRIVATE
-            ${common_dir}
-    BUILD_DEPENDENCIES
-        PRIVATE
-            AZ::AzCore
-            AZ::AzFramework
-)
-
 set(LY_SEARCH_MODE_DEFINE $<$<BOOL:"${LY_ARCHIVE_FILE_SEARCH_MODE}">:LY_ARCHIVE_FILE_SEARCH_MODE=${LY_ARCHIVE_FILE_SEARCH_MODE}>)
 
 ly_add_source_properties(

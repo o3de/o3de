@@ -38,13 +38,11 @@ QString CErrorRecord::GetErrorText() const
     case VALIDATOR_MODULE_AUDIO:
         sModuleName = "Audio";
         break;
-        // carbonated begin (akostin/mp344): IGame partially reverted for the sake of GridMate
-#if defined(CARBONATED)
+#if defined(CARBONATED) // (akostin/mp344): IGame partially reverted for the sake of GridMate
     case VALIDATOR_MODULE_GAME:
         sModuleName = "Game";
         break;
 #endif
-        // carbonated end
     case VALIDATOR_MODULE_MOVIE:
         sModuleName = "Movie";
         break;

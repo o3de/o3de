@@ -63,9 +63,6 @@ namespace AZ
             //! called when a DrawPacket used by this ModelDataInstance was updated. 
             void HandleDrawPacketUpdate();
 
-            //! called when a DrawPacket used by this ModelDataInstance was updated. 
-            void HandleDrawPacketUpdate();
-
         private:
             class MeshLoader
                 : private SystemTickBus::Handler

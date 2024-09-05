@@ -67,8 +67,6 @@ namespace AZ
 
             void SetGoboTexture([[maybe_unused]] AZ::Data::Instance<AZ::RPI::Image> goboTexture) override {}
 
-            void SetGoboTexture([[maybe_unused]] AZ::Data::Instance<AZ::RPI::Image> goboTexture) override {}
-
         protected:
             void InitBase(EntityId entityId);
 

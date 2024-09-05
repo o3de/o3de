@@ -223,13 +223,13 @@ namespace AZ
             switch (fogSettings->GetFogMode())
             {
             case FogMode::Linear:
-                shaderOption.SetValue(m_fogModeOptionName, AZ::Name("FogMode::LinearMode"));
+                shaderOptions.SetValue(m_fogModeOptionName, AZ::Name("FogMode::LinearMode"));
                 break;
             case FogMode::Exponential:
-                shaderOption.SetValue(m_fogModeOptionName, AZ::Name("FogMode::ExponentialMode"));
+                shaderOptions.SetValue(m_fogModeOptionName, AZ::Name("FogMode::ExponentialMode"));
                 break;
             case FogMode::ExponentialSquared:
-                shaderOption.SetValue(m_fogModeOptionName, AZ::Name("FogMode::ExponentialSquaredMode"));
+                shaderOptions.SetValue(m_fogModeOptionName, AZ::Name("FogMode::ExponentialSquaredMode"));
                 break;
             default:
                 AZ_Error("DeferredFogPass", false, "Invalid fog mode %d", fogSettings->GetFogMode());
@@ -241,6 +241,7 @@ namespace AZ
                 FullscreenTrianglePass::UpdateShaderOptions(shaderOptions.GetShaderVariantId());
             }
         }
+
 
         void DeferredFogPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {

@@ -374,6 +374,15 @@ def sync_layout_vfs(target_platform, project_path, asset_type, warning_on_missin
         logging.debug("Copying %s -> %s",  os.path.join(project_asset_folder, root_asset), layout_target)
         shutil.copy2(os.path.join(project_asset_folder, root_asset), layout_target)
 
+# CARBONATED - REMOVED
+#   # Reset the 'gems' junction if any in the layout
+#   layout_gems_folder_src = os.path.join(project_asset_folder, 'gems')
+#   layout_gems_folder_target = os.path.join(layout_target, 'gems')
+#   if os.path.isdir(layout_gems_folder_target):
+#       remove_link(layout_gems_folder_target)
+#   if os.path.isdir(layout_gems_folder_src):
+#       create_link(layout_gems_folder_src, layout_gems_folder_target, copy)
+# CARBONATED - REMOVED
 
 
 def sync_layout_non_vfs(mode, target_platform, project_path, asset_type, warning_on_missing_assets, layout_target, override_pak_folder, copy):
@@ -441,6 +450,15 @@ def sync_layout_non_vfs(mode, target_platform, project_path, asset_type, warning
     copy_asset_files_to_layout(project_asset_folder=project_asset_folder,
                                target_platform=target_platform,
                                layout_target=layout_target)
+# CARBONATED - REMOVED
+#   # Reset the 'gems' junction if any in the layout (only in loose mode).
+#   layout_gems_folder_src = os.path.join(project_asset_folder, 'gems')
+#
+#   # The gems link only is valid in LOOSE mode. If in PAK, then dont re-link
+#   if mode == ASSET_MODE_LOOSE and os.path.isdir(layout_gems_folder_src):
+#       if os.path.isdir(layout_gems_folder_src):
+#           create_link(layout_gems_folder_src, layout_gems_folder_target, copy)
+# CARBONATED - REMOVED
 
 
 def sync_layout_pak(target_platform, project_path, asset_type, warning_on_missing_assets, layout_target,

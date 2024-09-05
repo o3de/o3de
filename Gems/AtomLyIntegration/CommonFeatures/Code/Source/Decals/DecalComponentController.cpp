@@ -195,6 +195,23 @@ namespace AZ
             return m_configuration.m_decalColor;
         }
 
+        void DecalComponentController::SetDecalColor(const AZ::Vector3& color)
+        {
+            m_configuration.m_decalColor = color;
+            DecalColorChanged();
+        }
+
+        float DecalComponentController::GetDecalColorFactor() const
+        {
+            return m_configuration.m_decalColorFactor;
+        }
+
+        void DecalComponentController::SetDecalColorFactor(float colorFactor)
+        {
+            m_configuration.m_decalColorFactor = colorFactor;
+            DecalColorFactorChanged();
+        }
+
         float DecalComponentController::GetOpacity() const
         {
             return m_configuration.m_opacity;
@@ -206,7 +223,7 @@ namespace AZ
             OpacityChanged();
         }
 
-        #if defined(CARBONATED)
+#if defined(CARBONATED)
         bool DecalComponentController::GetVisibility() const
         {
             return !mIsHidden;
@@ -217,7 +234,7 @@ namespace AZ
             mIsHidden = !show;
             OpacityChanged();
         }
-        #endif
+#endif
 
         float DecalComponentController::GetNormalMapOpacity() const
         {

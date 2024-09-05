@@ -18,11 +18,9 @@
 #include <AzToolsFramework/Thumbnails/ThumbnailerComponent.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
 
-// carbonated begin (akostin/mp226): Add NetworkContext to ReflectionManager instance
 #if defined(CARBONATED)
 #include <AzFramework/Network/NetworkContext.h>
 #endif
-// carbonated end
 
 // Editor
 #include "MainWindow.h"
@@ -136,12 +134,10 @@ namespace EditorInternal
     void EditorToolsApplication::CreateReflectionManager()
     {
         ToolsApplication::CreateReflectionManager();
-        // carbonated begin (akostin/mp226): Add NetworkContext to ReflectionManager instance
 #if defined(CARBONATED)
         // Setup NetworkContext
         AZ::ReflectionEnvironment::GetReflectionManager()->AddReflectContext<AzFramework::NetworkContext>();
 #endif
-        // carbonated end
 
         GetSerializeContext()->CreateEditContext();
     }
