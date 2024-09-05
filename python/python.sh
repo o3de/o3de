@@ -45,7 +45,7 @@ fi
 # for the export scripts because the ROS2 projects may require ros-specific python modules to exist for validation to build the project
 # which is installed as part of the ROS2 system packages. These packages are not available in the embedded O3DE python so in this
 # case we must call the system installed python3
-if [[ $ROS_DISTRO != ""  && $2 == "export-project" ]]
+if [[ $ROS_DISTRO != ""  && ( $1 == "export-project" || $2 == "export-project" ) ]]
 then
     which python3 > /dev/null 2>&1
     if [ $? -eq 0 ]
