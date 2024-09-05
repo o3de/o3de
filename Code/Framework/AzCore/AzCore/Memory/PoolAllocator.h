@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Memory/SimpleSchemaAllocator.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Memory/AllocationRecords.h>
 
@@ -35,9 +36,9 @@ namespace AZ
         bool Create(
             PoolSchema::size_type pageSize, PoolSchema::size_type minAllocationSize, PoolSchema::size_type maxAllocationSize);
 
-        pointer allocate(size_type byteSize, size_type alignment) override;
-        void deallocate(pointer ptr, size_type byteSize, size_type alignment) override;
-        pointer reallocate(pointer ptr, size_type newSize, size_type newAlignment) override;
+        AllocateAddress allocate(size_type byteSize, size_type alignment) override;
+        size_type deallocate(pointer ptr, size_type byteSize, size_type alignment) override;
+        AllocateAddress reallocate(pointer ptr, size_type newSize, size_type newAlignment) override;
         size_type get_allocated_size(pointer ptr, align_type alignment) const override;
 
         /// Return unused memory to the OS. Don't call this too often because you will force unnecessary allocations.
@@ -73,9 +74,9 @@ namespace AZ
         bool Create();
         bool Create(PoolSchema::size_type pageSize, PoolSchema::size_type minAllocationSize, PoolSchema::size_type maxAllocationSize);
 
-        pointer allocate(size_type byteSize, size_type alignment) override;
-        void deallocate(pointer ptr, size_type byteSize, size_type alignment) override;
-        pointer reallocate(pointer ptr, size_type newSize, size_type newAlignment) override;
+        AllocateAddress allocate(size_type byteSize, size_type alignment) override;
+        size_type deallocate(pointer ptr, size_type byteSize, size_type alignment) override;
+        AllocateAddress reallocate(pointer ptr, size_type newSize, size_type newAlignment) override;
         size_type get_allocated_size(pointer ptr, align_type alignment) const override;
         /// Return unused memory to the OS. Don't call this too often because you will force unnecessary allocations.
         void GarbageCollect() override;
@@ -155,29 +156,24 @@ namespace AZ::Internal
         PoolAllocatorHelper()
         {
             static_cast<Schema*>(this->m_schema)->Create();
-            this->PostCreate();
         }
 
         PoolAllocatorHelper(size_t pageSize, size_t minAllocationSize, size_t maxAllocationSize)
         {
             static_cast<Schema*>(this->m_schema)->Create(pageSize, minAllocationSize, maxAllocationSize);
-            this->PostCreate();
         }
 
-        ~PoolAllocatorHelper() override
-        {
-            this->PreDestroy();
-        }
+        ~PoolAllocatorHelper() override = default;
 
         //////////////////////////////////////////////////////////////////////////
         // IAllocator
-        pointer reallocate(pointer ptr, size_type newSize, size_type newAlignment) override
+        AllocateAddress reallocate(pointer ptr, size_type newSize, size_type newAlignment) override
         {
             (void)ptr;
             (void)newSize;
             (void)newAlignment;
             AZ_Assert(false, "Not supported!");
-            return nullptr;
+            return AllocateAddress{};
         }
 
         //////////////////////////////////////////////////////////////////////////

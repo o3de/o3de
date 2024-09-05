@@ -206,6 +206,17 @@
                 "Exclude Install": {
                     "glob": "install/*"
                 },
+                "Exclude ProjectPackages": {
+                    "glob": "ProjectPackages/*"
+                },
+                // Exclude Gems inside Projects, their Assets folders will still be included
+                "Exclude Gems": {
+                    "glob": "Gems/*"
+                },
+                // Exclude the .git folder which is commonly found in projects
+                "Exclude Git": {
+                    "glob": ".git/*"
+                },
 
                 //------------------------------------------------------------------------------
                 // Copying Files Automatically Into the Cache
@@ -329,11 +340,6 @@
                 "RC bspace": {
                     "glob": "*.bspace",
                     "params": "copy"
-                },
-                "RC cdf": {
-                    "glob": "*.cdf",
-                    "params": "copy",
-                    "productAssetType": "{DF036C63-9AE6-4AC3-A6AC-8A1D76126C01}"
                 },
                 "RC comb": {
                     "glob": "*.comb",

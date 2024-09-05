@@ -109,6 +109,12 @@ namespace AZ
             const Descriptor& GetDescriptor() const;
             uint32_t GetAttachmentCount() const;
 
+            //! Typically the returned descriptor is only used to create a dummy VkRenderPass (cached and reusable)
+            //! that will be associated with one or more PSOs. The PSO will use such VkRenderPass as a data source
+            //! to better optimize the layout of the PSO. In the end the real VkRenderPass is built (cached and reusable)
+            //! at runtime by the FrameGraph and used with VkCmdBeginRenderPass.
+            //! This is possible because, per the Vulkan spec, it is only required that the PSO VkRenderPass and the VkCmdBeginRenderPass
+            //! VkRenderPass to be "compatible", but they don't have to be the same object.
             static Descriptor ConvertRenderAttachmentLayout(
                 Device& device,
                 const RHI::RenderAttachmentLayout& layout,

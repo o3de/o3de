@@ -321,16 +321,32 @@ namespace AZ
             }
         }
 
-        AZStd::vector<AZStd::string> MaterialTypeBuilder::PipelineStage::GetMaterialPipelinePaths() const
+        AZStd::set<AZStd::string> MaterialTypeBuilder::PipelineStage::GetMaterialPipelinePaths() const
         {
-            AZStd::vector<AZStd::string> materialPipelines;
+            AZStd::set<AZStd::string> combinedMaterialPipelines;
+
+            auto ResolvePathAndAddToReturnValue = [&](const AZStd::string& path)
+            {
+                AZ::IO::FixedMaxPath pathWithoutAlias;
+                AZ::IO::FileIOBase::GetInstance()->ResolvePath(pathWithoutAlias, AZ::IO::PathView{ path });
+                combinedMaterialPipelines.insert(pathWithoutAlias.StringAsPosix());
+            };
 
             if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
             {
-                settingsRegistry->GetObject(materialPipelines, "/O3DE/Atom/RPI/MaterialPipelineFiles");
+                AZStd::vector<AZStd::string> defaultMaterialPipelines;
+                settingsRegistry->GetObject(defaultMaterialPipelines, "/O3DE/Atom/RPI/MaterialPipelineFiles");
+                AZStd::for_each(defaultMaterialPipelines.begin(), defaultMaterialPipelines.end(), ResolvePathAndAddToReturnValue);
+
+                AZStd::map<AZStd::string, AZStd::vector<AZStd::string>> gemMaterialPipelines;
+                settingsRegistry->GetObject(gemMaterialPipelines, "/O3DE/Atom/RPI/MaterialPipelineFilesByGem");
+                for (const auto& [_ /*gemName*/, gemMaterialPipelinePaths] : gemMaterialPipelines)
+                {
+                    AZStd::for_each(gemMaterialPipelinePaths.begin(), gemMaterialPipelinePaths.end(), ResolvePathAndAddToReturnValue);
+                }
             }
 
-            return materialPipelines;
+            return combinedMaterialPipelines;
         }
 
         AZStd::map<AZ::IO::Path, MaterialPipelineSourceData> MaterialTypeBuilder::PipelineStage::LoadMaterialPipelines() const
@@ -368,6 +384,12 @@ namespace AZ
             const AZStd::string materialTypeName = AZ::IO::Path{ materialTypeSourcePath }.Stem().Native();
 
             const AZStd::map<AZ::IO::Path, MaterialPipelineSourceData> materialPipelines = LoadMaterialPipelines();
+
+            // A list of pointers to lists
+            // Each leaf element is a line that will be included in the object SRG of every shader
+            // This allows Material Pipelines to add members to object SRGs, for example a texture space shading
+            // pipeline can add a texture index to the Object SRG so the object can refer to it's lighting texture.
+            AZStd::vector<const AZStd::vector<AZStd::string>*> objectSrgAdditionsFromMaterialPipelines;
 
             // Some shader templates may be reused by multiple pipelines, so first collect a full picture of all the dependencies
             AZStd::map<MaterialPipelineSourceData::ShaderTemplate, AZStd::vector<Name/*materialPipielineName*/>> shaderTemplateReferences;
@@ -419,6 +441,13 @@ namespace AZ
 
                         shaderTemplateReferences[normalizedShaderTemplate].push_back(materialPipelineName);
                     }
+
+                    // Only include Object SRGs from material pipelines which have shader templates relevant to this material
+                    // This avoids adding extra SRG members in materials for MaterialPipelines it won't be rendered in
+                    if (!shaderTemplateList.empty())
+                    {
+                        objectSrgAdditionsFromMaterialPipelines.push_back(&materialPipeline.m_objectSrgAdditions);
+                    }
                 }
 
                 if (foundProblems)
@@ -443,6 +472,8 @@ namespace AZ
             materialTypeSourceData.m_shaderCollection.clear(); 
             materialTypeSourceData.m_pipelineData.clear();
 
+            u32 commonCounter = 0;
+
             // Generate the required shaders
             for (const auto& [shaderTemplate, materialPipelineList] : shaderTemplateReferences)
             {
@@ -457,7 +488,10 @@ namespace AZ
                 else if(materialPipelineList.size() > 1)
                 {
                     // Multiple material pipelines reference the same shader, so it should have a generic common name.
-                    materialPipelineIndicator = PipelineNameForCommonShaders;
+                    // The common name is appended with an incrementing value to avoid naming conflicts. Naming conflicts
+                    // happen if Pipeline A and Pipeline B include shader X and Pipeline C and Pipeline D include shader Y,
+                    // and X and Y have the same name (for example depth.shader.template).
+                    materialPipelineIndicator = AZStd::string::format("%s_%u", PipelineNameForCommonShaders, commonCounter++);
                 }
                 else
                 {
@@ -475,14 +509,27 @@ namespace AZ
                 }
 
                 // Intermediate azsl file
+                AZStd::string generatedAzsl;
+                generatedAzsl += AZStd::string::format("// This code was generated by %s. Do not modify.\n", MaterialTypeBuilderName);
+
+                // Generate the #define that will include new object srg members that were specified in the material pipelines 
+                generatedAzsl += AZStd::string::format("#define MATERIAL_PIPELINE_OBJECT_SRG_MEMBERS   \\\n");
+
+                for (const AZStd::vector<AZStd::string>* perMaterialPipelineAdditions : objectSrgAdditionsFromMaterialPipelines)
+                {
+                    for (const AZStd::string& objectSrgAddition : *perMaterialPipelineAdditions)
+                    {
+                        generatedAzsl += AZStd::string::format("%s;   \\\n", objectSrgAddition.c_str());
+                    }
+                }
+
+                generatedAzsl += AZStd::string::format("\n");
 
                 // At this point m_azsli should be absolute due to ResolvePathReference() being called above.
                 // It might be better for the include path to be relative to the generated .shader file path in the intermediate cache,
                 // so the project could be renamed or moved without having to rebuild the cache. But there's a good chance that moving
                 // the project would require a rebuild of the cache anyway.
                 const AZ::IO::PathView materialAzsliFilePathView{ materialAzsliFilePath };
-                AZStd::string generatedAzsl;
-                generatedAzsl += AZStd::string::format("// This code was generated by %s. Do not modify.\n", MaterialTypeBuilderName);
                 generatedAzsl += AZStd::string::format("#define MATERIAL_TYPE_AZSLI_FILE_PATH \"%s\" \n", materialAzsliFilePathView.StringAsPosix().c_str());
                 generatedAzsl += AZStd::string::format("#include \"%s\" \n", shaderTemplate.m_azsli.c_str());
 

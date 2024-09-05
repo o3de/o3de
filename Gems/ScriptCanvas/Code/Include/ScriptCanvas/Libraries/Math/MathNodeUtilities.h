@@ -11,7 +11,6 @@
 
 
 #include <AzCore/Math/Vector4.h>
-#include <ScriptCanvas/Core/NodeFunctionGeneric.h>
 #include <ScriptCanvas/Data/NumericData.h>
 
 namespace ScriptCanvas

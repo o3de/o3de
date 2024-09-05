@@ -24,7 +24,7 @@
 #  built-ins
 import collections
 from collections import abc
-# import subprocess
+import subprocess
 import logging as _logging
 try:
     import pathlib
@@ -55,7 +55,7 @@ print(_config)
 # init lumberyard Qy/PySide2 access
 # now default settings are extended with PySide2
 # this is an alternative to "from dynaconf import settings" with Qt
-settings = _config.get_config_settings(setup_ly_pyside=True)
+settings = _config.get_config_settings(enable_o3de_pyside2=True)
 
 
 # 3rd Party (we may or do provide)
@@ -78,6 +78,8 @@ for handler in _logging.root.handlers[:]:
 
 module_name = 'legacy_asset_converter.main'
 log_file_path = os.path.join(settings.DCCSI_LOG_PATH, f'{module_name}.log')
+if not os.path.exists(settings.DCCSI_LOG_PATH):
+    os.makedirs(settings.DCCSI_LOG_PATH, exist_ok=True)
 
 _log_level = int(20)
 _DCCSI_GDEBUG = True
@@ -151,7 +153,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         self.log_file_location = os.path.join(Path.cwd(), 'output.log')
         self.directory_dictionary = {}
         self.materials_dictionary = {}
-        self.materials_db = shelve.open('materialsdb', protocol=2)
+        self.materials_db = {} #shelve.open('materialsdb', protocol=2) # Do not save materialDB on disk as can lead to issue on reopen
         self.file_target_method = 'Directory'
         self.selected_directory_index = -1
         self.separator_layout = QtWidgets.QHBoxLayout()
@@ -269,6 +271,9 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         self.clean_material_names_checkbox = QtWidgets.QCheckBox('Clean Material Names')
         self.clean_material_names_checkbox.setChecked(False)
         self.right_checkbox_items.addWidget(self.clean_material_names_checkbox)
+        self.skip_white_texture_materials = QtWidgets.QCheckBox('Skip White Texture Materials')
+        self.skip_white_texture_materials.setChecked(True)
+        self.right_checkbox_items.addWidget(self.skip_white_texture_materials)
         self.main_container.addWidget(self.actions_groupbox)
 
         self.process_files_button = QtWidgets.QPushButton('Process Files')
@@ -578,7 +583,8 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         self.initialize_qprocess()
 
         # Get Material Definition Template
-        with open(self.default_material_definition) as json_file:
+        mat_abs_path = Path(__file__).with_name(self.default_material_definition)
+        with mat_abs_path.open() as json_file:
             self.template_lumberyard_material = json.load(json_file)
 
         if os.path.exists(os.path.join(Path.cwd(), 'materialsdb.dat')):
@@ -650,7 +656,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
             asset_information.fbxfiles[key] = values
         self.materials_db[index] = asset_information
 
-    def compare_boilerplate_settings(self, property_values, material_template):
+    def compare_boilerplate_settings(self, property_values, material_template, export_file_path):
         """
         Lumberyard material definitions only include settings that deviate from default settings. When converting .mtl
         files to .material files, the script attempts to find all settings that each material previously held and carry
@@ -658,6 +664,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         standard pbr material description, and only includes this information to the definition when it finds a need to
         :param property_values:
         :param material_template:
+        :param export_file_path: The absolute path to the final material file
         :return:
         """
         updated = False
@@ -675,7 +682,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                         if v != value:
                             _LOGGER.info(f'{key}---->> NEW VALUE: {v}')
                             updated = True
-                            target_value = self.format_material_value(v)
+                            target_value = self.format_material_value(v, export_file_path)
                             updated_property_dictionary[key] = target_value
                         else:
                             updated_property_dictionary[key] = value
@@ -686,29 +693,29 @@ class LegacyFilesConverter(QtWidgets.QDialog):
             return updated_property_dictionary
         return None
 
-    def format_material_value(self, value):
+    def format_material_value(self, value, export_file_path):
         """
         In order for the formatting of the information to work properly once converted into a JSON-like material
         definition, information needs to be properly formatted... not all information can be gathered as strings. This
         function reviews the format of the information and makes changes if necessary for the information to carry
         over properly in the definition.
         :param value: The value under review for formatting issues
+        :param export_file_path: The absolute path to the final material file
         :return:
         """
         if isinstance(value, list):
             converted_list = []
             for item in value:
-                item_value = 0 if item is 0 else float(item)
                 converted_list.append(item)
             return converted_list
         elif isinstance(value, str):
             if os.path.isfile(str(value)):
-                target_path = self.get_relative_path(value)
+                target_path = self.get_relative_path_from_material(value, export_file_path)
                 return str(target_path)
             elif value in ['true', 'false']:
                 return str(value)
             elif value.isnumeric():
-                return 0 if value is 0 else float(value)
+                return 0 if value == 0 else float(value)
             else:
                 pattern = r'\[[^\]]*\]'
                 test_brackets = re.sub(pattern, '', value)
@@ -785,6 +792,10 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                                 texture_key = 'Normal'
                             elif material_property == 'opacity':
                                 texture_key = 'Opacity'
+                                alpha = self.get_alpha_test_value(material_values.numericalsettings)
+                                if alpha > 0.:
+                                    temp_dict['mode'] = 'Cutout'
+                                    temp_dict['factor'] = 1. - alpha
                             elif material_property == 'uv':
                                 modifications = material_values['modifications']
                                 if modifications:
@@ -798,7 +809,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                                 _LOGGER.info(f'Unknown Material Property found: {material_property}')
 
                             # Add Texture Map
-                            if texture_key and texture_key in material_textures.keys():
+                            if texture_key and texture_key in material_textures.keys() and material_textures[texture_key]:
                                 if material_property not in ['emissive', 'general'] and 'factor' not in temp_dict.keys():
                                     temp_dict['factor'] = 1.0
                                     temp_dict['useTexture'] = True
@@ -809,7 +820,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                             if temp_dict:
                                 comparison_dictionary = material_template['properties'][material_property]
                                 _LOGGER.info(f'ComparisonDictionary: {comparison_dictionary}')
-                                custom_settings = self.compare_boilerplate_settings(temp_dict, comparison_dictionary)
+                                custom_settings = self.compare_boilerplate_settings(temp_dict, comparison_dictionary, os.path.abspath(export_file_path))
                                 _LOGGER.info(f'CustomSettings: {custom_settings}')
                                 _LOGGER.info(f'MaterialProperty: {material_property}')
                                 _LOGGER.info(f'Key: {key}')
@@ -922,8 +933,10 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         """
         self.p = QProcess()
         env = [env for env in QtCore.QProcess.systemEnvironment() if not env.startswith('PYTHONPATH=')]
-        env.append(f'MAYA_LOCATION={os.path.dirname(self.mayapy_path)}')
-        env.append(f'PYTHONPATH={os.path.dirname(self.mayapy_path)}')
+        if self.mayapy_path != None: 
+            env.append(f'MAYA_LOCATION={os.path.dirname(self.mayapy_path)}')
+            env.append(f'PYTHONPATH={os.path.dirname(self.mayapy_path)}')
+
         self.p.setEnvironment(env)
         self.p.setProgram(str(self.mayapy_path))
         self.p.setProcessChannelMode(QProcess.SeparateChannels)
@@ -1038,7 +1051,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                     fbx_name = key
                     destination_directory = self.set_destination_directory(target_dictionary[constants.FBX_DIRECTORY_NAME])
 
-                    for material_name, texture_set in values['materials'].items():
+                    for material_name, texture_set in values[constants.FBX_MATERIALS].items():
                         checklist = collections.OrderedDict()
                         checklist['fbxname'] = fbx_name
                         checklist['materialname'] = material_name
@@ -1118,31 +1131,40 @@ class LegacyFilesConverter(QtWidgets.QDialog):
     # Getters/Setters ############
     ##############################
 
-    def get_material_information(self, search_path, mtl_info, assetinfo):
+    def get_material_information(self, search_path, mtl_info, assetinfo_filename):
         """
         Builds a dictionary for each fbx in a processed directory used for creating a .material file. This information
         includes texture sets, 'uv' modifications like tiling and rotation, numerical settings like color or f0 specularity
         settings, and the fbx layer geometry that the materials are assigned to
         :param search_path: The directory used to search for assets related to a listing
         :param mtl_info: Information drawn from the .mtl file relevant for processing
-        :param assetinfo: Information collected after processing PBR textures conversion
+        :param assetinfo_filename: Assetinfo file
         :return:
         """
         fbx_material_dictionary = Box({})
         for key, values in mtl_info.items():
             _LOGGER.info(f'\n_\n+++++++++++++++++++++++++\nMaterial: {key}\n+++++++++++++++++++++++++\n')
             fbx_material_dictionary[key] = {}
-            if values.attributes.Shader == 'Illum':
+
+            if self.skip_white_texture_materials.isChecked():
+                if 'engineassets/textures/white.dds' in (str(path.as_posix()).lower() for path in values.textures.values()):
+                    _LOGGER.info('Found engine white texture... skipping')
+                    continue
+
+            if values.attributes.Shader in constants.EXPORT_MATERIAL_TYPES:
                 legacy_textures = values.textures
                 all_textures = self.get_additional_textures(search_path, legacy_textures)
-                fbx_material_dictionary[key][constants.FBX_TEXTURES] = self.get_texture_set(search_path, all_textures) if legacy_textures else ''
+                numerical_settings = self.get_numerical_settings(mtl_info, key)
+                uses_alpha = self.get_alpha_test_value(numerical_settings) > 0.
+                fbx_material_dictionary[key][constants.FBX_NUMERICAL_SETTINGS] = numerical_settings
+                fbx_material_dictionary[key][constants.FBX_TEXTURES] = self.get_texture_set(search_path, all_textures, uses_alpha) if legacy_textures else ''
                 fbx_material_dictionary[key][constants.FBX_TEXTURE_MODIFICATIONS] = values.modifications if values.modifications else ''
-                fbx_material_dictionary[key][constants.FBX_NUMERICAL_SETTINGS] = self.get_numerical_settings(mtl_info, key)
                 fbx_material_dictionary[key][constants.FBX_MATERIAL_FILE] = ''
-                fbx_material_dictionary[key][constants.FBX_ASSIGNED_GEO] = lumberyard_data.get_asset_info(search_path, assetinfo, key)
+                fbx_material_dictionary[key][constants.FBX_ASSIGNED_GEO] = lumberyard_data.get_asset_info(search_path, assetinfo_filename, key)
             elif values.attributes.Shader == 'Nodraw':
                 _LOGGER.info('Found No-draw shader... skipping')
             else:
+                _LOGGER.info(f'Shader {values.attributes.Shader} not supported... skipping')
                 pass
         _LOGGER.info(f'\n_____\n_____FBX Material Dictionary:::: {fbx_material_dictionary}\n______\n')
         return fbx_material_dictionary
@@ -1166,11 +1188,12 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                     if texture_basename:
                         for target_image in search_path.iterdir():
                             if target_image.stem.lower().startswith(texture_basename):
-                                texture_type = image_conversion.get_texture_type(target_image)
-                                for key, values in constants.IMAGE_KEYS.items():
-                                    if texture_type.lower() in values:
-                                        all_textures[key] = search_path / target_image
-                                        break
+                                filemask = image_conversion.get_filemask(target_image)
+                                for tex_type, possible_masks in constants.FILE_MASKS.items():
+                                    if filemask.lower() in possible_masks:
+                                        if tex_type not in all_textures.keys():
+                                            all_textures[tex_type] = search_path / target_image
+                                            break
                 except Exception as e:
                     _LOGGER.info(f'Could not find texture basename... skipping: {e}')
         return all_textures
@@ -1184,7 +1207,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         :return:
         """
         numerical_settings = {}
-        property_list = ['Diffuse', 'Specular', 'Emittance', 'Opacity']
+        property_list = ['Diffuse', 'Specular', 'Emittance', 'Opacity', 'AlphaTest']
         for material_property in property_list:
             try:
                 numerical_settings[material_property] = mtl_info[material].attributes[material_property]
@@ -1192,12 +1215,24 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                 pass
         return numerical_settings
 
-    def get_texture_set(self, search_path, mtl_textures):
+    def get_alpha_test_value(self, numericalsettings):
+        """
+        Return the AlphaTest key value found in dictionnary. Default to 0
+        :param numericalsettings: The shader numerical settings dictionnary
+        :return:
+        """
+        if 'AlphaTest' in numericalsettings:
+            return float(numericalsettings['AlphaTest'])
+        else:
+            return 0.
+
+    def get_texture_set(self, search_path, mtl_textures, uses_alpha):
         """
         Begins the process of collecting texture sets for each material found in an FBX file. The process begins by
         getting the file "stem" string in order to find textures starting with identical strings
         :param search_path: The directory to search for corresponding files
         :param mtl_textures: The texture file names pulled from the mtl files in the legacy directories
+        :param uses_alpha: Bool to state weither diffuse texture should support alpha channel
         :return:
         """
         _LOGGER.info(f'GetTexSet: {search_path}   MTL TEXTURES: {mtl_textures}')
@@ -1208,20 +1243,19 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                     mtl_textures[key] = search_path / file
                     _LOGGER.info(f'\n///////// MTL TEX: {mtl_textures[key]}')
                     break
-        return image_conversion.get_pbr_textures(mtl_textures, Path(destination_directory), search_path, Path(self.input_directory))
+        return image_conversion.get_pbr_textures(mtl_textures, Path(destination_directory), Path(self.input_directory), uses_alpha)
 
-    def get_relative_path(self, full_path):
+    def get_relative_path_from_material(self, texture_file_abs_path, material_abs_path):
         """
         Material definitions use relative paths for file textures- this function takes the full paths of assets and
         converts to the abbreviated relative path format needed for Lumberyard to source the files
-        :param full_path: Full path to the asset
-        :return:
+        :param texture_file_abs_path: Absolute path to the texture file
+        :param material_abs_path: Absolute path to the material file
+        :return: relative path from the material to the texture
         """
-        return_path = Path(full_path)
-        start_directory = 'Objects'
-        path_list = return_path.parts
-        return_path = ('/').join(path_list[path_list.index(start_directory):])
-        return return_path
+        material_dir_abs_path = os.path.dirname(material_abs_path)
+        relative_path = os.path.relpath(texture_file_abs_path, material_dir_abs_path)
+        return relative_path
 
     def get_separator_bar(self):
         """ Convenience function for UI layout element """
@@ -1261,14 +1295,14 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         Finds the most current version of Maya for use of its standalone python capabilities.
         :return:
         """
-        maya_versions = [int(x.name[-4:]) for x in self.autodesk_directory.iterdir() if x.name.startswith('Maya')]
+        maya_versions = [int(x.name[-4:]) for x in self.autodesk_directory.iterdir() if x.name.startswith('Maya') and x.name[-1].isdigit()]
         if maya_versions:
             target_version = f'Maya{max(maya_versions)}'
             self.create_maya_files_checkbox.setChecked(True)
             return self.autodesk_directory / target_version / 'bin\mayapy.exe'
         else:
-            self.create_maya_files_checkbox.setChecked(False)
-            return None
+            self.create_maya_files_checkbox.setEnabled(False)
+        return None
 
     def get_section_audit(self, key):
         """
@@ -1344,8 +1378,12 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         :param destination_directory: The directory that assets will be saved to in the conversion process
         :return:
         """
-        fbx_files = asset_information.fbxfiles.values()
-        for key, values in fbx_files[0].materials.items():
+        first_key = next(iter(asset_information.fbxfiles))
+        for key, values in asset_information.fbxfiles[first_key].materials.items():
+            if not values:
+                # Unsupported material. See get_material_information()
+                continue
+
             for k, v in mtl_info.items():
                 if key is v.attributes.Name:
                     if v.attributes.Shader in constants.EXPORT_MATERIAL_TYPES:
@@ -1422,7 +1460,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
             for key, values in self.materials_db.items():
                 directory_items.append(values[constants.FBX_DIRECTORY_NAME])
             self.asset_directory_combobox.addItems(directory_items)
-            current_directory = section_data.directoryname
+            current_directory = section_data[constants.FBX_DIRECTORY_NAME]
             index = self.asset_directory_combobox.findText(current_directory, QtCore.Qt.MatchFixedString)
             self.asset_directory_combobox.setCurrentIndex(index)
             self.asset_directory_combobox.blockSignals(False)
@@ -1506,12 +1544,13 @@ class LegacyFilesConverter(QtWidgets.QDialog):
             for key, values in self.materials_db.items():
                 if values:
                     try:
+                        values = Box(values)
                         for k, v in values.fbxfiles.items():
                             count_totals.fbxfiles += 1
                             if v[constants.FBX_MAYA_FILE]:
                                 count_totals.mayafiles += 1
-                            if v.materials:
-                                for material_name, material_values in v.materials.items():
+                            if v[constants.FBX_MATERIALS]:
+                                for material_name, material_values in v[constants.FBX_MATERIALS].items():
                                     count_totals.materials += 1
                                     if constants.FBX_TEXTURES in material_values.keys():
                                         for texture_type, texture_path in material_values.textures.items():
@@ -1787,7 +1826,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                 for val in fbx_values:
                     material_list = val[constants.FBX_MATERIALS]
                     for material_key, material_values in material_list.items():
-                        for texture_key, texture_path in material_values[FBX_TEXTURES].items():
+                        for texture_key, texture_path in material_values[constants.FBX_TEXTURES].items():
                             if texture_type:
                                 if os.path.exists(texture_path):
                                     try:
@@ -1829,7 +1868,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                 for val in fbx_values:
                     material_list = val[constants.FBX_MATERIALS]
                     for material_key, material_values in material_list.items():
-                        for texture_key, texture_path in material_values[FBX_TEXTURES].items():
+                        for texture_key, texture_path in material_values[constants.FBX_TEXTURES].items():
                             if texture_key == texture_type:
                                 if os.path.exists(texture_path):
                                     try:

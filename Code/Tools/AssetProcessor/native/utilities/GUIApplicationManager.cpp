@@ -94,7 +94,17 @@ void ErrorCollector::AddError(AZStd::string message)
 }
 
 GUIApplicationManager::GUIApplicationManager(int* argc, char*** argv, QObject* parent)
-    : ApplicationManagerBase(argc, argv, parent)
+    : GUIApplicationManager(argc, argv, parent, {})
+{
+}
+
+GUIApplicationManager::GUIApplicationManager(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
+    : GUIApplicationManager(argc, argv, nullptr, AZStd::move(componentAppSettings))
+{
+}
+
+GUIApplicationManager::GUIApplicationManager(int* argc, char*** argv, QObject* parent, AZ::ComponentApplicationSettings componentAppSettings)
+    : ApplicationManagerBase(argc, argv, parent, AZStd::move(componentAppSettings))
 {
 #if defined(AZ_PLATFORM_MAC)
     // Since AP is not shipped as a '.app' package, it will not receive keyboard focus

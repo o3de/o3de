@@ -26,7 +26,6 @@ ASSET_MODE_PAK     = 'PAK'
 ASSET_MODE_LOOSE   = 'LOOSE'
 SUPPORTED_ASSET_MODES = [ASSET_MODE_PAK, ASSET_MODE_LOOSE]
 ASSET_PLATFORM_KEY = 'android'
-ASSET_PLATFORM_KEY_LOOSE = 'android_loose'
 
 SUPPORTED_BUILD_CONFIGS = ['debug', 'profile', 'release']
 
@@ -58,70 +57,41 @@ def create_link(src: Path, tgt: Path):
 
     try:
         if src.is_file():
-            tgt.hardlink_to(src)
-            logger.info(f"Created hard link {str(src)} to {str(tgt)}")
+            tgt.symlink_to(src)
+            logger.info(f"Created symbolic link {str(tgt)} => {str(src)}")
         else:
             if IS_PLATFORM_WINDOWS:
                 import _winapi
                 _winapi.CreateJunction(str(src.resolve().absolute()), str(tgt.resolve().absolute()))
-                logger.info(f'Created Junction {str(src)} => {str(tgt)}')
+                logger.info(f'Created Junction {str(tgt)} => {str(src)}')
             else:
                 tgt.symlink_to(src, target_is_directory=True)
-                logger.info(f'Created symbolic link {str(src)} => {str(tgt)}')
+                logger.info(f'Created symbolic link {str(tgt)} => {str(src)}')
 
     except OSError as os_err:
-        raise AndroidPostBuildError(f"Error trying to link  {src} => {tgt} : {os_err}")
+        raise AndroidPostBuildError(f"Error trying to link  {tgt} => {src} : {os_err}")
 
+# deprecated: The functionality has been replaced with a single call to remove_link_to_directory()
+# Go to commit e302882 to get this functionality back.
+# def safe_clear_folder(target_folder: Path) -> None:
 
-def safe_clear_folder(target_folder: Path) -> None:
+def remove_link_to_directory(link_to_directory: Path) -> None:
     """
-    Safely clean the contents of a folder. If items are links/junctions, then attempt to unlink, but if the
-    items are non-linked, then perform a deletion.
+    Removes a Symbolic Link or Junction(Windows) that points to a directory
+    Throws an exception if the link exists, and it points to a directory and could not be deleted.
 
-    :param target_folder:   Folder to safely clear
-    :param delete_folders:  Optional set of folders to perform a delete on instead of an unlink
+    :param link_to_directory: The symbolic link or junction which should point to a directory.
     """
-
-    if not target_folder.exists():
-        logger.warn(f"Nothing to clean. '{target_folder}' does not exist")
-        return
-
-    if not target_folder.is_dir():
-        logger.warn(f"Unable to clean '{target_folder}', target is not a directory")
-        return
-
-    for target_item in target_folder.iterdir():
+    if link_to_directory.is_dir():
         try:
-            target_item.unlink()
+            link_to_directory.unlink()
         except OSError as os_err:
-            raise AndroidPostBuildError(f"Error trying to unlink/delete {target_item}: {os_err}")
+            raise AndroidPostBuildError(f"Error trying to unlink/delete {link_to_directory}: {os_err}")
 
 
-def synchronize_folders(src: Path, tgt: Path) -> None:
-    """
-    Create a copy of a source folder 'src' to a target folder 'tgt', but use the following rules:
-    1. Make sure that a 'tgt' folder exists
-    2. For each item in the 'src' folder, call 'copy_or_create_link' to apply a copy or link of the items to the
-       target folder 'tgt'
-
-    :param src:             The source folder to synchronize from
-    :param tgt:             The target folder to synchronize to
-    """
-
-    assert not tgt.is_file()
-    assert src.is_dir()
-
-    # Make sure the target folder exists
-    tgt.mkdir(parents=True, exist_ok=True)
-
-    # Iterate through the items in the source folder and copy to the target folder
-    processed = 0
-    for src_item in src.iterdir():
-        tgt_item = tgt / src_item.name
-        create_link(src_item, tgt_item)
-        processed += 1
-
-    logger.info(f"{processed} items from {src} linked/copied to {tgt}")
+# deprecated: The functionality has been replaced with a single call to create_link()
+# Go to commit e302882 to get this functionality back.
+# def synchronize_folders(src: Path, tgt: Path) -> None:
 
 
 def apply_pak_layout(project_root: Path, asset_bundle_folder: str, target_layout_root: Path) -> None:
@@ -146,14 +116,14 @@ def apply_pak_layout(project_root: Path, asset_bundle_folder: str, target_layout
             has_engine_android_pak = True
             break
     if not has_engine_android_pak:
-        raise AndroidPostBuildError(f"Unable to locate the required 'engine_{ASSET_PLATFORM_KEY}.pak' file at location specified at {src_pak_file_full_path}. "
+        raise AndroidPostBuildError(f"Unable to located the required 'engine_android.pak' file at location specified at {src_pak_file_full_path}. "
                                     f"{PAK_FILE_INSTRUCTIONS}")
 
-    # Clear out the target folder first
-    safe_clear_folder(target_layout_root)
+    # Remove the link to the source assets folder, if it exists.
+    remove_link_to_directory(target_layout_root)
 
-    # Copy/Link the contents to the target folder
-    synchronize_folders(src_pak_file_full_path, target_layout_root)
+    # Create the link to the asset bundle folder.
+    create_link(src_pak_file_full_path, target_layout_root)
 
 
 def apply_loose_layout(project_root: Path, target_layout_root: Path) -> None:
@@ -164,19 +134,19 @@ def apply_loose_layout(project_root: Path, target_layout_root: Path) -> None:
     :param target_layout_root:      The target layout destination of the loose assets
     """
 
-    android_cache_folder = project_root / 'Cache' / ASSET_PLATFORM_KEY_LOOSE
-    if not android_cache_folder.exists():
-        android_cache_folder = project_root / 'Cache' / ASSET_PLATFORM_KEY
+    android_cache_folder = project_root / 'Cache' / ASSET_PLATFORM_KEY
     engine_json_marker = android_cache_folder / 'engine.json'
     if not engine_json_marker.is_file():
         raise AndroidPostBuildError(f"Assets have not been built for this project at ({project_root}) yet. "
                                     f"Please run the AssetProcessor for this project first.")
 
-    # Clear out the target folder first
-    safe_clear_folder(target_layout_root)
+    # Remove the link to the source assets folder, if it exists.
+    remove_link_to_directory(target_layout_root)
 
-    # Copy/Link the contents to the target folder
-    synchronize_folders(android_cache_folder, target_layout_root)
+
+    # Create a symlink or junction {target_layout_root} to this
+    # project Cache folder for the android platform {android_cache_folder}.
+    create_link(android_cache_folder, target_layout_root)
 
 
 def post_build_action(android_app_root: Path, project_root: Path, gradle_version: Version,

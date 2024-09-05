@@ -19,7 +19,6 @@
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
-
 namespace AZ
 {
     namespace DX12
@@ -49,7 +48,7 @@ namespace AZ
             RHI::Ptr<ShaderStageFunction> newShaderStageFunction =  ShaderStageFunction::Create(RHI::ToRHIShaderStage(stageDescriptor.m_stageType));
 
             const DX12::ShaderByteCode& byteCode = stageDescriptor.m_byteCode;
-            const int byteCodeIndex = (stageDescriptor.m_stageType == RHI::ShaderHardwareStage::TessellationEvaluation) ? 1 : 0;
+            const int byteCodeIndex = 0;
             newShaderStageFunction->SetByteCode(byteCodeIndex, byteCode);
 
             // Read the json data with the specialization constants offsets.
@@ -91,8 +90,7 @@ namespace AZ
 
             hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::Vertex;
             hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::Fragment;
-            hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::TessellationControl;
-            hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::TessellationEvaluation;
+            hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::Geometry;
 
             return hasRasterProgram;
         }
@@ -237,7 +235,7 @@ namespace AZ
             const bool useSpecializationConstants) const
         {
             // Shader compiler executable
-            static const char* dxcRelativePath = "Builders/DirectXShaderCompiler/dxc.exe";
+            const auto dxcRelativePath = RHI::GetDirectXShaderCompilerPath("Builders/DirectXShaderCompiler/dxc.exe");
 
             // NOTE:
             // Running DX12 on PC with DXIL shaders requires modern GPUs and at least Windows 10 Build 1803 or later for Shader Model 6.2
@@ -265,8 +263,6 @@ namespace AZ
                 {RHI::ShaderHardwareStage::Fragment,               "ps_" + shaderModelVersion},
                 {RHI::ShaderHardwareStage::Compute,                "cs_" + shaderModelVersion},
                 {RHI::ShaderHardwareStage::Geometry,               "gs_" + shaderModelVersion},
-                {RHI::ShaderHardwareStage::TessellationControl,    "hs_" + shaderModelVersion},
-                {RHI::ShaderHardwareStage::TessellationEvaluation, "ds_" + shaderModelVersion},
                 {RHI::ShaderHardwareStage::RayTracing,             "lib_6_3"}
             };
             auto profileIt = stageToProfileName.find(shaderStageType);

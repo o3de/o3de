@@ -14,6 +14,7 @@ import json
 import logging
 import os
 import re
+import pathlib
 import platform
 import shutil
 import stat
@@ -21,7 +22,7 @@ import string
 import subprocess
 
 from enum import Enum
-from o3de import command_utils, manifest, utils
+from o3de import command_utils, manifest, utils, export_project as exp
 from packaging.version import Version
 from pathlib import Path
 from typing import Dict, List, Tuple
@@ -137,14 +138,16 @@ SETTINGS_SIGNING_STORE_FILE     = register_setting(key='signconfig.store.file',
 
 SETTINGS_SIGNING_STORE_PASSWORD = register_setting(key='signconfig.store.password',
                                                    description='The password for the key store file',
-                                                   is_password=False)
+                                                   # is_password=True)
+                                                   is_password=False) # CARBONATED - disable password so we can pass in via command line or otherwise
 
 SETTINGS_SIGNING_KEY_ALIAS      = register_setting(key='signconfig.key.alias',
                                                    description='The key alias withing the key store that idfentifies the signing key')
 
 SETTINGS_SIGNING_KEY_PASSWORD   = register_setting(key='signconfig.key.password',
                                                    description='The password for the key inside the key store referenced by the key alias',
-                                                   is_password=False)
+                                                   # is_password=True)
+                                                   is_password=False) # CARBONATED - disable password so we can pass in via command line or otherwise
 
 # General O3DE build and deployment options
 SETTINGS_ASSET_MODE             = register_setting(key='asset.mode',
@@ -183,6 +186,19 @@ def get_android_config(project_path: Path or None) -> command_utils.O3DEConfig:
                                     settings_description_list=SUPPORTED_ANDROID_SETTINGS)
 
 
+
+def deloy_to_android_device(target_android_project_path: pathlib.Path,
+                            build_config:str,
+                            android_sdk_home:pathlib.Path,
+                            org_name,
+                            activity_name):
+    adb_exec_path = android_sdk_home / (f'platform-tools/adb{EXE_EXTENSION}')
+    apk_file = target_android_project_path / f'app/build/outputs/apk/{build_config}/app-{build_config}.apk'
+    
+    has_error = exp.process_command([adb_exec_path, 'install', '-t', '-r', apk_file])
+    if has_error:
+        raise AndroidToolError(f"Installing APK '{apk_file}' has failed for the android device.")
+    
 """
 Map to make troubleshooting java issues related to mismatched java versions when running the sdkmanager.
 """
@@ -681,17 +697,16 @@ class AndroidSDKManager(object):
         that provides information on how to accept them.
         """
         logger.info("Checking Android SDK Package licenses state..")
-        result = subprocess.run(' '.join(['echo' , 'Y' , '|', str(self._android_command_line_tools_sdkmanager_path), '--licenses']),
+        result = subprocess.run(f"echo 'Y' | \"{self._android_command_line_tools_sdkmanager_path}\" --licenses",
                                 shell=True,
                                 capture_output=True,
                                 encoding=DEFAULT_READ_ENCODING,
                                 errors=ENCODING_ERROR_HANDLINGS,
-                                timeout=30)
+                                timeout=5)
         license_not_accepted_match = AndroidSDKManager.LICENSE_NOT_ACCEPTED_REGEX.search(result.stdout or result.stderr)
         if license_not_accepted_match:
             raise AndroidToolError(f"{license_not_accepted_match.group(1)}\n"
                                    f"Please run '{self._android_command_line_tools_sdkmanager_path} --licenses' and follow the instructions.\n")
-        
         license_accepted_match = AndroidSDKManager.LICENSE_ACCEPTED_REGEX.search(result.stdout or result.stderr)
         if license_accepted_match:
             logger.info(license_accepted_match.group(1))
@@ -846,6 +861,7 @@ def validate_build_tool(tool_name: str, tool_command: str, tool_config_key: str 
         if env_home:
             tool_home_and_src_list.append( (env_home, f'environment variable {tool_environment_var}') )
     tool_home_and_src_list.append( (None, None) )
+    tool_located = False
 
     for tool_home, tool_home_src in tool_home_and_src_list:
         if tool_home is not None:
@@ -854,21 +870,25 @@ def validate_build_tool(tool_name: str, tool_command: str, tool_config_key: str 
             tool_test_command = tool_command
 
         # Run the command to get the tool version
-        result = subprocess.run([tool_test_command, tool_version_arg],
-                                shell=(platform.system() == 'Windows'),
-                                capture_output=True,
-                                encoding=DEFAULT_READ_ENCODING,
-                                errors=ENCODING_ERROR_HANDLINGS)
-        if result.returncode == 0:
-            if tool_home:
-                tool_full_path = Path(tool_home) / tool_config_sub_path / tool_command
+        try:
+            result = subprocess.run([tool_test_command, tool_version_arg],
+                                    shell=(platform.system() == 'Windows'),
+                                    capture_output=True,
+                                    encoding=DEFAULT_READ_ENCODING,
+                                    errors=ENCODING_ERROR_HANDLINGS)
+            if result.returncode == 0:
+                if tool_home:
+                    tool_full_path = Path(tool_home) / tool_config_sub_path / tool_command
+                else:
+                    tool_full_path = Path(shutil.which(tool_command))
+                tool_located = True
+                break
             else:
-                tool_full_path = Path(shutil.which(tool_command))
-            break
-        else:
+                logger.warning(f"Unable to resolve tool {tool_name} from {tool_home_src}")
+        except FileNotFoundError:
             logger.warning(f"Unable to resolve tool {tool_name} from {tool_home_src}")
 
-    if result.returncode != 0:
+    if not tool_located:
         error_msgs = [f"Unable to resolve {tool_name}. Make sure its installed and in the PATH environment"]
         if tool_config_key:
             error_msgs.append(f', or the {tool_config_key} settings')

@@ -57,7 +57,7 @@ namespace AZ
                 path.ends_with(AZ::Render::EditorMaterialComponentUtil::MaterialGraphTemplateExtensionWithDot) ||
                 path.ends_with(AZ::Render::EditorMaterialComponentUtil::ShaderExtensionWithDot))
             {
-                openers.push_back({ "Material_Canvas", "Open in Material Canvas (Preview)...", QIcon(":/Menu/material_canvas.svg"),
+                openers.push_back({ "Material_Canvas", "Open in Material Canvas...", QIcon(":/Menu/material_canvas.svg"),
                     [&](const char* fullSourceFileNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
                     {
                         EditorMaterialSystemComponentRequestBus::Broadcast(

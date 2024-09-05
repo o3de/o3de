@@ -258,6 +258,27 @@ using UiTextNotificationsBus = AZ::EBus<UiTextNotifications>;
 // carbonated end
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+class UiTextNotifications : public AZ::ComponentBus
+{
+public:
+    //////////////////////////////////////////////////////////////////////////
+    // EBusTraits overrides
+    static const bool EnableEventQueue = true;
+    //////////////////////////////////////////////////////////////////////////
+
+public: // member functions
+    virtual ~UiTextNotifications()
+    {
+    }
+
+    //! Notify listeners that the text has been changed
+    virtual void OnLayoutInvalidated()
+    {
+    }
+};
+using UiTextNotificationsBus = AZ::EBus<UiTextNotifications>;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 //! Interface that describes "clickable" areas of text for a text component.
 //!
 //! Text components can contain anchor tags that allow user interaction with text.

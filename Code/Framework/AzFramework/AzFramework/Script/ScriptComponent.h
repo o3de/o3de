@@ -10,6 +10,7 @@
 #include <AzCore/Script/ScriptAsset.h>
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/Serialization/DynamicSerializableField.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/std/string/string.h>
@@ -91,11 +92,10 @@ namespace AzFramework
     class ScriptComponent
         : public AZ::Component
         , private AZ::Data::AssetBus::Handler
-        // carbonated begin (akostin/mp226-2): Add NetBindable to ScriptComponent
+        , private AZ::TickBus::Handler
 #if defined(CARBONATED)
         , public AzFramework::NetBindable
 #endif
-        // carbonated end
     {
         friend class AzToolsFramework::Components::ScriptEditorComponent;        
 
@@ -132,19 +132,18 @@ namespace AzFramework
 
     protected:
         ScriptComponent(const ScriptComponent&) = delete;
-        //////////////////////////////////////////////////////////////////////////
-        // Component base
+
         void Init() override;
         void Activate() override;
         void Deactivate() override;
-        //////////////////////////////////////////////////////////////////////////
 
-        //////////////////////////////////////////////////////////////////////////
         // AssetBus
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+
+        // TickBus
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         //////////////////////////////////////////////////////////////////////////
 
-        // carbonated begin (akostin/mp226-2): Add NetBindable to ScriptComponent
 #if defined(CARBONATED)
         //////////////////////////////////////////////////////////////////////////
         // NetBindable
@@ -153,7 +152,6 @@ namespace AzFramework
         void UnbindFromNetwork() override;
         //////////////////////////////////////////////////////////////////////////
 #endif
-        // carbonated end
 
         /// Loads the script into the context/VM, \returns true if the script is loaded
         bool LoadInContext();

@@ -148,6 +148,8 @@ namespace AZ
                 m_drawSrg->SetShaderVariantKeyFallbackValue(options.GetShaderVariantKeyFallbackValue());
             }
 
+            OnShaderReloadedInternal();
+
             ShaderReloadNotificationBus::Handler::BusDisconnect();
             ShaderReloadNotificationBus::Handler::BusConnect(passData->m_shaderReference.m_assetId);
         }
@@ -245,6 +247,19 @@ namespace AZ
         void ComputePass::OnShaderVariantReinitialized(const ShaderVariant&)
         {
             LoadShader();
+        }
+
+        void ComputePass::SetComputeShaderReloadedCallback(ComputeShaderReloadedCallback callback)
+        {
+            m_shaderReloadedCallback = callback;
+        }
+
+        void ComputePass::OnShaderReloadedInternal()
+        {
+            if (m_shaderReloadedCallback)
+            {
+                m_shaderReloadedCallback(this);
+            }
         }
 
         void ComputePass::UpdateShaderOptions(const ShaderVariantId& shaderVariantId)

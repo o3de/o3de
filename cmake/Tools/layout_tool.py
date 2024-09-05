@@ -129,7 +129,7 @@ def verify_layout(layout_dir, platform_name, project_path, asset_mode, asset_typ
         # Validate that if '<platform>_connect_to_remote is enabled, that the 'remote_ip' is not set to local host
         warning_count += _validate_remote_ap(remote_ip, remote_connect, None)
 
-        project_asset_path = layout_path / project_name_lower
+        project_asset_path = layout_path
         if not project_asset_path.is_dir():
             warning_count += _warn(f"Asset folder for project {project_name} is missing from the deployment layout.")
         else:
@@ -403,7 +403,10 @@ def sync_layout_non_vfs(mode, target_platform, project_path, asset_type, warning
 
     if mode == ASSET_MODE_PAK:
         target_pak_folder_name = '{}_{}_paks'.format(project_name_lower, asset_type)
-        project_asset_folder = os.path.join(project_path, override_pak_folder or PAK_FOLDER_NAME, target_pak_folder_name)
+        if override_pak_folder:
+            project_asset_folder = override_pak_folder
+        else:    
+            project_asset_folder = os.path.join(project_path, override_pak_folder or PAK_FOLDER_NAME, target_pak_folder_name)
         if not os.path.isdir(project_asset_folder):
             if warning_on_missing_assets:
                 logging.warning(f'Pak folder for the project at path "{project_path}" is missing'

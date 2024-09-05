@@ -8,9 +8,9 @@
 
 o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
-# The MultiplayerStats.API target declares the common interface for tracking and recording multiplayer stats for profiling purposes.
+# The ${gem_name}Stats.API target declares the common interface for tracking and recording multiplayer stats for profiling purposes.
 ly_add_target(
-    NAME MultiplayerStats.API INTERFACE
+    NAME ${gem_name}Stats.API INTERFACE
     NAMESPACE Gem
     FILES_CMAKE
         multiplayerstats_api_files.cmake
@@ -23,7 +23,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME Multiplayer.Common.Static STATIC
+    NAME ${gem_name}.Common.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         multiplayer_files.cmake
@@ -62,7 +62,7 @@ set(FORCE_ENABLE_O3DE_EDITOR_CONNECTION_LISTENER "" CACHE STRING
 set(O3DE_EDITOR_CONNECTION_LISTENER_ENABLE_FLAG $<$<NOT:$<STREQUAL:"${FORCE_ENABLE_O3DE_EDITOR_CONNECTION_LISTENER}","">>:O3DE_EDITOR_CONNECTION_LISTENER_ENABLE=$<BOOL:${FORCE_ENABLE_O3DE_EDITOR_CONNECTION_LISTENER}>>)
 
 ly_add_target(
-    NAME Multiplayer.Client.Static STATIC
+    NAME ${gem_name}.Client.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         multiplayer_split_files.cmake
@@ -80,7 +80,7 @@ ly_add_target(
             ${O3DE_EDITOR_CONNECTION_LISTENER_ENABLE_FLAG}
     BUILD_DEPENDENCIES
         PUBLIC
-            Gem::Multiplayer.Common.Static
+            Gem::${gem_name}.Common.Static
         PRIVATE
             Gem::EMotionFXStaticLib
             Gem::PhysX.Static
@@ -92,7 +92,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME Multiplayer.Server.Static STATIC
+    NAME ${gem_name}.Server.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         multiplayer_split_files.cmake
@@ -110,7 +110,7 @@ ly_add_target(
             ${O3DE_EDITOR_CONNECTION_LISTENER_ENABLE_FLAG}
     BUILD_DEPENDENCIES
         PUBLIC
-            Gem::Multiplayer.Common.Static
+            Gem::${gem_name}.Common.Static
         PRIVATE
             Gem::EMotionFXStaticLib
             Gem::PhysX.Static
@@ -122,7 +122,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME Multiplayer.Unified.Static STATIC
+    NAME ${gem_name}.Unified.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         multiplayer_split_files.cmake
@@ -140,7 +140,7 @@ ly_add_target(
             ${O3DE_EDITOR_CONNECTION_LISTENER_ENABLE_FLAG}
     BUILD_DEPENDENCIES
         PUBLIC
-            Gem::Multiplayer.Common.Static
+            Gem::${gem_name}.Common.Static
         PRIVATE
             Gem::EMotionFXStaticLib
             Gem::PhysX.Static
@@ -152,7 +152,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME Multiplayer ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         multiplayer_shared_files.cmake
@@ -164,13 +164,22 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::Multiplayer.Unified.Static
+            Gem::${gem_name}.Unified.Static
     RUNTIME_DEPENDENCIES
         Gem::CertificateManager
 )
 
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/MultiplayerGem.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
 ly_add_target(
-    NAME Multiplayer.Client ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name}.Client ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         multiplayer_shared_files.cmake
@@ -182,13 +191,13 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::Multiplayer.Client.Static
+            Gem::${gem_name}.Client.Static
     RUNTIME_DEPENDENCIES
         Gem::CertificateManager
 )
 
 ly_add_target(
-    NAME Multiplayer.Server ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name}.Server ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         multiplayer_shared_files.cmake
@@ -200,13 +209,13 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::Multiplayer.Server.Static
+            Gem::${gem_name}.Server.Static
     RUNTIME_DEPENDENCIES
         Gem::CertificateManager
 )
 
 ly_add_target(
-    NAME Multiplayer.Debug.Client ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name}.Debug.Client ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         multiplayer_debug_files.cmake
@@ -223,12 +232,12 @@ ly_add_target(
             AZ::AzFramework
             AZ::AzNetworking
             Gem::Atom_Feature_Common.Static
-            Gem::Multiplayer.Client.Static
+            Gem::${gem_name}.Client.Static
             Gem::ImGui.Static
 )
 
 ly_add_target(
-    NAME Multiplayer.Debug ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name}.Debug ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         multiplayer_debug_files.cmake
@@ -245,18 +254,27 @@ ly_add_target(
             AZ::AzFramework
             AZ::AzNetworking
             Gem::Atom_Feature_Common.Static
-            Gem::Multiplayer.Unified.Static
+            Gem::${gem_name}.Unified.Static
             Gem::ImGui.Static
 )
+
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/Debug/MultiplayerDebugModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
 
 # The "Multiplayer" target is used by clients and servers, Debug is used only on clients.
-ly_create_alias(NAME Multiplayer.Clients NAMESPACE Gem TARGETS Gem::Multiplayer.Client Gem::Multiplayer.Debug.Client)
-ly_create_alias(NAME Multiplayer.Servers NAMESPACE Gem TARGETS Gem::Multiplayer.Server)
-ly_create_alias(NAME Multiplayer.Unified NAMESPACE Gem TARGETS Gem::Multiplayer Gem::Multiplayer.Debug)
+ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::${gem_name}.Client Gem::${gem_name}.Debug.Client)
+ly_create_alias(NAME ${gem_name}.Servers NAMESPACE Gem TARGETS Gem::${gem_name}.Server)
+ly_create_alias(NAME ${gem_name}.Unified NAMESPACE Gem TARGETS Gem::${gem_name} Gem::${gem_name}.Debug)
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME Multiplayer.Tools.Static STATIC
+        NAME ${gem_name}.Tools.Static STATIC
         NAMESPACE Gem
         FILES_CMAKE
             multiplayer_tools_files.cmake
@@ -276,7 +294,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME Multiplayer.Editor GEM_MODULE
+        NAME ${gem_name}.Editor GEM_MODULE
         NAMESPACE Gem
         FILES_CMAKE
             multiplayer_editor_shared_files.cmake
@@ -301,18 +319,27 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzToolsFramework
                 Gem::Atom_RPI.Public
                 Gem::Atom_RHI.Reflect
-                Gem::Multiplayer.Unified.Static
-                Gem::Multiplayer.Tools.Static
+                Gem::${gem_name}.Unified.Static
+                Gem::${gem_name}.Tools.Static
     )
 
-    ly_create_alias(NAME Multiplayer.Builders  NAMESPACE Gem TARGETS Gem::Multiplayer.Editor)
-    # use the Multiplayer.Editor module in tools like the Editor:  Such tools also get the visual debug view:
-    ly_create_alias(NAME Multiplayer.Tools     NAMESPACE Gem TARGETS Gem::Multiplayer.Debug Gem::Multiplayer.Builders)
+    # Inject the gem name into the Module source file
+    ly_add_source_properties(
+        SOURCES
+        Source/Editor/MultiplayerEditorGem.cpp
+        PROPERTY COMPILE_DEFINITIONS
+            VALUES
+                O3DE_GEM_NAME=${gem_name}
+                O3DE_GEM_VERSION=${gem_version})
+
+    ly_create_alias(NAME ${gem_name}.Builders  NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
+    # use the ${gem_name}.Editor module in tools like the Editor:  Such tools also get the visual debug view:
+    ly_create_alias(NAME ${gem_name}.Tools     NAMESPACE Gem TARGETS Gem::${gem_name}.Debug Gem::${gem_name}.Builders)
 endif()
 
 if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
-        NAME Multiplayer.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             multiplayer_tests_files.cmake
@@ -327,7 +354,7 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
-                Gem::Multiplayer.Unified.Static
+                Gem::${gem_name}.Unified.Static
                 Gem::PhysX.Static
         AUTOGEN_RULES
             *.AutoComponent.xml,AutoComponent_Header.jinja,$path/$fileprefix.AutoComponent.h
@@ -336,17 +363,17 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             *.AutoComponent.xml,AutoComponentTypes_Source.jinja,$path/AutoComponentTypes.cpp
     )
     ly_add_googletest(
-        NAME Gem::Multiplayer.Tests
+        NAME Gem::${gem_name}.Tests
         LABELS REQUIRES_tiaf
     )
     ly_add_googlebenchmark(
-        NAME Gem::Multiplayer.Benchmarks
-        TARGET Gem::Multiplayer.Tests
+        NAME Gem::${gem_name}.Benchmarks
+        TARGET Gem::${gem_name}.Tests
     )
 
     if (PAL_TRAIT_BUILD_HOST_TOOLS)
         ly_add_target(
-            NAME Multiplayer.Builders.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAME ${gem_name}.Builders.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem
             FILES_CMAKE
                 multiplayer_tools_tests_files.cmake
@@ -360,11 +387,11 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzTest
                     AZ::AzTestShared
                     AZ::AzToolsFrameworkTestCommon
-                    Gem::Multiplayer.Unified.Static
-                    Gem::Multiplayer.Tools.Static
+                    Gem::${gem_name}.Unified.Static
+                    Gem::${gem_name}.Tools.Static
         )
         ly_add_googletest(
-            NAME Gem::Multiplayer.Builders.Tests
+            NAME Gem::${gem_name}.Builders.Tests
             LABELS REQUIRES_tiaf
         )
     endif()

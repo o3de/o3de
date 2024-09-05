@@ -8,6 +8,8 @@
 
 #include <EMotionStudio/Plugins/StandardPlugins/Source/TimeView/TimeViewToolBar.h>
 
+#include <AzCore/Serialization/Locale.h>
+
 #include <EMotionStudio/Plugins/StandardPlugins/Source/TimeView/TimeViewPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/TimeView/TimeViewShared.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/TimeView/TrackDataWidget.h>
@@ -353,6 +355,8 @@ namespace EMStudio
 
     void TimeViewToolBar::UpdateMotions()
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
+
         MCore::CommandGroup commandGroup("Adjust default motion instances");
 
         const CommandSystem::SelectionList& selection = CommandSystem::GetCommandManager()->GetCurrentSelection();

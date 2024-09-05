@@ -24,20 +24,9 @@ namespace AZ::RHI
     public:
         AZ_CLASS_ALLOCATOR(MultiDeviceQuery, AZ::SystemAllocator, 0);
         AZ_RTTI(MultiDeviceQuery, "{F72033E8-7A91-40BF-80E2-7262223362DB}", MultiDeviceResource);
+        AZ_RHI_MULTI_DEVICE_OBJECT_GETTER(Query);
         MultiDeviceQuery() = default;
         virtual ~MultiDeviceQuery() override = default;
-
-        //! Returns the device-specific Query for the given index
-        inline Ptr<Query> GetDeviceQuery(int deviceIndex) const
-        {
-            AZ_Error(
-                "MultiDeviceQuery",
-                m_deviceQueries.find(deviceIndex) != m_deviceQueries.end(),
-                "No DeviceQuery found for device index %d\n",
-                deviceIndex);
-
-            return m_deviceQueries.at(deviceIndex);
-        }
 
         //! Returns the query pool that this query belongs to.
         const MultiDeviceQueryPool* GetQueryPool() const;
@@ -47,19 +36,10 @@ namespace AZ::RHI
         //! @param deviceIndex Specify from which device the query handle should be retrieved
         QueryHandle GetHandle(int deviceIndex)
         {
-            AZ_Assert(
-                m_deviceQueries.find(deviceIndex) != m_deviceQueries.end(), "No DeviceQuery found for device index %d\n", deviceIndex);
-            return m_deviceQueries.at(deviceIndex)->GetHandle();
+            return GetDeviceQuery(deviceIndex)->GetHandle();
         }
 
         //! Shuts down the device-specific resources by detaching them from their parent pool.
         void Shutdown() override final;
-
-        //! Invalidates all views by setting off events on all device-specific ResourceInvalidateBusses
-        void InvalidateViews() override final;
-
-    private:
-        //! A map of all device-specific Queries, indexed by the device index
-        AZStd::unordered_map<int, Ptr<Query>> m_deviceQueries;
     };
 } // namespace AZ::RHI

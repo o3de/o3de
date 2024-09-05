@@ -137,3 +137,8 @@ set(CPACK_WIX_CANDLE_EXTRA_FLAGS
     -dCPACK_EMBED_ARTIFACTS=${_embed_artifacts}
     -dCPACK_CMAKE_PACKAGE_NAME=${_cmake_package_name}
 )
+
+set(O3DE_INCLUDE_INSTALL_IN_PACKAGE FALSE CACHE BOOL "Option to copy the contents of the most recent install from CMAKE_INSTALL_PREFIX into the CORE package.  Useful for including a release build in a profile SDK.")
+if(O3DE_INCLUDE_INSTALL_IN_PACKAGE)
+    set(CPACK_INSTALLED_DIRECTORIES "${CMAKE_INSTALL_PREFIX};/CORE")
+endif()

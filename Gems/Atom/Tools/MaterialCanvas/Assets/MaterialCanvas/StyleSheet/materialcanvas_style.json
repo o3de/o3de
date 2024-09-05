@@ -2209,6 +2209,20 @@
     "color": "#ffffff"
   },
   {
+    "selectors": [ "ViewNodeTitlePalette" ],
+    "palette-style": "solid",
+    "line-color": "#FF8800",
+    "background-color": "#FF8800",
+    "color": "#ffffff"
+  },
+  {
+    "selectors": [ "SceneNodeTitlePalette" ],
+    "palette-style": "solid",
+    "line-color": "#FF8800",
+    "background-color": "#FF8800",
+    "color": "#ffffff"
+  },
+  {
     "selectors": [ "TimeNodeTitlePalette" ],
     "palette-style": "solid",
     "line-color": "#FF8800",

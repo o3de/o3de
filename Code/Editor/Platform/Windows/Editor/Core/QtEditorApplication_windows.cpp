@@ -27,6 +27,8 @@
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 
+#include <dbt.h>
+
 namespace Editor
 {
     EditorQtApplication* EditorQtApplication::newInstance(int& argc, char** argv)
@@ -111,7 +113,7 @@ namespace Editor
             }
             else if (msg->message == WM_DEVICECHANGE)
             {
-                if (msg->wParam == 0x0007) // DBT_DEVNODES_CHANGED
+                if (msg->wParam == DBT_DEVNODES_CHANGED) // DBT_DEVNODES_CHANGED
                 {
                     AzFramework::RawInputNotificationBusWindows::Broadcast(
                         &AzFramework::RawInputNotificationsWindows::OnRawInputDeviceChangeEvent);

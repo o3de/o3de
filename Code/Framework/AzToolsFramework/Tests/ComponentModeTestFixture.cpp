@@ -47,7 +47,7 @@ namespace UnitTest
         Disconnect();
     }
 
-    void ComponentModeTestFixture::GetDisabledComponents(AZStd::vector<AZ::Component*>& components)
+    void ComponentModeTestFixture::GetDisabledComponents(AZ::Entity::ComponentArrayType& components)
     {
          if (m_disabledComponent != nullptr)
          {

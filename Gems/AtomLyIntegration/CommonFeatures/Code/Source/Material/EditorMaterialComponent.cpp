@@ -277,8 +277,7 @@ namespace AZ
 
             MaterialComponentNotificationBus::Event(GetEntityId(), &MaterialComponentNotifications::OnMaterialsEdited);
 
-            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+            InvalidatePropertyDisplay(AzToolsFramework::Refresh_AttributesAndValues);
         }
 
         void EditorMaterialComponent::OnMaterialsCreated(const MaterialAssignmentMap& materials)
@@ -361,8 +360,7 @@ namespace AZ
 
             MaterialComponentNotificationBus::Event(GetEntityId(), &MaterialComponentNotifications::OnMaterialsEdited);
 
-            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
+            InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
         }
 
         AZ::u32 EditorMaterialComponent::OpenMaterialExporterFromRPE()
@@ -406,7 +404,7 @@ namespace AZ
                 AzToolsFramework::ScopedUndoBatch undoBatch("Generating materials.");
 
                 // Create progress dialog to report the status of each material being generated.
-                EditorMaterialComponentExporter::ProgressDialog progressDialog("Generating materials", "Generating material...", static_cast<int>(exportItems.size())); // carbonated (carbonated/port/main23101)
+                EditorMaterialComponentExporter::ProgressDialog progressDialog("Generating materials", "Generating material...", aznumeric_cast<int>(exportItems.size()));
 
                 for (const EditorMaterialComponentExporter::ExportItem& exportItem : exportItems)
                 {

@@ -35,6 +35,7 @@
 #include <Atom/Feature/DisplayMapper/OutputTransformPass.h>
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
 #include <Atom/Feature/AuxGeom/AuxGeomFeatureProcessor.h>
+#include <Atom/Feature/LightingChannel/LightingChannelConfiguration.h>
 #include <Atom/Feature/SplashScreen/SplashScreenSettings.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
@@ -69,6 +70,10 @@
 #include <PostProcessing/BloomBlurPass.h>
 #include <PostProcessing/BloomCompositePass.h>
 #include <PostProcessing/ChromaticAberrationPass.h>
+#include <PostProcessing/PaniniProjectionPass.h>
+#include <PostProcessing/FilmGrainPass.h>
+#include <PostProcessing/WhiteBalancePass.h>
+#include <PostProcessing/VignettePass.h>
 #include <ScreenSpace/DeferredFogPass.h>
 #include <Shadows/ProjectedShadowFeatureProcessor.h>
 #include <SkyAtmosphere/SkyAtmosphereFeatureProcessor.h>
@@ -148,6 +153,7 @@ namespace AZ
             ModelPreset::Reflect(context);
             RayTracingFeatureProcessor::Reflect(context);
             OcclusionCullingPlaneFeatureProcessor::Reflect(context);
+            LightingChannelConfiguration::Reflect(context);
 
             if (SerializeContext* serialize = azrtti_cast<SerializeContext*>(context))
             {
@@ -287,6 +293,18 @@ namespace AZ
             // Add Chromatic Aberration
             passSystem->AddPassCreator(Name("ChromaticAberrationPass"), &ChromaticAberrationPass::Create);
 
+            // Add Panini Projection
+            passSystem->AddPassCreator(Name("PaniniProjectionPass"), &PaniniProjectionPass::Create);
+
+            // Add Film Grain
+            passSystem->AddPassCreator(Name("FilmGrainPass"), &FilmGrainPass::Create);
+
+            // Add White Balance pass
+            passSystem->AddPassCreator(Name("WhiteBalancePass"), &WhiteBalancePass::Create);
+
+            // Add Vignette
+            passSystem->AddPassCreator(Name("VignettePass"), &VignettePass::Create);
+
             // Add Luminance Histogram pass
             passSystem->AddPassCreator(Name("LuminanceHistogramGeneratorPass"), &LuminanceHistogramGeneratorPass::Create);
 
@@ -322,25 +340,32 @@ namespace AZ
         {
             m_modelReloaderSystem.reset();
             m_loadTemplatesHandler.Disconnect();
-            AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<RayTracingFeatureProcessor>();
-            AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<SMAAFeatureProcessor>();
-            AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<ReflectionProbeFeatureProcessor>();
-            AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<SpecularReflectionsFeatureProcessor>();
-            AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<CubeMapCaptureFeatureProcessor>();
-            AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<ProjectedShadowFeatureProcessor>();
-            AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<AcesDisplayMapperFeatureProcessor>();
-            AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<PostProcessFeatureProcessor>();
-            AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<DecalTextureArrayFeatureProcessor>();
-            AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<ImageBasedLightFeatureProcessor>();
+
+            AZ::ApplicationTypeQuery appType;
+            ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+            if (!appType.IsHeadless())
+            {
+                AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<RayTracingFeatureProcessor>();
+                AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<SMAAFeatureProcessor>();
+                AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<ReflectionProbeFeatureProcessor>();
+                AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<SpecularReflectionsFeatureProcessor>();
+                AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<CubeMapCaptureFeatureProcessor>();
+                AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<ProjectedShadowFeatureProcessor>();
+                AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<AcesDisplayMapperFeatureProcessor>();
+                AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<PostProcessFeatureProcessor>();
+                AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<DecalTextureArrayFeatureProcessor>();
+                AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<ImageBasedLightFeatureProcessor>();
+                AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<SkyBoxFeatureProcessor>();
+                AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<SkyAtmosphereFeatureProcessor>();
+                AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<OcclusionCullingPlaneFeatureProcessor>();
+                AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<RenderDebugFeatureProcessor>();
+                AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<SplashScreenFeatureProcessor>();
+                AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<SilhouetteFeatureProcessor>();
+            }
+
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<MeshFeatureProcessor>();
-            AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<SkyBoxFeatureProcessor>();
-            AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<SkyAtmosphereFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<TransformServiceFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<AuxGeomFeatureProcessor>();
-            AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<OcclusionCullingPlaneFeatureProcessor>();
-            AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<RenderDebugFeatureProcessor>();
-            AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<SplashScreenFeatureProcessor>();
-            AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<SilhouetteFeatureProcessor>();
         }
 
         void CommonSystemComponent::LoadPassTemplateMappings()

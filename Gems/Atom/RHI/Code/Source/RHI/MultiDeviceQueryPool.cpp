@@ -56,8 +56,8 @@ namespace AZ::RHI
                     {
                         auto* device = RHISystemInterface::Get()->GetDevice(deviceIndex);
 
-                        m_deviceQueryPools[deviceIndex] = Factory::Get().CreateQueryPool();
-                        resultCode = m_deviceQueryPools[deviceIndex]->Init(*device, descriptor);
+                        m_deviceObjects[deviceIndex] = Factory::Get().CreateQueryPool();
+                        resultCode = GetDeviceQueryPool(deviceIndex)->Init(*device, descriptor);
                         return resultCode == ResultCode::Success;
                     });
 
@@ -67,7 +67,7 @@ namespace AZ::RHI
         if (resultCode != ResultCode::Success)
         {
             // Reset already initialized device-specific QueryPools and set deviceMask to 0
-            m_deviceQueryPools.clear();
+            m_deviceObjects.clear();
             MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
         }
 
@@ -82,9 +82,7 @@ namespace AZ::RHI
     ResultCode MultiDeviceQueryPool::InitQuery(MultiDeviceQuery** queries, uint32_t queryCount)
     {
         AZ_Assert(queries, "Null queries");
-        auto resultCode{ ResultCode::Success };
-
-        for (auto& [deviceIndex, deviceQueryPool] : m_deviceQueryPools)
+        auto resultCode = IterateObjects<QueryPool>([&](auto deviceIndex, auto deviceQueryPool)
         {
             AZStd::vector<RHI::Ptr<Query>> deviceQueries(queryCount);
             AZStd::vector<Query*> rawDeviceQueries(queryCount);
@@ -94,18 +92,20 @@ namespace AZ::RHI
                 rawDeviceQueries[index] = deviceQueries[index].get();
             }
 
-            resultCode = deviceQueryPool->InitQuery(rawDeviceQueries.data(), queryCount);
-
-            for (auto index{ 0u }; index < queryCount; ++index)
-            {
-                queries[index]->m_deviceQueries[deviceIndex] = deviceQueries[index];
-            }
+            auto resultCode = deviceQueryPool->InitQuery(rawDeviceQueries.data(), queryCount);
 
             if (resultCode != ResultCode::Success)
             {
-                break;
+                return resultCode;
             }
-        }
+
+            for (auto index{ 0u }; index < queryCount; ++index)
+            {
+                queries[index]->m_deviceObjects[deviceIndex] = deviceQueries[index];
+            }
+
+            return resultCode;
+        });
 
         if (resultCode == ResultCode::Success)
         {
@@ -169,23 +169,15 @@ namespace AZ::RHI
             }
         }
 
-        auto resultCode{ ResultCode::Success };
-
         auto perDeviceResultCount{CalculatePerDeviceResultsCount(1)};
 
-        for (auto& [deviceIndex, deviceQueryPool] : m_deviceQueryPools)
+        return IterateObjects<QueryPool>([&](auto deviceIndex, auto deviceQueryPool)
         {
-            auto deviceQuery{ query->m_deviceQueries[deviceIndex].get() };
+            auto deviceQuery{ query->GetDeviceQuery(deviceIndex).get() };
             auto deviceResult{ result + (deviceIndex * perDeviceResultCount) };
 
-            resultCode = deviceQueryPool->GetResults(&deviceQuery, 1, deviceResult, perDeviceResultCount, flags);
-            if (resultCode != ResultCode::Success)
-            {
-                break;
-            }
-        }
-
-        return resultCode;
+            return deviceQueryPool->GetResults(&deviceQuery, 1, deviceResult, perDeviceResultCount, flags);
+        });
     }
 
     ResultCode MultiDeviceQueryPool::GetResults(
@@ -211,28 +203,19 @@ namespace AZ::RHI
             }
         }
 
-        auto resultCode{ ResultCode::Success };
-
         auto perDeviceResultCount{CalculatePerDeviceResultsCount(queryCount)};
 
-        for (auto& [deviceIndex, deviceQueryPool] : m_deviceQueryPools)
+        return IterateObjects<QueryPool>([&](auto deviceIndex, auto deviceQueryPool)
         {
             AZStd::vector<Query*> deviceQueries(queryCount);
             for (auto index{ 0u }; index < queryCount; ++index)
             {
-                deviceQueries[index] = queries[index]->m_deviceQueries[deviceIndex].get();
+                deviceQueries[index] = queries[index]->GetDeviceQuery(deviceIndex).get();
             }
 
             auto deviceResults{ results + (deviceIndex * perDeviceResultCount) };
-            resultCode = deviceQueryPool->GetResults(deviceQueries.data(), queryCount, deviceResults, perDeviceResultCount, flags);
-
-            if (resultCode != ResultCode::Success)
-            {
-                break;
-            }
-        }
-
-        return resultCode;
+            return deviceQueryPool->GetResults(deviceQueries.data(), queryCount, deviceResults, perDeviceResultCount, flags);
+        });
     }
 
     ResultCode MultiDeviceQueryPool::GetResults(uint64_t* results, uint32_t resultsCount, QueryResultFlagBits flags)
@@ -248,22 +231,13 @@ namespace AZ::RHI
             }
         }
 
-        auto resultCode{ ResultCode::Success };
-
         auto perDeviceResultCount{CalculatePerDeviceResultsCount(0)};
 
-        for (auto& [deviceIndex, deviceQueryPool] : m_deviceQueryPools)
+        return IterateObjects<QueryPool>([&](auto deviceIndex, auto deviceQueryPool)
         {
             auto deviceResults{ results + (deviceIndex * perDeviceResultCount) };
-            resultCode = deviceQueryPool->GetResults(deviceResults, perDeviceResultCount, flags);
-
-            if (resultCode != ResultCode::Success)
-            {
-                break;
-            }
-        }
-
-        return resultCode;
+            return deviceQueryPool->GetResults(deviceResults, perDeviceResultCount, flags);
+        });
     }
 
     const QueryPoolDescriptor& MultiDeviceQueryPool::GetDescriptor() const
@@ -273,10 +247,10 @@ namespace AZ::RHI
 
     void MultiDeviceQueryPool::Shutdown()
     {
-        for (auto [_, pool] : m_deviceQueryPools)
+        IterateObjects<QueryPool>([]([[maybe_unused]] auto deviceIndex, auto deviceQueryPool)
         {
-            pool->Shutdown();
-        }
+            deviceQueryPool->Shutdown();
+        });
 
         MultiDeviceResourcePool::Shutdown();
     }

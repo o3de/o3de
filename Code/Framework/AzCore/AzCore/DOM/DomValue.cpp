@@ -24,7 +24,7 @@ namespace AZ::Dom
             }
             else
             {
-                refCountedPointer = AZStd::allocate_shared<T>(StdValueAllocator(), *refCountedPointer);
+                refCountedPointer = AZStd::allocate_shared<T>(ValueAllocator_for_std_t(), *refCountedPointer);
                 return refCountedPointer;
             }
         }
@@ -142,7 +142,7 @@ namespace AZ::Dom
     }
 
     Value::Value(AZStd::any opaqueValue)
-        : m_value(AZStd::allocate_shared<AZStd::any>(StdValueAllocator(), AZStd::move(opaqueValue)))
+        : m_value(AZStd::allocate_shared<AZStd::any>(ValueAllocator_for_std_t(), AZStd::move(opaqueValue)))
     {
     }
 
@@ -446,7 +446,7 @@ namespace AZ::Dom
 
     Value& Value::SetObject()
     {
-        m_value = AZStd::allocate_shared<Object>(StdValueAllocator());
+        m_value = AZStd::allocate_shared<Object>(ValueAllocator_for_std_t());
         return *this;
     }
 
@@ -730,7 +730,7 @@ namespace AZ::Dom
 
     Value& Value::SetArray()
     {
-        m_value = AZStd::allocate_shared<Array>(StdValueAllocator());
+        m_value = AZStd::allocate_shared<Array>(ValueAllocator_for_std_t());
         return *this;
     }
 
@@ -858,7 +858,7 @@ namespace AZ::Dom
 
     void Value::SetNode(AZ::Name name)
     {
-        m_value = AZStd::allocate_shared<Node>(StdValueAllocator(), AZStd::move(name));
+        m_value = AZStd::allocate_shared<Node>(ValueAllocator_for_std_t(), AZStd::move(name));
     }
 
     void Value::SetNode(AZStd::string_view name)
@@ -1049,7 +1049,7 @@ namespace AZ::Dom
         }
         else
         {
-            SharedStringType sharedString = AZStd::allocate_shared<SharedStringContainer>(StdValueAllocator(), value.begin(), value.end());
+            SharedStringType sharedString = AZStd::allocate_shared<SharedStringContainer>(ValueAllocator_for_std_t(), value.begin(), value.end());
             m_value = AZStd::move(sharedString);
         }
     }
@@ -1061,7 +1061,7 @@ namespace AZ::Dom
 
     void Value::SetOpaqueValue(AZStd::any value)
     {
-        m_value = AZStd::allocate_shared<AZStd::any>(StdValueAllocator(), AZStd::move(value));
+        m_value = AZStd::allocate_shared<AZStd::any>(ValueAllocator_for_std_t(), AZStd::move(value));
     }
 
     void Value::SetNull()

@@ -142,7 +142,7 @@ namespace ShaderManagementConsole
             sourceAssetFileName.c_str(),
             assetInfo,
             watchFolder);
-        AZ_Error(nullptr, result, "Failed to get the asset info for the file: %s.", sourceAssetFileName.c_str());
+        AZ_Error(AZ::Debug::Trace::GetDefaultSystemWindow(), result, "Failed to get the asset info for the file: %s.", sourceAssetFileName.c_str());
 
         return assetInfo;
     }

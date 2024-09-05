@@ -221,18 +221,7 @@ namespace AZ
                 }
                 AZ_Assert(false, "Could not create Pipeline object!.");
             }
-            AZ_Assert(m_graphicsPipelineState, "Could not create Pipeline object!.");
-            
             //We keep the descriptors alive in case we want to build the PSO cache. Delete them otherwise.
-            if (!r_enablePsoCaching)
-            {
-                [m_renderPipelineDesc release];
-                m_renderPipelineDesc = nil;
-            }
-            
-            [constantValues release];
-            constantValues = nil;
-             
             m_pipelineStateMultiSampleState = descriptor.m_renderStates.m_multisampleState;
             
             //Cache the rasterizer state

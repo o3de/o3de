@@ -103,6 +103,7 @@ namespace AzFramework
         virtual bool IsEditorModeFeedbackEnabled() const { return false; }
 
         /// Returns true if Prefab System is enabled, false if Legacy Slice System is enabled
+        /// @deprecated the Legacy Slice System for level editing has been deprecated.
         virtual bool IsPrefabSystemEnabled() const { return true; }
 
         /// Returns true if the additional work in progress Prefab features are enabled, false otherwise

@@ -11,8 +11,8 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/FileIO.h>
 
-#include <Source/PythonCommon.h>
-#include <Source/PythonUtility.h>
+#include <EditorPythonBindings/PythonCommon.h>
+#include <EditorPythonBindings/PythonUtility.h>
 #include <Source/PythonSymbolsBus.h>
 
 #include <EditorPythonBindings/EditorPythonBindingsBus.h>
@@ -87,18 +87,13 @@ namespace EditorPythonBindings
         using GlobalFunctionEntry = AZStd::pair<const AZ::BehaviorMethod*, AZStd::string>;
         using GlobalFunctionList = AZStd::vector<GlobalFunctionEntry>;
         using GlobalFunctionMap = AZStd::unordered_map<AZStd::string_view, GlobalFunctionList>;
-        using TypeMap = AZStd::unordered_map<AZ::TypeId, AZStd::string>;
         using FileHandlePtr = AZStd::shared_ptr<Internal::FileHandle>;
 
         AZStd::string m_basePath;
         ModuleSet m_moduleSet;
         GlobalFunctionMap m_globalFunctionMap;
-        TypeMap m_typeCache;
+        Text::PythonBehaviorDescription m_pythonBehaviorDescription;
 
-        AZStd::string FetchListType(const AZ::TypeId& typeId);
-        AZStd::string FetchMapType(const AZ::TypeId& typeId);
-        AZStd::string FetchOutcomeType(const AZ::TypeId& typeId);
-        AZStd::string TypeNameFallback(const AZ::TypeId& typeId);
         FileHandlePtr OpenInitFileAt(AZStd::string_view moduleName);
         FileHandlePtr OpenModuleAt(AZStd::string_view moduleName);
         void WriteMethod(AZ::IO::HandleType handle, AZStd::string_view methodName, const AZ::BehaviorMethod& behaviorMethod, const AZ::BehaviorClass* behaviorClass);

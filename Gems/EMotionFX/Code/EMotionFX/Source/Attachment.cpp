@@ -17,7 +17,7 @@ namespace EMotionFX
 
     // constructor
     Attachment::Attachment(ActorInstance* attachToActorInstance, ActorInstance* attachment)
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_attachment     = attachment;
         m_actorInstance  = attachToActorInstance;

@@ -312,7 +312,7 @@ namespace EMotionFX
 
     // constructor
     ChunkProcessor::ChunkProcessor(uint32 chunkID, uint32 version)
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_chunkId        = chunkID;
         m_version        = version;
@@ -478,10 +478,10 @@ namespace EMotionFX
                     static_cast<float>(pos.GetX()),
                     static_cast<float>(pos.GetY()),
                     static_cast<float>(pos.GetZ()));
-                MCore::LogDetailedInfo("      - Rotation:      x=%f, y=%f, z=%f, w=%f", 
-                    static_cast<float>(rot.GetX()), 
-                    static_cast<float>(rot.GetY()), 
-                    static_cast<float>(rot.GetZ()), 
+                MCore::LogDetailedInfo("      - Rotation:      x=%f, y=%f, z=%f, w=%f",
+                    static_cast<float>(rot.GetX()),
+                    static_cast<float>(rot.GetY()),
+                    static_cast<float>(rot.GetZ()),
                     static_cast<float>(rot.GetW()));
                 MCore::LogDetailedInfo("      - Scale:         x=%f, y=%f, z=%f",
                     static_cast<float>(scale.GetX()),
@@ -554,10 +554,10 @@ namespace EMotionFX
                     static_cast<float>(posePos.GetX()),
                     static_cast<float>(posePos.GetY()),
                     static_cast<float>(posePos.GetZ()));
-                MCore::LogDetailedInfo("    + Pose Rotation:         x=%f, y=%f, z=%f, w=%f", 
-                    static_cast<float>(uncompressedPoseRot.GetX()), 
-                    static_cast<float>(uncompressedPoseRot.GetY()), 
-                    static_cast<float>(uncompressedPoseRot.GetZ()), 
+                MCore::LogDetailedInfo("    + Pose Rotation:         x=%f, y=%f, z=%f, w=%f",
+                    static_cast<float>(uncompressedPoseRot.GetX()),
+                    static_cast<float>(uncompressedPoseRot.GetY()),
+                    static_cast<float>(uncompressedPoseRot.GetZ()),
                     static_cast<float>(uncompressedPoseRot.GetW()));
                 MCore::LogDetailedInfo("    + Pose Scale:            x=%f, y=%f, z=%f",
                     static_cast<float>(poseScale.GetX()),
@@ -567,7 +567,7 @@ namespace EMotionFX
                     static_cast<float>(bindPosePos.GetX()),
                     static_cast<float>(bindPosePos.GetY()),
                     static_cast<float>(bindPosePos.GetZ()));
-                MCore::LogDetailedInfo("    + Bind Pose Rotation:    x=%f, y=%f, z=%f, w=%f", 
+                MCore::LogDetailedInfo("    + Bind Pose Rotation:    x=%f, y=%f, z=%f, w=%f",
                     static_cast<float>(uncompressedBindPoseRot.GetX()),
                     static_cast<float>(uncompressedBindPoseRot.GetY()),
                     static_cast<float>(uncompressedBindPoseRot.GetZ()),
@@ -1373,7 +1373,7 @@ namespace EMotionFX
                     static_cast<float>(transform.m_position.GetX()),
                     static_cast<float>(transform.m_position.GetY()),
                     static_cast<float>(transform.m_position.GetZ()));
-                MCore::LogDetailedInfo("       + Rotation: %f, %f, %f %f", 
+                MCore::LogDetailedInfo("       + Rotation: %f, %f, %f %f",
                     static_cast<float>(transform.m_rotation.GetX()),
                     static_cast<float>(transform.m_rotation.GetY()),
                     static_cast<float>(transform.m_rotation.GetZ()),
@@ -1791,7 +1791,7 @@ namespace EMotionFX
                         static_cast<float>(transform.m_position.GetX()),
                         static_cast<float>(transform.m_position.GetY()),
                         static_cast<float>(transform.m_position.GetZ()));
-                    MCore::LogDetailedInfo("        - Rotation: %f, %f, %f %f", 
+                    MCore::LogDetailedInfo("        - Rotation: %f, %f, %f %f",
                         static_cast<float>(transform.m_rotation.GetX()),
                         static_cast<float>(transform.m_rotation.GetY()),
                         static_cast<float>(transform.m_rotation.GetZ()),
@@ -1800,7 +1800,7 @@ namespace EMotionFX
                         static_cast<float>(transform.m_scale.GetX()),
                         static_cast<float>(transform.m_scale.GetY()),
                         static_cast<float>(transform.m_scale.GetZ()));
-                    MCore::LogDetailedInfo("        - ScaleRot: %f, %f, %f %f", 
+                    MCore::LogDetailedInfo("        - ScaleRot: %f, %f, %f %f",
                         static_cast<float>(scaleRot.GetX()),
                         static_cast<float>(scaleRot.GetY()),
                         static_cast<float>(scaleRot.GetZ()),

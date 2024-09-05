@@ -31,6 +31,8 @@ namespace DebugDraw
         AZ::ComponentId         m_owningEditorComponent;
         AZ::Vector3             m_scale;
 
+        bool                    m_isRayTracingEnabled = false;
+
         DebugDrawObbElement()
             : m_duration(0.1f)
             , m_color(1.0f, 1.0f, 1.0f, 1.0f) // AZ::Color::White

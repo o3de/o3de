@@ -9,6 +9,7 @@
 
 #include <RHI/DX12.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
+#include <Atom/RHI.Reflect/FrameCountMaxRingBuffer.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
@@ -37,11 +38,11 @@ namespace AZ
 #ifdef AZ_DX12_DXR_SUPPORT
             const D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS& GetInputs() const { return m_inputs; }
 #endif
-            const TlasBuffers& GetBuffers() const { return m_buffers[m_currentBufferIndex]; }
+            const TlasBuffers& GetBuffers() const { return m_buffers.GetCurrentElement(); }
 
             // RHI::RayTracingTlas overrides...
-            const RHI::Ptr<RHI::Buffer> GetTlasBuffer() const override { return m_buffers[m_currentBufferIndex].m_tlasBuffer; }
-            const RHI::Ptr<RHI::Buffer> GetTlasInstancesBuffer() const override { return m_buffers[m_currentBufferIndex].m_tlasInstancesBuffer; }
+            const RHI::Ptr<RHI::Buffer> GetTlasBuffer() const override { return GetBuffers().m_tlasBuffer; }
+            const RHI::Ptr<RHI::Buffer> GetTlasInstancesBuffer() const override { return GetBuffers().m_tlasInstancesBuffer; }
 
         private:
             RayTracingTlas() = default;
@@ -54,9 +55,7 @@ namespace AZ
 #endif
 
             // buffer list to keep buffers alive for several frames
-            static const uint32_t BufferCount = AZ::RHI::Limits::Device::FrameCountMax;
-            TlasBuffers m_buffers[BufferCount];
-            uint32_t m_currentBufferIndex = 0;
+            RHI::FrameCountMaxRingBuffer<TlasBuffers> m_buffers;
         };
     }
 }

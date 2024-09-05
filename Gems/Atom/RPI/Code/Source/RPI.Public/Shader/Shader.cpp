@@ -442,7 +442,7 @@ namespace AZ
 
         const RHI::PipelineState* Shader::AcquirePipelineState(const RHI::PipelineStateDescriptor& descriptor) const
         {
-            return m_pipelineStateCache->AcquirePipelineState(m_pipelineLibraryHandle, descriptor);
+            return m_pipelineStateCache->AcquirePipelineState(m_pipelineLibraryHandle, descriptor, m_asset->GetName());
         }
 
         const RHI::Ptr<RHI::ShaderResourceGroupLayout>& Shader::FindShaderResourceGroupLayout(const Name& shaderResourceGroupName) const

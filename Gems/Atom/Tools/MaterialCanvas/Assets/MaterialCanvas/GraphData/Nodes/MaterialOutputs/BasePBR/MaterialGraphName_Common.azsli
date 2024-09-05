@@ -34,6 +34,9 @@
 #include <Atom/RPI/TangentSpace.azsli>
 #include <Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/EvaluateTangentFrame.azsli>
 
+// O3DE_GENERATED_INCLUDES_BEGIN
+// O3DE_GENERATED_INCLUDES_END
+
 option bool o_normal_override_enabled = false;
 
 ShaderResourceGroup MaterialSrg : SRG_PerMaterial
@@ -44,9 +47,6 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     // O3DE_GENERATED_MATERIAL_SRG_BEGIN
     // O3DE_GENERATED_MATERIAL_SRG_END
 }
- 
-// O3DE_GENERATED_INCLUDES_BEGIN
-// O3DE_GENERATED_INCLUDES_END
 
 // O3DE_GENERATED_CLASSES_BEGIN
 // O3DE_GENERATED_CLASSES_END

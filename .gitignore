@@ -15,7 +15,6 @@ CMakeUserPresets.json
 [Uu]ser/
 FrameCapture/**
 .DS_Store
-.automatedtesting.json
 user*.cfg
 client*.cfg
 server*.cfg
@@ -24,3 +23,7 @@ _savebackup/
 *.swatches
 /imgui.ini
 .command_settings
+
+# CARBONATED
+/python/runtime
+

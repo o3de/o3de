@@ -433,8 +433,7 @@ namespace AZ::DocumentPropertyEditor
                 const AZ::SerializeContext::ClassElement* containerClassElement =
                     m_container->GetElement(m_container->GetDefaultElementNameCrc());
                 auto elementInstance = m_container->GetElementByIndex(m_containerInstance, containerClassElement, m_elementIndex);
-                const bool elementRemoved = m_container->RemoveElement(m_containerInstance, elementInstance, impl->m_serializeContext);
-                (void)elementRemoved; // dodge unused warning when below assert is compiled out...
+                [[maybe_unused]] const bool elementRemoved = m_container->RemoveElement(m_containerInstance, elementInstance, impl->m_serializeContext);
                 AZ_Assert(elementRemoved, "could not remove element!");
                 auto containerNode = GetContainerNode(impl, path);
                 Nodes::PropertyEditor::ChangeNotify.InvokeOnDomNode(containerNode);

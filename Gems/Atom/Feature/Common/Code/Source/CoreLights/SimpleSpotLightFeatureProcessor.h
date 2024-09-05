@@ -25,9 +25,9 @@ namespace AZ
 
     namespace Render
     {
-        static const uint8_t MaxGoboTextureCount = 4;
+        static const uint8_t MaxGoboTextureCount = 5;
 
-        struct SimpleSpotLightData
+        struct alignas(16) SimpleSpotLightData
         {
             AZStd::array<float, 16> m_viewProjectionMatrix; // Matrix to transform from world space to the spot light's lighting frustum. 
             AZStd::array<float, 3> m_position = { { 0.0f, 0.0f, 0.0f } };
@@ -41,6 +41,7 @@ namespace AZ
             uint32_t m_goboTextureIndex = MaxGoboTextureCount; // index for m_goboTextures.
             float m_affectsGIFactor = 1.0f;
             bool m_affectsGI = true;
+            uint32_t m_lightingChannelMask = 1;
         };
 
         class SimpleSpotLightFeatureProcessor final
@@ -71,6 +72,7 @@ namespace AZ
             void SetAttenuationRadius(LightHandle handle, float attenuationRadius) override;
             void SetAffectsGI(LightHandle handle, bool affectsGI) override;
             void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) override;
+            void SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask) override;
             void SetShadowsEnabled(LightHandle handle, bool enabled) override;
             void SetShadowBias(LightHandle handle, float bias) override;
             void SetNormalShadowBias(LightHandle handle, float bias) override;
@@ -133,7 +135,7 @@ namespace AZ
             // Number of buffers being used for visibility in the current frame.
             uint32_t m_visibleSpotLightsBufferUsedCount = 0;
             // Views that have a GPU culling pass per render pipeline.
-            AZStd::unordered_set<AZStd::pair<const RPI::RenderPipeline*, const RPI::View*>> m_hasGPUCulling;
+            AZStd::unordered_map<const RPI::View*, AZStd::vector<const RPI::RenderPipeline*>> m_cpuCulledPipelinesPerView;
         };
     } // namespace Render
 } // namespace AZ

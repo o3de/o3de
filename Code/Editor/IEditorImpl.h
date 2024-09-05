@@ -122,7 +122,6 @@ public:
     bool IsInPreviewMode() override;
     bool IsInConsolewMode() override;
     bool IsInLevelLoadTestMode() override;
-    bool IsInMatEditMode() override { return m_bMatEditMode; }
 
     //! Enables/Disable updates of editor.
     void EnableUpdate(bool enable) override { m_bUpdates = enable; };
@@ -139,12 +138,6 @@ public:
     // to feed memory node with all necessary data needed for export
     // (gSettings.Load() and CXTPDockingPaneManager/CXTPDockingPaneLayout Sandbox layout management)
     CSettingsManager* GetSettingsManager() override;
-    CSelectionGroup*    GetSelection() override;
-    int ClearSelection() override;
-    CBaseObject* GetSelectedObject() override;
-    void SelectObject(CBaseObject* obj) override;
-    void LockSelection(bool bLock) override;
-    bool IsSelectionLocked() override;
 
     CMusicManager* GetMusicManager() override { return m_pMusicManager; };
 
@@ -255,12 +248,9 @@ public:
     bool IsSourceControlAvailable() override;
     //! Only returns true if source control is both available AND currently connected and functioning
     bool IsSourceControlConnected() override;
-    //! Setup Material Editor mode
-    void SetMatEditMode(bool bIsMatEditMode);
     void ReduceMemory() override;
     ESystemConfigPlatform GetEditorConfigPlatform() const override;
     void ReloadTemplates() override;
-    void AddErrorMessage(const QString& text, const QString& caption);
     void ShowStatusText(bool bEnable) override;
 
     void OnObjectContextMenuOpened(QMenu* pMenu, const CBaseObject* pObject);
@@ -319,8 +309,6 @@ protected:
     CErrorReport* m_pErrorReport;
     //! Contains the error reports for the last loaded level.
     CErrorReport* m_pLasLoadedLevelErrorReport;
-    //! Global instance of error report class.
-    CErrorsDlg* m_pErrorsDlg;
     //! Source control interface.
     ISourceControl* m_pSourceControl;
 
@@ -337,10 +325,6 @@ protected:
     QString m_selectFileBuffer;
     QString m_levelNameBuffer;
 
-
-    //! True if the editor is in material edit mode. Fast preview of materials.
-    //! In this mode only very limited functionality is available.
-    bool m_bMatEditMode;
     bool m_bShowStatusText;
     bool m_bInitialized;
     bool m_bExiting;

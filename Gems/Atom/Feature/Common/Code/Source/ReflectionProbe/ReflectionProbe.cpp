@@ -23,7 +23,7 @@ namespace AZ
     {
         ReflectionProbe::~ReflectionProbe()
         {
-            Data::AssetBus::MultiHandler::BusDisconnect();
+            Data::AssetBus::Handler::BusDisconnect();
             m_scene->GetCullingScene()->UnregisterCullable(m_cullable);
             m_meshFeatureProcessor->ReleaseMesh(m_visualizationMeshHandle);
         }
@@ -33,7 +33,7 @@ namespace AZ
             if (m_visualizationMaterialAsset.GetId() == asset.GetId())
             {
                 m_visualizationMaterialAsset = asset;
-                Data::AssetBus::MultiHandler::BusDisconnect(asset.GetId());
+                Data::AssetBus::Handler::BusDisconnect();
 
                 m_meshFeatureProcessor->SetCustomMaterials(m_visualizationMeshHandle, AZ::RPI::Material::FindOrCreate(m_visualizationMaterialAsset));
             }
@@ -42,7 +42,7 @@ namespace AZ
         void ReflectionProbe::OnAssetError(Data::Asset<Data::AssetData> asset)
         {
             AZ_Error("ReflectionProbe", false, "Failed to load ReflectionProbe dependency asset %s", asset.ToString<AZStd::string>().c_str());
-            Data::AssetBus::MultiHandler::BusDisconnect(asset.GetId());
+            Data::AssetBus::Handler::BusDisconnect();
         }
 
         void ReflectionProbe::Init(RPI::Scene* scene, ReflectionRenderData* reflectionRenderData)
@@ -70,14 +70,14 @@ namespace AZ
             m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(m_visualizationMeshHandle, true);
             m_meshFeatureProcessor->SetTransform(m_visualizationMeshHandle, AZ::Transform::CreateIdentity());
 
-            // We have to pre-load this asset before creating a Material instance because the InstanceDatabase will attempt a blocking load which could deadlock,
+            // We have to pre-load this asset before creating a material instance because the InstanceDatabase will attempt a blocking load which could deadlock,
             // particularly when slices are involved.
             // Note that m_visualizationMeshHandle had to be set up first, because AssetBus BusConnect() might call ReflectionProbe::OnAssetReady() immediately on this callstack.
             m_visualizationMaterialAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::MaterialAsset>(
                 "Materials/ReflectionProbe/ReflectionProbeVisualization.azmaterial",
                 AZ::RPI::AssetUtils::TraceLevel::Assert);
             m_visualizationMaterialAsset.QueueLoad();
-            Data::AssetBus::MultiHandler::BusConnect(m_visualizationMaterialAsset.GetId());
+            Data::AssetBus::Handler::BusConnect(m_visualizationMaterialAsset.GetId());
 
             // reflection render Srgs
             m_stencilSrg = RPI::ShaderResourceGroup::Create(

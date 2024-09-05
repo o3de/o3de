@@ -117,7 +117,10 @@ namespace GraphCanvas
             {
                 QFont sizedFont;
                 int pointSize = sizedFont.pointSize();
-                sizedFont.setPointSizeF(pointSize * m_fontScale);
+                if (pointSize >= 0)
+                {
+                    sizedFont.setPointSizeF(pointSize * m_fontScale);
+                }
                 return sizedFont;
             }
             default:

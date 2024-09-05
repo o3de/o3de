@@ -38,6 +38,12 @@ class SurfaceData_BasePBR
 
     //! Sets albedo, base color, specularF0, and metallic properties using metallic workflow
     void SetAlbedoAndSpecularF0(real3 newBaseColor, real specularF0Factor, real newMetallic);
+
+    real3 GetDiffuseNormal() { return normal; }
+    real3 GetSpecularNormal() { return normal; }
+    real3 GetDefaultNormal() { return normal; }
+    real3 GetVertexNormal() { return vertexNormal; }
+    real3 GetSpecularF0() { return specularF0; }
 };
 
 void SurfaceData_BasePBR::CalculateRoughnessA()
@@ -51,5 +57,5 @@ void SurfaceData_BasePBR::SetAlbedoAndSpecularF0(real3 newBaseColor, real specul
     metallic = newMetallic;
 
     albedo = GetAlbedo(baseColor, metallic);
-    specularF0 = GetSpecularF0(baseColor, metallic, specularF0Factor);
+    specularF0 = CalculateSpecularF0(baseColor, metallic, specularF0Factor);
 }

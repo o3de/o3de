@@ -188,6 +188,7 @@ namespace AZ
 
         void RenderPass::FrameBeginInternal(FramePrepareParams params)
         {
+            m_timestampResult = AZ::RPI::TimestampResult();
             if (GetScopeId().IsEmpty())
             {
                 InitScope(RHI::ScopeId(GetPathName()), m_hardwareQueueClass);

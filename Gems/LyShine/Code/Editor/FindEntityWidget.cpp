@@ -62,7 +62,7 @@ FindEntityWidget::FindEntityWidget(AZ::EntityId canvasEntityId, QWidget* pParent
 
         AzToolsFramework::ComponentPaletteUtil::ComponentDataTable componentDataTable;
         AzToolsFramework::ComponentPaletteUtil::ComponentIconTable componentIconTable;
-        AZStd::vector<AZ::ComponentServiceType> serviceFilter;
+        AZ::ComponentDescriptor::DependencyArrayType serviceFilter;
 
         AzToolsFramework::ComponentPaletteUtil::BuildComponentTables(serializeContext, AppearsInUiComponentMenu, serviceFilter, componentDataTable, componentIconTable);
 

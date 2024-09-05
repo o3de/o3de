@@ -19,7 +19,6 @@
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
-#include <AzToolsFramework/Commands/EntityStateCommand.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
@@ -608,7 +607,7 @@ namespace LandscapeCanvasEditor
             {
                 m_ignoreGraphUpdates = true;
 
-                AzToolsFramework::RemoveComponents(component);
+                AzToolsFramework::RemoveComponents({ component });
 
                 m_ignoreGraphUpdates = false;
             }
@@ -2943,7 +2942,7 @@ namespace LandscapeCanvasEditor
     }
 
     AZ::ComponentId MainWindow::AddComponentTypeIdToEntity(
-        const AZ::EntityId& entityId, AZ::TypeId componentToAddTypeId, const AZ::ComponentDescriptor::DependencyArrayType& optionalServices)
+        const AZ::EntityId& entityId, AZ::TypeId componentToAddTypeId, AZStd::span<const AZ::ComponentServiceType> optionalServices)
     {
         using namespace AzToolsFramework;
 
@@ -2954,7 +2953,7 @@ namespace LandscapeCanvasEditor
         // and any required Components it may need by keeping track of any missing required
         // services that are reported when the Component(s) are added
         // Initialize our list of missing required services with any optional services this component needs
-        EntityCompositionRequests::ComponentServicesList missingRequiredServices(optionalServices);
+        AZ::ComponentDescriptor::DependencyArrayType missingRequiredServices(optionalServices.begin(), optionalServices.end());
         AZ::ComponentId requestedComponentId = AZ::InvalidComponentId;
         do
         {

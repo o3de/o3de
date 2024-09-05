@@ -8,6 +8,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Math/Color.h>
 #include "EMotionFXConfig.h"
 #include "AnimGraphStateTransition.h"
 #include "AnimGraphStateMachine.h"
@@ -717,11 +718,6 @@ namespace EMotionFX
             AnimGraphTriggerAction* action = m_actionSetup.GetAction(a);
             action->InvalidateUniqueData(animGraphInstance);
         }
-    }
-
-    uint32 AnimGraphStateTransition::GetVisualColor() const
-    {
-        return MCore::RGBA(150, 150, 150);
     }
 
     bool AnimGraphStateTransition::GetIsStateTransitionNode() const

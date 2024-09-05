@@ -21,25 +21,23 @@ namespace AZ::Render::LightCommon
         return (invRadiusSqaured <= 0.0f) ? 1.0f : Sqrt(1.0f / invRadiusSqaured);
     }
 
-    // Check if a view is being used by a pipeline that has a GPU culling pass.
-    // @param parentScene - Parent Scene associated with a feature processor
-    // @param view - Check if gpu culling passes are part of this view
-    // @param gpuCullingData - Cached Unordered set of Render Pipelines and views that will contain the LightCullingPass which can be used for querying purposes
-    bool HasGPUCulling(
-        RPI::Scene* parentScene,
+    // Check if a view has a pipeline that needs CPU culling (i.e. doesn't have a GPU culling pass).
+    // @param view - The view we are checking against
+    // @param cpuCulledPipelinesPerView - Map of views -> pipelines in that view that need CPU culling (i.e. no GPU culling pass)
+    bool NeedsCPUCulling(
         const RPI::ViewPtr& view,
-        AZStd::unordered_set<AZStd::pair<const RPI::RenderPipeline*, const RPI::View*>>& gpuCullingData);
+        const AZStd::unordered_map<const RPI::View*, AZStd::vector<const RPI::RenderPipeline*>>& cpuCulledPipelinesPerView);
 
-    //! Update gpuCullingData to hold information related to gpu culling passes in order to Check if render pipeline is using GPU culling
+    //! Cache pipelines that need CPU culling (i.e. no GPU culling pass) with their respective view, store in cpuCulledPipelinesPerView
     //! @param renderPipeline - Cache data associated with the passed RenderPipeline
     //! @param newView The new view triggered from view changes via OnRenderPipelinePersistentViewChanged
     //! @param previousView The previous view triggered from view changes via OnRenderPipelinePersistentViewChanged
-    //! @param gpuCullingData - Update an Unordered set of Render Pipelines and views that will contain the LightCullingPass
-    void CacheGPUCullingPipelineInfo(
+    // @param cpuCulledPipelinesPerView - Map of views -> pipelines in that view that need CPU culling (i.e. no GPU culling pass)
+    void CacheCPUCulledPipelineInfo(
         RPI::RenderPipeline* renderPipeline,
         RPI::ViewPtr newView,
         RPI::ViewPtr previousView,
-        AZStd::unordered_set<AZStd::pair<const RPI::RenderPipeline*, const RPI::View*>>& gpuCullingData);
+        AZStd::unordered_map<const RPI::View*, AZStd::vector<const RPI::RenderPipeline*>>& cpuCulledPipelinesPerView);
 
     //! Populate and cache multiple buffer handlers (one per view) that will be used to hold visibility data from cpu culling
     //! @param inputBufferName - Gpu Buffer name

@@ -39,7 +39,7 @@ ly_add_target(
         PRIVATE
             Gem::AtomToolsFramework.Static
             Gem::AtomToolsFramework.Editor
-            Gem::Atom_Asset_Shader.Static
+            Gem::AtomShader.Static
     RUNTIME_DEPENDENCIES
         Gem::AtomToolsFramework.Editor
 )

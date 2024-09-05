@@ -30,6 +30,12 @@ namespace AzToolsFramework
             //! @return true if overrides are present on the given entity id.
             virtual bool AreOverridesPresent(AZ::EntityId entityId, AZStd::string_view relativePathFromEntity = {}) = 0;
 
+            //! Checks whether overrides are present on the given component. The prefab that creates the overrides is identified
+            //! by the class implmenting this interface based on certain selections in the editor. eg: the prefab currently being edited.
+            //! @param entityComponentIdPair The entity id - component id pair of the component to check for overrides.
+            //! @return true if overrides are present on the given entityComponentIdPair.
+            virtual bool AreComponentOverridesPresent(AZ::EntityComponentIdPair entityComponentIdPair) = 0;
+
             //! Gets the override type on the given entity id. The prefab that creates the overrides is identified
             //! by the class implmenting this interface based on certain selections in the editor. eg: the prefab currently being edited.
             //! @param entityId The id of the entity for which to get the override type.
@@ -52,6 +58,11 @@ namespace AzToolsFramework
             //! @param entityComponentIdPair The entityId and componentId on which overrides should be reverted.
             //! @return Whether overrides are successfully reverted on the component.
             virtual bool RevertComponentOverrides(const AZ::EntityComponentIdPair& entityComponentIdPair) = 0;
+
+            //! Apply overrides on the given component. Returns false if no overrides are present on the component.
+            //! @param entityComponentIdPair The entityId and componentId on which overrides should be applied.
+            //! @return Whether overrides are successfully reverted on the component.
+            virtual bool ApplyComponentOverrides(const AZ::EntityComponentIdPair& entityComponentIdPair) = 0;
         };
 
         class PrefabOverridePublicRequests : public AZ::EBusTraits

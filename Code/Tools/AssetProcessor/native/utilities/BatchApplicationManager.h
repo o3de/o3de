@@ -22,7 +22,9 @@ class BatchApplicationManager
 {
     Q_OBJECT
 public:
-    explicit BatchApplicationManager(int* argc, char*** argv, QObject* parent = 0);
+    BatchApplicationManager(int* argc, char*** argv, QObject* parent = nullptr);
+    BatchApplicationManager(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings);
+    BatchApplicationManager(int* argc, char*** argv, QObject* parent, AZ::ComponentApplicationSettings componentAppSettings);
     virtual ~BatchApplicationManager();
 
     void Destroy() override;

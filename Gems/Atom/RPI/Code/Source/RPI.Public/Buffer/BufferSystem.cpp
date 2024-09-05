@@ -138,6 +138,12 @@ namespace AZ
                 bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
                 bufferPoolDesc.m_hostMemoryAccess = RHI::HostMemoryAccess::Write;
                 break;
+            case CommonBufferPoolType::Indirect:
+                bufferPoolDesc.m_bindFlags = AZ::RHI::BufferBindFlags::ShaderReadWrite | AZ::RHI::BufferBindFlags::Indirect |
+                    AZ::RHI::BufferBindFlags::CopyRead | AZ::RHI::BufferBindFlags::CopyWrite;
+                bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
+                bufferPoolDesc.m_hostMemoryAccess = RHI::HostMemoryAccess::Write;
+                break;
             default:
                 AZ_Error("BufferSystem", false, "Unknown common buffer pool type: %d", poolType);
                 return false;

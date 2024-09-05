@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RHI/RayTracingShaderTable.h>
+#include <Atom/RHI.Reflect/FrameCountMaxRingBuffer.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <Atom/RHI/Buffer.h>
@@ -43,7 +44,7 @@ namespace AZ
                 uint32_t m_hitGroupTableStride = 0;
             };
 
-            const ShaderTableBuffers& GetBuffers() const { return m_buffers[m_currentBufferIndex]; }
+            const ShaderTableBuffers& GetBuffers() const { return m_buffers.GetCurrentElement(); }
 
         private:
 
@@ -62,9 +63,7 @@ namespace AZ
             RHI::ResultCode BuildInternal() override;
             //////////////////////////////////////////////////////////////////////////
 
-            static const uint32_t BufferCount = 3;
-            ShaderTableBuffers m_buffers[BufferCount];
-            uint32_t m_currentBufferIndex = 0;
+            RHI::FrameCountMaxRingBuffer<ShaderTableBuffers> m_buffers;
         };
     }
 }

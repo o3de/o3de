@@ -36,3 +36,5 @@ namespace ScriptCanvas
         Data::MatrixMxNType MultiplyByMatrix(const Data::MatrixMxNType& lhs, const Data::MatrixMxNType& rhs);
     } // namespace MatrixMxNFunctions
 } // namespace ScriptCanvas
+
+#include <Include/ScriptCanvas/Libraries/Math/MatrixMxN.generated.h>

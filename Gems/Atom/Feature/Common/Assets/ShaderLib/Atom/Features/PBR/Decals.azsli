@@ -23,6 +23,7 @@
 #ifndef ENABLE_DECALS_CAP
 // CARBONATED - increased default number of decals
 #define ENABLE_DECALS_CAP 25 // Default cap if it was not set by the pipeline. This is only applicable if gpu culling is disabled
+// CARBONATED
 #endif
 
 
@@ -121,7 +122,7 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface)
             break;
         }
         
-        const real decalAttenuation = GetDecalAttenuation(surface.normal, decalRot[2], real(decal.m_angleAttenuation));
+        const real decalAttenuation = GetDecalAttenuation(surface.GetVertexNormal(), decalRot[2], real(decal.m_angleAttenuation));
         const real albedoOpacity = real(baseMap.a) * real(decal.m_opacity) * decalAttenuation;
 
         bool useTexture = true;

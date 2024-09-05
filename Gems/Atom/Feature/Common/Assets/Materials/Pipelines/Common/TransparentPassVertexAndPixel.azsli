@@ -35,7 +35,7 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     Surface surface = EvaluateSurface(IN, geoData);
 
-    LightingData lightingData = EvaluateLighting(surface, IN.position);
+    LightingData lightingData = EvaluateLighting(surface, IN.position, ViewSrg::m_worldPosition.xyz);
 
     // ------- Output -------
 
@@ -61,7 +61,7 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
     // like glass, so it becomes less transparent at grazing angles. For m_opacityAffectsSpecularFactor
     // values close to 1.0, that indicates the absence of a surface entirely, so this effect should
     // not apply.
-    float fresnelAlpha = FresnelSchlickWithRoughness(lightingData.NdotV, surface.alpha, surface.roughnessLinear).x;
+    float fresnelAlpha = FresnelSchlickWithRoughness(lightingData.GetSpecularNdotV(), surface.alpha, surface.roughnessLinear).x;
     float alpha = lerp(fresnelAlpha, surface.alpha, surface.opacityAffectsSpecularFactor);
 
     if (o_opacity_mode == OpacityMode::Blended)

@@ -118,7 +118,8 @@ namespace O3DE::ProjectManager
         AZ::Outcome<void, AZStd::string> GemRegistration(const QString& gemPath, const QString& projectPath, bool remove = false);
         bool StopPython();
         IPythonBindings::ErrorPair GetErrorPair();
-
+        bool ExtendSysPath(const AZStd::vector<AZ::IO::Path>& extendPaths);
+    
         bool m_pythonStarted = false;
 
         AZ::IO::FixedMaxPath m_enginePath;

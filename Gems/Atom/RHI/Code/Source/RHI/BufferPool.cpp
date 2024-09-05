@@ -10,24 +10,6 @@
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 namespace AZ::RHI
 {
-    BufferInitRequest::BufferInitRequest(
-        Buffer& buffer,
-        const BufferDescriptor& descriptor,
-        const void* initialData)
-        : m_buffer{&buffer}
-        , m_descriptor{descriptor}
-        , m_initialData{initialData}
-    {}
-
-    BufferMapRequest::BufferMapRequest(
-        Buffer& buffer,
-        size_t byteOffset,
-        size_t byteCount)
-        : m_buffer{&buffer}
-        , m_byteOffset{byteOffset}
-        , m_byteCount{byteCount}
-    {}
-
     bool BufferPool::ValidatePoolDescriptor(const BufferPoolDescriptor& descriptor) const
     {
         if (Validation::IsEnabled())

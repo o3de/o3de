@@ -6,8 +6,8 @@
  *
  */
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include "MiniAudioEditorSystemComponent.h"
+#include <AzCore/Serialization/SerializeContext.h>
 
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzFramework/Asset/GenericAssetHandler.h>
@@ -29,10 +29,8 @@ namespace MiniAudio
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<MiniAudioEditorSystemComponent, AZ::Component>()
-                ->Version(1)
-                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("AssetBuilder") }))
-                ;
+            serializeContext->Class<MiniAudioEditorSystemComponent, AZ::Component>()->Version(1)->Attribute(
+                AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("AssetBuilder") }));
         }
     }
 
@@ -66,7 +64,8 @@ namespace MiniAudio
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
 
         // Register MiniSound Asset
-        auto* materialAsset = aznew AzFramework::GenericAssetHandler<SoundAsset>("MiniSound Asset", SoundAsset::AssetGroup, SoundAsset::FileExtension);
+        auto* materialAsset =
+            aznew AzFramework::GenericAssetHandler<SoundAsset>("MiniSound Asset", SoundAsset::AssetGroup, SoundAsset::FileExtension);
         materialAsset->Register();
         m_assetHandlers.emplace_back(materialAsset);
 
@@ -74,29 +73,28 @@ namespace MiniAudio
         AssetBuilderSDK::AssetBuilderDesc materialAssetBuilderDescriptor;
         materialAssetBuilderDescriptor.m_name = "MiniSound Asset Builder";
         materialAssetBuilderDescriptor.m_version = 3; // bump this to rebuild all sound files
-        materialAssetBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.ogg",
-            AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
-        materialAssetBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.flac",
-            AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
-        materialAssetBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.mp3",
-            AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
-        materialAssetBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.wav",
-            AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
+        materialAssetBuilderDescriptor.m_patterns.push_back(
+            AssetBuilderSDK::AssetBuilderPattern("*.ogg", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
+        materialAssetBuilderDescriptor.m_patterns.push_back(
+            AssetBuilderSDK::AssetBuilderPattern("*.flac", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
+        materialAssetBuilderDescriptor.m_patterns.push_back(
+            AssetBuilderSDK::AssetBuilderPattern("*.mp3", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
+        materialAssetBuilderDescriptor.m_patterns.push_back(
+            AssetBuilderSDK::AssetBuilderPattern("*.wav", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
         materialAssetBuilderDescriptor.m_busId = azrtti_typeid<SoundAssetBuilder>();
-        materialAssetBuilderDescriptor.m_createJobFunction = [this](const AssetBuilderSDK::CreateJobsRequest& request,
-            AssetBuilderSDK::CreateJobsResponse& response)
+        materialAssetBuilderDescriptor.m_createJobFunction =
+            [this](const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
         {
             m_soundAssetBuilder.CreateJobs(request, response);
         };
-        materialAssetBuilderDescriptor.m_processJobFunction = [this](const AssetBuilderSDK::ProcessJobRequest& request,
-            AssetBuilderSDK::ProcessJobResponse& response)
+        materialAssetBuilderDescriptor.m_processJobFunction =
+            [this](const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response)
         {
             m_soundAssetBuilder.ProcessJob(request, response);
         };
         m_soundAssetBuilder.BusConnect(materialAssetBuilderDescriptor.m_busId);
-        AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBus::Handler::RegisterBuilderInformation,
-            materialAssetBuilderDescriptor);
-
+        AssetBuilderSDK::AssetBuilderBus::Broadcast(
+            &AssetBuilderSDK::AssetBuilderBus::Handler::RegisterBuilderInformation, materialAssetBuilderDescriptor);
     }
 
     void MiniAudioEditorSystemComponent::Deactivate()

@@ -45,13 +45,35 @@ namespace MiniAudio
         // MiniAudioPlaybackRequestBus
         void Play() override;
         void Stop() override;
-        void SetVolume(float volume) override;
+        void Pause() override;
+        void SetVolumePercentage(float volume) override;
+        float GetVolumePercentage() const override;
+        void SetVolumeDecibels(float volumeDecibels) override;
+        float GetVolumeDecibels() const override;
         void SetLooping(bool loop) override;
         bool IsLooping() const override;
         AZ::Data::Asset<SoundAsset> GetSoundAsset() const override;
         void SetSoundAsset(AZ::Data::Asset<SoundAsset> soundAsset) override;
         SoundAssetRef GetSoundAssetRef() const override;
         void SetSoundAssetRef(const SoundAssetRef& soundAssetRef) override;
+        float GetInnerAngleInRadians() const override;
+        void SetInnerAngleInRadians(float innerAngleInRadians) override;
+        float GetInnerAngleInDegrees() const override;
+        void SetInnerAngleInDegrees(float innerAngleInDegrees) override;
+        float GetOuterAngleInRadians() const override;
+        void SetOuterAngleInRadians(float outerAngleInRadians) override;
+        float GetOuterAngleInDegrees() const override;
+        void SetOuterAngleInDegrees(float outerAngleInDegrees) override;
+        float GetOuterVolumePercentage() const override;
+        void SetOuterVolumePercentage(float outerVolume) override;
+        float GetOuterVolumeDecibels() const override;
+        void SetOuterVolumeDecibels(float outerVolumeDecibels) override;
+        bool GetFixedDirecion() const override;
+        void SetFixedDirecion(bool fixedDirection) override;
+        float GetDirectionalAttenuationFactor() const override;
+        void SetDirectionalAttenuationFactor(float directionalAttenuationFactor) override;
+        AZ::Vector3 GetDirection() const override;
+        void SetDirection(const AZ::Vector3& direction) override;
 
         // MultiHandler
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;

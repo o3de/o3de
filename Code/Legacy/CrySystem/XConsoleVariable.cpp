@@ -17,6 +17,8 @@
 
 #include <algorithm>
 
+#include <AzCore/Serialization/Locale.h>
+
 namespace
 {
     using stack_string = AZStd::fixed_string<512>;
@@ -417,6 +419,10 @@ void CXConsoleVariableFloat::Set(const char* s)
     float fValue = 0;
     if (s)
     {
+        // console commands are interpreted in the invarant locale as they come from cfg files which need to be
+        // portable. 
+        AZ::Locale::ScopedSerializationLocale scopedLocale; 
+
         fValue = (float)atof(s);
     }
 
@@ -488,6 +494,8 @@ void CXConsoleVariableFloatRef::Set(const char *s)
     float fValue = 0;
     if (s)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; 
+
         fValue = (float)atof(s);
     }
     if (fValue == m_fValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)

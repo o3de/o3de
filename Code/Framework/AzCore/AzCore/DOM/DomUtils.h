@@ -177,7 +177,6 @@ namespace AZ::Dom::Utils
 
         // Lifetime variables provides storage for Dom::Value variable
         // long enough to complete the call to the ValueFromType overload which accepts a void pointer
-        Dom::Value domValueLifetime;
         if constexpr (AZStd::is_reference_wrapper<ValueType>())
         {
             WrapperType wrapper = value;
@@ -227,7 +226,6 @@ namespace AZ::Dom::Utils
                     return true;
                 }
             }
-
             // For pointer types, the pointer marshaling logic is used
             // to extract a pointer address from the Object with the Dom::Value
             if constexpr (AZStd::is_pointer_v<WrapperType>)

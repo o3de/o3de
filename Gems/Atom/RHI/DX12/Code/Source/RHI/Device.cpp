@@ -208,7 +208,6 @@ namespace AZ
 
         void Device::InitFeatures()
         {
-            m_features.m_tessellationShader = true;
             m_features.m_geometryShader = true;
             m_features.m_computeShader = true;
             m_features.m_independentBlend = true;
@@ -256,6 +255,8 @@ namespace AZ
             m_features.m_rayTracing = false;
 #endif
 
+            m_features.m_float16 = (options.MinPrecisionSupport & D3D12_SHADER_MIN_PRECISION_SUPPORT_16_BIT) != 0;
+
             m_features.m_unboundedArrays = true;
 
 #ifdef O3DE_DX12_VRS_SUPPORT
@@ -298,6 +299,8 @@ namespace AZ
                     RHI::ShadingRateFlags::Rate4x2 |
                     RHI::ShadingRateFlags::Rate4x4;
             }
+
+            m_features.m_signalFenceFromCPU = true;
 
             m_limits.m_shadingRateTileSize = RHI::Size(options6.ShadingRateImageTileSize, options6.ShadingRateImageTileSize, 1);
 #endif

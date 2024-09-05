@@ -19,7 +19,7 @@ from azpy.constants import ENVAR_DCCSI_DEV_MODE
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
 _PACKAGENAME = __name__
-if _PACKAGENAME is '__main__':
+if _PACKAGENAME == '__main__':
     _PACKAGENAME = 'DCCsi.SDK.Substance.builder'
 
 import azpy

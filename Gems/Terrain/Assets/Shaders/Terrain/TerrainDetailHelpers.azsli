@@ -357,7 +357,8 @@ bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdCoord,
     macroColor = sqrt(macroColor); // Put macro color into an approximate perceptual space.
 
     // The detail material id texture wraps since the "center" point can be anywhere in the texture, so mod by intTextureSize
-    int2 detailMaterialIdTopLeft = int2(floor(detailMaterialIdCoord)) % intTextureSize;
+    // We can't use the '%' operator for 'detailMaterialIdCoord' because it's only defined when both sides are negative, or both sides are positive.
+    int2 detailMaterialIdTopLeft = int2(fmod(floor(detailMaterialIdCoord), textureSize));
     detailMaterialIdTopLeft = (detailMaterialIdTopLeft + intTextureSize) % intTextureSize; // Make a negative result from modulus positive.
     int2 detailMaterialIdBottomRight = (detailMaterialIdTopLeft + 1) % intTextureSize;
 

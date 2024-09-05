@@ -65,12 +65,10 @@ namespace AZ
                     D3D12BytecodeFromView(ShaderUtils::PatchShaderFunction(*vertexFunction, 0, descriptor, shaderByteCodeCache));
             }
 
-            if (const ShaderStageFunction* tessellationFunction = azrtti_cast<const ShaderStageFunction*>(descriptor.m_tessellationFunction.get()))
+            if (const ShaderStageFunction* geometryFunction = azrtti_cast<const ShaderStageFunction*>(descriptor.m_geometryFunction.get()))
             {
-                pipelineStateDesc.HS = D3D12BytecodeFromView(ShaderUtils::PatchShaderFunction(
-                    *tessellationFunction, ShaderSubStage::TessellationHull, descriptor, shaderByteCodeCache));
-                pipelineStateDesc.DS = D3D12BytecodeFromView(ShaderUtils::PatchShaderFunction(
-                    *tessellationFunction, ShaderSubStage::TessellationDomain, descriptor, shaderByteCodeCache));
+                pipelineStateDesc.GS =
+                    D3D12BytecodeFromView(ShaderUtils::PatchShaderFunction(*geometryFunction, 0, descriptor, shaderByteCodeCache));
             }
 
             if (const ShaderStageFunction* fragmentFunction = azrtti_cast<const ShaderStageFunction*>(descriptor.m_fragmentFunction.get()))

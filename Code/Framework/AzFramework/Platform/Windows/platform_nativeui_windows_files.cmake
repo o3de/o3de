@@ -12,6 +12,7 @@ set(FILES
     AzFramework/Application/Application_Windows.h
     AzFramework/Windowing/NativeWindow_Windows.cpp
     AzFramework/Windowing/NativeWindow_Windows.h
+    AzFramework/Windowing/Resources.h
     AzFramework/Input/Devices/Gamepad/InputDeviceGamepad_Windows.cpp
     AzFramework/Input/Devices/Gamepad/InputDeviceGamepad_Windows.h
     AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard_Windows.cpp

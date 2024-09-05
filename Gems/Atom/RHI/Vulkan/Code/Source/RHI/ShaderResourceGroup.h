@@ -48,7 +48,6 @@ namespace AZ
             /// The current index into the compiled data array.
             uint32_t m_compiledDataIndex = 0;
             uint64_t m_lastCompileFrameIteration = 0;
-            RHI::Ptr<DescriptorSetLayout> m_descriptorSetLayout;
             AZStd::vector<RHI::Ptr<DescriptorSet>> m_compiledData;
         };
     }

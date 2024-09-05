@@ -22,6 +22,5 @@ namespace MCore
         AZ_RTTI_NO_TYPE_INFO_DECL();
     };
 
-
     AZ_RTTI_NO_TYPE_INFO_IMPL_INLINE(AttributeAllocator);
 }

@@ -94,7 +94,7 @@ namespace LmbrCentral
         CompoundShapeComponentHierarchyRequestsBus::Handler::BusDisconnect();
     }
 
-    bool EditorCompoundShapeComponent::HasChildId(const AZ::EntityId& entityId)
+    bool EditorCompoundShapeComponent::HasChildId(const AZ::EntityId& entityId) const
     {
         for (const AZ::EntityId& childEntityId : m_configuration.GetChildEntities())
         {

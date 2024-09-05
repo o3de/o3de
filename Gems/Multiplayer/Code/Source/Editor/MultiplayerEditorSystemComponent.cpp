@@ -26,7 +26,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/Utils/Utils.h>
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Process/ProcessUtils.h>
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
@@ -74,7 +73,7 @@ namespace Multiplayer
 
     AZ_CVAR_EXTERNED(uint16_t, editorsv_port);
     AZ_CVAR_EXTERNED(bool, bg_enableNetworkingMetrics);
-    
+
     //////////////////////////////////////////////////////////////////////////
     void PyEnterGameMode()
     {
@@ -117,7 +116,7 @@ namespace Multiplayer
 
         }
     }
-    
+
     void MultiplayerEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         Automation::MultiplayerEditorAutomationHandler::Reflect(context);
@@ -168,14 +167,12 @@ namespace Multiplayer
         MultiplayerEditorServerRequestBus::Handler::BusConnect();
         AZ::Interface<IMultiplayer>::Get()->AddServerAcceptanceReceivedHandler(m_serverAcceptanceReceivedHandler);
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
-        AzToolsFramework::EditorContextMenuBus::Handler::BusConnect();
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
     }
 
     void MultiplayerEditorSystemComponent::Deactivate()
     {
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
-        AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         MultiplayerEditorServerRequestBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
@@ -219,7 +216,7 @@ namespace Multiplayer
             AZ::TickBus::Handler::BusDisconnect();
             m_connectionEvent.RemoveFromQueue();
             ResetLevelSendData();
-            
+
             if (m_serverProcessWatcher)
             {
                 m_serverProcessWatcher->TerminateProcess(0);
@@ -250,7 +247,7 @@ namespace Multiplayer
             // Delete the spawnables we've stored for the server
             m_preAliasedSpawnablesForServer.clear();
 
-            // Turn off debug messaging: we've exiting playmode and intentionally disconnected from the server. 
+            // Turn off debug messaging: we've exiting playmode and intentionally disconnected from the server.
             MultiplayerEditorServerNotificationBus::Broadcast(&MultiplayerEditorServerNotificationBus::Events::OnPlayModeEnd);
             break;
         }
@@ -387,12 +384,10 @@ namespace Multiplayer
         const auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
         if (!prefabEditorEntityOwnershipInterface)
         {
-            bool prefabSystemEnabled = false;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-            AZ_Error("MultiplayerEditor", !prefabSystemEnabled, "PrefabEditorEntityOwnershipInterface unavailable but prefabs are enabled");
+            AZ_Error("MultiplayerEditor", false, "PrefabEditorEntityOwnershipInterface could not find PrefabEditorEntityOwnershipInterface!");
             return;
         }
-        
+
         AZ_TracePrintf("MultiplayerEditor", "Editor is sending the editor-server the level data packet.")
 
         m_levelSendData.m_sendConnection = connection;
@@ -414,7 +409,7 @@ namespace Multiplayer
                 preAliasedSpawnableData.spawnable.get(),
                 preAliasedSpawnableData.spawnable->GetType());
         }
-        
+
         // Spawnable library needs to be rebuilt since now we have newly registered in-memory spawnable assets
         AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
 
@@ -536,7 +531,7 @@ namespace Multiplayer
     {
         PyEnterGameMode();
     }
-    
+
     bool MultiplayerEditorSystemComponent::IsInGameMode()
     {
         return PyIsInGameMode();
@@ -599,7 +594,7 @@ namespace Multiplayer
         {
             return;
         }
-        
+
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(serializeContext, "Failed to retrieve application serialization context.")
@@ -691,62 +686,6 @@ namespace Multiplayer
         m_connectionEvent.Enqueue(AZ::SecondsToTimeMs(retrySeconds), autoRequeue);
     }
 
-    void MultiplayerEditorSystemComponent::PopulateEditorGlobalContextMenu(QMenu* menu, const AZStd::optional<AzFramework::ScreenPoint>& point, [[ maybe_unused ]] int flags)
-    {
-        AzToolsFramework::EntityIdList selected;
-        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(selected, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-
-        // Merge in highlighted entities..
-        // This stuff should probably be exposed from the SandboxIntegration class
-        {
-            AzToolsFramework::EntityIdList highlightedEntities;
-            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(highlightedEntities, &AzToolsFramework::ToolsApplicationRequests::GetHighlightedEntities);
-            for (AZ::EntityId highlightedId : highlightedEntities)
-            {
-                if (selected.end() == AZStd::find(selected.begin(), selected.end(), highlightedId))
-                {
-                    selected.push_back(highlightedId);
-                }
-            }
-        }
-
-        AZ::EntityId parentEntityId = AZ::EntityId();
-        AZ::Vector3 worldPosition = AZ::Vector3::CreateZero();
-        if (selected.size() == 1)
-        {
-            parentEntityId = selected.front();
-        }
-
-        auto readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
-        auto containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
-        if ((readOnlyEntityPublicInterface && !readOnlyEntityPublicInterface->IsReadOnly(parentEntityId)) &&
-            (containerEntityInterface && containerEntityInterface->IsContainerOpen(parentEntityId)))
-        {
-            menu->setToolTipsVisible(true);
-
-            if (CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport();
-                view && point.has_value())
-            {
-                worldPosition = AzToolsFramework::FindClosestPickIntersection(
-                    view->GetViewportId(), point.value(), AzToolsFramework::EditorPickRayLength,
-                    AzToolsFramework::GetDefaultEntityPlacementDistance());
-            }
-
-            QAction* action = nullptr;
-
-            action = menu->addAction(QObject::tr("Create multiplayer entity"));
-            action->setShortcut(QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_M));
-            QObject::connect(action, &QAction::triggered, action, [this, parentEntityId, worldPosition]
-            {
-                ContextMenu_NewMultiplayerEntity(parentEntityId, worldPosition);
-            });
-        }
-    }
-
-    int MultiplayerEditorSystemComponent::GetMenuPosition() const
-    {
-        return aznumeric_cast<int>(AzToolsFramework::EditorContextMenuOrdering::TOP);
-    }
 
     void MultiplayerEditorSystemComponent::OnActionRegistrationHook()
     {
@@ -787,13 +726,8 @@ namespace Multiplayer
                         AZ::EntityId selectedEntityId = selectedEntities.front();
                         bool selectedEntityIsReadOnly = readOnlyEntityPublicInterface->IsReadOnly(selectedEntityId);
                         auto containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
-                        bool prefabSystemEnabled = false;
-                        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                            prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
-                        if (!prefabSystemEnabled ||
-                            (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) &&
-                             !selectedEntityIsReadOnly))
+                        if (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) && !selectedEntityIsReadOnly)
                         {
                             ContextMenu_NewMultiplayerEntity(selectedEntityId, AZ::Vector3::CreateZero());
                         }
@@ -818,14 +752,8 @@ namespace Multiplayer
                         AZ::EntityId selectedEntityId = selectedEntities.front();
                         bool selectedEntityIsReadOnly = readOnlyEntityPublicInterface->IsReadOnly(selectedEntityId);
                         auto containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
-                        bool prefabSystemEnabled = false;
-                        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                            prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
-                        return (
-                            !prefabSystemEnabled ||
-                            (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) &&
-                             !selectedEntityIsReadOnly));
+                        return (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) && !selectedEntityIsReadOnly);
                     }
 
                     return false;

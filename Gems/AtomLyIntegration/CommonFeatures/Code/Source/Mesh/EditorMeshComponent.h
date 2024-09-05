@@ -74,6 +74,7 @@ namespace AZ
 
             // Stats for current mesh asset
             EditorMeshStats m_stats;
+
         };
     } // namespace Render
 } // namespace AZ

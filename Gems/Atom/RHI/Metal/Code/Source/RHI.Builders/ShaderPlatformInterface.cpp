@@ -243,7 +243,7 @@ namespace AZ
             ByProducts& byProducts) const
         {
             // Shader compiler executable
-            static const char* dxcRelativePath = "Builders/DirectXShaderCompiler/bin/dxc";
+            const auto dxcRelativePath = RHI::GetDirectXShaderCompilerPath("Builders/DirectXShaderCompiler/bin/dxc");
 
             // Output file
             AZStd::string shaderMSLOutputFile = RHI::BuildFileNameWithExtension(shaderSourceFile, tempFolder, "metal");

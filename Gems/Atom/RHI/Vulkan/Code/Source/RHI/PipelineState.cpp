@@ -99,5 +99,13 @@ namespace AZ
                 m_pipeline = nullptr;
             }
         }
+
+        void PipelineState::SetNameInternal(const AZStd::string_view& name)
+        {
+            if (m_pipeline)
+            {
+                m_pipeline->SetName(AZ::Name(name));
+            }
+        }
     }
 }

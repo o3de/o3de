@@ -55,6 +55,7 @@ namespace O3DE::ProjectManager
         QString m_iconPath;
         QString m_requirements;
         QString m_license;
+        QString m_restricted;
         QStringList m_userTags;
 
         QStringList m_requiredGemDependencies;
@@ -63,7 +64,8 @@ namespace O3DE::ProjectManager
         // Used as temp variable for replace images
         QString m_newPreviewImagePath;
         QString m_newBackgroundImagePath;
-
+        QString m_currentExportScript;
+        QString m_expectedOutputDir;
         bool m_remote = false;
 
         //! Used in project creation

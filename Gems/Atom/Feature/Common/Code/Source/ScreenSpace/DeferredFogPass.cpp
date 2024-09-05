@@ -223,13 +223,13 @@ namespace AZ
             switch (fogSettings->GetFogMode())
             {
             case FogMode::Linear:
-                shaderOptions.SetValue(m_fogModeOptionName, AZ::Name("FogMode::LinearMode"));
+                shaderOption.SetValue(m_fogModeOptionName, AZ::Name("FogMode::LinearMode"));
                 break;
             case FogMode::Exponential:
-                shaderOptions.SetValue(m_fogModeOptionName, AZ::Name("FogMode::ExponentialMode"));
+                shaderOption.SetValue(m_fogModeOptionName, AZ::Name("FogMode::ExponentialMode"));
                 break;
             case FogMode::ExponentialSquared:
-                shaderOptions.SetValue(m_fogModeOptionName, AZ::Name("FogMode::ExponentialSquaredMode"));
+                shaderOption.SetValue(m_fogModeOptionName, AZ::Name("FogMode::ExponentialSquaredMode"));
                 break;
             default:
                 AZ_Error("DeferredFogPass", false, "Invalid fog mode %d", fogSettings->GetFogMode());

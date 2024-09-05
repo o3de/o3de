@@ -24,9 +24,9 @@
 #include "Util/Image.h"
 #include "ObjectManagerLegacyUndo.h"
 #include "Include/HitContext.h"
-#include "Plugins/ComponentEntityEditorPlugin/Objects/ComponentEntityObject.h"
 
 #include <AzCore/Console/Console.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 
@@ -78,9 +78,7 @@ CObjectManager* g_pObjectManager = nullptr;
 
 //////////////////////////////////////////////////////////////////////////
 CObjectManager::CObjectManager()
-    : m_currSelection(&m_defaultSelection)
-    , m_bSelectionChanged(false)
-    , m_bExiting(false)
+    : m_bExiting(false)
     , m_isUpdateVisibilityList(false)
     , m_currentHideCount(CBaseObject::s_invalidHiddenID)
 {
@@ -331,78 +329,9 @@ void    CObjectManager::DeleteObject(CBaseObject* obj)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CObjectManager::DeleteSelection(CSelectionGroup* pSelection)
-{
-    AZ_PROFILE_FUNCTION(Editor);
-    if (pSelection == nullptr)
-    {
-        return;
-    }
-
-    // if the object contains an entity which has link, the link information should be recorded for undo separately. p
-
-    if (CUndo::IsRecording())
-    {
-        for (int i = 0, iSize(pSelection->GetCount()); i < iSize; ++i)
-        {
-            CBaseObject* pObj = pSelection->GetObject(i);
-            if (!qobject_cast<CEntityObject*>(pObj))
-            {
-                continue;
-            }
-
-            CEntityObject* pEntity = (CEntityObject*)pObj;
-            if (pEntity->GetEntityLinkCount() <= 0)
-            {
-                continue;
-            }
-
-            CEntityObject::StoreUndoEntityLink(pSelection);
-            break;
-        }
-    }
-
-    AzToolsFramework::EntityIdList selectedComponentEntities;
-    for (int i = 0, iObjSize(pSelection->GetCount()); i < iObjSize; i++)
-    {
-        CBaseObject* object = pSelection->GetObject(i);
-
-        // AZ::Entity deletion is handled through AZ undo system (DeleteSelected bus call below).
-        if (object->GetType() != OBJTYPE_AZENTITY)
-        {
-            DeleteObject(object);
-        }
-        else
-        {
-            AZ::EntityId id;
-            AzToolsFramework::ComponentEntityObjectRequestBus::EventResult(
-                id, object, &AzToolsFramework::ComponentEntityObjectRequestBus::Events::GetAssociatedEntityId);
-            if (id.IsValid())
-            {
-                selectedComponentEntities.push_back(id);
-            }
-        }
-    }
-
-    // Delete AZ (component) entities.
-    if (QApplication::keyboardModifiers() & Qt::ShiftModifier)
-    {
-        AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
-            &AzToolsFramework::ToolsApplicationRequests::Bus::Events::DeleteEntities, selectedComponentEntities);
-    }
-    else
-    {
-        AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
-            &AzToolsFramework::ToolsApplicationRequests::Bus::Events::DeleteEntitiesAndAllDescendants, selectedComponentEntities);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CObjectManager::DeleteAllObjects()
 {
     AZ_PROFILE_FUNCTION(Editor);
-
-    ClearSelection();
 
     InvalidateVisibleList();
 
@@ -555,9 +484,6 @@ void CObjectManager::RemoveObject(CBaseObject* obj)
         }
     }
 
-    // Remove this object from selection groups.
-    m_currSelection->RemoveObject(obj);
-
     m_objectsByName.erase(AZ::Crc32(obj->GetName().toUtf8().data(), obj->GetName().toUtf8().count(), true));
 
     // Need to erase this last since it is a smart pointer and can end up deleting the object if it is the last reference to it being kept
@@ -636,150 +562,6 @@ void CObjectManager::SendEvent(ObjectEvent event, const AABB& bounds)
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CObjectManager::SelectObject(CBaseObject* obj, bool bUseMask)
-{
-    assert(obj);
-    if (obj == nullptr)
-    {
-        return false;
-    }
-
-    // Check if can be selected.
-    if (bUseMask && (!(obj->GetType() & gSettings.objectSelectMask)))
-    {
-        return false;
-    }
-
-    m_currSelection->AddObject(obj);
-
-    // while in ComponentMode we never explicitly change selection (the entity will always be selected).
-    // this check is to handle the case where an undo or redo action has occurred and
-    // the entity has been destroyed and recreated as part of the deserialization step.
-    // we want the internal state to stay consistent but do not want to notify other systems of the change.
-    if (AzToolsFramework::ComponentModeFramework::InComponentMode())
-    {
-        obj->SetSelected(true);
-    }
-    else
-    {
-        SetObjectSelected(obj, true);
-        GetIEditor()->Notify(eNotify_OnSelectionChange);
-    }
-
-    return true;
-}
-
-void CObjectManager::UnselectObject(CBaseObject* obj)
-{
-    // while in ComponentMode we never explicitly change selection (the entity will always be selected).
-    // this check is to handle the case where an undo or redo action has occurred and
-    // the entity has been destroyed and recreated as part of the deserialization step.
-    // we want the internal state to stay consistent but do not want to notify other systems of the change.
-    if (AzToolsFramework::ComponentModeFramework::InComponentMode())
-    {
-        obj->SetSelected(false);
-    }
-    else
-    {
-        SetObjectSelected(obj, false);
-    }
-
-    m_currSelection->RemoveObject(obj);
-}
-
-//////////////////////////////////////////////////////////////////////////
-int CObjectManager::ClearSelection()
-{
-    AZ_PROFILE_FUNCTION(Editor);
-
-    // Make sure to unlock selection.
-    GetIEditor()->LockSelection(false);
-
-    int numSel = m_currSelection->GetCount();
-
-    // Handle Undo/Redo of Component Entities
-    bool isUndoRecording = GetIEditor()->IsUndoRecording();
-    if (isUndoRecording)
-    {
-        m_processingBulkSelect = true;
-        GetIEditor()->RecordUndo(new CUndoBaseObjectClearSelection(*m_currSelection));
-    }
-
-    // Handle legacy entities separately so the selection group can be cleared safely.
-    // This prevents every AzEntity from being removed one by one from a vector.
-    m_currSelection->RemoveAllExceptLegacySet();
-
-    // Kick off Deselect for Legacy Entities
-    for (CBaseObjectPtr legacyObject : m_currSelection->GetLegacyObjects())
-    {
-        if (isUndoRecording && legacyObject->IsSelected())
-        {
-            GetIEditor()->RecordUndo(new CUndoBaseObjectSelect(legacyObject));
-        }
-
-        SetObjectSelected(legacyObject, false);
-    }
-
-    // Legacy set is cleared
-    m_defaultSelection.RemoveAll();
-    m_currSelection = &m_defaultSelection;
-    m_bSelectionChanged = true;
-
-    // Unselect all component entities as one bulk operation instead of individually
-    AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-        &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities,
-        AzToolsFramework::EntityIdList());
-
-    m_processingBulkSelect = false;
-
-    if (!m_bExiting)
-    {
-        GetIEditor()->Notify(eNotify_OnSelectionChange);
-    }
-
-    return numSel;
-}
-
-void CObjectManager::SelectCurrent()
-{
-    AZ_PROFILE_FUNCTION(Editor);
-    for (int i = 0; i < m_currSelection->GetCount(); i++)
-    {
-        CBaseObject* obj = m_currSelection->GetObject(i);
-        if (GetIEditor()->IsUndoRecording() && !obj->IsSelected())
-        {
-            GetIEditor()->RecordUndo(new CUndoBaseObjectSelect(obj));
-        }
-
-        SetObjectSelected(obj, true);
-    }
-}
-
-void CObjectManager::UnselectCurrent()
-{
-    AZ_PROFILE_FUNCTION(Editor);
-
-    // Make sure to unlock selection.
-    GetIEditor()->LockSelection(false);
-
-    // Unselect all component entities as one bulk operation instead of individually
-    AzToolsFramework::EntityIdList selectedEntities;
-    AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
-        &AzToolsFramework::ToolsApplicationRequests::Bus::Events::SetSelectedEntities, selectedEntities);
-
-    for (int i = 0; i < m_currSelection->GetCount(); i++)
-    {
-        CBaseObject* obj = m_currSelection->GetObject(i);
-        if (GetIEditor()->IsUndoRecording() && obj->IsSelected())
-        {
-            GetIEditor()->RecordUndo(new CUndoBaseObjectSelect(obj));
-        }
-
-        SetObjectSelected(obj, false);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
 bool CObjectManager::IsObjectDeletionAllowed(CBaseObject* pObject)
@@ -791,32 +573,6 @@ bool CObjectManager::IsObjectDeletionAllowed(CBaseObject* pObject)
 
     return true;
 };
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::DeleteSelection()
-{
-    AZ_PROFILE_FUNCTION(Editor);
-
-    // Make sure to unlock selection.
-    GetIEditor()->LockSelection(false);
-
-    CSelectionGroup objects;
-    for (int i = 0; i < m_currSelection->GetCount(); i++)
-    {
-        // Check condition(s) if object could be deleted
-        if (!IsObjectDeletionAllowed(m_currSelection->GetObject(i)))
-        {
-            return;
-        }
-
-        objects.AddObject(m_currSelection->GetObject(i));
-    }
-
-    m_currSelection = &m_defaultSelection;
-    m_defaultSelection.RemoveAll();
-
-    DeleteSelection(&objects);
-}
 
 //////////////////////////////////////////////////////////////////////////
 uint16 FindPossibleObjectNameNumber(std::set<uint16>& numberSet)
@@ -971,16 +727,6 @@ void CObjectManager::LoadClassTemplates(const QString& path)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CObjectManager::RegisterCVars()
-{
-    REGISTER_CVAR2("AxisHelperHitRadius",
-        &m_axisHelperHitRadius,
-        20,
-        VF_DEV_ONLY,
-        "Adjust the hit radius used for axis helpers, like the transform gizmo.");
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CObjectManager::InvalidateVisibleList()
 {
     if (m_isUpdateVisibilityList)
@@ -1022,26 +768,6 @@ void CObjectManager::UpdateVisibilityList()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CObjectManager::SetObjectSelected(CBaseObject* pObject, bool bSelect)
-{
-    AZ_PROFILE_FUNCTION(Editor);
-    // Only select/unselect once.
-    if ((pObject->IsSelected() && bSelect) || (!pObject->IsSelected() && !bSelect))
-    {
-        return;
-    }
-
-    // Store selection undo.
-    if (CUndo::IsRecording() && !m_processingBulkSelect)
-    {
-        CUndo::Record(new CUndoBaseObjectSelect(pObject));
-    }
-
-    pObject->SetSelected(bSelect);
-    m_bSelectionChanged = true;
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CObjectManager::GatherUsedResources(CUsedResources& resources)
 {
     CBaseObjectsArray objects;
@@ -1054,313 +780,3 @@ void CObjectManager::GatherUsedResources(CUsedResources& resources)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
-bool CObjectManager::IsLightClass(CBaseObject* pObject)
-{
-    if (qobject_cast<CEntityObject*>(pObject))
-    {
-        CEntityObject* pEntity = (CEntityObject*)pObject;
-        if (pEntity)
-        {
-            if (pEntity->GetEntityClass().compare(CLASS_LIGHT) == 0)
-            {
-                return true;
-            }
-            if (pEntity->GetEntityClass().compare(CLASS_RIGIDBODY_LIGHT) == 0)
-            {
-                return true;
-            }
-            if (pEntity->GetEntityClass().compare(CLASS_DESTROYABLE_LIGHT) == 0)
-            {
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-namespace
-{
-    AZStd::vector<AZStd::string> PyGetAllObjects()
-    {
-        IObjectManager* pObjMgr = GetIEditor()->GetObjectManager();
-        CBaseObjectsArray objects;
-        pObjMgr->GetObjects(objects);
-        int count = pObjMgr->GetObjectCount();
-        AZStd::vector<AZStd::string> result;
-        for (int i = 0; i < count; ++i)
-        {
-            result.push_back(objects[i]->GetName().toUtf8().data());
-        }
-
-        return result;
-    }
-
-    AZStd::vector<AZStd::string> PyGetNamesOfSelectedObjects()
-    {
-        CSelectionGroup* pSel = GetIEditor()->GetSelection();
-        AZStd::vector<AZStd::string> result;
-        const int selectionCount = pSel->GetCount();
-        result.reserve(selectionCount);
-
-        for (int i = 0; i < selectionCount; i++)
-        {
-            result.push_back(pSel->GetObject(i)->GetName().toUtf8().data());
-        }
-
-        return result;
-    }
-
-    void PySelectObject(const char* objName)
-    {
-        CUndo undo("Select Object");
-
-        CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(objName);
-        if (pObject)
-        {
-            GetIEditor()->GetObjectManager()->SelectObject(pObject);
-        }
-    }
-
-    void PyUnselectObjects(const AZStd::vector<AZStd::string>& names)
-    {
-        CUndo undo("Unselect Objects");
-
-        std::vector<CBaseObject*> pBaseObjects;
-        for (int i = 0; i < names.size(); i++)
-        {
-            if (!GetIEditor()->GetObjectManager()->FindObject(names[i].c_str()))
-            {
-                throw std::logic_error((QString("\"") + names[i].c_str() + "\" is an invalid entity.").toUtf8().data());
-            }
-            pBaseObjects.push_back(GetIEditor()->GetObjectManager()->FindObject(names[i].c_str()));
-        }
-
-        for (int i = 0; i < pBaseObjects.size(); i++)
-        {
-            GetIEditor()->GetObjectManager()->UnselectObject(pBaseObjects[i]);
-        }
-    }
-
-    void PySelectObjects(const AZStd::vector<AZStd::string>& names)
-    {
-        CUndo undo("Select Objects");
-        CBaseObject* pObject;
-        for (size_t i = 0; i < names.size(); ++i)
-        {
-            pObject = GetIEditor()->GetObjectManager()->FindObject(names[i].c_str());
-            if (!pObject)
-            {
-                throw std::logic_error((QString("\"") + names[i].c_str() + "\" is an invalid entity.").toUtf8().data());
-            }
-            GetIEditor()->GetObjectManager()->SelectObject(pObject);
-        }
-    }
-
-    void PyDeleteObject(const char* objName)
-    {
-        CUndo undo("Delete Object");
-
-        CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(objName);
-        if (pObject)
-        {
-            GetIEditor()->GetObjectManager()->DeleteObject(pObject);
-        }
-    }
-
-    int PyClearSelection()
-    {
-        CUndo undo("Clear Selection");
-        return GetIEditor()->GetObjectManager()->ClearSelection();
-    }
-
-    void PyDeleteSelected()
-    {
-        CUndo undo("Delete Selected Object");
-        GetIEditor()->GetObjectManager()->DeleteSelection();
-    }
-
-    int PyGetNumSelectedObjects()
-    {
-        if (CSelectionGroup* pGroup = GetIEditor()->GetObjectManager()->GetSelection())
-        {
-            return pGroup->GetCount();
-        }
-
-        return 0;
-    }
-
-    AZ::Vector3 PyGetSelectionCenter()
-    {
-        if (CSelectionGroup* pGroup = GetIEditor()->GetObjectManager()->GetSelection())
-        {
-            if (pGroup->GetCount() == 0)
-            {
-                throw std::runtime_error("Nothing selected");
-            }
-
-            const Vec3 center = pGroup->GetCenter();
-            return AZ::Vector3(center.x, center.y, center.z);
-        }
-
-        throw std::runtime_error("Nothing selected");
-    }
-
-    AZ::Aabb PyGetSelectionAABB()
-    {
-        if (CSelectionGroup* pGroup = GetIEditor()->GetObjectManager()->GetSelection())
-        {
-            if (pGroup->GetCount() == 0)
-            {
-                throw std::runtime_error("Nothing selected");
-            }
-
-            const AABB aabb = pGroup->GetBounds();
-            AZ::Aabb result;
-            result.Set(
-                AZ::Vector3(
-                    aabb.min.x,
-                    aabb.min.y,
-                    aabb.min.z
-                ),
-                AZ::Vector3(
-                    aabb.max.x,
-                    aabb.max.y,
-                    aabb.max.z
-                )
-            );
-            return result;
-        }
-
-        throw std::runtime_error("Nothing selected");
-    }
-
-    AZ::Vector3 PyGetObjectPosition(const char* pName)
-    {
-        CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(pName);
-        if (!pObject)
-        {
-            throw std::logic_error((QString("\"") + pName + "\" is an invalid object.").toUtf8().data());
-        }
-        Vec3 position = pObject->GetPos();
-        return AZ::Vector3(position.x, position.y, position.z);
-    }
-
-    void PySetObjectPosition(const char* pName, float fValueX, float fValueY, float fValueZ)
-    {
-        CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(pName);
-        if (!pObject)
-        {
-            throw std::logic_error((QString("\"") + pName + "\" is an invalid object.").toUtf8().data());
-        }
-        CUndo undo("Set Object Base Position");
-        pObject->SetPos(Vec3(fValueX, fValueY, fValueZ));
-    }
-
-    AZ::Vector3 PyGetObjectRotation(const char* pName)
-    {
-        CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(pName);
-        if (!pObject)
-        {
-            throw std::logic_error((QString("\"") + pName + "\" is an invalid object.").toUtf8().data());
-        }
-        Ang3 ang = RAD2DEG(Ang3(pObject->GetRotation()));
-        return AZ::Vector3(ang.x, ang.y, ang.z);
-    }
-
-    void PySetObjectRotation(const char* pName, float fValueX, float fValueY, float fValueZ)
-    {
-        CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(pName);
-        if (!pObject)
-        {
-            throw std::logic_error((QString("\"") + pName + "\" is an invalid object.").toUtf8().data());
-        }
-        CUndo undo("Set Object Rotation");
-        pObject->SetRotation(Quat(DEG2RAD(Ang3(fValueX, fValueY, fValueZ))));
-    }
-
-    AZ::Vector3 PyGetObjectScale(const char* pName)
-    {
-        CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(pName);
-        if (!pObject)
-        {
-            throw std::logic_error((QString("\"") + pName + "\" is an invalid object.").toUtf8().data());
-        }
-        Vec3 scaleVec3 = pObject->GetScale();
-        return AZ::Vector3(scaleVec3.x, scaleVec3.y, scaleVec3.z);
-    }
-
-    void PySetObjectScale(const char* pName, float fValueX, float fValueY, float fValueZ)
-    {
-        CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(pName);
-        if (!pObject)
-        {
-            throw std::logic_error((QString("\"") + pName + "\" is an invalid object.").toUtf8().data());
-        }
-        CUndo undo("Set Object Scale");
-        pObject->SetScale(Vec3(fValueX, fValueY, fValueZ));
-    }
-
-    void PyRenameObject(const char* pOldName, const char* pNewName)
-    {
-        CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(pOldName);
-        if (!pObject)
-        {
-            throw std::runtime_error("Could not find object");
-        }
-
-        if (strcmp(pNewName, "") == 0 || GetIEditor()->GetObjectManager()->FindObject(pNewName))
-        {
-            throw std::runtime_error("Invalid object name.");
-        }
-
-        CUndo undo("Rename object");
-        pObject->SetName(pNewName);
-    }
-}
-
-namespace AzToolsFramework
-{
-    void ObjectManagerFuncsHandler::Reflect(AZ::ReflectContext* context)
-    {
-        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-            // this will put these methods into the 'azlmbr.legacy.general' module
-            auto addLegacyGeneral = [](AZ::BehaviorContext::GlobalMethodBuilder methodBuilder)
-            {
-                methodBuilder->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                    ->Attribute(AZ::Script::Attributes::Category, "Legacy/Editor")
-                    ->Attribute(AZ::Script::Attributes::Module, "legacy.general");
-            };
-            addLegacyGeneral(behaviorContext->Method("get_all_objects", PyGetAllObjects, nullptr, "Gets the list of names of all objects in the whole level."));
-            addLegacyGeneral(behaviorContext->Method("get_names_of_selected_objects", PyGetNamesOfSelectedObjects, nullptr, "Get the name from selected object/objects."));
-
-            addLegacyGeneral(behaviorContext->Method("select_object", PySelectObject, nullptr, "Selects a specified object."));
-            addLegacyGeneral(behaviorContext->Method("unselect_objects", PyUnselectObjects, nullptr, "Unselects a list of objects."));
-            addLegacyGeneral(behaviorContext->Method("select_objects", PySelectObjects, nullptr, "Selects a list of objects."));
-            addLegacyGeneral(behaviorContext->Method("get_num_selected", PyGetNumSelectedObjects, nullptr, "Returns the number of selected objects."));
-            addLegacyGeneral(behaviorContext->Method("clear_selection", PyClearSelection, nullptr, "Clears selection."));
-
-            addLegacyGeneral(behaviorContext->Method("get_selection_center", PyGetSelectionCenter, nullptr, "Returns the center point of the selection group."));
-            addLegacyGeneral(behaviorContext->Method("get_selection_aabb", PyGetSelectionAABB, nullptr, "Returns the aabb of the selection group."));
-
-            addLegacyGeneral(behaviorContext->Method("delete_object", PyDeleteObject, nullptr, "Deletes a specified object."));
-            addLegacyGeneral(behaviorContext->Method("delete_selected", PyDeleteSelected, nullptr, "Deletes selected object(s)."));
-
-            addLegacyGeneral(behaviorContext->Method("get_position", PyGetObjectPosition, nullptr, "Gets the position of an object."));
-            addLegacyGeneral(behaviorContext->Method("set_position", PySetObjectPosition, nullptr, "Sets the position of an object."));
-
-            addLegacyGeneral(behaviorContext->Method("get_rotation", PyGetObjectRotation, nullptr, "Gets the rotation of an object."));
-            addLegacyGeneral(behaviorContext->Method("set_rotation", PySetObjectRotation, nullptr, "Sets the rotation of an object."));
-
-            addLegacyGeneral(behaviorContext->Method("get_scale", PyGetObjectScale, nullptr, "Gets the scale of an object."));
-            addLegacyGeneral(behaviorContext->Method("set_scale", PySetObjectScale, nullptr, "Sets the scale of an object."));
-
-            addLegacyGeneral(behaviorContext->Method("rename_object", PyRenameObject, nullptr, "Renames object with oldObjectName to newObjectName."));
-
-
-        }
-    }
-} // namespace AzToolsFramework

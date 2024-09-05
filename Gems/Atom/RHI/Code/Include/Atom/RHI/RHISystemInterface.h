@@ -46,6 +46,8 @@ namespace AZ::RHI
 
         virtual RHI::Device* GetDevice(int deviceIndex = MultiDevice::DefaultDeviceIndex) = 0;
 
+        [[nodiscard]] virtual AZStd::optional<int> AddVirtualDevice(int deviceIndexToVirtualize = MultiDevice::DefaultDeviceIndex) = 0;
+
         virtual int GetDeviceCount() = 0;
 
         virtual RHI::DrawListTagRegistry* GetDrawListTagRegistry() = 0;
@@ -65,6 +67,10 @@ namespace AZ::RHI
         virtual void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable) = 0;
             
         virtual XRRenderingInterface* GetXRSystem() const = 0;
+
+        virtual void SetDrawListTagEnabledByDefault(DrawListTag drawListTag, bool enabled) = 0;
+
+        virtual const AZStd::vector<DrawListTag>& GetDrawListTagsDisabledByDefault() const = 0;
 
         virtual bool GpuMarkersEnabled() const = 0;
     };

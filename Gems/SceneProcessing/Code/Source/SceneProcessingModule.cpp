@@ -95,7 +95,7 @@ namespace AZ
                     module = DynamicModuleHandle::Create(name);
                     if (module)
                     {
-                        module->Load(false);
+                        module->Load();
                         auto init = module->GetFunction<InitializeDynamicModuleFunction>(InitializeDynamicModuleFunctionName);
                         if (init)
                         {
@@ -121,4 +121,8 @@ namespace AZ
     } // namespace SceneProcessing
 } // namespace AZ
 
-AZ_DECLARE_MODULE_CLASS(Gem_SceneProcessing, AZ::SceneProcessing::SceneProcessingModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), AZ::SceneProcessing::SceneProcessingModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_SceneProcessing_Editor, AZ::SceneProcessing::SceneProcessingModule)
+#endif

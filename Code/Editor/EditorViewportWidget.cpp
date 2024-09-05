@@ -29,7 +29,6 @@
 
 // AzFramework
 #include <AzFramework/Components/CameraBus.h>
-#include <AzFramework/Viewport/DisplayContextRequestBus.h>
 #if defined(AZ_PLATFORM_WINDOWS)
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 #endif // defined(AZ_PLATFORM_WINDOWS)
@@ -53,9 +52,6 @@
 // AtomToolsFramework
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
 
-// CryCommon
-#include <CryCommon/IRenderAuxGeom.h>
-
 // AzFramework
 #include <AzFramework/Render/IntersectorInterface.h>
 
@@ -74,17 +70,13 @@
 #include "Include/IObjectManager.h"
 #include "LayoutWnd.h"
 #include "MainWindow.h"
-#include "Objects/DisplayContext.h"
+#include "Objects/EntityObject.h"
 #include "Objects/ObjectManager.h"
-#include "Objects/SelectionGroup.h"
 #include "ProcessInfo.h"
 #include "Util/fastlib.h"
 #include "ViewManager.h"
 #include "ViewPane.h"
 #include "ViewportManipulatorController.h"
-
-// ComponentEntityEditorPlugin
-#include <Plugins/ComponentEntityEditorPlugin/Objects/ComponentEntityObject.h>
 
 // Atom
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -416,7 +408,7 @@ void EditorViewportWidget::Update()
         return;
     }
 
-    if (m_rcClient.isEmpty() || GetIEditor()->IsInMatEditMode())
+    if (m_rcClient.isEmpty())
     {
         return;
     }
@@ -471,7 +463,7 @@ void EditorViewportWidget::Update()
             if (debugDisplay)
             {
                 const AZ::u32 prevState = debugDisplay->GetState();
-                debugDisplay->SetState(e_Mode3D | e_AlphaBlended | e_FillModeSolid | e_CullModeBack | e_DepthWriteOn | e_DepthTestOn);
+                debugDisplay->SetState(AzFramework::e_Mode3D | AzFramework::e_AlphaBlended | AzFramework::e_FillModeSolid | AzFramework::e_CullModeBack | AzFramework::e_DepthWriteOn | AzFramework::e_DepthTestOn);
 
                 AzFramework::EntityDebugDisplayEventBus::Broadcast(
                     &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport, AzFramework::ViewportInfo{ GetViewportId() },
@@ -513,8 +505,6 @@ void EditorViewportWidget::Update()
 
     // Render
     {
-        m_displayContext.Flush2D();
-
         // Post Render Callback
         {
             PostRenderers::iterator itr = m_postRenderers.begin();
@@ -706,7 +696,7 @@ void EditorViewportWidget::OnBeginPrepareRender()
     // Draw 2D helpers.
     m_debugDisplay->DepthTestOff();
     auto prevState = m_debugDisplay->GetState();
-    m_debugDisplay->SetState(e_Mode3D | e_AlphaBlended | e_FillModeSolid | e_CullModeBack | e_DepthWriteOn | e_DepthTestOn);
+    m_debugDisplay->SetState(AzFramework::e_Mode3D | AzFramework::e_AlphaBlended | AzFramework::e_FillModeSolid | AzFramework::e_CullModeBack | AzFramework::e_DepthWriteOn | AzFramework::e_DepthTestOn);
 
     AzFramework::ViewportDebugDisplayEventBus::Event(
         AzToolsFramework::GetEntityContextId(), &AzFramework::ViewportDebugDisplayEvents::DisplayViewport2d,
@@ -756,61 +746,9 @@ float EditorViewportWidget::GetAspectRatio() const
 }
 
 //////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::RenderSnapMarker()
-{
-    if (!gSettings.snap.markerDisplay)
-    {
-        return;
-    }
-
-    QPoint point = QCursor::pos();
-    ScreenToClient(point);
-    Vec3 p = MapViewToCP(point);
-
-    DisplayContext& dc = m_displayContext;
-
-    float fScreenScaleFactor = GetScreenScaleFactor(p);
-
-    Vec3 x(1, 0, 0);
-    Vec3 y(0, 1, 0);
-    Vec3 z(0, 0, 1);
-    x = x * gSettings.snap.markerSize * fScreenScaleFactor * 0.1f;
-    y = y * gSettings.snap.markerSize * fScreenScaleFactor * 0.1f;
-    z = z * gSettings.snap.markerSize * fScreenScaleFactor * 0.1f;
-
-    dc.SetColor(gSettings.snap.markerColor);
-    dc.DrawLine(p - x, p + x);
-    dc.DrawLine(p - y, p + y);
-    dc.DrawLine(p - z, p + z);
-
-    point = WorldToView(p);
-
-    int s = 8;
-    dc.DrawLine2d(point + QPoint(-s, -s), point + QPoint(s, -s), 0);
-    dc.DrawLine2d(point + QPoint(-s, s), point + QPoint(s, s), 0);
-    dc.DrawLine2d(point + QPoint(-s, -s), point + QPoint(-s, s), 0);
-    dc.DrawLine2d(point + QPoint(s, -s), point + QPoint(s, s), 0);
-}
-
-//////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::OnMenuCreateCameraEntityFromCurrentView()
 {
     Camera::EditorCameraSystemRequestBus::Broadcast(&Camera::EditorCameraSystemRequests::CreateCameraEntityFromViewport);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::OnMenuSelectCurrentCamera()
-{
-    CBaseObject* pCameraObject = GetCameraObject();
-
-    if (pCameraObject && !pCameraObject->IsSelected())
-    {
-        GetIEditor()->BeginUndo();
-        IObjectManager* pObjectManager = GetIEditor()->GetObjectManager();
-        pObjectManager->ClearSelection();
-        pObjectManager->SelectObject(pCameraObject);
-        GetIEditor()->AcceptUndo("Select Current Camera");
-    }
 }
 
 void EditorViewportWidget::FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntitiesOut)
@@ -1078,12 +1016,6 @@ void EditorViewportWidget::OnTitleMenu(QMenu* menu)
         action->setEnabled(false);
         action->setToolTip(tr(AZ::ViewportHelpers::TextCantCreateCameraNoLevel));
         menu->setToolTipsVisible(true);
-    }
-
-    if (GetCameraObject())
-    {
-        action = menu->addAction(tr("Select Current Camera"));
-        connect(action, &QAction::triggered, this, &EditorViewportWidget::OnMenuSelectCurrentCamera);
     }
 
     // Add Cameras.
@@ -1553,17 +1485,6 @@ bool EditorViewportWidget::IsBoundsVisible(const AABB&) const
 }
 
 //////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::CenterOnSelection()
-{
-    if (!GetIEditor()->GetSelection()->IsEmpty())
-    {
-        // Get selection bounds & center
-        CSelectionGroup* sel = GetIEditor()->GetSelection();
-        AABB selectionBounds = sel->GetBounds();
-        CenterOnAABB(selectionBounds);
-    }
-}
-
 void EditorViewportWidget::CenterOnAABB(const AABB& aabb)
 {
     Vec3 selectionCenter = aabb.GetCenter();
@@ -1598,49 +1519,6 @@ void EditorViewportWidget::CenterOnAABB(const AABB& aabb)
     orbitDistance = fabs(orbitDistance);
 
     SetViewTM(newTM);
-}
-
-void EditorViewportWidget::CenterOnSliceInstance()
-{
-    AzToolsFramework::EntityIdList selectedEntityList;
-    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-        selectedEntityList, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-
-    AZ::SliceComponent::SliceInstanceAddress sliceAddress;
-    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-        sliceAddress, &AzToolsFramework::ToolsApplicationRequestBus::Events::FindCommonSliceInstanceAddress, selectedEntityList);
-
-    if (!sliceAddress.IsValid())
-    {
-        return;
-    }
-
-    AZ::EntityId sliceRootEntityId;
-    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-        sliceRootEntityId, &AzToolsFramework::ToolsApplicationRequestBus::Events::GetRootEntityIdOfSliceInstance, sliceAddress);
-
-    if (!sliceRootEntityId.IsValid())
-    {
-        return;
-    }
-
-    AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-        &AzToolsFramework::ToolsApplicationRequestBus::Events::SetSelectedEntities, AzToolsFramework::EntityIdList{ sliceRootEntityId });
-
-    const AZ::SliceComponent::InstantiatedContainer* instantiatedContainer = sliceAddress.GetInstance()->GetInstantiated();
-
-    AABB aabb(Vec3(std::numeric_limits<float>::max()), Vec3(-std::numeric_limits<float>::max()));
-    for (AZ::Entity* entity : instantiatedContainer->m_entities)
-    {
-        CEntityObject* entityObject = nullptr;
-        AzToolsFramework::ComponentEntityEditorRequestBus::EventResult(
-            entityObject, entity->GetId(), &AzToolsFramework::ComponentEntityEditorRequestBus::Events::GetSandboxObject);
-        AABB box;
-        entityObject->GetBoundBox(box);
-        aabb.Add(box.min);
-        aabb.Add(box.max);
-    }
-    CenterOnAABB(aabb);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1839,12 +1717,6 @@ void EditorViewportWidget::SetSelectedCamera()
 //////////////////////////////////////////////////////////////////////////
 bool EditorViewportWidget::IsSelectedCamera() const
 {
-    CBaseObject* pCameraObject = GetCameraObject();
-    if (pCameraObject && pCameraObject == GetIEditor()->GetSelectedObject())
-    {
-        return true;
-    }
-
     AzToolsFramework::EntityIdList selectedEntityList;
     AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
         selectedEntityList, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);

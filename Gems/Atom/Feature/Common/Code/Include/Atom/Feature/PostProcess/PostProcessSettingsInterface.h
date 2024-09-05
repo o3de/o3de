@@ -11,6 +11,10 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <Atom/Feature/PostProcess/Bloom/BloomSettingsInterface.h>
 #include <Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationSettingsInterface.h>
+#include <Atom/Feature/PostProcess/PaniniProjection/PaniniProjectionSettingsInterface.h>
+#include <Atom/Feature/PostProcess/FilmGrain/FilmGrainSettingsInterface.h>
+#include <Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceSettingsInterface.h>
+#include <Atom/Feature/PostProcess/Vignette/VignetteSettingsInterface.h>
 #include <Atom/Feature/PostProcess/DepthOfField/DepthOfFieldSettingsInterface.h>
 #include <Atom/Feature/PostProcess/ExposureControl/ExposureControlSettingsInterface.h>
 #include <Atom/Feature/PostProcess/Ssao/SsaoSettingsInterface.h>
@@ -27,7 +31,7 @@ namespace AZ
         class PostProcessSettingsInterface
         {
         public:
-            AZ_RTTI(AZ::Render::PostProcessSettingsInterface, "{DEB9EB6F-D158-402F-B7DD-03BDAC54B8BB}");
+            AZ_RTTI(AZ::Render::PostProcessSettingsInterface, "{22949C39-B56B-4920-94FA-6FDFA8273A2C}");
 
             using ViewBlendWeightMap = AZStd::unordered_map<AZ::RPI::View*, float>;
 

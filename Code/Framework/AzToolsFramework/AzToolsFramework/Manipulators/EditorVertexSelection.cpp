@@ -275,7 +275,9 @@ namespace AzToolsFramework
         OnEntityComponentPropertyChanged(entityComponentIdPair);
 
         // ensure property grid values are refreshed
-        ToolsApplicationNotificationBus::Broadcast(&ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_EntireTree);
+        ToolsApplicationNotificationBus::Broadcast(&ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplayForComponent,
+            entityComponentIdPair,
+            Refresh_EntireTree);
     }
 
     template<typename Vertex>
@@ -336,7 +338,10 @@ namespace AzToolsFramework
         OnEntityComponentPropertyChanged(GetEntityComponentIdPair());
 
         // ensure property grid values are refreshed
-        ToolsApplicationNotificationBus::Broadcast(&ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_Values);
+        ToolsApplicationNotificationBus::Broadcast(
+            &ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplayForComponent, 
+            GetEntityComponentIdPair(),
+            Refresh_Values);
     }
 
     // iterate over all vertices currently associated with the translation manipulator and update their
