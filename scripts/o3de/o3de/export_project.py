@@ -1161,7 +1161,7 @@ SETTINGS_OPTION_FAIL_ON_ASSET_ERR = register_setting(key='option.fail.on.asset.e
 
 SETTINGS_SEED_LIST_PATHS          = register_setting(key='seedlist.paths',
                                                      description='List of seed list paths (relative to the project folder) used for asset bundling. Multiple paths are separated by semi-colon (;).',
-                                                     default='AssetBundling/SeedLists/DefaultLevel.seed')
+                                                     default='')
 SETTINGS_SEED_FILE_PATHS          = register_setting(key='seedfile.paths',
                                                      description='List of seed file paths (relative to the project folder) used for asset bundling. Multiple paths are separated by semi-colon (;).',
                                                      default='')
