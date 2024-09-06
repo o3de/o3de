@@ -24,11 +24,22 @@ namespace AZ::RHI
         // A set of swap chains to present after executing the command lists.
         AZStd::vector<DeviceSwapChain*> m_swapChainsToPresent;
     };
-        
+
+    //! Policy for executing the work for a command queue.
+    enum class CommandQueuePolicy : uint32_t
+    {
+        /// Must execute serially (in-order) in the calling thread.
+        Serial = 0,
+
+        /// Use a separate thread to execute commands
+        Parallel
+    };
+
     struct CommandQueueDescriptor
     {
         RHI::HardwareQueueClass m_hardwareQueueClass = RHI::HardwareQueueClass::Graphics;
         int m_maxFrameQueueDepth = RHI::Limits::Device::FrameCountMax;
+        CommandQueuePolicy m_executePolicy = CommandQueuePolicy::Parallel;
     };
 
     //! Base class that provides the backend API the ability to add

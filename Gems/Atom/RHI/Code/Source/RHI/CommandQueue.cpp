@@ -55,9 +55,17 @@ namespace AZ::RHI
             m_descriptor = descriptor;
             m_isQuitting = false;
             m_isWorkQueueEmpty = true;
-                
-            AZStd::thread_desc threadDesc{ GetName().GetCStr() };
-            m_thread = AZStd::thread(threadDesc, [&]() { ProcessQueue(); });
+
+            if (m_descriptor.m_executePolicy == CommandQueuePolicy::Parallel)
+            {
+                AZStd::thread_desc threadDesc{ GetName().GetCStr() };
+                m_thread = AZStd::thread(
+                    threadDesc,
+                    [&]()
+                    {
+                        ProcessQueue();
+                    });
+            }
         }
         return resultCode;
     }
@@ -73,7 +81,7 @@ namespace AZ::RHI
             {
                 m_thread.join();
             }
-            else
+            else if (m_descriptor.m_executePolicy == CommandQueuePolicy::Parallel)
             {
                 AZ_Error("CommandQueue", false, "CommandQueue was shut down but thread was not joinable!");
             }
@@ -84,9 +92,9 @@ namespace AZ::RHI
 
     void CommandQueue::QueueCommand(Command command)
     {
-        if (m_thread.get_id() == AZStd::this_thread::get_id())
+        if (!m_thread.joinable() || m_thread.get_id() == AZStd::this_thread::get_id())
         {
-            // No need to queue the command since we are already in queue thread.
+            // No need to queue the command since we are already in queue thread or is using a serial policy.
             command(GetNativeQueue());
             return;
         }

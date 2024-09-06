@@ -28,6 +28,15 @@ ly_add_target_files(
 ly_add_target_files(
    TARGETS ${gem_name}.Builders
    FILES 
+       ${CMAKE_CURRENT_SOURCE_DIR}/AZSL/Platform/Windows/WebGPU/AzslcHeader.azsli
+       ${CMAKE_CURRENT_SOURCE_DIR}/AZSL/Platform/Windows/WebGPU/PlatformHeader.hlsli
+   OUTPUT_SUBDIRECTORY
+       Builders/ShaderHeaders/Platform/Windows/WebGPU
+)
+
+ly_add_target_files(
+   TARGETS ${gem_name}.Builders
+   FILES 
        ${CMAKE_CURRENT_SOURCE_DIR}/AZSL/Platform/Windows/Null/AzslcHeader.azsli
    OUTPUT_SUBDIRECTORY
        Builders/ShaderHeaders/Platform/Windows/Null
@@ -40,6 +49,15 @@ ly_add_target_files(
        ${CMAKE_CURRENT_SOURCE_DIR}/AZSL/Platform/Mac/Metal/PlatformHeader.hlsli
    OUTPUT_SUBDIRECTORY
        Builders/ShaderHeaders/Platform/Mac/Metal
+)
+
+ly_add_target_files(
+   TARGETS ${gem_name}.Builders
+   FILES 
+       ${CMAKE_CURRENT_SOURCE_DIR}/AZSL/Platform/Mac/WebGPU/AzslcHeader.azsli
+       ${CMAKE_CURRENT_SOURCE_DIR}/AZSL/Platform/Mac/WebGPU/PlatformHeader.hlsli
+   OUTPUT_SUBDIRECTORY
+       Builders/ShaderHeaders/Platform/Mac/WebGPU
 )
 
 ly_add_target_files(
@@ -75,6 +93,15 @@ ly_add_target_files(
        ${CMAKE_CURRENT_SOURCE_DIR}/AZSL/Platform/Linux/Vulkan/PlatformHeader.hlsli
    OUTPUT_SUBDIRECTORY
        Builders/ShaderHeaders/Platform/Linux/Vulkan
+)
+
+ly_add_target_files(
+   TARGETS ${gem_name}.Builders
+   FILES 
+       ${CMAKE_CURRENT_SOURCE_DIR}/AZSL/Platform/Linux/WebGPU/AzslcHeader.azsli
+       ${CMAKE_CURRENT_SOURCE_DIR}/AZSL/Platform/Linux/WebGPU/PlatformHeader.hlsli
+   OUTPUT_SUBDIRECTORY
+       Builders/ShaderHeaders/Platform/Linux/WebGPU
 )
 
 ly_add_target_files(

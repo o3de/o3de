@@ -300,7 +300,7 @@ namespace AZ::RHI
 
         RHI::TransientAttachmentStatistics::Attachment& attachment = m_heapStats.m_attachments.back();
         attachment.m_heapOffsetMin = heapOffsetInBytes;
-        attachment.m_heapOffsetMax = heapOffsetInBytes + sizeInBytes - 1;
+        attachment.m_heapOffsetMax = aznumeric_caster(AZStd::min(static_cast<AZ::s64>(heapOffsetInBytes + sizeInBytes) - 1, AZ::s64(0)));
         attachment.m_sizeInBytes = sizeInBytes;
         attachment.m_id = descriptor.m_attachmentId;
         attachment.m_scopeOffsetMin = scope.GetIndex();

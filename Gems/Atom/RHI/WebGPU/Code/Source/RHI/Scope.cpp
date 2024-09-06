@@ -5,15 +5,23 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <RHI/WebGPU.h>
 #include <RHI/Scope.h>
 
-namespace AZ
+namespace AZ::WebGPU
 {
-    namespace WebGPU
+    RHI::Ptr<Scope> Scope::Create()
     {
-        RHI::Ptr<Scope> Scope::Create()
-        {
-            return aznew Scope();
-        }
+        return aznew Scope();
+    }
+
+    bool Scope::HasSignalFence() const
+    {
+        return false;
+    }
+
+    bool Scope::HasWaitFences() const
+    {
+        return false;
     }
 }

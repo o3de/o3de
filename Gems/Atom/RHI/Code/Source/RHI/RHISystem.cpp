@@ -212,6 +212,10 @@ namespace AZ::RHI
             RHI::Ptr<RHI::Device> device = RHI::Factory::Get().CreateDevice();
             if (device->Init(static_cast<int>(m_devices.size()), *physicalDevice) == RHI::ResultCode::Success)
             {
+                if (!device->GetFeatures().m_resourceAliasing)
+                {
+                    m_compileRequest.m_compileFlags |= RHI::FrameSchedulerCompileFlags::DisableAttachmentAliasing;
+                }
                 m_devices.emplace_back(AZStd::move(device));
             }
         }

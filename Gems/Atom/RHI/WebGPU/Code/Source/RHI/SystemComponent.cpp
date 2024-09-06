@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <RHI/WebGPU.h>
 #include <Atom/RHI/FactoryManagerBus.h>
 #include <Atom/RHI/DeviceFence.h>
 #include <Atom/RHI/DeviceIndirectBufferSignature.h>
@@ -39,6 +40,7 @@
 #include <RHI/SystemComponent.h>
 #include <RHI/SwapChain.h>
 #include <RHI/TransientAttachmentPool.h>
+#include <RHI/Instance.h>
 
 namespace AZ
 {
@@ -65,7 +67,15 @@ namespace AZ
 
         void SystemComponent::Activate()
         {
-            RHI::FactoryManagerBus::Broadcast(&RHI::FactoryManagerRequest::RegisterFactory, this);
+            const Instance::Descriptor descriptor;
+            if (Instance::GetInstance().Init(descriptor))
+            {
+                RHI::FactoryManagerBus::Broadcast(&RHI::FactoryManagerRequest::RegisterFactory, this);
+            }
+            else
+            {
+                AZ_Warning("WebGPU", false, "WebGPU is not supported on this platform.");
+            }
         }
 
         void SystemComponent::Deactivate()
@@ -95,7 +105,7 @@ namespace AZ
 
         RHI::PhysicalDeviceList SystemComponent::EnumeratePhysicalDevices()
         {
-            return PhysicalDevice::Enumerate();
+            return Instance::GetInstance().GetSupportedDevices();
         }
 
         RHI::Ptr<RHI::DeviceSwapChain> SystemComponent::CreateSwapChain()

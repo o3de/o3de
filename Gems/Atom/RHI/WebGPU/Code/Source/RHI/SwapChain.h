@@ -28,13 +28,32 @@ namespace AZ
             
             //////////////////////////////////////////////////////////////////////////
             // RHI::DeviceSwapChain
-            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::SwapChainDescriptor& descriptor, [[maybe_unused]] RHI::SwapChainDimensions* nativeDimensions) override { return RHI::ResultCode::Success;}
-            void ShutdownInternal() override {}
-            uint32_t PresentInternal() override {return 0;}
-            RHI::ResultCode InitImageInternal([[maybe_unused]] const InitImageRequest& request) override { return RHI::ResultCode::Success;}
-            void ShutdownResourceInternal([[maybe_unused]] RHI::DeviceResource& resourceBase) override {}
+            RHI::ResultCode InitInternal(
+                RHI::Device& deviceBase,
+                const RHI::SwapChainDescriptor& descriptor,
+                RHI::SwapChainDimensions* nativeDimensions) override;
+            void ShutdownInternal() override;
+            uint32_t PresentInternal() override;
+            RHI::ResultCode InitImageInternal(const InitImageRequest& request) override;
             RHI::ResultCode ResizeInternal([[maybe_unused]] const RHI::SwapChainDimensions& dimensions, [[maybe_unused]] RHI::SwapChainDimensions* nativeDimensions) override { return RHI::ResultCode::Success;}
             //////////////////////////////////////////////////////////////////////////
+
+            static wgpu::Surface BuildNativeSurface(const RHI::SwapChainDescriptor& descriptor);
+            wgpu::SurfaceCapabilities GetSurfaceCapabilities(RHI::Device& deviceBase);
+            wgpu::TextureFormat GetSupportedSurfaceFormat(const RHI::Format rhiFormat) const;
+            wgpu::PresentMode GetSupportedPresentMode(uint32_t verticalSyncInterval) const;
+            wgpu::CompositeAlphaMode GetSupportedCompositeAlpha() const;
+            void AcquireNextImage(uint32_t imageIndex);
+
+            //! The native surface object
+            wgpu::Surface m_wgpuSurface = nullptr;
+            //! Capabilities of the surface
+            wgpu::SurfaceCapabilities m_wgpuSurfaceCapabilities = {};
+            //! Selected format for the surface
+            wgpu::TextureFormat m_wgpuSurfaceFormat = wgpu::TextureFormat::Undefined;
+            //! Selected presentation mode
+            wgpu::PresentMode m_wgpuPresentMode = wgpu::PresentMode::Fifo;
+            wgpu::CompositeAlphaMode m_wgpuCompositeAlphaMode = wgpu::CompositeAlphaMode::Auto;
         };
     }
 }
