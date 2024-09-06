@@ -39,7 +39,8 @@ namespace AZ::RHI
 
         inline DeviceGeometryView* GetDeviceGeometryView(int deviceIndex)
         {
-            if (!m_geometryViews.contains(deviceIndex))
+            auto iter = m_geometryViews.find(deviceIndex);
+            if (iter == m_geometryViews.end())
             {
                 DeviceGeometryView newGeometryView;
                 newGeometryView.SetDrawArguments( m_drawArguments.GetDeviceDrawArguments(deviceIndex) );
@@ -52,10 +53,13 @@ namespace AZ::RHI
                     newGeometryView.AddStreamBufferView(stream.GetDeviceStreamBufferView(deviceIndex));
                 }
                 newGeometryView.m_dummyStreamBufferIndex = m_dummyStreamBufferIndex;
-                m_geometryViews.emplace(deviceIndex, newGeometryView);
+                m_geometryViews.emplace(deviceIndex, std::move(newGeometryView));
+                return &m_geometryViews[deviceIndex];
             }
-
-            return &m_geometryViews[deviceIndex];
+            else
+            {
+                return &iter->second;
+            }
         }
 
         void Reset()

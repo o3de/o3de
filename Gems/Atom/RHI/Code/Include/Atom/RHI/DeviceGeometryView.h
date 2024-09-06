@@ -59,9 +59,11 @@ namespace AZ::RHI
 
         bool operator==(const StreamBufferIndices& other) const
         {
-            bool same = (m_count == other.m_count);
-            u32 arraySize = RHI::Limits::Pipeline::StreamCountMax / 2;
-            for (u32 i = 0; i < arraySize; ++i)
+            if (m_count != other.m_count)
+                return false;
+
+            bool same = true;
+            for (u32 i = 0; i < m_count; ++i)
             {
                 same = same && (m_indices[i] == other.m_indices[i]);
             }
