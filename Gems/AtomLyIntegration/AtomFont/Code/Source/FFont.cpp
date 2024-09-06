@@ -1609,8 +1609,9 @@ AZ::FFont::DrawParameters AZ::FFont::ExtractDrawParameters(const AzFramework::Te
     float posX = params.m_position.GetX();
     float posY = params.m_position.GetY();
     internalParams.m_viewportContext = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->GetViewportContextById(params.m_drawViewportId);
-    const AZ::RHI::Viewport& viewport = internalParams.m_viewportContext->GetWindowContext()->GetViewport();
-    internalParams.m_viewport = &viewport;
+    const auto viewportSize = internalParams.m_viewportContext->GetViewportSize();
+    internalParams.m_viewport = AZ::RHI::Viewport(0, aznumeric_caster(viewportSize.m_width), 0, aznumeric_caster(viewportSize.m_height));
+    auto& viewport = internalParams.m_viewport;
     if (params.m_virtual800x600ScreenSize)
     {
         posX *= WindowScaleWidth / (viewport.m_maxX - viewport.m_minX);
@@ -1686,7 +1687,7 @@ void AZ::FFont::DrawScreenAlignedText2d(
     }
 
     DrawStringUInternal(
-        *internalParams.m_viewport, 
+        internalParams.m_viewport, 
         internalParams.m_viewportContext, 
         internalParams.m_position.GetX(), 
         internalParams.m_position.GetY(), 
@@ -1725,10 +1726,10 @@ void AZ::FFont::DrawScreenAlignedText3d(
     internalParams.m_ctx.m_sizeIn800x600 = false;
 
     DrawStringUInternal(
-        *internalParams.m_viewport, 
+        internalParams.m_viewport, 
         internalParams.m_viewportContext, 
-        positionNdc.GetX() * internalParams.m_viewport->GetWidth() + internalParams.m_position.GetX(), 
-        (1.0f - positionNdc.GetY()) * internalParams.m_viewport->GetHeight() + internalParams.m_position.GetY(), 
+        positionNdc.GetX() * internalParams.m_viewport.GetWidth() + internalParams.m_position.GetX(), 
+        (1.0f - positionNdc.GetY()) * internalParams.m_viewport.GetHeight() + internalParams.m_position.GetY(), 
         positionNdc.GetZ(), // Z
         text.data(),
         params.m_multiline,

@@ -107,9 +107,12 @@ namespace AZ
             // Only held until the streaming upload is complete.
             Data::Asset<BufferAsset> m_bufferAsset;
 
+            // Note: The order of these members is important: The streamFence-destructor potentially uses m_pendingUploadMutex,
+            // so we need to make sure the mutex isn't destroyed before the fence
+
             // Tracks the streaming upload of the buffer.
-            RHI::Ptr<RHI::Fence> m_streamFence;
             AZStd::mutex m_pendingUploadMutex;
+            RHI::Ptr<RHI::Fence> m_streamFence;
             AZStd::atomic_int m_initialUploadCount{0};
 
             RHI::BufferViewDescriptor m_bufferViewDescriptor;

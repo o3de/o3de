@@ -5,9 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
-#include <Atom/RHI/Buffer.h>
 
 namespace AZ::RHI
 {
@@ -33,7 +33,7 @@ namespace AZ::RHI
 
     Ptr<BufferView> Buffer::BuildBufferView(const BufferViewDescriptor& bufferViewDescriptor)
     {
-        return aznew BufferView{ this, bufferViewDescriptor };
+        return aznew BufferView{ this, bufferViewDescriptor, GetDeviceMask() };
     }
 
     const HashValue64 Buffer::GetHash() const
@@ -45,11 +45,6 @@ namespace AZ::RHI
 
     void Buffer::Shutdown()
     {
-        IterateObjects<DeviceBuffer>([]([[maybe_unused]] auto deviceIndex, auto deviceBuffer)
-        {
-            deviceBuffer->Shutdown();
-        });
-
         Resource::Shutdown();
     }
 
@@ -67,6 +62,23 @@ namespace AZ::RHI
     const RHI::Ptr<RHI::DeviceBufferView> BufferView::GetDeviceBufferView(int deviceIndex) const
     {
         AZStd::lock_guard lock(m_bufferViewMutex);
+
+        if (m_buffer->GetDeviceMask() != m_deviceMask)
+        {
+            m_deviceMask = m_buffer->GetDeviceMask();
+
+            MultiDeviceObject::IterateDevices(
+                m_deviceMask,
+                [this](int deviceIndex)
+                {
+                    if (auto it{ m_cache.find(deviceIndex) }; it != m_cache.end())
+                    {
+                        m_cache.erase(it);
+                    }
+                    return true;
+                });
+        }
+
         auto iterator{ m_cache.find(deviceIndex) };
         if (iterator == m_cache.end())
         {
@@ -78,7 +90,26 @@ namespace AZ::RHI
                 return new_iterator->second;
             }
         }
+        else if (&iterator->second->GetBuffer() != m_buffer->GetDeviceBuffer(deviceIndex).get())
+        {
+            iterator->second = m_buffer->GetDeviceBuffer(deviceIndex)->GetBufferView(m_descriptor);
+        }
 
         return iterator->second;
+    }
+
+    AZStd::unordered_map<int, uint32_t> BufferView::GetBindlessReadIndex() const
+    {
+        AZStd::unordered_map<int, uint32_t> result;
+
+        MultiDeviceObject::IterateDevices(
+            m_buffer->GetDeviceMask(),
+            [this, &result](int deviceIndex)
+            {
+                result[deviceIndex] = GetDeviceBufferView(deviceIndex)->GetBindlessReadIndex();
+                return true;
+            });
+
+        return result;
     }
 } // namespace AZ::RHI

@@ -125,6 +125,15 @@ namespace AZ
                 const RHI::RenderAttachmentLayout& layout,
                 const RHI::MultisampleState& multisampleState);
 
+            //! Contains the layout that the RenderAttachment will used on a subpass.
+            //! This information is used when converting a RenderAttachmentLayout to a Renderpass::Descriptor (ConvertRenderAttachmentLayout)
+            struct RenderAttachmentLayout : RHI::RenderAttachmentExtras
+            {
+                AZ_RTTI(RenderAttachmentLayout, "{EDFE4C66-9780-4752-96CD-CCCE81C029DC}");
+                //! Layout of the attachment in a subpass.
+                VkImageLayout m_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+            };
+
         private:
             RenderPass() = default;
 

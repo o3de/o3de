@@ -52,10 +52,11 @@ namespace AZ
             m_fenceImpl->SetNameInternal(name);
         }
 
-        RHI::ResultCode Fence::InitInternal(RHI::Device& baseDevice, RHI::FenceState initialState)
+        RHI::ResultCode Fence::InitInternal(RHI::Device& baseDevice, RHI::FenceState initialState, bool usedForWaitingOnDevice)
         {
-            if (baseDevice.GetFeatures().m_signalFenceFromCPU)
+            if (usedForWaitingOnDevice)
             {
+                AZ_Assert(baseDevice.GetFeatures().m_signalFenceFromCPU, "Fences cannot be waited for on the GPU.");
                 m_fenceImpl = TimelineSemaphoreFence::Create();
             }
             else

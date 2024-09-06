@@ -81,8 +81,6 @@ public:
     MOCK_METHOD0(GetActiveView, class CViewport* ());
     MOCK_METHOD1(SetActiveView, void(CViewport*));
     MOCK_METHOD0(GetFileMonitor, struct IEditorFileMonitor* ());
-    MOCK_CONST_METHOD0(CreateQMimeData, QMimeData* ());
-    MOCK_CONST_METHOD1(DestroyQMimeData, void(QMimeData*));
     MOCK_METHOD0(GetLevelIndependentFileMan, class CLevelIndependentFileMan* ());
     MOCK_METHOD2(UpdateViews, void(int , const AABB* ));
     MOCK_METHOD0(ResetViews, void());
@@ -147,7 +145,6 @@ public:
     MOCK_METHOD0(ReloadTemplates, void());
     MOCK_METHOD1(ShowStatusText, void(bool ));
     MOCK_METHOD0(GetEnv, SSystemGlobalEnvironment* ());
-    MOCK_METHOD0(GetImageUtil, IImageUtil* ());
     MOCK_METHOD0(GetEditorSettings, SEditorSettings* ());
     MOCK_METHOD0(GetLogFile, ILogFile* ());
     MOCK_METHOD0(UnloadPlugins, void());

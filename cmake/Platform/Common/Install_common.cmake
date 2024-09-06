@@ -900,21 +900,46 @@ function(ly_setup_assets)
     # Gem Source Assets and configuration files
     # Find all gem directories relative to the CMake Source Dir
 
-    # This first loop is to filter out transient and .gitignore'd folders that should be added to
+    # this first loop real-path-izes all the paths to avoid doing so repeatedly.
+    get_external_subdirectories_in_use(external_subdirs_non_realpath)
+    foreach(gem_candidate_dir IN LISTS external_subdirs_non_realpath)
+        file(REAL_PATH ${gem_candidate_dir} gem_candidate_dir BASE_DIRECTORY ${LY_ROOT_FOLDER})
+        list(APPEND external_subdirs ${gem_candidate_dir})
+    endforeach()
+
+    # This next loop is to filter out transient and .gitignore'd folders that should be added to
     # the install layout from the root directory. Such as <external-subdirectory-root>/Cache.
     # This is also done to avoid globbing thousands of files in subdirectories that shouldn't
     # be processed.
-    get_external_subdirectories_in_use(external_subdirs)
+    # It also filters out subdirectories that are themselves gem candidate directories so they are
+    # not double-visited.
+    
     foreach(gem_candidate_dir IN LISTS external_subdirs)
-        file(REAL_PATH ${gem_candidate_dir} gem_candidate_dir BASE_DIRECTORY ${LY_ROOT_FOLDER})
+        unset(external_subdir_files)
+        unset(external_subdir_files_tenative)
+
         # Don't recurse immediately in order to exclude transient source artifacts
         file(GLOB
-            external_subdir_files
+            external_subdir_files_tenative
             LIST_DIRECTORIES TRUE
             "${gem_candidate_dir}/*"
         )
         # Exclude transient artifacts that shouldn't be copied to the install layout
-        list(FILTER external_subdir_files EXCLUDE REGEX "/([Bb]uild|[Cc]ache|[Uu]ser)$")
+        list(FILTER external_subdir_files_tenative EXCLUDE REGEX "/([Bb]uild|[Cc]ache|[Uu]ser)$")
+
+        # Exclude folders that themselves are gem_candidate_dirs with their own gem.json
+        foreach(check_file IN LISTS external_subdir_files_tenative)
+            if(IS_DIRECTORY ${check_file})
+                list(FIND external_subdirs ${check_file} is_gem_candidate_dir)
+                if(is_gem_candidate_dir EQUAL -1)
+                    # it is not already in the list, so it is unique to this gem folder.
+                    list(APPEND external_subdir_files ${check_file})
+                endif()
+            else()
+                list(APPEND external_subdir_files ${check_file})                
+            endif()
+        endforeach()
+
         # Storing a "mapping" of gem candidate directories, to external_subdirectory files using
         # a DIRECTORY property for the "value" and the GLOBAL property for the "key"
         set_property(DIRECTORY ${gem_candidate_dir} APPEND PROPERTY directory_filtered_asset_paths "${external_subdir_files}")

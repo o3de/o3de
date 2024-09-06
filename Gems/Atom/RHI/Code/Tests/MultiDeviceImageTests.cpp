@@ -137,8 +137,8 @@ namespace UnitTest
 
     TEST_F(MultiDeviceImageTests, TestViews)
     {
-        RHI::Ptr<RHI::DeviceImageView> imageViewA;
-        
+        AZStd::vector<RHI::Ptr<RHI::DeviceImageView>> imageViewsA(DeviceCount);
+
         {
             RHI::Ptr<RHI::ImagePool> imagePool;
             imagePool = aznew RHI::ImagePool;
@@ -158,76 +158,76 @@ namespace UnitTest
             // Should report initialized and not stale.
             for(auto deviceIndex{0}; deviceIndex < DeviceCount; ++deviceIndex)
             {
-                imageViewA = image->GetDeviceImage(deviceIndex)->GetImageView(RHI::ImageViewDescriptor{});
-                AZ_TEST_ASSERT(imageViewA->IsInitialized());
-                AZ_TEST_ASSERT(imageViewA->IsStale() == false);
-                AZ_TEST_ASSERT(imageViewA->IsFullView());
+                imageViewsA[deviceIndex] = image->GetDeviceImage(deviceIndex)->GetImageView(RHI::ImageViewDescriptor{});
+                AZ_TEST_ASSERT(imageViewsA[deviceIndex]->IsInitialized());
+                AZ_TEST_ASSERT(imageViewsA[deviceIndex]->IsStale() == false);
+                AZ_TEST_ASSERT(imageViewsA[deviceIndex]->IsFullView());
             }
 
             // Should report as still initialized and also stale.
+            for(auto deviceIndex{0}; deviceIndex < DeviceCount; ++deviceIndex)
+            {
+                image->GetDeviceImage(deviceIndex)->Shutdown();
+                AZ_TEST_ASSERT(imageViewsA[deviceIndex]->IsStale());
+                AZ_TEST_ASSERT(imageViewsA[deviceIndex]->IsInitialized());
+            }
             image->Shutdown();
-            for(auto deviceIndex{0}; deviceIndex < DeviceCount; ++deviceIndex)
-            {
-                AZ_TEST_ASSERT(imageViewA->IsStale());
-                AZ_TEST_ASSERT(imageViewA->IsInitialized());
-            }
-            
 
-            // Should *still* report as stale since resource invalidation events are queued.
             imagePool->InitImage(initRequest);
-            for(auto deviceIndex{0}; deviceIndex < DeviceCount; ++deviceIndex)
-            {
-                AZ_TEST_ASSERT(imageViewA->IsStale());
-                AZ_TEST_ASSERT(imageViewA->IsInitialized());
-            }
 
-            // This should re-initialize the views.
+            // Make sure that the image doesn't expect an invalidation event.
             RHI::ResourceInvalidateBus::ExecuteQueuedEvents();
+
+            // We need to recreate device views since device images are recreated after Shutdown.
             for(auto deviceIndex{0}; deviceIndex < DeviceCount; ++deviceIndex)
             {
-                AZ_TEST_ASSERT(imageViewA->IsInitialized());
-                AZ_TEST_ASSERT(imageViewA->IsStale() == false);
+                imageViewsA[deviceIndex] = image->GetDeviceImage(deviceIndex)->GetImageView(RHI::ImageViewDescriptor{});
+                AZ_TEST_ASSERT(imageViewsA[deviceIndex]->IsStale() == false);
+                AZ_TEST_ASSERT(imageViewsA[deviceIndex]->IsInitialized());
             }
 
             // Explicit invalidation should mark it stale.
             image->InvalidateViews();
             for(auto deviceIndex{0}; deviceIndex < DeviceCount; ++deviceIndex)
             {
-                AZ_TEST_ASSERT(imageViewA->IsStale());
-                AZ_TEST_ASSERT(imageViewA->IsInitialized());
+                AZ_TEST_ASSERT(imageViewsA[deviceIndex]->IsStale());
+                AZ_TEST_ASSERT(imageViewsA[deviceIndex]->IsInitialized());
             }
 
             // This should re-initialize the views.
             RHI::ResourceInvalidateBus::ExecuteQueuedEvents();
             for(auto deviceIndex{0}; deviceIndex < DeviceCount; ++deviceIndex)
             {
-                AZ_TEST_ASSERT(imageViewA->IsInitialized());
-                AZ_TEST_ASSERT(imageViewA->IsStale() == false);
+                AZ_TEST_ASSERT(imageViewsA[deviceIndex]->IsInitialized());
+                AZ_TEST_ASSERT(imageViewsA[deviceIndex]->IsStale() == false);
             }
 
             // Test re-initialization.
             RHI::ImageViewDescriptor imageViewDesc = RHI::ImageViewDescriptor::Create(RHI::Format::Unknown, 0, 0, 0, 0);
             for(auto deviceIndex{0}; deviceIndex < DeviceCount; ++deviceIndex)
             {
-                imageViewA = image->GetDeviceImage(deviceIndex)->GetImageView(imageViewDesc);
-                AZ_TEST_ASSERT(imageViewA->IsFullView() == false);
-                AZ_TEST_ASSERT(imageViewA->IsInitialized());
-                AZ_TEST_ASSERT(imageViewA->IsStale() == false);
+                imageViewsA[deviceIndex] = image->GetDeviceImage(deviceIndex)->GetImageView(imageViewDesc);
+                AZ_TEST_ASSERT(imageViewsA[deviceIndex]->IsFullView() == false);
+                AZ_TEST_ASSERT(imageViewsA[deviceIndex]->IsInitialized());
+                AZ_TEST_ASSERT(imageViewsA[deviceIndex]->IsStale() == false);
             }
 
             // Test re-initialization.
             imageViewDesc = RHI::ImageViewDescriptor::Create(RHI::Format::Unknown, 0, 0, 0, 1);
             for(auto deviceIndex{0}; deviceIndex < DeviceCount; ++deviceIndex)
             {
-                imageViewA = image->GetDeviceImage(deviceIndex)->GetImageView(imageViewDesc);
-                AZ_TEST_ASSERT(imageViewA->IsFullView());
-                AZ_TEST_ASSERT(imageViewA->IsInitialized());
-                AZ_TEST_ASSERT(imageViewA->IsStale() == false);
+                imageViewsA[deviceIndex] = image->GetDeviceImage(deviceIndex)->GetImageView(imageViewDesc);
+                AZ_TEST_ASSERT(imageViewsA[deviceIndex]->IsFullView());
+                AZ_TEST_ASSERT(imageViewsA[deviceIndex]->IsInitialized());
+                AZ_TEST_ASSERT(imageViewsA[deviceIndex]->IsStale() == false);
             }
         }
 
         // The parent image was shut down. This should report as being stale.
-        AZ_TEST_ASSERT(imageViewA->IsStale());
+        for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
+        {
+            AZ_TEST_ASSERT(imageViewsA[deviceIndex]->IsStale());
+        }
     }
 
     struct MultiDeviceImageAndViewBindFlags

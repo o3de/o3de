@@ -57,7 +57,13 @@ namespace AzFramework
         //! multiple components on an entity an opportunity to add their geometry. It is the caller's responsibility to manage and clear the
         //! container between calls. The container should not be cleared within the function, which might destroy a prior components
         //! contribution.
-        virtual void GetVisibleGeometry(const AZ::Aabb& bounds, VisibleGeometryContainer& geometryContainer) const = 0;
+        virtual void BuildVisibleGeometry(const AZ::Aabb& bounds, VisibleGeometryContainer& geometryContainer) const = 0;
+
+        //! GetVisibleGeometry is being deprecated in favor of BuildVisibleGeometry.
+        virtual void GetVisibleGeometry(const AZ::Aabb& bounds, VisibleGeometryContainer& geometryContainer) const
+        {
+            BuildVisibleGeometry(bounds, geometryContainer);
+        }
 
     protected:
         ~VisibleGeometryRequests() = default;

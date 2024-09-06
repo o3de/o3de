@@ -30,13 +30,13 @@ namespace AZ
             m_lifetime = attachmentDesc.m_lifetime;
             m_generateFullMipChain = attachmentDesc.m_generateFullMipChain;
 
-            m_descriptor = RHI::UnifiedAttachmentDescriptor(attachmentDesc.m_imageDescriptor);
+            m_descriptor = RHI::UnifiedAttachmentDescriptor(attachmentDesc.m_imageDescriptor, attachmentDesc.m_imageViewDescriptor);
             ValidateDeviceFormats(attachmentDesc.m_formatFallbacks);
         }
 
         PassAttachment::PassAttachment(const PassBufferAttachmentDesc& attachmentDesc)
         {
-            m_descriptor = RHI::UnifiedAttachmentDescriptor(attachmentDesc.m_bufferDescriptor);
+            m_descriptor = RHI::UnifiedAttachmentDescriptor(attachmentDesc.m_bufferDescriptor, attachmentDesc.m_bufferViewDescriptor);
             m_name = attachmentDesc.m_name;
             m_lifetime = attachmentDesc.m_lifetime;
         }
@@ -328,12 +328,11 @@ namespace AZ
                 {
                     if (attachment->GetAttachmentType() == RHI::AttachmentType::Buffer)
                     {
-                        // AZ_Assert(false, "Transient buffer's buffer view need to be set in slot");
-                        m_unifiedScopeDesc.SetAsBuffer(RHI::BufferViewDescriptor());
+                        m_unifiedScopeDesc.SetAsBuffer(attachment->m_descriptor.m_bufferView);
                     }
                     else if (attachment->GetAttachmentType() == RHI::AttachmentType::Image)
                     {
-                        m_unifiedScopeDesc.SetAsImage(RHI::ImageViewDescriptor());
+                        m_unifiedScopeDesc.SetAsImage(attachment->m_descriptor.m_imageView);
                     }
                 }
                 else if (attachment->m_lifetime == RHI::AttachmentLifetimeType::Imported)

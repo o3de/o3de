@@ -33,24 +33,24 @@ namespace AZ::RHI
         , m_bufferDescriptor{descriptor.m_bufferDescriptor}
     {}
 
-    const BufferScopeAttachment* BufferFrameAttachment::GetFirstScopeAttachment() const
+    const BufferScopeAttachment* BufferFrameAttachment::GetFirstScopeAttachment(int deviceIndex) const
     {
-        return static_cast<const BufferScopeAttachment*>(FrameAttachment::GetFirstScopeAttachment());
+        return static_cast<const BufferScopeAttachment*>(FrameAttachment::GetFirstScopeAttachment(deviceIndex));
     }
 
-    BufferScopeAttachment* BufferFrameAttachment::GetFirstScopeAttachment()
+    BufferScopeAttachment* BufferFrameAttachment::GetFirstScopeAttachment(int deviceIndex)
     {
-        return static_cast<BufferScopeAttachment*>(FrameAttachment::GetFirstScopeAttachment());
+        return static_cast<BufferScopeAttachment*>(FrameAttachment::GetFirstScopeAttachment(deviceIndex));
     }
 
-    const BufferScopeAttachment* BufferFrameAttachment::GetLastScopeAttachment() const
+    const BufferScopeAttachment* BufferFrameAttachment::GetLastScopeAttachment(int deviceIndex) const
     {
-        return static_cast<const BufferScopeAttachment*>(FrameAttachment::GetLastScopeAttachment());
+        return static_cast<const BufferScopeAttachment*>(FrameAttachment::GetLastScopeAttachment(deviceIndex));
     }
 
-    BufferScopeAttachment* BufferFrameAttachment::GetLastScopeAttachment()
+    BufferScopeAttachment* BufferFrameAttachment::GetLastScopeAttachment(int deviceIndex)
     {
-        return static_cast<BufferScopeAttachment*>(FrameAttachment::GetLastScopeAttachment());
+        return static_cast<BufferScopeAttachment*>(FrameAttachment::GetLastScopeAttachment(deviceIndex));
     }
 
     const BufferDescriptor& BufferFrameAttachment::GetBufferDescriptor() const

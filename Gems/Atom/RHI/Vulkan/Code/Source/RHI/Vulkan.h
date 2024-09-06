@@ -50,6 +50,13 @@ namespace AZ
             {
                 return m_pipelineStage == other.m_pipelineStage && m_access == other.m_access;
             }
+
+            PipelineAccessFlags& operator|=(const PipelineAccessFlags& other)
+            {
+                m_pipelineStage |= other.m_pipelineStage;
+                m_access |= other.m_access;
+                return *this;
+            }
         };
 
         class Device;
@@ -137,6 +144,9 @@ namespace AZ
         bool SubresourceRangeOverlaps(const RHI::BufferSubresourceRange& lhs, const RHI::BufferSubresourceRange& rhs);
 
         bool IsRenderAttachmentUsage(RHI::ScopeAttachmentUsage usage);
+
+        /// Return true if the flags only included read accesses.
+        bool IsReadOnlyAccess(VkAccessFlags access);
 
         bool operator==(const VkImageSubresourceRange& lhs, const VkImageSubresourceRange& rhs);
 

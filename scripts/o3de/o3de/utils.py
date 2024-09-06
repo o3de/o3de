@@ -29,6 +29,7 @@ from subprocess import Popen, PIPE, STDOUT
 from typing import List, Tuple
 
 LOG_FORMAT = '[%(levelname)s] %(name)s: %(message)s'
+UI_MSG_FORMAT = '%(message)s'
 
 logger = logging.getLogger('o3de.utils')
 logging.basicConfig(format=LOG_FORMAT)

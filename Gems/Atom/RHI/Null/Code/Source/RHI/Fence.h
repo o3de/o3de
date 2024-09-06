@@ -28,7 +28,13 @@ namespace AZ
             
             //////////////////////////////////////////////////////////////////////////
             // RHI::DeviceFence
-            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] RHI::FenceState initialState) override { return RHI::ResultCode::Success;}
+            RHI::ResultCode InitInternal(
+                [[maybe_unused]] RHI::Device& device,
+                [[maybe_unused]] RHI::FenceState initialState,
+                [[maybe_unused]] bool usedForWaitingOnDevice) override
+            {
+                return RHI::ResultCode::Success;
+            }
             void ShutdownInternal() override {}
             void SignalOnCpuInternal() override {}
             void WaitOnCpuInternal() const override {}

@@ -109,7 +109,20 @@ namespace AZ::Render
         ImGui::SetNextWindowSize(ImVec2(300, 500), ImGuiCond_FirstUseEver);
         if (ImGui::Begin("PassTree", nullptr, ImGuiWindowFlags_None))
         {
-            DrawTreeView(rootPass);
+            m_passFilter.Draw("Pass Name Filter");
+            AZStd::unordered_set<Name> filteredPassNames;
+            if (GetFilteredPassNames(rootPass, filteredPassNames))
+            {
+                if (ImGui::BeginChild("Passes"))
+                {
+                    DrawTreeView(rootPass, filteredPassNames);
+                }
+                ImGui::EndChild();
+            }
+            else
+            {
+                ImGui::Text("No matching pass name found");
+            }
         }
         ImGui::End();
 
@@ -248,8 +261,13 @@ namespace AZ::Render
 
     }
 
-    inline void ImGuiPassTree::DrawTreeView(AZ::RPI::Pass* pass)
+    inline void ImGuiPassTree::DrawTreeView(AZ::RPI::Pass* pass, const AZStd::unordered_set<Name>& filteredPassNames)
     {
+        if (!filteredPassNames.contains(pass->GetPathName()))
+        {
+            return;
+        }
+
         AZ::RPI::ParentPass* asParent = pass->AsParent();
 
         bool enabled = pass->IsEnabled();
@@ -333,7 +351,7 @@ namespace AZ::Render
                 }
                 for (const auto& child : asParent->GetChildren())
                 {
-                    DrawTreeView(child.get());
+                    DrawTreeView(child.get(), filteredPassNames);
                 }
 
                 ImGui::TreePop();
@@ -350,6 +368,26 @@ namespace AZ::Render
         {
             m_selectedPass = pass;
         }
+    }
+
+    inline bool ImGuiPassTree::GetFilteredPassNames(AZ::RPI::Pass* pass, AZStd::unordered_set<Name>& filteredPassNames) const
+    {
+        bool anyChildMatch = m_passFilter.PassFilter(pass->GetName().GetCStr());
+
+        if (RPI::ParentPass* asParent = pass->AsParent())
+        {
+            for (const auto& child : asParent->GetChildren())
+            {
+                anyChildMatch |= GetFilteredPassNames(child.get(), filteredPassNames);
+            }
+        }
+
+        if (anyChildMatch)
+        {
+            filteredPassNames.insert(pass->GetPathName());
+        }
+
+        return anyChildMatch;
     }
 
     inline void ImGuiPassTree::ReadbackCallback(const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult)

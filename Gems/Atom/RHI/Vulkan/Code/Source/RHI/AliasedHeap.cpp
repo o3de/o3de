@@ -28,7 +28,7 @@ namespace AZ
 
         AZStd::unique_ptr<RHI::AliasingBarrierTracker> AliasedHeap::CreateBarrierTrackerInternal()
         {
-            return AZStd::make_unique<AliasingBarrierTracker>(GetVulkanRHIDevice());
+            return AZStd::make_unique<AliasingBarrierTracker>(GetVulkanRHIDevice(), GetDescriptor().m_budgetInBytes);
         }
 
         RHI::ResultCode AliasedHeap::InitInternal(RHI::Device& rhiDevice, const RHI::AliasedHeapDescriptor& descriptor)
@@ -113,10 +113,10 @@ namespace AZ
 
             BufferMemoryView memoryView = BufferMemoryView(bufferMemory);
 
+            buffer->SetDescriptor(bufferDescriptor);
             result = buffer->Init(GetVulkanRHIDevice(), bufferDescriptor, memoryView);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
-            buffer->SetDescriptor(bufferDescriptor);
             return RHI::ResultCode::Success;
         }
 

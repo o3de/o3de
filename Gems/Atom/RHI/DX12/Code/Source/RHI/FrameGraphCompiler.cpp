@@ -9,6 +9,7 @@
 #include <RHI/FrameGraphCompiler.h>
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <RHI/Buffer.h>
 #include <RHI/CommandQueueContext.h>
 #include <RHI/Conversions.h>
@@ -371,78 +372,74 @@ namespace AZ
 #else
             ResourceTransitionLoggerNull logger(bufferFrameAttachment.GetId());
 #endif
-            RHI::BufferScopeAttachment* scopeAttachment = bufferFrameAttachment.GetFirstScopeAttachment();
-
-            if (scopeAttachment == nullptr)
+            for (int deviceIndex{ 0 }; deviceIndex < RHI::RHISystemInterface::Get()->GetDeviceCount(); ++deviceIndex)
             {
-                AZ_WarningOnce("RHI", false, "Imported BufferFrameAttachment isn't used in any Scope");
-                return;
-            }
+                RHI::BufferScopeAttachment* scopeAttachment = bufferFrameAttachment.GetFirstScopeAttachment(deviceIndex);
 
-            // TODO:
-            // As the FrameGraph currently does not track ScopeAttachments per device but puts them all into one list,
-            // we currently insert transition barriers between resources on different devices.
-            // As this cannot be solved with the information at this point, we defer this until we properly handle
-            // linking between ScopeAttachments on a per-device basis
-
-            Scope& firstScope = static_cast<Scope&>(scopeAttachment->GetScope());
-            Buffer& buffer = static_cast<Buffer&>(*bufferFrameAttachment.GetBuffer()->GetDeviceBuffer(firstScope.GetDeviceIndex()));
-
-            D3D12_RESOURCE_TRANSITION_BARRIER transition;
-            transition.pResource = buffer.GetMemoryView().GetMemory();
-            transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-            transition.StateBefore = buffer.m_initialAttachmentState;
-            logger.SetStateBefore(transition.StateBefore);
-
-            if (firstScope.IsResourceDiscarded(*scopeAttachment))
-            {
-                auto afterState = GetDiscardResourceState(*scopeAttachment, ConvertBufferBindFlags(buffer.GetDescriptor().m_bindFlags));
-                if (afterState)
+                if (scopeAttachment == nullptr)
                 {
-                    transition.StateAfter = afterState.value();
-                    if (firstScope.IsStateSupportedByQueue(transition.StateBefore) &&
-                        firstScope.IsStateSupportedByQueue(transition.StateAfter))
-                    {
-                        logger.SetStateAfter(transition.StateAfter);
-                        logger.LogPreDiscardTransition(firstScope);
-                        firstScope.QueuePreDiscardTransition(transition);
+                    continue;
+                }
 
-                        transition.StateBefore = transition.StateAfter;
-                        logger.SetStateBefore(transition.StateBefore);
+                Scope& firstScope = static_cast<Scope&>(scopeAttachment->GetScope());
+                Buffer& buffer = static_cast<Buffer&>(*bufferFrameAttachment.GetBuffer()->GetDeviceBuffer(deviceIndex));
+
+                D3D12_RESOURCE_TRANSITION_BARRIER transition;
+                transition.pResource = buffer.GetMemoryView().GetMemory();
+                transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+                transition.StateBefore = buffer.m_initialAttachmentState;
+                logger.SetStateBefore(transition.StateBefore);
+
+                if (firstScope.IsResourceDiscarded(*scopeAttachment))
+                {
+                    auto afterState = GetDiscardResourceState(*scopeAttachment, ConvertBufferBindFlags(buffer.GetDescriptor().m_bindFlags));
+                    if (afterState)
+                    {
+                        transition.StateAfter = afterState.value();
+                        if (firstScope.IsStateSupportedByQueue(transition.StateBefore) &&
+                            firstScope.IsStateSupportedByQueue(transition.StateAfter))
+                        {
+                            logger.SetStateAfter(transition.StateAfter);
+                            logger.LogPreDiscardTransition(firstScope);
+                            firstScope.QueuePreDiscardTransition(transition);
+
+                            transition.StateBefore = transition.StateAfter;
+                            logger.SetStateBefore(transition.StateBefore);
+                        }
                     }
                 }
-            }
 
-            // Reset the initial state of the buffer back to common since we consumed it.
-            buffer.m_initialAttachmentState = D3D12_RESOURCE_STATE_COMMON;
+                // Reset the initial state of the buffer back to common since we consumed it.
+                buffer.m_initialAttachmentState = D3D12_RESOURCE_STATE_COMMON;
 
-            Scope* scopeBefore = rootScope;
-            while (scopeAttachment)
-            {
-                Scope& scopeAfter = static_cast<Scope&>(scopeAttachment->GetScope());
-                transition.StateAfter = GetResourceState(*scopeAttachment);
-                logger.SetStateAfter(transition.StateAfter);
-
-                /**
-                 * Due to implicit state promotion and decay (which applies to all buffers), we only need
-                 * to transition when the before and after scopes are on the same queue. Even then, we can
-                 * ignore transitions out of the common state.
-                 */
-                const bool onSameQueue = scopeBefore->GetHardwareQueueClass() == scopeAfter.GetHardwareQueueClass();
-                const bool inCommonState = transition.StateBefore == D3D12_RESOURCE_STATE_COMMON;
-                if (onSameQueue && !inCommonState)
+                Scope* scopeBefore = rootScope;
+                while (scopeAttachment)
                 {
-                    logger.LogPrologueTransition(scopeAfter);
-                    scopeAfter.QueuePrologueTransition(transition);
-                }
+                    Scope& scopeAfter = static_cast<Scope&>(scopeAttachment->GetScope());
+                    transition.StateAfter = GetResourceState(*scopeAttachment);
+                    logger.SetStateAfter(transition.StateAfter);
 
-                scopeAttachment = scopeAttachment->GetNext();
-                transition.StateBefore = transition.StateAfter;
-                scopeBefore = &scopeAfter;
-                logger.SetStateBefore(transition.StateBefore);
+                    /**
+                     * Due to implicit state promotion and decay (which applies to all buffers), we only need
+                     * to transition when the before and after scopes are on the same queue. Even then, we can
+                     * ignore transitions out of the common state.
+                     */
+                    const bool onSameQueue = scopeBefore->GetHardwareQueueClass() == scopeAfter.GetHardwareQueueClass();
+                    const bool inCommonState = transition.StateBefore == D3D12_RESOURCE_STATE_COMMON;
+                    if (onSameQueue && !inCommonState)
+                    {
+                        logger.LogPrologueTransition(scopeAfter);
+                        scopeAfter.QueuePrologueTransition(transition);
+                    }
+
+                    scopeAttachment = scopeAttachment->GetNext();
+                    transition.StateBefore = transition.StateAfter;
+                    scopeBefore = &scopeAfter;
+                    logger.SetStateBefore(transition.StateBefore);
+                }
             }
         }
-    
+
         void FrameGraphCompiler::CompileImageBarriers(RHI::ImageFrameAttachment& imageFrameAttachment)
         {
 #if defined(AZ_DX12_FRAMESCHEDULER_LOG_TRANSITIONS)
@@ -451,234 +448,238 @@ namespace AZ
             ResourceTransitionLoggerNull logger(imageFrameAttachment.GetId());
 #endif
 
-            RHI::ImageScopeAttachment* scopeAttachment = imageFrameAttachment.GetFirstScopeAttachment();
-
-            if (scopeAttachment == nullptr)
+            for (int deviceIndex{ 0 }; deviceIndex < RHI::RHISystemInterface::Get()->GetDeviceCount(); ++deviceIndex)
             {
-                AZ_WarningOnce("RHI", false, "Imported ImageFrameAttachment isn't used in any Scope");
-                return;
-            }
+                RHI::ImageScopeAttachment* scopeAttachment = imageFrameAttachment.GetFirstScopeAttachment(deviceIndex);
 
-            // TODO:
-            // As the FrameGraph currently does not track ScopeAttachments per device but puts them all into one list,
-            // we currently insert transition barriers between resources on different devices.
-            // As this cannot be solved with the information at this point, we defer this until we properly handle
-            // linking between ScopeAttachments on a per-device basis
-
-            Scope& firstScope = static_cast<Scope&>(scopeAttachment->GetScope());
-            Image& image = static_cast<Image&>(*imageFrameAttachment.GetImage()->GetDeviceImage(firstScope.GetDeviceIndex()));
-
-            const BarrierOp::CommandListState* barrierState = nullptr;
-            if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::Depth))
-            {
-                // Depth/Stencil resources needs to set the sample positions before doing barrier operations.
-                barrierState = &image.GetDescriptor().m_multisampleState;
-            }
-
-            D3D12_RESOURCE_TRANSITION_BARRIER transition = {0};
-            transition.pResource = image.GetMemoryView().GetMemory();
-
-            //Apply appropriate pre-discard transition
-            if (firstScope.IsResourceDiscarded(*scopeAttachment))
-            {
-                auto afterState = GetDiscardResourceState(*scopeAttachment, ConvertImageBindFlags(image.GetDescriptor().m_bindFlags));
-                if (afterState)
+                if (scopeAttachment == nullptr)
                 {
-                    transition.StateAfter = afterState.value();
-                    for (const auto& subresourceState : image.GetAttachmentStateByIndex())
-                    {
-                        transition.Subresource = subresourceState.m_subresourceIndex;
-                        transition.StateBefore = subresourceState.m_state;
-                        logger.SetStateBefore(transition.StateBefore);
-
-                        logger.SetStateAfter(transition.StateAfter);
-                        if (firstScope.IsStateSupportedByQueue(transition.StateBefore) &&
-                            firstScope.IsStateSupportedByQueue(transition.StateAfter))
-                        {
-                            logger.LogPreDiscardTransition(firstScope);
-                            firstScope.QueuePreDiscardTransition(transition, barrierState);
-                        }
-                        else
-                        {
-                            //Find the previous scope on higher capable queue and do the transition at the end of that scope
-                            Scope* previousScope = static_cast<Scope*>(firstScope.FindMoreCapableCrossQueueProducer());
-                            AZ_Assert(previousScope, "Coudn't find a scope to transiiton into the correct state for Discard");
-                            if (previousScope)
-                            {
-                                logger.LogEpilogueTransition(*previousScope);
-                                transition = previousScope->QueueEpilogueTransition(transition, barrierState);
-                            }
-                        }
-                        logger.SetStateBefore(transition.StateBefore);
-                        transition.StateBefore = transition.StateAfter;
-                        image.SetAttachmentState(transition.StateAfter, transition.Subresource);
-                    }
+                    continue;
                 }
-            }
-            
-            Scope* scopeBefore = nullptr;
-            while (scopeAttachment)
-            {
-                Scope& scopeAfter = static_cast<Scope&>(scopeAttachment->GetScope());
-                transition.StateAfter = GetResourceState(*scopeAttachment);
-                logger.SetStateAfter(transition.StateAfter);
 
-                RHI::ImageSubresourceRange viewRange = RHI::ImageSubresourceRange(scopeAttachment->GetImageView()->GetDescriptor());
-                for (const auto& subresourceState : image.GetAttachmentStateByIndex(&viewRange))
+                Scope& firstScope = static_cast<Scope&>(scopeAttachment->GetScope());
+                Image& image = static_cast<Image&>(*imageFrameAttachment.GetImage()->GetDeviceImage(deviceIndex));
+
+                const BarrierOp::CommandListState* barrierState = nullptr;
+                if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::Depth))
                 {
-                    transition.StateBefore = subresourceState.m_state;
-                    transition.Subresource = subresourceState.m_subresourceIndex;
-                    /**
-                     * We have all the information we need to transition the attachment. The transition
-                     * is occurring between two scopes (excluding the first scope), and each scope could be
-                     * on a different queue. The question is whether the transition needs to go at the end
-                     * of a (could be any) previous scope, at the beginning of the current scope.
-                     *
-                     * To answer that question, we need to consider the hardware queues of each scope and the
-                     * usage of the attachment. The constraint is that we are not allowed to transition to / from
-                     * a state that is incompatible with the queue class. That means, for instance, if we're transitioning
-                     * from depth-stencil read-write to non-pixel-shader-read, we must submit that barrier on the graphics
-                     * queue.
-                     */
+                    // Depth/Stencil resources needs to set the sample positions before doing barrier operations.
+                    barrierState = &image.GetDescriptor().m_multisampleState;
+                }
 
-                     // Check if we can service the request at the beginning of the current scope. This is the
-                     // normal case when transitioning within the same queue family.
-                    if (scopeAfter.IsStateSupportedByQueue(transition.StateBefore) &&
-                        scopeAfter.IsStateSupportedByQueue(transition.StateAfter))
+                D3D12_RESOURCE_TRANSITION_BARRIER transition = { 0 };
+                transition.pResource = image.GetMemoryView().GetMemory();
+
+                // Apply appropriate pre-discard transition
+                if (firstScope.IsResourceDiscarded(*scopeAttachment))
+                {
+                    auto afterState = GetDiscardResourceState(*scopeAttachment, ConvertImageBindFlags(image.GetDescriptor().m_bindFlags));
+                    if (afterState)
                     {
-                        // We can just queue the transition on the scope directly.
-                        logger.LogPrologueTransition(scopeAfter);
-                        if (scopeAttachment->GetUsage() == RHI::ScopeAttachmentUsage::Resolve)
+                        transition.StateAfter = afterState.value();
+                        for (const auto& subresourceState : image.GetAttachmentStateByIndex())
                         {
-                            transition = scopeAfter.QueueResolveTransition(transition, barrierState);
-                        }
-                        else
-                        {
-                            transition = scopeAfter.QueuePrologueTransition(transition, barrierState);
-                        }
-                    }
+                            transition.Subresource = subresourceState.m_subresourceIndex;
+                            transition.StateBefore = subresourceState.m_state;
+                            logger.SetStateBefore(transition.StateBefore);
 
-                    // Attempt to find a previous scope to service the request. This will occur when transitioning from a
-                    // higher-capability queue family to a lower-capability one.
-                    else
-                    {
-                        if (!scopeBefore)
-                        {
-                            /**
-                             * This attachment is the first usage of the frame, and its before state is incompatible
-                             * with the scope it's being used on. This happens if an imported attachment is used on
-                             * a lesser-capability queue as the first scope of the frame, but its current state is enabled
-                             * for a higher-capability queue.
-                             *
-                             * What we need to do is search for a scope guaranteed to execute earlier than us, and on a
-                             * higher-capability queue. We can do this by searching for a producer on that queue.
-                             */
-                            scopeBefore = static_cast<Scope*>(scopeAfter.FindMoreCapableCrossQueueProducer());
-
-                            if (AZ::RHI::Validation::IsEnabled())
+                            logger.SetStateAfter(transition.StateAfter);
+                            if (firstScope.IsStateSupportedByQueue(transition.StateBefore) &&
+                                firstScope.IsStateSupportedByQueue(transition.StateAfter))
                             {
-                                if (scopeBefore)
-                                {
-                                    /**
-                                     * Edge case for transient resources: if a scope changes its queue type from frame to frame, it may leave the
-                                     * resource in a state that is incompatible with the earliest scope in the lifetime of the next frame. This would
-                                     * happen if, for example, a resource ended on a graphics job in the PIXEL_SHADER_RESOURCE | NON_PIXEL_SHADER_RESOURCE state,
-                                     * but in the next frame, it becomes a compute job. If the resource is now (in the current frame) only used by
-                                     * compute jobs, we have no way of knowing that we need to extend the lifetime to accommodate the transition
-                                     * change. This only happens when queue classes are changed at runtime, and the effects are unknown at this
-                                     * time. It may rear its head as a potential corruption issue, so for now I am queuing a warning to correlate
-                                     * this event with potential visual artifacts.
-                                     */
-                                    if (imageFrameAttachment.GetLifetimeType() == RHI::AttachmentLifetimeType::Transient)
-                                    {
-                                        AZ_Warning("FrameScheduler", scopeBefore->GetIndex() >= imageFrameAttachment.GetFirstScope()->GetIndex(),
-                                            "Warning: Transition barrier search found '%s' as the best scope for '%s', but it is before the aliasing"
-                                            "barrier which occurs at '%s'. This may cause corruption.",
-                                            scopeBefore->GetId().GetCStr(),
-                                            imageFrameAttachment.GetId().GetCStr(),
-                                            imageFrameAttachment.GetFirstScope()->GetId().GetCStr());
-                                    }
-                                }
-                                else
-                                {
-                                    AZ_Error(
-                                        "FrameGraphCompiler", false,
-                                        "Failed to transition attachment '%s' on scope '%s'. Scope hardware queue does not support resource state "
-                                        "and no compatible producer was found to service the transition request. This can be avoided by always having "
-                                        "the first scope in the frame be on the graphics queue\n",
-                                        imageFrameAttachment.GetId().GetCStr(), scopeAfter.GetId().GetCStr());
-                                }
+                                logger.LogPreDiscardTransition(firstScope);
+                                firstScope.QueuePreDiscardTransition(transition, barrierState);
                             }
-                        }
-
-                        // Check if we can service the request at the end of the previous scope.
-                        if (scopeBefore)
-                        {
-                            // Moving out of copy queue.
-                            if (scopeBefore->GetHardwareQueueClass() == RHI::HardwareQueueClass::Copy)
-                            {
-                                transition.StateBefore = D3D12_RESOURCE_STATE_COMMON;
-
-                                // Transition from COMMON -> AFTER on graphics / compute scope.
-                                logger.SetStateBefore(transition.StateBefore);
-                                logger.SetStateAfter(transition.StateAfter);
-                                logger.LogPrologueTransition(scopeAfter);
-                                transition = scopeAfter.QueuePrologueTransition(transition, barrierState);
-                            }
-
-                            // Moving into copy queue.
-                            else if (scopeAfter.GetHardwareQueueClass() == RHI::HardwareQueueClass::Copy)
-                            {
-                                D3D12_RESOURCE_TRANSITION_BARRIER transitionCopy = transition;
-                                transitionCopy.StateAfter = D3D12_RESOURCE_STATE_COMMON;
-
-                                // Transition from BEFORE -> COMMON on before scope. Leave the after state intact
-                                // since state promotion will take care of it.
-                                logger.SetStateAfter(transitionCopy.StateAfter);
-                                logger.LogEpilogueTransition(*scopeBefore);
-                                transition = scopeBefore->QueueEpilogueTransition(transitionCopy, barrierState);
-                            }
-
-                            // Moving between compute / graphics queue.
                             else
                             {
-                                logger.LogEpilogueTransition(*scopeBefore);
-                                transition = scopeBefore->QueueEpilogueTransition(transition, barrierState);
+                                // Find the previous scope on higher capable queue and do the transition at the end of that scope
+                                Scope* previousScope = static_cast<Scope*>(firstScope.FindMoreCapableCrossQueueProducer());
+                                AZ_Assert(previousScope, "Coudn't find a scope to transiiton into the correct state for Discard");
+                                if (previousScope)
+                                {
+                                    logger.LogEpilogueTransition(*previousScope);
+                                    transition = previousScope->QueueEpilogueTransition(transition, barrierState);
+                                }
                             }
+                            logger.SetStateBefore(transition.StateBefore);
+                            transition.StateBefore = transition.StateAfter;
+                            image.SetAttachmentState(transition.StateAfter, transition.Subresource);
                         }
                     }
-
-                    // Add a transition to the resolve_source state if the image is
-                    // being resolved
-                    if (scopeAttachment->IsBeingResolved())
-                    {
-                        transition.StateBefore = transition.StateAfter;
-                        transition.StateAfter = D3D12_RESOURCE_STATE_RESOLVE_SOURCE;
-                        transition = scopeAfter.QueueResolveTransition(transition, barrierState);
-                    }
-                    image.SetAttachmentState(transition.StateAfter, transition.Subresource);
                 }
 
-                scopeAttachment = scopeAttachment->GetNext();
-                scopeBefore = !scopeAttachment || scopeAfter.GetId() != scopeAttachment->GetScope().GetId() ? &scopeAfter : scopeBefore;
-                logger.SetStateBefore(transition.StateBefore);
-            }
-
-            /**
-             * If this is the last usage of a swap chain, we require that it be in the common state for presentation.
-             */
-            const bool isSwapChain = (azrtti_cast<const RHI::SwapChainFrameAttachment*>(&imageFrameAttachment) != nullptr);
-            if (isSwapChain)
-            {
-                for (const auto& subresourceState : image.GetAttachmentStateByIndex())
+                Scope* scopeBefore = nullptr;
+                while (scopeAttachment)
                 {
-                    transition.StateBefore = subresourceState.m_state;
-                    transition.Subresource = subresourceState.m_subresourceIndex;
-                    transition.StateAfter = D3D12_RESOURCE_STATE_COMMON;
+                    Scope& scopeAfter = static_cast<Scope&>(scopeAttachment->GetScope());
+                    transition.StateAfter = GetResourceState(*scopeAttachment);
                     logger.SetStateAfter(transition.StateAfter);
-                    logger.LogEpilogueTransition(*scopeBefore);
-                    transition = scopeBefore->QueueEpilogueTransition(transition);
-                    image.SetAttachmentState(transition.StateAfter, transition.Subresource);
+
+                    RHI::ImageSubresourceRange viewRange = RHI::ImageSubresourceRange(scopeAttachment->GetImageView()->GetDescriptor());
+                    for (const auto& subresourceState : image.GetAttachmentStateByIndex(&viewRange))
+                    {
+                        transition.StateBefore = subresourceState.m_state;
+                        transition.Subresource = subresourceState.m_subresourceIndex;
+                        /**
+                         * We have all the information we need to transition the attachment. The transition
+                         * is occurring between two scopes (excluding the first scope), and each scope could be
+                         * on a different queue. The question is whether the transition needs to go at the end
+                         * of a (could be any) previous scope, at the beginning of the current scope.
+                         *
+                         * To answer that question, we need to consider the hardware queues of each scope and the
+                         * usage of the attachment. The constraint is that we are not allowed to transition to / from
+                         * a state that is incompatible with the queue class. That means, for instance, if we're transitioning
+                         * from depth-stencil read-write to non-pixel-shader-read, we must submit that barrier on the graphics
+                         * queue.
+                         */
+
+                        // Check if we can service the request at the beginning of the current scope. This is the
+                        // normal case when transitioning within the same queue family.
+                        if (scopeAfter.IsStateSupportedByQueue(transition.StateBefore) &&
+                            scopeAfter.IsStateSupportedByQueue(transition.StateAfter))
+                        {
+                            // We can just queue the transition on the scope directly.
+                            logger.LogPrologueTransition(scopeAfter);
+                            if (scopeAttachment->GetUsage() == RHI::ScopeAttachmentUsage::Resolve)
+                            {
+                                transition = scopeAfter.QueueResolveTransition(transition, barrierState);
+                            }
+                            else
+                            {
+                                transition = scopeAfter.QueuePrologueTransition(transition, barrierState);
+                            }
+                        }
+
+                        // Attempt to find a previous scope to service the request. This will occur when transitioning from a
+                        // higher-capability queue family to a lower-capability one.
+                        else
+                        {
+                            if (!scopeBefore)
+                            {
+                                /**
+                                 * This attachment is the first usage of the frame, and its before state is incompatible
+                                 * with the scope it's being used on. This happens if an imported attachment is used on
+                                 * a lesser-capability queue as the first scope of the frame, but its current state is enabled
+                                 * for a higher-capability queue.
+                                 *
+                                 * What we need to do is search for a scope guaranteed to execute earlier than us, and on a
+                                 * higher-capability queue. We can do this by searching for a producer on that queue.
+                                 */
+                                scopeBefore = static_cast<Scope*>(scopeAfter.FindMoreCapableCrossQueueProducer());
+
+                                if (AZ::RHI::Validation::IsEnabled())
+                                {
+                                    if (scopeBefore)
+                                    {
+                                        /**
+                                         * Edge case for transient resources: if a scope changes its queue type from frame to frame, it may
+                                         * leave the resource in a state that is incompatible with the earliest scope in the lifetime of the
+                                         * next frame. This would happen if, for example, a resource ended on a graphics job in the
+                                         * PIXEL_SHADER_RESOURCE | NON_PIXEL_SHADER_RESOURCE state, but in the next frame, it becomes a
+                                         * compute job. If the resource is now (in the current frame) only used by compute jobs, we have no
+                                         * way of knowing that we need to extend the lifetime to accommodate the transition change. This
+                                         * only happens when queue classes are changed at runtime, and the effects are unknown at this time.
+                                         * It may rear its head as a potential corruption issue, so for now I am queuing a warning to
+                                         * correlate this event with potential visual artifacts.
+                                         */
+                                        if (imageFrameAttachment.GetLifetimeType() == RHI::AttachmentLifetimeType::Transient)
+                                        {
+                                            AZ_Warning(
+                                                "FrameScheduler",
+                                                scopeBefore->GetIndex() >= imageFrameAttachment.GetFirstScope(deviceIndex)->GetIndex(),
+                                                "Warning: Transition barrier search found '%s' as the best scope for '%s', but it is "
+                                                "before the aliasing"
+                                                "barrier which occurs at '%s'. This may cause corruption.",
+                                                scopeBefore->GetId().GetCStr(),
+                                                imageFrameAttachment.GetId().GetCStr(),
+                                                imageFrameAttachment.GetFirstScope(deviceIndex)->GetId().GetCStr());
+                                        }
+                                    }
+                                    else
+                                    {
+                                        AZ_Error(
+                                            "FrameGraphCompiler",
+                                            false,
+                                            "Failed to transition attachment '%s' on scope '%s'. Scope hardware queue does not support "
+                                            "resource state "
+                                            "and no compatible producer was found to service the transition request. This can be avoided "
+                                            "by always having "
+                                            "the first scope in the frame be on the graphics queue\n",
+                                            imageFrameAttachment.GetId().GetCStr(),
+                                            scopeAfter.GetId().GetCStr());
+                                    }
+                                }
+                            }
+
+                            // Check if we can service the request at the end of the previous scope.
+                            if (scopeBefore)
+                            {
+                                // Moving out of copy queue.
+                                if (scopeBefore->GetHardwareQueueClass() == RHI::HardwareQueueClass::Copy)
+                                {
+                                    transition.StateBefore = D3D12_RESOURCE_STATE_COMMON;
+
+                                    // Transition from COMMON -> AFTER on graphics / compute scope.
+                                    logger.SetStateBefore(transition.StateBefore);
+                                    logger.SetStateAfter(transition.StateAfter);
+                                    logger.LogPrologueTransition(scopeAfter);
+                                    transition = scopeAfter.QueuePrologueTransition(transition, barrierState);
+                                }
+
+                                // Moving into copy queue.
+                                else if (scopeAfter.GetHardwareQueueClass() == RHI::HardwareQueueClass::Copy)
+                                {
+                                    D3D12_RESOURCE_TRANSITION_BARRIER transitionCopy = transition;
+                                    transitionCopy.StateAfter = D3D12_RESOURCE_STATE_COMMON;
+
+                                    // Transition from BEFORE -> COMMON on before scope. Leave the after state intact
+                                    // since state promotion will take care of it.
+                                    logger.SetStateAfter(transitionCopy.StateAfter);
+                                    logger.LogEpilogueTransition(*scopeBefore);
+                                    transition = scopeBefore->QueueEpilogueTransition(transitionCopy, barrierState);
+                                }
+
+                                // Moving between compute / graphics queue.
+                                else
+                                {
+                                    logger.LogEpilogueTransition(*scopeBefore);
+                                    transition = scopeBefore->QueueEpilogueTransition(transition, barrierState);
+                                }
+                            }
+                        }
+
+                        // Add a transition to the resolve_source state if the image is
+                        // being resolved
+                        if (scopeAttachment->IsBeingResolved())
+                        {
+                            transition.StateBefore = transition.StateAfter;
+                            transition.StateAfter = D3D12_RESOURCE_STATE_RESOLVE_SOURCE;
+                            transition = scopeAfter.QueueResolveTransition(transition, barrierState);
+                        }
+                        image.SetAttachmentState(transition.StateAfter, transition.Subresource);
+                    }
+
+                    scopeAttachment = scopeAttachment->GetNext();
+                    scopeBefore = !scopeAttachment || scopeAfter.GetId() != scopeAttachment->GetScope().GetId() ? &scopeAfter : scopeBefore;
+                    logger.SetStateBefore(transition.StateBefore);
+                }
+
+                /**
+                 * If this is the last usage of a swap chain, we require that it be in the common state for presentation.
+                 */
+                const bool isSwapChain = (azrtti_cast<const RHI::SwapChainFrameAttachment*>(&imageFrameAttachment) != nullptr);
+                if (isSwapChain)
+                {
+                    for (const auto& subresourceState : image.GetAttachmentStateByIndex())
+                    {
+                        transition.StateBefore = subresourceState.m_state;
+                        transition.Subresource = subresourceState.m_subresourceIndex;
+                        transition.StateAfter = D3D12_RESOURCE_STATE_COMMON;
+                        logger.SetStateAfter(transition.StateAfter);
+                        logger.LogEpilogueTransition(*scopeBefore);
+                        transition = scopeBefore->QueueEpilogueTransition(transition);
+                        image.SetAttachmentState(transition.StateAfter, transition.Subresource);
+                    }
                 }
             }
         }

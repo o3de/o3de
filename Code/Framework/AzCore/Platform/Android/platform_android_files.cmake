@@ -27,6 +27,9 @@ set(FILES
     ../Common/Unimplemented/AzCore/PlatformIncl_Unimplemented.h
     ../Common/UnixLike/AzCore/Platform_UnixLike.cpp
     AzCore/PlatformIncl_Platform.h
+    AzCore/Serialization/Locale_Platform.h
+    ../Common/UnixLike/AzCore/Serialization/Locale_UnixLike.h
+    ../Common/UnixLike/AzCore/Serialization/Locale_UnixLike.cpp
     ../Common/UnixLike/AzCore/Process/ProcessInfo_UnixLike.cpp
     ../Common/Unimplemented/AzCore/Debug/StackTracer_Unimplemented.cpp
     ../Common/UnixLike/AzCore/Debug/Trace_UnixLike.cpp

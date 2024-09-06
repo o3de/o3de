@@ -188,11 +188,6 @@ namespace AZ::RHI
 
     void ShaderResourceGroupPool::Shutdown()
     {
-        IterateObjects<DeviceShaderResourceGroupPool>([]([[maybe_unused]] auto deviceIndex, auto deviceShaderResourceGroupPool)
-        {
-            deviceShaderResourceGroupPool->Shutdown();
-        });
-
         ResourcePool::Shutdown();
     }
 } // namespace AZ::RHI

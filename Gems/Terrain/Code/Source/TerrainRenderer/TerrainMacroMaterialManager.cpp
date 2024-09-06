@@ -39,12 +39,11 @@ namespace Terrain
             return;
         }
         
-        auto deviceMask{AZStd::to_underlying(terrainSrg->GetRHIShaderResourceGroup()->GetDeviceMask())};
         auto deviceCount = AZ::RHI::RHISystemInterface::Get()->GetDeviceCount();
 
         for (auto deviceIndex{0}; deviceIndex < deviceCount; ++deviceIndex)
         {
-            if (deviceMask & (1 << deviceIndex))
+            if (terrainSrg->GetRHIShaderResourceGroup()->IsDeviceSet(deviceIndex))
             {
                 m_materialShaderData[deviceIndex] = {};
             }

@@ -253,7 +253,7 @@ namespace AZ
             AZ::Vector2 m_position;
             AZ::Vector2 m_size;
             AZ::RPI::ViewportContextPtr m_viewportContext;
-            const AZ::RHI::Viewport* m_viewport;
+            AZ::RHI::Viewport m_viewport;
         };
         DrawParameters ExtractDrawParameters(const AzFramework::TextDrawParameters& params, AZStd::string_view text, bool forceCalculateSize);
 

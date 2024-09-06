@@ -176,4 +176,11 @@ namespace O3DE::ProjectManager
             QWidget* parent = nullptr,
             QMessageBox::StandardButtons buttons = QMessageBox::Ok);
     } // namespace ProjectUtils
+
+    namespace ErrorMessages
+    {
+        static const char * ExportCancelled =   "Export Cancelled.";
+        static const char * LogOpenFailureMsg = "Failed to open log file.";
+        static const char * LogPathFailureMsg = "Failed to retrieve log file path.";
+    }
 } // namespace O3DE::ProjectManager

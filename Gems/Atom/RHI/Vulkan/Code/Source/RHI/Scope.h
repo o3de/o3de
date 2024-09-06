@@ -42,8 +42,7 @@ namespace AZ
 
             enum class BarrierSlot : uint32_t
             {
-                Aliasing = 0,   // First to be executed in the scope.
-                Clear,
+                Clear = 0,      // First to be executed in the scope.
                 Prologue,
                 Epilogue,
                 Resolve,        // Last to be executed in the scope.
@@ -68,7 +67,7 @@ namespace AZ
             //! Adds a barrier for a scope attachment resource to be emitted at a later time.
             //! Returns the barrier inserted. This barrier may have been merged with a previously inserted barrier.
             template<class T>
-            const Barrier& QueueAttachmentBarrier(
+            const Barrier QueueAttachmentBarrier(
                 const RHI::ScopeAttachment& attachment,
                 BarrierSlot slot,
                 const VkPipelineStageFlags src,
@@ -76,18 +75,6 @@ namespace AZ
                 const T& barrier)
             {
                 return QueueBarrierInternal(&attachment, slot, src, dst, barrier);
-            }
-
-            //! Adds a barrier over a resource that is not a scope attachment that will be emitted at a later time.
-            //! Returns the barrier inserted. This barrier may have been merged with a previously inserted barrier.
-            template<class T>
-            const Barrier& QueueBarrier(
-                BarrierSlot slot,
-                const VkPipelineStageFlags src,
-                const VkPipelineStageFlags dst,
-                const T& barrier)
-            {
-                return QueueBarrierInternal(nullptr, slot, src, dst, barrier);
             }
 
             //! Execute the queued barriers into the provided commandlist.
@@ -155,6 +142,10 @@ namespace AZ
                 bool Overlaps(const Barrier& barrier, OverlapType overlapType) const;
 
                 void Combine(const Barrier& rhs);
+
+                // Returns false if the barrier is not needed because is a read after read access with no
+                // ownership transfer or layout transition.
+                bool IsNeeded() const;
             };
 
             using BarrierList = AZStd::array<AZStd::vector<Barrier>, BarrierSlotCount>;
@@ -186,7 +177,7 @@ namespace AZ
             bool CanOptimizeBarrier(const Barrier& barrier, BarrierSlot slot) const;
 
             template<class T>
-            const Barrier& QueueBarrierInternal(
+            const Barrier QueueBarrierInternal(
                 const RHI::ScopeAttachment* attachment,
                 BarrierSlot slot,
                 const VkPipelineStageFlags src,
@@ -195,13 +186,16 @@ namespace AZ
 
             // Converts barriers to implicit subpass barriers if possible.
             void OptimizeBarriers();
+            
+            void OptimizeBarrier(const Barrier& unoptimizedBarrier, BarrierSlot slot);
+            void BuildGlobalBarriers(BarrierSlot slot);
 
             // List of barriers that are not yet optimized.
             BarrierList m_unoptimizedBarriers;
             // List of barriers that must be execute outside the renderpass.
             BarrierList m_scopeBarriers;
-            // List of barriers that are part of the subpass.
-            BarrierList m_subpassBarriers;
+            // List of barriers that are merged as a global memory barrier.
+            BarrierList m_globalBarriers;
 
             AZStd::vector<Semaphore::WaitSemaphore> m_waitSemaphores;
             AZStd::vector<RHI::Ptr<Semaphore>> m_signalSemaphores;
@@ -222,7 +216,7 @@ namespace AZ
         };
 
         template<class T>
-        const Scope::Barrier& Scope::QueueBarrierInternal(
+        const Scope::Barrier Scope::QueueBarrierInternal(
             const RHI::ScopeAttachment* attachment,
             BarrierSlot slot,
             const VkPipelineStageFlags src,
@@ -234,6 +228,29 @@ namespace AZ
             barrier.m_attachment = attachment;
             barrier.m_dstStageMask = dst;
             barrier.m_srcStageMask = src;
+
+            if (!barrier.IsNeeded())
+            {
+                // If the barrier is not needed, we add the source access to the destination access,
+                // so future barriers can synchronize properly. E.g. a read after read barrier needs
+                // future barriers to synchronize with both read accesses (the first and the second read accesses). 
+                barrier.m_dstStageMask |= barrier.m_srcStageMask;
+                switch (barrier.m_type)
+                {
+                case VK_STRUCTURE_TYPE_MEMORY_BARRIER:
+                    barrier.m_memoryBarrier.dstAccessMask |= barrier.m_memoryBarrier.srcAccessMask;
+                    break;
+                case VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER:
+                    barrier.m_bufferBarrier.dstAccessMask |= barrier.m_bufferBarrier.srcAccessMask;
+                    break;
+                case VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER:
+                    barrier.m_imageBarrier.dstAccessMask |= barrier.m_imageBarrier.srcAccessMask;
+                    break;
+                default:
+                    break;
+                }
+                return barrier;
+            }
 
             auto& unoptimizedBarriers = m_unoptimizedBarriers[static_cast<uint32_t>(slot)];
             auto findIt = AZStd::find_if(

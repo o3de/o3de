@@ -17,9 +17,7 @@ namespace AZ
     namespace Render
     {
         //! This pass builds the RayTracing acceleration structures for a scene
-        class RayTracingAccelerationStructurePass final
-            : public RPI::Pass
-            , public RHI::ScopeProducer
+        class RayTracingAccelerationStructurePass final : public RPI::Pass
         {
         public:
             AZ_RPI_PASS(RayTracingAccelerationStructurePass);
@@ -40,8 +38,8 @@ namespace AZ
             explicit RayTracingAccelerationStructurePass(const RPI::PassDescriptor& descriptor);
 
             // Scope producer functions
-            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
-            void BuildCommandList(const RHI::FrameGraphExecuteContext& context) override;
+            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph);
+            void BuildCommandList(const RHI::FrameGraphExecuteContext& context);
 
             // Pass overrides
             void BuildInternal() override;
@@ -71,11 +69,17 @@ namespace AZ
             // Used to set some build options for the TLASes
             static AZ::RHI::RayTracingAccelerationStructureBuildFlags CreateRayTracingAccelerationStructureBuildFlags(bool isSkinnedMesh);
 
+            // Scope producers for each device
+            AZStd::unordered_map<int, AZStd::shared_ptr<AZ::RHI::ScopeProducer>> m_scopeProducers;
+
             // buffer view descriptor for the TLAS
             RHI::BufferViewDescriptor m_tlasBufferViewDescriptor;
 
             // revision number of the ray tracing data when the TLAS was built
             uint32_t m_rayTracingRevision = 0;
+
+            // revision out of date
+            bool m_rayTracingRevisionOutDated{ false };
 
             // keeps track of the current frame to determine updates or rebuilds of the skinned BLASes
             uint64_t m_frameCount = 0;
@@ -84,13 +88,10 @@ namespace AZ
             static constexpr uint32_t SKINNED_BLAS_REBUILD_FRAME_INTERVAL = 8;
 
             // Readback results from the Timestamp queries
-            AZ::RPI::TimestampResult m_timestampResult;
+            AZStd::unordered_map<int, AZ::RPI::TimestampResult> m_timestampResults;
 
             // Readback results from the PipelineStatistics queries
-            AZ::RPI::PipelineStatisticsResult m_statisticsResult;
-
-            // The device index the pass ran on during the last frame, necessary to read the queries.
-            int m_lastDeviceIndex = RHI::MultiDevice::DefaultDeviceIndex;
+            AZStd::unordered_map<int, AZ::RPI::PipelineStatisticsResult> m_statisticsResults;
 
             // For each ScopeProducer an instance of the ScopeQuery is created, which consists
             // of a Timestamp and PipelineStatistic query.

@@ -26,6 +26,11 @@
 #include <RHI/Device.h>
 #include <RHI/Conversion.h>
 #include <RHI/BufferView.h>
+#include <AzCore/Console/IConsole.h>
+
+AZ_CVAR(bool, r_vkOptimizeBarriers, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+    "Optimize resource barriers using a single global barrier and removing not needed barriers (read after read access).\
+     Useful when debugging to see all generated barriers.");
 
 namespace AZ
 {
@@ -179,6 +184,32 @@ namespace AZ
                 break;
             default:
                 break;
+            }
+        }
+
+        bool Scope::Barrier::IsNeeded() const
+        {
+            if (!r_vkOptimizeBarriers)
+            {
+                return true;
+            }
+
+            // Read after read access don't need synchronization.
+            switch (m_type)
+            {
+            case VK_STRUCTURE_TYPE_MEMORY_BARRIER:
+                return !(IsReadOnlyAccess(m_memoryBarrier.srcAccessMask) && IsReadOnlyAccess(m_memoryBarrier.dstAccessMask));
+            case VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER:
+                // Ownership transfer need barriers.
+                return !(m_bufferBarrier.srcQueueFamilyIndex == m_bufferBarrier.dstQueueFamilyIndex &&
+                    IsReadOnlyAccess(m_bufferBarrier.srcAccessMask) && IsReadOnlyAccess(m_bufferBarrier.dstAccessMask));
+            case VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER:
+                // Ownership transfer and layout transitions need barriers.
+                return !(m_imageBarrier.srcQueueFamilyIndex == m_imageBarrier.dstQueueFamilyIndex &&
+                    m_imageBarrier.oldLayout == m_imageBarrier.newLayout &&
+                    IsReadOnlyAccess(m_imageBarrier.srcAccessMask) && IsReadOnlyAccess(m_imageBarrier.dstAccessMask));
+            default:
+                return false;
             }
         }
 
@@ -386,7 +417,7 @@ namespace AZ
             {
                 m_unoptimizedBarriers[i].clear();
                 m_scopeBarriers[i].clear();
-                m_subpassBarriers[i].clear();
+                m_globalBarriers[i].clear();
             }
 
             m_usesRenderpass = false;
@@ -449,9 +480,9 @@ namespace AZ
             m_queryPoolAttachments.push_back({ queryPool, interval, access });
         }
 
-        bool Scope::CanOptimizeBarrier(const Barrier& barrier, BarrierSlot slot) const
+        bool Scope::CanOptimizeBarrier([[maybe_unused]] const Barrier& barrier, [[maybe_unused]] BarrierSlot slot) const
         {
-            if (!UsesRenderpass() || !barrier.m_attachment)
+            if (!r_vkOptimizeBarriers)
             {
                 return false;
             }
@@ -459,19 +490,6 @@ namespace AZ
             // Check that the destination pipeline stages are supported by the Pipeline
             VkPipelineStageFlags filteredDstStages = RHI::FilterBits(barrier.m_dstStageMask, GetSupportedPipelineStages(RHI::PipelineStateType::Draw));
             if (filteredDstStages == VkPipelineStageFlags(0))
-            {
-                return false;
-            }
-
-            const RHI::ScopeAttachment* scopeAttachment = barrier.m_attachment;
-            while (scopeAttachment != nullptr && scopeAttachment->GetScope().GetId() == GetId())
-            {
-                scopeAttachment = slot == BarrierSlot::Prologue ? scopeAttachment->GetPrevious() : scopeAttachment->GetNext();
-            }                
-
-            // We don't optimize external barriers because they cause renderpass incompatiblity with the pipeline renderpass.
-            // The subpass dependencies added by the optimization causes the incompatibility.
-            if (!scopeAttachment || scopeAttachment->GetScope().GetFrameGraphGroupId() != GetFrameGraphGroupId())
             {
                 return false;
             }
@@ -485,8 +503,10 @@ namespace AZ
             case VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER:
                 if (barrier.m_imageBarrier.srcQueueFamilyIndex == barrier.m_imageBarrier.dstQueueFamilyIndex)
                 {
-                    // Check if the barrier is a renderpass image attachment (to replace it with a subpass dependency and an automatic subpass layout transition)
-                    if (IsRenderAttachmentUsage(scopeAttachment->GetUsage()))
+                    // Check if the barrier is a renderpass image attachment (to replace it with a memory barrier and an automatic subpass layout transition)
+                    // or if it's not doing a layout transition (we just use a memory barrier).
+                    if ((UsesRenderpass()  && IsRenderAttachmentUsage(barrier.m_attachment->GetUsage())) ||
+                        barrier.m_imageBarrier.oldLayout == barrier.m_imageBarrier.newLayout)
                     {
                         // Since we need to preserve the order of the barriers, and scope barriers are execute before
                         // subpass barriers, we need to check that there's no barrier for the same resource already in the
@@ -513,123 +533,135 @@ namespace AZ
             }
         }
 
+        void Scope::OptimizeBarrier(const Barrier& unoptimizedBarrier, BarrierSlot slot)
+        {
+            uint32_t slotIndex = aznumeric_caster(slot);
+            AZStd::vector<Barrier>& barriers =
+                CanOptimizeBarrier(unoptimizedBarrier, slot) ? m_globalBarriers[slotIndex] : m_scopeBarriers[slotIndex];
+            auto filteredBarrier = unoptimizedBarrier;
+            filteredBarrier.m_dstStageMask = RHI::FilterBits(unoptimizedBarrier.m_dstStageMask, m_deviceSupportedPipelineStageFlags);
+            filteredBarrier.m_srcStageMask = RHI::FilterBits(unoptimizedBarrier.m_srcStageMask, m_deviceSupportedPipelineStageFlags);            
+
+            switch (slot)
+            {
+            case BarrierSlot::Prologue:
+                barriers.insert(barriers.begin(), filteredBarrier);
+                break;
+            case BarrierSlot::Epilogue:
+                barriers.push_back(filteredBarrier);
+                break;
+            default:
+                AZ_Assert(false, "Invalid slot type %d", slot);
+                break;
+            }        
+        }
+
         void Scope::OptimizeBarriers()
         {
-            auto optimizeBarrierFunc = [this](const Barrier& unoptimizedBarrier, BarrierSlot slot)
-            {
-                uint32_t slotIndex = aznumeric_caster(slot);
-                AZStd::vector<Barrier>& barriers = CanOptimizeBarrier(unoptimizedBarrier, slot) ? m_subpassBarriers[slotIndex] : m_scopeBarriers[slotIndex];
-                auto filteredBarrier = unoptimizedBarrier;
-                filteredBarrier.m_dstStageMask = RHI::FilterBits(unoptimizedBarrier.m_dstStageMask, m_deviceSupportedPipelineStageFlags);
-                filteredBarrier.m_srcStageMask = RHI::FilterBits(unoptimizedBarrier.m_srcStageMask, m_deviceSupportedPipelineStageFlags);
-
-                switch (filteredBarrier.m_type)
-                {
-                case VK_STRUCTURE_TYPE_MEMORY_BARRIER:
-                {
-                    // All memory barriers can be group into one.
-                    auto findIt = AZStd::find_if(barriers.begin(), barriers.end(), [](const Barrier& element) {return element.m_type == VK_STRUCTURE_TYPE_MEMORY_BARRIER; });
-                    if (findIt != barriers.end())
-                    {
-                        Barrier& foundBarrier = *findIt;
-                        AddStageMasks(foundBarrier, filteredBarrier);
-                        AddAccessStages(foundBarrier.m_memoryBarrier, filteredBarrier.m_memoryBarrier);
-                        return;
-                    }
-                    break;
-                }
-                case VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER:
-                {
-                    // Merge all buffer barriers that affect the same buffer region into one.
-                    auto findIt = AZStd::find_if(barriers.begin(), barriers.end(), [&filteredBarrier](const Barrier& element)
-                    {
-                        return element.m_type == VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER &&
-                            element.m_bufferBarrier.buffer == filteredBarrier.m_bufferBarrier.buffer &&
-                            element.m_bufferBarrier.offset == filteredBarrier.m_bufferBarrier.offset &&
-                            element.m_bufferBarrier.size == filteredBarrier.m_bufferBarrier.size &&
-                            element.m_bufferBarrier.srcQueueFamilyIndex == filteredBarrier.m_bufferBarrier.srcQueueFamilyIndex &&
-                            element.m_bufferBarrier.dstQueueFamilyIndex == filteredBarrier.m_bufferBarrier.dstQueueFamilyIndex;
-                    });
-
-
-                    if (findIt != barriers.end())
-                    {
-                        // Merge the stage and access flags of the barriers.
-                        Barrier& foundBarrier = *findIt;
-                        AddStageMasks(foundBarrier, filteredBarrier);
-                        AddAccessStages(foundBarrier.m_bufferBarrier, filteredBarrier.m_bufferBarrier);
-                        return;
-                    }
-                    break;
-                }
-                case VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER:
-                {
-                    // Merge all image barriers that affect the same image region into one.
-                    auto findIt = AZStd::find_if(barriers.begin(), barriers.end(), [&filteredBarrier](const Barrier& element)
-                    {
-                        return element.m_type == VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER &&
-                            element.m_imageBarrier.image == filteredBarrier.m_imageBarrier.image &&
-                            element.m_imageBarrier.subresourceRange == filteredBarrier.m_imageBarrier.subresourceRange &&
-                            element.m_imageBarrier.srcQueueFamilyIndex == filteredBarrier.m_imageBarrier.srcQueueFamilyIndex &&
-                            element.m_imageBarrier.dstQueueFamilyIndex == filteredBarrier.m_imageBarrier.dstQueueFamilyIndex;
-                    });
-
-                    if (findIt != barriers.end())
-                    {
-                        // Merge the stage and access flags of the barriers.
-                        Barrier& foundBarrier = *findIt;
-                        AddStageMasks(foundBarrier, filteredBarrier);
-                        AddAccessStages(foundBarrier.m_imageBarrier, filteredBarrier.m_imageBarrier);
-                        // The new layout will be equal to the new layout of the new barrier since this was added
-                        // after the found barrier.
-                        foundBarrier.m_imageBarrier.oldLayout = slot == BarrierSlot::Prologue ? filteredBarrier.m_imageBarrier.oldLayout : foundBarrier.m_imageBarrier.oldLayout;
-                        foundBarrier.m_imageBarrier.newLayout = slot == BarrierSlot::Prologue ? foundBarrier.m_imageBarrier.newLayout : filteredBarrier.m_imageBarrier.newLayout;
-                        return;
-                    }
-                    break;
-                }
-                default:
-                    AZ_Assert(false, "Invalid memory barrier type.");
-                    return;
-                }
-
-                switch (slot)
-                {
-                case BarrierSlot::Prologue:
-                    barriers.insert(barriers.begin(), filteredBarrier);
-                    break;
-                case BarrierSlot::Epilogue:
-                    barriers.push_back(filteredBarrier);
-                    break;
-                default:
-                    AZ_Assert(false, "Invalid slot type %d", slot);
-                    break;
-                }                
-            };
-
+            // Group resource barriers into a global barrier when possible. This seems to be more efficient than having multiple barriers
+            // for each resource. Ownership transfers and layout transitions for non render attachments cannot be group into a global barrier.
             uint32_t prologueIndex = aznumeric_caster(BarrierSlot::Prologue);
             uint32_t epilogueIndex = aznumeric_caster(BarrierSlot::Epilogue);
             // Traverse in reverse order because we can only optimize a barrier if we know that
             // all subsequent barriers over the same resource can also be optimize (so the order is preserve).
-            // This is because optimized barriers (i.e. subpass implicit barriers) are execute AFTER scope barriers.
+            // This is because the global barrier is executed at the end of the prologue scope barriers.
             // By traversing in reverse order we can easily check if all subsequent barriers are also optimized.
             for (auto it = m_unoptimizedBarriers[prologueIndex].rbegin(); it != m_unoptimizedBarriers[prologueIndex].rend(); ++it)
             {
-                optimizeBarrierFunc(*it, BarrierSlot::Prologue);
+                OptimizeBarrier(*it, BarrierSlot::Prologue);
             }
 
             for (auto it = m_unoptimizedBarriers[epilogueIndex].begin(); it != m_unoptimizedBarriers[epilogueIndex].end(); ++it)
             {
-                optimizeBarrierFunc(*it, BarrierSlot::Epilogue);
+                OptimizeBarrier(*it, BarrierSlot::Epilogue);
             }
 
+            // Merge all the optimizable barriers into one global barrier.
+            BuildGlobalBarriers(BarrierSlot::Prologue);
+            BuildGlobalBarriers(BarrierSlot::Epilogue);
+
+            // Other stages just get copied.
             const uint32_t resolveIndex = aznumeric_caster(BarrierSlot::Resolve);
             const uint32_t clearIndex = aznumeric_caster(BarrierSlot::Clear);
-            const uint32_t aliasingIndex = aznumeric_caster(BarrierSlot::Aliasing);
             m_scopeBarriers[resolveIndex] = m_unoptimizedBarriers[resolveIndex];
             m_scopeBarriers[clearIndex] = m_unoptimizedBarriers[clearIndex];
-            m_scopeBarriers[aliasingIndex] = m_unoptimizedBarriers[aliasingIndex];
-        }        
+        }
+
+        void Scope::BuildGlobalBarriers(BarrierSlot slot)
+        {
+            auto& subpassBarriers = m_globalBarriers[aznumeric_caster(slot)];
+            if (subpassBarriers.empty())
+            {
+                return;
+            }
+
+            // Check if we can move the barrier as a subpass dependency.
+            // We don't do this for external subpass dependencies because they cause incompatiblity with
+            // the renderpass used for building a pipeline state.
+            auto canBeSubpassDependency = [&](const Barrier& barrier)
+            {
+                const RHI::ScopeAttachment* scopeAttachment = barrier.m_attachment;
+                while (scopeAttachment != nullptr && scopeAttachment->GetScope().GetId() == GetId())
+                {
+                    scopeAttachment = slot == BarrierSlot::Prologue ? scopeAttachment->GetPrevious() : scopeAttachment->GetNext();
+                }
+
+                if (!scopeAttachment || scopeAttachment->GetScope().GetFrameGraphGroupId() != GetFrameGraphGroupId())
+                {
+                    return false;
+                }
+                return true;
+            };
+
+            VkPipelineStageFlags srcStageMask = 0;
+            VkPipelineStageFlags dstStageMask = 0;
+            VkMemoryBarrier vkMemoryBarrier{};
+            vkMemoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+            for (auto it : subpassBarriers)
+            {
+                // If we can transform the barrier into a subpass dependency we don't need to
+                // add it to memory barrier. Just skip it.
+                if (canBeSubpassDependency(it))
+                {
+                    continue;
+                }
+
+                srcStageMask |= it.m_srcStageMask;
+                dstStageMask |= it.m_dstStageMask;
+                switch (it.m_type)
+                {
+                case VK_STRUCTURE_TYPE_MEMORY_BARRIER:
+                    vkMemoryBarrier.srcAccessMask |= it.m_memoryBarrier.srcAccessMask;
+                    vkMemoryBarrier.dstAccessMask |= it.m_memoryBarrier.dstAccessMask;
+                    break;
+                case VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER:
+                    vkMemoryBarrier.srcAccessMask |= it.m_bufferBarrier.srcAccessMask;
+                    vkMemoryBarrier.dstAccessMask |= it.m_bufferBarrier.dstAccessMask;
+                    break;
+                case VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER:
+                    vkMemoryBarrier.srcAccessMask |= it.m_bufferBarrier.srcAccessMask;
+                    vkMemoryBarrier.dstAccessMask |= it.m_bufferBarrier.dstAccessMask;
+                    break;
+                default:
+                    AZ_Assert(false, "Invalid barrier type %s", it.m_type);
+                    break;
+                }
+            }
+            // Add the global memory barrier.
+            Barrier memoryBarrier(vkMemoryBarrier);
+            memoryBarrier.m_srcStageMask = srcStageMask;
+            memoryBarrier.m_dstStageMask = dstStageMask;
+            memoryBarrier.m_dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+            auto& barriers = m_scopeBarriers[aznumeric_caster(slot)];
+            if (slot == BarrierSlot::Epilogue)
+            {
+                barriers.push_back(AZStd::move(memoryBarrier));
+            }
+            else
+            {
+                barriers.insert(barriers.begin(), AZStd::move(memoryBarrier));
+            }
+        }
 
         void Scope::OnFrameCompileEnd(RHI::FrameGraph& frameGraph)
         {

@@ -15,15 +15,13 @@ namespace AZ::RHI
     DrawItem::DrawItem(MultiDevice::DeviceMask deviceMask)
         : m_deviceMask{ deviceMask }
     {
-        auto deviceCount{ RHI::RHISystemInterface::Get()->GetDeviceCount() };
-
-        for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
-        {
-            if ((AZStd::to_underlying(m_deviceMask) >> deviceIndex) & 1)
+        MultiDeviceObject::IterateDevices(
+            m_deviceMask,
+            [this](int deviceIndex)
             {
                 m_deviceDrawItems.emplace(deviceIndex, DeviceDrawItem{});
-            }
-        }
+                return true;
+            });
 
         for(auto& [deviceIndex, drawItem] : m_deviceDrawItems)
         {

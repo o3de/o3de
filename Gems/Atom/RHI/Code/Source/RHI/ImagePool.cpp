@@ -70,17 +70,31 @@ namespace AZ::RHI
             initRequest.m_descriptor,
             [this, &initRequest]()
             {
-                ResultCode result = IterateObjects<DeviceImagePool>([&initRequest](auto deviceIndex, auto deviceImagePool)
-                {
-                    if (!initRequest.m_image->m_deviceObjects.contains(deviceIndex))
-                    {
-                        initRequest.m_image->m_deviceObjects[deviceIndex] = Factory::Get().CreateImage();
-                    }
+                initRequest.m_image->Init(GetDeviceMask() & initRequest.m_deviceMask);
 
-                    DeviceImageInitRequest imageInitRequest(
-                        *initRequest.m_image->GetDeviceImage(deviceIndex), initRequest.m_descriptor, initRequest.m_optimizedClearValue);
-                    return deviceImagePool->InitImage(imageInitRequest);
-                });
+                ResultCode result = IterateObjects<DeviceImagePool>(
+                    [&initRequest](auto deviceIndex, auto deviceImagePool)
+                    {
+                        if (CheckBit(initRequest.m_image->GetDeviceMask(), deviceIndex))
+                        {
+                            if (!initRequest.m_image->m_deviceObjects.contains(deviceIndex))
+                            {
+                                initRequest.m_image->m_deviceObjects[deviceIndex] = Factory::Get().CreateImage();
+                            }
+
+                            DeviceImageInitRequest imageInitRequest(
+                                *initRequest.m_image->GetDeviceImage(deviceIndex),
+                                initRequest.m_descriptor,
+                                initRequest.m_optimizedClearValue);
+                            return deviceImagePool->InitImage(imageInitRequest);
+                        }
+                        else
+                        {
+                            initRequest.m_image->m_deviceObjects.erase(deviceIndex);
+                        }
+
+                        return ResultCode::Success;
+                    });
 
                 if (result != ResultCode::Success)
                 {
@@ -90,6 +104,39 @@ namespace AZ::RHI
                 }
 
                 return result;
+            });
+    }
+
+    ResultCode ImagePool::UpdateImageDeviceMask(const ImageDeviceMaskRequest& request)
+    {
+        return IterateObjects<DeviceImagePool>(
+            [&request](auto deviceIndex, auto deviceImagePool)
+            {
+                if (CheckBit(request.m_deviceMask, deviceIndex))
+                {
+                    if (!request.m_image->m_deviceObjects.contains(deviceIndex))
+                    {
+                        request.m_image->m_deviceObjects[deviceIndex] = Factory::Get().CreateImage();
+
+                        DeviceImageInitRequest imageInitRequest(
+                            *request.m_image->GetDeviceImage(deviceIndex), request.m_image->m_descriptor, request.m_optimizedClearValue);
+                        auto result = deviceImagePool->InitImage(imageInitRequest);
+
+                        if (result == ResultCode::Success)
+                        {
+                            request.m_image->Init(SetBit(request.m_image->GetDeviceMask(), deviceIndex));
+                        }
+
+                        return result;
+                    }
+                }
+                else
+                {
+                    request.m_image->Init(ResetBit(request.m_image->GetDeviceMask(), deviceIndex));
+                    request.m_image->m_deviceObjects.erase(deviceIndex);
+                }
+
+                return ResultCode::Success;
             });
     }
 
@@ -131,11 +178,6 @@ namespace AZ::RHI
 
     void ImagePool::Shutdown()
     {
-        IterateObjects<DeviceImagePool>([]([[maybe_unused]] auto deviceIndex, auto deviceImagePool)
-        {
-            deviceImagePool->Shutdown();
-        });
-
         ResourcePool::Shutdown();
     }
 } // namespace AZ::RHI

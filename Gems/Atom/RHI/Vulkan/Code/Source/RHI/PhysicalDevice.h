@@ -35,6 +35,8 @@ namespace AZ
             BufferDeviceAddress,
             SubgroupOperation,
             MemoryBudget,
+            LoadNoneOp,
+            StoreNoneOp,
             Count // Must be last
         };
 
@@ -63,6 +65,7 @@ namespace AZ
             FragmentDensityMap,
             Renderpass2,
             TimelineSempahore,
+            LoadStoreOpNone,
             Count
         };
 
@@ -114,6 +117,8 @@ namespace AZ
             void LoadSupportedFeatures(const GladVulkanContext& context);
             //! Filter optional extensions based on what the physics device support.
             RawStringList FilterSupportedOptionalExtensions();
+            //! Returns the supported vulkan version of the physical device.
+            uint32_t GetVulkanVersion() const;
 
         private:
             
@@ -150,6 +155,8 @@ namespace AZ
             VkPhysicalDeviceFragmentDensityMapPropertiesEXT m_fragmentDensityMapProperties{};
             VkPhysicalDeviceFragmentShadingRatePropertiesKHR m_fragmentShadingRateProperties{};
             VkPhysicalDeviceTimelineSemaphoreFeatures m_timelineSemaphoreFeatures{};
+
+            uint32_t m_vulkanVersion = 0;
         };
     }
 }
