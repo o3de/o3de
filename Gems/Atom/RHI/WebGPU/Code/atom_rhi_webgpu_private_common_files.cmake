@@ -36,7 +36,6 @@ set(FILES
     Source/RHI/DispatchRaysIndirectBuffer.h
     Source/RHI/Fence.cpp
     Source/RHI/Fence.h
-    Source/RHI/Formats.inl
     Source/RHI/FrameGraphCompiler.cpp
     Source/RHI/FrameGraphCompiler.h
     Source/RHI/FrameGraphExecuter.cpp
