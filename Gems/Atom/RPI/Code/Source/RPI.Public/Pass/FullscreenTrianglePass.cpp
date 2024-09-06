@@ -184,9 +184,7 @@ namespace AZ
             // This draw item purposefully does not reference any geometry buffers.
             // Instead it's expected that the extended class uses a vertex shader 
             // that generates a full-screen triangle completely from vertex ids.
-            RHI::DrawLinear draw = RHI::DrawLinear();
-            draw.m_vertexCount = 3;
-            m_geometryView.SetDrawArguments(draw);
+            m_geometryView.SetDrawArguments(RHI::DrawLinear(3, 0));
 
             m_item.SetGeometryView(& m_geometryView);
             m_item.SetPipelineState(m_pipelineStateForDraw.Finalize());

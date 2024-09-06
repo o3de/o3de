@@ -632,7 +632,7 @@ namespace AZ
             };
 
             m_reflectionRenderData.m_geometryView.SetIndexBufferView(indexBufferView);
-            m_reflectionRenderData.m_geometryView.SetDrawArguments(RHI::DrawIndexed{ 1, 0, 0, numIndices, 0 });
+            m_reflectionRenderData.m_geometryView.SetDrawArguments(RHI::DrawIndexed{ 0, numIndices, 0 });
 
             // create position buffer
             m_boxPositionBuffer = aznew RHI::Buffer;

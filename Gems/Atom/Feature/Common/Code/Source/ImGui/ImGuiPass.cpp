@@ -640,13 +640,14 @@ namespace AZ
                         }
 
                         RHI::GeometryView geometryView;
-                        geometryView.SetDrawArguments(RHI::DrawIndexed(1, index, vertexOffset, drawCmd.ElemCount, indexOffset));
+                        geometryView.SetDrawArguments(RHI::DrawIndexed(vertexOffset, drawCmd.ElemCount, indexOffset));
                         geometryView.SetIndexBufferView(m_indexBufferView);
                         geometryView.AddStreamBufferView(m_vertexBufferView[0]);
                         geometryView.AddStreamBufferView(m_vertexBufferView[1]);
 
                         m_drawInfos.Get().push_back(
                             {
+                                RHI::DrawInstanceArguments(1, index),
                                 geometryView,
                                 RHI::Scissor(
                                     static_cast<int32_t>(drawCmd.ClipRect.x),
@@ -686,6 +687,7 @@ namespace AZ
             {
                 DrawInfo& drawInfo = m_drawInfos.Get().at(i);
                 RHI::DeviceDrawItem drawItem;
+                drawItem.m_drawInstanceArgs = drawInfo.m_drawInstanceArgs;
                 drawItem.m_geometryView = drawInfo.m_geometryView.GetDeviceGeometryView(context.GetDeviceIndex());
                 drawItem.m_streamIndices = drawInfo.m_geometryView.GetFullStreamBufferIndices();
                 drawItem.m_pipelineState = m_pipelineState->GetRHIPipelineState()->GetDevicePipelineState(context.GetDeviceIndex()).get();

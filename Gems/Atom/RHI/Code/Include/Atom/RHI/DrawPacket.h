@@ -69,11 +69,6 @@ namespace AZ::RHI
         //! Set the instance count in all draw items.
         void SetInstanceCount(uint32_t instanceCount);
 
-        void SetGeometryView(GeometryView* geometryView)
-        {
-            m_geometryView = geometryView;
-        }
-
         const DeviceDrawPacket* GetDeviceDrawPacket(int deviceIndex) const
         {
             AZ_Error(
@@ -91,9 +86,6 @@ namespace AZ::RHI
 
         //! The bit-mask of all active filter tags.
         DrawListMask m_drawListMask{};
-
-        //! Collection of per-device GeometryView
-        GeometryView* m_geometryView;
 
         //! List of draw items.
         AZStd::vector<DrawItem> m_drawItems;

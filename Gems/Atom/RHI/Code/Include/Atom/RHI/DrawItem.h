@@ -148,9 +148,16 @@ namespace AZ::RHI
             }
         }
 
+        void SetDrawInstanceArgs(const RHI::DrawInstanceArguments& drawInstanceArgs)
+        {
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
+            {
+                drawItem->m_drawInstanceArgs = drawInstanceArgs;
+            }
+        }
+
         void SetGeometryView(RHI::GeometryView* geometryView)
         {
-            m_geometryView = geometryView;
             for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
             {
                 drawItem->m_geometryView = geometryView->GetDeviceGeometryView(deviceIndex);
@@ -159,7 +166,6 @@ namespace AZ::RHI
 
         void SetStreamIndices(RHI::StreamBufferIndices streamIndices)
         {
-            m_streamIndices = streamIndices;
             for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
             {
                 drawItem->m_streamIndices = streamIndices;
@@ -168,12 +174,6 @@ namespace AZ::RHI
 
     private:
         bool m_enabled{ true };
-
-        //! A class that wraps a map of all device-specific GeometryView, indexed by the device index
-        const RHI::GeometryView* m_geometryView;
-
-        //! Indices of the StreamBufferViews in the GeometryView that this DrawItem will use
-        RHI::StreamBufferIndices m_streamIndices;
 
         MultiDevice::DeviceMask m_deviceMask{ MultiDevice::DefaultDevice };
 

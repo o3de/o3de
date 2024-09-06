@@ -168,7 +168,7 @@ namespace AZ
                     }
 
                     primitive.m_geometryView = m_geometryView;
-                    primitive.m_geometryView.SetDrawArguments(RHI::DrawIndexed(1, 0, 0, primitive.m_indexCount, primitive.m_indexOffset));
+                    primitive.m_geometryView.SetDrawArguments(RHI::DrawIndexed(0, primitive.m_indexCount, primitive.m_indexOffset));
 
                     for (auto& view : auxGeomViews)
                     {

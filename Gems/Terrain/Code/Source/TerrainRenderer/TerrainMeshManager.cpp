@@ -304,7 +304,7 @@ namespace Terrain
     {
         AZ::RHI::DrawPacketBuilder drawPacketBuilder{AZ::RHI::MultiDevice::AllDevices};
         uint32_t indexCount = m_indexBuffer->GetBufferViewDescriptor().m_elementCount;
-        sector.m_geometryView.SetDrawArguments(AZ::RHI::DrawIndexed(1, 0, 0, indexCount, 0));
+        sector.m_geometryView.SetDrawArguments(AZ::RHI::DrawIndexed(0, indexCount, 0));
         sector.m_geometryView.SetIndexBufferView(m_indexBufferView);
 
         drawPacketBuilder.Begin(nullptr);
@@ -361,7 +361,7 @@ namespace Terrain
         for (uint32_t i = 0; i < 4; ++i)
         {
             sector.m_quadrantGeometryViews[i] = sector.m_geometryView;
-            sector.m_quadrantGeometryViews[i].SetDrawArguments( AZ::RHI::DrawIndexed(1, 0, 0, lowerLodIndexCount, lowerLodIndexCount * i) );
+            sector.m_quadrantGeometryViews[i].SetDrawArguments( AZ::RHI::DrawIndexed(0, lowerLodIndexCount, lowerLodIndexCount * i) );
 
             AZ::RHI::DrawPacketBuilder quadrantDrawPacketBuilder = commonQuadrantDrawPacketBuilder;
             quadrantDrawPacketBuilder.SetGeometryView(&sector.m_quadrantGeometryViews[i]);

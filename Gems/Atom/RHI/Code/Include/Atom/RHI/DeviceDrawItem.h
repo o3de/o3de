@@ -36,6 +36,8 @@ namespace AZ::RHI
     {
         DeviceDrawItem() = default;
 
+        DrawInstanceArguments m_drawInstanceArgs;
+
         /// Indices of the StreamBufferViews in the GeometryView that this DrawItem will use
         StreamBufferIndices m_streamIndices;
         uint8_t m_stencilRef = 0;

@@ -92,7 +92,6 @@ namespace AZ
 
                     RHI::DrawIndexed drawIndexed;
                     drawIndexed.m_indexCount = bufferViewDescriptor.m_elementCount;
-                    drawIndexed.m_instanceCount = 1;
                     meshInstance.SetDrawArguments(drawIndexed);
 
                     TrackBuffer(indexBuffer);

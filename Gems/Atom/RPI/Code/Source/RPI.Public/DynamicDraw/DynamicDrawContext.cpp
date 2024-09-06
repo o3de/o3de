@@ -503,7 +503,6 @@ namespace AZ
 
             RHI::DrawIndexed drawIndexed;
             drawIndexed.m_indexCount = indexCount;
-            drawIndexed.m_instanceCount = 1;
             newGeometryView.SetDrawArguments(drawIndexed);
 
             // Write data to vertex buffer and set up stream buffer views for DrawItem
@@ -599,11 +598,7 @@ namespace AZ
             // --- Geometry View ---
 
             RHI::GeometryView newGeometryView;
-
-            RHI::DrawLinear drawLinear;
-            drawLinear.m_instanceCount = 1;
-            drawLinear.m_vertexCount = vertexCount;
-            newGeometryView.SetDrawArguments(drawLinear);
+            newGeometryView.SetDrawArguments(RHI::DrawLinear(vertexCount, 0));
 
             // Write data to vertex buffer and set up stream buffer views for DrawItem
             // The stream buffer view need to be cached before the frame is end

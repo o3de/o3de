@@ -284,7 +284,7 @@ namespace AZ::Render
 
     RHI::ConstPtr<RHI::DrawPacket> StarsFeatureProcessor::BuildDrawPacket()
     {
-        m_geometryView.SetDrawArguments(RHI::DrawLinear{ 1, 0, m_numStarsVertices, 0 });
+        m_geometryView.SetDrawArguments(RHI::DrawLinear{ m_numStarsVertices, 0 });
 
         RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
         drawPacketBuilder.Begin(nullptr);

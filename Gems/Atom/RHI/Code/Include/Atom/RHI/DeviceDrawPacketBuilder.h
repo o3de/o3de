@@ -56,7 +56,9 @@ namespace AZ::RHI
 
         void Begin(IAllocator* allocator);
 
-        void SetGeometryView(DeviceGeometryView* geometryView);
+        void SetGeometryView(const DeviceGeometryView* geometryView);
+
+        void SetDrawInstanceArguments(const DrawInstanceArguments& drawInstanceArgs);
 
         void SetRootConstants(AZStd::span<const uint8_t> rootConstants);
 
@@ -84,7 +86,8 @@ namespace AZ::RHI
         void ClearData();
 
         IAllocator* m_allocator = nullptr;
-        DeviceGeometryView* m_geometryView = nullptr;
+        const DeviceGeometryView* m_geometryView = nullptr;
+        DrawInstanceArguments m_drawInstanceArgs;
         DrawListMask m_drawListMask = 0;
         AZStd::fixed_vector<DeviceDrawRequest, DrawItemCountMax> m_drawRequests;
         AZStd::fixed_vector<const DeviceShaderResourceGroup*, Limits::Pipeline::ShaderResourceGroupCountMax> m_shaderResourceGroups;

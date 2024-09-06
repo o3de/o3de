@@ -83,15 +83,6 @@ namespace AZ::RHI
             }
         }
 
-        inline void SetIndexInstanceCount(uint32_t instanceCount)
-        {
-            m_drawArguments.m_indexed.m_instanceCount = instanceCount;
-            for (auto& [deviceIndex, geometryView] : m_geometryViews)
-            {
-                geometryView.SetIndexInstanceCount(instanceCount);
-            }
-        }
-
         // --- Index Buffer View ---
 
         inline const IndexBufferView& GetIndexBufferView() const { return m_indexBufferView; }

@@ -464,16 +464,27 @@ namespace UnitTest
             RHI::DeviceDrawPacketBuilder builder2;
             RHI::DeviceDrawPacket* drawPacketClone = const_cast<RHI::DeviceDrawPacket*>(builder2.Clone(drawPacket));
 
+            uint8_t drawItemCount = drawPacketClone->m_drawItemCount;
+
             // Test default value
             EXPECT_EQ(drawPacketClone->m_geometryView->GetDrawArguments().m_type, RHI::DrawType::Indexed);
-            EXPECT_EQ(drawPacketClone->m_geometryView->GetDrawArguments().m_indexed.m_instanceCount, 1);
+            for (uint8_t i = 0; i < drawItemCount; ++i)
+            {
+                const RHI::DeviceDrawItem* drawItemClone = drawPacketClone->m_drawItems + i;
+                EXPECT_EQ(drawItemClone->m_drawInstanceArgs.m_instanceCount, 1);
+            }
 
-            // Set and test new instance count
             drawPacketClone->SetInstanceCount(12);
-            EXPECT_EQ(drawPacketClone->m_geometryView->GetDrawArguments().m_indexed.m_instanceCount, 12);
 
-            // Check that the original draw packet is not affected
-            //EXPECT_EQ(drawPacket->m_geometryView->GetDrawArguments().m_indexed.m_instanceCount, 1);
+            for (uint8_t i = 0; i < drawItemCount; ++i)
+            {
+                const RHI::DeviceDrawItem* drawItemClone = drawPacketClone->m_drawItems + i;
+                EXPECT_EQ(drawItemClone->m_drawInstanceArgs.m_instanceCount, 12);
+
+                // Check that the original draw packet is not affected
+                const RHI::DeviceDrawItem* drawItem = drawPacket->m_drawItems + i;
+                EXPECT_EQ(drawItem->m_drawInstanceArgs.m_instanceCount, 1);
+            }
 
             delete drawPacket;
             delete drawPacketClone;

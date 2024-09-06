@@ -80,6 +80,9 @@ namespace AZ::RHI
 
     void DrawPacket::SetInstanceCount(uint32_t instanceCount)
     {
-        m_geometryView->SetIndexInstanceCount(instanceCount);
+        for (auto& [_, deviceDrawPacket] : m_deviceDrawPackets)
+        {
+            deviceDrawPacket->SetInstanceCount(instanceCount);
+        }
     }
 } // namespace AZ::RHI

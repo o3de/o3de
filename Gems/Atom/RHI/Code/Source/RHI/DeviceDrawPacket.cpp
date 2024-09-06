@@ -91,6 +91,13 @@ namespace AZ::RHI
 
     void DeviceDrawPacket::SetInstanceCount(uint32_t instanceCount)
     {
-        m_geometryView->SetIndexInstanceCount(instanceCount);
+        for (size_t drawItemIndex = 0; drawItemIndex < m_drawItemCount; ++drawItemIndex)
+        {
+            const DeviceDrawItem* drawItemConst = m_drawItems + drawItemIndex;
+            // Need to mutate for mesh instancing.
+            // This should be used after cloning the draw packet from DeviceDrawPacketBuilder.
+            DeviceDrawItem* drawItem = const_cast<DeviceDrawItem*>(drawItemConst);
+            drawItem->m_drawInstanceArgs.m_instanceCount = instanceCount;
+        }
     }
 }

@@ -1128,7 +1128,7 @@ namespace AZ
                     numPrimsToRender *= 3;
                 }
 
-                m_geometryView.SetDrawArguments(RHI::DrawIndexed{ 1, 0, 0, numPrimsToRender, 0 });
+                m_geometryView.SetDrawArguments(RHI::DrawIndexed{ 0, numPrimsToRender, 0 });
 
                 drawPacketBuilder.Begin(nullptr);
                 drawPacketBuilder.SetGeometryView(&m_geometryView);

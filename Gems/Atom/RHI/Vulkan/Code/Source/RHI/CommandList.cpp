@@ -317,10 +317,10 @@ namespace AZ
                 context.CmdDrawIndexed(
                     m_nativeCommandBuffer,
                     indexed.m_indexCount,
-                    indexed.m_instanceCount,
+                    drawItem.m_drawInstanceArgs.m_instanceCount,
                     indexed.m_indexOffset,
                     indexed.m_vertexOffset,
-                    indexed.m_instanceOffset);
+                    drawItem.m_drawInstanceArgs.m_instanceOffset);
                 break;
             }
             case RHI::DrawType::Linear:
@@ -328,7 +328,11 @@ namespace AZ
                 const RHI::DrawLinear& linear = drawItem.m_geometryView->GetDrawArguments().m_linear;
 
                 context.CmdDraw(
-                    m_nativeCommandBuffer, linear.m_vertexCount, linear.m_instanceCount, linear.m_vertexOffset, linear.m_instanceOffset);
+                    m_nativeCommandBuffer,
+                    linear.m_vertexCount,
+                    drawItem.m_drawInstanceArgs.m_instanceCount,
+                    linear.m_vertexOffset,
+                    drawItem.m_drawInstanceArgs.m_instanceOffset);
                 break;
             }
             case RHI::DrawType::Indirect:

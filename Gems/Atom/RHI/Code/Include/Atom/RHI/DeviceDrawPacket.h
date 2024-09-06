@@ -96,6 +96,8 @@ namespace AZ::RHI
         // The allocator used to release the memory when Release() is called.
         IAllocator* m_allocator = nullptr;
 
+        DrawInstanceArguments m_drawInstanceArgs;
+
         // The bit-mask of all active filter tags.
         DrawListMask m_drawListMask = 0;
 
@@ -110,7 +112,7 @@ namespace AZ::RHI
         DeviceDrawItem* m_drawItems = nullptr;
 
         // Contains DrawArguments and geometry buffer views used during rendering
-        DeviceGeometryView* m_geometryView = nullptr;
+        const DeviceGeometryView* m_geometryView = nullptr;
 
         // List of draw item sort keys associated with the draw item index.
         const DrawItemSortKey* m_drawItemSortKeys = nullptr;

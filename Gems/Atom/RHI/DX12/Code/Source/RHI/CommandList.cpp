@@ -608,10 +608,10 @@ namespace AZ
 
                 GetCommandList()->DrawIndexedInstanced(
                     indexed.m_indexCount,
-                    indexed.m_instanceCount,
+                    drawItem.m_drawInstanceArgs.m_instanceCount,
                     indexed.m_indexOffset,
                     indexed.m_vertexOffset,
-                    indexed.m_instanceOffset);
+                    drawItem.m_drawInstanceArgs.m_instanceOffset);
                 break;
             }
 
@@ -620,9 +620,9 @@ namespace AZ
                 const RHI::DrawLinear& linear = drawItem.m_geometryView->GetDrawArguments().m_linear;
                 GetCommandList()->DrawInstanced(
                     linear.m_vertexCount,
-                    linear.m_instanceCount,
+                    drawItem.m_drawInstanceArgs.m_instanceCount,
                     linear.m_vertexOffset,
-                    linear.m_instanceOffset);
+                    drawItem.m_drawInstanceArgs.m_instanceOffset);
                 break;
             }
 

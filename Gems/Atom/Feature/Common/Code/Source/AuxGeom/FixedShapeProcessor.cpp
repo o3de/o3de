@@ -1302,7 +1302,7 @@ namespace AZ
 
             // Setup point index buffer view
             u32 pointIndexCount = static_cast<uint32_t>(meshData.m_pointIndices.size());
-            objectBuffers.m_pointGeometryView.SetDrawArguments(RHI::DrawIndexed{ 1, 0, 0, pointIndexCount, 0 });
+            objectBuffers.m_pointGeometryView.SetDrawArguments(RHI::DrawIndexed{ 0, pointIndexCount, 0 });
             objectBuffers.m_pointGeometryView.SetIndexBufferView(
             {
                 *objectBuffers.m_pointIndexBuffer,
@@ -1313,7 +1313,7 @@ namespace AZ
 
             // Setup line index buffer view
             u32 lineIndexCount = static_cast<uint32_t>(meshData.m_lineIndices.size());
-            objectBuffers.m_lineGeometryView.SetDrawArguments(RHI::DrawIndexed{ 1, 0, 0, lineIndexCount, 0 });
+            objectBuffers.m_lineGeometryView.SetDrawArguments(RHI::DrawIndexed{ 0, lineIndexCount, 0 });
             objectBuffers.m_lineGeometryView.SetIndexBufferView(
             {
                 *objectBuffers.m_lineIndexBuffer,
@@ -1324,7 +1324,7 @@ namespace AZ
 
             // Setup triangle index buffer view
             u32 triangleIndexCount = static_cast<uint32_t>(meshData.m_triangleIndices.size());
-            objectBuffers.m_triangleGeometryView.SetDrawArguments(RHI::DrawIndexed{ 1, 0, 0, triangleIndexCount, 0 });
+            objectBuffers.m_triangleGeometryView.SetDrawArguments(RHI::DrawIndexed{ 0, triangleIndexCount, 0 });
             objectBuffers.m_triangleGeometryView.SetIndexBufferView(
             {
                 *objectBuffers.m_triangleIndexBuffer,

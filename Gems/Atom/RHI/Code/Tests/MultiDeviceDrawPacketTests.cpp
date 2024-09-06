@@ -106,7 +106,7 @@ namespace UnitTest
                 data[i] = random.GetRandom();
             }
 
-            m_geometryView.SetDrawArguments(RHI::DrawIndexed{ 1, random.GetRandom(), random.GetRandom(), random.GetRandom(), random.GetRandom() });
+            m_geometryView.SetDrawArguments(RHI::DrawIndexed{ random.GetRandom(), random.GetRandom(), random.GetRandom() });
             m_geometryView.SetIndexBufferView({ *m_bufferEmpty, random.GetRandom(), random.GetRandom(), RHI::IndexFormat::Uint16 });
 
             for (u32 i = 0; i < RHI::Limits::Pipeline::StreamCountMax; ++i)
@@ -269,8 +269,6 @@ namespace UnitTest
             size_t tagIndex = 0;
             for (auto& drawList : listsByTag)
             {
-                SortDrawList(drawList, RHI::DrawListSortType::KeyThenDepth);
-
                 RHI::DrawListTag tag(tagIndex);
 
                 RHI::DrawListView drawListView = drawListContext.GetList(tag);
@@ -441,16 +439,36 @@ namespace UnitTest
             RHI::DrawPacketBuilder builder2(LocalDeviceMask);
             auto drawPacketClone = builder2.Clone(drawPacket.get());
 
+            const uint8_t drawItemCount =
+                static_cast<uint8_t>(AZStd::min<size_t>(drawPacket->GetDrawItemCount(), MultiDeviceDrawPacketData::DrawItemCountMax));
+
             // Test default value
             EXPECT_EQ(drawPacketClone->m_geometryView->GetDrawArguments().m_type, RHI::DrawType::Indexed);
-            EXPECT_EQ(drawPacketClone->m_geometryView->GetDrawArguments().m_indexed.m_instanceCount, 1);
 
-            // Set and test new instance count
+            // Test default value
+            for (uint8_t i = 0; i < drawItemCount; ++i)
+            {
+                for (auto deviceIndex{ 0 }; deviceIndex < LocalDeviceCount; ++deviceIndex)
+                {
+                    const auto& drawItemClone = drawPacketClone->m_drawItems[i].GetDeviceDrawItem(deviceIndex);
+                    EXPECT_EQ(drawItemClone.m_drawInstanceArgs.m_instanceCount, 1);
+                }
+            }
+
             drawPacketClone->SetInstanceCount(12);
-            EXPECT_EQ(drawPacketClone->m_geometryView->GetDrawArguments().m_indexed.m_instanceCount, 12);
 
-            // Check that the original draw packet is not affected
-            //EXPECT_EQ(drawPacket->m_geometryView->GetDrawArguments().m_indexed.m_instanceCount, 1);
+            for (uint8_t i = 0; i < drawItemCount; ++i)
+            {
+                for (auto deviceIndex{ 0 }; deviceIndex < LocalDeviceCount; ++deviceIndex)
+                {
+                    const auto& drawItemClone = drawPacketClone->m_drawItems[i].GetDeviceDrawItem(deviceIndex);
+                    EXPECT_EQ(drawItemClone.m_drawInstanceArgs.m_instanceCount, 12);
+
+                    // Check that the original draw packet is not affected
+                    const auto& drawItem = drawPacket->m_drawItems[i].GetDeviceDrawItem(deviceIndex);
+                    EXPECT_EQ(drawItem.m_drawInstanceArgs.m_instanceCount, 1);
+                }
+            }
         }
 
         void TestSetRootConstants()

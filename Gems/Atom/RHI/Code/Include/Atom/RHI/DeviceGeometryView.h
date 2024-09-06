@@ -158,9 +158,6 @@ namespace AZ::RHI
         void SetDrawArguments(DeviceDrawArguments drawArguments) { m_drawArguments = drawArguments; }
         const DeviceDrawArguments& GetDrawArguments() const { return m_drawArguments; }
 
-        //! Sets the intance count on the indexed draw. Used for instancing.
-        void SetIndexInstanceCount(u32 count) { m_drawArguments.m_indexed.m_instanceCount = count; }
-
         // --- IndexBufferView ---
 
         void SetIndexBufferView(DeviceIndexBufferView indexBufferView) { m_indexBufferView = indexBufferView; }

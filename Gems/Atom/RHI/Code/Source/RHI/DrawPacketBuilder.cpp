@@ -149,7 +149,6 @@ namespace AZ::RHI
             m_drawPacketInFlight->m_deviceDrawPackets[deviceIndex] = deviceDrawPacketBuilder.End();
         }
 
-        m_drawPacketInFlight->m_geometryView = m_geometryView;
         m_drawPacketInFlight->m_drawListTags.resize_no_construct(m_drawRequests.size());
         m_drawPacketInFlight->m_drawFilterMasks.resize_no_construct(m_drawRequests.size());
         m_drawPacketInFlight->m_drawItemSortKeys.resize_no_construct(m_drawRequests.size());
@@ -196,7 +195,6 @@ namespace AZ::RHI
 
         auto drawRequestCount{ original->m_drawListTags.size() };
         m_drawPacketInFlight->m_drawListMask = original->m_drawListMask;
-        m_drawPacketInFlight->m_geometryView = original->m_geometryView;
         m_drawPacketInFlight->m_drawListTags.resize_no_construct(drawRequestCount);
         m_drawPacketInFlight->m_drawFilterMasks.resize_no_construct(drawRequestCount);
         m_drawPacketInFlight->m_drawItemSortKeys.resize_no_construct(drawRequestCount);
