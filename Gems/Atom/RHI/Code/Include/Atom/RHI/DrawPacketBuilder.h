@@ -22,7 +22,7 @@ namespace AZ
 
 namespace AZ::RHI
 {
-    //! DrawPachetBuilder builds a DrawPacket and its DrawItems contiguously in memory for cache efficiency
+    //! DrawPacketBuilder builds a DrawPacket and its DrawItems contiguously in memory for cache efficiency
     //! Start by calling DrawPacketBuilder::Begin( )
     //! Then Set the necessary data and add a DrawRequest for each DrawItem
     //! Finalize the DrawPacket with a call to DrawPacketBuilder::End( )

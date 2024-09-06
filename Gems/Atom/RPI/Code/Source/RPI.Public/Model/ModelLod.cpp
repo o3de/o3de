@@ -332,7 +332,7 @@ namespace AZ
 
                         // Note, don't use iter->m_semantic as it can be a UV name matching.
                         layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, iter->m_format);
-                        streamIndicesOut.AddIndex((u8)iterIndex);
+                        streamIndicesOut.AddIndex(static_cast<u8>(iterIndex));
                     }
                 }
             }

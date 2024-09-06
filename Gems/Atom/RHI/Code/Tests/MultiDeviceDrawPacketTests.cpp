@@ -44,7 +44,7 @@ namespace UnitTest
             m_sortKey = random.GetRandom();
         }
 
-        const RHI::GeometryView* m_geometryView;
+        const RHI::GeometryView* m_geometryView = nullptr;
         RHI::StreamBufferIndices m_streamIndices;
         const RHI::PipelineState* m_pipelineState;
         RHI::DrawListTag m_tag;

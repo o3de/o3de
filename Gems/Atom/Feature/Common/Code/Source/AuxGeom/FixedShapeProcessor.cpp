@@ -31,6 +31,9 @@ namespace AZ
     {
         namespace
         {
+            static constexpr u8 PositionStreamIndex = 0;
+            static constexpr u8 NormalStreamIndex = 1;
+
             static const char* const ShapePerspectiveTypeViewProjection = "ViewProjectionMode::ViewProjection";
             static const char* const ShapePerspectiveTypeManualOverride = "ViewProjectionMode::ManualOverride";
             AZ::Name GetAuxGeomPerspectiveTypeName(AuxGeomShapePerpectiveType shapePerspectiveType)
@@ -1363,14 +1366,14 @@ namespace AZ
             objectBuffers.m_triangleGeometryView.AddStreamBufferView(normalBufferView);
 
             RHI::StreamBufferIndices streamIndices;
-            streamIndices.AddIndex(0);  // Positions
+            streamIndices.AddIndex(PositionStreamIndex);
 
             // Validate for each draw style
             AZ::RHI::ValidateStreamBufferViews(m_objectStreamLayout[DrawStyle_Point], objectBuffers.m_pointGeometryView, streamIndices);
             AZ::RHI::ValidateStreamBufferViews(m_objectStreamLayout[DrawStyle_Line], objectBuffers.m_lineGeometryView, streamIndices);
             AZ::RHI::ValidateStreamBufferViews(m_objectStreamLayout[DrawStyle_Solid], objectBuffers.m_triangleGeometryView, streamIndices);
 
-            streamIndices.AddIndex(1);  // Normals
+            streamIndices.AddIndex(NormalStreamIndex);
             AZ::RHI::ValidateStreamBufferViews(m_objectStreamLayout[DrawStyle_Shaded], objectBuffers.m_triangleGeometryView, streamIndices);
 
             return true;
@@ -1716,11 +1719,11 @@ namespace AZ
             drawPacketBuilder.AddShaderResourceGroup(srg->GetRHIShaderResourceGroup());
 
             RHI::StreamBufferIndices streamIndices;
-            streamIndices.AddIndex(0);          // Positions
+            streamIndices.AddIndex(PositionStreamIndex);
 
             if (drawStyle == DrawStyle_Shaded)
             {
-                streamIndices.AddIndex(1);          // Normals
+                streamIndices.AddIndex(NormalStreamIndex);
             }
 
             RHI::DrawPacketBuilder::DrawRequest drawRequest;

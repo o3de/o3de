@@ -15,14 +15,14 @@ namespace AZ::RHI
     bool ValidateStreamBufferViews(const InputStreamLayout& inputStreamLayout, RHI::GeometryView& geometryView,
         const RHI::StreamBufferIndices& streamIndices)
     {
-        bool ok = true;
+        bool validStreams = true;
 
         if (Validation::IsEnabled())
         {
             if (!inputStreamLayout.IsFinalized())
             {
                 AZ_Assert(false, "InputStreamLayout is not finalized.");
-                ok = false;
+                validStreams = false;
             }
 
             size_t streamCount = 0;
@@ -44,7 +44,7 @@ namespace AZ::RHI
                 {
                     AZ_Assert(false, "InputStreamLayout's buffer[%d] has stride=%d but StreamBufferView[%d] has stride=%d.",
                         streamCount, bufferDescriptor.m_byteStride, streamCount, bufferView.GetByteStride());
-                    ok = false;
+                    validStreams = false;
                 }
             }
 
@@ -52,12 +52,11 @@ namespace AZ::RHI
             {
                 AZ_Assert(false, "InputStreamLayout references %d stream buffers but %d StreamBufferViews passed the mask check.",
                     inputStreamLayout.GetStreamBuffers().size(), streamCount);
-                ok = false;
+                validStreams = false;
             }
-
         }
 
-        return ok;
+        return validStreams;
     }
 
 }

@@ -29,6 +29,9 @@ namespace AZ::RHI
     public:
         void AddIndex(u8 index)
         {
+            AZ_Assert(index < (1 << 4), "Provided index [%d] is larger than 4 bits, which breaks bit packing for StreamBufferIndices", index);
+            AZ_Assert(index < RHI::Limits::Pipeline::StreamCountMax, "Adding index [%d], which is greater or equal to the the StreamCountMax %d",
+                index, RHI::Limits::Pipeline::StreamCountMax);
             AZ_Assert(m_count < RHI::Limits::Pipeline::StreamCountMax, "Adding %d stream buffer indices, but the max count only allows for %d",
                 m_count, RHI::Limits::Pipeline::StreamCountMax);
 
@@ -60,7 +63,7 @@ namespace AZ::RHI
         bool operator==(const StreamBufferIndices& other) const
         {
             if (m_count != other.m_count)
-                return false;
+            { return false; }
 
             bool same = true;
             for (u32 i = 0; i < m_count; ++i)
@@ -126,10 +129,10 @@ namespace AZ::RHI
         //! Used for direct indexing, irrespective of the current iterator progress
         const StreamBufferViewType& operator[](u16 idx) const
         {
-            AZ_Assert((u8)idx < m_indices.Size(), "Passed index %d exceeds number of indices (%d) for stream buffer views",
+            AZ_Assert(static_cast<u8>(idx) < m_indices.Size(), "Passed index %d exceeds number of indices (%d) for stream buffer views",
                 idx, m_indices.Size());
 
-            return m_geometryView->GetStreamBufferView(m_indices.GetIndex((u8)idx));
+            return m_geometryView->GetStreamBufferView(m_indices.GetIndex(static_cast<u8>(idx)));
         }
     };
 
@@ -184,7 +187,7 @@ namespace AZ::RHI
             StreamBufferIndices streamIndices;
             for (size_t idx = 0; idx < m_streamBufferViews.size(); ++idx)
             {
-                streamIndices.AddIndex((u8)idx);
+                streamIndices.AddIndex(static_cast<u8>(idx));
             }
             return streamIndices;
         }
@@ -210,7 +213,7 @@ namespace AZ::RHI
         void AddDummyStreamBufferView(DeviceStreamBufferView streamBufferView)
         {
             AZ_Assert(!HasDummyStreamBufferView(), "Calling AddDummyStreamBufferView but dummy view is already set.");
-            m_dummyStreamBufferIndex = (u8)m_streamBufferViews.size();
+            m_dummyStreamBufferIndex = static_cast<u8>(m_streamBufferViews.size());
             m_streamBufferViews.emplace_back(streamBufferView);
         }
     };

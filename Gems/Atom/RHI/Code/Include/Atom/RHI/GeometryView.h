@@ -144,7 +144,7 @@ namespace AZ::RHI
             StreamBufferIndices streamIndices;
             for (size_t idx = 0; idx < m_streamBufferViews.size(); ++idx)
             {
-                streamIndices.AddIndex((u8)idx);
+                streamIndices.AddIndex(static_cast<u8>(idx));
             }
             return streamIndices;
         }
@@ -170,7 +170,7 @@ namespace AZ::RHI
         void AddDummyStreamBufferView(StreamBufferView streamBufferView)
         {
             AZ_Assert(!HasDummyStreamBufferView(), "Calling AddDummyStreamBufferView but dummy view is already set.");
-            m_dummyStreamBufferIndex = (u8)m_streamBufferViews.size();
+            m_dummyStreamBufferIndex = static_cast<u8>(m_streamBufferViews.size());
             m_streamBufferViews.emplace_back(streamBufferView);
             for (auto& [deviceIndex, geometryView] : m_geometryViews)
             {

@@ -40,7 +40,7 @@ namespace AZ::RHI
 
         DrawArguments(const DrawIndirect& indirect)
             : m_type{ DrawType::Indirect }
-            , m_mdIndirect{ indirect }
+            , m_indirect{ indirect }
         {
         }
 
@@ -54,7 +54,7 @@ namespace AZ::RHI
             case DrawType::Linear:
                 return DeviceDrawArguments(m_linear);
             case DrawType::Indirect:
-                return DeviceDrawArguments(DeviceDrawIndirect{ m_mdIndirect.m_maxSequenceCount, m_mdIndirect.m_indirectBufferView->GetDeviceIndirectBufferView(deviceIndex), m_mdIndirect.m_indirectBufferByteOffset, m_mdIndirect.m_countBuffer->GetDeviceBuffer(deviceIndex).get(), m_mdIndirect.m_countBufferByteOffset });
+                return DeviceDrawArguments(DeviceDrawIndirect{ m_indirect.m_maxSequenceCount, m_indirect.m_indirectBufferView->GetDeviceIndirectBufferView(deviceIndex), m_indirect.m_indirectBufferByteOffset, m_indirect.m_countBuffer->GetDeviceBuffer(deviceIndex).get(), m_indirect.m_countBufferByteOffset });
             default:
                 return DeviceDrawArguments();
             }
@@ -64,7 +64,7 @@ namespace AZ::RHI
         union {
             DrawIndexed m_indexed;
             DrawLinear m_linear;
-            DrawIndirect m_mdIndirect;
+            DrawIndirect m_indirect;
         };
     };
 }
