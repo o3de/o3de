@@ -544,10 +544,10 @@ namespace EMotionFX
             // Mark that we already tried to load this motion, so that we don't retry this next time.
             if (!motion)
             {
-#if defined (CARBONATED)
-                AZ_Printf("EMotionFX", "Failed to load motion '%s' for motion set '%s'.", entry->GetFilename(), GetName());
-#endif
                 entry->SetLoadingFailed(true);
+#if defined (CARBONATED)
+                AZ_Printf("EMotionFX", "Failed to load motion '%s' for motion set '%s'. Attempts left: %i", entry->GetFilename(), GetName(), entry->GetLoadAttempts());
+#endif
             }
 #if defined (CARBONATED)
             else

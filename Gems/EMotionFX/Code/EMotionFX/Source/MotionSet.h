@@ -105,6 +105,7 @@ namespace EMotionFX
              */
 #if defined (CARBONATED)            
             void SetLoadingFailed(bool failed) { m_loadAttempts = static_cast<int8_t>(failed ? std::max(m_loadAttempts - 1, 0) : MaxAttemptsToLoad); }
+            int8_t GetLoadAttempts() { return m_loadAttempts; }
 #else
             void SetLoadingFailed(bool failed)                                                                  { m_loadFailed = failed; }
 #endif
@@ -133,7 +134,7 @@ namespace EMotionFX
             AZStd::string   m_id;           /**< The motion name. */
             Motion*         m_motion;       /**< A pointer to the motion. */
 #if defined (CARBONATED)
-            static constexpr int8_t MaxAttemptsToLoad = 5;
+            static constexpr int8_t MaxAttemptsToLoad = 100;
             int8_t          m_loadAttempts;
 #else
             bool            m_loadFailed;   /**< Did the last load attempt fail? */
