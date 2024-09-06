@@ -19,21 +19,34 @@ set(FILES
     Source/RHI/CommandList.h
     Source/RHI/CommandQueue.cpp
     Source/RHI/CommandQueue.h
+    Source/RHI/CommandQueueContext.cpp
+    Source/RHI/CommandQueueContext.h
+    Source/RHI/Conversions.cpp
+    Source/RHI/Conversions.h
     Source/RHI/Device.cpp
     Source/RHI/Device.h
     Source/RHI/DispatchRaysIndirectBuffer.h
     Source/RHI/Fence.cpp
     Source/RHI/Fence.h
+    Source/RHI/Formats.inl
     Source/RHI/FrameGraphCompiler.cpp
     Source/RHI/FrameGraphCompiler.h
     Source/RHI/FrameGraphExecuter.cpp
     Source/RHI/FrameGraphExecuter.h
+    Source/RHI/FrameGraphExecuteGroup.cpp
+    Source/RHI/FrameGraphExecuteGroup.h
+    Source/RHI/FrameGraphExecuteGroupBase.cpp
+    Source/RHI/FrameGraphExecuteGroupBase.h
+    Source/RHI/FrameGraphExecuteGroupMerged.cpp
+    Source/RHI/FrameGraphExecuteGroupMerged.h
     Source/RHI/Image.cpp
     Source/RHI/Image.h
     Source/RHI/ImagePool.cpp
     Source/RHI/ImagePool.h
     Source/RHI/ImageView.cpp
     Source/RHI/ImageView.h
+    Source/RHI/Instance.cpp
+    Source/RHI/Instance.h
     Source/RHI/PhysicalDevice.cpp
     Source/RHI/PhysicalDevice.h
     Source/RHI/PipelineState.cpp
@@ -67,4 +80,6 @@ set(FILES
     Source/RHI/RayTracingPipelineState.h
     Source/RHI/RayTracingShaderTable.cpp
     Source/RHI/RayTracingShaderTable.h
+    Source/RHI/WebGPU.cpp
+    Source/RHI/WebGPU.h
 )

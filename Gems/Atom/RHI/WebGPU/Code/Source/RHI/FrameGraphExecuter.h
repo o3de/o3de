@@ -8,33 +8,35 @@
 
 #pragma once
 
-#include <RHI/Device.h>
 #include <Atom/RHI/FrameGraphExecuter.h>
 #include <Atom/RHI/FrameGraphExecuteGroup.h>
+#include <Atom/RHI.Reflect/WebGPU/PlatformLimitsDescriptor.h>
 
-namespace AZ
+namespace AZ::WebGPU
 {
-    namespace WebGPU
+    class FrameGraphExecuter final
+        : public RHI::FrameGraphExecuter
     {
-        class FrameGraphExecuter final
-            : public RHI::FrameGraphExecuter
-        {
-            using Base = RHI::FrameGraphExecuter;
-        public:
-            AZ_CLASS_ALLOCATOR(FrameGraphExecuter, AZ::SystemAllocator);
+        using Base = RHI::FrameGraphExecuter;
+    public:
+        AZ_CLASS_ALLOCATOR(FrameGraphExecuter, AZ::SystemAllocator);
 
-            static RHI::Ptr<FrameGraphExecuter> Create();
+        static RHI::Ptr<FrameGraphExecuter> Create();
 
-        private:
+    private:
 
-            //////////////////////////////////////////////////////////////////////////
-            // RHI::FrameGraphExecuter
-            RHI::ResultCode InitInternal([[maybe_unused]] const RHI::FrameGraphExecuterDescriptor& descriptor) override { return RHI::ResultCode::Success;}
-            void ShutdownInternal() override {}
-            void BeginInternal([[maybe_unused]] const RHI::FrameGraph& frameGraph) override {}
-            void ExecuteGroupInternal([[maybe_unused]] RHI::FrameGraphExecuteGroup& group) override {}
-            void EndInternal() override {}
-            ///////////////////////////////////////////////////////////////////////////
-        };
-    }
+        FrameGraphExecuter();
+
+        //////////////////////////////////////////////////////////////////////////
+        // RHI::FrameGraphExecuter
+        RHI::ResultCode InitInternal(const RHI::FrameGraphExecuterDescriptor& descriptor) override;
+        void ShutdownInternal() override;
+        void BeginInternal(const RHI::FrameGraph& frameGraph) override;
+        void ExecuteGroupInternal(RHI::FrameGraphExecuteGroup& group) override;
+        void EndInternal() override;
+        ///////////////////////////////////////////////////////////////////////////
+
+        const RHI::ScopeId m_mergedScopeId{ "Merged" };
+        AZStd::unordered_map<int, FrameGraphExecuterData> m_frameGraphExecuterData;
+    };
 }

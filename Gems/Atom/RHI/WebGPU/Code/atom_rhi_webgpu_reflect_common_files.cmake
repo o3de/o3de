@@ -14,4 +14,6 @@ set(FILES
     Source/RHI.Reflect/ReflectSystemComponent.cpp
     Include/Atom/RHI.Reflect/WebGPU/ShaderStageFunction.h
     Source/RHI.Reflect/ShaderStageFunction.cpp
+    Include/Atom/RHI.Reflect/WebGPU/PlatformLimitsDescriptor.h
+    Source/RHI.Reflect/PlatformLimitsDescriptor.cpp
 )

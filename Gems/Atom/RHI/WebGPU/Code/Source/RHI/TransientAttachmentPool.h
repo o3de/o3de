@@ -8,35 +8,36 @@
 #pragma once
 
 #include <Atom/RHI/DeviceTransientAttachmentPool.h>
+#include <RHI/AliasedHeap.h>
 
-namespace AZ
+namespace AZ::WebGPU
 {
-    namespace WebGPU
+    class TransientAttachmentPool final
+        : public RHI::DeviceTransientAttachmentPool
     {
-        class TransientAttachmentPool final
-            : public RHI::DeviceTransientAttachmentPool
-        {
-            using Base = RHI::DeviceTransientAttachmentPool;
-        public:
-            AZ_CLASS_ALLOCATOR(TransientAttachmentPool, AZ::SystemAllocator);
-            AZ_RTTI(TransientAttachmentPool, "{9EA06BFD-035D-442A-B46A-3FE2853813F4}", Base);
+        using Base = RHI::DeviceTransientAttachmentPool;
+    public:
+        AZ_CLASS_ALLOCATOR(TransientAttachmentPool, AZ::SystemAllocator);
+        AZ_RTTI(TransientAttachmentPool, "{9EA06BFD-035D-442A-B46A-3FE2853813F4}", Base);
 
-            static RHI::Ptr<TransientAttachmentPool> Create();
+        static RHI::Ptr<TransientAttachmentPool> Create();
 
-        private:
-            TransientAttachmentPool() = default;
+    private:
+        TransientAttachmentPool() = default;
             
-            //////////////////////////////////////////////////////////////////////////
-            // RHI::DeviceTransientAttachmentPool
-            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::TransientAttachmentPoolDescriptor& descriptor) override { return RHI::ResultCode::Success;}
-            void BeginInternal([[maybe_unused]] const RHI::TransientAttachmentPoolCompileFlags flags, [[maybe_unused]] const RHI::TransientAttachmentStatistics::MemoryUsage* memoryHint) override {}
-            void EndInternal() override {}
-            RHI::DeviceImage* ActivateImage([[maybe_unused]] const RHI::TransientImageDescriptor& descriptor) override { return nullptr;}
-            RHI::DeviceBuffer* ActivateBuffer([[maybe_unused]] const RHI::TransientBufferDescriptor& descriptor) override { return nullptr;}
-            void DeactivateBuffer([[maybe_unused]] const RHI::AttachmentId& attachmentId) override {}
-            void DeactivateImage([[maybe_unused]] const RHI::AttachmentId& attachmentId) override {}
-            void ShutdownInternal() override {}
-            //////////////////////////////////////////////////////////////////////////
-        };
-    }
+        //////////////////////////////////////////////////////////////////////////
+        // RHI::DeviceTransientAttachmentPool
+        RHI::ResultCode InitInternal(RHI::Device& device, const RHI::TransientAttachmentPoolDescriptor& descriptor) override;
+        void BeginInternal(const RHI::TransientAttachmentPoolCompileFlags flags, const RHI::TransientAttachmentStatistics::MemoryUsage* memoryHint) override;
+        void EndInternal() override;
+        RHI::DeviceImage* ActivateImage(const RHI::TransientImageDescriptor& descriptor) override;
+        RHI::DeviceBuffer* ActivateBuffer(const RHI::TransientBufferDescriptor& descriptor) override;
+        void DeactivateBuffer(const RHI::AttachmentId& attachmentId) override;
+        void DeactivateImage(const RHI::AttachmentId& attachmentId) override;
+        void ShutdownInternal() override;
+        //////////////////////////////////////////////////////////////////////////
+
+        //! Since aliasing is not supported, we use just one heap for all resource allocations.
+        RHI::Ptr<AliasedHeap> m_heap;
+    };
 }

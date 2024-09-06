@@ -10,31 +10,34 @@
 #include <Atom/RHI/DeviceImageView.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
-namespace AZ
+namespace AZ::WebGPU
 {
-    namespace WebGPU
+    class Image;
+
+    class ImageView final
+        : public RHI::DeviceImageView
     {
-        class Image;
+        using Base = RHI::DeviceImageView;
+    public:
+        AZ_CLASS_ALLOCATOR(ImageView, AZ::ThreadPoolAllocator);
+        AZ_RTTI(ImageView, "{AB053773-4C5E-40C3-A6C0-7990140FE116}", Base);
 
-        class ImageView final
-            : public RHI::DeviceImageView
-        {
-            using Base = RHI::DeviceImageView;
-        public:
-            AZ_CLASS_ALLOCATOR(ImageView, AZ::ThreadPoolAllocator);
-            AZ_RTTI(ImageView, "{AB053773-4C5E-40C3-A6C0-7990140FE116}", Base);
+        static RHI::Ptr<ImageView> Create();
 
-            static RHI::Ptr<ImageView> Create();
+    private:
+        ImageView() = default;
 
-        private:
-            ImageView() = default;
+        //////////////////////////////////////////////////////////////////////////
+        // RHI::DeviceImageView
+        RHI::ResultCode InitInternal(RHI::Device& device, const RHI::DeviceResource& resourceBase) override;
+        RHI::ResultCode InvalidateInternal() override;
+        void ShutdownInternal() override;
+        //////////////////////////////////////////////////////////////////////////
 
-            //////////////////////////////////////////////////////////////////////////
-            // RHI::DeviceImageView
-            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::DeviceResource& resourceBase) override { return RHI::ResultCode::Success;}
-            RHI::ResultCode InvalidateInternal() override { return RHI::ResultCode::Success;}
-            void ShutdownInternal() override {}
-            //////////////////////////////////////////////////////////////////////////
-        };
-    }
+        wgpu::TextureViewDimension GetImageViewDimension() const;
+        RHI::ImageSubresourceRange BuildImageSubresourceRange(
+            wgpu::TextureViewDimension imageViewDimension, RHI::ImageAspectFlags aspectFlags);
+
+        wgpu::TextureView m_wgpuTextureView = nullptr;
+    };
 }

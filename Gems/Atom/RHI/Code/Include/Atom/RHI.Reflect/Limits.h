@@ -62,7 +62,7 @@ namespace AZ::RHI
         {
             // RHI::Factory has a virtual method called GetAPIUniqueIndex(), see its documentation
             // for details. GetAPIUniqueIndex() should not return a value greater than this.
-            constexpr uint32_t PerPlatformApiUniqueIndexMax = 3;
+            constexpr uint32_t PerPlatformApiUniqueIndexMax = 4;
         }
     } // namespace Limits
 

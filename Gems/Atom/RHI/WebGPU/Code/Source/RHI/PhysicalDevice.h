@@ -24,6 +24,12 @@ namespace AZ
             ~PhysicalDevice() = default;
 
             static RHI::PhysicalDeviceList Enumerate();
+            void Init(wgpu::Adapter& adapter);
+            const wgpu::Adapter& GetNativeAdapter() const;
+
+        private:
+            wgpu::Adapter m_wgpuAdapter = nullptr;
+            wgpu::AdapterInfo m_adapterInfo;
         };
     }
 }
