@@ -489,6 +489,15 @@ namespace AZ
         AttachmentReadback::ReadbackResult AttachmentReadback::GetReadbackResult() const
         {
             ReadbackResult result;
+
+            if (m_readbackItems.empty())
+            {
+                // the AttachmentReadback was reset before the readback was triggered from the GPU. Avoid 
+                // a crash by accessing a non-existend readback item
+                result.m_state = ReadbackState::Failed;
+                return result;
+            }
+
             result.m_state = m_state;
             result.m_attachmentType = m_attachmentType;
             result.m_dataBuffer = m_readbackItems[0].m_dataBuffer;
