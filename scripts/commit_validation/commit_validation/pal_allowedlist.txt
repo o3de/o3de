@@ -1,6 +1,4 @@
 */Code/Legacy/*
-*/Code/Framework/AzCore/AzCore/Asset/AssetManager.cpp
-*/Code/Framework/AzCore/AzCore/Console/Console.cpp
 */Code/Framework/AzCore/AzCore/Math/Aabb.h
 */Code/Framework/AzCore/AzCore/Math/Color.h
 */Code/Framework/AzCore/AzCore/Math/Crc.h
@@ -26,7 +24,6 @@
 */Code/Framework/AzCore/AzCore/std/containers/variant.h
 */Code/Framework/AzCore/AzCore/std/parallel/binary_semaphore.h
 */Code/Framework/AzCore/AzCore/std/parallel/semaphore.h
-*/Code/Framework/AzCore/AzCore/Settings/SettingsRegistryMergeUtils.h
 */Code/Framework/AzCore/Platform/Android/AzCore/AzCore_Traits_Android.h
 */Code/Framework/AzCore/Platform/iOS/AzCore/AzCore_Traits_iOS.h
 */Code/Framework/AzCore/Platform/Jasper/AzCore/AzCore_Traits_Jasper.h
@@ -63,5 +60,4 @@
 */Gems/PhysX/Code/Source/System/PhysXSystem.cpp
 */Gems/SaveData/Code/Tests/SaveDataTest.cpp
 */Gems/WhiteBox/Code/Source/Rendering/Legacy/WhiteBoxLegacyRenderMesh.cpp
-*/Gems/Atom/RHI/Code/Include/Atom/RHI/DeviceAddon.h
 */restricted/*/Code/Framework/AzCore/AzCore/AzCore_Traits_*.h
