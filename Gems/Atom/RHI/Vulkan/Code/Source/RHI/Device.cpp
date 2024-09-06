@@ -867,6 +867,7 @@ namespace AZ
         void Device::FillFormatsCapabilitiesInternal(FormatCapabilitiesList& formatsCapabilities)
         {
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
+            const bool isFragmentShadingRateSupported = physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::FragmentShadingRate);
             for (uint32_t i = 0; i < formatsCapabilities.size(); ++i)
             {
                 RHI::Format format = static_cast<RHI::Format>(i);
@@ -920,18 +921,28 @@ namespace AZ
                     flags |= RHI::FormatCapabilities::AtomicBuffer;
                 }
 
-                if (RHI::CheckBitsAll(
-                        properties.optimalTilingFeatures,
-                        static_cast<VkFormatFeatureFlags>(VK_FORMAT_FEATURE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR)))
+                // "Fragment Shading Rate" is preferable over "Fragment Density Map".
+                // By checking only one of them, we avoid color format selection errors when looking
+                // for color formats compatible with RHI::FormatCapabilities::ShadingRate.
+                // Otherwise the runtime may end up using color formats that are ONLY supported for "Fragment Density Map"
+                // when trying to use "Fragment Shading Rate" feature.
+                if (isFragmentShadingRateSupported)
                 {
-                    flags |= RHI::FormatCapabilities::ShadingRate;
+                    if (RHI::CheckBitsAll(
+                            properties.optimalTilingFeatures,
+                            static_cast<VkFormatFeatureFlags>(VK_FORMAT_FEATURE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR)))
+                    {
+                        flags |= RHI::FormatCapabilities::ShadingRate;
+                    }
                 }
-
-                if (RHI::CheckBitsAll(
-                        properties.optimalTilingFeatures,
-                        static_cast<VkFormatFeatureFlags>(VK_FORMAT_FEATURE_FRAGMENT_DENSITY_MAP_BIT_EXT)))
+                else
                 {
-                    flags |= RHI::FormatCapabilities::ShadingRate;
+                    if (RHI::CheckBitsAll(
+                            properties.optimalTilingFeatures,
+                            static_cast<VkFormatFeatureFlags>(VK_FORMAT_FEATURE_FRAGMENT_DENSITY_MAP_BIT_EXT)))
+                    {
+                        flags |= RHI::FormatCapabilities::ShadingRate;
+                    }
                 }
             }
         }
