@@ -45,11 +45,12 @@ namespace AZ::WebGPU
         SetDescriptor(descriptor);
         wgpu::TextureDescriptor wgpuDescriptor = {};
         wgpuDescriptor.dimension = ConvertImageDimension(descriptor.m_dimension);
-        wgpuDescriptor.format = ConvertFormat(descriptor.m_format);
+        wgpuDescriptor.format = ConvertImageFormat(descriptor.m_format);
         wgpuDescriptor.mipLevelCount = descriptor.m_mipLevels;
         wgpuDescriptor.sampleCount = descriptor.m_multisampleState.m_samples;
         wgpuDescriptor.size = ConvertImageSize(descriptor.m_size);
         wgpuDescriptor.usage = ConvertImageBinding(descriptor.m_bindFlags);
+        wgpuDescriptor.label = GetName().GetCStr();
 
         m_wgpuTexture = device.GetNativeDevice().CreateTexture(&wgpuDescriptor);
         if (!m_wgpuTexture)
@@ -71,6 +72,18 @@ namespace AZ::WebGPU
 
     void Image::SetNativeTexture(wgpu::Texture& texture)
     {
-        m_wgpuTexture = AZStd::move(texture);
+        if (texture.Get() != m_wgpuTexture.Get())
+        {
+            m_wgpuTexture = texture;
+            InvalidateViews();
+        }
+    }
+
+    void Image::SetNameInternal(const AZStd::string_view& name)
+    {
+        if (m_wgpuTexture && !name.empty())
+        {
+            m_wgpuTexture.SetLabel(name.data());
+        }
     }
 }

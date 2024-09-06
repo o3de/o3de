@@ -8,17 +8,33 @@
 
 #pragma once
 
+#include <AzCore/PlatformDef.h>
 #include <webgpu/webgpu_cpp.h>
 #include <RHI/Conversions.h>
+#include <Atom/RHI/ObjectCollector.h>
 #include <AzCore/std/string/string.h>
 
 namespace AZ::WebGPU
 {
-    inline void AssertSuccess([[maybe_unused]] wgpu::Status result)
+    //! Mutex used for synchronization operations. It's null until multithreading is supported on WebGPU.
+    using mutex = RHI::NullMutex;
+
+    //! Min aligment for the size when doing a mapping operation of a buffer
+    constexpr uint32_t MapSizeAligment = 4;
+    //! Min aligment for the offset when doing a mapping operation of a buffer
+    constexpr uint32_t MapOffsetAligment = 8;
+
+    AZ_FORCE_INLINE void AssertSuccess([[maybe_unused]] wgpu::Status result)
     {
         if (result != wgpu::Status::Success)
         {
             AZ_Assert(false, "ASSERT: WebGPU API method failed: %s", ToString(result));
         }
+    }
+
+#define RETURN_RESULT_IF_UNSUCCESSFUL(result)                                                                                              \
+    if (result != RHI::ResultCode::Success)                                                                                                \
+    {                                                                                                                                      \
+        return result;                                                                                                                     \
     }
 }

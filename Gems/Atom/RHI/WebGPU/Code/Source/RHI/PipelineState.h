@@ -9,28 +9,40 @@
 
 #include <Atom/RHI/DevicePipelineState.h>
 
-namespace AZ
+namespace AZ::WebGPU
 {
-    namespace WebGPU
-    {
-        class PipelineState final
-            : public RHI::DevicePipelineState
-        {
-        public:
-            AZ_CLASS_ALLOCATOR(PipelineState, AZ::SystemAllocator);
+    class Pipeline;
+    class PipelineLayout;
 
-            static RHI::Ptr<PipelineState> Create();
+    class PipelineState final
+        : public RHI::DevicePipelineState
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(PipelineState, AZ::SystemAllocator);
+
+        static RHI::Ptr<PipelineState> Create();
+        PipelineLayout* GetPipelineLayout() const;
+        Pipeline* GetPipeline() const;
             
-        private:
-            PipelineState() = default;
+    private:
+        PipelineState() = default;
             
-            //////////////////////////////////////////////////////////////////////////
-            // RHI::DevicePipelineState
-            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::PipelineStateDescriptorForDraw& descriptor, [[maybe_unused]] RHI::DevicePipelineLibrary* pipelineLibrary) override { return RHI::ResultCode::Success;}
-            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::PipelineStateDescriptorForDispatch& descriptor, [[maybe_unused]] RHI::DevicePipelineLibrary* pipelineLibrary) override { return RHI::ResultCode::Success;}
-            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::PipelineStateDescriptorForRayTracing& descriptor, [[maybe_unused]] RHI::DevicePipelineLibrary* pipelineLibrary) override { return RHI::ResultCode::Success;}
-            void ShutdownInternal() override {}
-            //////////////////////////////////////////////////////////////////////////
-        };
-    }
+        //////////////////////////////////////////////////////////////////////////
+        // RHI::DevicePipelineState
+        RHI::ResultCode InitInternal(
+            RHI::Device& device,
+            const RHI::PipelineStateDescriptorForDraw& descriptor,
+            RHI::DevicePipelineLibrary* pipelineLibrary) override;
+        RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::PipelineStateDescriptorForDispatch& descriptor, [[maybe_unused]] RHI::DevicePipelineLibrary* pipelineLibrary) override { return RHI::ResultCode::Success;}
+        RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::PipelineStateDescriptorForRayTracing& descriptor, [[maybe_unused]] RHI::DevicePipelineLibrary* pipelineLibrary) override { return RHI::ResultCode::Success;}
+        void ShutdownInternal() override;
+        //////////////////////////////////////////////////////////////////////////
+
+        //////////////////////////////////////////////////////////////////////////
+        // RHI::Object
+        void SetNameInternal(const AZStd::string_view& name) override;
+        //////////////////////////////////////////////////////////////////////////
+
+        RHI::Ptr<Pipeline> m_pipeline;
+    };
 }

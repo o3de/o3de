@@ -51,7 +51,7 @@ namespace AZ
                 const AZStd::string& entryPoint,
                 const RHI::ShaderHardwareStage shaderAssetType,
                 const RHI::ShaderBuildArguments& shaderBuildArguments,
-                AZStd::vector<uint8_t>& compiledShader,
+                AZStd::string& compiledShader,
                 const AssetBuilderSDK::PlatformInfo& platform,
                 ByProducts& byProducts) const;
 

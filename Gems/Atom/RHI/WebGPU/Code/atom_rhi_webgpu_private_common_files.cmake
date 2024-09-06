@@ -9,18 +9,26 @@
 set(FILES
     Source/RHI/AliasedHeap.cpp
     Source/RHI/AliasedHeap.h
+    Source/RHI/BindGroupLayout.cpp
+    Source/RHI/BindGroupLayout.h
+    Source/RHI/BindGroup.cpp
+    Source/RHI/BindGroup.h    
     Source/RHI/Buffer.cpp
     Source/RHI/Buffer.h
     Source/RHI/BufferView.cpp
     Source/RHI/BufferView.h
     Source/RHI/BufferPool.cpp
     Source/RHI/BufferPool.h
+    Source/RHI/BufferPoolResolver.cpp
+    Source/RHI/BufferPoolResolver.h
     Source/RHI/CommandList.cpp
     Source/RHI/CommandList.h
     Source/RHI/CommandQueue.cpp
     Source/RHI/CommandQueue.h
     Source/RHI/CommandQueueContext.cpp
     Source/RHI/CommandQueueContext.h
+    Source/RHI/ComputePipeline.cpp
+    Source/RHI/ComputePipeline.h
     Source/RHI/Conversions.cpp
     Source/RHI/Conversions.h
     Source/RHI/Device.cpp
@@ -28,7 +36,6 @@ set(FILES
     Source/RHI/DispatchRaysIndirectBuffer.h
     Source/RHI/Fence.cpp
     Source/RHI/Fence.h
-    Source/RHI/Formats.inl
     Source/RHI/FrameGraphCompiler.cpp
     Source/RHI/FrameGraphCompiler.h
     Source/RHI/FrameGraphExecuter.cpp
@@ -49,6 +56,10 @@ set(FILES
     Source/RHI/Instance.h
     Source/RHI/PhysicalDevice.cpp
     Source/RHI/PhysicalDevice.h
+    Source/RHI/Pipeline.cpp
+    Source/RHI/Pipeline.h
+    Source/RHI/PipelineLayout.cpp
+    Source/RHI/PipelineLayout.h
     Source/RHI/PipelineState.cpp
     Source/RHI/PipelineState.h
     Source/RHI/PipelineLibrary.cpp
@@ -57,8 +68,15 @@ set(FILES
     Source/RHI/Query.h
     Source/RHI/QueryPool.cpp
     Source/RHI/QueryPool.h
+    Source/RHI/RenderPipeline.cpp
+    Source/RHI/RenderPipeline.h
+    Source/RHI/ResourcePoolResolver.h
+    Source/RHI/Sampler.cpp
+    Source/RHI/Sampler.h
     Source/RHI/Scope.cpp
     Source/RHI/Scope.h
+    Source/RHI/ShaderModule.cpp
+    Source/RHI/ShaderModule.h
     Source/RHI/ShaderResourceGroup.cpp
     Source/RHI/ShaderResourceGroup.h
     Source/RHI/ShaderResourceGroupPool.cpp
@@ -71,6 +89,8 @@ set(FILES
     Source/RHI/SystemComponent.h
     Source/RHI/TransientAttachmentPool.cpp
     Source/RHI/TransientAttachmentPool.h
+    Source/RHI/TextureFormats.inl
+    Source/RHI/VertexFormats.inl
     Source/RHI/RayTracingBufferPools.h
     Source/RHI/RayTracingBlas.cpp
     Source/RHI/RayTracingBlas.h

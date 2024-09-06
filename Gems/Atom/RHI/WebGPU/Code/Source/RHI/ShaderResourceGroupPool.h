@@ -9,35 +9,44 @@
 
 #include <Atom/RHI/DeviceShaderResourceGroupPool.h>
 
-namespace AZ
+namespace AZ::WebGPU
 {
-    namespace WebGPU
+    class BindGroupLayout;
+
+    class ShaderResourceGroupPool final
+        : public RHI::DeviceShaderResourceGroupPool
     {
-        class ShaderResourceGroupPool final
-            : public RHI::DeviceShaderResourceGroupPool
-        {
-            using Base = RHI::DeviceShaderResourceGroupPool;
-        public:
-            AZ_CLASS_ALLOCATOR(ShaderResourceGroupPool, AZ::SystemAllocator);
+        using Base = RHI::DeviceShaderResourceGroupPool;
+    public:
+        AZ_CLASS_ALLOCATOR(ShaderResourceGroupPool, AZ::SystemAllocator);
 
-            static RHI::Ptr<ShaderResourceGroupPool> Create();
+        static RHI::Ptr<ShaderResourceGroupPool> Create();
             
-        private:
-            ShaderResourceGroupPool() = default;
+    private:
+        ShaderResourceGroupPool() = default;
             
-            //////////////////////////////////////////////////////////////////////////
-            // Platform API
-            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::ShaderResourceGroupPoolDescriptor& descriptor) override { return RHI::ResultCode::Success;}
-            RHI::ResultCode InitGroupInternal([[maybe_unused]] RHI::DeviceShaderResourceGroup& groupBase) override { return RHI::ResultCode::Success;}
-            void ShutdownInternal() override;
-            RHI::ResultCode CompileGroupInternal([[maybe_unused]] RHI::DeviceShaderResourceGroup& groupBase, [[maybe_unused]] const RHI::DeviceShaderResourceGroupData& groupData) override { return RHI::ResultCode::Success;}
-            void ShutdownResourceInternal([[maybe_unused]] RHI::DeviceResource& resourceBase) override;
-            //////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////
+        // Platform API
+        RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::ShaderResourceGroupPoolDescriptor& descriptor) override;
+        RHI::ResultCode InitGroupInternal(RHI::DeviceShaderResourceGroup& groupBase) override;
+        void ShutdownInternal() override;
+        RHI::ResultCode CompileGroupInternal(
+            RHI::DeviceShaderResourceGroup& groupBase, const RHI::DeviceShaderResourceGroupData& groupData) override;
+        void ShutdownResourceInternal([[maybe_unused]] RHI::DeviceResource& resourceBase) override;
+        //////////////////////////////////////////////////////////////////////////
 
-            //////////////////////////////////////////////////////////////////////////
-            // FrameSchedulerEventBus::Handler
-            void OnFrameEnd() override;
-            //////////////////////////////////////////////////////////////////////////         
-        };
-    }
+        //////////////////////////////////////////////////////////////////////////
+        // FrameSchedulerEventBus::Handler
+        void OnFrameEnd() override;
+        //////////////////////////////////////////////////////////////////////////
+
+        //////////////////////////////////////////////////////////////////////////
+        // RHI::Object
+        void SetNameInternal(const AZStd::string_view& name) override;
+        //////////////////////////////////////////////////////////////////////////
+
+        uint64_t m_currentIteration = 0;
+        uint32_t m_bindGroupCount = 0;
+        RHI::Ptr<BindGroupLayout> m_bindGroupLayout;
+    };
 }

@@ -10,32 +10,54 @@
 #include <AzCore/Utils/TypeHash.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-namespace AZ
+namespace AZ::WebGPU
 {
-    namespace WebGPU
+    void ShaderStageFunction::Reflect(ReflectContext* context)
     {
-        void ShaderStageFunction::Reflect(ReflectContext* context)
+        if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
         {
-            if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
-            {
-                serializeContext->Class<ShaderStageFunction, RHI::ShaderStageFunction>()->Version(1);
-            }
+            serializeContext->Class<ShaderStageFunction, RHI::ShaderStageFunction>()
+                ->Version(1)
+                ->Field("m_sourceCode", &ShaderStageFunction::m_sourceCode)
+                ->Field("m_entryFunctionName", &ShaderStageFunction::m_entryFunctionName);
         }
+    }
 
-        ShaderStageFunction::ShaderStageFunction(RHI::ShaderStage shaderStage)
-            : RHI::ShaderStageFunction(shaderStage)
-        {}
+    ShaderStageFunction::ShaderStageFunction(RHI::ShaderStage shaderStage)
+        : RHI::ShaderStageFunction(shaderStage)
+    {}
     
-        RHI::Ptr<ShaderStageFunction> ShaderStageFunction::Create(RHI::ShaderStage shaderStage)
-        {
-            return aznew ShaderStageFunction(shaderStage);
-        }
+    RHI::Ptr<ShaderStageFunction> ShaderStageFunction::Create(RHI::ShaderStage shaderStage)
+    {
+        return aznew ShaderStageFunction(shaderStage);
+    }
 
-        RHI::ResultCode ShaderStageFunction::FinalizeInternal()
-        {
-            //Attach a dummy hash so it does not trigger validation checks
-            SetHash(HashValue64{1});
-            return RHI::ResultCode::Success;
-        }
+    void ShaderStageFunction::SetSourceCode(const ShaderSourceCode& sourceCode)
+    {
+        m_sourceCode = sourceCode;
+    }
+
+    const ShaderSourceCode& ShaderStageFunction::GetSourceCode() const
+    {
+        return m_sourceCode;
+    }
+
+    void ShaderStageFunction::SetEntryFunctionName(AZStd::string_view entryFunctionName)
+    {
+        m_entryFunctionName = entryFunctionName;
+    }
+
+    const AZStd::string& ShaderStageFunction::GetEntryFunctionName() const
+    {
+        return m_entryFunctionName;
+    }
+
+    RHI::ResultCode ShaderStageFunction::FinalizeInternal()
+    {
+        HashValue64 hash = HashValue64{ 0 };
+        hash = TypeHash64(reinterpret_cast<const uint8_t*>(m_sourceCode.data()), m_sourceCode.size(), hash);
+        hash = TypeHash64(reinterpret_cast<const uint8_t*>(m_entryFunctionName.data()), m_entryFunctionName.size(), hash);
+        SetHash(hash);
+        return RHI::ResultCode::Success;
     }
 } 

@@ -20,7 +20,7 @@ namespace AZ::WebGPU
 
         FrameGraphExecuteGroupMerged() = default;
 
-        void Init(Device& device, AZStd::vector<const Scope*>&& scopes, const RHI::ScopeId& mergedScopeId);
+        void Init(Device& device, AZStd::vector<Scope*>&& scopes, const RHI::ScopeId& mergedScopeId);
 
     private:
         //////////////////////////////////////////////////////////////////////////
@@ -36,7 +36,7 @@ namespace AZ::WebGPU
         //////////////////////////////////////////////////////////////////////////
 
         int32_t m_lastCompletedScope = -1;
-        AZStd::vector<const Scope*> m_scopes;
+        AZStd::vector<Scope*> m_scopes;
 
         RHI::ScopeId m_mergedScopeId;
     };

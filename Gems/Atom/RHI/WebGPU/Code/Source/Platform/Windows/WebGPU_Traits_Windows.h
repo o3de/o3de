@@ -8,3 +8,4 @@
 #pragma once
 
 #define AZ_TRAIT_ATOM_SHADERBUILDER_DXC "Builders/DirectXShaderCompiler/dxc.exe"
+#define AZ_TRAIT_ATOM_SHADERBUILDER_TINT "Builders/Tint/tint.exe"

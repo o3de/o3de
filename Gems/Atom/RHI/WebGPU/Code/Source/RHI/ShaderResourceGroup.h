@@ -9,21 +9,31 @@
 
 #include <Atom/RHI/DeviceShaderResourceGroup.h>
 
-namespace AZ
+namespace AZ::WebGPU
 {
-    namespace WebGPU
+    class BindGroup;
+
+    class ShaderResourceGroup final
+        : public RHI::DeviceShaderResourceGroup
     {
-        class ShaderResourceGroup final
-            : public RHI::DeviceShaderResourceGroup
-        {
-            using Base = RHI::DeviceShaderResourceGroup;
-        public:
-            AZ_CLASS_ALLOCATOR(ShaderResourceGroup, AZ::SystemAllocator);
+        using Base = RHI::DeviceShaderResourceGroup;
+        friend class ShaderResourceGroupPool;
 
-            static RHI::Ptr<ShaderResourceGroup> Create();
+    public:
+        AZ_CLASS_ALLOCATOR(ShaderResourceGroup, AZ::SystemAllocator);
 
-        private:
-            ShaderResourceGroup() = default;
-        };
-    }
+        static RHI::Ptr<ShaderResourceGroup> Create();
+
+        void UpdateCompiledDataIndex(uint64_t frameIteration);
+        const BindGroup& GetCompiledData() const;
+        uint32_t GetCompileDataIndex() const;
+        uint64_t GetLastCompileFrameIteration() const;
+
+    private:
+        ShaderResourceGroup() = default;
+
+        uint32_t m_compiledDataIndex = 0;
+        uint64_t m_lastCompileFrameIteration = 0;
+        AZStd::vector<RHI::Ptr<BindGroup>> m_compiledData;
+    };
 }

@@ -216,6 +216,10 @@ namespace AZ::RHI
                 {
                     m_compileRequest.m_compileFlags |= RHI::FrameSchedulerCompileFlags::DisableAttachmentAliasing;
                 }
+                if (!device->GetFeatures().m_multithreading)
+                {
+                    m_compileRequest.m_jobPolicy = RHI::JobPolicy::Serial;
+                }
                 m_devices.emplace_back(AZStd::move(device));
             }
         }

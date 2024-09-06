@@ -14,7 +14,7 @@ namespace AZ::WebGPU
 {
     void FrameGraphExecuteGroupMerged::Init(
         Device& device,
-        AZStd::vector<const Scope*>&& scopes,
+        AZStd::vector<Scope*>&& scopes,
         const RHI::ScopeId& mergedScopeId)
     {
         SetDevice(device);
@@ -54,26 +54,34 @@ namespace AZ::WebGPU
     void FrameGraphExecuteGroupMerged::BeginInternal()
     {
         CommandList* commandList = AcquireCommandList();
+        commandList->Begin();
         m_workRequest.m_commandLists.back() = commandList;
     }
 
     void FrameGraphExecuteGroupMerged::EndInternal()
-    {        
+    {
+        static_cast<CommandList*>(m_workRequest.m_commandLists.back())->End();
     }
 
     void FrameGraphExecuteGroupMerged::BeginContextInternal(
         RHI::FrameGraphExecuteContext& context,
-        [[maybe_unused]] uint32_t contextIndex)
+        uint32_t contextIndex)
     {
         AZ_Assert(static_cast<uint32_t>(m_lastCompletedScope + 1) == contextIndex, "Contexts must be recorded in order!");
+        Scope* scope = m_scopes[contextIndex];
         CommandList* commandList = static_cast<CommandList*>(m_workRequest.m_commandLists.back());
         context.SetCommandList(*commandList);
+        scope->Begin(*commandList, context.GetCommandListIndex(), context.GetCommandListCount());
     }
 
     void FrameGraphExecuteGroupMerged::EndContextInternal(
-        [[maybe_unused]]  RHI::FrameGraphExecuteContext& context,
-        [[maybe_unused]] uint32_t contextIndex)
+        RHI::FrameGraphExecuteContext& context,
+        uint32_t contextIndex)
     {
         m_lastCompletedScope = contextIndex;
+
+        Scope* scope = m_scopes[contextIndex];
+        CommandList* commandList = static_cast<CommandList*>(context.GetCommandList());
+        scope->End(*commandList, context.GetCommandListIndex(), context.GetCommandListCount());
     }
 }

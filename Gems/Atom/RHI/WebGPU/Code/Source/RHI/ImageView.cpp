@@ -18,6 +18,21 @@ namespace AZ::WebGPU
         return aznew ImageView();
     }
 
+    wgpu::TextureView& ImageView::GetNativeView()
+    {
+        return m_wgpuTextureView;
+    }
+
+    const wgpu::TextureView& ImageView::GetNativeView() const
+    {
+        return m_wgpuTextureView;
+    }
+
+    RHI::ImageAspectFlags ImageView::GetAspectFlags() const
+    {
+        return m_aspectFlags;
+    }
+
     RHI::ResultCode ImageView::InitInternal([[maybe_unused]] RHI::Device& deviceBase, const RHI::DeviceResource& resourceBase)
     {
         const auto& image = static_cast<const Image&>(resourceBase);
@@ -34,17 +49,17 @@ namespace AZ::WebGPU
             viewFormat = image.GetDescriptor().m_format;
         }
 
-        RHI::ImageAspectFlags imageAspectFlags = RHI::FilterBits(viewDescriptor.m_aspectFlags, image.GetAspectFlags());
+        m_aspectFlags = RHI::FilterBits(viewDescriptor.m_aspectFlags, image.GetAspectFlags());
         wgpu::TextureViewDimension imageViewDimension = GetImageViewDimension();
-        const RHI::ImageSubresourceRange range = BuildImageSubresourceRange(imageViewDimension, imageAspectFlags);
+        const RHI::ImageSubresourceRange range = BuildImageSubresourceRange(imageViewDimension, m_aspectFlags);
 
         wgpu::TextureViewDescriptor wgpuDesc = {};
         wgpuDesc.arrayLayerCount = range.m_arraySliceMax - range.m_arraySliceMin + 1;
-        wgpuDesc.aspect = ConvertImageAspectFlags(imageAspectFlags);
+        wgpuDesc.aspect = ConvertImageAspectFlags(m_aspectFlags);
         wgpuDesc.baseArrayLayer = range.m_arraySliceMin;
         wgpuDesc.baseMipLevel = range.m_mipSliceMin;
         wgpuDesc.dimension = imageViewDimension;
-        wgpuDesc.format = ConvertFormat(viewFormat);
+        wgpuDesc.format = ConvertImageFormat(viewFormat);
         wgpuDesc.mipLevelCount = range.m_mipSliceMax - range.m_mipSliceMin + 1;
 
         m_wgpuTextureView = image.GetNativeTexture().CreateView(&wgpuDesc);

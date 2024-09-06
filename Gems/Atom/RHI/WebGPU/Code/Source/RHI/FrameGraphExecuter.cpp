@@ -50,15 +50,15 @@ namespace AZ::WebGPU
 
     void FrameGraphExecuter::BeginInternal(const RHI::FrameGraph& frameGraph)
     {
-        AZStd::vector<const Scope*> mergedScopes;
+        AZStd::vector<Scope*> mergedScopes;
 
 #if defined(AZ_FORCE_CPU_GPU_INSYNC)
         // Forces all scopes to issue a dedicated merged scope group with one command list.
         // This will ensure that the Execute is done on only one scope and if an error happens
         // we can be sure about the work gpu was working on before the crash.
-        for (const RHI::Scope* scopeBase : frameGraph.GetScopes())
+        for (RHI::Scope* scopeBase : frameGraph.GetScopes())
         {
-            mergedScopes.push_back(static_cast<const Scope*>(scopeBase));
+            mergedScopes.push_back(static_cast<Scope*>(scopeBase));
             RHI::ScopeId scopeId = scopeBase->GetName();
             FrameGraphExecuteGroupMerged* multiScopeContextGroup = AddGroup<FrameGraphExecuteGroupMerged>();
             multiScopeContextGroup->Init(static_cast<Device&>(scopeBase->GetDevice()), AZStd::move(mergedScopes), scopeId);
@@ -70,10 +70,10 @@ namespace AZ::WebGPU
         uint32_t mergedGroupCost = 0;
         uint32_t mergedSwapchainCount = 0;
 
-        const Scope* scopePrev = nullptr;
-        for (const RHI::Scope* scopeBase : frameGraph.GetScopes())
+        Scope* scopePrev = nullptr;
+        for (RHI::Scope* scopeBase : frameGraph.GetScopes())
         {
-            const Scope& scope = *static_cast<const Scope*>(scopeBase);
+            Scope& scope = *static_cast<Scope*>(scopeBase);
 
             // Reset merged hardware queue class to match current scope if empty.
             if (mergedGroupCost == 0)
