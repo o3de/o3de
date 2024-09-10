@@ -77,7 +77,7 @@ namespace AzFramework
                 ->Field("flags", &AZ::Data::ProductDependency::m_flags);
 
             serializeContext->Class<AssetRegistry>()
-                ->Version(8)
+                ->Version(7)
                 ->Field("m_assetIdToInfo", &AssetRegistry::m_assetIdToInfo)
                 ->Field("m_assetPathToIdMap", &AssetRegistry::m_assetPathToId)
                 ->Field("m_assetDependencies", &AssetRegistry::m_assetDependencies);
