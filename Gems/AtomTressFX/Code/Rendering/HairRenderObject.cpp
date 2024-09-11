@@ -1109,7 +1109,6 @@ namespace AZ
             bool HairRenderObject::BuildDrawPacket(RPI::Shader* geometryShader, RHI::DrawPacketBuilder::DrawRequest& drawRequest)
             {
                 RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
-                RHI::DrawIndexed drawIndexed;
 
                 uint32_t numPrimsToRender = m_TotalIndices;
                 if (m_LODHairDensity < 1.0f)
