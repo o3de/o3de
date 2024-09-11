@@ -86,6 +86,9 @@ namespace AZ::RHI
         //! Passes the GeometryView to all single-device DrawPacketBuilders
         void SetGeometryView(GeometryView* geometryView);
 
+        //! Passes the DrawInstanceArguments to all single-device DrawPacketBuilders
+        void SetDrawInstanceArguments(DrawInstanceArguments drawInstanceArguments);
+
         //! Passes the RootConstants to all single-device DrawPacketBuilders
         void SetRootConstants(AZStd::span<const uint8_t> rootConstants);
 
@@ -123,8 +126,6 @@ namespace AZ::RHI
         AZStd::fixed_vector<DrawRequest, DeviceDrawPacketBuilder::DrawItemCountMax> m_drawRequests;
 
         RHI::Ptr<DrawPacket> m_drawPacketInFlight;
-
-        GeometryView* m_geometryView;
 
         //! A map of single-device DeviceDrawPacketBuilder, indexed by the device index
         AZStd::unordered_map<int, DeviceDrawPacketBuilder> m_deviceDrawPacketBuilders;

@@ -443,13 +443,16 @@ namespace UnitTest
                 static_cast<uint8_t>(AZStd::min<size_t>(drawPacket->GetDrawItemCount(), MultiDeviceDrawPacketData::DrawItemCountMax));
 
             // Test default value
-            EXPECT_EQ(drawPacketClone->m_geometryView->GetDrawArguments().m_type, RHI::DrawType::Indexed);
-
-            // Test default value
             for (uint8_t i = 0; i < drawItemCount; ++i)
             {
                 for (auto deviceIndex{ 0 }; deviceIndex < LocalDeviceCount; ++deviceIndex)
                 {
+                    // Test default value
+                    const auto& drawItem = drawPacket->m_drawItems[i].GetDeviceDrawItem(deviceIndex);
+                    EXPECT_EQ(drawItem.m_geometryView->GetDrawArguments().m_type, RHI::DrawType::Indexed);
+                    EXPECT_EQ(drawItem.m_drawInstanceArgs.m_instanceCount, 1);
+
+
                     const auto& drawItemClone = drawPacketClone->m_drawItems[i].GetDeviceDrawItem(deviceIndex);
                     EXPECT_EQ(drawItemClone.m_drawInstanceArgs.m_instanceCount, 1);
                 }

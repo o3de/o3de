@@ -68,11 +68,19 @@ namespace AZ::RHI
 
     void DrawPacketBuilder::SetGeometryView(GeometryView* geometryView)
     {
-        m_geometryView = geometryView;
         for (auto& [deviceIndex, deviceDrawPacketBuilder] : m_deviceDrawPacketBuilders)
         {
             deviceDrawPacketBuilder.SetGeometryView(geometryView->GetDeviceGeometryView(deviceIndex));
         }
+    }
+
+    void DrawPacketBuilder::SetDrawInstanceArguments(DrawInstanceArguments drawInstanceArgs)
+    {
+        for (auto& [deviceIndex, deviceDrawPacketBuilder] : m_deviceDrawPacketBuilders)
+        {
+            deviceDrawPacketBuilder.SetDrawInstanceArguments(drawInstanceArgs);
+        }
+
     }
 
     void DrawPacketBuilder::SetRootConstants(AZStd::span<const uint8_t> rootConstants)
