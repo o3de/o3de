@@ -68,13 +68,13 @@ namespace AZ::Vulkan
 
         CommandList::InheritanceInfo inheritanceInfo{ m_renderPassContext.m_framebuffer.get(), m_subpassIndex };
         commandList->BeginCommandBuffer(&inheritanceInfo);
-        m_scope->Begin(*commandList);
+        m_scope->Begin(*commandList, context);
     }
 
     void FrameGraphExecuteGroupSecondary::EndContextInternal(RHI::FrameGraphExecuteContext& context, [[maybe_unused]] uint32_t contextIndex)
     {
         CommandList& commandList = static_cast<CommandList&>(*context.GetCommandList());
-        m_scope->End(commandList);
+        m_scope->End(commandList, context);
         commandList.EndCommandBuffer();
     }
 

@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/BufferProperty.h>
+#include <Atom/RHI/FrameGraphExecuteContext.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/ImageFrameAttachment.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
@@ -235,84 +236,89 @@ namespace AZ
             return aznew Scope();
         }
 
-        void Scope::Begin(CommandList& commandList) const
+        void Scope::Begin(CommandList& commandList, const RHI::FrameGraphExecuteContext& context) const
         {
+            const bool isPrologue = context.GetCommandListIndex() == 0;
             commandList.GetValidator().BeginScope(*this);
 
-            for (RHI::ResourcePoolResolver* resolverBase : GetResourcePoolResolves())
+            if (isPrologue)
             {
-                auto* resolver = static_cast<ResourcePoolResolver*>(resolverBase);
-                resolver->Resolve(commandList);
-            }
-
-            // Attachments in a subpass (except for first usage) have to use the vkCmdClearAttachments
-            // instead of VK_ATTACHMENT_LOAD_OP_CLEAR.
-            if (RHI::CheckBitsAll(GetActivationFlags(), RHI::Scope::ActivationFlags::Subpass))
-            {
-                const Framebuffer* framebuffer = commandList.GetActiveFramebuffer();
-                if (framebuffer)
+                for (RHI::ResourcePoolResolver* resolverBase : GetResourcePoolResolves())
                 {
-                    AZStd::vector<VkClearAttachment> clearAttachments;
-                    AZStd::vector<VkClearRect> clearRects;
-                    for (auto imageAttachment : GetImageAttachments())
+                    auto* resolver = static_cast<ResourcePoolResolver*>(resolverBase);
+                    resolver->Resolve(commandList);
+                }
+
+                // Attachments in a subpass (except for first usage) have to use the vkCmdClearAttachments
+                // instead of VK_ATTACHMENT_LOAD_OP_CLEAR.
+                if (RHI::CheckBitsAll(GetActivationFlags(), RHI::Scope::ActivationFlags::Subpass))
+                {
+                    const Framebuffer* framebuffer = commandList.GetActiveFramebuffer();
+                    if (framebuffer)
                     {
-                        const auto& loadStoreAction = imageAttachment->GetScopeAttachmentDescriptor().m_loadStoreAction;
-                        bool clear = loadStoreAction.m_loadAction == RHI::AttachmentLoadAction::Clear;
-                        bool clearStencil = loadStoreAction.m_loadActionStencil == RHI::AttachmentLoadAction::Clear;
-                        if (IsRenderAttachmentUsage(imageAttachment->GetUsage()) && (clear || clearStencil))
+                        AZStd::vector<VkClearAttachment> clearAttachments;
+                        AZStd::vector<VkClearRect> clearRects;
+                        for (auto imageAttachment : GetImageAttachments())
                         {
-                            // Check that if it's the first usage of the attachment in the renderpass.
-                            // On first usage we can use VK_ATTACHMENT_LOAD_OP_CLEAR.
-                            if (!IsFirstUsage(imageAttachment))
+                            const auto& loadStoreAction = imageAttachment->GetScopeAttachmentDescriptor().m_loadStoreAction;
+                            bool clear = loadStoreAction.m_loadAction == RHI::AttachmentLoadAction::Clear;
+                            bool clearStencil = loadStoreAction.m_loadActionStencil == RHI::AttachmentLoadAction::Clear;
+                            if (IsRenderAttachmentUsage(imageAttachment->GetUsage()) && (clear || clearStencil))
                             {
-                                const auto& descriptor = imageAttachment->GetDescriptor();
-                                RHI::ImageAspectFlags aspectFlags = descriptor.GetViewDescriptor().m_aspectFlags;
-                                if (!clear)
+                                // Check that if it's the first usage of the attachment in the renderpass.
+                                // On first usage we can use VK_ATTACHMENT_LOAD_OP_CLEAR.
+                                if (!IsFirstUsage(imageAttachment))
                                 {
-                                    aspectFlags = RHI::ResetBits(aspectFlags, RHI::ImageAspectFlags::Color | RHI::ImageAspectFlags::Depth);
-                                }
-                                if (!clearStencil)
-                                {
-                                    aspectFlags = RHI::ResetBits(aspectFlags, RHI::ImageAspectFlags::Stencil);
-                                }
-                                // Find the index of the attachment in the framebuffer.
-                                auto attachmentIndex = framebuffer->FindImageViewIndex(*imageAttachment);
-                                AZ_Assert(
-                                    attachmentIndex || !RHI::CheckBitsAll(aspectFlags, RHI::ImageAspectFlags::Color),
-                                    "Failed to find attachment index for attachment %s",
-                                    imageAttachment->GetScopeAttachmentDescriptor().m_attachmentId.GetCStr());
+                                    const auto& descriptor = imageAttachment->GetDescriptor();
+                                    RHI::ImageAspectFlags aspectFlags = descriptor.GetViewDescriptor().m_aspectFlags;
+                                    if (!clear)
+                                    {
+                                        aspectFlags =
+                                            RHI::ResetBits(aspectFlags, RHI::ImageAspectFlags::Color | RHI::ImageAspectFlags::Depth);
+                                    }
+                                    if (!clearStencil)
+                                    {
+                                        aspectFlags = RHI::ResetBits(aspectFlags, RHI::ImageAspectFlags::Stencil);
+                                    }
+                                    // Find the index of the attachment in the framebuffer.
+                                    auto attachmentIndex = framebuffer->FindImageViewIndex(*imageAttachment);
+                                    AZ_Assert(
+                                        attachmentIndex || !RHI::CheckBitsAll(aspectFlags, RHI::ImageAspectFlags::Color),
+                                        "Failed to find attachment index for attachment %s",
+                                        imageAttachment->GetScopeAttachmentDescriptor().m_attachmentId.GetCStr());
 
-                                VkClearAttachment& clearAttachment = clearAttachments.emplace_back();
-                                clearAttachment.aspectMask = ConvertImageAspectFlags(aspectFlags);
-                                clearAttachment.colorAttachment = attachmentIndex.value_or(0);
-                                FillClearValue(loadStoreAction.m_clearValue, clearAttachment.clearValue);
+                                    VkClearAttachment& clearAttachment = clearAttachments.emplace_back();
+                                    clearAttachment.aspectMask = ConvertImageAspectFlags(aspectFlags);
+                                    clearAttachment.colorAttachment = attachmentIndex.value_or(0);
+                                    FillClearValue(loadStoreAction.m_clearValue, clearAttachment.clearValue);
 
-                                VkClearRect& clearRect = clearRects.emplace_back();
-                                clearRect.baseArrayLayer = 0;
-                                clearRect.layerCount = framebuffer->GetSize().m_depth;
-                                clearRect.rect.offset = {};
-                                clearRect.rect.extent.width = framebuffer->GetSize().m_width;
-                                clearRect.rect.extent.height = framebuffer->GetSize().m_height;
+                                    VkClearRect& clearRect = clearRects.emplace_back();
+                                    clearRect.baseArrayLayer = 0;
+                                    clearRect.layerCount = framebuffer->GetSize().m_depth;
+                                    clearRect.rect.offset = {};
+                                    clearRect.rect.extent.width = framebuffer->GetSize().m_width;
+                                    clearRect.rect.extent.height = framebuffer->GetSize().m_height;
+                                }
                             }
                         }
-                    }
 
-                    if (!clearAttachments.empty())
-                    {
-                        static_cast<Device&>(commandList.GetDevice())
-                            .GetContext()
-                            .CmdClearAttachments(
-                                commandList.GetNativeCommandBuffer(),
-                                aznumeric_caster(clearAttachments.size()),
-                                clearAttachments.data(),
-                                aznumeric_caster(clearRects.size()),
-                                clearRects.data());
+                        if (!clearAttachments.empty())
+                        {
+                            static_cast<Device&>(commandList.GetDevice())
+                                .GetContext()
+                                .CmdClearAttachments(
+                                    commandList.GetNativeCommandBuffer(),
+                                    aznumeric_caster(clearAttachments.size()),
+                                    clearAttachments.data(),
+                                    aznumeric_caster(clearRects.size()),
+                                    clearRects.data());
+                        }
                     }
                 }
             }
         }
 
-        void Scope::End(CommandList& commandList) const
+        void Scope::End(CommandList& commandList, [[maybe_unused]] const RHI::FrameGraphExecuteContext& context) const
         {
             commandList.GetValidator().EndScope();
         }

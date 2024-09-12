@@ -18,6 +18,11 @@
 
 namespace AZ
 {
+    namespace RHI
+    {
+        class FrameGraphExecuteContext;
+    }
+
     namespace Vulkan
     {
         class BufferView;
@@ -59,8 +64,8 @@ namespace AZ
             static RHI::Ptr<Scope> Create();
             ~Scope() = default;
 
-            void Begin(CommandList& commandList) const;
-            void End(CommandList& commandList) const;
+            void Begin(CommandList& commandList, const RHI::FrameGraphExecuteContext& context) const;
+            void End(CommandList& commandList, const RHI::FrameGraphExecuteContext& context) const;
 
             //! Adds a barrier for a scope attachment resource to be emitted at a later time.
             //! Returns the barrier inserted. This barrier may have been merged with a previously inserted barrier.
