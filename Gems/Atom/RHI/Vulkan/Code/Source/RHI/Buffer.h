@@ -7,15 +7,16 @@
  */
 #pragma once
 
-#include <Atom/RHI/DeviceBuffer.h>
-#include <Atom/RHI/BufferProperty.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
+#include <Atom/RHI/AsyncWorkQueue.h>
+#include <Atom/RHI/BufferProperty.h>
+#include <Atom/RHI/DeviceBuffer.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/containers/list.h>
 #include <AzCore/std/parallel/mutex.h>
-#include <Atom/RHI/AsyncWorkQueue.h>
 #include <RHI/BufferMemoryView.h>
 #include <RHI/Queue.h>
+#include <RHI/RayTracingAccelerationStructure.h>
 
 namespace AZ
 {
@@ -69,7 +70,7 @@ namespace AZ
 
             /// Only valid for buffers with the RayTracingAccelerationStructure bind flag
             VkAccelerationStructureKHR GetNativeAccelerationStructure() const;
-            void SetNativeAccelerationStructure(const VkAccelerationStructureKHR& accelerationStructure);
+            void SetNativeAccelerationStructure(const RHI::Ptr<RayTracingAccelerationStructure>& accelerationStructure);
 
             VkSharingMode GetSharingMode() const;
 
@@ -105,7 +106,7 @@ namespace AZ
 
             // native raytracing acceleration structure handle, necessary to bind the descriptor for
             // this buffer if it is of type VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR
-            VkAccelerationStructureKHR m_nativeAccelerationStructure = VK_NULL_HANDLE;
+            RHI::Ptr<RayTracingAccelerationStructure> m_nativeAccelerationStructure = VK_NULL_HANDLE;
         };
     }
 }

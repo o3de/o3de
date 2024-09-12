@@ -546,7 +546,6 @@ namespace AZ
             RHI::ResultCode result = ConvertResult(vkResult);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
-            imageAvailableSemaphore->SignalEvent();
             if (m_currentFrameContext.m_imageAvailableSemaphore)
             {
                 semaphoreAllocator.DeAllocate(m_currentFrameContext.m_imageAvailableSemaphore);
@@ -571,7 +570,7 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
             auto presentCommand = [&device, swapchain]([[maybe_unused]] void* queue)
             {
-                device.GetContext().DeviceWaitIdle(device.GetNativeDevice());
+                device.GetCommandQueueContext().GetCommandQueue(RHI::HardwareQueueClass::Graphics).WaitForIdle();
                 if (swapchain != VK_NULL_HANDLE)
                 {
                     device.GetContext().DestroySwapchainKHR(device.GetNativeDevice(), swapchain, VkSystemAllocator::Get());

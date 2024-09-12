@@ -27,6 +27,7 @@
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/Time/ITime.h>
 
 //#define DEFENCE_CVAR_HASH_LOGGING
@@ -103,6 +104,10 @@ void Command_SetWaitSeconds(IConsoleCmdArgs* pCmd)
 
     if (pCmd->GetArgCount() > 1)
     {
+        // console commands are interpreted in the invarant locale as they come from cfg files which need to be
+        // portable. 
+        AZ::Locale::ScopedSerializationLocale scopedLocale; 
+
         pConsole->m_waitSeconds.SetSeconds(atof(pCmd->GetArg(1)));
         const AZ::TimeMs elaspedTimeMs = AZ::GetRealElapsedTimeMs();
         pConsole->m_waitSeconds += CTimeValue(AZ::TimeMsToSecondsDouble(elaspedTimeMs));

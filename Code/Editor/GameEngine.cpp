@@ -19,6 +19,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/IO/IStreamer.h>
 #include <AzCore/IO/Streamer/FileRequest.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/Console/IConsole.h>
 
@@ -277,6 +278,9 @@ void KillMemory(IConsoleCmdArgs* /* pArgs */)
 
 static void CmdGotoEditor(IConsoleCmdArgs* pArgs)
 {
+    // Console commands are assumed to be in the culture invariant locale since they can come from data files.
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
+
     // feature is mostly useful for QA purposes, this works with the game "goto" command
     // this console command actually is used by the game command, the editor command shouldn't be used by the user
     int iArgCount = pArgs->GetArgCount();

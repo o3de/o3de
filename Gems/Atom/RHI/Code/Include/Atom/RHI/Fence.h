@@ -26,8 +26,9 @@ namespace AZ::RHI
 
         //! Initializes the multi-device fence using the provided deviceMask.
         //! It creates on device-specific fence for each bit set in the deviceMask and
-        //! passes on the initial FenceState to each DeviceFence
-        ResultCode Init(MultiDevice::DeviceMask deviceMask, FenceState initialState);
+        //! passes on the initial FenceState to each DeviceFence.
+        //! Set usedForWaitingOnDevice to true if the Fence shoud be signaled on the CPU and waited for on the device.
+        ResultCode Init(MultiDevice::DeviceMask deviceMask, FenceState initialState, bool usedForWaitingOnDevice = false);
 
         //! Shuts down all device-specific fences.
         void Shutdown() override final;

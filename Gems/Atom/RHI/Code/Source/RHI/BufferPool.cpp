@@ -345,10 +345,6 @@ namespace AZ::RHI
 
     void BufferPool::Shutdown()
     {
-        IterateObjects<DeviceBufferPool>([]([[maybe_unused]] auto deviceIndex, auto deviceBufferPool)
-        {
-            deviceBufferPool->Shutdown();
-        });
         ResourcePool::Shutdown();
     }
 } // namespace AZ::RHI

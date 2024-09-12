@@ -84,11 +84,6 @@ namespace AZ::RHI
 
     void Image::Shutdown()
     {
-        IterateObjects<DeviceImage>([]([[maybe_unused]] auto deviceIndex, auto deviceImage)
-        {
-            deviceImage->Shutdown();
-        });
-
         Resource::Shutdown();
     }
 

@@ -324,6 +324,9 @@ namespace AZ
 
             PassState GetPassState() const { return m_state; }
 
+            //! Alter the connection of an Input or InputOutput attachment
+            void ChangeConnection(const Name& localSlot, Pass* pass, const Name& attachment);
+
             // Update all bindings on this pass that are connected to bindings on other passes
             virtual void UpdateConnectedBindings();
 

@@ -11,6 +11,7 @@
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/MathScriptHelpers.h>
+#include <AzCore/Serialization/Locale.h>
 
 namespace AZ
 {
@@ -76,6 +77,8 @@ namespace AZ
 
         AZStd::string Vector2ToString(const Vector2* thisPtr)
         {
+            AZ::Locale::ScopedSerializationLocale locale;
+
             return AZStd::string::format("(x=%.7f,y=%.7f)", static_cast<float>(thisPtr->GetX()), static_cast<float>(thisPtr->GetY()));
         }
 

@@ -18,6 +18,7 @@ namespace AZ
     namespace Vulkan
     {
         class Buffer;
+        class RayTracingAccelerationStructure;
 
         //! This class builds and contains the Vulkan RayTracing TLAS buffers.
         class RayTracingTlas final
@@ -33,7 +34,7 @@ namespace AZ
                 RHI::Ptr<RHI::DeviceBuffer> m_tlasBuffer;
                 RHI::Ptr<RHI::DeviceBuffer> m_scratchBuffer;
                 RHI::Ptr<RHI::DeviceBuffer> m_tlasInstancesBuffer;
-                VkAccelerationStructureKHR m_accelerationStructure = VK_NULL_HANDLE;
+                RHI::Ptr<RayTracingAccelerationStructure> m_accelerationStructure;
 
                 VkAccelerationStructureGeometryKHR m_geometry = {};
                 VkAccelerationStructureBuildRangeInfoKHR m_offsetInfo = {};

@@ -7,6 +7,9 @@
  */
 
 #include "Exporter.h"
+
+#include <AzCore/Serialization/Locale.h>
+
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/NodeGroup.h>
@@ -20,6 +23,8 @@ namespace ExporterLib
 {
     void SaveNode(MCore::Stream* file, EMotionFX::Actor* actor, EMotionFX::Node* node, MCore::Endian::EEndianType targetEndianType)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
+
         MCORE_ASSERT(file);
         MCORE_ASSERT(actor);
         MCORE_ASSERT(node);
