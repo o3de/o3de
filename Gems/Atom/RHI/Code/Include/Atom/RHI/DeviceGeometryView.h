@@ -66,9 +66,9 @@ namespace AZ::RHI
             { return false; }
 
             bool same = true;
-            for (u32 i = 0; i < m_count; ++i)
+            for (u8 i = 0; i < m_count; ++i)
             {
-                same = same && (m_indices[i] == other.m_indices[i]);
+                same = same && (GetIndex(i) == other.GetIndex(i));
             }
             return same;
         }
