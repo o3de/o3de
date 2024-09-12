@@ -271,11 +271,6 @@ namespace UnitTest
         m_loadDelay = loadDelay;
     }
 
-    void DataDrivenHandlerAndCatalog::AddLegacyAssetId(const Uuid& legacyAssetId, const Uuid& canonicalAssetId)
-    {
-        m_legacyAssetIds[AZ::Data::AssetId(legacyAssetId, 0)] = AZ::Data::AssetId(canonicalAssetId, 0);
-    }
-
     Outcome<AZStd::vector<ProductDependency>, AZStd::string> DataDrivenHandlerAndCatalog::GetAllProductDependencies(const AssetId& assetId)
     {
         const auto* def = FindById(assetId);
@@ -315,16 +310,6 @@ namespace UnitTest
     {
         AssetInfo result;
         const auto* def = FindById(assetId);
-
-        if (!def)
-        {
-            auto itr = m_legacyAssetIds.find(assetId);
-
-            if (itr != m_legacyAssetIds.end())
-            {
-                def = FindById(itr->second);
-            }
-        }
 
         if (def && !def->m_noAssetData)
         {
