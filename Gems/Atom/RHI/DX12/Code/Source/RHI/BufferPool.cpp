@@ -326,7 +326,7 @@ namespace AZ
                     return RHI::ResultCode::Fail;
                 }
                 mappedData += request.m_byteOffset;
-                
+                response.m_type = RHI::BufferResponseMapType::Permanent;                
             }
             else
             {
@@ -334,6 +334,7 @@ namespace AZ
                 if (mappedData)
                 {
                     m_memoryUsage.m_transferPull.m_bytesPerFrame += RHI::AlignUp(request.m_byteCount, Alignment::Buffer);
+                    response.m_type = RHI::BufferResponseMapType::Transient;
                 }
                 else
                 {

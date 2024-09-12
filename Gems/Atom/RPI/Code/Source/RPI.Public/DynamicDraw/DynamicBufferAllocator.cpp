@@ -26,7 +26,7 @@ namespace AZ
             for (unsigned i{ 0 }; i < m_bufferData.GetElementCount(); i++)
             {
                 m_bufferData.CreateOrResizeCurrentBuffer(m_ringBufferSize);
-                m_bufferStartAddresses.GetCurrentElement() = m_bufferData.GetCurrentElement()->Map(m_ringBufferSize, 0);
+                m_bufferStartAddresses.GetCurrentElement() = m_bufferData.GetCurrentElement()->Map(m_ringBufferSize, 0, &m_mapType);
                 m_bufferData.AdvanceCurrentElement();
                 m_bufferStartAddresses.AdvanceCurrentElement();
             }
@@ -110,9 +110,18 @@ namespace AZ
 
         void DynamicBufferAllocator::FrameEnd()
         {
+            // If the allocation is transient we need to remap every frame
+            if (m_mapType == RHI::BufferResponseMapType::Transient)
+            {
+                m_bufferData.GetCurrentElement()->Unmap();
+            }
             m_bufferData.AdvanceCurrentElement();
             m_bufferStartAddresses.AdvanceCurrentElement();
             m_currentPosition = 0;
+            if (m_mapType == RHI::BufferResponseMapType::Transient)
+            {
+                m_bufferStartAddresses.GetCurrentElement() = m_bufferData.GetCurrentElement()->Map(m_ringBufferSize, 0);
+            }
         }
     } // namespace RPI
 } // namespace AZ

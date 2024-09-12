@@ -62,9 +62,12 @@ namespace AZ::WebGPU
         //////////////////////////////////////////////////////////////////////////
 
         ShaderModule* BuildShaderModule(const RHI::ShaderStageFunction* function);
+        void BuildConstants(
+            const RHI::PipelineStateDescriptor& descriptor, const char* sourceCode, AZStd::vector<wgpu::ConstantEntry>& constants);
 
         RHI::Ptr<PipelineLayout> m_pipelineLayout;
         PipelineLibrary* m_pipelineLibrary = nullptr;
         AZStd::vector<RHI::Ptr<ShaderModule>> m_shaderModules;
+        AZStd::vector<AZStd::string> m_constantsName;
     };
 }

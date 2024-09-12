@@ -23,6 +23,8 @@ namespace AZ::WebGPU
         static RHI::Ptr<ComputePipeline> Create();
         ~ComputePipeline() {}
 
+        const wgpu::ComputePipeline& GetNativeComputePipeline() const;
+
     private:
         ComputePipeline() = default;
 
@@ -32,11 +34,20 @@ namespace AZ::WebGPU
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
+        // RHI::Object
+        void SetNameInternal(const AZStd::string_view& name) override;
+        //////////////////////////////////////////////////////////////////////////
+
+        //////////////////////////////////////////////////////////////////////////
         //! Pipeline
         RHI::ResultCode InitInternal(const Descriptor& descriptor, const PipelineLayout& pipelineLayout) override;
         RHI::PipelineStateType GetType() override { return RHI::PipelineStateType::Dispatch; }
         //////////////////////////////////////////////////////////////////////////
 
         RHI::ResultCode BuildNativePipeline(const Descriptor& descriptor, const PipelineLayout& pipelineLayout);
+
+        //! Native compute pipeline
+        wgpu::ComputePipeline m_wgpuComputePipeline = nullptr;
+        AZStd::vector<wgpu::ConstantEntry> m_computeConstants;
     };
 }

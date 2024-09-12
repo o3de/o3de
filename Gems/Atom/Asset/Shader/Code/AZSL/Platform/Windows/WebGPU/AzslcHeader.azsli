@@ -21,3 +21,10 @@
 #define real3x3 float3x3
 #define real3x4 float3x4
 #define real4x4 float4x4
+
+#define ENABLE_POLYGON_LTC_LIGHTS 0
+#define ENABLE_QUAD_LIGHTS 0
+#define ENABLE_SPHERE_LIGHTS 0
+#define ENABLE_DISK_LIGHTS 0
+#define ENABLE_CAPSULE_LIGHTS 0
+#define ENABLE_ESM_SHADOW 0

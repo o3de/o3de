@@ -579,6 +579,8 @@ namespace AZ
                     AZ::Vector4(0.0f, 0.0f, 0.5f, 0.5f),
                     AZ::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
 
+            projectionMatrix.Transpose();
+
             m_resourceGroup->SetConstant(m_projectionMatrixIndex, projectionMatrix);
 
             m_viewportState = params.m_viewportState;

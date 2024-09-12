@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RHI/AsyncWorkQueue.h>
 #include <Atom/RHI/DeviceBuffer.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
@@ -39,6 +40,9 @@ namespace AZ::WebGPU
         const wgpu::Buffer& GetNativeBuffer() const;
         bool CanBeMap() const;
 
+        void SetUploadHandle(const RHI::AsyncWorkHandle& handle);
+        const RHI::AsyncWorkHandle& GetUploadHandle() const;
+
     private:
 
         Buffer() = default;
@@ -59,6 +63,8 @@ namespace AZ::WebGPU
         //! Native buffer
         wgpu::Buffer m_wgpuBuffer = nullptr;
         wgpu::BufferUsage m_wgpuBufferUsage = wgpu::BufferUsage::None;
+
+        RHI::AsyncWorkHandle m_uploadHandle;
     };
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::WebGPU::Buffer::InitFlags);

@@ -39,7 +39,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         AddressW = Clamp;
     };
     
-    column_major float4x4 m_projectionMatrix;
+    float4x4 m_projectionMatrix;
 }
 
 VertexOutput MainVS(in VertexInput input)

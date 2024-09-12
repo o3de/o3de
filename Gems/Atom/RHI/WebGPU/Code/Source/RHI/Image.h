@@ -7,12 +7,14 @@
  */
 #pragma once
 
+#include <Atom/RHI/AsyncWorkQueue.h>
 #include <Atom/RHI/DeviceImage.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
 namespace AZ::WebGPU
 {
     class Device;
+    class StreamingImagePool;
 
     class Image final
         : public RHI::DeviceImage
@@ -20,6 +22,8 @@ namespace AZ::WebGPU
         using Base = RHI::DeviceImage;
         friend class SwapChain;
         friend class AliasedHeap;
+        friend class StreamingImagePool;
+        friend class ImagePool;
 
     public:
         AZ_CLASS_ALLOCATOR(Image, AZ::ThreadPoolAllocator);
@@ -30,6 +34,14 @@ namespace AZ::WebGPU
 
         wgpu::Texture& GetNativeTexture();
         const wgpu::Texture& GetNativeTexture() const;
+
+        void SetUploadHandle(const RHI::AsyncWorkHandle& handle);
+        const RHI::AsyncWorkHandle& GetUploadHandle() const;
+
+        uint16_t GetStreamedMipLevel() const;
+        void SetStreamedMipLevel(uint16_t mipLevel);
+
+        void FinalizeAsyncUpload(uint16_t newStreamedMipLevels);
   
     private:
         Image() = default;
@@ -45,16 +57,26 @@ namespace AZ::WebGPU
         //////////////////////////////////////////////////////////////////////////
         // RHI::DeviceImage
         void GetSubresourceLayoutsInternal(
-            [[maybe_unused]] const RHI::ImageSubresourceRange& subresourceRange,
-            [[maybe_unused]] RHI::DeviceImageSubresourceLayout* subresourceLayouts,
-            [[maybe_unused]] size_t* totalSizeInBytes) const override
-        {
-        }
+            const RHI::ImageSubresourceRange& subresourceRange,
+            RHI::DeviceImageSubresourceLayout* subresourceLayouts,
+            size_t* totalSizeInBytes) const override;
         //////////////////////////////////////////////////////////////////////////
 
         void SetNativeTexture(wgpu::Texture& texture);
 
+        // Trim image to specified mip level
+        RHI::ResultCode TrimImage(uint16_t targetMipLevel);
+
         //! Native texture
         wgpu::Texture m_wgpuTexture = nullptr;
+
+        // Handle for uploading mip map data to the image.
+        RHI::AsyncWorkHandle m_uploadHandle;
+
+        // Tracking the actual mip level data uploaded. It's also used for invalidate image view.
+        uint16_t m_streamedMipLevel = 0;
+
+        // The highest mip level that the image's current bound memory can accommodate
+        uint16_t m_highestMipLevel = RHI::Limits::Image::MipCountMax;
     };
 }

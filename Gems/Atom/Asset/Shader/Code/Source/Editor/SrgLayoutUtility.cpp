@@ -35,6 +35,8 @@ namespace AZ
                     return RHI::ShaderInputImageType::Image3D;
                 case TextureType::TextureCube:
                     return RHI::ShaderInputImageType::ImageCube;
+                case TextureType::TextureCubeArray:
+                    return RHI::ShaderInputImageType::ImageCubeArray;
                 case TextureType::RwTexture1D:
                     return RHI::ShaderInputImageType::Image1D;
                 case TextureType::RwTexture1DArray:

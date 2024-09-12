@@ -53,6 +53,16 @@ namespace AZ
             desc.m_elementSize = sizeof(QuadLightData);
             desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
 
+            m_quadLightEnabled = desc.m_srgLayout->FindShaderInputBufferIndex(Name(desc.m_bufferSrgName)).IsValid();
+            if (!m_quadLightEnabled)
+            {
+                AZ_Warning(
+                    "QuadLightFeatureProcessor",
+                    false,
+                    "Could not find m_quadLights entry in the View SRG. Disabling QuadLightFeatureProcessor.");
+                return;
+            }
+
             m_lightBufferHandler = GpuBufferHandler(desc);
 
             Interface<ILtcCommon>::Get()->LoadMatricesForSrg(GetParentScene()->GetShaderResourceGroup());
@@ -116,6 +126,10 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(RPI, "QuadLightFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
+            if (!m_quadLightEnabled)
+            {
+                return;
+            }
 
             if (m_deviceBufferNeedsUpdate)
             {
@@ -144,6 +158,10 @@ namespace AZ
         void QuadLightFeatureProcessor::Render(const QuadLightFeatureProcessor::RenderPacket& packet)
         {
             AZ_PROFILE_SCOPE(RPI, "QuadLightFeatureProcessor: Render");
+            if (!m_quadLightEnabled)
+            {
+                return;
+            }
 
             for (const RPI::ViewPtr& view : packet.m_views)
             {

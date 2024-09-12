@@ -9,30 +9,28 @@
 
 #include <Atom/RHI/DeviceImagePool.h>
 
-namespace AZ
+namespace AZ::WebGPU
 {
-    namespace WebGPU
+    class ImagePool final
+        : public RHI::DeviceImagePool
     {
-        class ImagePool final
-            : public RHI::DeviceImagePool
-        {
-            using Base = RHI::DeviceImagePool;
-        public:
-            AZ_CLASS_ALLOCATOR(ImagePool, AZ::SystemAllocator);
-            AZ_RTTI(ImagePool, "{26CC4BCD-2239-4935-945E-7B1F568839F3}", RHI::DeviceImagePool);
+        using Base = RHI::DeviceImagePool;
+    public:
+        AZ_CLASS_ALLOCATOR(ImagePool, AZ::SystemAllocator);
+        AZ_RTTI(ImagePool, "{26CC4BCD-2239-4935-945E-7B1F568839F3}", RHI::DeviceImagePool);
             
-            static RHI::Ptr<ImagePool> Create();
+        static RHI::Ptr<ImagePool> Create();
             
-        private:
-            ImagePool() = default;
+    private:
+        ImagePool() = default;
                         
-            //////////////////////////////////////////////////////////////////////////
-            // RHI::DeviceImagePool
-            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device&, [[maybe_unused]] const RHI::ImagePoolDescriptor&) override { return RHI::ResultCode::Success;}
-            RHI::ResultCode InitImageInternal([[maybe_unused]] const RHI::DeviceImageInitRequest& request) override { return RHI::ResultCode::Success;}
-            RHI::ResultCode UpdateImageContentsInternal([[maybe_unused]] const RHI::DeviceImageUpdateRequest& request) override { return RHI::ResultCode::Success;}
-            void ShutdownResourceInternal([[maybe_unused]] RHI::DeviceResource& resourceBase) override {}
-            //////////////////////////////////////////////////////////////////////////
-        };
-    }
+        //////////////////////////////////////////////////////////////////////////
+        // RHI::DeviceImagePool
+        RHI::ResultCode InitInternal(RHI::Device&, const RHI::ImagePoolDescriptor&) override;
+        RHI::ResultCode InitImageInternal(const RHI::DeviceImageInitRequest& request) override;
+        RHI::ResultCode UpdateImageContentsInternal(const RHI::DeviceImageUpdateRequest& request) override;
+        void ShutdownInternal() override;
+        void ShutdownResourceInternal(RHI::DeviceResource& resourceBase) override;
+        //////////////////////////////////////////////////////////////////////////
+    };
 }

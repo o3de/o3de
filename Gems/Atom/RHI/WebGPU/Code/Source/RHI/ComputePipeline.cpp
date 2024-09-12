@@ -18,9 +18,24 @@ namespace AZ::WebGPU
         return aznew ComputePipeline();
     }
 
+    const wgpu::ComputePipeline& ComputePipeline::GetNativeComputePipeline() const
+    {
+        return m_wgpuComputePipeline;
+    }
+
     void ComputePipeline::Shutdown()
     {
+        m_wgpuComputePipeline = nullptr;
         Base::Shutdown();
+    }
+
+    void ComputePipeline::SetNameInternal(const AZStd::string_view& name)
+    {
+        if (m_wgpuComputePipeline && !name.empty())
+        {
+            m_wgpuComputePipeline.SetLabel(name.data());
+        }
+        Base::SetNameInternal(name);
     }
 
     RHI::ResultCode ComputePipeline::InitInternal(const Descriptor& descriptor, const PipelineLayout& pipelineLayout)
@@ -35,8 +50,37 @@ namespace AZ::WebGPU
     }
 
     RHI::ResultCode ComputePipeline::BuildNativePipeline(
-        [[maybe_unused]] const Descriptor& descriptor, [[maybe_unused]] const PipelineLayout& pipelineLayout)
+        const Descriptor& descriptor, const PipelineLayout& pipelineLayout)
     {
-        return RHI::ResultCode::Success;
+        auto& device = static_cast<Device&>(GetDevice());
+        const auto& dispatchDescriptor = static_cast<const RHI::PipelineStateDescriptorForDispatch&>(*descriptor.m_pipelineDescritor);
+
+        auto* computeFunction = static_cast<const ShaderStageFunction*>(dispatchDescriptor.m_computeFunction.get());
+        if (!computeFunction || computeFunction->GetSourceCode().empty())
+        {
+            // Temporary until we can compile most of the shaders
+            return RHI::ResultCode::Success;
+        }
+
+        ShaderModule* module = BuildShaderModule(computeFunction);
+        if (module)
+        {
+            BuildConstants(
+                dispatchDescriptor,
+                static_cast<const ShaderStageFunction*>(module->GetStageFunction())->GetSourceCode().data(),
+                m_computeConstants);
+        }
+
+        wgpu::ComputePipelineDescriptor wgpuDescriptor = {};
+        wgpuDescriptor.layout = pipelineLayout.GetNativePipelineLayout();
+        wgpuDescriptor.label = GetName().GetCStr();
+        wgpuDescriptor.compute.module = module ? module->GetNativeShaderModule() : nullptr;
+        wgpuDescriptor.compute.entryPoint = module ? module->GetEntryFunctionName().c_str() : nullptr;
+        wgpuDescriptor.compute.constantCount = m_computeConstants.size();
+        wgpuDescriptor.compute.constants = m_computeConstants.empty() ? nullptr : m_computeConstants.data();
+
+        m_wgpuComputePipeline = device.GetNativeDevice().CreateComputePipeline(&wgpuDescriptor);
+        AZ_Assert(m_wgpuComputePipeline, "Failed to create compute pipeline");
+        return m_wgpuComputePipeline ? RHI::ResultCode::Success : RHI::ResultCode::Fail;
     }
 }

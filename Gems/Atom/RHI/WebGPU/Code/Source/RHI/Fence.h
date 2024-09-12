@@ -8,39 +8,39 @@
 #pragma once
 
 #include <Atom/RHI/DeviceFence.h>
+#include <AzCore/std/parallel/conditional_variable.h>
+#include <AzCore/std/parallel/mutex.h>
 
-namespace AZ
+namespace AZ::WebGPU
 {
-    namespace WebGPU
+    class Fence
+        : public RHI::DeviceFence
     {
-        class Fence
-            : public RHI::DeviceFence
-        {
-            using Base = RHI::DeviceFence;
-        public:
-            AZ_RTTI(Fence, "{41A94F34-1984-4CC3-82BE-02142ECBCA77}", Base);
-            AZ_CLASS_ALLOCATOR(Fence, AZ::SystemAllocator);
+        using Base = RHI::DeviceFence;
+    public:
+        AZ_RTTI(Fence, "{41A94F34-1984-4CC3-82BE-02142ECBCA77}", Base);
+        AZ_CLASS_ALLOCATOR(Fence, AZ::SystemAllocator);
 
-            static RHI::Ptr<Fence> Create();
+        static RHI::Ptr<Fence> Create();
+        void SignalEvent();
+        void WaitEvent() const;
             
-        private:
-            Fence() = default;
+    private:
+        Fence() = default;
             
-            //////////////////////////////////////////////////////////////////////////
-            // RHI::DeviceFence
-            RHI::ResultCode InitInternal(
-                [[maybe_unused]] RHI::Device& device,
-                [[maybe_unused]] RHI::FenceState initialState,
-                [[maybe_unused]] bool usedForWaitingOnDevice) override
-            {
-                return RHI::ResultCode::Success;
-            }
-            void ShutdownInternal() override {}
-            void SignalOnCpuInternal() override {}
-            void WaitOnCpuInternal() const override {}
-            void ResetInternal() override {}
-            RHI::FenceState GetFenceStateInternal() const override { return RHI::FenceState::Signaled;};
-            //////////////////////////////////////////////////////////////////////////
-        };
-    }
+        //////////////////////////////////////////////////////////////////////////
+        // RHI::DeviceFence
+        RHI::ResultCode InitInternal(RHI::Device& device, RHI::FenceState initialState, bool usedForWaitingOnDevice) override;
+        void ShutdownInternal() override;
+        void SignalOnCpuInternal() override;
+        void WaitOnCpuInternal() const override;
+        void ResetInternal() override;
+        RHI::FenceState GetFenceStateInternal() const override;
+        //////////////////////////////////////////////////////////////////////////
+
+        // Condition variable to handle the signal of the event
+        mutable AZStd::condition_variable m_eventSignal;
+        mutable AZStd::mutex m_eventMutex;
+        RHI::FenceState m_state = RHI::FenceState::Reset;
+    };
 }

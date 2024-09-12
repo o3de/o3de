@@ -14,6 +14,7 @@
 namespace AZ::WebGPU
 {
     class Buffer;
+    class Fence;
     struct ExecuteWorkRequest : public RHI::ExecuteWorkRequest
     {
         /// Command lists to queue.
@@ -42,6 +43,8 @@ namespace AZ::WebGPU
         void ClearTimers();
         //! Writes into a buffer directly using the queue
         void WriteBuffer(const Buffer& buffer, uint64_t bufferOffset, AZStd::span<const uint8_t> data);
+        //! Signals a fence from GPU
+        void Signal(Fence& fence);
 
     private:
         CommandQueue() = default;

@@ -103,6 +103,8 @@ namespace AZ::RHI
 
         //! Creates a barrier tracker object for the Aliased Heap to use.
         virtual AZStd::unique_ptr<AliasingBarrierTracker> CreateBarrierTrackerInternal() = 0;
+        //! Creates the allocator to use for the aliased heap
+        virtual AZStd::unique_ptr<Allocator> CreateAllocatorInternal(const AliasedHeapDescriptor& descriptor);
         //! Implementation specific initialization.
         virtual ResultCode InitInternal(Device& device, const AliasedHeapDescriptor& descriptor) = 0;
         //! Implementation initialization of an Aliased image.
@@ -125,8 +127,8 @@ namespace AZ::RHI
         /// Descriptor of the heap.
         AliasedHeapDescriptor m_descriptor;
 
-        /// First fit allocator used to allocate from placed heap.
-        FreeListAllocator m_firstFitAllocator;
+        /// Allocator used to allocate from placed heap.
+        AZStd::unique_ptr<Allocator> m_allocator;
 
         /// Cache of attachments.
         ObjectCache<DeviceResource> m_cache;

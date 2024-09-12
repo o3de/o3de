@@ -123,6 +123,7 @@ namespace AZ
             Texture2DMSArray,
             Texture3D,
             TextureCube,
+            TextureCubeArray,
             RwTexture1D,
             RwTexture1DArray,
             RwTexture2D,

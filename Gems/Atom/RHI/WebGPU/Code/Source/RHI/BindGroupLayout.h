@@ -43,6 +43,7 @@ namespace AZ::WebGPU
         const wgpu::BindGroupLayout& GetNativeBindGroupLayout() const;
         uint32_t GetConstantDataSize() const;
         const RHI::ShaderResourceGroupLayout* GetShaderResourceGroupLayout() const;
+        const wgpu::BindGroupLayoutEntry& GetEntry(const uint32_t index) const;
 
     private:
         BindGroupLayout() = default;

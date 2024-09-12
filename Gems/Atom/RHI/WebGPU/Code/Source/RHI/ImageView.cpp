@@ -33,6 +33,11 @@ namespace AZ::WebGPU
         return m_aspectFlags;
     }
 
+    RHI::Format ImageView::GetFormat() const
+    {
+        return m_viewFormat;
+    }
+
     RHI::ResultCode ImageView::InitInternal([[maybe_unused]] RHI::Device& deviceBase, const RHI::DeviceResource& resourceBase)
     {
         const auto& image = static_cast<const Image&>(resourceBase);
@@ -43,10 +48,10 @@ namespace AZ::WebGPU
 
         const RHI::ImageViewDescriptor& viewDescriptor = GetDescriptor();
 
-        RHI::Format viewFormat = viewDescriptor.m_overrideFormat;
-        if (viewFormat == RHI::Format::Unknown)
+        m_viewFormat = viewDescriptor.m_overrideFormat;
+        if (m_viewFormat == RHI::Format::Unknown)
         {
-            viewFormat = image.GetDescriptor().m_format;
+            m_viewFormat = image.GetDescriptor().m_format;
         }
 
         m_aspectFlags = RHI::FilterBits(viewDescriptor.m_aspectFlags, image.GetAspectFlags());
@@ -59,7 +64,7 @@ namespace AZ::WebGPU
         wgpuDesc.baseArrayLayer = range.m_arraySliceMin;
         wgpuDesc.baseMipLevel = range.m_mipSliceMin;
         wgpuDesc.dimension = imageViewDimension;
-        wgpuDesc.format = ConvertImageFormat(viewFormat);
+        wgpuDesc.format = ConvertImageFormat(m_viewFormat);
         wgpuDesc.mipLevelCount = range.m_mipSliceMax - range.m_mipSliceMin + 1;
 
         m_wgpuTextureView = image.GetNativeTexture().CreateView(&wgpuDesc);

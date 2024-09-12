@@ -11,6 +11,7 @@
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <Atom/RHI.Reflect/QueryPoolDescriptor.h>
+#include <Atom/RHI.Reflect/ImageEnums.h>
 #include <Atom/RHI.Reflect/IndirectBufferLayout.h>
 #include <Atom/RHI.Reflect/VariableRateShadingEnums.h>
 
@@ -108,6 +109,9 @@ namespace AZ::RHI
 
         //! Whether multithreading is supported
         bool m_multithreading = true;
+
+        //! The image dimensions that can be used for render attachment images
+        RHI::ImageDimensionFlags m_supportedRenderAttachmentDimensions = RHI::ImageDimensionFlags::All;
 
         /// Additional features here.
     };

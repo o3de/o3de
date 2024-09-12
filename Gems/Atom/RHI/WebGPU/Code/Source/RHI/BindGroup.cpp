@@ -14,6 +14,7 @@
 #include <RHI/CommandQueueContext.h>
 #include <RHI/Device.h>
 #include <RHI/ImageView.h>
+#include <RHI/NullDescriptorManager.h>
 
 namespace AZ::WebGPU
 {
@@ -44,28 +45,46 @@ namespace AZ::WebGPU
         auto bufferView = bufViews.front();
         wgpu::BindGroupEntry& data = m_wgpuEntries.emplace_back(wgpu::BindGroupEntry{});
         data.binding = binding;
-        if (bufferView)
+        if (bufferView && !bufferView->IsStale())
         {
             const RHI::BufferViewDescriptor& descriptor = bufferView->GetDescriptor();
             data.buffer = static_cast<const Buffer&>(bufferView->GetBuffer()).GetNativeBuffer();
             data.offset = descriptor.m_elementOffset * descriptor.m_elementSize;
             data.size = descriptor.m_elementCount * descriptor.m_elementSize;
         }
+        else
+        {
+            auto& device = static_cast<Device&>(GetDevice());
+            data.buffer = static_cast<const Buffer&>(device.GetNullDescriptorManager().GetBuffer()).GetNativeBuffer();
+        }
     }       
 
     void BindGroup::UpdateImageViews(
-        uint32_t binding, const AZStd::span<const RHI::ConstPtr<RHI::DeviceImageView>>& imageViews)
+        uint32_t index,
+        uint32_t binding,
+        const AZStd::span<const RHI::ConstPtr<RHI::DeviceImageView>>& imageViews,
+        RHI::ShaderInputImageType imageType)
     {
-        //AZ_Assert(imageViews.size() == 1, "WebGPU doesn't support array of images yet");
+        AZ_Error("WebGPU", imageViews.size() == 1, "WebGPU doesn't support array of images yet");
         auto imageView = imageViews.front();
         wgpu::BindGroupEntry& data = m_wgpuEntries.emplace_back(wgpu::BindGroupEntry{});
         data.binding = binding;
-        data.textureView = imageView ? static_cast<const ImageView*>(imageView.get())->GetNativeView() : nullptr;
+        if (imageView && !imageView->IsStale())
+        {
+            data.textureView = static_cast<const ImageView*>(imageView.get())->GetNativeView();
+        }
+        else
+        {
+            auto& device = static_cast<Device&>(GetDevice());
+            NullDescriptorManager& nullDescriptorManager = device.GetNullDescriptorManager();
+            bool storageImage = m_descriptor.m_bindGroupLayout->GetEntry(index).storageTexture.format != wgpu::TextureFormat::Undefined;
+            data.textureView = nullDescriptorManager.GetDescriptorImageInfo(imageType, storageImage, false);
+        }
     }
 
     void BindGroup::UpdateSamplers(uint32_t binding, const AZStd::span<const RHI::SamplerState>& samplers)
     {
-        AZ_Assert(samplers.size() == 1, "WebGPU doesn't support array of samplers yet");
+        AZ_Error("WebGPU", samplers.size() == 1, "WebGPU doesn't support array of samplers yet");
         const RHI::SamplerState& descriptor = samplers.front();
         Sampler::Descriptor sampleDesc;
         sampleDesc.m_samplerState = descriptor;
@@ -77,7 +96,7 @@ namespace AZ::WebGPU
 
     void BindGroup::UpdateConstantData([[maybe_unused]] AZStd::span<const uint8_t> rawData)
     {
-        AZ_Assert(m_constantDataBuffer, "Null constant buffer");
+        AZ_Error("WebGPU", m_constantDataBuffer, "Null constant buffer");
         auto& queue = static_cast<Device&>(GetDevice()).GetCommandQueueContext().GetCommandQueue(RHI::HardwareQueueClass::Copy);
         queue.WriteBuffer(*m_constantDataBuffer, 0, rawData);
         

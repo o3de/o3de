@@ -7,9 +7,11 @@
  */
 #include <RHI/WebGPU.h>
 #include <RHI/BindGroupLayout.h>
+#include <RHI/Conversions.h>
 #include <RHI/Device.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayout.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 namespace AZ::WebGPU
 {
@@ -40,6 +42,11 @@ namespace AZ::WebGPU
     const RHI::ShaderResourceGroupLayout* BindGroupLayout::GetShaderResourceGroupLayout() const
     {
         return m_shaderResourceGroupLayout.get();
+    }
+
+    const wgpu::BindGroupLayoutEntry& BindGroupLayout::GetEntry(const uint32_t index) const
+    {
+        return m_wgpuEntries[index];
     }
 
     RHI::ResultCode BindGroupLayout::Init(Device& device, const Descriptor& descriptor)
@@ -124,7 +131,6 @@ namespace AZ::WebGPU
             entry.visibility = DefaultShaderStageVisibility;
             entry.buffer.type = wgpu::BufferBindingType::Uniform;
             entry.buffer.hasDynamicOffset = false;
-            entry.buffer.minBindingSize = m_constantDataSize;
         }
 
         // Buffers
@@ -146,6 +152,8 @@ namespace AZ::WebGPU
                 break;
             case RHI::ShaderInputBufferAccess::ReadWrite:
                 entry.buffer.type = wgpu::BufferBindingType::Storage;
+                // Storage buffers cannot be accessed from the vertex stage
+                entry.visibility &= ~wgpu::ShaderStage::Vertex;
                 break;
             default:
                 AZ_Assert(false, "Invalid ShaderInputBufferAccess.");
@@ -163,14 +171,16 @@ namespace AZ::WebGPU
             switch (desc.m_access)
             {
             case RHI::ShaderInputImageAccess::Read:
-                entry.texture.sampleType = wgpu::TextureSampleType::Float;
-                entry.texture.multisampled = false;
-                entry.texture.viewDimension = wgpu::TextureViewDimension::e2D;
+                entry.texture.multisampled = desc.m_type == RHI::ShaderInputImageType::Image2DMultisample ||
+                    desc.m_type == RHI::ShaderInputImageType::Image2DMultisampleArray;
+                entry.texture.sampleType =
+                    entry.texture.multisampled ? wgpu::TextureSampleType::UnfilterableFloat : wgpu::TextureSampleType::Float;
+                entry.texture.viewDimension = ConvertImageType(desc.m_type);
                 break;
             case RHI::ShaderInputImageAccess::ReadWrite:
                 entry.storageTexture.access = wgpu::StorageTextureAccess::ReadWrite;
                 entry.storageTexture.format = wgpu::TextureFormat::Undefined;
-                entry.storageTexture.viewDimension = wgpu::TextureViewDimension::e2D;
+                entry.storageTexture.viewDimension = ConvertImageType(desc.m_type);
                 break;
             default:
                 AZ_Assert(false, "Invalid ShaderInputImageAccess.");
@@ -195,7 +205,7 @@ namespace AZ::WebGPU
             wgpu::BindGroupLayoutEntry& entry = m_wgpuEntries.emplace_back(wgpu::BindGroupLayoutEntry{});
             entry.binding = staticSamplerInput.m_registerId;
             entry.visibility = DefaultShaderStageVisibility;
-            entry.sampler.type = wgpu::SamplerBindingType::Filtering;
+            entry.sampler.type = ConvertReductionType(staticSamplerInput.m_samplerState.m_reductionType);
         }
 
         return RHI::ResultCode::Success;

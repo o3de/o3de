@@ -10,6 +10,7 @@
 #include <RHI/Device.h>
 #include <RHI/PipelineLayout.h>
 #include <RHI/PipelineLibrary.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 namespace AZ::WebGPU
 {
@@ -30,6 +31,10 @@ namespace AZ::WebGPU
         }
 
         Base::Init(device);
+        // Reserve the vector memory for constant names. Need to do this beforehand so the vector doesn't reallocate.
+        // Since we have 2 stages (vertex + fragment) we allocate twice the space for constants names.
+        constexpr uint32_t MaxStages = 2;
+        m_constantsName.reserve(descriptor.m_pipelineDescritor->m_specializationData.size() * MaxStages);
 
         RHI::ResultCode result = InitInternal(descriptor, *layout);
         RETURN_RESULT_IF_UNSUCCESSFUL(result);
@@ -61,6 +66,8 @@ namespace AZ::WebGPU
 
     void Pipeline::Shutdown()
     {
+        m_constantsName.clear();
+        m_shaderModules.clear();
         Base::Shutdown();
     }
 
@@ -78,5 +85,22 @@ namespace AZ::WebGPU
         shaderModule->Init(static_cast<Device&>(GetDevice()), shaderModuleDesc);
         m_shaderModules.emplace_back(shaderModule);
         return shaderModule.get();
+    }
+
+    void Pipeline::BuildConstants(
+        const RHI::PipelineStateDescriptor& descriptor, const char* sourceCode, AZStd::vector<wgpu::ConstantEntry>& constants)
+    {
+        constants.reserve(descriptor.m_specializationData.size());
+        for (const RHI::SpecializationConstant& constantData : descriptor.m_specializationData)
+        {
+            if (AZ::StringFunc::Contains(sourceCode, constantData.m_name.GetStringView()))
+            {
+                wgpu::ConstantEntry& entry = constants.emplace_back(wgpu::ConstantEntry{});
+                // We can't use the name for the constants because it causes an error when building the RenderPipeline
+                // We need to use the "id" of the constant instead.
+                entry.key = m_constantsName.emplace_back(AZStd::string::format("%d", constantData.m_id)).c_str();
+                entry.value = aznumeric_caster(constantData.m_value.GetIndex());
+            }
+        }
     }
 }

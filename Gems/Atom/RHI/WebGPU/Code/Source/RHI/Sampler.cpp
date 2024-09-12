@@ -74,7 +74,9 @@ namespace AZ::WebGPU
         desc.mipmapFilter = ConvertMipMapFilterMode(filterMip);
         desc.lodMinClamp = samplerState.m_mipLodMin;
         desc.lodMaxClamp = samplerState.m_mipLodMax;
-        desc.compare = ConvertCompareFunction(samplerState.m_comparisonFunc); // Must be "Undefined" if not being used, if not it causes an error.
+        desc.compare = samplerState.m_reductionType == RHI::ReductionType::Comparison
+            ? ConvertCompareFunction(samplerState.m_comparisonFunc)
+            : wgpu::CompareFunction::Undefined;  // Must be "Undefined" if not being used, if not it causes an error.
         desc.maxAnisotropy = aznumeric_caster(AZStd::max(samplerState.m_anisotropyMax, 1u));
         desc.label = GetName().GetCStr();
 

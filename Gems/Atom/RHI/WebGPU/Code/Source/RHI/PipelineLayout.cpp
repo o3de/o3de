@@ -39,22 +39,30 @@ namespace AZ::WebGPU
         // Initialise mapping tables
         m_slotToIndexTable.fill(static_cast<uint8_t>(RHI::Limits::Pipeline::ShaderResourceGroupCountMax));
         m_indexToSlotTable.resize(groupLayoutCount);
-        m_bindGroupLayouts.reserve(groupLayoutCount);
+        m_bindGroupLayouts.resize(groupLayoutCount);
         RHI::ResultCode result;
         for (uint32_t groupLayoutIndex = 0; groupLayoutIndex < groupLayoutCount; ++groupLayoutIndex)
         {
+            const auto& bindingInfo = pipelineLayoutDesc.GetShaderResourceGroupBindingInfo(groupLayoutIndex);
             const auto* srgLayout = pipelineLayoutDesc.GetShaderResourceGroupLayout(groupLayoutIndex);
 
+            uint32_t spaceId = bindingInfo.m_constantDataBindingInfo.m_spaceId;
+            if (spaceId == ~0u)
+            {
+                AZ_Assert(!bindingInfo.m_resourcesRegisterMap.empty(), "SRG Binding Info has neither constant data nor resources bound");
+                spaceId = bindingInfo.m_resourcesRegisterMap.begin()->second.m_spaceId;
+            }
+
             uint32_t bindingSlot = srgLayout->GetBindingSlot();
-            m_slotToIndexTable[bindingSlot] = static_cast<uint8_t>(groupLayoutIndex);
-            m_indexToSlotTable[groupLayoutIndex] = static_cast<uint8_t>(bindingSlot);
+            m_slotToIndexTable[bindingSlot] = static_cast<uint8_t>(spaceId);
+            m_indexToSlotTable[spaceId] = static_cast<uint8_t>(bindingSlot);
 
             RHI::Ptr<BindGroupLayout> bindGroupLayout = BindGroupLayout::Create();
             BindGroupLayout::Descriptor layoutDesc;
             layoutDesc.m_shaderResouceGroupLayout = srgLayout;
             result = bindGroupLayout->Init(device, layoutDesc);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            m_bindGroupLayouts.push_back(bindGroupLayout);
+            m_bindGroupLayouts[spaceId] = bindGroupLayout;
         }
 
         result = BuildNativePipelineLayout();

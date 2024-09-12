@@ -289,8 +289,7 @@ namespace AZ::WebGPU
         case RHI::ComparisonFunc::Greater: return wgpu::CompareFunction::Greater;
         case RHI::ComparisonFunc::NotEqual: return wgpu::CompareFunction::NotEqual;
         case RHI::ComparisonFunc::GreaterEqual: return wgpu::CompareFunction::GreaterEqual;
-        case RHI::ComparisonFunc::Always: return wgpu::CompareFunction::Undefined; // Temporary hack until AZSLC supports "None"
-        case RHI::ComparisonFunc::None: return wgpu::CompareFunction::Undefined;
+        case RHI::ComparisonFunc::Always: return wgpu::CompareFunction::Always;
         case RHI::ComparisonFunc::Invalid: return wgpu::CompareFunction::Undefined;
         default:
             AZ_Assert(false, "Unsuported ComparisonFunc %d", func);
@@ -542,6 +541,40 @@ namespace AZ::WebGPU
         default:
             AZ_Assert(false, "Invalid IndexFormat %d", format);
             return wgpu::IndexFormat::Undefined;
+        }
+    }
+
+    wgpu::TextureViewDimension ConvertImageType(RHI::ShaderInputImageType type)
+    {
+        switch (type)
+        {
+        case RHI::ShaderInputImageType::Unknown: return wgpu::TextureViewDimension::Undefined;
+        case RHI::ShaderInputImageType::Image1D: return wgpu::TextureViewDimension::e1D;
+        case RHI::ShaderInputImageType::Image2D: return wgpu::TextureViewDimension::e2D;
+        case RHI::ShaderInputImageType::Image2DMultisample: return wgpu::TextureViewDimension::e2D;
+        case RHI::ShaderInputImageType::Image2DArray: return wgpu::TextureViewDimension::e2DArray;
+        case RHI::ShaderInputImageType::Image2DMultisampleArray: return wgpu::TextureViewDimension::e2DArray;
+        case RHI::ShaderInputImageType::ImageCube: return wgpu::TextureViewDimension::Cube;
+        case RHI::ShaderInputImageType::ImageCubeArray:
+            return wgpu::TextureViewDimension::CubeArray;
+        case RHI::ShaderInputImageType::Image3D: return wgpu::TextureViewDimension::e3D;
+        default:
+            AZ_Assert(false, "Unsupported image type %d", type);
+            return wgpu::TextureViewDimension::Undefined;
+        }
+    }
+
+    wgpu::SamplerBindingType ConvertReductionType(RHI::ReductionType type)
+    {
+        switch (type)
+        {
+        case RHI::ReductionType::Filter: return wgpu::SamplerBindingType::Filtering;
+        case RHI::ReductionType::Comparison: return wgpu::SamplerBindingType::Comparison;
+        case RHI::ReductionType::Minimum: return wgpu::SamplerBindingType::NonFiltering;
+        case RHI::ReductionType::Maximum: return wgpu::SamplerBindingType::NonFiltering;
+        default:
+            AZ_Assert(false, "Unsupported ReductionType %d", type);
+            return wgpu::SamplerBindingType::Undefined;
         }
     }
 }

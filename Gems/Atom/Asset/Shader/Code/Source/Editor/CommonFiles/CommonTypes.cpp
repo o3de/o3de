@@ -121,6 +121,10 @@ namespace AZ
             {
                 return TextureType::Texture3D;
             }
+            else if (AzFramework::StringFunc::StartsWith(textureType, "TextureCubeArray"))
+            {
+                return TextureType::TextureCubeArray;
+            }
             else if (AzFramework::StringFunc::StartsWith(textureType, "TextureCube"))
             {
                 return TextureType::TextureCube;

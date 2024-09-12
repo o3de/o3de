@@ -225,7 +225,11 @@ namespace AZ
                 m_lightBufferHandler.UpdateSrg(view->GetShaderResourceGroup().get());
                 if (count > 0)
                 {
-                    view->GetShaderResourceGroup()->SetImageArray(m_goboTexturesIndex, AZStd::span(m_goboTextures.begin(), m_goboTextures.begin() + count));
+                    for (uint32_t index = 0; index < count; ++index)
+                    {
+                        RHI::ShaderInputNameIndex shaderInput(AZStd::string::format("m_goboTexture%d", index).c_str());
+                        view->GetShaderResourceGroup()->SetImage(shaderInput, m_goboTextures[index]);
+                    }
                     
                 }
                 CullLights(view);

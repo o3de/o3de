@@ -14,6 +14,8 @@
 #include <Atom/RHI.Reflect/InputStreamLayout.h>
 #include <Atom/RHI.Reflect/MemoryEnums.h>
 #include <Atom/RHI.Reflect/RenderStates.h>
+#include <Atom/RHI.Reflect/SamplerState.h>
+#include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <Atom/RHI/DeviceIndexBufferView.h>
 
 namespace AZ::WebGPU
@@ -48,4 +50,6 @@ namespace AZ::WebGPU
     wgpu::BufferUsage ConvertBufferBindFlags(RHI::BufferBindFlags flags);
     wgpu::MapMode ConvertMapMode(RHI::HostMemoryAccess access);
     wgpu::IndexFormat ConvertIndexFormat(RHI::IndexFormat format);
+    wgpu::TextureViewDimension ConvertImageType(RHI::ShaderInputImageType type);
+    wgpu::SamplerBindingType ConvertReductionType(RHI::ReductionType type);
 }

@@ -30,11 +30,18 @@ class DirectionalShadowCalculator
         m_blendBetweenCascadesEnable = enable;
     }
 
+#if ENABLE_ESM_SHADOW
     void SetShadowmaps(Texture2DArray<float> dirShadowMap, Texture2DArray<float> expShadowmap)
     {
         m_directionalLightShadowmap = dirShadowMap;
         m_directionalLightExponentialShadowmap = expShadowmap;
     }
+#else
+    void SetShadowmaps(Texture2DArray<float> dirShadowMap, float dummyExpShadowMap)
+    {
+        m_directionalLightShadowmap = dirShadowMap;
+    }
+#endif
 
     void SetReceiverShadowPlaneBiasEnable(const bool enable)
     {
@@ -96,7 +103,7 @@ class DirectionalShadowCalculator
     ShadowFilterMethod m_filterMode;
     ShadowFilterSampleCount m_filteringSampleCountMode;
 
-    Texture2DArray<float> m_directionalLightShadowmap;   
+    Texture2DArray<float> m_directionalLightShadowmap;
     Texture2DArray<float> m_directionalLightExponentialShadowmap;        
 };
 
@@ -348,6 +355,7 @@ real DirectionalShadowCalculator::GetVisibilityFromLightPcf()
 
 float DirectionalShadowCalculator::GetVisibilityFromLightEsm()
 {
+#if ENABLE_ESM_SHADOW
     for (int indexOfCascade = m_minCascade; indexOfCascade <= m_maxCascade; ++indexOfCascade)
     {
         const float3 shadowCoord = m_shadowCoords[indexOfCascade];
@@ -368,11 +376,13 @@ float DirectionalShadowCalculator::GetVisibilityFromLightEsm()
             }
         }
     }
+#endif
     return 1.;
 }
 
 float DirectionalShadowCalculator::GetVisibilityFromLightEsmPcf()
 {
+#if #if ENABLE_ESM_SHADOW
     for (int indexOfCascade = m_minCascade; indexOfCascade <= m_maxCascade; ++indexOfCascade)
     {
         const float3 shadowCoord = m_shadowCoords[indexOfCascade];
@@ -400,6 +410,7 @@ float DirectionalShadowCalculator::GetVisibilityFromLightEsmPcf()
             }
         }
     }
+#endif
     return 1.;
 }
 

@@ -80,7 +80,7 @@ namespace AZ::WebGPU
             const RHI::ShaderInputImageIndex index(groupIndex);
             auto imgViews = groupData.GetImageViewArray(index);
             uint32_t binding = shaderImageList[groupIndex].m_registerId;
-            bindGroup.UpdateImageViews(binding, imgViews);
+            bindGroup.UpdateImageViews(groupIndex, binding, imgViews, shaderImageList[groupIndex].m_type);
         }        
 
         auto const& shaderSamplerList = layout->GetShaderInputListForSamplers();

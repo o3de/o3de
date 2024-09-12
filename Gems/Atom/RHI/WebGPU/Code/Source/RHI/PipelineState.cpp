@@ -7,6 +7,7 @@
  */
 #include <RHI/WebGPU.h>
 #include <RHI/Device.h>
+#include <RHI/ComputePipeline.h>
 #include <RHI/PipelineState.h>
 #include <RHI/RenderPipeline.h>
 #include <RHI/PipelineLibrary.h>
@@ -39,6 +40,20 @@ namespace AZ::WebGPU
         pipelineDescriptor.m_pipelineDescritor = &descriptor;
         pipelineDescriptor.m_pipelineLibrary = static_cast<PipelineLibrary*>(pipelineLibrary);
         RHI::Ptr<RenderPipeline> pipeline = RenderPipeline::Create();
+        RHI::ResultCode result = pipeline->Init(static_cast<Device&>(device), pipelineDescriptor);
+        RETURN_RESULT_IF_UNSUCCESSFUL(result);
+
+        m_pipeline = pipeline;
+        return result;
+    }
+
+    RHI::ResultCode PipelineState::InitInternal(
+        RHI::Device& device, const RHI::PipelineStateDescriptorForDispatch& descriptor, RHI::DevicePipelineLibrary* pipelineLibrary)
+    {
+        Pipeline::Descriptor pipelineDescriptor;
+        pipelineDescriptor.m_pipelineDescritor = &descriptor;
+        pipelineDescriptor.m_pipelineLibrary = static_cast<PipelineLibrary*>(pipelineLibrary);
+        RHI::Ptr<ComputePipeline> pipeline = ComputePipeline::Create();
         RHI::ResultCode result = pipeline->Init(static_cast<Device&>(device), pipelineDescriptor);
         RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
