@@ -6,6 +6,8 @@
  *
  */
 #include <RHI/WebGPU.h>
+#include <RHI/Buffer.h>
+#include <RHI/BufferPool.h>
 #include <RHI/Device.h>
 #include <RHI/Instance.h>
 #include <RHI/Conversions.h>
@@ -35,8 +37,7 @@ namespace AZ::WebGPU
         m_wgpuDeviceDesc.SetDeviceLostCallback(wgpu::CallbackMode::AllowSpontaneous, Device::DeviceLostCallback);
         m_wgpuDeviceDesc.SetUncapturedErrorCallback(&Device::ErrorCallback);
 
-            // Synchronously create the device
-
+        // Synchronously create the device
         auto& instance = Instance::GetInstance().GetNativeInstance();
         m_wgpuDevice = nullptr;
         instance.WaitAny(
@@ -85,6 +86,7 @@ namespace AZ::WebGPU
     CommandList* Device::AcquireCommandList([[maybe_unused]] RHI::HardwareQueueClass hardwareQueueClass)
     {
         RHI::Ptr<CommandList> commandList = CommandList::Create();
+        commandList->Init(*this);
         m_frameCommandLists.push_back(commandList);
         return commandList.get();
     }
@@ -115,14 +117,45 @@ namespace AZ::WebGPU
         m_limits.m_maxBufferSize = maxValue;
 
         m_features.m_resourceAliasing = false;
+        m_features.m_multithreading = false;
+
+        // Set the cache sizes.
+        m_samplerCache.first.SetCapacity(SamplerCacheCapacity);
+        m_pipelineLayoutCache.first.SetCapacity(PipelineLayoutCacheCapacity);
 
         m_commandQueueContext.Init(*this);
+
+        m_constantBufferPool = BufferPool::Create();
+        static int index = 0;
+        m_constantBufferPool->SetName(Name(AZStd::string::format("ConstantPool_%d", ++index)));
+
+        RHI::BufferPoolDescriptor bufferPoolDescriptor;
+        bufferPoolDescriptor.m_bindFlags = RHI::BufferBindFlags::Constant;
+        bufferPoolDescriptor.m_heapMemoryLevel = RHI::HeapMemoryLevel::Host;
+        RHI::ResultCode result = m_constantBufferPool->Init(*this, bufferPoolDescriptor);
+        RETURN_RESULT_IF_UNSUCCESSFUL(result);
+
+        m_stagingBufferPool = BufferPool::Create();
+        BufferPoolDescriptor poolDesc;
+        poolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Host;
+        poolDesc.m_hostMemoryAccess = RHI::HostMemoryAccess::Write;
+        poolDesc.m_bindFlags = RHI::BufferBindFlags::CopyRead;
+        poolDesc.m_budgetInBytes = m_descriptor.m_platformLimitsDescriptor->m_platformDefaultValues.m_stagingBufferBudgetInBytes;
+        poolDesc.m_mappedAtCreation = true;
+        m_stagingBufferPool->SetName(AZ::Name("Device_StagingBufferPool"));
+        result = m_stagingBufferPool->Init(*this, poolDesc);
+        RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
         return RHI::ResultCode::Success;
     }
 
     void Device::PreShutdown()
     {
+        m_samplerCache.first.Clear();
+        m_pipelineLayoutCache.first.Clear();
+
+        m_stagingBufferPool.reset();
+        m_constantBufferPool.reset();
         m_commandQueueContext.Shutdown();
     }
 
@@ -144,5 +177,36 @@ namespace AZ::WebGPU
     void Device::ErrorCallback([[maybe_unused]] const wgpu::Device& wgpuDevice, wgpu::ErrorType type, const char* message)
     {
         AZ_Error("WebGPU", false, "Device error of type %s : %s", ToString(type), message);
+    }
+
+    RHI::Ptr<PipelineLayout> Device::AcquirePipelineLayout(const PipelineLayout::Descriptor& descriptor)
+    {
+        return AcquireObjectFromCache(m_pipelineLayoutCache, descriptor.GetHash(), descriptor);
+    }
+
+    RHI::Ptr<Sampler> Device::AcquireSampler(const Sampler::Descriptor& descriptor)
+    {
+        return AcquireObjectFromCache(m_samplerCache, descriptor.GetHash(), descriptor);
+    }
+
+    RHI::Ptr<Buffer> Device::AcquireStagingBuffer(AZStd::size_t byteCount, AZStd::size_t alignment /* = 1*/)
+    {
+        RHI::Ptr<Buffer> stagingBuffer = Buffer::Create();
+        RHI::BufferDescriptor bufferDesc(RHI::BufferBindFlags::CopyRead, byteCount);
+        bufferDesc.m_alignment = alignment;
+        RHI::DeviceBufferInitRequest initRequest(*stagingBuffer, bufferDesc);
+        const RHI::ResultCode result = m_stagingBufferPool->InitBuffer(initRequest);
+        if (result != RHI::ResultCode::Success)
+        {
+            AZ_Assert(false, "Initialization of staging Buffer fails.");
+            return nullptr;
+        }
+
+        return stagingBuffer;
+    }
+
+    RHI::Ptr<BufferPool> Device::GetConstantBufferPool()
+    {
+        return m_constantBufferPool;
     }
 }

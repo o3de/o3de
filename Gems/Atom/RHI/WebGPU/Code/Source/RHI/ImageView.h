@@ -23,6 +23,9 @@ namespace AZ::WebGPU
         AZ_RTTI(ImageView, "{AB053773-4C5E-40C3-A6C0-7990140FE116}", Base);
 
         static RHI::Ptr<ImageView> Create();
+        wgpu::TextureView& GetNativeView();
+        const wgpu::TextureView& GetNativeView() const;
+        RHI::ImageAspectFlags GetAspectFlags() const;
 
     private:
         ImageView() = default;
@@ -39,5 +42,6 @@ namespace AZ::WebGPU
             wgpu::TextureViewDimension imageViewDimension, RHI::ImageAspectFlags aspectFlags);
 
         wgpu::TextureView m_wgpuTextureView = nullptr;
+        RHI::ImageAspectFlags m_aspectFlags = RHI::ImageAspectFlags::None;
     };
 }

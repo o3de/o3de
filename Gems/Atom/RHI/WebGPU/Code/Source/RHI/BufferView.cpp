@@ -5,16 +5,13 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <RHI/WebGPU.h>
 #include <RHI/BufferView.h>
 
-
-namespace AZ
+namespace AZ::WebGPU
 {
-    namespace WebGPU
+    RHI::Ptr<BufferView> BufferView::Create()
     {
-        RHI::Ptr<BufferView> BufferView::Create()
-        {
-            return aznew BufferView();
-        }
+        return aznew BufferView();
     }
 }

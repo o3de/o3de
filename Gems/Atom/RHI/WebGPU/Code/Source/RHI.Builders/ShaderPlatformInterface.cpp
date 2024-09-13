@@ -62,6 +62,8 @@ namespace AZ
         RHI::Ptr<RHI::ShaderStageFunction> ShaderPlatformInterface::CreateShaderStageFunction(const StageDescriptor& stageDescriptor)
         {
             RHI::Ptr<ShaderStageFunction> newShaderStageFunction = ShaderStageFunction::Create(RHI::ToRHIShaderStage(stageDescriptor.m_stageType));
+            newShaderStageFunction->SetSourceCode(stageDescriptor.m_sourceCode);
+            newShaderStageFunction->SetEntryFunctionName(stageDescriptor.m_entryFunctionName);
             newShaderStageFunction->Finalize();
             return newShaderStageFunction;
         }
@@ -116,7 +118,7 @@ namespace AZ
             const RHI::ShaderBuildArguments& shaderBuildArguments,
             [[maybe_unused]] const bool useSpecializationConstants) const
         {
-            AZStd::vector<uint8_t> shaderByteCode;
+            AZStd::string shaderCode;
 
             // Compile HLSL shader to SPIRV byte code
             bool compiledSucessfully = CompileHLSLShader(
@@ -125,7 +127,7 @@ namespace AZ
                 functionName, // name of function that is the entry point
                 shaderStage, // shader stage (vertex shader, pixel shader, ...)
                 shaderBuildArguments,
-                shaderByteCode, // compiled shader output
+                shaderCode, // compiled shader output
                 platform, // target platform
                 outputDescriptor.m_byProducts); // dynamic branch count output & debug dumps
 
@@ -135,11 +137,12 @@ namespace AZ
                 return false;
             }
 
-            if (shaderByteCode.size() > 0)
+            if (!shaderCode.empty())
             {
                 AZ_Assert(!functionName.empty(), "There is no entry function name.");
                 outputDescriptor.m_stageType = shaderStage;
-                outputDescriptor.m_byteCode = AZStd::move(shaderByteCode);
+                outputDescriptor.m_sourceCode = AZStd::vector<char>(shaderCode.begin(), shaderCode.end());
+                outputDescriptor.m_sourceCode.push_back('\0');
                 outputDescriptor.m_entryFunctionName = AZStd::move(functionName);
             }
             else
@@ -157,7 +160,7 @@ namespace AZ
             const AZStd::string& entryPoint,
             const RHI::ShaderHardwareStage shaderStageType,
             const RHI::ShaderBuildArguments& shaderBuildArguments,
-            AZStd::vector<uint8_t>& compiledShader,
+            AZStd::string& compiledShader,
             [[maybe_unused]] const AssetBuilderSDK::PlatformInfo& platform,
             ByProducts& byProducts) const
         {
@@ -165,10 +168,10 @@ namespace AZ
             const auto dxcRelativePath = RHI::GetDirectXShaderCompilerPath(AZ_TRAIT_ATOM_SHADERBUILDER_DXC);
 
             // -Fo "Output file"
-            AZStd::string shaderOutputFile;
-            AzFramework::StringFunc::Path::GetFileName(shaderSourceFile.c_str(), shaderOutputFile);
-            AzFramework::StringFunc::Path::Join(tempFolder.c_str(), shaderOutputFile.c_str(), shaderOutputFile);
-            AzFramework::StringFunc::Path::ReplaceExtension(shaderOutputFile, "spirv.bin");
+            AZStd::string spirvOutputFile;
+            AzFramework::StringFunc::Path::GetFileName(shaderSourceFile.c_str(), spirvOutputFile);
+            AzFramework::StringFunc::Path::Join(tempFolder.c_str(), spirvOutputFile.c_str(), spirvOutputFile);
+            AzFramework::StringFunc::Path::ReplaceExtension(spirvOutputFile, "spv");
 
             // -Fh "Output header file containing object code", used for counting dynamic branches
             AZStd::string objectCodeOutputFile;
@@ -274,24 +277,42 @@ namespace AZ
             //                                                    |   2.SM  |   4.output       |      |
             //                                                    |     |   |       |          |      |
             const auto dxcCommandOptions = AZStd::string::format(
-                "%s -T %s %s -Fo \"%s\" -Fh \"%s\" \"%s\"",
-                dxcEntryPoint.c_str(), // 1
-                profileIt->second.c_str(), // 2
-                params.c_str(), // 3
-                shaderOutputFile.c_str(), // 4
-                objectCodeOutputFile.c_str(), // 5
-                dxcInputFile.c_str()); // 6
+                                                                 "%s -T %s %s -Fo \"%s\" -Fh \"%s\" \"%s\"",
+                                                                 dxcEntryPoint.c_str(),         // 1
+                                                                 profileIt->second.c_str(),     // 2
+                                                                 params.c_str(),                // 3
+                                                                 spirvOutputFile.c_str(),       // 4
+                                                                 objectCodeOutputFile.c_str(),  // 5
+                                                                 dxcInputFile.c_str());         // 6
             // note: unlike DX12, the -Fd switch fails with -spirv. waiting for an answer on
             // https://github.com/microsoft/DirectXShaderCompiler/issues/3111
             //       therefore, the debug data is probably embedded in the spirv blob.
 
-            // Run Shader Compiler
+            // Run DXC Shader Compiler
             if (!RHI::ExecuteShaderCompiler(dxcRelativePath, dxcCommandOptions, shaderSourceFile, tempFolder, "DXC"))
             {
                 return false;
             }
 
-            auto shaderOutputFileLoadResult = AZ::RHI::LoadFileBytes(shaderOutputFile.c_str());
+            const auto tintRelativePath = AZ_TRAIT_ATOM_SHADERBUILDER_TINT;
+            AZStd::string shaderOutputFile;
+            AzFramework::StringFunc::Path::GetFileName(shaderSourceFile.c_str(), shaderOutputFile);
+            AzFramework::StringFunc::Path::Join(tempFolder.c_str(), shaderOutputFile.c_str(), shaderOutputFile);
+            AzFramework::StringFunc::Path::ReplaceExtension(shaderOutputFile, "wgsl");
+            //                                                                  1.output
+            //                                                                      |   2.spirv-in
+            //                                                                      |       |
+             const auto tintCommandOptions = AZStd::string::format(
+                                                                "--format wgsl -o \"%s\" \"%s\"",
+                                                                shaderOutputFile.c_str(), // 1
+                                                                spirvOutputFile.c_str()); // 2
+            // Run Tint Shader Compiler
+            if (!RHI::ExecuteShaderCompiler(tintRelativePath, tintCommandOptions, shaderSourceFile, tempFolder, "Tint"))
+            {
+                return false;
+            }
+
+            auto shaderOutputFileLoadResult = AZ::RHI::LoadFileString(shaderOutputFile.c_str());
             if (!shaderOutputFileLoadResult)
             {
                 AZ_Error(WebGPUShaderPlatformName, false, "%s", shaderOutputFileLoadResult.GetError().c_str());

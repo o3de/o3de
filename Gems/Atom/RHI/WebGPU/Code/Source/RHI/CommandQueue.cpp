@@ -6,6 +6,7 @@
  *
  */
 #include <RHI/WebGPU.h>
+#include <RHI/Buffer.h>
 #include <RHI/Device.h>
 #include <RHI/CommandQueue.h>
 #include <RHI/SwapChain.h>
@@ -44,6 +45,21 @@ namespace AZ::WebGPU
             {
                 AZ_PROFILE_SCOPE(RHI, "ExecuteWork");
                 AZ::Debug::ScopedTimer executionTimer(m_lastExecuteDuration);
+                AZStd::vector<wgpu::CommandBuffer> commandBuffers;
+                commandBuffers.reserve(request.m_commandLists.size());
+                for (CommandList* commandList : request.m_commandLists)
+                {
+                    const auto& wgpuCommandBuffer = commandList->GetNativeCommandBuffer();
+                    if (wgpuCommandBuffer)
+                    {
+                        commandBuffers.push_back(AZStd::move(wgpuCommandBuffer));
+                    }
+                }
+
+                if (!commandBuffers.empty())
+                {
+                    m_wgpuQueue.Submit(commandBuffers.size(), commandBuffers.data());
+                }
 
                 AZ::Debug::ScopedTimer presentTimer(m_lastPresentDuration);
                 for (RHI::DeviceSwapChain* swapChain : request.m_swapChainsToPresent)
@@ -62,5 +78,12 @@ namespace AZ::WebGPU
         m_lastExecuteDuration = 0;
     }
 
-
+    void CommandQueue::WriteBuffer(const Buffer& buffer, uint64_t bufferOffset, AZStd::span<const uint8_t> data)
+    {
+        QueueCommand(
+            [&buffer, bufferOffset, data, this]([[maybe_unused]] void* commandQueue)
+            {
+                m_wgpuQueue.WriteBuffer(buffer.GetNativeBuffer(), bufferOffset, data.data(), data.size());
+            });
+    }
 }

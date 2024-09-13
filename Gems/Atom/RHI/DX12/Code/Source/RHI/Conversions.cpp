@@ -1334,7 +1334,8 @@ namespace AZ
                 D3D12_COMPARISON_FUNC_GREATER,
                 D3D12_COMPARISON_FUNC_NOT_EQUAL,
                 D3D12_COMPARISON_FUNC_GREATER_EQUAL,
-                D3D12_COMPARISON_FUNC_ALWAYS
+                D3D12_COMPARISON_FUNC_ALWAYS,
+                D3D12_COMPARISON_FUNC_ALWAYS // We can use any value when is RHI::ComparisonFunc::None
             };
             return table[(uint32_t)func];
         }

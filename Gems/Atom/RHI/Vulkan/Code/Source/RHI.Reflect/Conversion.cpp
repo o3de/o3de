@@ -257,6 +257,9 @@ namespace AZ
                 return VK_COMPARE_OP_GREATER_OR_EQUAL;
             case RHI::ComparisonFunc::Always:
                 return VK_COMPARE_OP_ALWAYS;
+            case RHI::ComparisonFunc::None:
+                // We can use any value when is RHI::ComparisonFunc::None
+                return VK_COMPARE_OP_ALWAYS;
             default:
                 AZ_Assert(false, "Comparison function is invalid.");
             }

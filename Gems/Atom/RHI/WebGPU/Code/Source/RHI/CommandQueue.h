@@ -13,6 +13,7 @@
 
 namespace AZ::WebGPU
 {
+    class Buffer;
     struct ExecuteWorkRequest : public RHI::ExecuteWorkRequest
     {
         /// Command lists to queue.
@@ -39,6 +40,8 @@ namespace AZ::WebGPU
 
         //! Reset timers for measuring duration of execution and presentation
         void ClearTimers();
+        //! Writes into a buffer directly using the queue
+        void WriteBuffer(const Buffer& buffer, uint64_t bufferOffset, AZStd::span<const uint8_t> data);
 
     private:
         CommandQueue() = default;

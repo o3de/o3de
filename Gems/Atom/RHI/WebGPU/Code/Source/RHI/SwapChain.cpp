@@ -53,7 +53,7 @@ namespace AZ
             {
                 // Fill out the real swapchain dimensions to return
                 *nativeDimensions = descriptor.m_dimensions;
-                nativeDimensions->m_imageFormat = ConvertFormat(m_wgpuSurfaceFormat);
+                nativeDimensions->m_imageFormat = ConvertImageFormat(m_wgpuSurfaceFormat);
             }
 
             return RHI::ResultCode::Success;
@@ -85,7 +85,7 @@ namespace AZ
             // wgpu::Texture with a proper value when acquiring a new image from
             // the Swapchain (wgpu::Surface::GetCurrentTexture)
             wgpu::Texture nullTexture = nullptr;
-            imageDesc.m_format = ConvertFormat(m_wgpuSurfaceFormat);
+            imageDesc.m_format = ConvertImageFormat(m_wgpuSurfaceFormat);
             result = image->Init(device, nullTexture, imageDesc);
             
             if (result != RHI::ResultCode::Success)
@@ -118,7 +118,7 @@ namespace AZ
         {
             AZ_Assert(m_wgpuSurface, "Surface has not been initialized.");
             AZ_Assert(m_wgpuSurfaceCapabilities.formatCount > 0, "Surface capabilities not initialized");
-            const wgpu::TextureFormat format = ConvertFormat(rhiFormat);
+            const wgpu::TextureFormat format = ConvertImageFormat(rhiFormat);
             for (uint32_t index = 0; index < m_wgpuSurfaceCapabilities.formatCount; ++index)
             {
                 if (m_wgpuSurfaceCapabilities.formats[index] == format)

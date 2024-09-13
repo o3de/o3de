@@ -10,29 +10,56 @@
 #include <Atom/RHI/DeviceBuffer.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
-namespace AZ
+namespace AZ::WebGPU
 {
-    namespace WebGPU
+    class Device;
+
+    class Buffer final
+        : public RHI::DeviceBuffer
     {
-        class Buffer final
-            : public RHI::DeviceBuffer
+        using Base = RHI::DeviceBuffer;
+        friend class BufferPool;
+        friend class AliasedHeap;
+
+    public:
+        AZ_CLASS_ALLOCATOR(Buffer, AZ::ThreadPoolAllocator);
+        AZ_RTTI(Buffer, "{8C858CF3-E360-42EC-A6FF-D441F60D7D01}", Base);
+        ~Buffer() = default;
+
+        enum class InitFlags : uint8_t
         {
-            using Base = RHI::DeviceBuffer;
-        public:
-            AZ_CLASS_ALLOCATOR(Buffer, AZ::ThreadPoolAllocator);
-            AZ_RTTI(Buffer, "{8C858CF3-E360-42EC-A6FF-D441F60D7D01}", Base);
-            ~Buffer() = default;
-            
-            static RHI::Ptr<Buffer> Create();
-            
-        private:
-            Buffer() = default;
-
-            //////////////////////////////////////////////////////////////////////////
-            // RHI::DeviceResource
-            void ReportMemoryUsage([[maybe_unused]] RHI::MemoryStatisticsBuilder& builder) const override {}
-            //////////////////////////////////////////////////////////////////////////
-
+            None = 0,
+            MapRead = AZ_BIT(0),
+            MapWrite = AZ_BIT(1),
+            MapReadWrite = MapRead | MapWrite,
+            MappedAtCreation = AZ_BIT(2)
         };
-    }
+            
+        static RHI::Ptr<Buffer> Create();
+        const wgpu::Buffer& GetNativeBuffer() const;
+        bool CanBeMap() const;
+
+    private:
+
+        Buffer() = default;
+        RHI::ResultCode Init(Device& device, const RHI::BufferDescriptor& bufferDescriptor, InitFlags initFlags = InitFlags::None);
+
+        void Invalidate();
+
+        //////////////////////////////////////////////////////////////////////////
+        // RHI::DeviceResource
+        void ReportMemoryUsage([[maybe_unused]] RHI::MemoryStatisticsBuilder& builder) const override {}
+        //////////////////////////////////////////////////////////////////////////
+
+        //////////////////////////////////////////////////////////////////////////
+        // RHI::Object
+        void SetNameInternal(const AZStd::string_view& name) override;
+        //////////////////////////////////////////////////////////////////////////
+
+        //! Native buffer
+        wgpu::Buffer m_wgpuBuffer = nullptr;
+        wgpu::BufferUsage m_wgpuBufferUsage = wgpu::BufferUsage::None;
+    };
+
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::WebGPU::Buffer::InitFlags);
 }

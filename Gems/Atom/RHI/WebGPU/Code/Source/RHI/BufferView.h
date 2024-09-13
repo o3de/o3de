@@ -11,29 +11,26 @@
 #include <AzCore/Memory/PoolAllocator.h>
 #include <RHI/Buffer.h>
 
-namespace AZ
+namespace AZ::WebGPU
 {
-    namespace WebGPU
+    class BufferView final
+        : public RHI::DeviceBufferView
     {
-        class BufferView final
-            : public RHI::DeviceBufferView
-        {
-            using Base = RHI::DeviceBufferView;
-        public:
-            AZ_CLASS_ALLOCATOR(BufferView, AZ::ThreadPoolAllocator);
-            AZ_RTTI(BufferView, "{EB1B6718-AA10-41C8-A86E-D74633D7A3D8}", Base);
+        using Base = RHI::DeviceBufferView;
+    public:
+        AZ_CLASS_ALLOCATOR(BufferView, AZ::ThreadPoolAllocator);
+        AZ_RTTI(BufferView, "{EB1B6718-AA10-41C8-A86E-D74633D7A3D8}", Base);
 
-            static RHI::Ptr<BufferView> Create();
+        static RHI::Ptr<BufferView> Create();
 
-        private:
-            BufferView() = default;
+    private:
+        BufferView() = default;
 
-            //////////////////////////////////////////////////////////////////////////
-            // RHI::DeviceBufferView
-            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::DeviceResource& resourceBase) override { return RHI::ResultCode::Success;}
-            RHI::ResultCode InvalidateInternal() override { return RHI::ResultCode::Success;}
-            void ShutdownInternal() override{};
-            //////////////////////////////////////////////////////////////////////////
-        };
-    }
+        //////////////////////////////////////////////////////////////////////////
+        // RHI::DeviceBufferView
+        RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::DeviceResource& resourceBase) override { return RHI::ResultCode::Success;}
+        RHI::ResultCode InvalidateInternal() override { return RHI::ResultCode::Success;}
+        void ShutdownInternal() override{};
+        //////////////////////////////////////////////////////////////////////////
+    };
 }

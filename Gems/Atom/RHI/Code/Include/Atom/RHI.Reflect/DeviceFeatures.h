@@ -106,6 +106,9 @@ namespace AZ::RHI
         //! Whether resource aliasing is supported.
         bool m_resourceAliasing = true;
 
+        //! Whether multithreading is supported
+        bool m_multithreading = true;
+
         /// Additional features here.
     };
 }
