@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <RHI/Vulkan.h>
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <Atom/RHI/DeviceIndexBufferView.h>
 #include <Atom/RHI/DeviceQuery.h>

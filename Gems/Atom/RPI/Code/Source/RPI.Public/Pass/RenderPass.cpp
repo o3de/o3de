@@ -42,7 +42,10 @@ namespace AZ
                 {
                     SetPipelineViewTag(passData->m_pipelineViewTag);
                 }
-                m_flags.m_bindViewSrg = passData->m_bindViewSrg;
+                if (passData->m_bindViewSrg)
+                {
+                    m_flags.m_bindViewSrg = true;
+                }
                 m_flags.m_canBecomeASubpass = passData->m_canBecomeASubpass;
             }
         }
