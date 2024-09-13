@@ -403,7 +403,7 @@
   "install_mono_android_api_24_profile": {
     "TAGS": [],
     "PIPELINE_ENV": {
-      "NODE_LABEL":"ubuntu-android-22-packaging"
+      "NODE_LABEL":"ubuntu-22-packaging"
     },
     "COMMAND": "build_linux.sh",
     "PARAMETERS": {
