@@ -97,7 +97,7 @@ namespace AZ::RHI
             // Need to mutate for mesh instancing.
             // This should be used after cloning the draw packet from DeviceDrawPacketBuilder.
             DeviceDrawItem* drawItem = const_cast<DeviceDrawItem*>(drawItemConst);
-            drawItem->m_arguments.m_indexed.m_instanceCount = instanceCount;
+            drawItem->m_drawInstanceArgs.m_instanceCount = instanceCount;
         }
     }
 }

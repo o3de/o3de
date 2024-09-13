@@ -179,7 +179,7 @@ function(o3de_get_dependencies_for_target)
     get_target_property(is_imported ${target} IMPORTED)
     if(is_imported)
         set(skip_imported FALSE)
-        if(target_type MATCHES "(STATIC_LIBRARY)")
+        if(target_type MATCHES "(STATIC_LIBRARY|OBJECT_LIBRARY)")
             # No need to copy these dependencies since the outputs are not used at runtime
             set(skip_imported TRUE)
         endif()

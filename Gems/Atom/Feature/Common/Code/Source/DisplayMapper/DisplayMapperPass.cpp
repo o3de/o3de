@@ -212,7 +212,6 @@ namespace AZ
             outSlot.m_name = "Output";
             outSlot.m_slotType = RPI::PassSlotType::Output;
             outSlot.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::RenderTarget;
-            outSlot.m_loadStoreAction.m_loadAction = RHI::AttachmentLoadAction::DontCare;
 
             passTemplate->m_connections.resize(1);
             RPI::PassConnection& outConnection = passTemplate->m_connections[0];

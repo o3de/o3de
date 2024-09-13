@@ -95,9 +95,14 @@ float4x4 Inverse(float4x4 m)
     /* Calculate the determinant */
     float det = m[0][0] * result[0][0] + m[1][0] * result[0][1] + m[2][0] * result[0][2];
 
+    /* Run singularity test */
+    if (det == 0)
+    {
+        return CreateIdentity4x4();
+    }
+
     /* divide cofactors by determinant */
-    bool isDetZero = step(-EPSILON, det) * (1 - step(EPSILON, det));
-    float f = (isDetZero? 10000000.0 : 1.0/det);
+    float f = 1.f / det;
 
     result[0][0] = result[0][0] * f;
     result[0][1] = result[0][1] * f;

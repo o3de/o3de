@@ -13,7 +13,7 @@ namespace AZ
 {
     namespace RHI
     {
-        class DrawItem;
+        struct DrawItem;
     }
 
     namespace Render

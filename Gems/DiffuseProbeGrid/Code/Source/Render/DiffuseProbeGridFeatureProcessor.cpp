@@ -804,8 +804,8 @@ namespace AZ
                 sizeof(indices),
                 AZ::RHI::IndexFormat::Uint16,
             };
-            m_probeGridRenderData.m_boxIndexBufferView = indexBufferView;
-            m_probeGridRenderData.m_boxIndexCount = numIndices;
+            m_probeGridRenderData.m_geometryView.SetIndexBufferView(indexBufferView);
+            m_probeGridRenderData.m_geometryView.SetDrawArguments(RHI::DrawIndexed{ 0, numIndices, 0 });
 
             // create position buffer
             m_boxPositionBuffer = aznew RHI::Buffer;
@@ -823,9 +823,10 @@ namespace AZ
                 (uint32_t)(m_boxPositions.size() * sizeof(Position)),
                 sizeof(Position),
             };
-            m_probeGridRenderData.m_boxPositionBufferView = { { positionBufferView } };
+            m_probeGridRenderData.m_geometryView.ClearStreamBufferViews();
+            m_probeGridRenderData.m_geometryView.AddStreamBufferView(positionBufferView);
 
-            AZ::RHI::ValidateStreamBufferViews(m_boxStreamLayout, m_probeGridRenderData.m_boxPositionBufferView);
+            AZ::RHI::ValidateStreamBufferViews(m_boxStreamLayout, m_probeGridRenderData.m_geometryView.GetStreamBufferViews());
         }
 
         void DiffuseProbeGridFeatureProcessor::OnRenderPipelineChanged(RPI::RenderPipeline* renderPipeline,
@@ -1020,10 +1021,6 @@ namespace AZ
             static const char* PositionSemantic = "POSITION";
             static const RHI::Format PositionStreamFormat = RHI::Format::R32G32B32_FLOAT;
 
-            RHI::InputStreamLayoutBuilder layoutBuilder;
-            layoutBuilder.AddBuffer()->Channel(PositionSemantic, PositionStreamFormat);
-            RHI::InputStreamLayout inputStreamLayout = layoutBuilder.End();
-
             RPI::ShaderInputContract::StreamChannelInfo positionStreamChannelInfo;
             positionStreamChannelInfo.m_semantic = RHI::ShaderSemantic(AZ::Name(PositionSemantic));
             positionStreamChannelInfo.m_componentCount = RHI::GetFormatComponentCount(PositionStreamFormat);
@@ -1032,17 +1029,20 @@ namespace AZ
             shaderInputContract.m_streamChannels.emplace_back(positionStreamChannelInfo);
 
             // retrieve vertex/index buffers
-            RPI::ModelLod::StreamBufferViewList streamBufferViews;
+            RHI::InputStreamLayout inputStreamLayout;
+            RHI::StreamBufferIndices streamIndices;
             [[maybe_unused]] bool result = modelLod->GetStreamsForMesh(
                 inputStreamLayout,
-                streamBufferViews,
+                streamIndices,
                 nullptr,
                 shaderInputContract,
                 0);
             AZ_Assert(result, "Failed to retrieve DiffuseProbeGrid visualization mesh stream buffer views");
 
-            m_visualizationVB = streamBufferViews[0];
-            m_visualizationIB = mesh.m_indexBufferView;
+            auto streamIter = mesh.CreateStreamIterator(streamIndices);
+
+            m_visualizationVB = streamIter[0];
+            m_visualizationIB = mesh.GetIndexBufferView();
 
             // create the BLAS object
             RHI::RayTracingBlasDescriptor blasDescriptor;
