@@ -119,9 +119,10 @@ namespace AZ::RHI
         AZ_RTTI(ImageView, "{AB366B8F-F1B7-45C6-A0D8-475D4834FAD2}", ResourceView);
         virtual ~ImageView() = default;
 
-        ImageView(const RHI::Image* image, ImageViewDescriptor descriptor)
+        ImageView(const RHI::Image* image, ImageViewDescriptor descriptor, MultiDevice::DeviceMask deviceMask)
             : m_image{ image }
             , m_descriptor{ descriptor }
+            , m_deviceMask{ deviceMask }
         {
         }
 
@@ -157,6 +158,8 @@ namespace AZ::RHI
         ConstPtr<RHI::Image> m_image;
         //! The corresponding ImageViewDescriptor for this view.
         ImageViewDescriptor m_descriptor;
+        //! The device mask of the image stored for comparison to figure out when cache entries need to be freed.
+        mutable MultiDevice::DeviceMask m_deviceMask = MultiDevice::AllDevices;
         //! DeviceImageView cache
         //! This cache is necessary as the caller receives raw pointers from the ResourceCache,
         //! which now, with multi-device objects in use, need to be held in memory as long as

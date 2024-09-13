@@ -152,10 +152,8 @@ namespace AZ
             // Readback results from the PipelineStatistics queries
             PipelineStatisticsResult m_statisticsResult;
 
-            // The device index the pass should run on. Can be invalid if it doesn't matter.
-            int m_deviceIndex{RHI::MultiDevice::InvalidDeviceIndex};
             // The device index the pass ran on during the last frame, necessary to read the queries.
-            int m_lastDeviceIndex = RHI::MultiDevice::DefaultDeviceIndex;
+            int m_lastDeviceIndex = RHI::MultiDevice::InvalidDeviceIndex;
 
             // For each ScopeProducer an instance of the ScopeQuery is created, which consists
             // of an Timestamp and PipelineStatistic query.

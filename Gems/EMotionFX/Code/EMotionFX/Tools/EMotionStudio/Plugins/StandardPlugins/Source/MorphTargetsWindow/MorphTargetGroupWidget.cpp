@@ -8,6 +8,7 @@
 
 #include "MorphTargetGroupWidget.h"
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Serialization/Locale.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <MCore/Source/StringConversions.h>
 #include <QVBoxLayout>
@@ -148,6 +149,8 @@ namespace EMStudio
     // reset all morph targets
     void MorphTargetGroupWidget::ResetAll()
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
+
         // create our command group
         MCore::CommandGroup commandGroup("Adjust morph targets");
         AZStd::string command;
@@ -173,6 +176,8 @@ namespace EMStudio
     // manual mode
     void MorphTargetGroupWidget::ManualModeClicked()
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
+
         QCheckBox* checkBox = static_cast<QCheckBox*>(sender());
         const int morphTargetIndex = checkBox->property("MorphTargetIndex").toInt();
         EMotionFX::MorphTarget* morphTarget = m_morphTargets[morphTargetIndex].m_morphTarget;
@@ -207,6 +212,8 @@ namespace EMStudio
     // slider weight released
     void MorphTargetGroupWidget::SliderWeightReleased()
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
+
         // get the morph target and the morph target instance
         AzQtComponents::SliderDoubleCombo* floatSlider = static_cast<AzQtComponents::SliderDoubleCombo*>(sender());
         const int morphTargetIndex = floatSlider->property("MorphTargetIndex").toInt();

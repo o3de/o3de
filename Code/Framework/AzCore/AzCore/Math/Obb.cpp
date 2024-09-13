@@ -10,6 +10,7 @@
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/MathScriptHelpers.h>
+#include <AzCore/Serialization/Locale.h>
 
 namespace AZ
 {
@@ -41,6 +42,8 @@ namespace AZ
 
         AZStd::string ObbToString(const Obb& obb)
         {
+            AZ::Locale::ScopedSerializationLocale locale;
+
             return AZStd::string::format("Position %s AxisX %s AxisY %s AxisZ %s halfLengthX=%.7f halfLengthY=%.7f halfLengthZ=%.7f",
                 Vector3ToString(obb.GetPosition()).c_str(),
                 Vector3ToString(obb.GetAxisX()).c_str(),

@@ -242,7 +242,10 @@ namespace UnitTest
             AZ_CLASS_ALLOCATOR(Fence, AZ::SystemAllocator);
 
         private:
-            AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, AZ::RHI::FenceState) override { return AZ::RHI::ResultCode::Success; }
+            AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, AZ::RHI::FenceState, [[maybe_unused]] bool usedForWaitingOnDevice) override
+            {
+                return AZ::RHI::ResultCode::Success;
+            }
             void ShutdownInternal() override {}
             void SignalOnCpuInternal() override {}
             void WaitOnCpuInternal() const override {};
@@ -404,8 +407,8 @@ namespace UnitTest
         private:
             void SetVertexViewInternal([[maybe_unused]] AZ::RHI::IndirectCommandIndex index, [[maybe_unused]] const AZ::RHI::DeviceStreamBufferView& view) override {}
             void SetIndexViewInternal([[maybe_unused]] AZ::RHI::IndirectCommandIndex index, [[maybe_unused]] const AZ::RHI::DeviceIndexBufferView& view) override {}
-            void DrawInternal([[maybe_unused]] AZ::RHI::IndirectCommandIndex index, [[maybe_unused]] const AZ::RHI::DrawLinear& arguments) override {}
-            void DrawIndexedInternal([[maybe_unused]] AZ::RHI::IndirectCommandIndex index, [[maybe_unused]] const AZ::RHI::DrawIndexed& arguments) override {}
+            void DrawInternal([[maybe_unused]] AZ::RHI::IndirectCommandIndex index, [[maybe_unused]] const AZ::RHI::DrawLinear& arguments, [[maybe_unused]] const AZ::RHI::DrawInstanceArguments& drawInstanceArgs) override {}
+            void DrawIndexedInternal([[maybe_unused]] AZ::RHI::IndirectCommandIndex index, [[maybe_unused]] const AZ::RHI::DrawIndexed& arguments, [[maybe_unused]] const AZ::RHI::DrawInstanceArguments& drawInstanceArgs) override {}
             void DispatchInternal([[maybe_unused]] AZ::RHI::IndirectCommandIndex index, [[maybe_unused]] const AZ::RHI::DispatchDirect& arguments) override {}
             void SetRootConstantsInternal([[maybe_unused]] AZ::RHI::IndirectCommandIndex index, [[maybe_unused]] const uint8_t* data, [[maybe_unused]] uint32_t byteSize) override {}
         };

@@ -155,20 +155,67 @@ namespace AZ::RHI
             initRequest.m_descriptor,
             [this, &initRequest]()
             {
-                return IterateObjects<DeviceBufferPool>([&initRequest](auto deviceIndex, auto deviceBufferPool)
-                {
-                    if (!initRequest.m_buffer->m_deviceObjects.contains(deviceIndex))
-                    {
-                        initRequest.m_buffer->m_deviceObjects[deviceIndex] = Factory::Get().CreateBuffer();
-                    }
+                initRequest.m_buffer->Init(GetDeviceMask() & initRequest.m_deviceMask);
 
-                    DeviceBufferInitRequest bufferInitRequest(
-                        *initRequest.m_buffer->GetDeviceBuffer(deviceIndex), initRequest.m_descriptor, initRequest.m_initialData);
-                    return deviceBufferPool->InitBuffer(bufferInitRequest);
-                });
+                return IterateObjects<DeviceBufferPool>(
+                    [&initRequest](auto deviceIndex, auto deviceBufferPool)
+                    {
+                        if (CheckBit(initRequest.m_buffer->GetDeviceMask(), deviceIndex))
+                        {
+                            if (!initRequest.m_buffer->m_deviceObjects.contains(deviceIndex))
+                            {
+                                initRequest.m_buffer->m_deviceObjects[deviceIndex] = Factory::Get().CreateBuffer();
+                            }
+
+                            DeviceBufferInitRequest bufferInitRequest(
+                                *initRequest.m_buffer->GetDeviceBuffer(deviceIndex), initRequest.m_descriptor, initRequest.m_initialData);
+                            return deviceBufferPool->InitBuffer(bufferInitRequest);
+                        }
+                        else
+                        {
+                            initRequest.m_buffer->m_deviceObjects.erase(deviceIndex);
+                        }
+
+                        return ResultCode::Success;
+                    });
             });
 
         return resultCode;
+    }
+
+    ResultCode BufferPool::UpdateBufferDeviceMask(const BufferDeviceMaskRequest& request)
+    {
+        AZ_PROFILE_FUNCTION(RHI);
+
+        return IterateObjects<DeviceBufferPool>(
+            [&request](auto deviceIndex, auto deviceBufferPool)
+            {
+                if (CheckBit(request.m_deviceMask, deviceIndex))
+                {
+                    if (!request.m_buffer->m_deviceObjects.contains(deviceIndex))
+                    {
+                        request.m_buffer->m_deviceObjects[deviceIndex] = Factory::Get().CreateBuffer();
+
+                        DeviceBufferInitRequest bufferInitRequest(
+                            *request.m_buffer->GetDeviceBuffer(deviceIndex), request.m_buffer->m_descriptor, request.m_initialData);
+                        auto result = deviceBufferPool->InitBuffer(bufferInitRequest);
+
+                        if (result == ResultCode::Success)
+                        {
+                            request.m_buffer->Init(SetBit(request.m_buffer->GetDeviceMask(), deviceIndex));
+                        }
+
+                        return result;
+                    }
+                }
+                else
+                {
+                    request.m_buffer->Init(ResetBit(request.m_buffer->GetDeviceMask(), deviceIndex));
+                    request.m_buffer->m_deviceObjects.erase(deviceIndex);
+                }
+
+                return ResultCode::Success;
+            });
     }
 
     ResultCode BufferPool::OrphanBuffer(Buffer& buffer)
@@ -186,7 +233,7 @@ namespace AZ::RHI
         AZ_PROFILE_SCOPE(RHI, "BufferPool::OrphanBuffer");
 
         buffer.Invalidate();
-        buffer.Init(GetDeviceMask());
+        buffer.Init(MultiDevice::NoDevices);
 
         return ResultCode::Success;
     }
@@ -298,10 +345,6 @@ namespace AZ::RHI
 
     void BufferPool::Shutdown()
     {
-        IterateObjects<DeviceBufferPool>([]([[maybe_unused]] auto deviceIndex, auto deviceBufferPool)
-        {
-            deviceBufferPool->Shutdown();
-        });
         ResourcePool::Shutdown();
     }
 } // namespace AZ::RHI

@@ -67,15 +67,10 @@ namespace AZ::Render
         void UpdateBackgroundClearColor();
 
         //! build a draw packet to draw the star mesh
-        RHI::ConstPtr<RHI::DrawPacket> BuildDrawPacket(
-            const Data::Instance<RPI::ShaderResourceGroup>& srg,
-            const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
-            const RHI::DrawListTag& drawListTag,
-            const AZStd::span<const RHI::StreamBufferView>& streamBufferViews,
-            uint32_t vertexCount);
+        RHI::ConstPtr<RHI::DrawPacket> BuildDrawPacket();
 
         RPI::Ptr<RPI::PipelineStateForDraw> m_meshPipelineState;
-        AZStd::array<AZ::RHI::StreamBufferView, 1> m_meshStreamBufferViews;
+        RHI::GeometryView m_geometryView;
 
         Data::Instance<RPI::ShaderResourceGroup> m_drawSrg = nullptr;
         Data::Instance<RPI::Shader> m_shader = nullptr;

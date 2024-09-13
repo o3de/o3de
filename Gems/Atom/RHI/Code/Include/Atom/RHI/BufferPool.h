@@ -23,7 +23,49 @@ namespace AZ::RHI
         AZStd::unordered_map<int, void*> m_data;
     };
 
-    using BufferInitRequest = BufferInitRequestTemplate<Buffer>;
+    //! A structure used as an argument to BufferPool::UpdateBufferDeviceMask.
+    struct BufferDeviceMaskRequest
+    {
+        BufferDeviceMaskRequest() = default;
+
+        BufferDeviceMaskRequest(
+            Buffer& buffer, MultiDevice::DeviceMask deviceMask = MultiDevice::AllDevices, const void* initialData = nullptr)
+            : m_buffer{ &buffer }
+            , m_deviceMask{ deviceMask }
+            , m_initialData{ initialData }
+        {
+        }
+
+        /// The buffer to update the device mask of and (de)allocate device buffers.
+        Buffer* m_buffer = nullptr;
+
+        /// The new device mask used for the buffer.
+        /// Note: Only devices in the mask of the buffer pool will be considered.
+        MultiDevice::DeviceMask m_deviceMask = MultiDevice::AllDevices;
+
+        /// [Optional] Initial data used to initialize new device buffers with.
+        const void* m_initialData = nullptr;
+    };
+
+    //! A structure used as an argument to BufferPool::InitBuffer.
+    struct BufferInitRequest : public BufferDeviceMaskRequest
+    {
+        BufferInitRequest() = default;
+
+        BufferInitRequest(
+            Buffer& buffer,
+            const BufferDescriptor& descriptor,
+            const void* initialData = nullptr,
+            MultiDevice::DeviceMask deviceMask = MultiDevice::AllDevices)
+            : BufferDeviceMaskRequest{ buffer, deviceMask, initialData }
+            , m_descriptor{ descriptor }
+        {
+        }
+
+        /// The descriptor used to initialize the buffer.
+        BufferDescriptor m_descriptor;
+    };
+
     using BufferMapRequest = BufferMapRequestTemplate<Buffer>;
     using BufferStreamRequest = BufferStreamRequestTemplate<Buffer, Fence>;
 
@@ -61,6 +103,17 @@ namespace AZ::RHI
         //!      initialized, but will remain empty and the call will return ResultCode::OutOfMemory. Checking
         //!      this amounts to seeing if buffer.IsInitialized() is true.
         ResultCode InitBuffer(const BufferInitRequest& request);
+
+        //! Updates the device mask of a buffer instance created from this pool. The buffer must be in an
+        //! initialized state, or the call will fail, i.e., first call InitBuffer on the pool.
+        //!
+        //!  @param request The request used to update a buffer instance's device mask and device buffer
+        //!      allocations.
+        //!  @return A result code denoting the status of the call. If successful, the buffer device mask is
+        //!      considered updated. If the pool fails to secure an allocation for the device buffers, it's
+        //!      device mask may only partially change. If the initial data upload fails, the buffer will be
+        //!      initialized, but will remain empty and the call will return ResultCode::OutOfMemory.
+        ResultCode UpdateBufferDeviceMask(const BufferDeviceMaskRequest& request);
 
         //! NOTE: Only applicable to 'Host' pools. Device pools will fail with ResultCode::InvalidOperation.
         //!

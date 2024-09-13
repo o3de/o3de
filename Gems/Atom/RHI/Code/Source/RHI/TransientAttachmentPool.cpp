@@ -66,12 +66,6 @@ namespace AZ::RHI
     {
         if (IsInitialized())
         {
-            IterateObjects<DeviceTransientAttachmentPool>(
-                [](auto /*deviceIndex*/, auto deviceTransientAttachmentPool)
-                {
-                    deviceTransientAttachmentPool->Shutdown();
-                });
-            m_deviceObjects.clear();
             MultiDeviceObject::Shutdown();
             m_cache.Clear();
             m_reverseLookupHash.clear();

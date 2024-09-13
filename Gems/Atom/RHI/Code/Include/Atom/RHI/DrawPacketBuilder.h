@@ -8,11 +8,11 @@
 
 #pragma once
 
+#include <Atom/RHI/GeometryView.h>
 #include <Atom/RHI.Reflect/Scissor.h>
 #include <Atom/RHI.Reflect/Viewport.h>
 #include <Atom/RHI/DeviceDrawPacketBuilder.h>
 #include <Atom/RHI/DrawPacket.h>
-#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/DeviceStreamBufferView.h>
 
 namespace AZ
@@ -22,6 +22,10 @@ namespace AZ
 
 namespace AZ::RHI
 {
+    //! DrawPacketBuilder builds a DrawPacket and its DrawItems contiguously in memory for cache efficiency
+    //! Start by calling DrawPacketBuilder::Begin( )
+    //! Then Set the necessary data and add a DrawRequest for each DrawItem
+    //! Finalize the DrawPacket with a call to DrawPacketBuilder::End( )
     class DrawPacketBuilder
     {
     public:
@@ -36,10 +40,10 @@ namespace AZ::RHI
             DrawListTag m_listTag;
 
             //! The stencil ref value used for this draw item.
-            uint8_t m_stencilRef{};
+            u8 m_stencilRef = 0;
 
-            //! The array of stream buffers to bind for this draw item.
-            AZStd::span<const StreamBufferView> m_streamBufferViews;
+            //! Indices of the StreamBufferViews the DrawItem will use
+            RHI::StreamBufferIndices m_streamIndices;
 
             //! Shader resource group unique for this draw request
             const ShaderResourceGroup* m_uniqueShaderResourceGroup{};
@@ -54,26 +58,18 @@ namespace AZ::RHI
             //! We use a mask because the same item could be reused in multiple pipelines. For example, a simple
             //! depth pre-pass could be present in multiple pipelines.
             DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
-
-            //! A map of all device-specific StreamBufferViews, indexed by the device index
-            //! This additional cache is needed since device-specific StreamBufferViews are returned as objects
-            //! and the device-specific DeviceDrawItem holds a pointer to it.
-            AZStd::unordered_map<int, AZStd::vector<DeviceStreamBufferView>> m_deviceStreamBufferViews;
         };
 
         explicit DrawPacketBuilder(RHI::MultiDevice::DeviceMask deviceMask)
             : m_deviceMask{ deviceMask }
         {
-            auto deviceCount{ RHI::RHISystemInterface::Get()->GetDeviceCount() };
-
-            for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
-            {
-                // cast to u8 to prevent warning
-                if (RHI::CheckBit(AZStd::to_underlying(m_deviceMask), static_cast<AZ::u8>(deviceIndex)))
+            MultiDeviceObject::IterateDevices(
+                m_deviceMask,
+                [this](int deviceIndex)
                 {
                     m_deviceDrawPacketBuilders.emplace(deviceIndex, DeviceDrawPacketBuilder());
-                }
-            }
+                    return true;
+                });
         }
 
         DrawPacketBuilder(const DrawPacketBuilder& other);
@@ -87,11 +83,11 @@ namespace AZ::RHI
         //! initializes the multi-device DeviceDrawPacket which will be returned after calling End()
         void Begin(IAllocator* allocator);
 
-        //! Passes the DeviceDrawArguments to all single-device DrawPacketBuilders
-        void SetDrawArguments(const DrawArguments& drawArguments);
+        //! Passes the GeometryView to all single-device DrawPacketBuilders
+        void SetGeometryView(GeometryView* geometryView);
 
-        //! Passes the IndexBufferViews to all single-device DrawPacketBuilders
-        void SetIndexBufferView(const IndexBufferView& indexBufferView);
+        //! Passes the DrawInstanceArguments to all single-device DrawPacketBuilders
+        void SetDrawInstanceArguments(DrawInstanceArguments drawInstanceArguments);
 
         //! Passes the RootConstants to all single-device DrawPacketBuilders
         void SetRootConstants(AZStd::span<const uint8_t> rootConstants);

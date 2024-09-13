@@ -6,10 +6,9 @@
  *
  */
 
-#include <Atom/RHI/ImageFrameAttachment.h>
 #include <Atom/RHI/DeviceImageView.h>
 #include <Atom/RHI/Image.h>
-#include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/ImageFrameAttachment.h>
 
 namespace AZ::RHI
 {
@@ -46,7 +45,7 @@ namespace AZ::RHI
 
     Ptr<ImageView> Image::BuildImageView(const ImageViewDescriptor& imageViewDescriptor)
     {
-        return aznew ImageView{ this, imageViewDescriptor };
+        return aznew ImageView{ this, imageViewDescriptor, GetDeviceMask() };
     }
 
     uint32_t Image::GetResidentMipLevel() const
@@ -85,11 +84,6 @@ namespace AZ::RHI
 
     void Image::Shutdown()
     {
-        IterateObjects<DeviceImage>([]([[maybe_unused]] auto deviceIndex, auto deviceImage)
-        {
-            deviceImage->Shutdown();
-        });
-
         Resource::Shutdown();
     }
 
@@ -107,6 +101,23 @@ namespace AZ::RHI
     const RHI::Ptr<RHI::DeviceImageView> ImageView::GetDeviceImageView(int deviceIndex) const
     {
         AZStd::lock_guard lock(m_imageViewMutex);
+
+        if (m_image->GetDeviceMask() != m_deviceMask)
+        {
+            m_deviceMask = m_image->GetDeviceMask();
+
+            MultiDeviceObject::IterateDevices(
+                m_deviceMask,
+                [this](int deviceIndex)
+                {
+                    if (auto it{ m_cache.find(deviceIndex) }; it != m_cache.end())
+                    {
+                        m_cache.erase(it);
+                    }
+                    return true;
+                });
+        }
+
         auto iterator{ m_cache.find(deviceIndex) };
         if (iterator == m_cache.end())
         {
@@ -118,20 +129,22 @@ namespace AZ::RHI
                 return new_iterator->second;
             }
         }
+        else if (&iterator->second->GetImage() != m_image->GetDeviceImage(deviceIndex).get())
+        {
+            iterator->second = m_image->GetDeviceImage(deviceIndex)->GetImageView(m_descriptor);
+        }
 
         return iterator->second;
     }
 
     void ImageSubresourceLayout::Init(MultiDevice::DeviceMask deviceMask, const DeviceImageSubresourceLayout &deviceLayout)
     {
-        int deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
-
-        for (auto deviceIndex { 0 }; deviceIndex < deviceCount; ++deviceIndex)
-        {
-            if ((AZStd::to_underlying(deviceMask) >> deviceIndex) & 1)
+        MultiDeviceObject::IterateDevices(
+            deviceMask,
+            [this, deviceLayout](int deviceIndex)
             {
                 m_deviceImageSubresourceLayout[deviceIndex] = deviceLayout;
-            }
-        }
+                return true;
+            });
     }
 } // namespace AZ::RHI

@@ -400,7 +400,7 @@ namespace AZ::RHI
             AZ::RHI::ScopeAttachmentStage::ShadingRate,
             extras
         };
-        m_shadingRateAttachment.m_loadStoreAction.m_storeAction = AttachmentStoreAction::DontCare;
+        m_shadingRateAttachment.m_loadStoreAction.m_storeAction = AttachmentStoreAction::None;
         return this;
     }
 

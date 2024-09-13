@@ -6,16 +6,17 @@
  *
  */
 
+#include <Atom/RHI.Reflect/VkAllocator.h>
+#include <Atom/RHI/DeviceBufferPool.h>
+#include <Atom/RHI/DeviceRayTracingBufferPools.h>
+#include <Atom/RHI/Factory.h>
 #include <AzCore/Math/Matrix3x4.h>
-#include <RHI/RayTracingTlas.h>
-#include <RHI/RayTracingBlas.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferView.h>
 #include <RHI/Device.h>
-#include <Atom/RHI/Factory.h>
-#include <Atom/RHI/DeviceBufferPool.h>
-#include <Atom/RHI/DeviceRayTracingBufferPools.h>
-#include <Atom/RHI.Reflect/VkAllocator.h>
+#include <RHI/RayTracingAccelerationStructure.h>
+#include <RHI/RayTracingBlas.h>
+#include <RHI/RayTracingTlas.h>
 
 namespace AZ
 {
@@ -37,8 +38,6 @@ namespace AZ
 
             if (buffers.m_accelerationStructure)
             {
-                device.GetContext().DestroyAccelerationStructureKHR(
-                    device.GetNativeDevice(), buffers.m_accelerationStructure, VkSystemAllocator::Get());
                 buffers.m_accelerationStructure = nullptr;
             }
 
@@ -51,7 +50,8 @@ namespace AZ
                 buffers.m_scratchBuffer = nullptr;
                 return RHI::ResultCode::Success;
             }
-            
+
+            AZStd::vector<RHI::Ptr<RHI::DeviceBuffer>> blasBuffers;
             VkDeviceAddress tlasInstancesGpuAddress = 0;
             if (descriptor->GetInstancesBuffer() == nullptr)
             {
@@ -79,7 +79,7 @@ namespace AZ
                 VkAccelerationStructureInstanceKHR* mappedData = reinterpret_cast<VkAccelerationStructureInstanceKHR*>(mapResponse.m_data);
 
                 memset(mappedData, 0, instanceDescsSizeInBytes);
-            
+
                 // create each VkAccelerationStructureInstanceKHR structure
                 for (uint32_t i = 0; i < instances.size(); ++i)
                 {
@@ -95,12 +95,14 @@ namespace AZ
                     VkAccelerationStructureDeviceAddressInfoKHR addressInfo = {};
                     addressInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_DEVICE_ADDRESS_INFO_KHR;
                     addressInfo.pNext = nullptr;
-                    addressInfo.accelerationStructure = blas->GetBuffers().m_accelerationStructure;
+                    addressInfo.accelerationStructure = blas->GetBuffers().m_accelerationStructure->GetNativeAccelerationStructure();
                     mappedData[i].accelerationStructureReference =
                         device.GetContext().GetAccelerationStructureDeviceAddressKHR(device.GetNativeDevice(), &addressInfo);
 
                     mappedData[i].mask = instance.m_instanceMask;
                     mappedData[i].flags = instance.m_transparent ? VK_GEOMETRY_INSTANCE_FORCE_NO_OPAQUE_BIT_KHR : 0;
+
+                    blasBuffers.emplace_back(blas->GetBuffers().m_blasBuffer);
                 }
             
                 bufferPools.GetTlasInstancesBufferPool()->UnmapBuffer(*buffers.m_tlasInstancesBuffer);
@@ -193,12 +195,12 @@ namespace AZ
             createInfo.offset = 0;
             createInfo.buffer = tlasMemoryView->GetNativeBuffer();
 
-            VkResult vkResult = device.GetContext().CreateAccelerationStructureKHR(
-                device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &buffers.m_accelerationStructure);
-            AssertSuccess(vkResult);
-            
-            buffers.m_buildInfo.dstAccelerationStructure = buffers.m_accelerationStructure;
-            
+            buffers.m_accelerationStructure = RayTracingAccelerationStructure::Create();
+            buffers.m_accelerationStructure->Init(device, createInfo);
+            buffers.m_accelerationStructure->SetBlasBuffers(std::move(blasBuffers));
+
+            buffers.m_buildInfo.dstAccelerationStructure = buffers.m_accelerationStructure->GetNativeAccelerationStructure();
+
             VkBufferDeviceAddressInfo addressInfo = {};
             addressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
             addressInfo.pNext = nullptr;
@@ -215,5 +217,5 @@ namespace AZ
 
             return RHI::ResultCode::Success;
         }
-    }
+    } // namespace Vulkan
 }

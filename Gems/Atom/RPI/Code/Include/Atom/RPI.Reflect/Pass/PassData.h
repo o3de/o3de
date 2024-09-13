@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RHI.Reflect/Limits.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/std/containers/vector.h>
@@ -51,6 +52,9 @@ namespace AZ
             PipelineGlobalConnectionList m_pipelineGlobalConnections;
 
             Name m_pipelineViewTag;
+
+            int m_deviceIndex = RHI::MultiDevice::InvalidDeviceIndex;
+
 
             //! Only applicable for ParentPass.
             //! If set to "true" then:

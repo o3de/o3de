@@ -14,7 +14,6 @@
 #include <Atom/RHI/RayTracingPipelineState.h>
 #include <Atom/RHI/RayTracingShaderTable.h>
 #include <Atom/RHI/ShaderResourceGroup.h>
-#include <Atom/RHI/RHISystemInterface.h>
 #include <AzCore/std/containers/array.h>
 
 namespace AZ::RHI
@@ -115,15 +114,13 @@ namespace AZ::RHI
         DispatchRaysItem(MultiDevice::DeviceMask deviceMask)
             : m_deviceMask{ deviceMask }
         {
-            auto deviceCount{ RHI::RHISystemInterface::Get()->GetDeviceCount() };
-
-            for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
-            {
-                if (CheckBitsAll(AZStd::to_underlying(m_deviceMask), 1u << deviceIndex))
+            MultiDeviceObject::IterateDevices(
+                m_deviceMask,
+                [this](int deviceIndex)
                 {
                     m_deviceDispatchRaysItems.emplace(deviceIndex, DeviceDispatchRaysItem{});
-                }
-            }
+                    return true;
+                });
         }
 
         //! Returns the device-specific DeviceDispatchRaysItem for the given index

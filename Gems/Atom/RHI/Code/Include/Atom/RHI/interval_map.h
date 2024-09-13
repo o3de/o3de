@@ -218,33 +218,33 @@ namespace AZ::RHI
                 return pair<const_iterator, const_iterator>(end(), end());
             }
 
-            auto lower_bound = m_container.upper_bound(lower);
-            auto upper_bound = m_container.upper_bound(upper);
-            if (lower_bound == m_container.end() || upper_bound == m_container.begin())
+            auto lower_limit = m_container.upper_bound(lower);
+            auto upper_limit = m_container.lower_bound(upper);
+            if (lower_limit == m_container.end() || upper_limit == m_container.begin())
             {
                 return pair<const_iterator, const_iterator>(end(), end());
             }
 
             const_iterator begin_range;
             const_iterator end_range;
-            if (lower_bound == m_container.begin())
+            if (lower_limit == m_container.begin())
             {
-                begin_range = const_iterator(m_container, lower_bound);
+                begin_range = const_iterator(m_container, lower_limit);
             }
             else
             {
-                auto prev = AZStd::prev(lower_bound);
-                begin_range = const_iterator(m_container, has_value(prev) ? prev : lower_bound);
+                auto prev = AZStd::prev(lower_limit);
+                begin_range = const_iterator(m_container, has_value(prev) ? prev : lower_limit);
             }
 
-            if (upper_bound == m_container.end())
+            if (upper_limit == m_container.end())
             {
-                end_range = const_iterator(m_container, upper_bound);
+                end_range = const_iterator(m_container, upper_limit);
             }
             else
             {
-                auto next = AZStd::next(upper_bound);
-                end_range = const_iterator(m_container, has_value(upper_bound) ? upper_bound : next);
+                auto next = AZStd::next(upper_limit);
+                end_range = const_iterator(m_container, has_value(upper_limit) ? upper_limit : next);
             }
 
             return pair<const_iterator, const_iterator>(begin_range, end_range);

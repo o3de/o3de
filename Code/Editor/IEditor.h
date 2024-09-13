@@ -60,7 +60,6 @@ struct AABB;
 struct IErrorReport; // Vladimir@conffx
 struct IFileUtil;  // Vladimir@conffx
 struct IEditorLog;  // Vladimir@conffx
-struct IImageUtil;  // Vladimir@conffx
 struct IEditorParticleUtils;  // Leroy@conffx
 struct ILogFile; // Vladimir@conffx
 
@@ -457,15 +456,6 @@ struct IEditor
     virtual void SetActiveView(CViewport* viewport) = 0;
     virtual struct IEditorFileMonitor* GetFileMonitor() = 0;
 
-    //! QMimeData is used by the Qt clipboard.
-    //! IMPORTANT: Any QMimeData allocated for the clipboard will be deleted
-    //! when the editor exists. If a QMimeData is allocated by a different
-    //! memory allocator (for example, in a different DLL) than the one used
-    //! by the main editor, a crash will occur on exit, if data is left in
-    //! the clipboard. The solution is to enfore all allocations of QMimeData
-    //! using CreateQMimeData().
-    virtual QMimeData* CreateQMimeData() const = 0;
-    virtual void DestroyQMimeData(QMimeData* data) const = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Access for CLevelIndependentFileMan
@@ -596,7 +586,6 @@ struct IEditor
 
 
     virtual SSystemGlobalEnvironment* GetEnv() = 0;
-    virtual IImageUtil* GetImageUtil() = 0;  // Vladimir@conffx
     virtual SEditorSettings* GetEditorSettings() = 0;
 
     virtual ILogFile* GetLogFile() = 0;  // Vladimir@conffx

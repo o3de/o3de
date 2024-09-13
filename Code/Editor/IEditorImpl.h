@@ -242,15 +242,11 @@ public:
     void ShowStatusText(bool bEnable) override;
 
     SSystemGlobalEnvironment* GetEnv() override;
-    IImageUtil* GetImageUtil() override;  // Vladimir@conffx
     SEditorSettings* GetEditorSettings() override;
     ILogFile* GetLogFile() override { return m_pLogFile; }
 
     void UnloadPlugins() override;
     void LoadPlugins() override;
-
-    QMimeData* CreateQMimeData() const override;
-    void DestroyQMimeData(QMimeData* data) const override;
 
 protected:
 
@@ -318,7 +314,6 @@ protected:
     AzAssetBrowserRequestHandler* m_pAssetBrowserRequestHandler;
     AssetEditorRequestsHandler* m_assetEditorRequestsHandler;
 
-    IImageUtil* m_pImageUtil;  // Vladimir@conffx
     ILogFile* m_pLogFile;  // Vladimir@conffx
 
     AZStd::mutex m_pluginMutex; // protect any pointers that come from plugins, such as the source control cached pointer.

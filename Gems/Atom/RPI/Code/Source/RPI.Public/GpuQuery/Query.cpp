@@ -181,30 +181,12 @@ namespace AZ
 
         bool Query::AssignNewFrameIndexToSubQuery(uint64_t poolFrameIndex)
         {
-#if defined (AZ_RPI_ENABLE_VALIDATION)
-            // Check if the query is already added in this frame.
-            {
-                const auto predicate = [poolFrameIndex](SubQuery& queryIndices)
-                {
-                    return queryIndices.m_poolFrameIndex == poolFrameIndex;
-                };
-
-                if (AZStd::any_of(m_subQueryArray.begin(), m_subQueryArray.end(), predicate))
-                {
-                    AZ_Warning("RPI::Query", false, "Query is already added in this frame");
-                    return false;
-                }
-            }
-#else
-            // Check if the FrameIndex is already present for this query instance, meaning that
-            // the user is trying to use the same query multiple times to record within a single frame.
             if (m_cachedSubQueryArrayIndex != InvalidQueryIndex &&
                 m_subQueryArray[m_cachedSubQueryArrayIndex].m_poolFrameIndex == poolFrameIndex)
             {
-                AZ_Warning("RPI::Query", false, "Query is already added in this frame");
-                return false;
+                // It might run multiple times if a pass has multiple scopes run on multiple devices
+                return true;
             }
-#endif
 
             // Get the oldest query array index.
             const uint32_t availableQueryIndex = GetOldestOrAvailableSubQueryArrayIndex();

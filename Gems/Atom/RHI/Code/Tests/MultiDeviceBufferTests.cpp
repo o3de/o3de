@@ -189,25 +189,24 @@ namespace UnitTest
             }
 
             // Should report as still initialized and also stale.
-            buffer->Shutdown();
             for(auto deviceIndex{0}; deviceIndex < DeviceCount; ++deviceIndex)
             {
+                buffer->GetDeviceBuffer(deviceIndex)->Shutdown();
                 AZ_TEST_ASSERT(bufferViewsA[deviceIndex]->IsInitialized());
                 AZ_TEST_ASSERT(bufferViewsA[deviceIndex]->IsStale());
             }
+            buffer->Shutdown();
 
-            // Should *still* report as stale since resource invalidation events are queued.
             bufferPool->InitBuffer(initRequest);
-            for(auto deviceIndex{0}; deviceIndex < DeviceCount; ++deviceIndex) 
-            {
-                AZ_TEST_ASSERT(bufferViewsA[deviceIndex]->IsInitialized());
-                AZ_TEST_ASSERT(bufferViewsA[deviceIndex]->IsStale()); 
-            }
 
-            // This should re-initialize the views.
+            // Make sure that the buffer doesn't expect an invalidation event.
             RHI::ResourceInvalidateBus::ExecuteQueuedEvents();
-            for(auto deviceIndex{0}; deviceIndex < DeviceCount; ++deviceIndex)
+
+            // We need to recreate device views since device buffers are recreated after Shutdown.
+            for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
             {
+                bufferViewsA[deviceIndex] =
+                    buffer->GetDeviceBuffer(deviceIndex)->GetBufferView(RHI::BufferViewDescriptor::CreateRaw(0, 32));
                 AZ_TEST_ASSERT(bufferViewsA[deviceIndex]->IsInitialized());
                 AZ_TEST_ASSERT(bufferViewsA[deviceIndex]->IsStale() == false);
             }

@@ -73,7 +73,6 @@ namespace AZ
                 device.GetContext().DestroySemaphore(device.GetNativeDevice(), m_nativeSemaphore, VkSystemAllocator::Get());
                 m_nativeSemaphore = VK_NULL_HANDLE;
             }
-            Base::ShutdownInternal();
         }
 
         void TimelineSemaphoreFence::SignalOnCpuInternal()
@@ -97,7 +96,12 @@ namespace AZ
             waitInfo.flags = 0;
             waitInfo.semaphoreCount = 1;
             waitInfo.pSemaphores = &m_nativeSemaphore;
-            waitInfo.pValues = &m_pendingValue;
+
+            // If another thread resets this Semaphore while we are waiting, m_pendingValue is changed, which might interfere
+            // with the WaitSemaphore here, depending on how this is implemented in the driver.
+            // To avoid this, make a local copy of the pending value
+            auto pendingValue = m_pendingValue;
+            waitInfo.pValues = &pendingValue;
 
             auto& device = static_cast<Device&>(GetDevice());
             device.GetContext().WaitSemaphores(device.GetNativeDevice(), &waitInfo, AZStd::numeric_limits<uint64_t>::max());

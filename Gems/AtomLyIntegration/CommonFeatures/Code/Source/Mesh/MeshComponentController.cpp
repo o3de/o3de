@@ -717,7 +717,7 @@ namespace AZ
             return Aabb::CreateNull();
         }
 
-        void MeshComponentController::GetVisibleGeometry(
+        void MeshComponentController::BuildVisibleGeometry(
             const AZ::Aabb& bounds, AzFramework::VisibleGeometryContainer& geometryContainer) const
         {
             // Only include data for this entity if it is within bounds. This could possibly be done per sub mesh.

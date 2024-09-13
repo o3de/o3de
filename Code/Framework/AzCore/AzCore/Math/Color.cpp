@@ -8,6 +8,7 @@
 
 #include "Color.h"
 #include <AzCore/Math/MathScriptHelpers.h>
+#include <AzCore/Serialization/Locale.h>
 
 namespace AZ
 {
@@ -217,6 +218,7 @@ namespace AZ
 
         AZStd::string ColorToString(const Color& c)
         {
+            AZ::Locale::ScopedSerializationLocale locale; // colors<--->string should be intepreted in the "C" Locale.
             return AZStd::string::format("(r=%.7f,g=%.7f,b=%.7f,a=%.7f)", static_cast<float>(c.GetR()), static_cast<float>(c.GetG()), static_cast<float>(c.GetB()), static_cast<float>(c.GetA()));
         }
     }

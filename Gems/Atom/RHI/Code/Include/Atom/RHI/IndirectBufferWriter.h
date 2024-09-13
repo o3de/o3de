@@ -88,12 +88,12 @@ namespace AZ::RHI
         //! Writes a draw command into the current sequence.
         //! @param arguments The draw arguments that will be written.
         //! @return A pointer to the IndirectBufferWriter object (this).
-        IndirectBufferWriter* Draw(const DrawLinear& arguments);
+        IndirectBufferWriter* Draw(const DrawLinear& arguments, const RHI::DrawInstanceArguments& drawInstanceArgs);
 
         //! Writes a draw indexed command into the current sequence.
         //! @param arguments The draw indexed arguments that will be written.
         //! @return A pointer to the IndirectBufferWriter object (this).
-        IndirectBufferWriter* DrawIndexed(const DrawIndexed& arguments);
+        IndirectBufferWriter* DrawIndexed(const DrawIndexed& arguments, const RHI::DrawInstanceArguments& drawInstanceArgs);
 
         //! Writes a dispatch command into the current sequence.
         //! @param arguments The dispatch arguments that will be written.

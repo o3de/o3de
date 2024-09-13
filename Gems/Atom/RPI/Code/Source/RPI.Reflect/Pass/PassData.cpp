@@ -6,18 +6,18 @@
  *
  */
 
-#include <AzCore/Serialization/SerializeContext.h>
+#include <Atom/RPI.Reflect/Pass/PassData.h>
 
 #include <Atom/RPI.Reflect/Pass/ComputePassData.h>
 #include <Atom/RPI.Reflect/Pass/CopyPassData.h>
 #include <Atom/RPI.Reflect/Pass/DownsampleMipChainPassData.h>
 #include <Atom/RPI.Reflect/Pass/EnvironmentCubeMapPassData.h>
 #include <Atom/RPI.Reflect/Pass/FullscreenTrianglePassData.h>
-#include <Atom/RPI.Reflect/Pass/PassData.h>
 #include <Atom/RPI.Reflect/Pass/RasterPassData.h>
 #include <Atom/RPI.Reflect/Pass/RenderPassData.h>
 #include <Atom/RPI.Reflect/Pass/RenderToTexturePassData.h>
 #include <Atom/RPI.Reflect/Pass/SlowClearPassData.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
 {
@@ -51,8 +51,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<RenderPassData, PassData>()
-                    ->Version(1)
-                    ->Field("DeviceIndex", &RenderPassData::m_deviceIndex)
+                    ->Version(2)
                     ->Field("BindViewSrg", &RenderPassData::m_bindViewSrg)
                     ->Field("ShaderDataMappings", &RenderPassData::m_mappings);
             }
@@ -93,7 +92,9 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<PassData>()
-                    ->Version(2) // Added "MergeChildrenAsSubpasses"
+                    ->Version(3)
+
+                    ->Field("DeviceIndex", &PassData::m_deviceIndex)
                     ->Field("PipelineViewTag", &PassData::m_pipelineViewTag)
                     ->Field("PipelineGlobalConnections", &PassData::m_pipelineGlobalConnections)
                     ->Field("MergeChildrenAsSubpasses", &PassData::m_mergeChildrenAsSubpasses);

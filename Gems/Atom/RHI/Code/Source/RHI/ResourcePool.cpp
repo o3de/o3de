@@ -135,16 +135,20 @@ namespace AZ::RHI
             return ResultCode::InvalidArgument;
         }
 
+        resource->Init(GetDeviceMask());
         const ResultCode resultCode = platformInitResourceMethod();
         if (resultCode == ResultCode::Success)
         {
-            resource->Init(GetDeviceMask());
             Register(*resource);
 
             if (const auto& name = resource->GetName(); !name.IsEmpty())
             {
                 resource->SetName(name);
             }
+        }
+        else
+        {
+            resource->Init(MultiDevice::NoDevices);
         }
         return resultCode;
     }

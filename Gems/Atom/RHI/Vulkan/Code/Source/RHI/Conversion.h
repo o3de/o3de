@@ -29,6 +29,7 @@ namespace AZ
     namespace Vulkan
     {
         class Image;
+        class Device;
 
         VkIndexType ConvertIndexBufferFormat(RHI::IndexFormat indexFormat);
         VkQueryControlFlags ConvertQueryControlFlags(RHI::QueryControlFlags flags);
@@ -57,5 +58,7 @@ namespace AZ
         VmaAllocationCreateInfo GetVmaAllocationCreateInfo(const RHI::HeapMemoryLevel level);
         VkImageLayout CombineImageLayout(VkImageLayout lhs, VkImageLayout rhs);
         VkImageLayout FilterImageLayout(VkImageLayout layout, RHI::ImageAspectFlags aspectFlags);
+        VkAttachmentLoadOp ConvertAttachmentLoadAction(RHI::AttachmentLoadAction loadAction, const Device& device);
+        VkAttachmentStoreOp ConvertAttachmentStoreAction(RHI::AttachmentStoreAction storeAction, const Device& device);
     }
 }

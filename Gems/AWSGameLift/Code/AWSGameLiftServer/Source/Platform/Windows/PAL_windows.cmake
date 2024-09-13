@@ -8,4 +8,4 @@
 
 set(PAL_TRAIT_AWSGAMELIFTSERVER_SUPPORTED TRUE)
 
-ly_associate_package(PACKAGE_NAME AWSGameLiftServerSDK-5.1.1-rev1-windows               TARGETS AWSGameLiftServerSDK        PACKAGE_HASH 77fefd7307e5bf7e1b7d3362237e49b37aedab15b103cfa4bdca004b3e22390a)
+ly_associate_package(PACKAGE_NAME AWSGameLiftServerSDK-5.1.2-rev1-windows               TARGETS AWSGameLiftServerSDK        PACKAGE_HASH 253fe40ab4ea61279b61d8c653a715329bfa4081d022b37b7f2d092647dab765)

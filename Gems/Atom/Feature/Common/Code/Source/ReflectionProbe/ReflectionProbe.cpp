@@ -292,21 +292,14 @@ namespace AZ
             }
 
             RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
-
-            RHI::DrawIndexed drawIndexed;
-            drawIndexed.m_indexCount = (uint32_t)m_reflectionRenderData->m_boxIndexCount;
-            drawIndexed.m_indexOffset = 0;
-            drawIndexed.m_vertexOffset = 0;
-
             drawPacketBuilder.Begin(nullptr);
-            drawPacketBuilder.SetDrawArguments(drawIndexed);
-            drawPacketBuilder.SetIndexBufferView(m_reflectionRenderData->m_boxIndexBufferView);
+            drawPacketBuilder.SetGeometryView(&m_reflectionRenderData->m_geometryView);
             drawPacketBuilder.AddShaderResourceGroup(srg->GetRHIShaderResourceGroup());
 
             RHI::DrawPacketBuilder::DrawRequest drawRequest;
             drawRequest.m_listTag = drawListTag;
+            drawRequest.m_streamIndices = m_reflectionRenderData->m_geometryView.GetFullStreamBufferIndices();
             drawRequest.m_pipelineState = pipelineState->GetRHIPipelineState();
-            drawRequest.m_streamBufferViews = m_reflectionRenderData->m_boxPositionBufferView;
             drawRequest.m_stencilRef = static_cast<uint8_t>(stencilRef);
             drawRequest.m_sortKey = m_sortKey;
             drawPacketBuilder.AddDrawItem(drawRequest);

@@ -55,7 +55,6 @@
 #include "MainStatusBar.h"
 
 #include "Util/FileUtil_impl.h"
-#include "Util/ImageUtil_impl.h"
 #include "LogFileImpl.h"
 
 #include "Editor/AssetDatabase/AssetDatabaseLocationListener.h"
@@ -109,7 +108,6 @@ CEditorImpl::CEditorImpl()
     , m_bInitialized(false)
     , m_bExiting(false)
     , m_QtApplication(static_cast<Editor::EditorQtApplication*>(qApp))
-    , m_pImageUtil(nullptr)
     , m_pLogFile(nullptr)
 {
     // note that this is a call into EditorCore.dll, which stores the g_pEditorPointer for all shared modules that share EditorCore.dll
@@ -135,7 +133,6 @@ CEditorImpl::CEditorImpl()
     m_pSequenceManager = new CTrackViewSequenceManager;
     m_pAnimationContext = new CAnimationContext;
 
-    m_pImageUtil = new CImageUtil_impl();
     m_selectedRegion.min = Vec3(0, 0, 0);
     m_selectedRegion.max = Vec3(0, 0, 0);
     DetectVersion();
@@ -280,7 +277,6 @@ CEditorImpl::~CEditorImpl()
     SAFE_DELETE(m_pErrorReport);
 
     SAFE_DELETE(m_pFileUtil); // Vladimir@Conffx
-    SAFE_DELETE(m_pImageUtil); // Vladimir@Conffx
     SAFE_DELETE(m_pLogFile); // Vladimir@Conffx
 }
 
@@ -1241,17 +1237,3 @@ SEditorSettings* CEditorImpl::GetEditorSettings()
     return &gSettings;
 }
 
-IImageUtil* CEditorImpl::GetImageUtil()
-{
-    return m_pImageUtil;
-}
-
-QMimeData* CEditorImpl::CreateQMimeData() const
-{
-    return new QMimeData();
-}
-
-void CEditorImpl::DestroyQMimeData(QMimeData* data) const
-{
-    delete data;
-}

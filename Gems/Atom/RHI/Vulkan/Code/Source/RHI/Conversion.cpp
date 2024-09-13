@@ -13,6 +13,7 @@
 #include <Atom/RHI/Resource.h>
 #include <Atom/RHI/DeviceImageView.h>
 #include <RHI/Conversion.h>
+#include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/PhysicalDevice.h>
 
@@ -620,6 +621,44 @@ namespace AZ
             }
 
             return layout;
+        }
+
+        VkAttachmentLoadOp ConvertAttachmentLoadAction(RHI::AttachmentLoadAction loadAction, const Device& device)
+        {
+            const auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
+            switch (loadAction)
+            {
+            case RHI::AttachmentLoadAction::Load:
+                return VK_ATTACHMENT_LOAD_OP_LOAD;
+            case RHI::AttachmentLoadAction::Clear:
+                return VK_ATTACHMENT_LOAD_OP_CLEAR;
+            case RHI::AttachmentLoadAction::DontCare:
+                return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            case RHI::AttachmentLoadAction::None:
+                return physicalDevice.IsFeatureSupported(DeviceFeature::LoadNoneOp) ? VK_ATTACHMENT_LOAD_OP_NONE_EXT
+                                                                                    : VK_ATTACHMENT_LOAD_OP_LOAD;
+            default:
+                AZ_Assert(false, "AttachmentLoadAction is illegal.");
+                return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            }
+        }
+
+        VkAttachmentStoreOp ConvertAttachmentStoreAction(RHI::AttachmentStoreAction storeAction, const Device& device)
+        {
+            const auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
+            switch (storeAction)
+            {
+            case RHI::AttachmentStoreAction::Store:
+                return VK_ATTACHMENT_STORE_OP_STORE;
+            case RHI::AttachmentStoreAction::DontCare:
+                return VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            case RHI::AttachmentStoreAction::None:
+                return physicalDevice.IsFeatureSupported(DeviceFeature::StoreNoneOp) ? VK_ATTACHMENT_STORE_OP_NONE
+                                                                                     : VK_ATTACHMENT_STORE_OP_STORE;
+            default:
+                AZ_Assert(false, "AttachmentStoreAction is illegal.");
+                return VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            }
         }
     }
 }

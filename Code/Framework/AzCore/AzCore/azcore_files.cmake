@@ -86,7 +86,6 @@ set(FILES
     Debug/PerformanceCollector.h
     Debug/PerformanceCollector.cpp
     Debug/Profiler.cpp
-    Debug/Profiler.inl
     Debug/Profiler.h
     Debug/ProfilerBus.h
     Debug/ProfilerReflection.cpp
@@ -560,6 +559,8 @@ set(FILES
     Serialization/EditContextConstants.inl
     Serialization/IdUtils.inl
     Serialization/IdUtils.h
+    Serialization/Locale.h
+    Serialization/Locale.cpp
     Serialization/Utils.h
     Serialization/SerializationUtils.cpp
     Serialization/ObjectStream.cpp

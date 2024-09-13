@@ -6,14 +6,15 @@
  *
  */
 
-#include <RHI/RayTracingBlas.h>
-#include <RHI/Buffer.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
-#include <RHI/Device.h>
-#include <Atom/RHI/Factory.h>
 #include <Atom/RHI/DeviceBufferPool.h>
 #include <Atom/RHI/DeviceRayTracingBufferPools.h>
-#include <Atom/RHI.Reflect/VkAllocator.h>
+#include <Atom/RHI/Factory.h>
+#include <RHI/Buffer.h>
+#include <RHI/Device.h>
+#include <RHI/RayTracingAccelerationStructure.h>
+#include <RHI/RayTracingBlas.h>
 
 namespace AZ
 {
@@ -35,8 +36,6 @@ namespace AZ
 
             if (buffers.m_accelerationStructure)
             {
-                device.GetContext().DestroyAccelerationStructureKHR(
-                    device.GetNativeDevice(), buffers.m_accelerationStructure, VkSystemAllocator::Get());
                 buffers.m_accelerationStructure = nullptr;
             }
 
@@ -218,16 +217,19 @@ namespace AZ
             addressInfo.buffer = static_cast<Buffer*>(buffers.m_blasBuffer.get())->GetBufferMemoryView()->GetNativeBuffer();
             createInfo.buffer = blasMemoryView->GetNativeBuffer();
 
-            VkResult vkResult = device.GetContext().CreateAccelerationStructureKHR(
-                device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &buffers.m_accelerationStructure);
-            AssertSuccess(vkResult);
+            buffers.m_accelerationStructure = RayTracingAccelerationStructure::Create();
+            buffers.m_accelerationStructure->Init(device, createInfo);
 
-            buffers.m_buildInfo.dstAccelerationStructure = buffers.m_accelerationStructure;
+            buffers.m_buildInfo.dstAccelerationStructure = buffers.m_accelerationStructure->GetNativeAccelerationStructure();
 
             addressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
             addressInfo.buffer = scratchMemoryView->GetNativeBuffer();
             buffers.m_buildInfo.scratchData.deviceAddress =
                 device.GetContext().GetBufferDeviceAddress(device.GetNativeDevice(), &addressInfo);
+
+            // store the VkAccelerationStructureKHR in the BLAS Buffer, this is necessary since we need it to
+            // stay alive as long as it is used
+            static_cast<Buffer*>(buffers.m_blasBuffer.get())->SetNativeAccelerationStructure(buffers.m_accelerationStructure);
 
             return RHI::ResultCode::Success;
         }
@@ -252,5 +254,5 @@ namespace AZ
 
             return vkBuildFlags;
         }
-    }
+    } // namespace Vulkan
 }

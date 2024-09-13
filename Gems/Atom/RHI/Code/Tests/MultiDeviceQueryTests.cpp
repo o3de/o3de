@@ -195,6 +195,10 @@ namespace UnitTest
         EXPECT_EQ(result, RHI::ResultCode::Success);
         checkSlotsFunc(queriesToShutdown);
 
+        // Since we are recreating queries it adds a refcount and invalidates the (non-existing) views.
+        // We need to ensure to release the refcount and avoid leaks by running the invalidate bus.
+        RHI::ResourceInvalidateBus::ExecuteQueuedEvents();
+
         queriesIndicesToShutdown = { 2, 5, 9 };
         queriesToShutdown.clear();
         for (auto& index : queriesIndicesToShutdown)
@@ -207,8 +211,8 @@ namespace UnitTest
 
         result = queryPool->InitQuery(queriesToShutdown.data(), static_cast<uint32_t>(queriesToShutdown.size()));
 
-        // Since we are switching queryPools for some queries it adds a refcount and invalidates the views.
-        // We need to ensure the views are fully invalidated in order to release the refcount and avoid leaks.
+        // Since we are recreating queries it adds a refcount and invalidates the (non-existing) views.
+        // We need to ensure to release the refcount and avoid leaks by running the invalidate bus.
         RHI::ResourceInvalidateBus::ExecuteQueuedEvents();
 
         checkSlotsFunc(queriesToInitialize);

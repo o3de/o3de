@@ -251,6 +251,9 @@ namespace AZ
             //! The image descriptor for the attachment
             RHI::ImageDescriptor m_imageDescriptor;
 
+            //! A image view descriptor which is used when no explicit descriptor is specified when using this image in a slot
+            RHI::ImageViewDescriptor m_imageViewDescriptor;
+
             //! Whether to auto generate the number of mips based on the attachment
             //! so that we get a full mip chain with the smallest mip being 1x1 in size
             bool m_generateFullMipChain = false;
@@ -271,6 +274,9 @@ namespace AZ
 
             //! The buffer descriptor for the transient buffer attachment
             RHI::BufferDescriptor m_bufferDescriptor;
+
+            //! A buffer view descriptor which is used when no explicit descriptor is specified when using this buffer in a slot
+            RHI::BufferViewDescriptor m_bufferViewDescriptor;
         };
 
         using PassBufferAttachmentDescList = AZStd::vector<PassBufferAttachmentDesc>;

@@ -355,7 +355,7 @@ namespace CopyDependencyBuilder
         xmlSchemaBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("(?!.*libs\\/gameaudio\\/).*\\.xml", AssetBuilderSDK::AssetBuilderPattern::PatternType::Regex));
         xmlSchemaBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.vegdescriptorlist", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
         xmlSchemaBuilderDescriptor.m_busId = azrtti_typeid<XmlBuilderWorker>();
-        xmlSchemaBuilderDescriptor.m_version = 9;
+        xmlSchemaBuilderDescriptor.m_version = 10;
         xmlSchemaBuilderDescriptor.m_createJobFunction =
             AZStd::bind(&XmlBuilderWorker::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
         xmlSchemaBuilderDescriptor.m_processJobFunction =
@@ -397,6 +397,10 @@ namespace CopyDependencyBuilder
         const AssetBuilderSDK::CreateJobsRequest& request) const
     {
         AZStd::vector<AssetBuilderSDK::SourceFileDependency> sourceDependencies;
+        AZStd::vector<AZStd::string> matchedSchemas;
+
+        AZStd::string fullPath;
+        AzFramework::StringFunc::AssetDatabasePath::Join(request.m_watchFolder.c_str(), request.m_sourceFile.c_str(), fullPath);
 
         // Iterate through each schema file and check whether the source XML matches its file path pattern
         for (const AZStd::string& schemaFileDirectory : m_schemaFileDirectories)
@@ -415,13 +419,37 @@ namespace CopyDependencyBuilder
                 {
                     return AZ::Failure(AZStd::string::format("Failed to load schema file: %s.", schemaPath.c_str()));
                 }
-
-                AZStd::string fullPath;
-                AzFramework::StringFunc::AssetDatabasePath::Join(request.m_watchFolder.c_str(), request.m_sourceFile.c_str(), fullPath);
                 if (SourceFileDependsOnSchema(schemaAsset, fullPath.c_str()))
                 {
+                    matchedSchemas.emplace_back(schemaPath);
+                }
+            }
+        }
+
+        // If we have matched any schemas, then add both the schemas as well as the path dependencies as source dependencies.
+        if (matchedSchemas.size() > 0)
+        {
+            for (const AZStd::string& schemaPath : matchedSchemas)
+            {
+                AssetBuilderSDK::SourceFileDependency sourceFileDependency;
+                sourceFileDependency.m_sourceFileDependencyPath = schemaPath;
+                sourceDependencies.emplace_back(sourceFileDependency);
+            }
+
+            AZStd::vector<AssetBuilderSDK::ProductDependency> productDependencies;
+            AssetBuilderSDK::ProductPathDependencySet pathDependencies;
+            if (MatchExistingSchema(fullPath, matchedSchemas, productDependencies, pathDependencies, request.m_watchFolder) != SchemaMatchResult::Error)
+            {
+                // Product dependencies with wildcards are treated as source dependencies
+                for (const auto& pathDependency : pathDependencies)
+                {
+                    if (!pathDependency.m_dependencyPath.contains('*') && !pathDependency.m_dependencyPath.contains('?'))
+                        continue;
+
                     AssetBuilderSDK::SourceFileDependency sourceFileDependency;
-                    sourceFileDependency.m_sourceFileDependencyPath = schemaPath;
+                    sourceFileDependency.m_sourceFileDependencyPath = pathDependency.m_dependencyPath;
+                    sourceFileDependency.m_sourceDependencyType = AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards;
+
                     sourceDependencies.emplace_back(sourceFileDependency);
                 }
             }
