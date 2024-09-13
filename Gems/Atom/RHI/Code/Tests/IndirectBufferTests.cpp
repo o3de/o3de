@@ -501,9 +501,10 @@ namespace UnitTest
                 {
                     auto index = m_signatureDescriptor.m_layout.FindCommandIndex(command.m_type);
                     EXPECT_FALSE(index.IsNull());
-                    AZ::RHI::DrawIndexed arguments(1, 2, 3, 4, 5);
-                    EXPECT_CALL(*writer, DrawIndexedInternal(index, testing::_)).Times(1);
-                    writer->DrawIndexed(arguments);
+                    AZ::RHI::DrawInstanceArguments drawInstanceArgs(1, 2);
+                    AZ::RHI::DrawIndexed arguments(3, 4, 5);
+                    EXPECT_CALL(*writer, DrawIndexedInternal(index, testing::_, testing::_)).Times(1);
+                    writer->DrawIndexed(arguments, drawInstanceArgs);
                     break;
                 }
                 case RHI::IndirectCommandType::RootConstants:
@@ -539,13 +540,13 @@ namespace UnitTest
 
         // Write command on uninitialized writer
         {
-             RHI::Ptr<IndirectBufferWriter> writer = aznew NiceIndirectBufferWriter;
-;
-             AZ::RHI::DrawIndexed arguments(1, 2, 3, 4, 5);
-             EXPECT_CALL(*writer, DrawIndexedInternal(testing::_, testing::_)).Times(0);
-             AZ_TEST_START_TRACE_SUPPRESSION;
-             writer->DrawIndexed(arguments);
-             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+            RHI::Ptr<IndirectBufferWriter> writer = aznew NiceIndirectBufferWriter;
+            AZ::RHI::DrawInstanceArguments drawInstanceArgs(1, 2);
+            AZ::RHI::DrawIndexed arguments(3, 4, 5);
+            EXPECT_CALL(*writer, DrawIndexedInternal(testing::_, testing::_, testing::_)).Times(0);
+            AZ_TEST_START_TRACE_SUPPRESSION;
+            writer->DrawIndexed(arguments, drawInstanceArgs);
+            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         }
 
         // Flush

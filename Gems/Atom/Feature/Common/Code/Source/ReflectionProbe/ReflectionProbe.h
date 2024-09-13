@@ -11,6 +11,7 @@
 #include <AzCore/Math/Transform.h>
 #include <Atom/Feature/RenderCommon.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
+#include <Atom/RHI/GeometryView.h>
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Public/MeshDrawPacket.h>
@@ -27,9 +28,7 @@ namespace AZ
         // shared data for rendering reflections, loaded and stored by the ReflectionProbeFeatureProcessor and passed to all probes
         struct ReflectionRenderData
         {
-            AZStd::array<RHI::StreamBufferView, 1> m_boxPositionBufferView;
-            RHI::IndexBufferView m_boxIndexBufferView;
-            uint32_t m_boxIndexCount = 0;
+            RHI::GeometryView m_geometryView;
 
             RPI::Ptr<RPI::PipelineStateForDraw> m_stencilPipelineState;
             RPI::Ptr<RPI::PipelineStateForDraw> m_blendWeightPipelineState;

@@ -9,6 +9,7 @@
 
 #include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI/DeviceDrawItem.h>
+#include <Atom/RHI/GeometryView.h>
 #include <Atom/RHI/IndexBufferView.h>
 #include <Atom/RHI/IndirectArguments.h>
 #include <Atom/RHI/IndirectBufferView.h>
@@ -26,62 +27,7 @@ namespace AZ::RHI
     template<typename T, typename NamespaceType>
     struct Handle;
 
-    using DrawIndirect = IndirectArguments;
-
-    //! A structure used to define the type of draw that should happen, directly passed on to the device-specific DrawItems in
-    //! DrawItem::SetArguments
-    struct DrawArguments
-    {
-        AZ_TYPE_INFO(DrawArguments, "B8127BDE-513E-4D5C-98C2-027BA1DE9E6E");
-
-        DrawArguments()
-            : DrawArguments(DrawIndexed{})
-        {
-        }
-
-        DrawArguments(const DrawIndexed& indexed)
-            : m_type{ DrawType::Indexed }
-            , m_indexed{ indexed }
-        {
-        }
-
-        DrawArguments(const DrawLinear& linear)
-            : m_type{ DrawType::Linear }
-            , m_linear{ linear }
-        {
-        }
-
-        DrawArguments(const DrawIndirect& indirect)
-            : m_type{ DrawType::Indirect }
-            , m_indirect{ indirect }
-        {
-        }
-
-        //! Returns the device-specific DeviceDrawArguments for the given index
-        DeviceDrawArguments GetDeviceDrawArguments(int deviceIndex) const
-        {
-            switch (m_type)
-            {
-            case DrawType::Indexed:
-                return DeviceDrawArguments(m_indexed);
-            case DrawType::Linear:
-                return DeviceDrawArguments(m_linear);
-            case DrawType::Indirect:
-                return DeviceDrawArguments(DeviceDrawIndirect{m_indirect.m_maxSequenceCount, m_indirect.m_indirectBufferView->GetDeviceIndirectBufferView(deviceIndex), m_indirect.m_indirectBufferByteOffset, m_indirect.m_countBuffer->GetDeviceBuffer(deviceIndex).get(), m_indirect.m_countBufferByteOffset});
-            default:
-                return DeviceDrawArguments();
-            }
-        }
-
-        DrawType m_type;
-        union {
-            DrawIndexed m_indexed;
-            DrawLinear m_linear;
-            DrawIndirect m_indirect;
-        };
-    };
-
-    class DrawItem
+    struct DrawItem
     {
         friend class DrawPacketBuilder;
 
@@ -123,22 +69,6 @@ namespace AZ::RHI
             }
         }
 
-        void SetArguments(const DrawArguments& arguments)
-        {
-            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
-            {
-                drawItem->m_arguments = arguments.GetDeviceDrawArguments(deviceIndex);
-            }
-        }
-
-        void SetIndexedArgumentsInstanceCount(uint32_t instanceCount)
-        {
-            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
-            {
-                drawItem->m_arguments.m_indexed.m_instanceCount = instanceCount;
-            }
-        }
-
         void SetStencilRef(uint8_t stencilRef)
         {
             for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
@@ -152,41 +82,6 @@ namespace AZ::RHI
             for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
             {
                 drawItem->m_pipelineState = pipelineState ? pipelineState->GetDevicePipelineState(deviceIndex).get() : nullptr;
-            }
-        }
-
-        //! The index buffer used when drawing with an indexed draw call.
-        void SetIndexBufferView(const IndexBufferView* indexBufferView)
-        {
-            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
-            {
-                m_deviceIndexBufferView.emplace(deviceIndex, indexBufferView->GetDeviceIndexBufferView(deviceIndex));
-            }
-
-            // Done extra so memory is not moved around any more during map resize
-            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
-            {
-                drawItem->m_indexBufferView = &m_deviceIndexBufferView[deviceIndex];
-            }
-        }
-
-        //! Array of stream buffers to bind (count must match m_streamBufferViewCount).
-        void SetStreamBufferViews(const StreamBufferView* streamBufferViews, uint32_t streamBufferViewCount)
-        {
-            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
-            {
-                drawItem->m_streamBufferViewCount = static_cast<uint8_t>(streamBufferViewCount);
-
-                auto [it, insertOK]{ m_deviceStreamBufferViews.emplace(deviceIndex, AZStd::vector<DeviceStreamBufferView>{}) };
-
-                auto& [index, deviceStreamBufferView]{ *it };
-
-                for (auto i = 0u; i < streamBufferViewCount; ++i)
-                {
-                    deviceStreamBufferView.emplace_back(streamBufferViews[i].GetDeviceStreamBufferView(deviceIndex));
-                }
-
-                drawItem->m_streamBufferViews = deviceStreamBufferView.data();
             }
         }
 
@@ -253,23 +148,43 @@ namespace AZ::RHI
             }
         }
 
+        void SetDrawInstanceArgs(const RHI::DrawInstanceArguments& drawInstanceArgs)
+        {
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
+            {
+                drawItem->m_drawInstanceArgs = drawInstanceArgs;
+            }
+        }
+
+        void SetGeometryView(RHI::GeometryView* geometryView)
+        {
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
+            {
+                drawItem->m_geometryView = geometryView->GetDeviceGeometryView(deviceIndex);
+            }
+        }
+
+        void SetStreamIndices(RHI::StreamBufferIndices streamIndices)
+        {
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
+            {
+                drawItem->m_streamIndices = streamIndices;
+            }
+        }
+
     private:
         bool m_enabled{ true };
+
         MultiDevice::DeviceMask m_deviceMask{ MultiDevice::DefaultDevice };
+
         //! A map of all device-specific DrawItems, indexed by the device index
         AZStd::unordered_map<int, DeviceDrawItem> m_deviceDrawItems;
+
         //! A map of pointers to device-specific DrawItems, indexed by the device index
         //! These pointers may point to m_deviceDrawItems (in case of direct usage of a DeviceDrawItem)
         //! or may point to DrawItems in linear memory (when allocated via a DrawPacket)
         AZStd::unordered_map<int, DeviceDrawItem*> m_deviceDrawItemPtrs;
-        //! A map of all device-specific IndexBufferViews, indexed by the device index
-        //! This additional cache is needed since device-specific IndexBufferViews are returned as objects
-        //! and the device-specific DeviceDrawItem holds a pointer to it.
-        AZStd::unordered_map<int, DeviceIndexBufferView> m_deviceIndexBufferView;
-        //! A map of all device-specific StreamBufferViews, indexed by the device index
-        //! This additional cache is needed since device-specific StreamBufferViews are returned as objects
-        //! and the device-specific DeviceDrawItem holds a pointer to it.
-        AZStd::unordered_map<int, AZStd::vector<DeviceStreamBufferView>> m_deviceStreamBufferViews;
+
         //! A map of all device-specific ShaderResourceGroups, indexed by the device index
         //! This additional cache is needed since device-specific ShaderResourceGroups are provided as a DeviceShaderResourceGroup**,
         //! which are then locally cached in a vector (per device) and the device-specific DeviceDrawItem holds a pointer to this vector's data.

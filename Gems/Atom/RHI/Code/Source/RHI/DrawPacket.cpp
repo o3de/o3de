@@ -80,9 +80,9 @@ namespace AZ::RHI
 
     void DrawPacket::SetInstanceCount(uint32_t instanceCount)
     {
-        for (auto& drawItem : m_drawItems)
+        for (auto& [_, deviceDrawPacket] : m_deviceDrawPackets)
         {
-            drawItem.SetIndexedArgumentsInstanceCount(instanceCount);
+            deviceDrawPacket->SetInstanceCount(instanceCount);
         }
     }
 } // namespace AZ::RHI

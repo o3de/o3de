@@ -268,28 +268,28 @@ namespace AZ::RHI
         return this;
     }
 
-    DeviceIndirectBufferWriter* DeviceIndirectBufferWriter::Draw(const DrawLinear& arguments)
+    DeviceIndirectBufferWriter* DeviceIndirectBufferWriter::Draw(const DrawLinear& arguments, const RHI::DrawInstanceArguments& drawInstanceArgs)
     {
         if (ValidateInitializedState(ValidateInitializedStateExpect::Initialized))
         {
             IndirectCommandIndex index = m_signature->GetLayout().FindCommandIndex(IndirectCommandType::Draw);
             if (PrepareWriting(index))
             {
-                DrawInternal(index, arguments);
+                DrawInternal(index, arguments, drawInstanceArgs);
             }
         }
 
         return this;
     }
 
-    DeviceIndirectBufferWriter* DeviceIndirectBufferWriter::DrawIndexed(const RHI::DrawIndexed& arguments)
+    DeviceIndirectBufferWriter* DeviceIndirectBufferWriter::DrawIndexed(const RHI::DrawIndexed& arguments, const RHI::DrawInstanceArguments& drawInstanceArgs)
     {
         if (ValidateInitializedState(ValidateInitializedStateExpect::Initialized))
         {
             IndirectCommandIndex index = m_signature->GetLayout().FindCommandIndex(IndirectCommandType::DrawIndexed);
             if (PrepareWriting(index))
             {
-                DrawIndexedInternal(index, arguments);
+                DrawIndexedInternal(index, arguments, drawInstanceArgs);
             }
         }
             

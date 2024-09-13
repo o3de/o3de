@@ -35,8 +35,8 @@ namespace AZ
             // RHI::DeviceIndirectBufferWriter
             void SetVertexViewInternal(RHI::IndirectCommandIndex index, const RHI::DeviceStreamBufferView& view) override;
             void SetIndexViewInternal(RHI::IndirectCommandIndex index, const RHI::DeviceIndexBufferView& view) override;
-            void DrawInternal(RHI::IndirectCommandIndex index, const RHI::DrawLinear& arguments) override;
-            void DrawIndexedInternal(RHI::IndirectCommandIndex index, const RHI::DrawIndexed& arguments) override;
+            void DrawInternal(RHI::IndirectCommandIndex index, const RHI::DrawLinear& arguments, const RHI::DrawInstanceArguments& drawInstanceArgs) override;
+            void DrawIndexedInternal(RHI::IndirectCommandIndex index, const RHI::DrawIndexed& arguments, const RHI::DrawInstanceArguments& drawInstanceArgs) override;
             void DispatchInternal(RHI::IndirectCommandIndex index, const RHI::DispatchDirect& arguments) override;
             void SetRootConstantsInternal(RHI::IndirectCommandIndex index, const uint8_t* data, uint32_t byteSize) override;
             //////////////////////////////////////////////////////////////////////////

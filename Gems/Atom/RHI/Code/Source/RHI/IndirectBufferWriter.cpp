@@ -169,7 +169,7 @@ namespace AZ::RHI
         return this;
     }
 
-    IndirectBufferWriter* IndirectBufferWriter::Draw(const DrawLinear& arguments)
+    IndirectBufferWriter* IndirectBufferWriter::Draw(const DrawLinear& arguments, const RHI::DrawInstanceArguments& drawInstanceArgs)
     {
         if (Validation::IsEnabled() && !IsInitialized())
         {
@@ -178,13 +178,13 @@ namespace AZ::RHI
 
         for (const auto& [deviceIndex, writer] : m_deviceIndirectBufferWriter)
         {
-            writer->Draw(arguments);
+            writer->Draw(arguments, drawInstanceArgs);
         }
 
         return this;
     }
 
-    IndirectBufferWriter* IndirectBufferWriter::DrawIndexed(const RHI::DrawIndexed& arguments)
+    IndirectBufferWriter* IndirectBufferWriter::DrawIndexed(const RHI::DrawIndexed& arguments, const RHI::DrawInstanceArguments& drawInstanceArgs)
     {
         if (Validation::IsEnabled() && !IsInitialized())
         {
@@ -193,7 +193,7 @@ namespace AZ::RHI
 
         for (const auto& [deviceIndex, writer] : m_deviceIndirectBufferWriter)
         {
-            writer->DrawIndexed(arguments);
+            writer->DrawIndexed(arguments, drawInstanceArgs);
         }
 
         return this;
