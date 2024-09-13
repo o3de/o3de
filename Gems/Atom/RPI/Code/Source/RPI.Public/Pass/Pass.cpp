@@ -1763,7 +1763,6 @@ namespace AZ
                 if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::SubpassInput)
                 {
                     binding.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
-                    continue;
                 }
             }
             m_flags.m_hasSubpassInput = false;
