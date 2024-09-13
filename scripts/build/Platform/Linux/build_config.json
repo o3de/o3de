@@ -453,34 +453,6 @@
       "CMAKE_TARGET": "all"
     }
   },
-  "snap_pipe": {
-    "TAGS": [
-      "periodic-clean-weekly-internal",
-      "nightly-installer"
-    ],
-    "steps": [
-      "install_mono_22_release",
-      "snap_package"
-    ]
-  },
-  "snap_package": {
-    "TAGS": [
-      "periodic-clean-weekly-internal"
-    ],
-    "PIPELINE_ENV": {
-      "NODE_LABEL": "ubuntu-22-packaging"
-    },
-    "COMMAND": "build_installer_linux.sh",
-    "PARAMETERS": {
-      "CONFIGURATION": "profile",
-      "OUTPUT_DIRECTORY": "build/linux",
-      "O3DE_PACKAGE_TYPE": "SNAP",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DO3DE_INSTALL_ENGINE_NAME=o3de-sdk -DLY_STRIP_DEBUG_SYMBOLS=TRUE",
-      "EXTRA_CMAKE_OPTIONS": "-DO3DE_INCLUDE_INSTALL_IN_PACKAGE=TRUE",
-      "CPACK_OPTIONS": "-D CPACK_UPLOAD_URL=${CPACK_UPLOAD_URL}",
-      "CMAKE_TARGET": "all"
-    }
-  },
   "install_profile_pipe": {
     "TAGS": [
       "periodic-incremental-daily",
