@@ -72,7 +72,7 @@ namespace AZ::Vulkan
             collectedMemoryBarrier.dstAccessMask |= scopeMemoryBarrier.dstAccessMask;
         }
 
-        if (collectedMemoryBarrier.srcAccessMask != 0 && collectedMemoryBarrier.dstAccessMask)
+        if (collectedMemoryBarrier.srcAccessMask != 0 || collectedMemoryBarrier.dstAccessMask != 0)
         {
             // Now emit the grouped memory barrier.
             VkMemoryBarrier memoryBarrier{};
