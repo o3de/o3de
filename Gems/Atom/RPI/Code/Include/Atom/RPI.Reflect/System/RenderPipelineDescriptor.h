@@ -60,6 +60,9 @@ namespace AZ
             //! Flag indicating if this pipeline can accept modifications from scene's feature processors
             bool m_allowModification = false;
 
+            //! Flag indicating if this pipeline can accept subpass merging.
+            bool m_allowSubpassMerging = false;
+
             //! Include(MSAA, TAA, SMAA)
             AZStd::string m_defaultAAMethod = "MSAA";
         };

@@ -113,6 +113,8 @@ namespace AZ
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 
             fogSettings->SetInitialized(true);
+
+            m_depthTextureDimensionsIndex = srg->FindShaderInputConstantIndex(Name("m_depthTextureDimentions"));
         }
 
 
@@ -174,6 +176,19 @@ namespace AZ
 
 #include <Atom/Feature/ScreenSpace/DeferredFogParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
+
+            if (m_depthTextureDimensionsIndex.IsValid())
+            {
+                
+                auto attachment = GetInputOutputBinding(0).GetAttachment();
+                if (attachment)
+                {
+                    const auto& descriptor = attachment->GetTransientImageDescriptor().m_imageDescriptor;
+                    float depthTextureDimensions[] = { static_cast<float>(descriptor.m_size.m_width),
+                                                       static_cast<float>(descriptor.m_size.m_height) };
+                    srg->SetConstant(m_depthTextureDimensionsIndex, depthTextureDimensions);
+                }
+            }
         }
         //---------------------------------------------------------------------
 

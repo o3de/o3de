@@ -59,6 +59,8 @@ namespace AZ
 
             CompileSemaphoreSynchronization(frameGraph);
 
+            OptimizeBarriers(request);
+
             return AZ::Success();
         }
 
@@ -254,7 +256,7 @@ namespace AZ
                     imageBarrier.srcQueueFamilyIndex = srcQueueId.m_familyIndex;
                     imageBarrier.dstQueueFamilyIndex = dstQueueId.m_familyIndex;
                     imageBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-                    imageBarrier.dstAccessMask = 0;
+                    imageBarrier.dstAccessMask = VK_ACCESS_NONE_KHR;
                     imageBarrier.oldLayout = GetImageAttachmentLayout(*lastScopeAttachment);
                     imageBarrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
                     imageBarrier.subresourceRange = VkImageSubresourceRange{ image.GetImageAspectFlags(), 0, 1, 0, 1 };
@@ -262,10 +264,10 @@ namespace AZ
                         *lastScopeAttachment,
                         Scope::BarrierSlot::Epilogue,
                         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                        VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+                        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
                         imageBarrier);
                     image.SetLayout(VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-                    image.SetPipelineAccess({ VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0 });
+                    image.SetPipelineAccess({ VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_NONE_KHR });
 
                     // If the presentation and graphic queue are in different families, then we need to transfer the
                     // ownership of the swapchain image between family queues. We add a barrier to the swapchain that will be
@@ -284,7 +286,7 @@ namespace AZ
 
         void FrameGraphCompiler::QueueResourceBarrier(
             Scope& scope,
-            const RHI::ScopeAttachment& scopeAttachment,
+            RHI::ScopeAttachment& scopeAttachment,
             Buffer& buffer,
             const RHI::BufferSubresourceRange& range,
             const Scope::BarrierSlot slot,
@@ -343,7 +345,7 @@ namespace AZ
 
         void FrameGraphCompiler::QueueResourceBarrier(
             Scope& scope, 
-            const RHI::ScopeAttachment& scopeAttachment, 
+            RHI::ScopeAttachment& scopeAttachment, 
             Image& image,
             const RHI::ImageSubresourceRange& range,
             const Scope::BarrierSlot slot,
@@ -449,7 +451,7 @@ namespace AZ
             const auto& scope = scopeAttachment.GetScope();
             auto &physicalDevice = static_cast<const PhysicalDevice&>(scope.GetDevice().GetPhysicalDevice());
             const auto* imageView = static_cast<const ImageView*>(scopeAttachment.GetImageView()->GetDeviceImageView(scope.GetDeviceIndex()).get());
-            auto range = RHI::ImageSubresourceRange(imageView->GetDescriptor());
+            auto range = imageView->GetImageSubresourceRange();
 
             // If separate depth/stencil is not supported, then the barrier must ALWAYS include both image aspects (depth and stencil).
             if (!physicalDevice.IsFeatureSupported(DeviceFeature::SeparateDepthStencil) &&
@@ -541,6 +543,15 @@ namespace AZ
                 }
             }
             return nullptr;
+        }
+
+        void FrameGraphCompiler::OptimizeBarriers(const RHI::FrameGraphCompileRequest& request)
+        {
+            RHI::FrameGraph& frameGraph = *request.m_frameGraph;
+            for (RHI::Scope* scope : frameGraph.GetScopes())
+            {
+                static_cast<Scope*>(scope)->OptimizeBarriers();
+            }            
         }
     } // namespace Vulkan
 } // namespace AZ

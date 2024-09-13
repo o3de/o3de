@@ -12,6 +12,7 @@
 #include <RHI/ImageView.h>
 #include <RHI/RenderPass.h>
 #include <Atom/RHI.Reflect/VkAllocator.h>
+#include <Atom/RHI/ImageScopeAttachment.h>
 
 namespace AZ
 {
@@ -102,6 +103,26 @@ namespace AZ
         const RHI::Size& Framebuffer::GetSize() const
         {
             return m_size;
+        }
+
+        const AZStd::vector<RHI::ConstPtr<ImageView>>& Framebuffer::GetImageViews() const
+        {
+            return m_attachments;
+        }
+
+        AZStd::optional<uint32_t> Framebuffer::FindImageViewIndex(RHI::ImageScopeAttachment& scopeAttachment) const
+        {
+            auto deviceIndex = m_attachments.front()->GetDevice().GetDeviceIndex();
+            const ImageView* imageView =
+                static_cast<const ImageView*>(scopeAttachment.GetImageView()->GetDeviceImageView(deviceIndex).get());
+            for (uint32_t i = 0; i < m_attachments.size(); ++i)
+            {
+                if (imageView == m_attachments[i])
+                {
+                    return i;
+                }
+            }
+            return AZStd::optional<uint32_t>();
         }
 
         void Framebuffer::SetNameInternal(const AZStd::string_view& name)

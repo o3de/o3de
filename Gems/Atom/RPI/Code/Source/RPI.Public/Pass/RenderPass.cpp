@@ -33,15 +33,20 @@ namespace AZ
         RenderPass::RenderPass(const PassDescriptor& descriptor)
             : Pass(descriptor)
         {
+            m_flags.m_canBecomeASubpass = true;
             // Read view tag from pass data
             const RenderPassData* passData = PassUtils::GetPassData<RenderPassData>(descriptor);
-            if (passData && !passData->m_pipelineViewTag.IsEmpty())
+            if (passData)
             {
-                SetPipelineViewTag(passData->m_pipelineViewTag);
-            }
-            if (passData && passData->m_bindViewSrg)
-            {
-                m_flags.m_bindViewSrg = true;
+                if (!passData->m_pipelineViewTag.IsEmpty())
+                {
+                    SetPipelineViewTag(passData->m_pipelineViewTag);
+                }
+                if (passData->m_bindViewSrg)
+                {
+                    m_flags.m_bindViewSrg = true;
+                }
+                m_flags.m_canBecomeASubpass = passData->m_canBecomeASubpass;
             }
         }
 
@@ -49,38 +54,35 @@ namespace AZ
         {
         }
 
+        bool RenderPass::CanBecomeSubpass() const
+        {
+            return m_flags.m_canBecomeASubpass;
+        }
+
         RHI::RenderAttachmentConfiguration RenderPass::GetRenderAttachmentConfiguration()
         {
-            if (m_renderAttachmentLayout)
-            {
-                return { *m_renderAttachmentLayout.get(), m_subpassIndex };
-            }
+            AZ_Assert(
+                m_renderAttachmentConfiguration.has_value(), "Null RenderAttachmentConfiguration for pass [%s]", GetPathName().GetCStr());
+            return m_renderAttachmentConfiguration.value();
+        }
 
-            RHI::RenderAttachmentLayoutBuilder builder;
-            auto* layoutBuilder = builder.AddSubpass();
-
-            const bool success = BuildSubpassLayout(*layoutBuilder);
-            if (!success)
-            {
-                AZ_Assert(false, "Failed to add subpass layout for pass '%s'", GetName().GetCStr());
-            }
-            auto renderAttachmentLayout = AZStd::make_shared<RHI::RenderAttachmentLayout>();
-            const RHI::ResultCode resultCode = builder.End(*renderAttachmentLayout.get());
-            if (resultCode != RHI::ResultCode::Success)
-            {
-                AZ_Assert(false, "Failed to build subpass layout for pass '%s'", GetName().GetCStr());
-            }
-            constexpr uint32_t subpassIndex = 0;
-            SetRenderAttachmentLayout(renderAttachmentLayout, subpassIndex);
-
-            return { *m_renderAttachmentLayout.get(), m_subpassIndex };
+        void RenderPass::SetRenderAttachmentConfiguration(
+            const RHI::RenderAttachmentConfiguration& configuration, const AZ::RHI::ScopeGroupId& subpassGroupId)
+        {
+            m_renderAttachmentConfiguration = configuration;
+            m_subpassGroupId = subpassGroupId;
         }
 
         bool RenderPass::BuildSubpassLayout(RHI::RenderAttachmentLayoutBuilder::SubpassAttachmentLayoutBuilder& subpassLayoutBuilder)
         {
-            m_subpassIndex = subpassLayoutBuilder.GetSubpassIndex();
+            // Replace all subpass inputs as shader inputs if we are the first subpass in the group.
+            // This could happen if we have a subpass group that could be merged with other group(s), but it didn't happen
+            // due to some pass breaking the subpass chaining.
+            if (m_flags.m_hasSubpassInput && subpassLayoutBuilder.GetSubpassIndex() == 0)
+            {
+                ReplaceSubpassInputs();
+            }
 
-            bool atLeastOneAttachmentWasSubpassInput = false;
             for (size_t slotIndex = 0; slotIndex < m_attachmentBindings.size(); ++slotIndex)
             {
                 const PassAttachmentBinding& binding = m_attachmentBindings[slotIndex];
@@ -112,21 +114,15 @@ namespace AZ
 
                 if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::SubpassInput)
                 {
-                    AZ_Assert(m_subpassIndex > 0, "The first subpass can't have attachments used as SubpassInput");
+                    AZ_Assert(subpassLayoutBuilder.GetSubpassIndex() > 0, "The first subpass can't have attachments used as SubpassInput");
                     AZ_Assert(
                         binding.m_unifiedScopeDesc.GetType() == RHI::AttachmentType::Image,
                         "Only image attachments are allowed as SubpassInput.");
-                    atLeastOneAttachmentWasSubpassInput = true;
                     const auto aspectFlags = binding.m_unifiedScopeDesc.GetAsImage().m_imageViewDescriptor.m_aspectFlags;
                     subpassLayoutBuilder.SubpassInputAttachment(
                         binding.GetAttachment()->GetAttachmentId(),
-                        aspectFlags);
-                    continue;
-                }
-
-                // Skip bindings that aren't outputs or inputOutputs
-                if (binding.m_slotType != PassSlotType::Output && binding.m_slotType != PassSlotType::InputOutput)
-                {
+                        aspectFlags,
+                        binding.m_unifiedScopeDesc.m_loadStoreAction);
                     continue;
                 }
 
@@ -149,35 +145,34 @@ namespace AZ
                     AZ_Assert(renderTargetBinding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::RenderTarget,
                         "A Resolve attachment must be declared immediately after a RenderTarget attachment.");
                     subpassLayoutBuilder.ResolveAttachment(renderTargetBinding.GetAttachment()->GetAttachmentId(), binding.GetAttachment()->GetAttachmentId());
-                }
-            }
-
-            if (m_subpassIndex > 0)
-            {
-                if (!atLeastOneAttachmentWasSubpassInput)
-                {
-                    AZ_Assert(false, "Starting from the second subpass, at least one attachment must be of SubpassInput usage.");
-                    return false;
+                    continue;
                 }
             }
 
             return true;
         }
 
-        void RenderPass::SetRenderAttachmentLayout(
-            const AZStd::shared_ptr<RHI::RenderAttachmentLayout>& renderAttachmentLayout, uint32_t subpassIndex)
+        void RenderPass::BuildRenderAttachmentConfiguration()
         {
-            if (m_subpassIndex != subpassIndex)
+            if (m_renderAttachmentConfiguration)
             {
-                AZ_Error("RasterPass", false, "%s Error at pass '%s': Was expecting subpassIndex=%u, instead got=%u.\n",
-                         __FUNCTION__, GetName().GetCStr(), m_subpassIndex, subpassIndex);
-                // We throw an assert, in addition to reporting the error, because this is most likely a programming error
-                // and not a runtime error.
-                AZ_Assert(false, "Error at pass '%s': Was expecting subpassIndex=%u, instead got=%u.\n",
-                          GetName().GetCStr(), m_subpassIndex, subpassIndex);
+                // Already has a render attachment configuration. Nothing to do.
+                return;
             }
 
-            m_renderAttachmentLayout = renderAttachmentLayout;
+            RHI::RenderAttachmentLayoutBuilder builder;
+            auto* layoutBuilder = builder.AddSubpass();
+            BuildSubpassLayout(*layoutBuilder);
+            if (!layoutBuilder->HasAttachments())
+            {
+                return;
+            }
+
+            RHI::RenderAttachmentLayout subpassLayout;
+            [[maybe_unused]] RHI::ResultCode result = builder.End(subpassLayout);
+            AZ_Assert(
+                result == RHI::ResultCode::Success, "RenderPass [%s] failed to create render attachment configuration", GetPathName().GetCStr());
+            m_renderAttachmentConfiguration = RHI::RenderAttachmentConfiguration{ AZStd::move(subpassLayout), 0 };
         }
 
         RHI::MultisampleState RenderPass::GetMultisampleState() const
@@ -267,6 +262,7 @@ namespace AZ
                     }
                 }
             }
+            BuildRenderAttachmentConfiguration();
         }
 
         void RenderPass::FrameBeginInternal(FramePrepareParams params)
@@ -293,6 +289,12 @@ namespace AZ
         void RenderPass::FrameEndInternal()
         {
             ResetSrgs();
+        }
+
+        void RenderPass::ResetInternal()
+        {
+            m_renderAttachmentConfiguration.reset();
+            m_subpassGroupId = RHI::ScopeGroupId();
         }
 
         void RenderPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
@@ -329,6 +331,7 @@ namespace AZ
                     frameGraph.ExecuteBefore(renderPass->GetScopeId());
                 }
             }
+            frameGraph.SetGroupId(GetSubpassGroupId());
         }
 
         void RenderPass::BindAttachment(const RHI::FrameGraphCompileContext& context, PassAttachmentBinding& binding, int16_t& imageIndex, int16_t& bufferIndex)
@@ -575,6 +578,11 @@ namespace AZ
 
             ExecuteOnTimestampQuery(addToFrameGraph);
             ExecuteOnPipelineStatisticsQuery(addToFrameGraph);
+        }
+
+        const AZ::RHI::ScopeGroupId& RenderPass::GetSubpassGroupId() const
+        {
+            return m_subpassGroupId;
         }
 
         void RenderPass::BeginScopeQuery(const RHI::FrameGraphExecuteContext& context)
