@@ -176,8 +176,6 @@ public:
     bool IsAxisVectorLocked() override { return m_bAxisVectorLock; }
     void SetTerrainAxisIgnoreObjects(bool bIgnore) override;
     bool IsTerrainAxisIgnoreObjects() override;
-    void SetReferenceCoordSys(RefCoordSys refCoords) override;
-    RefCoordSys GetReferenceCoordSys() override;
     XmlNodeRef FindTemplate(const QString& templateName) override;
     void AddTemplate(const QString& templateName, XmlNodeRef& tmpl) override;
 
@@ -269,7 +267,6 @@ protected:
     Vec3 m_marker;
     AABB m_selectedRegion;
     AxisConstrains m_selectedAxis;
-    RefCoordSys m_refCoordsSys;
     bool m_bAxisVectorLock;
     bool m_bUpdates;
     bool m_bTerrainAxisIgnoreObjects;
