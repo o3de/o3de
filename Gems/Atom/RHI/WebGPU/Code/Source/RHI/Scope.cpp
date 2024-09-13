@@ -18,7 +18,7 @@ namespace AZ::WebGPU
 {
     void RenderPassDescriptorBuilder::Add(const RHI::ImageScopeAttachment& scopeAttachment)
     {
-        int deviceIndex = scopeAttachment.GetScope().GetDeviceIndex();
+        const int deviceIndex = scopeAttachment.GetScope().GetDeviceIndex();
         const ImageView* imageView = static_cast<const ImageView*>(scopeAttachment.GetImageView()->GetDeviceImageView(deviceIndex).get());
         const RHI::ImageScopeAttachmentDescriptor& bindingDescriptor = scopeAttachment.GetDescriptor();
         const RHI::ImageViewDescriptor& viewDescriptor = bindingDescriptor.GetViewDescriptor();

@@ -343,7 +343,7 @@ namespace AZ::WebGPU
 
     void CommandList::SetIndexBuffer(const RHI::DeviceIndexBufferView& indexBufferView)
     {
-        uint64_t indexBufferHash = static_cast<uint64_t>(indexBufferView.GetHash());
+        const uint64_t indexBufferHash = static_cast<uint64_t>(indexBufferView.GetHash());
         if (indexBufferHash != m_state.m_indexBufferHash)
         {
             const Buffer* indexBuffer = static_cast<const Buffer*>(indexBufferView.GetBuffer());
