@@ -216,7 +216,7 @@ namespace AzFramework
                 {
                     // the requested qualityLevel index wasn't found, use highest available 
                     PerformConsoleCommand(command, FixedValueString::format("%.*s/%d",
-                        AZ_STRING_ARG(visitArgs.m_jsonKeyPath), currentQualityLevel));
+                        AZ_STRING_ARG(visitArgs.m_jsonKeyPath), static_cast<int>(currentQualityLevel)));
                 }
             }
             else
