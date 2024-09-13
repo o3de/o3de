@@ -90,8 +90,6 @@ public:
     MOCK_METHOD0(GetAxisConstrains, AxisConstrains());
     MOCK_METHOD1(SetTerrainAxisIgnoreObjects, void(bool));
     MOCK_METHOD0(IsTerrainAxisIgnoreObjects, bool());
-    MOCK_METHOD1(SetReferenceCoordSys, void(RefCoordSys ));
-    MOCK_METHOD0(GetReferenceCoordSys, RefCoordSys());
     MOCK_METHOD1(FindTemplate, XmlNodeRef(const QString& ));
     MOCK_METHOD2(AddTemplate, void(const QString& , XmlNodeRef& ));
     MOCK_METHOD2(OpenView, const QtViewPane* (QString , bool ));

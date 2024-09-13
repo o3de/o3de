@@ -168,8 +168,6 @@ public:
     AxisConstrains GetAxisConstrains() override;
     void SetTerrainAxisIgnoreObjects(bool bIgnore) override;
     bool IsTerrainAxisIgnoreObjects() override;
-    void SetReferenceCoordSys(RefCoordSys refCoords) override;
-    RefCoordSys GetReferenceCoordSys() override;
     XmlNodeRef FindTemplate(const QString& templateName) override;
     void AddTemplate(const QString& templateName, XmlNodeRef& tmpl) override;
 
@@ -253,7 +251,6 @@ protected:
     CViewManager*   m_pViewManager;
     CUndoManager* m_pUndoManager;
     AxisConstrains m_selectedAxis;
-    RefCoordSys m_refCoordsSys;
     bool m_bUpdates;
     bool m_bTerrainAxisIgnoreObjects;
     SFileVersion m_fileVersion;

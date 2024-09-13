@@ -705,7 +705,7 @@ void QtViewport::MakeConstructionPlane(int axis)
     Vec3 raySrc(Vec3_Zero), rayDir(Vec3_OneX);
     ViewToWorldRay(cursorPos, raySrc, rayDir);
 
-    int coordSys = GetIEditor()->GetReferenceCoordSys();
+    int coordSys = COORDS_VIEW;//GetIEditor()->GetReferenceCoordSys();
 
     Vec3 xAxis(Vec3_OneX);
     Vec3 yAxis(Vec3_OneY);
@@ -842,7 +842,7 @@ Vec3 QtViewport::GetCPVector(const Vec3& p1, const Vec3& p2, int axis)
 {
     Vec3 v = p2 - p1;
 
-    int coordSys = GetIEditor()->GetReferenceCoordSys();
+    int coordSys = COORDS_VIEW;//GetIEditor()->GetReferenceCoordSys();
 
     Vec3 xAxis(Vec3_OneX);
     Vec3 yAxis(Vec3_OneY);
