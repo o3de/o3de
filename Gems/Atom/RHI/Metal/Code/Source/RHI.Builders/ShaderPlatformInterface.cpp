@@ -451,7 +451,7 @@ namespace AZ
             // not to the same textures). If we merge the two passes, and both are sharing one color attachment, then we would have 3 color
             // attachments for both passes. Because of the rearrangement of the color attachments, the shaders of the second pass would need to
             // output to color1 and color2 for example, hence we would need to change the indices for the outputs that were specified in the shader.
-            // Luckyly Metal supports using function specialization for specifiying the color index of an output at runtime.
+            // Luckily Metal supports using function specialization for specifying the color index of an output at runtime.
             if(shaderStageType != RHI::ShaderHardwareStage::Fragment)
             {
                 return;
