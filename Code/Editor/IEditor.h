@@ -228,17 +228,6 @@ enum AxisConstrains
     AXIS_TERRAIN,
 };
 
-//! Reference coordinate system values
-enum RefCoordSys
-{ // Don't change this order. Should be in the same order as MainWindow::CreateRefCoordComboBox()
-    COORDS_VIEW = 0,
-    COORDS_LOCAL,
-    COORDS_PARENT,
-    COORDS_WORLD,
-    COORDS_USERDEFINED,
-    LAST_COORD_SYSTEM, // Must always be the last member
-};
-
 // Insert locations for menu items
 enum EMenuInsertLocation
 {

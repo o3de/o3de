@@ -177,18 +177,9 @@ QtViewport::QtViewport(QWidget* parent)
 
     m_activeAxis = AXIS_TERRAIN;
 
-    for (int i = 0; i < LAST_COORD_SYSTEM; i++)
-    {
-        m_constructionMatrix[i].SetIdentity();
-    }
     m_screenTM.SetIdentity();
 
-
     m_bAdvancedSelectMode = false;
-
-    m_constructionPlane.SetPlane(Vec3_OneZ, Vec3_Zero);
-    m_constructionPlaneAxisX = Vec3_Zero;
-    m_constructionPlaneAxisY = Vec3_Zero;
 
     GetIEditor()->GetViewManager()->RegisterViewport(this);
 
@@ -627,51 +618,6 @@ void QtViewport::ResetCursor()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void QtViewport::SetConstructionOrigin(const Vec3& worldPos)
-{
-    Matrix34 tm;
-    tm.SetIdentity();
-    tm.SetTranslation(worldPos);
-    SetConstructionMatrix(COORDS_LOCAL, tm);
-    SetConstructionMatrix(COORDS_PARENT, tm);
-    SetConstructionMatrix(COORDS_USERDEFINED, tm);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void QtViewport::SetConstructionMatrix(RefCoordSys coordSys, const Matrix34& xform)
-{
-    m_constructionMatrix[coordSys] = xform;
-    m_constructionMatrix[coordSys].OrthonormalizeFast(); // Remove scale component from matrix.
-    if (coordSys == COORDS_LOCAL)
-    {
-        m_constructionMatrix[COORDS_VIEW].SetTranslation(xform.GetTranslation());
-        m_constructionMatrix[COORDS_WORLD].SetTranslation(xform.GetTranslation());
-        m_constructionMatrix[COORDS_USERDEFINED].SetIdentity();
-        m_constructionMatrix[COORDS_USERDEFINED].SetTranslation(xform.GetTranslation());
-        m_constructionMatrix[COORDS_PARENT] = xform;
-    }
-    MakeConstructionPlane(GetAxisConstrain());
-}
-
-//////////////////////////////////////////////////////////////////////////
-const Matrix34& QtViewport::GetConstructionMatrix(RefCoordSys coordSys)
-{
-    if (coordSys == COORDS_VIEW)
-    {
-        return m_constructionMatrix[COORDS_WORLD];
-    }
-    return m_constructionMatrix[coordSys];
-}
-
-//////////////////////////////////////////////////////////////////////////
-void QtViewport::AssignConstructionPlane(const Vec3& p1, const Vec3& p2, const Vec3& p3)
-{
-    m_constructionPlane.SetPlane(p1, p2, p3);
-    m_constructionPlaneAxisX = p3 - p1;
-    m_constructionPlaneAxisY = p2 - p1;
-}
-
-//////////////////////////////////////////////////////////////////////////
 HWND QtViewport::renderOverlayHWND() const
 {
     return reinterpret_cast<HWND>(m_renderOverlay.winId());
@@ -686,219 +632,6 @@ void QtViewport::setRenderOverlayVisible(bool visible)
 bool QtViewport::isRenderOverlayVisible() const
 {
     return m_renderOverlay.isVisible();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void QtViewport::MakeConstructionPlane(int axis)
-{
-    QPoint cursorPos;
-    if (m_mouseCaptured)
-    {
-        cursorPos = m_cMouseDownPos;
-    }
-    else
-    {
-        cursorPos = QCursor::pos();
-        ScreenToClient(cursorPos);
-    }
-
-    Vec3 raySrc(Vec3_Zero), rayDir(Vec3_OneX);
-    ViewToWorldRay(cursorPos, raySrc, rayDir);
-
-    int coordSys = COORDS_VIEW;//GetIEditor()->GetReferenceCoordSys();
-
-    Vec3 xAxis(Vec3_OneX);
-    Vec3 yAxis(Vec3_OneY);
-    Vec3 zAxis(Vec3_OneZ);
-
-    xAxis = m_constructionMatrix[coordSys].TransformVector(xAxis);
-    yAxis = m_constructionMatrix[coordSys].TransformVector(yAxis);
-    zAxis = m_constructionMatrix[coordSys].TransformVector(zAxis);
-
-    Vec3 pos = m_constructionMatrix[coordSys].GetTranslation();
-
-    if (axis == AXIS_X)
-    {
-        // X direction.
-        Vec3 n;
-        float d1 = fabs(rayDir.Dot(yAxis));
-        float d2 = fabs(rayDir.Dot(zAxis));
-        if (d1 > d2)
-        {
-            n = yAxis;
-        }
-        else
-        {
-            n = zAxis;
-        }
-        if (rayDir.Dot(n) < 0)
-        {
-            n = -n;                    // face construction plane to the ray.
-        }
-        //Vec3 n = Vec3(0,0,1);
-        Vec3 v1 = n.Cross(xAxis);
-        Vec3 v2 = n.Cross(v1);
-        AssignConstructionPlane(pos, pos + v2, pos + v1);
-    }
-    else if (axis == AXIS_Y)
-    {
-        // Y direction.
-        Vec3 n;
-        float d1 = fabs(rayDir.Dot(xAxis));
-        float d2 = fabs(rayDir.Dot(zAxis));
-        if (d1 > d2)
-        {
-            n = xAxis;
-        }
-        else
-        {
-            n = zAxis;
-        }
-        if (rayDir.Dot(n) < 0)
-        {
-            n = -n;                    // face construction plane to the ray.
-        }
-        Vec3 v1 = n.Cross(yAxis);
-        Vec3 v2 = n.Cross(v1);
-        AssignConstructionPlane(pos, pos + v2, pos + v1);
-    }
-    else if (axis == AXIS_Z)
-    {
-        // Z direction.
-        Vec3 n;
-        float d1 = fabs(rayDir.Dot(xAxis));
-        float d2 = fabs(rayDir.Dot(yAxis));
-        if (d1 > d2)
-        {
-            n = xAxis;
-        }
-        else
-        {
-            n = yAxis;
-        }
-        if (rayDir.Dot(n) < 0)
-        {
-            n = -n;                    // face construction plane to the ray.
-        }
-        Vec3 v1 = n.Cross(zAxis);
-        Vec3 v2 = n.Cross(v1);
-        AssignConstructionPlane(pos, pos + v2, pos + v1);
-    }
-    else if (axis == AXIS_XY)
-    {
-        AssignConstructionPlane(pos, pos + yAxis, pos + xAxis);
-    }
-    else if (axis == AXIS_XZ)
-    {
-        AssignConstructionPlane(pos, pos + zAxis, pos + xAxis);
-    }
-    else if (axis == AXIS_YZ)
-    {
-        AssignConstructionPlane(pos, pos + zAxis, pos + yAxis);
-    }
-    else
-    {
-        AssignConstructionPlane(pos, pos + yAxis, pos + xAxis);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-Vec3 QtViewport::MapViewToCP(const QPoint& point, int axis)
-{
-    AZ_PROFILE_FUNCTION(Editor);
-
-    if (axis == AXIS_TERRAIN)
-    {
-        return SnapToGrid(ViewToWorld(point));
-    }
-
-    MakeConstructionPlane(axis);
-
-    Vec3 raySrc(Vec3_Zero), rayDir(Vec3_OneX);
-    ViewToWorldRay(point, raySrc, rayDir);
-    
-    Vec3 v;
-
-    Ray ray(raySrc, rayDir);
-    if (!Intersect::Ray_Plane(ray, m_constructionPlane, v))
-    {
-        Plane inversePlane = m_constructionPlane;
-        inversePlane.n = -inversePlane.n;
-        inversePlane.d = -inversePlane.d;
-        if (!Intersect::Ray_Plane(ray, inversePlane, v))
-        {
-            v = Vec3_Zero;
-        }
-    }
-
-    // Snap value to grid.
-    v = SnapToGrid(v);
-
-    return v;
-}
-
-//////////////////////////////////////////////////////////////////////////
-Vec3 QtViewport::GetCPVector(const Vec3& p1, const Vec3& p2, int axis)
-{
-    Vec3 v = p2 - p1;
-
-    int coordSys = COORDS_VIEW;//GetIEditor()->GetReferenceCoordSys();
-
-    Vec3 xAxis(Vec3_OneX);
-    Vec3 yAxis(Vec3_OneY);
-    Vec3 zAxis(Vec3_OneZ);
-
-    // In local coordinate system transform axises by construction matrix.
-    xAxis = m_constructionMatrix[coordSys].TransformVector(xAxis);
-    yAxis = m_constructionMatrix[coordSys].TransformVector(yAxis);
-    zAxis = m_constructionMatrix[coordSys].TransformVector(zAxis);
-
-    if (axis == AXIS_X || axis == AXIS_Y || axis == AXIS_Z)
-    {
-        // Project vector v on transformed axis x,y or z.
-        Vec3 axisVector;
-        if (axis == AXIS_X)
-        {
-            axisVector = xAxis;
-        }
-        if (axis == AXIS_Y)
-        {
-            axisVector = yAxis;
-        }
-        if (axis == AXIS_Z)
-        {
-            axisVector = zAxis;
-        }
-
-        // Project vector on construction plane into the one of axises.
-        v = v.Dot(axisVector) * axisVector;
-    }
-    else if (axis == AXIS_XY)
-    {
-        // Project vector v on transformed plane x/y.
-        Vec3 planeNormal = xAxis.Cross(yAxis);
-        Vec3 projV = v.Dot(planeNormal) * planeNormal;
-        v = v - projV;
-    }
-    else if (axis == AXIS_XZ)
-    {
-        // Project vector v on transformed plane x/y.
-        Vec3 planeNormal = xAxis.Cross(zAxis);
-        Vec3 projV = v.Dot(planeNormal) * planeNormal;
-        v = v - projV;
-    }
-    else if (axis == AXIS_YZ)
-    {
-        // Project vector v on transformed plane x/y.
-        Vec3 planeNormal = yAxis.Cross(zAxis);
-        Vec3 projV = v.Dot(planeNormal) * planeNormal;
-        v = v - projV;
-    }
-    else if (axis == AXIS_TERRAIN)
-    {
-        v.z = 0;
-    }
-    return v;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1120,7 +853,7 @@ bool QtViewport::GetAdvancedSelectModeFlag()
 //////////////////////////////////////////////////////////////////////////
 #if defined(AZ_PLATFORM_WINDOWS)
 // Note: Both CreateAnglesYPR and CreateOrientationYPR were copied verbatim from Cry_Camera.h which has been removed.
-// 
+//
 // Description
 //   <PRE>
 //   x-YAW
