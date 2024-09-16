@@ -47,9 +47,11 @@ namespace AZ
                         ->Field("Thread Count X", &RayTracingPassData::m_threadCountX)
                         ->Field("Thread Count Y", &RayTracingPassData::m_threadCountY)
                         ->Field("Thread Count Z", &RayTracingPassData::m_threadCountZ)
-                        ->Field("Make Fullscreen Pass", &RayTracingPassData::m_makeFullscreenPass)
-                        ->Field("Max Ray Length", &RayTracingPassData::m_maxRayLength)
-                        ;
+                        ->Field("Make Fullscreen Pass", &RayTracingPassData::m_fullscreenDispatch)
+                        ->Field("FullscreenSizeSourceSlotName", &RayTracingPassData::m_fullscreenSizeSourceSlotName)
+                        ->Field("IndirectDispatch", &RayTracingPassData::m_indirectDispatch)
+                        ->Field("IndirectDispatchBufferSlotName", &RayTracingPassData::m_indirectDispatchBufferSlotName)
+                        ->Field("Max Ray Length", &RayTracingPassData::m_maxRayLength);
                 }
             }
 
@@ -73,7 +75,11 @@ namespace AZ
             uint32_t m_threadCountY = 1;
             uint32_t m_threadCountZ = 1;
 
-            bool m_makeFullscreenPass = false;
+            bool m_fullscreenDispatch = false;
+            AZ::Name m_fullscreenSizeSourceSlotName;
+
+            bool m_indirectDispatch = false;
+            AZ::Name m_indirectDispatchBufferSlotName;
         };
     } // namespace RPI
 } // namespace AZ

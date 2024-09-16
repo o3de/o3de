@@ -166,14 +166,16 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ComputePassData, RenderPassData>()
-                    ->Version(2)
+                    ->Version(3)
                     ->Field("ShaderAsset", &ComputePassData::m_shaderReference)
                     ->Field("Target Thread Count X", &ComputePassData::m_totalNumberOfThreadsX)
                     ->Field("Target Thread Count Y", &ComputePassData::m_totalNumberOfThreadsY)
                     ->Field("Target Thread Count Z", &ComputePassData::m_totalNumberOfThreadsZ)
-                    ->Field("Make Fullscreen Pass", &ComputePassData::m_makeFullscreenPass)
-                    ->Field("Use Async Compute", &ComputePassData::m_useAsyncCompute)
-                    ;
+                    ->Field("Make Fullscreen Pass", &ComputePassData::m_fullscreenDispatch)
+                    ->Field("FullscreenSizeSourceSlotName", &ComputePassData::m_fullscreenSizeSourceSlotName)
+                    ->Field("IndirectDispatch", &ComputePassData::m_indirectDispatch)
+                    ->Field("IndirectDispatchBufferSlotName", &ComputePassData::m_indirectDispatchBufferSlotName)
+                    ->Field("Use Async Compute", &ComputePassData::m_useAsyncCompute);
             }
         }
 

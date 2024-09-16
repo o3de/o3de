@@ -59,7 +59,7 @@ namespace AZ
             ComputePass(const PassDescriptor& descriptor, AZ::Name supervariant = AZ::Name(""));
 
             // Pass behavior overrides...
-            void FrameBeginInternal(FramePrepareParams params) override;
+            void BuildInternal() override;
 
             // Scope producer functions...
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
@@ -78,9 +78,18 @@ namespace AZ
             // The draw item submitted by this pass
             RHI::DispatchItem m_dispatchItem;
 
-            // Whether or not to make the pass a full-screen compute pass. If set to true, the dispatch group counts will
-            // be automatically calculated from the size of the first output attachment and the group size dimensions.
-            bool m_isFullscreenPass = false;
+            // Whether or not to make the pass a full-screen compute pass, and which slot to use as the size source
+            AZ::Name m_fullscreenSizeSourceSlotName;
+            bool m_fullscreenDispatch = false;
+            AZ::RPI::PassAttachmentBinding* m_fullscreenSizeSourceBinding = nullptr;
+
+            // Wheter or not to make the pass a indirect dispatch compute pass, and which slot to use as indirect dispatch
+            // command buffer
+            bool m_indirectDispatch = false;
+            AZ::Name m_indirectDispatchBufferSlotName;
+            AZ::RPI::PassAttachmentBinding* m_indirectDispatchBufferBinding = nullptr;
+            AZ::RHI::Ptr<AZ::RHI::IndirectBufferSignature> m_indirectDispatchBufferSignature;
+            AZ::RHI::IndirectBufferView m_indirectDispatchBufferView;
 
             // ShaderReloadNotificationBus::Handler overrides...
             void OnShaderReinitialized(const Shader& shader) override;

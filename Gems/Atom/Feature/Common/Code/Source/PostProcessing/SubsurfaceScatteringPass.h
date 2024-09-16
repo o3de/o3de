@@ -33,7 +33,7 @@ namespace AZ
         protected:
             SubsurfaceScatteringPass(const PassDescriptor& descriptor);
 
-            void FrameBeginInternal(FramePrepareParams params) override;
+            void CompileResources(const RHI::FrameGraphCompileContext& context) override;
 
             // output texture vertical dimension required by compute shader
             AZ::RHI::ShaderInputNameIndex m_screenSizeInputIndex = "m_screenSize";
