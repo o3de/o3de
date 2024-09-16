@@ -591,7 +591,6 @@ namespace LegacyLevelSystem
 
         const int progressAmount = max(1, static_cast<int>(m_fFilteredProgress));
         OnLoadingProgress(m_lastLevelName.c_str(), progressAmount);
-        AZ_TracePrintf("LevelSystem", "Level load - progress amount: %i%%  (%i/%i)", progressAmount, m_queuedAssetsCount, m_queuedAssetsCountMax);
     }
 #endif
 
