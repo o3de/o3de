@@ -37,7 +37,6 @@
 
 namespace ScriptCanvas
 {
-    GraphInfo CreateGraphInfo(ScriptCanvasId executionId, const GraphIdentifier& graphIdentifier);
     class ExecutionState;
 
     namespace Execution

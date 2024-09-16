@@ -114,15 +114,19 @@ namespace PhysX
         {
             return;
         }
+        Physics::DefaultWorldBus::BroadcastResult(m_attachedSceneHandle, &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
+        if (m_attachedSceneHandle == AzPhysics::InvalidSceneHandle)
+        {
+            AZ_Error("ArticulationLinkComponent", false, "Invalid Scene Handle");
+            return;
+        }
+
         // set the transform to not update when the parent's transform changes, to avoid conflict with physics transform updates
         GetEntity()->GetTransform()->SetOnParentChangedBehavior(AZ::OnParentChangedBehavior::DoNotUpdate);
 
         if (IsRootArticulation())
         {
             AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
-
-            Physics::DefaultWorldBus::BroadcastResult(m_attachedSceneHandle, &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
-
             if (m_attachedSceneHandle != AzPhysics::InvalidSceneHandle)
             {
                 sceneInterface->RegisterSceneSimulationFinishHandler(m_attachedSceneHandle, m_sceneFinishSimHandler);
@@ -156,15 +160,18 @@ namespace PhysX
                 auto* rootArticulationLinkComponent = articulationRootEntity->FindComponent<ArticulationLinkComponent>();
                 AZ_Assert(rootArticulationLinkComponent, "Articulation root has to have ArticulationLinkComponent");
 
-                m_link = rootArticulationLinkComponent->GetArticulationLink(GetEntityId());
+                     m_link = rootArticulationLinkComponent->GetArticulationLink(GetEntityId());
+                     AZ_Assert(m_link, "Scene not found for the root articulation link component");
 
-                AzPhysics::Scene* scene = sceneInterface->GetScene(rootArticulationLinkComponent->m_attachedSceneHandle);
-                auto* pxScene = static_cast<physx::PxScene*>(scene->GetNativePointer());
-                if (m_link && pxScene)
-                {
-                    PHYSX_SCENE_READ_LOCK(pxScene);
-                    m_driveJoint = m_link->getInboundJoint()->is<physx::PxArticulationJointReducedCoordinate>();
-                }
+                     AzPhysics::Scene* scene = sceneInterface->GetScene(rootArticulationLinkComponent->m_attachedSceneHandle);
+                     AZ_Assert(scene, "Scene not found for the root articulation link component");
+
+                     auto* pxScene = static_cast<physx::PxScene*>(scene->GetNativePointer());
+                     if (m_link && pxScene)
+                     {
+                         PHYSX_SCENE_READ_LOCK(pxScene);
+                         m_driveJoint = m_link->getInboundJoint()->is<physx::PxArticulationJointReducedCoordinate>();
+                     }
 
                 m_sensorIndices = rootArticulationLinkComponent->GetSensorIndices(GetEntityId());
             }
@@ -222,6 +229,7 @@ namespace PhysX
     void ArticulationLinkComponent::CreateArticulation()
     {
         AzPhysics::SceneInterface* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+        AZ_Assert(sceneInterface, "PhysX Scene Interface not found");
         if (!sceneInterface)
         {
             return;

@@ -264,7 +264,10 @@ namespace AZ
                 // the DiffuseProbeGridVisualization Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader
                 // inputs (see line ValidateSetImageView() in ShaderResourceGroupData.cpp)
                 diffuseProbeGrid->UpdateVisualizationRayTraceSrg(m_rayTracingShader, m_globalSrgLayout, outputImageView);
-                diffuseProbeGrid->GetVisualizationRayTraceSrg()->Compile();
+                if (!diffuseProbeGrid->GetVisualizationRayTraceSrg()->IsQueuedForCompile())
+                {
+                    diffuseProbeGrid->GetVisualizationRayTraceSrg()->Compile();
+                }
             }
 
             if (auto viewSRG = diffuseProbeGridFeatureProcessor->GetViewSrg(m_pipeline, GetPipelineViewTag()))
