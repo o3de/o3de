@@ -533,6 +533,9 @@ namespace AZ
 
                         // If the pass is using a subpass input attachment.
                         uint64_t m_hasSubpassInput : 1;
+
+                        // Whether the pass was enabled last frame
+                        uint64_t m_lastFrameEnabled : 1;
                     };
                     uint64_t m_allFlags = 0;
                 };
