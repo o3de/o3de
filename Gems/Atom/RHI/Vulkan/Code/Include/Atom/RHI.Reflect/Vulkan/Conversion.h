@@ -68,6 +68,7 @@ namespace AZ
         VkComponentSwizzle ConvertComponentSwizzle(const ImageComponentMapping::Swizzle swizzle);
         VkComponentMapping ConvertComponentMapping(const ImageComponentMapping& mapping);
         RHI::ImageSubresourceRange ConvertSubresourceRange(const VkImageSubresourceRange& range);
+        VkImageSubresourceRange ConvertSubresourceRange(const RHI::ImageSubresourceRange& range);
         VkPipelineStageFlags ConvertScopeAttachmentStage(const RHI::ScopeAttachmentStage& stage);
     }
 }

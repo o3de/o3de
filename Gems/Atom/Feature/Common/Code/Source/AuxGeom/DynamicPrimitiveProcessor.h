@@ -12,6 +12,10 @@
 #include <Atom/RHI/StreamBufferView.h>
 #include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RHI/DrawList.h>
+#include <Atom/RHI/IndexBufferView.h>
+#include <Atom/RHI/GeometryView.h>
+#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/StreamBufferView.h>
 
 #include <Atom/RHI.Reflect/InputStreamLayout.h>
 #include <Atom/RHI.Reflect/Limits.h>
@@ -62,7 +66,7 @@ namespace AZ
             void Release();
 
             //! Process the list of primitives in the buffer data and add them to the views in the feature processor packet
-            void ProcessDynamicPrimitives(const AuxGeomBufferData* bufferData, const RPI::FeatureProcessor::RenderPacket& fpPacket);
+            void ProcessDynamicPrimitives(AuxGeomBufferData* bufferData, const RPI::FeatureProcessor::RenderPacket& fpPacket);
 
             //! Prepare frame.
             void PrepareFrame();
@@ -76,15 +80,6 @@ namespace AZ
         private: // types
 
             using StreamBufferViewsForAllStreams = AZStd::fixed_vector<AZ::RHI::StreamBufferView, AZ::RHI::Limits::Pipeline::StreamCountMax>;
-
-            struct DynamicBufferGroup
-            {
-                //! The view into the index buffer
-                AZ::RHI::IndexBufferView m_indexBufferView;
-
-                //! The stream views into the vertex buffer (we only have one in our case)
-                StreamBufferViewsForAllStreams m_streamBufferViews;
-            };
 
             using DrawPackets = AZStd::vector<AZ::RHI::ConstPtr<RHI::DrawPacket>>;
 
@@ -112,22 +107,20 @@ namespace AZ
 
             //!Uses the given drawPacketBuilder to build a draw packet with given data and returns it
             RHI::ConstPtr<RHI::DrawPacket> BuildDrawPacketForDynamicPrimitive(
-                DynamicBufferGroup& group,
+                RHI::GeometryView& geometryView,
                 const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
                 Data::Instance<RPI::ShaderResourceGroup> srg,
-                uint32_t indexCount,
-                uint32_t indexOffset,
                 RHI::DrawPacketBuilder& drawPacketBuilder,
                 RHI::DrawItemSortKey sortKey = 0);
 
             // Update a dynamic index buffer, given the data from draw requests
-            bool UpdateIndexBuffer(const IndexBuffer& indexSource, DynamicBufferGroup& group);
+            bool UpdateIndexBuffer(const IndexBuffer& indexSource);
 
             // Update a dynamic vertex buffer, given the data from draw requests
-            bool UpdateVertexBuffer(const VertexBuffer& source, DynamicBufferGroup& group);
+            bool UpdateVertexBuffer(const VertexBuffer& source);
 
             // Validate the given stream buffer views for the layout used for the given prim type (uses isValidated flags to see if necessary)
-            void ValidateStreamBufferViews(StreamBufferViewsForAllStreams& streamBufferViews, bool* isValidated, int primitiveType);
+            void ValidateStreamBufferViews(AZStd::span<const RHI::StreamBufferView> streamBufferViews, bool* isValidated, int primitiveType);
 
             // Sets up stream layout used for dynamic primitive shader for the given toplogy 
             void SetupInputStreamLayout(RHI::InputStreamLayout& inputStreamLayout, RHI::PrimitiveTopology topology);
@@ -151,7 +144,7 @@ namespace AZ
             ShaderData m_shaderData;
 
             // Buffers for all primitives
-            DynamicBufferGroup m_primitiveBuffers;
+            RHI::GeometryView m_geometryView;
 
             // Flags to see if stream buffer views have been validated for a prim type's layout
             bool m_streamBufferViewsValidatedForLayout[PrimitiveType_Count];

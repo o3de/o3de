@@ -112,9 +112,14 @@ namespace AZ::Render
 
     void StarsFeatureProcessor::UpdateDrawPacket()
     {
-        if(m_meshPipelineState && m_drawSrg && m_meshStreamBufferViews[0].GetByteCount() != 0)
+        if (m_geometryView.GetStreamBufferViews().size() == 0)
         {
-            m_drawPacket = BuildDrawPacket(m_drawSrg, m_meshPipelineState, m_drawListTag, m_meshStreamBufferViews, m_numStarsVertices);
+            return;
+        }
+
+        if(m_meshPipelineState && m_drawSrg && m_geometryView.GetStreamBufferView(0).GetByteCount() != 0)
+        {
+            m_drawPacket = BuildDrawPacket();
         }
     }
 
@@ -166,7 +171,8 @@ namespace AZ::Render
             m_starsVertexBuffer->UpdateData(m_starsMeshData.data(), bufferSize);
         }
 
-        m_meshStreamBufferViews[0] = RHI::StreamBufferView(*m_starsVertexBuffer->GetRHIBuffer(), 0, bufferSize, elementSize);
+        m_geometryView.ClearStreamBufferViews();
+        m_geometryView.AddStreamBufferView( RHI::StreamBufferView(*m_starsVertexBuffer->GetRHIBuffer(), 0, bufferSize, elementSize) );
 
         UpdateDrawPacket();
     }
@@ -276,28 +282,19 @@ namespace AZ::Render
         RPI::PassSystemInterface::Get()->ForEachPass(passFilter, setClearValue);
     }
 
-    RHI::ConstPtr<RHI::DrawPacket> StarsFeatureProcessor::BuildDrawPacket(
-                const Data::Instance<RPI::ShaderResourceGroup>& srg,
-                const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
-                const RHI::DrawListTag& drawListTag,
-                const AZStd::span<const AZ::RHI::StreamBufferView>& streamBufferViews,
-                uint32_t vertexCount)
+    RHI::ConstPtr<RHI::DrawPacket> StarsFeatureProcessor::BuildDrawPacket()
     {
-        RHI::DrawLinear drawLinear;
-        drawLinear.m_vertexCount = vertexCount;
-        drawLinear.m_vertexOffset = 0;
-        drawLinear.m_instanceCount = 1;
-        drawLinear.m_instanceOffset = 0;
+        m_geometryView.SetDrawArguments(RHI::DrawLinear{ m_numStarsVertices, 0 });
 
         RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
         drawPacketBuilder.Begin(nullptr);
-        drawPacketBuilder.SetDrawArguments(drawLinear);
-        drawPacketBuilder.AddShaderResourceGroup(srg->GetRHIShaderResourceGroup());
+        drawPacketBuilder.SetGeometryView(&m_geometryView);
+        drawPacketBuilder.AddShaderResourceGroup(m_drawSrg->GetRHIShaderResourceGroup());
 
         RHI::DrawPacketBuilder::DrawRequest drawRequest;
-        drawRequest.m_listTag = drawListTag;
-        drawRequest.m_pipelineState = pipelineState->GetRHIPipelineState();
-        drawRequest.m_streamBufferViews = streamBufferViews;
+        drawRequest.m_listTag = m_drawListTag;
+        drawRequest.m_pipelineState = m_meshPipelineState->GetRHIPipelineState();
+        drawRequest.m_streamIndices = m_geometryView.GetFullStreamBufferIndices();
         drawPacketBuilder.AddDrawItem(drawRequest);
         return drawPacketBuilder.End();
     }

@@ -13,6 +13,9 @@
 #include <memory>
 #include <Atom/RHI.Reflect/VkAllocator.h>
 
+// Enable this define to enable logging of subpass merge feedback.
+//#define AZ_LOG_SUBPASS_MERGE_FEEDBACK 1
+
 namespace AZ
 {
     namespace Vulkan
@@ -75,15 +78,22 @@ namespace AZ
 
                 RenderPassResult Build(const RenderPass::Descriptor& descriptor)
                 {
+                    const PhysicalDevice& physicalDevice = static_cast<const PhysicalDevice&>(m_device.GetPhysicalDevice());
+                    m_collectSubpassMergeInfo = descriptor.m_subpassCount > 1 &&
+                        physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::SubpassMergeFeedback);
+#if !AZ_LOG_SUBPASS_MERGE_FEEDBACK
+                    m_collectSubpassMergeInfo = false;
+#endif
                     m_descriptor = &descriptor;
                     AZStd::vector<VkAttachmentDescriptionType> attachmentDescriptions;
                     AZStd::vector<SubpassInfo> subpassInfo;
                     AZStd::vector<VkSubpassDescriptionType> subpassDescriptions;
                     AZStd::vector<VkSubpassDependencyType> subpassDependencies;
+                    AZStd::vector<SubpassFeedbackInfo> subpassFeedback;
 
                     BuildAttachmentDescriptions(attachmentDescriptions);
                     BuildSubpassAttachmentReferences(subpassInfo);
-                    BuildSubpassDescriptions(subpassInfo, subpassDescriptions);
+                    BuildSubpassDescriptions(subpassInfo, subpassDescriptions, subpassFeedback);
                     BuildSubpassDependencies(subpassDependencies);
 
                     VkRenderPassCreateInfoType createInfo{};
@@ -117,14 +127,53 @@ namespace AZ
                             fdmAttachmentCreateInfo.fragmentDensityMapAttachment.attachment = fragmentDensityReference.attachment;
                             fdmAttachmentCreateInfo.fragmentDensityMapAttachment.layout = fragmentDensityReference.layout;
 
-                            createInfo.pNext = &fdmAttachmentCreateInfo;
+                            AppendVkStruct(createInfo, &fdmAttachmentCreateInfo);
                         }
                     }
 
-                    return Create<VkRenderPassCreateInfoType>(createInfo);
+                    VkRenderPassCreationFeedbackCreateInfoEXT renderPassCreationFeedbackCreateInfo;
+                    VkRenderPassCreationFeedbackInfoEXT renderPassCreationFeedbackInfo{};
+                    if (m_collectSubpassMergeInfo)
+                    {
+                        renderPassCreationFeedbackCreateInfo = {};
+                        renderPassCreationFeedbackCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATION_FEEDBACK_CREATE_INFO_EXT;
+                        renderPassCreationFeedbackCreateInfo.pRenderPassFeedback = &renderPassCreationFeedbackInfo;
+                        AppendVkStruct(createInfo, &renderPassCreationFeedbackCreateInfo);
+                    }
+
+                    RenderPassResult result = Create<VkRenderPassCreateInfoType>(createInfo);
+                    if (m_collectSubpassMergeInfo)
+                    {
+                        if (renderPassCreationFeedbackInfo.postMergeSubpassCount > 1)
+                        {
+                            AZ_Printf(
+                                "Vulkan",
+                                "%d subpasses were merged from %d subpasses available",
+                                createInfo.subpassCount - renderPassCreationFeedbackInfo.postMergeSubpassCount,
+                                createInfo.subpassCount);
+
+                            for (uint32_t i = 0; i < subpassFeedback.size(); ++i)
+                            {
+                                const VkRenderPassSubpassFeedbackInfoEXT& info = subpassFeedback[i].second;
+                                if (i > 0 && info.subpassMergeStatus != VK_SUBPASS_MERGE_STATUS_MERGED_EXT)
+                                {
+                                    AZ_Printf("Vulkan", "Subpass %d was not merged due to: %s", i, info.description);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            AZ_Printf(
+                                "Vulkan",
+                                "All subpasses (%d) were successfully merged",
+                                createInfo.subpassCount);
+                        }
+                    }
+                    return result;
                 }
 
             private:
+                using SubpassFeedbackInfo = AZStd::pair<VkRenderPassSubpassFeedbackCreateInfoEXT, VkRenderPassSubpassFeedbackInfoEXT>; 
 
                 // Classes used for handling setting a member that may not exist.
                 struct general_ {};
@@ -260,9 +309,14 @@ namespace AZ
                 // Builds the subpass descriptions using the previously built attachment references.
                 void BuildSubpassDescriptions(
                     AZStd::vector<SubpassInfo>& subpassInfo,
-                    AZStd::vector<VkSubpassDescriptionType>& subpassDescriptions) const
+                    AZStd::vector<VkSubpassDescriptionType>& subpassDescriptions,
+                    AZStd::vector<SubpassFeedbackInfo>& subpassFeedback) const
                 {
                     subpassDescriptions.resize(m_descriptor->m_subpassCount);
+                    if (m_collectSubpassMergeInfo)
+                    {
+                        subpassFeedback.resize(m_descriptor->m_subpassCount);
+                    }
                     for (uint32_t i = 0; i < m_descriptor->m_subpassCount; ++i)
                     {
                         const auto& attachmentReferencesPerType = subpassInfo[i].m_attachmentReferences;
@@ -294,6 +348,16 @@ namespace AZ
                             SetFragmentShadingRateAttachmentInfo<VkAttachmentReferenceType>(
                                 subpassInfo[i], shadingRateAttachmentRefList.data());
                             SetNext(desc, &subpassInfo[i].m_shadingRateAttachmentExtension, special_());
+                        }
+
+                        if (m_collectSubpassMergeInfo)
+                        {
+                            auto& subpassFeedbackInfo = subpassFeedback[i];
+                            subpassFeedbackInfo.first = {};
+                            subpassFeedbackInfo.first.sType = VK_STRUCTURE_TYPE_RENDER_PASS_SUBPASS_FEEDBACK_CREATE_INFO_EXT;
+                            subpassFeedbackInfo.second = {};
+                            subpassFeedbackInfo.first.pSubpassFeedback = &subpassFeedbackInfo.second;
+                            AppendVkStruct(desc, &subpassFeedbackInfo.first);
                         }
                     }
                 }
@@ -373,6 +437,7 @@ namespace AZ
 
                 const Device& m_device;
                 const RenderPass::Descriptor* m_descriptor = nullptr;
+                bool m_collectSubpassMergeInfo = false;
             };
 
             template<typename T, VkStructureType type = AZStd::numeric_limits<VkStructureType>::max()>
@@ -673,33 +738,25 @@ namespace AZ
                 }
             };
 
+            AZStd::bitset<RHI::Limits::Pipeline::RenderAttachmentCountMax> loadActionSet;
+            AZStd::bitset<RHI::Limits::Pipeline::RenderAttachmentCountMax> loadStencilActionSet;
             auto setAttachmentLoadStoreActionFunc =
                 [&](const uint32_t attachmentIndex, const RHI::AttachmentLoadStoreAction& loadStoreAction)
             {
                 auto& attachmentLoadStoreAction = renderPassDesc.m_attachments[attachmentIndex].m_loadStoreAction;
-                AZ_Assert(
-                    attachmentLoadStoreAction.m_loadAction == loadStoreAction.m_loadAction ||
-                        attachmentLoadStoreAction.m_loadAction == RHI::AttachmentLoadAction::DontCare,
-                    "Trying to use load action %d when load action is alreay %d",
-                    loadStoreAction.m_loadAction,
-                    attachmentLoadStoreAction.m_loadAction);
-                attachmentLoadStoreAction.m_loadAction = loadStoreAction.m_loadAction;
-                attachmentLoadStoreAction.m_storeAction = loadStoreAction.m_storeAction != RHI::AttachmentStoreAction::DontCare
-                    ? loadStoreAction.m_storeAction
-                    : attachmentLoadStoreAction.m_storeAction;
+                attachmentLoadStoreAction.m_loadAction = loadActionSet.test(attachmentIndex)
+                    ? CombineLoadOp(attachmentLoadStoreAction.m_loadAction, loadStoreAction.m_loadAction)
+                    : loadStoreAction.m_loadAction;
+                loadActionSet.set(attachmentIndex);
+                attachmentLoadStoreAction.m_storeAction =
+                    CombineStoreOp(attachmentLoadStoreAction.m_storeAction, loadStoreAction.m_storeAction);
 
-                AZ_Assert(
-                    attachmentLoadStoreAction.m_loadActionStencil == loadStoreAction.m_loadActionStencil ||
-                        attachmentLoadStoreAction.m_loadActionStencil ==
-                        RHI::AttachmentLoadAction::DontCare,
-                    "Trying to use stencil load action %d when stencilload action is alreay %d",
-                    loadStoreAction.m_loadActionStencil,
-                    attachmentLoadStoreAction.m_loadActionStencil);
-                attachmentLoadStoreAction.m_loadActionStencil = loadStoreAction.m_loadActionStencil;
+                attachmentLoadStoreAction.m_loadActionStencil = loadStencilActionSet.test(attachmentIndex)
+                    ? CombineLoadOp(attachmentLoadStoreAction.m_loadActionStencil, loadStoreAction.m_loadActionStencil)
+                    : loadStoreAction.m_loadActionStencil;
+                loadStencilActionSet.set(attachmentIndex);
                 attachmentLoadStoreAction.m_storeActionStencil =
-                    loadStoreAction.m_storeActionStencil != RHI::AttachmentStoreAction::DontCare
-                    ? loadStoreAction.m_storeActionStencil
-                    : attachmentLoadStoreAction.m_storeActionStencil;
+                    CombineStoreOp(attachmentLoadStoreAction.m_storeActionStencil, loadStoreAction.m_storeActionStencil);
             };
 
             renderPassDesc.m_subpassCount = layout.m_subpassCount;
@@ -784,12 +841,17 @@ namespace AZ
                     RenderPass::SubpassAttachment& subpassAttachment = subpassDescriptor.m_subpassInputAttachments[inputAttachmentIndex];
                     subpassAttachment.m_attachmentIndex = inputAttachmentDescriptor.m_attachmentIndex;
                     subpassAttachment.m_layout = isDepthStencil ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                    subpassAttachment.m_imageAspectFlags = ConvertImageAspectFlags(inputAttachmentDescriptor.m_aspectFlags);
+                    RHI::ImageAspectFlags filteredFlags = RHI::FilterBits(
+                        inputAttachmentDescriptor.m_aspectFlags,
+                        GetImageAspectFlags(layout.m_attachmentFormats[inputAttachmentDescriptor.m_attachmentIndex]));
+                    subpassAttachment.m_imageAspectFlags = ConvertImageAspectFlags(filteredFlags);
                     usedAttachments.set(subpassAttachment.m_attachmentIndex);
 
                     setLayoutFunc(
                         inputAttachmentDescriptor.m_extras,
                         subpassAttachment);
+
+                    setAttachmentLoadStoreActionFunc(subpassAttachment.m_attachmentIndex, inputAttachmentDescriptor.m_loadStoreAction);
 
                     subpassDependencyHelper.AddSubpassDependency(
                         subpassAttachment.m_attachmentIndex,
@@ -842,17 +904,76 @@ namespace AZ
                         shadingRateAttachmentUsageFlags);
                 }
 
-                // [GFX_TODO][ATOM-3948] Implement preserve attachments. For now preserve all attachments.
                 for (uint32_t attachmentIndex = 0; attachmentIndex < renderPassDesc.m_attachmentCount; ++attachmentIndex)
                 {
+                    // First check if the attachment was used in the subpass.
                     if (!usedAttachments[attachmentIndex])
                     {
-                        subpassDescriptor.m_preserveAttachments[subpassDescriptor.m_preserveAttachmentCount++] = attachmentIndex;
+                        // Find the load store action of the next use of this attachment.
+                        AZStd::vector<RHI::AttachmentLoadAction> nextLoadActions;
+                        for (uint32_t i = subpassIndex + 1; i < layout.m_subpassCount && nextLoadActions.empty(); ++i)
+                        {
+                            const auto& subpassLayoutPreserve = layout.m_subpassLayouts[i];
+                            if (subpassLayoutPreserve.m_depthStencilDescriptor.m_attachmentIndex == attachmentIndex)
+                            {
+                                nextLoadActions.push_back(subpassLayoutPreserve.m_depthStencilDescriptor.m_loadStoreAction.m_loadAction);
+                            }
+
+                            if (subpassLayoutPreserve.m_shadingRateDescriptor.m_attachmentIndex == attachmentIndex)
+                            {
+                                nextLoadActions.push_back(subpassLayoutPreserve.m_shadingRateDescriptor.m_loadStoreAction.m_loadAction);
+                            }
+
+                            for (uint32_t colorIndex = 0; colorIndex < subpassLayoutPreserve.m_rendertargetCount; ++colorIndex)
+                            {
+                                const auto& renderTargetDesc = subpassLayoutPreserve.m_rendertargetDescriptors[colorIndex];
+                                if (attachmentIndex == renderTargetDesc.m_attachmentIndex)
+                                {
+                                    nextLoadActions.push_back(renderTargetDesc.m_loadStoreAction.m_loadAction);
+                                    break;
+                                }
+                            }
+
+                            for (uint32_t inputIndex = 0; inputIndex < subpassLayoutPreserve.m_subpassInputCount; ++inputIndex)
+                            {
+                                const auto& inputDesc = subpassLayoutPreserve.m_subpassInputDescriptors[inputIndex];
+                                if (attachmentIndex == inputDesc.m_attachmentIndex)
+                                {
+                                    nextLoadActions.push_back(RHI::AttachmentLoadAction::Load);
+                                    break;
+                                }
+                            }
+                        }
+
+                        bool preverseAttachment;
+                        if (nextLoadActions.empty())
+                        {
+                            // This is the last usage, so we just check if we need to store the content.
+                            preverseAttachment = renderPassDesc.m_attachments[attachmentIndex].m_loadStoreAction.m_storeAction !=
+                                RHI::AttachmentStoreAction::DontCare;
+                        }
+                        else
+                        {
+                            // Check if the next usage wants to load the content. If not, we don't need to preserve it.
+                            preverseAttachment = false;
+                            for (RHI::AttachmentLoadAction loadAction : nextLoadActions)
+                            {
+                                if (loadAction != RHI::AttachmentLoadAction::DontCare)
+                                {
+                                    preverseAttachment = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (preverseAttachment)
+                        {
+                            subpassDescriptor.m_preserveAttachments[subpassDescriptor.m_preserveAttachmentCount++] = attachmentIndex;
+                        }
                     }
                 }
 
             }
-
             renderPassDesc.MergeSubpassDependencies();
 
             return renderPassDesc;

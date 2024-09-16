@@ -542,7 +542,7 @@ namespace O3DE::ProjectManager
 
         SetProjectExporting(true);
 
-        ShowMessage(tr("Exporting Launcher..."));
+        ShowMessage(tr("Exporting Project..."));
     }
 
     void ProjectButton::ShowBuildFailedState()

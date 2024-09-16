@@ -46,12 +46,13 @@ namespace AZ
             : Pass(descriptor)
         {
             m_flags.m_createChildren = true;
-            if (m_passData && m_passData->m_mergeChildrenAsSubpasses)
-            {
-                AZ_Assert(RHI::RHISystemInterface::Get()->CanMergeSubpasses(),
-                    "Can not create parent pass '%s' because the active RHI can't merge subpasses.", descriptor.m_passName.GetCStr());
-                m_flags.m_mergeChildrenAsSubpasses = true;
-            }
+            m_flags.m_canBecomeASubpass = true;
+            UpdateFlagsFromPassData();
+            AZ_Warning(
+                "ParentPass",
+                !m_passData || m_passData->m_mergeChildrenAsSubpasses == static_cast<bool>(m_flags.m_mergeChildrenAsSubpasses),
+                "Ignoring merging as subpasses for ParentPass [%s] since the platform doesn't support it.",
+                GetPathName().GetCStr());
         }
 
         ParentPass::~ParentPass()
@@ -59,25 +60,6 @@ namespace AZ
             // Explicitly remove children so we call their OnOrphan function
             constexpr bool callingFromDestructor = true;
             RemoveChildren(callingFromDestructor);
-        }
-
-        // --- Child Pass Addition ---
-        void ParentPass::MarkChildAsSubpass(const Ptr<Pass>& child)
-        {
-            if (m_flags.m_mergeChildrenAsSubpasses)
-            {
-                if (auto* childRenderPass = azrtti_cast<RenderPass*>(child.get()); childRenderPass && childRenderPass->CanBecomeSubpass())
-                {
-                    childRenderPass->m_flags.m_mergeChildrenAsSubpasses = true;
-                }
-                else
-                {
-                    AZ_Warning("ParentPass",  false,
-                        "Can't merge child passes because child pass with name [%s] is NOT a mergeable RenderPass.\n",
-                        child->GetName().GetCStr());
-                    m_flags.m_mergeChildrenAsSubpasses = false;
-                }
-            }
         }
 
         void ParentPass::AddChild(const Ptr<Pass>& child, [[maybe_unused]] bool skipStateCheckWhenRunningTests)
@@ -93,9 +75,6 @@ namespace AZ
                 AZ_Assert(false, "Can't add Pass that already has a parent. Remove the Pass from it's parent before adding it to another Pass.");
                 return;
             }
-
-            // This function is a NO OP if children are not supposed to be merged as subpasses.
-            MarkChildAsSubpass(child);
 
             child->m_parentChildIndex = static_cast<uint32_t>(m_children.size());
             m_children.push_back(child);
@@ -125,9 +104,6 @@ namespace AZ
                 AZ_Assert(false, "Can't insert a child pass with invalid position");
                 return false;
             }
-
-            // This function is a NO OP if children are not supposed to be merged as subpasses.
-            MarkChildAsSubpass(child);
 
             auto insertPos = m_children.cbegin() + index;
             m_children.insert(insertPos, child);
@@ -364,6 +340,52 @@ namespace AZ
             }
         }
 
+        void ParentPass::OnDescendantChange(PassDescendantChangeFlags flags)
+        {
+            if (static_cast<uint32_t>(GetPassState()) > static_cast<uint32_t>(PassState::Building))
+            {
+                UpdateFlagsFromPassData();
+                if (m_flags.m_mergeChildrenAsSubpasses)
+                {
+                    QueueForBuildAndInitialization();
+                }
+            }
+
+            Pass::OnDescendantChange(flags);
+        }
+
+        void ParentPass::UpdateChildrenFlags()
+        {
+            if (m_flags.m_mergeChildrenAsSubpasses)
+            {
+                if (CanBecomeSubpass())
+                {
+                    // Disable all descendants to merge as subpasses, since this parent pass
+                    // will do the merging for all descendants. 
+                    ClearMergeAsSubpassesFlag();
+                    // ClearMergeAsSubpassesFlag will remove the flag from this pass so
+                    // we just enable it again.
+                    m_flags.m_mergeChildrenAsSubpasses = true;
+                }
+                else
+                {
+                    m_flags.m_mergeChildrenAsSubpasses = false;
+                }
+            }
+        }
+
+        void ParentPass::UpdateFlagsFromPassData()
+        {
+            if (m_passData)
+            {
+                if (m_passData->m_mergeChildrenAsSubpasses)
+                {                   
+                    m_flags.m_mergeChildrenAsSubpasses = RHI::RHISystemInterface::Get()->CanMergeSubpasses();
+                }
+                m_flags.m_canBecomeASubpass = m_passData->m_canBecomeASubpass;
+            }
+        }
+
         // --- Pass behavior functions ---
 
         void ParentPass::CreateChildPasses()
@@ -394,14 +416,12 @@ namespace AZ
         void ParentPass::BuildInternal()
         {
             CreateChildPasses();
+            UpdateChildrenFlags();
 
             for (const Ptr<Pass>& child : m_children)
             {
                 child->Build();
             }
-
-            // Only applicable is m_flags.m_mergeChildrenAsSubpasses is true (checked inside).
-            CreateRenderAttachmentConfigurationForSubpasses();
         }
 
         void ParentPass::OnInitializationFinishedInternal()
@@ -528,60 +548,150 @@ namespace AZ
             for (auto& childPass : m_children)
             {
                 childPass->m_flags.m_mergeChildrenAsSubpasses = false;
+                if (auto* parentPass = azrtti_cast<ParentPass*>(childPass.get()))
+                {
+                    parentPass->ClearMergeAsSubpassesFlag();
+                }
             }
         }
 
-        void ParentPass::CreateRenderAttachmentConfigurationForSubpasses()
+        bool ParentPass::CreateRenderAttachmentConfigurationForSubpasses()
         {
             if (!m_flags.m_mergeChildrenAsSubpasses)
             {
                 // This is the most common scenario.
-                return;
+                return false;
             }
 
-            // We validated already during AddChild() and InsertChild() that all children are
-            // mergeable RenderPass instances.
-            const auto numSubpasses = m_children.size();
-            if (numSubpasses < 2)
-            {
-                AZ_Error("ParentPass", false, "A parent pass that merges its children must have at least two children");
-                m_flags.m_mergeChildrenAsSubpasses = false;
-                return;
-            }
-
-            bool allChildrenBuiltLayout = true;
             RHI::RenderAttachmentLayoutBuilder builder;
-            for (auto subpassIndex = 0;  subpassIndex < numSubpasses; subpassIndex++)
+            bool result = CreateRenderAttachmentConfigurationForSubpasses(builder);
+            if (!result)
             {
-                RenderPass* renderPassChild = azrtti_cast<RenderPass*>(m_children[subpassIndex].get());
-                AZ_Assert( (renderPassChild != nullptr) && renderPassChild->CanBecomeSubpass(), "When merging subpasses, all children must be mergeable RenderPass");
-                auto* layoutBuilder = builder.AddSubpass();
-                if (!renderPassChild->BuildSubpassLayout(*layoutBuilder))
+                AZ_Error("ParentPass", false, "Failed to create render attachment configuration for subpasses");
+                m_flags.m_mergeChildrenAsSubpasses = false;
+                return false;
+            }
+
+            RHI::RenderAttachmentLayout builtRenderAttachmentLayout;
+            auto buildRet = builder.End(builtRenderAttachmentLayout);
+            if (buildRet != RHI::ResultCode::Success)
+            {
+                AZ_Error("ParentPass", false, "Failed to build render attachment layout for subpasses");
+                m_flags.m_mergeChildrenAsSubpasses = false;
+                return false;
+            }
+
+            RHI::RenderAttachmentConfiguration configuration = { builtRenderAttachmentLayout, 0 };
+            SetRenderAttachmentConfiguration(configuration, GetPathName());
+            return true;
+        }
+
+        bool ParentPass::CreateRenderAttachmentConfigurationForSubpasses(RHI::RenderAttachmentLayoutBuilder& builder)
+        {
+            for (auto i = 0; i < m_children.size(); i++)
+            {
+                if (!m_children[i]->IsEnabled())
                 {
-                    AZ_Error("ParentPass", false, "RenderPass [%s] failed to build its subpass layout.\n", renderPassChild->GetName().GetCStr());
-                    allChildrenBuiltLayout = false;
-                    break;
+                    continue;
+                }
+
+                if (RenderPass* renderChild = azrtti_cast<RenderPass*>(m_children[i].get()))
+                {
+                    if (renderChild->m_attachmentBindings.empty())
+                    {
+                        continue;
+                    }
+
+                    auto* subPassBuilder = builder.AddSubpass();
+                    if (!renderChild->BuildSubpassLayout(*subPassBuilder) || !subPassBuilder->HasAttachments())
+                    {
+                        AZ_Error(
+                            "ParentPass", false, "RenderPass [%s] failed to build its subpass layout.\n", renderChild->GetName().GetCStr());
+                        return false;
+                    }
+                }
+                else if (ParentPass* parentChild = azrtti_cast<ParentPass*>(m_children[i].get()))
+                {
+                    if (!parentChild->CreateRenderAttachmentConfigurationForSubpasses(builder))
+                    {
+                        AZ_Error(
+                            "ParentPass",
+                            false,
+                            "RenderPass [%s] failed to build its subpass layout.\n",
+                            m_children[i]->GetName().GetCStr());
+                        return false;
+                    }
+                }
+                else
+                {
+                    AZ_Error("ParentPass", false, "Trying to merge RenderPass [%s] as subpass.\n", m_children[i]->GetName().GetCStr());
+                    return false;
                 }
             }
+            return true;
+        }
 
-            if (!allChildrenBuiltLayout)
+        void ParentPass::SetRenderAttachmentConfiguration(
+            RHI::RenderAttachmentConfiguration& configuration, const AZ::RHI::ScopeGroupId& subpassGroupId)
+        {
+            for (auto i = 0; i < m_children.size(); i++)
             {
-                ClearMergeAsSubpassesFlag();
-                return;
-            }
-
-            auto renderAttachmentLayout = AZStd::make_shared<RHI::RenderAttachmentLayout>();
-            RHI::ResultCode result = builder.End(*renderAttachmentLayout.get());
-            if (result == RHI::ResultCode::Success)
-            {
-                // Loop again across all children and set their RenderAttachmentConfiguration
-                for (auto subpassIndex = 0; subpassIndex < numSubpasses; subpassIndex++)
+                if (!m_children[i]->IsEnabled())
                 {
-                    RenderPass* renderPassChild = azrtti_cast<RenderPass*>(m_children[subpassIndex].get());
-                    renderPassChild->SetRenderAttachmentLayout(renderAttachmentLayout, subpassIndex);
+                    continue;
+                }
+
+                if (RenderPass* renderChild = azrtti_cast<RenderPass*>(m_children[i].get()))
+                {
+                    if (renderChild->m_attachmentBindings.empty())
+                    {
+                        continue;
+                    }
+
+                    renderChild->SetRenderAttachmentConfiguration(configuration, subpassGroupId);
+                    configuration.m_subpassIndex++;
+                }
+                else if (ParentPass* parentChild = azrtti_cast<ParentPass*>(m_children[i].get()))
+                {
+                    parentChild->SetRenderAttachmentConfiguration(configuration, subpassGroupId);
+                }
+                else
+                {
+                    AZ_Error("PassSystem", false, "Invalid pass for merging as subpass");
                 }
             }
+        }
 
+        bool ParentPass::CanBecomeSubpass() const
+        {
+            if (!m_flags.m_canBecomeASubpass)
+            {
+                return false;
+            }
+
+            for (auto i = 0; i < m_children.size(); i++)
+            {
+                if (!m_children[i]->IsEnabled())
+                {
+                    continue;
+                }
+
+                bool canBecomeASubpass = false;
+                if (RenderPass* renderChild = azrtti_cast<RenderPass*>(m_children[i].get()))
+                {
+                    canBecomeASubpass = renderChild->CanBecomeSubpass();
+                }
+                else if (ParentPass* parentChild = azrtti_cast<ParentPass*>(m_children[i].get()))
+                {
+                    canBecomeASubpass = parentChild->CanBecomeSubpass();
+                }
+
+                if (!canBecomeASubpass)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         // --- Debug functions ---
@@ -616,6 +726,18 @@ namespace AZ
                 pipelineStatisticsResultArray.emplace_back(childPass->GetLatestPipelineStatisticsResult());
             }
             return PipelineStatisticsResult(pipelineStatisticsResultArray);
+        }
+
+        void ParentPass::OnBuildFinishedInternal()
+        {
+            bool allowSubpassMerging = false;
+            if (auto* renderPipeline = GetRenderPipeline())
+            {
+                allowSubpassMerging = renderPipeline->SubpassMergingSupported();
+            }
+            m_flags.m_mergeChildrenAsSubpasses &= allowSubpassMerging;
+            // Only applicable is m_flags.m_mergeChildrenAsSubpasses is true (checked inside).
+            CreateRenderAttachmentConfigurationForSubpasses();
         }
 
     }   // namespace RPI

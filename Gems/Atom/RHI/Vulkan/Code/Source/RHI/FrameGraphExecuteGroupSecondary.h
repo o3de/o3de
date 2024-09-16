@@ -49,6 +49,8 @@ namespace AZ::Vulkan
         //! Set the render context and subpass that will be used by this execute group.
         void SetRenderContext(const RenderPassContext& renderPassContext, uint32_t subpassIndex = 0);
 
+        const Scope* GetScope() const;
+
     private:
         //////////////////////////////////////////////////////////////////////////
         // RHI::ExecuteContextGroupBase

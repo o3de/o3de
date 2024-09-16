@@ -168,20 +168,26 @@ namespace AZ
             EraseResourceFromList(m_epilogueBarriers, predicateBarriers);
         }
 
-        void BufferPoolResolver::QueuePrologueTransitionBarriers(CommandList& commandList)
+        void BufferPoolResolver::QueuePrologueTransitionBarriers(CommandList& commandList, BarrierTypeFlags mask)
         {
-            EmmitBarriers(commandList, m_prologueBarriers);
+            EmmitBarriers(commandList, m_prologueBarriers, mask);
         }
 
-        void BufferPoolResolver::QueueEpilogueTransitionBarriers(CommandList& commandList)
+        void BufferPoolResolver::QueueEpilogueTransitionBarriers(CommandList& commandList, BarrierTypeFlags mask)
         {
-            EmmitBarriers(commandList, m_epilogueBarriers);
+            EmmitBarriers(commandList, m_epilogueBarriers, mask);
         }
 
-        void BufferPoolResolver::EmmitBarriers(CommandList& commandList, const AZStd::vector<BarrierInfo>& barriers) const
+        void BufferPoolResolver::EmmitBarriers(
+            CommandList& commandList, const AZStd::vector<BarrierInfo>& barriers, BarrierTypeFlags mask) const
         {
             for (const BarrierInfo& barrierInfo : barriers)
             {
+                if (!RHI::CheckBitsAll(mask, ConvertBarrierType(VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER)))
+                {
+                    continue;
+                }
+
                 m_device.GetContext().CmdPipelineBarrier(
                     commandList.GetNativeCommandBuffer(),
                     barrierInfo.m_srcStageMask,

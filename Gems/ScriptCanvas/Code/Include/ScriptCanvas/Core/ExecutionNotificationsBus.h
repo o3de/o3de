@@ -18,26 +18,6 @@
 #include <AzCore/std/time.h>
 #include <ScriptCanvas/Execution/ExecutionStateDeclarations.h>
 
-#if defined(SC_EXECUTION_TRACE_ENABLED)
-#define SC_EXECUTION_TRACE_THREAD_BEGUN(arg) ;
-#define SC_EXECUTION_TRACE_THREAD_ENDED(arg) ;
-#define SC_EXECUTION_TRACE_GRAPH_ACTIVATED(arg) ScriptCanvas::ExecutionNotificationsBus::Broadcast(&ScriptCanvas::ExecutionNotifications::GraphActivated, arg);
-#define SC_EXECUTION_TRACE_GRAPH_DEACTIVATED(arg) ScriptCanvas::ExecutionNotificationsBus::Broadcast(&ScriptCanvas::ExecutionNotifications::GraphDeactivated, arg);
-#define SC_EXECUTION_TRACE_SIGNAL_INPUT(node, arg) if (IsGraphObserved(node.GetGraphEntityId(), node.GetGraphIdentifier())) { ScriptCanvas::ExecutionNotificationsBus::Broadcast(&ScriptCanvas::ExecutionNotifications::NodeSignaledInput, arg); }
-#define SC_EXECUTION_TRACE_SIGNAL_OUTPUT(node, arg) if (IsGraphObserved(node.GetGraphEntityId(), node.GetGraphIdentifier())) { ScriptCanvas::ExecutionNotificationsBus::Broadcast(&ScriptCanvas::ExecutionNotifications::NodeSignaledOutput, arg); }
-#define SC_EXECUTION_TRACE_VARIABLE_CHANGE(id, arg) if (IsVariableObserved(id)) { ScriptCanvas::ExecutionNotificationsBus::Broadcast(&ScriptCanvas::ExecutionNotifications::VariableChanged, arg); } 
-#define SC_EXECUTION_TRACE_ANNOTATE_NODE(node, arg) if (IsGraphObserved(node.GetGraphEntityId(), node.GetGraphIdentifier())) { ScriptCanvas::ExecutionNotificationsBus::Broadcast(&ScriptCanvas::ExecutionNotifications::AnnotateNode, arg); }
-#else
-#define SC_EXECUTION_TRACE_THREAD_BEGUN(arg) ;
-#define SC_EXECUTION_TRACE_THREAD_ENDED(arg) ;
-#define SC_EXECUTION_TRACE_GRAPH_ACTIVATED(arg) ;
-#define SC_EXECUTION_TRACE_GRAPH_DEACTIVATED(arg) ;
-#define SC_EXECUTION_TRACE_SIGNAL_INPUT(node, arg) ;
-#define SC_EXECUTION_TRACE_SIGNAL_OUTPUT(node, arg) ;
-#define SC_EXECUTION_TRACE_VARIABLE_CHANGE(id, arg) ;
-#define SC_EXECUTION_TRACE_ANNOTATE_NODE(node, arg) ;
-#endif
-
 namespace AZ
 {
     class ReflectContext;
@@ -47,21 +27,20 @@ namespace ScriptCanvas
 {
     class ExecutionState;
 
+    // Graph info made to be serialized and sent over the network
     struct GraphInfo
     {
         AZ_CLASS_ALLOCATOR(GraphInfo, AZ::SystemAllocator);
-        AZ_RTTI(GraphInfo, "{8D40A70D-3846-46B4-B0BF-22B5D0F55ADC}");
+        AZ_RTTI(GraphInfo, "{5E7ED577-2F0E-4BC2-97A0-B3B7307EDA26}");
 
-        ExecutionStateWeakConstPtr m_executionState;
+        NamedActiveEntityId m_runtimeEntity;
+        GraphIdentifier m_graphIdentifier;
 
         GraphInfo() = default;
-        virtual ~GraphInfo() = default;
-
         GraphInfo(const GraphInfo&) = default;
-
-        GraphInfo(ExecutionStateWeakConstPtr executionState)
-            : m_executionState(executionState)
-        {}
+        GraphInfo(ExecutionStateWeakConstPtr executionState);
+        GraphInfo(const NamedActiveEntityId& runtimeEntity, const GraphIdentifier& graphIdentifier);
+        virtual ~GraphInfo() = default;
 
         bool operator==(const GraphInfo& graphInfo) const;
 
@@ -112,8 +91,9 @@ namespace AZStd
 
         AZ_FORCE_INLINE size_t operator()(const argument_type& argument) const
         {
-            auto voidPtr = reinterpret_cast<const void*>(argument.m_executionState);
-            AZStd::size_t graphInfoHash = AZStd::hash<const void*>()(voidPtr);
+            AZStd::size_t graphInfoHash = AZStd::hash<AZ::EntityId>()(argument.m_runtimeEntity);
+            AZStd::hash_combine(graphInfoHash, argument.m_graphIdentifier);
+
             return graphInfoHash;
         }
     };
@@ -192,6 +172,11 @@ namespace ScriptCanvas
     {
         AZ_TYPE_INFO(OutputSignalTag, "{6E8D6FA8-92C5-4EEB-82DE-8CF4293F83E6}");
         static const char* ToString() { return "OutputSignal"; }
+    };
+    struct ReturnSignalTag
+    {
+        AZ_TYPE_INFO(ReturnSignalTag, "{CFA657CE-6073-4D3C-B5EF-B7BA624A4C19}");
+        static const char* ToString() { return "ReturnSignal"; }
     };
     struct AnnotateNodeSignalTag
     {
@@ -504,6 +489,7 @@ namespace ScriptCanvas
     using GraphDeactivation = TaggedParent<GraphDeactivationTag, ActivationInfo>;
     using InputSignal = TaggedParent<InputSignalTag, Signal>;
     using OutputSignal = TaggedParent<OutputSignalTag, Signal>;
+    using ReturnSignal = TaggedParent<ReturnSignalTag, Signal>;
 
     // Base class to handle some basic information
     struct GraphInfoEventBase
@@ -576,12 +562,13 @@ namespace ScriptCanvas
     public:
         virtual void AnnotateNode(const AnnotateNodeSignal&) = 0;
         virtual void GraphActivated(const GraphActivation&) = 0;
-        virtual void GraphDeactivated(const GraphActivation&) = 0;
+        virtual void GraphDeactivated(const GraphDeactivation&) = 0;
         virtual void RuntimeError(const ExecutionState& executionState, const AZStd::string_view& description) = 0;
-        virtual bool IsGraphObserved(const ExecutionState& executionState) = 0;
+        virtual bool IsGraphObserved(const AZ::EntityId& entityId, const GraphIdentifier& identifier) = 0;
         virtual bool IsVariableObserved(const VariableId&) = 0;
         virtual void NodeSignaledOutput(const OutputSignal&) = 0;
         virtual void NodeSignaledInput(const InputSignal&) = 0;
+        virtual void GraphSignaledReturn(const ReturnSignal&) = 0;
         virtual void NodeStateUpdated(const NodeStateChange&) = 0;
         virtual void VariableChanged(const VariableChange&) = 0;
     };
@@ -600,6 +587,7 @@ namespace ScriptCanvas
         virtual void Visit(NodeStateChange&) = 0;
         virtual void Visit(InputSignal&) = 0;
         virtual void Visit(OutputSignal&) = 0;
+        virtual void Visit(ReturnSignal&) = 0;
         virtual void Visit(VariableChange&) = 0;
         virtual void Visit(AnnotateNodeSignal&) = 0;
 
@@ -634,8 +622,8 @@ namespace AZStd
 
         AZ_FORCE_INLINE size_t operator()(const argument_type& argument) const
         {
-            auto voidPtr = reinterpret_cast<const void*>(argument.m_executionState);
-            AZStd::size_t result = AZStd::hash<const void*>()(voidPtr);
+            result_type result = AZStd::hash<const AZ::u64>()(static_cast<AZ::u64>(argument.m_runtimeEntity));
+            AZStd::hash_combine(result, argument.m_graphIdentifier);
             AZStd::hash_combine(result, argument.m_endpoint);
             return result;
         }

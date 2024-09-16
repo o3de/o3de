@@ -6,12 +6,13 @@
  *
  */
 
-#include <RHI/RayTracingPipelineState.h>
-#include <RHI/Device.h>
-#include <RHI/SpecializationConstantData.h>
 #include <Atom/RHI.Reflect/SamplerState.h>
-#include <Atom/RHI.Reflect/Vulkan/ShaderStageFunction.h>
 #include <Atom/RHI.Reflect/VkAllocator.h>
+#include <Atom/RHI.Reflect/Vulkan/ShaderStageFunction.h>
+#include <RHI/Device.h>
+#include <RHI/RayTracingPipelineState.h>
+#include <RHI/ReleaseContainer.h>
+#include <RHI/SpecializationConstantData.h>
 
 namespace AZ
 {
@@ -248,7 +249,8 @@ namespace AZ
         {
             Device& device = static_cast<Device&>(GetDevice());
 
-            device.GetContext().DestroyPipeline(device.GetNativeDevice(), m_pipeline, VkSystemAllocator::Get());
+            device.QueueForRelease(
+                new ReleaseContainer<VkPipeline>(device.GetNativeDevice(), m_pipeline, device.GetContext().DestroyPipeline));
 
             for (auto& shaderModule : m_shaderModules)
             {

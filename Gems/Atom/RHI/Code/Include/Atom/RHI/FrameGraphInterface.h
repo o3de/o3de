@@ -287,6 +287,11 @@ namespace AZ::RHI
             m_frameGraph.SetHardwareQueueClass(hardwareQueueClass);
         }
 
+        void SetGroupId(const ScopeGroupId& groupId)
+        {
+            m_frameGraph.SetGroupId(groupId);
+        }
+
     private:
 
         //! Reference to the underlying FrameGraph. All function calls are forwarded to this member

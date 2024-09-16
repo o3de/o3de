@@ -68,6 +68,7 @@ namespace AZ
                 VkImageLayout m_initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                 VkImageLayout m_finalLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                 RHI::ClearValue m_clearValue;
+                int m_lastSubpassUsage = -1;
             };
             AZStd::unordered_map<RHI::AttachmentId, FramebufferInfo> m_framebufferAttachments;
             AZStd::vector<AZStd::shared_ptr<RenderPass::RenderAttachmentLayout>> m_subpassAttachmentsLayout;

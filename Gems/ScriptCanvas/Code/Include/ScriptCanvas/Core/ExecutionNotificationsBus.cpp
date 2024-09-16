@@ -10,6 +10,7 @@
 #include "ExecutionNotificationsBus.h"
 
 #include <ScriptCanvas/Execution/ExecutionState.h>
+#include <ScriptCanvas/Execution/RuntimeComponent.h>
 
 namespace ScriptCanvas
 {
@@ -22,10 +23,15 @@ namespace ScriptCanvas
             NamedSlotId::Reflect(context);
 
             serializeContext->Class<GraphIdentifier>()
-
                 ->Version(0)
                 ->Field("uniqueIdentifier", &GraphIdentifier::m_componentId)
                 ->Field("assetId", &GraphIdentifier::m_assetId)
+                ;
+
+            serializeContext->Class<GraphInfo>()
+                ->Version(0)
+                ->Field("graphIdentifier", &GraphInfo::m_graphIdentifier)
+                ->Field("runtimeEntity", &GraphInfo::m_runtimeEntity)
                 ;
 
             serializeContext->Class<ActiveGraphStatus>()
@@ -37,10 +43,6 @@ namespace ScriptCanvas
                 ->Version(0)
                 ->Field("NamedEntityId", &ActiveEntityStatus::m_namedEntityId)
                 ->Field("ActiveGraphs", &ActiveEntityStatus::m_activeGraphs)
-                ;
-
-            serializeContext->Class<GraphInfo>()
-                ->Version(0)
                 ;
 
             serializeContext->Class<DatumValue>()
@@ -96,6 +98,7 @@ namespace ScriptCanvas
                 ;
 
             OutputSignal::Reflect(context);
+            ReturnSignal::Reflect(context);
             VariableChange::Reflect(context);
         }
     }
@@ -185,14 +188,34 @@ namespace ScriptCanvas
         return AZStd::string::format("Asset: %s, ComponentId: %llu", m_assetId.ToString<AZStd::string>().data(), m_componentId);
     }
 
+    GraphInfo::GraphInfo(ExecutionStateWeakConstPtr executionState)
+    {
+        const auto userData = AZStd::any_cast<const RuntimeComponentUserData>(&executionState->GetUserData());
+        if (!userData)
+        {
+            AZ_Error("GraphInfo", false, "Failed to get user data from graph. Constructed with invalid values");
+            return;
+        }
+
+        const GraphIdentifier graphIdentifier(executionState->GetAssetId(), userData->component.GetId());
+        m_graphIdentifier = graphIdentifier;
+        m_runtimeEntity = userData->entity;
+    }
+
+    GraphInfo::GraphInfo(const NamedActiveEntityId& runtimeEntity, const GraphIdentifier& graphIdentifier)
+        : m_runtimeEntity(runtimeEntity)
+        , m_graphIdentifier(graphIdentifier)
+    {
+    }
+
     bool GraphInfo::operator==(const GraphInfo& other) const
     {
-        return m_executionState == other.m_executionState;
+        return m_graphIdentifier == other.m_graphIdentifier;
     }
 
     AZStd::string GraphInfo::ToString() const
     {
-        return m_executionState->ToString();
+        return AZStd::string::format("GraphIdentifier: %s", m_graphIdentifier.ToString().data());
     }
 
     NodeStateChange::NodeStateChange()
@@ -283,7 +306,8 @@ namespace ScriptCanvas
 
     bool Signal::operator==(const Signal& other) const
     {
-        return m_executionState == other.m_executionState
+        return m_runtimeEntity == other.m_runtimeEntity
+            && m_graphIdentifier == other.m_graphIdentifier
             && m_endpoint == other.m_endpoint;
     }    
 

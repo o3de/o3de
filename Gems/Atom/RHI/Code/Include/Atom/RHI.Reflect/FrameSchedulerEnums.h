@@ -45,7 +45,14 @@ namespace AZ::RHI
         DisableAttachmentAliasing = AZ_BIT(2),
 
         /// Disables aliasing of transient attachment memory during async queue regions.
-        DisableAttachmentAliasingAsyncQueue = AZ_BIT(3)
+        DisableAttachmentAliasingAsyncQueue = AZ_BIT(3),
+
+        /// Enables aliasing of memory for scopes in the same Graph Group (on some platforms, like Vulkan, aliased
+        /// resources cannot be synchronized when they are in the same group).
+        IntraGroupAliasing = AZ_BIT(4),
+
+        /// Disables optimizing load store actions of transient attachmetns
+        DisableLoadStoreActionOptimization = AZ_BIT(5)
     };
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::FrameSchedulerCompileFlags)
 

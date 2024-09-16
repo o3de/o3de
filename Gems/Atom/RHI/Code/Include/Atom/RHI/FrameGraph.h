@@ -134,6 +134,7 @@ namespace AZ::RHI
         void WaitFence(Fence& fence);
         void SetEstimatedItemCount(uint32_t itemCount);
         void SetHardwareQueueClass(HardwareQueueClass hardwareQueueClass);
+        void SetGroupId(const ScopeGroupId& groupId);
 
         //! Declares a single color attachment for use on the current scope.             
         ResultCode UseColorAttachment(const ImageScopeAttachmentDescriptor& descriptor)
@@ -223,32 +224,19 @@ namespace AZ::RHI
             ScopeAttachmentStage stage,
             const BufferScopeAttachmentDescriptor& descriptor);
 
-
-        //! @param requiresSortForSubpasses If true, a second sort is executed after the topological sort
-        //!        that makes sure subpasses get grouped consecutively.
-        ResultCode TopologicalSort(bool requiresSortForSubpasses);            
+        ResultCode TopologicalSort();            
             
-        // The type of edge connection between two node graphs.
-        enum class GraphEdgeType : uint16_t
-        {
-            DifferentGroup, // Edge between nodes from different groups.
-            SameGroup       // Edge between nodes from the same group. Nodes in the same group
-                            // share the same RenderAttachmentLayout. One use case is using
-                            // multiple subpasses connected by SubpassInput attachments.
-        };
-
-        void InsertEdge(Scope& producer, Scope& consumer, GraphEdgeType edgeType = GraphEdgeType::DifferentGroup);
+        void InsertEdge(Scope& producer, Scope& consumer);
 
         struct GraphEdge
         {
             bool operator== (const GraphEdge& rhs) const
             {
-                return m_producerIndex == rhs.m_producerIndex && m_consumerIndex == rhs.m_consumerIndex && m_type == rhs.m_type;
+                return m_producerIndex == rhs.m_producerIndex && m_consumerIndex == rhs.m_consumerIndex;
             }
 
             uint32_t m_producerIndex;
             uint32_t m_consumerIndex;
-            GraphEdgeType m_type = GraphEdgeType::DifferentGroup;
         };
 
         struct GraphNode
@@ -261,6 +249,7 @@ namespace AZ::RHI
             AZStd::vector<Scope*> m_producers;
             AZStd::vector<Scope*> m_consumers;
             uint16_t m_unsortedProducerCount = 0;
+            ScopeGroupId m_scopeGroupId;
         };
 
         FrameGraphAttachmentDatabase m_attachmentDatabase;
@@ -272,10 +261,6 @@ namespace AZ::RHI
         bool m_isCompiled = false;
         bool m_isBuilding = false;
         size_t m_frameCount = 0;
-        //! Becomes true if the Graph contains Subpasses.
-        //! This will be used as a hint for the Topological Sort to do a second sort
-        //! that groups Subpasses consecutively.
-        bool m_requiresSortForSubpasses = false;
     };
 
     template<class T>

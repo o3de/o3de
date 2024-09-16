@@ -9,9 +9,14 @@
 
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
+#include <Atom/RHI.Reflect/ScopeId.h>
 
 namespace AZ
 {
+    namespace RHI
+    {
+        class RenderAttachmentLayoutBuilder;
+    }
     namespace RPI
     {
         class SwapChainPass;
@@ -57,13 +62,6 @@ namespace AZ
             Ptr<PassAttachment> GetOwnedAttachment(const Name& attachmentName) const;
 
             // --- Children related functions ---
-
-            //! When PassData::m_mergeChildrenAsSubpasses is true, the ParentPass will try to merge child passes as subpasses.
-            //! Child passes do not mark themselves as mergeable, instead the ParentPass marks its children as mergeable by
-            //! calling this function.
-            //! This function makes sure @child is a RasterPass and marks it as mergeable.
-            //! if the child is NOT a RasterPass, this ParentPass clears its own flag that merges children passes.
-            void MarkChildAsSubpass(const Ptr<Pass>& child);
 
             //! Adds pass to list of children. NOTE: skipStateCheckWhenRunningTests is only used to support manual adding of passing in unit tests, do not use this variable otherwise
             void AddChild(const Ptr<Pass>& child, bool skipStateCheckWhenRunningTests = false);
@@ -137,16 +135,22 @@ namespace AZ
             //! This function will only do work if @m_flags.m_mergeChildrenAsSubpasses is true.
             //! Will loop through all children passes, make sure they are all RasterPass type,
             //! and create a common RHI::RenderAttachmentLayout that all subpasses should use.
-            void CreateRenderAttachmentConfigurationForSubpasses();
+            bool CreateRenderAttachmentConfigurationForSubpasses();
+            bool CreateRenderAttachmentConfigurationForSubpasses(AZ::RHI::RenderAttachmentLayoutBuilder& builder);
+
+            void SetRenderAttachmentConfiguration(RHI::RenderAttachmentConfiguration& configuration, const AZ::RHI::ScopeGroupId& groupId);
+
+            //! Can instances of this class be merged as subpasses?
+            bool CanBecomeSubpass() const;
 
             //! A helper function that clears m_flags.m_mergeChildrenAsSubpasses for this parent pass
-            //! and all its children.Typically called when it was requested to merge subpasses but
-            //! it was found that the subpasses are not mergeable.
+            //! and all its children.
             void ClearMergeAsSubpassesFlag();
 
         private:
             // RPI::Pass overrides...
             PipelineStatisticsResult GetPipelineStatisticsResultInternal() const override;
+            void OnBuildFinishedInternal() override;
 
             // --- Hierarchy related functions ---
 
@@ -171,6 +175,15 @@ namespace AZ
             // So now we detect clear actions on parent slots and generate a clear pass for them.
             void CreateClearPassFromBinding(PassAttachmentBinding& binding, PassRequest& clearRequest);
             void CreateClearPassesFromBindings();
+
+            // Called when a descendant has changed.
+            void OnDescendantChange(PassDescendantChangeFlags flags) override;
+
+            // Updates the m_flags for the children.
+            void UpdateChildrenFlags();
+
+            // Copies flags from the pass data to the pass.
+            void UpdateFlagsFromPassData();
         };
 
         template<typename PassType>

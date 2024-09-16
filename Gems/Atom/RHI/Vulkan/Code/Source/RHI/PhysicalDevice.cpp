@@ -186,6 +186,11 @@ namespace AZ
             return m_timelineSemaphoreFeatures;
         }
 
+        const VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT& PhysicalDevice::GetPhysicalSubpassMergeFeedbackFeatures() const
+        {
+            return m_subpassMergeFeedbackFeatures;
+        }
+
         const VkPhysicalDeviceVulkan12Features& PhysicalDevice::GetPhysicalDeviceVulkan12Features() const
         {
             return m_vulkan12Features;
@@ -335,7 +340,8 @@ namespace AZ
                 VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME,
                 VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME,
                 VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
-                VK_EXT_LOAD_STORE_OP_NONE_EXTENSION_NAME
+                VK_EXT_LOAD_STORE_OP_NONE_EXTENSION_NAME,
+                VK_EXT_SUBPASS_MERGE_FEEDBACK_EXTENSION_NAME
             } };
 
             [[maybe_unused]] uint32_t optionalExtensionCount = aznumeric_cast<uint32_t>(optionalExtensions.size());
@@ -391,6 +397,7 @@ namespace AZ
                 m_shadingRateFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR;
                 m_fragmentDensityMapFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT;
                 m_timelineSemaphoreFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES;
+                m_subpassMergeFeedbackFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBPASS_MERGE_FEEDBACK_FEATURES_EXT;
 
                 VkPhysicalDeviceFeatures2 deviceFeatures2 = {};
                 deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
@@ -410,7 +417,8 @@ namespace AZ
                       &m_rayTracingPipelineFeatures,
                       &m_shadingRateFeatures,
                       &m_fragmentDensityMapFeatures,
-                      &m_timelineSemaphoreFeatures });
+                      &m_timelineSemaphoreFeatures,
+                      &m_subpassMergeFeedbackFeatures });
 
                 context.GetPhysicalDeviceFeatures2KHR(vkPhysicalDevice, &deviceFeatures2);
                 m_deviceFeatures = deviceFeatures2.features;

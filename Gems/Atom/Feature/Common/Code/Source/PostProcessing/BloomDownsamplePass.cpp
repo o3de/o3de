@@ -120,15 +120,6 @@ namespace AZ
                 }
             }
 
-            RHI::Size targetImageSize;
-            if (m_isFullscreenPass)
-            {
-                RPI::PassAttachment* outputAttachment = GetOutputBinding(0).GetAttachment().get();
-
-                targetImageSize = outputAttachment->m_descriptor.m_image.m_size;
-                SetTargetThreadCounts(targetImageSize.m_width, targetImageSize.m_height, targetImageSize.m_depth);
-            }
-
             RHI::Size sourceImageSize;
             RPI::PassAttachment* inputAttachment = GetInputBinding(0).GetAttachment().get();
             sourceImageSize = inputAttachment->m_descriptor.m_image.m_size;
@@ -136,7 +127,7 @@ namespace AZ
             // Update shader constant
             m_shaderResourceGroup->SetConstant(m_sourceImageTexelSizeInputIndex, AZ::Vector2(1.0f / static_cast<float>(sourceImageSize.m_width), 1.0f / static_cast<float>(sourceImageSize.m_height)));
 
-            RenderPass::FrameBeginInternal(params);
+            ComputePass::FrameBeginInternal(params);
         }
     }   // namespace RPI
 }   // namespace AZ
