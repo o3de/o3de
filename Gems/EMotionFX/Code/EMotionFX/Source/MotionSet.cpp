@@ -66,6 +66,12 @@ namespace EMotionFX
             AzFramework::StringFunc::Path::GetFileName(filename.c_str(), motionName);
             motion->SetName(motionName.c_str());
         }
+#if defined (CARBONATED)
+        else
+        {
+            AZ_Error("EMotionFX", false, "Failed to load motion as file '%s'!", filename.c_str());
+        }
+#endif
 
         return motion;
     }
