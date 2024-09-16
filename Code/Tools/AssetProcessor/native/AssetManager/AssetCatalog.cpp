@@ -90,14 +90,6 @@ namespace AssetProcessor
             {
                 QMutexLocker locker(&m_registriesMutex);
                 m_registries[message.m_platform.c_str()].RegisterAsset(assetInfo.m_assetId, assetInfo);
-                for (const AZ::Data::AssetId& mapping : message.m_legacyAssetIds)
-                {
-                    if (mapping != assetInfo.m_assetId)
-                    {
-                        m_registries[assetPlatform].RegisterLegacyAssetMapping(mapping, assetInfo.m_assetId);
-                    }
-                }
-
                 m_registries[assetPlatform].SetAssetDependencies(message.m_assetId, message.m_dependencies);
 
                 using namespace AzFramework::FileTag;
@@ -142,7 +134,6 @@ namespace AssetProcessor
                 m_catalogIsDirty = true;
 
                 m_registries[assetPlatform].UnregisterAsset(message.m_assetId);
-                m_registries[assetPlatform].UnregisterLegacyAssetMappingsForAsset(message.m_assetId);
 
                 if (m_registryBuiltOnce)
                 {
@@ -534,47 +525,7 @@ namespace AssetProcessor
                     info.m_sizeBytes = productFileSize;
 
                     // also register it at the legacy id(s) if its different:
-                    AZ::Data::AssetId legacyAssetId(combined.m_legacyGuid, 0);
                     currentRegistry.RegisterAsset(assetId, info);
-
-                    if (legacyAssetId != assetId)
-                    {
-                        currentRegistry.RegisterLegacyAssetMapping(legacyAssetId, assetId);
-                    }
-
-                    AZStd::unordered_set<AZ::Data::AssetId> legacySourceAssetIds;
-
-                    if (fileExists)
-                    {
-                        auto legacySourceUuidsOutcome = AssetUtilities::GetLegacySourceUuids(sourceAsset);
-
-                        if (legacySourceUuidsOutcome)
-                        {
-                            auto legacySourceUuids = legacySourceUuidsOutcome.GetValue();
-                            legacySourceAssetIds.reserve(legacySourceUuids.size());
-
-                            for (const auto& legacyUuid : legacySourceUuids)
-                            {
-                                AZ::Data::AssetId legacySourceAssetId(legacyUuid, combined.m_subID);
-
-                                if (legacySourceAssetId != assetId)
-                                {
-                                    legacySourceAssetIds.emplace(legacySourceAssetId);
-                                    currentRegistry.RegisterLegacyAssetMapping(legacySourceAssetId, assetId);
-                                }
-                            }
-                        }
-                    }
-
-                    // now include the additional legacies based on the SubIDs by which this asset was previously referred to.
-                    for (const auto& entry : combined.m_legacySubIDs)
-                    {
-                        AZ::Data::AssetId legacySubID(combined.m_sourceGuid, entry.m_subID);
-                        if ((legacySubID != assetId) && (legacySubID != legacyAssetId) && !legacySourceAssetIds.contains(legacySubID))
-                        {
-                            currentRegistry.RegisterLegacyAssetMapping(legacySubID, assetId);
-                        }
-                    }
 
                     return true; // see them all
                 };
@@ -708,12 +659,6 @@ namespace AssetProcessor
             QMutexLocker locker(&m_registriesMutex);
             m_registries[platform].RegisterAssetDependency(assetId, newDependency);
             message.m_dependencies = AZStd::move(m_registries[platform].GetAssetDependencies(assetId));
-            legacyIds = m_registries[platform].GetLegacyMappingSubsetFromRealIds(AZStd::vector<AZ::Data::AssetId>{ assetId });
-        }
-
-        for (auto& legacyId : legacyIds)
-        {
-            message.m_legacyAssetIds.emplace_back(legacyId.first);
         }
 
         if (m_registryBuiltOnce)
@@ -757,13 +702,6 @@ namespace AssetProcessor
                 message.m_sizeBytes = assetInfo.second.m_sizeBytes;
                 message.m_dependencies = AZStd::move(currentRegistry.GetAssetDependencies(assetInfo.second.m_assetId));
 
-                const auto& legacyIds =
-                    m_registries[platform].GetLegacyMappingSubsetFromRealIds(AZStd::vector<AZ::Data::AssetId>{ assetInfo.second.m_assetId });
-
-                for (auto& legacyId : legacyIds)
-                {
-                    message.m_legacyAssetIds.emplace_back(legacyId.first);
-                }
 
                 bulkMessage.m_messages.push_back(AZStd::move(message));
             }
@@ -1708,23 +1646,6 @@ namespace AssetProcessor
         if (foundIter != registryToUse.m_assetIdToInfo.end())
         {
             return foundIter->second;
-        }
-
-        // we did not find it - try the backup mapping!
-        AssetId legacyMapping = registryToUse.GetAssetIdByLegacyAssetId(assetId);
-        if (legacyMapping.IsValid())
-        {
-            AZ::Data::AssetInfo legacyAssetInfo = GetProductAssetInfo(platformName, legacyMapping);
-            AZ_Error(
-                "O3DE_DEPRECATION_NOTICE(GHI-17861)",
-                legacyAssetInfo.m_assetType == AZ::Data::s_invalidAssetType,
-                "Deprecated asset id warning! GetProductAssetInfo could not find asset id \"%s\" and so fell back to using the legacy "
-                "asset id. \"%s\". Please look up these asset ids in AssetProcessor and recreate the asset in order to generate a new "
-                "asset id.",
-                assetId.ToFixedString().c_str(),
-                legacyMapping.ToFixedString().c_str());
-
-            return legacyAssetInfo;
         }
 
         return AssetInfo(); // not found!

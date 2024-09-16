@@ -54,6 +54,16 @@ namespace AZ::RHI
         return m_byteStride;
     }
 
+    bool DeviceStreamBufferView::operator==(const DeviceStreamBufferView& other) const
+    {
+        return (m_hash == other.m_hash) &&
+            (m_buffer == other.m_buffer) &&
+            (m_byteOffset == other.m_byteOffset) &&
+            (m_byteCount == other.m_byteCount) &&
+            (m_byteStride == other.m_byteStride);
+    }
+
+
     bool ValidateStreamBufferViews(const RHI::InputStreamLayout& inputStreamLayout, AZStd::span<const RHI::DeviceStreamBufferView> streamBufferViews)
     {
         bool ok = true;

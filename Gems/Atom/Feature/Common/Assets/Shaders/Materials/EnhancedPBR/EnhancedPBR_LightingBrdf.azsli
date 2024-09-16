@@ -71,6 +71,7 @@ real3 GetSpecularLighting_EnhancedPBR(Surface surface, LightingData lightingData
         specular = SpecularGGXMobile(lightingData.dirToCamera, dirToLight, surface.GetSpecularNormal(), surface.GetSpecularF0(), surface.roughnessA2, surface.roughnessA, surface.roughnessLinear);
 #else
         specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.GetSpecularNormal(), surface.GetSpecularF0(), lightingData.GetSpecularNdotV(), surface.roughnessA2, lightingData.multiScatterCompensation);
+#endif
     }
 
 #if ENABLE_CLEAR_COAT

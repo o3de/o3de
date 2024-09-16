@@ -19,5 +19,20 @@
           "type": "Fragment"
         }
       ]
-    }  
+    },
+    "Supervariants":
+    [
+        {
+            "Name": "",
+            "AddBuildArguments": {
+                "azslc": ["--no-subpass-input"]
+            }
+        },
+        {
+            "Name": "SubpassInput",
+            "RemoveBuildArguments": {
+                "azslc": ["--no-subpass-input"]
+            }
+        }
+    ]
 }

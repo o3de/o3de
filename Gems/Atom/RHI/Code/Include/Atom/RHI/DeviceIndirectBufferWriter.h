@@ -70,12 +70,12 @@ namespace AZ::RHI
         //! Writes a draw command into the current sequence.
         //! @param arguments The draw arguments that will be written.
         //! @return A pointer to the DeviceIndirectBufferWriter object (this).
-        DeviceIndirectBufferWriter* Draw(const DrawLinear& arguments);
+        DeviceIndirectBufferWriter* Draw(const DrawLinear& arguments, const RHI::DrawInstanceArguments& drawInstanceArgs);
 
         //! Writes a draw indexed command into the current sequence.
         //! @param arguments The draw indexed arguments that will be written.
         //! @return A pointer to the DeviceIndirectBufferWriter object (this).
-        DeviceIndirectBufferWriter* DrawIndexed(const DrawIndexed& arguments);
+        DeviceIndirectBufferWriter* DrawIndexed(const DrawIndexed& arguments, const RHI::DrawInstanceArguments& drawInstanceArgs);
 
         //! Writes a dispatch command into the current sequence.
         //! @param arguments The dispatch arguments that will be written.
@@ -135,9 +135,9 @@ namespace AZ::RHI
         /// Called when writing an index view command.
         virtual void SetIndexViewInternal(IndirectCommandIndex index, const DeviceIndexBufferView& view) = 0;
         /// Called when writing a draw command.
-        virtual void DrawInternal(IndirectCommandIndex index, const DrawLinear& arguments) = 0;
+        virtual void DrawInternal(IndirectCommandIndex index, const DrawLinear& arguments, const RHI::DrawInstanceArguments& drawInstanceArgs) = 0;
         /// Call when writing a draw indexed command.
-        virtual void DrawIndexedInternal(IndirectCommandIndex index, const RHI::DrawIndexed& arguments) = 0;
+        virtual void DrawIndexedInternal(IndirectCommandIndex index, const RHI::DrawIndexed& arguments, const RHI::DrawInstanceArguments& drawInstanceArgs) = 0;
         /// Call when writing a dispatch command.
         virtual void DispatchInternal(IndirectCommandIndex index, const DispatchDirect& arguments) = 0;
         /// Call when writing an inline constants command.

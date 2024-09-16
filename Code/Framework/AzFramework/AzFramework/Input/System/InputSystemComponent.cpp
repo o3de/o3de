@@ -231,7 +231,7 @@ namespace AzFramework
             AZ::ApplicationTypeQuery appType;
             AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
 
-            m_captureMouseCursor = (captureMouseCursor && (!appType.IsHeadless() && !appType.IsConsoleMode()) || appType.IsEditor());
+            m_captureMouseCursor = captureMouseCursor && (!appType.IsHeadless() && !appType.IsConsoleMode());
         }
 
         // Create all enabled input devices

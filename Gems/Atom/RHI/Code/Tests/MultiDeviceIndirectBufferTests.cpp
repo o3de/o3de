@@ -459,13 +459,14 @@ namespace UnitTest
                     {
                         auto index = m_signatureDescriptor.m_layout.FindCommandIndex(command.m_type);
                         EXPECT_FALSE(index.IsNull());
-                        AZ::RHI::DrawIndexed arguments(1, 2, 3, 4, 5);
+                        AZ::RHI::DrawInstanceArguments drawInstanceArgs(1, 2);
+                        AZ::RHI::DrawIndexed arguments(3, 4, 5);
                         for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
                             EXPECT_CALL(
                                 *static_cast<IndirectBufferWriter*>(writer->GetDeviceIndirectBufferWriter(deviceIndex).get()),
-                                DrawIndexedInternal(index, testing::_))
+                                DrawIndexedInternal(index, testing::_, testing::_))
                                 .Times(1);
-                        writer->DrawIndexed(arguments);
+                        writer->DrawIndexed(arguments, drawInstanceArgs);
                         break;
                     }
                 case RHI::IndirectCommandType::RootConstants:
@@ -516,10 +517,11 @@ namespace UnitTest
         // Write command on uninitialized writer
         {
             RHI::Ptr<AZ::RHI::IndirectBufferWriter> writer = aznew AZ::RHI::IndirectBufferWriter;
-            ;
-            AZ::RHI::DrawIndexed arguments(1, 2, 3, 4, 5);
+
+            AZ::RHI::DrawInstanceArguments drawInstanceArgs(1, 2);
+            AZ::RHI::DrawIndexed arguments(3, 4, 5);
             AZ_TEST_START_TRACE_SUPPRESSION;
-            writer->DrawIndexed(arguments);
+            writer->DrawIndexed(arguments, drawInstanceArgs);
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         }
 

@@ -44,8 +44,8 @@ namespace AZ
             void Resolve(CommandList& commandList) override;
             void Deactivate() override;
             void OnResourceShutdown(const RHI::DeviceResource& resource) override;
-            void QueuePrologueTransitionBarriers(CommandList& commandList) override;
-            void QueueEpilogueTransitionBarriers(CommandList& commandList) override;
+            void QueuePrologueTransitionBarriers(CommandList& commandList, BarrierTypeFlags mask) override;
+            void QueueEpilogueTransitionBarriers(CommandList& commandList, BarrierTypeFlags mask) override;
             //////////////////////////////////////////////////////////////////////
 
         private:
@@ -67,7 +67,7 @@ namespace AZ
                 bool operator==(const BarrierInfo& other) { return ::memcmp(this, &other, sizeof(BarrierInfo)) == 0; }
             };
 
-            void EmmitBarriers(CommandList& commandList, const AZStd::vector<BarrierInfo>& barriers) const;
+            void EmmitBarriers(CommandList& commandList, const AZStd::vector<BarrierInfo>& barriers, BarrierTypeFlags mask) const;
 
             AZStd::mutex m_uploadPacketsLock;
             AZStd::vector<ImageUploadPacket> m_uploadPackets;

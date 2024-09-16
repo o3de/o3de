@@ -783,9 +783,11 @@ namespace AZ::Render
             return;
         }
 
+        m_geometryView.SetDrawArguments(RHI::DrawLinear(3, 0));
+
         RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
         drawPacketBuilder.Begin(nullptr);
-        drawPacketBuilder.SetDrawArguments(RHI::DrawLinear(1, 0, 3, 0));
+        drawPacketBuilder.SetGeometryView(&m_geometryView);
 
         RHI::DrawPacketBuilder::DrawRequest drawRequest;
         drawRequest.m_listTag = m_clearShadowShader->GetDrawListTag();

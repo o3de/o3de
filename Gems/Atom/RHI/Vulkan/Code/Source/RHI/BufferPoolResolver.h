@@ -40,8 +40,8 @@ namespace AZ
             void Resolve(CommandList& commandList) override;
             void Deactivate() override;
             void OnResourceShutdown(const RHI::DeviceResource& resource) override;
-            void QueuePrologueTransitionBarriers(CommandList&) override;
-            void QueueEpilogueTransitionBarriers(CommandList&) override;
+            void QueuePrologueTransitionBarriers(CommandList&, BarrierTypeFlags mask) override;
+            void QueueEpilogueTransitionBarriers(CommandList&, BarrierTypeFlags mask) override;
             //////////////////////////////////////////////////////////////////////
 
         private:
@@ -60,7 +60,7 @@ namespace AZ
                 VkBufferMemoryBarrier m_barrier = {};
             };
 
-            void EmmitBarriers(CommandList& commandList, const AZStd::vector<BarrierInfo>& barriers) const;
+            void EmmitBarriers(CommandList& commandList, const AZStd::vector<BarrierInfo>& barriers, BarrierTypeFlags mask) const;
 
             AZStd::mutex m_uploadPacketsLock;
             AZStd::vector<BufferUploadPacket> m_uploadPackets;

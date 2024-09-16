@@ -514,8 +514,14 @@ namespace AZ
         // Calculate the determinant
         float det = (*this)(0, 0) * out(0, 0) + (*this)(1, 0) * out(0, 1) + (*this)(2, 0) * out(0, 2);
 
+        // Run singularity test
+        if (det == 0)
+        {
+            return CreateIdentity();
+        }
+
         // Divide cofactors by determinant
-        float f = (Abs(det) > Constants::Tolerance) ? 1.0f / det : 10000000.0f;
+        float f = 1.0f / det;
 
         out.SetRow(0, out.GetRow(0) * f);
         out.SetRow(1, out.GetRow(1) * f);

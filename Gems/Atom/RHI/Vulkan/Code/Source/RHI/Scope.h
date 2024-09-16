@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#include <Atom/RHI/FrameEventBus.h>
 #include <Atom/RHI/Scope.h>
 #include <Atom/RHI.Reflect/ClearValue.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -19,6 +18,11 @@
 
 namespace AZ
 {
+    namespace RHI
+    {
+        class FrameGraphExecuteContext;
+    }
+
     namespace Vulkan
     {
         class BufferView;
@@ -29,7 +33,6 @@ namespace AZ
 
         class Scope final
             : public RHI::Scope
-            , public RHI::FrameEventBus::Handler
         {
             using Base = RHI::Scope;
             friend class RenderPassBuilder;
@@ -61,14 +64,14 @@ namespace AZ
             static RHI::Ptr<Scope> Create();
             ~Scope() = default;
 
-            void Begin(CommandList& commandList) const;
-            void End(CommandList& commandList) const;
+            void Begin(CommandList& commandList, const RHI::FrameGraphExecuteContext& context) const;
+            void End(CommandList& commandList, const RHI::FrameGraphExecuteContext& context) const;
 
             //! Adds a barrier for a scope attachment resource to be emitted at a later time.
             //! Returns the barrier inserted. This barrier may have been merged with a previously inserted barrier.
             template<class T>
             const Barrier QueueAttachmentBarrier(
-                const RHI::ScopeAttachment& attachment,
+                RHI::ScopeAttachment& attachment,
                 BarrierSlot slot,
                 const VkPipelineStageFlags src,
                 const VkPipelineStageFlags dst,
@@ -77,8 +80,11 @@ namespace AZ
                 return QueueBarrierInternal(&attachment, slot, src, dst, barrier);
             }
 
+            // Collects all the memory barriers used by the scope in the provided BarrierSlot.
+            VkMemoryBarrier2 CollectMemoryBarriers(BarrierSlot slot) const;
+
             //! Execute the queued barriers into the provided commandlist.
-            void EmitScopeBarriers(CommandList& commandList, BarrierSlot slot) const;
+            void EmitScopeBarriers(CommandList& commandList, BarrierSlot slot, BarrierTypeFlags mask = BarrierTypeFlags::All) const;
             
             //! Process all clear requests needed for UAVs in the scope.
             void ProcessClearRequests(CommandList& commandList) const;
@@ -123,7 +129,7 @@ namespace AZ
                 VkPipelineStageFlags m_srcStageMask = 0;
                 VkPipelineStageFlags m_dstStageMask = 0;
                 VkDependencyFlags m_dependencyFlags = 0;
-                const RHI::ScopeAttachment* m_attachment = nullptr;
+                RHI::ScopeAttachment* m_attachment = nullptr;
 
                 VkStructureType m_type = static_cast<VkStructureType>(~0);
                 union
@@ -146,9 +152,14 @@ namespace AZ
                 // Returns false if the barrier is not needed because is a read after read access with no
                 // ownership transfer or layout transition.
                 bool IsNeeded() const;
+
+                bool operator==(const Barrier& other) const;
             };
 
             using BarrierList = AZStd::array<AZStd::vector<Barrier>, BarrierSlotCount>;
+
+            // Converts barriers to implicit subpass barriers if possible.
+            void OptimizeBarriers();
 
         private:
             struct QueryPoolAttachment
@@ -168,27 +179,26 @@ namespace AZ
             void AddQueryPoolUse(RHI::Ptr<RHI::QueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access) override;
             //////////////////////////////////////////////////////////////////////////
 
-            //////////////////////////////////////////////////////////////////////////
-            // FrameEventBus::Handler
-            void OnFrameCompileEnd(RHI::FrameGraph& frameGraph) override;
-            //////////////////////////////////////////////////////////////////////////
-
             // Returns true if a barrier can be converted to an implicit subpass barrier.
             bool CanOptimizeBarrier(const Barrier& barrier, BarrierSlot slot) const;
 
             template<class T>
             const Barrier QueueBarrierInternal(
-                const RHI::ScopeAttachment* attachment,
+                RHI::ScopeAttachment* attachment,
                 BarrierSlot slot,
                 const VkPipelineStageFlags src,
                 const VkPipelineStageFlags dst,
                 const T& barrier);
 
-            // Converts barriers to implicit subpass barriers if possible.
-            void OptimizeBarriers();
-            
             void OptimizeBarrier(const Barrier& unoptimizedBarrier, BarrierSlot slot);
             void BuildGlobalBarriers(BarrierSlot slot);
+
+            // Returns true if it's the first usage of the scope in the graph group.
+            bool IsFirstUsage(const RHI::ScopeAttachment* scopeAttachment) const;
+            // Returns true if it's the last usage of the scope in the graph group.
+            bool IsLastUsage(const RHI::ScopeAttachment* scopeAttachment) const;
+            // Returns true if the previous/next usage of the ScopeAttachment is outside of the graph group.
+            bool HasExternalConnection(const RHI::ScopeAttachment* scopeAttachment, BarrierSlot slot) const;
 
             // List of barriers that are not yet optimized.
             BarrierList m_unoptimizedBarriers;
@@ -217,7 +227,7 @@ namespace AZ
 
         template<class T>
         const Scope::Barrier Scope::QueueBarrierInternal(
-            const RHI::ScopeAttachment* attachment,
+            RHI::ScopeAttachment* attachment,
             BarrierSlot slot,
             const VkPipelineStageFlags src,
             const VkPipelineStageFlags dst,

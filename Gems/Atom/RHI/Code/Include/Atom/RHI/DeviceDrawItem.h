@@ -8,10 +8,12 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Limits.h>
-#include <Atom/RHI/DeviceStreamBufferView.h>
+#include <Atom/RHI/DeviceDrawArguments.h>
+#include <Atom/RHI/DeviceGeometryView.h>
 #include <Atom/RHI/DeviceIndexBufferView.h>
 #include <Atom/RHI/DeviceIndirectBufferView.h>
 #include <Atom/RHI/DeviceIndirectArguments.h>
+#include <Atom/RHI/DeviceStreamBufferView.h>
 #include <AzCore/std/containers/array.h>
 
 namespace AZ::RHI
@@ -25,91 +27,6 @@ namespace AZ::RHI
     template <typename T , typename NamespaceType>
     struct Handle;
 
-    struct DrawLinear
-    {
-        DrawLinear() = default;
-
-        DrawLinear(
-            uint32_t instanceCount,
-            uint32_t instanceOffset,
-            uint32_t vertexCount,
-            uint32_t vertexOffset)
-            : m_instanceCount(instanceCount)
-            , m_instanceOffset(instanceOffset)
-            , m_vertexCount(vertexCount)
-            , m_vertexOffset(vertexOffset)
-        {}
-
-        uint32_t m_instanceCount = 1;
-        uint32_t m_instanceOffset = 0;
-        uint32_t m_vertexCount = 0;
-        uint32_t m_vertexOffset = 0;
-    };
-
-    struct DrawIndexed
-    {
-        DrawIndexed() = default;
-
-        DrawIndexed(
-            uint32_t instanceCount,
-            uint32_t instanceOffset,
-            uint32_t vertexOffset,
-            uint32_t indexCount,
-            uint32_t indexOffset)
-            : m_instanceCount(instanceCount)
-            , m_instanceOffset(instanceOffset)
-            , m_vertexOffset(vertexOffset)
-            , m_indexCount(indexCount)
-            , m_indexOffset(indexOffset)
-        {}
-
-        uint32_t m_instanceCount = 1;
-        uint32_t m_instanceOffset = 0;
-        uint32_t m_vertexOffset = 0;
-        uint32_t m_indexCount = 0;
-        uint32_t m_indexOffset = 0;
-    };
-
-    using DeviceDrawIndirect = DeviceIndirectArguments;
-
-    enum class DrawType : uint8_t
-    {
-        Indexed = 0,
-        Linear,
-        Indirect
-    };
-
-    struct DeviceDrawArguments
-    {
-        AZ_TYPE_INFO(DeviceDrawArguments, "B8127BDE-513E-4D5C-98C2-027BA1DE9E6E");
-
-        DeviceDrawArguments() : DeviceDrawArguments(DrawIndexed{}) {}
-
-        DeviceDrawArguments(const DrawIndexed& indexed)
-            : m_type{DrawType::Indexed}
-            , m_indexed{indexed}
-        {}
-
-        DeviceDrawArguments(const DrawLinear& linear)
-            : m_type{DrawType::Linear}
-            , m_linear{linear}
-        {}
-
-
-        DeviceDrawArguments(const DeviceDrawIndirect& indirect)
-            : m_type{ DrawType::Indirect }
-            , m_indirect{ indirect }
-        {}
-
-        DrawType m_type;
-        union
-        {
-            DrawIndexed m_indexed;
-            DrawLinear m_linear;
-            DeviceDrawIndirect m_indirect;
-        };
-    };
-
     // A DeviceDrawItem corresponds to one draw of one mesh in one pass. Multiple draw items are bundled
     // in a DeviceDrawPacket, which corresponds to multiple draws of one mesh in multiple passes.
     // NOTE: Do not rely solely on default member initialization here, as DrawItems are bulk allocated for
@@ -119,10 +36,11 @@ namespace AZ::RHI
     {
         DeviceDrawItem() = default;
 
-        DeviceDrawArguments m_arguments;
+        DrawInstanceArguments m_drawInstanceArgs;
 
+        /// Indices of the StreamBufferViews in the GeometryView that this DrawItem will use
+        StreamBufferIndices m_streamIndices;
         uint8_t m_stencilRef = 0;
-        uint8_t m_streamBufferViewCount = 0;
         uint8_t m_shaderResourceGroupCount = 0;
         uint8_t m_rootConstantSize = 0;
         uint8_t m_scissorsCount = 0;
@@ -141,13 +59,14 @@ namespace AZ::RHI
             uint8_t m_allFlags = 1;     //< Update default value if you add flags. Also update in DeviceDrawPacketBuilder::End()
         };
 
+        // --- Geometry ---
+
+        /// The GeometryView used when drawing with an indexed draw call.
+        const DeviceGeometryView* m_geometryView = nullptr;
+
+        // --- Shader ---
+
         const DevicePipelineState* m_pipelineState = nullptr;
-
-        /// The index buffer used when drawing with an indexed draw call.
-        const DeviceIndexBufferView* m_indexBufferView = nullptr;
-
-        /// Array of stream buffers to bind (count must match m_streamBufferViewCount).
-        const DeviceStreamBufferView* m_streamBufferViews = nullptr;
 
         /// Array of shader resource groups to bind (count must match m_shaderResourceGroupCount).
         const DeviceShaderResourceGroup* const* m_shaderResourceGroups = nullptr;
@@ -157,6 +76,8 @@ namespace AZ::RHI
 
         /// Array of root constants to bind (count must match m_rootConstantSize).
         const uint8_t* m_rootConstants = nullptr;
+
+        // --- Scissor and Viewport ---
 
         /// List of scissors to be applied to this draw item only. Scissor will be restore to the previous state
         /// after the DeviceDrawItem has been processed.

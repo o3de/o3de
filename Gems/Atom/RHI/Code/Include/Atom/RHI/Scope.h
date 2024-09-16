@@ -43,6 +43,12 @@ namespace AZ::RHI
     public:
         AZ_RTTI(Scope, "{C9EB500A-EF31-46E2-98DE-62396CDBAFB1}", Object);
 
+        enum class ActivationFlags : uint32_t
+        {
+            None = 0,
+            Subpass // Scope is part of a subpass group
+        };
+
         Scope() = default;
         virtual ~Scope() = default;
 
@@ -132,7 +138,8 @@ namespace AZ::RHI
         void Init(const ScopeId& scopeId, HardwareQueueClass hardwareQueueClass = HardwareQueueClass::Graphics);
 
         //! Activates the scope for the current frame.
-        void Activate(const FrameGraph* frameGraph, uint32_t index, const GraphGroupId& groupId);
+        void Activate(
+            const FrameGraph* frameGraph, uint32_t index, const GraphGroupId& groupId, ActivationFlags activationFlags);
 
         //! Called when the scope is being compiled at the end of the graph-building phase.
         void Compile();
@@ -162,6 +169,9 @@ namespace AZ::RHI
 
         //! Adds a fence that will be signaled at the end of the scope.
         void AddFenceToSignal(Ptr<Fence> fence);
+
+        //! Returns the activation flags.
+        ActivationFlags GetActivationFlags() const;
 
     protected:
         //! Called when the scope will use a query pool during it's execution. Some platforms need this information.
@@ -259,5 +269,10 @@ namespace AZ::RHI
 
         /// The set query pools.
         AZStd::vector<Ptr<QueryPool>>                m_queryPools;
+
+        /// Flags used during activation
+        ActivationFlags m_activationFlags = ActivationFlags::None;
     };
+
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::Scope::ActivationFlags)
 }
