@@ -199,7 +199,7 @@ namespace AZ
 
             for (auto& [deviceIndex, timestampResult] : m_timestampResults)
             {
-                result.Add(timestampResult);
+                result.AddDuration(timestampResult);
             }
 
             return result;

@@ -47,6 +47,7 @@ namespace AZ
             uint64_t GetTimestampBeginInTicks() const;
 
             void Add(const TimestampResult& extent);
+            void AddDuration(const TimestampResult& extent);
 
         private:
             // the timestamp of begin and duration in ticks.
