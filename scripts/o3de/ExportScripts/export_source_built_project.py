@@ -96,12 +96,25 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     # Calculate the tools and game build paths
     default_base_path = ctx.engine_path if engine_centric else ctx.project_path
     
+    # For installed SDKs, the monolithic option depends on the build configuration that is selected since only profile shared objects and release static libraries
+    # are produced. Debug is not allowed.
     if is_installer_sdk:
-        # Check if we have any monolithic entries if building monolithic
-        if monolithic_build and not exp.has_monolithic_artifacts(ctx):
-            logger.error("Trying to create monolithic build, but no monolithic artifacts are detected in the engine installation! Please re-run the script with '--non-monolithic' and '-config profile'.")
-            raise exp.ExportProjectError("Trying to build monolithic without libraries.")
-    
+        if build_config == exp.BUILD_CONFIG_DEBUG:
+            raise exp.ExportProjectError("Exporting debug projects not supported with the O3DE SDK.")
+
+        if build_config == exp.BUILD_CONFIG_RELEASE:
+
+            # Check if we have any monolithic entries if building monolithic
+            if not exp.has_monolithic_artifacts(ctx):
+                logger.error("No monolithic artifacts are detected in the engine installation.")
+                raise exp.ExportProjectError("Trying to build monolithic without libraries.")
+
+            logger.info(f"Preparing monolithic build for export.")
+            monolithic_build = True
+
+        else:
+            logger.info(f"Preparing non-monolithic build for export.")
+            monolithic_build = False
     
     if not launcher_build_path:
         launcher_build_path = default_base_path / 'build/launcher'
