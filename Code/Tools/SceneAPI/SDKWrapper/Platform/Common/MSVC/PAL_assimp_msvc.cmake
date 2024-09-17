@@ -7,5 +7,4 @@
 #
 
 # Set compiler options specific to this compiler
-message("Gene CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /wd4777 /wd5032")

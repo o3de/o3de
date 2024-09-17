@@ -12,6 +12,8 @@ endif()
 
 set(sdkwrapper_dir ${CMAKE_CURRENT_LIST_DIR}/../SDKWrapper)
 
+
+# BEGIN: Assimp
 # Add Assimp dependency using CMake's FetchContent
 # Note: Assimp requires lowering of the warning level to compile, due to a child dependency of TinyUSDZ
 include(FetchContent)
@@ -21,10 +23,10 @@ FetchContent_Declare(
     GIT_TAG "d41b6b253d215a003ed6cfd7db197dbe7e7e8206"
 )
 
-set(ASSIMP_BUILD_ZLIB OFF)
+set(ASSIMP_BUILD_ZLIB OFF)  # Turned off because O3DE's comes with its own ZLIB 3rd Party package
 set(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
 set(ASSIMP_BUILD_USD_IMPORTER ON)
-set(ASSIMP_WARNINGS_AS_ERRORS OFF)  # No sure why this doesn't work. Warnings are still treated as error; need to add warning disabled commandline parameters to PAL_assimp_msvc.cmake
+set(ASSIMP_WARNINGS_AS_ERRORS OFF)  # Not sure why this doesn't work. Warnings are still treated as error; need to add warning disabled commandline parameters to PAL_assimp_msvc.cmake
 set(ASSIMP_BUILD_TESTS OFF)
 set(ASSIMP_INSTALL OFF)  # Disable since we're using Assimp as a sub module
 
@@ -44,14 +46,7 @@ FetchContent_MakeAvailable(assimp)
 
 # Restore compile options
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_OLD}")
-
-# Place external assimp under SDKWrapper target.
-get_property(sdkwrapper_target_root GLOBAL PROPERTY "@GEMROOT:${gem_name}@")
-ly_get_engine_relative_source_dir(${sdkwrapper_target_root} relative_sdkwrapper_target_root)
-set(assimpLibraries assimp)
-foreach(assimpLibrary ${assimpLibraries})
-    set_property(TARGET ${assimpLibrary} PROPERTY FOLDER "${relative_sdkwrapper_target_root}/External")
-endforeach()
+# END: Assimp
 
 
 ly_add_target(
@@ -70,3 +65,11 @@ ly_add_target(
         PUBLIC
             assimp
 )
+
+
+# Move the Assimp projects into the SDKWrapper module folder
+get_target_property(SDKWRAPPER_FOLDER SDKWrapper FOLDER)
+set(assimpLibraries assimp;tinyusdz;tinyusdz_static;UpdateAssimpLibsDebugSymbolsAndDLLs)
+foreach(assimpLibrary ${assimpLibraries})
+    set_property(TARGET ${assimpLibrary} PROPERTY FOLDER "${SDKWRAPPER_FOLDER}/assimp")
+endforeach()
