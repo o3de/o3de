@@ -14,7 +14,7 @@
 
 // Note that this is also the max defined in Windows.h but we'd like to avoid using windows.h
 // in headers if we can possibly avoid it.
-#define AZ_LOCALE_NAME_MAX_LENGTH 85 
+#define AZ_LOCALE_NAME_MAX_LENGTH 100 
 
 namespace AZ
 {
