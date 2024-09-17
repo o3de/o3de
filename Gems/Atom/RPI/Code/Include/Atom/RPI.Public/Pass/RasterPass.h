@@ -49,12 +49,10 @@ namespace AZ
         protected:
             explicit RasterPass(const PassDescriptor& descriptor);
 
-            //! RenderPass override.
-            bool CanBecomeSubpass() override { return true; }
-
             // Pass behavior overrides
             void Validate(PassValidationResults& validationResults) override;
             void FrameBeginInternal(FramePrepareParams params) override;
+            void InitializeInternal() override;
 
             // Scope producer functions...
             void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
@@ -67,6 +65,9 @@ namespace AZ
             // Submit draw items to the context
             virtual void SubmitDrawItems(const RHI::FrameGraphExecuteContext& context, uint32_t startIndex, uint32_t endIndex, uint32_t indexOffset) const;
 
+            // Loads the shader resource group of the pass depending on the Supervariant that the pass needs to use.
+            void LoadShaderResourceGroup();
+        
             // The draw list tag used to fetch the draw list from the views
             RHI::DrawListTag m_drawListTag;
 

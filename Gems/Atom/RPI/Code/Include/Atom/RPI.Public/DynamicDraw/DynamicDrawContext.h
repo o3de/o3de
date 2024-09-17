@@ -11,6 +11,7 @@
 #include <Atom/RHI.Reflect/Base.h> // for AZ_BITS and AZ_DEFINE_ENUM_BITWISE_OPERATORS
 
 #include <Atom/RPI.Public/PipelineState.h>
+#include <Atom/RPI.Public/SceneBus.h>
 
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 
@@ -30,13 +31,14 @@ namespace AZ
         //! DynamicDrawContext may allow some render states change or few other changes which are defined in DynamicDrawContext::DrawVariation
         class DynamicDrawContext
             : public AZStd::intrusive_base
+            , public SceneNotificationBus::Handler
         {
             friend class DynamicDrawSystem;
 
         public:
             AZ_RTTI(AZ::RPI::DynamicDrawContext, "{9F6645D7-2C64-4963-BAAB-5144E92F61E2}");
             AZ_CLASS_ALLOCATOR(DynamicDrawContext, AZ::SystemAllocator);
-            virtual ~DynamicDrawContext() = default;
+            virtual ~DynamicDrawContext();
 
             // Type of render state which can be changed for dynamic draw context
             enum class DrawStateOptions : uint32_t
@@ -199,7 +201,10 @@ namespace AZ
 
             // Get rhi pipeline state which matches current states
             const RHI::PipelineState* GetCurrentPipelineState();
-                        
+
+            // RPI::SceneNotificationBus::Handler overrides...
+            void OnPipelineStateLookupRebuilt() override;
+
             struct MultiStates
             {
                 // states available for change 

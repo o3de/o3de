@@ -78,6 +78,10 @@ namespace AZ
             //! @param previousView The previous view associates to render pipeline's view tag before the new view was set
             virtual void OnRenderPipelinePersistentViewChanged([[maybe_unused]] RenderPipeline* renderPipeline, PipelineViewTag viewTag, ViewPtr newView, ViewPtr previousView) {}
 
+            //! Notifies that the pipeline state lookup table has been rebuilt, so the pipeline state data (multisample state,
+            //! render attachment configuration, etc) for a DrawListTag may have changed. 
+            virtual void OnPipelineStateLookupRebuilt() {};
+
             //! Notifies when the PrepareRender phase is beginning
             //! This phase is when data is read from the FeatureProcessors and written to the draw lists.
             virtual void OnBeginPrepareRender() {}

@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/BufferProperty.h>
+#include <Atom/RHI/FrameGraphExecuteContext.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/ImageFrameAttachment.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
@@ -26,11 +27,6 @@
 #include <RHI/Device.h>
 #include <RHI/Conversion.h>
 #include <RHI/BufferView.h>
-#include <AzCore/Console/IConsole.h>
-
-AZ_CVAR(bool, r_vkOptimizeBarriers, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
-    "Optimize resource barriers using a single global barrier and removing not needed barriers (read after read access).\
-     Useful when debugging to see all generated barriers.");
 
 namespace AZ
 {
@@ -181,6 +177,7 @@ namespace AZ
                 AddSubresources(m_imageBarrier, other.m_imageBarrier);
                 CombineFamilyQueues(m_imageBarrier, other.m_imageBarrier);
                 FilterAccessStages(m_imageBarrier, srcSupportedAccess, dstSupportedAccess);
+                m_imageBarrier.newLayout = other.m_imageBarrier.newLayout;
                 break;
             default:
                 break;
@@ -189,7 +186,7 @@ namespace AZ
 
         bool Scope::Barrier::IsNeeded() const
         {
-            if (!r_vkOptimizeBarriers)
+            if (!RHI::CheckBitsAll(GetBarrierOptimizationFlags(), BarrierOptimizationFlags::RemoveReadAfterRead))
             {
                 return true;
             }
@@ -213,41 +210,149 @@ namespace AZ
             }
         }
 
+        bool Scope::Barrier::operator==(const Barrier& other) const
+        {
+            if (!(m_type == other.m_type && m_srcStageMask == other.m_srcStageMask && m_dstStageMask == other.m_dstStageMask &&
+                m_dependencyFlags == other.m_dependencyFlags && m_attachment == other.m_attachment))
+            {
+                return false;
+            }
+
+            switch (m_type)
+            {
+            case VK_STRUCTURE_TYPE_MEMORY_BARRIER:
+                return m_memoryBarrier == other.m_memoryBarrier;
+            case VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER:
+                return m_bufferBarrier == other.m_bufferBarrier;
+            case VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER:
+                return m_imageBarrier == other.m_imageBarrier;
+            default:
+                return false;
+            }
+        }
+
         RHI::Ptr<Scope> Scope::Create()
         {
             return aznew Scope();
         }
 
-        void Scope::Begin(CommandList& commandList) const
+        void Scope::Begin(CommandList& commandList, const RHI::FrameGraphExecuteContext& context) const
         {
+            const bool isPrologue = context.GetCommandListIndex() == 0;
             commandList.GetValidator().BeginScope(*this);
 
-            for (RHI::ResourcePoolResolver* resolverBase : GetResourcePoolResolves())
+            if (isPrologue)
             {
-                auto* resolver = static_cast<ResourcePoolResolver*>(resolverBase);
-                resolver->Resolve(commandList);
+                for (RHI::ResourcePoolResolver* resolverBase : GetResourcePoolResolves())
+                {
+                    auto* resolver = static_cast<ResourcePoolResolver*>(resolverBase);
+                    resolver->Resolve(commandList);
+                }
+
+                // Attachments in a subpass (except for first usage) have to use the vkCmdClearAttachments
+                // instead of VK_ATTACHMENT_LOAD_OP_CLEAR.
+                if (RHI::CheckBitsAll(GetActivationFlags(), RHI::Scope::ActivationFlags::Subpass))
+                {
+                    const Framebuffer* framebuffer = commandList.GetActiveFramebuffer();
+                    if (framebuffer)
+                    {
+                        AZStd::vector<VkClearAttachment> clearAttachments;
+                        AZStd::vector<VkClearRect> clearRects;
+                        for (auto imageAttachment : GetImageAttachments())
+                        {
+                            const auto& loadStoreAction = imageAttachment->GetScopeAttachmentDescriptor().m_loadStoreAction;
+                            bool clear = loadStoreAction.m_loadAction == RHI::AttachmentLoadAction::Clear;
+                            bool clearStencil = loadStoreAction.m_loadActionStencil == RHI::AttachmentLoadAction::Clear;
+                            if (IsRenderAttachmentUsage(imageAttachment->GetUsage()) && (clear || clearStencil))
+                            {
+                                // Check that if it's the first usage of the attachment in the renderpass.
+                                // On first usage we can use VK_ATTACHMENT_LOAD_OP_CLEAR.
+                                if (!IsFirstUsage(imageAttachment))
+                                {
+                                    const auto& descriptor = imageAttachment->GetDescriptor();
+                                    RHI::ImageAspectFlags aspectFlags = descriptor.GetViewDescriptor().m_aspectFlags;
+                                    if (!clear)
+                                    {
+                                        aspectFlags =
+                                            RHI::ResetBits(aspectFlags, RHI::ImageAspectFlags::Color | RHI::ImageAspectFlags::Depth);
+                                    }
+                                    if (!clearStencil)
+                                    {
+                                        aspectFlags = RHI::ResetBits(aspectFlags, RHI::ImageAspectFlags::Stencil);
+                                    }
+                                    // Find the index of the attachment in the framebuffer.
+                                    auto attachmentIndex = framebuffer->FindImageViewIndex(*imageAttachment);
+                                    AZ_Assert(
+                                        attachmentIndex || !RHI::CheckBitsAll(aspectFlags, RHI::ImageAspectFlags::Color),
+                                        "Failed to find attachment index for attachment %s",
+                                        imageAttachment->GetScopeAttachmentDescriptor().m_attachmentId.GetCStr());
+
+                                    VkClearAttachment& clearAttachment = clearAttachments.emplace_back();
+                                    clearAttachment.aspectMask = ConvertImageAspectFlags(aspectFlags);
+                                    clearAttachment.colorAttachment = attachmentIndex.value_or(0);
+                                    FillClearValue(loadStoreAction.m_clearValue, clearAttachment.clearValue);
+
+                                    VkClearRect& clearRect = clearRects.emplace_back();
+                                    clearRect.baseArrayLayer = 0;
+                                    clearRect.layerCount = framebuffer->GetSize().m_depth;
+                                    clearRect.rect.offset = {};
+                                    clearRect.rect.extent.width = framebuffer->GetSize().m_width;
+                                    clearRect.rect.extent.height = framebuffer->GetSize().m_height;
+                                }
+                            }
+                        }
+
+                        if (!clearAttachments.empty())
+                        {
+                            static_cast<Device&>(commandList.GetDevice())
+                                .GetContext()
+                                .CmdClearAttachments(
+                                    commandList.GetNativeCommandBuffer(),
+                                    aznumeric_caster(clearAttachments.size()),
+                                    clearAttachments.data(),
+                                    aznumeric_caster(clearRects.size()),
+                                    clearRects.data());
+                        }
+                    }
+                }
             }
         }
 
-        void Scope::End(CommandList& commandList) const
+        void Scope::End(CommandList& commandList, [[maybe_unused]] const RHI::FrameGraphExecuteContext& context) const
         {
             commandList.GetValidator().EndScope();
         }
 
-        void Scope::EmitScopeBarriers(CommandList& commandList, BarrierSlot slot) const
+        VkMemoryBarrier2 Scope::CollectMemoryBarriers(BarrierSlot slot) const
+        {
+            VkMemoryBarrier2 memoryBarrier = {};
+            for (const auto& barrier : m_scopeBarriers[static_cast<uint32_t>(slot)])
+            {
+                if (barrier.m_type == VK_STRUCTURE_TYPE_MEMORY_BARRIER)
+                {
+                    memoryBarrier.srcStageMask |= barrier.m_srcStageMask;
+                    memoryBarrier.dstStageMask |= barrier.m_dstStageMask;
+                    memoryBarrier.srcAccessMask |= barrier.m_memoryBarrier.srcAccessMask;
+                    memoryBarrier.dstAccessMask |= barrier.m_memoryBarrier.dstAccessMask;
+                }
+            }
+            return memoryBarrier;
+        }
+
+        void Scope::EmitScopeBarriers(CommandList& commandList, BarrierSlot slot, BarrierTypeFlags mask) const
         {
             switch (slot)
             {
             case BarrierSlot::Prologue:
                 for (RHI::ResourcePoolResolver* resolvePolicyBase : GetResourcePoolResolves())
                 {
-                    static_cast<ResourcePoolResolver*>(resolvePolicyBase)->QueuePrologueTransitionBarriers(commandList);
+                    static_cast<ResourcePoolResolver*>(resolvePolicyBase)->QueuePrologueTransitionBarriers(commandList, mask);
                 }
                 break;
             case BarrierSlot::Epilogue:
                 for (RHI::ResourcePoolResolver* resolvePolicyBase : GetResourcePoolResolves())
                 {
-                    static_cast<ResourcePoolResolver*>(resolvePolicyBase)->QueueEpilogueTransitionBarriers(commandList);
+                    static_cast<ResourcePoolResolver*>(resolvePolicyBase)->QueueEpilogueTransitionBarriers(commandList, mask);
                 }
                 break;
             default:
@@ -256,6 +361,11 @@ namespace AZ
 
             for (const auto& barrier : m_scopeBarriers[static_cast<uint32_t>(slot)])
             {
+                if (!RHI::CheckBitsAll(mask, ConvertBarrierType(barrier.m_type)))
+                {
+                    continue;
+                }
+
                 const VkMemoryBarrier* memoryBarriers = nullptr;
                 const VkBufferMemoryBarrier* bufferBarriers = nullptr;
                 const VkImageMemoryBarrier* imageBarriers = nullptr;
@@ -369,6 +479,8 @@ namespace AZ
                 haveRenderAttachments |=
                     attachment->GetUsage() == RHI::ScopeAttachmentUsage::RenderTarget ||
                     attachment->GetUsage() == RHI::ScopeAttachmentUsage::DepthStencil ||
+                    attachment->GetUsage() == RHI::ScopeAttachmentUsage::SubpassInput ||
+                    attachment->GetUsage() == RHI::ScopeAttachmentUsage::ShadingRate ||
                     attachment->GetUsage() == RHI::ScopeAttachmentUsage::Resolve;
 
                 haveClearLoadOps |=
@@ -377,7 +489,9 @@ namespace AZ
             }
 
             if (haveRenderAttachments &&
-                (haveClearLoadOps || GetEstimatedItemCount() > 0))
+                (   RHI::CheckBitsAll(GetActivationFlags(), RHI::Scope::ActivationFlags::Subpass) ||
+                    haveClearLoadOps ||
+                    GetEstimatedItemCount() > 0))
             {
                 m_usesRenderpass = true;
             }
@@ -427,8 +541,6 @@ namespace AZ
 
             m_imageClearRequests.clear();
             m_bufferClearRequests.clear();
-
-            RHI::FrameEventBus::Handler::BusDisconnect();
         }
 
         template<typename T>
@@ -471,8 +583,6 @@ namespace AZ
             RHI::Device& deviceBase = GetDevice();
             Device& device = static_cast<Device&>(deviceBase);
             m_deviceSupportedPipelineStageFlags = device.GetCommandQueueContext().GetCommandQueue(GetHardwareQueueClass()).GetSupportedPipelineStages();
-
-            RHI::FrameEventBus::Handler::BusConnect(&deviceBase);
         }
 
         void Scope::AddQueryPoolUse(RHI::Ptr<RHI::QueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access)
@@ -482,11 +592,6 @@ namespace AZ
 
         bool Scope::CanOptimizeBarrier([[maybe_unused]] const Barrier& barrier, [[maybe_unused]] BarrierSlot slot) const
         {
-            if (!r_vkOptimizeBarriers)
-            {
-                return false;
-            }
-
             // Check that the destination pipeline stages are supported by the Pipeline
             VkPipelineStageFlags filteredDstStages = RHI::FilterBits(barrier.m_dstStageMask, GetSupportedPipelineStages(RHI::PipelineStateType::Draw));
             if (filteredDstStages == VkPipelineStageFlags(0))
@@ -494,19 +599,27 @@ namespace AZ
                 return false;
             }
 
+            BarrierOptimizationFlags optimizationFlags = GetBarrierOptimizationFlags();
+            bool globalBarrierOptimizationEnabled = RHI::CheckBitsAll(optimizationFlags, BarrierOptimizationFlags::UseGlobal);
             switch (barrier.m_type)
             {
             case VK_STRUCTURE_TYPE_MEMORY_BARRIER:
-                return true;
+                return globalBarrierOptimizationEnabled;
             case VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER:
-                return barrier.m_bufferBarrier.srcQueueFamilyIndex == barrier.m_bufferBarrier.dstQueueFamilyIndex;
+                return globalBarrierOptimizationEnabled &&
+                    barrier.m_bufferBarrier.srcQueueFamilyIndex == barrier.m_bufferBarrier.dstQueueFamilyIndex;
             case VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER:
                 if (barrier.m_imageBarrier.srcQueueFamilyIndex == barrier.m_imageBarrier.dstQueueFamilyIndex)
                 {
-                    // Check if the barrier is a renderpass image attachment (to replace it with a memory barrier and an automatic subpass layout transition)
-                    // or if it's not doing a layout transition (we just use a memory barrier).
-                    if ((UsesRenderpass()  && IsRenderAttachmentUsage(barrier.m_attachment->GetUsage())) ||
-                        barrier.m_imageBarrier.oldLayout == barrier.m_imageBarrier.newLayout)
+                    // Barriers between subpasses have to be "optimized" as subpass dependencies and subpass layout transitions (for pipeline compatibilty)
+                    // Barriers to external scopes (outside of the group) can be optimized if we are using a renderpass and the optimization option is enabled.
+                    bool useRenderpassBarrier = UsesRenderpass() && IsRenderAttachmentUsage(barrier.m_attachment->GetUsage());
+                    bool renderpassLayoutOptimizationEnabled = RHI::CheckBitsAll(optimizationFlags,BarrierOptimizationFlags::UseRenderpassLayout);
+                    useRenderpassBarrier &= renderpassLayoutOptimizationEnabled || !HasExternalConnection(barrier.m_attachment, slot);
+                    if (useRenderpassBarrier ||
+                        (globalBarrierOptimizationEnabled &&
+                         barrier.m_imageBarrier.oldLayout == barrier.m_imageBarrier.newLayout)) // If the layout doesn't change we can just
+                                                                                                // add it to the global barrier (if enabled)
                     {
                         // Since we need to preserve the order of the barriers, and scope barriers are execute before
                         // subpass barriers, we need to check that there's no barrier for the same resource already in the
@@ -595,33 +708,16 @@ namespace AZ
                 return;
             }
 
-            // Check if we can move the barrier as a subpass dependency.
-            // We don't do this for external subpass dependencies because they cause incompatiblity with
-            // the renderpass used for building a pipeline state.
-            auto canBeSubpassDependency = [&](const Barrier& barrier)
-            {
-                const RHI::ScopeAttachment* scopeAttachment = barrier.m_attachment;
-                while (scopeAttachment != nullptr && scopeAttachment->GetScope().GetId() == GetId())
-                {
-                    scopeAttachment = slot == BarrierSlot::Prologue ? scopeAttachment->GetPrevious() : scopeAttachment->GetNext();
-                }
-
-                if (!scopeAttachment || scopeAttachment->GetScope().GetFrameGraphGroupId() != GetFrameGraphGroupId())
-                {
-                    return false;
-                }
-                return true;
-            };
-
             VkPipelineStageFlags srcStageMask = 0;
             VkPipelineStageFlags dstStageMask = 0;
             VkMemoryBarrier vkMemoryBarrier{};
             vkMemoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
             for (auto it : subpassBarriers)
             {
-                // If we can transform the barrier into a subpass dependency we don't need to
-                // add it to memory barrier. Just skip it.
-                if (canBeSubpassDependency(it))
+                // Check if we can move the barrier as a subpass dependency.
+                // We don't do this for external subpass dependencies because they cause incompatiblity with
+                // the renderpass used for building a pipeline state.
+                if (!HasExternalConnection(it.m_attachment, slot))
                 {
                     continue;
                 }
@@ -647,6 +743,13 @@ namespace AZ
                     break;
                 }
             }
+
+            // Check for an empty memory barrier
+            if (vkMemoryBarrier.srcAccessMask == 0 && vkMemoryBarrier.dstAccessMask == 0)
+            {
+                return;
+            }
+
             // Add the global memory barrier.
             Barrier memoryBarrier(vkMemoryBarrier);
             memoryBarrier.m_srcStageMask = srcStageMask;
@@ -663,15 +766,29 @@ namespace AZ
             }
         }
 
-        void Scope::OnFrameCompileEnd(RHI::FrameGraph& frameGraph)
+        bool Scope::IsFirstUsage(const RHI::ScopeAttachment* scopeAttachment) const
         {
-            if (GetFrameGraph() != &frameGraph)
+            return HasExternalConnection(scopeAttachment, BarrierSlot::Prologue);
+        }
+
+        bool Scope::IsLastUsage(const RHI::ScopeAttachment* scopeAttachment) const
+        {
+            return HasExternalConnection(scopeAttachment, BarrierSlot::Epilogue);
+        }
+
+        bool Scope::HasExternalConnection(const RHI::ScopeAttachment* scopeAttachment, BarrierSlot slot) const
+        {
+            bool goForward = slot == BarrierSlot::Epilogue;
+            while (scopeAttachment != nullptr && scopeAttachment->GetScope().GetId() == GetId())
             {
-                return;
+                scopeAttachment = goForward ? scopeAttachment->GetNext() : scopeAttachment->GetPrevious();
             }
 
-            // All barriers are already queued so we can optimize them.
-            OptimizeBarriers();
+            if (!scopeAttachment || scopeAttachment->GetScope().GetFrameGraphGroupId() != GetFrameGraphGroupId())
+            {
+                return true;
+            }
+            return false;
         }
 
         void Scope::ResolveMSAAAttachments(CommandList& commandList) const

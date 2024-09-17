@@ -114,7 +114,7 @@ namespace AZ
                 return;
             }
 
-            m_shader = Shader::FindOrCreate(shaderAsset);
+            m_shader = Shader::FindOrCreate(shaderAsset, GetSuperVariantName());
             if (m_shader == nullptr)
             {
                 AZ_Error("PassSystem", false, "[FullscreenTrianglePass '%s']: Failed to create shader instance from asset '%s'!",
@@ -211,6 +211,12 @@ namespace AZ
 
         void FullscreenTrianglePass::InitializeInternal()
         {
+            BuildRenderAttachmentConfiguration();
+            if (m_shader->GetSupervariantIndex() != m_shader->GetAsset()->GetSupervariantIndex(GetSuperVariantName()))
+            {
+                LoadShader();
+            }
+
             RenderPass::InitializeInternal();
             
             ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->FullscreenTrianglePass::InitializeInternal", this);

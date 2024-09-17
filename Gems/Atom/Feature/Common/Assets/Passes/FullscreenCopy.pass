@@ -10,10 +10,13 @@
                 {
                     "Name": "Input",
                     "SlotType": "Input",
-                    "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentUsage": "SubpassInput",
                     "ImageViewDesc": {
                         "MipSliceMin": "0",
-                        "MipSliceMax": "0"
+                        "MipSliceMax": "0",
+                        "AspectFlags": [
+                            "Color"
+                        ]
                     }
                 },
                 {

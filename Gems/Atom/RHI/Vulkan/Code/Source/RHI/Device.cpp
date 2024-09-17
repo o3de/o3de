@@ -199,6 +199,14 @@ namespace AZ
             auto depthClipEnabled = physicalDevice.GetPhysicalDeviceDepthClipEnableFeatures();
             auto rayQueryFeatures = physicalDevice.GetRayQueryFeatures();
             auto shaderImageAtomicInt64 = physicalDevice.GetShaderImageAtomicInt64Features();
+            auto subpassMergeFeedback = physicalDevice.GetPhysicalSubpassMergeFeedbackFeatures();
+#if !defined(AZ_RELEASE_BUILD)
+            subpassMergeFeedback.subpassMergeFeedback = false;
+#endif
+            if (!subpassMergeFeedback.subpassMergeFeedback)
+            {
+                physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::SubpassMergeFeedback);
+            }
 
             VkPhysicalDeviceRobustness2FeaturesEXT robustness2 = {};
             robustness2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
@@ -209,6 +217,7 @@ namespace AZ
             rayQueryFeatures.pNext = nullptr;
             shaderImageAtomicInt64.pNext = nullptr;
             robustness2.pNext = nullptr;
+            subpassMergeFeedback.pNext = nullptr;
 
             AppendVkStruct(
                 chainInit,
@@ -217,7 +226,8 @@ namespace AZ
                     &depthClipEnabled,
                     &rayQueryFeatures,
                     &shaderImageAtomicInt64,
-                    &robustness2
+                    &robustness2,
+                    &subpassMergeFeedback
                 });
 
             auto fragmenDensityMapFeatures = physicalDevice.GetPhysicalDeviceFragmentDensityMapFeatures();

@@ -14,23 +14,13 @@
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
-    Texture2D<float4> m_framebuffer;
-    Sampler LinearSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
+    [[input_attachment_index(0)]]
+    SubpassInput m_framebuffer;
 }
 
 PSOutput MainPS(VSOutput IN)
 {
     PSOutput OUT;
-    
-    OUT.m_color = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord);
-
+    OUT.m_color = PassSrg::m_framebuffer.SubpassLoad(int3(IN.m_position.x, IN.m_position.y, 0));
     return OUT;
 }
