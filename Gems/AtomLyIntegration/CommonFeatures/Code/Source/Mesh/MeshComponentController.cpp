@@ -75,13 +75,16 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<MeshComponentConfig>()
-                    ->Version(3, &MeshComponentControllerVersionUtility::VersionConverter)
+                    ->Version(4, &MeshComponentControllerVersionUtility::VersionConverter)
                     ->Field("ModelAsset", &MeshComponentConfig::m_modelAsset)
                     ->Field("SortKey", &MeshComponentConfig::m_sortKey)
                     ->Field("ExcludeFromReflectionCubeMaps", &MeshComponentConfig::m_excludeFromReflectionCubeMaps)
                     ->Field("UseForwardPassIBLSpecular", &MeshComponentConfig::m_useForwardPassIblSpecular)
                     ->Field("IsRayTracingEnabled", &MeshComponentConfig::m_isRayTracingEnabled)
                     ->Field("IsAlwaysDynamic", &MeshComponentConfig::m_isAlwaysDynamic)
+#if defined(CARBONATED)
+                    ->Field("Visibility", &MeshComponentConfig::m_visibility)
+#endif
                     ->Field("SupportRayIntersection", &MeshComponentConfig::m_enableRayIntersection)
                     ->Field("LodType", &MeshComponentConfig::m_lodType)
                     ->Field("LodOverride", &MeshComponentConfig::m_lodOverride)
@@ -445,7 +448,12 @@ namespace AZ
                 m_meshFeatureProcessor->SetTransform(m_meshHandle, transform, m_cachedNonUniformScale);
                 m_meshFeatureProcessor->SetSortKey(m_meshHandle, m_configuration.m_sortKey);
                 m_meshFeatureProcessor->SetMeshLodConfiguration(m_meshHandle, GetMeshLodConfiguration());
+#if defined(CARBONATED)
+                m_meshFeatureProcessor->SetVisible(m_meshHandle, m_configuration.m_visibility);
+                m_isVisible = m_configuration.m_visibility;
+#else
                 m_meshFeatureProcessor->SetVisible(m_meshHandle, m_isVisible);
+#endif
                 m_meshFeatureProcessor->SetRayTracingEnabled(m_meshHandle, meshDescriptor.m_isRayTracingEnabled);
                 // [GFX TODO] This should happen automatically. m_changeEventHandler should be passed to AcquireMesh
                 // If the model instance or asset already exists, announce a model change to let others know it's loaded.
@@ -633,6 +641,9 @@ namespace AZ
                 {
                     m_meshFeatureProcessor->SetVisible(m_meshHandle, visible);
                 }
+#if defined(CARBONATED)
+                m_configuration.m_visibility = visible;
+#endif
                 m_isVisible = visible;
             }
         }
