@@ -53,9 +53,9 @@ namespace AZ
             friend class StreamingImageAssetHandler;
 
         public:
-            static const char* DisplayName;
-            static const char* Extension;
-            static const char* Group;
+            static constexpr const char* DisplayName{ "StreamingImage" };
+            static constexpr const char* Group{ "Image" };
+            static constexpr const char* Extension{ "streamingimage" };
 
             AZ_RTTI(StreamingImageAsset, "{3C96A826-9099-4308-A604-7B19ADBF8761}", ImageAsset);
             AZ_CLASS_ALLOCATOR(StreamingImageAsset , AZ::SystemAllocator)

@@ -67,7 +67,7 @@ namespace AZ
                 ModelKdTreeNode* pNode, const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, AZStd::vector<AZ::Aabb>& outBoxes);
             void ConstructMeshList(const ModelAsset* model, const AZ::Transform& matParent);
 
-            static const int s_MinimumVertexSizeInLeafNode = 3 * 10;
+            static constexpr int s_MinimumVertexSizeInLeafNode = 3 * 10;
             // Stop splitting the tree if more than 10% of the triangles are straddling the split axis
             static constexpr float s_MaximumSplitAxisStraddlingTriangles = 1.1;
             AZStd::unique_ptr<ModelKdTreeNode> m_pRootNode;

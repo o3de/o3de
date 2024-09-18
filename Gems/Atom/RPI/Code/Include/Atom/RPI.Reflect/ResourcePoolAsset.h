@@ -39,9 +39,9 @@ namespace AZ
             AZ_RTTI(ResourcePoolAsset, "{62A59999-66DA-467E-804A-0EA64A64299F}", AZ::Data::AssetData);
             AZ_CLASS_ALLOCATOR(ResourcePoolAsset, AZ::SystemAllocator);
 
-            static const char* DisplayName;
-            static const char* Group;
-            static const char* Extension;
+            static constexpr const char* DisplayName{ "ResourcePool" };
+            static constexpr const char* Group{ "RenderingPipeline" };
+            static constexpr const char* Extension{ "pool" };
 
             static void Reflect(ReflectContext* context);
 

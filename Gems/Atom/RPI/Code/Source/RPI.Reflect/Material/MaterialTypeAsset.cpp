@@ -19,10 +19,6 @@ namespace AZ
 {
     namespace RPI
     {
-        const char* MaterialTypeAsset::DisplayName = "MaterialTypeAsset";
-        const char* MaterialTypeAsset::Group = "Material";
-        const char* MaterialTypeAsset::Extension = "azmaterialtype";
-
         void UvNamePair::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
