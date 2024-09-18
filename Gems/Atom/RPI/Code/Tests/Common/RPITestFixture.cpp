@@ -63,7 +63,7 @@ namespace UnitTest
     {
         AssetManagerTestFixture::SetUp();
 
-        AZ::RPI::Validation::s_isEnabled = true;
+        AZ::RPI::Validation::SetEnabled(true);
         AZ::RHI::Validation::s_isEnabled = true;
 
         m_priorFileIO = AZ::IO::FileIOBase::GetInstance();

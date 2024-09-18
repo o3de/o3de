@@ -22,12 +22,6 @@ namespace AZ
 {
     namespace RPI
     {
-        const char* MaterialAsset::s_debugTraceName = "MaterialAsset";
-
-        const char* MaterialAsset::DisplayName = "MaterialAsset";
-        const char* MaterialAsset::Group = "Material";
-        const char* MaterialAsset::Extension = "azmaterial";
-
         void MaterialAsset::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
