@@ -25,7 +25,7 @@
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
 #include <SceneAPI/SceneCore/SceneBuilderDependencyBus.h>
 
-#include <Model/ModelExporterContexts.h>
+#include <Atom/RPI.Builders/Model/ModelExporterContexts.h>
 
 #include <AzCore/std/containers/map.h>
 
