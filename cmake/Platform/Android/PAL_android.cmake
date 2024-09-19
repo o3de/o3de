@@ -52,3 +52,6 @@ if(PAL_HOST_PLATFORM_NAME_LOWERCASE STREQUAL "windows")
 else()
     ly_set(LY_PYTHON_CMD ${CMAKE_CURRENT_SOURCE_DIR}/python/python.sh)
 endif()
+
+# Compiler flag to export all symbols from a library
+ly_set(PAL_TRAIT_EXPORT_ALL_SYMBOLS_COMPILE_OPTIONS -fvisibility=default)
