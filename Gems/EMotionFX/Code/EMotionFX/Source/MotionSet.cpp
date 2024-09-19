@@ -154,7 +154,11 @@ namespace EMotionFX
         , m_dirtyFlag(false)
     {
         m_id                 = aznumeric_caster(MCore::GetIDGenerator().GenerateID());
+#if defined (CARBONATED)
+        m_callback           = nullptr; // do not use MotionSetCallback as default loader callback class due to it does not work with platforms (e.g. with iOS)
+#else
         m_callback           = aznew MotionSetCallback(this);
+#endif
 
 #if defined(EMFX_DEVELOPMENT_BUILD)
         m_isOwnedByRuntime   = false;
@@ -523,7 +527,11 @@ namespace EMotionFX
         Motion* motion = entry->GetMotion();
 
         // If loading on demand is enabled and the motion hasn't loaded yet.
+#if defined (CARBONATED)
+        if (!motion && !entry->GetFilenameString().empty() && !entry->GetLoadingFailed() && m_callback) // ... and desired loader callback has been assigned
+#else
         if (!motion && !entry->GetFilenameString().empty() && !entry->GetLoadingFailed())
+#endif
         {
             motion = m_callback->LoadMotion(entry);
 
