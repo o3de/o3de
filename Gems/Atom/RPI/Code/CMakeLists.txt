@@ -20,14 +20,13 @@ endif()
 ly_add_target(
     NAME ${gem_name}.Public ${PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE}
     NAMESPACE Gem
+    EXPORT_ALL_SYMBOLS
     FILES_CMAKE
         atom_rpi_reflect_files.cmake
         atom_rpi_public_files.cmake
         ../Assets/atom_rpi_asset_files.cmake
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
         ${MASKED_OCCLUSION_CULLING_FILES}
-    TARGET_PROPERTIES
-        WINDOWS_EXPORT_ALL_SYMBOLS TRUE
     PLATFORM_INCLUDE_FILES
         ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common/${PAL_TRAIT_COMPILER_ID}/atom_rpi_public_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
@@ -85,10 +84,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME ${gem_name}.Edit ${PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE}
         NAMESPACE Gem
+        EXPORT_ALL_SYMBOLS
         FILES_CMAKE
             atom_rpi_edit_files.cmake
-        TARGET_PROPERTIES
-            WINDOWS_EXPORT_ALL_SYMBOLS TRUE
         INCLUDE_DIRECTORIES
             PRIVATE
                 Source
@@ -161,10 +159,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
         NAME ${gem_name}.TestUtils ${PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE}
         NAMESPACE Gem
+        EXPORT_ALL_SYMBOLS
         FILES_CMAKE
             atom_rpi_test_utils_files.cmake
-        TARGET_PROPERTIES
-            WINDOWS_EXPORT_ALL_SYMBOLS TRUE
         INCLUDE_DIRECTORIES
             PUBLIC
                 Tests
