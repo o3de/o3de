@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <Atom/RPI.Public/Configuration.h>
+
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantTreeAsset.h>
@@ -28,7 +30,7 @@ namespace AZ
          * and ShaderVariantAssets.
          * The notifications of assets being loaded & ready are dispatched via ShaderVariantFinderNotificationBus.
          */
-        class ShaderVariantAsyncLoader final
+        class ATOM_RPI_PUBLIC_API ShaderVariantAsyncLoader final
             : public AZ::Interface<IShaderVariantFinder>::Registrar
             , public AZ::Data::AssetBus::MultiHandler
         {

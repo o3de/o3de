@@ -10,6 +10,7 @@
 
 #include <Atom/RHI/ShaderResourceGroupPool.h>
 #include <AtomCore/Instance/InstanceData.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 
 
@@ -34,7 +35,7 @@ namespace AZ
          *
          * User code should not need to access this pool directly; RPI::ShaderResourceGroup uses it internally.
          */
-        class ShaderResourceGroupPool final
+        class ATOM_RPI_PUBLIC_API ShaderResourceGroupPool final
             : public Data::InstanceData
         {
             friend class ShaderSystem;

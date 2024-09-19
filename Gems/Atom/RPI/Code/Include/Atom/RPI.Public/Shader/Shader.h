@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Shader/ShaderVariant.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 
@@ -51,7 +52,7 @@ namespace AZ
         //! 
         //! Remember that the returned RHI::PipelineState instance lifetime is tied to the Shader lifetime.
         //! If you need guarantee lifetime, it is safe to take a reference on the returned pipeline state.
-        class Shader final
+        class ATOM_RPI_PUBLIC_API Shader final
             : public Data::InstanceData
             , public Data::AssetBus::Handler
             , public ShaderVariantFinderNotificationBus::Handler

@@ -9,7 +9,7 @@
 #pragma once
 
 #include <Atom/RHI/Device.h>
-
+#include <Atom/RPI.Public/Configuration.h>
 #include <AtomCore/Instance/InstanceData.h>
 
 namespace AZ
@@ -24,7 +24,7 @@ namespace AZ
     {
         class ResourcePoolAsset;
 
-        class AttachmentImagePool final
+        class ATOM_RPI_PUBLIC_API AttachmentImagePool final
             : public Data::InstanceData
         {
             friend class ImageSystem;

@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <Atom/RPI.Public/Configuration.h>
+
 #include <Atom/RHI/BufferPool.h>
 
 #include <AtomCore/Instance/InstanceData.h>
@@ -23,7 +25,7 @@ namespace AZ
     {
         class ResourcePoolAsset;
 
-        class BufferPool final
+        class ATOM_RPI_PUBLIC_API BufferPool final
             : public Data::InstanceData
         {
             friend class BufferSystem;

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/Image/Image.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Image/StreamingImageContext.h>
 
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
@@ -43,7 +44,7 @@ namespace AZ
         //! 
         //! A trim operation will immediately trim the GPU image down and cancel any in-flight mip chain fetches.
         //! 
-        class StreamingImage final
+        class ATOM_RPI_PUBLIC_API StreamingImage final
             : public Image
             , public Data::AssetBus::MultiHandler
         {
@@ -133,7 +134,7 @@ namespace AZ
             bool IsStreamed() const;
 
         private:
-            StreamingImage() = default;
+            StreamingImage();
 
             static Data::Instance<StreamingImage> CreateInternal(StreamingImageAsset& streamingImageAsset);
             RHI::ResultCode Init(StreamingImageAsset& imageAsset);

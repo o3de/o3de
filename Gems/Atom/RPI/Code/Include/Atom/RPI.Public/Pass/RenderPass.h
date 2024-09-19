@@ -15,6 +15,7 @@
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RHI.Reflect/RenderAttachmentLayoutBuilder.h>
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
@@ -34,7 +35,7 @@ namespace AZ
 
         //! A RenderPass is a leaf Pass (i.e. a Pass that has no children) that 
         //! implements rendering functionality (raster, compute, copy)
-        class RenderPass :
+        class ATOM_RPI_PUBLIC_API RenderPass :
             public Pass,
             public RHI::ScopeProducer
         {

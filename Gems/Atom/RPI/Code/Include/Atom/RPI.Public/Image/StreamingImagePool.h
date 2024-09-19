@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Image/StreamingImageController.h>
 
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAsset.h>
@@ -36,7 +37,7 @@ namespace AZ
         //! Users won't need to interact directly with pools. If a streaming image is instantiated which references
         //! the pool (by asset id), the pool is automatically brought up to accommodate the request. Likewise, if a pool
         //! is no longer referenced by a streaming image, it is shut down.
-        class StreamingImagePool final
+        class ATOM_RPI_PUBLIC_API StreamingImagePool final
             : public Data::InstanceData
         {
             friend class StreamingImage;

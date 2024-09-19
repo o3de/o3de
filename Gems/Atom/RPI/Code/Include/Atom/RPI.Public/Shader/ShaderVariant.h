@@ -7,8 +7,8 @@
  */
 #pragma once
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
-
 #include <Atom/RHI/DrawListTagRegistry.h>
 
 namespace AZ
@@ -18,7 +18,7 @@ namespace AZ
         //! Represents the concrete state to configure a PipelineStateDescriptor. ShaderVariant's match
         //! the RHI::PipelineStateType of the parent Shader instance. For shaders on the raster
         //! pipeline, the RHI::DrawFilterTag is also provided.
-        class ShaderVariant final
+        class ATOM_RPI_PUBLIC_API ShaderVariant final
         {
             friend class Shader;
         public:

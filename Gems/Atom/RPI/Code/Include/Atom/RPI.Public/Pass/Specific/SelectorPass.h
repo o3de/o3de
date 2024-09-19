@@ -15,6 +15,7 @@
 #include <Atom/RHI.Reflect/Format.h>
 #include <Atom/RHI.Reflect/SwapChainDescriptor.h>
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 
 #include <AzFramework/Windowing/WindowBus.h>
@@ -25,7 +26,7 @@ namespace AZ
     {
         //! A pass provide the ability to pass through input attachments to output attachments
         //! For example, it can choose one of the input attachments as output atachments. 
-        class SelectorPass final
+        class ATOM_RPI_PUBLIC_API SelectorPass final
             : public Pass
         {
         public:

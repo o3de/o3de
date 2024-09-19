@@ -12,6 +12,7 @@
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/ImagePool.h>
 #include <Atom/RHI/ScopeProducerFunction.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
@@ -22,7 +23,7 @@ namespace AZ
     namespace RPI
     {
         // pass that generates all faces of a Cubemap environment image at a specified point
-        class EnvironmentCubeMapPass final
+        class ATOM_RPI_PUBLIC_API EnvironmentCubeMapPass final
             : public ParentPass
         {
         public:

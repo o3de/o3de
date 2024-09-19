@@ -12,6 +12,7 @@
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyCollection.h>
 #include <Atom/RPI.Reflect/Material/MaterialPipelineState.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 
 #include <AtomCore/Instance/InstanceData.h>
@@ -41,7 +42,7 @@ namespace AZ
         //! an error is emitted and the call returns false without performing the requested operation. Likewise, if 
         //! a getter method fails, an error is emitted and an empty value is returned. If validation is disabled, the 
         //! operation is always performed.
-        class Material
+        class ATOM_RPI_PUBLIC_API Material
             : public Data::InstanceData
             , public ShaderReloadNotificationBus::MultiHandler
         {

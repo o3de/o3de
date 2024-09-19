@@ -13,6 +13,7 @@
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelLodIndex.h>
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Model/ModelLod.h>
 
 #include <AtomCore/Instance/InstanceData.h>
@@ -26,7 +27,7 @@ namespace AZ
     {
         class ModelAsset;
 
-        class Model final
+        class ATOM_RPI_PUBLIC_API Model final
             : public Data::InstanceData
         {
             friend class ModelSystem;

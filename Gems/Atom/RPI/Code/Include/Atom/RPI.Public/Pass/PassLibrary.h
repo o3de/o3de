@@ -11,6 +11,8 @@
 
 #include <Atom/RHI.Reflect/NameIdReflectionMap.h>
 
+#include <Atom/RPI.Public/Configuration.h>
+
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <Atom/RPI.Reflect/System/AssetAliases.h>
@@ -35,7 +37,7 @@ namespace AZ
         //!
         //! Because PassLibrary enables PassTemplates to be referenced with just a Name,
         //! this enables code to reference Passes defined in data and vice-versa
-        class PassLibrary final
+        class ATOM_RPI_PUBLIC_API PassLibrary final
             : public Data::AssetBus::MultiHandler
         {
             AZ_DISABLE_COPY_MOVE(PassLibrary);
