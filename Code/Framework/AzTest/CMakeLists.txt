@@ -9,6 +9,21 @@
 if(NOT LY_MONOLITHIC_GAME)
     o3de_pal_dir(pal_aztest_dir ${CMAKE_CURRENT_LIST_DIR}/AzTest/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
 
+    include(FetchContent)
+    FetchContent_Declare(
+        googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG 2fe3bd994b3189899d93f1d5a881e725e046fdc2 # release-1.8.1
+    )
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE) # Prevent overriding the parent project's compiler/linker settings
+    set(BUILD_GMOCK ON CACHE BOOL "" FORCE) # This setting builds gtest and gmock
+    set(BUILD_GTEST OFF CACHE BOOL "" FORCE) # This setting would only build gtest
+    set(INSTALL_GTEST OFF CACHE BOOL "" FORCE) # Install target is not needed
+    FetchContent_MakeAvailable(googletest)
+
+    ly_create_alias(NAME googletest::GTest NAMESPACE 3rdParty TARGETS gtest)
+    ly_create_alias(NAME googletest::GMock NAMESPACE 3rdParty TARGETS gmock)
+
     ly_add_target(
         NAME AzTest STATIC
         NAMESPACE AZ

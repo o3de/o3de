@@ -18,6 +18,7 @@
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Color.h>
+#include <iomanip> // for std::setw
 
 // make gtest/gmock aware of these types so when a failure occurs we get more useful output
 namespace AZ
