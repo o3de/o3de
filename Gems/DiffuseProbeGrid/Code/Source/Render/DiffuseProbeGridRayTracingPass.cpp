@@ -20,10 +20,10 @@
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/View.h>
 #include <DiffuseProbeGrid_Traits_Platform.h>
+#include <Atom/Feature/RayTracing/RayTracingFeatureProcessor.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Render/DiffuseProbeGridFeatureProcessor.h>
 #include <Render/DiffuseProbeGridRayTracingPass.h>
-#include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ
 {

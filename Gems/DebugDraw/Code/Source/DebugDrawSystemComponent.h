@@ -32,7 +32,7 @@
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/Bootstrap/BootstrapNotificationBus.h>
-#include <RayTracing/RayTracingFeatureProcessor.h>
+#include <Atom/Feature/RayTracing/RayTracingFeatureProcessor.h>
 
 namespace DebugDraw
 {

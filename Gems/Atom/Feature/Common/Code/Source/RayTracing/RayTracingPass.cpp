@@ -6,6 +6,9 @@
  *
  */
 
+#include <Atom/Feature/RayTracing/RayTracingFeatureProcessor.h>
+#include <Atom/Feature/RayTracing/RayTracingPass.h>
+#include <Atom/Feature/RayTracing/RayTracingPassData.h>
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/DeviceDispatchRaysItem.h>
 #include <Atom/RHI/DevicePipelineState.h>
@@ -24,9 +27,6 @@
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManagerBus.h>
-#include <RayTracing/RayTracingFeatureProcessor.h>
-#include <RayTracing/RayTracingPass.h>
-#include <RayTracing/RayTracingPassData.h>
 
 using uint = uint32_t;
 using uint4 = uint[4];

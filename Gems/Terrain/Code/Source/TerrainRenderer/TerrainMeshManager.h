@@ -23,7 +23,7 @@
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/MeshDrawPacket.h>
 
-#include <RayTracing/RayTracingFeatureProcessor.h>
+#include <Atom/Feature/RayTracing/RayTracingFeatureProcessor.h>
 
 #include <TerrainRenderer/Vector2i.h>
 

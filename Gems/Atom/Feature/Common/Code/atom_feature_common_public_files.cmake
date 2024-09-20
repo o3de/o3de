@@ -86,6 +86,10 @@ set(FILES
     Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceConstants.h
     Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceParams.inl
     Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceSettingsInterface.h
+    Include/Atom/Feature/RayTracing/RayTracingFeatureProcessor.h
+    Include/Atom/Feature/RayTracing/RayTracingIndexList.h
+    Include/Atom/Feature/RayTracing/RayTracingPass.h
+    Include/Atom/Feature/RayTracing/RayTracingPassData.h
     Include/Atom/Feature/ScreenSpace/DeferredFogSettingsInterface.h
     Include/Atom/Feature/ScreenSpace/DeferredFogParams.inl
     Include/Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessorInterface.h
@@ -104,6 +108,8 @@ set(FILES
     Include/Atom/Feature/SkyAtmosphere/SkyAtmosphereFeatureProcessorInterface.h
     Source/CoreLights/PhotometricValue.cpp
     Source/MorphTargets/MorphTargetInputBuffers.cpp
+    Source/RayTracing/RayTracingFeatureProcessor.cpp
+    Source/RayTracing/RayTracingPass.cpp
     Source/SkinnedMesh/SkinnedMeshInputBuffers.cpp
     Source/SkinnedMesh/SkinnedMeshInstance.cpp
     Source/SplashScreen/SplashScreenSettings.cpp
