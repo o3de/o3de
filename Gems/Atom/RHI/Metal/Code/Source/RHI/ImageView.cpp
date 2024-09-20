@@ -54,8 +54,8 @@ namespace AZ
             }
             
             MTLTextureType imgTextureType = mtlTexture.textureType;
-            //Recreate the texture if the existing texture is not flagged as an array but the view is of an array
-            //Essentially this will tag a 2d texture as 2darray texture to ensure that sampling works correctly
+            //Recreate the texture if the existing texture is not flagged as an array but the view is of an array.
+            //Essentially this will tag a 2d texture as 2darray texture to ensure that sampling works correctly.
             if(!IsTextureTypeAnArray(imgTextureType) && viewDescriptor.m_isArray)
             {
                 isViewFormatDifferent = true;
