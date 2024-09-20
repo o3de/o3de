@@ -375,7 +375,12 @@ namespace AZ
             //! Retrieves the GPU buffer containing information for all ray tracing materials.
             const Data::Instance<RPI::Buffer> GetMaterialInfoGpuBuffer() const { return m_materialInfoGpuBuffer.GetCurrentBuffer(); }
 
-            //! Updates the RayTracingSceneSrg and RayTracingMaterialSrg, called after the TLAS is allocated in the RayTracingAccelerationStructurePass
+            //! If necessary recreates TLAS buffers and updates the ray tracing SRGs. Should only be called by the
+            //! RayTracingAccelerationStructurePass. Returns the current revision.
+            uint32_t BeginFrame();
+
+            //! Updates the RayTracingSceneSrg and RayTracingMaterialSrg, called after the TLAS is allocated in the
+            //! RayTracingAccelerationStructurePass
             void UpdateRayTracingSrgs();
 
             struct SubMeshBlasInstance
@@ -434,6 +439,9 @@ namespace AZ
 
             // current revision number of ray tracing data
             uint32_t m_revision = 0;
+
+            // latest tlas revision number
+            uint32_t m_tlasRevision = 0;
 
             uint32_t m_proceduralGeometryTypeRevision = 0;
 
