@@ -6,8 +6,8 @@
  *
  */
 
-#include <RayTracing/RayTracingFeatureProcessor.h>
-#include <RayTracing/RayTracingPass.h>
+#include <Atom/Feature/RayTracing/RayTracingFeatureProcessor.h>
+#include <Atom/Feature/RayTracing/RayTracingPass.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>

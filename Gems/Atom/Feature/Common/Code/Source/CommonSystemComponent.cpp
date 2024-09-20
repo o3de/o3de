@@ -22,7 +22,6 @@
 #include <ReflectionProbe/ReflectionProbeFeatureProcessor.h>
 #include <SpecularReflections/SpecularReflectionsFeatureProcessor.h>
 #include <CubeMapCapture/CubeMapCaptureFeatureProcessor.h>
-#include <RayTracing/RayTracingFeatureProcessor.h>
 
 #include <Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessor.h>
 #include <Atom/Feature/DisplayMapper/AcesOutputTransformLutPass.h>
@@ -36,6 +35,9 @@
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
 #include <Atom/Feature/AuxGeom/AuxGeomFeatureProcessor.h>
 #include <Atom/Feature/LightingChannel/LightingChannelConfiguration.h>
+#include <Atom/Feature/RayTracing/RayTracingPass.h>
+#include <Atom/Feature/RayTracing/RayTracingFeatureProcessor.h>
+#include <Atom/Feature/RayTracing/RayTracingPassData.h>
 #include <Atom/Feature/SplashScreen/SplashScreenSettings.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
@@ -97,8 +99,6 @@
 #include <ImGui/ImGuiPass.h>
 
 #include <RayTracing/RayTracingAccelerationStructurePass.h>
-#include <RayTracing/RayTracingPass.h>
-#include <RayTracing/RayTracingPassData.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpacePass.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpaceTracePass.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpaceDownsampleDepthLinearPass.h>

@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <RayTracing/RayTracingResourceList.h>
-#include <RayTracing/RayTracingIndexList.h>
+#include <Atom/Feature/RayTracing/RayTracingFeatureProcessor.h>
+#include <Atom/Feature/RayTracing/RayTracingIndexList.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/RHI/IndexBufferView.h>
 #include <Atom/RHI/StreamBufferView.h>
