@@ -84,7 +84,6 @@ function(ly_delayed_generate_unit_test_module_registry)
     list(REMOVE_DUPLICATES ly_delayed_aztestrunner_test_modules) # Strip out any duplicate test targets
 
     set(target_test_dependencies_names)
-    set(test_module_name_components)
 
     foreach(namespace_and_target ${ly_delayed_aztestrunner_test_modules})
 
