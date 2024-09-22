@@ -241,13 +241,13 @@ namespace AZ
             return usageFlags;
         }
         
-        MTLTextureType ConvertTextureType(RHI::ImageDimension dimension, int arraySize, bool isCubeMap)
+        MTLTextureType ConvertTextureType(RHI::ImageDimension dimension, int arraySize, bool isCubeMap, bool isViewArray)
         {
             if(isCubeMap)
             {
                 AZ_Assert(arraySize % RHI::ImageDescriptor::NumCubeMapSlices == 0, "Incorrect array layers for Cube or CubeArray.");
                 int numCubeMaps = arraySize / RHI::ImageDescriptor::NumCubeMapSlices;
-                if(numCubeMaps>1)
+                if(numCubeMaps>1 || isViewArray)
                 {
                     return MTLTextureTypeCubeArray;
                 }
@@ -260,7 +260,7 @@ namespace AZ
             {
                 case RHI::ImageDimension::Image1D:
                 {
-                    if(arraySize>1)
+                    if(arraySize>1 || isViewArray)
                     {
                         return MTLTextureType1DArray;
                     }
@@ -271,7 +271,7 @@ namespace AZ
                 }
                 case RHI::ImageDimension::Image2D:
                 {
-                    if(arraySize>1)
+                    if(arraySize>1 || isViewArray)
                     {
                         return MTLTextureType2DArray;
                     }
@@ -293,6 +293,14 @@ namespace AZ
             }
         }
         
+        bool IsTextureTypeAnArray(MTLTextureType textureType)
+        {
+            return textureType == MTLTextureType1DArray ||
+                    textureType == MTLTextureType2DArray ||
+                    textureType == MTLTextureTypeCubeArray ||
+                    textureType == MTLTextureType2DMultisampleArray;
+        }
+    
         uint32_t GetArrayLength(int arraySize, bool isCubeMap)
         {            
             if(arraySize>1)
