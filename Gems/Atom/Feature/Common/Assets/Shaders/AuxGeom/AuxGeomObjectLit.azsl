@@ -39,7 +39,11 @@ VSOutput MainVS(VSInput vsInput)
         OUT.m_position = mul(ObjectSrg::m_viewProjectionOverride, float4(OUT.m_position.xyz, 1.0));
     }
     OUT.m_normal = mul(ObjectSrg::GetWorldMatrixInverseTranspose(), vsInput.m_normal);
+#if AZ_TRAIT_POINT_SIZE
     OUT.m_pointSize = ObjectSrg::m_pointSize;
+#else
+    OUT.m_pointSize = 1.0;
+#endif  
 
     return OUT;
 }

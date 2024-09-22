@@ -112,7 +112,8 @@ namespace AZ
                             newSrgLayout->AddShaderInput({ samplerData.m_nameId,
                                                            samplerData.m_count,
                                                            samplerData.m_registerId,
-                                                           samplerData.m_spaceId });
+                                                           samplerData.m_spaceId,
+                                                           samplerData.m_type });
                         }
                         else
                         {
@@ -135,9 +136,14 @@ namespace AZ
                         {
                             if (textureData.m_count != aznumeric_cast<uint32_t>(-1))
                             {
-                                newSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{
-                                    textureData.m_nameId, imageAccess, imageType, textureData.m_count,
-                                    textureData.m_registerId, textureData.m_spaceId });
+                                newSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ textureData.m_nameId,
+                                                                                              imageAccess,
+                                                                                              imageType,
+                                                                                              textureData.m_count,
+                                                                                              textureData.m_registerId,
+                                                                                              textureData.m_spaceId,
+                                                                                              textureData.m_format,
+                                                                                              textureData.m_sampleType });
                             }
                             else
                             {

@@ -53,6 +53,7 @@ namespace AZ::WebGPU
     {
         Base::Init(device);
         m_shaderResourceGroupLayout = descriptor.m_shaderResouceGroupLayout;
+        m_useDynamicOffset = descriptor.m_useDynamicBuffer;
 
         const RHI::ResultCode result = BuildNativeDescriptorSetLayout();
         RETURN_RESULT_IF_UNSUCCESSFUL(result);
@@ -137,10 +138,10 @@ namespace AZ::WebGPU
         for (uint32_t index = 0; index < bufferDescs.size(); ++index)
         {
             const RHI::ShaderInputBufferDescriptor& desc = bufferDescs[index];
-            wgpu::BindGroupLayoutEntry& entry = m_wgpuEntries.emplace_back(wgpu::BindGroupLayoutEntry{});
+            wgpu::BindGroupLayoutEntry entry{};
             entry.binding = desc.m_registerId;
             entry.visibility = DefaultShaderStageVisibility;
-            entry.buffer.hasDynamicOffset = false;
+            entry.buffer.hasDynamicOffset = m_useDynamicOffset;
             entry.buffer.minBindingSize = 0;
             switch (desc.m_access)
             {
@@ -159,13 +160,20 @@ namespace AZ::WebGPU
                 AZ_Assert(false, "Invalid ShaderInputBufferAccess.");
                 return RHI::ResultCode::InvalidArgument;
             }
+
+            // Arrays at not supported yet on WebGPU, so we add them as consecutive buffers (shaders are modified to fit this)
+            for (uint32_t arrayIndex = 0; arrayIndex < desc.m_count; ++arrayIndex)
+            {
+                m_wgpuEntries.emplace_back(entry);
+                entry.binding++;
+            }
         }
 
         // Images
         for (uint32_t index = 0; index < imageDescs.size(); ++index)
         {
             const RHI::ShaderInputImageDescriptor& desc = imageDescs[index];
-            wgpu::BindGroupLayoutEntry& entry = m_wgpuEntries.emplace_back(wgpu::BindGroupLayoutEntry{});
+            wgpu::BindGroupLayoutEntry entry{};
             entry.binding = desc.m_registerId;
             entry.visibility = DefaultShaderStageVisibility;
             switch (desc.m_access)
@@ -174,17 +182,24 @@ namespace AZ::WebGPU
                 entry.texture.multisampled = desc.m_type == RHI::ShaderInputImageType::Image2DMultisample ||
                     desc.m_type == RHI::ShaderInputImageType::Image2DMultisampleArray;
                 entry.texture.sampleType =
-                    entry.texture.multisampled ? wgpu::TextureSampleType::UnfilterableFloat : wgpu::TextureSampleType::Float;
+                    entry.texture.multisampled ? wgpu::TextureSampleType::UnfilterableFloat : ConvertSampleType(desc.m_sampleType);
                 entry.texture.viewDimension = ConvertImageType(desc.m_type);
                 break;
             case RHI::ShaderInputImageAccess::ReadWrite:
                 entry.storageTexture.access = wgpu::StorageTextureAccess::ReadWrite;
-                entry.storageTexture.format = wgpu::TextureFormat::Undefined;
+                entry.storageTexture.format = ConvertImageFormat(desc.m_format);
                 entry.storageTexture.viewDimension = ConvertImageType(desc.m_type);
                 break;
             default:
                 AZ_Assert(false, "Invalid ShaderInputImageAccess.");
                 return RHI::ResultCode::InvalidArgument;
+            }
+
+            // Arrays at not supported yet on WebGPU, so we add them as consecutive images (shaders are modified to fit this)
+            for (uint32_t arrayIndex = 0; arrayIndex < desc.m_count; ++arrayIndex)
+            {
+                m_wgpuEntries.emplace_back(entry);
+                entry.binding++;
             }
         }
 
@@ -192,10 +207,17 @@ namespace AZ::WebGPU
         for (uint32_t index = 0; index < samplerDescs.size(); ++index)
         {
             const RHI::ShaderInputSamplerDescriptor& desc = samplerDescs[index];
-            wgpu::BindGroupLayoutEntry& entry = m_wgpuEntries.emplace_back(wgpu::BindGroupLayoutEntry{});
+            wgpu::BindGroupLayoutEntry entry;
             entry.binding = desc.m_registerId;
             entry.visibility = DefaultShaderStageVisibility;
-            entry.sampler.type = wgpu::SamplerBindingType::Filtering;
+            entry.sampler.type = ConvertSamplerBindingType(desc.m_type);
+
+            // Arrays at not supported yet on WebGPU, so we add them as consecutive samplers (shaders are modified to fit this)
+            for (uint32_t arrayIndex = 0; arrayIndex < desc.m_count; ++arrayIndex)
+            {
+                m_wgpuEntries.emplace_back(entry);
+                entry.binding++;
+            }
         }
 
         // Static samplers (WebGPU doesn't support static samplers, so we use regular ones)
@@ -205,7 +227,23 @@ namespace AZ::WebGPU
             wgpu::BindGroupLayoutEntry& entry = m_wgpuEntries.emplace_back(wgpu::BindGroupLayoutEntry{});
             entry.binding = staticSamplerInput.m_registerId;
             entry.visibility = DefaultShaderStageVisibility;
-            entry.sampler.type = ConvertReductionType(staticSamplerInput.m_samplerState.m_reductionType);
+            if (staticSamplerInput.m_samplerState.m_reductionType == RHI::ReductionType::Comparison)
+            {
+                entry.sampler.type = wgpu::SamplerBindingType::Comparison;
+            }
+            // Check if the sampler is doing filtering
+            else if (
+                !staticSamplerInput.m_samplerState.m_anisotropyEnable && // We use linear filtering when anisotropic is enabled
+                staticSamplerInput.m_samplerState.m_filterMag == RHI::FilterMode::Point &&
+                staticSamplerInput.m_samplerState.m_filterMin == RHI::FilterMode::Point &&
+                staticSamplerInput.m_samplerState.m_filterMip == RHI::FilterMode::Point)
+            {
+                entry.sampler.type = wgpu::SamplerBindingType::NonFiltering;
+            }
+            else
+            {
+                entry.sampler.type = ConvertReductionType(staticSamplerInput.m_samplerState.m_reductionType);
+            }
         }
 
         return RHI::ResultCode::Success;

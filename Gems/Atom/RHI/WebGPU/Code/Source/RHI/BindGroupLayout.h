@@ -33,6 +33,7 @@ namespace AZ::WebGPU
         struct Descriptor
         {
             RHI::ConstPtr<RHI::ShaderResourceGroupLayout> m_shaderResouceGroupLayout;
+            bool m_useDynamicBuffer = false; // Buffer bindings will use a dynamic offset
             HashValue64 GetHash() const;
         };
 
@@ -65,5 +66,6 @@ namespace AZ::WebGPU
         AZStd::vector<wgpu::BindGroupLayoutEntry> m_wgpuEntries;
         RHI::ConstPtr<RHI::ShaderResourceGroupLayout> m_shaderResourceGroupLayout;
         uint32_t m_constantDataSize = 0;
+        bool m_useDynamicOffset = false;
     };
 }

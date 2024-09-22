@@ -77,6 +77,8 @@ set(FILES
     Source/RHI/RenderPipeline.cpp
     Source/RHI/RenderPipeline.h
     Source/RHI/ResourcePoolResolver.h
+    Source/RHI/RootConstantManager.cpp
+    Source/RHI/RootConstantManager.h
     Source/RHI/Sampler.cpp
     Source/RHI/Sampler.h
     Source/RHI/Scope.cpp

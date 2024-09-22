@@ -577,4 +577,34 @@ namespace AZ::WebGPU
             return wgpu::SamplerBindingType::Undefined;
         }
     }
+
+    wgpu::TextureSampleType ConvertSampleType(RHI::ShaderInputImageSampleType type)
+    {
+        switch (type)
+        {
+        case RHI::ShaderInputImageSampleType::Float: return wgpu::TextureSampleType::Float;
+        case RHI::ShaderInputImageSampleType::UnfilterableFloat: return wgpu::TextureSampleType::UnfilterableFloat;
+        case RHI::ShaderInputImageSampleType::Depth: return wgpu::TextureSampleType::Depth;
+        case RHI::ShaderInputImageSampleType::Sint: return wgpu::TextureSampleType::Sint;
+        case RHI::ShaderInputImageSampleType::Uint: return wgpu::TextureSampleType::Uint;
+        case RHI::ShaderInputImageSampleType::Unknown: return wgpu::TextureSampleType::Undefined;
+        default:
+            AZ_Assert(false, "Unsupported ShaderInputImageSampleType %d", type);
+            return wgpu::TextureSampleType::Undefined;
+        }
+    }
+
+    wgpu::SamplerBindingType ConvertSamplerBindingType(RHI::ShaderInputSamplerType type)
+    {
+        switch (type)
+        {
+        case RHI::ShaderInputSamplerType::Filtering: return wgpu::SamplerBindingType::Filtering;
+        case RHI::ShaderInputSamplerType::NonFiltering: return wgpu::SamplerBindingType::NonFiltering;
+        case RHI::ShaderInputSamplerType::Comparison: return wgpu::SamplerBindingType::Comparison;
+        case RHI::ShaderInputSamplerType::Unknown: return wgpu::SamplerBindingType::Undefined;
+        default:
+            AZ_Assert(false, "Unsupported ShaderInputSamplerType %d", type);
+            return wgpu::SamplerBindingType::Undefined;
+        }
+    }
 }

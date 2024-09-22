@@ -14,6 +14,7 @@
 #include <RHI/Conversions.h>
 #include <RHI/PhysicalDevice.h>
 #include <RHI/NullDescriptorManager.h>
+#include <RHI/RootConstantManager.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI.Reflect/WebGPU/PlatformLimitsDescriptor.h>
 
@@ -93,6 +94,7 @@ namespace AZ::WebGPU
     void Device::EndFrameInternal()
     {
         m_frameCommandLists.clear();
+        m_rootConstantManager->Collect();
     }
 
     const wgpu::Device& Device::GetNativeDevice() const
@@ -170,6 +172,9 @@ namespace AZ::WebGPU
         result = m_stagingBufferPool->Init(*this, poolDesc);
         RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
+        m_rootConstantManager = RootConstantManager::Create();
+        m_rootConstantManager->Init(*this);
+
         return RHI::ResultCode::Success;
     }
 
@@ -181,6 +186,7 @@ namespace AZ::WebGPU
 
         m_stagingBufferPool.reset();
         m_constantBufferPool.reset();
+        m_rootConstantManager.reset();
         m_commandQueueContext.Shutdown();
 
         m_asyncUploadQueue.reset();
@@ -252,6 +258,12 @@ namespace AZ::WebGPU
     {
         AZ_Assert(m_nullDescriptorManager, "NullDescriptorManager was not created.");
         return *m_nullDescriptorManager;
+    }
+
+    RootConstantManager& Device::GetRootConstantManager()
+    {
+        AZ_Assert(m_rootConstantManager, "RootConstantManager was not created.");
+        return *m_rootConstantManager;
     }
 
     void Device::OnRHISystemInitialized()

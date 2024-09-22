@@ -18,6 +18,7 @@
 
 namespace AZ::WebGPU
 {
+    class BindGroup;
     class Device;
     class ShaderResourceGroup;
 
@@ -85,6 +86,8 @@ namespace AZ::WebGPU
             const PipelineState* m_pipelineState = nullptr;
             AZStd::array<const ShaderResourceGroup*, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_SRGByAzslBindingSlot = { {} };
             AZStd::array<WGPUBindGroup, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_bindGroups = { { nullptr } };
+            const BindGroup* m_rootConstantBindGroup = nullptr;
+            uint32_t m_rootConstantOffset = 0;
         };
 
         template<class Item>
@@ -92,7 +95,8 @@ namespace AZ::WebGPU
         void CommitViewportState();
         void CommitScissorState();
         void CommitBindGroups(RHI::PipelineStateType type);
-        void SetStreamBuffers(const RHI::DeviceStreamBufferView* streams, uint32_t count);
+        void CommitRootConstants(RHI::PipelineStateType type, uint8_t rootConstantSize, const uint8_t* rootConstants);
+        void SetStreamBuffers(const RHI::DeviceGeometryView& geometryView, const RHI::StreamBufferIndices& streamIndices);
         void SetIndexBuffer(const RHI::DeviceIndexBufferView& indexBufferView);
         void SetStencilRef(uint8_t stencilRef);
         void SetShaderResourceGroup(const RHI::DeviceShaderResourceGroup& shaderResourceGroup, RHI::PipelineStateType type);
@@ -161,8 +165,16 @@ namespace AZ::WebGPU
 
         ValidateShaderResourceGroups(pipelineType);
 
+        // Set root constants values if needed.
+        auto pipelineLayout = pipelineState->GetPipelineLayout();
+        if (item.m_rootConstantSize && pipelineLayout->GetRootConstantSize() > 0)
+        {
+            CommitRootConstants(pipelineType, item.m_rootConstantSize, item.m_rootConstants);
+        }
+
         // Set BindGroups based on the assigned SRGs.
         CommitBindGroups(pipelineType);
+
         return true;
     }
 }

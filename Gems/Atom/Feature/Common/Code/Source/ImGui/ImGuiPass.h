@@ -129,7 +129,7 @@ namespace AZ
 
             struct DrawInfo
             {
-                RHI::DrawInstanceArguments m_drawInstanceArgs;
+                uint32_t m_textureIndex = 0;
                 RHI::GeometryView m_geometryView;
                 RHI::Scissor m_scissor;
             };

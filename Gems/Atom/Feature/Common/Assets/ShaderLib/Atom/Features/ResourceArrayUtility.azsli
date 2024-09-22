@@ -1,0 +1,153 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#ifndef AZ_TRAIT_RESOURCE_ARRAY
+    #define AZ_TRAIT_RESOURCE_ARRAY 1
+#endif
+
+// This file define macros used for declaring array of resources.
+// On some platforms (e.g. WebGPU) array of resources are not supported, so we
+// unrolled a resource array as individual resources. For example:
+// Texture2D<float4> m_textures[4] is transformed into ->   Texture2D<float4> m_textures0;
+//                                                          Texture2D<float4> m_textures1;
+//                                                          Texture2D<float4> m_textures2;
+//                                                          Texture2D<float4> m_textures3;
+// We also add the [[unrolled]] attribute so AZSLc knows to treat them as a resource array.
+// To access the resource, you also need to declare a function (using a macro), instead of accessing directly with the name.
+// This function has a switch case depending on the provided index to access the proper resource.
+// float4 SampleTexture(uint index, Sampler sampler, float2 uv)
+//{
+//    switch (index)
+//    {
+//        case 0: return m_textures0.Sample(sampler, uv);  
+//        case 1: return m_textures1.Sample(sampler, uv);
+//        case 2: return m_textures2.Sample(sampler, uv);
+//        case 3: return m_textures3.Sample(sampler, uv);
+//    }    
+//}
+// @TODO Move this into AZSLc at some point
+#if AZ_TRAIT_RESOURCE_ARRAY
+    
+    #define DECLARE_RESOURCE_ARRAY(type, name, size) type name[size];
+    #define DECLARE_RESOURCE_ARRAY_FUNC(returnType, varName, funcName, op, arg1Type, arg2Type, size)\
+        returnType funcName(uint resourceIndex, arg1Type arg1, arg2Type arg2)                       \
+        {                                                                                           \
+            return varName[resourceIndex].op(arg1, arg2);                                           \
+        }
+#else
+    // Simple concat macro
+    #define PRIMITIVE_CAT(a, ...) a ## __VA_ARGS__
+
+    // Increment a number macro
+    #define INC(x) PRIMITIVE_CAT(INC_, x)
+    #define INC_0 1
+    #define INC_1 2
+    #define INC_2 3
+    #define INC_3 4
+    #define INC_4 5
+    #define INC_5 6
+    #define INC_6 7
+    #define INC_7 8
+    #define INC_8 9
+    #define INC_9 10
+    #define INC_10 11
+    #define INC_11 12
+    #define INC_12 13
+    #define INC_13 14
+    #define INC_14 15
+    #define INC_15 16
+
+    // Macros for declaring a resource array
+    #define DECLARE_RESOURCE_ARRAY_1(type, name, size) [[unrolled]] type PRIMITIVE_CAT(name, size);
+    #define DECLARE_RESOURCE_ARRAY_2(type, name, size) [[unrolled]] type PRIMITIVE_CAT(name, size); DECLARE_RESOURCE_ARRAY_1(type, name, INC(size))
+    #define DECLARE_RESOURCE_ARRAY_3(type, name, size) [[unrolled]] type PRIMITIVE_CAT(name, size); DECLARE_RESOURCE_ARRAY_2(type, name, INC(size))
+    #define DECLARE_RESOURCE_ARRAY_4(type, name, size) [[unrolled]] type PRIMITIVE_CAT(name, size); DECLARE_RESOURCE_ARRAY_3(type, name, INC(size))
+    #define DECLARE_RESOURCE_ARRAY_5(type, name, size) [[unrolled]] type PRIMITIVE_CAT(name, size); DECLARE_RESOURCE_ARRAY_4(type, name, INC(size))
+    #define DECLARE_RESOURCE_ARRAY_6(type, name, size) [[unrolled]] type PRIMITIVE_CAT(name, size); DECLARE_RESOURCE_ARRAY_5(type, name, INC(size))
+    #define DECLARE_RESOURCE_ARRAY_7(type, name, size) [[unrolled]] type PRIMITIVE_CAT(name, size); DECLARE_RESOURCE_ARRAY_6(type, name, INC(size))
+    #define DECLARE_RESOURCE_ARRAY_8(type, name, size) [[unrolled]] type PRIMITIVE_CAT(name, size); DECLARE_RESOURCE_ARRAY_7(type, name, INC(size))
+    #define DECLARE_RESOURCE_ARRAY_9(type, name, size) [[unrolled]] type PRIMITIVE_CAT(name, size); DECLARE_RESOURCE_ARRAY_8(type, name, INC(size))
+    #define DECLARE_RESOURCE_ARRAY_10(type, name, size) [[unrolled]] type PRIMITIVE_CAT(name, size); DECLARE_RESOURCE_ARRAY_9(type, name, INC(size))
+    #define DECLARE_RESOURCE_ARRAY_11(type, name, size) [[unrolled]] type PRIMITIVE_CAT(name, size); DECLARE_RESOURCE_ARRAY_10(type, name, INC(size))
+    #define DECLARE_RESOURCE_ARRAY_12(type, name, size) [[unrolled]] type PRIMITIVE_CAT(name, size); DECLARE_RESOURCE_ARRAY_11(type, name, INC(size))
+    #define DECLARE_RESOURCE_ARRAY_13(type, name, size) [[unrolled]] type PRIMITIVE_CAT(name, size); DECLARE_RESOURCE_ARRAY_12(type, name, INC(size))
+    #define DECLARE_RESOURCE_ARRAY_14(type, name, size) [[unrolled]] type PRIMITIVE_CAT(name, size); DECLARE_RESOURCE_ARRAY_13(type, name, INC(size))
+    #define DECLARE_RESOURCE_ARRAY_15(type, name, size) [[unrolled]] type PRIMITIVE_CAT(name, size); DECLARE_RESOURCE_ARRAY_14(type, name, INC(size))
+    #define DECLARE_RESOURCE_ARRAY_16(type, name, size) [[unrolled]] type PRIMITIVE_CAT(name, size); DECLARE_RESOURCE_ARRAY_15(type, name, INC(size))
+    #define DECLARE_RESOURCE_ARRAY(type, name, size) DECLARE_RESOURCE_ARRAY_##size(type, name, 0)
+
+    // Macro for adding the function call
+    #define RESOURCE_ARRAY_FUNC(varName, func) varName.func
+
+    // Macros for adding the switch case to access the specific resource
+    #define RESOURCE_ARRAY_CASE_1(index, varName, op) \
+        case index: return RESOURCE_ARRAY_FUNC(PRIMITIVE_CAT(varName,index), op)(arg1, arg2);
+    #define RESOURCE_ARRAY_CASE_2(index, varName, op) \
+        case index: return RESOURCE_ARRAY_FUNC(PRIMITIVE_CAT(varName,index), op)(arg1, arg2);\
+        RESOURCE_ARRAY_CASE_1(INC(index), varName, op)
+    #define RESOURCE_ARRAY_CASE_3(index, varName, op) \
+        case index: return RESOURCE_ARRAY_FUNC(PRIMITIVE_CAT(varName,index), op)(arg1, arg2);\
+        RESOURCE_ARRAY_CASE_2(INC(index), varName, op)
+    #define RESOURCE_ARRAY_CASE_4(index, varName, op) \
+        case index: return RESOURCE_ARRAY_FUNC(PRIMITIVE_CAT(varName,index), op)(arg1, arg2);\
+        RESOURCE_ARRAY_CASE_3(INC(index), varName, op)
+    #define RESOURCE_ARRAY_CASE_5(index, varName, op) \
+        case index: return RESOURCE_ARRAY_FUNC(PRIMITIVE_CAT(varName,index), op)(arg1, arg2);\
+        RESOURCE_ARRAY_CASE_4(INC(index), varName, op)
+    #define RESOURCE_ARRAY_CASE_6(index, varName, op) \
+        case index: return RESOURCE_ARRAY_FUNC(PRIMITIVE_CAT(varName,index), op)(arg1, arg2);\
+        RESOURCE_ARRAY_CASE_5(INC(index), varName, op)
+    #define RESOURCE_ARRAY_CASE_7(index, varName, op) \
+        case index: return RESOURCE_ARRAY_FUNC(PRIMITIVE_CAT(varName,index), op)(arg1, arg2);\
+        RESOURCE_ARRAY_CASE_6(INC(index), varName, op)
+    #define RESOURCE_ARRAY_CASE_8(index, varName, op) \
+        case index: return RESOURCE_ARRAY_FUNC(PRIMITIVE_CAT(varName,index), op)(arg1, arg2);\
+        RESOURCE_ARRAY_CASE_7(INC(index), varName, op)
+    #define RESOURCE_ARRAY_CASE_9(index, varName, op) \
+        case index: return RESOURCE_ARRAY_FUNC(PRIMITIVE_CAT(varName,index), op)(arg1, arg2);\
+        RESOURCE_ARRAY_CASE_8(INC(index), varName, op)
+    #define RESOURCE_ARRAY_CASE_10(index, varName, op) \
+        case index: return RESOURCE_ARRAY_FUNC(PRIMITIVE_CAT(varName,index), op)(arg1, arg2);\
+        RESOURCE_ARRAY_CASE_9(INC(index), varName, op)
+    #define RESOURCE_ARRAY_CASE_11(index, varName, op) \
+        case index: return RESOURCE_ARRAY_FUNC(PRIMITIVE_CAT(varName,index), op)(arg1, arg2);\
+        RESOURCE_ARRAY_CASE_10(INC(index), varName, op)
+    #define RESOURCE_ARRAY_CASE_12(index, varName, op) \
+        case index: return RESOURCE_ARRAY_FUNC(PRIMITIVE_CAT(varName,index), op)(arg1, arg2);\
+        RESOURCE_ARRAY_CASE_11(INC(index), varName, op)
+    #define RESOURCE_ARRAY_CASE_13(index, varName, op) \
+        case index: return RESOURCE_ARRAY_FUNC(PRIMITIVE_CAT(varName,index), op)(arg1, arg2);\
+        RESOURCE_ARRAY_CASE_12(INC(index), varName, op)
+    #define RESOURCE_ARRAY_CASE_14(index, varName, op) \
+        case index: return RESOURCE_ARRAY_FUNC(PRIMITIVE_CAT(varName,index), op)(arg1, arg2);\
+        RESOURCE_ARRAY_CASE_13(INC(index), varName, op)
+    #define RESOURCE_ARRAY_CASE_15(index, varName, op) \
+        case index: return RESOURCE_ARRAY_FUNC(PRIMITIVE_CAT(varName,index), op)(arg1, arg2);\
+        RESOURCE_ARRAY_CASE_14(INC(index), varName, op)
+    #define RESOURCE_ARRAY_CASE_16(index, varName, op) \
+        case index: return RESOURCE_ARRAY_FUNC(PRIMITIVE_CAT(varName,index), op)(arg1, arg2);\
+        RESOURCE_ARRAY_CASE_15(INC(index), varName, op)
+
+    // Macro for declaring the function to access the array resource
+    #define DECLARE_RESOURCE_ARRAY_FUNC(returnType, varName, funcName, op, arg1Type, arg2Type, size)    \
+        returnType funcName(uint resourceIndex, arg1Type arg1, arg2Type arg2) \
+        { \
+            switch(resourceIndex)   \
+            {                       \
+                RESOURCE_ARRAY_CASE_##size(0, varName, op)    \
+                default:                                           \
+                        return RESOURCE_ARRAY_FUNC(varName##0, op)(arg1, arg2); \
+            }                       \
+        }
+
+#endif // AZ_TRAIT_RESOURCE_ARRAY
+
+// Helper macro for declaring a sample2d function for a texture array
+#define DECLARE_TEXTURE_ARRAY_SAMPLE2D(varName, funcName, size) DECLARE_RESOURCE_ARRAY_FUNC(float4, varName, funcName, Sample, SamplerState, float2, size)

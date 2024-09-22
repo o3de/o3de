@@ -46,7 +46,13 @@ namespace AZ::WebGPU
         //! Returns the SRG flat index associated with the SRG binding slot.
         uint32_t GetIndexBySlot(uint32_t slot) const;
 
-        uint32_t GetPushContantsSize() const;
+        //! Returns the size in bytes of root constants being used
+        uint32_t GetRootConstantSize() const;
+
+        //! Returns the binding group index used for root constants.
+        uint32_t GetRootConstantIndex() const;
+
+        //! Returns the pipeline layout descriptor being used
         const RHI::PipelineLayoutDescriptor& GetPipelineLayoutDescriptor() const;
 
         const wgpu::PipelineLayout& GetNativePipelineLayout() const;
@@ -66,13 +72,13 @@ namespace AZ::WebGPU
         //////////////////////////////////////////////////////////////////////////
 
         RHI::ResultCode BuildNativePipelineLayout();
-        void BuildPushConstantRanges();
 
         /// Tables for mapping between SRG slots (sparse) to SRG indices (packed).
         AZStd::array<uint8_t, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_slotToIndexTable;
         AZStd::fixed_vector<uint8_t, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_indexToSlotTable;
 
-        uint32_t m_pushConstantsSize = 0;
+        uint32_t m_rootConstantSize = 0;
+        uint32_t m_rootConstantIndex = ~0u;
         RHI::ConstPtr<RHI::PipelineLayoutDescriptor> m_layoutDescriptor;
 
         //! Native handle

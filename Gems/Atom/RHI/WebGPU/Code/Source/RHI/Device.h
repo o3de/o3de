@@ -23,6 +23,7 @@ namespace AZ::WebGPU
     class BufferPool;
     class AsyncUploadQueue;
     class NullDescriptorManager;
+    class RootConstantManager;
 
     class Device final
         : public RHI::Device
@@ -53,6 +54,8 @@ namespace AZ::WebGPU
         AsyncUploadQueue& GetAsyncUploadQueue();
         //! Returns the manager for handling null resources
         NullDescriptorManager& GetNullDescriptorManager();
+        //! Returns the manager for root constants
+        RootConstantManager& GetRootConstantManager();
 
     protected:
         // RHI::RHISystemNotificationBus::Handler overrides...
@@ -113,6 +116,7 @@ namespace AZ::WebGPU
 
         RHI::Ptr<AsyncUploadQueue> m_asyncUploadQueue;
         RHI::Ptr<NullDescriptorManager> m_nullDescriptorManager;
+        RHI::Ptr<RootConstantManager> m_rootConstantManager;
     };
 
     template<typename ObjectType, typename... Args>

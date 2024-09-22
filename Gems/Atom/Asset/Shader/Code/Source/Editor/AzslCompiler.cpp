@@ -622,6 +622,14 @@ namespace AZ
                                 {
                                     inputsForImageViews.m_spaceId = itr4->value.GetInt();
                                 }
+                                else if (attributeArrayMemberName == "format")
+                                {
+                                    inputsForImageViews.m_format = StringToFormat(itr4->value.GetString());
+                                }
+                                else if (attributeArrayMemberName == "sampleType")
+                                {
+                                    inputsForImageViews.m_sampleType = StringToSampleType(itr4->value.GetString());
+                                }
                             }
                             srgData.m_textures.push_back(inputsForImageViews);
                         }
@@ -716,6 +724,10 @@ namespace AZ
                                 else if (AzFramework::StringFunc::Equal(attributeArrayMemberName, "space"))
                                 {
                                     sampler.m_spaceId = itr4->value.GetInt();
+                                }
+                                else if (AzFramework::StringFunc::Equal(attributeArrayMemberName, "bindingType"))
+                                {
+                                    sampler.m_type = StringToSamplerType(itr4->value.GetString());
                                 }
                             }
                             sampler.m_descriptor = samplerStateDesc;

@@ -13,6 +13,7 @@
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/PipelineState.h>
+#include <RHI/RootConstantManager.h>
 #include <RHI/RenderPipeline.h>
 #include <RHI/ShaderResourceGroup.h>
 
@@ -110,7 +111,7 @@ namespace AZ::WebGPU
         }
 
         SetStencilRef(drawItem.m_stencilRef);
-        SetStreamBuffers(drawItem.m_streamBufferViews, drawItem.m_streamBufferViewCount);
+        SetStreamBuffers(*drawItem.m_geometryView, drawItem.m_streamIndices);
 
         RHI::CommandListScissorState scissorState;
         if (drawItem.m_scissorsCount)
@@ -129,25 +130,32 @@ namespace AZ::WebGPU
         CommitScissorState();
         CommitViewportState();
 
-        switch (drawItem.m_arguments.m_type)
+        switch (drawItem.m_geometryView->GetDrawArguments().m_type)
         {
         case RHI::DrawType::Indexed:
             {
-                AZ_Assert(drawItem.m_indexBufferView, "IndexBufferView is null.");
+                AZ_Assert(drawItem.m_geometryView->GetIndexBufferView().GetBuffer(), "IndexBufferView is null.");
 
-                const RHI::DrawIndexed& indexed = drawItem.m_arguments.m_indexed;
-                SetIndexBuffer(*drawItem.m_indexBufferView);
+                const RHI::DrawIndexed& indexed = drawItem.m_geometryView->GetDrawArguments().m_indexed;
+                SetIndexBuffer(drawItem.m_geometryView->GetIndexBufferView());
 
                 m_state.m_wgpuRenderPassEncoder.DrawIndexed(
-                    indexed.m_indexCount, indexed.m_instanceCount, indexed.m_indexOffset, indexed.m_vertexOffset, indexed.m_instanceOffset);
+                    indexed.m_indexCount,
+                    drawItem.m_drawInstanceArgs.m_instanceCount,
+                    indexed.m_indexOffset,
+                    indexed.m_vertexOffset,
+                    drawItem.m_drawInstanceArgs.m_instanceOffset);
                 break;
             }
         case RHI::DrawType::Linear:
             {
-                const RHI::DrawLinear& linear = drawItem.m_arguments.m_linear;
+                const RHI::DrawLinear& linear = drawItem.m_geometryView->GetDrawArguments().m_linear;
 
                 m_state.m_wgpuRenderPassEncoder.Draw(
-                    linear.m_vertexCount, linear.m_instanceCount, linear.m_vertexOffset, linear.m_instanceOffset);
+                    linear.m_vertexCount,
+                    drawItem.m_drawInstanceArgs.m_instanceCount,
+                    linear.m_vertexOffset,
+                    drawItem.m_drawInstanceArgs.m_instanceOffset);
                 break;
             }
         case RHI::DrawType::Indirect:
@@ -295,6 +303,28 @@ namespace AZ::WebGPU
         const PipelineState& pipelineState = *bindings.m_pipelineState;
         const PipelineLayout& pipelineLayout = *pipelineState.GetPipelineLayout();
         const RHI::PipelineLayoutDescriptor& pipelineLayoutDescriptor = pipelineLayout.GetPipelineLayoutDescriptor();
+        auto setBindGroup =
+            [&](uint32_t index, const BindGroup& group, size_t dynamicOffsetCount = 0, uint32_t const* dynamicOffsets = nullptr)
+        {
+            const wgpu::BindGroup& bindGroup = group.GetNativeBindGroup();
+            if (bindings.m_bindGroups[index] != bindGroup.Get() || dynamicOffsetCount > 0)
+            {
+                switch (pipelineState.GetType())
+                {
+                case RHI::PipelineStateType::Draw:
+                    m_state.m_wgpuRenderPassEncoder.SetBindGroup(index, bindGroup, dynamicOffsetCount, dynamicOffsets);
+                    break;
+                case RHI::PipelineStateType::Dispatch:
+                    m_state.m_wgpuComputePassEncoder.SetBindGroup(index, bindGroup, dynamicOffsetCount, dynamicOffsets);
+                    break;
+                default:
+                    AZ_Assert(false, "Invalid pipeline state %d", pipelineState.GetType());
+                    return;
+                }
+                bindings.m_bindGroups[index] = bindGroup.Get();
+            }
+        };
+
         for (uint32_t srgIndex = 0; srgIndex < pipelineLayoutDescriptor.GetShaderResourceGroupLayoutCount(); ++srgIndex)
         {
             uint32_t bindingSlot = pipelineLayoutDescriptor.GetShaderResourceGroupLayout(srgIndex)->GetBindingSlot();
@@ -304,39 +334,53 @@ namespace AZ::WebGPU
             if (shaderResourceGroup)
             {
                 auto& compiledData = shaderResourceGroup->GetCompiledData();
-                const wgpu::BindGroup& bindGroup = compiledData.GetNativeBindGroup();
-                if (bindings.m_bindGroups[bindingGroupIndex] != bindGroup.Get())
-                {
-                    switch (pipelineState.GetType())
-                    {
-                    case RHI::PipelineStateType::Draw:
-                        m_state.m_wgpuRenderPassEncoder.SetBindGroup(bindingGroupIndex, bindGroup);
-                        break;
-                    case RHI::PipelineStateType::Dispatch:
-                        m_state.m_wgpuComputePassEncoder.SetBindGroup(bindingGroupIndex, bindGroup);
-                        break;
-                    default:
-                        AZ_Assert(false, "Invalid pipeline state %d", pipelineState.GetType());
-                        return;
-                    }
-                    bindings.m_bindGroups[bindingGroupIndex] = bindGroup.Get();
-                }
+                setBindGroup(bindingGroupIndex, compiledData);
             }
+        }
+
+        // Set the binding group use for root constants
+        if (bindings.m_rootConstantBindGroup)
+        {
+            setBindGroup(
+                pipelineLayout.GetRootConstantIndex(),
+                *bindings.m_rootConstantBindGroup,
+                1,
+                &bindings.m_rootConstantOffset);
         }
     }
 
-    void CommandList::SetStreamBuffers(const RHI::DeviceStreamBufferView* streams, uint32_t count)
+    void CommandList::CommitRootConstants(
+        RHI::PipelineStateType type,
+        uint8_t rootConstantSize,
+        const uint8_t* rootConstants)
     {
-        for (uint32_t index = 0; index < count; ++index)
+        ShaderResourceBindings& bindings = GetShaderResourceBindingsByPipelineType(type);
+        RootConstantManager& rootConstantManager = static_cast<Device&>(GetDevice()).GetRootConstantManager();
+        auto allocation = rootConstantManager.Allocate(rootConstantSize);
+        AZ_Assert(allocation.m_bindGroup, "Invalid root constant allocation");
+        // Since root constants are not supported yet, we use a uniform buffer to pass the values.
+        // Update the buffer used for root constants at the specified offset.
+        static_cast<Device&>(GetDevice())
+            .GetCommandQueueContext()
+            .GetCommandQueue(RHI::HardwareQueueClass::Graphics)
+            .WriteBuffer(*allocation.m_buffer, allocation.m_bufferOffset, AZStd::span<const uint8_t>(rootConstants, rootConstantSize));
+        bindings.m_rootConstantBindGroup = allocation.m_bindGroup.get();
+        bindings.m_rootConstantOffset = allocation.m_bufferOffset;
+    }
+
+    void CommandList::SetStreamBuffers(const RHI::DeviceGeometryView& geometryView, const RHI::StreamBufferIndices& streamIndices)
+    {
+        auto streamIter = geometryView.CreateStreamIterator(streamIndices);
+        for (u8 index = 0; !streamIter.HasEnded(); ++streamIter, ++index)
         {
-            if (m_state.m_streamBufferHashes[index] != static_cast<uint64_t>(streams[index].GetHash()))
+            if (m_state.m_streamBufferHashes[index] != static_cast<uint64_t>(streamIter->GetHash()))
             {
-                m_state.m_streamBufferHashes[index] = static_cast<uint64_t>(streams[index].GetHash());
+                m_state.m_streamBufferHashes[index] = static_cast<uint64_t>(streamIter->GetHash());
                 m_state.m_wgpuRenderPassEncoder.SetVertexBuffer(
                     index,
-                    static_cast<const Buffer*>(streams[index].GetBuffer())->GetNativeBuffer(),
-                    streams[index].GetByteOffset(),
-                    streams[index].GetByteCount());
+                    static_cast<const Buffer*>(streamIter->GetBuffer())->GetNativeBuffer(),
+                    streamIter->GetByteOffset(),
+                    streamIter->GetByteCount());
             }
         }
     }

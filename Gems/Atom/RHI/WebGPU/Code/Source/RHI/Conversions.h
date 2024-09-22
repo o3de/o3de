@@ -52,4 +52,6 @@ namespace AZ::WebGPU
     wgpu::IndexFormat ConvertIndexFormat(RHI::IndexFormat format);
     wgpu::TextureViewDimension ConvertImageType(RHI::ShaderInputImageType type);
     wgpu::SamplerBindingType ConvertReductionType(RHI::ReductionType type);
+    wgpu::TextureSampleType ConvertSampleType(RHI::ShaderInputImageSampleType type);
+    wgpu::SamplerBindingType ConvertSamplerBindingType(RHI::ShaderInputSamplerType type);
 }
