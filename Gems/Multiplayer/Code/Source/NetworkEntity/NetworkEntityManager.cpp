@@ -236,7 +236,7 @@ namespace Multiplayer
 
     void NetworkEntityManager::HandleLocalRpcMessage(NetworkEntityRpcMessage& message)
     {
-        m_localDeferredRpcMessages.emplace_back(AZStd::move(message));
+        m_localDeferredRpcMessages.emplace_back(message);
     }
 
     void NetworkEntityManager::HandleEntitiesExitDomain(const NetEntityIdSet& entitiesNotInDomain)
@@ -245,7 +245,7 @@ namespace Multiplayer
         {
             NetworkEntityHandle entityHandle = m_networkEntityTracker.Get(exitingId);
 
-            bool safeToExit = IsHierarchySafeToExit(entityHandle, entitiesNotInDomain);;
+            bool safeToExit = IsHierarchySafeToExit(entityHandle, entitiesNotInDomain);
 
             // Validate that we aren't already planning to remove this entity
             if (safeToExit)

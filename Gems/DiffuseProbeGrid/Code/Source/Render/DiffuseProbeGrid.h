@@ -293,10 +293,6 @@ namespace AZ
 
             const DiffuseProbeGridRenderData* GetRenderData() const { return m_renderData; }
 
-            // the Irradiance, Distance, and ProbeData images need to be manually cleared after certain operations, e.g., changing the grid size
-            bool GetTextureClearRequired() const { return m_textureClearRequired; }
-            void ResetTextureClearRequired() { m_textureClearRequired = false; }
-
             // texture readback
             DiffuseProbeGridTextureReadback& GetTextureReadback() { return m_textureReadback; }
 
@@ -412,7 +408,6 @@ namespace AZ
             RHI::Ptr<RHI::Image> m_probeDataImage[ImageFrameCount];
             uint32_t m_currentImageIndex = 0;
             bool m_updateTextures = false;
-            bool m_textureClearRequired = true;
 
             // baked textures
             Data::Instance<RPI::Image> m_bakedIrradianceImage;

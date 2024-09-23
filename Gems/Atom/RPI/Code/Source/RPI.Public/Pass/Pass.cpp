@@ -92,6 +92,7 @@ namespace AZ
 
             // Skip reset since the pass just got created
             m_state = PassState::Reset;
+            m_flags.m_lastFrameEnabled = m_flags.m_enabled;
         }
 
         Pass::~Pass()
@@ -1462,12 +1463,12 @@ namespace AZ
 
             bool isEnabled = IsEnabled();
             bool earlyOut = !isEnabled;
-            // Since IsEnabled can be virtual, we update m_flags.m_enabled with the proper value.
-            if (isEnabled != m_flags.m_enabled)
+            // Since IsEnabled can be virtual and we need to detect HierarchyChange, we can't use the m_flags.m_enabled flag
+            if (isEnabled != m_flags.m_lastFrameEnabled)
             {
-                SetEnabled(isEnabled);
+                OnHierarchyChange();
             }
-
+            m_flags.m_lastFrameEnabled = isEnabled;
             // Skip if this pass is the root of the pipeline and the pipeline is set to not render
             if (m_flags.m_isPipelineRoot)
             {
