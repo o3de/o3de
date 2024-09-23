@@ -126,7 +126,7 @@ namespace AZ
             CustomMaterialInfo GetCustomMaterialWithFallback(const CustomMaterialId& id) const;
 
             // When instancing is disabled, draw packets are owned by the ModelDataInstance
-            RPI::MeshDrawPacketLods m_drawPacketListsByLod;
+            RPI::MeshDrawPacketLods m_meshDrawPacketListsByLod;
             
             // When instancing is enabled, draw packets are owned by the MeshInstanceManager,
             // and the ModelDataInstance refers to those draw packets via InstanceGroupHandles,
