@@ -32,8 +32,7 @@ set(ASSIMP_INSTALL OFF)  # Disable since we're using Assimp as a sub module
 set(ASSIMP_INJECT_DEBUG_POSTFIX OFF)  # Stop Assimp from adding 'd' to debug target outputs (mylibraryd.dll) https://github.com/assimp/assimp/blob/f63625256c4e6f18fca8e7dc857b47a02320e867/CMakeLists.txt#L411
 set(ASSIMP_HUNTER_ENABLED OFF)
 
-# Include compiler settings for Assimp libraries based on platform and compiler
-include(Platform/${PAL_PLATFORM_NAME}/PAL_assimp_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+# Include compiler settings for Assimp libraries based on compiler
 include(Platform/Common/${PAL_TRAIT_COMPILER_ID}/PAL_assimp_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake)
 
 # Assimp requires ZLIB
