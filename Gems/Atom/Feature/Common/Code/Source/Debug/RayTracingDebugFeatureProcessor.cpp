@@ -9,7 +9,7 @@
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Debug/RayTracingDebugFeatureProcessor.h>
-#include <Atom/Feature/RayTracing/RayTracingFeatureProcessor.h>
+#include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ::Render
 {

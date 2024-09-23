@@ -102,7 +102,7 @@ set(FILES
     Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceSettingsInterface.h
     Include/Atom/Feature/PostProcessing/PostProcessingConstants.h
     Include/Atom/Feature/PostProcessing/SMAAFeatureProcessorInterface.h
-    Include/Atom/Feature/RayTracing/RayTracingFeatureProcessor.h
+    Include/Atom/Feature/RayTracing/RayTracingFeatureProcessorInterface.h
     Include/Atom/Feature/RayTracing/RayTracingIndexList.h
     Include/Atom/Feature/RayTracing/RayTracingPass.h
     Include/Atom/Feature/RayTracing/RayTracingPassData.h
@@ -146,7 +146,6 @@ set(FILES
     Source/DisplayMapper/DisplayMapperConfigurationDescriptor.cpp
     Source/LightingChannel/LightingChannelConfiguration.cpp
     Source/MorphTargets/MorphTargetInputBuffers.cpp
-    Source/RayTracing/RayTracingFeatureProcessor.cpp
     Source/RayTracing/RayTracingPass.cpp
     Source/SkinnedMesh/SkinnedMeshInputBuffers.cpp
     Source/SkinnedMesh/SkinnedMeshInstance.cpp

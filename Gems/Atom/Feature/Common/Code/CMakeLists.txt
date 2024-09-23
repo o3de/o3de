@@ -27,10 +27,9 @@ ly_add_target(
         PRIVATE
             IMGUI_DISABLE_OBSOLETE_FUNCTIONS
     BUILD_DEPENDENCIES
-        PRIVATE
+        PUBLIC
             AZ::AzCore
             AZ::AzFramework
-        PUBLIC
             Gem::Atom_RPI.Public
             Gem::Atom_Utils.Static
             Gem::ImGui.imguilib
@@ -59,7 +58,6 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
-            Gem::${gem_name}.Private.Object
         PUBLIC
             Gem::Atom_RPI.Public
             Gem::Atom_Utils.Static
@@ -78,14 +76,11 @@ ly_add_target(
         PRIVATE
             Source
             ${pal_source_dir}
-        PUBLIC
-            Include
     BUILD_DEPENDENCIES
-        PRIVATE
-            AZ::AzCore
-            AZ::AzFramework
-            Gem::${gem_name}.Private.Object
+        PUBLIC
             Gem::${gem_name}.Public
+        PRIVATE
+            Gem::${gem_name}.Private.Object
 )
 
 ly_add_target(
@@ -105,11 +100,12 @@ ly_add_target(
         PRIVATE
             O3DE_HEADLESS_SERVER=1
     BUILD_DEPENDENCIES
+        PUBLIC
+            Gem::${gem_name}.Public
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
             Gem::${gem_name}.Private.Object
-            Gem::${gem_name}.Public
 )
 
 # Inject the gem name into the Module source file
