@@ -66,7 +66,14 @@ ly_add_target(
 
 # Move the Assimp projects into the SDKWrapper module folder
 get_target_property(SDKWRAPPER_FOLDER SDKWrapper FOLDER)
-set(assimpLibraries assimp;tinyusdz;tinyusdz_static;UpdateAssimpLibsDebugSymbolsAndDLLs)
+
+set(assimpLibraries assimp tinyusdz tinyusdz_static)
+
+# Move UpdateAssimpLibsDebugSymbolsAndDLLs if needed. Not all platforms produce this target.
+if(TARGET UpdateAssimpLibsDebugSymbolsAndDLLs)
+    list(APPEND assimpLibraries UpdateAssimpLibsDebugSymbolsAndDLLs)
+endif()
+
 foreach(assimpLibrary ${assimpLibraries})
     set_property(TARGET ${assimpLibrary} PROPERTY FOLDER "${SDKWRAPPER_FOLDER}/assimp")
 endforeach()
