@@ -23,7 +23,7 @@
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/MeshDrawPacket.h>
 
-#include <Atom/Feature/RayTracing/RayTracingFeatureProcessor.h>
+#include <Atom/Feature/RayTracing/RayTracingFeatureProcessorInterface.h>
 
 #include <TerrainRenderer/Vector2i.h>
 
@@ -142,8 +142,8 @@ namespace Terrain
             struct MeshGroup
             {
                 AZ::Uuid m_id { AZ::Uuid::CreateRandom() };
-                AZ::Render::RayTracingFeatureProcessor::Mesh m_mesh;
-                AZ::Render::RayTracingFeatureProcessor::SubMeshVector m_submeshVector;
+                AZ::Render::RayTracingFeatureProcessorInterface::Mesh m_mesh;
+                AZ::Render::RayTracingFeatureProcessorInterface::SubMeshVector m_submeshVector;
                 bool m_isVisible = false;
             };
 
@@ -292,7 +292,7 @@ namespace Terrain
 
         MeshConfiguration m_config;
         AZ::RPI::Scene* m_parentScene;
-        AZ::Render::RayTracingFeatureProcessor* m_rayTracingFeatureProcessor;
+        AZ::Render::RayTracingFeatureProcessorInterface* m_rayTracingFeatureProcessor;
 
         MaterialInstance m_materialInstance;
         AZStd::vector<CachedDrawData> m_cachedDrawData; // Holds common parts of draw packets
