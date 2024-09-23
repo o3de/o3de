@@ -36,7 +36,7 @@ set(ASSIMP_HUNTER_ENABLED OFF)
 include(Platform/Common/${PAL_TRAIT_COMPILER_ID}/PAL_assimp_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake)
 
 # Assimp requires ZLIB
-find_package(zlib REQUIRED)
+find_package(ZLIB REQUIRED)
 
 FetchContent_MakeAvailable(assimp)
 
