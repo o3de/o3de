@@ -14,7 +14,6 @@ ly_add_target(
     NAMESPACE Gem
     FILES_CMAKE
         atom_feature_common_files.cmake
-        atom_feature_common_staticlibrary_files.cmake
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     PLATFORM_INCLUDE_FILES
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake

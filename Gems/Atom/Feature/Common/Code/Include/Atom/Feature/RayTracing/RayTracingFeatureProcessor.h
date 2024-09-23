@@ -10,7 +10,7 @@
 
 #include <Atom/Feature/RayTracing/RayTracingFeatureProcessor.h>
 #include <Atom/Feature/RayTracing/RayTracingIndexList.h>
-#include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
+#include <Atom/Feature/TransformService/TransformServiceFeatureProcessorInterface.h>
 #include <Atom/RHI/IndexBufferView.h>
 #include <Atom/RHI/StreamBufferView.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
@@ -19,6 +19,7 @@
 #include <Atom/RHI/DeviceImageView.h>
 #include <Atom/RPI.Public/Buffer/RingBuffer.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
+#include <Atom/RPI.Reflect/Image/Image.h>
 #include <Atom/Utils/StableDynamicArray.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Color.h>
@@ -451,7 +452,7 @@ namespace AZ
             RHI::AttachmentId m_tlasAttachmentId;
 
             // cached TransformServiceFeatureProcessor
-            TransformServiceFeatureProcessor* m_transformServiceFeatureProcessor = nullptr;
+            TransformServiceFeatureProcessorInterface* m_transformServiceFeatureProcessor = nullptr;
 
             // mutex for the mesh and BLAS lists
             AZStd::mutex m_mutex;

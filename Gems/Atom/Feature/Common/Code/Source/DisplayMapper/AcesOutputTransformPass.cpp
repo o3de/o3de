@@ -6,7 +6,7 @@
  *
  */
 
-#include <Atom/Feature/DisplayMapper/AcesOutputTransformPass.h>
+#include <DisplayMapper/AcesOutputTransformPass.h>
 #include <ACES/Aces.h>
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>

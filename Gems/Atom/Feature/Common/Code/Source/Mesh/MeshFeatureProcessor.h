@@ -11,7 +11,6 @@
 #include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
 #include <Atom/Feature/RayTracing/RayTracingFeatureProcessor.h>
-#include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/RHI/TagBitRegistry.h>
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/MeshDrawPacket.h>
@@ -22,6 +21,7 @@
 #include <AzCore/Console/Console.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <Mesh/MeshInstanceManager.h>
+#include <TransformService/TransformServiceFeatureProcessor.h>
 
 namespace AZ
 {

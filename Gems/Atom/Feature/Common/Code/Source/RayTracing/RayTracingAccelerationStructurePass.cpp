@@ -6,7 +6,6 @@
  *
  */
 
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/Feature/RayTracing/RayTracingFeatureProcessor.h>
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
@@ -18,6 +17,7 @@
 #include <Atom/RPI.Public/Buffer/BufferSystemInterface.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
+#include <Mesh/MeshFeatureProcessor.h>
 #include <RayTracing/RayTracingAccelerationStructurePass.h>
 
 namespace AZ

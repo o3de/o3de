@@ -18,7 +18,7 @@
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
-#include <Atom/Feature/DisplayMapper/DisplayMapperFullScreenPass.h>
+#include <DisplayMapper/DisplayMapperFullScreenPass.h>
 
 namespace AZ
 {
