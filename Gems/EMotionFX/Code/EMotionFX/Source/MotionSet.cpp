@@ -74,11 +74,7 @@ namespace EMotionFX
 
     MotionSet::MotionEntry::MotionEntry()
         : m_motion(nullptr)
-#if defined (CARBONATED)
-        , m_loadAttempts(MaxAttemptsToLoad)
-#else
         , m_loadFailed(false)
-#endif
     {
     }
 
@@ -87,11 +83,7 @@ namespace EMotionFX
         : m_id(motionId)
         , m_filename(fileName)
         , m_motion(motion)
-#if defined (CARBONATED)
-        , m_loadAttempts(MaxAttemptsToLoad)
-#else
         , m_loadFailed(false)
-#endif
     {
     }
 
@@ -162,7 +154,11 @@ namespace EMotionFX
         , m_dirtyFlag(false)
     {
         m_id                 = aznumeric_caster(MCore::GetIDGenerator().GenerateID());
+#if defined (CARBONATED)
+        m_callback           = nullptr; // do not use MotionSetCallback as default loader callback class due to it does not work with platforms (e.g. with iOS)
+#else
         m_callback           = aznew MotionSetCallback(this);
+#endif
 
 #if defined(EMFX_DEVELOPMENT_BUILD)
         m_isOwnedByRuntime   = false;
@@ -450,12 +446,6 @@ namespace EMotionFX
         }
 
         Motion* motion = entry->GetMotion();
-#if defined (CARBONATED)
-        if (!motion && !entry->GetLoadingFailed())
-        {
-            loadOnDemand = true;
-        }
-#endif
         if (loadOnDemand)
         {
             motion = LoadMotion(entry);
@@ -537,7 +527,11 @@ namespace EMotionFX
         Motion* motion = entry->GetMotion();
 
         // If loading on demand is enabled and the motion hasn't loaded yet.
+#if defined (CARBONATED)
+        if (!motion && !entry->GetFilenameString().empty() && !entry->GetLoadingFailed() && m_callback) // ... and desired loader callback has been assigned
+#else
         if (!motion && !entry->GetFilenameString().empty() && !entry->GetLoadingFailed())
+#endif
         {
             motion = m_callback->LoadMotion(entry);
 
@@ -546,7 +540,7 @@ namespace EMotionFX
             {
                 entry->SetLoadingFailed(true);
 #if defined (CARBONATED)
-                AZ_Printf("EMotionFX", "Failed to load motion '%s' for motion set '%s'. Attempts left: %i", entry->GetFilename(), GetName(), entry->GetLoadAttempts());
+                AZ_Printf("EMotionFX", "Failed to load motion '%s' for motion set '%s'.", entry->GetFilename(), GetName());
 #endif
             }
 #if defined (CARBONATED)
