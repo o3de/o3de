@@ -6,7 +6,7 @@
  *
  */
 
-#include <Atom/Feature/DisplayMapper/AcesOutputTransformLutPass.h>
+#include <DisplayMapper/AcesOutputTransformLutPass.h>
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
 
 #include <Atom/RHI/FrameGraphInterface.h>

@@ -7,33 +7,31 @@
  */
 
 #include <CommonSystemComponent.h>
-#include <Source/Material/UseTextureFunctor.h>
-#include <Source/Material/SubsurfaceTransmissionParameterFunctor.h>
-#include <Source/Material/Transform2DFunctor.h>
-#include <Source/Material/ConvertEmissiveUnitFunctor.h>
+#include <Material/UseTextureFunctor.h>
+#include <Material/SubsurfaceTransmissionParameterFunctor.h>
+#include <Material/Transform2DFunctor.h>
+#include <Material/ConvertEmissiveUnitFunctor.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 
-#include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h> 
-#include <Atom/Feature/LookupTable/LookupTableAsset.h>
+#include <LookupTable/LookupTableAsset.h>
 #include <ReflectionProbe/ReflectionProbeFeatureProcessor.h>
 #include <SpecularReflections/SpecularReflectionsFeatureProcessor.h>
+#include <TransformService/TransformServiceFeatureProcessor.h>
 #include <CubeMapCapture/CubeMapCaptureFeatureProcessor.h>
 
-#include <Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessor.h>
-#include <Atom/Feature/DisplayMapper/AcesOutputTransformLutPass.h>
-#include <Atom/Feature/DisplayMapper/AcesOutputTransformPass.h>
-#include <Atom/Feature/DisplayMapper/ApplyShaperLookupTablePass.h>
-#include <Atom/Feature/DisplayMapper/BakeAcesOutputTransformLutPass.h>
-#include <Atom/Feature/DisplayMapper/DisplayMapperPass.h>
-#include <Atom/Feature/DisplayMapper/DisplayMapperFullScreenPass.h>
+#include <ImageBasedLights/ImageBasedLightFeatureProcessor.h>
+#include <DisplayMapper/AcesOutputTransformLutPass.h>
+#include <DisplayMapper/AcesOutputTransformPass.h>
+#include <DisplayMapper/ApplyShaperLookupTablePass.h>
+#include <DisplayMapper/BakeAcesOutputTransformLutPass.h>
+#include <DisplayMapper/DisplayMapperPass.h>
+#include <DisplayMapper/DisplayMapperFullScreenPass.h>
+#include <DisplayMapper/OutputTransformPass.h>
 #include <Atom/Feature/DisplayMapper/DisplayMapperConfigurationDescriptor.h>
-#include <Atom/Feature/DisplayMapper/OutputTransformPass.h>
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
-#include <Atom/Feature/AuxGeom/AuxGeomFeatureProcessor.h>
 #include <Atom/Feature/LightingChannel/LightingChannelConfiguration.h>
 #include <Atom/Feature/RayTracing/RayTracingPass.h>
 #include <Atom/Feature/RayTracing/RayTracingFeatureProcessor.h>
@@ -41,9 +39,12 @@
 #include <Atom/Feature/SplashScreen/SplashScreenSettings.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
+#include <Atom/Feature/SkyBox/SkyBoxFogSettings.h>
+#include <AuxGeom/AuxGeomFeatureProcessor.h>
 #include <ColorGrading/LutGenerationPass.h>
 #include <Debug/RayTracingDebugFeatureProcessor.h>
 #include <Debug/RenderDebugFeatureProcessor.h>
+#include <Mesh/MeshFeatureProcessor.h>
 #include <Silhouette/SilhouetteFeatureProcessor.h>
 #include <PostProcess/PostProcessFeatureProcessor.h>
 #include <PostProcessing/BlendColorGradingLutsPass.h>
@@ -81,7 +82,6 @@
 #include <Shadows/ProjectedShadowFeatureProcessor.h>
 #include <SkyAtmosphere/SkyAtmosphereFeatureProcessor.h>
 #include <SkyAtmosphere/SkyAtmosphereParentPass.h>
-#include <SkyBox/SkyBoxFogSettings.h>
 #include <SkyBox/SkyBoxFeatureProcessor.h>
 #include <SplashScreen/SplashScreenFeatureProcessor.h>
 #include <SplashScreen/SplashScreenPass.h>

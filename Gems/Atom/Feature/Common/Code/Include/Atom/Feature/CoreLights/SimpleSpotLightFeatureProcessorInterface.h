@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
+#include <Atom/RPI.Reflect/Image/Image.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/CoreLights/ShadowConstants.h>
 

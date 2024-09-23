@@ -11,8 +11,6 @@
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshHandleStateBus.h>
 
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
-
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/RHIUtils.h>
 #include <Atom/RPI.Public/Model/Model.h>

@@ -7,7 +7,9 @@
  */
 
 #include <Source/Debug/MultiplayerDebugSystemComponent.h>
+#include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/StringFunc/StringFunc.h>
@@ -20,7 +22,6 @@
 #include <Multiplayer/MultiplayerMetrics.h>
 #include <Atom/Feature/ImGui/SystemBus.h>
 #include <ImGuiContextScope.h>
-#include <ImGui/ImGuiPass.h>
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
 

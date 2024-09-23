@@ -8,7 +8,6 @@
 
 #include <Atom/Feature/RayTracing/RayTracingFeatureProcessor.h>
 #include <Atom/Feature/RayTracing/RayTracingPass.h>
-#include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -16,7 +15,6 @@
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
-#include <Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessor.h>
 #include <CoreLights/DirectionalLightFeatureProcessor.h>
 #include <CoreLights/SimplePointLightFeatureProcessor.h>
 #include <CoreLights/SimpleSpotLightFeatureProcessor.h>
@@ -24,6 +22,7 @@
 #include <CoreLights/DiskLightFeatureProcessor.h>
 #include <CoreLights/CapsuleLightFeatureProcessor.h>
 #include <CoreLights/QuadLightFeatureProcessor.h>
+#include <ImageBasedLights/ImageBasedLightFeatureProcessor.h>
 
 namespace AZ
 {
@@ -49,7 +48,7 @@ namespace AZ
                 return;
             }
             
-            m_transformServiceFeatureProcessor = GetParentScene()->GetFeatureProcessor<TransformServiceFeatureProcessor>();
+            m_transformServiceFeatureProcessor = GetParentScene()->GetFeatureProcessor<TransformServiceFeatureProcessorInterface>();
 
             // initialize the ray tracing buffer pools
             m_bufferPools = aznew RHI::RayTracingBufferPools;

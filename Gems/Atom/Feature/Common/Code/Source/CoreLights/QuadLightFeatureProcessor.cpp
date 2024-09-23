@@ -7,14 +7,14 @@
  */
 
 #include <CoreLights/QuadLightFeatureProcessor.h>
+#include <CoreLights/LightCommon.h>
 #include <CoreLights/LtcCommon.h>
+#include <Mesh/MeshFeatureProcessor.h>
 
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Color.h>
 
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
-#include <Atom/Feature/CoreLights/LightCommon.h>
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 
 #include <Atom/RHI/Factory.h>
 
