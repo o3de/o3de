@@ -1394,12 +1394,12 @@ namespace AZ
                 subpassInputSupported = renderPipeline->SubpassMergingSupported();
             }
             
-            RHI::SubpassInputSupportType supportTypes = RHI::RHISystemInterface::Get()->GetDevice()->GetFeatures().m_subpassInputSupport;
+            RHI::SubpassInputSupportType supportedTypes = RHI::RHISystemInterface::Get()->GetDevice()->GetFeatures().m_subpassInputSupport;
             if (!subpassInputSupported)
             {
-                supportTypes = RHI::SubpassInputSupportType::None;
+                supportedTypes = RHI::SubpassInputSupportType::None;
             }
-            ReplaceSubpassInputs(supportTypes);
+            ReplaceSubpassInputs(supportedTypes);
             OnBuildFinishedInternal();
 
             m_flags.m_hasSubpassInput = AZStd::any_of(
@@ -1756,7 +1756,7 @@ namespace AZ
             return AZ::Name(m_flags.m_hasSubpassInput ? RPI::SubpassInputSupervariantName : "");
         }
 
-        void Pass::ReplaceSubpassInputs(RHI::SubpassInputSupportType supportTypes)
+        void Pass::ReplaceSubpassInputs(RHI::SubpassInputSupportType supportedTypes)
         {
             m_flags.m_hasSubpassInput = false;
             for (size_t slotIndex = 0; slotIndex < m_attachmentBindings.size(); ++slotIndex)
@@ -1766,9 +1766,9 @@ namespace AZ
                 {
                     const RHI::ImageViewDescriptor& descriptor = binding.m_unifiedScopeDesc.GetImageViewDescriptor();
                     if ((RHI::CheckBitsAny(descriptor.m_aspectFlags, RHI::ImageAspectFlags::Color) &&
-                         RHI::CheckBitsAny(supportTypes, RHI::SubpassInputSupportType::Color)) ||
+                         RHI::CheckBitsAny(supportedTypes, RHI::SubpassInputSupportType::Color)) ||
                         (RHI::CheckBitsAny(descriptor.m_aspectFlags, RHI::ImageAspectFlags::DepthStencil) &&
-                         RHI::CheckBitsAny(supportTypes, RHI::SubpassInputSupportType::DepthStencil)))
+                         RHI::CheckBitsAny(supportedTypes, RHI::SubpassInputSupportType::DepthStencil)))
                     {
                         m_flags.m_hasSubpassInput = true;
                     }

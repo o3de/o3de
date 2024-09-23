@@ -26,6 +26,7 @@ struct PushConstants
 {
     float4 m_color[8];
     float m_depth;
+    float3 m_padding;
 };
 struct VSOutput
 {

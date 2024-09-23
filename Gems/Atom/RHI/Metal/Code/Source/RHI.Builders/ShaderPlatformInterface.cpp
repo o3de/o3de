@@ -452,6 +452,16 @@ namespace AZ
             // attachments for both passes. Because of the rearrangement of the color attachments, the shaders of the second pass would need to
             // output to color1 and color2 for example, hence we would need to change the indices for the outputs that were specified in the shader.
             // Luckily Metal supports using function specialization for specifying the color index of an output at runtime.
+            //
+            // constant int colorAttachment0 [[function_constant(0)]];  <-------- This can be any index. Decided at runtime
+            // constant int colorAttachment0_tmp = is_function_constant_defined(colorAttachment0) ? colorAttachment0 : 0;
+            // constant int colorAttachment1 [[function_constant(1)]];  <-------- This can be any index. Decided at runtime
+            // constant int colorAttachment1_tmp = is_function_constant_defined(colorAttachment1) ? colorAttachment1 : 1;
+            // struct PSOut
+            // {
+            //     float4 m_color0 [[color(colorAttachment0_tmp)]];
+            //     float4 m_color1 [[color(colorAttachment1_tmp)]];
+            // };
             if(shaderStageType != RHI::ShaderHardwareStage::Fragment)
             {
                 return;
