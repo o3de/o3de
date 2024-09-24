@@ -4,7 +4,7 @@
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "MobileSubpass2ParentPassTemplate",
+            "Name": "MobileSubpass3ParentPassTemplate",
             "PassClass": "ParentPass",
             "Slots": [
                 // Outputs...
