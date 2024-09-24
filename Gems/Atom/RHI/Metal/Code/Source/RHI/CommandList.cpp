@@ -764,15 +764,14 @@ namespace AZ
                 AZ_Assert(count <= METAL_MAX_ENTRIES_BUFFER_ARG_TABLE , "Slots needed cannot exceed METAL_MAX_ENTRIES_BUFFER_ARG_TABLE");
 
                 NSRange range = {METAL_MAX_ENTRIES_BUFFER_ARG_TABLE - count, count};
-                for (u8 i = 0; !streamIter.HasEnded(); ++streamIter, ++i)
+                //The stream buffers are populated from bottom to top as the top slots are taken by argument buffers
+                for (int i = count-1; i >= 0; --i)
                 {
-                    //The stream buffers are populated from bottom to top as the top slots are taken by argument buffers
-                    uint16_t index = count - i - 1;
-                    if (streamIter[index].GetBuffer())
+                    if (streamIter[i].GetBuffer())
                     {
-                        const Buffer * buff = static_cast<const Buffer*>(streamIter[index].GetBuffer());
+                        const Buffer * buff = static_cast<const Buffer*>(streamIter[i].GetBuffer());
                         id<MTLBuffer> mtlBuff = buff->GetMemoryView().GetGpuAddress<id<MTLBuffer>>();
-                        uint32_t offset = static_cast<uint32_t>(streamIter[index].GetByteOffset() + buff->GetMemoryView().GetOffset());
+                        uint32_t offset = static_cast<uint32_t>(streamIter[i].GetByteOffset() + buff->GetMemoryView().GetOffset());
                         mtlStreamBuffers[bufferArrayLen] = mtlBuff;
                         mtlStreamBufferOffsets[bufferArrayLen] = offset;
                         bufferArrayLen++;
