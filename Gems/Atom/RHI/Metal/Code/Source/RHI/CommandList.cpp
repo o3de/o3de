@@ -760,16 +760,13 @@ namespace AZ
             {
                 uint16_t bufferArrayLen = 0;
                 streamIter.Reset();
-                //u8 count = geometryBufferViews.GetStreamBufferViews().size();
                 u8 count = streamIndices.Size();
                 AZ_Assert(count <= METAL_MAX_ENTRIES_BUFFER_ARG_TABLE , "Slots needed cannot exceed METAL_MAX_ENTRIES_BUFFER_ARG_TABLE");
 
-                
                 NSRange range = {METAL_MAX_ENTRIES_BUFFER_ARG_TABLE - count, count};
-                //The stream buffers are populated from bottom to top as the top slots are taken by argument buffers
-                //for (uint16_t i = count-1; i >= 0; --i)
                 for (u8 i = 0; !streamIter.HasEnded(); ++streamIter, ++i)
                 {
+                    //The stream buffers are populated from bottom to top as the top slots are taken by argument buffers
                     uint16_t index = count - i - 1;
                     if (streamIter[index].GetBuffer())
                     {
