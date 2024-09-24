@@ -444,8 +444,8 @@ namespace AZ
             const Name PipelineGlobalKeyword{"PipelineGlobal"};
 
             // List of input, output and input/output attachment bindings
-            // Fixed size for performance and so we can hold pointers to the bindings for connections
-            AZStd::fixed_vector<PassAttachmentBinding, PassAttachmentBindingCountMax> m_attachmentBindings;
+            // The size is reserved to PassAttachmentBindingCountMax in the constructor for performance
+            AZStd::vector<PassAttachmentBinding> m_attachmentBindings;
             
             // List of attachments owned by this pass.
             // It includes both transient attachments and imported attachments
@@ -659,13 +659,13 @@ namespace AZ
             // --- Private Members ---
 
             // List of attachment binding indices for all the input bindings
-            AZStd::fixed_vector<uint8_t, PassInputBindingCountMax> m_inputBindingIndices;
+            AZStd::vector<uint8_t> m_inputBindingIndices;
 
             // List of attachment binding indices for all the input/output bindings
-            AZStd::fixed_vector<uint8_t, PassInputOutputBindingCountMax> m_inputOutputBindingIndices;
+            AZStd::vector<uint8_t> m_inputOutputBindingIndices;
 
             // List of attachment binding indices for all the output bindings
-            AZStd::fixed_vector<uint8_t, PassOutputBindingCountMax> m_outputBindingIndices;
+            AZStd::vector<uint8_t> m_outputBindingIndices;
 
             // Used to maintain references to imported attachments so they're underlying
             // buffers and images don't get deleted during attachment build phase
