@@ -79,6 +79,12 @@ namespace AZ
                 seed = TypeHash64(m_blendState0.m_blendAlphaDest, seed);
             }
 
+            if (RHI::CheckBitsAny(drawStateOptions, DrawStateOptions::ShaderVariant))
+            {
+                seed = TypeHash64(m_shaderVariantId.m_key, seed);
+                seed = TypeHash64(m_shaderVariantId.m_mask, seed);
+            }
+
             m_hash = seed;
             m_isDirty = false;
         }
@@ -218,6 +224,7 @@ namespace AZ
             m_currentStates.m_depthState = m_pipelineState->ConstDescriptor().m_renderStates.m_depthStencilState.m_depth;
             m_currentStates.m_stencilState = m_pipelineState->ConstDescriptor().m_renderStates.m_depthStencilState.m_stencil;
             m_currentStates.m_blendState0 = m_pipelineState->ConstDescriptor().m_renderStates.m_blendState.m_targets[0];
+            m_currentStates.m_shaderVariantId = m_pipelineState->GetShaderVariantId();
             m_currentStates.UpdateHash(m_drawStateOptions);
 
             m_cachedRhiPipelineStates[m_currentStates.m_hash] = m_pipelineState->GetRHIPipelineState();
@@ -459,7 +466,19 @@ namespace AZ
                 return;
             }
 
-            m_currentShaderVariantId = shaderVariantId;
+            if (RHI::CheckBitsAny(m_drawStateOptions, DrawStateOptions::ShaderVariant))
+            {
+                if (m_currentStates.m_shaderVariantId != shaderVariantId)
+                {
+                    m_currentStates.m_shaderVariantId = shaderVariantId;
+                    m_currentStates.m_isDirty = true;
+                }
+            }
+            else
+            {
+                AZ_Warning("RHI", false, "Can't set SetShaderVariant if DrawVariation::ShaderVariant wasn't enabled");
+            }
+
         }
 
         void DynamicDrawContext::DrawIndexed(const void* vertexData, uint32_t vertexCount, const void* indexData, uint32_t indexCount, RHI::IndexFormat indexFormat, Data::Instance < ShaderResourceGroup> drawSrg)
@@ -680,7 +699,7 @@ namespace AZ
                 // If the dynamic draw context support multiple shader variants, it uses m_currentShaderVariantId to setup srg shader variant fallback key
                 if (m_supportShaderVariants)
                 {
-                    drawSrg->SetShaderVariantKeyFallbackValue(m_currentShaderVariantId.m_key);
+                    drawSrg->SetShaderVariantKeyFallbackValue(m_currentStates.m_shaderVariantId.m_key);
                 }
                 // otherwise use the m_pipelineState to config the fallback
                 else
@@ -825,6 +844,10 @@ namespace AZ
                 if (RHI::CheckBitsAny(m_drawStateOptions, DrawStateOptions::BlendMode))
                 {
                     m_pipelineState->RenderStatesOverlay().m_blendState.m_targets[0] = m_currentStates.m_blendState0;
+                }
+                if (RHI::CheckBitsAny(m_drawStateOptions, DrawStateOptions::ShaderVariant))
+                {
+                    m_pipelineState->UpdateShaderVaraintId(m_currentStates.m_shaderVariantId);
                 }
 
                 const RHI::PipelineState* pipelineState = m_pipelineState->Finalize();                

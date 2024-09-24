@@ -47,7 +47,8 @@ namespace AZ
                 DepthState = AZ_BIT(1),
                 StencilState = AZ_BIT(2),
                 FaceCullMode = AZ_BIT(3),
-                BlendMode = AZ_BIT(4)
+                BlendMode = AZ_BIT(4),
+                ShaderVariant = AZ_BIT(5)
             };
 
             struct VertexChannel
@@ -213,6 +214,7 @@ namespace AZ
                 RHI::StencilState m_stencilState;
                 RHI::PrimitiveTopology m_topology;
                 RHI::TargetBlendState m_blendState0;
+                RPI::ShaderVariantId m_shaderVariantId;
 
                 HashValue64 m_hash = HashValue64{ 0 };
                 bool m_isDirty = false;
@@ -291,7 +293,6 @@ namespace AZ
 
             // Flags if this DynamicDrawContext can change shader variants
             bool m_supportShaderVariants = false;
-            ShaderVariantId m_currentShaderVariantId;
 
             Data::Instance<Shader> m_shader;
 
