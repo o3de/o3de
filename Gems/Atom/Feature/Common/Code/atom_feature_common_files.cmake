@@ -186,6 +186,8 @@ set(FILES
     Source/OcclusionCullingPlane/OcclusionCullingPlane.cpp
     Source/Silhouette/SilhouetteFeatureProcessor.cpp
     Source/Silhouette/SilhouetteFeatureProcessor.h
+    Source/Silhouette/SilhouetteCompositePass.cpp
+    Source/Silhouette/SilhouetteCompositePass.h
     Source/PostProcess/PostProcessBase.cpp
     Source/PostProcess/PostProcessBase.h
     Source/PostProcess/PostProcessFeatureProcessor.cpp
