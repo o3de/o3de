@@ -42,7 +42,7 @@ namespace AZ
 
         void RayTracingAccelerationStructurePass::BuildInternal()
         {
-            InitScope(RHI::ScopeId(GetPathName()), AZ::RHI::HardwareQueueClass::Compute);
+            InitScope(RHI::ScopeId(GetPathName()), AZ::RHI::HardwareQueueClass::Graphics);
         }
 
         void RayTracingAccelerationStructurePass::FrameBeginInternal(FramePrepareParams params)
@@ -50,7 +50,7 @@ namespace AZ
             m_timestampResult = RPI::TimestampResult();
             if(GetScopeId().IsEmpty())
             {
-                InitScope(RHI::ScopeId(GetPathName()), RHI::HardwareQueueClass::Compute);
+                InitScope(RHI::ScopeId(GetPathName()), RHI::HardwareQueueClass::Graphics);
             }
 
             params.m_frameGraphBuilder->ImportScopeProducer(*this);
