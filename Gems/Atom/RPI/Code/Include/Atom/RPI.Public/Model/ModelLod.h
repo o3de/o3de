@@ -116,6 +116,9 @@ namespace AZ
                 const MaterialModelUvOverrideMap& materialModelUvMap = {},
                 const MaterialUvNameMap& materialUvNameMap = {});
 
+            // Releases all the buffer dependencies that were added through TrackBuffer
+            void ReleaseTrackedBuffers();
+
         private:
             ModelLod() = default;
 

@@ -752,7 +752,7 @@ namespace AZ
                     isSkinningEnabledPerMesh.push_back(lod.m_meshes[i].m_skinInfluenceCountPerVertex > 0);
 
                     Aabb localAabb = inputMesh.GetAabb();
-                    modelLodCreator.SetMeshAabb(AZStd::move(localAabb));
+                    modelLodCreator.SetMeshAabb(localAabb);
 
                     modelCreator.AddMaterialSlot(m_modelAsset->FindMaterialSlot(inputMesh.GetMaterialSlotId()));
                     modelLodCreator.SetMeshMaterialSlot(inputMesh.GetMaterialSlotId());

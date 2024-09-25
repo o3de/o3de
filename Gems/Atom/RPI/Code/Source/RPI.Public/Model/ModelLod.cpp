@@ -432,5 +432,11 @@ namespace AZ
             m_buffers.emplace_back(buffer);
             return static_cast<uint32_t>(m_buffers.size() - 1);
         }
+
+        void ModelLod::ReleaseTrackedBuffers()
+        {
+            m_buffers.clear();
+        }
+
     } // namespace RPI
 } // namespace AZ

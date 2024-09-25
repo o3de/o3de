@@ -106,6 +106,15 @@ namespace AZ::RHI
         AZStd::vector<StreamBufferView>& GetStreamBufferViews() { return m_streamBufferViews; }
         const AZStd::vector<StreamBufferView>& GetStreamBufferViews() const { return m_streamBufferViews; }
 
+        inline void SetStreamBufferView(u8 idx, StreamBufferView streamBufferView)
+        {
+            m_streamBufferViews[idx] = streamBufferView;
+            for (auto& [deviceIndex, geometryView] : m_geometryViews)
+            {
+                geometryView.SetStreamBufferView(idx, streamBufferView.GetDeviceStreamBufferView(deviceIndex));
+            }
+        }
+
         inline void SetStreamBufferViews(const AZStd::vector<StreamBufferView>& streamBufferViews)
         {
             m_streamBufferViews = streamBufferViews;

@@ -176,6 +176,7 @@ namespace AZ::RHI
             m_dummyStreamBufferIndex = InvalidStreamBufferIndex;
         }
         void AddStreamBufferView(DeviceStreamBufferView streamBufferView) { m_streamBufferViews.emplace_back(streamBufferView); }
+        void SetStreamBufferView(u8 idx, DeviceStreamBufferView streamBufferView) { m_streamBufferViews[idx] = streamBufferView; }
         const DeviceStreamBufferView& GetStreamBufferView(u8 idx) const { return m_streamBufferViews[idx]; }
 
         AZStd::vector<DeviceStreamBufferView>& GetStreamBufferViews() { return m_streamBufferViews; }
