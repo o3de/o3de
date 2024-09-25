@@ -641,10 +641,6 @@ namespace AZ::Render
         SkinnedMeshOverrideRequestBus::Handler::BusConnect(m_entityId);
         MeshHandleStateRequestBus::Handler::BusConnect(m_entityId);
 
-        const Data::Instance<RPI::Model> model = m_meshFeatureProcessor->GetModel(*m_meshHandle);
-        MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelReady, GetModelAsset(), model);
-        MeshHandleStateNotificationBus::Event(m_entityId, &MeshHandleStateNotificationBus::Events::OnMeshHandleSet, &(*m_meshHandle));
-
         m_meshFeatureProcessor->SetVisible(*m_meshHandle, IsVisible());
     }
 
@@ -673,6 +669,7 @@ namespace AZ::Render
         if (meshFeatureProcessor)
         {
             MeshHandleDescriptor meshDescriptor;
+            meshDescriptor.m_entityId = m_entityId;
             meshDescriptor.m_modelAsset = m_skinnedMeshInstance->m_model->GetModelAsset();
             meshDescriptor.m_customMaterials = ConvertToCustomMaterialMap(materials);
             meshDescriptor.m_isRayTracingEnabled = m_rayTracingEnabled;
@@ -680,7 +677,7 @@ namespace AZ::Render
             meshDescriptor.m_excludeFromReflectionCubeMaps = true;
             meshDescriptor.m_isSkinnedMesh = true;
             meshDescriptor.m_supportRayIntersection = true; // we need to keep the buffer data in order to initialize the actor.
-
+            meshDescriptor.m_modelChangedEventHandler = m_modelChangedEventHandler;
             meshDescriptor.m_objectSrgCreatedHandler = m_objectSrgCreatedHandler;
             m_meshHandle = AZStd::make_shared<MeshFeatureProcessorInterface::MeshHandle>(m_meshFeatureProcessor->AcquireMesh(meshDescriptor));
         }
@@ -814,6 +811,18 @@ namespace AZ::Render
     void AtomActorInstance::HandleObjectSrgCreate(const Data::Instance<RPI::ShaderResourceGroup>& objectSrg)
     {
         MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnObjectSrgCreated, objectSrg);
+    }
+
+    void AtomActorInstance::HandleModelChange(const Data::Instance<RPI::Model>& model)
+    {
+        Data::Asset<RPI::ModelAsset> modelAsset = m_meshFeatureProcessor->GetModelAsset(*m_meshHandle);
+        if (model && modelAsset.IsReady())
+        {
+            MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelReady, modelAsset, model);
+            MaterialConsumerNotificationBus::Event(m_entityId, &MaterialConsumerNotificationBus::Events::OnMaterialAssignmentSlotsChanged);
+            AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(m_entityId);
+            MeshHandleStateNotificationBus::Event(m_entityId, &MeshHandleStateNotificationBus::Events::OnMeshHandleSet, &(*m_meshHandle));
+        }
     }
 
     void AtomActorInstance::UpdateLightingChannelMask()
