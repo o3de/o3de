@@ -25,8 +25,7 @@ using namespace metal;
 struct PushConstants
 {
     float4 m_color[8];
-    float m_depth;
-    float3 m_padding;
+    float4 m_depth;
 };
 struct VSOutput
 {
@@ -38,7 +37,7 @@ vertex VSOutput VSMain(
 {
     const float2 vertices[3] = { float2(-1,1), float2(-1, -3), float2(3, 1) };
     VSOutput out = {};
-    out.m_position = float4(vertices[vertexID], pushConstants.m_depth, 1);
+    out.m_position = float4(vertices[vertexID], pushConstants.m_depth.x, 1);
     return out;
 }
 struct PSOut
@@ -120,14 +119,7 @@ namespace AZ::Metal
             constantDescriptor.m_constantByteOffset = offsetof(PushConstants, m_depth);
             constantDescriptor.m_constantByteCount = sizeof(PushConstants::m_depth);
             constantLayout->AddShaderInput(constantDescriptor);
-        }
-        {
-            RHI::ShaderInputConstantDescriptor constantDescriptor;
-            constantDescriptor.m_name = "Pad";
-            constantDescriptor.m_constantByteOffset = offsetof(PushConstants, m_padding);
-            constantDescriptor.m_constantByteCount = sizeof(PushConstants::m_padding);
-            constantLayout->AddShaderInput(constantDescriptor);
-        }
+        }        
         constantLayout->Finalize();
         pipelineLayoutDescriptor->SetRootConstantsLayout(*constantLayout);
         pipelineLayoutDescriptor->SetRootConstantBinding(RootConstantBinding{});
@@ -215,7 +207,7 @@ namespace AZ::Metal
                     // Enable depth write so we can write the clear value
                     RHI::DepthState& depthState = renderStates.m_depthStencilState.m_depth;
                     depthState.m_enable = 1;
-                    pushConstants.m_depth = clearData.m_clearValue.m_depthStencil.m_depth;
+                    pushConstants.m_depth[0] = clearData.m_clearValue.m_depthStencil.m_depth;
                 }
                 
                 if (RHI::CheckBitsAll(clearData.m_imageAspects, RHI::ImageAspectFlags::Stencil))

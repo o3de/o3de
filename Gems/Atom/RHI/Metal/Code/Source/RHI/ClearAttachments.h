@@ -55,8 +55,7 @@ namespace AZ::Metal
         struct alignas(16) PushConstants
         {
             float m_color[RHI::Limits::Pipeline::AttachmentColorCountMax][4];
-            float m_depth;
-            float m_padding[3];
+            float m_depth[4];
         };
 
         //! PipelineStateDescriptor used for rendering the full screen triangle
