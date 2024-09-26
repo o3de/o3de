@@ -13,6 +13,9 @@
 
 namespace AzFramework
 {
+    // Forward declare the following function so we don't have to include the entire CameraInput.h file unnecessarily
+    bool IsMouseCaptureUsedForCameraRotation();
+
     xcb_window_t GetSystemCursorFocusWindow(xcb_connection_t* connection)
     {
         void* systemCursorFocusWindow = nullptr;
@@ -85,7 +88,7 @@ namespace AzFramework
     XcbInputDeviceMouse::XcbInputDeviceMouse(InputDeviceMouse& inputDevice)
         : InputDeviceMouse::Implementation(inputDevice)
         , m_systemCursorState(SystemCursorState::Unknown)
-        , m_systemCursorPositionNormalized(0.5f, 0.5f)
+        , m_systemCursorPositionNormalized(0.0f, 0.0f)
         , m_focusWindow(XCB_WINDOW_NONE)
         , m_cursorShown(true)
     {
@@ -536,6 +539,8 @@ namespace AzFramework
 
                 int axisLen = xcb_input_raw_button_press_axisvalues_length(mouseMotionEvent);
                 const xcb_input_fp3232_t* axisvalues = xcb_input_raw_button_press_axisvalues_raw(mouseMotionEvent);
+                float movement_x = 0.0f;
+                float movement_y = 0.0f;
                 for (int i = 0; i < axisLen; ++i)
                 {
                     const float axisValue = fp3232ToFloat(axisvalues[i]);
@@ -543,12 +548,30 @@ namespace AzFramework
                     switch (i)
                     {
                     case 0:
-                        QueueRawMovementEvent(InputDeviceMouse::Movement::X, axisValue);
+                        movement_x = axisValue;
                         break;
                     case 1:
-                        QueueRawMovementEvent(InputDeviceMouse::Movement::Y, axisValue);
+                        movement_y = axisValue;
                         break;
                     }
+                }
+                if (IsMouseCaptureUsedForCameraRotation())
+                {
+                    QueueRawMovementEvent(InputDeviceMouse::Movement::X, movement_x);
+                    QueueRawMovementEvent(InputDeviceMouse::Movement::Y, movement_y);
+                }
+                else
+                {
+                    if ((m_systemCursorPositionNormalized.GetX() == 0.0f) &&
+                        (m_systemCursorPositionNormalized.GetY() == 0.0f))
+                    {
+                        m_systemCursorPositionNormalized.SetX(movement_x);
+                        m_systemCursorPositionNormalized.SetY(movement_y);
+                    }
+                    QueueRawMovementEvent(InputDeviceMouse::Movement::X, movement_x - m_systemCursorPositionNormalized.GetX());
+                    QueueRawMovementEvent(InputDeviceMouse::Movement::Y, movement_y - m_systemCursorPositionNormalized.GetY());
+                    m_systemCursorPositionNormalized.SetX(movement_x);
+                    m_systemCursorPositionNormalized.SetY(movement_y);
                 }
             }
             break;

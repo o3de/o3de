@@ -9,9 +9,12 @@
 #include "CameraInput.h"
 
 #include <AzCore/std/numeric.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
+#include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
 #include <AzFramework/Windowing/WindowBus.h>
+
 
 namespace AzFramework
 {
@@ -22,6 +25,14 @@ namespace AzFramework
         nullptr,
         AZ::ConsoleFunctorFlags::Null,
         "Should the camera use cursor absolute positions or motion deltas");
+
+    AZ_CVAR(
+        bool,
+        bg_capture_mouse_for_camera_rotation,
+        true,
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
+        "Trap/Capture the mouse when it is used to freely rotate a camera view. If the system cannot capture the mouse, set this value to false to resolve movement calculation errors.");
 
     //! return -1.0f if inverted, 1.0f otherwise
     constexpr static float Invert(const bool invert)
@@ -155,7 +166,14 @@ namespace AzFramework
         if (const auto& cursor = AZStd::get_if<CursorEvent>(&state.m_inputEvent))
         {
             m_cursorState.SetCurrentPosition(cursor->m_position);
-            m_cursorState.SetCaptured(cursor->m_captured);
+            if (IsMouseCaptureUsedForCameraRotation())
+            {
+                m_cursorState.SetCaptured(cursor->m_captured);
+            }
+            else
+            {
+                m_cursorState.SetCaptured(false);
+            }
         }
         else if (const auto& horizontalMotion = AZStd::get_if<HorizontalMotionEvent>(&state.m_inputEvent))
         {
@@ -1023,4 +1041,10 @@ namespace AzFramework
 
         return { AZStd::monostate{}, ModifierKeyStates{} };
     }
+
+    bool IsMouseCaptureUsedForCameraRotation()
+    {
+        return bg_capture_mouse_for_camera_rotation;
+    }
+
 } // namespace AzFramework
