@@ -258,11 +258,11 @@ namespace AZ::Metal
         }
         
         AZ_Assert(pipelineState, "Null PipelineState");
-        RHI::DrawLinear drawlinear = RHI::DrawLinear();
-        drawlinear.m_vertexCount = 3;
+        RHI::DeviceGeometryView geometryView;
+        geometryView.SetDrawArguments(RHI::DeviceDrawArguments(RHI::DrawLinear(3, 0)));
 
         RHI::DeviceDrawItem drawItem;
-        drawItem.m_arguments = drawlinear;
+        drawItem.m_geometryView = &geometryView;
         drawItem.m_pipelineState = pipelineState->GetDevicePipelineState(GetDevice().GetDeviceIndex()).get();
         drawItem.m_rootConstants = reinterpret_cast<uint8_t*>(&pushConstants);
         drawItem.m_rootConstantSize = sizeof(pushConstants);
