@@ -55,6 +55,14 @@ then
     exit 1
 fi
 
+# Install the necessary build tools for android on linux
+./install-ubuntu-build-android-tools.sh
+if [ $? -ne 0 ]
+then
+    echo Error installing ubuntu android tools
+    exit 1
+fi
+
 # Install the packages in the platform list
 ./install-ubuntu-packages.sh
 if [ $? -ne 0 ]
