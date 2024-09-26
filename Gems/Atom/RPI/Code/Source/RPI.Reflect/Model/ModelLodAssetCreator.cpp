@@ -53,7 +53,7 @@ namespace AZ
             }
         }
 
-        void ModelLodAssetCreator::SetMeshAabb(AZ::Aabb aabb)
+        void ModelLodAssetCreator::SetMeshAabb(const AZ::Aabb& aabb)
         {
             if (ValidateIsMeshReady())
             {
