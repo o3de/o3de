@@ -147,6 +147,7 @@ namespace AZ
                     mappedData += request.m_byteOffset;
                     
                     response.m_data = mappedData;
+                    response.m_type = RHI::BufferResponseMapType::Permanent;
                     break;
                 }
                 case MTLStorageModePrivate:
@@ -155,6 +156,7 @@ namespace AZ
                     if (mappedData)
                     {
                         m_memoryUsage.m_transferPull.m_bytesPerFrame += request.m_byteCount;
+                        response.m_type = RHI::BufferResponseMapType::Transient;
                     }
                     else
                     {
