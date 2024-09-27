@@ -300,31 +300,31 @@ namespace AZ
                 {
                     AZ_PROFILE_SCOPE(AzRender, "MeshFeatureProcessor: Simulate: Init");
 
-                    for (auto meshDataIter = iteratorRange.m_begin; meshDataIter != iteratorRange.m_end; ++meshDataIter)
+                    for (auto modelDataIter = iteratorRange.m_begin; modelDataIter != iteratorRange.m_end; ++modelDataIter)
                     {
-                        if (!meshDataIter->m_model)
+                        if (!modelDataIter->m_model)
                         {
                             continue; // model not loaded yet
                         }
 
-                        if (!meshDataIter->m_flags.m_visible)
+                        if (!modelDataIter->m_flags.m_visible)
                         {
                             continue;
                         }
 
-                        if (meshDataIter->m_flags.m_needsInit)
+                        if (modelDataIter->m_flags.m_needsInit)
                         {
-                            meshDataIter->Init(this);
+                            modelDataIter->Init(this);
                         }
 
-                        if (meshDataIter->m_flags.m_objectSrgNeedsUpdate)
+                        if (modelDataIter->m_flags.m_objectSrgNeedsUpdate)
                         {
-                            meshDataIter->UpdateObjectSrg(this);
+                            modelDataIter->UpdateObjectSrg(this);
                         }
 
-                        if (meshDataIter->m_flags.m_needsSetRayTracingData)
+                        if (modelDataIter->m_flags.m_needsSetRayTracingData)
                         {
-                            meshDataIter->SetRayTracingData(this);
+                            modelDataIter->SetRayTracingData(this);
                         }
 
                         // If instancing is enabled, the draw packets will be updated by the per-instance group jobs,
@@ -334,7 +334,7 @@ namespace AZ
                             // Unset per mesh shader options
                             if (removePerMeshShaderOptionFlags)
                             {
-                                for (RPI::MeshDrawPacketList& drawPacketList : meshDataIter->m_drawPacketListsByLod)
+                                for (RPI::MeshDrawPacketList& drawPacketList : modelDataIter->m_meshDrawPacketListsByLod)
                                 {
                                     for (RPI::MeshDrawPacket& drawPacket : drawPacketList)
                                     {
@@ -346,15 +346,15 @@ namespace AZ
                                     }
                                 }
 
-                                meshDataIter->m_cullable.m_shaderOptionFlags = 0;
-                                meshDataIter->m_cullable.m_prevShaderOptionFlags = 0;
+                                modelDataIter->m_cullable.m_shaderOptionFlags = 0;
+                                modelDataIter->m_cullable.m_prevShaderOptionFlags = 0;
                             }
 
                             // [GFX TODO] [ATOM-1357] Currently all of the draw packets have to be checked for material ID changes because
                             // material properties can impact which actual shader is used, which impacts the SRG in the draw packet.
                             // This is scheduled to be optimized so the work is only done on draw packets that need it instead of having
                             // to check every one.
-                            meshDataIter->UpdateDrawPackets(m_forceRebuildDrawPackets);
+                            modelDataIter->UpdateDrawPackets(m_forceRebuildDrawPackets);
                         }
                     }
                 };
@@ -894,7 +894,7 @@ namespace AZ
 
                         if (!r_meshInstancingEnabled)
                         {
-                            for (RPI::MeshDrawPacketList& drawPacketList : modelHandle.m_drawPacketListsByLod)
+                            for (RPI::MeshDrawPacketList& drawPacketList : modelHandle.m_meshDrawPacketListsByLod)
                             {
                                 for (RPI::MeshDrawPacket& drawPacket : drawPacketList)
                                 {
@@ -1036,7 +1036,7 @@ namespace AZ
 
         void MeshFeatureProcessor::SetDrawItemEnabled(const MeshHandle& meshHandle, RHI::DrawListTag drawListTag, bool enabled)
         {
-            AZ::RPI::MeshDrawPacketLods& drawPacketListByLod = meshHandle.IsValid() && !r_meshInstancingEnabled ? meshHandle->m_drawPacketListsByLod : m_emptyDrawPacketLods;
+            AZ::RPI::MeshDrawPacketLods& drawPacketListByLod = meshHandle.IsValid() && !r_meshInstancingEnabled ? meshHandle->m_meshDrawPacketListsByLod : m_emptyDrawPacketLods;
 
             for (AZ::RPI::MeshDrawPacketList& drawPacketList : drawPacketListByLod)
             {
@@ -1065,7 +1065,7 @@ namespace AZ
         {
             AZStd::string stringOutput = "\n------- MESH INFO -------\n";
 
-            AZ::RPI::MeshDrawPacketLods& drawPacketListByLod = meshHandle.IsValid() && !r_meshInstancingEnabled ? meshHandle->m_drawPacketListsByLod : m_emptyDrawPacketLods;
+            AZ::RPI::MeshDrawPacketLods& drawPacketListByLod = meshHandle.IsValid() && !r_meshInstancingEnabled ? meshHandle->m_meshDrawPacketListsByLod : m_emptyDrawPacketLods;
 
             u32 lodCounter = 0;
             for (AZ::RPI::MeshDrawPacketList& drawPacketList : drawPacketListByLod)
@@ -1126,7 +1126,7 @@ namespace AZ
             // debug information about the draw packets in an imgui menu. But the ownership model for draw packets is changing.
             // We can no longer assume a meshHandle directly keeps a copy of all of its draw packets.
 
-            return meshHandle.IsValid() && !r_meshInstancingEnabled ? meshHandle->m_drawPacketListsByLod : m_emptyDrawPacketLods;
+            return meshHandle.IsValid() && !r_meshInstancingEnabled ? meshHandle->m_meshDrawPacketListsByLod : m_emptyDrawPacketLods;
         }
 
         const AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>>& MeshFeatureProcessor::GetObjectSrgs(const MeshHandle& meshHandle) const
@@ -1772,7 +1772,7 @@ namespace AZ
             // value in that case
             if (!meshFeatureProcessor->IsMeshInstancingEnabled())
             {
-                m_drawPacketListsByLod.clear();
+                m_meshDrawPacketListsByLod.clear();
             }
             else
             {
@@ -1823,7 +1823,7 @@ namespace AZ
 
             if (!r_meshInstancingEnabled)
             {
-                m_drawPacketListsByLod.resize(modelLodCount);
+                m_meshDrawPacketListsByLod.resize(modelLodCount);
             }
             else
             {
@@ -1934,7 +1934,7 @@ namespace AZ
 
             if (!r_meshInstancingEnabled)
             {
-                RPI::MeshDrawPacketList& drawPacketListOut = m_drawPacketListsByLod[modelLodIndex];
+                RPI::MeshDrawPacketList& drawPacketListOut = m_meshDrawPacketListsByLod[modelLodIndex];
                 drawPacketListOut.clear();
                 drawPacketListOut.reserve(meshCount);
             }
@@ -2086,7 +2086,7 @@ namespace AZ
 
                     if (!r_meshInstancingEnabled)
                     {
-                        m_drawPacketListsByLod[modelLodIndex].emplace_back(AZStd::move(drawPacket));
+                        m_meshDrawPacketListsByLod[modelLodIndex].emplace_back(AZStd::move(drawPacket));
                     }
                     else
                     {
@@ -2639,7 +2639,7 @@ namespace AZ
             {
                 if (!r_meshInstancingEnabled)
                 {
-                    for (auto& drawPacketList : m_drawPacketListsByLod)
+                    for (auto& drawPacketList : m_meshDrawPacketListsByLod)
                     {
                         for (auto& drawPacket : drawPacketList)
                         {
@@ -2689,15 +2689,15 @@ namespace AZ
                 meshMotionDrawListTag = AZ::RHI::RHISystemInterface::Get()->GetDrawListTagRegistry()->FindTag(MeshCommon::MotionDrawListTagName);
             }
 
-            for (auto& drawPacketList : m_drawPacketListsByLod)
+            for (auto& meshDrawPacketList : m_meshDrawPacketListsByLod)
             {
-                for (auto& drawPacket : drawPacketList)
+                for (auto& meshDrawPacket : meshDrawPacketList)
                 {
                     if (enableDrawMotion)
                     {
-                        drawPacket.SetEnableDraw(meshMotionDrawListTag, true);
+                        meshDrawPacket.SetEnableDraw(meshMotionDrawListTag, true);
                     }
-                    if (drawPacket.Update(*m_scene, forceUpdate))
+                    if (meshDrawPacket.Update(*m_scene, forceUpdate))
                     {
                         m_flags.m_cullableNeedsRebuild = true;
                     }
@@ -2765,7 +2765,7 @@ namespace AZ
                 lod.m_drawPackets.clear();
                 if (!r_meshInstancingEnabled)
                 {
-                    const RPI::MeshDrawPacketList& drawPacketList = m_drawPacketListsByLod[lodIndex + m_lodBias];
+                    const RPI::MeshDrawPacketList& drawPacketList = m_meshDrawPacketListsByLod[lodIndex + m_lodBias];
                     for (const RPI::MeshDrawPacket& drawPacket : drawPacketList)
                     {
                         // If mesh instancing is disabled, get the draw packets directly from this ModelDataInstance
