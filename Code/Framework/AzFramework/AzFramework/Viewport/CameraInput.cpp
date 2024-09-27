@@ -30,11 +30,13 @@ namespace AzFramework
 #if AZ_TRAIT_AZFRAMEWORK_ENABLE_DISABLE_MOUSE_CAPTURE_FOR_CAMERA_CVAR_OPTION
     AZ_CVAR(
         bool,
-        bg_capture_mouse_for_camera_rotation,
-        true,
+        ed_disable_capture_mouse_for_camera_rotation,
+        false,
         nullptr,
         AZ::ConsoleFunctorFlags::Null,
-        "Trap/Capture the mouse when it is used to freely rotate a camera view. If the system cannot capture the mouse, set this value to false to resolve movement calculation errors.");
+        "Disable the capture the mouse when it is used to freely rotate a camera view. Use this option if the camera rotation during free look movements with "
+        "the mouse is hyper-sensitive, in which case may be an indication that the system is unable to trap the cursor location which is needed for normal mouse "
+        " movement calculations.");
 #endif // AZ_TRAIT_AZFRAMEWORK_ENABLE_DISABLE_MOUSE_CAPTURE_FOR_CAMERA_CVAR_OPTION
 
     //! return -1.0f if inverted, 1.0f otherwise
@@ -1048,7 +1050,7 @@ namespace AzFramework
     bool IsMouseCaptureUsedForCameraRotation()
     {
 #if AZ_TRAIT_AZFRAMEWORK_ENABLE_DISABLE_MOUSE_CAPTURE_FOR_CAMERA_CVAR_OPTION
-        return bg_capture_mouse_for_camera_rotation;
+        return !ed_disable_capture_mouse_for_camera_rotation;
 #else
         return true;
 #endif // AZ_TRAIT_AZFRAMEWORK_ENABLE_DISABLE_MOUSE_CAPTURE_FOR_CAMERA_CVAR_OPTION
