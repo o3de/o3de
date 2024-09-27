@@ -9,7 +9,6 @@
 #include "CameraInput.h"
 
 #include <AzCore/std/numeric.h>
-#include <AzCore/Console/IConsole.h>
 #include <AzFramework/AzFramework_Traits_Platform.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
