@@ -11,6 +11,7 @@
 #include <RHI/BufferView.h>
 #include <RHI/BufferPool.h>
 #include <RHI/Device.h>
+#include <RHI/PhysicalDevice.h>
 #include <RHI/RootConstantManager.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayout.h>
 
@@ -73,6 +74,7 @@ namespace AZ::WebGPU
 
     RootConstantManager::Allocation RootConstantManager::Allocate(uint32_t size)
     {
+        const PhysicalDevice& physicalDevice = static_cast<const PhysicalDevice&>(GetDevice().GetPhysicalDevice());        
         Allocation alloc;
         // Check if we need to allocate a new buffer
         if (m_allocations.empty() ||
@@ -99,8 +101,10 @@ namespace AZ::WebGPU
             }
             bindGroup->SetName(AZ::Name("RootConstant"));
 
+            constexpr size_t RootConstantViewSize = 128;
             auto bufferView = BufferView::Create();
-            result = bufferView->Init(*rootConstantBuffer, RHI::BufferViewDescriptor::CreateTyped(0, BufferSize, RHI::Format::R8_UINT));
+            result = bufferView->Init(
+                *rootConstantBuffer, RHI::BufferViewDescriptor::CreateTyped(0, RootConstantViewSize, RHI::Format::R8_UINT));
             RHI::ConstPtr<RHI::DeviceBufferView> constBufferView = bufferView;
             bindGroup->UpdateBufferViews(0, AZStd::span<const RHI::ConstPtr<RHI::DeviceBufferView>>(&constBufferView, 1));
             bindGroup->CommitUpdates();
@@ -114,6 +118,8 @@ namespace AZ::WebGPU
         Allocation& currentAlloc = m_allocations.back();
         alloc = currentAlloc;
         currentAlloc.m_bufferOffset += size;
+        currentAlloc.m_bufferOffset =
+            RHI::AlignUp(currentAlloc.m_bufferOffset, physicalDevice.GetLimits().limits.minUniformBufferOffsetAlignment);
         return alloc;
     }
 
