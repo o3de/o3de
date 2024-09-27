@@ -37,19 +37,19 @@ namespace AZ::RHI
             , m_threadsPerGroupZ(threadsPerGroupZ)
         {}
 
-        uint16_t GetNumberOfGroupsX() const
+        uint32_t GetNumberOfGroupsX() const
         {
-            return aznumeric_cast<uint16_t>(DivideAndRoundUp(m_totalNumberOfThreadsX, aznumeric_cast<uint32_t>(m_threadsPerGroupX)));
+            return DivideAndRoundUp(m_totalNumberOfThreadsX, aznumeric_cast<uint32_t>(m_threadsPerGroupX));
         }
 
-        uint16_t GetNumberOfGroupsY() const
+        uint32_t GetNumberOfGroupsY() const
         {
-            return aznumeric_cast<uint16_t>(DivideAndRoundUp(m_totalNumberOfThreadsY, aznumeric_cast<uint32_t>(m_threadsPerGroupY)));
+            return DivideAndRoundUp(m_totalNumberOfThreadsY, aznumeric_cast<uint32_t>(m_threadsPerGroupY));
         }
 
-        uint16_t GetNumberOfGroupsZ() const
+        uint32_t GetNumberOfGroupsZ() const
         {
-            return aznumeric_cast<uint16_t>(DivideAndRoundUp(m_totalNumberOfThreadsZ, aznumeric_cast<uint32_t>(m_threadsPerGroupZ)));
+            return DivideAndRoundUp(m_totalNumberOfThreadsZ, aznumeric_cast<uint32_t>(m_threadsPerGroupZ));
         }
 
         // Different platforms require number of groups or number of threads or both in their Dispatch() call
