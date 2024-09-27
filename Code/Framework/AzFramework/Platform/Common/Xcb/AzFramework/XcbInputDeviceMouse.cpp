@@ -81,8 +81,16 @@ namespace AzFramework
     xcb_screen_t* XcbInputDeviceMouse::s_xcbScreen = nullptr;
     bool XcbInputDeviceMouse::m_xfixesInitialized = false;
     bool XcbInputDeviceMouse::m_xInputInitialized = false;
-    static constexpr float s_movementThresholdDeltaLimit = 480.0f;
-    static constexpr int s_movementThresholdTriggerValue = 10;
+
+    // The mouse movement threshold value to detect possible absolute mouse positions versus actual incremental mouse movement
+    // deltas. This value represents a reasonable number where multiple deltas are not possible (ie its not possible to move
+    // a mouse by this number of pixels continously)
+    static constexpr const float s_movementThresholdDeltaLimit = 480.f;
+
+    // To prevent possible anomalies with the delta limit, set a value where X number of violations will trigger the mode where
+    // we internally calculate the mouse movements based on the assumption that the received mouse movement values are actually
+    // mouse coordinates.
+    static constexpr const int s_movementThresholdTriggerValue = 10;
 
     XcbInputDeviceMouse::XcbInputDeviceMouse(InputDeviceMouse& inputDevice)
         : InputDeviceMouse::Implementation(inputDevice)

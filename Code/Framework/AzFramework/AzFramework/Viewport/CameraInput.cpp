@@ -171,14 +171,7 @@ namespace AzFramework
         if (const auto& cursor = AZStd::get_if<CursorEvent>(&state.m_inputEvent))
         {
             m_cursorState.SetCurrentPosition(cursor->m_position);
-            if (IsMouseCaptureUsedForCameraRotation())
-            {
-                m_cursorState.SetCaptured(cursor->m_captured);
-            }
-            else
-            {
-                m_cursorState.SetCaptured(false);
-            }
+            m_cursorState.SetCaptured(IsMouseCaptureUsedForCameraRotation() ? cursor->m_captured : false);
         }
         else if (const auto& horizontalMotion = AZStd::get_if<HorizontalMotionEvent>(&state.m_inputEvent))
         {
