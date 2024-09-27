@@ -13,9 +13,6 @@
 
 namespace AzFramework
 {
-    // Forward declare the following function so we don't have to include the entire CameraInput.h file unnecessarily
-    bool IsMouseCaptureUsedForCameraRotation();
-
     xcb_window_t GetSystemCursorFocusWindow(xcb_connection_t* connection)
     {
         void* systemCursorFocusWindow = nullptr;
@@ -84,6 +81,8 @@ namespace AzFramework
     xcb_screen_t* XcbInputDeviceMouse::s_xcbScreen = nullptr;
     bool XcbInputDeviceMouse::m_xfixesInitialized = false;
     bool XcbInputDeviceMouse::m_xInputInitialized = false;
+    static constexpr float s_movementThresholdDeltaLimit = 480.0f;
+    static constexpr int s_movementThresholdTriggerValue = 10;
 
     XcbInputDeviceMouse::XcbInputDeviceMouse(InputDeviceMouse& inputDevice)
         : InputDeviceMouse::Implementation(inputDevice)
@@ -91,6 +90,7 @@ namespace AzFramework
         , m_systemCursorPositionNormalized(0.0f, 0.0f)
         , m_focusWindow(XCB_WINDOW_NONE)
         , m_cursorShown(true)
+        , m_movementThresholdViolations(0)
     {
         XcbEventHandlerBus::Handler::BusConnect();
 
@@ -555,10 +555,14 @@ namespace AzFramework
                         break;
                     }
                 }
-                if (IsMouseCaptureUsedForCameraRotation())
+                if (m_movementThresholdViolations < s_movementThresholdTriggerValue)
                 {
                     QueueRawMovementEvent(InputDeviceMouse::Movement::X, movement_x);
                     QueueRawMovementEvent(InputDeviceMouse::Movement::Y, movement_y);
+                    if (movement_x > s_movementThresholdDeltaLimit || movement_y > s_movementThresholdDeltaLimit)
+                    {
+                        m_movementThresholdViolations += 1;
+                    }
                 }
                 else
                 {
@@ -572,9 +576,6 @@ namespace AzFramework
                     float movement_y_delta = movement_y - m_systemCursorPositionNormalized.GetY();
                     QueueRawMovementEvent(InputDeviceMouse::Movement::X, movement_x_delta);
                     QueueRawMovementEvent(InputDeviceMouse::Movement::Y, movement_y_delta);
-
-                    AZ_Printf("Mouse", "(%f,%f) delta (%f,%f)", movement_x, movement_y, movement_x_delta, movement_y_delta);
-
                     m_systemCursorPositionNormalized.SetX(movement_x);
                     m_systemCursorPositionNormalized.SetY(movement_y);
                 }

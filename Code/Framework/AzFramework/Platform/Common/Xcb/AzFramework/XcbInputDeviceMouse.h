@@ -178,5 +178,10 @@ namespace AzFramework
 
         //! Array that holds barrier information used to confine the cursor.
         std::vector<XFixesBarrierProperty> m_activeBarriers;
+
+        //! Tracks the number of mouse movement threshold violations so we can trigger
+        //! internal delta tracking on systems that report mouse movement deltas as absolute
+        //! screen positions.
+        size_t m_movementThresholdViolations;
     };
 } // namespace AzFramework
