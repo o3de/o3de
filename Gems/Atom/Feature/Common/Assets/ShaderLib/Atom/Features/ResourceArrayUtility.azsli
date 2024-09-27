@@ -150,4 +150,4 @@
 #endif // AZ_TRAIT_RESOURCE_ARRAY
 
 // Helper macro for declaring a sample2d function for a texture array
-#define DECLARE_TEXTURE_ARRAY_SAMPLE2D(varName, funcName, size) DECLARE_RESOURCE_ARRAY_FUNC(float4, varName, funcName, Sample, SamplerState, float2, size)
+#define DECLARE_TEXTURE_ARRAY_SAMPLE2D(type, varName, funcName, size) DECLARE_RESOURCE_ARRAY_FUNC(type, varName, funcName, Sample, SamplerState, float2, size)

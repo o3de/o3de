@@ -32,7 +32,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     // Use a macro to declare the array since some platforms don't support resource arrays
     DECLARE_RESOURCE_ARRAY(Texture2D<float4>, m_textures, 16)
     // Use a macro to declare a sampling function "SampleTexture"
-    DECLARE_TEXTURE_ARRAY_SAMPLE2D(m_textures, SampleTexture, 16)
+    DECLARE_TEXTURE_ARRAY_SAMPLE2D(float4, m_textures, SampleTexture, 16)
     
     Sampler LinearSampler
     {
