@@ -10,6 +10,7 @@
 
 #include <AzCore/std/numeric.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzFramework/AzFramework_Traits_Platform.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
@@ -26,6 +27,7 @@ namespace AzFramework
         AZ::ConsoleFunctorFlags::Null,
         "Should the camera use cursor absolute positions or motion deltas");
 
+#if AZ_TRAIT_AZFRAMEWORK_ENABLE_DISABLE_MOUSE_CAPTURE_FOR_CAMERA_CVAR_OPTION
     AZ_CVAR(
         bool,
         bg_capture_mouse_for_camera_rotation,
@@ -33,6 +35,7 @@ namespace AzFramework
         nullptr,
         AZ::ConsoleFunctorFlags::Null,
         "Trap/Capture the mouse when it is used to freely rotate a camera view. If the system cannot capture the mouse, set this value to false to resolve movement calculation errors.");
+#endif // AZ_TRAIT_AZFRAMEWORK_ENABLE_DISABLE_MOUSE_CAPTURE_FOR_CAMERA_CVAR_OPTION
 
     //! return -1.0f if inverted, 1.0f otherwise
     constexpr static float Invert(const bool invert)
@@ -1044,7 +1047,11 @@ namespace AzFramework
 
     bool IsMouseCaptureUsedForCameraRotation()
     {
+#if AZ_TRAIT_AZFRAMEWORK_ENABLE_DISABLE_MOUSE_CAPTURE_FOR_CAMERA_CVAR_OPTION
         return bg_capture_mouse_for_camera_rotation;
+#else
+        return true;
+#endif // AZ_TRAIT_AZFRAMEWORK_ENABLE_DISABLE_MOUSE_CAPTURE_FOR_CAMERA_CVAR_OPTION
     }
 
 } // namespace AzFramework

@@ -20,3 +20,5 @@
 // the whole OS gets stuck with an invisible mouse
 // cursor when debugging Lua code.
 #define AZ_TRAIT_AZFRAMEWORK_SHOW_MOUSE_ON_LUA_BREAKPOINT 1
+
+#define AZ_TRAIT_AZFRAMEWORK_ENABLE_DISABLE_MOUSE_CAPTURE_FOR_CAMERA_CVAR_OPTION 1

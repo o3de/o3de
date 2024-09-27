@@ -568,8 +568,13 @@ namespace AzFramework
                         m_systemCursorPositionNormalized.SetX(movement_x);
                         m_systemCursorPositionNormalized.SetY(movement_y);
                     }
-                    QueueRawMovementEvent(InputDeviceMouse::Movement::X, movement_x - m_systemCursorPositionNormalized.GetX());
-                    QueueRawMovementEvent(InputDeviceMouse::Movement::Y, movement_y - m_systemCursorPositionNormalized.GetY());
+                    float movement_x_delta = movement_x - m_systemCursorPositionNormalized.GetX();
+                    float movement_y_delta = movement_y - m_systemCursorPositionNormalized.GetY();
+                    QueueRawMovementEvent(InputDeviceMouse::Movement::X, movement_x_delta);
+                    QueueRawMovementEvent(InputDeviceMouse::Movement::Y, movement_y_delta);
+
+                    AZ_Printf("Mouse", "(%f,%f) delta (%f,%f)", movement_x, movement_y, movement_x_delta, movement_y_delta);
+
                     m_systemCursorPositionNormalized.SetX(movement_x);
                     m_systemCursorPositionNormalized.SetY(movement_y);
                 }
