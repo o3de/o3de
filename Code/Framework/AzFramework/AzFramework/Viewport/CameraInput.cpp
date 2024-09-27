@@ -36,7 +36,7 @@ namespace AzFramework
         AZ::ConsoleFunctorFlags::Null,
         "Disable the capture the mouse when it is used to freely rotate a camera view. Use this option if the camera rotation during free look movements with "
         "the mouse is hyper-sensitive, in which case may be an indication that the system is unable to trap the cursor location which is needed for normal mouse "
-        " movement calculations.");
+        "movement calculations.");
 #endif // AZ_TRAIT_AZFRAMEWORK_ENABLE_DISABLE_MOUSE_CAPTURE_FOR_CAMERA_CVAR_OPTION
 
     //! return -1.0f if inverted, 1.0f otherwise
