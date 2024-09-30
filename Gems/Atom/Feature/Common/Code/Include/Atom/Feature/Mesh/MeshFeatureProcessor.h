@@ -59,6 +59,7 @@ namespace AZ
 
             using PostCullingInstanceDataList = AZStd::vector<PostCullingInstanceData>;
             const bool IsSkinnedMesh() { return m_descriptor.m_isSkinnedMesh; }
+            const AZ::Uuid& GetRayTracingUuid() const { return m_rayTracingUuid; }
 
             //! called when a DrawPacket used by this ModelDataInstance was updated. 
             void HandleDrawPacketUpdate();
