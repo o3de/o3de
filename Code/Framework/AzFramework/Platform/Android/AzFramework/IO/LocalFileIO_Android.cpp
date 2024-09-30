@@ -164,11 +164,23 @@ namespace AZ
             for (AZ::IO::PathView pathSegment : resolvedPath.RelativePath())
             {
                 directoryPath /= pathSegment;
+#if defined(CARBONATED)
+                const auto directoryPathCStr = directoryPath.c_str();
+                if (!Exists(directoryPathCStr))
+                {
+                    mkdir(directoryPathCStr, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+                    if (!IsDirectory(directoryPathCStr))
+                    {
+                        return ResultCode::Error;
+                    }
+                }
+#else
                 mkdir(directoryPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
                 if (!IsDirectory(directoryPath.c_str()))
                 {
                     return ResultCode::Error;
                 }
+#endif
             }
 
             return IsDirectory(resolvedPath.c_str()) ? ResultCode::Success : ResultCode::Error;
