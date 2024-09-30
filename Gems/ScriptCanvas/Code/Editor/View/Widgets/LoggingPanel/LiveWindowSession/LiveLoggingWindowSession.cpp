@@ -9,8 +9,9 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <EditorCoreAPI.h>
-#include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <IEditor.h>
+#include <QtWidgets/QLabel>
+#include <ScriptCanvas/Asset/RuntimeAsset.h>
 
 #include <Editor/View/Widgets/LoggingPanel/LiveWindowSession/LiveLoggingWindowSession.h>
 
@@ -223,6 +224,15 @@ namespace ScriptCanvasEditor
 
         m_ui->autoCaptureToggle->setChecked(m_userSettings->IsAutoCaptureEnabled());
         QObject::connect(m_ui->autoCaptureToggle, &QToolButton::toggled, this, &LiveLoggingWindowSession::OnAutoCaptureToggled);
+
+        if (!AzFramework::RemoteToolsInterface::Get())
+        {
+            m_ui->logTree->setHidden(true);
+            m_ui->verticalLayout->setAlignment(Qt::AlignTop);
+            QLabel* warnMessage = new QLabel("Please enable the **Remote Tools Connection** gem to use graph debugging features");
+            warnMessage->setTextFormat(Qt::MarkdownText);
+            m_ui->verticalLayout->addWidget(warnMessage);
+        }
     }
 
     LiveLoggingWindowSession::~LiveLoggingWindowSession()

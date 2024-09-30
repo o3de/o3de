@@ -42,36 +42,21 @@ namespace AZ
 
         void RayTracingAccelerationStructurePass::BuildInternal()
         {
-            const auto deviceMask{ RHI::RHISystemInterface::Get()->GetRayTracingSupport() };
-            const auto deviceCount{ RHI::RHISystemInterface::Get()->GetDeviceCount() };
-            for (auto deviceIndex{ 0 }; deviceIndex < deviceCount; ++deviceIndex)
-            {
-                if ((AZStd::to_underlying(deviceMask) >> deviceIndex) & 1)
-                {
-                    m_scopeProducers[deviceIndex] = AZStd::make_shared<RHI::ScopeProducerFunctionNoData>(
-                        RHI::ScopeId{ AZStd::string(GetPathName().GetCStr() + AZStd::to_string(deviceIndex)) },
-                        AZStd::bind(&RayTracingAccelerationStructurePass::SetupFrameGraphDependencies, this, AZStd::placeholders::_1),
-                        [](const RHI::FrameGraphCompileContext&)
-                        {
-                        },
-                        AZStd::bind(&RayTracingAccelerationStructurePass::BuildCommandList, this, AZStd::placeholders::_1),
-                        RHI::HardwareQueueClass::Compute,
-                        deviceIndex);
-                }
-            }
+            auto deviceIndex = Pass::GetDeviceIndex();
+            InitScope(
+                RHI::ScopeId(AZStd::string(GetPathName().GetCStr() + AZStd::to_string(deviceIndex))),
+                AZ::RHI::HardwareQueueClass::Compute,
+                deviceIndex);
         }
 
         void RayTracingAccelerationStructurePass::FrameBeginInternal(FramePrepareParams params)
         {
-            const auto deviceMask{ RHI::RHISystemInterface::Get()->GetRayTracingSupport() };
-            const auto deviceCount{ RHI::RHISystemInterface::Get()->GetDeviceCount() };
-            for (auto deviceIndex{ 0 }; deviceIndex < deviceCount; ++deviceIndex)
+            if (GetScopeId().IsEmpty())
             {
-                if ((AZStd::to_underlying(deviceMask) >> deviceIndex) & 1)
-                {
-                    params.m_frameGraphBuilder->ImportScopeProducer(*m_scopeProducers[deviceIndex]);
-                }
+                InitScope(RHI::ScopeId(GetPathName()), RHI::HardwareQueueClass::Compute, Pass::GetDeviceIndex());
             }
+
+            params.m_frameGraphBuilder->ImportScopeProducer(*this);
 
             ReadbackScopeQueryResults();
 
@@ -80,65 +65,12 @@ namespace AZ
 
             if (rayTracingFeatureProcessor)
             {
-                m_rayTracingRevisionOutDated = rayTracingFeatureProcessor->GetRevision() != m_rayTracingRevision;
+                auto revision = rayTracingFeatureProcessor->BeginFrame();
+                m_rayTracingRevisionOutDated = revision != m_rayTracingRevision;
                 if (m_rayTracingRevisionOutDated)
                 {
-                    m_rayTracingRevision = rayTracingFeatureProcessor->GetRevision();
-
-                    RHI::RayTracingBufferPools& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
-                    RayTracingFeatureProcessor::SubMeshVector& subMeshes = rayTracingFeatureProcessor->GetSubMeshes();
-
-                    // create the TLAS descriptor
-                    RHI::RayTracingTlasDescriptor tlasDescriptor;
-                    RHI::RayTracingTlasDescriptor* tlasDescriptorBuild = tlasDescriptor.Build();
-
-                    uint32_t instanceIndex = 0;
-                    for (auto& subMesh : subMeshes)
-                    {
-                        tlasDescriptorBuild->Instance()
-                            ->InstanceID(instanceIndex)
-                            ->InstanceMask(subMesh.m_mesh->m_instanceMask)
-                            ->HitGroupIndex(0)
-                            ->Blas(subMesh.m_blas)
-                            ->Transform(subMesh.m_mesh->m_transform)
-                            ->NonUniformScale(subMesh.m_mesh->m_nonUniformScale)
-                            ->Transparent(subMesh.m_material.m_irradianceColor.GetA() < 1.0f);
-
-                        instanceIndex++;
-                    }
-
-                    unsigned proceduralHitGroupIndex = 1; // Hit group 0 is used for normal meshes
-                    const auto& proceduralGeometryTypes = rayTracingFeatureProcessor->GetProceduralGeometryTypes();
-                    AZStd::unordered_map<Name, unsigned> geometryTypeMap;
-                    geometryTypeMap.reserve(proceduralGeometryTypes.size());
-                    for (auto it = proceduralGeometryTypes.cbegin(); it != proceduralGeometryTypes.cend(); ++it)
-                    {
-                        geometryTypeMap[it->m_name] = proceduralHitGroupIndex++;
-                    }
-
-                    for (const auto& proceduralGeometry : rayTracingFeatureProcessor->GetProceduralGeometries())
-                    {
-                        tlasDescriptorBuild->Instance()
-                            ->InstanceID(instanceIndex)
-                            ->InstanceMask(proceduralGeometry.m_instanceMask)
-                            ->HitGroupIndex(geometryTypeMap[proceduralGeometry.m_typeHandle->m_name])
-                            ->Blas(proceduralGeometry.m_blas)
-                            ->Transform(proceduralGeometry.m_transform)
-                            ->NonUniformScale(proceduralGeometry.m_nonUniformScale);
-                        instanceIndex++;
-                    }
-
-                    // create the TLAS buffers based on the descriptor
-                    RHI::Ptr<RHI::RayTracingTlas>& rayTracingTlas = rayTracingFeatureProcessor->GetTlas();
-                    rayTracingTlas->CreateBuffers(
-                        RHI::RHISystemInterface::Get()->GetRayTracingSupport(), &tlasDescriptor, rayTracingBufferPools);
+                    m_rayTracingRevision = revision;
                 }
-
-                // update and compile the RayTracingSceneSrg and RayTracingMaterialSrg
-                // Note: the timing of this update is very important, it needs to be updated after the TLAS is allocated so it can
-                // be set on the RayTracingSceneSrg for this frame, and the ray tracing mesh data in the RayTracingSceneSrg must
-                // exactly match the TLAS.  Any mismatch in this data may result in a TDR.
-                rayTracingFeatureProcessor->UpdateRayTracingSrgs();
             }
         }
 
@@ -195,26 +127,12 @@ namespace AZ
 
         RPI::TimestampResult RayTracingAccelerationStructurePass::GetTimestampResultInternal() const
         {
-            RPI::TimestampResult result{};
-
-            for (auto& [deviceIndex, timestampResult] : m_timestampResults)
-            {
-                result.Add(timestampResult);
-            }
-
-            return result;
+            return m_timestampResult;
         }
 
         RPI::PipelineStatisticsResult RayTracingAccelerationStructurePass::GetPipelineStatisticsResultInternal() const
         {
-            RPI::PipelineStatisticsResult result{};
-
-            for (auto& [deviceIndex, statisticsResult] : m_statisticsResults)
-            {
-                result += statisticsResult;
-            }
-
-            return result;
+            return m_statisticsResult;
         }
 
         void RayTracingAccelerationStructurePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
@@ -389,33 +307,26 @@ namespace AZ
             // [GHI-16945] Feature Request - Add GPU timestamp and pipeline statistic support for scopes
             ExecuteOnTimestampQuery(endQuery);
             ExecuteOnPipelineStatisticsQuery(endQuery);
+
+            m_lastDeviceIndex = context.GetDeviceIndex();
         }
 
         void RayTracingAccelerationStructurePass::ReadbackScopeQueryResults()
         {
-            const auto deviceMask{ RHI::RHISystemInterface::Get()->GetRayTracingSupport() };
-            const auto deviceCount{ RHI::RHISystemInterface::Get()->GetDeviceCount() };
-            for (auto deviceIndex{ 0 }; deviceIndex < deviceCount; ++deviceIndex)
-            {
-                if ((AZStd::to_underlying(deviceMask) >> deviceIndex) & 1)
+            ExecuteOnTimestampQuery(
+                [this](const RHI::Ptr<RPI::Query>& query)
                 {
-                    ExecuteOnTimestampQuery(
-                        [this, deviceIndex](const RHI::Ptr<RPI::Query>& query)
-                        {
-                            const uint32_t TimestampResultQueryCount{ 2u };
-                            uint64_t timestampResult[TimestampResultQueryCount] = { 0 };
-                            query->GetLatestResult(&timestampResult, sizeof(uint64_t) * TimestampResultQueryCount, deviceIndex);
-                            m_timestampResults[deviceIndex] =
-                                RPI::TimestampResult(timestampResult[0], timestampResult[1], RHI::HardwareQueueClass::Compute);
-                        });
+                    const uint32_t TimestampResultQueryCount{ 2u };
+                    uint64_t timestampResult[TimestampResultQueryCount] = { 0 };
+                    query->GetLatestResult(&timestampResult, sizeof(uint64_t) * TimestampResultQueryCount, m_lastDeviceIndex);
+                    m_timestampResult = RPI::TimestampResult(timestampResult[0], timestampResult[1], RHI::HardwareQueueClass::Compute);
+                });
 
-                    ExecuteOnPipelineStatisticsQuery(
-                        [this, deviceIndex](const RHI::Ptr<RPI::Query>& query)
-                        {
-                            query->GetLatestResult(&m_statisticsResults[deviceIndex], sizeof(RPI::PipelineStatisticsResult), deviceIndex);
-                        });
-                }
-            }
+            ExecuteOnPipelineStatisticsQuery(
+                [this](const RHI::Ptr<RPI::Query>& query)
+                {
+                    query->GetLatestResult(&m_statisticsResult, sizeof(RPI::PipelineStatisticsResult), m_lastDeviceIndex);
+                });
         }
     }   // namespace RPI
 }   // namespace AZ

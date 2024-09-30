@@ -2293,7 +2293,7 @@ namespace AZ
                 AZ::Aabb subMeshAabb = AZ::Aabb::CreateNull();
                 if (CalculateAABB(positionBufferViewDescriptor, *positionStreamBufferInfo.m_bufferAssetView.GetBufferAsset().Get(), subMeshAabb))
                 {
-                    lodAssetCreator.SetMeshAabb(AZStd::move(subMeshAabb));
+                    lodAssetCreator.SetMeshAabb(subMeshAabb);
                 }
                 else
                 {

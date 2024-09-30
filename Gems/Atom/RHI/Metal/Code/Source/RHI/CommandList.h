@@ -10,6 +10,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/CommandListStates.h>
+#include <Atom/RHI/DeviceGeometryView.h>
 #include <Atom/RHI/ObjectPool.h>
 #include <Atom/RHI/PipelineStateDescriptor.h>
 #include <Atom/RHI/ScopeAttachment.h>
@@ -80,7 +81,7 @@ namespace AZ
         private:
             
             void SetPipelineState(const PipelineState* pipelineState);
-            void SetStreamBuffers(const RHI::DeviceStreamBufferView* descriptors, AZ::u32 count);
+            void SetStreamBuffers(const RHI::DeviceGeometryView& geometryView, const RHI::StreamBufferIndices& streamIndices);
             void SetIndexBuffer(const RHI::DeviceIndexBufferView& descriptor);
             void SetStencilRef(AZ::u8 stencilRef);
             void SetRasterizerState(const RasterizerState& rastState);

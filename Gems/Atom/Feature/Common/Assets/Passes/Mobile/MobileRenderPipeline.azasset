@@ -8,6 +8,7 @@
         "MaterialPipelineTag": "MobilePipeline",
         "RootPassTemplate": "MobilePipelineTemplate",
         "AllowModification": true,
+        "AllowSubpassMerging" : true,
         "RenderSettings": {
             "MultisampleState": {
                 "samples": 1

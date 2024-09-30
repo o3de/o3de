@@ -470,6 +470,7 @@
     ],
     "steps": [
       "install_mono_release",
+      "install_mono_android_api_24_release",
       "installer",
       "installer_test"
     ]
@@ -581,6 +582,34 @@
     "COMMAND": "destroy_cdk_applications.cmd",
     "PARAMETERS": {
       "CDK_VERSION": "2.68.0"
+    }
+  },
+  "install_mono_android_api_24_release": {
+    "TAGS": [],
+    "PIPELINE_ENV": {
+      "NODE_LABEL":"windows-packaging"
+    },
+    "COMMAND": "build_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "release",
+      "OUTPUT_DIRECTORY": "build\\android_api_mono",
+      "CMAKE_OPTIONS":"-G \"Ninja Multi-Config\" -DCMAKE_TOOLCHAIN_FILE=cmake\\Platform\\Android\\Toolchain_android.cmake -DLY_MONOLITHIC_GAME=TRUE -DLY_DISABLE_TEST_MODULES=TRUE -DANDROID_NATIVE_API_LEVEL=24 -DLY_NDK_DIR=\"C:/AndroidSdk/ndk/25.1.8937393\"",
+      "CMAKE_TARGET": "install",
+      "CMAKE_BUILD_ARGS":"-j!NUMBER_OF_PROCESSORS!"
+    }
+  },
+  "install_mono_android_api_24_profile": {
+    "TAGS": [],
+    "PIPELINE_ENV": {
+      "NODE_LABEL":"windows-packaging"
+    },
+    "COMMAND": "build_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build\\android_api_mono",
+      "CMAKE_OPTIONS":"-G \"Ninja Multi-Config\" -DCMAKE_TOOLCHAIN_FILE=cmake\\Platform\\Android\\Toolchain_android.cmake -DLY_MONOLITHIC_GAME=TRUE -DLY_DISABLE_TEST_MODULES=TRUE -DANDROID_NATIVE_API_LEVEL=24 -DLY_NDK_DIR=\"C:/AndroidSdk/ndk/25.1.8937393\"",
+      "CMAKE_TARGET": "install",
+      "CMAKE_BUILD_ARGS":"-j!NUMBER_OF_PROCESSORS!"
     }
   }
 }

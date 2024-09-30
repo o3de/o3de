@@ -193,9 +193,6 @@ namespace AZ
 
                 ReflectionProbe m_reflectionProbe;
 
-            private:
-                friend RayTracingFeatureProcessor;
-
                 // indices of subMeshes in the subMesh list
                 IndexVector m_subMeshIndices;
             };
@@ -322,6 +319,11 @@ namespace AZ
             const SubMeshVector& GetSubMeshes() const { return m_subMeshes; }
             SubMeshVector& GetSubMeshes() { return m_subMeshes; }
 
+            // mesh data for meshes that should be included in ray tracing operations,
+            // this is a map of the mesh UUID to the ray tracing data for the sub-meshes
+            using MeshMap = AZStd::map<AZ::Uuid, Mesh>;
+            const MeshMap& GetMeshMap() const { return m_meshes; };
+
             //! Retrieves the RayTracingSceneSrg
             Data::Instance<RPI::ShaderResourceGroup> GetRayTracingSceneSrg() const { return m_rayTracingSceneSrg; }
 
@@ -375,7 +377,12 @@ namespace AZ
             //! Retrieves the GPU buffer containing information for all ray tracing materials.
             const Data::Instance<RPI::Buffer> GetMaterialInfoGpuBuffer() const { return m_materialInfoGpuBuffer.GetCurrentBuffer(); }
 
-            //! Updates the RayTracingSceneSrg and RayTracingMaterialSrg, called after the TLAS is allocated in the RayTracingAccelerationStructurePass
+            //! If necessary recreates TLAS buffers and updates the ray tracing SRGs. Should only be called by the
+            //! RayTracingAccelerationStructurePass. Returns the current revision.
+            uint32_t BeginFrame();
+
+            //! Updates the RayTracingSceneSrg and RayTracingMaterialSrg, called after the TLAS is allocated in the
+            //! RayTracingAccelerationStructurePass
             void UpdateRayTracingSrgs();
 
             struct SubMeshBlasInstance
@@ -415,9 +422,6 @@ namespace AZ
             // flag indicating if RayTracing is enabled, currently based on device support
             bool m_rayTracingEnabled = false;
 
-            // mesh data for meshes that should be included in ray tracing operations,
-            // this is a map of the mesh UUID to the ray tracing data for the sub-meshes
-            using MeshMap = AZStd::map<AZ::Uuid, Mesh>;
             MeshMap m_meshes;
             SubMeshVector m_subMeshes;
 
@@ -434,6 +438,9 @@ namespace AZ
 
             // current revision number of ray tracing data
             uint32_t m_revision = 0;
+
+            // latest tlas revision number
+            uint32_t m_tlasRevision = 0;
 
             uint32_t m_proceduralGeometryTypeRevision = 0;
 

@@ -50,7 +50,7 @@ namespace AZ
         {
             // Though this is a fullscreen pass, the algorithm used makes each thread output 3 blurred pixels, so
             // it's not a 1-to-1 ratio and requires custom calculation of target thread counts
-            m_isFullscreenPass = false;
+            m_fullscreenDispatch = false;
         }
 
         void FastDepthAwareBlurHorPass::SetConstants(float constFalloff, float depthFalloffThreshold, float depthFalloffStrength)
@@ -92,7 +92,7 @@ namespace AZ
         {
             // Though this is a fullscreen pass, the algorithm used makes each thread output 3 blurred pixels, so
             // it's not a 1-to-1 ratio and requires custom calculation of target thread counts
-            m_isFullscreenPass = false;
+            m_fullscreenDispatch = false;
         }
 
         void FastDepthAwareBlurVerPass::SetConstants(float constFalloff, float depthFalloffThreshold, float depthFalloffStrength)

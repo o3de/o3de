@@ -527,10 +527,12 @@ namespace AZ
                     previewInfo.m_pipelineStateDescriptor.m_renderStates.m_multisampleState = outputImageView->GetImage()->GetDescriptor().m_multisampleState;
 
                     // draw each image by using instancing
-                    RHI::DrawLinear drawLinear;
-                    drawLinear.m_vertexCount = 4;
-                    drawLinear.m_instanceCount = previewInfo.m_imageCount;
-                    previewInfo.m_item.SetArguments(RHI::DrawArguments(drawLinear));
+                    RHI::DrawInstanceArguments drawInstanceArgs(previewInfo.m_imageCount, 0);
+                    RHI::DrawLinear drawLinear(4, 0);
+
+                    previewInfo.m_geometryView.SetDrawArguments(drawLinear);
+                    previewInfo.m_item.SetDrawInstanceArgs(drawInstanceArgs);
+                    previewInfo.m_item.SetGeometryView(&previewInfo.m_geometryView);
                     previewInfo.m_item.SetPipelineState(m_shader->AcquirePipelineState(previewInfo.m_pipelineStateDescriptor));
                 }
             }

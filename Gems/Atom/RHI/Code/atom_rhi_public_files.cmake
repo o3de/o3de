@@ -46,6 +46,7 @@ set(FILES
     Include/Atom/RHI/DeviceDispatchItem.h
     Include/Atom/RHI/DispatchItem.h
     Include/Atom/RHI/DrawFilterTagRegistry.h
+    Include/Atom/RHI/DrawArguments.h
     Include/Atom/RHI/DeviceDrawItem.h
     Include/Atom/RHI/DrawItem.h
     Source/RHI/DrawItem.cpp
@@ -54,10 +55,13 @@ set(FILES
     Include/Atom/RHI/DrawListContext.h
     Include/Atom/RHI/DeviceDrawPacket.h
     Include/Atom/RHI/DrawPacket.h
+    Include/Atom/RHI/GeometryView.h
     Include/Atom/RHI/DeviceDrawPacketBuilder.h
     Include/Atom/RHI/DrawPacketBuilder.h
     Include/Atom/RHI/DeviceIndirectArguments.h
     Include/Atom/RHI/IndirectArguments.h
+    Include/Atom/RHI/DeviceGeometryView.h
+    Include/Atom/RHI/DeviceDrawArguments.h
     Source/RHI/CommandList.cpp
     Source/RHI/CommandListValidator.cpp
     Source/RHI/ConstantsData.cpp
@@ -65,6 +69,7 @@ set(FILES
     Source/RHI/DrawListContext.cpp
     Source/RHI/DeviceDrawPacket.cpp
     Source/RHI/DrawPacket.cpp
+    Source/RHI/GeometryView.cpp
     Source/RHI/DeviceDrawPacketBuilder.cpp
     Source/RHI/DrawPacketBuilder.cpp
     Source/RHI/DrawItem.cpp

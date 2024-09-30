@@ -19,20 +19,10 @@ namespace AZ::RHI
     DeviceDrawPacketBuilder::DeviceDrawRequest DrawPacketBuilder::DrawRequest::
         GetDeviceDrawRequest(int deviceIndex)
     {
-        if (!m_deviceStreamBufferViews.contains(deviceIndex))
-        {
-            // We need to hold the memory for the single-device StreamBufferViews
-            AZStd::vector<DeviceStreamBufferView> deviceStreamBufferView;
-            for (auto& mdStreamBufferView : m_streamBufferViews)
-            {
-                deviceStreamBufferView.emplace_back(mdStreamBufferView.GetDeviceStreamBufferView(deviceIndex));
-            }
-            m_deviceStreamBufferViews.emplace(deviceIndex, AZStd::move(deviceStreamBufferView));
-        }
         return DeviceDrawPacketBuilder::DeviceDrawRequest{
                 m_listTag,
                 m_stencilRef,
-                m_deviceStreamBufferViews.at(deviceIndex),
+                m_streamIndices,
                 m_uniqueShaderResourceGroup ? m_uniqueShaderResourceGroup->GetDeviceShaderResourceGroup(deviceIndex).get() : nullptr,
                 m_pipelineState ? m_pipelineState->GetDevicePipelineState(deviceIndex).get() : nullptr,
                 m_sortKey,
@@ -41,17 +31,7 @@ namespace AZ::RHI
 
     DrawPacketBuilder::DrawPacketBuilder(const DrawPacketBuilder& other)
     {
-        m_deviceMask = other.m_deviceMask;
-
-        m_drawRequests = other.m_drawRequests;
-
-        m_drawPacketInFlight = aznew DrawPacket;
-        if (other.m_drawPacketInFlight)
-        {
-            m_drawPacketInFlight->m_drawListMask = other.m_drawPacketInFlight->m_drawListMask;
-        }
-
-        m_deviceDrawPacketBuilders = other.m_deviceDrawPacketBuilders;
+        *this = other;
     }
 
     DrawPacketBuilder& DrawPacketBuilder::operator=(const DrawPacketBuilder& other)
@@ -86,20 +66,21 @@ namespace AZ::RHI
         }
     }
 
-    void DrawPacketBuilder::SetDrawArguments(const DrawArguments& drawArguments)
+    void DrawPacketBuilder::SetGeometryView(GeometryView* geometryView)
     {
         for (auto& [deviceIndex, deviceDrawPacketBuilder] : m_deviceDrawPacketBuilders)
         {
-            deviceDrawPacketBuilder.SetDrawArguments(drawArguments.GetDeviceDrawArguments(deviceIndex));
+            deviceDrawPacketBuilder.SetGeometryView(geometryView->GetDeviceGeometryView(deviceIndex));
         }
     }
 
-    void DrawPacketBuilder::SetIndexBufferView(const IndexBufferView& indexBufferView)
+    void DrawPacketBuilder::SetDrawInstanceArguments(DrawInstanceArguments drawInstanceArgs)
     {
         for (auto& [deviceIndex, deviceDrawPacketBuilder] : m_deviceDrawPacketBuilders)
         {
-            deviceDrawPacketBuilder.SetIndexBufferView(indexBufferView.GetDeviceIndexBufferView(deviceIndex));
+            deviceDrawPacketBuilder.SetDrawInstanceArguments(drawInstanceArgs);
         }
+
     }
 
     void DrawPacketBuilder::SetRootConstants(AZStd::span<const uint8_t> rootConstants)

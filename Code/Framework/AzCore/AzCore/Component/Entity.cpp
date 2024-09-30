@@ -1048,8 +1048,12 @@ namespace AZ
             // different error message for multiple components of the same type
             if (componentProvidingService->m_underlyingTypeId == componentIncompatibleWithService->m_underlyingTypeId)
             {
-                return AZStd::string::format("Multiple '%s' found, but this component is incompatible with others of the same type.",
-                    componentProvidingService->m_component->RTTI_GetTypeName());
+                return AZStd::string::format(
+                    "Multiple '%s' found, but this component is incompatible with others of the same type. Components with UUID %s "
+                    "and %s are incompatible with each other.",
+                    componentProvidingService->m_component->RTTI_GetTypeName(),
+                    componentProvidingService->m_component->RTTI_GetType().ToString<AZStd::string>().c_str(),
+                    componentIncompatibleWithService->m_component->RTTI_GetType().ToString<AZStd::string>().c_str());
             }
 
             return AZStd::string::format("Components '%s' and '%s' are incompatible.",

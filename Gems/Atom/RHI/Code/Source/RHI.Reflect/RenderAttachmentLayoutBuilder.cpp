@@ -180,6 +180,7 @@ namespace AZ::RHI
                                             builder.m_subpassInputAttachments[i].m_imageAspects,
                                             builder.m_subpassInputAttachments[i].m_scopeAttachmentAccess,
                                             builder.m_subpassInputAttachments[i].m_scopeAttachmentStage,
+                                            builder.m_subpassInputAttachments[i].m_loadStoreAction,
                                             builder.m_subpassInputAttachments[i].m_extras};
             }
 
@@ -375,10 +376,15 @@ namespace AZ::RHI
     RenderAttachmentLayoutBuilder::SubpassAttachmentLayoutBuilder* RenderAttachmentLayoutBuilder::SubpassAttachmentLayoutBuilder::SubpassInputAttachment(
         const AZ::Name& name,
         RHI::ImageAspectFlags aspectFlags,
+        const AttachmentLoadStoreAction& loadStoreAction /*= AttachmentLoadStoreAction()*/,
         RenderAttachmentExtras* extras /*= nullptr*/)
     {
-        m_subpassInputAttachments.push_back(SubpassAttachmentEntry{
-            name, aspectFlags, AZ::RHI::ScopeAttachmentAccess::Read, AZ::RHI::ScopeAttachmentStage::FragmentShader, extras });
+        m_subpassInputAttachments.push_back(SubpassAttachmentEntry{ name,
+                                                                    aspectFlags,
+                                                                    AZ::RHI::ScopeAttachmentAccess::Read,
+                                                                    AZ::RHI::ScopeAttachmentStage::FragmentShader,
+                                                                    loadStoreAction,
+                                                                    extras });
         return this;
     }
 
@@ -402,6 +408,12 @@ namespace AZ::RHI
         };
         m_shadingRateAttachment.m_loadStoreAction.m_storeAction = AttachmentStoreAction::None;
         return this;
+    }
+
+    bool RenderAttachmentLayoutBuilder::SubpassAttachmentLayoutBuilder::HasAttachments() const
+    {
+        return !m_subpassInputAttachments.empty() || !m_renderTargetAttachments.empty() || !m_shadingRateAttachment.m_name.IsEmpty() ||
+            !m_depthStencilAttachment.m_name.IsEmpty();
     }
 
 }

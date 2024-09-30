@@ -12,6 +12,7 @@
 #include <Atom/RHI/Image.h>
 #include <Atom/RHI/Resource.h>
 #include <Atom/RHI/DeviceImageView.h>
+#include <RHI/Vulkan.h>
 #include <RHI/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
@@ -431,32 +432,28 @@ namespace AZ
                                                                                         : VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
                 }                
             case RHI::ScopeAttachmentUsage::Shader:
+                if (RHI::CheckBitsAny(access, RHI::ScopeAttachmentAccess::Write))
+                {
+                    return VK_IMAGE_LAYOUT_GENERAL;
+                }
+                [[fallthrough]];
             case RHI::ScopeAttachmentUsage::SubpassInput:
                 {
-                    // always set VK_IMAGE_LAYOUT_GENERAL if the Image is ShaderWrite, even in a read scope
-                    if (RHI::CheckBitsAny(access, RHI::ScopeAttachmentAccess::Write) ||
-                        RHI::CheckBitsAny(imageView->GetImage().GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderWrite))
-                    {
-                        return VK_IMAGE_LAYOUT_GENERAL;
-                    }
-                    else
-                    {
-                        // if we are reading from a depth/stencil texture, then we use the depth/stencil read optimal layout instead of the
-                        // generic shader read one
-                        AZ_Error(
-                            "Vulkan",
-                            !RHI::CheckBitsAll(imageAspects, RHI::ImageAspectFlags::DepthStencil),
-                            "Please specify depth or stencil aspect mask for ScopeAttachment %s in Scope %s",
-                            imageAttachment.GetDescriptor().m_attachmentId.GetCStr(),
-                            imageAttachment.GetScope().GetId().GetCStr());
+                    // if we are reading from a depth/stencil texture, then we use the depth/stencil read optimal layout instead of the
+                    // generic shader read one
+                    AZ_Error(
+                        "Vulkan",
+                        !RHI::CheckBitsAll(imageAspects, RHI::ImageAspectFlags::DepthStencil),
+                        "Please specify depth or stencil aspect mask for ScopeAttachment %s in Scope %s",
+                        imageAttachment.GetDescriptor().m_attachmentId.GetCStr(),
+                        imageAttachment.GetScope().GetId().GetCStr());
 
-                        if (RHI::CheckBitsAny(imageAspects, RHI::ImageAspectFlags::DepthStencil))
-                        {
-                            return VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-                        }
-                        
-                        return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                    if (RHI::CheckBitsAny(imageAspects, RHI::ImageAspectFlags::DepthStencil))
+                    {
+                        return VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
                     }
+                        
+                    return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 }
             case RHI::ScopeAttachmentUsage::Copy:
                 return RHI::CheckBitsAny(access, RHI::ScopeAttachmentAccess::Write)
@@ -638,7 +635,7 @@ namespace AZ
                 return physicalDevice.IsFeatureSupported(DeviceFeature::LoadNoneOp) ? VK_ATTACHMENT_LOAD_OP_NONE_EXT
                                                                                     : VK_ATTACHMENT_LOAD_OP_LOAD;
             default:
-                AZ_Assert(false, "AttachmentLoadAction is illegal.");
+                AZ_Assert(false, "AttachmentLoadAction is invalid.");
                 return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             }
         }
@@ -656,8 +653,58 @@ namespace AZ
                 return physicalDevice.IsFeatureSupported(DeviceFeature::StoreNoneOp) ? VK_ATTACHMENT_STORE_OP_NONE
                                                                                      : VK_ATTACHMENT_STORE_OP_STORE;
             default:
-                AZ_Assert(false, "AttachmentStoreAction is illegal.");
+                AZ_Assert(false, "AttachmentStoreAction is invalid.");
                 return VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            }
+        }
+
+        RHI::AttachmentLoadAction CombineLoadOp(RHI::AttachmentLoadAction currentOp, RHI::AttachmentLoadAction newOp)
+        {
+            switch (currentOp)
+            {
+            case RHI::AttachmentLoadAction::Load:
+                return RHI::AttachmentLoadAction::Load;
+            case RHI::AttachmentLoadAction::DontCare:
+                return RHI::AttachmentLoadAction::DontCare;
+            case RHI::AttachmentLoadAction::Clear:
+                return RHI::AttachmentLoadAction::Clear;
+            case RHI::AttachmentLoadAction::None:
+                return newOp != RHI::AttachmentLoadAction::None ? RHI::AttachmentLoadAction::Load : RHI::AttachmentLoadAction::None;
+            default:
+                AZ_Assert(false, "AttachmentLoadAction is invalid.");
+                return RHI::AttachmentLoadAction::Load;
+            }
+        }
+
+        RHI::AttachmentStoreAction CombineStoreOp(RHI::AttachmentStoreAction currentOp, RHI::AttachmentStoreAction newOp)
+        {
+            switch (currentOp)
+            {
+            case RHI::AttachmentStoreAction::DontCare:
+                return newOp;
+            case RHI::AttachmentStoreAction::Store:
+                return newOp == RHI::AttachmentStoreAction::None ? RHI::AttachmentStoreAction::Store : newOp;
+            case RHI::AttachmentStoreAction::None:
+                return newOp;
+            default:
+                AZ_Assert(false, "AttachmentStoreAction is invalid.");
+                return RHI::AttachmentStoreAction::Store;
+            }
+        }
+
+        BarrierTypeFlags ConvertBarrierType(VkStructureType type)
+        {
+            switch (type)
+            {
+            case VK_STRUCTURE_TYPE_MEMORY_BARRIER:
+                return BarrierTypeFlags::Memory;
+            case VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER:
+                return BarrierTypeFlags::Buffer;
+            case VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER:
+                return BarrierTypeFlags::Image;
+            default:
+                AZ_Assert(false, "Invalid memory barrier type.");
+                return BarrierTypeFlags::None;
             }
         }
     }

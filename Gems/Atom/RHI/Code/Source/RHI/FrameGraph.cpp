@@ -79,7 +79,6 @@ namespace AZ::RHI
         m_scopeLookup.clear();
         m_attachmentDatabase.Clear();
         m_isCompiled = false;
-        m_requiresSortForSubpasses = false;
     }
 
     ResultCode FrameGraph::ValidateEnd()
@@ -318,7 +317,7 @@ namespace AZ::RHI
         m_isBuilding = false;
 
         /// Finally, topologically sort the graph in preparation for compilation.
-        resultCode = TopologicalSort(m_requiresSortForSubpasses);
+        resultCode = TopologicalSort();
         if (resultCode != ResultCode::Success)
         {
             Clear();
@@ -353,6 +352,13 @@ namespace AZ::RHI
     void FrameGraph::SetHardwareQueueClass(HardwareQueueClass hardwareQueueClass)
     {
         m_currentScope->m_hardwareQueueClass = hardwareQueueClass;
+    }
+
+    void FrameGraph::SetGroupId(const ScopeGroupId& groupId)
+    {
+        AZ_Assert(m_currentScope, "Current scope is null while setting the group id");
+        AZ_Assert(m_currentScope->m_graphNodeIndex.IsValid(), "Current scope doesn't have a valid node graph index");
+        m_graphNodes[m_currentScope->m_graphNodeIndex.GetIndex()].m_scopeGroupId = groupId;
     }            
 
     void FrameGraph::UseAttachmentInternal(
@@ -373,16 +379,7 @@ namespace AZ::RHI
         // TODO:[ATOM-1267] Replace with writer / reader dependencies.
         if (Scope* producer = frameAttachment.GetLastScope(m_currentScope->GetDeviceIndex()))
         {
-            // If there's a last scope, we are at a scope subpass that is NOT the first subpass
-            if (usage == ScopeAttachmentUsage::SubpassInput)
-            {
-                m_requiresSortForSubpasses = true;
-                InsertEdge(*producer, *m_currentScope, GraphEdgeType::SameGroup);
-            }
-            else
-            {
-                InsertEdge(*producer, *m_currentScope, GraphEdgeType::DifferentGroup);
-            }
+            InsertEdge(*producer, *m_currentScope);
         }
 
         ImageScopeAttachment* scopeAttachment =
@@ -621,7 +618,7 @@ namespace AZ::RHI
         m_currentScope->m_fencesToWaitFor.push_back(&fence);
     }
 
-    ResultCode FrameGraph::TopologicalSort(bool requiresSortForSubpasses)
+    ResultCode FrameGraph::TopologicalSort()
     {
         struct NodeId
         {
@@ -633,28 +630,32 @@ namespace AZ::RHI
         unblockedNodes.reserve(m_graphNodes.size());
 
         // Build a list with the edges for each producer node.
-        AZStd::vector<AZStd::list<uint32_t>> graphEdges(m_graphNodes.size());
+        AZStd::vector<AZStd::vector<uint32_t>> graphEdges(m_graphNodes.size());
         for (uint32_t edgeIndex = 0; edgeIndex < m_graphEdges.size(); ++edgeIndex)
         {
             const GraphEdge& edge = m_graphEdges[edgeIndex];
-            AZStd::list<uint32_t>& edgeList = graphEdges[edge.m_producerIndex];
-            // Push group edges at the front so they are processed before the single ones.
-            // We need this so nodes in the same group are together.
-            switch (edge.m_type)
-            {
-            case GraphEdgeType::DifferentGroup:
-                edgeList.push_back(edgeIndex);
-                break;
-            case GraphEdgeType::SameGroup:
-                edgeList.push_front(edgeIndex);
-                break;
-            default:
-                AZ_Assert(false, "Invalid edge type %d", edge.m_type);
-                break;
-            }
+            AZStd::vector<uint32_t>& edgeList = graphEdges[edge.m_producerIndex];
+            edgeList.push_back(edgeIndex);
         }
 
+       
         uint16_t groupCount = 0;
+        AZStd::unordered_map<ScopeGroupId, uint16_t> groupIds;
+        // Returns a groupId from the ScopeGroupId of the scopes.
+        auto getGroupId = [&](const ScopeGroupId& groupId)
+        {
+            // An empty ScopeGroupId means the scope doesn't belong to a group.
+            if (groupId.IsEmpty())
+            {
+                return groupCount++;
+            }
+
+            // It doesn't matter that we incremented groupCount when not inserting since we only
+            // care of being a unique increment number.
+            auto inserRet = groupIds.insert(AZStd::pair<ScopeGroupId, uint16_t>(groupId, groupCount++));
+            return inserRet.first->second;
+        };
+
         // This loop will add all unblocked nodes, i.e. nodes that don't have any producers. This
         // includes the root node.
         for (size_t nodeIndex = 0; nodeIndex < m_graphNodes.size(); ++nodeIndex)
@@ -662,9 +663,12 @@ namespace AZ::RHI
             const GraphNode& graphNode = m_graphNodes[nodeIndex];
             if (graphNode.m_unsortedProducerCount == 0)
             {
-                unblockedNodes.push_back({ static_cast<uint16_t>(nodeIndex), groupCount++ });
+                unblockedNodes.push_back({ static_cast<uint16_t>(nodeIndex), getGroupId(graphNode.m_scopeGroupId) });
             }
         }
+
+        AZStd::vector<AZStd::pair<Scope*, uint16_t>> preSortScopes;
+        preSortScopes.reserve(m_graphNodes.size());
 
         // Process nodes that don't have any producers left (they have already been processed).
         // They get added to the unblockedNodes vector in a topological manner.
@@ -675,23 +679,20 @@ namespace AZ::RHI
             const uint16_t producerGroupId = producerNodeId.m_groupId;
             unblockedNodes.pop_back();
 
-            const uint32_t scopeIndexNext = aznumeric_caster(m_scopes.size());
-
             Scope* scope = m_graphNodes[producerIndex].m_scope;
-            // Activate the scope in topological order.
-            scope->Activate(this, scopeIndexNext, GraphGroupId(producerGroupId));
-            m_scopes.push_back(scope);
+            preSortScopes.push_back(AZStd::make_pair(scope, producerGroupId));
 
             // Go through all the edges of this node, find the consumer nodes that are fully sorted and add them to the unblockedNodes.
             for (const uint32_t edgeIndex : graphEdges[producerIndex])
             {
                 const GraphEdge& graphEdge = m_graphEdges[edgeIndex];
                 const uint16_t consumerIndex = static_cast<uint16_t>(graphEdge.m_consumerIndex);
-                if (--m_graphNodes[consumerIndex].m_unsortedProducerCount == 0)
+                GraphNode& graphNode = m_graphNodes[consumerIndex];
+                if (--graphNode.m_unsortedProducerCount == 0)
                 {
                     NodeId newNode;
                     newNode.m_nodeIndex = consumerIndex;
-                    newNode.m_groupId = graphEdge.m_type == GraphEdgeType::SameGroup ? producerGroupId : groupCount++;
+                    newNode.m_groupId = getGroupId(graphNode.m_scopeGroupId);
                     unblockedNodes.emplace_back(newNode);
                 }
             }
@@ -699,8 +700,8 @@ namespace AZ::RHI
         }
 
         //////////////////////////////////////////////////////////////////
-        // This additional sort makes sure that Subpasses get grouped consecutively
-        // in MultiView(aka XR) pipelines.
+        // This additional sort makes sure that scopes in the same group get grouped consecutively.
+        // This is necessary when using subpasses.
         // This is an example on how a Multiview(aka XR) scenario would sort scopes WITHOUT
         // this sort:
         //     [0] "Root"
@@ -715,20 +716,25 @@ namespace AZ::RHI
         //     [2] "XRLeftPipeline_-10.MultiViewSkyBoxPass" 
         //     [3] "XRRightPipeline_-10.MultiViewForwardPass"
         //     [4] "XRRightPipeline_-10.MultiViewSkyBoxPass"
-        // Breadcrumb: It was found that the main pipeline (Which luckily doesn't use subpasses)
-        //     reports a minor validation error in Vulkan related with image layout for some
-        //     compute passes like LightCullingPass when this sort is execute.
-        //     As mentioned already, FORTUNATELY the main pipeline doesn't use subpasses
-        //     and this sort is never executed in that case. 
-        if (requiresSortForSubpasses)
+        AZStd::stable_sort(
+            preSortScopes.begin(),
+            preSortScopes.end(),
+            [](const auto& lhs, const auto& rhs)
+            {
+                // Sort by group id
+                return (lhs.second < rhs.second);
+            });
+
+        // Activate the scope in topological order.
+        m_scopes.resize(preSortScopes.size());
+        for (uint32_t scopeIndex = 0; scopeIndex < preSortScopes.size(); ++scopeIndex)
         {
-            AZStd::sort(
-                m_scopes.begin(),
-                m_scopes.end(),
-                [](const AZ::RHI::Scope* a, const AZ::RHI::Scope* b)
-                {
-                    return (a->GetFrameGraphGroupId() < b->GetFrameGraphGroupId());
-                });
+            Scope* scope = preSortScopes[scopeIndex].first;
+            m_scopes[scopeIndex] = scope;
+            Scope::ActivationFlags activationFlags = m_graphNodes[scope->m_graphNodeIndex.GetIndex()].m_scopeGroupId.IsEmpty()
+                ? Scope::ActivationFlags::None
+                : Scope::ActivationFlags::Subpass;
+            scope->Activate(this, scopeIndex, GraphGroupId(preSortScopes[scopeIndex].second), activationFlags);
         }
         ////////////////////////////////////////////////////////////////
 
@@ -740,7 +746,7 @@ namespace AZ::RHI
         if (Validation::IsEnabled())
         {
             AZStd::string cycleInfoString = "Error, a cycle exists in the graph. Failed to topologically sort. Remaining Edges:\n";
-            for (const AZStd::list<uint32_t>& edgeList : graphEdges)
+            for (const AZStd::vector<uint32_t>& edgeList : graphEdges)
             {
                 for (uint32_t edgeIndex : edgeList)
                 {
@@ -792,7 +798,7 @@ namespace AZ::RHI
         return m_graphNodes[consumer.m_graphNodeIndex.GetIndex()].m_producers;
     }
 
-    void FrameGraph::InsertEdge(Scope& producer, Scope& consumer, GraphEdgeType edgeType /*= GraphEdgeType::DifferentGroup*/)
+    void FrameGraph::InsertEdge(Scope& producer, Scope& consumer)
     {
         // Ignore edges where the read and write are pointing to the same scope
         // This can happen if a scope is reading and writing to different mips of the same attachment
@@ -804,8 +810,7 @@ namespace AZ::RHI
         const GraphEdge graphEdge =
         {
             producer.m_graphNodeIndex.GetIndex(),
-            consumer.m_graphNodeIndex.GetIndex(),
-            edgeType
+            consumer.m_graphNodeIndex.GetIndex()
         };
 
         auto findIter = AZStd::find_if(m_graphEdges.begin(), m_graphEdges.end(), [&graphEdge](const GraphEdge& element)
@@ -823,12 +828,6 @@ namespace AZ::RHI
 
             GraphNode& producerGraphNode = m_graphNodes[graphEdge.m_producerIndex];
             producerGraphNode.m_consumers.push_back(&consumer);
-        }
-        else
-        {
-            // Update the edge type if needed.
-            GraphEdge& edge = *findIter;
-            edge.m_type = edgeType == GraphEdgeType::SameGroup ? edgeType : edge.m_type;
         }
     }
 }

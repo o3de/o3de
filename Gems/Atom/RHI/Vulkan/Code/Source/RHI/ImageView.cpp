@@ -319,6 +319,7 @@ namespace AZ
             const RHI::ImageViewDescriptor& descriptor = GetDescriptor();
 
             RHI::ImageSubresourceRange& range = m_imageSubresourceRange;
+            range.m_aspectFlags = ConvertImageAspectFlags(aspectFlags);
             range.m_mipSliceMin = AZStd::max(descriptor.m_mipSliceMin, image.GetStreamedMipLevel());
             range.m_mipSliceMax = AZStd::min(descriptor.m_mipSliceMax, static_cast<uint16_t>(imageDesc.m_mipLevels - 1));
             if (imageDesc.m_dimension != RHI::ImageDimension::Image3D)

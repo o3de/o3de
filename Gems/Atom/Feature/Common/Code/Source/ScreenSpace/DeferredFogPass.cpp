@@ -45,6 +45,14 @@ namespace AZ
             RPI::Ptr<DeferredFogPass> pass = aznew DeferredFogPass(descriptor);
             pass->SetSrgBindIndices();
 
+            // The following will ensure that in the case of data driven pass, the settings will get
+            // updated by the pass enable state.
+            // When code is involved or editor component comes to action, this value will be overriden
+            // in the following frames.
+            DeferredFogSettings* fogSettings = pass->GetPassFogSettings();
+            bool isEnabled = pass->Pass::IsEnabled(); // retrieves the state from the data driven pass
+            fogSettings->SetEnabled(isEnabled); // Set it and mark for update
+
             return AZStd::move(pass);
         }
 
@@ -52,14 +60,6 @@ namespace AZ
         void DeferredFogPass::InitializeInternal()
         {
             FullscreenTrianglePass::InitializeInternal();
-
-            // The following will ensure that in the case of data driven pass, the settings will get
-            // updated by the pass enable state.
-            // When code is involved or editor component comes to action, this value will be overriden
-            // in the following frames.
-            DeferredFogSettings* fogSettings = GetPassFogSettings();
-            bool isEnabled = Pass::IsEnabled();     // retrieves the state from the data driven pass
-            fogSettings->SetEnabled(isEnabled);     // Set it and mark for update
         }
 
         //---------------------------------------------------------------------
@@ -113,6 +113,8 @@ namespace AZ
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 
             fogSettings->SetInitialized(true);
+
+            m_depthTextureDimensionsIndex = srg->FindShaderInputConstantIndex(Name("m_depthTextureDimentions"));
         }
 
 
@@ -174,6 +176,19 @@ namespace AZ
 
 #include <Atom/Feature/ScreenSpace/DeferredFogParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
+
+            if (m_depthTextureDimensionsIndex.IsValid())
+            {
+                
+                auto attachment = GetInputOutputBinding(0).GetAttachment();
+                if (attachment)
+                {
+                    const auto& descriptor = attachment->GetTransientImageDescriptor().m_imageDescriptor;
+                    float depthTextureDimensions[] = { static_cast<float>(descriptor.m_size.m_width),
+                                                       static_cast<float>(descriptor.m_size.m_height) };
+                    srg->SetConstant(m_depthTextureDimensionsIndex, depthTextureDimensions);
+                }
+            }
         }
         //---------------------------------------------------------------------
 

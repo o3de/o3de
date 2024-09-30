@@ -169,8 +169,10 @@ namespace AZ
                 // (see ValidateSetImageView() in ShaderResourceGroupData.cpp)
                 DiffuseProbeGridShader& shader = m_shaders[diffuseProbeGrid->GetNumRaysPerProbe().m_index];
                 diffuseProbeGrid->UpdateBlendDistanceSrg(shader.m_shader, shader.m_srgLayout);
-
-                diffuseProbeGrid->GetBlendDistanceSrg()->Compile();
+                if (!diffuseProbeGrid->GetBlendDistanceSrg()->IsQueuedForCompile())
+                {
+                    diffuseProbeGrid->GetBlendDistanceSrg()->Compile();
+                }
             }
         }
 

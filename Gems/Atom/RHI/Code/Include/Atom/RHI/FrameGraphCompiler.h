@@ -82,6 +82,7 @@ namespace AZ::RHI
     class FrameGraphAttachmentDatabase;
     class ResourcePoolFrameAttachment;
     class TransientAttachmentPool;
+    class Scope;
 
     /**
         * @brief Fill this request structure and pass to FrameGraphCompiler::Compile.
@@ -210,6 +211,27 @@ namespace AZ::RHI
         void ExtendTransientAttachmentAsyncQueueLifetimes(
             FrameGraph& frameGraph,
             FrameSchedulerCompileFlags compileFlags);
+
+        //! Extends the life of transient attachments to the end of the graph group.
+        void ExtendTransientAttachmentGroupLifetimes(
+            FrameGraph& frameGraph,
+            FrameSchedulerCompileFlags compileFlags);
+
+        //! Helper function for doing ExtendTransientAttachmentGroupLifetimes
+        template<class T>
+        void ExtendTransientAttachmentGroupLifetimesHelper(
+            const AZStd::vector<Scope*>& scopes,
+            const AZStd::vector<T*>& frameAttachments);
+
+        //! Optimize the load store action of the first and last usage of the a transient attachments.
+        void OptimizeTransientLoadStoreActions(
+            FrameGraph& frameGraph,
+            FrameSchedulerCompileFlags compileFlags);
+
+        //! Helper function for OptimizeTransientLoadStoreActions
+        template<class T>
+        void OptimizeTransientLoadStoreActionsHelper(
+             const AZStd::vector<T*>& frameAttachments);
 
         void CompileTransientAttachments(
             FrameGraph& frameGraph,

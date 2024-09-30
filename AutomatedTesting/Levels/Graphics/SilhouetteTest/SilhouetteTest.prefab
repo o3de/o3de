@@ -26,7 +26,8 @@
                     "Entity_[6289932813408]",
                     "Entity_[6010759939168]",
                     "Entity_[4195937910594]",
-                    "Entity_[1014068446616]"
+                    "Entity_[1014068446616]",
+                    "Entity_[500470478144]"
                 ]
             },
             "Component_[15230859088967841193]": {
@@ -648,6 +649,66 @@
                             9.5367431640625e-7
                         ]
                     }
+                }
+            }
+        },
+        "Entity_[500470478144]": {
+            "Id": "Entity_[500470478144]",
+            "Name": "SilhouetteCVAR",
+            "Components": {
+                "EditorDisabledCompositionComponent": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 9117092890701956949
+                },
+                "EditorEntityIconComponent": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 7579579611351949855
+                },
+                "EditorEntitySortComponent": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 15290678515227949929
+                },
+                "EditorInspectorComponent": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 13610854406190871550
+                },
+                "EditorLockComponent": {
+                    "$type": "EditorLockComponent",
+                    "Id": 3717411995798002536
+                },
+                "EditorOnlyEntityComponent": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 13680329333075483739
+                },
+                "EditorPendingCompositionComponent": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 2975523452465594470
+                },
+                "EditorScriptCanvasComponent": {
+                    "$type": "EditorScriptCanvasComponent",
+                    "Id": 13629354981518808831,
+                    "configuration": {
+                        "sourceHandle": {
+                            "id": "{1C739A69-B4B6-5055-A2F7-8F3C8F6FA040}",
+                            "path": "ScriptCanvas/Silhouette.scriptcanvas"
+                        },
+                        "sourceName": "Silhouette.scriptcanvas",
+                        "propertyOverrides": {
+                            "source": {
+                                "id": "{1C739A69-B4B6-5055-A2F7-8F3C8F6FA040}",
+                                "path": "ScriptCanvas/Silhouette.scriptcanvas"
+                            }
+                        }
+                    }
+                },
+                "EditorVisibilityComponent": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 13963243713210499304
+                },
+                "TransformComponent": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 15981358364288810544,
+                    "Parent Entity": "Entity_[1146574390643]"
                 }
             }
         },

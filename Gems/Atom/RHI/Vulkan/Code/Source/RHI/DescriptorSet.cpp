@@ -151,10 +151,7 @@ namespace AZ
                 else
                 {
                     imageInfo.imageView = imageView->GetNativeImageView();
-
-                    // always set VK_IMAGE_LAYOUT_GENERAL if the Image is ShaderWrite, even if the descriptor layout wants a read-only input
-                    if (layout.GetDescriptorType(layoutIndex) == VK_DESCRIPTOR_TYPE_STORAGE_IMAGE ||
-                        RHI::CheckBitsAny(imageView->GetImage().GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderWrite))
+                    if (layout.GetDescriptorType(layoutIndex) == VK_DESCRIPTOR_TYPE_STORAGE_IMAGE)
                     {
                         imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
                     }

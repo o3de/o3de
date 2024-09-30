@@ -21,7 +21,7 @@
 #include "../MaterialInputs/TransmissionInput.azsli"
 
 [[range(0,4)]]
-option uint o_wrinkleLayers_count = 0;
+option int o_wrinkleLayers_count = 0;
 option bool o_wrinkleLayers_enabled;
 
 option bool o_wrinkleLayers_baseColor_enabled;

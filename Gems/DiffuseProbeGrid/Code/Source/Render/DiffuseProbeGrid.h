@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RHI/DrawPacketBuilder.h>
+#include <Atom/RHI/GeometryView.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/PipelineState.h>
@@ -33,9 +34,7 @@ namespace AZ
             RHI::Ptr<RHI::ImagePool> m_imagePool;
             RHI::Ptr<RHI::BufferPool> m_bufferPool;
 
-            AZStd::array<RHI::StreamBufferView, 1> m_boxPositionBufferView;
-            RHI::IndexBufferView m_boxIndexBufferView;
-            uint32_t m_boxIndexCount = 0;
+            RHI::GeometryView m_geometryView;
 
             // image views
             RHI::ImageViewDescriptor m_probeRayTraceImageViewDescriptor;
@@ -294,10 +293,6 @@ namespace AZ
 
             const DiffuseProbeGridRenderData* GetRenderData() const { return m_renderData; }
 
-            // the Irradiance, Distance, and ProbeData images need to be manually cleared after certain operations, e.g., changing the grid size
-            bool GetTextureClearRequired() const { return m_textureClearRequired; }
-            void ResetTextureClearRequired() { m_textureClearRequired = false; }
-
             // texture readback
             DiffuseProbeGridTextureReadback& GetTextureReadback() { return m_textureReadback; }
 
@@ -413,7 +408,6 @@ namespace AZ
             RHI::Ptr<RHI::Image> m_probeDataImage[ImageFrameCount];
             uint32_t m_currentImageIndex = 0;
             bool m_updateTextures = false;
-            bool m_textureClearRequired = true;
 
             // baked textures
             Data::Instance<RPI::Image> m_bakedIrradianceImage;

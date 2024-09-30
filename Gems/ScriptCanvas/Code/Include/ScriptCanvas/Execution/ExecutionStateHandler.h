@@ -43,8 +43,6 @@ namespace ScriptCanvas
         /// Clears the Executable on destruction if required.
         ~ExecutionStateHandler();
 
-        ActivationInfo CreateActivationInfo() const;
-
         /** Executes if possible, fails an SC_RUNTIME_CHECK if not. */
         void Execute();
 
