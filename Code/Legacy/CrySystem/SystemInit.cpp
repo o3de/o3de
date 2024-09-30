@@ -1153,7 +1153,7 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
     EBUS_EVENT(CrySystemEventBus, OnCrySystemInitialized, *this, startupParams);
 
 #if defined (CARBONATED)
-    // Load the defered level only after CrySystem has been fully initialized
+    // Load the deffered level only after CrySystem has been fully initialized
     m_pLevelSystem->Activate();
 #endif    
 
