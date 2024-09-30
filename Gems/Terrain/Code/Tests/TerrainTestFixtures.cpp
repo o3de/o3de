@@ -39,6 +39,8 @@
 #include <MockAxisAlignedBoxShapeComponent.h>
 #include <Terrain/MockTerrainLayerSpawner.h>
 
+extern "C" void CleanUpRpiPublicGenericClassInfo();
+
 namespace UnitTest
 {
     void TerrainTestEnvironment::AddGemsAndComponents()
@@ -436,6 +438,8 @@ namespace UnitTest
         m_rhiFactory = nullptr;
 
         m_systemEntity.reset();
+
+        CleanUpRpiPublicGenericClassInfo();
 
         UnitTest::TerrainTestFixture::TearDown();
     }

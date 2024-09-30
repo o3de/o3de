@@ -74,6 +74,8 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <ImageBuilderComponent.h>
 
+extern "C" void CleanUpRpiPublicGenericClassInfo();
+
 using namespace ImageProcessingAtom;
 
 namespace UnitTest
@@ -256,6 +258,8 @@ namespace UnitTest
 
             AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(this);
             ComponentApplicationBus::Handler::BusDisconnect();
+
+            CleanUpRpiPublicGenericClassInfo();
         }
 
         //enum names for Images with specific identification
