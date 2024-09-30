@@ -20,6 +20,19 @@
                 {
                     "Name": "PipelineOutput",
                     "SlotType": "InputOutput"
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "Subpass3",
+                        "Attachment": "Output"
+                    }
                 }
             ],
             "PassRequests": [
