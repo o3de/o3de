@@ -14,6 +14,8 @@
 
 namespace AZ::WebGPU
 {
+    class Fence;
+
     //! Provides centralize access to the Command queues provided by the implementation 
     class CommandQueueContext final
     {
@@ -28,7 +30,12 @@ namespace AZ::WebGPU
         CommandQueueContext() = default;
         ~CommandQueueContext() = default;
 
-        void Init(RHI::Device& deviceBase);
+        struct Descriptor
+        {
+            uint32_t m_frameCountMax = RHI::Limits::Device::FrameCountMax;
+        };
+
+        RHI::ResultCode Init(RHI::Device& deviceBase, const Descriptor& descriptor);
 
         void Shutdown();
 
@@ -46,12 +53,18 @@ namespace AZ::WebGPU
         void ExecuteWork(
             RHI::HardwareQueueClass hardwareQueueClass,
             const ExecuteWorkRequest& request);
+
+        RHI::Ptr<Fence> GetFrameFence(RHI::HardwareQueueClass hardwareQueueClass) const;
+        uint32_t GetFrameCount() const;
             
     private:        
         void ForAllQueues(const AZStd::function<void(RHI::Ptr<CommandQueue>&)>& callback);
 
+        Descriptor m_descriptor;
+
         //! Single command queue since WebGPU only supports one at the moment
         RHI::Ptr<CommandQueue> m_commandQueue;
+        AZStd::array<RHI::Ptr<Fence>, RHI::Limits::Device::FrameCountMax> m_frameFences;
         uint32_t m_currentFrameIndex = 0;
     };
 }

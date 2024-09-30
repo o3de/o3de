@@ -10,6 +10,7 @@
 #include <Atom/RHI/DeviceFence.h>
 #include <AzCore/std/parallel/conditional_variable.h>
 #include <AzCore/std/parallel/mutex.h>
+#include <AzCore/std/optional.h>
 
 namespace AZ::WebGPU
 {
@@ -24,6 +25,7 @@ namespace AZ::WebGPU
         static RHI::Ptr<Fence> Create();
         void SignalEvent();
         void WaitEvent() const;
+        void SetSignalFuture(const wgpu::Future& future);
             
     private:
         Fence() = default;
@@ -38,9 +40,7 @@ namespace AZ::WebGPU
         RHI::FenceState GetFenceStateInternal() const override;
         //////////////////////////////////////////////////////////////////////////
 
-        // Condition variable to handle the signal of the event
-        mutable AZStd::condition_variable m_eventSignal;
-        mutable AZStd::mutex m_eventMutex;
         RHI::FenceState m_state = RHI::FenceState::Reset;
+        AZStd::optional<wgpu::Future> m_signalFuture;
     };
 }

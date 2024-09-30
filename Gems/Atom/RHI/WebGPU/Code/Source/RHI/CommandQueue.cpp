@@ -95,13 +95,19 @@ namespace AZ::WebGPU
         QueueCommand(
             [&fence, this]([[maybe_unused]] void* queue)
             {
-                m_wgpuQueue.OnSubmittedWorkDone(
+                bool workDone = false;
+                wgpu::Future future = m_wgpuQueue.OnSubmittedWorkDone(
                     wgpu::CallbackMode::AllowSpontaneous,
-                    [&fence]([[maybe_unused]] wgpu::QueueWorkDoneStatus status)
+                    [&fence, &workDone]([[maybe_unused]] wgpu::QueueWorkDoneStatus status)
                     {
                         AZ_Error("WebGPU", status == wgpu::QueueWorkDoneStatus::Success, "Failed to wait on submitted work");
                         fence.SignalEvent();
+                        workDone = true;
                     });
+                if (!workDone)
+                {
+                    fence.SetSignalFuture(future);
+                }
             });
     }
 }

@@ -88,6 +88,7 @@ namespace AZ::WebGPU
 
     RHI::ResultCode Device::BeginFrameInternal()
     {
+        m_commandQueueContext.Begin();
         return RHI::ResultCode::Success;
     }
 
@@ -95,6 +96,7 @@ namespace AZ::WebGPU
     {
         m_frameCommandLists.clear();
         m_rootConstantManager->Collect();
+        m_commandQueueContext.End();
     }
 
     const wgpu::Device& Device::GetNativeDevice() const
@@ -149,7 +151,7 @@ namespace AZ::WebGPU
         m_samplerCache.first.SetCapacity(SamplerCacheCapacity);
         m_pipelineLayoutCache.first.SetCapacity(PipelineLayoutCacheCapacity);
 
-        m_commandQueueContext.Init(*this);
+        m_commandQueueContext.Init(*this, CommandQueueContext::Descriptor{ RHI::Limits::Device::FrameCountMax });
 
         m_constantBufferPool = BufferPool::Create();
         static int index = 0;
