@@ -9,9 +9,11 @@
 #include "CameraInput.h"
 
 #include <AzCore/std/numeric.h>
+#include <AzFramework/AzFramework_Traits_Platform.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Windowing/WindowBus.h>
+
 
 namespace AzFramework
 {
@@ -22,6 +24,18 @@ namespace AzFramework
         nullptr,
         AZ::ConsoleFunctorFlags::Null,
         "Should the camera use cursor absolute positions or motion deltas");
+
+#if AZ_TRAIT_AZFRAMEWORK_ENABLE_DISABLE_MOUSE_CAPTURE_FOR_CAMERA_CVAR_OPTION
+    AZ_CVAR(
+        bool,
+        ed_disable_capture_mouse_for_camera_rotation,
+        false,
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
+        "Disable capturing the mouse position when it is used to freely rotate a camera view. Use this option if the camera rotation during free look movements with "
+        "the mouse is hyper-sensitive, in which case may be an indication that the system is unable to trap the cursor location which is needed for normal mouse "
+        "movement calculations.");
+#endif // AZ_TRAIT_AZFRAMEWORK_ENABLE_DISABLE_MOUSE_CAPTURE_FOR_CAMERA_CVAR_OPTION
 
     //! return -1.0f if inverted, 1.0f otherwise
     constexpr static float Invert(const bool invert)
@@ -155,7 +169,7 @@ namespace AzFramework
         if (const auto& cursor = AZStd::get_if<CursorEvent>(&state.m_inputEvent))
         {
             m_cursorState.SetCurrentPosition(cursor->m_position);
-            m_cursorState.SetCaptured(cursor->m_captured);
+            m_cursorState.SetCaptured(IsMouseCaptureUsedForCameraRotation() ? cursor->m_captured : false);
         }
         else if (const auto& horizontalMotion = AZStd::get_if<HorizontalMotionEvent>(&state.m_inputEvent))
         {
@@ -1023,4 +1037,14 @@ namespace AzFramework
 
         return { AZStd::monostate{}, ModifierKeyStates{} };
     }
+
+    bool IsMouseCaptureUsedForCameraRotation()
+    {
+#if AZ_TRAIT_AZFRAMEWORK_ENABLE_DISABLE_MOUSE_CAPTURE_FOR_CAMERA_CVAR_OPTION
+        return !ed_disable_capture_mouse_for_camera_rotation;
+#else
+        return true;
+#endif // AZ_TRAIT_AZFRAMEWORK_ENABLE_DISABLE_MOUSE_CAPTURE_FOR_CAMERA_CVAR_OPTION
+    }
+
 } // namespace AzFramework
