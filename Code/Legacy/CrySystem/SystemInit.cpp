@@ -1152,6 +1152,11 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
     // Send out EBus event
     EBUS_EVENT(CrySystemEventBus, OnCrySystemInitialized, *this, startupParams);
 
+#if defined (CARBONATED)
+    // Load the defered level only after CrySystem has been fully initialized
+    AZ::Interface<AZ::IConsole>::Get()->PerformCommand("LoadDefferedLevel");
+#endif    
+
     // Execute any deferred commands that uses the CVar commands that were just registered
     AZ::Interface<AZ::IConsole>::Get()->ExecuteDeferredConsoleCommands();
 
