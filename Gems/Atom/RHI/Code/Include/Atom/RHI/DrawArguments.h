@@ -54,7 +54,7 @@ namespace AZ::RHI
             case DrawType::Linear:
                 return DeviceDrawArguments(m_linear);
             case DrawType::Indirect:
-                return DeviceDrawArguments(DeviceDrawIndirect{ m_indirect.m_maxSequenceCount, m_indirect.m_indirectBufferView->GetDeviceIndirectBufferView(deviceIndex), m_indirect.m_indirectBufferByteOffset, m_indirect.m_countBuffer->GetDeviceBuffer(deviceIndex).get(), m_indirect.m_countBufferByteOffset });
+                return DeviceDrawArguments(DeviceDrawIndirect{ m_indirect.m_maxSequenceCount, m_indirect.m_indirectBufferView->GetDeviceIndirectBufferView(deviceIndex), m_indirect.m_indirectBufferByteOffset, m_indirect.m_countBuffer ? m_indirect.m_countBuffer->GetDeviceBuffer(deviceIndex).get() : nullptr, m_indirect.m_countBufferByteOffset });
             default:
                 return DeviceDrawArguments();
             }
