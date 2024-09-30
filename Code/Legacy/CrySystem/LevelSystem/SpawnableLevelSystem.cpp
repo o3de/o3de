@@ -63,30 +63,6 @@ namespace LegacyLevelSystem
     AZ_CONSOLEFREEFUNC(LoadLevel, AZ::ConsoleFunctorFlags::Null, "Unloads the current level and loads a new one with the given asset name");
     AZ_CONSOLEFREEFUNC(UnloadLevel, AZ::ConsoleFunctorFlags::Null, "Unloads the current level");
 
-#if defined (CARBONATED)
-    static void LoadDefferedLevel([[maybe_unused]] const AZ::ConsoleCommandContainer&)
-    {
-        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
-        {
-            if (AZ::SettingsRegistryInterface::FixedValueString deferredLevelName;
-                settingsRegistry->Get(deferredLevelName, DeferredLoadLevelKey) && !deferredLevelName.empty())
-            {
-                // since this is the constructor any derived classes vtables aren't setup yet
-                // call this class LoadLevel function
-                AZ_TracePrintf("SpawnableLevelSystem", "The Level System is now available."
-                    " Loading level %s which could not be loaded earlier\n", deferredLevelName.c_str());
-                if (gEnv && gEnv->pSystem && gEnv->pSystem->GetILevelSystem() && !gEnv->IsEditor())
-                {
-                    gEnv->pSystem->GetILevelSystem()->LoadLevel(deferredLevelName.c_str());
-                }
-                // Delete the key with the deferred level name
-                settingsRegistry->Remove(DeferredLoadLevelKey);
-            }
-        }
-    }
-    AZ_CONSOLEFREEFUNC(LoadDefferedLevel, AZ::ConsoleFunctorFlags::Null, "Load Deffered Level");
-#endif
-
     //------------------------------------------------------------------------
     SpawnableLevelSystem::SpawnableLevelSystem([[maybe_unused]] ISystem* pSystem)
     {
@@ -111,8 +87,12 @@ namespace LegacyLevelSystem
             "Failed to register the SpawnableLevelSystem with the LevelSystemLifecycleInterface.");
 
 #if defined (CARBONATED)
-        // Do not load the defered level while CrySystem is not fully initialized
-#else
+    }
+
+    // Move the deffered level load from ctor to Activate method
+    void SpawnableLevelSystem::Activate()
+    {
+#endif
         // If there were LoadLevel command invocations before the creation of the level system
         // then those invocations were queued.
         // load the last level in the queue, since only one level can be loaded at a time
@@ -130,7 +110,6 @@ namespace LegacyLevelSystem
                 settingsRegistry->Remove(DeferredLoadLevelKey);
             }
         }
-#endif
     }
 
     //------------------------------------------------------------------------

@@ -1154,7 +1154,7 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
 
 #if defined (CARBONATED)
     // Load the defered level only after CrySystem has been fully initialized
-    AZ::Interface<AZ::IConsole>::Get()->PerformCommand("LoadDefferedLevel");
+    m_pLevelSystem->Activate();
 #endif    
 
     // Execute any deferred commands that uses the CVar commands that were just registered

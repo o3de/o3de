@@ -58,6 +58,9 @@ struct ILevelSystem
 {
     virtual ~ILevelSystem() = default;
 
+#if defined (CARBONATED)
+    virtual void Activate() {}
+#endif
     virtual void Release() = 0;
 
     virtual void AddListener(ILevelSystemListener* pListener) = 0;
