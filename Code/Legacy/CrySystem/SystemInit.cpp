@@ -1152,14 +1152,18 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
     // Send out EBus event
     EBUS_EVENT(CrySystemEventBus, OnCrySystemInitialized, *this, startupParams);
 
-#if defined (CARBONATED)
-    // Load the deffered level only after CrySystem has been fully initialized
-    m_pLevelSystem->Activate();
-#endif    
-
     // Execute any deferred commands that uses the CVar commands that were just registered
     AZ::Interface<AZ::IConsole>::Get()->ExecuteDeferredConsoleCommands();
 
+#if defined (CARBONATED)
+    // Load the deffered level only after CrySystem has been fully initialized
+    AZ::TickBus::QueueFunction(
+       [this]()
+       { // Wait while RPI System is fully initialized
+           m_pLevelSystem->Activate();
+       });
+#endif
+    
     if (ISystemEventDispatcher* systemEventDispatcher = GetISystemEventDispatcher())
     {
         systemEventDispatcher->OnSystemEvent(ESYSTEM_EVENT_GAME_POST_INIT, 0, 0);
