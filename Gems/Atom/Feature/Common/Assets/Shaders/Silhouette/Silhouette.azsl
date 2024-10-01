@@ -29,6 +29,17 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
 {
     PSOutput OUT;
 
+    real4 pixelSample = PassSrg::m_silhouettes.Load(IN.m_position.xy, sampleIndex);
+
+    // CARBONATED
+
+    if(pixelSample.a == 0.0)
+    {
+        discard;
+    }
+
+    // ELSE (this code piece makes outlines from silhouettes based on alpha-channel, we form outline a different way with variable alpha support
+    /*
     const int NUM_SAMPLES = 7;
     const real outline_opacity = 0.7;
     const real2 Silhouette_Width = 3.0;
@@ -48,7 +59,6 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
     PassSrg::m_silhouettes.GetDimensions(width, height, samples);
     real2 scale = Silhouette_Width;
 
-    real4 pixelSample = PassSrg::m_silhouettes.Load(IN.m_position.xy, sampleIndex);
     if(dot(pixelSample.xyz, pixelSample.xyz) > 0.0)
     {
         // this is a silhouette pixel
@@ -64,7 +74,7 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
             real4 sampleColor = PassSrg::m_silhouettes.Load(IN.m_position.xy + offset, sampleIndex);
             pixelSample = max(pixelSample, sampleColor);
         }
-
+        
         if(pixelSample.a == 0.0)
         {
             discard;
@@ -72,7 +82,8 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
 
         pixelSample.a = outline_opacity * step(0.001, pixelSample.a);
     }
-
+    */
+    
     OUT.m_color = pixelSample;
 
     return OUT;
