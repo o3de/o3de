@@ -1258,6 +1258,11 @@ namespace AZ::IO
         if (usePrefabSystemForLevels)
         {
             m_arrZips.insert(revItZip.base(), desc);
+#if defined (CARBONATED)
+            // Fixed issue: lock.unlock() is missed for this 'if' branch.
+            // Note: in the latest O3DE (Oct/2024) this 'if' was removed at all.
+            lock.unlock();
+#endif
         }
         else
         {
