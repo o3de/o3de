@@ -468,7 +468,7 @@ void AllocatorManager::PopMemoryMarker()
 }
 
 //=========================================================================
-// PushMemoryMarker and PopMemoryMarker
+// PushMemoryTag and PopMemoryTag
 // [4/9/2024]
 //=========================================================================
 constexpr unsigned int NO_CHANGE_BIT = 10;
