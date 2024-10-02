@@ -82,12 +82,23 @@ namespace AzFramework
     bool XcbInputDeviceMouse::m_xfixesInitialized = false;
     bool XcbInputDeviceMouse::m_xInputInitialized = false;
 
+    // The mouse movement threshold value to detect possible absolute mouse positions versus actual incremental mouse movement
+    // deltas. This value represents a reasonable number where multiple deltas are not possible (ie its not possible to move
+    // a mouse by this number of pixels continously)
+    static constexpr const float s_movementThresholdDeltaLimit = 480.f;
+
+    // To prevent possible anomalies with the delta limit, set a value where X number of violations will trigger the mode where
+    // we internally calculate the mouse movements based on the assumption that the received mouse movement values are actually
+    // mouse coordinates.
+    static constexpr const int s_movementThresholdTriggerValue = 10;
+
     XcbInputDeviceMouse::XcbInputDeviceMouse(InputDeviceMouse& inputDevice)
         : InputDeviceMouse::Implementation(inputDevice)
         , m_systemCursorState(SystemCursorState::Unknown)
-        , m_systemCursorPositionNormalized(0.5f, 0.5f)
+        , m_systemCursorPositionNormalized(0.0f, 0.0f)
         , m_focusWindow(XCB_WINDOW_NONE)
         , m_cursorShown(true)
+        , m_movementThresholdViolations(0)
     {
         XcbEventHandlerBus::Handler::BusConnect();
 
@@ -536,6 +547,8 @@ namespace AzFramework
 
                 int axisLen = xcb_input_raw_button_press_axisvalues_length(mouseMotionEvent);
                 const xcb_input_fp3232_t* axisvalues = xcb_input_raw_button_press_axisvalues_raw(mouseMotionEvent);
+                float movement_x = 0.0f;
+                float movement_y = 0.0f;
                 for (int i = 0; i < axisLen; ++i)
                 {
                     const float axisValue = fp3232ToFloat(axisvalues[i]);
@@ -543,12 +556,48 @@ namespace AzFramework
                     switch (i)
                     {
                     case 0:
-                        QueueRawMovementEvent(InputDeviceMouse::Movement::X, axisValue);
+                        movement_x = axisValue;
                         break;
                     case 1:
-                        QueueRawMovementEvent(InputDeviceMouse::Movement::Y, axisValue);
+                        movement_y = axisValue;
                         break;
                     }
+                }
+
+                if (m_movementThresholdViolations < s_movementThresholdTriggerValue)
+                {
+                    // Treat values as movement (delta) values
+                    QueueRawMovementEvent(InputDeviceMouse::Movement::X, movement_x);
+                    QueueRawMovementEvent(InputDeviceMouse::Movement::Y, movement_y);
+
+                    // If we detect a movement greater than whats considered a possible normal mouse movement, it is
+                    // possible that we are unable to track mouse movement deltas, but are instead tracking absolute
+                    // screen positions. Track the number of times this threshold is crossed to determine if we need
+                    // to instead keep track of the last position internally and use that to calculate the delta.
+                    if (movement_x > s_movementThresholdDeltaLimit || movement_y > s_movementThresholdDeltaLimit)
+                    {
+                        m_movementThresholdViolations += 1;
+                    }
+                }
+                else
+                {
+                    // Treat values as absolute mouse coordinates.
+                    if ((m_systemCursorPositionNormalized.GetX() == 0.0f) &&
+                        (m_systemCursorPositionNormalized.GetY() == 0.0f))
+                    {
+                        // Initialize the last tracked position if this is the first time being set to avoid a initial large
+                        // jump
+                        m_systemCursorPositionNormalized.SetX(movement_x);
+                        m_systemCursorPositionNormalized.SetY(movement_y);
+                    }
+
+                    // Calculate movement deltas from the mouse coordinates based on the last internally tracked mouse position
+                    QueueRawMovementEvent(InputDeviceMouse::Movement::X, movement_x - m_systemCursorPositionNormalized.GetX());
+                    QueueRawMovementEvent(InputDeviceMouse::Movement::Y, movement_y - m_systemCursorPositionNormalized.GetY());
+
+                    // Internally track the last position
+                    m_systemCursorPositionNormalized.SetX(movement_x);
+                    m_systemCursorPositionNormalized.SetY(movement_y);
                 }
             }
             break;
