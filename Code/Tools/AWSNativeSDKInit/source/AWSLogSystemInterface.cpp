@@ -62,7 +62,6 @@ namespace AWSNativeSDKInit
     */
     void AWSLogSystemInterface::Log(Aws::Utils::Logging::LogLevel logLevel, const char* tag, const char* formatStr, ...)
     {
-
         if (!ShouldLog(logLevel))
         {
             return;
@@ -76,7 +75,21 @@ namespace AWSNativeSDKInit
         va_end(mark);
 
         ForwardAwsApiLogMessage(logLevel, tag, message);
+    }
 
+     /**
+     * va_list overload for Log, avoid using this as well.
+     * */
+    void AWSLogSystemInterface::vaLog(Aws::Utils::Logging::LogLevel logLevel, const char* tag, const char* formatStr, va_list args)
+    {
+        if (!ShouldLog(logLevel))
+        {
+            return;
+        }
+
+        char message[MAX_MESSAGE_LENGTH];
+        azvsnprintf(message, MAX_MESSAGE_LENGTH, formatStr, args);
+        ForwardAwsApiLogMessage(logLevel, tag, message);
     }
 
     /**
