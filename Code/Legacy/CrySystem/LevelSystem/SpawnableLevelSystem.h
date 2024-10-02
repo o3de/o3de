@@ -66,7 +66,7 @@ class SpawnableLevelSystem
         // AssetLoadNotificatorBus interface implementation
         void WaitForAssetUpdate() override;
         // ILevelSystem override
-        void Activate() override;
+        void LoadDefferedLevel() override;
 #endif
 
     private:

@@ -89,8 +89,8 @@ namespace LegacyLevelSystem
 #if defined (CARBONATED)
     }
 
-    // Move the deffered level load from ctor to Activate method
-    void SpawnableLevelSystem::Activate()
+    // Move the deffered level load from the SpawnableLevelSystem constructor to a separate method
+    void SpawnableLevelSystem::LoadDefferedLevel()
     {
 #endif
         // If there were LoadLevel command invocations before the creation of the level system
