@@ -24,7 +24,7 @@
     },
     "DrawList": "silhouette",
     "RasterState": { 
-        "CullMode": "Front"
+        "CullMode": "Back"
     },
 
     "GlobalTargetBlendState": {
