@@ -38,6 +38,9 @@ namespace AZ
     {
         Unused = 0,
         Overhead = 1, // reserved for extra memory consumed by the memory tracking system
+        ClassData = 2,
+        TaskGraphComponent = 3,
+        MaterialInit = 4,
 
         GameSpecific = 32  // game tags starts from this index, use your own enum starting with this value
     };

@@ -24,6 +24,10 @@
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <AtomCore/Utils/ScopedValue.h>
 
+#ifdef CARBONATED
+#include <AzCore/Memory/MemoryMarker.h>
+#endif
+
 namespace AZ
 {
     namespace RPI
@@ -55,6 +59,8 @@ namespace AZ
 
         RHI::ResultCode Material::Init(MaterialAsset& materialAsset)
         {
+            MEMORY_TAG(MaterialInit);
+
             AZ_PROFILE_FUNCTION(RPI);
 
             ScopedValue isInitializing(&m_isInitializing, true, false);
@@ -111,7 +117,28 @@ namespace AZ
             for (auto& [materialPipelineName, materialPipeline] : m_materialAsset->GetMaterialPipelinePayloads())
             {
                 MaterialPipelineState& pipelineData = m_materialPipelineData[materialPipelineName];
-
+                /*
+                for (size_t i = 0; i < materialPipeline.m_shaderCollection.size(); i++)
+                {
+                    const ShaderCollection::Item& item = materialPipeline.m_shaderCollection[i];
+                    const AZStd::unordered_set<ShaderOptionIndex>& set = item.GetShaderOptionIndices();
+                    static unsigned int maxIndex = 0;
+                    AZ_Info("sss", "copy material, indices: %d, maxindex %u", int(set.size()), maxIndex);
+                    for (ShaderOptionIndex ind : set)
+                    {
+                        unsigned int index = ind.GetIndex();
+                        if (index > maxIndex)
+                        {
+                            maxIndex = index;
+                            AZ_Info("sss", "maxindex: %u", index);  // this happens too early while log is inactive
+                        }
+                        else
+                        {
+                            AZ_Info("sss", "index: %u", index);
+                        }
+                    }
+                }
+                */
                 pipelineData.m_shaderCollection = materialPipeline.m_shaderCollection;
 
                 if (!pipelineData.m_materialProperties.Init(materialPipeline.m_materialPropertiesLayout, materialPipeline.m_defaultPropertyValues))

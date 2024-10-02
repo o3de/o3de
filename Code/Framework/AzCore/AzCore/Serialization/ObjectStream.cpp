@@ -52,6 +52,10 @@
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/string/osstring.h>
 
+#ifdef CARBONATED
+#include <AzCore/Memory/MemoryMarker.h>
+#endif
+
 namespace AZ
 {
     static bool ShouldLookUpSpecializedTypeId(const SerializeContext::DataElement& element)
@@ -390,6 +394,8 @@ namespace AZ
         //=========================================================================
         bool ObjectStreamImpl::LoadClass(IO::GenericStream& stream, SerializeContext::DataElementNode& convertedClassElement, const SerializeContext::ClassData* parentClassInfo, void* parentClassPtr, int flags)
         {
+            MEMORY_TAG(ClassData);
+
             bool result = true;
 
             SerializeContext::DataElement element;
