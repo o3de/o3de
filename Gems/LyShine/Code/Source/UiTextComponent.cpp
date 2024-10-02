@@ -3381,6 +3381,15 @@ void UiTextComponent::Activate()
     FontNotificationBus::Handler::BusConnect();
     LanguageChangeNotificationBus::Handler::BusConnect();
 
+#if defined(CARBONATED)
+    // Reload the font families if they were deleted while this UiTextComponent was inactive.
+    // It is important for UiTextComponent which can be activated and deactivated many times.
+    if (m_fontFamily->familyName.empty())
+    {
+        OnFontsReloaded();
+    }
+#endif
+
     // When we are activated the transform could have changed so we will always need to recompute the
     // draw batch lines before they are used. Also, we pass true to invalidate the layout,
     // if this is the first time the entity has been activated this has no effect since the canvas
