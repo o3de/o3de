@@ -86,6 +86,13 @@ namespace LegacyLevelSystem
         AZ_Error("SpawnableLevelSystem", AzFramework::LevelSystemLifecycleInterface::Get() == this,
             "Failed to register the SpawnableLevelSystem with the LevelSystemLifecycleInterface.");
 
+#if defined (CARBONATED)
+    }
+
+    // Move the deffered level load from the SpawnableLevelSystem constructor to a separate method
+    void SpawnableLevelSystem::LoadDeferredLevel()
+    {
+#endif
         // If there were LoadLevel command invocations before the creation of the level system
         // then those invocations were queued.
         // load the last level in the queue, since only one level can be loaded at a time

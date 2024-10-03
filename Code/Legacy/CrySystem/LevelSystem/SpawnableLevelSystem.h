@@ -65,6 +65,8 @@ class SpawnableLevelSystem
         bool ApplyLevelLoadScreenConfig(const char* levelName) const;
         // AssetLoadNotificatorBus interface implementation
         void WaitForAssetUpdate() override;
+        // ILevelSystem override
+        void LoadDeferredLevel() override;
 #endif
 
     private:
