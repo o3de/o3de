@@ -90,7 +90,7 @@ namespace LegacyLevelSystem
     }
 
     // Move the deffered level load from the SpawnableLevelSystem constructor to a separate method
-    void SpawnableLevelSystem::LoadDefferedLevel()
+    void SpawnableLevelSystem::LoadDeferredLevel()
     {
 #endif
         // If there were LoadLevel command invocations before the creation of the level system

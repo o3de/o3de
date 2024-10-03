@@ -1162,7 +1162,7 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
        {   // Load the deffered level after the queued system initializations are executed too,
            // e.g. after the queued call of RPISystem::InitializeSystemAssets() is finished.
            // The RPISystem can be required for the deffered level to access the graphics assets.
-           m_pLevelSystem->LoadDefferedLevel();
+           m_pLevelSystem->LoadDeferredLevel();
        });
 #endif
     

@@ -59,7 +59,7 @@ struct ILevelSystem
     virtual ~ILevelSystem() = default;
 
 #if defined (CARBONATED)
-    virtual void LoadDefferedLevel() {} 
+    virtual void LoadDeferredLevel() {} 
 #endif
     virtual void Release() = 0;
 
