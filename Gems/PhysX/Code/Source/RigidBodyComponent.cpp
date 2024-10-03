@@ -405,7 +405,9 @@ namespace PhysX
         m_interpolator->Reset(transform.GetTranslation(), rotation);
 
         // set the transform to not update when the parent's transform changes, to avoid conflict with physics transform updates
+#if defined(CARBONATED)
         if (!m_configuration.m_kinematic)
+#endif
             GetEntity()->GetTransform()->SetOnParentChangedBehavior(AZ::OnParentChangedBehavior::DoNotUpdate);
 
         Physics::RigidBodyNotificationBus::Event(GetEntityId(), &Physics::RigidBodyNotificationBus::Events::OnPhysicsEnabled, GetEntityId());
