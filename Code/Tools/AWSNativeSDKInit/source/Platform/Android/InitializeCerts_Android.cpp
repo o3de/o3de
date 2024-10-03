@@ -44,6 +44,9 @@ namespace AWSNativeSDKInit
             if (!fileResult)
             {
                 AZ_Error("AWSNativeSDKInit", false, "Failed to open certificate file with result %i\n", fileResult.GetResultCode());
+#if defined(CARBONATED)
+                return;
+#endif
             }
 
             AZ::u64 fileSize = 0;
@@ -52,36 +55,61 @@ namespace AWSNativeSDKInit
             if (fileSize == 0)
             {
                 AZ_Error("AWSNativeSDKInit", false, "Given empty file(%s) as the certificate bundle.\n", certificatePath.c_str());
+#if defined(CARBONATED)
+                fileBase->Close(fileHandle);
+                return;
+#endif
             }
 
             contents.resize(fileSize + 1);
             fileResult = fileBase->Read(fileHandle, contents.data(), fileSize);
-
+#if defined(CARBONATED)
+            fileBase->Close(fileHandle);
+#endif
             if (!fileResult)
             {
                 AZ_Error(
                     "AWSNativeSDKInit", false, "Failed to read from the certificate bundle(%s) with result code(%i).\n", certificatePath.c_str(),
                     fileResult.GetResultCode());
+#if defined(CARBONATED)
+                return;
+#endif
             }
 
             AZ_Printf("AWSNativeSDKInit", "Certificate bundle is read successfully from %s", certificatePath.c_str());
 
             AZ::IO::HandleType outFileHandle;
-
+#if defined(CARBONATED)
+            AZ::IO::Result outFileResult = fileBase->Open(publicStoragePath.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath, outFileHandle);
+#else
             AZ::IO::Result outFileResult = fileBase->Open(publicStoragePath.c_str(), AZ::IO::OpenMode::ModeWrite, outFileHandle);
+#endif
 
             if (!outFileResult)
             {
+#if defined(CARBONATED)
+                AZ_Error("AWSNativeSDKInit", false, "Failed to open the certificate bundle in %s with result %i\n", publicStoragePath.c_str(), fileResult.GetResultCode());
+                return;
+#else
                 AZ_Error("AWSNativeSDKInit", false, "Failed to open the certificate bundle with result %i\n", fileResult.GetResultCode());
+#endif
             }
 
             AZ::IO::Result writeFileResult = fileBase->Write(outFileHandle, contents.data(), fileSize);
             if (!writeFileResult)
             {
+#if defined(CARBONATED)
+                AZ_Error("AWSNativeSDKInit", false, "Failed to write the certificate bundle in %s with result %i\n", publicStoragePath.c_str(), writeFileResult.GetResultCode());
+#else
                 AZ_Error("AWSNativeSDKInit", false, "Failed to write the certificate bundle with result %i\n", writeFileResult.GetResultCode());
+#endif
             }
 
+#if defined(CARBONATED)
+            // Removed - closed earlier
+#else
             fileBase->Close(fileHandle);
+#endif
             fileBase->Close(outFileHandle);
 
             AZ_Printf("AWSNativeSDKInit", "Certificate bundle successfully copied to %s", publicStoragePath.c_str());
