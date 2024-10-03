@@ -774,9 +774,6 @@ void AZ::AtomFont::ReleaseFontFamily(FontFamily* fontFamily)
     // the font family, so we need to remove that entry also.
     m_fontFamilyReverseLookup.erase(fontFamily);
 
-#if defined(CARBONATED)
-    fontFamily->familyName.clear(); // to know that the font was released
-#endif
     SAFE_RELEASE(fontFamily->normal);
     SAFE_RELEASE(fontFamily->bold);
     SAFE_RELEASE(fontFamily->italic);
