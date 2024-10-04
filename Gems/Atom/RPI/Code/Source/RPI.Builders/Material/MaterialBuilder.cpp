@@ -39,7 +39,7 @@ namespace AZ
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = JobKey;
 #if defined(CARBONATED)
-            materialBuilderDescriptor.m_version = 143; // add silhouette blocker to StandardPBR
+            materialBuilderDescriptor.m_version = 144; // 143 add silhouette blocker to StandardPBR, 144 use effective bitset to shader options
 #else
             materialBuilderDescriptor.m_version = 142; // Add support for small SRGs
 #endif
