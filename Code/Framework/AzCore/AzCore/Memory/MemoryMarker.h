@@ -41,6 +41,9 @@ namespace AZ
         ClassData = 2,
         TaskGraphComponent = 3,
         MaterialInit = 4,
+        ImageMip = 5,
+        EMotionFX = 6,
+        Mesh = 7,
 
         GameSpecific = 32  // game tags starts from this index, use your own enum starting with this value
     };
@@ -55,11 +58,15 @@ namespace AZ
 
 #define MEMORY_ALLOCATION_MARKER AZ::MemoryAllocationMarker(nullptr, __FILE__, __LINE__)
 
-// the name must be a string literal
-#define MEMORY_ALLOCATION_MARKER_NAME(name) AZ::MemoryAllocationMarker(name, __FILE__, __LINE__)
+// without these wrapper macros Name##_LINE__ is Name__LINE__ but not Name123
+#define CONCATENATION_MACRO_1(a, b) a##b
+#define CONCATENATION_MACRO_2(a, b) CONCATENATION_MACRO_1(a, b)
 
-#define MEMORY_TAG(x) AZ::MemoryTagMarker tagMarker##__LINE__(AZ::MemoryTagValue::x)
-#define MEMORY_TAG_GAME(x) AZ::MemoryTagMarker tagMarker##__LINE__(static_cast<AZ::MemoryTagValue>((unsigned int)(x)))
+// the name must be a string literal
+#define MEMORY_ALLOCATION_MARKER_NAME(name) AZ::MemoryAllocationMarker CONCATENATION_MACRO_2(memoryNameMarker_, __LINE__)(name, __FILE__, __LINE__)
+
+#define MEMORY_TAG(x) AZ::MemoryTagMarker CONCATENATION_MACRO_2(memoryTagMarker_, __LINE__)(AZ::MemoryTagValue::x)
+#define MEMORY_TAG_GAME(x) AZ::MemoryTagMarker CONCATENATION_MACRO_2(memoryTagMarkerGame_, __LINE__)(static_cast<AZ::MemoryTagValue>((unsigned int)(x)))
 
 #else  // AZ_ENABLE_TRACING  && !_RELEASE && CARBONATED
 

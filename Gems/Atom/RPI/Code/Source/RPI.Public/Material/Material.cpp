@@ -117,31 +117,31 @@ namespace AZ
             for (auto& [materialPipelineName, materialPipeline] : m_materialAsset->GetMaterialPipelinePayloads())
             {
                 MaterialPipelineState& pipelineData = m_materialPipelineData[materialPipelineName];
+#if defined(CARBONATED)
+                // max index calculation to verify if we have enough space in bit set, keep it to investigate issues if any
                 /*
                 for (size_t i = 0; i < materialPipeline.m_shaderCollection.size(); i++)
                 {
                     const ShaderCollection::Item& item = materialPipeline.m_shaderCollection[i];
                     const AZStd::unordered_set<ShaderOptionIndex>& set = item.GetShaderOptionIndices();
                     static unsigned int maxIndex = 0;
-                    AZ_Info("sss", "copy material, indices: %d, maxindex %u", int(set.size()), maxIndex);
+                    AZ_Info("sss", "copy material, indices: %d, maxindex: %u", int(set.size()), maxIndex);
                     for (ShaderOptionIndex ind : set)
                     {
                         unsigned int index = ind.GetIndex();
                         if (index > maxIndex)
                         {
                             maxIndex = index;
-                            AZ_Info("sss", "maxindex: %u", index);  // this happens too early while log is inactive
-                        }
-                        else
-                        {
-                            AZ_Info("sss", "index: %u", index);
+                            AZ_Info("sss", "maxindex: %u", index);  // sometimes this happens too early while log is inactive, so check the previous log message
                         }
                     }
                 }
                 */
+#endif
                 pipelineData.m_shaderCollection = materialPipeline.m_shaderCollection;
 
-                if (!pipelineData.m_materialProperties.Init(materialPipeline.m_materialPropertiesLayout, materialPipeline.m_defaultPropertyValues))
+                if (!pipelineData.m_materialProperties.Init(
+                        materialPipeline.m_materialPropertiesLayout, materialPipeline.m_defaultPropertyValues))
                 {
                     return RHI::ResultCode::Fail;
                 }

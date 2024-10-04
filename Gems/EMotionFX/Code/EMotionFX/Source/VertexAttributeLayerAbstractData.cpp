@@ -10,6 +10,9 @@
 #include "VertexAttributeLayerAbstractData.h"
 #include <EMotionFX/Source/Allocators.h>
 
+#ifdef CARBONATED
+#include <AzCore/Memory/MemoryMarker.h>
+#endif
 
 namespace EMotionFX
 {
@@ -20,6 +23,8 @@ namespace EMotionFX
     VertexAttributeLayerAbstractData::VertexAttributeLayerAbstractData(uint32 numAttributes, uint32 typeID, uint32 attribSizeInBytes, bool keepOriginals)
         : VertexAttributeLayer(numAttributes, keepOriginals)
     {
+        MEMORY_TAG(EMotionFX);
+
         m_data               = nullptr;
         m_swapBuffer         = nullptr;
         m_typeId             = typeID;
@@ -77,6 +82,8 @@ namespace EMotionFX
     // clone the layer
     VertexAttributeLayer* VertexAttributeLayerAbstractData::Clone()
     {
+        MEMORY_TAG(EMotionFX);
+
         // create the clone
         VertexAttributeLayerAbstractData* clone = aznew VertexAttributeLayerAbstractData(m_numAttributes, m_typeId, m_attribSizeInBytes, m_keepOriginals);
 
@@ -110,6 +117,8 @@ namespace EMotionFX
     // swap two attributes
     void VertexAttributeLayerAbstractData::SwapAttributes(uint32 attribA, uint32 attribB)
     {
+        MEMORY_TAG(EMotionFX);
+
         // create a swap buffer if we haven't got it already
         if (m_swapBuffer == nullptr)
         {
@@ -148,6 +157,8 @@ namespace EMotionFX
     // remove a given set of attributes
     void VertexAttributeLayerAbstractData::RemoveAttributes(uint32 startAttributeNr, uint32 endAttributeNr)
     {
+        MEMORY_TAG(EMotionFX);
+
         // perform some checks on the input data
         MCORE_ASSERT(startAttributeNr < m_numAttributes);
         MCORE_ASSERT(endAttributeNr < m_numAttributes);

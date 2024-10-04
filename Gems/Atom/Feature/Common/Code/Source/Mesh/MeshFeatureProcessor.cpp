@@ -46,6 +46,10 @@
 
 #include <algorithm>
 
+#ifdef CARBONATED
+#include <AzCore/Memory/MemoryMarker.h>
+#endif
+
 namespace AZ
 {
     namespace Render
@@ -261,6 +265,8 @@ namespace AZ
 
         AZStd::vector<Job*> MeshFeatureProcessor::CreatePerInstanceGroupJobQueue()
         {
+            MEMORY_TAG(Mesh);
+
             const auto instanceManagerRanges = m_meshInstanceManager.GetParallelRanges();
             AZStd::vector<Job*> perInstanceGroupJobQueue;
             perInstanceGroupJobQueue.reserve(instanceManagerRanges.size());
@@ -270,6 +276,9 @@ namespace AZ
                 const auto perInstanceGroupJobLambda = [this, scene, iteratorRange]() -> void
                 {
                     AZ_PROFILE_SCOPE(AzRender, "MeshFeatureProcessor: Simulate: PerInstanceGroupUpdate");
+
+                    MEMORY_TAG(Mesh);
+
                     for (auto instanceGroupDataIter = iteratorRange.m_begin; instanceGroupDataIter != iteratorRange.m_end;
                          ++instanceGroupDataIter)
                     {
@@ -290,6 +299,8 @@ namespace AZ
 
         AZStd::vector<Job*> MeshFeatureProcessor::CreateInitJobQueue()
         {
+            MEMORY_TAG(Mesh);
+
             const auto iteratorRanges = m_modelData.GetParallelRanges();
             AZStd::vector<Job*> initJobQueue;
             initJobQueue.reserve(iteratorRanges.size());
@@ -299,6 +310,8 @@ namespace AZ
                 const auto initJobLambda = [this, iteratorRange, removePerMeshShaderOptionFlags]() -> void
                 {
                     AZ_PROFILE_SCOPE(AzRender, "MeshFeatureProcessor: Simulate: Init");
+
+                    MEMORY_TAG(Mesh);
 
                     for (auto meshDataIter = iteratorRange.m_begin; meshDataIter != iteratorRange.m_end; ++meshDataIter)
                     {
@@ -366,6 +379,8 @@ namespace AZ
 
         AZStd::vector<Job*> MeshFeatureProcessor::CreateUpdateCullingJobQueue()
         {
+            MEMORY_TAG(Mesh);
+
             const auto iteratorRanges = m_modelData.GetParallelRanges();
             AZStd::vector<Job*> updateCullingJobQueue;
             updateCullingJobQueue.reserve(iteratorRanges.size());
@@ -375,6 +390,8 @@ namespace AZ
                 const auto updateCullingJobLambda = [this, iteratorRange]() -> void
                 {
                     AZ_PROFILE_SCOPE(AzRender, "MeshFeatureProcessor: Simulate: UpdateCulling");
+
+                    MEMORY_TAG(Mesh);
 
                     for (auto meshDataIter = iteratorRange.m_begin; meshDataIter != iteratorRange.m_end; ++meshDataIter)
                     {
@@ -403,6 +420,8 @@ namespace AZ
 
         void MeshFeatureProcessor::ExecuteCombinedJobQueue(AZStd::span<Job*> initQueue, AZStd::span<Job*> updateCullingQueue, Job* parentJob)
         {
+            MEMORY_TAG(Mesh);
+
             AZ::JobCompletion jobCompletion;
             for (size_t i = 0; i < initQueue.size(); ++i)
             {
@@ -437,6 +456,8 @@ namespace AZ
 
         void MeshFeatureProcessor::ExecuteSimulateJobQueue(AZStd::span<Job*> jobQueue, Job* parentJob)
         {
+            MEMORY_TAG(Mesh);
+
             AZ::JobCompletion jobCompletion;
             for (Job* childJob : jobQueue)
             {
@@ -466,6 +487,8 @@ namespace AZ
 
         void MeshFeatureProcessor::OnEndCulling(const MeshFeatureProcessor::RenderPacket& packet)
         {
+            MEMORY_TAG(Mesh);
+
             if (r_meshInstancingEnabled)
             {
                 AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: OnEndCulling");
@@ -529,6 +552,8 @@ namespace AZ
         
         void MeshFeatureProcessor::ResizePerViewInstanceVectors(size_t viewCount)
         {
+            MEMORY_TAG(Mesh);
+
             AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: ResizePerInstanceVectors");
             // Initialize the instance data if it hasn't been created yet
             if (m_perViewInstanceData.size() <= viewCount)
@@ -627,6 +652,8 @@ namespace AZ
             AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: AddVisibleObjectsToBuckets");
             size_t visibleObjectCount = view->GetVisibleObjectList().size();
 
+            MEMORY_TAG(Mesh);
+
             AZStd::vector<TransformServiceFeatureProcessorInterface::ObjectId>& perViewInstanceData = m_perViewInstanceData[viewIndex];
             if (visibleObjectCount > 0)
             {
@@ -723,6 +750,8 @@ namespace AZ
             uint32_t instanceGroupBeginIndex,
             uint32_t instanceGroupEndNonInclusiveIndex)
         {
+            MEMORY_TAG(Mesh);
+
             MeshInstanceGroupData& instanceGroup = *instanceGroupHandle;
 
             // Each task is working on a page of instance groups, but
@@ -773,6 +802,8 @@ namespace AZ
         void MeshFeatureProcessor::BuildInstanceBufferAndDrawCalls(
             TaskGraph& buildInstanceBufferTG, size_t viewIndex, const RPI::ViewPtr& view)
         {
+            MEMORY_TAG(Mesh);
+
             AZStd::vector<TransformServiceFeatureProcessorInterface::ObjectId>& perViewInstanceData = m_perViewInstanceData[viewIndex];
             AZStd::vector<InstanceGroupBucket>& currentViewInstanceGroupBuckets = m_perViewInstanceGroupBuckets[viewIndex];
 
@@ -835,6 +866,9 @@ namespace AZ
         void MeshFeatureProcessor::UpdateGPUInstanceBufferForView(size_t viewIndex, const RPI::ViewPtr& view)
         {
             AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: UpdateGPUInstanceBufferForView");
+
+            MEMORY_TAG(Mesh);
+
             // Use the correct srg for the view
             GpuBufferHandler& instanceDataBufferHandler = m_perViewInstanceDataBufferHandlers[viewIndex];
             instanceDataBufferHandler.UpdateSrg(view->GetShaderResourceGroup().get());
@@ -849,6 +883,8 @@ namespace AZ
         
         void MeshFeatureProcessor::OnBeginPrepareRender()
         {
+            MEMORY_TAG(Mesh);
+
             m_meshDataChecker.soft_lock();
                         
             // The per-mesh shader option flags are set in feature processors' simulate function
@@ -973,6 +1009,8 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(AzRender, "MeshFeatureProcessor: AcquireMesh");
 
+            MEMORY_TAG(Mesh);
+
             // don't need to check the concurrency during emplace() because the StableDynamicArray won't move the other elements during
             // insertion
             MeshHandle meshDataHandle = m_modelData.emplace();
@@ -1080,6 +1118,8 @@ namespace AZ
 
         void MeshFeatureProcessor::SetCustomMaterials(const MeshHandle& meshHandle, const CustomMaterialMap& materials)
         {
+            MEMORY_TAG(Mesh);
+
             if (meshHandle.IsValid())
             {
                 meshHandle->m_customMaterials = materials;
@@ -1362,6 +1402,8 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
+                MEMORY_TAG(Mesh);
+
                 meshHandle->m_descriptor.m_useForwardPassIblSpecular = useForwardPassIblSpecular;
                 meshHandle->m_flags.m_objectSrgNeedsUpdate = true;
 
@@ -1406,6 +1448,8 @@ namespace AZ
 
         void MeshFeatureProcessor::UpdateMeshReflectionProbes()
         {
+            MEMORY_TAG(Mesh);
+
             for (auto& meshInstance : m_modelData)
             {
                 // we need to rebuild the Srg for any meshes that are using the forward pass IBL specular option
@@ -1546,6 +1590,8 @@ namespace AZ
         //! AssetBus::Handler overrides...
         void ModelDataInstance::MeshLoader::OnAssetReady(Data::Asset<Data::AssetData> asset)
         {
+            MEMORY_TAG(Mesh);
+
             Data::Asset<RPI::ModelAsset> modelAsset = asset;
 
             // Update our model asset reference to contain the latest loaded version.
@@ -1679,6 +1725,8 @@ namespace AZ
                         // in reloading the model.
                         if (meshLoader.use_count() > 1)
                         {
+                            MEMORY_TAG(Mesh);
+
                             ModelReloaderSystemInterface::Get()->ReloadModel(modelAssetReference, m_modelReloadedEventHandler);
                         }
                     });
@@ -1760,6 +1808,8 @@ namespace AZ
 
         void ModelDataInstance::Init(MeshFeatureProcessor* meshFeatureProcessor)
         {
+            MEMORY_TAG(Mesh);
+
             const size_t modelLodCount = m_model->GetLodCount();
             
             if (!r_meshInstancingEnabled)
@@ -1868,6 +1918,8 @@ namespace AZ
 
         void ModelDataInstance::BuildDrawPacketList(MeshFeatureProcessor* meshFeatureProcessor, size_t modelLodIndex)
         {
+            MEMORY_TAG(Mesh);
+
             RPI::ModelLod& modelLod = *m_model->GetLods()[modelLodIndex];
             const size_t meshCount = modelLod.GetMeshes().size();
             MeshInstanceManager& meshInstanceManager = meshFeatureProcessor->GetMeshInstanceManager();
@@ -2061,6 +2113,8 @@ namespace AZ
 
         void ModelDataInstance::SetRayTracingData(MeshFeatureProcessor* meshFeatureProcessor)
         {
+            MEMORY_TAG(Mesh);
+
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = meshFeatureProcessor->GetRayTracingFeatureProcessor();
             TransformServiceFeatureProcessor* transformServiceFeatureProcessor =
                 meshFeatureProcessor->GetTransformServiceFeatureProcessor();
@@ -2411,6 +2465,8 @@ namespace AZ
             const Data::Instance<RPI::Material> material,
             const Data::Instance<RPI::Image> baseColorImage)
         {
+            MEMORY_TAG(Mesh);
+
             RPI::MaterialPropertyIndex propertyIndex = material->FindPropertyIndex(s_irradiance_irradianceColorSource_Name);
             if (!propertyIndex.IsValid())
             {
@@ -2540,7 +2596,10 @@ namespace AZ
             MeshFeatureProcessor* meshFeatureProcessor,
             RayTracingFeatureProcessor::Mesh::ReflectionProbe& reflectionProbe)
         {
-            TransformServiceFeatureProcessor* transformServiceFeatureProcessor = meshFeatureProcessor->GetTransformServiceFeatureProcessor();
+            MEMORY_TAG(Mesh);
+
+            TransformServiceFeatureProcessor* transformServiceFeatureProcessor =
+                meshFeatureProcessor->GetTransformServiceFeatureProcessor();
             ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor = meshFeatureProcessor->GetReflectionProbeFeatureProcessor();
             AZ::Transform transform = transformServiceFeatureProcessor->GetTransformForId(m_objectId);
 
@@ -2624,6 +2683,8 @@ namespace AZ
         {
             AZ_Assert(!r_meshInstancingEnabled, "If mesh instancing is enabled, the draw packet update should be going through the MeshInstanceManager.");
 
+            MEMORY_TAG(Mesh);
+
             // Only enable draw motion if model is dynamic and draw motion was disabled
             bool enableDrawMotion = !m_flags.m_isDrawMotion && m_flags.m_dynamic;
             RHI::DrawListTag meshMotionDrawListTag;
@@ -2652,6 +2713,8 @@ namespace AZ
         {
             AZ_Assert(m_flags.m_cullableNeedsRebuild, "This function only needs to be called if the cullable to be rebuilt");
             AZ_Assert(m_model, "The model has not finished loading yet");
+
+            MEMORY_TAG(Mesh);
 
             RPI::Cullable::CullData& cullData = m_cullable.m_cullData;
             RPI::Cullable::LodData& lodData = m_cullable.m_lodData;
@@ -2819,6 +2882,8 @@ namespace AZ
 
         void ModelDataInstance::UpdateObjectSrg(MeshFeatureProcessor* meshFeatureProcessor)
         {
+            MEMORY_TAG(Mesh);
+
             ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor = meshFeatureProcessor->GetReflectionProbeFeatureProcessor();
             TransformServiceFeatureProcessor* transformServiceFeatureProcessor = meshFeatureProcessor->GetTransformServiceFeatureProcessor();
             for (auto& objectSrg : m_objectSrgList)
