@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/DeviceImageView.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <RHI/Image.h>
 
@@ -18,9 +18,9 @@ namespace AZ
         class SwapChain;
 
         class ImageView final
-            : public RHI::ImageView
+            : public RHI::DeviceImageView
         {
-            using Base = RHI::ImageView;
+            using Base = RHI::DeviceImageView;
         public:
             using ResourceType = Image;
 
@@ -32,6 +32,7 @@ namespace AZ
 
             VkImageView GetNativeImageView() const;
             RHI::Format GetFormat() const;
+            RHI::ImageAspectFlags GetAspectFlags() const;
             const RHI::ImageSubresourceRange& GetImageSubresourceRange() const;
             const VkImageSubresourceRange& GetVkImageSubresourceRange() const;
 
@@ -48,8 +49,8 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::ImageView
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::Resource& resourceBase) override;
+            // RHI::DeviceImageView
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::DeviceResource& resourceBase) override;
             RHI::ResultCode InvalidateInternal() override;
             void ShutdownInternal() override;
             //////////////////////////////////////////////////////////////////////////
@@ -61,6 +62,7 @@ namespace AZ
 
             VkImageView m_vkImageView = VK_NULL_HANDLE;
             RHI::Format m_format = RHI::Format::Unknown;
+            RHI::ImageAspectFlags m_aspectFlags = RHI::ImageAspectFlags::All;
             RHI::ImageSubresourceRange m_imageSubresourceRange;
             VkImageSubresourceRange m_vkImageSubResourceRange;
 

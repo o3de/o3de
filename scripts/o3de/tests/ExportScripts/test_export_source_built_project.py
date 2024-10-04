@@ -8,8 +8,8 @@
 
 import pytest
 import pathlib
-from unittest.mock import patch, create_autospec, MagicMock, Mock, PropertyMock
-from o3de.export_project import O3DEScriptExportContext, LauncherType
+from unittest.mock import patch, create_autospec, MagicMock, Mock, PropertyMock, ANY
+from o3de.export_project import ExportProjectError, O3DEScriptExportContext, LauncherType
 import logging
 import configparser
 
@@ -139,21 +139,8 @@ def test_build_tools_combinations(tmp_path, is_engine_centric, use_sdk, should_b
             else:
                 test_tools_build_path = None
 
-            cannot_build_monolithic = (use_sdk and not has_monolithic and use_monolithic)
             buildconf = 'release' if use_monolithic else 'profile'
-            if not expect_toolchain_build_called and cannot_build_monolithic:
-                pytest.raises(exp.ExportProjectError, export_standalone_project, 
-                              mock_ctx,
-                              mock_platform,
-                              test_output_path,
-                              should_build_tools_flag,
-                              buildconf,
-                              "profile",
-                              [],[],[],
-                              monolithic_build=use_monolithic,
-                              tools_build_path=test_tools_build_path,
-                              engine_centric=is_engine_centric)
-            else:
+            try:
                 export_standalone_project(mock_ctx,
                                         mock_platform,
                                         test_output_path,
@@ -178,7 +165,10 @@ def test_build_tools_combinations(tmp_path, is_engine_centric, use_sdk, should_b
                                                                         logger=mock_logger)
                 else:
                     mock_build_export_toolchain.assert_not_called()
-            
+                    
+            except ExportProjectError:
+                assert not has_monolithic, "Error expected if we do not have monolithic binaries what requesting monolithic builds."
+
             mock_build_export_toolchain.reset_mock()
 
 
@@ -249,29 +239,11 @@ def test_asset_bundler_combinations(tmp_path, is_engine_centric, use_sdk, has_mo
                 if test_tools_build_path and test_tools_build_path.is_absolute():
                     test_tools_build_path.mkdir(exist_ok=True, parents=True)
 
-                cannot_build_monolithic = (use_sdk and not has_monolithic and use_monolithic)
-
-
-                if cannot_build_monolithic:
-                    pytest.raises(exp.ExportProjectError, export_standalone_project,
-                                  mock_ctx,
-                                  mock_platform,
-                                  test_output_path,
-                                  should_build_tools, 
-                                  buildconf,
-                                  'profile',
-                                  [],[],[],
-                                  monolithic_build=use_monolithic,
-                                  engine_centric=is_engine_centric,
-                                  tools_build_path=test_tools_build_path,
-                                  asset_bundling_path=test_asset_bundling_path)
-                    mock_get_asset_bundler_path.assert_not_called()
-                    mock_bundle_assets.assert_not_called()
-                else:
+                try:
                     export_standalone_project(mock_ctx,
                                         mock_platform,
                                         test_output_path,
-                                        should_build_tools, 
+                                        should_build_tools,
                                         buildconf,
                                         'profile',
                                         [],[],[],
@@ -283,18 +255,18 @@ def test_asset_bundler_combinations(tmp_path, is_engine_centric, use_sdk, has_mo
 
                     if not selected_tools_build_path:
                         selected_tools_build_path = test_o3de_base_path / 'build/tools'
-                    
+
                     if not selected_tools_build_path.is_absolute():
                         selected_tools_build_path = test_o3de_base_path / selected_tools_build_path
-                    
+
                     selected_asset_bundling_path = test_asset_bundling_path if test_asset_bundling_path else \
                                                         test_o3de_base_path / 'build/asset_bundling'
-                
+
                     if not selected_asset_bundling_path.is_absolute():
                         selected_asset_bundling_path = test_o3de_base_path / selected_asset_bundling_path
 
                     mock_get_asset_bundler_path.assert_not_called()
-                    
+
                     mock_bundle_assets.assert_called_once_with(ctx=mock_ctx,
                                                             selected_platforms=[mock_platform],
                                                             seedlist_paths=[],
@@ -305,6 +277,8 @@ def test_asset_bundler_combinations(tmp_path, is_engine_centric, use_sdk, has_mo
                                                             using_installer_sdk=use_sdk,
                                                             tool_config='profile',
                                                             max_bundle_size=2048)
+                except ExportProjectError:
+                    assert not has_monolithic, "Error expected if we do not have monolithic binaries what requesting monolithic builds."
 
                 mock_get_asset_bundler_path.reset_mock()
                 mock_bundle_assets.reset_mock()
@@ -450,7 +424,6 @@ def test_asset_processor_combinations(tmp_path, is_engine_centric, use_sdk, has_
                 test_tools_build_path = None if not base_path else base_path / 'build/tools'
                 test_tools_sdk_path = (test_engine_path / 'bin/Windows/profile/Default')
 
-                cannot_build_monolithic = (use_sdk and not has_monolithic and use_monolithic)
                 selected_tools_build_path = test_tools_build_path if not use_sdk else test_tools_sdk_path
 
                 if not selected_tools_build_path:
@@ -459,26 +432,11 @@ def test_asset_processor_combinations(tmp_path, is_engine_centric, use_sdk, has_
                 if not selected_tools_build_path.is_absolute():
                     selected_tools_build_path = test_o3de_base_path / selected_tools_build_path                
 
-                if cannot_build_monolithic:
-                    pytest.raises(exp.ExportProjectError, export_standalone_project,
-                                  mock_ctx,
-                                  mock_platform,
-                                  test_output_path,
-                                  should_build_tools, 
-                                  buildconf,
-                                  'profile',
-                                  [],[],[],
-                                  monolithic_build=use_monolithic,
-                                  engine_centric=is_engine_centric,
-                                  tools_build_path=test_tools_build_path,
-                                  should_build_all_assets=True)
-                    mock_get_asset_processor_path.assert_not_called()
-                    mock_build_assets.assert_not_called()
-                else:
+                try:
                     export_standalone_project(mock_ctx,
                                         mock_platform,
                                         test_output_path,
-                                        should_build_tools, 
+                                        should_build_tools,
                                         buildconf,
                                         'profile',
                                         [],[],[],
@@ -490,7 +448,7 @@ def test_asset_processor_combinations(tmp_path, is_engine_centric, use_sdk, has_
                                                                         using_installer_sdk=use_sdk,
                                                                         tool_config='profile',
                                                                         required=True)
-                    
+
                     mock_build_assets.assert_called_once_with(ctx=mock_ctx,
                                                             tools_build_path=selected_tools_build_path,
                                                             engine_centric=is_engine_centric,
@@ -500,24 +458,13 @@ def test_asset_processor_combinations(tmp_path, is_engine_centric, use_sdk, has_
                                                             selected_platforms=[mock_platform],
                                                             logger=mock_logger)
 
-                mock_get_asset_processor_path.reset_mock()
-                mock_build_assets.reset_mock()
+                    mock_get_asset_processor_path.reset_mock()
+                    mock_build_assets.reset_mock()
+                except ExportProjectError:
+                    assert not has_monolithic, "Error expected if we do not have monolithic binaries what requesting monolithic builds."
 
                 #now test for when we skip the asset build process
-                if cannot_build_monolithic:
-                    pytest.raises(exp.ExportProjectError, export_standalone_project,
-                                  mock_ctx,
-                                  mock_platform,
-                                  test_output_path,
-                                  should_build_tools, 
-                                  buildconf,
-                                  'profile',
-                                  [],[],[],
-                                  monolithic_build=use_monolithic,
-                                  engine_centric=is_engine_centric,
-                                  tools_build_path=test_tools_build_path,
-                                  should_build_all_assets=False)
-                else:
+                try:
                     export_standalone_project(mock_ctx,
                                             mock_platform,
                                             test_output_path,
@@ -532,6 +479,8 @@ def test_asset_processor_combinations(tmp_path, is_engine_centric, use_sdk, has_
                     
                     mock_get_asset_processor_path.assert_not_called()
                     mock_build_assets.assert_not_called()
+                except ExportProjectError:
+                    assert not has_monolithic, "Error expected if we do not have monolithic binaries what requesting monolithic builds."
 
                 mock_get_asset_processor_path.reset_mock()
                 mock_build_assets.reset_mock()
@@ -581,7 +530,7 @@ def test_build_game_targets_combinations(tmp_path, is_engine_centric, use_sdk, h
     mock_logger = create_autospec(logging.Logger)
 
     with patch('o3de.manifest.is_sdk_engine', return_value=use_sdk) as mock_is_sdk_engine,\
-         patch('o3de.export_project.has_monolithic_artifacts', return_value=has_monolithic) as mock_has_mono_artifacts,\
+         patch('o3de.export_project.has_monolithic_artifacts', return_value=True) as mock_has_mono_artifacts,\
          patch('o3de.export_project.get_platform_installer_folder_name', return_value="Windows") as mock_platform_folder_name,\
          patch('o3de.export_project.validate_project_artifact_paths', return_value=[]) as mock_validate_project_artifacts,\
          patch('o3de.export_project.kill_existing_processes') as mock_kill_processes,\
@@ -644,55 +593,34 @@ def test_build_game_targets_combinations(tmp_path, is_engine_centric, use_sdk, h
                     if not selected_launcher_build_path.is_absolute():
                         selected_launcher_build_path = test_o3de_base_path / selected_launcher_build_path
 
-                    cannot_build_monolithic = (use_sdk and not has_monolithic and use_monolithic)
-                    if cannot_build_monolithic:
-                        pytest.raises(exp.ExportProjectError, export_standalone_project,
-                                      mock_ctx,
-                                      mock_platform,
-                                      test_output_path,
-                                      should_build_tools, 
-                                      buildconf,
-                                      'profile',
-                                      [],[],[],
-                                      monolithic_build=use_monolithic,
-                                      engine_centric=is_engine_centric,
-                                      tools_build_path=test_tools_build_path,
-                                      should_build_all_assets=True,
-                                      launcher_build_path=test_launcher_build_path,
-                                      should_build_game_launcher=should_build_game,
-                                      should_build_server_launcher=should_build_server,
-                                      should_build_headless_server_launcher=should_build_headless_server,
-                                      should_build_unified_launcher=should_build_unified)
+                    export_standalone_project(mock_ctx,
+                                    mock_platform,
+                                    test_output_path,
+                                    should_build_tools,
+                                    buildconf,
+                                    'profile',
+                                    [],[],[],
+                                    monolithic_build=use_monolithic,
+                                    engine_centric=is_engine_centric,
+                                    tools_build_path=test_tools_build_path,
+                                    should_build_all_assets=True,
+                                    launcher_build_path=test_launcher_build_path,
+                                    should_build_game_launcher=should_build_game,
+                                    should_build_server_launcher=should_build_server,
+                                    should_build_headless_server_launcher=should_build_headless_server,
+                                    should_build_unified_launcher=should_build_unified)
+                    if check_launcher_type == 0:
                         mock_build_game_targets.assert_not_called()
                     else:
-                        export_standalone_project(mock_ctx,
-                                        mock_platform,
-                                        test_output_path,
-                                        should_build_tools, 
-                                        buildconf,
-                                        'profile',
-                                        [],[],[],
-                                        monolithic_build=use_monolithic,
-                                        engine_centric=is_engine_centric,
-                                        tools_build_path=test_tools_build_path,
-                                        should_build_all_assets=True,
-                                        launcher_build_path=test_launcher_build_path,
-                                        should_build_game_launcher=should_build_game,
-                                        should_build_server_launcher=should_build_server,
-                                        should_build_headless_server_launcher=should_build_headless_server,
-                                        should_build_unified_launcher=should_build_unified)
-                        if check_launcher_type == 0:
-                            mock_build_game_targets.assert_not_called()
-                        else:
-                            mock_build_game_targets.assert_called_once_with(ctx=mock_ctx,
-                                                                            build_config=buildconf,
-                                                                            game_build_path=selected_launcher_build_path,
-                                                                            engine_centric=is_engine_centric,
-                                                                            launcher_types=check_launcher_type,
-                                                                            allow_registry_overrides=False,
-                                                                            tool_config='profile',
-                                                                            monolithic_build=use_monolithic,
-                                                                            logger=mock_logger)
+                        mock_build_game_targets.assert_called_once_with(ctx=mock_ctx,
+                                                                        build_config=buildconf,
+                                                                        game_build_path=selected_launcher_build_path,
+                                                                        engine_centric=is_engine_centric,
+                                                                        launcher_types=check_launcher_type,
+                                                                        allow_registry_overrides=False,
+                                                                        tool_config='profile',
+                                                                        monolithic_build=ANY,
+                                                                        logger=mock_logger)
                     mock_build_game_targets.reset_mock()
 
 
@@ -813,27 +741,7 @@ def test_setup_launcher_layout_directory(tmp_path, is_engine_centric, use_sdk, h
                     if not selected_launcher_build_path.is_absolute():
                         selected_launcher_build_path = test_o3de_base_path / selected_launcher_build_path
 
-                    cannot_build_monolithic = (use_sdk and not has_monolithic and use_monolithic)
-                    if cannot_build_monolithic:
-                        pytest.raises(exp.ExportProjectError, export_standalone_project,
-                                      mock_ctx,
-                                      mock_platform,
-                                      test_output_path,
-                                      should_build_tools, 
-                                      buildconf,
-                                      'profile',
-                                      [],[],[],
-                                      monolithic_build=use_monolithic,
-                                      engine_centric=is_engine_centric,
-                                      tools_build_path=test_tools_build_path,
-                                      should_build_all_assets=True,
-                                      launcher_build_path=test_launcher_build_path,
-                                      should_build_game_launcher=should_build_game,
-                                      should_build_server_launcher=should_build_server,
-                                      should_build_headless_server_launcher=should_build_headless_server,
-                                      should_build_unified_launcher=should_build_unified)
-                        mock_setup_launcher_layout_directory.assert_not_called()
-                    else:
+                    try:
                         export_standalone_project(mock_ctx,
                                         mock_platform,
                                         test_output_path,
@@ -880,6 +788,8 @@ def test_setup_launcher_layout_directory(tmp_path, is_engine_centric, use_sdk, h
                                     break
                         
                         assert settings_remaining == 0
+                    except ExportProjectError:
+                        assert not has_monolithic, "Error expected if we do not have monolithic binaries what requesting monolithic builds."
 
                     reset_cache()
                     mock_setup_launcher_layout_directory.reset_mock()
@@ -893,24 +803,8 @@ from itertools import product
 def test_export_standalone_parse_args_should_require_output(tmpdir):
     # Test Data
     test_project_name, test_project_path, test_engine_path = setup_local_export_config_test(tmpdir)
-
-    with pytest.raises(SystemExit):
-        with patch('o3de.manifest.get_o3de_folder') as mock_get_o3de_folder,\
-             patch('o3de.export_project.get_default_asset_platform', return_value='pc') as mock_get_asset_platform:
-
-            mock_get_o3de_folder.return_value = pathlib.Path(tmpdir.join('.o3de').realpath())
-
-            mock_ctx = create_autospec(O3DEScriptExportContext)
-            mock_ctx.project_path = test_project_path
-            mock_ctx.engine_path = test_engine_path
-            mock_ctx.project_name = test_project_name
-
-            test_export_config = exp.get_export_project_config(project_path=None)
-
-            # Since we are not specifying arguments, output path is missing. This should cause an error
-            export_standalone_parse_args(mock_ctx, test_export_config)
     
-    #this should run fine however
+    #this should run fine, note that all parameters are considered optional except for project-path now
     with patch('o3de.manifest.get_o3de_folder') as mock_get_o3de_folder,\
          patch('o3de.export_project.get_default_asset_platform', return_value='pc') as mock_get_asset_platform:
         
@@ -1212,6 +1106,7 @@ def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, d
                                     launcher_build_path=args.launcher_build_path,
                                     archive_output_format=check_archive_format,
                                     monolithic_build=check_mono,
+                                    kill_o3de_processes_before_running=False,
                                     logger=mock_logger)
                     mock_export_func.reset_mock()
 
@@ -1312,4 +1207,5 @@ def test_export_standalone_multipart_args(tmpdir, seedlists, seedfiles, levelnam
                         launcher_build_path=pathlib.PurePath('LauncherBuilds/Packages'),
                         archive_output_format='none',
                         monolithic_build=False,
+                        kill_o3de_processes_before_running=False,
                         logger=mock_logger)

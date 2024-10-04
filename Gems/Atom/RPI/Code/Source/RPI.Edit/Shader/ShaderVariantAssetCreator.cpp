@@ -15,7 +15,11 @@ namespace AZ
 {
     namespace RPI
     {
-        void ShaderVariantAssetCreator::Begin(const AZ::Data::AssetId& assetId, const ShaderVariantId& shaderVariantId, RPI::ShaderVariantStableId stableId, bool isFullyBaked)
+        void ShaderVariantAssetCreator::Begin(
+            const AZ::Data::AssetId& assetId,
+            const ShaderVariantId& shaderVariantId,
+            RPI::ShaderVariantStableId stableId,
+            bool isFullyBaked)
         {
             BeginCommon(assetId);
 

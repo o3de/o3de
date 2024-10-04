@@ -144,7 +144,7 @@ namespace AZ
             AZ::Aabb GetLocalBounds() const override;
 
             // AzFramework::VisibleGeometryRequestBus::Handler overrides ...
-            void GetVisibleGeometry(const AZ::Aabb& bounds, AzFramework::VisibleGeometryContainer& geometryContainer) const override;
+            void BuildVisibleGeometry(const AZ::Aabb& bounds, AzFramework::VisibleGeometryContainer& geometryContainer) const override;
 
             // Searches all shader items referenced by the material for one with a matching draw list tag.
             // Returns true if a matching tag was found. Otherwise, false.

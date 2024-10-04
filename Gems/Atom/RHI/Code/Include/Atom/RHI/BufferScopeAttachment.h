@@ -21,6 +21,8 @@ namespace AZ::RHI
     class BufferScopeAttachment final
         : public ScopeAttachment
     {
+        friend class FrameGraphCompiler;
+
     public:
         AZ_RTTI(BufferScopeAttachment, "{48A21F94-985B-40EE-A75A-8E960E935321}", ScopeAttachment);
         AZ_CLASS_ALLOCATOR(BufferScopeAttachment, SystemAllocator);
@@ -30,6 +32,7 @@ namespace AZ::RHI
             FrameAttachment& attachment,
             ScopeAttachmentUsage usage,
             ScopeAttachmentAccess access,
+            ScopeAttachmentStage stage,
             const BufferScopeAttachmentDescriptor& descriptor);
 
         const BufferScopeAttachmentDescriptor& GetDescriptor() const;
@@ -47,10 +50,13 @@ namespace AZ::RHI
         BufferScopeAttachment* GetNext();
 
         /// Returns the buffer view set on the scope attachment.
-        const BufferView* GetBufferView() const;
+        const AZ::RHI::BufferView* GetBufferView() const;
 
         /// Assigns a buffer view to the scope attachment.
         void SetBufferView(ConstPtr<BufferView> bufferView);
+
+        // ScopeAttachment overrides...
+        const ScopeAttachmentDescriptor& GetScopeAttachmentDescriptor() const override;
 
     private:
         BufferScopeAttachmentDescriptor m_descriptor;

@@ -314,14 +314,14 @@ namespace UnitTest
         void GetProvidedServices(DependencyArrayType& provided, const Component* instance) const override
         {
             (void)instance;
-            provided.push_back(AZ_CRC("ServiceA", 0x808b9021));
+            provided.push_back(AZ_CRC_CE("ServiceA"));
         }
         void GetDependentServices(DependencyArrayType& dependent, const Component* instance) const override
         {
             (void)instance;
             if (m_isDependent)
             {
-                dependent.push_back(AZ_CRC("ServiceD", 0xf0e164ae));
+                dependent.push_back(AZ_CRC_CE("ServiceD"));
             }
         }
         void Reflect(ReflectContext* /*reflection*/) const override {}
@@ -341,9 +341,9 @@ namespace UnitTest
         void Activate() override {}
         void Deactivate() override {}
 
-        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC("ServiceB", 0x1982c19b)); }
-        static void GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent) { dependent.push_back(AZ_CRC("ServiceE", 0x87e65438)); }
-        static void GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible) { incompatible.push_back(AZ_CRC("ServiceF", 0x1eef0582)); }
+        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC_CE("ServiceB")); }
+        static void GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent) { dependent.push_back(AZ_CRC_CE("ServiceE")); }
+        static void GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible) { incompatible.push_back(AZ_CRC_CE("ServiceF")); }
         static void Reflect(ReflectContext* /*reflection*/)  {}
     };
 
@@ -359,7 +359,7 @@ namespace UnitTest
         void Activate() override {}
         void Deactivate() override {}
 
-        static void GetRequiredServices(ComponentDescriptor::DependencyArrayType& required) { required.push_back(AZ_CRC("ServiceB", 0x1982c19b)); }
+        static void GetRequiredServices(ComponentDescriptor::DependencyArrayType& required) { required.push_back(AZ_CRC_CE("ServiceB")); }
         static void Reflect(ReflectContext* /*reflection*/) {}
     };
 
@@ -375,7 +375,7 @@ namespace UnitTest
         void Activate() override {}
         void Deactivate() override {}
 
-        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC("ServiceD", 0xf0e164ae)); }
+        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC_CE("ServiceD")); }
         static void Reflect(ReflectContext* /*reflection*/) {}
     };
     //////////////////////////////////////////////////////////////////////////
@@ -391,8 +391,8 @@ namespace UnitTest
         void Activate() override {}
         void Deactivate() override {}
 
-        static void GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent) { dependent.push_back(AZ_CRC("ServiceD", 0xf0e164ae)); dependent.push_back(AZ_CRC("ServiceA", 0x808b9021)); }
-        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC("ServiceE", 0x87e65438)); }
+        static void GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent) { dependent.push_back(AZ_CRC_CE("ServiceD")); dependent.push_back(AZ_CRC_CE("ServiceA")); }
+        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC_CE("ServiceE")); }
         static void Reflect(ReflectContext* /*reflection*/) {}
     };
     //////////////////////////////////////////////////////////////////////////
@@ -409,7 +409,7 @@ namespace UnitTest
         void Activate() override {}
         void Deactivate() override {}
 
-        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC("ServiceE", 0x87e65438)); }
+        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC_CE("ServiceE")); }
         static void Reflect(ReflectContext* /*reflection*/) {}
     };
     //////////////////////////////////////////////////////////////////////////
@@ -425,8 +425,8 @@ namespace UnitTest
         void Activate() override {}
         void Deactivate() override {}
 
-        static void GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible) { incompatible.push_back(AZ_CRC("ServiceA", 0x808b9021)); }
-        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC("ServiceF", 0x1eef0582)); }
+        static void GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible) { incompatible.push_back(AZ_CRC_CE("ServiceA")); }
+        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC_CE("ServiceF")); }
         static void Reflect(ReflectContext* /*reflection*/) {}
     };
     //////////////////////////////////////////////////////////////////////////
@@ -442,8 +442,8 @@ namespace UnitTest
         void Activate() override {}
         void Deactivate() override {}
 
-        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC("ServiceG")); }
-        static void GetRequiredServices(ComponentDescriptor::DependencyArrayType& required) { required.push_back(AZ_CRC("ServiceH")); }
+        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC_CE("ServiceG")); }
+        static void GetRequiredServices(ComponentDescriptor::DependencyArrayType& required) { required.push_back(AZ_CRC_CE("ServiceH")); }
         static void Reflect(ReflectContext* /*reflection*/) {}
     };
     //////////////////////////////////////////////////////////////////////////
@@ -459,8 +459,8 @@ namespace UnitTest
         void Activate() override {}
         void Deactivate() override {}
 
-        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC("ServiceH")); }
-        static void GetRequiredServices(ComponentDescriptor::DependencyArrayType& required) { required.push_back(AZ_CRC("ServiceG")); }
+        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC_CE("ServiceH")); }
+        static void GetRequiredServices(ComponentDescriptor::DependencyArrayType& required) { required.push_back(AZ_CRC_CE("ServiceG")); }
         static void Reflect(ReflectContext* /*reflection*/) {}
     };
     //////////////////////////////////////////////////////////////////////////
@@ -476,8 +476,8 @@ namespace UnitTest
         void Activate() override {}
         void Deactivate() override {}
 
-        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC("ServiceI")); }
-        static void GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC("ServiceI")); }
+        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC_CE("ServiceI")); }
+        static void GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC_CE("ServiceI")); }
         static void Reflect(ReflectContext* /*reflection*/) {}
     };
     //////////////////////////////////////////////////////////////////////////
@@ -493,7 +493,7 @@ namespace UnitTest
         void Activate() override {}
         void Deactivate() override {}
 
-        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC("ServiceJ")); provided.push_back(AZ_CRC("ServiceJ")); }
+        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC_CE("ServiceJ")); provided.push_back(AZ_CRC_CE("ServiceJ")); }
         static void Reflect(ReflectContext* /*reflection*/) {}
     };
     //////////////////////////////////////////////////////////////////////////
@@ -509,8 +509,8 @@ namespace UnitTest
         void Activate() override {}
         void Deactivate() override {}
 
-        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC("ServiceK")); }
-        static void GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent) { dependent.push_back(AZ_CRC("ServiceJ")); }
+        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC_CE("ServiceK")); }
+        static void GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent) { dependent.push_back(AZ_CRC_CE("ServiceJ")); }
         static void Reflect(ReflectContext* /*reflection*/) {}
     };
     //////////////////////////////////////////////////////////////////////////
@@ -526,8 +526,8 @@ namespace UnitTest
         void Activate() override {}
         void Deactivate() override {}
 
-        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC("ServiceL")); }
-        static void GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent) { dependent.push_back(AZ_CRC("ServiceA")); dependent.push_back(AZ_CRC("ServiceA")); }
+        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC_CE("ServiceL")); }
+        static void GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent) { dependent.push_back(AZ_CRC_CE("ServiceA")); dependent.push_back(AZ_CRC_CE("ServiceA")); }
         static void Reflect(ReflectContext* /*reflection*/) {}
     };
     //////////////////////////////////////////////////////////////////////////
@@ -543,9 +543,9 @@ namespace UnitTest
         void Activate() override {}
         void Deactivate() override {}
 
-        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC("ServiceM")); }
-        static void GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent) { dependent.push_back(AZ_CRC("ServiceA")); }
-        static void GetRequiredServices(ComponentDescriptor::DependencyArrayType& dependent) { dependent.push_back(AZ_CRC("ServiceA")); }
+        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC_CE("ServiceM")); }
+        static void GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent) { dependent.push_back(AZ_CRC_CE("ServiceA")); }
+        static void GetRequiredServices(ComponentDescriptor::DependencyArrayType& dependent) { dependent.push_back(AZ_CRC_CE("ServiceA")); }
         static void Reflect(ReflectContext* /*reflection*/) {}
     };
     //////////////////////////////////////////////////////////////////////////
@@ -561,8 +561,8 @@ namespace UnitTest
         void Activate() override {}
         void Deactivate() override {}
 
-        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC("ServiceN")); }
-        static void GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC("ServiceA")); provided.push_back(AZ_CRC("ServiceA")); }
+        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC_CE("ServiceN")); }
+        static void GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC_CE("ServiceA")); provided.push_back(AZ_CRC_CE("ServiceA")); }
         static void Reflect(ReflectContext* /*reflection*/) {}
     };
     //////////////////////////////////////////////////////////////////////////
@@ -578,8 +578,8 @@ namespace UnitTest
         void Activate() override {}
         void Deactivate() override {}
 
-        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC("ServiceO")); }
-        static void GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC("ServiceO")); provided.push_back(AZ_CRC("ServiceO")); }
+        static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC_CE("ServiceO")); }
+        static void GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& provided) { provided.push_back(AZ_CRC_CE("ServiceO")); provided.push_back(AZ_CRC_CE("ServiceO")); }
         static void Reflect(ReflectContext* /*reflection*/) {}
     };
     //////////////////////////////////////////////////////////////////////////
@@ -1127,17 +1127,17 @@ namespace UnitTest
         systemEntity->Init();
         systemEntity->Activate();
 
-        AZStd::intrusive_ptr<MyUserSettings> myGlobalUserSettings = UserSettings::CreateFind<MyUserSettings>(AZ_CRC("MyUserSettings", 0x65286904), UserSettings::CT_GLOBAL);
+        AZStd::intrusive_ptr<MyUserSettings> myGlobalUserSettings = UserSettings::CreateFind<MyUserSettings>(AZ_CRC_CE("MyUserSettings"), UserSettings::CT_GLOBAL);
         AZ_TEST_ASSERT(myGlobalUserSettings);
         myGlobalUserSettings->m_intOption1 = 10;
-        AZStd::intrusive_ptr<MyUserSettings> storedGlobalSettings = UserSettings::CreateFind<MyUserSettings>(AZ_CRC("MyUserSettings", 0x65286904), UserSettings::CT_GLOBAL);
+        AZStd::intrusive_ptr<MyUserSettings> storedGlobalSettings = UserSettings::CreateFind<MyUserSettings>(AZ_CRC_CE("MyUserSettings"), UserSettings::CT_GLOBAL);
         AZ_TEST_ASSERT(myGlobalUserSettings == storedGlobalSettings);
         AZ_TEST_ASSERT(storedGlobalSettings->m_intOption1 == 10);
 
-        AZStd::intrusive_ptr<MyUserSettings> myLocalUserSettings = UserSettings::CreateFind<MyUserSettings>(AZ_CRC("MyUserSettings", 0x65286904), UserSettings::CT_LOCAL);
+        AZStd::intrusive_ptr<MyUserSettings> myLocalUserSettings = UserSettings::CreateFind<MyUserSettings>(AZ_CRC_CE("MyUserSettings"), UserSettings::CT_LOCAL);
         AZ_TEST_ASSERT(myLocalUserSettings);
         myLocalUserSettings->m_intOption1 = 20;
-        AZStd::intrusive_ptr<MyUserSettings> storedLocalSettings = UserSettings::CreateFind<MyUserSettings>(AZ_CRC("MyUserSettings", 0x65286904), UserSettings::CT_LOCAL);
+        AZStd::intrusive_ptr<MyUserSettings> storedLocalSettings = UserSettings::CreateFind<MyUserSettings>(AZ_CRC_CE("MyUserSettings"), UserSettings::CT_LOCAL);
         AZ_TEST_ASSERT(myLocalUserSettings == storedLocalSettings);
         AZ_TEST_ASSERT(storedLocalSettings->m_intOption1 == 20);
 
@@ -1146,23 +1146,23 @@ namespace UnitTest
         systemEntity->Deactivate();
 
         // Deactivate() should have cleared all the registered user options
-        storedGlobalSettings = UserSettings::Find<MyUserSettings>(AZ_CRC("MyUserSettings", 0x65286904), UserSettings::CT_GLOBAL);
+        storedGlobalSettings = UserSettings::Find<MyUserSettings>(AZ_CRC_CE("MyUserSettings"), UserSettings::CT_GLOBAL);
         AZ_TEST_ASSERT(!storedGlobalSettings);
-        storedLocalSettings = UserSettings::Find<MyUserSettings>(AZ_CRC("MyUserSettings", 0x65286904), UserSettings::CT_LOCAL);
+        storedLocalSettings = UserSettings::Find<MyUserSettings>(AZ_CRC_CE("MyUserSettings"), UserSettings::CT_LOCAL);
         AZ_TEST_ASSERT(!storedLocalSettings);
 
         systemEntity->Activate();
 
         // Verify that upon re-activation, we successfully loaded all settings saved during deactivation
-        storedGlobalSettings = UserSettings::Find<MyUserSettings>(AZ_CRC("MyUserSettings", 0x65286904), UserSettings::CT_GLOBAL);
+        storedGlobalSettings = UserSettings::Find<MyUserSettings>(AZ_CRC_CE("MyUserSettings"), UserSettings::CT_GLOBAL);
         AZ_TEST_ASSERT(storedGlobalSettings);
-        myGlobalUserSettings = UserSettings::CreateFind<MyUserSettings>(AZ_CRC("MyUserSettings", 0x65286904), UserSettings::CT_GLOBAL);
+        myGlobalUserSettings = UserSettings::CreateFind<MyUserSettings>(AZ_CRC_CE("MyUserSettings"), UserSettings::CT_GLOBAL);
         AZ_TEST_ASSERT(myGlobalUserSettings == storedGlobalSettings);
         AZ_TEST_ASSERT(storedGlobalSettings->m_intOption1 == 10);
 
-        storedLocalSettings = UserSettings::Find<MyUserSettings>(AZ_CRC("MyUserSettings", 0x65286904), UserSettings::CT_LOCAL);
+        storedLocalSettings = UserSettings::Find<MyUserSettings>(AZ_CRC_CE("MyUserSettings"), UserSettings::CT_LOCAL);
         AZ_TEST_ASSERT(storedLocalSettings);
-        myLocalUserSettings = UserSettings::CreateFind<MyUserSettings>(AZ_CRC("MyUserSettings", 0x65286904), UserSettings::CT_LOCAL);
+        myLocalUserSettings = UserSettings::CreateFind<MyUserSettings>(AZ_CRC_CE("MyUserSettings"), UserSettings::CT_LOCAL);
         AZ_TEST_ASSERT(myLocalUserSettings == storedLocalSettings);
         AZ_TEST_ASSERT(storedLocalSettings->m_intOption1 == 20);
 
@@ -1825,7 +1825,7 @@ namespace UnitTest
     TEST_F(Components, RemoveDuplicateServicesOfAndAfterIterator_OnlyOneService_ReturnsFalse)
     {
         AZ::ComponentDescriptor::DependencyArrayType dependencyList;
-        dependencyList.push_back(AZ_CRC("SomeService"));
+        dependencyList.push_back(AZ_CRC_CE("SomeService"));
 
         const ComponentDescriptor::DependencyArrayType::iterator dependencyIter = dependencyList.begin();
         const bool servicesRemoved = EntityUtils::RemoveDuplicateServicesOfAndAfterIterator(dependencyIter, dependencyList, nullptr);
@@ -1836,9 +1836,9 @@ namespace UnitTest
     TEST_F(Components, RemoveDuplicateServicesOfAndAfterIterator_NoDuplicates_ReturnsFalse)
     {
         AZ::ComponentDescriptor::DependencyArrayType dependencyList;
-        dependencyList.push_back(AZ_CRC("SomeService"));
-        dependencyList.push_back(AZ_CRC("AnotherService"));
-        dependencyList.push_back(AZ_CRC("YetAnotherService"));
+        dependencyList.push_back(AZ_CRC_CE("SomeService"));
+        dependencyList.push_back(AZ_CRC_CE("AnotherService"));
+        dependencyList.push_back(AZ_CRC_CE("YetAnotherService"));
 
         for (ComponentDescriptor::DependencyArrayType::iterator dependencyIter = dependencyList.begin();
             dependencyIter != dependencyList.end();
@@ -1849,18 +1849,18 @@ namespace UnitTest
         }
         // Make sure no services were removed.
         EXPECT_EQ(dependencyList.size(), 3);
-        EXPECT_EQ(dependencyList[0], AZ_CRC("SomeService"));
-        EXPECT_EQ(dependencyList[1], AZ_CRC("AnotherService"));
-        EXPECT_EQ(dependencyList[2], AZ_CRC("YetAnotherService"));
+        EXPECT_EQ(dependencyList[0], AZ_CRC_CE("SomeService"));
+        EXPECT_EQ(dependencyList[1], AZ_CRC_CE("AnotherService"));
+        EXPECT_EQ(dependencyList[2], AZ_CRC_CE("YetAnotherService"));
     }
 
     TEST_F(Components, RemoveDuplicateServicesOfAndAfterIterator_DuplicateAfterIterator_ReturnsTrueClearsDuplicates)
     {
         AZ::ComponentDescriptor::DependencyArrayType dependencyList;
-        dependencyList.push_back(AZ_CRC("SomeService"));
-        dependencyList.push_back(AZ_CRC("AnotherService"));
-        dependencyList.push_back(AZ_CRC("YetAnotherService"));
-        dependencyList.push_back(AZ_CRC("SomeService"));
+        dependencyList.push_back(AZ_CRC_CE("SomeService"));
+        dependencyList.push_back(AZ_CRC_CE("AnotherService"));
+        dependencyList.push_back(AZ_CRC_CE("YetAnotherService"));
+        dependencyList.push_back(AZ_CRC_CE("SomeService"));
 
         ComponentDescriptor::DependencyArrayType::iterator dependencyIter = dependencyList.begin();
         EXPECT_TRUE(EntityUtils::RemoveDuplicateServicesOfAndAfterIterator(dependencyIter, dependencyList, nullptr));
@@ -1872,19 +1872,19 @@ namespace UnitTest
         EXPECT_EQ(dependencyIter, dependencyList.end());
         // Make sure the service was removed.
         EXPECT_EQ(dependencyList.size(), 3);
-        EXPECT_EQ(dependencyList[0], AZ_CRC("SomeService"));
-        EXPECT_EQ(dependencyList[1], AZ_CRC("AnotherService"));
-        EXPECT_EQ(dependencyList[2], AZ_CRC("YetAnotherService"));
+        EXPECT_EQ(dependencyList[0], AZ_CRC_CE("SomeService"));
+        EXPECT_EQ(dependencyList[1], AZ_CRC_CE("AnotherService"));
+        EXPECT_EQ(dependencyList[2], AZ_CRC_CE("YetAnotherService"));
     }
 
     TEST_F(Components, RemoveDuplicateServicesOfAndAfterIterator_2DuplicatesAfterIterator_ReturnsTrueClearsDuplicates)
     {
         AZ::ComponentDescriptor::DependencyArrayType dependencyList;
-        dependencyList.push_back(AZ_CRC("SomeService"));
-        dependencyList.push_back(AZ_CRC("AnotherService"));
-        dependencyList.push_back(AZ_CRC("SomeService"));
-        dependencyList.push_back(AZ_CRC("YetAnotherService"));
-        dependencyList.push_back(AZ_CRC("SomeService"));
+        dependencyList.push_back(AZ_CRC_CE("SomeService"));
+        dependencyList.push_back(AZ_CRC_CE("AnotherService"));
+        dependencyList.push_back(AZ_CRC_CE("SomeService"));
+        dependencyList.push_back(AZ_CRC_CE("YetAnotherService"));
+        dependencyList.push_back(AZ_CRC_CE("SomeService"));
 
         ComponentDescriptor::DependencyArrayType::iterator dependencyIter = dependencyList.begin();
         EXPECT_TRUE(EntityUtils::RemoveDuplicateServicesOfAndAfterIterator(dependencyIter, dependencyList, nullptr));
@@ -1896,9 +1896,9 @@ namespace UnitTest
         EXPECT_EQ(dependencyIter, dependencyList.end());
         // Make sure the service was removed.
         EXPECT_EQ(dependencyList.size(), 3);
-        EXPECT_EQ(dependencyList[0], AZ_CRC("SomeService"));
-        EXPECT_EQ(dependencyList[1], AZ_CRC("AnotherService"));
-        EXPECT_EQ(dependencyList[2], AZ_CRC("YetAnotherService"));
+        EXPECT_EQ(dependencyList[0], AZ_CRC_CE("SomeService"));
+        EXPECT_EQ(dependencyList[1], AZ_CRC_CE("AnotherService"));
+        EXPECT_EQ(dependencyList[2], AZ_CRC_CE("YetAnotherService"));
     }
 
     // The duplicate check logic only checks after the current iterator for performance reasons.
@@ -1906,10 +1906,10 @@ namespace UnitTest
     TEST_F(Components, RemoveDuplicateServicesOfAndAfterIterator_DuplicateBeforeIterator_ReturnsFalseDuplicateRemains)
     {
         AZ::ComponentDescriptor::DependencyArrayType dependencyList;
-        dependencyList.push_back(AZ_CRC("SomeService"));
-        dependencyList.push_back(AZ_CRC("AnotherService"));
-        dependencyList.push_back(AZ_CRC("YetAnotherService"));
-        dependencyList.push_back(AZ_CRC("SomeService"));
+        dependencyList.push_back(AZ_CRC_CE("SomeService"));
+        dependencyList.push_back(AZ_CRC_CE("AnotherService"));
+        dependencyList.push_back(AZ_CRC_CE("YetAnotherService"));
+        dependencyList.push_back(AZ_CRC_CE("SomeService"));
 
         ComponentDescriptor::DependencyArrayType::iterator dependencyIter = dependencyList.begin();
         // Skip the first element to leave a duplicate before the iterator.
@@ -1923,20 +1923,20 @@ namespace UnitTest
         EXPECT_EQ(dependencyIter, dependencyList.end());
         // Make sure the service was not removed.
         EXPECT_EQ(dependencyList.size(), 4);
-        EXPECT_EQ(dependencyList[0], AZ_CRC("SomeService"));
-        EXPECT_EQ(dependencyList[1], AZ_CRC("AnotherService"));
-        EXPECT_EQ(dependencyList[2], AZ_CRC("YetAnotherService"));
-        EXPECT_EQ(dependencyList[3], AZ_CRC("SomeService"));
+        EXPECT_EQ(dependencyList[0], AZ_CRC_CE("SomeService"));
+        EXPECT_EQ(dependencyList[1], AZ_CRC_CE("AnotherService"));
+        EXPECT_EQ(dependencyList[2], AZ_CRC_CE("YetAnotherService"));
+        EXPECT_EQ(dependencyList[3], AZ_CRC_CE("SomeService"));
     }
 
     TEST_F(Components, RemoveDuplicateServicesOfAndAfterIterator_DuplicateBeforeAndAfterIterator_ReturnsTrueListUpdated)
     {
         AZ::ComponentDescriptor::DependencyArrayType dependencyList;
-        dependencyList.push_back(AZ_CRC("SomeService"));
-        dependencyList.push_back(AZ_CRC("AnotherService"));
-        dependencyList.push_back(AZ_CRC("SomeService"));
-        dependencyList.push_back(AZ_CRC("YetAnotherService"));
-        dependencyList.push_back(AZ_CRC("SomeService"));
+        dependencyList.push_back(AZ_CRC_CE("SomeService"));
+        dependencyList.push_back(AZ_CRC_CE("AnotherService"));
+        dependencyList.push_back(AZ_CRC_CE("SomeService"));
+        dependencyList.push_back(AZ_CRC_CE("YetAnotherService"));
+        dependencyList.push_back(AZ_CRC_CE("SomeService"));
 
         ComponentDescriptor::DependencyArrayType::iterator dependencyIter = dependencyList.begin();
         // Skip the first element to leave a duplicate before the iterator.
@@ -1950,10 +1950,10 @@ namespace UnitTest
         EXPECT_EQ(dependencyIter, dependencyList.end());
         // Make sure one service was removed, and another not removed.
         EXPECT_EQ(dependencyList.size(), 4);
-        EXPECT_EQ(dependencyList[0], AZ_CRC("SomeService"));
-        EXPECT_EQ(dependencyList[1], AZ_CRC("AnotherService"));
-        EXPECT_EQ(dependencyList[2], AZ_CRC("SomeService"));
-        EXPECT_EQ(dependencyList[3], AZ_CRC("YetAnotherService"));
+        EXPECT_EQ(dependencyList[0], AZ_CRC_CE("SomeService"));
+        EXPECT_EQ(dependencyList[1], AZ_CRC_CE("AnotherService"));
+        EXPECT_EQ(dependencyList[2], AZ_CRC_CE("SomeService"));
+        EXPECT_EQ(dependencyList[3], AZ_CRC_CE("YetAnotherService"));
     }
 
     class ComponentDeclImpl

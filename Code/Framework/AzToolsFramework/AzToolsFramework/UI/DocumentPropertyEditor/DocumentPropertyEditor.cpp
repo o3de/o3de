@@ -1635,6 +1635,13 @@ namespace AzToolsFramework
 
     void DocumentPropertyEditor::HandleDomChange(const AZ::Dom::Patch& patch)
     {
+        if (m_isBeingCleared)
+        {
+            AZ_Assert(false, "DocumentPropertyEditor::HandleDomChange called while being cleared.  check the callstack.  Suppress your signals during cleanup and destruction of widgets!");
+            AZ_TracePrintf("Document Property Editor", "DocumentPropertyEditor::HandleDomChange leaving early");
+            return;
+        }
+
         if (m_rootNode)
         {
             bool needsReset = false;

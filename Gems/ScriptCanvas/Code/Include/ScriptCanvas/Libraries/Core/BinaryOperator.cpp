@@ -210,7 +210,7 @@ namespace ScriptCanvas
         {
             if (rootElement.GetVersion() == 0)
             {
-                int nodeElementIndex = rootElement.FindElement(AZ_CRC("BaseClass1", 0xd4925735));
+                int nodeElementIndex = rootElement.FindElement(AZ_CRC_CE("BaseClass1"));
                 if (nodeElementIndex == -1)
                 {
                     AZ_Error("Script Canvas", false, "Unable to find base class node element for ComparisonExpression class %s", false, rootElement.GetNameString());
@@ -320,14 +320,14 @@ namespace ScriptCanvas
 
                 if (secondSlot->GetDynamicGroup() == AZ::Crc32())
                 {
-                    SetDynamicGroup(secondSlot->GetId(), AZ_CRC("ExpressionGroup", 0xd34c978c));                    
+                    SetDynamicGroup(secondSlot->GetId(), AZ_CRC_CE("ExpressionGroup"));
                     addedGroup = true;
                 }
             }
 
             if (addedGroup && m_displayType.IsValid())
             {                
-                SetDisplayType(AZ_CRC("ExpressionGroup", 0xd34c978c), m_displayType);
+                SetDisplayType(AZ_CRC_CE("ExpressionGroup"), m_displayType);
             }
             ////
             ////

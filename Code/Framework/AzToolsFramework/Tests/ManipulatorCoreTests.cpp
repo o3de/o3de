@@ -155,8 +155,9 @@ namespace UnitTest
             m_editorEntityComponentChangeDetector->m_componentIds,
             UnorderedElementsAre(m_transformComponentId, m_lockComponentId, m_visibiltyComponentId));
 
-        EXPECT_TRUE(m_editorEntityComponentChangeDetector->PropertyDisplayInvalidated());
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // note that manipulators talk to property editor components directly via the above call, which causes
+        // an automatic invalidation of the property editor UI for that entity/component pair in all windows where
+        // it is present.  It is not necessary to broadcast a message to invalidate anything else.
     }
 
     using ManipulatorCoreInteractionFixture = DirectCallManipulatorViewportInteractionFixtureMixin<ManipulatorCoreFixture>;

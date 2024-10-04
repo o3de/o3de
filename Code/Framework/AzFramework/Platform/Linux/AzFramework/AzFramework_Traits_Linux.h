@@ -20,3 +20,7 @@
 // the whole OS gets stuck with an invisible mouse
 // cursor when debugging Lua code.
 #define AZ_TRAIT_AZFRAMEWORK_SHOW_MOUSE_ON_LUA_BREAKPOINT 1
+
+// Enable the cvar 'ed_disable_capture_mouse_for_camera_rotation' to optionally disable mouse captures for 
+// mouse free-looks in the Editor
+#define AZ_TRAIT_AZFRAMEWORK_ENABLE_DISABLE_MOUSE_CAPTURE_FOR_CAMERA_CVAR_OPTION 1

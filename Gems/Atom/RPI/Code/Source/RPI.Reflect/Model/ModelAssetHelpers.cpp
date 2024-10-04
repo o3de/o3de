@@ -101,7 +101,7 @@ namespace AZ
 
             // Set up a single-mesh asset with only position data.
             creator.BeginMesh();
-            creator.SetMeshAabb(AZStd::move(aabb));
+            creator.SetMeshAabb(aabb);
             creator.SetMeshMaterialSlot(0);
             creator.SetMeshIndexBuffer({ CreateBufferAsset(indices.data(), indexElementCount, IndexElementSize),
                                          AZ::RHI::BufferViewDescriptor::CreateTyped(0, indexElementCount, AZ::RHI::Format::R32_UINT) });

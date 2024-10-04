@@ -10,7 +10,6 @@
 
 #include <IEditor.h>
 #include <Include/IPlugin.h>
-#include <Include/IEditorClassFactory.h>
 #include "ComponentEntityEditorPlugin.h"
 
 #if AZ_TRAIT_OS_PLATFORM_APPLE || defined(AZ_PLATFORM_LINUX)

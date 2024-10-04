@@ -77,9 +77,9 @@ namespace ExpressionEvaluation
     // Class to get the various symbol sets that can be added to the parsing steps.
     namespace Interfaces
     {
-        static const ExpressionParserId NumericPrimitives = AZ_CRC("ExpressionEngine::NumericPrimitive", 0x750f46ec);
-        static const ExpressionParserId BooleanPrimitives = AZ_CRC("ExpressionEngine::BooleanPrimitive", 0xa006d7be);
+        static const ExpressionParserId NumericPrimitives = AZ_CRC_CE("ExpressionEngine::NumericPrimitive");
+        static const ExpressionParserId BooleanPrimitives = AZ_CRC_CE("ExpressionEngine::BooleanPrimitive");
 
-        static const ExpressionParserId MathOperators = AZ_CRC("ExpressionEngine::BasicMath", 0xd0957da8);
+        static const ExpressionParserId MathOperators = AZ_CRC_CE("ExpressionEngine::BasicMath");
     }
 }

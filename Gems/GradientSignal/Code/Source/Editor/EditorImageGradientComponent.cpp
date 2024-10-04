@@ -269,18 +269,10 @@ namespace GradientSignal
 
         m_configuration.SetImageAssetPropertyName(assetLabel);
 
-        if (m_configuration.GetImageAssetPropertyName() != previousImageAssetPropertyName)
-        {
-            // If the asset status changed and the image asset property is visible, refresh the entire tree so
-            // that the label change is picked up.
-            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
-        }
-        else
-        {
-            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
-        }
+        bool imageNameChanged = m_configuration.GetImageAssetPropertyName() != previousImageAssetPropertyName;
+
+         InvalidatePropertyDisplay(imageNameChanged ? AzToolsFramework::Refresh_EntireTree : AzToolsFramework::Refresh_AttributesAndValues);
+
     }
 
     AZ::u32 EditorImageGradientComponent::ConfigurationChanged()
@@ -316,6 +308,8 @@ namespace GradientSignal
 
     bool EditorImageGradientComponent::GetImageOptionsReadOnly() const
     {
+        // you cannot change any configuration option if the image is modified in memory but not saved.
+        // note that this will apply to all child options, too.
         return (m_component.ModificationBufferIsActive());
     }
 
@@ -329,8 +323,7 @@ namespace GradientSignal
 
         // While we're editing, we need to set all the configuration properties to read-only and refresh them.
         // Otherwise, the property changes could conflict with the current painted modifications.
-        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+        InvalidatePropertyDisplay(AzToolsFramework::Refresh_AttributesAndValues);
 
     }
 
@@ -342,16 +335,19 @@ namespace GradientSignal
 
         m_configuration.m_numImageModificationsActive--;
 
-        // We're done editing, so set all the configuration properties back to writeable and refresh them.
-        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
-
         // It's possible that we're leaving component mode as the result of an "undo" action.
         // If that's the case, don't prompt the user to save the changes.
         if (!AzToolsFramework::UndoRedoOperationInProgress() && m_component.ImageIsModified())
         {
-            SavePaintedData();
+            SavePaintedData(); // this function may execute a modal call.  Delay property invalidation until afterwards.
         }
+        else
+        {
+             m_component.ClearImageModificationBuffer(); // unless we do this, all properties stay read-only
+        }
+
+        // We're done editing, so set all the configuration properties back to writeable and refresh them.
+        InvalidatePropertyDisplay(AzToolsFramework::Refresh_AttributesAndValues);
     }
 
     void EditorImageGradientComponent::OnBrushStrokeBegin(const AZ::Color& color)
@@ -424,6 +420,7 @@ namespace GradientSignal
         {
             // Set the active image to the created one.
             m_component.SetImageAsset(createdAsset.value());
+            m_component.ClearImageModificationBuffer(); // we no longer have modified changes that are unsaved.
 
             OnCompositionChanged();
         }

@@ -208,7 +208,7 @@ namespace EMotionFX
             [title, description]
             {
                 AzToolsFramework::ToastRequestBus::Event(
-                    AZ_CRC("SkeletonOutliner"),
+                    AZ_CRC_CE("SkeletonOutliner"),
                     &AzToolsFramework::ToastRequestBus::Events::ShowToastNotification,
                     AzQtComponents::ToastConfiguration{
                         AzQtComponents::ToastType::Error,

@@ -10,7 +10,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/DeviceDrawItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 
 #include <Atom/RPI.Public/Pass/RenderPass.h>
@@ -46,6 +46,7 @@ namespace AZ
 
             //! Updates the shader options used in this pass
             void UpdateShaderOptions(const ShaderOptionList& shaderOptions);
+            void UpdateShaderOptions(const ShaderVariantId& shaderVariantId);
 
         protected:
             FullscreenTrianglePass(const PassDescriptor& descriptor);
@@ -64,6 +65,9 @@ namespace AZ
             void OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset) override;
             void OnShaderVariantReinitialized(const ShaderVariant& shaderVariant) override;
 
+            // Common code when updating the shader variant with new options
+            void UpdateShaderOptionsCommon();
+
             RHI::Viewport m_viewportState;
             RHI::Scissor m_scissorState;
 
@@ -75,6 +79,9 @@ namespace AZ
 
             // The draw item submitted by this pass
             RHI::DrawItem m_item;
+
+            // Holds the geometry info for the draw call
+            RHI::GeometryView m_geometryView;
 
             // The stencil reference value for the draw item
             uint32_t m_stencilRef;

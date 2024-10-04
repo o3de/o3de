@@ -137,7 +137,7 @@ namespace AZ
             {
                 auto uuid = AzTypeInfo<ValueType>::Uuid();
 
-                classElement.m_attributes.emplace_back(AZ_CRC("EnumType", 0xb177e1b5), CreateModuleAttribute(AZStd::move(uuid)));
+                classElement.m_attributes.emplace_back(AZ_CRC_CE("EnumType"), CreateModuleAttribute(AZStd::move(uuid)));
             }
         }
 
@@ -756,7 +756,7 @@ namespace AZ
                 // Register our key type within an lvalue to rvalue wrapper as an attribute
                 AZ::TypeId uuid = azrtti_typeid<WrappedKeyType>();
 
-                m_classElement.m_attributes.emplace_back(AZ_CRC("KeyType", 0x15bc5303), CreateModuleAttribute(AZStd::move(uuid)));
+                m_classElement.m_attributes.emplace_back(AZ_CRC_CE("KeyType"), CreateModuleAttribute(AZStd::move(uuid)));
             }
 
             // Reflect our wrapped key and value types to serializeContext so that may later be used
@@ -1056,12 +1056,12 @@ namespace AZ
             {
                 // FIXME: We should properly fill in all the other fields as well.
                 m_value1ClassElement.m_name = "value1";
-                m_value1ClassElement.m_nameCrc = AZ_CRC("value1", 0xa2756c5a);
+                m_value1ClassElement.m_nameCrc = AZ_CRC_CE("value1");
                 m_value1ClassElement.m_offset = 0;
                 SetupClassElementFromType<T1>(m_value1ClassElement);
 
                 m_value2ClassElement.m_name = "value2";
-                m_value2ClassElement.m_nameCrc = AZ_CRC("value2", 0x3b7c3de0);
+                m_value2ClassElement.m_nameCrc = AZ_CRC_CE("value2");
                 m_value2ClassElement.m_offset = sizeof(T1);
                 SetupClassElementFromType<T2>(m_value2ClassElement);
             }
@@ -1539,7 +1539,7 @@ namespace AZ
             AZRValueContainer()
             {
                 m_valueClassElement.m_name = "value";
-                m_valueClassElement.m_nameCrc = AZ_CRC("value", 0x1d775834);
+                m_valueClassElement.m_nameCrc = AZ_CRC_CE("value");
                 m_valueClassElement.m_offset = 0;
                 SetupClassElementFromType<T>(m_valueClassElement);
             }

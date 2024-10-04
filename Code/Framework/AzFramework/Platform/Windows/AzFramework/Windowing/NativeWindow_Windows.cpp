@@ -16,6 +16,8 @@
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/string/conversions.h>
 
+#include <dbt.h>
+
 namespace AzFramework
 {
     const wchar_t* NativeWindowImpl_Win32::s_defaultClassName = L"O3DEWin32Class";
@@ -66,9 +68,10 @@ namespace AzFramework
         }
     }
 
-    void NativeWindowImpl_Win32::InitWindow(const AZStd::string& title,
-                                            const WindowGeometry& geometry,
-                                            const WindowStyleMasks& styleMasks)
+    void NativeWindowImpl_Win32::InitWindowInternal(
+        const AZStd::string& title,
+        const WindowGeometry& geometry,
+        const WindowStyleMasks& styleMasks)
     {
         const HINSTANCE hInstance = GetModuleHandle(0);
 
@@ -385,6 +388,12 @@ namespace AzFramework
             shouldBubbleEventUp = true;
             break;
         }
+        case WM_DEVICECHANGE:
+            if (wParam == DBT_DEVNODES_CHANGED)
+            {
+                // If any device changes were detected, broadcast to the input device notification
+                AzFramework::RawInputNotificationBusWindows::Broadcast(&AzFramework::RawInputNotificationsWindows::OnRawInputDeviceChangeEvent);
+            }
         default:
             shouldBubbleEventUp = true;
             break;
@@ -409,10 +418,6 @@ namespace AzFramework
             if (m_activated)
             {
                 WindowNotificationBus::Event(m_win32Handle, &WindowNotificationBus::Events::OnWindowResized, width, height);
-                if (!m_enableCustomizedResolution)
-                {
-                    WindowNotificationBus::Event(m_win32Handle, &WindowNotificationBus::Events::OnResolutionChanged, width, height);
-                }
             }
         }
     }

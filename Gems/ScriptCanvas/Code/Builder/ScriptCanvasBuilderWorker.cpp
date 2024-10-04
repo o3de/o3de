@@ -54,7 +54,7 @@ namespace ScriptCanvasBuilder
         // By default, entity IDs are made unique, so that multiple instances of the script canvas file can be loaded at the same time.
         // However, in this case the file is not loaded multiple times at once, and the entity IDs need to be stable so that
         // the logic used to generate the fingerprint for this file remains stable.
-        auto result = LoadFromFile(fullPath, MakeInternalGraphEntitiesUnique::No, LoadReferencedAssets::No);
+        const auto result = LoadFromFile(fullPath, MakeInternalGraphEntitiesUnique::No, LoadReferencedAssets::No);
         if (result)
         {
             sourceHandle = result.m_handle;
@@ -255,7 +255,7 @@ namespace ScriptCanvasBuilder
             return;
         }
 
-        auto result = LoadFromFile(request.m_fullPath);
+        const auto result = LoadFromFile(request.m_fullPath, MakeInternalGraphEntitiesUnique::No);
         if (!result)
         {
             AZ_Error(s_scriptCanvasBuilder, false, R"(Loading of ScriptCanvas asset for source file "%s" has failed)", fullPath.data());

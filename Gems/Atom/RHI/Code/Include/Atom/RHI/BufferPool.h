@@ -8,99 +8,79 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/BufferPoolDescriptor.h>
+#include <Atom/RHI/DeviceBufferPool.h>
+#include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/BufferPoolBase.h>
 
 namespace AZ::RHI
 {
     class Fence;
 
-    //! A structure used as an argument to BufferPool::InitBuffer.
-    template <typename BufferClass>
-    struct BufferInitRequestTemplate
-    {
-        BufferInitRequestTemplate() = default;
-
-        BufferInitRequestTemplate(
-            BufferClass& buffer,
-            const BufferDescriptor& descriptor,
-            const void* initialData = nullptr)
-            : m_buffer{&buffer}
-            , m_descriptor{descriptor}
-            , m_initialData{initialData}
-            {}
-
-        /// The buffer to initialize. The buffer must be in an uninitialized state.
-        BufferClass* m_buffer = nullptr;
-
-        /// The descriptor used to initialize the buffer.
-        BufferDescriptor m_descriptor;
-
-        /// [Optional] Initial data used to initialize the buffer.
-        const void* m_initialData = nullptr;
-    };
-
-    //! A structure used as an argument to BufferPool::MapBuffer.
-    template <typename BufferClass>
-    struct BufferMapRequestTemplate
-    {
-        BufferMapRequestTemplate() = default;
-
-        BufferMapRequestTemplate(BufferClass& buffer, size_t byteOffset, size_t byteCount)
-            : m_buffer{&buffer}
-            , m_byteOffset{byteOffset}
-            , m_byteCount{byteCount}
-            {}
-
-        /// The buffer instance to map for CPU access.
-        BufferClass* m_buffer = nullptr;
-
-        /// The number of bytes offset from the base of the buffer to map for access.
-        size_t m_byteOffset = 0;
-
-        /// The number of bytes beginning from the offset to map for access.
-        size_t m_byteCount = 0;
-    };
-
     //! A structure used as an argument to BufferPool::MapBuffer.
     struct BufferMapResponse
     {
-        void* m_data = nullptr;
+        //! Will hold the mapped data for each device selected in the Buffer
+        AZStd::unordered_map<int, void*> m_data;
     };
 
-    //! A structure used as an argument to BufferPool::StreamBuffer.
-    template <typename BufferClass, typename FenceClass>
-    struct BufferStreamRequestTemplate
+    //! A structure used as an argument to BufferPool::UpdateBufferDeviceMask.
+    struct BufferDeviceMaskRequest
     {
-        /// A fence to signal on completion of the upload operation.
-        FenceClass* m_fenceToSignal = nullptr;
+        BufferDeviceMaskRequest() = default;
 
-        /// The buffer instance to stream up to.
-        BufferClass* m_buffer = nullptr;
+        BufferDeviceMaskRequest(
+            Buffer& buffer, MultiDevice::DeviceMask deviceMask = MultiDevice::AllDevices, const void* initialData = nullptr)
+            : m_buffer{ &buffer }
+            , m_deviceMask{ deviceMask }
+            , m_initialData{ initialData }
+        {
+        }
 
-        /// The number of bytes offset from the base of the buffer to start the upload.
-        size_t m_byteOffset = 0;
+        /// The buffer to update the device mask of and (de)allocate device buffers.
+        Buffer* m_buffer = nullptr;
 
-        /// The number of bytes to upload beginning from m_byteOffset.
-        size_t m_byteCount = 0;
+        /// The new device mask used for the buffer.
+        /// Note: Only devices in the mask of the buffer pool will be considered.
+        MultiDevice::DeviceMask m_deviceMask = MultiDevice::AllDevices;
 
-        /// A pointer to the source data to upload. The source data must remain valid
-        /// for the duration of the upload operation (i.e. until m_callbackFunction
-        /// is invoked).
-        const void* m_sourceData = nullptr;
+        /// [Optional] Initial data used to initialize new device buffers with.
+        const void* m_initialData = nullptr;
     };
 
-    using BufferInitRequest = BufferInitRequestTemplate<Buffer>;
+    //! A structure used as an argument to BufferPool::InitBuffer.
+    struct BufferInitRequest : public BufferDeviceMaskRequest
+    {
+        BufferInitRequest() = default;
+
+        BufferInitRequest(
+            Buffer& buffer,
+            const BufferDescriptor& descriptor,
+            const void* initialData = nullptr,
+            MultiDevice::DeviceMask deviceMask = MultiDevice::AllDevices)
+            : BufferDeviceMaskRequest{ buffer, deviceMask, initialData }
+            , m_descriptor{ descriptor }
+        {
+        }
+
+        /// The descriptor used to initialize the buffer.
+        BufferDescriptor m_descriptor;
+    };
+
     using BufferMapRequest = BufferMapRequestTemplate<Buffer>;
     using BufferStreamRequest = BufferStreamRequestTemplate<Buffer, Fence>;
 
     //! Buffer pool provides backing storage and context for buffer instances. The BufferPoolDescriptor
     //! contains properties defining memory characteristics of buffer pools. All buffers created on a pool
     //! share the same backing heap and buffer bind flags.
-    class BufferPool
-        : public BufferPoolBase
+    class BufferPool : public BufferPoolBase
     {
+        friend class RayTracingBufferPools;
+
     public:
-        AZ_RTTI(BufferPool, "{6C7A657E-3940-465D-BC15-569741D9BBDF}", BufferPoolBase)
+        AZ_CLASS_ALLOCATOR(BufferPool, AZ::SystemAllocator, 0);
+        AZ_RTTI(BufferPool, "{547F1577-0AA3-4F0D-9656-8905DE5E9E8A}", BufferPoolBase)
+        AZ_RHI_MULTI_DEVICE_OBJECT_GETTER(BufferPool);
+        BufferPool() = default;
         virtual ~BufferPool() override = default;
 
         //! Initializes the buffer pool with a provided descriptor. The pool must be in an uninitialized
@@ -110,8 +90,7 @@ namespace AZ::RHI
         //!  @param descriptor The descriptor containing properties used to initialize the pool.
         //!  @return A result code denoting the status of the call. If successful, the pool is considered
         //!      initialized and is able to service buffer requests. If failure, the pool remains uninitialized.
-        ResultCode Init(Device& device, const BufferPoolDescriptor& descriptor);
-
+        ResultCode Init(const BufferPoolDescriptor& descriptor);
 
         //! Initializes a buffer instance created from this pool. The buffer must be in an uninitialized
         //! state, or the call will fail. To re-use an existing buffer instance, first call Shutdown
@@ -124,6 +103,17 @@ namespace AZ::RHI
         //!      initialized, but will remain empty and the call will return ResultCode::OutOfMemory. Checking
         //!      this amounts to seeing if buffer.IsInitialized() is true.
         ResultCode InitBuffer(const BufferInitRequest& request);
+
+        //! Updates the device mask of a buffer instance created from this pool. The buffer must be in an
+        //! initialized state, or the call will fail, i.e., first call InitBuffer on the pool.
+        //!
+        //!  @param request The request used to update a buffer instance's device mask and device buffer
+        //!      allocations.
+        //!  @return A result code denoting the status of the call. If successful, the buffer device mask is
+        //!      considered updated. If the pool fails to secure an allocation for the device buffers, it's
+        //!      device mask may only partially change. If the initial data upload fails, the buffer will be
+        //!      initialized, but will remain empty and the call will return ResultCode::OutOfMemory.
+        ResultCode UpdateBufferDeviceMask(const BufferDeviceMaskRequest& request);
 
         //! NOTE: Only applicable to 'Host' pools. Device pools will fail with ResultCode::InvalidOperation.
         //!
@@ -173,51 +163,22 @@ namespace AZ::RHI
         //! are undefined for uninitialized pools.
         const BufferPoolDescriptor& GetDescriptor() const override final;
 
-    protected:
-        BufferPool() = default;
-
-        ///////////////////////////////////////////////////////////////////
-        // FrameEventBus::Handler
-        void OnFrameBegin() override;
-        ///////////////////////////////////////////////////////////////////
-
-        bool ValidateNotProcessingFrame() const;
+        //! Shuts down the pool. This method will shutdown all resources associated with the pool.
+        void Shutdown() override final;
 
     private:
-        using ResourcePool::Init;
         using BufferPoolBase::InitBuffer;
+        using ResourcePool::Init;
+
+        //! Validates that the map operation succeeded by printing a warning otherwise. Increments
+        //! the map reference counts for the buffer and the pool.
+        void ValidateBufferMap(Buffer& buffer, bool isDataValid);
 
         bool ValidatePoolDescriptor(const BufferPoolDescriptor& descriptor) const;
         bool ValidateInitRequest(const BufferInitRequest& initRequest) const;
         bool ValidateIsHostHeap() const;
         bool ValidateMapRequest(const BufferMapRequest& request) const;
 
-        //////////////////////////////////////////////////////////////////////////
-        // Platform API
-
-        /// Called when the pool is being initialized.
-        virtual ResultCode InitInternal(Device& device, const RHI::BufferPoolDescriptor& descriptor) = 0;
-
-        /// Called when a buffer is being initialized onto the pool.
-        virtual ResultCode InitBufferInternal(Buffer& buffer, const BufferDescriptor& descriptor) = 0;
-
-        /// Called when the buffer is being orphaned.
-        virtual ResultCode OrphanBufferInternal(Buffer& buffer) = 0;
-
-        /// Called when a buffer is being mapped.
-        virtual ResultCode MapBufferInternal(const BufferMapRequest& request, BufferMapResponse& response) = 0;
-
-        /// Called when a buffer is being unmapped.
-        virtual void UnmapBufferInternal(Buffer& buffer) = 0;
-
-        /// Called when a buffer is being streamed asynchronously.
-        virtual ResultCode StreamBufferInternal(const BufferStreamRequest& request);
-
-        //Called in order to do a simple mem copy allowing Null rhi to opt out
-        virtual void BufferCopy(void* destination, const void* source, size_t num);
-
-        //////////////////////////////////////////////////////////////////////////
-
         BufferPoolDescriptor m_descriptor;
     };
-}
+} // namespace AZ::RHI

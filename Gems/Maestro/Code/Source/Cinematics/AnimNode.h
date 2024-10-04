@@ -75,9 +75,9 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // Space position/orientation scale.
     //////////////////////////////////////////////////////////////////////////
-    void SetPos([[maybe_unused]] float time, [[maybe_unused]] const Vec3& pos) override {};
-    void SetRotate([[maybe_unused]] float time, [[maybe_unused]] const Quat& quat) override {};
-    void SetScale([[maybe_unused]] float time, [[maybe_unused]] const Vec3& scale) override {};
+    void SetPos([[maybe_unused]] float time, [[maybe_unused]] const AZ::Vector3& pos) override {};
+    void SetRotate([[maybe_unused]] float time, [[maybe_unused]] const AZ::Quaternion& quat) override {};
+    void SetScale([[maybe_unused]] float time, [[maybe_unused]] const AZ::Vector3& scale) override {};
 
     Vec3 GetPos() override { return Vec3(0, 0, 0); };
     Quat GetRotate() override { return Quat(0, 0, 0, 0); };

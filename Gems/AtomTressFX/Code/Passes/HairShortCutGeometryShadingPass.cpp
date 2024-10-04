@@ -62,8 +62,12 @@ namespace AZ
                 shaderOption.SetValue(o_enableMarschner_TT, AZ::RPI::ShaderOptionValue{ m_hairGlobalSettings.m_enableMarschner_TT });
                 shaderOption.SetValue(o_enableLongtitudeCoeff, AZ::RPI::ShaderOptionValue{ m_hairGlobalSettings.m_enableLongtitudeCoeff });
                 shaderOption.SetValue(o_enableAzimuthCoeff, AZ::RPI::ShaderOptionValue{ m_hairGlobalSettings.m_enableAzimuthCoeff });
-
-                m_shaderOptions = shaderOption.GetShaderVariantKeyFallbackValue();
+                shaderOption.SetUnspecifiedToDefaultValues();
+                if (shaderOption.GetShaderVariantId() != m_currentShaderVariantId)
+                {
+                    UpdateShaderOptions(shaderOption.GetShaderVariantId());
+                    m_featureProcessor->ForceRebuildRenderData();
+                }
             }
 
             void HairShortCutGeometryShadingPass::CompileResources(const RHI::FrameGraphCompileContext& context)
@@ -76,11 +80,6 @@ namespace AZ
 
                 UpdateGlobalShaderOptions();
 
-                if (m_shaderResourceGroup->HasShaderVariantKeyFallbackEntry())
-                {
-                    m_shaderResourceGroup->SetShaderVariantKeyFallbackValue(m_shaderOptions);
-                }
-
                 // Update the material array constant buffer within the per pass srg
                 SrgBufferDescriptor descriptor = SrgBufferDescriptor(
                     RPI::CommonBufferPoolType::Constant, RHI::Format::Unknown,
@@ -91,18 +90,22 @@ namespace AZ
                 m_featureProcessor->GetMaterialsArray().UpdateGPUData(m_shaderResourceGroup, descriptor);
 
                 // Compilation of remaining srgs will be done by the parent class 
-                RPI::RasterPass::CompileResources(context);
+                HairGeometryRasterPass::CompileResources(context);
             }
 
             void HairShortCutGeometryShadingPass::BuildInternal()
             {
-                RasterPass::BuildInternal();    // change this to call parent if the method exists
+                HairGeometryRasterPass::BuildInternal(); // change this to call parent if the method exists
 
                 if (!AcquireFeatureProcessor())
                 {
                     return;
                 }
+            }
 
+            void HairShortCutGeometryShadingPass::InitializeInternal()
+            {
+                HairGeometryRasterPass::InitializeInternal();
                 LoadShaderAndPipelineState();
             }
 

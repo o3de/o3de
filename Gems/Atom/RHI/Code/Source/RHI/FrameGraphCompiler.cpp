@@ -23,18 +23,9 @@
 
 namespace AZ::RHI
 {
-    ResultCode FrameGraphCompiler::Init(Device& device)
+    ResultCode FrameGraphCompiler::Init()
     {
-        if (Validation::IsEnabled())
-        {
-            if (IsInitialized())
-            {
-                AZ_Error("FrameGraphCompiler", false, "FrameGraphCompiler already initialized. Shutdown must be called first.");
-                return ResultCode::InvalidArgument;
-            }
-        }
-
-        const ResultCode resultCode = InitInternal(device);
+        const ResultCode resultCode = InitInternal();
 
         if (resultCode == ResultCode::Success)
         {
@@ -44,9 +35,6 @@ namespace AZ::RHI
 
             const uint32_t ImageViewCapacity = 128;
             m_imageViewCache.SetCapacity(ImageViewCapacity);
-
-
-            DeviceObject::Init(device);
         }
 
         return resultCode;
@@ -54,16 +42,12 @@ namespace AZ::RHI
 
     void FrameGraphCompiler::Shutdown()
     {
-        if (IsInitialized())
-        {
-            m_imageViewCache.Clear();
-            m_bufferViewCache.Clear();
-            m_imageReverseLookupHash.clear();
-            m_bufferReverseLookupHash.clear();
-               
-            ShutdownInternal();
-            DeviceObject::Shutdown();
-        }
+        m_imageViewCache.Clear();
+        m_bufferViewCache.Clear();
+        m_imageReverseLookupHash.clear();
+        m_bufferReverseLookupHash.clear();
+
+        ShutdownInternal();
     }
 
     MessageOutcome FrameGraphCompiler::ValidateCompileRequest(const FrameGraphCompileRequest& request) const
@@ -84,7 +68,7 @@ namespace AZ::RHI
             const bool hasTransientAttachments = attachmentDatabase.GetTransientBufferAttachments().size() || attachmentDatabase.GetTransientImageAttachments().size();
             if (request.m_transientAttachmentPool == nullptr && hasTransientAttachments)
             {
-                return AZ::Failure(AZStd::string("TransientAttachmentPool is null, but transient attachments are in the graph. Skipping compilation..."));
+                return AZ::Failure(AZStd::string("DeviceTransientAttachmentPool is null, but transient attachments are in the graph. Skipping compilation..."));
             }
         }
 
@@ -146,7 +130,7 @@ namespace AZ::RHI
 
             for (Scope* scope : frameGraph.GetScopes())
             {
-                scope->Compile(GetDevice());
+                scope->Compile();
             }
         }
 
@@ -178,7 +162,10 @@ namespace AZ::RHI
                 const uint32_t hardwareQueueClassIdx = static_cast<uint32_t>(consumer->GetHardwareQueueClass());
                 if (producer[hardwareQueueClassIdx])
                 {
-                    Scope::LinkProducerConsumerByQueues(producer[hardwareQueueClassIdx], consumer);
+                    if (producer[hardwareQueueClassIdx]->GetDeviceIndex() == consumer->GetDeviceIndex())
+                    {
+                        Scope::LinkProducerConsumerByQueues(producer[hardwareQueueClassIdx], consumer);
+                    }
                 }
                 producer[hardwareQueueClassIdx] = consumer;
             }
@@ -227,7 +214,10 @@ namespace AZ::RHI
 
                     if (foundEarlierConsumerOnSameQueue == false)
                     {
-                        Scope::LinkProducerConsumerByQueues(producerScopeLast, currentScope);
+                        if (producerScopeLast->GetDeviceIndex() == currentScope->GetDeviceIndex())
+                        {
+                            Scope::LinkProducerConsumerByQueues(producerScopeLast, currentScope);
+                        }
                     }
                 }
             }
@@ -283,30 +273,35 @@ namespace AZ::RHI
         const FrameGraphAttachmentDatabase& attachmentDatabase = frameGraph.GetAttachmentDatabase();
         for (FrameAttachment* transientImage : attachmentDatabase.GetTransientImageAttachments())
         {
-            Scope* firstScope = transientImage->GetFirstScope();
-            if (firstScope == nullptr)
+            for (int deviceIndex{ 0 }; deviceIndex < RHISystemInterface::Get()->GetDeviceCount(); ++deviceIndex)
             {
-                // If the attachment is owned by a pass that isn't a scope-producer (e.g. Parent-Pass), and is not connected to
-                // anything, the first and last scope will be empty. We will get a warning its unused in ValidateEnd(), but we don't want to
-                // crash here
-                continue;
-            }
-            const HardwareQueueClass mostCapableQueueUsage = GetMostCapableHardwareQueue(transientImage->GetSupportedQueueMask());
-
-            if (firstScope->GetHardwareQueueClass() != mostCapableQueueUsage)
-            {
-                if (Scope* foundScope = firstScope->FindCapableCrossQueueProducer(mostCapableQueueUsage))
+                Scope* firstScope = transientImage->GetFirstScope(deviceIndex);
+                if (firstScope == nullptr)
                 {
-                    transientImage->m_firstScope = foundScope;
+                    // If the attachment is owned by a pass that isn't a scope-producer (e.g. Parent-Pass), and is not connected to
+                    // anything, the first and last scope will be empty. We will get a warning its unused in ValidateEnd(), but we don't
+                    // want to crash here
                     continue;
                 }
+                const HardwareQueueClass mostCapableQueueUsage = GetMostCapableHardwareQueue(transientImage->GetSupportedQueueMask());
 
-                AZ_Warning("FrameGraphCompiler", false,
-                    "Could not find a %s queue producer scope to begin aliasing attachment '%s'. This can be remedied by "
-                    "having a %s scope earlier in the frame (or as the root of the frame graph).",
-                    GetHardwareQueueClassName(mostCapableQueueUsage),
-                    transientImage->GetId().GetCStr(),
-                    GetHardwareQueueClassName(mostCapableQueueUsage));
+                if (firstScope->GetHardwareQueueClass() != mostCapableQueueUsage)
+                {
+                    if (Scope* foundScope = firstScope->FindCapableCrossQueueProducer(mostCapableQueueUsage))
+                    {
+                        transientImage->m_scopeInfos[deviceIndex].m_firstScope = foundScope;
+                        continue;
+                    }
+
+                    AZ_Warning(
+                        "FrameGraphCompiler",
+                        false,
+                        "Could not find a %s queue producer scope to begin aliasing attachment '%s'. This can be remedied by "
+                        "having a %s scope earlier in the frame (or as the root of the frame graph).",
+                        GetHardwareQueueClassName(mostCapableQueueUsage),
+                        transientImage->GetId().GetCStr(),
+                        GetHardwareQueueClassName(mostCapableQueueUsage));
+                }
             }
         }
 
@@ -435,17 +430,108 @@ namespace AZ::RHI
                         // the beginning and end of the async interval.
                         if (!isAliasingAllowed)
                         {
-                            if (frameAttachment.m_firstScope->GetIndex() > interval.m_indexFirst)
+                            auto& scopeInfo{ frameAttachment.m_scopeInfos[scope->GetDeviceIndex()] };
+
+                            if (scopeInfo.m_firstScope->GetIndex() > interval.m_indexFirst)
                             {
-                                frameAttachment.m_firstScope = scopes[interval.m_indexFirst];
+                                scopeInfo.m_firstScope = scopes[interval.m_indexFirst];
                             }
 
-                            if (frameAttachment.m_lastScope->GetIndex() < interval.m_indexLast)
+                            if (scopeInfo.m_lastScope->GetIndex() < interval.m_indexLast)
                             {
-                                frameAttachment.m_lastScope = scopes[interval.m_indexLast];
+                                scopeInfo.m_lastScope = scopes[interval.m_indexLast];
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+
+    void FrameGraphCompiler::ExtendTransientAttachmentGroupLifetimes(FrameGraph& frameGraph, FrameSchedulerCompileFlags compileFlags)
+    {
+        /// No need to do this if intra group aliasing is allowed
+        if (CheckBitsAny(compileFlags, FrameSchedulerCompileFlags::IntraGroupAliasing))
+        {
+            return;
+        }
+
+        // Extend the lifetime of a transient attachment to the end of the graph group so we don't have aliasing of the same
+        // memory in the same group. Some APIs don't allow synchronization of aliased resource between scopes in the group.
+        const FrameGraphAttachmentDatabase& attachmentDatabase = frameGraph.GetAttachmentDatabase();
+        const auto& scopes = frameGraph.GetScopes();
+        ExtendTransientAttachmentGroupLifetimesHelper(scopes, attachmentDatabase.GetTransientBufferAttachments());
+        ExtendTransientAttachmentGroupLifetimesHelper(scopes, attachmentDatabase.GetTransientImageAttachments());
+    }
+
+    template<class T>
+    void FrameGraphCompiler::ExtendTransientAttachmentGroupLifetimesHelper(
+        const AZStd::vector<Scope*>& scopes, const AZStd::vector<T*>& frameAttachments)
+    {
+        for (T* transientResource : frameAttachments)
+        {
+            for (int deviceIndex{ 0 }; deviceIndex < RHISystemInterface::Get()->GetDeviceCount(); ++deviceIndex)
+            {
+                Scope* lastScope = transientResource->GetLastScope(deviceIndex);
+                if (!lastScope)
+                {
+                    continue;
+                }
+
+                for (uint32_t scopeIndex = lastScope->GetIndex() + 1;
+                     scopeIndex < scopes.size() && lastScope->GetFrameGraphGroupId() == scopes[scopeIndex]->GetFrameGraphGroupId();
+                     ++scopeIndex)
+                {
+                    lastScope = scopes[scopeIndex];
+                }
+                transientResource->m_scopeInfos[deviceIndex].m_lastScope = lastScope;
+            }
+        }
+    }
+
+    void FrameGraphCompiler::OptimizeTransientLoadStoreActions(FrameGraph& frameGraph, FrameSchedulerCompileFlags compileFlags)
+    {
+        /// No need to do this if optimization is disabled.
+        if (CheckBitsAny(compileFlags, FrameSchedulerCompileFlags::DisableLoadStoreActionOptimization))
+        {
+            return;
+        }
+
+        // Set the load of first usage of transient attachments to DontCare.
+        // Set the store of last usage of transient attachments to DontCare.
+        const FrameGraphAttachmentDatabase& attachmentDatabase = frameGraph.GetAttachmentDatabase();
+        OptimizeTransientLoadStoreActionsHelper(attachmentDatabase.GetTransientBufferAttachments());
+        OptimizeTransientLoadStoreActionsHelper(attachmentDatabase.GetTransientImageAttachments());
+    }
+
+    template<class T>
+    void FrameGraphCompiler::OptimizeTransientLoadStoreActionsHelper(const AZStd::vector<T*>& frameAttachments)
+    {
+        for (T* transientResource : frameAttachments)
+        {
+            for (int deviceIndex{ 0 }; deviceIndex < RHISystemInterface::Get()->GetDeviceCount(); ++deviceIndex)
+            {
+                auto* firstScopeAttachment = transientResource->GetFirstScopeAttachment(deviceIndex);
+                if (firstScopeAttachment)
+                {
+                    // No need to load if it's the first usage of the frame.
+                    auto& loadStoreAction = firstScopeAttachment->m_descriptor.m_loadStoreAction;
+                    if (loadStoreAction.m_loadAction != AttachmentLoadAction::Clear)
+                    {
+                        loadStoreAction.m_loadAction = AttachmentLoadAction::DontCare;
+                    }
+                    if (loadStoreAction.m_loadActionStencil != AttachmentLoadAction::Clear)
+                    {
+                        loadStoreAction.m_loadActionStencil = AttachmentLoadAction::DontCare;
+                    }
+                }
+
+                auto* lastScopeAttachment = transientResource->GetLastScopeAttachment(deviceIndex);
+                if (lastScopeAttachment)
+                {
+                    // No need to store if it's the last scope using the transient attachment.
+                    lastScopeAttachment->m_descriptor.m_loadStoreAction.m_storeAction = AttachmentStoreAction::DontCare;
+                    lastScopeAttachment->m_descriptor.m_loadStoreAction.m_storeActionStencil = AttachmentStoreAction::DontCare;
                 }
             }
         }
@@ -466,6 +552,9 @@ namespace AZ::RHI
         AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileTransientAttachments");
 
         ExtendTransientAttachmentAsyncQueueLifetimes(frameGraph, compileFlags);
+        ExtendTransientAttachmentGroupLifetimes(frameGraph, compileFlags);
+
+        OptimizeTransientLoadStoreActions(frameGraph, compileFlags);
 
         // Builds a sortable key. It iterates each scope and performs deactivations
         // followed by activations on each attachment.
@@ -521,8 +610,9 @@ namespace AZ::RHI
         AZ_Assert(scopes.size() < AZ_BIT(SCOPE_BIT_COUNT),
             "Exceeded maximum number of allowed scopes");
 
-        AZ_Assert(transientBufferGraphAttachments.size() + transientImageGraphAttachments.size() < AZ_BIT(ATTACHMENT_BIT_COUNT),
-            "Exceeded maximum number of allowed attachments");            
+        AZ_Assert(
+            transientBufferGraphAttachments.size() + transientImageGraphAttachments.size() < AZ_BIT(ATTACHMENT_BIT_COUNT),
+            "Exceeded maximum number of allowed attachments");
 
         AZStd::vector<Buffer*> transientBuffers(transientBufferGraphAttachments.size());
         AZStd::vector<Image*> transientImages(transientImageGraphAttachments.size());
@@ -550,54 +640,60 @@ namespace AZ::RHI
         }
         else
         {
-            // Generate commands for each transient buffer: one for activation, and one for deactivation.
-            for (uint32_t attachmentIndex = 0; attachmentIndex < (uint32_t)transientBufferGraphAttachments.size(); ++attachmentIndex)
+            for (int deviceIndex{ 0 }; deviceIndex < RHISystemInterface::Get()->GetDeviceCount(); ++deviceIndex)
             {
-                BufferFrameAttachment* transientBuffer = transientBufferGraphAttachments[attachmentIndex];
-                const auto* firstScope = transientBuffer->GetFirstScope();
-                const auto* lastScope = transientBuffer->GetLastScope();
-                if (firstScope == nullptr || lastScope == nullptr)
+                // Generate commands for each transient buffer: one for activation, and one for deactivation.
+                for (uint32_t attachmentIndex = 0; attachmentIndex < (uint32_t)transientBufferGraphAttachments.size(); ++attachmentIndex)
                 {
-                    // If the attachment is owned by a pass that isn't a scope-producer (e.g. Parent-Pass), and is not connected to
-                    // anything, the first and last scope will be empty. We will get a warning its unused in ValidateEnd(), but we don't
-                    // want to crash here
-                    continue;
+                    BufferFrameAttachment* transientBuffer = transientBufferGraphAttachments[attachmentIndex];
+                    const auto* firstScope = transientBuffer->GetFirstScope(deviceIndex);
+                    const auto* lastScope = transientBuffer->GetLastScope(deviceIndex);
+                    if (firstScope == nullptr || lastScope == nullptr)
+                    {
+                        // If the attachment is owned by a pass that isn't a scope-producer (e.g. Parent-Pass), and is not connected to
+                        // anything, the first and last scope will be empty. We will get a warning its unused in ValidateEnd(), but we don't
+                        // want to crash here
+                        continue;
+                    }
+                    const uint32_t scopeIndexFirst = firstScope->GetIndex();
+                    const uint32_t scopeIndexLast = lastScope->GetIndex();
+                    commands.emplace_back(scopeIndexFirst, Action::ActivateBuffer, attachmentIndex);
+                    commands.emplace_back(scopeIndexLast, Action::DeactivateBuffer, attachmentIndex);
                 }
-                const uint32_t scopeIndexFirst = firstScope->GetIndex();
-                const uint32_t scopeIndexLast = lastScope->GetIndex();
-                commands.emplace_back(scopeIndexFirst, Action::ActivateBuffer, attachmentIndex);
-                commands.emplace_back(scopeIndexLast, Action::DeactivateBuffer, attachmentIndex);
-            }
 
-            // Generate commands for each transient image: one for activation, and one for deactivation.
-            for (uint32_t attachmentIndex = 0; attachmentIndex < (uint32_t)transientImageGraphAttachments.size(); ++attachmentIndex)
-            {
-                ImageFrameAttachment* transientImage = transientImageGraphAttachments[attachmentIndex];
-                const auto* firstScope = transientImage->GetFirstScope();
-                const auto* lastScope = transientImage->GetLastScope();
-                if (firstScope == nullptr || lastScope == nullptr)
+                // Generate commands for each transient image: one for activation, and one for deactivation.
+                for (uint32_t attachmentIndex = 0; attachmentIndex < (uint32_t)transientImageGraphAttachments.size(); ++attachmentIndex)
                 {
-                    // If the attachment is owned by a pass that isn't a scope-producer (e.g. Parent-Pass), and is not connected to
-                    // anything, the first and last scope will be empty. We will get a warning its unused in ValidateEnd(), but we don't
-                    // want to crash here
-                    continue;
+                    ImageFrameAttachment* transientImage = transientImageGraphAttachments[attachmentIndex];
+                    const auto* firstScope = transientImage->GetFirstScope(deviceIndex);
+                    const auto* lastScope = transientImage->GetLastScope(deviceIndex);
+                    if (firstScope == nullptr || lastScope == nullptr)
+                    {
+                        // If the attachment is owned by a pass that isn't a scope-producer (e.g. Parent-Pass), and is not connected to
+                        // anything, the first and last scope will be empty. We will get a warning its unused in ValidateEnd(), but we don't
+                        // want to crash here
+                        continue;
+                    }
+                    const uint32_t scopeIndexFirst = firstScope->GetIndex();
+                    const uint32_t scopeIndexLast = lastScope->GetIndex();
+                    commands.emplace_back(scopeIndexFirst, Action::ActivateImage, attachmentIndex);
+                    commands.emplace_back(scopeIndexLast, Action::DeactivateImage, attachmentIndex);
                 }
-                const uint32_t scopeIndexFirst = firstScope->GetIndex();
-                const uint32_t scopeIndexLast = lastScope->GetIndex();
-                commands.emplace_back(scopeIndexFirst, Action::ActivateImage, attachmentIndex);
-                commands.emplace_back(scopeIndexLast, Action::DeactivateImage, attachmentIndex);
             }
         }
 
         AZStd::sort(commands.begin(), commands.end());
 
-        auto processCommands = [&](TransientAttachmentPoolCompileFlags compileFlags, TransientAttachmentStatistics::MemoryUsage* memoryHint = nullptr)
+        auto processCommands = [&](int deviceIndex,
+                                   TransientAttachmentPoolCompileFlags compileFlags,
+                                   TransientAttachmentStatistics::MemoryUsage* memoryHint = nullptr)
         {
             transientAttachmentPool.Begin(compileFlags, memoryHint);
 
             uint32_t currentScopeIndex = static_cast<uint32_t>(-1);
 
             bool allocateResources = !CheckBitsAny(compileFlags, TransientAttachmentPoolCompileFlags::DontAllocateResources);
+            bool beganScope = false;
 
             for (Command command : commands)
             {
@@ -605,16 +701,30 @@ namespace AZ::RHI
                 const uint32_t attachmentIndex = command.m_bits.m_attachmentIndex;
                 const Action action = (Action)command.m_bits.m_action;
 
+                if (scopes[scopeIndex]->GetDeviceIndex() != deviceIndex)
+                {
+                    continue;
+                }
+
                 // Make sure to walk the full set of scopes, even if a transient resource doesn't
                 // exist in it. This is necessary for proper statistics tracking.
                 while (currentScopeIndex != scopeIndex)
                 {
                     const uint32_t nextScope = ++currentScopeIndex;
 
+                    if (scopes[nextScope]->GetDeviceIndex() != deviceIndex)
+                    {
+                        continue;
+                    }
+
                     // End the previous scope (if there is one).
-                    if (nextScope > 0)
+                    if (beganScope)
                     {
                         transientAttachmentPool.EndScope();
+                    }
+                    else
+                    {
+                        beganScope = true;
                     }
 
                     transientAttachmentPool.BeginScope(*scopes[nextScope]);
@@ -624,94 +734,117 @@ namespace AZ::RHI
                 {
 
                 case Action::DeactivateBuffer:
-                {
-                    AZ_Assert(!allocateResources || transientBuffers[attachmentIndex] || IsNullRHI(), "Buffer is not active: %s", transientBufferGraphAttachments[attachmentIndex]->GetId().GetCStr());
-                    BufferFrameAttachment* bufferFrameAttachment = transientBufferGraphAttachments[attachmentIndex];
-                    transientAttachmentPool.DeactivateBuffer(bufferFrameAttachment->GetId());
-                    transientBuffers[attachmentIndex] = nullptr;
-                    break;
-                }
+                    {
+                        AZ_Assert(
+                            !allocateResources || transientBuffers[attachmentIndex] || IsNullRHI(),
+                            "DeviceBuffer is not active: %s",
+                            transientBufferGraphAttachments[attachmentIndex]->GetId().GetCStr());
+                        BufferFrameAttachment* bufferFrameAttachment = transientBufferGraphAttachments[attachmentIndex];
+                        transientAttachmentPool.DeactivateBuffer(bufferFrameAttachment->GetId());
+                        transientBuffers[attachmentIndex] = nullptr;
+                        break;
+                    }
 
                 case Action::DeactivateImage:
-                {
-                    AZ_Assert(!allocateResources || transientImages[attachmentIndex] || IsNullRHI(), "Image is not active: %s", transientImageGraphAttachments[attachmentIndex]->GetId().GetCStr());
-                    ImageFrameAttachment* imageFrameAttachment = transientImageGraphAttachments[attachmentIndex];
-                    transientAttachmentPool.DeactivateImage(imageFrameAttachment->GetId());
-                    transientImages[attachmentIndex] = nullptr;
-                    break;
-                }
+                    {
+                        AZ_Assert(
+                            !allocateResources || transientImages[attachmentIndex] || IsNullRHI(),
+                            "DeviceImage is not active: %s",
+                            transientImageGraphAttachments[attachmentIndex]->GetId().GetCStr());
+                        ImageFrameAttachment* imageFrameAttachment = transientImageGraphAttachments[attachmentIndex];
+                        transientAttachmentPool.DeactivateImage(imageFrameAttachment->GetId());
+                        transientImages[attachmentIndex] = nullptr;
+                        break;
+                    }
 
                 case Action::ActivateBuffer:
-                {
-                    BufferFrameAttachment* bufferFrameAttachment = transientBufferGraphAttachments[attachmentIndex];
-                    AZ_Assert(transientBuffers[attachmentIndex] == nullptr, "Buffer has been activated already. %s", bufferFrameAttachment->GetId().GetCStr());
-
-                    TransientBufferDescriptor descriptor;
-                    descriptor.m_attachmentId = bufferFrameAttachment->GetId();
-                    descriptor.m_bufferDescriptor = bufferFrameAttachment->GetBufferDescriptor();
-
-                    Buffer* buffer = transientAttachmentPool.ActivateBuffer(descriptor);
-                    if (allocateResources && buffer)
                     {
-                        bufferFrameAttachment->SetResource(buffer);
-                        transientBuffers[attachmentIndex] = buffer;
+                        BufferFrameAttachment* bufferFrameAttachment = transientBufferGraphAttachments[attachmentIndex];
+                        AZ_Assert(
+                            transientBuffers[attachmentIndex] == nullptr,
+                            "DeviceBuffer has been activated already. %s",
+                            bufferFrameAttachment->GetId().GetCStr());
+
+                        TransientBufferDescriptor descriptor;
+                        descriptor.m_attachmentId = bufferFrameAttachment->GetId();
+                        descriptor.m_bufferDescriptor = bufferFrameAttachment->GetBufferDescriptor();
+
+                        auto buffer = transientAttachmentPool.ActivateBuffer(descriptor);
+                        if (allocateResources && buffer)
+                        {
+                            bufferFrameAttachment->SetResource(buffer, scopes[currentScopeIndex]->GetDeviceIndex());
+                            transientBuffers[attachmentIndex] = buffer;
+                        }
+                        break;
                     }
-                    break;
-                }
 
                 case Action::ActivateImage:
-                {
-                    ImageFrameAttachment* imageFrameAttachment = transientImageGraphAttachments[attachmentIndex];
-                    AZ_Assert(transientImages[attachmentIndex] == nullptr, "Image has been activated already. %s", imageFrameAttachment->GetId().GetCStr());
-
-                    ClearValue optimizedClearValue;
-
-                    TransientImageDescriptor descriptor;
-                    descriptor.m_attachmentId = imageFrameAttachment->GetId();
-                    descriptor.m_imageDescriptor = imageFrameAttachment->GetImageDescriptor();
-                    descriptor.m_supportedQueueMask = imageFrameAttachment->GetSupportedQueueMask();
-
-                    const bool isOutputMerger = RHI::CheckBitsAny(descriptor.m_imageDescriptor.m_bindFlags, RHI::ImageBindFlags::Color | RHI::ImageBindFlags::DepthStencil);
-                    if (isOutputMerger)
                     {
-                        optimizedClearValue = imageFrameAttachment->GetOptimizedClearValue();
-                        descriptor.m_optimizedClearValue = &optimizedClearValue;
-                    }
+                        ImageFrameAttachment* imageFrameAttachment = transientImageGraphAttachments[attachmentIndex];
+                        AZ_Assert(
+                            transientImages[attachmentIndex] == nullptr,
+                            "DeviceImage has been activated already. %s",
+                            imageFrameAttachment->GetId().GetCStr());
 
-                    Image* image = transientAttachmentPool.ActivateImage(descriptor);
-                    if (allocateResources && image)
-                    {
-                        imageFrameAttachment->SetResource(image);
-                        transientImages[attachmentIndex] = image;
-                    }
-                    break;
-                }
+                        ClearValue optimizedClearValue;
 
+                        TransientImageDescriptor descriptor;
+                        descriptor.m_attachmentId = imageFrameAttachment->GetId();
+                        descriptor.m_imageDescriptor = imageFrameAttachment->GetImageDescriptor();
+                        descriptor.m_supportedQueueMask = imageFrameAttachment->GetSupportedQueueMask();
+
+                        const bool isOutputMerger = RHI::CheckBitsAny(
+                            descriptor.m_imageDescriptor.m_bindFlags, RHI::ImageBindFlags::Color | RHI::ImageBindFlags::DepthStencil);
+                        if (isOutputMerger)
+                        {
+                            optimizedClearValue = imageFrameAttachment->GetOptimizedClearValue(scopes[currentScopeIndex]->GetDeviceIndex());
+                            descriptor.m_optimizedClearValue = &optimizedClearValue;
+                        }
+
+                        auto image = transientAttachmentPool.ActivateImage(descriptor);
+                        if (allocateResources && image)
+                        {
+                            imageFrameAttachment->SetResource(image, scopes[currentScopeIndex]->GetDeviceIndex());
+                            transientImages[attachmentIndex] = image;
+                        }
+                        break;
+                    }
                 }
             }
 
-            transientAttachmentPool.EndScope();
+            if (beganScope)
+            {
+                transientAttachmentPool.EndScope();
+            }
+
             transientAttachmentPool.End();
         };
 
-        AZStd::optional<TransientAttachmentStatistics::MemoryUsage> memoryUsage;
-        // Check if we need to do two passes (one for calculating the size and the second one for allocating the resources)
-        if (transientAttachmentPool.GetDescriptor().m_heapParameters.m_type == HeapAllocationStrategy::MemoryHint)
+        for (auto& [deviceIndex, descriptor] : transientAttachmentPool.GetDescriptor())
         {
-            // First pass to calculate size needed.
-            processCommands(TransientAttachmentPoolCompileFlags::GatherStatistics | TransientAttachmentPoolCompileFlags::DontAllocateResources);
-            memoryUsage = transientAttachmentPool.GetStatistics().m_reservedMemory;
-        }
+            AZStd::optional<TransientAttachmentStatistics::MemoryUsage> memoryUsage;
 
-        // Second pass uses the information about memory usage
-        TransientAttachmentPoolCompileFlags poolCompileFlags = TransientAttachmentPoolCompileFlags::None;
-        if (CheckBitsAny(statisticsFlags, FrameSchedulerStatisticsFlags::GatherTransientAttachmentStatistics))
-        {
-            poolCompileFlags |= TransientAttachmentPoolCompileFlags::GatherStatistics;
+            // Check if we need to do two passes (one for calculating the size and the second one for allocating the resources)
+            if (descriptor.m_heapParameters.m_type == HeapAllocationStrategy::MemoryHint)
+            {
+                // First pass to calculate size needed.
+                processCommands(
+                    deviceIndex,
+                    TransientAttachmentPoolCompileFlags::GatherStatistics | TransientAttachmentPoolCompileFlags::DontAllocateResources);
+                auto statistics = transientAttachmentPool.GetDeviceTransientAttachmentPool(deviceIndex)->GetStatistics();
+                memoryUsage = statistics.m_reservedMemory;
+            }
+
+            // Second pass uses the information about memory usage
+            TransientAttachmentPoolCompileFlags poolCompileFlags = TransientAttachmentPoolCompileFlags::None;
+            if (CheckBitsAny(statisticsFlags, FrameSchedulerStatisticsFlags::GatherTransientAttachmentStatistics))
+            {
+                poolCompileFlags |= TransientAttachmentPoolCompileFlags::GatherStatistics;
+            }
+            processCommands(deviceIndex, poolCompileFlags, memoryUsage ? &memoryUsage.value() : nullptr);
         }
-        processCommands(poolCompileFlags, memoryUsage ? &memoryUsage.value() : nullptr);
     }
-                    
+
     ImageView* FrameGraphCompiler::GetImageViewFromLocalCache(Image* image, const ImageViewDescriptor& imageViewDescriptor)
     {
         const size_t baseHash = AZStd::hash<Image*>()(image);
@@ -725,27 +858,20 @@ namespace AZ::RHI
         {
             // This is one way of clearing view entries within the cache if we are creating a new view to replace the old one.
             // Normally this can happen for transient resources if their pointer within the heap changes for the current frame
-            const ImageResourceViewData imageResourceViewData = ImageResourceViewData {image->GetName(), imageViewDescriptor};
+            const ImageResourceViewData imageResourceViewData = ImageResourceViewData{ image->GetName(), imageViewDescriptor };
             RemoveFromCache(imageResourceViewData, m_imageReverseLookupHash, m_imageViewCache);
             // Create a new image view instance and insert it into the cache.
-            Ptr<ImageView> imageViewPtr = Factory::Get().CreateImageView();
-            if (imageViewPtr->Init(*image, imageViewDescriptor) == ResultCode::Success)
+            Ptr<ImageView> imageViewPtr = image->BuildImageView(imageViewDescriptor);
+            imageView = imageViewPtr.get();
+            m_imageViewCache.Insert(static_cast<uint64_t>(hash), AZStd::move(imageViewPtr));
+            if (!image->GetName().IsEmpty())
             {
-                imageView = imageViewPtr.get();
-                m_imageViewCache.Insert(static_cast<uint64_t>(hash), AZStd::move(imageViewPtr));
-                if (!image->GetName().IsEmpty())
-                {
-                    m_imageReverseLookupHash.emplace(imageResourceViewData, hash);
-                }
-            }
-            else
-            {
-                AZ_Error("FrameGraphCompiler", false, "Failed to acquire an image view");
+                m_imageReverseLookupHash.emplace(imageResourceViewData, hash);
             }
         }
         return imageView;
     }
-                    
+
     BufferView* FrameGraphCompiler::GetBufferViewFromLocalCache(Buffer* buffer, const BufferViewDescriptor& bufferViewDescriptor)
     {
         const size_t baseHash = AZStd::hash<Buffer*>()(buffer);
@@ -763,19 +889,12 @@ namespace AZ::RHI
             RemoveFromCache(bufferResourceViewData, m_bufferReverseLookupHash, m_bufferViewCache);
                 
             // Create a new buffer view instance and insert it into the cache.
-            Ptr<BufferView> bufferViewPtr = Factory::Get().CreateBufferView();
-            if (bufferViewPtr->Init(*buffer, bufferViewDescriptor) == ResultCode::Success)
+            Ptr<BufferView> bufferViewPtr = buffer->BuildBufferView(bufferViewDescriptor);
+            bufferView = bufferViewPtr.get();
+            m_bufferViewCache.Insert(static_cast<uint64_t>(hash), AZStd::move(bufferViewPtr));
+            if (!buffer->GetName().IsEmpty())
             {
-                bufferView = bufferViewPtr.get();
-                m_bufferViewCache.Insert(static_cast<uint64_t>(hash), AZStd::move(bufferViewPtr));
-                if (!buffer->GetName().IsEmpty())
-                {
-                    m_bufferReverseLookupHash.emplace(bufferResourceViewData, hash);
-                }
-            }
-            else
-            {
-                AZ_Error("FrameGraphCompiler", false, "Failed to acquire an buffer view");
+                m_bufferReverseLookupHash.emplace(bufferResourceViewData, hash);
             }
         }
         return bufferView;
@@ -795,25 +914,18 @@ namespace AZ::RHI
             }
             // Iterates through every usage of the image, pulls image views
             // from image's cache or local cache, and assigns them to the scope attachments.
-            for (ImageScopeAttachment* node = imageAttachment->GetFirstScopeAttachment(); node != nullptr; node = node->GetNext())
+            for (int deviceIndex{ 0 }; deviceIndex < RHISystemInterface::Get()->GetDeviceCount(); ++deviceIndex)
             {
-                const ImageViewDescriptor& imageViewDescriptor = node->GetDescriptor().m_imageViewDescriptor;
-                    
-                ImageView* imageView = nullptr;
-                //Check image's cache first as that contains views provided by higher level code.
-                if(image->IsInResourceCache(imageViewDescriptor))
+                for (ImageScopeAttachment* node = imageAttachment->GetFirstScopeAttachment(deviceIndex); node != nullptr;
+                     node = node->GetNext())
                 {
-                    imageView = image->GetImageView(imageViewDescriptor).get();
+                    const ImageViewDescriptor& imageViewDescriptor = node->GetDescriptor().m_imageViewDescriptor;
+
+                    // Multi device image views don't have a global cache, so we always cache them
+                    ImageView* imageView = GetImageViewFromLocalCache(image, imageViewDescriptor);
+
+                    node->SetImageView(imageView);
                 }
-                else
-                {
-                    //If the higher level code has not provided a view, check local frame graph compiler's local cache.
-                    //The local cache is special and was mainly added to handle transient resources. This cache adds a dependency to
-                    //the resourceview ensuring they do not get deleted at the end of the frame and recreated at the start of the next frame.
-                    imageView = GetImageViewFromLocalCache(image, imageViewDescriptor);
-                }
-                     
-                node->SetImageView(imageView);
             }
         }
 
@@ -828,25 +940,18 @@ namespace AZ::RHI
 
             // Iterates through every usage of the buffer attachment, pulls buffer views
             // from the cache within the buffer, and assigns them to the scope attachments.
-            for (BufferScopeAttachment* node = bufferAttachment->GetFirstScopeAttachment(); node != nullptr; node = node->GetNext())
+            for (int deviceIndex{ 0 }; deviceIndex < RHISystemInterface::Get()->GetDeviceCount(); ++deviceIndex)
             {
-                const BufferViewDescriptor& bufferViewDescriptor = node->GetDescriptor().m_bufferViewDescriptor;
-                    
-                BufferView* bufferView = nullptr;
-                //Check buffer's cache first as that contains views provided by higher level code.
-                if(buffer->IsInResourceCache(bufferViewDescriptor))
+                for (BufferScopeAttachment* node = bufferAttachment->GetFirstScopeAttachment(deviceIndex); node != nullptr;
+                     node = node->GetNext())
                 {
-                    bufferView = buffer->GetBufferView(bufferViewDescriptor).get();
-                }
-                else
-                {
-                    //If the higher level code has not provided a view, check local frame graph compiler's local cache.
-                    //The local cache is special and was mainly added to handle transient resources. This cache adds a dependency to
-                    //the resourceview ensuring they do not get deleted at the end of the frame and recreated at the start of the next frame.
-                    bufferView = GetBufferViewFromLocalCache(buffer, bufferViewDescriptor);
-                }
+                    const BufferViewDescriptor& bufferViewDescriptor = node->GetDescriptor().m_bufferViewDescriptor;
 
-                node->SetBufferView(bufferView);
+                    // Multi device buffer views don't have a global cache, so we always cache them
+                    BufferView* bufferView = GetBufferViewFromLocalCache(buffer, bufferViewDescriptor);
+
+                    node->SetBufferView(bufferView);
+                }
             }
         }
     }

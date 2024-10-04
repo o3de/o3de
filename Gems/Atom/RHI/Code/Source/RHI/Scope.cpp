@@ -7,8 +7,7 @@
  */
 #include <Atom/RHI/Scope.h>
 #include <Atom/RHI/ResourcePoolDatabase.h>
-#include <Atom/RHI/ImagePoolBase.h>
-#include <Atom/RHI/BufferPoolBase.h>
+#include <Atom/RHI/DeviceImagePoolBase.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
 namespace AZ::RHI
@@ -21,6 +20,21 @@ namespace AZ::RHI
     bool Scope::IsActive() const
     {
         return m_isActive;
+    }
+
+    int Scope::GetDeviceIndex() const
+    {
+        return m_deviceIndex;
+    }
+
+    void Scope::SetDeviceIndex(int deviceIndex)
+    {
+        m_deviceIndex = deviceIndex;
+    }
+
+    Device& Scope::GetDevice() const
+    {
+        return *RHISystemInterface::Get()->GetDevice(m_deviceIndex);
     }
 
     void Scope::Init(const ScopeId& scopeId, HardwareQueueClass hardwareQueueClass)
@@ -56,20 +70,21 @@ namespace AZ::RHI
         m_isInitialized = true;
     }
 
-    void Scope::Activate(const FrameGraph* frameGraph, uint32_t index, const GraphGroupId& groupId)
+    void Scope::Activate(const FrameGraph* frameGraph, uint32_t index, const GraphGroupId& groupId, ActivationFlags activationFlags)
     {
         AZ_Assert(m_isActive == false, "Scope was previously active.");
         m_index = decltype(m_index)(index);
         m_frameGraph = frameGraph;
         m_graphGroupId = groupId;
+        m_activationFlags = activationFlags;
         ActivateInternal();
         m_isActive = true;
     }
 
-    void Scope::Compile(Device& device)
+    void Scope::Compile()
     {
         AZ_Assert(m_isActive, "Scope being compiled but is not active");
-        CompileInternal(device);
+        CompileInternal();
     }
 
     void Scope::Deactivate()
@@ -94,6 +109,7 @@ namespace AZ::RHI
         m_fencesToWaitFor.clear();
         m_resourcePoolResolves.clear();
         m_queryPools.clear();
+        m_activationFlags = ActivationFlags::None;
     }
 
     void Scope::Shutdown()
@@ -127,9 +143,11 @@ namespace AZ::RHI
 
     void Scope::InitInternal() {}
     void Scope::ActivateInternal() {}
-    void Scope::CompileInternal([[maybe_unused]] Device& device) {}
+    void Scope::CompileInternal() {}
     void Scope::DeactivateInternal() {}
-    void Scope::ShutdownInternal() {}
+    void Scope::ShutdownInternal()
+    {
+    }
 
     const ScopeId& Scope::GetId() const
     {
@@ -213,7 +231,7 @@ namespace AZ::RHI
         return m_resourcePoolResolves;
     }
 
-    const AZStd::vector<SwapChain*>& Scope::GetSwapChainsToPresent() const
+    const AZStd::vector<DeviceSwapChain*>& Scope::GetSwapChainsToPresent() const
     {
         return m_swapChainsToPresent;
     }
@@ -260,6 +278,11 @@ namespace AZ::RHI
     void Scope::AddFenceToSignal(Ptr<Fence> fence)
     {
         m_fencesToSignal.push_back(fence);
+    }
+
+    Scope::ActivationFlags Scope::GetActivationFlags() const
+    {
+        return m_activationFlags;
     }
 
     Scope* Scope::FindMoreCapableCrossQueueProducer()

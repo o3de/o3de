@@ -349,7 +349,7 @@ namespace LUAEditor
     //public:
     //  AZ_CLASS_ALLOCATOR(ContextFactory,AZ::SystemAllocator,0)
 
-    //  ContextFactory() : AZ::ComponentFactory<Context>(AZ_CRC("LUAEditor::Context", 0x304bb93b)){}
+    //  ContextFactory() : AZ::ComponentFactory<Context>(AZ_CRC_CE("LUAEditor::Context")){}
     //  virtual const char* GetName() {return "LUAEditor::Context";}
     //  virtual void        Reflect(AZ::ReflectContext* reflection);
     //};

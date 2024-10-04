@@ -32,7 +32,11 @@ namespace AZ
             uint32_t m_totalNumberOfThreadsY = 0;
             uint32_t m_totalNumberOfThreadsZ = 0;
 
-            bool m_makeFullscreenPass = false;
+            bool m_fullscreenDispatch = false;
+            AZ::Name m_fullscreenSizeSourceSlotName;
+
+            bool m_indirectDispatch = false;
+            AZ::Name m_indirectDispatchBufferSlotName;
 
             // Whether the pass should use async compute and run on the compute hardware queue.
             bool m_useAsyncCompute = false;

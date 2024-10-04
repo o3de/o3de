@@ -45,8 +45,8 @@ namespace UnitTest
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("SurfaceDataSystemService", 0x1d44d25f));
-            provided.push_back(AZ_CRC("SurfaceDataProviderService", 0xfe9fb95e));
+            provided.push_back(AZ_CRC_CE("SurfaceDataSystemService"));
+            provided.push_back(AZ_CRC_CE("SurfaceDataProviderService"));
         }
         static void GetIncompatibleServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& incompatible) {}
         static void GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required) {}

@@ -104,8 +104,8 @@ namespace StartingPointInput
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("AssetDatabaseService"));
-            required.push_back(AZ_CRC("AssetCatalogService"));
+            required.push_back(AZ_CRC_CE("AssetDatabaseService"));
+            required.push_back(AZ_CRC_CE("AssetCatalogService"));
         }
 
         static void Reflect(AZ::ReflectContext* context)

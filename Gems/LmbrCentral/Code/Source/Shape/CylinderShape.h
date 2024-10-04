@@ -43,7 +43,7 @@ namespace LmbrCentral
         void InvalidateCache(InvalidateShapeCacheReason reason);
 
         // ShapeComponentRequestsBus::Handler
-        AZ::Crc32 GetShapeType() const override { return AZ_CRC("Cylinder", 0x9b045bea); }
+        AZ::Crc32 GetShapeType() const override { return AZ_CRC_CE("Cylinder"); }
         bool IsPointInside(const AZ::Vector3& point) const override;
         float DistanceSquaredFromPoint(const AZ::Vector3& point) const override;
         AZ::Aabb GetEncompassingAabb() const override;

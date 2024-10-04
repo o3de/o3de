@@ -5,14 +5,17 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <Atom_RHI_Vulkan_Platform.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/iterator.h>
-#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
+#include <RHI/BinaryFence.h>
 #include <RHI/Device.h>
-#include <RHI/Semaphore.h>
 #include <RHI/Fence.h>
 #include <RHI/Queue.h>
+#include <RHI/Semaphore.h>
+#include <RHI/TimelineSemaphoreFence.h>
+
 
 namespace AZ
 {
@@ -51,58 +54,82 @@ namespace AZ
             AZStd::vector<uint64_t> vkSignalSemaphoreValues;
             AZStd::vector<uint64_t> vkWaitSemaphoreValues;
 
+            auto timelineSemaphoreFenceToSignal = azrtti_cast<TimelineSemaphoreFence*>(fenceToSignal ? &fenceToSignal->GetFenceBase() : nullptr);
+
             VkSubmitInfo submitInfo;
             uint32_t submitCount = 0;
-            if (!commandBuffers.empty() || !waitSemaphoresInfo.empty() || !semaphoresToSignal.empty() ||
-                (fenceToSignal && fenceToSignal->GetFenceType() == FenceType::TimelineSemaphore))
+            if (!commandBuffers.empty() || !waitSemaphoresInfo.empty() || !semaphoresToSignal.empty() || timelineSemaphoreFenceToSignal ||
+                !fencesToWaitFor.empty())
             {
                 vkCommandBuffers.reserve(commandBuffers.size());
                 AZStd::transform(commandBuffers.begin(), commandBuffers.end(), AZStd::back_inserter(vkCommandBuffers), [&](const auto& item)
                 { 
                     return item->GetNativeCommandBuffer(); 
                 });
+                bool hasTimelineSemaphore = false;
                 vkSignalSemaphores.reserve(semaphoresToSignal.size());
-                AZStd::transform(semaphoresToSignal.begin(), semaphoresToSignal.end(), AZStd::back_inserter(vkSignalSemaphores), [&](const auto& item)
-                { 
-                    return item->GetNativeSemaphore(); 
-                });
+                for (const auto& semaphore : semaphoresToSignal)
+                {
+                    vkSignalSemaphores.push_back(semaphore->GetNativeSemaphore());
+                    auto timelineSemaphore = azrtti_cast<TimelineSemaphore*>(semaphore.get());
+                    if (timelineSemaphore)
+                    {
+                        vkSignalSemaphoreValues.push_back(timelineSemaphore->GetPendingValue());
+                        hasTimelineSemaphore = true;
+                    }
+                    else
+                    {
+                        vkSignalSemaphoreValues.push_back(0);
+                    }
+                }
                 vkWaitPipelineStages.reserve(waitSemaphoresInfo.size());
                 vkWaitSemaphoreVector.reserve(waitSemaphoresInfo.size());
-                AZStd::for_each(waitSemaphoresInfo.begin(), waitSemaphoresInfo.end(), [&](auto& item) 
-                { 
+                for (const auto& item : waitSemaphoresInfo)
+                {
                     vkWaitPipelineStages.push_back(item.first);
                     vkWaitSemaphoreVector.push_back(item.second->GetNativeSemaphore());
                     // Wait until the wait semaphores has been submitted for signaling.
                     item.second->WaitEvent();
-                });
+                    auto timelineSemaphore = azrtti_cast<TimelineSemaphore*>(item.second.get());
+                    if (timelineSemaphore)
+                    {
+                        vkWaitSemaphoreValues.push_back(timelineSemaphore->GetPendingValue());
+                        hasTimelineSemaphore = true;
+                    }
+                    else
+                    {
+                        vkWaitSemaphoreValues.push_back(0);
+                    }
+                }
 
                 submitInfo = {};
                 submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
                 submitInfo.pNext = nullptr;
 
-                if ((fenceToSignal && fenceToSignal->GetFenceType() == FenceType::TimelineSemaphore) || !fencesToWaitFor.empty())
+                hasTimelineSemaphore |= timelineSemaphoreFenceToSignal || !fencesToWaitFor.empty();
+
+                if (hasTimelineSemaphore)
                 {
                     timelineSemaphoresSubmitInfos.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
                     timelineSemaphoresSubmitInfos.pNext = nullptr;
                     submitInfo.pNext = &timelineSemaphoresSubmitInfos;
 
-                    if ((fenceToSignal && fenceToSignal->GetFenceType() == FenceType::TimelineSemaphore))
+                    if (timelineSemaphoreFenceToSignal)
                     {
-                        vkSignalSemaphoreValues.resize(vkSignalSemaphores.size(), 0); // Add 'dummy' values for binary sempahores
-                        vkSignalSemaphoreValues.push_back(fenceToSignal->GetPendingValue());
-                        vkSignalSemaphores.push_back(fenceToSignal->GetNativeSemaphore());
-                        timelineSemaphoresSubmitInfos.signalSemaphoreValueCount = static_cast<uint32_t>(vkSignalSemaphoreValues.size());
-                        timelineSemaphoresSubmitInfos.pSignalSemaphoreValues = vkSignalSemaphoreValues.data();
+                        vkSignalSemaphoreValues.push_back(timelineSemaphoreFenceToSignal->GetPendingValue());
+                        vkSignalSemaphores.push_back(timelineSemaphoreFenceToSignal->GetNativeSemaphore());
                     }
+                    timelineSemaphoresSubmitInfos.signalSemaphoreValueCount = static_cast<uint32_t>(vkSignalSemaphoreValues.size());
+                    timelineSemaphoresSubmitInfos.pSignalSemaphoreValues =
+                        vkSignalSemaphoreValues.empty() ? nullptr : vkSignalSemaphoreValues.data();
 
-                    vkWaitSemaphoreValues.resize(vkWaitSemaphoreVector.size(), 0); // Add 'dummy' values for binary sempahores
                     for (auto& fence : fencesToWaitFor)
                     {
-                        AZ_Assert(
-                            fence->GetFenceType() == FenceType::TimelineSemaphore,
-                            "Queue: Only fences of type timeline semaphores can be waited for");
-                        vkWaitSemaphoreValues.push_back(fence->GetPendingValue());
-                        vkWaitSemaphoreVector.push_back(fence->GetNativeSemaphore());
+                        auto timelineSemaphoreFence = azrtti_cast<TimelineSemaphoreFence*>(&fence->GetFenceBase());
+                        AZ_Assert(timelineSemaphoreFence, "Queue: Only fences of type timeline semaphores can be waited for");
+                        vkWaitSemaphoreValues.push_back(timelineSemaphoreFence->GetPendingValue());
+                        vkWaitPipelineStages.push_back(VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
+                        vkWaitSemaphoreVector.push_back(timelineSemaphoreFence->GetNativeSemaphore());
                     }
                     timelineSemaphoresSubmitInfos.waitSemaphoreValueCount = static_cast<uint32_t>(vkWaitSemaphoreValues.size());
                     timelineSemaphoresSubmitInfos.pWaitSemaphoreValues =
@@ -120,10 +147,11 @@ namespace AZ
             }
 
             VkFence nativeFence = VK_NULL_HANDLE;
-            if (fenceToSignal && fenceToSignal->GetFenceType() == FenceType::Fence)
+            auto fenceVulkanFence = azrtti_cast<BinaryFence*>(fenceToSignal ? &fenceToSignal->GetFenceBase() : nullptr);
+            if (fenceVulkanFence)
             {
                 fenceToSignal->Reset();
-                nativeFence = fenceToSignal->GetNativeFence();
+                nativeFence = fenceVulkanFence->GetNativeFence();
             }
             const VkResult result = static_cast<Device&>(GetDevice())
                                         .GetContext()
@@ -132,7 +160,10 @@ namespace AZ
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
             // Signal all signaling semaphores that they can be used.
-            AZStd::for_each(semaphoresToSignal.begin(), semaphoresToSignal.end(), [&](auto& item) { item->SignalEvent(); });
+            for (const auto& item : semaphoresToSignal)
+            {
+                item->SignalEvent();
+            }
 
             if (fenceToSignal)
             {

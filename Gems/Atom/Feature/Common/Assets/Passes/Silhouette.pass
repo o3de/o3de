@@ -24,7 +24,8 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/Silhouette/Silhouette.shader"
                 },
-                "BindViewSrg": true
+                "BindViewSrg": true,
+                "CanBeSubpass": false
             },
             "Connections": [
                 {

@@ -461,7 +461,7 @@ void UiMarkupButtonComponent::Reflect(AZ::ReflectContext* context)
                 // Need to request markup button component icons for LY ML
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiMarkupButton.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiMarkupButton.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             editInfo->DataElement(AZ::Edit::UIHandlers::Color, &UiMarkupButtonComponent::m_linkColor, "Link Color", "Link text color.")

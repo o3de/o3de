@@ -28,7 +28,6 @@ public:
 
     MOCK_METHOD0(DeleteThis, void());
     MOCK_METHOD0(GetSystem, ISystem*());
-    MOCK_METHOD0(GetClassFactory, IEditorClassFactory* ());
     MOCK_METHOD0(GetCommandManager, CEditorCommandManager*());
     MOCK_METHOD0(GetICommandManager, ICommandManager* ());
     MOCK_METHOD1(ExecuteCommand, void(const QString& sCommand));
@@ -70,10 +69,6 @@ public:
     MOCK_METHOD0(GetProductVersion, SFileVersion());
     MOCK_METHOD0(GetGameEngine , CGameEngine* ());
     MOCK_METHOD0(GetDisplaySettings, CDisplaySettings*());
-    MOCK_METHOD7(NewObject, CBaseObject* (const char*, const char*, const char*, float, float, float, bool));
-    MOCK_METHOD1(DeleteObject, void(CBaseObject* obj));
-    MOCK_METHOD1(CloneObject, CBaseObject* (CBaseObject* ));
-    MOCK_METHOD0(GetObjectManager, struct IObjectManager* ());
     MOCK_METHOD0(GetSettingsManager, CSettingsManager* ());
     MOCK_METHOD0(GetMusicManager, CMusicManager* ());
     MOCK_METHOD2(GetTerrainElevation, float(float , float ));
@@ -86,8 +81,6 @@ public:
     MOCK_METHOD0(GetActiveView, class CViewport* ());
     MOCK_METHOD1(SetActiveView, void(CViewport*));
     MOCK_METHOD0(GetFileMonitor, struct IEditorFileMonitor* ());
-    MOCK_CONST_METHOD0(CreateQMimeData, QMimeData* ());
-    MOCK_CONST_METHOD1(DestroyQMimeData, void(QMimeData*));
     MOCK_METHOD0(GetLevelIndependentFileMan, class CLevelIndependentFileMan* ());
     MOCK_METHOD2(UpdateViews, void(int , const AABB* ));
     MOCK_METHOD0(ResetViews, void());
@@ -147,16 +140,11 @@ public:
     MOCK_METHOD1(UnregisterNotifyListener, void(IEditorNotifyListener* ));
     MOCK_METHOD1(RegisterDocListener, void(IDocListener* ));
     MOCK_METHOD1(UnregisterDocListener, void(IDocListener* ));
-    MOCK_METHOD0(GetSourceControl, ISourceControl* ());
-    MOCK_METHOD0(IsSourceControlAvailable, bool());
-    MOCK_METHOD0(IsSourceControlConnected, bool());
     MOCK_METHOD0(ReduceMemory, void());
     MOCK_CONST_METHOD0(GetEditorConfigPlatform, ESystemConfigPlatform());
     MOCK_METHOD0(ReloadTemplates, void());
     MOCK_METHOD1(ShowStatusText, void(bool ));
-    MOCK_METHOD1(RegisterObjectContextMenuExtension, void(TContextMenuExtensionFunc ));
     MOCK_METHOD0(GetEnv, SSystemGlobalEnvironment* ());
-    MOCK_METHOD0(GetImageUtil, IImageUtil* ());
     MOCK_METHOD0(GetEditorSettings, SEditorSettings* ());
     MOCK_METHOD0(GetLogFile, ILogFile* ());
     MOCK_METHOD0(UnloadPlugins, void());

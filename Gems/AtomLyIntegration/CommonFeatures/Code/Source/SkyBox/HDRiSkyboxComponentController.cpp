@@ -59,7 +59,7 @@ namespace AZ
 
         void HDRiSkyboxComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("TransformService"));
+            required.push_back(AZ_CRC_CE("TransformService"));
         }
 
         HDRiSkyboxComponentController::HDRiSkyboxComponentController(const HDRiSkyboxComponentConfig& config)

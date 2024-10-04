@@ -53,7 +53,6 @@
 
 // Editor
 #include "IEditor.h"
-#include "Include/IObjectManager.h"
 #include "CryEditDoc.h"
 #include "QtViewPaneManager.h"
 
@@ -122,7 +121,7 @@ namespace AzAssetBrowserRequestHandlerPrivate
 
         if (!parentSource)
         {
-            return nullptr; 
+            return nullptr;
         }
         AZ::IO::Path parentName = parentSource->GetName();
         AZ::IO::PathView parentNameWithoutExtension = parentName.Stem();
@@ -184,7 +183,7 @@ namespace AzAssetBrowserRequestHandlerPrivate
                 // here so as to eliminate ties.
                 return a->GetName() < b->GetName();
             });
-        
+
         // since the valid entries are already sorted, just return the first one.
         return validEntries[0];
     }
@@ -294,7 +293,7 @@ namespace AzAssetBrowserRequestHandlerPrivate
                 EntityCompositionRequests::AddComponentsOutcome addComponentsOutcome = AZ::Failure(AZStd::string());
                 EntityCompositionRequestBus::BroadcastResult(
                     addComponentsOutcome, &EntityCompositionRequests::AddComponentsToEntities, entityIds, componentsToAdd);
-                    
+
                 if (!addComponentsOutcome.IsSuccess())
                 {
                     AZ_Error(
@@ -397,7 +396,7 @@ void AzAssetBrowserRequestHandler::CreateSortAction(
         }
     }
 }
-    
+
 
 void AzAssetBrowserRequestHandler::AddSortMenu(
     QMenu* menu,
@@ -420,13 +419,13 @@ void AzAssetBrowserRequestHandler::AddSortMenu(
     }
 
     QMenu* sortMenu = menu->addMenu(QObject::tr("Sort by"));
-    
+
     CreateSortAction(
         sortMenu,
         thumbnailView,
         treeView,
         QObject::tr("Name"), AssetBrowserEntry::AssetEntrySortMode::Name);
-    
+
     CreateSortAction(
         sortMenu,
         thumbnailView,
@@ -654,7 +653,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                 [fullFilePath, thumbnailView, tableView]()
                 {
                     AzAssetBrowserWindow* newAssetBrowser = AzAssetBrowserMultiWindow::OpenNewAssetBrowserWindow();
-                    
+
                     if (thumbnailView)
                     {
                         newAssetBrowser->SetCurrentMode(AssetBrowserMode::ThumbnailView);
@@ -1038,8 +1037,11 @@ void AzAssetBrowserRequestHandler::DoDropItemView(bool& accepted, AzQtComponents
     }
 }
 
-// There are two paths for generating entities by dragging and dropping from the asset browser.
-// This logic handles dropping them into the viewport. Dropping them in the outliner is handled by OutlinerListModel::DropMimeDataAssets.
+// There are multiple paths for generating entities by dragging and dropping from the asset browser.
+// This logic handles dropping them into the viewport.
+// Dropping them in the outliner is handled by OutlinerListModel::DropMimeDataAssets.
+// There's also a higher priority listener for dropping things containing prefabs, by instantiating the prefab.
+// This is used just when there's no higher priority listener to handle basic drops.
 void AzAssetBrowserRequestHandler::Drop(QDropEvent* event, AzQtComponents::DragAndDropContextBase& context)
 {
     using namespace AzToolsFramework;
@@ -1059,7 +1061,7 @@ void AzAssetBrowserRequestHandler::Drop(QDropEvent* event, AzQtComponents::DragA
     {
         return;
     }
-    
+
     event->setDropAction(Qt::CopyAction);
     event->setAccepted(true);
 
@@ -1108,7 +1110,7 @@ void AzAssetBrowserRequestHandler::AddSourceFileOpeners(
                 // it is not the generic asset handler.
                 continue;
             }
-            
+
             // yes, it is the generic asset handler, so install an opener that sends it to the Asset Editor.
 
             AZ::Data::AssetId assetId = productEntry->GetAssetId();

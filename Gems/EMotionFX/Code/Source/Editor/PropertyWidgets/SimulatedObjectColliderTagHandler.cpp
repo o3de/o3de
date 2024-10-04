@@ -73,7 +73,7 @@ namespace EMotionFX
 
     AZ::u32 SimulatedObjectColliderTagHandler::GetHandlerName() const
     {
-        return AZ_CRC("SimulatedObjectColliderTags", 0x80cfa635);
+        return AZ_CRC_CE("SimulatedObjectColliderTags");
     }
 
     QWidget* SimulatedObjectColliderTagHandler::CreateGUI(QWidget* parent)
@@ -166,7 +166,7 @@ namespace EMotionFX
 
     AZ::u32 SimulatedJointColliderExclusionTagHandler::GetHandlerName() const
     {
-        return AZ_CRC("SimulatedJointColliderExclusionTags", 0x27b61cea);
+        return AZ_CRC_CE("SimulatedJointColliderExclusionTags");
     }
 
     QWidget* SimulatedJointColliderExclusionTagHandler::CreateGUI(QWidget* parent)
@@ -185,7 +185,7 @@ namespace EMotionFX
             }
         }
 
-        if (attrib == AZ_CRC("SimulatedObject", 0x2076ba91))
+        if (attrib == AZ_CRC_CE("SimulatedObject"))
         {
             attrValue->Read<SimulatedObject*>(m_simulatedObject);
             GUI->SetSimulatedObject(m_simulatedObject);

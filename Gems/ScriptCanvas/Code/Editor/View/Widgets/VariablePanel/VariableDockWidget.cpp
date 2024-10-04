@@ -678,7 +678,7 @@ namespace ScriptCanvasEditor
         QAction* sortByType = actionGroup.addAction("Sort by type");
         sortByType->setCheckable(true);
 
-        AZStd::intrusive_ptr<EditorSettings::ScriptCanvasEditorSettings> settings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL);
+        AZStd::intrusive_ptr<EditorSettings::ScriptCanvasEditorSettings> settings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC_CE("ScriptCanvasPreviewSettings"), AZ::UserSettings::CT_LOCAL);
 
         if (settings->m_variablePanelSorting == GraphVariablesModel::ColumnIndex::Name)
         {

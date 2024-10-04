@@ -59,6 +59,7 @@ namespace AZ
 
             using PostCullingInstanceDataList = AZStd::vector<PostCullingInstanceData>;
             const bool IsSkinnedMesh() { return m_descriptor.m_isSkinnedMesh; }
+            const AZ::Uuid& GetRayTracingUuid() const { return m_rayTracingUuid; }
 
             //! called when a DrawPacket used by this ModelDataInstance was updated. 
             void HandleDrawPacketUpdate();
@@ -126,7 +127,7 @@ namespace AZ
             CustomMaterialInfo GetCustomMaterialWithFallback(const CustomMaterialId& id) const;
 
             // When instancing is disabled, draw packets are owned by the ModelDataInstance
-            RPI::MeshDrawPacketLods m_drawPacketListsByLod;
+            RPI::MeshDrawPacketLods m_meshDrawPacketListsByLod;
             
             // When instancing is enabled, draw packets are owned by the MeshInstanceManager,
             // and the ModelDataInstance refers to those draw packets via InstanceGroupHandles,

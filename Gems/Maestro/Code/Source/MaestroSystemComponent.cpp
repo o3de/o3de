@@ -27,7 +27,7 @@ namespace Maestro
 
     void MaestroAllocatorComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("MemoryAllocators", 0xd59acbcc));
+        provided.push_back(AZ_CRC_CE("MemoryAllocators"));
     }
 
     void MaestroAllocatorComponent::Reflect(AZ::ReflectContext* context)
@@ -36,7 +36,7 @@ namespace Maestro
         if (serializeContext)
         {
             serializeContext->Class<MaestroAllocatorComponent, AZ::Component>()->Version(1)
-                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC("AssetBuilder", 0xc739c7d7) }));
+                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("AssetBuilder") }));
         }
     }
 
@@ -61,17 +61,17 @@ namespace Maestro
 
     void MaestroSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("MaestroService", 0xba05938e));
+        provided.push_back(AZ_CRC_CE("MaestroService"));
     }
 
     void MaestroSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("MaestroService", 0xba05938e));
+        incompatible.push_back(AZ_CRC_CE("MaestroService"));
     }
 
     void MaestroSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("MemoryAllocators", 0xd59acbcc));
+        required.push_back(AZ_CRC_CE("MemoryAllocators"));
     }
 
     void MaestroSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)

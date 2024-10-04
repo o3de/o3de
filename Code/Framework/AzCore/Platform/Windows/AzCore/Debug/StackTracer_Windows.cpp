@@ -63,7 +63,7 @@ namespace AZ {
         {
             if (!s_dynamicallyLoadedModulesMutex)
             {
-                s_dynamicallyLoadedModulesMutex = Environment::CreateVariable<AZStd::mutex>(AZ_CRC("SymbolStorageDynamicallyLoadedModulesMutex", 0x2b7dbaf2));
+                s_dynamicallyLoadedModulesMutex = Environment::CreateVariable<AZStd::mutex>(AZ_CRC_CE("SymbolStorageDynamicallyLoadedModulesMutex"));
                 AZ_Assert(s_dynamicallyLoadedModulesMutex, "Unable to create SymbolStorageDynamicallyLoadedModulesMutex environment variable");
             }
             return *s_dynamicallyLoadedModulesMutex;
@@ -73,7 +73,7 @@ namespace AZ {
         {
             if (!s_dynamicallyLoadedModules)
             {
-                s_dynamicallyLoadedModules = Environment::CreateVariable<SymbolStorageDynamicallyLoadedModules>(AZ_CRC("SymbolStorageDynamicallyLoadedModules", 0xecf96588));
+                s_dynamicallyLoadedModules = Environment::CreateVariable<SymbolStorageDynamicallyLoadedModules>(AZ_CRC_CE("SymbolStorageDynamicallyLoadedModules"));
                 AZ_Assert(s_dynamicallyLoadedModules, "Unable to create SymbolStorageDynamicallyLoadedModules environment variable - dynamically loaded modules won't have symbols loaded!");
             }
             return *s_dynamicallyLoadedModules;

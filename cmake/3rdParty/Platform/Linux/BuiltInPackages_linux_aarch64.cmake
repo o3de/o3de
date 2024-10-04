@@ -17,7 +17,7 @@ ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform               
 
 # platform-specific:
 ly_associate_package(PACKAGE_NAME expat-2.4.2-rev2-linux-aarch64                             TARGETS expat                       PACKAGE_HASH 934a535c1492d11906789d7ddf105b1a530cf8d8fb126063ffde16c5caeb0179)
-ly_associate_package(PACKAGE_NAME assimp-5.2.5-rev1-linux-aarch64                            TARGETS assimplib                   PACKAGE_HASH 0e497e129f9868088c81891e87b778894c12486b039a5b7bd8a47267275b640f)
+ly_associate_package(PACKAGE_NAME assimp-5.4.3-rev1-linux-aarch64                            TARGETS assimplib                   PACKAGE_HASH 6f3882d9c17071f5014667aff868bd9f5b899fe67f51180bbb2e7137c2bf49c2)
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.11.288-rev1-linux-aarch64                   TARGETS AWSNativeSDK                PACKAGE_HASH 55791343d3aaa07a4242190cc9d6f1f2448c55125839255bdec25efdbab46efa)
 ly_associate_package(PACKAGE_NAME cityhash-1.1-rev1-linux-aarch64                            TARGETS cityhash                    PACKAGE_HASH c4fafa13add81c6ca03338462af78eabbdea917de68c599f11c4a36b0982cec2)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev3-linux-aarch64                           TARGETS TIFF                        PACKAGE_HASH 429461014b21a530dcad597c2d91072ae39d937a04b7bbbf5c34491c41767f7f)
@@ -36,7 +36,7 @@ ly_associate_package(PACKAGE_NAME OpenEXR-3.1.3-rev4-linux-aarch64              
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1t-rev1-linux-aarch64                          TARGETS OpenSSL                     PACKAGE_HASH f32721bec9c82d1bd7fb244d78d5dc4e2a47e7b808bb36027236ad377e241ea5)
 ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.7.2308-o3de-rev1-linux-aarch64  TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH 226eaf982fa182c3460e79a00edfa19d0df6144f089ee1746adfaa24f1f4e5d0)
 ly_associate_package(PACKAGE_NAME SPIRVCross-1.3.275.0-rev1-linux-aarch64                    TARGETS SPIRVCross                  PACKAGE_HASH 8cd6e4b26202d657e221c4513916ba82b17c73caf1533c8dd833bce6c5c88c2b)
-ly_associate_package(PACKAGE_NAME azslc-1.8.19-rev1-linux-aarch64                            TARGETS azslc                       PACKAGE_HASH b62fc3bd7c9fa8939086b37a29cb6492fb001e8df3e60e50c051b4bc0a57ef4e)
+ly_associate_package(PACKAGE_NAME azslc-1.8.22-rev1-linux-aarch64                            TARGETS azslc                       PACKAGE_HASH 5f7c59e4991a22439bbe4af8deab079ec056f90bdd3642eb417c72a15613ecc9)
 ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev5-linux-aarch64                             TARGETS ZLIB                        PACKAGE_HASH ce9d1ed2883d77ffc69c7982c078595c1f89ca55ec19d89fe7e6beb05f774775)
 ly_associate_package(PACKAGE_NAME squish-ccr-deb557d-rev1-linux-aarch64                      TARGETS squish-ccr                  PACKAGE_HASH d3e54df2defff9f9254085acbf7c61dfda56f72ad10d34e1dd3b5d1bd2b8129f)
 ly_associate_package(PACKAGE_NAME astc-encoder-3.2-rev3-linux-aarch64                        TARGETS astc-encoder                PACKAGE_HASH 60ef2a8adc15767dc263860e1e3befc2f3acea26987442a7e80783f1b2158c73)

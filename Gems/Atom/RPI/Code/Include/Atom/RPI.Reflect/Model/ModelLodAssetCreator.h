@@ -44,7 +44,7 @@ namespace AZ
 
             //! Sets the Aabb of the current SubMesh.
             //! Begin and BeginMesh must be called first.
-            void SetMeshAabb(AZ::Aabb&& aabb);
+            void SetMeshAabb(const AZ::Aabb& aabb);
 
             //! Sets the ID of the model's material slot that this mesh uses.
             //! Begin and BeginMesh must be called first

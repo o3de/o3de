@@ -1142,6 +1142,7 @@ namespace AZ
                 }
             }
             m_pipelineStatesLookupNeedsRebuild = false;
+            SceneNotificationBus::Event(m_id, &SceneNotification::OnPipelineStateLookupRebuilt);
         }
 
         RenderPipelinePtr Scene::FindRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle, ViewType viewType)

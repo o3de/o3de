@@ -19,7 +19,7 @@ namespace EMotionFX
 
     // constructor
     MeshDeformerStack::MeshDeformerStack(Mesh* mesh)
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_mesh = mesh;
     }
@@ -109,7 +109,7 @@ namespace EMotionFX
     {
         // if we have deformers in the stack
         const size_t numDeformers = m_deformers.size();
-        
+
         const uint16 highestJointIndex = m_mesh->GetHighestJointIndex();
 
         // iterate through the deformers and reinitialize them

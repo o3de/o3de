@@ -32,7 +32,7 @@ namespace AZ
                 fencesToSignal.reserve(scope.GetFencesToSignal().size());
                 for (const RHI::Ptr<RHI::Fence>& fence : scope.GetFencesToSignal())
                 {
-                    fencesToSignal.push_back(&static_cast<FenceImpl&>(*fence).Get());
+                    fencesToSignal.push_back(&static_cast<FenceImpl&>(*fence->GetDeviceFence(scope.GetDeviceIndex())).Get());
                 }
             }
 
@@ -40,7 +40,7 @@ namespace AZ
                 auto& swapChainsToPresent = m_workRequest.m_swapChainsToPresent;
 
                 swapChainsToPresent.reserve(scope.GetSwapChainsToPresent().size());
-                for (RHI::SwapChain* swapChain : scope.GetSwapChainsToPresent())
+                for (RHI::DeviceSwapChain* swapChain : scope.GetSwapChainsToPresent())
                 {
                     swapChainsToPresent.push_back(static_cast<SwapChain*>(swapChain));
                 }
@@ -48,6 +48,7 @@ namespace AZ
 
             InitRequest request;
             request.m_scopeId = scope.GetId();
+            request.m_deviceIndex = scope.GetDeviceIndex();
             request.m_submitCount = scope.GetEstimatedItemCount();
             request.m_commandLists = reinterpret_cast<RHI::CommandList* const*>(m_workRequest.m_commandLists.data());
             request.m_commandListCount = commandListCount;

@@ -133,7 +133,7 @@ namespace EMotionFX
 
     AZ::u32 TransitionStateFilterLocalHandler::GetHandlerName() const
     {
-        return AZ_CRC("TransitionStateFilterLocal", 0x7c4000ff);
+        return AZ_CRC_CE("TransitionStateFilterLocal");
     }
 
 
@@ -162,7 +162,7 @@ namespace EMotionFX
             }
         }
 
-        if (attrib == AZ_CRC("StateMachine", 0xe5f2e7a8))
+        if (attrib == AZ_CRC_CE("StateMachine"))
         {
             attrValue->Read<AnimGraphStateMachine*>(m_stateMachine);
             GUI->SetStateMachine(m_stateMachine);

@@ -79,9 +79,8 @@ namespace Terrain
         
         m_meshMovedFlag = m_parentScene->GetViewTagBitRegistry().AcquireTag(AZ::Render::MeshCommon::MeshMovedName);
 
-        AZ::RHI::Ptr<AZ::RHI::Device> rhiDevice = AZ::RHI::RHISystemInterface::Get()->GetDevice();
         m_rayTracingFeatureProcessor = m_parentScene->GetFeatureProcessor<AZ::Render::RayTracingFeatureProcessor>();
-        m_rayTracingEnabled = rhiDevice->GetFeatures().m_rayTracing && m_rayTracingFeatureProcessor;
+        m_rayTracingEnabled = (AZ::RHI::RHISystemInterface::Get()->GetRayTracingSupport() != AZ::RHI::MultiDevice::NoDevices) && m_rayTracingFeatureProcessor;
 
         m_isInitialized = true;
     }
@@ -303,11 +302,13 @@ namespace Terrain
 
     void TerrainMeshManager::BuildDrawPacket(Sector& sector)
     {
-        AZ::RHI::DrawPacketBuilder drawPacketBuilder;
+        AZ::RHI::DrawPacketBuilder drawPacketBuilder{AZ::RHI::MultiDevice::AllDevices};
         uint32_t indexCount = m_indexBuffer->GetBufferViewDescriptor().m_elementCount;
+        sector.m_geometryView.SetDrawArguments(AZ::RHI::DrawIndexed(0, indexCount, 0));
+        sector.m_geometryView.SetIndexBufferView(m_indexBufferView);
+
         drawPacketBuilder.Begin(nullptr);
-        drawPacketBuilder.SetDrawArguments(AZ::RHI::DrawIndexed(1, 0, 0, indexCount, 0));
-        drawPacketBuilder.SetIndexBufferView(m_indexBufferView);
+        drawPacketBuilder.SetGeometryView(&sector.m_geometryView);
         drawPacketBuilder.AddShaderResourceGroup(sector.m_srg->GetRHIShaderResourceGroup());
         drawPacketBuilder.AddShaderResourceGroup(m_materialInstance->GetRHIShaderResourceGroup());
 
@@ -320,7 +321,7 @@ namespace Terrain
             AZ::RHI::DrawPacketBuilder::DrawRequest drawRequest;
             drawRequest.m_listTag = drawData.m_drawListTag;
             drawRequest.m_pipelineState = drawData.m_pipelineState;
-            drawRequest.m_streamBufferViews = sector.m_streamBufferViews;
+            drawRequest.m_streamIndices = sector.m_geometryView.GetFullStreamBufferIndices();
             drawRequest.m_stencilRef = AZ::Render::StencilRefs::UseDiffuseGIPass | AZ::Render::StencilRefs::UseIBLSpecularPass;
 
             if (drawData.m_materialPipelineName != AZ::RPI::MaterialPipelineNone)
@@ -335,7 +336,7 @@ namespace Terrain
             {
                 // If the DrawSrg exists we must create and bind it, otherwise the CommandList will fail validation for SRG being null
                 drawSrg = AZ::RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), drawData.m_drawSrgLayout->GetName());
-                if (!drawData.m_shaderVariant.IsFullyBaked() && drawData.m_drawSrgLayout->HasShaderVariantKeyFallbackEntry())
+                if (drawData.m_shaderVariant.UseKeyFallback() && drawData.m_drawSrgLayout->HasShaderVariantKeyFallbackEntry())
                 {
                     drawSrg->SetShaderVariantKeyFallbackValue(drawData.m_shaderOptions.GetShaderVariantKeyFallbackValue());
                 }
@@ -359,8 +360,11 @@ namespace Terrain
         uint32_t lowerLodIndexCount = indexCount / 4;
         for (uint32_t i = 0; i < 4; ++i)
         {
+            sector.m_quadrantGeometryViews[i] = sector.m_geometryView;
+            sector.m_quadrantGeometryViews[i].SetDrawArguments( AZ::RHI::DrawIndexed(0, lowerLodIndexCount, lowerLodIndexCount * i) );
+
             AZ::RHI::DrawPacketBuilder quadrantDrawPacketBuilder = commonQuadrantDrawPacketBuilder;
-            quadrantDrawPacketBuilder.SetDrawArguments(AZ::RHI::DrawIndexed(1, 0, 0, lowerLodIndexCount, lowerLodIndexCount * i));
+            quadrantDrawPacketBuilder.SetGeometryView(&sector.m_quadrantGeometryViews[i]);
             sector.m_rhiDrawPacketQuadrant[i] = quadrantDrawPacketBuilder.End();
         }
     }
@@ -404,10 +408,10 @@ namespace Terrain
 
             subMesh.m_positionFormat = positionsBufferFormat;
             subMesh.m_positionVertexBufferView = positionsVertexBufferView;
-            subMesh.m_positionShaderBufferView = rhiPositionsBuffer.GetBufferView(positionsBufferDescriptor);
+            subMesh.m_positionShaderBufferView = rhiPositionsBuffer.BuildBufferView(positionsBufferDescriptor);
             subMesh.m_normalFormat = normalsBufferFormat;
             subMesh.m_normalVertexBufferView = normalsVertexBufferView;
-            subMesh.m_normalShaderBufferView = rhiNormalsBuffer.GetBufferView(normalsBufferDescriptor);
+            subMesh.m_normalShaderBufferView = rhiNormalsBuffer.BuildBufferView(normalsBufferDescriptor);
             subMesh.m_indexBufferView = AZ::RHI::IndexBufferView(rhiIndexBuffer, indexBufferByteOffset, indexBufferByteCount, indexBufferFormat);
             subMesh.m_material.m_baseColor = AZ::Color::CreateFromVector3(AZ::Vector3(0.18f));
 
@@ -417,7 +421,7 @@ namespace Terrain
             indexBufferDescriptor.m_elementSize = indexElementSize;
             indexBufferDescriptor.m_elementFormat = AZ::RHI::Format::R32_UINT;
 
-            subMesh.m_indexShaderBufferView = rhiIndexBuffer.GetBufferView(indexBufferDescriptor);
+            subMesh.m_indexShaderBufferView = rhiIndexBuffer.BuildBufferView(indexBufferDescriptor);
 
             meshGroup.m_mesh.m_assetId = AZ::Data::AssetId(meshGroup.m_id);
             float xyScale = (m_gridSize * m_sampleSpacing) * (1 << lodLevel);
@@ -477,20 +481,25 @@ namespace Terrain
                 sector.m_srg = AZ::RPI::ShaderResourceGroup::Create(shaderAsset, materialAsset->GetObjectSrgLayout()->GetName());
 
                 sector.m_heightsNormalsBuffer = CreateMeshBufferInstance(sizeof(HeightNormalVertex), m_gridVerts2D);
-                sector.m_streamBufferViews[StreamIndex::XYPositions] = CreateStreamBufferView(m_xyPositionsBuffer);
-                sector.m_streamBufferViews[StreamIndex::Heights] = CreateStreamBufferView(sector.m_heightsNormalsBuffer);
-                sector.m_streamBufferViews[StreamIndex::Normals] = CreateStreamBufferView(sector.m_heightsNormalsBuffer, AZ::RHI::GetFormatSize(HeightFormat));
+
+                sector.m_geometryView.ClearStreamBufferViews();
+
+                AZStd::vector<AZ::RHI::StreamBufferView>& streamBufferViews = sector.m_geometryView.GetStreamBufferViews();
+                streamBufferViews.resize(StreamIndex::Count);
+                streamBufferViews[StreamIndex::XYPositions] = CreateStreamBufferView(m_xyPositionsBuffer);
+                streamBufferViews[StreamIndex::Heights] = CreateStreamBufferView(sector.m_heightsNormalsBuffer);
+                streamBufferViews[StreamIndex::Normals] = CreateStreamBufferView(sector.m_heightsNormalsBuffer, AZ::RHI::GetFormatSize(HeightFormat));
 
                 if (m_config.m_clodEnabled)
                 {
                     sector.m_lodHeightsNormalsBuffer = CreateMeshBufferInstance(sizeof(HeightNormalVertex), m_gridVerts2D);
-                    sector.m_streamBufferViews[StreamIndex::LodHeights] = CreateStreamBufferView(sector.m_lodHeightsNormalsBuffer);
-                    sector.m_streamBufferViews[StreamIndex::LodNormals] = CreateStreamBufferView(sector.m_lodHeightsNormalsBuffer, AZ::RHI::GetFormatSize(HeightFormat));
+                    streamBufferViews[StreamIndex::LodHeights] = CreateStreamBufferView(sector.m_lodHeightsNormalsBuffer);
+                    streamBufferViews[StreamIndex::LodNormals] = CreateStreamBufferView(sector.m_lodHeightsNormalsBuffer, AZ::RHI::GetFormatSize(HeightFormat));
                 }
                 else
                 {
-                    sector.m_streamBufferViews[StreamIndex::LodHeights] = CreateStreamBufferView(m_dummyLodHeightsNormalsBuffer);
-                    sector.m_streamBufferViews[StreamIndex::LodNormals] = CreateStreamBufferView(m_dummyLodHeightsNormalsBuffer, AZ::RHI::GetFormatSize(HeightFormat));
+                    streamBufferViews[StreamIndex::LodHeights] = CreateStreamBufferView(m_dummyLodHeightsNormalsBuffer);
+                    streamBufferViews[StreamIndex::LodNormals] = CreateStreamBufferView(m_dummyLodHeightsNormalsBuffer, AZ::RHI::GetFormatSize(HeightFormat));
                 }
 
                 BuildDrawPacket(sector);
@@ -615,7 +624,7 @@ namespace Terrain
                 const AZ::RPI::ShaderVariant& variant = shader->GetVariant(finalVariantId);
 
                 AZ::RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
-                variant.ConfigurePipelineState(pipelineStateDescriptor);
+                variant.ConfigurePipelineState(pipelineStateDescriptor, shaderOptions);
 
                 AZ::RHI::InputStreamLayoutBuilder layoutBuilder;
                 layoutBuilder.AddBuffer()->Channel(AZ::RHI::ShaderSemantic{ "POSITION", 0 }, XYPositionFormat);

@@ -25,19 +25,17 @@
 #include <AzFramework/Font/FontInterface.h>
 
 #include <Atom/RHI.Reflect/Base.h>
-#include <Atom/RHI/StreamBufferView.h>
-#include <Atom/RHI/IndexBufferView.h>
-#include <Atom/RHI/PipelineState.h>
 #include <Atom/RHI/DrawList.h>
 #include <Atom/RHI/Image.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
-#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
-#include <Atom/RPI.Public/Shader/Shader.h>
-#include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
+#include <Atom/RPI.Public/Image/StreamingImage.h>
+#include <Atom/RPI.Public/Scene.h>
+#include <Atom/RPI.Public/Shader/Shader.h>
+#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/WindowContext.h>
-#include <Atom/RPI.Public/Image/StreamingImage.h>
 
 struct ISystem;
 
@@ -255,7 +253,7 @@ namespace AZ
             AZ::Vector2 m_position;
             AZ::Vector2 m_size;
             AZ::RPI::ViewportContextPtr m_viewportContext;
-            const AZ::RHI::Viewport* m_viewport;
+            AZ::RHI::Viewport m_viewport;
         };
         DrawParameters ExtractDrawParameters(const AzFramework::TextDrawParameters& params, AZStd::string_view text, bool forceCalculateSize);
 

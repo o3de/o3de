@@ -1,0 +1,47 @@
+{
+    "name": "vertexColor",
+    "displayName": "Vertex Color",
+    "description": "Properties for configuring the vertex color.",
+    "properties": [
+        {
+            "name": "enable",
+            "displayName": "Use Vertex Color",
+            "description": "Whether to use vertex color.",
+            "type": "Bool",
+            "defaultValue": false
+        },
+        {
+            "name": "factor",
+            "displayName": "Vertex Color Factor",
+            "description": "Factor for blending Color and Vertex Color. The behavior depends on Vertex Color Blend Mode.",
+            "type": "Float",
+            "defaultValue": 1.0,
+            "min": 0.0,
+            "max": 1.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_vertexColorFactor"
+            }
+        },
+        {
+            "name": "blendMode",
+            "displayName": "Vertex Color Blend Mode",
+            "description": "Selects the equation to use when combining Color, Factor, and Vertex Color.",
+            "type": "Enum",
+            "enumValues": [ "Multiply", "LinearLight", "Lerp", "Overlay" ],
+            "defaultValue": "Multiply",
+            "connection": {
+                "type": "ShaderOption",
+                "name": "o_vertexColorBlendMode"
+            }
+        }
+    ],
+    "functors": [
+        {
+            "type": "Lua",
+            "args": {
+                "file": "Materials/Types/BasePBR_VertexColorEnableFeature.lua"
+            }
+        }
+    ]
+}

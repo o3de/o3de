@@ -29,14 +29,8 @@ namespace AZ
             m_vertexDeltaBuffer = RPI::Buffer::FindOrCreate(bufferAssetView.GetBufferAsset());
             if (m_vertexDeltaBuffer)
             {
-                AZ::RHI::Ptr<AZ::RHI::BufferView> bufferView = RHI::Factory::Get().CreateBufferView();
-                {
-                    bufferView->SetName(Name(bufferNamePrefix + "MorphTargetVertexDeltaView"));
-                    [[maybe_unused]] RHI::ResultCode resultCode = bufferView->Init(*m_vertexDeltaBuffer->GetRHIBuffer(), bufferAssetView.GetBufferViewDescriptor());
-                    AZ_Error("MorphTargetInputBuffers", resultCode == RHI::ResultCode::Success, "Failed to initialize buffer view for morph target.");
-                }
-
-                m_vertexDeltaBufferView = bufferView;
+                m_vertexDeltaBufferView = m_vertexDeltaBuffer->GetRHIBuffer()->BuildBufferView(bufferAssetView.GetBufferViewDescriptor());
+                m_vertexDeltaBufferView->SetName(Name(bufferNamePrefix + "MorphTargetVertexDeltaView"));
             }
         }
 
@@ -46,7 +40,8 @@ namespace AZ
             RHI::ShaderInputBufferIndex srgIndex = perInstanceSRG->FindShaderInputBufferIndex(Name{ "m_vertexDeltas" });
             AZ_Error("MorphTargetInputBuffers", srgIndex.IsValid(), "Failed to find shader input index for 'm_positionDeltas' in the skinning compute shader per-instance SRG.");
 
-            [[maybe_unused]] bool success = perInstanceSRG->SetBufferView(srgIndex, m_vertexDeltaBufferView.get());
+            [[maybe_unused]] bool success = perInstanceSRG->SetBufferView(
+                srgIndex, m_vertexDeltaBufferView.get());
             AZ_Error("MorphTargetInputBuffers", success, "Failed to bind buffer view for vertex deltas");
         }
     } // namespace Render

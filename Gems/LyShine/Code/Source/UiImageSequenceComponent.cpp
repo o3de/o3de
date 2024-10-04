@@ -210,7 +210,7 @@ void UiImageSequenceComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiImage.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiImage.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageSequenceComponent::m_imageType, "ImageType", "The image type. Affects how the texture/sprite is mapped to the image rectangle.")
@@ -221,7 +221,7 @@ void UiImageSequenceComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageSequenceComponent::OnImageTypeChange);
             editInfo->DataElement("Directory", &UiImageSequenceComponent::m_imageSequenceDirectory, "Sequence Directory", "A directory containing images of the sequence.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageSequenceComponent::OnImageSequenceDirectoryChange)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageSequenceComponent::m_sequenceIndex, "Sequence Index", "Image index to display.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageSequenceComponent::OnImageSequenceIndexChange)
                 ->Attribute("EnumValues", &UiImageSequenceComponent::PopulateIndexStringList);

@@ -175,12 +175,12 @@ namespace HttpRequestor
 
     void HttpRequestorSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("HttpRequestorService"));
+        provided.push_back(AZ_CRC_CE("HttpRequestorService"));
     }
 
     void HttpRequestorSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("HttpRequestorService"));
+        incompatible.push_back(AZ_CRC_CE("HttpRequestorService"));
     }
 
     void HttpRequestorSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

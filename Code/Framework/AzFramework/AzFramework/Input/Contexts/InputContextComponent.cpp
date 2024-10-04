@@ -20,7 +20,7 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void InputContextComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("InputContextService", 0xa2734425));
+        provided.push_back(AZ_CRC_CE("InputContextService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -44,7 +44,7 @@ namespace AzFramework
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Category, "Input")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &InputContextComponent::m_uniqueName, "Unique Name",
                         "The name of the input context, unique among all active input contexts and input devices.\n"
                         "This will be truncated if its length exceeds that of InputDeviceId::MAX_NAME_LENGTH = 64")

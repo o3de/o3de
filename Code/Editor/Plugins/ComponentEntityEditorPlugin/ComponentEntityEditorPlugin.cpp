@@ -43,7 +43,6 @@ namespace ComponentEntityEditorPluginInternal
 
     void UnregisterSandboxObjects()
     {
-        GetIEditor()->GetClassFactory()->UnregisterClass("ComponentEntity");
     }
 
 

@@ -6,11 +6,13 @@
  *
  */
 
-#include <RHI/RayTracingPipelineState.h>
 #include <Atom/RHI.Reflect/SamplerState.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 #include <Atom/RHI.Reflect/Vulkan/ShaderStageFunction.h>
 #include <RHI/Device.h>
-#include <Atom/RHI.Reflect/VkAllocator.h>
+#include <RHI/RayTracingPipelineState.h>
+#include <RHI/ReleaseContainer.h>
+#include <RHI/SpecializationConstantData.h>
 
 namespace AZ
 {
@@ -21,7 +23,7 @@ namespace AZ
             return aznew RayTracingPipelineState;
         }
 
-        RHI::ResultCode RayTracingPipelineState::InitInternal(RHI::Device& deviceBase, const RHI::RayTracingPipelineStateDescriptor* descriptor)
+        RHI::ResultCode RayTracingPipelineState::InitInternal(RHI::Device& deviceBase, const RHI::DeviceRayTracingPipelineStateDescriptor* descriptor)
         {
             Device &device = static_cast<Device&>(deviceBase);
             auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
@@ -37,11 +39,14 @@ namespace AZ
             // process shader libraries into shader stages and groups
             AZStd::vector<VkPipelineShaderStageCreateInfo> stages;
             AZStd::vector<VkRayTracingShaderGroupCreateInfoKHR> groups;
-            m_shaderModules.reserve(descriptor->GetShaderLibraries().size());
-            for (const RHI::RayTracingShaderLibrary& shaderLibrary : descriptor->GetShaderLibraries())
-            {
-                const ShaderStageFunction* rayTracingFunction = azrtti_cast<const ShaderStageFunction*>(shaderLibrary.m_descriptor.m_rayTracingFunction.get());
+            AZStd::vector<SpecializationConstantData> specializationDataVector(descriptor->GetShaderLibraries().size());
 
+            m_shaderModules.reserve(descriptor->GetShaderLibraries().size());
+            const auto& libraries = descriptor->GetShaderLibraries();
+            for (uint32_t i = 0; i < libraries.size(); ++i)
+            {
+                const RHI::RayTracingShaderLibrary& shaderLibrary = libraries[i];
+                const ShaderStageFunction* rayTracingFunction = azrtti_cast<const ShaderStageFunction*>(shaderLibrary.m_descriptor.m_rayTracingFunction.get());
                 VkShaderModule& shaderModule = m_shaderModules.emplace_back();
                 VkShaderModuleCreateInfo moduleCreateInfo = {};
                 moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -50,9 +55,13 @@ namespace AZ
                 device.GetContext().CreateShaderModule(
                     device.GetNativeDevice(), &moduleCreateInfo, VkSystemAllocator::Get(), &shaderModule);
 
+                SpecializationConstantData& specializationData = specializationDataVector[i];
+                specializationData.Init(shaderLibrary.m_descriptor);
+
                 VkPipelineShaderStageCreateInfo stageCreateInfo = {};
                 stageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
                 stageCreateInfo.module = shaderModule;
+                stageCreateInfo.pSpecializationInfo = specializationData.GetVkSpecializationInfo();
 
                 // ray generation
                 if (!shaderLibrary.m_rayGenerationShaderName.IsEmpty())
@@ -239,6 +248,10 @@ namespace AZ
         void RayTracingPipelineState::ShutdownInternal()
         {
             Device& device = static_cast<Device&>(GetDevice());
+
+            device.QueueForRelease(
+                new ReleaseContainer<VkPipeline>(device.GetNativeDevice(), m_pipeline, device.GetContext().DestroyPipeline));
+
             for (auto& shaderModule : m_shaderModules)
             {
                 device.GetContext().DestroyShaderModule(device.GetNativeDevice(), shaderModule, VkSystemAllocator::Get());

@@ -11,10 +11,13 @@
 #include <RayTracing/RayTracingResourceList.h>
 #include <RayTracing/RayTracingIndexList.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
+#include <Atom/RHI/IndexBufferView.h>
+#include <Atom/RHI/StreamBufferView.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
 #include <Atom/RHI/RayTracingBufferPools.h>
-#include <Atom/RHI/BufferView.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/DeviceBufferView.h>
+#include <Atom/RHI/DeviceImageView.h>
+#include <Atom/RPI.Public/Buffer/RingBuffer.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/Utils/StableDynamicArray.h>
 #include <AzCore/Math/Aabb.h>
@@ -109,6 +112,7 @@ namespace AZ
             {
                 // vertex streams
                 RHI::Format m_positionFormat = RHI::Format::Unknown;
+
                 RHI::StreamBufferView m_positionVertexBufferView;
                 RHI::Ptr<RHI::BufferView> m_positionShaderBufferView;
 
@@ -189,9 +193,6 @@ namespace AZ
 
                 ReflectionProbe m_reflectionProbe;
 
-            private:
-                friend RayTracingFeatureProcessor;
-
                 // indices of subMeshes in the subMesh list
                 IndexVector m_subMeshIndices;
             };
@@ -202,7 +203,7 @@ namespace AZ
                 Name m_name;
                 Data::Instance<RPI::Shader> m_intersectionShader;
                 Name m_intersectionShaderName;
-                uint32_t m_bindlessBufferIndex;
+                AZStd::unordered_map<int, uint32_t> m_bindlessBufferIndices;
                 int m_instanceCount = 0;
             };
             using ProceduralGeometryTypeHandle = StableDynamicArrayHandle<ProceduralGeometryType>;
@@ -240,16 +241,16 @@ namespace AZ
                 const AZStd::string& name,
                 const Data::Instance<RPI::Shader>& intersectionShader,
                 const AZStd::string& intersectionShaderName,
-                uint32_t bindlessBufferIndex = static_cast<uint32_t>(-1));
+                const AZStd::unordered_map<int, uint32_t>& bindlessBufferIndices = {});
 
-            //! Sets the bindlessBufferIndex of a procedural geometry type. This is necessary if the buffer, whose bindless read index was
+            //! Sets the bindlessBufferIndices of a procedural geometry type. This is necessary if the buffer, whose bindless read index was
             //! passed to `RegisterProceduralGeometryType`, is resized or recreated.
             //! \param geometryTypeHandle A weak handle of a procedural geometry type (obtained by calling `.GetWeakHandle()` on the handle
             //! returned by `RegisterProceduralGeometryType`.
-            //! \param bindlessBufferIndex A single 32-bit value which can be queried in the intersection shader with
+            //! \param bindlessBufferIndices A single 32-bit value which can be queried in the intersection shader with
             //! `GetBindlessBufferIndex()`.
             void SetProceduralGeometryTypeBindlessBufferIndex(
-                ProceduralGeometryTypeWeakHandle geometryTypeHandle, uint32_t bindlessBufferIndex);
+                ProceduralGeometryTypeWeakHandle geometryTypeHandle, const AZStd::unordered_map<int, uint32_t>& bindlessBufferIndices);
 
             //! Adds a procedural geometry to the ray tracing scene.
             //! \param geometryTypeHandle A weak handle of a procedural geometry type (obtained by calling `.GetWeakHandle()` on the handle
@@ -280,6 +281,11 @@ namespace AZ
             //! \param localInstanceIndex An index which can be queried in the intersection shader with `GetLocalInstanceIndex()` and can be
             //! used together with `GetBindlessBufferIndex()` to access per-instance geometry data.
             void SetProceduralGeometryLocalInstanceIndex(const Uuid& uuid, uint32_t localInstanceIndex);
+
+            //! Sets the material of a procedural geometry instance.
+            //! \param uuid The Uuid of the procedural geometry which must have been added with `AddProceduralGeometry` before.
+            //! \param material The material of the procedural geometry instance.
+            void SetProceduralGeometryMaterial(const Uuid& uuid, const SubMeshMaterial& material);
 
             //! Removes a procedural geometry instance from the ray tracing scene.
             //! \param uuid The Uuid of the procedrual geometry which must have been added with `AddProceduralGeometry` before.
@@ -313,6 +319,11 @@ namespace AZ
             const SubMeshVector& GetSubMeshes() const { return m_subMeshes; }
             SubMeshVector& GetSubMeshes() { return m_subMeshes; }
 
+            // mesh data for meshes that should be included in ray tracing operations,
+            // this is a map of the mesh UUID to the ray tracing data for the sub-meshes
+            using MeshMap = AZStd::map<AZ::Uuid, Mesh>;
+            const MeshMap& GetMeshMap() const { return m_meshes; };
+
             //! Retrieves the RayTracingSceneSrg
             Data::Instance<RPI::ShaderResourceGroup> GetRayTracingSceneSrg() const { return m_rayTracingSceneSrg; }
 
@@ -330,6 +341,12 @@ namespace AZ
             //! Retrieves the revision number of the procedural geometry data of the ray tracing data.
             //! This is used to determine if the RayTracingPipelineState needs to be recreated.
             uint32_t GetProceduralGeometryTypeRevision() const { return m_proceduralGeometryTypeRevision; }
+
+            //! Provide access to the mutex protecting the blasBuilt flag
+            AZStd::mutex& GetBlasBuiltMutex()
+            {
+                return m_blasBuiltMutex;
+            }
 
             uint32_t GetSkinnedMeshCount() const
             {
@@ -355,12 +372,17 @@ namespace AZ
             RHI::AttachmentId GetTlasAttachmentId() const { return m_tlasAttachmentId; }
 
             //! Retrieves the GPU buffer containing information for all ray tracing meshes.
-            const Data::Instance<RPI::Buffer> GetMeshInfoGpuBuffer() const { return m_meshInfoGpuBuffer[m_currentMeshInfoFrameIndex]; }
+            const Data::Instance<RPI::Buffer> GetMeshInfoGpuBuffer() const { return m_meshInfoGpuBuffer.GetCurrentBuffer(); }
 
             //! Retrieves the GPU buffer containing information for all ray tracing materials.
-            const Data::Instance<RPI::Buffer> GetMaterialInfoGpuBuffer() const { return m_materialInfoGpuBuffer[m_currentMaterialInfoFrameIndex]; }
+            const Data::Instance<RPI::Buffer> GetMaterialInfoGpuBuffer() const { return m_materialInfoGpuBuffer.GetCurrentBuffer(); }
 
-            //! Updates the RayTracingSceneSrg and RayTracingMaterialSrg, called after the TLAS is allocated in the RayTracingAccelerationStructurePass
+            //! If necessary recreates TLAS buffers and updates the ray tracing SRGs. Should only be called by the
+            //! RayTracingAccelerationStructurePass. Returns the current revision.
+            uint32_t BeginFrame();
+
+            //! Updates the RayTracingSceneSrg and RayTracingMaterialSrg, called after the TLAS is allocated in the
+            //! RayTracingAccelerationStructurePass
             void UpdateRayTracingSrgs();
 
             struct SubMeshBlasInstance
@@ -373,8 +395,8 @@ namespace AZ
                 uint32_t m_count = 0;
                 AZStd::vector<SubMeshBlasInstance> m_subMeshes;
 
-                // flag indicating if the Blas objects in the sub-mesh list are built
-                bool m_blasBuilt = false;
+                // Flags indicating if the Blas objects in the sub-mesh list are already built
+                RHI::MultiDevice::DeviceMask m_blasBuilt = RHI::MultiDevice::NoDevices;
                 bool m_isSkinnedMesh = false;
             };
 
@@ -400,9 +422,6 @@ namespace AZ
             // flag indicating if RayTracing is enabled, currently based on device support
             bool m_rayTracingEnabled = false;
 
-            // mesh data for meshes that should be included in ray tracing operations,
-            // this is a map of the mesh UUID to the ray tracing data for the sub-meshes
-            using MeshMap = AZStd::map<AZ::Uuid, Mesh>;
             MeshMap m_meshes;
             SubMeshVector m_subMeshes;
 
@@ -420,6 +439,9 @@ namespace AZ
             // current revision number of ray tracing data
             uint32_t m_revision = 0;
 
+            // latest tlas revision number
+            uint32_t m_tlasRevision = 0;
+
             uint32_t m_proceduralGeometryTypeRevision = 0;
 
             // total number of ray tracing sub-meshes
@@ -433,6 +455,9 @@ namespace AZ
 
             // mutex for the mesh and BLAS lists
             AZStd::mutex m_mutex;
+
+            // mutex for the m_blasBuilt flag manipulation
+            AZStd::mutex m_blasBuiltMutex;
 
             // structure for data in the m_meshInfoBuffer, shaders that use the buffer must match this type
             struct MeshInfo
@@ -453,13 +478,9 @@ namespace AZ
 
             // vector of MeshInfo, transferred to the meshInfoGpuBuffer
             using MeshInfoVector = AZStd::vector<MeshInfo>;
-            MeshInfoVector m_meshInfos;
-            static const uint32_t BufferFrameCount = 3;
-            Data::Instance<RPI::Buffer> m_meshInfoGpuBuffer[BufferFrameCount];
-            uint32_t m_currentMeshInfoFrameIndex = 0;
-
-            Data::Instance<RPI::Buffer> m_proceduralGeometryInfoGpuBuffer[BufferFrameCount];
-            uint32_t m_currentProceduralGeometryInfoFrameIndex = 0;
+            AZStd::unordered_map<int, MeshInfoVector> m_meshInfos;
+            RPI::RingBuffer m_meshInfoGpuBuffer{ "RayTracingMeshInfo", RPI::CommonBufferPoolType::ReadOnly, sizeof(MeshInfo) };
+            RPI::RingBuffer m_proceduralGeometryInfoGpuBuffer{ "ProceduralGeometryInfo", RPI::CommonBufferPoolType::ReadOnly, RHI::Format::R32G32_UINT };
 
             // structure for data in the m_materialInfoBuffer, shaders that use the buffer must match this type
             struct alignas(16) MaterialInfo
@@ -490,10 +511,9 @@ namespace AZ
 
             // vector of MaterialInfo, transferred to the materialInfoGpuBuffer
             using MaterialInfoVector = AZStd::vector<MaterialInfo>;
-            MaterialInfoVector m_materialInfos;
-            MaterialInfoVector m_proceduralGeometryMaterialInfos;
-            Data::Instance<RPI::Buffer> m_materialInfoGpuBuffer[BufferFrameCount];
-            uint32_t m_currentMaterialInfoFrameIndex = 0;
+            AZStd::unordered_map<int, MaterialInfoVector> m_materialInfos;
+            AZStd::unordered_map<int, MaterialInfoVector> m_proceduralGeometryMaterialInfos;
+            RPI::RingBuffer m_materialInfoGpuBuffer{ "RayTracingMaterialInfo", RPI::CommonBufferPoolType::ReadOnly, sizeof(MaterialInfo) };
 
             // update flags
             bool m_meshInfoBufferNeedsUpdate = false;
@@ -519,15 +539,14 @@ namespace AZ
 
             // mesh buffer and material texture index lists, which contain the array indices of the mesh resources
             static const uint32_t NumMeshBuffersPerMesh = 6;
-            RayTracingIndexList<NumMeshBuffersPerMesh> m_meshBufferIndices;
+            AZStd::unordered_map<int, RayTracingIndexList<NumMeshBuffersPerMesh>> m_meshBufferIndices;
 
             static const uint32_t NumMaterialTexturesPerMesh = 5;
-            RayTracingIndexList<NumMaterialTexturesPerMesh> m_materialTextureIndices;
+            AZStd::unordered_map<int, RayTracingIndexList<NumMaterialTexturesPerMesh>> m_materialTextureIndices;
 
             // Gpu buffers for the mesh and material index lists
-            Data::Instance<RPI::Buffer> m_meshBufferIndicesGpuBuffer[BufferFrameCount];
-            Data::Instance<RPI::Buffer> m_materialTextureIndicesGpuBuffer[BufferFrameCount];
-            uint32_t m_currentIndexListFrameIndex = 0;
+            RPI::RingBuffer m_meshBufferIndicesGpuBuffer{ "RayTracingMeshBufferIndices", RPI::CommonBufferPoolType::ReadOnly, RHI::Format::R32_UINT };
+            RPI::RingBuffer m_materialTextureIndicesGpuBuffer{ "RayTracingMaterialTextureIndices", RPI::CommonBufferPoolType::ReadOnly, RHI::Format::R32_UINT };
 
             uint32_t m_skinnedMeshCount = 0;
 
@@ -535,7 +554,7 @@ namespace AZ
             ProceduralGeometryList m_proceduralGeometry;
             AZStd::unordered_map<Uuid, size_t> m_proceduralGeometryLookup;
 
-            void ConvertMaterial(MaterialInfo& materialInfo, const SubMeshMaterial& subMeshMaterial);
+            void ConvertMaterial(MaterialInfo& materialInfo, const SubMeshMaterial& subMeshMaterial, int deviceIndex);
         };
     }
 }

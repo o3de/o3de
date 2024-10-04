@@ -1238,7 +1238,7 @@ namespace EMotionFX
             // Developer code and APIs with exclusionary terms will be deprecated as we introduce replacements across this project's related
             // codebases and APIs. Please note, some instances have been retained in the current version to provide backward compatibility
             // for assets/materials created prior to the change. These will be deprecated in the future.
-            int index = classElement.FindElement(AZ_CRC("syncMasterMotionId", 0xfaec9599));
+            int index = classElement.FindElement(AZ_CRC_CE("syncMasterMotionId"));
             if (index > 0)
             {
                 AZStd::string oldValue;
@@ -1295,24 +1295,24 @@ namespace EMotionFX
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendSpace2DNode::m_calculationMethodX, "Calculation method (X-Axis)", "Calculation method for the X Axis")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendSpace2DNode::Reinit)
-            ->DataElement(AZ_CRC("BlendSpaceEvaluator", 0x9a3f7d07), &BlendSpace2DNode::m_evaluatorTypeX, "X-Axis Evaluator", "Evaluator for the X axis value of motions")
+            ->DataElement(AZ_CRC_CE("BlendSpaceEvaluator"), &BlendSpace2DNode::m_evaluatorTypeX, "X-Axis Evaluator", "Evaluator for the X axis value of motions")
             ->Attribute(AZ::Edit::Attributes::Visibility, &BlendSpace2DNode::GetEvaluatorXVisibility)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendSpace2DNode::Reinit)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendSpace2DNode::m_calculationMethodY, "Calculation method (Y-Axis)", "Calculation method for the Y Axis")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendSpace2DNode::Reinit)
-            ->DataElement(AZ_CRC("BlendSpaceEvaluator", 0x9a3f7d07), &BlendSpace2DNode::m_evaluatorTypeY, "Y-Axis Evaluator", "Evaluator for the Y axis value of motions")
+            ->DataElement(AZ_CRC_CE("BlendSpaceEvaluator"), &BlendSpace2DNode::m_evaluatorTypeY, "Y-Axis Evaluator", "Evaluator for the Y axis value of motions")
             ->Attribute(AZ::Edit::Attributes::Visibility, &BlendSpace2DNode::GetEvaluatorYVisibility)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendSpace2DNode::Reinit)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendSpace2DNode::m_syncMode)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-            ->DataElement(AZ_CRC("BlendSpaceMotion", 0x9be98fb7), &BlendSpace2DNode::m_syncLeaderMotionId, "Sync Leader Motion", "The leader motion used for motion synchronization.")
+            ->DataElement(AZ_CRC_CE("BlendSpaceMotion"), &BlendSpace2DNode::m_syncLeaderMotionId, "Sync Leader Motion", "The leader motion used for motion synchronization.")
             ->Attribute(AZ::Edit::Attributes::Visibility, &BlendSpace2DNode::GetSyncOptionsVisibility)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendSpace2DNode::Reinit)
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendSpace2DNode::m_eventFilterMode)
-            ->DataElement(AZ_CRC("BlendSpaceMotionContainer", 0x8025d37d), &BlendSpace2DNode::m_motions, "Motions", "Source motions for blend space")
+            ->DataElement(AZ_CRC_CE("BlendSpaceMotionContainer"), &BlendSpace2DNode::m_motions, "Motions", "Source motions for blend space")
             ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendSpace2DNode::Reinit)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)

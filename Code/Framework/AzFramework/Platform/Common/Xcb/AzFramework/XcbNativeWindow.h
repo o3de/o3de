@@ -27,7 +27,7 @@ namespace AzFramework
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // NativeWindow::Implementation
-        void InitWindow(const AZStd::string& title, const WindowGeometry& geometry, const WindowStyleMasks& styleMasks) override;
+        void InitWindowInternal(const AZStd::string& title, const WindowGeometry& geometry, const WindowStyleMasks& styleMasks) override;
         void Activate() override;
         void Deactivate() override;
         NativeWindowHandle GetWindowHandle() const override;

@@ -16,6 +16,7 @@
 #include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Console/ILogger.h>
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
@@ -160,7 +161,7 @@ namespace AZ
             m_currentFrameContext = {};
         }
 
-        RHI::ResultCode SwapChain::InitImageInternal(const RHI::SwapChain::InitImageRequest& request)
+        RHI::ResultCode SwapChain::InitImageInternal(const RHI::DeviceSwapChain::InitImageRequest& request)
         {
             auto& device = static_cast<Device&>(GetDevice());
             Image* image = static_cast<Image*>(request.m_image);
@@ -265,7 +266,7 @@ namespace AZ
                     commandList->EndCommandBuffer();
 
                     // This semaphore will be signaled once the transfer has completed.
-                    auto transferSemaphore = device.GetSemaphoreAllocator().Allocate();
+                    auto transferSemaphore = device.GetSwapChainSemaphoreAllocator().Allocate();
                     // We wait until the swapchain image has finished being rendered to initialize the
                     // ownership transfer.
                     vulkanQueue->SubmitCommandBuffers(
@@ -279,7 +280,7 @@ namespace AZ
                     waitSemaphore = transferSemaphore->GetNativeSemaphore();
                     transferSemaphore->SignalEvent();
                     // This will not deallocate immediately. It has a collect latency.
-                    device.GetSemaphoreAllocator().DeAllocate(transferSemaphore);
+                    device.GetSwapChainSemaphoreAllocator().DeAllocate(transferSemaphore);
                     m_swapChainBarrier.m_isValid = false;
                 }
 
@@ -396,27 +397,29 @@ namespace AZ
         {
             AZ_Assert(m_surface, "Surface has not been initialized.");
 
-            if (verticalSyncInterval > 0)
+            AZStd::vector<VkPresentModeKHR> preferredModes;
+            if (verticalSyncInterval == 0)
             {
-                // When a non-zero vsync interval is requested, the FIFO presentation mode (always available)
-                // is usable without needing to query available presentation modes.
-                return VK_PRESENT_MODE_FIFO_KHR;
+                // No vsync, so we try to use the immediate mode.
+                preferredModes.push_back(VK_PRESENT_MODE_IMMEDIATE_KHR);
+                // If immediate mode is not available we try for mailbox, which technically is still vsync
+                // but doesn't block the CPU when queue is full.
+                preferredModes.push_back(VK_PRESENT_MODE_MAILBOX_KHR);
             }
-
+            preferredModes.push_back(VK_PRESENT_MODE_FIFO_KHR);
             auto& device = static_cast<Device&>(GetDevice());
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
 
             uint32_t modeCount = 0;
             AssertSuccess(device.GetContext().GetPhysicalDeviceSurfacePresentModesKHR(
                 physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &modeCount, nullptr));
-            // At least VK_PRESENT_MODE_FIFO_KHR have to be supported.
+            // VK_PRESENT_MODE_FIFO_KHR has to be supported.
             // https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkPresentModeKHR.html
             AZ_Assert(modeCount > 0, "no available present mode.");
             AZStd::vector<VkPresentModeKHR> supportedModes(modeCount);
             AssertSuccess(device.GetContext().GetPhysicalDeviceSurfacePresentModesKHR(
                 physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &modeCount, supportedModes.data()));
 
-            VkPresentModeKHR preferredModes[] = {VK_PRESENT_MODE_IMMEDIATE_KHR, VK_PRESENT_MODE_MAILBOX_KHR};
             for (VkPresentModeKHR preferredMode : preferredModes)
             {
                 for (VkPresentModeKHR supportedMode : supportedModes)
@@ -530,7 +533,7 @@ namespace AZ
         RHI::ResultCode SwapChain::AcquireNewImage(uint32_t* acquiredImageIndex)
         {
             auto& device = static_cast<Device&>(GetDevice());
-            auto& semaphoreAllocator = device.GetSemaphoreAllocator();
+            auto& semaphoreAllocator = device.GetSwapChainSemaphoreAllocator();
             Semaphore* imageAvailableSemaphore = semaphoreAllocator.Allocate();
             VkResult vkResult = device.GetContext().AcquireNextImageKHR(
                 device.GetNativeDevice(),
@@ -543,7 +546,6 @@ namespace AZ
             RHI::ResultCode result = ConvertResult(vkResult);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
-            imageAvailableSemaphore->SignalEvent();
             if (m_currentFrameContext.m_imageAvailableSemaphore)
             {
                 semaphoreAllocator.DeAllocate(m_currentFrameContext.m_imageAvailableSemaphore);
@@ -568,7 +570,7 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
             auto presentCommand = [&device, swapchain]([[maybe_unused]] void* queue)
             {
-                device.GetContext().DeviceWaitIdle(device.GetNativeDevice());
+                device.GetCommandQueueContext().GetCommandQueue(RHI::HardwareQueueClass::Graphics).WaitForIdle();
                 if (swapchain != VK_NULL_HANDLE)
                 {
                     device.GetContext().DestroySwapchainKHR(device.GetNativeDevice(), swapchain, VkSystemAllocator::Get());
@@ -600,14 +602,13 @@ namespace AZ
                     m_dimensions.m_imageWidth,
                     m_surfaceCapabilities.minImageExtent.width,
                     m_surfaceCapabilities.maxImageExtent.width);
-                AZ_Printf(
-                    "Vulkan", "Resizing swapchain from (%u, %u) to (%u, %u).",
+                AZLOG_DEBUG("Resizing swapchain from (%u, %u) to (%u, %u).",
                     oldWidth, oldHeight, m_dimensions.m_imageWidth, m_dimensions.m_imageHeight);
             }
 
             RHI::ResultCode result = BuildNativeSwapChain(m_dimensions);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            AZ_TracePrintf("Vulkan", "Swapchain created. Width: %u, Height: %u.\n", m_dimensions.m_imageWidth, m_dimensions.m_imageHeight);
+            AZLOG_DEBUG("Swapchain created. Width: %u, Height: %u.\n", m_dimensions.m_imageWidth, m_dimensions.m_imageHeight);
 
             // Do not recycle the semaphore because they may not ever get signaled and since
             // we can't recycle Vulkan semaphores we just delete them.
@@ -634,13 +635,13 @@ namespace AZ
                 device.GetNativeDevice(), m_nativeSwapChain, &m_dimensions.m_imageCount, m_swapchainNativeImages.data());
             AssertSuccess(vkResult);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(vkResult));
-            AZ_TracePrintf("Swapchain", "Obtained presentable images.\n");
+            AZLOG_DEBUG("Obtained presentable images.\n");
 
             // Acquire the first image
             uint32_t imageIndex = 0;
             result = AcquireNewImage(&imageIndex);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            AZ_TracePrintf("Swapchain", "Acquired the first image.\n");
+            AZLOG_DEBUG("Acquired the first image.\n");
 
             return RHI::ResultCode::Success;
         }

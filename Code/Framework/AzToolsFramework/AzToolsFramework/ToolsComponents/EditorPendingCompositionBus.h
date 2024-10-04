@@ -9,6 +9,7 @@
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/Entity.h> // for Entity::ComponentArrayType
 
 namespace AzToolsFramework
 {

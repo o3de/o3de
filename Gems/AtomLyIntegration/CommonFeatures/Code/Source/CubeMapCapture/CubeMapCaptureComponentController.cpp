@@ -60,12 +60,12 @@ namespace AZ
 
         void CubeMapCaptureComponentController::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+            dependent.push_back(AZ_CRC_CE("TransformService"));
         }
 
         void CubeMapCaptureComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("CubeMapCaptureService", 0x32fbe4ea));
+            provided.push_back(AZ_CRC_CE("CubeMapCaptureService"));
         }
 
         CubeMapCaptureComponentController::CubeMapCaptureComponentController(const CubeMapCaptureComponentConfig& config)

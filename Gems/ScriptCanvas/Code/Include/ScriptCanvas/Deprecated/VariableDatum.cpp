@@ -18,24 +18,24 @@ namespace ScriptCanvas
             if (rootElementNode.GetVersion() == 0)
             {
                 AZ::Uuid variableId;
-                if (!rootElementNode.GetChildData(AZ_CRC("m_variableId", 0x872cb185), variableId))
+                if (!rootElementNode.GetChildData(AZ_CRC_CE("m_variableId"), variableId))
                 {
                     AZ_Error("Script Canvas", false, "Variable id in version 0 VariableDatum element should be AZ::Uuid");
                     return false;
                 }
 
-                rootElementNode.RemoveElementByName(AZ_CRC("m_variableId", 0x872cb185));
+                rootElementNode.RemoveElementByName(AZ_CRC_CE("m_variableId"));
                 rootElementNode.AddElementWithData(context, "m_variableId", VariableId(variableId));
             }
 
             if (rootElementNode.GetVersion() <= 1)
             {
-                const AZ::Crc32 k_input = AZ_CRC("ExposeInput", 0xcd41aead);
+                const AZ::Crc32 k_input = AZ_CRC_CE("ExposeInput");
 
                 AZ::Crc32 exposeType;
-                if (rootElementNode.GetChildData(AZ_CRC("m_exposeCrc", 0xf5fa57bd), exposeType))
+                if (rootElementNode.GetChildData(AZ_CRC_CE("m_exposeCrc"), exposeType))
                 {
-                    rootElementNode.RemoveElementByName(AZ_CRC("m_exposeCrc", 0xf5fa57bd));
+                    rootElementNode.RemoveElementByName(AZ_CRC_CE("m_exposeCrc"));
 
                     bool addAsInput = (exposeType == k_input);
                     rootElementNode.AddElementWithData(context, "m_exposeAsInput", addAsInput);
@@ -45,21 +45,21 @@ namespace ScriptCanvas
             if (rootElementNode.GetVersion() <= 2)
             {
                 VariableId variableId;
-                if (!rootElementNode.GetChildData(AZ_CRC("m_variableId", 0x872cb185), variableId))
+                if (!rootElementNode.GetChildData(AZ_CRC_CE("m_variableId"), variableId))
                 {
                     AZ_Error("Script Canvas", false, "Unable to find variable id on Variable Datum version %u. Conversion failed.", rootElementNode.GetVersion());
                     return false;
                 }
-                rootElementNode.RemoveElementByName(AZ_CRC("m_variableId", 0x872cb185));
+                rootElementNode.RemoveElementByName(AZ_CRC_CE("m_variableId"));
 
                 Datum datumValue;
-                if (!rootElementNode.GetChildData(AZ_CRC("m_data", 0x335cc942), datumValue))
+                if (!rootElementNode.GetChildData(AZ_CRC_CE("m_data"), datumValue))
                 {
                     AZ_Error("Script Canvas", false, "Unable to find datum value on Variable Datum version %u. Conversion failed.", rootElementNode.GetVersion());
                     return false;
                 }
 
-                rootElementNode.RemoveElementByName(AZ_CRC("m_data", 0x335cc942));
+                rootElementNode.RemoveElementByName(AZ_CRC_CE("m_data"));
 
                 VariableDatum preConvertedVarDatum(datumValue);
                 if (!rootElementNode.GetData(preConvertedVarDatum))

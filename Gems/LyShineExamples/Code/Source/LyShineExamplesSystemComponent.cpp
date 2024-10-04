@@ -42,17 +42,17 @@ namespace LyShineExamples
 
     void LyShineExamplesSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("LyShineExamplesService"));
+        provided.push_back(AZ_CRC_CE("LyShineExamplesService"));
     }
 
     void LyShineExamplesSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("LyShineExamplesService"));
+        incompatible.push_back(AZ_CRC_CE("LyShineExamplesService"));
     }
 
     void LyShineExamplesSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("LyShineService"));;
+        required.push_back(AZ_CRC_CE("LyShineService"));;
     }
 
     void LyShineExamplesSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)

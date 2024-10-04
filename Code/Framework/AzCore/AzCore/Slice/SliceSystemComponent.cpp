@@ -31,18 +31,18 @@ namespace AZ
 
     void SliceSystemComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("SliceSystemService", 0x1a5b7aad));
+        services.push_back(AZ_CRC_CE("SliceSystemService"));
     }
 
     void SliceSystemComponent::GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("SliceSystemService", 0x1a5b7aad));
+        services.push_back(AZ_CRC_CE("SliceSystemService"));
     }
 
     void SliceSystemComponent::GetDependentServices(ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
-        services.push_back(AZ_CRC("AssetCatalogService", 0xc68ffc57));
+        services.push_back(AZ_CRC_CE("AssetDatabaseService"));
+        services.push_back(AZ_CRC_CE("AssetCatalogService"));
     }
 
     void SliceSystemComponent::Activate()

@@ -48,7 +48,7 @@ namespace AZ::Metal
             MTLArgumentDescriptor* argDescriptor = [[MTLArgumentDescriptor alloc]init];
             argDescriptor.dataType = MTLDataTypeTexture;
             argDescriptor.index = 0;
-            argDescriptor.access = MTLArgumentAccessReadOnly;
+            argDescriptor.access = GetBindingAccess(RHI::ShaderInputImageAccess::Read);
             argDescriptor.textureType = MTLTextureType2D;
             argDescriptor.arrayLength = RHI::Limits::Pipeline::UnboundedArraySize;
             argBufferDescriptors.push_back(argDescriptor);
@@ -57,14 +57,14 @@ namespace AZ::Metal
             mtlArgBufferOffsets.push_back(m_bindlessTextureArgBuffer->GetOffset());
 
             //Unbounded read write textures
-            argDescriptor.access = MTLArgumentAccessReadWrite;
+            argDescriptor.access = MTLBindingAccessReadWrite;
             argBufferDescriptors[0] = argDescriptor;
             m_bindlessRWTextureArgBuffer->Init(device, argBufferDescriptors, "ArgumentBuffer_BindlessRWTextures");
             mtlArgBuffers.push_back(m_bindlessRWTextureArgBuffer->GetArgEncoderBuffer());
             mtlArgBufferOffsets.push_back(m_bindlessRWTextureArgBuffer->GetOffset());
             
             //Unbounded read cube textures
-            argDescriptor.access = MTLArgumentAccessReadOnly;
+            argDescriptor.access = GetBindingAccess(RHI::ShaderInputImageAccess::Read);
             argDescriptor.textureType = MTLTextureTypeCube;
             argBufferDescriptors[0] = argDescriptor;
             m_bindlessCubeTextureArgBuffer->Init(device, argBufferDescriptors, "ArgumentBuffer_BindlessCubeROTextures");
@@ -73,14 +73,14 @@ namespace AZ::Metal
 
             //Unbounded read only buffers
             argDescriptor.dataType = MTLDataTypePointer;
-            argDescriptor.access = MTLArgumentAccessReadOnly;
+            argDescriptor.access = GetBindingAccess(RHI::ShaderInputImageAccess::Read);
             argBufferDescriptors[0] = argDescriptor;
             m_bindlessBufferArgBuffer->Init(device, argBufferDescriptors, "ArgumentBuffer_BindlessROBuffers");
             mtlArgBuffers.push_back(m_bindlessBufferArgBuffer->GetArgEncoderBuffer());
             mtlArgBufferOffsets.push_back(m_bindlessBufferArgBuffer->GetOffset());
 
             //Unbounded read write buffers
-            argDescriptor.access = MTLArgumentAccessReadWrite;
+            argDescriptor.access = MTLBindingAccessReadWrite;
             argBufferDescriptors[0] = argDescriptor;
             m_bindlessRWBufferArgBuffer->Init(device, argBufferDescriptors, "ArgumentBuffer_BindlessRWBuffers");
             mtlArgBuffers.push_back(m_bindlessRWBufferArgBuffer->GetArgEncoderBuffer());
@@ -89,7 +89,7 @@ namespace AZ::Metal
             //Container Argument buffer for all the unbounded arrays
             argDescriptor.dataType = MTLDataTypePointer;
             argDescriptor.index = 0;
-            argDescriptor.access = MTLArgumentAccessReadOnly;
+            argDescriptor.access = GetBindingAccess(RHI::ShaderInputImageAccess::Read);
             argDescriptor.arrayLength = static_cast<uint32_t>(RHI::BindlessResourceType::Count) - 1;
             argBufferDescriptors[0] = argDescriptor;
             m_rootArgBuffer->Init(device, argBufferDescriptors, "ArgumentBuffer_BindlessRoot");
@@ -111,7 +111,7 @@ namespace AZ::Metal
                 
                 resourceArgDescriptor.arrayLength = RHI::Limits::Pipeline::UnboundedArraySize;
                 resourceArgDescriptor.dataType = MTLDataTypeTexture;
-                resourceArgDescriptor.access = MTLArgumentAccessReadOnly;
+                resourceArgDescriptor.access = GetBindingAccess(RHI::ShaderInputImageAccess::Read);
 
                 if(i == m_bindlessSrgDesc.m_roTextureIndex)
                 {
@@ -122,7 +122,7 @@ namespace AZ::Metal
                 {
                     resourceArgDescriptor.index = RHI::Limits::Pipeline::UnboundedArraySize * m_bindlessSrgDesc.m_rwTextureIndex;
                     resourceArgDescriptor.textureType = MTLTextureType2D;
-                    resourceArgDescriptor.access = MTLArgumentAccessReadWrite;
+                    resourceArgDescriptor.access = MTLBindingAccessReadWrite;
                 }
                 else if(i == m_bindlessSrgDesc.m_roTextureCubeIndex)
                 {
@@ -138,7 +138,7 @@ namespace AZ::Metal
                 {
                     resourceArgDescriptor.index = RHI::Limits::Pipeline::UnboundedArraySize * m_bindlessSrgDesc.m_rwBufferIndex;
                     resourceArgDescriptor.dataType = MTLDataTypePointer;
-                    resourceArgDescriptor.access = MTLArgumentAccessReadWrite;
+                    resourceArgDescriptor.access = MTLBindingAccessReadWrite;
                 }
                 argBufferDescriptors.push_back(resourceArgDescriptor);
             }
