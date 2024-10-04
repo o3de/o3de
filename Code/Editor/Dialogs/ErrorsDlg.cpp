@@ -30,6 +30,11 @@ CErrorsDlg::CErrorsDlg(QWidget* pParent /*=nullptr*/)
 
     m_bFirstMessage = true;
 
+#if defined(CARBONATED)
+    static constexpr QSize minSize(500, 300);
+    setMinimumSize(minSize);
+#endif
+
     OnInitDialog();
 
     connect(ui->m_buttonCopyErrors, &QPushButton::clicked, this, &CErrorsDlg::OnCopyErrors);
