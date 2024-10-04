@@ -50,7 +50,10 @@ add_custom_command(TARGET ${project_name}.GameLauncher POST_BUILD
         --warn-on-missing-assets
         --verify
         --copy
-        --override-pak-folder ${project_real_path}/AssetBundling/Bundles
+        # CARBONATED
+        # Don't explicitly set the override here
+        # --override-pak-folder ${project_real_path}/AssetBundling/Bundles
+        # /CARBONATED
         ${LY_OVERRIDE_PAK_ARGUMENT}
     WORKING_DIRECTORY ${layout_tool_dir}
     COMMENT "Synchronizing Layout Assets ..."
