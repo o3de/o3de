@@ -118,14 +118,20 @@ namespace RecastNavigation
                     ->DataElement(AZ::Edit::UIHandlers::Default, &Config::m_detailSampleDist, "Detail Sample Distance",
                         "Sets the sampling distance to use when generating the detail mesh. (For height detail only.)")
                     ->Attribute(AZ::Edit::Attributes::SoftMin, 0.9f)
+#if defined CARBONATED
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " * voxel size")
+#else
                     ->Attribute(AZ::Edit::Attributes::Suffix, " world units")
-
+#endif
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &Config::m_detailSampleMaxError, "Detail Sample Max Error",
                         "The maximum distance the detail mesh surface should deviate from heightfield data. (For height detail only.)")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.f)
+#if defined CARBONATED
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " * voxel height")
+#else
                     ->Attribute(AZ::Edit::Attributes::Suffix, " world units")
-
+#endif
                     ->DataElement(AZ::Edit::UIHandlers::Default, &Config::m_edgeMaxError, "Edge Max Error",
                         "The maximum distance a simplified contour's border edges should deviate the original raw contour.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.f)

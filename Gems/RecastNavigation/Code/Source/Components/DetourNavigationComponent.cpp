@@ -48,6 +48,22 @@ namespace RecastNavigation
         }
     }
 
+#if defined(CARBONATED)
+    AZStd::vector<AZ::Vector3> DetourNavigationComponent::FindPathBetweenEntities(
+        AZ::EntityId fromEntity, AZ::EntityId toEntity, bool addCrossings, bool& partial)
+    {
+        if (fromEntity.IsValid() && toEntity.IsValid())
+        {
+            AZ::Vector3 start = AZ::Vector3::CreateZero(), end = AZ::Vector3::CreateZero();
+            AZ::TransformBus::EventResult(start, fromEntity, &AZ::TransformBus::Events::GetWorldTranslation);
+            AZ::TransformBus::EventResult(end, toEntity, &AZ::TransformBus::Events::GetWorldTranslation);
+
+            return FindPathBetweenPositions(start, end, addCrossings, partial);
+        }
+
+        return {};
+    }
+#else
     AZStd::vector<AZ::Vector3> DetourNavigationComponent::FindPathBetweenEntities(AZ::EntityId fromEntity, AZ::EntityId toEntity)
     {
         if (fromEntity.IsValid() && toEntity.IsValid())
@@ -61,8 +77,14 @@ namespace RecastNavigation
 
         return {};
     }
+#endif
 
+#if defined(CARBONATED)
+    AZStd::vector<AZ::Vector3> DetourNavigationComponent::FindPathBetweenPositions(
+        const AZ::Vector3& fromWorldPosition, const AZ::Vector3& toWorldPosition, bool addCrossings, bool& partial)
+#else
     AZStd::vector<AZ::Vector3> DetourNavigationComponent::FindPathBetweenPositions(const AZ::Vector3& fromWorldPosition, const AZ::Vector3& toWorldPosition)
+#endif
     {
         AZ_PROFILE_SCOPE(Navigation, "Navigation: FindPathBetweenPositions");
 
@@ -116,6 +138,9 @@ namespace RecastNavigation
         {
             return {};
         }
+#if defined(CARBONATED)
+        partial = ((result & DT_PARTIAL_RESULT) != 0);
+#endif
 
         AZStd::array<RecastVector3, MaxPathLength> detailedPath;
         AZStd::array<AZ::u8, MaxPathLength> detailedPathFlags;
@@ -123,9 +148,15 @@ namespace RecastNavigation
         int detailedPathCount = 0;
 
         // Then the detailed path. This gives us actual specific waypoints along the path over the polygons found earlier.
+#if defined(CARBONATED)
+        result = lock.GetNavQuery()->findStraightPath(startRecast.GetData(), endRecast.GetData(), path.data(), pathLength,
+            detailedPath[0].GetData(), detailedPathFlags.data(), detailedPolyPathRefs.data(),
+            &detailedPathCount, MaxPathLength, addCrossings ? DT_STRAIGHTPATH_ALL_CROSSINGS : 0);
+#else
         result = lock.GetNavQuery()->findStraightPath(startRecast.GetData(), endRecast.GetData(), path.data(), pathLength,
             detailedPath[0].GetData(), detailedPathFlags.data(), detailedPolyPathRefs.data(),
             &detailedPathCount, MaxPathLength, DT_STRAIGHTPATH_ALL_CROSSINGS);
+#endif
         if (dtStatusFailed(result))
         {
             return {};
