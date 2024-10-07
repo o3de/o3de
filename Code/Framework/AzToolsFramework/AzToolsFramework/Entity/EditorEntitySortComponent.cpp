@@ -13,7 +13,6 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/std/sort.h>
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicRequestBus.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
@@ -388,14 +387,9 @@ namespace AzToolsFramework
 
         void EditorEntitySortComponent::Activate()
         {
-            // Run the post-serialize handler if prefabs are enabled because PostLoad won't be called automatically
-            bool isPrefabEnabled = false;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-            if (isPrefabEnabled)
-            {
-                m_shouldSanityCheckStateAfterPropagation = true;
-            }
+            // Run the post-serialize handler because PostLoad won't be called automatically
+            m_shouldSanityCheckStateAfterPropagation = true;
+
             // Send out that the order for our entity is now updated
             EditorEntitySortNotificationBus::Event(GetEntityId(), &EditorEntitySortNotificationBus::Events::ChildEntityOrderArrayUpdated);
         }

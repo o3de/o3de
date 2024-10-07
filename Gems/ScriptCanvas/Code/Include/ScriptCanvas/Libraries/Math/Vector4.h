@@ -58,3 +58,5 @@ namespace ScriptCanvas
         AZStd::tuple<Vector4Type, NumberType> DirectionTo(const Vector4Type from, const Vector4Type to, NumberType optionalScale = 1.f);
     } // namespace Vector4Functions
 } // namespace ScriptCanvas
+
+#include <Include/ScriptCanvas/Libraries/Math/Vector4.generated.h>

@@ -23,7 +23,6 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
 #include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
-#include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QApplication>
@@ -158,7 +157,7 @@ namespace UnitTest
         void SetupComponentApplication()
         {
             AZ::ComponentApplication::Descriptor desc;
-            desc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_FULL;
+            desc.m_recordingMode = AZ::Debug::AllocationRecords::Mode::RECORD_FULL;
             desc.m_useExistingAllocator = true;
             m_componentApplication = aznew TestbedApplication(*this);
 
@@ -220,19 +219,6 @@ namespace UnitTest
         {
             AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
                 &AzToolsFramework::ToolsApplicationRequests::Bus::Events::DeleteSelected);
-        }
-
-        void SaveRoot()
-        {
-            const QString saveAs = QFileDialog::getSaveFileName(nullptr,
-                    QString("Save As..."), QString("."), QString("Xml Files (*.xml)"));
-            if (!saveAs.isEmpty())
-            {
-                AZ::SliceComponent* rootSlice;
-                AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::BroadcastResult(
-                    rootSlice, &AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Events::GetEditorRootSlice);
-                AZ::Utils::SaveObjectToFile(saveAs.toUtf8().constData(), AZ::DataStream::ST_XML, rootSlice->GetEntity());
-            }
         }
 
         void ResetRoot()

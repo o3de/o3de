@@ -30,8 +30,6 @@ namespace AZ
     {
         namespace Behaviors
         {
-            const int MeshGroup::s_meshGroupPreferredTabOrder = 0;
-
             void MeshGroup::Activate()
             {
                 Events::ManifestMetaInfoBus::Handler::BusConnect();

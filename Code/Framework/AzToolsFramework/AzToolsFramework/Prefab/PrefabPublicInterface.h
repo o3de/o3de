@@ -11,6 +11,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/Transform.h>
 
 #include <AzToolsFramework/Entity/EntityTypes.h>
 
@@ -65,6 +66,16 @@ namespace AzToolsFramework
              *  on failure, it comes with an error message detailing the cause of the error.
              */
             virtual CreatePrefabResult CreatePrefabInMemory(const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
+
+            /**
+             * Instantiate a prefab from a prefab file.
+             * @param filePath The path to the prefab file to instantiate.
+             * @param parentId The entity id the prefab should be a child of in the transform hierarchy.
+             * @param transform The transform in world space the prefab should be instantiated in.
+             * @return An outcome object with an entityId of the new prefab's container entity;
+             *  on failure, it comes with an error message detailing the cause of the error.
+             */
+            virtual InstantiatePrefabResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Transform& transform) = 0;
 
             /**
              * Instantiate a prefab from a prefab file.
@@ -190,10 +201,23 @@ namespace AzToolsFramework
               * instance and the parent, removing links between this instance and its nested instances, and adding entities directly
               * owned by this instance under the parent instance.
               * Bails if the entity is not a container entity or belongs to the level prefab instance.
+              * Note that this function retains the container entities, unlike the below function
+              * @ref DetachPrefabAndRemoveContainerEntity.
               * @param containerEntityId The container entity id of the instance to detach.
               * @return An outcome object; on failure, it comes with an error message detailing the cause of the error.
               */
             virtual PrefabOperationResult DetachPrefab(const AZ::EntityId& containerEntityId) = 0;
+
+            /**
+              * Does the same thing as @ref DetachPrefab, but also removes the container entity representing the prefab instance.
+              * This re-parents anything that used to be a child of the container entity to the container entity's parent.
+              * This operation is essentially the reverse of what happens when you create a prefab (which creates a new 
+              * container entity and re-parents the entities under it.
+              * Note that the previous API only had "DetachPrefab", which kept the container entities, 
+              * and by way of introducing as little risk a possible in an API change, the old function
+              * retains its original behavior and name.
+              */
+            virtual PrefabOperationResult DetachPrefabAndRemoveContainerEntity(const AZ::EntityId& containerEntityId) = 0;
         };
 
     } // namespace Prefab

@@ -51,6 +51,7 @@ set(FILES
     Materials/Types/EnhancedPBR_SubsurfaceState.lua
     Materials/Types/Eye.azsli
     Materials/Types/Eye.materialtype
+    Materials/Types/Silhouette.materialtype
     Materials/Types/Skin.azsli
     Materials/Types/Skin.materialtype
     Materials/Types/Skin_SpecularF0.lua
@@ -85,6 +86,9 @@ set(FILES
     Passes/CheckerboardResolveColor.pass
     Passes/CheckerboardResolveDepth.pass
     Passes/ChromaticAberration.pass
+    Passes/PaniniProjection.pass
+    Passes/FilmGrain.pass
+    Passes/Vignette.pass
     Passes/ContrastAdaptiveSharpening.pass
     Passes/ConvertToAcescg.pass
     Passes/DebugOverlayParent.pass
@@ -156,6 +160,12 @@ set(FILES
     Passes/MultiViewSkyBox.pass
     Passes/MultiViewTransparent.pass
     Passes/MultiViewTransparentParent.pass
+    Passes/Mobile/Forward.pass
+    Passes/Mobile/Pipeline.pass
+    Passes/Mobile/ShadowParent.pass
+    Passes/Mobile/SkyBox.pass
+    Passes/Mobile/Transparent.pass
+    Passes/Mobile/TransparentParent.pass
     Passes/NewDepthOfField.pass
     Passes/NewDepthOfFieldComposite.pass
     Passes/NewDepthOfFieldDownsample.pass
@@ -217,6 +227,7 @@ set(FILES
     Passes/TransparentParent.pass
     Passes/UI.pass
     Passes/UIParent.pass
+    Passes/WhiteBalance.pass
     Scripts/material_find_overrides_demo.lua
     Scripts/material_property_overrides_demo.lua
     ShaderLib/3rdParty/Features/PostProcessing/KelvinToRgb.azsli
@@ -300,10 +311,13 @@ set(FILES
     ShaderLib/Atom/Features/PostProcessing/PostProcessUtil.azsli
     ShaderLib/Atom/Features/PostProcessing/Shapers.azsli
     ShaderLib/Atom/Features/PostProcessing/Tonemap.azsli
+    ShaderLib/Atom/Features/RayTracing/RayTracingIntersectionAttributes.azsli
+    ShaderLib/Atom/Features/RayTracing/RayTracingGlobalSrg.azsli
     ShaderLib/Atom/Features/RayTracing/RayTracingMaterialSrg.azsli
     ShaderLib/Atom/Features/RayTracing/RayTracingMaterialUtils.azsli
     ShaderLib/Atom/Features/RayTracing/RayTracingSceneSrg.azsli
     ShaderLib/Atom/Features/RayTracing/RayTracingSceneUtils.azsli
+    ShaderLib/Atom/Features/RayTracing/RayTracingSrgs.azsli
     ShaderLib/Atom/Features/RayTracing/RayTracingSrgs.azsl
     ShaderLib/Atom/Features/RayTracing/RayTracingSrgs.shader
     ShaderLib/Atom/Features/ScreenSpace/ScreenSpaceUtil.azsli
@@ -426,6 +440,10 @@ set(FILES
     Shaders/MorphTargets/MorphTargetSRG.azsli
     Shaders/MotionVector/CameraMotionVector.azsl
     Shaders/MotionVector/CameraMotionVector.shader
+    Shaders/Silhouette/Silhouette.azsl
+    Shaders/Silhouette/Silhouette.shader
+    Shaders/Silhouette/SilhouetteGather.azsl
+    Shaders/Silhouette/SilhouetteGather.shader
     Shaders/PostProcessing/AcesOutputTransformLut.azsl
     Shaders/PostProcessing/AcesOutputTransformLut.shader
     Shaders/PostProcessing/ApplyShaperLookupTable.azsl
@@ -442,6 +460,12 @@ set(FILES
     Shaders/PostProcessing/BloomDownsampleCS.shader
     Shaders/PostProcessing/ChromaticAberration.azsl
     Shaders/PostProcessing/ChromaticAberration.shader
+    Shaders/PostProcessing/PaniniProjection.azsl
+    Shaders/PostProcessing/PaniniProjection.shader
+    Shaders/PostProcessing/FilmGrain.azsl
+    Shaders/PostProcessing/FilmGrain.shader
+    Shaders/PostProcessing/Vignette.azsl
+    Shaders/PostProcessing/Vignette.shader
     Shaders/PostProcessing/ContrastAdaptiveSharpening.azsl
     Shaders/PostProcessing/ContrastAdaptiveSharpening.shader
     Shaders/PostProcessing/ConvertToAcescg.azsl
@@ -535,6 +559,8 @@ set(FILES
     Shaders/PostProcessing/Taa.shader
     Shaders/PostProcessing/UniformColor.azsl
     Shaders/PostProcessing/UniformColor.shader
+    Shaders/PostProcessing/WhiteBalance.azsl
+    Shaders/PostProcessing/WhiteBalance.shader
     Shaders/Reflections/ReflectionCommon.azsli
     Shaders/Reflections/ReflectionComposite.azsl
     Shaders/Reflections/ReflectionComposite.shader
@@ -563,8 +589,11 @@ set(FILES
     Shaders/Reflections/ReflectionScreenSpaceFilter.shader
     Shaders/Reflections/ReflectionScreenSpaceRayTracing.azsl
     Shaders/Reflections/ReflectionScreenSpaceRayTracing.shader
+    Shaders/Reflections/ReflectionScreenSpaceRayTracingClosestHit.azsli
     Shaders/Reflections/ReflectionScreenSpaceRayTracingClosestHit.azsl
     Shaders/Reflections/ReflectionScreenSpaceRayTracingClosestHit.shader
+    Shaders/Reflections/ReflectionScreenSpaceRayTracingClosestHitProcedural.azsl
+    Shaders/Reflections/ReflectionScreenSpaceRayTracingClosestHitProcedural.shader
     Shaders/Reflections/ReflectionScreenSpaceRayTracingCommon.azsli
     Shaders/Reflections/ReflectionScreenSpaceRayTracingMiss.azsl
     Shaders/Reflections/ReflectionScreenSpaceRayTracingMiss.shader

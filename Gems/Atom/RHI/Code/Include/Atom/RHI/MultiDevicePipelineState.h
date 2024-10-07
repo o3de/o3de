@@ -28,6 +28,7 @@ namespace AZ::RHI
     public:
         AZ_CLASS_ALLOCATOR(MultiDevicePipelineState, AZ::SystemAllocator, 0);
         AZ_RTTI(MultiDevicePipelineState, "77B85640-C2E2-4312-AD67-68FED421F84E", MultiDeviceObject);
+        AZ_RHI_MULTI_DEVICE_OBJECT_GETTER(PipelineState);
         MultiDevicePipelineState() = default;
         virtual ~MultiDevicePipelineState() = default;
 
@@ -43,18 +44,6 @@ namespace AZ::RHI
             const PipelineStateDescriptor& descriptor,
             MultiDevicePipelineLibrary* pipelineLibrary = nullptr);
 
-        //! Returns the device-specific PipelineState for the given index
-        inline Ptr<PipelineState> GetDevicePipelineState(int deviceIndex) const
-        {
-            AZ_Error(
-                "MultiDevicePipelineState",
-                m_devicePipelineStates.find(deviceIndex) != m_devicePipelineStates.end(),
-                "No DevicePipelineState found for device index %d\n",
-                deviceIndex);
-
-            return m_devicePipelineStates.at(deviceIndex);
-        }
-
         PipelineStateType GetType() const;
 
     private:
@@ -64,8 +53,5 @@ namespace AZ::RHI
         bool ValidateNotInitialized() const;
 
         PipelineStateType m_type = PipelineStateType::Count;
-
-        //! A map of all device-specific PipelineStates, indexed by the device index
-        AZStd::unordered_map<int, Ptr<PipelineState>> m_devicePipelineStates;
     };
 } // namespace AZ::RHI

@@ -75,3 +75,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE True)
 
 include(CheckPIESupported)
 check_pie_supported()
+
+# Determine if lld is installed to use as a default linker by supported platforms/configurations
+find_program(LLD_LINKER_INSTALLED lld)

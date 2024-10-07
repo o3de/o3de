@@ -307,7 +307,7 @@ namespace AZ
             PassState GetPassState() const { return m_state; }
 
             // Update all bindings on this pass that are connected to bindings on other passes
-            void UpdateConnectedBindings();
+            virtual void UpdateConnectedBindings();
 
             // Update input and input/output bindings on this pass that are connected to bindings on other passes
             void UpdateConnectedInputBindings();
@@ -398,6 +398,11 @@ namespace AZ
 
             // Setup ImageAttachmentCopy
             void UpdateAttachmentCopy(FramePrepareParams params);
+
+            // Update Imported Attachment
+            bool UpdateImportedAttachmentImage(Ptr<PassAttachment>& attachment, 
+                RHI::ImageBindFlags bindFlags = RHI::ImageBindFlags::Color | RHI::ImageBindFlags::ShaderReadWrite,
+                RHI::ImageAspectFlags aspectFlags = RHI::ImageAspectFlags::Color);
 
             // --- Protected Members ---
 

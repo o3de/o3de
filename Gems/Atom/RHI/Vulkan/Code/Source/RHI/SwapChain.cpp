@@ -16,6 +16,7 @@
 #include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Console/ILogger.h>
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
@@ -70,7 +71,7 @@ namespace AZ
             m_swapChainBarrier.m_isValid = true;
         }
 
-        void SwapChain::ProcessRecreation()
+        bool SwapChain::ProcessRecreation()
         {
             if (m_pendingRecreation)
             {
@@ -82,7 +83,9 @@ namespace AZ
                 InitImages();
 
                 m_pendingRecreation = false;
+                return true;
             }
+            return false;
         }
 
         void SwapChain::SetVerticalSyncIntervalInternal(uint32_t previousVsyncInterval)
@@ -95,12 +98,9 @@ namespace AZ
             }
         }
 
-        void SwapChain::SetNameInternal(const AZStd::string_view& name)
+        void SwapChain::SetNameInternal([[maybe_unused]] const AZStd::string_view& name)
         {
-            if ((m_nativeSwapChain != VK_NULL_HANDLE) && IsInitialized() && !name.empty())
-            {
-                Debug::SetNameToObject(reinterpret_cast<uint64_t>(m_nativeSwapChain), name.data(), VK_OBJECT_TYPE_SWAPCHAIN_KHR, static_cast<Device&>(GetDevice()));
-            }
+            // On some GPUs, like the Adreno 740, setting the name of the swapchain causes a crash, so we don't do it.
         }
 
         RHI::ResultCode SwapChain::InitInternal(RHI::Device& baseDevice, const RHI::SwapChainDescriptor& descriptor, RHI::SwapChainDimensions* nativeDimensions)
@@ -266,20 +266,21 @@ namespace AZ
                     commandList->EndCommandBuffer();
 
                     // This semaphore will be signaled once the transfer has completed.
-                    auto transferSemaphore = device.GetSemaphoreAllocator().Allocate();
+                    auto transferSemaphore = device.GetSwapChainSemaphoreAllocator().Allocate();
                     // We wait until the swapchain image has finished being rendered to initialize the
                     // ownership transfer.
                     vulkanQueue->SubmitCommandBuffers(
-                        AZStd::vector<RHI::Ptr<CommandList>>{commandList},
-                        AZStd::vector<Semaphore::WaitSemaphore>{AZStd::make_pair(VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, presentSemaphore)},
-                        AZStd::vector< RHI::Ptr<Semaphore>>{transferSemaphore},
+                        AZStd::vector<RHI::Ptr<CommandList>>{ commandList },
+                        AZStd::vector<Semaphore::WaitSemaphore>{ AZStd::make_pair(VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, presentSemaphore) },
+                        AZStd::vector<RHI::Ptr<Semaphore>>{ transferSemaphore },
+                        {},
                         nullptr);
 
                     // The presentation engine must wait until the ownership transfer has completed.
                     waitSemaphore = transferSemaphore->GetNativeSemaphore();
                     transferSemaphore->SignalEvent();
                     // This will not deallocate immediately. It has a collect latency.
-                    device.GetSemaphoreAllocator().DeAllocate(transferSemaphore);
+                    device.GetSwapChainSemaphoreAllocator().DeAllocate(transferSemaphore);
                     m_swapChainBarrier.m_isValid = false;
                 }
 
@@ -530,7 +531,7 @@ namespace AZ
         RHI::ResultCode SwapChain::AcquireNewImage(uint32_t* acquiredImageIndex)
         {
             auto& device = static_cast<Device&>(GetDevice());
-            auto& semaphoreAllocator = device.GetSemaphoreAllocator();
+            auto& semaphoreAllocator = device.GetSwapChainSemaphoreAllocator();
             Semaphore* imageAvailableSemaphore = semaphoreAllocator.Allocate();
             VkResult vkResult = device.GetContext().AcquireNextImageKHR(
                 device.GetNativeDevice(),
@@ -600,14 +601,13 @@ namespace AZ
                     m_dimensions.m_imageWidth,
                     m_surfaceCapabilities.minImageExtent.width,
                     m_surfaceCapabilities.maxImageExtent.width);
-                AZ_Printf(
-                    "Vulkan", "Resizing swapchain from (%u, %u) to (%u, %u).",
+                AZLOG_DEBUG("Resizing swapchain from (%u, %u) to (%u, %u).",
                     oldWidth, oldHeight, m_dimensions.m_imageWidth, m_dimensions.m_imageHeight);
             }
 
             RHI::ResultCode result = BuildNativeSwapChain(m_dimensions);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            AZ_TracePrintf("Vulkan", "Swapchain created. Width: %u, Height: %u.\n", m_dimensions.m_imageWidth, m_dimensions.m_imageHeight);
+            AZLOG_DEBUG("Swapchain created. Width: %u, Height: %u.\n", m_dimensions.m_imageWidth, m_dimensions.m_imageHeight);
 
             // Do not recycle the semaphore because they may not ever get signaled and since
             // we can't recycle Vulkan semaphores we just delete them.
@@ -634,13 +634,13 @@ namespace AZ
                 device.GetNativeDevice(), m_nativeSwapChain, &m_dimensions.m_imageCount, m_swapchainNativeImages.data());
             AssertSuccess(vkResult);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(vkResult));
-            AZ_TracePrintf("Swapchain", "Obtained presentable images.\n");
+            AZLOG_DEBUG("Obtained presentable images.\n");
 
             // Acquire the first image
             uint32_t imageIndex = 0;
             result = AcquireNewImage(&imageIndex);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            AZ_TracePrintf("Swapchain", "Acquired the first image.\n");
+            AZLOG_DEBUG("Acquired the first image.\n");
 
             return RHI::ResultCode::Success;
         }

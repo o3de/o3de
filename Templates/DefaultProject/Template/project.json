@@ -22,7 +22,6 @@
         "${Name}",
         "Atom",
         "AudioSystem",
-        "AWSCore",
         "CameraFramework",
         "DebugDraw",
         "DiffuseProbeGrid",
@@ -32,6 +31,7 @@
         "ImGui",
         "LandscapeCanvas",
         "LyShine",
+        "MiniAudio",
         "PhysX",
         "PrimitiveAssets",
         "PrefabBuilder",
@@ -40,6 +40,7 @@
         "ScriptEvents",
         "StartingPointInput",
         "TextureAtlas",
-        "WhiteBox"
+        "WhiteBox",
+        "RemoteTools"
     ]
 }

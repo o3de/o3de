@@ -57,7 +57,7 @@ if settings.DCCSI_DEV_MODE:
 try:
     azlmbr.qt.QtForPythonRequestBus(azlmbr.bus.Broadcast, 'IsActive')
     params = azlmbr.qt.QtForPythonRequestBus(azlmbr.bus.Broadcast, 'GetQtBootstrapParameters')
-    params is not None and params.mainWindowId is not 0
+    params is not None and params.mainWindowId != 0
     from PySide2 import QtWidgets
 except Exception as e:
     _LOGGER.error(f'Pyside not available, exception: {e}')

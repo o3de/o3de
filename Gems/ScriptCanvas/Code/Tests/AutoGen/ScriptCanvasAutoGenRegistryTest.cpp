@@ -6,112 +6,48 @@
  *
  */
 
+#include <AzCore/Component/Component.h>
 #include <AzCore/RTTI/ReflectContext.h>
-#include <AutoGen/ScriptCanvasAutoGenRegistry.h>
+
+#include <ScriptCanvas/AutoGen/ScriptCanvasAutoGenRegistry.h>
 #include <Tests/Framework/ScriptCanvasUnitTestFixture.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
+
+namespace AZ
+{
+    class ComponentDescriptor;
+}
 
 namespace ScriptCanvasUnitTest
 {
-    using ScriptCanvasAutoGenRegistry = ScriptCanvasUnitTestFixture;
-
-    class MockRegistry
-        : public ScriptCanvas::ScriptCanvasRegistry
+    class MockNode
+        : public AZ::Component
     {
     public:
-        MockRegistry() = default;
-        virtual ~MockRegistry() = default;
+        AZ_COMPONENT(MockNode, "{79A83E8A-0FFD-4CED-96E0-ADED256E6D8C}");
 
-        MOCK_METHOD1(Init, void(ScriptCanvas::NodeRegistry*));
-        MOCK_METHOD1(Reflect, void(AZ::ReflectContext*));
-        MOCK_METHOD0(GetComponentDescriptors, AZStd::vector<AZ::ComponentDescriptor*>());
+        ~MockNode() override = default;
+
+        static void Reflect(AZ::ReflectContext*) {}
+
+        // AZ::Component...
+        void Activate() override { }
+        void Deactivate() override { }
     };
 
-    TEST_F(ScriptCanvasAutoGenRegistry, GetInstance_Call_ExpectToBeValid)
+    TEST_F(ScriptCanvasUnitTestFixture, GetDescriptors_ExpectItExists)
     {
-        auto autogenRegistry = ScriptCanvas::AutoGenRegistryManager::GetInstance();
-        EXPECT_TRUE(autogenRegistry);
+        auto* descriptor = MockNode::CreateDescriptor();
+        ScriptCanvasModel::Instance().RegisterReflection("MockNode", [](AZ::ReflectContext* context) { MockNode::Reflect(context); }, descriptor);
+
+
+        auto& descriptors = ScriptCanvasModel::Instance().GetDescriptors();
+        EXPECT_TRUE(!descriptors.empty());
+
+        ScriptCanvasModel::Instance().RemoveDescriptor(descriptor);
+
+        descriptor->ReleaseDescriptor();
     }
 
-    TEST_F(ScriptCanvasAutoGenRegistry, GetInstance_Call_ExpectToBeConsistent)
-    {
-        auto autogenRegistry1 = ScriptCanvas::AutoGenRegistryManager::GetInstance();
-        auto autogenRegistry2 = ScriptCanvas::AutoGenRegistryManager::GetInstance();
-        EXPECT_EQ(autogenRegistry1, autogenRegistry2);
-    }
-
-    TEST_F(ScriptCanvasAutoGenRegistry, Init_CallWithCorrectName_ExpectToBeCalledOnce)
-    {
-        auto autogenRegistry = ScriptCanvas::AutoGenRegistryManager::GetInstance();
-        MockRegistry mockRegistry;
-        autogenRegistry->RegisterRegistry("MockFunctionRegistry", &mockRegistry);
-
-        EXPECT_CALL(mockRegistry, Init(::testing::_)).Times(1);
-        ScriptCanvas::AutoGenRegistryManager::Init("Mock");
-
-        autogenRegistry->UnregisterRegistry("MockFunctionRegistry");
-    }
-
-    TEST_F(ScriptCanvasAutoGenRegistry, Init_CallWithIncorrectName_ExpectNotToBeCalled)
-    {
-        auto autogenRegistry = ScriptCanvas::AutoGenRegistryManager::GetInstance();
-        MockRegistry mockRegistry;
-        autogenRegistry->RegisterRegistry("MockFunctionRegistry", &mockRegistry);
-
-        EXPECT_CALL(mockRegistry, Init(::testing::_)).Times(0);
-        ScriptCanvas::AutoGenRegistryManager::Init("Test");
-
-        autogenRegistry->UnregisterRegistry("MockFunctionRegistry");
-    }
-
-    TEST_F(ScriptCanvasAutoGenRegistry, Reflect_CallWithCorrectName_ExpectToBeCalledOnce)
-    {
-        auto autogenRegistry = ScriptCanvas::AutoGenRegistryManager::GetInstance();
-        MockRegistry mockRegistry;
-        autogenRegistry->RegisterRegistry("MockFunctionRegistry", &mockRegistry);
-        AZ::ReflectContext reflectContext;
-
-        EXPECT_CALL(mockRegistry, Reflect(::testing::_)).Times(1);
-        ScriptCanvas::AutoGenRegistryManager::Reflect(&reflectContext, "Mock");
-
-        autogenRegistry->UnregisterRegistry("MockFunctionRegistry");
-    }
-
-    TEST_F(ScriptCanvasAutoGenRegistry, Reflect_CallWithIncorrectName_ExpectNotToBeCalled)
-    {
-        auto autogenRegistry = ScriptCanvas::AutoGenRegistryManager::GetInstance();
-        MockRegistry mockRegistry;
-        autogenRegistry->RegisterRegistry("MockFunctionRegistry", &mockRegistry);
-        AZ::ReflectContext reflectContext;
-
-        EXPECT_CALL(mockRegistry, Reflect(::testing::_)).Times(0);
-        ScriptCanvas::AutoGenRegistryManager::Reflect(&reflectContext, "Test");
-
-        autogenRegistry->UnregisterRegistry("MockFunctionRegistry");
-    }
-
-    TEST_F(ScriptCanvasAutoGenRegistry, GetComponentDescriptors_CallWithCorrectName_ExpectToBeCalledOnce)
-    {
-        auto autogenRegistry = ScriptCanvas::AutoGenRegistryManager::GetInstance();
-        MockRegistry mockRegistry;
-        autogenRegistry->RegisterRegistry("MockFunctionRegistry", &mockRegistry);
-
-        EXPECT_CALL(mockRegistry, GetComponentDescriptors()).Times(1).WillOnce(testing::Return(AZStd::vector<AZ::ComponentDescriptor*>{nullptr}));
-        auto actualResult = ScriptCanvas::AutoGenRegistryManager::GetComponentDescriptors("Mock");
-
-        EXPECT_TRUE(actualResult.size() == 1);
-        autogenRegistry->UnregisterRegistry("MockFunctionRegistry");
-    }
-
-    TEST_F(ScriptCanvasAutoGenRegistry, GetComponentDescriptors_CallWithIncorrectName_ExpectNotToBeCalled)
-    {
-        auto autogenRegistry = ScriptCanvas::AutoGenRegistryManager::GetInstance();
-        MockRegistry mockRegistry;
-        autogenRegistry->RegisterRegistry("MockFunctionRegistry", &mockRegistry);
-
-        EXPECT_CALL(mockRegistry, GetComponentDescriptors()).Times(0);
-        auto actualResult = ScriptCanvas::AutoGenRegistryManager::GetComponentDescriptors("Test");
-
-        EXPECT_TRUE(actualResult.size() == 0);
-        autogenRegistry->UnregisterRegistry("MockFunctionRegistry");
-    }
 } // namespace ScriptCanvasUnitTest
+

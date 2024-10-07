@@ -54,6 +54,8 @@ def AssetPicker_UI_UX():
 
         import azlmbr.asset as asset
         import azlmbr.bus as bus
+        import azlmbr.editor as editor
+        import azlmbr.entity as entity
         import azlmbr.legacy.general as general
         import azlmbr.math as math
 
@@ -63,6 +65,12 @@ def AssetPicker_UI_UX():
 
         file_path = ["AutomatedTesting", "Assets", "Objects", "Foliage"]
 
+        def select_entity_by_name(entity_name):
+            searchFilter = entity.SearchFilter()
+            searchFilter.names = [entity_name]
+            entities = entity.SearchBus(bus.Broadcast, 'SearchEntities', searchFilter)
+            editor.ToolsApplicationRequestBus(bus.Broadcast, 'MarkEntitySelected', entities[0])
+            
         def is_asset_assigned(component, interaction_option):
             path = os.path.join("assets", "objects", "foliage", "cedar.fbx.azmodel")
             expected_asset_id = asset.AssetCatalogRequestBus(bus.Broadcast, 'GetAssetIdByPath', path, math.Uuid(),
@@ -228,7 +236,7 @@ def AssetPicker_UI_UX():
         component_list_widget = entity_inspector.findChild(QtWidgets.QWidget, "m_componentListContents")
 
         # 4) Click on Asset Picker (Model Asset)
-        general.select_object("TestEntity")
+        select_entity_by_name("TestEntity")
         general.idle_wait(0.5)
         attached_button = component_list_widget.findChildren(QtWidgets.QPushButton, "attached-button")[0]
 
@@ -251,7 +259,7 @@ def AssetPicker_UI_UX():
 
         # Clear Model Asset
         hydra.get_set_test(entity, 0, "Controller|Configuration|Model Asset", None)
-        general.select_object("TestEntity")
+        select_entity_by_name("TestEntity")
         general.idle_wait(0.5)
         attached_button = component_list_widget.findChildren(QtWidgets.QPushButton, "attached-button")[0]
 

@@ -23,7 +23,7 @@
 // Then define the Diffuse and Specular lighting functions
 real3 GetDiffuseLighting(Surface surface, LightingData lightingData, real3 lightIntensity, real3 dirToLight)
 {
-    real3 diffuse = DiffuseLambertian(surface.albedo, surface.normal, dirToLight, lightingData.diffuseResponse);
+    real3 diffuse = DiffuseLambertian(surface.albedo, surface.GetDiffuseNormal(), dirToLight, lightingData.diffuseResponse);
 
 #if ENABLE_CLEAR_COAT
     if(o_clearCoat_feature_enabled)
@@ -40,7 +40,7 @@ real3 GetDiffuseLighting(Surface surface, LightingData lightingData, real3 light
 
 real3 GetSpecularLighting(Surface surface, LightingData lightingData, const real3 lightIntensity, const real3 dirToLight)
 {
-    real3 specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.normal, surface.specularF0, lightingData.NdotV, surface.roughnessA2, lightingData.multiScatterCompensation);
+    real3 specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.GetSpecularNormal(), surface.GetSpecularF0(), lightingData.GetSpecularNdotV(), surface.roughnessA2, lightingData.multiScatterCompensation);
 
 #if ENABLE_CLEAR_COAT
     if(o_clearCoat_feature_enabled)
@@ -75,10 +75,10 @@ PbrLightingOutput GetPbrLightingOutput(Surface surface, LightingData lightingDat
     lightingOutput.m_specularColor = real4(lightingData.specularLighting, 1.0);
 
     // albedo, specularF0, roughness, and normals for later passes (specular IBL, Diffuse GI, SSR, AO, etc)
-    lightingOutput.m_specularF0 = real4(surface.specularF0, surface.roughnessLinear);
+    lightingOutput.m_specularF0 = real4(surface.GetSpecularF0(), surface.roughnessLinear);
     lightingOutput.m_albedo.rgb = surface.albedo * lightingData.diffuseResponse * lightingData.diffuseAmbientOcclusion;
     lightingOutput.m_albedo.a = lightingData.specularOcclusion;
-    lightingOutput.m_normal.rgb = EncodeNormalSignedOctahedron(surface.normal);
+    lightingOutput.m_normal.rgb = EncodeNormalSignedOctahedron(surface.GetDefaultNormal());
     lightingOutput.m_normal.a = EncodeUnorm2BitFlags(o_enableIBL, o_specularF0_enableMultiScatterCompensation);
     
     return lightingOutput;

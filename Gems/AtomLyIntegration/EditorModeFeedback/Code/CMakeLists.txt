@@ -7,7 +7,7 @@
 #
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME EditorModeFeedback.Editor.Static STATIC
+        NAME ${gem_name}.Editor.Static STATIC
         NAMESPACE Gem
         FILES_CMAKE
             editormodefeedback_editor_files.cmake
@@ -22,11 +22,11 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzToolsFramework
                 Gem::Atom_RPI.Public
                 Gem::Atom_Feature_Common.Static
-                Gem::AtomLyIntegration_CommonFeatures.Static
+                Gem::CommonFeaturesAtom.Static
     )
 
     ly_add_target(
-        NAME EditorModeFeedback.Editor GEM_MODULE
+        NAME ${gem_name}.Editor GEM_MODULE
         NAMESPACE Gem
         AUTORCC
         FILES_CMAKE
@@ -38,9 +38,18 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include
         BUILD_DEPENDENCIES
             PRIVATE
-                Gem::EditorModeFeedback.Editor.Static
+                Gem::${gem_name}.Editor.Static
     )
 
-    ly_create_alias(NAME EditorModeFeedback.Tools NAMESPACE Gem TARGETS Gem::EditorModeFeedback.Editor)
-    ly_create_alias(NAME EditorModeFeedback.Builders NAMESPACE Gem TARGETS Gem::EditorModeFeedback.Editor)
+    # Inject the gem name into the Module source file
+    ly_add_source_properties(
+        SOURCES
+            Source/${gem_name}Module.cpp
+        PROPERTY COMPILE_DEFINITIONS
+            VALUES
+                O3DE_GEM_NAME=${gem_name}
+                O3DE_GEM_VERSION=${gem_version})
+
+    ly_create_alias(NAME ${gem_name}.Tools NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
+    ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 endif()

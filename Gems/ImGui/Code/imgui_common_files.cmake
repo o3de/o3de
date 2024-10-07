@@ -12,6 +12,8 @@ set(FILES
     Source/ImGuiColorDefines.h
     Source/ImGuiManager.h
     Source/ImGuiManager.cpp
+    Source/LYCommonMenu/ImGuiInputMonitor.h
+    Source/LYCommonMenu/ImGuiInputMonitor.cpp
     Source/LYCommonMenu/ImGuiLYCommonMenu.h
     Source/LYCommonMenu/ImGuiLYCommonMenu.cpp
     Source/LYCommonMenu/ImGuiLYAssetExplorer.h

@@ -7,18 +7,12 @@
  */
 #pragma once
 
+#include <AzCore/std/containers/span_fwd.h>
+
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/limits.h>
 #include <AzCore/std/ranges/ranges.h>
 #include <AzCore/std/typetraits/type_identity.h>
-
-namespace AZStd
-{
-    inline constexpr size_t dynamic_extent = numeric_limits<size_t>::max();
-
-    template <class T, size_t Extent = dynamic_extent>
-    class span;
-}
 
 namespace AZStd::Internal
 {

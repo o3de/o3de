@@ -58,12 +58,12 @@ namespace LmbrCentral
         void InvalidateCache(InvalidateShapeCacheReason reason);
 
         // ShapeComponent::Handler
-        AZ::Crc32 GetShapeType() override { return AZ_CRC("PolygonPrism", 0xd6b50036); }
-        AZ::Aabb GetEncompassingAabb() override;
-        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) override;
-        bool IsPointInside(const AZ::Vector3& point) override;
-        float DistanceSquaredFromPoint(const AZ::Vector3& point) override;
-        bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
+        AZ::Crc32 GetShapeType() const override { return AZ_CRC("PolygonPrism", 0xd6b50036); }
+        AZ::Aabb GetEncompassingAabb() const override;
+        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const override;
+        bool IsPointInside(const AZ::Vector3& point) const override;
+        float DistanceSquaredFromPoint(const AZ::Vector3& point) const override;
+        bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const override;
 
         // PolygonShapeShapeComponentRequestBus::Handler
         AZ::PolygonPrismPtr GetPolygonPrism() override;
@@ -181,7 +181,7 @@ namespace LmbrCentral
         };
 
         AZ::PolygonPrismPtr m_polygonPrism; ///< Reference to the underlying polygon prism data.
-        PolygonPrismIntersectionDataCache m_intersectionDataCache; ///< Caches transient intersection data.
+        mutable PolygonPrismIntersectionDataCache m_intersectionDataCache; ///< Caches transient intersection data.
         AZ::Transform m_currentTransform = AZ::Transform::CreateIdentity(); ///< Caches the current transform for this shape.
         AZ::EntityId m_entityId; ///< Id of the entity the box shape is attached to.
         AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; ///< Responds to changes in non-uniform scale.

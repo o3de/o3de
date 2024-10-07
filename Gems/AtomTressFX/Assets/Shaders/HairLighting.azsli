@@ -226,7 +226,7 @@ float3 CalculateLighting(
     lightingData.tileIterator.Init(screenCoords, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
 
     // The normal assignment will be overriden afterwards per light
-    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
+    lightingData.Init(surface.position, surface.GetSpecularNormal(), surface.roughnessLinear, ViewSrg::m_worldPosition.xyz);
 
     ApplyLighting(surface, lightingData, screenCoords);
 

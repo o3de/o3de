@@ -13,6 +13,7 @@
 
 #ifdef IMGUI_ENABLED
 
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Jobs/Algorithms.h>
 #include <AzCore/Jobs/JobCompletion.h>
@@ -108,7 +109,7 @@ void ImGuiManager::Initialize()
     // Let the application process the path
     AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::ResolveModulePath, imgGuiLibPath);
     m_imgSharedLib = AZ::DynamicModuleHandle::Create(imgGuiLibPath.c_str());
-    if (!m_imgSharedLib->Load(false))
+    if (!m_imgSharedLib->Load())
     {
         AZ_Warning("ImGuiManager", false, "%s %s", __func__, "Unable to load " AZ_DYNAMIC_LIBRARY_PREFIX "imguilib" AZ_DYNAMIC_LIBRARY_EXTENSION "-- Skipping ImGui Initialization.");
         return;
@@ -268,6 +269,16 @@ ImDrawData* ImGui::ImGuiManager::GetImguiDrawData()
         } 
         return nullptr;
     }
+    else if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+    {
+        int consoleDeactivated = 0;
+        console->GetCvarValue("sys_DeactivateConsole", consoleDeactivated);
+        if (consoleDeactivated != 0)
+        {
+            ToggleToImGuiVisibleState(DisplayState::Hidden);
+            return nullptr;
+        }
+    }
 
     ImGui::ImGuiContextScope contextScope(m_imguiContext);
 
@@ -346,13 +357,6 @@ ImDrawData* ImGui::ImGuiManager::GetImguiDrawData()
 
     // Start New Frame
     ImGui::NewFrame();
-
-    //// START FROM PREUPDATE
-    ICVar* consoleDisabled = gEnv->pConsole->GetCVar("sys_DeactivateConsole");
-    if (consoleDisabled && consoleDisabled->GetIVal() != 0)
-    {
-        m_clientMenuBarState = DisplayState::Hidden;
-    }
 
     // Advance ImGui by Elapsed Frame Time
     const AZ::TimeUs gameTickTimeUs = AZ::GetSimulationTickDeltaTimeUs();
@@ -448,8 +452,8 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
         // Handle Keyboard Hotkeys
         if (inputChannel.IsStateBegan())
         {
-            // Cycle through ImGui Menu Bar States on ~ button press
-            if (inputChannelId == InputDeviceKeyboard::Key::PunctuationTilde)
+            // Cycle through ImGui Menu Bar States on Home button press
+            if (inputChannelId == InputDeviceKeyboard::Key::NavigationHome)
             {
                 ToggleThroughImGuiVisibleState();
             }

@@ -94,6 +94,8 @@ namespace AZ
                     ->Event("SetAffectsGI", &DirectionalLightRequestBus::Events::SetAffectsGI)
                     ->Event("GetAffectsGIFactor", &DirectionalLightRequestBus::Events::GetAffectsGIFactor)
                     ->Event("SetAffectsGIFactor", &DirectionalLightRequestBus::Events::SetAffectsGIFactor)
+                    ->Event("GetLightingChannelMask", &DirectionalLightRequestBus::Events::GetLightingChannelMask)
+                    ->Event("SetLightingChannelMask", &DirectionalLightRequestBus::Events::SetLightingChannelMask)
                     ->VirtualProperty("Color", "GetColor", "SetColor")
                     ->VirtualProperty("Intensity", "GetIntensity", "SetIntensity")
                     ->VirtualProperty("AngularDiameter", "GetAngularDiameter", "SetAngularDiameter")
@@ -113,7 +115,8 @@ namespace AZ
                     ->VirtualProperty("NormalShadowBias", "GetNormalShadowBias", "SetNormalShadowBias")
                     ->VirtualProperty("BlendBetweenCascadesEnabled", "GetCascadeBlendingEnabled", "SetCascadeBlendingEnabled")
                     ->VirtualProperty("AffectsGI", "GetAffectsGI", "SetAffectsGI")
-                    ->VirtualProperty("AffectsGIFactor", "GetAffectsGIFactor", "SetAffectsGIFactor");
+                    ->VirtualProperty("AffectsGIFactor", "GetAffectsGIFactor", "SetAffectsGIFactor")
+                    ->VirtualProperty("LightingChannelMask", "GetLightingChannelMask", "SetLightingChannelMask");
                 ;
             }
         }
@@ -519,6 +522,17 @@ namespace AZ
             configurationChangedHandler.Connect(m_configurationChangedEvent);
         }
 
+        uint32_t DirectionalLightComponentController::GetLightingChannelMask() const
+        {
+            return m_configuration.m_lightingChannelConfig.GetLightingChannelMask();
+        }
+
+        void DirectionalLightComponentController::SetLightingChannelMask(uint32_t lightingChannelMask)
+        {
+            m_configuration.m_lightingChannelConfig.SetLightingChannelMask(lightingChannelMask);
+            m_featureProcessor->SetLightingChannelMask(m_lightHandle, m_configuration.m_lightingChannelConfig.GetLightingChannelMask());
+        }
+        
         const DirectionalLightComponentConfig& DirectionalLightComponentController::GetConfiguration() const
         {
             return m_configuration;
@@ -578,6 +592,7 @@ namespace AZ
             ColorIntensityChanged();
             SetAngularDiameter(m_configuration.m_angularDiameter);
 
+            SetShadowEnabled(m_configuration.m_shadowEnabled);
             SetCameraEntityId(m_configuration.m_cameraEntityId);
             SetCascadeCount(m_configuration.m_cascadeCount);
             if (m_configuration.m_isShadowmapFrustumSplitAutomatic)
@@ -611,6 +626,7 @@ namespace AZ
             SetFullscreenBlurDepthFalloffStrength(m_configuration.m_fullscreenBlurDepthFalloffStrength);
             SetAffectsGI(m_configuration.m_affectsGI);
             SetAffectsGIFactor(m_configuration.m_affectsGIFactor);
+            LightingChannelMaskChanged();
 
             // [GFX TODO][ATOM-1726] share config for multiple light (e.g., light ID).
             // [GFX TODO][ATOM-2416] adapt to multiple viewports.
@@ -696,6 +712,25 @@ namespace AZ
             if (m_featureProcessor)
             {
                 m_featureProcessor->SetRgbIntensity(m_lightHandle, m_photometricValue.GetCombinedRgb<PhotometricUnit::Lux>());
+            }
+        }
+
+        bool DirectionalLightComponentController::GetShadowEnabled() const
+        {
+            return m_configuration.m_shadowEnabled;
+        }
+
+        void DirectionalLightComponentController::SetShadowEnabled(bool enable)
+        {
+            m_configuration.m_shadowEnabled = enable;
+            m_featureProcessor->SetShadowEnabled(m_lightHandle, enable);
+        }
+
+        void DirectionalLightComponentController::LightingChannelMaskChanged()
+        {
+            if (m_featureProcessor)
+            {
+                m_featureProcessor->SetLightingChannelMask(m_lightHandle, m_configuration.m_lightingChannelConfig.GetLightingChannelMask());
             }
         }
 

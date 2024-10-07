@@ -48,6 +48,13 @@ namespace AZ
 
         void SpecularReflectionsComponentController::Activate(EntityId entityId)
         {
+            AZ::ApplicationTypeQuery appType;
+            ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+            if (appType.IsHeadless())
+            {
+                return;
+            }
+
             m_featureProcessor = AZ::RPI::Scene::GetFeatureProcessorForEntity<SpecularReflectionsFeatureProcessorInterface>(entityId);
             OnConfigChanged();
         }

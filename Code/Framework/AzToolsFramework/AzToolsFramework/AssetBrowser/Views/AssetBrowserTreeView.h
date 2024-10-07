@@ -42,7 +42,6 @@ namespace AzToolsFramework
             , public AssetBrowserViewRequestBus::Handler
             , public AssetBrowserComponentNotificationBus::Handler
             , public AssetBrowserInteractionNotificationBus::Handler
-
         {
             Q_OBJECT
 
@@ -141,6 +140,7 @@ namespace AzToolsFramework
         protected Q_SLOTS:
             void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
             void rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end) override;
+            void itemClicked(const QModelIndex& index);
 
         private:
             QPointer<AssetBrowserModel> m_assetBrowserModel;

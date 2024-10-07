@@ -105,19 +105,19 @@ namespace LmbrCentral
             ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
     }
 
-    float CapsuleShape::GetHeight()
+    float CapsuleShape::GetHeight() const
     {
         AZStd::shared_lock lock(m_mutex);
         return m_capsuleShapeConfig.m_height;
     }
 
-    float CapsuleShape::GetRadius()
+    float CapsuleShape::GetRadius() const
     {
         AZStd::shared_lock lock(m_mutex);
         return m_capsuleShapeConfig.m_radius;
     }
 
-    CapsuleInternalEndPoints CapsuleShape::GetCapsulePoints()
+    CapsuleInternalEndPoints CapsuleShape::GetCapsulePoints() const
     {
         AZStd::shared_lock lock(m_mutex);
         m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_capsuleShapeConfig, &m_mutex);
@@ -125,7 +125,7 @@ namespace LmbrCentral
         return { m_intersectionDataCache.m_basePlaneCenterPoint, m_intersectionDataCache.m_topPlaneCenterPoint };
     }
 
-    AZ::Aabb CapsuleShape::GetEncompassingAabb()
+    AZ::Aabb CapsuleShape::GetEncompassingAabb() const
     {
         AZStd::shared_lock lock(m_mutex);
         m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_capsuleShapeConfig, &m_mutex);
@@ -138,7 +138,7 @@ namespace LmbrCentral
         return baseAabb;
     }
 
-    void CapsuleShape::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds)
+    void CapsuleShape::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const
     {
         float halfHeight = AZ::GetMax(m_capsuleShapeConfig.m_height * 0.5f, m_capsuleShapeConfig.m_radius);
         const AZ::Vector3 extent(m_capsuleShapeConfig.m_radius, m_capsuleShapeConfig.m_radius, halfHeight);
@@ -147,7 +147,7 @@ namespace LmbrCentral
         transform = m_currentTransform;
     }
 
-    bool CapsuleShape::IsPointInside(const AZ::Vector3& point)
+    bool CapsuleShape::IsPointInside(const AZ::Vector3& point) const
     {
         AZStd::shared_lock lock(m_mutex);
         m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_capsuleShapeConfig, &m_mutex);
@@ -178,7 +178,7 @@ namespace LmbrCentral
             m_intersectionDataCache.m_internalHeight * m_intersectionDataCache.m_internalHeight, radiusSquared, point);
     }
 
-    float CapsuleShape::DistanceSquaredFromPoint(const AZ::Vector3& point)
+    float CapsuleShape::DistanceSquaredFromPoint(const AZ::Vector3& point) const
     {
         AZStd::shared_lock lock(m_mutex);
         m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_capsuleShapeConfig, &m_mutex);
@@ -194,7 +194,7 @@ namespace LmbrCentral
         return clampedDistance * clampedDistance;
     }
 
-    bool CapsuleShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
+    bool CapsuleShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const
     {
         AZStd::shared_lock lock(m_mutex);
         m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_capsuleShapeConfig, &m_mutex);

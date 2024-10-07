@@ -31,8 +31,7 @@ namespace AZ
             ID3D12DeviceX* dx12Device = device.GetDevice();
 
             // advance to the next buffer
-            m_currentBufferIndex = (m_currentBufferIndex + 1) % BufferCount;
-            TlasBuffers& buffers = m_buffers[m_currentBufferIndex];
+            TlasBuffers& buffers = m_buffers.AdvanceCurrentElement();
 
             const RHI::RayTracingTlasInstanceVector& instances = descriptor->GetInstances();
             if (instances.empty())
@@ -87,8 +86,7 @@ namespace AZ
                     matrix3x4.MultiplyByScale(instance.m_nonUniformScale);
                     matrix3x4.StoreToRowMajorFloat12(&mappedData[i].Transform[0][0]);
                     mappedData[i].AccelerationStructure = static_cast<DX12::Buffer*>(blas->GetBuffers().m_blasBuffer.get())->GetMemoryView().GetGpuAddress();
-                    // [GFX TODO][ATOM-5270] Add ray tracing TLAS instance mask support
-                    mappedData[i].InstanceMask = 0x1;
+                    mappedData[i].InstanceMask = instance.m_instanceMask;
                     mappedData[i].Flags = instance.m_transparent ? D3D12_RAYTRACING_INSTANCE_FLAG_FORCE_NON_OPAQUE : D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
                 }
             

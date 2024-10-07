@@ -338,29 +338,6 @@ namespace AZ
             }
             // Loop the triple buffer index and cache the current index to the callback.
             m_readbackBufferCurrentIndex = (m_readbackBufferCurrentIndex + 1) % RHI::Limits::Device::FrameCountMax;
-            
-            uint32_t readbackBufferCurrentIndex = m_readbackBufferCurrentIndex;
-            m_fence->WaitOnCpuAsync([this, readbackBufferCurrentIndex]()
-                {
-                    if (m_state == ReadbackState::Reading)
-                    {
-                        if (CopyBufferData(readbackBufferCurrentIndex))
-                        {
-                            m_state = ReadbackState::Success;
-                        }
-                        else
-                        {
-                            m_state = ReadbackState::Failed;
-                        }
-                    }
-                    if (m_callback)
-                    {
-                        m_callback(GetReadbackResult());
-                    }
-
-                    Reset();
-                }
-            );
         }
 
         void AttachmentReadback::CopyCompile(const RHI::FrameGraphCompileContext& context)
@@ -457,6 +434,29 @@ namespace AZ
                     context.GetCommandList()->Submit(readbackItem.m_copyItem);
                 }
             }
+
+            uint32_t readbackBufferCurrentIndex = m_readbackBufferCurrentIndex;
+            m_fence->WaitOnCpuAsync(
+                [this, readbackBufferCurrentIndex]()
+                {
+                    if (m_state == ReadbackState::Reading)
+                    {
+                        if (CopyBufferData(readbackBufferCurrentIndex))
+                        {
+                            m_state = ReadbackState::Success;
+                        }
+                        else
+                        {
+                            m_state = ReadbackState::Failed;
+                        }
+                    }
+                    if (m_callback)
+                    {
+                        m_callback(GetReadbackResult());
+                    }
+
+                    Reset();
+                });
         }
         
         void AttachmentReadback::Reset()

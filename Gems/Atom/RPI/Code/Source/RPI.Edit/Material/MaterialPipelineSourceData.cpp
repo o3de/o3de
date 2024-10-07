@@ -34,10 +34,11 @@ namespace AZ
                     ;
 
                 serializeContext->Class<MaterialPipelineSourceData>()
-                    ->Version(1)
+                    ->Version(4)    // Object Srg Additions
                     ->Field("shaderTemplates", &MaterialPipelineSourceData::m_shaderTemplates)
                     ->Field("runtime", &MaterialPipelineSourceData::m_runtimeControls)
                     ->Field("pipelineScript", &MaterialPipelineSourceData::m_pipelineScript)
+                    ->Field("objectSrgAdditions", &MaterialPipelineSourceData::m_objectSrgAdditions)
                     ;
             }
         }

@@ -218,7 +218,7 @@ namespace AZ
         //! \param components Component vector to be converted.
         //! \param[out] componentMapOut Component map that stores a component alias as key and a component as value.
         void ConvertComponentVectorToMap(
-            const AZ::Entity::ComponentArrayType& components, AZStd::unordered_map<AZStd::string, AZ::Component*>& componentMapOut);
+            AZStd::span<AZ::Component* const> components, AZStd::unordered_map<AZStd::string, AZ::Component*>& componentMapOut);
 
     } // namespace EntityUtils
 }   // namespace AZ

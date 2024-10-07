@@ -7,7 +7,7 @@
 #
 
 ly_add_target(
-    NAME ImguiAtom.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         imguiatom_files.cmake
@@ -23,7 +23,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME ImguiAtom ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         imguiatom_shared_files.cmake
@@ -33,5 +33,14 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzFramework
-            Gem::ImguiAtom.Static
+            Gem::${gem_name}.Static
 )
+
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/ImguiAtomModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})

@@ -26,6 +26,7 @@ namespace AZ
                     ->Field("MaterialPipelineTag", &RenderPipelineDescriptor::m_materialPipelineTag)
                     ->Field("ExecuteOnce", &RenderPipelineDescriptor::m_executeOnce)
                     ->Field("RenderSettings", &RenderPipelineDescriptor::m_renderSettings)
+                    ->Field("DefaultAAMethod", &RenderPipelineDescriptor::m_defaultAAMethod)
                     ->Field("AllowModification", &RenderPipelineDescriptor::m_allowModification)
                 ;
             }

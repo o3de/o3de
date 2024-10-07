@@ -38,9 +38,9 @@ namespace AZ::RHI
         , public RHIMemoryStatisticsInterface
     {
     public:
-        //! This function just initializes the native device and RHI::Device as a result.
-        //! We can use this device to then query for device capabilities.
-        ResultCode InitDevices(InitDevicesFlags initializationVariant = InitDevicesFlags::SingleDevice);
+        //! This function just initializes the native devices and RHI::Device as a result.
+        //! We can use these devices to then query for device capabilities.
+        ResultCode InitDevices(int deviceCount = 1);
 
         //! This function initializes the rest of the RHI/RHI backend.
         //! bindlessSrgLayout in this case is layout associated with the bindless srg (Bindless.azsli).
@@ -64,6 +64,8 @@ namespace AZ::RHI
         //////////////////////////////////////////////////////////////////////////
         // RHISystemInterface Overrides
         RHI::Device* GetDevice(int deviceIndex = MultiDevice::DefaultDeviceIndex) override;
+        //! Add a new virtual device (referencing the same physical device as an existing device marked by deviceIndexToVirtualize)
+        [[nodiscard]] AZStd::optional<int> AddVirtualDevice(int deviceIndexToVirtualize = MultiDevice::DefaultDeviceIndex) override;
         int GetDeviceCount() override;
         RHI::DrawListTagRegistry* GetDrawListTagRegistry() override;
         RHI::PipelineStateCache* GetPipelineStateCache() override;
@@ -73,6 +75,9 @@ namespace AZ::RHI
         ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor(int deviceIndex = MultiDevice::DefaultDeviceIndex) const override;
         void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable) override;
         XRRenderingInterface* GetXRSystem() const override;
+        void SetDrawListTagEnabledByDefault(DrawListTag drawListTag, bool enabled) override;
+        const AZStd::vector<DrawListTag>& GetDrawListTagsDisabledByDefault() const override;
+        bool GpuMarkersEnabled() const override;
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
@@ -93,8 +98,9 @@ namespace AZ::RHI
     private:
 
         //! Enumerates the Physical devices and picks one (or multiple) to be used to initialize the RHI::Device(s) with
-        ResultCode InitInternalDevices(InitDevicesFlags initializationVariant);
+        ResultCode InitInternalDevices(int deviceCount);
 
+        AZStd::vector<DrawListTag> m_drawListTagsDisabledByDefault;
         AZStd::vector<RHI::Ptr<RHI::Device>> m_devices;
         RHI::FrameScheduler m_frameScheduler;
         RHI::FrameSchedulerCompileRequest m_compileRequest;
@@ -104,5 +110,6 @@ namespace AZ::RHI
 
         //Used for better verbosity related to gpu markers
         uint16_t m_numActiveRenderPipelines = 0;
+        bool m_gpuMarkersEnabled = true;
     };
 }

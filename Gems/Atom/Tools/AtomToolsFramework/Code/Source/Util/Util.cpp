@@ -10,6 +10,7 @@
 #include <Atom/ImageProcessing/ImageProcessingBus.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+#include <AtomToolsFramework/AtomToolsFrameworkSystemRequestBus.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/IO/SystemFile.h>
@@ -460,32 +461,16 @@ namespace AtomToolsFramework
 
     bool IsDocumentPathEditable(const AZStd::string& path)
     {
-        const AZStd::string pathWithoutAlias = GetPathWithoutAlias(path);
-
-        for (const auto& [storedPath, flag] :
-             GetSettingsObject<AZStd::unordered_map<AZStd::string, bool>>("/O3DE/Atom/Tools/EditablePathSettings"))
-        {
-            if (pathWithoutAlias == GetPathWithoutAlias(storedPath))
-            {
-                return flag;
-            }
-        }
-        return true;
+        bool result = true;
+        AtomToolsFrameworkSystemRequestBus::BroadcastResult(result, &AtomToolsFrameworkSystemRequestBus::Events::IsPathEditable, path);
+        return result;
     }
 
     bool IsDocumentPathPreviewable(const AZStd::string& path)
     {
-        const AZStd::string pathWithoutAlias = GetPathWithoutAlias(path);
-
-        for (const auto& [storedPath, flag] :
-             GetSettingsObject<AZStd::unordered_map<AZStd::string, bool>>("/O3DE/Atom/Tools/PreviewablePathSettings"))
-        {
-            if (pathWithoutAlias == GetPathWithoutAlias(storedPath))
-            {
-                return flag;
-            }
-        }
-        return true;
+        bool result = true;
+        AtomToolsFrameworkSystemRequestBus::BroadcastResult(result, &AtomToolsFrameworkSystemRequestBus::Events::IsPathPreviewable, path);
+        return result;
     }
 
     bool LaunchTool(const QString& baseName, const QStringList& arguments)
@@ -947,26 +932,9 @@ namespace AtomToolsFramework
 
     bool IsPathIgnored(const AZStd::string& path)
     {
-        // Ignoring the cache folder is currently the most common case for tools that want to ignore intermediate assets
-        const bool ignoreCacheFolder = GetSettingsValue("/O3DE/AtomToolsFramework/Application/IgnoreCacheFolder", true);
-        if (ignoreCacheFolder && AZ::StringFunc::Contains(path, "cache"))
-        {
-            return true;
-        }
-
-        // For more extensive customization, pattern matching is also supported via IgnoredPathRegexPatterns. This is empty by default.
-        for (const auto& patternStr : GetSettingsObject("/O3DE/AtomToolsFramework/Application/IgnoredPathRegexPatterns", AZStd::vector<AZStd::string>{}))
-        {
-            if (!patternStr.empty())
-            {
-                AZStd::regex patternRegex(patternStr, AZStd::regex::flag_type::icase);
-                if (AZStd::regex_match(path, patternRegex))
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
+        bool result = false;
+        AtomToolsFrameworkSystemRequestBus::BroadcastResult(result, &AtomToolsFrameworkSystemRequestBus::Events::IsPathIgnored, path);
+        return result;
     }
 
     AZStd::vector<AZStd::string> GetSupportedSourceFolders()

@@ -651,22 +651,23 @@ namespace AzToolsFramework
         typedef WidgetType widget_t;
 
         // Resets widget attributes for reuse; returns true if widget was reset
+        // if you return false, the widget will be destroyed and recreated on each reuse, so implementing this
+        // can improve response speed and reduce flicker.  On the other hand, actually resetting a really complicated
+        // widget can involve cleaning out unexpected amounts of hidden state in a tree of child widgets, which themselves
+        // may have complicated hidden state, so implement it with care and test it extensively.
         virtual bool ResetGUIToDefaults([[maybe_unused]] WidgetType* widget)
         {
             return false;
         }
 
+        // see documentation in PropertyEditorAPI.h in @ref class PropertyHandler
+        virtual void BeforeConsumeAttributes(WidgetType* widget, InstanceDataNode* attrValue) = 0;
+
         // this will be called in order to initialize your gui.  Your class will be fed one attribute at a time
         // you can interpret the attributes as you wish - use attrValue->Read<int>() for example, to interpret it as an int.
         // all attributes can either be a flat value, or a function which returns that same type.  In the case of the function
         // it will be called on the first instance.
-        virtual void ConsumeAttribute(WidgetType* widget, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName)
-        {
-            (void)widget;
-            (void)attrib;
-            (void)attrValue;
-            (void)debugName;
-        }
+        virtual void ConsumeAttribute(WidgetType* widget, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) = 0;
 
         // provides an option to specify reading parent element attributes.
         // This allows parent elements to override attributes of their children if needed.

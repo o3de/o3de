@@ -182,9 +182,12 @@ namespace Terrain
 
         for (RayTracedItem& item : m_rayTracedItems)
         {
-            RtSector::MeshGroup& meshGroup = item.m_sector->m_rtData->m_meshGroups.at(item.m_meshGroupIndex);
-            meshGroup.m_isVisible = false;
-            m_rayTracingFeatureProcessor->RemoveMesh(meshGroup.m_id);
+            if (auto& rtData = item.m_sector->m_rtData; rtData)
+            {
+                RtSector::MeshGroup& meshGroup = rtData->m_meshGroups.at(item.m_meshGroupIndex);
+                meshGroup.m_isVisible = false;
+                m_rayTracingFeatureProcessor->RemoveMesh(meshGroup.m_id);
+            }
         }
         m_rayTracedItems.clear();
     }
@@ -406,7 +409,7 @@ namespace Terrain
             subMesh.m_normalVertexBufferView = normalsVertexBufferView;
             subMesh.m_normalShaderBufferView = rhiNormalsBuffer.GetBufferView(normalsBufferDescriptor);
             subMesh.m_indexBufferView = AZ::RHI::IndexBufferView(rhiIndexBuffer, indexBufferByteOffset, indexBufferByteCount, indexBufferFormat);
-            subMesh.m_baseColor = AZ::Color::CreateFromVector3(AZ::Vector3(0.18f));
+            subMesh.m_material.m_baseColor = AZ::Color::CreateFromVector3(AZ::Vector3(0.18f));
 
             AZ::RHI::BufferViewDescriptor indexBufferDescriptor;
             indexBufferDescriptor.m_elementOffset = indexBufferByteOffset / indexElementSize;

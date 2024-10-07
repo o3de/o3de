@@ -22,7 +22,6 @@
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeCollection.h>
-#include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityBus.h>
 #include <AzToolsFramework/Manipulators/BaseManipulator.h>
@@ -144,7 +143,6 @@ namespace AzToolsFramework
     class EditorTransformComponentSelection
         : public ViewportInteraction::ViewportSelectionRequests
         , public ActionManagerRegistrationNotificationBus::Handler
-        , public EditorContextMenuBus::Handler
         , private EditorTransformComponentSelectionRequestBus::Handler
         , private ToolsApplicationNotificationBus::Handler
         , private Camera::EditorCameraNotificationBus::Handler
@@ -208,7 +206,6 @@ namespace AzToolsFramework
 
         bool IsEntitySelected(AZ::EntityId entityId) const;
         void SetSelectedEntities(const EntityIdList& entityIds);
-        void DeselectEntities();
         bool SelectDeselect(AZ::EntityId entityId);
         void ChangeSelectedEntity(AZ::EntityId entityId);
 
@@ -258,14 +255,10 @@ namespace AzToolsFramework
         void CopyScaleToSelectedEntitiesIndividualWorld(float scale) override;
         void SnapSelectedEntitiesToWorldGrid(float gridSize) override;
         void OverrideComponentModeSwitcher(AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher>) override;
+        void DeselectEntities() override;
 
         // EditorManipulatorCommandUndoRedoRequestBus overrides ...
         void UndoRedoEntityManipulatorCommand(AZ::u8 pivotOverride, const AZ::Transform& transform) override;
-
-        // EditorContextMenuBus overrides ...
-        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZStd::optional<AzFramework::ScreenPoint>& point, int flags) override;
-        int GetMenuPosition() const override;
-        AZStd::string GetMenuIdentifier() const override;
 
         // ToolsApplicationNotificationBus overrides ...
         void BeforeEntitySelectionChanged() override;
@@ -359,12 +352,17 @@ namespace AzToolsFramework
         SpaceCluster m_spaceCluster; //!< Related viewport ui state for controlling the current reference space.
         SnappingCluster m_snappingCluster; //!< Related viewport ui state for aligning positions to a grid or reference frame.
         //! Viewport UI Switcher for showing component mode components.
-        AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher> m_componentModeSwitcher; 
+        AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher> m_componentModeSwitcher;
         bool m_viewportUiVisible = true; //!< Used to hide/show the viewport ui elements.
 
         ActionManagerInterface* m_actionManagerInterface = nullptr;
         HotKeyManagerInterface* m_hotKeyManagerInterface = nullptr;
         MenuManagerInterface* m_menuManagerInterface = nullptr;
+
+    private:
+        // static void in order to ensure that the 'this' pointer is not captured in any lamba functions
+        // as the actions are global.
+        static void RegisterActions();
     };
 
     //! Bundles viewport state that impacts how accents are added/removed in HandleAccents.

@@ -139,6 +139,15 @@ namespace AZ
         /// Resolve the instance pointer for a given ClassElement by casting it to the actual type
         /// expected by the ClassData for this element
         void* ResolvePointer(void* ptr, const SerializeContext::ClassElement& classElement, const SerializeContext& context);
+
+        //! Open the given file and load it into an ObjectStream that you can inspect
+        //! @param classCallback Called for each root object loaded via the ObjectStream. Use it to read values from the file.
+        //! @param assetFilterCallback Limit the processing/loading to specific asset type(s)
+        bool InspectSerializedFile(
+            const char* filePath,
+            SerializeContext* sc,
+            const ObjectStream::ClassReadyCB& classCallback,
+            Data::AssetFilterCB assetFilterCallback = AZ::Data::AssetFilterNoAssetLoading);
     } // namespace Utils
 } // namespace Az
 

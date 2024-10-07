@@ -53,14 +53,14 @@ namespace UnitTest
         AzFramework::BoundsRequestBus::Handler::BusDisconnect();
     }
 
-    AZ::Aabb BoundsTestComponent::GetWorldBounds()
+    AZ::Aabb BoundsTestComponent::GetWorldBounds() const
     {
         AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(worldFromLocal, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
         return GetLocalBounds().GetTransformedAabb(worldFromLocal);
     }
 
-    AZ::Aabb BoundsTestComponent::GetLocalBounds()
+    AZ::Aabb BoundsTestComponent::GetLocalBounds() const
     {
         return m_localBounds;
     }
@@ -90,7 +90,7 @@ namespace UnitTest
     }
 
     AzFramework::RenderGeometry::RayResult RenderGeometryIntersectionTestComponent::RenderGeometryIntersect(
-        const AzFramework::RenderGeometry::RayRequest& ray)
+        const AzFramework::RenderGeometry::RayRequest& ray) const
     {
         AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(worldFromLocal, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);

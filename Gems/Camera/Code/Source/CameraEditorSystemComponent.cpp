@@ -58,7 +58,6 @@ namespace Camera
 
     void CameraEditorSystemComponent::Activate()
     {
-        AzToolsFramework::EditorContextMenuBus::Handler::BusConnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
         Camera::EditorCameraSystemRequestBus::Handler::BusConnect();
         Camera::CameraViewRegistrationRequestsBus::Handler::BusConnect();
@@ -71,48 +70,6 @@ namespace Camera
         Camera::CameraViewRegistrationRequestsBus::Handler::BusDisconnect();
         Camera::EditorCameraSystemRequestBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
-        AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
-    }
-
-    void CameraEditorSystemComponent::PopulateEditorGlobalContextMenu(
-        QMenu* menu, [[maybe_unused]] const AZStd::optional<AzFramework::ScreenPoint>& point, int flags)
-    {
-        if (!(flags & AzToolsFramework::EditorEvents::eECMF_HIDE_ENTITY_CREATION))
-        {
-            QAction* action = menu->addAction(QObject::tr("Create camera entity from view"));
-            bool showAction = true;
-
-            if (const auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
-                prefabEditorEntityOwnershipInterface && !prefabEditorEntityOwnershipInterface->IsRootPrefabAssigned())
-            {
-                showAction = false;
-            }
-
-            auto entityContextId = AzFramework::EntityContextId::CreateNull();
-            AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-                entityContextId, &AzToolsFramework::EditorEntityContextRequests::GetEditorEntityContextId);
-
-            if (const auto prefabFocusInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusInterface>::Get();
-                prefabFocusInterface && prefabFocusInterface->IsFocusedPrefabInstanceReadOnly(entityContextId))
-            {
-                showAction = false;
-            }
-
-            if (showAction)
-            {
-                QObject::connect(
-                    action, &QAction::triggered,
-                    [this]()
-                    {
-                        CreateCameraEntityFromViewport();
-                    }
-                );
-            }
-            else
-            {
-                action->setEnabled(false);
-            }
-        }
     }
 
     void CameraEditorSystemComponent::CreateCameraEntityFromViewport()

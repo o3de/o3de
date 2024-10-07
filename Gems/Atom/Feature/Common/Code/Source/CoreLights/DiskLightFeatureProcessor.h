@@ -62,6 +62,7 @@ namespace AZ
             void SetUseCachedShadows(LightHandle handle, bool useCachedShadows) override;
             void SetAffectsGI(LightHandle handle, bool affectsGI) override;
             void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) override;
+            void SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask) override;
 
             void SetDiskData(LightHandle handle, const DiskLightData& data) override;
             const DiskLightData& GetDiskData(LightHandle handle) const override;
@@ -72,9 +73,6 @@ namespace AZ
         private:
 
             static constexpr const char* FeatureProcessorName = "DiskLightFeatureProcessor";
-            static constexpr float MaxConeRadians = AZ::DegToRad(90.0f);
-            static constexpr float MaxProjectedShadowRadians = ProjectedShadowFeatureProcessorInterface::MaxProjectedShadowRadians * 0.5f;
-            using ShadowId = ProjectedShadowFeatureProcessor::ShadowId;
 
             DiskLightFeatureProcessor(const DiskLightFeatureProcessor&) = delete;
             

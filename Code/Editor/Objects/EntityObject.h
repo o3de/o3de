@@ -20,12 +20,7 @@
 #include <QObject>
 #endif
 
-#define CLASS_LIGHT "Light"
-#define CLASS_DESTROYABLE_LIGHT "DestroyableLight"
-#define CLASS_RIGIDBODY_LIGHT "RigidBodyLight"
-
 class CEntityObject;
-class CSelectionGroup;
 class QMenu;
 
 /*!
@@ -80,7 +75,6 @@ public:
     void InitVariables() override;
     void Done() override;
 
-    void DrawExtraLightInfo (DisplayContext& disp);
 
     bool GetEntityPropertyBool(const char* name) const;
     int GetEntityPropertyInteger(const char* name) const;
@@ -196,8 +190,6 @@ public:
         m_bEnableReload = bEnable;
     }
 
-    static void StoreUndoEntityLink(CSelectionGroup* pGroup);
-
 protected:
     template <typename T>
     void SetEntityProperty(const char* name, T value);
@@ -205,9 +197,6 @@ protected:
     T GetEntityProperty(const char* name, T defaultvalue) const;
 
     //! Draw default object items.
-    void DrawProjectorPyramid(DisplayContext& dc, float dist);
-    void DrawProjectorFrustum(DisplayContext& dc, Vec2 size, float dist);
-
     void OnLoadFailed();
 
     CVarBlock* CloneProperties(CVarBlock* srcProperties);

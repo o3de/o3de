@@ -94,16 +94,32 @@ namespace AZ
             
             for (RHI::ImageScopeAttachment* scopeAttachment : GetImageAttachments())
             {
-                m_isWritingToSwapChainScope = scopeAttachment->IsSwapChainAttachment() && scopeAttachment->HasUsage(RHI::ScopeAttachmentUsage::RenderTarget);
-                if(m_isWritingToSwapChainScope)
+                bool isWritingToSwapChainScope = scopeAttachment->IsSwapChainAttachment() && scopeAttachment->HasUsage(RHI::ScopeAttachmentUsage::RenderTarget);
+                const RHI::SwapChainFrameAttachment* swapChainFrameAttachment = (azrtti_cast<const RHI::SwapChainFrameAttachment*>(&scopeAttachment->GetFrameAttachment()));
+                
+                //Check if this scope is writing to the swapchain texture and if the swapchain attachment is valid
+                if(isWritingToSwapChainScope && swapChainFrameAttachment)
                 {
-                    //The way Metal works is that we ask the drivers for the swapchain texture right before we write to it.
-                    //And if we have to read from the swapchain texture we need to tell the driver this information when requesting the
-                    //texture. Hence we need to check if we will be reading from the swapchain texture here. We traverse all the
-                    //scopeattachments for the scopes after CopyToSwapchain Scope and see if any of them is trying to read from
-                    //the swapchain texture. If it is we cache this information within m_isSwapChainAndFrameCaptureEnabled which will
-                    //be used when we request the swapchain texture.
                     RHI::ScopeAttachment* frameCaptureScopeAttachment = scopeAttachment;
+                    
+                    //The way Metal works is that we ask the drivers for the swapchain texture right before we write to it.
+                    //Check if we are the first scope in the chain of scope that will be writing to the swapchain texture.
+                    //We will use this to request the drawable from the driver in the Execute phase (i.e Scope::Begin)
+                    RHI::ScopeAttachment* frameCaptureScopeAttachmentBefore = frameCaptureScopeAttachment->GetPrevious();
+                    if(!frameCaptureScopeAttachmentBefore)
+                    {
+                        m_isRequestingSwapChainDrawable = true;
+                    }
+                        
+                    //Cache if we will be writing to the swapchain texture which is different from requesting one. The difference
+                    //is that a scope may just use the swapchain texture requested by another scope before it in the frame graph.
+                    m_isWritingToSwapChainScope = true;
+                    m_swapChainAttachment = scopeAttachment;
+                    
+                    //If a scope needs to read from the swapchain texture we need to tell the driver this information when requesting the
+                    //texture. Traverse all the scopeattachments and see if any of them is trying to read from the swapchain texture.
+                    //If it is we cache this information within m_isSwapChainAndFrameCaptureEnabled which will
+                    //be used when we request the swapchain texture.
                     while(frameCaptureScopeAttachment)
                     {
                         frameCaptureScopeAttachment = frameCaptureScopeAttachment->GetNext();
@@ -114,9 +130,6 @@ namespace AZ
                             break;
                         }
                     }
-                    
-                    //Cache this as we will use this to request the drawable from the driver in the Execute phase (i.e Scope::Begin)
-                    m_swapChainAttachment = scopeAttachment;
                 }
                 
                 const ImageView* imageView = static_cast<const ImageView*>(scopeAttachment->GetImageView());
@@ -340,17 +353,14 @@ namespace AZ
 
         void Scope::End(
             CommandList& commandList,
-            AZ::u32 commandListIndex,
-            AZ::u32 commandListCount) const
+            bool signalFencesForAliasedResources) const
         {
             AZ_PROFILE_FUNCTION(RHI);
             commandList.FlushEncoder();
             
-            //Check if the scope is part of merged group (i.e FrameGraphExecuteGroupMerged). For non-merged
-            //groups (i.e FrameGraphExecuteGroup) we handle signalling at the end of the group within FrameGraphExecuteGroup::EndInternal
-            //The reason for this is that you can only signal fences once the parallel encoders (within FrameGraphExecuteGroup) are flushed
-            const bool isScopePartOfMergedGroup = commandListCount == 1;
-            if (isScopePartOfMergedGroup)
+            //Signal all the fences related to aliased resources. This is to ensure that the GPU does not start work for
+            //scopes that overlap memory with other scopes that are still being worked on.
+            if (signalFencesForAliasedResources)
             {
                 SignalAllResourceFences(commandList);
             }
@@ -441,6 +451,16 @@ namespace AZ
         void Scope::AddQueryPoolUse(RHI::Ptr<RHI::QueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access)
         {
             m_queryPoolAttachments.push_back({ AZStd::static_pointer_cast<QueryPool>(queryPool), interval, access });
+        }
+    
+        bool Scope::IsWritingToSwapChain() const
+        {
+            return m_isWritingToSwapChainScope;
+        }
+    
+        bool Scope::IsRequestingSwapChain() const
+        {
+            return m_isRequestingSwapChainDrawable;
         }
     }
 }

@@ -47,6 +47,14 @@ namespace AZ::DocumentPropertyEditor
         RequestRefresh(level);
     }
 
+    void ComponentAdapter::InvalidatePropertyDisplayForComponent(AZ::EntityComponentIdPair entityComponentIdPair, AzToolsFramework::PropertyModificationRefreshLevel level)
+    {
+        if ((entityComponentIdPair.GetEntityId() == m_entityId) && (entityComponentIdPair.GetComponentId() == m_componentId))
+        {
+            RequestRefresh(level);
+        }
+    }
+
     void ComponentAdapter::RequestRefresh(AzToolsFramework::PropertyModificationRefreshLevel level)
     {
         if (level > m_queuedRefreshLevel)

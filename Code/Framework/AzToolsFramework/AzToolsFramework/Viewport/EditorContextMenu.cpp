@@ -12,7 +12,6 @@
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Viewport/EditorContextMenu.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
-#include <Editor/EditorContextMenuBus.h>
 
 AZ_CVAR(
     int,

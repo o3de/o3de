@@ -26,6 +26,8 @@ namespace AzQtComponents
         setSortingEnabled(true);
         setContextMenuPolicy(Qt::CustomContextMenu);
         setSelectionMode(ExtendedSelection);
+
+        connect(this, &QAbstractItemView::clicked, this, &AssetFolderTableView::onClickedView);
     }
 
     void AssetFolderTableView::setRootIndex(const QModelIndex& index)
@@ -71,6 +73,17 @@ namespace AzQtComponents
     {
         TableView::selectionChanged(selected, deselected);
         Q_EMIT selectionChangedSignal(selected, deselected);
+
+    }
+
+    void AssetFolderTableView::onClickedView(const QModelIndex& index)
+    {
+        // if we click on an item and selection wasn't changed, then reselect the current item so that it shows up in
+        // any related previewers.
+        if (selectionModel()->isSelected(index))
+        {
+            Q_EMIT selectionChangedSignal(selectionModel()->selection(), {});
+        }
     }
 
 } // namespace AzQtComponents

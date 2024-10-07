@@ -81,7 +81,7 @@ namespace AzToolsFramework
         *          If the operation could not be completed then the failed
         *          outcome contains a string describing what went wrong.
         */
-        virtual AddExistingComponentsOutcome AddExistingComponentsToEntityById(const AZ::EntityId& entityId, const AZStd::vector<AZ::Component*>& componentsToAdd) = 0;
+        virtual AddExistingComponentsOutcome AddExistingComponentsToEntityById(const AZ::EntityId& entityId, AZStd::span<AZ::Component* const> componentsToAdd) = 0;
 
         // Removing a component can only cause the following to occur:
         // 1) Invalidate other components by removing missing services
@@ -104,7 +104,7 @@ namespace AzToolsFramework
         * \param componentsToRemove List of component pointers to remove (from their respective entities).
         * \return true if the components were successfully removed or false otherwise.
         */
-        virtual RemoveComponentsOutcome RemoveComponents(const AZStd::vector<AZ::Component*>& componentsToRemove) = 0;
+        virtual RemoveComponentsOutcome RemoveComponents(AZStd::span<AZ::Component* const> componentsToRemove) = 0;
 
         using ScrubEntityResults = RemoveComponentsResults;
         using EntityToScrubEntityResultsMap = AZStd::unordered_map<AZ::EntityId, ScrubEntityResults>;
@@ -139,13 +139,13 @@ namespace AzToolsFramework
         * Removes the given components from their respective entities (currently only single entity is supported) and copies the data to the clipboard if successful
         * \param components vector of components to cut (this method will delete the components provided on successful removal)
         */
-        virtual void CutComponents(const AZStd::vector<AZ::Component*>& components) = 0;
+        virtual void CutComponents(AZStd::span<AZ::Component* const> components) = 0;
 
         /*!
         * Copies the given components from their respective entities (multiple source entities are supported) into mime data on the clipboard for pasting elsewhere
         * \param components vector of components to copy
         */
-        virtual void CopyComponents(const AZStd::vector<AZ::Component*>& components) = 0;
+        virtual void CopyComponents(AZStd::span<AZ::Component* const> components) = 0;
 
         /*!
         * Pastes components from the mime data on the clipboard (assuming it is component data) to the given entity
@@ -163,15 +163,14 @@ namespace AzToolsFramework
         * Enables the given components
         * \param components vector of components to enable
         */
-        virtual void EnableComponents(const AZStd::vector<AZ::Component*>& components) = 0;
+        virtual void EnableComponents(AZStd::span<AZ::Component* const> components) = 0;
 
         /*!
         * Disables the given components
         * \param components vector of components to disable
         */
-        virtual void DisableComponents(const AZStd::vector<AZ::Component*>& components) = 0;
+        virtual void DisableComponents(AZStd::span<AZ::Component* const> components) = 0;
 
-        using ComponentServicesList = AZStd::vector<AZ::ComponentServiceType>;
 
         /*!
          * Info detailing why a pending component cannot be activated.
@@ -180,9 +179,9 @@ namespace AzToolsFramework
         {
             AZ::Entity::ComponentArrayType m_validComponentsThatAreIncompatible;
             AZ::Entity::ComponentArrayType m_pendingComponentsWithRequiredServices;
-            AZ::Entity::StringWarningArray m_warnings;
-            ComponentServicesList m_missingRequiredServices;
-            ComponentServicesList m_incompatibleServices;
+            AZ::ComponentDescriptor::StringWarningArray m_warnings;
+            AZ::ComponentDescriptor::DependencyArrayType m_missingRequiredServices;
+            AZ::ComponentDescriptor::DependencyArrayType m_incompatibleServices;
         };
 
         /*

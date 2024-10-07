@@ -192,7 +192,7 @@ namespace AZ
         FontEffect* AddEffect(const char* effectName);
         FontEffect* GetDefaultEffect();
 
-        AZ::Data::Instance<AZ::RPI::Image> GetFontImage() { return m_fontStreamingImage; }
+        AZ::Data::Instance<AZ::RPI::Image> GetFontImage() { return m_fontAttachmentImage; }
 
     private:
         virtual ~FFont();
@@ -255,7 +255,7 @@ namespace AZ
             AZ::Vector2 m_position;
             AZ::Vector2 m_size;
             AZ::RPI::ViewportContextPtr m_viewportContext;
-            const AZ::RHI::Viewport* m_viewport;
+            AZ::RHI::Viewport m_viewport;
         };
         DrawParameters ExtractDrawParameters(const AzFramework::TextDrawParameters& params, AZStd::string_view text, bool forceCalculateSize);
 
@@ -273,7 +273,7 @@ namespace AZ
         size_t m_fontBufferSize = 0;
         AZStd::unique_ptr<uint8_t[]> m_fontBuffer;
 
-        AZ::Data::Instance<AZ::RPI::StreamingImage> m_fontStreamingImage;
+        AZ::Data::Instance<AZ::RPI::AttachmentImage> m_fontAttachmentImage;
         AZ::RHI::Ptr<AZ::RHI::Image>     m_fontImage;
         uint32_t m_fontImageVersion = 0;
 

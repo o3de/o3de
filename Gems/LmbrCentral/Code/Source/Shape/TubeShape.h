@@ -39,13 +39,13 @@ namespace LmbrCentral
         void Deactivate();
 
         // ShapeComponentRequestsBus
-        AZ::Crc32 GetShapeType() override { return AZ_CRC("Tube", 0xfd30de9e); }
-        AZ::Aabb GetEncompassingAabb() override;
-        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) override;
-        bool IsPointInside(const AZ::Vector3& point)  override;
-        float DistanceFromPoint(const AZ::Vector3& point) override;
-        float DistanceSquaredFromPoint(const AZ::Vector3& point) override;
-        bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
+        AZ::Crc32 GetShapeType() const override { return AZ_CRC("Tube", 0xfd30de9e); }
+        AZ::Aabb GetEncompassingAabb() const override;
+        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const override;
+        bool IsPointInside(const AZ::Vector3& point) const  override;
+        float DistanceFromPoint(const AZ::Vector3& point) const override;
+        float DistanceSquaredFromPoint(const AZ::Vector3& point) const override;
+        bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const override;
 
         // TubeShapeComponentRequestsBus
         void SetRadius(float radius) override;

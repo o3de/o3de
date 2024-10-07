@@ -10,11 +10,18 @@
 
 option bool o_subsurfaceScattering_useTexture;
 
-real GetSubsurfaceInput(Texture2D map, sampler mapSampler, float2 uv, real surfaceScatteringFactor)
+real GetSubsurfaceInput(Texture2D map, sampler mapSampler, float2 uv, real surfaceScatteringFactor, float4 uvDxDy = float4(0.0, 0.0, 0.0, 0.0), bool customDerivatives = false)
 {
     if(o_subsurfaceScattering_useTexture)
     {
-        surfaceScatteringFactor *= real(map.Sample(mapSampler, uv).r);
+        if (customDerivatives)
+        {
+            surfaceScatteringFactor *= real(map.SampleGrad(mapSampler, uv, uvDxDy.xy, uvDxDy.zw).r);
+        }
+        else
+        {
+            surfaceScatteringFactor *= real(map.Sample(mapSampler, uv).r);
+        }
     }
     return surfaceScatteringFactor;
 }

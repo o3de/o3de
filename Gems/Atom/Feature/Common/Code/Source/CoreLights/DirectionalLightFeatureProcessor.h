@@ -18,6 +18,7 @@
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <CoreLights/DirectionalLightShadowNotificationBus.h>
 
 namespace AZ
 {
@@ -75,9 +76,9 @@ namespace AZ
             float m_affectsGIFactor = 1.0f;
 
             bool m_affectsGI = true;
+            uint32_t m_lightingChannelMask = 1;
             float m_padding0 = 0.0f;
             float m_padding1 = 0.0f;
-            float m_padding2 = 0.0f;
         };
 
         // [GFX TODO][ATOM-15172] Look into compacting struct DirectionalLightShadowData
@@ -106,7 +107,7 @@ namespace AZ
             float m_shadowBias = 0.0015f;
             // Reduces acne by biasing the shadowmap lookup along the geometric normal.
             float m_normalShadowBias = 2.5f;
-            uint32_t m_filteringSampleCount = 0;
+            uint32_t m_filteringSampleCountMode = 0;
             uint32_t m_debugFlags = 0;
             uint32_t m_shadowFilterMethod = 0; 
             float m_far_minus_near = 0;
@@ -221,6 +222,7 @@ namespace AZ
             void SetRgbIntensity(LightHandle handle, const PhotometricColor<PhotometricUnit::Lux>& lightColor) override;
             void SetDirection(LightHandle handle, const Vector3& lightDirection) override;
             void SetAngularDiameter(LightHandle handle, float angularDiameter) override;
+            void SetShadowEnabled(LightHandle handle, bool enable) override;
             void SetShadowmapSize(LightHandle handle, ShadowmapSize size) override;
             void SetCascadeCount(LightHandle handle, uint16_t cascadeCount) override;
             void SetShadowmapFrustumSplitSchemeRatio(LightHandle handle, float ratio) override;
@@ -248,6 +250,7 @@ namespace AZ
             void SetFullscreenBlurDepthFalloffStrength(LightHandle handle, float blurDepthFalloffStrength) override;
             void SetAffectsGI(LightHandle handle, bool affectsGI) override;
             void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) override;
+            void SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask) override;
 
             const Data::Instance<RPI::Buffer> GetLightBuffer() const { return m_lightBufferHandler.GetBuffer(); }
             uint32_t GetLightCount() const { return m_lightBufferHandler.GetElementCount(); }
@@ -407,6 +410,7 @@ namespace AZ
 
             Name m_lightTypeName = Name("directional");
             Name m_directionalShadowFilteringMethodName = Name("o_directional_shadow_filtering_method");
+            Name m_directionalShadowFilteringSamplecountName = Name("o_directional_shadow_filtering_sample_count");
             Name m_directionalShadowReceiverPlaneBiasEnableName = Name("o_directional_shadow_receiver_plane_bias_enable");
             Name m_BlendBetweenCascadesEnableName = Name("o_blend_between_cascades_enable");
             static constexpr const char* FeatureProcessorName = "DirectionalLightFeatureProcessor";

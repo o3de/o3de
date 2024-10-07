@@ -15,17 +15,22 @@ namespace AZ::RHI
     class Fence;
 
     //! A structure used as an argument to BufferPool::InitBuffer.
-    struct BufferInitRequest
+    template <typename BufferClass>
+    struct BufferInitRequestTemplate
     {
-        BufferInitRequest() = default;
+        BufferInitRequestTemplate() = default;
 
-        BufferInitRequest(
-            Buffer& buffer,
+        BufferInitRequestTemplate(
+            BufferClass& buffer,
             const BufferDescriptor& descriptor,
-            const void* initialData = nullptr);
+            const void* initialData = nullptr)
+            : m_buffer{&buffer}
+            , m_descriptor{descriptor}
+            , m_initialData{initialData}
+            {}
 
         /// The buffer to initialize. The buffer must be in an uninitialized state.
-        Buffer* m_buffer = nullptr;
+        BufferClass* m_buffer = nullptr;
 
         /// The descriptor used to initialize the buffer.
         BufferDescriptor m_descriptor;
@@ -35,14 +40,19 @@ namespace AZ::RHI
     };
 
     //! A structure used as an argument to BufferPool::MapBuffer.
-    struct BufferMapRequest
+    template <typename BufferClass>
+    struct BufferMapRequestTemplate
     {
-        BufferMapRequest() = default;
+        BufferMapRequestTemplate() = default;
 
-        BufferMapRequest(Buffer& buffer, size_t byteOffset, size_t byteCount);
+        BufferMapRequestTemplate(BufferClass& buffer, size_t byteOffset, size_t byteCount)
+            : m_buffer{&buffer}
+            , m_byteOffset{byteOffset}
+            , m_byteCount{byteCount}
+            {}
 
         /// The buffer instance to map for CPU access.
-        Buffer* m_buffer = nullptr;
+        BufferClass* m_buffer = nullptr;
 
         /// The number of bytes offset from the base of the buffer to map for access.
         size_t m_byteOffset = 0;
@@ -58,13 +68,14 @@ namespace AZ::RHI
     };
 
     //! A structure used as an argument to BufferPool::StreamBuffer.
-    struct BufferStreamRequest
+    template <typename BufferClass, typename FenceClass>
+    struct BufferStreamRequestTemplate
     {
         /// A fence to signal on completion of the upload operation.
-        Fence* m_fenceToSignal = nullptr;
+        FenceClass* m_fenceToSignal = nullptr;
 
         /// The buffer instance to stream up to.
-        Buffer* m_buffer = nullptr;
+        BufferClass* m_buffer = nullptr;
 
         /// The number of bytes offset from the base of the buffer to start the upload.
         size_t m_byteOffset = 0;
@@ -77,6 +88,10 @@ namespace AZ::RHI
         /// is invoked).
         const void* m_sourceData = nullptr;
     };
+
+    using BufferInitRequest = BufferInitRequestTemplate<Buffer>;
+    using BufferMapRequest = BufferMapRequestTemplate<Buffer>;
+    using BufferStreamRequest = BufferStreamRequestTemplate<Buffer, Fence>;
 
     //! Buffer pool provides backing storage and context for buffer instances. The BufferPoolDescriptor
     //! contains properties defining memory characteristics of buffer pools. All buffers created on a pool

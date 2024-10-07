@@ -32,6 +32,7 @@ ly_add_target(
     COMPILE_DEFINITIONS
         PRIVATE
             $<$<CONFIG:debug>:ENABLE_UNDOCACHE_CONSISTENCY_CHECKS>
+            O3DE_PYTHON_SITE_PACKAGE_SUBPATH="${LY_PYTHON_VENV_SITE_PACKAGES}"
     BUILD_DEPENDENCIES
         PRIVATE
             3rdParty::SQLite
@@ -41,6 +42,7 @@ ly_add_target(
             3rdParty::Qt::Gui
             3rdParty::Qt::Widgets
             AZ::AzFramework
+            AZ::AzFramework.NativeUI
             AZ::AzQtComponents
 )
 
@@ -79,6 +81,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         INCLUDE_DIRECTORIES
             PRIVATE
                 Tests
+        COMPILE_DEFINITIONS
+            PRIVATE
+                O3DE_PYTHON_SITE_PACKAGE_SUBPATH="${LY_PYTHON_VENV_SITE_PACKAGES}"
         BUILD_DEPENDENCIES
             PUBLIC
                 AZ::AzTestShared

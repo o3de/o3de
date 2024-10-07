@@ -33,7 +33,7 @@ namespace AZ
                 "Models/OcclusionCullingPlane.fbx.azmodel",
                 AZ::RPI::AssetUtils::TraceLevel::Assert);
 
-            m_visualizationMeshHandle = m_meshFeatureProcessor->AcquireMesh(MeshHandleDescriptor{ m_visualizationModelAsset });
+            m_visualizationMeshHandle = m_meshFeatureProcessor->AcquireMesh(MeshHandleDescriptor(m_visualizationModelAsset));
             m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(m_visualizationMeshHandle, true);
             m_meshFeatureProcessor->SetRayTracingEnabled(m_visualizationMeshHandle, false);
             m_meshFeatureProcessor->SetTransform(m_visualizationMeshHandle, AZ::Transform::CreateIdentity());

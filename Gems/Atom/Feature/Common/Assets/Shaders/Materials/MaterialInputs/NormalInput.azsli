@@ -30,14 +30,22 @@ option bool prefix##o_normal_useTexture;
 //! Samples the normal map and returns the XY values of the normal. 
 //! (Z must be reconstructed assuming length=1; this is handled by the various utility functions that take float2 in TangentSpace.azsli).
 //! The returned XY values will be in the range [-1,1].
-real2 SampleNormalXY(Texture2D map, sampler mapSampler, float2 uv)
+real2 SampleNormalXY(Texture2D map, sampler mapSampler, float2 uv, float4 uvDxDy, bool customDerivatives)
 {
     if (!AreNormalMapsEnabled())
     {
         return real2(0, 0);
     }
 
-    real4 sampledValue = real4(map.Sample(mapSampler, uv));
+    real2 sampledValue;
+    if (customDerivatives)
+    {
+        sampledValue = real2(map.SampleGrad(mapSampler, uv, uvDxDy.xy, uvDxDy.zw).xy);
+    }
+    else
+    {
+        sampledValue = real2(map.Sample(mapSampler, uv).xy);
+    }
     
 #if AZ_TRAIT_ASTC_COMPRESSION
     //Astc compression is unorm (0 to 1) so we need to accomodate for that. We are using BC5_SNORM (-1 - +1)for other platforms like pc
@@ -52,9 +60,9 @@ real2 SampleNormalXY(Texture2D map, sampler mapSampler, float2 uv)
 //! (Z must be reconstructed assuming length=1; this is handled by the various utility functions that take float2 in TangentSpace.azsli).
 //! The returned XY values will be in the range [-1,1].
 //! Also flips X and/or Y if requested.
-real2 SampleNormalXY(Texture2D map, sampler mapSampler, float2 uv, bool flipX, bool flipY)
+real2 SampleNormalXY(Texture2D map, sampler mapSampler, float2 uv, bool flipX, bool flipY, float4 uvDxDy, bool customDerivatives)
 {
-    real2 sampledValue = real2(SampleNormalXY(map, mapSampler, uv));
+    real2 sampledValue = real2(SampleNormalXY(map, mapSampler, uv, uvDxDy, customDerivatives));
 
     // [GFX TODO][ATOM-2404] For some reason, the image build pipeline swaps the R and G channels
     if(flipX)
@@ -78,11 +86,11 @@ real3 AdjustBackFaceNormal(real3 normal, bool isFrontFace)
 
 // Get the input normal in world space
 real3 GetNormalInputWS(Texture2D map, sampler mapSampler, float2 uv, bool flipX, bool flipY, bool isFrontFace,
-                        real3 normal, real3 tangent, real3 bitangent, real3x3 uvMatrix, bool useTexture, real normalStrength)
+                        real3 normal, real3 tangent, real3 bitangent, real3x3 uvMatrix, bool useTexture, real normalStrength, float4 uvDxDy, bool customDerivatives)
 {
     if (useTexture && AreNormalMapsEnabled())
     {
-        real2 sampledValue = SampleNormalXY(map, mapSampler, uv, flipX, flipY);
+        real2 sampledValue = SampleNormalXY(map, mapSampler, uv, flipX, flipY, uvDxDy, customDerivatives);
         normal = GetWorldSpaceNormal(sampledValue, normal, tangent, bitangent, uvMatrix, normalStrength);
     }
     else
@@ -95,11 +103,11 @@ real3 GetNormalInputWS(Texture2D map, sampler mapSampler, float2 uv, bool flipX,
 }
 
 // Get the input normal in tangent space
-real3 GetNormalInputTS(Texture2D map, sampler mapSampler, float2 uv, bool flipX, bool flipY, real3x3 uvMatrix, bool useTexture, real normalStrength)
+real3 GetNormalInputTS(Texture2D map, sampler mapSampler, float2 uv, bool flipX, bool flipY, real3x3 uvMatrix, bool useTexture, real normalStrength, float4 uvDxDy, bool customDerivatives)
 {
     if (useTexture && AreNormalMapsEnabled())
     {
-        real2 sampledValue = SampleNormalXY(map, mapSampler, uv, flipX, flipY);
+        real2 sampledValue = SampleNormalXY(map, mapSampler, uv, flipX, flipY, uvDxDy, customDerivatives);
         return GetTangentSpaceNormal(sampledValue, uvMatrix, normalStrength);
     }
     else
@@ -110,15 +118,15 @@ real3 GetNormalInputTS(Texture2D map, sampler mapSampler, float2 uv, bool flipX,
 
 // Helper with default normal strength = 1.0f
 real3 GetNormalInputWS(Texture2D map, sampler mapSampler, float2 uv, bool flipX, bool flipY, bool isFrontFace,
-                        real3 normal, real3 tangent, real3 bitangent, real3x3 uvMatrix, bool useTexture)
+                        real3 normal, real3 tangent, real3 bitangent, real3x3 uvMatrix, bool useTexture, float4 uvDxDy, bool customDerivatives)
 {
     const real normalStrength = 1.0f;
-    return GetNormalInputWS(map, mapSampler, uv, flipX, flipY, isFrontFace, normal, tangent, bitangent, uvMatrix, useTexture, normalStrength);
+    return GetNormalInputWS(map, mapSampler, uv, flipX, flipY, isFrontFace, normal, tangent, bitangent, uvMatrix, useTexture, normalStrength, uvDxDy, customDerivatives);
 }
 
 // Helper with default normal strength = 1.0f
-real3 GetNormalInputTS(Texture2D map, sampler mapSampler, float2 uv, bool flipX, bool flipY, real3x3 uvMatrix, bool useTexture)
+real3 GetNormalInputTS(Texture2D map, sampler mapSampler, float2 uv, bool flipX, bool flipY, real3x3 uvMatrix, bool useTexture, float4 uvDxDy, bool customDerivatives)
 {
     const real normalStrength = 1.0f;
-    return GetNormalInputTS(map, mapSampler, uv, flipX, flipY, uvMatrix, useTexture, normalStrength);
+    return GetNormalInputTS(map, mapSampler, uv, flipX, flipY, uvMatrix, useTexture, normalStrength, uvDxDy, customDerivatives);
 }

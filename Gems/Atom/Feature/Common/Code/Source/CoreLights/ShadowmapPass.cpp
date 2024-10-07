@@ -159,7 +159,7 @@ namespace AZ
         void ShadowmapPass::SetClearShadowDrawPacket(AZ::RHI::ConstPtr<RHI::DrawPacket> clearShadowDrawPacket)
         {
             m_clearShadowDrawPacket = clearShadowDrawPacket;
-            m_clearShadowDrawItemProperties = clearShadowDrawPacket->GetDrawItem(0);
+            m_clearShadowDrawItemProperties = clearShadowDrawPacket->GetDrawItemProperties(0);
         }
 
         void ShadowmapPass::UpdatePipelineViewTag(const RPI::PipelineViewTag& viewTag)
@@ -201,7 +201,7 @@ namespace AZ
                 if (startIndex == 0)
                 {
                     RHI::CommandList* commandList = context.GetCommandList();
-                    commandList->Submit(*m_clearShadowDrawPacket->GetDrawItem(0).m_item, 0);
+                    commandList->Submit(*m_clearShadowDrawPacket->GetDrawItemProperties(0).m_item, 0);
                 }
                 else
                 {

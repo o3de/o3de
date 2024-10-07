@@ -15,6 +15,7 @@ set(FILES
     Include/Atom/Feature/ColorGrading/LutResolution.h
     Include/Atom/Feature/CoreLights/CoreLightsConstants.h
     Include/Atom/Feature/CoreLights/LightCommon.h
+    Source/CoreLights/LightCommon.cpp
     Include/Atom/Feature/CubeMapCapture/CubeMapCaptureFeatureProcessorInterface.h
     Include/Atom/Feature/DisplayMapper/AcesOutputTransformPass.h
     Include/Atom/Feature/DisplayMapper/AcesOutputTransformLutPass.h
@@ -27,6 +28,7 @@ set(FILES
     Include/Atom/Feature/ImGui/ImGuiUtils.h
     Include/Atom/Feature/ImGui/SystemBus.h
     Include/Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessor.h
+    Include/Atom/Feature/LightingChannel/LightingChannelConfiguration.h
     Include/Atom/Feature/LookupTable/LookupTableAsset.h
     Include/Atom/Feature/Mesh/MeshFeatureProcessor.h
     Include/Atom/Feature/Mesh/ModelReloaderSystemInterface.h
@@ -80,6 +82,7 @@ set(FILES
     Source/CoreLights/DepthExponentiationPass.cpp
     Source/CoreLights/DirectionalLightFeatureProcessor.h
     Source/CoreLights/DirectionalLightFeatureProcessor.cpp
+    Source/CoreLights/DirectionalLightShadowNotificationBus.h
     Source/CoreLights/DiskLightFeatureProcessor.h
     Source/CoreLights/DiskLightFeatureProcessor.cpp
     Source/CoreLights/EsmShadowmapsPass.h
@@ -111,6 +114,7 @@ set(FILES
     Source/CoreLights/ShadowmapAtlas.cpp
     Source/CoreLights/ShadowmapPass.h
     Source/CoreLights/ShadowmapPass.cpp
+    Source/CoreLights/SpotLightUtils.h
     Source/Checkerboard/CheckerboardColorResolvePass.cpp
     Source/Checkerboard/CheckerboardColorResolvePass.h
     Source/Checkerboard/CheckerboardPass.cpp
@@ -143,6 +147,7 @@ set(FILES
     Source/ImGui/ImGuiSystemComponent.cpp
     Source/ImGui/ImGuiSystemComponent.h
     Source/ImageBasedLights/ImageBasedLightFeatureProcessor.cpp
+    Source/LightingChannel/LightingChannelConfiguration.cpp
     Source/LookupTable/LookupTableAsset.cpp
     Source/Material/ConvertEmissiveUnitFunctor.cpp
     Source/Material/ConvertEmissiveUnitFunctor.h
@@ -176,6 +181,8 @@ set(FILES
     Source/OcclusionCullingPlane/OcclusionCullingPlaneFeatureProcessor.cpp
     Source/OcclusionCullingPlane/OcclusionCullingPlane.h
     Source/OcclusionCullingPlane/OcclusionCullingPlane.cpp
+    Source/Silhouette/SilhouetteFeatureProcessor.cpp
+    Source/Silhouette/SilhouetteFeatureProcessor.h
     Source/PostProcess/PostProcessBase.cpp
     Source/PostProcess/PostProcessBase.h
     Source/PostProcess/PostProcessFeatureProcessor.cpp
@@ -192,8 +199,16 @@ set(FILES
     Source/PostProcess/DepthOfField/DepthOfFieldSettings.h
     Source/PostProcess/ExposureControl/ExposureControlSettings.cpp
     Source/PostProcess/ExposureControl/ExposureControlSettings.h
+    Source/PostProcess/FilmGrain/FilmGrainSettings.cpp
+    Source/PostProcess/FilmGrain/FilmGrainSettings.h
+    Source/PostProcess/PaniniProjection/PaniniProjectionSettings.cpp
+    Source/PostProcess/PaniniProjection/PaniniProjectionSettings.h
     Source/PostProcess/Ssao/SsaoSettings.cpp
     Source/PostProcess/Ssao/SsaoSettings.h
+    Source/PostProcess/WhiteBalance/WhiteBalanceSettings.cpp
+    Source/PostProcess/WhiteBalance/WhiteBalanceSettings.h
+    Source/PostProcess/Vignette/VignetteSettings.cpp
+    Source/PostProcess/Vignette/VignetteSettings.h
     Source/PostProcess/LookModification/LookModificationSettings.cpp
     Source/PostProcess/LookModification/LookModificationSettings.h
     Source/PostProcessing/BlendColorGradingLutsPass.h
@@ -210,6 +225,12 @@ set(FILES
     Source/PostProcessing/BloomParentPass.cpp
     Source/PostProcessing/ChromaticAberrationPass.h
     Source/PostProcessing/ChromaticAberrationPass.cpp
+    Source/PostProcessing/FilmGrainPass.h
+    Source/PostProcessing/FilmGrainPass.cpp
+    Source/PostProcessing/PaniniProjectionPass.h
+    Source/PostProcessing/PaniniProjectionPass.cpp
+    Source/PostProcessing/VignettePass.h
+    Source/PostProcessing/VignettePass.cpp
     Source/PostProcessing/DepthOfFieldCompositePass.h
     Source/PostProcessing/DepthOfFieldCompositePass.cpp
     Source/PostProcessing/DepthOfFieldBokehBlurPass.h
@@ -261,6 +282,8 @@ set(FILES
     Source/PostProcessing/SubsurfaceScatteringPass.h
     Source/PostProcessing/TaaPass.h
     Source/PostProcessing/TaaPass.cpp
+    Source/PostProcessing/WhiteBalancePass.h
+    Source/PostProcessing/WhiteBalancePass.cpp
     Source/RayTracing/RayTracingFeatureProcessor.h
     Source/RayTracing/RayTracingFeatureProcessor.cpp
     Source/RayTracing/RayTracingResourceList.h

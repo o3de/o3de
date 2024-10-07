@@ -92,13 +92,46 @@ namespace AZ
         struct MeshHandleDescriptor
         {
             using RequiresCloneCallback = AZStd::function<bool(const Data::Asset<RPI::ModelAsset>& modelAsset)>;
+            using ModelChangedEvent = Event<const Data::Instance<RPI::Model>&>;
+            using ObjectSrgCreatedEvent = Event<const Data::Instance<RPI::ShaderResourceGroup>&>;
 
+            MeshHandleDescriptor() = default;
+
+            MeshHandleDescriptor(const Data::Asset<RPI::ModelAsset>& modelAsset)
+                : m_modelAsset(modelAsset)
+            {
+            }
+
+            MeshHandleDescriptor(const Data::Asset<RPI::ModelAsset>& modelAsset, const CustomMaterialMap& customMaterials)
+                : m_modelAsset(modelAsset)
+                , m_customMaterials(customMaterials)
+            {
+            }
+
+            MeshHandleDescriptor(const Data::Asset<RPI::ModelAsset>& modelAsset, const Data::Instance<RPI::Material>& material)
+                : m_modelAsset(modelAsset)
+                , m_customMaterials({ { AZ::Render::DefaultCustomMaterialId, { material, {} } } })
+            {
+            }
+
+            AZ::EntityId m_entityId{ AZ::EntityId::InvalidEntityId };
             Data::Asset<RPI::ModelAsset> m_modelAsset;
-            RequiresCloneCallback m_requiresCloneCallback = {};
             bool m_isRayTracingEnabled = true;
             bool m_useForwardPassIblSpecular = false;
             bool m_isAlwaysDynamic = false;
             bool m_excludeFromReflectionCubeMaps = false;
+            bool m_isSkinnedMesh = false;
+            bool m_supportRayIntersection = false;
+
+            CustomMaterialMap m_customMaterials;
+
+            RequiresCloneCallback m_requiresCloneCallback{};
+
+            //! Connects to an event that gets triggered whenever the model is changed, loaded, or reloaded.
+            ModelChangedEvent::Handler m_modelChangedEventHandler{ [](const Data::Instance<RPI::Model>&){} };
+
+            //! Connects to an event that triggers whenever the ObjectSrg is created.
+            ObjectSrgCreatedEvent::Handler m_objectSrgCreatedHandler{ [](const Data::Instance<RPI::ShaderResourceGroup>&){} };
         };
 
         //! MeshFeatureProcessorInterface provides an interface to acquire and release a MeshHandle from the underlying
@@ -109,17 +142,12 @@ namespace AZ
             AZ_RTTI(AZ::Render::MeshFeatureProcessorInterface, "{975D7F0C-2E7E-4819-94D0-D3C4E2024721}", AZ::RPI::FeatureProcessor);
 
             using MeshHandle = StableDynamicArrayHandle<ModelDataInstance>;
-            using ModelChangedEvent = Event<const Data::Instance<RPI::Model>>;
-            using ObjectSrgCreatedEvent = Event<const Data::Instance<RPI::ShaderResourceGroup>&>;
 
             //! Returns the object id for a mesh handle.
             virtual TransformServiceFeatureProcessorInterface::ObjectId GetObjectId(const MeshHandle& meshHandle) const = 0;
 
-            //! Acquires a model with an optional collection of custom materials.
-            //! @param requiresCloneCallback The callback indicates whether cloning is required for a given model asset.
-            virtual MeshHandle AcquireMesh(const MeshHandleDescriptor& descriptor, const CustomMaterialMap& materials = {}) = 0;
-            //! Acquires a model with a single material applied to all its meshes.
-            virtual MeshHandle AcquireMesh(const MeshHandleDescriptor& descriptor, const Data::Instance<RPI::Material>& material) = 0;
+            //! Acquire a mesh handle for a model configured using the descriptor
+            virtual MeshHandle AcquireMesh(const MeshHandleDescriptor& descriptor) = 0;
             //! Releases the mesh handle
             virtual bool ReleaseMesh(MeshHandle& meshHandle) = 0;
             //! Creates a new instance and handle of a mesh using an existing MeshId. Currently, this will reset the new mesh to default materials.
@@ -150,12 +178,9 @@ namespace AZ
             virtual void SetCustomMaterials(const MeshHandle& meshHandle, const CustomMaterialMap& materials) = 0;
             //! Gets the CustomMaterialMap for a meshHandle.
             virtual const CustomMaterialMap& GetCustomMaterials(const MeshHandle& meshHandle) const = 0;
-            //! Connects a handler to any changes to an RPI::Model. Changes include loading and reloading.
-            virtual void ConnectModelChangeEventHandler(const MeshHandle& meshHandle, ModelChangedEvent::Handler& handler) = 0;
 
-            //! Connects a handler to ObjectSrg creation
-            virtual void ConnectObjectSrgCreatedEventHandler(const MeshHandle& meshHandle, ObjectSrgCreatedEvent::Handler& handler) = 0;
-
+            //! Enables/Disables the mesh's DrawItem for the given drawListTag
+            virtual void SetDrawItemEnabled(const MeshHandle& meshHandle, RHI::DrawListTag drawListTag, bool enabled) = 0;
             //! Sets the transform for a given mesh handle.
             virtual void SetTransform(const MeshHandle& meshHandle, const Transform& transform,
                 const Vector3& nonUniformScale = Vector3::CreateOne()) = 0;
@@ -171,6 +196,10 @@ namespace AZ
             virtual void SetSortKey(const MeshHandle& meshHandle, RHI::DrawItemSortKey sortKey) = 0;
             //! Gets the sort key for a given mesh handle.
             virtual RHI::DrawItemSortKey GetSortKey(const MeshHandle& meshHandle) const = 0;
+            //! Sets the lighting channel mask for a given mesh handle.
+            virtual void SetLightingChannelMask(const MeshHandle& meshHandle, uint32_t lightingChannelMask) = 0;
+            //! Gets the lighting channel mask for a given mesh handle.
+            virtual uint32_t GetLightingChannelMask(const MeshHandle& meshHandle) const = 0;
             //! Sets LOD mesh configurations to be used in the Mesh Feature Processor
             virtual void SetMeshLodConfiguration(const MeshHandle& meshHandle, const RPI::Cullable::LodConfiguration& meshLodConfig) = 0;
             //! Gets the LOD mesh configurations being used in the Mesh Feature Processor
@@ -184,7 +213,7 @@ namespace AZ
             //! Gets if a mesh is considered to always be moving.
             virtual bool GetIsAlwaysDynamic(const MeshHandle& meshHandle) const = 0;
             //! Sets the option to exclude this mesh from raytracing
-            virtual void SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled) = 0;
+            virtual void SetRayTracingEnabled(const MeshHandle& meshHandle, bool enabled) = 0;
             //! Gets whether this mesh is excluded from raytracing
             virtual bool GetRayTracingEnabled(const MeshHandle& meshHandle) const = 0;
             //! Sets the mesh as visible or hidden.  When the mesh is hidden it will not be rendered by the feature processor.
@@ -196,6 +225,8 @@ namespace AZ
             virtual void SetUseForwardPassIblSpecular(const MeshHandle& meshHandle, bool useForwardPassIblSpecular) = 0;
             //! Set a flag that the ray tracing data needs to be updated, usually after material changes. 
             virtual void SetRayTracingDirty(const MeshHandle& meshHandle) = 0;
+            //! Print out info about the mesh draw packet
+            virtual void PrintDrawPacketInfo(const MeshHandle& meshHandle) = 0;
         };
     } // namespace Render
 } // namespace AZ

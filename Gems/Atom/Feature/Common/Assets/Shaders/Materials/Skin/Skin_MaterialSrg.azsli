@@ -17,6 +17,7 @@
 #include "../MaterialInputs/EmissiveInput.azsli"
 #include "../MaterialInputs/UvSetCount.azsli"
 #include "../MaterialInputs/DetailMapsInput.azsli"
+#include "../MaterialInputs/DualSpecular.azsli"
 
 #include <Atom/Features/SrgSemantics.azsli>
 
@@ -29,6 +30,7 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     COMMON_SRG_INPUTS_NORMAL()
     COMMON_SRG_INPUTS_OCCLUSION()
     COMMON_SRG_INPUTS_DETAIL_MAPS()
+    COMMON_SRG_INPUTS_DUAL_SPECULAR()
     
     Sampler m_sampler
     {

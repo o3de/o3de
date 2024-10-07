@@ -49,7 +49,7 @@ TimelineWidget::TimelineWidget(QWidget* parent /* = nullptr */)
 
     m_ticksStep = 10.0f;
 
-    m_grid.zoom.x = 100;
+    m_grid.zoom.SetX(100);
 
     m_bIgnoreSetTime = false;
 
@@ -513,13 +513,13 @@ void TimelineWidget::SetTimeMarker(float fTime)
 //////////////////////////////////////////////////////////////////////////
 void TimelineWidget::SetZoom(float fZoom)
 {
-    m_grid.zoom.x = fZoom;
+    m_grid.zoom.SetX(fZoom);
 }
 
 //////////////////////////////////////////////////////////////////////////
 void TimelineWidget::SetOrigin(float fOffset)
 {
-    m_grid.origin.x = fOffset;
+    m_grid.origin.SetX(fOffset);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -657,7 +657,7 @@ public:
 void TimelineWidget::DrawFrameTicks(QPainter* painter)
 {
     TickDrawer tickDrawer(painter, m_rcTimeline);
-    GridUtils::IterateGrid(tickDrawer, 50.0f, m_grid.zoom.x, m_grid.origin.x, m_fps, m_grid.rect.left(), m_grid.rect.right() + 1);
+    GridUtils::IterateGrid(tickDrawer, 50.0f, m_grid.zoom.GetX(), m_grid.origin.GetX(), m_fps, m_grid.rect.left(), m_grid.rect.right() + 1);
 }
 
 void TimelineWidget::SetPlayCallback(const std::function<void()>& callback)

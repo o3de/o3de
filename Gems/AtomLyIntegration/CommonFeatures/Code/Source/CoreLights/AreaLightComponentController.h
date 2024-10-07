@@ -98,6 +98,9 @@ namespace AZ
             float GetAffectsGIFactor() const override;
             void SetAffectsGIFactor(float affectsGIFactor) const override;
 
+            uint32_t GetLightingChannelMask() const;
+            void SetLightingChannelMask(uint32_t lightingChannelMask) override;
+
             AZ::Aabb GetLocalVisualizationBounds() const override;
 
             void HandleDisplayEntityViewport(
@@ -113,6 +116,7 @@ namespace AZ
             void AttenuationRadiusChanged();
             void ShuttersChanged();
             void ShadowsChanged();
+            void LightingChannelMaskChanged();
             
             //! Handles calculating the attenuation radius when LightAttenuationRadiusMode is auto
             void AutoCalculateAttenuationRadius();

@@ -43,6 +43,10 @@ namespace AZ
             // Forces viewport and scissor to match width/height of output image at specified index.
             // Does nothing if index is negative.
             s32 m_viewportAndScissorTargetOutputIndex = -1;
+
+            // Specifies whether to enable DrawItems with this DrawListTag when they are created
+            // Set to false if you want to manually enable draw items for your Pass/DrawListTag
+            bool m_enableDrawItemsByDefault = true;
         };
     } // namespace RPI
 } // namespace AZ

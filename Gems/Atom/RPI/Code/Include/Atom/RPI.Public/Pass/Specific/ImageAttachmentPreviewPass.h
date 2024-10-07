@@ -56,6 +56,7 @@ namespace AZ
             RHI::AttachmentId m_destAttachmentId;
 
             Data::Instance<AttachmentImage> m_destImage;
+            u16 m_sourceArraySlice = 0;
 
             // Copy item to be submitted to command list
             RHI::CopyItem m_copyItem;
@@ -79,7 +80,7 @@ namespace AZ
             ~ImageAttachmentPreviewPass();
             
             //! Preview the PassAttachment of a pass' PassAttachmentBinding
-            void PreviewImageAttachmentForPass(Pass* pass, const PassAttachment* passAttachment);
+            void PreviewImageAttachmentForPass(Pass* pass, const PassAttachment* passAttachment, RenderPipeline* previewOutputPipeline = nullptr, u32 imageArraySlice = 0);
 
             //! Set the output color attachment for this pass
             void SetOutputColorAttachment(RHI::Ptr<PassAttachment> outputImageAttachment);

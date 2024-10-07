@@ -8,16 +8,18 @@
 
 #pragma once
 
+#include "AzCore/Math/MathUtils.h"
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <MiniAudio/SoundAsset.h>
+#include <AzCore/Math/Vector3.h>
 
 namespace MiniAudio
 {
     // AttenuationModel hidden here to prevent needing to include miniaudio.h here.
-    enum class AttenuationModel  // must match ma_attenuation_model from miniaudio.   
+    enum class AttenuationModel  // must match ma_attenuation_model from miniaudio.
     {
         Inverse = 1, //ma_attenuation_model_inverse,
         Linear = 2, // ma_attenuation_model_linear,
@@ -38,7 +40,8 @@ namespace MiniAudio
         //! environment audio.
         bool m_autoplayOnActivate = false;
 
-        float m_volume = 1.f;
+        //! Playback volume represented as a percentage
+        float m_volume = 100.f;
 
         //! If true, follow the position of the entity.
         bool m_autoFollowEntity = false;
@@ -48,7 +51,20 @@ namespace MiniAudio
 
         bool m_enableSpatialization = false;
         AttenuationModel m_attenuationModel = AttenuationModel::Inverse;
-        float m_minimumDistance = 3.f;        
+        float m_minimumDistance = 3.f;
         float m_maximumDistance = 30.f;
+
+        //! Inner cone angle
+        float m_innerAngleInRadians = AZ::Constants::TwoPi;
+        float m_innerAngleInDegrees = AZ::RadToDeg(m_innerAngleInRadians);
+        //! Outer cone angle
+        float m_outerAngleInRadians = AZ::Constants::TwoPi;
+        float m_outerAngleInDegrees = AZ::RadToDeg(m_outerAngleInRadians);
+        //! Volume outside of outer cone
+        float m_outerVolume = 0.f;
+        //! Directional controls
+        float m_directionalAttenuationFactor = 1.f;
+        bool m_fixedDirection = false;
+        AZ::Vector3 m_direction = AZ::Vector3::CreateAxisY(1.f);
     };
 } // namespace MiniAudio

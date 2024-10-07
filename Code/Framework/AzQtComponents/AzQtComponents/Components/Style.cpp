@@ -75,6 +75,7 @@ AZ_POP_DISABLE_WARNING
 #include <QtWidgets/private/qstylehelper_p.h>
 
 #include <limits>
+#include <QListWidget>
 
 namespace AzQtComponents
 {
@@ -789,7 +790,8 @@ namespace AzQtComponents
 
     QPixmap Style::generatedIconPixmap(QIcon::Mode iconMode, const QPixmap& pixmap, const QStyleOption* option) const
     {
-        if (qobject_cast<const TableView*>(m_drawControlWidget) && iconMode == QIcon::Mode::Selected)
+        if ((qobject_cast<const TableView*>(m_drawControlWidget) ||
+            qobject_cast<const QListWidget*>(m_drawControlWidget)) && iconMode == QIcon::Mode::Selected)
         {
             return QProxyStyle::generatedIconPixmap(QIcon::Mode::Active, pixmap, option);
         }

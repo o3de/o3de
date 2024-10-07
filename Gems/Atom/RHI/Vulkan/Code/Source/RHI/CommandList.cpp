@@ -127,7 +127,7 @@ namespace AZ
                 const auto* sourceBufferMemoryView = static_cast<const Buffer*>(descriptor.m_sourceBuffer)->GetBufferMemoryView();
                 const auto* destinationImage = static_cast<const Image*>(descriptor.m_destinationImage);
                 const RHI::Format format = destinationImage->GetDescriptor().m_format;
-                uint32_t formatDimensionAlignment = GetFormatDimensionAlignment(format);
+                RHI::Size formatDimensionAlignment = GetFormatDimensionAlignment(format);
 
                 // VkBufferImageCopy::bufferRowLength is specified in texels not in bytes. 
                 // Because of this we need to convert m_sourceBytesPerRow from bytes to pixels to account 
@@ -138,8 +138,8 @@ namespace AZ
 
                 VkBufferImageCopy copy{};
                 copy.bufferOffset = sourceBufferMemoryView->GetOffset() + descriptor.m_sourceOffset;
-                copy.bufferRowLength = descriptor.m_sourceBytesPerRow / GetFormatSize(format) * formatDimensionAlignment;
-                copy.bufferImageHeight = RHI::AlignUp(descriptor.m_sourceSize.m_height, formatDimensionAlignment);
+                copy.bufferRowLength = descriptor.m_sourceBytesPerRow / GetFormatSize(format) * formatDimensionAlignment.m_width;
+                copy.bufferImageHeight = RHI::AlignUp(descriptor.m_sourceSize.m_height, formatDimensionAlignment.m_height);
                 copy.imageSubresource.aspectMask = destinationImage->GetImageAspectFlags();
                 copy.imageSubresource.mipLevel = descriptor.m_destinationSubresource.m_mipSlice;
                 copy.imageSubresource.baseArrayLayer = descriptor.m_destinationSubresource.m_arraySlice;
@@ -201,6 +201,7 @@ namespace AZ
                 const auto* sourceImage = static_cast<const Image*>(descriptor.m_sourceImage);
                 const auto* destinationBufferMemoryView = static_cast<const Buffer*>(descriptor.m_destinationBuffer)->GetBufferMemoryView();
                 const RHI::Format format = descriptor.m_destinationFormat;
+                RHI::Size formatDimensionAlignment = GetFormatDimensionAlignment(format);
 
                 // VkBufferImageCopy::bufferRowLength is specified in texels not in bytes. 
                 // Because of this we need to convert m_sourceBytesPerRow from bytes to pixels to account 
@@ -211,8 +212,8 @@ namespace AZ
 
                 VkBufferImageCopy copy{};
                 copy.bufferOffset = destinationBufferMemoryView->GetOffset() + descriptor.m_destinationOffset;
-                copy.bufferRowLength = descriptor.m_destinationBytesPerRow / GetFormatSize(format) * GetFormatDimensionAlignment(format);
-                copy.bufferImageHeight = descriptor.m_sourceSize.m_height;
+                copy.bufferRowLength = descriptor.m_destinationBytesPerRow / GetFormatSize(format) * formatDimensionAlignment.m_width;
+                copy.bufferImageHeight = RHI::AlignUp(descriptor.m_sourceSize.m_height, formatDimensionAlignment.m_height);
                 copy.imageSubresource.aspectMask = ConvertImageAspect(descriptor.m_sourceSubresource.m_aspect);
                 copy.imageSubresource.mipLevel = descriptor.m_sourceSubresource.m_mipSlice;
                 copy.imageSubresource.baseArrayLayer = descriptor.m_sourceSubresource.m_arraySlice;
@@ -650,13 +651,14 @@ namespace AZ
             if (m_descriptor.m_level == VK_COMMAND_BUFFER_LEVEL_SECONDARY)
             {
                 AZ_Assert(inheritance, "Null inheritance info");
-                const RenderPass* renderPass = inheritance->m_frameBuffer->GetRenderPass();
+                const RenderPass* renderPass = inheritance->m_frameBuffer ? inheritance->m_frameBuffer->GetRenderPass() : nullptr;
                 inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-                inheritanceInfo.renderPass = renderPass->GetNativeRenderPass();
+                inheritanceInfo.renderPass = renderPass ? renderPass->GetNativeRenderPass() : VK_NULL_HANDLE;
                 inheritanceInfo.subpass = inheritance->m_subpass;
-                inheritanceInfo.framebuffer = inheritance->m_frameBuffer->GetNativeFramebuffer();
+                inheritanceInfo.framebuffer =
+                    inheritance->m_frameBuffer ? inheritance->m_frameBuffer->GetNativeFramebuffer() : VK_NULL_HANDLE;
                 beginInfo.pInheritanceInfo = &inheritanceInfo;
-                beginInfo.flags |= VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+                beginInfo.flags |= renderPass ? VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT : 0;
                 m_state.m_framebuffer = inheritance->m_frameBuffer;
                 m_state.m_subpassIndex = inheritance->m_subpass;
             }
@@ -1047,6 +1049,8 @@ namespace AZ
                     shaderResourceGroup = shaderResourceGroupList.front();
                 }
 
+                bindings.m_SRGByVulkanBindingIndex[index] = shaderResourceGroup.get();
+
                 VkDescriptorSet vkDescriptorSet = nullptr;
 
                 if (shaderResourceGroup == nullptr)
@@ -1147,34 +1151,55 @@ namespace AZ
             // submit the command to build the BLAS
             const VkAccelerationStructureBuildRangeInfoKHR* rangeInfos = blasBuffers.m_rangeInfos.data();
             context.CmdBuildAccelerationStructuresKHR(GetNativeCommandBuffer(), 1, &blasBuffers.m_buildInfo, &rangeInfos);
+        }
 
-            // we need to have a barrier on VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR to ensure that the BLAS objects
-            // are built prior to building the TLAS in BuildTopLevelAccelerationStructure()
+        void CommandList::UpdateBottomLevelAccelerationStructure([[maybe_unused]] const RHI::RayTracingBlas& rayTracingBlas)
+        {
+            const RayTracingBlas& vulkanRayTracingBlas = dynamic_cast<const RayTracingBlas&>(rayTracingBlas);
+            const RayTracingBlas::BlasBuffers& blasBuffers = vulkanRayTracingBlas.GetBuffers();
+
+            // Set the build mode to update the acceleration structure
+            VkAccelerationStructureBuildGeometryInfoKHR tempBuildInfo = blasBuffers.m_buildInfo;
+            tempBuildInfo.mode = VK_BUILD_ACCELERATION_STRUCTURE_MODE_UPDATE_KHR;
+            tempBuildInfo.srcAccelerationStructure = blasBuffers.m_accelerationStructure;
+
+            const auto& context = dynamic_cast<Device&>(GetDevice()).GetContext();
+
+            // submit the command to build the BLAS
+            const VkAccelerationStructureBuildRangeInfoKHR* rangeInfos = blasBuffers.m_rangeInfos.data();
+            context.CmdBuildAccelerationStructuresKHR(GetNativeCommandBuffer(), 1, &tempBuildInfo, &rangeInfos);
+        }
+
+        void CommandList::BuildTopLevelAccelerationStructure(
+            const RHI::RayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::RayTracingBlas*>& changedBlasList)
+        {
+            const auto& context = static_cast<Device&>(GetDevice()).GetContext();
+
             VkMemoryBarrier memoryBarrier = {};
             memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
             memoryBarrier.pNext = nullptr;
             memoryBarrier.srcAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
             memoryBarrier.dstAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
 
-            context.CmdPipelineBarrier(
-                GetNativeCommandBuffer(),
-                VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
-                VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
-                0,
-                1,
-                &memoryBarrier,
-                0,
-                nullptr,
-                0,
-                nullptr);
-        }
-        
-        void CommandList::BuildTopLevelAccelerationStructure([[maybe_unused]] const RHI::RayTracingTlas& rayTracingTlas)
-        {
+            if (!changedBlasList.empty())
+            {
+                // we need to have a barrier on VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR to ensure that the BLAS objects
+                // are built prior to building the TLAS
+                context.CmdPipelineBarrier(
+                    GetNativeCommandBuffer(),
+                    VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
+                    VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
+                    0,
+                    1,
+                    &memoryBarrier,
+                    0,
+                    nullptr,
+                    0,
+                    nullptr);
+            }
+
             const RayTracingTlas& vulkanRayTracingTlas = static_cast<const RayTracingTlas&>(rayTracingTlas);
             const RayTracingTlas::TlasBuffers& tlasBuffers = vulkanRayTracingTlas.GetBuffers();
-
-            const auto& context = static_cast<Device&>(GetDevice()).GetContext();
 
             // submit the command to build the TLAS
             const VkAccelerationStructureBuildRangeInfoKHR& offsetInfo = tlasBuffers.m_offsetInfo;
@@ -1183,12 +1208,6 @@ namespace AZ
 
             // we need a pipeline barrier on VK_ACCESS_ACCELERATION_STRUCTURE (both read and write) in case we are building
             // multiple TLAS objects in a command list
-            VkMemoryBarrier memoryBarrier = {};
-            memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-            memoryBarrier.pNext = nullptr;
-            memoryBarrier.srcAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
-            memoryBarrier.dstAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
-
             context.CmdPipelineBarrier(
                 GetNativeCommandBuffer(),
                 VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,

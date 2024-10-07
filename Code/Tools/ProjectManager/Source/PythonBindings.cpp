@@ -9,6 +9,7 @@
 #include <PythonBindings.h>
 
 #include <ProjectManagerDefs.h>
+#include <osdefs.h> // for DELIM
 
 // Qt defines slots, which interferes with the use here.
 #pragma push_macro("slots")
@@ -26,6 +27,8 @@
 #include <AzCore/std/numeric.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/std/sort.h>
+#include <AzToolsFramework/API/PythonLoader.h>
+
 
 #include <QDir>
 
@@ -47,11 +50,8 @@ namespace Platform
         AZ_Warning("python", false, "Python library path should exist. path:%s", libPath.c_str());
         return false;
     }
-
-    // Implemented in each different platform's PAL implementation files, as it differs per platform.
-    AZStd::string GetPythonHomePath(const char* pythonPackage, const char* engineRoot);
-
 } // namespace Platform
+
 
 #define Py_To_String(obj) pybind11::str(obj).cast<std::string>().c_str()
 #define Py_To_String_Optional(dict, key, default_string) dict.contains(key) ? Py_To_String(dict[key]) : default_string
@@ -284,7 +284,7 @@ namespace O3DE::ProjectManager
         m_pythonStarted = false;
 
         // set PYTHON_HOME
-        AZStd::string pyBasePath = Platform::GetPythonHomePath(PY_PACKAGE, m_enginePath.c_str());
+        AZStd::string pyBasePath = AzToolsFramework::EmbeddedPython::PythonLoader::GetPythonHomePath(m_enginePath).StringAsPosix();
         if (!AZ::IO::SystemFile::Exists(pyBasePath.c_str()))
         {
             AZ_Error("python", false, "Python home path does not exist: %s", pyBasePath.c_str());
@@ -313,6 +313,22 @@ namespace O3DE::ProjectManager
             pybind11::initialize_interpreter(initializeSignalHandlers);
 
             RedirectOutput::Intialize(PyImport_ImportModule("azlmbr_redirect"), &PythonBindings::OnStdOut, &PythonBindings::OnStdError);
+
+            // Add custom site packages after initializing the interpreter above.  Calling Py_SetPath before initialization
+            // alters the behavior of the initializer to not compute default search paths. See
+            // https://docs.python.org/3/c-api/init.html#c.Py_SetPath
+
+            AZStd::vector<AZ::IO::Path> extendedPaths;
+            AzToolsFramework::EmbeddedPython::PythonLoader::ReadPythonEggLinkPaths(
+                m_enginePath.c_str(), [&extendedPaths](AZ::IO::PathView path)
+                {
+                    extendedPaths.emplace_back(path);
+                });
+
+            if (!extendedPaths.empty())
+            {
+                ExtendSysPath(extendedPaths);
+            }
 
             // Acquire GIL before calling Python code
             AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
@@ -1093,6 +1109,7 @@ namespace O3DE::ProjectManager
         projectInfo.m_license = Py_To_String_Optional(projectData, "license", projectInfo.m_license);
         projectInfo.m_iconPath = Py_To_String_Optional(projectData, "icon", ProjectPreviewImagePath);
         projectInfo.m_engineName = Py_To_String_Optional(projectData, "engine", projectInfo.m_engineName);
+        projectInfo.m_restricted = Py_To_String_Optional(projectData, "restricted", projectInfo.m_restricted);
         if (projectData.contains("user_tags"))
         {
             for (auto tag : projectData["user_tags"])
@@ -2058,4 +2075,31 @@ namespace O3DE::ProjectManager
     {
         m_pythonErrorStrings.push_back(errorString);
     }
+
+    bool PythonBindings::ExtendSysPath(const AZStd::vector<AZ::IO::Path>& extendPaths)
+    {
+        AZStd::unordered_set<AZ::IO::Path> oldPathSet;
+        auto SplitPath = [&oldPathSet](AZStd::string_view pathPart)
+        {
+            oldPathSet.emplace(AZ::IO::FixedMaxPath(pathPart));
+        };
+        AZ::StringFunc::TokenizeVisitor(Py_EncodeLocale(Py_GetPath(), nullptr), SplitPath, DELIM);
+        bool appended{ false };
+        AZStd::string pathAppend{ "import sys\n" };
+        for (const auto& thisStr : extendPaths)
+        {
+            if (!oldPathSet.contains(thisStr.c_str()))
+            {
+                pathAppend.append(AZStd::string::format("sys.path.append(r'%s')\n", thisStr.c_str()));
+                appended = true;
+            }
+        }
+        if (appended)
+        {
+            PyRun_SimpleString(pathAppend.c_str());
+            return true;
+        }
+        return false;
+    }
+
 } // namespace O3DE::ProjectManager

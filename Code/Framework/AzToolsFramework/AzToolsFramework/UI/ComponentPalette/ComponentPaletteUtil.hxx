@@ -32,18 +32,18 @@ namespace AzToolsFramework
         void BuildComponentTables(
             AZ::SerializeContext* serializeContext,
             const AzToolsFramework::ComponentFilter& componentFilter,
-            const AZStd::vector<AZ::ComponentServiceType>& serviceFilter,
-            const AZStd::vector<AZ::ComponentServiceType>& incompatibleServiceFilter,
-            ComponentDataTable &componentDataTable,
-            ComponentIconTable &componentIconTable
+            AZStd::span<const AZ::ComponentServiceType> serviceFilter,
+            AZStd::span<const AZ::ComponentServiceType> incompatibleServiceFilter,
+            ComponentDataTable& componentDataTable,
+            ComponentIconTable& componentIconTable
         );
 
         void BuildComponentTables(
             AZ::SerializeContext* serializeContext,
             const AzToolsFramework::ComponentFilter& componentFilter,
-            const AZStd::vector<AZ::ComponentServiceType>& serviceFilter,
-            ComponentDataTable &componentDataTable,
-            ComponentIconTable &componentIconTable
+            AZStd::span<const AZ::ComponentServiceType> serviceFilter,
+            ComponentDataTable& componentDataTable,
+            ComponentIconTable& componentIconTable
         );
 
         // Returns true if any components in the given filter provide any of the services
@@ -51,14 +51,14 @@ namespace AzToolsFramework
         bool ContainsEditableComponents(
             AZ::SerializeContext* serializeContext,
             const AzToolsFramework::ComponentFilter& componentFilter,
-            const AZStd::vector<AZ::ComponentServiceType>& serviceFilter,
-            const AZStd::vector<AZ::ComponentServiceType>& incompatibleServiceFilter
+            AZStd::span<const AZ::ComponentServiceType> serviceFilter,
+            AZStd::span<const AZ::ComponentServiceType> incompatibleServiceFilter
         );
 
         bool ContainsEditableComponents(
             AZ::SerializeContext* serializeContext,
             const AzToolsFramework::ComponentFilter& componentFilter,
-            const AZStd::vector<AZ::ComponentServiceType>& serviceFilter
+            AZStd::span<const AZ::ComponentServiceType> serviceFilter
         );
 
         QRegExp BuildFilterRegExp(QStringList& criteriaList, AzToolsFramework::FilterOperatorType filterOperator);

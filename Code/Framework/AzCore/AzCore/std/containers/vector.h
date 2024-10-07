@@ -96,7 +96,7 @@ namespace AZStd
             if (numElements > 0)
             {
                 size_type byteSize = sizeof(node_type) * numElements;
-                m_start = reinterpret_cast<pointer>(m_allocator.allocate(byteSize, alignment_of<node_type>::value));
+                m_start = reinterpret_cast<pointer>(static_cast<void*>(m_allocator.allocate(byteSize, alignof(node_type))));
                 m_end = m_start + numElements;
                 Internal::construct<pointer, value_type, false>::range(m_start, m_end);
                 m_last = m_end;
@@ -111,7 +111,7 @@ namespace AZStd
             if (numElements > 0)
             {
                 size_type byteSize = sizeof(node_type) * numElements;
-                m_start = reinterpret_cast<pointer>(m_allocator.allocate(byteSize, alignment_of<node_type>::value));
+                m_start = reinterpret_cast<pointer>(static_cast<void*>(m_allocator.allocate(byteSize, alignof(node_type))));
                 m_end   = m_start + numElements;
                 AZStd::uninitialized_fill_n(m_start, numElements, value);
                 m_last  = m_end;
@@ -126,7 +126,7 @@ namespace AZStd
             if (numElements > 0)
             {
                 size_type byteSize = sizeof(node_type) * numElements;
-                m_start = reinterpret_cast<pointer>(m_allocator.allocate(byteSize, alignment_of<node_type>::value));
+                m_start = reinterpret_cast<pointer>(static_cast<void*>(m_allocator.allocate(byteSize, alignof(node_type))));
                 m_end   = m_start + numElements;
                 AZStd::uninitialized_fill_n(m_start, numElements, value);
                 m_last  = m_end;
@@ -160,7 +160,7 @@ namespace AZStd
             size_type byteSize = sizeof(node_type) * (rhs.m_last - rhs.m_start);
             if (byteSize)
             {
-                m_start = reinterpret_cast<pointer>(m_allocator.allocate(byteSize, alignment_of<node_type>::value));
+                m_start = reinterpret_cast<pointer>(static_cast<void*>(m_allocator.allocate(byteSize, alignof(node_type))));
                 m_last  = AZStd::uninitialized_copy(rhs.m_start, rhs.m_last, m_start, is_trivially_copy_constructible<value_type>());
             }
             else
@@ -365,7 +365,7 @@ namespace AZStd
 
                 // allocate and copy new
                 size_type byteSize = sizeof(node_type) * newSize;
-                m_start = reinterpret_cast<pointer>(m_allocator.allocate(byteSize, alignment_of<node_type>::value));
+                m_start = reinterpret_cast<pointer>(static_cast<void*>(m_allocator.allocate(byteSize, alignof(node_type))));
                 m_last  = AZStd::uninitialized_copy(rhs.m_start, rhs.m_last, m_start, is_trivially_copy_constructible<value_type>());
                 m_end   = m_last;
             }
@@ -422,7 +422,7 @@ namespace AZStd
                 // need more capacity - reallocate
                 size_type byteSize = sizeof(node_type) * numElements;
                 // TODO: here we can use reallocate, if possible, reallocate will extend the current allocation
-                pointer newStart = reinterpret_cast<pointer>(m_allocator.allocate(byteSize, alignment_of<node_type>::value));
+                pointer newStart = reinterpret_cast<pointer>(static_cast<void*>(m_allocator.allocate(byteSize, alignof(node_type))));
                 pointer newLast = AZStd::uninitialized_move(m_start, m_last, newStart);
 
                 // Destroy old array
@@ -676,7 +676,7 @@ namespace AZStd
 
                 size_type byteSize = capacity * sizeof(node_type);
 
-                pointer newStart = reinterpret_cast<pointer>(m_allocator.allocate(byteSize, alignment_of<node_type>::value));
+                pointer newStart = reinterpret_cast<pointer>(static_cast<void*>(m_allocator.allocate(byteSize, alignof(node_type))));
                 // Copy the elements before insert position.
                 pointer newLast = AZStd::uninitialized_move(m_start, insertPosPtr, newStart);
                 // add new data
@@ -913,7 +913,7 @@ namespace AZStd
 
                     size_type byteSize = sizeof(node_type) * size;
 
-                    pointer newStart = reinterpret_cast<pointer>(newAllocator.allocate(byteSize, alignment_of<node_type>::value));
+                    pointer newStart = reinterpret_cast<pointer>(static_cast<void*>(newAllocator.allocate(byteSize, alignof(node_type))));
                     pointer newLast = AZStd::uninitialized_move(m_start, m_last, newStart);
 
                     // destroy objects
@@ -1006,7 +1006,7 @@ namespace AZStd
                     size_type byteSize = sizeof(node_type) * numElements;
 
                     // TODO: here we can use reallocate, if possible, reallocate will extend the current allocation
-                    newStart = reinterpret_cast<pointer>(m_allocator.allocate(byteSize, alignment_of<node_type>::value));
+                    newStart = reinterpret_cast<pointer>(static_cast<void*>(m_allocator.allocate(byteSize, alignof(node_type))));
 
                     if (numMoved > 0)
                     {
@@ -1116,7 +1116,7 @@ namespace AZStd
 
                     size_type byteSize = capacity * sizeof(node_type);
 
-                    pointer newStart = reinterpret_cast<pointer>(m_allocator.allocate(byteSize, alignment_of<node_type>::value));
+                    pointer newStart = reinterpret_cast<pointer>(static_cast<void*>(m_allocator.allocate(byteSize, alignof(node_type))));
                     // Copy the elements before insert position.
                     pointer newLast = AZStd::uninitialized_move(m_start, insertPosPtr, newStart);
                     // add new data (just copy no move)
@@ -1211,7 +1211,7 @@ namespace AZStd
             // ok so we did not really mean iterators when the called this function.
             size_type byteSize = sizeof(node_type) * numElements;
 
-            m_start = reinterpret_cast<pointer>(m_allocator.allocate(byteSize, alignment_of<node_type>::value));
+            m_start = reinterpret_cast<pointer>(static_cast<void*>(m_allocator.allocate(byteSize, alignof(node_type))));
             m_end   = m_start + numElements;
             AZStd::uninitialized_fill_n(m_start, numElements, value);
             m_last  = m_end;

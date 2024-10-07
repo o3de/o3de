@@ -631,6 +631,261 @@ namespace AZ
         {
             return m_data.GetConstantRaw(inputIndex);
         }
+
+        bool ShaderResourceGroup::CopyShaderResourceGroupData(const ShaderResourceGroup& other)
+        {
+            bool isFullCopy = true;
+            // Copy Buffer Shader Inputs
+            for (const RHI::ShaderInputBufferDescriptor& desc : m_layout->GetShaderInputListForBuffers())
+            {
+                RHI::ShaderInputBufferIndex otherIndex = other.m_layout->FindShaderInputBufferIndex(desc.m_name);
+                if (!otherIndex.IsValid())
+                {
+                    isFullCopy = false;
+                    continue;
+                }
+
+                [[maybe_unused]] const RHI::ShaderInputBufferDescriptor& otherDesc = other.m_layout->GetShaderInput(otherIndex);
+                AZ_Error(
+                    "ShaderResourceGroup",
+                    desc.m_access == otherDesc.m_access && desc.m_count == otherDesc.m_count &&
+                        desc.m_strideSize == otherDesc.m_strideSize && desc.m_type == otherDesc.m_type,
+                    "ShaderInputBuffer %s does not match when copying shader resource group data",
+                    desc.m_name.GetCStr());
+
+                RHI::ShaderInputBufferIndex index = m_layout->FindShaderInputBufferIndex(desc.m_name);
+                auto bufferViewArray = other.GetBufferViewArray(otherIndex);
+                auto bufferArray = other.GetBufferArray(otherIndex);
+                AZ_Assert(bufferViewArray.size() == bufferArray.size(), "Different size between buffers and buffer views");
+                for (uint32_t i = 0; i < bufferViewArray.size(); ++i)
+                {
+                    if (bufferArray[i])
+                    {
+                        SetBuffer(index, bufferArray[i], i);
+                    }
+                    else
+                    {
+                        SetBufferView(index, bufferViewArray[i].get(), i);
+                    }
+                }
+            }
+
+            // Copy Image Shader Inputs
+            for (const RHI::ShaderInputImageDescriptor& desc : m_layout->GetShaderInputListForImages())
+            {
+                RHI::ShaderInputImageIndex otherIndex = other.m_layout->FindShaderInputImageIndex(desc.m_name);
+                if (!otherIndex.IsValid())
+                {
+                    isFullCopy = false;
+                    continue;
+                }
+
+                [[maybe_unused]] const RHI::ShaderInputImageDescriptor& otherDesc = other.m_layout->GetShaderInput(otherIndex);
+                AZ_Error(
+                    "ShaderResourceGroup",
+                    desc.m_access == otherDesc.m_access && desc.m_count == otherDesc.m_count &&
+                        desc.m_type == otherDesc.m_type,
+                    "ShaderInputImage %s does not match when copying shader resource group data",
+                    desc.m_name.GetCStr());
+
+                RHI::ShaderInputImageIndex index = m_layout->FindShaderInputImageIndex(desc.m_name);
+                auto imageViewArray = other.GetImageViewArray(otherIndex);
+                auto imageArray = other.GetImageArray(otherIndex);
+                AZ_Assert(imageViewArray.size() == imageArray.size(), "Different size between image and image views");
+                for (uint32_t i = 0; i < imageViewArray.size(); ++i)
+                {
+                    if (imageArray[i])
+                    {
+                        SetImage(index, imageArray[i].get(), i);
+                    }
+                    else
+                    {
+                        SetImageView(index, imageViewArray[i].get(), i);
+                    }
+                }
+            }
+
+            // Copy Sample Shader Inputs
+            for (const RHI::ShaderInputSamplerDescriptor& desc : m_layout->GetShaderInputListForSamplers())
+            {
+                RHI::ShaderInputSamplerIndex otherIndex = other.m_layout->FindShaderInputSamplerIndex(desc.m_name);
+                if (!otherIndex.IsValid())
+                {
+                    isFullCopy = false;
+                    continue;
+                }
+
+                [[maybe_unused]] const RHI::ShaderInputSamplerDescriptor& otherDesc = other.m_layout->GetShaderInput(otherIndex);
+                AZ_Error(
+                    "ShaderResourceGroup",
+                    desc.m_count == otherDesc.m_count,
+                    "ShaderInputSampler %s does not match when copying shader resource group data",
+                    desc.m_name.GetCStr());
+
+                AZStd::span<const RHI::SamplerState> samplerViewArray = other.m_data.GetSamplerArray(otherIndex);
+                SetSamplerArray(m_layout->FindShaderInputSamplerIndex(desc.m_name), samplerViewArray);
+            }
+
+            // Copy Constants Shader Inputs
+            for (const RHI::ShaderInputConstantDescriptor& desc : m_layout->GetShaderInputListForConstants())
+            {
+                RHI::ShaderInputConstantIndex otherIndex = other.m_layout->FindShaderInputConstantIndex(desc.m_name);
+                if (!otherIndex.IsValid())
+                {
+                    isFullCopy = false;
+                    continue;
+                }
+
+                [[maybe_unused]] const RHI::ShaderInputConstantDescriptor& otherDesc = other.m_layout->GetShaderInput(otherIndex);
+                AZ_Error(
+                    "ShaderResourceGroup",
+                    desc.m_constantByteCount == otherDesc.m_constantByteCount,
+                    "ShaderInputConstant %s does not match when copying shader resource group data",
+                    desc.m_name.GetCStr());
+
+                AZStd::span<const uint8_t> constantRaw = other.m_data.GetConstantRaw(otherIndex);
+                SetConstantRaw(m_layout->FindShaderInputConstantIndex(desc.m_name), constantRaw.data(), static_cast<uint32_t>(constantRaw.size()));
+            }
+
+            // Copy Unbound Buffer Array Inputs
+            AZStd::vector<const RHI::BufferView*> bufferViewPtrArray;
+            for (const RHI::ShaderInputBufferUnboundedArrayDescriptor& desc : m_layout->GetShaderInputListForBufferUnboundedArrays())
+            {
+                RHI::ShaderInputBufferUnboundedArrayIndex otherIndex =
+                    other.m_layout->FindShaderInputBufferUnboundedArrayIndex(desc.m_name);
+                if (!otherIndex.IsValid())
+                {
+                    isFullCopy = false;
+                    continue;
+                }
+
+                [[maybe_unused]] const RHI::ShaderInputBufferUnboundedArrayDescriptor& otherDesc =
+                    other.m_layout->GetShaderInput(otherIndex);
+                AZ_Error(
+                    "ShaderResourceGroup",
+                    desc.m_type == otherDesc.m_type && desc.m_access == otherDesc.m_access,
+                    "ShaderInputBufferUnboundedArray %s does not match when copying shader resource group data",
+                    desc.m_name.GetCStr());
+
+                AZStd::span<const RHI::ConstPtr<RHI::BufferView>> bufferViewArray = other.m_data.GetBufferViewUnboundedArray(otherIndex);
+                bufferViewPtrArray.resize(bufferViewArray.size());
+                AZStd::transform(
+                    bufferViewArray.begin(),
+                    bufferViewArray.end(),
+                    bufferViewPtrArray.begin(),
+                    [](auto& item)
+                    {
+                        return item.get();
+                    });
+                SetBufferViewUnboundedArray(m_layout->FindShaderInputBufferUnboundedArrayIndex(desc.m_name), bufferViewPtrArray);
+            }
+
+            // Copy Unbound Image Array Inputs
+            AZStd::vector<const RHI::ImageView*> imageViewPtrArray;
+            for (const RHI::ShaderInputImageUnboundedArrayDescriptor& desc : m_layout->GetShaderInputListForImageUnboundedArrays())
+            {
+                RHI::ShaderInputImageUnboundedArrayIndex otherIndex = other.m_layout->FindShaderInputImageUnboundedArrayIndex(desc.m_name);
+                if (!otherIndex.IsValid())
+                {
+                    isFullCopy = false;
+                    continue;
+                }
+
+                [[maybe_unused]] const RHI::ShaderInputImageUnboundedArrayDescriptor& otherDesc =
+                    other.m_layout->GetShaderInput(otherIndex);
+                AZ_Error(
+                    "ShaderResourceGroup",
+                    desc.m_type == otherDesc.m_type && desc.m_access == otherDesc.m_access,
+                    "ShaderInputImageUnboundedArray %s does not match when copying shader resource group data",
+                    desc.m_name.GetCStr());
+
+                AZStd::span<const RHI::ConstPtr<RHI::ImageView>> imageViewArray = other.m_data.GetImageViewUnboundedArray(otherIndex);
+                imageViewPtrArray.resize(imageViewArray.size());
+                AZStd::transform(
+                    imageViewArray.begin(),
+                    imageViewArray.end(),
+                    imageViewPtrArray.begin(),
+                    [](auto& item)
+                    {
+                        return item.get();
+                    });
+                SetImageViewUnboundedArray(m_layout->FindShaderInputImageUnboundedArrayIndex(desc.m_name), imageViewPtrArray);
+            }
+
+            // Copy Bindless Inputs
+            AZStd::vector<bool> isReadOnlyBuffer;
+            AZStd::vector<bool> isReadOnlyImage;
+            for (const auto& entry : other.m_data.GetBindlessResourceViews())
+            {
+                RHI::ShaderInputBufferIndex otherIndirectResourceBufferIndex = entry.first.first;
+                const RHI::ConstPtr<RHI::BufferView>& indirectResourceBuffer = other.GetBufferView(otherIndirectResourceBufferIndex);
+                RHI::ShaderInputBufferDescriptor otherIndirectResourceBufferDesc =
+                    other.m_layout->GetShaderInput(otherIndirectResourceBufferIndex);
+
+                RHI::ShaderInputBufferIndex indirectResourceBufferIndex =
+                    FindShaderInputBufferIndex(otherIndirectResourceBufferDesc.m_name);
+
+                if (!indirectResourceBufferIndex.IsValid())
+                {
+                    continue;
+                }
+
+                size_t maxSize = entry.second.m_bindlessResources.size();
+                bufferViewPtrArray.clear();
+                bufferViewPtrArray.reserve(maxSize);
+                imageViewPtrArray.clear();
+                imageViewPtrArray.reserve(maxSize);
+                isReadOnlyBuffer.clear();
+                isReadOnlyBuffer.reserve(maxSize);
+                isReadOnlyImage.clear();
+                isReadOnlyImage.reserve(maxSize);
+                for (ConstPtr<RHI::ResourceView> resourceView : entry.second.m_bindlessResources)
+                {
+                    RHI::BindlessResourceType type = entry.second.m_bindlessResourceType;
+                    switch (type)
+                    {
+                    case RHI::BindlessResourceType::m_ByteAddressBuffer:
+                    case RHI::BindlessResourceType::m_RWByteAddressBuffer:
+                        bufferViewPtrArray.push_back(static_cast<const RHI::BufferView*>(resourceView.get()));
+                        isReadOnlyBuffer.push_back(type != RHI::BindlessResourceType::m_RWByteAddressBuffer);
+                        break;
+                    case RHI::BindlessResourceType::m_Texture2D:
+                    case RHI::BindlessResourceType::m_RWTexture2D:
+                    case RHI::BindlessResourceType::m_TextureCube:
+                        imageViewPtrArray.push_back(static_cast<const RHI::ImageView*>(resourceView.get()));
+                        isReadOnlyBuffer.push_back(type != RHI::BindlessResourceType::m_RWTexture2D);
+                        break;
+                    default:
+                        AZ_Assert(false, "Invalid RHI::BindlessResourceType %d", type);
+                        continue;
+                    }
+                }
+
+                if (!bufferViewPtrArray.empty())
+                {
+                    SetBindlessViews(
+                        indirectResourceBufferIndex,
+                        indirectResourceBuffer.get(),
+                        bufferViewPtrArray,
+                        nullptr,
+                        isReadOnlyBuffer,
+                        entry.first.second);
+                }
+
+                if (!imageViewPtrArray.empty())
+                {
+                    SetBindlessViews(
+                        indirectResourceBufferIndex,
+                        indirectResourceBuffer.get(),
+                        imageViewPtrArray,
+                        nullptr,
+                        isReadOnlyImage,
+                        entry.first.second);
+                }
+            }
+
+            return isFullCopy;
+        }
     
         void ShaderResourceGroup::SetBindlessViews(
             RHI::ShaderInputBufferIndex indirectResourceBufferIndex,

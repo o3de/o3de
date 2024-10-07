@@ -95,6 +95,12 @@ def ComponentCRUD_Add_Delete_Components():
             tree.expand(component_index)
             tree.setCurrentIndex(component_index)
             QtTest.QTest.keyClick(tree, Qt.Key_Enter, Qt.NoModifier)
+        
+        def select_entity_by_name(entity_name):
+            searchFilter = entity.SearchFilter()
+            searchFilter.names = [entity_name]
+            entities = entity.SearchBus(bus.Broadcast, 'SearchEntities', searchFilter)
+            editor.ToolsApplicationRequestBus(bus.Broadcast, 'MarkEntitySelected', entities[0])
 
         # 1) Open an existing simple level
         hydra.open_base_level()
@@ -107,7 +113,7 @@ def ComponentCRUD_Add_Delete_Components():
         Report.critical_result(Tests.entity_created, entity_id.IsValid())
 
         # 3) Select the newly created entity
-        general.select_object("Entity1")
+        select_entity_by_name("Entity1")
 
         # Give the Entity Inspector time to fully create its contents
         general.idle_wait_frames(3)

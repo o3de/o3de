@@ -61,7 +61,7 @@ namespace LyShine
             return false;
         }
         //TODO: gEnv->pRenderer is always null, fix the logic below
-        AZ_ErrorOnce(nullptr, false, "NotifyGameLoadStart needs to be removed/ported to use Atom");
+        AZ_ErrorOnce(AZ::Debug::Trace::GetDefaultSystemWindow(), false, "NotifyGameLoadStart needs to be removed/ported to use Atom");
         return false;
 #if 0
         if (!gEnv || gEnv->pRenderer || !AZ::Interface<ILyShine>::Get())
@@ -100,7 +100,7 @@ namespace LyShine
             return false;
         }
 
-        AZ_ErrorOnce(nullptr, false, "NotifyLevelLoadStart needs to be removed/ported to use Atom");
+        AZ_ErrorOnce(AZ::Debug::Trace::GetDefaultSystemWindow(), false, "NotifyLevelLoadStart needs to be removed/ported to use Atom");
         return false;
         //TODO: gEnv->pRenderer is always null, fix the logic below
 #if 0
@@ -141,7 +141,7 @@ namespace LyShine
     void LyShineLoadScreenComponent::UpdateAndRender([[maybe_unused]] float deltaTimeInSeconds)
     {
         AZ_Assert(m_isPlaying, "LyShineLoadScreenComponent should not be connected to LoadScreenUpdateNotificationBus while not playing");
-        AZ_ErrorOnce(nullptr, m_isPlaying && AZ::Interface<ILyShine>::Get(), "UpdateAndRender needs to be removed/ported to use Atom");
+        AZ_ErrorOnce(AZ::Debug::Trace::GetDefaultSystemWindow(), m_isPlaying && AZ::Interface<ILyShine>::Get(), "UpdateAndRender needs to be removed/ported to use Atom");
 
         //TODO: gEnv->pRenderer is always null, fix the logic below
 #if 0

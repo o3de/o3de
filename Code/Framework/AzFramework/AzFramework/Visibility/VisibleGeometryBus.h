@@ -38,6 +38,9 @@ namespace AzFramework
 
         //! Index list must contain 3 uint32_t per triangle face. Each index references a position in the vertex list.
         AZStd::vector<uint32_t> m_indices;
+
+        //! Flag signifying if the geometry has transparent elements.
+        bool m_transparent = false;
     };
 
     using VisibleGeometryContainer = AZStd::vector<VisibleGeometry>;

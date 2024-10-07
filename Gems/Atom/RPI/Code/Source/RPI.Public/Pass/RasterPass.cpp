@@ -47,6 +47,8 @@ namespace AZ
             SetDrawListTag(rasterData->m_drawListTag);
             m_drawListSortType = rasterData->m_drawListSortType;
 
+            RHI::RHISystemInterface::Get()->SetDrawListTagEnabledByDefault(m_drawListTag, rasterData->m_enableDrawItemsByDefault);
+
             // Get the shader asset that contains the SRG Layout.
             Data::Asset<ShaderAsset> shaderAsset;
             if (rasterData->m_passSrgShaderReference.m_assetId.IsValid())
@@ -131,14 +133,33 @@ namespace AZ
 
         void RasterPass::FrameBeginInternal(FramePrepareParams params)
         {
+            // Binding to use for viewport and scissor calculations
+            PassAttachmentBinding* viewportTarget = nullptr;
+
+            // If a target binding for viewport calculation is specified
             if (m_viewportAndScissorTargetOutputIndex >= 0)
             {
-                PassAttachmentBinding& target = GetOutputBinding(m_viewportAndScissorTargetOutputIndex);
-                u32 targetWidth = target.GetAttachment()->m_descriptor.m_image.m_size.m_width;
-                u32 targetHeight = target.GetAttachment()->m_descriptor.m_image.m_size.m_height;
+                u32 idx = u32(m_viewportAndScissorTargetOutputIndex);
+                // First check outputs
+                if (GetOutputCount() > idx)
+                {
+                    viewportTarget = &GetOutputBinding(idx);
+                }
+                // If not an output, check input/outputs
+                else if (GetInputOutputCount() > idx)
+                {
+                    viewportTarget = &GetInputOutputBinding(idx);
+                }
+            }
+            // Build viewport and scissor from target binding if specified
+            if (viewportTarget)
+            {
+                u32 targetWidth = viewportTarget->GetAttachment()->m_descriptor.m_image.m_size.m_width;
+                u32 targetHeight = viewportTarget->GetAttachment()->m_descriptor.m_image.m_size.m_height;
                 m_scissorState = RHI::Scissor(0, 0, targetWidth, targetHeight);
                 m_viewportState = RHI::Viewport(0, static_cast<float>(targetWidth), 0, static_cast<float>(targetHeight));
             }
+            // Otherwise check whether viewport/scissor overrides were manually provided
             else
             {
                 if (!m_overrideScissorSate)

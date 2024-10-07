@@ -60,7 +60,7 @@ namespace AZ::RHI
         //!
         //! Platform back-ends which invalidate GPU-specific data on the resource without an explicit
         //! shutdown / re-initialization will need to call this method explicitly.
-        virtual void InvalidateViews() = 0;
+        void InvalidateViews();
 
     protected:
         MultiDeviceResource() = default;
@@ -83,5 +83,23 @@ namespace AZ::RHI
 
         //! The version is monotonically incremented any time the backing resource is changed.
         uint32_t m_version = 0;
+    };
+
+    class MultiDeviceBuffer;
+    class MultiDeviceImage;
+    class ResourceView;
+
+    //! MultiDeviceResourceView is a base class for multi-device buffer and image views for
+    //! polymorphic usage of views in a generic way.
+    class MultiDeviceResourceView : public Object
+    {
+    public:
+        virtual ~MultiDeviceResourceView() = default;
+
+        //! Returns the resource associated with this view.
+        virtual const MultiDeviceResource* GetResource() const = 0;
+        virtual const ResourceView* GetDeviceResourceView(int deviceIndex) const = 0;
+
+        AZ_RTTI(MultiDeviceResourceView, "{D7442960-531D-4DCC-B60D-FD26FF75BE51}", Object);
     };
 } // namespace AZ::RHI

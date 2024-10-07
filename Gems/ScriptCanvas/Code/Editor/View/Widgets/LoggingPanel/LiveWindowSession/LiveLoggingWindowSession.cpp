@@ -10,6 +10,8 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <EditorCoreAPI.h>
 #include <IEditor.h>
+#include <QtWidgets/QLabel>
+#include <ScriptCanvas/Asset/RuntimeAsset.h>
 
 #include <Editor/View/Widgets/LoggingPanel/LiveWindowSession/LiveLoggingWindowSession.h>
 
@@ -222,6 +224,15 @@ namespace ScriptCanvasEditor
 
         m_ui->autoCaptureToggle->setChecked(m_userSettings->IsAutoCaptureEnabled());
         QObject::connect(m_ui->autoCaptureToggle, &QToolButton::toggled, this, &LiveLoggingWindowSession::OnAutoCaptureToggled);
+
+        if (!AzFramework::RemoteToolsInterface::Get())
+        {
+            m_ui->logTree->setHidden(true);
+            m_ui->verticalLayout->setAlignment(Qt::AlignTop);
+            QLabel* warnMessage = new QLabel("Please enable the **Remote Tools Connection** gem to use graph debugging features");
+            warnMessage->setTextFormat(Qt::MarkdownText);
+            m_ui->verticalLayout->addWidget(warnMessage);
+        }
     }
 
     LiveLoggingWindowSession::~LiveLoggingWindowSession()
@@ -525,7 +536,8 @@ namespace ScriptCanvasEditor
 
         for (const auto& graphIdentifier : registrationSet)
         {
-            captureInfo.m_graphs.insert(graphIdentifier.m_assetId);
+            // Graphs capture is using runtime asset subID, need this conversion else comparison won't match
+            captureInfo.m_graphs.insert(AZ::Data::AssetId(graphIdentifier.m_assetId.m_guid, ScriptCanvas::RuntimeDataSubId));
         }
     }
 

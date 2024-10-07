@@ -37,6 +37,7 @@ namespace MiniAudio
 
         AZ::Crc32 PlaySoundInEditor();
         AZ::Crc32 StopSoundInEditor();
+        AZ::Crc32 PauseSoundInEditor();
         AZ::Crc32 OnVolumeChanged();
     };
 

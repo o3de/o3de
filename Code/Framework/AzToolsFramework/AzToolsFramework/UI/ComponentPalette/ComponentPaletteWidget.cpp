@@ -115,14 +115,14 @@ namespace AzToolsFramework
         AZ::SerializeContext* serializeContext,
         const AzToolsFramework::EntityIdList& selectedEntityIds,
         const AzToolsFramework::ComponentFilter& componentFilter,
-        const AZStd::vector<AZ::ComponentServiceType>& serviceFilter,
-        const AZStd::vector<AZ::ComponentServiceType>& incompatibleServiceFilter)
+        AZStd::span<const AZ::ComponentServiceType> serviceFilter,
+        AZStd::span<const AZ::ComponentServiceType> incompatibleServiceFilter)
     {
         m_serializeContext = serializeContext;
         m_selectedEntityIds = selectedEntityIds;
         m_componentFilter = componentFilter;
-        m_serviceFilter = serviceFilter;
-        m_incompatibleServiceFilter = incompatibleServiceFilter;
+        m_serviceFilter.assign_range(serviceFilter);
+        m_incompatibleServiceFilter.assign_range(incompatibleServiceFilter);
 
         UpdateContent();
         Present();

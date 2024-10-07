@@ -30,8 +30,8 @@ namespace EditorInternal
         virtual bool OpenLevel(AZStd::string_view levelName) = 0;
         virtual bool OpenLevelNoPrompt(AZStd::string_view levelName) = 0;
 
-        virtual int CreateLevel(AZStd::string_view levelName, bool bUseTerrain) = 0;
-        virtual int CreateLevelNoPrompt(AZStd::string_view levelName, int terrainExportTextureSize, bool useTerrain) = 0;
+        virtual int CreateLevel(AZStd::string_view templateName, AZStd::string_view levelName, bool bUseTerrain) = 0;
+        virtual int CreateLevelNoPrompt(AZStd::string_view templateName, AZStd::string_view levelName, int terrainExportTextureSize, bool useTerrain) = 0;
 
         virtual AZStd::string GetGameFolder() const = 0;
         virtual AZStd::string GetCurrentLevelName() const = 0;

@@ -15,6 +15,7 @@
 #include <CoreLights/SimpleSpotLightDelegate.h>
 #include <CoreLights/SphereLightDelegate.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
+#include <Atom/RPI.Public/Image/StreamingImage.h>
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -89,6 +90,8 @@ namespace AZ::Render
                 ->Event("GetAffectsGIFactor", &AreaLightRequestBus::Events::GetAffectsGIFactor)
                 ->Event("SetAffectsGIFactor", &AreaLightRequestBus::Events::SetAffectsGIFactor)
 
+                ->Event("GetLightingChannelMask", &AreaLightRequestBus::Events::GetLightingChannelMask)
+                ->Event("SetLightingChannelMask", &AreaLightRequestBus::Events::SetLightingChannelMask)
                 ->VirtualProperty("AttenuationRadius", "GetAttenuationRadius", "SetAttenuationRadius")
                 ->VirtualProperty("Color", "GetColor", "SetColor")
                 ->VirtualProperty("EmitsLightBothDirections", "GetEmitsLightBothDirections", "SetEmitsLightBothDirections")
@@ -109,7 +112,8 @@ namespace AZ::Render
                 ->VirtualProperty("ShadowCachingMode", "GetShadowCachingMode", "SetShadowCachingMode")
 
                 ->VirtualProperty("AffectsGI", "GetAffectsGI", "SetAffectsGI")
-                ->VirtualProperty("AffectsGIFactor", "GetAffectsGIFactor", "SetAffectsGIFactor");
+                ->VirtualProperty("AffectsGIFactor", "GetAffectsGIFactor", "SetAffectsGIFactor")
+                ->VirtualProperty("LightingChannelMask", "GetLightingChannelMask", "SetLightingChannelMask");
         }
     }
 
@@ -261,6 +265,7 @@ namespace AZ::Render
         AttenuationRadiusChanged();
         ShuttersChanged();
         ShadowsChanged();
+        LightingChannelMaskChanged();
 
         if (m_lightShapeDelegate)
         {
@@ -268,6 +273,12 @@ namespace AZ::Render
             m_lightShapeDelegate->SetUseFastApproximation(m_configuration.m_useFastApproximation);
             m_lightShapeDelegate->SetAffectsGI(m_configuration.m_affectsGI);
             m_lightShapeDelegate->SetAffectsGIFactor(m_configuration.m_affectsGIFactor);
+            AZ::Data::Instance<AZ::RPI::StreamingImage> image = nullptr;
+            if (m_configuration.m_goboImageAsset.GetId().IsValid())
+            {
+                image = AZ::RPI::StreamingImage::FindOrCreate(m_configuration.m_goboImageAsset);
+            }
+            m_lightShapeDelegate->SetGoboTexture(image);
         }
     }
 
@@ -338,6 +349,14 @@ namespace AZ::Render
             }
         }
     }
+
+    void AreaLightComponentController::LightingChannelMaskChanged()
+    {
+        if (m_lightShapeDelegate)
+        {
+            m_lightShapeDelegate->SetLightingChannelMask(m_configuration.m_lightingChannelConfig.GetLightingChannelMask());
+        }
+    }    
 
     void AreaLightComponentController::AutoCalculateAttenuationRadius()
     {
@@ -647,6 +666,20 @@ namespace AZ::Render
         if (m_lightShapeDelegate)
         {
             m_lightShapeDelegate->SetAffectsGIFactor(affectsGIFactor);
+        }
+    }
+
+    uint32_t AreaLightComponentController::GetLightingChannelMask() const
+    {
+        return m_configuration.m_lightingChannelConfig.GetLightingChannelMask();
+    }
+
+    void AreaLightComponentController::SetLightingChannelMask(const uint32_t lightingChannelMask)
+    {
+        m_configuration.m_lightingChannelConfig.SetLightingChannelMask(lightingChannelMask);
+        if (m_lightShapeDelegate)
+        {
+            m_lightShapeDelegate->SetLightingChannelMask(m_configuration.m_lightingChannelConfig.GetLightingChannelMask());
         }
     }
 

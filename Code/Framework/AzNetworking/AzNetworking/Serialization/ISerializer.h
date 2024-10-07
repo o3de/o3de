@@ -139,7 +139,7 @@ namespace AzNetworking
         //! @param minValue the minimum value expected during serialization
         //! @param maxValue the maximum value expected during serialization
         //! @return boolean true for success, false for failure
-        virtual bool Serialize(unsigned long& value, const char* name, unsigned long minValue = AZStd::numeric_limits<unsigned long>::min(), unsigned long maxValue = AZStd::numeric_limits<uint64_t>::max()) = 0;
+        virtual bool Serialize(unsigned long& value, const char* name, unsigned long minValue = AZStd::numeric_limits<unsigned long>::min(), unsigned long maxValue = AZStd::numeric_limits<unsigned long>::max()) = 0;
 
         //! Serialize an unsigned 64-bit integer (unsigned long long).
         //! @param value    unsigned 64-bit integer input value to serialize

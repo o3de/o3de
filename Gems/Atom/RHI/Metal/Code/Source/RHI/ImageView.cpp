@@ -10,6 +10,7 @@
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/ImageView.h>
+#include <Atom/RHI.Reflect/Format.h>
 
 namespace AZ
 {
@@ -52,6 +53,15 @@ namespace AZ
                 textureLength = textureLength * RHI::ImageDescriptor::NumCubeMapSlices;
             }
             
+            MTLTextureType imgTextureType = mtlTexture.textureType;
+            //Recreate the texture if the existing texture is not flagged as an array but the view is of an array.
+            //Essentially this will tag a 2d texture as 2darray texture to ensure that sampling works correctly.
+            if(!IsTextureTypeAnArray(imgTextureType) && viewDescriptor.m_isArray)
+            {
+                isViewFormatDifferent = true;
+                imgTextureType = ConvertTextureType(imgDesc.m_dimension, imgDesc.m_arraySize, imgDesc.m_isCubemap, viewDescriptor.m_isArray);
+            }
+            
             //Create a new view if the format, mip range or slice range has changed
             if( isViewFormatDifferent ||
                 levelRange.length != mtlTexture.mipmapLevelCount ||
@@ -65,7 +75,7 @@ namespace AZ
                 }
 
                 textureView = [mtlTexture newTextureViewWithPixelFormat : textureViewFormat
-                                                            textureType : mtlTexture.textureType
+                                                            textureType : imgTextureType
                                                                  levels : levelRange
                                                                  slices : sliceRange];
             }
@@ -121,6 +131,7 @@ namespace AZ
                 }
             }
             
+            m_memoryView.SetName(AZStd::string::format("%s_View_%s", image.GetName().GetCStr(), AZ::RHI::ToString(image.GetDescriptor().m_format)));
             m_hash = TypeHash64(m_imageSubresourceRange.GetHash(), m_hash);
             m_hash = TypeHash64(m_format, m_hash);
             return RHI::ResultCode::Success;

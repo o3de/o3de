@@ -35,7 +35,17 @@ namespace BatchApplicationManagerPrivate
 #endif  //#if defined(AZ_PLATFORM_WINDOWS)
 
 BatchApplicationManager::BatchApplicationManager(int* argc, char*** argv, QObject* parent)
-    : ApplicationManagerBase(argc, argv, parent)
+    : BatchApplicationManager(argc, argv, parent, {})
+{
+}
+
+BatchApplicationManager::BatchApplicationManager(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
+    : BatchApplicationManager(argc, argv, nullptr, AZStd::move(componentAppSettings))
+{
+}
+
+BatchApplicationManager::BatchApplicationManager(int* argc, char*** argv, QObject* parent, AZ::ComponentApplicationSettings componentAppSettings)
+    : ApplicationManagerBase(argc, argv, parent, AZStd::move(componentAppSettings))
 {
     AssetProcessor::MessageInfoBus::Handler::BusConnect();
 }

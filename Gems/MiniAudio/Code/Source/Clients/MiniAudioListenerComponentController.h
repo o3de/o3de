@@ -41,8 +41,25 @@ namespace MiniAudio
         const MiniAudioListenerComponentConfig& GetConfiguration() const;
 
         // MiniAudioListenerRequestBus
-        void SetFollowEntity(AZ::EntityId followEntity) override;
+        void SetFollowEntity(const AZ::EntityId& followEntity) override;
         void SetPosition(const AZ::Vector3& position) override;
+        AZ::u32 GetChannelCount() const override;
+        float GetGlobalVolumePercentage() const override;
+        void SetGlobalVolumePercentage(float globalVolume) override;
+        float GetGlobalVolumeDecibels() const override;
+        void SetGlobalVolumeDecibels(float globalVolumeDecibels) override;
+        float GetInnerAngleInRadians() const override;
+        void SetInnerAngleInRadians(float innerAngleInRadians) override;
+        float GetInnerAngleInDegrees() const override;
+        void SetInnerAngleInDegrees(float innerAngleInDegrees) override;
+        float GetOuterAngleInRadians() const override;
+        void SetOuterAngleInRadians(float outerAngleInRadians) override;
+        float GetOuterAngleInDegrees() const override;
+        void SetOuterAngleInDegrees(float outerAngleInDegrees) override;
+        float GetOuterVolumePercentage() const override;
+        void SetOuterVolumePercentage(float outerVolume) override;
+        float GetOuterVolumeDecibels() const override;
+        void SetOuterVolumeDecibels(float outerVolumeDecibels) override;
 
     private:
         AZ::EntityComponentIdPair m_entityComponentIdPair;

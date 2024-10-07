@@ -86,7 +86,9 @@ namespace AZ
             void BeginPredication(const RHI::Buffer& buffer, uint64_t offset, RHI::PredicationOp operation) override;
             void EndPredication() override;
             void BuildBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas) override;
-            void BuildTopLevelAccelerationStructure(const RHI::RayTracingTlas& rayTracingTlas) override;
+            void UpdateBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas) override;
+            void BuildTopLevelAccelerationStructure(
+                const RHI::RayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::RayTracingBlas*>& changedBlasList) override;
             void SetFragmentShadingRate(
                 RHI::ShadingRate rate,
                 const RHI::ShadingRateCombinators& combinators = DefaultShadingRateCombinators) override;
@@ -130,6 +132,8 @@ namespace AZ
             {
                 const PipelineState* m_pipelineState = nullptr;
                 AZStd::array<const ShaderResourceGroup*, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_SRGByAzslBindingSlot = { {} };
+                // Used for better debugging (VS Natvis)
+                AZStd::array<const ShaderResourceGroup*, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_SRGByVulkanBindingIndex = { {} };
                 AZStd::array<VkDescriptorSet, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_descriptorSets = { {VK_NULL_HANDLE} };
                 AZStd::bitset<RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_dirtyShaderResourceGroupFlags;
             };

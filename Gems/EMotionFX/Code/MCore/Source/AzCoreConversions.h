@@ -16,7 +16,6 @@
 #include <AzCore/Math/VectorConversions.h>
 #include <AzCore/Math/PackedVector3.h>
 #include <MCore/Source/Algorithms.h>
-#include <MCore/Source/Color.h>
 #include <MCore/Source/Vector.h>
 #include <EMotionFX/Source/Transform.h>
 
@@ -27,16 +26,6 @@
 
 namespace MCore
 {
-    AZ_FORCE_INLINE AZ::Color EmfxColorToAzColor(const RGBAColor& emfxColor)
-    {
-        return AZ::Color(emfxColor.m_r, emfxColor.m_g, emfxColor.m_b, emfxColor.m_a);
-    }
-
-    AZ_FORCE_INLINE RGBAColor AzColorToEmfxColor(const AZ::Color& azColor)
-    {
-        return RGBAColor(static_cast<float>(azColor.GetR()), static_cast<float>(azColor.GetG()), static_cast<float>(azColor.GetB()), static_cast<float>(azColor.GetA()));
-    }
-
     AZ_FORCE_INLINE AZ::Transform EmfxTransformToAzTransform(const EMotionFX::Transform& emfxTransform)
     {
         AZ::Transform transform = AZ::Transform::CreateFromQuaternionAndTranslation(emfxTransform.m_rotation, emfxTransform.m_position);

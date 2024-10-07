@@ -20,7 +20,8 @@
 #define AZ_MULTIPLAYER_COMPONENT(ComponentClass, Guid, Base) \
     AZ_RTTI(ComponentClass, Guid, Base)                      \
     AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(ComponentClass)   \
-    AZ_COMPONENT_BASE(ComponentClass, Guid, Base)
+    AZ_COMPONENT_BASE(ComponentClass)                        \
+    AZ_CLASS_ALLOCATOR(ComponentClass, AZ::ComponentAllocator)
 
 namespace Multiplayer
 {

@@ -88,7 +88,8 @@ namespace AZ
             void GetLutFromAssetLocation(DisplayMapperAssetLut& displayMapperAssetLut, const AZStd::string& assetPath) override;
             void GetLutFromAssetId(DisplayMapperAssetLut& displayMapperAssetLut, const AZ::Data::AssetId) override;
             void RegisterDisplayMapperConfiguration(const DisplayMapperConfigurationDescriptor& config) override;
-            DisplayMapperConfigurationDescriptor GetDisplayMapperConfiguration() override;
+            void UnregisterDisplayMapperConfiguration() override;
+            const DisplayMapperConfigurationDescriptor* GetDisplayMapperConfiguration() override;
 
         private:
             AcesDisplayMapperFeatureProcessor(const AcesDisplayMapperFeatureProcessor&) = delete;
@@ -111,7 +112,7 @@ namespace AZ
             // LUTs loaded from assets
             AZStd::unordered_map<AZStd::string, DisplayMapperAssetLut>  m_assetLuts;
             // DisplayMapper configurations per scene
-            DisplayMapperConfigurationDescriptor m_displayMapperConfiguration;
+            AZStd::optional<DisplayMapperConfigurationDescriptor> m_displayMapperConfiguration;
 
             void InitializeImagePool();
             // Initialize a LUT image with the given name.

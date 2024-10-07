@@ -97,7 +97,7 @@ public:
     void SetValue([[maybe_unused]] float time, [[maybe_unused]] const bool& value, [[maybe_unused]] bool bDefault = false) override { assert(0); };
     void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Maestro::AssetBlends<AZ::Data::AssetData>& value, [[maybe_unused]] bool bDefault = false) override { assert(0); }
 
-    void OffsetKeyPosition(const Vec3& value) override;
+    void OffsetKeyPosition(const AZ::Vector3& value) override;
     void UpdateKeyDataAfterParentChanged(const AZ::Transform& oldParentWorldTM, const AZ::Transform& newParentWorldTM) override;
 
     void SetTimeRange(const Range& timeRange) override;
