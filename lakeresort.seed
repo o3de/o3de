@@ -1,0 +1,29 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AZStd::vector<SeedInfo, allocator>",
+    "ClassData": [
+        {
+            "assetId": {
+                "guid": "{DBB37502-2DFA-5618-95D6-D580BA8BAB99}",
+                "subId": 2776830899
+            },
+            "platformFlags": 1,
+            "pathHint": "levels/dlc/lakeresort/lakeresort.spawnable"
+        },
+        {
+            "assetId": {
+                "guid": "{456A0231-4984-5524-AEFD-5023966D2045}"
+            },
+            "platformFlags": 1,
+            "pathHint": "levels/dlc/lakeresort/coverdata.dat"
+        },
+        {
+            "assetId": {
+                "guid": "{63602DBE-ACF9-598B-8A96-E33A1EA91CEB}"
+            },
+            "platformFlags": 1,
+            "pathHint": "levels/dlc/lakeresort/kytnavbounds.mesh"
+        }
+    ]
+}
