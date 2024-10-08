@@ -20,7 +20,11 @@ namespace AZ
 
 namespace AzToolsFramework
 {
+#if defined(CARBONATED)
+    constexpr AZ::u64 MaxBundleSizeInMB = 4000; // Carbonated specific: do not split packs
+#else
     constexpr AZ::u64 MaxBundleSizeInMB = 2 * 1024;
+#endif
     class AssetBundleSettings
     {
     public:
