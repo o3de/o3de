@@ -25,6 +25,12 @@ namespace RecastNavigation
         //! @returns a container with triangle data for each tile.
         virtual AZStd::vector<AZStd::shared_ptr<TileGeometry>> CollectGeometry(float tileSize, float borderSize) = 0;
 
+#if defined(CARBONATED)
+        // same as the above, but collect the geometry for tiles affected by AABBs in changedGeometry
+        virtual AZStd::vector<AZStd::shared_ptr<TileGeometry>> CollectPartialGeometry(
+            float tileSize, float borderSize, const AZStd::vector<AZ::Aabb>& changedGeometry) = 0;
+#endif
+
         //! Collects the geometry (triangles) within the configured area and returns the result via the callback @tileCallback.
         //! @param tileSize A navigation mesh is made up of tiles. Each tile is a square of the same size.
         //! @param borderSize An additional extent in each dimension around each tile. In order for navigation tiles to connect
@@ -33,6 +39,13 @@ namespace RecastNavigation
         //! @returns true if an async operation was scheduled, false otherwise
         virtual bool CollectGeometryAsync(float tileSize, float borderSize,
             AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback) = 0;
+
+#if defined(CARBONATED)
+        // same as the above, but collect the geometry for tiles affected by AABBs in changedGeometry
+        virtual bool CollectPartialGeometryAsync(
+            float tileSize, float borderSize, const AZStd::vector<AZ::Aabb>& changedGeometry,
+            AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback) = 0;
+#endif
 
         //! A navigation mesh is made up of tiles. Each tile is a square of the same size.
         //! @param tileSize size of square tiles that make up a navigation mesh.

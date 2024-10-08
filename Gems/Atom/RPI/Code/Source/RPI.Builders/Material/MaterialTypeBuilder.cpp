@@ -45,7 +45,7 @@ namespace AZ
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = "Material Type Builder";
 #if defined(CARBONATED)
-            materialBuilderDescriptor.m_version = 52; // add silhouette blocker to StandardPBR
+            materialBuilderDescriptor.m_version = 53; // 52 add silhouette blocker to StandardPBR, 53 use effective bitset to shader indexes
 #else
             materialBuilderDescriptor.m_version = 51; // Add support for small SRGs
 #endif

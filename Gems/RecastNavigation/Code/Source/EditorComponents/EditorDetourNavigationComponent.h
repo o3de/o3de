@@ -10,12 +10,18 @@
 
 #include <AzCore/Component/Component.h>
 #include <ToolsComponents/EditorComponentBase.h>
+#if defined(CARBONATED)
+#include <RecastNavigation/DetourNavigationBus.h>
+#endif
 
 namespace RecastNavigation
 {
     //! Editor version of a path finding component, @DetourNavigationComponent.
     class EditorDetourNavigationComponent final
         : public AzToolsFramework::Components::EditorComponentBase
+#if defined(CARBONATED)
+        , public DetourNavigationRequestBus::Handler
+#endif
     {
     public:
         AZ_EDITOR_COMPONENT(EditorDetourNavigationComponent, "{A8D728AB-FC42-42AE-A904-3CF5F1C83D16}", AzToolsFramework::Components::EditorComponentBase);
@@ -30,6 +36,18 @@ namespace RecastNavigation
         void Deactivate() override;
         void BuildGameEntity(AZ::Entity* gameEntity) override;
         //! @}
+
+#if defined(CARBONATED)
+        //! DetourNavigationBus overrides ...
+        //! @{
+        void SetNavigationMeshEntity(AZ::EntityId navMeshEntity) override;
+        AZ::EntityId GetNavigationMeshEntity() const override;
+        AZStd::vector<AZ::Vector3> FindPathBetweenEntities(
+            AZ::EntityId fromEntity, AZ::EntityId toEntity, bool addCrossings, bool& partial) override;
+        AZStd::vector<AZ::Vector3> FindPathBetweenPositions(
+            const AZ::Vector3& fromWorldPosition, const AZ::Vector3& toWorldPosition, bool addCrossings, bool& partial) override;        
+        //! @}
+#endif
 
     private:
         //! Entity with Recast Navigation Mesh component.

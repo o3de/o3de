@@ -47,6 +47,13 @@ namespace RecastNavigation
         //! @{
         AZStd::vector<AZStd::shared_ptr<TileGeometry>> CollectGeometry(float tileSize, float borderSize) override;
         bool CollectGeometryAsync(float tileSize, float borderSize, AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback) override;
+#if defined(CARBONATED)
+        AZStd::vector<AZStd::shared_ptr<TileGeometry>> CollectPartialGeometry(
+            float tileSize, float borderSize, const AZStd::vector<AZ::Aabb>& changedGeometry) override;
+        bool CollectPartialGeometryAsync(
+            float tileSize, float borderSize, const AZStd::vector<AZ::Aabb>& changedGeometry,
+            AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback) override;
+#endif
         AZ::Aabb GetWorldBounds() const override;
         int GetNumberOfTiles(float tileSize) const override;
         //! @}
@@ -63,6 +70,11 @@ namespace RecastNavigation
             float tileSize,
             float borderSize,
             const AZ::Aabb& worldVolume);
+#if defined(CARBONATED)
+        // same as the above, but collect geometry that is affected by the AABBs in changedGeometry
+        AZStd::vector<AZStd::shared_ptr<TileGeometry>> CollectPartialGeometryImpl(
+            float tileSize, float borderSize, const AZ::Aabb& worldVolume, const AZStd::vector<AZ::Aabb>& changedGeometry);
+#endif
 
         //! Async variant of @CollectGeometryImpl. Tiles are returned via a callback @tileCallback.
         //!   Calls on @tileCallback will come from a task graph (not a main thread).
@@ -84,6 +96,15 @@ namespace RecastNavigation
             float borderSize,
             const AZ::Aabb& worldVolume,
             AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback);
+#if defined(CARBONATED)
+        // same as the above, but collect geometry that is affected by the AABBs in changedGeometry
+        bool CollectPartialGeometryAsyncImpl(
+            float tileSize,
+            float borderSize,
+            const AZ::Aabb& worldVolume,
+            const AZStd::vector<AZ::Aabb>& changedGeometry,
+            AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback);
+#endif
 
         //! Finds all the static PhysX colliders within a given volume.
         //! @param volume the world to look for static colliders

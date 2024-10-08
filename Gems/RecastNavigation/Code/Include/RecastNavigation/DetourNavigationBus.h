@@ -31,13 +31,23 @@ namespace RecastNavigation
         //! @param fromEntity The starting point of the path from the position of this entity.
         //! @param toEntity The end point of the path is at the position of this entity.
         //! @return If a path is found, returns a vector of waypoints. An empty vector is returned if a path was not found.
+#if defined(CARBONATED)
+        virtual AZStd::vector<AZ::Vector3> FindPathBetweenEntities(AZ::EntityId fromEntity, AZ::EntityId toEntity,
+            bool addCrossings, bool& partial) = 0;
+#else
         virtual AZStd::vector<AZ::Vector3> FindPathBetweenEntities(AZ::EntityId fromEntity, AZ::EntityId toEntity) = 0;
+#endif
 
         //! Blocking call that finds a walkable path between two world positions.
         //! @param fromWorldPosition The starting point of the path.
         //! @param toWorldPosition The end point of the path to find.
         //! @return If a path is found, returns a vector of waypoints. An empty vector is returned if a path was not found.
+#if defined(CARBONATED)        
+        virtual AZStd::vector<AZ::Vector3> FindPathBetweenPositions(const AZ::Vector3& fromWorldPosition, const AZ::Vector3& toWorldPosition,
+            bool addCrossings, bool& partial) = 0;
+#else
         virtual AZStd::vector<AZ::Vector3> FindPathBetweenPositions(const AZ::Vector3& fromWorldPosition, const AZ::Vector3& toWorldPosition) = 0;
+#endif
     };
 
     //! Request EBus for a path finding component.

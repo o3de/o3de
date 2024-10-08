@@ -32,8 +32,16 @@ namespace RecastNavigation
 
         //! DetourNavigationRequestBus overrides ...
         //! @{
+#if defined(CARBONATED)
+        AZStd::vector<AZ::Vector3> FindPathBetweenEntities(AZ::EntityId fromEntity, AZ::EntityId toEntity,
+            bool addCrossings, bool& partial) override;
+        AZStd::vector<AZ::Vector3> FindPathBetweenPositions(const AZ::Vector3& fromWorldPosition, const AZ::Vector3& toWorldPosition,
+            bool addCrossings, bool& partial) override;
+#else
         AZStd::vector<AZ::Vector3> FindPathBetweenEntities(AZ::EntityId fromEntity, AZ::EntityId toEntity) override;
         AZStd::vector<AZ::Vector3> FindPathBetweenPositions(const AZ::Vector3& fromWorldPosition, const AZ::Vector3& toWorldPosition) override;
+#endif
+
         void SetNavigationMeshEntity(AZ::EntityId navMeshEntity) override;
         AZ::EntityId GetNavigationMeshEntity() const override;
         //! @}
