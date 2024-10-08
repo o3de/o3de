@@ -10,6 +10,10 @@
 
 #include <AzCore/Asset/AssetManager.h>
 
+#ifdef CARBONATED
+#include <AzCore/Memory/MemoryMarker.h>
+#endif
+
 namespace AZ
 {
     namespace RPI
@@ -79,6 +83,8 @@ namespace AZ
 
         void ImageMipChainAssetCreator::AddSubImage(const void* data, size_t dataSize)
         {
+            MEMORY_TAG(ImageMip);
+
             if (!ValidateIsBuildingMip())
             {
                 return;
@@ -127,6 +133,8 @@ namespace AZ
 
         bool ImageMipChainAssetCreator::End(Data::Asset<ImageMipChainAsset>& result)
         {
+            MEMORY_TAG(ImageMip);
+
             if (!ValidateIsReady())
             {
                 return false;
