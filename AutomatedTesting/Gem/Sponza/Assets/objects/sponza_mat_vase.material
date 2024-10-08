@@ -12,6 +12,7 @@
         ],
         "metallic.textureMap": "../Textures/vase_1k_metallic.png",
         "normal.textureMap": "../Textures/vase_1k_normal.jpg",
+        "normal.flipY": true,
         "occlusion.diffuseTextureMap": "../Textures/vase_1k_ao.png",
         "opacity.factor": 1.0,
         "parallax.factor": 0.027000000700354576,

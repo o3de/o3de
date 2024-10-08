@@ -13,6 +13,7 @@
         "metallic.textureMap": "../Textures/curtain_metallic.png",
         "normal.factor": 0.5,
         "normal.textureMap": "../Textures/curtain_normal.jpg",
+        "normal.flipY": true,
         "occlusion.diffuseTextureMap": "../Textures/curtain_ao.png",
         "opacity.factor": 1.0,
         "roughness.textureMap": "../Textures/curtain_roughness.png"
