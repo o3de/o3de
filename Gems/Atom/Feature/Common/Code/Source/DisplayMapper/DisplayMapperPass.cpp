@@ -43,13 +43,19 @@ namespace AZ
         DisplayMapperPass::DisplayMapperPass(const RPI::PassDescriptor& descriptor)
             : RPI::ParentPass(descriptor)
         {
-            GetDisplayMapperConfiguration();
-
             const DisplayMapperPassData* passData = RPI::PassUtils::GetPassData<DisplayMapperPassData>(descriptor);
             if (passData != nullptr)
             {
-                m_displayMapperConfigurationDescriptor = passData->m_config;
+                m_defaultDisplayMapperConfigurationDescriptor = passData->m_config;
+                m_mergeLdrGradingLut = passData->m_mergeLdrGradingLut;
+                m_outputTransformOverrideShader = passData->m_outputTransformOverride;
             }
+            else
+            {
+                AcesDisplayMapperFeatureProcessor::GetDefaultDisplayMapperConfiguration(m_defaultDisplayMapperConfigurationDescriptor);
+            }
+
+            UpdateDisplayMapperConfiguration();
         }
 
         void DisplayMapperPass::ConfigureDisplayParameters()
@@ -76,7 +82,9 @@ namespace AZ
                 }
                 if (m_outputTransformPass)
                 {
-                    if (m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::Reinhard)
+                    if (m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::Reinhard ||
+                        m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::AcesFitted ||
+                        m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::AcesFilmic)
                     {
                         // When using Reinhard tonemapper, a gamma of 2.2 for the transfer function is used for LDR display,
                         // and PQ is used for HDR.
@@ -89,6 +97,10 @@ namespace AZ
                         {
                             m_outputTransformPass->SetTransferFunctionType(TransferFunctionType::PerceptualQuantizer);
                         }
+                    }
+                    else if (m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::Filmic)
+                    {
+                        m_outputTransformPass->SetTransferFunctionType(TransferFunctionType::None);
                     }
 
                     m_outputTransformPass->SetDisplayBufferFormat(m_displayBufferFormat);
@@ -171,7 +183,7 @@ namespace AZ
 
         void DisplayMapperPass::FrameEndInternal()
         {
-            GetDisplayMapperConfiguration();
+            UpdateDisplayMapperConfiguration();
             ParentPass::FrameEndInternal();
         }
 
@@ -229,10 +241,13 @@ namespace AZ
                 outConnection.m_attachmentRef.m_attachment = "Output";
             }
 
+            AZStd::string azshaderPath = shaderFilePath;
+            AZ::StringFunc::Path::ReplaceExtension(azshaderPath, "azshader");
+
             Data::AssetId shaderAssetId;
             Data::AssetCatalogRequestBus::BroadcastResult(
                 shaderAssetId, &Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
-                shaderFilePath, azrtti_typeid<RPI::ShaderAsset>(), false);
+                azshaderPath.c_str(), azrtti_typeid<RPI::ShaderAsset>(), false);
             if (!shaderAssetId.IsValid())
             {
                 AZ_Assert(false, "[DisplayMapperPass] Unable to obtain asset id for %s.", shaderFilePath);
@@ -316,40 +331,59 @@ namespace AZ
             const char* passthroughShaderPath = "Shaders/PostProcessing/FullscreenCopy.azshader";
             const char* sRGBShaderPath = "Shaders/PostProcessing/DisplayMapperSRGB.azshader";
             const char* applyShaperLookupTableShaderFilePath = "Shaders/PostProcessing/ApplyShaperLookupTable.azshader";
-            const char* outputTransformShaderPath = "Shaders/PostProcessing/OutputTransform.azshader";
+            const char* outputTransformShaderPath = m_outputTransformOverrideShader.m_assetId.IsValid()
+                ? m_outputTransformOverrideShader.m_filePath.c_str()
+                : "Shaders/PostProcessing/OutputTransform.azshader";
 
             // Output transform templates. If there is no LDR grading LUT pass, then the output transform pass is the final pass
             // and will render to the DisplayMapper's output attachment. Otherwise, it renders to its own attachment image.
+            bool useSeparateLdrGradingLutPass = UsesLdrGradingLutPass();
             // ACES
             m_acesOutputTransformTemplate.reset();
             m_acesOutputTransformTemplate = CreatePassTemplateHelper(
-                acesOutputTransformTemplateName, acesOutputTransformPassClassName,
-                m_displayMapperConfigurationDescriptor.m_ldrGradingLutEnabled, outputTransformImageName, acesOuputTransformShaderPath);
+                acesOutputTransformTemplateName,
+                acesOutputTransformPassClassName,
+                useSeparateLdrGradingLutPass,
+                outputTransformImageName,
+                acesOuputTransformShaderPath);
             // ACES LUT
             m_acesOutputTransformLutTemplate.reset();
             m_acesOutputTransformLutTemplate = CreatePassTemplateHelper(
-                acesOutputTransformLutTemplateName, acesOutputTransformLutPassClassName,
-                m_displayMapperConfigurationDescriptor.m_ldrGradingLutEnabled, outputTransformImageName, acesOuputTransformLutShaderPath);
+                acesOutputTransformLutTemplateName,
+                acesOutputTransformLutPassClassName,
+                useSeparateLdrGradingLutPass,
+                outputTransformImageName,
+                acesOuputTransformLutShaderPath);
             // Bake ACES LUT
             m_bakeAcesOutputTransformLutTemplate.reset();
             m_bakeAcesOutputTransformLutTemplate = CreateBakeAcesLutPassTemplateHelper(
-                bakeAcesOutputTransformLutTemplateName, bakeAcesOutputTransformLutPassClassName,
+                bakeAcesOutputTransformLutTemplateName,
+                bakeAcesOutputTransformLutPassClassName,
                 bakeAcesOuputTransformLutShaderPath);
             // Passthrough
             m_passthroughTemplate.reset();
             m_passthroughTemplate = CreatePassTemplateHelper(
-                displayMapperPassthroughTemplateName, displayMapperFullScreenPassClassName,
-                m_displayMapperConfigurationDescriptor.m_ldrGradingLutEnabled, outputTransformImageName, passthroughShaderPath);
+                displayMapperPassthroughTemplateName,
+                displayMapperFullScreenPassClassName,
+                useSeparateLdrGradingLutPass,
+                outputTransformImageName,
+                passthroughShaderPath);
             // sRGB
             m_sRGBTemplate.reset();
             m_sRGBTemplate = CreatePassTemplateHelper(
-                displayMapperSRGBTemplateName, displayMapperFullScreenPassClassName,
-                m_displayMapperConfigurationDescriptor.m_ldrGradingLutEnabled, outputTransformImageName, sRGBShaderPath);
+                displayMapperSRGBTemplateName,
+                displayMapperFullScreenPassClassName,
+                useSeparateLdrGradingLutPass,
+                outputTransformImageName,
+                sRGBShaderPath);
             // Output Transform
             m_outputTransformTemplate.reset();
             m_outputTransformTemplate = CreatePassTemplateHelper(
-                outputTransformTemplateName, outputTransformPassClassName,
-                m_displayMapperConfigurationDescriptor.m_ldrGradingLutEnabled, outputTransformImageName, outputTransformShaderPath);
+                outputTransformTemplateName,
+                outputTransformPassClassName,
+                useSeparateLdrGradingLutPass,
+                outputTransformImageName,
+                outputTransformShaderPath);
 
             // LDR grading LUT pass, if enabled, is the final pass and so it will render into the DisplayMapper's output attachment.
             m_ldrGradingLookupTableTemplate.reset();
@@ -392,7 +426,7 @@ namespace AZ
                 // Passthrough
                 // [GFX TODO][ATOM-4189] Optimize the passthrough function in the DisplayMapper
                 // Only need to create this if LDR grading LUT pass is not used.
-                if (!m_displayMapperConfigurationDescriptor.m_ldrGradingLutEnabled)
+                if (!UsesLdrGradingLutPass())
                 {
                     m_displayMapperPassthroughPass = CreatePassHelper<DisplayMapperFullScreenPass>(passSystem, m_passthroughTemplate, m_displayMapperPassthroughPassName);
                 }
@@ -401,13 +435,38 @@ namespace AZ
             {
                 m_displayMapperSRGBPass = CreatePassHelper<DisplayMapperFullScreenPass>(passSystem, m_sRGBTemplate, m_displayMapperSRGBPassName);
             }
-            else if (m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::Reinhard)
+            else if (UsesOutputTransformPass())
             {
                 m_outputTransformPass = CreatePassHelper<OutputTransformPass>(passSystem, m_outputTransformTemplate, m_outputTransformPassName);
-                m_outputTransformPass->SetToneMapperType(ToneMapperType::Reinhard);
+                ToneMapperType type = ToneMapperType::None;
+                switch (m_displayMapperConfigurationDescriptor.m_operationType)
+                {
+                case DisplayMapperOperationType::Reinhard:
+                    type = ToneMapperType::Reinhard;
+                    break;
+                case DisplayMapperOperationType::AcesFitted:
+                    type = ToneMapperType::AcesFitted;
+                    break;
+                case DisplayMapperOperationType::AcesFilmic:
+                    type = ToneMapperType::AcesFilmic;
+                    break;
+                case DisplayMapperOperationType::Filmic:
+                    type = ToneMapperType::Filmic;
+                    break;
+                default:
+                    AZ_Assert(false, "Invalid tonemapper type %d", m_displayMapperConfigurationDescriptor.m_operationType);
+                    break;
+                }
+                m_outputTransformPass->SetToneMapperType(type);
+                if (m_displayMapperConfigurationDescriptor.m_ldrGradingLutEnabled &&
+                    m_mergeLdrGradingLut &&
+                    m_displayMapperConfigurationDescriptor.m_ldrColorGradingLut.GetId().IsValid())
+                {
+                    m_outputTransformPass->SetLutAssetId(m_displayMapperConfigurationDescriptor.m_ldrColorGradingLut.GetId());
+                }
             }
 
-            if (m_displayMapperConfigurationDescriptor.m_ldrGradingLutEnabled)
+            if (UsesLdrGradingLutPass())
             {
                 // ID should be valid, maybe no need to check again here.
                 if (m_displayMapperConfigurationDescriptor.m_ldrColorGradingLut.GetId().IsValid())
@@ -449,42 +508,42 @@ namespace AZ
             }
         }
 
-        void DisplayMapperPass::GetDisplayMapperConfiguration()
+        void DisplayMapperPass::UpdateDisplayMapperConfiguration()
         {
-            DisplayMapperConfigurationDescriptor desc;
+            // If no configuration is found, then use the default value that was set for the pass.
+            DisplayMapperConfigurationDescriptor desc = m_defaultDisplayMapperConfigurationDescriptor;
             AZ::RPI::Scene* scene = GetScene();
             if (scene)
             {
                 AcesDisplayMapperFeatureProcessor* fp = scene->GetFeatureProcessor<AcesDisplayMapperFeatureProcessor>();
                 if (fp)
                 {
-                    desc = fp->GetDisplayMapperConfiguration();
-
-                    // Check to ensure that a valid LUT has been set
-                    if (desc.m_ldrGradingLutEnabled)
+                    auto fpDesc = fp->GetDisplayMapperConfiguration();
+                    if (fpDesc)
                     {
-                        if (!desc.m_ldrColorGradingLut.GetId().IsValid())
+                        desc = *fpDesc;
+                        // Check to ensure that a valid LUT has been set
+                        if (desc.m_ldrGradingLutEnabled)
                         {
-                            desc.m_ldrGradingLutEnabled = false;
+                            if (!desc.m_ldrColorGradingLut.GetId().IsValid())
+                            {
+                                desc.m_ldrGradingLutEnabled = false;
+                            }
                         }
                     }
-
-                    if (desc.m_operationType != m_displayMapperConfigurationDescriptor.m_operationType ||
-                        desc.m_ldrGradingLutEnabled != m_displayMapperConfigurationDescriptor.m_ldrGradingLutEnabled ||
-                        desc.m_ldrColorGradingLut != m_displayMapperConfigurationDescriptor.m_ldrColorGradingLut ||
-                        desc.m_acesParameterOverrides.m_overrideDefaults != m_displayMapperConfigurationDescriptor.m_acesParameterOverrides.m_overrideDefaults)
-                    {
-                        m_flags.m_createChildren = true;
-                        QueueForBuildAndInitialization();
-                    }
-                    m_displayMapperConfigurationDescriptor = desc;
                 }
             }
-            else
+
+            if (desc.m_operationType != m_displayMapperConfigurationDescriptor.m_operationType ||
+                desc.m_ldrGradingLutEnabled != m_displayMapperConfigurationDescriptor.m_ldrGradingLutEnabled ||
+                desc.m_ldrColorGradingLut != m_displayMapperConfigurationDescriptor.m_ldrColorGradingLut ||
+                desc.m_acesParameterOverrides.m_overrideDefaults !=
+                    m_displayMapperConfigurationDescriptor.m_acesParameterOverrides.m_overrideDefaults)
             {
-                // At the time the DisplayMapper is created, there is no scene, so just get the default settings 
-                AcesDisplayMapperFeatureProcessor::GetDefaultDisplayMapperConfiguration(m_displayMapperConfigurationDescriptor);
+                m_flags.m_createChildren = true;
+                QueueForBuildAndInitialization();
             }
+            m_displayMapperConfigurationDescriptor = desc;
         }
 
         void DisplayMapperPass::ClearChildren()
@@ -498,6 +557,20 @@ namespace AZ
             m_displayMapperSRGBPass = nullptr;
             m_ldrGradingLookupTablePass = nullptr;
             m_outputTransformPass = nullptr;
+        }
+
+        bool DisplayMapperPass::UsesLdrGradingLutPass() const
+        {
+            // Merging the ldr color grading is only supported for the OutputTransform pass at the moment.
+            return m_displayMapperConfigurationDescriptor.m_ldrGradingLutEnabled && !(m_mergeLdrGradingLut && UsesOutputTransformPass());
+        }
+
+        bool DisplayMapperPass::UsesOutputTransformPass() const
+        {
+            return m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::Reinhard ||
+                m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::AcesFitted ||
+                m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::Filmic ||
+                m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::AcesFilmic;
         }
     }   // namespace Render
 }   // namespace AZ

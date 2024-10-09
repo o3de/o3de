@@ -361,6 +361,7 @@ namespace ScriptCanvasEditor
         if (runGraphSpec.runSpec.processOnly)
         {
             Reporter reporter;
+            reporter.SetFilePath(runGraphSpec.graphPath);
             reporter.SetProcessOnly(runGraphSpec.runSpec.processOnly);
             reporters.push_back(reporter);
         }
@@ -369,10 +370,12 @@ namespace ScriptCanvasEditor
             if (runGraphSpec.runSpec.release)
             {
                 Reporter reporterRelease;
+                reporterRelease.SetFilePath(runGraphSpec.graphPath);
                 reporterRelease.SetExecutionConfiguration(ExecutionConfiguration::Release);
                 reporters.push_back(reporterRelease);
 
                 Reporter reporterPeformance;
+                reporterPeformance.SetFilePath(runGraphSpec.graphPath);
                 reporterPeformance.SetExecutionConfiguration(ExecutionConfiguration::Performance);
                 reporters.push_back(reporterPeformance);
             }
@@ -380,6 +383,7 @@ namespace ScriptCanvasEditor
             if (runGraphSpec.runSpec.debug)
             {
                 Reporter reporterDebug;
+                reporterDebug.SetFilePath(runGraphSpec.graphPath);
                 reporterDebug.SetExecutionConfiguration(ExecutionConfiguration::Debug);
                 reporters.push_back(reporterDebug);
             }
@@ -387,6 +391,7 @@ namespace ScriptCanvasEditor
             if (runGraphSpec.runSpec.traced)
             {
                 Reporter reporterTraced;
+                reporterTraced.SetFilePath(runGraphSpec.graphPath);
                 reporterTraced.SetExecutionConfiguration(ExecutionConfiguration::Traced);
                 reporters.push_back(reporterTraced);
             }

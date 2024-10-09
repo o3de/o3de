@@ -43,13 +43,13 @@ namespace LmbrCentral
 
     private:
         // CompoundShapeComponentRequestsBus::Handler
-        CompoundShapeConfiguration GetCompoundShapeConfiguration() override
+        const CompoundShapeConfiguration& GetCompoundShapeConfiguration() const override
         {
             return m_configuration;
         }
 
         // CompoundShapeComponentHierarchyRequestsBus::Handler
-        bool HasChildId(const AZ::EntityId& entityId) override;
+        bool HasChildId(const AZ::EntityId& entityId) const override;
 
         bool ValidateChildIds() override;
 

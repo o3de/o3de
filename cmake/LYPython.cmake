@@ -9,57 +9,114 @@
 include_guard()
 
 include(cmake/LySet.cmake)
+include(cmake/3rdPartyPackages.cmake)
 
 # this script exists to make sure a python interpreter is immediately available
 # it will both locate and run pip on python for our requirements.txt
 # but you can also call update_pip_requirements(filename) at any time after.
 
-# this is different from the usual package usage, because even if we are targetting
+# this is different from the usual package usage, because even if we are targeting
 # android, for example, we may still be doing so on a windows HOST pc, and the
 # python interpreter we want to use is for the windows HOST pc, not the PAL platform:
 
-# CMAKE_HOST_SYSTEM_NAME is  "Windows", "Darwin", or "Linux" in our cases..
-if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" )
 
-    # Note: CMAKE_HOST_SYSTEM_PROCESSOR may not available in this script if it is not
-    #       invoked from the base CMakeList.txt since project needs to be declared.
-    #       We will extract the host architecture manually if this script is called externally
-    if (${CMAKE_SYSTEM_ARCHITECTURE})
-        set(LINUX_HOST_ARCHITECTURE ${CMAKE_SYSTEM_ARCHITECTURE})
-    else()
-        execute_process(COMMAND uname -m OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE LINUX_HOST_ARCHITECTURE)
-    endif()
-
-    if (${LINUX_HOST_ARCHITECTURE} STREQUAL "x86_64")
-        ly_set(LY_PYTHON_VERSION 3.10.5)
-        ly_set(LY_PYTHON_VERSION_MAJOR_MINOR 3.10)
-        ly_set(LY_PYTHON_PACKAGE_NAME python-3.10.5-rev4-linux)
-        ly_set(LY_PYTHON_PACKAGE_HASH 0144a4a5c9d39a834a319c98ce021741dac579bc39f60a08b6784b71d0983462)
-    elseif(${LINUX_HOST_ARCHITECTURE} STREQUAL "aarch64")
-        ly_set(LY_PYTHON_VERSION 3.10.5)
-        ly_set(LY_PYTHON_VERSION_MAJOR_MINOR 3.10)
-        ly_set(LY_PYTHON_PACKAGE_NAME python-3.10.5-rev4-linux-aarch64)
-        ly_set(LY_PYTHON_PACKAGE_HASH c6e5e9cecad36ee1baa3bcbec629fb1cdeb6854f73132e0ca2d97f5b3b8b3a0e)
-    else()
-        message(FATAL_ERROR "Linux host architecture ${LINUX_HOST_ARCHITECTURE} not supported.")
-    endif()
-
-elseif  (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin" )
-    ly_set(LY_PYTHON_VERSION 3.10.5)
-    ly_set(LY_PYTHON_VERSION_MAJOR_MINOR 3.10)
-    ly_set(LY_PYTHON_PACKAGE_NAME python-3.10.5-rev2-darwin)
-    ly_set(LY_PYTHON_PACKAGE_HASH 46d7c74c64bf639279c53a68ff958d9955e01e08d293524958eb7ea7cac9c4c5)
-elseif  (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows" )
-    ly_set(LY_PYTHON_VERSION 3.10.5)
-    ly_set(LY_PYTHON_VERSION_MAJOR_MINOR 3.10)
-    ly_set(LY_PYTHON_PACKAGE_NAME python-3.10.5-rev1-windows)
-    ly_set(LY_PYTHON_PACKAGE_HASH c012e7c8fd20e632446d2cd689a9472e4e4495da7534d484d0f1c63840222cbb)
-endif()
+set(LY_PAL_PYTHON_PACKAGE_FILE_NAME ${LY_ROOT_FOLDER}/cmake/3rdParty/Platform/${PAL_HOST_PLATFORM_NAME}/Python_${PAL_HOST_PLATFORM_NAME_LOWERCASE}${LY_HOST_ARCHITECTURE_NAME_EXTENSION}.cmake)
+cmake_path(NORMAL_PATH LY_PAL_PYTHON_PACKAGE_FILE_NAME)
+include(${LY_PAL_PYTHON_PACKAGE_FILE_NAME})
 
 # settings and globals
 ly_set(LY_PYTHON_DEFAULT_REQUIREMENTS_TXT "${LY_ROOT_FOLDER}/python/requirements.txt")
 
-include(cmake/3rdPartyPackages.cmake)
+# The expected venv for python is based on an ID generated based on the path of the current
+# engine using the logic in cmake/CalculateEnginePathId.cmake. 
+execute_process(COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/CalculateEnginePathId.cmake "${CMAKE_CURRENT_SOURCE_DIR}/"
+                OUTPUT_VARIABLE ENGINE_SOURCE_PATH_ID
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+# Normalize the expected location of the Python venv and set its path globally
+# The root Python folder is based off of the same folder as the manifest file
+if(DEFINED ENV{USERPROFILE} AND EXISTS $ENV{USERPROFILE})
+    set(PYTHON_ROOT_PATH "$ENV{USERPROFILE}/.o3de/Python") # Windows
+else()
+    set(PYTHON_ROOT_PATH "$ENV{HOME}/.o3de/Python") # Unix
+endif()
+
+set(PYTHON_PACKAGES_ROOT_PATH "${PYTHON_ROOT_PATH}/packages")
+cmake_path(NORMAL_PATH PYTHON_PACKAGES_ROOT_PATH )
+
+set(PYTHON_PACKAGE_CACHE_ROOT_PATH "${PYTHON_ROOT_PATH}/downloaded_packages")
+cmake_path(NORMAL_PATH PYTHON_PACKAGE_CACHE_ROOT_PATH )
+
+set(PYTHON_VENV_PATH "${PYTHON_ROOT_PATH}/venv/${ENGINE_SOURCE_PATH_ID}")
+cmake_path(NORMAL_PATH PYTHON_VENV_PATH )
+
+ly_set(LY_PYTHON_VENV_PATH ${PYTHON_VENV_PATH})
+
+function(ly_setup_python_venv)
+
+    # Check if we need to setup a new venv.
+    set(CREATE_NEW_VENV FALSE)
+    # We track if an existing venv matches the current version of the Python 3rd Party Package
+    # by tracking the package hash within the venv folder. If there it is missing or does not
+    # match the current package hash ${LY_PYTHON_PACKAGE_HASH} then reset the venv and request
+    # that a new venv is created with the current Python package at :
+    # 
+    if (EXISTS "${PYTHON_VENV_PATH}/.hash")
+        file(READ "${PYTHON_VENV_PATH}/.hash" LY_CURRENT_VENV_PACKAGE_HASH
+             LIMIT 80)
+        if (NOT ${LY_CURRENT_VENV_PACKAGE_HASH} STREQUAL ${LY_PYTHON_PACKAGE_HASH})
+            # The package hash changed, re-install the venv
+            set(CREATE_NEW_VENV TRUE)
+            file(REMOVE_RECURSE "${PYTHON_VENV_PATH}")
+        else()
+            # Sanity check to make sure the python launcher in the venv works
+            execute_process(COMMAND ${PYTHON_VENV_PATH}/${LY_PYTHON_VENV_PYTHON} --version
+                            OUTPUT_QUIET
+                            RESULT_VARIABLE command_result)
+            if (NOT ${command_result} EQUAL 0)
+                message(STATUS "Error validating python inside the venv. Reinstalling")
+                set(CREATE_NEW_VENV TRUE)
+                file(REMOVE_RECURSE "${PYTHON_VENV_PATH}")
+            else()
+                message(STATUS "Using Python venv at ${PYTHON_VENV_PATH}")
+            endif()
+        endif()
+    else()
+        set(CREATE_NEW_VENV TRUE)
+    endif()
+
+    if (CREATE_NEW_VENV)
+        # Run the install venv command, but skip the pip setup because we may need to manually create 
+        # a link to the shared library within the created virtual environment before proceeding with
+        # the pip install command.
+        message(STATUS "Creating Python venv at ${PYTHON_VENV_PATH}")
+        execute_process(COMMAND "${PYTHON_PACKAGES_ROOT_PATH}/${LY_PYTHON_PACKAGE_NAME}/${LY_PYTHON_BIN_PATH}/${LY_PYTHON_EXECUTABLE}" -m venv "${PYTHON_VENV_PATH}" --without-pip --clear
+                        WORKING_DIRECTORY "${PYTHON_PACKAGES_ROOT_PATH}/${LY_PYTHON_PACKAGE_NAME}/${LY_PYTHON_BIN_PATH}"
+                        COMMAND_ECHO STDOUT
+                        RESULT_VARIABLE command_result)
+
+        if (NOT ${command_result} EQUAL 0)
+            message(FATAL_ERROR "Error creating a venv")
+        endif()
+
+        ly_post_python_venv_install(${PYTHON_VENV_PATH})
+
+        # Manually install pip into the virtual environment
+        message(STATUS "Installing pip into venv at ${PYTHON_VENV_PATH} (${PYTHON_VENV_PATH}/${LY_PYTHON_BIN_PATH})")
+
+        execute_process(COMMAND "${PYTHON_VENV_PATH}/${LY_PYTHON_VENV_PYTHON}" -m ensurepip --upgrade --default-pip -v
+                        WORKING_DIRECTORY "${PYTHON_VENV_PATH}/${LY_PYTHON_VENV_BIN_PATH}"
+                        COMMAND_ECHO STDOUT
+                        RESULT_VARIABLE command_result)
+
+        if (NOT ${command_result} EQUAL 0)
+            message(FATAL_ERROR "Error installing pip into venv: ${LY_PIP_ERROR}")
+        endif()
+
+        file(WRITE "${PYTHON_VENV_PATH}/.hash" ${LY_PYTHON_PACKAGE_HASH})
+    endif()
+    
+endfunction()
 
 # update_pip_requirements
 #    param: requirements_file_path = path to a requirements.txt file.
@@ -69,6 +126,7 @@ include(cmake/3rdPartyPackages.cmake)
 # file, and should be unique to your particular gem/package/3rdParty.  It will be
 # used as a file name, so avoid special characters that would fail as a file name.
 function(update_pip_requirements requirements_file_path unique_name)
+
     # we run with --no-deps to prevent it from cascading to child dependencies 
     # and getting more than we expect.
     # to produce a new requirements.txt use pip-compile from pip-tools alongside pip freeze
@@ -76,7 +134,7 @@ function(update_pip_requirements requirements_file_path unique_name)
 
     # We skip running requirements.txt if we can (we use a stamp file to keep track)
     # the stamp file is kept in the binary folder with a similar file path to the source file.
-    set(stamp_file ${CMAKE_BINARY_DIR}/packages/requirements_files/${unique_name}.stamp)
+    set(stamp_file ${LY_PYTHON_VENV_PATH}/requirements_files/${unique_name}.stamp)
     get_filename_component(stamp_file_directory ${stamp_file} DIRECTORY)
     file(MAKE_DIRECTORY ${stamp_file_directory})
 
@@ -100,9 +158,10 @@ function(update_pip_requirements requirements_file_path unique_name)
     endif()
 
     set(ENV{PYTHONNOUSERSITE} 1)
+
     execute_process(COMMAND 
         ${LY_PYTHON_CMD} -m pip install -r "${requirements_file_path}" --disable-pip-version-check --no-warn-script-location
-        WORKING_DIRECTORY ${Python_BINFOLDER}
+        WORKING_DIRECTORY ${LY_ROOT_FOLDER}/python
         RESULT_VARIABLE PIP_RESULT
         OUTPUT_VARIABLE PIP_OUT 
         ERROR_VARIABLE PIP_OUT
@@ -136,7 +195,7 @@ function(update_pip_requirements requirements_file_path unique_name)
 
     execute_process(COMMAND 
         ${LY_PYTHON_CMD} -m pip check
-        WORKING_DIRECTORY ${Python_BINFOLDER} 
+        WORKING_DIRECTORY ${LY_ROOT_FOLDER}/python
         RESULT_VARIABLE PIP_RESULT
         OUTPUT_VARIABLE PIP_OUT 
         ERROR_VARIABLE PIP_OUT
@@ -160,7 +219,7 @@ endfunction()
 # the pip_package_name should be the name given to the package in setup.py so that
 # any old versions may be uninstalled using setuptools before we install the new one.
 function(ly_pip_install_local_package_editable package_folder_path pip_package_name)
-    set(stamp_file ${CMAKE_BINARY_DIR}/packages/pip_installs/${pip_package_name}.stamp)
+    set(stamp_file ${LY_PYTHON_VENV_PATH}/packages/pip_installs/${pip_package_name}.stamp)
     get_filename_component(stamp_file_directory ${stamp_file} DIRECTORY)
     file(MAKE_DIRECTORY ${stamp_file_directory})
     
@@ -196,19 +255,21 @@ function(ly_pip_install_local_package_editable package_folder_path pip_package_n
     # uninstall any old versions of this package first:
     execute_process(COMMAND 
         ${LY_PYTHON_CMD} -m pip uninstall ${pip_package_name} -y  --disable-pip-version-check 
-        WORKING_DIRECTORY ${Python_BINFOLDER}
+        WORKING_DIRECTORY ${LY_ROOT_FOLDER}/python
         RESULT_VARIABLE PIP_RESULT
         OUTPUT_VARIABLE PIP_OUT 
         ERROR_VARIABLE PIP_OUT
         )
+
     # we discard the error output of above, since it might not be installed, which is ok
     message(VERBOSE "pip uninstall result: ${PIP_RESULT}")
     message(VERBOSE "pip uninstall output: ${PIP_OUT}")
 
     # now install the new one:
+
     execute_process(COMMAND 
         ${LY_PYTHON_CMD} -m pip install -e ${package_folder_path} --no-deps --disable-pip-version-check  --no-warn-script-location 
-        WORKING_DIRECTORY ${Python_BINFOLDER}
+        WORKING_DIRECTORY ${LY_ROOT_FOLDER}/python
         RESULT_VARIABLE PIP_RESULT
         OUTPUT_VARIABLE PIP_OUT 
         ERROR_VARIABLE PIP_OUT
@@ -237,49 +298,30 @@ endfunction()
 # But we don't want to full verify using hashes after we successfully get it the
 # first time.
 
-set(temp_LY_PACKAGE_VALIDATE_PACKAGE ${LY_PACKAGE_VALIDATE_PACKAGE})
-if (EXISTS  ${LY_ROOT_FOLDER}/python/runtime/${LY_PYTHON_PACKAGE_NAME})
-    # we will not validate the hash of every file, just that it is present
-    # this is not just an optimization, see comment above.
-    set(LY_PACKAGE_VALIDATE_PACKAGE FALSE)
-endif()
 
+# We need to download the associated Python package early and install the venv 
 ly_associate_package(PACKAGE_NAME ${LY_PYTHON_PACKAGE_NAME} TARGETS "Python" PACKAGE_HASH ${LY_PYTHON_PACKAGE_HASH})
-ly_set_package_download_location(${LY_PYTHON_PACKAGE_NAME} ${LY_ROOT_FOLDER}/python/runtime)
+ly_set_package_download_location(${LY_PYTHON_PACKAGE_NAME} ${PYTHON_PACKAGES_ROOT_PATH})
+ly_set_package_download_cache_location(${LY_PYTHON_PACKAGE_NAME} ${PYTHON_PACKAGE_CACHE_ROOT_PATH})
 ly_download_associated_package(Python)
-
-ly_set(LY_PACKAGE_VALIDATE_CONTENTS ${temp_LY_PACKAGE_VALIDATE_CONTENTS})
-ly_set(LY_PACKAGE_VALIDATE_PACKAGE ${temp_LY_PACKAGE_VALIDATE_PACKAGE})
+ly_setup_python_venv()
 
 if (NOT CMAKE_SCRIPT_MODE_FILE)
-    # if we're in script mode, we dont want to actually try to find package or anything else
 
-    find_package(Python ${LY_PYTHON_VERSION} REQUIRED)
 
     # note - if you want to use a normal python via FindPython instead of the LY package above,
     # you may have to declare the below variables after find_package, as the project scripts are 
     # looking for the below variables specifically.
+    find_package(Python ${LY_PYTHON_VERSION} REQUIRED)
 
     # verify the required variables are present:
-    if (NOT Python_EXECUTABLE OR NOT Python_HOME OR NOT Python_PATHS)
+    if (NOT EXISTS "${PYTHON_VENV_PATH}/" OR NOT Python_EXECUTABLE OR NOT Python_HOME OR NOT Python_PATHS)
         message(SEND_ERROR "Python installation not valid expected to find all of the following variables set:")
         message(STATUS "    Python_EXECUTABLE:  ${Python_EXECUTABLE}")
         message(STATUS "    Python_HOME:        ${Python_HOME}")
         message(STATUS "    Python_PATHS:       ${Python_PATHS}")
     else()
-        message(STATUS "Using Python ${Python_VERSION} at ${Python_EXECUTABLE}")
-        message(VERBOSE "    Python_EXECUTABLE:  ${Python_EXECUTABLE}")
-        message(VERBOSE "    Python_HOME:        ${Python_HOME}")
-        message(VERBOSE "    Python_PATHS:       ${Python_PATHS}")
-
-        get_filename_component(Python_BINFOLDER ${Python_EXECUTABLE} DIRECTORY)
-
-        # make sure other utils can find python / pip / etc
-        # using find_program:
-        LIST(APPEND CMAKE_PROGRAM_PATH "${Python_BINFOLDER}")
-        
-        # some platforms have this scripts dir, its harmless to add for those that do not.
-        LIST(APPEND CMAKE_PROGRAM_PATH "${Python_BINFOLDER}/Scripts")   
+        LIST(APPEND CMAKE_PROGRAM_PATH "${LY_ROOT_FOLDER}/python")
 
         # those using python should call it via LY_PYTHON_CMD - it adds the extra "-s" param
         # this param causes python to ignore the users profile folder which can have bogus

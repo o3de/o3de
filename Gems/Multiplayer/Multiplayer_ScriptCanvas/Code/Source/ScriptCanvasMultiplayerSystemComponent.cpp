@@ -11,9 +11,6 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 
 #include "ScriptCanvasMultiplayerSystemComponent.h"
-#include <AutoGenNodeableRegistry.generated.h>
-
-REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(Multiplayer_ScriptCanvasStatic);
 
 namespace ScriptCanvasMultiplayer
 {

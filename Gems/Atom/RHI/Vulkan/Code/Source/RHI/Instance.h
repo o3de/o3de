@@ -52,8 +52,6 @@ namespace AZ
                 return m_loaderContext->GetContext();
             }
             const Descriptor& GetDescriptor() const;
-            StringList GetInstanceLayerNames() const;
-            StringList GetInstanceExtensionNames(const char* layerName = nullptr) const;
             RHI::PhysicalDeviceList GetSupportedDevices() const;
             AZ::RHI::ValidationMode GetValidationMode() const;
 
@@ -61,6 +59,9 @@ namespace AZ
             const RawStringList& GetLoadedLayers() const;
             //! Retuns the list of instance extensions loaded by the Vulkan instance.
             const RawStringList& GetLoadedExtensions() const;
+
+            //! Returns the App Info used for creting the instance.
+            const VkApplicationInfo& GetVkAppInfo() const;
 
         private:
             RHI::PhysicalDeviceList EnumerateSupportedDevices(uint32_t minVersion) const;
@@ -73,6 +74,7 @@ namespace AZ
             RHI::PhysicalDeviceList m_supportedDevices;
             VkInstanceCreateInfo m_instanceCreateInfo = {};
             VkApplicationInfo m_appInfo = {};
+            uint32_t m_instanceVersion = 0;
 
 #if defined(USE_NSIGHT_AFTERMATH)
             GpuCrashTracker m_gpuCrashHandler;

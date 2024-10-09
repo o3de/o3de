@@ -16,29 +16,9 @@ set(FILES
     SandboxIntegration.cpp
     UI/QComponentEntityEditorMainWindow.h
     UI/QComponentEntityEditorMainWindow.cpp
-    UI/QComponentLevelEntityEditorMainWindow.h
-    UI/QComponentLevelEntityEditorMainWindow.cpp
     UI/QComponentEntityEditorOutlinerWindow.h
     UI/QComponentEntityEditorOutlinerWindow.cpp
     UI/AssetCatalogModel.h
     UI/AssetCatalogModel.cpp
     UI/ComponentPalette/ComponentPaletteSettings.h
-    UI/Outliner/OutlinerDisplayOptionsMenu.h
-    UI/Outliner/OutlinerDisplayOptionsMenu.cpp
-    UI/Outliner/OutlinerTreeView.hxx
-    UI/Outliner/OutlinerTreeView.cpp
-    UI/Outliner/OutlinerWidget.hxx
-    UI/Outliner/OutlinerWidget.cpp
-    UI/Outliner/OutlinerCacheBus.h
-    UI/Outliner/OutlinerListModel.hxx
-    UI/Outliner/OutlinerListModel.cpp
-    UI/Outliner/OutlinerSearchWidget.h
-    UI/Outliner/OutlinerSearchWidget.cpp
-    UI/Outliner/OutlinerSortFilterProxyModel.hxx
-    UI/Outliner/OutlinerSortFilterProxyModel.cpp
-    UI/Outliner/OutlinerWidget.ui
-    UI/Outliner/resources.qrc
-    UI/Outliner/EntityOutliner.qss
-    Objects/ComponentEntityObject.h
-    Objects/ComponentEntityObject.cpp
 )

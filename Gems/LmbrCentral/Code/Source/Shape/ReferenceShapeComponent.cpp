@@ -197,7 +197,7 @@ namespace LmbrCentral
         }
     }
 
-    AZ::Crc32 ReferenceShapeComponent::GetShapeType()
+    AZ::Crc32 ReferenceShapeComponent::GetShapeType() const
     {
         AZ::Crc32 result = {};
 
@@ -210,7 +210,7 @@ namespace LmbrCentral
         return result;
     }
 
-    AZ::Aabb ReferenceShapeComponent::GetEncompassingAabb()
+    AZ::Aabb ReferenceShapeComponent::GetEncompassingAabb() const
     {
         AZ::Aabb result = AZ::Aabb::CreateNull();
 
@@ -223,7 +223,7 @@ namespace LmbrCentral
         return result;
     }
 
-    void ReferenceShapeComponent::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds)
+    void ReferenceShapeComponent::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const
     {
         transform = AZ::Transform::CreateIdentity();
         bounds = AZ::Aabb::CreateNull();
@@ -235,7 +235,7 @@ namespace LmbrCentral
         }
     }
 
-    bool ReferenceShapeComponent::IsPointInside(const AZ::Vector3& point)
+    bool ReferenceShapeComponent::IsPointInside(const AZ::Vector3& point) const
     {
         bool result = false;
 
@@ -248,7 +248,7 @@ namespace LmbrCentral
         return result;
     }
 
-    float ReferenceShapeComponent::DistanceFromPoint(const AZ::Vector3& point)
+    float ReferenceShapeComponent::DistanceFromPoint(const AZ::Vector3& point) const
     {
         float result = FLT_MAX;
 
@@ -261,7 +261,7 @@ namespace LmbrCentral
         return result;
     }
 
-    float ReferenceShapeComponent::DistanceSquaredFromPoint(const AZ::Vector3& point)
+    float ReferenceShapeComponent::DistanceSquaredFromPoint(const AZ::Vector3& point) const
     {
         float result = FLT_MAX;
 
@@ -274,7 +274,7 @@ namespace LmbrCentral
         return result;
     }
 
-    AZ::Vector3 ReferenceShapeComponent::GenerateRandomPointInside(AZ::RandomDistributionType randomDistribution)
+    AZ::Vector3 ReferenceShapeComponent::GenerateRandomPointInside(AZ::RandomDistributionType randomDistribution) const
     {
         AZ::Vector3 result = AZ::Vector3::CreateZero();
 
@@ -287,7 +287,7 @@ namespace LmbrCentral
         return result;
     }
 
-    bool ReferenceShapeComponent::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
+    bool ReferenceShapeComponent::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const
     {
         bool result = false;
 

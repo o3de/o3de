@@ -768,7 +768,7 @@ namespace AZ
             }
 
             // If any valid, already has said was found then read the rest of the material values from it
-            if (materialAsset.IsReady())
+            if (materialAsset.IsReady() && materialAsset->GetMaterialTypeAsset().IsReady())
             {
                 const auto layout = materialAsset->GetMaterialPropertiesLayout();
                 for (size_t propertyIndex = 0; propertyIndex < layout->GetPropertyCount(); ++propertyIndex)

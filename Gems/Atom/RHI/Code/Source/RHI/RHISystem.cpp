@@ -16,8 +16,11 @@
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/CommandLine/CommandLine.h>
+#include <AzFramework/Device/DeviceAttributeInterface.h>
+#include <AzFramework/Device/DeviceAttributeGPUModel.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
@@ -35,11 +38,11 @@ namespace AZ::RHI
         return Interface<RHIMemoryStatisticsInterface>::Get();
     }
 
-    ResultCode RHISystem::InitDevices(InitDevicesFlags initializationVariant)
+    ResultCode RHISystem::InitDevices(int deviceCount)
     {
         Interface<RHISystemInterface>::Register(this);
         Interface<RHIMemoryStatisticsInterface>::Register(this);
-        return InitInternalDevices(initializationVariant);
+        return InitInternalDevices(deviceCount);
     }
     
     void RHISystem::Init(RHI::Ptr<RHI::ShaderResourceGroupLayout> bindlessSrgLayout)
@@ -56,6 +59,8 @@ namespace AZ::RHI
 
         m_drawListTagRegistry = RHI::DrawListTagRegistry::Create();
         m_pipelineStateCache = RHI::PipelineStateCache::Create(*m_devices[MultiDevice::DefaultDeviceIndex]);
+
+        m_gpuMarkersEnabled = !RHI::QueryCommandLineOption("rhi-disable-gpu-markers");
 
         frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_renderTargetBudgetInBytes = platformLimitsDescriptor->m_transientAttachmentPoolBudgets.m_renderTargetBudgetInBytes;
         frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_imageBudgetInBytes = platformLimitsDescriptor->m_transientAttachmentPoolBudgets.m_imageBudgetInBytes;
@@ -100,7 +105,7 @@ namespace AZ::RHI
         RHISystemNotificationBus::Broadcast(&RHISystemNotificationBus::Events::OnRHISystemInitialized);
     }
 
-    ResultCode RHISystem::InitInternalDevices(InitDevicesFlags initializationVariant)
+    ResultCode RHISystem::InitInternalDevices(int deviceCount)
     {
         RHI::PhysicalDeviceList physicalDevices = RHI::Factory::Get().EnumeratePhysicalDevices();
 
@@ -114,11 +119,14 @@ namespace AZ::RHI
 
         RHI::PhysicalDeviceList usePhysicalDevices;
 
-        if (initializationVariant == InitDevicesFlags::MultiDevice)
+        if (deviceCount > 1)
         {
             AZ_Printf("RHISystem", "\tUsing multiple devices\n");
 
-            usePhysicalDevices = AZStd::move(physicalDevices);
+            for(auto i {0}; (i < deviceCount) && (i < static_cast<int>(AZStd::size(physicalDevices))); ++i)
+            {
+                usePhysicalDevices.emplace_back(physicalDevices[i]);
+            }
         }
         else
         {
@@ -197,10 +205,33 @@ namespace AZ::RHI
             }
         }
 
+        for (auto index{ 0 }; m_devices.size() < deviceCount; index++)
+        {
+            // We do not have enough physical devices for the requested device count
+            // Virtualize the existing devices up to the required number
+            auto deviceIndex{ AddVirtualDevice(m_devices[index]->GetDeviceIndex()) };
+            AZ_Printf("RHISystem", "\tVirtualized device %d from device %d\n", deviceIndex.value(), m_devices[index]->GetDeviceIndex());
+        }
+
         if (m_devices.empty())
         {
             AZ_Error("RHISystem", false, "Failed to initialize RHI device.");
             return ResultCode::Fail;
+        }
+
+        // Register device GPUs attributes
+        if (auto deviceRegistrar = AzFramework::DeviceAttributeRegistrar::Get())
+        {
+            AZStd::vector<AZStd::string_view> gpuList;
+            AZStd::transform(
+                m_devices.begin(),
+                m_devices.end(),
+                std::back_inserter(gpuList),
+                [](const auto& device)
+                {
+                    return device->GetPhysicalDevice().GetDescriptor().m_description.c_str();
+                });
+            deviceRegistrar->RegisterDeviceAttribute(AZStd::make_shared<AzFramework::DeviceAttributeGPUModel>(gpuList));
         }
         return ResultCode::Success;
     }
@@ -250,6 +281,29 @@ namespace AZ::RHI
         }
 
         m_frameScheduler.EndFrame();
+    }
+
+    AZStd::optional<int> RHISystem::AddVirtualDevice(int deviceIndexToVirtualize)
+    {
+        if (deviceIndexToVirtualize >= m_devices.size())
+        {
+            AZ_Error("RHISystem", false, "Invalid device index, cannot add virtual device");
+            return AZStd::nullopt;
+        }
+
+        RHI::Ptr<RHI::Device> device = RHI::Factory::Get().CreateDevice();
+        auto virtualDeviceIndex{ static_cast<int>(m_devices.size()) };
+        auto& selectedPhysicalDevice = const_cast<RHI::PhysicalDevice&>(m_devices[deviceIndexToVirtualize]->GetPhysicalDevice());
+        if (device->Init(virtualDeviceIndex, selectedPhysicalDevice) == RHI::ResultCode::Success)
+        {
+            m_devices.emplace_back(AZStd::move(device));
+            return virtualDeviceIndex;
+        }
+        else
+        {
+            AZ_Error("RHISystem", false, "Failed to initialize virtual device");
+            return AZStd::nullopt;
+        }
     }
 
     RHI::Device* RHISystem::GetDevice(int deviceIndex)
@@ -336,6 +390,30 @@ namespace AZ::RHI
     RHI::XRRenderingInterface* RHISystem::GetXRSystem() const
     {
         return m_xrSystem;
+    }
+
+    void RHISystem::SetDrawListTagEnabledByDefault(DrawListTag drawListTag, bool enabled)
+    {
+        if (enabled)
+        {
+            AZStd::remove(m_drawListTagsDisabledByDefault.begin(),
+                          m_drawListTagsDisabledByDefault.end(),
+                          drawListTag);
+        }
+        else
+        {
+            m_drawListTagsDisabledByDefault.push_back(drawListTag);
+        }
+    }
+
+    const AZStd::vector<DrawListTag>& RHISystem::GetDrawListTagsDisabledByDefault() const
+    {
+        return m_drawListTagsDisabledByDefault;
+    }
+
+    bool RHISystem::GpuMarkersEnabled() const
+    {
+        return m_gpuMarkersEnabled;
     }
 
     /////////////////////////////////////////////////////////////////////////////

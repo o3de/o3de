@@ -181,6 +181,11 @@ namespace AZ
 
                 diffuseProbeGrid->GetQuerySrg()->Compile();
             }
+
+            if (auto viewSRG = diffuseProbeGridFeatureProcessor->GetViewSrg(m_pipeline, GetPipelineViewTag()))
+            {
+                BindSrg(viewSRG->GetRHIShaderResourceGroup());
+            }
         }
 
         void DiffuseProbeGridQueryFullscreenPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)

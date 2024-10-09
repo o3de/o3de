@@ -33,12 +33,11 @@
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
-#include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
-#include <Atom/RPI.Public/Image/StreamingImagePool.h>
+#include <Atom/RPI.Public/Image/AttachmentImagePool.h>
 #include <Atom/RPI.Public/ViewportContextManager.h>
 #include <AzCore/Interface/Interface.h>
 
@@ -344,7 +343,7 @@ void AZ::FFont::DrawStringUInternal(
             //setup per draw srg
             auto drawSrg = dynamicDraw->NewDrawSrg();
             drawSrg->SetConstant(m_fontShaderData.m_viewProjInputIndex, modelViewProjMat);
-            drawSrg->SetImageView(m_fontShaderData.m_imageInputIndex, m_fontStreamingImage->GetImageView());
+            drawSrg->SetImageView(m_fontShaderData.m_imageInputIndex, m_fontAttachmentImage->GetImageView());
             drawSrg->Compile();
 
             dynamicDraw->DrawIndexed(m_vertexBuffer, m_vertexCount, m_indexBuffer, m_indexCount, RHI::IndexFormat::Uint16, drawSrg);
@@ -1435,23 +1434,17 @@ bool AZ::FFont::InitTexture()
 {
     using namespace AZ;
 
-    RHI::Format rhiImageFormat = RHI::Format::R8_UNORM;
-    int width = m_fontTexture->GetWidth();
-    int height = m_fontTexture->GetHeight();
-    uint8_t* fontImageData = m_fontTexture->GetBuffer();
-    uint32_t fontImageDataSize = RHI::GetFormatSize(rhiImageFormat) * width * height;
+    const RHI::Format rhiImageFormat = RHI::Format::R8_UNORM;
+    const int width = m_fontTexture->GetWidth();
+    const int height = m_fontTexture->GetHeight();
+    const Name imageName(m_name.c_str());
 
-    Data::Instance<RPI::StreamingImagePool> streamingImagePool = RPI::ImageSystemInterface::Get()->GetSystemStreamingPool();
-    m_fontStreamingImage = RPI::StreamingImage::CreateFromCpuData(
-        *streamingImagePool.get(),
-        RHI::ImageDimension::Image2D,
-        RHI::Size(width, height, 1),
-        rhiImageFormat,
-        fontImageData,
-        fontImageDataSize);
+    Data::Instance<RPI::AttachmentImagePool> imagePool = RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
+    RHI::ImageDescriptor imageDescriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderRead, width, height, rhiImageFormat);
+    m_fontAttachmentImage = RPI::AttachmentImage::Create(*imagePool.get(), imageDescriptor, imageName);
 
-    m_fontImage = m_fontStreamingImage->GetRHIImage();
-    m_fontImage->SetName(Name(m_name.c_str()));
+    m_fontImage = m_fontAttachmentImage->GetRHIImage();
+    m_fontImage->SetName(imageName);
 
     m_fontImageVersion = 0;
     return true;
@@ -1486,9 +1479,8 @@ bool AZ::FFont::UpdateTexture()
     imageUpdateReq.m_sourceData = m_fontTexture->GetBuffer();
     imageUpdateReq.m_sourceSubresourceLayout = layout;
 
-    m_fontStreamingImage->UpdateImageContents(imageUpdateReq);
-
-    return true;
+    const RHI::ResultCode result = m_fontAttachmentImage->UpdateImageContents(imageUpdateReq);
+    return result == RHI::ResultCode::Success;
 }
 
 bool AZ::FFont::InitCache()
@@ -1534,7 +1526,6 @@ void AZ::FFont::Prepare(const char* str, bool updateTexture, const AtomFont::Gly
         UpdateTexture();
         m_fontTexDirty = false;
         ++m_fontImageVersion;
-
         // Let any listeners know that the font texture has changed
         // TODO Update to an AZ::Event when Cry use of this bus is cleaned out.
         FontNotificationBus::Broadcast(&FontNotificationBus::Events::OnFontTextureUpdated, this);
@@ -1624,8 +1615,9 @@ AZ::FFont::DrawParameters AZ::FFont::ExtractDrawParameters(const AzFramework::Te
     float posX = params.m_position.GetX();
     float posY = params.m_position.GetY();
     internalParams.m_viewportContext = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->GetViewportContextById(params.m_drawViewportId);
-    const AZ::RHI::Viewport& viewport = internalParams.m_viewportContext->GetWindowContext()->GetViewport();
-    internalParams.m_viewport = &viewport;
+    const auto viewportSize = internalParams.m_viewportContext->GetViewportSize();
+    internalParams.m_viewport = AZ::RHI::Viewport(0, aznumeric_caster(viewportSize.m_width), 0, aznumeric_caster(viewportSize.m_height));
+    auto& viewport = internalParams.m_viewport;
     if (params.m_virtual800x600ScreenSize)
     {
         posX *= WindowScaleWidth / (viewport.m_maxX - viewport.m_minX);
@@ -1701,7 +1693,7 @@ void AZ::FFont::DrawScreenAlignedText2d(
     }
 
     DrawStringUInternal(
-        *internalParams.m_viewport, 
+        internalParams.m_viewport, 
         internalParams.m_viewportContext, 
         internalParams.m_position.GetX(), 
         internalParams.m_position.GetY(), 
@@ -1740,10 +1732,10 @@ void AZ::FFont::DrawScreenAlignedText3d(
     internalParams.m_ctx.m_sizeIn800x600 = false;
 
     DrawStringUInternal(
-        *internalParams.m_viewport, 
+        internalParams.m_viewport, 
         internalParams.m_viewportContext, 
-        positionNdc.GetX() * internalParams.m_viewport->GetWidth(), 
-        (1.0f - positionNdc.GetY()) * internalParams.m_viewport->GetHeight(), 
+        positionNdc.GetX() * internalParams.m_viewport.GetWidth() + internalParams.m_position.GetX(), 
+        (1.0f - positionNdc.GetY()) * internalParams.m_viewport.GetHeight() + internalParams.m_position.GetY(), 
         positionNdc.GetZ(), // Z
         text.data(),
         params.m_multiline,

@@ -12,6 +12,7 @@
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicHandler.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
+#include <AzToolsFramework/Prefab/PrefabInstanceUtils.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionBus.h>
@@ -25,6 +26,9 @@ namespace AzToolsFramework
         {
             AZ::Interface<PrefabOverridePublicInterface>::Register(this);
             PrefabOverridePublicRequestBus::Handler::BusConnect();
+
+            m_instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
+            AZ_Assert(m_instanceEntityMapperInterface, "PrefabOverridePublicHandler - InstanceEntityMapperInterface could not be found.");
 
             m_instanceToTemplateInterface = AZ::Interface<InstanceToTemplateInterface>::Get();
             AZ_Assert(m_instanceToTemplateInterface, "PrefabOverridePublicHandler - InstanceToTemplateInterface could not be found.");
@@ -51,6 +55,7 @@ namespace AzToolsFramework
                     ->Attribute(AZ::Script::Attributes::Category, "Prefab")
                     ->Attribute(AZ::Script::Attributes::Module, "prefab")
                     ->Event("AreOverridesPresent", &PrefabOverridePublicInterface::AreOverridesPresent)
+                    ->Event("AreComponentOverridesPresent", &PrefabOverridePublicInterface::AreComponentOverridesPresent)
                     ->Event("RevertOverrides", &PrefabOverridePublicInterface::RevertOverrides);
             }
         }
@@ -65,6 +70,22 @@ namespace AzToolsFramework
                     pathAndLinkIdPair.first /= AZ::Dom::Path(relativePathFromEntity);
                 }
                 return m_prefabOverrideHandler.AreOverridesPresent(pathAndLinkIdPair.first, pathAndLinkIdPair.second);
+            }
+
+            return false;
+        }
+
+        bool PrefabOverridePublicHandler::AreComponentOverridesPresent(AZ::EntityComponentIdPair entityComponentIdPair)
+        {
+            AZStd::pair<AZ::Dom::Path, LinkId> pathAndLinkIdPair = GetComponentPathAndLinkIdFromFocusedPrefab(entityComponentIdPair);
+            if (!pathAndLinkIdPair.first.IsEmpty() && pathAndLinkIdPair.second != InvalidLinkId)
+            {
+                AZStd::optional<PatchType> patchType =
+                    m_prefabOverrideHandler.GetPatchType(pathAndLinkIdPair.first, pathAndLinkIdPair.second);
+                if (patchType.has_value())
+                {
+                    return true;
+                }
             }
 
             return false;
@@ -152,6 +173,83 @@ namespace AzToolsFramework
                 return m_prefabOverrideHandler.RevertOverrides(pathAndLinkIdPair.first, pathAndLinkIdPair.second);
             }
             return false;
+        }
+
+        bool PrefabOverridePublicHandler::ApplyComponentOverrides(const AZ::EntityComponentIdPair& entityComponentIdPair)
+        {
+            AZStd::pair<AZ::Dom::Path, LinkId> pathAndLinkIdPair = GetComponentPathAndLinkIdFromFocusedPrefab(entityComponentIdPair);
+            if (pathAndLinkIdPair.first.IsEmpty() || pathAndLinkIdPair.second == InvalidLinkId)
+            {
+                return false;
+            }
+
+            // Retrieve EntityId for the entity affected by the overrides.
+            auto entityId = entityComponentIdPair.GetEntityId();
+
+            // Retrieve owning instance for the entity affected by the overrides.
+            InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
+            if (!owningInstance.has_value())
+            {
+                AZ_Warning(
+                    "PrefabOverridePublicHandler",
+                    false,
+                    "ApplyComponentOverrides failed - could not find owning prefab instance of entity being overridden.");
+                return false;
+            }
+
+            // Retrieve currently focused prefab instance.
+            AzFramework::EntityContextId editorEntityContextId;
+            AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+                editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
+            InstanceOptionalReference focusedInstance = m_prefabFocusInterface->GetFocusedPrefabInstance(editorEntityContextId);
+
+            // If the entity was owned by the focused instance, there's not much to push...
+            if (&focusedInstance->get() == &owningInstance->get())
+            {
+                return false;
+            }
+
+            // Climb up from the owning instance to the focused instance,
+            // and find the first instance down from focus that is an ancestor of owning.
+            // Note that this assumes the entity was a descendant of the focused instance, which should always be the case.
+            auto climbResult = PrefabInstanceUtils::ClimbUpToTargetOrRootInstance(owningInstance.value(), &focusedInstance->get());
+
+            if (!climbResult.m_isTargetInstanceReached)
+            {
+                // This should not be possible, so something is wrong with the input data.
+                return false;
+            }
+
+            // We already determined that the two instances are different, so no need to check for m_climbedInstances.size() == 0.
+            if (climbResult.m_climbedInstances.size() == 1)
+            {
+                // If m_climbedInstances only contains 1 instance, it will have to be the owningInstance meaning
+                // it is a direct child of focusedInstance. Hence we just apply the patch to the instance's template.
+                
+                // Retrieve the paths from the focusedInstance to the owningInstance.
+                auto relativePath = PrefabInstanceUtils::GetRelativePathBetweenInstances(focusedInstance->get(), owningInstance->get());
+
+                return m_prefabOverrideHandler.PushOverridesToPrefab(pathAndLinkIdPair.first, relativePath, owningInstance);
+            }
+            else
+            {
+                // There's more than one prefab instance in the hierarchy between the focused instance and the owned instance.
+                // In this case, we want to push this patch from the focused prefab down to the first descendant
+                // in the hierarchy that connects focused and owning instance.
+                InstanceOptionalConstReference sourceInstance =
+                    *climbResult.m_climbedInstances.at(climbResult.m_climbedInstances.size() - 1);
+                InstanceOptionalConstReference targetInstance =
+                    *climbResult.m_climbedInstances.at(climbResult.m_climbedInstances.size() - 2);
+
+                // Retrieve the link ids
+                auto sourceLinkId = sourceInstance->get().GetLinkId();
+                auto targetLinkId = targetInstance->get().GetLinkId();
+
+                // Retrieve the paths from the focusedInstance to the targetInstance.
+                auto relativePath = PrefabInstanceUtils::GetRelativePathBetweenInstances(sourceInstance->get(), targetInstance->get());
+
+                return m_prefabOverrideHandler.PushOverridesToLink(pathAndLinkIdPair.first, relativePath, sourceLinkId, targetLinkId);
+            }
         }
 
         AZStd::pair<AZ::Dom::Path, LinkId> PrefabOverridePublicHandler::GetEntityPathAndLinkIdFromFocusedPrefab(AZ::EntityId entityId)

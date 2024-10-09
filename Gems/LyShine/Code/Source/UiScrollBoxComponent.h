@@ -23,6 +23,8 @@
 #include <LmbrCentral/Rendering/TextureAsset.h>
 #include "UiNavigationHelpers.h"
 
+#include <AzCore/Component/TickBus.h>
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class UiScrollBoxComponent
     : public UiInteractableComponent
@@ -31,6 +33,7 @@ class UiScrollBoxComponent
     , public UiInitializationBus::Handler
     , public UiScrollerToScrollableNotificationBus::MultiHandler
     , public UiTransformChangeNotificationBus::MultiHandler
+    , public AZ::TickBus::Handler
 {
 public: // member functions
 
@@ -64,6 +67,12 @@ public: // member functions
     virtual void SetHorizontalScrollBarVisibility(ScrollBarVisibility visibility) override;
     virtual ScrollBarVisibility GetVerticalScrollBarVisibility() override;
     virtual void SetVerticalScrollBarVisibility(ScrollBarVisibility visibility) override;
+    virtual AZ::Vector2 GetScrollSensitivity() override;
+    virtual void SetScrollSensitivity(AZ::Vector2 scrollSensitivity) override;
+    virtual float GetMomentumDuration() override;
+    virtual void SetMomentumDuration(float scrollMomentumDuration) override;
+    virtual void SetMomentumActive(bool active) override;
+    virtual void StopMomentum() override;
 
     ScrollOffsetChangeCallback GetScrollOffsetChangingCallback() override;
     void SetScrollOffsetChangingCallback(ScrollOffsetChangeCallback onChange) override;
@@ -114,6 +123,10 @@ public: // member functions
     // UiTransformChangeNotification
     void OnCanvasSpaceRectChanged(AZ::EntityId entityId, const UiTransformInterface::Rect& oldRect, const UiTransformInterface::Rect& newRect) override;
     // ~UiTransformChangeNotification
+
+    // TickBus
+    void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+    // ~TickBus
 
 protected: // member functions
 
@@ -278,4 +291,15 @@ private: // data
     AZ::Vector2 m_pressedScrollOffset; // the original value of scrollOffset when the press occurred
 
     AZ::Vector2 m_lastDragPoint; // the point of the last drag
+
+    AZ::Vector2 m_scrollSensitivity = AZ::Vector2::CreateZero(); // Vector2(horizontal, vertical) factor applied to the dragging vector to adjust scroll speed
+    AZ::Vector2 m_lastOffsetChange = AZ::Vector2::CreateZero(); // Last instant offset change
+    AZ::Vector2 m_offsetChangeAccumulator = AZ::Vector2::CreateZero();
+    float m_stoppingTimeAccumulator = 0.f;
+    float m_draggingTimeAccumulator = 0.f;
+    bool m_momentumIsActive = false;
+    float m_momentumDuration = 0.f; // Time in seconds for which we keep scrolling after release
+    float m_momentumTimeAccumulator = 0.f;
+    const float MIN_OFFSET_THRESHOLD = 10.0f;
+    const float MAX_STOPPING_DELAY = 0.12f;
 };

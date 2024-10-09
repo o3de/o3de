@@ -20,8 +20,6 @@
 #include <AzFramework/Visibility/EntityVisibilityBoundsUnionSystem.h>
 
 #include <AzToolsFramework/Entity/EditorEntityContextPickingBus.h>
-#include <AzToolsFramework/Entity/SliceEditorEntityOwnershipService.h>
-#include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 
 #include "EditorEntityContextBus.h"
 
@@ -54,7 +52,6 @@ namespace AzToolsFramework
         , private EditorEntityContextRequestBus::Handler
         , private EditorEntityContextPickingRequestBus::Handler
         , private EditorLegacyGameModeNotificationBus::Handler
-        , private SliceEditorEntityOwnershipServiceNotificationBus::Handler
     {
     public:
 
@@ -153,14 +150,6 @@ namespace AzToolsFramework
 
     private:
         EditorEntityContextComponent(const EditorEntityContextComponent&) = delete;
-
-        //////////////////////////////////////////////////////////////////////////
-        // SliceEditorEntityOwnershipServiceNotificationBus
-        void OnSaveStreamForGameBegin(AZ::IO::GenericStream& gameStream, AZ::DataStream::StreamType streamType,
-            AZStd::vector<AZStd::unique_ptr<AZ::Entity>>& levelEntities) override;
-        void OnSaveStreamForGameSuccess(AZ::IO::GenericStream& gameStream) override;
-        void OnSaveStreamForGameFailure(AZStd::string_view failureString) override;
-        //////////////////////////////////////////////////////////////////////////
         
         // EditorLegacyGameModeNotificationBus ...
         void OnStartGameModeRequest() override;
@@ -175,14 +164,14 @@ namespace AzToolsFramework
         EntityIdList m_selectedBeforeStartingGame;
 
         //! Bidirectional mapping of runtime entity Ids to their editor counterparts (relevant during in-editor simulation).
+        using EntityIdToEntityIdMap = AZStd::unordered_map<AZ::EntityId, AZ::EntityId>;
+
         EntityIdToEntityIdMap m_editorToRuntimeIdMap;
         EntityIdToEntityIdMap m_runtimeToEditorIdMap;
 
         //! Array of types of required components added to all Editor entities with
         //! EditorEntityContextRequestBus::Events::AddRequiredComponents()
         AZ::ComponentTypeList m_requiredEditorComponentTypes;
-
-        bool m_isLegacySliceService;
 
         UndoSystem::UndoCacheInterface* m_undoCacheInterface = nullptr;
     };

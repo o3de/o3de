@@ -52,7 +52,6 @@
 #include <AzToolsFramework/ToolsComponents/ComponentAssetMimeDataContainer.h>
 #include <AzToolsFramework/ToolsComponents/ComponentMimeData.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIdContainer.h>
-#include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponentBus.h>
@@ -223,10 +222,10 @@ namespace AzToolsFramework
             return !AreAllDescendantsSameLockState(id);
 
         case LockedAncestorRole:
-            return IsInLayerWithProperty(id, LayerProperty::Locked);
+            return false;
 
         case InvisibleAncestorRole:
-            return IsInLayerWithProperty(id, LayerProperty::Invisible);
+            return false;
 
         case ChildCountRole:
             {
@@ -737,6 +736,12 @@ namespace AzToolsFramework
         [[maybe_unused]] int column,
         const QModelIndex& parent) const
     {
+        // Can only drop assets if a level is loaded!
+        if (rowCount() == 0)
+        {
+            return false;
+        }
+
         if (action != Qt::DropAction::CopyAction)
         {
             // we can only 'move' entityIds, and that will already be handled at this point
@@ -882,25 +887,6 @@ namespace AzToolsFramework
                 AZ::EntityId currentParentId;
                 AZ::TransformBus::EventResult(currentParentId, entityId, &AZ::TransformBus::Events::GetParentId);
                 if (currentParentId == newParentId)
-                {
-                    return false;
-                }
-            }
-
-            bool isLayerEntity = false;
-            Layers::EditorLayerComponentRequestBus::EventResult(
-                isLayerEntity,
-                entityId,
-                &Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-            // Layers can only have other layers as parents, or have no parent.
-            if (isLayerEntity)
-            {
-                bool newParentIsLayer = false;
-                Layers::EditorLayerComponentRequestBus::EventResult(
-                    newParentIsLayer,
-                    newParentId,
-                    &Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-                if (!newParentIsLayer)
                 {
                     return false;
                 }
@@ -1771,49 +1757,6 @@ namespace AzToolsFramework
             }
         }
         return true;
-    }
-
-    bool EntityOutlinerListModel::IsInLayerWithProperty(AZ::EntityId entityId, const LayerProperty& layerProperty) const
-    {
-        while (entityId.IsValid())
-        {
-            AZ::EntityId parentId;
-            EditorEntityInfoRequestBus::EventResult(
-                parentId, entityId, &EditorEntityInfoRequestBus::Events::GetParent);
-
-            bool isParentLayer = false;
-            Layers::EditorLayerComponentRequestBus::EventResult(
-                isParentLayer,
-                parentId,
-                &Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-
-            if (isParentLayer)
-            {
-                if (layerProperty == LayerProperty::Locked)
-                {
-                    bool isParentLayerLocked = false;
-                    EditorEntityInfoRequestBus::EventResult(
-                        isParentLayerLocked, parentId, &EditorEntityInfoRequestBus::Events::IsJustThisEntityLocked);
-                    if (isParentLayerLocked)
-                    {
-                        return true;
-                    }
-                    // If this layer wasn't locked, keep checking the hierarchy, a layer above this one may be locked.
-                }
-                else if (layerProperty == LayerProperty::Invisible)
-                {
-                    bool isParentVisible = IsEntitySetToBeVisible(parentId);
-                    if (!isParentVisible)
-                    {
-                        return true;
-                    }
-                    // If this layer was visible, keep checking the hierarchy, a layer above this one may be invisible.
-                }
-            }
-
-            entityId = parentId;
-        }
-        return false;
     }
 
     void EntityOutlinerListModel::OnEntityInitialized(const AZ::EntityId& entityId)

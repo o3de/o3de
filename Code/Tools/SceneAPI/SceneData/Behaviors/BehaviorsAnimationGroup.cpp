@@ -27,8 +27,6 @@ namespace AZ
     {
         namespace Behaviors
         {
-            const int AnimationGroup::s_animationsPreferredTabOrder = 2;
-
             void AnimationGroup::Activate()
             {       
             }

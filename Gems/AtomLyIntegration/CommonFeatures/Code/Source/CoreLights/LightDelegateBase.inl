@@ -162,5 +162,13 @@ namespace AZ
             }
         }
 
+        template<typename FeatureProcessorType>
+        void LightDelegateBase<FeatureProcessorType>::SetLightingChannelMask(uint32_t lightingChannelMask)
+        {
+            if (m_lightHandle.IsValid())
+            {
+                m_featureProcessor->SetLightingChannelMask(m_lightHandle, lightingChannelMask);
+            }
+        }
     }
 }

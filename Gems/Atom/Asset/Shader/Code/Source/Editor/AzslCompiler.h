@@ -32,13 +32,15 @@ namespace AZ
         public:
             //! AzslCompiler constructor
             //! @param inputFilePath      The target input file to compile. Should be a valid AZSL file with no preprocessing directives.
-            AzslCompiler(const AZStd::string& inputFilePath);
+            AzslCompiler(const AZStd::string& inputFilePath, const AZStd::string& tempFolder);
 
             //! compile with --full and generate all .json files
+            //! @param outputFile="" will use the input as base path.
             Outcome<ShaderBuilderUtility::AzslSubProducts::Paths> EmitFullData(const AZStd::vector<AZStd::string>& azslcArguments,
-                const AZStd::string& outputFile = "") const;
+                                                                               const AZStd::string& outputFile = "") const;
             //! compile to HLSL independently
-            bool EmitShader(AZ::IO::GenericStream& outputStream, const AZStd::string& extraCompilerParams) const;
+            bool EmitShader(AZ::IO::GenericStream& outputStream,
+                            const AZStd::string& extraCompilerParams) const;
             //! compile with --ia independently and populate document @output
             bool EmitInputAssembler(rapidjson::Document& output) const;
             //! compile with --om  independently
@@ -96,6 +98,7 @@ namespace AZ
                 const char* outputExtension) const;
 
             AZStd::string m_inputFilePath;
+            AZStd::string m_tempFolder;
         };
     }
 }

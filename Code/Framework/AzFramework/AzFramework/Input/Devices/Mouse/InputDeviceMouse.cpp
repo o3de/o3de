@@ -56,7 +56,7 @@ namespace AzFramework
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceMouse::InputDeviceMouse(const InputDeviceId& inputDeviceId,
-                                       ImplementationFactory implementationFactory)
+                                       ImplementationFactory* implementationFactory)
         : InputDevice(inputDeviceId)
         , m_allChannelsById()
         , m_buttonChannelsById()
@@ -87,7 +87,7 @@ namespace AzFramework
         m_allChannelsById[SystemCursorPosition] = m_cursorPositionChannel;
 
         // Create the platform specific or custom implementation
-        m_pimpl.reset(implementationFactory ? implementationFactory(*this) : nullptr);
+        m_pimpl = (implementationFactory != nullptr) ? implementationFactory->Create(*this) : nullptr;
 
         // Connect to the system cursor request bus
         InputSystemCursorRequestBus::Handler::BusConnect(GetInputDeviceId());
@@ -181,6 +181,15 @@ namespace AzFramework
         if (m_pimpl)
         {
             m_pimpl->SetRawMovementSampleRate(sampleRateHertz);
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void InputDeviceMouse::SetCaptureCursor(bool captureCursor)
+    {
+        if (m_pimpl)
+        {
+            m_pimpl->SetCaptureCursor(captureCursor);
         }
     }
 
@@ -296,5 +305,11 @@ namespace AzFramework
         {
             m_rawMovementSampleRate = static_cast<AZStd::sys_time_t>(1000000 / sampleRateHertz);
         }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void InputDeviceMouse::Implementation::SetCaptureCursor(bool captureCursor)
+    {
+        m_captureCursor = captureCursor;
     }
 } // namespace AzFramework

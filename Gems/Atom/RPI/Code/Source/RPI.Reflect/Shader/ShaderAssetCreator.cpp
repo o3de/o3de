@@ -241,7 +241,7 @@ namespace AZ
         static RHI::PipelineStateType GetPipelineStateType(const Data::Asset<ShaderVariantAsset>& shaderVariantAsset)
         {
             if (shaderVariantAsset->GetShaderStageFunction(RHI::ShaderStage::Vertex) ||
-                shaderVariantAsset->GetShaderStageFunction(RHI::ShaderStage::Tessellation) ||
+                shaderVariantAsset->GetShaderStageFunction(RHI::ShaderStage::Geometry) ||
                 shaderVariantAsset->GetShaderStageFunction(RHI::ShaderStage::Fragment))
             {
                 return RHI::PipelineStateType::Draw;

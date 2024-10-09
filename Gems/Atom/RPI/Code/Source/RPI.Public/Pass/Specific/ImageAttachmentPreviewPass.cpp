@@ -74,7 +74,10 @@ namespace AZ
                 RHI::ImageDescriptor imageDesc = attachmentDatabase.GetImageDescriptor(m_srcAttachmentId);
                 // add read flag since the image will always be read by ImageAttachmentPreviewPass
                 imageDesc.m_bindFlags |= RHI::ImageBindFlags::ShaderRead;
-                m_destImage = AttachmentImage::Create(*pool.get(), imageDesc, m_srcAttachmentId, nullptr, nullptr);
+                imageDesc.m_arraySize = 1;
+
+                Name copyName = Name( AZStd::string::format("%s_%s", m_srcAttachmentId.GetCStr(), "Copy") );
+                m_destImage = AttachmentImage::Create(*pool.get(), imageDesc, copyName, nullptr, nullptr);
             }
 
             if (!m_destImage)
@@ -105,6 +108,7 @@ namespace AZ
             const AZ::RHI::Image* image = context.GetImage(m_srcAttachmentId);
             copyImage.m_sourceImage = image;
             copyImage.m_sourceSize = image->GetDescriptor().m_size;
+            copyImage.m_sourceSubresource.m_arraySlice = m_sourceArraySlice;
             copyImage.m_destinationImage = context.GetImage(m_destAttachmentId);
             
             m_copyItem = copyImage;
@@ -132,7 +136,7 @@ namespace AZ
             Data::AssetBus::Handler::BusDisconnect();
         }
 
-        void ImageAttachmentPreviewPass::PreviewImageAttachmentForPass(Pass* pass, const PassAttachment* passAttachment)
+        void ImageAttachmentPreviewPass::PreviewImageAttachmentForPass(Pass* pass, const PassAttachment* passAttachment, RenderPipeline* previewOutputPipeline, u32 imageArraySlice)
         {
             if (passAttachment->GetAttachmentType() != RHI::AttachmentType::Image)
             {
@@ -169,11 +173,12 @@ namespace AZ
 
             m_updateDrawData = true;
             m_imageAttachmentId = m_attachmentCopy->m_destAttachmentId;
+            m_attachmentCopy->m_sourceArraySlice = u16(imageArraySlice);
 
             // Set the output of this pass to write to the pipeline output
             if (!m_outputColorAttachment)
             {
-                RenderPipeline* pipeline = pass->GetRenderPipeline();
+                RenderPipeline* pipeline = previewOutputPipeline ? previewOutputPipeline : pass->GetRenderPipeline();
                 if (pipeline)
                 {
                     Pass* pipelinePass = pipeline->GetRootPass().get();

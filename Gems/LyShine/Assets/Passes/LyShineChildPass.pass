@@ -15,7 +15,13 @@
                 {
                     "Name": "DepthInputOutput",
                     "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "DepthStencil"
+                    "ScopeAttachmentUsage": "DepthStencil",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Type": "DepthStencil"
+                        },
+                        "LoadActionStencil": "Clear"
+                    }
                 }
             ],
             "Connections": [

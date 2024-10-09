@@ -37,6 +37,9 @@ namespace AZ::SceneAPI::Utilities
 {
     constexpr int SceneGraphVersion = 1;
 
+    //! IsDebugEnabled - returns true if additional debug output is desired from scene processing.
+    SCENE_CORE_API bool IsDebugEnabled(); 
+
     struct DebugNode
     {
         AZ_TYPE_INFO(DebugNode, "{490B9D4C-1847-46EB-BEBC-49812E104626}");

@@ -113,7 +113,7 @@ namespace AZ
             virtual void CreateChildPassesInternal() { }
 
             // --- Pass Behaviour Overrides ---
-
+            void UpdateConnectedBindings() override;
             void ResetInternal() override;
             void BuildInternal() override;
             void OnInitializationFinishedInternal() override;

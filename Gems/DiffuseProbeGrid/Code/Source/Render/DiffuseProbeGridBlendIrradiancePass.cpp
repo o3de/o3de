@@ -160,7 +160,10 @@ namespace AZ
                 DiffuseProbeGridShader& shader = m_shaders[diffuseProbeGrid->GetNumRaysPerProbe().m_index];
                 diffuseProbeGrid->UpdateBlendIrradianceSrg(shader.m_shader, shader.m_srgLayout);
 
-                diffuseProbeGrid->GetBlendIrradianceSrg()->Compile();
+                if (!diffuseProbeGrid->GetBlendIrradianceSrg()->IsQueuedForCompile())
+                {
+                    diffuseProbeGrid->GetBlendIrradianceSrg()->Compile();
+                }
             }
         }
 

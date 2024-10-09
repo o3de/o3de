@@ -76,8 +76,8 @@ namespace AZ
             m_shaderResourceGroup->SetConstant(m_invOutputScaleNameIndex, 1.0f / ssrOptions.GetOutputScale());
             m_shaderResourceGroup->SetConstant(m_outputWidthNameIndex, outputImageSize.m_width);
             m_shaderResourceGroup->SetConstant(m_outputHeightNameIndex, outputImageSize.m_height);
-            m_shaderResourceGroup->SetConstant(m_rayTracingEnabledNameIndex, ssrOptions.m_rayTracing);
-            m_shaderResourceGroup->SetConstant(m_rayTraceFallbackDataNameIndex, ssrOptions.m_rayTraceFallbackData);
+            m_shaderResourceGroup->SetConstant(m_rayTracingEnabledNameIndex, ssrOptions.IsRayTracingEnabled());
+            m_shaderResourceGroup->SetConstant(m_rayTraceFallbackDataNameIndex, ssrOptions.IsRayTracingFallbackEnabled());
             m_shaderResourceGroup->SetConstant(m_maxRayDistanceNameIndex, ssrOptions.m_maxRayDistance);
             m_shaderResourceGroup->SetConstant(m_maxDepthThresholdNameIndex, ssrOptions.m_maxDepthThreshold);
             m_shaderResourceGroup->SetConstant(m_maxRoughnessNameIndex, ssrOptions.m_maxRoughness);

@@ -97,7 +97,7 @@ namespace AZ
             const ShaderVariantKey& GetShaderVariantMask() const;
 
             //! Returns the constructed id, which contains both the shader variant key and mask
-            const ShaderVariantId& GetShaderVariantId() const;            
+            const ShaderVariantId& GetShaderVariantId() const;
 
             //! Returns the shader option layout used to build the key.
             const ShaderOptionGroupLayout* GetShaderOptionLayout() const;

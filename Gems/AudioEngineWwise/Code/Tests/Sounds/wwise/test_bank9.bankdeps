@@ -1,8 +1,0 @@
-{
-    "version": "1.0",
-    "dependencies": [
-        "test_bank2.bnk",
-        "12345678.wem"
-    ],
-    "bankName": "test_bank9.bnk"
-}

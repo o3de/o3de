@@ -96,6 +96,8 @@ namespace O3DE::ProjectManager
         NeedsToBuild,
         Building,
         BuildFailed,
+        Exporting,
+        ExportFailed,
         NotDownloaded,
         Downloading,
         DownloadingBuildQueued,
@@ -137,11 +139,14 @@ namespace O3DE::ProjectManager
         void OpenProject(const QString& projectName);
         void EditProject(const QString& projectName);
         void EditProjectGems(const QString& projectName);
+        void ExportProject(const ProjectInfo& projectInfo, const QString& exportScript, bool skipDialogBox = false);
         void CopyProject(const ProjectInfo& projectInfo);
         void RemoveProject(const QString& projectName);
         void DeleteProject(const QString& projectName);
         void BuildProject(const ProjectInfo& projectInfo, bool skipDialogBox = false);
+        void OpenProjectExportSettings(const QString& projectPath);
         void OpenCMakeGUI(const ProjectInfo& projectInfo);
+        void OpenAndroidProjectGenerator(const QString& projectPath);
 
     private:
         void enterEvent(QEvent* event) override;
@@ -151,7 +156,9 @@ namespace O3DE::ProjectManager
         void ShowLaunchingState();
         void ShowBuildRequiredState();
         void ShowBuildingState();
+        void ShowExportingState();
         void ShowBuildFailedState();
+        void ShowExportFailedState();
         void ShowNotDownloadedState();
         void ShowDownloadingState();
         void ResetButtonWidgets();
@@ -160,6 +167,7 @@ namespace O3DE::ProjectManager
         void ShowBuildButton();
         void SetLaunchingEnabled(bool enabled);
         void SetProjectBuilding(bool isBuilding);
+        void SetProjectExporting(bool isExporting);
         void HideContextualLabelButtonWidgets();
 
         QMenu* CreateProjectMenu();
@@ -176,6 +184,7 @@ namespace O3DE::ProjectManager
         QMetaObject::Connection m_actionButtonConnection;
 
         bool m_isProjectBuilding = false;
+        bool m_isProjectExporting = false;
         bool m_canLaunch = true;
 
         ProjectButtonState m_currentState = ProjectButtonState::ReadyToLaunch;

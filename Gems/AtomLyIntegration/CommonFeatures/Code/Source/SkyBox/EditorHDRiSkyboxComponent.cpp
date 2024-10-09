@@ -48,6 +48,10 @@ namespace AZ
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->DataElement(AZ::Edit::UIHandlers::Default, &HDRiSkyboxComponentConfig::m_cubemapAsset, "Cubemap Texture", "The texture used for cubemap rendering")
+                                ->Attribute(AZ::Edit::Attributes::ShowProductAssetFileName, false)
+                                ->Attribute(AZ::Edit::Attributes::HideProductFilesInAssetPicker, true)
+                                ->Attribute(AZ::Edit::Attributes::AssetPickerTitle, "Cubemap Asset")
+
                             ->DataElement(AZ::Edit::UIHandlers::Slider, &HDRiSkyboxComponentConfig::m_exposure, "Exposure", "Exposure in stops")
                                 ->Attribute(AZ::Edit::Attributes::SoftMin, -5.0f)
                                 ->Attribute(AZ::Edit::Attributes::SoftMax, 5.0f)

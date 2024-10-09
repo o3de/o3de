@@ -28,6 +28,39 @@
 
 namespace AZ::Render
 {
+    namespace
+    {
+        AZ_CVAR(
+            bool,
+            r_cullShadowmapOutsideViewFrustum,
+            true,
+            nullptr,
+            AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
+            "If set, enables filtering of shadow maps that are outside of the view frustum.");
+
+        bool IsShadowmapCullingEnabled()
+        {
+            bool cullShadowmapOutsideViewFrustum = true;
+            if (auto* console = AZ::Interface<AZ::IConsole>::Get())
+            {
+                console->GetCvarValue("r_cullShadowmapOutsideViewFrustum", cullShadowmapOutsideViewFrustum);
+            }
+            return cullShadowmapOutsideViewFrustum;
+        }
+
+        bool IsLightInsideAnyViewFrustum(AZStd::span<AZ::Frustum> viewFrustums, const AZ::Vector3& lightPosition, float attenuationRadius)
+        {
+            return std::any_of(
+                viewFrustums.begin(),
+                viewFrustums.end(),
+                [lightPosition, attenuationRadius](const AZ::Frustum& viewFrustum)
+                {
+                    return viewFrustum.IntersectSphere(lightPosition, attenuationRadius) != AZ::IntersectResult::Exterior;
+                });
+        }
+
+    } // namespace
+
     void ProjectedShadowFeatureProcessor::Reflect(ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
@@ -540,7 +573,6 @@ namespace AZ::Render
     {
         if (m_primaryEsmShadowmapsPass == nullptr)
         {
-            AZ_Error("ProjectedShadowFeatureProcessor", false, "Cannot find a required pass.");
             return;
         }
 
@@ -561,11 +593,6 @@ namespace AZ::Render
     void ProjectedShadowFeatureProcessor::SetFilterParameterToPass()
     {
         static uint32_t nameIndex = 0;
-        if (m_primaryProjectedShadowmapsPass == nullptr || m_primaryEsmShadowmapsPass == nullptr)
-        {
-            AZ_Error("ProjectedShadowFeatureProcessor", false, "Cannot find a required pass.");
-            return;
-        }
 
         // Create index table buffer.
         // [GFX TODO ATOM-14851] Should not be creating a new buffer here, just map the data or orphan with new data.
@@ -574,8 +601,11 @@ namespace AZ::Render
 
         m_filterParamBufferHandler.UpdateBuffer(m_shadowData.GetRawData<FilterParamIndex>(), static_cast<uint32_t>(m_shadowData.GetSize()));
 
-        m_primaryEsmShadowmapsPass->SetShadowmapIndexTableBuffer(indexTableBuffer);
-        m_primaryEsmShadowmapsPass->SetFilterParameterBuffer(m_filterParamBufferHandler.GetBuffer());
+        if (m_primaryEsmShadowmapsPass)
+        {
+            m_primaryEsmShadowmapsPass->SetShadowmapIndexTableBuffer(indexTableBuffer);
+            m_primaryEsmShadowmapsPass->SetFilterParameterBuffer(m_filterParamBufferHandler.GetBuffer());
+        }
     }
 
     void ProjectedShadowFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& /*packet*/)
@@ -631,20 +661,35 @@ namespace AZ::Render
             }
         }
     }
-    
-    void ProjectedShadowFeatureProcessor::PrepareViews(const PrepareViewsPacket&, AZStd::vector<AZStd::pair<RPI::PipelineViewTag, RPI::ViewPtr>>& outViews)
+
+    void ProjectedShadowFeatureProcessor::PrepareViews(
+        const PrepareViewsPacket& prepareViewsPacket, AZStd::vector<AZStd::pair<RPI::PipelineViewTag, RPI::ViewPtr>>& outViews)
     {
         if (m_primaryProjectedShadowmapsPass != nullptr)
         {
             RPI::RenderPipeline* renderPipeline = m_primaryProjectedShadowmapsPass->GetRenderPipeline();
             if (renderPipeline)
             {
+                AZStd::vector<AZ::Frustum> mainViewFrustums;
+                for (const auto& [view, viewTag] : prepareViewsPacket.m_persistentViews)
+                {
+                    AZ::Frustum viewFrustum = AZ::Frustum::CreateFromMatrixColumnMajor(view->GetWorldToClipMatrix());
+                    mainViewFrustums.push_back(viewFrustum);
+                }
+                bool cullShadowmapOutsideViewFrustum = IsShadowmapCullingEnabled();
+
                 auto& shadowProperties = m_shadowProperties.GetDataVector();
                 for (ShadowProperty& shadowProperty : shadowProperties)
                 {
                     uint16_t shadowIndex = shadowProperty.m_shadowId.GetIndex();
                     const FilterParameter& filterData = m_shadowData.GetElement<FilterParamIndex>(shadowIndex);
                     if (filterData.m_shadowmapSize == aznumeric_cast<uint32_t>(ShadowmapSize::None))
+                    {
+                        continue;
+                    }
+                    auto lightPosition = shadowProperty.m_desc.m_transform.GetTranslation();
+                    if (cullShadowmapOutsideViewFrustum &&
+                        !IsLightInsideAnyViewFrustum(mainViewFrustums, lightPosition, shadowProperty.m_desc.m_farPlaneDistance))
                     {
                         continue;
                     }

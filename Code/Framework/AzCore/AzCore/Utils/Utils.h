@@ -93,10 +93,10 @@ namespace AZ
         //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
         AZ::IO::FixedMaxPathString GetProjectLogPath(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
-        //! Retrieves the full path to the project  path for the current asset platform from the settings registry
+        //! Retrieves the full path to the project path for the current asset platform from the settings registry
         //! This path is based on <project-cache-path>/<asset-platform>,
         //! where on Windows <asset-platform> = "pc", Linux  <asset-platform> = linux, etc...
-        //! The list of OS -> asst platforms is available in the `AZ::PlatformDefaults::OSPlatformToDefaultAssetPlatform` fuction
+        //! The list of OS -> asset platforms is available in the `AZ::PlatformDefaults::OSPlatformToDefaultAssetPlatform` function
         //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
         //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
         AZ::IO::FixedMaxPathString GetProjectProductPathForPlatform(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
@@ -135,17 +135,22 @@ namespace AZ
         AZ::IO::FixedMaxPathString GetO3deManifestPath(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
         //! Retrieves the full directory to the O3DE logs directory, i.e. "<userhome>/.o3de/Logs"
-        //! //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
+        //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
         //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
         AZ::IO::FixedMaxPathString GetO3deLogsDirectory(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+
+        //! Retrieves a full directory which can be used to write files into during development
+        //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
+        //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
+        AZ::IO::FixedMaxPathString GetDevWriteStoragePath(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
         //! Retrieves the application root path for a non-host platform
         //! On host platforms this returns a nullopt
         AZStd::optional<AZ::IO::FixedMaxPathString> GetDefaultAppRootPath();
 
-        //! Retrieves the development write storage path to use on the current platform, may be considered
+        //! Retrieves the default development write storage path to use on the current platform, may be considered
         //! temporary or cache storage
-        AZStd::optional<AZ::IO::FixedMaxPathString> GetDevWriteStoragePath();
+        AZStd::optional<AZ::IO::FixedMaxPathString> GetDefaultDevWriteStoragePath();
 
         //! Attempts the supplied path to an absolute path.
         //! Returns nullopt if path cannot be converted to an absolute path
@@ -162,6 +167,20 @@ namespace AZ
         template<typename Container = AZStd::string>
         AZ::Outcome<Container, AZStd::string> ReadFile(
             AZStd::string_view filePath, size_t maxFileSize = AZStd::numeric_limits<size_t>::max());
+
+
+        //! Retrieves the full path where the 3rd Party path is configured to based on the value of 'default_third_party_folder'
+        //! in the o3de manifest file (o3de_manifest.json)
+        //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup of the manifest file to base the lookup from
+        //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
+        //! Returns the outcome of the request, the configured 3rd Party path if successful, the error message if not.
+        AZ::Outcome<AZStd::string, AZStd::string> Get3rdPartyDirectory(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+
+        //! Retrieves the full directory to the O3DE Python virtual environment (venv) folder. 
+        //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
+        //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
+        AZ::IO::FixedMaxPathString GetO3dePythonVenvRoot(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+
 
         //! error code value returned when GetEnv fails
         enum class GetEnvErrorCode

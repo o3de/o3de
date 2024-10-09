@@ -66,7 +66,7 @@ void CEditorPreferencesPage_Files::Reflect(AZ::SerializeContext& serialize)
             ->Attribute(AZ::Edit::Attributes::Min, 1)
             ->Attribute(AZ::Edit::Attributes::Max, 100)
             ->DataElement(AZ::Edit::UIHandlers::LineEdit, &Files::m_standardTempDirectory, "Standard Temporary Directory", "Standard Temporary Directory")
-            ->DataElement(AZ::Edit::UIHandlers::LineEdit, &Files::m_saveLocation, "Slice Save location", "Specify the default location to save new slices");
+            ->DataElement(AZ::Edit::UIHandlers::LineEdit, &Files::m_saveLocation, "UI Slice Save location", "Specify the default location to save new UI slices");
 
         editContext->Class<ExternalEditors>("External Editors", "External Editors")
             ->DataElement(AZ::Edit::UIHandlers::ExeSelectBrowseEdit, &ExternalEditors::m_scripts, "Scripts Editor", "Scripts Text Editor")

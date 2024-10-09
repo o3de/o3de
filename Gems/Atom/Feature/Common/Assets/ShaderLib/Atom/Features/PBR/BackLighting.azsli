@@ -57,7 +57,7 @@ real3 GetBackLighting(Surface surface, LightingData lightingData, real3 lightInt
 
             {
                 thickness = max(transmissionDistance, transmission.thickness);
-                real transmittance = pow( saturate( dot( lightingData.dirToCamera, -normalize( dirToLight + surface.normal * transmission.GetDistortion() ) ) ), transmission.GetPower() ) * transmission.GetScale();
+                real transmittance = pow( saturate( dot( lightingData.dirToCamera, -normalize( dirToLight + surface.GetVertexNormal() * transmission.GetDistortion() ) ) ), transmission.GetPower() ) * transmission.GetScale();
                 real lamberAttenuation = exp(-thickness * transmission.GetAttenuationCoefficient()) * saturate(1.0 - thickness);
                 result = transmittance * lamberAttenuation * lightIntensity;
             }
@@ -78,7 +78,7 @@ real3 GetBackLighting(Surface surface, LightingData lightingData, real3 lightInt
                 // Albedo at front (surface point) is used to approximate irradiance at the back of the 
                 // object (observation 4 in [Jimenez J. et al, 2010])
                 // Increase angle of influence to avoid dark transition regions
-                real3 E = surface.albedo * saturate(transmission.GetTransmissionNdLBias() + dot(-surface.normal, dirToLight));
+                real3 E = surface.albedo * saturate(transmission.GetTransmissionNdLBias() + dot(-surface.GetVertexNormal(), dirToLight));
 
                 // Transmission distance modulated by hardcoded constant C and the thickness exposed parameter 
                 // (in this case modulating the distance traversed by the light inside the object)

@@ -131,7 +131,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 #include "RemoteConsole/RemoteConsole.h"
 
-#include <PNoise3.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemRequestBus.h>
@@ -1070,13 +1069,6 @@ ESystemConfigPlatform CSystem::GetConfigPlatform() const
     return m_ConfigPlatform;
 }
 
-//////////////////////////////////////////////////////////////////////////
-CPNoise3* CSystem::GetNoiseGen()
-{
-    static CPNoise3 m_pNoiseGen;
-    return &m_pNoiseGen;
-}
-
 //////////////////////////////////////////////////////////////////////
 void CSystem::OnLanguageCVarChanged(ICVar* language)
 {
@@ -1099,11 +1091,6 @@ void CSystem::OnLanguageCVarChanged(ICVar* language)
 
             LocalizationManagerRequestBus::Broadcast(&LocalizationManagerRequestBus::Events::SetLanguage, lang);
             LocalizationManagerRequestBus::Broadcast(&LocalizationManagerRequestBus::Events::ReloadData);
-
-            if (gEnv->pCryFont)
-            {
-                gEnv->pCryFont->OnLanguageChanged();
-            }
         }
     }
 }

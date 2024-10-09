@@ -14,6 +14,7 @@ import json
 import logging
 import os
 import re
+import pathlib
 import platform
 import shutil
 import stat
@@ -21,7 +22,7 @@ import string
 import subprocess
 
 from enum import Enum
-from o3de import command_utils, manifest, utils
+from o3de import command_utils, manifest, utils, export_project as exp
 from packaging.version import Version
 from pathlib import Path
 from typing import Dict, List, Tuple
@@ -45,14 +46,14 @@ elif platform.system() == 'Darwin':
     EXE_EXTENSION = ''
     O3DE_SCRIPT_EXTENSION = '.sh'
     SDKMANAGER_EXTENSION = ''
-    GRADLE_EXTENSION = '.sh'
+    GRADLE_EXTENSION = ''
     DEFAULT_ANDROID_SDK_PATH = f"{os.getenv('HOME')}/Library/Android/Sdk"
     PYTHON_SCRIPT = 'python.sh'
 elif platform.system() == 'Linux':
     EXE_EXTENSION = ''
     O3DE_SCRIPT_EXTENSION = '.sh'
     SDKMANAGER_EXTENSION = ''
-    GRADLE_EXTENSION = '.sh'
+    GRADLE_EXTENSION = ''
     DEFAULT_ANDROID_SDK_PATH = f"{os.getenv('HOME')}/Android/Sdk"
     PYTHON_SCRIPT = 'python.sh'
 else:
@@ -183,6 +184,19 @@ def get_android_config(project_path: Path or None) -> command_utils.O3DEConfig:
                                     settings_description_list=SUPPORTED_ANDROID_SETTINGS)
 
 
+
+def deloy_to_android_device(target_android_project_path: pathlib.Path,
+                            build_config:str,
+                            android_sdk_home:pathlib.Path,
+                            org_name,
+                            activity_name):
+    adb_exec_path = android_sdk_home / (f'platform-tools/adb{EXE_EXTENSION}')
+    apk_file = target_android_project_path / f'app/build/outputs/apk/{build_config}/app-{build_config}.apk'
+    
+    has_error = exp.process_command([adb_exec_path, 'install', '-t', '-r', apk_file])
+    if has_error:
+        raise AndroidToolError(f"Installing APK '{apk_file}' has failed for the android device.")
+    
 """
 Map to make troubleshooting java issues related to mismatched java versions when running the sdkmanager.
 """
@@ -475,7 +489,7 @@ class AndroidSDKManager(object):
                                    f"Make sure that it is installed at {android_sdk_command_line_tools_root}.")
 
         # Retrieve the version if possible to validate it can be used
-        command_arg = [android_sdk_command_line_tool.name, '--version']
+        command_arg = [android_sdk_command_line_tool, '--version']
         logging.debug("Validating tool version exec: (%s)", subprocess.list2cmdline(command_arg))
         result = subprocess.run(command_arg,
                                 shell=(platform.system() == 'Windows'),
@@ -675,12 +689,12 @@ class AndroidSDKManager(object):
         that provides information on how to accept them.
         """
         logger.info("Checking Android SDK Package licenses state..")
-        result = subprocess.run(['echo' , 'Y' , '|', self._android_command_line_tools_sdkmanager_path, '--licenses'],
-                                shell=(platform.system() == 'Windows'),
+        result = subprocess.run(f"echo 'Y' | \"{self._android_command_line_tools_sdkmanager_path}\" --licenses",
+                                shell=True,
                                 capture_output=True,
                                 encoding=DEFAULT_READ_ENCODING,
                                 errors=ENCODING_ERROR_HANDLINGS,
-                                timeout=2)
+                                timeout=5)
         license_not_accepted_match = AndroidSDKManager.LICENSE_NOT_ACCEPTED_REGEX.search(result.stdout or result.stderr)
         if license_not_accepted_match:
             raise AndroidToolError(f"{license_not_accepted_match.group(1)}\n"
@@ -839,6 +853,7 @@ def validate_build_tool(tool_name: str, tool_command: str, tool_config_key: str 
         if env_home:
             tool_home_and_src_list.append( (env_home, f'environment variable {tool_environment_var}') )
     tool_home_and_src_list.append( (None, None) )
+    tool_located = False
 
     for tool_home, tool_home_src in tool_home_and_src_list:
         if tool_home is not None:
@@ -847,21 +862,25 @@ def validate_build_tool(tool_name: str, tool_command: str, tool_config_key: str 
             tool_test_command = tool_command
 
         # Run the command to get the tool version
-        result = subprocess.run([tool_test_command, tool_version_arg],
-                                shell=(platform.system() == 'Windows'),
-                                capture_output=True,
-                                encoding=DEFAULT_READ_ENCODING,
-                                errors=ENCODING_ERROR_HANDLINGS)
-        if result.returncode == 0:
-            if tool_home:
-                tool_full_path = Path(tool_home) / tool_config_sub_path / tool_command
+        try:
+            result = subprocess.run([tool_test_command, tool_version_arg],
+                                    shell=(platform.system() == 'Windows'),
+                                    capture_output=True,
+                                    encoding=DEFAULT_READ_ENCODING,
+                                    errors=ENCODING_ERROR_HANDLINGS)
+            if result.returncode == 0:
+                if tool_home:
+                    tool_full_path = Path(tool_home) / tool_config_sub_path / tool_command
+                else:
+                    tool_full_path = Path(shutil.which(tool_command))
+                tool_located = True
+                break
             else:
-                tool_full_path = Path(shutil.which(tool_command))
-            break
-        else:
+                logger.warning(f"Unable to resolve tool {tool_name} from {tool_home_src}")
+        except FileNotFoundError:
             logger.warning(f"Unable to resolve tool {tool_name} from {tool_home_src}")
 
-    if result.returncode != 0:
+    if not tool_located:
         error_msgs = [f"Unable to resolve {tool_name}. Make sure its installed and in the PATH environment"]
         if tool_config_key:
             error_msgs.append(f', or the {tool_config_key} settings')
@@ -992,7 +1011,7 @@ CUSTOM_APPLY_ASSET_LAYOUT_TASK_FORMAT_STR = """
         tasks.findAll {{ task->task.name.contains('strip{config}DebugSymbols') }}
     }}
     
-    mergeProfileAssets.dependsOn syncLYLayoutMode{config}
+    merge{config}Assets.dependsOn syncLYLayoutMode{config}
 """
 
 DEFAULT_CONFIG_CHANGES = [
@@ -1597,6 +1616,9 @@ class AndroidProjectGenerator(object):
             if self._strip_debug_symbols:
                 cmake_argument_list.append('"-DLY_STRIP_DEBUG_SYMBOLS=ON"')
 
+            if self._asset_mode == ASSET_MODE_PAK:
+                cmake_argument_list.append('"-DLY_ARCHIVE_FILE_SEARCH_MODE=1"')
+
             cmake_argument_list.extend([
                 f'"-DANDROID_NATIVE_API_LEVEL={self._android_platform_sdk_api_level}"',
                 f'"-DLY_NDK_DIR={template_ndk_path}"',
@@ -1614,7 +1636,8 @@ class AndroidProjectGenerator(object):
                 cmake_argument_list.append(f'"-DLY_PROJECTS={template_project_path}"')
 
             if self._extra_cmake_configure_args:
-                extra_cmake_configure_arg_list = [f'"{arg}"' for arg in self._extra_cmake_configure_args.split()]
+                # Splits the arguments by white space but only if it's not in a quoted string (e.g. when specifiying a path with white spaces)
+                extra_cmake_configure_arg_list = [f'"{arg}"' for arg in re.split('''\s(?=(?:[^'"]|'[^']*'|"[^"]*")*$)''', self._extra_cmake_configure_args)]
                 cmake_argument_list.extend(extra_cmake_configure_arg_list)
 
             # Prepare the config-specific section to place the cmake argument list in the build.gradle for the app

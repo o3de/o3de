@@ -56,7 +56,7 @@
                 // this is an example of a headless platform that has no renderer.
                 // To use this you would still need to make sure 'assetplatform' in your startup params in your main() chooses this 'server' platform as your server 'assets' flavor
                 "Platform server": {
-                    "tags": "server,dx12,vulkan"
+                    "tags": "server,dx12,vulkan,null"
                 },
                 // this section allows you to turn on various platforms in addition to the host platform you're running on
                 // 'enabled' is AUTOMATICALLY TRUE for the current platform that you are running on, so it is not necessary to force it to true for that platform
@@ -206,6 +206,17 @@
                 "Exclude Install": {
                     "glob": "install/*"
                 },
+                "Exclude ProjectPackages": {
+                    "glob": "ProjectPackages/*"
+                },
+                // Exclude Gems inside Projects, their Assets folders will still be included
+                "Exclude Gems": {
+                    "glob": "Gems/*"
+                },
+                // Exclude the .git folder which is commonly found in projects
+                "Exclude Git": {
+                    "glob": ".git/*"
+                },
 
                 //------------------------------------------------------------------------------
                 // Copying Files Automatically Into the Cache
@@ -329,11 +340,6 @@
                 "RC bspace": {
                     "glob": "*.bspace",
                     "params": "copy"
-                },
-                "RC cdf": {
-                    "glob": "*.cdf",
-                    "params": "copy",
-                    "productAssetType": "{DF036C63-9AE6-4AC3-A6AC-8A1D76126C01}"
                 },
                 "RC comb": {
                     "glob": "*.comb",

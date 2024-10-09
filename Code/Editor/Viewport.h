@@ -37,7 +37,6 @@ namespace AzQtComponents
 
 // forward declarations.
 class CBaseObject;
-struct DisplayContext;
 class CCryEditDoc;
 class CLayoutViewPane;
 class CViewManager;
@@ -206,8 +205,6 @@ public:
     //! Center viewport on selection.
     virtual void CenterOnSelection() = 0;
     virtual void CenterOnAABB(const AABB& aabb) = 0;
-
-    virtual void CenterOnSliceInstance() = 0;
 
     /** Set ID of this viewport
     */
@@ -416,8 +413,6 @@ public:
     //! Center viewport on selection.
     void CenterOnSelection() override {}
     void CenterOnAABB([[maybe_unused]] const AABB& aabb) override {}
-
-    void CenterOnSliceInstance() override {}
 
     //! Performs hit testing of 2d point in view to find which object hit.
     bool HitTest(const QPoint& point, HitContext& hitInfo) override;

@@ -537,8 +537,6 @@ void MainWindow::closeEvent(QCloseEvent* event)
         GetIEditor()->GetDocument()->SetModifiedFlag(false);
         GetIEditor()->GetDocument()->SetModifiedModules(eModifiedNothing);
     }
-    // Close all edit panels.
-    GetIEditor()->ClearSelection();
 
     // force clean up of all deferred deletes, so that we don't have any issues with windows from plugins not being deleted yet
     qApp->sendPostedEvents(nullptr, QEvent::DeferredDelete);
@@ -1162,19 +1160,6 @@ void MainWindow::ConnectivityStateChanged(const AzToolsFramework::SourceControlS
 void MainWindow::OnGotoSelected()
 {
     AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequestBus::Events::GoToSelectedEntitiesInViewports);
-}
-
-void MainWindow::OnGotoSliceRoot()
-{
-    int numViews = GetIEditor()->GetViewManager()->GetViewCount();
-    for (int i = 0; i < numViews; ++i)
-    {
-        CViewport* viewport = GetIEditor()->GetViewManager()->GetView(i);
-        if (viewport)
-        {
-            viewport->CenterOnSliceInstance();
-        }
-    }
 }
 
 // don't want to eat escape as if it were a shortcut, as it would eat it for other windows that also care about escape

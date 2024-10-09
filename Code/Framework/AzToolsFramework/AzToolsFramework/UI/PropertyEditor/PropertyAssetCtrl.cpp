@@ -91,6 +91,7 @@ namespace AzToolsFramework
         pLayout->setContentsMargins(0, 0, 0, 0);
         pLayout->setSpacing(2);
 
+        m_browseEdit->lineEdit()->setAcceptDrops(false);
         setAcceptDrops(true);
 
         m_thumbnail = new ThumbnailPropertyCtrl(this);
@@ -995,12 +996,12 @@ namespace AzToolsFramework
     // Functionality to use the default asset when no asset is selected has to be implemented on the component side.
     void PropertyAssetCtrl::SetDefaultAssetID(const AZ::Data::AssetId& defaultID)
     {
-        if (defaultID.IsValid())
-        {
-            m_defaultAssetID = defaultID;
+        m_defaultAssetID = defaultID;
+        m_defaultAssetHint.clear();
+        m_browseEdit->setPlaceholderText("");
 
-            AZ::Data::AssetInfo assetInfo;
-            AZStd::string rootFilePath;
+        if (m_defaultAssetID.IsValid())
+        {
             AZStd::string assetPath;
 
             if (m_showProductAssetName)
@@ -1010,14 +1011,16 @@ namespace AzToolsFramework
             }
             else
             {
-                const AZStd::string platformName = ""; // Empty for default
+                AZ::Data::AssetInfo assetInfo;
+                AZStd::string rootFilePath;
+                const AZStd::string platformName; // Empty for default
                 for (const auto& assetType : GetSelectableAssetTypes())
                 {
                     bool result = false;
                     AssetSystemRequestBus::BroadcastResult(
                         result,
                         &AssetSystem::AssetSystemRequest::GetAssetInfoById,
-                        defaultID,
+                        m_defaultAssetID,
                         assetType,
                         platformName,
                         assetInfo,
@@ -1034,28 +1037,16 @@ namespace AzToolsFramework
             {
                 AzFramework::StringFunc::Path::GetFileName(assetPath.c_str(), m_defaultAssetHint);
             }
+
             m_browseEdit->setPlaceholderText((m_defaultAssetHint + m_DefaultSuffix).c_str());
         }
-        else
-        {
-            if (m_selectedAssetID.IsValid())
-            {
-                ClearErrorButton();
-            }
-            else
-            {
-                UpdateErrorButtonWithMessage(AZStd::string("Default asset is invalid"));
-                m_browseEdit->setPlaceholderText("Invalid");
-            }
-        }
 
-        UpdateEditButton();
+        UpdateAssetDisplay();
     }
 
     void PropertyAssetCtrl::UpdateAssetDisplay()
     {
         UpdateThumbnail();
-
         UpdateEditButton();
 
         const AZStd::string& folderPath = GetFolderSelection();

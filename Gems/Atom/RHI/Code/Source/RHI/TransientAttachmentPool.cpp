@@ -136,7 +136,7 @@ namespace AZ::RHI
         }
     }
 
-    bool TransientAttachmentPool::ValidateInitParameters([[maybe_unused]] const TransientAttachmentPoolDescriptor& descriptor) const
+    bool TransientAttachmentPool::ValidateInitParameters([[maybe_unused]] const TransientAttachmentPoolDescriptor& descriptor)
     {
 #if defined (AZ_RHI_ENABLE_VALIDATION)
         switch (descriptor.m_heapParameters.m_type)

@@ -17,6 +17,7 @@
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 #include <AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard.h>
 
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -163,6 +164,18 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
+    void InputSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    {
+        dependent.push_back(AZ_CRC_CE("NativeUIInputSystemService"));
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void InputSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
+    {
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     InputSystemComponent::InputSystemComponent()
         : m_gamepads()
         , m_keyboard()
@@ -179,6 +192,7 @@ namespace AzFramework
         , m_virtualKeyboardEnabled(true)
         , m_currentlyUpdatingInputDevices(false)
         , m_recreateInputDevicesAfterUpdate(false)
+        , m_captureMouseCursor(true)
     {
     }
 
@@ -207,6 +221,17 @@ namespace AzFramework
             settingsRegistry->Get(m_mouseEnabled, "/O3DE/InputSystem/MouseEnabled");
             settingsRegistry->Get(m_touchEnabled, "/O3DE/InputSystem/TouchEnabled");
             settingsRegistry->Get(m_virtualKeyboardEnabled, "/O3DE/InputSystem/VirtualKeyboardEnabled");
+            settingsRegistry->Get(m_captureMouseCursor, "/O3DE/InputSystem/Mouse/CaptureMouseCursor");
+
+            // Check if option to capture the mouse cursor is set or not.
+            bool captureMouseCursor{ true };
+            settingsRegistry->Get(captureMouseCursor, "/O3DE/InputSystem/Mouse/CaptureMouseCursor");
+
+            // Make sure that we only disable capturing the mouse (if specified) when we are running in either headless mode or console mode.
+            AZ::ApplicationTypeQuery appType;
+            AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+
+            m_captureMouseCursor = captureMouseCursor && (!appType.IsHeadless() && !appType.IsConsoleMode());
         }
 
         // Create all enabled input devices
@@ -274,7 +299,8 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void InputSystemComponent::CreateEnabledInputDevices()
     {
-        const AZ::u32 maxSupportedGamepads = InputDeviceGamepad::GetMaxSupportedGamepads();
+        auto deviceGamepadImplFactory = AZ::Interface<InputDeviceGamepad::ImplementationFactory>::Get();
+        const AZ::u32 maxSupportedGamepads = (deviceGamepadImplFactory != nullptr) ? deviceGamepadImplFactory->GetMaxSupportedGamepads() : 0;
         m_gamepadsEnabled = AZStd::clamp<AZ::u32>(m_gamepadsEnabled, 0, maxSupportedGamepads);
 
         DestroyEnabledInputDevices();
@@ -294,6 +320,7 @@ namespace AzFramework
         if (m_mouse)
         {
             m_mouse->SetRawMovementSampleRate(m_mouseMovementSampleRateHertz);
+            m_mouse->SetCaptureCursor(m_captureMouseCursor);
         }
     }
 

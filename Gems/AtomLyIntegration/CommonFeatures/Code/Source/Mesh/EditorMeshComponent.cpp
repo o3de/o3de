@@ -48,11 +48,11 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/mesh/")
                             ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, AZ::AzTypeInfo<RPI::ModelAsset>::Uuid())
-                        ->UIElement(AZ::Edit::UIHandlers::Button, "Add Material Component", "Add Material Component")
-                            ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                            ->Attribute(AZ::Edit::Attributes::ButtonText, "Add Material Component")
-                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorMeshComponent::AddEditorMaterialComponent)
-                            ->Attribute(AZ::Edit::Attributes::Visibility, &EditorMeshComponent::GetEditorMaterialComponentVisibility)
+                            ->UIElement(AZ::Edit::UIHandlers::Button, "Add Material Component", "Add Material Component")
+                                ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
+                                ->Attribute(AZ::Edit::Attributes::ButtonText, "Add Material Component")
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorMeshComponent::AddEditorMaterialComponent)
+                                ->Attribute(AZ::Edit::Attributes::Visibility, &EditorMeshComponent::GetEditorMaterialComponentVisibility)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMeshComponent::m_stats, "Model Stats", "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                         ;
@@ -76,11 +76,16 @@ namespace AZ
                             ->DataElement(AZ::Edit::UIHandlers::Default, &MeshComponentConfig::m_sortKey, "Sort Key", "Transparent meshes are first drawn by sort key, then depth. Use this to force certain transparent meshes to draw before or after others.")
                             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_excludeFromReflectionCubeMaps, "Exclude from reflection cubemaps", "Model will not be visible in baked reflection probe cubemaps")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_isVisible , "Visibility", "Model will not be visible")
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_useForwardPassIblSpecular, "Use Forward Pass IBL Specular",
                                 "Renders image-based lighting (IBL) specular reflections in the forward pass, by using only the most influential probe (based on the position of the entity) and the global IBL cubemap. It can reduce rendering costs, but is only recommended for static objects that are affected by at most one reflection probe.  Note that this will also disable SSR on the mesh.")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_isRayTracingEnabled, "Use ray tracing",
                                 "Includes this mesh in ray tracing calculations.")
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_enableRayIntersection, "Support ray intersection",
+                                "Set to true when the entity has UiCanvasOnMeshComponent")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_isAlwaysDynamic, "Always Moving", "Forces this mesh to be considered to always be moving, even if the transform didn't update. Useful for meshes with vertex shader animation.")
                             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MeshComponentConfig::m_lodType, "Lod Type", "Determines how level of detail (LOD) will be selected during rendering.")
@@ -89,6 +94,8 @@ namespace AZ
                                 ->EnumAttribute(RPI::Cullable::LodType::ScreenCoverage, "Screen Coverage")
                                 ->EnumAttribute(RPI::Cullable::LodType::SpecificLod, "Specific LOD")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::EntireTree)
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &MeshComponentConfig::m_lightingChannelConfig, "Lighting Channels", "")
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Lod Configuration")
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "LOD Configuration")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
@@ -128,6 +135,7 @@ namespace AZ
 
         void EditorMeshComponent::Activate()
         {
+            m_controller.m_configuration.m_editorRayIntersection = true;
             BaseClass::Activate();
             AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(GetEntityId());
             AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
@@ -250,9 +258,7 @@ namespace AZ
             }
 
             // Refresh the tree when the model loads to update UI based on the model.
-            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
-                AzToolsFramework::Refresh_EntireTree);
+            InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
 
         }
 

@@ -10,7 +10,7 @@ o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLAT
 set(common_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common)
 
 ly_add_target(
-    NAME Atom_Feature_Common.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         atom_feature_common_files.cmake
@@ -36,7 +36,7 @@ ly_add_target(
         PUBLIC
             Gem::Atom_RPI.Public
             Gem::Atom_Utils.Static
-            Gem::Atom_Feature_Common.Public
+            Gem::${gem_name}.Public
             Gem::ImGui.imguilib
             3rdParty::TIFF
     RUNTIME_DEPENDENCIES
@@ -44,7 +44,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME Atom_Feature_Common.Public STATIC
+    NAME ${gem_name}.Public STATIC
     NAMESPACE Gem
     FILES_CMAKE
         atom_feature_common_public_files.cmake
@@ -69,7 +69,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME Atom_Feature_Common ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         atom_feature_common_shared_files.cmake
@@ -87,9 +87,42 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
-            Gem::Atom_Feature_Common.Static
-            Gem::Atom_Feature_Common.Public
+            Gem::${gem_name}.Static
+            Gem::${gem_name}.Public
 )
+
+ly_add_target(
+    NAME ${gem_name}.Headless ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAMESPACE Gem
+    FILES_CMAKE
+        atom_feature_common_shared_files.cmake
+        ../Assets/atom_feature_common_asset_files.cmake
+        ../Editor/atom_feature_common_editor_script_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            Source
+            ${pal_source_dir}
+        PUBLIC
+            Include
+    COMPILE_DEFINITIONS
+        PRIVATE
+            O3DE_HEADLESS_SERVER=1
+    BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AzCore
+            AZ::AzFramework
+            Gem::${gem_name}.Static
+            Gem::${gem_name}.Public
+)
+
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/CommonModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
@@ -100,7 +133,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     endforeach()
 
     ly_add_target(
-        NAME Atom_Feature_Common.Editor GEM_MODULE
+        NAME ${gem_name}.Editor GEM_MODULE
 
         NAMESPACE Gem
         FILES_CMAKE
@@ -128,13 +161,13 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Atom_RPI.Edit
                 Gem::Atom_RPI.Public
                 Gem::Atom_Utils.Static
-                Gem::Atom_Feature_Common.Static
-                Gem::Atom_Feature_Common.Public
+                Gem::${gem_name}.Static
+                Gem::${gem_name}.Public
     )
 
     set(runtime_dependencies_builders ${pal_source_dir}/runtime_dependencies_builders.cmake)
     ly_add_target(
-        NAME Atom_Feature_Common.Builders GEM_MODULE
+        NAME ${gem_name}.Builders GEM_MODULE
 
         NAMESPACE Gem
         FILES_CMAKE
@@ -150,6 +183,15 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         RUNTIME_DEPENDENCIES
             Gem::Atom_RHI.Private
     )
+
+    # Inject the gem name into the Module source file
+    ly_add_source_properties(
+        SOURCES
+            Source/Builders/BuilderModule.cpp
+        PROPERTY COMPILE_DEFINITIONS
+            VALUES
+                O3DE_GEM_NAME=${gem_name}
+                O3DE_GEM_VERSION=${gem_version})
 endif()
 
 ################################################################################
@@ -157,7 +199,7 @@ endif()
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
-        NAME Atom_Feature_Common.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             atom_feature_common_tests_files.cmake
@@ -170,11 +212,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzFramework
                 AZ::AzTest
-                Gem::Atom_Feature_Common.Static
-                Gem::Atom_Feature_Common.Public
+                Gem::${gem_name}.Static
+                Gem::${gem_name}.Public
     )
     ly_add_googletest(
-        NAME Gem::Atom_Feature_Common.Tests
+        NAME Gem::${gem_name}.Tests
         LABELS REQUIRES_tiaf
     )
 endif()

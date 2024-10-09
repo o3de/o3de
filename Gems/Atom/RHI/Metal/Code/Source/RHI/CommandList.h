@@ -69,7 +69,10 @@ namespace AZ
             void BeginPredication(const RHI::Buffer& buffer, uint64_t offset, RHI::PredicationOp operation) override {}
             void EndPredication() override {}
             void BuildBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas) override;
-            void BuildTopLevelAccelerationStructure(const RHI::RayTracingTlas& rayTracingTlas) override;
+            void UpdateBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas) override;
+            void BuildTopLevelAccelerationStructure(
+                const RHI::RayTracingTlas &rayTracingTlas,
+                const AZStd::vector<const RHI::RayTracingBlas *> &changedBlasList) override;
             void SetFragmentShadingRate(
                 [[maybe_unused]] RHI::ShadingRate rate,
                 [[maybe_unused]] const RHI::ShadingRateCombinators& combinators = DefaultShadingRateCombinators) override {}
@@ -145,8 +148,10 @@ namespace AZ
                 // Draw State
                 const RHI::PipelineState* m_pipelineState = nullptr;
                 const PipelineLayout* m_pipelineLayout = nullptr;
-                AZ::HashValue64 m_streamsHash = AZ::HashValue64{0};
-                AZ::HashValue64 m_indicesHash = AZ::HashValue64{0};
+                AZStd::array<AZ::HashValue64, RHI::Limits::Pipeline::StreamCountMax> m_streamsHashes = {AZ::HashValue64{0}};
+                
+                AZ::HashValue64 m_rasterizerStateHash = AZ::HashValue64{0};
+                uint64_t m_depthStencilStateHash = 0;
                 uint32_t m_stencilRef = static_cast<uint32_t>(-1);
                 RHI::CommandListScissorState m_scissorState;
                 RHI::CommandListViewportState m_viewportState;

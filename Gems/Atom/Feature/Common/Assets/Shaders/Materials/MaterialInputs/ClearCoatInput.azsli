@@ -38,21 +38,44 @@ void GetClearCoatInputs(Texture2D influenceMap, float2 influenceUV, real clearCo
                         Texture2D normalMap, float2 normalUV, real3 normal, bool useNormalMap, real normalStrength,
                         real3x3 uvMatrix, real3 tangent, real3 bitangent,
                         sampler mapSampler, bool isFrontFace,
-                        inout real finalClearCoatFactor, inout real clearCoatRoughness, inout real3 clearCoatNormal)
+                        inout real finalClearCoatFactor, inout real clearCoatRoughness, inout real3 clearCoatNormal,
+                        float4 uvDxDy = float4(0.0f, 0.0f, 0.0f, 0.0f), bool customDerivatives = false)
 {
     if(useInfluenceMap)
     {
-        clearCoatFactor *= real(influenceMap.Sample(mapSampler, influenceUV).r);
+        if (customDerivatives)
+        {
+            clearCoatFactor *= real(influenceMap.SampleGrad(mapSampler, influenceUV, uvDxDy.xy, uvDxDy.zw).r);
+        }
+        else
+        {
+            clearCoatFactor *= real(influenceMap.Sample(mapSampler, influenceUV).r);
+        }
     }
     
     if(useRoughnessMap)
     {
-        roughness *= real(roughnessMap.Sample(mapSampler, roughnessUV).r);
+        if (customDerivatives)
+        {
+            roughness *= real(roughnessMap.SampleGrad(mapSampler, roughnessUV, uvDxDy.xy, uvDxDy.zw).r);
+        }
+        else
+        {
+            roughness *= real(roughnessMap.Sample(mapSampler, roughnessUV).r);
+        }
     }
     
     if (useNormalMap)
     {  
-        real4 sampledValue = real4(normalMap.Sample(mapSampler, normalUV));
+        real2 sampledValue;
+        if (customDerivatives)
+        {
+            sampledValue = real2(normalMap.SampleGrad(mapSampler, normalUV, uvDxDy.xy, uvDxDy.zw).xy);
+        }
+        else
+        {
+            sampledValue = real2(normalMap.Sample(mapSampler, normalUV).xy);
+        }
         clearCoatNormal = GetWorldSpaceNormal(sampledValue.xy, normal, tangent, bitangent, uvMatrix, normalStrength);
     }
     else

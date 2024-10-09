@@ -18,17 +18,6 @@ namespace AZ::Platform
         return AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory()) / "Frameworks";
     }
 
-    void* OpenModule(const AZ::IO::FixedMaxPathString& fileName, bool& alreadyOpen)
-    {
-        void* handle = dlopen(fileName.c_str(), RTLD_NOLOAD);
-        alreadyOpen = (handle != nullptr);
-        if (!alreadyOpen)
-        {
-            handle = dlopen(fileName.c_str(), RTLD_NOW);
-        }
-        return handle;
-    }
-
     void ConstructModuleFullFileName(AZ::IO::FixedMaxPath& fullPath)
     {
         // Append .framework to the name of full path

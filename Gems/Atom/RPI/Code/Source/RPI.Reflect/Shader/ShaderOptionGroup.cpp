@@ -48,6 +48,7 @@ namespace AZ
                     ->Method("GetValueByOptionName", static_cast<ShaderOptionValue (ShaderOptionGroup::*)(const Name&) const>(&ShaderOptionGroup::GetValue))
                     ->Method("GetShaderOptionDescriptors", &ShaderOptionGroup::GetShaderOptionDescriptors)
                     ->Method("GetShaderVariantId", &ShaderOptionGroup::GetShaderVariantId)
+                    ->Method("ClearValue", static_cast<bool (ShaderOptionGroup::*)(const Name&)>(&ShaderOptionGroup::ClearValue))
                     ;
             }
         }

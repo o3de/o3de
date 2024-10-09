@@ -105,7 +105,7 @@ namespace UnitTest
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Create a dummy allocator so unit tests can leak it
-    AZ_ALLOCATOR_DEFAULT_GLOBAL_WRAPPER(LeakDetection_TestAllocator, AZ::SystemAllocator, "{186B6E32-344D-4322-820A-4C3E4F30650B}")
+    AZ_CHILD_ALLOCATOR_WITH_NAME(LeakDetection_TestAllocator, "LeakDetection_TestAllocator", "{186B6E32-344D-4322-820A-4C3E4F30650B}", AZ::SystemAllocator);
 
     // Dummy test class
     class TestClassLeakDetection_TestAllocator
@@ -123,8 +123,8 @@ namespace UnitTest
         {
             AZ::AllocatorManager::Instance().EnterProfilingMode();
             AZ::AllocatorManager::Instance().SetDefaultProfilingState(true);
-            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
-            AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
+            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::Mode::RECORD_FULL);
+            AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::Mode::RECORD_FULL);
             [[maybe_unused]] TestClassLeakDetection_TestAllocator* object = new TestClassLeakDetection_TestAllocator();
 
             // In regular unit test operation, the environment will be teardown at the end and thats where the validation will happen. Here, we need
@@ -205,8 +205,8 @@ namespace UnitTest
         {
             AZ::AllocatorManager::Instance().EnterProfilingMode();
             AZ::AllocatorManager::Instance().SetDefaultProfilingState(true);
-            AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
-            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
+            AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::Mode::RECORD_FULL);
+            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::Mode::RECORD_FULL);
         }
 
         void TearDown() override
@@ -220,8 +220,8 @@ namespace UnitTest
                 AZ::AllocatorManager::Instance().GarbageCollect();
             }
 
-            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
-            AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
+            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::Mode::RECORD_NO_RECORDS);
+            AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::Mode::RECORD_NO_RECORDS);
             AZ::AllocatorManager::Instance().SetDefaultProfilingState(false);
             AZ::AllocatorManager::Instance().ExitProfilingMode();
         }

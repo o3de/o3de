@@ -53,9 +53,8 @@ namespace AZ::RHI
             {
                 auto* device = RHISystemInterface::Get()->GetDevice(deviceIndex);
 
-                m_devicePipelineLibraries[deviceIndex] = Factory::Get().CreatePipelineLibrary();
-                resultCode =
-                    m_devicePipelineLibraries[deviceIndex]->Init(*device, descriptor.GetDevicePipelineLibraryDescriptor(deviceIndex));
+                m_deviceObjects[deviceIndex] = Factory::Get().CreatePipelineLibrary();
+                resultCode = GetDevicePipelineLibrary(deviceIndex)->Init(*device, descriptor.GetDevicePipelineLibraryDescriptor(deviceIndex));
 
                 return resultCode == ResultCode::Success;
             });
@@ -63,7 +62,7 @@ namespace AZ::RHI
         if(resultCode != ResultCode::Success)
         {
             // Reset already initialized device-specific PipelineLibraries and set deviceMask to 0
-            m_devicePipelineLibraries.clear();
+            m_deviceObjects.clear();
             MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
         }
 
@@ -78,41 +77,34 @@ namespace AZ::RHI
             return ResultCode::InvalidOperation;
         }
 
-        ResultCode result = ResultCode::Success;
-
-        for (auto& [deviceIndex, devicePipelineLibrary] : m_devicePipelineLibraries)
+        return IterateObjects<PipelineLibrary>([&](auto deviceIndex, auto devicePipelineLibrary)
         {
             AZStd::vector<const PipelineLibrary*> deviceLibrariesToMerge;
 
             for (int i = 0; i < librariesToMerge.size(); ++i)
             {
-                auto it = librariesToMerge[i]->m_devicePipelineLibraries.find(deviceIndex);
+                auto it = librariesToMerge[i]->m_deviceObjects.find(deviceIndex);
 
-                if (it != librariesToMerge[i]->m_devicePipelineLibraries.end())
+                if (it != librariesToMerge[i]->m_deviceObjects.end())
                 {
-                    deviceLibrariesToMerge.emplace_back(it->second.get());
+                    deviceLibrariesToMerge.emplace_back(static_cast<const PipelineLibrary*>(it->second.get()));
                 }
             }
 
             if (!deviceLibrariesToMerge.empty())
             {
-                result = devicePipelineLibrary->MergeInto(deviceLibrariesToMerge);
-
-                if (result != ResultCode::Success)
-                {
-                    break;
-                }
+                return devicePipelineLibrary->MergeInto(deviceLibrariesToMerge);
             }
-        }
 
-        return result;
+            return ResultCode::Success;
+        });
     }
 
     void MultiDevicePipelineLibrary::Shutdown()
     {
         if (IsInitialized())
         {
-            m_devicePipelineLibraries.clear();
+            m_deviceObjects.clear();
             MultiDeviceObject::Shutdown();
         }
     }
@@ -121,10 +113,30 @@ namespace AZ::RHI
     {
         bool result = false;
 
-        for (auto& [deviceIndex, devicePipelineLibrary] : m_devicePipelineLibraries)
+        IterateObjects<PipelineLibrary>([&result]([[maybe_unused]]auto deviceIndex, auto devicePipelineLibrary)
         {
             result |= devicePipelineLibrary->IsMergeRequired();
+        });
+
+        return result;
+    }
+
+    bool MultiDevicePipelineLibrary::SaveSerializedData(const AZStd::unordered_map<int, AZStd::string>& filePaths) const
+    {
+        if (!ValidateIsInitialized())
+        {
+            return false;
         }
+
+        bool result = true;
+
+        IterateObjects<PipelineLibrary>(
+            [&result, &filePaths]([[maybe_unused]] auto deviceIndex, auto devicePipelineLibrary)
+            {
+                auto deviceResult{ devicePipelineLibrary->SaveSerializedData(filePaths.at(deviceIndex)) };
+                AZ_Error("MultiDevicePipelineLibrary", deviceResult, "SaveSerializedData failed for device %d", deviceIndex);
+                result &= deviceResult;
+            });
 
         return result;
     }

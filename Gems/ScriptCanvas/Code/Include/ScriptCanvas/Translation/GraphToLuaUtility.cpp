@@ -7,10 +7,9 @@
  */
 
 
-#include <clocale>
-
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/RTTI/BehaviorContextUtilities.h>
+#include <AzCore/Serialization/Locale.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Data/Data.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/ScopedDataConnectionEvent.h>
@@ -24,26 +23,6 @@
 
 #include <ScriptCanvas/Translation/GraphToLuaUtility.h>
 
-namespace GraphToLuaUtilityCpp
-{
-    class ScopedLocale
-    {
-    public:
-        ScopedLocale()
-        {
-            m_previousLocale = std::setlocale(LC_NUMERIC, "en_US.UTF-8");
-        }
-
-        ~ScopedLocale()
-        {
-            std::setlocale(LC_NUMERIC, m_previousLocale);
-        }
-
-    private:
-        char* m_previousLocale = nullptr;
-    };
-
-}
 
 namespace ScriptCanvas
 {
@@ -178,7 +157,7 @@ namespace ScriptCanvas
 
         AZStd::string ToValueString(const Datum& datum, const Configuration& config)
         {
-            GraphToLuaUtilityCpp::ScopedLocale scopedLocal;
+            AZ::Locale::ScopedSerializationLocale scopedLocale;
 
             switch (datum.GetType().GetType())
             {

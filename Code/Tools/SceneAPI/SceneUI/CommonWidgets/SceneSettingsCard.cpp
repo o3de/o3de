@@ -171,7 +171,7 @@ void SceneSettingsCard::AddLogEntry(const AzToolsFramework::Logging::LogEntry& l
         }
     }
 
-    m_additionalLogDetails.push_back(detailsForLogLine);
+    m_additionalLogDetails[m_reportModel->rowCount()] = detailsForLogLine;
     
     if (logEntry.GetSeverity() == AzToolsFramework::Logging::LogEntry::Severity::Error)
     {
@@ -438,12 +438,8 @@ void SceneSettingsCard::ShowLogContextMenu(const QPoint& pos)
     }
     
     int logRow = selectedIndex.row();
-    if (logRow <= 0)
-    {
-        return;
-    }
 
-    if (logRow > m_additionalLogDetails.count())
+    if (!m_additionalLogDetails.contains(logRow))
     {
         return;
     }

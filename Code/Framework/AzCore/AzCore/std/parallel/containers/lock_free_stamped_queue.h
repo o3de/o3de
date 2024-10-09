@@ -206,7 +206,7 @@ namespace AZStd
     inline typename lock_free_stamped_queue<T, Allocator>::node_ptr_type
     lock_free_stamped_queue<T, Allocator>::create_node()
     {
-        node_type* node = reinterpret_cast<node_ptr_type>(m_allocator.allocate(sizeof(node_type), alignment_of<node_type>::value));
+        node_type* node = reinterpret_cast<node_ptr_type>(static_cast<void*>(m_allocator.allocate(sizeof(node_type), alignof(node_type))));
         new(node) node_type;
         return node;
     }

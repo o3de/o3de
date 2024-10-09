@@ -45,7 +45,6 @@
 // Editor
 #include "TrackView/TVEventsDialog.h"
 #include "TrackView/TrackViewDialog.h"
-#include "Objects/SelectionGroup.h"
 #include "Objects/ObjectManager.h"
 #include "Util/AutoDirectoryRestoreFileDialog.h"
 #include "TrackViewFBXImportPreviewDialog.h"
@@ -1321,7 +1320,13 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
                 }
             } while (retryRename);
 
-            if (!newName.isEmpty())
+            if(!GetNodeRecord(animNode2)) {
+                QMessageBox::warning(
+                    this,
+                    tr("Entity does not exist"),
+                    tr("Entity has been deleted.\n\nUnable to rename entity"));
+            }
+            else if (!newName.isEmpty())
             {
                 const CTrackViewSequenceManager* sequenceManager = GetIEditor()->GetSequenceManager();
                 sequenceManager->RenameNode(animNode2, newName.toUtf8().data());
@@ -2265,10 +2270,9 @@ void CTrackViewNodesCtrl::ShowNextResult()
 void CTrackViewNodesCtrl::Update()
 {
     // Update the Track UI elements with the latest names of the Tracks.
-    // In some cases (save slice overrides) the Track names (param names)
-    // may not be available at the time of the Sequence activation because
-    // they come from the animated entities (which may not be active). So
-    // just update them once a frame to make sure they are the latest.
+    // In some cases the Track names (param names) may not be available at the time
+    // of the Sequence activation because they come from the animated entities (which may not be active).
+    // So just update them once a frame to make sure they are the latest.
     for (auto iter = m_nodeToRecordMap.begin(); iter != m_nodeToRecordMap.end(); ++iter)
     {
         const CTrackViewNode* node = iter->first;

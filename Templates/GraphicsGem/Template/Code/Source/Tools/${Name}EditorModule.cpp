@@ -1,3 +1,4 @@
+// {BEGIN_LICENSE}
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -5,31 +6,32 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+// {END_LICENSE}
 
 #include <${Name}/${Name}TypeIds.h>
 #include <${Name}ModuleInterface.h>
 #include "${Name}EditorSystemComponent.h"
 #include "Components/Editor${Name}Component.h"
 
-namespace ${Name}
+namespace ${SanitizedCppName}
 {
-    class ${Name}EditorModule
-        : public ${Name}ModuleInterface
+    class ${SanitizedCppName}EditorModule
+        : public ${SanitizedCppName}ModuleInterface
     {
     public:
-        AZ_RTTI(${Name}EditorModule, ${Name}EditorModuleTypeId, ${Name}ModuleInterface);
-        AZ_CLASS_ALLOCATOR(${Name}EditorModule, AZ::SystemAllocator);
+        AZ_RTTI(${SanitizedCppName}EditorModule, ${SanitizedCppName}EditorModuleTypeId, ${SanitizedCppName}ModuleInterface);
+        AZ_CLASS_ALLOCATOR(${SanitizedCppName}EditorModule, AZ::SystemAllocator);
 
-        ${Name}EditorModule()
+        ${SanitizedCppName}EditorModule()
         {
             // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
             // Add ALL components descriptors associated with this gem to m_descriptors.
             // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and EditContext.
             // This happens through the [MyComponent]::Reflect() function.
             m_descriptors.insert(m_descriptors.end(), {
-                ${Name}EditorSystemComponent::CreateDescriptor(),
-                ${Name}Component::CreateDescriptor(),
-                Editor${Name}Component::CreateDescriptor(),
+                ${SanitizedCppName}EditorSystemComponent::CreateDescriptor(),
+                ${SanitizedCppName}Component::CreateDescriptor(),
+                Editor${SanitizedCppName}Component::CreateDescriptor(),
             });
         }
 
@@ -40,10 +42,14 @@ namespace ${Name}
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
             return AZ::ComponentTypeList {
-                azrtti_typeid<${Name}EditorSystemComponent>(),
+                azrtti_typeid<${SanitizedCppName}EditorSystemComponent>(),
             };
         }
     };
-}// namespace ${Name}
+}// namespace ${SanitizedCppName}
 
-AZ_DECLARE_MODULE_CLASS(Gem_${Name}, ${Name}::${Name}EditorModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), ${SanitizedCppName}::${SanitizedCppName}EditorModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_${SanitizedCppName}_Editor, ${SanitizedCppName}::${SanitizedCppName}EditorModule)
+#endif

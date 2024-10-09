@@ -51,7 +51,7 @@ real3 GetAlbedo(real3 baseColor, real metallic)
     return baseColor * (1.0 - metallic);
 }
 
-real3 GetSpecularF0(real3 baseColor, real metallic, real specularF0Factor)
+real3 CalculateSpecularF0(real3 baseColor, real metallic, real specularF0Factor)
 {
     real3 dielectricSpecularF0 = MaxDielectricSpecularF0 * specularF0Factor;
     return lerp(dielectricSpecularF0, baseColor, metallic);

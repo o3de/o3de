@@ -9,6 +9,7 @@
 #include <Atom/RHI.Reflect/ReflectSystemComponent.h>
 #include <RHI.Private/FactoryManagerSystemComponent.h>
 #include <RHI.Private/FactoryRegistrationFinalizerSystemComponent.h>
+#include <RHI.Profiler/GraphicsProfilerSystemComponent.h>
 #include <AzCore/Module/Module.h>
 
 namespace AZ::RHI
@@ -26,7 +27,8 @@ namespace AZ::RHI
             m_descriptors.insert(m_descriptors.end(), {
                 ReflectSystemComponent::CreateDescriptor(),
                 FactoryManagerSystemComponent::CreateDescriptor(),
-                FactoryRegistrationFinalizerSystemComponent::CreateDescriptor()
+                FactoryRegistrationFinalizerSystemComponent::CreateDescriptor(),
+                GraphicsProfilerSystemComponent::CreateDescriptor()
             });
         }
         ~PlatformModule() override = default;
@@ -42,7 +44,8 @@ namespace AZ::RHI
     };
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Private), AZ::RHI::PlatformModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_Atom_RHI_Private, AZ::RHI::PlatformModule)
+#endif

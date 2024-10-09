@@ -45,6 +45,8 @@ set(FILES
     Source/RHI/DescriptorPool.h
     Source/RHI/Device.cpp
     Source/RHI/Device.h
+    Source/RHI/DispatchRaysIndirectBuffer.cpp
+    Source/RHI/DispatchRaysIndirectBuffer.h
     Source/RHI/DX12.cpp
     Source/RHI/DX12.h
     Source/RHI/Fence.cpp

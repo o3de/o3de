@@ -238,14 +238,12 @@ namespace ScriptCanvasEditor
         void DisplayGraphCanvasScene() override;
 
         /////
-        EditorGraphUpgradeMachine m_upgradeSM;
-
         enum UpgradeRequest
         {
             IfOutOfDate,
             Forced
         };
-bool UpgradeGraph(SourceHandle source, UpgradeRequest upgradeRequest, const UpgradeGraphConfig& upgradeConfig);
+        bool UpgradeGraph(SourceHandle source, UpgradeRequest upgradeRequest, const UpgradeGraphConfig& upgradeConfig);
         void ConnectGraphCanvasBuses();
         void DisconnectGraphCanvasBuses();
         ///////
@@ -254,6 +252,7 @@ bool UpgradeGraph(SourceHandle source, UpgradeRequest upgradeRequest, const Upgr
         void OnSystemTick() override;
         ////
 
+        // EditorGraphRequestBus
         void OnGraphCanvasSceneVisible() override;
 
         GraphCanvas::GraphId GetGraphCanvasGraphId() const override;
@@ -287,6 +286,11 @@ bool UpgradeGraph(SourceHandle source, UpgradeRequest upgradeRequest, const Upgr
 
         ScriptCanvas::Endpoint ConvertToScriptCanvasEndpoint(const GraphCanvas::Endpoint& endpoint) const override;
         GraphCanvas::Endpoint ConvertToGraphCanvasEndpoint(const ScriptCanvas::Endpoint& endpoint) const override;
+
+        void SetOriginalToNewIdsMap(const AZStd::unordered_map<AZ::EntityId, AZ::EntityId>& originalIdToNewIds) override;
+        void GetOriginalToNewIdsMap(AZStd::unordered_map<AZ::EntityId, AZ::EntityId>& originalIdToNewIdsOut) const override;
+        AZ::EntityId FindNewIdFromOriginal(const AZ::EntityId& originalId) const override;
+        AZ::EntityId FindOriginalIdFromNew(const AZ::EntityId& newId) const override;
         ////
 
         bool OnVersionConversionBegin(ScriptCanvas::Node& node);
@@ -342,8 +346,6 @@ bool UpgradeGraph(SourceHandle source, UpgradeRequest upgradeRequest, const Upgr
         void HandleQueuedUpdates();
         bool IsNodeVersionConverting(const AZ::EntityId& graphCanvasNodeId) const;
 
-        AZStd::unordered_map< AzToolsFramework::ToastId, AZ::EntityId > m_toastNodeIds;
-
         // Function Definition Node Extension
         void HandleFunctionDefinitionExtension(ScriptCanvas::Node* node, GraphCanvas::SlotId graphCanvasSlotId, const GraphCanvas::NodeId& nodeId);
 
@@ -395,6 +397,10 @@ bool UpgradeGraph(SourceHandle source, UpgradeRequest upgradeRequest, const Upgr
 
         void RefreshVariableReferences(const ScriptCanvas::VariableId& variableId) override;
 
+    private:
+        AZStd::unordered_map<AZ::EntityId, AZ::EntityId> m_originalIdToNewIds;
+        EditorGraphUpgradeMachine m_upgradeSM;
+        AZStd::unordered_map<AzToolsFramework::ToastId, AZ::EntityId> m_toastNodeIds;
         bool m_allowVersionUpdate = false;
         AZStd::unordered_set< AZ::EntityId > m_queuedConvertingNodes;
         AZStd::unordered_set< AZ::EntityId > m_convertingNodes;

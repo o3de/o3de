@@ -7,21 +7,21 @@
             "assetId": {
                 "guid": "{AC37FCC4-ACF3-5EB7-B66E-D552DB55BA43}"
             },
-            "platformFlags": 3,
+            "platformFlags": 255,
             "pathHint": "shaders/decomposemsimage.azshader"
         },
         {
             "assetId": {
                 "guid": "{624D96E2-CB87-5105-991E-01C17C9BCD20}"
             },
-            "platformFlags": 3,
+            "platformFlags": 255,
             "pathHint": "shaders/imagepreview.azshader"
         },
         {
             "assetId": {
                 "guid": "{DECFE8B1-6410-513D-902E-4601CB425B53}"
             },
-            "platformFlags": 3,
+            "platformFlags": 255,
             "pathHint": "shaders/sceneandviewsrgs.azshader"
         },
         {
@@ -29,7 +29,7 @@
                 "guid": "{FFF65E99-3A75-5734-BC40-E7D6796B1789}",
                 "subId": 1000
             },
-            "platformFlags": 3,
+            "platformFlags": 255,
             "pathHint": "textures/defaults/defaultfallback.png.streamingimage"
         },
         {
@@ -37,7 +37,7 @@
                 "guid": "{BBA1FB65-974C-55D2-B549-806FA42A2115}",
                 "subId": 1000
             },
-            "platformFlags": 3,
+            "platformFlags": 255,
             "pathHint": "textures/defaults/missing.png.streamingimage"
         }
     ]

@@ -12,7 +12,6 @@
 #include <AzCore/Math/Quaternion.h>
 #include "StandardHeaders.h"
 #include "Vector.h"
-#include "Color.h"
 #include "CompressedQuaternion.h"
 
 namespace AZ
@@ -110,13 +109,6 @@ namespace MCore
          * @param count The number of items to convert. Please note that the array specified by value must be large enough!
          */
         static MCORE_INLINE void Convert16BitQuaternion(MCore::Compressed16BitQuaternion* value, uint32 count = 1);
-
-        /**
-         * Swap the endian of one or more RGBAColor objects.
-         * @param value The value to convert the endian for.
-         * @param count The number of items to convert. Please note that the array specified by value must be large enough!
-         */
-        static MCORE_INLINE void ConvertRGBAColor(MCore::RGBAColor* value, uint32 count = 1);
 
         /**
          * Swap two bytes values. This means that after executing this method, the memory address of byteA will
@@ -240,15 +232,6 @@ namespace MCore
          */
         static MCORE_INLINE void Convert16BitQuaternion(MCore::Compressed16BitQuaternion* value, EEndianType sourceEndianType, uint32 count = 1);
 
-        /**
-         * Convert a RGBAColor object into the endian used by our current platform.
-         * @param value The object to convert the endian for.
-         * @param sourceEndianType The endian type where the object is currently stored in.
-         * @param count The number of objects to convert. This allows conversion of arrays at once.
-         */
-        static MCORE_INLINE void ConvertRGBAColor(MCore::RGBAColor* value, EEndianType sourceEndianType, uint32 count = 1);
-
-        //------------------------------
 
         /**
          * Convert a floating point value into another endian type.
@@ -343,17 +326,6 @@ namespace MCore
         static MCORE_INLINE void Convert16BitQuaternion(MCore::Compressed16BitQuaternion* value, EEndianType sourceEndianType, EEndianType targetEndianType, uint32 count = 1);
 
         /**
-         * Convert an RGBAColor object into another endian type.
-         * @param value A pointer to the object to convert/modify.
-         * @param sourceEndianType The endian type where the value is currently stored in, before conversion.
-         * @param targetEndianType The endian type that the value should be converted into.
-         * @param count The number of objects to convert. This allows conversion of arrays at once.
-         */
-        static MCORE_INLINE void ConvertRGBAColor(MCore::RGBAColor* value, EEndianType sourceEndianType, EEndianType targetEndianType, uint32 count = 1);
-
-        //------------------------------
-
-        /**
          * Convert a floating point value into another endian type.
          * @param value A pointer to the object to convert/modify.
          * @param targetEndianType The endian type that the value should be converted into.
@@ -432,14 +404,6 @@ namespace MCore
          * @param count The number of objects to convert. This allows conversion of arrays at once.
          */
         static MCORE_INLINE void Convert16BitQuaternionTo(MCore::Compressed16BitQuaternion* value, EEndianType targetEndianType, uint32 count = 1);
-
-        /**
-         * Convert an RGBAColor object into another endian type.
-         * @param value A pointer to the object to convert/modify.
-         * @param targetEndianType The endian type that the value should be converted into.
-         * @param count The number of objects to convert. This allows conversion of arrays at once.
-         */
-        static MCORE_INLINE void ConvertRGBAColorTo(MCore::RGBAColor* value, EEndianType targetEndianType, uint32 count = 1);
     };
 
     // include the inline code

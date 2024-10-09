@@ -96,17 +96,9 @@ namespace MaterialEditor
         m_materialViewport->UnlockRenderTargetSize();
     }
 
-    AZStd::string MaterialEditorMainWindow::GetHelpDialogText() const
+    AZStd::string MaterialEditorMainWindow::GetHelpUrl() const
     {
-        return R"(<html><head/><body>
-            <p><h3><u>Camera Controls</u></h3></p>
-            <p><b>LMB</b> - rotate camera</p>
-            <p><b>RMB</b> or <b>Alt+LMB</b> - orbit camera around target</p>
-            <p><b>MMB</b> - pan camera on its xy plane</p>
-            <p><b>Alt+RMB</b> or <b>LMB+RMB</b> - dolly camera on its z axis</p>
-            <p><b>Ctrl+LMB</b> - rotate model</p>
-            <p><b>Shift+LMB</b> - rotate environment</p>
-            </body></html>)";
+        return "https://docs.o3de.org/docs/atom-guide/look-dev/tools/material-editor/";
     }
 } // namespace MaterialEditor
 

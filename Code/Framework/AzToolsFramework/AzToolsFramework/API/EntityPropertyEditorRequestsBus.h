@@ -24,13 +24,17 @@ namespace AzToolsFramework
     public:
         using VisitComponentEditorsCallback = AZStd::function<bool(const ComponentEditor*)>;
 
-        //! Allows a component to get the list of selected entities or if in a pinned window, the list of entities in that window
+        //! Returns the list of selected entities or if in a pinned window, the list of entities in that window
         //! \param selectedEntityIds the return vector holding the entities required
         virtual void GetSelectedAndPinnedEntities(EntityIdList& selectedEntityIds) = 0;
 
-        //! Allows a component to get the list of selected entities
+        //! Returns the list of selected entities
         //! \param selectedEntityIds the return vector holding the entities required
         virtual void GetSelectedEntities(EntityIdList& selectedEntityIds) = 0;
+
+        //! Returns the list of selected components
+        //! \param selectedEntityIds the return vector holding the entities required
+        virtual void GetSelectedComponents(AZStd::unordered_set<AZ::EntityComponentIdPair>& selectedComponentEntityIds) = 0;
 
         //! Explicitly sets a component as having been the most recently added.
         //! This means that the next time the UI refreshes, that component will be ensured to be visible.

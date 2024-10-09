@@ -1,0 +1,77 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "MobileTransparentPassTemplate",
+            "PassClass": "RasterPass",
+            "Slots": [
+                // Inputs...
+                {
+                    "Name": "BRDFTextureInput",
+                    "ShaderInputName": "m_brdfMap",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "InputDepth",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_linearDepthTexture",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Depth"
+                        ]
+                    }
+                },
+                {
+                    "Name": "DepthStencil",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                },
+                // Input/Outputs
+                {
+                    "Name": "InputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "BRDFTexture",
+                    "Lifetime": "Imported",
+                    "AssetRef": {
+                        "FilePath": "Textures/BRDFTexture.attimage"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "BRDFTextureInput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "BRDFTexture"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "RasterPassData",
+                "DrawListTag": "transparent",
+                "DrawListSortType": "KeyThenReverseDepth",
+                "BindViewSrg": true,
+                "PassSrgShaderAsset": {
+                    "FilePath": "Shaders/ForwardPassSrg.shader"
+                },
+                "ShaderDataMappings": {
+                    "UintMappings": [
+                        {
+                            "Name": "m_isOriginalDepth",
+                            "Value": 1
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

@@ -24,6 +24,7 @@ namespace O3DE::ProjectManager
     extern const QString GetPythonScriptPath;
     static const QString ProjectBuildPathCmakeFiles = "CMakeFiles";
     static const QString ProjectBuildErrorLogName = "CMakeProjectBuildError.log";
+    static const QString ProjectExportErrorLogName = "ExportError.log";
     static const QString ProjectCacheDirectoryName = "Cache";
     static const QString ProjectPreviewImagePath = "preview.png";
     

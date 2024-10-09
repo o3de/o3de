@@ -14,6 +14,7 @@
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
+#include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 
 namespace AzPhysics
 {
@@ -108,11 +109,11 @@ namespace Physics
                     if (entityState == AZ::Entity::State::Active)
                     {
                         // Only immediately dispatch if the entity is a RigidBodyRequestBus' handler.
-                        RigidBodyRequestBus::EnumerateHandlersId(
+                        AzPhysics::SimulatedBodyComponentRequestsBus::EnumerateHandlersId(
                             id,
-                            [&handler, id](const RigidBodyRequests* rigidBodyhandler)
+                            [&handler, id](const AzPhysics::SimulatedBodyComponentRequests* simulatedBodyhandler)
                             {
-                                if (rigidBodyhandler->IsPhysicsEnabled())
+                                if (simulatedBodyhandler->IsPhysicsEnabled())
                                 {
                                     handler->OnPhysicsEnabled(id);
                                 }

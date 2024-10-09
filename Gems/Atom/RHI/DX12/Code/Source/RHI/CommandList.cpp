@@ -27,6 +27,9 @@
 #include <Atom/RHI/DispatchRaysItem.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/IndirectArguments.h>
+#include <Atom/RHI/RHISystemInterface.h>
+
+#include <RHI/DispatchRaysIndirectBuffer.h>
 
 // Conditionally disable timing at compile-time based on profile policy
 #if DX12_GPU_PROFILE_MODE == DX12_GPU_PROFILE_MODE_DETAIL
@@ -94,7 +97,7 @@ namespace AZ
         {
             SetName(name);
 
-            if (RHI::Factory::Get().PixGpuEventsEnabled() && r_gpuMarkersMergeGroups)
+            if (RHI::RHISystemInterface::Get()->GpuMarkersEnabled() && r_gpuMarkersMergeGroups)
             {
                 PIXBeginEvent(GetCommandList(), PIX_MARKER_CMDLIST_COL, name.GetCStr());
             }
@@ -103,7 +106,7 @@ namespace AZ
         void CommandList::Close()
         {
             FlushBarriers();
-            if (RHI::Factory::Get().PixGpuEventsEnabled() && r_gpuMarkersMergeGroups)
+            if (RHI::RHISystemInterface::Get()->GpuMarkersEnabled() && r_gpuMarkersMergeGroups)
             {
                 PIXEndEvent(GetCommandList());
             }
@@ -397,14 +400,23 @@ namespace AZ
             }
 
             // set the bindless descriptor table if required by the shader
+            const auto& device = static_cast<Device&>(GetDevice());
             for (uint32_t bindingIndex = 0; bindingIndex < globalPipelineLayout->GetRootParameterBindingCount(); ++bindingIndex)
             {
-                RootParameterBinding binding = globalPipelineLayout->GetRootParameterBindingByIndex(bindingIndex);
-                if (binding.m_bindlessTable.IsValid())
+                const size_t srgSlot = globalPipelineLayout->GetSlotByIndex(bindingIndex);
+                if (srgSlot == device.GetBindlessSrgSlot())
                 {
-                    GetCommandList()->SetComputeRootDescriptorTable(
-                        binding.m_bindlessTable.GetIndex(), m_descriptorContext->GetBindlessGpuPlatformHandle());
-                    break;
+                    RootParameterBinding binding = globalPipelineLayout->GetRootParameterBindingByIndex(bindingIndex);
+                    if (binding.m_bindlessTable.IsValid())
+                    {
+                        GetCommandList()->SetComputeRootDescriptorTable(
+                            binding.m_bindlessTable.GetIndex(), m_descriptorContext->GetBindlessGpuPlatformHandle());
+                        break;
+                    }
+                    else
+                    {
+                        AZ_Assert(false, "The ShaderResourceGroup using the Bindless SRG Slot doesn't have bindless arrays.");
+                    }
                 }
             }
 
@@ -448,7 +460,97 @@ namespace AZ
                 }
             case RHI::DispatchRaysType::Indirect:
                 {
-                    ExecuteIndirect(dispatchRaysItem.m_arguments.m_indirect);
+                    const auto& arguments = dispatchRaysItem.m_arguments.m_indirect;
+                    auto* dispatchIndirectBuffer = static_cast<DispatchRaysIndirectBuffer*>(arguments.m_dispatchRaysIndirectBuffer);
+                    AZ_Assert(
+                        dispatchIndirectBuffer, "CommandList: m_dispatchRaysIndirectBuffer is necessary for indirect raytracing commands");
+                    const Buffer* dx12IndirectBuffer = static_cast<const Buffer*>(dispatchIndirectBuffer->m_buffer.get());
+                    // Copy arguments from the given indirect buffer to the one we can actually use for the ExecuteIndirect call
+                    {
+                        constexpr ptrdiff_t widthOffset = offsetof(D3D12_DISPATCH_RAYS_DESC, Width);
+                        {
+                            D3D12_RESOURCE_BARRIER barrier;
+                            barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+                            barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+                            barrier.Transition.pResource = dx12IndirectBuffer->GetMemoryView().GetMemory();
+                            barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+                            barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
+                            barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_DEST;
+                            commandList->ResourceBarrier(1, &barrier);
+                        }
+
+                        if (dispatchIndirectBuffer->m_shaderTableNeedsCopy)
+                        {
+                            AZ_Assert(
+                                dispatchIndirectBuffer->m_shaderTableStagingMemory.IsValid(),
+                                "DispatchRaysIndirectBuffer: Staging memory is not valid."
+                                " The Build function must be called in the same frame as the CopyData function");
+                            commandList->CopyBufferRegion(
+                                dx12IndirectBuffer->GetMemoryView().GetMemory(),
+                                dx12IndirectBuffer->GetMemoryView().GetOffset(),
+                                dispatchIndirectBuffer->m_shaderTableStagingMemory.GetMemory(),
+                                dispatchIndirectBuffer->m_shaderTableStagingMemory.GetOffset(),
+                                widthOffset); // copy the shader table entries only
+                            dispatchIndirectBuffer->m_shaderTableNeedsCopy = false;
+                            dispatchIndirectBuffer->m_shaderTableStagingMemory = {}; // The staging memory is only valid for one frame. Make
+                                                                                     // sure to not access it again
+                        }
+                        constexpr ptrdiff_t sizeToCopy = sizeof(uint32_t) * 3;
+
+                        const Buffer* dx12OriginalBuffer = static_cast<const Buffer*>(arguments.m_indirectBufferView->GetBuffer());
+
+                        {
+                            D3D12_RESOURCE_BARRIER barrier;
+                            barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+                            barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+                            barrier.Transition.pResource = dx12OriginalBuffer->GetMemoryView().GetMemory();
+                            barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+                            barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
+                            barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
+                            commandList->ResourceBarrier(1, &barrier);
+                        }
+
+                        commandList->CopyBufferRegion(
+                            dx12IndirectBuffer->GetMemoryView().GetMemory(),
+                            dx12IndirectBuffer->GetMemoryView().GetOffset() + widthOffset,
+                            dx12OriginalBuffer->GetMemoryView().GetMemory(),
+                            arguments.m_indirectBufferView->GetByteOffset() + arguments.m_indirectBufferByteOffset,
+                            sizeToCopy);
+
+                        {
+                            D3D12_RESOURCE_BARRIER barrier;
+                            barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+                            barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+                            barrier.Transition.pResource = dx12OriginalBuffer->GetMemoryView().GetMemory();
+                            barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+                            barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_SOURCE;
+                            barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
+                            commandList->ResourceBarrier(1, &barrier);
+                        }
+
+                        {
+                            D3D12_RESOURCE_BARRIER barrier;
+                            barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+                            barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+                            barrier.Transition.pResource = dx12IndirectBuffer->GetMemoryView().GetMemory();
+                            barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+                            barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+                            barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
+                            commandList->ResourceBarrier(1, &barrier);
+                        }
+                    }
+
+                    const IndirectBufferSignature* signature =
+                        static_cast<const IndirectBufferSignature*>(arguments.m_indirectBufferView->GetSignature());
+
+                    AZ_Assert(arguments.m_countBuffer == nullptr, "CommandList: Count buffer is not supported for indirect raytracing");
+                    GetCommandList()->ExecuteIndirect(
+                        signature->Get(),
+                        arguments.m_maxSequenceCount,
+                        dx12IndirectBuffer->GetMemoryView().GetMemory(),
+                        dx12IndirectBuffer->GetMemoryView().GetOffset(),
+                        nullptr,
+                        0);
                     break;
                 }
             default:
@@ -575,14 +677,24 @@ namespace AZ
             blasDesc.DestAccelerationStructureData = static_cast<Buffer*>(blasBuffers.m_blasBuffer.get())->GetMemoryView().GetGpuAddress();
             ID3D12GraphicsCommandList4* commandList = static_cast<ID3D12GraphicsCommandList4*>(GetCommandList());
             commandList->BuildRaytracingAccelerationStructure(&blasDesc, 0, nullptr);
+#endif
+        }
 
-            // create an immediate barrier for BLAS completion
-            // this is required since the buffer must be built prior to using it in the TLAS
-            D3D12_RESOURCE_BARRIER barrier;
-            barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
-            barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-            barrier.UAV.pResource = static_cast<Buffer*>(blasBuffers.m_blasBuffer.get())->GetMemoryView().GetMemory();
-            commandList->ResourceBarrier(1, &barrier);        
+        void CommandList::UpdateBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas)
+        {
+#ifdef AZ_DX12_DXR_SUPPORT
+            const RayTracingBlas& dx12RayTracingBlas = static_cast<const RayTracingBlas&>(rayTracingBlas);
+            const RayTracingBlas::BlasBuffers& blasBuffers = dx12RayTracingBlas.GetBuffers();
+
+            // create the BLAS
+            D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC blasDesc = {};
+            blasDesc.Inputs = dx12RayTracingBlas.GetInputs();
+            blasDesc.Inputs.Flags |= D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PERFORM_UPDATE;
+            blasDesc.ScratchAccelerationStructureData = static_cast<Buffer*>(blasBuffers.m_scratchBuffer.get())->GetMemoryView().GetGpuAddress();
+            blasDesc.SourceAccelerationStructureData = static_cast<Buffer*>(blasBuffers.m_blasBuffer.get())->GetMemoryView().GetGpuAddress();
+            blasDesc.DestAccelerationStructureData = blasDesc.SourceAccelerationStructureData;
+            ID3D12GraphicsCommandList4* commandList = static_cast<ID3D12GraphicsCommandList4*>(GetCommandList());
+            commandList->BuildRaytracingAccelerationStructure(&blasDesc, 0, nullptr);
 #endif
         }
 
@@ -598,9 +710,30 @@ namespace AZ
             m_state.m_shadingRateState.Set(rate, combinators);
         }
 
-        void CommandList::BuildTopLevelAccelerationStructure([[maybe_unused]] const RHI::RayTracingTlas& rayTracingTlas)
+        void CommandList::BuildTopLevelAccelerationStructure(
+            const RHI::RayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::RayTracingBlas*>& changedBlasList)
         {
 #ifdef AZ_DX12_DXR_SUPPORT
+            ID3D12GraphicsCommandList4* commandList = static_cast<ID3D12GraphicsCommandList4*>(GetCommandList());
+            if (!changedBlasList.empty())
+            {
+                // create a barrier for BLAS completion
+                // this is required since all BLAS must be built prior to using it in the TLAS
+                AZStd::vector<D3D12_RESOURCE_BARRIER> barriers;
+                barriers.reserve(changedBlasList.size());
+                for (const auto* blas : changedBlasList)
+                {
+                    const auto dx12RayTracingBlas = static_cast<const RayTracingBlas*>(blas);
+                    const RayTracingBlas::BlasBuffers& blasBuffers = dx12RayTracingBlas->GetBuffers();
+
+                    D3D12_RESOURCE_BARRIER barrier;
+                    barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+                    barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+                    barrier.UAV.pResource = static_cast<Buffer*>(blasBuffers.m_blasBuffer.get())->GetMemoryView().GetMemory();
+                    barriers.push_back(barrier);
+                }
+                commandList->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
+            }
             const RayTracingTlas& dx12RayTracingTlas = static_cast<const RayTracingTlas&>(rayTracingTlas);
             const RayTracingTlas::TlasBuffers& tlasBuffers = dx12RayTracingTlas.GetBuffers();
 
@@ -609,8 +742,7 @@ namespace AZ
             tlasDesc.Inputs = dx12RayTracingTlas.GetInputs();
             tlasDesc.ScratchAccelerationStructureData = static_cast<Buffer*>(tlasBuffers.m_scratchBuffer.get())->GetMemoryView().GetGpuAddress();
             tlasDesc.DestAccelerationStructureData = static_cast<Buffer*>(tlasBuffers.m_tlasBuffer.get())->GetMemoryView().GetGpuAddress();
-        
-            ID3D12GraphicsCommandList4* commandList = static_cast<ID3D12GraphicsCommandList4*>(GetCommandList());
+
             commandList->BuildRaytracingAccelerationStructure(&tlasDesc, 0, nullptr);
 #endif
         }

@@ -46,7 +46,11 @@ namespace ScriptCanvasEditor
         EditorScriptCanvasComponent();
         EditorScriptCanvasComponent(const SourceHandle& sourceHandle);
         ~EditorScriptCanvasComponent() override;
-                        
+
+        //=====================================================================
+        // EditorComponentBase
+        void SetPrimaryAsset(const AZ::Data::AssetId&) override;
+
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
@@ -63,7 +67,6 @@ namespace ScriptCanvasEditor
         //=====================================================================
         // EditorComponentBase
         void BuildGameEntity(AZ::Entity* gameEntity) override;
-        void SetPrimaryAsset(const AZ::Data::AssetId&) override;
 
     private:
         Configuration m_configuration;

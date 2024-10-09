@@ -48,7 +48,7 @@ class CreateMayaFiles(QtCore.QObject):
         self.destination_directory = destination_directory
         self.modify_naming = modify_naming
         self.scene_shader_info = None
-        self.materials_db = shelve.open('materialsdb', protocol=2)
+        self.materials_db = {} #shelve.open('materialsdb', protocol=2)
         self.new_file = True
         self.file_name = None
         self.target_database_listing = None
@@ -107,7 +107,7 @@ class CreateMayaFiles(QtCore.QObject):
         try:
             return_dictionary = {self.target_database_listing: self.transfer_data}
             json.dump(return_dictionary, sys.stdout)
-            self.materials_db.close()
+            #self.materials_db.close()
         except Exception as e:
             _LOGGER.info('Error: {} -- {}'.format(e, self.transfer_data))
 

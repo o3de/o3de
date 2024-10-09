@@ -48,7 +48,11 @@ if [[ ! -z "$RUN_CONFIGURE" ]]; then
     echo "${CONFIGURE_CMD}" > ${LAST_CONFIGURE_CMD_FILE}
 fi
 
-echo [ci_build] cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $(/usr/sbin/sysctl -n hw.ncpu) -- ${CMAKE_NATIVE_BUILD_ARGS}
-cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $(/usr/sbin/sysctl -n hw.ncpu) -- ${CMAKE_NATIVE_BUILD_ARGS}
+# Split the configuration on semi-colon and use the cmake --build wrapper to run the underlying build command for each
+for config in $(echo $CONFIGURATION | sed "s/;/ /g")
+do
+    echo [ci_build] cmake --build . --target ${CMAKE_TARGET} --config ${config} -j $(/usr/sbin/sysctl -n hw.ncpu) -- ${CMAKE_NATIVE_BUILD_ARGS}
+    cmake --build . --target ${CMAKE_TARGET} --config ${config} -j $(/usr/sbin/sysctl -n hw.ncpu) -- ${CMAKE_NATIVE_BUILD_ARGS}
+done
 
 popd

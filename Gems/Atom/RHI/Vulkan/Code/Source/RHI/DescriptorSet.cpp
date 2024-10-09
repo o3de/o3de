@@ -144,7 +144,8 @@ namespace AZ
                         auto& device = static_cast<Device&>(GetDevice());
                         NullDescriptorManager& nullDescriptorManager = device.GetNullDescriptorManager();
                         bool storageImage = (layout.GetDescriptorType(layoutIndex) == VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
-                        imageInfo = nullDescriptorManager.GetDescriptorImageInfo(imageType, storageImage);
+                        imageInfo =
+                            nullDescriptorManager.GetDescriptorImageInfo(imageType, storageImage, layout.UsesDepthFormat(layoutIndex));
                     }
                 }
                 else

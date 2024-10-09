@@ -1451,6 +1451,28 @@ namespace ScriptCanvasEditor
             else if (slotType.IS_A(ScriptCanvas::Data::Type::AssetId()))
             {
                 dataInterface = aznew ScriptCanvasAssetIdDataInterface(scriptCanvasNodeId, scriptCanvasSlotId);
+                if (ScriptCanvas::Nodes::Core::Method* method = azrtti_cast<ScriptCanvas::Nodes::Core::Method*>(slot->GetNode()))
+                {
+                    // Try to find the AssetType attribute
+                    if (AZ::Attribute* assetTypeAttribute = FindAttribute(AZ::Script::Attributes::AssetType, method->GetMethod()->m_attributes))
+                    {
+                        AZ::AttributeReader attributeReader(nullptr, assetTypeAttribute);
+                        AZ::Data::AssetType assetType;
+                        attributeReader.Read<AZ::Data::AssetType>(assetType);
+                        ScriptCanvasAssetIdDataInterface* assetIdinterface = static_cast<ScriptCanvasAssetIdDataInterface*>(dataInterface);
+                        assetIdinterface->SetAssetType(assetType);
+                    }
+
+                    if (AZ::Attribute* sourceAssetFilterAttribute = FindAttribute(AZ::Edit::Attributes::SourceAssetFilterPattern, method->GetMethod()->m_attributes))
+                    {
+                        AZ::AttributeReader attributeReader(nullptr, sourceAssetFilterAttribute);
+                        AZStd::string filterPattern;
+                        attributeReader.Read<AZStd::string>(filterPattern);
+                        ScriptCanvasAssetIdDataInterface* assetIdinterface = static_cast<ScriptCanvasAssetIdDataInterface*>(dataInterface);
+                        assetIdinterface->SetStringFilter(filterPattern);
+                    }
+                }
+
                 GraphCanvas::GraphCanvasRequestBus::BroadcastResult(dataDisplay, &GraphCanvas::GraphCanvasRequests::CreateAssetIdNodePropertyDisplay, static_cast<GraphCanvas::AssetIdDataInterface*>(dataInterface));
             }
             else if (slotType.IS_A(ScriptCanvas::Data::Type::BehaviorContextObject(ScriptCanvas::GraphScopedVariableId::TYPEINFO_Uuid())))
@@ -1542,7 +1564,7 @@ namespace ScriptCanvasEditor
     {
         GraphCanvas::SceneMemberGlowOutlineConfiguration glowConfiguration;
 
-        glowConfiguration.m_blurRadius = 5;
+        glowConfiguration.m_blurRadius = 0; // #17174 using blur degrades performance
 
         glowConfiguration.m_pen = QPen();
         glowConfiguration.m_pen.setBrush(QColor(243,129,29));
@@ -3357,6 +3379,47 @@ namespace ScriptCanvasEditor
         GraphCanvas::SlotRequestBus::EventResult(graphCanvasEndpoint.m_nodeId, graphCanvasEndpoint.GetSlotId(), &GraphCanvas::SlotRequests::GetNode);
 
         return graphCanvasEndpoint;
+    }
+
+    void EditorGraph::SetOriginalToNewIdsMap(const AZStd::unordered_map<AZ::EntityId, AZ::EntityId>& originalIdToNewIds)
+    {
+        m_originalIdToNewIds = originalIdToNewIds;
+    }
+
+    void EditorGraph::GetOriginalToNewIdsMap(AZStd::unordered_map<AZ::EntityId, AZ::EntityId>& originalIdToNewIdsOut) const
+    {
+        originalIdToNewIdsOut = m_originalIdToNewIds;
+    }
+
+    AZ::EntityId EditorGraph::FindNewIdFromOriginal(const AZ::EntityId& originalId) const
+    {
+        if (m_originalIdToNewIds.empty())
+        {
+            return originalId;
+        }
+
+        if (!m_originalIdToNewIds.contains(originalId))
+        {
+            return AZ::EntityId();
+        }
+
+        return m_originalIdToNewIds.at(originalId);
+    }
+
+    AZ::EntityId EditorGraph::FindOriginalIdFromNew(const AZ::EntityId& newId) const
+    {
+        if (m_originalIdToNewIds.empty())
+        {
+            return newId;
+        }
+
+        const auto it = m_originalIdToNewIds.find(newId);
+        if (it == m_originalIdToNewIds.end())
+        {
+            return AZ::EntityId();
+        }
+
+        return it->first;
     }
 
     void EditorGraph::OnSaveDataDirtied(const AZ::EntityId& savedElement)

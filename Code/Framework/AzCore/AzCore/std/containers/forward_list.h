@@ -447,7 +447,7 @@ namespace AZStd
         template<class... Args>
         iterator emplace_after(const_iterator insertPos, Args&&... args)
         {
-            node_ptr_type newNode = reinterpret_cast<node_ptr_type>(m_allocator.allocate(sizeof(node_type), alignof(node_type)));
+            node_ptr_type newNode = reinterpret_cast<node_ptr_type>(static_cast<void*>(m_allocator.allocate(sizeof(node_type), alignof(node_type))));
 
             // forward to the constructor
             pointer ptr = &newNode->m_value;
@@ -487,7 +487,7 @@ namespace AZStd
 
             for (bool firstIteration = true; 0 < numElements; --numElements, firstIteration = false)
             {
-                node_ptr_type newNode = reinterpret_cast<node_ptr_type>(m_allocator.allocate(sizeof(node_type), alignment_of<node_type>::value));
+                node_ptr_type newNode = reinterpret_cast<node_ptr_type>(static_cast<void*>(m_allocator.allocate(sizeof(node_type), alignof(node_type))));
                 AZSTD_CONTAINER_ASSERT(newNode != nullptr, "AZSTD::forward_list::insert - failed to allocate node!");
 
                 if (firstIteration)

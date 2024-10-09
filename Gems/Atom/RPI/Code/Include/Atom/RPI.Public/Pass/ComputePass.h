@@ -46,6 +46,12 @@ namespace AZ
             //! Return the shader
             Data::Instance<Shader> GetShader() const;
 
+            // When the compute shader is reloaded, this callback will be called. Subclasses of ComputePass
+            // should override OnShaderReloadedInternal() instead. By default  OnShaderReloadedInternal() will simply call
+            // the callback.
+            using ComputeShaderReloadedCallback = AZStd::function<void(ComputePass* computePass)>;
+            void SetComputeShaderReloadedCallback(ComputeShaderReloadedCallback callback);
+
         protected:
             ComputePass(const PassDescriptor& descriptor, AZ::Name supervariant = AZ::Name(""));
 
@@ -81,6 +87,11 @@ namespace AZ
             void LoadShader(AZ::Name supervariant = AZ::Name(""));
             PassDescriptor m_passDescriptor;
 
+            // At the end of LoadShader(), this function is called. By default it executes
+            // the callback function. This gives an opportunity to subclasses and owners of compute passes
+            // to call SetTargetThreadCounts(), update shader constants, etc.
+            virtual void OnShaderReloadedInternal();
+            ComputeShaderReloadedCallback m_shaderReloadedCallback = nullptr;
         };
     }   // namespace RPI
 }   // namespace AZ

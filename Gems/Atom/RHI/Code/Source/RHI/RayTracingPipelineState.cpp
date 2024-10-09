@@ -106,6 +106,22 @@ namespace AZ::RHI
         return this;
     }
 
+    RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::IntersectionShaderName(const Name& intersectionShaderName)
+    {
+        AZ_Assert(m_shaderLibraryBuildContext || m_hitGroupBuildContext, "IntersectionShaderName can only be added to a ShaderLibrary or a HitGroup");
+
+        if (m_hitGroupBuildContext)
+        {
+            m_hitGroupBuildContext->m_intersectionShaderName = intersectionShaderName;
+        }
+        else
+        {
+            m_shaderLibraryBuildContext->m_intersectionShaderName = intersectionShaderName;
+        }
+
+        return this;
+    }
+
     RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::HitGroup(const AZ::Name& hitGroupName)
     {
         ClearBuildContext();

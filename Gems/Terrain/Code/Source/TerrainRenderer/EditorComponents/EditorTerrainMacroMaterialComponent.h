@@ -43,7 +43,8 @@ namespace Terrain
     public:
         AZ_EDITOR_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(EditorTerrainMacroMaterialComponent);
         AZ_COMPONENT_BASE(EditorTerrainMacroMaterialComponent);
-        AZ_RTTI_NO_TYPE_INFO_DECL()
+        AZ_CLASS_ALLOCATOR(EditorTerrainMacroMaterialComponent, AZ::ComponentAllocator);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
 
         static void Reflect(AZ::ReflectContext* context);
 

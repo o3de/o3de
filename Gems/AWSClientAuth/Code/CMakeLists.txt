@@ -9,7 +9,7 @@
 o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 ly_add_target(
-    NAME AWSClientAuth.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         awsclientauth_files.cmake
@@ -29,7 +29,7 @@ ly_add_target(
 )
 
 ly_add_target( 
-    NAME AWSClientAuth ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         awsclientauth_shared_files.cmake
@@ -44,13 +44,22 @@ ly_add_target(
             3rdParty::AWSNativeSDK::AWSClientAuth
             3rdParty::AWSNativeSDK::Core
         PUBLIC
-            Gem::AWSClientAuth.Static
+            Gem::${gem_name}.Static
 )
+
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/AWSClientAuthModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
 ly_add_target( 
-    NAME AWSClientAuth.Editor ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name}.Editor ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         awsclientauth_editor_files.cmake
@@ -72,55 +81,55 @@ ly_add_target(
             3rdParty::AWSNativeSDK::AWSClientAuth
             3rdParty::AWSNativeSDK::Core
     RUNTIME_DEPENDENCIES
-        Gem::AWSClientAuth
+        Gem::${gem_name}
 )
 
 endif()
 
 
-# Load the "Gem::AWSClientAuth" module in all types of applications.
+# Load the "Gem::${gem_name}" module in all types of applications.
 ly_create_alias(
-    NAME AWSClientAuth.Servers
+    NAME ${gem_name}.Servers
     NAMESPACE Gem
     TARGETS
-        Gem::AWSClientAuth
+        Gem::${gem_name}
         Gem::AWSCore.Servers
         Gem::HttpRequestor.Servers
 )
 
 ly_create_alias(
-    NAME AWSClientAuth.Clients
+    NAME ${gem_name}.Clients
     NAMESPACE Gem
     TARGETS
-        Gem::AWSClientAuth
+        Gem::${gem_name}
         Gem::AWSCore.Clients
         Gem::HttpRequestor.Clients
 )
 
 ly_create_alias(
-    NAME AWSClientAuth.Unified
+    NAME ${gem_name}.Unified
     NAMESPACE Gem
     TARGETS
-        Gem::AWSClientAuth
+        Gem::${gem_name}
         Gem::AWSCore.Unified
         Gem::HttpRequestor.Unified
 )
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_create_alias(
-        NAME AWSClientAuth.Tools
+        NAME ${gem_name}.Tools
         NAMESPACE Gem
         TARGETS
-            Gem::AWSClientAuth.Editor
+            Gem::${gem_name}.Editor
             Gem::AWSCore.Tools
             Gem::HttpRequestor.Tools
     )
 
     ly_create_alias(
-        NAME AWSClientAuth.Builders
+        NAME ${gem_name}.Builders
         NAMESPACE Gem
         TARGETS
-            Gem::AWSClientAuth
+            Gem::${gem_name}
             Gem::AWSCore.Builders
             Gem::HttpRequestor.Builders
     )
@@ -131,7 +140,7 @@ endif()
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
-        NAME AWSClientAuth.Tests MODULE
+        NAME ${gem_name}.Tests MODULE
         NAMESPACE Gem
         FILES_CMAKE
             awsclientauth_test_files.cmake
@@ -147,7 +156,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzCore
                 AZ::AzFramework
                 AZ::AWSNativeSDKTestLibs
-                Gem::AWSClientAuth.Static
+                Gem::${gem_name}.Static
                 Gem::AWSCore
                 Gem::HttpRequestor
         RUNTIME_DEPENDENCIES
@@ -155,7 +164,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             Gem::HttpRequestor
    )
    ly_add_googletest(
-        NAME Gem::AWSClientAuth.Tests
+        NAME Gem::${gem_name}.Tests
         LABELS REQUIRES_tiaf
     )
 endif()

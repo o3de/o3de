@@ -18,6 +18,7 @@ AZ_POP_DISABLE_WARNING
 #endif
 
 class QSettings;
+class QTimer;
 
 namespace AzQtComponents
 {
@@ -140,6 +141,8 @@ namespace AzQtComponents
 
         void paintEvent(QPaintEvent* event) override;
         void mousePressEvent(QMouseEvent* event) override;
+        void mouseMoveEvent(QMouseEvent* event) override;
+        void mouseReleaseEvent(QMouseEvent* event) override;
         void mouseDoubleClickEvent(QMouseEvent* event) override;
         void contextMenuEvent(QContextMenuEvent* event) override;
 
@@ -171,6 +174,25 @@ namespace AzQtComponents
         Config m_config;
         bool m_showSearchResultsMode = false;
         bool m_hideProductAssets = true;
+
+        // Selection Handling
+        void SelectAllEntitiesInSelectionRect();
+        QItemSelection m_previousSelection;
+
+        void ClearQueuedMouseEvent();
+        void ProcessQueuedMousePressedEvent(QMouseEvent* event);
+        void HandleDrag();
+        void StartCustomDrag(const QModelIndexList& indexList, Qt::DropActions supportedActions);
+        QImage CreateDragImage(const QModelIndexList& indexList);
+
+        QMouseEvent* m_queuedMouseEvent = nullptr;
+        QPoint m_mousePosition;
+        bool m_isDragSelectActive = false;
+        QTimer* m_selectionUpdater;
+
+        const int m_selectionUpdateInterval = 30; //msec
+        const QColor m_dragSelectRectColor = QColor(255, 255, 255, 20);
+        const QColor m_dragSelectBorderColor = QColor(255, 255, 255);
     };
 
     class AssetFolderThumbnailViewDelegate

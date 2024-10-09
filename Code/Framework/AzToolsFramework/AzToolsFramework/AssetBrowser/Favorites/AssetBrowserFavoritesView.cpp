@@ -11,6 +11,7 @@
 #include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoritesModel.h>
 #include <AzToolsFramework/AssetBrowser/Favorites/FavoritesEntryDelegate.h>
 #include <AzToolsFramework/AssetBrowser/Favorites/SearchAssetBrowserFavoriteItem.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 
 #include <QHeaderView>
 #include <QMenu>
@@ -48,9 +49,11 @@ namespace AzToolsFramework
 
             connect(m_delegate.data(), &EntryDelegate::RenameEntry, this, &AssetBrowserFavoritesView::AfterRename);
             connect(this, &QTreeView::customContextMenuRequested, this, &AssetBrowserFavoritesView::OnContextMenu);
+            connect(selectionModel(), &QItemSelectionModel::selectionChanged, this, &AssetBrowserFavoritesView::SelectionChanged);
 
             connect(this, &QTreeView::expanded, this, &AssetBrowserFavoritesView::expanded);
             connect(this, &QTreeView::collapsed, this, &AssetBrowserFavoritesView::collapsed);
+            connect(this, &QAbstractItemView::clicked, this, &AssetBrowserFavoritesView::ItemClicked);
 
             m_currentHeight = this->height();
         }
@@ -228,6 +231,47 @@ namespace AzToolsFramework
             else
             {
                 m_favoritesModel->EnableSearchItems();
+            }
+        }
+
+        
+        void AssetBrowserFavoritesView::SelectionChanged(const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
+        {
+            NotifySelection(selected);
+        }
+
+        void AssetBrowserFavoritesView::NotifySelection(const QItemSelection& selected)
+        {
+            // if we select 1 thing, give the previewer a chance to view it.  Favorites is a cell-by-cell selection
+            // so it won't select an entire row, ie, every selection will be its own row so its not necessary to count rows, as that will
+            // be the same as the count of the selected indexes.
+            QModelIndexList selectedIndexes = selected.indexes();
+            if (selectedIndexes.size() == 1)
+            {
+                const QModelIndex index = selectedIndexes[0];
+                if (index.isValid())
+                {
+                    auto* favorite = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserFavoriteItem*>();
+                    if ((favorite)&&(favorite->GetFavoriteType() == AssetBrowserFavoriteItem::FavoriteType::AssetBrowserEntry))
+                    {
+                        const EntryAssetBrowserFavoriteItem* entryItem = static_cast<const EntryAssetBrowserFavoriteItem*>(favorite);
+                        AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, entryItem->GetEntry());
+                        return;
+                    }
+                }
+            }
+
+            // note that if we don't early return above, we must clear the preview, as we have selected multiple items, or 0 items.
+            AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::ClearPreview);
+        }
+
+        void AssetBrowserFavoritesView::ItemClicked(const QModelIndex& index)
+        {
+            // if we click on an item that was already selected, notify anyway, as we want the behavior to be that
+            // it refreshes the gui when you do that.
+            if (selectionModel()->isSelected(index))
+            {
+                NotifySelection(selectionModel()->selection());
             }
         }
 

@@ -269,13 +269,6 @@ namespace AzToolsFramework
         bool AreAllDescendantsSameLockState(const AZ::EntityId& entityId) const;
         bool AreAllDescendantsSameVisibleState(const AZ::EntityId& entityId) const;
 
-        enum LayerProperty
-        {
-            Locked,
-            Invisible
-        };
-        bool IsInLayerWithProperty(AZ::EntityId entityId, const LayerProperty& layerProperty) const;
-
         // These are needed until we completely disassociated selection control from the outliner state to
         // keep track of selection state before/during/after filtering and searching
         EntityIdList m_unfilteredSelectionEntityIds;

@@ -196,11 +196,9 @@ namespace AZ
             AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(GetEntityId());
             AZ::TickBus::Handler::BusConnect();
             AzToolsFramework::EditorEntityInfoNotificationBus::Handler::BusConnect();
-            m_boxChangedByGridHandler = AZ::Event<bool>::Handler([]([[maybe_unused]] bool value)
+            m_boxChangedByGridHandler = AZ::Event<bool>::Handler([this]([[maybe_unused]] bool value)
                 {
-                    AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                        &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
-                        AzToolsFramework::Refresh_EntireTree);
+                    this->InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
                 });
             m_controller.RegisterBoxChangedByGridHandler(m_boxChangedByGridHandler);
 

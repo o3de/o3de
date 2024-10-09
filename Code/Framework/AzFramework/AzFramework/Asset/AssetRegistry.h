@@ -37,7 +37,10 @@ namespace AzFramework
         void RegisterAsset(AZ::Data::AssetId id, const AZ::Data::AssetInfo& assetInfo);
         void UnregisterAsset(AZ::Data::AssetId id);
 
+        // O3DE_DEPRECATION_NOTICE(GHI-17861)
         void RegisterLegacyAssetMapping(const AZ::Data::AssetId& legacyId, const AZ::Data::AssetId& newId);
+
+        // O3DE_DEPRECATION_NOTICE(GHI-17861)
         void UnregisterLegacyAssetMappingsForAsset(const AZ::Data::AssetId& id);
 
         void SetAssetDependencies(const AZ::Data::AssetId& id, const AZStd::vector<AZ::Data::ProductDependency>& dependencies);
@@ -55,9 +58,11 @@ namespace AzFramework
 
         void Clear();
 
+        // O3DE_DEPRECATION_NOTICE(GHI-17861)
         // see if the asset ID has been remapped to a new Id:
         AZ::Data::AssetId GetAssetIdByLegacyAssetId(const AZ::Data::AssetId& legacyAssetId) const;
 
+        // O3DE_DEPRECATION_NOTICE(GHI-17861)
         using LegacyAssetIdToRealAssetIdMap = AZStd::unordered_map<AZ::Data::AssetId, AZ::Data::AssetId>;
         LegacyAssetIdToRealAssetIdMap GetLegacyMappingSubsetFromRealIds(const AZStd::vector<AZ::Data::AssetId>& realIds) const;
 
