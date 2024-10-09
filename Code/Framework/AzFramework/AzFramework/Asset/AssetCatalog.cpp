@@ -29,6 +29,10 @@
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
+#ifdef CARBONATED
+#include <AzCore/Memory/MemoryMarker.h>
+#endif
+
 // uncomment to have the catalog be dumped to stdout:
 //#define DEBUG_DUMP_CATALOG
 
@@ -527,6 +531,8 @@ namespace AzFramework
     //=========================================================================
     void AssetCatalog::InitializeCatalog(const char* catalogRegistryFile /*= nullptr*/)
     {
+        MEMORY_TAG(AssetCatalog);
+
         bool shouldBroadcast = false;
         {
             // this scope controls the below lock guard, do not remove this scope.
@@ -655,6 +661,8 @@ namespace AzFramework
     //=========================================================================
     void AssetCatalog::RegisterAsset(const AZ::Data::AssetId& id, AZ::Data::AssetInfo& info)
     {
+        MEMORY_TAG(AssetCatalog);
+
         AZ_Error("AssetCatalog", id != AZ::Data::s_invalidAssetType, "Registering asset \"%s\" with invalid type.", info.m_relativePath.c_str());
 
         info.m_assetId = id;
@@ -797,6 +805,8 @@ namespace AzFramework
     // the results.  For this reason, it is a direct call and protects its structures with a lock.
     void AssetCatalog::AssetChanged(const AZStd::vector<AzFramework::AssetSystem::AssetNotificationMessage>& messages, bool isCatalogInitialize)
     {
+        MEMORY_TAG(AssetCatalog);
+
         for (const auto& message : messages)
         {
             AZStd::string relativePath = message.m_data;

@@ -14,6 +14,10 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/IO/SystemFile.h> // for max path
 
+#ifdef CARBONATED
+#include <AzCore/Memory/MemoryMarker.h>
+#endif
+
 namespace AssetRegistryInternal
 {
     // normalize the path.
@@ -91,6 +95,8 @@ namespace AzFramework
     //=========================================================================
     void AssetRegistry::RegisterAsset(AZ::Data::AssetId id, const AZ::Data::AssetInfo& assetInfo)
     {
+        MEMORY_TAG(AssetCatalog);
+
         // One day we'd like to remove the reverse lookup of name -> id since nothing should be recording asset names for purposes of logic or lookup.
         // But for now, we still support legacy systems which store asset relative pathnames instead of storing asset ID's.
 
@@ -135,11 +141,15 @@ namespace AzFramework
 
     void AssetRegistry::SetAssetDependencies(const AZ::Data::AssetId& id, const AZStd::vector<AZ::Data::ProductDependency>& dependencies)
     {
+        MEMORY_TAG(AssetCatalog);
+
         m_assetDependencies[id] = dependencies;
     }
 
     void AssetRegistry::RegisterAssetDependency(const AZ::Data::AssetId& id, const AZ::Data::ProductDependency& dependency)
     {
+        MEMORY_TAG(AssetCatalog);
+
         m_assetDependencies[id].push_back(dependency);
     }
 
@@ -173,6 +183,8 @@ namespace AzFramework
 
     void AssetRegistry::SetAssetIdByPath(const char* assetPath, const AZ::Data::AssetId& id)
     {
+        MEMORY_TAG(AssetCatalog);
+
         AZ_Assert(assetPath, "Invalid asset path provided to SetAssetID!\n");
         AZ_Assert(id.IsValid(), "Invalid asset id provided to SetAssetID!\n");
         if ((!assetPath) || (!id.IsValid()))
@@ -185,6 +197,8 @@ namespace AzFramework
 
     void AssetRegistry::AddRegistry(AZStd::shared_ptr<AssetRegistry> assetRegistry)
     {
+        MEMORY_TAG(AssetCatalog);
+
         for (const auto& element : assetRegistry->m_assetIdToInfo)
         {
             m_assetIdToInfo[element.first] = element.second;

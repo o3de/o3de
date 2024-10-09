@@ -44,6 +44,8 @@ namespace AZ
         ImageMip = 5,
         EMotionFX = 6,
         Mesh = 7,
+        AssetCatalog = 8,
+        RHIDevice = 9,
 
         GameSpecific = 32  // game tags starts from this index, use your own enum starting with this value
     };
