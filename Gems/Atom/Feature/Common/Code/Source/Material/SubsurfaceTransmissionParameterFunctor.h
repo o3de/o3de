@@ -48,9 +48,9 @@ namespace AZ
             RPI::MaterialPropertyIndex m_scatterDistanceIntensity;
 
             // Shader setting output...
-            RHI::ShaderInputConstantIndex m_scatterDistance;
-            RHI::ShaderInputConstantIndex m_transmissionParams;
-            RHI::ShaderInputConstantIndex m_transmissionTintThickness;
+            AZ::Name m_scatterDistance;
+            AZ::Name m_transmissionParams;
+            AZ::Name m_transmissionTintThickness;
         };
     } // namespace Render
 } // namespace AZ

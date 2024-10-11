@@ -37,7 +37,7 @@ namespace AZ
 
             AZ::RPI::MaterialPropertyIndex m_intensityPropertyIndex;
             AZ::RPI::MaterialPropertyIndex m_lightUnitPropertyIndex;
-            AZ::RHI::ShaderInputConstantIndex m_shaderInputIndex;
+            AZ::Name m_shaderInputName;
 
             uint32_t m_ev100Index;
             uint32_t m_nitIndex;

@@ -83,9 +83,9 @@ namespace AZ
             transmissionTintThickness.Set(tintColor.GetAsVector3());
             transmissionTintThickness.SetW(thickness);
 
-            context.GetShaderResourceGroup()->SetConstant(m_scatterDistance, scatterDistance);
-            context.GetShaderResourceGroup()->SetConstant(m_transmissionParams, transmissionParams);
-            context.GetShaderResourceGroup()->SetConstant(m_transmissionTintThickness, transmissionTintThickness);
+            context.GetMaterialShaderParameter()->SetParameter(m_scatterDistance, scatterDistance);
+            context.GetMaterialShaderParameter()->SetParameter(m_transmissionParams, transmissionParams);
+            context.GetMaterialShaderParameter()->SetParameter(m_transmissionTintThickness, transmissionTintThickness);
         }
 
     } // namespace Render

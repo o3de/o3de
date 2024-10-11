@@ -11,11 +11,12 @@
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
-#include <Atom/RPI.Reflect/Material/ShaderCollection.h>
-#include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
-#include <Atom/RPI.Reflect/Material/MaterialPropertyValue.h>
+#include <Atom/RPI.Public/Material/MaterialShaderParameter.h>
 #include <Atom/RPI.Reflect/Material/MaterialDynamicMetadata.h>
 #include <Atom/RPI.Reflect/Material/MaterialPipelineState.h>
+#include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
+#include <Atom/RPI.Reflect/Material/MaterialPropertyValue.h>
+#include <Atom/RPI.Reflect/Material/ShaderCollection.h>
 
 namespace AZ
 {
@@ -163,10 +164,9 @@ namespace AZ
                 , public ConfigureShaders
             {
             public:
-
                 //! Get the shader resource group for editing.
-                ShaderResourceGroup* GetShaderResourceGroup();
-
+                // ShaderResourceGroup* GetShaderResourceGroup();
+                MaterialShaderParameter* GetMaterialShaderParameter();
                 //! Set the value of an internal material property. These are used to pass data to one of the material pipelines.
                 bool SetInternalMaterialPropertyValue(const Name& propertyId, const MaterialPropertyValue& value);
 
@@ -174,16 +174,15 @@ namespace AZ
                     const MaterialPropertyCollection& materialProperties,
                     const MaterialPropertyFlags* materialPropertyDependencies,
                     MaterialPropertyPsoHandling psoHandling,
-                    ShaderResourceGroup* shaderResourceGroup,
+                    MaterialShaderParameter* shaderParameters,
                     ShaderCollection* generalShaderCollection,
-                    MaterialPipelineDataMap* materialPipelineData
-                );
+                    MaterialPipelineDataMap* materialPipelineData);
 
             private:
 
                 void ForAllShaderItems(AZStd::function<bool(ShaderCollection::Item& shaderItem)> callback) override;
 
-                ShaderResourceGroup* m_shaderResourceGroup;
+                MaterialShaderParameter* m_materialShaderParameter;
                 MaterialPipelineDataMap* m_materialPipelineData;
             };
 

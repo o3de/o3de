@@ -18,6 +18,18 @@ namespace AZ
 
     namespace RPI
     {
+
+        struct MaterialFunctorShaderParameter
+        {
+            AZ_RTTI(MaterialFunctorShaderParameter, "{A6220690-E78E-4B37-A349-5944E13F766B}");
+            static void Reflect(AZ::ReflectContext* context);
+
+            virtual ~MaterialFunctorShaderParameter() = default;
+            AZStd::string m_name;
+            AZStd::string m_typeName;
+            size_t m_typeSize = 0;
+        };
+
         //! The wrapper class for derived material functors.
         //! It is used in deserialization so that derived material functors can be deserialized by name.
         class MaterialFunctorSourceDataHolder final
@@ -39,8 +51,11 @@ namespace AZ
             MaterialFunctorSourceData::FunctorResult CreateFunctor(const MaterialFunctorSourceData::EditorContext& editorContext) const;
 
             Ptr<MaterialFunctorSourceData> GetActualSourceData() const;
+            const AZStd::vector<MaterialFunctorShaderParameter>& GetShaderParameters() const;
+
         private:
             Ptr<MaterialFunctorSourceData> m_actualSourceData = nullptr; // The derived material functor instance.
+            AZStd::vector<MaterialFunctorShaderParameter> m_shaderParameters;
         };
     } // namespace RPI
 

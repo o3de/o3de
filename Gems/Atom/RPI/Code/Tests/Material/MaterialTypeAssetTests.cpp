@@ -46,8 +46,7 @@ namespace UnitTest
                 serializeContext->Class<Splat3Functor, AZ::RPI::MaterialFunctor>()
                     ->Version(1)
                     ->Field("m_floatIndex", &Splat3Functor::m_floatIndex)
-                    ->Field("m_vector3Index", &Splat3Functor::m_vector3Index)
-                    ;
+                    ->Field("m_vector3Name", &Splat3Functor::m_vector3Name);
             }
 
             using AZ::RPI::MaterialFunctor::Process;
@@ -55,12 +54,12 @@ namespace UnitTest
             {
                 // This code isn't actually called in the unit test, but we include it here just to demonstrate what a real functor might look like.
                 float f = context.GetMaterialPropertyValue(m_floatIndex).GetValue<float>();
-                float f3[3] = { f,f,f };
-                context.GetShaderResourceGroup()->SetConstantRaw(m_vector3Index, f3, sizeof(float) * 3);
+                Vector3 f3{ f, f, f };
+                context.GetMaterialShaderParameter()->SetParameter(m_vector3Name, f3);
             }
 
             AZ::RPI::MaterialPropertyIndex m_floatIndex;
-            RHI::ShaderInputConstantIndex m_vector3Index;
+            AZ::Name m_vector3Name;
         };
 
         /// Sample used for testing a MaterialFunctor that updates the shader collection
@@ -223,7 +222,7 @@ namespace UnitTest
 
             Ptr<Splat3Functor> shaderInputFunctor = aznew Splat3Functor;
             shaderInputFunctor->m_floatIndex = materialTypeCreator.GetMaterialPropertiesLayout()->FindPropertyIndex(Name{ "NonAliasFloat" });
-            shaderInputFunctor->m_vector3Index = m_testMaterialSrgLayout->FindShaderInputConstantIndex(Name{ "m_float3" });
+            shaderInputFunctor->m_vector3Name = Name{ "m_float3" };
             materialTypeCreator.AddMaterialFunctor(shaderInputFunctor);
 
             EXPECT_TRUE(materialTypeCreator.End(materialTypeAsset));
@@ -277,8 +276,6 @@ namespace UnitTest
 
             // Check the functors
 
-            const RHI::ShaderInputConstantIndex expectedVector3Index = materialTypeAsset->GetMaterialSrgLayout()->FindShaderInputConstantIndex(Name{ "m_float3" });
-
             EXPECT_EQ(2, materialTypeAsset->GetMaterialFunctors().size());
             const DummyShaderCollectionFunctor* shaderCollectionFunctor = azrtti_cast<DummyShaderCollectionFunctor*>(materialTypeAsset->GetMaterialFunctors()[0].get());
             EXPECT_TRUE(nullptr != shaderCollectionFunctor);
@@ -287,7 +284,6 @@ namespace UnitTest
             const Splat3Functor* shaderInputFunctor = azrtti_cast<Splat3Functor*>(materialTypeAsset->GetMaterialFunctors()[1].get());
             EXPECT_TRUE(nullptr != shaderInputFunctor);
             EXPECT_EQ(nonAliasFloatIndex, shaderInputFunctor->m_floatIndex);
-            EXPECT_EQ(expectedVector3Index, shaderInputFunctor->m_vector3Index);
         };
 
     }

@@ -55,14 +55,8 @@ namespace AZ
 
             Matrix3x3 transform = CreateUvTransformMatrix(desc, m_transformOrder);
 
-            context.GetShaderResourceGroup()->SetConstant(m_transformMatrix, transform);
-
-            // There are some cases where the matrix is required but the inverse is not, so the SRG only has the regular matrix.
-            // In that case, the.materialtype file will not provide the name of an inverse matrix because it doesn't have one.
-            if (m_transformMatrixInverse.IsValid())
-            {
-                context.GetShaderResourceGroup()->SetConstant(m_transformMatrixInverse, transform.GetInverseFull());
-            }
+            context.GetMaterialShaderParameter()->SetParameter(m_transformMatrix, transform);
+            context.GetMaterialShaderParameter()->SetParameter(m_transformMatrixInverse, transform.GetInverseFull());
         }
 
     } // namespace Render
