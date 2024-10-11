@@ -71,6 +71,7 @@ ly_add_target(
             Gem::ImGui.ImGuiLYUtils
         PRIVATE
             Gem::LmbrCentral
+            Gem::LyShine
 )
 
 ly_add_target(
