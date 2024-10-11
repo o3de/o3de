@@ -105,9 +105,15 @@ namespace AZ
             //! Adds UV name for a shader input.
             void AddUvName(const RHI::ShaderSemantic& shaderInput, const Name& uvName);
 
+            void SetMaterialShaderParameterLayout(MaterialShaderParameterLayout parameters);
+
+            void UpdateShaderInputConnections();
+            void UpdateShaderInputConnection(MaterialPropertyDescriptor& propertyDescriptor, MaterialPropertyOutputId& outputId);
+
             //! This provides access to the MaterialPropertiesLayout while the MaterialTypeAsset is still being built.
             //! This is needed by MaterialTypeSourceData to initialize functor objects.
-            //! @param materialPipelineName For internal material properties, this indicates which MaterialPipelinePayload's property layout to query.
+            //! @param materialPipelineName For internal material properties, this indicates which MaterialPipelinePayload's property
+            //! layout to query.
             //!                             For main material properties, use MaterialPipelineNone.
             //! @return A valid pointer when called between Begin() and End(). Otherwise, returns nullptr.
             const MaterialPropertiesLayout* GetMaterialPropertiesLayout(const AZ::Name& materialPipelineName = MaterialPipelineNone) const;

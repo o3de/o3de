@@ -37,6 +37,7 @@ namespace AZ
 
         void MaterialTypeAsset::Reflect(ReflectContext* context)
         {
+            MaterialShaderParameterLayout::Reflect(context);
             MaterialVersionUpdates::Reflect(context);
             UvNamePair::Reflect(context);
 
@@ -64,7 +65,7 @@ namespace AZ
                     ->Field("DefaultPropertyValues", &MaterialTypeAsset::m_propertyValues)
                     ->Field("MaterialPipelinePayloads", &MaterialTypeAsset::m_materialPipelinePayloads)
                     ->Field("UvNameMap", &MaterialTypeAsset::m_uvNameMap)
-                    ;
+                    ->Field("MaterialShaderParameterLayout", &MaterialTypeAsset::m_materialShaderParameterLayout);
             }
 
             ShaderCollection::Reflect(context);
@@ -197,6 +198,11 @@ namespace AZ
         const MaterialPropertiesLayout* MaterialTypeAsset::GetMaterialPropertiesLayout() const
         {
             return m_materialPropertiesLayout.get();
+        }
+
+        const MaterialShaderParameterLayout& MaterialTypeAsset::GetMaterialShaderParameterLayout() const
+        {
+            return m_materialShaderParameterLayout;
         }
 
         const AZStd::vector<MaterialPropertyValue>& MaterialTypeAsset::GetDefaultPropertyValues() const

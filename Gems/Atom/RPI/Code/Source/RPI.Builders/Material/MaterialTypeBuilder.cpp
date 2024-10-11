@@ -456,6 +456,33 @@ namespace AZ
                 }
             }
 
+            auto MaterialShaderParameterLayout = materialTypeSourceData.CreateMaterialShaderParameterLayout();
+
+            AZStd::string materialParameterAzsliFileName = AZStd::string::format("%s_parameters.azsli", materialTypeName.c_str());
+            AZStd::to_lower(materialParameterAzsliFileName.begin(), materialParameterAzsliFileName.end());
+            AZ::IO::Path outputMaterialParameterAzsliFilePath = request.m_tempDirPath;
+            outputMaterialParameterAzsliFilePath /= materialParameterAzsliFileName;
+
+            if (MaterialShaderParameterLayout.WriteMaterialParameterStructureAzsli(outputMaterialParameterAzsliFilePath))
+            {
+                AssetBuilderSDK::JobProduct product;
+                product.m_outputFlags = AssetBuilderSDK::ProductOutputFlags::IntermediateAsset;
+                product.m_dependenciesHandled = true;
+                product.m_productFileName = outputMaterialParameterAzsliFilePath.String();
+                product.m_productAssetType = azrtti_typeid<RPI::MaterialTypeSourceData>();
+                product.m_productSubID = nextProductSubID++;
+                response.m_outputProducts.emplace_back(AZStd::move(product));
+            }
+            else
+            {
+                AZ_Error(
+                    MaterialTypeBuilderName,
+                    false,
+                    "Failed to write intermediate material parameters file '%s'.",
+                    outputMaterialParameterAzsliFilePath.c_str());
+                return;
+            }
+
             // The new material type will no longer be abstract, we remove the reference to the partial
             // material shader code and will replace it below with a concrete shader asset list.
             const AZ::IO::FixedMaxPath materialAzsliFilePath(
@@ -522,6 +549,11 @@ namespace AZ
                         generatedAzsl += AZStd::string::format("%s;   \\\n", objectSrgAddition.c_str());
                     }
                 }
+
+                generatedAzsl += AZStd::string::format("\n");
+
+                generatedAzsl +=
+                    AZStd::string::format("#define MATERIAL_PARAMETERS_AZSLI_FILE_PATH \"%s\" \n", materialParameterAzsliFileName.c_str());
 
                 generatedAzsl += AZStd::string::format("\n");
 

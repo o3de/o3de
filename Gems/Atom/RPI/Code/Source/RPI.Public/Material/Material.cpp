@@ -28,6 +28,7 @@ namespace AZ
 {
     namespace RPI
     {
+
         const char* Material::s_debugTraceName = "Material";
 
         Data::Instance<Material> Material::FindOrCreate(const Data::Asset<MaterialAsset>& materialAsset)
@@ -60,7 +61,7 @@ namespace AZ
             ScopedValue isInitializing(&m_isInitializing, true, false);
 
             // All of these members must be reset if the material can be reinitialized because of the shader reload notification bus
-            m_shaderResourceGroup = {};
+            m_instanceData = {};
             m_rhiShaderResourceGroup = {};
             m_materialProperties = {};
             m_generalShaderCollection = {};
@@ -81,22 +82,21 @@ namespace AZ
                 return RHI::ResultCode::Fail;
             }
 
-            // Cache off pointers to some key data structures from the material type...
+            auto instanceHandler = MaterialInstanceHandlerInterface::Get();
+
+            if (instanceHandler)
+            {
+                m_instanceData = instanceHandler->RegisterMaterialInstance(this);
+            }
+            else
+            {
+                return RHI::ResultCode::Fail;
+            }
+
             auto srgLayout = m_materialAsset->GetMaterialSrgLayout();
             if (srgLayout)
             {
-                auto shaderAsset = m_materialAsset->GetMaterialTypeAsset()->GetShaderAssetForMaterialSrg();
-                m_shaderResourceGroup = ShaderResourceGroup::Create(shaderAsset, srgLayout->GetName());
-
-                if (m_shaderResourceGroup)
-                {
-                    m_rhiShaderResourceGroup = m_shaderResourceGroup->GetRHIShaderResourceGroup();
-                }
-                else
-                {
-                    // No need to report an error message here, ShaderResourceGroup::Create() will have reported.
-                    return RHI::ResultCode::Fail;
-                }
+                m_rhiShaderResourceGroup = m_instanceData.m_shaderResourceGroup->GetRHIShaderResourceGroup();
             }
 
             m_generalShaderCollection = m_materialAsset->GetGeneralShaderCollection();
@@ -114,7 +114,8 @@ namespace AZ
 
                 pipelineData.m_shaderCollection = materialPipeline.m_shaderCollection;
 
-                if (!pipelineData.m_materialProperties.Init(materialPipeline.m_materialPropertiesLayout, materialPipeline.m_defaultPropertyValues))
+                if (!pipelineData.m_materialProperties.Init(
+                        materialPipeline.m_materialPropertiesLayout, materialPipeline.m_defaultPropertyValues))
                 {
                     return RHI::ResultCode::Fail;
                 }
@@ -124,7 +125,8 @@ namespace AZ
 
             // Register for update events related to Shader instances that own the ShaderAssets inside
             // the shader collection.
-            ForAllShaderItems([this](const Name&, const ShaderCollection::Item& shaderItem)
+            ForAllShaderItems(
+                [this](const Name&, const ShaderCollection::Item& shaderItem)
                 {
                     ShaderReloadDebugTracker::Printf("(Material has ShaderAsset %p)", shaderItem.GetShaderAsset().Get());
                     ShaderReloadNotificationBus::MultiHandler::BusConnect(shaderItem.GetShaderAsset().GetId());
@@ -143,7 +145,26 @@ namespace AZ
 
         Material::~Material()
         {
+            if (m_instanceData.m_materialTypeId >= 0)
+            {
+                auto instanceHandler = MaterialInstanceHandlerInterface::Get();
+                if (instanceHandler)
+                {
+                    instanceHandler->ReleaseMaterialInstance(m_instanceData);
+                    m_instanceData = {};
+                }
+            }
+
             ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
+        }
+
+        int Material::GetMaterialTypeId() const
+        {
+            return m_instanceData.m_materialTypeId;
+        }
+        int Material::GetMaterialInstanceId() const
+        {
+            return m_instanceData.m_materialInstanceId;
         }
 
         const ShaderCollection& Material::GetGeneralShaderCollection() const
@@ -295,7 +316,7 @@ namespace AZ
 
         bool Material::CanCompile() const
         {
-            return m_materialAsset.IsReady() && (!m_shaderResourceGroup || !m_shaderResourceGroup->IsQueuedForCompile());
+            return m_materialAsset.IsReady();
         }
 
         ///////////////////////////////////////////////////////////////////
@@ -387,20 +408,8 @@ namespace AZ
         {
             if (connection.m_type == MaterialPropertyOutputType::ShaderInput)
             {
-                if (propertyDescriptor->GetDataType() == MaterialPropertyDataType::Image)
-                {
-                    const Data::Instance<Image>& image = value.GetValue<Data::Instance<Image>>();
-
-                    RHI::ShaderInputImageIndex shaderInputIndex(connection.m_itemIndex.GetIndex());
-                    m_shaderResourceGroup->SetImage(shaderInputIndex, image);
-                }
-                else
-                {
-                    RHI::ShaderInputConstantIndex shaderInputIndex(connection.m_itemIndex.GetIndex());
-                    SetShaderConstant(shaderInputIndex, value);
-                }
-
-                return true;
+                MaterialShaderParameterLayout::Index itemIndex{ connection.m_itemIndex.GetIndex() };
+                return SetShaderParameterValue(itemIndex, value);
             }
 
             return false;
@@ -479,6 +488,10 @@ namespace AZ
         void Material::ProcessDirectConnections()
         {
             AZ_PROFILE_SCOPE(RPI, "Process direct connection");
+
+            m_instanceData.m_materialShaderParameter->SetParameter(AZ::Name{ "m_materialType" }, m_instanceData.m_materialTypeId);
+            // TODO: remove this (debug only)
+            m_instanceData.m_materialShaderParameter->SetParameter(AZ::Name{ "m_materialInstance" }, m_instanceData.m_materialInstanceId);
 
             // Apply any changes to *main* material properties...
 
@@ -566,10 +579,9 @@ namespace AZ
                             m_materialProperties,
                             &materialPropertyDependencies,
                             psoHandling,
-                            m_shaderResourceGroup.get(),
+                            m_instanceData.m_materialShaderParameter.get(),
                             &m_generalShaderCollection,
-                            &m_materialPipelineData
-                        );
+                            &m_materialPipelineData);
 
                         functor->Process(processContext);
                     }
@@ -647,11 +659,6 @@ namespace AZ
                     materialPipelinePair.second.m_materialProperties.ClearAllPropertyDirtyFlags();
                 }
 
-                if (m_shaderResourceGroup)
-                {
-                    m_shaderResourceGroup->Compile();
-                }
-
                 m_compiledChangeId = m_currentChangeId;
 
                 return true;
@@ -700,65 +707,58 @@ namespace AZ
             return index;
         }
 
-        bool Material::SetShaderConstant(RHI::ShaderInputConstantIndex shaderInputIndex, const MaterialPropertyValue& value)
+        bool Material::SetShaderParameterValue(const MaterialShaderParameterLayout::Index& index, const MaterialPropertyValue& value)
         {
             if (!value.IsValid())
             {
-                AZ_Assert(false, "Empty value found for shader input index %u", shaderInputIndex.GetIndex());
+                AZ_Assert(false, "Empty value found for material parameter");
+                return false;
+            }
+            if (!index.IsValid())
+            {
+                AZ_Assert(false, "Invalid Index for material parameter");
                 return false;
             }
             else if (value.Is<bool>())
             {
-                return m_shaderResourceGroup->SetConstant(shaderInputIndex, value.GetValue<bool>());
+                return m_instanceData.m_materialShaderParameter->SetParameter(index, value.GetValue<bool>());
             }
             else if (value.Is<int32_t>())
             {
-                return m_shaderResourceGroup->SetConstant(shaderInputIndex, value.GetValue<int32_t>());
+                return m_instanceData.m_materialShaderParameter->SetParameter(index, value.GetValue<int32_t>());
             }
             else if (value.Is<uint32_t>())
             {
-                return m_shaderResourceGroup->SetConstant(shaderInputIndex, value.GetValue<uint32_t>());
+                return m_instanceData.m_materialShaderParameter->SetParameter(index, value.GetValue<uint32_t>());
             }
             else if (value.Is<float>())
             {
-                return m_shaderResourceGroup->SetConstant(shaderInputIndex, value.GetValue<float>());
+                return m_instanceData.m_materialShaderParameter->SetParameter(index, value.GetValue<float>());
             }
             else if (value.Is<Vector2>())
             {
-                return m_shaderResourceGroup->SetConstant(shaderInputIndex, value.GetValue<Vector2>());
+                return m_instanceData.m_materialShaderParameter->SetParameter(index, value.GetValue<Vector2>());
             }
             else if (value.Is<Vector3>())
             {
-                // Vector3 is actually 16 bytes, not 12, so ShaderResourceGroup::SetConstant won't work. We
-                // have to pass the raw data instead.
-                return m_shaderResourceGroup->SetConstantRaw(shaderInputIndex, &value.GetValue<Vector3>(), 3 * sizeof(float));
+                return m_instanceData.m_materialShaderParameter->SetParameter(index, value.GetValue<Vector3>());
             }
             else if (value.Is<Vector4>())
             {
-                return m_shaderResourceGroup->SetConstant(shaderInputIndex, value.GetValue<Vector4>());
+                return m_instanceData.m_materialShaderParameter->SetParameter(index, value.GetValue<Vector4>());
             }
             else if (value.Is<Color>())
             {
                 auto transformedColor = AZ::RPI::TransformColor(value.GetValue<Color>(), ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
-
-                // Color is special because it could map to either a float3 or a float4
-                auto descriptor = m_shaderResourceGroup->GetLayout()->GetShaderInput(shaderInputIndex);
-                if (descriptor.m_constantByteCount == 3 * sizeof(float))
-                {
-                    return m_shaderResourceGroup->SetConstantRaw(shaderInputIndex, &transformedColor, 3 * sizeof(float));
-                }
-                else
-                {
-                    return m_shaderResourceGroup->SetConstantRaw(shaderInputIndex, &transformedColor, 4 * sizeof(float));
-                }
+                return m_instanceData.m_materialShaderParameter->SetParameter(index, transformedColor);
             }
             else if (value.Is<Data::Instance<Image>>())
             {
-                return m_shaderResourceGroup->SetConstant(shaderInputIndex, value.GetValue<Data::Instance<Image>>());
+                return m_instanceData.m_materialShaderParameter->SetParameter(index, value.GetValue<Data::Instance<Image>>());
             }
             else if (value.Is<Data::Asset<ImageAsset>>())
             {
-                return m_shaderResourceGroup->SetConstant(shaderInputIndex, value.GetValue<Data::Asset<ImageAsset>>());
+                return m_instanceData.m_materialShaderParameter->SetParameter(index, value.GetValue<Data::Asset<ImageAsset>>());
             }
             else
             {
@@ -859,7 +859,7 @@ namespace AZ
         }
         Data::Instance<RPI::ShaderResourceGroup> Material::GetShaderResourceGroup()
         {
-            return m_shaderResourceGroup;
+            return m_instanceData.m_shaderResourceGroup;
         }
     } // namespace RPI
 } // namespace AZ
