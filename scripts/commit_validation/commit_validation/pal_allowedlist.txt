@@ -63,3 +63,5 @@
 */Gems/WhiteBox/Code/Source/Rendering/Legacy/WhiteBoxLegacyRenderMesh.cpp
 */Gems/Atom/RHI/Code/Include/Atom/RHI/DeviceAddon.h
 */restricted/*/Code/Framework/AzCore/AzCore/AzCore_Traits_*.h
+*/Gems/Atom/RHI/Metal/Code/Source/RHI/MetalViewController.mm
+*/Gems/Atom/RHI/Metal/Code/Source/RHI/MetalViewController.h
