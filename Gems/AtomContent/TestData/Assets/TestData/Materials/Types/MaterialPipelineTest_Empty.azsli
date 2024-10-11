@@ -13,6 +13,14 @@
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/VertexUtility.azsli>
 
+#include MATERIAL_PARAMETERS_AZSLI_FILE_PATH
+
+#ifndef USE_BINDLESS_SRG
+#include <Atom/Features/Materials/MaterialSrg.azsli>
+#else
+#include <Atom/Features/Materials/SceneMaterialSrg.azsli>
+#endif
+
 void CalcPositions(float3 inPosition, uint instanceId, out float3 worldPos, out float4 clipPos)
 {        
     worldPos = LocalSpaceToWorldSpace(inPosition, instanceId);
@@ -41,7 +49,7 @@ void CalcPositions(float3 inPosition, uint instanceId, out float3 worldPos, out 
         uint m_instanceId;
     };
 
-    VsOutput EvaluateVertexGeometry(VsInput IN, VsSystemValues SV)
+    VsOutput EvaluateVertexGeometry(VsInput IN, const MaterialParameters params, VsSystemValues SV)
     {        
         VsOutput output;
 
@@ -62,7 +70,7 @@ void CalcPositions(float3 inPosition, uint instanceId, out float3 worldPos, out 
         float3 bitangents[1];
     };
 
-    PixelGeometryData EvaluatePixelGeometry(VsOutput IN, bool isFrontFace)
+    PixelGeometryData EvaluatePixelGeometry(VsOutput IN, const MaterialParameters params, bool isFrontFace)
     {
         PixelGeometryData pgd;
         pgd.positionWS = IN.worldPosition;
@@ -72,7 +80,7 @@ void CalcPositions(float3 inPosition, uint instanceId, out float3 worldPos, out 
 
     #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_SurfaceData.azsli>
 
-    Surface EvaluateSurface(VsOutput IN, PixelGeometryData geoData)
+    Surface EvaluateSurface(VsOutput IN, const MaterialParameters params, PixelGeometryData geoData)
     {
         Surface surface;
         surface.position = geoData.positionWS.xyz;
@@ -120,7 +128,7 @@ void CalcPositions(float3 inPosition, uint instanceId, out float3 worldPos, out 
         uint m_instanceId;
     };
 
-    VsOutput EvaluateVertexGeometry(VsInput IN, VsSystemValues SV)
+    VsOutput EvaluateVertexGeometry(VsInput IN, const MaterialParameters params, VsSystemValues SV)
     {
         float3 worldPosition;
 

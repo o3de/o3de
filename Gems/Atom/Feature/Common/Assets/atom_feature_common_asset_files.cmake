@@ -386,7 +386,7 @@ set(FILES
     Shaders/Materials/BasePBR/BasePBR_LightingBrdf.azsli
     Shaders/Materials/BasePBR/BasePBR_LightingData.azsli
     Shaders/Materials/BasePBR/BasePBR_LightingEval.azsli
-    Shaders/Materials/BasePBR/BasePBR_MaterialSrg.azsli
+    Shaders/Materials/BasePBR/BasePBR_MaterialInputs.azsli
     Shaders/Materials/BasePBR/BasePBR_PixelGeometryData.azsli
     Shaders/Materials/BasePBR/BasePBR_PixelGeometryEval.azsli
     Shaders/Materials/BasePBR/BasePBR_SurfaceData.azsli
@@ -394,14 +394,14 @@ set(FILES
     Shaders/Materials/BasePBR/BasePBR_VertexData.azsli
     Shaders/Materials/BasePBR/BasePBR_VertexEval.azsli
     Shaders/Materials/EnhancedPBR/EnhancedPBR_LightingBrdf.azsli
-    Shaders/Materials/EnhancedPBR/EnhancedPBR_MaterialSrg.azsli
+    Shaders/Materials/EnhancedPBR/EnhancedPBR_MaterialInputs.azsli
     Shaders/Materials/EnhancedPBR/EnhancedPBR_PixelGeometryData.azsli
     Shaders/Materials/EnhancedPBR/EnhancedPBR_PixelGeometryEval.azsli
     Shaders/Materials/EnhancedPBR/EnhancedPBR_SurfaceData.azsli
     Shaders/Materials/EnhancedPBR/EnhancedPBR_SurfaceEval.azsli
     Shaders/Materials/EnhancedPBR/EnhancedPBR_VertexData.azsli
     Shaders/Materials/EnhancedPBR/EnhancedPBR_VertexEval.azsli
-    Shaders/Materials/Eye/Eye_MaterialSrg.azsli
+    Shaders/Materials/Eye/Eye_MaterialInputs.azsli
     Shaders/Materials/Eye/Eye_PixelGeometryData.azsli
     Shaders/Materials/Eye/Eye_PixelGeometryEval.azsli
     Shaders/Materials/Eye/Eye_SurfaceEval.azsli
@@ -431,7 +431,7 @@ set(FILES
     Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_DepthPass_WithPS.azsl
     Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_Shadowmap_WithPS.azsl
     Shaders/Materials/Skin/Skin_LightingBrdf.azsli
-    Shaders/Materials/Skin/Skin_MaterialSrg.azsli
+    Shaders/Materials/Skin/Skin_MaterialInputs.azsli
     Shaders/Materials/Skin/Skin_PixelGeometryData.azsli
     Shaders/Materials/Skin/Skin_PixelGeometryEval.azsli
     Shaders/Materials/Skin/Skin_SurfaceData.azsli
@@ -440,7 +440,7 @@ set(FILES
     Shaders/Materials/Skin/Skin_VertexEval.azsli
     Shaders/Materials/StandardPBR/StandardPBR_LightingBrdf.azsli
     Shaders/Materials/StandardPBR/StandardPBR_LightingEval.azsli
-    Shaders/Materials/StandardPBR/StandardPBR_MaterialSrg.azsli
+    Shaders/Materials/StandardPBR/StandardPBR_MaterialInputs.azsli
     Shaders/Materials/StandardPBR/StandardPBR_PixelGeometryData.azsli
     Shaders/Materials/StandardPBR/StandardPBR_PixelGeometryEval.azsli
     Shaders/Materials/StandardPBR/StandardPBR_SurfaceData.azsli

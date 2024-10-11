@@ -380,7 +380,17 @@
             "type": "Lua",
             "args": {
                 "file": "Materials/Types/StandardMultilayerPBR_Displacement.lua"
-            }
+            },
+            "shaderparams": [
+                {
+                    "name": "m_displacementMin",
+                    "type": "float"
+                },
+                {
+                    "name": "m_displacementMax",
+                    "type": "float"
+                }
+            ]
         }
     ],
     "uvNameMap": {
