@@ -62,7 +62,7 @@
                 "defaultDataType": "bool",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue;"
+                        "SLOTTYPE SLOTNAME = params.inValue;"
                     ]
                 }
             }

@@ -12,7 +12,7 @@
 #include "../MaterialInputs/SilhouetteInput.azsli"
 
 struct MaterialParameters {
-    float3 m_color;
+    float4 m_color;
     float m_alpha;
     float m_depthBias;
     float m_outlineSize;

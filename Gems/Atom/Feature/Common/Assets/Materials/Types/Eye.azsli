@@ -7,6 +7,7 @@
  */
     
 //TODO(MaterialPipeline): Inline the MaterialSrg files since they aren't reused.
+#define USE_BINDLESS_SRG 1
 
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
@@ -15,7 +16,11 @@
 
 #include MATERIAL_PARAMETERS_AZSLI_FILE_PATH
 
+#if !USE_BINDLESS_SRG
+#include <Atom/Feature/Common/Assets/Shaders/Materials/ForwardPassMaterialSrg.azsli>
+#else
 #include <Atom/Features/Materials/SceneMaterialSrg.azsli>
+#endif
 
 #include <Atom/Feature/Common/Assets/Shaders/Materials/Eye/Eye_MaterialInputs.azsli>
 

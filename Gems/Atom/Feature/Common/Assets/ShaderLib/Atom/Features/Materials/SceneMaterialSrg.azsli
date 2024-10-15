@@ -8,6 +8,7 @@
 
 #pragma once 
 
+
 // This is separated out from SceneMaterialSrg.azsli so the SceneMaterialSrg - dummy shader can compile without including anything else besides MaterialSrgDefinition.azsli
 #include <Atom/Features/Materials/SceneMaterialSrgDefinition.azsli>
 

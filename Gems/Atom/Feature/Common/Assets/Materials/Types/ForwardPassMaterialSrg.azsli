@@ -10,9 +10,16 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
+// Fallback MaterialSrg for non-bindless support: We create one material-SRG per material-instance then
 ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 {
-    StructuredBuffer<MaterialParameters> m_materialParameters;
+    MaterialParameters m_params;
+
+#if !USE_BINDLESS_SRG
+    // the MaterialParameters can only contain texture indices, and no Texture2D directly.
+    // if we aren't using the bindless SRG, we register the Textures here, and the index refers to the index in this array 
+    Texture2D m_textures[];
+#endif
 
     Sampler m_sampler
     {
@@ -23,34 +30,29 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
         MipFilter = Linear;
         MaxAnisotropy = 16;
     };
-
-    Texture2D m_brdfMap;
-
-    Sampler m_samplerBrdf
-    {
-        AddressU = Clamp;
-        AddressV = Clamp;
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-    };
 }
 
+#if USE_BINDLESS_SRG
 #include <Atom/Features/Bindless.azsli>
+#endif
 Texture2D asTexture(const int readIndex)
 {
-    return Bindless::GetTexture2D(readIndex);
+    int localReadIndex = readIndex; 
+    if (localReadIndex < 0)
+    {
+        // TODO: choose a suitable fallback texture here.
+        localReadIndex = 0;
+    }
+#if !USE_BINDLESS_SRG
+    return MaterialSrg::m_textures[localReadIndex];
+#else
+    return BindlessSrg::GetTexture2D(localReadIndex);
+#endif
 }
 
 MaterialParameters GetMaterialParameters()
 {
-    if (DrawSrg::m_materialInstanceId >= 0)
-    {
-        return MaterialSrg::m_materialParameters[DrawSrg::m_materialInstanceId];
-    }
-    else {
-        return (MaterialParameters)0;
-    }
+    return MaterialSrg::m_params;
 }
 
 sampler GetMaterialTextureSampler(/* TODO: sampler params */)

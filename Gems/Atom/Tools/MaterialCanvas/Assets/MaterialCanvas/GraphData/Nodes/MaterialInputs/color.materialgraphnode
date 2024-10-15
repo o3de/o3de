@@ -63,7 +63,7 @@
                 "defaultDataType": "color",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue;"
+                        "SLOTTYPE SLOTNAME = params.inValue;"
                     ]
                 }
             },
@@ -75,7 +75,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue.r;"
+                        "SLOTTYPE SLOTNAME = params.inValue.r;"
                     ]
                 }
             },
@@ -87,7 +87,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue.g;"
+                        "SLOTTYPE SLOTNAME = params.inValue.g;"
                     ]
                 }
             },
@@ -99,7 +99,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue.b;"
+                        "SLOTTYPE SLOTNAME = params.inValue.b;"
                     ]
                 }
             },
@@ -111,7 +111,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue.a;"
+                        "SLOTTYPE SLOTNAME = params.inValue.a;"
                     ]
                 }
             }

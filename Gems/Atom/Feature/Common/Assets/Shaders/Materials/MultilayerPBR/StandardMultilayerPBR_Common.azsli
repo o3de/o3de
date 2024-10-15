@@ -8,13 +8,19 @@
 
 #pragma once 
 
+#define USE_BINDLESS_SRG 1
+
 #include <Atom/Features/SrgSemantics.azsli>
 #include <Atom/Features/PBR/LightingOptions.azsli>
 #include <Atom/RPI/Math.azsli>
 
 #include MATERIAL_PARAMETERS_AZSLI_FILE_PATH
 
+#if !USE_BINDLESS_SRG
+#include <Atom/Feature/Common/Assets/Shaders/Materials/ForwardPassMaterialSrg.azsli>
+#else
 #include <Atom/Features/Materials/SceneMaterialSrg.azsli>
+#endif
 
 #include "../MaterialInputs/BaseColorInput.azsli"
 #include "../MaterialInputs/RoughnessInput.azsli"
@@ -26,79 +32,6 @@
 #include "../MaterialInputs/EmissiveInput.azsli"
 #include "../MaterialInputs/ParallaxInput.azsli"
 #include "../MaterialInputs/UvSetCount.azsli"
-
-// ------ ShaderResourceGroup ----------------------------------------
-
-// #define DEFINE_LAYER_SRG_INPUTS(prefix) \
-// COMMON_SRG_INPUTS_BASE_COLOR(prefix)    \
-// COMMON_SRG_INPUTS_ROUGHNESS(prefix)     \
-// COMMON_SRG_INPUTS_METALLIC(prefix)      \
-// COMMON_SRG_INPUTS_SPECULAR_F0(prefix)   \
-// COMMON_SRG_INPUTS_NORMAL(prefix)        \
-// COMMON_SRG_INPUTS_CLEAR_COAT(prefix)    \
-// COMMON_SRG_INPUTS_OCCLUSION(prefix)     \
-// COMMON_SRG_INPUTS_EMISSIVE(prefix)      \
-// COMMON_SRG_INPUTS_PARALLAX(prefix)
-
-// ShaderResourceGroup MaterialSrg : SRG_PerMaterial
-// {
-//     Texture2D m_blendMaskTexture;
-//     uint m_blendMaskUvIndex;
-    
-//     // When parallax mapping is used, these limit the heightmap intersection search range to the narrowest band possible, to give the best quality result.
-//     // These are also support other calculations related to displacement-based blending, even when parallax is not used.
-//     float m_displacementMin; // The lowest displacement value possible from all layers combined (negative values are below the surface)
-//     float m_displacementMax; // The highest displacement value possible from all layers combined (negative values are below the surface)
-    
-//     // When displacement-based blending is used, this is the height range where the surface properties of different layers will be blended together.
-//     // We use an absolute value rather than a relative factor because disconnecting this property from the influence of other properties makes per-layer 
-//     // displacement adjustments feel more natural if they don't impact the blend distance.
-//     float m_displacementBlendDistance;
-
-//     // Auto-generate material SRG fields for common inputs for each layer
-//     DEFINE_LAYER_SRG_INPUTS(m_layer1_)
-//     DEFINE_LAYER_SRG_INPUTS(m_layer2_)
-//     DEFINE_LAYER_SRG_INPUTS(m_layer3_)
-    
-//     float3x3 m_layer1_m_uvMatrix;
-//     float4 m_pad1; // [GFX TODO][ATOM-14595] This is a workaround for a data stomping bug. Remove once it's fixed.
-
-//     float3x3 m_layer2_m_uvMatrix;
-//     float4 m_pad2; // [GFX TODO][ATOM-14595] This is a workaround for a data stomping bug. Remove once it's fixed.
-
-//     float3x3 m_layer3_m_uvMatrix;
-//     float4 m_pad3; // [GFX TODO][ATOM-14595] This is a workaround for a data stomping bug. Remove once it's fixed.
-    
-//     uint m_parallaxUvIndex;
-//     float m_parallax_pdo_shadowFactor;
-
-//     float3x3 m_uvMatrix;
-//     float4 m_pad4; // [GFX TODO][ATOM-14595] This is a workaround for a data stomping bug. Remove once it's fixed.
-//     float3x3 m_uvMatrixInverse;
-//     float4 m_pad5; // [GFX TODO][ATOM-14595] This is a workaround for a data stomping bug. Remove once it's fixed.
-    
-//     Sampler m_sampler
-//     {
-//         AddressU = Wrap;
-//         AddressV = Wrap;
-//         MinFilter = Linear;
-//         MagFilter = Linear;
-//         MipFilter = Linear;
-//         MaxAnisotropy = 16;
-//     };
-
-//     Texture2D m_brdfMap;
-
-//     Sampler m_samplerBrdf
-//     {
-//         AddressU = Clamp;
-//         AddressV = Clamp;
-//         MinFilter = Linear;
-//         MagFilter = Linear;
-//         MipFilter = Linear;
-//     };
-
-// }
 
 // ------ Shader Options ----------------------------------------
 
