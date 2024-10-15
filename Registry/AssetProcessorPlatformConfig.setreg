@@ -99,7 +99,8 @@
                     "fbx.assetinfo": "fbx",
                     "stl.assetinfo": "stl",
                     "gltf.assetinfo": "gltf",
-                    "glb.assetinfo": "glb"
+                    "glb.assetinfo": "glb",
+                    "usd.assetinfo": "usd"
 
                 },
 

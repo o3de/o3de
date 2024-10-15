@@ -759,4 +759,7 @@ namespace AzFramework
     //! Map from a generic InputChannel event to a camera specific InputEvent.
     InputState BuildInputEvent(
         const InputChannel& inputChannel, const AzFramework::ModifierKeyStates& modifiers, const WindowSize& windowSize);
+
+    //! Determine if we want to capture/trap the mouse cursor when using mouse movements for rotating the camera view
+    bool IsMouseCaptureUsedForCameraRotation();
 } // namespace AzFramework

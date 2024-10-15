@@ -20,6 +20,19 @@
                 {
                     "Name": "DepthStencilInputOutput",
                     "SlotType": "InputOutput"
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "DisplayMapperPass",
+                        "Attachment": "Output"
+                    }
                 }
             ],
             "PassRequests": [
@@ -106,28 +119,7 @@
                             }
                         }
                     ]
-                },
-                {
-                    "Name": "CopyToSwapChain",
-                    "TemplateName": "FullscreenCopyTemplate",
-                    "Enabled": false,
-                    "Connections": [
-                        {
-                            "LocalSlot": "Input",
-                            "AttachmentRef": {
-                                "Pass": "DisplayMapperPass",
-                                "Attachment": "Output"
-                            }
-                        },
-                        {
-                            "LocalSlot": "Output",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "PipelineOutput"
-                            }
-                        }
-                    ]
-                }          
+                }               
             ],
             "PassData": {
                 "MergeChildrenAsSubpasses": true
