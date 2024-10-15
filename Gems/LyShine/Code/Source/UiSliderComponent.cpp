@@ -79,7 +79,19 @@ float UiSliderComponent::GetValue()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+#if defined(CARBONATED)
+// Bus event that also triggers the value changed callback
 void UiSliderComponent::SetValue(float value)
+{
+    SetValueInternal(value);
+    DoChangedActions();
+}
+
+//Actually updates the value
+void UiSliderComponent::SetValueInternal(float value)
+#else
+void UiSliderComponent::SetValue(float value)
+#endif
 {
     if (m_minValue < m_maxValue)
     {
@@ -260,7 +272,11 @@ AZ::EntityId UiSliderComponent::GetManipulatorEntity()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiSliderComponent::InGamePostActivate()
 {
+#if defined(CARBONATED)
+    SetValueInternal(m_value);
+#else
     SetValue(m_value);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -282,7 +298,11 @@ bool UiSliderComponent::HandleReleased(AZ::Vector2 point)
     if (m_isPressed && m_isHandlingEvents)
     {
         float value = GetValueFromPoint(point);
+#if defined(CARBONATED)
+        SetValueInternal(value);
+#else
         SetValue(value);
+#endif
 
         UiInteractableComponent::TriggerReleasedAction();
 
@@ -378,7 +398,11 @@ bool UiSliderComponent::HandleKeyInputBegan(const AzFramework::InputChannel::Sna
 
         if (newValue != m_value)
         {
+#if defined(CARBONATED)
+            SetValueInternal(newValue);
+#else
             SetValue(newValue);
+#endif
 
             AZ::Vector2 point(-1.0f, 1.0f);
             DoChangingActions();
@@ -420,7 +444,11 @@ void UiSliderComponent::InputPositionUpdate(AZ::Vector2 point)
         {
             float value = GetValueFromPoint(point);
 
+#if defined(CARBONATED)
+            SetValueInternal(value);
+#else
             SetValue(value);
+#endif
 
             DoChangingActions();
         }
