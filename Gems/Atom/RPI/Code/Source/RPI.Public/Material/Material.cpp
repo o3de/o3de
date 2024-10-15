@@ -402,9 +402,7 @@ namespace AZ
         }
 
         bool Material::TryApplyPropertyConnectionToShaderInput(
-            const MaterialPropertyValue& value,
-            const MaterialPropertyOutputId& connection,
-            const MaterialPropertyDescriptor* propertyDescriptor)
+            const MaterialPropertyValue& value, const MaterialPropertyOutputId& connection)
         {
             if (connection.m_type == MaterialPropertyOutputType::ShaderInput)
             {
@@ -489,10 +487,6 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(RPI, "Process direct connection");
 
-            m_instanceData.m_materialShaderParameter->SetParameter(AZ::Name{ "m_materialType" }, m_instanceData.m_materialTypeId);
-            // TODO: remove this (debug only)
-            m_instanceData.m_materialShaderParameter->SetParameter(AZ::Name{ "m_materialInstance" }, m_instanceData.m_materialInstanceId);
-
             // Apply any changes to *main* material properties...
 
             for (size_t i = 0; i < m_materialProperties.GetMaterialPropertiesLayout()->GetPropertyCount(); ++i)
@@ -511,8 +505,7 @@ namespace AZ
 
                 for (const MaterialPropertyOutputId& connection : propertyDescriptor->GetOutputConnections())
                 {
-                    [[maybe_unused]] bool applied =
-                        TryApplyPropertyConnectionToShaderInput(value, connection, propertyDescriptor) ||
+                    [[maybe_unused]] bool applied = TryApplyPropertyConnectionToShaderInput(value, connection) ||
                         TryApplyPropertyConnectionToShaderOption(value, connection) ||
                         TryApplyPropertyConnectionToShaderEnable(value, connection) ||
                         TryApplyPropertyConnectionToInternalProperty(value, connection);
@@ -755,10 +748,6 @@ namespace AZ
             else if (value.Is<Data::Instance<Image>>())
             {
                 return m_instanceData.m_materialShaderParameter->SetParameter(index, value.GetValue<Data::Instance<Image>>());
-            }
-            else if (value.Is<Data::Asset<ImageAsset>>())
-            {
-                return m_instanceData.m_materialShaderParameter->SetParameter(index, value.GetValue<Data::Asset<ImageAsset>>());
             }
             else
             {

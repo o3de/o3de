@@ -54,7 +54,7 @@ PSOutput MainPS(VsOutput IN)
 
     MaterialParameters params = MaterialSrg::m_params;
     // write at least something in the alpha to distinguish between silhouette and background
-    OUT.m_color = float4(TransformColor(params.m_color, ColorSpaceId::ACEScg,ColorSpaceId::SRGB), max(0.01, params.m_alpha));
+    OUT.m_color = float4(TransformColor(params.m_color.rgb, ColorSpaceId::ACEScg,ColorSpaceId::SRGB), max(0.01, params.m_alpha));
 
     return OUT;
 }

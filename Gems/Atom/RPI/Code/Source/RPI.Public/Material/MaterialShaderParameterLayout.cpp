@@ -91,14 +91,14 @@ namespace AZ
                 MaterialShaderParameterDescriptor::BufferBinding bufferBinding{
                     gpuTypesize,
                     count,
-                    getStructuredBufferOffset(gpuTypesize * count),
+                    getStructuredBufferOffset(),
                 };
                 m_descriptors.emplace_back(
                     MaterialShaderParameterDescriptor{ AZStd::string(name), typeName, bufferBinding, {}, false, isPseudoparam });
             }
             else
             {
-                auto* desc = GetDescriptor(parameterIndex);
+                [[maybe_unused]] auto* desc = GetDescriptor(parameterIndex);
                 AZ_Assert(
                     desc->m_structuredBufferBinding.m_elementCount == count,
                     "MaterialParameterBuffer: Redefinition of Buffer entry %s with element count (%d -> %d)",
@@ -119,8 +119,9 @@ namespace AZ
         MaterialShaderParameterLayout::Index MaterialShaderParameterLayout::AddMaterialParameter(
             const AZStd::string_view& name, bool isPseudoParam, const size_t count)
         {
+            AZStd::string typeName{ GpuTypeName<T>::value };
             // Hack: AZSL complains about the layout of variables following a float3x3. So add a float4 as padding
-            if (!m_descriptors.empty() && m_descriptors.back().m_typeName == "float3x3" && GpuTypeName<T>::value != "float3x3" &&
+            if (!m_descriptors.empty() && m_descriptors.back().m_typeName == "float3x3" && typeName != "float3x3" &&
                 !name.starts_with("m_pad_matrix"))
             {
                 AddMaterialParameter<Vector4>(AZStd::string::format("m_pad_matrix_%d", m_matrixPaddingIndex++), true);
@@ -134,15 +135,15 @@ namespace AZ
                 MaterialShaderParameterDescriptor::BufferBinding bufferBinding{
                     StructuredBufferTypeSize<T>::value,
                     count,
-                    getStructuredBufferOffset(StructuredBufferTypeSize<T>::value * count),
+                    getStructuredBufferOffset(),
                 };
 
                 m_descriptors.emplace_back(MaterialShaderParameterDescriptor{
-                    AZStd::string(name), GpuTypeName<T>::value, bufferBinding, {}, GpuBindlessReadIndex<T>::value, isPseudoParam });
+                    AZStd::string(name), typeName, bufferBinding, {}, GpuBindlessReadIndex<T>::value, isPseudoParam });
             }
             else
             {
-                auto* desc = GetDescriptor(parameterIndex);
+                [[maybe_unused]] auto* desc = GetDescriptor(parameterIndex);
                 AZ_Assert(
                     desc->m_structuredBufferBinding.m_elementCount == count,
                     "MaterialParameterBuffer: Redefinition of Buffer entry %s with element count (%d -> %d)",
@@ -150,11 +151,11 @@ namespace AZ
                     desc->m_structuredBufferBinding.m_elementCount,
                     count);
                 AZ_Assert(
-                    desc->m_typeName == GpuTypeName<T>::value,
+                    desc->m_typeName == typeName,
                     "MaterialParameterBuffer: Redefinition of Buffer entry %s with new type: %s -> %s",
                     AZStd::string(name).c_str(),
                     desc->m_typeName.c_str(),
-                    GpuTypeName<T>::value);
+                    typeName.c_str());
             }
             return parameterIndex;
         }
@@ -172,6 +173,7 @@ namespace AZ
             const AZStd::string_view&, const bool isPseudoParam, const size_t count);
         template MaterialShaderParameterLayout::Index MaterialShaderParameterLayout::AddMaterialParameter<AZ::Matrix4x4>(
             const AZStd::string_view&, const bool isPseudoParam, const size_t count);
+
         template MaterialShaderParameterLayout::Index MaterialShaderParameterLayout::AddMaterialParameter<AZ::Matrix3x3>(
             const Name&, const bool isPseudoParam, const size_t count);
         template MaterialShaderParameterLayout::Index MaterialShaderParameterLayout::AddMaterialParameter<AZ::Matrix3x4>(
@@ -297,7 +299,7 @@ namespace AZ
             return nullptr;
         }
 
-        size_t MaterialShaderParameterLayout::getStructuredBufferOffset(size_t size) const
+        size_t MaterialShaderParameterLayout::getStructuredBufferOffset() const
         {
             if (m_descriptors.empty())
             {
@@ -329,18 +331,20 @@ namespace AZ
                 return false;
             };
 
-            // Note: the shader material functions provided by the engine take all parameters from a MaterialParameter - struct.
-            // Using the MaterialParameter-buffers from the global MaterialSRg only works if we know the exact layout of the struct on the
-            // GPU, and we only know that if we generated the struct during the materialpipeline processing (when we turn an abstract
-            // materialtype into a non-abstract materialtype). Shaders unaffected by the material pipeline (e.g. the SilhouetteGather -
-            // shader) can manually define a MaterialParameter - struct which resides in a member with the name "m_params" inside the
-            // Material-SRG.
+            // Note: the (new) shader material functions provided by the engine take all parameters from a MaterialParameter - struct.
+            // The materials generally fetch the parameters from a Bindless ByteAdressBuffer via the SceneMaterialSrg before calling the
+            // material functions, but we can fill these buffers if we know the exact layout of the Parameter struct on the
+            // GPU, and we only know that if we generated the struct during the materialpipeline processing, when we turn an abstract
+            // materialtype into a non-abstract materialtype.
+            // Shaders that do not use an abstract material-type (e.g. the SilhouetteGather - shader) can still use the (new) shader
+            // material functions by manually defining a MaterialParameter - struct. If that struct is part of the SRG with the name
+            // "m_params", we set the parameter values directly in the SRG.
 
             auto inputName = AZ::Name{ AZStd::string::format("m_params.%s", desc->m_name.c_str()) };
             if (!assignSrgIndex(inputName))
             {
-                // Backwards compatability with old materials that aren't using the shader material functions from the engine:
-                // look for the parameters in the srg directly
+                // Backwards compatability with shaders that aren't using the (new) shader material functions from the engine:
+                // look for the parameter name in the srg directly, so the data still arrives at the shader
                 inputName = desc->m_name;
                 return assignSrgIndex(inputName);
             }

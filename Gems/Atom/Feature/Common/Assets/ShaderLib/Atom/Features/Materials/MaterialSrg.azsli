@@ -10,12 +10,12 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
-// Fallback MaterialSrg for non-bindless support: We create one material-SRG per material-instance then
+// Fallback MaterialSrg for non-bindless support: We create one material-SRG per material-instance
 ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 {
     MaterialParameters m_params;
 
-#if !USE_BINDLESS_SRG
+#ifndef USE_BINDLESS_SRG
     // the MaterialParameters can only contain texture indices, and no Texture2D directly.
     // if we aren't using the bindless SRG, we register the Textures here, and the index refers to the index in this array 
     Texture2D m_textures[];
@@ -32,9 +32,10 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     };
 }
 
-#if USE_BINDLESS_SRG
+#ifdef USE_BINDLESS_SRG
 #include <Atom/Features/Bindless.azsli>
 #endif
+
 Texture2D asTexture(const int readIndex)
 {
     int localReadIndex = readIndex; 
@@ -43,7 +44,7 @@ Texture2D asTexture(const int readIndex)
         // TODO: choose a suitable fallback texture here.
         localReadIndex = 0;
     }
-#if !USE_BINDLESS_SRG
+#ifndef USE_BINDLESS_SRG
     return MaterialSrg::m_textures[localReadIndex];
 #else
     return BindlessSrg::GetTexture2D(localReadIndex);

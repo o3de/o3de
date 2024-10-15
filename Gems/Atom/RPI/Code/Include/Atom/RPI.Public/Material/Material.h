@@ -177,10 +177,7 @@ namespace AZ
             //! This template is explicitly specialized in the cpp file.
             bool SetShaderOption(ShaderOptionGroup& options, ShaderOptionIndex shaderOptionIndex, const MaterialPropertyValue & value);
 
-            bool TryApplyPropertyConnectionToShaderInput(
-                const MaterialPropertyValue & value,
-                const MaterialPropertyOutputId & connection,
-                const MaterialPropertyDescriptor * propertyDescriptor);
+            bool TryApplyPropertyConnectionToShaderInput(const MaterialPropertyValue& value, const MaterialPropertyOutputId& connection);
             bool TryApplyPropertyConnectionToShaderOption(
                 const MaterialPropertyValue & value,
                 const MaterialPropertyOutputId & connection);

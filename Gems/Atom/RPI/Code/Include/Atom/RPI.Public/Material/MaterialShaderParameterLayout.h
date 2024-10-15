@@ -110,7 +110,7 @@ namespace AZ
             void FinalizeLayout();
 
         private:
-            size_t getStructuredBufferOffset(const size_t size) const;
+            size_t getStructuredBufferOffset() const;
 
             RHI::NameIdReflectionMap<Index> m_names;
             AZStd::vector<MaterialShaderParameterDescriptor> m_descriptors = {};

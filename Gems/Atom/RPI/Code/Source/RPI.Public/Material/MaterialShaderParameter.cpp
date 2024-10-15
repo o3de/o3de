@@ -14,8 +14,15 @@ namespace AZ
     namespace RPI
     {
 
-        MaterialShaderParameter::MaterialShaderParameter(const MaterialShaderParameterLayout* layout)
+        MaterialShaderParameter::MaterialShaderParameter(
+            const int materialTypeIndex,
+            const int materialInstanceIndex,
+            const MaterialShaderParameterLayout* layout,
+            Data::Instance<RPI::ShaderResourceGroup> srg)
             : m_layout(layout)
+            , m_shaderResourceGroup(srg)
+            , m_materialTypeIndex(materialTypeIndex)
+            , m_materialInstanceIndex(materialInstanceIndex)
         {
             if (!m_layout->GetDescriptors().empty())
             {
@@ -30,6 +37,8 @@ namespace AZ
             {
                 AZ_Assert(false, "MaterialShaderParameter needs a layout");
             }
+            SetParameter("m_materialType", m_materialTypeIndex);
+            SetParameter("m_materialInstance", m_materialInstanceIndex);
         }
 
         void MaterialShaderParameter::SetStructuredBufferData(

@@ -17,6 +17,8 @@
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 
+#define DEBUG_MATERIALINSTANCES
+
 namespace AZ
 {
     namespace RPI
@@ -81,6 +83,35 @@ namespace AZ
             PrepareMaterialSrg();
         }
 
+#ifndef USE_BINDLESS_SRG
+        int32_t MaterialSystem::RegisterMaterialTexture(
+            const int materialTypeIndex, const int materialInstanceIndex, const Data::Instance<Image>& image)
+        {
+            int32_t textureIndex{ -1 };
+
+            if (!image)
+            {
+                return textureIndex;
+            }
+
+            auto& materialTypeData = m_materialTypeData[materialTypeIndex];
+            auto& instanceData = materialTypeData.m_instanceData[materialInstanceIndex];
+
+            auto textureIterator = instanceData.m_materialTexturesMap.find(image->GetAssetId());
+            if (textureIterator == instanceData.m_materialTexturesMap.end())
+            {
+                textureIndex = static_cast<int32_t>(instanceData.m_materialTextures.size());
+                instanceData.m_materialTextures.emplace_back(image);
+                instanceData.m_materialTexturesDirty = true;
+            }
+            else
+            {
+                textureIndex = textureIterator->second;
+            }
+            return textureIndex;
+        }
+#endif
+
         // MaterialSrgHandler Interface
         MaterialInstanceData MaterialSystem::RegisterMaterialInstance(const Data::Instance<Material> material)
         {
@@ -117,12 +148,7 @@ namespace AZ
                 {
                     if (m_sceneMaterialSrg && m_sceneMaterialSrg->GetLayout()->GetHash() == srgLayout->GetHash())
                     {
-                        materialTypeData.m_shaderResourceGroup = m_sceneMaterialSrg;
-                    }
-                    else
-                    {
-                        auto srgShaderAsset = materialTypeAsset->GetShaderAssetForMaterialSrg();
-                        materialTypeData.m_shaderResourceGroup = ShaderResourceGroup::Create(srgShaderAsset, srgLayout->GetName());
+                        materialTypeData.m_useSceneMaterialSrg = true;
                     }
                 }
             }
@@ -136,22 +162,42 @@ namespace AZ
             materialTypeData.m_instanceData.resize(materialTypeData.m_instanceIndices.Max(), {});
             auto& instanceData = materialTypeData.m_instanceData[materialInstanceIndex];
 
-            instanceData.m_shaderParameter = aznew MaterialShaderParameter(materialTypeData.m_shaderParameterLayout.get());
             instanceData.m_material = material.get();
             instanceData.m_compiledChangeId = Material::DEFAULT_CHANGE_ID;
 
+            if (!materialTypeData.m_useSceneMaterialSrg)
+            {
+                auto srgLayout = materialTypeAsset->GetMaterialSrgLayout();
+                if (srgLayout)
+                {
+                    auto srgShaderAsset = materialTypeAsset->GetShaderAssetForMaterialSrg();
+                    instanceData.m_shaderResourceGroup = ShaderResourceGroup::Create(srgShaderAsset, srgLayout->GetName());
+                }
+            }
+            else
+            {
+                instanceData.m_shaderResourceGroup = m_sceneMaterialSrg;
+            }
+            instanceData.m_shaderParameter = aznew MaterialShaderParameter(
+                materialTypeIndex,
+                materialInstanceIndex,
+                materialTypeData.m_shaderParameterLayout.get(),
+                instanceData.m_shaderResourceGroup);
+
             MaterialInstanceData result{
-                materialTypeIndex, materialInstanceIndex, materialTypeData.m_shaderResourceGroup, instanceData.m_shaderParameter
+                materialTypeIndex, materialInstanceIndex, instanceData.m_shaderResourceGroup, instanceData.m_shaderParameter
             };
 
-            AZ_Printf(
-                "MaterialSystem",
-                "RegisterMaterialInstance: Register Type %d (%s), Instance %d (%s) (max: %d)",
-                materialTypeIndex,
-                materialTypeData.m_materialTypeAssetHint.c_str(),
-                materialInstanceIndex,
-                instanceData.m_material->GetAsset().GetHint().c_str(),
-                materialTypeData.m_instanceIndices.Max());
+#ifdef DEBUG_MATERIALINSTANCES
+                AZ_Printf(
+                    "MaterialSystem",
+                    "RegisterMaterialInstance: Register Type %d (%s), Instance %d (%s) (max: %d)",
+                    materialTypeIndex,
+                    materialTypeData.m_materialTypeAssetHint.c_str(),
+                    materialInstanceIndex,
+                    instanceData.m_material->GetAsset().GetHint().c_str(),
+                    materialTypeData.m_instanceIndices.Max());
+#endif
 
             return result;
         }
@@ -161,6 +207,7 @@ namespace AZ
             m_bufferReadIndicesDirty = true;
 
             MaterialTypeData* materialTypeData = &m_materialTypeData[materialInstance.m_materialTypeId];
+#ifdef DEBUG_MATERIALINSTANCES
             InternalMaterialInstanceData* materialInstanceData = &materialTypeData->m_instanceData[materialInstance.m_materialInstanceId];
 
             AZ_Printf(
@@ -171,6 +218,7 @@ namespace AZ
                 materialInstance.m_materialInstanceId,
                 materialInstanceData->m_material->GetAsset().GetHint().c_str(),
                 materialTypeData->m_instanceIndices.Max());
+#endif
 
             materialTypeData->m_instanceData[materialInstance.m_materialInstanceId] = {};
             materialTypeData->m_instanceIndices.Release(materialInstance.m_materialInstanceId);
@@ -192,6 +240,7 @@ namespace AZ
 
         void MaterialSystem::DebugPrintMaterialInstances()
         {
+#ifdef DEBUG_MATERIALINSTANCES
             auto readIndices = [](const AZStd::unordered_map<int, uint32_t>& indices)
             {
                 AZStd::string result;
@@ -207,7 +256,7 @@ namespace AZ
                     {
                         result += ", ";
                     }
-                    result += AZStd::string::format("dev_%d: %d", deviceIndex, static_cast<int>(indices.at(deviceIndex)));
+                    result += AZStd::string::format("device %d: %d", deviceIndex, static_cast<int>(indices.at(deviceIndex)));
                 }
                 return result;
             };
@@ -219,32 +268,36 @@ namespace AZ
                 // this buffer
                 if (!materialTypeEntry.m_valid)
                 {
-                    AZ_Printf("MaterialSystem", "MaterialType [%d]: Empty", materialTypeIndex);
+                    AZ_Printf("MaterialSystem", " [%d] MaterialType Empty", materialTypeIndex);
                     continue;
                 }
+
                 AZ_Printf(
                     "MaterialSystem",
-                    "MaterialType [%d]: %s, ReadIndices = [%s]",
+                    "[%d] MaterialType %s, %s, device bindless read indices = [%s]",
                     materialTypeIndex,
                     materialTypeEntry.m_materialTypeAssetHint.c_str(),
+                    materialTypeEntry.m_useSceneMaterialSrg ? "uses SceneMaterialSrg" : "uses custom MaterialSrg",
                     readIndices(materialTypeEntry.m_bindlessReadIndices).c_str());
+
                 for (int instanceIndex = 0; instanceIndex < materialTypeEntry.m_instanceData.size(); instanceIndex++)
                 {
                     auto& materialInstanceEntry = materialTypeEntry.m_instanceData[instanceIndex];
                     if (!materialInstanceEntry.m_material)
                     {
-                        AZ_Printf("MaterialSystem", "    Instance [%d]: Empty", instanceIndex);
+                        AZ_Printf("MaterialSystem", "    [%d] Instance Empty", instanceIndex);
                         continue;
                     }
                     AZ_Printf(
                         "MaterialSystem",
-                        "    Instance [%d]: %s, Offset %d, size %d bytes",
+                        "    [%d] Instance %s (Offset %d, size %d)",
                         instanceIndex,
                         materialInstanceEntry.m_material->GetAsset().GetHint().c_str(),
                         materialInstanceEntry.m_shaderParameter->GetStructuredBufferDataSize() * instanceIndex,
                         materialInstanceEntry.m_shaderParameter->GetStructuredBufferDataSize());
                 }
             }
+#endif
         }
 
         void MaterialSystem::UpdateChangedMaterialParameters()
@@ -296,21 +349,20 @@ namespace AZ
 
         void MaterialSystem::PrepareMaterialParameterBuffers()
         {
-            auto createBuffer =
-                [](const RHI::Format format, const AZStd::string& name, const uint32_t elementSize, const uint32_t numElements)
+            auto createBuffer = [](const RHI::Format format, const AZStd::string& name, const size_t elementSize, const size_t numElements)
             {
                 AZ::RPI::CommonBufferDescriptor desc;
                 desc.m_elementFormat = format;
                 desc.m_poolType = AZ::RPI::CommonBufferPoolType::ReadOnly;
-                desc.m_elementSize = elementSize;
+                desc.m_elementSize = static_cast<uint32_t>(elementSize);
                 desc.m_bufferName = name;
-                desc.m_byteCount = static_cast<uint64_t>(desc.m_elementSize) * numElements;
+                desc.m_byteCount = desc.m_elementSize * numElements;
                 return AZ::RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
             };
 
             auto createRawBufferView = [](Data::Instance<Buffer>& buffer)
             {
-                auto bufferViewDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, buffer->GetBufferSize());
+                auto bufferViewDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, static_cast<uint32_t>(buffer->GetBufferSize()));
                 return buffer->GetRHIBuffer()->BuildBufferView(bufferViewDescriptor);
             };
 
@@ -365,14 +417,6 @@ namespace AZ
 
                 materialParameterBufferReadIndices[materialTypeIndex] = materialTypeEntry.m_parameterBufferView->GetBindlessReadIndex();
                 materialTypeEntry.m_bindlessReadIndices = materialParameterBufferReadIndices[materialTypeIndex];
-
-                // Register the buffer with the Srg and compile it if the material doesn't use the global material srg
-                if (materialTypeEntry.m_shaderResourceGroup != m_sceneMaterialSrg && materialTypeEntry.m_shaderResourceGroup)
-                {
-                    auto bufferIndex = RHI::ShaderInputNameIndex{ "m_materialParameters" };
-                    materialTypeEntry.m_shaderResourceGroup->SetBuffer(bufferIndex, materialTypeEntry.m_parameterBuffer);
-                    materialTypeEntry.m_shaderResourceGroup->Compile();
-                }
             }
             if (m_sceneMaterialSrg)
             {
@@ -388,7 +432,7 @@ namespace AZ
                 }
                 AZStd::unordered_map<int, AZStd::vector<int32_t>> deviceBufferData;
                 AZStd::unordered_map<int, const void*> constDeviceBufferData;
-                uint64_t bufferDataSize;
+                uint64_t bufferDataSize{ 0 };
                 for (auto deviceIndex{ 0 }; deviceIndex < deviceCount; ++deviceIndex)
                 {
                     for (auto& deviceReadIndices : materialParameterBufferReadIndices)
@@ -411,7 +455,9 @@ namespace AZ
             {
                 PrepareMaterialParameterBuffers();
                 m_bufferReadIndicesDirty = false;
+#ifdef DEBUG_MATERIALINSTANCES
                 DebugPrintMaterialInstances();
+#endif
             }
             UpdateChangedMaterialParameters();
         }

@@ -7,10 +7,13 @@
  */
 #pragma once
 
+#include <Atom/RPI.Reflect/Image/Image.h>
 #include <AtomCore/Instance/Instance.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+
+#define USE_BINDLESS_SRG 1
 
 namespace AZ
 {
@@ -39,6 +42,12 @@ namespace AZ
 
             virtual MaterialInstanceData RegisterMaterialInstance([[maybe_unused]] const Data::Instance<Material> material) = 0;
             virtual void ReleaseMaterialInstance([[maybe_unused]] const MaterialInstanceData& materialInstance) = 0;
+#ifndef USE_BINDLESS_SRG
+            virtual int32_t RegisterMaterialTexture(
+                [[maybe_unused]] const int materialTypeIndex,
+                [[maybe_unused]] const int materialInstanceIndex,
+                [[maybe_unused]] const Data::Instance<Image>& image) = 0;
+#endif
             virtual void Compile() = 0;
         };
 

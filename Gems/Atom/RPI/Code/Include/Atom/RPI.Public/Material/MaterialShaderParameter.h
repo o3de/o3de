@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RPI.Public/Material/MaterialInstanceHandler.h>
 #include <Atom/RPI.Public/Material/MaterialShaderParameterLayout.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
@@ -23,12 +24,11 @@ namespace AZ
         class MaterialShaderParameter : public AZStd::intrusive_base
         {
         public:
-            MaterialShaderParameter(const MaterialShaderParameterLayout* layout);
-
-            void SetShaderResourceGroup(Data::Instance<RPI::ShaderResourceGroup> srg)
-            {
-                m_shaderResourceGroup = AZStd::move(srg);
-            }
+            MaterialShaderParameter(
+                const int materialTypeIndex,
+                const int materialInstanceIndex,
+                const MaterialShaderParameterLayout* layout,
+                Data::Instance<RPI::ShaderResourceGroup> srg);
 
             template<typename T>
             bool SetArrayParameter(const AZStd::string_view& name, const AZStd::vector<T>& values)
@@ -66,7 +66,7 @@ namespace AZ
                 return false;
             }
 
-            template<typename T>
+            template<typename T, AZStd::enable_if_t<!AZStd::is_same_v<T, Data::Asset<ImageAsset>>, bool> = true>
             bool SetParameter(const MaterialShaderParameterLayout::Index& index, const T& value)
             {
                 const auto* desc{ m_layout->GetDescriptor(index) };
@@ -97,6 +97,23 @@ namespace AZ
             }
 
             template<>
+            bool SetParameter(const MaterialShaderParameterLayout::Index& index, const Vector3& value)
+            {
+                const auto* desc{ m_layout->GetDescriptor(index) };
+                if (desc)
+                {
+                    // Vector3 has 4 floats for Simd reasons, so copy the data to a float[3]
+                    AZStd::array<float, 3> values;
+                    value.StoreToFloat3(&values[0]);
+                    AZStd::span<const uint8_t> data(reinterpret_cast<const uint8_t*>(&values[0]), sizeof(float) * 3);
+                    SetStructuredBufferData(desc, data);
+                    SetMaterialSrgData(desc, value);
+                    return true;
+                }
+                return false;
+            }
+
+            template<>
             bool SetParameter(const MaterialShaderParameterLayout::Index& index, const Matrix3x3& matrix)
             {
                 const auto* desc{ m_layout->GetDescriptor(index) };
@@ -119,6 +136,7 @@ namespace AZ
                 const auto* desc{ m_layout->GetDescriptor(index) };
                 if (desc)
                 {
+#ifdef USE_BINDLESS_SRG
                     const auto deviceCount{ AZ::RHI::RHISystemInterface::Get()->GetDeviceCount() };
                     for (auto deviceIndex{ 0 }; deviceIndex < deviceCount; ++deviceIndex)
                     {
@@ -130,34 +148,36 @@ namespace AZ
                         }
                         AZStd::span<const uint8_t> data(reinterpret_cast<const uint8_t*>(&deviceReadIndex), sizeof(int32_t));
                         SetStructuredBufferData(desc, data, deviceIndex);
-                        SetMaterialSrgDeviceReadIndex(desc, deviceIndex, deviceReadIndex);
-                        // try to set either the texture or the device - ReadIndex in the SRG, only one of these calls can succeed
-                        SetMaterialSrgData(desc, image);
+                        // try to set the texture read index in the SRG
+                        if (!SetMaterialSrgDeviceReadIndex(desc, deviceIndex, deviceReadIndex))
+                        {
+                            // try to set the Image input in the SRG. Only one of these calls can succeeed, since we use the same name for
+                            // the srg member both times
+                            SetMaterialSrgData(desc, image);
+                        }
                     }
                     return true;
-                }
-                return false;
-            }
-
-            template<>
-            bool SetParameter(const MaterialShaderParameterLayout::Index& index, const Data::Asset<ImageAsset>& imageAsset)
-            {
-                const auto* desc{ m_layout->GetDescriptor(index) };
-                if (desc)
-                {
-                    int32_t readIndex = -1;
-                    if (imageAsset)
+#else
+                    if (!SetMaterialSrgData(desc, image))
                     {
-                        // TODO: find out when this is used
-                        // TODO: make this multi-device capable
-                        // image->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex();
-                        // SetMaterialSrgData(desc, imageAsset);
+                        int imageReadIndex{ -1 };
+                        auto* instanceHandler = MaterialInstanceHandlerInterface::Get();
+                        if (instanceHandler)
+                        {
+                            int imageIndex = instanceHandler->RegisterMaterialTexture(m_materialTypeIndex, m_materialInstanceIndex, image);
+                        }
+                        return SetMaterialSrgData(desc, imageReadIndex);
                     }
-                    AZStd::span<const uint8_t> data(reinterpret_cast<const uint8_t*>(&readIndex), sizeof(int32_t));
-                    SetStructuredBufferData(desc, data);
-                    return true;
+                    else
+                    {
+                        return true;
+                    }
+#endif
                 }
-                return false;
+                else
+                {
+                    return false;
+                }
             }
 
             bool SetParameterRaw(const MaterialShaderParameterLayout::Index& index, const AZStd::span<uint8_t>& data)
@@ -188,12 +208,12 @@ namespace AZ
             }
 
         private:
-            void SetMaterialSrgDeviceReadIndex(
-                const MaterialShaderParameterDescriptor* desc, const int deviceIndex, const int32_t readIndex)
+            bool SetMaterialSrgDeviceReadIndex(
+                const MaterialShaderParameterDescriptor* desc, [[maybe_unused]] const int deviceIndex, const int32_t readIndex)
             {
                 if (!m_shaderResourceGroup)
                 {
-                    return;
+                    return false;
                 }
                 auto* index = AZStd::get_if<RHI::ShaderInputConstantIndex>(&desc->m_srgInputIndex);
                 if (index && index->IsValid())
@@ -203,52 +223,39 @@ namespace AZ
                     //     ->GetDeviceShaderResourceGroup(deviceIndex)
                     //     ->GetData()
                     //     ->SetConstant(index, readIndex);
-                    // TODO: remove this as soon as the code above works
-                    m_shaderResourceGroup->SetConstant(*index, readIndex);
+                    return m_shaderResourceGroup->SetConstant(*index, readIndex);
                 }
+                return false;
             }
 
-            template<typename T>
-            void SetMaterialSrgData(const MaterialShaderParameterDescriptor* desc, const T& value)
+            template<typename T, AZStd::enable_if_t<!AZStd::is_same_v<T, Data::Asset<ImageAsset>>, bool> = true>
+            bool SetMaterialSrgData(const MaterialShaderParameterDescriptor* desc, const T& value)
             {
                 if (!m_shaderResourceGroup)
                 {
-                    return;
+                    return false;
                 }
                 auto* index = AZStd::get_if<RHI::ShaderInputConstantIndex>(&desc->m_srgInputIndex);
                 if (index && index->IsValid())
                 {
-                    m_shaderResourceGroup->SetConstant(*index, value);
+                    return m_shaderResourceGroup->SetConstant(*index, value);
                 }
+                return false;
             }
 
             template<>
-            void SetMaterialSrgData(const MaterialShaderParameterDescriptor* desc, const Data::Instance<Image>& value)
+            bool SetMaterialSrgData(const MaterialShaderParameterDescriptor* desc, const Data::Instance<Image>& value)
             {
                 if (!m_shaderResourceGroup)
                 {
-                    return;
+                    return false;
                 }
                 auto* index = AZStd::get_if<RHI::ShaderInputImageIndex>(&desc->m_srgInputIndex);
                 if (index && index->IsValid())
                 {
-                    m_shaderResourceGroup->SetImage(*index, value);
+                    return m_shaderResourceGroup->SetImage(*index, value);
                 }
-            }
-
-            template<>
-            void SetMaterialSrgData(const MaterialShaderParameterDescriptor* desc, const Data::Asset<ImageAsset>& value)
-            {
-                if (!m_shaderResourceGroup)
-                {
-                    return;
-                }
-                // TODO: figure out when this is called with an ImageAsset
-                auto* index = AZStd::get_if<RHI::ShaderInputImageIndex>(&desc->m_srgInputIndex);
-                if (index && index->IsValid())
-                {
-                    // m_shaderResourceGroup->SetImage(*index, value);
-                }
+                return false;
             }
 
             void SetStructuredBufferData(const MaterialShaderParameterDescriptor* desc, const AZStd::span<const uint8_t>& data);
@@ -258,6 +265,8 @@ namespace AZ
             const MaterialShaderParameterLayout* m_layout;
             AZStd::unordered_map<int, AZStd::vector<uint8_t>> m_structuredBufferData = {};
             Data::Instance<RPI::ShaderResourceGroup> m_shaderResourceGroup = nullptr;
+            int m_materialTypeIndex;
+            int m_materialInstanceIndex;
         };
 
     } // namespace RPI
