@@ -597,7 +597,7 @@ namespace UnitTests
     // To get around this we have to manually split the path here.
     static void MockAbsoluteSplit(const QString& absolutePath, AZStd::string& rootPath, AZStd::string& relPathFromRoot)
     {
-        qsizetype firstSlash = absolutePath.indexOf("/"); // we assume normalized forward slashes.
+        int firstSlash = absolutePath.indexOf("/"); // we assume normalized forward slashes.
         if (firstSlash == -1)
         {
             rootPath = AZStd::string();
@@ -605,8 +605,8 @@ namespace UnitTests
             return;
         }
 
-        rootPath = absolutePath.left(firstSlash + 1).toUtf8().constData();;
-        relPathFromRoot = absolutePath.mid(firstSlash + 1).toUtf8().constData();;
+        rootPath = absolutePath.left(firstSlash + 1).toUtf8().constData();
+        relPathFromRoot = absolutePath.mid(firstSlash + 1).toUtf8().constData();
     }
 
     bool MockFileStateCache::GetFileInfo(const QString& absolutePath, AssetProcessor::FileStateInfo* foundFileInfo) const
