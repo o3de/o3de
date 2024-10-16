@@ -83,6 +83,9 @@ float UiSliderComponent::GetValue()
 // Bus event that also triggers the value changed callback
 void UiSliderComponent::SetValue(float value)
 {
+    if (GetValue() == value)
+        return;
+
     SetValueInternal(value);
     DoChangedActions();
 }
