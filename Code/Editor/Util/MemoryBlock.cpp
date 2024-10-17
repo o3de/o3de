@@ -10,7 +10,6 @@
 #include "EditorDefs.h"
 
 #include "MemoryBlock.h"
-#include "Include/ILogFile.h"
 #include <zlib.h>
 
 #include <QMessageBox>
@@ -92,11 +91,11 @@ bool CMemoryBlock::Allocate(int size, int uncompressedSize)
         }
         if (!m_buffer)
         {
-            GetIEditor()->GetLogFile()->Warning("Reducing working memory set failed, Sandbox must quit");
+            AZ_Warning("CMemoryBlock", false, "Reducing working memory set failed, Sandbox must quit");
         }
         else
         {
-            GetIEditor()->GetLogFile()->Warning("Reducing working memory set succeeded\r\nSandbox may become unstable, it is advised to save the level and restart editor.");
+            AZ_Warning("CMemoryBlock", false, "Reducing working memory set succeeded\r\nSandbox may become unstable, it is advised to save the level and restart editor.");
         }
     }
 
