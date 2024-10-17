@@ -40,6 +40,11 @@ namespace AZ
         {
             m_sourceCode = AZStd::string(sourceCode.begin(), sourceCode.end());
         }
+    
+        void ShaderStageFunction::SetSourceCode(AZStd::string_view sourceCode)
+        {
+            m_sourceCode = sourceCode;
+        }
         
         const AZStd::string& ShaderStageFunction::GetSourceCode() const
         {
@@ -74,14 +79,17 @@ namespace AZ
 
         RHI::ResultCode ShaderStageFunction::FinalizeInternal()
         {
-            if (m_byteCode.empty())
+            if (m_byteCode.empty() && m_sourceCode.empty())
             {
                 AZ_Error("ShaderStageFunction", false, "Finalizing shader stage function with empty bytecodes.");
                 return RHI::ResultCode::InvalidArgument;
             }
 
             HashValue64 hash = HashValue64{ 0 };
-            hash = TypeHash64(m_byteCode.data(), m_byteCode.size(), hash);
+            if (!m_byteCode.empty())
+            {
+                hash = TypeHash64(m_byteCode.data(), m_byteCode.size(), hash);
+            }
             
             if(!m_sourceCode.empty())
             {
