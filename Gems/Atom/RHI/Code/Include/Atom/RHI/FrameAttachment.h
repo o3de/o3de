@@ -96,6 +96,8 @@ namespace AZ::RHI
         AttachmentLifetimeType m_lifetimeType;
         HardwareQueueClassMask m_usedQueueMask = HardwareQueueClassMask::None;
         HardwareQueueClassMask m_supportedQueueMask = HardwareQueueClassMask::None;
+        // we need to store the first device this frame attachment is used on to initialize the clear value
+        int m_firstDeviceIndex{ MultiDevice::InvalidDeviceIndex };
         AZStd::unordered_map<int, ScopeInfo> m_scopeInfos;
     };
 }
