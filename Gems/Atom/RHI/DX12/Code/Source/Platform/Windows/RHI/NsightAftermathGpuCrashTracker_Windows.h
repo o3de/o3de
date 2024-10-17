@@ -87,6 +87,7 @@ private:
     //! Marker resolve callback
     void OnResolveMarker(
         const void* pMarker,
+        const uint32_t markerDataSize,
         void** resolvedMarkerData,
         uint32_t* markerSize) const;
 
@@ -135,6 +136,7 @@ private:
     //! Marker resolve callback
     static void ResolveMarkerCallback(
         const void* pMarker,
+        const uint32_t markerDataSize,
         void* pUserData,
         void** resolvedMarkerData,
         uint32_t* markerSize);
