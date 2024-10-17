@@ -69,6 +69,7 @@ namespace AZ
                     ->Field("shadowFarClipDistance", &LightConfig::m_shadowFarClipDistance)
                     ->Field("shadowmapSize", &LightConfig::m_shadowmapSize)
                     ->Field("enableShadowDebugColoring", &LightConfig::m_enableShadowDebugColoring)
+                    ->Field("visible", &LightConfig::m_visible)
                     ;
             }
 
@@ -88,6 +89,7 @@ namespace AZ
                     ->Property("shadowFarClipDistance", BehaviorValueProperty(&LightConfig::m_shadowFarClipDistance))
                     ->Property("shadowmapSize", BehaviorValueProperty(&LightConfig::m_shadowmapSize))
                     ->Property("enableShadowDebugColoring", BehaviorValueProperty(&LightConfig::m_enableShadowDebugColoring))
+                    ->Property("visible", BehaviorValueProperty(&LightConfig::m_visible))
                     ;
             }
         }
@@ -191,6 +193,7 @@ namespace AZ
                     directionalLightFeatureProcessor->SetShadowmapFrustumSplitSchemeRatio(lightHandle, lightConfig.m_shadowRatioLogarithmUniform);
                     directionalLightFeatureProcessor->SetShadowFarClipDistance(lightHandle, lightConfig.m_shadowFarClipDistance);
                     directionalLightFeatureProcessor->SetShadowmapSize(lightHandle, lightConfig.m_shadowmapSize);
+                    directionalLightFeatureProcessor->SetVisible(lightHandle, lightConfig.m_visible);
 
                     int flags = lightConfig.m_enableShadowDebugColoring ?
                         DirectionalLightFeatureProcessorInterface::DebugDrawFlags::DebugDrawAll :
