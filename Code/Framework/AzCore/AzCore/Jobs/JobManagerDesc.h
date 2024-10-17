@@ -55,5 +55,13 @@ namespace AZ
 
         using DescList = AZStd::fixed_vector<JobManagerThreadDesc, 64>;
         DescList m_workerThreads; ///< List of worker threads to create
+
+        /**
+         *  Limits the number of worker threads to fit in m_workerThreads.
+         */
+        unsigned GetWorkerThreadCount(unsigned requestedWorkerThreadCount) const
+        {
+            return AZStd::min(requestedWorkerThreadCount, aznumeric_cast<unsigned>(m_workerThreads.capacity()));
+        }
     };
 }

@@ -61,7 +61,7 @@ namespace AZ
             numberOfWorkerThreads = AZ_TRAIT_THREAD_NUM_JOB_MANAGER_WORKER_THREADS;
         #else
             uint32_t scaledHardwareThreads = Threading::CalcNumWorkerThreads(cl_jobThreadsConcurrencyRatio, cl_jobThreadsMinNumber, 0, cl_jobThreadsNumReserved);
-            numberOfWorkerThreads = AZ::GetMin(static_cast<unsigned int>(desc.m_workerThreads.capacity()), scaledHardwareThreads);
+            numberOfWorkerThreads = desc.GetWorkerThreadCount(scaledHardwareThreads);
         #endif // (AZ_TRAIT_THREAD_NUM_JOB_MANAGER_WORKER_THREADS)
         }
 
