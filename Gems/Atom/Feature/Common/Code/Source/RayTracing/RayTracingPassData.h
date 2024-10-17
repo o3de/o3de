@@ -44,14 +44,14 @@ namespace AZ
                         ->Field("MaxPayloadSize", &RayTracingPassData::m_maxPayloadSize)
                         ->Field("MaxAttributeSize", &RayTracingPassData::m_maxAttributeSize)
                         ->Field("MaxRecursionDepth", &RayTracingPassData::m_maxRecursionDepth)
-                        ->Field("Thread Count X", &RayTracingPassData::m_threadCountX)
-                        ->Field("Thread Count Y", &RayTracingPassData::m_threadCountY)
-                        ->Field("Thread Count Z", &RayTracingPassData::m_threadCountZ)
-                        ->Field("Make Fullscreen Pass", &RayTracingPassData::m_fullscreenDispatch)
+                        ->Field("ThreadCountX", &RayTracingPassData::m_threadCountX)
+                        ->Field("ThreadCountY", &RayTracingPassData::m_threadCountY)
+                        ->Field("ThreadCountZ", &RayTracingPassData::m_threadCountZ)
+                        ->Field("FullscreenDispatch", &RayTracingPassData::m_fullscreenDispatch)
                         ->Field("FullscreenSizeSourceSlotName", &RayTracingPassData::m_fullscreenSizeSourceSlotName)
                         ->Field("IndirectDispatch", &RayTracingPassData::m_indirectDispatch)
                         ->Field("IndirectDispatchBufferSlotName", &RayTracingPassData::m_indirectDispatchBufferSlotName)
-                        ->Field("Max Ray Length", &RayTracingPassData::m_maxRayLength);
+                        ->Field("MaxRayLength", &RayTracingPassData::m_maxRayLength);
                 }
             }
 
