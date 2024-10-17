@@ -22,9 +22,6 @@ namespace AZ
 {
     namespace RPI
     {
-        const char* ShaderOptionDescriptor::DebugCategory = "ShaderOption";
-        const char* ShaderOptionGroupLayout::DebugCategory = "ShaderOption";
-
         const char* ToString(ShaderOptionType shaderOptionType)
         {
             switch (shaderOptionType)

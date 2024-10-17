@@ -34,9 +34,9 @@ namespace AZ
             friend class BufferAssetCreator;
 
         public:
-            static const char* DisplayName;
-            static const char* Extension;
-            static const char* Group;
+            static constexpr const char* DisplayName{ "BufferAsset" };
+            static constexpr const char* Group{ "Buffer" };
+            static constexpr const char* Extension{ "azbuffer" };
 
             AZ_RTTI(BufferAsset, "{F6C5EA8A-1DB3-456E-B970-B6E2AB262AED}", Data::AssetData);
             AZ_CLASS_ALLOCATOR(BufferAsset, AZ::SystemAllocator);

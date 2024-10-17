@@ -42,7 +42,7 @@ namespace AZ
         //! The supervariant that supports subpass inputs.
         static constexpr const char* SubpassInputSupervariantName = "SubpassInput";
 
-        static const SupervariantIndex InvalidSupervariantIndex;
+        static constexpr SupervariantIndex InvalidSupervariantIndex;
 
         enum class ShaderStageType : uint32_t
         {

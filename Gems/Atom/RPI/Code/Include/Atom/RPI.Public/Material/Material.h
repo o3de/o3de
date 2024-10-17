@@ -54,7 +54,7 @@ namespace AZ
             using ChangeId = size_t;
 
             //! GetCurrentChangeId() will never return this value, so client code can use this to initialize a ChangeId that is immediately dirty
-            static const ChangeId DEFAULT_CHANGE_ID = 0;
+            static constexpr ChangeId DEFAULT_CHANGE_ID = 0;
 
             static Data::Instance<Material> FindOrCreate(const Data::Asset<MaterialAsset>& materialAsset);
             static Data::Instance<Material> Create(const Data::Asset<MaterialAsset>& materialAsset);
@@ -195,7 +195,7 @@ namespace AZ
             // version of the function when a private overload is present, just based on a lambda signature.
             void ForAllShaderItemsWriteable(AZStd::function<bool(ShaderCollection::Item& shaderItem)> callback);
 
-            static const char* s_debugTraceName;
+            static constexpr const char* s_debugTraceName = "Material";
 
             //! The corresponding material asset that provides material type data and initial property values.
             Data::Asset<MaterialAsset> m_materialAsset;

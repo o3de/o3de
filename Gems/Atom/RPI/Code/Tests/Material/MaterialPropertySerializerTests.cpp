@@ -15,6 +15,9 @@
 #include <Common/TestUtils.h>
 #include <Tests/Serialization/Json/JsonSerializerConformityTests.h>
 
+extern "C" void CleanUpRpiPublicGenericClassInfo();
+extern "C" void CleanUpRpiEditGenericClassInfo();
+
 namespace JsonSerializationTests
 {
     class MaterialPropertySerializerTestDescription :
@@ -137,6 +140,14 @@ namespace JsonSerializationTests
                 if (leftConnection.m_name!= rightConnection.m_name) { return false; }
             }
             return true;
+        }
+
+        void TearDown() override
+        {
+            CleanUpRpiPublicGenericClassInfo();
+            CleanUpRpiEditGenericClassInfo();
+
+            JsonSerializerConformityTestDescriptor::TearDown();
         }
     };
 

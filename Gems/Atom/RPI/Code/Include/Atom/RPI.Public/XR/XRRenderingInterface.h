@@ -23,8 +23,8 @@ namespace AZ::RHI
 
 namespace AZ::RPI
 {
-    static const int XRMaxNumControllers = 2;
-    static const int XRMaxNumViews = 2;
+    static constexpr int XRMaxNumControllers = 2;
+    static constexpr int XRMaxNumViews = 2;
     class PassTemplate;
     class AttachmentImage;
 

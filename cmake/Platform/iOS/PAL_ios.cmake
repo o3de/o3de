@@ -49,3 +49,5 @@ set(LY_ASSET_DEPLOY_ASSET_TYPE "ios" CACHE STRING "Set the asset type for deploy
 # Set the python cmd tool
 ly_set(LY_PYTHON_CMD ${CMAKE_CURRENT_SOURCE_DIR}/python/python.sh)
 
+# Compiler flag to export all symbols from a library
+ly_set(PAL_TRAIT_EXPORT_ALL_SYMBOLS_COMPILE_OPTIONS -fvisibility=default)

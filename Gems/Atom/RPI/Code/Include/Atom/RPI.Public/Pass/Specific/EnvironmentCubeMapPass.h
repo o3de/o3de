@@ -37,8 +37,8 @@ namespace AZ
             void SetDefaultView();
 
             // cubemap face size is always 1024, it is downsampled during the asset build by the ImageProcessor
-            static const u32 CubeMapFaceSize = 1024;
-            static const u32 NumCubeMapFaces = 6;
+            static constexpr u32 CubeMapFaceSize = 1024;
+            static constexpr u32 NumCubeMapFaces = 6;
 
             // returns true if all faces of the cubemap have been rendered
             bool IsFinished() { return m_renderFace == NumCubeMapFaces; }
@@ -107,7 +107,7 @@ namespace AZ
             // tracks the number of frames elapsed before submitting the readback request
             // this is a work-around for a synchronization issue and will be removed after changing the readback mechanism
             // [ATOM-3844] Remove frame delay in EnvironmentCubeMapPass
-            static const u32 NumReadBackDelayFrames = 5;
+            static constexpr u32 NumReadBackDelayFrames = 5;
             u32 m_readBackDelayFrames = 0;
 
             // lock for managing state between this object and the callback

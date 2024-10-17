@@ -18,10 +18,6 @@ namespace AZ
 
     namespace RPI
     {
-        const char* BufferAsset::DisplayName = "BufferAsset";
-        const char* BufferAsset::Group = "Buffer";
-        const char* BufferAsset::Extension = "azbuffer";
-
         void BufferAsset::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))

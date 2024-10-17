@@ -14,10 +14,6 @@ namespace AZ
 {
     namespace RPI
     {
-        const char* ImageAsset::DisplayName = "ImageAsset";
-        const char* ImageAsset::Group = "Image";
-        const char* ImageAsset::Extension = "image";
-
         void ImageAsset::Reflect(AZ::ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))

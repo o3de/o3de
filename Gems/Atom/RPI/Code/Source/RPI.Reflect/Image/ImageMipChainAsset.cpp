@@ -14,10 +14,6 @@ namespace AZ
 {
     namespace RPI
     {
-        const char* ImageMipChainAsset::DisplayName = "ImageMipChain";
-        const char* ImageMipChainAsset::Group = "Image";
-        const char* ImageMipChainAsset::Extension = "imagemipchain";
-
         void ImageMipChainAsset::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))

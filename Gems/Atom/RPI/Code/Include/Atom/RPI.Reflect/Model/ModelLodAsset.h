@@ -38,9 +38,9 @@ namespace AZ
         public:
             static constexpr size_t LodCountMax = 10;
 
-            static const char* DisplayName;
-            static const char* Extension;
-            static const char* Group;
+            static constexpr const char* DisplayName{ "ModelLodAsset" };
+            static constexpr const char* Group{ "Model" };
+            static constexpr const char* Extension{ "azlod" };
 
             AZ_RTTI(ModelLodAsset, "{65B5A801-B9B9-4160-9CB4-D40DAA50B15C}", Data::AssetData);
             AZ_CLASS_ALLOCATOR(ModelLodAsset, AZ::SystemAllocator);

@@ -18,10 +18,6 @@ namespace AZ
 {
     namespace RPI
     {
-        const char* ResourcePoolAsset::DisplayName = "ResourcePool";
-        const char* ResourcePoolAsset::Group = "RenderingPipeline";
-        const char* ResourcePoolAsset::Extension = "pool";
-
         void ResourcePoolAsset::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))

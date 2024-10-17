@@ -28,9 +28,9 @@ namespace AZ
             : public Data::AssetData
         {
         public:
-            static const char* DisplayName;
-            static const char* Group;
-            static const char* Extension;
+            static constexpr const char* DisplayName{ "ImageAsset" };
+            static constexpr const char* Group{ "Image" };
+            static constexpr const char* Extension{ "image" };
 
             AZ_RTTI(ImageAsset, "{C53AB73A-5BC9-462D-805B-43BAFA8C8167}", Data::AssetData);
             AZ_CLASS_ALLOCATOR(ImageAsset, AZ::SystemAllocator);
