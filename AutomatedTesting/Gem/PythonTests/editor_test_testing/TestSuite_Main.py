@@ -38,6 +38,7 @@ def get_editor_launcher_platform():
 class TestEditorTest:
 
     args = []
+    assetprocessor_extra_params = None
     path = None
 
     @classmethod
@@ -81,7 +82,7 @@ class TestEditorTest:
         if cls._asset_processor is None:
             if not process_utils.process_exists("AssetProcessor", ignore_extensions=True):
                 cls._asset_processor = AssetProcessor(workspace)
-                cls._asset_processor.start()
+                cls._asset_processor.start(extra_params=cls.assetprocessor_extra_params)
 
         pytester.makepyfile(
             f"""
@@ -139,7 +140,7 @@ class TestEditorTest:
         if cls._asset_processor is None:
             if not process_utils.process_exists("AssetProcessor", ignore_extensions=True):
                 cls._asset_processor = AssetProcessor(workspace)
-                cls._asset_processor.start()
+                cls._asset_processor.start(extra_params=cls.assetprocessor_extra_params)
 
         pytester.makepyfile(
             f"""
