@@ -246,6 +246,18 @@ namespace AZ::RHI
         GetDeviceTransientAttachmentPool(m_currentScope->GetDeviceIndex())->DeactivateImage(attachmentId);
     }
 
+    void TransientAttachmentPool::RemoveDeviceBuffer(int deviceIndex, Buffer* buffer)
+    {
+        buffer->Init(ResetBit(buffer->GetDeviceMask(), deviceIndex));
+        buffer->m_deviceObjects.erase(deviceIndex);
+    }
+
+    void TransientAttachmentPool::RemoveDeviceImage(int deviceIndex, Image* image)
+    {
+        image->Init(ResetBit(image->GetDeviceMask(), deviceIndex));
+        image->m_deviceObjects.erase(deviceIndex);
+    }
+
     AZStd::unordered_map<int, TransientAttachmentStatistics> TransientAttachmentPool::GetStatistics() const
     {
         AZStd::unordered_map<int, TransientAttachmentStatistics> statistics;

@@ -193,6 +193,11 @@ namespace AZ::RHI
             // First element in the linked list. Trivial assignment.
             attachment.m_scopeInfos[deviceIndex].m_firstScopeAttachment = scopeAttachment;
             attachment.m_scopeInfos[deviceIndex].m_firstScope = &scope;
+
+            if (attachment.m_firstDeviceIndex == MultiDevice::InvalidDeviceIndex)
+            {
+                attachment.m_firstDeviceIndex = deviceIndex;
+            }
         }
         else
         {
