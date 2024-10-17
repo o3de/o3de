@@ -59,9 +59,8 @@ namespace AZ::WebGPU
         void BuildMultisampleState(const RHI::PipelineStateDescriptorForDraw& descriptor);
         void BuildVertexState(const RHI::PipelineStateDescriptorForDraw& descriptor);
         void BuildFragmentState(const RHI::PipelineStateDescriptorForDraw& descriptor);
-        void BuildConstants(
-            const RHI::PipelineStateDescriptorForDraw& descriptor, const char* sourceCode, AZStd::vector<wgpu::ConstantEntry>& constants);
-
+        void FillColorBlendAttachmentState(const RHI::TargetBlendState& blendState, wgpu::ColorTargetState& targetState);
+      
         //! Native wgpu renderpipeline
         wgpu::RenderPipeline m_wgpuRenderPipeline;
 
@@ -72,7 +71,6 @@ namespace AZ::WebGPU
         AZStd::fixed_vector<wgpu::BlendState, RHI::Limits::Pipeline::AttachmentColorCountMax> m_wgpuBlends;
         AZStd::vector<wgpu::ConstantEntry> m_vertexConstants;
         AZStd::vector<wgpu::ConstantEntry> m_fragmentConstants;
-        AZStd::vector<AZStd::string> m_constantsName;
 
         wgpu::FragmentState m_wgpuFragment = {};
         wgpu::DepthStencilState m_wgpuDepthStencil = {};

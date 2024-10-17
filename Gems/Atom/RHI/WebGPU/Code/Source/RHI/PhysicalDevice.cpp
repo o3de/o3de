@@ -57,11 +57,18 @@ namespace AZ
 
             m_wgpuAdapter.GetInfo(&m_adapterInfo);
             AZ_Printf("WebGPU", "Using adapter %s with backend %s", m_adapterInfo.device, ToString(m_adapterInfo.backendType));
+
+            m_wgpuAdapter.GetLimits(&m_limits);
         }
 
         const wgpu::Adapter& PhysicalDevice::GetNativeAdapter() const
         {
             return m_wgpuAdapter;
+        }
+
+        const wgpu::SupportedLimits& PhysicalDevice::GetLimits() const
+        {
+            return m_limits;
         }
     }
 }

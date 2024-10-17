@@ -70,7 +70,8 @@ namespace AZ
 
             //! Maps all buffers in the underlying multi-device buffer and returns a vector
             //! with mapped addresses, one per device.
-            AZStd::unordered_map<int, void*> Map(size_t byteCount, uint64_t byteOffset);
+            AZStd::unordered_map<int, void*> Map(
+                size_t byteCount, uint64_t byteOffset, RHI::BufferResponseMapType* mapType = nullptr);
             void Unmap();
 
             //! Get attachment id if this buffer is used as scope attachment

@@ -578,6 +578,8 @@ namespace AZ
                     AZ::Vector4(0.0f, 0.0f, 0.5f, 0.5f),
                     AZ::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
 
+            projectionMatrix.Transpose();
+
             m_resourceGroup->SetConstant(m_projectionMatrixIndex, projectionMatrix);
 
             m_viewportState = params.m_viewportState;
@@ -646,7 +648,7 @@ namespace AZ
 
                         m_drawInfos.Get().push_back(
                             {
-                                RHI::DrawInstanceArguments(1, index),
+                                index,
                                 geometryView,
                                 RHI::Scissor(
                                     static_cast<int32_t>(drawCmd.ClipRect.x),
@@ -686,12 +688,13 @@ namespace AZ
             {
                 DrawInfo& drawInfo = m_drawInfos.Get().at(i);
                 RHI::DeviceDrawItem drawItem;
-                drawItem.m_drawInstanceArgs = drawInfo.m_drawInstanceArgs;
                 drawItem.m_geometryView = drawInfo.m_geometryView.GetDeviceGeometryView(context.GetDeviceIndex());
                 drawItem.m_streamIndices = drawInfo.m_geometryView.GetFullStreamBufferIndices();
                 drawItem.m_pipelineState = m_pipelineState->GetRHIPipelineState()->GetDevicePipelineState(context.GetDeviceIndex()).get();
                 drawItem.m_scissorsCount = 1;
                 drawItem.m_scissors = &drawInfo.m_scissor;
+                drawItem.m_rootConstantSize = sizeof(drawInfo.m_textureIndex);
+                drawItem.m_rootConstants = reinterpret_cast<uint8_t*>(&drawInfo.m_textureIndex);
 
                 context.GetCommandList()->Submit(drawItem, i);
             }

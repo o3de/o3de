@@ -33,7 +33,10 @@ namespace AZ::WebGPU
             RHI::Device& device,
             const RHI::PipelineStateDescriptorForDraw& descriptor,
             RHI::DevicePipelineLibrary* pipelineLibrary) override;
-        RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::PipelineStateDescriptorForDispatch& descriptor, [[maybe_unused]] RHI::DevicePipelineLibrary* pipelineLibrary) override { return RHI::ResultCode::Success;}
+        RHI::ResultCode InitInternal(
+            RHI::Device& device,
+            const RHI::PipelineStateDescriptorForDispatch& descriptor,
+            RHI::DevicePipelineLibrary* pipelineLibrary) override;
         RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::PipelineStateDescriptorForRayTracing& descriptor, [[maybe_unused]] RHI::DevicePipelineLibrary* pipelineLibrary) override { return RHI::ResultCode::Success;}
         void ShutdownInternal() override;
         //////////////////////////////////////////////////////////////////////////

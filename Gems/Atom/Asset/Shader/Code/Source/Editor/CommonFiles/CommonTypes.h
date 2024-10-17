@@ -123,6 +123,7 @@ namespace AZ
             Texture2DMSArray,
             Texture3D,
             TextureCube,
+            TextureCubeArray,
             RwTexture1D,
             RwTexture1DArray,
             RwTexture2D,
@@ -149,6 +150,8 @@ namespace AZ
             bool          m_isReadOnlyType = false;
             uint32_t      m_registerId = RHI::UndefinedRegisterSlot;
             uint32_t      m_spaceId = RHI::UndefinedRegisterSlot;
+            RHI::Format m_format = RHI::Format::Unknown;
+            RHI::ShaderInputImageSampleType m_sampleType = RHI::ShaderInputImageSampleType::Unknown;
         };
 
         // Buffers
@@ -221,6 +224,7 @@ namespace AZ
             uint32_t m_count = 1;
             uint32_t m_registerId = RHI::UndefinedRegisterSlot;
             uint32_t m_spaceId = RHI::UndefinedRegisterSlot;
+            AZ::RHI::ShaderInputSamplerType m_type = RHI::ShaderInputSamplerType::Unknown;
         };
 
         MemberType StringToBaseType(const char* baseType);
@@ -231,7 +235,9 @@ namespace AZ
         AZ::RHI::ComparisonFunc StringToComparisonFunc(const char* comparison);
         AZ::RHI::FilterMode StringToFilterMode(const char* filterMode);
         AZ::RHI::ReductionType StringToReductionType(const char* reductionType);
+        AZ::RHI::ShaderInputSamplerType StringToSamplerType(const char* samplerType);
         AZ::RHI::Format StringToFormat(const char* format);
+        AZ::RHI::ShaderInputImageSampleType StringToSampleType(const char* sampleType);
 
         /// Reflection data about external resource usage
         /// This is fundamentally the reproduction of the JSON algebraic format output by AZSLc --bindingdep command

@@ -124,7 +124,6 @@ namespace AZ
             RHI::Handle<uint32_t> m_goboTextureFlag;
             bool m_deviceBufferNeedsUpdate = false;
 
-            RHI::ShaderInputNameIndex m_goboTexturesIndex = "m_goboTextures";
             AZStd::vector<AZ::Data::Instance<AZ::RPI::Image>> m_goboTextures;
             bool m_goboArrayChanged = false;
 

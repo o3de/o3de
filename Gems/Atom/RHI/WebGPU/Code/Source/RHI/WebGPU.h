@@ -26,10 +26,7 @@ namespace AZ::WebGPU
 
     AZ_FORCE_INLINE void AssertSuccess([[maybe_unused]] wgpu::Status result)
     {
-        if (result != wgpu::Status::Success)
-        {
-            AZ_Assert(false, "ASSERT: WebGPU API method failed: %s", ToString(result));
-        }
+        AZ_Assert(result == wgpu::Status::Success, "ASSERT: WebGPU API method failed: %s", ToString(result));
     }
 
 #define RETURN_RESULT_IF_UNSUCCESSFUL(result)                                                                                              \

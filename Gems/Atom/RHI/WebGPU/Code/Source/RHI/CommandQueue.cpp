@@ -9,6 +9,7 @@
 #include <RHI/Buffer.h>
 #include <RHI/Device.h>
 #include <RHI/CommandQueue.h>
+#include <RHI/Fence.h>
 #include <RHI/SwapChain.h>
 #include <AzCore/Debug/Timer.h>
 
@@ -84,6 +85,23 @@ namespace AZ::WebGPU
             [&buffer, bufferOffset, data, this]([[maybe_unused]] void* commandQueue)
             {
                 m_wgpuQueue.WriteBuffer(buffer.GetNativeBuffer(), bufferOffset, data.data(), data.size());
+            });
+    }
+
+    void CommandQueue::Signal(Fence& fence)
+    {
+        // WebGPU doesn't have a fence concept yet, so we just
+        // need to wait until all submitted GPU work is done
+        QueueCommand(
+            [&fence, this]([[maybe_unused]] void* queue)
+            {
+                m_wgpuQueue.OnSubmittedWorkDone(
+                    wgpu::CallbackMode::AllowSpontaneous,
+                    [&fence]([[maybe_unused]] wgpu::QueueWorkDoneStatus status)
+                    {
+                        AZ_Error("WebGPU", status == wgpu::QueueWorkDoneStatus::Success, "Failed to wait on submitted work");
+                        fence.SignalEvent();
+                    });
             });
     }
 }

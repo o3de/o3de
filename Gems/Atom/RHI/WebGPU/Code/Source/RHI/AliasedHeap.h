@@ -14,7 +14,7 @@
 namespace AZ::WebGPU
 {
     //! No op barrier tracker. Since WebGPU doesn't support aliasing, we don't need to track barriers
-    class NoBarrierAliasingBarrierTracker : public RHI::AliasingBarrierTracker
+    class NullAliasingBarrierTracker : public RHI::AliasingBarrierTracker
     {
     private:
         //////////////////////////////////////////////////////////////////////////
@@ -25,6 +25,21 @@ namespace AZ::WebGPU
         {
         }
         //////////////////////////////////////////////////////////////////////////
+    };
+
+    //! No op allocator. Since WebGPU doesn't support memory management we don't allocate anything 
+    class NullAllocator : public RHI::Allocator
+    {
+    private:
+
+        void Shutdown() override {}
+        RHI::VirtualAddress Allocate([[maybe_unused]] size_t byteCount,[[maybe_unused]]  size_t byteAlignment) override { return RHI::VirtualAddress::CreateZero(); }
+        void DeAllocate([[maybe_unused]] RHI::VirtualAddress offset) override {}
+        void GarbageCollect() override {}
+        void GarbageCollectForce() override {};
+        const RHI::Allocator::Descriptor& GetDescriptor() const override { return m_descriptor;};
+
+        RHI::Allocator::Descriptor m_descriptor;
     };
 
     //! Since aliasing is not supported for WebGPU, this heap doesn't really share any memory
@@ -44,6 +59,7 @@ namespace AZ::WebGPU
         //////////////////////////////////////////////////////////////////////////
         // RHI::AliasedHeap
         AZStd::unique_ptr<RHI::AliasingBarrierTracker> CreateBarrierTrackerInternal() override;
+        AZStd::unique_ptr<RHI::Allocator> CreateAllocatorInternal(const RHI::AliasedHeapDescriptor& descriptor) override;
         RHI::ResultCode InitInternal(RHI::Device& device, const RHI::AliasedHeapDescriptor& descriptor) override;
         RHI::ResultCode InitImageInternal(const RHI::DeviceImageInitRequest& request, size_t heapOffset) override;
         RHI::ResultCode InitBufferInternal(const RHI::DeviceBufferInitRequest& request, size_t heapOffset) override;

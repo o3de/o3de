@@ -12,7 +12,6 @@
 #include <RHI/RenderPipeline.h>
 #include <RHI/PipelineLibrary.h>
 #include <RHI/ShaderModule.h>
-#include <AzCore/StringFunc/StringFunc.h>
 
 namespace AZ::WebGPU
 {
@@ -63,9 +62,6 @@ namespace AZ::WebGPU
             return RHI::ResultCode::Success;
         }
 
-        // Reserve the vector memory for constant names. Need to do this beforehand so the vector doesn't reallocate.
-        // Since we have 2 stages (vertex + fragment) we allocate twice the space for constants names.
-        m_constantsName.reserve(drawDescriptor.m_specializationData.size() * 2);
         m_wgpuRenderPipelineDescriptor.layout = pipelineLayout.GetNativePipelineLayout();
         BuildPrimitiveState(drawDescriptor);
         BuildDepthStencilState(drawDescriptor);
@@ -85,7 +81,7 @@ namespace AZ::WebGPU
         wgpu::PrimitiveState& wgpuPrimtiveState = m_wgpuRenderPipelineDescriptor.primitive;
         wgpuPrimtiveState.topology = ConvertPrimitiveTopology(descriptor.m_inputStreamLayout.GetTopology());
         wgpuPrimtiveState.stripIndexFormat = wgpu::IndexFormat::Undefined;
-        wgpuPrimtiveState.frontFace = wgpu::FrontFace::CW; // o3de only supports Clockwise
+        wgpuPrimtiveState.frontFace = wgpu::FrontFace::CCW; // o3de only supports Clockwise
         wgpuPrimtiveState.cullMode = ConvertCullMode(descriptor.m_renderStates.m_rasterState.m_cullMode);
         wgpuPrimtiveState.unclippedDepth = !descriptor.m_renderStates.m_rasterState.m_depthClipEnable;
     }
@@ -100,18 +96,30 @@ namespace AZ::WebGPU
             const auto& depthState = descriptor.m_renderStates.m_depthStencilState.m_depth;
             const auto& stencilState = descriptor.m_renderStates.m_depthStencilState.m_stencil;
             wgpuDepthStencilState.format = ConvertImageFormat(depthStencilFormat);
-            wgpuDepthStencilState.depthWriteEnabled = depthState.m_writeMask == RHI::DepthWriteMask::All;
-            wgpuDepthStencilState.depthCompare = ConvertCompareFunction(depthState.m_func);
-            wgpuDepthStencilState.stencilFront.compare = ConvertCompareFunction(stencilState.m_frontFace.m_func);
-            wgpuDepthStencilState.stencilFront.failOp = ConvertStencilOp(stencilState.m_frontFace.m_failOp);
-            wgpuDepthStencilState.stencilFront.depthFailOp = ConvertStencilOp(stencilState.m_frontFace.m_depthFailOp);
-            wgpuDepthStencilState.stencilFront.passOp = ConvertStencilOp(stencilState.m_frontFace.m_passOp);
-            wgpuDepthStencilState.stencilBack.compare = ConvertCompareFunction(stencilState.m_backFace.m_func);
-            wgpuDepthStencilState.stencilBack.failOp = ConvertStencilOp(stencilState.m_backFace.m_failOp);
-            wgpuDepthStencilState.stencilBack.depthFailOp = ConvertStencilOp(stencilState.m_backFace.m_depthFailOp);
-            wgpuDepthStencilState.stencilBack.passOp = ConvertStencilOp(stencilState.m_backFace.m_passOp);
-            wgpuDepthStencilState.stencilReadMask = stencilState.m_readMask;
-            wgpuDepthStencilState.stencilWriteMask = stencilState.m_writeMask;
+            if (depthState.m_enable)
+            {
+                wgpuDepthStencilState.depthWriteEnabled = depthState.m_writeMask == RHI::DepthWriteMask::All;
+                wgpuDepthStencilState.depthCompare = ConvertCompareFunction(depthState.m_func);
+            }
+            else
+            {
+                wgpuDepthStencilState.depthWriteEnabled = false;
+                wgpuDepthStencilState.depthCompare = wgpu::CompareFunction::Always;
+            }
+            if (stencilState.m_enable)
+            {
+                wgpuDepthStencilState.stencilFront.compare = ConvertCompareFunction(stencilState.m_frontFace.m_func);
+                wgpuDepthStencilState.stencilFront.failOp = ConvertStencilOp(stencilState.m_frontFace.m_failOp);
+                wgpuDepthStencilState.stencilFront.depthFailOp = ConvertStencilOp(stencilState.m_frontFace.m_depthFailOp);
+                wgpuDepthStencilState.stencilFront.passOp = ConvertStencilOp(stencilState.m_frontFace.m_passOp);
+                wgpuDepthStencilState.stencilBack.compare = ConvertCompareFunction(stencilState.m_backFace.m_func);
+                wgpuDepthStencilState.stencilBack.failOp = ConvertStencilOp(stencilState.m_backFace.m_failOp);
+                wgpuDepthStencilState.stencilBack.depthFailOp = ConvertStencilOp(stencilState.m_backFace.m_depthFailOp);
+                wgpuDepthStencilState.stencilBack.passOp = ConvertStencilOp(stencilState.m_backFace.m_passOp);
+                wgpuDepthStencilState.stencilReadMask = stencilState.m_readMask;
+                wgpuDepthStencilState.stencilWriteMask = stencilState.m_writeMask;
+            }
+
             wgpuDepthStencilState.depthBias = descriptor.m_renderStates.m_rasterState.m_depthBias;
             wgpuDepthStencilState.depthBiasSlopeScale = descriptor.m_renderStates.m_rasterState.m_depthBiasSlopeScale;
             wgpuDepthStencilState.depthBiasClamp = descriptor.m_renderStates.m_rasterState.m_depthBiasClamp;
@@ -174,6 +182,26 @@ namespace AZ::WebGPU
         }
     }
 
+    void RenderPipeline::FillColorBlendAttachmentState(const RHI::TargetBlendState& blendState, wgpu::ColorTargetState& targetState)
+    {
+        if (blendState.m_enable)
+        {
+            wgpu::BlendState& blend = m_wgpuBlends.emplace_back(wgpu::BlendState{});
+            blend.color.operation = ConvertBlendOp(blendState.m_blendOp);
+            blend.color.srcFactor = ConvertBlendFactor(blendState.m_blendSource);
+            blend.color.dstFactor = ConvertBlendFactor(blendState.m_blendDest);
+            blend.alpha.operation = ConvertBlendOp(blendState.m_blendAlphaOp);
+            blend.alpha.srcFactor = ConvertBlendFactor(blendState.m_blendAlphaSource);
+            blend.alpha.dstFactor = ConvertBlendFactor(blendState.m_blendAlphaDest);
+            targetState.blend = &blend;
+        }
+        else
+        {
+            targetState.blend = nullptr;
+        }
+        targetState.writeMask = ConvertWriteMask(static_cast<uint8_t>(blendState.m_writeMask));
+    }
+
     void RenderPipeline::BuildFragmentState(const RHI::PipelineStateDescriptorForDraw& descriptor)
     {
         ShaderModule* module = BuildShaderModule(descriptor.m_fragmentFunction.get());
@@ -195,18 +223,18 @@ namespace AZ::WebGPU
             fragmentState.targetCount = descriptor.m_renderAttachmentConfiguration.GetRenderTargetCount();
             for (uint32_t i = 0; i < fragmentState.targetCount; ++i)
             {
-                const RHI::TargetBlendState& blendState = descriptor.m_renderStates.m_blendState.m_targets[i];
                 wgpu::ColorTargetState& targetState = m_wgpuTargets.emplace_back(wgpu::ColorTargetState{});
                 targetState.format = ConvertImageFormat(descriptor.m_renderAttachmentConfiguration.GetRenderTargetFormat(i));
-                targetState.writeMask = ConvertWriteMask(static_cast<uint8_t>(blendState.m_writeMask));
-                wgpu::BlendState& blend = m_wgpuBlends.emplace_back(wgpu::BlendState{});
-                blend.color.operation = ConvertBlendOp(blendState.m_blendOp);
-                blend.color.srcFactor = ConvertBlendFactor(blendState.m_blendSource);
-                blend.color.dstFactor = ConvertBlendFactor(blendState.m_blendDest);
-                blend.alpha.operation = ConvertBlendOp(blendState.m_blendAlphaOp);
-                blend.alpha.srcFactor = ConvertBlendFactor(blendState.m_blendAlphaSource);
-                blend.alpha.dstFactor = ConvertBlendFactor(blendState.m_blendAlphaDest);
-                targetState.blend = &blend;
+
+                // If m_independentBlendEnable is not enabled, we use the values from attachment 0 (same as D3D12)
+                if (i == 0 || descriptor.m_renderStates.m_blendState.m_independentBlendEnable)
+                {
+                    FillColorBlendAttachmentState(descriptor.m_renderStates.m_blendState.m_targets[0], targetState);
+                }
+                else
+                {
+                    FillColorBlendAttachmentState(descriptor.m_renderStates.m_blendState.m_targets[i], targetState);
+                }               
             }
             fragmentState.targets = m_wgpuTargets.data();
             m_wgpuRenderPipelineDescriptor.fragment = &m_wgpuFragment;
@@ -215,22 +243,5 @@ namespace AZ::WebGPU
         {
             m_wgpuRenderPipelineDescriptor.fragment = nullptr;
         }
-    }
-
-    void RenderPipeline::BuildConstants(
-        const RHI::PipelineStateDescriptorForDraw& descriptor, const char* sourceCode, AZStd::vector<wgpu::ConstantEntry>& constants)
-    {
-        constants.reserve(descriptor.m_specializationData.size());
-        for (const RHI::SpecializationConstant& constantData : descriptor.m_specializationData)
-        {
-            if (AZ::StringFunc::Contains(sourceCode, constantData.m_name.GetStringView()))
-            {
-                wgpu::ConstantEntry& entry = constants.emplace_back(wgpu::ConstantEntry{});
-                // We can't use the name for the constants because it causes an error when building the RenderPipeline
-                // We need to use the "id" of the constant instead.
-                entry.key = m_constantsName.emplace_back(AZStd::string::format("%d", constantData.m_id)).c_str();
-                entry.value = aznumeric_caster(constantData.m_value.GetIndex());
-            }
-        }
-    }
+    }    
 }

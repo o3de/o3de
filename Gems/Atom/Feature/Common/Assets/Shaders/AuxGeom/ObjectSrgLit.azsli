@@ -10,6 +10,10 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
+#ifndef AZ_TRAIT_POINT_SIZE
+    #define AZ_TRAIT_POINT_SIZE 1
+#endif
+
 ShaderResourceGroup ObjectSrg : SRG_PerDraw
 {
     float4 m_color;

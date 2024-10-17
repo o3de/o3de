@@ -57,6 +57,17 @@ namespace AZ::RHI
         Image3D = 3,
     };
 
+    //! Flags for ImageDimension
+    enum class ImageDimensionFlags
+    {
+        None = 0,
+        Image1D = AZ_BIT(static_cast<uint32_t>(ImageDimension::Image1D)),
+        Image2D = AZ_BIT(static_cast<uint32_t>(ImageDimension::Image2D)),
+        Image3D = AZ_BIT(static_cast<uint32_t>(ImageDimension::Image3D)),
+        All = Image1D | Image2D | Image3D
+    };
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::ImageDimensionFlags);
+
     //! Aspects (or Planes in some graphic APIs) that an image can contain.
     enum class ImageAspect : uint32_t
     {

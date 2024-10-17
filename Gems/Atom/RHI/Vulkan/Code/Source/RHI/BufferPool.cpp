@@ -139,6 +139,7 @@ namespace AZ
                 if (mappedData)
                 {
                     mappedData = static_cast<int8_t*>(mappedData) + mapRequest.m_byteOffset;
+                    response.m_type = RHI::BufferResponseMapType::Permanent;
                 }
                 else
                 {
@@ -152,6 +153,7 @@ namespace AZ
                 if (mappedData)
                 {
                     m_memoryUsage.m_transferPull.m_bytesPerFrame += mapRequest.m_byteCount;
+                    response.m_type = RHI::BufferResponseMapType::Transient;
                 }
                 else
                 {

@@ -56,9 +56,139 @@ namespace AZ
             {
                 return AZ::RHI::Format::R32G32B32A32_FLOAT;
             }
+            else if (AzFramework::StringFunc::Equal(format, "R8G8B8A8_UNORM"))
+            {
+                return AZ::RHI::Format::R8G8B8A8_UNORM;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R8G8B8A8_SNORM"))
+            {
+                return AZ::RHI::Format::R8G8B8A8_SNORM;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R8G8B8A8_UINT"))
+            {
+                return AZ::RHI::Format::R8G8B8A8_UINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R8G8B8A8_SINT"))
+            {
+                return AZ::RHI::Format::R8G8B8A8_SINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R32_UINT"))
+            {
+                return AZ::RHI::Format::R32_UINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R32_SINT"))
+            {
+                return AZ::RHI::Format::R32_SINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R32_FLOAT"))
+            {
+                return AZ::RHI::Format::R32_FLOAT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R32G32_UINT"))
+            {
+                return AZ::RHI::Format::R32G32_UINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R32G32_SINT"))
+            {
+                return AZ::RHI::Format::R32G32_SINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R32G32_FLOAT"))
+            {
+                return AZ::RHI::Format::R32G32_FLOAT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R32G32B32A32_UINT"))
+            {
+                return AZ::RHI::Format::R32G32B32A32_UINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R32G32B32A32_SINT"))
+            {
+                return AZ::RHI::Format::R32G32B32A32_SINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R32G32B32A32_FLOAT"))
+            {
+                return AZ::RHI::Format::R32G32B32A32_FLOAT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R16G16_SNORM"))
+            {
+                return AZ::RHI::Format::R16G16_SNORM;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R8G8_SNORM"))
+            {
+                return AZ::RHI::Format::R8G8_SNORM;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R16_SNORM"))
+            {
+                return AZ::RHI::Format::R16_SNORM;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R8_SNORM"))
+            {
+                return AZ::RHI::Format::R8_SNORM;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R16G16_SINT"))
+            {
+                return AZ::RHI::Format::R16G16_SINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R8G8_SINT"))
+            {
+                return AZ::RHI::Format::R8G8_SINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R16_SINT"))
+            {
+                return AZ::RHI::Format::R16_SINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R8_SINT"))
+            {
+                return AZ::RHI::Format::R8_SINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R16G16_UINT"))
+            {
+                return AZ::RHI::Format::R16G16_UINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R8G8_UINT"))
+            {
+                return AZ::RHI::Format::R8G8_UINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R16_UINT"))
+            {
+                return AZ::RHI::Format::R16_UINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R8_UINT"))
+            {
+                return AZ::RHI::Format::R8_UINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "Unknown"))
+            {
+                return AZ::RHI::Format::Unknown;
+            }
 
             AZ_Warning(s_azslShaderCompilerName, false, "Unknown format %s ", format);
             return AZ::RHI::Format::R16G16B16A16_FLOAT;
+        }
+
+        AZ::RHI::ShaderInputImageSampleType StringToSampleType(const char* sampleType)
+        {
+            if (AzFramework::StringFunc::Equal(sampleType, "float"))
+            {
+                return AZ::RHI::ShaderInputImageSampleType::Float;
+            }
+            else if (AzFramework::StringFunc::Equal(sampleType, "UnfilterableFloat"))
+            {
+                return AZ::RHI::ShaderInputImageSampleType::UnfilterableFloat;
+            }
+            else if (AzFramework::StringFunc::Equal(sampleType, "depth"))
+            {
+                return AZ::RHI::ShaderInputImageSampleType::Depth;
+            }
+            else if (AzFramework::StringFunc::Equal(sampleType, "Sint"))
+            {
+                return AZ::RHI::ShaderInputImageSampleType::Sint;
+            }
+            else if (AzFramework::StringFunc::Equal(sampleType, "Uint"))
+            {
+                return AZ::RHI::ShaderInputImageSampleType::Uint;
+            }
+
+            return AZ::RHI::ShaderInputImageSampleType::Float;
         }
 
         MemberType StringToBaseType(const char* baseType)
@@ -120,6 +250,10 @@ namespace AZ
             else if (AzFramework::StringFunc::StartsWith(textureType, "Texture3D"))
             {
                 return TextureType::Texture3D;
+            }
+            else if (AzFramework::StringFunc::StartsWith(textureType, "TextureCubeArray"))
+            {
+                return TextureType::TextureCubeArray;
             }
             else if (AzFramework::StringFunc::StartsWith(textureType, "TextureCube"))
             {
@@ -344,6 +478,25 @@ namespace AZ
 
             // If failed to match, set default ReductionType as Comparison
             return RHI::ReductionType::Comparison;
+        }
+
+        AZ::RHI::ShaderInputSamplerType StringToSamplerType(const char* samplerType)
+        {
+            if (AzFramework::StringFunc::Equal(samplerType, "Filtering"))
+            {
+                return RHI::ShaderInputSamplerType::Filtering;
+            }
+            else if (AzFramework::StringFunc::Equal(samplerType, "NonFiltering"))
+            {
+                return RHI::ShaderInputSamplerType::NonFiltering;
+            }
+            else if (AzFramework::StringFunc::Equal(samplerType, "Comparison"))
+            {
+                return RHI::ShaderInputSamplerType::Comparison;
+            }
+
+            // If failed to match, set default type as Filtering
+            return RHI::ShaderInputSamplerType::Filtering;
         }
 
         const BindingDependencies::Resource* BindingDependencies::SrgResources::GetResource(AZStd::string_view resourceName) const

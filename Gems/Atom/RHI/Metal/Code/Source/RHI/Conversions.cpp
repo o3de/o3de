@@ -756,8 +756,7 @@ namespace AZ
                 MTLCompareFunctionGreater,
                 MTLCompareFunctionNotEqual,
                 MTLCompareFunctionGreaterEqual,
-                MTLCompareFunctionAlways,
-                MTLCompareFunctionAlways // We can use any value when is RHI::ComparisonFunc::None
+                MTLCompareFunctionAlways
             };
             return table[static_cast<uint32_t>(func)];
         }

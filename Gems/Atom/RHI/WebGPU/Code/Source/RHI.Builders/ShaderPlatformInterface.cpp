@@ -225,7 +225,6 @@ namespace AZ
             {
             case RHI::ShaderHardwareStage::Vertex:
             case RHI::ShaderHardwareStage::Geometry:
-                RHI::ShaderBuildArguments::AppendArguments(dxcArguments, { "-fvk-invert-y" });
                 break;
             case RHI::ShaderHardwareStage::Fragment:
                 // Enable the use of subpass input. DXC doesn't compile if a SubpassInput is present

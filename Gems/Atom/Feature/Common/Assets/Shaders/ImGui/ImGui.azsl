@@ -8,13 +8,13 @@
  */
 
 #include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/Features/ResourceArrayUtility.azsli>
 
 struct VertexInput
 {
     float2 Position : POSITION;
     float2 UV : UV;
     float4 Color : COLOR;
-    uint TextureIndex : INSTANCE_DATA;
 };
 
 struct VertexOutput
@@ -22,12 +22,17 @@ struct VertexOutput
     float4 Position : SV_Position;
     float4 Color : COLOR;
     float2 UV : UV;
-    uint TextureIndex : INSTANCE_DATA;
 };
+
+// Root constant to specify the texture to use
+rootconstant uint s_textureIndex;
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
-    Texture2D<float4> m_textures[16];
+    // Use a macro to declare the array since some platforms don't support resource arrays
+    DECLARE_RESOURCE_ARRAY(Texture2D<float4>, m_textures, 16)
+    // Use a macro to declare a sampling function "SampleTexture"
+    DECLARE_TEXTURE_ARRAY_SAMPLE2D(float4, m_textures, SampleTexture, 16)
     
     Sampler LinearSampler
     {
@@ -39,7 +44,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         AddressW = Clamp;
     };
     
-    column_major float4x4 m_projectionMatrix;
+    float4x4 m_projectionMatrix;
 }
 
 VertexOutput MainVS(in VertexInput input)
@@ -48,7 +53,6 @@ VertexOutput MainVS(in VertexInput input)
     output.Position = mul(float4(input.Position, 0.0f, 1.0f), PassSrg::m_projectionMatrix);
     output.Color = float4(input.Color.rgb, input.Color.a);
     output.UV = input.UV;
-    output.TextureIndex = input.TextureIndex;
     return output;
 }
 
@@ -60,7 +64,7 @@ struct PixelOutput
 PixelOutput MainPS(in VertexOutput input)
 {
     PixelOutput output;
-    float4 color = PassSrg::m_textures[input.TextureIndex].Sample(PassSrg::LinearSampler, input.UV) * input.Color;
+    float4 color = PassSrg::SampleTexture(s_textureIndex, PassSrg::LinearSampler, input.UV) * input.Color;
     output.m_color = float4(color.rgb * color.a, color.a);
     return output;
 }

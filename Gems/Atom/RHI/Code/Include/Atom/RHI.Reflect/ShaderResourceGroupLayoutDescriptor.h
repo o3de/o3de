@@ -10,6 +10,7 @@
 #include <Atom/RHI.Reflect/SamplerState.h>
 #include <Atom/RHI.Reflect/Interval.h>
 #include <Atom/RHI.Reflect/Handle.h>
+#include <Atom/RHI.Reflect/Format.h>
 #include <AzCore/Utils/TypeHash.h>
 
 namespace AZ
@@ -129,6 +130,17 @@ namespace AZ::RHI
         SubpassInput
     };
 
+    //! The sample type required for Images bound to this shader input
+    enum class ShaderInputImageSampleType : uint32_t
+    {
+        Unknown = 0,
+        Float,              // Float sampling
+        UnfilterableFloat,  // Float but not filtered sampling. Used for MSAA textures or reading depth values for example
+        Depth,              // Depth sampling. Used with comparison samplers for example
+        Sint,               // Signed integer sampling
+        Uint                // Unsigned integer sampling
+    };
+
     class ShaderInputImageDescriptor final
     {
     public:
@@ -142,7 +154,9 @@ namespace AZ::RHI
             ShaderInputImageType type,
             uint32_t imageCount,
             uint32_t registerId,
-            uint32_t spaceId);
+            uint32_t spaceId,
+            Format format = Format::Unknown,
+            ShaderInputImageSampleType sampleType = ShaderInputImageSampleType::Unknown);
 
         HashValue64 GetHash(HashValue64 seed = HashValue64{ 0 }) const;
 
@@ -171,6 +185,12 @@ namespace AZ::RHI
         //! If an SRG doesn't contain any unbounded arrays all resources in it 
         //! will use the same space id.
         uint32_t m_spaceId = UndefinedRegisterSlot;
+
+        //! The sample type required for images bound to this shader input. Needed for some platforms (e.g. WebGPU)
+        ShaderInputImageSampleType m_sampleType = ShaderInputImageSampleType::Unknown;
+
+        //! Required format of the images bound to this shader input. Needed for storage images on some platforms (e.g. WebGPU)
+        Format m_format = Format::Unknown;
     };
 
     class ShaderInputBufferUnboundedArrayDescriptor final
@@ -257,6 +277,15 @@ namespace AZ::RHI
         uint32_t m_spaceId = UndefinedRegisterSlot;
     };
 
+    //! Required type for the Sampler bound to this shader input.
+    enum class ShaderInputSamplerType : uint32_t
+    {
+        Unknown = 0,
+        Filtering,      // Filtering sampler
+        NonFiltering,   // Non filtering sampler (e.g. a Point sampler)
+        Comparison      // Comparison sampler
+    };
+
     class ShaderInputSamplerDescriptor final
     {
     public:
@@ -264,7 +293,12 @@ namespace AZ::RHI
         static void Reflect(ReflectContext* context);
 
         ShaderInputSamplerDescriptor() = default;
-        ShaderInputSamplerDescriptor(const Name& name, uint32_t samplerCount, uint32_t registerId, uint32_t spaceId);
+        ShaderInputSamplerDescriptor(
+            const Name& name,
+            uint32_t samplerCount,
+            uint32_t registerId,
+            uint32_t spaceId,
+            ShaderInputSamplerType type = ShaderInputSamplerType::Filtering);
 
         HashValue64 GetHash(HashValue64 seed = HashValue64{ 0 }) const;
 
@@ -287,6 +321,9 @@ namespace AZ::RHI
         //! If an SRG doesn't contain any unbounded arrays all resources in it 
         //! will use the same space id.
         uint32_t m_spaceId = UndefinedRegisterSlot;
+
+        //! Required type for the Sampler bound to this shader input. Needed for some platforms (e.g. WebGPU)
+        ShaderInputSamplerType m_type = ShaderInputSamplerType::Filtering;
     };
 
     class ShaderInputConstantDescriptor final

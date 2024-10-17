@@ -28,7 +28,7 @@ namespace AZ::RHI
 
     void AliasedHeap::End()
     {
-        AZ_Assert(m_activeAttachmentLookup.empty() && m_firstFitAllocator.GetAllocationCount() == 0,
+        AZ_Assert(m_activeAttachmentLookup.empty() && m_allocator->GetAllocationCount() == 0,
             "There are still active allocations.");
 
         if (RHI::CheckBitsAny(m_compileFlags, TransientAttachmentPoolCompileFlags::GatherStatistics))
@@ -68,17 +68,7 @@ namespace AZ::RHI
 
                 m_cache.SetCapacity(descriptor.m_cacheSize);
 
-                {
-                    FreeListAllocator::Descriptor allocatorDesc;
-                    allocatorDesc.m_capacityInBytes = descriptor.m_budgetInBytes;
-                    allocatorDesc.m_garbageCollectLatency = 0;
-                    allocatorDesc.m_alignmentInBytes = descriptor.m_alignment;
-
-                    // A first-fit allocator is used because it will keep a low watermark.
-                    allocatorDesc.m_policy = FreeListAllocatorPolicy::FirstFit;
-
-                    m_firstFitAllocator.Init(allocatorDesc);
-                }
+                m_allocator = CreateAllocatorInternal(descriptor);
 
                 m_heapStats.m_name = GetName();
                 m_heapStats.m_heapSize = descriptor.m_budgetInBytes;
@@ -94,12 +84,13 @@ namespace AZ::RHI
         m_barrierTracker = nullptr;
         m_cache.Clear();
         m_reverseLookupHash.clear();
-        m_firstFitAllocator.Shutdown();
+        m_allocator->Shutdown();
+        m_allocator = nullptr;
     }
 
     void AliasedHeap::ComputeFragmentation() const
     {
-        float fragmentation = m_firstFitAllocator.ComputeFragmentation();
+        float fragmentation = m_allocator->ComputeFragmentation();
         m_memoryUsage.GetHeapMemoryUsage(HeapMemoryLevel::Device).m_fragmentation = fragmentation;
     }
 
@@ -111,7 +102,7 @@ namespace AZ::RHI
         ResourceMemoryRequirements memRequirements = GetDevice().GetResourceMemoryRequirements(descriptor.m_bufferDescriptor);
             
         const size_t alignmentInBytes = memRequirements.m_alignmentInBytes;
-        RHI::VirtualAddress address = m_firstFitAllocator.Allocate(memRequirements.m_sizeInBytes, alignmentInBytes);
+        RHI::VirtualAddress address = m_allocator->Allocate(memRequirements.m_sizeInBytes, alignmentInBytes);
         if (address.IsNull())
         {
             return ResultCode::OutOfMemory;
@@ -224,8 +215,8 @@ namespace AZ::RHI
         }
             
         const VirtualAddress heapAddress{attachment.m_heapOffsetMin};
-        m_firstFitAllocator.DeAllocate(heapAddress);
-        m_firstFitAllocator.GarbageCollectForce();
+        m_allocator->DeAllocate(heapAddress);
+        m_allocator->GarbageCollectForce();
         m_activeAttachmentLookup.erase(findIter);
     }
 
@@ -233,7 +224,7 @@ namespace AZ::RHI
     {
         ResourceMemoryRequirements memRequirements = GetDevice().GetResourceMemoryRequirements(descriptor.m_imageDescriptor);
 
-        VirtualAddress address = m_firstFitAllocator.Allocate(memRequirements.m_sizeInBytes, memRequirements.m_alignmentInBytes);
+        VirtualAddress address = m_allocator->Allocate(memRequirements.m_sizeInBytes, memRequirements.m_alignmentInBytes);
         if (address.IsNull())
         {
             return ResultCode::OutOfMemory;
@@ -329,6 +320,23 @@ namespace AZ::RHI
             m_cache.EraseItem(aznumeric_cast<uint64_t>(originalHash));
             m_reverseLookupHash.erase(attachmentId);
         }
+    }
+
+    AZStd::unique_ptr<Allocator> AliasedHeap::CreateAllocatorInternal(const AliasedHeapDescriptor& descriptor)
+    {
+        // By default we use a free list allocator with a first fit policy
+        // Implementations can build their own allocators
+        AZStd::unique_ptr<FreeListAllocator> freeListAllocator = AZStd::make_unique<FreeListAllocator>();
+        FreeListAllocator::Descriptor allocatorDesc;
+        allocatorDesc.m_capacityInBytes = descriptor.m_budgetInBytes;
+        allocatorDesc.m_garbageCollectLatency = 0;
+        allocatorDesc.m_alignmentInBytes = descriptor.m_alignment;
+
+        // A first-fit allocator is used because it will keep a low watermark.
+        allocatorDesc.m_policy = FreeListAllocatorPolicy::FirstFit;
+
+        freeListAllocator->Init(allocatorDesc);
+        return freeListAllocator;
     }
 
     const AliasedHeapDescriptor& AliasedHeap::GetDescriptor() const

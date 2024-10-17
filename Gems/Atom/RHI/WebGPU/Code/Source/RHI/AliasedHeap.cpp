@@ -7,6 +7,7 @@
  */
 #include <RHI/WebGPU.h>
 #include <RHI/AliasedHeap.h>
+#include <RHI/Buffer.h>
 #include <RHI/Image.h>
 #include <RHI/Device.h>
 
@@ -19,7 +20,12 @@ namespace AZ::WebGPU
 
     AZStd::unique_ptr<RHI::AliasingBarrierTracker> AliasedHeap::CreateBarrierTrackerInternal()
     {
-        return AZStd::make_unique<NoBarrierAliasingBarrierTracker>(); 
+        return AZStd::make_unique<NullAliasingBarrierTracker>(); 
+    }
+
+    AZStd::unique_ptr<RHI::Allocator> AliasedHeap::CreateAllocatorInternal([[maybe_unused]] const RHI::AliasedHeapDescriptor& descriptor)
+    {
+        return AZStd::make_unique<NullAllocator>();
     }
 
     RHI::ResultCode AliasedHeap::InitInternal(
@@ -35,8 +41,9 @@ namespace AZ::WebGPU
     }
 
     RHI::ResultCode AliasedHeap::InitBufferInternal(
-        [[maybe_unused]] const RHI::DeviceBufferInitRequest& request, [[maybe_unused]] size_t heapOffset)
+        const RHI::DeviceBufferInitRequest& request, [[maybe_unused]] size_t heapOffset)
     {
-        return RHI::ResultCode::Success;
+        Buffer* buffer = static_cast<Buffer*>(request.m_buffer);
+        return buffer->Init(static_cast<Device&>(GetDevice()), request.m_descriptor);
     }
 }

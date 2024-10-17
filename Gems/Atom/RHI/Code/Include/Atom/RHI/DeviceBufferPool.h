@@ -57,10 +57,18 @@ namespace AZ::RHI
         size_t m_byteCount = 0;
     };
 
+    //! Type of buffer mapping
+    enum class BufferResponseMapType : uint8_t
+    {
+        Transient,  /// The mapping is valid only during the duration of the frame (uses a staging buffer)
+        Permanent   /// The mapping is valid until the Unmap function is called (the buffer is mapped directly)
+    };
+
     //! A structure used as an argument to DeviceBufferPool::MapBuffer.
     struct DeviceBufferMapResponse
     {
         void* m_data = nullptr;
+        BufferResponseMapType m_type = BufferResponseMapType::Permanent;
     };
 
     //! A structure used as an argument to DeviceBufferPool::StreamBuffer.

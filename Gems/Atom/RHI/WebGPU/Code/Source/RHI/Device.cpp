@@ -6,12 +6,15 @@
  *
  */
 #include <RHI/WebGPU.h>
+#include <RHI/AsyncUploadQueue.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferPool.h>
 #include <RHI/Device.h>
 #include <RHI/Instance.h>
 #include <RHI/Conversions.h>
 #include <RHI/PhysicalDevice.h>
+#include <RHI/NullDescriptorManager.h>
+#include <RHI/RootConstantManager.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI.Reflect/WebGPU/PlatformLimitsDescriptor.h>
 
@@ -32,17 +35,30 @@ namespace AZ::WebGPU
     RHI::ResultCode Device::InitInternal(RHI::PhysicalDevice& physicalDeviceBase)
     {
         PhysicalDevice& physicalDevice = static_cast<PhysicalDevice&>(physicalDeviceBase);
+        const auto& wgpuPhysicalDevice = physicalDevice.GetNativeAdapter();
+        wgpu::SupportedLimits supportedLimits = {};
+        wgpuPhysicalDevice.GetLimits(&supportedLimits);
+        wgpu::AdapterInfo adapterInfo = {};
+        wgpuPhysicalDevice.GetInfo(&adapterInfo);
+        AZStd::vector<wgpu::FeatureName> requiredFeatures = { wgpu::FeatureName::TextureCompressionBC,  };
+        wgpu::RequiredLimits requiredLImits = {};
+        requiredLImits.limits.maxStorageBuffersPerShaderStage = AZStd::min(supportedLimits.limits.maxStorageBuffersPerShaderStage, 24u);
+        requiredLImits.limits.maxStorageTexturesPerShaderStage = AZStd::min(supportedLimits.limits.maxStorageTexturesPerShaderStage, 24u);
+        wgpu::DeviceDescriptor wgpuDeviceDesc = {};
         // Set device callbacks
-        m_wgpuDeviceDesc = {};
-        m_wgpuDeviceDesc.SetDeviceLostCallback(wgpu::CallbackMode::AllowSpontaneous, Device::DeviceLostCallback);
-        m_wgpuDeviceDesc.SetUncapturedErrorCallback(&Device::ErrorCallback);
+        wgpuDeviceDesc = {};
+        wgpuDeviceDesc.SetDeviceLostCallback(wgpu::CallbackMode::AllowSpontaneous, Device::DeviceLostCallback);
+        wgpuDeviceDesc.SetUncapturedErrorCallback(&Device::ErrorCallback);
+        wgpuDeviceDesc.requiredFeatureCount = requiredFeatures.size();
+        wgpuDeviceDesc.requiredFeatures = requiredFeatures.data();
+        wgpuDeviceDesc.requiredLimits = &requiredLImits;
 
         // Synchronously create the device
         auto& instance = Instance::GetInstance().GetNativeInstance();
         m_wgpuDevice = nullptr;
         instance.WaitAny(
             physicalDevice.GetNativeAdapter().RequestDevice(
-                &m_wgpuDeviceDesc,
+                &wgpuDeviceDesc,
                 wgpu::CallbackMode::WaitAnyOnly,
                 [this](wgpu::RequestDeviceStatus status, wgpu::Device device, const char* message)
                 {
@@ -60,7 +76,14 @@ namespace AZ::WebGPU
             return RHI::ResultCode::Fail;
         }
 
+        RHI::RHISystemNotificationBus::Handler::BusConnect();
         return RHI::ResultCode::Success;
+    }
+
+    void Device::ShutdownInternal()
+    {
+        RHI::RHISystemNotificationBus::Handler::BusDisconnect();
+        m_wgpuDevice = nullptr;
     }
 
     RHI::ResultCode Device::BeginFrameInternal()
@@ -71,6 +94,7 @@ namespace AZ::WebGPU
     void Device::EndFrameInternal()
     {
         m_frameCommandLists.clear();
+        m_rootConstantManager->Collect();
     }
 
     const wgpu::Device& Device::GetNativeDevice() const
@@ -118,6 +142,8 @@ namespace AZ::WebGPU
 
         m_features.m_resourceAliasing = false;
         m_features.m_multithreading = false;
+        // Only 2D images can be used for render attachments
+        m_features.m_supportedRenderAttachmentDimensions = RHI::ImageDimensionFlags::Image2D;
 
         // Set the cache sizes.
         m_samplerCache.first.SetCapacity(SamplerCacheCapacity);
@@ -146,17 +172,24 @@ namespace AZ::WebGPU
         result = m_stagingBufferPool->Init(*this, poolDesc);
         RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
+        m_rootConstantManager = RootConstantManager::Create();
+        m_rootConstantManager->Init(*this);
+
         return RHI::ResultCode::Success;
     }
 
     void Device::PreShutdown()
     {
+        m_nullDescriptorManager = nullptr;
         m_samplerCache.first.Clear();
         m_pipelineLayoutCache.first.Clear();
 
         m_stagingBufferPool.reset();
         m_constantBufferPool.reset();
+        m_rootConstantManager.reset();
         m_commandQueueContext.Shutdown();
+
+        m_asyncUploadQueue.reset();
     }
 
     void Device::ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction)
@@ -209,4 +242,37 @@ namespace AZ::WebGPU
     {
         return m_constantBufferPool;
     }
+
+    AsyncUploadQueue& Device::GetAsyncUploadQueue()
+    {
+        if (!m_asyncUploadQueue)
+        {
+            m_asyncUploadQueue = aznew AsyncUploadQueue();
+            m_asyncUploadQueue->Init(*this);
+        }
+
+        return *m_asyncUploadQueue;
+    }
+
+    NullDescriptorManager& Device::GetNullDescriptorManager()
+    {
+        AZ_Assert(m_nullDescriptorManager, "NullDescriptorManager was not created.");
+        return *m_nullDescriptorManager;
+    }
+
+    RootConstantManager& Device::GetRootConstantManager()
+    {
+        AZ_Assert(m_rootConstantManager, "RootConstantManager was not created.");
+        return *m_rootConstantManager;
+    }
+
+    void Device::OnRHISystemInitialized()
+    {
+        // Need to initialize the NullDescriptorManager AFTER the bindless descriptor pool, since we create images and buffers
+        // during the initialization of the NullDescriptorManager.
+        m_nullDescriptorManager = NullDescriptorManager::Create();
+        [[maybe_unused]] RHI::ResultCode result = m_nullDescriptorManager->Init(*this);
+        AZ_Error("WebGPU", result == RHI::ResultCode::Success, "Failed to initialize Null descriptor manager");
+    }
+
 }

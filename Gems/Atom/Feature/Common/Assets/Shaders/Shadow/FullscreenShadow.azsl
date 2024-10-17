@@ -62,7 +62,12 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     
     Constants m_constantData;
     Texture2DArray<float> m_directionalShadowmaps;
+#if ENABLE_ESM_SHADOW
     Texture2DArray<float> m_directionalShadowmapsESM;
+#else
+    // Dummy variable so we can still call functions that reference "m_directionalShadowmapsESM" without doing #if
+    float4 m_directionalShadowmapsESM;
+#endif
     Texture2DMS<float> m_depth;
     Texture2D<float> m_depthLinear;
 #if USING_COMPUTE_SHADER_DIRECTIONAL_LIGHT

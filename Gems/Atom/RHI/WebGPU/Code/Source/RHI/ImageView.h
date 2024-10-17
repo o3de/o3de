@@ -26,6 +26,7 @@ namespace AZ::WebGPU
         wgpu::TextureView& GetNativeView();
         const wgpu::TextureView& GetNativeView() const;
         RHI::ImageAspectFlags GetAspectFlags() const;
+        RHI::Format GetFormat() const;
 
     private:
         ImageView() = default;
@@ -43,5 +44,6 @@ namespace AZ::WebGPU
 
         wgpu::TextureView m_wgpuTextureView = nullptr;
         RHI::ImageAspectFlags m_aspectFlags = RHI::ImageAspectFlags::None;
+        RHI::Format m_viewFormat = RHI::Format::Unknown;
     };
 }

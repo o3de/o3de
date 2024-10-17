@@ -279,6 +279,8 @@ namespace AZ::RHI
             else
             {
                 response.m_data[deviceIndex] = deviceMapResponse.m_data;
+                // Mapping types should be the same for all devices.
+                response.m_type = deviceMapResponse.m_type;
             }
 
             return resultCode;

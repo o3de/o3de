@@ -27,10 +27,21 @@ namespace AZ::WebGPU
         return m_wgpuBufferUsage & (wgpu::BufferUsage::MapRead | wgpu::BufferUsage::MapWrite);
     }
 
+    void Buffer::SetUploadHandle(const RHI::AsyncWorkHandle& handle)
+    {
+        m_uploadHandle = handle;
+    }
+
+    const RHI::AsyncWorkHandle& Buffer::GetUploadHandle() const
+    {
+        return m_uploadHandle;
+    }
+
     RHI::ResultCode Buffer::Init(Device& device, const RHI::BufferDescriptor& bufferDescriptorBase, InitFlags initFlags)
     {
+        SetDescriptor(bufferDescriptorBase);
         wgpu::BufferDescriptor descriptor = {};
-        descriptor.size = bufferDescriptorBase.m_byteCount;
+        descriptor.size = RHI::AlignUp(bufferDescriptorBase.m_byteCount, MapSizeAligment);
         descriptor.usage = ConvertBufferBindFlags(bufferDescriptorBase.m_bindFlags);
         descriptor.label = GetName().GetCStr();
         if (RHI::CheckBitsAll(initFlags, InitFlags::MapRead))

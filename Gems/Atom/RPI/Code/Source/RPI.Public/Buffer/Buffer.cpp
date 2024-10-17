@@ -243,7 +243,7 @@ namespace AZ
             }
         }
 
-        AZStd::unordered_map<int, void*> Buffer::Map(size_t byteCount, uint64_t byteOffset)
+        AZStd::unordered_map<int, void*> Buffer::Map(size_t byteCount, uint64_t byteOffset, RHI::BufferResponseMapType* mapType)
         {
             if (byteOffset + byteCount > m_rhiBuffer->GetDescriptor().m_byteCount)
             {
@@ -261,6 +261,10 @@ namespace AZ
 
             if (result == RHI::ResultCode::Success)
             {
+                if (mapType)
+                {
+                    *mapType = response.m_type;
+                }
                 return response.m_data;
             }
             else

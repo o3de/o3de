@@ -14,15 +14,20 @@
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI/ObjectCache.h>
 #include <Atom/RHI/ObjectCollector.h>
+#include <Atom/RHI/RHISystemInterface.h>
 
 namespace AZ::WebGPU
 {
     class Buffer;
     class CommandList;
     class BufferPool;
+    class AsyncUploadQueue;
+    class NullDescriptorManager;
+    class RootConstantManager;
 
     class Device final
         : public RHI::Device
+        , public RHI::RHISystemNotificationBus::Handler
     {
         using Base = RHI::Device;
     public:
@@ -43,8 +48,18 @@ namespace AZ::WebGPU
         RHI::Ptr<Sampler> AcquireSampler(const Sampler::Descriptor& descriptor);
         //! Acquires a buffer for stating.
         RHI::Ptr<Buffer> AcquireStagingBuffer(AZStd::size_t byteCount, AZStd::size_t alignment = 1);
-        //! Retunrs the buffer pool used for SRG constants.
+        //! Returns the buffer pool used for SRG constants.
         RHI::Ptr<BufferPool> GetConstantBufferPool();
+        //! Returns the Async Upload Queue for streaming buffer and image content.
+        AsyncUploadQueue& GetAsyncUploadQueue();
+        //! Returns the manager for handling null resources
+        NullDescriptorManager& GetNullDescriptorManager();
+        //! Returns the manager for root constants
+        RootConstantManager& GetRootConstantManager();
+
+    protected:
+        // RHI::RHISystemNotificationBus::Handler overrides...
+        void OnRHISystemInitialized() override;
 
     private:
         Device();
@@ -53,7 +68,7 @@ namespace AZ::WebGPU
         // RHI::Device
         RHI::ResultCode InitInternal(RHI::PhysicalDevice& physicalDevice) override;
         RHI::ResultCode InitInternalBindlessSrg([[maybe_unused]] const RHI::BindlessSrgDescriptor& bindlessSrgDesc) override { return RHI::ResultCode::Success;}
-        void ShutdownInternal() override {}
+        void ShutdownInternal() override;
         void CompileMemoryStatisticsInternal([[maybe_unused]] RHI::MemoryStatisticsBuilder& builder) override {}
         void UpdateCpuTimingStatisticsInternal() const override {}
         RHI::ResultCode BeginFrameInternal() override;
@@ -78,8 +93,6 @@ namespace AZ::WebGPU
         static void DeviceLostCallback(const wgpu::Device&, wgpu::DeviceLostReason reason, const char* message);
         static void ErrorCallback(const wgpu::Device& , wgpu::ErrorType type, const char* message);
 
-        //! Native descriptor used for creating the device.
-        wgpu::DeviceDescriptor m_wgpuDeviceDesc = {};
         //! Native device
         wgpu::Device m_wgpuDevice = nullptr;
 
@@ -100,6 +113,10 @@ namespace AZ::WebGPU
         ObjectCache<Sampler> m_samplerCache;
         //! Cache for pipeline layout objects.
         ObjectCache<PipelineLayout> m_pipelineLayoutCache;
+
+        RHI::Ptr<AsyncUploadQueue> m_asyncUploadQueue;
+        RHI::Ptr<NullDescriptorManager> m_nullDescriptorManager;
+        RHI::Ptr<RootConstantManager> m_rootConstantManager;
     };
 
     template<typename ObjectType, typename... Args>

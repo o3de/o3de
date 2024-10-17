@@ -24,18 +24,18 @@ namespace AZ::WebGPU
     {
         AZ_Assert(request.m_byteCount > 0, "ByteCount of request is null");
         auto* buffer = static_cast<Buffer*>(request.m_buffer);
-        RHI::Ptr<Buffer> stagingBuffer =
-            m_device.AcquireStagingBuffer(RHI::AlignUp(request.m_byteCount, MapSizeAligment), buffer->GetDescriptor().m_alignment);
+        size_t alignedSize = RHI::AlignUp(request.m_byteCount, MapSizeAligment);
+        RHI::Ptr<Buffer> stagingBuffer = m_device.AcquireStagingBuffer(alignedSize, buffer->GetDescriptor().m_alignment);
         if (stagingBuffer)
         {
             BufferUploadPacket uploadRequest;
             uploadRequest.m_attachmentBuffer = buffer;
             uploadRequest.m_byteOffset = request.m_byteOffset;
             uploadRequest.m_stagingBuffer = stagingBuffer;
-            uploadRequest.m_byteSize = request.m_byteCount;
+            uploadRequest.m_byteSize = alignedSize;
 
             // Buffer was mapped at creation, so we can just request the range
-            auto address = stagingBuffer->GetNativeBuffer().GetMappedRange(request.m_byteOffset, request.m_byteCount);
+            auto address = stagingBuffer->GetNativeBuffer().GetMappedRange(0, alignedSize);
 
             m_uploadPacketsLock.lock();
             m_uploadPackets.emplace_back(AZStd::move(uploadRequest));

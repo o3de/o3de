@@ -6,7 +6,7 @@
  *
  */
 #include <RHI/WebGPU.h>
-#include <RHI/Buffer.h>
+#include <RHI/AsyncUploadQueue.h>
 #include <RHI/BufferPool.h>
 #include <RHI/BufferPoolResolver.h>
 #include <RHI/Device.h>
@@ -85,9 +85,10 @@ namespace AZ::WebGPU
     void BufferPool::ShutdownResourceInternal(RHI::DeviceResource& resource)
     {
         auto& buffer = static_cast<Buffer&>(resource);
+        auto& device = static_cast<Device&>(GetDevice());
 
         // Wait for any pending streaming upload.
-        // device.GetAsyncUploadQueue().WaitForUpload(buffer.GetUploadHandle());
+        device.GetAsyncUploadQueue().WaitForUpload(buffer.GetUploadHandle());
 
         if (auto* resolver = GetResolver())
         {
@@ -150,6 +151,7 @@ namespace AZ::WebGPU
             if (mappedData)
             {
                 mappedData = static_cast<int8_t*>(mappedData) + mapRequest.m_byteOffset - byteOffset;
+                response.m_type = RHI::BufferResponseMapType::Permanent;
             }
             else
             {
@@ -162,6 +164,7 @@ namespace AZ::WebGPU
             if (mappedData)
             {
                 m_memoryUsage.m_transferPull.m_bytesPerFrame += mapRequest.m_byteCount;
+                response.m_type = RHI::BufferResponseMapType::Transient;
             }
             else
             {
@@ -180,6 +183,13 @@ namespace AZ::WebGPU
         {
             buffer.GetNativeBuffer().Unmap();
         }
+    }
+
+    RHI::ResultCode BufferPool::StreamBufferInternal(const RHI::DeviceBufferStreamRequest& request)
+    {
+        auto& device = static_cast<Device&>(GetDevice());
+        device.GetAsyncUploadQueue().QueueUpload(request);
+        return RHI::ResultCode::Success;
     }
 
     void BufferPool::ShutdownInternal()

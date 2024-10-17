@@ -2,7 +2,8 @@
     "AddBuildArguments": {
         "debug": false,
         "preprocessor": [],
-        "azslc": ["--namespace=vk"
+        "azslc": ["--namespace=wg"
+                , "--namespace=vk"
                 , "--unique-idx"
         ],
         "dxc": ["-spirv"

@@ -72,6 +72,9 @@ namespace AZ
 
             // The CPU address of the mapped buffer per frame
             RHI::FrameCountMaxRingBuffer<AZStd::unordered_map<int, void*>> m_bufferStartAddresses;
+
+            // The type of buffer mapping being used
+            RHI::BufferResponseMapType m_mapType = RHI::BufferResponseMapType::Permanent;
         };
     } // namespace RPI
 } // namespace AZ

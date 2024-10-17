@@ -80,7 +80,7 @@ namespace AZ::WebGPU
             const RHI::ShaderInputImageIndex index(groupIndex);
             auto imgViews = groupData.GetImageViewArray(index);
             uint32_t binding = shaderImageList[groupIndex].m_registerId;
-            bindGroup.UpdateImageViews(binding, imgViews);
+            bindGroup.UpdateImageViews(groupIndex, binding, imgViews, shaderImageList[groupIndex].m_type);
         }        
 
         auto const& shaderSamplerList = layout->GetShaderInputListForSamplers();
@@ -100,7 +100,7 @@ namespace AZ::WebGPU
             bindGroup.UpdateSamplers(binding, AZStd::span<const RHI::SamplerState>(&shaderStaticSamplerList[groupIndex].m_samplerState, 1));
         }
 
-        auto constantData = groupData.GetConstantData();
+        AZStd::span<const uint8_t> constantData = groupData.GetConstantData();
         if (!constantData.empty())
         {
             bindGroup.UpdateConstantData(constantData);

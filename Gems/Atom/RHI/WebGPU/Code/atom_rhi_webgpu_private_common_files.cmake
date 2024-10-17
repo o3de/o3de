@@ -9,6 +9,8 @@
 set(FILES
     Source/RHI/AliasedHeap.cpp
     Source/RHI/AliasedHeap.h
+    Source/RHI/AsyncUploadQueue.cpp
+    Source/RHI/AsyncUploadQueue.h    
     Source/RHI/BindGroupLayout.cpp
     Source/RHI/BindGroupLayout.h
     Source/RHI/BindGroup.cpp
@@ -50,10 +52,14 @@ set(FILES
     Source/RHI/Image.h
     Source/RHI/ImagePool.cpp
     Source/RHI/ImagePool.h
+    Source/RHI/ImagePoolResolver.cpp
+    Source/RHI/ImagePoolResolver.h
     Source/RHI/ImageView.cpp
     Source/RHI/ImageView.h
     Source/RHI/Instance.cpp
     Source/RHI/Instance.h
+    Source/RHI/NullDescriptorManager.cpp
+    Source/RHI/NullDescriptorManager.h    
     Source/RHI/PhysicalDevice.cpp
     Source/RHI/PhysicalDevice.h
     Source/RHI/Pipeline.cpp
@@ -71,6 +77,8 @@ set(FILES
     Source/RHI/RenderPipeline.cpp
     Source/RHI/RenderPipeline.h
     Source/RHI/ResourcePoolResolver.h
+    Source/RHI/RootConstantManager.cpp
+    Source/RHI/RootConstantManager.h
     Source/RHI/Sampler.cpp
     Source/RHI/Sampler.h
     Source/RHI/Scope.cpp

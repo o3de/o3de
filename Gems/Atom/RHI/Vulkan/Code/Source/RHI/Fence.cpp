@@ -56,7 +56,7 @@ namespace AZ
         {
             if (usedForWaitingOnDevice)
             {
-                AZ_Assert(baseDevice.GetFeatures().m_signalFenceFromCPU, "Fences cannot be waited for on the GPU.");
+                AZ_Assert(baseDevice.GetFeatures().m_signalFenceFromCPU, "Waiting on Fences on the GPU is not supported on this platform.");
                 m_fenceImpl = TimelineSemaphoreFence::Create();
             }
             else

@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RHI/DeviceShaderResourceGroup.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace AZ::WebGPU
 {

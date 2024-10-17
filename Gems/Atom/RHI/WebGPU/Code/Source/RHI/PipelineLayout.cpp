@@ -9,6 +9,7 @@
 #include <RHI/BindGroupLayout.h>
 #include <RHI/Device.h>
 #include <RHI/PipelineLayout.h>
+#include <RHI/RootConstantManager.h>
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupPoolDescriptor.h>
 
@@ -39,22 +40,30 @@ namespace AZ::WebGPU
         // Initialise mapping tables
         m_slotToIndexTable.fill(static_cast<uint8_t>(RHI::Limits::Pipeline::ShaderResourceGroupCountMax));
         m_indexToSlotTable.resize(groupLayoutCount);
-        m_bindGroupLayouts.reserve(groupLayoutCount);
+        m_bindGroupLayouts.resize(groupLayoutCount);
         RHI::ResultCode result;
         for (uint32_t groupLayoutIndex = 0; groupLayoutIndex < groupLayoutCount; ++groupLayoutIndex)
         {
+            const auto& bindingInfo = pipelineLayoutDesc.GetShaderResourceGroupBindingInfo(groupLayoutIndex);
             const auto* srgLayout = pipelineLayoutDesc.GetShaderResourceGroupLayout(groupLayoutIndex);
 
+            uint32_t spaceId = bindingInfo.m_constantDataBindingInfo.m_spaceId;
+            if (spaceId == ~0u)
+            {
+                AZ_Assert(!bindingInfo.m_resourcesRegisterMap.empty(), "SRG Binding Info has neither constant data nor resources bound");
+                spaceId = bindingInfo.m_resourcesRegisterMap.begin()->second.m_spaceId;
+            }
+
             uint32_t bindingSlot = srgLayout->GetBindingSlot();
-            m_slotToIndexTable[bindingSlot] = static_cast<uint8_t>(groupLayoutIndex);
-            m_indexToSlotTable[groupLayoutIndex] = static_cast<uint8_t>(bindingSlot);
+            m_slotToIndexTable[bindingSlot] = static_cast<uint8_t>(spaceId);
+            m_indexToSlotTable[spaceId] = static_cast<uint8_t>(bindingSlot);
 
             RHI::Ptr<BindGroupLayout> bindGroupLayout = BindGroupLayout::Create();
             BindGroupLayout::Descriptor layoutDesc;
             layoutDesc.m_shaderResouceGroupLayout = srgLayout;
             result = bindGroupLayout->Init(device, layoutDesc);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            m_bindGroupLayouts.push_back(bindGroupLayout);
+            m_bindGroupLayouts[spaceId] = bindGroupLayout;
         }
 
         result = BuildNativePipelineLayout();
@@ -89,18 +98,39 @@ namespace AZ::WebGPU
         return m_slotToIndexTable[slot];
     }
 
-    uint32_t PipelineLayout::GetPushContantsSize() const
+    uint32_t PipelineLayout::GetRootConstantSize() const
     {
-        return m_pushConstantsSize;
+        return m_rootConstantSize;
+    }
+
+    uint32_t PipelineLayout::GetRootConstantIndex() const
+    {
+        return m_rootConstantIndex;
     }
 
     RHI::ResultCode PipelineLayout::BuildNativePipelineLayout()
     {
         AZ_Assert(m_layoutDescriptor, "Pipeline layout descriptor is null.");
-        AZStd::vector<wgpu::BindGroupLayout> nativeBindGroups(m_bindGroupLayouts.size());
+        Device& device = static_cast<Device&>(GetDevice());
+        size_t numOfBindGroups = m_bindGroupLayouts.size();
+        const RHI::ConstantsLayout* rootConstants = m_layoutDescriptor->GetRootConstantsLayout();
+        bool usesRootConstants = rootConstants && rootConstants->GetDataSize();
+        if (usesRootConstants)
+        {
+            m_rootConstantSize = rootConstants->GetDataSize();
+            // All root constants share the same spaceId
+            m_rootConstantIndex = rootConstants->GetShaderInputList().front().m_spaceId;
+            numOfBindGroups++;
+        }
+        AZStd::vector<wgpu::BindGroupLayout> nativeBindGroups(numOfBindGroups);
         for (uint32_t index = 0; index < m_bindGroupLayouts.size(); ++index)
         {
             nativeBindGroups[index] = m_bindGroupLayouts[index]->GetNativeBindGroupLayout();
+        }
+
+        if (usesRootConstants)
+        {
+            nativeBindGroups[m_rootConstantIndex] = device.GetRootConstantManager().GetBindGroupLayout().GetNativeBindGroupLayout();
         }
 
         wgpu::PipelineLayoutDescriptor descriptor = {};
@@ -108,13 +138,9 @@ namespace AZ::WebGPU
         descriptor.bindGroupLayouts = nativeBindGroups.data();
         descriptor.label = GetName().GetCStr();
 
-        m_wgpuPipelineLayout = static_cast<Device&>(GetDevice()).GetNativeDevice().CreatePipelineLayout(&descriptor);
+        m_wgpuPipelineLayout = device.GetNativeDevice().CreatePipelineLayout(&descriptor);
         AZ_Assert(m_wgpuPipelineLayout, "Failed to create PipelineLayout");
         return m_wgpuPipelineLayout ? RHI::ResultCode::Success : RHI::ResultCode::Fail;      
-    }
-
-    void PipelineLayout::BuildPushConstantRanges()
-    {
     }
 
     const RHI::PipelineLayoutDescriptor& PipelineLayout::GetPipelineLayoutDescriptor() const

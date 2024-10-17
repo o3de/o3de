@@ -55,9 +55,13 @@ namespace AZ::WebGPU
         void CommitUpdates();
 
         //! Updates the buffer views of the bind group
-        void UpdateBufferViews(uint32_t index, const AZStd::span<const RHI::ConstPtr<RHI::DeviceBufferView>>& bufViews);
+        void UpdateBufferViews(uint32_t binding, const AZStd::span<const RHI::ConstPtr<RHI::DeviceBufferView>>& bufViews);
         //! Updates the iamge views of the bind group
-        void UpdateImageViews(uint32_t index, const AZStd::span<const RHI::ConstPtr<RHI::DeviceImageView>>& imageViews);
+        void UpdateImageViews(
+            uint32_t index,
+            uint32_t binding,
+            const AZStd::span<const RHI::ConstPtr<RHI::DeviceImageView>>& imageViews,
+            RHI::ShaderInputImageType imageType);
         //! Updates the samplers of the bind group
         void UpdateSamplers(uint32_t index, const AZStd::span<const RHI::SamplerState>& samplers);
         //! Updates the constant data of the bind group

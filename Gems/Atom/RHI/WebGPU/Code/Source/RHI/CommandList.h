@@ -18,6 +18,7 @@
 
 namespace AZ::WebGPU
 {
+    class BindGroup;
     class Device;
     class ShaderResourceGroup;
 
@@ -44,6 +45,11 @@ namespace AZ::WebGPU
         //! Ends a renderpass
         void EndRenderPass();
 
+        //! Begins a computepass
+        void BeginComputePass();
+        //! Ends a computepass
+        void EndComputePass();
+
         //! Returns the CommandBuffer. Must Begin/End the command list in order to have
         //! a valid CommandBuffer
         wgpu::CommandBuffer& GetNativeCommandBuffer();
@@ -56,7 +62,7 @@ namespace AZ::WebGPU
         void SetShaderResourceGroupForDispatch(const RHI::DeviceShaderResourceGroup& shaderResourceGroup) override;
         void Submit(const RHI::DeviceDrawItem& drawItem, uint32_t submitIndex = 0) override;
         void Submit(const RHI::DeviceCopyItem& copyItem, uint32_t submitIndex = 0) override;
-        void Submit([[maybe_unused]] const RHI::DeviceDispatchItem& dispatchItem, [[maybe_unused]] uint32_t submitIndex = 0) override {}
+        void Submit(const RHI::DeviceDispatchItem& dispatchItem, uint32_t submitIndex = 0) override;
         void Submit([[maybe_unused]] const RHI::DeviceDispatchRaysItem& dispatchRaysItem, [[maybe_unused]] uint32_t submitIndex = 0) override {}
         void BeginPredication([[maybe_unused]] const RHI::DeviceBuffer& buffer, [[maybe_unused]] uint64_t offset, [[maybe_unused]] RHI::PredicationOp operation) override {}
         void EndPredication() override {}
@@ -80,6 +86,8 @@ namespace AZ::WebGPU
             const PipelineState* m_pipelineState = nullptr;
             AZStd::array<const ShaderResourceGroup*, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_SRGByAzslBindingSlot = { {} };
             AZStd::array<WGPUBindGroup, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_bindGroups = { { nullptr } };
+            const BindGroup* m_rootConstantBindGroup = nullptr;
+            uint32_t m_rootConstantOffset = 0;
         };
 
         template<class Item>
@@ -87,7 +95,8 @@ namespace AZ::WebGPU
         void CommitViewportState();
         void CommitScissorState();
         void CommitBindGroups(RHI::PipelineStateType type);
-        void SetStreamBuffers(const RHI::DeviceStreamBufferView* streams, uint32_t count);
+        void CommitRootConstants(RHI::PipelineStateType type, uint8_t rootConstantSize, const uint8_t* rootConstants);
+        void SetStreamBuffers(const RHI::DeviceGeometryView& geometryView, const RHI::StreamBufferIndices& streamIndices);
         void SetIndexBuffer(const RHI::DeviceIndexBufferView& indexBufferView);
         void SetStencilRef(uint8_t stencilRef);
         void SetShaderResourceGroup(const RHI::DeviceShaderResourceGroup& shaderResourceGroup, RHI::PipelineStateType type);
@@ -96,15 +105,23 @@ namespace AZ::WebGPU
 
         void ValidateShaderResourceGroups(RHI::PipelineStateType type) const;
 
-        //! Array of shader resource bindings, indexed by command pipe.
-        AZStd::array<ShaderResourceBindings, static_cast<size_t>(RHI::PipelineStateType::Count)> m_bindingsByPipe;
+        struct State
+        {
+            //! Array of shader resource bindings, indexed by command pipe.
+            AZStd::array<ShaderResourceBindings, static_cast<size_t>(RHI::PipelineStateType::Count)> m_bindingsByPipe;
 
-        // Graphics-specific state
-        AZStd::array<uint64_t, RHI::Limits::Pipeline::StreamCountMax> m_streamBufferHashes = { {} };
-        uint64_t m_indexBufferHash = 0;
-        RHI::CommandListScissorState m_scissorState;
-        RHI::CommandListViewportState m_viewportState;
-        wgpu::RenderPassEncoder m_wgpuRenderPassEncoder = nullptr;
+            // Graphics-specific state
+            AZStd::array<uint64_t, RHI::Limits::Pipeline::StreamCountMax> m_streamBufferHashes = { {} };
+            uint64_t m_indexBufferHash = 0;
+            RHI::CommandListScissorState m_scissorState;
+            RHI::CommandListViewportState m_viewportState;
+            wgpu::RenderPassEncoder m_wgpuRenderPassEncoder = nullptr;
+
+            // Compute-specific state
+            wgpu::ComputePassEncoder m_wgpuComputePassEncoder = nullptr;
+        };
+
+        State m_state;
 
         // Common state
         wgpu::CommandEncoder m_wgpuCommandEncoder = nullptr;
@@ -148,8 +165,16 @@ namespace AZ::WebGPU
 
         ValidateShaderResourceGroups(pipelineType);
 
+        // Set root constants values if needed.
+        auto pipelineLayout = pipelineState->GetPipelineLayout();
+        if (item.m_rootConstantSize && pipelineLayout->GetRootConstantSize() > 0)
+        {
+            CommitRootConstants(pipelineType, item.m_rootConstantSize, item.m_rootConstants);
+        }
+
         // Set BindGroups based on the assigned SRGs.
         CommitBindGroups(pipelineType);
+
         return true;
     }
 }

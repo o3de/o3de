@@ -10,6 +10,9 @@
 #error Do not include this file directly. Include the main .srgi file instead.
 #endif
 
+#include <Atom/Features/ResourceArrayUtility.azsli>
+#include <Atom/Features/PBR/LightingDefines.azsli>
+
 partial ShaderResourceGroup ViewSrg
 { 
     
@@ -76,8 +79,10 @@ partial ShaderResourceGroup ViewSrg
     uint m_visibleSimpleSpotLightCount;
     
     static const uint MaxGoboTextureCount = 5;
-    Texture2D<float> m_goboTextures[MaxGoboTextureCount];
+    DECLARE_RESOURCE_ARRAY(Texture2D<float>, m_goboTextures, 5)
+    DECLARE_TEXTURE_ARRAY_SAMPLE2D(float, m_goboTextures, SampleGoboTexture, 5)
 
+#if ENABLE_SPHERE_LIGHTS
     // Point lights (sphere lights)
 
     struct PointLight
@@ -95,6 +100,8 @@ partial ShaderResourceGroup ViewSrg
 
     StructuredBuffer<PointLight> m_pointLights;
     uint m_pointLightCount;
+#endif
+
     Buffer<uint> m_visibleSimplePointLightIndices;
     uint m_visibleSimplePointLightCount;
 
@@ -154,8 +161,11 @@ partial ShaderResourceGroup ViewSrg
     uint m_directionalLightCount;
     uint m_shadowIndexDirectionalLight;
 
+#if ENABLE_ESM_SHADOW
     StructuredBuffer<FilterParameter> m_esmsDirectional;
+#endif
 
+#if ENABLE_DISK_LIGHTS
     // Disk Lights
     
     struct DiskLight
@@ -178,7 +188,9 @@ partial ShaderResourceGroup ViewSrg
 
     StructuredBuffer<DiskLight> m_diskLights;
     uint m_diskLightCount;
-    
+#endif
+
+#if ENABLE_CAPSULE_LIGHTS     
     // Capsule Lights
     
     struct CapsuleLight
@@ -197,7 +209,9 @@ partial ShaderResourceGroup ViewSrg
 
     StructuredBuffer<CapsuleLight> m_capsuleLights;
     uint m_capsuleLightCount;
+#endif
     
+#if ENABLE_QUAD_LIGHTS 
     // Quad Lights
     
     struct QuadLight
@@ -218,7 +232,9 @@ partial ShaderResourceGroup ViewSrg
 
     StructuredBuffer<QuadLight> m_quadLights;
     uint m_quadLightCount;
-    
+#endif
+
+#if ENABLE_POLYGON_LTC_LIGHTS
     // Polygon Lights
 
     struct PolygonLight
@@ -244,4 +260,5 @@ partial ShaderResourceGroup ViewSrg
     {
         return index & 0x0000FFFF;
     }
+#endif
 }

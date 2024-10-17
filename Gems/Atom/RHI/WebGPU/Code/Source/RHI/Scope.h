@@ -28,6 +28,8 @@ namespace AZ::WebGPU
 
         //! List of color attachment descriptors used for building the renderpass
         AZStd::fixed_vector<wgpu::RenderPassColorAttachment, RHI::Limits::Pipeline::AttachmentColorCountMax> m_wgpuColorAttachments;
+        //! Color Index -> Attachment Id mapping
+        AZStd::array<RHI::AttachmentId, RHI::Limits::Pipeline::AttachmentColorCountMax> m_colorAttachmentIds;
         //! Depth/Stencil attachment descriptor
         wgpu::RenderPassDepthStencilAttachment m_wgpuDepthStencilAttachmentInfo = {};
         //! Signals if the renderpass descriptor is valid
@@ -55,6 +57,7 @@ namespace AZ::WebGPU
 
         //////////////////////////////////////////////////////////////////////////
         // RHI::Scope
+        void ActivateInternal() override;
         void DeactivateInternal() override;
         void CompileInternal() override;
         void AddQueryPoolUse([[maybe_unused]] RHI::Ptr<RHI::QueryPool> queryPool, [[maybe_unused]] const RHI::Interval& interval, [[maybe_unused]] RHI::ScopeAttachmentAccess access) override {}
@@ -64,5 +67,7 @@ namespace AZ::WebGPU
 
         //! Renderpass descriptor
         RenderPassDescriptorBuilder m_renderPassBuilder = {};
+        bool m_usesRenderpass = false;
+        bool m_usesComputepass = false;
     };
 }

@@ -26,10 +26,12 @@ namespace AZ
             static RHI::PhysicalDeviceList Enumerate();
             void Init(wgpu::Adapter& adapter);
             const wgpu::Adapter& GetNativeAdapter() const;
+            const wgpu::SupportedLimits& GetLimits() const;
 
         private:
             wgpu::Adapter m_wgpuAdapter = nullptr;
             wgpu::AdapterInfo m_adapterInfo;
+            wgpu::SupportedLimits m_limits{};
         };
     }
 }

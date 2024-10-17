@@ -8,6 +8,10 @@
 
 #include <viewsrg.srgi>
 
+#ifndef AZ_TRAIT_POINT_SIZE
+    #define AZ_TRAIT_POINT_SIZE 1
+#endif
+
 ShaderResourceGroup PerDrawSrg : SRG_PerDraw
 {
     row_major float4x4 m_viewProjectionOverride;
@@ -43,9 +47,13 @@ VSOutput MainVS(VSInput vsInput)
     }
     OUT.m_color = vsInput.m_color;
 
+#if AZ_TRAIT_POINT_SIZE
     // On Vulkan you need to specify the point size in the VS when using the point topology.
     OUT.m_pointSize = PerDrawSrg::m_pointSize;
-    return OUT;
+#else
+    OUT.m_pointSize = 1.0; 
+#endif  
+    return OUT; 
 }
 
 struct PSOutput

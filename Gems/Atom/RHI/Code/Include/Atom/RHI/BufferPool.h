@@ -21,6 +21,8 @@ namespace AZ::RHI
     {
         //! Will hold the mapped data for each device selected in the Buffer
         AZStd::unordered_map<int, void*> m_data;
+        //! The type of mapping done
+        BufferResponseMapType m_type = BufferResponseMapType::Permanent;
     };
 
     //! A structure used as an argument to BufferPool::UpdateBufferDeviceMask.

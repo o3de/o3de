@@ -8,56 +8,7 @@
 
 #pragma once
 
-// --- Note: About this file ---
-// This file uses #defines to completely strip out certain lighting features from shaders
-// This enables us to avoid code duplication and write an uber-esque shader code and then
-// be able to adjust the code for different use cases (for example basic materials can strip
-// away transimission related code used for foliage). These are different from shader options
-// in that shader options allow more user flexibility to adjust materials at runtime, whereas
-// these #define options are for customizing and optimizing material types (like BasePBR)
-
-// --- Light Defines ---
-
-#ifndef ENABLE_SHADOWS
-#define ENABLE_SHADOWS              1
-#endif
-
-#ifndef ENABLE_LIGHT_CULLING
-#define ENABLE_LIGHT_CULLING              1
-#endif
-
-#ifndef ENABLE_DECALS
-#define ENABLE_DECALS              1
-#endif
-
-#ifndef ENABLE_AREA_LIGHT_VALIDATION
-#define ENABLE_AREA_LIGHT_VALIDATION    1
-#endif
-
-#ifndef ENABLE_AREA_LIGHTS
-#define ENABLE_AREA_LIGHTS              1
-#endif
-
-#ifndef ENABLE_SPHERE_LIGHTS
-#define ENABLE_SPHERE_LIGHTS            ENABLE_AREA_LIGHTS
-#endif
-
-#ifndef ENABLE_DISK_LIGHTS
-#define ENABLE_DISK_LIGHTS              ENABLE_AREA_LIGHTS
-#endif
-
-#ifndef ENABLE_CAPSULE_LIGHTS
-#define ENABLE_CAPSULE_LIGHTS           ENABLE_AREA_LIGHTS
-#endif
-
-#ifndef ENABLE_QUAD_LIGHTS
-#define ENABLE_QUAD_LIGHTS              ENABLE_AREA_LIGHTS
-#endif
-
-#ifndef ENABLE_POLYGON_LTC_LIGHTS
-#define ENABLE_POLYGON_LTC_LIGHTS       ENABLE_AREA_LIGHTS
-#endif
-
+#include <Atom/Features/PBR/LightingDefines.azsli>
 
 // --- Material defines ---
 

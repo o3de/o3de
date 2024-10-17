@@ -50,7 +50,6 @@ namespace AZ::RHI
         NotEqual,
         GreaterEqual,
         Always,
-        None,
         Invalid
     );
 
@@ -88,7 +87,7 @@ namespace AZ::RHI
         FilterMode m_filterMag = FilterMode::Point;
         FilterMode m_filterMip = FilterMode::Point;
         ReductionType m_reductionType = ReductionType::Filter;
-        ComparisonFunc m_comparisonFunc = ComparisonFunc::None;
+        ComparisonFunc m_comparisonFunc = ComparisonFunc::Always;
         AddressMode m_addressU = AddressMode::Wrap;
         AddressMode m_addressV = AddressMode::Wrap;
         AddressMode m_addressW = AddressMode::Wrap;

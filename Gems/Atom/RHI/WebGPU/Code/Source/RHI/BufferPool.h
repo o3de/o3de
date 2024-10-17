@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <RHI/Buffer.h>
 #include <Atom/RHI/DeviceBufferPool.h>
 
 namespace AZ::WebGPU
@@ -51,7 +52,7 @@ namespace AZ::WebGPU
         RHI::ResultCode MapBufferInternal(
             const RHI::DeviceBufferMapRequest& mapRequest, RHI::DeviceBufferMapResponse& response) override;
         void UnmapBufferInternal(RHI::DeviceBuffer& buffer) override;
-        RHI::ResultCode StreamBufferInternal([[maybe_unused]] const RHI::DeviceBufferStreamRequest& request) override { return RHI::ResultCode::Success;}
+        RHI::ResultCode StreamBufferInternal(const RHI::DeviceBufferStreamRequest& request) override;
         void ComputeFragmentation() const override {}
         //////////////////////////////////////////////////////////////////////////
 

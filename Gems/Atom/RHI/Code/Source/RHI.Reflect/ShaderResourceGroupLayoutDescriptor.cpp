@@ -68,7 +68,9 @@ namespace AZ::RHI
                 ->Field("m_access", &ShaderInputImageDescriptor::m_access)
                 ->Field("m_count", &ShaderInputImageDescriptor::m_count)
                 ->Field("m_registerId", &ShaderInputImageDescriptor::m_registerId)
-                ->Field("m_spaceId", &ShaderInputImageDescriptor::m_spaceId);
+                ->Field("m_spaceId", &ShaderInputImageDescriptor::m_spaceId)
+                ->Field("m_sampleType", &ShaderInputImageDescriptor::m_sampleType)
+                ->Field("m_format", &ShaderInputImageDescriptor::m_format);
         }
 
         ShaderInputImageIndex::Reflect(context);
@@ -80,13 +82,17 @@ namespace AZ::RHI
         ShaderInputImageType type,
         uint32_t imageCount,
         uint32_t registerId,
-        uint32_t spaceId)
+        uint32_t spaceId,
+        Format format,
+        ShaderInputImageSampleType sampleType)
         : m_name{ name }
         , m_access{ access }
         , m_type{ type }
         , m_count{ imageCount }
         , m_registerId{ registerId }
         , m_spaceId{ spaceId }
+        , m_format{ format }
+        , m_sampleType{ sampleType }
     {}
 
     HashValue64 ShaderInputImageDescriptor::GetHash(HashValue64 seed) const
@@ -96,6 +102,8 @@ namespace AZ::RHI
         seed = TypeHash64(m_type, seed);
         seed = TypeHash64(m_count, seed);
         seed = TypeHash64(m_registerId, seed);
+        seed = TypeHash64(m_sampleType, seed);
+        seed = TypeHash64(m_format, seed);
         return seed;
     }
 
@@ -188,7 +196,8 @@ namespace AZ::RHI
                 ->Field("m_name", &ShaderInputSamplerDescriptor::m_name)
                 ->Field("m_count", &ShaderInputSamplerDescriptor::m_count)
                 ->Field("m_registerId", &ShaderInputSamplerDescriptor::m_registerId)
-                ->Field("m_spaceId", &ShaderInputSamplerDescriptor::m_spaceId);
+                ->Field("m_spaceId", &ShaderInputSamplerDescriptor::m_spaceId)
+                ->Field("m_type", &ShaderInputSamplerDescriptor::m_type);
         }
 
         ShaderInputSamplerIndex::Reflect(context);
@@ -198,18 +207,21 @@ namespace AZ::RHI
         const Name& name,
         uint32_t samplerCount,
         uint32_t registerId,
-        uint32_t spaceId)
+        uint32_t spaceId,
+        ShaderInputSamplerType type)
         : m_name{ name }
         , m_count{ samplerCount }
         , m_registerId{ registerId }
         , m_spaceId{ spaceId }
-    {}
+        , m_type{ type }
+    {} 
 
     HashValue64 ShaderInputSamplerDescriptor::GetHash(HashValue64 seed) const
     {
         seed = TypeHash64(m_name.GetHash(), seed);
         seed = TypeHash64(m_count, seed);
         seed = TypeHash64(m_registerId, seed);
+        seed = TypeHash64(m_type, seed);        
         return seed;
     }
 
