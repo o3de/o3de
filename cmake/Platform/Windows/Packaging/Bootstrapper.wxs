@@ -17,6 +17,14 @@
             Value="[WindowsVolume]$(var.CPACK_PACKAGE_INSTALL_DIRECTORY)"
             bal:Overridable="yes"/>
 
+        <Variable Name="LogLevel" Type="string" Value="" bal:Overridable="yes"/>
+        <CommandLine>
+            <Argument Name="verbose" Variable="LogLevel" Value="v"/>
+        </CommandLine>
+
+        <!-- Sets logging level for the MSI -->
+        <Property Id="MsiLogging" Value="[LogLevel]"/>
+
         <!-- special variable name that auto maps to a WixStandardBootstrapperApplication attribute of the same name -->
         <Variable Name="LaunchTarget"
             Type="string"
