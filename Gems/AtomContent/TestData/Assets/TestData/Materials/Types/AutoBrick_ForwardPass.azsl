@@ -17,6 +17,13 @@
 #include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
 #include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
+
+// the ParallaxMapping - functions expect a MaterialParameter struct, but only to pass it unchanged to the GetDepth function, 
+// in case that function wants to sample a heightmap or something. We don't need that, so we can bypass that with an empty struct
+struct MaterialParameters
+{
+};
+
 #include <Atom/Features/ParallaxMapping.azsli>
 #include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
 #include <Atom/Features/PBR/Lights/IblForward.azsli>
@@ -121,7 +128,7 @@ void GetSurfaceShape(float2 uv, out float depth, out float3 normal)
 }
 
 // Callback function for ParallaxMapping.azsli
-DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
+DepthResult GetDepth(const MaterialParameters params, float2 uv, float2 uv_ddx, float2 uv_ddy)
 {
     float depth;
     float3 normal;
@@ -144,7 +151,10 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
           
     float depthOffset = 0.0;
 
-    ParallaxOffset tangentOffset = GetParallaxOffset( AutoBrickSrg::m_lineDepth,
+    MaterialParameters params = (MaterialParameters)(0);
+
+    ParallaxOffset tangentOffset = GetParallaxOffset( params,
+                                                      AutoBrickSrg::m_lineDepth,
                                                       depthOffset,
                                                       IN.m_uv,
                                                       ViewSrg::m_worldPosition.xyz - IN.m_worldPosition, 

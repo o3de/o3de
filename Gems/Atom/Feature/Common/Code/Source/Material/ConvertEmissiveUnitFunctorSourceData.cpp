@@ -49,13 +49,7 @@ namespace AZ
             }
             AddMaterialPropertyDependency(functor, functor->m_lightUnitPropertyIndex);
 
-            functor->m_shaderInputIndex = context.FindShaderInputConstantIndex(AZ::Name{ m_shaderInputName });
-
-            if (functor->m_shaderInputIndex.IsNull())
-            {
-                AZ_Error("ConvertEmissiveUnitFunctorSourceData", false, "Could not find shader input '%s'", m_shaderInputName.data());
-                return Failure();
-            }
+            functor->m_shaderInputName = AZ::Name{ m_shaderInputName };
 
             functor->m_ev100Index = m_ev100Index;
             functor->m_nitIndex = m_nitIndex;

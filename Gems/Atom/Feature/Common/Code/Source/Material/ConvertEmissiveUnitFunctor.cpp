@@ -22,14 +22,13 @@ namespace AZ
                     ->Version(6)
                     ->Field("intensityPropertyIndex", &ConvertEmissiveUnitFunctor::m_intensityPropertyIndex)
                     ->Field("lightUnitPropertyIndex", &ConvertEmissiveUnitFunctor::m_lightUnitPropertyIndex)
-                    ->Field("shaderInputIndex", &ConvertEmissiveUnitFunctor::m_shaderInputIndex)
+                    ->Field("shaderInputName", &ConvertEmissiveUnitFunctor::m_shaderInputName)
                     ->Field("ev100Index", &ConvertEmissiveUnitFunctor::m_ev100Index)
                     ->Field("nitIndex", &ConvertEmissiveUnitFunctor::m_nitIndex)
                     ->Field("ev100Min", &ConvertEmissiveUnitFunctor::m_ev100Min)
                     ->Field("ev100Max", &ConvertEmissiveUnitFunctor::m_ev100Max)
                     ->Field("nitMin", &ConvertEmissiveUnitFunctor::m_nitMin)
-                    ->Field("nitMax", &ConvertEmissiveUnitFunctor::m_nitMax)
-                    ;
+                    ->Field("nitMax", &ConvertEmissiveUnitFunctor::m_nitMax);
             }
         }
 
@@ -39,7 +38,7 @@ namespace AZ
             float sourceValue = context.GetMaterialPropertyValue<float>(m_intensityPropertyIndex);
             uint32_t lightUnit = context.GetMaterialPropertyValue<uint32_t>(m_lightUnitPropertyIndex);
             float targetValue = GetProcessedValue(sourceValue, lightUnit);
-            context.GetShaderResourceGroup()->SetConstant(m_shaderInputIndex, targetValue);
+            context.GetMaterialShaderParameter()->SetParameter(m_shaderInputName, targetValue);
         }
 
         void ConvertEmissiveUnitFunctor::Process(RPI::MaterialFunctorAPI::EditorContext& context)

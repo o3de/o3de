@@ -348,45 +348,53 @@ namespace AZ
 
             MaterialPropertyOutputId outputId;
             outputId.m_type = MaterialPropertyOutputType::ShaderInput;
-
-            if (!m_materialShaderResourceGroupLayout)
-            {
-                ReportError("Material property '%s': Could not map this property to shader input '%s' because there is no material ShaderResourceGroup.",
-                    m_wipMaterialProperty.GetName().GetCStr(), shaderInputName.GetCStr());
-                return;
-            }
-
-            switch (m_wipMaterialProperty.GetDataType())
-            {
-            case MaterialPropertyDataType::Bool:
-            case MaterialPropertyDataType::Int:
-            case MaterialPropertyDataType::UInt:
-            case MaterialPropertyDataType::Float:
-            case MaterialPropertyDataType::Vector2:
-            case MaterialPropertyDataType::Vector3:
-            case MaterialPropertyDataType::Vector4:
-            case MaterialPropertyDataType::Color:
-            case MaterialPropertyDataType::Enum:
-                outputId.m_itemIndex = RHI::Handle<uint32_t>{m_materialShaderResourceGroupLayout->FindShaderInputConstantIndex(shaderInputName).GetIndex()};
-                if (outputId.m_itemIndex.IsNull())
-                {
-                    ReportError("Material property '%s': Could not find shader constant input '%s'.", m_wipMaterialProperty.GetName().GetCStr(), shaderInputName.GetCStr());
-                }
-                break;
-            case MaterialPropertyDataType::Image:
-                outputId.m_itemIndex = RHI::Handle<uint32_t>{m_materialShaderResourceGroupLayout->FindShaderInputImageIndex(shaderInputName).GetIndex()};
-                if (outputId.m_itemIndex.IsNull())
-                {
-                    ReportError("Material property '%s': Could not find shader image input '%s'.", m_wipMaterialProperty.GetName().GetCStr(), shaderInputName.GetCStr());
-                }
-                break;
-            default:
-                ReportError("Material property '%s': Properties of this type cannot be mapped to a ShaderResourceGroup input.", m_wipMaterialProperty.GetName().GetCStr());
-                return;
-            }
-
-
+            outputId.m_shaderInputName = shaderInputName;
             m_wipMaterialProperty.m_outputConnections.push_back(outputId);
+            return;
+        }
+
+        void MaterialTypeAssetCreator::UpdateShaderInputConnections()
+        {
+            if (!m_materialShaderResourceGroupLayout && m_asset->m_materialShaderParameterLayout.GetNonPseudoParameterCount() > 0)
+            {
+                ReportError("Could not map properties to shader inputs because there is no material ShaderResourceGroup.");
+                return;
+            }
+            for (auto& propertyDescriptor : m_materialPropertiesLayout->m_materialPropertyDescriptors)
+            {
+                for (auto& connection : propertyDescriptor.m_outputConnections)
+                {
+                    if (connection.m_type == MaterialPropertyOutputType::ShaderInput)
+                    {
+                        auto paramIndex =
+                            m_asset->m_materialShaderParameterLayout.GetParameterIndex(connection.m_shaderInputName.GetStringView());
+                        if (!paramIndex.IsValid())
+                        {
+                            ReportError(
+                                "Material property '%s': Could not find shader input '%s' in neither in the MaterialSrg nor the "
+                                "MaterialParameterBuffer.",
+                                propertyDescriptor.GetName().GetCStr(),
+                                connection.m_shaderInputName.GetCStr());
+                        }
+                        else
+                        {
+                            connection.m_itemIndex = RHI::Handle<uint32_t>(paramIndex.GetIndex());
+                            auto* paramDesc = m_asset->m_materialShaderParameterLayout.GetDescriptor(paramIndex);
+                            m_asset->m_materialShaderParameterLayout.ConnectParameterToSrg(paramDesc, m_materialShaderResourceGroupLayout);
+                        }
+                    }
+                }
+            }
+        }
+
+        void MaterialTypeAssetCreator::SetMaterialShaderParameterLayout(MaterialShaderParameterLayout layout)
+        {
+            if (!ValidateIsReady())
+            {
+                return;
+            }
+
+            m_asset->m_materialShaderParameterLayout = AZStd::move(layout);
         }
 
         void MaterialTypeAssetCreator::ConnectMaterialPropertyToShaderOptions(const Name& shaderOptionName)

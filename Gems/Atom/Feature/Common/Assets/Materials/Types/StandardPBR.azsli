@@ -12,10 +12,19 @@
 
 //TODO(MaterialPipeline): Inline the MaterialSrg files since they aren't reused.
 //TODO(MaterialPipeline): Try removing different parts of the SRG and see how hard/easy it is to customize the surface function.
-#include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_MaterialSrg.azsli>
 
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+
+#include MATERIAL_PARAMETERS_AZSLI_FILE_PATH
+
+#ifndef USE_BINDLESS_SRG
+#include <Atom/Features/Materials/MaterialSrg.azsli>
+#else
+#include <Atom/Features/Materials/SceneMaterialSrg.azsli>
+#endif
+
+#include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_MaterialInputs.azsli>
 
 #if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
 
@@ -42,9 +51,9 @@
     }
     
     // Callback function for ParallaxMapping.azsli
-    DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
+    DepthResult GetDepth(const MaterialParameters params, float2 uv, float2 uv_ddx, float2 uv_ddy)
     {
-        return SampleDepthFromHeightmap(MaterialSrg::m_heightmap, MaterialSrg::m_sampler, uv, uv_ddx, uv_ddy);
+        return SampleDepthFromHeightmap(asTexture(params.m_heightmap), GetMaterialTextureSampler(), uv, uv_ddx, uv_ddy);
     }
 
     #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexData.azsli>
@@ -76,9 +85,9 @@
     }
     
     // Callback function for ParallaxMapping.azsli
-    DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
+    DepthResult GetDepth(const MaterialParameters params, float2 uv, float2 uv_ddx, float2 uv_ddy)
     {
-        return SampleDepthFromHeightmap(MaterialSrg::m_heightmap, MaterialSrg::m_sampler, uv, uv_ddx, uv_ddy);
+        return SampleDepthFromHeightmap(asTexture(params.m_heightmap), GetMaterialTextureSampler(), uv, uv_ddx, uv_ddy);
     }
     
     #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexData.azsli>
@@ -89,9 +98,9 @@
     
     #include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/StandardGetAlphaAndClip.azsli"
 
-    void EvaluateSurface(VsOutput IN, PixelGeometryData geoData)
+    void EvaluateSurface(VsOutput IN, const MaterialParameters params, PixelGeometryData geoData)
     {
-        GetAlphaAndClip(geoData.uvs);
+        GetAlphaAndClip(params, geoData.uvs);
     }
 
 #else

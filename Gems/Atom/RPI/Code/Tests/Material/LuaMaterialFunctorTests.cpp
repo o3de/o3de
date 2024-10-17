@@ -310,7 +310,7 @@ namespace UnitTest
         ShaderOptionIndex m_shaderOptionIndex;
     };
 
-    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderConstant_Bool)
+    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderParameterValue_Bool)
     {
         using namespace AZ::RPI;
 
@@ -322,7 +322,7 @@ namespace UnitTest
 
                 function Process(context)
                     local value = context:GetMaterialPropertyValue_bool("general.TestBool")
-                    context:SetShaderConstant_bool("m_bool", value)
+                    context:SetShaderParameterValue_bool("m_bool", value)
                 end
             )";
 
@@ -343,7 +343,7 @@ namespace UnitTest
         EXPECT_EQ(false, testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<bool>(testData.GetSrgConstantIndex()));
     }
 
-    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderConstant_Float)
+    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderParameterValue_Float)
     {
         using namespace AZ::RPI;
 
@@ -355,7 +355,7 @@ namespace UnitTest
 
                 function Process(context)
                     local value = context:GetMaterialPropertyValue_float("general.TestFloat")
-                    context:SetShaderConstant_float("m_float", value * 2.0)
+                    context:SetShaderParameterValue_float("m_float", value * 2.0)
                 end
             )";
 
@@ -371,7 +371,7 @@ namespace UnitTest
         EXPECT_FLOAT_EQ(2.5f, testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<float>(testData.GetSrgConstantIndex()));
     }
 
-    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderConstant_Int)
+    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderParameterValue_Int)
     {
         using namespace AZ::RPI;
 
@@ -383,7 +383,7 @@ namespace UnitTest
 
                 function Process(context)
                     local value = context:GetMaterialPropertyValue_int("general.TestInt")
-                    context:SetShaderConstant_int("m_int", value * -1)
+                    context:SetShaderParameterValue_int("m_int", value * -1)
                 end
             )";
 
@@ -399,7 +399,7 @@ namespace UnitTest
         EXPECT_EQ(-2, testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<int32_t>(testData.GetSrgConstantIndex()));
     }
 
-    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderConstant_UInt)
+    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderParameterValue_UInt)
     {
         using namespace AZ::RPI;
 
@@ -411,7 +411,7 @@ namespace UnitTest
 
                 function Process(context)
                     local value = context:GetMaterialPropertyValue_uint("general.TestUInt")
-                    context:SetShaderConstant_uint("m_uint", value + 5)
+                    context:SetShaderParameterValue_uint("m_uint", value + 5)
                 end
             )";
 
@@ -427,7 +427,7 @@ namespace UnitTest
         EXPECT_EQ(7, testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<uint32_t>(testData.GetSrgConstantIndex()));
     }
 
-    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderConstant_Float2)
+    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderParameterValue_Float2)
     {
         using namespace AZ::RPI;
 
@@ -442,7 +442,7 @@ namespace UnitTest
                     local swap = value.y
                     value.y = value.x
                     value.x = swap
-                    context:SetShaderConstant_Vector2("m_float2", value)
+                    context:SetShaderParameterValue_Vector2("m_float2", value)
                 end
             )";
 
@@ -458,7 +458,7 @@ namespace UnitTest
         EXPECT_EQ(Vector2(2.0f, 1.0f), testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<Vector2>(testData.GetSrgConstantIndex()));
     }
 
-    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderConstant_Vector3)
+    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderParameterValue_Vector3)
     {
         using namespace AZ::RPI;
 
@@ -471,7 +471,7 @@ namespace UnitTest
                 function Process(context)
                     local value = context:GetMaterialPropertyValue_Vector3("general.TestVector3")
                     value:Normalize()
-                    context:SetShaderConstant_Vector3("m_float3", value)
+                    context:SetShaderParameterValue_Vector3("m_float3", value)
                 end
             )";
 
@@ -487,7 +487,7 @@ namespace UnitTest
         EXPECT_EQ(Vector3(5.0f, 4.0f, 3.0f).GetNormalized(), testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<Vector3>(testData.GetSrgConstantIndex()));
     }
 
-    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderConstant_Vector4)
+    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderParameterValue_Vector4)
     {
         using namespace AZ::RPI;
 
@@ -500,7 +500,7 @@ namespace UnitTest
                 function Process(context)
                     local value = context:GetMaterialPropertyValue_Vector4("general.TestVector4")
                     value:Homogenize()
-                    context:SetShaderConstant_Vector4("m_float4", value)
+                    context:SetShaderParameterValue_Vector4("m_float4", value)
                 end
             )";
 
@@ -516,7 +516,7 @@ namespace UnitTest
         EXPECT_EQ(Vector4(1.0f, 2.0f, 3.0f, 4.0f) / 4.0f, testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<Vector4>(testData.GetSrgConstantIndex()));
     }
 
-    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderConstant_Color)
+    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderParameterValue_Color)
     {
         using namespace AZ::RPI;
 
@@ -531,7 +531,7 @@ namespace UnitTest
                     value.r = value.r * value.a
                     value.g = value.g * value.a
                     value.b = value.b * value.a
-                    context:SetShaderConstant_Color("m_color", value)
+                    context:SetShaderParameterValue_Color("m_color", value)
                 end
             )";
 
@@ -547,7 +547,7 @@ namespace UnitTest
         EXPECT_EQ(Color(0.5f, 0.25f, 0.2f, 0.5f), testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<Color>(testData.GetSrgConstantIndex()));
     }
 
-    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_SetShaderConstant_Matrix3x3)
+    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_SetShaderParameterValue_Matrix3x3)
     {
         using namespace AZ::RPI;
 
@@ -560,7 +560,7 @@ namespace UnitTest
                 function Process(context)
                     local scale = context:GetMaterialPropertyValue_float("general.Scale")
                     local tansform = Matrix3x3.CreateScale(Vector3(scale, scale, 1.0))
-                    context:SetShaderConstant_Matrix3x3("m_float3x3", tansform)
+                    context:SetShaderParameterValue_Matrix3x3("m_float3x3", tansform)
                 end
             )";
 
@@ -576,7 +576,7 @@ namespace UnitTest
         EXPECT_EQ(Matrix3x3::CreateScale(Vector3(0.5f, 0.5f, 1.0f)), testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<Matrix3x3>(testData.GetSrgConstantIndex()));
     }
 
-    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_SetShaderConstant_Matrix4x4)
+    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_SetShaderParameterValue_Matrix4x4)
     {
         using namespace AZ::RPI;
 
@@ -589,7 +589,7 @@ namespace UnitTest
                 function Process(context)
                     local offset = context:GetMaterialPropertyValue_Vector3("general.Offset")
                     local tansform = Matrix4x4.CreateTranslation(offset)
-                    context:SetShaderConstant_Matrix4x4("m_float4x4", tansform)
+                    context:SetShaderParameterValue_Matrix4x4("m_float4x4", tansform)
                 end
             )";
 

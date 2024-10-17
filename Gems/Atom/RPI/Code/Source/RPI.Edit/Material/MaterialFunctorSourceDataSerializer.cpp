@@ -25,6 +25,7 @@ namespace AZ
         {
             constexpr const char TypeField[] = "type";
             constexpr const char ArgsField[] = "args";
+            constexpr const char ShaderParamsField[] = "shaderparams";
         }
 
         AZ_CLASS_ALLOCATOR_IMPL(JsonMaterialFunctorSourceDataSerializer, SystemAllocator);
@@ -64,6 +65,15 @@ namespace AZ
                 return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported, "Functor type name is not registered.");
             }
 
+            if (inputValue.HasMember(ShaderParamsField))
+            {
+                result.Combine(ContinueLoading(
+                    &functorHolder->m_shaderParameters,
+                    azrtti_typeid<AZStd::vector<MaterialFunctorShaderParameter>>(),
+                    inputValue[ShaderParamsField],
+                    context));
+            }
+
             // Create the actual source data of the functor.
             const SerializeContext::ClassData* actualClassData = context.GetSerializeContext()->FindClassData(functorTypeId);
             if (actualClassData)
@@ -72,10 +82,6 @@ namespace AZ
                 if (inputValue.HasMember(ArgsField))
                 {
                     result.Combine(ContinueLoading(instance, functorTypeId, inputValue[ArgsField], context));
-                }
-                else
-                {
-                    result.Combine(JSR::ResultCode(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed));
                 }
                 functorHolder->m_actualSourceData = reinterpret_cast<MaterialFunctorSourceData*>(instance);
             }
@@ -119,6 +125,13 @@ namespace AZ
             const AZStd::string emptyString;
             result.Combine(ContinueStoringToJsonObjectField(outputValue, TypeField, &functorName, &emptyString, azrtti_typeid<AZStd::string>(), context));
             result.Combine(ContinueStoringToJsonObjectField(outputValue, ArgsField, functorHolder->m_actualSourceData.get(), nullptr, functorTypeId, context));
+            result.Combine(ContinueStoringToJsonObjectField(
+                outputValue,
+                ShaderParamsField,
+                &functorHolder->m_shaderParameters,
+                nullptr,
+                azrtti_typeid<AZStd::vector<MaterialFunctorShaderParameter>>(),
+                context));
 
             return context.Report(result, "Successfully processed MaterialFunctorSourceData.");
         }
