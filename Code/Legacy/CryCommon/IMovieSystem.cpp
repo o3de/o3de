@@ -135,42 +135,6 @@ void IAnimTrack::Reflect(AZ::ReflectContext* context)
     }
 }
 
-// support for AZ:: vector types - re-route to legacy types
-void IAnimTrack::GetValue(float time, AZ::Vector3& value, bool applyMultiplier)
-{
-    Vec3 vec3;
-    GetValue(time, vec3, applyMultiplier);
-    value.Set(vec3.x, vec3.y, vec3.z);
-}
-void IAnimTrack::GetValue(float time, AZ::Vector4& value, bool applyMultiplier)
-{
-    Vec4 vec4;
-    GetValue(time, vec4, applyMultiplier);
-    value.Set(vec4.x, vec4.y, vec4.z, vec4.w);
-}
-void IAnimTrack::GetValue(float time, AZ::Quaternion& value)
-{
-    Quat quat;
-    GetValue(time, quat);
-    value.Set(quat.v.x, quat.v.y, quat.v.z, quat.w);
-}
-
-// support for AZ:: vector types - re-route to legacy types
-void IAnimTrack::SetValue(float time, AZ::Vector4& value, bool bDefault, bool applyMultiplier)
-{
-    Vec4 vec4(value.GetX(), value.GetY(), value.GetZ(), value.GetW());
-    SetValue(time, vec4, bDefault, applyMultiplier);
-}
-void IAnimTrack::SetValue(float time, AZ::Vector3& value, bool bDefault, bool applyMultiplier)
-{
-    Vec3 vec3(value.GetX(), value.GetY(), value.GetZ());
-    SetValue(time, vec3, bDefault, applyMultiplier);
-}
-void IAnimTrack::SetValue(float time, AZ::Quaternion& value, bool bDefault)
-{
-    Quat quat(value.GetW(), value.GetX(), value.GetY(), value.GetZ());
-    SetValue(time, quat, bDefault);
-}
 
 int IAnimTrack::NextKeyByTime(int key) const
 {
@@ -209,50 +173,6 @@ IAnimNode::SParamInfo::SParamInfo(const char* _name, CAnimParamType _paramType, 
 
 //! Compute and return the offset which brings the current position to the given position
 Vec3 IAnimNode::GetOffsetPosition(const Vec3& position) { return position - GetPos(); }
-
-/**
- * O3DE_DEPRECATION_NOTICE(GHI-9326)
- * use equivalent SetParamValue that accepts AZ::Vector3
- **/
-bool IAnimNode::SetParamValue(float time, CAnimParamType param, const AZ::Vector3& value)
-{
-    Vec3 vec3(value.GetX(), value.GetY(), value.GetZ());
-    return SetParamValue(time, param, vec3);
-}
-
-/**
- * O3DE_DEPRECATION_NOTICE(GHI-9326)
- * use equivalent SetParamValue that accepts AZ::Vector4
- **/
-bool IAnimNode::SetParamValue(float time, CAnimParamType param, const AZ::Vector4& value)
-{
-    Vec4 vec4(value.GetX(), value.GetY(), value.GetZ(), value.GetW());
-    return SetParamValue(time, param, vec4);
-}
-
-/**
- * O3DE_DEPRECATION_NOTICE(GHI-9326)
- * use equivalent GetParamValue that accepts AZ::Vector4
- **/
-bool IAnimNode::GetParamValue(float time, CAnimParamType param, AZ::Vector3& value)
-{
-    Vec3 vec3;
-    const bool result = GetParamValue(time, param, vec3);
-    value.Set(vec3.x, vec3.y, vec3.z);
-    return result;
-}
-
-/**
- * O3DE_DEPRECATION_NOTICE(GHI-9326)
- * use equivalent GetParamValue that accepts AZ::Vector4
- **/
-bool IAnimNode::GetParamValue(float time, CAnimParamType param, AZ::Vector4& value)
-{
-    Vec4 vec4;
-    const bool result = GetParamValue(time, param, vec4);
-    value.Set(vec4.x, vec4.y, vec4.z, vec4.w);
-    return result;
-}
 
 // IAnimStringTable RTTI member definitions
 AZ_TYPE_INFO_WITH_NAME_IMPL(IAnimStringTable, "IAnimStringTable", "{35690309-9D22-41FF-80B7-8AF7C8419945}");
