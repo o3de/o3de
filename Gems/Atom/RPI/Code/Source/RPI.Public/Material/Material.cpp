@@ -28,8 +28,6 @@ namespace AZ
 {
     namespace RPI
     {
-        const char* Material::s_debugTraceName = "Material";
-
         Data::Instance<Material> Material::FindOrCreate(const Data::Asset<MaterialAsset>& materialAsset)
         {
             return Data::InstanceDatabase<Material>::Instance().FindOrCreate(materialAsset);

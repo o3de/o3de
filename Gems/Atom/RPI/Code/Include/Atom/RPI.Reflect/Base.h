@@ -34,6 +34,8 @@ namespace AZ
                 return s_isEnabled;
             }
         private:
+            static void SetEnabled(bool enabled);
+
             static bool s_isEnabled;
         };
 

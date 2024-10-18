@@ -113,7 +113,7 @@ namespace AZ
             AZStd::string ToString() const;
 
         private:
-            static const char* DebugCategory;
+            static constexpr const char* DebugCategory = "ShaderOption";
 
             //! Returns the constructed key.
             ShaderVariantKey& GetShaderVariantKey();
