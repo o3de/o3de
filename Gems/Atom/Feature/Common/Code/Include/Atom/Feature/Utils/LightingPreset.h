@@ -66,6 +66,7 @@ namespace AZ
             float m_shadowFarClipDistance = 20.0f;
             ShadowmapSize m_shadowmapSize = ShadowmapSize::Size2048;
             bool m_enableShadowDebugColoring = false;
+            bool m_visible = true;
         };
 
         //! LightingPreset describes a lighting environment that can be applied to the viewport
