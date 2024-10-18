@@ -6,11 +6,15 @@
 #
 #
 
-set(minimum_supported_toolset 142)
-if(MSVC_TOOLSET_VERSION VERSION_LESS ${minimum_supported_toolset})
-    message(FATAL_ERROR "MSVC toolset ${MSVC_TOOLSET_VERSION} is too old, minimum supported toolset is ${minimum_supported_toolset}")
+get_property(O3DE_SCRIPT_ONLY GLOBAL PROPERTY "O3DE_SCRIPT_ONLY")
+
+if (NOT O3DE_SCRIPT_ONLY)
+    set(minimum_supported_toolset 142)
+    if(MSVC_TOOLSET_VERSION VERSION_LESS ${minimum_supported_toolset})
+        message(FATAL_ERROR "MSVC toolset ${MSVC_TOOLSET_VERSION} is too old, minimum supported toolset is ${minimum_supported_toolset}")
+    endif()
+    unset(minimum_supported_toolset)
 endif()
-unset(minimum_supported_toolset)
 
 include(cmake/Platform/Common/Configurations_common.cmake)
 include(cmake/Platform/Common/MSVC/VisualStudio_common.cmake)

@@ -1057,7 +1057,7 @@ namespace O3DE::ProjectManager
 
     bool ProjectsScreen::StartProjectBuild(const ProjectInfo& projectInfo, bool skipDialogBox)
     {
-        if (ProjectUtils::FindSupportedCompiler(this))
+        if (ProjectUtils::FindSupportedCompiler(projectInfo, this))
         {
             bool proceedToBuild = skipDialogBox;
             if (!proceedToBuild)
