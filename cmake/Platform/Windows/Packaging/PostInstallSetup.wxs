@@ -35,7 +35,6 @@
             <Directory Id="root.cmake" Name="cmake">
                 <Directory Id="root.cmake.runtime" Name="runtime"/>
             </Directory>
-            <Directory Id="root.python" Name="python"/>
             <Directory Id="root.scripts" Name="scripts"/>
             <Directory Id="root.tools" Name="Tools">
                 <Directory Id="root.tools.redist" Name="Redistributables">
@@ -52,12 +51,6 @@
 
         <CustomAction Id="MoveCMake"
             ExeCommand="&quot;[SystemFolder]cmd.exe&quot; /C move &quot;[root.tools.redist.cmake]$(var.CPACK_CMAKE_PACKAGE_NAME)&quot; &quot;[root.cmake]runtime&quot;"
-            Directory="INSTALL_ROOT"
-            Execute="deferred"
-            Impersonate="no"/>
-
-        <CustomAction Id="ConfigurePython"
-            ExeCommand="&quot;[SystemFolder]cmd.exe&quot; /C set &quot;LY_CMAKE_PATH=[root.cmake.runtime]bin&quot; &amp;&amp; &quot;[root.python]get_python.bat&quot;"
             Directory="INSTALL_ROOT"
             Execute="deferred"
             Impersonate="no"/>
