@@ -55,7 +55,6 @@
 #include "MainStatusBar.h"
 
 #include "Util/FileUtil_impl.h"
-#include "LogFileImpl.h"
 
 #include "Editor/AssetDatabase/AssetDatabaseLocationListener.h"
 #include "Editor/AzAssetBrowser/AzAssetBrowserRequestHandler.h"
@@ -108,14 +107,12 @@ CEditorImpl::CEditorImpl()
     , m_bInitialized(false)
     , m_bExiting(false)
     , m_QtApplication(static_cast<Editor::EditorQtApplication*>(qApp))
-    , m_pLogFile(nullptr)
 {
     // note that this is a call into EditorCore.dll, which stores the g_pEditorPointer for all shared modules that share EditorCore.dll
     // this means that they don't need to do SetIEditor(...) themselves and its available immediately
     SetIEditor(this);
 
     m_pFileUtil = new CFileUtil_impl();
-    m_pLogFile = new CLogFileImpl();
     m_pLevelIndependentFileMan = new CLevelIndependentFileMan;
     SetPrimaryCDFolder();
     gSettings.Load();
@@ -277,7 +274,6 @@ CEditorImpl::~CEditorImpl()
     SAFE_DELETE(m_pErrorReport);
 
     SAFE_DELETE(m_pFileUtil); // Vladimir@Conffx
-    SAFE_DELETE(m_pLogFile); // Vladimir@Conffx
 }
 
 void CEditorImpl::SetPrimaryCDFolder()

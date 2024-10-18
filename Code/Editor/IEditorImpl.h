@@ -243,7 +243,6 @@ public:
 
     SSystemGlobalEnvironment* GetEnv() override;
     SEditorSettings* GetEditorSettings() override;
-    ILogFile* GetLogFile() override { return m_pLogFile; }
 
     void UnloadPlugins() override;
     void LoadPlugins() override;
@@ -313,8 +312,6 @@ protected:
     ::AssetDatabase::AssetDatabaseLocationListener* m_pAssetDatabaseLocationListener;
     AzAssetBrowserRequestHandler* m_pAssetBrowserRequestHandler;
     AssetEditorRequestsHandler* m_assetEditorRequestsHandler;
-
-    ILogFile* m_pLogFile;  // Vladimir@conffx
 
     AZStd::mutex m_pluginMutex; // protect any pointers that come from plugins, such as the source control cached pointer.
     static const char* m_crashLogFileName;

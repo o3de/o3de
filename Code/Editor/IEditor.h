@@ -61,7 +61,6 @@ struct IErrorReport; // Vladimir@conffx
 struct IFileUtil;  // Vladimir@conffx
 struct IEditorLog;  // Vladimir@conffx
 struct IEditorParticleUtils;  // Leroy@conffx
-struct ILogFile; // Vladimir@conffx
 
 // Qt
 
@@ -587,8 +586,6 @@ struct IEditor
 
     virtual SSystemGlobalEnvironment* GetEnv() = 0;
     virtual SEditorSettings* GetEditorSettings() = 0;
-
-    virtual ILogFile* GetLogFile() = 0;  // Vladimir@conffx
 
     // unload all plugins
     virtual void UnloadPlugins() = 0;
