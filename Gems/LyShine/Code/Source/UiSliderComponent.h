@@ -83,6 +83,10 @@ protected: // member functions
     bool IsAutoActivationSupported() override;
     // ~UiInteractableComponent
 
+    #if defined(CARBONATED)
+    void SetValueInternal(float value);
+    #endif
+
     UiInteractableStatesInterface::State ComputeInteractableState() override;
 
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
