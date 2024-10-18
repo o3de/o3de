@@ -107,6 +107,9 @@ namespace AzToolsFramework
             bool CanDetachPrefabWithCurrentSelection(const AzToolsFramework::EntityIdList& selectedEntities);
             bool CanInstantiatePrefabWithCurrentSelection(const AzToolsFramework::EntityIdList& selectedEntities);
             bool CanSaveUnsavedPrefabChangedInCurrentSelection(const AzToolsFramework::EntityIdList& selectedEntities);
+#if defined(CARBONATED)
+            bool CanClosePrefabInCurrentSelection(const AzToolsFramework::EntityIdList& selectedEntities);
+#endif
 
             // Context menu item handlers
             void ContextMenu_CreatePrefab(AzToolsFramework::EntityIdList selectedEntities);
