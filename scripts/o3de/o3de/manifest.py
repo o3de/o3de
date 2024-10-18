@@ -454,12 +454,13 @@ def get_enabled_gems(cmake_file: pathlib.Path) -> set:
 
 
 
-def get_project_enabled_gems(project_path: pathlib.Path, include_dependencies:bool = True) -> dict or None:
+def get_project_enabled_gems(project_path: pathlib.Path, include_dependencies:bool = True, get_project_enabled_gems:bool = False, is_template: bool = False) -> dict or None:
     """
     Returns a dictionary of "<gem name with optional specifier>":"<gem path>"
     Example: {"gemA>=1.2.3":"c:/gemA", "gemB":"c:/gemB"}
     :param project_path The path to the project
     :param include_gem_dependencies True to include all gem dependencies, otherwise just return
+    :param is_template: Flag to indicate that this project definition is part of a template, not an actual template itself, to suppress some false-positive warnings
     gems listed in project.json and the deprecated enabled_gems.json
     """
     project_json_data = get_project_json_data(project_path=project_path)
@@ -487,8 +488,9 @@ def get_project_enabled_gems(project_path: pathlib.Path, include_dependencies:bo
                             f'"{project_path}" which is required to resolve gem dependencies.')
             return result
 
-        logger.warning('Failed to determine the correct engine for the project at '
-                        f'"{project_path}", falling back to this engine at {engine_path}.')
+        if not is_template:
+            logger.warning('Failed to determine the correct engine for the project at '
+                           f'"{project_path}", falling back to this engine at {engine_path}.')
     
     engine_json_data = get_engine_json_data(engine_path=engine_path)
     if not engine_json_data:

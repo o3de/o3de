@@ -550,7 +550,7 @@ class TestGetProjectEnabledGems:
             patch('pathlib.Path.resolve', self.resolve) as resolve_patch, \
             patch('pathlib.Path.is_file', return_value=True) as is_file_patch:
 
-            assert expected_result == manifest.get_project_enabled_gems(self.project_path, include_dependencies)
+            assert expected_result == manifest.get_project_enabled_gems(self.project_path, include_dependencies, False)
 
 class TestManifestGetRegistered:
     @staticmethod
