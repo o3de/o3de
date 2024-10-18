@@ -45,8 +45,8 @@ namespace AZ
             RPI::MaterialPropertyIndex m_rotateDegrees; //!< index of material property for rotating
 
             // Shader setting output...
-            RHI::ShaderInputConstantIndex m_transformMatrix;        //!< the index of a float3x3 shader input
-            RHI::ShaderInputConstantIndex m_transformMatrixInverse; //!< the index of the inverse float3x3 shader input
+            Name m_transformMatrix; //!< the index of a float3x3 shader input
+            Name m_transformMatrixInverse; //!< the index of the inverse float3x3 shader input
         };
 
     } // namespace Render

@@ -95,7 +95,13 @@
                 "nitIndex" : 1,
                 "ev100MinMax": [-10, 20],
                 "nitMinMax": [0.001, 100000.0]
-            }
+            },
+            "shaderparams": [
+                {
+                    "name": "m_emissiveIntensity",
+                    "type": "float"
+                }
+            ]
         },
         {
             "type": "Lua",

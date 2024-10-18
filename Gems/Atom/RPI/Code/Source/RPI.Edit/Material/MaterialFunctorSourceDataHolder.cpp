@@ -19,15 +19,30 @@ namespace AZ
         {
         }
 
+        void MaterialFunctorShaderParameter::Reflect(AZ::ReflectContext* context)
+        {
+            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
+            {
+                serializeContext->Class<MaterialFunctorShaderParameter>()
+                    ->Version(0)
+                    ->Field("name", &MaterialFunctorShaderParameter::m_name)
+                    ->Field("type", &MaterialFunctorShaderParameter::m_typeName)
+                    ->Field("size", &MaterialFunctorShaderParameter::m_typeSize);
+            }
+        }
+
         void MaterialFunctorSourceDataHolder::Reflect(AZ::ReflectContext* context)
         {
+            MaterialFunctorShaderParameter::Reflect(context);
+
             if (JsonRegistrationContext* jsonContext = azrtti_cast<JsonRegistrationContext*>(context))
             {
                 jsonContext->Serializer<JsonMaterialFunctorSourceDataSerializer>()->HandlesType<MaterialFunctorSourceDataHolder>();
             }
             else if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Class<MaterialFunctorSourceDataHolder>();
+                serializeContext->Class<MaterialFunctorSourceDataHolder>()->Version(0)->Field(
+                    "shaderparams", &MaterialFunctorSourceDataHolder::m_shaderParameters);
             }
         }
 
@@ -44,6 +59,11 @@ namespace AZ
         Ptr<MaterialFunctorSourceData> MaterialFunctorSourceDataHolder::GetActualSourceData() const
         {
             return m_actualSourceData;
+        }
+
+        const AZStd::vector<MaterialFunctorShaderParameter>& MaterialFunctorSourceDataHolder::GetShaderParameters() const
+        {
+            return m_shaderParameters;
         }
     } // namespace RPI
 } // namespace AZ

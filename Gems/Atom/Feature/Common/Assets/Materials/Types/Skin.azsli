@@ -7,10 +7,22 @@
  */
     
 //TODO(MaterialPipeline): Inline the MaterialSrg files since they aren't reused.
-#include <Atom/Feature/Common/Assets/Shaders/Materials/Skin/Skin_MaterialSrg.azsli>
+#define USE_BINDLESS_SRG 1
+
+#include <scenesrg.srgi>
 
 #include <Atom/Features/Skin/SkinObjectSrg.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+
+#include MATERIAL_PARAMETERS_AZSLI_FILE_PATH
+
+#ifndef USE_BINDLESS_SRG
+#include <Atom/Features/Materials/MaterialSrg.azsli>
+#else
+#include <Atom/Features/Materials/SceneMaterialSrg.azsli>
+#endif
+
+#include <Atom/Feature/Common/Assets/Shaders/Materials/Skin/Skin_MaterialInputs.azsli>
 
 #if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
 

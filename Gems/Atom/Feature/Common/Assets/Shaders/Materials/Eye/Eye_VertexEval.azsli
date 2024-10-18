@@ -19,6 +19,7 @@
 #include <Atom/Features/InstancedTransforms.azsli>
 
 VsOutput EvaluateVertexGeometry_Eye(
+    const MaterialParameters params,
     float3 position,
     float3 normal,
     float4 tangent,
@@ -51,9 +52,10 @@ VsOutput EvaluateVertexGeometry_Eye(
     return output;
 }
 
-VsOutput EvaluateVertexGeometry_Eye(VsInput IN, VsSystemValues SV)
+VsOutput EvaluateVertexGeometry_Eye(VsInput IN, const MaterialParameters params, VsSystemValues SV)
 {
     return EvaluateVertexGeometry_Eye(
+        params,
         IN.position,
         IN.normal,
         IN.tangent,

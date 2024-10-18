@@ -161,7 +161,7 @@ namespace AZ
                     ->Field("m_materialPipelineName", &MaterialPropertyOutputId::m_materialPipelineName)
                     ->Field("m_containerIndex", &MaterialPropertyOutputId::m_containerIndex)
                     ->Field("m_itemIndex", &MaterialPropertyOutputId::m_itemIndex)
-                    ;
+                    ->Field("m_shaderInputName", &MaterialPropertyOutputId::m_shaderInputName);
             }
         }
 
