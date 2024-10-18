@@ -458,7 +458,7 @@ namespace ScriptCanvasEditor
        if (!sourceModel()->hasChildren(index))
        {
            /* Do not display leaf - Asset Browser would show the source file as the leaf, but we only care about the product file */
-           return false;
+           return false; // this seems to hide all individual tests
        }
 
        if (!AssetBrowserFilterModel::filterAcceptsRow(source_row, source_parent))
