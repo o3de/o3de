@@ -175,7 +175,7 @@ namespace UnitTest
             threadDesc.m_cpuId = 0; // Don't set processors IDs on windows
 #endif 
 
-            uint32_t numWorkerThreads = AZStd::thread::hardware_concurrency();
+            uint32_t numWorkerThreads = jobManagerDesc.GetWorkerThreadCount(AZStd::thread::hardware_concurrency());
 
             for (unsigned int i = 0; i < numWorkerThreads; ++i)
             {
