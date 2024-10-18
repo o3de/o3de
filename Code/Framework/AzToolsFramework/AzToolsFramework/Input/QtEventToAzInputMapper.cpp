@@ -23,11 +23,6 @@
 #include <QWheelEvent>
 #include <QWidget>
 
-namespace AzFramework
-{
-    // Forward declare the following function so we don't have to include the entire CameraInput.h file unnecessarily
-    bool IsMouseCaptureUsedForCameraRotation();
-}
 namespace AzToolsFramework
 {
     static bool HandleTextEvent(QEvent::Type eventType, Qt::Key key, QString keyText, bool isAutoRepeat)
@@ -269,11 +264,8 @@ namespace AzToolsFramework
             switch (m_cursorMode)
             {
             case CursorInputMode::CursorModeCaptured:
-                if (AzFramework::IsMouseCaptureUsedForCameraRotation())
-                {
-                    qApp->setOverrideCursor(Qt::BlankCursor);
-                    m_mouseDevice->SetSystemCursorState(AzFramework::SystemCursorState::ConstrainedAndHidden);
-                }
+                qApp->setOverrideCursor(Qt::BlankCursor);
+                m_mouseDevice->SetSystemCursorState(AzFramework::SystemCursorState::ConstrainedAndHidden);
                 break;
             case CursorInputMode::CursorModeWrapped:
                 qApp->restoreOverrideCursor();
@@ -531,16 +523,7 @@ namespace AzToolsFramework
         switch (m_cursorMode)
         {
         case CursorInputMode::CursorModeCaptured:
-            {
-                if (AzFramework::IsMouseCaptureUsedForCameraRotation())
-                {
-                    AzQtComponents::SetCursorPos(m_previousGlobalCursorPosition);
-                }
-                else
-                {
-                    m_previousGlobalCursorPosition = globalCursorPosition;
-                }
-            }
+            AzQtComponents::SetCursorPos(m_previousGlobalCursorPosition);
             break;
         case CursorInputMode::CursorModeWrappedX:
         case CursorInputMode::CursorModeWrappedY:

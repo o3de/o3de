@@ -358,6 +358,11 @@ namespace AzToolsFramework
         ActionManagerInterface* m_actionManagerInterface = nullptr;
         HotKeyManagerInterface* m_hotKeyManagerInterface = nullptr;
         MenuManagerInterface* m_menuManagerInterface = nullptr;
+
+    private:
+        // static void in order to ensure that the 'this' pointer is not captured in any lamba functions
+        // as the actions are global.
+        static void RegisterActions();
     };
 
     //! Bundles viewport state that impacts how accents are added/removed in HandleAccents.
