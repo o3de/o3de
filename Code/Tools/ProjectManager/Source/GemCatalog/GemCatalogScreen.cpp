@@ -686,7 +686,8 @@ namespace O3DE::ProjectManager
             if (!m_projectPath.isEmpty())
             {
                 constexpr bool includeDependencies = false;
-                const auto& enabledGemNamesResult = PythonBindingsInterface::Get()->GetEnabledGems(projectPath, includeDependencies);
+                constexpr bool isTemplate = false;
+                const auto& enabledGemNamesResult = PythonBindingsInterface::Get()->GetEnabledGems(projectPath, includeDependencies, isTemplate);
                 if (enabledGemNamesResult.IsSuccess())
                 {
                     m_gemModel->ActivateGems(enabledGemNamesResult.GetValue());
