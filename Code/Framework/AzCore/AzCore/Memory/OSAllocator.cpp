@@ -108,13 +108,15 @@ namespace AZ
         const size_type previouslyAllocatedSize = ptr ? get_allocated_size(ptr, 1) : 0;
 #endif
 
+        pointer oldPtr = static_cast<void *>(std::launder(static_cast<uint8_t *>(ptr)));
         pointer newPtr = AZ_OS_REALLOC(ptr, newSize, static_cast<AZStd::size_t>(alignment));
 
         const size_type allocatedSize = get_allocated_size(newPtr, 1);
 #if defined(AZ_ENABLE_TRACING)
         m_numAllocatedBytes += (allocatedSize - previouslyAllocatedSize);
         AZ_PROFILE_MEMORY_ALLOC_EX(MemoryReserved, fileName, lineNum, address, byteSize, name);
-        AZ_MEMORY_PROFILE(ProfileReallocation(ptr, newPtr, allocatedSize, 1));
+	/* The ptr ends up being used by profiling function */
+        AZ_MEMORY_PROFILE(ProfileReallocation(oldPtr, newPtr, allocatedSize, 1));
 #endif
 
         return AllocateAddress{ newPtr, allocatedSize };
