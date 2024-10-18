@@ -8,10 +8,10 @@
 
 #pragma once
 
+#include <Atom/Feature/RayTracing/RayTracingIndexList.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/Casting/numeric_cast.h>
-#include <RayTracing/RayTracingIndexList.h>
 
 namespace AZ
 {

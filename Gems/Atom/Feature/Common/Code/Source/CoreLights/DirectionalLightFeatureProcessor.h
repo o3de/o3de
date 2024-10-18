@@ -13,12 +13,12 @@
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
 #include <Atom/Feature/Utils/IndexedDataVector.h>
 #include <Atom/Feature/CoreLights/DirectionalLightFeatureProcessorInterface.h>
+#include <Atom/Feature/CoreLights/DirectionalLightShadowNotificationBus.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
-#include <CoreLights/DirectionalLightShadowNotificationBus.h>
 
 namespace AZ
 {

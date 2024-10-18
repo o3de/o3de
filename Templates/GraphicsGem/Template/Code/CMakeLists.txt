@@ -40,7 +40,6 @@ ly_add_target(
            Gem::Atom_RPI.Public
            Gem::Atom_Feature_Common
            Gem::Atom_Feature_Common.Public
-           Gem::Atom_Feature_Common.Static
 )
 
 # The ${gem_name}.Private.Object target is an internal target
@@ -151,7 +150,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzToolsFramework
                 ${gem_name}.Private.Object
                 Gem::Atom_Utils.Static
-                Gem::Atom_Feature_Common.Static
+                Gem::Atom_Feature_Common.Public
                 Gem::CommonFeaturesAtom.Static
     )
 

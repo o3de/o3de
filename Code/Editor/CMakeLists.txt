@@ -111,7 +111,7 @@ ly_add_target(
             AZ::AtomCore
             Gem::Atom_RPI.Edit
             Gem::Atom_RPI.Public
-            Gem::Atom_Feature_Common.Static
+            Gem::Atom_Feature_Common.Public
             Gem::AtomToolsFramework.Static
             Gem::AtomViewportDisplayInfo
             Gem::EditorModeFeedback.Editor.Static
