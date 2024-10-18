@@ -512,9 +512,15 @@ namespace AZ
             Asset<AssetData> FindOrCreateAsset(const AssetId& id, const AssetType& type, AssetLoadBehavior assetReferenceLoadBehavior);
             Asset<AssetData> GetAsset(const AssetId& id, const AssetType& type, AssetLoadBehavior assetReferenceLoadBehavior,
                 const AZ::Data::AssetLoadParameters& assetLoadFilterCB = AssetLoadParameters{});
+            Asset<AssetData> GetAsset(
+                const AssetId& id,
+                const AssetType& type,
+                const AZStd::string& hint,
+                AssetLoadBehavior assetReferenceLoadBehavior,
+                const AZ::Data::AssetLoadParameters& assetLoadFilterCB = AssetLoadParameters{});
             AssetData::AssetStatus BlockUntilLoadComplete(const Asset<AssetData>& asset);
             void UpdateAssetInfo(AssetId& id, AZStd::string& assetHint);
-            bool ReloadAsset(AssetData* assetData, AssetLoadBehavior assetReferenceLoadBehavior);
+            Asset<AssetData> ReloadAsset(AssetData* assetData, AssetLoadBehavior assetReferenceLoadBehavior);
             bool SaveAsset(AssetData* assetData, AssetLoadBehavior assetReferenceLoadBehavior);
             Asset<AssetData> GetAssetData(const AssetId& id, AssetLoadBehavior assetReferenceLoadBehavior);
             AssetId ResolveAssetId(const AssetId& id);
@@ -1133,7 +1139,7 @@ namespace AZ
                 if ((m_assetData->GetStatus() == AZ::Data::AssetData::AssetStatus::NotLoaded) ||
                     (m_assetData->GetUseCount() == 1))
                 {
-                    *this = AssetInternal::GetAsset(m_assetData->GetId(), m_assetData->GetType(), loadBehavior, loadParams);
+                    *this = AssetInternal::GetAsset(m_assetData->GetId(), m_assetData->GetType(), GetHint(), loadBehavior, loadParams);
                 }
 
                 // If the asset made it to a loading or ready state, consider the request successful.
@@ -1202,7 +1208,14 @@ namespace AZ
         {
             if (m_assetData && m_assetData->GetId().IsValid())
             {
-                return AssetInternal::ReloadAsset(m_assetData, m_loadBehavior);
+                auto asset = AssetInternal::ReloadAsset(m_assetData, m_loadBehavior);
+
+                // Only assign on success so we don't lose the assetId/assetType if the above failed
+                if (asset)
+                {
+                    *this = asset;
+                    return true;
+                }
             }
 
             return false;
