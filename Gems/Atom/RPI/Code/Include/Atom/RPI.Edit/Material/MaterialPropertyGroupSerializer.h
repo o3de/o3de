@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Edit/Configuration.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 
@@ -20,7 +21,7 @@ namespace AZ
         //! The property group itself is rather simple, but we need this custom serializer to provide backward compatibility
         //! for when the "id" key was changed to "name". If the JSON serialization system is ever updated to provide built-in
         //! support for versioning, then we can probably remove this class.
-        class JsonMaterialPropertyGroupSerializer
+        class ATOM_RPI_EDIT_API JsonMaterialPropertyGroupSerializer
             : public BaseJsonSerializer
         {
         public:

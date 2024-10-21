@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Edit/Configuration.h>
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceData.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 
@@ -17,7 +18,7 @@ namespace AZ
 
     namespace RPI
     {
-        class JsonMaterialFunctorSourceDataSerializer
+        class ATOM_RPI_EDIT_API JsonMaterialFunctorSourceDataSerializer
             : public BaseJsonSerializer
         {
         public:

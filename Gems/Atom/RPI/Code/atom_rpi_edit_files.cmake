@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    Include/Atom/RPI.Edit/Configuration.h
     Include/Atom/RPI.Edit/Common/AssetUtils.h
     Include/Atom/RPI.Edit/Common/AssetAliasesSourceData.h
     Include/Atom/RPI.Edit/Common/ColorUtils.h

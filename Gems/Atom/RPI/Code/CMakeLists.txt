@@ -85,10 +85,13 @@ ly_add_source_properties(
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
-        NAME ${gem_name}.Edit STATIC
+        NAME ${gem_name}.Edit ${PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             atom_rpi_edit_files.cmake
+        COMPILE_DEFINITIONS
+            PRIVATE
+                ATOM_RPI_EDIT_EXPORTS
         INCLUDE_DIRECTORIES
             PRIVATE
                 Source
