@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <AzCore/std/string/string.h>
 
 namespace AZ
@@ -16,7 +17,7 @@ namespace AZ
 
     namespace RPI
     {
-        class LuaScriptUtilities
+        class ATOM_RPI_REFLECT_API LuaScriptUtilities
         {
         public:
             static void Reflect(BehaviorContext* behaviorContext);

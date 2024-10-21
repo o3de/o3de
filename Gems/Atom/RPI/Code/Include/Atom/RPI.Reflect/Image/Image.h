@@ -14,6 +14,8 @@
 #include <Atom/RHI/ImagePool.h>
 #include <Atom/RHI/DeviceImageView.h>
 
+#include <Atom/RPI.Reflect/Configuration.h>
+
 #include <AtomCore/Instance/InstanceData.h>
 
 namespace AZ
@@ -23,7 +25,7 @@ namespace AZ
         class ImageAsset;
 
         //! A base class for images providing access to common image information.
-        class Image
+        class ATOM_RPI_REFLECT_API Image
             : public Data::InstanceData
         {
             friend class ImageSystem;

@@ -15,6 +15,7 @@
 
 #include <Atom/RPI.Public/AssetInitBus.h>
 #include <Atom/RPI.Reflect/Base.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Material/ShaderCollection.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
@@ -28,7 +29,7 @@ namespace AZ
     {
         class MaterialTypeAssetHandler;
 
-        class UvNamePair final
+        class ATOM_RPI_REFLECT_API UvNamePair final
         {
         public:
             AZ_RTTI(UvNamePair, "{587D2902-B236-41B6-8F7B-479D891CC3F3}");
@@ -49,7 +50,7 @@ namespace AZ
         //! which can be used to render meshes at runtime.
         //! 
         //! Use a MaterialTypeAssetCreator to create a MaterialTypeAsset.
-        class MaterialTypeAsset
+        class ATOM_RPI_REFLECT_API MaterialTypeAsset
             : public AZ::Data::AssetData
             , public Data::AssetBus::MultiHandler
             , public AssetInitBus::Handler
@@ -206,7 +207,7 @@ namespace AZ
             bool m_isNonSerializedDataInitialized = false;
         };
 
-        class MaterialTypeAssetHandler : public AssetHandler<MaterialTypeAsset>
+        class ATOM_RPI_REFLECT_API MaterialTypeAssetHandler : public AssetHandler<MaterialTypeAsset>
         {
             using Base = AssetHandler<MaterialTypeAsset>;
         public:

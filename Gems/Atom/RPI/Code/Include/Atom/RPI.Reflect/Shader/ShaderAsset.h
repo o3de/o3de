@@ -13,6 +13,7 @@
 
 #include <Atom/RPI.Public/AssetInitBus.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroupLayout.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantAsset.h>
@@ -51,7 +52,7 @@ namespace AZ
                             //!< with dxc, or spirv-cross, etc.
         };
 
-        class ShaderAsset final
+        class ATOM_RPI_REFLECT_API ShaderAsset final
             : public Data::AssetData
             , public ShaderVariantFinderNotificationBus::Handler
             , public AssetInitBus::Handler
@@ -333,7 +334,7 @@ namespace AZ
             bool m_isFullySpecialized = false;
         };
 
-        class ShaderAssetHandler final
+        class ATOM_RPI_REFLECT_API ShaderAssetHandler final
             : public AssetHandler<ShaderAsset>
         {
             using Base = AssetHandler<ShaderAsset>;

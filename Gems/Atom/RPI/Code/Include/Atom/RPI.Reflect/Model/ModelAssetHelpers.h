@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
 namespace AZ
@@ -56,7 +57,7 @@ namespace AZ
         }
 
         //! ModelAssetHelpers is a collection of helper methods for generating or manipulating model assets.
-        class ModelAssetHelpers
+        class ATOM_RPI_REFLECT_API ModelAssetHelpers
         {
         public:
             //! Given an empty created ModelAsset, fill it with a valid unit cube model.

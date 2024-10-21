@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
 namespace AZ
@@ -16,7 +17,7 @@ namespace AZ
     namespace RPI
     {
         //! The StreamingImageAsset's handler with customized loading steps in LoadAssetData override.
-        class StreamingImageAssetHandler final
+        class ATOM_RPI_REFLECT_API StreamingImageAssetHandler final
             : public AssetHandler<StreamingImageAsset>
             , private Data::AssetBus::MultiHandler
         {

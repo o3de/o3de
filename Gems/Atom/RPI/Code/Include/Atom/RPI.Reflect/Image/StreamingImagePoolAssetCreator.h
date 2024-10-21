@@ -8,8 +8,9 @@
 
 #pragma once
 
-#include <Atom/RPI.Reflect/Image/StreamingImagePoolAsset.h>
 #include <Atom/RPI.Reflect/AssetCreator.h>
+#include <Atom/RPI.Reflect/Configuration.h>
+#include <Atom/RPI.Reflect/Image/StreamingImagePoolAsset.h>
 
 namespace AZ
 {
@@ -18,7 +19,7 @@ namespace AZ
         //! Constructs an instance of an StreamingImagePoolAsset.
         //! (Note this class generally follows the builder design pattern, but is called a "creator" rather 
         //! than a "builder" to avoid confusion with the AssetBuilderSDK).
-        class StreamingImagePoolAssetCreator
+        class ATOM_RPI_REFLECT_API StreamingImagePoolAssetCreator
             : public AssetCreator<StreamingImagePoolAsset>
         {
         public:

@@ -10,6 +10,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Base.h>
 
 namespace AZ
@@ -20,7 +21,7 @@ namespace AZ
     {
         //! Any asset can be used for storage any az serialization class data. So user don't need to create their own 
         //! builder and handler. 
-        class AnyAsset
+        class ATOM_RPI_REFLECT_API AnyAsset
             : public AZ::Data::AssetData
         {
             friend class AnyAssetHandler;
@@ -74,7 +75,7 @@ namespace AZ
             return dataT;
         }
 
-        class AnyAssetHandler
+        class ATOM_RPI_REFLECT_API AnyAssetHandler
             : public AssetHandler<AnyAsset>
         {
             using Base = AssetHandler<AnyAsset>;
@@ -86,7 +87,7 @@ namespace AZ
             bool SaveAssetData(const Data::Asset<Data::AssetData>& asset, IO::GenericStream* stream) override;
         };
 
-        class AnyAssetCreator
+        class ATOM_RPI_REFLECT_API AnyAssetCreator
         {
         public:
             static bool CreateAnyAsset(const AZStd::any& anyData, const Data::AssetId& assetId, Data::Asset<AnyAsset>& result);

@@ -13,6 +13,7 @@
 
 #include <Atom/RPI.Public/AssetInitBus.h>
 #include <Atom/RPI.Reflect/Base.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyValue.h>
 
@@ -34,7 +35,7 @@ namespace AZ
 
         //! MaterialAsset defines a single material, which can be used to create a Material instance for rendering at runtime.
         //! Use a MaterialAssetCreator to create a MaterialAsset.
-        class MaterialAsset
+        class ATOM_RPI_REFLECT_API MaterialAsset
             : public AZ::Data::AssetData
             , public AssetInitBus::Handler
         {
@@ -161,7 +162,7 @@ namespace AZ
         };
        
 
-        class MaterialAssetHandler : public AssetHandler<MaterialAsset>
+        class ATOM_RPI_REFLECT_API MaterialAssetHandler : public AssetHandler<MaterialAsset>
         {
             using Base = AssetHandler<MaterialAsset>;
         public:

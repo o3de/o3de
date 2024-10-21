@@ -11,13 +11,14 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
 namespace AZ::RPI
 {
     //! The morph target meta asset is an optional asset that belongs to a model.
     //! In case the model does not contain any morph targets, the meta asset won't be generated.
-    class MorphTargetMetaAsset final
+    class ATOM_RPI_REFLECT_API MorphTargetMetaAsset final
         : public Data::AssetData
     {
     public:

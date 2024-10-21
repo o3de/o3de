@@ -10,6 +10,7 @@ set(FILES
     Include/Atom/RPI.Reflect/Allocators.h
     Include/Atom/RPI.Reflect/AssetCreator.h
     Include/Atom/RPI.Reflect/Base.h
+    Include/Atom/RPI.Reflect/Configuration.h
     Include/Atom/RPI.Reflect/FeatureProcessorDescriptor.h
     Include/Atom/RPI.Reflect/GpuQuerySystemDescriptor.h
     Include/Atom/RPI.Reflect/Limits.h

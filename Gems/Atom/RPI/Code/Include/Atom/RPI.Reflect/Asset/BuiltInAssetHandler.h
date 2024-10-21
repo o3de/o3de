@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <AzCore/Asset/AssetManager.h>
 
 namespace AZ
@@ -92,7 +93,7 @@ namespace AZ
         //!         Data::Asset<Bar> m_bar1;
         //!         Data::Asset<Bar> m_bar2;
         //!     };
-        class BuiltInAssetHandler
+        class ATOM_RPI_REFLECT_API BuiltInAssetHandler
             : public Data::AssetHandler
         {
         public:

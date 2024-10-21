@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAsset.h>
 
 #include <Atom/RHI.Reflect/Limits.h>
@@ -29,7 +30,7 @@ namespace AZ
         //! Contains a set of ModelLodAsset::Mesh objects and BufferAsset objects, representing the data a single level-of-detail for a Model.
         //! Serialized to a .azlod file.
         //! Actual vertex and index buffer data is stored in the BufferAssets.
-        class ModelLodAsset final
+        class ATOM_RPI_REFLECT_API ModelLodAsset final
             : public Data::AssetData
         {
             friend class ModelLodAssetCreator;
@@ -52,7 +53,7 @@ namespace AZ
 
             //! Associates stream views (vertex buffer views and an index buffer view) with material data.
             //! A ModelLodAsset::Mesh can have many Streams but only one material id.
-            class Mesh final
+            class ATOM_RPI_REFLECT_API Mesh final
             {
                 friend class ModelLodAssetCreator;
                 friend class ModelLodAsset;

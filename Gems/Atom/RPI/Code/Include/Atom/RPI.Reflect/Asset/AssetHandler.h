@@ -8,9 +8,9 @@
 
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-
 #include <AzFramework/Asset/GenericAssetHandler.h>
 
 namespace AZ
@@ -20,7 +20,7 @@ namespace AZ
         //! Base asset handler class for all assets in the RPI. Provides constructor to initialize
         //! asset type information from static members on the asset class.
         template <typename AssetDataT>
-        class AssetHandler : public AzFramework::GenericAssetHandler<AssetDataT>
+        class ATOM_RPI_REFLECT_API AssetHandler : public AzFramework::GenericAssetHandler<AssetDataT>
         {
             using Base = AzFramework::GenericAssetHandler<AssetDataT>;
         public:

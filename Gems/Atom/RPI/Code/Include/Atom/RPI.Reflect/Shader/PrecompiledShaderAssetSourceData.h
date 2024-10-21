@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -20,7 +21,7 @@ namespace AZ
     {
         //! This asset is loaded from a Json file and contains information about
         //! precompiled shader variants and their associated API name.
-        struct PrecompiledRootShaderVariantAssetSourceData final
+        struct ATOM_RPI_REFLECT_API PrecompiledRootShaderVariantAssetSourceData final
             : public Data::AssetData
         {
         public:
@@ -35,7 +36,7 @@ namespace AZ
 
         //! This asset is loaded from a Json file and contains information about
         //! precompiled shader supervariants
-        struct PrecompiledSupervariantSourceData final
+        struct ATOM_RPI_REFLECT_API PrecompiledSupervariantSourceData final
             : public Data::AssetData
         {
         public:
@@ -50,7 +51,7 @@ namespace AZ
 
         //! This asset is loaded from a Json file and contains information about
         //! precompiled shader assets.
-        struct PrecompiledShaderAssetSourceData final
+        struct ATOM_RPI_REFLECT_API PrecompiledShaderAssetSourceData final
             : public Data::AssetData
         {
         public:
