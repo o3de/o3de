@@ -13,7 +13,8 @@
 
 extern "C" AZ_DLL_EXPORT void CleanUpRpiEditGenericClassInfo()
 {
-    AZ::GetCurrentSerializeContextModule().Cleanup();
+    // TODO(Atom_RPI-sharedlib): Uncomment this when Atom_RPI.Edit is converted to a shared library
+    // AZ::GetCurrentSerializeContextModule().Cleanup();
 }
 
 #endif

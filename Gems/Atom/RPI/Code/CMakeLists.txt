@@ -18,9 +18,8 @@ else()
 endif()
 
 ly_add_target(
-    NAME ${gem_name}.Public ${PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE}
+    NAME ${gem_name}.Public STATIC
     NAMESPACE Gem
-    EXPORT_ALL_SYMBOLS
     FILES_CMAKE
         atom_rpi_reflect_files.cmake
         atom_rpi_public_files.cmake
@@ -82,9 +81,8 @@ ly_add_source_properties(
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
-        NAME ${gem_name}.Edit ${PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE}
+        NAME ${gem_name}.Edit STATIC
         NAMESPACE Gem
-        EXPORT_ALL_SYMBOLS
         FILES_CMAKE
             atom_rpi_edit_files.cmake
         INCLUDE_DIRECTORIES
@@ -157,9 +155,8 @@ endif()
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     ly_add_target(
-        NAME ${gem_name}.TestUtils ${PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE}
+        NAME ${gem_name}.TestUtils STATIC
         NAMESPACE Gem
-        EXPORT_ALL_SYMBOLS
         FILES_CMAKE
             atom_rpi_test_utils_files.cmake
         INCLUDE_DIRECTORIES
