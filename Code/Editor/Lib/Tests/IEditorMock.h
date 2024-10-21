@@ -146,7 +146,6 @@ public:
     MOCK_METHOD1(ShowStatusText, void(bool ));
     MOCK_METHOD0(GetEnv, SSystemGlobalEnvironment* ());
     MOCK_METHOD0(GetEditorSettings, SEditorSettings* ());
-    MOCK_METHOD0(GetLogFile, ILogFile* ());
     MOCK_METHOD0(UnloadPlugins, void());
     MOCK_METHOD0(LoadPlugins, void());
     MOCK_METHOD1(GetSearchPath, QString(EEditorPathName));
