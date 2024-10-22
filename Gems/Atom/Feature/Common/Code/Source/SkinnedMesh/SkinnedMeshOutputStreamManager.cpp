@@ -61,7 +61,8 @@ namespace AZ
             creator.SetPoolAsset(SkinnedMeshVertexStreamPropertyInterface::Get()->GetOutputStreamResourcePool());
 
             RHI::BufferDescriptor bufferDescriptor;
-            bufferDescriptor.m_bindFlags = RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::ShaderReadWrite;
+            bufferDescriptor.m_bindFlags = RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::ShaderReadWrite |
+                RHI::BufferBindFlags::CopyRead | RHI::BufferBindFlags::CopyWrite;
             bufferDescriptor.m_byteCount = m_sizeInBytes;
             bufferDescriptor.m_alignment = m_alignment;
             creator.SetBuffer(nullptr, 0, bufferDescriptor);

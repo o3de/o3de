@@ -127,7 +127,7 @@ namespace AZ
                 const RHI::DeviceCopyBufferToImageDescriptor& descriptor = copyItem.m_bufferToImage;
                 const auto* sourceBufferMemoryView = static_cast<const Buffer*>(descriptor.m_sourceBuffer)->GetBufferMemoryView();
                 const auto* destinationImage = static_cast<const Image*>(descriptor.m_destinationImage);
-                const RHI::Format format = destinationImage->GetDescriptor().m_format;
+                const RHI::Format format = descriptor.m_sourceFormat;
                 RHI::Size formatDimensionAlignment = GetFormatDimensionAlignment(format);
 
                 // VkBufferImageCopy::bufferRowLength is specified in texels not in bytes. 
@@ -141,7 +141,8 @@ namespace AZ
                 copy.bufferOffset = sourceBufferMemoryView->GetOffset() + descriptor.m_sourceOffset;
                 copy.bufferRowLength = descriptor.m_sourceBytesPerRow / GetFormatSize(format) * formatDimensionAlignment.m_width;
                 copy.bufferImageHeight = RHI::AlignUp(descriptor.m_sourceSize.m_height, formatDimensionAlignment.m_height);
-                copy.imageSubresource.aspectMask = destinationImage->GetImageAspectFlags();
+                copy.imageSubresource.aspectMask = ConvertImageAspect(descriptor.m_destinationSubresource.m_aspect);
+
                 copy.imageSubresource.mipLevel = descriptor.m_destinationSubresource.m_mipSlice;
                 copy.imageSubresource.baseArrayLayer = descriptor.m_destinationSubresource.m_arraySlice;
                 copy.imageSubresource.layerCount = 1;
@@ -168,14 +169,14 @@ namespace AZ
                 const auto* destinationImage = static_cast<const Image*>(descriptor.m_destinationImage);
 
                 VkImageCopy copy{};
-                copy.srcSubresource.aspectMask = sourceImage->GetImageAspectFlags();
+                copy.srcSubresource.aspectMask = ConvertImageAspect(descriptor.m_sourceSubresource.m_aspect);
                 copy.srcSubresource.mipLevel = descriptor.m_sourceSubresource.m_mipSlice;
                 copy.srcSubresource.baseArrayLayer = descriptor.m_sourceSubresource.m_arraySlice;
                 copy.srcSubresource.layerCount = 1;
                 copy.srcOffset.x = descriptor.m_sourceOrigin.m_left;
                 copy.srcOffset.y = descriptor.m_sourceOrigin.m_top;
                 copy.srcOffset.z = descriptor.m_sourceOrigin.m_front;
-                copy.dstSubresource.aspectMask = destinationImage->GetImageAspectFlags();
+                copy.dstSubresource.aspectMask = ConvertImageAspect(descriptor.m_destinationSubresource.m_aspect);
                 copy.dstSubresource.mipLevel = descriptor.m_destinationSubresource.m_mipSlice;
                 copy.dstSubresource.baseArrayLayer = descriptor.m_destinationSubresource.m_arraySlice;
                 copy.dstSubresource.layerCount = 1;
