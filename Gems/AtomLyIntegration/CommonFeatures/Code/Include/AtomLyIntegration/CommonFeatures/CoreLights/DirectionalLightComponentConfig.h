@@ -142,6 +142,9 @@ namespace AZ
             bool m_affectsGI = true;
             float m_affectsGIFactor = 1.0f;
 
+            // Visibility
+            bool m_isVisible = true;
+
             // Lighting channel
             AZ::Render::LightingChannelConfiguration m_lightingChannelConfig;
             bool IsSplitManual() const;
@@ -151,6 +154,7 @@ namespace AZ
             bool IsShadowFilteringDisabled() const;
             bool IsShadowPcfDisabled() const;
             bool IsEsmDisabled() const;
+            bool IsVisible() const;
             AZ::Crc32 UpdateCascadeFarDepths();
         };
     } // namespace Render

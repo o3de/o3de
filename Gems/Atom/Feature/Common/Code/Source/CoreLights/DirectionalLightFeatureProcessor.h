@@ -73,12 +73,11 @@ namespace AZ
             AZStd::array<float, 3> m_direction = { { 1.0f, 0.0f, 0.0f } };
             float m_angularRadius = 0.0f;
             AZStd::array<float, 3> m_rgbIntensity = { { 0.0f, 0.0f, 0.0f } };
+            bool m_isVisible = true;
             float m_affectsGIFactor = 1.0f;
-
             bool m_affectsGI = true;
             uint32_t m_lightingChannelMask = 1;
             float m_padding0 = 0.0f;
-            float m_padding1 = 0.0f;
         };
 
         // [GFX TODO][ATOM-15172] Look into compacting struct DirectionalLightShadowData
@@ -251,6 +250,7 @@ namespace AZ
             void SetAffectsGI(LightHandle handle, bool affectsGI) override;
             void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) override;
             void SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask) override;
+            void SetVisible(LightHandle handle, bool visible) override;
 
             const Data::Instance<RPI::Buffer> GetLightBuffer() const { return m_lightBufferHandler.GetBuffer(); }
             uint32_t GetLightCount() const { return m_lightBufferHandler.GetElementCount(); }
@@ -407,6 +407,9 @@ namespace AZ
             bool m_previousExcludeCvarValue = false;
             uint32_t m_shadowBufferNameIndex = 0;
             uint32_t m_shadowmapIndexTableBufferNameIndex = 0;
+
+            // used to restore m_affectsGI to the configured value when restoring visibility
+            bool m_cachedAffectsGIValue = true;
 
             Name m_lightTypeName = Name("directional");
             Name m_directionalShadowFilteringMethodName = Name("o_directional_shadow_filtering_method");
