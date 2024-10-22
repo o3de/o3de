@@ -141,6 +141,47 @@ namespace AzToolsFramework::Prefab
             FocusOnPrefabInstanceOwningEntityId(entityId);
         }
 
+        // Set the selection to the entities owned by the newly focused prefab instance.
+        // Only do it if the focused prefab is not the root.
+        if (auto focusedInstance = GetInstanceReference(m_rootAliasFocusPath);
+            focusedInstance.has_value() && focusedInstance->get().HasParentInstance())
+        {
+            EntityIdList selectedEntities;
+
+            // Retrieve all nested entities in this instance, excluding the container.
+            AZ::EntityId containerEntityId = focusedInstance->get().GetContainerEntityId();
+            focusedInstance->get().GetEntityIds(
+                [&selectedEntities, containerEntityId](AZ::EntityId entityId)
+                {
+                    if (entityId != containerEntityId)
+                    {
+                        selectedEntities.push_back(entityId);
+                    }
+                    return true;
+                }
+            );
+
+            // Retrieve container entities for all nested prefab instances in this instance.
+            focusedInstance->get().GetNestedInstances(
+                [&selectedEntities](AZStd::unique_ptr<Instance>& instance)
+                {
+                    if (instance)
+                    {
+                        selectedEntities.push_back(instance->GetContainerEntityId());
+                    }
+                    return true;
+                }
+            );
+
+            if (!selectedEntities.empty())
+            {
+                // Create undo node to select entities.
+                auto selectionUndo = aznew SelectionCommand(selectedEntities, "Select Entities of Focused Prefab");
+                selectionUndo->SetParent(undoBatch.GetUndoBatch());
+                ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::SetSelectedEntities, selectedEntities);
+            }
+        }
+
         return AZ::Success();
     }
 
@@ -465,7 +506,7 @@ namespace AzToolsFramework::Prefab
 
     bool PrefabFocusHandler::IsOwningPrefabBeingFocused(AZ::EntityId entityId) const
     {
-        if (!entityId.IsValid())
+        if (!entityId.IsValid() || !m_instanceEntityMapperInterface)
         {
             return false;
         }
