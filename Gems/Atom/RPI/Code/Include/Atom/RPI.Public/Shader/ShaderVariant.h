@@ -55,11 +55,6 @@ namespace AZ
             //! Return true if this variant needs the ShaderVariantKeyFallbackValue to be correctly set when drawing.
             bool UseKeyFallback() const;
 
-            //! Return the timestamp when this asset was built.
-            //! This is used to synchronize versions of the ShaderAsset and ShaderVariantAsset, especially during hot-reload.
-            //! This timestamp must be >= than the ShaderAsset timestamp.
-            AZStd::sys_time_t GetBuildTimestamp() const { return m_shaderVariantAsset->GetBuildTimestamp(); }
-
             bool IsRootVariant() const { return m_shaderVariantAsset->IsRootVariant(); }
 
             ShaderVariantStableId GetStableId() const { return m_shaderVariantAsset->GetStableId(); }

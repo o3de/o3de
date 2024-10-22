@@ -62,10 +62,6 @@ namespace AZ
             //! If the shader variant is not fully baked or fully specialized, the ShaderVariantKeyFallbackValue must be correctly set when drawing.
             bool IsFullyBaked() const;
 
-            //! Return the timestamp when this asset was built, and it must be >= than the timestamp of the main ShaderAsset.
-            //! This is used to synchronize versions of the ShaderAsset and ShaderVariantAsset, especially during hot-reload.
-            AZ::u64 GetBuildTimestamp() const;
-
             bool IsRootVariant() const { return m_stableId == RPI::RootShaderVariantStableId; }
 
         private:
