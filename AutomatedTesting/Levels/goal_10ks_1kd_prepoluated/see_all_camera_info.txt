@@ -1,0 +1,9 @@
+To get the camera to view the terrain
+and all objects at once:
+Pos: -7.489, -483.972, 893.138
+Rot: -62.073, 0, 0
+
+issue:
+- Add a component to any entity:
+In the VS2019 debugger Memory starts at 13GB and by the time it is finished saving
+the level it is at 37.6GB.
