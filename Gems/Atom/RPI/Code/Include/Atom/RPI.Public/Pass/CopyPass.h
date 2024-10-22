@@ -62,8 +62,9 @@ namespace AZ
 
             // The copy item submitted to the command list
             RHI::CopyItem m_copyItemSameDevice;
-            RHI::CopyItem m_copyItemDeviceToHost;
-            RHI::CopyItem m_copyItemHostToDevice;
+            AZStd::vector<RHI::CopyItem> m_copyItemDeviceToHost;
+            AZStd::vector<RHI::CopyItem> m_copyItemHostToDevice;
+
             AZStd::shared_ptr<AZ::RHI::ScopeProducer> m_copyScopeProducerSameDevice;
             AZStd::shared_ptr<AZ::RHI::ScopeProducer> m_copyScopeProducerDeviceToHost;
             AZStd::shared_ptr<AZ::RHI::ScopeProducer> m_copyScopeProducerHostToDevice;
@@ -80,15 +81,16 @@ namespace AZ
                 Invalid
             };
             CopyMode m_copyMode = CopyMode::Invalid;
+            bool m_inputOutputCopy = false;
 
             constexpr static int MaxFrames = RHI::Limits::Device::FrameCountMax;
             int m_currentBufferIndex = 0;
-            AZStd::array<Data::Instance<Buffer>, MaxFrames> m_device1HostBuffer;
-            AZStd::array<Data::Instance<Buffer>, MaxFrames> m_device2HostBuffer;
-            AZStd::array<AZ::u64, MaxFrames> m_deviceHostBufferByteCount{};
+            AZStd::array<AZStd::array<Data::Instance<Buffer>, MaxFrames>, 2> m_device1HostBuffer;
+            AZStd::array<AZStd::array<Data::Instance<Buffer>, MaxFrames>, 2> m_device2HostBuffer;
+            AZStd::array<AZStd::array<AZ::u64, MaxFrames>, 2> m_deviceHostBufferByteCount{};
             AZStd::array<Ptr<RHI::Fence>, MaxFrames> m_device1SignalFence;
             AZStd::array<Ptr<RHI::Fence>, MaxFrames> m_device2WaitFence;
-            RHI::DeviceImageSubresourceLayout m_inputImageLayout;
+            AZStd::array<RHI::DeviceImageSubresourceLayout, 2> m_inputImageLayouts;
         };
     } // namespace RPI
 } // namespace AZ

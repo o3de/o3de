@@ -649,11 +649,32 @@ namespace AZ
         void Scope::OptimizeBarrier(const Barrier& unoptimizedBarrier, BarrierSlot slot)
         {
             uint32_t slotIndex = aznumeric_caster(slot);
-            AZStd::vector<Barrier>& barriers =
-                CanOptimizeBarrier(unoptimizedBarrier, slot) ? m_globalBarriers[slotIndex] : m_scopeBarriers[slotIndex];
+            bool canOptimize = CanOptimizeBarrier(unoptimizedBarrier, slot);
             auto filteredBarrier = unoptimizedBarrier;
             filteredBarrier.m_dstStageMask = RHI::FilterBits(unoptimizedBarrier.m_dstStageMask, m_deviceSupportedPipelineStageFlags);
-            filteredBarrier.m_srcStageMask = RHI::FilterBits(unoptimizedBarrier.m_srcStageMask, m_deviceSupportedPipelineStageFlags);            
+            filteredBarrier.m_srcStageMask = RHI::FilterBits(unoptimizedBarrier.m_srcStageMask, m_deviceSupportedPipelineStageFlags);
+
+            // a render pass can only automatically convert image layouts if a multi-aspect image has the same or compatible layouts for all
+            // aspects this workaround covers this case for depth/stencil images where one aspect is in a transfer state:
+            if (canOptimize && filteredBarrier.m_type == VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER && UsesRenderpass() &&
+                IsRenderAttachmentUsage(filteredBarrier.m_attachment->GetUsage()) &&
+                (filteredBarrier.m_imageBarrier.subresourceRange.aspectMask == VK_IMAGE_ASPECT_DEPTH_BIT ||
+                 filteredBarrier.m_imageBarrier.subresourceRange.aspectMask == VK_IMAGE_ASPECT_STENCIL_BIT) &&
+                (filteredBarrier.m_imageBarrier.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL ||
+                 filteredBarrier.m_imageBarrier.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL))
+            {
+                auto oldLayout = filteredBarrier.m_imageBarrier.oldLayout;
+
+                // insert the newLayout as oldLayout into m_globalBarriers as the RenderPass uses oldLayout to determine the initial layout
+                filteredBarrier.m_imageBarrier.oldLayout = filteredBarrier.m_imageBarrier.newLayout;
+                OptimizeBarrier(filteredBarrier, slot);
+
+                // insert an actual barrier for transfer -> newLayout transition into m_scopeBarriers
+                filteredBarrier.m_imageBarrier.oldLayout = oldLayout;
+                canOptimize = false;
+            }
+
+            AZStd::vector<Barrier>& barriers = canOptimize ? m_globalBarriers[slotIndex] : m_scopeBarriers[slotIndex];
 
             switch (slot)
             {

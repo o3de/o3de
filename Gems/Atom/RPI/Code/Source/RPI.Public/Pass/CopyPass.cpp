@@ -55,8 +55,10 @@ namespace AZ
 
         RHI::CopyItemType CopyPass::GetCopyItemType()
         {
-            RHI::AttachmentType inputType = GetInputBinding(0).GetAttachment()->GetAttachmentType();
-            RHI::AttachmentType outputType = GetOutputBinding(0).GetAttachment()->GetAttachmentType();
+            RHI::AttachmentType inputType =
+                (m_inputOutputCopy ? GetInputOutputBinding(0) : GetInputBinding(0)).GetAttachment()->GetAttachmentType();
+            RHI::AttachmentType outputType =
+                (m_inputOutputCopy ? GetInputOutputBinding(0) : GetOutputBinding(0)).GetAttachment()->GetAttachmentType();
 
             RHI::CopyItemType copyType = RHI::CopyItemType::Invalid;
 
@@ -84,13 +86,19 @@ namespace AZ
 
         void CopyPass::BuildInternal()
         {
-            AZ_Assert(GetInputCount() == 1 && GetOutputCount() == 1,
-                "CopyPass has %d inputs and %d outputs. It should have exactly one of each.",
-                GetInputCount(), GetOutputCount());
+            m_inputOutputCopy = GetInputOutputCount() == 1 && m_data.m_sourceDeviceIndex != m_data.m_destinationDeviceIndex;
 
-            AZ_Assert(m_attachmentBindings.size() == 2,
+            AZ_Assert(
+                (GetInputCount() == 1 && GetOutputCount() == 1) || m_inputOutputCopy,
+                "CopyPass has %d inputs and %d outputs. It should have exactly one of each.",
+                GetInputCount(),
+                GetOutputCount());
+
+            AZ_Assert(
+                (m_attachmentBindings.size() == 2) || (m_inputOutputCopy && m_attachmentBindings.size() == 1),
                 "CopyPass must have exactly 2 bindings: 1 input and 1 output. %s has %d bindings.",
-                GetPathName().GetCStr(), m_attachmentBindings.size());
+                GetPathName().GetCStr(),
+                m_attachmentBindings.size());
 
             bool sameDevice = (m_data.m_sourceDeviceIndex == -1 && m_data.m_destinationDeviceIndex == -1) ||
                 m_data.m_sourceDeviceIndex == m_data.m_destinationDeviceIndex;
@@ -156,13 +164,20 @@ namespace AZ
                     AZStd::bind(&CopyPass::BuildCommandListInternalHostToDevice, this, AZStd::placeholders::_1),
                     m_hardwareQueueClass,
                     m_data.m_destinationDeviceIndex);
+
+                m_copyItemDeviceToHost.clear();
+                m_copyItemDeviceToHost.emplace_back();
+                m_copyItemHostToDevice.clear();
+                m_copyItemHostToDevice.emplace_back();
             }
             
             // Create transient attachment based on input if required
-            if (m_data.m_cloneInput)
+            if (m_data.m_cloneInput && !m_inputOutputCopy)
             {
                 const Ptr<PassAttachment>& source = GetInputBinding(0).GetAttachment();
                 Ptr<PassAttachment> dest = source->Clone();
+
+                dest->m_lifetime = RHI::AttachmentLifetimeType::Transient;
 
                 // Set bind flags to CopyWrite. Other bind flags will be auto-inferred by pass system
                 if (dest->m_descriptor.m_type == RHI::AttachmentType::Image)
@@ -172,6 +187,11 @@ namespace AZ
                 else if (dest->m_descriptor.m_type == RHI::AttachmentType::Buffer)
                 {
                     dest->m_descriptor.m_buffer.m_bindFlags = RHI::BufferBindFlags::CopyWrite;
+                    if (dest->m_descriptor.m_bufferView.m_elementCount == 0)
+                    {
+                        dest->m_descriptor.m_bufferView =
+                            RHI::BufferViewDescriptor::CreateRaw(0, static_cast<uint32_t>(dest->m_descriptor.m_buffer.m_byteCount));
+                    }
                 }
 
                 // Set path name for the new attachment and add it to our attachment list
@@ -262,119 +282,141 @@ namespace AZ
 
         void CopyPass::SetupFrameGraphDependenciesDeviceToHost(RHI::FrameGraphInterface frameGraph)
         {
-            // We need the size of the output image when copying from image to image, so we need all attachments (even the output ones)
-            // We also need it so the framegraph knows the two scopes depend on each other
-            DeclareAttachmentsToFrameGraph(frameGraph);
+            if (m_inputOutputCopy)
+            {
+                // We need to manually do what DeclareAttachmentsToFrameGraph in order to correctly set the ScopeAttachmentAccess to Read
+                // since we only read within this scope.
+                const auto& attachmentBinding = m_attachmentBindings[0];
+                if (attachmentBinding.GetAttachment() != nullptr &&
+                    frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentBinding.GetAttachment()->GetAttachmentId()))
+                {
+                    switch (attachmentBinding.m_unifiedScopeDesc.GetType())
+                    {
+                    case RHI::AttachmentType::Image:
+                        {
+                            frameGraph.UseAttachment(
+                                attachmentBinding.m_unifiedScopeDesc.GetAsImage(),
+                                RHI::ScopeAttachmentAccess::Read,
+                                attachmentBinding.m_scopeAttachmentUsage,
+                                attachmentBinding.m_scopeAttachmentStage);
+                            break;
+                        }
+                    case RHI::AttachmentType::Buffer:
+                        {
+                            frameGraph.UseAttachment(
+                                attachmentBinding.m_unifiedScopeDesc.GetAsBuffer(),
+                                RHI::ScopeAttachmentAccess::Read,
+                                attachmentBinding.m_scopeAttachmentUsage,
+                                attachmentBinding.m_scopeAttachmentStage);
+                            break;
+                        }
+                    default:
+                        AZ_Assert(false, "Error, trying to bind an attachment that is neither an image nor a buffer!");
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                // We need the size of the output image when copying from image to image, so we need all attachments (even the output ones)
+                // We also need it so the framegraph knows the two scopes depend on each other
+                DeclareAttachmentsToFrameGraph(frameGraph);
+            }
 
+            frameGraph.SetEstimatedItemCount(2);
             frameGraph.SignalFence(*m_device1SignalFence[m_currentBufferIndex]);
         }
 
         void CopyPass::CompileResourcesDeviceToHost(const RHI::FrameGraphCompileContext& context)
         {
             RHI::CopyItemType copyType = GetCopyItemType();
-            auto inputId = GetInputBinding(0).GetAttachment()->GetAttachmentId();
+            auto inputId = (m_inputOutputCopy ? GetInputOutputBinding(0) : GetInputBinding(0)).GetAttachment()->GetAttachmentId();
             switch (copyType)
             {
             case AZ::RHI::CopyItemType::Image:
                 [[fallthrough]];
             case AZ::RHI::CopyItemType::ImageToBuffer:
                 {
-                    // copy image to read back buffer since only buffer can be accessed by host
                     const auto* sourceImage = context.GetImage(inputId);
                     if (!sourceImage)
                     {
-                        AZ_Warning("AttachmentReadback", false, "Failed to find attachment image %s for copy to buffer", inputId.GetCStr());
+                        AZ_Warning("CopyPass", false, "Failed to find attachment image %s for copy to buffer", inputId.GetCStr());
                         return;
                     }
                     const auto& sourceImageDescriptor = sourceImage->GetDescriptor();
                     const uint16_t sourceMipSlice = m_data.m_imageSourceSubresource.m_mipSlice;
                     RHI::ImageSubresourceRange sourceRange(sourceMipSlice, sourceMipSlice, 0, 0);
-                    sourceRange.m_aspectFlags = RHI::ImageAspectFlags::Color;
-
-                    RHI::ImageAspect sourceImageAspect = RHI::ImageAspect::Color;
                     RHI::ImageAspectFlags sourceImageAspectFlags = RHI::GetImageAspectFlags(sourceImageDescriptor.m_format);
-                    if (RHI::CheckBitsAll(sourceImageAspectFlags, RHI::ImageAspectFlags::Depth))
-                    {
-                        sourceImageAspect = RHI::ImageAspect::Depth;
-                        sourceRange.m_aspectFlags = RHI::ImageAspectFlags::Depth;
-                    }
+                    uint32_t sourceImageAspect = az_ctz_u32(static_cast<uint32_t>(sourceImageAspectFlags));
+
+                    auto aspectCount{ static_cast<int>(az_popcnt_u32(static_cast<uint32_t>(sourceImageAspectFlags))) };
+
+                    AZ_Assert(
+                        copyType == AZ::RHI::CopyItemType::Image || aspectCount == 1,
+                        "CopyPass cannot copy %d image aspects into a buffer.",
+                        aspectCount);
+
+                    AZ_Assert(aspectCount <= 2, "CopyPass cannot copy more than two aspects at the moment.");
 
                     AZStd::vector<RHI::DeviceImageSubresourceLayout> sourceImageSubResourcesLayouts;
                     sourceImageSubResourcesLayouts.resize_no_construct(sourceImageDescriptor.m_mipLevels);
-                    size_t sourceTotalSizeInBytes = 0;
-                    sourceImage->GetDeviceImage(m_data.m_sourceDeviceIndex)
-                        ->GetSubresourceLayouts(sourceRange, sourceImageSubResourcesLayouts.data(), &sourceTotalSizeInBytes);
-                    AZ::u64 sourceByteCount = sourceTotalSizeInBytes;
 
-                    if(m_deviceHostBufferByteCount[m_currentBufferIndex] != sourceByteCount)
+                    for (auto aspectIndex{ 0 }; aspectIndex < aspectCount; ++aspectIndex)
                     {
-                        m_deviceHostBufferByteCount[m_currentBufferIndex] = sourceByteCount;
+                        while ((static_cast<uint32_t>(sourceImageAspectFlags) & AZ_BIT(sourceImageAspect)) == 0)
+                        {
+                            ++sourceImageAspect;
+                        }
 
-                        RPI::CommonBufferDescriptor desc;
-                        desc.m_poolType = RPI::CommonBufferPoolType::ReadBack;
-                        desc.m_bufferName = AZStd::string(GetPathName().GetStringView()) + "_hostbuffer";
-                        desc.m_byteCount = m_deviceHostBufferByteCount[m_currentBufferIndex];
-                        m_device1HostBuffer[m_currentBufferIndex] = BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+                        sourceRange.m_aspectFlags = static_cast<RHI::ImageAspectFlags>(AZ_BIT(sourceImageAspect));
 
-                        desc.m_bufferName = AZStd::string(GetPathName().GetStringView()) + "_hostbuffer2";
-                        desc.m_poolType = RPI::CommonBufferPoolType::Staging;
-                        m_device2HostBuffer[m_currentBufferIndex] = BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
-                    }
+                        size_t sourceTotalSizeInBytes = 0;
+                        sourceImage->GetDeviceImage(m_data.m_sourceDeviceIndex)
+                            ->GetSubresourceLayouts(sourceRange, sourceImageSubResourcesLayouts.data(), &sourceTotalSizeInBytes);
+                        AZ::u64 sourceByteCount = sourceTotalSizeInBytes;
 
-                    // copy descriptor for copying image to buffer
-                    RHI::CopyImageToBufferDescriptor copyImageToBufferDesc;
-                    copyImageToBufferDesc.m_sourceImage = sourceImage;
-                    copyImageToBufferDesc.m_sourceSize = sourceImageSubResourcesLayouts[sourceMipSlice].m_size;
-                    copyImageToBufferDesc.m_sourceSubresource = RHI::ImageSubresource(sourceMipSlice, 0 /*arraySlice*/, sourceImageAspect);
-                    copyImageToBufferDesc.m_destinationOffset = 0;
+                        if (m_deviceHostBufferByteCount[aspectIndex][m_currentBufferIndex] != sourceByteCount)
+                        {
+                            m_deviceHostBufferByteCount[aspectIndex][m_currentBufferIndex] = sourceByteCount;
 
-                    if (copyType == RHI::CopyItemType::ImageToBuffer)
-                    {
+                            RPI::CommonBufferDescriptor desc;
+                            desc.m_poolType = RPI::CommonBufferPoolType::ReadBack;
+                            desc.m_bufferName =
+                                AZStd::string(GetPathName().GetStringView()) + "_hostbuffer_" + AZStd::to_string(aspectIndex);
+                            desc.m_byteCount = m_deviceHostBufferByteCount[aspectIndex][m_currentBufferIndex];
+                            m_device1HostBuffer[aspectIndex][m_currentBufferIndex] =
+                                BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+
+                            desc.m_bufferName =
+                                AZStd::string(GetPathName().GetStringView()) + "_hostbuffer2_" + AZStd::to_string(aspectIndex);
+                            desc.m_poolType = RPI::CommonBufferPoolType::Staging;
+                            m_device2HostBuffer[aspectIndex][m_currentBufferIndex] =
+                                BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+                        }
+
+                        // copy descriptor for copying image to buffer
+                        RHI::CopyImageToBufferDescriptor copyImageToBufferDesc;
+                        copyImageToBufferDesc.m_sourceImage = sourceImage;
+                        copyImageToBufferDesc.m_sourceSize = sourceImageSubResourcesLayouts[sourceMipSlice].m_size;
+                        copyImageToBufferDesc.m_sourceSubresource =
+                            RHI::ImageSubresource(sourceMipSlice, 0 /*arraySlice*/, static_cast<RHI::ImageAspect>(sourceImageAspect));
+                        copyImageToBufferDesc.m_destinationOffset = 0;
+
                         copyImageToBufferDesc.m_destinationBytesPerRow = sourceImageSubResourcesLayouts[sourceMipSlice].m_bytesPerRow;
                         copyImageToBufferDesc.m_destinationBytesPerImage = sourceImageSubResourcesLayouts[sourceMipSlice].m_bytesPerImage;
-                        copyImageToBufferDesc.m_destinationBuffer = m_device1HostBuffer[m_currentBufferIndex]->GetRHIBuffer();
-                        copyImageToBufferDesc.m_destinationFormat = FindFormatForAspect(sourceImageDescriptor.m_format, sourceImageAspect);
-                    }
-                    else
-                    {
-                        auto outputId = GetOutputBinding(0).GetAttachment()->GetAttachmentId();
-                        const auto* destImage = context.GetImage(outputId);
-                        if (!destImage)
+                        copyImageToBufferDesc.m_destinationBuffer = m_device1HostBuffer[aspectIndex][m_currentBufferIndex]->GetRHIBuffer();
+                        copyImageToBufferDesc.m_destinationFormat =
+                            FindFormatForAspect(sourceImageDescriptor.m_format, static_cast<RHI::ImageAspect>(sourceImageAspect));
+
+                        ++sourceImageAspect;
+
+                        if (m_copyItemDeviceToHost.size() <= aspectIndex)
                         {
-                            AZ_Warning(
-                                "AttachmentReadback", false, "Failed to find attachment image %s for copy to buffer", inputId.GetCStr());
-                            return;
+                            m_copyItemDeviceToHost.emplace_back();
                         }
-
-                        const auto& destImageDescriptor = destImage->GetDescriptor();
-                        const uint16_t destMipSlice = m_data.m_imageSourceSubresource.m_mipSlice;
-                        RHI::ImageSubresourceRange destRange(destMipSlice, destMipSlice, 0, 0);
-                        destRange.m_aspectFlags = RHI::ImageAspectFlags::Color;
-
-                        destRange.m_aspectFlags = RHI::ImageAspectFlags::Color;
-                        RHI::ImageAspect destImageAspect = RHI::ImageAspect::Color;
-                        RHI::ImageAspectFlags destImageAspectFlags = RHI::GetImageAspectFlags(destImageDescriptor.m_format);
-                        if (RHI::CheckBitsAll(destImageAspectFlags, RHI::ImageAspectFlags::Depth))
-                        {
-                            destImageAspect = RHI::ImageAspect::Depth;
-                            destRange.m_aspectFlags = RHI::ImageAspectFlags::Depth;
-                        }
-
-                        AZStd::vector<RHI::DeviceImageSubresourceLayout> destImageSubResourcesLayouts;
-                        destImageSubResourcesLayouts.resize_no_construct(destImageDescriptor.m_mipLevels);
-                        size_t destTotalSizeInBytes = 0;
-                        destImage->GetDeviceImage(m_data.m_sourceDeviceIndex)
-                            ->GetSubresourceLayouts(destRange, destImageSubResourcesLayouts.data(), &destTotalSizeInBytes);
-
-                        copyImageToBufferDesc.m_destinationBytesPerRow = destImageSubResourcesLayouts[destMipSlice].m_bytesPerRow;
-                        copyImageToBufferDesc.m_destinationBytesPerImage = destImageSubResourcesLayouts[destMipSlice].m_bytesPerImage;
-                        copyImageToBufferDesc.m_destinationBuffer = m_device1HostBuffer[m_currentBufferIndex]->GetRHIBuffer();
-                        copyImageToBufferDesc.m_destinationFormat = FindFormatForAspect(destImageDescriptor.m_format, destImageAspect);
+                        m_copyItemDeviceToHost[aspectIndex] = copyImageToBufferDesc;
+                        m_inputImageLayouts[aspectIndex] = sourceImageSubResourcesLayouts[sourceMipSlice];
                     }
-
-                    m_inputImageLayout = sourceImageSubResourcesLayouts[sourceMipSlice];
-
-                    m_copyItemDeviceToHost = copyImageToBufferDesc;
                 }
                 break;
             case AZ::RHI::CopyItemType::Buffer:
@@ -383,28 +425,28 @@ namespace AZ
                 {
                     const auto* buffer = context.GetBuffer(inputId);
 
-                    if(m_deviceHostBufferByteCount[m_currentBufferIndex] != buffer->GetDescriptor().m_byteCount)
+                    if (m_deviceHostBufferByteCount[0][m_currentBufferIndex] != buffer->GetDescriptor().m_byteCount)
                     {
-                        m_deviceHostBufferByteCount[m_currentBufferIndex] = buffer->GetDescriptor().m_byteCount;
+                        m_deviceHostBufferByteCount[0][m_currentBufferIndex] = buffer->GetDescriptor().m_byteCount;
 
                         RPI::CommonBufferDescriptor desc;
                         desc.m_poolType = RPI::CommonBufferPoolType::ReadBack;
                         desc.m_bufferName = AZStd::string(GetPathName().GetStringView()) + "_hostbuffer";
-                        desc.m_byteCount = m_deviceHostBufferByteCount[m_currentBufferIndex];
+                        desc.m_byteCount = m_deviceHostBufferByteCount[0][m_currentBufferIndex];
 
-                        m_device1HostBuffer[m_currentBufferIndex] = BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+                        m_device1HostBuffer[0][m_currentBufferIndex] = BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
                         desc.m_poolType = RPI::CommonBufferPoolType::Staging;
                         desc.m_bufferName = AZStd::string(GetPathName().GetStringView()) + "_hostbuffer2";
-                        m_device2HostBuffer[m_currentBufferIndex] = BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+                        m_device2HostBuffer[0][m_currentBufferIndex] = BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
                     }
 
                     // copy buffer
                     RHI::CopyBufferDescriptor copyBuffer;
                     copyBuffer.m_sourceBuffer = buffer;
-                    copyBuffer.m_destinationBuffer = m_device1HostBuffer[m_currentBufferIndex]->GetRHIBuffer();
-                    copyBuffer.m_size = aznumeric_cast<uint32_t>(m_deviceHostBufferByteCount[m_currentBufferIndex]);
+                    copyBuffer.m_destinationBuffer = m_device1HostBuffer[0][m_currentBufferIndex]->GetRHIBuffer();
+                    copyBuffer.m_size = aznumeric_cast<uint32_t>(m_deviceHostBufferByteCount[0][m_currentBufferIndex]);
 
-                    m_copyItemDeviceToHost = copyBuffer;
+                    m_copyItemDeviceToHost[0] = copyBuffer;
                 }
                 break;
             default:
@@ -414,9 +456,12 @@ namespace AZ
 
         void CopyPass::BuildCommandListInternalDeviceToHost(const RHI::FrameGraphExecuteContext& context)
         {
-            if (m_copyItemDeviceToHost.m_type != RHI::CopyItemType::Invalid)
+            for (const auto& copyItem : m_copyItemDeviceToHost)
             {
-                context.GetCommandList()->Submit(m_copyItemDeviceToHost.GetDeviceCopyItem(context.GetDeviceIndex()));
+                if (copyItem.m_type != RHI::CopyItemType::Invalid)
+                {
+                    context.GetCommandList()->Submit(copyItem.GetDeviceCopyItem(context.GetDeviceIndex()));
+                }
             }
 
             // Once signaled on device 1, we can map the host staging buffers on device 1 and 2 and copy data from 1 -> 2 and then signal the upload on device 2
@@ -425,12 +470,15 @@ namespace AZ
                 ->WaitOnCpuAsync(
                     [this, bufferIndex = m_currentBufferIndex]()
                     {
-                        auto bufferSize = m_device2HostBuffer[bufferIndex]->GetBufferSize();
-                        void* data1 = m_device1HostBuffer[bufferIndex]->Map(bufferSize, 0)[m_data.m_sourceDeviceIndex];
-                        void* data2 = m_device2HostBuffer[bufferIndex]->Map(bufferSize, 0)[m_data.m_destinationDeviceIndex];
-                        memcpy(data2, data1, bufferSize);
-                        m_device1HostBuffer[bufferIndex]->Unmap();
-                        m_device2HostBuffer[bufferIndex]->Unmap();
+                        for (int copyIndex{ 0 }; copyIndex < m_copyItemDeviceToHost.size(); ++copyIndex)
+                        {
+                            auto bufferSize = m_device2HostBuffer[copyIndex][bufferIndex]->GetBufferSize();
+                            void* data1 = m_device1HostBuffer[copyIndex][bufferIndex]->Map(bufferSize, 0)[m_data.m_sourceDeviceIndex];
+                            void* data2 = m_device2HostBuffer[copyIndex][bufferIndex]->Map(bufferSize, 0)[m_data.m_destinationDeviceIndex];
+                            memcpy(data2, data1, bufferSize);
+                            m_device1HostBuffer[copyIndex][bufferIndex]->Unmap();
+                            m_device2HostBuffer[copyIndex][bufferIndex]->Unmap();
+                        }
 
                         m_device2WaitFence[bufferIndex]->GetDeviceFence(m_data.m_destinationDeviceIndex)->SignalOnCpu();
                     });
@@ -438,7 +486,7 @@ namespace AZ
 
         void CopyPass::SetupFrameGraphDependenciesHostToDevice(RHI::FrameGraphInterface frameGraph)
         {
-            DeclareAttachmentsToFrameGraph(frameGraph, PassSlotType::Output);
+            DeclareAttachmentsToFrameGraph(frameGraph, m_inputOutputCopy ? PassSlotType::InputOutput : PassSlotType::Output);
             frameGraph.ExecuteAfter(m_copyScopeProducerDeviceToHost->GetScopeId());
             for (Pass* pass : m_executeBeforePasses)
             {
@@ -449,14 +497,14 @@ namespace AZ
                 }
             }
 
+            frameGraph.SetEstimatedItemCount(2);
+
             frameGraph.WaitFence(*m_device2WaitFence[m_currentBufferIndex]);
         }
 
         void CopyPass::CompileResourcesHostToDevice(const RHI::FrameGraphCompileContext& context)
         {
-            m_copyItemHostToDevice = {};
-            m_copyItemHostToDevice.m_type = RHI::CopyItemType::Invalid;
-            PassAttachmentBinding& copyDest = GetOutputBinding(0);
+            PassAttachmentBinding& copyDest = m_inputOutputCopy ? GetInputOutputBinding(0) : GetOutputBinding(0);
             auto outputId = copyDest.GetAttachment()->GetAttachmentId();
             RHI::CopyItemType copyType = GetCopyItemType();
             switch (copyType)
@@ -467,11 +515,11 @@ namespace AZ
                 {
                     const auto* buffer = context.GetBuffer(outputId);
                     RHI::CopyBufferDescriptor copyBuffer;
-                    copyBuffer.m_sourceBuffer = m_device2HostBuffer[m_currentBufferIndex]->GetRHIBuffer();
+                    copyBuffer.m_sourceBuffer = m_device2HostBuffer[0][m_currentBufferIndex]->GetRHIBuffer();
                     copyBuffer.m_destinationBuffer = buffer;
-                    copyBuffer.m_size = aznumeric_cast<uint32_t>(m_device2HostBuffer[m_currentBufferIndex]->GetBufferSize());
+                    copyBuffer.m_size = aznumeric_cast<uint32_t>(m_device2HostBuffer[0][m_currentBufferIndex]->GetBufferSize());
 
-                    m_copyItemHostToDevice = copyBuffer;
+                    m_copyItemHostToDevice[0] = copyBuffer;
                 }
                 break;
             case AZ::RHI::CopyItemType::Image:
@@ -479,22 +527,28 @@ namespace AZ
             case AZ::RHI::CopyItemType::BufferToImage:
                 {
                     RHI::CopyBufferToImageDescriptor copyDesc;
-
-                    const auto* sourceBuffer = m_device2HostBuffer[m_currentBufferIndex]->GetRHIBuffer();
-                    copyDesc.m_sourceBuffer = sourceBuffer;
-
                     copyDesc.m_sourceOffset = 0;
-                    if (copyType == RHI::CopyItemType::BufferToImage)
+
+                    RHI::ImageAspectFlags sourceImageAspectFlags = RHI::ImageAspectFlags::Color;
+                    uint32_t sourceImageAspect;
+                    RHI::Format sourceFormat;
+
+                    if (copyType == RHI::CopyItemType::Image)
                     {
-                        copyDesc.m_sourceBytesPerRow = m_data.m_bufferSourceBytesPerRow;
-                        copyDesc.m_sourceBytesPerImage = m_data.m_bufferSourceBytesPerImage;
-                        copyDesc.m_sourceSize = m_data.m_sourceSize;
-                    }
-                    else
-                    {
-                        copyDesc.m_sourceBytesPerRow = m_inputImageLayout.m_bytesPerRow;
-                        copyDesc.m_sourceBytesPerImage = m_inputImageLayout.m_bytesPerImage;
-                        copyDesc.m_sourceSize = m_inputImageLayout.m_size;
+                        auto inputId =
+                            (m_inputOutputCopy ? GetInputOutputBinding(0) : GetInputBinding(0)).GetAttachment()->GetAttachmentId();
+
+                        const auto* sourceImage = context.GetImage(inputId);
+                        if (!sourceImage)
+                        {
+                            AZ_Warning("CopyPass", false, "Failed to find attachment image %s for copy to buffer", inputId.GetCStr());
+                            return;
+                        }
+                        const auto& sourceImageDescriptor = sourceImage->GetDescriptor();
+
+                        sourceFormat = sourceImageDescriptor.m_format;
+                        sourceImageAspectFlags = RHI::GetImageAspectFlags(sourceFormat);
+                        sourceImageAspect = az_ctz_u32(static_cast<uint32_t>(sourceImageAspectFlags));
                     }
 
                     // Destination Image
@@ -502,7 +556,58 @@ namespace AZ
                     copyDesc.m_destinationOrigin = m_data.m_imageDestinationOrigin;
                     copyDesc.m_destinationSubresource = m_data.m_imageDestinationSubresource;
 
-                    m_copyItemHostToDevice = copyDesc;
+                    const auto& destinationImageDescriptor = copyDesc.m_destinationImage->GetDescriptor();
+                    auto destImageAspectFlags = RHI::GetImageAspectFlags(destinationImageDescriptor.m_format);
+                    uint32_t destImageAspect = az_ctz_u32(static_cast<uint32_t>(destImageAspectFlags));
+
+                    auto aspectCount{ static_cast<int>(AZStd::min(
+                        az_popcnt_u32(static_cast<uint32_t>(sourceImageAspectFlags)),
+                        az_popcnt_u32(static_cast<uint32_t>(destImageAspectFlags)))) };
+
+                    AZ_Assert(aspectCount <= 2, "CopyPass cannot copy more than two aspects at the moment.");
+
+                    for (auto aspectIndex{ 0 }; aspectIndex < aspectCount; ++aspectIndex)
+                    {
+                        while ((static_cast<uint32_t>(sourceImageAspectFlags) & AZ_BIT(sourceImageAspect)) == 0)
+                        {
+                            ++sourceImageAspect;
+                        }
+
+                        while ((static_cast<uint32_t>(destImageAspectFlags) & AZ_BIT(destImageAspect)) == 0)
+                        {
+                            ++destImageAspect;
+                        }
+
+                        if (copyType == RHI::CopyItemType::BufferToImage)
+                        {
+                            copyDesc.m_sourceBytesPerRow = m_data.m_bufferSourceBytesPerRow;
+                            copyDesc.m_sourceBytesPerImage = m_data.m_bufferSourceBytesPerImage;
+                            copyDesc.m_sourceSize = m_data.m_sourceSize;
+                            copyDesc.m_sourceFormat =
+                                FindFormatForAspect(destinationImageDescriptor.m_format, static_cast<RHI::ImageAspect>(destImageAspect));
+                        }
+                        else
+                        {
+                            copyDesc.m_sourceBytesPerRow = m_inputImageLayouts[aspectIndex].m_bytesPerRow;
+                            copyDesc.m_sourceBytesPerImage = m_inputImageLayouts[aspectIndex].m_bytesPerImage;
+                            copyDesc.m_sourceSize = m_inputImageLayouts[aspectIndex].m_size;
+                            copyDesc.m_sourceFormat = FindFormatForAspect(sourceFormat, static_cast<RHI::ImageAspect>(sourceImageAspect));
+                        }
+
+                        const auto* sourceBuffer = m_device2HostBuffer[aspectIndex][m_currentBufferIndex]->GetRHIBuffer();
+                        copyDesc.m_sourceBuffer = sourceBuffer;
+                        copyDesc.m_destinationSubresource.m_aspect = static_cast<RHI::ImageAspect>(destImageAspect);
+
+                        if (m_copyItemHostToDevice.size() <= aspectIndex)
+                        {
+                            m_copyItemHostToDevice.emplace_back();
+                        }
+
+                        m_copyItemHostToDevice[aspectIndex] = copyDesc;
+
+                        ++sourceImageAspect;
+                        ++destImageAspect;
+                    }
                 }
                 break;
             default:
@@ -512,9 +617,12 @@ namespace AZ
 
         void CopyPass::BuildCommandListInternalHostToDevice(const RHI::FrameGraphExecuteContext& context)
         {
-            if (m_copyItemHostToDevice.m_type != RHI::CopyItemType::Invalid)
+            for (const auto& copyItem : m_copyItemHostToDevice)
             {
-                context.GetCommandList()->Submit(m_copyItemHostToDevice.GetDeviceCopyItem(context.GetDeviceIndex()));
+                if (copyItem.m_type != RHI::CopyItemType::Invalid)
+                {
+                    context.GetCommandList()->Submit(copyItem.GetDeviceCopyItem(context.GetDeviceIndex()));
+                }
             }
         }
 
@@ -579,6 +687,7 @@ namespace AZ
             copyDesc.m_destinationImage = context.GetImage(copyDest.GetAttachment()->GetAttachmentId());
             copyDesc.m_destinationOrigin = m_data.m_imageDestinationOrigin;
             copyDesc.m_destinationSubresource = m_data.m_imageDestinationSubresource;
+            copyDesc.m_sourceFormat = copyDesc.m_destinationImage->GetDescriptor().m_format;
 
             m_copyItemSameDevice = copyDesc;
         }

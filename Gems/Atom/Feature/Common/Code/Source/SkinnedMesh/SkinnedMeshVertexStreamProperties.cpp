@@ -131,7 +131,8 @@ namespace AZ
             {
                 auto bufferPoolDesc = AZStd::make_unique<RHI::BufferPoolDescriptor>();
                 // Output buffers are both written to during skinning and used as input assembly buffers
-                bufferPoolDesc->m_bindFlags = RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::ShaderReadWrite;
+                bufferPoolDesc->m_bindFlags = RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::ShaderReadWrite |
+                    RHI::BufferBindFlags::CopyRead | RHI::BufferBindFlags::CopyWrite;
                 bufferPoolDesc->m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
 
                 RPI::ResourcePoolAssetCreator creator;

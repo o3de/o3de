@@ -224,7 +224,7 @@ namespace AZ
                 footprint.Footprint.Width = descriptor.m_sourceSize.m_width;
                 footprint.Footprint.Height = descriptor.m_sourceSize.m_height;
                 footprint.Footprint.Depth = descriptor.m_sourceSize.m_depth;
-                footprint.Footprint.Format = ConvertFormat(destinationImage->GetDescriptor().m_format);
+                footprint.Footprint.Format = ConvertFormat(descriptor.m_sourceFormat);
                 footprint.Footprint.RowPitch = descriptor.m_sourceBytesPerRow;
 
                 const CD3DX12_TEXTURE_COPY_LOCATION sourceLocation(sourceBuffer->GetMemoryView().GetMemory(), footprint);

@@ -238,14 +238,8 @@ namespace AZ::RHI
             }
             return access;
 
-        // Disallow read/write access for Copy scope attachments as this is nonsensical, Copy operations
-        // have only sources and destinations. We remap read/write to write as a fallback.
+        // Read/write access for Copy scope attachments can happen when copying between two devices.
         case ScopeAttachmentUsage::Copy:
-            AZ_Error("ScopeAttachment", access != ScopeAttachmentAccess::ReadWrite, "ScopeAttachmentAccess cannot be 'ReadWrite' when usage is 'Copy'.");
-            if (access == ScopeAttachmentAccess::ReadWrite)
-            {
-                return ScopeAttachmentAccess::Write;
-            }
             return access;
 
         case ScopeAttachmentUsage::InputAssembly:
