@@ -54,10 +54,13 @@ namespace AzFramework
         // Initialize all used atoms.
         void InitializeAtoms();
         void GetWMStates();
+        
+        void DrawSplash();
 
         xcb_connection_t* m_xcbConnection = nullptr;
         xcb_screen_t* m_xcbRootScreen = nullptr;
         xcb_window_t m_xcbWindow = 0;
+        xcb_gcontext_t m_xcbGraphicContext = 0;
         int32_t m_posX;
         int32_t m_posY;
         bool m_fullscreenState = false;
