@@ -43,7 +43,6 @@ namespace AZ
             AZ::Vector2 m_autoFocusScreenPosition{ 0.0f, 0.0f };
 
             // Scope producer functions...
-            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
 
             // Pass overrides
