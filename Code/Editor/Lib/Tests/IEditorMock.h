@@ -85,16 +85,9 @@ public:
     MOCK_METHOD2(UpdateViews, void(int , const AABB* ));
     MOCK_METHOD0(ResetViews, void());
     MOCK_METHOD0(ReloadTrackView, void());
-    MOCK_METHOD0(GetMarkerPosition, Vec3());
-    MOCK_METHOD1(SetMarkerPosition, void(const Vec3&));
-    MOCK_METHOD1(SetSelectedRegion, void(const AABB& box));
-    MOCK_METHOD1(GetSelectedRegion, void(AABB& box));
-    MOCK_METHOD1(SetOperationMode, void(EOperationMode ));
-    MOCK_METHOD0(GetOperationMode, EOperationMode());
+
     MOCK_METHOD1(SetAxisConstraints, void(AxisConstrains ));
     MOCK_METHOD0(GetAxisConstrains, AxisConstrains());
-    MOCK_METHOD1(SetAxisVectorLock, void(bool));
-    MOCK_METHOD0(IsAxisVectorLocked, bool());
     MOCK_METHOD1(SetTerrainAxisIgnoreObjects, void(bool));
     MOCK_METHOD0(IsTerrainAxisIgnoreObjects, bool());
     MOCK_METHOD1(SetReferenceCoordSys, void(RefCoordSys ));
@@ -138,8 +131,6 @@ public:
     MOCK_METHOD2(NotifyExcept, void(EEditorNotifyEvent , IEditorNotifyListener* ));
     MOCK_METHOD1(RegisterNotifyListener, void(IEditorNotifyListener* ));
     MOCK_METHOD1(UnregisterNotifyListener, void(IEditorNotifyListener* ));
-    MOCK_METHOD1(RegisterDocListener, void(IDocListener* ));
-    MOCK_METHOD1(UnregisterDocListener, void(IDocListener* ));
     MOCK_METHOD0(ReduceMemory, void());
     MOCK_CONST_METHOD0(GetEditorConfigPlatform, ESystemConfigPlatform());
     MOCK_METHOD0(ReloadTemplates, void());

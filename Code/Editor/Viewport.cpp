@@ -541,7 +541,6 @@ void QtViewport::OnSetCursor()
 void QtViewport::ResetSelectionRegion()
 {
     AABB box(Vec3(0, 0, 0), Vec3(0, 0, 0));
-    GetIEditor()->SetSelectedRegion(box);
     m_selectedRect = QRect();
 }
 
@@ -579,7 +578,6 @@ void QtViewport::OnDragSelectRectangle(const QRect& rect, bool bNormalizeRect)
 
     box.min.z = -10000;
     box.max.z = 10000;
-    GetIEditor()->SetSelectedRegion(box);
 
     // Show marker position in the status bar
     float w = box.max.x - box.min.x;
