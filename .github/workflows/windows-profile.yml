@@ -64,14 +64,14 @@ jobs:
         with:
           name: O3DE-${{ matrix.platform }}-build
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ steps.last-run-id.output.runID || vars.Windows_ARTIFACT_RUNID || github.run_id }}
+          run-id: ${{ steps.last-run-id.outputs.runID || vars.Windows_ARTIFACT_RUNID || github.run_id }}
 
       - name: Extract build
         continue-on-error: true
         run: |
           echo "Windows_ARTIFACT_RUNID: ${{ vars.Windows_ARTIFACT_RUNID }}"
           echo "Runid: ${{ github.run_id }}"
-          echo "Last run id: ${{ steps.last-run-id.output.runID }}"
+          echo "Last run id: ${{ steps.last-run-id.outputs.artifacts }}"
           tar -xvpf ${{ github.workspace }}\cache.tar
           rm ${{ github.workspace }}\cache.tar
         
