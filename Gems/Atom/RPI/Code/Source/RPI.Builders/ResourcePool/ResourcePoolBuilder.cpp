@@ -223,29 +223,5 @@ namespace AZ
             assetCreator.End(poolAsset);
             return poolAsset;
         }
-
-        void ResourcePoolSourceData::Reflect(ReflectContext* context)
-        {
-            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
-            {
-                serializeContext->Class<ResourcePoolSourceData>()
-                    ->Field("PoolName", &ResourcePoolSourceData::m_poolName)
-                    ->Field("PoolType", &ResourcePoolSourceData::m_poolType)
-                    ->Field("BudgetInBytes", &ResourcePoolSourceData::m_budgetInBytes)
-                    ->Field("BufferPoolHeapMemoryLevel", &ResourcePoolSourceData::m_heapMemoryLevel)
-                    ->Field("BufferPoolhostMemoryAccess", &ResourcePoolSourceData::m_hostMemoryAccess)
-                    ->Field("BufferPoolBindFlags", &ResourcePoolSourceData::m_bufferPoolBindFlags)
-                    ->Field("ImagePoolBindFlags", &ResourcePoolSourceData::m_imagePoolBindFlags)
-                    ;
-
-                // register enum strings
-                serializeContext->Enum<ResourcePoolAssetType>()
-                    ->Value("Unknown", ResourcePoolAssetType::Unknown)
-                    ->Value("BufferPool", ResourcePoolAssetType::BufferPool)
-                    ->Value("ImagePool", ResourcePoolAssetType::ImagePool)
-                    ->Value("StreamingImagePool", ResourcePoolAssetType::StreamingImagePool)
-                    ;
-            }
-        }
     } // namespace RPI_Builder
 } // namespace AZ
