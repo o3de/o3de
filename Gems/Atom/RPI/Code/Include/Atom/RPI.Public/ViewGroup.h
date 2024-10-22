@@ -51,9 +51,6 @@ namespace AZ
                 MatrixChangedEvent m_viewMatrixChangedEvent;
             };
 
-            ViewGroup();
-            ~ViewGroup();
-
             //! Initialization which involves caching the descriptor and XR system related properties if applicable.
             void Init(const Descriptor& desc);
 
@@ -124,7 +121,7 @@ namespace AZ
             uint32_t GetViewIndex(ViewType viewType);
 
             //! Vector to all the view data
-            AZStd::vector<ViewData> m_cameraViews;
+            AZStd::array<ViewData, MaxViewTypes> m_cameraViews;
 
             //! XRRendering interface
             AZ::RPI::XRRenderingInterface* m_xrSystem = nullptr;

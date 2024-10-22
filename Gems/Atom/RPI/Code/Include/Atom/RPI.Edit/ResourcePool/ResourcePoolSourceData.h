@@ -50,4 +50,6 @@ namespace AZ
         };
 
     } // namespace RPI
+
+    AZ_TYPE_INFO_SPECIALIZE(RPI::ResourcePoolAssetType, "{09D35821-2D42-456B-B53C-C02BF387C5C4}");
 } // namespace AZ

@@ -36,14 +36,14 @@ namespace AZ
             //! Instantiates or returns an existing attachment image pool using a paired resource pool asset.
             static Data::Instance<AttachmentImagePool> FindOrCreate(const Data::Asset<ResourcePoolAsset>& resourcePoolAsset);
 
-            ~AttachmentImagePool() override = default;
+            ~AttachmentImagePool() override;
 
             RHI::ImagePool* GetRHIPool();
 
             const RHI::ImagePool* GetRHIPool() const;
 
         private:
-            AttachmentImagePool() = default;
+            AttachmentImagePool();
 
             // Standard asset creation path.
             static Data::Instance<AttachmentImagePool> CreateInternal(ResourcePoolAsset& poolAsset);

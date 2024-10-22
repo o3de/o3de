@@ -149,7 +149,7 @@ namespace AZ
             void ConnectEvent(OnMaterialShaderVariantReadyEvent::Handler& handler);
 
         private:
-            Material() = default;
+            Material();
 
             //! Standard init path from asset data.
             static Data::Instance<Material> CreateInternal(MaterialAsset& materialAsset);

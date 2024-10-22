@@ -16,6 +16,7 @@
 #include <Atom/RPI.Reflect/Model/ModelLodAssetCreator.h>
 #include <Atom/RPI.Reflect/Model/MorphTargetMetaAsset.h>
 #include <Atom/RPI.Reflect/Model/MorphTargetDelta.h>
+#include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RHI/Factory.h>
@@ -23,8 +24,6 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Math/PackedVector3.h>
 #include <inttypes.h>
-
-AZ_DECLARE_BUDGET(AzRender);
 
 namespace AZ
 {

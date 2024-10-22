@@ -61,17 +61,6 @@ namespace AZ
             void FrameBeginInternal(FramePrepareParams params) override;
             void FrameEndInternal() override;
 
-            // camera basis vectors for each cubemap face
-            inline static const Vector3 CameraBasis[NumCubeMapFaces][3] =
-            {
-                { Vector3( 0.0f,  1.0f,  0.0f), Vector3(-1.0f,  0.0f,  0.0f), Vector3( 0.0f,  0.0f,  1.0f) },
-                { Vector3( 0.0f, -1.0f,  0.0f), Vector3( 1.0f,  0.0f,  0.0f), Vector3( 0.0f,  0.0f,  1.0f) },
-                { Vector3(-1.0f,  0.0f,  0.0f), Vector3( 0.0f,  0.0f,  1.0f), Vector3( 0.0f,  1.0f,  0.0f) },
-                { Vector3(-1.0f,  0.0f,  0.0f), Vector3( 0.0f,  0.0f, -1.0f), Vector3( 0.0f, -1.0f,  0.0f) },
-                { Vector3(-1.0f,  0.0f,  0.0f), Vector3( 0.0f, -1.0f,  0.0f), Vector3( 0.0f,  0.0f,  1.0f) },
-                { Vector3( 1.0f,  0.0f,  0.0f), Vector3( 0.0f,  1.0f,  0.0f), Vector3( 0.0f,  0.0f,  1.0f) },
-            };
-
             // world space position to render the environment cubemap
             Vector3 m_position;
 

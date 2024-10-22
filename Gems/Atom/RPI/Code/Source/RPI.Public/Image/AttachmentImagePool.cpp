@@ -21,6 +21,10 @@ namespace AZ
 {
     namespace RPI
     {
+        AttachmentImagePool::AttachmentImagePool() = default;
+
+        AttachmentImagePool::~AttachmentImagePool() = default;
+
         Data::Instance<AttachmentImagePool> AttachmentImagePool::FindOrCreate(const Data::Asset<ResourcePoolAsset>& resourcePoolAsset)
         {
             return Data::InstanceDatabase<AttachmentImagePool>::Instance().FindOrCreate(

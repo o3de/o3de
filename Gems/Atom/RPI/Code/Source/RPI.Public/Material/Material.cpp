@@ -139,6 +139,8 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
+        Material::Material() = default;
+
         Material::~Material()
         {
             ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
