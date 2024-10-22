@@ -71,7 +71,8 @@ jobs:
         run: |
           echo "Windows_ARTIFACT_RUNID: ${{ vars.Windows_ARTIFACT_RUNID }}"
           echo "Runid: ${{ github.run_id }}"
-          echo "Last run id: ${{ steps.last-run-id.outputs.artifacts }}"
+          echo "Last run id: ${{ fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id }}"
+          
           tar -xvpf ${{ github.workspace }}\cache.tar
           rm ${{ github.workspace }}\cache.tar
         
