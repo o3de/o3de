@@ -93,6 +93,12 @@ namespace AZ
             // Skip reset since the pass just got created
             m_state = PassState::Reset;
             m_flags.m_lastFrameEnabled = m_flags.m_enabled;
+
+            // Reserve memory for performance concern.
+            m_attachmentBindings.reserve(PassAttachmentBindingCountMax);
+            m_inputBindingIndices.reserve(PassInputBindingCountMax);
+            m_inputOutputBindingIndices.reserve(PassInputOutputBindingCountMax);
+            m_outputBindingIndices.reserve(PassOutputBindingCountMax);
         }
 
         Pass::~Pass()
