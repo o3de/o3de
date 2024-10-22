@@ -94,11 +94,11 @@ public:
     unsigned int GetParamCount() const override { return 0; };
 
     bool SetParamValue(float time, CAnimParamType param, float val) override;
-    bool SetParamValue(float time, CAnimParamType param, const Vec3& val) override;
-    bool SetParamValue(float time, CAnimParamType param, const Vec4& val) override;
+    bool SetParamValue(float time, CAnimParamType param, const AZ::Vector3& val) override;
+    bool SetParamValue(float time, CAnimParamType param, const AZ::Vector4& val) override;
     bool GetParamValue(float time, CAnimParamType param, float& val) override;
-    bool GetParamValue(float time, CAnimParamType param, Vec3& val) override;
-    bool GetParamValue(float time, CAnimParamType param, Vec4& val) override;
+    bool GetParamValue(float time, CAnimParamType param, AZ::Vector3& val) override;
+    bool GetParamValue(float time, CAnimParamType param, AZ::Vector4& val) override;
 
     void SetTarget([[maybe_unused]] IAnimNode* node) {};
     IAnimNode* GetTarget() const { return 0; };
