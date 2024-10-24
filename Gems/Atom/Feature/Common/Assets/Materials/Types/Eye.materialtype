@@ -151,7 +151,9 @@
     },
     // Skin lighting model works well because it supports subsurface scattering, and Eye doesn't need all the other stuff in the Enhanced lighting model.
     "lightingModel": "Skin",
+    "materialShaderDefines": "Eye_Defines.azsli",
     "materialShaderCode": "Eye.azsli",
+
     "uvNameMap": {
         "UV0": "Tiled",
         "UV1": "Unwrapped"

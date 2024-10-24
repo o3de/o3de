@@ -19,7 +19,6 @@
 #if ENABLE_PARALLAX
 #include "../MaterialFunctions/ParallaxDepth.azsli"
 #endif
-#include <Atom/Features/InstancedTransforms.azsli>
 
 #include <Atom/Features/Debug.azsli>
 
@@ -51,10 +50,10 @@ PixelGeometryData EvaluatePixelGeometry_StandardPBR(
     return geoData;
 }
 
-PixelGeometryData EvaluatePixelGeometry_StandardPBR(inout VsOutput IN, bool isFrontFace, const MaterialParameters params)
+PixelGeometryData EvaluatePixelGeometry_StandardPBR(inout VsOutput IN, VsSystemValues SV, bool isFrontFace, const MaterialParameters params)
 {
-    real4x4 objectToWorld = real4x4(GetObjectToWorldMatrix(IN.m_instanceId));
-    real3x3 objectToWorldIT = real3x3(GetObjectToWorldMatrixInverseTranspose(IN.m_instanceId));
+    real4x4 objectToWorld = real4x4(GetObjectToWorldMatrix(SV));
+    real3x3 objectToWorldIT = real3x3(GetObjectToWorldMatrixInverseTranspose(SV));
 
     real3 normalWS, tangentWS, bitangentWS;
     ConstructTBN(real3(IN.normal), real4(IN.tangent), objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);

@@ -180,6 +180,11 @@ namespace AZ
             // the path and fails if it can't be found.
             addPossibleDependencies(materialTypeSourcePath, materialTypeSourceData.m_materialShaderCode);
 
+            if (!materialTypeSourceData.m_materialShaderDefines.empty())
+            {
+                addPossibleDependencies(materialTypeSourcePath, materialTypeSourceData.m_materialShaderDefines);
+            }
+
             // Note we report dependencies based on GetMaterialPipelinePaths() rather than LoadMaterialPipelines(), because dependencies are
             // needed even for pipelines that fail to load, so that the job will re-process when the broken pipeline gets fixed.
             for (const auto& materialPipelineFilePath : GetMaterialPipelinePaths())
@@ -607,7 +612,19 @@ namespace AZ
                 return;
             }
 
+            // material shader defines work simila as m_materialShaderCode: its partial material shader code, and exists only in the
+            // abstract material type, but it can be empty from the start
+            const AZ::IO::FixedMaxPath materialDefinesAzsliFilePath(
+                AssetUtils::ResolvePathReference(materialTypeSourcePath, materialTypeSourceData.m_materialShaderDefines));
+            if (materialDefinesAzsliFilePath.HasFilename() &&
+                !AZ::IO::LocalFileIO::GetInstance()->Exists(materialDefinesAzsliFilePath.c_str()))
+            {
+                AZ_Error(MaterialTypeBuilderName, false, "File is missing: '%s'", materialTypeSourceData.m_materialShaderDefines.c_str());
+                return;
+            }
+
             materialTypeSourceData.m_materialShaderCode.clear();
+            materialTypeSourceData.m_materialShaderDefines.clear();
             materialTypeSourceData.m_lightingModel.clear();
             // These should already be clear, but just in case
             materialTypeSourceData.m_shaderCollection.clear();
@@ -682,6 +699,13 @@ namespace AZ
                     AZStd::string::format("#define MATERIAL_PARAMETERS_AZSLI_FILE_PATH \"%s\" \n", materialParameterAzsliFileName.c_str());
 
                 generatedAzsl += AZStd::string::format("\n");
+                if (!materialDefinesAzsliFilePath.empty())
+                {
+                    const AZ::IO::PathView materialDefinesAzsliFilePathView{ materialDefinesAzsliFilePath };
+                    generatedAzsl += AZStd::string::format(
+                        "#define MATERIAL_TYPE_DEFINES_AZSLI_FILE_PATH \"%s\" \n",
+                        materialDefinesAzsliFilePathView.StringAsPosix().c_str());
+                }
 
                 // At this point m_azsli should be absolute due to ResolvePathReference() being called above.
                 // It might be better for the include path to be relative to the generated .shader file path in the intermediate cache,
@@ -690,9 +714,11 @@ namespace AZ
                 const AZ::IO::PathView materialAzsliFilePathView{ materialAzsliFilePath };
                 generatedAzsl += AZStd::string::format(
                     "#define MATERIAL_TYPE_AZSLI_FILE_PATH \"%s\" \n", materialAzsliFilePathView.StringAsPosix().c_str());
+
                 auto materialTypeNameUpper = materialTypeName;
                 AZStd::to_upper(materialTypeNameUpper);
                 generatedAzsl += AZStd::string::format("#define MATERIAL_TYPE_%s 1 \n", materialTypeNameUpper.c_str());
+
                 generatedAzsl += AZStd::string::format("#include \"%s\" \n", shaderTemplate.m_azsli.c_str());
 
                 AZ::IO::Path shaderName = shaderTemplate.m_shader;
