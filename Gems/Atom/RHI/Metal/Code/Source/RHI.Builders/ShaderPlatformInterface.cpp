@@ -528,7 +528,7 @@ namespace AZ
             // optimization off attribute "[[clang::optnone]]" added by SPIRV-Cross makes the render 20 times slower
             // we drop the attribute here, but calculation precision might suffer causing z-fighting
             finalMetalSLStr = AZStd::regex_replace(finalMetalSLStr, AZStd::regex("\\[\\[clang::optnone\\]\\]"), "");
-            
+
             compiledShader = AZStd::vector<char>(finalMetalSLStr.begin(), finalMetalSLStr.end());
             return true;
         }
