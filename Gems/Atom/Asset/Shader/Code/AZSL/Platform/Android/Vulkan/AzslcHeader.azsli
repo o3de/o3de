@@ -24,6 +24,11 @@ static const float4 s_AzslDebugColor = float4(165.0 / 255.0, 30.0 / 255.0, 36.0 
 //Assuming unbounded array suport for Android
 #define UNBOUNDED_SIZE
 
+// use the Single Material SRG with, but bindless use the textures from bindless
+#define AZ_TRAIT_FORCE_SINGLE_MATERIAL_SRG
+// note: This assumes AZ_TRAIT_REGISTER_TEXTURES_PER_MATERIAL is defined via Atom_RPI_Traits_Platform.h
+#define AZ_TRAIT_MAX_TEXTURES_PER_MATERIAL 32
+
 #define USE_HALF_FLOATS_FOR_ANDROID 1
 #if USE_HALF_FLOATS_FOR_ANDROID
 

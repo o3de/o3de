@@ -6,16 +6,18 @@
  *
  */
 
-#include <Atom/RPI.Public/MeshDrawPacket.h>
-#include <Atom/RPI.Public/RPIUtils.h>
-#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
-#include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
-#include <Atom/RPI.Public/Scene.h>
-#include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <AzCore/Console/Console.h>
+#include <Atom/RPI.Public/MeshDrawPacket.h>
+#include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
+#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+#include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
+#include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
+#include <AzCore/Console/Console.h>
+#include <AzCore/Name/NameDictionary.h>
+
 
 namespace AZ
 {
@@ -423,22 +425,32 @@ namespace AZ
                 Data::Instance<ShaderResourceGroup> drawSrg = shader->CreateDrawSrgForShaderVariant(shaderOptions, false);
                 if (drawSrg)
                 {
-                    // Pass UvStreamTangentBitmask to the shader if the draw SRG has it.
-
-                    AZ::Name shaderUvStreamTangentBitmask = AZ::Name(UvStreamTangentBitmask::SrgName);
-                    auto index = drawSrg->FindShaderInputConstantIndex(shaderUvStreamTangentBitmask);
-
-                    if (index.IsValid())
+                    // Note: ShaderInputNameIndex as a local variable isn't all that useful, since it can't actually cache the index across
+                    // multiple calls. But it does save us from having the "index = FindConstantIndex(..); if (index.IsValid()) {}"
+                    // construct everywhere
                     {
-                        drawSrg->SetConstant(index, uvStreamTangentBitmask.GetFullTangentBitmask());
+                        // Pass UvStreamTangentBitmask to the shader if the draw SRG has it.
+                        RHI::ShaderInputNameIndex nameIndex(UvStreamTangentBitmask::SrgName);
+                        drawSrg->SetConstant(nameIndex, uvStreamTangentBitmask.GetFullTangentBitmask());
                     }
-
-                    AZ::Name drawSrgModelLodMeshIndex = AZ::Name(DrawSrgModelLodMeshIndex);
-                    index = drawSrg->FindShaderInputConstantIndex(drawSrgModelLodMeshIndex);
-
-                    if (index.IsValid())
                     {
-                        drawSrg->SetConstant(index, aznumeric_cast<uint32_t>(m_modelLodMeshIndex));
+                        // Pass UvStreamTangentBitmask to the shader if the draw SRG has it.
+                        RHI::ShaderInputNameIndex nameIndex(AZ_NAME_LITERAL("m_materialTypeId"));
+                        drawSrg->SetConstant(nameIndex, m_material->GetMaterialTypeId());
+                    }
+                    {
+                        // Pass UvStreamTangentBitmask to the shader if the draw SRG has it.
+                        RHI::ShaderInputNameIndex nameIndex(AZ_NAME_LITERAL("m_materialInstanceId"));
+                        drawSrg->SetConstant(nameIndex, m_material->GetMaterialInstanceId());
+                    }
+                    {
+                        // To enable this shader constant in DrawSrg, a shader must:
+                        // #define USE_DRAWSRG_MESHLOD_MESHINDEX 1
+                        // By default it is NOT defined.
+                        // When defined, the value of @m_modelLodMeshIndex (aka subMesh index) is written
+                        // to the shader constant.
+                        RHI::ShaderInputNameIndex nameIndex(AZ_NAME_LITERAL("m_modelLodMeshIndex"));
+                        drawSrg->SetConstant(nameIndex, aznumeric_cast<uint32_t>(m_modelLodMeshIndex));
                     }
 
                     // TODO: Does it make sense to call Compile() in the case where both SetConstant() calls above fail?

@@ -28,6 +28,8 @@ ShaderResourceGroup DrawSrg : SRG_PerDraw
 {
     // This SRG is unique per draw packet
     uint m_uvStreamTangentBitmask;
+    int m_materialTypeId;
+    int m_materialInstanceId;
 
 #if USE_DRAWSRG_MESHLOD_MESHINDEX
     // See MeshDrawPacket.h
