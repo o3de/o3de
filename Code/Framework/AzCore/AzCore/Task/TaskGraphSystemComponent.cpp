@@ -15,7 +15,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Threading/ThreadUtils.h>
 
-#ifdef CARBONATED
+#if defined(CARBONATED)
 #include <AzCore/Memory/MemoryMarker.h>
 #endif
 
@@ -38,8 +38,9 @@ namespace AZ
 {
     void TaskGraphSystemComponent::Activate()
     {
+#if defined(CARBONATED)
         MEMORY_TAG(TaskGraphComponent);
-
+#endif
         AZ_Assert(m_taskExecutor == nullptr, "Error multiple activation of the TaskGraphSystemComponent");
 
         AZ::ApplicationTypeQuery appType;

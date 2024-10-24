@@ -22,7 +22,7 @@
 
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
-#ifdef CARBONATED
+#if defined(CARBONATED)
 #include <AzCore/Memory/MemoryMarker.h>
 #endif
 
@@ -123,8 +123,9 @@ namespace EMotionFX
             Mesh* targetMesh, AZ::u32 vertexAttributeLayerTypeId, bool keepOriginals,
             const TargetType& defaultPaddingValue)
         {
+#if defined(CARBONATED)
             MEMORY_TAG(EMotionFX);
-
+#endif
             VertexAttributeLayerAbstractData* targetVertexAttributeLayer = VertexAttributeLayerAbstractData::Create(modelVertexCount, vertexAttributeLayerTypeId, sizeof(TargetType), keepOriginals);
             TargetType* targetBuffer = static_cast<TargetType*>(targetVertexAttributeLayer->GetData());
 
@@ -175,8 +176,9 @@ namespace EMotionFX
 
     Mesh* Mesh::CreateFromModelLod(const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& sourceModelLod, const AZStd::unordered_map<AZ::u16, AZ::u16>& skinToSkeletonIndexMap)
     {
+#if defined(CARBONATED)
         MEMORY_TAG(EMotionFX);
-
+#endif
         AZ::u32 modelVertexCount = 0;
         AZ::u32 modelIndexCount = 0;
 
@@ -383,8 +385,9 @@ namespace EMotionFX
     // allocate mesh data
     void Mesh::Allocate(uint32 numVerts, uint32 numIndices, uint32 numPolygons, uint32 numOrgVerts)
     {
+#if defined(CARBONATED)
         MEMORY_TAG(EMotionFX);
-
+#endif
         // get rid of existing data
         ReleaseData();
 
@@ -406,8 +409,9 @@ namespace EMotionFX
     // copy all original data over the output data
     void Mesh::ResetToOriginalData()
     {
+#if defined(CARBONATED)
         MEMORY_TAG(EMotionFX);
-
+#endif
         for (VertexAttributeLayer* vertexAttribute : m_vertexAttributes)
         {
             vertexAttribute->ResetToOriginalData();
@@ -501,8 +505,9 @@ namespace EMotionFX
     // calculate the S and T vectors
     bool Mesh::CalcTangents(uint32 uvSet, bool storeBitangents)
     {
+#if defined(CARBONATED)
         MEMORY_TAG(EMotionFX);
-
+#endif
         if (!CheckIfIsTriangleMesh())
         {
             AZ_Warning("EMotionFX", false, "Cannot calculate tangents for mesh that isn't a pure triangle mesh.");
@@ -848,8 +853,9 @@ namespace EMotionFX
     // insert a given submesh
     void Mesh::InsertSubMesh(size_t insertIndex, SubMesh* subMesh)
     {
+#if defined(CARBONATED)
         MEMORY_TAG(EMotionFX);
-
+#endif
         m_subMeshes.emplace(AZStd::next(begin(m_subMeshes), insertIndex), subMesh);
     }
 
@@ -959,8 +965,9 @@ namespace EMotionFX
 
     void Mesh::AddVertexAttributeLayer(VertexAttributeLayer* layer)
     {
+#if defined(CARBONATED)
         MEMORY_TAG(EMotionFX);
-
+#endif
         MCORE_ASSERT(AZStd::find(begin(m_vertexAttributes), end(m_vertexAttributes), layer) == end(m_vertexAttributes));
         m_vertexAttributes.emplace_back(layer);
     }
@@ -1037,8 +1044,9 @@ namespace EMotionFX
     // clone the mesh
     Mesh* Mesh::Clone()
     {
+#if defined(CARBONATED)
         MEMORY_TAG(EMotionFX);
-
+#endif
         // allocate a mesh of the same dimensions
         Mesh* clone = aznew Mesh(m_numVertices, m_numIndices, m_numPolygons, m_numOrgVerts, m_isCollisionMesh);
 
@@ -1579,8 +1587,9 @@ namespace EMotionFX
     // convert the indices from 32-bit to 16-bit values
     bool Mesh::ConvertTo16BitIndices()
     {
+#if defined(CARBONATED)
         MEMORY_TAG(EMotionFX);
-
+#endif
         // set to success as nothing bad happened yet
         bool result = true;
 
@@ -1620,8 +1629,9 @@ namespace EMotionFX
     // extract the original vertex positions
     void Mesh::ExtractOriginalVertexPositions(AZStd::vector<AZ::Vector3>& outPoints) const
     {
+#if defined(CARBONATED)
         MEMORY_TAG(EMotionFX);
-
+#endif
         // allocate space
         outPoints.resize(m_numOrgVerts);
 

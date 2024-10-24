@@ -24,7 +24,7 @@
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <AtomCore/Utils/ScopedValue.h>
 
-#ifdef CARBONATED
+#if defined(CARBONATED)
 #include <AzCore/Memory/MemoryMarker.h>
 #endif
 
@@ -59,8 +59,9 @@ namespace AZ
 
         RHI::ResultCode Material::Init(MaterialAsset& materialAsset)
         {
+#if defined(CARBONATED)
             MEMORY_TAG(MaterialInit);
-
+#endif
             AZ_PROFILE_FUNCTION(RPI);
 
             ScopedValue isInitializing(&m_isInitializing, true, false);

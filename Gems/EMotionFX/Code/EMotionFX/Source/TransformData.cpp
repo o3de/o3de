@@ -16,7 +16,7 @@
 #include "Node.h"
 #include <EMotionFX/Source/Allocators.h>
 
-#ifdef CARBONATED
+#if defined(CARBONATED)
 #include <AzCore/Memory/MemoryMarker.h>
 #endif
 
@@ -69,8 +69,9 @@ namespace EMotionFX
     // initialize from a given actor
     void TransformData::InitForActorInstance(ActorInstance* actorInstance)
     {
+#if defined(CARBONATED)
         MEMORY_TAG(EMotionFX);
-
+#endif
         Release();
 
         // link to the given actor instance
@@ -108,8 +109,9 @@ namespace EMotionFX
     // make the bind pose transforms unique
     void TransformData::MakeBindPoseTransformsUnique()
     {
+#if defined(CARBONATED)
         MEMORY_TAG(EMotionFX);
-
+#endif
         if (m_hasUniqueBindPose)
         {
             return;
@@ -157,8 +159,9 @@ namespace EMotionFX
     // set the number of morph weights
     void TransformData::SetNumMorphWeights(size_t numMorphWeights)
     {
+#if defined(CARBONATED)
         MEMORY_TAG(EMotionFX);
-
+#endif
         m_pose.ResizeNumMorphs(numMorphWeights);
     }
 }   // namespace EMotionFX

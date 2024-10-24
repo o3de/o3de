@@ -52,7 +52,7 @@
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/string/osstring.h>
 
-#ifdef CARBONATED
+#if defined(CARBONATED)
 #include <AzCore/Memory/MemoryMarker.h>
 #endif
 
@@ -394,8 +394,9 @@ namespace AZ
         //=========================================================================
         bool ObjectStreamImpl::LoadClass(IO::GenericStream& stream, SerializeContext::DataElementNode& convertedClassElement, const SerializeContext::ClassData* parentClassInfo, void* parentClassPtr, int flags)
         {
+#if defined(CARBONATED)
             MEMORY_TAG(ClassData);
-
+#endif
             bool result = true;
 
             SerializeContext::DataElement element;

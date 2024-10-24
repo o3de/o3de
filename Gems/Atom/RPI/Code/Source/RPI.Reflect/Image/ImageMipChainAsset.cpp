@@ -10,7 +10,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 
-#ifdef CARBONATED
+#if defined(CARBONATED)
 #include <AzCore/Memory/MemoryMarker.h>
 #endif
 
@@ -92,8 +92,9 @@ namespace AZ
 
         void ImageMipChainAsset::CopyFrom(const ImageMipChainAsset& source)
         {
+#if defined(CARBONATED)
             MEMORY_TAG(ImageMip);
-
+#endif
             m_mipLevels = source.m_mipLevels;
             m_arraySize = source.m_arraySize;
             m_mipToSubImageOffset = source.m_mipToSubImageOffset;
@@ -106,8 +107,9 @@ namespace AZ
 
         void ImageMipChainAsset::Init()
         {
+#if defined(CARBONATED)
             MEMORY_TAG(ImageMip);
-
+#endif
             const size_t subImageCount = m_mipLevels * m_arraySize;
 
             AZ_Assert(m_status != AssetStatus::Ready, "ImageMipChainAsset has already been initialized!");
@@ -142,8 +144,9 @@ namespace AZ
             AZStd::shared_ptr<Data::AssetDataStream> stream,
             const Data::AssetFilterCB& assetLoadFilterCB)
         {
+#if defined(CARBONATED)
             MEMORY_TAG(ImageMip);
-
+#endif
             Data::AssetHandler::LoadResult result = Base::LoadAssetData(asset, stream, assetLoadFilterCB);
             if (result == Data::AssetHandler::LoadResult::LoadComplete)
             {

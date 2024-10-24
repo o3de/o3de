@@ -34,7 +34,7 @@
 #include <Vulkan_Traits_Platform.h>
 #include <Atom/RHI.Reflect/VkAllocator.h>
 
-#ifdef CARBONATED
+#if defined(CARBONATED)
 #include <AzCore/Memory/MemoryMarker.h>
 #endif
 
@@ -51,8 +51,9 @@ namespace AZ
 
         RHI::Ptr<Device> Device::Create()
         {
+#if defined(CARBONATED)
             MEMORY_TAG(RHIDevice);
-
+#endif
             return aznew Device();
         }
 
@@ -81,8 +82,9 @@ namespace AZ
 
         RHI::ResultCode Device::InitInternal(RHI::PhysicalDevice& physicalDeviceBase)
         {
+#if defined(CARBONATED)
             MEMORY_TAG(RHIDevice);
-
+#endif
             m_loaderContext = LoaderContext::Create();
             if (!m_loaderContext)
             {
@@ -393,16 +395,18 @@ namespace AZ
 
         RHI::ResultCode Device::InitInternalBindlessSrg(const AZ::RHI::BindlessSrgDescriptor& bindlessSrgDesc)
         {
+#if defined(CARBONATED)
             MEMORY_TAG(RHIDevice);
-
+#endif
             RHI::ResultCode result = m_bindlessDescriptorPool.Init(*this, bindlessSrgDesc);
             return result;
         }
 
         RHI::ResultCode Device::InitializeLimits()
         {
+#if defined(CARBONATED)
             MEMORY_TAG(RHIDevice);
-
+#endif
             CommandQueueContext::Descriptor commandQueueContextDescriptor;
             commandQueueContextDescriptor.m_frameCountMax = RHI::Limits::Device::FrameCountMax;
             RHI::ResultCode result = m_commandQueueContext.Init(*this, commandQueueContextDescriptor);
@@ -634,50 +638,57 @@ namespace AZ
 
         RHI::Ptr<RenderPass> Device::AcquireRenderPass(const RenderPass::Descriptor& descriptor)
         {
+#if defined(CARBONATED)
             MEMORY_TAG(RHIDevice);
-
+#endif
             return AcquireObjectFromCache(m_renderPassCache, descriptor.GetHash(), descriptor);
         }
 
         RHI::Ptr<Framebuffer> Device::AcquireFramebuffer(const Framebuffer::Descriptor& descriptor)
         {
+#if defined(CARBONATED)
             MEMORY_TAG(RHIDevice);
-
+#endif
             return AcquireObjectFromCache(m_framebufferCache, descriptor.GetHash(), descriptor);
         }
 
         RHI::Ptr<DescriptorSetLayout> Device::AcquireDescriptorSetLayout(const DescriptorSetLayout::Descriptor& descriptor)
         {
+#if defined(CARBONATED)
             MEMORY_TAG(RHIDevice);
-
+#endif
             return AcquireObjectFromCache(m_descriptorSetLayoutCache, static_cast<uint64_t>(descriptor.GetHash()), descriptor);
         }
 
         RHI::Ptr<Sampler> Device::AcquireSampler(const Sampler::Descriptor& descriptor)
         {
+#if defined(CARBONATED)
             MEMORY_TAG(RHIDevice);
-
+#endif
             return AcquireObjectFromCache(m_samplerCache, descriptor.GetHash(), descriptor);
         }
 
         RHI::Ptr<PipelineLayout> Device::AcquirePipelineLayout(const PipelineLayout::Descriptor& descriptor)
         {
+#if defined(CARBONATED)
             MEMORY_TAG(RHIDevice);
-
+#endif
             return AcquireObjectFromCache(m_pipelineLayoutCache, descriptor.GetHash(), descriptor);
         }
 
         RHI::Ptr<CommandList> Device::AcquireCommandList(uint32_t familyQueueIndex, VkCommandBufferLevel level /*=VK_COMMAND_BUFFER_LEVEL_PRIMARY*/)
         {
+#if defined(CARBONATED)
             MEMORY_TAG(RHIDevice);
-
+#endif
             return m_commandListAllocator.Allocate(familyQueueIndex, level);
         }
 
         RHI::Ptr<CommandList> Device::AcquireCommandList(RHI::HardwareQueueClass queueClass, VkCommandBufferLevel level /*=VK_COMMAND_BUFFER_LEVEL_PRIMARY*/)
         {
+#if defined(CARBONATED)
             MEMORY_TAG(RHIDevice);
-
+#endif
             return m_commandListAllocator.Allocate(m_commandQueueContext.GetQueueFamilyIndex(queueClass), level);
         }
 

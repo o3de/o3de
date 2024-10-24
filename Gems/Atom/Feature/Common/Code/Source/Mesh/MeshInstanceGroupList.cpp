@@ -11,7 +11,7 @@
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h> 
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
-#ifdef CARBONATED
+#if defined(CARBONATED)
 #include <AzCore/Memory/MemoryMarker.h>
 #endif
 
@@ -19,8 +19,9 @@ namespace AZ::Render
 {
     bool MeshInstanceGroupData::UpdateDrawPacket(const RPI::Scene& parentScene, bool forceUpdate)
     {
+#if defined(CARBONATED)
         MEMORY_TAG(Mesh);
-
+#endif
         if (m_drawPacket.Update(parentScene, forceUpdate))
         {
             // Clear any cached draw packets, since they need to be re-created
@@ -36,8 +37,9 @@ namespace AZ::Render
 
     bool MeshInstanceGroupData::UpdateShaderOptionFlags()
     {
+#if defined(CARBONATED)
         MEMORY_TAG(Mesh);
-
+#endif
         // Shader options are either set or being unspecified (which means use the global value).
         // We only set a shader option if ALL instances have the same value. Otherwise, we leave it unspecified.
         uint32_t newShaderOptionFlagMask = ~0u;      // Defaults to all shaders options being specified. 
@@ -71,8 +73,9 @@ namespace AZ::Render
 
     void MeshInstanceGroupData::AddAssociatedInstance(ModelDataInstance* instance)
     {
+#if defined(CARBONATED)
         MEMORY_TAG(Mesh);
-
+#endif
         AZStd::scoped_lock<AZStd::mutex> scopedLock(m_eventLock);
         m_associatedInstances.insert(instance);
 
@@ -86,8 +89,9 @@ namespace AZ::Render
 
     MeshInstanceGroupList::InsertResult MeshInstanceGroupList::Add(const MeshInstanceGroupKey& key)
     {
+#if defined(CARBONATED)
         MEMORY_TAG(Mesh);
-
+#endif
         // It is not safe to have multiple threads Add and/or Remove at the same time
         m_instanceDataConcurrencyChecker.soft_lock();
 
