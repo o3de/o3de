@@ -61,8 +61,19 @@ namespace AZ
             const bool IsSkinnedMesh() { return m_descriptor.m_isSkinnedMesh; }
             const AZ::Uuid& GetRayTracingUuid() const { return m_rayTracingUuid; }
 
-            //! called when a DrawPacket used by this ModelDataInstance was updated. 
-            void HandleDrawPacketUpdate();
+            //! Internally called when a DrawPacket used by this ModelDataInstance was updated. 
+            void HandleDrawPacketUpdate(RPI::MeshDrawPacket& meshDrawPacket);
+
+            //! Event that let's us know whenever one of the MeshDrawPackets has been updated.
+            //! This event can occur on multiple threads.
+            //! Provides the ModelDataInstance parent object that owns the MeshDrawPacket.
+            using MeshDrawPacketUpdatedEvent = Event<const ModelDataInstance&, const AZ::RPI::MeshDrawPacket&>;
+            //! Connects @handler to the MeshDrawPacketUpdatedEvent.
+            //! One of the most common reasons a MeshDrawPacket gets updated is
+            //! when a RenderPipeline is instantiated at runtime and it happens to contain
+            //! a RasterPass with a DrawListTag that matches one of the Shaders of one of the Materials in
+            //! a Mesh.
+            void ConnectMeshDrawPacketUpdatedHandler(MeshDrawPacketUpdatedEvent::Handler& handler);
 
         private:
             class MeshLoader
@@ -150,6 +161,9 @@ namespace AZ
 
             //! Event that triggers whenever the ObjectSrg is created.
             MeshHandleDescriptor::ObjectSrgCreatedEvent m_objectSrgCreatedEvent;
+
+            //! Event that triggers whenever a MeshDrawPacket gets updated.
+            MeshDrawPacketUpdatedEvent m_meshDrawPacketUpdatedEvent;
 
             // MeshLoader is a shared pointer because it can queue a reference to itself on the SystemTickBus. The reference
             // needs to stay alive until the queued function is executed.
