@@ -23,7 +23,7 @@ namespace AZ
 
         //! Describes an attachment to be used by a Pass.
         struct ATOM_RPI_PUBLIC_API PassAttachment final
-            : AZStd::intrusive_refcount<AZStd::atomic_uint, AZStd::intrusive_default_delete>
+            : AZStd::intrusive_base
         {
             AZ_CLASS_ALLOCATOR(PassAttachment, SystemAllocator);
 

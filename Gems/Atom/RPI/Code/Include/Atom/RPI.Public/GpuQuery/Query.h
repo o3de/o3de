@@ -43,7 +43,7 @@ namespace AZ
         //! The RPI Query will instantiate multiple SubQueries, one for each buffered frame. The SubQuery that is used for recording, will cache the
         //! FrameIndex in which it was used for recording.
         class ATOM_RPI_PUBLIC_API Query :
-            public AZStd::intrusive_refcount<AZStd::atomic_uint>
+            public AZStd::intrusive_base
         {
             friend class QueryPool;
 
