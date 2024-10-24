@@ -9,10 +9,12 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 
-#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
-#include <Atom/RPI.Reflect/Material/MaterialPropertyCollection.h>
-#include <Atom/RPI.Reflect/Material/MaterialPipelineState.h>
+#include <Atom/RPI.Public/Material/MaterialShaderParameter.h>
+#include <Atom/RPI.Public/Material/MaterialSystem.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
+#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <Atom/RPI.Reflect/Material/MaterialPipelineState.h>
+#include <Atom/RPI.Reflect/Material/MaterialPropertyCollection.h>
 
 #include <AtomCore/Instance/InstanceData.h>
 
@@ -31,15 +33,15 @@ namespace AZ
         class MaterialPropertiesLayout;
 
         //! Provides runtime material functionality based on a MaterialAsset. The material operates on a
-        //! set of properties, which are configured primarily at build-time through the MaterialAsset. 
+        //! set of properties, which are configured primarily at build-time through the MaterialAsset.
         //! These properties are used to configure shader system inputs at runtime.
-        //! 
+        //!
         //! Material property values can be accessed at runtime, using the SetPropertyValue() and GetPropertyValue().
         //! After applying all property changes, Compile() must be called to apply those changes to the shader system.
-        //! 
+        //!
         //! If RPI validation is enabled, the class will perform additional error checking. If a setter method fails
-        //! an error is emitted and the call returns false without performing the requested operation. Likewise, if 
-        //! a getter method fails, an error is emitted and an empty value is returned. If validation is disabled, the 
+        //! an error is emitted and the call returns false without performing the requested operation. Likewise, if
+        //! a getter method fails, an error is emitted and an empty value is returned. If validation is disabled, the
         //! operation is always performed.
         class Material
             : public Data::InstanceData
@@ -132,6 +134,9 @@ namespace AZ
             void SetPsoHandlingOverride(MaterialPropertyPsoHandling psoHandlingOverride);
 
             Data::Instance<RPI::ShaderResourceGroup> GetShaderResourceGroup();
+            Data::Instance<MaterialShaderParameter> GetMaterialShaderParameter();
+            int32_t GetMaterialTypeId();
+            int32_t GetMaterialInstanceId();
 
             const RHI::ShaderResourceGroup* GetRHIShaderResourceGroup() const;
 
@@ -147,6 +152,9 @@ namespace AZ
             //! Connect a handler to listen to the event that a shader variant asset of the shaders used by this material is ready
             void ConnectEvent(OnMaterialShaderVariantReadyEvent::Handler& handler);
 
+            int GetMaterialTypeId() const;
+            int GetMaterialInstanceId() const;
+
         private:
             Material() = default;
 
@@ -161,21 +169,18 @@ namespace AZ
             void OnShaderVariantReinitialized(const ShaderVariant& shaderVariant) override;
             ///////////////////////////////////////////////////////////////////
 
+            //! Helper function for setting the value of a shader parameter, allowing for specialized handling of specific types,
+            //! converting to the native type before passing to the MaterialShaderParameters.
+            bool SetShaderParameterValue(const MaterialShaderParameterLayout::Index& index, const MaterialPropertyValue& value);
+
             //! Helper function to reinitialize the material while preserving property values.
             void ReInitKeepPropertyValues();
-
-            //! Helper function for setting the value of a shader constant input, allowing for specialized handling of specific types,
-            //! converting to the native type before passing to the ShaderResourceGroup.
-            bool SetShaderConstant(RHI::ShaderInputConstantIndex shaderInputIndex, const MaterialPropertyValue& value);
 
             //! Helper function for setting the value of a shader option, allowing for specialized handling of specific types.
             //! This template is explicitly specialized in the cpp file.
             bool SetShaderOption(ShaderOptionGroup& options, ShaderOptionIndex shaderOptionIndex, const MaterialPropertyValue & value);
 
-            bool TryApplyPropertyConnectionToShaderInput(
-                const MaterialPropertyValue & value,
-                const MaterialPropertyOutputId & connection,
-                const MaterialPropertyDescriptor * propertyDescriptor);
+            bool TryApplyPropertyConnectionToShaderInput(const MaterialPropertyValue& value, const MaterialPropertyOutputId& connection);
             bool TryApplyPropertyConnectionToShaderOption(
                 const MaterialPropertyValue & value,
                 const MaterialPropertyOutputId & connection);
@@ -200,8 +205,8 @@ namespace AZ
             //! The corresponding material asset that provides material type data and initial property values.
             Data::Asset<MaterialAsset> m_materialAsset;
 
-            //! Holds all runtime data for the shader resource group, and provides functions to easily manipulate that data
-            Data::Instance<RPI::ShaderResourceGroup> m_shaderResourceGroup;
+            //! Holds all runtime data for the Shader Parameters and the shader resource group
+            MaterialInstanceData m_instanceData;
 
             //! The RHI shader resource group owned by m_shaderResourceGroup. Held locally to avoid an indirection.
             const RHI::ShaderResourceGroup* m_rhiShaderResourceGroup = nullptr;

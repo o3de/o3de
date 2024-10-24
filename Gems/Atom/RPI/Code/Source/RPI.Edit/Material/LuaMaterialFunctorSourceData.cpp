@@ -22,7 +22,7 @@ namespace AZ
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
-                serializeContext->Class<LuaMaterialFunctorSourceData>()
+                serializeContext->Class<LuaMaterialFunctorSourceData, RPI::MaterialFunctorSourceData>()
                     ->Version(3)
                     ->Field("file", &LuaMaterialFunctorSourceData::m_luaSourceFile)
                     ->Field("propertyNamePrefix", &LuaMaterialFunctorSourceData::m_propertyNamePrefix)
@@ -218,6 +218,8 @@ namespace AZ
                 // or may not exist, and it's up to the script to call HasMaterialProperty() before accessing a property
                 // if necessary.
             }
+
+            SetFunctorShaderParameter(functor, m_shaderParameters);
 
             return Success(RPI::Ptr<MaterialFunctor>(functor));
         }

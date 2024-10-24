@@ -82,27 +82,11 @@ namespace AZ
             AddMaterialPropertyDependency(functor, functor->m_scatterDistanceColor);
             AddMaterialPropertyDependency(functor, functor->m_scatterDistanceIntensity);
 
-            functor->m_scatterDistance = context.FindShaderInputConstantIndex(Name{ m_scatterDistance });
-            functor->m_transmissionParams = context.FindShaderInputConstantIndex(Name{ m_transmissionParams });
-            functor->m_transmissionTintThickness = context.FindShaderInputConstantIndex(Name{ m_transmissionTintThickness });
+            functor->m_scatterDistance = Name{ m_scatterDistance };
+            functor->m_transmissionParams = Name{ m_transmissionParams };
+            functor->m_transmissionTintThickness = Name{ m_transmissionTintThickness };
 
-            if (functor->m_scatterDistance.IsNull())
-            {
-                AZ_Error("ShaderCollectionFunctorSourceData", false, "Could not find shader input '%s'", m_scatterDistance.c_str());
-                return Failure();
-            }
-
-            if (functor->m_transmissionParams.IsNull())
-            {
-                AZ_Error("ShaderCollectionFunctorSourceData", false, "Could not find shader input '%s'", m_transmissionParams.c_str());
-                return Failure();
-            }
-
-            if (functor->m_transmissionTintThickness.IsNull())
-            {
-                AZ_Error("ShaderCollectionFunctorSourceData", false, "Could not find shader input '%s'", m_transmissionTintThickness.c_str());
-                return Failure();
-            }
+            SetFunctorShaderParameter(functor, m_shaderParameters);
 
             return Success(RPI::Ptr<MaterialFunctor>(functor));
         }

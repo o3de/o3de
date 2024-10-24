@@ -61,9 +61,9 @@ namespace AZ
             //!                             For main material properties, use MaterialPipelineNone.
             void BeginMaterialProperty(const Name& materialPropertyName, MaterialPropertyDataType dataType, const AZ::Name& materialPipelineName = MaterialPipelineNone);
 
-            //! Adds an output mapping from the current material property to a ShaderResourceGroup input.
-            void ConnectMaterialPropertyToShaderInput(const Name& shaderInputName);
-            
+            //! Adds an output mapping from the current material property to a ShaderPararameter field.
+            void ConnectMaterialPropertyToShaderParameter(const Name& shaderInputName);
+
             //! Adds output mappings from the current material property to a shader option in multiple shaders.
             //! Will add one mapping for every ShaderAsset that has a matching shader option.
             void ConnectMaterialPropertyToShaderOptions(const Name& shaderOptionName);
@@ -105,9 +105,12 @@ namespace AZ
             //! Adds UV name for a shader input.
             void AddUvName(const RHI::ShaderSemantic& shaderInput, const Name& uvName);
 
+            void SetMaterialShaderParameterLayout(MaterialShaderParameterLayout parameters);
+
             //! This provides access to the MaterialPropertiesLayout while the MaterialTypeAsset is still being built.
             //! This is needed by MaterialTypeSourceData to initialize functor objects.
-            //! @param materialPipelineName For internal material properties, this indicates which MaterialPipelinePayload's property layout to query.
+            //! @param materialPipelineName For internal material properties, this indicates which MaterialPipelinePayload's property
+            //! layout to query.
             //!                             For main material properties, use MaterialPipelineNone.
             //! @return A valid pointer when called between Begin() and End(). Otherwise, returns nullptr.
             const MaterialPropertiesLayout* GetMaterialPropertiesLayout(const AZ::Name& materialPipelineName = MaterialPipelineNone) const;
@@ -118,6 +121,9 @@ namespace AZ
             //! is provided for convenience.
             //! @return A valid pointer if a ShaderAsset with a material ShaderResourceGroupLayout was added. Otherwise, returns nullptr.
             const RHI::ShaderResourceGroupLayout* GetMaterialShaderResourceGroupLayout() const;
+
+            const MaterialShaderParameterLayout CreateMaterialShaderParameterLayout();
+            void UpdateShaderParameterConnections();
 
             bool End(Data::Asset<MaterialTypeAsset>& result);
 

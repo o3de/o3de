@@ -46,8 +46,7 @@ namespace UnitTest
                 serializeContext->Class<Splat3Functor, AZ::RPI::MaterialFunctor>()
                     ->Version(1)
                     ->Field("m_floatIndex", &Splat3Functor::m_floatIndex)
-                    ->Field("m_vector3Index", &Splat3Functor::m_vector3Index)
-                    ;
+                    ->Field("m_vector3Name", &Splat3Functor::m_vector3Name);
             }
 
             using AZ::RPI::MaterialFunctor::Process;
@@ -55,12 +54,12 @@ namespace UnitTest
             {
                 // This code isn't actually called in the unit test, but we include it here just to demonstrate what a real functor might look like.
                 float f = context.GetMaterialPropertyValue(m_floatIndex).GetValue<float>();
-                float f3[3] = { f,f,f };
-                context.GetShaderResourceGroup()->SetConstantRaw(m_vector3Index, f3, sizeof(float) * 3);
+                Vector3 f3{ f, f, f };
+                context.GetMaterialShaderParameter()->SetParameter(m_vector3Name, f3);
             }
 
             AZ::RPI::MaterialPropertyIndex m_floatIndex;
-            RHI::ShaderInputConstantIndex m_vector3Index;
+            AZ::Name m_vector3Name;
         };
 
         /// Sample used for testing a MaterialFunctor that updates the shader collection
@@ -92,6 +91,7 @@ namespace UnitTest
         };
 
         RHI::Ptr<RHI::ShaderResourceGroupLayout> m_testMaterialSrgLayout;
+        MaterialShaderParameterLayout m_testMaterialShaderParamterLayout;
         Ptr<ShaderOptionGroupLayout> m_testShaderOptionsLayout;
         Data::Asset<ShaderAsset> m_testShaderAsset;
         Data::Asset<ImageAsset> m_testImageAsset;
@@ -138,6 +138,9 @@ namespace UnitTest
 
             m_testMaterialSrgLayout = CreateCommonTestMaterialSrgLayout();
 
+            m_testMaterialShaderParamterLayout = CreateCommonTestMaterialShaderParameterLayout();
+            m_testMaterialShaderParamterLayout.ConnectParametersToSrg(m_testMaterialSrgLayout.get());
+
             AZStd::vector<RPI::ShaderOptionValuePair> boolOptionValues = CreateBoolShaderOptionValues();
             AZStd::vector<RPI::ShaderOptionValuePair> enumOptionValues = CreateEnumShaderOptionValues({"Low", "Med", "High"});
             AZStd::vector<RPI::ShaderOptionValuePair> intOptionRange = CreateIntRangeShaderOptionValues(0, 8);
@@ -167,6 +170,7 @@ namespace UnitTest
         void TearDown() override
         {
             m_testMaterialSrgLayout = nullptr;
+            m_testMaterialShaderParamterLayout = {};
             m_testShaderAsset.Reset();
             m_testShaderOptionsLayout = nullptr;
 
@@ -201,6 +205,10 @@ namespace UnitTest
 
             materialTypeCreator.AddShader(m_testShaderAsset);
 
+            // Material Shader Parameter layout
+
+            materialTypeCreator.SetMaterialShaderParameterLayout(m_testMaterialShaderParamterLayout);
+
             // Functor-driven shader
 
             materialTypeCreator.BeginMaterialProperty(Name{ "EnableSpecialPass" }, MaterialPropertyDataType::Bool);
@@ -223,8 +231,11 @@ namespace UnitTest
 
             Ptr<Splat3Functor> shaderInputFunctor = aznew Splat3Functor;
             shaderInputFunctor->m_floatIndex = materialTypeCreator.GetMaterialPropertiesLayout()->FindPropertyIndex(Name{ "NonAliasFloat" });
-            shaderInputFunctor->m_vector3Index = m_testMaterialSrgLayout->FindShaderInputConstantIndex(Name{ "m_float3" });
+            shaderInputFunctor->m_vector3Name = Name{ "m_float3" };
             materialTypeCreator.AddMaterialFunctor(shaderInputFunctor);
+
+            // update the connections between the Properties and the Shader Parameters
+            materialTypeCreator.UpdateShaderParameterConnections();
 
             EXPECT_TRUE(materialTypeCreator.End(materialTypeAsset));
             EXPECT_EQ(assetId, materialTypeAsset->GetId());
@@ -253,17 +264,48 @@ namespace UnitTest
             const MaterialPropertyDescriptor* floatDescriptor = materialTypeAsset->GetMaterialPropertiesLayout()->GetPropertyDescriptor(floatIndex);
             const MaterialPropertyDescriptor* imageDescriptor = materialTypeAsset->GetMaterialPropertiesLayout()->GetPropertyDescriptor(imageIndex);
 
-            EXPECT_EQ(1, colorDescriptor->GetOutputConnections().size());
             EXPECT_EQ(1, floatDescriptor->GetOutputConnections().size());
             EXPECT_EQ(1, imageDescriptor->GetOutputConnections().size());
 
-            EXPECT_EQ(1, colorDescriptor->GetOutputConnections()[0].m_itemIndex.GetIndex());
-            EXPECT_EQ(2, floatDescriptor->GetOutputConnections()[0].m_itemIndex.GetIndex());
-            EXPECT_EQ(1, imageDescriptor->GetOutputConnections()[0].m_itemIndex.GetIndex());
+            auto checkShaderParameterIndices = [&](const AZStd::string& name,
+                                                   const MaterialPropertyDescriptor* propertyDesc,
+                                                   const int expectedIndex,
+                                                   const int expectedSrgIndex)
+            {
+                // Check if the descriptor has exactly one output connection with the ShaderInput type
+                EXPECT_EQ(1, propertyDesc->GetOutputConnections().size());
+                EXPECT_EQ(MaterialPropertyOutputType::ShaderInput, propertyDesc->GetOutputConnections()[0].m_type);
 
-            EXPECT_EQ(MaterialPropertyOutputType::ShaderInput, colorDescriptor->GetOutputConnections()[0].m_type);
-            EXPECT_EQ(MaterialPropertyOutputType::ShaderInput, floatDescriptor->GetOutputConnections()[0].m_type);
-            EXPECT_EQ(MaterialPropertyOutputType::ShaderInput, imageDescriptor->GetOutputConnections()[0].m_type);
+                auto itemIndex = materialTypeAsset->GetMaterialShaderParameterLayout().GetParameterIndex(name);
+
+                // check if the index in the ShaderParameters has the expected value
+                EXPECT_EQ(expectedIndex, itemIndex.GetIndex());
+
+                // check if the ShaderParameter index is registered in the property output connection
+                EXPECT_EQ(itemIndex.GetIndex(), propertyDesc->GetOutputConnections()[0].m_itemIndex.GetIndex());
+
+                // check if the srg-connection of the ShaderParameter agrees with the srg-layout
+                auto* srgConstantIndex = AZStd::get_if<RHI::ShaderInputConstantIndex>(
+                    &materialTypeAsset->GetMaterialShaderParameterLayout().GetDescriptor(itemIndex)->m_srgInputIndex);
+                auto* srgImageIndex = AZStd::get_if<RHI::ShaderInputImageIndex>(
+                    &materialTypeAsset->GetMaterialShaderParameterLayout().GetDescriptor(itemIndex)->m_srgInputIndex);
+                EXPECT_TRUE((srgConstantIndex != nullptr || srgImageIndex != nullptr));
+
+                if (srgConstantIndex)
+                {
+                    EXPECT_EQ(expectedSrgIndex, srgConstantIndex->m_index);
+                    EXPECT_EQ(srgConstantIndex->m_index, m_testMaterialSrgLayout->FindShaderInputConstantIndex(AZ::Name{ name }).m_index);
+                }
+                else if (srgImageIndex)
+                {
+                    EXPECT_EQ(expectedSrgIndex, srgImageIndex->m_index);
+                    EXPECT_EQ(srgImageIndex->m_index, m_testMaterialSrgLayout->FindShaderInputImageIndex(AZ::Name{ name }).m_index);
+                }
+            };
+
+            checkShaderParameterIndices("m_color", colorDescriptor, 3 /* shader Parameter Index */, 1 /* srg constant index*/);
+            checkShaderParameterIndices("m_image", imageDescriptor, 9 /* shader Parameter Index */, 1 /* srg image index */);
+            checkShaderParameterIndices("m_float", floatDescriptor, 4 /* shader Parameter Index */, 2 /* srg constant index */);
 
             // Check non-aliased, functor-based properties
 
@@ -277,8 +319,6 @@ namespace UnitTest
 
             // Check the functors
 
-            const RHI::ShaderInputConstantIndex expectedVector3Index = materialTypeAsset->GetMaterialSrgLayout()->FindShaderInputConstantIndex(Name{ "m_float3" });
-
             EXPECT_EQ(2, materialTypeAsset->GetMaterialFunctors().size());
             const DummyShaderCollectionFunctor* shaderCollectionFunctor = azrtti_cast<DummyShaderCollectionFunctor*>(materialTypeAsset->GetMaterialFunctors()[0].get());
             EXPECT_TRUE(nullptr != shaderCollectionFunctor);
@@ -287,7 +327,6 @@ namespace UnitTest
             const Splat3Functor* shaderInputFunctor = azrtti_cast<Splat3Functor*>(materialTypeAsset->GetMaterialFunctors()[1].get());
             EXPECT_TRUE(nullptr != shaderInputFunctor);
             EXPECT_EQ(nonAliasFloatIndex, shaderInputFunctor->m_floatIndex);
-            EXPECT_EQ(expectedVector3Index, shaderInputFunctor->m_vector3Index);
         };
 
     }
@@ -918,7 +957,7 @@ namespace UnitTest
 
         ErrorMessageFinder errorMessageFinder("Material property 'materialPipelineBoolProperty': Connection type 'ShaderInput' is not supported by internal material pipeline properties.");
         errorMessageFinder.AddIgnoredErrorMessage("Cannot continue building", true);
-        materialTypeCreator.ConnectMaterialPropertyToShaderInput(Name{"m_bool"});
+        materialTypeCreator.ConnectMaterialPropertyToShaderParameter(Name{ "m_bool" });
         materialTypeCreator.EndMaterialProperty();
         errorMessageFinder.CheckExpectedErrorsFound();
 
@@ -2042,11 +2081,12 @@ namespace UnitTest
         MaterialTypeAssetCreator creator;
         creator.Begin(Uuid::CreateRandom());
         creator.AddShader(m_testShaderAsset);
-
+        creator.SetMaterialShaderParameterLayout(m_testMaterialShaderParamterLayout);
         creator.BeginMaterialProperty(Name{ "MyColor" }, MaterialPropertyDataType::Color);
-
+        creator.ConnectMaterialPropertyToShaderParameter(Name{ "doesNotExist" });
+        creator.EndMaterialProperty();
         AZ_TEST_START_ASSERTTEST;
-        creator.ConnectMaterialPropertyToShaderInput(Name{ "doesNotExist" });
+        creator.UpdateShaderParameterConnections();
         AZ_TEST_STOP_ASSERTTEST(1);
 
         EXPECT_EQ(1, creator.GetErrorCount());
@@ -2060,9 +2100,11 @@ namespace UnitTest
         creator.Begin(Uuid::CreateRandom());
 
         creator.BeginMaterialProperty(Name{ "MyColor" }, MaterialPropertyDataType::Color);
+        creator.ConnectMaterialPropertyToShaderParameter(Name{ "m_color" });
+        creator.EndMaterialProperty();
 
         AZ_TEST_START_ASSERTTEST;
-        creator.ConnectMaterialPropertyToShaderInput(Name{ "m_color" });
+        creator.UpdateShaderParameterConnections();
         AZ_TEST_STOP_ASSERTTEST(1);
 
         EXPECT_EQ(1, creator.GetErrorCount());
@@ -2075,9 +2117,11 @@ namespace UnitTest
         creator.AddShader(m_testShaderAsset);
 
         creator.BeginMaterialProperty(Name{ "MyImage" }, MaterialPropertyDataType::Image);
+        creator.ConnectMaterialPropertyToShaderParameter(Name{ "m_float" });
+        creator.EndMaterialProperty();
 
         AZ_TEST_START_ASSERTTEST;
-        creator.ConnectMaterialPropertyToShaderInput(Name{ "m_float" });
+        creator.UpdateShaderParameterConnections();
         AZ_TEST_STOP_ASSERTTEST(1);
 
         EXPECT_EQ(1, creator.GetErrorCount());
@@ -2090,9 +2134,11 @@ namespace UnitTest
         creator.AddShader(m_testShaderAsset);
 
         creator.BeginMaterialProperty(Name{ "MyFloat" }, MaterialPropertyDataType::Float);
+        creator.ConnectMaterialPropertyToShaderParameter(Name{ "m_image" });
+        creator.EndMaterialProperty();
 
         AZ_TEST_START_ASSERTTEST;
-        creator.ConnectMaterialPropertyToShaderInput(Name{ "m_image" });
+        creator.UpdateShaderParameterConnections();
         AZ_TEST_STOP_ASSERTTEST(1);
 
         EXPECT_EQ(1, creator.GetErrorCount());
@@ -2155,14 +2201,14 @@ namespace UnitTest
         EXPECT_EQ(1, creator.GetErrorCount());
     }
 
-    TEST_F(MaterialTypeAssetTests, Error_NoBeginMaterialProperty_BeforeConnectMaterialPropertyToShaderInput)
+    TEST_F(MaterialTypeAssetTests, Error_NoBeginMaterialProperty_BeforeConnectMaterialPropertyToShaderParameter)
     {
         MaterialTypeAssetCreator creator;
         creator.Begin(Uuid::CreateRandom());
         creator.AddShader(m_testShaderAsset);
 
         AZ_TEST_START_ASSERTTEST;
-        creator.ConnectMaterialPropertyToShaderInput(Name{"m_bool"});
+        creator.ConnectMaterialPropertyToShaderParameter(Name{ "m_bool" });
         AZ_TEST_STOP_ASSERTTEST(1);
 
         EXPECT_EQ(1, creator.GetErrorCount());

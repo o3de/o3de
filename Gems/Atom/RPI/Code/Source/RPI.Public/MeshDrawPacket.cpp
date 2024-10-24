@@ -394,15 +394,27 @@ namespace AZ
                 Data::Instance<ShaderResourceGroup> drawSrg = shader->CreateDrawSrgForShaderVariant(shaderOptions, false);
                 if (drawSrg)
                 {
-                    // Pass UvStreamTangentBitmask to the shader if the draw SRG has it.
-
-                    AZ::Name shaderUvStreamTangentBitmask = AZ::Name(UvStreamTangentBitmask::SrgName);
-                    auto index = drawSrg->FindShaderInputConstantIndex(shaderUvStreamTangentBitmask);
-
-                    if (index.IsValid())
                     {
-                        drawSrg->SetConstant(index, uvStreamTangentBitmask.GetFullTangentBitmask());
+                        // Pass UvStreamTangentBitmask to the shader if the draw SRG has it.
+                        RHI::ShaderInputNameIndex nameIndex(UvStreamTangentBitmask::SrgName);
+                        drawSrg->SetConstant(nameIndex, uvStreamTangentBitmask.GetFullTangentBitmask());
                     }
+                    {
+                        // Pass UvStreamTangentBitmask to the shader if the draw SRG has it.
+                        RHI::ShaderInputNameIndex nameIndex("m_materialTypeId");
+                        drawSrg->SetConstant(nameIndex, m_material->GetMaterialTypeId());
+                    }
+                    {
+                        // Pass UvStreamTangentBitmask to the shader if the draw SRG has it.
+                        RHI::ShaderInputNameIndex nameIndex("m_materialInstanceId");
+                        drawSrg->SetConstant(nameIndex, m_material->GetMaterialInstanceId());
+                    }
+                    AZ_Printf(
+                        "MeshDrawPacket",
+                        "Set DrawSrg.m_materialTypeId=%d, m_materialInstanceId=%d (material %s)",
+                        m_material->GetMaterialTypeId(),
+                        m_material->GetMaterialInstanceId(),
+                        m_material->GetAsset().GetHint().c_str());
 
                     drawSrg->Compile();
                 }

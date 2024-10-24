@@ -48,5 +48,6 @@ namespace UnitTest
     void AddCommonTestMaterialProperties(AZ::RPI::MaterialTypeAssetCreator& materialTypeCreator, AZStd::string propertyGroupPrefix = "");
 
     AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout> CreateCommonTestMaterialSrgLayout();
+    AZ::RPI::MaterialShaderParameterLayout CreateCommonTestMaterialShaderParameterLayout();
 
 } //namespace UnitTest

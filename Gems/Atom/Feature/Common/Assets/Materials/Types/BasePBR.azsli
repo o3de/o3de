@@ -7,13 +7,24 @@
  */
 
 #define ENABLE_VERTEX_COLOR 1
-    
+#define USE_BINDLESS_SRG 1
+     
 //TODO(MaterialPipeline): Inline the MaterialSrg files since they aren't reused.
 //TODO(MaterialPipeline): Try removing different parts of the SRG and see how hard/easy it is to customize the surface function.
-#include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_MaterialSrg.azsli>
+
 
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+
+#include MATERIAL_PARAMETERS_AZSLI_FILE_PATH
+
+#ifndef USE_BINDLESS_SRG
+#include <Atom/Features/Materials/MaterialSrg.azsli>
+#else
+#include <Atom/Features/Materials/SceneMaterialSrg.azsli>
+#endif
+
+#include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_MaterialInputs.azsli>
 
 #if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
 

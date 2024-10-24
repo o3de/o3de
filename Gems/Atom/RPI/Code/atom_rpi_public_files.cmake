@@ -56,6 +56,8 @@ set(FILES
     Include/Atom/RPI.Public/Image/StreamingImageController.h
     Include/Atom/RPI.Public/Image/StreamingImagePool.h
     Include/Atom/RPI.Public/Material/Material.h
+    Include/Atom/RPI.Public/Material/MaterialShaderParameterLayout.h
+    Include/Atom/RPI.Public/Material/MaterialShaderParameter.h
     Include/Atom/RPI.Public/Material/MaterialSystem.h
     Include/Atom/RPI.Public/Model/Model.h
     Include/Atom/RPI.Public/Model/ModelLod.h
@@ -144,6 +146,8 @@ set(FILES
     Source/RPI.Public/Image/StreamingImageController.cpp
     Source/RPI.Public/Image/StreamingImagePool.cpp
     Source/RPI.Public/Material/Material.cpp
+    Source/RPI.Public/Material/MaterialShaderParameterLayout.cpp
+    Source/RPI.Public/Material/MaterialShaderParameter.cpp
     Source/RPI.Public/Material/MaterialSystem.cpp
     Source/RPI.Public/Model/Model.cpp
     Source/RPI.Public/Model/ModelLod.cpp

@@ -18,6 +18,7 @@ namespace AZ
 
     namespace RPI
     {
+
         //! The wrapper class for derived material functors.
         //! It is used in deserialization so that derived material functors can be deserialized by name.
         class MaterialFunctorSourceDataHolder final
@@ -39,6 +40,7 @@ namespace AZ
             MaterialFunctorSourceData::FunctorResult CreateFunctor(const MaterialFunctorSourceData::EditorContext& editorContext) const;
 
             Ptr<MaterialFunctorSourceData> GetActualSourceData() const;
+
         private:
             Ptr<MaterialFunctorSourceData> m_actualSourceData = nullptr; // The derived material functor instance.
         };

@@ -19,8 +19,16 @@ namespace AZ
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
-                serializeContext->Class<MaterialFunctorSourceData>();
+                serializeContext->Class<MaterialFunctorSourceData>()->Version(1)->Field(
+                    "shaderParameters", &MaterialFunctorSourceData::m_shaderParameters);
+                ;
             }
+        }
+
+        void MaterialFunctorSourceData::SetFunctorShaderParameter(
+            Ptr<MaterialFunctor> functor, const AZStd::vector<MaterialFunctorShaderParameter>& shaderParameters)
+        {
+            functor->m_functorShaderParameters = shaderParameters;
         }
 
         void MaterialFunctorSourceData::AddMaterialPropertyDependency(Ptr<MaterialFunctor> functor, MaterialPropertyIndex index) const

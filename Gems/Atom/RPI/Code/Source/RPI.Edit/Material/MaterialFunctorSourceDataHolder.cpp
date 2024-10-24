@@ -19,8 +19,22 @@ namespace AZ
         {
         }
 
+        void MaterialFunctorShaderParameter::Reflect(AZ::ReflectContext* context)
+        {
+            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
+            {
+                serializeContext->Class<MaterialFunctorShaderParameter>()
+                    ->Version(0)
+                    ->Field("name", &MaterialFunctorShaderParameter::m_name)
+                    ->Field("type", &MaterialFunctorShaderParameter::m_typeName)
+                    ->Field("size", &MaterialFunctorShaderParameter::m_typeSize);
+            }
+        }
+
         void MaterialFunctorSourceDataHolder::Reflect(AZ::ReflectContext* context)
         {
+            MaterialFunctorShaderParameter::Reflect(context);
+
             if (JsonRegistrationContext* jsonContext = azrtti_cast<JsonRegistrationContext*>(context))
             {
                 jsonContext->Serializer<JsonMaterialFunctorSourceDataSerializer>()->HandlesType<MaterialFunctorSourceDataHolder>();

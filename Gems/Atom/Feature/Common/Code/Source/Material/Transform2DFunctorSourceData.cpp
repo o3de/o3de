@@ -19,7 +19,7 @@ namespace AZ
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
-                serializeContext->Class<Transform2DFunctorSourceData>()
+                serializeContext->Class<Transform2DFunctorSourceData, RPI::MaterialFunctorSourceData>()
                     ->Version(3)
                     ->Field("transformOrder", &Transform2DFunctorSourceData::m_transformOrder)
                     ->Field("centerProperty", &Transform2DFunctorSourceData::m_center)
@@ -30,8 +30,7 @@ namespace AZ
                     ->Field("translateYProperty", &Transform2DFunctorSourceData::m_translateY)
                     ->Field("rotateDegreesProperty", &Transform2DFunctorSourceData::m_rotateDegrees)
                     ->Field("float3x3ShaderInput", &Transform2DFunctorSourceData::m_transformMatrix)
-                    ->Field("float3x3InverseShaderInput", &Transform2DFunctorSourceData::m_transformMatrixInverse)
-                    ;
+                    ->Field("float3x3InverseShaderInput", &Transform2DFunctorSourceData::m_transformMatrixInverse);
             }
         }
 
@@ -63,27 +62,8 @@ namespace AZ
             AddMaterialPropertyDependency(functor, functor->m_translateY);
             AddMaterialPropertyDependency(functor, functor->m_rotateDegrees);
 
-            functor->m_transformMatrix = context.FindShaderInputConstantIndex(Name{m_transformMatrix});
-            
-            if (functor->m_transformMatrix.IsNull())
-            {
-                AZ_Error("MaterialFunctorSourceData", false, "Could not find shader input '%s'", context.GetNameContext()->GetContextualizedProperty(m_transformMatrix).c_str());
-                return Failure();
-            }
-
-            // There are some cases where the matrix is required but the inverse is not, so the SRG only has the regular matrix.
-            // In that case, the.materialtype file will not provide the name of an inverse matrix because it doesn't have one.
-            if (!m_transformMatrixInverse.empty())
-            {
-                functor->m_transformMatrixInverse = context.FindShaderInputConstantIndex(Name{m_transformMatrixInverse});
-
-                if (functor->m_transformMatrixInverse.IsNull())
-                {
-                    // There are cases where the same functor definition is used for multiple shaders where some have an inverse matrix and some do not.
-                    // So this is just a warning, not an error, to allow re-use of that functor definition.
-                    AZ_Warning("MaterialFunctorSourceData", false, "Could not find shader input '%s'", context.GetNameContext()->GetContextualizedProperty(m_transformMatrixInverse).c_str());
-                }
-            }
+            functor->m_transformMatrix = Name{ m_transformMatrix };
+            functor->m_transformMatrixInverse = Name{ m_transformMatrixInverse };
 
             functor->m_transformOrder = m_transformOrder;
 
@@ -97,6 +77,8 @@ namespace AZ
             {
                 AZ_Warning("Transform2DFunctor", false, "transformOrder contains invalid entries");
             }
+
+            SetFunctorShaderParameter(functor, m_shaderParameters);
 
             return Success(RPI::Ptr<MaterialFunctor>(functor));
         }

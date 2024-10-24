@@ -22,7 +22,7 @@ namespace UnitTest
     {
         using namespace AZ::RPI;
         materialTypeCreator.BeginMaterialProperty(propertyName, dataType);
-        materialTypeCreator.ConnectMaterialPropertyToShaderInput(shaderInputName);
+        materialTypeCreator.ConnectMaterialPropertyToShaderParameter(shaderInputName);
         if (dataType == MaterialPropertyDataType::Enum)
         {
             materialTypeCreator.SetMaterialPropertyEnumNames(AZStd::vector<AZStd::string>({ "Enum0", "Enum1", "Enum2" }));
@@ -81,6 +81,40 @@ namespace UnitTest
         EXPECT_TRUE(srgLayout->Finalize());
 
         return srgLayout;
+    }
+
+    AZ::RPI::MaterialShaderParameterLayout CreateCommonTestMaterialShaderParameterLayout()
+    {
+        using namespace AZ;
+        using namespace RPI;
+
+        // Note we specify the shader parameters and material properties in a different order so the indexes don't align
+        // We also include a couple unused inputs to further make sure shader and material indexes don't align
+
+        MaterialShaderParameterLayout shaderParamsLayout{};
+
+        // the first entry is always the material type
+        shaderParamsLayout.AddMaterialParameter<uint32_t>("m_materialType", true);
+        shaderParamsLayout.AddMaterialParameter<uint32_t>("m_materialInstance", true);
+
+        shaderParamsLayout.AddMaterialParameter<uint32_t>("m_unused");
+        shaderParamsLayout.AddMaterialParameter<Color>("m_color");
+        shaderParamsLayout.AddMaterialParameter<float>("m_float");
+        shaderParamsLayout.AddMaterialParameter<Vector2>("m_float2");
+        shaderParamsLayout.AddMaterialParameter<Vector3>("m_float3");
+        shaderParamsLayout.AddMaterialParameter<Vector4>("m_float4");
+        shaderParamsLayout.AddMaterialParameter<Data::Asset<Image>>("m_unusedImage");
+        shaderParamsLayout.AddMaterialParameter<Data::Asset<Image>>("m_image");
+        shaderParamsLayout.AddMaterialParameter<Data::Asset<Image>>("m_attachmentImage");
+        shaderParamsLayout.AddMaterialParameter<int>("m_int");
+        shaderParamsLayout.AddMaterialParameter<uint32_t>("m_uint");
+        shaderParamsLayout.AddMaterialParameter<uint32_t>("m_enum");
+        shaderParamsLayout.AddMaterialParameter<bool>("m_bool");
+        shaderParamsLayout.AddMaterialParameter<Matrix3x3>("m_float3x3");
+        shaderParamsLayout.AddMaterialParameter<Matrix4x4>("m_float4x4");
+        shaderParamsLayout.FinalizeLayout();
+
+        return shaderParamsLayout;
     }
 
 } // namespace UnitTest

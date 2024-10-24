@@ -61,11 +61,14 @@ namespace AZ
             //! Index to the specific setting that the material property maps to. 
             //! The MaterialPropertyDataType, MaterialPropertyOutputType, and m_containerIndex determine which list this refers to.
             RHI::Handle<uint32_t> m_itemIndex;
+
+            //! For m_type==ShaderInput, this is the name of the variable in the ShaderResourceGroup / MaterialShaderParameter.
+            Name m_shaderInputName;
         };
-                
+
         enum class MaterialPropertyDataType : uint32_t
         {
-            Invalid, 
+            Invalid,
 
             Bool,
             Int,
@@ -76,7 +79,7 @@ namespace AZ
             Vector4,
             Color,
             Image,
-            Enum,   //!< This type is only used in source data files, not runtime data
+            Enum, //!< This type is only used in source data files, not runtime data
 
             Count
         };

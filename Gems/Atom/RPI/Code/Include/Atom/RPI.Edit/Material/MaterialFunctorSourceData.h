@@ -137,6 +137,17 @@ namespace AZ
             //! Add a new dependent property to this functor.
             void AddMaterialPropertyDependency(Ptr<MaterialFunctor> functor, MaterialPropertyIndex index) const;
 
+            static void SetFunctorShaderParameter(
+                Ptr<MaterialFunctor> functor, const AZStd::vector<MaterialFunctorShaderParameter>& shaderParameters);
+
+            //! Shader parameters used by this functor that are not defined anywhere in the MaterialProperties.
+            // e.g. the transformation matrix for the Transform2Dfunctor is only known to the functor because the
+            //! MaterialProperties contain only the user-facing scale/translate/rotate - fields
+            AZStd::vector<MaterialFunctorShaderParameter> m_shaderParameters;
+
+            //! Returns a list of all shader parameters for this functor that aren't in the Material Properties
+            virtual const AZStd::vector<MaterialFunctorShaderParameter>& GetMaterialShaderParameters() const { return m_shaderParameters; }
+
             //! Returns a list of all shader options that this functor can set.
             virtual AZStd::vector<AZ::Name> GetShaderOptionDependencies() const { return {}; }
 
