@@ -6,53 +6,11 @@
  *
  */
 
-#include <viewsrg_all.srgi>
-#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
-#include <Atom/Features/VertexUtility.azsli>
-
-#include "../../Shaders/Materials/MaterialInputs/UvSetCount.azsli"
-
-
-struct MaterialParameters {};
-
-const MaterialParameters GetMaterialParameters()
-{
-    return (MaterialParameters)0;
-}
-
 #define ENABLE_DEBUG_MODIFY_OUTPUT 0
 
 #if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
     
 #define MATERIAL_HAS_UVS 0
-
-    struct VsInput
-    {
-        float3 position : POSITION;
-        float3 normal : NORMAL;
-    };
-
-    struct VsSystemValues
-    {
-        uint m_instanceId;
-    };
-
-    struct VsOutput
-    {
-        precise linear centroid float4 position : SV_Position;
-        float3 normal: NORMAL;
-        float3 worldPosition : UV0;
-    };
-    
-    VsOutput EvaluateVertexGeometry(VsInput IN, VsSystemValues SV, const MaterialParameters params)
-    {        
-        VsOutput output;
-        output.worldPosition = LocalSpaceToWorldSpace(IN.position, SV.m_instanceId);
-        output.position = WorldSpaceToClipSpace(output.worldPosition);
-        output.normal = IN.normal;
-        return output;
-    }
 
     VsOutput EvaluateVertexGeometry(
         float3 position,
@@ -63,20 +21,37 @@ const MaterialParameters GetMaterialParameters()
         uint instanceId)
     {
         VsOutput output;
-        output.worldPosition = LocalSpaceToWorldSpace(position, instanceId);
-        output.position = WorldSpaceToClipSpace(output.worldPosition);
+
+        // TODO: this assumes a forward+ - pipeline
+        VsSystemValues SV;
+        SV.m_instanceId = instanceId;
+
+        float4x4 objectToWorld = GetObjectToWorldMatrix(SV);
+        output.worldPosition = mul(objectToWorld, float4(IN.position, 1.0));
+
+        float4x4 viewProjectionMatrix = GetViewProjectionMatrix(SV);
+        output.position = mul(viewProjectionMatrix, output.worldPosition);
+
         output.normal = normal;
         return output;
     }
 
-    class PixelGeometryData
-    {
-        float3 positionWS;
-        float2 uvs[UvSetCount];
-        float3 vertexNormal;
-    };
+    VsOutput EvaluateVertexGeometry(VsInput IN, VsSystemValues SV, const MaterialParameters params)
+    {        
+        VsOutput output;
 
-    PixelGeometryData EvaluatePixelGeometry(VsOutput IN, bool isFrontFace, const MaterialParameters params)
+        float4x4 objectToWorld = GetObjectToWorldMatrix(SV);
+        output.worldPosition = mul(objectToWorld, float4(IN.position, 1.0));
+        
+        float4x4 viewProjectionMatrix = GetViewProjectionMatrix(SV);
+        output.position = mul(viewProjectionMatrix, output.worldPosition);
+
+        output.normal = IN.normal;
+
+        return output;
+    }
+        
+    PixelGeometryData EvaluatePixelGeometry(VsOutput IN, VsSystemValues SV, bool isFrontFace, const MaterialParameters params)
     {
         PixelGeometryData geoData;
         geoData.positionWS = IN.worldPosition;
@@ -90,8 +65,6 @@ const MaterialParameters GetMaterialParameters()
 
         return geoData;
     }
-
-    #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_SurfaceData.azsli>
 
     Surface EvaluateSurface(VsOutput IN, PixelGeometryData geoData, const MaterialParameters params)
     {
@@ -113,7 +86,6 @@ const MaterialParameters GetMaterialParameters()
 
 #else
 
-    #include <Atom/Feature/Common/Assets/Shaders/Materials/DepthPass_VertexData.azsli>
     #include <Atom/Feature/Common/Assets/Shaders/Materials/DepthPass_VertexEval.azsli>
 
 #endif

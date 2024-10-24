@@ -206,6 +206,13 @@ namespace AZ
             //! This is relevant for "abstract" material type files (see GetFormat()).
             AZStd::string m_lightingModel;
 
+            //! This indicates a .azsli file that contains only material-specific shader definitions, which will be included.
+            //! in the final shader before any other files.
+            //! The build system will automatically combine this code with .materialpipeline shader code
+            //! for use in each available render pipeline.
+            //! This is relevant for "abstract" material type files (see GetFormat()).
+            AZStd::string m_materialShaderDefines;
+
             //! This indicates a .azsli file that contains only material-specific shader code.
             //! The build system will automatically combine this code with .materialpipeline shader code
             //! for use in each available render pipeline.

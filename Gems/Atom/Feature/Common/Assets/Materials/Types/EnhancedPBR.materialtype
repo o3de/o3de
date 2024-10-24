@@ -134,6 +134,7 @@
         ]
     },
     "lightingModel": "Enhanced",
+    "materialShaderDefines": "EnhancedPBR_Defines.azsli",
     "materialShaderCode": "EnhancedPBR.azsli",
     "functors": [
     ],

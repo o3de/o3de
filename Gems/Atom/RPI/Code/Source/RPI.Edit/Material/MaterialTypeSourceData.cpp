@@ -133,11 +133,11 @@ namespace AZ
                     ->Field("propertyLayout", &MaterialTypeSourceData::m_propertyLayout)
                     ->Field("lightingModel", &MaterialTypeSourceData::m_lightingModel)
                     ->Field("materialShaderCode", &MaterialTypeSourceData::m_materialShaderCode)
+                    ->Field("materialShaderDefines", &MaterialTypeSourceData::m_materialShaderDefines)
                     ->Field("shaders", &MaterialTypeSourceData::m_shaderCollection)
                     ->Field("functors", &MaterialTypeSourceData::m_materialFunctorSourceData)
                     ->Field("materialPipelines", &MaterialTypeSourceData::m_pipelineData)
-                    ->Field("uvNameMap", &MaterialTypeSourceData::m_uvNameMap)
-                    ;
+                    ->Field("uvNameMap", &MaterialTypeSourceData::m_uvNameMap);
             }
         }
 
@@ -898,13 +898,13 @@ namespace AZ
                 // by using the material pipeline to generate default shaders.
                 return Format::Abstract;
             }
-            else if (!m_materialShaderCode.empty() || !m_lightingModel.empty())
+            else if (!m_materialShaderCode.empty() || !m_lightingModel.empty() || !m_materialShaderDefines.empty())
             {
                 AZ_Error(
                     MaterialTypeSourceDataDebugName,
                     false,
                     "Invalid material type format, an explicit shader list and pipeline data cannot be combined with "
-                    "materialShaderCode or lightingModel fields.");
+                    "materialShaderCode, materialShaderDefines or lightingModel fields.");
                 return Format::Invalid;
             }
             else

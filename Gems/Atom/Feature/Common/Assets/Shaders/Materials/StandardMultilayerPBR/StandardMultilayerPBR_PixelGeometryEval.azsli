@@ -1,0 +1,64 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#ifndef EvaluatePixelGeometry
+#define EvaluatePixelGeometry EvaluatePixelGeometry_StandardMultilayerPBR
+#endif
+
+#include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_PixelGeometryEval.azsli>
+
+PixelGeometryData EvaluatePixelGeometry_StandardMultilayerPBR(
+    const MaterialParameters params,
+    inout float4 positionSV,
+    float3 positionWS,
+    real3 normalWS,
+    real3 tangentWS,
+    real3 bitangentWS,
+    float2 uvs[UvSetCount],
+    bool isFrontFace,
+    real4x4 objectToWorld,
+    real3 vertexBlendMask)
+{
+    PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(params, positionWS, normalWS, tangentWS, bitangentWS, uvs, isFrontFace);
+    geoData.isDisplacementClipped = false;
+    geoData.m_vertexBlendMask = vertexBlendMask;
+
+#if ENABLE_PARALLAX
+    if(ShouldHandleParallax())
+    {
+        MultilayerSetPixelDepth(params, vertexBlendMask, geoData.positionWS, geoData.vertexNormal, geoData.tangents, geoData.bitangents,
+            geoData.uvs, isFrontFace, objectToWorld, positionSV.z, positionSV.w, geoData.isDisplacementClipped);
+    }
+#endif
+    return geoData;
+}
+
+PixelGeometryData EvaluatePixelGeometry_StandardMultilayerPBR(inout VsOutput IN, VsSystemValues SV, bool isFrontFace, const MaterialParameters params)
+{
+    real4x4 objectToWorld = real4x4(GetObjectToWorldMatrix(SV));
+    real3x3 objectToWorldIT = real3x3(GetObjectToWorldMatrixInverseTranspose(SV));
+    
+    real3 normalWS, tangentWS, bitangentWS;
+    ConstructTBN(real3(IN.normal), real4(IN.tangent), objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
+    
+    return EvaluatePixelGeometry_StandardMultilayerPBR(
+        params,
+        IN.position,
+        IN.worldPosition,
+        normalWS,
+        tangentWS,
+        bitangentWS,
+        IN.uvs,
+        isFrontFace,
+        objectToWorld,
+        real3(IN.blendFactors.xyz));
+}
+
+
