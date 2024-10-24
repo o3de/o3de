@@ -525,8 +525,9 @@ namespace AZ
                 finalMetalSLStr.insert(startOfShaderPos + startOfShaderTag.length() + 1, structuredBufferTempStructs);
             }
 
+            // optimization off attribute "[[clang::optnone]]" added by SPIRV-Cross makes the render 20 times slower
+            // we drop the attribute here, but calculation precision might suffer causing z-fighting
 #if defined(CARBONATED)
-            // optimization off attribute (from SPIRVCross) makes the render 20 times slower, we drop the attribute here, but calculation precision might suffer causing z-fighting
             constexpr const char* strToFind = "[[clang::optnone]]";
             const size_t strToFindLen = strlen(strToFind);
             size_t pos = finalMetalSLStr.find(strToFind);
@@ -535,6 +536,8 @@ namespace AZ
                 finalMetalSLStr.erase(pos, strToFindLen);
                 pos = finalMetalSLStr.find(strToFind, pos);
             }
+#else
+            finalMetalSLStr = AZStd::regex_replace(finalMetalSLStr, AZStd::regex("\\[\\[clang::optnone\\]\\]"), "");
 #endif
             
             compiledShader = AZStd::vector<char>(finalMetalSLStr.begin(), finalMetalSLStr.end());
