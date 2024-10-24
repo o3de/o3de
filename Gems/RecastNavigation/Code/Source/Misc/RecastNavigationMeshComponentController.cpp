@@ -141,6 +141,143 @@ namespace RecastNavigation
         return false;
     }
 
+#if defined(CARBONATED)
+    bool RecastNavigationMeshComponentController::PartialUpdateNavigationMeshBlockUntilCompleted(const AZStd::vector<AZ::Aabb>& changedGeometry)
+    {
+        bool notInProgress = false;
+        if (!m_updateInProgress.compare_exchange_strong(notInProgress, true))
+        {
+            return false;
+        }
+
+        AZStd::vector<AZStd::shared_ptr<TileGeometry>> tiles;
+
+        // Blocking call.
+        RecastNavigationProviderRequestBus::EventResult(
+            tiles,
+            m_entityComponentIdPair.GetEntityId(),
+            &RecastNavigationProviderRequests::CollectPartialGeometry,
+            m_configuration.m_tileSize,
+            aznumeric_cast<float>(m_configuration.m_borderSize) * m_configuration.m_cellSize,
+            changedGeometry);
+
+        RecastNavigationMeshNotificationBus::Event(
+            m_entityComponentIdPair.GetEntityId(),
+            &RecastNavigationMeshNotificationBus::Events::OnNavigationMeshBeganRecalculating,
+            m_entityComponentIdPair.GetEntityId());
+
+        {
+            for (AZStd::shared_ptr<TileGeometry>& tile : tiles)
+            {
+                {
+                    NavMeshQuery::LockGuard lock(*m_navObject);
+                    // If a tile at the location already exists, remove it before updating the data.
+                    if (const dtTileRef tileRef = lock.GetNavMesh()->getTileRefAt(tile->m_tileX, tile->m_tileY, 0))
+                    {
+                        lock.GetNavMesh()->removeTile(tileRef, nullptr, nullptr);
+                    }
+                }
+
+                if (tile->IsEmpty())
+                {
+                    continue;
+                }
+
+                // Given geometry create Recast tile structure.
+                NavigationTileData navigationTileData = CreateNavigationTile(tile.get(), m_configuration, m_context.get());
+
+                // A tile might have no geometry at all if no objects were found there.
+                if (navigationTileData.IsValid())
+                {
+                    AttachNavigationTileToMesh(navigationTileData);
+                }
+            }
+        }
+
+        RecastNavigationMeshNotificationBus::Event(
+            m_entityComponentIdPair.GetEntityId(),
+            &RecastNavigationMeshNotifications::OnNavigationMeshUpdated,
+            m_entityComponentIdPair.GetEntityId());
+        m_updateInProgress = false;
+        return true;
+    }
+
+    bool RecastNavigationMeshComponentController::PartialUpdateNavigationMeshAsync(const AZStd::vector<AZ::Aabb>& changedGeometry)
+    {
+        bool notInProgress = false;
+        if (m_updateInProgress.compare_exchange_strong(notInProgress, true))
+        {
+            AZ_PROFILE_SCOPE(Navigation, "Navigation: UpdateNavigationMeshAsync");
+
+            bool operationScheduled = false;
+            RecastNavigationProviderRequestBus::EventResult(
+                operationScheduled,
+                m_entityComponentIdPair.GetEntityId(),
+                &RecastNavigationProviderRequests::CollectPartialGeometryAsync,
+                m_configuration.m_tileSize,
+                aznumeric_cast<float>(m_configuration.m_borderSize) * m_configuration.m_cellSize,
+                changedGeometry,
+                [this](AZStd::shared_ptr<TileGeometry> tile)
+                {
+                    OnTileProcessedEvent(tile);
+                });
+
+            if (!operationScheduled)
+            {
+                m_updateInProgress = false;
+                return false;
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    bool RecastNavigationMeshComponentController::TestPointOnNavMesh(
+        const AZ::Vector3& point, const AZ::Vector3& tolerance, AZ::Vector3& nearestPoint)
+    {
+        AZ_PROFILE_SCOPE(Navigation, "Navigation: TestPointOnNavMesh");
+
+        if (!m_navObject)
+        {
+            return false;  // sometimes the editor keep calling it while ESC pressed and the app exits the game mode
+        }
+
+        NavMeshQuery::LockGuard lock(*m_navObject);
+
+        RecastVector3 pointRecast = RecastVector3::CreateFromVector3SwapYZ(point);
+        RecastVector3 nearestPointRecast;
+        const float halfExtents[3] = { tolerance.GetX(), tolerance.GetZ(), tolerance.GetY() }; // Swap Z/Y for Recast.
+        dtPolyRef nearestPolygon = 0;
+        const dtQueryFilter filter;
+
+        // Find nearest points on the navigation mesh given the positions provided.
+        // We are allowing some flexibility where looking for a point just a bit outside of the navigation mesh would still work.
+        const dtStatus result =
+            lock.GetNavQuery()->findNearestPoly(pointRecast.GetData(), halfExtents, &filter, &nearestPolygon, nearestPointRecast.GetData());
+        if (dtStatusFailed(result) || nearestPolygon == 0)
+        {
+            return false;
+        }
+        nearestPoint = nearestPointRecast.AsVector3WithZup();
+
+        const auto nearestPointRecastRaw = nearestPointRecast.GetData();
+        const auto pointRecastRaw = pointRecast.GetData();
+        if ((fabs(nearestPointRecastRaw[0] - pointRecastRaw[0]) > halfExtents[0]) ||
+            (fabs(nearestPointRecastRaw[1] - pointRecastRaw[1]) > halfExtents[1]) ||
+            (fabs(nearestPointRecastRaw[2] - pointRecastRaw[2]) > halfExtents[2]))
+        {
+            return false;
+        }
+        return true;
+    }
+
+    float RecastNavigationMeshComponentController::GetNavMeshHeightMaxError() const
+    {
+        return m_configuration.m_cellHeight * m_configuration.m_detailSampleMaxError * 2.0f;  // apparently it can be larger than ch * dsme, so I added * 2.0f
+    }
+#endif
+
     AZStd::shared_ptr<NavMeshQuery> RecastNavigationMeshComponentController::GetNavigationObject()
     {
         return m_navObject;
