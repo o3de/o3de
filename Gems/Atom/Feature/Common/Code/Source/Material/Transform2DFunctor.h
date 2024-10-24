@@ -30,9 +30,9 @@ namespace AZ
 
             using RPI::MaterialFunctor::Process;
             void Process(RPI::MaterialFunctorAPI::RuntimeContext& context) override;
+            bool UpdateShaderParameterConnections(const RPI::MaterialShaderParameterLayout* layout) override;
 
         private:
-
             AZStd::vector<TransformType> m_transformOrder; //!< Controls the order in which Scale, Translate, Rotate are performed
 
             // Material property inputs...
@@ -45,8 +45,8 @@ namespace AZ
             RPI::MaterialPropertyIndex m_rotateDegrees; //!< index of material property for rotating
 
             // Shader setting output...
-            RHI::ShaderInputConstantIndex m_transformMatrix;        //!< the index of a float3x3 shader input
-            RHI::ShaderInputConstantIndex m_transformMatrixInverse; //!< the index of the inverse float3x3 shader input
+            RPI::MaterialShaderParameterNameIndex m_transformMatrix; //!< the index of a float3x3 shader input
+            RPI::MaterialShaderParameterNameIndex m_transformMatrixInverse; //!< the index of the inverse float3x3 shader input
         };
 
     } // namespace Render

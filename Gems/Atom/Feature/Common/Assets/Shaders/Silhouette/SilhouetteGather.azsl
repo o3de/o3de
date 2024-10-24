@@ -21,21 +21,23 @@ VsOutput MainVS(VsInput IN, uint instanceId : SV_InstanceID)
     VsSystemValues SV;
     SV.m_instanceId = instanceId;
 
-    VsOutput OUT = EvaluateVertexGeometry(IN, SV);
+    const MaterialParameters params = GetMaterialParameters();
+
+    VsOutput OUT = EvaluateVertexGeometry(IN, SV, params);
 
     // this depth bias helps prevent silhouettes appearing where there are small intersections
     // like the player feet with the ground
     real distanceScale = 1.0 - OUT.position.z / OUT.position.w;
-    OUT.position.z += MaterialSrg::m_depthBias * distanceScale;
+    OUT.position.z += params.m_depthBias * distanceScale;
 
-    if(MaterialSrg::m_outlineSize > EPSILON)
+    if(params.m_outlineSize > EPSILON)
     {
         real3 worldNormal = normalize(mul(GetObjectToWorldMatrixInverseTranspose(instanceId), IN.normal));
         real4 screenSpaceNormal = mul(ViewSrg::m_viewProjectionMatrix, real4(worldNormal, 0.0));
 
         // use a size scale so input m_outlineSize can be in range 0..100
         const real sizeScale = 1.0 / 400.0;
-        OUT.position.xy += screenSpaceNormal.xy * (MaterialSrg::m_outlineSize * OUT.position.w * sizeScale) * distanceScale;
+        OUT.position.xy += screenSpaceNormal.xy * (params.m_outlineSize * OUT.position.w * sizeScale) * distanceScale;
     }
 
     return OUT;
@@ -50,8 +52,9 @@ PSOutput MainPS(VsOutput IN)
 {
     PSOutput OUT;
 
+    const MaterialParameters params = GetMaterialParameters();
     // write at least something in the alpha to distinguish between silhouette and background
-    OUT.m_color = float4(TransformColor(MaterialSrg::m_color, ColorSpaceId::ACEScg,ColorSpaceId::SRGB), max(0.01, MaterialSrg::m_alpha));
+    OUT.m_color = float4(TransformColor(params.m_color.rgb, ColorSpaceId::ACEScg,ColorSpaceId::SRGB), max(0.01, params.m_alpha));
 
     return OUT;
 }

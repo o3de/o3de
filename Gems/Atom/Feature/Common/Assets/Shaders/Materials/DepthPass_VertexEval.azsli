@@ -15,7 +15,7 @@
 #include <Atom/RPI/TangentSpace.azsli>
 #include <Atom/Features/InstancedTransforms.azsli>
 
-VsOutput EvaluateVertexGeometry_DepthPass(VsInput IN, VsSystemValues SV)
+VsOutput EvaluateVertexGeometry_DepthPass(VsInput IN, VsSystemValues SV, const MaterialParameters params)
 {
     VsOutput output;
 

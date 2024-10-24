@@ -11,12 +11,22 @@
 #include <Atom/Features/SrgSemantics.azsli>
 #include "../MaterialInputs/SilhouetteInput.azsli"
 
-ShaderResourceGroup MaterialSrg : SRG_PerMaterial
-{
-    float3 m_color;
+struct MaterialParameters {
+    float4 m_color;
     float m_alpha;
     float m_depthBias;
     float m_outlineSize;
     float m_padding0;
     float3x3 m_uvMatrix;
+};
+
+ShaderResourceGroup MaterialSrg : SRG_PerMaterial
+{
+    MaterialParameters m_params;
 }
+
+const MaterialParameters GetMaterialParameters()
+{
+    return MaterialSrg::m_params;
+}
+

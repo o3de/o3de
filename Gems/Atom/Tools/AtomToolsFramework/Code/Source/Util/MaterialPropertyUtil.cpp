@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom/RHI.Reflect/SamplerState.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
@@ -272,6 +273,10 @@ namespace AtomToolsFramework
         if (propertyValue.Is<AZ::Data::Instance<AZ::RPI::Image>>())
         {
             return AZ::RPI::MaterialPropertyDataType::Image;
+        }
+        if (propertyValue.Is<AZ::RHI::SamplerState>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::SamplerState;
         }
         if (propertyValue.Is<AZStd::string>())
         {

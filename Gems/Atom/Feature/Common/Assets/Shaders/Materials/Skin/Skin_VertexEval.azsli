@@ -24,6 +24,7 @@
 option bool o_blendMask_isBound;
 
 VsOutput EvaluateVertexGeometry_Skin(
+    const MaterialParameters params,
     float3 position,
     float3 normal,
     float4 tangent,
@@ -53,8 +54,8 @@ VsOutput EvaluateVertexGeometry_Skin(
     
     // The detail layer has a dedicated UV transform which we apply here. The detail layer does have the option of using
     // either UV0 or UV1, in either case we apply the transform.
-    output.detailUv = MaterialSrg::m_detail_allMapsUvIndex == 0 ? uv0_tiled : uv1_unwrapped;
-    output.detailUv = mul(MaterialSrg::m_detailUvMatrix, float3(output.detailUv, 1.0)).xy;
+    output.detailUv = params.m_detail_allMapsUvIndex == 0 ? uv0_tiled : uv1_unwrapped;
+    output.detailUv = mul(params.m_detailUvMatrix, float3(output.detailUv, 1.0)).xy;
     
     if(o_blendMask_isBound)
     {
@@ -79,6 +80,7 @@ VsOutput EvaluateVertexGeometry_Skin(
 // Avoids compilation errors for compute shaders, listed in a materialpipeline,
 // that call EvaluateVertexGeometry().
 VsOutput EvaluateVertexGeometry_Skin(
+    const MaterialParameters params,
     float3 position,
     float3 normal,
     float4 tangent,
@@ -86,12 +88,13 @@ VsOutput EvaluateVertexGeometry_Skin(
     float2 uv1_unwrapped,
     uint instanceId)
 {
-    return EvaluateVertexGeometry_Skin(position, normal, tangent, uv0_tiled, uv1_unwrapped, float4(0, 0, 0, 0), instanceId);
+    return EvaluateVertexGeometry_Skin(params, position, normal, tangent, uv0_tiled, uv1_unwrapped, float4(0, 0, 0, 0), instanceId);
 }
 
-VsOutput EvaluateVertexGeometry_Skin(VsInput IN, VsSystemValues SV)
+VsOutput EvaluateVertexGeometry_Skin(VsInput IN, VsSystemValues SV, const MaterialParameters params)
 {
     return EvaluateVertexGeometry_Skin(
+        params,
         IN.position,
         IN.normal,
         IN.tangent,

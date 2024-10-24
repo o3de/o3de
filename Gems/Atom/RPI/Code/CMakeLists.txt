@@ -59,6 +59,7 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
+            ${pal_source_dir}
         PUBLIC
             Include
     BUILD_DEPENDENCIES
@@ -204,6 +205,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::${gem_name}.Public
                 Gem::${gem_name}.TestUtils
     )
+    target_compile_options(${gem_name}.Tests PRIVATE -O0)
     ly_add_googletest(
         NAME Gem::${gem_name}.Tests
         LABELS REQUIRES_tiaf

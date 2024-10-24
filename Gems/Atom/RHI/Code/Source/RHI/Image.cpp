@@ -147,4 +147,20 @@ namespace AZ::RHI
                 return true;
             });
     }
+
+    AZStd::unordered_map<int, uint32_t> ImageView::GetBindlessReadIndex() const
+    {
+        AZStd::unordered_map<int, uint32_t> result;
+
+        MultiDeviceObject::IterateDevices(
+            m_image->GetDeviceMask(),
+            [this, &result](int deviceIndex)
+            {
+                result[deviceIndex] = GetDeviceImageView(deviceIndex)->GetBindlessReadIndex();
+                return true;
+            });
+
+        return result;
+    }
+
 } // namespace AZ::RHI
