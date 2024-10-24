@@ -520,6 +520,9 @@ namespace AZ
                 finalMetalSLStr.insert(startOfShaderPos + startOfShaderTag.length() + 1, structuredBufferTempStructs);
             }
 
+            // Workaround:  Remove "[[clang::optnone]]" as added by SPIRV-Cross
+            finalMetalSLStr = AZStd::regex_replace(finalMetalSLStr, AZStd::regex("\\[\\[clang::optnone\\]\\]"), "");
+
             compiledShader = AZStd::vector<char>(finalMetalSLStr.begin(), finalMetalSLStr.end());
             return true;
         }
