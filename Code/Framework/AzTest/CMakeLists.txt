@@ -22,7 +22,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         googletest
         GIT_REPOSITORY ${GOOGLETEST_GIT_REPOSITORY}
         GIT_TAG ${GOOGLETEST_GIT_TAG} 
-        SYSTEM
         CMAKE_ARGS "-DCMAKE_WARN_DEPRECATED=FALSE;-Dgtest_force_shared_crt=ON;-DBUILD_GMOCK=ON;-DBUILD_GTEST=ON;-DINSTALL_GTEST=OFF;-Dgmock_build_tests=OFF;-Dgtest_build_tests=OFF;-Dgtest_build_samples=OFF;-Dgtest_hide_internal_symbols=ON"
     )
     
