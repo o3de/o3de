@@ -61,3 +61,5 @@
 */Gems/SaveData/Code/Tests/SaveDataTest.cpp
 */Gems/WhiteBox/Code/Source/Rendering/Legacy/WhiteBoxLegacyRenderMesh.cpp
 */restricted/*/Code/Framework/AzCore/AzCore/AzCore_Traits_*.h
+*/Gems/Atom/RHI/Metal/Code/Source/RHI/MetalViewController.mm
+*/Gems/Atom/RHI/Metal/Code/Source/RHI/MetalViewController.h

@@ -23,6 +23,9 @@
 #include <AzCore/Time/ITime.h>
 #include <AzFramework/Input/Buses/Requests/InputTextEntryRequestBus.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
+#if defined(CARBONATED)
+#include <LyShine/Bus/UiCursorBus.h>
+#endif
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Gamepad/InputDeviceGamepad.h>
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
@@ -691,6 +694,10 @@ void ImGuiManager::ToggleThroughImGuiVisibleState()
     {
         case DisplayState::Hidden:
             m_clientMenuBarState = DisplayState::Visible;
+
+#if defined(CARBONATED)
+            UiCursorBus::Broadcast(&UiCursorBus::Events::DecrementVisibleCounter);
+#endif
             
             if (gEnv->IsEditor() && !gEnv->IsEditorGameMode())
             {
@@ -728,6 +735,10 @@ void ImGuiManager::ToggleThroughImGuiVisibleState()
         default:
         case DisplayState::Visible:
             m_clientMenuBarState = DisplayState::Hidden;
+
+#if defined(CARBONATED)
+            UiCursorBus::Broadcast(&UiCursorBus::Events::IncrementVisibleCounter);
+#endif
 
             // Avoid hiding the cursor when in the Editor and not in game mode
             const bool inGame = !gEnv->IsEditor() || gEnv->IsEditorGameMode(); 

@@ -37,6 +37,11 @@ namespace RecastNavigation
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "navigation")
                 ->Attribute(AZ::Script::Attributes::Category, "Recast Navigation")
+#if defined(CARBONATED)
+                ->Event("PartialUpdateNavigationMesh", &RecastNavigationMeshRequests::PartialUpdateNavigationMeshBlockUntilCompleted)
+                ->Event("PartialUpdateNavigationMeshAsync", &RecastNavigationMeshRequests::PartialUpdateNavigationMeshAsync)
+                ->Event("GetNavMeshHeightMaxError", &RecastNavigationMeshRequests::GetNavMeshHeightMaxError)
+#endif
                 ->Event("UpdateNavigationMesh", &RecastNavigationMeshRequests::UpdateNavigationMeshBlockUntilCompleted)
                 ->Event("UpdateNavigationMeshAsync", &RecastNavigationMeshRequests::UpdateNavigationMeshAsync);
 

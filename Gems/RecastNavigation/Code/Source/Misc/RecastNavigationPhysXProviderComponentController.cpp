@@ -124,6 +124,21 @@ namespace RecastNavigation
         return CollectGeometryAsyncImpl(tileSize, borderSize, GetWorldBounds(), AZStd::move(tileCallback));
     }
 
+#if defined(CARBONATED)
+    AZStd::vector<AZStd::shared_ptr<TileGeometry>> RecastNavigationPhysXProviderComponentController::CollectPartialGeometry(
+        float tileSize, float borderSize, const AZStd::vector<AZ::Aabb>& changedGeometry)
+    {
+        // Blocking call.
+        return CollectPartialGeometryImpl(tileSize, borderSize, GetWorldBounds(), changedGeometry);
+    }
+    bool RecastNavigationPhysXProviderComponentController::CollectPartialGeometryAsync(
+        float tileSize, float borderSize, const AZStd::vector<AZ::Aabb>& changedGeometry,
+        AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback)
+    {
+        return CollectPartialGeometryAsyncImpl(tileSize, borderSize, GetWorldBounds(), changedGeometry, AZStd::move(tileCallback));
+    }
+#endif
+
     AZ::Aabb RecastNavigationPhysXProviderComponentController::GetWorldBounds() const
     {
         AZ::Aabb worldBounds = AZ::Aabb::CreateNull();
@@ -159,9 +174,6 @@ namespace RecastNavigation
 
         AZ::Vector3 dimension = volume.GetExtents();
         AZ::Transform pose = AZ::Transform::CreateFromQuaternionAndTranslation(AZ::Quaternion::CreateIdentity(), volume.GetCenter());
-
-        Physics::BoxShapeConfiguration shapeConfiguration;
-        shapeConfiguration.m_dimensions = dimension;
 
         AzPhysics::OverlapRequest request = AzPhysics::OverlapRequestHelpers::CreateBoxOverlapRequest(dimension, pose, nullptr);
         request.m_queryType = AzPhysics::SceneQuery::QueryType::Static; // only looking for static PhysX colliders
@@ -331,34 +343,87 @@ namespace RecastNavigation
         return tiles;
     }
 
-    // Adjust the origin, so that any tile over-extension is even across all sides.
-    // Note, navigation mesh is made up of square tiles. Recast does not support uneven tiles,
-    // so the best we can do is even them out. Additionally, users can set their own tile size on @RecastNavigationMeshComponent.
-    AZ::Vector3 GetAdjustedOriginBasedOnTileSize(const AZ::Aabb& worldVolume, float tileSize)
+#if defined(CARBONATED)
+    AZStd::vector<AZStd::shared_ptr<TileGeometry>> RecastNavigationPhysXProviderComponentController::CollectPartialGeometryImpl(
+        float tileSize, float borderSize, const AZ::Aabb& worldVolume, const AZStd::vector<AZ::Aabb>& changedGeometry)
     {
-        if (tileSize <= 0.f)
+        AZ_PROFILE_SCOPE(Navigation, "Navigation: CollectPartialGeometry");
+
+        bool notInProgress = false;
+        if (!m_updateInProgress.compare_exchange_strong(notInProgress, true))
         {
-            AZ_Warning("Recast Navigation", true, "Tile size is invalid. It should be a positive number.");
-            return AZ::Vector3::CreateZero();
+            return {};
         }
 
-        AZ::Vector3 origin = worldVolume.GetMin();
-        const AZ::Vector3& extents = worldVolume.GetExtents();
+        if (tileSize <= 0.f)
+        {
+            return {};
+        }
 
-        const float tileOverExtensionOnX = AZStd::ceil(extents.GetX() / tileSize) * tileSize - extents.GetX();
-        origin.SetX(origin.GetX() - tileOverExtensionOnX / 2.f);
+        AZStd::vector<AZStd::shared_ptr<TileGeometry>> tiles;
 
-        const float tileOverExtensionOnY = AZStd::ceil(extents.GetY() / tileSize) * tileSize - extents.GetY();
-        origin.SetY(origin.GetY() - tileOverExtensionOnY / 2.f);
+        const AZ::Vector3 extents = worldVolume.GetExtents();
+        int tilesAlongX = aznumeric_cast<int>(AZStd::ceil(extents.GetX() / tileSize));
+        int tilesAlongY = aznumeric_cast<int>(AZStd::ceil(extents.GetY() / tileSize));
 
-        return origin;
+        const AZ::Vector3& worldMin = worldVolume.GetMin();
+        const AZ::Vector3& worldMax = worldVolume.GetMax();
+
+        const AZ::Vector3 border = AZ::Vector3::CreateOne() * borderSize;
+
+        // Find all geometry one tile at a time.
+        for (int y = 0; y < tilesAlongY; ++y)
+        {
+            for (int x = 0; x < tilesAlongX; ++x)
+            {
+                const AZ::Vector3 tileMin{ worldMin.GetX() + aznumeric_cast<float>(x) * tileSize,
+                                           worldMin.GetY() + aznumeric_cast<float>(y) * tileSize,
+                                           worldMin.GetZ() };
+
+                const AZ::Vector3 tileMax{ worldMin.GetX() + aznumeric_cast<float>(x + 1) * tileSize,
+                                           worldMin.GetY() + aznumeric_cast<float>(y + 1) * tileSize,
+                                           worldMax.GetZ() };
+                const AZ::Aabb tileVolume = AZ::Aabb::CreateFromMinMax(tileMin, tileMax);
+
+                bool tileIsAffected = false;
+
+                for (auto aabb : changedGeometry)
+                {
+                    if (tileVolume.Overlaps(aabb))
+                    {
+                        tileIsAffected = true;
+                        break;
+                    }
+                }
+
+                if (tileIsAffected)
+                {
+                    // Recast wants extra triangle data around each tile, so that each tile can connect to each other.
+                    AZ::Aabb scanVolume = AZ::Aabb::CreateFromMinMax(tileMin - border, tileMax + border);
+
+                    QueryHits results;
+                    CollectCollidersWithinVolume(scanVolume, results);
+
+                    AZStd::shared_ptr<TileGeometry> geometryData = AZStd::make_unique<TileGeometry>();
+                    geometryData->m_worldBounds = tileVolume;
+                    geometryData->m_scanBounds = scanVolume;
+                    AppendColliderGeometry(*geometryData, results);
+
+                    geometryData->m_tileX = x;
+                    geometryData->m_tileY = y;
+                    tiles.push_back(geometryData);
+                }
+            }
+        }
+
+        m_updateInProgress = false;
+        return tiles;
     }
+#endif
 
+#if defined(CARBONATED)
     bool RecastNavigationPhysXProviderComponentController::CollectGeometryAsyncImpl(
-        float tileSize,
-        float borderSize,
-        const AZ::Aabb& worldVolume,
-        AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback)
+        float tileSize, float borderSize, const AZ::Aabb& worldVolume, AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback)
     {
         bool notInProgress = false;
         if (!m_updateInProgress.compare_exchange_strong(notInProgress, true))
@@ -378,12 +443,9 @@ namespace RecastNavigation
             const AZ::Vector3 extents = worldVolume.GetExtents();
             int tilesAlongX = aznumeric_cast<int>(AZStd::ceil(extents.GetX() / tileSize));
             int tilesAlongY = aznumeric_cast<int>(AZStd::ceil(extents.GetY() / tileSize));
-            
-            const AZ::Vector3 worldOrigin = GetAdjustedOriginBasedOnTileSize(worldVolume, tileSize);
-            const AZ::Vector3 worldMax(
-                worldOrigin.GetX() + tileSize * aznumeric_cast<float>(tilesAlongX),
-                worldOrigin.GetY() + tileSize * aznumeric_cast<float>(tilesAlongY),
-                worldVolume.GetMax().GetZ());
+
+            const AZ::Vector3& worldMin = worldVolume.GetMin();
+            const AZ::Vector3& worldMax = worldVolume.GetMax();
 
             const AZ::Vector3 border = AZ::Vector3::CreateOne() * borderSize;
 
@@ -394,17 +456,13 @@ namespace RecastNavigation
             {
                 for (int x = 0; x < tilesAlongX; ++x)
                 {
-                    const AZ::Vector3 tileMin{
-                        worldOrigin.GetX() + aznumeric_cast<float>(x) * tileSize,
-                        worldOrigin.GetY() + aznumeric_cast<float>(y) * tileSize,
-                        worldOrigin.GetZ()
-                    };
+                    const AZ::Vector3 tileMin{ worldMin.GetX() + aznumeric_cast<float>(x) * tileSize,
+                                               worldMin.GetY() + aznumeric_cast<float>(y) * tileSize,
+                                               worldMin.GetZ() };
 
-                    const AZ::Vector3 tileMax{
-                        worldOrigin.GetX() + aznumeric_cast<float>(x + 1) * tileSize,
-                        worldOrigin.GetY() + aznumeric_cast<float>(y + 1) * tileSize,
-                        worldMax.GetZ()
-                    };
+                    const AZ::Vector3 tileMax{ worldMin.GetX() + aznumeric_cast<float>(x + 1) * tileSize,
+                                               worldMin.GetY() + aznumeric_cast<float>(y + 1) * tileSize,
+                                               worldMax.GetZ() };
 
                     AZ::Aabb tileVolume = AZ::Aabb::CreateFromMinMax(tileMin, tileMax);
                     AZ::Aabb scanVolume = AZ::Aabb::CreateFromMinMax(tileMin - border, tileMax + border);
@@ -451,4 +509,234 @@ namespace RecastNavigation
 
         return false;
     }
+
+    bool RecastNavigationPhysXProviderComponentController::CollectPartialGeometryAsyncImpl(
+        float tileSize, float borderSize, const AZ::Aabb& worldVolume, const AZStd::vector<AZ::Aabb>& changedGeometry,
+        AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback)
+    {
+        bool notInProgress = false;
+        if (!m_updateInProgress.compare_exchange_strong(notInProgress, true))
+        {
+            return false;
+        }
+
+        if (!m_taskGraphEvent || m_taskGraphEvent->IsSignaled())
+        {
+            AZ_PROFILE_SCOPE(Navigation, "Navigation: CollectGeometryAsync");
+
+            m_taskGraphEvent = AZStd::make_unique<AZ::TaskGraphEvent>("RecastNavigation PhysX Wait");
+            m_taskGraph.Reset();
+
+            AZStd::vector<AZStd::shared_ptr<TileGeometry>> tiles;
+
+            const AZ::Vector3 extents = worldVolume.GetExtents();
+            int tilesAlongX = aznumeric_cast<int>(AZStd::ceil(extents.GetX() / tileSize));
+            int tilesAlongY = aznumeric_cast<int>(AZStd::ceil(extents.GetY() / tileSize));
+
+            const AZ::Vector3& worldMin = worldVolume.GetMin();
+            const AZ::Vector3& worldMax = worldVolume.GetMax();
+
+            const AZ::Vector3 border = AZ::Vector3::CreateOne() * borderSize;
+
+            AZStd::vector<AZ::TaskToken> tileTaskTokens;
+
+            // Create tasks for each tile and a finish task.
+            for (int y = 0; y < tilesAlongY; ++y)
+            {
+                for (int x = 0; x < tilesAlongX; ++x)
+                {
+                    const AZ::Vector3 tileMin{ worldMin.GetX() + aznumeric_cast<float>(x) * tileSize,
+                                               worldMin.GetY() + aznumeric_cast<float>(y) * tileSize,
+                                               worldMin.GetZ() };
+
+                    const AZ::Vector3 tileMax{ worldMin.GetX() + aznumeric_cast<float>(x + 1) * tileSize,
+                                               worldMin.GetY() + aznumeric_cast<float>(y + 1) * tileSize,
+                                               worldMax.GetZ() };
+
+                    AZ::Aabb tileVolume = AZ::Aabb::CreateFromMinMax(tileMin, tileMax);
+
+                    bool tileIsAffected = false;
+
+                    for (auto aabb : changedGeometry)
+                    {
+                        if (tileVolume.Overlaps(aabb))
+                        {
+                            tileIsAffected = true;
+                            break;
+                        }
+                    }
+
+                    if (tileIsAffected)
+                    {
+                        AZ::Aabb scanVolume = AZ::Aabb::CreateFromMinMax(tileMin - border, tileMax + border);
+                        AZStd::shared_ptr<TileGeometry> geometryData = AZStd::make_unique<TileGeometry>();
+                        geometryData->m_tileCallback = tileCallback;
+                        geometryData->m_worldBounds = tileVolume;
+                        geometryData->m_scanBounds = scanVolume;
+                        geometryData->m_tileX = x;
+                        geometryData->m_tileY = y;
+
+                        AZ::TaskToken token = m_taskGraph.AddTask(
+                            m_taskDescriptor,
+                            [this, geometryData]()
+                            {
+                                if (m_shouldProcessTiles)
+                                {
+                                    AZ_PROFILE_SCOPE(Navigation, "Navigation: collecting geometry for a tile");
+                                    QueryHits results;
+                                    CollectCollidersWithinVolume(geometryData->m_scanBounds, results);
+                                    AppendColliderGeometry(*geometryData, results);
+                                    geometryData->m_tileCallback(geometryData);
+                                }
+                            });
+
+                        tileTaskTokens.push_back(AZStd::move(token));
+                    }
+                }
+            }
+
+            AZ::TaskToken finishToken = m_taskGraph.AddTask(
+                m_taskDescriptor,
+                [this, tileCallback]()
+                {
+                    tileCallback({}); // Notifies the caller that the operation is done.
+                    m_updateInProgress = false;
+                });
+
+            for (AZ::TaskToken& task : tileTaskTokens)
+            {
+                task.Precedes(finishToken);
+            }
+
+            AZ_Assert(
+                m_taskGraphEvent->IsSignaled() == false,
+                "RecastNavigationPhysXProviderComponentController might be runtime two async gather operations, which is not supported.");
+            m_taskGraph.SubmitOnExecutor(m_taskExecutor, m_taskGraphEvent.get());
+            return true;
+        }
+
+        return false;
+    }
+#else  // CARBONATED
+
+    // Adjust the origin, so that any tile over-extension is even across all sides.
+    // Note, navigation mesh is made up of square tiles. Recast does not support uneven tiles,
+    // so the best we can do is even them out. Additionally, users can set their own tile size on @RecastNavigationMeshComponent.
+    AZ::Vector3 GetAdjustedOriginBasedOnTileSize(const AZ::Aabb& worldVolume, float tileSize)
+    {
+        if (tileSize <= 0.f)
+        {
+            AZ_Warning("Recast Navigation", true, "Tile size is invalid. It should be a positive number.");
+            return AZ::Vector3::CreateZero();
+        }
+
+        AZ::Vector3 origin = worldVolume.GetMin();
+        const AZ::Vector3& extents = worldVolume.GetExtents();
+
+        const float tileOverExtensionOnX = AZStd::ceil(extents.GetX() / tileSize) * tileSize - extents.GetX();
+        origin.SetX(origin.GetX() - tileOverExtensionOnX / 2.f);
+
+        const float tileOverExtensionOnY = AZStd::ceil(extents.GetY() / tileSize) * tileSize - extents.GetY();
+        origin.SetY(origin.GetY() - tileOverExtensionOnY / 2.f);
+
+        return origin;
+    }
+
+    bool RecastNavigationPhysXProviderComponentController::CollectGeometryAsyncImpl(
+        float tileSize, float borderSize, const AZ::Aabb& worldVolume, AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback)
+    {
+        bool notInProgress = false;
+        if (!m_updateInProgress.compare_exchange_strong(notInProgress, true))
+        {
+            return false;
+        }
+
+        if (!m_taskGraphEvent || m_taskGraphEvent->IsSignaled())
+        {
+            AZ_PROFILE_SCOPE(Navigation, "Navigation: CollectGeometryAsync");
+
+            m_taskGraphEvent = AZStd::make_unique<AZ::TaskGraphEvent>("RecastNavigation PhysX Wait");
+            m_taskGraph.Reset();
+
+            AZStd::vector<AZStd::shared_ptr<TileGeometry>> tiles;
+
+            const AZ::Vector3 extents = worldVolume.GetExtents();
+            int tilesAlongX = aznumeric_cast<int>(AZStd::ceil(extents.GetX() / tileSize));
+            int tilesAlongY = aznumeric_cast<int>(AZStd::ceil(extents.GetY() / tileSize));
+
+            const AZ::Vector3 worldOrigin = GetAdjustedOriginBasedOnTileSize(worldVolume, tileSize);
+            const AZ::Vector3 worldMax(
+                worldOrigin.GetX() + tileSize * aznumeric_cast<float>(tilesAlongX),
+                worldOrigin.GetY() + tileSize * aznumeric_cast<float>(tilesAlongY),
+                worldVolume.GetMax().GetZ());
+
+            const AZ::Vector3 border = AZ::Vector3::CreateOne() * borderSize;
+
+            AZStd::vector<AZ::TaskToken> tileTaskTokens;
+
+            // Create tasks for each tile and a finish task.
+            for (int y = 0; y < tilesAlongY; ++y)
+            {
+                for (int x = 0; x < tilesAlongX; ++x)
+                {
+                    const AZ::Vector3 tileMin{ worldOrigin.GetX() + aznumeric_cast<float>(x) * tileSize,
+                                               worldOrigin.GetY() + aznumeric_cast<float>(y) * tileSize,
+                                               worldOrigin.GetZ() };
+
+                    const AZ::Vector3 tileMax{ worldOrigin.GetX() + aznumeric_cast<float>(x + 1) * tileSize,
+                                               worldOrigin.GetY() + aznumeric_cast<float>(y + 1) * tileSize,
+                                               worldMax.GetZ() };
+
+                    AZ::Aabb tileVolume = AZ::Aabb::CreateFromMinMax(tileMin, tileMax);
+                    AZ::Aabb scanVolume = AZ::Aabb::CreateFromMinMax(tileMin - border, tileMax + border);
+                    AZStd::shared_ptr<TileGeometry> geometryData = AZStd::make_unique<TileGeometry>();
+                    geometryData->m_tileCallback = tileCallback;
+                    geometryData->m_worldBounds = tileVolume;
+                    geometryData->m_scanBounds = scanVolume;
+                    geometryData->m_tileX = x;
+                    geometryData->m_tileY = y;
+
+                    AZ::TaskToken token = m_taskGraph.AddTask(
+                        m_taskDescriptor,
+                        [this, geometryData]()
+                        {
+                            if (m_shouldProcessTiles)
+                            {
+                                AZ_PROFILE_SCOPE(Navigation, "Navigation: collecting geometry for a tile");
+                                QueryHits results;
+                                CollectCollidersWithinVolume(geometryData->m_scanBounds, results);
+                                AppendColliderGeometry(*geometryData, results);
+                                geometryData->m_tileCallback(geometryData);
+                            }
+                        });
+
+                    tileTaskTokens.push_back(AZStd::move(token));
+                }
+            }
+
+            AZ::TaskToken finishToken = m_taskGraph.AddTask(
+                m_taskDescriptor,
+                [this, tileCallback]()
+                {
+                    tileCallback({}); // Notifies the caller that the operation is done.
+                    m_updateInProgress = false;
+                });
+
+            for (AZ::TaskToken& task : tileTaskTokens)
+            {
+                task.Precedes(finishToken);
+            }
+
+            AZ_Assert(
+                m_taskGraphEvent->IsSignaled() == false,
+                "RecastNavigationPhysXProviderComponentController might be runtime two async gather operations, which is not supported.");
+            m_taskGraph.SubmitOnExecutor(m_taskExecutor, m_taskGraphEvent.get());
+            return true;
+        }
+
+        return false;
+    }
+
+#endif  // CARBONATED
+
 } // namespace RecastNavigation
