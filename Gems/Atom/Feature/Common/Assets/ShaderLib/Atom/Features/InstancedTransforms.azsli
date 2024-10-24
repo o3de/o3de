@@ -26,7 +26,7 @@ float4x4 GetObjectToWorldMatrix(uint instanceId)
     }
     else
     {
-        return ObjectSrg::GetWorldMatrix();
+        return SceneSrg::GetObjectToWorldMatrix(ObjectSrg::m_objectId);
     }
 }
 
@@ -40,7 +40,7 @@ float3x3 GetObjectToWorldMatrixInverseTranspose(uint instanceId)
     }
     else
     {
-        return ObjectSrg::GetWorldMatrixInverseTranspose();
+        return SceneSrg::GetObjectToWorldInverseTransposeMatrix(ObjectSrg::m_objectId);
     }
 }
 
@@ -53,6 +53,6 @@ float4x4 GetObjectToWorldMatrixPrev(uint instanceId)
     }
     else
     {
-        return ObjectSrg::GetWorldMatrixPrev();
+        return SceneSrg::GetObjectToWorldMatrixPrev(ObjectSrg::m_objectId);
     }
 }

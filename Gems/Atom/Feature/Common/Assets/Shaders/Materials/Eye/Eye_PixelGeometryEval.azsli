@@ -16,7 +16,6 @@
 #endif
 
 #include "../MaterialFunctions/EvaluateTangentFrame.azsli"
-#include <Atom/Features/InstancedTransforms.azsli>
 
 // TODO: The body of this function is copy pasted from BasePBR_PixelGeometryEval.azsli as that file could not be included here
 // since the file references an option o_normal_useTexture, which is not defined for the Eye shader. Need to find an elegant
@@ -77,10 +76,10 @@ PixelGeometryData EvaluatePixelGeometry_Eye(
     return geoData;
 }
 
-PixelGeometryData EvaluatePixelGeometry_Eye(VsOutput IN, bool isFrontFace, const MaterialParameters params)
+PixelGeometryData EvaluatePixelGeometry_Eye(VsOutput IN,  VsSystemValues SV, bool isFrontFace, const MaterialParameters params)
 {
-    real4x4 objectToWorld = real4x4(GetObjectToWorldMatrix(IN.m_instanceId));
-    real3x3 objectToWorldIT = real3x3(GetObjectToWorldMatrixInverseTranspose(IN.m_instanceId));
+    real4x4 objectToWorld = real4x4(GetObjectToWorldMatrix(SV));
+    real3x3 objectToWorldIT = real3x3(GetObjectToWorldMatrixInverseTranspose(SV));
 
     real3 normalWS, tangentWS, bitangentWS;
     ConstructTBN(real3(IN.normal), real4(IN.tangent), objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);

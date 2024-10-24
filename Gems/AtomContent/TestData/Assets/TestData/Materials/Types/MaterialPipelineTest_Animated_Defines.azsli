@@ -1,0 +1,70 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+ 
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+
+ShaderResourceGroup MaterialSrg : SRG_PerMaterial
+{
+    float3 m_baseColor;
+    float m_metallic;
+    float m_roughness;
+    float m_animationSpeed;
+    float m_amplitude;
+    float m_frequency;
+}
+
+#if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
+
+#define MATERIAL_HAS_UVS 0
+
+    // by default the Vertex-Data is empty, so enable the parts we need
+    #define PIPELINE_VERTEX_POSITION 1
+    #define PIPELINE_VERTEX_POSITIONWS 1
+    // #define PIPELINE_VERTEX_LOCALPOSITION 1
+    // #define PIPELINE_VERTEX_PREV_POSITION 1
+    #define PIPELINE_VERTEX_NORMAL 1
+    #define PIPELINE_VERTEX_TANGENT 1
+    // #define PIPELINE_VERTEX_BITANGENT 1
+    // #define PIPELINE_VERTEX_UV 1
+    // #define PIPELINE_VERTEX_DETAIL_UV 1
+    // #define PIPELINE_VERTEX_COLOR 1
+    // #define PIPELINE_VERTEX_BLENDMASK 1
+
+    class PixelGeometryData
+    {
+        float3 positionWS;
+        float3 vertexNormal;
+
+        //TODO(MaterialPipeline): use these or remove them
+        float3 tangents[1];
+        float3 bitangents[1];
+    };
+
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_SurfaceData.azsli>
+
+#else
+
+    // by default the Vertex-Data is empty, so enable the parts we need
+    #define PIPELINE_VERTEX_POSITION 1
+    // #define PIPELINE_VERTEX_LOCALPOSITION 1
+#if MATERIALPIPELINE_USES_PREV_VERTEX_POSITION
+    #define PIPELINE_VERTEX_POSITIONWS 1
+    #define PIPELINE_VERTEX_PREV_POSITION 1
+#endif
+    // #define PIPELINE_VERTEX_NORMAL 1
+    // #define PIPELINE_VERTEX_TANGENT 1
+    // #define PIPELINE_VERTEX_BITANGENT 1
+    // #define PIPELINE_VERTEX_UV 1
+    // #define PIPELINE_VERTEX_DETAIL_UV 1
+    // #define PIPELINE_VERTEX_COLOR 1
+    // #define PIPELINE_VERTEX_BLENDMASK 1
+#endif

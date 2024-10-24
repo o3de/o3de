@@ -50,3 +50,12 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     // And the shaders can calculate linear depth themselves
     uint m_isOriginalDepth;
 }
+
+float2 SampleBrdfMap(float2 brdfUV)
+{
+#ifdef CS_SAMPLERS
+    return PassSrg::m_brdfMap.SampleLevel(PassSrg::LinearSampler, brdfUV, 0).rg;
+#else
+    return PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, brdfUV).rg;
+#endif // CS_SAMPLERS
+}
