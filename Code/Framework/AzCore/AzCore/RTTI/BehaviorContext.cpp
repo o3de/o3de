@@ -10,8 +10,6 @@
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/Component/EntityBus.h>
 
-DECLARE_EBUS_INSTANTIATION(BehaviorContextEvents);
-
 namespace AZ
 {
     // Definitions for TypeInfo and RTTI functions

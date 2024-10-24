@@ -298,9 +298,9 @@ namespace AZ
     }   // namespace Data
 }   // namespace AZ
 
-DECLARE_EBUS_EXTERN(Data::AssetManagerNotifications);
-DECLARE_EBUS_EXTERN(Data::AssetCatalogRequests);
-DECLARE_EBUS_EXTERN(Data::AssetManagerEvents);
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(Data::AssetManagerNotifications);
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(Data::AssetCatalogRequests);
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(Data::AssetManagerEvents);
 
 #endif  // AZCORE_ASSET_DATABASE_BUS_H
 #pragma once

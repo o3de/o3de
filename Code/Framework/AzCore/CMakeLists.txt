@@ -73,7 +73,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME AzCore STATIC
+    NAME AzCore.Static STATIC
     NAMESPACE AZ
     FILES_CMAKE
         AzCore/azcore_files.cmake
@@ -98,6 +98,17 @@ ly_add_target(
             3rdParty::cityhash
             AZ::O3DEKernel
 )
+
+ly_add_target(
+    NAME AzCore ${PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE}
+    NAMESPACE AZ
+    FILES_CMAKE
+        AzCore/azcoreshared_files.cmake
+    BUILD_DEPENDENCIES
+        PUBLIC
+            AZ::AzCore.Static
+)
+
 ly_add_source_properties(
     SOURCES
         AzCore/Script/ScriptSystemComponent.cpp
