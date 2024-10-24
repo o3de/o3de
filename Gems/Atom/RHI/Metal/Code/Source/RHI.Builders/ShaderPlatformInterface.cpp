@@ -412,7 +412,12 @@ namespace AZ
             if (isGraphicsDevModeEnabled)
             {
                 //Embed debug symbols into the bytecode
+#if defined CARBONATED
+                // -MO is deprecated
+                RHI::ShaderBuildArguments::AppendArguments(metalAirArguments, { "-gline-tables-only", "-frecord-sources" });
+#else
                 RHI::ShaderBuildArguments::AppendArguments(metalAirArguments, { "-gline-tables-only", "-MO" });
+#endif
             }
             
             const auto metalAirArgumentsStr = RHI::ShaderBuildArguments::ListAsString(metalAirArguments);
@@ -520,6 +525,18 @@ namespace AZ
                 finalMetalSLStr.insert(startOfShaderPos + startOfShaderTag.length() + 1, structuredBufferTempStructs);
             }
 
+#if defined(CARBONATED)
+            // optimization off attribute (from SPIRVCross) makes the render 20 times slower, we drop the attribute here, but calculation precision might suffer causing z-fighting
+            constexpr const char* strToFind = "[[clang::optnone]]";
+            const size_t strToFindLen = strlen(strToFind);
+            size_t pos = finalMetalSLStr.find(strToFind);
+            while (pos != AZStd::string::npos)
+            {
+                finalMetalSLStr.erase(pos, strToFindLen);
+                pos = finalMetalSLStr.find(strToFind, pos);
+            }
+#endif
+            
             compiledShader = AZStd::vector<char>(finalMetalSLStr.begin(), finalMetalSLStr.end());
             return true;
         }
