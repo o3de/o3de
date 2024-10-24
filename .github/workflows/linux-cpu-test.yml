@@ -3,8 +3,8 @@ name: Linux Profile CPU Test
 on:
   workflow_dispatch:
   workflow_call:
-  # push:
-  #     paths: '.github/workflows/linux-cpu-test.yml'
+  push:
+       paths: '.github/workflows/linux-cpu-test.yml'
 
 jobs:
   Build-CPU-Test:
@@ -86,7 +86,8 @@ jobs:
         with:
           name: O3DE-${{ matrix.platform }}-ccache
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ vars.Linux_ARTIFACT_RUNID }}
+         # run-id: ${{ vars.Linux_ARTIFACT_RUNID }}
+          run-id: 11358787829
           path: ${{ github.workspace }}/.ccache/
 
       - name: Restore build
