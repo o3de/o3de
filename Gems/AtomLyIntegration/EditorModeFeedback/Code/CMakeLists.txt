@@ -21,7 +21,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzCore
                 AZ::AzToolsFramework
                 Gem::Atom_RPI.Public
-                Gem::Atom_Feature_Common.Static
+                Gem::Atom_Feature_Common.Public
                 Gem::CommonFeaturesAtom.Static
     )
 

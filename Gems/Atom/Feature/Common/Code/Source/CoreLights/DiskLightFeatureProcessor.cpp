@@ -8,13 +8,13 @@
 
 #include <CoreLights/DiskLightFeatureProcessor.h>
 #include <CoreLights/SpotLightUtils.h>
+#include <Mesh/MeshFeatureProcessor.h>
 
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>
 
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 
 #include <Atom/RHI/Factory.h>
 

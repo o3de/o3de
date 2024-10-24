@@ -16,7 +16,6 @@
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Render/DiffuseProbeGridFeatureProcessor.h>
 #include <DiffuseProbeGrid_Traits_Platform.h>
-#include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/Feature/SpecularReflections/SpecularReflectionsFeatureProcessorInterface.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>

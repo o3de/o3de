@@ -8,7 +8,7 @@
 
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
 #include <ACES/Aces.h>
-#include <Atom/Feature/LookupTable/LookupTableAsset.h>
+#include <LookupTable/LookupTableAsset.h>
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>

@@ -7,10 +7,10 @@
  */
 
 #include <EditorCommonSystemComponent.h>
-#include <Source/Material/UseTextureFunctorSourceData.h>
-#include <Source/Material/SubsurfaceTransmissionParameterFunctorSourceData.h>
-#include <Source/Material/Transform2DFunctorSourceData.h>
-#include <Source/Material/ConvertEmissiveUnitFunctorSourceData.h>
+#include <Material/UseTextureFunctorSourceData.h>
+#include <Material/SubsurfaceTransmissionParameterFunctorSourceData.h>
+#include <Material/Transform2DFunctorSourceData.h>
+#include <Material/ConvertEmissiveUnitFunctorSourceData.h>
 
 #include <Atom/Feature/Utils/EditorLightingPreset.h>
 #include <Atom/Feature/Utils/EditorModelPreset.h>

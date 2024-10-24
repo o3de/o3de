@@ -6,7 +6,7 @@
  *
  */
 
-#include <Atom/Feature/DisplayMapper/DisplayMapperPass.h>
+#include <DisplayMapper/DisplayMapperPass.h>
 #include <ACES/Aces.h>
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
 #include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>

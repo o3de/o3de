@@ -6,7 +6,7 @@
  *
  */
 
-#include <Source/Mesh/ModelReloader.h>
+#include <Mesh/ModelReloader.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Public/Model/Model.h>
 

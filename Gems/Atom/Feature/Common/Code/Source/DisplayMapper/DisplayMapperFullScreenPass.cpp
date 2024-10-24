@@ -6,7 +6,7 @@
  *
  */
 
-#include <Atom/Feature/DisplayMapper/DisplayMapperFullScreenPass.h>
+#include <DisplayMapper/DisplayMapperFullScreenPass.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 
 #include <Atom/RHI/Factory.h>

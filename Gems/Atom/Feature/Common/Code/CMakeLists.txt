@@ -10,33 +10,28 @@ o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLAT
 set(common_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common)
 
 ly_add_target(
-    NAME ${gem_name}.Static STATIC
+    NAME ${gem_name}.Private.Object OBJECT
     NAMESPACE Gem
     FILES_CMAKE
         atom_feature_common_files.cmake
-        atom_feature_common_staticlibrary_files.cmake
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     PLATFORM_INCLUDE_FILES
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
-            .
-            Source
-            ${pal_source_dir}
-        PUBLIC
             Include
             Source
+            ${pal_source_dir}
+            3rdParty/ACES
     COMPILE_DEFINITIONS
         PRIVATE
             IMGUI_DISABLE_OBSOLETE_FUNCTIONS
     BUILD_DEPENDENCIES
-        PRIVATE
+        PUBLIC
             AZ::AzCore
             AZ::AzFramework
-        PUBLIC
             Gem::Atom_RPI.Public
             Gem::Atom_Utils.Static
-            Gem::${gem_name}.Public
             Gem::ImGui.imguilib
             3rdParty::TIFF
     RUNTIME_DEPENDENCIES
@@ -50,7 +45,6 @@ ly_add_target(
         atom_feature_common_public_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
-            .
             Source
             ${pal_source_dir}
         PUBLIC
@@ -81,14 +75,11 @@ ly_add_target(
         PRIVATE
             Source
             ${pal_source_dir}
-        PUBLIC
-            Include
     BUILD_DEPENDENCIES
-        PRIVATE
-            AZ::AzCore
-            AZ::AzFramework
-            Gem::${gem_name}.Static
+        PUBLIC
             Gem::${gem_name}.Public
+        PRIVATE
+            Gem::${gem_name}.Private.Object
 )
 
 ly_add_target(
@@ -111,7 +102,7 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
-            Gem::${gem_name}.Static
+            Gem::${gem_name}.Private.Object
             Gem::${gem_name}.Public
 )
 
@@ -142,7 +133,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             ${runtime_dependencies_tools}
         INCLUDE_DIRECTORIES
             PRIVATE
-                .
                 Source
                 ${pal_source_dir}
             PUBLIC
@@ -161,7 +151,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Atom_RPI.Edit
                 Gem::Atom_RPI.Public
                 Gem::Atom_Utils.Static
-                Gem::${gem_name}.Static
+                Gem::${gem_name}.Private.Object
                 Gem::${gem_name}.Public
     )
 
@@ -205,6 +195,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             atom_feature_common_tests_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
+                Source
                 Tests
             PUBLIC
                 Mocks
@@ -212,7 +203,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzFramework
                 AZ::AzTest
-                Gem::${gem_name}.Static
+                Gem::${gem_name}.Private.Object
                 Gem::${gem_name}.Public
     )
     ly_add_googletest(

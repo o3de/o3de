@@ -73,7 +73,7 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             Gem::Atom_RPI.Public
-            Gem::Atom_Feature_Common.Static
+            Gem::Atom_Feature_Common.Public
             Gem::CommonFeaturesAtom.Static
             Legacy::CryCommon
 )

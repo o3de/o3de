@@ -43,9 +43,8 @@ namespace AZ
             void RemoveSettingsInterface(EntityId entityId) override;
             void OnPostProcessSettingsChanged() override;
             PostProcessSettings* GetLevelSettingsFromView(AZ::RPI::ViewPtr view);
-
-            void SetViewAlias(const AZ::RPI::ViewPtr sourceView, const AZ::RPI::ViewPtr targetView);
-            void RemoveViewAlias(const AZ::RPI::ViewPtr sourceView);
+            void SetViewAlias(const AZ::RPI::ViewPtr sourceView, const AZ::RPI::ViewPtr targetView) override;
+            void RemoveViewAlias(const AZ::RPI::ViewPtr sourceView) override;
 
         private:
             PostProcessFeatureProcessor(const PostProcessFeatureProcessor&) = delete;

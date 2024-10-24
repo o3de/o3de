@@ -20,13 +20,13 @@
 #include <Atom/RPI.Reflect/Pass/FullscreenTrianglePassData.h>
 
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
-#include <Atom/Feature/DisplayMapper/AcesOutputTransformLutPass.h>
-#include <Atom/Feature/DisplayMapper/AcesOutputTransformPass.h>
-#include <Atom/Feature/DisplayMapper/ApplyShaperLookupTablePass.h>
-#include <Atom/Feature/DisplayMapper/BakeAcesOutputTransformLutPass.h>
-#include <Atom/Feature/DisplayMapper/DisplayMapperFullScreenPass.h>
 #include <Atom/Feature/DisplayMapper/DisplayMapperConfigurationDescriptor.h>
-#include <Atom/Feature/DisplayMapper/OutputTransformPass.h>
+#include <DisplayMapper/AcesOutputTransformLutPass.h>
+#include <DisplayMapper/AcesOutputTransformPass.h>
+#include <DisplayMapper/ApplyShaperLookupTablePass.h>
+#include <DisplayMapper/BakeAcesOutputTransformLutPass.h>
+#include <DisplayMapper/DisplayMapperFullScreenPass.h>
+#include <DisplayMapper/OutputTransformPass.h>
 
 #include <AzFramework/Windowing/WindowBus.h>
 

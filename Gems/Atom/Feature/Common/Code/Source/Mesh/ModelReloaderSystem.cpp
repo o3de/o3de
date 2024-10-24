@@ -6,8 +6,8 @@
  *
  */
 
-#include <Source/Mesh/ModelReloaderSystem.h>
-#include <Source/Mesh/ModelReloader.h>
+#include <Mesh/ModelReloaderSystem.h>
+#include <Mesh/ModelReloader.h>
 #include <AzCore/std/parallel/scoped_lock.h>
 
 namespace AZ

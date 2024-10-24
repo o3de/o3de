@@ -231,7 +231,7 @@ ly_add_target(
             AZ::AtomCore
             AZ::AzFramework
             AZ::AzNetworking
-            Gem::Atom_Feature_Common.Static
+            Gem::Atom_Feature_Common.Public
             Gem::${gem_name}.Client.Static
             Gem::ImGui.Static
 )
@@ -253,7 +253,7 @@ ly_add_target(
             AZ::AtomCore
             AZ::AzFramework
             AZ::AzNetworking
-            Gem::Atom_Feature_Common.Static
+            Gem::Atom_Feature_Common.Public
             Gem::${gem_name}.Unified.Static
             Gem::ImGui.Static
 )

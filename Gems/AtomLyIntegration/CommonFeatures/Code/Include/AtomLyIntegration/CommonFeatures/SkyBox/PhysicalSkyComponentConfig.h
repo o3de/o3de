@@ -11,7 +11,7 @@
 #include <AzCore/Component/Component.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/SkyBox/SkyboxConstants.h>
-#include <SkyBox/SkyBoxFogSettings.h>
+#include <Atom/Feature/SkyBox/SkyBoxFogSettings.h>
 
 namespace AZ
 {

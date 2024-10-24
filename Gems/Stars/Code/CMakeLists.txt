@@ -76,7 +76,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 AZ::AzToolsFramework
                 Gem::${gem_name}.Static
-                Gem::Atom_Feature_Common.Static
                 Gem::Atom_Feature_Common.Public
     )
 
