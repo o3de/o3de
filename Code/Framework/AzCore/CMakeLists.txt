@@ -79,6 +79,9 @@ ly_add_target(
         AzCore/azcore_files.cmake
         AzCore/std/azstd_files.cmake
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+    COMPILE_DEFINITIONS
+        PRIVATE
+            AZCORE_EXPORTS
     PLATFORM_INCLUDE_FILES
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
