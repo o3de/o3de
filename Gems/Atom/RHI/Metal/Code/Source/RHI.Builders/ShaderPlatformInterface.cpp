@@ -412,7 +412,7 @@ namespace AZ
             if (isGraphicsDevModeEnabled)
             {
                 //Embed debug symbols into the bytecode
-#if defined CARBONATED
+#if defined(CARBONATED)
                 // -MO is deprecated
                 RHI::ShaderBuildArguments::AppendArguments(metalAirArguments, { "-gline-tables-only", "-frecord-sources" });
 #else
