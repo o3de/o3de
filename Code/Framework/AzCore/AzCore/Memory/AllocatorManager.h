@@ -230,10 +230,10 @@ namespace AZ
 
     private:
         void ConfigureTrackingForAllocator(IAllocator* alloc, const AllocatorTrackingConfig& foundTrackingConfigIt);
-		
-	
+
+
 #if defined(CARBONATED)
-	private:
+    private:
         // this is a specfic stack that can grow beyond its capacity not storing values
         template<typename Data, int Size>
         class DataStack
