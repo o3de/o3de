@@ -647,9 +647,10 @@ namespace AZ
 
                     addVisibleObjectsToBucketsTG.AddTask(
                         addVisibleObjectsToBucketsTaskDescriptor,
-                        [this, view, viewIndex, batchStart, currentBatchCount]()
+                        // Don't capture the shared_ptr because that causes incorrect ref counting when copying/moving the lambda
+                        [this, viewPtr = view.get(), viewIndex, batchStart, currentBatchCount]()
                         {
-                            RPI::VisibleObjectListView visibilityList = view->GetVisibleObjectList();
+                            RPI::VisibleObjectListView visibilityList = viewPtr->GetVisibleObjectList();
                             AZStd::vector<InstanceGroupBucket>& currentViewInstanceGroupBuckets = m_perViewInstanceGroupBuckets[viewIndex];
                             for (size_t i = batchStart; i < batchStart + currentBatchCount; ++i)
                             {
