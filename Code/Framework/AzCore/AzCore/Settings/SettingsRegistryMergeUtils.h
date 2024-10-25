@@ -189,13 +189,11 @@ namespace AZ::SettingsRegistryMergeUtils
             UseFileIOOnly
         };
 
-// Carbonated changes begin (alukyanov)
-#if defined(LINUX)
+#if defined(CARBONATED) && defined(AZ_PLATFORM_LINUX)
         FileReaderClass m_fileReaderClass = FileReaderClass::UseSystemFileOnly;
 #else
         FileReaderClass m_fileReaderClass = FileReaderClass::UseFileIOIfAvailableFallbackToSystemFile;
-#endif // LINUX
-// Carbonated changes end
+#endif
 
     };
     //! Loads basic configuration files which have structures similar to Windows INI files
