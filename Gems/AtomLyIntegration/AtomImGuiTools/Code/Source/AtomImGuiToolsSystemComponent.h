@@ -20,6 +20,7 @@
 #include <Atom/Utils/ImGuiPassTree.h>
 #include <Atom/Utils/ImGuiMaterialDetails.h>
 #include <Atom/Utils/ImGuiTransientAttachmentProfiler.h>
+#include <Atom/Utils/ImGuiHeapProfiler.h>
 #include <AtomLyIntegration/AtomImGuiTools/AtomImGuiToolsBus.h>
 #include <AzCore/std/containers/set.h>
 #include <MaterialShaderDetailsController.h>
@@ -76,6 +77,9 @@ namespace AtomImGuiTools
         AZ::Render::ImGuiMaterialDetails m_imguiMaterialDetails;
         bool m_showMaterialDetails = false;
         MaterialShaderDetailsController m_materialDetailsController;
+
+        AZ::Render::ImGuiHeapProfiler m_imguiHeapProfiler;
+        bool m_showHeapProfiler = false;
 
         // switchable render pipelines
         AZStd::set<AZStd::string> m_switchableRenderPipelines;

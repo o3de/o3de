@@ -131,4 +131,8 @@ set(FILES
     Include/Atom/RHI.Reflect/ShaderInputNameIndex.h
     Source/RHI.Reflect/ShaderInputNameIndex.cpp
     Include/Atom/RHI.Reflect/VariableRateShadingEnums.h
+    Source/RHI.Reflect//Allocators.cpp
+    Include/Atom/RHI.Reflect/Allocators.h
+    Source/RHI.Reflect//AllocatorManager.cpp
+    Include/Atom/RHI.Reflect/AllocatorManager.h
 )

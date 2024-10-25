@@ -10,6 +10,8 @@
 #include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/ValidationLayer.h>
 
+#include <Atom/RHI.Reflect/AllocatorManager.h>
+
 #include <RHI.Private/FactoryManagerSystemComponent.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
@@ -20,7 +22,7 @@
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/IO/LocalFileIO.h>
-
+#include <AzFramework/StringFunc/StringFunc.h>
 
 namespace AZ::RHI
 {
@@ -31,7 +33,8 @@ namespace AZ::RHI
             serializeContext->Class<FactoryManagerSystemComponent, AZ::Component>()
                 ->Version(1)
                 ->Field("factoriesPriority", &FactoryManagerSystemComponent::m_factoriesPriority)
-                ->Field("validationMode", &FactoryManagerSystemComponent::m_validationMode);
+                ->Field("validationMode", &FactoryManagerSystemComponent::m_validationMode)
+                ->Field("profileMemory", &FactoryManagerSystemComponent::m_profileAllocations);
 
             if (AZ::EditContext* ec = serializeContext->GetEditContext())
             {
@@ -51,7 +54,8 @@ namespace AZ::RHI
                             "Verbose - Enables warnings, error and information messages."),
                         AZ::Edit::EnumConstant<RHI::ValidationMode>(RHI::ValidationMode::GPU,
                             "GPU - Enables based validation."),
-                });
+                })
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &FactoryManagerSystemComponent::m_profileAllocations, "Profile memory", "Enable/Disable profiling of memory allocations");
             }
                 
         }
@@ -75,8 +79,10 @@ namespace AZ::RHI
 
     void FactoryManagerSystemComponent::Activate()
     {
+        UpdateProfileAllocationsFromCommandLine();
         UpdateValidationModeFromCommandline();
         FactoryManagerBus::Handler::BusConnect();
+        AllocatorManager::Instance().SetProfilingMode(m_profileAllocations);
     }
 
     void FactoryManagerSystemComponent::Deactivate()
@@ -209,6 +215,22 @@ namespace AZ::RHI
     void FactoryManagerSystemComponent::UpdateValidationModeFromCommandline()
     {
         m_validationMode = AZ::RHI::ReadValidationMode();
+    }
+
+    void FactoryManagerSystemComponent::UpdateProfileAllocationsFromCommandLine()
+    {
+        AZStd::string cmdLineValue = RHI::GetCommandLineValue("rhi-memory-profile");
+        if (!cmdLineValue.empty())
+        {
+            if (AzFramework::StringFunc::Equal(cmdLineValue.c_str(), "disable"))
+            {
+                m_profileAllocations = false;
+            }
+            else if (AzFramework::StringFunc::Equal(cmdLineValue.c_str(), "enable"))
+            {
+                m_profileAllocations = true;
+            }
+        }
     }
 
     void FactoryManagerSystemComponent::EnumerateFactories(AZStd::function<bool(Factory* factory)> callback)

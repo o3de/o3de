@@ -31,15 +31,15 @@ namespace AZ
 
     namespace Metal
     {
-        using ShaderSourceCode = AZStd::vector<char>;
-        using ShaderByteCode = AZStd::vector<uint8_t>;
+        using ShaderSourceCode = AZStd::vector<char, RHI::ShaderStageFunction::Allocator>;
+        using ShaderByteCode = AZStd::vector<uint8_t, RHI::ShaderStageFunction::Allocator>;
 
         class ShaderStageFunction
             : public RHI::ShaderStageFunction
         {
         public:
             AZ_RTTI(ShaderStageFunction, "{44E51B8E-CFEE-4A63-8DC2-65CDCA0E373B}", RHI::ShaderStageFunction);
-            AZ_CLASS_ALLOCATOR(ShaderStageFunction, AZ::SystemAllocator);
+            AZ_CLASS_ALLOCATOR_DECL
 
             static void Reflect(AZ::ReflectContext* context);
 

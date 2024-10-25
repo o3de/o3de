@@ -104,6 +104,10 @@ namespace AtomImGuiTools
                 m_showTransientAttachmentProfiler = m_imguiTransientAttachmentProfiler.Draw(transientStats);
             }
         }
+        if (m_showHeapProfiler)
+        {
+            m_imguiHeapProfiler.Draw(m_showHeapProfiler);
+        }
 
         m_showMaterialDetails = m_imguiMaterialDetails.Tick(m_materialDetailsController.GetMeshDrawPackets(), m_materialDetailsController.GetSelectionName().c_str());
     }
@@ -139,6 +143,7 @@ namespace AtomImGuiTools
             {
                 AZ::RHI::GraphicsProfilerBus::Broadcast(&AZ::RHI::GraphicsProfilerBus::Events::TriggerCapture);
             }
+            ImGui::MenuItem("Heap Memory Profiler", "", &m_showHeapProfiler, AZ::RHI::AllocatorManager::Instance().GetProfilingMode());
             ImGui::EndMenu();
         }
 

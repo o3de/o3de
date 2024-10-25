@@ -15,6 +15,8 @@ namespace AZ
 {
     namespace Vulkan
     {
+        AZ_CLASS_ALLOCATOR_IMPL(ShaderStageFunction, RHI::ShaderStageFunctionAllocator)
+
         void ShaderStageFunction::Reflect(ReflectContext* context)
         {
             if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
@@ -36,10 +38,12 @@ namespace AZ
             return aznew ShaderStageFunction(shaderStage);
         }
 
-        void ShaderStageFunction::SetByteCode(uint32_t subStageIndex, const ShaderByteCode& byteCode, const AZStd::string_view& entryFunctionName)
+        void ShaderStageFunction::SetByteCode(
+            uint32_t subStageIndex, const AZStd::vector<uint8_t>& byteCode, const AZStd::string_view& entryFunctionName)
         {
             AZ_Assert(subStageIndex < ShaderSubStageCountMax, "SubStage index is out of bound.");
-            m_byteCodes[subStageIndex] = byteCode;
+            m_byteCodes[subStageIndex].resize(byteCode.size());
+            ::memcpy(m_byteCodes[subStageIndex].data(), byteCode.data(), byteCode.size());
             m_entryFunctionNames[subStageIndex] = entryFunctionName;
         }
 

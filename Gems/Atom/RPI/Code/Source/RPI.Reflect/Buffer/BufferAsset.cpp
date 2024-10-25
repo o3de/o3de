@@ -18,6 +18,8 @@ namespace AZ
 
     namespace RPI
     {
+        AZ_CLASS_ALLOCATOR_IMPL(BufferAsset, BufferAssetAllocator)
+
         void BufferAsset::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))

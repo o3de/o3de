@@ -9,7 +9,7 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
-
+#include <Atom/RPI.Reflect/Allocators.h>
 #include <Atom/RHI.Reflect/ImageSubresource.h>
 
 #include <Atom/RHI/StreamingImagePool.h>
@@ -49,7 +49,7 @@ namespace AZ
             static constexpr const char* Extension{ "imagemipchain" };
 
             AZ_RTTI(ImageMipChainAsset, "{CB403C8A-6982-4C9F-8090-78C9C36FBEDB}", Data::AssetData);
-            AZ_CLASS_ALLOCATOR(ImageMipChainAsset, AZ::SystemAllocator);
+            AZ_CLASS_ALLOCATOR_DECL
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -86,6 +86,7 @@ namespace AZ
             bool HandleAutoReload() override { return false; }
 
         private:
+            using Allocator = AZStdAlloc<ImageMipChainAssetAllocator>;
 
             // Copy content from another ImageMipChainAsset
             void CopyFrom(const ImageMipChainAsset& source);
@@ -100,7 +101,7 @@ namespace AZ
             MipSliceList m_mipSlices;
 
             // The list of subresource data, fixed up from serialization.
-            AZStd::vector<RHI::StreamingImageSubresourceData> m_subImageDatas;
+            AZStd::vector<RHI::StreamingImageSubresourceData, Allocator> m_subImageDatas;
 
             // [Serialized] Topology of sub-images in the mip group.
             uint16_t m_mipLevels = 0;
@@ -113,10 +114,10 @@ namespace AZ
             AZStd::array<RHI::DeviceImageSubresourceLayout, RHI::Limits::Image::MipCountMax> m_subImageLayouts;
 
             // [Serialized] Contains a flat list of sub-images which reference the flat data blob.
-            AZStd::vector<AZ::u64> m_subImageDataOffsets;
+            AZStd::vector<AZ::u64, Allocator> m_subImageDataOffsets;
 
             // [Serialized] Flat image data interpreted by m_subImages.
-            AZStd::vector<uint8_t> m_imageData;
+            AZStd::vector<uint8_t, Allocator> m_imageData;
         };
 
         class ImageMipChainAssetHandler final

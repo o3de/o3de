@@ -7,6 +7,7 @@
  */
 
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
+#include <Atom/RPI.Reflect/Allocators.h>
 
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -15,6 +16,8 @@ namespace AZ
 {
     namespace RPI
     {
+
+        AZ_CLASS_ALLOCATOR_IMPL(StreamingImageAsset, StreamingImageAssetAllocator)
         void StreamingImageAsset::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
@@ -130,7 +133,7 @@ namespace AZ
             return imageDescriptor;
         }
 
-        const AZStd::vector<AZ::Name>& StreamingImageAsset::GetTags() const
+        const StreamingImageAsset::TagList& StreamingImageAsset::GetTags() const
         {
             return m_tags;
         }

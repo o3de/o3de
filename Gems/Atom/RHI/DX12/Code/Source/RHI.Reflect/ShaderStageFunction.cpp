@@ -14,6 +14,8 @@ namespace AZ
 {
     namespace DX12
     {
+        AZ_CLASS_ALLOCATOR_IMPL(ShaderStageFunction, RHI::ShaderStageFunctionAllocator)
+
         void ShaderStageFunction::Reflect(ReflectContext* context)
         {
             if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
@@ -35,9 +37,10 @@ namespace AZ
             return aznew ShaderStageFunction(shaderStage);
         }
 
-        void ShaderStageFunction::SetByteCode(uint32_t subStageIndex, const ShaderByteCode& byteCode)
+        void ShaderStageFunction::SetByteCode(uint32_t subStageIndex, const AZStd::vector<uint8_t>& byteCode)
         {
-            m_byteCodes[subStageIndex] = byteCode;
+            m_byteCodes[subStageIndex].resize(byteCode.size());
+            ::memcpy(m_byteCodes[subStageIndex].data(), byteCode.data(), byteCode.size());
         }
 
         ShaderByteCodeView ShaderStageFunction::GetByteCode(uint32_t subStageIndex) const

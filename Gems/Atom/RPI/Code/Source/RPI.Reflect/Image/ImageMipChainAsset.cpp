@@ -7,6 +7,7 @@
  */
 
 #include <Atom/RPI.Reflect/Image/ImageMipChainAsset.h>
+#include <Atom/RPI.Reflect/Allocators.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 
@@ -14,6 +15,8 @@ namespace AZ
 {
     namespace RPI
     {
+
+        AZ_CLASS_ALLOCATOR_IMPL(ImageMipChainAsset, ImageMipChainAssetAllocator)
         void ImageMipChainAsset::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))

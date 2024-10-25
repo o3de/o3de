@@ -14,6 +14,8 @@ namespace AZ
 {
     namespace Metal
     {
+        AZ_CLASS_ALLOCATOR_IMPL(ShaderStageFunction, RHI::ShaderStageFunctionAllocator)
+
         void ShaderStageFunction::Reflect(ReflectContext* context)
         {
             if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))

@@ -30,6 +30,8 @@ set(FILES
     Include/Atom/Utils/Utils.h
     Include/Atom/Utils/Utils.inl
     Include/Atom/Utils/AssetCollectionAsyncLoader.h
+    Include/Atom/Utils/ImGuiHeapProfiler.h
+    Include/Atom/Utils/ImGuiHeapProfiler.inl
     Source/ImGuiGpuProfiler.cpp
     Source/DdsFile.cpp
     Source/ImageComparison.cpp
