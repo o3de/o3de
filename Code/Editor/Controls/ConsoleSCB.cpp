@@ -142,10 +142,19 @@ static QString RemoveColorCode(const QString& text, int& iColorCode)
     return cleanString;
 }
 
+#if defined(CARBONATED)
+namespace
+{
+    QKeyEvent invalidKeyEvent(QEvent::None, 0, Qt::NoModifier);
+}
+#endif
 ConsoleLineEdit::ConsoleLineEdit(QWidget* parent)
     : QLineEdit(parent)
     , m_historyIndex(0)
     , m_bReusedHistory(false)
+#if defined(CARBONATED)
+    , m_keyEvent(invalidKeyEvent)
+#endif
 {
 }
 
@@ -166,7 +175,13 @@ bool ConsoleLineEdit::event(QEvent* ev)
     QKeyEvent* ke = static_cast<QKeyEvent*>(ev);
     if (ke->key() != Qt::Key_Tab)
     {
+#if defined(CARBONATED)
+        m_keyEvent = *ke;
+        // Consume Enter (Return) key right now
+        return (ke->key() == Qt::Key_Return || ke->key() == Qt::Key_Enter) ? keyPressEventImpl() : false;
+#else
         return QLineEdit::event(ev);
+#endif
     }
 
     QString inputStr = text();
@@ -203,8 +218,33 @@ bool ConsoleLineEdit::event(QEvent* ev)
     return true;
 }
 
+#if defined(CARBONATED)
 void ConsoleLineEdit::keyPressEvent(QKeyEvent* ev)
 {
+    m_keyEvent = *ev;
+
+    // Consume Enter (Return) key right now
+    if (ev->key() == Qt::Key_Return || ev->key() == Qt::Key_Enter)
+    {
+        keyPressEventImpl();
+    }
+}
+#endif
+
+#if defined(CARBONATED)
+bool ConsoleLineEdit::keyPressEventImpl()
+#else
+void ConsoleLineEdit::keyPressEvent(QKeyEvent* ev)
+#endif
+{
+#if defined(CARBONATED)
+    if (m_keyEvent.type() != QEvent::KeyPress)
+    {
+        return false;
+    }
+
+    QKeyEvent* ev = &m_keyEvent;
+#endif
     IConsole* console = GetIEditor()->GetSystem()->GetIConsole();
     auto commandManager = GetIEditor()->GetCommandManager();
 
@@ -276,6 +316,10 @@ void ConsoleLineEdit::keyPressEvent(QKeyEvent* ev)
     default:
         QLineEdit::keyPressEvent(ev);
     }
+#if defined(CARBONATED)
+    m_keyEvent = invalidKeyEvent;
+    return true;
+#endif
 }
 
 void ConsoleLineEdit::DisplayHistory(bool bForward)
@@ -486,6 +530,12 @@ void CConsoleSCB::SetInputFocus()
     ui->lineEdit->setFocus();
     ui->lineEdit->setText(QString());
 }
+#if defined(CARBONATED)
+ConsoleLineEdit* CConsoleSCB::GetConsoleInput()
+{
+    return ui->lineEdit;
+}
+#endif
 
 void CConsoleSCB::AddToConsole(const QString& text, bool bNewLine)
 {
