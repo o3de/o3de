@@ -75,15 +75,15 @@ jobs:
 
       - name: Create and symlink build folders
         run: |
-          sudo sh -c 'p=/mnt/build; mkdir -p "$p" && chown "$SUDO_USER:$SUDO_USER" "$p"'
-          sudo sh -c 'p=/mnt/Cache; mkdir -p "$p" && chown "$SUDO_USER:$SUDO_USER" "$p"'
-          sudo sh -c 'p=/mnt/user; mkdir -p "$p" && chown "$SUDO_USER:$SUDO_USER" "$p"'
-          sudo sh -c 'p=/mnt/.ccache; mkdir -p "$p" && chown "$SUDO_USER:$SUDO_USER" "$p"'
+          sudo sh -c 'p=/mnt/build; mkdir -p "$p" && mount --bind "${{ github.workspace }}/build" "$p" && chown "$SUDO_USER:$SUDO_USER" "$p"'
+          sudo sh -c 'p=/mnt/Cache; mkdir -p "$p" && mount --bind "${{ github.workspace }}/AutomatedTesting/Cache" "$p" && chown "$SUDO_USER:$SUDO_USER" "$p"'
+          sudo sh -c 'p=/mnt/user; mkdir -p "$p" && mount --bind "${{ github.workspace }}/AutomatedTesting/user" "$p" && chown "$SUDO_USER:$SUDO_USER" "$p"'
+          sudo sh -c 'p=/mnt/.ccache; mkdir -p "$p" && mount --bind "${{ github.workspace }}/.ccache" "$p" && chown "$SUDO_USER:$SUDO_USER" "$p"'
 
-          ln -s /mnt/build ${{ github.workspace }}/build
-          ln -s /mnt/Cache ${{ github.workspace }}/AutomatedTesting/Cache
-          ln -s /mnt/user ${{ github.workspace }}/AutomatedTesting/user
-          ln -s /mnt/.ccache ${{ github.workspace }}/.ccache
+          # ln -s /mnt/build ${{ github.workspace }}/build
+          # ln -s /mnt/Cache ${{ github.workspace }}/AutomatedTesting/Cache
+          # ln -s /mnt/user ${{ github.workspace }}/AutomatedTesting/user
+          # ln -s /mnt/.ccache ${{ github.workspace }}/.ccache
           ls -lah /mnt
           ls -lah ${{ github.workspace }}
           
