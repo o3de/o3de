@@ -75,11 +75,11 @@ jobs:
 
       - name: Create and symlink build folders
         run: |
-          sudo mkdir -m 755 -o $(whoami) /mnt/build
-          sudo mkdir -m 755 -o $(whoami) /mnt/Cache
-          sudo mkdir -m 755 -o $(whoami) /mnt/user
-          sudo mkdir -m 755 -o $(whoami) /mnt/.ccache
-          
+          sudo sh -c 'p=/mnt/build; mkdir -p "$p" && chown "$SUDO_USER:$SUDO_USER" "$p"'
+          sudo sh -c 'p=/mnt/Cache; mkdir -p "$p" && chown "$SUDO_USER:$SUDO_USER" "$p"'
+          sudo sh -c 'p=/mnt/user; mkdir -p "$p" && chown "$SUDO_USER:$SUDO_USER" "$p"'
+          sudo sh -c 'p=/mnt/.ccache; mkdir -p "$p" && chown "$SUDO_USER:$SUDO_USER" "$p"'
+
           ln -s /mnt/build ${{ github.workspace }}/build
           ln -s /mnt/Cache ${{ github.workspace }}/AutomatedTesting/Cache
           ln -s /mnt/user ${{ github.workspace }}/AutomatedTesting/user
