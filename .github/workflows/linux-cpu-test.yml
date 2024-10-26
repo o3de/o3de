@@ -57,7 +57,7 @@ jobs:
           /usr/local/share/powershell \
           /usr/share/dotnet \
           /usr/share/swift
-          df -h 
+          df -h
             
       - name: Checkout repo
         uses: actions/checkout@v4.1.7
@@ -72,6 +72,19 @@ jobs:
 
       - name: Restore timestamps
         uses: chetan/git-restore-mtime-action@v2
+
+      - name: Create and symlink build folders
+        run: |
+          mkdir /mnt/build
+          mkdir /mnt/Cache
+          mkdir /mnt/user
+          mkdir /mnt/.ccache
+          ln -s /mnt/build ${{ github.workspace }}/build
+          ln -s /mnt/Cache ${{ github.workspace }}/AutomatedTesting/Cache
+          ln -s /mnt/user ${{ github.workspace }}/AutomatedTesting/user
+          ln -s /mnt/.ccache ${{ github.workspace }}/.ccache
+          ls -lah /mnt
+          ls -lah ${{ github.workspace }}
           
       - name: Restore 3P Cache
         uses: actions/cache/restore@v4.0.2
