@@ -21,12 +21,6 @@
 #include <Cry_Geo.h>
 #include <IIndexedMesh.h>
 
-#if !defined(_RELEASE)
-#include <IRenderAuxGeom.h>
-
-// set this to 1 to enable debug display
-#define UI_CANVAS_ON_MESH_DEBUG 0
-#endif // !defined(_RELEASE)
 
 #include <AzFramework/Render/GeometryIntersectionStructures.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
@@ -36,74 +30,6 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace
 {
-#if UI_CANVAS_ON_MESH_DEBUG
-    // Debug draw methods only used for debugging the collision
-
-    static const ColorB debugHitColor(255, 0, 0, 255);
-    static const ColorB debugCollisionMeshColor(255, 255, 0, 255);
-    static const ColorB debugRenderMeshAttempt1Color(0, 255, 0, 255);
-    static const ColorB debugRenderMeshAttempt2Color(0, 0, 255, 255);
-
-    static const float debugDrawSphereSize = 0.01f;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void DrawSphere(const Vec3& point, const ColorB& color, float size)
-    {
-        IRenderAuxGeom* pRenderAux = gEnv->pRenderer->GetIRenderAuxGeom();
-        pRenderAux->DrawSphere(point, size, color);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void DrawTrianglePoints(const Vec3& v0, const Vec3& v1, const Vec3& v2, const ColorB& color, float size)
-    {
-        IRenderAuxGeom* pRenderAux = gEnv->pRenderer->GetIRenderAuxGeom();
-        pRenderAux->DrawSphere(v0, size, color);
-        pRenderAux->DrawSphere(v1, size, color);
-        pRenderAux->DrawSphere(v2, size, color);
-    }
-
-    void DrawCollisionMeshTrianglePoints(
-        int triIndex,
-        const IPhysicalEntity* collider,
-        int partIndex,
-        const Matrix34& slotWorldTM
-        )
-    {
-        if (collider)
-        {
-            const IPhysicalEntity* pe = collider;
-            pe_params_part partParams;
-            partParams.ipart = partIndex;
-            pe->GetParams(&partParams);
-            phys_geometry* pPhysGeom = partParams.pPhysGeom;
-            phys_geometry* pPhysGeomProxy = partParams.pPhysGeomProxy;
-
-            IGeometry* geom = pPhysGeom->pGeom;
-            Vec3 featurePoint[3];
-            int feat = geom->GetFeature(triIndex, 0, featurePoint);
-            primitives::triangle prim;
-            int primResult = geom->GetPrimitive(triIndex, &prim);
-
-            {
-                // get verts in world space
-                Vec3 wv0 = slotWorldTM.TransformPoint(prim.pt[0]);
-                Vec3 wv1 = slotWorldTM.TransformPoint(prim.pt[1]);
-                Vec3 wv2 = slotWorldTM.TransformPoint(prim.pt[2]);
-
-                // offset the points that we draw by the debug sphere radius so they can be seen when
-                // they are on top of the render mesh points
-                Vec3 worldNormal = slotWorldTM.TransformVector(prim.n);
-
-                wv0 += worldNormal * debugDrawSphereSize;
-                wv1 += worldNormal * debugDrawSphereSize;
-                wv2 += worldNormal * debugDrawSphereSize;
-
-                DrawTrianglePoints(wv0, wv1, wv2, debugCollisionMeshColor, debugDrawSphereSize * 0.5f);
-            }
-        }
-    }
-#endif
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     AZ::Vector2 ConvertBarycentricCoordsToUVCoords(float u, float v, float w, AZ::Vector2 uv0, AZ::Vector2 uv1, AZ::Vector2 uv2)
     {

@@ -34,6 +34,7 @@ set(FILES
     Source/RHI/MetalCopyShaders.h
     Source/RHI/Device.cpp
     Source/RHI/Device.h
+    Source/RHI/DispatchRaysIndirectBuffer.h
     Source/RHI/CommandQueue.cpp
     Source/RHI/CommandQueue.h
     Source/RHI/CommandQueueContext.cpp

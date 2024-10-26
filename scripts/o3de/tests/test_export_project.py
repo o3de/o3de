@@ -329,6 +329,7 @@ def test_build_game_targets(tmp_path, build_config, build_game_launcher, build_s
                            build_config=build_config,
                            game_build_path=test_game_build_path,
                            engine_centric=engine_centric,
+                           monolithic_build=True,
                            launcher_types=launcher_types,
                            allow_registry_overrides=allow_registry_overrides)
 
@@ -408,7 +409,7 @@ def test_bundle_assets(tmp_path, asset_platform):
         mock_ctx.project_path = test_project_path
 
         result = bundle_assets(ctx=mock_ctx,
-                               selected_platform=asset_platform,
+                               selected_platforms=[asset_platform],
                                seedlist_paths=[test_seedlist_path],
                                seedfile_paths=[],
                                tools_build_path=test_build_tool_path,

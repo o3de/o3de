@@ -28,7 +28,8 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
         float3 m_rgbIntensity;
         float  m_affectsGIFactor;
         bool   m_affectsGI;
-        float3 m_padding;
+        uint m_lightingChannelMask;
+        float2 m_padding;
     };
     
     StructuredBuffer<DirectionalLight> m_directionalLights;
@@ -42,7 +43,8 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
         float3 m_rgbIntensityCandelas;
         float m_affectsGIFactor;
         bool m_affectsGI;
-        float3 m_padding;
+        uint m_lightingChannelMask;
+        float2 m_padding;
     };
 
     StructuredBuffer<SimplePointLight> m_simplePointLights;
@@ -62,6 +64,7 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
         uint m_goboTexIndex;
         float m_affectsGIFactor;
         bool m_affectsGI;
+        uint m_lightingChannelMask;
         [[pad_to(16)]] // Here to ensure we pad the struct to 16 in case someone adds incorrect padding
     };
 
@@ -78,7 +81,8 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
         uint3 m_shadowIndices;
         float m_affectsGIFactor;
         bool m_affectsGI;
-        float3 m_padding;
+        uint m_lightingChannelMask;
+        float2 m_padding;
     };
     
     StructuredBuffer<PointLight> m_pointLights;
@@ -99,7 +103,8 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
         uint m_shadowIndex;
         float m_affectsGIFactor;
         bool m_affectsGI;
-        float2 m_padding;
+        uint m_lightingChannelMask;
+        float m_padding;
     };
     
     StructuredBuffer<DiskLight> m_diskLights;
@@ -116,7 +121,8 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
         float m_invAttenuationRadiusSquared;    // inverse of the distance at which this light no longer has an effect, squared. Also used for falloff calculations.
         float m_affectsGIFactor;
         bool m_affectsGI;
-        float2 m_padding;
+        uint m_lightingChannelMask;
+        float m_padding;
     };
     
     StructuredBuffer<CapsuleLight> m_capsuleLights;
@@ -135,7 +141,8 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
         uint   m_flags;                         // see QuadLightFlag enum
         float  m_affectsGIFactor;
         bool   m_affectsGI;
-        float2 m_padding;
+        uint m_lightingChannelMask;
+        float m_padding;
     };
     
     StructuredBuffer<QuadLight> m_quadLights;
@@ -168,17 +175,22 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
         uint     m_bufferFlags;
         uint     m_bufferStartIndex;
 
-        float4   m_irradianceColor;
         float3x4 m_worldInvTranspose;
     };
 
     // hit shaders can retrieve the MeshInfo for a mesh hit using: RayTracingSceneSrg::m_meshInfo[InstanceIndex()]    
     StructuredBuffer<MeshInfo> m_meshInfo;
+    uint m_meshInfoCount;
     
     // indirection buffer containing indices into the m_meshBuffers unbounded array
     // Note 1: the index list for a particular mesh begins at MeshInfo::m_bufferStartIndex
     // Note 2: multiple MeshInfos will refer to the same buffer in m_meshBuffers when they are instances of the same mesh
     Buffer<uint> m_meshBufferIndices;
+
+    // contains a mapping from RT InstanceIndex to procedural geometry instances, which can be used to read per-instance geometry data:
+    // [0] bindlessBufferIndex parameter from RegisterProceduralGeometryType
+    // [1] localInstanceIndex parameter from AddProceduralGeometry
+    Buffer<uint2> m_proceduralGeometryInfo;
 
     // buffer array index offsets from MeshInfo::m_bufferStartIndex in the m_meshBufferIndices indirection buffer
     // Note: every mesh has all six entries in the index list, but only the Index, Position, and Normal buffers are guaranteed to be valid

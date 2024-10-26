@@ -65,7 +65,10 @@ void ApplyPolygonLights(Surface surface, inout LightingData lightingData)
         for (uint currLightIndex = 0; currLightIndex <  ViewSrg::m_polygonLightCount; ++currLightIndex)
         {
             ViewSrg::PolygonLight light = ViewSrg::m_polygonLights[currLightIndex];
-            
+            if(!IsSameLightChannel(lightingData.lightingChannels, light.m_lightingChannelMask))
+            {
+                continue;
+            }            
             ApplyPoylgonLight(light, surface, lightingData);
         }
     }

@@ -48,8 +48,6 @@
 
 #include "EditorCommon.h"
 
-#include <QtViewPane.h>
-
 #include <QAction>
 #include <QComboBox>
 #include <QInputDialog>

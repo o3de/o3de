@@ -23,37 +23,66 @@ set(SERVER_LAUNCHERTYPE_HeadlessServerLauncher EXECUTABLE)
 set(SERVER_BUILD_DEPENDENCIES_HeadlessServerLauncher AZ::Launcher.Headless.Static AZ::AzGameFramework.Headless AZ::Launcher.Server.Static)
 set(SERVER_VARIANT_HeadlessServerLauncher HeadlessServers)
 
+# the following controls what visibility the various target properties are set to
+# and allow them to be overridden to "INTERFACE" in script-only mode.
+set(LAUNCHER_TARGET_PROPERTY_TYPE "PRIVATE")
+
 # Launcher targets for a project need to be generated when configuring a project.
 # When building the engine source, this file will be included by LauncherUnified's CMakeLists.txt
 # When using an installed engine, this file will be included by the FindLauncherGenerator.cmake script
 get_property(SERVER_LAUNCHER_TYPES GLOBAL PROPERTY SERVER_LAUNCHER_TYPES)
 get_property(O3DE_PROJECTS_NAME GLOBAL PROPERTY O3DE_PROJECTS_NAME)
-foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
 
-    # Computes the realpath to the project
-    # If the project_path is relative, it is evaluated relative to the ${LY_ROOT_FOLDER}
-    # Otherwise the the absolute project_path is returned with symlinks resolved
-    file(REAL_PATH ${project_path} project_real_path BASE_DIRECTORY ${LY_ROOT_FOLDER})
+# when NO project is specified, for example, when creating a pre-built version of the engine,
+# create a generic launcher that can be shipped with the engine
 
-    ################################################################################
-    # Assets
-    ################################################################################
-    if(PAL_TRAIT_BUILD_HOST_TOOLS)
-        add_custom_target(${project_name}.Assets
-            COMMENT "Processing ${project_name} assets..."
-            COMMAND "${CMAKE_COMMAND}"
-                -DLY_LOCK_FILE=$<GENEX_EVAL:$<TARGET_FILE_DIR:AZ::AssetProcessorBatch>>/project_assets.lock
-                -P ${LY_ROOT_FOLDER}/cmake/CommandExecution.cmake
-                    EXEC_COMMAND $<GENEX_EVAL:$<TARGET_FILE:AZ::AssetProcessorBatch>>
-                        --zeroAnalysisMode
-                        --project-path=${project_real_path}
-                        --platforms=${LY_ASSET_DEPLOY_ASSET_TYPE}
-        )
-        set_target_properties(${project_name}.Assets
-            PROPERTIES
-                EXCLUDE_FROM_ALL TRUE
-                FOLDER ${project_name}
-        )
+set(launcher_generator_LY_PROJECTS ${LY_PROJECTS})
+
+# the following generates "generic" launchers when no project is specified
+# this cannot happen in script only mode, since scripts-only mode requires a prebuilt installer
+# and the prebuilt installer always operates on a project, so will generally only happen
+# when building an installer from the o3de source code, or just compiling O3DE itself with no
+# project specified.
+if (NOT launcher_generator_LY_PROJECTS)
+    set(launcher_generator_LY_PROJECTS ":PROJECT_PATH_ONLY_FOR_GENERIC_LAUNCHER")
+    set(O3DE_PROJECTS_NAME "O3DE")
+    set(launcher_generator_BUILD_GENERIC TRUE) # used to skip the asset processing step
+    
+    # set a compile definition on the launchers themselves to let them know they are generic launchers
+    # they can use this in their code and logic to avoid doing things like loading the burned-in
+    # registry keys.
+    set(GENERIC_LAUNCHER_COMPILE_DEFINITION "O3DE_IS_GENERIC_LAUNCHER")
+endif()
+
+
+foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME launcher_generator_LY_PROJECTS)
+
+    if (NOT launcher_generator_BUILD_GENERIC) # generic launcher does not build assets.
+        # Computes the realpath to the project.  Only used in building assets.
+        # If the project_path is relative, it is evaluated relative to the ${LY_ROOT_FOLDER}
+        # Otherwise the the absolute project_path is returned with symlinks resolved
+        file(REAL_PATH ${project_path} project_real_path BASE_DIRECTORY ${LY_ROOT_FOLDER})
+
+        ################################################################################
+        # Assets
+        ################################################################################
+        if(PAL_TRAIT_BUILD_HOST_TOOLS)
+            add_custom_target(${project_name}.Assets
+                COMMENT "Processing ${project_name} assets..."
+                COMMAND "${CMAKE_COMMAND}"
+                    -DLY_LOCK_FILE=$<GENEX_EVAL:$<TARGET_FILE_DIR:AZ::AssetProcessorBatch>>/project_assets.lock
+                    -P ${LY_ROOT_FOLDER}/cmake/CommandExecution.cmake
+                        EXEC_COMMAND $<GENEX_EVAL:$<TARGET_FILE:AZ::AssetProcessorBatch>>
+                            --zeroAnalysisMode
+                            --project-path=${project_real_path}
+                            --platforms=${LY_ASSET_DEPLOY_ASSET_TYPE}
+            )
+            set_target_properties(${project_name}.Assets
+                PROPERTIES
+                    EXCLUDE_FROM_ALL TRUE
+                    FOLDER ${project_name}
+            )
+        endif()
     endif()
 
     ################################################################################
@@ -96,16 +125,35 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
             Legacy::CrySystem
         )
 
+        # in script only mode, which can only happen when building a project
+        # that is using a prebuilt installer, add the generic gamelauncher as a run time dependency
+        # of the project launcher.  The project launcher is "fake" and will not get actually compiled,
+        # but this will cause the generic game launcher and its dependencies to get deployed into the bin folder
+        # since they are all dependencies of this fake target.
+        
+        if (O3DE_SCRIPT_ONLY)
+            set(game_runtime_dependencies ${game_runtime_dependencies} O3DE.GameLauncher)
+        endif()
+
         if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
             set(server_runtime_dependencies
                 Legacy::CrySystem
             )
+
+            if (O3DE_SCRIPT_ONLY)
+                foreach(server_launcher_type ${SERVER_LAUNCHER_TYPES})
+                    set(SERVER_RUNTIME_DEPENDENCIES_${server_launcher_type} "${SERVER_RUNTIME_DEPENDENCIES_${server_launcher_type}}" O3DE.${server_launcher_type})
+                endforeach()
+            endif()
         endif()
 
         if(PAL_TRAIT_BUILD_UNIFIED_SUPPORTED)
             set(unified_runtime_dependencies
                 Legacy::CrySystem
             )
+            if (O3DE_SCRIPT_ONLY)
+                set(unified_runtime_dependencies ${unified_runtime_dependencies} O3DE.UnifiedLauncher)
+            endif()
         endif()
 
     endif()
@@ -121,19 +169,20 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
         PLATFORM_INCLUDE_FILES
             ${pal_dir}/launcher_project_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
         COMPILE_DEFINITIONS
-            PRIVATE
+            ${LAUNCHER_TARGET_PROPERTY_TYPE}
                 # Adds the name of the project/game
                 LY_PROJECT_NAME="${project_name}"
                 # Adds the ${project_name}_GameLauncher target as a define so for the Settings Registry to use
                 # when loading .setreg file specializations
                 # This is needed so that only gems for the project game launcher are loaded
                 LY_CMAKE_TARGET="${project_name}_GameLauncher"
+                "${GENERIC_LAUNCHER_COMPILE_DEFINITION}" # this is empty if its not a generic launcher
         INCLUDE_DIRECTORIES
-            PRIVATE
+            ${LAUNCHER_TARGET_PROPERTY_TYPE}
                 .
                 ${CMAKE_CURRENT_BINARY_DIR}/${project_name}.GameLauncher/Includes # required for StaticModules.inl
         BUILD_DEPENDENCIES
-            PRIVATE
+            ${LAUNCHER_TARGET_PROPERTY_TYPE}
                 AZ::Launcher.Static
                 AZ::Launcher.Game.Static
                 ${game_build_dependencies}
@@ -181,23 +230,24 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
                 PLATFORM_INCLUDE_FILES
                     ${pal_dir}/launcher_project_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
                 COMPILE_DEFINITIONS
-                    PRIVATE
+                    ${LAUNCHER_TARGET_PROPERTY_TYPE}
                         # Adds the name of the project/game
                         LY_PROJECT_NAME="${project_name}"
                         # Adds the ${project_name}_${server_launcher_type} target as a define so for the Settings Registry to use
                         # when loading .setreg file specializations
                         # This is needed so that only gems for the project server launcher are loaded
                         LY_CMAKE_TARGET="${project_name}_${server_launcher_type}"
+                        "${GENERIC_LAUNCHER_COMPILE_DEFINITION}" # this is empty if its not a generic launcher
 
                 INCLUDE_DIRECTORIES
-                    PRIVATE
+                    ${LAUNCHER_TARGET_PROPERTY_TYPE}
                         .
                         ${CMAKE_CURRENT_BINARY_DIR}/${project_name}.${server_launcher_type}/Includes # required for StaticModules.inl
                 BUILD_DEPENDENCIES
-                    PRIVATE
+                    ${LAUNCHER_TARGET_PROPERTY_TYPE}
                         ${SERVER_BUILD_DEPENDENCIES_${server_launcher_type}}
                 RUNTIME_DEPENDENCIES
-                    ${server_runtime_dependencies}
+                    ${SERVER_RUNTIME_DEPENDENCIES_${server_launcher_type}}
             )
             # Needs to be set manually after ly_add_target to prevent the default location overriding it
             set_target_properties(${project_name}.${server_launcher_type}
@@ -238,26 +288,27 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
     ################################################################################
     if(PAL_TRAIT_BUILD_UNIFIED_SUPPORTED)
         ly_add_target(
-            NAME ${project_name}.UnifiedLauncher APPLICATION
+            NAME ${project_name}.UnifiedLauncher ${PAL_TRAIT_LAUNCHERUNIFIED_LAUNCHER_TYPE}
             NAMESPACE AZ
             FILES_CMAKE
                 ${CMAKE_CURRENT_LIST_DIR}/launcher_project_files.cmake
             PLATFORM_INCLUDE_FILES
                 ${pal_dir}/launcher_project_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
             COMPILE_DEFINITIONS
-                PRIVATE
+                ${LAUNCHER_TARGET_PROPERTY_TYPE}
                     # Adds the name of the project/game
                     LY_PROJECT_NAME="${project_name}"
                     # Adds the ${project_name}_UnifiedLauncher target as a define so for the Settings Registry to use
                     # when loading .setreg file specializations
                     # This is needed so that only gems for the project unified launcher are loaded
                     LY_CMAKE_TARGET="${project_name}_UnifiedLauncher"
+                    "${GENERIC_LAUNCHER_COMPILE_DEFINITION}" # this is empty if its not a generic launcher
             INCLUDE_DIRECTORIES
-                PRIVATE
+                ${LAUNCHER_TARGET_PROPERTY_TYPE}
                     .
                     ${CMAKE_CURRENT_BINARY_DIR}/${project_name}.UnifiedLauncher/Includes # required for StaticModules.inl
             BUILD_DEPENDENCIES
-                PRIVATE
+                ${LAUNCHER_TARGET_PROPERTY_TYPE}
                     AZ::Launcher.Static
                     AZ::Launcher.Unified.Static
                     ${unified_build_dependencies}

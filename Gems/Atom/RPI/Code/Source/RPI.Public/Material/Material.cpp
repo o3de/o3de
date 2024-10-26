@@ -306,7 +306,7 @@ namespace AZ
             // Note that it might not be strictly necessary to reinitialize the entire material, we might be able to get away with
             // just bumping the m_currentChangeId or some other minor updates. But it's pretty hard to know what exactly needs to be
             // updated to correctly handle the reload, so it's safer to just reinitialize the whole material.
-            Init(*m_materialAsset);
+            ReInitKeepPropertyValues();
         }
 
         void Material::OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset)
@@ -315,7 +315,7 @@ namespace AZ
             // Note that it might not be strictly necessary to reinitialize the entire material, we might be able to get away with
             // just bumping the m_currentChangeId or some other minor updates. But it's pretty hard to know what exactly needs to be
             // updated to correctly handle the reload, so it's safer to just reinitialize the whole material.
-            Init(*m_materialAsset);
+            ReInitKeepPropertyValues();
         }
 
         void Material::OnShaderVariantReinitialized(const ShaderVariant& shaderVariant)
@@ -327,6 +327,32 @@ namespace AZ
             // This event can be used to notify the owners to update their DrawPackets
             m_shaderVariantReadyEvent.Signal();
         }
+
+        void Material::ReInitKeepPropertyValues()
+        {
+            // Save the material property values to be reapplied after reinitialization. The mapping is stored by name in case the property
+            // layout changes after reinitialization.
+            AZStd::unordered_map<AZ::Name, MaterialPropertyValue> properties;
+            properties.reserve(GetMaterialPropertiesLayout()->GetPropertyCount());
+            for (size_t propertyIndex = 0; propertyIndex < GetMaterialPropertiesLayout()->GetPropertyCount(); ++propertyIndex)
+            {
+                auto descriptor = GetMaterialPropertiesLayout()->GetPropertyDescriptor(AZ::RPI::MaterialPropertyIndex{ propertyIndex });
+                properties.emplace(descriptor->GetName(), GetPropertyValue(AZ::RPI::MaterialPropertyIndex{ propertyIndex }));
+            }
+
+            if (Init(*m_materialAsset) == RHI::ResultCode::Success)
+            {
+                for (const auto& [propertyName, propertyValue] : properties)
+                {
+                    if (const auto& propertyIndex = GetMaterialPropertiesLayout()->FindPropertyIndex(propertyName); propertyIndex.IsValid())
+                    {
+                        SetPropertyValue(propertyIndex, propertyValue);
+                    }
+                }
+                Compile();
+            }
+        }
+
         ///////////////////////////////////////////////////////////////////
 
         const MaterialPropertyCollection& Material::GetPropertyCollection() const
@@ -830,6 +856,10 @@ namespace AZ
         RHI::ConstPtr<MaterialPropertiesLayout> Material::GetMaterialPropertiesLayout() const
         {
             return m_materialProperties.GetMaterialPropertiesLayout();
+        }
+        Data::Instance<RPI::ShaderResourceGroup> Material::GetShaderResourceGroup()
+        {
+            return m_shaderResourceGroup;
         }
     } // namespace RPI
 } // namespace AZ

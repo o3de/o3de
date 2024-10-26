@@ -518,11 +518,6 @@ namespace AZ
             }
         }
 
-        const RHI::DrawPacket* MeshDrawPacket::GetRHIDrawPacket() const
-        {
-            return m_drawPacket.get();
-        }
-
         const RHI::ConstPtr<RHI::ConstantsLayout> MeshDrawPacket::GetRootConstantsLayout() const
         {
             return m_rootConstantsLayout;

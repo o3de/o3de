@@ -10,7 +10,7 @@
 #include <Atom/RHI/FrameGraph.h>
 #include <Atom/RHI/FrameGraphExecuter.h>
 #include <RHI/CommandQueue.h>
-#include <RHI/FrameGraphExecuteGroupHandlerBase.h>
+#include <RHI/FrameGraphExecuteGroupHandler.h>
 
 #include <AzCore/std/containers/unordered_map.h>
 #include <Atom/RHI.Reflect/Vulkan/PlatformLimitsDescriptor.h>
@@ -50,7 +50,7 @@ namespace AZ
             void AddExecuteGroupHandler(const RHI::GraphGroupId& groupId, const AZStd::vector<RHI::FrameGraphExecuteGroup*>& groups);
 
             // List of handlers for execute groups.
-            AZStd::unordered_map<RHI::GraphGroupId, AZStd::unique_ptr<FrameGraphExecuteGroupHandlerBase>> m_groupHandlers;
+            AZStd::unordered_map<RHI::GraphGroupId, AZStd::unique_ptr<FrameGraphExecuteGroupHandler>> m_groupHandlers;
             FrameGraphExecuterData m_frameGraphExecuterData;
         };
     }

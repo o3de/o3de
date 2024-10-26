@@ -31,7 +31,7 @@
 
 real3 GetDiffuseLighting_BasePBR(Surface surface, LightingData lightingData, real3 lightIntensity, real3 dirToLight)
 {
-    real3 diffuse = DiffuseLambertian(surface.albedo, surface.normal, dirToLight, lightingData.diffuseResponse);
+    real3 diffuse = DiffuseLambertian(surface.albedo, surface.GetDiffuseNormal(), dirToLight, lightingData.diffuseResponse);
     diffuse *= lightIntensity;
     return diffuse;
 }
@@ -39,9 +39,9 @@ real3 GetDiffuseLighting_BasePBR(Surface surface, LightingData lightingData, rea
 real3 GetSpecularLighting_BasePBR(Surface surface, LightingData lightingData, const real3 lightIntensity, const real3 dirToLight)
 {
 #if ENABLE_MOBILEBRDF    
-    real3 specular = SpecularGGXMobile(lightingData.dirToCamera, dirToLight, surface.normal, surface.specularF0, surface.roughnessA2, surface.roughnessA, surface.roughnessLinear); 
+    real3 specular = SpecularGGXMobile(lightingData.dirToCamera, dirToLight, surface.GetSpecularNormal(), surface.GetSpecularF0(), surface.roughnessA2, surface.roughnessA, surface.roughnessLinear); 
 #else
-    real3 specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.normal, surface.specularF0, lightingData.NdotV, surface.roughnessA2, lightingData.multiScatterCompensation);
+    real3 specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.GetSpecularNormal(), surface.GetSpecularF0(), lightingData.GetSpecularNdotV(), surface.roughnessA2, lightingData.multiScatterCompensation);
 #endif
     specular *= lightIntensity;
     return specular;

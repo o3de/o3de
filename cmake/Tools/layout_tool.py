@@ -129,7 +129,7 @@ def verify_layout(layout_dir, platform_name, project_path, asset_mode, asset_typ
         # Validate that if '<platform>_connect_to_remote is enabled, that the 'remote_ip' is not set to local host
         warning_count += _validate_remote_ap(remote_ip, remote_connect, None)
 
-        project_asset_path = layout_path / project_name_lower
+        project_asset_path = layout_path
         if not project_asset_path.is_dir():
             warning_count += _warn(f"Asset folder for project {project_name} is missing from the deployment layout.")
         else:
@@ -374,6 +374,15 @@ def sync_layout_vfs(target_platform, project_path, asset_type, warning_on_missin
         logging.debug("Copying %s -> %s",  os.path.join(project_asset_folder, root_asset), layout_target)
         shutil.copy2(os.path.join(project_asset_folder, root_asset), layout_target)
 
+# CARBONATED - REMOVED
+#   # Reset the 'gems' junction if any in the layout
+#   layout_gems_folder_src = os.path.join(project_asset_folder, 'gems')
+#   layout_gems_folder_target = os.path.join(layout_target, 'gems')
+#   if os.path.isdir(layout_gems_folder_target):
+#       remove_link(layout_gems_folder_target)
+#   if os.path.isdir(layout_gems_folder_src):
+#       create_link(layout_gems_folder_src, layout_gems_folder_target, copy)
+# CARBONATED - REMOVED
 
 
 def sync_layout_non_vfs(mode, target_platform, project_path, asset_type, warning_on_missing_assets, layout_target, override_pak_folder, copy):
@@ -403,7 +412,10 @@ def sync_layout_non_vfs(mode, target_platform, project_path, asset_type, warning
 
     if mode == ASSET_MODE_PAK:
         target_pak_folder_name = '{}_{}_paks'.format(project_name_lower, asset_type)
-        project_asset_folder = os.path.join(project_path, override_pak_folder or PAK_FOLDER_NAME, target_pak_folder_name)
+        if override_pak_folder:
+            project_asset_folder = override_pak_folder
+        else:    
+            project_asset_folder = os.path.join(project_path, override_pak_folder or PAK_FOLDER_NAME, target_pak_folder_name)
         if not os.path.isdir(project_asset_folder):
             if warning_on_missing_assets:
                 logging.warning(f'Pak folder for the project at path "{project_path}" is missing'
@@ -438,6 +450,15 @@ def sync_layout_non_vfs(mode, target_platform, project_path, asset_type, warning
     copy_asset_files_to_layout(project_asset_folder=project_asset_folder,
                                target_platform=target_platform,
                                layout_target=layout_target)
+# CARBONATED - REMOVED
+#   # Reset the 'gems' junction if any in the layout (only in loose mode).
+#   layout_gems_folder_src = os.path.join(project_asset_folder, 'gems')
+#
+#   # The gems link only is valid in LOOSE mode. If in PAK, then dont re-link
+#   if mode == ASSET_MODE_LOOSE and os.path.isdir(layout_gems_folder_src):
+#       if os.path.isdir(layout_gems_folder_src):
+#           create_link(layout_gems_folder_src, layout_gems_folder_target, copy)
+# CARBONATED - REMOVED
 
 
 def sync_layout_pak(target_platform, project_path, asset_type, warning_on_missing_assets, layout_target,

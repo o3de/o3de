@@ -19,7 +19,8 @@ partial ShaderResourceGroup SceneSrg
         float3 m_rgbIntensityLux;
         float m_affectsGIFactor;
         bool m_affectsGI;
-        float3 m_padding;
+        uint m_lightingChannelMask;
+        float2 m_padding;
     };
 
     StructuredBuffer<DirectionalLight> m_directionalLights;

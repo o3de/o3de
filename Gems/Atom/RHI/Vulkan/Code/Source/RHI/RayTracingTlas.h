@@ -9,6 +9,7 @@
 
 #include <Atom_RHI_Vulkan_Platform.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
+#include <Atom/RHI.Reflect/FrameCountMaxRingBuffer.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
@@ -40,11 +41,11 @@ namespace AZ
                 uint32_t m_instanceCount = 0;
             };
 
-            const TlasBuffers& GetBuffers() const { return m_buffers[m_currentBufferIndex]; }
+            const TlasBuffers& GetBuffers() const { return m_buffers.GetCurrentElement(); }
 
             // RHI::RayTracingTlas overrides...
-            const RHI::Ptr<RHI::Buffer> GetTlasBuffer() const override { return m_buffers[m_currentBufferIndex].m_tlasBuffer; }
-            const RHI::Ptr<RHI::Buffer> GetTlasInstancesBuffer() const override { return m_buffers[m_currentBufferIndex].m_tlasInstancesBuffer; }
+            const RHI::Ptr<RHI::Buffer> GetTlasBuffer() const override { return GetBuffers().m_tlasBuffer; }
+            const RHI::Ptr<RHI::Buffer> GetTlasInstancesBuffer() const override { return GetBuffers().m_tlasInstancesBuffer; }
 
         private:
             RayTracingTlas() = default;
@@ -53,9 +54,7 @@ namespace AZ
             RHI::ResultCode CreateBuffersInternal(RHI::Device& deviceBase, const RHI::RayTracingTlasDescriptor* descriptor, const RHI::RayTracingBufferPools& rayTracingBufferPools) override;
 
             // buffer list to keep buffers alive for several frames
-            static const uint32_t BufferCount = 3;
-            TlasBuffers m_buffers[BufferCount];
-            uint32_t m_currentBufferIndex = 0;
+            RHI::FrameCountMaxRingBuffer<TlasBuffers> m_buffers;
         };
     }
 }

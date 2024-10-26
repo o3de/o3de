@@ -39,7 +39,13 @@ namespace {{ Namespace }}
             componentData.m_versionHash = {{ Component.attrib['Name'] }}::GetVersionHash();
             componentData.m_componentPropertyNameLookupFunction = {{ ComponentBaseName }}::GetNetworkPropertyName;
             componentData.m_componentRpcNameLookupFunction = {{ ComponentBaseName }}::GetRpcName;
-            componentData.m_allocComponentInputFunction = {{ ComponentBaseName }}::AllocateComponentInput;
+            componentData.m_allocComponentInputFunction = {{ ComponentBaseName }}::AllocateComponentInput;            
+{% if ('OmitFromClientServerVersionHandshake' in Component.attrib) %}
+{%     set ComponentSkipsVersioning = Component.attrib['OmitFromClientServerVersionHandshake']|booleanTrue %}
+{%     if ComponentSkipsVersioning %}
+            componentData.m_includeInVersionCheck = false;
+{%     endif %}
+{% endif %}
             {{ ComponentBaseName }}::s_netComponentId = multiplayerComponentRegistry->RegisterMultiplayerComponent(componentData);
 {% if NetworkInputCount > 0 %}
             {{ ComponentName }}NetworkInput::s_netComponentId = {{ ComponentBaseName }}::s_netComponentId;

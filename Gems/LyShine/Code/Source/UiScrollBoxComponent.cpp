@@ -91,7 +91,6 @@ UiScrollBoxComponent::UiScrollBoxComponent()
     , m_isActive(false)
     , m_pressedScrollOffset(0.0f, 0.0f)
     , m_lastDragPoint(0.0f, 0.0f)
-#if defined(CARBONATED)
     , m_scrollSensitivity(1.0f, 1.0f)
     , m_lastOffsetChange(0.0f, 0.0f)
     , m_offsetChangeAccumulator(0.0f, 0.0f)
@@ -100,7 +99,6 @@ UiScrollBoxComponent::UiScrollBoxComponent()
     , m_momentumIsActive(false)
     , m_momentumDuration(0.0f)
     , m_momentumTimeAccumulator(0.0f)
-#endif
 {
 }
 
@@ -405,7 +403,6 @@ void UiScrollBoxComponent::SetVerticalScrollBarVisibility(ScrollBarVisibility vi
     m_vScrollBarVisibility = visibility;
 }
 
-#if defined(CARBONATED)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 AZ::Vector2 UiScrollBoxComponent::GetScrollSensitivity()
 {
@@ -453,7 +450,6 @@ void UiScrollBoxComponent::StopMomentum()
     m_stoppingTimeAccumulator = 0.0f;
     m_momentumTimeAccumulator = 0.0f;
 }
-#endif // CARBONATED
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 UiScrollBoxComponent::ScrollOffsetChangeCallback UiScrollBoxComponent::GetScrollOffsetChangingCallback()
@@ -758,10 +754,8 @@ bool UiScrollBoxComponent::HandlePressed(AZ::Vector2 point, bool& shouldStayActi
         m_pressedScrollOffset = m_scrollOffset;
     }
 
-#if defined(CARBONATED)
     // Stop momentum if the user pressed the screen, when handled directly
     SetMomentumActive(false);
-#endif
         
     return handled;
 }
@@ -785,10 +779,8 @@ bool UiScrollBoxComponent::HandleReleased([[maybe_unused]] AZ::Vector2 point)
     m_isPressed = false;
     m_isDragging = false;
 
-#if defined(CARBONATED)
     //Start momentum if released the screen
     SetMomentumActive(true);
-#endif
 
     return m_isHandlingEvents;
 }
@@ -957,9 +949,7 @@ void UiScrollBoxComponent::InputPositionUpdate(AZ::Vector2 point)
 {
     if (m_isPressed && m_contentEntity.IsValid())
     {
-#if defined(CARBONATED)
         m_lastOffsetChange = AZ::Vector2(0.0f, 0.0f);
-#endif
         if (!m_isDragging)
         {
             CheckForDragOrHandOffToParent(point);
@@ -968,9 +958,7 @@ void UiScrollBoxComponent::InputPositionUpdate(AZ::Vector2 point)
         if (m_isDragging)
         {
             AZ::Vector2 dragVector = point - m_pressedPoint;
-#if defined(CARBONATED)
             dragVector *= m_scrollSensitivity;
-#endif
             
             AZ::Entity* contentParentEntity = nullptr;
             UiElementBus::EventResult(contentParentEntity, m_contentEntity, &UiElementBus::Events::GetParent);
@@ -1013,10 +1001,8 @@ void UiScrollBoxComponent::InputPositionUpdate(AZ::Vector2 point)
 
             if (newScrollOffset != m_scrollOffset)
             {
-#if defined(CARBONATED)
                 m_lastOffsetChange = newScrollOffset - m_scrollOffset;
                 m_offsetChangeAccumulator += m_lastOffsetChange;
-#endif
                 DoSetScrollOffset(newScrollOffset);
 
                 NotifyScrollersOnValueChanging();
@@ -1024,11 +1010,11 @@ void UiScrollBoxComponent::InputPositionUpdate(AZ::Vector2 point)
                 DoChangingActions();
             }
             
-#if defined(CARBONATED)
             //Reset offset and time accumulators if change scrolling direction
             if (m_lastOffsetChange.Dot(m_offsetChangeAccumulator) < 0.0f)
+            {
                 SetMomentumActive(false);
-#endif
+            }
         }
     }
 }
@@ -1074,10 +1060,8 @@ bool UiScrollBoxComponent::OfferDragHandOff(AZ::EntityId currentActiveInteractab
         m_pressedScrollOffset = m_scrollOffset;
         m_lastDragPoint = m_pressedPoint;
         
-#if defined(CARBONATED)
         // Stop momentum if the user pressed the screen, when handled indirectly
         SetMomentumActive(false);
-#endif
 
         // tell the canvas that this is now the active interacatable
         UiInteractableActiveNotificationBus::Event(
@@ -1269,29 +1253,36 @@ void UiScrollBoxComponent::OnCanvasSpaceRectChanged([[maybe_unused]] AZ::EntityI
     }
 }
 
-#if defined(CARBONATED)
 void UiScrollBoxComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
 {
     if (!m_momentumIsActive && m_isDragging)
     {
         m_draggingTimeAccumulator += deltaTime;
         // Detect if stopped by checking if immediate offset change falls below threshold
-        if ((m_lastOffsetChange/m_scrollSensitivity).GetLength() < MIN_OFFSET_THRESHOLD)
+        if ((m_lastOffsetChange / m_scrollSensitivity).GetLength() < MIN_OFFSET_THRESHOLD)
+        {
             m_stoppingTimeAccumulator += deltaTime;
+        }
         else
+        {
             m_stoppingTimeAccumulator = 0.0f;
+        }
     }
     
     // Stop momentum if off or already ran the full momentum duration
     if (!m_momentumIsActive ||
         m_momentumDuration < m_momentumTimeAccumulator)
+    {
         return;
+    }
     
     // Stop momentum if no dragging accumulator, or not enough drag, or if stopped for long enough
     if (m_draggingTimeAccumulator == 0.0f ||
-        (m_offsetChangeAccumulator/m_scrollSensitivity).GetLength() < MIN_OFFSET_THRESHOLD ||
+        (m_offsetChangeAccumulator / m_scrollSensitivity).GetLength() < MIN_OFFSET_THRESHOLD ||
         m_stoppingTimeAccumulator > MAX_STOPPING_DELAY)
+    {
         return;
+    }
     
     m_momentumTimeAccumulator += deltaTime;
 
@@ -1319,7 +1310,6 @@ void UiScrollBoxComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTi
         DoChangingActions();
     }
 }
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PROTECTED MEMBER FUNCTIONS
@@ -1332,9 +1322,9 @@ void UiScrollBoxComponent::Activate()
     UiScrollBoxBus::Handler::BusConnect(GetEntityId());
     UiScrollableBus::Handler::BusConnect(GetEntityId());
     UiInitializationBus::Handler::BusConnect(GetEntityId());
-#if defined(CARBONATED) // Carbonated patch : porting 02_27
+#if defined(CARBONATED)
     AZ::TickBus::Handler::BusConnect();
-#endif // CARBONATED
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1345,9 +1335,9 @@ void UiScrollBoxComponent::Deactivate()
     UiScrollableBus::Handler::BusDisconnect(GetEntityId());
     UiInitializationBus::Handler::BusDisconnect(GetEntityId());
     UiTransformChangeNotificationBus::MultiHandler::BusDisconnect();
-#if defined(CARBONATED) // Carbonated patch : porting 02_27
+#if defined(CARBONATED)
     AZ::TickBus::Handler::BusDisconnect();
-#endif // CARBONATED
+#endif
 
     if (m_hScrollBarEntity.IsValid() && m_isHorizontalScrollingEnabled)
     {
@@ -1399,11 +1389,11 @@ void UiScrollBoxComponent::Reflect(AZ::ReflectContext* context)
     if (serializeContext)
     {
         serializeContext->Class<UiScrollBoxComponent, UiInteractableComponent>()
-#if defined(CARBONATED) // Carbonated patch : porting 02_27
+#if defined(CARBONATED)
             ->Version(5, &VersionConverter)
 #else
             ->Version(4, &VersionConverter)
-#endif // CARBONATED
+#endif
         // Content group
             ->Field("ContentEntity", &UiScrollBoxComponent::m_contentEntity)
             ->Field("ScrollOffset", &UiScrollBoxComponent::m_scrollOffset)
@@ -1418,11 +1408,11 @@ void UiScrollBoxComponent::Reflect(AZ::ReflectContext* context)
             ->Field("AllowVertScrolling", &UiScrollBoxComponent::m_isVerticalScrollingEnabled)
             ->Field("VScrollBarEntity", &UiScrollBoxComponent::m_vScrollBarEntity)
             ->Field("VScrollBarVisibility", &UiScrollBoxComponent::m_vScrollBarVisibility)
-#if defined(CARBONATED) // Carbonated patch : porting 02_27
+#if defined(CARBONATED)
         // Scroll speed and momentum group
             ->Field("ScrollingSpeed", &UiScrollBoxComponent::m_scrollSensitivity)
             ->Field("MomentumScrollingDuration", &UiScrollBoxComponent::m_momentumDuration)
-#endif // CARBONATED
+#endif
         // Actions group
             ->Field("ScrollOffsetChangingActionName", &UiScrollBoxComponent::m_scrollOffsetChangingActionName)
             ->Field("ScrollOffsetChangedActionName", &UiScrollBoxComponent::m_scrollOffsetChangedActionName);
@@ -1505,7 +1495,7 @@ void UiScrollBoxComponent::Reflect(AZ::ReflectContext* context)
                     ->EnumAttribute(UiScrollBoxInterface::ScrollBarVisibility::AutoHideAndResizeViewport, "Auto hide and resize view area");
             }
 
-#if defined(CARBONATED) // Carbonated patch : porting 02_27
+#if defined(CARBONATED)
             // Scroll speed and momentum group
             {
                 editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Scrolling speed and momentum")
@@ -1517,7 +1507,7 @@ void UiScrollBoxComponent::Reflect(AZ::ReflectContext* context)
                 editInfo->DataElement(0, &UiScrollBoxComponent::m_momentumDuration, "Momentun duration", "Time for which we keep scrolling after release.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show);
             }
-#endif // CARBONATED
+#endif
 
             // Actions group
             {
@@ -1553,14 +1543,12 @@ void UiScrollBoxComponent::Reflect(AZ::ReflectContext* context)
             ->Event("SetHorizontalScrollBarVisibility", &UiScrollBoxBus::Events::SetHorizontalScrollBarVisibility)
             ->Event("GetVerticalScrollBarVisibility", &UiScrollBoxBus::Events::GetVerticalScrollBarVisibility)
             ->Event("SetVerticalScrollBarVisibility", &UiScrollBoxBus::Events::SetVerticalScrollBarVisibility)
-#if defined(CARBONATED)
             ->Event("GetScrollSensitivity", &UiScrollBoxBus::Events::GetScrollSensitivity)
             ->Event("SetScrollSensitivity", &UiScrollBoxBus::Events::SetScrollSensitivity)
             ->Event("GetMomentumDuration", &UiScrollBoxBus::Events::GetMomentumDuration)
             ->Event("SetMomentumDuration", &UiScrollBoxBus::Events::SetMomentumDuration)
             ->Event("SetMomentumActive", &UiScrollBoxBus::Events::SetMomentumActive)
             ->Event("StopMomentum", &UiScrollBoxBus::Events::StopMomentum)
-#endif
             ->Event("GetScrollOffsetChangingActionName", &UiScrollBoxBus::Events::GetScrollOffsetChangingActionName)
             ->Event("SetScrollOffsetChangingActionName", &UiScrollBoxBus::Events::SetScrollOffsetChangingActionName)
             ->Event("GetScrollOffsetChangedActionName", &UiScrollBoxBus::Events::GetScrollOffsetChangedActionName)
@@ -1594,7 +1582,11 @@ UiScrollBoxComponent::EntityComboBoxVec UiScrollBoxComponent::PopulateChildEntit
     EntityComboBoxVec result;
 
     // add a first entry for "None"
-    result.push_back(AZStd::make_pair(AZ::EntityId(), "<None>")); // Carbonated patch : was AZ::EntityId(AZ::EntityId())
+#if defined(CARBONATED)
+    result.push_back(AZStd::make_pair(AZ::EntityId(), "<None>"));
+#else
+    result.push_back(AZStd::make_pair(AZ::EntityId(AZ::EntityId()), "<None>"));
+#endif
 
     // Get a list of all child elements
     LyShine::EntityArray matchingElements;
@@ -1894,9 +1886,9 @@ float UiScrollBoxComponent::GetValidDragDistanceInPixels(AZ::Vector2 startPoint,
     AZ::Matrix4x4 transformFromViewport;
     UiTransformBus::Event(contentParentEntity->GetId(), &UiTransformBus::Events::GetTransformFromViewport, transformFromViewport);
     AZ::Vector2 dragVec = endPoint - startPoint;
-#if defined(CARBONATED) // Carbonated patch : porting 02_27
+#if defined(CARBONATED)
     dragVec *= m_scrollSensitivity;
-#endif // CARBONATED
+#endif
     AZ::Vector3 dragVec3(dragVec.GetX(), dragVec.GetY(), 0.0f);
     AZ::Vector3 localDragVec = transformFromViewport.Multiply3x3(dragVec3);
 

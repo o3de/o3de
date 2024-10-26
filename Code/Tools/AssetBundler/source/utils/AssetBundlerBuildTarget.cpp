@@ -9,7 +9,7 @@
 
 namespace AssetBundler
 {
-    //! This file is to be added only to the AssetProcessor build target
+    //! This file is to be added only to the AssetBundler build target
     //! This function returns the build system target name
     AZStd::string_view GetBuildTargetName()
     {

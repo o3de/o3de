@@ -75,7 +75,12 @@ bool TraceRayScreenSpace(float3 rayStartVS, float3 rayDirectionVS, uint2 dimensi
     float3 Q1 = rayEndVS * k1;
 
     // if the line is degenerate, make it cover at least one pixel
+#ifdef PRE_HLSL_2021
+    // See /o3de/Gems/Atom/Feature/Common/Assets/ShaderLib/PRE_HLSL_2021.md for details.
+    P1 += DistanceSqr(P0, P1) < EPSILON ? float2(0.01f, 0.01f) : 0.0f;
+#else
     P1 += select(DistanceSqr(P0, P1) < EPSILON, float2(0.01f, 0.01f), 0.0f);
+#endif
 
     // store all of the start variables in a single float4
     float4 PQK = float4(P0, Q0.z, k0);

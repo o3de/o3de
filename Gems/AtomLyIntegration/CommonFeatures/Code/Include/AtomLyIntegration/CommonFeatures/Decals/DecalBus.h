@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#pragma once // Gruber patch // STA : fix compilation errors
+#pragma once
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/Decals/DecalComponentConfig.h>
@@ -37,13 +37,13 @@ namespace AZ
             //! Sets the decal opacity
             virtual void SetOpacity(float opacity) = 0;
 
-            #if defined(CARBONATED)
+#if defined(CARBONATED)
             //! Gets the decals visibility
             virtual bool GetVisibility() const = 0;
 
             //! Sets the decals visibility
             virtual void SetVisibility(bool visible) = 0;
-            #endif
+#endif
 
             //! Gets the decal color
             virtual const AZ::Vector3& GetDecalColor() const = 0;

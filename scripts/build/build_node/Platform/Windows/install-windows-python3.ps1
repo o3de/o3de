@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 #>
 
 Write-Host "Install Python"
-choco install -y python3 --version=3.10.5
+choco install -y python3 --version=3.10.11
 $pyroot = "C:\Python310"
 
 Write-Host "Ensure Python paths are set"

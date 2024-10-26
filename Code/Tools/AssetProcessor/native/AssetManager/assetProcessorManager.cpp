@@ -339,7 +339,9 @@ namespace AssetProcessor
 
         if (jobInfo.m_status == JobStatus::Failed_InvalidSourceNameExceedsMaxLimit)
         {
-            response.m_jobLog.append(AZStd::string::format("Warn: Source file name exceeds the maximum length allowed (%d).", AP_MAX_PATH_LEN).c_str());
+            response.m_jobLog.append(
+                AZStd::string::format("Warn: Source file name exceeds the maximum length allowed (%d).", ASSETPROCESSOR_TRAIT_MAX_PATH_LEN)
+                    .c_str());
             response.m_isSuccess = true;
             return;
         }
@@ -804,7 +806,8 @@ namespace AssetProcessor
 
         QString fullPath = jobEntry.GetAbsoluteSourcePath();
         //set the new status
-        job.m_status = fullPath.length() < AP_MAX_PATH_LEN ? JobStatus::Failed : JobStatus::Failed_InvalidSourceNameExceedsMaxLimit;
+        job.m_status =
+            fullPath.length() < ASSETPROCESSOR_TRAIT_MAX_PATH_LEN ? JobStatus::Failed : JobStatus::Failed_InvalidSourceNameExceedsMaxLimit;
 
         JobDiagnosticInfo info{};
         JobDiagnosticRequestBus::BroadcastResult(info, &JobDiagnosticRequestBus::Events::GetDiagnosticInfo, job.m_jobRunKey);
@@ -2861,7 +2864,7 @@ namespace AssetProcessor
             if (isProductFile)
             {
                 // its a product file.
-                if (normalizedPath.length() >= AP_MAX_PATH_LEN)
+                if (normalizedPath.length() >= ASSETPROCESSOR_TRAIT_MAX_PATH_LEN)
                 {
                     // if we are here it means that we have found a cache file whose filepath is greater than the maximum path length allowed
                     continue;
@@ -2930,10 +2933,15 @@ namespace AssetProcessor
                     m_knownFolders.insert(sourceAssetReference.ScanFolderPath().c_str());
                 }
 
-                if (normalizedPath.length() >= AP_MAX_PATH_LEN)
+                if (normalizedPath.length() >= ASSETPROCESSOR_TRAIT_MAX_PATH_LEN)
                 {
                     // if we are here it means that we have found a source file whose filepath is greater than the maximum path length allowed
-                    AZ_TracePrintf(AssetProcessor::ConsoleChannel, "ProcessFilesToExamineQueue: %s filepath length %d exceeds the maximum path length (%d) allowed.\n", normalizedPath.toUtf8().constData(), normalizedPath.length(), AP_MAX_PATH_LEN);
+                    AZ_TracePrintf(
+                        AssetProcessor::ConsoleChannel,
+                        "ProcessFilesToExamineQueue: %s filepath length %d exceeds the maximum path length (%d) allowed.\n",
+                        normalizedPath.toUtf8().constData(),
+                        normalizedPath.length(),
+                        ASSETPROCESSOR_TRAIT_MAX_PATH_LEN);
 
                     JobInfoContainer jobInfos;
                     m_stateData->GetJobInfoBySourceNameScanFolderId(sourceAssetReference.RelativePath().c_str(), scanFolderInfo->ScanFolderID(), jobInfos);

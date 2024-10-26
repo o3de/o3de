@@ -8,6 +8,10 @@
 
 #pragma once
 
+#ifndef ENABLE_VERTEX_COLOR
+#define ENABLE_VERTEX_COLOR 0
+#endif
+
 // This #define magic allows you to use the EvaluateVertexGeometry function in this file without making it the final
 // EvaluateVertexGeometry used in your shader. Simply #define EvaluateVertexGeometry before including this file
 //
@@ -25,9 +29,9 @@ VsOutput EvaluateVertexGeometry_BasePBR(
     float4 tangent,
     float2 uv0,
     float2 uv1,
-    float4 color0,
     uint instanceId,
-    bool useVertexColor0)
+    bool useVertexColor0,
+    float4 color0)
 {
     VsOutput output;
 
@@ -61,22 +65,49 @@ VsOutput EvaluateVertexGeometry_BasePBR(
     return output;
 }
 
-VsOutput EvaluateVertexGeometry_BasePBR(VsInput IN, VsSystemValues SV)
+void GetVertexColor(VsInput IN, out float4 color, out bool useVertexColor)
 {
 #if ENABLE_VERTEX_COLOR
-    float4 color0 = IN.m_optional_color0;
-    bool useVertexColor0 = o_color0_isBound;
+    color = IN.m_optional_color0;
+    useVertexColor = o_color0_isBound;
 #else
-    float4 color0 = float4(1.0f, 1.0f, 1.0f, 1.0f);
-    bool useVertexColor0 = false;
+    color = float4(1.0f, 1.0f, 1.0f, 1.0f);
+    useVertexColor = false;
 #endif
+}
+
+VsOutput EvaluateVertexGeometry_BasePBR(VsInput IN, VsSystemValues SV)
+{
+    float4 color0;
+    bool useVertexColor0;
+    GetVertexColor(IN, color0, useVertexColor0);
+
     return EvaluateVertexGeometry_BasePBR(
         IN.position,
         IN.normal,
         IN.tangent,
         IN.uv0,
         IN.uv1,
-        color0,
         SV.m_instanceId,
-        useVertexColor0);
+        useVertexColor0,
+        color0);
+}
+
+VsOutput EvaluateVertexGeometry_BasePBR(
+    float3 position,
+    float3 normal,
+    float4 tangent,
+    float2 uv0,
+    float2 uv1,
+    uint instanceId)
+{
+    return EvaluateVertexGeometry_BasePBR(
+        position,
+        normal,
+        tangent,
+        uv0,
+        uv1,
+        instanceId,
+        false,
+        float4(1.0f, 1.0f, 1.0f, 1.0f));
 }

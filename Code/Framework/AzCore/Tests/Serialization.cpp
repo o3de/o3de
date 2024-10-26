@@ -65,6 +65,8 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AZTestShared/Utils/Utils.h>
 
+#include <locale.h>
+
 namespace SerializeTestClasses {
     class MyClassBase1
     {
@@ -1400,15 +1402,51 @@ namespace UnitTest
         void SetUp() override
         {
             Serialization::SetUp();
-
+            setlocale(LC_NUMERIC, "en-US");
             m_context.reset(aznew SerializeContext());
         }
 
         void TearDown() override
         {
+            setlocale(LC_NUMERIC, "en-US");
             m_context.reset();
 
             Serialization::TearDown();
+        }
+
+        void InitializeValues()
+        {
+            m_char = -1;
+            m_short = -2;
+            m_int = -3;
+            m_long = -4;
+            m_s64 = -5;
+            m_uchar = 1;
+            m_ushort = 2;
+            m_uint = 3;
+            m_ulong = 4;
+            m_u64 = 5;
+            m_float = 2.f;
+            m_double = 20.0000005;
+            m_true = true;
+            m_false = false;
+
+            // Math
+            m_uuid = AZ::Uuid::CreateString("{16490FB4-A7CE-4a8a-A882-F98DDA6A788F}");
+            m_vector2 = Vector2(1.0f, 2.0f);
+            m_vector3 = Vector3(3.0f, 4.0f, 5.0f);
+            m_vector4 = Vector4(6.0f, 7.0f, 8.0f, 9.0f);
+
+            m_quaternion = Quaternion::CreateRotationZ(0.7f);
+            m_transform = Transform::CreateRotationX(1.1f);
+            m_matrix3x3 = Matrix3x3::CreateRotationY(0.5f);
+            m_matrix4x4 = Matrix4x4::CreateFromQuaternionAndTranslation(m_quaternion, m_vector3);
+
+            m_aabb.Set(-m_vector3, m_vector3);
+            m_plane.Set(m_vector4);
+
+            m_classicEnum = CE_A;
+            m_classEnum = ClassEnum::B;
         }
 
         void OnLoadedClassReady(void* classPtr, const Uuid& classId, int* callCount)
@@ -1867,37 +1905,7 @@ TEST_F(SerializeBasicTest, DISABLED_BasicTypeTest_Succeed)
 TEST_F(SerializeBasicTest, BasicTypeTest_Succeed)
 #endif
     {
-        m_char = -1;
-        m_short = -2;
-        m_int = -3;
-        m_long = -4;
-        m_s64 = -5;
-        m_uchar = 1;
-        m_ushort = 2;
-        m_uint = 3;
-        m_ulong = 4;
-        m_u64 = 5;
-        m_float = 2.f;
-        m_double = 20.0000005;
-        m_true = true;
-        m_false = false;
-
-        // Math
-        m_uuid = AZ::Uuid::CreateString("{16490FB4-A7CE-4a8a-A882-F98DDA6A788F}");
-        m_vector2 = Vector2(1.0f, 2.0f);
-        m_vector3 = Vector3(3.0f, 4.0f, 5.0f);
-        m_vector4 = Vector4(6.0f, 7.0f, 8.0f, 9.0f);
-
-        m_quaternion = Quaternion::CreateRotationZ(0.7f);
-        m_transform = Transform::CreateRotationX(1.1f);
-        m_matrix3x3 = Matrix3x3::CreateRotationY(0.5f);
-        m_matrix4x4 = Matrix4x4::CreateFromQuaternionAndTranslation(m_quaternion, m_vector3);
-
-        m_aabb.Set(-m_vector3, m_vector3);
-        m_plane.Set(m_vector4);
-
-        m_classicEnum = CE_A;
-        m_classEnum = ClassEnum::B;
+        InitializeValues();
 
         TestFileIOBase fileIO;
         SetRestoreFileIOBaseRAII restoreFileIOScope(fileIO);
@@ -1945,6 +1953,55 @@ TEST_F(SerializeBasicTest, BasicTypeTest_Succeed)
             IO::FileIOStream stream(testBinFilePath.c_str(), IO::OpenMode::ModeRead);
             TestLoad(&stream);
         }
+    }
+
+    TEST_F(SerializeBasicTest, BasicTypeTest_LocaleIndependent)
+    {
+        InitializeValues();
+
+        m_s64 = -50000; // ensure that the number is large enough so that if the locale inserts commas, they are there
+        m_float = 20000.5f;
+        m_double = 20000.5; // the number has values after the decimal point and is large enough that it would be formatted with a comma
+
+        TestFileIOBase fileIO;
+        SetRestoreFileIOBaseRAII restoreFileIOScope(fileIO);
+
+        // Store test files within a temporary directory that is deleted
+        // when the variable goes out of scope
+        AZ::Test::ScopedAutoTempDirectory tempDirectory;
+        AZ::IO::Path serializeTestFilePath = tempDirectory.GetDirectory();
+
+        auto readwriteFn = [&](AZ::IO::Path testFilePath, const char* localewrite, const char* localeread, AZ::DataStream::StreamType streamType)
+        {
+            {
+                setlocale(LC_ALL, localewrite);
+                AZ_TracePrintf("SerializeBasicTest", "\nWriting as XML with global locale %s...\n", localewrite);
+                IO::FileIOStream stream(testFilePath.c_str(), IO::OpenMode::ModeWrite);
+                TestSave(&stream, streamType);
+            }
+            {
+                setlocale(LC_ALL, localeread);
+                AZ_TracePrintf("SerializeBasicTest", "Loading as XML with global locale %s...\n", localeread);
+                IO::FileIOStream stream(testFilePath.c_str(), IO::OpenMode::ModeRead);
+                TestLoad(&stream);
+            }
+        };
+        
+
+        // XML version
+        AZ::IO::Path testXmlFilePath = serializeTestFilePath / "serializebasictest_localeindependent.xml";
+        readwriteFn(testXmlFilePath, "en-US", "pl-PL", ObjectStream::ST_XML);
+        readwriteFn(testXmlFilePath, "pl-PL", "en-US", ObjectStream::ST_XML);
+
+        // JSON version
+        AZ::IO::Path testJsonFilePath = serializeTestFilePath / "serializebasictest_localeindependent.json";
+        readwriteFn(testJsonFilePath, "en-US", "pl-PL", ObjectStream::ST_JSON);
+        readwriteFn(testJsonFilePath, "pl-PL", "en-US", ObjectStream::ST_XML);
+        
+        // Binary version
+        AZ::IO::Path testBinFilePath = serializeTestFilePath / "serializebasictest_localeindependent.bin";
+        readwriteFn(testJsonFilePath, "en-US", "pl-PL", ObjectStream::ST_BINARY);
+        readwriteFn(testJsonFilePath, "pl-PL", "en-US", ObjectStream::ST_BINARY);
     }
     /*
     * Test serialization of built-in container types

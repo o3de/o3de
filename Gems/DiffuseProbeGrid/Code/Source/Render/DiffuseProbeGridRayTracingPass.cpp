@@ -314,7 +314,10 @@ namespace AZ
                     diffuseProbeGrid->UpdateRayTraceSrg(m_rayTracingShader, m_globalSrgLayout);
 
                     diffuseProbeGrid->GetRayTraceSrg()->SetConstant(m_maxRecursionDepthNameIndex, MaxRecursionDepth);
-                    diffuseProbeGrid->GetRayTraceSrg()->Compile();
+                    if (!diffuseProbeGrid->GetRayTraceSrg()->IsQueuedForCompile())
+                    {
+                        diffuseProbeGrid->GetRayTraceSrg()->Compile();
+                    }
                 }
             }
 

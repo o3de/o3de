@@ -46,6 +46,7 @@ namespace ScriptCanvas
         RuntimeComponent() = default;
 
         void TakeRuntimeDataOverrides(RuntimeDataOverrides&& overrideData);
+        const RuntimeDataOverrides& GetRuntimeDataOverrides() const;
 
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)

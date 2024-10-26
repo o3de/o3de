@@ -15,7 +15,7 @@ namespace AZ::RHI
     namespace
     {
         static constexpr const char FieldVendor[]             = "vendor";
-        static constexpr const char FieldMinVerison[]         = "minVersion";
+        static constexpr const char FieldMinVersion[]         = "minVersion";
         static constexpr const char FieldVersionsWithIssues[] = "versionsWithIssues";
     }
 
@@ -111,7 +111,7 @@ namespace AZ::RHI
         driverInfo->m_vendorId = VendorId::Unknown;
         AZStd::vector<AZStd::string> badVersions;
         result.Combine(ContinueLoadingFromJsonObjectField(&driverInfo->m_vendorId, azrtti_typeid(driverInfo->m_vendorId), inputValue, FieldVendor, context));
-        result.Combine(ContinueLoadingFromJsonObjectField(&driverInfo->m_minVersion.m_readableVersion, azrtti_typeid(driverInfo->m_minVersion.m_readableVersion), inputValue, FieldMinVerison, context));
+        result.Combine(ContinueLoadingFromJsonObjectField(&driverInfo->m_minVersion.m_readableVersion, azrtti_typeid(driverInfo->m_minVersion.m_readableVersion), inputValue, FieldMinVersion, context));
         result.Combine(ContinueLoadingFromJsonObjectField(&badVersions, azrtti_typeid(badVersions), inputValue, FieldVersionsWithIssues, context));
 
         driverInfo->m_minVersion.m_encodedVersion = ConvertVersionNumber(driverInfo->m_vendorId, driverInfo->m_minVersion.m_readableVersion);
@@ -155,7 +155,7 @@ namespace AZ::RHI
 
         VendorId defaultVendorId = VendorId::Unknown;
         result.Combine(ContinueStoringToJsonObjectField(outputValue, FieldVendor, &driverInfo->m_vendorId, &defaultVendorId, azrtti_typeid(driverInfo->m_vendorId), context));
-        result.Combine(ContinueStoringToJsonObjectField(outputValue, FieldMinVerison, &driverInfo->m_minVersion.m_readableVersion, nullptr, azrtti_typeid(driverInfo->m_minVersion.m_readableVersion), context));
+        result.Combine(ContinueStoringToJsonObjectField(outputValue, FieldMinVersion, &driverInfo->m_minVersion.m_readableVersion, nullptr, azrtti_typeid(driverInfo->m_minVersion.m_readableVersion), context));
         result.Combine(ContinueStoringToJsonObjectField(outputValue, FieldVersionsWithIssues, &badVersions, nullptr, azrtti_typeid(badVersions), context));
 
         if (result.GetProcessing() == JsonSerializationResult::Processing::Completed)

@@ -95,7 +95,7 @@ namespace LUAEditor
                 drawRect.setLeft(c_borderSize);
                 drawRect.setRight(c_borderSize + m_numDigits * avgCharWidth);
 
-                p.setPen(colors->GetTextColor());
+                p.setPen(colors->GetLineNumberColor());
                 p.drawText(drawRect.toRect(), Qt::AlignRight | Qt::AlignBottom, lineNumStr.c_str());
 
                 {

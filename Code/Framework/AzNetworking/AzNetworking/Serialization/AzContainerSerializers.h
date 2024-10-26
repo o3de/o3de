@@ -311,6 +311,11 @@ namespace AzNetworking
     {
         static bool SerializeObject(ISerializer& serializer, AZ::VectorN& value)
         {
+            AZStd::size_t size = value.GetDimensionality();
+            if (serializer.Serialize(size, "size"))
+            {
+                value.Resize(size);
+            }
             return serializer.Serialize(value.GetVectorValues(), "data");
         }
     };
@@ -393,6 +398,12 @@ namespace AzNetworking
     {
         static bool SerializeObject(ISerializer& serializer, AZ::MatrixMxN& value)
         {
+            AZStd::size_t rows = value.GetRowCount();
+            AZStd::size_t cols = value.GetColumnCount();
+            if (serializer.Serialize(rows, "rows") && serializer.Serialize(cols, "cols"))
+            {
+                value.Resize(rows, cols);
+            }
             return serializer.Serialize(value.GetMatrixElements(), "data");
         }
     };

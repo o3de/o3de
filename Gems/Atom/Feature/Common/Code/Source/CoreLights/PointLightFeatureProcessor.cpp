@@ -378,6 +378,14 @@ namespace AZ
             m_deviceBufferNeedsUpdate = true;
         }
 
+        void PointLightFeatureProcessor::SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to PointLightFeatureProcessor::SetLightingChannelMask().");
+
+            m_lightData.GetData<0>(handle.GetIndex()).m_lightingChannelMask = lightingChannelMask;
+            m_deviceBufferNeedsUpdate = true;
+        }
+
         void PointLightFeatureProcessor::SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize)
         {
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetShadowmapMaxResolution, shadowmapSize);

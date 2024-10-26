@@ -21,22 +21,28 @@ namespace AzGameFramework
 
         GameApplication();
         GameApplication(int argc, char** argvS);
+        // Allows passing in a JSON Merge Patch string that can bootstrap
+        // the settings registry with an initial set of settings
+        explicit GameApplication(AZ::ComponentApplicationSettings componentAppSettings);
+        GameApplication(int argc, char** argvS, AZ::ComponentApplicationSettings componentAppSettings);
         ~GameApplication();
 
         //////////////////////////////////////////////////////////////////////////
         // AZ::ComponentApplication
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
-        //////////////////////////////////////////////////////////////////////////
-
-
-        void SetHeadless(bool headless);
-
         void CreateStaticModules(AZStd::vector<AZ::Module*>& outModules) override;
+        //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
         // AzFramework::ApplicationRequests::Bus
         void QueryApplicationType(AZ::ApplicationTypeQuery& appType) const override;
         //////////////////////////////////////////////////////////////////////////
+
+        //! Set the headless state of the game application. This is determined at compile time
+        void SetHeadless(bool headless);
+
+        //! Set the flag indicating if console-only mode is supported. This is determined based on the platform that supports it.
+        void SetConsoleModeSupported(bool supported);
 
     protected:
 
@@ -50,6 +56,10 @@ namespace AzGameFramework
         //////////////////////////////////////////////////////////////////////////
 
         bool m_headless{ false };
+
+        bool m_consoleModeSupported{ true };
+
+        bool m_consoleMode{ false };
     };
 } // namespace AzGameFramework
 

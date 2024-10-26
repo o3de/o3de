@@ -242,6 +242,7 @@ namespace AZ
             }
         }
 
+
         void DeferredFogPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
             FullscreenTrianglePass::SetupFrameGraphDependencies(frameGraph);

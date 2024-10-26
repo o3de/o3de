@@ -20,9 +20,10 @@ namespace AzFramework
         {
             serializeContext->Class<VisibleGeometry>()
                 ->Version(0)
+                ->Field("transform", &VisibleGeometry::m_transform)
                 ->Field("vertices", &VisibleGeometry::m_vertices)
                 ->Field("indices", &VisibleGeometry::m_indices)
-                ;
+                ->Field("transparent", &VisibleGeometry::m_transparent);
 
             serializeContext->Class<VisibleGeometryContainer>()
                 ;
@@ -36,8 +37,10 @@ namespace AzFramework
                 ->Attribute(AZ::Script::Attributes::Module, "visibility")
                 ->Constructor()
                 ->Constructor<const VisibleGeometry&>()
+                ->Property("transform", BehaviorValueProperty(&VisibleGeometry::m_transform))
                 ->Property("vertices", BehaviorValueProperty(&VisibleGeometry::m_vertices))
                 ->Property("indices", BehaviorValueProperty(&VisibleGeometry::m_indices))
+                ->Property("transparent", BehaviorValueProperty(&VisibleGeometry::m_transparent))
                 ;
         }
     }

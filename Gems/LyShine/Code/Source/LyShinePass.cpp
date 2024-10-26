@@ -126,6 +126,9 @@ namespace LyShine
         rttChildPass->m_attachmentImage = attachmentImage;
         rttChildPass->m_attachmentImageDependencies = attachmentImageDependencies;
 
+        // Disable by default, the RenderGraph will enable it when render to render target
+        rttChildPass->SetEnabled(false);
+
         AddChild(rttChildPass);
     }
 

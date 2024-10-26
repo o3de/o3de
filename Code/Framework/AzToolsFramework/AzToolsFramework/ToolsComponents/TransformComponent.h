@@ -161,8 +161,6 @@ namespace AzToolsFramework
             void UpdateCachedWorldTransform();
             void ClearCachedWorldTransform();
 
-            bool ShowClearButtonHandler();
-
             // SliceEntityHierarchyRequestBus
             AZ::EntityId GetSliceEntityParentId() override;
             AZStd::vector<AZ::EntityId> GetSliceEntityChildren() override;
@@ -182,10 +180,7 @@ namespace AzToolsFramework
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
             static void Reflect(AZ::ReflectContext* context);
 
-            AZ::Outcome<void, AZStd::string> ValidatePotentialParent(void* newValue, const AZ::Uuid& valueType);
-
             AZ::u32 TransformChangedInspector();
-            AZ::u32 ParentChangedInspector();
             AZ::u32 StaticChangedInspector();
 
             bool TransformChanged();

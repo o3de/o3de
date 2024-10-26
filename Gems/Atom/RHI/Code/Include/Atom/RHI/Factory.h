@@ -22,6 +22,7 @@ namespace AZ::RHI
     class BufferPool;
     class BufferView;
     class Device;
+    class DispatchRaysIndirectBuffer;
     class Image;
     class ImagePool;
     class ImageView;
@@ -191,5 +192,7 @@ namespace AZ::RHI
         virtual Ptr<RayTracingPipelineState> CreateRayTracingPipelineState() = 0;
 
         virtual Ptr<RayTracingShaderTable> CreateRayTracingShaderTable() = 0;
+
+        virtual Ptr<DispatchRaysIndirectBuffer> CreateDispatchRaysIndirectBuffer() = 0;
     };
-}
+} // namespace AZ::RHI

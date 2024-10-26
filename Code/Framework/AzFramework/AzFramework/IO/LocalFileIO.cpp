@@ -300,8 +300,8 @@ namespace AZ
                 const AZ::IO::PathView pathView(path);
 
                 const auto devWriteStoragePath = AZ::Utils::GetDevWriteStoragePath();
-                if (devWriteStoragePath.has_value() &&
-                    pathView.IsRelativeTo(AZStd::string_view(*devWriteStoragePath)))
+                if (!devWriteStoragePath.empty() &&
+                    pathView.IsRelativeTo(AZStd::string_view(devWriteStoragePath)))
                 {
                     return;
                 }

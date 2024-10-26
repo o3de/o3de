@@ -22,6 +22,7 @@
 #include <AzCore/Math/Sha1.h>
 #include <AzCore/Platform.h>
 #include <AzCore/std/time.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
 
@@ -412,11 +413,7 @@ namespace AZ::RHI
         case ShaderHardwareStage::Fragment:
             return RHI::ShaderStage::Fragment;
         case ShaderHardwareStage::Geometry:
-            AZ_Assert(false, "RHI currently does not support geometry shaders");
-            return RHI::ShaderStage::Unknown;
-        case ShaderHardwareStage::TessellationControl:
-        case ShaderHardwareStage::TessellationEvaluation:
-            return RHI::ShaderStage::Tessellation;
+            return RHI::ShaderStage::Geometry;
         case ShaderHardwareStage::Vertex:
             return RHI::ShaderStage::Vertex;
         case ShaderHardwareStage::RayTracing:
@@ -497,6 +494,25 @@ namespace AZ::RHI
         AzFramework::StringFunc::Path::Join(tempFolder.c_str(), outputFile.c_str(), outputFile);
         AzFramework::StringFunc::Path::ReplaceExtension(outputFile, outputExtension);
         return outputFile;
+    }
+
+    AZStd::string GetDirectXShaderCompilerPath(const char* defaultPathToDxc)
+    {
+        // To quickly test changes to the DXC compiler or as a workaround to the default.
+        static constexpr char DxcOverridePathKey[] = "/O3DE/Atom/DxcOverridePath";
+
+        if (auto setReg = AZ::Interface<SettingsRegistryInterface>::Get())
+        {
+            AZStd::string overridePath;
+            if (setReg->Get(overridePath, DxcOverridePathKey))
+            {
+                AZ_TraceOnce("CustomDxc", "DXC executable override specified, using %s.\n", overridePath.c_str());
+                return overridePath;
+            }
+        }
+
+        AZ_Assert(defaultPathToDxc != nullptr, "Invalid default path to DXC.");
+        return AZStd::string(defaultPathToDxc);
     }
 
     namespace CommandLineArgumentUtils

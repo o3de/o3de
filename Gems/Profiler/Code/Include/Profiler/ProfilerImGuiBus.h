@@ -13,6 +13,10 @@
 #include <AzCore/std/string/string.h>
 #endif
 
+#if defined(CARBONATED)
+#include <AzCore/std/string/string.h>
+#endif
+
 namespace Profiler
 {
 #if defined (CARBONATED)

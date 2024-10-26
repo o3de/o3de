@@ -227,10 +227,6 @@ namespace AZ
                     return RHI::ShaderHardwareStage::Fragment;
                 case RPI::ShaderStageType::Geometry:
                     return RHI::ShaderHardwareStage::Geometry;
-                case RPI::ShaderStageType::TessellationControl:
-                    return RHI::ShaderHardwareStage::TessellationControl;
-                case RPI::ShaderStageType::TessellationEvaluation:
-                    return RHI::ShaderHardwareStage::TessellationEvaluation;
                 case RPI::ShaderStageType::Vertex:
                     return RHI::ShaderHardwareStage::Vertex;
                 case RPI::ShaderStageType::RayTracing:

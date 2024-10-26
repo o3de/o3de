@@ -346,8 +346,6 @@ namespace AZ
 
         void Device::InitFeatures()
         {
-            
-            m_features.m_tessellationShader = false;
             m_features.m_geometryShader = false;
             m_features.m_computeShader = true;
             m_features.m_independentBlend = true;

@@ -85,7 +85,7 @@ class SettingsDescription(object):
 
     def validate_value(self, input):
         if self._is_password:
-            raise O3DEConfigError(f"Input value for '{self._key}' must be set through the password setting argument.")
+            logger.debug(f"Input value for '{self._key}' is a password. If extra security is required, use the --set-password setting argument.")
         if self._is_boolean:
             evaluate_boolean_from_setting(input)
         if self._restricted_regex and not self._restricted_regex.match(input):
@@ -522,3 +522,16 @@ class O3DEConfig(object):
                                     help=description, default=default_values)
             else:
                 raise O3DEConfigError("parameter 'argument' must be either a string or list of string")
+
+    def get_settings_description(self, key: str) -> SettingsDescription:
+        """
+        Get the value of a particular setting based on a key.
+        :param key: The key to look up the value
+        :param default: The default value to return if the key is not set
+        :return: The value of the settings based on the key. If the key is not found, return the default
+        """
+        settings_description = self._settings_description_map.get(key, None)
+        if not settings_description:
+            raise O3DEConfigError(f"Unrecognized setting '{key}'")
+        return settings_description
+    

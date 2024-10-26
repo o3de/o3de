@@ -34,22 +34,22 @@ function Process(context)
     local silhouetteType = context:GetMaterialPropertyValue_enum("silhouetteType")
     local shaderItem = context:GetShaderByTag("SilhouetteGather")
     if(silhouetteType == SilhouetteType_AlwaysDraw) then
-        -- "AlwaysDraw" ignores depth check and draws everywhere except where silhouettes are blocked
+        -- Always draws in ignores depth check, but won't draw where silhouettes are blocked
         shaderItem:GetRenderStatesOverride():SetDepthEnabled(false)
         shaderItem:GetRenderStatesOverride():SetDepthComparisonFunc(ComparisonFunc_Never)
         -- if you want to let the full silhouette draw even on top of meshes that block
         -- silhouettes, you can disable the stencil check using SetStencilEnabled()
         -- e.g. shaderItem:GetRenderStatesOverride():SetStencilEnabled(false)
     elseif(silhouetteType == SilhouetteType_Visible) then
-        -- "Visible" draws where the silhouette is NOT obscured
+        -- Visible draws where the silhouette is NOT obscured
         shaderItem:GetRenderStatesOverride():SetDepthEnabled(true)
         shaderItem:GetRenderStatesOverride():SetDepthComparisonFunc(ComparisonFunc_GreaterEqual)
     elseif(silhouetteType == SilhouetteType_XRay) then
-        -- "XRay" draws where the silhouette IS obscured
+        -- XRay draws where the silhouette IS obscured
         shaderItem:GetRenderStatesOverride():SetDepthEnabled(true)
         shaderItem:GetRenderStatesOverride():SetDepthComparisonFunc(ComparisonFunc_Less)
     elseif(silhouetteType == SilhouetteType_NeverDraw) then
-        -- "NeverDraw" doesn't draw the silhouette
+        -- Never doesn't draw the silhouette
         shaderItem:GetRenderStatesOverride():SetDepthEnabled(true)
         shaderItem:GetRenderStatesOverride():SetDepthComparisonFunc(ComparisonFunc_Never)
     end

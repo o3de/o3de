@@ -134,7 +134,8 @@ namespace AZ::RHI
         //! It is permitted to take a strong reference to the returned pointer, but is not necessary as long as the reference
         //! is discarded on a library reset / release event. The cache will store a reference internally. If a strong reference
         //! is held externally, the instance will remain valid even after the cache is reset / destroyed.
-        const PipelineState* AcquirePipelineState(PipelineLibraryHandle library, const PipelineStateDescriptor& descriptor);
+        const PipelineState* AcquirePipelineState(
+            PipelineLibraryHandle library, const PipelineStateDescriptor& descriptor, const AZ::Name& name = AZ::Name());
 
         //! This method merges the global pending cache into the global read-only cache and clears all thread-local caches.
         //! This reduces the total memory footprint of the caches and optimizes subsequent fetches. This method should be called
@@ -225,7 +226,8 @@ namespace AZ::RHI
             GlobalLibraryEntry& globalLibraryEntry,
             ThreadLibraryEntry& threadLibraryEntry,
             const PipelineStateDescriptor& pipelineStateDescriptor,
-            PipelineStateHash pipelineStateHash);
+            PipelineStateHash pipelineStateHash,
+            const AZ::Name& name);
 
         //! Resets the library without validating the handle or taking a lock.
         void ResetLibraryImpl(PipelineLibraryHandle handle);

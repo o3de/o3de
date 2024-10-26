@@ -55,7 +55,7 @@ namespace MaterialCanvas
         InitMaterialCanvasResources();
 
         QApplication::setOrganizationName("O3DE");
-        QApplication::setApplicationName("O3DE Material Canvas (Preview)");
+        QApplication::setApplicationName("O3DE Material Canvas");
         QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
 
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
@@ -197,6 +197,12 @@ namespace MaterialCanvas
         m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyConnectionName", editData);
         m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyGroupName", editData);
         m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyGroup", editData);
+
+        editData = {};
+        editData.m_elementId = AZ::Edit::UIHandlers::ComboBox;
+        AtomToolsFramework::AddEditDataAttribute(
+            editData, AZ::Edit::Attributes::StringList, AZStd::vector<AZStd::string>{ "", "0", "1", "2", "3", "4" });
+        m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyMinVectorSize", editData);
 
         editData = {};
         editData.m_elementId = AZ::Edit::UIHandlers::ComboBox;

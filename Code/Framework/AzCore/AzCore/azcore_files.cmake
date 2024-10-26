@@ -402,7 +402,9 @@ set(FILES
     Math/VertexContainer.h
     Math/VertexContainer.cpp
     Math/VertexContainerInterface.h
+    Math/PackedVector2.h
     Math/PackedVector3.h
+    Math/PackedVector4.h
     Math/Color.h
     Math/Color.cpp
     Math/ColorSerializer.h
@@ -423,8 +425,6 @@ set(FILES
     Memory/HphaAllocator.cpp
     Memory/HphaAllocator.h
     Memory/IAllocator.h
-    Memory/MallocSchema.cpp
-    Memory/MallocSchema.h
     Memory/Memory_fwd.h
     Memory/Memory.cpp
     Memory/Memory.h
@@ -565,6 +565,8 @@ set(FILES
     Serialization/EditContextConstants.inl
     Serialization/IdUtils.inl
     Serialization/IdUtils.h
+    Serialization/Locale.h
+    Serialization/Locale.cpp
     Serialization/Utils.h
     Serialization/SerializationUtils.cpp
     Serialization/ObjectStream.cpp
@@ -641,6 +643,8 @@ set(FILES
     Serialization/std/VariantReflection.inl
     Settings/CommandLine.cpp
     Settings/CommandLine.h
+    Settings/CommandLineParser.cpp
+    Settings/CommandLineParser.h
     Settings/ConfigParser.cpp
     Settings/ConfigParser.h
     Settings/ConfigurableStack.cpp

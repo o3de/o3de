@@ -10,8 +10,34 @@
 set -o errexit # exit on the first failure encountered
 
 {
-    pushd @CPACK_PACKAGING_INSTALL_PREFIX@
-    python/get_python.sh
-    chown -R $SUDO_USER .
-    popd
-} &> /dev/null # hide output
+    ln -s @CPACK_PACKAGING_INSTALL_PREFIX@/bin/Linux/profile/Default/o3de /usr/local/bin/o3de
+    ln -s @CPACK_PACKAGING_INSTALL_PREFIX@/bin/Linux/profile/Default/AssetProcessor /usr/local/bin/o3de.assetprocessor
+    ln -s @CPACK_PACKAGING_INSTALL_PREFIX@/bin/Linux/profile/Default/Editor /usr/local/bin/o3de.editor
+
+    # Generate the desktop icon
+    DESKTOP_ICON_FILE=/usr/share/applications/o3de.desktop
+
+    echo -e "[Desktop Entry]\n\
+Version=@CPACK_PACKAGE_VERSION@\n\
+Name=O3DE\n\
+Comment=O3DE Project Manager\n\
+Type=Application\n\
+Exec=@CPACK_PACKAGING_INSTALL_PREFIX@/bin/Linux/profile/Default/o3de\n\
+Path=@CPACK_PACKAGING_INSTALL_PREFIX@/bin/Linux/profile/Default/\n\
+Icon=@CPACK_PACKAGING_INSTALL_PREFIX@/o3de.svg\n\
+Terminal=false\n\
+StartupWMClass=O3DE.SNAP\n\
+StartupNotify=true\n\
+X-GNOME-Autostart-enabled=true\n\
+" > $DESKTOP_ICON_FILE
+
+    if [ "" != "$SUDO_USER" ]
+    then
+        pushd @CPACK_PACKAGING_INSTALL_PREFIX@
+        chown -R $SUDO_USER .
+        sudo -u $SUDO_USER python/get_python.sh
+        popd
+    fi
+
+} 
+#&> /dev/null # hide output

@@ -1362,14 +1362,14 @@ namespace UnitTest
         EXPECT_FALSE(shaderAsset);
     }
 
-    TEST_F(ShaderTests, ShaderAsset_Error_TessellationFunctionRequiresVertexFunction)
+    TEST_F(ShaderTests, ShaderAsset_Error_GeometryFunctionRequiresVertexFunction)
     {
-        ErrorMessageFinder messageFinder("tessellation function but no vertex function");
+        ErrorMessageFinder messageFinder("geometry function but no vertex function");
         messageFinder.AddExpectedErrorMessage("Invalid root variant");
         messageFinder.AddExpectedErrorMessage("Cannot continue building ShaderAsset because 1 error(s) reported");
 
         AZ::RPI::ShaderAssetCreator creator;
-        BeginCreatingTestShaderAsset(creator, { AZ::RHI::ShaderStage::Tessellation });
+        BeginCreatingTestShaderAsset(creator, { AZ::RHI::ShaderStage::Geometry });
 
         AZ::Data::Asset<AZ::RPI::ShaderAsset> shaderAsset = EndCreatingTestShaderAsset(creator);
 

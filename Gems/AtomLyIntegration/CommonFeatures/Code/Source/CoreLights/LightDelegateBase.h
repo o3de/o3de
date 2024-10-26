@@ -63,6 +63,7 @@ namespace AZ
 
             void SetAffectsGI([[maybe_unused]] bool affectsGI) override {}
             void SetAffectsGIFactor([[maybe_unused]] float affectsGIFactor) override {}
+            void SetLightingChannelMask([[maybe_unused]] uint32_t lightingChannelMask) override;
 
             void SetGoboTexture([[maybe_unused]] AZ::Data::Instance<AZ::RPI::Image> goboTexture) override {}
 

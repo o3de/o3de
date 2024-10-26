@@ -33,6 +33,7 @@ ShaderResourceGroup RayTracingMaterialSrg : SRG_RayTracingMaterial
     struct MaterialInfo
     {
         float4 m_baseColor;
+        float4 m_irradianceColor;
         float3 m_emissiveColor;
         float  m_metallicFactor;
         float  m_roughnessFactor;

@@ -16,6 +16,8 @@
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/Utils.h>
 
+#include <InputHandlerNodeable.h>
+
 namespace AZ
 {
     // Added definition of type info and rtti for the DataPatchTypeUpgrade class

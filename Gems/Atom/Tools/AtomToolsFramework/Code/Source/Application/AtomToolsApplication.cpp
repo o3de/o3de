@@ -16,6 +16,7 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/Asset/AssetSystemComponent.h>
 #include <AzFramework/AzFrameworkNativeUIModule.h>
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -47,8 +48,13 @@ namespace AtomToolsFramework
     AtomToolsApplication* AtomToolsApplication::m_instance = {};
 
     AtomToolsApplication::AtomToolsApplication(const char* targetName, int* argc, char*** argv)
+        : AtomToolsApplication(targetName, argc, argv, {})
+    {
+    }
+
+    AtomToolsApplication::AtomToolsApplication(const char* targetName, int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
         : AzQtApplication(*argc, *argv)
-        , Application(argc, argv)
+        , Application(argc, argv, AZStd::move(componentAppSettings))
         , m_targetName(targetName)
         , m_toolId(targetName)
     {
@@ -150,6 +156,7 @@ namespace AtomToolsFramework
                 azrtti_typeid<AzToolsFramework::Components::PropertyManagerComponent>(),
                 azrtti_typeid<AzToolsFramework::PerforceComponent>(),
                 azrtti_typeid<AzToolsFramework::Thumbnailer::ThumbnailerComponent>(),
+                azrtti_typeid<AzFramework::NativeUISystemComponent>(),
             });
 
         return components;

@@ -36,6 +36,7 @@ namespace AZ
             ReadBack,               //<! For gpu write cpu read buffers which is mainly used to read back gpu data
             ReadWrite,              //<! For gpu read/write buffers. They are often used as both StructuredBuffer and RWStructuredBuffer in different shaders
             ReadOnly,               //<! For buffers which are read only. They are usually only used as StructuredBuffer in shaders
+            Indirect,               //<! For buffers which are used as indirect call arguments
 
             Count,
             Invalid = Count

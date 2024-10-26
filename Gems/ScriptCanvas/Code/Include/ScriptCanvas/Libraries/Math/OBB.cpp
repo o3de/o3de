@@ -8,6 +8,8 @@
 
 #include "OBB.h"
 
+#include <Include/ScriptCanvas/Libraries/Math/OBB.generated.h>
+
 namespace ScriptCanvas
 {
     namespace OBBFunctions

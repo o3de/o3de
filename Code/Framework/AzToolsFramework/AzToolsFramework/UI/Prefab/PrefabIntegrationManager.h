@@ -11,6 +11,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
+#include <AzToolsFramework/API/EntityPropertyEditorNotificationBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/PrefabFocusNotificationBus.h>
@@ -47,6 +48,7 @@ namespace AzToolsFramework
             , private PrefabPublicNotificationBus::Handler
             , private EditorEntityContextNotificationBus::Handler
             , private ActionManagerRegistrationNotificationBus::Handler
+            , private EntityPropertyEditorNotificationBus::Handler
         {
         public:
             AZ_CLASS_ALLOCATOR(PrefabIntegrationManager, AZ::SystemAllocator);
@@ -59,6 +61,10 @@ namespace AzToolsFramework
             // EditorEntityContextNotificationBus overrides ...
             void OnStartPlayInEditorBegin() override;
             void OnStopPlayInEditor() override;
+
+            // EntityPropertyEditorNotificationBus ...
+            void OnComponentSelectionChanged(
+                EntityPropertyEditor* entityPropertyEditor, const AZStd::unordered_set<AZ::EntityComponentIdPair>& selectedEntityComponentIds) override;
 
             // PrefabFocusNotificationBus overrides ...
             void OnPrefabFocusChanged(AZ::EntityId previousContainerEntityId, AZ::EntityId newContainerEntityId) override;
@@ -77,6 +83,7 @@ namespace AzToolsFramework
             void OnActionUpdaterRegistrationHook() override;
             void OnActionRegistrationHook() override;
             void OnWidgetActionRegistrationHook() override;
+            void OnMenuRegistrationHook() override;
             void OnMenuBindingHook() override;
             void OnToolBarBindingHook() override;
             void OnPostActionManagerRegistrationHook() override;

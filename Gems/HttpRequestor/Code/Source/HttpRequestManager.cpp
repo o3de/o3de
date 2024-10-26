@@ -135,7 +135,7 @@ namespace HttpRequestor
 
     void Manager::HandleRequest(const Parameters& httpRequestParameters)
     {
-        Aws::Client::ClientConfiguration config;
+        Aws::Client::ClientConfiguration config = httpRequestParameters.GetClientConfiguration();
         config.enableTcpKeepAlive = AZ_TRAIT_AZFRAMEWORK_AWS_ENABLE_TCP_KEEP_ALIVE_SUPPORTED;
         std::shared_ptr<Aws::Http::HttpClient> httpClient = Aws::Http::CreateHttpClient(config);
 
@@ -186,7 +186,7 @@ namespace HttpRequestor
 
     void Manager::HandleTextRequest(const TextParameters& httpRequestParameters)
     {
-        Aws::Client::ClientConfiguration config;
+        Aws::Client::ClientConfiguration config = httpRequestParameters.GetClientConfiguration();
         config.enableTcpKeepAlive = AZ_TRAIT_AZFRAMEWORK_AWS_ENABLE_TCP_KEEP_ALIVE_SUPPORTED;
         std::shared_ptr<Aws::Http::HttpClient> httpClient = Aws::Http::CreateHttpClient(config);
 

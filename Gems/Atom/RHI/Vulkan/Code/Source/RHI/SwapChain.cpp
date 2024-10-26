@@ -71,7 +71,7 @@ namespace AZ
             m_swapChainBarrier.m_isValid = true;
         }
 
-        void SwapChain::ProcessRecreation()
+        bool SwapChain::ProcessRecreation()
         {
             if (m_pendingRecreation)
             {
@@ -83,7 +83,9 @@ namespace AZ
                 InitImages();
 
                 m_pendingRecreation = false;
+                return true;
             }
+            return false;
         }
 
         void SwapChain::SetVerticalSyncIntervalInternal(uint32_t previousVsyncInterval)
@@ -264,20 +266,21 @@ namespace AZ
                     commandList->EndCommandBuffer();
 
                     // This semaphore will be signaled once the transfer has completed.
-                    auto transferSemaphore = device.GetSemaphoreAllocator().Allocate();
+                    auto transferSemaphore = device.GetSwapChainSemaphoreAllocator().Allocate();
                     // We wait until the swapchain image has finished being rendered to initialize the
                     // ownership transfer.
                     vulkanQueue->SubmitCommandBuffers(
-                        AZStd::vector<RHI::Ptr<CommandList>>{commandList},
-                        AZStd::vector<Semaphore::WaitSemaphore>{AZStd::make_pair(VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, presentSemaphore)},
-                        AZStd::vector< RHI::Ptr<Semaphore>>{transferSemaphore},
+                        AZStd::vector<RHI::Ptr<CommandList>>{ commandList },
+                        AZStd::vector<Semaphore::WaitSemaphore>{ AZStd::make_pair(VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, presentSemaphore) },
+                        AZStd::vector<RHI::Ptr<Semaphore>>{ transferSemaphore },
+                        {},
                         nullptr);
 
                     // The presentation engine must wait until the ownership transfer has completed.
                     waitSemaphore = transferSemaphore->GetNativeSemaphore();
                     transferSemaphore->SignalEvent();
                     // This will not deallocate immediately. It has a collect latency.
-                    device.GetSemaphoreAllocator().DeAllocate(transferSemaphore);
+                    device.GetSwapChainSemaphoreAllocator().DeAllocate(transferSemaphore);
                     m_swapChainBarrier.m_isValid = false;
                 }
 
@@ -528,7 +531,7 @@ namespace AZ
         RHI::ResultCode SwapChain::AcquireNewImage(uint32_t* acquiredImageIndex)
         {
             auto& device = static_cast<Device&>(GetDevice());
-            auto& semaphoreAllocator = device.GetSemaphoreAllocator();
+            auto& semaphoreAllocator = device.GetSwapChainSemaphoreAllocator();
             Semaphore* imageAvailableSemaphore = semaphoreAllocator.Allocate();
             VkResult vkResult = device.GetContext().AcquireNextImageKHR(
                 device.GetNativeDevice(),

@@ -72,6 +72,8 @@ namespace AZ
             virtual void SetAngularDiameter(LightHandle handle, float angularDiameter) = 0;
 
             ////////// shadow specific
+            //! Sets wheter or not enabling shadow
+            virtual void SetShadowEnabled(LightHandle handle, bool enable) = 0;
 
             //! This sets the shadowmap size (width and height) of the light.
             //! @param handle the light handle.
@@ -182,6 +184,8 @@ namespace AZ
             //! Specifies the contribution of this light to the diffuse global illumination in the scene.
             virtual void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) = 0;
 
+            //! Sets the lighting channel mask
+            virtual void SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask) = 0;
         };
     } // namespace Render
 } // namespace AZ

@@ -153,7 +153,7 @@ public:
     void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZ::Vector4& value, [[maybe_unused]] bool bDefault = false) override { assert(0); };
     void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZ::Color& value, [[maybe_unused]] bool bDefault = false) override { assert(0); };
 
-    void OffsetKeyPosition([[maybe_unused]] const Vec3& value) override { assert(0); };
+    void OffsetKeyPosition([[maybe_unused]] const AZ::Vector3& value) override { AZ_Assert(0, "Not implemented"); };
 
     /** Assign active time range for this track.
     */

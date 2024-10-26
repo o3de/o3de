@@ -108,6 +108,7 @@ set(FILES
     containers/rbtree.h
     containers/ring_buffer.h
     containers/set.h
+    containers/span_fwd.h
     containers/span.h
     containers/span.inl
     containers/stack.h

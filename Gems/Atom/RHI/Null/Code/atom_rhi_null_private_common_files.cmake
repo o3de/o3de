@@ -21,6 +21,7 @@ set(FILES
     Source/RHI/CommandQueue.h
     Source/RHI/Device.cpp
     Source/RHI/Device.h
+    Source/RHI/DispatchRaysIndirectBuffer.h
     Source/RHI/Fence.cpp
     Source/RHI/Fence.h
     Source/RHI/FrameGraphCompiler.cpp

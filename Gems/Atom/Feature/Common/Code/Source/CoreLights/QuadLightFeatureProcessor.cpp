@@ -268,6 +268,14 @@ namespace AZ
             m_deviceBufferNeedsUpdate = true;
         }
 
+        void QuadLightFeatureProcessor::SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to QuadLightFeatureProcessor::SetLightingChannelMask().");
+
+            m_lightData.GetData<0>(handle.GetIndex()).m_lightingChannelMask = lightingChannelMask;
+            m_deviceBufferNeedsUpdate = true;
+        }
+
         void QuadLightFeatureProcessor::SetQuadData(LightHandle handle, const QuadLightData& data)
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to QuadLightFeatureProcessor::SetQuadData().");

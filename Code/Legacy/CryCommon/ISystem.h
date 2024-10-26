@@ -61,7 +61,6 @@ struct INameTable;
 struct ILevelSystem;
 class IXMLBinarySerializer;
 struct IAVI_Reader;
-class CPNoise3;
 struct ILocalizationManager;
 struct IOutputPrintSink;
 struct IWindowMessageHandler;
@@ -968,9 +967,6 @@ struct ISystem
     //   Retrieves localized strings manager interface.
     virtual ILocalizationManager* GetLocalizationManager() = 0;
 
-    // Summary:
-    //   Retrieves the perlin noise singleton instance.
-    virtual CPNoise3* GetNoiseGen() = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Error callback handling

@@ -429,6 +429,11 @@ namespace AZ::RHI
         m_currentScope->m_fencesToSignal.push_back(&fence);
     }
 
+    void FrameGraph::WaitFence(Fence& fence)
+    {
+        m_currentScope->m_fencesToWaitFor.push_back(&fence);
+    }
+
     ResultCode FrameGraph::TopologicalSort()
     {
         struct NodeId

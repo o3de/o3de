@@ -243,7 +243,7 @@ namespace AZ
             ByProducts& byProducts) const
         {
             // Shader compiler executable
-            static const char* dxcRelativePath = "Builders/DirectXShaderCompiler/bin/dxc";
+            const auto dxcRelativePath = RHI::GetDirectXShaderCompilerPath("Builders/DirectXShaderCompiler/bin/dxc");
 
             // Output file
             AZStd::string shaderMSLOutputFile = RHI::BuildFileNameWithExtension(shaderSourceFile, tempFolder, "metal");
@@ -412,7 +412,12 @@ namespace AZ
             if (isGraphicsDevModeEnabled)
             {
                 //Embed debug symbols into the bytecode
+#if defined(CARBONATED)
+                // -MO is deprecated
+                RHI::ShaderBuildArguments::AppendArguments(metalAirArguments, { "-gline-tables-only", "-frecord-sources" });
+#else
                 RHI::ShaderBuildArguments::AppendArguments(metalAirArguments, { "-gline-tables-only", "-MO" });
+#endif
             }
             
             const auto metalAirArgumentsStr = RHI::ShaderBuildArguments::ListAsString(metalAirArguments);
@@ -519,6 +524,10 @@ namespace AZ
                 finalMetalSLStr.insert(startOfShaderPos + startOfShaderTag.length() + 1, constantBufferTempStructs);
                 finalMetalSLStr.insert(startOfShaderPos + startOfShaderTag.length() + 1, structuredBufferTempStructs);
             }
+
+            // optimization off attribute "[[clang::optnone]]" added by SPIRV-Cross makes the render 20 times slower
+            // we drop the attribute here, but calculation precision might suffer causing z-fighting
+            finalMetalSLStr = AZStd::regex_replace(finalMetalSLStr, AZStd::regex("\\[\\[clang::optnone\\]\\]"), "");
 
             compiledShader = AZStd::vector<char>(finalMetalSLStr.begin(), finalMetalSLStr.end());
             return true;

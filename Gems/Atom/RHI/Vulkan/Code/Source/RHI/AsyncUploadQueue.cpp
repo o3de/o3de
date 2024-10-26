@@ -5,13 +5,14 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI.Reflect/ImageSubresource.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
 #include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/StreamingImagePool.h>
-#include <Atom/RHI.Reflect/ImageSubresource.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <RHI/AsyncUploadQueue.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferPool.h>
@@ -24,6 +25,7 @@
 #include <RHI/Image.h>
 #include <RHI/MemoryView.h>
 #include <RHI/Queue.h>
+#include <RHI/SignalEvent.h>
 
 namespace AZ
 {
@@ -93,6 +95,19 @@ namespace AZ
 
             RHI::Ptr<Fence> uploadFence = Fence::Create();
             uploadFence->Init(device, RHI::FenceState::Reset);
+
+            uploadFence->SetSignalEvent(AZStd::make_shared<SignalEvent>());
+            uploadFence->SetSignalEventBitToSignal(0);
+            uploadFence->SetSignalEventDependencies(1);
+
+            if (request.m_fenceToSignal)
+            {
+                auto fenceToSignal = static_cast<Fence*>(request.m_fenceToSignal);
+                fenceToSignal->SetSignalEvent(AZStd::make_shared<SignalEvent>());
+                fenceToSignal->SetSignalEventBitToSignal(0);
+                fenceToSignal->SetSignalEventDependencies(1);
+            }
+
             CommandQueue::Command command = [=, &device](void* queue)
             {
                 AZ_PROFILE_SCOPE(RHI, "Upload Buffer");
@@ -182,6 +197,10 @@ namespace AZ
 
             RHI::Ptr<Fence> uploadFence = Fence::Create();
             uploadFence->Init(device, RHI::FenceState::Reset);
+
+            uploadFence->SetSignalEvent(AZStd::make_shared<SignalEvent>());
+            uploadFence->SetSignalEventBitToSignal(0);
+            uploadFence->SetSignalEventDependencies(1);
 
             CommandQueue::Command command = [=, &device](void* queue)
             {
@@ -463,6 +482,9 @@ namespace AZ
                 AZ_Assert(framePacket.m_stagingBuffer, "Failed to acquire staging buffer");
                 framePacket.m_fence = Fence::Create();
                 result = framePacket.m_fence->Init(device, RHI::FenceState::Signaled);
+                framePacket.m_fence->SetSignalEvent(AZStd::make_shared<SignalEvent>());
+                framePacket.m_fence->SetSignalEventBitToSignal(0);
+                framePacket.m_fence->SetSignalEventDependencies(1);
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
             }
 
@@ -504,7 +526,7 @@ namespace AZ
             {
                 semaphoresToSignal.push_back(semaphoreToSignal);
             }
-            queue->SubmitCommandBuffers(commandBuffers, semaphoresWaitInfo, semaphoresToSignal, framePacket.m_fence.get());
+            queue->SubmitCommandBuffers(commandBuffers, semaphoresWaitInfo, semaphoresToSignal, {}, framePacket.m_fence.get());
             queue->EndDebugLabel();
 
             m_frameIndex = (m_frameIndex + 1) % m_descriptor.m_frameCount;

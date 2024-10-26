@@ -48,24 +48,24 @@ namespace AssetProcessor
 #else
         if (dayCount > 0)
         {
-            return duration.toString("zzz' ms, 'ss' sec, 'mm' min, 'hh' hr, %1 day'").arg(dayCount);
+            return duration.toString("'%1d 'hh'h 'mm'm 'ss's 'zzz'ms'").arg(dayCount);
         }
 
         if (duration.isValid())
         {
             if (duration.hour() > 0)
             {
-                return duration.toString("zzz' ms, 'ss' sec, 'mm' min, 'hh' hr'");
+                return duration.toString("hh'h 'mm'm 'ss's 'zzz'ms'");
             }
             if (duration.minute() > 0)
             {
-                return duration.toString("zzz' ms, 'ss' sec, 'mm' min'");
+                return duration.toString("mm'm 'ss's 'zzz'ms'");
             }
             if (duration.second() > 0)
             {
-                return duration.toString("zzz' ms, 'ss' sec'");
+                return duration.toString("ss's 'zzz'ms'");
             }
-            return duration.toString("zzz' ms'");
+            return duration.toString("zzz'ms'");
         }
 #endif
 

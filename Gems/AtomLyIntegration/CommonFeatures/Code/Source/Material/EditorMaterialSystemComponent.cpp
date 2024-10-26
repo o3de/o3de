@@ -183,7 +183,7 @@ namespace AZ
                 arguments.append(QString("--project-path=%1").arg(projectPath.c_str()));
             }
 
-            AZ_TracePrintf("MaterialComponent", "Launching Material Canvas (Preview)");
+            AZ_TracePrintf("MaterialComponent", "Launching Material Canvas");
             AtomToolsFramework::LaunchTool("MaterialCanvas", arguments);
         }
 
@@ -424,7 +424,7 @@ namespace AZ
 
             {
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Material Canvas (Preview)";
+                actionProperties.m_name = "Material Canvas";
                 actionProperties.m_iconPath = ":/Menu/material_canvas.svg";
 
                 auto outcome = actionManagerInterface->RegisterAction(

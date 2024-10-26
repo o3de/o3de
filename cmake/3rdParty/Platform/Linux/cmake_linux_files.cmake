@@ -10,4 +10,6 @@ set(FILES
     BuiltInPackages_linux_aarch64.cmake
     BuiltInPackages_linux_x86_64.cmake
     Wwise_linux.cmake
+    Python_linux_aarch64.cmake
+    Python_linux_x86_64.cmake
 )

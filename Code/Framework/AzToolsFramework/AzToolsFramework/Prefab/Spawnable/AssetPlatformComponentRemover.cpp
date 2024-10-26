@@ -52,10 +52,12 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
                 prefab.GetInstance().GetAllEntitiesInHierarchy(
                     [&prefab, &prefabProcessorContext, &excludedComponents](AZStd::unique_ptr<AZ::Entity>& entity) -> bool
                     {
+                        (void) prefab;
+
                         // Loop over an entity's components backwards and pop-off components that shouldn't exist.
                         AZStd::vector<AZ::Component*> components = entity->GetComponents();
-                        const size_t oldComponentCount = components.size();
-                        for (size_t i = oldComponentCount - 1; i > 0; --i)
+                        const auto oldComponentCount = components.size();
+                        for (int i = aznumeric_cast<int>(oldComponentCount) - 1; i >= 0; --i)
                         {
                             AZ::Component* component = components[i];
                             if (excludedComponents.contains(component->GetUnderlyingComponentType()))
@@ -70,9 +72,6 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
                         {
                             if (entity->EvaluateDependencies() == AZ::Entity::DependencySortResult::MissingRequiredService)
                             {
-#if defined(CARBONATED)
-                                (void)prefab; // suppress 'warning as error' for unused variable from capture list in Release
-#endif
                                 AZ_Error( "AssetPlatformComponentRemover", false,
                                     "Processing prefab '%s' failed! Removing components on entity '%s' has broken component "
                                     "dependency. Make sure you also remove any dependent components. If dependent component is actually required, "

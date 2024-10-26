@@ -381,7 +381,6 @@ namespace AZ
                 m_shadowProperties.GetData(index).m_cameraConfigurations[nullptr] = {};
 
                 const LightHandle handle(index);
-                m_shadowingLightHandle = handle; // only the recent light has shadows.
                 SetCascadeCount(handle, 1); // 1 cascade initially.
                 return handle;
             }
@@ -459,6 +458,17 @@ namespace AZ
         }
 
         // --- Cascade Shadows ---
+
+        void DirectionalLightFeatureProcessor::SetShadowEnabled(LightHandle handle, bool enable)
+        {
+            m_shadowingLightHandle.Reset();
+            if (enable)
+            {
+                m_shadowingLightHandle = handle;
+                ShadowingDirectionalLightNotificationsBus::Broadcast(&ShadowingDirectionalLightNotifications::OnShadowingDirectionalLightChanged, handle);
+                m_shadowBufferNeedsUpdate = true;
+            }
+        }
 
         void DirectionalLightFeatureProcessor::SetShadowmapSize(LightHandle handle, ShadowmapSize size)
         {
@@ -682,6 +692,14 @@ namespace AZ
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to DirectionalLightFeatureProcessor::SetAffectsGIFactor().");
 
             m_lightData.GetData(handle.GetIndex()).m_affectsGIFactor = affectsGIFactor;
+            m_lightBufferNeedsUpdate = true;
+        }
+
+        void DirectionalLightFeatureProcessor::SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to DirectionalLightFeatureProcessor::SetLightingChannelMask().");
+
+            m_lightData.GetData(handle.GetIndex()).m_lightingChannelMask = lightingChannelMask;
             m_lightBufferNeedsUpdate = true;
         }
 

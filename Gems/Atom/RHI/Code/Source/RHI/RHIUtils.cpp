@@ -162,6 +162,13 @@ namespace AZ::RHI
         return graphicsDevMode;
     }
 
+    const AZ::Name& GetDefaultSupervariantNameWithNoFloat16Fallback()
+    {
+        const static AZ::Name DefaultSupervariantName{ "" };
+        const static AZ::Name NoFloat16SupervariantName{ "NoFloat16" };
+        return GetRHIDevice()->GetFeatures().m_float16 ? DefaultSupervariantName : NoFloat16SupervariantName;
+    }
+
     // Pool attributes
     using JsonStringRef = rapidjson::Value::StringRefType;
     const char PoolNameAttribStr[] = "PoolName";
@@ -474,4 +481,38 @@ namespace AZ::RHI
         outputFile.Write(jsonStringBuffer.GetString(), jsonStringBuffer.GetSize());
         outputFile.Close();
     }
+
+    RHI::DrawListTagRegistry* GetDrawListTagRegistry()
+    {
+        RHI::DrawListTagRegistry* drawListTagRegistry = RHI::RHISystemInterface::Get()->GetDrawListTagRegistry();
+        return drawListTagRegistry;
+    }
+
+    Name GetDrawListName(DrawListTag drawListTag)
+    {
+        RHI::DrawListTagRegistry* drawListTagRegistry = GetDrawListTagRegistry();
+        return drawListTagRegistry->GetName(drawListTag);
+    }
+
+    AZStd::string DrawListMaskToString(const RHI::DrawListMask& drawListMask)
+    {
+        AZStd::string tagString;
+        u32 maxTags = RHI::Limits::Pipeline::DrawListTagCountMax;
+
+        u32 drawListTagCount = 0;
+
+        for (u32 i = 0; i < maxTags; ++i)
+        {
+            if (drawListMask[i])
+            {
+                DrawListTag tag(i);
+                tagString += AZStd::string::format("%s | ", GetDrawListName(tag).GetCStr());
+                ++drawListTagCount;
+            }
+        }
+
+        AZStd::string output = AZStd::string::format("DrawListMask has %d tags = %s", drawListTagCount, tagString.c_str());
+        return output;
+    }
+
 }

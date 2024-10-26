@@ -73,25 +73,14 @@ namespace AzToolsFramework
         }
     };
 
-    template <typename... ComponentType>
-    EntityCompositionRequests::RemoveComponentsOutcome RemoveComponents(ComponentType... components)
-    {
-        EntityCompositionRequests::RemoveComponentsOutcome outcome = AZ::Failure(AZStd::string(""));
-        EntityCompositionRequestBus::BroadcastResult(outcome, &EntityCompositionRequests::RemoveComponents, AZ::Entity::ComponentArrayType{ components... });
-        return outcome;
-    }
+    EntityCompositionRequests::RemoveComponentsOutcome RemoveComponents(AZStd::span<AZ::Component* const> components);
+    EntityCompositionRequests::RemoveComponentsOutcome RemoveComponents(AZStd::initializer_list<AZ::Component* const> components);
 
-    template <typename... ComponentType>
-    void EnableComponents(ComponentType... components)
-    {
-        EntityCompositionRequestBus::Broadcast(&EntityCompositionRequests::EnableComponents, AZ::Entity::ComponentArrayType{ components... });
-    }
+    void EnableComponents(AZStd::span<AZ::Component* const> components);
 
-    template <typename... ComponentType>
-    void DisableComponents(ComponentType... components)
-    {
-        EntityCompositionRequestBus::Broadcast(&EntityCompositionRequests::DisableComponents, AZ::Entity::ComponentArrayType{ components... });
-    }
+    void EnableComponents(AZStd::initializer_list<AZ::Component* const> components);
+    void DisableComponents(AZStd::span<AZ::Component* const> components);
+    void DisableComponents(AZStd::initializer_list<AZ::Component* const> components);
 
     void GetAllComponentsForEntity(const AZ::Entity* entity, AZ::Entity::ComponentArrayType& componentsOnEntity);
     void GetAllComponentsForEntity(const AZ::EntityId& entityId, AZ::Entity::ComponentArrayType& componentsOnEntity);
@@ -109,12 +98,12 @@ namespace AzToolsFramework
     // Returns true if the given component provides at least one of the services specified or no services are provided
     bool OffersRequiredServices(
         const AZ::SerializeContext::ClassData* componentClass,
-        const AZStd::vector<AZ::ComponentServiceType>& serviceFilter,
-        const AZStd::vector<AZ::ComponentServiceType>& incompatibleServiceFilter
+        AZStd::span<const AZ::ComponentServiceType> serviceFilter,
+        AZStd::span<const AZ::ComponentServiceType> incompatibleServiceFilter
     );
     bool OffersRequiredServices(
         const AZ::SerializeContext::ClassData* componentClass,
-        const AZStd::vector<AZ::ComponentServiceType>& serviceFilter
+        AZStd::span<const AZ::ComponentServiceType> serviceFilter
     );
 
     /// Return true if the editor should show this component to users,

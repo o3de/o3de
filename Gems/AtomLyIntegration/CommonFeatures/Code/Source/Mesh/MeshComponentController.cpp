@@ -13,6 +13,8 @@
 
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 
+#include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/RHIUtils.h>
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Public/Scene.h>
 
@@ -82,14 +84,13 @@ namespace AZ
                     ->Field("UseForwardPassIBLSpecular", &MeshComponentConfig::m_useForwardPassIblSpecular)
                     ->Field("IsRayTracingEnabled", &MeshComponentConfig::m_isRayTracingEnabled)
                     ->Field("IsAlwaysDynamic", &MeshComponentConfig::m_isAlwaysDynamic)
-#if defined(CARBONATED)
-                    ->Field("Visibility", &MeshComponentConfig::m_visibility)
-#endif
+                    ->Field("Visibility", &MeshComponentConfig::m_isVisible)
                     ->Field("SupportRayIntersection", &MeshComponentConfig::m_enableRayIntersection)
                     ->Field("LodType", &MeshComponentConfig::m_lodType)
                     ->Field("LodOverride", &MeshComponentConfig::m_lodOverride)
                     ->Field("MinimumScreenCoverage", &MeshComponentConfig::m_minimumScreenCoverage)
-                    ->Field("QualityDecayRate", &MeshComponentConfig::m_qualityDecayRate);
+                    ->Field("QualityDecayRate", &MeshComponentConfig::m_qualityDecayRate)
+                    ->Field("LightingChannelConfig", &MeshComponentConfig::m_lightingChannelConfig);
             }
         }
 
@@ -160,7 +161,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<MeshComponentController>()
-                    ->Version(0)
+                    ->Version(1)
                     ->Field("Configuration", &MeshComponentController::m_configuration);
             }
 
@@ -211,7 +212,7 @@ namespace AZ
                     ->VirtualProperty("ExcludeFromReflectionCubeMaps", "GetExcludeFromReflectionCubeMaps", "SetExcludeFromReflectionCubeMaps")
                     ->VirtualProperty("Visibility", "GetVisibility", "SetVisibility")
                     ;
-                
+
                 behaviorContext->EBus<MeshComponentNotificationBus>("MeshComponentNotificationBus")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Category, "render")
@@ -281,6 +282,8 @@ namespace AZ
             AzFramework::RenderGeometry::IntersectionRequestBus::Handler::BusConnect({ entityId, entityContextId });
             AzFramework::RenderGeometry::IntersectionNotificationBus::Bind(m_intersectionNotificationBus, entityContextId);
 
+            LightingChannelMaskChanged();
+
             // Buses must be connected before RegisterModel in case requests are made as a result of HandleModelChange
             RegisterModel();
         }
@@ -337,6 +340,14 @@ namespace AZ
             if (m_meshFeatureProcessor)
             {
                 m_meshFeatureProcessor->SetTransform(m_meshHandle, m_transformInterface->GetWorldTM(), m_cachedNonUniformScale);
+            }
+        }
+
+        void MeshComponentController::LightingChannelMaskChanged()
+        {
+            if (m_meshFeatureProcessor)
+            {
+                m_meshFeatureProcessor->SetLightingChannelMask(m_meshHandle, m_configuration.m_lightingChannelConfig.GetLightingChannelMask());
             }
         }
 
@@ -397,10 +408,10 @@ namespace AZ
             return false;
         }
 
-        void MeshComponentController::HandleModelChange(Data::Instance<RPI::Model> model)
+        void MeshComponentController::HandleModelChange(const AZ::Data::Instance<AZ::RPI::Model>& model)
         {
             Data::Asset<RPI::ModelAsset> modelAsset = m_meshFeatureProcessor->GetModelAsset(m_meshHandle);
-            if (model && modelAsset)
+            if (model && modelAsset.IsReady())
             {
                 const AZ::EntityId entityId = m_entityComponentIdPair.GetEntityId();
                 m_configuration.m_modelAsset = modelAsset;
@@ -431,33 +442,27 @@ namespace AZ
 
                 m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
                 MeshHandleDescriptor meshDescriptor;
+                meshDescriptor.m_entityId = m_entityComponentIdPair.GetEntityId();
                 meshDescriptor.m_modelAsset = m_configuration.m_modelAsset;
+                meshDescriptor.m_customMaterials = ConvertToCustomMaterialMap(materials);
                 meshDescriptor.m_useForwardPassIblSpecular = m_configuration.m_useForwardPassIblSpecular;
                 meshDescriptor.m_requiresCloneCallback = RequiresCloning;
                 meshDescriptor.m_isRayTracingEnabled = m_configuration.m_isRayTracingEnabled;
                 meshDescriptor.m_excludeFromReflectionCubeMaps = m_configuration.m_excludeFromReflectionCubeMaps;
                 meshDescriptor.m_isAlwaysDynamic = m_configuration.m_isAlwaysDynamic;
                 meshDescriptor.m_supportRayIntersection = m_configuration.m_enableRayIntersection || m_configuration.m_editorRayIntersection;
-                m_meshHandle = m_meshFeatureProcessor->AcquireMesh(meshDescriptor, ConvertToCustomMaterialMap(materials));
-                m_meshFeatureProcessor->ConnectModelChangeEventHandler(m_meshHandle, m_changeEventHandler);
-                m_meshFeatureProcessor->ConnectObjectSrgCreatedEventHandler(m_meshHandle, m_objectSrgCreatedHandler);
+                meshDescriptor.m_modelChangedEventHandler = m_modelChangedEventHandler;
+                meshDescriptor.m_objectSrgCreatedHandler = m_objectSrgCreatedHandler;
+                m_meshHandle = m_meshFeatureProcessor->AcquireMesh(meshDescriptor);
 
                 const AZ::Transform& transform =
                     m_transformInterface ? m_transformInterface->GetWorldTM() : AZ::Transform::CreateIdentity();
-
+                m_meshFeatureProcessor->SetVisible(m_meshHandle, m_configuration.m_isVisible);
                 m_meshFeatureProcessor->SetTransform(m_meshHandle, transform, m_cachedNonUniformScale);
                 m_meshFeatureProcessor->SetSortKey(m_meshHandle, m_configuration.m_sortKey);
+                m_meshFeatureProcessor->SetLightingChannelMask(m_meshHandle, m_configuration.m_lightingChannelConfig.GetLightingChannelMask());
                 m_meshFeatureProcessor->SetMeshLodConfiguration(m_meshHandle, GetMeshLodConfiguration());
-#if defined(CARBONATED)
-                m_meshFeatureProcessor->SetVisible(m_meshHandle, m_configuration.m_visibility);
-                m_isVisible = m_configuration.m_visibility;
-#else
-                m_meshFeatureProcessor->SetVisible(m_meshHandle, m_isVisible);
-#endif
                 m_meshFeatureProcessor->SetRayTracingEnabled(m_meshHandle, meshDescriptor.m_isRayTracingEnabled);
-                // [GFX TODO] This should happen automatically. m_changeEventHandler should be passed to AcquireMesh
-                // If the model instance or asset already exists, announce a model change to let others know it's loaded.
-                HandleModelChange(m_meshFeatureProcessor->GetModel(m_meshHandle));
             }
             else
             {
@@ -543,7 +548,7 @@ namespace AZ
         {
             return m_meshFeatureProcessor ? m_meshFeatureProcessor->GetModel(m_meshHandle) : Data::Instance<RPI::Model>();
         }
-        
+
         const RPI::MeshDrawPacketLods* MeshComponentController::GetDrawPackets() const
         {
             return m_meshFeatureProcessor ? &m_meshFeatureProcessor->GetDrawPackets(m_meshHandle) : nullptr;
@@ -635,22 +640,19 @@ namespace AZ
 
         void MeshComponentController::SetVisibility(bool visible)
         {
-            if (m_isVisible != visible)
+            if (m_meshFeatureProcessor)
             {
-                if (m_meshFeatureProcessor)
-                {
-                    m_meshFeatureProcessor->SetVisible(m_meshHandle, visible);
-                }
-#if defined(CARBONATED)
-                m_configuration.m_visibility = visible;
-#endif
-                m_isVisible = visible;
+                m_meshFeatureProcessor->SetVisible(m_meshHandle, visible);
             }
         }
 
         bool MeshComponentController::GetVisibility() const
         {
-            return m_isVisible;
+            if (m_meshFeatureProcessor)
+            {
+                return m_meshFeatureProcessor->GetVisible(m_meshHandle);
+            }
+            return false;
         }
 
         void MeshComponentController::SetRayTracingEnabled(bool enabled)
@@ -691,7 +693,7 @@ namespace AZ
             return false;
         }
 
-        Aabb MeshComponentController::GetWorldBounds()
+        Aabb MeshComponentController::GetWorldBounds() const
         {
             if (const AZ::Aabb localBounds = GetLocalBounds(); localBounds.IsValid())
             {
@@ -701,7 +703,7 @@ namespace AZ
             return AZ::Aabb::CreateNull();
         }
 
-        Aabb MeshComponentController::GetLocalBounds()
+        Aabb MeshComponentController::GetLocalBounds() const
         {
             if (m_meshHandle.IsValid() && m_meshFeatureProcessor)
             {
@@ -716,8 +718,28 @@ namespace AZ
         }
 
         void MeshComponentController::GetVisibleGeometry(
-            [[maybe_unused]] const AZ::Aabb& bounds, AzFramework::VisibleGeometryContainer& geometryContainer) const
+            const AZ::Aabb& bounds, AzFramework::VisibleGeometryContainer& geometryContainer) const
         {
+            // Only include data for this entity if it is within bounds. This could possibly be done per sub mesh.
+            if (bounds.IsValid())
+            {
+                const AZ::Aabb worldBounds = GetWorldBounds();
+                if (worldBounds.IsValid() && !worldBounds.Overlaps(bounds))
+                {
+                    return;
+                }
+            }
+
+            // The draw list tag is needed to search material shaders and determine if they are transparent.
+            AZ::RHI::DrawListTag transparentDrawListTag =
+                AZ::RHI::RHISystemInterface::Get()->GetDrawListTagRegistry()->AcquireTag(AZ::Name("transparent"));
+
+            // Retrieve the map of material overrides from the material component. If any mesh has a material override, that must be checked
+            // for transparency instead of the material included with the model asset.
+            MaterialAssignmentMap materials;
+            MaterialComponentRequestBus::EventResult(
+                materials, m_entityComponentIdPair.GetEntityId(), &MaterialComponentRequests::GetMaterialMap);
+
             // Attempt to copy the triangle list geometry data out of the model asset into the visible geometry structure
             const auto& modelAsset = GetModelAsset();
             if (!modelAsset.IsReady() || modelAsset->GetLodAssets().empty())
@@ -727,6 +749,7 @@ namespace AZ
             }
 
             // This will only extract data from the first LOD. It might be necessary to make the LOD selectable.
+            const int lodIndex = 0;
             const auto& lodAsset = modelAsset->GetLodAssets().front();
             if (!lodAsset.IsReady())
             {
@@ -778,6 +801,7 @@ namespace AZ
                 // Copy the index and position data into the visible geometry structure.
                 AzFramework::VisibleGeometry visibleGeometry;
                 visibleGeometry.m_transform = AZ::Matrix4x4::CreateFromTransform(m_transformInterface->GetWorldTM());
+                visibleGeometry.m_transform *= AZ::Matrix4x4::CreateScale(m_cachedNonUniformScale);
 
                 // Reserve space for indices and copy data, assuming stride between elements is 0.
                 visibleGeometry.m_indices.resize_no_construct(indexBufferViewDesc.m_elementCount);
@@ -799,12 +823,74 @@ namespace AZ
 
                 memcpy(&visibleGeometry.m_vertices[0], positionPtr, positionBufferViewDesc.m_elementCount * positionBufferViewDesc.m_elementSize);
 
+                // Inspect the material assigned to this mesh to determine if it should be considered transparent.
+                const auto& materialSlotId = mesh.GetMaterialSlotId();
+                const auto& materialSlot = modelAsset->FindMaterialSlot(materialSlotId);
+
+                // The material asset assigned by the model will be used by default.
+                AZ::Data::Instance<AZ::RPI::Material> material = AZ::RPI::Material::FindOrCreate(materialSlot.m_defaultMaterialAsset);
+
+                // Materials provided by the material component take priority over materials provided by the model asset.
+                const MaterialAssignmentId id(lodIndex, materialSlotId);
+                const MaterialAssignmentId ignoreLodId(DefaultCustomMaterialLodIndex, materialSlotId);
+                for (const auto& currentId : { id, ignoreLodId, DefaultMaterialAssignmentId })
+                {
+                    if (auto itr = materials.find(currentId); itr != materials.end() && itr->second.m_materialInstance)
+                    {
+                        material = itr->second.m_materialInstance;
+                        break;
+                    }
+                }
+
+                // Once the active material has been resolved, determine if it has any shaders with the transparent tag.
+                visibleGeometry.m_transparent = DoesMaterialUseDrawListTag(material, transparentDrawListTag);
+
                 geometryContainer.emplace_back(AZStd::move(visibleGeometry));
             }
+
+            // Release the draw list tag acquired at the top of the function to determine material transparency.
+            AZ::RHI::RHISystemInterface::Get()->GetDrawListTagRegistry()->ReleaseTag(transparentDrawListTag);
+        }
+
+        bool MeshComponentController::DoesMaterialUseDrawListTag(
+            const AZ::Data::Instance<AZ::RPI::Material> material, const AZ::RHI::DrawListTag searchDrawListTag) const
+        {
+            bool foundTag = false;
+
+            if (material)
+            {
+                material->ForAllShaderItems(
+                    [&](const AZ::Name&, const AZ::RPI::ShaderCollection::Item& shaderItem)
+                    {
+                        if (shaderItem.IsEnabled())
+                        {
+                            // Get the DrawListTag. Use the explicit draw list override if exists.
+                            AZ::RHI::DrawListTag drawListTag = shaderItem.GetDrawListTagOverride();
+
+                            if (drawListTag.IsNull())
+                            {
+                                drawListTag = AZ::RHI::RHISystemInterface::Get()->GetDrawListTagRegistry()->FindTag(
+                                    shaderItem.GetShaderAsset()->GetDrawListName());
+                            }
+
+                            // If this shader has a matching tag end the search.
+                            if (drawListTag == searchDrawListTag)
+                            {
+                                foundTag = true;
+                                return false;
+                            }
+                        }
+
+                        // Continue iterating until all shaders have been checked or a matching tag is found.
+                        return true;
+                    });
+            }
+
+            return foundTag;
         }
 
         AzFramework::RenderGeometry::RayResult MeshComponentController::RenderGeometryIntersect(
-            const AzFramework::RenderGeometry::RayRequest& ray)
+            const AzFramework::RenderGeometry::RayRequest& ray) const
         {
             AzFramework::RenderGeometry::RayResult result;
             if (const Data::Instance<RPI::Model> model = GetModel())

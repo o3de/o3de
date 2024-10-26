@@ -24,7 +24,7 @@ uint        prefix##m_metallicMapUvIndex;
 #define COMMON_OPTIONS_METALLIC(prefix) \
 option bool prefix##o_metallic_useTexture; 
 
-real GetMetallicInput(Texture2D map, sampler mapSampler, float2 uv, real factor, bool useTexture)
+real GetMetallicInput(Texture2D map, sampler mapSampler, float2 uv, real factor, bool useTexture, float4 uvDxDy = float4(0.0, 0.0, 0.0, 0.0), bool customDerivatives = false)
 {
     if(OverrideMetallicEnabled())
     {
@@ -34,7 +34,14 @@ real GetMetallicInput(Texture2D map, sampler mapSampler, float2 uv, real factor,
     if (useTexture)
     {
        // [GFX TODO][ATOM-1793]: Figure out how we want our base material to expect channels to be encoded, and apply that to the way we pack metalness.
-       return real(map.Sample(mapSampler, uv).r);
+       if (customDerivatives)
+       {
+           return real(map.SampleGrad(mapSampler, uv, uvDxDy.xy, uvDxDy.zw).r);
+       }
+       else
+       {
+           return real(map.Sample(mapSampler, uv).r);
+       }
     }
     return factor;
 }

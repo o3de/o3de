@@ -8,7 +8,7 @@
                 "guid": "{44E2934E-9CB7-568F-A59C-D72D83E642F0}",
                 "subId": 1000
             },
-            "platformFlags": 255,
+            "platformFlags": 127,
             "pathHint": "textures/cursor_default.tif.streamingimage"
         },
         {
@@ -41,3 +41,4 @@
         }
     ]
 }
+

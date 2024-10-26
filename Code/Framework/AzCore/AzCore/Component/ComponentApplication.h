@@ -71,6 +71,17 @@ namespace AZ
 
     };
 
+    //! Settings used to customize the constructor calls for the ComponentApplications
+    //! This differs from the ComponentApplication::StartupParameters and ComponentApplication::Descriptor structs
+    //! These settings are only used at construction time of the ComponentApplication and not in ComponentApplication::Create()
+    struct ComponentApplicationSettings
+    {
+        //! JSON string that will be merged to the Settings Registry right after construction
+        AZStd::string_view m_setregBootstrapJson;
+        //! Defaults to merging the JSON string using JSON Merge Patch, where a regular JSON string can be supplied
+        AZ::SettingsRegistryInterface::Format m_setregFormat = AZ::SettingsRegistryInterface::Format::JsonMergePatch;
+    };
+
     /**
      * A main class that can be used directly or as a base to start a
      * component based application. It will provide all the proper bootstrap
@@ -117,7 +128,7 @@ namespace AZ
             bool            m_enableScriptReflection;   //!< True if we want to enable reflection to the script context.
 
             AZ::u64         m_memoryBlocksByteSize;     //!< Memory block size in bytes.
-            Debug::AllocationRecords::Mode m_recordingMode; //!< When to record stack traces (default: AZ::Debug::AllocationRecords::RECORD_STACK_IF_NO_FILE_LINE)
+            Debug::AllocationRecords::Mode m_recordingMode; //!< When to record stack traces (default: AZ::Debug::AllocationRecords::Mode::RECORD_STACK_IF_NO_FILE_LINE)
 
             ModuleDescriptorList m_modules;             //!< Dynamic modules used by the application.
                                                         //!< These will be loaded on startup.
@@ -151,6 +162,10 @@ namespace AZ
 
         ComponentApplication();
         ComponentApplication(int argC, char** argV);
+        // Allows passing in a JSON Merge Patch string that can bootstrap
+        // the settings registry with an initial set of settings
+        explicit ComponentApplication(ComponentApplicationSettings componentAppSettings);
+        ComponentApplication(int argC, char** argV, ComponentApplicationSettings componentAppSettings);
         virtual ~ComponentApplication();
 
         /**
@@ -272,10 +287,15 @@ namespace AZ
         void LoadDynamicModules();
 
     protected:
-        void InitializeSettingsRegistry();
+        //! The Bootstrap JSON settings are merged to the Settings Registry immediately
+        //! after creation
+        void InitializeSettingsRegistry(const ComponentApplicationSettings& componentAppSettings);
         void InitializeEventLoggerFactory();
         void InitializeLifecyleEvents(SettingsRegistryInterface& settingsRegistry);
         void InitializeConsole(SettingsRegistryInterface& settingsRegistry);
+        //! Reads any allocator settings from the either the <executable-directory>/startup.cfg
+        //! or a file specified by the last --startup-file-cfg=<path> option
+        void InitializeAllocatorSettings(int argc, char** argv);
 
         void RegisterCoreEventLogger();
 

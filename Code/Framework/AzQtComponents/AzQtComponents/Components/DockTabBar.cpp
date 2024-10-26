@@ -212,13 +212,14 @@ namespace AzQtComponents
 
         // Need to create our context menu/actions if this is the first time
         // it has been invoked
+        const bool isValidIndex = (index >= 0);
         if (!m_contextMenu)
         {
             m_contextMenu = new QMenu(this);
-
+            const QString tabName = isValidIndex ? QTabBar::tabText(index) : QString();
             // Action to close the specified tab, and leave the text blank since
             // it will be dynamically set using the title of the specified tab
-            m_closeTabMenuAction = m_contextMenu->addAction(QString());
+            m_closeTabMenuAction = m_contextMenu->addAction(tr("Close %1").arg(tabName));
             QObject::connect(m_closeTabMenuAction, &QAction::triggered, this, [this]() { emit closeTab(m_menuActionTabIndex); });
 
             // Action to close all of the tabs in our tab widget
@@ -230,7 +231,7 @@ namespace AzQtComponents
 
             // Action to undock the specified tab, and leave the text blank since
             // it will be dynamically set using the title of the specified tab
-            m_undockTabMenuAction = m_contextMenu->addAction(QString());
+            m_undockTabMenuAction = m_contextMenu->addAction(tr("Undock %1").arg(tabName));
             QObject::connect(m_undockTabMenuAction, &QAction::triggered, this, [this]() { emit undockTab(m_menuActionTabIndex); });
 
             // Action to undock the entire tab widget
@@ -238,13 +239,8 @@ namespace AzQtComponents
             QObject::connect(m_undockTabGroupMenuAction, &QAction::triggered, this ,[this]() { emit undockTab(-1); });
         }
 
-        if (index >= 0)
+        if (isValidIndex)
         {
-            // Update the menu labels for the close/undock individual tab actions
-            QString tabName = tabText(index);
-            m_closeTabMenuAction->setText(tr("Close %1").arg(tabName));
-            m_undockTabMenuAction->setText(tr("Undock %1").arg(tabName));
-
             // Only enable the close/undock group actions if we have more than one
             // tab in our tab widget
             bool enableGroupActions = (count() > 1);

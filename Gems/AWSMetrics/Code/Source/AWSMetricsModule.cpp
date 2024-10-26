@@ -46,7 +46,8 @@ namespace AWSMetrics
     }
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), AWSMetrics::AWSMetricsModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_AWSMetrics, AWSMetrics::AWSMetricsModule)
+#endif

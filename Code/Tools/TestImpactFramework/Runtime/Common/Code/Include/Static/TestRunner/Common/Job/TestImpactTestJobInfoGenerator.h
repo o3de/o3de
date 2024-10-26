@@ -81,7 +81,7 @@ namespace TestImpact
         RepoPath m_testRunnerBinary;
 
     private:
-        typename CachePolicy m_cachePolicy = CachePolicy::Write;
+        CachePolicy m_cachePolicy = CachePolicy::Write;
     };
 
     template<typename TestJobRunner, typename TestTarget>

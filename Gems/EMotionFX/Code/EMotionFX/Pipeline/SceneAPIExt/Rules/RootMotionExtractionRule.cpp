@@ -43,7 +43,7 @@ namespace EMotionFX::Pipeline::Rule
         AZ::EditContext* editContext = serializeContext->GetEditContext();
         if (editContext)
         {
-            editContext->Class<RootMotionExtractionRule>("Root motion extraction (preview)", "Extract motion from the sample joint.")
+            editContext->Class<RootMotionExtractionRule>("Root motion extraction", "Extract motion from the sample joint.")
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")

@@ -64,7 +64,7 @@ namespace WhiteBox
     }
 
     bool ManipulatorBoundPolygon::IntersectRay(
-        const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance)
+        const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance) const
     {
         int64_t intersectedTriangleIndex = 0;
         return IntersectRayPolygon(
@@ -111,7 +111,7 @@ namespace WhiteBox
     }
 
     bool ManipulatorBoundEdge::IntersectRay(
-        const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance)
+        const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance) const
     {
         return IntersectRayEdge(m_edgeBound, m_edgeBound.m_radius, rayOrigin, rayDirection, rayIntersectionDistance);
     }

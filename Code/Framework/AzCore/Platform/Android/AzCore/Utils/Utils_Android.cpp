@@ -87,7 +87,7 @@ namespace AZ::Utils
         return appRoot ? AZStd::make_optional<AZ::IO::FixedMaxPathString>(appRoot) : AZStd::nullopt;
     }
 
-    AZStd::optional<AZ::IO::FixedMaxPathString> GetDevWriteStoragePath()
+    AZStd::optional<AZ::IO::FixedMaxPathString> GetDefaultDevWriteStoragePath()
     {
         const char* writeStorage = AZ::Android::Utils::GetAppPublicStoragePath();
         return writeStorage ? AZStd::make_optional<AZ::IO::FixedMaxPathString>(writeStorage) : AZStd::nullopt;

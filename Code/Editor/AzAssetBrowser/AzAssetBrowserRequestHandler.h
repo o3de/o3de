@@ -100,6 +100,7 @@ protected:
 
     bool DecodeDragMimeData(const QMimeData* mimeData,
                             AZStd::vector<const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry*>* outVector = nullptr) const;
+    AzAssetBrowserWindow* FindAzAssetBrowserWindow(QWidget* widgetToStartSearchFrom);
     AzAssetBrowserWindow* FindAzAssetBrowserWindowThatContainsWidget(QWidget* widget);
 };
 

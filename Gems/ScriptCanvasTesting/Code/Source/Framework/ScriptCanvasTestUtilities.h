@@ -54,7 +54,7 @@ namespace ScriptCanvasTests
     {
         using namespace ScriptCanvas;
         t_NodeType* node{};
-        SystemRequestBus::BroadcastResult(node, &SystemRequests::GetNode<t_NodeType>, nodeID);
+        ScriptCanvas::SystemRequestBus::BroadcastResult(node, &ScriptCanvas::SystemRequests::GetNode<t_NodeType>, nodeID);
         EXPECT_TRUE(node != nullptr);
         return node;
     }
@@ -68,7 +68,7 @@ namespace ScriptCanvasTests
         entity->Init();
         entityOut = entity->GetId();
         EXPECT_TRUE(entityOut.IsValid());
-        SystemRequestBus::Broadcast(&SystemRequests::CreateNodeOnEntity, entityOut, scriptCanvasId, azrtti_typeid<t_NodeType>());
+        ScriptCanvas::SystemRequestBus::Broadcast(&ScriptCanvas::SystemRequests::CreateNodeOnEntity, entityOut, scriptCanvasId, azrtti_typeid<t_NodeType>());
         return GetTestNode<t_NodeType>(scriptCanvasId, entityOut);
     }
 

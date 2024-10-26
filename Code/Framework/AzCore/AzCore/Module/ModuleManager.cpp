@@ -402,7 +402,7 @@ namespace AZ
                     }
 
                     // Load DLL from disk
-                    if (!moduleDataPtr->m_dynamicHandle->Load(true))
+                    if (!moduleDataPtr->m_dynamicHandle->Load(AZ::DynamicModuleHandle::LoadFlags::InitFuncRequired))
                     {
                         return AZ::Failure(AZStd::string::format("Failed to load dynamic library at path \"%s\".",
                             moduleDataPtr->m_dynamicHandle->GetFilename()));

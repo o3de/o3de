@@ -231,8 +231,6 @@ public: // static member data
 
 typedef AZ::EBus<UiTextInterface> UiTextBus;
 
-// carbonated begin (alukyanov/lyshine-UiTextNotifications)
-#if defined(CARBONATED)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class UiTextNotifications : public AZ::ComponentBus
 {
@@ -253,9 +251,6 @@ public: // member functions
     }
 };
 using UiTextNotificationsBus = AZ::EBus<UiTextNotifications>;
-#endif // #if defined(CARBONATED)
-
-// carbonated end
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! Interface that describes "clickable" areas of text for a text component.

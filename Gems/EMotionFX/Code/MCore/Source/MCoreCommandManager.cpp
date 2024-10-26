@@ -7,6 +7,9 @@
  */
 
 #include "MCoreCommandManager.h"
+
+#include <AzCore/Serialization/Locale.h>
+
 #include "LogManager.h"
 #include "CommandManagerCallback.h"
 #include "StringConversions.h"
@@ -1021,6 +1024,8 @@ namespace MCore
         bool handleErrors,
         bool autoDeleteCommand)
     {
+        AZ::Locale::ScopedSerializationLocale localeScope;  // make sure '%f' uses the "C" Locale.
+
 #ifdef MCORE_COMMANDMANAGER_PERFORMANCE
         Timer commandTimer;
 #endif

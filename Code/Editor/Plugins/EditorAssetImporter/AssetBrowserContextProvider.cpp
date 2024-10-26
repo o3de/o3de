@@ -77,17 +77,29 @@ namespace AZ
         return AzToolsFramework::AssetBrowser::SourceFileDetails();
     }
 
-    bool AssetBrowserContextProvider::PreviewSceneSettings(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry)
+    void AssetBrowserContextProvider::PreviewSceneSettings(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry)
     {
         using namespace AzToolsFramework;
 
         if (const SourceAssetBrowserEntry* sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(selectedEntry))
         {
-            if (HandlesSource(sourceEntry))
+            if (HandlesSource(sourceEntry) && sourceEntry != m_currentEntry)
             {
-                AssetImporterPlugin::GetInstance()->EditImportSettings(sourceEntry->GetFullPath());
-                return true;
+                if (AssetImporterPlugin::GetInstance()->EditImportSettings(sourceEntry->GetFullPath()))
+                {
+                    m_currentEntry = sourceEntry;
+                }
             }
+        }
+    }
+
+    bool AssetBrowserContextProvider::HandleSource(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) const
+    {
+        using namespace AzToolsFramework;
+
+        if (const SourceAssetBrowserEntry* sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(selectedEntry))
+        {
+            return HandlesSource(sourceEntry);
         }
 
         return false;
