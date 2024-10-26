@@ -1,7 +1,7 @@
 name: AR
 
 on:
-  pull_request:
+#  pull_request:
   workflow_dispatch:
   push:
     branches:
@@ -10,7 +10,7 @@ on:
 # - ${{ vars.STABILIZATION_BRANCH }}
 
 jobs:
-    Cache-LFS:
+#    Cache-LFS:
         
 
     Windows-Profile:
