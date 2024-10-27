@@ -78,7 +78,7 @@ jobs:
           sudo sh -c 'src="${{ github.workspace }}/build" && dst="/mnt/build" && mkdir -p "$src" "$dst" && mount --bind "$src" "$dst" && chown -R "$SUDO_USER:$SUDO_USER" "$src" "$dst"'
           sudo sh -c 'src="${{ github.workspace }}/AutomatedTesting/Cache" && dst="/o3de/AutomatedTesting/Cache" && mkdir -p "$src" "$dst" && mount --bind "$src" "$dst" && chown -R "$SUDO_USER:$SUDO_USER" "$src" "$dst"'
           sudo sh -c 'src="${{ github.workspace }}/AutomatedTesting/user" && dst="/o3de/AutomatedTesting/user" && mkdir -p "$src" "$dst" && mount --bind "$src" "$dst" && chown -R "$SUDO_USER:$SUDO_USER" "$src" "$dst"'
-          sudo sh -c 'src="${{ github.workspace }}/.ccache" && dst="/o3de/.ccache" && mkdir -p "$src" "$dst" && mount --bind "$src" "$dst" && chown -R "$SUDO_USER:$SUDO_USER" "$src" "$dst"'
+          sudo sh -c 'src="${{ github.workspace }}/.ccache" && dst="/mnt/.ccache" && mkdir -p "$src" "$dst" && mount --bind "$src" "$dst" && chown -R "$SUDO_USER:$SUDO_USER" "$src" "$dst"'
           ls -lah /mnt
           ls -lah ${{ github.workspace }}
           
@@ -169,4 +169,9 @@ jobs:
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           Xvfb :0 -screen 0 1400x1050x16 &
           python/python.sh -u scripts/build/ci_build.py --platform ${{ matrix.platform }} --type ${{ matrix.type }}
+
+      - name: Check disk space
+        if: always ()
+        run: |
+          df -h
           
