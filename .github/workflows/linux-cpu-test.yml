@@ -76,9 +76,9 @@ jobs:
       - name: Create and mount build folders
         run: |
           sudo sh -c 'src="${{ github.workspace }}/build" && dst="/mnt/build" && mkdir -p "$src" "$dst" && mount --bind "$src" "$dst" && chown -R "$SUDO_USER:$SUDO_USER" "$src" "$dst"'
-          sudo sh -c 'src="${{ github.workspace }}/AutomatedTesting/Cache" && dst="/mnt/AutomatedTesting/Cache" && mkdir -p "$src" "$dst" && mount --bind "$src" "$dst" && chown -R "$SUDO_USER:$SUDO_USER" "$src" "$dst"'
-          sudo sh -c 'src="${{ github.workspace }}/AutomatedTesting/user" && dst="/mnt/AutomatedTesting/user" && mkdir -p "$src" "$dst" && mount --bind "$src" "$dst" && chown -R "$SUDO_USER:$SUDO_USER" "$src" "$dst"'
-          sudo sh -c 'src="${{ github.workspace }}/.ccache" && dst="/mnt/.ccache" && mkdir -p "$src" "$dst" && mount --bind "$src" "$dst" && chown -R "$SUDO_USER:$SUDO_USER" "$src" "$dst"'
+          sudo sh -c 'src="${{ github.workspace }}/AutomatedTesting/Cache" && dst="/o3de/AutomatedTesting/Cache" && mkdir -p "$src" "$dst" && mount --bind "$src" "$dst" && chown -R "$SUDO_USER:$SUDO_USER" "$src" "$dst"'
+          sudo sh -c 'src="${{ github.workspace }}/AutomatedTesting/user" && dst="/o3de/AutomatedTesting/user" && mkdir -p "$src" "$dst" && mount --bind "$src" "$dst" && chown -R "$SUDO_USER:$SUDO_USER" "$src" "$dst"'
+          sudo sh -c 'src="${{ github.workspace }}/.ccache" && dst="/o3de/.ccache" && mkdir -p "$src" "$dst" && mount --bind "$src" "$dst" && chown -R "$SUDO_USER:$SUDO_USER" "$src" "$dst"'
           ls -lah /mnt
           ls -lah ${{ github.workspace }}
           
