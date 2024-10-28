@@ -121,6 +121,10 @@ namespace AZ
                     return false;
                 }
             }
+            else if (m_shaderOptions.m_skinningMethod == SkinningMethod::NoSkinning)
+            {
+                // Do nothing if no skinning
+            }
             else
             {
                 AZ_Assert(false, "Invalid skinning method for SkinnedMeshDispatchItem.");
@@ -159,7 +163,11 @@ namespace AZ
                 m_instanceSrg->SetConstant(outputOffsetIndex, m_positionHistoryBufferOffsetInBytes / 4);
             }
 
-            m_instanceSrg->SetBuffer(actorInstanceBoneTransformsIndex, m_boneTransforms);
+            // Ignore bone transform buffer for actors with skinning disabled
+            if (m_shaderOptions.m_skinningMethod != SkinningMethod::NoSkinning)
+            {
+                m_instanceSrg->SetBuffer(actorInstanceBoneTransformsIndex, m_boneTransforms);
+            }
 
             // Set the morph target related srg constants
             RHI::ShaderInputConstantIndex morphPositionOffsetIndex = m_instanceSrg->FindShaderInputConstantIndex(Name{ "m_morphTargetPositionDeltaOffset" });
@@ -177,14 +185,14 @@ namespace AZ
 
             RHI::ShaderInputConstantIndex morphDeltaIntegerEncodingIndex = m_instanceSrg->FindShaderInputConstantIndex(Name{ "m_morphTargetDeltaInverseIntegerEncoding" });
             m_instanceSrg->SetConstant(morphDeltaIntegerEncodingIndex, 1.0f / m_morphTargetDeltaIntegerEncoding);
-            
+
             // Set the vertex count
             const uint32_t vertexCount = GetVertexCount();
 
             RHI::ShaderInputConstantIndex numVerticesIndex = m_instanceSrg->FindShaderInputConstantIndex(Name{ "m_numVertices" });
             AZ_Error("SkinnedMeshInputBuffers", numVerticesIndex.IsValid(), "Failed to find shader input index for m_numVerticies in the skinning compute shader per-instance SRG.");
             m_instanceSrg->SetConstant(numVerticesIndex, vertexCount);
-            
+
             uint32_t xThreads = 0;
             uint32_t yThreads = 0;
             CalculateSkinnedMeshTotalThreadsPerDimension(vertexCount, xThreads, yThreads);
@@ -205,7 +213,7 @@ namespace AZ
             {
                 AZ_Error("SkinnedMeshInputBuffers", false, outcome.GetError().c_str());
             }
- 
+
             arguments.m_totalNumberOfThreadsX = xThreads;
             arguments.m_totalNumberOfThreadsY = yThreads;
             arguments.m_totalNumberOfThreadsZ = 1;
@@ -272,10 +280,10 @@ namespace AZ
                 yThreads = 0;
                 return;
             }
-            
+
             // Get the minimum number of threads in the y dimension needed to cover all the vertices in the mesh
             yThreads = vertexCount % maxVerticesPerDimension != 0 ? vertexCount / maxVerticesPerDimension + 1 : vertexCount / maxVerticesPerDimension;
-            
+
             // Divide the total number of threads across y dimensions, rounding the number of xThreads up to cover any remainder
             xThreads = 1 + ((vertexCount - 1) / yThreads);
         }

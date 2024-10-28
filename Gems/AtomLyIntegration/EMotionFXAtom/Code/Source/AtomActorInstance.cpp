@@ -130,12 +130,20 @@ namespace AZ::Render
 
     SkinningMethod AtomActorInstance::GetAtomSkinningMethod() const
     {
+        // No skeleton and skinning
+        if (m_boneTransforms->GetBufferSize() == 0)
+        {
+            return SkinningMethod::NoSkinning;
+        }
+
         switch (GetSkinningMethod())
         {
         case EMotionFX::Integration::SkinningMethod::DualQuat:
             return SkinningMethod::DualQuaternion;
         case EMotionFX::Integration::SkinningMethod::Linear:
             return SkinningMethod::LinearSkinning;
+        case EMotionFX::Integration::SkinningMethod::None:
+            return SkinningMethod::NoSkinning;
         default:
             AZ_Error("AtomActorInstance", false, "Unsupported skinning method. Defaulting to linear");
         }
@@ -457,8 +465,9 @@ namespace AZ::Render
         AZ_Warning("AtomActorInstance", m_skinnedMeshInputBuffers, "Failed to create SkinnedMeshInputBuffers from Actor. It is likely that this actor doesn't have any meshes");
         if (m_skinnedMeshInputBuffers)
         {
-            m_boneTransforms = CreateBoneTransformBufferFromActorInstance(m_actorInstance, GetSkinningMethod());
-            AZ_Error("AtomActorInstance", m_boneTransforms || AZ::RHI::IsNullRHI(), "Failed to create bone transform buffer.");
+            EMotionFX::Integration::SkinningMethod skinningMethod = GetSkinningMethod();
+            m_boneTransforms = CreateBoneTransformBufferFromActorInstance(m_actorInstance, skinningMethod);
+            AZ_Error("AtomActorInstance", m_boneTransforms || AZ::RHI::IsNullRHI() || skinningMethod == EMotionFX::Integration::SkinningMethod::None, "Failed to create bone transform buffer.");
 
             // If the instance is created before the default materials on the model have finished loading, the mesh feature processor will ignore it.
             // Wait for them all to be ready before creating the instance
@@ -506,7 +515,8 @@ namespace AZ::Render
             UnregisterActor();
             m_skinnedMeshInputBuffers.reset();
             m_skinnedMeshInstance.reset();
-            m_boneTransforms.reset();
+            if (m_boneTransforms)
+                m_boneTransforms.reset();
         }
     }
 
@@ -628,7 +638,7 @@ namespace AZ::Render
             AZ_Error("AtomActorInstance", m_skinnedMeshInstance, "SkinnedMeshInstance must be created before register this actor.");
             return;
         }
-        
+
         MaterialAssignmentMap materials;
         MaterialComponentRequestBus::EventResult(materials, m_entityId, &MaterialComponentRequests::GetMaterialMap);
         CreateRenderProxy(materials);
@@ -713,7 +723,7 @@ namespace AZ::Render
             SkinnedMeshOutputStreamNotificationBus::Handler::BusConnect();
         }
     }
-    
+
     void AtomActorInstance::EnableSkinning(uint32_t lodIndex, uint32_t meshIndex)
     {
         if (m_skinnedMeshHandle.IsValid())
