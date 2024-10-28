@@ -16,12 +16,32 @@ namespace AZ
     {
         AZ_CLASS_ALLOCATOR_IMPL(ShaderStageFunction, RHI::ShaderStageFunctionAllocator)
 
+        static bool ConvertOldVersions(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+        {
+            if (classElement.GetVersion() < 4)
+            {
+                // We need to convert the shader byte code because we added a custom allocator
+                // and the serialization system doens't automatically convert between two different classes
+                auto crc32 = AZ::Crc32("m_byteCode");
+                auto* vectorElement = classElement.FindSubElement(crc32);
+                if (vectorElement)
+                {
+                    // Convert the vector with the new allocator
+                    vectorElement->Convert(context, AZ::AzTypeInfo<ShaderByteCode>::Uuid());
+                }
+            }
+            return true;
+        }
+
         void ShaderStageFunction::Reflect(ReflectContext* context)
         {
             if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
+                // Need to register the old type with the Serializer so we can read it in order to convert it
+                serializeContext->RegisterGenericType<AZStd::vector<uint8_t>>();
+
                 serializeContext->Class<ShaderStageFunction, RHI::ShaderStageFunction>()
-                    ->Version(3)
+                    ->Version(4, &ConvertOldVersions)
                     ->Field("m_sourceCode", &ShaderStageFunction::m_sourceCode)
                     ->Field("m_byteCode", &ShaderStageFunction::m_byteCode)
                     ->Field("m_byteCodeLength", &ShaderStageFunction::m_byteCodeLength)

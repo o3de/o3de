@@ -17,12 +17,45 @@ namespace AZ
     {
 
         AZ_CLASS_ALLOCATOR_IMPL(ImageMipChainAsset, ImageMipChainAssetAllocator)
+
+        static bool ConvertOldVersions(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+        {
+            if (classElement.GetVersion() < 1)
+            {
+                // We need to convert the shader byte code because we added a custom allocator
+                // and the serialization system doens't automatically convert between two different classes
+                {
+                    auto crc32 = AZ::Crc32("m_imageData");
+                    auto* vectorElement = classElement.FindSubElement(crc32);
+                    if (vectorElement)
+                    {
+                        // Convert the vector with the new allocator
+                        vectorElement->Convert(context, AZ::AzTypeInfo<AZStd::vector<uint8_t, ImageMipChainAsset::Allocator>>::Uuid());
+                    }
+                }
+                {
+                    auto crc32 = AZ::Crc32("m_subImageDataOffsets");
+                    auto* vectorElement = classElement.FindSubElement(crc32);
+                    if (vectorElement)
+                    {
+                        // Convert the vector with the new allocator
+                        vectorElement->Convert(context, AZ::AzTypeInfo<AZStd::vector<AZ::u64, ImageMipChainAsset::Allocator>>::Uuid());
+                    }
+                }
+            }
+            return true;
+        }
+
         void ImageMipChainAsset::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
+                // Need to register the old type with the Serializer so we can read it in order to convert it
+                serializeContext->RegisterGenericType<AZStd::vector<uint8_t>>();
+                serializeContext->RegisterGenericType<AZStd::vector<u64>>();
+
                 serializeContext->Class<ImageMipChainAsset, Data::AssetData>()
-                    ->Version(0)
+                    ->Version(1, &ConvertOldVersions)
                     ->Field("m_mipLevels", &ImageMipChainAsset::m_mipLevels)
                     ->Field("m_arraySize", &ImageMipChainAsset::m_arraySize)
                     ->Field("m_mipToSubImageOffset", &ImageMipChainAsset::m_mipToSubImageOffset)

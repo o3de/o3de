@@ -17,12 +17,44 @@ namespace AZ
     {
         AZ_CLASS_ALLOCATOR_IMPL(ShaderStageFunction, RHI::ShaderStageFunctionAllocator)
 
+        static bool ConvertOldVersions(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+        {
+            if (classElement.GetVersion() < 3)
+            {
+                // We need to convert the shader byte code because we added a custom allocator
+                // and the serialization system doens't automatically convert between two different classes
+                auto crc32 = AZ::Crc32("m_byteCodes");
+                auto* arrayElement = classElement.FindSubElement(crc32);
+                if (arrayElement)
+                {
+                    // When we convert all sub elements are removed, so we first need to
+                    // get the child data, so we can re-insert it after we convert the element
+                    AZStd::array<AZStd::vector<uint8_t>, ShaderSubStageCountMax> oldData;
+                    [[maybe_unused]] bool result = classElement.GetChildData(crc32, oldData);
+                    AZ_Assert(result, "Failed to get m_byteCodes attribute for converting");
+                    // Convert the array with the new allocator
+                    arrayElement->Convert(context, AZ::AzTypeInfo<AZStd::array<ShaderByteCode, ShaderSubStageCountMax>>::Uuid());
+                    for (const auto& element : oldData)
+                    {
+                        // Convert each vector and re add it. During convertion all sub elements were removed.
+                        ShaderByteCode newData(element.size());
+                        ::memcpy(newData.data(), element.data(), element.size());
+                        arrayElement->AddElementWithData<ShaderByteCode>(context, "element", newData);
+                    }
+                }
+            }
+            return true;
+        }
+
         void ShaderStageFunction::Reflect(ReflectContext* context)
         {
             if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
+                // Need to register the old type with the Serializer so we can read it in order to convert it
+                serializeContext->RegisterGenericType<AZStd::array<AZStd::vector<uint8_t>, ShaderSubStageCountMax>>();
+
                 serializeContext->Class<ShaderStageFunction, RHI::ShaderStageFunction>()
-                    ->Version(2)
+                    ->Version(3, &ConvertOldVersions)
                     ->Field("m_byteCodes", &ShaderStageFunction::m_byteCodes)
                     ->Field("m_entryFunctionName", &ShaderStageFunction::m_entryFunctionNames);
             }
