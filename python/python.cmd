@@ -21,7 +21,6 @@ REM Calculate the path to the expected python venv for the current engine locate
 REM The logic in LYPython will generate a unique ID based on the absolute path of the current engine
 REM so that the venv will not collide with any other versions of O3DE installed on the current machine
 
-
 REM Run the custom cmake command script to calculate the ID based on %CMD_DIR%\.. 
 SET CALC_PATH=%CMD_DIR%\..\cmake\CalculateEnginePathId.cmake
 FOR /F %%g IN ('cmake -P %CALC_PATH% %CMD_DIR%\..') DO SET ENGINE_ID=%%g
@@ -37,20 +36,20 @@ REM needed to run python within the venv properly
 
 REM If the %LY_3RDPARTY_PATH% is not set, then default it to %USERPROFILE%/.o3de/3rdParty
 IF "" == "%LY_3RDPARTY_PATH%" (
-    SET LY_3RDPARTY_PATH=%USERPROFILE%\.o3de\3rdParty
+    SET LY_3RDPARTY_PATH="%USERPROFILE%\.o3de\3rdParty"
 )
 
-SET PYTHON_VENV=%USERPROFILE%\.o3de\Python\venv\%ENGINE_ID%
-SET PYTHON_VENV_ACTIVATE=%PYTHON_VENV%\Scripts\activate.bat
-SET PYTHON_VENV_DEACTIVATE=%PYTHON_VENV%\Scripts\deactivate.bat
+SET PYTHON_VENV="%USERPROFILE%\.o3de\Python\venv\%ENGINE_ID%"
+SET PYTHON_VENV_ACTIVATE="%PYTHON_VENV%\Scripts\activate.bat"
+SET PYTHON_VENV_DEACTIVATE="%PYTHON_VENV%\Scripts\deactivate.bat"
 IF [%1] EQU [debug] (
-    SET PYTHON_VENV_PYTHON=%PYTHON_VENV%\Scripts\python_d.exe
+    SET PYTHON_VENV_PYTHON="%PYTHON_VENV%\Scripts\python_d.exe"
     SET PYTHON_ARGS=%*:~6%
 ) ELSE (
-    SET PYTHON_VENV_PYTHON=%PYTHON_VENV%\Scripts\python.exe
+    SET PYTHON_VENV_PYTHON="%PYTHON_VENV%\Scripts\python.exe"
     SET PYTHON_ARGS=%*
 )
-IF EXIST %PYTHON_VENV_PYTHON% GOTO PYTHON_VENV_EXISTS
+IF EXIST "%PYTHON_VENV_PYTHON%" GOTO PYTHON_VENV_EXISTS
 ECHO Python has not been setup completely for O3DE. Missing Python venv %PYTHON_VENV_PYTHON%
 ECHO Try running %CMD_DIR%\get_python.bat to setup Python for O3DE.
 exit /b 1
@@ -65,13 +64,12 @@ echo
 echo Unable to get current python package hash
 exit /b 1
 
-
 :PACKAGE_HASH_READ
 
 REM Make sure there a .hash file that serves as the marker for the source python package the venv is from
-SET PYTHON_VENV_HASH=%PYTHON_VENV%\.hash
+SET PYTHON_VENV_HASH="%PYTHON_VENV%\.hash"
 
-IF EXIST %PYTHON_VENV_HASH% GOTO PYTHON_VENV_HASH_EXISTS
+IF EXIST "%PYTHON_VENV_HASH%" GOTO PYTHON_VENV_HASH_EXISTS
 ECHO Python has not been setup completely for O3DE. Missing venv hash %PYTHON_VENV_HASH%
 ECHO Try running %CMD_DIR%\get_python.bat to setup Python for O3DE.
 exit /b 1
@@ -79,7 +77,7 @@ exit /b 1
 :PYTHON_VENV_HASH_EXISTS
 
 REM Read in the .hash from the venv to see if we need to update the version of python
-SET /p VENV_PACKAGE_HASH=<%PYTHON_VENV_HASH%
+SET /p VENV_PACKAGE_HASH=<"%PYTHON_VENV_HASH%"
 
 IF "%VENV_PACKAGE_HASH%" == "%CURRENT_PACKAGE_HASH%" GOTO PYTHON_VENV_MATCHES
 ECHO Python needs to be updated against the current version.
@@ -87,13 +85,13 @@ ECHO Try running %CMD_DIR%\get_python.bat to update Python for O3DE.
 exit /b 1
 
 :PYTHON_VENV_MATCHES
-REM Execute the python call from the arguments within the python venv environment
 
-call %PYTHON_VENV_ACTIVATE%
+REM Execute the python call from the arguments within the python venv environment
+call "%PYTHON_VENV_ACTIVATE%"
 
 call "%PYTHON_VENV_PYTHON%" %PYTHON_ARGS%
 SET PYTHON_RESULT=%ERRORLEVEL%
 
-call %PYTHON_VENV_DEACTIVATE%
+call "%PYTHON_VENV_DEACTIVATE%"
 
 exit /B %PYTHON_RESULT%
