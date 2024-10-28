@@ -48,7 +48,7 @@ IF NOT !ERRORLEVEL!==0 (
 
 REM If the %LY_3RDPARTY_PATH% is not set, then default it to %USERPROFILE%/.o3de/3rdParty
 IF "" == "%LY_3RDPARTY_PATH%" (
-    SET LY_3RDPARTY_PATH=%USERPROFILE%\.o3de\3rdParty
+    SET LY_3RDPARTY_PATH="%USERPROFILE%\.o3de\3rdParty"
 )
 
 REM output the version number for forensic logging

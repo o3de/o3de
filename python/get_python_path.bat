@@ -21,7 +21,7 @@ FOR /F "tokens=* USEBACKQ" %%F IN (`%CMD_DIR%\python.cmd %CMD_DIR%\get_python_pa
 echo     O3DE_PYTHONHOME - is now the folder containing O3DE python executable
 echo     O3DE_PYTHONHOME = %O3DE_PYTHONHOME% 
 
-SET PYTHON=%O3DE_PYTHONHOME%\python.exe
+SET PYTHON="%O3DE_PYTHONHOME%\python.exe"
 
 :: Set flag so we don't initialize dccsi environment twice
 SET O3DE_PYTHONHOME_INIT=1
