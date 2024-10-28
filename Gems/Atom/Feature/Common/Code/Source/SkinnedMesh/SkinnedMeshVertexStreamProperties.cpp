@@ -68,7 +68,7 @@ namespace AZ
                 Name{"SkinnedMeshInputBlendIndices"},
                 Name{"m_sourceBlendIndices"},
                 RHI::ShaderSemantic{Name{"SKIN_JOINTINDICES"}},
-                false, // isOptional
+                true, // isOptional
                 SkinnedMeshInputVertexStreams::BlendIndices
             };
 
@@ -78,7 +78,7 @@ namespace AZ
                 Name{"SkinnedMeshInputBlendWeights"},
                 Name{"m_sourceBlendWeights"},
                 RHI::ShaderSemantic{Name{"SKIN_WEIGHTS"}},
-                false, // isOptional
+                true, // isOptional
                 SkinnedMeshInputVertexStreams::BlendWeights
             };
 
