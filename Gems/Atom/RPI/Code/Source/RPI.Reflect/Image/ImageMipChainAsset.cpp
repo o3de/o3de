@@ -22,15 +22,25 @@ namespace AZ
         {
             if (classElement.GetVersion() < 1)
             {
-                // We need to convert the shader byte code because we added a custom allocator
+                // We need to convert the vectors because we added a custom allocator
                 // and the serialization system doens't automatically convert between two different classes
                 {
                     auto crc32 = AZ::Crc32("m_imageData");
                     auto* vectorElement = classElement.FindSubElement(crc32);
                     if (vectorElement)
                     {
-                        // Convert the vector with the new allocator
-                        vectorElement->Convert(context, AZ::AzTypeInfo<AZStd::vector<uint8_t, ImageMipChainAsset::Allocator>>::Uuid());
+                        // Get the old data
+                        AZStd::vector<uint8_t> oldData;
+                        if (vectorElement->GetData(oldData))
+                        {
+                            // Convert the vector with the new allocator
+                            vectorElement->Convert(context, AZ::AzTypeInfo<AZStd::vector<uint8_t, ImageMipChainAsset::Allocator>>::Uuid());
+                            // Copy old data to new data
+                            AZStd::vector<uint8_t, ImageMipChainAsset::Allocator> newData(oldData.size());
+                            ::memcpy(newData.data(), oldData.data(), newData.size());
+                            // Set the new data
+                            vectorElement->SetData(context, newData);
+                        }
                     }
                 }
                 {
@@ -38,8 +48,17 @@ namespace AZ
                     auto* vectorElement = classElement.FindSubElement(crc32);
                     if (vectorElement)
                     {
-                        // Convert the vector with the new allocator
-                        vectorElement->Convert(context, AZ::AzTypeInfo<AZStd::vector<AZ::u64, ImageMipChainAsset::Allocator>>::Uuid());
+                        AZStd::vector<AZ::u64> oldData;
+                        if (classElement.GetChildData(crc32, oldData))
+                        {
+                            // Convert the vector with the new allocator
+                            vectorElement->Convert(context, AZ::AzTypeInfo<AZStd::vector<AZ::u64, ImageMipChainAsset::Allocator>>::Uuid());
+                            for (const auto& element : oldData)
+                            {
+                                // Convert each vector and re add it. During convertion all sub elements were removed.
+                                vectorElement->AddElementWithData<AZ::u64>(context, "element", element);
+                            }
+                        }
                     }
                 }
             }

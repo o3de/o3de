@@ -30,16 +30,17 @@ namespace AZ
                     // When we convert all sub elements are removed, so we first need to
                     // get the child data, so we can re-insert it after we convert the element
                     AZStd::array<AZStd::vector<uint8_t>, ShaderSubStageCountMax> oldData;
-                    [[maybe_unused]] bool result = classElement.GetChildData(crc32, oldData);
-                    AZ_Assert(result, "Failed to get m_byteCodes attribute for converting");
-                    // Convert the array with the new allocator
-                    arrayElement->Convert(context, AZ::AzTypeInfo<AZStd::array<ShaderByteCode, ShaderSubStageCountMax>>::Uuid());
-                    for (const auto& element : oldData)
+                    if (classElement.GetChildData(crc32, oldData))
                     {
-                        // Convert each vector and re add it. During convertion all sub elements were removed.
-                        ShaderByteCode newData(element.size());
-                        ::memcpy(newData.data(), element.data(), element.size());
-                        arrayElement->AddElementWithData<ShaderByteCode>(context, "element", newData);
+                        // Convert the array with the new allocator
+                        arrayElement->Convert(context, AZ::AzTypeInfo<AZStd::array<ShaderByteCode, ShaderSubStageCountMax>>::Uuid());
+                        for (const auto& element : oldData)
+                        {
+                            // Convert each vector and re add it. During convertion all sub elements were removed.
+                            ShaderByteCode newData(element.size());
+                            ::memcpy(newData.data(), element.data(), element.size());
+                            arrayElement->AddElementWithData<ShaderByteCode>(context, "element", newData);
+                        }
                     }
                 }
             }

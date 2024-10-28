@@ -20,14 +20,22 @@ namespace AZ
         {
             if (classElement.GetVersion() < 4)
             {
-                // We need to convert the shader byte code because we added a custom allocator
-                // and the serialization system doens't automatically convert between two different classes
                 auto crc32 = AZ::Crc32("m_byteCode");
                 auto* vectorElement = classElement.FindSubElement(crc32);
                 if (vectorElement)
                 {
-                    // Convert the vector with the new allocator
-                    vectorElement->Convert(context, AZ::AzTypeInfo<ShaderByteCode>::Uuid());
+                    // Get the old data
+                    AZStd::vector<uint8_t> oldData;
+                    if (vectorElement->GetData(oldData))
+                    {
+                        // Convert the vector with the new allocator
+                        vectorElement->Convert(context, AZ::AzTypeInfo<ShaderByteCode>::Uuid());
+                        // Copy old data to new data
+                        ShaderByteCode newData(oldData.size());
+                        ::memcpy(newData.data(), oldData.data(), newData.size());
+                        // Set the new data
+                        vectorElement->SetData(context, newData);
+                    }
                 }
             }
             return true;
