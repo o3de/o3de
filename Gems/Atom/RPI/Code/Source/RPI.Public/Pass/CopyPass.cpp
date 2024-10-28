@@ -279,46 +279,10 @@ namespace AZ
 
         void CopyPass::SetupFrameGraphDependenciesDeviceToHost(RHI::FrameGraphInterface frameGraph)
         {
-            if (m_inputOutputCopy)
-            {
-                // We need to manually do what DeclareAttachmentsToFrameGraph in order to correctly set the ScopeAttachmentAccess to Read
-                // since we only read within this scope.
-                const auto& attachmentBinding = m_attachmentBindings[0];
-                if (attachmentBinding.GetAttachment() != nullptr &&
-                    frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentBinding.GetAttachment()->GetAttachmentId()))
-                {
-                    switch (attachmentBinding.m_unifiedScopeDesc.GetType())
-                    {
-                    case RHI::AttachmentType::Image:
-                        {
-                            frameGraph.UseAttachment(
-                                attachmentBinding.m_unifiedScopeDesc.GetAsImage(),
-                                RHI::ScopeAttachmentAccess::Read,
-                                attachmentBinding.m_scopeAttachmentUsage,
-                                attachmentBinding.m_scopeAttachmentStage);
-                            break;
-                        }
-                    case RHI::AttachmentType::Buffer:
-                        {
-                            frameGraph.UseAttachment(
-                                attachmentBinding.m_unifiedScopeDesc.GetAsBuffer(),
-                                RHI::ScopeAttachmentAccess::Read,
-                                attachmentBinding.m_scopeAttachmentUsage,
-                                attachmentBinding.m_scopeAttachmentStage);
-                            break;
-                        }
-                    default:
-                        AZ_Assert(false, "Error, trying to bind an attachment that is neither an image nor a buffer!");
-                        break;
-                    }
-                }
-            }
-            else
-            {
-                // We need the size of the output image when copying from image to image, so we need all attachments (even the output ones)
-                // We also need it so the framegraph knows the two scopes depend on each other
-                DeclareAttachmentsToFrameGraph(frameGraph);
-            }
+            // We need to set the access mask to read since we only copy from the device otherwise we would get an error with InputOutput.
+            // We also need the size of the output image when copying from image to image, so we need all attachments (even the output ones)
+            // We also need it so the framegraph knows the two scopes depend on each other
+            DeclareAttachmentsToFrameGraph(frameGraph, PassSlotType::Uninitialized, RHI::ScopeAttachmentAccess::Read);
 
             frameGraph.SetEstimatedItemCount(2);
             frameGraph.SignalFence(*m_device1SignalFence[m_currentBufferIndex]);

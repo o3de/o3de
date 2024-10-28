@@ -655,7 +655,7 @@ namespace AZ
             filteredBarrier.m_srcStageMask = RHI::FilterBits(unoptimizedBarrier.m_srcStageMask, m_deviceSupportedPipelineStageFlags);
 
             // a render pass can only automatically convert image layouts if a multi-aspect image has the same or compatible layouts for all
-            // aspects this workaround covers this case for depth/stencil images where one aspect is in a transfer state:
+            // aspects. This workaround covers the case for depth/stencil images where one aspect is in a transfer state:
             if (canOptimize && filteredBarrier.m_type == VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER && UsesRenderpass() &&
                 IsRenderAttachmentUsage(filteredBarrier.m_attachment->GetUsage()) &&
                 (filteredBarrier.m_imageBarrier.subresourceRange.aspectMask == VK_IMAGE_ASPECT_DEPTH_BIT ||

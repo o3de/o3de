@@ -79,6 +79,7 @@ namespace AZ
                 Invalid
             };
             CopyMode m_copyMode = CopyMode::Invalid;
+            // Set to true for the MultiDeviceCopyPass, which uses one InputOutput slot instead of one Input and one Output slot.
             bool m_inputOutputCopy = false;
 
             constexpr static int MaxFrames = RHI::Limits::Device::FrameCountMax;
@@ -93,6 +94,8 @@ namespace AZ
                 RHI::DeviceImageSubresourceLayout m_inputImageLayout;
             };
 
+            // Multiple aspects cannot be copied at the same time, so we need a copy items (and corresponding other members)
+            // for each aspect. This is the case for example, when we want to copy a depth-stencil-image.
             AZStd::vector<PerAspectCopyInfo> m_perAspectCopyInfos;
 
             int m_currentBufferIndex = 0;
