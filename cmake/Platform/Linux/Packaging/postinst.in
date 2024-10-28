@@ -32,19 +32,19 @@ StartupNotify=true\n\
 X-GNOME-Autostart-enabled=true\n\
 " > $DESKTOP_ICON_FILE
 
-    if [ "" != "$SUDO_USER" ]
-    then
-        pushd @CPACK_PACKAGING_INSTALL_PREFIX@
-        chown -R $SUDO_USER .
+    pushd @CPACK_PACKAGING_INSTALL_PREFIX@
 
-        sudo chmod -R a+w Tools/LyTestTools
-        sudo chmod -R a+w Tools/RemoteConsole/ly_remote_console
-        sudo chmod -R a+w Gems/Atom/RPI/Tools
-        sudo chmod -R a+w Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface
-        sudo chmod -R a+w scripts/o3de
+    # Make sure the python script folders are writable since pyc and egg-link files will be generated in them
+    sudo find Tools/LyTestTools -type d -exec chmod a+w {} \;
+    sudo find Tools/RemoteConsole/ly_remote_console -type d -exec chmod a+w {} \;
+    sudo find Gems/Atom/RPI/Tools -type d -exec chmod a+w {} \;
+    sudo find Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface -type d -exec chmod a+w {} \;
+    sudo find scripts/o3de -type d -exec chmod a+w {} \;
 
-        popd
-    fi
+    # Clear out any previously generated egg-info linked folder
+    sudo rm -rf scripts/o3de/o3de.egg-info
+
+    popd
 
 } 
 #&> /dev/null # hide output
