@@ -585,8 +585,6 @@ namespace AZ
 
                 if (textureArray.NumMaterials() == 0)
                 {
-                    // Need to "destroy" the DecalTextureArray since erase only free up the space to be reused
-                    m_textureArrayList[decalLocation.textureArrayIndex] = {};
                     m_textureArrayList.erase(decalLocation.textureArrayIndex);
                 }
             }
