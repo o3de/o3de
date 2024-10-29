@@ -1038,12 +1038,6 @@ namespace AZ
     //////////////////////////////////////////////////////////////////////////
     // EBus implementations
 
-    namespace Internal
-    {
-        template <class C>
-        AZ_THREAD_LOCAL C* EBusCallstackStorage<C, true>::s_entry = nullptr;
-    }
-
     //=========================================================================
     // Context::Context
     //=========================================================================
