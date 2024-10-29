@@ -52,9 +52,6 @@ class ConsoleLineEdit
 public:
     explicit ConsoleLineEdit(QWidget* parent = nullptr);
 
-#if defined(CARBONATED)
-    bool keyPressEventImpl();
-#endif
 protected:
     void mouseDoubleClickEvent(QMouseEvent* ev) override;
     void keyPressEvent(QKeyEvent* ev) override;
@@ -70,9 +67,6 @@ private:
     QStringList m_history;
     unsigned int m_historyIndex;
     bool m_bReusedHistory;
-#if defined(CARBONATED)
-    QKeyEvent m_keyEvent;
-#endif
 };
 
 class ConsoleVariableItemDelegate
@@ -157,9 +151,6 @@ public:
 
     static void RegisterViewClass();
     void SetInputFocus();
-#if defined(CARBONATED)
-    ConsoleLineEdit* GetConsoleInput();
-#endif
     void AddToConsole(const QString& text, bool bNewLine);
     void FlushText();
     QSize sizeHint() const override;
