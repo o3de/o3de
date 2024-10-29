@@ -50,7 +50,7 @@ IF [%1] EQU [debug] (
     SET PYTHON_VENV_PYTHON=%PYTHON_VENV%\Scripts\python.exe
     SET PYTHON_ARGS=%*
 )
-IF EXIST %PYTHON_VENV_PYTHON% GOTO PYTHON_VENV_EXISTS
+IF EXIST "%PYTHON_VENV_PYTHON%" GOTO PYTHON_VENV_EXISTS
 ECHO Python has not been setup completely for O3DE. Missing Python venv %PYTHON_VENV_PYTHON%
 ECHO Try running %CMD_DIR%\get_python.bat to setup Python for O3DE.
 exit /b 1
@@ -89,11 +89,11 @@ exit /b 1
 :PYTHON_VENV_MATCHES
 REM Execute the python call from the arguments within the python venv environment
 
-call %PYTHON_VENV_ACTIVATE%
+call "%PYTHON_VENV_ACTIVATE%"
 
 call "%PYTHON_VENV_PYTHON%" %PYTHON_ARGS%
 SET PYTHON_RESULT=%ERRORLEVEL%
 
-call %PYTHON_VENV_DEACTIVATE%
+call "%PYTHON_VENV_DEACTIVATE%"
 
 exit /B %PYTHON_RESULT%
