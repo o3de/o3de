@@ -24,8 +24,8 @@ static const float4 s_AzslDebugColor = float4(165.0 / 255.0, 30.0 / 255.0, 36.0 
 //Assuming unbounded array suport for Android
 #define UNBOUNDED_SIZE
 
-#define USE_HALF_FLOATS_FOR_ANDROID 1
-#if USE_HALF_FLOATS_FOR_ANDROID
+#define USE_HALF_FLOATS 1
+#if USE_HALF_FLOATS
 
 // use half float for android
 #define real half
