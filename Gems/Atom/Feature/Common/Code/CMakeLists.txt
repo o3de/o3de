@@ -9,8 +9,9 @@
 o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 set(common_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common)
 
+# TODO(OBJECT-library): Change this target to an object library after Gradle was updated
 ly_add_target(
-    NAME ${gem_name}.Private.Object OBJECT
+    NAME ${gem_name}.Private.Object STATIC
     NAMESPACE Gem
     FILES_CMAKE
         atom_feature_common_files.cmake
