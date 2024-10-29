@@ -120,9 +120,17 @@ namespace AZ::Render
 
     void AtomActorInstance::SetSkinningMethod(EMotionFX::Integration::SkinningMethod emfxSkinningMethod)
     {
-        RenderActorInstance::SetSkinningMethod(emfxSkinningMethod);
+        // Check if the actor has skinning, otherwise fall back to `NoSkinning` regardless of `emfxSkinningMethod`
+        if (m_actorInstance->GetActor()->GetSkinMetaAsset().Get())
+        {
+            RenderActorInstance::SetSkinningMethod(emfxSkinningMethod);
+            m_boneTransforms = CreateBoneTransformBufferFromActorInstance(m_actorInstance, emfxSkinningMethod);
+        }
+        else
+        {
+            RenderActorInstance::SetSkinningMethod(EMotionFX::Integration::SkinningMethod::None);
+        }
 
-        m_boneTransforms = CreateBoneTransformBufferFromActorInstance(m_actorInstance, emfxSkinningMethod);
         // Release the Atom skinned mesh and acquire a new one to apply the new skinning method
         UnregisterActor();
         RegisterActor();
@@ -130,12 +138,6 @@ namespace AZ::Render
 
     SkinningMethod AtomActorInstance::GetAtomSkinningMethod() const
     {
-        // No skeleton and skinning
-        if (m_boneTransforms->GetBufferSize() == 0)
-        {
-            return SkinningMethod::NoSkinning;
-        }
-
         switch (GetSkinningMethod())
         {
         case EMotionFX::Integration::SkinningMethod::DualQuat:
@@ -466,8 +468,18 @@ namespace AZ::Render
         if (m_skinnedMeshInputBuffers)
         {
             EMotionFX::Integration::SkinningMethod skinningMethod = GetSkinningMethod();
-            m_boneTransforms = CreateBoneTransformBufferFromActorInstance(m_actorInstance, skinningMethod);
-            AZ_Error("AtomActorInstance", m_boneTransforms || AZ::RHI::IsNullRHI() || skinningMethod == EMotionFX::Integration::SkinningMethod::None, "Failed to create bone transform buffer.");
+            
+            // When skinning mode is none or there's no skin asset, skip creating bone transform buffer
+            if (skinningMethod != EMotionFX::Integration::SkinningMethod::None && m_actorAsset->GetActor()->GetSkinMetaAsset().Get())
+            {
+                m_boneTransforms = CreateBoneTransformBufferFromActorInstance(m_actorInstance, skinningMethod);
+                AZ_Error("AtomActorInstance", m_boneTransforms || AZ::RHI::IsNullRHI(), "Failed to create bone transform buffer.");
+            }
+            else if (!m_actorAsset->GetActor()->GetSkinMetaAsset().Get())
+            {
+                // Fallback to no skinning if skinning metaasset doesn't exist
+                RenderActorInstance::SetSkinningMethod(EMotionFX::Integration::SkinningMethod::None);
+            }
 
             // If the instance is created before the default materials on the model have finished loading, the mesh feature processor will ignore it.
             // Wait for them all to be ready before creating the instance

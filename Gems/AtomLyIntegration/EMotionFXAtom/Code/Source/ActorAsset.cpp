@@ -362,6 +362,7 @@ namespace AZ
             }
             else if (skinningMethod == EMotionFX::Integration::SkinningMethod::None)
             {
+                AZ_Warning("ActorAsset", false, "Create bone transform called with no skinning, will return nullptr.");
                 return nullptr;
             }
             else

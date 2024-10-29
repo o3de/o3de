@@ -308,7 +308,7 @@ namespace AZ
                     else
                     {
                         AZ_Warning("Mesh", false, "Mesh does not have all the required input streams. Missing '%s'.", contractStreamChannel.m_semantic.ToString().c_str());
-                        // success = false;
+                        success = false;
                     }
                 }
                 else
@@ -337,6 +337,7 @@ namespace AZ
             if (success)
             {
                 layoutOut = layoutBuilder.End();
+
                 success &= RHI::ValidateStreamBufferViews(layoutOut, streamBufferViewsOut);
             }
 
