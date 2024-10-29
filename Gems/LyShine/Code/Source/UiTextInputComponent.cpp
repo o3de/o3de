@@ -377,7 +377,7 @@ bool UiTextInputComponent::HandleTextInput(const AZStd::string& inputTextUTF8)
                 {
                     currentText.insert(rawIndexPos, inputTextUTF8);
 
-                    m_textCursorPos++;
+                    m_textCursorPos += LyShine::GetUtf8StringLength(inputTextUTF8);
                     m_textSelectionStartPos = m_textCursorPos;
                     UiTextBus::Event(
                         m_textEntity, &UiTextBus::Events::SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);

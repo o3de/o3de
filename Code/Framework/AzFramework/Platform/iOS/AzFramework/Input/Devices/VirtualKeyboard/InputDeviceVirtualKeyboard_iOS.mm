@@ -196,7 +196,7 @@ namespace AzFramework
 
         // Disable autocapitalization and autocorrection, which both behave strangely.
         m_textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
-        m_textField.autocorrectionType = UITextAutocorrectionTypeNo;
+        m_textField.autocorrectionType = UITextAutocorrectionTypeYes;
 
         // Hide the text field so it will never actually be shown.
         m_textField.hidden = YES;
