@@ -50,7 +50,7 @@ namespace AZ::Render
                     ImGui::TableNextColumn();
                     ImGui::Text("%.2f", static_cast<float>(stat.m_requestedBytesPeak) / MB);
                     ImGui::TableNextColumn();
-                    ImGui::Text("%d", stat.m_requestedAllocs);
+                    ImGui::Text("%d", static_cast<int >(stat.m_requestedAllocs));
                 }
 
                 ImGui::EndTable();
