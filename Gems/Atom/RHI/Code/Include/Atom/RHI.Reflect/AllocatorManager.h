@@ -15,6 +15,9 @@
 
 namespace AZ::RHI
 {
+    //! Global allocation manager for Atom. It has access to all
+    //! registered Atom allocators. Controls profiling of those allocators and
+    //! access to allocation data.
     class AllocatorManager
     {
     public:
@@ -23,6 +26,7 @@ namespace AZ::RHI
         ~AllocatorManager();
 
         static AllocatorManager& Instance();
+        //! Returns true if the global instance is constructed
         static bool IsReady();
 
         AZ_FORCE_INLINE  int            GetNumAllocators() const    { return m_numAllocators; }
@@ -31,16 +35,17 @@ namespace AZ::RHI
             AZ_Assert(index < m_numAllocators, "Invalid allocator index %d [0,%d]!", index, m_numAllocators - 1);
             return m_allocators[index];
         }
-        /// Set memory track mode for all allocators already created.
+        //! Set memory track mode for all allocators already created.
         void SetTrackingMode(AZ::Debug::AllocationRecords::Mode mode);
 
-        /// Reset the peak bytes for all allocators
+        //! Reset the peak bytes for all allocators
         void ResetPeakBytes();
 
-        /// Enter or exit profiling mode; calls to Enter must be matched with calls to Exit
+        //! Enter or exit profiling mode
         void SetProfilingMode(bool value);
         bool GetProfilingMode() const;
 
+        //! Allocation information about the allocators
         struct AllocatorStats
         {
             AllocatorStats() = default;
@@ -52,13 +57,20 @@ namespace AZ::RHI
             {}
 
             AZStd::string m_name;
+            //! Requested user bytes. IMPORTANT: This is user requested memory! Any allocator overhead is NOT included.
             size_t m_requestedBytes = 0;
+            //! Total number of requested allocations
             size_t m_requestedAllocs = 0;
+            //! Peak of requested memory. IMPORTANT: This is user requested memory! Any allocator overhead is NOT included.
             size_t m_requestedBytesPeak = 0;
         };
 
+        //! Returns the AllocatorStats for each registered allocator
+        //! @param requestedBytes Stores the total number of request bytes for all allocators
+        //! @param requestedAllocs Stores the total number of allocations for all allocators
+        //! @param requestedBytesPeak Stores the peak of request of requested bytes for all allocators
         void GetAllocatorStats(
-            size_t& requestedBytes, size_t& m_requestedAllocs, size_t& requestedBytesPeak, AZStd::vector<AllocatorStats>* outStats = nullptr);
+            size_t& requestedBytes, size_t& requestedAllocs, size_t& requestedBytesPeak, AZStd::vector<AllocatorStats>* outStats = nullptr);
 
         // Called from IAllocator
         void RegisterAllocator(IAllocator* alloc);

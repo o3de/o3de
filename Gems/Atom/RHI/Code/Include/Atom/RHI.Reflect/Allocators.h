@@ -16,6 +16,9 @@
 
 namespace AZ::RHI
 {
+    //! Base allocator that is used by all Atom allocators.
+    //! This allocator is used for tracking purpouse and it just forward the
+    //! allocations to the final allocator.
     class SystemAllocatorBase
         : public AZ::SimpleSchemaAllocator<AZ::ChildAllocatorSchema<AZ::SystemAllocator>>
     {
@@ -27,7 +30,10 @@ namespace AZ::RHI
         ~SystemAllocatorBase() override;
     };
 
-    // Allocator name,                        Display Name,                     Allocator type,         UUID
+// Sequence with all the allocators for the RHI. For new allocators, just 
+// add a new row with the proper information
+// 
+//              Allocator name,               Display Name,                     Allocator type,         UUID
 #define RHI_ALLOCATORS \
     ((ShaderStageFunctionAllocator) ("RHI::ShaderStageFunctionAllocator")   (SystemAllocatorBase)   ("{15F285F1-74D5-4FAE-8CE4-B7D235A92F23}")) \
 
@@ -50,6 +56,7 @@ namespace AZ::RHI
 #define RHI_ALLOCATOR_SEQ_GET_TYPE(X) RHI_SEQ_HEAD_3(X)
 #define RHI_ALLOCATOR_SEQ_GET_UUID(X) RHI_SEQ_HEAD_4(X)
 
+// Declare the allocator using the macro arguments
 #define RHI_ALLOCATOR_DECL(ALLOCATOR_SEQUENCE)                                                                                       \
     class RHI_ALLOCATOR_SEQ_GET_NAME(ALLOCATOR_SEQUENCE)                                                                             \
         : public RHI_ALLOCATOR_SEQ_GET_TYPE(ALLOCATOR_SEQUENCE)                                                                      \
@@ -68,7 +75,7 @@ namespace AZ::RHI
     AZ_RTTI_NO_TYPE_INFO_IMPL_INLINE(                                                                                                      \
         RHI_ALLOCATOR_SEQ_GET_NAME(ALLOCATOR_SEQUENCE), RHI_ALLOCATOR_SEQ_GET_NAME(ALLOCATOR_SEQUENCE)::Base);
 
-    // Here we create all the classes for all the items in the above table (Step 1)
+    // Here we create all the classes for all the items in the above table
     AZ_SEQ_FOR_EACH(RHI_ALLOCATOR_DECL, RHI_ALLOCATORS)
 
 } // namespace RHI

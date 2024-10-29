@@ -72,8 +72,6 @@ void AllocatorManager::InternalDestroy()
 {
     while (m_numAllocators > 0)
     {
-        IAllocator* allocator = m_allocators[m_numAllocators - 1];
-        (void)allocator;
         m_allocators[--m_numAllocators] = nullptr;
         // Do not actually destroy the lazy allocator as it may have work to do during non-deterministic shutdown
     }
@@ -161,7 +159,7 @@ void AllocatorManager::GetAllocatorStats(
             }
             requestedBytes += stats.m_requestedBytes;
             requestedAllocs += stats.m_requestedAllocs;
-            requestedBytesPeak += stats.m_requestedBytesPeak;
+            requestedBytesPeak = AZStd::max(stats.m_requestedBytesPeak, requestedBytesPeak);
             outStats->emplace_back(AZStd::move(stats));
         }
     }
