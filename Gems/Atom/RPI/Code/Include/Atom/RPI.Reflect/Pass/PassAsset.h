@@ -28,9 +28,11 @@ namespace AZ
     {
         //! An asset that describes the root of a pass by having a PassTemplate.
         //! By adding PassRequests to the template you can describe an entire tree of passes.
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_REFLECT_API PassAsset final
             : public Data::AssetData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class PassSystem;
             friend class UnitTest::PassBuilderTests;
         public:

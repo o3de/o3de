@@ -19,9 +19,12 @@ namespace AZ
     {
         //! The skin meta asset is an optional asset that belongs to a model.
         //! In case the model does not contain any mesh with skinning information, the skin meta asset won't be generated.
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_REFLECT_API SkinMetaAsset final
             : public Data::AssetData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+
         public:
             static constexpr inline const char* DisplayName = "SkinMeta";
             static constexpr inline const char* Extension = "skinMeta";

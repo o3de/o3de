@@ -52,11 +52,13 @@ namespace AZ
                             //!< with dxc, or spirv-cross, etc.
         };
 
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_REFLECT_API ShaderAsset final
             : public Data::AssetData
             , public ShaderVariantFinderNotificationBus::Handler
             , public AssetInitBus::Handler
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ShaderAssetCreator;
             friend class ShaderAssetHandler;
             friend class ShaderAssetTester;

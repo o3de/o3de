@@ -93,9 +93,12 @@ namespace AZ
         //!         Data::Asset<Bar> m_bar1;
         //!         Data::Asset<Bar> m_bar2;
         //!     };
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_REFLECT_API BuiltInAssetHandler
             : public Data::AssetHandler
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+
         public:
             AZ_CLASS_ALLOCATOR(BuiltInAssetHandler, AZ::SystemAllocator);
             AZ_RTTI(BuiltInAssetHandler, "{C6615D6C-72AF-4444-8C27-8B88D89074E8}", Data::AssetHandler);

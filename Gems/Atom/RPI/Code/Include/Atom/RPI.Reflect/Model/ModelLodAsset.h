@@ -30,9 +30,11 @@ namespace AZ
         //! Contains a set of ModelLodAsset::Mesh objects and BufferAsset objects, representing the data a single level-of-detail for a Model.
         //! Serialized to a .azlod file.
         //! Actual vertex and index buffer data is stored in the BufferAssets.
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_REFLECT_API ModelLodAsset final
             : public Data::AssetData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ModelLodAssetCreator;
             friend class ModelAsset;
 

@@ -47,9 +47,11 @@ namespace AZ
          * Likewise, if a getter method fails, an error is emitted and an empty value or empty array
          * is returned. If validation is disabled, the operation is always performed.
          */
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_PUBLIC_API ShaderResourceGroup final
             : public AZ::Data::InstanceData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ShaderSystem;
             friend class ShaderResourceGroupPool;
 

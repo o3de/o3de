@@ -35,9 +35,11 @@ namespace AZ
          *
          * User code should not need to access this pool directly; RPI::ShaderResourceGroup uses it internally.
          */
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_PUBLIC_API ShaderResourceGroupPool final
             : public Data::InstanceData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ShaderSystem;
         public:
             AZ_INSTANCE_DATA(ShaderResourceGroupPool, "{D75561AF-C10A-41BC-BABF-63DBFA160388}");

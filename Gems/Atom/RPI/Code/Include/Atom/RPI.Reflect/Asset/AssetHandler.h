@@ -19,9 +19,12 @@ namespace AZ
     {
         //! Base asset handler class for all assets in the RPI. Provides constructor to initialize
         //! asset type information from static members on the asset class.
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         template <typename AssetDataT>
         class ATOM_RPI_REFLECT_API AssetHandler : public AzFramework::GenericAssetHandler<AssetDataT>
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+
             using Base = AzFramework::GenericAssetHandler<AssetDataT>;
         public:
             AZ_CLASS_ALLOCATOR(AssetHandler, AZ::SystemAllocator)

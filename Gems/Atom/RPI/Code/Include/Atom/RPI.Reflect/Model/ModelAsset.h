@@ -28,9 +28,11 @@ namespace AZ
         //! Contains a set of RPI::ModelLodAsset objects.
         //! Serialized to a .azmodel file.
         //! Actual model data is stored in the BufferAssets referenced by ModelLodAssets.
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_REFLECT_API ModelAsset
             : public AZ::Data::AssetData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ModelAssetCreator;
             friend class ModelAssetHelpers;
 

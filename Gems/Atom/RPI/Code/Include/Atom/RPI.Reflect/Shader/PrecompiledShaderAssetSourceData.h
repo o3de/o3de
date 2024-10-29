@@ -21,9 +21,12 @@ namespace AZ
     {
         //! This asset is loaded from a Json file and contains information about
         //! precompiled shader variants and their associated API name.
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         struct ATOM_RPI_REFLECT_API PrecompiledRootShaderVariantAssetSourceData final
             : public Data::AssetData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+
         public:
             AZ_RTTI(PrecompiledRootShaderVariantAssetSourceData, "{661EF8A7-7BAC-41B6-AD5C-C7249B2390AD}");
             AZ_CLASS_ALLOCATOR(PrecompiledRootShaderVariantAssetSourceData, SystemAllocator);
@@ -36,9 +39,12 @@ namespace AZ
 
         //! This asset is loaded from a Json file and contains information about
         //! precompiled shader supervariants
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         struct ATOM_RPI_REFLECT_API PrecompiledSupervariantSourceData final
             : public Data::AssetData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+
         public:
             AZ_RTTI(PrecompiledSupervariantSourceData, "{630BDF15-CE7C-4E2C-882E-4F7AF09C8BB6}");
             AZ_CLASS_ALLOCATOR(PrecompiledSupervariantSourceData, SystemAllocator);
@@ -51,9 +57,12 @@ namespace AZ
 
         //! This asset is loaded from a Json file and contains information about
         //! precompiled shader assets.
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         struct ATOM_RPI_REFLECT_API PrecompiledShaderAssetSourceData final
             : public Data::AssetData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+
         public:
             AZ_RTTI(PrecompiledShaderAssetSourceData, "{C6B606EF-B788-4979-BA0F-6A28B33A1372}");
             AZ_CLASS_ALLOCATOR(PrecompiledShaderAssetSourceData, SystemAllocator);

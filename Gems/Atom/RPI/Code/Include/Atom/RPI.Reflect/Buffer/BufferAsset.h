@@ -30,9 +30,11 @@ namespace AZ
     {
         //! An asset representation of a buffer meant to be uploaded to the GPU.
         //! For example: vertex buffer, index buffer, etc
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_REFLECT_API BufferAsset final
             : public Data::AssetData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class BufferAssetCreator;
 
         public:

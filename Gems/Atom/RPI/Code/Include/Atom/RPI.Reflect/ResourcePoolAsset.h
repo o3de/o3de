@@ -30,9 +30,11 @@ namespace AZ
         //! ResourcePoolAsset is the AssetData class for a resource pool asset.
         //! This is an immutable, serialized asset. It can be either serialized-in or created dynamically using ResourcePoolAssetCreator.
         //! Multiple runtime pool classes are based on this asset, for example RPI::ImagePool, RPI::StreamingImagePool, RPI::ShaderResourceGroupPool.
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_REFLECT_API ResourcePoolAsset
             : public AZ::Data::AssetData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ResourcePoolAssetCreator;
 
         public:

@@ -25,9 +25,11 @@ namespace AZ
         class ImageAsset;
 
         //! A base class for images providing access to common image information.
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_REFLECT_API Image
             : public Data::InstanceData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ImageSystem;
 
         public:

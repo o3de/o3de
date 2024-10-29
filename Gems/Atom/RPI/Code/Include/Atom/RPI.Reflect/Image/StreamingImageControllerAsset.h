@@ -25,9 +25,12 @@ namespace AZ
         //! concrete streaming image controller instance. Users should derive from this class, store
         //! configuration data on it for your specific back-end, and implement the factory method to create
         //! an instance at runtime.
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_REFLECT_API StreamingImageControllerAsset
             : public Data::AssetData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+
         public:
             AZ_RTTI(StreamingImageControllerAsset, "{0797F48F-B097-4209-8D6F-DA40DC0FAB42}", Data::AssetData);
             AZ_CLASS_ALLOCATOR(StreamingImageControllerAsset, SystemAllocator);

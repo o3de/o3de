@@ -193,8 +193,11 @@ namespace AZ
             //! multiple ebus functions to handle callbacks. It will invoke the provided callback function when the
             //! asset loads or errors. It will stop listening on destruction, so it should be held onto until the
             //! callback fires.
+            AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             class ATOM_RPI_REFLECT_API AsyncAssetLoader : private Data::AssetBus::Handler
             {
+                AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+
             public:
                 AZ_RTTI(AZ::RPI::AssetUtils::AsyncAssetLoader, "{E0FB5B08-B97D-40DF-8478-226249C0B654}");
 

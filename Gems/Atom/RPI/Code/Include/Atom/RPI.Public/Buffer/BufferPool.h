@@ -25,9 +25,11 @@ namespace AZ
     {
         class ResourcePoolAsset;
 
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_PUBLIC_API BufferPool final
             : public Data::InstanceData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class BufferSystem;
 
         public:

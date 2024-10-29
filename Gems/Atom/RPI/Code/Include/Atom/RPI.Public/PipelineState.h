@@ -25,10 +25,13 @@ namespace AZ
 
         //! The PipelineStateForDraw caches descriptor for RHI::PipelineState's creation so the RHI::PipelineState can be created
         //! or updated later when Scene's render pipelines changed or any other data in the descriptor has changed.
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_PUBLIC_API PipelineStateForDraw
             : public AZStd::intrusive_base
             , public ShaderReloadNotificationBus::MultiHandler
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+
         public:
             AZ_CLASS_ALLOCATOR(PipelineStateForDraw, SystemAllocator);
 

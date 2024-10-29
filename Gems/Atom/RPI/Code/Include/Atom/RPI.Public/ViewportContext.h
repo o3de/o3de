@@ -27,11 +27,14 @@ namespace AZ
         //! in which a scene is rendered on-screen.
         //! ViewportContexts are registered on creation to allow consumers to listen to notifications
         //! and manage the view stack for a given viewport.
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_PUBLIC_API ViewportContext
             : public SceneNotificationBus::Handler
             , public AzFramework::WindowNotificationBus::Handler
             , public AzFramework::ViewportRequestBus::Handler
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+
         public:
             AZ_CLASS_ALLOCATOR(ViewportContext, AZ::SystemAllocator);
 

@@ -34,9 +34,11 @@ namespace AZ
         //! The variant searched using the tree has a key that matches the requested key, but some values can be undefined.
         //! For example, requesting a key equal to "00101" could return a variant with ID "0?10?", in which ? stands for undefined values.
         //! The undefined values must be provided to the fallback constant buffer. (See Shader::FindFallbackShaderResourceGroupAsset).
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_REFLECT_API ShaderVariantTreeAsset final
             : public Data::AssetData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ShaderVariantTreeAssetHandler;
             friend class ShaderVariantTreeAssetCreator;
             friend struct ShaderVariantTreeNode;
