@@ -520,8 +520,8 @@ namespace AZ
                 finalMetalSLStr.insert(startOfShaderPos + startOfShaderTag.length() + 1, structuredBufferTempStructs);
             }
 
-            //spirv-cross introduces the keyword [[clang::optnone]] across shader functions which will cancel all optimizations
-            //for that method. This is suppose to be tied to the keyword 'precise' but is contaminating areas outside it's usage.
+            //spirv-cross introduced the keyword [[clang::optnone]] across shader functions which cancels all optimizations
+            //for the tagged method. This is suppose to be tied to the keyword 'precise' but is contaminating areas outside it's usage.
             //Removing this manually until a better solution is established.
             //GHI for ref - https://github.com/KhronosGroup/SPIRV-Cross/issues/1999
             finalMetalSLStr = AZStd::regex_replace(finalMetalSLStr, AZStd::regex("\\[\\[clang::optnone\\]\\]"), "");
