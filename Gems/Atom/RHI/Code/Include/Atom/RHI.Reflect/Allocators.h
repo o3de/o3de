@@ -19,15 +19,15 @@ namespace AZ::RHI
     //! Base allocator that is used by all Atom allocators.
     //! This allocator is used for tracking purpouse and it just forward the
     //! allocations to the final allocator.
-    class SystemAllocatorBase
+    class PassThroughAllocatorBase
         : public AZ::SimpleSchemaAllocator<AZ::ChildAllocatorSchema<AZ::SystemAllocator>>
     {
     public:
         using Base = AZ::SimpleSchemaAllocator<AZ::ChildAllocatorSchema<AZ::SystemAllocator>>;
-        AZ_RTTI(SystemAllocatorBase, "{5A2780C1-3660-4F47-A529-8E4F7B2B2F84}", Base)
+        AZ_RTTI(PassThroughAllocatorBase, "{5A2780C1-3660-4F47-A529-8E4F7B2B2F84}", Base)
 
-        SystemAllocatorBase();
-        ~SystemAllocatorBase() override;
+        PassThroughAllocatorBase();
+        ~PassThroughAllocatorBase() override;
     };
 
 // Sequence with all the allocators for the RHI. For new allocators, just 
@@ -35,7 +35,7 @@ namespace AZ::RHI
 // 
 //              Allocator name,               Display Name,                     Allocator type,         UUID
 #define RHI_ALLOCATORS \
-    ((ShaderStageFunctionAllocator) ("RHI::ShaderStageFunctionAllocator")   (SystemAllocatorBase)   ("{15F285F1-74D5-4FAE-8CE4-B7D235A92F23}")) \
+    ((ShaderStageFunctionAllocator) ("RHI::ShaderStageFunctionAllocator")   (PassThroughAllocatorBase)   ("{15F285F1-74D5-4FAE-8CE4-B7D235A92F23}")) \
 
     // if it exceeds 50, needs adjustments in AzCore/Preprocessor/Sequences.h
 

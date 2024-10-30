@@ -10,7 +10,7 @@
 
 namespace AZ::RHI
 {
-    SystemAllocatorBase::SystemAllocatorBase()
+    PassThroughAllocatorBase::PassThroughAllocatorBase()
     {
         // Disable global registration since this is a pass through to another allocator (that should be registered)
         DisableRegistration();
@@ -19,7 +19,7 @@ namespace AZ::RHI
         AllocatorManager::Instance().RegisterAllocator(this);
     }
 
-    SystemAllocatorBase::~SystemAllocatorBase()
+    PassThroughAllocatorBase::~PassThroughAllocatorBase()
     {
         PreDestroy();
         if (RHI::AllocatorManager::IsReady())
