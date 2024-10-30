@@ -1864,6 +1864,33 @@ namespace AZ
             }
         }
 
+        void Pass::ChangeConnection(const Name& localSlot, const Name& passName, const Name& attachment, RenderPipeline* pipeline)
+        {
+            Pass* otherPass{ nullptr };
+
+            if (passName == PassNameParent)
+            {
+                otherPass = GetParent();
+            }
+            else if (passName == PipelineGlobalKeyword)
+            {
+                const AZ::RPI::PipelineGlobalBinding* globalBinding = pipeline->GetPipelineGlobalConnection(attachment);
+                otherPass = globalBinding->m_pass;
+            }
+            else if (passName == PassNameThis)
+            {
+                otherPass = this;
+            }
+            else
+            {
+                otherPass = GetParent()->FindChildPass(passName).get();
+            }
+
+            AZ_Assert(otherPass, "Pass %s not found.", passName.GetCStr());
+
+            ChangeConnection(localSlot, otherPass, attachment);
+        }
+
         void Pass::ChangeConnection(const Name& localSlot, Pass* pass, const Name& attachment)
         {
             bool connectionFound(false);
