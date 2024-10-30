@@ -81,9 +81,10 @@ namespace AZ
             return m_sourceCode;
         }
 
-        void ShaderStageFunction::SetByteCode(const ShaderByteCode& byteCode)
+        void ShaderStageFunction::SetByteCode(const AZStd::vector<uint8_t>& byteCode)
         {
-            m_byteCode = byteCode;
+            m_byteCode.resize(byteCode.size());
+            ::memcpy(m_byteCode.data(), byteCode.data(), m_byteCode.size());
             m_byteCodeLength = aznumeric_cast<uint32_t>(byteCode.size());
         }
 
