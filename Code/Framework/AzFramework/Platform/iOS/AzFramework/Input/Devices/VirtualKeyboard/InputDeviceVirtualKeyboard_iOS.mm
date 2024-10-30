@@ -104,7 +104,7 @@
     m_inputDevice->QueueRawCommandEvent(AzFramework::InputDeviceVirtualKeyboard::Command::EditClear);
 
     // Return false so that the text field itself does not update.
-    return FALSE;
+    return TRUE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -127,7 +127,7 @@
     m_inputDevice->QueueRawTextEvent(textUTF8);
 
     // Return false so that the text field itself does not update.
-    return FALSE;
+    return TRUE;
 }
 @end // VirtualKeyboardTextFieldDelegate implementation
 
