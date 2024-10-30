@@ -34,17 +34,16 @@ X-GNOME-Autostart-enabled=true\n\
 
     pushd @CPACK_PACKAGING_INSTALL_PREFIX@
 
-    # Make sure the python script folders are writable since pyc and egg-link files will be generated in them
-    sudo find Tools/LyTestTools -type d -exec chmod a+w {} \;
-    sudo find Tools/RemoteConsole/ly_remote_console -type d -exec chmod a+w {} \;
-    sudo find Gems/Atom/RPI/Tools -type d -exec chmod a+w {} \;
-    sudo find Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface -type d -exec chmod a+w {} \;
-    sudo find scripts/o3de -type d -exec chmod a+w {} \;
-
-    # Clear out any previously generated egg-info linked folder
+    # Clear out any previously generated egg-info linked folder (as a result of the installer build)
     sudo rm -rf scripts/o3de/o3de.egg-info
 
-    popd
+    # The following folders must be writeable to support the egg-info creation during the bootstrapping of 
+    # python.
+    sudo chmod a+w Tools/LyTestTools
+    sudo chmod a+w Tools/RemoteConsole/ly_remote_console
+    sudo chmod a+w Gems/Atom/RPI/Tools
+    sudo chmod a+w Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface
+    sudo chmod a+w scripts/o3de
 
-} 
-#&> /dev/null # hide output
+    popd
+} &> /dev/null # hide output
