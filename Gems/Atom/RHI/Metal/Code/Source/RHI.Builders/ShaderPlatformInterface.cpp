@@ -521,7 +521,7 @@ namespace AZ
             }
 
             //spirv-cross introduced the keyword [[clang::optnone]] across shader functions which cancels all optimizations
-            //for the tagged method. This is suppose to be tied to the keyword 'precise' but is contaminating areas outside it's usage.
+            //for the tagged method. This is suppose to be tied to the keyword 'precise' but is contaminating areas outside its usage.
             //Removing this manually until a better solution is established.
             //GHI for ref - https://github.com/KhronosGroup/SPIRV-Cross/issues/1999
             finalMetalSLStr = AZStd::regex_replace(finalMetalSLStr, AZStd::regex("\\[\\[clang::optnone\\]\\]"), "");
