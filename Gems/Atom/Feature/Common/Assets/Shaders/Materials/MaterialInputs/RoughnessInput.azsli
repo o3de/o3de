@@ -43,7 +43,11 @@ real GetRoughnessInput(Texture2D map, sampler mapSampler, float2 uv, real factor
         }
         else
         {
+            #ifdef SAMPLE_LEVEL_LOD
+            sampledValue = real(map.SampleLevel(mapSampler, uv, SAMPLE_LEVEL_LOD).r);
+            #else
             sampledValue = real(map.Sample(mapSampler, uv).r);
+            #endif
         }
         return lerp(roughnessLowerBound, roughnessUpperBound, sampledValue);
     }

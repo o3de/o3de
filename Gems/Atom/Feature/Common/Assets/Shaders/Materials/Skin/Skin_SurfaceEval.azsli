@@ -54,7 +54,11 @@ real3 ApplyBaseColorWrinkleMap(bool shouldApply, real3 baseColor, Texture2D map,
         }
         else
         {
+            #ifdef SAMPLE_LEVEL_LOD
+            sampledColor = real3(map.SampleLevel(mapSampler, uv, SAMPLE_LEVEL_LOD).rgb);
+            #else
             sampledColor = real3(map.Sample(mapSampler, uv).rgb);
+            #endif
         }
         sampledColor = TransformColor(sampledColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
         return lerp(baseColor, sampledColor, factor);
@@ -121,7 +125,11 @@ Surface EvaluateSurface_Skin(
             }
             else
             {
+                #ifdef SAMPLE_LEVEL_LOD
+                wrinkleMaskBlendFactors += real4(ObjectSrg::m_wrinkle_masks[wrinkleMaskIndex].SampleLevel(MaterialSrg::m_sampler, normalUv, SAMPLE_LEVEL_LOD) * ObjectSrg::GetWrinkleMaskWeight(wrinkleMaskIndex));
+                #else
                 wrinkleMaskBlendFactors += real4(ObjectSrg::m_wrinkle_masks[wrinkleMaskIndex].Sample(MaterialSrg::m_sampler, normalUv) * ObjectSrg::GetWrinkleMaskWeight(wrinkleMaskIndex));
+                #endif
             }
         }
 

@@ -44,7 +44,11 @@ real2 SampleNormalXY(Texture2D map, sampler mapSampler, float2 uv, float4 uvDxDy
     }
     else
     {
+        #ifdef SAMPLE_LEVEL_LOD
+        sampledValue = real2(map.SampleLevel(mapSampler, uv, SAMPLE_LEVEL_LOD).xy);
+        #else
         sampledValue = real2(map.Sample(mapSampler, uv).xy);
+        #endif
     }
     
 #if AZ_TRAIT_ASTC_COMPRESSION
