@@ -61,7 +61,7 @@ Setup will install [WixBundleName] on your computer. Click install to continue, 
     <String Id="FailureUninstallHeader">Uninstall Failed</String>
     <String Id="FailureRepairHeader">Repair Failed</String>
     <String Id="FailureHyperlinkLogText">
-One or more issues caused the setup to fail.  Please fix the issues and then retry setup.  For more information, see the log file.
+One or more issues caused the setup to fail.  Please fix the issues and then retry setup.  For more information, see the log file or retry with '/log (path to log)' to create debug logs
 
 &lt;a href="#"&gt;View Log File&lt;/a&gt;
     </String>
