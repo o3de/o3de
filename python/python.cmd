@@ -71,7 +71,7 @@ exit /b 1
 REM Make sure there a .hash file that serves as the marker for the source python package the venv is from
 SET PYTHON_VENV_HASH=%PYTHON_VENV%\.hash
 
-IF EXIST %PYTHON_VENV_HASH% GOTO PYTHON_VENV_HASH_EXISTS
+IF EXIST "%PYTHON_VENV_HASH%" GOTO PYTHON_VENV_HASH_EXISTS
 ECHO Python has not been setup completely for O3DE. Missing venv hash %PYTHON_VENV_HASH%
 ECHO Try running %CMD_DIR%\get_python.bat to setup Python for O3DE.
 exit /b 1
@@ -79,7 +79,7 @@ exit /b 1
 :PYTHON_VENV_HASH_EXISTS
 
 REM Read in the .hash from the venv to see if we need to update the version of python
-SET /p VENV_PACKAGE_HASH=<%PYTHON_VENV_HASH%
+SET /p VENV_PACKAGE_HASH=<"%PYTHON_VENV_HASH%"
 
 IF "%VENV_PACKAGE_HASH%" == "%CURRENT_PACKAGE_HASH%" GOTO PYTHON_VENV_MATCHES
 ECHO Python needs to be updated against the current version.
