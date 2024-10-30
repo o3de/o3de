@@ -528,7 +528,9 @@ namespace AZ::Render
             m_skinnedMeshInputBuffers.reset();
             m_skinnedMeshInstance.reset();
             if (m_boneTransforms)
+            {
                 m_boneTransforms.reset();
+            }
         }
     }
 
