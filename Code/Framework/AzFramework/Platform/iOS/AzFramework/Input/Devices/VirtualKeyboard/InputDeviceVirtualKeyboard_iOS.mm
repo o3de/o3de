@@ -123,8 +123,8 @@
         replacementString: (NSString*)string
 {
     // If the string length is 0, the user has pressed the backspace key on the virtual keyboard.
-    const AZStd::string textUTF8 = string.length ? string.UTF8String : "\b";
-    m_inputDevice->QueueRawTextEvent(textUTF8);
+    //const AZStd::string textUTF8 = string.length ? string.UTF8String : "\b";
+    //m_inputDevice->QueueRawTextEvent(textUTF8);
 
     // Return false so that the text field itself does not update.
     return TRUE;
@@ -199,10 +199,10 @@ namespace AzFramework
         m_textField.autocorrectionType = UITextAutocorrectionTypeYes;
 
         // Hide the text field so it will never actually be shown.
-        m_textField.hidden = YES;
+        m_textField.hidden = NO;
 
         // Add something to the text field so delete works.
-        m_textField.text = @" ";
+        m_textField.text = @"";
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -277,6 +277,9 @@ namespace AzFramework
         // On iOS we must set m_activeTextFieldNormalizedBottomY before hiding the virtual keyboard
         // by calling resignFirstResponder, which then sends a UIKeyboardWillChangeFrameNotification.
         m_textFieldDelegate->m_activeTextFieldNormalizedBottomY = 0.0f;
+
+        QueueRawCommandEvent(AzFramework::InputDeviceVirtualKeyboard::Command::EditClear);
+        QueueRawTextEvent(m_textField.text.UTF8String);
 
         [m_textField resignFirstResponder];
         [m_textField removeFromSuperview];
