@@ -526,15 +526,27 @@ namespace AZ
 
         void DecalTextureArrayFeatureProcessor::SetPackedTexturesToSrg(const RPI::ViewPtr& view)
         {
-            int iter = m_textureArrayList.begin();
-            while (iter != -1)
+            for (int mapType = 0; mapType < DecalMapType_Num; ++mapType)
             {
-                for (int mapType = 0 ; mapType < DecalMapType_Num ; ++mapType)
+                AZStd::bitset<NumTextureArrays> usedTextureArrayIndices;
+                int iter = m_textureArrayList.begin();
+                while (iter != -1)
                 {
                     const auto& packedTexture = m_textureArrayList[iter].second.GetPackedTexture(aznumeric_cast<DecalMapType>(mapType));
                     view->GetShaderResourceGroup()->SetImage(m_decalTextureArrayIndices[iter][mapType], packedTexture);
+                    usedTextureArrayIndices.set(iter);
+                    iter = m_textureArrayList.next(iter);
                 }
-                iter = m_textureArrayList.next(iter);
+
+                // Need to set to null all the not used texture shader inputs in case the texture array was destroyed
+                // but the SRG cached a copy of it.
+                for (uint32_t i = 0; i < usedTextureArrayIndices.size(); ++i)
+                {
+                    if (!usedTextureArrayIndices[i])
+                    {
+                        view->GetShaderResourceGroup()->SetImage(m_decalTextureArrayIndices[i][mapType], nullptr);
+                    }
+                }
             }
         }
 

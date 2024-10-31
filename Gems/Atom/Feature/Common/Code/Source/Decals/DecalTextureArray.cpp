@@ -123,7 +123,6 @@ namespace AZ
 
         void DecalTextureArray::RemoveMaterial(const int index)
         {
-            m_materials[index] = {};
             m_materials.erase(index);
         }
 
