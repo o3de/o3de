@@ -245,7 +245,7 @@ namespace AZ
 #if defined (CARBONATED)
     void Console::EnableToDispatchConsoleCommands()
     {
-        AZLOG_INFO("Number of registered commands : %i", m_commands.size());
+        AZLOG_INFO("Number of registered commands : %lu", m_commands.size());
         m_enableToDispatchConsoleCommands = true;
     }
 #endif
