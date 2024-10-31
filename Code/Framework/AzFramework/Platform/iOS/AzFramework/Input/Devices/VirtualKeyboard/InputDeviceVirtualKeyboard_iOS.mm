@@ -42,6 +42,9 @@
 - (BOOL)textField: (UITextField*)textField
         shouldChangeCharactersInRange: (NSRange)range
         replacementString: (NSString*)string;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+- (void)textFieldDidEndEditing:(UITextField *)textField;
 @end // VirtualKeyboardTextFieldDelegate interface
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -128,6 +131,12 @@
 
     // Return false so that the text field itself does not update.
     return TRUE;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+- (void)textFieldDidEndEditing:(UITextField *)textField
+{
+    m_inputDevice->QueueRawTextEvent(textField.text.UTF8String);
 }
 @end // VirtualKeyboardTextFieldDelegate implementation
 
