@@ -9,6 +9,7 @@
 #pragma once
 
 #if defined(IMGUI_ENABLED)
+#include <imgui/imgui.h>
 #include <AzCore/Memory/AllocatorManager.h>
 
 namespace Profiler

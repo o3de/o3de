@@ -9,7 +9,6 @@
 #if defined(IMGUI_ENABLED)
 
 #include <ImGuiHeapMemoryProfiler.h>
-#include <imgui/imgui.h>
 #include <AzCore/std/sort.h>
 
 namespace Profiler
