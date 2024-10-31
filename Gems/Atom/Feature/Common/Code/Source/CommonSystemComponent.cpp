@@ -315,7 +315,7 @@ namespace AZ
             // Deferred Fog
             passSystem->AddPassCreator(Name("DeferredFogPass"), &DeferredFogPass::Create);
 
-            // Deferred Fog
+            // Add SilhouetteComposite pass
             passSystem->AddPassCreator(Name("SilhouetteCompositePass"), &SilhouetteCompositePass::Create);
 
             // Add Reflection passes
