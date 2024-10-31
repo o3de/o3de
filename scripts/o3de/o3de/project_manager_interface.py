@@ -123,7 +123,6 @@ def get_enabled_gems(project_path: str, include_dependencies: bool = True) -> li
         Return get_enabled_gems for cmake file
 
         :param project_path: Project path to gather enable gems for
-        :param include_dependencies: Whether to return gem dependencies or only gems listed in project.json and the deprecated enabled_gems.cmake file if it exists
 
         :return list of strs of enable gems for project.
     """
