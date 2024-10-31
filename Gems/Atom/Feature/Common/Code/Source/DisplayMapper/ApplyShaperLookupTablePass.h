@@ -11,7 +11,7 @@
 #include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
 #include <ACES/Aces.h>
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
-#include <Atom/Feature/DisplayMapper/DisplayMapperFullScreenPass.h>
+#include <DisplayMapper/DisplayMapperFullScreenPass.h>
 
 namespace AZ
 {

@@ -24,7 +24,7 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 
-#include <Atom/Feature/SkyBox/SkyBoxLUT.h>
+#include <SkyBox/SkyBoxLUT.h>
 
 namespace AZ
 {

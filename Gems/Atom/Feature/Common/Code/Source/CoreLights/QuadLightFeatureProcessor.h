@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Atom/Feature/CoreLights/LightCommon.h>
+#include <CoreLights/LightCommon.h>
 #include <Atom/Feature/CoreLights/QuadLightFeatureProcessorInterface.h>
 #include <Atom/Feature/Mesh/MeshCommon.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>

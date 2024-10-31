@@ -6,7 +6,7 @@
  *
  */
 
-#include <Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessor.h>
+#include <ImageBasedLights/ImageBasedLightFeatureProcessor.h>
 
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/RPIUtils.h>

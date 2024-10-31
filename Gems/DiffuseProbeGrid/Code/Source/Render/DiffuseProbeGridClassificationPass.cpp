@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom/Feature/RayTracing/RayTracingFeatureProcessorInterface.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RHI/FrameGraphInterface.h>
@@ -19,7 +20,6 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <DiffuseProbeGrid_Traits_Platform.h>
 #include <Render/DiffuseProbeGridClassificationPass.h>
-#include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ
 {
@@ -92,7 +92,7 @@ namespace AZ
                 return false;
             }
 
-            RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
+            auto* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessorInterface>();
             if (!rayTracingFeatureProcessor || !rayTracingFeatureProcessor->GetSubMeshCount())
             {
                 // empty scene

@@ -6,9 +6,9 @@
  *
  */
 
+#include <Mesh/MeshFeatureProcessor.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/Mesh/MeshCommon.h>
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
 #include <Atom/Feature/RenderCommon.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>

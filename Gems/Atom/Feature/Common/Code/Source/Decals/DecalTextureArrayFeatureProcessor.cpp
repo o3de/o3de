@@ -7,9 +7,7 @@
  */
 
 #include <Decals/DecalTextureArrayFeatureProcessor.h>
-#include <Atom/Feature/CoreLights/LightCommon.h>
 #include <Atom/Feature/Mesh/MeshCommon.h>
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
@@ -24,6 +22,8 @@
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/ShapeIntersection.h>
 #include <AzCore/std/containers/span.h>
+#include <CoreLights/LightCommon.h>
+#include <Mesh/MeshFeatureProcessor.h>
 #include <numeric>
 
 //! If modified, ensure that r_maxVisibleDecals is equal to or lower than ENABLE_DECALS_CAP which is the limit set by the shader on GPU.
