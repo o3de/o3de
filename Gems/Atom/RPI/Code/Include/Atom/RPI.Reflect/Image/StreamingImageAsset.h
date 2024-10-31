@@ -57,7 +57,7 @@ namespace AZ
             static constexpr const char* Group{ "Image" };
             static constexpr const char* Extension{ "streamingimage" };
 
-            using Allocator = AZStdAlloc<StreamingImageAssetAllocator>;
+            using Allocator = StreamingImageAssetAllocator_for_std_t;
 
             AZ_RTTI(StreamingImageAsset, "{3C96A826-9099-4308-A604-7B19ADBF8761}", ImageAsset);
             AZ_CLASS_ALLOCATOR_DECL

@@ -32,7 +32,7 @@ namespace AZ::RHI
         : public AZStd::intrusive_base
     {
     public:
-        using Allocator = AZStdAlloc<ShaderStageFunctionAllocator>;
+        using Allocator = ShaderStageFunctionAllocator_for_std_t;
 
         AZ_RTTI(ShaderStageFunction, "{D7D800D1-4A14-4C3F-A7E4-B2645137FAC6}");
         static void Reflect(AZ::ReflectContext* context);

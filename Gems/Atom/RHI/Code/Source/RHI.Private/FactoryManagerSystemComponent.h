@@ -58,13 +58,11 @@ namespace AZ::RHI
         Factory* SelectRegisteredFactory();
 
         void UpdateValidationModeFromCommandline();
-        void UpdateProfileAllocationsFromCommandLine();
 
         /// List with the factory priorities set by the user.
         AZStd::vector<AZStd::string> m_factoriesPriority;
         /// List of registered factories.
         AZStd::vector<Factory*> m_registeredFactories;
         AZ::RHI::ValidationMode m_validationMode = AZ::RHI::ValidationMode::Disabled;
-        bool m_profileAllocations = false;
     };
 }

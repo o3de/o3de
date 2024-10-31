@@ -10,8 +10,6 @@
 #include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/ValidationLayer.h>
 
-#include <Atom/RHI.Reflect/AllocatorManager.h>
-
 #include <RHI.Private/FactoryManagerSystemComponent.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
@@ -33,29 +31,34 @@ namespace AZ::RHI
             serializeContext->Class<FactoryManagerSystemComponent, AZ::Component>()
                 ->Version(1)
                 ->Field("factoriesPriority", &FactoryManagerSystemComponent::m_factoriesPriority)
-                ->Field("validationMode", &FactoryManagerSystemComponent::m_validationMode)
-                ->Field("profileMemory", &FactoryManagerSystemComponent::m_profileAllocations);
+                ->Field("validationMode", &FactoryManagerSystemComponent::m_validationMode);
 
             if (AZ::EditContext* ec = serializeContext->GetEditContext())
             {
                 ec->Class<FactoryManagerSystemComponent>("Atom RHI Manager", "Atom Renderer")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &FactoryManagerSystemComponent::m_factoriesPriority, "RHI Priority list", "Priorities for RHI Implementations")
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &FactoryManagerSystemComponent::m_validationMode, "Validation Layer Mode", "Set the validation mode for the RHI. It only applies for non release builds")
-                    ->Attribute(AZ::Edit::Attributes::EnumValues,
-                        AZStd::vector<AZ::Edit::EnumConstant<RHI::ValidationMode>>
-                {
-                    AZ::Edit::EnumConstant<RHI::ValidationMode>(RHI::ValidationMode::Disabled,
-                        "Disable - Disables any validation."),
-                        AZ::Edit::EnumConstant<RHI::ValidationMode>(RHI::ValidationMode::Enabled,
-                            "Enable - Enables warnings and errors validation messages."),
-                        AZ::Edit::EnumConstant<RHI::ValidationMode>(RHI::ValidationMode::Verbose,
-                            "Verbose - Enables warnings, error and information messages."),
-                        AZ::Edit::EnumConstant<RHI::ValidationMode>(RHI::ValidationMode::GPU,
-                            "GPU - Enables based validation."),
-                })
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &FactoryManagerSystemComponent::m_profileAllocations, "Profile memory", "Enable/Disable profiling of memory allocations");
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &FactoryManagerSystemComponent::m_factoriesPriority,
+                        "RHI Priority list",
+                        "Priorities for RHI Implementations")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::ComboBox,
+                        &FactoryManagerSystemComponent::m_validationMode,
+                        "Validation Layer Mode",
+                        "Set the validation mode for the RHI. It only applies for non release builds")
+                    ->Attribute(
+                        AZ::Edit::Attributes::EnumValues,
+                        AZStd::vector<AZ::Edit::EnumConstant<RHI::ValidationMode>>{
+                            AZ::Edit::EnumConstant<RHI::ValidationMode>(
+                                RHI::ValidationMode::Disabled, "Disable - Disables any validation."),
+                            AZ::Edit::EnumConstant<RHI::ValidationMode>(
+                                RHI::ValidationMode::Enabled, "Enable - Enables warnings and errors validation messages."),
+                            AZ::Edit::EnumConstant<RHI::ValidationMode>(
+                                RHI::ValidationMode::Verbose, "Verbose - Enables warnings, error and information messages."),
+                            AZ::Edit::EnumConstant<RHI::ValidationMode>(RHI::ValidationMode::GPU, "GPU - Enables based validation."),
+                        });
             }
                 
         }
@@ -79,10 +82,8 @@ namespace AZ::RHI
 
     void FactoryManagerSystemComponent::Activate()
     {
-        UpdateProfileAllocationsFromCommandLine();
         UpdateValidationModeFromCommandline();
         FactoryManagerBus::Handler::BusConnect();
-        AllocatorManager::Instance().SetProfilingMode(m_profileAllocations);
     }
 
     void FactoryManagerSystemComponent::Deactivate()
@@ -215,22 +216,6 @@ namespace AZ::RHI
     void FactoryManagerSystemComponent::UpdateValidationModeFromCommandline()
     {
         m_validationMode = AZ::RHI::ReadValidationMode();
-    }
-
-    void FactoryManagerSystemComponent::UpdateProfileAllocationsFromCommandLine()
-    {
-        AZStd::string cmdLineValue = RHI::GetCommandLineValue("rhi-memory-profile");
-        if (!cmdLineValue.empty())
-        {
-            if (AzFramework::StringFunc::Equal(cmdLineValue.c_str(), "disable"))
-            {
-                m_profileAllocations = false;
-            }
-            else if (AzFramework::StringFunc::Equal(cmdLineValue.c_str(), "enable"))
-            {
-                m_profileAllocations = true;
-            }
-        }
     }
 
     void FactoryManagerSystemComponent::EnumerateFactories(AZStd::function<bool(Factory* factory)> callback)

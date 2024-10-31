@@ -61,7 +61,7 @@ namespace AZ
             const AZStd::string& GetName() const;
 
         private:
-            using Allocator = AZStdAlloc<BufferAssetAllocator>;
+            using Allocator = BufferAssetAllocator_for_std_t;
 
             // AssetData overrides...
             bool HandleAutoReload() override

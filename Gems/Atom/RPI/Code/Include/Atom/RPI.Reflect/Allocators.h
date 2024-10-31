@@ -8,18 +8,15 @@
 
 #pragma once
 
-#include <Atom/RHI.Reflect/Allocators.h>
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Memory/ChildAllocatorSchema.h>
 
 namespace AZ::RPI
 {
-    // Allocator name,                      Display Name,                       Allocator type,                 UUID
-#define RPI_ALLOCATORS \
-    ((ImageMipChainAssetAllocator)  ("RPI::ImageMipChainAssetAllocator")    (RHI::PassThroughAllocatorBase)  ("{E3F40786-8675-461A-BF96-70812B4CFAF5}")) \
-    ((StreamingImageAssetAllocator) ("RPI::StreamingImageAssetAllocator")   (RHI::PassThroughAllocatorBase)  ("{FE311FD6-105B-484E-A603-C773BFF25BA6}")) \
-    ((BufferAssetAllocator)         ("RPI::BufferAssetAllocator")           (RHI::PassThroughAllocatorBase)  ("{3C9BE3B7-65C8-48E0-BF03-6BE228C1842F}")) \
-    // if it exceeds 50, needs adjustments in AzCore/Preprocessor/Sequences.h
-
-    // Here we create all the classes for all the items in the above table (Step 1)
-    AZ_SEQ_FOR_EACH(RHI_ALLOCATOR_DECL, RPI_ALLOCATORS)
-
+    AZ_CHILD_ALLOCATOR_WITH_NAME(
+        ImageMipChainAssetAllocator, "Atom::ImageMipChainAssetAllocator", "{E3F40786-8675-461A-BF96-70812B4CFAF5}", AZ::SystemAllocator);
+    AZ_CHILD_ALLOCATOR_WITH_NAME(
+        StreamingImageAssetAllocator, "Atom::StreamingImageAssetAllocator", "{FE311FD6-105B-484E-A603-C773BFF25BA6}", AZ::SystemAllocator);
+    AZ_CHILD_ALLOCATOR_WITH_NAME(
+        BufferAssetAllocator, "Atom::BufferAssetAllocator", "{3C9BE3B7-65C8-48E0-BF03-6BE228C1842F}", AZ::SystemAllocator);
 } // namespace RPI

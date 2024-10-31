@@ -48,7 +48,7 @@ namespace AZ
             static constexpr const char* Group{ "Image" };
             static constexpr const char* Extension{ "imagemipchain" };
 
-            using Allocator = AZStdAlloc<ImageMipChainAssetAllocator>;
+            using Allocator = ImageMipChainAssetAllocator_for_std_t;
 
             AZ_RTTI(ImageMipChainAsset, "{CB403C8A-6982-4C9F-8090-78C9C36FBEDB}", Data::AssetData);
             AZ_CLASS_ALLOCATOR_DECL
