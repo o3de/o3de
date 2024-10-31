@@ -275,7 +275,7 @@ namespace AzFramework
 
         CGFloat lineHeight = m_textField.font.pointSize * 1.2;
         CGRect textFieldRect = CGRectMake(0, rootView.frame.size.height - lineHeight * 2, rootView.bounds.size.width, lineHeight);
-        m_textField.frame = textFieldFrame
+        m_textField.frame = textFieldRect
 
         // On iOS we must set m_activeTextFieldNormalizedBottomY before showing the virtual keyboard
         // by calling becomeFirstResponder, which then sends a UIKeyboardWillChangeFrameNotification.
