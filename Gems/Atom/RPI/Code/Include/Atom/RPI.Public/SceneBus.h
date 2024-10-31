@@ -120,3 +120,5 @@ namespace AZ
         }
     } // namespace RPI
 } // namespace AZ
+
+DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(RPI::SceneNotification);
