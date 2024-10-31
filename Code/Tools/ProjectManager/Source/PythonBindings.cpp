@@ -799,12 +799,12 @@ namespace O3DE::ProjectManager
         return AZ::Success(AZStd::move(gems));
     }
 
-    AZ::Outcome<QHash<QString, QString>, AZStd::string> PythonBindings::GetEnabledGems(const QString& projectPath, bool includeDependencies, bool isTemplate) const
+    AZ::Outcome<QHash<QString, QString>, AZStd::string> PythonBindings::GetEnabledGems(const QString& projectPath, bool includeDependencies) const
     {
         QHash<QString, QString> enabledGems;
         auto result = ExecuteWithLockErrorHandling([&]
         {
-            auto enabledGemsData = m_projectManagerInterface.attr("get_enabled_gems")(QString_To_Py_Path(projectPath), includeDependencies, isTemplate);
+            auto enabledGemsData = m_projectManagerInterface.attr("get_enabled_gems")(QString_To_Py_Path(projectPath), includeDependencies);
             if (pybind11::isinstance<pybind11::dict>(enabledGemsData))
             {
                 for (auto item : pybind11::dict(enabledGemsData))
@@ -1380,8 +1380,7 @@ namespace O3DE::ProjectManager
         {
             QString templateProjectPath = QDir(templateInfo.m_path).filePath("Template");
             constexpr bool includeDependencies = false;
-            constexpr bool isTemplate = true;
-            auto enabledGems = GetEnabledGems(templateProjectPath, includeDependencies, isTemplate);
+            auto enabledGems = GetEnabledGems(templateProjectPath, includeDependencies);
             if (enabledGems)
             {
                 for (auto gemName : enabledGems.GetValue().keys())
@@ -1414,8 +1413,7 @@ namespace O3DE::ProjectManager
 
             QString templateProjectPath = QDir(templateInfo.m_path).filePath("Template");
             constexpr bool includeDependencies = false;
-            constexpr bool isTemplate = false;
-            auto enabledGems = GetEnabledGems(templateProjectPath, includeDependencies, isTemplate);
+            auto enabledGems = GetEnabledGems(templateProjectPath, includeDependencies);
             if (enabledGems)
             {
                 for (auto gemName : enabledGems.GetValue().keys())

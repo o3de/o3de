@@ -116,7 +116,7 @@ def create_project(project_info: dict, template_path: str):
     pass
 
 
-def get_enabled_gems(project_path: str, include_dependencies: bool = True, is_template: bool = False) -> list:
+def get_enabled_gems(project_path: str, include_dependencies: bool = True) -> list:
     """
         Call get_enabled_gem_cmake_file for project_path
 
@@ -124,11 +124,10 @@ def get_enabled_gems(project_path: str, include_dependencies: bool = True, is_te
 
         :param project_path: Project path to gather enable gems for
         :param include_dependencies: Whether to return gem dependencies or only gems listed in project.json and the deprecated enabled_gems.cmake file if it exists
-        :param is_template: Flag to indicate that this project definition is part of a template, not an actual template itself, to suppress some false-positive warnings
 
         :return list of strs of enable gems for project.
     """
-    return manifest.get_project_enabled_gems(project_path=project_path, include_dependencies=include_dependencies, is_template=is_template)
+    return manifest.get_project_enabled_gems(project_path=project_path, include_dependencies=include_dependencies)
 
 
 def get_project_info(project_path: str) -> dict or None:
