@@ -264,6 +264,10 @@ namespace AzFramework
         // Add the text field to the root view.
         [rootView addSubview: m_textField];
 
+        CGFloat lineHeight = m_textField.font.pointSize * 1.2;
+        CGRect textFieldRect = CGRectMake(0, root.frame.size.height - lineHeight * 2, root.bounds.size.width, lineHeight);
+        m_textField.frame = textFieldFrame
+
         // On iOS we must set m_activeTextFieldNormalizedBottomY before showing the virtual keyboard
         // by calling becomeFirstResponder, which then sends a UIKeyboardWillChangeFrameNotification.
         m_textFieldDelegate->m_activeTextFieldNormalizedBottomY = options.m_normalizedMinY;
@@ -277,9 +281,6 @@ namespace AzFramework
         // On iOS we must set m_activeTextFieldNormalizedBottomY before hiding the virtual keyboard
         // by calling resignFirstResponder, which then sends a UIKeyboardWillChangeFrameNotification.
         m_textFieldDelegate->m_activeTextFieldNormalizedBottomY = 0.0f;
-
-        QueueRawCommandEvent(AzFramework::InputDeviceVirtualKeyboard::Command::EditClear);
-        QueueRawTextEvent(m_textField.text.UTF8String);
 
         [m_textField resignFirstResponder];
         [m_textField removeFromSuperview];
