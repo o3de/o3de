@@ -51,6 +51,7 @@ namespace AZ
             RPI::ShaderOptionIndex m_skinningMethodOptionIndex;
             RPI::ShaderOptionValue m_skinningMethodLinearSkinningValue;
             RPI::ShaderOptionValue m_skinningMethodDualQuaternionValue;
+            RPI::ShaderOptionValue m_skinningMethodNoSkinningValue;
 
             RPI::ShaderOptionIndex m_applyMorphTargetOptionIndex;
             RPI::ShaderOptionValue m_applyMorphTargetFalseValue;
