@@ -1478,6 +1478,10 @@ void UiTextInputComponent::CheckStartTextInput()
         const AZ::Vector2 bottomRight = rectPoints.GetAxisAlignedBottomRight();
         options.m_normalizedMinY = (canvasSize.GetY() > 0.0f) ? bottomRight.GetY() / canvasSize.GetY() : 0.0f;
 
+        AZ_Printf("UiTextInputComponent", "canvasSize: %.2f, %.2f", canvasSize.GetX(), canvasSize.GetY());
+        AZ_Printf("UiTextInputComponent", "Game text input bottomRight: %.2f, %.2f", bottomRight.GetX(), bottomRight.GetY());
+        AZ_Printf("UiTextInputComponent", "options.m_normalizedMinY: %.4f", options.m_normalizedMinY);
+
         UiCanvasBus::EventResult(options.m_localUserId, canvasEntityId, &UiCanvasBus::Events::GetLocalUserIdInputFilter);
 
         AzFramework::InputTextEntryRequestBus::Broadcast(&AzFramework::InputTextEntryRequests::TextEntryStart, options);

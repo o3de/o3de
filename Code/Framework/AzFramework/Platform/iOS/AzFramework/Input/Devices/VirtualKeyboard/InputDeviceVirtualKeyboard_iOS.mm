@@ -85,11 +85,11 @@
     keyboardRect = [m_textField.superview convertRect: keyboardRect fromView: nil];
 
     // Calculate the offset needed so the active text field is not being covered by the keyboard.
-    const double activeTextFieldBottom = m_activeTextFieldNormalizedBottomY * m_textField.superview.bounds.size.height;
-    const double offsetY = AZ::GetMin(0.0, keyboardRect.origin.y - activeTextFieldBottom);
+    const float activeTextFieldBottom = m_activeTextFieldNormalizedBottomY * m_textField.superview.bounds.size.height;
+    const float offsetY = AZ::GetMin(0.0f, keyboardRect.origin.y - activeTextFieldBottom);
 
     // Create the offset view rect and transform it into the coordinate space of the main window.
-    CGRect offsetViewRect = CGRectMake(0, offsetY, m_textField.superview.bounds.size.width,
+    CGRect offsetViewRect = CGRectMake(0.0f, offsetY, m_textField.superview.bounds.size.width,
                                                    m_textField.superview.bounds.size.height);
     offsetViewRect = [m_textField.superview convertRect: offsetViewRect toView: nil];
 
@@ -97,6 +97,10 @@
     offsetViewRect.origin.x -= m_textField.superview.frame.origin.x;
     offsetViewRect.origin.y -= m_textField.superview.frame.origin.y;
 
+    NSLog(@"m_activeTextFieldNormalizedBottomY: %.4f", m_activeTextFieldNormalizedBottomY);
+    NSLog(@"activeTextFieldBottom: %.2f", activeTextFieldBottom);
+    NSLog(@"offsetY: %.2f", offsetY);
+    NSLog(@"superview bounds - width: %.2f, height: %.2f", m_textField.superview.bounds.size.width, m_textField.superview.bounds.size.height);
     NSLog(@"offsetViewRect - x: %.2f, y: %.2f, width: %.2f, height: %.2f", offsetViewRect.origin.x, offsetViewRect.origin.y, offsetViewRect.size.width, offsetViewRect.size.height);
 
     m_textField.superview.frame = offsetViewRect;
@@ -280,6 +284,8 @@ namespace AzFramework
         CGRect textFieldRect = CGRectMake(0, rootView.frame.size.height - lineHeight * 2, rootView.bounds.size.width, lineHeight);
         m_textField.frame = textFieldRect;
 
+        NSLog(@"m_textField.font.pointSize - %.2f", m_textField.font.pointSize);
+        NSLog(@"lineHeight - %.2f", lineHeight);
         NSLog(@"textFieldRect - x: %.2f, y: %.2f, width: %.2f, height: %.2f", textFieldRect.origin.x, textFieldRect.origin.y, textFieldRect.size.width, textFieldRect.size.height);
 
         // On iOS we must set m_activeTextFieldNormalizedBottomY before showing the virtual keyboard
