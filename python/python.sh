@@ -104,11 +104,11 @@ then
 fi
 
 # Activate the venv environment
-source $PYTHON_VENV_ACTIVATE
+source "$PYTHON_VENV_ACTIVATE"
 
 # Make sure that python shared library that is loaded by the python linked in the venv folder
 # is the one that is loaded by injecting the shared lib path before invoking python. Otherwise,
 # the shared library may not be found or it could load it from a different location.
 PYTHON_LIB_PATH=$PYTHON_VENV/lib
-PYTHONNOUSERSITE=1 LD_LIBRARY_PATH="$PYTHON_LIB_PATH:$LD_LIBRARY_PATH" PYTHONPATH= "$PYTHON_VENV_PYTHON" "$@"
+PYTHONNOUSERSITE=1 LD_LIBRARY_PATH="$PYTHON_LIB_PATH:$LD_LIBRARY_PATH" PYTHONPATH= "$PYTHON_VENV_PYTHON" -B "$@"
 exit $?
