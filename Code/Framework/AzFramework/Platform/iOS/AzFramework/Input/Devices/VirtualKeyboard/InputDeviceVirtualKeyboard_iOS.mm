@@ -85,11 +85,11 @@
     keyboardRect = [m_textField.superview convertRect: keyboardRect fromView: nil];
 
     // Calculate the offset needed so the active text field is not being covered by the keyboard.
-    const float activeTextFieldBottom = m_activeTextFieldNormalizedBottomY * m_textField.superview.bounds.size.height;
-    const float offsetY = AZ::GetMin(0.0f, keyboardRect.origin.y - activeTextFieldBottom);
+    const double activeTextFieldBottom = m_activeTextFieldNormalizedBottomY * m_textField.superview.bounds.size.height;
+    const double offsetY = AZ::GetMin(0.0, keyboardRect.origin.y - activeTextFieldBottom);
 
     // Create the offset view rect and transform it into the coordinate space of the main window.
-    CGRect offsetViewRect = CGRectMake(0.0f, offsetY, m_textField.superview.bounds.size.width,
+    CGRect offsetViewRect = CGRectMake(0, offsetY, m_textField.superview.bounds.size.width,
                                                    m_textField.superview.bounds.size.height);
     offsetViewRect = [m_textField.superview convertRect: offsetViewRect toView: nil];
 
