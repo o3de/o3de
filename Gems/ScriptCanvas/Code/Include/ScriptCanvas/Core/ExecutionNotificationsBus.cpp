@@ -193,7 +193,7 @@ namespace ScriptCanvas
         const auto userData = AZStd::any_cast<const RuntimeComponentUserData>(&executionState->GetUserData());
         if (!userData)
         {
-            AZ_Error("GraphInfo", false, "Failed to get user data from graph. Constructed with invalid values");
+            AZ_Error("GraphInfo", false, "Failed to get user data from graph. Constructed with invalid values. Asset Hint: %s", executionState->GetRuntimeData().m_script.GetHint().c_str());
             return;
         }
 
