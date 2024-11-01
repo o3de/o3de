@@ -14,12 +14,42 @@ namespace AZ
 {
     namespace Metal
     {
+        AZ_CLASS_ALLOCATOR_IMPL(ShaderStageFunction, RHI::ShaderStageFunctionAllocator)
+
+        static bool ConvertOldVersions(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+        {
+            if (classElement.GetVersion() < 4)
+            {
+                auto crc32 = AZ::Crc32("m_byteCode");
+                auto* vectorElement = classElement.FindSubElement(crc32);
+                if (vectorElement)
+                {
+                    // Get the old data
+                    AZStd::vector<uint8_t> oldData;
+                    if (vectorElement->GetData(oldData))
+                    {
+                        // Convert the vector with the new allocator
+                        vectorElement->Convert(context, AZ::AzTypeInfo<ShaderByteCode>::Uuid());
+                        // Copy old data to new data
+                        ShaderByteCode newData(oldData.size());
+                        ::memcpy(newData.data(), oldData.data(), newData.size());
+                        // Set the new data
+                        vectorElement->SetData(context, newData);
+                    }
+                }
+            }
+            return true;
+        }
+
         void ShaderStageFunction::Reflect(ReflectContext* context)
         {
             if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
+                // Need to register the old type with the Serializer so we can read it in order to convert it
+                serializeContext->RegisterGenericType<AZStd::vector<uint8_t>>();
+
                 serializeContext->Class<ShaderStageFunction, RHI::ShaderStageFunction>()
-                    ->Version(3)
+                    ->Version(4, &ConvertOldVersions)
                     ->Field("m_sourceCode", &ShaderStageFunction::m_sourceCode)
                     ->Field("m_byteCode", &ShaderStageFunction::m_byteCode)
                     ->Field("m_byteCodeLength", &ShaderStageFunction::m_byteCodeLength)
@@ -51,9 +81,10 @@ namespace AZ
             return m_sourceCode;
         }
 
-        void ShaderStageFunction::SetByteCode(const ShaderByteCode& byteCode)
+        void ShaderStageFunction::SetByteCode(const AZStd::vector<uint8_t>& byteCode)
         {
-            m_byteCode = byteCode;
+            m_byteCode.resize(byteCode.size());
+            ::memcpy(m_byteCode.data(), byteCode.data(), m_byteCode.size());
             m_byteCodeLength = aznumeric_cast<uint32_t>(byteCode.size());
         }
 

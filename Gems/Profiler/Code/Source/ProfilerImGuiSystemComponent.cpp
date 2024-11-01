@@ -111,6 +111,10 @@ namespace Profiler
         {
             ShowCpuProfilerWindow(m_showCpuProfiler);
         }
+        if (m_showHeapMemoryProfiler)
+        {
+            m_imguiHeapMemoryProfiler.Draw(m_showHeapMemoryProfiler);
+        }
     }
 
     void ProfilerImGuiSystemComponent::OnImGuiMainMenuUpdate()
@@ -121,6 +125,7 @@ namespace Profiler
             {
                 AZ::Debug::ProfilerSystemInterface::Get()->SetActive(m_showCpuProfiler);
             }
+            ImGui::MenuItem("Heap Memory", "", &m_showHeapMemoryProfiler);
             ImGui::EndMenu();
         }
     }

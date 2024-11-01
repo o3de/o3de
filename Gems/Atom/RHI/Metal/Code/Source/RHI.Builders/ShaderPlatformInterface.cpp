@@ -126,7 +126,7 @@ namespace AZ
                 newShaderStageFunction->SetSourceCode(sourceCode);
             }
             
-            const Metal::ShaderByteCode& byteCode = stageDescriptor.m_byteCode;
+            const auto& byteCode = stageDescriptor.m_byteCode;
             const AZStd::string& entryFunctionName = stageDescriptor.m_entryFunctionName;
             newShaderStageFunction->SetByteCode(byteCode);
             newShaderStageFunction->SetEntryFunctionName(entryFunctionName);
