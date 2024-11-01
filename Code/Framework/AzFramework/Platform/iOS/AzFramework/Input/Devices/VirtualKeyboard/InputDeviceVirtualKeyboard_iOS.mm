@@ -97,6 +97,8 @@
     offsetViewRect.origin.x -= m_textField.superview.frame.origin.x;
     offsetViewRect.origin.y -= m_textField.superview.frame.origin.y;
 
+    NSLog(@"offsetViewRect - x: %.2f, y: %.2f, width: %.2f, height: %.2f", offsetViewRect.origin.x, offsetViewRect.origin.y, offsetViewRect.size.width, offsetViewRect.size.height);
+
     m_textField.superview.frame = offsetViewRect;
 }
 
@@ -136,6 +138,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)textFieldDidEndEditing:(UITextField *)textField
 {
+    NSLog(@"textFieldDidEndEditing %@", textField.text);
     m_inputDevice->QueueRawTextEvent(textField.text.UTF8String);
 }
 @end // VirtualKeyboardTextFieldDelegate implementation
@@ -276,6 +279,8 @@ namespace AzFramework
         CGFloat lineHeight = m_textField.font.pointSize * 1.2;
         CGRect textFieldRect = CGRectMake(0, rootView.frame.size.height - lineHeight * 2, rootView.bounds.size.width, lineHeight);
         m_textField.frame = textFieldRect;
+
+        NSLog(@"textFieldRect - x: %.2f, y: %.2f, width: %.2f, height: %.2f", textFieldRect.origin.x, textFieldRect.origin.y, textFieldRect.size.width, textFieldRect.size.height);
 
         // On iOS we must set m_activeTextFieldNormalizedBottomY before showing the virtual keyboard
         // by calling becomeFirstResponder, which then sends a UIKeyboardWillChangeFrameNotification.

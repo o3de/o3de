@@ -316,14 +316,17 @@ bool UiTextInputComponent::HandleAutoActivation()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 bool UiTextInputComponent::HandleTextInput(const AZStd::string& inputTextUTF8)
 {
+    AZ_Printf("UiTextInputComponent", "HandleTextInput: %s", inputTextUTF8.c_str());
     if (!m_isHandlingEvents)
     {
+        AZ_Printf("UiTextInputComponent", "!m_isHandlingEvents");
         return false;
     }
 
     // don't accept text input while in pressed state
     if (m_isPressed)
     {
+        AZ_Printf("UiTextInputComponent", "m_isPressed");
         return false;
     }
 
@@ -376,6 +379,7 @@ bool UiTextInputComponent::HandleTextInput(const AZStd::string& inputTextUTF8)
                 if (rawIndexPos >= 0)
                 {
                     currentText.insert(rawIndexPos, inputTextUTF8);
+                    AZ_Printf("UiTextInputComponent", "currentText %s", currentText.c_str());
 
                     m_textCursorPos += LyShine::GetUtf8StringLength(inputTextUTF8);
                     m_textSelectionStartPos = m_textCursorPos;
