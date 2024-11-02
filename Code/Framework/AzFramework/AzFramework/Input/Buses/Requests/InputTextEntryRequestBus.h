@@ -30,7 +30,10 @@ namespace AzFramework
         {
             AZStd::string m_initialText;   //!< The virtual keyboard's initial text
             AZStd::string m_titleText;     //!< The virtual keyboard's title text
+            float m_normalizedMinX = 0.0f; //!< The virtual keyboard's minimum x position normalized
+            float m_normalizedMaxX = 0.0f; //!< The virtual keyboard's maximum x position normalized
             float m_normalizedMinY = 0.0f; //!< The virtual keyboard's minimum y position normalized
+            float m_normalizedMaxY = 0.0f; //!< The virtual keyboard's maximum y position normalized
             LocalUserId m_localUserId = LocalUserIdAny; //!< The local user to operate the keyboard
         };
 

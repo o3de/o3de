@@ -1475,12 +1475,20 @@ void UiTextInputComponent::CheckStartTextInput()
         UiCanvasBus::EventResult(canvasSize, canvasEntityId, &UiCanvasBus::Events::GetCanvasSize);
         UiTransformInterface::RectPoints rectPoints;
         UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetViewportSpacePoints, rectPoints);
+        const AZ::Vector2 topLeft = rectPoints.GetAxisAlignedTopLeft();
         const AZ::Vector2 bottomRight = rectPoints.GetAxisAlignedBottomRight();
+        options.m_normalizedMinX = (canvasSize.GetX() > 0.0f) ? topLeft.GetX() / canvasSize.GetX() : 0.0f;
+        options.m_normalizedMaxX = (canvasSize.GetX() > 0.0f) ? bottomRight.GetX() / canvasSize.GetX() : 0.0f;
         options.m_normalizedMinY = (canvasSize.GetY() > 0.0f) ? bottomRight.GetY() / canvasSize.GetY() : 0.0f;
+        options.m_normalizedMaxY = (canvasSize.GetY() > 0.0f) ? topLeft.GetY() / canvasSize.GetY() : 0.0f;
 
         AZ_Printf("UiTextInputComponent", "canvasSize: %.2f, %.2f", canvasSize.GetX(), canvasSize.GetY());
+        AZ_Printf("UiTextInputComponent", "Game text input topLeft: %.2f, %.2f", topLeft.GetX(), topLeft.GetY());
         AZ_Printf("UiTextInputComponent", "Game text input bottomRight: %.2f, %.2f", bottomRight.GetX(), bottomRight.GetY());
+        AZ_Printf("UiTextInputComponent", "options.m_normalizedMinX: %.4f", options.m_normalizedMinX);
+        AZ_Printf("UiTextInputComponent", "options.m_normalizedMaxX: %.4f", options.m_normalizedMaxX);
         AZ_Printf("UiTextInputComponent", "options.m_normalizedMinY: %.4f", options.m_normalizedMinY);
+        AZ_Printf("UiTextInputComponent", "options.m_normalizedMaxY: %.4f", options.m_normalizedMaxY);
 
         UiCanvasBus::EventResult(options.m_localUserId, canvasEntityId, &UiCanvasBus::Events::GetLocalUserIdInputFilter);
 

@@ -44,6 +44,9 @@
         replacementString: (NSString*)string;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+- (BOOL)textFieldShouldEndEditing:(UITextField *)textField
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)textFieldDidEndEditing:(UITextField *)textField;
 @end // VirtualKeyboardTextFieldDelegate interface
 
@@ -140,9 +143,16 @@
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+- (BOOL)textFieldShouldEndEditing:(UITextField *)textField
+{
+    AZ_Printf("VirtualKeyboard", "textFieldShouldEndEditing %s", textField.text.UTF8String);
+	return TRUE;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)textFieldDidEndEditing:(UITextField *)textField
 {
-    AZ_Printf("VirtualKeyboard", "textFieldDidEndEditing %@", textField.text);
+    AZ_Printf("VirtualKeyboard", "textFieldDidEndEditing %s", textField.text.UTF8String);
     m_inputDevice->QueueRawTextEvent(textField.text.UTF8String);
 }
 @end // VirtualKeyboardTextFieldDelegate implementation
