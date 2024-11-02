@@ -294,7 +294,7 @@ namespace AzFramework
         CGRect textFieldRect = CGRectMake(0, rootView.frame.size.height - lineHeight * 2, rootView.bounds.size.width, lineHeight);
         m_textField.frame = textFieldRect;
 
-        AZ_Printf("VirtualKeyboard", @"m_textField.font.pointSize - %.2f", m_textField.font.pointSize);
+        AZ_Printf("VirtualKeyboard", "m_textField.font.pointSize - %.2f", m_textField.font.pointSize);
         AZ_Printf("VirtualKeyboard", "lineHeight - %.2f", lineHeight);
         AZ_Printf("VirtualKeyboard", "textFieldRect - x: %.2f, y: %.2f, width: %.2f, height: %.2f", textFieldRect.origin.x, textFieldRect.origin.y, textFieldRect.size.width, textFieldRect.size.height);
 
