@@ -20,7 +20,8 @@
                 {
                     "Name": "DofDepthInputOutput",
                     "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "Shader"
+                    "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage": "ComputeShader"
                 }
             ],
             "PassData": {
