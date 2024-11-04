@@ -109,12 +109,13 @@
     AZ_Printf("VirtualKeyboard", "superview bounds - width: %.2f, height: %.2f", m_textField.superview.bounds.size.width, m_textField.superview.bounds.size.height);
     AZ_Printf("VirtualKeyboard", "offsetViewRect - x: %.2f, y: %.2f, width: %.2f, height: %.2f", offsetViewRect.origin.x, offsetViewRect.origin.y, offsetViewRect.size.width, offsetViewRect.size.height);
 
-    float textFieldHeight = m_activeTextFieldNormalizedBottomY - m_activeTextFieldNormalizedTopY;
-    float textFieldWidth = m_activeTextFieldNormalizedRightX - m_activeTextFieldNormalizedLeftX;
+    float textFieldWidth = (m_activeTextFieldNormalizedRightX - m_activeTextFieldNormalizedLeftX) * m_textField.superview.bounds.size.width;
+    float textFieldHeight = (m_activeTextFieldNormalizedBottomY - m_activeTextFieldNormalizedTopY) * m_textField.superview.bounds.size.height;
     float lineHeight = textFieldHeight * 0.8f;
 
-    CGRect textFieldRect = CGRectMake(m_activeTextFieldNormalizedLeftX + textFieldWidth * 0.1f, m_activeTextFieldNormalizedTopY + textFieldHeight * 0.1f,
-                                        textFieldWidth * 0.8f, textFieldHeight * 0.8f);
+    CGRect textFieldRect = CGRectMake(m_activeTextFieldNormalizedLeftX * m_textField.superview.bounds.size.width + textFieldWidth * 0.1f,
+                                      m_activeTextFieldNormalizedTopY * m_textField.superview.bounds.size.height + textFieldHeight * 0.1f,
+                                      textFieldWidth * 0.8f, textFieldHeight * 0.8f);
     textFieldRect = [m_textField.superview convertRect: textFieldRect toView: nil];
 
     m_textField.frame = textFieldRect;
@@ -164,6 +165,7 @@
 - (BOOL)textFieldShouldEndEditing:(UITextField *)textField
 {
     AZ_Printf("VirtualKeyboard", "textFieldShouldEndEditing %s", textField.text.UTF8String);
+    m_inputDevice->QueueRawTextEvent(textField.text.UTF8String);
 	return TRUE;
 }
 
@@ -171,7 +173,6 @@
 - (void)textFieldDidEndEditing:(UITextField *)textField
 {
     AZ_Printf("VirtualKeyboard", "textFieldDidEndEditing %s", textField.text.UTF8String);
-    m_inputDevice->QueueRawTextEvent(textField.text.UTF8String);
 }
 @end // VirtualKeyboardTextFieldDelegate implementation
 
