@@ -113,9 +113,9 @@
     float textFieldHeight = (m_activeTextFieldNormalizedBottomY - m_activeTextFieldNormalizedTopY) * m_textField.superview.bounds.size.height;
     float lineHeight = textFieldHeight * 0.8f;
 
-    CGRect textFieldRect = CGRectMake(m_activeTextFieldNormalizedLeftX * m_textField.superview.bounds.size.width + textFieldWidth * 0.1f,
+    CGRect textFieldRect = CGRectMake(m_activeTextFieldNormalizedLeftX * m_textField.superview.bounds.size.width + textFieldHeight * 0.1f,
                                       m_activeTextFieldNormalizedTopY * m_textField.superview.bounds.size.height + textFieldHeight * 0.1f,
-                                      textFieldWidth * 0.8f, textFieldHeight * 0.8f);
+                                      textFieldWidth - textFieldHeight * 0.2f, textFieldHeight * 0.8f);
     textFieldRect = [m_textField.superview convertRect: textFieldRect toView: nil];
 
     m_textField.frame = textFieldRect;
@@ -166,6 +166,8 @@
 {
     AZ_Printf("VirtualKeyboard", "textFieldShouldEndEditing %s", textField.text.UTF8String);
     m_inputDevice->QueueRawTextEvent(textField.text.UTF8String);
+    m_inputDevice->TickInputDevice();
+
 	return TRUE;
 }
 
