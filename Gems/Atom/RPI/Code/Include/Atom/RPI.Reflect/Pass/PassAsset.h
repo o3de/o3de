@@ -38,9 +38,9 @@ namespace AZ
 
             static void Reflect(ReflectContext* context);
 
-            static const char* DisplayName;
-            static const char* Group;
-            static const char* Extension;
+            static constexpr const char* DisplayName{ "Pass" };
+            static constexpr const char* Group{ "RenderingPipeline" };
+            static constexpr const char* Extension{ "pass" };
 
             //! Retrieves the underlying PassTemplate
             const AZStd::unique_ptr<PassTemplate>& GetPassTemplate() const;

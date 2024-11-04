@@ -199,14 +199,6 @@ namespace AZ
             auto depthClipEnabled = physicalDevice.GetPhysicalDeviceDepthClipEnableFeatures();
             auto rayQueryFeatures = physicalDevice.GetRayQueryFeatures();
             auto shaderImageAtomicInt64 = physicalDevice.GetShaderImageAtomicInt64Features();
-            auto subpassMergeFeedback = physicalDevice.GetPhysicalSubpassMergeFeedbackFeatures();
-#if !defined(AZ_RELEASE_BUILD)
-            subpassMergeFeedback.subpassMergeFeedback = false;
-#endif
-            if (!subpassMergeFeedback.subpassMergeFeedback)
-            {
-                physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::SubpassMergeFeedback);
-            }
 
             VkPhysicalDeviceRobustness2FeaturesEXT robustness2 = {};
             robustness2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
@@ -217,18 +209,22 @@ namespace AZ
             rayQueryFeatures.pNext = nullptr;
             shaderImageAtomicInt64.pNext = nullptr;
             robustness2.pNext = nullptr;
-            subpassMergeFeedback.pNext = nullptr;
 
             AppendVkStruct(
-                chainInit,
-                {
-                    &bufferDeviceAddressFeatures,
-                    &depthClipEnabled,
-                    &rayQueryFeatures,
-                    &shaderImageAtomicInt64,
-                    &robustness2,
-                    &subpassMergeFeedback
-                });
+                chainInit, { &bufferDeviceAddressFeatures, &depthClipEnabled, &rayQueryFeatures, &shaderImageAtomicInt64, &robustness2 });
+
+            auto subpassMergeFeedback = physicalDevice.GetPhysicalSubpassMergeFeedbackFeatures();
+
+#if !defined(AZ_RELEASE_BUILD)
+            subpassMergeFeedback.subpassMergeFeedback = false;
+#endif
+            if (!subpassMergeFeedback.subpassMergeFeedback &&
+                physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::SubpassMergeFeedback))
+            {
+                physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::SubpassMergeFeedback);
+                subpassMergeFeedback.pNext = nullptr;
+                AppendVkStruct(chainInit, &subpassMergeFeedback);
+            }
 
             auto fragmenDensityMapFeatures = physicalDevice.GetPhysicalDeviceFragmentDensityMapFeatures();
             auto fragmenShadingRateFeatures = physicalDevice.GetPhysicalDeviceFragmentShadingRateFeatures();
@@ -1142,8 +1138,7 @@ namespace AZ
             m_features.m_indirectDrawCountBufferSupported = physicalDevice.IsFeatureSupported(DeviceFeature::DrawIndirectCount);
             m_features.m_indirectDispatchCountBufferSupported = false;
             m_features.m_indirectDrawStartInstanceLocationSupported = m_enabledDeviceFeatures.drawIndirectFirstInstance == VK_TRUE;
-            m_features.m_renderTargetSubpassInputSupport = RHI::SubpassInputSupportType::Native;
-            m_features.m_depthStencilSubpassInputSupport = RHI::SubpassInputSupportType::Native;
+            m_features.m_subpassInputSupport = RHI::SubpassInputSupportType::Color | RHI::SubpassInputSupportType::DepthStencil;
 
             const VkPhysicalDeviceProperties& deviceProperties = physicalDevice.GetPhysicalDeviceProperties();
             // Our sparse image implementation requires the device support sparse binding and particle residency for 2d and 3d images

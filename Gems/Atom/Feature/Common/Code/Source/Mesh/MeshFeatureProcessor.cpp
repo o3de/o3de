@@ -6,9 +6,9 @@
  *
  */
 
+#include <Mesh/MeshFeatureProcessor.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/Mesh/MeshCommon.h>
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
 #include <Atom/Feature/RenderCommon.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
@@ -2699,7 +2699,7 @@ namespace AZ
                     }
                     if (meshDrawPacket.Update(*m_scene, forceUpdate))
                     {
-                        m_flags.m_cullableNeedsRebuild = true;
+                        HandleDrawPacketUpdate(meshDrawPacket);
                     }
                 }
             }
@@ -2977,10 +2977,20 @@ namespace AZ
             return CustomMaterialInfo{};
         }
 
-        void ModelDataInstance::HandleDrawPacketUpdate()
+        void ModelDataInstance::HandleDrawPacketUpdate(RPI::MeshDrawPacket& meshDrawPacket)
         {
             // When the drawpacket is updated, the cullable must be rebuilt to use the latest draw packet
             m_flags.m_cullableNeedsRebuild = true;
+            m_meshDrawPacketUpdatedEvent.Signal(*this, meshDrawPacket);
+        }
+
+        void ModelDataInstance::ConnectMeshDrawPacketUpdatedHandler(MeshDrawPacketUpdatedEvent::Handler& handler)
+        {
+            if (handler.IsConnected())
+            {
+                handler.Disconnect();
+            }
+            handler.Connect(m_meshDrawPacketUpdatedEvent);
         }
 
     } // namespace Render

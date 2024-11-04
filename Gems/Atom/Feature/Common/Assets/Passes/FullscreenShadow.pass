@@ -106,7 +106,7 @@
             //     "ShaderAsset": {
             //         "FilePath": "Shaders/Shadow/FullscreenShadow.shader"
             //     },
-            //     "Make Fullscreen Pass": true,
+            //     "FullscreenDispatch": true,
             //     "BindViewSrg": true
             // }
         }

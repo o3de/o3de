@@ -61,7 +61,6 @@ struct IErrorReport; // Vladimir@conffx
 struct IFileUtil;  // Vladimir@conffx
 struct IEditorLog;  // Vladimir@conffx
 struct IEditorParticleUtils;  // Leroy@conffx
-struct ILogFile; // Vladimir@conffx
 
 // Qt
 
@@ -253,14 +252,6 @@ enum EMenuInsertLocation
     eMenuScript,
     eMenuView,
     eMenuHelp
-};
-
-//! Global editor operation mode
-enum EOperationMode
-{
-    eOperationModeNone = 0, // None
-    eCompositingMode, // Normal operation mode where objects are composited in the scene
-    eModellingMode // Geometry modeling mode
 };
 
 //! Mouse events that viewport can send
@@ -468,26 +459,12 @@ struct IEditor
     virtual void ResetViews() = 0;
     //! Update information in track view dialog.
     virtual void ReloadTrackView() = 0;
-    //! Current position marker
-    virtual Vec3 GetMarkerPosition() = 0;
-    //! Set current position marker.
-    virtual void    SetMarkerPosition(const Vec3& pos) = 0;
-    //! Set current selected region.
-    virtual void    SetSelectedRegion(const AABB& box) = 0;
-    //! Get currently selected region.
-    virtual void    GetSelectedRegion(AABB& box) = 0;
 
-    virtual void SetOperationMode(EOperationMode mode) = 0;
-    virtual EOperationMode GetOperationMode() = 0;
     //! Set constrain on specified axis for objects construction and modifications.
     //! @param axis one of AxisConstrains enumerations.
     virtual void SetAxisConstraints(AxisConstrains axis) = 0;
     //! Get axis constrain for objects construction and modifications.
     virtual AxisConstrains GetAxisConstrains() = 0;
-    //! Set whether axes are forced to the same value when they are changed (x = y = z).
-    virtual void SetAxisVectorLock(bool bAxisVectorLock) = 0;
-    //! Get whether axes are forced to the same value when they are changed (x = y = z).
-    virtual bool IsAxisVectorLocked() = 0;
     //! If set, when axis terrain constrain is selected, snapping only to terrain.
     virtual void SetTerrainAxisIgnoreObjects(bool bIgnore) = 0;
     virtual bool IsTerrainAxisIgnoreObjects() = 0;
@@ -573,10 +550,6 @@ struct IEditor
     virtual void RegisterNotifyListener(IEditorNotifyListener* listener) = 0;
     //! Unregister Editor notifications listener.
     virtual void UnregisterNotifyListener(IEditorNotifyListener* listener) = 0;
-    //! Register document notifications listener.
-    virtual void RegisterDocListener(IDocListener* listener) = 0;
-    //! Unregister document notifications listener.
-    virtual void UnregisterDocListener(IDocListener* listener) = 0;
 
     virtual void ReduceMemory() = 0;
 
@@ -584,11 +557,8 @@ struct IEditor
     virtual void ReloadTemplates() = 0;
     virtual void ShowStatusText(bool bEnable) = 0;
 
-
     virtual SSystemGlobalEnvironment* GetEnv() = 0;
     virtual SEditorSettings* GetEditorSettings() = 0;
-
-    virtual ILogFile* GetLogFile() = 0;  // Vladimir@conffx
 
     // unload all plugins
     virtual void UnloadPlugins() = 0;

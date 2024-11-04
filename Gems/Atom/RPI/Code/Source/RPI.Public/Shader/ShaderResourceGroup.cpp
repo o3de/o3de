@@ -16,7 +16,6 @@ namespace AZ
 {
     namespace RPI
     {
-        const char* ShaderResourceGroup::s_traceCategoryName = "ShaderResourceGroup";
         const Data::Instance<Image> ShaderResourceGroup::s_nullImage;
         const Data::Instance<Buffer> ShaderResourceGroup::s_nullBuffer;
 

@@ -45,9 +45,9 @@ namespace AZ
 
             using ConnectionList = AZStd::vector<Connection>;
 
-            static const float DefaultMin;
-            static const float DefaultMax;
-            static const float DefaultStep;
+            static constexpr float DefaultMin = AZStd::numeric_limits<float>::lowest();
+            static constexpr float DefaultMax = AZStd::numeric_limits<float>::max();
+            static constexpr float DefaultStep = 0.1f;
 
             static void Reflect(ReflectContext* context);
 

@@ -21,6 +21,43 @@ namespace UnitTest
 
 namespace AZ::RHI
 {
+    using PipelineStateHash = HashValue64;
+
+    //! Used for storing a PipelineState object in a hash table structure (set, map, etc)
+    struct PipelineStateEntry
+    {
+        PipelineStateEntry(
+            PipelineStateHash hash, ConstPtr<PipelineState> pipelineState, const PipelineStateDescriptor& descriptor);
+
+        bool operator < (const PipelineStateEntry& rhs) const
+        {
+            return m_hash < rhs.m_hash;
+        }
+
+        bool operator == (const PipelineStateEntry& rhs) const;
+
+        //! Hash of the PipelineStateDescriptor
+        PipelineStateHash m_hash;
+        //! Pipeline state
+        ConstPtr<PipelineState> m_pipelineState;
+
+        //! Pipeline state descriptor variant for dispatch, draw, and ray tracing
+        using PipelineStateDescriptorVariant = AZStd::variant<AZ::RHI::PipelineStateDescriptorForDraw, AZ::RHI::PipelineStateDescriptorForDispatch, AZ::RHI::PipelineStateDescriptorForRayTracing>;
+        PipelineStateDescriptorVariant m_pipelineStateDescriptorVariant;
+    };
+
+    //! Hash calculator for a PipelineStateEntry
+    struct PipelineStateCacheHash : public ::AZStd::hash<AZ::RHI::PipelineStateEntry>
+    {
+        AZStd::hash<AZ::RHI::PipelineStateEntry>::result_type operator () (const AZ::RHI::PipelineStateEntry& pipelineStateEntry) const
+        {
+            return static_cast<AZStd::hash<PipelineStateEntry>::result_type>(pipelineStateEntry.m_hash);
+        }
+    };
+
+    //! The pipeline state set is an unordered set to help with detecting hash collisions and also faster find and store operations.
+    using PipelineStateSet = AZStd::unordered_set<PipelineStateEntry, PipelineStateCacheHash>;
+
     //! Problem: High-level rendering code works in 'materials', 'shaders', and 'models', but the RHI works in
     //! 'pipeline states'. Therefore, a translation process must exist to resolve a shader variation (plus runtime
     //! state) into a pipeline state suitable for consumption by the RHI. These resolve operations can number in the
@@ -150,39 +187,6 @@ namespace AZ::RHI
         PipelineStateCache(MultiDevice::DeviceMask deviceMask);
 
         void ValidateCacheIntegrity() const;
-
-        using PipelineStateHash = HashValue64;
-
-        struct PipelineStateEntry
-        {
-            PipelineStateEntry(
-                PipelineStateHash hash, ConstPtr<PipelineState> pipelineState, const PipelineStateDescriptor& descriptor);
-
-            bool operator < (const PipelineStateEntry& rhs) const
-            {
-                return m_hash < rhs.m_hash;
-            }
-
-            bool operator == (const PipelineStateEntry& rhs) const;
-
-            PipelineStateHash m_hash;
-            ConstPtr<PipelineState> m_pipelineState;
-
-            // pipeline state descriptor variant for dispatch, draw, and ray tracing
-            using PipelineStateDescriptorVariant = AZStd::variant<AZ::RHI::PipelineStateDescriptorForDraw, AZ::RHI::PipelineStateDescriptorForDispatch, AZ::RHI::PipelineStateDescriptorForRayTracing>;
-            PipelineStateDescriptorVariant m_pipelineStateDescriptorVariant;
-        };
-
-        struct PipelineStateCacheHash : public ::AZStd::hash<AZ::RHI::PipelineStateCache::PipelineStateEntry>
-        {
-            AZStd::hash<AZ::RHI::PipelineStateCache::PipelineStateEntry>::result_type operator () (const AZ::RHI::PipelineStateCache::PipelineStateEntry& pipelineStateEntry) const
-            {
-                return static_cast<AZStd::hash<PipelineStateEntry>::result_type>(pipelineStateEntry.m_hash);
-            }
-        };
-
-        // The pipeline state set is an unordered set to help with detecting hash collisions and also faster find and store operations.
-        using PipelineStateSet = AZStd::unordered_set<PipelineStateEntry, PipelineStateCacheHash>;
 
         struct GlobalLibraryEntry
         {

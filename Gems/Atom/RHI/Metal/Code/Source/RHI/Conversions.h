@@ -47,6 +47,7 @@ namespace AZ
         };
 
         MTLPixelFormat ConvertPixelFormat(RHI::Format format);
+        RHI::Format  ConvertPixelFormat(MTLPixelFormat format);
         MTLTextureUsage ConvertTextureUsageFlags(RHI::BufferBindFlags flags, RHI::Format format);
         MTLTextureType ConvertTextureType(RHI::ImageDimension dimension, int arraySize, bool isCubeMap, bool isViewArray=false);
         MTLPixelFormat ConvertImageViewFormat( const Image& image, const RHI::ImageViewDescriptor& imageViewDescriptor);

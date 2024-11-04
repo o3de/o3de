@@ -179,7 +179,7 @@ namespace AZ
             uint32_t DecodeBits(ShaderVariantKey key) const;
 
         private:
-            static const char* DebugCategory;
+            static constexpr const char* DebugCategory = "ShaderOption";
 
             //! Adds a new option value to the (name, index) map. Only to use from the constructor.
             void AddValue(const Name& name, const ShaderOptionValue value);
@@ -283,7 +283,7 @@ namespace AZ
             template <typename, bool, bool>
             friend struct Serialize::InstanceFactory;
 
-            static const char* DebugCategory;
+            static constexpr const char* DebugCategory = "ShaderOption";
 
             bool ValidateIsFinalized() const;
             bool ValidateIsNotFinalized() const;

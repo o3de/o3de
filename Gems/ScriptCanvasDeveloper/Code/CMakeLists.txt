@@ -29,8 +29,7 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
-            Gem::ImGui.imguilib
-            Gem::ImGui            
+            Gem::ImGui.imguilib           
 )
 
 ly_add_target(
@@ -95,7 +94,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::${gem_name}.Static
                 Gem::ScriptCanvas.Editor.Static
                 Gem::GraphCanvasWidgets
-                Gem::ImGui  # note that this includes the ImGui bus interfaces, but not necessarily the static lib 
+                Gem::ImGui.Tools  # note that this includes the ImGui bus interfaces, but not necessarily the static lib 
         RUNTIME_DEPENDENCIES
             Gem::ScriptCanvas.Editor
             Gem::GraphCanvasWidgets

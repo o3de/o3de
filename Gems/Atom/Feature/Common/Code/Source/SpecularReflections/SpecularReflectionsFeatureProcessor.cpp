@@ -7,10 +7,10 @@
  */
 
 #include <SpecularReflections/SpecularReflectionsFeatureProcessor.h>
+#include <Atom/Feature/RayTracing/RayTracingPass.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
-#include <RayTracing/RayTracingPass.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpacePass.h>
 
 namespace AZ

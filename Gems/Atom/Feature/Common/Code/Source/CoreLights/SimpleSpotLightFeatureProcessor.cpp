@@ -8,8 +8,8 @@
 
 #include <CoreLights/SimpleSpotLightFeatureProcessor.h>
 #include <CoreLights/SpotLightUtils.h>
+#include <Mesh/MeshFeatureProcessor.h>
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RPI.Public/ColorManagement/TransformColor.h>
 #include <Atom/RPI.Public/RenderPipeline.h>

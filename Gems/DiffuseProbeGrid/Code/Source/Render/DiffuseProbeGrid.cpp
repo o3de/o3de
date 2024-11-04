@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom/Feature/RayTracing/RayTracingFeatureProcessorInterface.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Render/DiffuseProbeGrid.h>
@@ -14,7 +15,6 @@
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/Factory.h>
 #include <AzCore/Math/MathUtils.h>
-#include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ
 {

@@ -43,9 +43,9 @@ namespace AZ
             AZ_RTTI(StreamingImagePoolAsset, "{877B2DA2-BBE7-42E7-AED3-F571929820FE}", Data::AssetData);
             AZ_CLASS_ALLOCATOR(StreamingImagePoolAsset, SystemAllocator);
 
-            static const char* DisplayName;
-            static const char* Extension;
-            static const char* Group;
+            static constexpr const char* DisplayName{ "StreamingImagePool" };
+            static constexpr const char* Group{ "Image" };
+            static constexpr const char* Extension{ "streamingimagepool" };
 
             static void Reflect(AZ::ReflectContext* context);
 

@@ -7,59 +7,24 @@
 #
 
 set(FILES
-    3rdParty/ACES/ACES/Aces.h
-    Include/Atom/Feature/RenderCommon.h
-    Include/Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h
-    Include/Atom/Feature/Automation/AtomAutomationBus.h
-    Include/Atom/Feature/AuxGeom/AuxGeomFeatureProcessor.h
-    Include/Atom/Feature/ColorGrading/LutResolution.h
-    Include/Atom/Feature/CoreLights/CoreLightsConstants.h
-    Include/Atom/Feature/CoreLights/LightCommon.h
+    Source/AuxGeom/AuxGeomFeatureProcessor.h
+    Source/CoreLights/LightCommon.h
     Source/CoreLights/LightCommon.cpp
-    Include/Atom/Feature/CubeMapCapture/CubeMapCaptureFeatureProcessorInterface.h
-    Include/Atom/Feature/DisplayMapper/AcesOutputTransformPass.h
-    Include/Atom/Feature/DisplayMapper/AcesOutputTransformLutPass.h
-    Include/Atom/Feature/DisplayMapper/ApplyShaperLookupTablePass.h
-    Include/Atom/Feature/DisplayMapper/DisplayMapperPass.h
-    Include/Atom/Feature/DisplayMapper/DisplayMapperFullScreenPass.h
-    Include/Atom/Feature/DisplayMapper/BakeAcesOutputTransformLutPass.h
-    Include/Atom/Feature/DisplayMapper/DisplayMapperConfigurationDescriptor.h
-    Include/Atom/Feature/DisplayMapper/OutputTransformPass.h
-    Include/Atom/Feature/ImGui/ImGuiUtils.h
-    Include/Atom/Feature/ImGui/SystemBus.h
-    Include/Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessor.h
-    Include/Atom/Feature/LightingChannel/LightingChannelConfiguration.h
-    Include/Atom/Feature/LookupTable/LookupTableAsset.h
-    Include/Atom/Feature/Mesh/MeshFeatureProcessor.h
-    Include/Atom/Feature/Mesh/ModelReloaderSystemInterface.h
-    Include/Atom/Feature/PostProcessing/PostProcessingConstants.h
-    Include/Atom/Feature/PostProcessing/SMAAFeatureProcessorInterface.h
-    Include/Atom/Feature/PostProcess/PostFxLayerCategoriesConstants.h
-    Include/Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessorInterface.h
-    Include/Atom/Feature/SpecularReflections/SpecularReflectionsFeatureProcessorInterface.h
-    Include/Atom/Feature/SkyBox/SkyBoxFogBus.h
-    Include/Atom/Feature/SkyBox/SkyboxConstants.h
-    Include/Atom/Feature/SkyBox/SkyBoxLUT.h
-    Include/Atom/Feature/SphericalHarmonics/SphericalHarmonicsUtility.h
-    Include/Atom/Feature/SphericalHarmonics/SphericalHarmonicsUtility.inl
-    Include/Atom/Feature/TransformService/TransformServiceFeatureProcessor.h
-    Include/Atom/Feature/Utils/FrameCaptureBus.h
-    Include/Atom/Feature/Utils/FrameCaptureTestBus.h
-    Include/Atom/Feature/Utils/GpuBufferHandler.h
-    Include/Atom/Feature/Utils/IndexedDataVector.h
-    Include/Atom/Feature/Utils/IndexedDataVector.inl
-    Include/Atom/Feature/Utils/MultiIndexedDataVector.h
-    Include/Atom/Feature/Utils/MultiSparseVector.h
-    Include/Atom/Feature/Utils/ProfilingCaptureBus.h
-    Include/Atom/Feature/Utils/SparseVector.h
-    Source/CommonModule.cpp
+    Source/DisplayMapper/AcesOutputTransformPass.h
+    Source/DisplayMapper/AcesOutputTransformLutPass.h
+    Source/DisplayMapper/ApplyShaperLookupTablePass.h
+    Source/DisplayMapper/DisplayMapperPass.h
+    Source/DisplayMapper/DisplayMapperFullScreenPass.h
+    Source/DisplayMapper/BakeAcesOutputTransformLutPass.h
+    Source/DisplayMapper/OutputTransformPass.h
+    Source/ImageBasedLights/ImageBasedLightFeatureProcessor.h
+    Source/LookupTable/LookupTableAsset.h
+    Source/SkyBox/SkyBoxLUT.h
     Source/CommonSystemComponent.cpp
     Source/FrameCaptureSystemComponent.cpp
     Source/FrameCaptureSystemComponent.h
     Source/ProfilingCaptureSystemComponent.cpp
     Source/ProfilingCaptureSystemComponent.h
-    3rdParty/ACES/ACES/Aces.cpp
-    Source/ACES/AcesDisplayMapperFeatureProcessor.cpp
     Source/AuxGeom/AuxGeomBase.h
     Source/AuxGeom/AuxGeomFeatureProcessor.cpp
     Source/AuxGeom/AuxGeomDrawQueue.cpp
@@ -82,7 +47,6 @@ set(FILES
     Source/CoreLights/DepthExponentiationPass.cpp
     Source/CoreLights/DirectionalLightFeatureProcessor.h
     Source/CoreLights/DirectionalLightFeatureProcessor.cpp
-    Source/CoreLights/DirectionalLightShadowNotificationBus.h
     Source/CoreLights/DiskLightFeatureProcessor.h
     Source/CoreLights/DiskLightFeatureProcessor.cpp
     Source/CoreLights/EsmShadowmapsPass.h
@@ -143,14 +107,12 @@ set(FILES
     Source/DisplayMapper/DisplayMapperPass.cpp
     Source/DisplayMapper/DisplayMapperFullScreenPass.cpp
     Source/DisplayMapper/BakeAcesOutputTransformLutPass.cpp
-    Source/DisplayMapper/DisplayMapperConfigurationDescriptor.cpp
     Source/DisplayMapper/OutputTransformPass.cpp
     Source/ImGui/ImGuiPass.cpp
     Source/ImGui/ImGuiPass.h
     Source/ImGui/ImGuiSystemComponent.cpp
     Source/ImGui/ImGuiSystemComponent.h
     Source/ImageBasedLights/ImageBasedLightFeatureProcessor.cpp
-    Source/LightingChannel/LightingChannelConfiguration.cpp
     Source/LookupTable/LookupTableAsset.cpp
     Source/Material/ConvertEmissiveUnitFunctor.cpp
     Source/Material/ConvertEmissiveUnitFunctor.h
@@ -172,6 +134,7 @@ set(FILES
     Source/Mesh/MeshInstanceManager.cpp
     Source/Mesh/MeshInstanceManager.h
     Source/Mesh/MeshFeatureProcessor.cpp
+    Source/Mesh/MeshFeatureProcessor.h
     Source/Mesh/ModelReloader.cpp
     Source/Mesh/ModelReloader.h
     Source/Mesh/ModelReloaderSystem.cpp
@@ -186,6 +149,8 @@ set(FILES
     Source/OcclusionCullingPlane/OcclusionCullingPlane.cpp
     Source/Silhouette/SilhouetteFeatureProcessor.cpp
     Source/Silhouette/SilhouetteFeatureProcessor.h
+    Source/Silhouette/SilhouetteCompositePass.cpp
+    Source/Silhouette/SilhouetteCompositePass.h
     Source/PostProcess/PostProcessBase.cpp
     Source/PostProcess/PostProcessBase.h
     Source/PostProcess/PostProcessFeatureProcessor.cpp
@@ -290,12 +255,8 @@ set(FILES
     Source/RayTracing/RayTracingFeatureProcessor.h
     Source/RayTracing/RayTracingFeatureProcessor.cpp
     Source/RayTracing/RayTracingResourceList.h
-    Source/RayTracing/RayTracingIndexList.h
     Source/RayTracing/RayTracingAccelerationStructurePass.cpp
     Source/RayTracing/RayTracingAccelerationStructurePass.h
-    Source/RayTracing/RayTracingPass.cpp
-    Source/RayTracing/RayTracingPass.h
-    Source/RayTracing/RayTracingPassData.h
     Source/ReflectionProbe/ReflectionProbeFeatureProcessor.h
     Source/ReflectionProbe/ReflectionProbeFeatureProcessor.cpp
     Source/ReflectionProbe/ReflectionProbe.h
@@ -348,8 +309,6 @@ set(FILES
     Source/SkinnedMesh/SkinnedMeshVertexStreamProperties.h
     Source/SkyBox/SkyBoxFeatureProcessor.cpp
     Source/SkyBox/SkyBoxFeatureProcessor.h
-    Source/SkyBox/SkyBoxFogSettings.h
-    Source/SkyBox/SkyBoxFogSettings.cpp
     Source/SkyAtmosphere/SkyAtmosphereFeatureProcessor.cpp
     Source/SkyAtmosphere/SkyAtmosphereFeatureProcessor.h
     Source/SkyAtmosphere/SkyAtmosphereParentPass.cpp
@@ -361,9 +320,5 @@ set(FILES
     Source/SplashScreen/SplashScreenPass.cpp
     Source/SplashScreen/SplashScreenPass.h
     Source/TransformService/TransformServiceFeatureProcessor.cpp
-    Source/Utils/GpuBufferHandler.cpp
-)
-
-set(SKIP_UNITY_BUILD_INCLUSION_FILES
-    Source/CommonModule.cpp
+    Source/TransformService/TransformServiceFeatureProcessor.h
 )
