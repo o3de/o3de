@@ -108,6 +108,7 @@ namespace
         utf8String.erase(left, right - left);
     }
 
+#if !defined(CARBONATED) || !defined(AZ_PLATFORM_IOS)
     //! \brief Returns a UTF8 sub-string using the given indices.
     //! The given indices are code-point indices and not raw (byte) indices.
     AZStd::string Utf8SubString(const AZStd::string& utf8String, int utf8CharIndexStart, int utf8CharIndexEnd)
@@ -118,6 +119,7 @@ namespace
         const int right = GetCharArrayIndexFromUtf8CharIndex(utf8String, maxCharIndex);
         return utf8String.substr(left, right - left);
     }
+#endif
 
     //! \brief Convenience method for erasing a range of text and updating the given selection indices accordingly.
     void EraseAndUpdateSelectionRange(AZStd::string& utf8String, int& endSelectIndex, int& startSelectIndex)
