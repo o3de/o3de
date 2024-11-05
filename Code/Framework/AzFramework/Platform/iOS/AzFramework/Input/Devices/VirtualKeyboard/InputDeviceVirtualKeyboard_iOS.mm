@@ -208,7 +208,7 @@ namespace AzFramework
         m_textField.text = @"";
         m_textField.textColor = [UIColor whiteColor];
 
-        [textField setReturnKeyType:UIReturnKeySend];
+        [m_textField setReturnKeyType:UIReturnKeySend];
 #else
         // Disable autocapitalization and autocorrection, which both behave strangely.
         m_textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
