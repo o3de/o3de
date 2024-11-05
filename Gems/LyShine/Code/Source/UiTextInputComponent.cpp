@@ -316,17 +316,14 @@ bool UiTextInputComponent::HandleAutoActivation()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 bool UiTextInputComponent::HandleTextInput(const AZStd::string& inputTextUTF8)
 {
-    AZ_Printf("UiTextInputComponent", "HandleTextInput: %s", inputTextUTF8.c_str());
     if (!m_isHandlingEvents)
     {
-        AZ_Printf("UiTextInputComponent", "!m_isHandlingEvents");
         return false;
     }
 
     // don't accept text input while in pressed state
     if (m_isPressed)
     {
-        AZ_Printf("UiTextInputComponent", "m_isPressed");
         return false;
     }
 
@@ -387,7 +384,6 @@ bool UiTextInputComponent::HandleTextInput(const AZStd::string& inputTextUTF8)
                 if (rawIndexPos >= 0)
                 {
                     currentText.insert(rawIndexPos, inputTextUTF8);
-                    AZ_Printf("UiTextInputComponent", "currentText %s", currentText.c_str());
 
                     m_textCursorPos++;
                     m_textSelectionStartPos = m_textCursorPos;
@@ -1053,6 +1049,10 @@ void UiTextInputComponent::BeginEditState()
     // position the cursor in the text entity
     UiTextBus::Event(m_textEntity, &UiTextBus::Events::SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);
 
+#if defined(CARBONATED) && defined(AZ_PLATFORM_IOS)
+    UiElementBus::Event(GetEntityId(), &UiElementBus::Events::SetIsEnabled, false);
+#endif
+
     ResetCursorBlink();
 }
 
@@ -1080,6 +1080,10 @@ void UiTextInputComponent::EndEditState()
     }
 
     UiTextInputNotificationBus::Event(GetEntityId(), &UiTextInputNotificationBus::Events::OnTextInputEndEdit, textString);
+
+#if defined(CARBONATED) && defined(AZ_PLATFORM_IOS)
+    UiElementBus::Event(GetEntityId(), &UiElementBus::Events::SetIsEnabled, true);
+#endif
 
     // clear the selection highlight
     UiTextBus::Event(m_textEntity, &UiTextBus::Events::ClearSelectionRange);
@@ -1492,14 +1496,6 @@ void UiTextInputComponent::CheckStartTextInput()
         options.m_normalizedMinX = (canvasSize.GetX() > 0.0f) ? topLeft.GetX() / canvasSize.GetX() : 0.0f;
         options.m_normalizedMaxX = (canvasSize.GetX() > 0.0f) ? bottomRight.GetX() / canvasSize.GetX() : 0.0f;
         options.m_normalizedMaxY = (canvasSize.GetY() > 0.0f) ? topLeft.GetY() / canvasSize.GetY() : 0.0f;
-
-        AZ_Printf("UiTextInputComponent", "canvasSize: %.2f, %.2f", canvasSize.GetX(), canvasSize.GetY());
-        AZ_Printf("UiTextInputComponent", "Game text input topLeft: %.2f, %.2f", topLeft.GetX(), topLeft.GetY());
-        AZ_Printf("UiTextInputComponent", "Game text input bottomRight: %.2f, %.2f", bottomRight.GetX(), bottomRight.GetY());
-        AZ_Printf("UiTextInputComponent", "options.m_normalizedMinX: %.4f", options.m_normalizedMinX);
-        AZ_Printf("UiTextInputComponent", "options.m_normalizedMaxX: %.4f", options.m_normalizedMaxX);
-        AZ_Printf("UiTextInputComponent", "options.m_normalizedMinY: %.4f", options.m_normalizedMinY);
-        AZ_Printf("UiTextInputComponent", "options.m_normalizedMaxY: %.4f", options.m_normalizedMaxY);
 #endif
 
         UiCanvasBus::EventResult(options.m_localUserId, canvasEntityId, &UiCanvasBus::Events::GetLocalUserIdInputFilter);

@@ -94,12 +94,6 @@
     offsetViewRect.origin.x -= m_textField.superview.frame.origin.x;
     offsetViewRect.origin.y -= m_textField.superview.frame.origin.y;
 
-    AZ_Printf("VirtualKeyboard", "m_activeTextFieldNormalizedBottomY: %.4f", m_activeTextFieldNormalizedBottomY);
-    AZ_Printf("VirtualKeyboard", "activeTextFieldBottom: %.2f", activeTextFieldBottom);
-    AZ_Printf("VirtualKeyboard", "offsetY: %.2f", offsetY);
-    AZ_Printf("VirtualKeyboard", "superview bounds - width: %.2f, height: %.2f", m_textField.superview.bounds.size.width, m_textField.superview.bounds.size.height);
-    AZ_Printf("VirtualKeyboard", "offsetViewRect - x: %.2f, y: %.2f, width: %.2f, height: %.2f", offsetViewRect.origin.x, offsetViewRect.origin.y, offsetViewRect.size.width, offsetViewRect.size.height);
-
     m_textField.superview.frame = offsetViewRect;
 }
 
@@ -207,15 +201,22 @@ namespace AzFramework
         m_textFieldDelegate = [[VirtualKeyboardTextFieldDelegate alloc] initWithInputDevice: this withTextField: m_textField];
         m_textField.delegate = m_textFieldDelegate;
 
-        // Disable autocapitalization and autocorrection, which both behave strangely.
+#if defined(CARBONATED)
         m_textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
         m_textField.autocorrectionType = UITextAutocorrectionTypeYes;
+        m_textField.hidden = NO;
+        m_textField.text = @"";
+#else
+        // Disable autocapitalization and autocorrection, which both behave strangely.
+        m_textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
+        m_textField.autocorrectionType = UITextAutocorrectionTypeNo;
 
         // Hide the text field so it will never actually be shown.
-        m_textField.hidden = NO;
+        m_textField.hidden = YES;
 
         // Add something to the text field so delete works.
-        m_textField.text = @"";
+        m_textField.text = @" ";
+#endif
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -294,10 +295,7 @@ namespace AzFramework
         textFieldRect = [m_textField.superview convertRect: textFieldRect toView: nil];
 
         m_textField.frame = textFieldRect;
-
-        AZ_Printf("VirtualKeyboard", "textFieldHeight - %.2f", textFieldHeight);
-        AZ_Printf("VirtualKeyboard", "textFieldWidth - %.2f", textFieldWidth);
-        AZ_Printf("VirtualKeyboard", "textFieldRect - x: %.2f, y: %.2f, width: %.2f, height: %.2f", textFieldRect.origin.x, textFieldRect.origin.y, textFieldRect.size.width, textFieldRect.size.height);
+        m_textField.text = [NSString stringWithUTF8String:options.m_initialText.c_str()];
 #endif
     }
 
