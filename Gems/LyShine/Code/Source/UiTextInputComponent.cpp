@@ -1478,7 +1478,11 @@ void UiTextInputComponent::CheckStartTextInput()
 
         AZStd::string textString;
         UiTextBus::EventResult(textString, m_textEntity, &UiTextBus::Events::GetText);
+#if defined(CARBONATED) && defined(AZ_PLATFORM_IOS)
+        options.m_initialText = textString;
+#else
         options.m_initialText = Utf8SubString(textString, m_textCursorPos, m_textSelectionStartPos);
+#endif
 
         AZ::EntityId canvasEntityId;
         UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
