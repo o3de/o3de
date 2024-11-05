@@ -335,6 +335,14 @@ bool UiTextInputComponent::HandleTextInput(const AZStd::string& inputTextUTF8)
 
     bool changedText = false;
 
+#if defined(CARBONATED) && defined(AZ_PLATFORM_IOS)
+
+    changedText = true;
+    currentText = inputTextUTF8;
+    m_textCursorPos = m_textSelectionStartPos = LyShine::GetUtf8StringLength(inputTextUTF8);
+
+#else
+
     if (inputTextUTF8 == "\b" || inputTextUTF8 == "\x7f")
     {
         // backspace pressed, delete character before cursor or the selected range
@@ -381,7 +389,7 @@ bool UiTextInputComponent::HandleTextInput(const AZStd::string& inputTextUTF8)
                     currentText.insert(rawIndexPos, inputTextUTF8);
                     AZ_Printf("UiTextInputComponent", "currentText %s", currentText.c_str());
 
-                    m_textCursorPos += LyShine::GetUtf8StringLength(inputTextUTF8);
+                    m_textCursorPos++;
                     m_textSelectionStartPos = m_textCursorPos;
                     UiTextBus::Event(
                         m_textEntity, &UiTextBus::Events::SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);
@@ -390,6 +398,7 @@ bool UiTextInputComponent::HandleTextInput(const AZStd::string& inputTextUTF8)
             }
         }
     }
+#endif
 
     if (changedText)
     {
@@ -1475,11 +1484,13 @@ void UiTextInputComponent::CheckStartTextInput()
         UiCanvasBus::EventResult(canvasSize, canvasEntityId, &UiCanvasBus::Events::GetCanvasSize);
         UiTransformInterface::RectPoints rectPoints;
         UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetViewportSpacePoints, rectPoints);
-        const AZ::Vector2 topLeft = rectPoints.GetAxisAlignedTopLeft();
         const AZ::Vector2 bottomRight = rectPoints.GetAxisAlignedBottomRight();
+        options.m_normalizedMinY = (canvasSize.GetY() > 0.0f) ? bottomRight.GetY() / canvasSize.GetY() : 0.0f;
+
+#if defined(CARBONATED)
+        const AZ::Vector2 topLeft = rectPoints.GetAxisAlignedTopLeft();
         options.m_normalizedMinX = (canvasSize.GetX() > 0.0f) ? topLeft.GetX() / canvasSize.GetX() : 0.0f;
         options.m_normalizedMaxX = (canvasSize.GetX() > 0.0f) ? bottomRight.GetX() / canvasSize.GetX() : 0.0f;
-        options.m_normalizedMinY = (canvasSize.GetY() > 0.0f) ? bottomRight.GetY() / canvasSize.GetY() : 0.0f;
         options.m_normalizedMaxY = (canvasSize.GetY() > 0.0f) ? topLeft.GetY() / canvasSize.GetY() : 0.0f;
 
         AZ_Printf("UiTextInputComponent", "canvasSize: %.2f, %.2f", canvasSize.GetX(), canvasSize.GetY());
@@ -1489,6 +1500,7 @@ void UiTextInputComponent::CheckStartTextInput()
         AZ_Printf("UiTextInputComponent", "options.m_normalizedMaxX: %.4f", options.m_normalizedMaxX);
         AZ_Printf("UiTextInputComponent", "options.m_normalizedMinY: %.4f", options.m_normalizedMinY);
         AZ_Printf("UiTextInputComponent", "options.m_normalizedMaxY: %.4f", options.m_normalizedMaxY);
+#endif
 
         UiCanvasBus::EventResult(options.m_localUserId, canvasEntityId, &UiCanvasBus::Events::GetLocalUserIdInputFilter);
 

@@ -22,9 +22,6 @@
     AzFramework::InputDeviceVirtualKeyboard::Implementation* m_inputDevice;
     UITextField* m_textField;
 @public
-    float m_activeTextFieldNormalizedLeftX;
-    float m_activeTextFieldNormalizedRightX;
-    float m_activeTextFieldNormalizedTopY;
     float m_activeTextFieldNormalizedBottomY;
 }
 
@@ -45,12 +42,6 @@
 - (BOOL)textField: (UITextField*)textField
         shouldChangeCharactersInRange: (NSRange)range
         replacementString: (NSString*)string;
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-- (BOOL)textFieldShouldEndEditing:(UITextField *)textField;
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-- (void)textFieldDidEndEditing:(UITextField *)textField;
 @end // VirtualKeyboardTextFieldDelegate interface
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -109,22 +100,6 @@
     AZ_Printf("VirtualKeyboard", "superview bounds - width: %.2f, height: %.2f", m_textField.superview.bounds.size.width, m_textField.superview.bounds.size.height);
     AZ_Printf("VirtualKeyboard", "offsetViewRect - x: %.2f, y: %.2f, width: %.2f, height: %.2f", offsetViewRect.origin.x, offsetViewRect.origin.y, offsetViewRect.size.width, offsetViewRect.size.height);
 
-    float textFieldWidth = (m_activeTextFieldNormalizedRightX - m_activeTextFieldNormalizedLeftX) * m_textField.superview.bounds.size.width;
-    float textFieldHeight = (m_activeTextFieldNormalizedBottomY - m_activeTextFieldNormalizedTopY) * m_textField.superview.bounds.size.height;
-    float lineHeight = textFieldHeight * 0.8f;
-
-    CGRect textFieldRect = CGRectMake(m_activeTextFieldNormalizedLeftX * m_textField.superview.bounds.size.width + textFieldHeight * 0.1f,
-                                      m_activeTextFieldNormalizedTopY * m_textField.superview.bounds.size.height + textFieldHeight * 0.1f,
-                                      textFieldWidth - textFieldHeight * 0.2f, textFieldHeight * 0.8f);
-    textFieldRect = [m_textField.superview convertRect: textFieldRect toView: nil];
-
-    m_textField.frame = textFieldRect;
-
-    AZ_Printf("VirtualKeyboard", "textFieldHeight - %.2f", textFieldHeight);
-    AZ_Printf("VirtualKeyboard", "textFieldWidth - %.2f", textFieldWidth);
-    AZ_Printf("VirtualKeyboard", "lineHeight - %.2f", lineHeight);
-    AZ_Printf("VirtualKeyboard", "textFieldRect - x: %.2f, y: %.2f, width: %.2f, height: %.2f", textFieldRect.origin.x, textFieldRect.origin.y, textFieldRect.size.width, textFieldRect.size.height);
-
     m_textField.superview.frame = offsetViewRect;
 }
 
@@ -135,7 +110,7 @@
     m_inputDevice->QueueRawCommandEvent(AzFramework::InputDeviceVirtualKeyboard::Command::EditClear);
 
     // Return false so that the text field itself does not update.
-    return TRUE;
+    return FALSE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -153,28 +128,19 @@
         shouldChangeCharactersInRange: (NSRange)range
         replacementString: (NSString*)string
 {
+#if defined(CARBONATED)
+    NSString *newText = [textField.text stringByReplacingCharactersInRange:range withString:string];
+    m_inputDevice->QueueRawTextEvent(newText.UTF8String);
+
+    return TRUE;
+#else
     // If the string length is 0, the user has pressed the backspace key on the virtual keyboard.
-    //const AZStd::string textUTF8 = string.length ? string.UTF8String : "\b";
-    //m_inputDevice->QueueRawTextEvent(textUTF8);
+    const AZStd::string textUTF8 = string.length ? string.UTF8String : "\b";
+    m_inputDevice->QueueRawTextEvent(textUTF8);
 
     // Return false so that the text field itself does not update.
-    return TRUE;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-- (BOOL)textFieldShouldEndEditing:(UITextField *)textField
-{
-    AZ_Printf("VirtualKeyboard", "textFieldShouldEndEditing %s", textField.text.UTF8String);
-    m_inputDevice->QueueRawTextEvent(textField.text.UTF8String);
-    m_inputDevice->TickInputDevice();
-
-	return TRUE;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-- (void)textFieldDidEndEditing:(UITextField *)textField
-{
-    AZ_Printf("VirtualKeyboard", "textFieldDidEndEditing %s", textField.text.UTF8String);
+    return FALSE;
+#endif
 }
 @end // VirtualKeyboardTextFieldDelegate implementation
 
@@ -313,12 +279,26 @@ namespace AzFramework
 
         // On iOS we must set m_activeTextFieldNormalizedBottomY before showing the virtual keyboard
         // by calling becomeFirstResponder, which then sends a UIKeyboardWillChangeFrameNotification.
-        m_textFieldDelegate->m_activeTextFieldNormalizedLeftX = options.m_normalizedMinX;
-        m_textFieldDelegate->m_activeTextFieldNormalizedRightX = options.m_normalizedMaxX;
-        m_textFieldDelegate->m_activeTextFieldNormalizedTopY = options.m_normalizedMaxY;
         m_textFieldDelegate->m_activeTextFieldNormalizedBottomY = options.m_normalizedMinY;
 
         [m_textField becomeFirstResponder];
+
+#if defined(CARBONATED)
+        // Position text field
+        float textFieldWidth = (options.m_normalizedMaxX - options.m_normalizedMinX) * m_textField.superview.bounds.size.width;
+        float textFieldHeight = (options.m_normalizedMinY - options.m_normalizedMaxY) * m_textField.superview.bounds.size.height;
+
+        CGRect textFieldRect = CGRectMake(options.m_normalizedMinX * m_textField.superview.bounds.size.width + textFieldHeight * 0.1f,
+                                          options.m_normalizedMaxY * m_textField.superview.bounds.size.height + textFieldHeight * 0.1f,
+                                          textFieldWidth - textFieldHeight * 0.2f, textFieldHeight * 0.8f);
+        textFieldRect = [m_textField.superview convertRect: textFieldRect toView: nil];
+
+        m_textField.frame = textFieldRect;
+
+        AZ_Printf("VirtualKeyboard", "textFieldHeight - %.2f", textFieldHeight);
+        AZ_Printf("VirtualKeyboard", "textFieldWidth - %.2f", textFieldWidth);
+        AZ_Printf("VirtualKeyboard", "textFieldRect - x: %.2f, y: %.2f, width: %.2f, height: %.2f", textFieldRect.origin.x, textFieldRect.origin.y, textFieldRect.size.width, textFieldRect.size.height);
+#endif
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -326,9 +306,6 @@ namespace AzFramework
     {
         // On iOS we must set m_activeTextFieldNormalizedBottomY before hiding the virtual keyboard
         // by calling resignFirstResponder, which then sends a UIKeyboardWillChangeFrameNotification.
-        m_textFieldDelegate->m_activeTextFieldNormalizedLeftX = 0;
-        m_textFieldDelegate->m_activeTextFieldNormalizedRightX = 0;
-        m_textFieldDelegate->m_activeTextFieldNormalizedTopY = 0;
         m_textFieldDelegate->m_activeTextFieldNormalizedBottomY = 0.0f;
 
         [m_textField resignFirstResponder];
