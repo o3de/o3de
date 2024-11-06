@@ -575,7 +575,7 @@ namespace AZ
     AZ_MATH_INLINE Vector3 Matrix3x4::RetrieveScale() const
     {
         return Vector3(GetColumn(0).GetLength(), GetColumn(1).GetLength(), GetColumn(2).GetLength()) *
-            (GetDeterminant3x3() >= 0.f ? 1.f : -1.f);
+            AZ::GetSign(GetDeterminant3x3());
     }
 
     AZ_MATH_INLINE Vector3 Matrix3x4::RetrieveScaleSq() const
