@@ -55,6 +55,9 @@
             <Custom Action="MoveCMake" After="ExtractCMake">
                 NOT Installed Or REINSTALL
             </Custom>
+            <Custom Action="ConfigurePython" After="MoveCMake">
+                NOT Installed Or REINSTALL
+            </Custom>
             <!-- limit the unregister action to full uninstall -->
             <Custom Action="UnRegisterEngine" After="InstallInitialize">
                 (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
