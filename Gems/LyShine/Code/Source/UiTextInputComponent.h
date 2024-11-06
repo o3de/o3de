@@ -211,4 +211,8 @@ private: // data
     bool m_clipInputText;               //!< True if input text should be visually clipped to child text element, false otherwise.
 
     bool m_enableClipboard;             //!< True if copy/cut/paste should be supported, false otherwise.
+
+#if defined(CARBONATED)
+    bool m_showSendOnReturnKey;         //!< True if return key on virtual keyboard should show send, false otherwise.
+#endif
 };

@@ -181,6 +181,9 @@ UiTextInputComponent::UiTextInputComponent()
     , m_isPasswordField(false)
     , m_clipInputText(true)
     , m_enableClipboard(true)
+#if defined(CARBONATED)
+    , m_showSendOnReturnKey(false)
+#endif
 {
 }
 
@@ -1301,7 +1304,11 @@ void UiTextInputComponent::Reflect(AZ::ReflectContext* context)
     if (serializeContext)
     {
         serializeContext->Class<UiTextInputComponent, UiInteractableComponent>()
+#if defined(CARBONATED)
+            ->Version(9, &VersionConverter)
+#else
             ->Version(8, &VersionConverter)
+#endif
         // Elements group
             ->Field("Text", &UiTextInputComponent::m_textEntity)
             ->Field("PlaceHolderText", &UiTextInputComponent::m_placeHolderTextEntity)
@@ -1314,7 +1321,10 @@ void UiTextInputComponent::Reflect(AZ::ReflectContext* context)
             ->Field("ReplacementCharacter", &UiTextInputComponent::m_replacementCharacter)
             ->Field("ClipInputText", &UiTextInputComponent::m_clipInputText)
             ->Field("EnableClipboard", &UiTextInputComponent::m_enableClipboard)
-        // Actions group
+#if defined(CARBONATED)
+            ->Field("ShowSendOnReturnKey", &UiTextInputComponent::m_showSendOnReturnKey)
+#endif
+            // Actions group
             ->Field("ChangeAction", &UiTextInputComponent::m_changeAction)
             ->Field("EndEditAction", &UiTextInputComponent::m_endEditAction)
             ->Field("EnterAction", &UiTextInputComponent::m_enterAction);
@@ -1371,6 +1381,10 @@ void UiTextInputComponent::Reflect(AZ::ReflectContext* context)
                     "Clip input text", "When checked, the input text is clipped to this element's rect.");
                 editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiTextInputComponent::m_enableClipboard,
                     "Enable clipboard", "When checked, Ctrl-C, Ctrl-X, and Ctrl-V events will be handled");
+#if defined(CARBONATED)
+                editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiTextInputComponent::m_showSendOnReturnKey,
+                    "Show send key", "When checked, return key on virtual keyboard will show send");
+#endif
             }
 
             // Actions group
@@ -1498,6 +1512,8 @@ void UiTextInputComponent::CheckStartTextInput()
         options.m_normalizedMinY = (canvasSize.GetY() > 0.0f) ? bottomRight.GetY() / canvasSize.GetY() : 0.0f;
 
 #if defined(CARBONATED)
+        options.m_showSendOnReturnKey = m_showSendOnReturnKey;
+
         const AZ::Vector2 topLeft = rectPoints.GetAxisAlignedTopLeft();
         options.m_normalizedMinX = (canvasSize.GetX() > 0.0f) ? topLeft.GetX() / canvasSize.GetX() : 0.0f;
         options.m_normalizedMaxX = (canvasSize.GetX() > 0.0f) ? bottomRight.GetX() / canvasSize.GetX() : 0.0f;
