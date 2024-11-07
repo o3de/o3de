@@ -302,6 +302,10 @@ namespace AzFramework
         {
             [m_textField setReturnKeyType:UIReturnKeySend];
         }
+        else
+        {
+			[m_textField setReturnKeyType:UIReturnKeyDefault];
+		}
 #endif
     }
 
