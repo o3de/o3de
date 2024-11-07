@@ -283,8 +283,6 @@ namespace AzFramework
         // by calling becomeFirstResponder, which then sends a UIKeyboardWillChangeFrameNotification.
         m_textFieldDelegate->m_activeTextFieldNormalizedBottomY = options.m_normalizedMinY;
 
-        [m_textField becomeFirstResponder];
-
 #if defined(CARBONATED)
         // Position text field
         float textFieldWidth = (options.m_normalizedMaxX - options.m_normalizedMinX) * m_textField.superview.bounds.size.width;
@@ -307,6 +305,8 @@ namespace AzFramework
 			[m_textField setReturnKeyType:UIReturnKeyDefault];
 		}
 #endif
+
+        [m_textField becomeFirstResponder];
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
