@@ -302,8 +302,8 @@ namespace AzFramework
         }
         else
         {
-			[m_textField setReturnKeyType:UIReturnKeyDefault];
-		}
+            [m_textField setReturnKeyType:UIReturnKeyDefault];
+        }
 #endif
 
         [m_textField becomeFirstResponder];
