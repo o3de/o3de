@@ -83,6 +83,8 @@ namespace AzToolsFramework
         void SetFilterString(AZStd::string filterString);
         void InvalidateAll(const char* filter = nullptr);
         void QueuePropertyEditorInvalidation(PropertyModificationRefreshLevel refreshLevel);
+        void QueuePropertyEditorInvalidationForComponent(AZ::EntityComponentIdPair entityComponentIdPair, PropertyModificationRefreshLevel refreshLevel);
+        
         void CancelQueuedRefresh();
         void PreventRefresh(bool shouldPrevent);
         void contextMenuEvent(QContextMenuEvent *event) override;

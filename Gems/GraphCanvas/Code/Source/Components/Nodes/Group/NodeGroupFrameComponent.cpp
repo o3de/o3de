@@ -103,9 +103,9 @@ namespace GraphCanvas
     {
         if (classElement.GetVersion() == 1)
         {
-            AZ::Crc32 colorId = AZ_CRC("Color", 0x665648e9);
-            AZ::Crc32 heightId = AZ_CRC("DisplayHeight", 0x7e251278);
-            AZ::Crc32 widthId = AZ_CRC("DisplayWidth", 0x5a55d875);
+            AZ::Crc32 colorId = AZ_CRC_CE("Color");
+            AZ::Crc32 heightId = AZ_CRC_CE("DisplayHeight");
+            AZ::Crc32 widthId = AZ_CRC_CE("DisplayWidth");
 
             NodeGroupFrameComponent::NodeGroupFrameComponentSaveData saveData;
 

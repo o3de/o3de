@@ -34,8 +34,6 @@
 #include <AzQtComponents/Components/StyledDockWidget.h>
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
 
-#include "Objects/EntityObject.h"
-
 #include "PluginManager.h"
 #include "Util/3DConnexionDriver.h"
 #include "UiAnimViewNewSequenceDialog.h"
@@ -47,8 +45,6 @@
 #include "UiEditorAnimationBus.h"
 
 #include "EditorCommon.h"
-
-#include <QtViewPane.h>
 
 #include <QAction>
 #include <QComboBox>
@@ -850,26 +846,6 @@ void CUiAnimViewDialog::OnSlideKey()
 void CUiAnimViewDialog::OnScaleKey()
 {
     m_wndDopeSheet->SetMouseActionMode(eUiAVActionMode_ScaleKey);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CUiAnimViewDialog::OnSyncSelectedTracksToBase()
-{
-    CUiAnimViewSequence* pSequence = m_animationContext->GetSequence();
-    if (pSequence)
-    {
-        pSequence->SyncSelectedTracksToBase();
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CUiAnimViewDialog::OnSyncSelectedTracksFromBase()
-{
-    CUiAnimViewSequence* pSequence = m_animationContext->GetSequence();
-    if (pSequence)
-    {
-        pSequence->SyncSelectedTracksFromBase();
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -44,7 +44,7 @@ namespace Camera
                     ->DataElement(0, &RotateCameraLookAt::m_rotationSpeedScale, "Rotation Speed Scale", "Scale greater than 1 to speed up, between 0 and 1 to slow down")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.001f)
                         ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshAttributesAndValues"));
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"));
             }
         }
     }

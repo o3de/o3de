@@ -31,9 +31,9 @@ namespace AZ
             AZ_RTTI(AnyAsset, "{2643D686-3E7C-450C-BB61-427EDEBF13D5}", AZ::Data::AssetData);
             AZ_CLASS_ALLOCATOR(AnyAsset, SystemAllocator);
 
-            static const char* DisplayName;
-            static const char* Group;
-            static const char* Extension;
+            static constexpr const char* DisplayName{ "AnyAsset" };
+            static constexpr const char* Group{ "Common" };
+            static constexpr const char* Extension{ "azasset" };
             
             template <typename T>
             const T* GetDataAs() const

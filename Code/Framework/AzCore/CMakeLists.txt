@@ -87,6 +87,8 @@ ly_add_target(
             ${pal_dir}
             ${common_dir}
     BUILD_DEPENDENCIES
+        PRIVATE
+            ${AZ_CORE_PIX_BUILD_DEPENDENCIES}
         PUBLIC
             3rdParty::Lua
             3rdParty::RapidJSON
@@ -94,7 +96,6 @@ ly_add_target(
             3rdParty::ZLIB
             3rdParty::zstd
             3rdParty::cityhash
-            ${AZ_CORE_PIX_BUILD_DEPENDENCIES}
             AZ::O3DEKernel
 )
 ly_add_source_properties(
@@ -151,7 +152,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 ${common_dir}
         BUILD_DEPENDENCIES
             PRIVATE
-                3rdParty::googletest::GMock
+                AZ::AzTest
                 3rdParty::GoogleBenchmark
     )
 

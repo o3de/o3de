@@ -27,7 +27,7 @@ namespace ScriptCanvas
         protected:
             void ConfigureSlots() override;
 
-            AZ::Crc32 GetDataDynamicGroup() const { return AZ_CRC("LerpDataDynamicGroup", 0x62b5f89e); }
+            AZ::Crc32 GetDataDynamicGroup() const { return AZ_CRC_CE("LerpDataDynamicGroup"); }
         };
 
     }

@@ -83,7 +83,7 @@ namespace Internal
 
     bool AppearsInUIComponentMenu(const AZ::SerializeContext::ClassData& componentClassData, bool forCanvasEntity)
     {
-        return AzToolsFramework::AppearsInAddComponentMenu(componentClassData, forCanvasEntity ? AZ_CRC("CanvasUI", 0xe1e05605) : AZ_CRC("UI", 0x27ff46b0));
+        return AzToolsFramework::AppearsInAddComponentMenu(componentClassData, forCanvasEntity ? AZ_CRC_CE("CanvasUI") : AZ_CRC_CE("UI"));
     }
 
     bool IsAddableByUser(const AZ::SerializeContext::ClassData& componentClassData)

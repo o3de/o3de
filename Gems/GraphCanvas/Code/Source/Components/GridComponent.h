@@ -33,8 +33,8 @@ namespace GraphCanvas
         // AZ::Component
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("GraphCanvas_GridService", 0x58f7e1d8));
-            provided.push_back(AZ_CRC("GraphCanvas_SceneMemberService", 0xe9759a2d));
+            provided.push_back(AZ_CRC_CE("GraphCanvas_GridService"));
+            provided.push_back(AZ_CRC_CE("GraphCanvas_SceneMemberService"));
         }
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& /*dependent*/)

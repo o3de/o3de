@@ -56,6 +56,8 @@ namespace AZ
                     ->Event("SetColor", &DirectionalLightRequestBus::Events::SetColor)
                     ->Event("GetIntensity", &DirectionalLightRequestBus::Events::GetIntensity)
                     ->Event("SetIntensity", static_cast<void(DirectionalLightRequestBus::Events::*)(float)>(&DirectionalLightRequestBus::Events::SetIntensity))
+                    ->Event("GetIntensityMode", &DirectionalLightRequestBus::Events::GetIntensityMode)
+                    ->Event("SetIntensityMode", &DirectionalLightRequestBus::Events::SetIntensityMode)
                     ->Event("GetAngularDiameter", &DirectionalLightRequestBus::Events::GetAngularDiameter)
                     ->Event("SetAngularDiameter", &DirectionalLightRequestBus::Events::SetAngularDiameter)
                     ->Event("GetShadowmapSize", &DirectionalLightRequestBus::Events::GetShadowmapSize)
@@ -98,6 +100,7 @@ namespace AZ
                     ->Event("SetLightingChannelMask", &DirectionalLightRequestBus::Events::SetLightingChannelMask)
                     ->VirtualProperty("Color", "GetColor", "SetColor")
                     ->VirtualProperty("Intensity", "GetIntensity", "SetIntensity")
+                    ->VirtualProperty("IntensityMode", "GetIntensityMode", "SetIntensityMode")
                     ->VirtualProperty("AngularDiameter", "GetAngularDiameter", "SetAngularDiameter")
                     ->VirtualProperty("ShadowmapSize", "GetShadowmapSize", "SetShadowmapSize")
                     ->VirtualProperty("CascadeCount", "GetCascadeCount", "SetCascadeCount")
@@ -123,18 +126,18 @@ namespace AZ
 
         void DirectionalLightComponentController::GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+            dependent.push_back(AZ_CRC_CE("TransformService"));
         }
 
         void DirectionalLightComponentController::GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("DirectionalLightService", 0x5270619f));
+            incompatible.push_back(AZ_CRC_CE("DirectionalLightService"));
             incompatible.push_back(AZ_CRC_CE("NonUniformScaleComponent"));
         }
 
         void DirectionalLightComponentController::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("DirectionalLightService", 0x5270619f));
+            provided.push_back(AZ_CRC_CE("DirectionalLightService"));
         }
 
         DirectionalLightComponentController::DirectionalLightComponentController(const DirectionalLightComponentConfig& config)
@@ -199,6 +202,19 @@ namespace AZ
         float DirectionalLightComponentController::GetIntensity() const
         {
             return m_configuration.m_intensity;
+        }
+
+        PhotometricUnit DirectionalLightComponentController::GetIntensityMode() const
+        {
+            return m_configuration.m_intensityMode;
+        }
+
+        void DirectionalLightComponentController::SetIntensityMode(PhotometricUnit unit)
+        {
+            m_photometricValue.ConvertToPhotometricUnit(unit);
+            m_configuration.m_intensityMode = unit;
+            m_configuration.m_intensity = m_photometricValue.GetIntensity();
+            ColorIntensityChanged();
         }
 
         void DirectionalLightComponentController::SetIntensity(float intensity, PhotometricUnit unit)

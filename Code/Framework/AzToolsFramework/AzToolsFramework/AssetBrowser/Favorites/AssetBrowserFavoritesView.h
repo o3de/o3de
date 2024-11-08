@@ -58,12 +58,18 @@ namespace AzToolsFramework
 
             void drawBranches(QPainter* painter, const QRect& rect, const QModelIndex& index) const override;
 
+        protected Q_SLOTS:
+            void SelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+            void ItemClicked(const QModelIndex& index);
+
         private:
             QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserFavoritesModel> m_favoritesModel;
             QScopedPointer<FavoritesEntryDelegate> m_delegate;
             int m_currentHeight = 0;
 
             void OnContextMenu(const QPoint& point);
+
+            void NotifySelection(const QItemSelection& selected);
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

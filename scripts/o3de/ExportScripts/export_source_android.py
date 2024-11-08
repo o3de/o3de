@@ -47,6 +47,17 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
 
     is_installer_sdk = manifest.is_sdk_engine(engine_path=ctx.engine_path)
 
+    # For installed SDKs, only the release monolithic android artifacts are installed with the SDK
+    if is_installer_sdk:
+        # Make sure monolithic artifacts are present
+        if not exp.has_monolithic_artifacts(ctx):
+            logger.error("No monolithic artifacts are detected in the engine installation.")
+            raise exp.ExportProjectError("Trying to build monolithic without libraries.")
+
+        if build_config != exp.BUILD_CONFIG_RELEASE:
+            logger.warning("Only release packages are supported for Android in the O3DE SDK.")
+        build_config = exp.BUILD_CONFIG_RELEASE
+
     android_arg_parser = argparse.ArgumentParser()
     android_subparser = android_arg_parser.add_subparsers(title="Android sub-commands")
     android.add_args(android_subparser)
@@ -123,11 +134,13 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
                 logger.error("Unable to verify signing configuration in build.gradle. Aborting deployment...")
         except FileNotFoundError:
             logger.error("Unable to open build.gradle file. Aborting deployment...")
+    
+    logger.info(f"Project exported to '{target_android_project_path}'.")
+    
         
 
 def export_source_android_parse_args(o3de_context: exp.O3DEScriptExportContext,
-                                     export_config: command_utils.O3DEConfig,
-                                     android_config: command_utils.O3DEConfig):
+                                     export_config: command_utils.O3DEConfig):
     parser = argparse.ArgumentParser(
                     prog=f'o3de.py export-project -es {__file__}',
                     description="Exports a project as an Android APK that is optionally deployed to an android device. "
@@ -141,15 +154,16 @@ def export_source_android_parse_args(o3de_context: exp.O3DEScriptExportContext,
 
     parser.add_argument('--deploy-to-android',action='store_true',help='At completion of build, deploy to a connected android device.')
  
+    default_android_build_path = pathlib.Path(export_config.get_value(key=exp.SETTINGS_DEFAULT_ANDROID_BUILD_PATH.key, default=android.DEFAULT_ANDROID_BUILD_FOLDER))
     parser.add_argument('-abp', '--android-build-path', type=str, 
                                           help=f"The location to write the android project scripts to. Default: '{android.DEFAULT_ANDROID_BUILD_FOLDER}'", 
-                                          default=android.DEFAULT_ANDROID_BUILD_FOLDER) 
+                                          default=default_android_build_path) 
 
-    asset_mode = android_config.get_value(android_support.SETTINGS_ASSET_MODE.key, default=android_support.ASSET_MODE_LOOSE)
+    asset_mode = export_config.get_value(exp.SETTINGS_ANDROID_ASSET_MODE.key, default=exp.ASSET_MODE_LOOSE)
     parser.add_argument('--asset-mode', type=str,
                                             help=f"The mode of asset deployment to use. "
                                                  f" Default: {asset_mode}",
-                                            choices=android_support.ASSET_MODES,
+                                            choices=exp.ASSET_MODES,
                                             default=asset_mode)
 
     if o3de_context is None:
@@ -185,6 +199,11 @@ def export_source_android_run_command(o3de_context: exp.O3DEScriptExportContext,
                                                                           enable_attribute='engine_centric',
                                                                           disable_attribute='project_centric')
     
+    option_android_deploy = export_config.get_parsed_boolean_option(parsed_args=args,
+                                                                    key=exp.SETTINGS_ANDROID_DEPLOY.key,
+                                                                    enable_attribute='deploy_to_android',
+                                                                    disable_attribute='no_deploy_to_android')
+    
     target_android_project_path = pathlib.Path(args.android_build_path)
 
     if not target_android_project_path.is_absolute():
@@ -194,8 +213,6 @@ def export_source_android_run_command(o3de_context: exp.O3DEScriptExportContext,
         o3de_logger.setLevel(logging.ERROR)
     else:
         o3de_logger.setLevel(logging.INFO)
-
-    
 
     try:
         export_source_android_project(ctx=o3de_context,
@@ -212,7 +229,7 @@ def export_source_android_run_command(o3de_context: exp.O3DEScriptExportContext,
                                       tools_build_path=args.tools_build_path,
                                       max_bundle_size=args.max_bundle_size,
                                       fail_on_asset_errors=fail_on_asset_errors,
-                                      deploy_to_device=args.deploy_to_android,
+                                      deploy_to_device=option_android_deploy,
                                       logger=o3de_logger)
     except exp.ExportProjectError as err:
         print(err)
@@ -244,8 +261,8 @@ if "o3de_context" in globals():
         android_config = android_support.get_android_config(project_path=None)
         
 
-    args = export_source_android_parse_args(o3de_context, export_config, android_config)
+    args = export_source_android_parse_args(o3de_context, export_config)
 
     export_source_android_run_command(o3de_context, args, export_config, o3de_logger)
-    o3de_logger.info(f"Finished exporting android project to {args.android_build_path}")
+    o3de_logger.info(f"Finished exporting.")
     sys.exit(0)

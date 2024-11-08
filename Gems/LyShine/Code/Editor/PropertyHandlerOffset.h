@@ -28,7 +28,7 @@ public:
 
     AZ::u32 GetHandlerName(void) const override
     {
-        return AZ_CRC("Offset", 0x590acad0);
+        return AZ_CRC_CE("Offset");
     }
 
     bool IsDefaultHandler() const override

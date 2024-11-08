@@ -53,21 +53,21 @@ namespace UnitTest
                 {
                     editContext->Class<LeatherBootsComponent>("Leather Boots", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"));
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
                 }
             }
         }
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ShoesService", 0xaa20aadf));
+            provided.push_back(AZ_CRC_CE("ShoesService"));
         }
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("ShoesService", 0xaa20aadf));
+            incompatible.push_back(AZ_CRC_CE("ShoesService"));
         }
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("SocksService", 0x51e58440));
+            required.push_back(AZ_CRC_CE("SocksService"));
         }
     };
 
@@ -90,17 +90,17 @@ namespace UnitTest
                 {
                     editContext->Class<WoolSocksComponent>("Wool Socks", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"));
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
                 }
             }
         }
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("SocksService", 0x51e58440));
+            provided.push_back(AZ_CRC_CE("SocksService"));
         }
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("SocksService", 0x51e58440));
+            incompatible.push_back(AZ_CRC_CE("SocksService"));
         }
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& /*required*/)
         {
@@ -124,7 +124,7 @@ namespace UnitTest
                 {
                     editContext->Class<HatesSocksComponent>("Hates Socks", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"));
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
                 }
             }
         }
@@ -133,7 +133,7 @@ namespace UnitTest
         }
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("SocksService", 0x51e58440));
+            incompatible.push_back(AZ_CRC_CE("SocksService"));
         }
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& /*required*/)
         {
@@ -157,21 +157,21 @@ namespace UnitTest
                 {
                     editContext->Class<BlueJeansComponent>("Blue Jeans", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"));
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
                 }
             }
         }
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("TrousersService", 0x15edf105));
+            provided.push_back(AZ_CRC_CE("TrousersService"));
         }
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("TrousersService", 0x15edf105));
+            incompatible.push_back(AZ_CRC_CE("TrousersService"));
         }
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("UnderwearService", 0x915ec03a));
+            required.push_back(AZ_CRC_CE("UnderwearService"));
         }
     };
 
@@ -192,17 +192,17 @@ namespace UnitTest
                 {
                     editContext->Class<WhiteBriefsComponent>("White Briefs", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"));
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
                 }
             }
         }
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("UnderwearService", 0x915ec03a));
+            provided.push_back(AZ_CRC_CE("UnderwearService"));
         }
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("UnderwearService", 0x915ec03a));
+            incompatible.push_back(AZ_CRC_CE("UnderwearService"));
         }
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& /*required*/)
         {
@@ -226,17 +226,17 @@ namespace UnitTest
                 {
                     editContext->Class<HeartBoxersComponent>("Heart Boxers", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"));
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
                 }
             }
         }
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("UnderwearService", 0x915ec03a));
+            provided.push_back(AZ_CRC_CE("UnderwearService"));
         }
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("UnderwearService", 0x915ec03a));
+            incompatible.push_back(AZ_CRC_CE("UnderwearService"));
         }
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& /*required*/)
         {
@@ -260,7 +260,7 @@ namespace UnitTest
                 {
                     editContext->Class<KnifeSheathComponent>("Knife Sheath", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"));
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
                 }
             }
         }
@@ -272,7 +272,7 @@ namespace UnitTest
         }
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("BeltService", 0xba4df957));
+            required.push_back(AZ_CRC_CE("BeltService"));
         }
     };
 
@@ -767,7 +767,7 @@ namespace UnitTest
         ASSERT_EQ(pendingComponentInfo.m_validComponentsThatAreIncompatible.size(), 0);
         ASSERT_EQ(pendingComponentInfo.m_pendingComponentsWithRequiredServices.size(), 0);
         // And that missing service should be the BeltService
-        ASSERT_EQ(pendingComponentInfo.m_missingRequiredServices[0], AZ_CRC("BeltService"));
+        ASSERT_EQ(pendingComponentInfo.m_missingRequiredServices[0], AZ_CRC_CE("BeltService"));
 
         // Entity 1 should remain untouched
         ASSERT_EQ(2, m_entity1Counter.GetCount());
@@ -800,7 +800,7 @@ namespace UnitTest
         ASSERT_EQ(pendingComponentInfo.m_validComponentsThatAreIncompatible.size(), 0);
         ASSERT_EQ(pendingComponentInfo.m_pendingComponentsWithRequiredServices.size(), 0);
         // And that missing service should be the "UnderwearService"
-        ASSERT_EQ(pendingComponentInfo.m_missingRequiredServices[0], AZ_CRC("UnderwearService"));
+        ASSERT_EQ(pendingComponentInfo.m_missingRequiredServices[0], AZ_CRC_CE("UnderwearService"));
 
         outcome = AzToolsFramework::AddComponents<WhiteBriefsComponent>::ToEntities(m_entity1);
 
@@ -1173,12 +1173,12 @@ namespace UnitTest
 
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
             {
-                provided.push_back(AZ_CRC("ValidComponentService"));
+                provided.push_back(AZ_CRC_CE("ValidComponentService"));
             }
 
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
             {
-                incompatible.push_back(AZ_CRC("ValidComponentService"));
+                incompatible.push_back(AZ_CRC_CE("ValidComponentService"));
             }
 
             static void Reflect(ReflectContext* reflection)
@@ -1192,7 +1192,7 @@ namespace UnitTest
                     ec->Class<VisibleComponent>("Visible Component", "A class that should show up in the property editor")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c));
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
                 }
             }
         };
@@ -1214,12 +1214,12 @@ namespace UnitTest
 
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
             {
-                provided.push_back(AZ_CRC("HiddenComponentService"));
+                provided.push_back(AZ_CRC_CE("HiddenComponentService"));
             }
 
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
             {
-                incompatible.push_back(AZ_CRC("HiddenComponentService"));
+                incompatible.push_back(AZ_CRC_CE("HiddenComponentService"));
             }
 
             static void Reflect(ReflectContext* reflection)

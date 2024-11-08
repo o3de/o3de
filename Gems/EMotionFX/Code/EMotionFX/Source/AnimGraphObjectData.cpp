@@ -18,7 +18,7 @@ namespace EMotionFX
     AZ_CLASS_ALLOCATOR_IMPL(AnimGraphObjectData, AnimGraphObjectDataAllocator)
 
     AnimGraphObjectData::AnimGraphObjectData(AnimGraphObject* object, AnimGraphInstance* animGraphInstance)
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_object             = object;
         m_animGraphInstance = animGraphInstance;

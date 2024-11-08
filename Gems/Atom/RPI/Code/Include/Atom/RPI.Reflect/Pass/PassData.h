@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RHI.Reflect/Limits.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/std/containers/vector.h>
@@ -51,6 +52,20 @@ namespace AZ
             PipelineGlobalConnectionList m_pipelineGlobalConnections;
 
             Name m_pipelineViewTag;
+
+            int m_deviceIndex = RHI::MultiDevice::InvalidDeviceIndex;
+
+
+            //! Only applicable for ParentPass.
+            //! If set to "true" then:
+            //! 0- You may get performance benefits if the GPU is a Tiled Based Rasterizer and the RHI supports TBR (like Vulkan).
+            //!    This is typically the case for Mobile and XR platforms.
+            //! 1- All Child passes must be subclass of RenderPass and return true to CanBecomeSubpass().
+            //! 2- The Child passes will be considered as mergeable into sequential subpasses.
+            bool m_mergeChildrenAsSubpasses = false;
+
+            //! If the pass can be used as a subpass.
+            bool m_canBecomeASubpass = true;
         };
     } // namespace RPI
 } // namespace AZ

@@ -37,14 +37,14 @@ real2 SampleNormalXY(Texture2D map, sampler mapSampler, float2 uv, float4 uvDxDy
         return real2(0, 0);
     }
 
-    real4 sampledValue;
+    real2 sampledValue;
     if (customDerivatives)
     {
-        sampledValue = real4(map.SampleGrad(mapSampler, uv, uvDxDy.xy, uvDxDy.zw));
+        sampledValue = real2(map.SampleGrad(mapSampler, uv, uvDxDy.xy, uvDxDy.zw).xy);
     }
     else
     {
-        sampledValue = real4(map.Sample(mapSampler, uv));
+        sampledValue = real2(map.Sample(mapSampler, uv).xy);
     }
     
 #if AZ_TRAIT_ASTC_COMPRESSION

@@ -88,12 +88,12 @@ namespace Maestro
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("SequenceService", 0x7cbe5938));
+            provided.push_back(AZ_CRC_CE("SequenceService"));
         }
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
             // This guarantees that only one SequenceComponent will ever be on an entity
-            incompatible.push_back(AZ_CRC("SequenceService", 0x7cbe5938));
+            incompatible.push_back(AZ_CRC_CE("SequenceService"));
             incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 

@@ -20,11 +20,15 @@
 #include <AzCore/Dependency/Dependency.h>
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/Outcome/Outcome.h>
+#include <AzCore/std/string/string_view.h>
 
 namespace O3DE::ProjectManager
 {
     namespace ProjectUtils
     {
+        static constexpr AZStd::string_view EngineJsonFilename = "engine.json";
+        static constexpr AZStd::string_view ProjectJsonFilename = "project.json";
+
         bool RegisterProject(const QString& path, QWidget* parent = nullptr);
         bool UnregisterProject(const QString& path, QWidget* parent = nullptr);
         bool CopyProjectDialog(const QString& origPath, ProjectInfo& newProjectInfo, QWidget* parent = nullptr);
@@ -34,14 +38,18 @@ namespace O3DE::ProjectManager
 
         bool ReplaceProjectFile(const QString& origFile, const QString& newFile, QWidget* parent = nullptr, bool interactive = true);
 
-        bool FindSupportedCompiler(QWidget* parent = nullptr);
-        AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform();
+        bool FindSupportedCompiler(const ProjectInfo& projectInfo, QWidget* parent = nullptr);
+        AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform(const ProjectInfo& projectInfo);
 
         //! Detect if cmake is installed
         //! Does NOT detect if the version of cmake required to run O3DE
         //! The cmake exeuctable is only tool suitable for detecting the minimum cmake version
         //! required, so it is left up to it to detect the version and error out.
         AZ::Outcome<QString, QString> FindSupportedCMake();
+
+        //! Detect if Ninja-build.Ninja is installed
+        //! This is only required if the project is a Script-Only project.
+        AZ::Outcome<QString, QString> FindSupportedNinja();
 
         ProjectManagerScreen GetProjectManagerScreen(const QString& screen);
 
@@ -172,4 +180,11 @@ namespace O3DE::ProjectManager
             QWidget* parent = nullptr,
             QMessageBox::StandardButtons buttons = QMessageBox::Ok);
     } // namespace ProjectUtils
+
+    namespace ErrorMessages
+    {
+        static const char * ExportCancelled =   "Export Cancelled.";
+        static const char * LogOpenFailureMsg = "Failed to open log file.";
+        static const char * LogPathFailureMsg = "Failed to retrieve log file path.";
+    }
 } // namespace O3DE::ProjectManager

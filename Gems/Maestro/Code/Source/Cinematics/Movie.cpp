@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -85,7 +86,6 @@ void CMovieSystem::RegisterNodeTypes()
 {
     REGISTER_NODE_TYPE(Entity)
     REGISTER_NODE_TYPE(Director)
-    REGISTER_NODE_TYPE(Camera)
     REGISTER_NODE_TYPE(CVar)
     REGISTER_NODE_TYPE(ScriptVar)
     REGISTER_NODE_TYPE(Material)
@@ -109,13 +109,11 @@ void CMovieSystem::RegisterNodeTypes()
 // If you get an assert in this function, it means two param types have the same enum value.
 void CMovieSystem::RegisterParamTypes()
 {
-    REGISTER_PARAM_TYPE(FOV)
     REGISTER_PARAM_TYPE(Position)
     REGISTER_PARAM_TYPE(Rotation)
     REGISTER_PARAM_TYPE(Scale)
     REGISTER_PARAM_TYPE(Event)
     REGISTER_PARAM_TYPE(Visibility)
-    REGISTER_PARAM_TYPE(Camera)
     REGISTER_PARAM_TYPE(Animation)
     REGISTER_PARAM_TYPE(Sound)
     REGISTER_PARAM_TYPE(Sequence)
@@ -208,7 +206,6 @@ CMovieSystem::CMovieSystem(ISystem* pSystem)
     m_pCallback = nullptr;
     m_pUser = nullptr;
     m_bPaused = false;
-    m_bEnableCameraShake = true;
     m_bCutscenesPausedInEditor = true;
     m_sequenceStopBehavior = eSSB_GotoEndTime;
     m_lastUpdateTime = AZ::Time::ZeroTimeUs;
@@ -552,27 +549,6 @@ int CMovieSystem::OnCameraRenamed(const char* before, const char* after)
                 }
             }
             break;
-        }
-    }
-
-    // For every sequence,
-    for (Sequences::iterator it = m_sequences.begin(); it != m_sequences.end(); ++it)
-    {
-        // Find camera nodes.
-        for (int k = 0; k < (*it)->GetNodeCount(); ++k)
-        {
-            IAnimNode* node = (*it)->GetNode(k);
-
-            if (node->GetType() != AnimNodeType::Camera)
-            {
-                continue;
-            }
-
-            // Update its name, if it's a corresponding one.
-            if (_stricmp(node->GetName(), before) == 0)
-            {
-                node->SetName(after);
-            }
         }
     }
 
@@ -1220,11 +1196,6 @@ void CMovieSystem::SetCameraParams(const SCameraParams& Params)
     {
         m_pUser->SetActiveCamera(m_ActiveCameraParams);
     }
-
-    if (m_pCallback)
-    {
-        m_pCallback->OnSetCamera(m_ActiveCameraParams);
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1439,6 +1410,12 @@ void CMovieSystem::GoToFrameCmd(IConsoleCmdArgs* pArgs)
         return;
     }
 
+    // Console commands are always interpreted in the culture invariant locale because
+    // they often come from files (as in, .cfg files) which need to be portable.  We set the scoped locale
+    // to the invariant locale here so that atof() functions in that locale regardless of app locale.
+
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
+
     const char* pSeqName = pArgs->GetArg(1);
     float targetFrame = (float)atof(pArgs->GetArg(2));
 
@@ -1471,6 +1448,8 @@ void CMovieSystem::PlaySequencesCmd(IConsoleCmdArgs* pArgs)
 
 void CMovieSystem::GoToFrame(const char* seqName, float targetFrame)
 {
+    AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
+
     assert(seqName != NULL);
 
     if (gEnv->IsEditor() && gEnv->IsEditorGameMode() == false)

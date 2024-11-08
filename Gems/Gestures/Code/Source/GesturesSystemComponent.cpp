@@ -17,19 +17,19 @@ namespace Gestures
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void GesturesSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("GestureInputService"));
+        provided.push_back(AZ_CRC_CE("GestureInputService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void GesturesSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("GestureInputService"));
+        incompatible.push_back(AZ_CRC_CE("GestureInputService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void GesturesSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("InputSystemService", 0x5438d51a));
+        required.push_back(AZ_CRC_CE("InputSystemService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

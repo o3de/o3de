@@ -17,3 +17,4 @@
 #include <Atom/Features/RayTracing/RayTracingSceneSrg.azsli>
 #include <Atom/Features/RayTracing/RayTracingMaterialSrg.azsli>
 #include <Atom/Features/RayTracing/RayTracingGlobalSrg.azsli>
+#include <Atom/Features/Bindless.azsli>

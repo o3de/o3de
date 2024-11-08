@@ -227,6 +227,7 @@ namespace AzToolsFramework
             const AzToolsFramework::EntityIdList& newlySelectedEntities,
             const AzToolsFramework::EntityIdList& newlyDeselectedEntities) override;
         void InvalidatePropertyDisplay(PropertyModificationRefreshLevel level) override;
+        void InvalidatePropertyDisplayForComponent(AZ::EntityComponentIdPair componentId, PropertyModificationRefreshLevel level) override;
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
@@ -621,6 +622,9 @@ namespace AzToolsFramework
         bool m_isAlreadyQueuedRefresh;
         bool m_shouldScrollToNewComponents;
         bool m_shouldScrollToNewComponentsQueued;
+
+        int m_savedVerticalScroll = -1;
+        int m_savedHorizontalScroll = -1;
 
         AZStd::string m_filterString;
 

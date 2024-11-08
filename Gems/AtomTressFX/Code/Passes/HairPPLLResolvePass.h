@@ -76,7 +76,6 @@ namespace AZ
 
                 HairGlobalSettings m_hairGlobalSettings;
                 HairFeatureProcessor* m_featureProcessor = nullptr;
-                AZ::RPI::ShaderVariantKey m_shaderOptions;
             };
 
         } // namespace Hair

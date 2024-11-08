@@ -47,6 +47,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                               archive_output_format: str = "none",
                               fail_on_asset_errors: bool = False,
                               engine_centric: bool = False,
+                              kill_o3de_processes_before_running: bool = False,
                               logger: logging.Logger|None = None) -> None:
     """
     This function serves as the generic, general workflow for project exports. The steps in this code will generate
@@ -95,12 +96,25 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     # Calculate the tools and game build paths
     default_base_path = ctx.engine_path if engine_centric else ctx.project_path
     
+    # For installed SDKs, the monolithic option depends on the build configuration that is selected since only profile shared objects and release static libraries
+    # are produced. Debug is not allowed.
     if is_installer_sdk:
-        # Check if we have any monolithic entries if building monolithic
-        if monolithic_build and not exp.has_monolithic_artifacts(ctx):
-            logger.error("Trying to create monolithic build, but no monolithic artifacts are detected in the engine installation! Please re-run the script with '--non-monolithic' and '-config profile'.")
-            raise exp.ExportProjectError("Trying to build monolithic without libraries.")
-    
+        if build_config == exp.BUILD_CONFIG_DEBUG:
+            raise exp.ExportProjectError("Exporting debug projects not supported with the O3DE SDK.")
+
+        if build_config == exp.BUILD_CONFIG_RELEASE:
+
+            # Check if we have any monolithic entries if building monolithic
+            if not exp.has_monolithic_artifacts(ctx):
+                logger.error("No monolithic artifacts are detected in the engine installation.")
+                raise exp.ExportProjectError("Trying to build monolithic without libraries.")
+
+            logger.info(f"Preparing monolithic build for export.")
+            monolithic_build = True
+
+        else:
+            logger.info(f"Preparing non-monolithic build for export.")
+            monolithic_build = False
     
     if not launcher_build_path:
         launcher_build_path = default_base_path / 'build/launcher'
@@ -128,7 +142,8 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     eutil.process_level_names(ctx, preprocessed_seedfile_paths, level_names, selected_platform)
 
     # Make sure there are no running processes for the current project before continuing
-    exp.kill_existing_processes(ctx.project_name)
+    if kill_o3de_processes_before_running:
+        exp.kill_existing_processes(ctx.project_name)
 
     tools_build_path = eutil.handle_tools(ctx,
                                           should_build_tools,
@@ -219,7 +234,8 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                                             export_layout=export_layout,
                                             archive_output_format=archive_output_format,
                                             logger=logger)
-
+    
+    logger.info(f"Project exported to '{output_path}'.")
 
 def export_standalone_parse_args(o3de_context: exp.O3DEScriptExportContext, export_config: command_utils.O3DEConfig):
 
@@ -233,9 +249,17 @@ def export_standalone_parse_args(o3de_context: exp.O3DEScriptExportContext, expo
         )
         eutil.create_common_export_params_and_config(parser, export_config)
         
-        parser.add_argument('-out', '--output-path', type=pathlib.Path, required=True, help='Path that describes the final resulting Release Directory path location.')
+        default_output_path = pathlib.Path(export_config.get_value(key=exp.SETTINGS_DEFAULT_OUTPUT_PATH.key,
+                                                                   default=exp.SETTINGS_DEFAULT_OUTPUT_PATH.default))
+        if not default_output_path.is_absolute():
+            default_output_path = pathlib.Path(o3de_context.project_path) / default_output_path
 
-        # archive.output.format / SETTINGS_ARCHIVE_OUTPUT_FORMAT
+        parser.add_argument('-out', '--output-path',
+                            type=pathlib.Path,
+                            required=False,
+                            help='Path that describes the final resulting Output Directory path location.',
+                            default=default_output_path)
+        
         default_archive_output_format = export_config.get_value(key=exp.SETTINGS_ARCHIVE_OUTPUT_FORMAT.key,
                                                                 default=exp.SETTINGS_ARCHIVE_OUTPUT_FORMAT.default)
         parser.add_argument('-a', '--archive-output',  type=str,
@@ -384,6 +408,11 @@ def export_standalone_run_command(o3de_context, args, export_config: command_uti
                                                                           enable_attribute='monolithic',
                                                                           disable_attribute='non_monolithic')
 
+    option_kill_prior_processes = export_config.get_parsed_boolean_option(parsed_args=args,
+                                                                          key=exp.SETTINGS_OPTION_KILL_PRIOR_PROCESSES.key,
+                                                                          enable_attribute='kill_processes',
+                                                                          disable_attribute='no_kill_processes')
+
     if args.quiet:
         o3de_logger.setLevel(logging.ERROR)
     else:
@@ -416,6 +445,7 @@ def export_standalone_run_command(o3de_context, args, export_config: command_uti
                                   launcher_build_path=args.launcher_build_path,
                                   archive_output_format=args.archive_output,
                                   monolithic_build=option_build_monolithically,
+                                  kill_o3de_processes_before_running=option_kill_prior_processes,
                                   logger=o3de_logger)
     except exp.ExportProjectError as err:
         print(err)
@@ -428,6 +458,7 @@ if "o3de_context" in globals():
     global o3de_logger
 
     # Resolve the export config
+    export_config = None
     try:
         if o3de_context is None:
             project_name, project_path = command_utils.resolve_project_name_and_path()
@@ -439,8 +470,9 @@ if "o3de_context" in globals():
         project_name = None
         export_config = exp.get_export_project_config(project_path=None)
 
+    assert export_config
     args = export_standalone_parse_args(o3de_context, export_config)
 
     export_standalone_run_command(o3de_context, args, export_config, o3de_logger)
-    o3de_logger.info(f"Finished exporting project to {args.output_path}")
+    o3de_logger.info(f"Finished exporting.")
     sys.exit(0)

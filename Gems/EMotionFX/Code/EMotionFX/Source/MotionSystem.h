@@ -10,7 +10,7 @@
 
 // include the required headers
 #include "EMotionFXConfig.h"
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 #include <AzCore/std/containers/vector.h>
 
 
@@ -35,7 +35,7 @@ namespace EMotionFX
      * The motion system also contains a motion queue, which is responsible for some very basic scheduling of motions.
      */
     class EMFX_API MotionSystem
-        : public BaseObject
+        : public MCore::RefCounted
     {
         AZ_CLASS_ALLOCATOR_DECL
         friend class MotionQueue;

@@ -37,17 +37,17 @@ namespace ScriptCanvasPhysics
 
     void ScriptCanvasPhysicsSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ScriptCanvasPhysicsService", 0x4686eefd));
+        provided.push_back(AZ_CRC_CE("ScriptCanvasPhysicsService"));
     }
 
     void ScriptCanvasPhysicsSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("ScriptCanvasPhysicsService", 0x4686eefd));
+        incompatible.push_back(AZ_CRC_CE("ScriptCanvasPhysicsService"));
     }
 
     void ScriptCanvasPhysicsSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("LmbrCentralService", 0xc3a02410));
+        required.push_back(AZ_CRC_CE("LmbrCentralService"));
     }
 
     void ScriptCanvasPhysicsSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)

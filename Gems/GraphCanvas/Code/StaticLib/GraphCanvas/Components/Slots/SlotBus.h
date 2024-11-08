@@ -43,13 +43,13 @@ namespace GraphCanvas
     {
         static const SlotType Invalid = AZ::Crc32();
 
-        static const SlotType DataSlot = AZ_CRC("SlotType_Data", 0x85691298);
+        static const SlotType DataSlot = AZ_CRC_CE("SlotType_Data");
 
-        static const SlotType ExecutionSlot = AZ_CRC("SlotType_Execution", 0xfe5e03a7);
+        static const SlotType ExecutionSlot = AZ_CRC_CE("SlotType_Execution");
 
-        static const SlotType ExtenderSlot = AZ_CRC("SlotType_Extender", 0x9635d575);
+        static const SlotType ExtenderSlot = AZ_CRC_CE("SlotType_Extender");
 
-        static const SlotType PropertySlot = AZ_CRC("SlotType_Property", 0xccaefd85);
+        static const SlotType PropertySlot = AZ_CRC_CE("SlotType_Property");
     }
 
     // Visual Identification of how the Slot should be grouped for display
@@ -60,22 +60,22 @@ namespace GraphCanvas
         static const SlotGroup Invalid = AZ::Crc32();
 
         // Slot Group used by default for Data Slots
-        static const SlotGroup DataGroup = AZ_CRC("SlotGroup_Data", 0xa0e29e91);
+        static const SlotGroup DataGroup = AZ_CRC_CE("SlotGroup_Data");
 
         // Slot Group used by default for Execution Slots
-        static const SlotGroup ExecutionGroup = AZ_CRC("SlotGroup_Execution", 0x51524cd3);
+        static const SlotGroup ExecutionGroup = AZ_CRC_CE("SlotGroup_Execution");
 
         // Slot Group used by default for Extender Slots
-        static const SlotGroup ExtenderGroup = AZ_CRC("SlotGroup_Extender", 0x9061eddc);
+        static const SlotGroup ExtenderGroup = AZ_CRC_CE("SlotGroup_Extender");
 
         // Slot Group used by default for Property Slots
-        static const SlotGroup PropertyGroup = AZ_CRC("SlotGroup_Property", 0xcafac52c);
+        static const SlotGroup PropertyGroup = AZ_CRC_CE("SlotGroup_Property");
 
         // Slot Group used by default for Variable Slots
-        static const SlotGroup VariableReferenceGroup = AZ_CRC("SlotGroup_VariableReference", 0x7508f93b);
+        static const SlotGroup VariableReferenceGroup = AZ_CRC_CE("SlotGroup_VariableReference");
 
         // Slot Group used by default for Variable Slots
-        static const SlotGroup VariableSourceGroup = AZ_CRC("SlotGroup_VariableSource", 0x67fa9111);
+        static const SlotGroup VariableSourceGroup = AZ_CRC_CE("SlotGroup_VariableSource");
     }
 
     struct SlotConfiguration
@@ -188,7 +188,7 @@ namespace GraphCanvas
         const SlotGroupConfigurationMap* m_slotConfigurationMap;
     };
 
-    static const AZ::Crc32 kSlotServiceProviderId = AZ_CRC("GraphCanvas_SlotService", 0x701eaf6b);
+    static const AZ::Crc32 kSlotServiceProviderId = AZ_CRC_CE("GraphCanvas_SlotService");
 
     //! SlotRequests
     //! Requests to retrieve or modify the current state of a slot.

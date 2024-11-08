@@ -422,7 +422,7 @@ namespace AzToolsFramework
             AZ_Assert(mainWindow != nullptr, "PrefabSaveHandler - Editor MainWindow is not available.");
 
             m_prefabToastNotificationsView =
-                AZStd::make_unique<AzToolsFramework::ToastNotificationsView>(mainWindow, AZ_CRC("PrefabToastNotificationsView"));
+                AZStd::make_unique<AzToolsFramework::ToastNotificationsView>(mainWindow, AZ_CRC_CE("PrefabToastNotificationsView"));
 
             m_prefabToastNotificationsView->SetRejectDuplicates(false);
             m_prefabToastNotificationsView->SetAnchorPoint(QPoint(1, 1));
@@ -648,7 +648,7 @@ namespace AzToolsFramework
             AZStd::string prefabNameFiltered = prefabName;
             AZ::StringFunc::Replace(prefabNameFiltered, ' ', '_');
 
-            auto settings = AZ::UserSettings::CreateFind<PrefabUserSettings>(AZ_CRC("PrefabUserSettings"), AZ::UserSettings::CT_LOCAL);
+            auto settings = AZ::UserSettings::CreateFind<PrefabUserSettings>(AZ_CRC_CE("PrefabUserSettings"), AZ::UserSettings::CT_LOCAL);
             if (settings->m_autoNumber)
             {
                 AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();

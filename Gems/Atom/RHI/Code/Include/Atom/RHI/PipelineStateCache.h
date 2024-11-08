@@ -16,10 +16,48 @@
 namespace UnitTest
 {
     class PipelineStateTests;
+    class MultiDevicePipelineStateTests;
 }
 
 namespace AZ::RHI
 {
+    using PipelineStateHash = HashValue64;
+
+    //! Used for storing a PipelineState object in a hash table structure (set, map, etc)
+    struct PipelineStateEntry
+    {
+        PipelineStateEntry(
+            PipelineStateHash hash, ConstPtr<PipelineState> pipelineState, const PipelineStateDescriptor& descriptor);
+
+        bool operator < (const PipelineStateEntry& rhs) const
+        {
+            return m_hash < rhs.m_hash;
+        }
+
+        bool operator == (const PipelineStateEntry& rhs) const;
+
+        //! Hash of the PipelineStateDescriptor
+        PipelineStateHash m_hash;
+        //! Pipeline state
+        ConstPtr<PipelineState> m_pipelineState;
+
+        //! Pipeline state descriptor variant for dispatch, draw, and ray tracing
+        using PipelineStateDescriptorVariant = AZStd::variant<AZ::RHI::PipelineStateDescriptorForDraw, AZ::RHI::PipelineStateDescriptorForDispatch, AZ::RHI::PipelineStateDescriptorForRayTracing>;
+        PipelineStateDescriptorVariant m_pipelineStateDescriptorVariant;
+    };
+
+    //! Hash calculator for a PipelineStateEntry
+    struct PipelineStateCacheHash : public ::AZStd::hash<AZ::RHI::PipelineStateEntry>
+    {
+        AZStd::hash<AZ::RHI::PipelineStateEntry>::result_type operator () (const AZ::RHI::PipelineStateEntry& pipelineStateEntry) const
+        {
+            return static_cast<AZStd::hash<PipelineStateEntry>::result_type>(pipelineStateEntry.m_hash);
+        }
+    };
+
+    //! The pipeline state set is an unordered set to help with detecting hash collisions and also faster find and store operations.
+    using PipelineStateSet = AZStd::unordered_set<PipelineStateEntry, PipelineStateCacheHash>;
+
     //! Problem: High-level rendering code works in 'materials', 'shaders', and 'models', but the RHI works in
     //! 'pipeline states'. Therefore, a translation process must exist to resolve a shader variation (plus runtime
     //! state) into a pipeline state suitable for consumption by the RHI. These resolve operations can number in the
@@ -100,6 +138,7 @@ namespace AZ::RHI
     class PipelineStateCache final
         : public AZStd::intrusive_base
     {
+        friend class UnitTest::MultiDevicePipelineStateTests;
     public:
         AZ_CLASS_ALLOCATOR(PipelineStateCache, SystemAllocator);
 
@@ -108,13 +147,15 @@ namespace AZ::RHI
         //! avoid a pointer indirection on access.
         static const size_t LibraryCountMax = 256;
 
-        static Ptr<PipelineStateCache> Create(Device& device);
+        static Ptr<PipelineStateCache> Create(MultiDevice::DeviceMask deviceMask);
 
         //! Resets the caches of all pipeline libraries back to empty. All internal references to pipeline states are released.
         void Reset();
 
         //! Creates an internal pipeline library instance and returns its handle.
-        PipelineLibraryHandle CreateLibrary(const PipelineLibraryData* serializedData, const AZStd::string& filePath = "");
+        PipelineLibraryHandle CreateLibrary(
+            const AZStd::unordered_map<int, ConstPtr<RHI::PipelineLibraryData>>& serializedData,
+            const AZStd::unordered_map<int, AZStd::string>& filePaths);
 
         //! Releases the pipeline library and purges it from the cache. Releases all held references to pipeline states for the library.
         void ReleaseLibrary(PipelineLibraryHandle handle);
@@ -143,41 +184,9 @@ namespace AZ::RHI
         void Compact();
 
     private:
-        PipelineStateCache(Device& device);
+        PipelineStateCache(MultiDevice::DeviceMask deviceMask);
 
         void ValidateCacheIntegrity() const;
-
-        using PipelineStateHash = HashValue64;
-
-        struct PipelineStateEntry
-        {
-            PipelineStateEntry(PipelineStateHash hash, ConstPtr<PipelineState> pipelineState, const PipelineStateDescriptor& descriptor);
-
-            bool operator < (const PipelineStateEntry& rhs) const
-            {
-                return m_hash < rhs.m_hash;
-            }
-
-            bool operator == (const PipelineStateEntry& rhs) const;
-
-            PipelineStateHash m_hash;
-            ConstPtr<PipelineState> m_pipelineState;
-
-            // pipeline state descriptor variant for dispatch, draw, and ray tracing
-            using PipelineStateDescriptorVariant = AZStd::variant<AZ::RHI::PipelineStateDescriptorForDraw, AZ::RHI::PipelineStateDescriptorForDispatch, AZ::RHI::PipelineStateDescriptorForRayTracing>;
-            PipelineStateDescriptorVariant m_pipelineStateDescriptorVariant;
-        };
-
-        struct PipelineStateCacheHash : public ::AZStd::hash<AZ::RHI::PipelineStateCache::PipelineStateEntry>
-        {
-            AZStd::hash<AZ::RHI::PipelineStateCache::PipelineStateEntry>::result_type operator () (const AZ::RHI::PipelineStateCache::PipelineStateEntry& pipelineStateEntry) const
-            {
-                return static_cast<AZStd::hash<PipelineStateEntry>::result_type>(pipelineStateEntry.m_hash);
-            }
-        };
-
-        // The pipeline state set is an unordered set to help with detecting hash collisions and also faster find and store operations.
-        using PipelineStateSet = AZStd::unordered_set<PipelineStateEntry, PipelineStateCacheHash>;
 
         struct GlobalLibraryEntry
         {
@@ -216,7 +225,8 @@ namespace AZ::RHI
         using ThreadLibrarySet = AZStd::array<ThreadLibraryEntry, LibraryCountMax>;
 
         //! Helper function which binary searches a pipeline state set looking for an entry which matches the requested descriptor.
-        static const PipelineState* FindPipelineState(const PipelineStateSet& pipelineStateSet, const PipelineStateDescriptor& descriptor);
+        static const PipelineState* FindPipelineState(
+            const PipelineStateSet& pipelineStateSet, const PipelineStateDescriptor& descriptor);
 
         //! Helper function which inserts an entry into the set. Returns true if the entry was inserted, or false is a duplicate entry existed.
         static bool InsertPipelineState(PipelineStateSet& pipelineStateSet, PipelineStateEntry pipelineStateEntry);
@@ -232,7 +242,7 @@ namespace AZ::RHI
         //! Resets the library without validating the handle or taking a lock.
         void ResetLibraryImpl(PipelineLibraryHandle handle);
 
-        Ptr<Device> m_device;
+        MultiDevice::DeviceMask m_deviceMask;
 
         /// Each thread owns a set of ThreadLibraryEntry elements. RHI::PipelineLibraryHandle is an
         /// index into the array.

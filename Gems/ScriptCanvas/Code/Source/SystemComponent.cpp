@@ -92,7 +92,7 @@ namespace ScriptCanvas
             serialize->Class<SystemComponent, AZ::Component>()
                 ->Version(1)
                 // ScriptCanvas avoids a use dependency on the AssetBuilderSDK. Therefore the Crc is used directly to register this component with the Gem builder
-                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC("AssetBuilder", 0xc739c7d7) }))
+                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("AssetBuilder") }))
                 ->Field("m_infiniteLoopDetectionMaxIterations", &SystemComponent::m_infiniteLoopDetectionMaxIterations)
                 ->Field("maxHandlerStackDepth", &SystemComponent::m_maxHandlerStackDepth)
                 ;
@@ -125,7 +125,7 @@ namespace ScriptCanvas
 
     void SystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ScriptCanvasService", 0x41fd58f3));
+        provided.push_back(AZ_CRC_CE("ScriptCanvasService"));
     }
 
     void SystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
@@ -136,8 +136,8 @@ namespace ScriptCanvas
     void SystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         // \todo configure the application to require these services
-        // required.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
-        // required.push_back(AZ_CRC("ScriptService", 0x787235ab));
+        // required.push_back(AZ_CRC_CE("AssetDatabaseService"));
+        // required.push_back(AZ_CRC_CE("ScriptService"));
     }
 
     void SystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)

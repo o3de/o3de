@@ -11,17 +11,14 @@
 #define CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWKEYPROPERTIESDLG_H
 #pragma once
 
-#pragma once
-
 #if !defined(Q_MOC_RUN)
 #include "TrackViewSequence.h"
 #include "TrackViewNode.h"
-#include "Plugin.h"
 #include "TrackViewDopeSheetBase.h"
-#include "QtViewPane.h"
 
 #include <QScopedPointer>
 #include <QDockWidget>
+#include "Util/Variable.h"
 #endif
 
 namespace Ui {

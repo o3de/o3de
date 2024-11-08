@@ -10,7 +10,7 @@
                 {
                     "Name": "Input",
                     "SlotType": "Input",
-                    "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentUsage": "RenderTarget",
                     "LoadStoreAction": {
                         "LoadAction": "Load",
                         "StoreAction": "DontCare",

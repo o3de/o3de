@@ -86,8 +86,9 @@ namespace AzToolsFramework
         {
             if (m_invalidateFilter)
             {
-                invalidateFilter();
+                beginResetModel();
                 m_invalidateFilter = false;
+                endResetModel();
             }
         }
 
@@ -98,7 +99,18 @@ namespace AzToolsFramework
 
         QVariant AssetBrowserFilterModel::data(const QModelIndex& index, int role) const
         {
-            auto assetBrowserEntry = mapToSource(index).data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+            if (!index.isValid())
+            {
+                return QVariant();
+            }
+            QModelIndex sourceIndex = mapToSource(index);
+
+            if (!sourceIndex.isValid())
+            {
+                return QVariant(); // the view may be in a state of repopulating.
+            }
+
+            auto assetBrowserEntry = sourceIndex.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
             AZ_Assert(assetBrowserEntry, "Couldn't fetch asset entry for the given index.");
             if (!assetBrowserEntry)
             {
@@ -223,8 +235,12 @@ namespace AzToolsFramework
                     }
                 }
             }
+            // Note that because the data we are filtering over is massive (all assets) its way faster
+            // to reset the model than it is to try to incrementally apply filters here, which can cause many more
+            // messages like "row added / row removed" to be sent to the view.
+            beginResetModel();
+            endResetModel();
 
-            invalidateFilter();
             Q_EMIT filterChanged();
         }
 
@@ -234,7 +250,9 @@ namespace AzToolsFramework
             {
                 m_alreadyRecomputingFilters = true;
                 // de-bounce it, since we may get many filter updates all at once.
-                QTimer::singleShot(0, this, [this]()
+                // do not use a 0 here, as this puts the message directly in the message queue, and will interleave
+                // it with keypress events / referesh events, etc.
+                QTimer::singleShot(20, this, [this]()
                 {
                     m_alreadyRecomputingFilters = false;
                     FilterUpdatedSlotImmediate();

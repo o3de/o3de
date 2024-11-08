@@ -246,7 +246,7 @@ namespace AzToolsFramework
             }
             return;
         }
-        else if (attrib == AZ_CRC("Multiplier", 0xa49aa95b))
+        else if (attrib == AZ_CRC_CE("Multiplier"))
         {
             if (attrValue->Read<double>(value))
             {
@@ -272,7 +272,7 @@ namespace AzToolsFramework
             }
             return;
         }
-        else if (attrib == AZ_CRC("Prefix", 0x93b1868e))
+        else if (attrib == AZ_CRC_CE("Prefix"))
         {
             AZStd::string result;
             if (attrValue->Read<AZStd::string>(result))

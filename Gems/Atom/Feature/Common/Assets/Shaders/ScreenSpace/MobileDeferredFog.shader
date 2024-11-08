@@ -1,6 +1,6 @@
 { 
     "Source" : "DeferredFog.azsl",
-    "Definitions": ["ENABLE_FOG_LAYER=0", "HAS_LINEAR_DEPTH=0"],
+    "Definitions": ["HAS_LINEAR_DEPTH=0"],
 
     "DepthStencilState" : 
     {
@@ -36,5 +36,20 @@
           "type": "Fragment"
         }
       ]
-    }   
+    },
+    "Supervariants":
+    [
+        {
+            "Name": "",
+            "AddBuildArguments": {
+                "azslc": ["--no-subpass-input"]
+            }
+        },
+        {
+            "Name": "SubpassInput",
+            "RemoveBuildArguments": {
+                "azslc": ["--no-subpass-input"]
+            }
+        }
+    ]   
 }

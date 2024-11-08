@@ -36,7 +36,7 @@ namespace Vegetation
                     "Vegetation System Settings", "The vegetation system settings for this level/map.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Vegetation")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(0, &LevelSettingsConfig::m_areaSystemConfig, "Area System Settings", "Area management settings.")
                     ->DataElement(0, &LevelSettingsConfig::m_instanceSystemConfig, "Instance System Settings", "Instance management settings.")
@@ -87,12 +87,12 @@ namespace Vegetation
 
     void LevelSettingsComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationLevelSettingsService", 0x7466472a));
+        services.push_back(AZ_CRC_CE("VegetationLevelSettingsService"));
     }
 
     void LevelSettingsComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationLevelSettingsService", 0x7466472a));
+        services.push_back(AZ_CRC_CE("VegetationLevelSettingsService"));
     }
 
     LevelSettingsComponent::LevelSettingsComponent(const LevelSettingsConfig& configuration)

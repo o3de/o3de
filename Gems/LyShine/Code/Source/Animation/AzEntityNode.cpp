@@ -13,7 +13,6 @@
 #include "ISystem.h"
 #include "CompoundSplineTrack.h"
 #include "UiAnimationSystem.h"
-#include "PNoise3.h"
 #include "AnimSequence.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
@@ -921,20 +920,6 @@ void CUiAnimAzEntityNode::PrecacheStatic([[maybe_unused]] float time)
 void CUiAnimAzEntityNode::PrecacheDynamic([[maybe_unused]] float time)
 {
     // Used to update durations of all character animations.
-}
-
-//////////////////////////////////////////////////////////////////////////
-Vec3 CUiAnimAzEntityNode::Noise::Get(float time) const
-{
-    Vec3 noise;
-    const float phase = time * m_freq;
-    const Vec3 phase0 = Vec3(15.0f * m_freq, 55.1f * m_freq, 101.2f * m_freq);
-
-    noise.x = gEnv->pSystem->GetNoiseGen()->Noise1D(phase + phase0.x) * m_amp;
-    noise.y = gEnv->pSystem->GetNoiseGen()->Noise1D(phase + phase0.y) * m_amp;
-    noise.z = gEnv->pSystem->GetNoiseGen()->Noise1D(phase + phase0.z) * m_amp;
-
-    return noise;
 }
 
 IUiAnimTrack* CUiAnimAzEntityNode::CreateVectorTrack(const UiAnimParamData& param, EUiAnimValue valueType, int numElements)

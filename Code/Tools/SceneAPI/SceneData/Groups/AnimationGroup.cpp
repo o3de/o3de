@@ -160,7 +160,7 @@ namespace AZ
                             ->Attribute(Edit::Attributes::NameLabelOverride, "")
                             ->Attribute(AZ::Edit::Attributes::CategoryStyle, "display divider")
                             ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/assets/scene-settings/motions-tab/")
-                        ->DataElement(AZ_CRC("ManifestName", 0x5215b349), &AnimationGroup::m_name, "Group name",
+                        ->DataElement(AZ_CRC_CE("ManifestName"), &AnimationGroup::m_name, "Group name",
                             "Name for the group. This name will also be used as the name for the generated file.")
                             ->Attribute("FilterType", DataTypes::IAnimationGroup::TYPEINFO_Uuid())
                         ->DataElement("NodeListSelection", &AnimationGroup::m_selectedRootBone, "Select root bone", "The root bone of the animation that will be exported.")
@@ -168,7 +168,7 @@ namespace AZ
                         ->DataElement(Edit::UIHandlers::Default, &AnimationGroup::m_startFrame, "Start frame", "The start frame of the animation that will be exported.")
                         ->DataElement(Edit::UIHandlers::Default, &AnimationGroup::m_endFrame, "End frame", "The end frame of the animation that will be exported.")
                         ->DataElement(Edit::UIHandlers::Default, &AnimationGroup::m_rules, "", "Add or remove rules to fine-tune the export process.")
-                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
+                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
                         ->ClassElement(Edit::ClassElements::Group, "Compression")
                             ->DataElement(Edit::UIHandlers::Slider, &AnimationGroup::m_defaultCompressionStrength, "Default strength", "Default compression strength to use by default for all bones.")
                                 ->Attribute(AZ::Edit::Attributes::Min, 0.f)

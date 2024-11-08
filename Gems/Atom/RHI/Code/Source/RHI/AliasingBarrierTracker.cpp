@@ -6,9 +6,9 @@
  *
  */
 #include <Atom/RHI/AliasingBarrierTracker.h>
-#include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/Image.h>
 #include <Atom/RHI/Scope.h>
+#include <Atom/RHI/DeviceBuffer.h>
 
 namespace AZ::RHI
 {
@@ -105,6 +105,7 @@ namespace AZ::RHI
         {
             m_resources.push_back(resourceNew);
         }
+        AddResourceInternal(resourceNew);
     }
 
     void AliasingBarrierTracker::End()
@@ -112,6 +113,7 @@ namespace AZ::RHI
         EndInternal();
     }
 
+    void AliasingBarrierTracker::AddResourceInternal([[maybe_unused]] const AliasedResource& resourceNew) {}
     void AliasingBarrierTracker::ResetInternal() {}
     void AliasingBarrierTracker::EndInternal() {}
 

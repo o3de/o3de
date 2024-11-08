@@ -7,45 +7,42 @@
  */
 
 
-#include <Atom/Feature/CoreLights/LightCommon.h>
+#include <CoreLights/LightCommon.h>
 
 namespace AZ::Render::LightCommon
 {
-    bool HasGPUCulling(
-        RPI::Scene* parentScene,
+    bool NeedsCPUCulling(
         const RPI::ViewPtr& view,
-        AZStd::unordered_set<AZStd::pair<const RPI::RenderPipeline*, const RPI::View*>>& gpuCullingData)
+        const AZStd::unordered_map<const RPI::View*, AZStd::vector<const RPI::RenderPipeline*>>& cpuCulledPipelinesPerView)
     {
-        for (const auto& renderPipeline : parentScene->GetRenderPipelines())
+        auto viewPipelines = cpuCulledPipelinesPerView.find(view.get());
+        if (viewPipelines == cpuCulledPipelinesPerView.end())
         {
-            if (renderPipeline->NeedsRender() && gpuCullingData.contains(AZStd::pair(renderPipeline.get(), view.get())))
-            {
-                return true;
-            }
+            return false;
         }
-        return false;
+        return (viewPipelines->second.size() > 0);
     }
 
-    void CacheGPUCullingPipelineInfo(
+    void CacheCPUCulledPipelineInfo(
         RPI::RenderPipeline* renderPipeline,
         RPI::ViewPtr newView,
         RPI::ViewPtr previousView,
-        AZStd::unordered_set<AZStd::pair<const RPI::RenderPipeline*, const RPI::View*>>& gpuCullingData)
+        AZStd::unordered_map<const RPI::View*, AZStd::vector<const RPI::RenderPipeline*>>& cpuCulledPipelinesPerView)
     {
         // Check if render pipeline is using GPU culling
-        if (!renderPipeline->FindFirstPass(AZ::Name("LightCullingPass")))
+        if (renderPipeline->FindFirstPass(AZ::Name("LightCullingPass")))
         {
             return;
         }
 
         if (previousView)
         {
-            gpuCullingData.erase(AZStd::make_pair(renderPipeline, previousView.get()));
+            erase(cpuCulledPipelinesPerView[previousView.get()], renderPipeline);
         }
 
         if (newView)
         {
-            gpuCullingData.insert(AZStd::make_pair(renderPipeline, newView.get()));
+            cpuCulledPipelinesPerView[newView.get()].emplace_back(renderPipeline);
         }
     }
 

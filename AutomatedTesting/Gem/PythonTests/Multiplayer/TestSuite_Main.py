@@ -38,9 +38,19 @@ class TestAutomation(EditorTestSuite):
     class test_Multiplayer_BasicConnectivity_Connects(EditorSingleTest):
         from .tests import Multiplayer_BasicConnectivity_Connects as test_module
         
+        timeout = 60.0 * 15.0 # increase timeout to ~15 minutes to accommodate for slow server startup
+
+        def __init__(self):
+            super(test_Multiplayer_BasicConnectivity_Connects, self).__init__()
+
         @classmethod
         def setup(cls, instance, request, workspace):
             save_multiplayer_level_cache_folder_artifact(workspace, "basicconnectivity_connects")
 
     class test_Multiplayer_BasicConnectivity_Connects_ClientServer(EditorSingleTest):
         from .tests import Multiplayer_BasicConnectivity_Connects_ClientServer as test_module
+
+        timeout = 60.0 * 15.0 # increase timeout to ~15 minutes to accommodate for slow server startup
+
+        def __init__(self):
+            super(test_Multiplayer_BasicConnectivity_Connects_ClientServer, self).__init__()

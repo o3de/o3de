@@ -6,21 +6,22 @@
  *
  */
 
-#include <Atom_RHI_Vulkan_Platform.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <Atom/RHI.Reflect/Vulkan/PlatformLimitsDescriptor.h>
 #include <Atom/RHI.Reflect/Vulkan/VulkanBus.h>
 #include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/RHIMemoryStatisticsInterface.h>
-#include <Atom/RHI/TransientAttachmentPool.h>
+#include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/DeviceTransientAttachmentPool.h>
+#include <Atom_RHI_Vulkan_Platform.h>
+#include <AzCore/Debug/Trace.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/Debug/Trace.h>
 #include <RHI/AsyncUploadQueue.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferPool.h>
-#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/CommandList.h>
 #include <RHI/CommandQueue.h>
 #include <RHI/Device.h>
@@ -32,7 +33,6 @@
 #include <RHI/WSISurface.h>
 #include <RHI/WindowSurfaceBus.h>
 #include <Vulkan_Traits_Platform.h>
-#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -165,9 +165,9 @@ namespace AZ
                 queueCreationInfo.push_back(queueCreateInfo);
             }
 
-            const auto& physicalProperties = physicalDevice.GetPhysicalDeviceProperties();
-            uint32_t majorVersion = VK_VERSION_MAJOR(physicalProperties.apiVersion);
-            uint32_t minorVersion = VK_VERSION_MINOR(physicalProperties.apiVersion);
+            uint32_t physicalDeviceVersion = physicalDevice.GetVulkanVersion();
+            uint32_t majorVersion = VK_VERSION_MAJOR(physicalDeviceVersion);
+            uint32_t minorVersion = VK_VERSION_MINOR(physicalDeviceVersion);
 
             // unbounded array functionality
             VkPhysicalDeviceDescriptorIndexingFeaturesEXT descriptorIndexingFeatures = {};
@@ -196,9 +196,9 @@ namespace AZ
                 physicalDeviceDescriptorIndexingFeatures.descriptorBindingStorageBufferUpdateAfterBind;
 
             auto bufferDeviceAddressFeatures = physicalDevice.GetPhysicalDeviceBufferDeviceAddressFeatures();
-            auto depthClipEnabled = physicalDevice.GetPhysicalDeviceDepthClipEnableFeatures();            
-            auto rayQueryFeatures = physicalDevice.GetRayQueryFeatures();            
-            auto shaderImageAtomicInt64 = physicalDevice.GetShaderImageAtomicInt64Features();            
+            auto depthClipEnabled = physicalDevice.GetPhysicalDeviceDepthClipEnableFeatures();
+            auto rayQueryFeatures = physicalDevice.GetRayQueryFeatures();
+            auto shaderImageAtomicInt64 = physicalDevice.GetShaderImageAtomicInt64Features();
 
             VkPhysicalDeviceRobustness2FeaturesEXT robustness2 = {};
             robustness2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
@@ -211,14 +211,20 @@ namespace AZ
             robustness2.pNext = nullptr;
 
             AppendVkStruct(
-                chainInit,
-                {
-                    &bufferDeviceAddressFeatures,
-                    &depthClipEnabled,
-                    &rayQueryFeatures,
-                    &shaderImageAtomicInt64,
-                    &robustness2
-                });
+                chainInit, { &bufferDeviceAddressFeatures, &depthClipEnabled, &rayQueryFeatures, &shaderImageAtomicInt64, &robustness2 });
+
+            auto subpassMergeFeedback = physicalDevice.GetPhysicalSubpassMergeFeedbackFeatures();
+
+#if !defined(AZ_RELEASE_BUILD)
+            subpassMergeFeedback.subpassMergeFeedback = false;
+#endif
+            if (!subpassMergeFeedback.subpassMergeFeedback &&
+                physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::SubpassMergeFeedback))
+            {
+                physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::SubpassMergeFeedback);
+                subpassMergeFeedback.pNext = nullptr;
+                AppendVkStruct(chainInit, &subpassMergeFeedback);
+            }
 
             auto fragmenDensityMapFeatures = physicalDevice.GetPhysicalDeviceFragmentDensityMapFeatures();
             auto fragmenShadingRateFeatures = physicalDevice.GetPhysicalDeviceFragmentShadingRateFeatures();
@@ -230,8 +236,9 @@ namespace AZ
                 fragmenShadingRateFeatures.pNext = nullptr;
                 AppendVkStruct(chainInit, &fragmenShadingRateFeatures);
             }
-            else if (fragmenDensityMapFeatures.fragmentDensityMap)
+            else if (fragmenDensityMapFeatures.fragmentDensityMap && fragmenDensityMapFeatures.fragmentDensityMapNonSubsampledImages)
             {
+                // We only support NonSubsampledImages when using fragment density map
                 // Must disable the "FragmentShadingRate" usage if "fragmentDensityMap" is enabled.
                 physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::FragmentShadingRate);
                 fragmenDensityMapFeatures.pNext = nullptr;
@@ -248,6 +255,7 @@ namespace AZ
             VkDeviceCreateInfo deviceInfo = {};
             deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 
+            auto timelineSemaphore = physicalDevice.GetPhysicalDeviceTimelineSemaphoreFeatures();
             // If we are running Vulkan >= 1.2, then we must use VkPhysicalDeviceVulkan12Features instead
             // of VkPhysicalDeviceShaderFloat16Int8FeaturesKHR or VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR.
             if (majorVersion >= 1 && minorVersion >= 2)
@@ -275,7 +283,7 @@ namespace AZ
                 vulkan12Features.descriptorBindingUpdateUnusedWhilePending = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorBindingUpdateUnusedWhilePending;
                 vulkan12Features.shaderOutputViewportIndex = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderOutputViewportIndex;
                 vulkan12Features.shaderOutputLayer = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderOutputLayer;
-                vulkan12Features.timelineSemaphore = physicalDevice.GetPhysicalDeviceVulkan12Features().timelineSemaphore;
+                vulkan12Features.timelineSemaphore = timelineSemaphore.timelineSemaphore;
 
                 accelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
                 accelerationStructureFeatures.accelerationStructure = physicalDevice.GetPhysicalDeviceAccelerationStructureFeatures().accelerationStructure;
@@ -300,7 +308,7 @@ namespace AZ
                 shaderAtomicInt64.shaderBufferInt64Atomics = physicalDevice.GetShaderAtomicInt64Features().shaderBufferInt64Atomics;
                 shaderAtomicInt64.shaderSharedInt64Atomics = physicalDevice.GetShaderAtomicInt64Features().shaderSharedInt64Atomics;
 
-                AppendVkStruct(chainInit, { &float16Int8, &separateDepthStencil, &shaderAtomicInt64 });
+                AppendVkStruct(chainInit, { &float16Int8, &separateDepthStencil, &shaderAtomicInt64, &timelineSemaphore });
                 deviceInfo.pNext = &chainInit;
             }
 
@@ -414,6 +422,11 @@ namespace AZ
             semaphoreAllocDescriptor.m_collectLatency = RHI::Limits::Device::FrameCountMax;
             m_semaphoreAllocator.Init(semaphoreAllocDescriptor);
 
+            SwapChainSemaphoreAllocator::Descriptor swapChainSemaphoreAllocDescriptor;
+            swapChainSemaphoreAllocDescriptor.m_device = this;
+            swapChainSemaphoreAllocDescriptor.m_collectLatency = RHI::Limits::Device::FrameCountMax;
+            m_swapChainSemaphoreAllocator.Init(swapChainSemaphoreAllocDescriptor);
+
             m_imageMemoryRequirementsCache.SetInitFunction([](auto& cache) { cache.set_capacity(MemoryRequirementsCacheSize); });
             m_bufferMemoryRequirementsCache.SetInitFunction([](auto& cache) { cache.set_capacity(MemoryRequirementsCacheSize); });
 
@@ -437,7 +450,7 @@ namespace AZ
                 bufferPoolDescriptor.m_heapMemoryLevel = RHI::HeapMemoryLevel::Host;
                 result = m_constantBufferPool->Init(*this, bufferPoolDescriptor);
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            }           
+            }
 
             SetName(GetName());
             return result;
@@ -564,6 +577,11 @@ namespace AZ
             return m_semaphoreAllocator;
         }
 
+        SwapChainSemaphoreAllocator& Device::GetSwapChainSemaphoreAllocator()
+        {
+            return m_swapChainSemaphoreAllocator;
+        }
+
         const AZStd::vector<VkQueueFamilyProperties>& Device::GetQueueFamilyProperties() const
         {
             return m_queueFamilyProperties;
@@ -574,7 +592,9 @@ namespace AZ
             if (!m_asyncUploadQueue)
             {
                 m_asyncUploadQueue = aznew AsyncUploadQueue();
-                AsyncUploadQueue::Descriptor asyncUploadQueueDescriptor(RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_asyncQueueStagingBufferSizeInBytes);
+                AsyncUploadQueue::Descriptor asyncUploadQueueDescriptor(RHI::RHISystemInterface::Get()
+                                                                            ->GetPlatformLimitsDescriptor(GetDeviceIndex())
+                                                                            ->m_platformDefaultValues.m_asyncQueueStagingBufferSizeInBytes);
                 asyncUploadQueueDescriptor.m_device = this;
                 m_asyncUploadQueue->Init(asyncUploadQueueDescriptor);
             }
@@ -592,7 +612,7 @@ namespace AZ
             RHI::Ptr<Buffer> stagingBuffer = Buffer::Create();
             RHI::BufferDescriptor bufferDesc(RHI::BufferBindFlags::CopyRead, byteCount);
             bufferDesc.m_alignment = alignment;
-            RHI::BufferInitRequest initRequest(*stagingBuffer, bufferDesc);
+            RHI::DeviceBufferInitRequest initRequest(*stagingBuffer, bufferDesc);
             const RHI::ResultCode result = m_stagingBufferPool->InitBuffer(initRequest);
             if (result != RHI::ResultCode::Success)
             {
@@ -666,15 +686,16 @@ namespace AZ
             m_descriptorSetLayoutCache.first.Clear();
             m_samplerCache.first.Clear();
             m_pipelineLayoutCache.first.Clear();
-            m_semaphoreAllocator.Shutdown();
 
-            // Make sure this is last to flush any objects released in the above calls.
-            m_releaseQueue.Shutdown();
-
-            // The Objects in the release-queue need the command / upload queues for shutting down
             m_asyncUploadQueue.reset();
-            m_commandListAllocator.Shutdown();
             m_commandQueueContext.Shutdown();
+            m_commandListAllocator.Shutdown();
+
+            m_semaphoreAllocator.Shutdown();
+            m_swapChainSemaphoreAllocator.Shutdown();
+
+            // Flush any objects released in the above calls.
+            m_releaseQueue.Shutdown();
         }
 
         void Device::ShutdownInternal()
@@ -745,6 +766,7 @@ namespace AZ
             m_commandQueueContext.End();
             m_commandListAllocator.Collect();
             m_semaphoreAllocator.Collect();
+            m_swapChainSemaphoreAllocator.Collect();
             m_bindlessDescriptorPool.GarbageCollect();
         }
 
@@ -851,6 +873,7 @@ namespace AZ
         void Device::FillFormatsCapabilitiesInternal(FormatCapabilitiesList& formatsCapabilities)
         {
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
+            const bool isFragmentShadingRateSupported = physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::FragmentShadingRate);
             for (uint32_t i = 0; i < formatsCapabilities.size(); ++i)
             {
                 RHI::Format format = static_cast<RHI::Format>(i);
@@ -904,18 +927,28 @@ namespace AZ
                     flags |= RHI::FormatCapabilities::AtomicBuffer;
                 }
 
-                if (RHI::CheckBitsAll(
-                        properties.optimalTilingFeatures,
-                        static_cast<VkFormatFeatureFlags>(VK_FORMAT_FEATURE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR)))
+                // "Fragment Shading Rate" is preferable over "Fragment Density Map".
+                // By checking only one of them, we avoid color format selection errors when looking
+                // for color formats compatible with RHI::FormatCapabilities::ShadingRate.
+                // Otherwise the runtime may end up using color formats that are ONLY supported for "Fragment Density Map"
+                // when trying to use "Fragment Shading Rate" feature.
+                if (isFragmentShadingRateSupported)
                 {
-                    flags |= RHI::FormatCapabilities::ShadingRate;
+                    if (RHI::CheckBitsAll(
+                            properties.optimalTilingFeatures,
+                            static_cast<VkFormatFeatureFlags>(VK_FORMAT_FEATURE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR)))
+                    {
+                        flags |= RHI::FormatCapabilities::ShadingRate;
+                    }
                 }
-
-                if (RHI::CheckBitsAll(
-                        properties.optimalTilingFeatures,
-                        static_cast<VkFormatFeatureFlags>(VK_FORMAT_FEATURE_FRAGMENT_DENSITY_MAP_BIT_EXT)))
+                else
                 {
-                    flags |= RHI::FormatCapabilities::ShadingRate;
+                    if (RHI::CheckBitsAll(
+                            properties.optimalTilingFeatures,
+                            static_cast<VkFormatFeatureFlags>(VK_FORMAT_FEATURE_FRAGMENT_DENSITY_MAP_BIT_EXT)))
+                    {
+                        flags |= RHI::FormatCapabilities::ShadingRate;
+                    }
                 }
             }
         }
@@ -1105,19 +1138,20 @@ namespace AZ
             m_features.m_indirectDrawCountBufferSupported = physicalDevice.IsFeatureSupported(DeviceFeature::DrawIndirectCount);
             m_features.m_indirectDispatchCountBufferSupported = false;
             m_features.m_indirectDrawStartInstanceLocationSupported = m_enabledDeviceFeatures.drawIndirectFirstInstance == VK_TRUE;
-            m_features.m_renderTargetSubpassInputSupport = RHI::SubpassInputSupportType::Native;
-            m_features.m_depthStencilSubpassInputSupport = RHI::SubpassInputSupportType::Native;
+            m_features.m_subpassInputSupport = RHI::SubpassInputSupportType::Color | RHI::SubpassInputSupportType::DepthStencil;
 
             const VkPhysicalDeviceProperties& deviceProperties = physicalDevice.GetPhysicalDeviceProperties();
             // Our sparse image implementation requires the device support sparse binding and particle residency for 2d and 3d images
             // And it should use standard block shape (64k).
             // It also requires memory alias support so resources can use the same block repeatedly (this may reduce performance based on implementation)
+           const auto& copyQueue = m_commandQueueContext.GetCommandQueue(RHI::HardwareQueueClass::Copy);
             m_features.m_tiledResource = m_enabledDeviceFeatures.sparseBinding
                 && m_enabledDeviceFeatures.sparseResidencyImage2D
                 && m_enabledDeviceFeatures.sparseResidencyImage3D
                 && m_enabledDeviceFeatures.sparseResidencyAliased
                 && deviceProperties.sparseProperties.residencyStandard2DBlockShape
-                && deviceProperties.sparseProperties.residencyStandard3DBlockShape;
+                && deviceProperties.sparseProperties.residencyStandard3DBlockShape
+                && ((m_queueFamilyProperties[copyQueue.GetQueueDescriptor().m_familyIndex].queueFlags & VK_QUEUE_SPARSE_BINDING_BIT) == VK_QUEUE_SPARSE_BINDING_BIT);
 
             // Check if the Vulkan device support subgroup operations
             m_features.m_waveOperation = physicalDevice.IsFeatureSupported(DeviceFeature::SubgroupOperation);
@@ -1132,6 +1166,8 @@ namespace AZ
                 // Ray tracing needs raytracing extensions and unbounded arrays to work
                 m_features.m_rayTracing = (itRayTracingExtension != deviceExtensions.end());
             }
+
+            m_features.m_float16 = physicalDevice.GetPhysicalDeviceFloat16Int8Features().shaderFloat16;
 
             if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::FragmentShadingRate))
             {
@@ -1175,7 +1211,7 @@ namespace AZ
             else if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::FragmentDensityMap))
             {
                 const auto& densityFeatures = physicalDevice.GetPhysicalDeviceFragmentDensityMapFeatures();
-                if (densityFeatures.fragmentDensityMap)
+                if (densityFeatures.fragmentDensityMap && densityFeatures.fragmentDensityMapNonSubsampledImages)
                 {
                     m_features.m_shadingRateTypeMask |= RHI::ShadingRateTypeFlags::PerRegion;
                     m_imageShadingRateMode = ShadingRateImageMode::DensityMap;
@@ -1188,7 +1224,11 @@ namespace AZ
             }
             m_features.m_swapchainScalingFlags = AZ_TRAIT_ATOM_VULKAN_SWAPCHAIN_SCALING_FLAGS;
 
+#ifdef DISABLE_TIMELINE_SEMAPHORES
+            m_features.m_signalFenceFromCPU = false;
+#else
             m_features.m_signalFenceFromCPU = physicalDevice.GetPhysicalDeviceTimelineSemaphoreFeatures().timelineSemaphore;
+#endif
 
             const auto& deviceLimits = physicalDevice.GetDeviceLimits();
             m_limits.m_maxImageDimension1D = deviceLimits.maxImageDimension1D;
@@ -1265,7 +1305,6 @@ namespace AZ
         RHI::ResultCode Device::InitVmaAllocator(RHI::PhysicalDevice & physicalDeviceBase)
         {
             auto& physicalDevice = static_cast<Vulkan::PhysicalDevice&>(physicalDeviceBase);
-            const auto& physicalProperties = physicalDevice.GetPhysicalDeviceProperties();
 
             auto& context = GetContext();
             // We pass the function pointers from the Glad context since we already loaded them.
@@ -1305,8 +1344,7 @@ namespace AZ
             allocatorInfo.physicalDevice = physicalDevice.GetNativePhysicalDevice();
             allocatorInfo.device = m_nativeDevice;
             allocatorInfo.instance = instance.GetNativeInstance();
-            // Current version for glad function pointers. Update this value when updating GLAD.
-            allocatorInfo.vulkanApiVersion = AZStd::min(physicalProperties.apiVersion, VK_API_VERSION_1_3);
+            allocatorInfo.vulkanApiVersion = physicalDevice.GetVulkanVersion();
             allocatorInfo.pVulkanFunctions = &vulkanFunctions;
             allocatorInfo.pAllocationCallbacks = VkSystemAllocator::Get();
 

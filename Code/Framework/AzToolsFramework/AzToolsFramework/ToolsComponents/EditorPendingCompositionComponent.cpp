@@ -123,12 +123,12 @@ namespace AzToolsFramework
 
         void EditorPendingCompositionComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("EditorPendingCompositionService", 0x6b5b794f));
+            services.push_back(AZ_CRC_CE("EditorPendingCompositionService"));
         }
 
         void EditorPendingCompositionComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("EditorPendingCompositionService", 0x6b5b794f));
+            services.push_back(AZ_CRC_CE("EditorPendingCompositionService"));
         }
 
         void EditorPendingCompositionComponent::GetPendingComponents(AZ::Entity::ComponentArrayType& components)

@@ -11,8 +11,6 @@
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshHandleStateBus.h>
 
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
-
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/RHIUtils.h>
 #include <Atom/RPI.Public/Model/Model.h>
@@ -441,6 +439,7 @@ namespace AZ
 
                 m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
                 MeshHandleDescriptor meshDescriptor;
+                meshDescriptor.m_entityId = m_entityComponentIdPair.GetEntityId();
                 meshDescriptor.m_modelAsset = m_configuration.m_modelAsset;
                 meshDescriptor.m_customMaterials = ConvertToCustomMaterialMap(materials);
                 meshDescriptor.m_useForwardPassIblSpecular = m_configuration.m_useForwardPassIblSpecular;
@@ -716,7 +715,7 @@ namespace AZ
             return Aabb::CreateNull();
         }
 
-        void MeshComponentController::GetVisibleGeometry(
+        void MeshComponentController::BuildVisibleGeometry(
             const AZ::Aabb& bounds, AzFramework::VisibleGeometryContainer& geometryContainer) const
         {
             // Only include data for this entity if it is within bounds. This could possibly be done per sub mesh.
@@ -800,6 +799,7 @@ namespace AZ
                 // Copy the index and position data into the visible geometry structure.
                 AzFramework::VisibleGeometry visibleGeometry;
                 visibleGeometry.m_transform = AZ::Matrix4x4::CreateFromTransform(m_transformInterface->GetWorldTM());
+                visibleGeometry.m_transform *= AZ::Matrix4x4::CreateScale(m_cachedNonUniformScale);
 
                 // Reserve space for indices and copy data, assuming stride between elements is 0.
                 visibleGeometry.m_indices.resize_no_construct(indexBufferViewDesc.m_elementCount);

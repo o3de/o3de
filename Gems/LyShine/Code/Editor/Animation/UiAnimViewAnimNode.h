@@ -15,7 +15,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 
 class CUiAnimViewAnimNode;
-class CEntityObject;
 class QWidget;
 
 namespace AZ

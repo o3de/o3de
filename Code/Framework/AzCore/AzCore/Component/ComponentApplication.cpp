@@ -218,7 +218,7 @@ namespace AZ
     {
         if (node.GetVersion() < 2)
         {
-            int nodeIdx = node.FindElement(AZ_CRC("recordsMode", 0x764c147a));
+            int nodeIdx = node.FindElement(AZ_CRC_CE("recordsMode"));
             if (nodeIdx != -1)
             {
                 auto& subNode = node.GetSubElement(nodeIdx);
@@ -230,7 +230,7 @@ namespace AZ
                 subNode.SetName("recordingMode");
             }
 
-            nodeIdx = node.FindElement(AZ_CRC("stackRecordLevels", 0xf8492566));
+            nodeIdx = node.FindElement(AZ_CRC_CE("stackRecordLevels"));
             if (nodeIdx != -1)
             {
                 auto& subNode = node.GetSubElement(nodeIdx);

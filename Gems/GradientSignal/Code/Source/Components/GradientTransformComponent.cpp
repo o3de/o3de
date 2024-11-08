@@ -198,18 +198,18 @@ namespace GradientSignal
 
     void GradientTransformComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("GradientTransformService", 0x8c8c5ecc));
+        services.push_back(AZ_CRC_CE("GradientTransformService"));
     }
 
     void GradientTransformComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("GradientTransformService", 0x8c8c5ecc));
+        services.push_back(AZ_CRC_CE("GradientTransformService"));
         services.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     void GradientTransformComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
+        services.push_back(AZ_CRC_CE("ShapeService"));
     }
 
     void GradientTransformComponent::Reflect(AZ::ReflectContext* context)

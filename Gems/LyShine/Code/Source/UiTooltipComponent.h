@@ -66,20 +66,20 @@ public:  // static member functions
 
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("UiTooltipService", 0x78437544));
+        provided.push_back(AZ_CRC_CE("UiTooltipService"));
     }
 
     static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("UiTooltipService", 0x78437544));
-        incompatible.push_back(AZ_CRC("UiTooltipDisplayService", 0xb2f093fd));
+        incompatible.push_back(AZ_CRC_CE("UiTooltipService"));
+        incompatible.push_back(AZ_CRC_CE("UiTooltipDisplayService"));
     }
 
     static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("UiElementService", 0x3dca7ad4));
-        required.push_back(AZ_CRC("UiTransformService", 0x3a838e34));
-        required.push_back(AZ_CRC("UiInteractableService", 0x1d474c98));
+        required.push_back(AZ_CRC_CE("UiElementService"));
+        required.push_back(AZ_CRC_CE("UiTransformService"));
+        required.push_back(AZ_CRC_CE("UiInteractableService"));
     }
 
     static void Reflect(AZ::ReflectContext* context);

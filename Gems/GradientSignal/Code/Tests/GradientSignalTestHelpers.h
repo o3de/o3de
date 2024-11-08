@@ -24,7 +24,7 @@ namespace UnitTest
     //! @param height The height of the image
     //! @param pixelSize Number of bytes per pixel
     //! @return The AZ::RHI::ImageSubresourceLayout that has been filled out appropriately
-    AZ::RHI::ImageSubresourceLayout BuildSubImageLayout(AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize);
+    AZ::RHI::DeviceImageSubresourceLayout BuildSubImageLayout(AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize);
 
     //! Build a deterministic random set of image pixel data
     //! @param width Width of the image

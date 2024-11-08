@@ -66,7 +66,7 @@ namespace AZ
             //! This is the Id used to bind the attachment with the RHI
             RHI::AttachmentId m_path;
 
-            //! A descriptor of the attachment image
+            //! A descriptor of the attachment buffer or image
             RHI::UnifiedAttachmentDescriptor m_descriptor;
 
             //! Whether the attachment is transient or not
@@ -173,6 +173,9 @@ namespace AZ
             //! ScopeAttachmentUsage used when binding the attachment with the RHI
             RHI::ScopeAttachmentUsage m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Uninitialized;
 
+            //! ScopeAttachmentStage that this binding will be used
+            RHI::ScopeAttachmentStage m_scopeAttachmentStage = RHI::ScopeAttachmentStage::Uninitialized;
+
             //! The scope descriptor to be used for this binding during rendering
             RHI::UnifiedScopeAttachmentDescriptor m_unifiedScopeDesc;
 
@@ -183,8 +186,8 @@ namespace AZ
             //! this is the fallback we will use when the pass is disabled.
             PassAttachmentBinding* m_fallbackBinding = nullptr;
 
-            static const int16_t ShaderInputAutoBind = -1;
-            static const int16_t ShaderInputNoBind = -2;
+            static constexpr int16_t ShaderInputAutoBind = -1;
+            static constexpr int16_t ShaderInputNoBind = -2;
 
             //! This tracks which SRG slot to bind the attachment to. This value gets applied in RenderPass::BindPassSrg
             //! after being converted to either an RHI::ShaderInputImageIndex or an RHI::ShaderInputBufferIndex using

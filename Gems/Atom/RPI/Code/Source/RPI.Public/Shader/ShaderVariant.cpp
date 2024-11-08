@@ -29,7 +29,7 @@ namespace AZ
             m_pipelineStateType = shaderAsset->GetPipelineStateType();
             m_pipelineLayoutDescriptor = shaderAsset->GetPipelineLayoutDescriptor(supervariantIndex);
             m_renderStates = &shaderAsset->GetRenderStates(supervariantIndex);
-
+            m_useSpecializationConstants = shaderAsset->UseSpecializationConstants(supervariantIndex);
             return true;
         }
 
@@ -38,7 +38,16 @@ namespace AZ
 
         }
 
-        void ShaderVariant::ConfigurePipelineState(RHI::PipelineStateDescriptor& descriptor) const
+        void ShaderVariant::ConfigurePipelineState(
+            RHI::PipelineStateDescriptor& descriptor,
+            const ShaderVariantId& specialization) const
+        {
+            ConfigurePipelineState(descriptor, ShaderOptionGroup(m_shaderAsset->GetShaderOptionGroupLayout(), specialization));
+        }
+
+        void ShaderVariant::ConfigurePipelineState(
+            RHI::PipelineStateDescriptor& descriptor,
+            const ShaderOptionGroup& specialization) const
         {
             descriptor.m_pipelineLayoutDescriptor = m_pipelineLayoutDescriptor;
 
@@ -76,6 +85,73 @@ namespace AZ
                 AZ_Assert(false, "Unexpected PipelineStateType");
                 break;
             }
+
+            if (m_useSpecializationConstants)
+            {
+                // Configure specialization data for the shader
+                AZ_Assert(
+                    specialization.GetShaderOptionLayout() == m_shaderAsset->GetShaderOptionGroupLayout(),
+                    "OptionGroup for specialization is different to the one in the ShaderAsset");
+                descriptor.m_specializationData.clear();
+                ShaderOptionGroup options = specialization;
+                options.SetUnspecifiedToDefaultValues();
+                for (auto& option : options.GetShaderOptionLayout()->GetShaderOptions())
+                {
+                    if (option.GetSpecializationId() >= 0)
+                    {
+                        descriptor.m_specializationData.emplace_back();
+                        auto& specializationData = descriptor.m_specializationData.back();
+                        specializationData.m_name = option.GetName();
+                        specializationData.m_id = option.GetSpecializationId();
+                        specializationData.m_value = RHI::SpecializationValue(option.Get(options).GetIndex());
+                        switch (option.GetType())
+                        {
+                        case ShaderOptionType::Boolean:
+                            specializationData.m_type = RHI::SpecializationType::Bool;
+                            break;
+                        case ShaderOptionType::Enumeration:
+                        case ShaderOptionType::IntegerRange:
+                            specializationData.m_type = RHI::SpecializationType::Integer;
+                            break;
+                        default:
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        void ShaderVariant::ConfigurePipelineState(RHI::PipelineStateDescriptor& descriptor) const
+        {
+            auto layout = m_shaderAsset->GetShaderOptionGroupLayout();
+            for ([[maybe_unused]] auto& option : layout->GetShaderOptions())
+            {
+                if (m_useSpecializationConstants && option.GetSpecializationId() >= 0)
+                {
+                    AZ_Error(
+                        "ConfigurePipelineState",
+                        !m_useSpecializationConstants || option.GetSpecializationId() < 0,
+                        "Configuring PipelineStateDescriptor without specializing option %s.\
+                         Call ConfigurePipelineState with specialization data. Default value will be used.",
+                        option.GetName().GetCStr());
+                }
+            }
+            ConfigurePipelineState(descriptor, ShaderOptionGroup(layout));
+        }
+
+        bool ShaderVariant::IsFullySpecialized() const
+        {
+            return m_shaderAsset->IsFullySpecialized(m_supervariantIndex);
+        }
+
+        bool ShaderVariant::UseSpecializationConstants() const
+        {
+            return m_shaderAsset->UseSpecializationConstants(m_supervariantIndex);
+        }
+
+        bool ShaderVariant::UseKeyFallback() const
+        {
+            return !(IsFullyBaked() || IsFullySpecialized());
         }
 
     } // namespace RPI

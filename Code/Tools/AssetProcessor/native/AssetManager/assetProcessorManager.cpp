@@ -339,7 +339,9 @@ namespace AssetProcessor
 
         if (jobInfo.m_status == JobStatus::Failed_InvalidSourceNameExceedsMaxLimit)
         {
-            response.m_jobLog.append(AZStd::string::format("Warn: Source file name exceeds the maximum length allowed (%d).", AP_MAX_PATH_LEN).c_str());
+            response.m_jobLog.append(
+                AZStd::string::format("Warn: Source file name exceeds the maximum length allowed (%d).", ASSETPROCESSOR_TRAIT_MAX_PATH_LEN)
+                    .c_str());
             response.m_isSuccess = true;
             return;
         }
@@ -804,7 +806,8 @@ namespace AssetProcessor
 
         QString fullPath = jobEntry.GetAbsoluteSourcePath();
         //set the new status
-        job.m_status = fullPath.length() < AP_MAX_PATH_LEN ? JobStatus::Failed : JobStatus::Failed_InvalidSourceNameExceedsMaxLimit;
+        job.m_status =
+            fullPath.length() < ASSETPROCESSOR_TRAIT_MAX_PATH_LEN ? JobStatus::Failed : JobStatus::Failed_InvalidSourceNameExceedsMaxLimit;
 
         JobDiagnosticInfo info{};
         JobDiagnosticRequestBus::BroadcastResult(info, &JobDiagnosticRequestBus::Events::GetDiagnosticInfo, job.m_jobRunKey);
@@ -1589,7 +1592,6 @@ namespace AssetProcessor
 
                 // now we need notify everyone about the new products
                 AzToolsFramework::AssetDatabase::ProductDatabaseEntry& newProduct = pair.first;
-                AZStd::vector<AZ::u32>& subIds = newLegacySubIDs[productIdx];
 
                 // product name will be in the form "platform/relativeProductPath"
                 QString productName = QString::fromUtf8(newProduct.m_productName.c_str());
@@ -1603,7 +1605,6 @@ namespace AssetProcessor
 
                 AssetNotificationMessage message(relativeProductPath, AssetNotificationMessage::AssetChanged, newProduct.m_assetType, processedAsset.m_entry.m_platformInfo.m_identifier.c_str());
                 AZ::Data::AssetId assetId(source.m_sourceGuid, newProduct.m_subID);
-                AZ::Data::AssetId legacyAssetId(newProduct.m_legacyGuid, 0);
 
                 message.m_data = relativeProductPath;
                 message.m_sizeBytes = QFileInfo(fullProductPath).size();
@@ -1616,40 +1617,6 @@ namespace AssetProcessor
                     message.m_dependencies.emplace_back(AZ::Data::AssetId(entry.m_dependencySourceGuid, entry.m_dependencySubID), entry.m_dependencyFlags);
                 }
 
-                if (legacyAssetId != assetId)
-                {
-                    message.m_legacyAssetIds.push_back(legacyAssetId);
-                }
-
-                const SourceAssetReference& sourceAsset = processedAsset.m_entry.m_sourceAssetReference;
-                AZStd::unordered_set<AZ::Data::AssetId> legacySourceAssetIds; // Keep track of the legacy *asset* Ids to avoid duplicates
-                auto legacySourceUuidsOutcome = AssetUtilities::GetLegacySourceUuids(sourceAsset);
-
-                if (legacySourceUuidsOutcome)
-                {
-                    auto legacySourceUuids = legacySourceUuidsOutcome.GetValue();
-                    legacySourceAssetIds.reserve(legacySourceUuids.size());
-
-                    for (const auto& legacyUuid : legacySourceUuids)
-                    {
-                        AZ::Data::AssetId legacySourceAssetId(legacyUuid, newProduct.m_subID);
-
-                        if (legacySourceAssetId != assetId)
-                        {
-                            legacySourceAssetIds.emplace(legacySourceAssetId);
-                            message.m_legacyAssetIds.push_back(AZStd::move(legacySourceAssetId));
-                        }
-                    }
-                }
-
-                for (AZ::u32 newLegacySubId : subIds)
-                {
-                    AZ::Data::AssetId createdSubID(source.m_sourceGuid, newLegacySubId);
-                    if ((createdSubID != legacyAssetId) && !legacySourceAssetIds.contains(createdSubID) && (createdSubID != assetId))
-                    {
-                        message.m_legacyAssetIds.push_back(createdSubID);
-                    }
-                }
 
                 Q_EMIT AssetMessage(message);
 
@@ -1902,18 +1869,26 @@ namespace AssetProcessor
                 // or if its in the "currently being examined" list.  The latter is likely to be the smaller list,
                 // so we check it first.  Both of those are absolute paths, so we convert to absolute path before
                 // searching those lists:
+
                 if (m_filesToExamine.find(absolutePath) != m_filesToExamine.end())
                 {
                     // its already in the file to examine queue.
                     continue;
                 }
+
                 if (m_alreadyActiveFiles.find(absolutePath) != m_alreadyActiveFiles.end())
                 {
                     // its already been picked up by a file monitoring / scanning step.
                     continue;
                 }
+                
+                if (source.m_fromDependencyChain.contains(absolutePath))
+                {
+                    AZ_Trace(AssetProcessor::DebugChannel, "Ignoring dependant file: " AZ_STRING_FORMAT " - cyclic dependency detected\n", AZ_STRING_ARG(absolutePath));
+                    continue;
+                }
 
-                AssessFileInternal(absolutePath, false);
+                AssessFileInternal(absolutePath, false, false, normalizedFilePath + QString(";") + source.m_fromDependencyChain);
             }
         }
 
@@ -1923,7 +1898,7 @@ namespace AssetProcessor
         {
             m_queuedExamination = true;
             QTimer::singleShot(0, this, SLOT(ProcessFilesToExamineQueue()));
-            Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + m_filesToExamine.size() + m_numOfJobsToAnalyze);
+            Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + m_filesToExamine.size() + m_numOfJobsToAnalyze, AnalysisExtraInfo());
         }
     }
 
@@ -2855,7 +2830,7 @@ namespace AssetProcessor
             if (elapsedTimer.elapsed() >= MILLISECONDS_BETWEEN_CREATE_JOBS_STATUS_UPDATE)
             {
                 int remainingInSwapped = swapped.size() - i;
-                Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + remainingInSwapped + m_numOfJobsToAnalyze);
+                Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + remainingInSwapped + m_numOfJobsToAnalyze, AnalysisExtraInfo());
                 elapsedTimer.restart();
             }
 
@@ -2885,7 +2860,7 @@ namespace AssetProcessor
             if (isProductFile)
             {
                 // its a product file.
-                if (normalizedPath.length() >= AP_MAX_PATH_LEN)
+                if (normalizedPath.length() >= ASSETPROCESSOR_TRAIT_MAX_PATH_LEN)
                 {
                     // if we are here it means that we have found a cache file whose filepath is greater than the maximum path length allowed
                     continue;
@@ -2954,10 +2929,15 @@ namespace AssetProcessor
                     m_knownFolders.insert(sourceAssetReference.ScanFolderPath().c_str());
                 }
 
-                if (normalizedPath.length() >= AP_MAX_PATH_LEN)
+                if (normalizedPath.length() >= ASSETPROCESSOR_TRAIT_MAX_PATH_LEN)
                 {
                     // if we are here it means that we have found a source file whose filepath is greater than the maximum path length allowed
-                    AZ_TracePrintf(AssetProcessor::ConsoleChannel, "ProcessFilesToExamineQueue: %s filepath length %d exceeds the maximum path length (%d) allowed.\n", normalizedPath.toUtf8().constData(), normalizedPath.length(), AP_MAX_PATH_LEN);
+                    AZ_TracePrintf(
+                        AssetProcessor::ConsoleChannel,
+                        "ProcessFilesToExamineQueue: %s filepath length %d exceeds the maximum path length (%d) allowed.\n",
+                        normalizedPath.toUtf8().constData(),
+                        normalizedPath.length(),
+                        ASSETPROCESSOR_TRAIT_MAX_PATH_LEN);
 
                     JobInfoContainer jobInfos;
                     m_stateData->GetJobInfoBySourceNameScanFolderId(sourceAssetReference.RelativePath().c_str(), scanFolderInfo->ScanFolderID(), jobInfos);
@@ -3197,7 +3177,7 @@ namespace AssetProcessor
             if (!m_quitRequested && m_AssetProcessorIsBusy)
             {
                 m_AssetProcessorIsBusy = false;
-                Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + m_filesToExamine.size() + m_numOfJobsToAnalyze);
+                Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + m_filesToExamine.size() + m_numOfJobsToAnalyze, AnalysisExtraInfo());
                 Q_EMIT AssetProcessorManagerIdleState(true);
             }
 
@@ -3205,7 +3185,14 @@ namespace AssetProcessor
             {
                 // report these metrics only once per session.
                 m_reportedAnalysisMetrics = true;
-                AZ_TracePrintf(ConsoleChannel, "Builder optimization: %i / %i files required full analysis, %i sources found but not processed by anyone\n", m_numSourcesNeedingFullAnalysis, m_numTotalSourcesFound, m_numSourcesNotHandledByAnyBuilder);
+                AZ_TracePrintf(
+                    ConsoleChannel,
+                    "Builder optimization: %i / %i files required full analysis, %i sources found but not processed by anyone. %i override "
+                    "collisions.\n",
+                    m_numSourcesNeedingFullAnalysis,
+                    m_numTotalSourcesFound,
+                    m_numSourcesNotHandledByAnyBuilder,
+                    m_numOverrides);
             }
 
             m_dependencyCache = {};
@@ -3222,7 +3209,7 @@ namespace AssetProcessor
             int numWorkRemainingNow = m_activeFiles.size() + m_filesToExamine.size();
             // total (GUI Shown) of work remaining (including jobs to do later)
             int numTotalWorkRemaining = numWorkRemainingNow + m_numOfJobsToAnalyze;
-            Q_EMIT NumRemainingJobsChanged(numTotalWorkRemaining);
+            Q_EMIT NumRemainingJobsChanged(numTotalWorkRemaining, AnalysisExtraInfo());
 
             // wake up if there's work to do and we haven't scheduled to do it.
             if ((!m_alreadyScheduledUpdate) && (numWorkRemainingNow > 0))
@@ -3264,7 +3251,7 @@ namespace AssetProcessor
     // during startup, and should avoid logging, sleeping, or doing
     // any more work than is necessary (Log only in error or uncommon
     // circumstances).
-    void AssetProcessorManager::AssessFileInternal(QString fullFile, bool isDelete, bool fromScanner)
+    void AssetProcessorManager::AssessFileInternal(QString fullFile, bool isDelete, bool fromScanner, QString fromDependencyChain)
     {
         if (m_quitRequested)
         {
@@ -3365,6 +3352,7 @@ namespace AssetProcessor
         }
 
         FileEntry newEntry(normalizedFullFile, isDelete, fromScanner);
+        newEntry.m_fromDependencyChain = fromDependencyChain;
 
         if (m_alreadyActiveFiles.find(normalizedFullFile) != m_alreadyActiveFiles.end())
         {
@@ -3383,7 +3371,9 @@ namespace AssetProcessor
         m_AssetProcessorIsBusy = true;
         m_activeFiles.push_back(newEntry);
         m_alreadyActiveFiles.insert(normalizedFullFile);
-        Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + m_filesToExamine.size() + m_numOfJobsToAnalyze);
+
+
+        Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + m_filesToExamine.size() + m_numOfJobsToAnalyze, AnalysisExtraInfo());
 
         if (!m_alreadyScheduledUpdate)
         {
@@ -3528,6 +3518,8 @@ namespace AssetProcessor
         [[maybe_unused]] int processedFileCount = 0;
 
         AssetProcessor::StatsCapture::BeginCaptureStat("InitialFileAssessment");
+        m_totalScannerFilesToAssess = filePaths.size();
+        m_scannerFilesAssessed = 0;
 
         for (const AssetFileInfo& fileInfo : filePaths)
         {
@@ -3552,18 +3544,30 @@ namespace AssetProcessor
                         }
                     }
 
+                    ++m_scannerFilesAssessed;
                     continue;
                 }
             }
 
-            processedFileCount++;
             AssessFileInternal(fileInfo.m_filePath, false, true);
+            ++m_scannerFilesAssessed;
+            ++processedFileCount;
         }
 
         if (m_allowModtimeSkippingFeature)
         {
             AZ_TracePrintf(AssetProcessor::DebugChannel, "%d files reported from scanner.  %d unchanged files skipped, %d files processed\n", filePaths.size(), filePaths.size() - processedFileCount, processedFileCount);
         }
+
+        AZ_Printf(
+            "AssetProcessor",
+            "Assessing files from scanner complete. Total files: %i. Assets with new builders: %i. Unregistered/new files: %i. Old timestamps: %i. "
+            "Modified dependencies: %i.\n",
+            m_scannerFilesAssessed,
+            m_assetsNeedingProcessing_BuildersChanged,
+            m_assetsNeedingProcessing_NewFile,
+            m_assetsNeedingProcessing_TimeStampChanged,
+            m_assetsNeedingProcessing_DependenciesChanged);
 
         AssetProcessor::StatsCapture::EndCaptureStat("InitialFileAssessment");
 
@@ -3617,6 +3621,7 @@ namespace AssetProcessor
         // We can only do this if the builders haven't changed however, as they can register to watch files that were previously not processed
         if (m_buildersAddedOrRemoved)
         {
+            ++m_assetsNeedingProcessing_BuildersChanged;
             return false;
         }
 
@@ -3625,6 +3630,7 @@ namespace AssetProcessor
         if (fileItr == m_fileModTimes.end())
         {
             // File has not been processed before
+            ++m_assetsNeedingProcessing_NewFile;
             return false;
         }
 
@@ -3637,6 +3643,7 @@ namespace AssetProcessor
         {
             // Don't bother with any further checks (particularly hashing), this file hasn't been seen before
             // There should never be a case where we have recorded a hash but not a modtime
+            ++m_assetsNeedingProcessing_NewFile;
             return false;
         }
 
@@ -3644,8 +3651,10 @@ namespace AssetProcessor
 
         if (databaseModTime != thisModTime)
         {
+            ++m_assetsNeedingProcessing_TimeStampChanged;
+
             // File timestamp has changed since last time
-            // Check if the contents have changed or if its just a timestamp mismatch
+            // Check if the contents have changed or if it's just a timestamp mismatch
 
             auto hashItr = m_fileHashes.find(fileInfo.m_filePath.toUtf8().constData());
 
@@ -3682,39 +3691,44 @@ namespace AssetProcessor
         {
             // File is a source file that has been processed before
             AZStd::string fingerprintFromDatabase = sourceFileItr->m_analysisFingerprint.toUtf8().data();
+
+            if (fingerprintFromDatabase.empty())
+            {
+                // No recorded fingerprint
+                return false;
+            }
+
             AZStd::string_view builderEntries(fingerprintFromDatabase.begin() + s_lengthOfUuid + 1, fingerprintFromDatabase.end());
             AZStd::string_view dependencyFingerprint(fingerprintFromDatabase.begin(), fingerprintFromDatabase.begin() + s_lengthOfUuid);
             int numBuildersEmittingSourceDependencies = 0;
 
-            if (!fingerprintFromDatabase.empty() && AreBuildersUnchanged(builderEntries, numBuildersEmittingSourceDependencies))
+            // Check for updated builders
+            if (!AreBuildersUnchanged(builderEntries, numBuildersEmittingSourceDependencies))
             {
-                // Builder(s) have not changed since last time
-                AZStd::string currentFingerprint = ComputeRecursiveDependenciesFingerprint(sourceFileItr->m_sourceAssetReference);
-
-                if(dependencyFingerprint != currentFingerprint)
-                {
-                    // Dependencies have changed
-                    return false;
-                }
-                // Success - we can skip this file, nothing has changed!
-
-                // Remove it from the list of to-be-processed files, otherwise the AP will assume the file was deleted
-                // Note that this means any files that *were* deleted are already handled by CheckMissingFiles
-                m_sourceFilesInDatabase.erase(sourceFileItr);
-
-                return true;
+                ++m_assetsNeedingProcessing_BuildersChanged;
+                return false;
             }
-        }
-        else
-        {
-            // File is a non-tracked file, aka a file that no builder cares about.
-            // The fact that it has a matching modtime means we've already seen this file and attempted to process it
-            // If it were a new, unprocessed source file, there would be no modtime stored
 
+            // Check for updated fingerprint
+            AZStd::string currentFingerprint = ComputeRecursiveDependenciesFingerprint(sourceFileItr->m_sourceAssetReference);
+            if (dependencyFingerprint != currentFingerprint)
+            {
+                // Dependencies have changed
+                ++m_assetsNeedingProcessing_DependenciesChanged;
+                return false;
+            }
+
+            // Success - we can skip this file, nothing has changed!
+
+            // Remove it from the list of to-be-processed files, otherwise the AP will assume the file was deleted
+            // Note that this means any files that *were* deleted are already handled by CheckMissingFiles
+            m_sourceFilesInDatabase.erase(sourceFileItr);
             return true;
         }
-
-        return false;
+        // File is a non-tracked file, aka a file that no builder cares about.
+        // The fact that it has a matching modtime means we've already seen this file and attempted to process it
+        // If it were a new, unprocessed source file, there would be no modtime stored
+        return true;
     }
 
     void AssetProcessorManager::AssessDeletedFile(QString filePath)
@@ -3842,7 +3856,7 @@ namespace AssetProcessor
                 // Update the remaining job status occasionally
                 if (elapsedTimer.elapsed() >= MILLISECONDS_BETWEEN_PROCESS_JOBS_STATUS_UPDATE)
                 {
-                    Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + m_filesToExamine.size() + m_numOfJobsToAnalyze);
+                    Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + m_filesToExamine.size() + m_numOfJobsToAnalyze, AnalysisExtraInfo());
                     elapsedTimer.restart();
                 }
             }
@@ -3875,7 +3889,7 @@ namespace AssetProcessor
             QueueIdleCheck();
         }
 
-        Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + m_filesToExamine.size() + m_numOfJobsToAnalyze);
+        Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + m_filesToExamine.size() + m_numOfJobsToAnalyze, AnalysisExtraInfo());
     }
 
     void AssetProcessorManager::ProcessJob(JobDetails& job)
@@ -4698,6 +4712,10 @@ namespace AssetProcessor
                         false, // Wildcard dependencies never come from an AssetId
                         "");
                     newDependencies.push_back(AZStd::move(newDependencyEntry));
+                }
+                else
+                {
+                    ++m_numOverrides;
                 }
             }
 
@@ -5879,11 +5897,11 @@ namespace AssetProcessor
         jobdetail.m_critical = true;
         jobdetail.m_priority = INT_MAX; // front of the queue.
         // the new lines make it easier to copy and paste the file names.
-        jobdetail.m_jobParam[AZ_CRC(AutoFailReasonKey)] = autoFailReason;
+        jobdetail.m_jobParam[AZ_CRC_CE(AutoFailReasonKey)] = autoFailReason;
 
         if(!jobLog.empty())
         {
-            jobdetail.m_jobParam[AZ_CRC(AutoFailLogFile)] = jobLog;
+            jobdetail.m_jobParam[AZ_CRC_CE(AutoFailLogFile)] = jobLog;
         }
 
         // this is a failure, so make sure that the system that is tracking files
@@ -6171,5 +6189,24 @@ namespace AssetProcessor
             m_delayProcessMetadataQueued = true;
             QTimer::singleShot(minWaitTime, this, SLOT(DelayedMetadataFileCheck()));
         }
+    }
+
+    QString AssetProcessorManager::AnalysisExtraInfo() const
+    {
+        if (m_scannerFilesAssessed == m_totalScannerFilesToAssess)
+        {
+            return "";
+        }
+
+        QLocale locale(QLocale::English, QLocale::UnitedStates); // Locale for formatting (US English uses commas)
+        QString extraInfo = QString("Assessing %1 of %2: %3 assets with modified builders, %4 unregistered/new, %5 outdated timestamps, %6 "
+                                    "with modified dependencies.")
+                                .arg(locale.toString(m_scannerFilesAssessed))
+                                .arg(locale.toString(m_totalScannerFilesToAssess))
+                                .arg(locale.toString(m_assetsNeedingProcessing_BuildersChanged))
+                                .arg(locale.toString(m_assetsNeedingProcessing_NewFile))
+                                .arg(locale.toString(m_assetsNeedingProcessing_TimeStampChanged))
+                                .arg(locale.toString(m_assetsNeedingProcessing_DependenciesChanged));
+        return extraInfo;
     }
 } // namespace AssetProcessor

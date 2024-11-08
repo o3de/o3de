@@ -358,7 +358,7 @@ void PropertiesContainer::BuildSharedComponentList(ComponentTypeMap& sharedCompo
                     AZ::u32 visibilityValue;
                     if (reader.Read<AZ::u32>(visibilityValue))
                     {
-                        if (visibilityValue == AZ_CRC("PropertyVisibility_Hide", 0x32ab90f7))
+                        if (visibilityValue == AZ_CRC_CE("PropertyVisibility_Hide"))
                         {
                             continue;
                         }

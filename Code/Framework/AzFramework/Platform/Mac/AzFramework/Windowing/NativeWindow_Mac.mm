@@ -25,7 +25,7 @@ namespace AzFramework
         ~NativeWindowImpl_Darwin() override;
         
         // NativeWindow::Implementation overrides...
-        void InitWindow(const AZStd::string& title,
+        void InitWindowInternal(const AZStd::string& title,
                         const WindowGeometry& geometry,
                         const WindowStyleMasks& styleMasks) override;
         NativeWindowHandle GetWindowHandle() const override;
@@ -52,7 +52,7 @@ namespace AzFramework
         m_nativeWindow = nil;
     }
 
-    void NativeWindowImpl_Darwin::InitWindow(const AZStd::string& title,
+    void NativeWindowImpl_Darwin::InitWindowInternal(const AZStd::string& title,
                                              const WindowGeometry& geometry,
                                              const WindowStyleMasks& styleMasks)
     {

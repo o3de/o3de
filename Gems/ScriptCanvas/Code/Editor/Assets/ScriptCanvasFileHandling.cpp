@@ -19,6 +19,7 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <ScriptCanvas/Asset/SubgraphInterfaceAsset.h>
+#include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Bus/ScriptCanvasBus.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorUtils.h>
@@ -112,7 +113,8 @@ namespace ScriptCanvasFileHandlingCpp
         SourceTreeLoader* m_parent = nullptr;
     };
 
-    AZ::Outcome<void, AZStd::string> LoadEditorAssetTree(SourceTreeLoader& result)
+    AZ::Outcome<void, AZStd::string> LoadEditorAssetTree(
+        SourceTreeLoader& result, ScriptCanvas::MakeInternalGraphEntitiesUnique makeUniqueEntities)
     {
         using namespace ScriptCanvas;
 
@@ -123,7 +125,7 @@ namespace ScriptCanvasFileHandlingCpp
 
         if (!result.m_source.Get())
         {
-            auto loadResult = LoadFromFile(result.m_source.AbsolutePath().Native());
+            const auto loadResult = LoadFromFile(result.m_source.AbsolutePath().Native(), makeUniqueEntities);
             if (!loadResult)
             {
                 return AZ::Failure
@@ -200,7 +202,7 @@ namespace ScriptCanvasFileHandlingCpp
                 }
                 else
                 {   // ...and if not, load and add the value to the in process-loads at this step...
-                    auto loadDependentOutcome = ScriptCanvasFileHandlingCpp::LoadEditorAssetTree(dependentAsset);
+                    const auto loadDependentOutcome = ScriptCanvasFileHandlingCpp::LoadEditorAssetTree(dependentAsset, makeUniqueEntities);
                     if (!loadDependentOutcome.IsSuccess())
                     {
                         return AZ::Failure(AZStd::string::format("LoadEditorAssetTree failed to load graph from %s: %s"
@@ -230,14 +232,15 @@ namespace ScriptCanvas
         }
     }
 
-    AZ::Outcome<SourceTree, AZStd::string> LoadEditorAssetTree(SourceHandle sourceHandle)
+    AZ::Outcome<SourceTree, AZStd::string> LoadEditorAssetTree(
+        SourceHandle sourceHandle, MakeInternalGraphEntitiesUnique makeUniqueEntities)
     {
         using namespace ScriptCanvasFileHandlingCpp;
 
         SourceTreeLoader result;
         result.m_source = sourceHandle;
 
-        auto loadOutome = LoadEditorAssetTree(result);
+        auto loadOutome = LoadEditorAssetTree(result, makeUniqueEntities);
 
         if (loadOutome.IsSuccess())
         {
@@ -272,6 +275,15 @@ namespace ScriptCanvas
         if (!result.m_deserializeResult.m_isSuccessful)
         {
             result.m_fileReadErrors = "Script Canvas Graph Deserialization Failed - " + result.m_deserializeResult.m_errors + "\n";
+        }
+
+        const auto& graphDataPtr = result.m_deserializeResult.m_graphDataPtr;
+        if (graphDataPtr && graphDataPtr->GetEditorGraph())
+        {
+            ScriptCanvasEditor::EditorGraphRequestBus::Event(
+                graphDataPtr->GetEditorGraph()->GetScriptCanvasId(),
+                &ScriptCanvasEditor::EditorGraphRequests::SetOriginalToNewIdsMap,
+                result.m_deserializeResult.m_originalIdsToNewIds);
         }
 
         result.m_handle = SourceHandle::FromRelativePath(result.m_deserializeResult.m_graphDataPtr, path);

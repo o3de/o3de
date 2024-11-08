@@ -34,16 +34,16 @@ namespace AZ
             static constexpr AZ::RHI::Format SkinIndicesFormat = AZ::RHI::Format::R16_UINT; // Single-component, 16-bit int per weight
             static constexpr AZ::RHI::Format SkinWeightFormat = AZ::RHI::Format::R32_FLOAT; // Single-component, 32-bit floating point per weight
 
-            static const char* ShaderSemanticName_SkinJointIndices = "SKIN_JOINTINDICES";
-            static const char* ShaderSemanticName_SkinWeights = "SKIN_WEIGHTS";
+            static constexpr const char* ShaderSemanticName_SkinJointIndices = "SKIN_JOINTINDICES";
+            static constexpr const char* ShaderSemanticName_SkinWeights = "SKIN_WEIGHTS";
 
             // Morph targets
-            static const char* ShaderSemanticName_MorphTargetDeltas = "MORPHTARGET_VERTEXDELTAS";
+            static constexpr const char* ShaderSemanticName_MorphTargetDeltas = "MORPHTARGET_VERTEXDELTAS";
 
             // Cloth data
-            static const char* ShaderSemanticName_ClothData = "CLOTH_DATA";
+            static constexpr const char* ShaderSemanticName_ClothData = "CLOTH_DATA";
             static constexpr uint32_t ClothDataFloatsPerVert = 4;
-            static const AZ::RHI::Format ClothDataFormat = AZ::RHI::Format::R32G32B32A32_FLOAT;
+            static constexpr AZ::RHI::Format ClothDataFormat = AZ::RHI::Format::R32G32B32A32_FLOAT;
 
             // We align all the skinned mesh related stream buffers to 192 bytes for various reasons.
             // Metal has a restriction where each typed buffer needs to start at 64 byte boundary.

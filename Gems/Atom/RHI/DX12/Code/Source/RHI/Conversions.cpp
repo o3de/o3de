@@ -845,6 +845,19 @@ namespace AZ
                 return 0;
             }
         }
+
+        RHI::ImageAspectFlags ConvertPlaneSliceToImageAspectFlags(uint16_t planeSlice)
+        {
+            if (planeSlice == 0)
+            {
+                return RHI::ImageAspectFlags::Depth | RHI::ImageAspectFlags::Color;
+            }
+            else if (planeSlice == 1)
+            {
+                return RHI::ImageAspectFlags::Stencil;
+            }
+            return RHI::ImageAspectFlags::None;
+        }
     
         DXGI_FORMAT ConvertFormat(RHI::Format format, [[maybe_unused]] bool raiseAsserts)
         {

@@ -68,23 +68,23 @@ namespace AZ
 
         void ReflectionProbeComponentController::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+            dependent.push_back(AZ_CRC_CE("TransformService"));
         }
 
         void ReflectionProbeComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ReflectionProbeService", 0xa5b919ce));
+            provided.push_back(AZ_CRC_CE("ReflectionProbeService"));
         }
 
         void ReflectionProbeComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("ReflectionProbeService", 0xa5b919ce));
+            incompatible.push_back(AZ_CRC_CE("ReflectionProbeService"));
             incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         void ReflectionProbeComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("BoxShapeService", 0x946a0032));
+            required.push_back(AZ_CRC_CE("BoxShapeService"));
         }
 
         ReflectionProbeComponentController::ReflectionProbeComponentController(const ReflectionProbeComponentConfig& config)

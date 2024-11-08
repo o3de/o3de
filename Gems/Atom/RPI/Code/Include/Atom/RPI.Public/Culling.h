@@ -68,6 +68,9 @@ namespace AZ
                 //! Set to all 0's if you don't want to hide the object from any Views.
                 RPI::View::UsageFlags m_hideFlags = RPI::View::UsageNone;
 
+                //! ID of the entity owning this cullable (optional)
+                AZ::EntityId m_entityId{ AZ::EntityId::InvalidEntityId };
+
                 //! UUID and type of the component that owns this cullable (optional)
                 AZ::Uuid m_componentUuid = AZ::Uuid::CreateNull();
                 uint32_t m_componentType = 0;
@@ -113,7 +116,7 @@ namespace AZ
             LodData m_lodData;
 
             using FlagType = uint32_t;
-            FlagType m_prevShaderOptionFlags = 0;
+            FlagType m_prevShaderOptionFlags = ~0u; // Init to something different than 0, so it updates on first usage.
             AZStd::atomic<FlagType> m_shaderOptionFlags = 0;
             FlagType m_flags;
 

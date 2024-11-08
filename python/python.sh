@@ -16,11 +16,14 @@ while [[ -h "$SOURCE" ]]; do
 done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-
 # Locate and make sure cmake is in the path
 if [[ "$OSTYPE" = *"darwin"* ]];
 then
     PAL=Mac
+    ARCH=
+elif [[ "$OSTYPE" = "msys" ]];
+then
+    PAL=Windows
     ARCH=
 else
     PAL=Linux
@@ -42,6 +45,26 @@ if ! [ -x "$(command -v cmake)" ]; then
     fi
 fi
 
+# Special Case: If we are using the export-project script in a ROS2 enabled environment, then we cannot use the O3DE embedded python
+# for the export scripts because the ROS2 projects may require ros-specific python modules to exist for validation to build the project
+# which is installed as part of the ROS2 system packages. These packages are not available in the embedded O3DE python so in this
+# case we must call the system installed python3
+if [[ $ROS_DISTRO != ""  && ( $1 == "export-project" || $2 == "export-project" ) ]]
+then
+    which python3 > /dev/null 2>&1
+    if [ $? -eq 0 ]
+    then
+        # Make sure the required 'resolvelib' is installed which is required for project export
+        python3 -m pip install resolvelib || true
+
+        # Run the python command through the ROS-installed python3
+        python3 "$@"
+        exit $?
+    else
+        echo "Warning. Detected ROS but cannot locate python3 for ROS, this may cause issues with O3DE."
+    fi
+fi
+
 # Calculate the engine ID
 CALC_PATH=$DIR/../cmake/CalculateEnginePathId.cmake
 LY_ROOT_FOLDER=$DIR/..
@@ -55,11 +78,18 @@ fi
 # Set the expected location of the python venv for this engine and the locations of the critical scripts/executables 
 # needed to run python within the venv properly
 PYTHON_VENV=$HOME/.o3de/Python/venv/$ENGINE_ID
-PYTHON_VENV_ACTIVATE=$PYTHON_VENV/bin/activate
-PYTHON_VENV_PYTHON=$PYTHON_VENV/bin/python
+if [[ "$OSTYPE" == "msys" ]];  #git bash on windows
+then
+    PYTHON_VENV_ACTIVATE=$PYTHON_VENV/Scripts/activate
+    PYTHON_VENV_PYTHON=$PYTHON_VENV/Scripts/python
+else
+    PYTHON_VENV_ACTIVATE=$PYTHON_VENV/bin/activate
+    PYTHON_VENV_PYTHON=$PYTHON_VENV/bin/python
+fi
+
 if [ ! -f $PYTHON_VENV_PYTHON ]
 then
-    echo "Python has not been downloaded/configured yet."    
+    echo "Python has not been downloaded/configured yet."
     echo "Try running $DIR/get_python.sh first."
     exit 1
 fi

@@ -867,11 +867,7 @@ void CAnimSceneNode::ApplyCameraKey(ISelectKey& key, SAnimContext& ec)
                 prevCameraAnimNode = m_pSequence->FindNodeByName(prevKey.szSelection.c_str(), nullptr);
             }
 
-            if (prevCameraAnimNode && prevCameraAnimNode->GetType() == AnimNodeType::Camera && prevCameraAnimNode->GetTrackForParameter(AnimParamType::FOV))
-            {
-                prevCameraAnimNode->SetParamValue(ec.time, AnimParamType::FOV, stashedData.m_FoV);
-            }
-            else if (prevSceneCamera)
+            if (prevSceneCamera)
             {
                 prevSceneCamera->SetNearZAndFOVIfChanged(DEG2RAD(stashedData.m_FoV), stashedData.m_nearZ);
             }

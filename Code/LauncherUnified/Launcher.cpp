@@ -445,6 +445,12 @@ namespace O3DELauncher
         gameApplication.SetHeadless(false);
 #endif // O3DE_HEADLESS_SERVER
 
+#if AZ_TRAIT_CONSOLE_MODE_SUPPORT
+        gameApplication.SetConsoleModeSupported(true);
+#else
+        gameApplication.SetConsoleModeSupported(false);
+#endif // AZ_TRAIT_CONSOLE_MODE_SUPPORT
+
         // Finally add the "launcher" specialization tag into the Settings Registry
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddSpecialization(*settingsRegistry, LauncherFilenameTag);
 

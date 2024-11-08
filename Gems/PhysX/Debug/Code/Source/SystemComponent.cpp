@@ -17,7 +17,6 @@
 #include <PhysX/PhysXLocks.h>
 
 #include <CryCommon/IConsole.h>
-#include <CryCommon/IRenderAuxGeom.h>
 #include <CryCommon/ISystem.h>
 #include <CryCommon/MathConversion.h>
 

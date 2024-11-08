@@ -87,7 +87,6 @@ AZ_POP_DISABLE_WARNING
 // Editor
 #include "Settings.h"
 
-#include "GameExporter.h"
 #include "GameResourcesExporter.h"
 
 #include "MainWindow.h"
@@ -106,7 +105,6 @@ AZ_POP_DISABLE_WARNING
 
 #include "StartupTraceHandler.h"
 #include "ToolsConfigPage.h"
-#include "Include/IObjectManager.h"
 #include "WaitProgress.h"
 
 #include "ToolBox.h"
@@ -2748,7 +2746,7 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
             GetIEditor()->GetDocument()->SetModifiedFlag(false);
             break;
         }
-        
+
     }
 
     const char* temporaryLevelName = GetIEditor()->GetDocument()->GetTemporaryLevelName();

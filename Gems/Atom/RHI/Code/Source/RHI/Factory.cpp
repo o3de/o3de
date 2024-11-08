@@ -28,17 +28,17 @@ namespace AZ::RHI
 {
     uint32_t Factory::GetComponentService()
     {
-        return AZ_CRC("RHIService", 0x45d8e053);
+        return AZ_CRC_CE("RHIService");
     }
 
     uint32_t Factory::GetManagerComponentService()
     {
-        return AZ_CRC("RHIManagerService", 0x0849eda9);
+        return AZ_CRC_CE("RHIManagerService");
     }
 
     uint32_t Factory::GetPlatformService()
     {
-        return AZ_CRC("RHIPlatformService", 0xfff2cea4);
+        return AZ_CRC_CE("RHIPlatformService");
     }
 
     Factory::Factory()

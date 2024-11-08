@@ -136,15 +136,56 @@ namespace UnitTest
         EXPECT_EQ(iter.interval_end(), interval2.m_max);
         iter++;
         EXPECT_EQ(iter, m_intervalMap.end());
+        overlap = m_intervalMap.overlap(interval1.m_min, interval2.m_min);
+        iter = overlap.first;
+        EXPECT_EQ(iter.value(), 1337);
+        EXPECT_EQ(iter.interval_begin(), interval1.m_min);
+        EXPECT_EQ(iter.interval_end(), interval1.m_max);
+        iter++;
+        EXPECT_EQ(iter, overlap.second);
+        overlap = m_intervalMap.overlap(interval1.m_min, interval2.m_min + 1);
+        iter = overlap.first;
+        EXPECT_EQ(iter.value(), 1337);
+        EXPECT_EQ(iter.interval_begin(), interval1.m_min);
+        EXPECT_EQ(iter.interval_end(), interval1.m_max);
+        iter++;
+        EXPECT_EQ(iter.value(), 1338);
+        EXPECT_EQ(iter.interval_begin(), interval2.m_min);
+        EXPECT_EQ(iter.interval_end(), interval2.m_max);
+        iter++;
+        EXPECT_EQ(iter, m_intervalMap.end());
     }
 
     TEST_F(IntervalMapTests, TestNoOverlap)
     {
         RHI::Interval interval(0, 500);
         m_intervalMap.assign(interval.m_min, interval.m_max, 1337);
-        auto overlap = m_intervalMap.overlap(interval.m_max, interval.m_max + 1);
+        auto overlap = m_intervalMap.overlap(interval.m_max, interval.m_max);
         EXPECT_EQ(overlap.first, m_intervalMap.end());
         EXPECT_EQ(overlap.second, m_intervalMap.end());
+    }
+
+    TEST_F(IntervalMapTests, TestOverlapContinuousIntervals)
+    {
+        RHI::Interval interval1(0, 500);
+        RHI::Interval interval2(500, 1000);
+        m_intervalMap.assign(interval1.m_min, interval1.m_max, 1337);
+        m_intervalMap.assign(interval2.m_min, interval2.m_max, 1338);
+        auto overlap = m_intervalMap.overlap(interval1.m_min, interval1.m_max);
+        auto iter = overlap.first;
+        EXPECT_EQ(iter.value(), 1337);
+        EXPECT_EQ(iter.interval_begin(), interval1.m_min);
+        EXPECT_EQ(iter.interval_end(), interval1.m_max);
+        iter++;
+        EXPECT_EQ(iter, overlap.second);
+
+        overlap = m_intervalMap.overlap(interval2.m_min, interval2.m_max);
+        iter = overlap.first;
+        EXPECT_EQ(iter.value(), 1338);
+        EXPECT_EQ(iter.interval_begin(), interval2.m_min);
+        EXPECT_EQ(iter.interval_end(), interval2.m_max);
+        iter++;
+        EXPECT_EQ(iter, overlap.second);
     }
 
     TEST_F(IntervalMapTests, TestErase)

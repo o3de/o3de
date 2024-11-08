@@ -22,11 +22,11 @@ namespace AZ::RHI
 {
     class Device;
     class FrameGraphBuilder;
-    class PipelineState;
+    class DevicePipelineState;
     class PipelineStateCache;
     class PlatformLimitsDescriptor;
     class PhysicalDeviceDescriptor;
-    class RayTracingShaderTable;
+    class DeviceRayTracingShaderTable;
     struct FrameSchedulerCompileRequest;
     struct TransientAttachmentStatistics;
     struct TransientAttachmentPoolDescriptor;
@@ -46,9 +46,13 @@ namespace AZ::RHI
 
         virtual RHI::Device* GetDevice(int deviceIndex = MultiDevice::DefaultDeviceIndex) = 0;
 
+        virtual const RHI::Device* GetDevice(int deviceIndex = MultiDevice::DefaultDeviceIndex) const = 0;
+
         [[nodiscard]] virtual AZStd::optional<int> AddVirtualDevice(int deviceIndexToVirtualize = MultiDevice::DefaultDeviceIndex) = 0;
 
         virtual int GetDeviceCount() = 0;
+
+        virtual MultiDevice::DeviceMask GetRayTracingSupport() = 0;
 
         virtual RHI::DrawListTagRegistry* GetDrawListTagRegistry() = 0;
 
@@ -60,11 +64,11 @@ namespace AZ::RHI
 
         virtual uint16_t GetNumActiveRenderPipelines() const = 0;
 
-        virtual const RHI::TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const = 0;
+        virtual const AZStd::unordered_map<int, TransientAttachmentPoolDescriptor>* GetTransientAttachmentPoolDescriptor() const = 0;
 
         virtual ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor(int deviceIndex = MultiDevice::DefaultDeviceIndex) const = 0;
 
-        virtual void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable) = 0;
+        virtual void QueueRayTracingShaderTableForBuild(DeviceRayTracingShaderTable* rayTracingShaderTable) = 0;
             
         virtual XRRenderingInterface* GetXRSystem() const = 0;
 
@@ -73,6 +77,9 @@ namespace AZ::RHI
         virtual const AZStd::vector<DrawListTag>& GetDrawListTagsDisabledByDefault() const = 0;
 
         virtual bool GpuMarkersEnabled() const = 0;
+
+        //! Returns true is the RHI supports merging Subpasses.
+        virtual bool CanMergeSubpasses() const = 0;
     };
 
     //! This bus exists to give RHI samples the ability to slot in scopes manually

@@ -32,16 +32,16 @@ namespace AZ
             BufferPoolResolver(Device& device, const RHI::BufferPoolDescriptor& descriptor);
 
             ///Get a pointer to write a content to upload to GPU.
-            void* MapBuffer(const RHI::BufferMapRequest& request);
+            void* MapBuffer(const RHI::DeviceBufferMapRequest& request);
 
             //////////////////////////////////////////////////////////////////////
             ///ResourcePoolResolver
             void Compile(const RHI::HardwareQueueClass hardwareClass) override;
             void Resolve(CommandList& commandList) override;
             void Deactivate() override;
-            void OnResourceShutdown(const RHI::Resource& resource) override;
-            void QueuePrologueTransitionBarriers(CommandList&) override;
-            void QueueEpilogueTransitionBarriers(CommandList&) override;
+            void OnResourceShutdown(const RHI::DeviceResource& resource) override;
+            void QueuePrologueTransitionBarriers(CommandList&, BarrierTypeFlags mask) override;
+            void QueueEpilogueTransitionBarriers(CommandList&, BarrierTypeFlags mask) override;
             //////////////////////////////////////////////////////////////////////
 
         private:
@@ -60,7 +60,7 @@ namespace AZ
                 VkBufferMemoryBarrier m_barrier = {};
             };
 
-            void EmmitBarriers(CommandList& commandList, const AZStd::vector<BarrierInfo>& barriers) const;
+            void EmmitBarriers(CommandList& commandList, const AZStd::vector<BarrierInfo>& barriers, BarrierTypeFlags mask) const;
 
             AZStd::mutex m_uploadPacketsLock;
             AZStd::vector<BufferUploadPacket> m_uploadPackets;

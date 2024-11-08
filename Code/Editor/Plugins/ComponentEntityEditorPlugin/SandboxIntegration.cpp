@@ -61,7 +61,6 @@
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h>
 
-#include "ISourceControl.h"
 #include "UI/QComponentEntityEditorMainWindow.h"
 
 #include <LmbrCentral/Scripting/TagComponentBus.h>
@@ -76,7 +75,6 @@
 #include <Editor/EditorViewportSettings.h>
 #include <Editor/EditorViewportCamera.h>
 #include <Editor/Util/PathUtil.h>
-#include <Editor/Objects/EntityObject.h>
 #include "CryEdit.h"
 #include "Undo/Undo.h"
 
@@ -85,8 +83,6 @@
 #include <QWidgetAction>
 #include <QHBoxLayout>
 #include "MainWindow.h"
-
-#include "Include/IObjectManager.h"
 
 #include <AzCore/std/algorithm.h>
 
@@ -367,6 +363,17 @@ AZ::Vector3 SandboxIntegrationManager::GetWorldPositionAtViewportCenter()
     return AZ::Vector3::CreateZero();
 }
 
+AZ::Vector3 SandboxIntegrationManager::GetWorldPositionAtViewportInteraction() const
+{
+    const auto& iEditor = GetIEditor();
+    if (const auto& viewManager = (iEditor != nullptr) ? iEditor->GetViewManager() : nullptr)
+    {
+        return viewManager->GetClickPositionInViewportSpace();
+    }
+
+    return AZ::Vector3::CreateZero();
+}
+
 void SandboxIntegrationManager::ClearRedoStack()
 {
     // We have two separate undo systems that are assumed to be kept in sync,
@@ -492,11 +499,6 @@ void SandboxIntegrationManager::OnPrepareForContextReset()
     // Deselect everything.
     AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
         &AzToolsFramework::ToolsApplicationRequests::Bus::Events::SetSelectedEntities, AzToolsFramework::EntityIdList());
-
-    std::vector<CBaseObject*> objects;
-    objects.reserve(128);
-    IObjectManager* objectManager = GetIEditor()->GetObjectManager();
-    objectManager->FindObjectsOfType(OBJTYPE_AZENTITY, objects);
 }
 
 void SandboxIntegrationManager::OnActionRegistrationHook()
@@ -524,6 +526,8 @@ void SandboxIntegrationManager::OnActionRegistrationHook()
             actionProperties,
             [this]()
             {
+                AZ::Vector3 worldPosition = GetWorldPositionAtViewportInteraction();
+
                 AzToolsFramework::EntityIdList selectedEntities;
                 AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
                     selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
@@ -531,7 +535,7 @@ void SandboxIntegrationManager::OnActionRegistrationHook()
                 // when nothing is selected, entity is created at root level.
                 if (selectedEntities.empty())
                 {
-                    ContextMenu_NewEntity();
+                    CreateNewEntityAtPosition(worldPosition);
                 }
                 // when a single entity is selected, entity is created as its child.
                 else if (selectedEntities.size() == 1)
@@ -542,8 +546,9 @@ void SandboxIntegrationManager::OnActionRegistrationHook()
 
                     if (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) && !selectedEntityIsReadOnly)
                     {
-                        AzToolsFramework::EditorRequestBus::Broadcast(
-                            &AzToolsFramework::EditorRequestBus::Handler::CreateNewEntityAsChild, selectedEntityId);
+                        AZ::Transform entityTransform = AZ::Transform::CreateIdentity();
+                        AZ::TransformBus::EventResult(entityTransform, selectedEntityId, &AZ::TransformBus::Events::GetWorldTM);
+                        CreateNewEntityAtPosition(entityTransform.GetInverse().TransformPoint(worldPosition), selectedEntityId);
                     }
                 }
             }
@@ -612,26 +617,6 @@ void SandboxIntegrationManager::ContextMenu_NewEntity()
     }
 
     CreateNewEntityAtPosition(worldPosition);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Returns true if at least one non-layer entity was found.
-bool CollectEntityBoundingBoxesForZoom(const AZ::EntityId& entityId, AABB& selectionBounds)
-{
-    AABB entityBoundingBox;
-    CEntityObject* componentEntityObject = nullptr;
-    AzToolsFramework::ComponentEntityEditorRequestBus::EventResult(
-        /*result*/ componentEntityObject,
-        /*address*/ entityId,
-        &AzToolsFramework::ComponentEntityEditorRequestBus::Events::GetSandboxObject);
-
-    if (componentEntityObject)
-    {
-        componentEntityObject->GetBoundBox(entityBoundingBox);
-        selectionBounds.Add(entityBoundingBox.min);
-        selectionBounds.Add(entityBoundingBox.max);
-    }
-    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////

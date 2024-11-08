@@ -26,7 +26,7 @@ namespace GraphCanvas
     
         static ActionGroupId GetNodeContextMenuActionGroupId()
         {
-            return AZ_CRC("NodeActionGroup", 0xf1eff042);
+            return AZ_CRC_CE("NodeActionGroup");
         }
     
         ActionGroupId GetActionGroupId() const override

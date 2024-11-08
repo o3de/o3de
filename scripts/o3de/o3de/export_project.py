@@ -19,6 +19,31 @@ import shutil
 import subprocess
 
 from o3de import command_utils, manifest, utils
+
+# Check if tkinter is installed or not
+tkinter_installed = True
+try:
+    from o3de.ui import export_project as export_project_ui
+except:
+    tkinter_installed = False
+
+# Check if tix is installed or not
+tkinter_tix_installed = True
+try:
+    # `tix` won't be detected with a simple import, it won't raise an exception until
+    # tk attempts to create an object
+    import tkinter.tix as tkp
+
+    class CheckTix(tkp.Tk):
+
+        def __init__(self):
+            super().__init__()
+
+    CheckTix().destroy()
+
+except Exception as e:
+    tkinter_tix_installed = False
+
 from typing import List
 from enum import IntEnum
 
@@ -232,7 +257,7 @@ def process_command(args: list,
     return utils.CLICommand(args, cwd, logging.getLogger(), env=env).run()
 
 
-def execute_python_script(target_script_path: pathlib.Path or str, o3de_context: O3DEScriptExportContext = None) -> int:
+def execute_python_script(target_script_path: pathlib.Path or str, o3de_context: O3DEScriptExportContext = None, logger=None) -> int:
     """
     Execute a new python script, using new or existing O3DEScriptExportContexts to streamline communication between multiple scripts
     :param target_script_path: The path to the python script to run.
@@ -245,8 +270,10 @@ def execute_python_script(target_script_path: pathlib.Path or str, o3de_context:
     utils.prepend_to_system_path(target_script_path)
 
     logging.info(f"Begin loading script '{target_script_path}'...")
+    if not logger:
+        logger = logging.getLogger()
     
-    return utils.load_and_execute_script(target_script_path, o3de_context = o3de_context, o3de_logger=logging.getLogger())
+    return utils.load_and_execute_script(target_script_path, o3de_context = o3de_context, o3de_logger=logger)
 
 
 
@@ -304,7 +331,7 @@ def extract_cmake_custom_args(arg_list: List[str])->tuple:
     return export_process_args, cmake_configure_args, cmake_build_args
 
 
-def _export_script(export_script_path: pathlib.Path, project_path: pathlib.Path, passthru_args: list) -> int:
+def _export_script(export_script_path: pathlib.Path, project_path: pathlib.Path, passthru_args: list, logger=None) -> int:
     if export_script_path.suffix != '.py':
         logging.error(f"Invalid export script type for '{export_script_path}'. Please provide a file path to an existing python script with '.py' extension.")
         return 1
@@ -361,14 +388,47 @@ def _export_script(export_script_path: pathlib.Path, project_path: pathlib.Path,
                                            cmake_additional_configure_args=cmake_configure_args,
                                            cmake_additional_build_args=cmake_build_args)
 
-    return execute_python_script(validated_export_script_path, o3de_context)
+    return execute_python_script(validated_export_script_path, o3de_context, logger=logger)
+
+def _ui_export(project_path: pathlib.Path) -> int:
+    logger = logging.getLogger()    
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.INFO)
+    formatter = logging.Formatter(utils.UI_MSG_FORMAT)
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+    
+    export_config = get_export_project_config(project_path=project_path)
+    export_script = pathlib.Path(export_config.get_value('option.default.export.script'))
+    
+    return _export_script(export_script, project_path, [], logger=logger)
 
 # Export Script entry point
 def _run_export_script(args: argparse, passthru_args: list) -> int:
     logging.basicConfig(format=utils.LOG_FORMAT)
     logging.getLogger().setLevel(args.log_level)
     
-    return _export_script(args.export_script, args.project_path, passthru_args)
+    if args.export_script is None:
+        export_config = get_project_export_config_from_args(args)[0]
+        export_script = pathlib.Path(export_config.get_value('option.default.export.script'))
+    else:
+        export_script = args.export_script
+    
+    if args.configure:
+        if tkinter_installed and tkinter_tix_installed:
+            export_config = get_export_project_config(args.project_path)
+            project_info = manifest.get_project_json_data(project_path=args.project_path)
+            is_o3de_sdk = project_info.get('engine') == 'o3de-sdk'
+            export_project_ui.MainWindow(export_config, is_o3de_sdk).configure_settings()
+            return 0
+        else:
+            if not tkinter_installed:
+                print("Unable to open the configure window. Required package 'tk' is not installed on this system.")
+            else:
+                print("Unable to open the configure window. Required package 'tix' is not installed on this system.")
+            return 1
+    
+    return _export_script(export_script, args.project_path, passthru_args)
 
 
 def get_project_export_config_from_args(args: argparse) -> (command_utils.O3DEConfig, str):
@@ -473,10 +533,10 @@ def configure_project_export_options(args: argparse) -> int:
 
 # Argument handling
 def add_parser_args(parser) -> None:
-    parser.add_argument('-es', '--export-script', type=pathlib.Path, required=True, help="An external Python script to run")
+    parser.add_argument('-es', '--export-script', type=pathlib.Path, required=False, help="An external Python script to run")
     parser.add_argument('-pp', '--project-path', type=pathlib.Path, required=False, default=pathlib.Path(os.getcwd()),
                         help="Project to export. If not supplied, it will be the current working directory.")
-    
+    parser.add_argument('--configure', default=False, action='store_true', help='Configure the project export settings')
     parser.add_argument('-ll', '--log-level', default='ERROR',
                         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
                         help="Set the log level")
@@ -836,35 +896,43 @@ def bundle_assets(ctx: O3DEScriptExportContext,
                                                                 '--project-path', ctx.project_path,
                                                                 '--allowOverwrites']
         for seed in seedlist_paths:
-            gen_game_asset_list_command.extend(["--seedListFile", str(seed)])
+            if seed.is_absolute():
+                abs_seed = seed
+            else:
+                abs_seed = ctx.project_path / seed
+            gen_game_asset_list_command.extend(["--seedListFile", str(abs_seed)])
         
         for seed in seedfile_paths:
-            gen_game_asset_list_command.extend(["--addSeed", str(seed)])
+            if seed.is_absolute():
+                abs_seed = seed
+            else:
+                abs_seed = ctx.project_path / seed
+            gen_game_asset_list_command.extend(["--addSeed", str(abs_seed)])
 
         ret = process_command(gen_game_asset_list_command,
-                            cwd=ctx.engine_path if engine_centric else ctx.project_path)
+                              cwd=ctx.engine_path if engine_centric else ctx.project_path)
         if ret != 0:
             raise RuntimeError(f"Error generating game assets lists for {game_asset_list_path}")
 
         gen_engine_asset_list_command = [asset_bundler_batch_path, "assetLists",
-                                                                "--assetListFile", engine_asset_list_path,
-                                                                '--platform', selected_platform,
-                                                                '--project-path', ctx.project_path,
-                                                                "--allowOverwrites",
-                                                                "--addDefaultSeedListFiles"]
+                                                                   "--assetListFile", engine_asset_list_path,
+                                                                   '--platform', selected_platform,
+                                                                   '--project-path', ctx.project_path,
+                                                                   "--allowOverwrites",
+                                                                   "--addDefaultSeedListFiles"]
         ret = process_command(gen_engine_asset_list_command,
-                            cwd=ctx.engine_path if engine_centric else ctx.project_path)
+                              cwd=ctx.engine_path if engine_centric else ctx.project_path)
         if ret != 0:
             raise RuntimeError(f"Error generating engine assets lists for {engine_asset_list_path}")
 
         # Generate the bundles. We will place it in the project directory for now, since the files need to be copied multiple times (one for each separate launcher distribution)
         gen_game_bundle_command = [asset_bundler_batch_path, "bundles",
-                                                            "--maxSize", str(max_bundle_size),
-                                                            "--platform",  selected_platform,
-                                                            '--project-path', ctx.project_path,
-                                                            "--allowOverwrites",
-                                                            "--outputBundlePath", bundles_path / f"game_{selected_platform}.pak",
-                                                            "--assetListFile", game_asset_list_path]
+                                                             "--maxSize", str(max_bundle_size),
+                                                             "--platform",  selected_platform,
+                                                             '--project-path', ctx.project_path,
+                                                             "--allowOverwrites",
+                                                             "--outputBundlePath", bundles_path / f"game_{selected_platform}.pak",
+                                                             "--assetListFile", game_asset_list_path]
         ret = process_command(gen_game_bundle_command,
                             cwd=ctx.engine_path if engine_centric else ctx.project_path)
         if ret != 0:
@@ -1135,13 +1203,28 @@ SETTINGS_ADDITIONAL_PROJECT_FILE_PATTERN = register_setting(key='additional.proj
                                                             default='')
 
 SETTINGS_OPTION_BUILD_TOOLS       = register_setting(key='option.build.tools',
-                                                     description='The option to build O3DE toolchain executables. This will build AssetBundlerBatch and AssetProcessorBatch.',
+                                                     description='The option to build O3DE toolchain executables. This will build AssetBundlerBatch and AssetProcessorBatch. Unnecessary when using engine as SDK since tools are prebuilt.',
                                                      is_boolean=True,
-                                                     default='False')
+                                                     default='True')
 
 SETTINGS_DEFAULT_ANDROID_BUILD_PATH = register_setting(key='default.android.build.path',
                                                        description='Designates where the android build files are generated.',
-                                                       default='build/game_android')
+                                                       default='build/android')
+
+#note: we are duplicating this setting specifically to reduce dependency on android_support for the android parameter configuration
+ASSET_MODE_LOOSE = 'LOOSE'
+ASSET_MODE_PAK = 'PAK'
+ASSET_MODES = [ASSET_MODE_LOOSE, ASSET_MODE_PAK]
+SETTINGS_ANDROID_ASSET_MODE                 = register_setting(key='option.android.assets.mode',
+                                                   description='The asset mode to determine how the assets are stored in the target APK. Valid values are LOOSE and PAK.',
+                                                   restricted_regex=f'({ASSET_MODE_LOOSE}|{ASSET_MODE_PAK})',
+                                                   restricted_regex_description=f"Valid values are {','.join(ASSET_MODES)}.",
+                                                   default=ASSET_MODE_PAK)
+
+SETTINGS_ANDROID_DEPLOY = register_setting(key='option.android.deploy',
+                                           description='Upon completing export, immediately attempt to deploy to a locally connected Android device. Useful for testing.',
+                                           is_boolean=True,
+                                           default='False')
 
 SETTINGS_DEFAULT_IOS_BUILD_PATH = register_setting(key='default.ios.build.path',
                                                    description='Designates where the iOS build files are generated.',
@@ -1167,7 +1250,7 @@ SETTINGS_DEFAULT_ASSET_BUNDLING_PATH = register_setting(key='asset.bundling.path
 SETTINGS_MAX_BUNDLE_SIZE = register_setting(key='max.size',
                                             description='The maximum size of a given asset bundle.',
                                             default="2048",
-                                            restricted_regex=f'([0-9]+)',
+                                            restricted_regex=f'(^[0-9]+$)',
                                             restricted_regex_description=f'Value must be a whole number.')
 
 SETTINGS_OPTION_BUILD_GAME_LAUNCHER  = register_setting(key='option.build.game.launcher',
@@ -1199,6 +1282,19 @@ SETTINGS_OPTION_BUILD_MONOLITHICALLY = register_setting(key='option.build.monoli
                                                         description='The option to build the launchers monolithically vs non-monolithically.',
                                                         is_boolean=True,
                                                         default='True')
+
+SETTINGS_OPTION_KILL_PRIOR_PROCESSES = register_setting(key='option.processes.kill',
+                                                        description='Before running the export process, this will kill all currently running O3DE processes.',
+                                                        is_boolean=True,
+                                                        default='False')
+
+SETTINGS_DEFAULT_EXPORT_SCRIPT = register_setting(key='option.default.export.script',
+                                                  description='The default export script to execute.',
+                                                  default='export_source_built_project.py')
+
+SETTINGS_DEFAULT_OUTPUT_PATH = register_setting(key='option.default.output.path',
+                                                description='The default target export path.',
+                                                default='build/export')
 
 def get_export_project_config(project_path: pathlib.Path or None) -> command_utils.O3DEConfig:
     """

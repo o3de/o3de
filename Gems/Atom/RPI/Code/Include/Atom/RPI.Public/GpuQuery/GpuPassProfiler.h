@@ -36,7 +36,7 @@ namespace AZ
             struct PassEntry
             {
                 //! Total number of attributes collected per  PipelineStatistics.
-                static const uint32_t PipelineStatisticsAttributeCount = 7u;
+                static constexpr uint32_t PipelineStatisticsAttributeCount = 7u;
 
                 using PipelineStatisticsArray = AZStd::array<uint64_t, PipelineStatisticsAttributeCount>;
 

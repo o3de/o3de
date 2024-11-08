@@ -93,17 +93,17 @@ namespace GradientSignal
 
     void GradientSignalEditorSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("GradientSignalEditorService", 0xb7e6d6c7));
+        provided.push_back(AZ_CRC_CE("GradientSignalEditorService"));
     }
 
     void GradientSignalEditorSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("GradientSignalEditorService", 0xb7e6d6c7));
+        incompatible.push_back(AZ_CRC_CE("GradientSignalEditorService"));
     }
 
     void GradientSignalEditorSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("PropertyManagerService", 0x63a3d7ad));
+        required.push_back(AZ_CRC_CE("PropertyManagerService"));
     }
 
     void GradientSignalEditorSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& /*dependent*/)

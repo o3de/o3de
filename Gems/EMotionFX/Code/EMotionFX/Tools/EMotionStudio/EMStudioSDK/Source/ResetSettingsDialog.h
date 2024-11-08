@@ -10,7 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include "EMStudioConfig.h"
-#include <MCore/Source/MemoryObject.h>
+#include <MCore/Source/RefCounted.h>
 #include <QDialog>
 #endif
 

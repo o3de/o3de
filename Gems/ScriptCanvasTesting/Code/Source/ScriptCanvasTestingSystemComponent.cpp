@@ -83,12 +83,12 @@ namespace ScriptCanvasTesting
 
     void ScriptCanvasTestingSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ScriptCanvasTestingService", 0xd2b424fc));
+        provided.push_back(AZ_CRC_CE("ScriptCanvasTestingService"));
     }
 
     void ScriptCanvasTestingSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("ScriptCanvasTestingService", 0xd2b424fc));
+        incompatible.push_back(AZ_CRC_CE("ScriptCanvasTestingService"));
     }
 
     void ScriptCanvasTestingSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

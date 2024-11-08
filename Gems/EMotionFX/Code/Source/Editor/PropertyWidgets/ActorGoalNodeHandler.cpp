@@ -148,7 +148,7 @@ namespace EMotionFX
 
     AZ::u32 ActorGoalNodeHandler::GetHandlerName() const
     {
-        return AZ_CRC("ActorGoalNode", 0xaf1e8a3a);
+        return AZ_CRC_CE("ActorGoalNode");
     }
 
 

@@ -27,7 +27,7 @@ namespace EMotionFX
     AZ_CLASS_ALLOCATOR_IMPL(Mesh, MeshAllocator)
 
     Mesh::Mesh()
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_numVertices        = 0;
         m_numIndices         = 0;
@@ -40,6 +40,7 @@ namespace EMotionFX
 
     // allocation constructor
     Mesh::Mesh(uint32 numVerts, uint32 numIndices, uint32 numPolygons, uint32 numOrgVerts, bool isCollisionMesh)
+        : MCore::RefCounted()
     {
         m_numVertices        = 0;
         m_numIndices         = 0;
@@ -173,6 +174,7 @@ namespace EMotionFX
         AZ::u32 modelIndexCount = 0;
 
         // Find the maximum skin influences across all meshes to use when pre-allocating memory
+        bool hasSkinInfluence = false;
         AZ::u32 maxSkinInfluences = 0;
         for (const AZ::RPI::ModelLodAsset::Mesh& mesh : sourceModelLod->GetMeshes())
         {
@@ -183,9 +185,15 @@ namespace EMotionFX
             {
                 const AZ::u32 meshInfluenceCount = weightView->GetBufferViewDescriptor().m_elementCount / mesh.GetVertexCount();
                 maxSkinInfluences = AZStd::max(maxSkinInfluences, meshInfluenceCount);
+                hasSkinInfluence = true;
             }
         }
-        AZ_Assert(maxSkinInfluences > 0 && maxSkinInfluences < 100, "Expect max skin influences in a reasonable value range.");
+
+        // Assert the skin influence range only if the model has skin influence data
+        if (hasSkinInfluence)
+        {
+            AZ_Assert(maxSkinInfluences > 0 && maxSkinInfluences < 100, "Expect max skin influences in a reasonable value range.");
+        }
 
         // IndicesPerFace defined in atom is 3.
         const AZ::u32 numPolygons = modelIndexCount / 3;

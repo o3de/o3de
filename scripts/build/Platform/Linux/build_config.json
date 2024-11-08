@@ -46,6 +46,34 @@
       "test_profile_unity_arm64"
     ]
   },
+  "profile_ubuntu24_nounity_pipe": {
+    "TAGS": [
+      "periodic-incremental-daily",
+      "periodic-clean-weekly-internal"
+    ],
+    "PIPELINE_ENV": {
+      "NODE_LABEL": "linux-ubuntu-24"
+    },
+    "steps": [
+      "profile_nounity",
+      "asset_profile_nounity",
+      "test_profile_nounity"
+    ]
+  },
+  "profile_ubuntu24_arm64_unity_pipe": {
+    "TAGS": [
+      "periodic-incremental-daily-internal",
+      "periodic-clean-weekly-internal"
+    ],
+    "PIPELINE_ENV": {
+      "NODE_LABEL": "linux-ubuntu-24-arm"
+    },
+    "steps": [
+      "profile_unity",
+      "asset_profile_unity",
+      "test_profile_unity_arm64"
+    ]
+  },
   "metrics": {
     "TAGS": [
       "weekly"
@@ -387,19 +415,6 @@
       "CMAKE_TARGET": "install"
     }
   },
-  "install_mono_20_release": {
-    "TAGS": [],
-    "PIPELINE_ENV": {
-      "NODE_LABEL": "ubuntu-20-packaging"
-    },
-    "COMMAND": "build_linux.sh",
-    "PARAMETERS": {
-      "CONFIGURATION": "release",
-      "OUTPUT_DIRECTORY": "build/linux_mono",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_MONOLITHIC_GAME=TRUE -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DLY_STRIP_DEBUG_SYMBOLS=TRUE",
-      "CMAKE_TARGET": "install"
-    }
-  },
   "install_mono_22_release": {
     "TAGS": [],
     "PIPELINE_ENV": {
@@ -413,20 +428,47 @@
       "CMAKE_TARGET": "install"
     }
   },
+  "install_mono_android_api_24_profile": {
+    "TAGS": [],
+    "PIPELINE_ENV": {
+      "NODE_LABEL":"ubuntu-22-packaging"
+    },
+    "COMMAND": "build_linux.sh",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/android_api_mono",
+      "CMAKE_OPTIONS":"-G 'Ninja Multi-Config' -DCMAKE_TOOLCHAIN_FILE=cmake/Platform/Android/Toolchain_android.cmake -DLY_MONOLITHIC_GAME=TRUE -DLY_DISABLE_TEST_MODULES=TRUE -DANDROID_NATIVE_API_LEVEL=24 -DLY_NDK_DIR=\"${LY_NDK_DIR}\"",
+      "CMAKE_TARGET": "install"
+    }
+  },
+  "install_mono_android_api_24_release": {
+    "TAGS": [],
+    "PIPELINE_ENV": {
+      "NODE_LABEL":"ubuntu-22-packaging"
+    },
+    "COMMAND": "build_linux.sh",
+    "PARAMETERS": {
+      "CONFIGURATION": "release",
+      "OUTPUT_DIRECTORY": "build/android_api_mono",
+      "CMAKE_OPTIONS":"-G 'Ninja Multi-Config' -DCMAKE_TOOLCHAIN_FILE=cmake/Platform/Android/Toolchain_android.cmake -DLY_MONOLITHIC_GAME=TRUE -DLY_DISABLE_TEST_MODULES=TRUE -DANDROID_NATIVE_API_LEVEL=24 -DLY_NDK_DIR=\"${LY_NDK_DIR}\"",
+      "CMAKE_TARGET": "install"
+    }
+  },
   "installer_pipe": {
     "TAGS": [
       "periodic-clean-weekly-internal",
       "nightly-installer"
     ],
     "steps": [
-      "install_mono_20_release",
+      "install_mono_22_release",
+      "install_mono_android_api_24_release",
       "installer"
     ]
   },
   "installer": {
     "TAGS": [],
     "PIPELINE_ENV": {
-      "NODE_LABEL": "ubuntu-20-packaging"
+      "NODE_LABEL": "ubuntu-22-packaging"
     },
     "COMMAND": "build_installer_linux.sh",
     "PARAMETERS": {
@@ -436,62 +478,6 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DO3DE_INSTALL_ENGINE_NAME=o3de-sdk -DLY_STRIP_DEBUG_SYMBOLS=TRUE",
       "EXTRA_CMAKE_OPTIONS": "-DLY_INSTALLER_AUTO_GEN_TAG=TRUE -DLY_INSTALLER_DOWNLOAD_URL=${INSTALLER_DOWNLOAD_URL} -DLY_INSTALLER_LICENSE_URL=${INSTALLER_DOWNLOAD_URL}/license -DO3DE_INCLUDE_INSTALL_IN_PACKAGE=TRUE",
       "CPACK_OPTIONS": "-D CPACK_UPLOAD_URL=${CPACK_UPLOAD_URL}",
-      "CMAKE_TARGET": "all"
-    }
-  },
-  "snap_pipe": {
-    "TAGS": [
-      "periodic-clean-weekly-internal",
-      "nightly-installer"
-    ],
-    "steps": [
-      "install_mono_22_release",
-      "snap_package"
-    ]
-  },
-  "snap_package": {
-    "TAGS": [
-      "periodic-clean-weekly-internal"
-    ],
-    "PIPELINE_ENV": {
-      "NODE_LABEL": "ubuntu-22-packaging"
-    },
-    "COMMAND": "build_installer_linux.sh",
-    "PARAMETERS": {
-      "CONFIGURATION": "profile",
-      "OUTPUT_DIRECTORY": "build/linux",
-      "O3DE_PACKAGE_TYPE": "SNAP",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DO3DE_INSTALL_ENGINE_NAME=o3de-sdk -DLY_STRIP_DEBUG_SYMBOLS=TRUE",
-      "EXTRA_CMAKE_OPTIONS": "-DO3DE_INCLUDE_INSTALL_IN_PACKAGE=TRUE",
-      "CPACK_OPTIONS": "-D CPACK_UPLOAD_URL=${CPACK_UPLOAD_URL}",
-      "CMAKE_TARGET": "all"
-    }
-  },
-  "snap_core20_pipe": {
-    "TAGS": [
-      "periodic-clean-weekly-internal",
-      "nightly-installer"
-    ],
-    "steps": [
-      "install_mono_20_release",
-      "snap_core20_package"
-    ]
-  },
-  "snap_core20_package": {
-    "TAGS": [
-      "periodic-clean-weekly-internal"
-    ],
-    "PIPELINE_ENV": {
-      "NODE_LABEL": "ubuntu-20-packaging"
-    },
-    "COMMAND": "build_installer_linux.sh",
-    "PARAMETERS": {
-      "CONFIGURATION": "profile",
-      "OUTPUT_DIRECTORY": "build/linux",
-      "O3DE_PACKAGE_TYPE": "SNAP",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DO3DE_INSTALL_ENGINE_NAME=o3de-sdk -DLY_STRIP_DEBUG_SYMBOLS=TRUE",
-      "EXTRA_CMAKE_OPTIONS": "-DO3DE_INCLUDE_INSTALL_IN_PACKAGE=TRUE",
-      "CPACK_OPTIONS": "-D CPACK_UPLOAD_URL=${CPACK_UPLOAD_URL} -D CPACK_SNAP_DISTRO=core20",
       "CMAKE_TARGET": "all"
     }
   },

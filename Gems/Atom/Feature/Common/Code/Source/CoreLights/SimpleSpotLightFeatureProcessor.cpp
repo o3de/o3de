@@ -8,8 +8,8 @@
 
 #include <CoreLights/SimpleSpotLightFeatureProcessor.h>
 #include <CoreLights/SpotLightUtils.h>
+#include <Mesh/MeshFeatureProcessor.h>
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RPI.Public/ColorManagement/TransformColor.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -462,15 +462,15 @@ namespace AZ
             RPI::ViewPtr newView,
             RPI::ViewPtr previousView)
         {
-            Render::LightCommon::CacheGPUCullingPipelineInfo(
+            Render::LightCommon::CacheCPUCulledPipelineInfo(
                 renderPipeline,
-                newView, previousView, m_hasGPUCulling);
+                newView, previousView, m_cpuCulledPipelinesPerView);
         }
 
         void SimpleSpotLightFeatureProcessor::CullLights(const RPI::ViewPtr& view)
         {
             if (!AZ::RHI::CheckBitsAll(view->GetUsageFlags(), RPI::View::UsageFlags::UsageCamera) ||
-                Render::LightCommon::HasGPUCulling(GetParentScene(), view, m_hasGPUCulling))
+                !Render::LightCommon::NeedsCPUCulling(view, m_cpuCulledPipelinesPerView))
             {
                 return;
             }

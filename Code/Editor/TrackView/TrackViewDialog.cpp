@@ -595,14 +595,6 @@ void CTrackViewDialog::InitToolbar()
     m_actions[ID_TV_SNAP_TICK] = qaction;
     connect(qaction, &QAction::triggered, this, &CTrackViewDialog::OnSnapTick);
     m_keysToolBar->addSeparator();
-    qaction = m_keysToolBar->addAction(QIcon(":/Trackview/keys/tvkeys-11.png"), "Sync Selected Entity Nodes to Base Position");
-    qaction->setData(ID_TV_SYNC_TO_BASE);
-    m_actions[ID_TV_SYNC_TO_BASE] = qaction;
-    connect(qaction, &QAction::triggered, this, &CTrackViewDialog::OnSyncSelectedTracksToBase);
-    qaction = m_keysToolBar->addAction(QIcon(":/Trackview/keys/tvkeys-12.png"), "Sync Selected Entity Nodes from Base Position");
-    qaction->setData(ID_TV_SYNC_FROM_BASE);
-    m_actions[ID_TV_SYNC_FROM_BASE] = qaction;
-    connect(qaction, &QAction::triggered, this, &CTrackViewDialog::OnSyncSelectedTracksFromBase);
     QActionGroup* ag = new QActionGroup(this);
     ag->addAction(m_actions[ID_TV_ADDKEY]);
     ag->addAction(m_actions[ID_TV_MOVEKEY]);
@@ -996,27 +988,6 @@ void CTrackViewDialog::OnScaleKey()
 {
     m_wndDopeSheet->SetMouseActionMode(eTVActionMode_ScaleKey);
 }
-
-//////////////////////////////////////////////////////////////////////////
-void CTrackViewDialog::OnSyncSelectedTracksToBase()
-{
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
-    if (sequence)
-    {
-        sequence->SyncSelectedTracksToBase();
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CTrackViewDialog::OnSyncSelectedTracksFromBase()
-{
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
-    if (sequence)
-    {
-        sequence->SyncSelectedTracksFromBase();
-    }
-}
-
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnAddSequence()
 {

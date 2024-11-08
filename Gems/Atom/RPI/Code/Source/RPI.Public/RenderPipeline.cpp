@@ -173,6 +173,7 @@ namespace AZ
             pipeline->m_materialPipelineTagName = Name{desc.m_materialPipelineTag};
             pipeline->m_activeRenderSettings = desc.m_renderSettings;
             pipeline->m_activeAAMethod = GetAAMethodByName(desc.m_defaultAAMethod);
+            pipeline->m_allowSubpassMerging = desc.m_allowSubpassMerging && RHI::RHISystemInterface::Get()->CanMergeSubpasses();
             pipeline->m_passTree.m_rootPass->SetRenderPipeline(pipeline);
             pipeline->m_passTree.m_rootPass->m_flags.m_isPipelineRoot = true;
             pipeline->m_passTree.m_rootPass->ManualPipelineBuildAndInitialize();
@@ -206,6 +207,11 @@ namespace AZ
                     }
                 }
             }
+        }
+
+        bool RenderPipeline::SubpassMergingSupported() const
+        {
+            return m_allowSubpassMerging;
         }
 
         RenderPipeline::~RenderPipeline()

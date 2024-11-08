@@ -9,6 +9,7 @@
 
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/fixed_string.h>
+#include <AzCore/Serialization/Locale.h>
 
 #include <ctype.h>
 #include <wctype.h>
@@ -184,6 +185,8 @@ namespace AZStd
     template<class Allocator>
     float stof(const AZStd::basic_string<AZStd::string::value_type, AZStd::string::traits_type, Allocator>& str, AZStd::size_t* idx = 0)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // invariant locale for converting strings to values.
+
         char* ptr;
         const char* sChar = str.c_str();
         float result = (float)strtod(sChar, &ptr);
@@ -196,6 +199,7 @@ namespace AZStd
     template<class Allocator>
     double stod(const AZStd::basic_string<AZStd::string::value_type, AZStd::string::traits_type, Allocator>& str, AZStd::size_t* idx = 0)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // invariant locale for converting strings to values.
         char* ptr;
         const char* sChar = str.c_str();
         double result = strtod(sChar, &ptr);
@@ -205,17 +209,6 @@ namespace AZStd
         }
         return result;
     }
-    /*
-    template<class Allocator>
-    long double stold(const AZStd::basic_string<string::value_type,string::traits_type,Allocator>& str, size_t *idx = 0)
-    {
-        char* ptr;
-        const char * sChar = str.c_str();
-        long double result = strtold(sChar,&ptr);
-        if(idx)
-            *idx = ptr - sChar;
-        return result;
-    }*/
 
     // Standard is messy when it comes to custom string. Let's say we have a string with different allocator ???
     // so we have our (custom) implementations here and wrappers so we are compatible with the standard.

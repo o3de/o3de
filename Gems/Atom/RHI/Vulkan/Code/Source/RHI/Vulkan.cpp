@@ -19,11 +19,20 @@
 #include <Atom/RHI.Reflect/Bits.h>
 #include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
 #define VMA_IMPLEMENTATION
 
 #include <vma/vk_mem_alloc.h>
+AZ_CVAR(
+    uint32_t,
+    r_vkBarrierOptimizationFlags,
+    static_cast<uint32_t>(AZ::Vulkan::BarrierOptimizationFlags::All),
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate,
+    "Optimize resource barriers mask: 0 = None, 1 = UseRenderpassLayout, 2 = RemoveReadAfterRead, 4 = UseGlobal, All = 7\
+     Useful when debugging to see all generated barriers.");
 
 namespace AZ
 {
@@ -149,7 +158,7 @@ namespace AZ
             return x1 < y2 && y1 < x2;
         }
 
-        bool ResourceViewOverlaps(const RHI::BufferView& lhs, const RHI::BufferView& rhs)
+        bool ResourceViewOverlaps(const RHI::DeviceBufferView& lhs, const RHI::DeviceBufferView& rhs)
         {
             auto const& lhsBufferMemoryView = static_cast<const Buffer&>(lhs.GetBuffer()).GetBufferMemoryView();
             auto const& rhsBufferMemoryView = static_cast<const Buffer&>(rhs.GetBuffer()).GetBufferMemoryView();
@@ -167,7 +176,7 @@ namespace AZ
             return Overlaps(lhsBegin, lhsEnd, rhsBegin, rhsEnd);
         }
 
-        bool ResourceViewOverlaps(const RHI::ImageView& lhs, const RHI::ImageView& rhs)
+        bool ResourceViewOverlaps(const RHI::DeviceImageView& lhs, const RHI::DeviceImageView& rhs)
         {
             auto const& lhsImage = static_cast<const Image&>(lhs.GetImage());
             auto const& rhsImage = static_cast<const Image&>(rhs.GetImage());
@@ -179,6 +188,44 @@ namespace AZ
             return SubresourceRangeOverlaps(
                 static_cast<const ImageView&>(lhs).GetVkImageSubresourceRange(),
                 static_cast<const ImageView&>(rhs).GetVkImageSubresourceRange());
+        }
+
+        bool ResourceViewContains(const RHI::DeviceImageView& lhs, const RHI::DeviceImageView& rhs)
+        {
+            auto const& lhsImageView = static_cast<const ImageView&>(lhs);
+            auto const& rhsImageView = static_cast<const ImageView&>(rhs);
+            if (static_cast<const Image&>(lhsImageView.GetImage()).GetNativeImage() !=
+                static_cast<const Image&>(rhsImageView.GetImage()).GetNativeImage())
+            {
+                return false;
+            }
+
+            const auto& lhsRange = lhsImageView.GetImageSubresourceRange();
+            const auto& rhsRange = rhsImageView.GetImageSubresourceRange();
+            if (!(
+                lhsRange.m_arraySliceMin <= rhsRange.m_arraySliceMin &&
+                lhsRange.m_arraySliceMax >= rhsRange.m_arraySliceMax &&
+                lhsRange.m_mipSliceMin <= rhsRange.m_mipSliceMin &&
+                lhsRange.m_mipSliceMax >= rhsRange.m_mipSliceMax
+                ))
+            {
+                return false;
+            }
+
+            for (uint32_t i = static_cast<uint32_t>(RHI::ImageAspect::Color); i < static_cast<uint32_t>(RHI::ImageAspect::Count); ++i)
+            {
+                RHI::ImageAspectFlags flag = static_cast<RHI::ImageAspectFlags>(AZ_BIT(i));
+                if (!RHI::CheckBitsAll(rhsImageView.GetAspectFlags(), flag))
+                {
+                    continue;
+                }
+
+                if (!RHI::CheckBitsAll(lhsImageView.GetAspectFlags(), flag))
+                {
+                    return false;
+                }                
+            }
+            return true;
         }
 
         bool SubresourceRangeOverlaps(const VkImageSubresourceRange& lhs, const VkImageSubresourceRange& rhs)
@@ -202,10 +249,48 @@ namespace AZ
             case RHI::ScopeAttachmentUsage::DepthStencil:
             case RHI::ScopeAttachmentUsage::Resolve:
             case RHI::ScopeAttachmentUsage::SubpassInput:
+            case RHI::ScopeAttachmentUsage::ShadingRate:
                 return true;
             default:
                 return false;
             }
+        }
+
+        bool IsReadOnlyAccess(VkAccessFlags access)
+        {
+            return !RHI::CheckBitsAny(
+                access,
+                VkAccessFlags(VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+                    VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+                    VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_HOST_WRITE_BIT | VK_ACCESS_MEMORY_WRITE_BIT |
+                    VK_ACCESS_TRANSFORM_FEEDBACK_WRITE_BIT_EXT | VK_ACCESS_TRANSFORM_FEEDBACK_COUNTER_WRITE_BIT_EXT |
+                    VK_ACCESS_CONDITIONAL_RENDERING_READ_BIT_EXT | VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR |
+                    VK_ACCESS_COMMAND_PREPROCESS_WRITE_BIT_NV | VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_NV));
+        }
+
+        BarrierOptimizationFlags GetBarrierOptimizationFlags()
+        {
+            return static_cast<BarrierOptimizationFlags>(static_cast<uint32_t>(r_vkBarrierOptimizationFlags));
+        }
+
+        bool operator==(const VkMemoryBarrier& lhs, const VkMemoryBarrier& rhs)
+        {
+            return lhs.dstAccessMask == rhs.dstAccessMask && lhs.pNext == rhs.pNext && lhs.srcAccessMask == rhs.srcAccessMask;
+        }
+
+        bool operator==(const VkBufferMemoryBarrier& lhs, const VkBufferMemoryBarrier& rhs)
+        {
+            return lhs.buffer == rhs.buffer && lhs.dstAccessMask == rhs.dstAccessMask &&
+                lhs.dstQueueFamilyIndex == rhs.dstQueueFamilyIndex && lhs.offset == rhs.offset && lhs.pNext == rhs.pNext &&
+                lhs.size == rhs.size && lhs.srcAccessMask == rhs.srcAccessMask && lhs.srcQueueFamilyIndex == rhs.srcQueueFamilyIndex;
+        }
+
+        bool operator==(const VkImageMemoryBarrier& lhs, const VkImageMemoryBarrier& rhs)
+        {
+            return lhs.dstAccessMask == rhs.dstAccessMask && lhs.dstQueueFamilyIndex == rhs.dstQueueFamilyIndex && lhs.image == rhs.image &&
+                lhs.newLayout == rhs.newLayout && lhs.oldLayout == rhs.oldLayout && lhs.pNext == rhs.pNext &&
+                lhs.srcAccessMask == rhs.srcAccessMask && lhs.srcQueueFamilyIndex == rhs.srcQueueFamilyIndex &&
+                lhs.subresourceRange == rhs.subresourceRange;
         }
 
         bool operator==(const VkImageSubresourceRange& lhs, const VkImageSubresourceRange& rhs)

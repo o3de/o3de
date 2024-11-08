@@ -28,7 +28,7 @@ namespace EMotionFX
     AZ_CLASS_ALLOCATOR_IMPL(Motion, MotionAllocator)
 
     Motion::Motion(const char* name)
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_id = aznumeric_caster(MCore::GetIDGenerator().GenerateID());
         m_eventTable = AZStd::make_unique<MotionEventTable>();
@@ -308,7 +308,7 @@ namespace EMotionFX
         sampleSettings.m_retarget = instance->GetRetargetingEnabled();
         sampleSettings.m_sampleTime = instance->GetCurrentTime();
         sampleSettings.m_inputPose = inputPose ? inputPose : sampleSettings.m_actorInstance->GetTransformData()->GetBindPose();
-        
+
         m_motionData->SamplePose(sampleSettings, outputPose);
     }
 

@@ -17,6 +17,8 @@
 // AzQtComponents
 #include <AzQtComponents/DragAndDrop/ViewportDragAndDrop.h>
 
+#include <AzCore/Math/IntersectSegment.h>
+
 // AzToolsFramework
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
@@ -26,7 +28,6 @@
 #include "Editor/Plugins/ComponentEntityEditorPlugin/SandboxIntegration.h"
 #include "ViewManager.h"
 #include "Include/HitContext.h"
-#include "Objects/ObjectManager.h"
 #include "Util/3DConnexionDriver.h"
 #include "PluginManager.h"
 #include "GameEngine.h"
@@ -117,6 +118,15 @@ void QtViewport::dropEvent(QDropEvent* event)
         ViewportDragContext context;
         BuildDragDropContext(context, GetViewportId(), event->pos());
         DragAndDropEventsBus::Event(DragAndDropContexts::EditorViewport, &DragAndDropEvents::Drop, event, context);
+        if (event->isAccepted())
+        {
+            // send focus to whatever window accepted it.  Its not necessarily this window, as it might be a child embedded in it.
+            QWidget* widget = qApp->widgetAt(event->pos());
+            if (widget)
+            {
+                widget->setFocus(Qt::MouseFocusReason);
+            }
+        }
     }
 }
 
@@ -173,7 +183,6 @@ QtViewport::QtViewport(QWidget* parent)
     }
     m_screenTM.SetIdentity();
 
-    m_pMouseOverObject = nullptr;
 
     m_bAdvancedSelectMode = false;
 
@@ -313,7 +322,6 @@ void QtViewport::OnDeactivate()
 //////////////////////////////////////////////////////////////////////////
 void QtViewport::ResetContent()
 {
-    m_pMouseOverObject = nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -533,7 +541,6 @@ void QtViewport::OnSetCursor()
 void QtViewport::ResetSelectionRegion()
 {
     AABB box(Vec3(0, 0, 0), Vec3(0, 0, 0));
-    GetIEditor()->SetSelectedRegion(box);
     m_selectedRect = QRect();
 }
 
@@ -571,7 +578,6 @@ void QtViewport::OnDragSelectRectangle(const QRect& rect, bool bNormalizeRect)
 
     box.min.z = -10000;
     box.max.z = 10000;
-    GetIEditor()->SetSelectedRegion(box);
 
     // Show marker position in the status bar
     float w = box.max.x - box.min.x;
@@ -1052,10 +1058,11 @@ float QtViewport::GetDistanceToLine(const Vec3& lineP1, const Vec3& lineP2, cons
     QPoint p1 = WorldToView(lineP1);
     QPoint p2 = WorldToView(lineP2);
 
-    return PointToLineDistance2D(
-        Vec3(static_cast<f32>(p1.x()), static_cast<f32>(p1.y()), 0.0f),
-        Vec3(static_cast<f32>(p2.x()), static_cast<f32>(p2.y()), 0.0f),
-        Vec3(static_cast<f32>(point.x()), static_cast<f32>(point.y()), 0.0f));
+    return AZ::Intersect::PointSegmentDistanceSq(
+       AZ::Vector3(static_cast<f32>(point.x()), static_cast<f32>(point.y()), 0.0f),
+       AZ::Vector3(static_cast<f32>(p1.x()), static_cast<f32>(p1.y()), 0.0f),
+       AZ::Vector3(static_cast<f32>(p2.x()), static_cast<f32>(p2.y()), 0.0f)
+    );
 }
 
 //////////////////////////////////////////////////////////////////////////
