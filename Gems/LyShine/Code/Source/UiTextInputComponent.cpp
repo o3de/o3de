@@ -108,7 +108,7 @@ namespace
         utf8String.erase(left, right - left);
     }
 
-#if !defined(CARBONATED) || !defined(AZ_PLATFORM_IOS)
+#if !(defined(CARBONATED) && defined(AZ_PLATFORM_IOS))
     //! \brief Returns a UTF8 sub-string using the given indices.
     //! The given indices are code-point indices and not raw (byte) indices.
     AZStd::string Utf8SubString(const AZStd::string& utf8String, int utf8CharIndexStart, int utf8CharIndexEnd)
