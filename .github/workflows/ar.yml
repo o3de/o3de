@@ -1,7 +1,7 @@
 name: AR
 
 on:
-#  pull_request:
+  pull_request:
   workflow_dispatch:
   push:
     branches:
@@ -10,10 +10,26 @@ on:
 # - ${{ vars.STABILIZATION_BRANCH }}
 
 jobs:
-#    Cache-LFS:
-        
+    Cache-LFS:
+        runs-on: ubuntu-latest
+        name: Update LFS data cache
+        outputs:
+          lfs_sha: ${{ steps.lfs_sha_recover.outputs.lfs_sha }}
+        steps:
+    
+        - name: Checkout
+          uses: actions/checkout@v4
+          with:
+            fetch-depth: 1
+            lfs: false
+    
+        # Use producer action to recover the LFS data and upload it as cache/artifacts
+        - name: Cache LFS Data
+          id: lfs_sha_recover
+          uses: f3d-app/lfs-data-cache-action@v1
 
     Windows-Profile:
+        needs: Cache-LFS
         uses: ./.github/workflows/windows-profile.yml
         secrets: inherit
     Windows-Asset:
@@ -24,6 +40,7 @@ jobs:
         uses: ./.github/workflows/windows-cpu-test.yml
         
     Linux-Profile:
+        needs: Cache-LFS
         uses: ./.github/workflows/linux-profile.yml
         secrets: inherit
     Linux-Asset:
@@ -34,9 +51,12 @@ jobs:
         uses: ./.github/workflows/linux-cpu-test.yml
 
     Android-Profile:
+        needs: Cache-LFS
         uses: ./.github/workflows/android-profile.yml
         secrets: inherit
-    # Android-Asset:
-    #     uses: ./.github/workflows/android-asset.yml
-    # Android-Gradle:
-    #     uses: ./.github/workflows/android-gradle.yml
+    Android-Asset:
+        needs: Cache-LFS
+        uses: ./.github/workflows/android-asset.yml
+    Android-Gradle:
+        needs: Cache-LFS
+        uses: ./.github/workflows/android-gradle.yml

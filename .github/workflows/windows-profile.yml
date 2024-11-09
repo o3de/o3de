@@ -25,11 +25,17 @@ jobs:
         with:
           show-progress: false
           
-      - name: Git LFS fetch
-        run: |
-          git lfs install
-          git lfs fetch --include "*.ico,*.bmp"
-          git lfs checkout
+      # - name: Git LFS fetch
+      #   run: |
+      #     git lfs install
+      #     git lfs fetch --include "*.ico,*.bmp"
+      #     git lfs checkout
+
+      - name: Recover LFS Data
+        uses: f3d-app/lfs-data-cache-action@v1
+        with:
+          workflow_label: 'consumer'
+          lfs_sha: ${{ needs.Cache-LFS.outputs.lfs_sha }}
 
       - name: Setup 3p, user, and build folders
         run: |
