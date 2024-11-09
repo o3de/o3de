@@ -176,8 +176,6 @@ public:
         return m_screenTM;
     }
 
-    virtual Vec3 MapViewToCP(const QPoint& point) = 0;
-
     //! Map viewport position to world space position.
     Vec3        ViewToWorld(const QPoint& vp, bool* pCollideWithTerrain = nullptr, bool onlyTerrain = false, bool bSkipVegetation = false, bool bTestRenderMesh = false, bool* collideWithObject = nullptr) const override = 0;
     //! Convert point on screen to world ray.
@@ -185,13 +183,8 @@ public:
     //! Get normal for viewport position
     virtual Vec3        ViewToWorldNormal(const QPoint& vp, bool onlyTerrain, bool bTestRenderMesh = false) = 0;
 
-    virtual Vec3 GetCPVector(const Vec3& p1, const Vec3& p2, int axis) = 0;
-    virtual Vec3 GetCPVector(const Vec3& p1, const Vec3& p2) { return GetCPVector(p1, p2, GetAxisConstrain()); }
-
     //! Performs hit testing of 2d point in view to find which object hit.
     virtual bool HitTest(const QPoint& point, HitContext& hitInfo) = 0;
-
-    virtual void MakeConstructionPlane(int axis) = 0;
 
     // Access to the member m_bAdvancedSelectMode so interested modules can know its value.
     virtual bool GetAdvancedSelectModeFlag() = 0;
@@ -223,8 +216,6 @@ public:
         m_dropCallback = dropCallback;
         m_dropCallbackCustom = dropCallbackCustom;
     }
-
-    virtual void SetConstructionMatrix(RefCoordSys coordSys, const Matrix34& xform) = 0;
 
     virtual void BeginUndo() = 0;
     virtual void AcceptUndo(const QString& undoDescription) = 0;
@@ -369,14 +360,6 @@ public:
     //! Get normal for viewport position
     virtual Vec3        ViewToWorldNormal(const QPoint& vp, bool onlyTerrain, bool bTestRenderMesh = false) override;
 
-    //! Map view point to world space using current construction plane.
-    Vec3 MapViewToCP(const QPoint& point) override { return MapViewToCP(point, GetAxisConstrain()); }
-    virtual Vec3 MapViewToCP(const QPoint& point, int axis);
-
-    //! This method return a vector (p2-p1) in world space alligned to construction plane and restriction axises.
-    //! p1 and p2 must be given in world space and lie on construction plane.
-    using CViewport::GetCPVector;
-    Vec3 GetCPVector(const Vec3& p1, const Vec3& p2, int axis) override;
 
     //! Snap any given 3D world position to grid lines if snap is enabled.
     Vec3 SnapToGrid(const Vec3& vec) override;
@@ -420,16 +403,6 @@ public:
     bool GetAdvancedSelectModeFlag() override;
 
     void GetPerpendicularAxis(EAxis* pAxis, bool* pIs2D) const override;
-
-    //////////////////////////////////////////////////////////////////////////
-    //! Set construction plane from given position construction matrix refrence coord system and axis settings.
-    //////////////////////////////////////////////////////////////////////////
-    void MakeConstructionPlane(int axis) override;
-    void SetConstructionMatrix(RefCoordSys coordSys, const Matrix34& xform) override;
-    virtual const Matrix34& GetConstructionMatrix(RefCoordSys coordSys);
-    // Set simple construction plane origin.
-    void SetConstructionOrigin(const Vec3& worldPos);
-    //////////////////////////////////////////////////////////////////////////
 
     void DegradateQuality(bool bEnable);
 
@@ -543,13 +516,6 @@ protected:
 
     int m_activeAxis;
 
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-    //! Current construction plane.
-    ::Plane m_constructionPlane;
-    Vec3 m_constructionPlaneAxisX;
-    Vec3 m_constructionPlaneAxisY;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
-
     // When true selection helpers will be shown and hit tested against.
     bool m_bAdvancedSelectMode;
 
@@ -574,8 +540,6 @@ protected:
     QRect m_rcClient;
 
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-    // Same construction matrix is shared by all viewports.
-    Matrix34 m_constructionMatrix[LAST_COORD_SYSTEM];
 
     typedef std::vector<_smart_ptr<IPostRenderer> > PostRenderers;
     PostRenderers   m_postRenderers;
