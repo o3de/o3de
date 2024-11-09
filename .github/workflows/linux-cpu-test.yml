@@ -45,16 +45,16 @@ jobs:
       - name: Restore timestamps
         uses: chetan/git-restore-mtime-action@v2
 
-      - name: Create and mount build folders
-        run: |
-          # sudo sh -c 'src="${{ github.workspace }}/build" && dst="/mnt/build" && mkdir -p "$src" "$dst" && mount --bind "$src" "$dst" && chown -R "$SUDO_USER:$SUDO_USER" "$src" "$dst"'
-          sudo sh -c 'build_path="${{ github.workspace }}/build" && mkdir -p "$build_path" /mnt/build && mount --bind /mnt/build "$build_path" && chown -R "$SUDO_USER:$SUDO_USER" "$build_path"'
-          sudo sh -c 'src="${{ github.workspace }}/AutomatedTesting/Cache" && dst="/o3de/AutomatedTesting/Cache" && mkdir -p "$src" "$dst" && mount --bind "$dst" "$src" && chown -R "$SUDO_USER:$SUDO_USER" "$src" "$dst"'
-          sudo sh -c 'src="${{ github.workspace }}/AutomatedTesting/user" && dst="/o3de/AutomatedTesting/user" && mkdir -p "$src" "$dst" && mount --bind "$dst" "$src" && chown -R "$SUDO_USER:$SUDO_USER" "$src" "$dst"'
-          sudo sh -c 'src="${{ github.workspace }}/.ccache" && dst="/mnt/.ccache" && mkdir -p "$src" "$dst" && mount --bind "$dst" "$src" && chown -R "$SUDO_USER:$SUDO_USER" "$src" "$dst"'
-          ls -lah /mnt
-          ls -lah ${{ github.workspace }}
-          df -h
+      # - name: Create and mount build folders
+      #   run: |
+      #     # sudo sh -c 'src="${{ github.workspace }}/build" && dst="/mnt/build" && mkdir -p "$src" "$dst" && mount --bind "$src" "$dst" && chown -R "$SUDO_USER:$SUDO_USER" "$src" "$dst"'
+      #     sudo sh -c 'build_path="${{ github.workspace }}/build" && mkdir -p "$build_path" /mnt/build && mount --bind /mnt/build "$build_path" && chown -R "$SUDO_USER:$SUDO_USER" "$build_path"'
+      #     sudo sh -c 'src="${{ github.workspace }}/AutomatedTesting/Cache" && dst="/o3de/AutomatedTesting/Cache" && mkdir -p "$src" "$dst" && mount --bind "$dst" "$src" && chown -R "$SUDO_USER:$SUDO_USER" "$src" "$dst"'
+      #     sudo sh -c 'src="${{ github.workspace }}/AutomatedTesting/user" && dst="/o3de/AutomatedTesting/user" && mkdir -p "$src" "$dst" && mount --bind "$dst" "$src" && chown -R "$SUDO_USER:$SUDO_USER" "$src" "$dst"'
+      #     sudo sh -c 'src="${{ github.workspace }}/.ccache" && dst="/mnt/.ccache" && mkdir -p "$src" "$dst" && mount --bind "$dst" "$src" && chown -R "$SUDO_USER:$SUDO_USER" "$src" "$dst"'
+      #     ls -lah /mnt
+      #     ls -lah ${{ github.workspace }}
+      #     df -h
           
       - name: Restore 3P Cache
         uses: actions/cache/restore@v4.0.2

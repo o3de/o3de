@@ -34,7 +34,7 @@ jobs:
       - name: Recover LFS Data
         uses: f3d-app/lfs-data-cache-action@v1
         with:
-          workflow_label: 'consumer'
+          type: 'consumer'
           lfs_sha: ${{ needs.Cache-LFS.outputs.lfs_sha }}
 
       - name: Setup 3p, user, and build folders
