@@ -21,7 +21,7 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4.2.1
+        uses: actions/checkout@v4
         with:
           show-progress: false
           
@@ -37,7 +37,7 @@ jobs:
           ".o3de" | % {New-Item -Path $env:USERPROFILE\$_ -ItemType SymbolicLink -Target ${{ github.workspace }}\$_ -Force}
 
       - name: Setup ccache
-        uses: Chocobo1/setup-ccache-action@v1.4.4
+        uses: Chocobo1/setup-ccache-action@v1
         continue-on-error: true
         if: always()
         with:
@@ -55,12 +55,13 @@ jobs:
         with:
           workflow_search: true
           workflow_conclusion: completed
-          search_artifacts: O3DE-${{ matrix.platform }}-build
+          search_artifacts: true
+          name: O3DE-${{ matrix.platform }}-build
           dry_run: true
           if_no_artifact_found: warn
     
       - name: Restore build cache
-        uses: actions/download-artifact@v4.1.8
+        uses: actions/download-artifact@v4
         continue-on-error: true
         if: always()
         with:
@@ -85,7 +86,7 @@ jobs:
           python\get_python.bat
           
       - name: Add msbuild to PATH
-        uses: ilammy/msvc-dev-cmd@v1.13.0
+        uses: ilammy/msvc-dev-cmd@v1
           
       - name: Build ${{ matrix.type }}
         env:
@@ -105,7 +106,7 @@ jobs:
             .ccache
   
       - name: Save artifacts
-        uses: actions/upload-artifact@v4.4.3
+        uses: actions/upload-artifact@v4
         continue-on-error: true
         if: (contains(github.ref, 'development') || contains(github.ref, ${{ vars.STABILIZATION_BRANCH }}))
         with:
