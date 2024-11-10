@@ -65,7 +65,7 @@ jobs:
         with:
           name: O3DE-${{ matrix.platform }}-build
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ steps.last-run-id.outputs.runID || vars.Windows_ARTIFACT_RUNID }}
+          run-id: ${{ steps.last-run-id.outputs.runID }}
 
       - name: Extract build
         continue-on-error: true
