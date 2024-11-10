@@ -58,7 +58,7 @@ jobs:
           override_cache_key: O3DE-${{ matrix.platform }}-${{ matrix.config }}-ccache
           override_cache_key_fallback: |
             O3DE-${{ matrix.platform }}-${{ matrix.config }}
-          Android_compile_environment: msvc
+          windows_compile_environment: msvc
           prepend_symlinks_to_path: false
           store_cache: false
           restore_cache: false

@@ -22,11 +22,6 @@ jobs:
           with:
             fetch-depth: 1
             lfs: false
-    
-        # Use producer action to recover the LFS data and upload it as cache/artifacts
-        - name: Cache LFS Data
-          id: lfs_sha_recover
-          uses: f3d-app/lfs-data-cache-action@v1
 
     Windows-Profile:
         needs: Cache-LFS
