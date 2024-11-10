@@ -46,7 +46,7 @@ jobs:
           store_cache: true
           restore_cache: false
           ccache_options: |
-            max_size=5G
+            max_size=10G
             cache_dir=${{ github.workspace }}\.ccache
       
       - name: Get last run
@@ -54,7 +54,8 @@ jobs:
         id: last-run-id
         with:
           workflow_search: true
-          workflow_conclusion: success
+          workflow_conclusion: completed
+          search_artifacts: O3DE-${{ matrix.platform }}-build
           dry_run: true
           if_no_artifact_found: warn
     
@@ -65,12 +66,12 @@ jobs:
         with:
           name: O3DE-${{ matrix.platform }}-build
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ steps.last-run-id.outputs.runID }}
+          run-id: ${{ fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id }}
 
       - name: Extract build
         continue-on-error: true
         run: |
-          echo "Windows_ARTIFACT_RUNID: ${{ vars.Windows_ARTIFACT_RUNID }}"
+          echo "{{ matrix.platform }}_ARTIFACT_RUNID: ${{ vars[format('{0}_ARTIFACT_RUNID', matrix.platform)] }}"
           echo "Runid: ${{ github.run_id }}"
           echo "Last run id: ${{ fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id }}"
           
@@ -94,7 +95,7 @@ jobs:
       
       - name: Compress artifacts
         continue-on-error: true
-        if: (contains(github.ref, 'development') || contains(github.ref, ${{ vars.STABILIZATION_BRANCH }})) && always()
+        if: (contains(github.ref, 'development') || contains(github.ref, ${{ vars.STABILIZATION_BRANCH }}))
         run: |
           tar --format=posix -cvpf ${{ github.workspace }}\cache.tar `
             .o3de\Python `
@@ -106,7 +107,7 @@ jobs:
       - name: Save artifacts
         uses: actions/upload-artifact@v4.4.3
         continue-on-error: true
-        if: (contains(github.ref, 'development') || contains(github.ref, ${{ vars.STABILIZATION_BRANCH }})) && always()
+        if: (contains(github.ref, 'development') || contains(github.ref, ${{ vars.STABILIZATION_BRANCH }}))
         with:
           name: O3DE-${{ matrix.platform }}-build
           compression-level: 1
