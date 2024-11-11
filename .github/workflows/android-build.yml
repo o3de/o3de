@@ -92,7 +92,7 @@ jobs:
           
           tar -xvpf ${{ github.workspace }}\cache.tar
           rm ${{ github.workspace }}\cache.tar
-        
+
       - name: Configure environment
         continue-on-error: true
         env:
@@ -102,11 +102,8 @@ jobs:
           echo "Getting python..."
           python\get_python.bat
           echo "Setup Android SDK..."
-          scripts\build\build_node\Platform\Windows\install-windows-android.ps1 | Out-Null
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-          
+          scripts\build\build_node\Platform\Windows\install-windows-android.ps1
+        
       - name: Add msbuild to PATH
         uses: ilammy/msvc-dev-cmd@v1
             

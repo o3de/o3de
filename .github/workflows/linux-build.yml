@@ -121,7 +121,7 @@ jobs:
           sudo apt clean
           df -h
           
-      - name: Build
+      - name: Build ${{ inputs.type }}
         env:
           LY_3RDPARTY_PATH: ${{ github.workspace }}/3rdParty
           CC:  ${{ inputs.compiler == 'gcc' && 'gcc' || 'clang'   }}
@@ -135,16 +135,6 @@ jobs:
             Xvfb :0 -screen 0 1400x1050x16 &
           fi
           python/python.sh -u scripts/build/ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }}
-      
-      - name: Save 3P Cache
-        uses: actions/cache/save@v4.1.1
-        continue-on-error: true
-        if: (contains(github.ref, 'development') || contains(github.ref, ${{ vars.STABILIZATION_BRANCH }})) && always()
-        with:
-          path: |
-            ${{ github.workspace }}/3rdParty/packages
-            ${{ github.workspace }}/python
-          key: O3DE-${{ inputs.platform }}-3p
 
       - name: Compress artifacts
         continue-on-error: true
