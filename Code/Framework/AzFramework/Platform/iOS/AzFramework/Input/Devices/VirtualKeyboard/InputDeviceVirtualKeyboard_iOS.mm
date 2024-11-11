@@ -25,7 +25,7 @@
     float m_activeTextFieldNormalizedBottomY;
 
 #if defined(CARBONATED)
-	bool m_showNativeTextField;
+    bool m_showNativeTextField;
 #endif
 }
 
