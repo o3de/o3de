@@ -128,9 +128,9 @@ jobs:
           CXX: ${{ matrix.compiler == 'gcc' && 'g++' || 'clang++' }}
           CMAKE_C_COMPILER_LAUNCHER: ccache
           CMAKE_CXX_COMPILER_LAUNCHER: ccache
-          PATH: "/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           DISPLAY: :0
         run: |
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           if [ "${{ inputs.desktop }}" == "true" ]; then 
             Xvfb :0 -screen 0 1400x1050x16 &
           fi
