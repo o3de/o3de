@@ -67,14 +67,12 @@ jobs:
         uses: dawidd6/action-download-artifact@v6
         id: last-run-id
         with:
-          workflow_search: true
-          workflow_conclusion: completed
           search_artifacts: true
           name: O3DE-${{ inputs.platform }}-build
           dry_run: true
           if_no_artifact_found: warn
     
-      - name: Restore build cache
+      - name: Restore artifact cache
         uses: actions/download-artifact@v4
         continue-on-error: true
         if: always()
@@ -83,7 +81,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id }}
 
-      - name: Extract build
+      - name: Extract artifact
         continue-on-error: true
         run: |
           echo "Current Runid: ${{ github.run_id }}"

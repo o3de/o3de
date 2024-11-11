@@ -53,6 +53,15 @@ jobs:
             platform: Windows
             type: test_cpu_profile
 
+    Windows-Release:
+        uses: ./.github/workflows/windows-build.yml
+        with:
+            compiler: msvc
+            config: release
+            image: windows-2022
+            platform: Windows
+            type: release
+
 #### Linux Build ####
     Linux-Profile:
         uses: ./.github/workflows/linux-build.yml
@@ -96,7 +105,6 @@ jobs:
 
     Android-Asset:
         uses: ./.github/workflows/android-build.yml
-        needs: Android-Profile
         with:
             compiler: msvc
             config: profile
