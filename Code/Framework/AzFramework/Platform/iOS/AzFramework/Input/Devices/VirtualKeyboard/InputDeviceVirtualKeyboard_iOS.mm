@@ -23,6 +23,10 @@
     UITextField* m_textField;
 @public
     float m_activeTextFieldNormalizedBottomY;
+
+#if defined(CARBONATED)
+	bool m_showNativeTextField;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -123,18 +127,21 @@
         replacementString: (NSString*)string
 {
 #if defined(CARBONATED)
-    NSString *newText = [textField.text stringByReplacingCharactersInRange:range withString:string];
-    m_inputDevice->QueueRawTextEvent(newText.UTF8String);
+    if (m_showNativeTextField)
+    {
+        NSString *newText = [textField.text stringByReplacingCharactersInRange:range withString:string];
+        m_inputDevice->QueueRawTextEvent(newText.UTF8String);
 
-    return TRUE;
-#else
+        return TRUE;
+    }
+#endif
+
     // If the string length is 0, the user has pressed the backspace key on the virtual keyboard.
     const AZStd::string textUTF8 = string.length ? string.UTF8String : "\b";
     m_inputDevice->QueueRawTextEvent(textUTF8);
 
     // Return false so that the text field itself does not update.
     return FALSE;
-#endif
 }
 @end // VirtualKeyboardTextFieldDelegate implementation
 
@@ -201,13 +208,6 @@ namespace AzFramework
         m_textFieldDelegate = [[VirtualKeyboardTextFieldDelegate alloc] initWithInputDevice: this withTextField: m_textField];
         m_textField.delegate = m_textFieldDelegate;
 
-#if defined(CARBONATED)
-        m_textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
-        m_textField.autocorrectionType = UITextAutocorrectionTypeYes;
-        m_textField.hidden = NO;
-        m_textField.text = @"";
-        m_textField.textColor = [UIColor whiteColor];
-#else
         // Disable autocapitalization and autocorrection, which both behave strangely.
         m_textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
         m_textField.autocorrectionType = UITextAutocorrectionTypeNo;
@@ -217,6 +217,15 @@ namespace AzFramework
 
         // Add something to the text field so delete works.
         m_textField.text = @" ";
+
+#if defined(CARBONATED)
+        if (m_textFieldDelegate->m_showNativeTextField)
+        {
+            m_textField.autocorrectionType = UITextAutocorrectionTypeYes;
+            m_textField.hidden = NO;
+            m_textField.text = @"";
+            m_textField.textColor = [UIColor whiteColor];
+        }
 #endif
     }
 
@@ -284,17 +293,22 @@ namespace AzFramework
         m_textFieldDelegate->m_activeTextFieldNormalizedBottomY = options.m_normalizedMinY;
 
 #if defined(CARBONATED)
-        // Position text field
-        float textFieldWidth = (options.m_normalizedMaxX - options.m_normalizedMinX) * m_textField.superview.bounds.size.width;
-        float textFieldHeight = (options.m_normalizedMinY - options.m_normalizedMaxY) * m_textField.superview.bounds.size.height;
+        m_textFieldDelegate->m_showNativeTextField = options.m_showNativeTextField;
 
-        CGRect textFieldRect = CGRectMake(options.m_normalizedMinX * m_textField.superview.bounds.size.width + textFieldHeight * 0.1f,
-                                          options.m_normalizedMaxY * m_textField.superview.bounds.size.height + textFieldHeight * 0.1f,
-                                          textFieldWidth - textFieldHeight * 0.2f, textFieldHeight * 0.8f);
-        textFieldRect = [m_textField.superview convertRect: textFieldRect toView: nil];
+        if (options.m_showNativeTextField)
+        {
+            // Position text field
+            float textFieldWidth = (options.m_normalizedMaxX - options.m_normalizedMinX) * m_textField.superview.bounds.size.width;
+            float textFieldHeight = (options.m_normalizedMinY - options.m_normalizedMaxY) * m_textField.superview.bounds.size.height;
 
-        m_textField.frame = textFieldRect;
-        m_textField.text = [NSString stringWithUTF8String:options.m_initialText.c_str()];
+            CGRect textFieldRect = CGRectMake(options.m_normalizedMinX * m_textField.superview.bounds.size.width + textFieldHeight * 0.1f,
+                                              options.m_normalizedMaxY * m_textField.superview.bounds.size.height + textFieldHeight * 0.1f,
+                                              textFieldWidth - textFieldHeight * 0.2f, textFieldHeight * 0.8f);
+            textFieldRect = [m_textField.superview convertRect: textFieldRect toView: nil];
+
+            m_textField.frame = textFieldRect;
+            m_textField.text = [NSString stringWithUTF8String:options.m_initialText.c_str()];
+        }
 
         if (options.m_showSendOnReturnKey)
         {

@@ -108,7 +108,6 @@ namespace
         utf8String.erase(left, right - left);
     }
 
-#if !(defined(CARBONATED) && defined(AZ_PLATFORM_IOS))
     //! \brief Returns a UTF8 sub-string using the given indices.
     //! The given indices are code-point indices and not raw (byte) indices.
     AZStd::string Utf8SubString(const AZStd::string& utf8String, int utf8CharIndexStart, int utf8CharIndexEnd)
@@ -119,7 +118,6 @@ namespace
         const int right = GetCharArrayIndexFromUtf8CharIndex(utf8String, maxCharIndex);
         return utf8String.substr(left, right - left);
     }
-#endif
 
     //! \brief Convenience method for erasing a range of text and updating the given selection indices accordingly.
     void EraseAndUpdateSelectionRange(AZStd::string& utf8String, int& endSelectIndex, int& startSelectIndex)
@@ -183,6 +181,7 @@ UiTextInputComponent::UiTextInputComponent()
     , m_enableClipboard(true)
 #if defined(CARBONATED)
     , m_showSendOnReturnKey(false)
+    , m_showNativeTextField(false)
 #endif
 {
 }
@@ -337,14 +336,15 @@ bool UiTextInputComponent::HandleTextInput(const AZStd::string& inputTextUTF8)
 
     bool changedText = false;
 
-#if defined(CARBONATED) && defined(AZ_PLATFORM_IOS)
-
-    changedText = true;
-    currentText = inputTextUTF8;
-    m_textCursorPos = m_textSelectionStartPos = LyShine::GetUtf8StringLength(inputTextUTF8);
-
-#else
-
+#if defined(CARBONATED)
+    if (m_showNativeTextField)
+    {
+        changedText = true;
+        currentText = inputTextUTF8;
+        m_textCursorPos = m_textSelectionStartPos = LyShine::GetUtf8StringLength(inputTextUTF8);
+    }
+    else
+#endif
     if (inputTextUTF8 == "\b" || inputTextUTF8 == "\x7f")
     {
         // backspace pressed, delete character before cursor or the selected range
@@ -399,7 +399,6 @@ bool UiTextInputComponent::HandleTextInput(const AZStd::string& inputTextUTF8)
             }
         }
     }
-#endif
 
     if (changedText)
     {
@@ -1017,6 +1016,13 @@ void UiTextInputComponent::SetIsClipboardEnabled(bool enableClipboard)
     m_enableClipboard = enableClipboard;
 }
 
+#if defined(CARBONATED)
+void UiTextInputComponent::SetNativeTextFieldEnabled(bool enabled)
+{
+    m_showNativeTextField = enabled;
+}
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PROTECTED MEMBER FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1054,8 +1060,11 @@ void UiTextInputComponent::BeginEditState()
     // position the cursor in the text entity
     UiTextBus::Event(m_textEntity, &UiTextBus::Events::SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);
 
-#if defined(CARBONATED) && defined(AZ_PLATFORM_IOS)
-    UiElementBus::Event(GetEntityId(), &UiElementBus::Events::SetIsEnabled, false);
+#if defined(CARBONATED)
+    if (m_showNativeTextField)
+    {
+        UiElementBus::Event(GetEntityId(), &UiElementBus::Events::SetIsEnabled, false);
+    }
 #endif
 
     ResetCursorBlink();
@@ -1086,8 +1095,11 @@ void UiTextInputComponent::EndEditState()
 
     UiTextInputNotificationBus::Event(GetEntityId(), &UiTextInputNotificationBus::Events::OnTextInputEndEdit, textString);
 
-#if defined(CARBONATED) && defined(AZ_PLATFORM_IOS)
-    UiElementBus::Event(GetEntityId(), &UiElementBus::Events::SetIsEnabled, true);
+#if defined(CARBONATED)
+    if (m_showNativeTextField)
+    {
+        UiElementBus::Event(GetEntityId(), &UiElementBus::Events::SetIsEnabled, true);
+    }
 #endif
 
     // clear the selection highlight
@@ -1429,6 +1441,9 @@ void UiTextInputComponent::Reflect(AZ::ReflectContext* context)
             ->Event("SetReplacementCharacter", &UiTextInputBus::Events::SetReplacementCharacter)
             ->Event("GetIsClipboardEnabled", &UiTextInputBus::Events::GetIsClipboardEnabled)
             ->Event("SetIsClipboardEnabled", &UiTextInputBus::Events::SetIsClipboardEnabled)
+#if defined(CARBONATED)
+            ->Event("SetNativeTextFieldEnabled", &UiTextInputBus::Events::SetNativeTextFieldEnabled)
+#endif
             ->VirtualProperty("TextSelectionColor", "GetTextSelectionColor", "SetTextSelectionColor")
             ->VirtualProperty("TextCursorColor", "GetTextCursorColor", "SetTextCursorColor")
             ->VirtualProperty("CursorBlinkInterval", "GetCursorBlinkInterval", "SetCursorBlinkInterval")
@@ -1494,11 +1509,12 @@ void UiTextInputComponent::CheckStartTextInput()
 
         AZStd::string textString;
         UiTextBus::EventResult(textString, m_textEntity, &UiTextBus::Events::GetText);
-#if defined(CARBONATED) && defined(AZ_PLATFORM_IOS)
-        options.m_initialText = textString;
-#else
-        options.m_initialText = Utf8SubString(textString, m_textCursorPos, m_textSelectionStartPos);
+#if defined(CARBONATED)
+        if (m_showNativeTextField)
+            options.m_initialText = textString;
+        else
 #endif
+            options.m_initialText = Utf8SubString(textString, m_textCursorPos, m_textSelectionStartPos);
 
         AZ::EntityId canvasEntityId;
         UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
@@ -1513,6 +1529,7 @@ void UiTextInputComponent::CheckStartTextInput()
 
 #if defined(CARBONATED)
         options.m_showSendOnReturnKey = m_showSendOnReturnKey;
+        options.m_showNativeTextField = m_showNativeTextField;
 
         const AZ::Vector2 topLeft = rectPoints.GetAxisAlignedTopLeft();
         options.m_normalizedMinX = (canvasSize.GetX() > 0.0f) ? topLeft.GetX() / canvasSize.GetX() : 0.0f;

@@ -95,6 +95,10 @@ public: // member functions
     bool GetIsClipboardEnabled() override;
     void SetIsClipboardEnabled(bool enableClipboard) override;
 
+#if defined(CARBONATED)
+    void SetNativeTextFieldEnabled(bool enabled) override;
+#endif
+
     // ~UiTextInputInterface
 
 protected: // member functions
@@ -214,5 +218,6 @@ private: // data
 
 #if defined(CARBONATED)
     bool m_showSendOnReturnKey;         //!< True if return key on virtual keyboard should show send, false otherwise.
+    bool m_showNativeTextField;         //!< True if the native text field should be shown, false otherwise.
 #endif
 };

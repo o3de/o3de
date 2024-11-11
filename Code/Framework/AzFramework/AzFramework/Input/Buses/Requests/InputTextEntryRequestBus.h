@@ -32,6 +32,7 @@ namespace AzFramework
             AZStd::string m_titleText;     //!< The virtual keyboard's title text
 #if defined(CARBONATED)
             bool m_showSendOnReturnKey = false; //!< Whether the return key on virtual keyboard should show send
+            bool m_showNativeTextField = false; //!< Whether the native text field should be shown
 
             float m_normalizedMinX = 0.0f; //!< The virtual keyboard's minimum x position normalized
             float m_normalizedMaxX = 0.0f; //!< The virtual keyboard's maximum x position normalized
