@@ -51,9 +51,9 @@ namespace AZ
             void SetAttenuationRadius(LightHandle handle, float attenuationRadius) override;
             void SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask) override;
 
-            const Data::Instance<RPI::Buffer> GetLightBuffer()const;
-            const Data::Instance<RPI::Buffer> GetLightPointBuffer()const;
-            uint32_t GetLightCount()const;
+            const Data::Instance<RPI::Buffer> GetLightBuffer() const override;
+            const Data::Instance<RPI::Buffer> GetLightPointBuffer() const override;
+            uint32_t GetLightCount() const override;
 
         private:
             PolygonLightFeatureProcessor(const PolygonLightFeatureProcessor&) = delete;

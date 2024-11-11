@@ -83,8 +83,8 @@ namespace AZ
             void SetUseCachedShadows(LightHandle handle, bool useCachedShadows) override;
             void SetGoboTexture(LightHandle handle, AZ::Data::Instance<AZ::RPI::Image> goboTexture) override;
 
-            const Data::Instance<RPI::Buffer>  GetLightBuffer() const;
-            uint32_t GetLightCount()const;
+            const Data::Instance<RPI::Buffer> GetLightBuffer() const override;
+            uint32_t GetLightCount() const override;
 
             // SceneNotificationBus::Handler overrides...
             void OnRenderPipelinePersistentViewChanged(
