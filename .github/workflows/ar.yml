@@ -7,7 +7,7 @@ on:
     branches:
         - main
         - development
-        - ${{ vars.STABILIZATION_BRANCH }}
+        - AR-development
 
 jobs:
     # Cache-LFS:
