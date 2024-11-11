@@ -18,10 +18,10 @@ $ndk = '"ndk;21.4.7075529" "ndk;23.1.7779620" "ndk;25.1.8937393" "ndk;25.2.95196
 
 Write-Host "Installing Android SDK packages"
 $sdkmanager = "C:\Android\android-sdk\tools\bin\sdkmanager.bat"
-Start-Process -FilePath $sdkmanager -ArgumentList $android_packages -NoNewWindow -Wait
-Start-Process -FilePath $sdkmanager -ArgumentList $googleplay_packages -NoNewWindow -Wait
-Start-Process -FilePath $sdkmanager -ArgumentList $build_tools -NoNewWindow -Wait
-Start-Process -FilePath $sdkmanager -ArgumentList $ndk -NoNewWindow -Wait
+Start-Process -FilePath $sdkmanager -ArgumentList $android_packages -RedirectStandardOutput "NUL" -RedirectStandardError "$host.Streams.Error" -NoNewWindow -Wait
+Start-Process -FilePath $sdkmanager -ArgumentList $googleplay_packages -RedirectStandardOutput "NUL" -RedirectStandardError "$host.Streams.Error" -NoNewWindow -Wait
+Start-Process -FilePath $sdkmanager -ArgumentList $build_tools -RedirectStandardOutput "NUL" -RedirectStandardError "$host.Streams.Error" -NoNewWindow -Wait
+Start-Process -FilePath $sdkmanager -ArgumentList $ndk -RedirectStandardOutput "NUL" -RedirectStandardError "$host.Streams.Error" -NoNewWindow -Wait
 # Set the NDK environment
 Install-ChocolateyEnvironmentVariable "LY_NDK_DIR" "C:\AndroidSdk\ndk\25.1.8937393" -VariableType 'Machine'
 
