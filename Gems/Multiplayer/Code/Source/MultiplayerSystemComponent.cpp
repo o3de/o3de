@@ -481,7 +481,8 @@ namespace Multiplayer
     bool MultiplayerSystemComponent::OnCreateSessionBegin(const SessionConfig& sessionConfig)
     {
         // Check if session manager has a certificate for us and pass it along if so
-        if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+        auto console = AZ::Interface<AZ::IConsole>::Get();
+        if (console != nullptr)
         {
             bool tcpUseEncryption = false;
             console->GetCvarValue("net_TcpUseEncryption", tcpUseEncryption);
@@ -501,6 +502,15 @@ namespace Multiplayer
 
         Multiplayer::MultiplayerAgentType serverType = sv_isDedicated ? MultiplayerAgentType::DedicatedServer : MultiplayerAgentType::ClientServer;
         InitializeMultiplayer(serverType);
+
+        // Load a multiplayer level if there's a session property called the "level"...
+        if (const auto& levelName = sessionConfig.m_sessionProperties.find("level");
+            console != nullptr && levelName != sessionConfig.m_sessionProperties.end())
+        {
+            AZStd::string loadLevelCommand = "loadlevel " + levelName->second;
+            console->PerformCommand(loadLevelCommand.c_str());
+        }
+
         return m_networkInterface->Listen(sessionConfig.m_port);
     }
 
