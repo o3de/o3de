@@ -103,6 +103,8 @@ jobs:
           python\get_python.bat
           echo "Setup Android SDK..."
           scripts\build\build_node\Platform\Windows\install-windows-android.ps1
+
+          "C:\\gradle\\gradle-7.0\\bin" | Out-File -FilePath "$env:GITHUB_PATH" -Append
         
       - name: Add msbuild to PATH
         uses: ilammy/msvc-dev-cmd@v1
