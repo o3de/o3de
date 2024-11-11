@@ -1,0 +1,166 @@
+name: Linux Build
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      compiler: 
+        required: true
+        type: string
+      config: 
+        required: true
+        type: string
+      image: 
+        required: true
+        type: string
+      platform: 
+        required: true
+        type: string
+      type: 
+        required: true
+        type: string
+      desktop:
+        required: false
+        type: boolean
+
+run-name: ${{ inputs.platform }} - ${{ inputs.type }}
+
+jobs:
+  Build:
+    strategy:
+      fail-fast: false
+
+    runs-on: ${{ inputs.image }}
+
+    steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@v10
+        with:
+          root-reserve-mb: 8000
+          swap-size-mb: 200
+          remove-dotnet: true
+          remove-haskell: true
+          remove-codeql: true
+          remove-docker-images: true
+            
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          show-progress: false   
+            
+      - name: Git LFS fetch
+        run: |
+          git lfs install
+          [[ "${{ inputs.type }}" == "profile" ]] && git lfs fetch --include "*.ico,*.bmp" || git lfs fetch
+          git lfs checkout
+
+      - name: Setup 3p, user, and build folders
+        run: |
+          mkdir -p .o3de build 3rdParty && ln -sf "$(pwd)/.o3de" ~/.o3de
+          
+      - name: Setup ccache
+        uses: Chocobo1/setup-ccache-action@v1
+        continue-on-error: true
+        if: always()
+        with:
+          prepend_symlinks_to_path: false
+          store_cache: false
+          restore_cache: false
+          ccache_options: |
+            max_size=10G
+            cache_dir=${{ github.workspace }}/.ccache
+
+      - name: Get last run
+        uses: dawidd6/action-download-artifact@v6
+        id: last-run-id
+        with:
+          workflow_search: true
+          workflow_conclusion: completed
+          search_artifacts: true
+          name: O3DE-${{ inputs.platform }}-build
+          dry_run: true
+          if_no_artifact_found: warn
+        
+      - name: Restore build cache
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        if: always()
+        with:
+          name: O3DE-${{ inputs.platform }}-build
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id }}
+
+      - name: Extract build
+        continue-on-error: true
+        run: |
+          echo "Current Runid: ${{ github.run_id }}"
+          echo "${{ inputs.platform }}_ARTIFACT_RUNID: ${{ vars[format('{0}_ARTIFACT_RUNID', inputs.platform)] }}"
+          echo "Last run id: ${{ fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id }}"
+          
+          tar -xvpf ${{ github.workspace }}\cache.tar
+          rm ${{ github.workspace }}\cache.tar
+
+      - name: Configure environment
+        continue-on-error: true
+        if: always()
+        run: |
+          echo "Installing dependancies"
+          pushd ./scripts/build/build_node/Platform/Linux
+          sudo ./install-ubuntu.sh
+          popd
+          echo "Getting python..."
+          ./python/get_python.sh
+
+          # If desktop is true, install desktop and x11 packages, otherwise run base packages
+          [[ "${{ inputs.desktop }}" == "true" ]] && \
+           sudo apt-get install -qq ubuntu-desktop xorg mesa-utils vulkan-tools libevdev-dev libevdev2 -y || \
+           sudo apt-get install -qq libevdev-dev libevdev2 -y
+          sudo apt -y autoremove --purge
+          sudo apt -y autoclean
+          sudo apt clean
+          df -h
+          
+      - name: Build
+        env:
+          LY_3RDPARTY_PATH: ${{ github.workspace }}/3rdParty
+          CC:  ${{ matrix.compiler == 'gcc' && 'gcc' || 'clang'   }}
+          CXX: ${{ matrix.compiler == 'gcc' && 'g++' || 'clang++' }}
+          CMAKE_C_COMPILER_LAUNCHER: ccache
+          CMAKE_CXX_COMPILER_LAUNCHER: ccache
+          PATH: "/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          DISPLAY: :0
+        run: |
+          [[ "${{ inputs.desktop }}" == "true" ]] && Xvfb :0 -screen 0 1400x1050x16 & || true
+          python/python.sh -u scripts/build/ci_build.py --platform ${{ matrix.platform }} --type ${{ matrix.type }}
+      
+      - name: Save 3P Cache
+        uses: actions/cache/save@v4.1.1
+        continue-on-error: true
+        if: (contains(github.ref, 'development') || contains(github.ref, ${{ vars.STABILIZATION_BRANCH }})) && always()
+        with:
+          path: |
+            ${{ github.workspace }}/3rdParty/packages
+            ${{ github.workspace }}/python
+          key: O3DE-${{ matrix.platform }}-3p
+
+      - name: Compress artifacts
+        continue-on-error: true
+        if: (contains(github.ref, 'development') || contains(github.ref, ${{ vars.STABILIZATION_BRANCH }}))
+        run: |
+          tar --format=posix -cvpf ${{ github.workspace }}/cache.tar \
+            .o3de/Python \
+            python \
+            3rdParty/packages \
+            AutomatedTesting \
+            .ccache
+  
+      - name: Save artifacts
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        if: (contains(github.ref, 'development') || contains(github.ref, ${{ vars.STABILIZATION_BRANCH }}))
+        with:
+          name: O3DE-${{ inputs.platform }}-build
+          compression-level: 1
+          path: |
+            ${{ github.workspace }}\cache.tar

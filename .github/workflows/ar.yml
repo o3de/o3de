@@ -23,35 +23,94 @@ jobs:
             fetch-depth: 1
             lfs: false
 
+#### Windows Build ####
     Windows-Profile:
         needs: Cache-LFS
-        uses: ./.github/workflows/windows-profile.yml
-        secrets: inherit
+        uses: ./.github/workflows/windows-build.yml
+        with:
+            compiler: msvc
+            config: profile
+            image: windows-2022
+            platform: Windows
+            type: profile
+    
     Windows-Asset:
         needs: Windows-Profile
-        uses: ./.github/workflows/windows-asset.yml
+        uses: ./.github/workflows/windows-build.yml
+        with:
+            compiler: msvc
+            config: profile
+            image: windows-2022
+            platform: Windows
+            type: asset_profile
+
     Windows-Test:
         needs: Windows-Asset
-        uses: ./.github/workflows/windows-cpu-test.yml
-        
+        uses: ./.github/workflows/windows-build.yml
+        with:
+            compiler: msvc
+            config: profile
+            image: windows-2022
+            platform: Windows
+            type: test_cpu_profile
+
+#### Linux Build ####
     Linux-Profile:
         needs: Cache-LFS
-        uses: ./.github/workflows/linux-profile.yml
-        secrets: inherit
+        uses: ./.github/workflows/linux-build.yml
+        with:
+            compiler: clang
+            config: profile
+            image: ubuntu-22.04
+            platform: Linux
+            type: profile
+
     Linux-Asset:
         needs: Linux-Profile
-        uses: ./.github/workflows/linux-asset.yml
+        uses: ./.github/workflows/linux-build.yml
+        with:
+            compiler: clang
+            config: profile
+            image: ubuntu-22.04
+            platform: Linux
+            type: asset_profile
+
     Linux-Test:
         needs: Linux-Asset
-        uses: ./.github/workflows/linux-cpu-test.yml
+        uses: ./.github/workflows/linux-build.yml
+        with:
+            compiler: clang
+            config: profile
+            image: ubuntu-22.04
+            platform: Linux
+            type: test_profile
+            desktop: true
 
+#### Android Build ####
     Android-Profile:
         needs: Cache-LFS
-        uses: ./.github/workflows/android-profile.yml
-        secrets: inherit
+        uses: ./.github/workflows/android-build.yml
+        with:
+            compiler: msvc
+            config: profile
+            image: windows-2022
+            platform: Android
+            type: profile
+
     Android-Asset:
-        needs: Cache-LFS
-        uses: ./.github/workflows/android-asset.yml
+        uses: ./.github/workflows/android-build.yml
+        with:
+            compiler: msvc
+            config: profile
+            image: windows-2022
+            platform: Android
+            type: asset_profile
+            
     Android-Gradle:
-        needs: Cache-LFS
-        uses: ./.github/workflows/android-gradle.yml
+        uses: ./.github/workflows/android-build.yml
+        with:
+            compiler: msvc
+            config: profile
+            image: windows-2022
+            platform: Android
+            type: gradle

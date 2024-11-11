@@ -1,0 +1,135 @@
+name: Android Profile
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      compiler: 
+        required: true
+        type: string
+      config: 
+        required: true
+        type: string
+      image: 
+        required: true
+        type: string
+      platform: 
+        required: true
+        type: string
+      type: 
+        required: true
+        type: string
+
+run-name: ${{ inputs.platform }} - ${{ inputs.type }}
+
+jobs:
+  Build-Profile:
+    strategy:
+      fail-fast: false
+
+    runs-on: ${{ inputs.image }}
+
+    env:
+        LY_NDK_DIR: "C:/Android/android-sdk/ndk/21.4.7075529"
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          show-progress: false   
+          
+      - name: Git LFS fetch
+        run: |
+          git lfs install
+          [[ "${{ inputs.type }}" == "profile" ]] && git lfs fetch --include "*.ico,*.bmp" || git lfs fetch
+          git lfs checkout
+
+      - name: Setup 3p, user, and build folders
+        run: |
+          "3rdParty", "build", ".o3de" | % {New-Item "${{ github.workspace }}\$_" -ItemType 'Directory' -Force}
+          ".o3de" | % {New-Item -Path $env:USERPROFILE\$_ -ItemType SymbolicLink -Target ${{ github.workspace }}\$_ -Force}
+
+      - name: Setup ccache
+        uses: Chocobo1/setup-ccache-action@v1
+        continue-on-error: true
+        if: always()
+        with:
+          windows_compile_environment: msvc
+          prepend_symlinks_to_path: false
+          store_cache: true
+          restore_cache: false
+          ccache_options: |
+            max_size=10G
+            cache_dir=${{ github.workspace }}\.ccache
+      
+      - name: Get last run
+        uses: dawidd6/action-download-artifact@v6
+        id: last-run-id
+        with:
+          workflow_search: true
+          workflow_conclusion: completed
+          search_artifacts: true
+          name: O3DE-${{ inputs.platform }}-build
+          dry_run: true
+          if_no_artifact_found: warn
+    
+      - name: Restore build cache
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        if: always()
+        with:
+          name: O3DE-${{ inputs.platform }}-build
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id }}
+
+      - name: Extract build
+        continue-on-error: true
+        run: |
+          echo "Current Runid: ${{ github.run_id }}"
+          echo "${{ inputs.platform }}_ARTIFACT_RUNID: ${{ vars[format('{0}_ARTIFACT_RUNID', inputs.platform)] }}"
+          echo "Last run id: ${{ fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id }}"
+          
+          tar -xvpf ${{ github.workspace }}\cache.tar
+          rm ${{ github.workspace }}\cache.tar
+        
+      - name: Configure environment
+        continue-on-error: true
+        env:
+          chocolateyPackageFolder: "C:\\ProgramData\\chocolatey"
+        run: |
+          echo "Installing dependancies"
+          echo "Getting python..."
+          python\get_python.bat
+          echo "Setup Android SDK..."
+          scripts\build\build_node\Platform\Windows\install-windows-android.ps1 | Out-Null
+          
+          - name: Add msbuild to PATH
+          uses: ilammy/msvc-dev-cmd@v1
+            
+      - name: Build ${{ inputs.type }}
+        env:
+          LY_3RDPARTY_PATH: ${{ github.workspace }}\3rdParty
+        run: 
+          python\python.cmd -u scripts\build\ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }} 
+      
+      - name: Compress artifacts
+        continue-on-error: true
+        if: (contains(github.ref, 'development') || contains(github.ref, ${{ vars.STABILIZATION_BRANCH }}))
+        run: |
+          tar --format=posix -cvpf ${{ github.workspace }}\cache.tar `
+            .o3de\Python `
+            python `
+            3rdParty\packages `
+            AutomatedTesting `
+            .ccache
+  
+      - name: Save artifacts
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        if: (contains(github.ref, 'development') || contains(github.ref, ${{ vars.STABILIZATION_BRANCH }}))
+        with:
+          name: O3DE-${{ inputs.platform }}-build
+          compression-level: 1
+          path: |
+            ${{ github.workspace }}\cache.tar
