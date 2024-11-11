@@ -46,14 +46,13 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
           show-progress: false   
             
-      - name: Git LFS fetch
+      - name: Git LFS pull
         run: |
           git lfs install
-          [[ "${{ inputs.type }}" == "profile" ]] && git lfs fetch --include "*.ico,*.bmp" || git lfs fetch --all
-          git lfs checkout
+          [[ "${{ inputs.type }}" == "profile" ]] && git lfs pull --include "*.ico,*.bmp" || git lfs pull
 
       - name: Setup 3p, user, and build folders
         run: |
@@ -112,7 +111,7 @@ jobs:
           echo "Getting python..."
           ./python/get_python.sh
 
-          # If desktop is true, install desktop and x11 packages, otherwise run base packages
+          # If desktop is true, install desktop and x11 packages, otherwise install base packages
           [[ "${{ inputs.desktop }}" == "true" ]] && \
            sudo apt-get install -qq ubuntu-desktop xorg mesa-utils vulkan-tools libevdev-dev libevdev2 -y || \
            sudo apt-get install -qq libevdev-dev libevdev2 -y

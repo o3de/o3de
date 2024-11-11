@@ -36,14 +36,13 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
           show-progress: false   
           
-      - name: Git LFS fetch
+      - name: Git LFS pull
         run: |
           git lfs install
-          if ("${{ inputs.type }}" -eq "profile") { git lfs fetch --include "*.ico,*.bmp" } else { git lfs fetch --all }
-          git lfs checkout
+          if ("${{ inputs.type }}" -eq "profile") { git lfs pull --include "*.ico,*.bmp" } else { git lfs pull }
 
       - name: Setup 3p, user, and build folders
         run: |
@@ -104,7 +103,11 @@ jobs:
           echo "Setup Android SDK..."
           scripts\build\build_node\Platform\Windows\install-windows-android.ps1
 
-          "C:\\gradle\\gradle-7.0\\bin" | Out-File -FilePath "$env:GITHUB_PATH" -Append
+          echo "C:/gradle/gradle-7.0/bin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+
+          gradle --version
+
+          where gradle
         
       - name: Add msbuild to PATH
         uses: ilammy/msvc-dev-cmd@v1

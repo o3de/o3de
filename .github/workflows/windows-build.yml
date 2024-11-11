@@ -33,14 +33,13 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
           show-progress: false   
           
-      - name: Git LFS fetch
+      - name: Git LFS pull
         run: |
           git lfs install
-          if ("${{ inputs.type }}" -eq "profile") { git lfs fetch --include "*.ico,*.bmp" } else { git lfs fetch --all }
-          git lfs checkout
+          if ("${{ inputs.type }}" -eq "profile") { git lfs pull --include "*.ico,*.bmp" } else { git lfs pull }
 
       - name: Setup 3p, user, and build folders
         run: |
