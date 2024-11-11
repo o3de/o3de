@@ -154,5 +154,6 @@ jobs:
         with:
           name: O3DE-${{ inputs.platform }}-build
           compression-level: 1
+          overwrite: true
           path: |
             ${{ github.workspace }}/cache.tar
