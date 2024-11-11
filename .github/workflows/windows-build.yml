@@ -39,7 +39,7 @@ jobs:
       - name: Git LFS fetch
         run: |
           git lfs install
-          [[ "${{ inputs.type }}" == "profile" ]] && git lfs fetch --include "*.ico,*.bmp" || git lfs fetch
+          if ("${{ inputs.type }}" -eq "profile") { git lfs fetch --include "*.ico,*.bmp" } else { git lfs fetch }
           git lfs checkout
 
       - name: Setup 3p, user, and build folders
