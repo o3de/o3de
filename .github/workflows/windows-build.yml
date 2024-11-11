@@ -54,7 +54,7 @@ jobs:
         with:
           windows_compile_environment: msvc
           prepend_symlinks_to_path: false
-          store_cache: true
+          store_cache: false
           restore_cache: false
           ccache_options: |
             max_size=10G

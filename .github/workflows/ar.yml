@@ -96,6 +96,7 @@ jobs:
 
     Android-Asset:
         uses: ./.github/workflows/android-build.yml
+        needs: Android-Profile
         with:
             compiler: msvc
             config: profile
