@@ -124,8 +124,8 @@ jobs:
       - name: Build
         env:
           LY_3RDPARTY_PATH: ${{ github.workspace }}/3rdParty
-          CC:  ${{ matrix.compiler == 'gcc' && 'gcc' || 'clang'   }}
-          CXX: ${{ matrix.compiler == 'gcc' && 'g++' || 'clang++' }}
+          CC:  ${{ inputs.compiler == 'gcc' && 'gcc' || 'clang'   }}
+          CXX: ${{ inputs.compiler == 'gcc' && 'g++' || 'clang++' }}
           CMAKE_C_COMPILER_LAUNCHER: ccache
           CMAKE_CXX_COMPILER_LAUNCHER: ccache
           DISPLAY: :0
@@ -134,7 +134,7 @@ jobs:
           if [ "${{ inputs.desktop }}" == "true" ]; then 
             Xvfb :0 -screen 0 1400x1050x16 &
           fi
-          python/python.sh -u scripts/build/ci_build.py --platform ${{ matrix.platform }} --type ${{ matrix.type }}
+          python/python.sh -u scripts/build/ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }}
       
       - name: Save 3P Cache
         uses: actions/cache/save@v4.1.1
@@ -144,7 +144,7 @@ jobs:
           path: |
             ${{ github.workspace }}/3rdParty/packages
             ${{ github.workspace }}/python
-          key: O3DE-${{ matrix.platform }}-3p
+          key: O3DE-${{ inputs.platform }}-3p
 
       - name: Compress artifacts
         continue-on-error: true
