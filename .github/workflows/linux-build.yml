@@ -98,8 +98,8 @@ jobs:
           echo "${{ inputs.platform }}_ARTIFACT_RUNID: ${{ vars[format('{0}_ARTIFACT_RUNID', inputs.platform)] }}"
           echo "Last run id: ${{ fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id }}"
           
-          tar -xvpf ${{ github.workspace }}\cache.tar
-          rm ${{ github.workspace }}\cache.tar
+          tar -xvpf ${{ github.workspace }}/cache.tar
+          rm ${{ github.workspace }}/cache.tar
 
       - name: Configure environment
         continue-on-error: true
@@ -165,4 +165,4 @@ jobs:
           name: O3DE-${{ inputs.platform }}-build
           compression-level: 1
           path: |
-            ${{ github.workspace }}\cache.tar
+            ${{ github.workspace }}/cache.tar

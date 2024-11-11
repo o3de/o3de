@@ -23,7 +23,7 @@ on:
 run-name: ${{ inputs.platform }} - ${{ inputs.type }}
 
 jobs:
-  Build-Profile:
+  Build:
     strategy:
       fail-fast: false
 
@@ -104,8 +104,8 @@ jobs:
           echo "Setup Android SDK..."
           scripts\build\build_node\Platform\Windows\install-windows-android.ps1 | Out-Null
           
-          - name: Add msbuild to PATH
-          uses: ilammy/msvc-dev-cmd@v1
+      - name: Add msbuild to PATH
+        uses: ilammy/msvc-dev-cmd@v1
             
       - name: Build ${{ inputs.type }}
         env:
