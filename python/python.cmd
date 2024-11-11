@@ -91,7 +91,7 @@ REM Execute the python call from the arguments within the python venv environmen
 
 call %PYTHON_VENV_ACTIVATE%
 
-call "%PYTHON_VENV_PYTHON%" %PYTHON_ARGS%
+call "%PYTHON_VENV_PYTHON%" -B %PYTHON_ARGS%
 SET PYTHON_RESULT=%ERRORLEVEL%
 
 call %PYTHON_VENV_DEACTIVATE%

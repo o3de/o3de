@@ -1171,7 +1171,7 @@ function(ly_setup_o3de_install)
 
     if("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
         ly_install(FILES
-            ${LY_ROOT_FOLDER}/Code/Tools/ProjectManager/Resources/o3de.svg
+            ${LY_ROOT_FOLDER}/Code/Tools/ProjectManager/Resources/o3de_desktop.svg
             DESTINATION .
             COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
         )
