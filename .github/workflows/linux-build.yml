@@ -75,6 +75,8 @@ jobs:
         uses: dawidd6/action-download-artifact@v6
         id: last-run-id
         with:
+          workflow_search: true
+          workflow_conclusion: ""
           search_artifacts: true
           name: O3DE-${{ inputs.platform }}-build
           dry_run: true
