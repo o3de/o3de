@@ -7,7 +7,7 @@ on:
     branches:
         - main
         - development
-# - ${{ vars.STABILIZATION_BRANCH }}
+        - ${{ vars.STABILIZATION_BRANCH }}
 
 jobs:
     # Cache-LFS:
@@ -116,7 +116,7 @@ jobs:
         uses: ./.github/workflows/android-build.yml
         with:
             compiler: msvc
-            config: profile
+            config: gradle
             image: windows-2022
             platform: Android
             type: gradle

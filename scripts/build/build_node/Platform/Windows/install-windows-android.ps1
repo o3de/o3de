@@ -4,6 +4,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 #>
+Import-Module C:\ProgramData\chocolatey\helpers\chocolateyInstaller.psm1 
 
 Write-Host "Installing Android SDK"
 choco install -y android-sdk
@@ -29,7 +30,7 @@ $gradle_version = '7.0'
 $packageName = 'gradle'
 $checksum = '81003F83B0056D20EEDF48CDDD4F52A9813163D4BA185BCF8ABD34B8EEEA4CBD'
 $url = "https://services.gradle.org/distributions/gradle-$gradle_version-all.zip"
-$installDir = "C:\"
+$installDir = "C:\Gradle"
 
 Install-ChocolateyZipPackage $packageName $url $installDir -Checksum $checksum -ChecksumType 'sha256'
 

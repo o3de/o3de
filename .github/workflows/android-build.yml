@@ -70,7 +70,7 @@ jobs:
           workflow_search: true
           workflow_conclusion: ""
           search_artifacts: true
-          name: O3DE-${{ inputs.platform }}-build
+          name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
           dry_run: true
           if_no_artifact_found: warn
     
@@ -79,7 +79,7 @@ jobs:
         continue-on-error: true
         if: always()
         with:
-          name: O3DE-${{ inputs.platform }}-build
+          name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id }}
 
@@ -129,7 +129,7 @@ jobs:
         continue-on-error: true
         if: (contains(github.ref, 'development') || contains(github.ref, ${{ vars.STABILIZATION_BRANCH }}))
         with:
-          name: O3DE-${{ inputs.platform }}-build
+          name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
           compression-level: 1
           overwrite: true
           path: |
