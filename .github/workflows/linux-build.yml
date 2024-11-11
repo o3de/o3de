@@ -52,7 +52,7 @@ jobs:
       - name: Git LFS pull
         run: |
           git lfs install
-          [[ "${{ inputs.type }}" == "profile" ]] && git lfs pull --include "*.ico,*.bmp" || git lfs pull
+          [[ "${{ inputs.type }}" == "profile" ]] && git lfs pull --include "*.ico,*.bmp" || git lfs pull --all
 
       - name: Setup 3p, user, and build folders
         run: |
@@ -84,7 +84,7 @@ jobs:
       - name: Restore artifact cache
         uses: actions/download-artifact@v4
         continue-on-error: true
-        if: always()
+        if: ${{ steps.last-run-id.outputs.artifacts != '[]' }}
         with:
           name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -102,7 +102,6 @@ jobs:
 
       - name: Configure environment
         continue-on-error: true
-        if: always()
         run: |
           echo "Installing dependancies"
           pushd ./scripts/build/build_node/Platform/Linux

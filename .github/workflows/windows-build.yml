@@ -39,7 +39,7 @@ jobs:
       - name: Git LFS pull
         run: |
           git lfs install
-          if ("${{ inputs.type }}" -eq "profile") { git lfs pull --include "*.ico,*.bmp" } else { git lfs pull }
+          if ("${{ inputs.type }}" -eq "profile") { git lfs pull --include "*.ico,*.bmp" } else { git lfs pull --all }
 
       - name: Setup 3p, user, and build folders
         run: |
@@ -73,7 +73,7 @@ jobs:
       - name: Restore artifact cache
         uses: actions/download-artifact@v4
         continue-on-error: true
-        if: always()
+        if: ${{ steps.last-run-id.outputs.artifacts != '[]' }}
         with:
           name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
           github-token: ${{ secrets.GITHUB_TOKEN }}

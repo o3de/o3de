@@ -107,7 +107,7 @@ jobs:
         uses: ./.github/workflows/android-build.yml
         with:
             compiler: msvc
-            config: profile
+            config: asset_profile
             image: windows-2022
             platform: Android
             type: asset_profile
