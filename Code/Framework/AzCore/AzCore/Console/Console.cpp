@@ -39,6 +39,9 @@ namespace AZ
 
     Console::Console()
         : m_head(nullptr)
+#if defined (CARBONATED)
+        , m_enableToDispatchConsoleCommands(false)
+#endif
     {
     }
 
@@ -238,6 +241,14 @@ namespace AZ
     {
         m_deferredCommands = {};
     }
+
+#if defined (CARBONATED)
+    void Console::EnableToDispatchConsoleCommands()
+    {
+        AZLOG_INFO("Number of registered commands : %lu", m_commands.size());
+        m_enableToDispatchConsoleCommands = true;
+    }
+#endif
 
     bool Console::HasCommand(AZStd::string_view command, ConsoleFunctorFlags ignoreAnyFlags)
     {
@@ -469,6 +480,13 @@ namespace AZ
         ConsoleFunctorFlags requiredClear
     )
     {
+#if defined (CARBONATED)
+        if (!m_enableToDispatchConsoleCommands)
+        {
+            return false;
+        }
+#endif
+
         // incoming commands are assumed to be in the "C" locale as they might be from portable data files
         AZ::Locale::ScopedSerializationLocale scopedLocale;
 
