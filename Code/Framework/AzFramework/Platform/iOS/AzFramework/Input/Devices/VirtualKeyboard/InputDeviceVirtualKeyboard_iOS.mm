@@ -217,16 +217,6 @@ namespace AzFramework
 
         // Add something to the text field so delete works.
         m_textField.text = @" ";
-
-#if defined(CARBONATED)
-        if (m_textFieldDelegate->m_showNativeTextField)
-        {
-            m_textField.autocorrectionType = UITextAutocorrectionTypeYes;
-            m_textField.hidden = NO;
-            m_textField.text = @"";
-            m_textField.textColor = [UIColor whiteColor];
-        }
-#endif
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -308,6 +298,10 @@ namespace AzFramework
 
             m_textField.frame = textFieldRect;
             m_textField.text = [NSString stringWithUTF8String:options.m_initialText.c_str()];
+
+            m_textField.autocorrectionType = UITextAutocorrectionTypeYes;
+            m_textField.hidden = NO;
+            m_textField.textColor = [UIColor whiteColor];
         }
 
         if (options.m_showSendOnReturnKey)
