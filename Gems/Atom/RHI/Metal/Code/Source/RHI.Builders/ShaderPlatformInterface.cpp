@@ -14,6 +14,7 @@
 #include <Atom/RHI.Reflect/Metal/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/Metal/ShaderStageFunction.h>
 #include <Atom/RHI/RHIUtils.h>
+#include <AzCore/std/string/regex.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 namespace AZ
@@ -525,8 +526,10 @@ namespace AZ
                 finalMetalSLStr.insert(startOfShaderPos + startOfShaderTag.length() + 1, structuredBufferTempStructs);
             }
 
-            // optimization off attribute "[[clang::optnone]]" added by SPIRV-Cross makes the render 20 times slower
-            // we drop the attribute here, but calculation precision might suffer causing z-fighting
+            //spirv-cross introduced the keyword [[clang::optnone]] across shader functions which cancels all optimizations
+            //for the tagged method. This is suppose to be tied to the keyword 'precise' but is contaminating areas outside its usage.
+            //Removing this manually until a better solution is established.
+            //GHI for ref - https://github.com/KhronosGroup/SPIRV-Cross/issues/1999
             finalMetalSLStr = AZStd::regex_replace(finalMetalSLStr, AZStd::regex("\\[\\[clang::optnone\\]\\]"), "");
 
             compiledShader = AZStd::vector<char>(finalMetalSLStr.begin(), finalMetalSLStr.end());
