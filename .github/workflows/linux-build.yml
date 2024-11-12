@@ -22,6 +22,9 @@ on:
       desktop:
         required: false
         type: boolean
+      last-artifact: 
+        required: false
+        type: boolean
 
 run-name: ${{ inputs.platform }} - ${{ inputs.type }}
 
@@ -46,13 +49,13 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
           show-progress: false   
             
       - name: Git LFS pull
         run: |
           git lfs install
-          [[ "${{ inputs.type }}" == "profile" ]] && git lfs fetch --include "*.ico,*.bmp" || git lfs fetch --all
+          # [[ "${{ inputs.type }}" == "profile" ]] && git lfs fetch --include "*.ico,*.bmp" || git lfs fetch --all
+          git lfs fetch --all
           git lfs checkout
 
       - name: Setup 3p, user, and build folders
@@ -85,11 +88,10 @@ jobs:
       - name: Restore artifact cache
         uses: actions/download-artifact@v4
         continue-on-error: true
-        if: ${{ steps.last-run-id.outputs.artifacts != '[]' }}
         with:
           name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ inputs.type == 'profile' && fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id || github.run_id }}
+          run-id: ${{ inputs.last-artifact == 'true' && fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id || github.run_id }}
 
       - name: Extract artifact
         continue-on-error: true
