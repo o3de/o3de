@@ -885,7 +885,8 @@ namespace AZ
             }
         }
 
-        void Pass::DeclareAttachmentsToFrameGraph(RHI::FrameGraphInterface frameGraph, PassSlotType slotType) const
+        void Pass::DeclareAttachmentsToFrameGraph(
+            RHI::FrameGraphInterface frameGraph, PassSlotType slotType, RHI::ScopeAttachmentAccess accessMask) const
         {
             for (size_t slotIndex = 0; slotIndex < m_attachmentBindings.size(); ++slotIndex)
             {
@@ -921,7 +922,7 @@ namespace AZ
                                 {
                                     frameGraph.UseAttachment(
                                         imageScopeAttachmentDescriptor,
-                                        attachmentBinding.GetAttachmentAccess(),
+                                        attachmentBinding.GetAttachmentAccess() & accessMask,
                                         attachmentBinding.m_scopeAttachmentUsage,
                                         attachmentBinding.m_scopeAttachmentStage);
                                 }
@@ -931,7 +932,7 @@ namespace AZ
                             {
                                 frameGraph.UseAttachment(
                                     attachmentBinding.m_unifiedScopeDesc.GetAsBuffer(),
-                                    attachmentBinding.GetAttachmentAccess(),
+                                    attachmentBinding.GetAttachmentAccess() & accessMask,
                                     attachmentBinding.m_scopeAttachmentUsage,
                                     attachmentBinding.m_scopeAttachmentStage);
                                 break;

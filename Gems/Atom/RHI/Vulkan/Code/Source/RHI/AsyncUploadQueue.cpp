@@ -293,6 +293,7 @@ namespace AZ
                                 copyDescriptor.m_sourceBytesPerImage = stagingSlicePitch;
                                 copyDescriptor.m_sourceSize = subresourceLayout.m_size;
                                 copyDescriptor.m_sourceSize.m_depth = 1;
+                                copyDescriptor.m_sourceFormat = image->GetDescriptor().m_format;
                                 copyDescriptor.m_destinationImage = image;
                                 copyDescriptor.m_destinationSubresource.m_mipSlice = curMip;
                                 copyDescriptor.m_destinationSubresource.m_arraySlice = static_cast<uint16_t>(arraySlice);
@@ -325,6 +326,7 @@ namespace AZ
                                 copyDescriptor.m_sourceBytesPerImage = stagingSlicePitch;
                                 copyDescriptor.m_sourceSize = subresourceLayout.m_size;
                                 copyDescriptor.m_sourceSize.m_depth = 1;
+                                copyDescriptor.m_sourceFormat = image->GetDescriptor().m_format;
                                 copyDescriptor.m_destinationImage = image;
                                 copyDescriptor.m_destinationSubresource.m_mipSlice = curMip;
                                 copyDescriptor.m_destinationSubresource.m_arraySlice = static_cast<uint16_t>(arraySlice);

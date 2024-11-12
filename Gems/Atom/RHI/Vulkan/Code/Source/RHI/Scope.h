@@ -182,6 +182,10 @@ namespace AZ
             // Returns true if a barrier can be converted to an implicit subpass barrier.
             bool CanOptimizeBarrier(const Barrier& barrier, BarrierSlot slot) const;
 
+            // Returns true if the barriers in the scope have layout transitions that are incompatible with automatic layout transition of
+            // a renderpass and thus cannot be optimized.
+            bool AreDepthStencilLayoutsCompatible(const Barrier& barrier, BarrierSlot slot) const;
+
             template<class T>
             const Barrier QueueBarrierInternal(
                 RHI::ScopeAttachment* attachment,
