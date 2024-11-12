@@ -588,7 +588,6 @@ set(FILES
     Serialization/Json/BoolSerializer.h
     Serialization/Json/BoolSerializer.cpp
     Serialization/Json/ByteStreamSerializer.h
-    Serialization/Json/ByteStreamSerializer.cpp
     Serialization/Json/CastingHelpers.h
     Serialization/Json/DoubleSerializer.h
     Serialization/Json/DoubleSerializer.cpp
