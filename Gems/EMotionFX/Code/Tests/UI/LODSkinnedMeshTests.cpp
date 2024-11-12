@@ -104,7 +104,7 @@ namespace EMotionFX
         QLabel* GetDefaultLabel() { return m_defaultLabel; }
     };
 
-    INSTANTIATE_TEST_CASE_P(LODSkinnedMeshFixtureTests, LODSkinnedMeshFixture, ::testing::Range<int>(1, 7));
+    INSTANTIATE_TEST_SUITE_P(LODSkinnedMeshFixtureTests, LODSkinnedMeshFixture, ::testing::Range<int>(1, 7));
 
     // TODO: Re-enabled the test when we can access viewport context in the SimpleLODComponent.
     TEST_F(LODSkinnedMeshColorFixture, DISABLED_CheckLODDistanceChange)

@@ -311,7 +311,7 @@ namespace UnitTest
         HaltCollaborators();
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All, ModularViewportCameraControllerDeltaTimeParamFixture, testing::Values(1.0f / 60.0f, 1.0f / 50.0f, 1.0f / 30.0f));
 
     TEST_F(ModularViewportCameraControllerFixture, MouseMovementOrientatesCameraWhenCursorIsCaptured)

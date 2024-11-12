@@ -8,8 +8,8 @@
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     set(GOOGLETEST_GIT_REPOSITORY "https://github.com/google/googletest.git")
-    set(GOOGLETEST_GIT_TAG 2fe3bd994b3189899d93f1d5a881e725e046fdc2) # release-1.8.1
-    set(GOOGLETEST_VERSION_STRING "release-1.8.1")
+    set(GOOGLETEST_GIT_TAG b514bdc898e2951020cbdca1304b75f5950d1f59) # release-1.15.2
+    set(GOOGLETEST_VERSION_STRING "release-1.15.2")
 
     o3de_pal_dir(pal_aztest_dir ${CMAKE_CURRENT_LIST_DIR}/AzTest/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
 

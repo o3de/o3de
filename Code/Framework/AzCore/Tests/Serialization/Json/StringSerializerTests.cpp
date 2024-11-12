@@ -58,7 +58,7 @@ namespace JsonSerializationTests
         StringTestDescription<AZStd::string, AZ::JsonStringSerializer>,
         StringTestDescription<AZ::OSString, AZ::JsonOSStringSerializer>
     >;
-    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_CASE_P(String, JsonSerializerConformityTests, StringConformityTestTypes));
+    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_SUITE_P(String, JsonSerializerConformityTests, StringConformityTestTypes));
 
     template<typename> struct SerializerInfo {};
 
@@ -98,7 +98,7 @@ namespace JsonSerializationTests
     using StringSerializationTypes = ::testing::Types<
         AZ::JsonStringSerializer,
         AZ::JsonOSStringSerializer >;
-    TYPED_TEST_CASE(TypedJsonStringSerializerTests, StringSerializationTypes);
+    TYPED_TEST_SUITE(TypedJsonStringSerializerTests, StringSerializationTypes);
 
     TYPED_TEST(TypedJsonStringSerializerTests, Load_FalseBoolean_FalseAsString)
     {

@@ -1559,7 +1559,7 @@ namespace UnitTest
     {};
 
     using StringViewElementTypes = ::testing::Types<char, wchar_t>;
-    TYPED_TEST_CASE(BasicStringViewConstexprFixture, StringViewElementTypes);
+    TYPED_TEST_SUITE(BasicStringViewConstexprFixture, StringViewElementTypes);
     TYPED_TEST(BasicStringViewConstexprFixture, StringView_DefaultConstructorsIsConstexpr)
     {
         constexpr AZStd::basic_string_view<TypeParam> defaultView1;
@@ -2518,7 +2518,7 @@ namespace UnitTest
         : public LeakDetectionFixture
     {};
     using StringTypesToTest = ::testing::Types<AZStd::string_view, AZStd::string, AZStd::fixed_string<1024>>;
-    TYPED_TEST_CASE(ImmutableStringFunctionsFixture, StringTypesToTest);
+    TYPED_TEST_SUITE(ImmutableStringFunctionsFixture, StringTypesToTest);
 
     TYPED_TEST(ImmutableStringFunctionsFixture, Contains_Succeeds)
     {
@@ -2553,7 +2553,7 @@ namespace UnitTest
     };
 
     using StringFormatTypesToTest = ::testing::Types<AZStd::string>; //, AZStd::wstring>;
-    TYPED_TEST_CASE(StringFormatFixture, StringFormatTypesToTest);
+    TYPED_TEST_SUITE(StringFormatFixture, StringFormatTypesToTest);
 
     TYPED_TEST(StringFormatFixture, CanFormatStringLongerThan2048Chars)
     {
@@ -2568,7 +2568,7 @@ namespace UnitTest
     {};
 
     using StringTypeWithRangeFunctions = ::testing::Types<AZStd::string, AZStd::fixed_string<32>>;
-    TYPED_TEST_CASE(StringTypeFixture, StringTypeWithRangeFunctions);
+    TYPED_TEST_SUITE(StringTypeFixture, StringTypeWithRangeFunctions);
 
     TYPED_TEST(StringTypeFixture, RangeConstructor_Succeeds)
     {

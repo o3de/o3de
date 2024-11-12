@@ -27,7 +27,7 @@ namespace MCore
     }
 
     // same test cases in QuaternionTests.cpp AngleRadianTestFixtureZYX
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         MATH_AZCoreConversions,
         AngleRadianTestFixtureXYZ,
         ::testing::Values(

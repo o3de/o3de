@@ -294,7 +294,7 @@ namespace EMotionFX
         recording->Destroy();
     }
 
-    INSTANTIATE_TEST_CASE_P(DISABLED_TestPoses, PoseComparisonFixture,
+    INSTANTIATE_TEST_SUITE_P(DISABLED_TestPoses, PoseComparisonFixture,
         ::testing::Values(
             PoseComparisonFixtureParams (
                 "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.actor",
@@ -311,7 +311,7 @@ namespace EMotionFX
         )
     );
 
-    INSTANTIATE_TEST_CASE_P(DISABLED_TestPoseComparison, TestPoseComparisonFixture,
+    INSTANTIATE_TEST_SUITE_P(DISABLED_TestPoseComparison, TestPoseComparisonFixture,
         ::testing::Values(
             PoseComparisonFixtureParams (
                 "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.actor",

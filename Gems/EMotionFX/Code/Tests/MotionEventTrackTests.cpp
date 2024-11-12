@@ -884,6 +884,6 @@ namespace EMotionFX
         }
     };
 
-    INSTANTIATE_TEST_CASE_P(TestExtractProcessEvents, TestExtractProcessEventsFixture,
+    INSTANTIATE_TEST_SUITE_P(TestExtractProcessEvents, TestExtractProcessEventsFixture,
         ::testing::ValuesIn(extractEventTestData));
 } // end namespace EMotionFX
