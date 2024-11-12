@@ -31,22 +31,20 @@ jobs:
       fail-fast: false
 
     runs-on: ${{ inputs.image }}
-
-    env:
-        LY_NDK_DIR: "C:/Android/android-sdk/ndk/21.4.7075529"
-
+        
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          show-progress: false   
+          show-progress: false
+          lfs: true
           
-      - name: Git LFS pull
-        run: |
-          git lfs install
-          # if ("${{ inputs.type }}" -eq "profile") { git lfs fetch --include "*.ico,*.bmp" } else { git lfs fetch --all }
-          git lfs fetch --all
-          git lfs checkout
+      # - name: Git LFS pull
+      #   run: |
+      #     git lfs install
+      #     # if ("${{ inputs.type }}" -eq "profile") { git lfs fetch --include "*.ico,*.bmp" } else { git lfs fetch --all }
+      #     git lfs fetch --all
+      #     git lfs checkout
 
       - name: Setup 3p, user, and build folders
         run: |
@@ -107,9 +105,8 @@ jobs:
           scripts\build\build_node\Platform\Windows\install-windows-android.ps1
 
           echo "C:\gradle\gradle-7.0\bin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
-          echo "TEMP=$env:USERPROFILE\AppData\Local\Temp" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
-          dir C:\gradle\gradle-7.0\bin
-          gradle --version
+          echo "TEMP=${{ github.workspace }}\Temp" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
+          echo "TMP=${{ github.workspace }}\Temp" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
         
       - name: Add msbuild to PATH
         uses: ilammy/msvc-dev-cmd@v1
@@ -117,6 +114,7 @@ jobs:
       - name: Build ${{ inputs.type }}
         env:
           LY_3RDPARTY_PATH: ${{ github.workspace }}\3rdParty
+          LY_NDK_DIR: C:\Android\android-sdk\ndk\21.4.7075529 
         run: 
           python\python.cmd -u scripts\build\ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }} 
       
