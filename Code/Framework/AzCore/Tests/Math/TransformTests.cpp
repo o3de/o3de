@@ -186,6 +186,23 @@ namespace UnitTest
 
     INSTANTIATE_TEST_CASE_P(MATH_Transform, TransformCreateLookAtFixture, ::testing::ValuesIn(MathTestData::Axes));
 
+    using TransformFromMatrixFixture = ::testing::TestWithParam<AZ::Matrix3x4>;
+
+    TEST_P(TransformFromMatrixFixture, ReconstructMatrixFromRetrievedTransformScale)
+    {
+        AZ::Matrix3x4 matrix = GetParam();
+        AZ::Transform retrievedTransform = AZ::Transform::CreateFromMatrix3x4(matrix);
+        retrievedTransform.ExtractUniformScale();
+        AZ::Vector3 retrievedNonUniformScale = matrix.RetrieveScale();
+
+        AZ::Matrix3x4 reconstructedMatrix = AZ::Matrix3x4::CreateFromTransform(retrievedTransform);
+        reconstructedMatrix.MultiplyByScale(retrievedNonUniformScale);
+
+        EXPECT_THAT(matrix, IsClose(reconstructedMatrix));
+    }
+
+    INSTANTIATE_TEST_CASE_P(MATH_Transform, TransformFromMatrixFixture, ::testing::ValuesIn(MathTestData::NonOrthogonalMatrix3x4s));
+
     TEST(MATH_Transform, CreateLookAtDegenerateCases)
     {
         const AZ::Vector3 from(2.5f, 0.2f, 3.6f);
