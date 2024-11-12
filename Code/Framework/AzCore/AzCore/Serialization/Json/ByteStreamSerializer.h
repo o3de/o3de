@@ -30,7 +30,10 @@ namespace AZ
         AZ_CLASS_ALLOCATOR(JsonByteStreamSerializer, AZ::SystemAllocator, 0);
 
         JsonSerializationResult::Result Load(
-            void* outputValue, const Uuid& outputValueTypeId, const rapidjson::Value& inputValue, JsonDeserializerContext& context) override
+            void* outputValue,
+            [[maybe_unused]] const Uuid& outputValueTypeId,
+            const rapidjson::Value& inputValue,
+            JsonDeserializerContext& context) override
         {
             using JsonSerializationResult::Outcomes;
             using JsonSerializationResult::Tasks;
@@ -82,7 +85,7 @@ namespace AZ
             rapidjson::Value& outputValue,
             const void* inputValue,
             const void* defaultValue,
-            const Uuid& valueTypeId,
+            [[maybe_unused]] const Uuid& valueTypeId,
             JsonSerializerContext& context) override
         {
             using JsonSerializationResult::Outcomes;
