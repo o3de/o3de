@@ -22,5 +22,7 @@
           "type": "Vertex"
         }
       ]
-    }
+    },
+    
+    "DisabledRHIBackends": ["webgpu"]
 }

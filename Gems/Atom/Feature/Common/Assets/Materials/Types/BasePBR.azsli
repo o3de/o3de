@@ -10,6 +10,7 @@
     
 //TODO(MaterialPipeline): Inline the MaterialSrg files since they aren't reused.
 //TODO(MaterialPipeline): Try removing different parts of the SRG and see how hard/easy it is to customize the surface function.
+#include <Atom/Features/PBR/LightingDefines.azsli>
 #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_MaterialSrg.azsli>
 
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>

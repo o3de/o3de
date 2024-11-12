@@ -30,7 +30,7 @@
 
     struct VsOutput
     {
-        precise linear centroid float4 position : SV_Position;
+        AZ_PRECISION_POSITION_CENTROID float4 position : SV_Position;
         float3 normal: NORMAL;
         float3 worldPosition : UV0;
     };

@@ -237,6 +237,7 @@ namespace AZ
                             descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
                             break;
 
+                        case RHI::ShaderInputImageAccess::Write:
                         case RHI::ShaderInputImageAccess::ReadWrite:
                             descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
                             break;
@@ -303,6 +304,7 @@ namespace AZ
                         descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
                         break;
 
+                    case RHI::ShaderInputImageAccess::Write:
                     case RHI::ShaderInputImageAccess::ReadWrite:
                         descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
                         break;

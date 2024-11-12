@@ -10,6 +10,6 @@
             "type" : "Compute"
         }
         ]
-    }
-
+    },
+    "DisabledRHIBackends": ["webgpu"]
 }

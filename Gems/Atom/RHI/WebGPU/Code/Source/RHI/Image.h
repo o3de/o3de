@@ -9,6 +9,7 @@
 
 #include <Atom/RHI/AsyncWorkQueue.h>
 #include <Atom/RHI/DeviceImage.h>
+#include <RHI/Fence.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
 namespace AZ::WebGPU
@@ -35,8 +36,8 @@ namespace AZ::WebGPU
         wgpu::Texture& GetNativeTexture();
         const wgpu::Texture& GetNativeTexture() const;
 
-        void SetUploadHandle(const RHI::AsyncWorkHandle& handle);
-        const RHI::AsyncWorkHandle& GetUploadHandle() const;
+        void SetUploadFence(RHI::Ptr<Fence> uploadFence);
+        RHI::Ptr<Fence> GetUploadFence() const;
 
         uint16_t GetStreamedMipLevel() const;
         void SetStreamedMipLevel(uint16_t mipLevel);
@@ -70,8 +71,8 @@ namespace AZ::WebGPU
         //! Native texture
         wgpu::Texture m_wgpuTexture = nullptr;
 
-        // Handle for uploading mip map data to the image.
-        RHI::AsyncWorkHandle m_uploadHandle;
+        // Fence for uploading mip map data to the image.
+        RHI::Ptr<Fence> m_uploadFence;
 
         // Tracking the actual mip level data uploaded. It's also used for invalidate image view.
         uint16_t m_streamedMipLevel = 0;

@@ -37,7 +37,7 @@ namespace AZ
             desc.m_byteCount = sizeof(float);
             desc.m_elementSize = aznumeric_cast<uint32_t>(desc.m_byteCount);
             desc.m_bufferData = nullptr;
-            desc.m_elementFormat = RHI::Format::R32_FLOAT;
+            desc.m_elementFormat = RHI::Format::Unknown;
             m_buffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
         }
 

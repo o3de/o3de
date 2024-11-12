@@ -9,6 +9,14 @@
 // --- Static Options Available ---
 // SKYBOX_TWO_OUTPUTS - Skybox renders to two rendertargets instead of one (SkyBox_TwoOutputs.pass writes to specular and reflection targets)
 
+#ifndef ENABLE_PHYSICAL_SKY
+#define ENABLE_PHYSICAL_SKY              1
+#endif
+
+#ifndef ENABLE_MERGE_FILMIC_TONEMAP
+#define ENABLE_MERGE_FILMIC_TONEMAP              0
+#endif
+
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
 #include <Atom/Features/PostProcessing/Tonemap.azsli>
@@ -17,14 +25,6 @@
 
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
-
-#ifndef ENABLE_PHYSICAL_SKY
-#define ENABLE_PHYSICAL_SKY              1
-#endif
-
-#ifndef ENABLE_MERGE_FILMIC_TONEMAP
-#define ENABLE_MERGE_FILMIC_TONEMAP              0
-#endif
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {

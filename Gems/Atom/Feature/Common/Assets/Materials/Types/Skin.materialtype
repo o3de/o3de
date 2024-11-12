@@ -164,6 +164,7 @@
     },
     "lightingModel": "Skin",
     "materialShaderCode": "Skin.azsli",
+    "disabledRHIBackends": ["webgpu"],
     "functors": [
         {
             "type": "Lua",

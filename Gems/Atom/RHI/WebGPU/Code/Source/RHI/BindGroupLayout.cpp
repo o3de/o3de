@@ -44,18 +44,25 @@ namespace AZ::WebGPU
         return m_shaderResourceGroupLayout.get();
     }
 
-    const wgpu::BindGroupLayoutEntry& BindGroupLayout::GetEntry(const uint32_t index) const
+    const wgpu::BindGroupLayoutEntry& BindGroupLayout::GetEntryByBinding(const uint32_t binding) const
     {
-        return m_wgpuEntries[index];
+        static wgpu::BindGroupLayoutEntry nulllEntry{};
+        auto it = AZStd::find_if(
+            m_wgpuEntries.begin(),
+            m_wgpuEntries.end(),
+            [&](const wgpu::BindGroupLayoutEntry& entry)
+            {
+                return entry.binding == binding;
+            });
+        return it == m_wgpuEntries.end() ? nulllEntry : *it;
     }
 
     RHI::ResultCode BindGroupLayout::Init(Device& device, const Descriptor& descriptor)
     {
         Base::Init(device);
         m_shaderResourceGroupLayout = descriptor.m_shaderResouceGroupLayout;
-        m_useDynamicOffset = descriptor.m_useDynamicBuffer;
 
-        const RHI::ResultCode result = BuildNativeDescriptorSetLayout();
+        const RHI::ResultCode result = BuildNativeDescriptorSetLayout(descriptor);
         RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
         // Name the descriptor layout from the SRG layout
@@ -78,21 +85,21 @@ namespace AZ::WebGPU
         Base::Shutdown();
     }
 
-    RHI::ResultCode BindGroupLayout::BuildNativeDescriptorSetLayout()
+    RHI::ResultCode BindGroupLayout::BuildNativeDescriptorSetLayout(const Descriptor& descriptor)
     {
-        const RHI::ResultCode buildResult = BuildDescriptorSetLayoutBindings();
+        const RHI::ResultCode buildResult = BuildBindGroupLayoutBindings(descriptor);
         RETURN_RESULT_IF_UNSUCCESSFUL(buildResult);
 
-        wgpu::BindGroupLayoutDescriptor descriptor = {};
-        descriptor.entryCount = m_wgpuEntries.size();
-        descriptor.entries = m_wgpuEntries.data();
-        descriptor.label = GetName().GetCStr();
-        m_wgpuBindGroupLayout = static_cast<Device&>(GetDevice()).GetNativeDevice().CreateBindGroupLayout(&descriptor);
+        wgpu::BindGroupLayoutDescriptor wgpuDescriptor = {};
+        wgpuDescriptor.entryCount = m_wgpuEntries.size();
+        wgpuDescriptor.entries = m_wgpuEntries.data();
+        wgpuDescriptor.label = GetName().GetCStr();
+        m_wgpuBindGroupLayout = static_cast<Device&>(GetDevice()).GetNativeDevice().CreateBindGroupLayout(&wgpuDescriptor);
         AZ_Assert(m_wgpuBindGroupLayout, "Failed to create BindGroupLayout");
         return m_wgpuBindGroupLayout ? RHI::ResultCode::Success : RHI::ResultCode::Fail;
     }
 
-    RHI::ResultCode BindGroupLayout::BuildDescriptorSetLayoutBindings()
+    RHI::ResultCode BindGroupLayout::BuildBindGroupLayoutBindings(const Descriptor& descriptor)
     {
         const AZStd::span<const RHI::ShaderInputBufferDescriptor> bufferDescs = m_shaderResourceGroupLayout->GetShaderInputListForBuffers();
         const AZStd::span<const RHI::ShaderInputImageDescriptor> imageDescs = m_shaderResourceGroupLayout->GetShaderInputListForImages();
@@ -141,7 +148,10 @@ namespace AZ::WebGPU
             wgpu::BindGroupLayoutEntry entry{};
             entry.binding = desc.m_registerId;
             entry.visibility = DefaultShaderStageVisibility;
-            entry.buffer.hasDynamicOffset = m_useDynamicOffset;
+            entry.buffer.hasDynamicOffset = AZStd::find(
+                                                descriptor.m_dynamicOffsetBuffers.begin(),
+                                                descriptor.m_dynamicOffsetBuffers.end(),
+                                                RHI::ShaderInputBufferIndex(index)) != descriptor.m_dynamicOffsetBuffers.end();
             entry.buffer.minBindingSize = 0;
             switch (desc.m_access)
             {
@@ -185,10 +195,13 @@ namespace AZ::WebGPU
                     entry.texture.multisampled ? wgpu::TextureSampleType::UnfilterableFloat : ConvertSampleType(desc.m_sampleType);
                 entry.texture.viewDimension = ConvertImageType(desc.m_type);
                 break;
+            case RHI::ShaderInputImageAccess::Write:
             case RHI::ShaderInputImageAccess::ReadWrite:
-                entry.storageTexture.access = wgpu::StorageTextureAccess::ReadWrite;
+                entry.storageTexture.access = desc.m_access == RHI::ShaderInputImageAccess::Write ? wgpu::StorageTextureAccess::WriteOnly
+                                                                                                  : wgpu::StorageTextureAccess::ReadWrite;
                 entry.storageTexture.format = ConvertImageFormat(desc.m_format);
                 entry.storageTexture.viewDimension = ConvertImageType(desc.m_type);
+                entry.visibility &= ~wgpu::ShaderStage::Vertex;
                 break;
             default:
                 AZ_Assert(false, "Invalid ShaderInputImageAccess.");
@@ -242,7 +255,7 @@ namespace AZ::WebGPU
             }
             else
             {
-                entry.sampler.type = ConvertReductionType(staticSamplerInput.m_samplerState.m_reductionType);
+                entry.sampler.type = ConvertSamplerBindingType(staticSamplerInput.m_type    );
             }
         }
 

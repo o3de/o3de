@@ -15,6 +15,7 @@
         _Func(R8G8B8A8_SINT,            Sint8x4)        \
         _Func(R8G8_UNORM,               Unorm8x2)       \
         _Func(R8G8B8A8_UNORM,           Unorm8x4)       \
+        _Func(B8G8R8A8_UNORM,           Unorm8x4)       \
         _Func(R8G8_SNORM,               Snorm8x2)       \
         _Func(R8G8B8A8_SNORM,           Snorm8x4)       \
         _Func(R16G16_UINT,              Uint16x2)       \

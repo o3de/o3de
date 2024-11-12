@@ -153,9 +153,10 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
         surface.CalculateRoughnessA();
     }
 
+#if ENABLE_CLEAR_COAT
     // Clear Coat
     surface.clearCoat.InitializeToZero();
-
+#endif
     // ------- LightingData -------
 
     LightingData lightingData;

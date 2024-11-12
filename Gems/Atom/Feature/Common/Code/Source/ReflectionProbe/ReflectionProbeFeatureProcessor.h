@@ -77,7 +77,7 @@ namespace AZ
             void CreateBoxMesh();
 
             // load the shader and retrieve pipeline state, shader, Srg Layout, and drawListTag
-            void LoadShader(
+            bool LoadShader(
                 const char* filePath, RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState, Data::Instance<RPI::Shader>& shader,
                 RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout, RHI::DrawListTag& drawListTag);
 
@@ -147,6 +147,8 @@ namespace AZ
             bool m_probeSortRequired = false;
             bool m_meshFeatureProcessorUpdateRequired = false;
             bool m_needUpdatePipelineStates = false;
+
+            bool m_enabled = true;
         };
     } // namespace Render
 } // namespace AZ

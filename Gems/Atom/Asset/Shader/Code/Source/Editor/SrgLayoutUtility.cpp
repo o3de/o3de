@@ -127,9 +127,7 @@ namespace AZ
                     // Images
                     for (const TextureSrgData& textureData : srgData.m_textures)
                     {
-                        const RHI::ShaderInputImageAccess imageAccess =
-                            textureData.m_isReadOnlyType ? RHI::ShaderInputImageAccess::Read : RHI::ShaderInputImageAccess::ReadWrite;
-
+                        const RHI::ShaderInputImageAccess imageAccess = textureData.m_access;
                         const RHI::ShaderInputImageType imageType = SrgLayoutUtility::ToShaderInputImageType(textureData.m_type);
 
                         if (imageType != RHI::ShaderInputImageType::Unknown)

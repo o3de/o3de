@@ -153,6 +153,7 @@ void SetNormalAndUpdateLightingParams(
 //==============================================================================
 //                         Simple Point Light 
 //==============================================================================
+#if ENABLE_SIMPLE_POINTLIGHTS
 void ApplySimplePointLight(ViewSrg::SimplePointLight light, Surface surface, inout LightingData lightingData)
 {  
     float3 posToLight = light.m_position - surface.position;
@@ -204,16 +205,23 @@ void ApplyCulledSimplePointLights(Surface surface, inout LightingData lightingDa
 
 void ApplyAllSimplePointLights(Surface surface, inout LightingData lightingData)
 {
+
     for (int l = 0; l < ViewSrg::m_simplePointLightCount; ++l)
     {
         ViewSrg::SimplePointLight light = ViewSrg::m_simplePointLights[l];
         ApplySimplePointLight(light, surface, lightingData);
     }
 }
+#else
+void ApplyAllSimplePointLights(Surface surface, inout LightingData lightingData)
+{    
+}
+#endif
 
 //==============================================================================
 //                           Simple Spot Light 
 //==============================================================================
+#if ENABLE_SIMPLE_SPOTLIGHTS
 void ApplySimpleSpotLight(ViewSrg::SimpleSpotLight light, Surface surface, inout LightingData lightingData)
 {
     float3 posToLight = light.m_position - surface.position;
@@ -272,9 +280,16 @@ void ApplyAllSimpleSpotLights(Surface surface, inout LightingData lightingData)
         ApplySimpleSpotLight(light, surface, lightingData);
     }
 }
+#else
+void ApplyAllSimpleSpotLights(Surface surface, inout LightingData lightingData)
+{    
+}
+#endif
+
 //==============================================================================
 //                              Point Light 
 //==============================================================================
+#if ENABLE_SPHERE_LIGHTS
 void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingData lightingData)
 {
     float3 posToLight = light.m_position - surface.position;
@@ -328,10 +343,16 @@ void ApplyAllPointLights(Surface surface, inout LightingData lightingData)
         ApplyPointLight(light, surface, lightingData);
     }
 }
+#else
+void ApplyAllPointLights(Surface surface, inout LightingData lightingData)
+{
+}
+#endif
 
 //==============================================================================
 //                             Disk Lights
 //==============================================================================
+#if ENABLE_DISK_LIGHTS
 #include <Atom/Features/PBR/Lights/DiskLight.azsli>
 
 void ApplyAllDiskLights(Surface surface, inout LightingData lightingData)
@@ -343,6 +364,11 @@ void ApplyAllDiskLights(Surface surface, inout LightingData lightingData)
         ApplyDiskLight(light, surface, lightingData);
     }
 }
+#else
+void ApplyAllDiskLights(Surface surface, inout LightingData lightingData)
+{
+}
+#endif
 
 //==============================================================================
 //                            Directional Lights

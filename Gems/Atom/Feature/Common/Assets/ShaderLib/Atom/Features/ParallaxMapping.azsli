@@ -52,6 +52,8 @@ DepthResult DepthResultAbsolute(float depth)
     return result;
 }
 
+#if ENABLE_PARALLAX
+
 //! The client shader must define this function.
 //! This allows the client shader to implement special depth map sampling, for example procedurally generating or blending depth maps.
 //! In simple cases though, the implementation of GetDepth() can simply call SampleDepthFromHeightmap().
@@ -433,3 +435,4 @@ PixelDepthOffset CalcPixelDepthOffset(  float depthFactor,
     pdo.m_worldPosition = worldOffsetPosition;
     return pdo;
 }
+#endif

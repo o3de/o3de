@@ -20,15 +20,16 @@ ShaderResourceGroup AutoBrickSrg : SRG_PerMaterial
     float m_brickOffset;
 
     // Appearance...
-    float3 m_brickColor;
     float m_brickNoiseFactor;
-    float3 m_lineColor;
     float m_lineNoiseFactor;
     float m_brickColorBleed;
-    float m_aoFactor;
+    float3 m_brickColor;
     float m_debugValue;
+    float3 m_lineColor;
+    float m_aoFactor;
     float m_debugValueScale;
-    
+    [[pad_to(16)]]
+
     Sampler m_sampler
     {
        AddressU = Wrap;

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/Features/VertexDefines.azsli>
 #include <viewsrg.srgi>
 #include <Atom/Features/InstancedTransforms.azsli>
 

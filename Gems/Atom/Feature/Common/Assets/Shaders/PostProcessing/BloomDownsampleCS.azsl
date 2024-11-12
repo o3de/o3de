@@ -12,12 +12,28 @@
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
     Texture2D<float4>       m_sourceTexture;
+    [[vk::image_format("rgba16f")]]
+    [[access("Write")]]
     RWTexture2D<float4>     m_targetTexture;  
 
+    [[vk::image_format("rgba16f")]]
+    [[access("Write")]]
     RWTexture2D<float4>     m_targetMipLevel0;
+
+    [[vk::image_format("rgba16f")]]
+    [[access("Write")]]
     RWTexture2D<float4>     m_targetMipLevel1;
+
+    [[vk::image_format("rgba16f")]]
+    [[access("Write")]]
     RWTexture2D<float4>     m_targetMipLevel2;
+
+    [[vk::image_format("rgba16f")]]
+    [[access("Write")]]
     RWTexture2D<float4>     m_targetMipLevel3;
+
+    [[vk::image_format("rgba16f")]]
+    [[access("Write")]]
     RWTexture2D<float4>     m_targetMipLevel4;
 
     Sampler LinearSampler

@@ -22,12 +22,20 @@
 #define ENABLE_SHADOWS              1
 #endif
 
+#ifndef ENABLE_ESM_SHADOW
+#define ENABLE_ESM_SHADOW 			1
+#endif
+
 #ifndef ENABLE_LIGHT_CULLING
-#define ENABLE_LIGHT_CULLING              1
+#define ENABLE_LIGHT_CULLING       	1
 #endif
 
 #ifndef ENABLE_DECALS
-#define ENABLE_DECALS              1
+#define ENABLE_DECALS              	1
+#endif
+
+#ifndef ENABLE_LINEAR_DEPTH
+#define ENABLE_LINEAR_DEPTH			1
 #endif
 
 #ifndef ENABLE_AREA_LIGHT_VALIDATION
@@ -35,7 +43,23 @@
 #endif
 
 #ifndef ENABLE_AREA_LIGHTS
-#define ENABLE_AREA_LIGHTS              1
+#define ENABLE_AREA_LIGHTS          1
+#endif
+
+#ifndef ENABLE_FULLSCREEN_SHADOW
+#define ENABLE_FULLSCREEN_SHADOW 	1
+#endif
+
+#ifndef ENABLE_GOBO
+#define ENABLE_GOBO 				1
+#endif
+
+#ifndef ENABLE_SIMPLE_SPOTLIGHTS
+#define ENABLE_SIMPLE_SPOTLIGHTS 	1
+#endif
+
+#ifndef ENABLE_SIMPLE_POINTLIGHTS
+#define ENABLE_SIMPLE_POINTLIGHTS 	1
 #endif
 
 #ifndef ENABLE_SPHERE_LIGHTS

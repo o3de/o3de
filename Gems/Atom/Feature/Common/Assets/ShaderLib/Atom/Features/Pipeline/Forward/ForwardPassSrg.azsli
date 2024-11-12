@@ -8,17 +8,25 @@
 
 #pragma once
 
+#include <Atom/Features/PBR/LightingDefines.azsli>
 #include <Atom/Features/SrgSemantics.azsli>
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
     // [GFX TODO][ATOM-2012] adapt to multiple shadowmaps
+    [[sample_type("Depth")]]
     Texture2DArray<float> m_directionalLightShadowmap;
-    Texture2DArray<float> m_directionalLightExponentialShadowmap;
+    [[sample_type("Depth")]]
     Texture2DArray<float> m_projectedShadowmaps;
+#if !AZ_TRAIT_SMALL_SRGS || ENABLE_ESM_SHADOW
     Texture2DArray<float> m_projectedExponentialShadowmap;
+    Texture2DArray<float> m_directionalLightExponentialShadowmap;
+#endif
+    [[sample_type("UnfilterableFloat")]]
     Texture2D m_brdfMap;
+#if !AZ_TRAIT_SMALL_SRGS || ENABLE_FULLSCREEN_SHADOW
     Texture2D<float> m_fullscreenShadow;
+#endif
 
     Sampler LinearSampler
     {
@@ -39,10 +47,25 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         AddressV = Clamp;
         AddressW = Clamp;
     };
+
+    Sampler BrdfSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
     
+#if !AZ_TRAIT_SMALL_SRGS || ENABLE_LIGHT_CULLING
     Texture2D<uint4> m_tileLightData;
     StructuredBuffer<uint> m_lightListRemapped;
+#endif
+
+#if !AZ_TRAIT_SMALL_SRGS || ENABLE_LINEAR_DEPTH
     Texture2D<float> m_linearDepthTexture;
+#endif
 
     // Whether the m_linearDepthTexture is linear depth or original depth
     // This is useful for render pipeline which doesn't have a pass to convert original depth to linear depth

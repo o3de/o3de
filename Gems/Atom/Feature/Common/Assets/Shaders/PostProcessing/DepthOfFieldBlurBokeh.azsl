@@ -72,10 +72,14 @@ inline float4 SampleColorAndDofFactor(float2 centerTexCoord, float cocRadius, in
 // Load the pencil map. Since the colors are square rooted, they are decoded (linearized). This is for accuracy.
 inline float4 SamplePencilMap(float lensCoordX, float radius)
 {
+#if ENABLE_DOF
     float2 bokehTexcoord = float2(lensCoordX, radius);
     float4 bokehColor = float4(SceneSrg::m_dofPencilMap.Sample(PassSrg::LinearSampler, bokehTexcoord).rgb, 1.0f);
     bokehColor.rgb *= bokehColor.rgb;
     return bokehColor;
+#else
+    return float4(1.0, 1.0, 1.0, 1.0);
+#endif
 }
 
 PSOutput MainPS(VSOutput IN)

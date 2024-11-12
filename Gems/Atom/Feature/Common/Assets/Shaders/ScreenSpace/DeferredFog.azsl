@@ -33,7 +33,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     float               m_fogDensity;
     float               m_fogDensityClamp;
 
-#if ENABLE_FOG_LAYER
+#if !AZ_TRAIT_SMALL_SRGS || ENABLE_FOG_LAYER
     float               m_fogMinHeight;     // Minmum and Maximum fog layer heights
     float               m_fogMaxHeight;
 
@@ -49,7 +49,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     Texture2D           m_noiseTexture;     // Defines fog pattern 
 
     float2              m_depthTextureDimentions;
-#endif //ENABLE_FOG_LAYER
+#endif //AZ_TRAIT_FOG_LAYER
 
     Sampler DepthSampler
     {

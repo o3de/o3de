@@ -32,6 +32,7 @@
             }
         ] 
     },
+    "DisabledRHIBackends": ["webgpu"],
 
     "DrawList": "transparent"
 }

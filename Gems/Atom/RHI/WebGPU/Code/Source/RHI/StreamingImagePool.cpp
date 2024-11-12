@@ -105,7 +105,9 @@ namespace AZ::WebGPU
 
     void StreamingImagePool::WaitFinishUploading(const Image& image)
     {
-        auto& device = static_cast<Device&>(GetDevice());
-        device.GetAsyncUploadQueue().WaitForUpload(image.GetUploadHandle());
+        if (auto uploadFence = image.GetUploadFence())
+        {
+            uploadFence->WaitOnCpu();
+        }
     }
 }

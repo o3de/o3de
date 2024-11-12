@@ -27,8 +27,8 @@ partial ShaderResourceGroup ViewSrg
     // This struct is coherent to the ones in Shadow.azsli and EsmShadowmapsPass.h.
     struct FilterParameter
     {
-        uint m_isEnabled;
         uint2 m_shadowmapOriginInSlice;
+        uint m_isEnabled;
         uint m_shadowmapSize;
         float m_lightDistanceOfCameraViewFrustum;
         float m_nf;  // n*f
@@ -47,12 +47,15 @@ partial ShaderResourceGroup ViewSrg
         float m_affectsGIFactor;
         bool m_affectsGI;
         uint m_lightingChannelMask;
-        float2 m_padding;
         [[pad_to(16)]]  // Here to ensure we pad the struct to 16 in case someone adds incorrect padding
     };
 
+#if !AZ_TRAIT_SMALL_SRGS || ENABLE_SIMPLE_POINTLIGHTS
     StructuredBuffer<SimplePointLight> m_simplePointLights;
     uint m_simplePointLightCount;
+    StructuredBuffer<uint> m_visibleSimplePointLightIndices;
+    uint m_visibleSimplePointLightCount;
+#endif
 
     // Simple Spot Lights
 
@@ -73,16 +76,20 @@ partial ShaderResourceGroup ViewSrg
         [[pad_to(16)]] // Here to ensure we pad the struct to 16 in case someone adds incorrect padding
     };
 
+#if !AZ_TRAIT_SMALL_SRGS || ENABLE_SIMPLE_SPOTLIGHTS
     StructuredBuffer<SimpleSpotLight> m_simpleSpotLights;
     uint m_simpleSpotLightCount;
-    Buffer<uint> m_visibleSimpleSpotLightIndices;
+    StructuredBuffer<uint> m_visibleSimpleSpotLightIndices;
     uint m_visibleSimpleSpotLightCount;
-    
+#endif
+
+#if !AZ_TRAIT_SMALL_SRGS || ENABLE_GOBO
     static const uint MaxGoboTextureCount = 5;
     DECLARE_RESOURCE_ARRAY(Texture2D<float>, m_goboTextures, 5)
     DECLARE_TEXTURE_ARRAY_SAMPLE2D(float, m_goboTextures, SampleGoboTexture, 5)
+#endif
 
-#if ENABLE_SPHERE_LIGHTS
+#if !AZ_TRAIT_SMALL_SRGS || ENABLE_SPHERE_LIGHTS
     // Point lights (sphere lights)
 
     struct PointLight
@@ -95,15 +102,12 @@ partial ShaderResourceGroup ViewSrg
         float m_affectsGIFactor;
         bool m_affectsGI;
         uint m_lightingChannelMask;
-        float2 m_padding;
+        [[pad_to(16)]]
     };
 
     StructuredBuffer<PointLight> m_pointLights;
     uint m_pointLightCount;
 #endif
-
-    Buffer<uint> m_visibleSimplePointLightIndices;
-    uint m_visibleSimplePointLightCount;
 
     // Projected Shadows
 
@@ -118,7 +122,7 @@ partial ShaderResourceGroup ViewSrg
         float m_bias;
         float m_normalShadowBias;
         float m_esmExponent;
-        float3 m_padding;
+        [[pad_to(16)]]
     };
 
     StructuredBuffer<ProjectedShadow> m_projectedShadows;
@@ -146,7 +150,7 @@ partial ShaderResourceGroup ViewSrg
         uint m_debugFlags;
         uint m_shadowFilterMethod;
         float m_far_minus_near;
-        float3 m_padding;
+        [[pad_to(16)]]
     };
 
     enum ShadowFilterMethod
@@ -161,11 +165,11 @@ partial ShaderResourceGroup ViewSrg
     uint m_directionalLightCount;
     uint m_shadowIndexDirectionalLight;
 
-#if ENABLE_ESM_SHADOW
+#if !AZ_TRAIT_SMALL_SRGS || ENABLE_ESM_SHADOW
     StructuredBuffer<FilterParameter> m_esmsDirectional;
 #endif
 
-#if ENABLE_DISK_LIGHTS
+#if !AZ_TRAIT_SMALL_SRGS || ENABLE_DISK_LIGHTS
     // Disk Lights
     
     struct DiskLight
@@ -183,14 +187,14 @@ partial ShaderResourceGroup ViewSrg
         float m_affectsGIFactor;
         bool m_affectsGI;
         uint m_lightingChannelMask;
-        float m_padding;
+        [[pad_to(16)]]
     };
 
     StructuredBuffer<DiskLight> m_diskLights;
     uint m_diskLightCount;
 #endif
 
-#if ENABLE_CAPSULE_LIGHTS     
+#if !AZ_TRAIT_SMALL_SRGS || ENABLE_CAPSULE_LIGHTS     
     // Capsule Lights
     
     struct CapsuleLight
@@ -204,7 +208,7 @@ partial ShaderResourceGroup ViewSrg
         float m_affectsGIFactor;
         bool m_affectsGI;
         uint m_lightingChannelMask;
-        float m_padding;
+        [[pad_to(16)]]
     };
 
     StructuredBuffer<CapsuleLight> m_capsuleLights;
@@ -227,7 +231,7 @@ partial ShaderResourceGroup ViewSrg
         float m_affectsGIFactor;
         bool m_affectsGI;
         uint m_lightingChannelMask;
-        float m_padding;
+        [[pad_to(16)]]
     };
 
     StructuredBuffer<QuadLight> m_quadLights;

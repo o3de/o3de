@@ -15,8 +15,8 @@ enum PcfFilterMethod { PcfFilterMethod_BoundarySearch = 0, PcfFilterMethod_Bicub
 
 struct FilterParameter
 {
-    uint m_isEnabled;
     uint2 m_shadowmapOriginInSlice;
+    uint m_isEnabled;
     uint m_shadowmapSize;
     float m_lightDistanceOfCameraViewFrustum;
     float m_nf;    // nf

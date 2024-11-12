@@ -20,9 +20,7 @@
 
 #define ENABLE_TRANSMISSION 0
 #define ENABLE_SHADER_DEBUGGING 0
-#define ENABLE_CLEAR_COAT 0
 #define ENABLE_SHADOWS 0
-#define ENABLE_LIGHT_CULLING 0
 #define ENABLE_AREA_LIGHTS 0
 #define ENABLE_AREA_LIGHT_VALIDATION    0
 #define ENABLE_PHYSICAL_SKY 0
@@ -31,6 +29,12 @@
 #define ENABLE_REFLECTIONPROBE_PARALLAXCORRECTION 0
 #define ENABLE_REFLECTIONPROBE_BLENDING 0
 #define ENABLE_SPECULARAA 0
+#ifndef ENABLE_LIGHT_CULLING
+	#define ENABLE_LIGHT_CULLING 0
+#endif
+#ifndef ENABLE_CLEAR_COAT
+	#define ENABLE_CLEAR_COAT 0
+#endif
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 

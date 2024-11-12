@@ -24,3 +24,8 @@ static const float4 s_AzslDebugColor = float4(16.0 / 255.0, 124.0 / 255.0, 16.0 
 #define real3x3 float3x3
 #define real3x4 float3x4
 #define real4x4 float4x4
+
+// The SRG for a material must be the same for all RHI and supervariants
+// Disable these features until the material can handle an SRG per RHI
+#define ENABLE_CLEAR_COAT 0
+#define ENABLE_PARALLAX 0

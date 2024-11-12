@@ -13,7 +13,7 @@ namespace AZ::WebGPU
 {
     class BindGroupLayout;
 
-    class ShaderResourceGroupPool final
+    class ShaderResourceGroupPool
         : public RHI::DeviceShaderResourceGroupPool
     {
         using Base = RHI::DeviceShaderResourceGroupPool;
@@ -22,7 +22,7 @@ namespace AZ::WebGPU
 
         static RHI::Ptr<ShaderResourceGroupPool> Create();
             
-    private:
+    protected:
         ShaderResourceGroupPool() = default;
             
         //////////////////////////////////////////////////////////////////////////
@@ -45,6 +45,7 @@ namespace AZ::WebGPU
         void SetNameInternal(const AZStd::string_view& name) override;
         //////////////////////////////////////////////////////////////////////////
 
+    protected:
         uint64_t m_currentIteration = 0;
         uint32_t m_bindGroupCount = 0;
         RHI::Ptr<BindGroupLayout> m_bindGroupLayout;

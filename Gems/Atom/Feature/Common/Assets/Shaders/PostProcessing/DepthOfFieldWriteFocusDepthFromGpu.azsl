@@ -13,7 +13,7 @@
 ShaderResourceGroup PerPass : SRG_PerPass
 {
     Texture2D<float4> m_depthTexture;
-    RWBuffer<float> m_outputFocusDepth;
+    RWStructuredBuffer<float> m_outputFocusDepth;
     float2 m_autoFocusScreenPosition;
 
     Sampler LinearSampler

@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom/Features/PBR/LightingDefines.azsli>
 #include <viewsrg.srgi>
 
 option enum class OpacityMode 

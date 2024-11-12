@@ -111,6 +111,7 @@
                     "displayName": "Height Map",
                     "description": "Displacement height map to create parallax effect.",
                     "type": "Image",
+                    "optional": true,
                     "connection": {
                         "type": "ShaderInput",
                         "name": "m_heightmap"
@@ -131,6 +132,7 @@
                     "defaultValue": 0.05,
                     "min": 0.0,
                     "softMax": 0.1,
+                    "optional": true,
                     "connection": {
                         "type": "ShaderInput",
                         "name": "m_heightmapScale"
@@ -144,6 +146,7 @@
                     "defaultValue": 0.0,
                     "softMin": -0.1,
                     "softMax": 0.1,
+                    "optional": true,
                     "connection": {
                         "type": "ShaderInput",
                         "name": "m_heightmapOffset"

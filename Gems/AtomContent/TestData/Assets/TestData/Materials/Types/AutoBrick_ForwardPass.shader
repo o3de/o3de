@@ -23,6 +23,8 @@
         }
     },
 
+    "DisabledRHIBackends": ["webgpu"],
+
     "ProgramSettings":
     {
       "EntryPoints":

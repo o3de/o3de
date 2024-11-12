@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <Atom/Features/VertexDefines.azsli>
+
 // This #define magic lets you use the VsInput & VsOutput classes in this file without making it the final VsInput & VsOutput
 // used in your shader. Simply #define VsInput & VsOutput to your custom definitions before including this file
 //
@@ -60,7 +62,7 @@ struct VsOutput_BasePBR
 {
     // Base fields (required by the template azsli file)...
     // "centroid" is needed for SV_Depth to compile
-    precise linear centroid 
+    AZ_PRECISION_POSITION_CENTROID 
     float4 position : SV_Position;
     float3 normal: NORMAL;
     float4 tangent : TANGENT;

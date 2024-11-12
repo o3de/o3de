@@ -30,6 +30,7 @@ namespace AZ::RHI
 
         BufferViewDescriptor() = default;
         bool operator==(const BufferViewDescriptor& other) const;
+        bool operator!=(const BufferViewDescriptor& other) const;
             
         //! Creates a structured buffer view. Structured buffers are defined by an array of non-fundamental
         //! types, or custom data structures. The exact format of the data structure is defined elsewhere

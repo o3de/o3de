@@ -26,6 +26,7 @@ namespace AZ::WebGPU
     }
 
     Device::Device()
+        : m_renderThreadId(AZStd::this_thread::get_id())
     {
         RHI::Ptr<PlatformLimitsDescriptor> platformLimitsDescriptor = aznew PlatformLimitsDescriptor();
         platformLimitsDescriptor->LoadPlatformLimitsDescriptor(RHI::Factory::Get().GetName().GetCStr());
@@ -40,7 +41,10 @@ namespace AZ::WebGPU
         wgpuPhysicalDevice.GetLimits(&supportedLimits);
         wgpu::AdapterInfo adapterInfo = {};
         wgpuPhysicalDevice.GetInfo(&adapterInfo);
-        AZStd::vector<wgpu::FeatureName> requiredFeatures = { wgpu::FeatureName::TextureCompressionBC,  };
+        AZStd::vector<wgpu::FeatureName> requiredFeatures = { wgpu::FeatureName::TextureCompressionBC,
+                                                              wgpu::FeatureName::DualSourceBlending,
+                                                              wgpu::FeatureName::Depth32FloatStencil8,
+                                                              wgpu::FeatureName::DepthClipControl };
         wgpu::RequiredLimits requiredLImits = {};
         requiredLImits.limits.maxStorageBuffersPerShaderStage = AZStd::min(supportedLimits.limits.maxStorageBuffersPerShaderStage, 24u);
         requiredLImits.limits.maxStorageTexturesPerShaderStage = AZStd::min(supportedLimits.limits.maxStorageTexturesPerShaderStage, 24u);
@@ -88,6 +92,9 @@ namespace AZ::WebGPU
 
     RHI::ResultCode Device::BeginFrameInternal()
     {
+        wgpu::Instance& instance = Instance::GetInstance().GetNativeInstance();
+        instance.ProcessEvents();
+        m_commandQueueContext.Begin();
         return RHI::ResultCode::Success;
     }
 
@@ -95,6 +102,7 @@ namespace AZ::WebGPU
     {
         m_frameCommandLists.clear();
         m_rootConstantManager->Collect();
+        m_commandQueueContext.End();
     }
 
     const wgpu::Device& Device::GetNativeDevice() const
@@ -141,7 +149,10 @@ namespace AZ::WebGPU
         m_limits.m_maxBufferSize = maxValue;
 
         m_features.m_resourceAliasing = false;
+        // Multirheading is not supported yet
         m_features.m_multithreading = false;
+        // WebGPU doesn't support resource array yet
+        m_features.m_resourceArray = false;
         // Only 2D images can be used for render attachments
         m_features.m_supportedRenderAttachmentDimensions = RHI::ImageDimensionFlags::Image2D;
 
@@ -149,7 +160,7 @@ namespace AZ::WebGPU
         m_samplerCache.first.SetCapacity(SamplerCacheCapacity);
         m_pipelineLayoutCache.first.SetCapacity(PipelineLayoutCacheCapacity);
 
-        m_commandQueueContext.Init(*this);
+        m_commandQueueContext.Init(*this, CommandQueueContext::Descriptor{ RHI::Limits::Device::FrameCountMax });
 
         m_constantBufferPool = BufferPool::Create();
         static int index = 0;
@@ -264,6 +275,11 @@ namespace AZ::WebGPU
     {
         AZ_Assert(m_rootConstantManager, "RootConstantManager was not created.");
         return *m_rootConstantManager;
+    }
+
+    AZStd::thread::id Device::GetRenderThread() const
+    {
+        return m_renderThreadId;
     }
 
     void Device::OnRHISystemInitialized()

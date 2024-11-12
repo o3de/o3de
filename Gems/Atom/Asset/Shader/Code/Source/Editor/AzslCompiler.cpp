@@ -445,11 +445,11 @@ namespace AZ
                                 AZStd::string nameId = bufferForRootConstantsValue.GetString();
                                 rootConstantData.m_bindingInfo.m_nameId = nameId;
                             }
-                            else if (bufferForRootConstantsName == "index")
+                            else if (bufferForRootConstantsName == "index-merged")
                             {
                                 rootConstantData.m_bindingInfo.m_registerId = bufferForRootConstantsValue.GetInt();
                             }
-                            else if (bufferForRootConstantsName == "space")
+                            else if (bufferForRootConstantsName == "space-merged")
                             {
                                 rootConstantData.m_bindingInfo.m_space = bufferForRootConstantsValue.GetInt();
                             }
@@ -601,18 +601,7 @@ namespace AZ
                                 }
                                 else if (attributeArrayMemberName == "usage")
                                 {
-                                    if(AzFramework::StringFunc::Equal(itr4->value.GetString(), "Read"))
-                                    {
-                                        inputsForImageViews.m_isReadOnlyType = true;
-                                    }
-                                    else if (AzFramework::StringFunc::Equal(itr4->value.GetString(), "ReadWrite"))
-                                    {
-                                        inputsForImageViews.m_isReadOnlyType = false;
-                                    }
-                                    else
-                                    {
-                                        AZ_Assert(false, "%s is an unexpected usage type", itr4->value.GetString());
-                                    }
+                                    inputsForImageViews.m_access = StringToAccess(itr4->value.GetString());
                                 }
                                 else if (attributeArrayMemberName == "index")
                                 {

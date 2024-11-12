@@ -9,6 +9,7 @@
 
 #include <Atom/RHI/AsyncWorkQueue.h>
 #include <Atom/RHI/DeviceBuffer.h>
+#include <RHI/Fence.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
 namespace AZ::WebGPU
@@ -40,8 +41,8 @@ namespace AZ::WebGPU
         const wgpu::Buffer& GetNativeBuffer() const;
         bool CanBeMap() const;
 
-        void SetUploadHandle(const RHI::AsyncWorkHandle& handle);
-        const RHI::AsyncWorkHandle& GetUploadHandle() const;
+        void SetUploadFence(RHI::Ptr<Fence> uploadFence);
+        RHI::Ptr<Fence> GetUploadFence() const;
 
     private:
 
@@ -64,7 +65,7 @@ namespace AZ::WebGPU
         wgpu::Buffer m_wgpuBuffer = nullptr;
         wgpu::BufferUsage m_wgpuBufferUsage = wgpu::BufferUsage::None;
 
-        RHI::AsyncWorkHandle m_uploadHandle;
+        RHI::Ptr<Fence> m_uploadFence;
     };
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::WebGPU::Buffer::InitFlags);

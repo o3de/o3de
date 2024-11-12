@@ -40,5 +40,7 @@
                 "azslc": ["--strip-unused-srgs"]
             }
         }
-    ]
+    ],
+
+    "DisabledRHIBackends": ["webgpu"]
 }

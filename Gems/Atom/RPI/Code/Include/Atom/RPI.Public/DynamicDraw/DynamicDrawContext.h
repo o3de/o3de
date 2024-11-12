@@ -151,11 +151,22 @@ namespace AZ
 
             //! Draw Indexed primitives with vertex and index data and per draw srg
             //! The per draw srg need to be provided if it's required by shader. 
-            void DrawIndexed(const void* vertexData, uint32_t vertexCount, const void* indexData, uint32_t indexCount, RHI::IndexFormat indexFormat, Data::Instance < ShaderResourceGroup> drawSrg = nullptr);
+            void DrawIndexed(
+                const void* vertexData,
+                uint32_t vertexCount,
+                const void* indexData,
+                uint32_t indexCount,
+                RHI::IndexFormat indexFormat,
+                Data::Instance<ShaderResourceGroup> drawSrg = nullptr,
+                AZStd::span<const uint8_t> rootConstants = {});
 
             //! Draw linear indexed primitives with vertex data and per draw srg
             //! The per draw srg need to be provided if it's required by shader. 
-            void DrawLinear(const void* vertexData, uint32_t vertexCount, Data::Instance<ShaderResourceGroup> drawSrg);
+            void DrawLinear(
+                const void* vertexData,
+                uint32_t vertexCount,
+                Data::Instance<ShaderResourceGroup> drawSrg,
+                AZStd::span<const uint8_t> rootConstants = {});
 
             //! Get per vertex size. The size was evaluated when vertex format was set
             uint32_t GetPerVertexDataSize();
@@ -283,6 +294,7 @@ namespace AZ
                 RHI::DrawItem m_drawItem;
                 RHI::DrawItemSortKey m_sortKey = 0;
                 u32 m_cachedIndex = InvalidIndex;
+                AZStd::vector<uint8_t> m_rootConstants;
             };
             AZStd::vector<DrawItemInfo> m_cachedDrawItems;
 

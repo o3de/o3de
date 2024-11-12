@@ -69,8 +69,7 @@ namespace AZ
 
             m_passData = *passData;
 
-            m_weightBuffer.resize(Render::Bloom::MaxStageCount);
-            m_offsetBuffer.resize(Render::Bloom::MaxStageCount);
+            m_blurDataBuffer.resize(Render::Bloom::MaxStageCount);
         }
 
         void BloomBlurPass::GetInputInfo()
@@ -234,14 +233,12 @@ namespace AZ
                 // Horizontal
                 BloomBlurChildPass* blurChild = static_cast<BloomBlurChildPass*>(m_children[childIdxH].get());
                 blurChild->UpdateParameters(
-                    m_offsetBuffer[childIdxH], m_weightBuffer[childIdxH], m_kernelRadiusData[childIdxH],
-                    true, childIdxH, imageWidth, imageHeight);
+                    m_blurDataBuffer[childIdxH], m_kernelRadiusData[childIdxH], true, childIdxH, imageWidth, imageHeight);
 
                 // Vertical
                 blurChild = static_cast<BloomBlurChildPass*>(m_children[childIdxV].get());
                 blurChild->UpdateParameters(
-                    m_offsetBuffer[childIdxH], m_weightBuffer[childIdxH], m_kernelRadiusData[childIdxH],
-                    false, childIdxH, imageWidth, imageHeight);
+                    m_blurDataBuffer[childIdxH], m_kernelRadiusData[childIdxH], false, childIdxH, imageWidth, imageHeight);
 
                 imageWidth = imageWidth / 2;
                 imageHeight = imageHeight / 2;
@@ -271,8 +268,7 @@ namespace AZ
 
         void BloomBlurPass::BuildKernelData()
         {
-            m_weightData.clear();
-            m_offsetData.clear();
+            m_blurData.clear();
             m_kernelRadiusData.clear();
 
             RPI::PassAttachment* inOutAttachment = GetInputOutputBinding(0).GetAttachment().get();
@@ -299,8 +295,7 @@ namespace AZ
                 else
                 {
                     // If kernel radius is 0 skip kernel calculation and buffer preparation
-                    m_weightData.emplace_back();
-                    m_offsetData.emplace_back();
+                    m_blurData.emplace_back();
                     m_kernelRadiusData.push_back(0);
                 }
             }
@@ -322,13 +317,11 @@ namespace AZ
             float weight = 0.0;
 
             // Gaussian kernel is radially symmetric, so we only store one wing of the 1d kernel
-            AZStd::vector<float> weights;
-            AZStd::vector<float> offsets;
+            AZStd::vector<BlurData> blurData;
             
             // Center pixel
             weight = Gaussian1D(0, sigma);
-            weights.push_back(weight);
-            offsets.push_back(0);
+            blurData.push_back({ weight, 0 });
             weightSum += weight;
             for (uint32_t i = 1; i <= kernelRadius; i += 2)
             {
@@ -341,12 +334,11 @@ namespace AZ
                 }
 
                 weight = weight0 + weight1;
-                weights.push_back(weight);
 
                 //    (i * weight0 + (i + 1) * weight1) / (weight0 + weight1)
                 // => (i * (weight0 + weight1) + weight1) / (weight0 + weight1)
                 // => i + weight1 / (weight0 + weight1)
-                offsets.push_back(i + weight1 / weight);
+                blurData.push_back({ weight, i + weight1 / weight });
 
                 // Two symmetric weight on each side
                 weightSum += weight * 2;
@@ -354,54 +346,44 @@ namespace AZ
 
             // Renormalize so the kenrel weight sum to 1
             float weightSumRcp = 1.0f / weightSum;
-            for (uint32_t i = 0; i < weights.size(); ++i)
+            for (uint32_t i = 0; i < blurData.size(); ++i)
             {
-                weights[i] *= weightSumRcp;
+                blurData[i].m_weight *= weightSumRcp;
             }
 
-            m_weightData.push_back(weights);
-            m_offsetData.push_back(offsets);
-
             // Record reduced kernel's radius
-            m_kernelRadiusData.push_back(static_cast<uint32_t>(weights.size()));
+            m_kernelRadiusData.push_back(static_cast<uint32_t>(blurData.size()));
+
+            m_blurData.push_back(AZStd::move(blurData));
         }
 
         void BloomBlurPass::PrepareBuffer(uint32_t blurStageIndex)
         {
-            uint32_t byteCount = sizeof(float) * static_cast<uint32_t>(m_weightData[blurStageIndex].size());
+            uint32_t byteCount = sizeof(BlurData) * static_cast<uint32_t>(m_blurData[blurStageIndex].size());
 
-            // Prepare buffer, these two buffers shared the same size and layout so can be allocated together
-            if (!(m_weightBuffer[blurStageIndex] || m_offsetBuffer[blurStageIndex]))
+            // Prepare buffer
+            if (!m_blurDataBuffer[blurStageIndex])
             {
                 std::stringstream ss;
-                ss << GetPathName().GetCStr() << ".WeightBuffer.Stage" << blurStageIndex;
+                ss << GetPathName().GetCStr() << ".BlurDataBuffer.Stage" << blurStageIndex;
 
                 RPI::CommonBufferDescriptor desc;
                 desc.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
                 desc.m_bufferName = ss.str().c_str();
-                desc.m_elementSize = sizeof(float);
-                desc.m_elementFormat = RHI::Format::R32_FLOAT;
+                desc.m_elementSize = sizeof(BlurData);
+                desc.m_elementFormat = RHI::Format::Unknown;
                 desc.m_byteCount = byteCount;
-                desc.m_bufferData = static_cast<void*>(m_weightData[blurStageIndex].data());
-                m_weightBuffer[blurStageIndex] = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
-
-                ss.clear();
-                ss << GetPathName().GetCStr() << "OffsetBuffer.Stage" << blurStageIndex;
-                desc.m_bufferName = ss.str().c_str();
-                desc.m_bufferData = static_cast<void*>(m_offsetData[blurStageIndex].data());
-                m_offsetBuffer[blurStageIndex] = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+                desc.m_bufferData = static_cast<void*>(m_blurData[blurStageIndex].data());
+                m_blurDataBuffer[blurStageIndex] = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
             }
             else
             {
-                // Update buffer data and resize if necessary, weight and offset buffer always has same size
-                // therefore no need to check twice
-                if (byteCount != m_weightBuffer[blurStageIndex]->GetBufferSize())
+                // Update buffer data and resize if necessary
+                if (byteCount != m_blurDataBuffer[blurStageIndex]->GetBufferSize())
                 {
-                    m_weightBuffer[blurStageIndex]->Resize(byteCount);
-                    m_offsetBuffer[blurStageIndex]->Resize(byteCount);
+                    m_blurDataBuffer[blurStageIndex]->Resize(byteCount);
                 }
-                m_weightBuffer[blurStageIndex]->UpdateData(m_weightData[blurStageIndex].data(), byteCount);
-                m_offsetBuffer[blurStageIndex]->UpdateData(m_offsetData[blurStageIndex].data(), byteCount);
+                m_blurDataBuffer[blurStageIndex]->UpdateData(m_blurData[blurStageIndex].data(), byteCount);
             }
         }
 
@@ -418,8 +400,7 @@ namespace AZ
         { }
 
         void BloomBlurChildPass::UpdateParameters(
-            Data::Instance<RPI::Buffer> offsetBuffer,
-            Data::Instance<RPI::Buffer> weightBuffer,
+            Data::Instance<RPI::Buffer> buffer,
             uint32_t radius,
             bool direction,
             uint32_t mipLevel,
@@ -428,8 +409,7 @@ namespace AZ
         {
             // These quantities are stored locally because they need to be passed every frame
             // but the function is only invoked when parameters are updated
-            m_offsetBuffer = offsetBuffer;
-            m_weightBuffer = weightBuffer;
+            m_blurDataBuffer = buffer;
 
             m_sourceImageWidth = imageWidth;
             m_sourceImageHeight = imageHeight;
@@ -446,16 +426,9 @@ namespace AZ
 
         void BloomBlurChildPass::FrameBeginInternal(FramePrepareParams params)
         {
-            if (m_offsetBuffer)
+            if (m_blurDataBuffer)
             {
-                m_shaderResourceGroup->SetBufferView(
-                    m_offsetsInputIndex, m_offsetBuffer->GetBufferView());
-            }
-
-            if (m_weightBuffer)
-            {
-                m_shaderResourceGroup->SetBufferView(
-                    m_weightsInputIndex, m_weightBuffer->GetBufferView());
+                m_shaderResourceGroup->SetBufferView(m_blurDataInputIndex, m_blurDataBuffer->GetBufferView());
             }
 
             SetTargetThreadCounts(m_sourceImageWidth, m_sourceImageHeight, 1);

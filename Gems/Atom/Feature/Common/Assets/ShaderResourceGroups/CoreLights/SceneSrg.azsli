@@ -10,6 +10,8 @@
 #error Do not include this file directly. Include the main .srgi file instead.
 #endif
 
+#include <Atom/Features/PBR/LightingDefines.azsli>
+
 partial ShaderResourceGroup SceneSrg
 { 
     struct DirectionalLight
@@ -20,13 +22,14 @@ partial ShaderResourceGroup SceneSrg
         float m_affectsGIFactor;
         bool m_affectsGI;
         uint m_lightingChannelMask;
-        float2 m_padding;
+        uint m_padding1;
+        uint m_padding2;
     };
 
     StructuredBuffer<DirectionalLight> m_directionalLights;
     uint m_directionalLightCount;
     
-#if ENABLE_POLYGON_LTC_LIGHTS || ENABLE_QUAD_LIGHTS
+#if !AZ_TRAIT_SMALL_SRGS || (ENABLE_POLYGON_LTC_LIGHTS || ENABLE_QUAD_LIGHTS)
     // Look up textures for linear transform cosine area lights.
     Texture2D<float4> m_ltcMatrix;
     Texture2D<float2> m_ltcAmplification;

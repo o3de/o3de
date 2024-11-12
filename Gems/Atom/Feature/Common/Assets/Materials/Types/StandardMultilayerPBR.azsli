@@ -11,6 +11,7 @@
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/InstancedTransforms.azsli>
+#include <Atom/Features/VertexDefines.azsli>
 
 #include <Atom/Feature/Common/Assets/Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_Common.azsli>
 
@@ -60,7 +61,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
     {
         // TODO: If we can make the shader builder understand class inheritance for reflection data, then
         // we could make this a class that inherits from VsInput_BasePBR instead of repeating the fields here.
-        precise linear centroid 
+        AZ_PRECISION_POSITION_CENTROID 
         float4 position : SV_Position;
         float3 normal: NORMAL;
         float4 tangent : TANGENT;
@@ -246,12 +247,10 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
         bool m_diffuseOcclusion_useTexture;
         bool m_specularOcclusion_useTexture;
         
-    #if ENABLE_CLEAR_COAT
         bool m_clearCoatEnabled;
         bool m_clearCoat_factor_useTexture;
         bool m_clearCoat_roughness_useTexture;
         bool m_clearCoat_normal_useTexture;
-    #endif
 
         TextureBlendMode m_baseColorTextureBlendMode;
 
@@ -441,7 +440,8 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
             real3 blendMaskValues = GetApplicableBlendMaskValues(blendSource, uvs[MaterialSrg::m_blendMaskUvIndex], vertexBlendMask, uvDxDy, customDerivatives);
             return MakeDebugSurface(positionWS, normalWS, real3(blendMaskValues));
         }
-    
+
+#if ENABLE_PARALLAX
         if(o_debugDrawMode == DebugDrawMode::Displacement)
         {
             real startDepth = real(-MaterialSrg::m_displacementMax);
@@ -450,6 +450,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
             real height = 1 - saturate(depth);
             return MakeDebugSurface(positionWS, normalWS, real3(height,height,height));
         }
+#endif
     
         if(o_debugDrawMode == DebugDrawMode::FinalBlendWeights)
         {
@@ -556,11 +557,13 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
         real3 baseColor = BlendLayers(lightingInputLayer1.m_baseColor, lightingInputLayer2.m_baseColor, lightingInputLayer3.m_baseColor, blendWeights);
         real specularF0Factor = BlendLayers(lightingInputLayer1.m_specularF0Factor, lightingInputLayer2.m_specularF0Factor, lightingInputLayer3.m_specularF0Factor, blendWeights);
         real metallic = BlendLayers(lightingInputLayer1.m_metallic, lightingInputLayer2.m_metallic, lightingInputLayer3.m_metallic, blendWeights);
-    
+
+ #if ENABLE_PARALLAX
         if(o_parallax_highlightClipping && isDisplacementClipped)
         {
             ApplyParallaxClippingHighlight(baseColor);
         }
+#endif
 
         surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
 

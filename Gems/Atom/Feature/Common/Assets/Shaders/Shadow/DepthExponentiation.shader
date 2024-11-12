@@ -12,5 +12,7 @@
           "type": "Compute"
         }
       ]
-    }
+    },
+
+     "DisabledRHIBackends": ["webgpu"]
 }

@@ -14,7 +14,7 @@ namespace AZ::WebGPU
 {
     class BindGroup;
 
-    class ShaderResourceGroup final
+    class ShaderResourceGroup
         : public RHI::DeviceShaderResourceGroup
     {
         using Base = RHI::DeviceShaderResourceGroup;
@@ -30,9 +30,10 @@ namespace AZ::WebGPU
         uint32_t GetCompileDataIndex() const;
         uint64_t GetLastCompileFrameIteration() const;
 
-    private:
+    protected:
         ShaderResourceGroup() = default;
 
+    private:
         uint32_t m_compiledDataIndex = 0;
         uint64_t m_lastCompileFrameIteration = 0;
         AZStd::vector<RHI::Ptr<BindGroup>> m_compiledData;

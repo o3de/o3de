@@ -9,6 +9,7 @@
 #include <Atom/Features/SrgSemantics.azsli>
 
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
+#include <Atom/Features/ResourceArrayUtility.azsli>
 
 // If true pixels with an alpha value of less than 0.5 are clipped
 option bool o_alphaTest;
@@ -19,6 +20,11 @@ option bool o_srgbWrite;
 // Indicates how to use the second texture indexed by a vertex (if at all)
 option enum class Modulate { None, Alpha, AlphaAndColor } o_modulate;
 
+#if !AZ_TRAIT_RESOURCE_ARRAY
+    rootconstant uint s_texIndex;
+    rootconstant uint s_texIndex2;
+#endif
+
 // Each vertex can select one or two of the 16 textures bound
 // We use an array of textures and a bitmask that indicates whether to use clamp
 // sampler (bit set) or wrap. The nth bit has the correct sampler value for the nth texture
@@ -26,7 +32,8 @@ ShaderResourceGroup InstanceSrg : SRG_PerDraw
 {
     row_major float4x4 m_worldToProj;
     uint m_isClamp;
-    Texture2D m_texture[16];
+    DECLARE_RESOURCE_ARRAY(Texture2D, m_texture, 16)
+    DECLARE_TEXTURE_ARRAY_SAMPLE2D(float4, m_texture, SampleTexture, 16)
 
     Sampler m_wrapSampler
     {
@@ -87,19 +94,27 @@ float4 SampleTriangleTexture(uint texIndex, float2 uv)
 {
     if ((InstanceSrg::m_isClamp & (1U << texIndex)) != 0)
     {
-        return InstanceSrg::m_texture[texIndex].Sample(InstanceSrg::m_clampSampler, uv);
+        return InstanceSrg::SampleTexture(texIndex, InstanceSrg::m_clampSampler, uv);
     }
     else
     {
-        return InstanceSrg::m_texture[texIndex].Sample(InstanceSrg::m_wrapSampler, uv);
+        return InstanceSrg::SampleTexture(texIndex, InstanceSrg::m_wrapSampler, uv);
     }
 }
 
 PSOutput MainPS(VSOutput IN)
 {
+#if AZ_TRAIT_RESOURCE_ARRAY
+    uint textIndex = IN.m_texIndex;
+    uint textIndex2 = IN.m_texIndex2;
+#else
+    uint textIndex = s_texIndex;
+    uint textIndex2 = s_texIndex2;
+#endif
+
     PSOutput OUT;
 
-    float4 baseTex = SampleTriangleTexture(IN.m_texIndex, IN.m_uv.xy);
+    float4 baseTex = SampleTriangleTexture(textIndex, IN.m_uv.xy);
     float4 inDiffuse = IN.m_color;
 
     // If the texture does not have a color channel then the alpha channel will be in the R channel of the R8 texture
@@ -121,7 +136,7 @@ PSOutput MainPS(VSOutput IN)
     // mask the first. This is used for gradient masks.
     if (o_modulate == Modulate::Alpha)
     {
-        float4 maskTexAlpha = SampleTriangleTexture(IN.m_texIndex2, IN.m_uv.xy);
+        float4 maskTexAlpha = SampleTriangleTexture(textIndex2, IN.m_uv.xy);
         resColor.w *= maskTexAlpha.w;
 
         if (o_alphaTest)
@@ -132,7 +147,7 @@ PSOutput MainPS(VSOutput IN)
     }
     else if (o_modulate == Modulate::AlphaAndColor)
     {
-        float4 maskTex = SampleTriangleTexture(IN.m_texIndex2, IN.m_uv.xy);
+        float4 maskTex = SampleTriangleTexture(textIndex2, IN.m_uv.xy);
         resColor *= maskTex.w;
 
         if (o_alphaTest)

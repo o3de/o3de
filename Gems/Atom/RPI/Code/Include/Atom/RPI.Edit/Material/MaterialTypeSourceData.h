@@ -226,6 +226,9 @@ namespace AZ
             using UvNameMap = AZStd::map<AZStd::string, AZStd::string>;
             UvNameMap m_uvNameMap;
 
+            //! List of RHI Backends (aka ShaderPlatformInterface) for which this materialType should not be compiled.
+            AZStd::vector<AZStd::string> m_disabledRhiBackends;
+
             //! Copy over UV custom names to the properties enum values.
             void ResolveUvEnums();
 

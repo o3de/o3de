@@ -67,17 +67,6 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
        MaxAnisotropy = 16;
     };
 
-    Texture2D m_brdfMap;
-
-    Sampler m_samplerBrdf
-    {
-        AddressU = Clamp;
-        AddressV = Clamp;
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-    };
-
     // Detail Layer for clear coat
     float m_clearCoatDetailRoughnessBlend;
     Texture2D m_clearCoatDetailRoughnessMap;
@@ -86,8 +75,8 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 
     // Parameters for subsurface scattering
     float m_subsurfaceScatteringFactor;
-    float m_subsurfaceScatteringQuality;
     float3 m_scatterDistance;
+    float m_subsurfaceScatteringQuality;
     Texture2D m_subsurfaceScatteringInfluenceMap;
     uint m_subsurfaceScatteringInfluenceMapUvIndex;
 

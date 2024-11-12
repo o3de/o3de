@@ -24,18 +24,15 @@ namespace AZ::WebGPU
         RHI::ResultCode result = RHI::ResultCode::Success;
 
         m_queue = &device.GetCommandQueueContext().GetCommandQueue(RHI::HardwareQueueClass::Copy);
-        m_asyncWaitQueue.Init();
 
         return result;
     }
 
     void AsyncUploadQueue::Shutdown()
     {
-        m_asyncWaitQueue.ShutDown();
-        m_callbackList.clear();
     }
 
-    RHI::AsyncWorkHandle AsyncUploadQueue::QueueUpload(const RHI::DeviceBufferStreamRequest& request)
+    RHI::Ptr<Fence> AsyncUploadQueue::QueueUpload(const RHI::DeviceBufferStreamRequest& request)
     {
         auto& device = static_cast<Device&>(GetDevice());
 
@@ -45,31 +42,28 @@ namespace AZ::WebGPU
         if (byteCount == 0)
         {
             AZ_Assert(false, "Trying to upload 0 bytes to buffer");
-            return RHI::AsyncWorkHandle::Null;
+            return nullptr;
         }
+
+        auto waitEvent = [buffer]()
+        {
+            buffer->SetUploadFence(nullptr);
+        };
 
         RHI::Ptr<Fence> uploadFence = Fence::Create();
         uploadFence->Init(device, RHI::FenceState::Reset);
+        buffer->SetUploadFence(uploadFence);
         m_queue->WriteBuffer(*buffer, request.m_byteOffset, AZStd::span<const uint8_t>(sourceData, byteCount));
-        m_queue->Signal(*uploadFence);
+        m_queue->Signal(*uploadFence, waitEvent);
         if (request.m_fenceToSignal)
         {
             m_queue->Signal(static_cast<Fence&>(*request.m_fenceToSignal));
         }
 
-        auto waitEvent = [buffer]()
-        {
-            buffer->SetUploadHandle(RHI::AsyncWorkHandle::Null);
-        };
-
-        // Add the wait event so we can wait for upload if necessary.
-        RHI::AsyncWorkHandle handle = CreateAsyncWork(uploadFence, waitEvent);
-        buffer->SetUploadHandle(handle);
-        m_asyncWaitQueue.UnlockAsyncWorkQueue();
-        return handle;
+        return uploadFence;
     }
 
-    RHI::AsyncWorkHandle AsyncUploadQueue::QueueUpload(const RHI::DeviceStreamingImageExpandRequest& request, uint32_t residentMip)
+    RHI::Ptr<Fence> AsyncUploadQueue::QueueUpload(const RHI::DeviceStreamingImageExpandRequest& request, uint32_t residentMip)
     {
         if (residentMip < request.m_mipSlices.size() || residentMip < 1)
         {
@@ -84,7 +78,7 @@ namespace AZ::WebGPU
 
         RHI::Ptr<Fence> uploadFence = Fence::Create();
         uploadFence->Init(device, RHI::FenceState::Reset);
-
+        image->SetUploadFence(uploadFence);
         CommandQueue::Command command = [=](void* queue)
         {
             AZ_PROFILE_SCOPE(RHI, "Upload Image");
@@ -146,80 +140,25 @@ namespace AZ::WebGPU
             }  
         };
 
-        m_queue->QueueCommand(AZStd::move(command));
-        m_queue->Signal(*uploadFence);
-
-        auto waitEvent = [this, request, image]()
+        auto waitEvent = [request, image]()
         {
-            RHI::AsyncWorkHandle uploadHandle = image->GetUploadHandle();
+            image->SetUploadFence(nullptr);
             if (request.m_completeCallback)
             {
-                if (request.m_waitForUpload)
-                {
-                    request.m_completeCallback();
-                }
-                else
-                {
-                    // Add the callback so it can be processed from the main thread.                       
-                    {
-                        AZStd::unique_lock<AZStd::mutex> lock(m_callbackListMutex);
-                        m_callbackList.insert(AZStd::make_pair(uploadHandle, [request, image]() {
-                            image->SetUploadHandle(RHI::AsyncWorkHandle::Null);
-                            request.m_completeCallback();
-                        }));
-                    }
-                    // We could just add a lambda that calls the request.m_completeCallback() but that could create a crash
-                    // if the image is destroyed before the callback is triggered from the TickBus. Because of this we save the callbacks in this
-                    // class and when and image is destroy, we just execute any pending callback for that image.
-                    AZ::TickBus::QueueFunction([this, uploadHandle]() { ProcessCallback(uploadHandle); });
-                }
+                request.m_completeCallback();
             }
         };
 
+        m_queue->QueueCommand(AZStd::move(command));
+        m_queue->Signal(*uploadFence, waitEvent);
         if (request.m_waitForUpload)
         {
-            // No need to add wait event.
             uploadFence->WaitOnCpu();
-            waitEvent();
+            return nullptr;
         }
         else
         {
-            auto uploadHandle = CreateAsyncWork(uploadFence, waitEvent);
-            image->SetUploadHandle(uploadHandle);
-            m_asyncWaitQueue.UnlockAsyncWorkQueue();
-            return uploadHandle;
-        }
-
-        return RHI::AsyncWorkHandle::Null;
-    }
-
-    void AsyncUploadQueue::WaitForUpload(const RHI::AsyncWorkHandle& workHandle)
-    {
-        m_asyncWaitQueue.WaitToFinish(workHandle);
-        ProcessCallback(workHandle);
-    }
-
-    RHI::AsyncWorkHandle AsyncUploadQueue::CreateAsyncWork(RHI::Ptr<Fence> fence, RHI::DeviceFence::SignalCallback callback /* = nullptr */)
-    {
-        return m_asyncWaitQueue.CreateAsyncWork([fence, callback]()
-        {
-            fence->WaitOnCpu();
-            if (callback)
-            {
-                callback();
-            }
-        });
-    }
-
-    void AsyncUploadQueue::ProcessCallback(const RHI::AsyncWorkHandle& handle)
-    {
-        AZ_PROFILE_SCOPE(RHI, "AsyncUploadQueue: ProcessCallback");
-        AZStd::unique_lock<AZStd::mutex> lock(m_callbackListMutex);
-        auto findIter = m_callbackList.find(handle);
-        if (findIter != m_callbackList.end())
-        {
-            findIter->second();
-            m_callbackList.erase(findIter);
+            return uploadFence;
         }
     }
 }

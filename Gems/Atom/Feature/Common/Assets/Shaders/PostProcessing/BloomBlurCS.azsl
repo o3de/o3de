@@ -11,10 +11,18 @@
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
     Texture2D<float4>     m_inputTexture;
+
+    [[vk::image_format("rgba16f")]]
+    [[access("Write")]]
     RWTexture2D<float4>   m_outputTexture;
 
-    Buffer<float>  m_offsets;
-    Buffer<float>  m_weights;
+    struct BlurData
+    {
+        float m_weight;
+        float m_offset;
+    };
+
+    StructuredBuffer<BlurData> m_blurData;
     
     uint   m_kernelRadius;
     uint   m_direction;
@@ -46,20 +54,20 @@ void MainCS(uint3 dID : SV_DispatchThreadID)
     float2 uv = (dID.xy + 0.5) * PassSrg::m_sourceImageTexelSize;
 
     // Kernel has been normalized beforehand
-    float3 sum = (PassSrg::m_kernelRadius > 0 ? PassSrg::m_weights[0] : 1.0) * 
+    float3 sum = (PassSrg::m_kernelRadius > 0 ? PassSrg::m_blurData[0].m_weight : 1.0) * 
                  PassSrg::m_inputTexture.SampleLevel(PassSrg::LinearSampler, uv, PassSrg::m_mipLevel).rgb;
 
     float2 t = (PassSrg::m_direction ? float2(1.0, 0.0) : float2(0.0, 1.0)) * PassSrg::m_sourceImageTexelSize;
     for(int i = 1; i < PassSrg::m_kernelRadius; ++i)
     {
-        float2 offset = PassSrg::m_offsets[i] * t;
+        float2 offset = PassSrg::m_blurData[i].m_offset * t;
 
         // One side with positive offset
-        sum += PassSrg::m_weights[i] * 
+        sum += PassSrg::m_blurData[i].m_weight * 
             PassSrg::m_inputTexture.SampleLevel(PassSrg::LinearSampler, uv + offset, PassSrg::m_mipLevel).rgb;       
 
         // The other side with negative offset
-        sum += PassSrg::m_weights[i] * 
+        sum += PassSrg::m_blurData[i].m_weight * 
             PassSrg::m_inputTexture.SampleLevel(PassSrg::LinearSampler, uv - offset, PassSrg::m_mipLevel).rgb;    
     }
 

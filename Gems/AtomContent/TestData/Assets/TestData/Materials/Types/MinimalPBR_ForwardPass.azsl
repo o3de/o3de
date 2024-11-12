@@ -8,6 +8,7 @@
 
 #define FORCE_OPAQUE 1
 
+#include <Atom/Features/PBR/LightingDefines.azsli>
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
@@ -21,6 +22,7 @@
 #include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
 #include <Atom/Features/PBR/Lights/IblForward.azsli>
 #include <Atom/Features/PBR/Decals.azsli>
+#include <Atom/Features/VertexDefines.azsli>
 
 ShaderResourceGroup MinimalPBRSrg : SRG_PerMaterial
 {
@@ -38,7 +40,7 @@ struct VSInput
 
 struct VSOutput
 {
-    precise linear centroid float4 m_position : SV_Position;
+    AZ_PRECISION_POSITION_CENTROID float4 m_position : SV_Position;
     float3 m_normal: NORMAL;
     float4 m_tangent : TANGENT;
     float3 m_worldPosition : UV0;
@@ -84,8 +86,10 @@ ForwardPassOutput MinimalPBR_MainPassPS(VSOutput IN)
     float specularF0Factor = 0.5f;
     surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
 
+#if ENABLE_CLEAR_COAT
     // Clear Coat
     surface.clearCoat.InitializeToZero();
+#endif
 
     // ------- LightingData -------
 

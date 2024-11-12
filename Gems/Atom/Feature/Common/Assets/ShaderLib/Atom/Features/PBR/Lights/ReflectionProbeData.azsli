@@ -18,7 +18,9 @@ struct ReflectionProbeData
     float3 m_innerObbHalfLengths;
     bool m_useReflectionProbe;
     bool m_useParallaxCorrection;
-    float3 m_padding;
+    float m_padding1;
+    float m_padding2;
+    float m_padding3;
     [[pad_to(16)]]
 };
 

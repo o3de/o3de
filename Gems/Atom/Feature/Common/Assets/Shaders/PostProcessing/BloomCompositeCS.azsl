@@ -13,6 +13,9 @@
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
     Texture2D<float4>     m_inputTexture;
+
+    [[vk::image_format("rgba16f")]]
+    [[access("Write")]]
     RWTexture2D<float4>   m_outputTexture;
 
     float  m_intensity;

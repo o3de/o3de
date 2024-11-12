@@ -56,7 +56,7 @@ namespace AZ::WebGPU
         srgLayout->SetName(AZ::Name{ "RootConstants" });
 
         // Creates the BindGroup layout
-        BindGroupLayout::Descriptor layoutDesc{ srgLayout, true };
+        BindGroupLayout::Descriptor layoutDesc{ srgLayout, { RHI::ShaderInputBufferIndex(0) } };
         m_bindGroupLayout = BindGroupLayout::Create();
         result = m_bindGroupLayout->Init(device, layoutDesc);
         RETURN_RESULT_IF_UNSUCCESSFUL(result);
@@ -78,7 +78,7 @@ namespace AZ::WebGPU
         Allocation alloc;
         // Check if we need to allocate a new buffer
         if (m_allocations.empty() ||
-            m_allocations.back().m_bufferOffset + size > m_allocations.back().m_buffer->GetDescriptor().m_byteCount)
+            m_allocations.back().m_bufferOffset + size > m_allocations.back().m_bufferView->GetBuffer().GetDescriptor().m_byteCount)
         {
             // Allocate a buffer, create a bind group and update it to point to the newly created buffer.
             Device& device = static_cast<Device&>(GetDevice());
@@ -111,7 +111,7 @@ namespace AZ::WebGPU
 
             Allocation& newAlloc = m_allocations.emplace_back();
             newAlloc.m_bindGroup = bindGroup;
-            newAlloc.m_buffer = rootConstantBuffer;
+            newAlloc.m_bufferView = bufferView;
             newAlloc.m_bufferOffset = 0;
         }
 

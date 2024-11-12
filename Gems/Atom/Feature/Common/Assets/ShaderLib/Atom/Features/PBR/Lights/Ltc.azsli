@@ -125,6 +125,7 @@ float3 ClipEdge(in float3 pointAboveHorizon, in float3 pointBelowHorizon)
     return pointAboveHorizon.z * pointBelowHorizon - pointBelowHorizon.z * pointAboveHorizon;
 }
 
+#if ENABLE_QUAD_LIGHTS
 // Clips a quad to above the xy plane in positive z space. Returns number of points after
 // clip in vertexCount. This could have a 5 point result if only one corner is clipped.
 void ClipQuadToHorizon(inout float3 p[5], out int vertexCount)
@@ -433,7 +434,9 @@ void LtcQuadEvaluate(
     diffuseOut = diffuse;
     specularOut = specularRgb;
 }
+#endif
 
+#if ENABLE_POLYGON_LTC_LIGHTS
 // Checks an edge against the horizon and integrates it.
 //   p0 - First point
 //   p1 - Second point
@@ -681,3 +684,4 @@ void LtcPolygonEvaluate(
     specularRgbOut = specularRgb;
 
 }
+#endif

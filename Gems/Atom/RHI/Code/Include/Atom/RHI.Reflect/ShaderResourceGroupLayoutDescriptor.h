@@ -111,9 +111,13 @@ namespace AZ::RHI
 
     enum class ShaderInputImageAccess : uint32_t
     {
-        Read = 0,
-        ReadWrite
+        Unknown = 0,
+        Read = AZ_BIT(0),
+        Write = AZ_BIT(1),
+        ReadWrite = Read | Write
     };
+
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::ShaderInputImageAccess);
 
     enum class ShaderInputImageType : uint32_t
     {
@@ -374,7 +378,12 @@ namespace AZ::RHI
         static void Reflect(ReflectContext* context);
 
         ShaderInputStaticSamplerDescriptor() = default;
-        ShaderInputStaticSamplerDescriptor(const Name& name, const SamplerState& samplerState, uint32_t registerId, uint32_t spaceId);
+        ShaderInputStaticSamplerDescriptor(
+            const Name& name,
+            const SamplerState& samplerState,
+            uint32_t registerId,
+            uint32_t spaceId,
+            ShaderInputSamplerType type = ShaderInputSamplerType::Filtering);
 
         HashValue64 GetHash(HashValue64 seed = HashValue64{ 0 }) const;
 
@@ -397,6 +406,9 @@ namespace AZ::RHI
         //! If an SRG doesn't contain any unbounded arrays all resources in it 
         //! will use the same space id.
         uint32_t m_spaceId = UndefinedRegisterSlot;
+
+        //! Required type for the Sampler bound to this shader input. Needed for some platforms (e.g. WebGPU)
+        ShaderInputSamplerType m_type = ShaderInputSamplerType::Filtering;
     };
 
     //! Returns the string name for the shader input type enum.

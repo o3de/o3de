@@ -462,7 +462,14 @@ namespace AZ
             m_currentShaderVariantId = shaderVariantId;
         }
 
-        void DynamicDrawContext::DrawIndexed(const void* vertexData, uint32_t vertexCount, const void* indexData, uint32_t indexCount, RHI::IndexFormat indexFormat, Data::Instance < ShaderResourceGroup> drawSrg)
+        void DynamicDrawContext::DrawIndexed(
+            const void* vertexData,
+            uint32_t vertexCount,
+            const void* indexData,
+            uint32_t indexCount,
+            RHI::IndexFormat indexFormat,
+            Data::Instance<ShaderResourceGroup> drawSrg,
+            AZStd::span<const uint8_t> rootConstants)
         {
             if (!m_initialized)
             {
@@ -560,11 +567,23 @@ namespace AZ
             // Set stencil reference. Used when stencil is enabled.
             drawItem.SetStencilRef(m_stencilRef);
 
+            // Set Root constants
+            if (!rootConstants.empty())
+            {
+                drawItemInfo.m_rootConstants.resize(rootConstants.size()); 
+                ::memcpy(drawItemInfo.m_rootConstants.data(), rootConstants.data(), rootConstants.size());
+                drawItem.SetRootConstants(drawItemInfo.m_rootConstants.data(), aznumeric_caster(drawItemInfo.m_rootConstants.size()));
+            }
+
             drawItemInfo.m_sortKey = m_sortKey++;
             m_cachedDrawItems.emplace_back(AZStd::move(drawItemInfo));
         }
 
-        void DynamicDrawContext::DrawLinear(const void* vertexData, uint32_t vertexCount, Data::Instance<ShaderResourceGroup> drawSrg)
+        void DynamicDrawContext::DrawLinear(
+            const void* vertexData,
+            uint32_t vertexCount,
+            Data::Instance<ShaderResourceGroup> drawSrg,
+            AZStd::span<const uint8_t> rootConstants)
         {
             if (!m_initialized)
             {
@@ -645,6 +664,14 @@ namespace AZ
             if (m_useViewport)
             {
                 drawItem.SetViewports(&m_viewport, 1);
+            }
+
+            // Set Root constants
+            if (!rootConstants.empty())
+            {
+                drawItemInfo.m_rootConstants.resize(rootConstants.size());
+                ::memcpy(drawItemInfo.m_rootConstants.data(), rootConstants.data(), rootConstants.size());
+                drawItem.SetRootConstants(drawItemInfo.m_rootConstants.data(), aznumeric_caster(drawItemInfo.m_rootConstants.size()));
             }
 
             drawItemInfo.m_sortKey = m_sortKey++;

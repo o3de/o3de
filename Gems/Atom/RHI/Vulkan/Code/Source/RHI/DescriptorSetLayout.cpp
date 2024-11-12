@@ -296,6 +296,7 @@ namespace AZ
                     case RHI::ShaderInputImageAccess::Read:
                         vbinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
                         break;
+                    case RHI::ShaderInputImageAccess::Write:
                     case RHI::ShaderInputImageAccess::ReadWrite:
                         vbinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
                         break;
@@ -421,6 +422,7 @@ namespace AZ
                 case RHI::ShaderInputImageAccess::Read:
                     vbinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
                     break;
+                case RHI::ShaderInputImageAccess::Write:
                 case RHI::ShaderInputImageAccess::ReadWrite:
                     vbinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
                     break;

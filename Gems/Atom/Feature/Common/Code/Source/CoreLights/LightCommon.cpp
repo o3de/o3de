@@ -59,7 +59,8 @@ namespace AZ::Render::LightCommon
             desc.m_bufferName = inputBufferName;
             desc.m_bufferSrgName = inputBufferSrgName;
             desc.m_elementCountSrgName = inputElementCountSrgName;
-            desc.m_elementFormat = AZ::RHI::Format::R32_UINT;
+            desc.m_elementFormat = AZ::RHI::Format::Unknown;
+            desc.m_elementSize = sizeof(uint32_t);
             desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
 
             outputVisibleBufferHandlers.emplace_back(GpuBufferHandler(desc));

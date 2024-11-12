@@ -232,10 +232,6 @@ namespace AZ::RHI
         // Remap write to read/write for Shader scope attachments. This is because  
         // a write Shader scope is a UAV under the hood, and UAVs are read/write.
         case ScopeAttachmentUsage::Shader:
-            if (access == ScopeAttachmentAccess::Write)
-            {
-                return ScopeAttachmentAccess::ReadWrite;
-            }
             return access;
 
         // Disallow read/write access for Copy scope attachments as this is nonsensical, Copy operations

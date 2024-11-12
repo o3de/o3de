@@ -10,6 +10,11 @@
 #error Do not include this file directly. Include the main .srgi file instead.
 #endif
 
+#ifndef ENABLE_DECALS
+#define ENABLE_DECALS               1
+#endif
+
+#if !AZ_TRAIT_SMALL_SRGS || ENABLE_DECALS
 partial ShaderResourceGroup ViewSrg
 { 
     struct Decal
@@ -30,7 +35,7 @@ partial ShaderResourceGroup ViewSrg
     };
 
     StructuredBuffer<Decal> m_decals; 
-    Buffer<uint> m_visibleDecalIndices; 
+    StructuredBuffer<uint> m_visibleDecalIndices; 
 
     // Each texture array stores all the decals for one size permutation.
     // e.g. m_decalTextureArray0 might store 24 textures @128x128, 
@@ -52,3 +57,4 @@ partial ShaderResourceGroup ViewSrg
     uint m_decalCount;
     uint m_visibleDecalCount;
 }
+#endif

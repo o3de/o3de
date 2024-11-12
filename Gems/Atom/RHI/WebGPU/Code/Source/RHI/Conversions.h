@@ -27,7 +27,6 @@ namespace AZ::WebGPU
     wgpu::TextureFormat ConvertImageFormat(RHI::Format format, bool raiseAsserts = true);
     RHI::Format ConvertImageFormat(wgpu::TextureFormat format);
     wgpu::VertexFormat ConvertVertexFormat(RHI::Format format);
-    RHI::Format ConvertVertexFormat(wgpu::VertexFormat format);
     wgpu::TextureDimension ConvertImageDimension(RHI::ImageDimension dimension);
     wgpu::Extent3D ConvertImageSize(const RHI::Size& size);
     wgpu::TextureUsage ConvertImageBinding(RHI::ImageBindFlags flags);

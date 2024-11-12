@@ -9,24 +9,38 @@
 #include <RHI/WebGPU.h>
 #include <RHI/CommandQueueContext.h>
 #include <RHI/Device.h>
+#include <RHI/Fence.h>
 
 namespace AZ::WebGPU
 {
-    void CommandQueueContext::Init(RHI::Device& deviceBase)
+    RHI::ResultCode CommandQueueContext::Init(RHI::Device& deviceBase, const Descriptor& descriptor)
     {
+        m_descriptor = descriptor;
         m_currentFrameIndex = 0;
 
         // WebGPU only supports one queue for now.
-        RHI::CommandQueueDescriptor descriptor;
+        RHI::CommandQueueDescriptor commandQueueDescriptor;
         // WebGPU doesn't support multithreading for now.
-        descriptor.m_executePolicy = RHI::CommandQueuePolicy::Serial;
+        commandQueueDescriptor.m_executePolicy = RHI::CommandQueuePolicy::Serial;
         m_commandQueue = CommandQueue::Create();
-        m_commandQueue->Init(deviceBase, descriptor);
+        RHI::ResultCode result = m_commandQueue->Init(deviceBase, commandQueueDescriptor);
+        RETURN_RESULT_IF_UNSUCCESSFUL(result);
+        // Build frame fences for queue
+        AZ_Assert(GetFrameCount() <= m_frameFences.size(), "FrameCount is too large.");
+        for (uint32_t index = 0; index < GetFrameCount(); ++index)
+        {
+            RHI::Ptr<Fence> fence = Fence::Create();
+            result = fence->Init(deviceBase, RHI::FenceState::Signaled);
+            RETURN_RESULT_IF_UNSUCCESSFUL(result);
+            m_frameFences[index] = fence;
+        }
+        return result;
     }
 
     void CommandQueueContext::Shutdown()
     {
         WaitForIdle();
+        m_frameFences.fill(nullptr);
         ForAllQueues(
             [](RHI::Ptr<CommandQueue>& commandQueue)
             {
@@ -59,13 +73,20 @@ namespace AZ::WebGPU
         AZ_PROFILE_SCOPE(RHI, "CommandQueueContext: End");
 
         ForAllQueues(
-            [](RHI::Ptr<CommandQueue>& commandQueue)
+            [this](RHI::Ptr<CommandQueue>& commandQueue)
             {
+                commandQueue->Signal(*GetFrameFence(commandQueue->GetHardwareQueueClass()));
                 commandQueue->FlushCommands();
             });
 
         // Advance to the next frame and wait for its resources to be available before continuing.
         m_currentFrameIndex = (m_currentFrameIndex + 1) % aznumeric_cast<uint32_t>(RHI::Limits::Device::FrameCountMax);
+
+        {
+            AZ_PROFILE_SCOPE(RHI, "Wait on Fences");
+
+            m_frameFences[m_currentFrameIndex]->WaitOnCpu();
+        }
     }
 
     void CommandQueueContext::ExecuteWork(
@@ -91,5 +112,13 @@ namespace AZ::WebGPU
         return *m_commandQueue;
     }
 
+    RHI::Ptr<Fence> CommandQueueContext::GetFrameFence([[maybe_unused]] RHI::HardwareQueueClass hardwareQueueClass) const
+    {
+        return m_frameFences[m_currentFrameIndex];
+    }
 
+    uint32_t CommandQueueContext::GetFrameCount() const
+    {
+        return m_descriptor.m_frameCountMax;
+    }
 }

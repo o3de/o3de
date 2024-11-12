@@ -85,10 +85,12 @@ namespace AZ::WebGPU
     void BufferPool::ShutdownResourceInternal(RHI::DeviceResource& resource)
     {
         auto& buffer = static_cast<Buffer&>(resource);
-        auto& device = static_cast<Device&>(GetDevice());
 
         // Wait for any pending streaming upload.
-        device.GetAsyncUploadQueue().WaitForUpload(buffer.GetUploadHandle());
+        if (auto uploadFence = buffer.GetUploadFence())
+        {
+            uploadFence->WaitOnCpu();
+        }
 
         if (auto* resolver = GetResolver())
         {

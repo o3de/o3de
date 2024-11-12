@@ -19,6 +19,7 @@ namespace AZ::WebGPU
 {
     class Device;
     class BindGroupLayout;
+    class MergedShaderResourceGroupPool;
 
     class PipelineLayout final
         : public RHI::DeviceObject
@@ -36,12 +37,14 @@ namespace AZ::WebGPU
             RHI::ConstPtr<RHI::PipelineLayoutDescriptor> m_pipelineLayoutDescriptor;
         };
 
+        using ShaderResourceGroupBitset = AZStd::bitset<RHI::Limits::Pipeline::ShaderResourceGroupCountMax>;
+
         static RHI::Ptr<PipelineLayout> Create();
         RHI::ResultCode Init(Device& device, const Descriptor& descriptor);
         ~PipelineLayout() = default;
 
         //! Returns the SRG binding slot associated with the SRG flat index.
-        uint32_t GetSlotByIndex(uint32_t index) const;
+        ShaderResourceGroupBitset GetSlotsByIndex(uint32_t index) const;
 
         //! Returns the SRG flat index associated with the SRG binding slot.
         uint32_t GetIndexBySlot(uint32_t slot) const;
@@ -58,6 +61,10 @@ namespace AZ::WebGPU
         const wgpu::PipelineLayout& GetNativePipelineLayout() const;
         wgpu::PipelineLayout& GetNativePipelineLayout();
 
+        MergedShaderResourceGroupPool* GetMergedShaderResourceGroupPool(uint32_t index) const;
+        bool IsBindGroupMerged(uint32_t index) const;
+        bool IsRootConstantBindGroupMerged() const;
+
     private:
         PipelineLayout() = default;
 
@@ -72,10 +79,14 @@ namespace AZ::WebGPU
         //////////////////////////////////////////////////////////////////////////
 
         RHI::ResultCode BuildNativePipelineLayout();
+        RHI::ConstPtr<RHI::ShaderResourceGroupLayout> MergeShaderResourceGroupLayouts(
+            const AZStd::vector<const RHI::ShaderResourceGroupLayout*>& srgLayoutList, uint32_t spaceId) const;
+        RHI::ResultCode BuildMergedShaderResourceGroupPools();
+
 
         /// Tables for mapping between SRG slots (sparse) to SRG indices (packed).
-        AZStd::array<uint8_t, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_slotToIndexTable;
-        AZStd::fixed_vector<uint8_t, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_indexToSlotTable;
+        AZStd::array<uint8_t, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_slotToIndex;
+        AZStd::array<ShaderResourceGroupBitset, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_indexToSlot;
 
         uint32_t m_rootConstantSize = 0;
         uint32_t m_rootConstantIndex = ~0u;
@@ -84,5 +95,9 @@ namespace AZ::WebGPU
         //! Native handle
         wgpu::PipelineLayout m_wgpuPipelineLayout = nullptr;
         AZStd::vector<RHI::Ptr<BindGroupLayout>> m_bindGroupLayouts;
+
+        AZStd::array<RHI::Ptr<MergedShaderResourceGroupPool>, RHI::Limits::Pipeline::ShaderResourceGroupCountMax>
+            m_mergedShaderResourceGroupPools;
+
     };
 }

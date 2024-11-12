@@ -37,7 +37,7 @@ class DirectionalShadowCalculator
         m_directionalLightExponentialShadowmap = expShadowmap;
     }
 #else
-    void SetShadowmaps(Texture2DArray<float> dirShadowMap, float dummyExpShadowMap)
+    void SetShadowmaps(Texture2DArray<float> dirShadowMap)
     {
         m_directionalLightShadowmap = dirShadowMap;
     }
@@ -199,10 +199,19 @@ void DirectionalShadowCalculator::ComputeShadowCoords()
 #if !USING_COMPUTE_SHADER_DIRECTIONAL_LIGHT
     if (m_receiverShadowPlaneBiasEnable)
     {
-        for(int i = 0 ; i < m_cascadeCount; ++i)
+        [unroll]
+        for(int i = 0 ; i < ViewSrg::MaxCascadeCount; ++i)
         {
-            m_shadowPosDX[i] = ddx_fine(m_shadowCoords[i]);
-            m_shadowPosDY[i] = ddy_fine(m_shadowCoords[i]);
+            if (i < m_cascadeCount)
+            {
+                m_shadowPosDX[i] = ddx_fine(m_shadowCoords[i]);
+                m_shadowPosDY[i] = ddy_fine(m_shadowCoords[i]);
+            }
+            else
+            {
+                m_shadowPosDX[i] = float3(0, 0, 0);
+                m_shadowPosDY[i] = float3(0, 0, 0);
+            }
         }
     }
 #endif
@@ -382,7 +391,7 @@ float DirectionalShadowCalculator::GetVisibilityFromLightEsm()
 
 float DirectionalShadowCalculator::GetVisibilityFromLightEsmPcf()
 {
-#if #if ENABLE_ESM_SHADOW
+#if ENABLE_ESM_SHADOW
     for (int indexOfCascade = m_minCascade; indexOfCascade <= m_maxCascade; ++indexOfCascade)
     {
         const float3 shadowCoord = m_shadowCoords[indexOfCascade];

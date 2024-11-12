@@ -272,18 +272,20 @@ namespace AZ::RHI
                 ->Field("m_name", &ShaderInputStaticSamplerDescriptor::m_name)
                 ->Field("m_samplerState", &ShaderInputStaticSamplerDescriptor::m_samplerState)
                 ->Field("m_registerId", &ShaderInputStaticSamplerDescriptor::m_registerId)
-                ->Field("m_spaceId", &ShaderInputStaticSamplerDescriptor::m_spaceId);
+                ->Field("m_spaceId", &ShaderInputStaticSamplerDescriptor::m_spaceId)
+                ->Field("m_type", &ShaderInputStaticSamplerDescriptor::m_type);
         }
 
         ShaderInputStaticSamplerIndex::Reflect(context);
     }
 
     ShaderInputStaticSamplerDescriptor::ShaderInputStaticSamplerDescriptor(
-        const Name& name, const SamplerState& samplerState, uint32_t registerId, uint32_t spaceId)
+        const Name& name, const SamplerState& samplerState, uint32_t registerId, uint32_t spaceId, ShaderInputSamplerType type)
         : m_name{name}
         , m_samplerState{ samplerState }
         , m_registerId{ registerId }
         , m_spaceId{ spaceId }
+        , m_type{ type }
     {}
 
     HashValue64 ShaderInputStaticSamplerDescriptor::GetHash(HashValue64 seed) const
@@ -291,6 +293,7 @@ namespace AZ::RHI
         seed = TypeHash64(m_name.GetHash(), seed);
         seed = m_samplerState.GetHash(seed);
         seed = TypeHash64(m_registerId, seed);
+        seed = TypeHash64(m_type, seed);
         return seed;
     }
 
@@ -360,6 +363,8 @@ namespace AZ::RHI
             return "ImageRead";
         case ShaderInputImageAccess::ReadWrite:
             return "ImageReadWrite";
+        case ShaderInputImageAccess::Write:
+            return "ImageWrite";
         }
         return "";
     }

@@ -369,7 +369,8 @@ namespace AZ::RHI
         // The image must have the correct bind flags for the slot.
         const bool isValidAccess =
             (shaderInputImage.m_access == ShaderInputImageAccess::Read && CheckBitsAll(imageDescriptor.m_bindFlags, ImageBindFlags::ShaderRead)) ||
-            (shaderInputImage.m_access == ShaderInputImageAccess::ReadWrite && CheckBitsAll(imageDescriptor.m_bindFlags, ImageBindFlags::ShaderReadWrite));
+            (shaderInputImage.m_access == ShaderInputImageAccess::ReadWrite && CheckBitsAll(imageDescriptor.m_bindFlags, ImageBindFlags::ShaderReadWrite)) ||
+            (shaderInputImage.m_access == ShaderInputImageAccess::Write && CheckBitsAll(imageDescriptor.m_bindFlags, ImageBindFlags::ShaderWrite));
 
         if (!isValidAccess)
         {
@@ -379,7 +380,7 @@ namespace AZ::RHI
             return false;
         }
 
-        if (shaderInputImage.m_access == ShaderInputImageAccess::ReadWrite)
+        if (CheckBitsAll(shaderInputImage.m_access,ShaderInputImageAccess::ReadWrite))
         {
             // An image view assigned to an input with read-write access must be an attachment on the frame scheduler.
             if (!frameAttachment)

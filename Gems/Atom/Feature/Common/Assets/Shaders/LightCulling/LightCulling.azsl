@@ -39,7 +39,8 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         float m_affectsGIFactor;
         bool m_affectsGI;
         uint m_lightingChannelMask;
-        float2 m_padding;
+        float m_padding1;
+        float m_padding2;
     };
 
     struct SimpleSpotLight
@@ -69,7 +70,8 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         float m_affectsGIFactor;
         bool m_affectsGI;
         uint m_lightingChannelMask;
-        float2 m_padding;
+        float m_padding1;
+        float m_padding2;
     };
 
     struct DiskLight

@@ -50,6 +50,9 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     float m_weight3;
     float m_weight4;
 
+    float m_pad1;
+    float m_pad2;
+    
     // Destination LUT
     RWTexture3D<float4> m_blendedLut;
     uint3 m_blendedLutDimensions;
@@ -102,22 +105,22 @@ void MainCS(uint3 dispatch_id: SV_DispatchThreadID)
     float4 output;
     float3 blendedColor = baseColor * PassSrg::m_weight0;    
 
-    if (o_numSourceLuts > 0)
+    if (o_numSourceLuts > 0.0)
     {
         float3 linearColor1 = GetSourceLutLinearColor(baseColor, PassSrg::m_sourceLut1, (ShaperType)PassSrg::m_sourceLut1ShaperType, PassSrg::m_sourceLut1ShaperBias, PassSrg::m_sourceLut1ShaperScale);
         blendedColor = blendedColor + (linearColor1 * PassSrg::m_weight1);
     }
-    if (o_numSourceLuts > 1)
+    if (o_numSourceLuts > 1.0)
     {
         float3 linearColor2 = GetSourceLutLinearColor(baseColor, PassSrg::m_sourceLut2, (ShaperType)PassSrg::m_sourceLut2ShaperType, PassSrg::m_sourceLut2ShaperBias, PassSrg::m_sourceLut2ShaperScale);
         blendedColor = blendedColor + (linearColor2 * PassSrg::m_weight2);
     }
-    if (o_numSourceLuts > 2)
+    if (o_numSourceLuts > 2.0)
     {
         float3 linearColor3 = GetSourceLutLinearColor(baseColor, PassSrg::m_sourceLut3, (ShaperType)PassSrg::m_sourceLut3ShaperType, PassSrg::m_sourceLut3ShaperBias, PassSrg::m_sourceLut3ShaperScale);
         blendedColor = blendedColor + (linearColor3 * PassSrg::m_weight3);
     }
-    if (o_numSourceLuts > 3)
+    if (o_numSourceLuts > 3.0)
     {
         float3 linearColor4 = GetSourceLutLinearColor(baseColor, PassSrg::m_sourceLut4, (ShaperType)PassSrg::m_sourceLut4ShaperType, PassSrg::m_sourceLut4ShaperBias, PassSrg::m_sourceLut4ShaperScale);
         blendedColor = blendedColor + (linearColor4 * PassSrg::m_weight4);

@@ -62,12 +62,16 @@ namespace AZ
 
             RPI::DownsampleMipChainPassData m_passData;
 
-            AZStd::vector<AZStd::vector<float>> m_weightData;
-            AZStd::vector<AZStd::vector<float>> m_offsetData;
+            struct BlurData
+            {
+                float m_weight;
+                float m_offset;
+            };
+
+            AZStd::vector<AZStd::vector<BlurData>> m_blurData;
             AZStd::vector<uint32_t> m_kernelRadiusData;
 
-            AZStd::vector<Data::Instance<RPI::Buffer>> m_weightBuffer;
-            AZStd::vector<Data::Instance<RPI::Buffer>> m_offsetBuffer;
+            AZStd::vector<Data::Instance<RPI::Buffer>> m_blurDataBuffer;
 
             AZStd::vector<float> m_kernelScreenPercents = {
                 AZ::Render::Bloom::DefaultScreenPercentStage0,
@@ -104,8 +108,7 @@ namespace AZ
             static RPI::Ptr<BloomBlurChildPass> Create(const RPI::PassDescriptor& descriptor);
 
             void UpdateParameters(
-                Data::Instance<RPI::Buffer> offsetBuffer,
-                Data::Instance<RPI::Buffer> weightBuffer,
+                Data::Instance<RPI::Buffer> buffer,
                 uint32_t radius,
                 bool direction,
                 uint32_t mipLevel,
@@ -119,8 +122,7 @@ namespace AZ
             void FrameBeginInternal(FramePrepareParams params) override;
 
             // output texture vertical dimension required by compute shader
-            RHI::ShaderInputNameIndex m_offsetsInputIndex = "m_offsets";
-            RHI::ShaderInputNameIndex m_weightsInputIndex = "m_weights";
+            RHI::ShaderInputNameIndex m_blurDataInputIndex = "m_blurData";
 
             RHI::ShaderInputNameIndex m_kernelRadiusInputIndex = "m_kernelRadius";
             RHI::ShaderInputNameIndex m_directionInputIndex = "m_direction";
@@ -128,8 +130,7 @@ namespace AZ
             RHI::ShaderInputNameIndex m_sourceImageTexelSizeInputIndex = "m_sourceImageTexelSize";
             RHI::ShaderInputNameIndex m_mipLevelInputIndex = "m_mipLevel";
 
-            Data::Instance<RPI::Buffer> m_offsetBuffer;
-            Data::Instance<RPI::Buffer> m_weightBuffer;
+            Data::Instance<RPI::Buffer> m_blurDataBuffer;
 
             uint32_t m_sourceImageWidth;
             uint32_t m_sourceImageHeight;

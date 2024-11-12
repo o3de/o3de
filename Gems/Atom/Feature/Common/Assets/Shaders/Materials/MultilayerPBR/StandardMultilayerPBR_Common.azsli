@@ -82,18 +82,6 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
         MipFilter = Linear;
         MaxAnisotropy = 16;
     };
-
-    Texture2D m_brdfMap;
-
-    Sampler m_samplerBrdf
-    {
-        AddressU = Clamp;
-        AddressV = Clamp;
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-    };
-
 }
 
 // ------ Shader Options ----------------------------------------
@@ -185,29 +173,25 @@ real3 GetApplicableBlendMaskValues(LayerBlendSource blendSource, float2 blendMas
 
     if(o_layer2_enabled || o_layer3_enabled)
     {
-        switch(blendSource)
+        if(blendSource == LayerBlendSource::Displacement)
         {
-            case LayerBlendSource::Displacement:
-                // In this case the blend mask has no effect, returning (1,1,1) disables any impact of the mask.
-                blendSourceValues = real3(1,1,1);
-                break;
-            case LayerBlendSource::BlendMaskTexture:
-            case LayerBlendSource::Displacement_With_BlendMaskTexture:
-                if (customDerivatives)
-                {
-                    blendSourceValues = real3(MaterialSrg::m_blendMaskTexture.SampleGrad(MaterialSrg::m_sampler, blendMaskUv, uvDxDy.xy, uvDxDy.zw).rgb);
-                }
-                else
-                {
-                    blendSourceValues = real3(MaterialSrg::m_blendMaskTexture.Sample(MaterialSrg::m_sampler, blendMaskUv).rgb);
-                }
-                break;
-            case LayerBlendSource::BlendMaskVertexColors:
-            case LayerBlendSource::Displacement_With_BlendMaskVertexColors:
-                blendSourceValues = blendMaskVertexColors;
-                break;
-            case LayerBlendSource::Fallback:
-                break;
+            // In this case the blend mask has no effect, returning (1,1,1) disables any impact of the mask.
+            blendSourceValues = real3(1,1,1);
+        }
+        else if (blendSource == LayerBlendSource::BlendMaskTexture || blendSource == LayerBlendSource::Displacement_With_BlendMaskTexture)
+        {
+            if (customDerivatives)
+            {
+                blendSourceValues = real3(MaterialSrg::m_blendMaskTexture.SampleGrad(MaterialSrg::m_sampler, blendMaskUv, uvDxDy.xy, uvDxDy.zw).rgb);
+            }
+            else
+            {
+                blendSourceValues = real3(MaterialSrg::m_blendMaskTexture.Sample(MaterialSrg::m_sampler, blendMaskUv).rgb);
+            }
+        }
+        else if(blendSource == LayerBlendSource::BlendMaskVertexColors || blendSource == LayerBlendSource::Displacement_With_BlendMaskVertexColors)
+        {
+            blendSourceValues = blendMaskVertexColors;
         }
 
         if(!o_layer2_enabled)
@@ -375,6 +359,7 @@ float3 GetLayerDepthValues(float2 uv, float2 uv_ddx, float2 uv_ddy)
 {
     float3 layerDepthValues = float3(0,0,0);
     
+#if ENABLE_PARALLAX
     // layer1
     {
         if(o_layer1_o_useHeightmap)
@@ -427,6 +412,7 @@ float3 GetLayerDepthValues(float2 uv, float2 uv_ddx, float2 uv_ddy)
         layerDepthValues.b -= MaterialSrg::m_layer3_m_heightmapOffset;
 
     }
+#endif
     
     return layerDepthValues;
 }
@@ -440,6 +426,7 @@ float3 GetLayerDepthValues(float2 uv, float2 uv_ddx, float2 uv_ddy)
 //! @return new layer depth values that have been adjusted according to the layerMaskValues
 real3 ApplyBlendMaskToDepthValues(real3 blendMaskValues, real3 layerDepthValues, real zeroMaskDisplacement)
 {
+#if ENABLE_PARALLAX
     if(o_layer2_enabled || o_layer3_enabled)
     {        
         // We add to the depth value rather than lerp toward m_displacementMin to avoid squashing the topology, but instead lower it out of sight.
@@ -456,6 +443,7 @@ real3 ApplyBlendMaskToDepthValues(real3 blendMaskValues, real3 layerDepthValues,
             layerDepthValues.b += dropoffRange * (1-blendMaskValues.g);
         }
     }
+#endif
 
     return layerDepthValues;
 }
