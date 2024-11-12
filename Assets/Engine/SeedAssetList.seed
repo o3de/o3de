@@ -7,35 +7,35 @@
             "assetId": {
                 "guid": "{2FB1A7EF-557C-577E-94E6-DC1F331E374F}"
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "config/config.dat"
         },
         {
             "assetId": {
                 "guid": "{1103CB60-BE8D-56C0-AE9D-98EF531C7106}"
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "config/gpu/android_gpus.xml"
         },
         {
             "assetId": {
                 "guid": "{AD7E02A2-5658-5138-95F2-47347A9C1BE1}"
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "config/gpu/android_models.xml"
         },
         {
             "assetId": {
                 "guid": "{7646BFFB-B94B-5593-8669-9B387B4669D6}"
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "config/gpu/ios_models.xml"
         },
         {
             "assetId": {
                 "guid": "{F408D747-032E-5409-BBDF-2C4AAA5FD385}"
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "config/perfhud_pc.xml"
         },
         {
@@ -43,7 +43,7 @@
                 "guid": "{34B60E74-28FA-57C4-9A2E-77515A083AC5}",
                 "subId": 1000
             },
-            "platformFlags": 127,
+            "platformFlags": 383,
             "pathHint": "engineassets/icons/averagememoryusage.tif.streamingimage"
         },
         {
@@ -51,7 +51,7 @@
                 "guid": "{D84DBC88-3637-5876-B249-E92EA9BCD0F5}",
                 "subId": 1000
             },
-            "platformFlags": 127,
+            "platformFlags": 383,
             "pathHint": "engineassets/icons/highmemoryusage.tif.streamingimage"
         },
         {
@@ -59,7 +59,7 @@
                 "guid": "{98BA37F2-74C0-54CD-8109-F71276E834FE}",
                 "subId": 1000
             },
-            "platformFlags": 127,
+            "platformFlags": 383,
             "pathHint": "engineassets/icons/livepreview.tif.streamingimage"
         },
         {
@@ -67,7 +67,7 @@
                 "guid": "{DAC6670C-4A48-5661-B0DC-030071B2F2AB}",
                 "subId": 1000
             },
-            "platformFlags": 127,
+            "platformFlags": 383,
             "pathHint": "engineassets/icons/lowmemoryusage.tif.streamingimage"
         },
         {
@@ -75,7 +75,7 @@
                 "guid": "{9AF56C8A-4B9F-5B20-A77D-E30114E032D6}",
                 "subId": 1000
             },
-            "platformFlags": 127,
+            "platformFlags": 383,
             "pathHint": "engineassets/icons/navigationprocessing.tif.streamingimage"
         },
         {
@@ -83,7 +83,7 @@
                 "guid": "{B6A22033-75B8-5580-80D7-0568C08AAFF3}",
                 "subId": 1000
             },
-            "platformFlags": 127,
+            "platformFlags": 383,
             "pathHint": "engineassets/icons/nullsoundsystem.tif.streamingimage"
         },
         {
@@ -91,7 +91,7 @@
                 "guid": "{8AE41B60-4004-5749-8B50-5EF6E5151342}",
                 "subId": 1000
             },
-            "platformFlags": 127,
+            "platformFlags": 383,
             "pathHint": "engineassets/icons/shadercompiling.tif.streamingimage"
         },
         {
@@ -99,7 +99,7 @@
                 "guid": "{B150AA1E-B38A-5827-AABE-A072E7C2477F}",
                 "subId": 1000
             },
-            "platformFlags": 127,
+            "platformFlags": 383,
             "pathHint": "engineassets/icons/streaming.tif.streamingimage"
         },
         {
@@ -107,105 +107,105 @@
                 "guid": "{F43241FB-ECDE-55A9-BA59-AE19AF495F62}",
                 "subId": 1000
             },
-            "platformFlags": 127,
+            "platformFlags": 383,
             "pathHint": "engineassets/icons/streamingterrain.tif.streamingimage"
         },
         {
             "assetId": {
                 "guid": "{E03A8D59-7F4C-5C84-9D05-339A65C65E2C}"
             },
-            "platformFlags": 127,
+            "platformFlags": 383,
             "pathHint": "fonts/default-ui.font"
         },
         {
             "assetId": {
                 "guid": "{D4279574-B13F-5B71-B5D2-BE04FA3A0C81}"
             },
-            "platformFlags": 127,
+            "platformFlags": 383,
             "pathHint": "fonts/default.font"
         },
         {
             "assetId": {
                 "guid": "{368A249D-7AC3-5B44-A6FC-8FDDF7C2AA62}"
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "config/cvargroups/sys_spec_full.cfg"
         },
         {
             "assetId": {
                 "guid": "{FD38C182-1AFC-514C-99E5-BB1AB60C4A31}"
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "config/spec/android_high.cfg"
         },
         {
             "assetId": {
                 "guid": "{A81A509B-C473-583A-9675-AC159B274231}"
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "config/spec/android_high_nogmem.cfg"
         },
         {
             "assetId": {
                 "guid": "{08D52EFB-D7FB-5266-905F-1599F8D29C77}"
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "config/spec/android_low.cfg"
         },
         {
             "assetId": {
                 "guid": "{78605B06-1772-5B60-AEF4-4F5DD3AAA665}"
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "config/spec/android_malit760.cfg"
         },
         {
             "assetId": {
                 "guid": "{9452506B-6F3D-5907-B631-78AD00C7A555}"
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "config/spec/android_medium.cfg"
         },
         {
             "assetId": {
                 "guid": "{E68C7CB3-DE0B-5A2C-914B-F2E50F48D4F3}"
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "config/spec/android_veryhigh.cfg"
         },
         {
             "assetId": {
                 "guid": "{6971FAB8-2ABE-5830-AE34-081B35970662}"
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "config/spec/ios_high.cfg"
         },
         {
             "assetId": {
                 "guid": "{ECFC3EF0-4B9D-504B-8DC6-231CA22E2EDB}"
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "config/spec/ios_low.cfg"
         },
         {
             "assetId": {
                 "guid": "{3B603071-F68A-515F-BE93-7592E08EA56B}"
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "config/spec/ios_medium.cfg"
         },
         {
             "assetId": {
                 "guid": "{7DC7B81A-6E95-567E-8BBA-30957B97312A}"
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "config/spec/ios_veryhigh.cfg"
         },
         {
             "assetId": {
                 "guid": "{2DEEC017-D5F2-585D-A729-F68D51AF6E07}"
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "engine_dependencies.xml"
         },
         {
@@ -213,7 +213,7 @@
                 "guid": "{3B28A661-E723-5EBE-AB52-EC5829D88C31}",
                 "subId": 3428050507
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "bootstrap.client.release.setreg"
         },
         {
@@ -221,7 +221,7 @@
                 "guid": "{3B28A661-E723-5EBE-AB52-EC5829D88C31}",
                 "subId": 2733667963
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "bootstrap.client.profile.setreg"
         },
         {
@@ -229,7 +229,7 @@
                 "guid": "{3B28A661-E723-5EBE-AB52-EC5829D88C31}",
                 "subId": 3945067969
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "bootstrap.client.debug.setreg"
         },
         {
@@ -237,7 +237,7 @@
                 "guid": "{3B28A661-E723-5EBE-AB52-EC5829D88C31}",
                 "subId": 3877526290
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "bootstrap.server.release.setreg"
         },
         {
@@ -245,7 +245,7 @@
                 "guid": "{3B28A661-E723-5EBE-AB52-EC5829D88C31}",
                 "subId": 3451833122
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "bootstrap.server.profile.setreg"
         },
         {
@@ -253,7 +253,7 @@
                 "guid": "{3B28A661-E723-5EBE-AB52-EC5829D88C31}",
                 "subId": 2263697560
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "bootstrap.server.debug.setreg"
         },
         {
@@ -261,7 +261,7 @@
                 "guid": "{3B28A661-E723-5EBE-AB52-EC5829D88C31}",
                 "subId": 3208209838
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "bootstrap.unified.release.setreg"
         },
         {
@@ -269,7 +269,7 @@
                 "guid": "{3B28A661-E723-5EBE-AB52-EC5829D88C31}",
                 "subId": 3520632254
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "bootstrap.unified.profile.setreg"
         },
         {
@@ -277,7 +277,7 @@
                 "guid": "{3B28A661-E723-5EBE-AB52-EC5829D88C31}",
                 "subId": 2660526372
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "bootstrap.unified.debug.setreg"
         }
     ]
