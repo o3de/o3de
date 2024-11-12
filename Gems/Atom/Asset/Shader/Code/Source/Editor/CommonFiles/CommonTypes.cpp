@@ -112,6 +112,58 @@ namespace AZ
             {
                 return AZ::RHI::Format::R32G32B32A32_FLOAT;
             }
+            else if (AzFramework::StringFunc::Equal(format, "R8G8B8A8_UNORM"))
+            {
+                return AZ::RHI::Format::R8G8B8A8_UNORM;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R8G8B8A8_SNORM"))
+            {
+                return AZ::RHI::Format::R8G8B8A8_SNORM;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R8G8B8A8_UINT"))
+            {
+                return AZ::RHI::Format::R8G8B8A8_UINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R8G8B8A8_SINT"))
+            {
+                return AZ::RHI::Format::R8G8B8A8_SINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R32_UINT"))
+            {
+                return AZ::RHI::Format::R32_UINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R32_SINT"))
+            {
+                return AZ::RHI::Format::R32_SINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R32_FLOAT"))
+            {
+                return AZ::RHI::Format::R32_FLOAT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R32G32_UINT"))
+            {
+                return AZ::RHI::Format::R32G32_UINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R32G32_SINT"))
+            {
+                return AZ::RHI::Format::R32G32_SINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R32G32_FLOAT"))
+            {
+                return AZ::RHI::Format::R32G32_FLOAT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R32G32B32A32_UINT"))
+            {
+                return AZ::RHI::Format::R32G32B32A32_UINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R32G32B32A32_SINT"))
+            {
+                return AZ::RHI::Format::R32G32B32A32_SINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R32G32B32A32_FLOAT"))
+            {
+                return AZ::RHI::Format::R32G32B32A32_FLOAT;
+            }
             else if (AzFramework::StringFunc::Equal(format, "R16G16_SNORM"))
             {
                 return AZ::RHI::Format::R16G16_SNORM;
