@@ -37,15 +37,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           show-progress: false
-          lfs: true
           
-      # - name: Git LFS pull
-      #   run: |
-      #     git lfs install
-      #     # if ("${{ inputs.type }}" -eq "profile") { git lfs fetch --include "*.ico,*.bmp" } else { git lfs fetch --all }
-      #     git lfs fetch --all
-      #     git lfs checkout
-
       - name: Setup 3p, user, and build folders
         run: |
           "3rdParty", "build", ".o3de" | % {New-Item "${{ github.workspace }}\$_" -ItemType 'Directory' -Force}
@@ -92,6 +84,15 @@ jobs:
           
           tar -xvpf ${{ github.workspace }}\cache.tar
           rm ${{ github.workspace }}\cache.tar
+
+
+      - name: Git LFS pull
+        run: |
+           git lfs install
+           if ("${{ inputs.type }}" -eq "profile") { git lfs pull --include "*.ico,*.bmp" } else { git lfs pull }
+      #     git lfs fetch --all
+      #     git lfs checkout
+
         
       - name: Configure environment
         run: |
