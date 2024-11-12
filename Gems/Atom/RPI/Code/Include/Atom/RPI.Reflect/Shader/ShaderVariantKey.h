@@ -72,7 +72,7 @@ namespace AZ
         //! Also the ShaderVariantStableId is used to make the Asset SubId of ShaderVariantAssets. See ShaderVariantAsset::GetAssetSubId()
         using ShaderVariantStableId = RHI::Handle<uint32_t, ShaderVariantId>;
 
-        extern const ShaderVariantStableId RootShaderVariantStableId;
+        static constexpr ShaderVariantStableId RootShaderVariantStableId{ 0 };
 
         //! Suggests the shader binary which best fits a requested variant
         //! The suggested binary is given as an index in the asset where the search was performed

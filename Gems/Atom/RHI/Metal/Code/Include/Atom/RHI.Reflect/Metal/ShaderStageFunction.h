@@ -32,14 +32,14 @@ namespace AZ
     namespace Metal
     {
         using ShaderSourceCode = AZStd::vector<char>;
-        using ShaderByteCode = AZStd::vector<uint8_t>;
+        using ShaderByteCode = AZStd::vector<uint8_t, RHI::ShaderStageFunction::Allocator>;
 
         class ShaderStageFunction
             : public RHI::ShaderStageFunction
         {
         public:
             AZ_RTTI(ShaderStageFunction, "{44E51B8E-CFEE-4A63-8DC2-65CDCA0E373B}", RHI::ShaderStageFunction);
-            AZ_CLASS_ALLOCATOR(ShaderStageFunction, AZ::SystemAllocator);
+            AZ_CLASS_ALLOCATOR_DECL
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -47,12 +47,13 @@ namespace AZ
 
             /// Assigns source code to the function.
             void SetSourceCode(const ShaderSourceCode& sourceCode);
+            void SetSourceCode(const AZStd::string_view sourceCode);
 
             /// Returns the assigned source code.
             const AZStd::string& GetSourceCode() const;
 
             /// Assigns byte code and byte code length.
-            void SetByteCode(const ShaderByteCode& byteCode);
+            void SetByteCode(const AZStd::vector<uint8_t>& byteCode);
 
             /// Assigns entry function name.
             void SetEntryFunctionName(AZStd::string_view entryFunctionName);

@@ -456,30 +456,30 @@ namespace
         break;
         case AnimValueType::Quat:
         {
-            Quat value;
+            AZ::Quaternion value;
             pTrack->GetValue(time, value);
-            Ang3 rotation(value);
-            return AZStd::make_any<AZ::Vector3>(rotation.x, rotation.y, rotation.z);
+            const AZ::Vector3 rotation = value.GetEulerDegrees();
+            return AZStd::make_any<AZ::Vector3>(rotation);
         }
         case AnimValueType::Vector:
         {
-            Vec3 value;
+            AZ::Vector3 value;
             pTrack->GetValue(time, value);
-            return AZStd::make_any<AZ::Vector3>(value.x, value.y, value.z);
+            return AZStd::make_any<AZ::Vector3>(value);
         }
         break;
         case AnimValueType::Vector4:
         {
-            Vec4 value;
+            AZ::Vector4 value;
             pTrack->GetValue(time, value);
-            return AZStd::make_any<AZ::Vector4>(value.x, value.y, value.z, value.w);
+            return AZStd::make_any<AZ::Vector4>(value);
         }
         break;
         case AnimValueType::RGB:
         {
-            Vec3 value;
+            AZ::Vector3 value;
             pTrack->GetValue(time, value);
-            return AZStd::make_any<AZ::Color>(value.x, value.y, value.z, 0.0f);
+            return AZStd::make_any<AZ::Color>(value.GetX(), value.GetY(), value.GetZ(), 0.0f);
         }
         break;
         default:

@@ -6,9 +6,9 @@
  *
  */
 
+#include <Mesh/MeshFeatureProcessor.h>
 #include <Mesh/MeshInstanceGroupList.h>
 #include <AzCore/std/numeric.h>
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h> 
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
 namespace AZ::Render
@@ -21,7 +21,7 @@ namespace AZ::Render
             m_perViewDrawPackets.clear();
             for (auto modelDataInstance : m_associatedInstances)
             {
-                modelDataInstance->HandleDrawPacketUpdate();
+                modelDataInstance->HandleDrawPacketUpdate(m_drawPacket);
             }
             return true;
         }

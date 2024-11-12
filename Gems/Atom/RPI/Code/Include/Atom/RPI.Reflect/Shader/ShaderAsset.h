@@ -70,7 +70,7 @@ namespace AZ
             static constexpr char Group[] = "Shader";
 
             //! The default shader variant (i.e. the one without any options set).
-            static const ShaderVariantStableId RootShaderVariantStableId;
+            static constexpr ShaderVariantStableId RootShaderVariantStableId{ 0 };
 
             // @subProductType is one of ShaderAssetSubId, or ShaderAssetSubId::FirstByProduct+
             static uint32_t MakeProductAssetSubId(uint32_t rhiApiUniqueIndex, uint32_t supervariantIndex, uint32_t subProductType);

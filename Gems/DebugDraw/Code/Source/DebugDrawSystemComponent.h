@@ -32,7 +32,7 @@
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/Bootstrap/BootstrapNotificationBus.h>
-#include <RayTracing/RayTracingFeatureProcessor.h>
+#include <Atom/Feature/RayTracing/RayTracingFeatureProcessorInterface.h>
 
 namespace DebugDraw
 {
@@ -187,10 +187,10 @@ namespace DebugDraw
         AZStd::vector<AZ::Vector3> m_batchPoints;
         AZStd::vector<AZ::Color> m_batchColors;
 
-        AZ::Render::RayTracingFeatureProcessor* m_rayTracingFeatureProcessor = nullptr;
+        AZ::Render::RayTracingFeatureProcessorInterface* m_rayTracingFeatureProcessor = nullptr;
         AZ::RPI::Ptr<AZ::RPI::Buffer> m_spheresRayTracingIndicesBuffer;
-        AZ::Render::RayTracingFeatureProcessor::ProceduralGeometryTypeHandle m_sphereRayTracingTypeHandle;
+        AZ::Render::RayTracingFeatureProcessorInterface::ProceduralGeometryTypeHandle m_sphereRayTracingTypeHandle;
         AZ::Render::RayTracingIndexList<1> m_spheresRayTracingIndices;
-        AZ::Render::RayTracingFeatureProcessor::ProceduralGeometryTypeHandle m_obbRayTracingTypeHandle;
+        AZ::Render::RayTracingFeatureProcessorInterface::ProceduralGeometryTypeHandle m_obbRayTracingTypeHandle;
     };
 }

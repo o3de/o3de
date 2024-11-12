@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom/Feature/RayTracing/RayTracingFeatureProcessorInterface.h>
 #include <Atom/RHI/FrameScheduler.h>
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -14,7 +15,6 @@
 #include <DiffuseProbeGrid_Traits_Platform.h>
 #include <Render/DiffuseProbeGridFeatureProcessor.h>
 #include <Render/DiffuseProbeGridVisualizationAccelerationStructurePass.h>
-#include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ
 {

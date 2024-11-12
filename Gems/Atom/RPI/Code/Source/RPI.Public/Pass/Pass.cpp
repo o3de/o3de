@@ -885,7 +885,8 @@ namespace AZ
             }
         }
 
-        void Pass::DeclareAttachmentsToFrameGraph(RHI::FrameGraphInterface frameGraph, PassSlotType slotType) const
+        void Pass::DeclareAttachmentsToFrameGraph(
+            RHI::FrameGraphInterface frameGraph, PassSlotType slotType, RHI::ScopeAttachmentAccess accessMask) const
         {
             for (size_t slotIndex = 0; slotIndex < m_attachmentBindings.size(); ++slotIndex)
             {
@@ -921,7 +922,7 @@ namespace AZ
                                 {
                                     frameGraph.UseAttachment(
                                         imageScopeAttachmentDescriptor,
-                                        attachmentBinding.GetAttachmentAccess(),
+                                        attachmentBinding.GetAttachmentAccess() & accessMask,
                                         attachmentBinding.m_scopeAttachmentUsage,
                                         attachmentBinding.m_scopeAttachmentStage);
                                 }
@@ -931,7 +932,7 @@ namespace AZ
                             {
                                 frameGraph.UseAttachment(
                                     attachmentBinding.m_unifiedScopeDesc.GetAsBuffer(),
-                                    attachmentBinding.GetAttachmentAccess(),
+                                    attachmentBinding.GetAttachmentAccess() & accessMask,
                                     attachmentBinding.m_scopeAttachmentUsage,
                                     attachmentBinding.m_scopeAttachmentStage);
                                 break;
@@ -1394,12 +1395,13 @@ namespace AZ
             {
                 subpassInputSupported = renderPipeline->SubpassMergingSupported();
             }
-
+            
+            RHI::SubpassInputSupportType supportedTypes = RHI::RHISystemInterface::Get()->GetDevice()->GetFeatures().m_subpassInputSupport;
             if (!subpassInputSupported)
             {
-                ReplaceSubpassInputs();
+                supportedTypes = RHI::SubpassInputSupportType::None;
             }
-
+            ReplaceSubpassInputs(supportedTypes);
             OnBuildFinishedInternal();
 
             m_flags.m_hasSubpassInput = AZStd::any_of(
@@ -1756,17 +1758,29 @@ namespace AZ
             return AZ::Name(m_flags.m_hasSubpassInput ? RPI::SubpassInputSupervariantName : "");
         }
 
-        void Pass::ReplaceSubpassInputs()
+        void Pass::ReplaceSubpassInputs(RHI::SubpassInputSupportType supportedTypes)
         {
+            m_flags.m_hasSubpassInput = false;
             for (size_t slotIndex = 0; slotIndex < m_attachmentBindings.size(); ++slotIndex)
             {
                 PassAttachmentBinding& binding = m_attachmentBindings[slotIndex];
                 if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::SubpassInput)
                 {
-                    binding.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
+                    const RHI::ImageViewDescriptor& descriptor = binding.m_unifiedScopeDesc.GetImageViewDescriptor();
+                    if ((RHI::CheckBitsAny(descriptor.m_aspectFlags, RHI::ImageAspectFlags::Color) &&
+                         RHI::CheckBitsAny(supportedTypes, RHI::SubpassInputSupportType::Color)) ||
+                        (RHI::CheckBitsAny(descriptor.m_aspectFlags, RHI::ImageAspectFlags::DepthStencil) &&
+                         RHI::CheckBitsAny(supportedTypes, RHI::SubpassInputSupportType::DepthStencil)))
+                    {
+                        m_flags.m_hasSubpassInput = true;
+                    }
+                    else
+                    {
+                        binding.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
+                        continue;
+                    }
                 }
             }
-            m_flags.m_hasSubpassInput = false;
         }
 
         void Pass::PrintIndent(AZStd::string& stringOutput, uint32_t indent) const
@@ -1849,6 +1863,33 @@ namespace AZ
                 }
                 AZ_Printf("PassSystem", stringOutput.c_str());
             }
+        }
+
+        void Pass::ChangeConnection(const Name& localSlot, const Name& passName, const Name& attachment, RenderPipeline* pipeline)
+        {
+            Pass* otherPass{ nullptr };
+
+            if (passName == PassNameParent)
+            {
+                otherPass = GetParent();
+            }
+            else if (passName == PipelineGlobalKeyword)
+            {
+                const AZ::RPI::PipelineGlobalBinding* globalBinding = pipeline->GetPipelineGlobalConnection(attachment);
+                otherPass = globalBinding->m_pass;
+            }
+            else if (passName == PassNameThis)
+            {
+                otherPass = this;
+            }
+            else
+            {
+                otherPass = GetParent()->FindChildPass(passName).get();
+            }
+
+            AZ_Assert(otherPass, "Pass %s not found.", passName.GetCStr());
+
+            ChangeConnection(localSlot, otherPass, attachment);
         }
 
         void Pass::ChangeConnection(const Name& localSlot, Pass* pass, const Name& attachment)

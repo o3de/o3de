@@ -57,7 +57,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/PostProcessing/DownsampleMinAvgMaxCS.shader"
                 },
-                "Make Fullscreen Pass": true
+                "FullscreenDispatch": true
             }
         }
     }

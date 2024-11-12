@@ -1825,8 +1825,8 @@ namespace AZ
 
                 if(fullscreenBlurEnabled)
                 {
-                    RPI::Pass* child_0 = m_fullscreenShadowBlurPass->GetChildren()[0].get();
-                    RPI::Pass* child_1 = m_fullscreenShadowBlurPass->GetChildren()[1].get();
+                    RPI::Pass* child_0 = m_fullscreenShadowBlurPass->FindChildPass(Name("VerticalBlur")).get();
+                    RPI::Pass* child_1 = m_fullscreenShadowBlurPass->FindChildPass(Name("HorizontalBlur")).get();
 
                     FastDepthAwareBlurVerPass* verBlurPass = azrtti_cast<FastDepthAwareBlurVerPass*>(child_0);
                     FastDepthAwareBlurHorPass* horBlurPass = azrtti_cast<FastDepthAwareBlurHorPass*>(child_1);

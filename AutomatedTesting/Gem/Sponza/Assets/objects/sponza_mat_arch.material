@@ -11,6 +11,7 @@
             1.0
         ],
         "normal.textureMap": "../Textures/arch_1k_normal.jpg",
+        "normal.flipY": true,
         "occlusion.diffuseTextureMap": "../Textures/arch_1k_ao.png",
         "opacity.factor": 1.0,
         "parallax.factor": 0.050999999046325684,

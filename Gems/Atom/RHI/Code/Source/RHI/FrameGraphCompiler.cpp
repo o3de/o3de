@@ -618,6 +618,8 @@ namespace AZ::RHI
         AZStd::vector<Image*> transientImages(transientImageGraphAttachments.size());
         AZStd::vector<Command> commands;
         commands.reserve((transientBufferGraphAttachments.size() + transientImageGraphAttachments.size()) * 2);
+        AZStd::vector<AZStd::pair<int, uint32_t>> removeBuffers;
+        AZStd::vector<AZStd::pair<int, uint32_t>> removeImages;
 
         if (CheckBitsAny(compileFlags, FrameSchedulerCompileFlags::DisableAttachmentAliasing))
         {
@@ -650,6 +652,7 @@ namespace AZ::RHI
                     const auto* lastScope = transientBuffer->GetLastScope(deviceIndex);
                     if (firstScope == nullptr || lastScope == nullptr)
                     {
+                        removeBuffers.emplace_back(deviceIndex, attachmentIndex);
                         // If the attachment is owned by a pass that isn't a scope-producer (e.g. Parent-Pass), and is not connected to
                         // anything, the first and last scope will be empty. We will get a warning its unused in ValidateEnd(), but we don't
                         // want to crash here
@@ -669,6 +672,7 @@ namespace AZ::RHI
                     const auto* lastScope = transientImage->GetLastScope(deviceIndex);
                     if (firstScope == nullptr || lastScope == nullptr)
                     {
+                        removeImages.emplace_back(deviceIndex, attachmentIndex);
                         // If the attachment is owned by a pass that isn't a scope-producer (e.g. Parent-Pass), and is not connected to
                         // anything, the first and last scope will be empty. We will get a warning its unused in ValidateEnd(), but we don't
                         // want to crash here
@@ -797,7 +801,7 @@ namespace AZ::RHI
                             descriptor.m_imageDescriptor.m_bindFlags, RHI::ImageBindFlags::Color | RHI::ImageBindFlags::DepthStencil);
                         if (isOutputMerger)
                         {
-                            optimizedClearValue = imageFrameAttachment->GetOptimizedClearValue(scopes[currentScopeIndex]->GetDeviceIndex());
+                            optimizedClearValue = imageFrameAttachment->GetOptimizedClearValue(imageFrameAttachment->m_firstDeviceIndex);
                             descriptor.m_optimizedClearValue = &optimizedClearValue;
                         }
 
@@ -842,6 +846,30 @@ namespace AZ::RHI
                 poolCompileFlags |= TransientAttachmentPoolCompileFlags::GatherStatistics;
             }
             processCommands(deviceIndex, poolCompileFlags, memoryUsage ? &memoryUsage.value() : nullptr);
+        }
+
+        for (auto& [deviceIndex, attachmentIndex] : removeImages)
+        {
+            ImageFrameAttachment* imageFrameAttachment = transientImageGraphAttachments[attachmentIndex];
+
+            auto image = imageFrameAttachment->GetImage();
+
+            if (image)
+            {
+                transientAttachmentPool.RemoveDeviceImage(deviceIndex, image);
+            }
+        }
+
+        for (auto& [deviceIndex, attachmentIndex] : removeBuffers)
+        {
+            BufferFrameAttachment* bufferFrameAttachment = transientBufferGraphAttachments[attachmentIndex];
+
+            auto buffer = bufferFrameAttachment->GetBuffer();
+
+            if (buffer)
+            {
+                transientAttachmentPool.RemoveDeviceBuffer(deviceIndex, buffer);
+            }
         }
     }
 

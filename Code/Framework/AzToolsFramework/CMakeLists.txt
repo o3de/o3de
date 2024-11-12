@@ -66,7 +66,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTestShared
             PRIVATE
                 3rdParty::Qt::Test
-                3rdParty::googletest::GMock
                 3rdParty::GoogleBenchmark
                 AZ::AzToolsFramework
                 AZ::AzTest

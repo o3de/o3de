@@ -7,7 +7,6 @@
  */
  
 #include <Pass/Child/EditorModeTintPass.h>
-#include <PostProcess/PostProcessFeatureProcessor.h>
 
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>

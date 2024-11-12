@@ -18,16 +18,14 @@ namespace AZ
 
     namespace RPI
     {
-        const char* BufferAsset::DisplayName = "BufferAsset";
-        const char* BufferAsset::Group = "Buffer";
-        const char* BufferAsset::Extension = "azbuffer";
+        AZ_CLASS_ALLOCATOR_IMPL(BufferAsset, BufferAssetAllocator)
 
         void BufferAsset::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<BufferAsset>()
-                    ->Version(2)
+                    ->Version(3)
                     ->Field("Name", &BufferAsset::m_name)
                     ->Field("Buffer", &BufferAsset::m_buffer)
                     ->Field("BufferDescriptor", &BufferAsset::m_bufferDescriptor)

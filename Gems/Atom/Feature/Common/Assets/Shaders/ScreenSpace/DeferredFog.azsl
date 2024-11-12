@@ -25,7 +25,8 @@
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
     [[input_attachment_index(0)]]
-    SubpassInput        m_depthStencilTexture;
+    SubpassInputDS      m_depthStencilTexture;  // Need to use SubpassInputDS to signal that we are reading from a depth/stencil texture
+                                                // since some platforms don't support reading from it.
     Texture2D<float>    m_linearDepthTexture;
     float3              m_fogColor;
     float               m_fogStartDistance; // Distance at which the fog starts to appear

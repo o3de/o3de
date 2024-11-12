@@ -62,8 +62,7 @@ namespace AZ
 
             // The copy item submitted to the command list
             RHI::CopyItem m_copyItemSameDevice;
-            RHI::CopyItem m_copyItemDeviceToHost;
-            RHI::CopyItem m_copyItemHostToDevice;
+
             AZStd::shared_ptr<AZ::RHI::ScopeProducer> m_copyScopeProducerSameDevice;
             AZStd::shared_ptr<AZ::RHI::ScopeProducer> m_copyScopeProducerDeviceToHost;
             AZStd::shared_ptr<AZ::RHI::ScopeProducer> m_copyScopeProducerHostToDevice;
@@ -80,15 +79,28 @@ namespace AZ
                 Invalid
             };
             CopyMode m_copyMode = CopyMode::Invalid;
+            // Set to true for the MultiDeviceCopyPass, which uses one InputOutput slot instead of one Input and one Output slot.
+            bool m_inputOutputCopy = false;
 
             constexpr static int MaxFrames = RHI::Limits::Device::FrameCountMax;
+
+            struct PerAspectCopyInfo
+            {
+                RHI::CopyItem m_copyItemDeviceToHost{};
+                RHI::CopyItem m_copyItemHostToDevice{};
+                AZStd::array<Data::Instance<Buffer>, MaxFrames> m_device1HostBuffer{};
+                AZStd::array<Data::Instance<Buffer>, MaxFrames> m_device2HostBuffer{};
+                AZStd::array<AZ::u64, MaxFrames> m_deviceHostBufferByteCount{};
+                RHI::DeviceImageSubresourceLayout m_inputImageLayout;
+            };
+
+            // Multiple aspects cannot be copied at the same time, so we need a copy items (and corresponding other members)
+            // for each aspect. This is the case for example, when we want to copy a depth-stencil-image.
+            AZStd::vector<PerAspectCopyInfo> m_perAspectCopyInfos;
+
             int m_currentBufferIndex = 0;
-            AZStd::array<Data::Instance<Buffer>, MaxFrames> m_device1HostBuffer;
-            AZStd::array<Data::Instance<Buffer>, MaxFrames> m_device2HostBuffer;
-            AZStd::array<AZ::u64, MaxFrames> m_deviceHostBufferByteCount{};
             AZStd::array<Ptr<RHI::Fence>, MaxFrames> m_device1SignalFence;
             AZStd::array<Ptr<RHI::Fence>, MaxFrames> m_device2WaitFence;
-            RHI::DeviceImageSubresourceLayout m_inputImageLayout;
         };
     } // namespace RPI
 } // namespace AZ

@@ -6,7 +6,6 @@
  *
  */
 
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/CommandList.h>
@@ -17,6 +16,7 @@
 #include <Atom/RPI.Public/Buffer/BufferSystemInterface.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
+#include <Mesh/MeshFeatureProcessor.h>
 #include <RayTracing/RayTracingAccelerationStructurePass.h>
 #include <RayTracing/RayTracingFeatureProcessor.h>
 
@@ -42,10 +42,11 @@ namespace AZ
 
         void RayTracingAccelerationStructurePass::BuildInternal()
         {
+            // [GFX TODO][ATOM-18111] Ideally, this would be done on the Compute queue, but that has multiple issues (see also 18305).
             auto deviceIndex = Pass::GetDeviceIndex();
             InitScope(
                 RHI::ScopeId(AZStd::string(GetPathName().GetCStr() + AZStd::to_string(deviceIndex))),
-                AZ::RHI::HardwareQueueClass::Compute,
+                AZ::RHI::HardwareQueueClass::Graphics,
                 deviceIndex);
         }
 
@@ -53,7 +54,7 @@ namespace AZ
         {
             if (GetScopeId().IsEmpty())
             {
-                InitScope(RHI::ScopeId(GetPathName()), RHI::HardwareQueueClass::Compute, Pass::GetDeviceIndex());
+                InitScope(RHI::ScopeId(GetPathName()), RHI::HardwareQueueClass::Graphics, Pass::GetDeviceIndex());
             }
 
             params.m_frameGraphBuilder->ImportScopeProducer(*this);
@@ -319,7 +320,7 @@ namespace AZ
                     const uint32_t TimestampResultQueryCount{ 2u };
                     uint64_t timestampResult[TimestampResultQueryCount] = { 0 };
                     query->GetLatestResult(&timestampResult, sizeof(uint64_t) * TimestampResultQueryCount, m_lastDeviceIndex);
-                    m_timestampResult = RPI::TimestampResult(timestampResult[0], timestampResult[1], RHI::HardwareQueueClass::Compute);
+                    m_timestampResult = RPI::TimestampResult(timestampResult[0], timestampResult[1], RHI::HardwareQueueClass::Graphics);
                 });
 
             ExecuteOnPipelineStatisticsQuery(

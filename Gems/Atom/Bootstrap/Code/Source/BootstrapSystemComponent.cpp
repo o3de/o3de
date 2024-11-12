@@ -609,11 +609,6 @@ namespace AZ
                     }
 
                     // As part of our initialization we need to create the BRDF texture generation pipeline
-                    AZ::RPI::RenderPipelineDescriptor pipelineDesc;
-                    pipelineDesc.m_mainViewTagName = "MainCamera";
-                    pipelineDesc.m_name = AZStd::string::format("BRDFTexturePipeline_%i", viewportContext->GetId());
-                    pipelineDesc.m_rootPassTemplate = "BRDFTexturePipeline";
-                    pipelineDesc.m_executeOnce = true;
 
                     // Save a reference to the generated BRDF texture so it doesn't get deleted if all the passes refering to it get deleted
                     // and it's ref count goes to zero
@@ -629,10 +624,21 @@ namespace AZ
                         }
                     }
 
-                    if (!scene->GetRenderPipeline(AZ::Name(pipelineDesc.m_name)))
+                    AZ::RPI::RenderPipelineDescriptor pipelineDesc;
+                    pipelineDesc.m_mainViewTagName = "MainCamera";
+                    pipelineDesc.m_rootPassTemplate = "BRDFTexturePipeline";
+                    pipelineDesc.m_executeOnce = true;
+
+                    for (int deviceIndex{ 0 }; deviceIndex < RHI::RHISystemInterface::Get()->GetDeviceCount(); ++deviceIndex)
                     {
-                        RPI::RenderPipelinePtr brdfTexturePipeline = AZ::RPI::RenderPipeline::CreateRenderPipeline(pipelineDesc);
-                        scene->AddRenderPipeline(brdfTexturePipeline);
+                        pipelineDesc.m_name = AZStd::string::format("BRDFTexturePipeline_%d_%d", viewportContext->GetId(), deviceIndex);
+
+                        if (!scene->GetRenderPipeline(AZ::Name(pipelineDesc.m_name)))
+                        {
+                            RPI::RenderPipelinePtr brdfTexturePipeline = AZ::RPI::RenderPipeline::CreateRenderPipeline(pipelineDesc);
+                            brdfTexturePipeline->GetRootPass()->SetDeviceIndex(deviceIndex);
+                            scene->AddRenderPipeline(brdfTexturePipeline);
+                        }
                     }
                 }
 

@@ -80,7 +80,7 @@ namespace AZ
             // due to some pass breaking the subpass chaining.
             if (m_flags.m_hasSubpassInput && subpassLayoutBuilder.GetSubpassIndex() == 0)
             {
-                ReplaceSubpassInputs();
+                ReplaceSubpassInputs(RHI::SubpassInputSupportType::None);
             }
 
             for (size_t slotIndex = 0; slotIndex < m_attachmentBindings.size(); ++slotIndex)
