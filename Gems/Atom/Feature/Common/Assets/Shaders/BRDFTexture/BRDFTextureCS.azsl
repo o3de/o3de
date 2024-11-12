@@ -13,6 +13,8 @@
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
+    [[vk::image_format("rg32f")]]
+    [[access("Write")]]
     RWTexture2D<float2> m_outputTexture;
 } 
 

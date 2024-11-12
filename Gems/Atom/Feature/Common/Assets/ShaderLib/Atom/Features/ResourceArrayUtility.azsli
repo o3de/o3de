@@ -137,7 +137,7 @@
 
     // Macro for declaring the function to access the array resource
     #define DECLARE_RESOURCE_ARRAY_FUNC(returnType, varName, funcName, op, arg1Type, arg2Type, size)    \
-        returnType funcName(uint resourceIndex, arg1Type arg1, arg2Type arg2) \
+        returnType funcName(int resourceIndex, arg1Type arg1, arg2Type arg2) \
         { \
             switch(resourceIndex)   \
             {                       \

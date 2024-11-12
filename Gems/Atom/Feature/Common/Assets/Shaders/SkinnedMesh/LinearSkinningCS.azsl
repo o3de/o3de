@@ -14,7 +14,7 @@
 option enum class SkinningMethod { LinearSkinning, DualQuaternion } o_skinningMethod = SkinningMethod::LinearSkinning;
 option bool o_applyMorphTargets = false;
 
-float3 ReadFloat3FromFloatBuffer(Buffer<float> buffer, uint index)
+float3 ReadFloat3FromFloatBuffer(StructuredBuffer<float> buffer, uint index)
 {
     float3 result;
     result.x = buffer[index * 3];

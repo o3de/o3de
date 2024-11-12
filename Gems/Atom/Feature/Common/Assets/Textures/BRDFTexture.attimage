@@ -12,7 +12,7 @@
                 "Width": 256,
                 "Height": 256
             },
-            "Format": 24
+            "Format": 12
         },
         "Name": "$BrdfTexture",
         "IsUniqueName": true

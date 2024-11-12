@@ -88,21 +88,25 @@ namespace AZ::WebGPU
             });
     }
 
-    void CommandQueue::Signal(Fence& fence)
+    void CommandQueue::Signal(Fence& fence, RHI::DeviceFence::SignalCallback callback /*= nullptr*/)
     {
         // WebGPU doesn't have a fence concept yet, so we just
         // need to wait until all submitted GPU work is done
         QueueCommand(
-            [&fence, this]([[maybe_unused]] void* queue)
+            [&fence, this, callback]([[maybe_unused]] void* queue)
             {
                 bool workDone = false;
                 wgpu::Future future = m_wgpuQueue.OnSubmittedWorkDone(
                     wgpu::CallbackMode::AllowSpontaneous,
-                    [&fence, &workDone]([[maybe_unused]] wgpu::QueueWorkDoneStatus status)
+                    [&fence, &workDone, callback]([[maybe_unused]] wgpu::QueueWorkDoneStatus status)
                     {
                         AZ_Error("WebGPU", status == wgpu::QueueWorkDoneStatus::Success, "Failed to wait on submitted work");
                         fence.SignalEvent();
                         workDone = true;
+                        if (callback)
+                        {
+                            callback();
+                        }
                     });
                 if (!workDone)
                 {

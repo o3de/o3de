@@ -38,6 +38,41 @@ namespace AZ
         {
             m_reflectionProbes.reserve(InitialProbeAllocationSize);
 
+            // load shaders for stencil, blend weight, and render passes
+            bool result = LoadShader(
+                "shaders/reflections/reflectionprobestencil.azshader",
+                m_reflectionRenderData.m_stencilPipelineState,
+                m_reflectionRenderData.m_stencilShader,
+                m_reflectionRenderData.m_stencilSrgLayout,
+                m_reflectionRenderData.m_stencilDrawListTag);
+
+            result &= LoadShader(
+                "shaders/reflections/reflectionprobeblendweight.azshader",
+                m_reflectionRenderData.m_blendWeightPipelineState,
+                m_reflectionRenderData.m_blendWeightShader,
+                m_reflectionRenderData.m_blendWeightSrgLayout,
+                m_reflectionRenderData.m_blendWeightDrawListTag);
+
+            result &= LoadShader(
+                "shaders/reflections/reflectionproberenderouter.azshader",
+                m_reflectionRenderData.m_renderOuterPipelineState,
+                m_reflectionRenderData.m_renderOuterShader,
+                m_reflectionRenderData.m_renderOuterSrgLayout,
+                m_reflectionRenderData.m_renderOuterDrawListTag);
+
+            result &= LoadShader(
+                "shaders/reflections/reflectionproberenderinner.azshader",
+                m_reflectionRenderData.m_renderInnerPipelineState,
+                m_reflectionRenderData.m_renderInnerShader,
+                m_reflectionRenderData.m_renderInnerSrgLayout,
+                m_reflectionRenderData.m_renderInnerDrawListTag);
+
+            if (!result)
+            {
+                m_enabled = false;
+                return;
+            }
+
             RHI::BufferPoolDescriptor desc;
             desc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
             desc.m_bindFlags = RHI::BufferBindFlags::InputAssembly;
@@ -48,32 +83,7 @@ namespace AZ
             AZ_Error("ReflectionProbeFeatureProcessor", resultCode == RHI::ResultCode::Success, "Failed to initialize buffer pool");
 
             // create box mesh vertices and indices
-            CreateBoxMesh();
-
-            // load shaders for stencil, blend weight, and render passes
-            LoadShader("shaders/reflections/reflectionprobestencil.azshader",
-                m_reflectionRenderData.m_stencilPipelineState,
-                m_reflectionRenderData.m_stencilShader,
-                m_reflectionRenderData.m_stencilSrgLayout,
-                m_reflectionRenderData.m_stencilDrawListTag);
-
-            LoadShader("shaders/reflections/reflectionprobeblendweight.azshader",
-                m_reflectionRenderData.m_blendWeightPipelineState,
-                m_reflectionRenderData.m_blendWeightShader,
-                m_reflectionRenderData.m_blendWeightSrgLayout,
-                m_reflectionRenderData.m_blendWeightDrawListTag);
-
-            LoadShader("shaders/reflections/reflectionproberenderouter.azshader",
-                m_reflectionRenderData.m_renderOuterPipelineState,
-                m_reflectionRenderData.m_renderOuterShader,
-                m_reflectionRenderData.m_renderOuterSrgLayout,
-                m_reflectionRenderData.m_renderOuterDrawListTag);
-
-            LoadShader("shaders/reflections/reflectionproberenderinner.azshader",
-                m_reflectionRenderData.m_renderInnerPipelineState,
-                m_reflectionRenderData.m_renderInnerShader,
-                m_reflectionRenderData.m_renderInnerSrgLayout,
-                m_reflectionRenderData.m_renderInnerDrawListTag);
+            CreateBoxMesh();                 
 
             EnableSceneNotification();
         }
@@ -98,6 +108,10 @@ namespace AZ
         void ReflectionProbeFeatureProcessor::Simulate([[maybe_unused]] const FeatureProcessor::SimulatePacket& packet)
         {
             AZ_PROFILE_SCOPE(AzRender, "ReflectionProbeFeatureProcessor: Simulate");
+            if (!m_enabled)
+            {
+                return;
+            }
 
             // update pipeline states
             if (m_needUpdatePipelineStates)
@@ -165,6 +179,11 @@ namespace AZ
 
         void ReflectionProbeFeatureProcessor::OnRenderEnd()
         {
+            if (!m_enabled)
+            {
+                return;
+            }
+
             // call OnRenderEnd on all reflection probes
             for (auto& reflectionProbe : m_reflectionProbes)
             {
@@ -656,7 +675,7 @@ namespace AZ
             AZ::RHI::ValidateStreamBufferViews(m_boxStreamLayout, m_reflectionRenderData.m_geometryView.GetStreamBufferViews());
         }
 
-        void ReflectionProbeFeatureProcessor::LoadShader(
+        bool ReflectionProbeFeatureProcessor::LoadShader(
             const char* filePath,
             RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
             Data::Instance<RPI::Shader>& shader,
@@ -669,7 +688,7 @@ namespace AZ
             if (shader == nullptr)
             {
                 AZ_Error("ReflectionProbeFeatureProcessor", false, "Failed to find asset for shader [%s]", filePath);
-                return;
+                return false;
             }
 
             // store drawlist tag
@@ -685,6 +704,7 @@ namespace AZ
             // load object shader resource group
             srgLayout = shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Object);
             AZ_Error("ReflectionProbeFeatureProcessor", srgLayout != nullptr, "Failed to find ObjectSrg layout from shader [%s]", filePath);
+            return srgLayout != nullptr;
         }
 
         void ReflectionProbeFeatureProcessor::OnRenderPipelineChanged(RPI::RenderPipeline* renderPipeline,

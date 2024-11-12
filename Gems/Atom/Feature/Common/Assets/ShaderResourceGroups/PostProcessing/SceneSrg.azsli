@@ -10,9 +10,15 @@
 #error Do not include this file directly. Include the main .srgi file instead.
 #endif
 
+#ifndef ENABLE_DOF
+#define ENABLE_DOF 1
+#endif
+
 partial ShaderResourceGroup SceneSrg
 {
+#if !AZ_TRAIT_SMALL_SRGS || ENABLE_DOF
     Texture2D<float3> m_dofPencilMap;
+#endif
 }
 
 

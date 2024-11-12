@@ -222,10 +222,16 @@ namespace AZ::RHI
 
     ScopeAttachmentAccess CommandListValidator::GetAttachmentAccess(ShaderInputImageAccess access)
     {
-        return
-            (access == ShaderInputImageAccess::ReadWrite)
-            ? ScopeAttachmentAccess::ReadWrite
-            : ScopeAttachmentAccess::Read;
+        ScopeAttachmentAccess scopeAccess = {};
+        if (CheckBitsAll(access, ShaderInputImageAccess::Read))
+        {
+            scopeAccess |= ScopeAttachmentAccess::Read;
+        }
+        if (CheckBitsAll(access, ShaderInputImageAccess::Write))
+        {
+            scopeAccess |= ScopeAttachmentAccess::Write;
+        }
+        return scopeAccess;
     }
 
     bool CommandListValidator::ValidateView(const ValidateViewContext& context, bool ignoreAttachmentValidation) const

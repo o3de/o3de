@@ -42,5 +42,7 @@ namespace AZ::WebGPU
 
         RHI::FenceState m_state = RHI::FenceState::Reset;
         AZStd::optional<wgpu::Future> m_signalFuture;
+        mutable AZStd::condition_variable_any m_eventSignal;
+        mutable AZStd::recursive_mutex m_eventMutex;
     };
 }

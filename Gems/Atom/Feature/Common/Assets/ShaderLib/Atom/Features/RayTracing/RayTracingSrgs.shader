@@ -32,6 +32,8 @@
       ]
     },
 
+    "DisabledRHIBackends": ["webgpu"],
+
     "Supervariants":
     [
         {

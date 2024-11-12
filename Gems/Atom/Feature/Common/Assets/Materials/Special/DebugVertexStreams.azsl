@@ -11,6 +11,7 @@
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/InstancedTransforms.azsli>
+#include <Atom/Features/VertexDefines.azsli>
 #include <Atom/RPI/TangentSpace.azsli>
 
 // These enums need to be kept in sync with the enum values in DebugVertexStreams_IncompatibleEnums.lua
@@ -40,7 +41,7 @@ struct VSOutput
 {
     // Base fields (required by the template azsli file)...
     // "centroid" is needed for SV_Depth to compile
-    precise linear centroid float4 m_position : SV_Position;
+    AZ_PRECISION_POSITION_CENTROID float4 m_position : SV_Position;
     float3 m_normal: NORMAL;
     float4 m_tangent : TANGENT;
     float3 m_worldPosition : UV0;

@@ -7,6 +7,7 @@
  */
 
 #include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/Features/VertexDefines.azsli>
 
 #include <viewsrg.srgi>
 #include <scenesrg.srgi>
@@ -52,7 +53,7 @@ struct VSOutput
 {
     // Base fields (required by the template azsli file)...
     // "centroid" is needed for SV_Depth to compile
-    precise linear centroid float4 m_position : SV_Position;
+    AZ_PRECISION_POSITION_CENTROID float4 m_position : SV_Position;
 
     // Fragment depth
     float m_depth : UV0;

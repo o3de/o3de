@@ -86,8 +86,7 @@ namespace AZ::WebGPU
             desc.m_descriptor = RHI::ImageDescriptor::Create2D(
                 RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyWrite,
                 256,
-                256,
-                RHI::Format::R32G32B32A32_FLOAT);
+                256, RHI::Format::R32G32_FLOAT);
         }
         {
             auto& desc = m_imageNullDescriptors[static_cast<uint32_t>(ImageTypes::Depth2D)];

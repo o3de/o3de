@@ -363,6 +363,7 @@
     },
     "lightingModel": "Standard",
     "materialShaderCode": "StandardMultilayerPBR.azsli",
+    "disabledRHIBackends": ["webgpu"],
     "functors": [
         {
             "type": "Lua",

@@ -7,11 +7,14 @@
  */
 #include <RHI/WebGPU.h>
 #include <RHI/Buffer.h>
+#include <RHI/BufferView.h>
 #include <RHI/BindGroup.h>
 #include <RHI/CommandList.h>
 #include <RHI/ComputePipeline.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
+#include <RHI/MergedShaderResourceGroup.h>
+#include <RHI/MergedShaderResourceGroupPool.h>
 #include <RHI/PipelineState.h>
 #include <RHI/RootConstantManager.h>
 #include <RHI/RenderPipeline.h>
@@ -327,19 +330,55 @@ namespace AZ::WebGPU
 
         for (uint32_t srgIndex = 0; srgIndex < pipelineLayoutDescriptor.GetShaderResourceGroupLayoutCount(); ++srgIndex)
         {
-            uint32_t bindingSlot = pipelineLayoutDescriptor.GetShaderResourceGroupLayout(srgIndex)->GetBindingSlot();
-            uint32_t bindingGroupIndex = pipelineLayout.GetIndexBySlot(bindingSlot);
-            RHI::ConstPtr<ShaderResourceGroup> shaderResourceGroup = bindings.m_SRGByAzslBindingSlot[bindingSlot];
+            uint32_t* dynamicOffsets = nullptr;
+            uint32_t srgbindingSlot = pipelineLayoutDescriptor.GetShaderResourceGroupLayout(srgIndex)->GetBindingSlot();
+            uint32_t bindingGroupIndex = pipelineLayout.GetIndexBySlot(srgbindingSlot);
+            RHI::ConstPtr<ShaderResourceGroup> shaderResourceGroup;
+            const auto& srgBitset = pipelineLayout.GetSlotsByIndex(bindingGroupIndex);
+            AZStd::fixed_vector<const ShaderResourceGroup*, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> shaderResourceGroupList;
+            // Collect all the SRGs that are part of this bindgroup. They could be more than
+            // 1, so we would need to merge their values before committing the bindgroup.
+            for (uint32_t bindingSlot = 0; bindingSlot < srgBitset.size(); ++bindingSlot)
+            {
+                if (srgBitset[bindingSlot])
+                {
+                    shaderResourceGroupList.push_back(bindings.m_SRGByAzslBindingSlot[bindingSlot]);
+                }
+            }
+
+            // Check if this is a merged bindgroup.
+            if (pipelineLayout.IsBindGroupMerged(bindingGroupIndex))
+            {
+                // Get the MergedShaderResourceGroup
+                MergedShaderResourceGroupPool* mergedSRGPool = pipelineLayout.GetMergedShaderResourceGroupPool(bindingGroupIndex);
+                AZ_Assert(mergedSRGPool, "Null MergedShaderResourceGroupPool");
+
+                RHI::Ptr<MergedShaderResourceGroup> mergedSRG = mergedSRGPool->FindOrCreate(shaderResourceGroupList);
+                AZ_Assert(mergedSRG, "Null MergedShaderResourceGroup");
+                const BufferView* rootConstantBufferView =
+                    pipelineLayout.GetRootConstantIndex() == bindingGroupIndex ? bindings.m_rootConstantBufferView : nullptr;
+                if (mergedSRG->NeedsCompile(rootConstantBufferView))
+                {
+                    mergedSRG->Compile(rootConstantBufferView);
+                }
+                shaderResourceGroup = mergedSRG;
+                dynamicOffsets = rootConstantBufferView ? &bindings.m_rootConstantOffset : nullptr;
+            }
+            else
+            {
+                shaderResourceGroup = shaderResourceGroupList.front();
+            }
 
             if (shaderResourceGroup)
             {
                 auto& compiledData = shaderResourceGroup->GetCompiledData();
-                setBindGroup(bindingGroupIndex, compiledData);
+                setBindGroup(bindingGroupIndex, compiledData, dynamicOffsets ? 1 : 0, dynamicOffsets);
             }
         }
 
-        // Set the binding group use for root constants
-        if (bindings.m_rootConstantBindGroup)
+        // Set the binding group use for root constants.
+        // If it was merged, then it was already set with the merged SRG.
+        if (!pipelineLayout.IsRootConstantBindGroupMerged() && bindings.m_rootConstantBindGroup)
         {
             setBindGroup(
                 pipelineLayout.GetRootConstantIndex(),
@@ -363,9 +402,13 @@ namespace AZ::WebGPU
         static_cast<Device&>(GetDevice())
             .GetCommandQueueContext()
             .GetCommandQueue(RHI::HardwareQueueClass::Graphics)
-            .WriteBuffer(*allocation.m_buffer, allocation.m_bufferOffset, AZStd::span<const uint8_t>(rootConstants, rootConstantSize));
+            .WriteBuffer(
+                static_cast<const Buffer&>(allocation.m_bufferView->GetBuffer()),
+                allocation.m_bufferOffset,
+                AZStd::span<const uint8_t>(rootConstants, rootConstantSize));
         bindings.m_rootConstantBindGroup = allocation.m_bindGroup.get();
         bindings.m_rootConstantOffset = allocation.m_bufferOffset;
+        bindings.m_rootConstantBufferView = allocation.m_bufferView.get();
     }
 
     void CommandList::SetStreamBuffers(const RHI::DeviceGeometryView& geometryView, const RHI::StreamBufferIndices& streamIndices)

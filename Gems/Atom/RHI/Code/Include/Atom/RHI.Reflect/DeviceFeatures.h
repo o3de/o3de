@@ -113,6 +113,9 @@ namespace AZ::RHI
         //! The image dimensions that can be used for render attachment images
         RHI::ImageDimensionFlags m_supportedRenderAttachmentDimensions = RHI::ImageDimensionFlags::All;
 
+        //! Whether resources array (texture, samplers, buffers) is supported (e.g. Texture2D m_texture[10])
+        bool m_resourceArray = true;
+
         /// Additional features here.
     };
 }

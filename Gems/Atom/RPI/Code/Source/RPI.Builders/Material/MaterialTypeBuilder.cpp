@@ -44,7 +44,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = "Material Type Builder";
-            materialBuilderDescriptor.m_version = 50; // Using ordered map for shader templates to fix unstable assets sub IDs
+            materialBuilderDescriptor.m_version = 51; // Add support for small SRGs
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialTypeBuilder>();
             materialBuilderDescriptor.m_createJobFunction = AZStd::bind(&MaterialTypeBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -561,6 +561,10 @@ namespace AZ
                 AZStd::string azslFileReference = AZ::IO::Path{ outputAzslFilePath.Filename() }.AsPosix();
                 AZStd::to_lower(azslFileReference.begin(), azslFileReference.end());
                 shaderSourceData.m_source = azslFileReference.c_str();
+                shaderSourceData.m_disabledRhiBackends.insert(
+                    shaderSourceData.m_disabledRhiBackends.end(),
+                    materialTypeSourceData.m_disabledRhiBackends.begin(),
+                    materialTypeSourceData.m_disabledRhiBackends.end());
 
                 AZ::IO::Path outputShaderFilePath = request.m_tempDirPath;
                 outputShaderFilePath /= AZStd::string::format("%s_%s_%s.shader", materialTypeName.c_str(), materialPipelineIndicator.c_str(), shaderName.c_str());

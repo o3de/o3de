@@ -956,7 +956,7 @@ namespace AZ
             MTLBindingAccess mtlBindingAccess = MTLArgumentAccessReadOnly;
 #endif
             
-            if(accessType == RHI::ShaderInputImageAccess::ReadWrite)
+            if(accessType == RHI::ShaderInputImageAccess::ReadWrite || accessType == RHI::ShaderInputImageAccess::Write)
             {
 #if defined(__IPHONE_17_0) || defined(__MAC_14_0)
             mtlBindingAccess = MTLBindingAccessReadWrite;
@@ -1403,7 +1403,7 @@ namespace AZ
         MTLResourceUsage GetImageResourceUsage(RHI::ShaderInputImageAccess imageAccess)
         {
             MTLResourceUsage mtlResourceUsage = MTLResourceUsageRead;
-            if(imageAccess == RHI::ShaderInputImageAccess::ReadWrite)
+            if(imageAccess == RHI::ShaderInputImageAccess::ReadWrite || accessType == RHI::ShaderInputImageAccess::Write)
             {
                 mtlResourceUsage |= MTLResourceUsageWrite;
             }

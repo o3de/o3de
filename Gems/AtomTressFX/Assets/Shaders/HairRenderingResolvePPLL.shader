@@ -38,5 +38,7 @@
           "type": "Fragment"
         }
       ]
-    }
+    },
+    
+    "DisabledRHIBackends": ["webgpu"]
 }

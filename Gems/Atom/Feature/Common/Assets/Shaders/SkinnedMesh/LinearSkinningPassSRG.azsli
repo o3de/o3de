@@ -24,15 +24,15 @@ ShaderResourceGroup InstanceSrg : SRG_PerDraw
     // Per-model input
     // Positions, normals, and bitangents are all 3-component per-vertex buffers,
     // but Metal doesn't support float3 buffers so Buffer<float> is used instead
-    Buffer<float> m_sourcePositions; // POSITION 0
-    Buffer<float> m_sourceNormals; // NORMAL 0
-    Buffer<float4> m_sourceTangents; // TANGENT 0
-    Buffer<float> m_sourceBiTangents; // BITANGENT 0
+    StructuredBuffer<float> m_sourcePositions; // POSITION 0
+    StructuredBuffer<float> m_sourceNormals; // NORMAL 0
+    StructuredBuffer<float4> m_sourceTangents; // TANGENT 0
+    StructuredBuffer<float> m_sourceBiTangents; // BITANGENT 0
     ByteAddressBuffer m_sourceBlendIndices; // BLENDINDICES 0
-    Buffer<float> m_sourceBlendWeights; // BLENDWEIGHTS 0
+    StructuredBuffer<float> m_sourceBlendWeights; // BLENDWEIGHTS 0
 
     // Optional color input, if colors are being morphed by morph targets
-    Buffer<float4> m_sourceColors; // COLOR 0
+    StructuredBuffer<float4> m_sourceColors; // COLOR 0
     
     // Per-instance input
     StructuredBuffer<float3x4> m_boneTransformsLinear;

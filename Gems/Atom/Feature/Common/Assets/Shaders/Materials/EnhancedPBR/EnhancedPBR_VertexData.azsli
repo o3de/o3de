@@ -8,6 +8,7 @@
 
 #pragma once
 
+
 #ifndef ENABLE_VERTEX_COLOR
 #define ENABLE_VERTEX_COLOR 0
 #endif
@@ -17,6 +18,7 @@
 #endif
 
 #include "../BasePBR/BasePBR_VertexData.azsli"
+#include <Atom/Features/VertexDefines.azsli>
 
 // Class inheritance doesn't seem to be working
 #define DOES_CLASS_INHERITANCE_WORK_IN_ASZL 0
@@ -32,7 +34,7 @@
     struct VsOutput_EnhancedPBR
     {
         // Base fields (required by the template azsli file)...
-        precise linear centroid
+        AZ_PRECISION_POSITION_CENTROID
         float4 position : SV_Position;
         float3 normal: NORMAL;
         float4 tangent : TANGENT;

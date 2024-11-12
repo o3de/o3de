@@ -58,6 +58,11 @@ set(FILES
     Source/RHI/ImageView.h
     Source/RHI/Instance.cpp
     Source/RHI/Instance.h
+    Source/RHI/MergedShaderResourceGroupPoolDescriptor.h
+    Source/RHI/MergedShaderResourceGroup.cpp
+    Source/RHI/MergedShaderResourceGroup.h
+    Source/RHI/MergedShaderResourceGroupPool.cpp
+    Source/RHI/MergedShaderResourceGroupPool.h
     Source/RHI/NullDescriptorManager.cpp
     Source/RHI/NullDescriptorManager.h    
     Source/RHI/PhysicalDevice.cpp

@@ -135,6 +135,7 @@
     },
     "lightingModel": "Enhanced",
     "materialShaderCode": "EnhancedPBR.azsli",
+    "disabledRHIBackends": ["webgpu"],
     "functors": [
     ],
     "uvNameMap": {

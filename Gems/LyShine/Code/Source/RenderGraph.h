@@ -113,6 +113,11 @@ namespace LyShine
 
     public: // data
         static const int MaxTextures = 16;
+        enum class Flags : uint8_t
+        {
+            None = 0,
+            CombineVertices = AZ_BIT(0)
+        };
 
     private: // types
         struct TextureUsage
@@ -136,7 +141,12 @@ namespace LyShine
         // Per-frame combined vertex and index buffers
         AZStd::vector<UiPrimitiveVertex> m_combinedVertices;
         AZStd::vector<uint16> m_combinedIndices;
+
+        // Behavior flags for the render node
+        Flags m_flags = Flags::None;
     };
+
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(LyShine::PrimitiveListRenderNode::Flags);
 
     // A mask render node handles using one set of render nodes to mask another set of render nodes
     class MaskRenderNode : public RenderNode

@@ -8,6 +8,7 @@
 
 #define FORCE_OPAQUE 1
 
+#include <Atom/Features/PBR/LightingDefines.azsli>
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
@@ -21,6 +22,7 @@
 #include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
 #include <Atom/Features/PBR/Lights/IblForward.azsli>
 #include <Atom/Features/PBR/Decals.azsli>
+#include <Atom/Features/VertexDefines.azsli>
 
 struct VSInput
 {
@@ -32,7 +34,7 @@ struct VSInput
 
 struct VSOutput
 {
-    precise linear centroid float4 m_position : SV_Position;
+    AZ_PRECISION_POSITION_CENTROID float4 m_position : SV_Position;
     float3 m_normal: NORMAL;
     float4 m_tangent : TANGENT;
     float3 m_worldPosition : UV0;
@@ -144,6 +146,7 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
           
     float depthOffset = 0.0;
 
+#if ENABLE_PARALLAX
     ParallaxOffset tangentOffset = GetParallaxOffset( AutoBrickSrg::m_lineDepth,
                                                       depthOffset,
                                                       IN.m_uv,
@@ -154,6 +157,7 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
                                                       identityUvMatrix);
     
     IN.m_uv += tangentOffset.m_offsetTS.xy;
+ #endif
  
     float3 baseColor = float3(1,1,1);
     const float noise = AutoBrickSrg::m_noise.Sample(AutoBrickSrg::m_sampler, IN.m_uv).r;
@@ -189,8 +193,10 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
     const float specularF0Factor = 0.5f;
     surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
 
+#if ENABLE_CLEAR_COAT
     // Clear Coat
     surface.clearCoat.InitializeToZero();
+#endif
 
     // ------- LightingData -------
 

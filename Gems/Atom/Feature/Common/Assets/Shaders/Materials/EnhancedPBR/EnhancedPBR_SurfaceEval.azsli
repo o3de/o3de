@@ -76,12 +76,13 @@ Surface EvaluateSurface_EnhancedPBR(
         MaterialSrg::m_detail_baseColor_texture, MaterialSrg::m_sampler, detailUv,    o_detail_baseColor_useTexture, detailLayerBaseColorFactor, uvDxDy, customDerivatives);
     baseColor = BlendVertexColor(baseColor, real3(vertexColor.rgb));
     
+#if ENABLE_PARALLAX
     // ------- Parallax Clipping -------
-
     if(o_parallax_highlightClipping && isDisplacementClipped)
     {
         ApplyParallaxClippingHighlight(baseColor);
     }
+#endif
 
     // ------- Alpha & Clip -------
 

@@ -6,6 +6,7 @@
  *
  */
 #include <RHI/WebGPU.h>
+#include <RHI/Device.h>
 #include <RHI/Fence.h>
 #include <RHI/Instance.h>
 
@@ -25,6 +26,7 @@ namespace AZ::WebGPU
 
     void Fence::ShutdownInternal()
     {
+        m_eventSignal.notify_all();
     }
 
     void Fence::SignalOnCpuInternal()
@@ -50,18 +52,33 @@ namespace AZ::WebGPU
 
     void Fence::SignalEvent()
     {
+        AZStd::unique_lock<AZStd::recursive_mutex> lock(m_eventMutex);
         m_state = RHI::FenceState::Signaled;
         m_signalFuture = {};
+        m_eventSignal.notify_all();
     }
 
     void Fence::WaitEvent() const
     {
+        AZStd::unique_lock<AZStd::recursive_mutex> lock(m_eventMutex);
         if (m_state != RHI::FenceState::Signaled)
         {
-            AZ_Assert(m_signalFuture.has_value(), "Trying to wait on event before signal future has been set");
-            wgpu::Instance& instance = Instance::GetInstance().GetNativeInstance();
-            wgpu::WaitStatus status = instance.WaitAny(m_signalFuture.value(), UINT64_MAX);
-            AZ_Error("WebGPU", status == wgpu::WaitStatus::Success, "WaitAny error %d when doing Fence::WaitEvent", status);
+            if (AZStd::this_thread::get_id() == static_cast<Device&>(GetDevice()).GetRenderThread())
+            {
+                AZ_Assert(m_signalFuture.has_value(), "Trying to wait on event before signal future has been set");
+                wgpu::Instance& instance = Instance::GetInstance().GetNativeInstance();
+                wgpu::WaitStatus status = instance.WaitAny(m_signalFuture.value(), UINT64_MAX);
+                AZ_Error("WebGPU", status == wgpu::WaitStatus::Success, "WaitAny error %d when doing Fence::WaitEvent", status);
+            }
+            else
+            {
+                m_eventSignal.wait(
+                    lock,
+                    [&]()
+                    {
+                        return m_state == RHI::FenceState::Signaled;
+                    });
+            }
         }
     }
 

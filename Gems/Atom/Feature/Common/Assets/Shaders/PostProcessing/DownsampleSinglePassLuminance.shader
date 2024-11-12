@@ -24,5 +24,7 @@
                 "preprocessor": ["-DSPD_NO_WAVE_OPERATIONS"]
             }
         }
-    ]
+    ],
+
+    "DisabledRHIBackends": ["webgpu"]
 }

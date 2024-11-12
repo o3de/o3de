@@ -26,7 +26,7 @@ namespace AZ::WebGPU
         struct Allocation
         {
             RHI::Ptr<BindGroup> m_bindGroup;    // The binding group containing the buffer that needs to be bind
-            RHI::Ptr<Buffer> m_buffer;          // The buffer that will be used to populate the root constants
+            RHI::Ptr<BufferView> m_bufferView;  // The buffer that will be used to populate the root constants
             uint32_t m_bufferOffset = 0;        // The offset that needs to be used for the root constants values
         };
 

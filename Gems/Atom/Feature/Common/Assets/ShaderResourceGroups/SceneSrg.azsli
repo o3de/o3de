@@ -45,6 +45,9 @@ partial ShaderResourceGroup SceneSrg
     float m_debugOverrideRoughness;
     float m_debugOverrideMetallic;
 
+    // Pad to force "m_debugLightingDirection" into a new float4 register (so it's the same alignment in all RHIs)
+    float m_pad;
+    
     // Specifies a lighting direction and intensity for debug purposes 
     float3 m_debugLightingDirection;
     float3 m_debugLightingIntensity;

@@ -63,7 +63,6 @@ namespace AZ::WebGPU
     }       
 
     void BindGroup::UpdateImageViews(
-        uint32_t index,
         uint32_t binding,
         const AZStd::span<const RHI::ConstPtr<RHI::DeviceImageView>>& imageViews,
         RHI::ShaderInputImageType imageType)
@@ -82,8 +81,10 @@ namespace AZ::WebGPU
             {
                 auto& device = static_cast<Device&>(GetDevice());
                 NullDescriptorManager& nullDescriptorManager = device.GetNullDescriptorManager();
-                bool storageImage = m_descriptor.m_bindGroupLayout->GetEntry(index).storageTexture.format != wgpu::TextureFormat::Undefined;
-                data.textureView = nullDescriptorManager.GetDescriptorImageInfo(imageType, storageImage, false);
+                const auto& entry = m_descriptor.m_bindGroupLayout->GetEntryByBinding(data.binding);
+                bool storageImage = entry.storageTexture.format != wgpu::TextureFormat::Undefined;
+                bool isDepthSampleType = entry.texture.sampleType == wgpu::TextureSampleType::Depth;
+                data.textureView = nullDescriptorManager.GetDescriptorImageInfo(imageType, storageImage, isDepthSampleType);
             }
         }
     }
@@ -114,7 +115,7 @@ namespace AZ::WebGPU
             m_descriptor.m_bindGroupLayout->GetShaderResourceGroupLayout()->GetShaderInputListForConstants().front().m_registerId;
         data.buffer = m_constantDataBuffer->GetNativeBuffer();
         data.offset = 0;
-        data.size = m_descriptor.m_bindGroupLayout->GetConstantDataSize();
+        data.size = WGPU_WHOLE_SIZE;
     }
 
     RHI::Ptr<BindGroup> BindGroup::Create()
@@ -129,7 +130,7 @@ namespace AZ::WebGPU
         Base::Init(device);
 
         // Check if we need to create a uniform buffer for the constants
-        size_t constantDataSize = descriptor.m_bindGroupLayout->GetConstantDataSize();
+        size_t constantDataSize = RHI::AlignUp(descriptor.m_bindGroupLayout->GetConstantDataSize(), 16u);
         if (constantDataSize)
         {
             m_constantDataBuffer = Buffer::Create();

@@ -21,6 +21,7 @@ namespace AZ::WebGPU
     class BindGroup;
     class Device;
     class ShaderResourceGroup;
+    class BufferView;
 
     class CommandList final
         : public RHI::CommandList
@@ -87,6 +88,7 @@ namespace AZ::WebGPU
             AZStd::array<const ShaderResourceGroup*, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_SRGByAzslBindingSlot = { {} };
             AZStd::array<WGPUBindGroup, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_bindGroups = { { nullptr } };
             const BindGroup* m_rootConstantBindGroup = nullptr;
+            const BufferView* m_rootConstantBufferView = nullptr;
             uint32_t m_rootConstantOffset = 0;
         };
 

@@ -8,6 +8,8 @@
 
 #pragma once
 
+#if ENABLE_PARALLAX
+
 #include <Atom/Features/ParallaxMapping.azsli>
 #include "../MaterialInputs/ParallaxInput.azsli"
 #include <Atom/Features/MatrixUtility.azsli>
@@ -80,3 +82,4 @@
     // Apply second part of the offset to the detail UV (see comment above)
     detailUv[MaterialSrg::m_parallaxUvIndex] += uvs[MaterialSrg::m_parallaxUvIndex];
 }
+#endif
