@@ -498,7 +498,8 @@ namespace AZ
                 // This will not allocate or bind memory.
                 ImageCreateInfo createInfo = BuildImageCreateInfo(descriptor);
                 VkImage vkImage = VK_NULL_HANDLE;
-                VkResult vkResult = GetContext().CreateImage(GetNativeDevice(), &createInfo.m_vkCreateInfo, VkSystemAllocator::Get(), &vkImage);
+                VkResult vkResult =
+                    GetContext().CreateImage(GetNativeDevice(), createInfo.GetCreateInfo(), VkSystemAllocator::Get(), &vkImage);
                 AssertSuccess(vkResult);
 
                 VkMemoryRequirements memoryRequirements = {};
@@ -525,7 +526,8 @@ namespace AZ
                 // This will not allocate or bind memory.
                 BufferCreateInfo createInfo = BuildBufferCreateInfo(descriptor);
                 VkBuffer vkBuffer = VK_NULL_HANDLE;
-                VkResult vkResult = GetContext().CreateBuffer(GetNativeDevice(), &createInfo.m_vkCreateInfo, VkSystemAllocator::Get(), &vkBuffer);
+                VkResult vkResult =
+                    GetContext().CreateBuffer(GetNativeDevice(), createInfo.GetCreateInfo(), VkSystemAllocator::Get(), &vkBuffer);
                 AssertSuccess(vkResult);
 
                 VkMemoryRequirements memoryRequirements = {};
@@ -1348,6 +1350,17 @@ namespace AZ
             allocatorInfo.pVulkanFunctions = &vulkanFunctions;
             allocatorInfo.pAllocationCallbacks = VkSystemAllocator::Get();
 
+            VkExternalMemoryHandleTypeFlagsKHR externalHandleTypeFlags = 0;
+            ExternalHandleRequirementBus::Broadcast(
+                &ExternalHandleRequirementBus::Events::CollectExternalMemoryRequirements, externalHandleTypeFlags);
+            AZStd::vector<VkExternalMemoryHandleTypeFlagsKHR> externalTypes;
+            if (externalHandleTypeFlags != 0)
+            {
+                externalTypes = AZStd::vector<VkExternalMemoryHandleTypeFlagsKHR>(
+                    physicalDevice.GetMemoryProperties().memoryTypeCount, externalHandleTypeFlags);
+                allocatorInfo.pTypeExternalMemoryHandleTypes = externalTypes.data();
+            }
+
             if (GetContext().GetBufferMemoryRequirements2 && GetContext().GetImageMemoryRequirements2)
             {
                 allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
@@ -1492,7 +1505,7 @@ namespace AZ
             AZ_Assert(descriptor.m_sharedQueueMask != RHI::HardwareQueueClassMask::None, "Invalid shared queue mask");
             createInfo.m_queueFamilyIndices = GetCommandQueueContext().GetQueueFamilyIndices(descriptor.m_sharedQueueMask);
 
-            auto& vkCreateInfo = createInfo.m_vkCreateInfo;
+            VkBufferCreateInfo vkCreateInfo = {};
             vkCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
             vkCreateInfo.pNext = nullptr;
             vkCreateInfo.flags = 0;
@@ -1509,6 +1522,20 @@ namespace AZ
                 : VK_SHARING_MODE_CONCURRENT;
             vkCreateInfo.queueFamilyIndexCount = static_cast<uint32_t>(createInfo.m_queueFamilyIndices.size());
             vkCreateInfo.pQueueFamilyIndices = createInfo.m_queueFamilyIndices.empty() ? nullptr : createInfo.m_queueFamilyIndices.data();
+            createInfo.SetCreateInfo(vkCreateInfo);
+
+            VkExternalMemoryHandleTypeFlagsKHR externalHandleTypeFlags = 0;
+            ExternalHandleRequirementBus::Broadcast(
+                &ExternalHandleRequirementBus::Events::CollectExternalMemoryRequirements, externalHandleTypeFlags);
+            if (externalHandleTypeFlags != 0)
+            {
+                VkExternalMemoryBufferCreateInfo externalInfo = {};
+                externalInfo.sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO;
+                externalInfo.handleTypes = externalHandleTypeFlags;
+                externalInfo.pNext = nullptr;
+                createInfo.SetExternalCreateInfo(externalInfo);
+            }
+
             return createInfo;
         }
 
@@ -1518,7 +1545,7 @@ namespace AZ
 
             ImageCreateInfo createInfo;
 
-            auto& vkCreateInfo = createInfo.m_vkCreateInfo;
+            VkImageCreateInfo vkCreateInfo = {};
             vkCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
             vkCreateInfo.pNext = nullptr;
             vkCreateInfo.format = ConvertFormat(descriptor.m_format);
@@ -1567,6 +1594,19 @@ namespace AZ
             vkCreateInfo.queueFamilyIndexCount = static_cast<uint32_t>(createInfo.m_queueFamilyIndices.size());
             vkCreateInfo.pQueueFamilyIndices = createInfo.m_queueFamilyIndices.empty() ? nullptr : createInfo.m_queueFamilyIndices.data();
             vkCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            createInfo.SetCreateInfo(vkCreateInfo);
+
+            VkExternalMemoryHandleTypeFlagsKHR externalHandleTypeFlags = 0;
+            ExternalHandleRequirementBus::Broadcast(
+                &ExternalHandleRequirementBus::Events::CollectExternalMemoryRequirements, externalHandleTypeFlags);
+            if (externalHandleTypeFlags != 0)
+            {
+                VkExternalMemoryImageCreateInfo externalInfo = {};
+                externalInfo.sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO;
+                externalInfo.handleTypes = externalHandleTypeFlags;
+                externalInfo.pNext = nullptr;
+                createInfo.SetExternalCreateInfo(externalInfo);
+            }
 
             return createInfo;
         }

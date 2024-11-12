@@ -6,12 +6,13 @@
  *
  */
 
+#include <Atom/RHI.Reflect/VkAllocator.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
+#include <Atom/RHI/RHIBus.h>
 #include <Atom_RHI_Vulkan_Platform.h>
 #include <RHI/BufferMemory.h>
 #include <RHI/Conversion.h>
 #include <RHI/Device.h>
-#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
-#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -31,7 +32,7 @@ namespace AZ
                 device.GetVmaAllocator(),
                 memoryView.GetAllocation()->GetVmaAllocation(),
                 memoryView.GetOffset(),
-                &createInfo.m_vkCreateInfo,
+                createInfo.GetCreateInfo(),
                 &m_vkBuffer);
 
             AssertSuccess(vkResult);
@@ -50,19 +51,35 @@ namespace AZ
             Base::Init(device);
             m_descriptor = descriptor;
             BufferCreateInfo createInfo = device.BuildBufferCreateInfo(descriptor);
+            struct
+            {
+                size_t m_alignment = 0;
+                void operator=(size_t value)
+                {
+                    m_alignment = AZStd::max(m_alignment, value);
+                }
+            } alignment;
+            RHI::RHIRequirementRequestBus::BroadcastResult(alignment, &RHI::RHIRequirementsRequest::GetRequiredAlignment, device);
+            auto updatedCreateInfo{ createInfo.GetCreateInfo() };
+            if (alignment.m_alignment && updatedCreateInfo->size > alignment.m_alignment)
+            {
+                updatedCreateInfo->size =
+                    ((updatedCreateInfo->size + alignment.m_alignment - 1) / alignment.m_alignment) * alignment.m_alignment;
+            }
+
             VmaAllocationCreateInfo allocInfo = GetVmaAllocationCreateInfo(descriptor.m_heapMemoryLevel);
             VmaAllocation vmaAlloc;
             VkResult vkResult;
             // Creates the buffer, allocates new memory and bind it to the buffer.
             vkResult = vmaCreateBufferWithAlignment(
                 device.GetVmaAllocator(),
-                &createInfo.m_vkCreateInfo,
+                createInfo.GetCreateInfo(),
                 &allocInfo,
                 RHI::IsPowerOfTwo(descriptor.m_alignment) ? descriptor.m_alignment : 1,
                 &m_vkBuffer,
                 &vmaAlloc,
                 nullptr);
-            
+
             AssertSuccess(vkResult);
             RHI::ResultCode result = ConvertResult(vkResult);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
@@ -70,7 +87,7 @@ namespace AZ
             RHI::Ptr<VulkanMemoryAllocation> alloc = VulkanMemoryAllocation::Create();
             alloc->Init(device, vmaAlloc);
             m_memoryView = MemoryView(alloc);
-            m_sharingMode = createInfo.m_vkCreateInfo.sharingMode;
+            m_sharingMode = createInfo.GetCreateInfo()->sharingMode;
             return RHI::ResultCode::Success;
         }
 
@@ -102,6 +119,26 @@ namespace AZ
         size_t BufferMemory::GetSize() const
         {
             return m_memoryView.GetSize();
+        }
+
+        const MemoryView& BufferMemory::GetMemoryView() const
+        {
+            return m_memoryView;
+        }
+
+        size_t BufferMemory::GetAllocationSize() const
+        {
+            return m_memoryView.GetAllocation()->GetSize();
+        }
+
+        VkDeviceMemory BufferMemory::GetNativeDeviceMemory() const
+        {
+            return m_memoryView.GetNativeDeviceMemory();
+        }
+
+        size_t BufferMemory::GetMemoryViewOffset() const
+        {
+            return m_memoryView.GetOffset();
         }
 
         void BufferMemory::SetNameInternal(const AZStd::string_view& name)
