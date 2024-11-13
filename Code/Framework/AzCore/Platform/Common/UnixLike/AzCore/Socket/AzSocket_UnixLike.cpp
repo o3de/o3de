@@ -309,7 +309,8 @@ namespace AZ::AzSock
         fdPollData.fd = sock;
         fdPollData.events = POLLIN;
         fdPollData.revents = 0;
-        return Poll(&fdPollData, 1, timeout ? timeout->tv_sec * 1000 + timeout->tv_usec : -1) > 0 ? 1 : 0;;
+
+        return Poll(&fdPollData, 1, timeout ? timeout->tv_sec * 1000 + timeout->tv_usec : -1) > 0 ? 1 : 0;
 #else
         AZFD_SET readSet;
         FD_ZERO(&readSet);
@@ -337,7 +338,8 @@ namespace AZ::AzSock
         fdPollData.fd = sock;
         fdPollData.events = POLLOUT;
         fdPollData.revents = 0;
-        return Poll(&fdPollData, 1, timeout ? timeout->tv_sec * 1000 + timeout->tv_usec : -1) > 0 ? 1 : 0;;
+
+        return Poll(&fdPollData, 1, timeout ? timeout->tv_sec * 1000 + timeout->tv_usec : -1) > 0 ? 1 : 0;
 #else
         AZFD_SET writeSet;
         FD_ZERO(&writeSet);
