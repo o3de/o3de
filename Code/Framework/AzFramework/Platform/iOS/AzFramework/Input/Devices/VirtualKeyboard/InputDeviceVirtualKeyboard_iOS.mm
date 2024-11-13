@@ -23,6 +23,10 @@
     UITextField* m_textField;
 @public
     float m_activeTextFieldNormalizedBottomY;
+
+#if defined(CARBONATED)
+    bool m_showNativeTextField;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -122,6 +126,16 @@
         shouldChangeCharactersInRange: (NSRange)range
         replacementString: (NSString*)string
 {
+#if defined(CARBONATED)
+    if (m_showNativeTextField)
+    {
+        NSString *newText = [textField.text stringByReplacingCharactersInRange:range withString:string];
+        m_inputDevice->QueueRawTextEvent(newText.UTF8String);
+
+        return TRUE;
+    }
+#endif
+
     // If the string length is 0, the user has pressed the backspace key on the virtual keyboard.
     const AZStd::string textUTF8 = string.length ? string.UTF8String : "\b";
     m_inputDevice->QueueRawTextEvent(textUTF8);
@@ -267,6 +281,38 @@ namespace AzFramework
         // On iOS we must set m_activeTextFieldNormalizedBottomY before showing the virtual keyboard
         // by calling becomeFirstResponder, which then sends a UIKeyboardWillChangeFrameNotification.
         m_textFieldDelegate->m_activeTextFieldNormalizedBottomY = options.m_normalizedMinY;
+
+#if defined(CARBONATED)
+        m_textFieldDelegate->m_showNativeTextField = options.m_showNativeTextField;
+
+        if (options.m_showNativeTextField)
+        {
+            // Position text field
+            float textFieldWidth = (options.m_normalizedMaxX - options.m_normalizedMinX) * m_textField.superview.bounds.size.width;
+            float textFieldHeight = (options.m_normalizedMinY - options.m_normalizedMaxY) * m_textField.superview.bounds.size.height;
+
+            CGRect textFieldRect = CGRectMake(options.m_normalizedMinX * m_textField.superview.bounds.size.width + textFieldHeight * 0.1f,
+                                              options.m_normalizedMaxY * m_textField.superview.bounds.size.height + textFieldHeight * 0.1f,
+                                              textFieldWidth - textFieldHeight * 0.2f, textFieldHeight * 0.8f);
+            textFieldRect = [m_textField.superview convertRect: textFieldRect toView: nil];
+
+            m_textField.frame = textFieldRect;
+            m_textField.text = [NSString stringWithUTF8String:options.m_initialText.c_str()];
+
+            m_textField.autocorrectionType = UITextAutocorrectionTypeYes;
+            m_textField.hidden = NO;
+            m_textField.textColor = [UIColor whiteColor];
+        }
+
+        if (options.m_showSendOnReturnKey)
+        {
+            [m_textField setReturnKeyType:UIReturnKeySend];
+        }
+        else
+        {
+            [m_textField setReturnKeyType:UIReturnKeyDefault];
+        }
+#endif
 
         [m_textField becomeFirstResponder];
     }
