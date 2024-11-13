@@ -113,7 +113,7 @@ jobs:
         env:
           LY_3RDPARTY_PATH: ${{ github.workspace }}\3rdParty
           LY_NDK_DIR: C:\Android\android-sdk\ndk\21.4.7075529 
-        run: 
+        run: |
           scripts\o3de.bat register --this-engine
           python\python.cmd -u scripts\build\ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }} 
       
