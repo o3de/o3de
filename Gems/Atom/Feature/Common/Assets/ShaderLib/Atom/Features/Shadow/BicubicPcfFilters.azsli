@@ -32,7 +32,7 @@ struct SampleShadowMapBicubicParameters
     real shadowMapSize;
     real invShadowMapSize;
     SamplerComparisonState samplerState;
-    real comparisonValue;
+    float comparisonValue;
 
     // Optionally pass in a non-zero value into the receiverPlaneDepthBias to reduce shadow acne with large Pcf kernels
     float2 receiverPlaneDepthBias;
