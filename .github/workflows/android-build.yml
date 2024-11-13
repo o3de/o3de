@@ -38,13 +38,6 @@ jobs:
         with:
           show-progress: false
           lfs: true
-          
-      # - name: Git LFS pull
-      #   run: |
-      #     git lfs install
-      #     # if ("${{ inputs.type }}" -eq "profile") { git lfs fetch --include "*.ico,*.bmp" } else { git lfs fetch --all }
-      #     git lfs fetch --all
-      #     git lfs checkout
 
       - name: Setup 3p, user, and build folders
         run: |
@@ -93,6 +86,11 @@ jobs:
           tar -xvpf ${{ github.workspace }}\cache.tar
           rm ${{ github.workspace }}\cache.tar
 
+      - name: Git LFS pull
+        run: |
+          git lfs install
+          if ("${{ inputs.type }}" -eq "profile") { git lfs pull --include "*.ico,*.bmp" } else { git lfs pull }
+
       - name: Configure environment
         continue-on-error: true
         env:
@@ -116,6 +114,7 @@ jobs:
           LY_3RDPARTY_PATH: ${{ github.workspace }}\3rdParty
           LY_NDK_DIR: C:\Android\android-sdk\ndk\21.4.7075529 
         run: 
+          scripts\o3de.bat register --this-engine
           python\python.cmd -u scripts\build\ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }} 
       
       - name: Compress artifacts

@@ -104,6 +104,11 @@ jobs:
           tar -xvpf ${{ github.workspace }}/cache.tar
           rm ${{ github.workspace }}/cache.tar
 
+      - name: Git LFS pull
+        run: |
+          git lfs install
+          [[ "${{ inputs.type }}" == "profile" ]] && git lfs pull --include "*.ico,*.bmp" || git lfs pull
+
       - name: Configure environment
         continue-on-error: true
         run: |
