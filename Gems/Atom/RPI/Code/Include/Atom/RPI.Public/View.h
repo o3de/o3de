@@ -136,8 +136,8 @@ namespace AZ
             const AZ::Matrix4x4& GetClipToViewMatrix() const;
 
             //! Functions for getting the matrices that are used in the view srg
-            //! These are different from the matrices returned above if a clip space offset is applied
-            //! They updated in the UpdateSrg function
+            //! These are different from the matrices returned above as they take clip space offset into account
+            //! They are updated in the UpdateSrg function
             //! Calling these functions before UpdateSrg will return the last frames values
             const Matrix4x4& GetWorldToClipPrevMatrixWithOffset() const;
             const Matrix4x4& GetWorldToClipMatrixWithOffset() const;
