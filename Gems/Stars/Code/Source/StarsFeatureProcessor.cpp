@@ -60,11 +60,16 @@ namespace AZ::Render
 
         auto viewportContextInterface = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
         auto viewportContext = viewportContextInterface->GetViewportContextByScene(GetParentScene());
-        m_viewportSize = viewportContext->GetViewportSize();
-
+        if (viewportContext)
+        {
+            m_viewportSize = viewportContext->GetViewportSize();
+            RPI::ViewportContextIdNotificationBus::Handler::BusConnect(viewportContext->GetId());
+        }
+        else{
+            m_viewportSize = AzFramework::WindowSize(1280, 720);
+        }
         EnableSceneNotification();
 
-        RPI::ViewportContextIdNotificationBus::Handler::BusConnect(viewportContext->GetId());
     }
 
     void StarsFeatureProcessor::Deactivate()
