@@ -162,7 +162,7 @@ namespace EMotionFX
                 1,
                 2
             },
-        });
+        })
     );
 
     struct FindMatchingEventsParams
