@@ -61,9 +61,6 @@ namespace AZ
             void CompileResourcesHostToDevice(const RHI::FrameGraphCompileContext& context);
             void BuildCommandListInternalHostToDevice(const RHI::FrameGraphExecuteContext& context);
 
-            // Add the ScopeQuery's QueryPool to the FrameGraph
-            void AddScopeQueryToFrameGraph(RHI::FrameGraphInterface frameGraph, int scopeIndex);
-
         private:
             // Retrieves the copy item type based on the input and output attachment type
             RHI::CopyItemType GetCopyItemType();
@@ -109,37 +106,49 @@ namespace AZ
             int m_currentBufferIndex = 0;
             AZStd::array<Ptr<RHI::Fence>, MaxFrames> m_device1SignalFence;
             AZStd::array<Ptr<RHI::Fence>, MaxFrames> m_device2WaitFence;
+
+            enum class CopyIndex : int
+            {
+                DeviceToHost = 0,
+                HostToDevice = 1,
+                SameDevice = DeviceToHost
+            };
+
+            // Add the ScopeQuery's QueryPool to the FrameGraph
+            void AddScopeQueryToFrameGraph(RHI::FrameGraphInterface frameGraph, CopyIndex copyIndex);
+
             // RPI::Pass overrides...
             TimestampResult GetTimestampResultInternal() const override;
             PipelineStatisticsResult GetPipelineStatisticsResultInternal() const override;
 
             // Helper function to get the query by the scope index and query type
-            RHI::Ptr<Query> GetQuery(ScopeQueryType queryType, int scopeIndex);
+            RHI::Ptr<Query> GetQuery(ScopeQueryType queryType, CopyIndex copyIndex);
 
             // Executes a lambda depending on the passed ScopeQuery types
             template<typename Func>
-            void ExecuteOnTimestampQuery(Func&& func, int scopeIndex);
+            void ExecuteOnTimestampQuery(Func&& func, CopyIndex copyIndex);
             template<typename Func>
-            void ExecuteOnPipelineStatisticsQuery(Func&& func, int scopeIndex);
+            void ExecuteOnPipelineStatisticsQuery(Func&& func, CopyIndex copyIndex);
 
             // Begin recording commands for the ScopeQueries
-            void BeginScopeQuery(const RHI::FrameGraphExecuteContext& context, int scopeIndex);
+            void BeginScopeQuery(const RHI::FrameGraphExecuteContext& context, CopyIndex copyIndex);
 
             // End recording commands for the ScopeQueries
-            void EndScopeQuery(const RHI::FrameGraphExecuteContext& context, int scopeIndex);
+            void EndScopeQuery(const RHI::FrameGraphExecuteContext& context, CopyIndex copyIndex);
 
             // Readback the results from the ScopeQueries
-            void ReadbackScopeQueryResults(int scopeIndex = 0);
+            void ReadbackScopeQueryResults(CopyIndex copyIndex);
 
-            struct PerScopeQueries
+            struct QueryEntry
             {
                 ScopeQuery m_scopeQuery;
                 TimestampResult m_timestampResult;
                 PipelineStatisticsResult m_statisticsResult;
             };
 
-            // Record per-scope query results
-            AZStd::array<PerScopeQueries, 2> m_perScopeQueries;
+            // Record per-scope query results, holds one valid entry for same-device copies
+            // and two entries for multi-device copy (source and destination scope)
+            AZStd::array<QueryEntry, 2> m_queryEntries;
         };
     } // namespace RPI
 } // namespace AZ
