@@ -304,13 +304,13 @@ namespace AZ::AzSock
     AZ::s32 IsRecvPending(AZSOCKET sock, AZTIMEVAL* timeout)
     {
 #if defined(CARBONATED) && defined(AZ_PLATFORM_ANDROID)
-        // use poll() instead select() for Android to allow the sockets with descriptor values >= FD_SETSIZE
+        // Use poll() instead select() for Android to allow the sockets with descriptor values >= FD_SETSIZE
         AZPOLLFD fdPollData;
         fdPollData.fd = sock;
         fdPollData.events = POLLIN;
         fdPollData.revents = 0;
 
-        return Poll(&fdPollData, 1, timeout ? timeout->tv_sec * 1000 + timeout->tv_usec : -1) > 0 ? 1 : 0;
+        return Poll(&fdPollData, 1, timeout ? timeout->tv_sec * 1000 + timeout->tv_usec / 1000 : -1) > 0 ? 1 : 0;
 #else
         AZFD_SET readSet;
         FD_ZERO(&readSet);
@@ -333,13 +333,13 @@ namespace AZ::AzSock
     AZ::s32 WaitForWritableSocket(AZSOCKET sock, AZTIMEVAL* timeout)
     {
 #if defined(CARBONATED) && defined(AZ_PLATFORM_ANDROID)
-        // use poll() instead select() for Android to allow the sockets with descriptor values >= FD_SETSIZE
+        // Use poll() instead select() for Android to allow the sockets with descriptor values >= FD_SETSIZE
         AZPOLLFD fdPollData;
         fdPollData.fd = sock;
         fdPollData.events = POLLOUT;
         fdPollData.revents = 0;
 
-        return Poll(&fdPollData, 1, timeout ? timeout->tv_sec * 1000 + timeout->tv_usec : -1) > 0 ? 1 : 0;
+        return Poll(&fdPollData, 1, timeout ? timeout->tv_sec * 1000 + timeout->tv_usec / 1000 : -1) > 0 ? 1 : 0;
 #else
         AZFD_SET writeSet;
         FD_ZERO(&writeSet);
