@@ -201,7 +201,7 @@ namespace UnitTest
         EXPECT_THAT(matrix, IsClose(reconstructedMatrix));
     }
 
-    INSTANTIATE_TEST_CASE_P(MATH_Transform, TransformFromMatrixFixture, ::testing::ValuesIn(MathTestData::NonOrthogonalMatrix3x4s));
+    INSTANTIATE_TEST_SUITE_P(MATH_Transform, TransformFromMatrixFixture, ::testing::ValuesIn(MathTestData::NonOrthogonalMatrix3x4s));
 
     TEST(MATH_Transform, CreateLookAtDegenerateCases)
     {
