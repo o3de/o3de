@@ -100,10 +100,18 @@ jobs:
           python\get_python.bat
           echo "Setup Android SDK..."
           scripts\build\build_node\Platform\Windows\install-windows-android.ps1
+          echo "Install Java (for Android)..."
+          choco install corretto17jdk -y --ia INSTALLDIR="c:\jdk17" # Custom directory to handle cases where whitespace in the path is not quote wrapped
+          
+          echo "Set JDK_PATH for Android"
+          [Environment]::SetEnvironmentVariable("JDK_PATH", "c:\jdk17\jdk17.0.12_7", [EnvironmentVariableTarget]::Machine) >> $env:GITHUB_ENV
+          [Environment]::SetEnvironmentVariable("JAVA_HOME", "c:\jdk17\jdk17.0.12_7", [EnvironmentVariableTarget]::Machine) >> $env:GITHUB_ENV
 
           $varsToSync = @(
             'ANDROID_SDK_ROOT',
             'GRADLE_BUILD_HOME',
+            'JDK_PATH',
+            'JAVA_HOME',
             'LY_NDK_DIR'
           )
           
