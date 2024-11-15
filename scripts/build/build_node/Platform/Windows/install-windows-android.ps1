@@ -33,7 +33,7 @@ Start-Process -FilePath $sdkmanager -ArgumentList $googleplay_packages -Redirect
 Write-Host "Installing Build Tools: $build_tools"
 Start-Process -FilePath $sdkmanager -ArgumentList $build_tools -RedirectStandardOutput "NUL" -RedirectStandardError "$host.Streams.Error" -NoNewWindow -Wait
 Write-Host "Installing Android NDK packages: $ndk"
-Start-Process -FilePath $sdkmanager -ArgumentList $ndk -RedirectStandardOutput "NUL" -RedirectStandardError "$host.Streams.Error" -NoNewWindow -Wait
+Start-Process -FilePath $sdkmanager -ArgumentList $ndk -NoNewWindow -Wait
 # Set the NDK environment
 Install-ChocolateyEnvironmentVariable "LY_NDK_DIR" "C:\AndroidSdk\ndk\25.1.8937393" -VariableType 'Machine'
 
