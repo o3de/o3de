@@ -90,6 +90,12 @@ jobs:
           git lfs install
           if ("${{ inputs.type }}" -eq "profile") { git lfs pull --include "*.ico,*.bmp" } else { git lfs pull }
 
+      - name: Install Java
+        uses: actions/setup-java@v4
+        with:
+            distribution: 'corretto'
+            java-version: '17'
+
       - name: Configure environment
         continue-on-error: true
         env:
@@ -98,14 +104,9 @@ jobs:
           echo "Installing dependancies"
           echo "Getting python..."
           python\get_python.bat
+
           echo "Setup Android SDK..."
           scripts\build\build_node\Platform\Windows\install-windows-android.ps1
-          echo "Install Java (for Android)..."
-          choco install corretto17jdk -y --ia INSTALLDIR="c:\jdk17" # Custom directory to handle cases where whitespace in the path is not quote wrapped
-          
-          echo "Set JDK_PATH for Android"
-          [Environment]::SetEnvironmentVariable("JDK_PATH", "c:\jdk17\jdk17.0.12_7", [EnvironmentVariableTarget]::Machine) >> $env:GITHUB_ENV
-          [Environment]::SetEnvironmentVariable("JAVA_HOME", "c:\jdk17\jdk17.0.12_7", [EnvironmentVariableTarget]::Machine) >> $env:GITHUB_ENV
 
           $varsToSync = @(
             'ANDROID_SDK_ROOT',
