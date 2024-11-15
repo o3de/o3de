@@ -663,7 +663,7 @@ namespace AzFramework
         if (attemptNumber >= maxAttempts)
         {
             userCachePath.ReplaceFilename(userCachePathFilename);
-            AZ_TracePrintf("Application", "Couldn't find a valid asset cache folder after %i attempts."
+            AZ_WarningOnce("Application", false, "Couldn't find a valid asset cache folder after %i attempts."
                 " Setting cache folder to %s\n", maxAttempts, userCachePath.c_str());
         }
 #endif

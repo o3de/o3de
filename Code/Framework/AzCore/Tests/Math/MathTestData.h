@@ -54,6 +54,9 @@ namespace MathTestData
 
     static const AZ::Matrix3x4 NonOrthogonalMatrix3x4s[] = {
         AZ::Matrix3x4::CreateScale(AZ::Vector3(2.4f, 0.3f, 1.7f)),
+        AZ::Matrix3x4::CreateScale(AZ::Vector3(-2.4f, 0.3f, 1.7f)),
+        AZ::Matrix3x4::CreateScale(AZ::Vector3(-2.4f, -0.3f, -1.7f)),
+        AZ::Matrix3x4::CreateRotationX(2.2f) * AZ::Matrix3x4::CreateScale(AZ::Vector3(-2.4f, -0.3f, -1.7f)),
         AZ::Matrix3x4::CreateRotationX(2.2f) * AZ::Matrix3x4::CreateDiagonal(AZ::Vector3(0.2f, 0.8f, 1.4f))
     };
 

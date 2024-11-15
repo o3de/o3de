@@ -157,30 +157,33 @@ void CCompoundSplineTrack::GetValue(float time, float& value, bool applyMultipli
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCompoundSplineTrack::GetValue(float time, Vec3& value, bool applyMultiplier)
+void CCompoundSplineTrack::GetValue(float time, AZ::Vector3& value, bool applyMultiplier)
 {
+    AZ_Assert(m_nDimensions == 3, "mismatched dimension %d", m_nDimensions);
     for (int i = 0; i < m_nDimensions; i++)
     {
-        float v = value[i];
-        m_subTracks[i]->GetValue(time, v, applyMultiplier);
-        value[i] = v;
+        float temp;
+        m_subTracks[i]->GetValue(time, temp, applyMultiplier);
+        value.SetElement(i, temp);
     }
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCompoundSplineTrack::GetValue(float time, Vec4& value, bool applyMultiplier)
+void CCompoundSplineTrack::GetValue(float time, AZ::Vector4& value, bool applyMultiplier)
 {
+    AZ_Assert(m_nDimensions == 4, "mismatched dimension %d", m_nDimensions);
     for (int i = 0; i < m_nDimensions; i++)
     {
-        float v = value[i];
-        m_subTracks[i]->GetValue(time, v, applyMultiplier);
-        value[i] = v;
+        float temp;
+        m_subTracks[i]->GetValue(time, temp, applyMultiplier);
+        value.SetElement(i, temp);
     }
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCompoundSplineTrack::GetValue(float time, Quat& value)
+void CCompoundSplineTrack::GetValue(float time, AZ::Quaternion& value)
 {
+    AZ_Assert(m_nDimensions == 3, "mismatched dimension %d", m_nDimensions);
     if (m_nDimensions == 3)
     {
         // Assume Euler Angles XYZ
@@ -189,12 +192,11 @@ void CCompoundSplineTrack::GetValue(float time, Quat& value)
         {
             m_subTracks[i]->GetValue(time, angles[i]);
         }
-        value = Quat::CreateRotationZYX(Ang3(DEG2RAD(angles[0]), DEG2RAD(angles[1]), DEG2RAD(angles[2])));
+        value = AZ::Quaternion::CreateFromEulerDegreesZYX(AZ::Vector3(angles[0], angles[1], angles[2]));
     }
     else
     {
-        assert(0);
-        value.SetIdentity();
+        value = value.CreateIdentity();
     }
 }
 
@@ -208,46 +210,43 @@ void CCompoundSplineTrack::SetValue(float time, const float& value, bool bDefaul
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCompoundSplineTrack::SetValue(float time, const Vec3& value, bool bDefault, bool applyMultiplier)
+void CCompoundSplineTrack::SetValue(float time, const AZ::Vector3& value, bool bDefault, bool applyMultiplier)
 {
     for (int i = 0; i < m_nDimensions; i++)
     {
-        m_subTracks[i]->SetValue(time, value[i], bDefault, applyMultiplier);
+        m_subTracks[i]->SetValue(time, value.GetElement(i), bDefault, applyMultiplier);
     }
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCompoundSplineTrack::SetValue(float time, const Vec4& value, bool bDefault, bool applyMultiplier)
+void CCompoundSplineTrack::SetValue(float time, const AZ::Vector4& value, bool bDefault, bool applyMultiplier)
 {
     for (int i = 0; i < m_nDimensions; i++)
     {
-        m_subTracks[i]->SetValue(time, value[i], bDefault, applyMultiplier);
+        m_subTracks[i]->SetValue(time, value.GetElement(i), bDefault, applyMultiplier);
     }
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCompoundSplineTrack::SetValue(float time, const Quat& value, bool bDefault)
+void CCompoundSplineTrack::SetValue(float time, const AZ::Quaternion& value, bool bDefault)
 {
+    AZ_Assert(m_nDimensions == 3, "mismatched dimension %d", m_nDimensions);
     if (m_nDimensions == 3)
     {
         // Assume Euler Angles XYZ
-        Ang3 angles = Ang3::GetAnglesXYZ(value);
+        AZ::Vector3 eulerAngle = value.GetEulerDegrees();
         for (int i = 0; i < 3; i++)
         {
-            float degree = RAD2DEG(angles[i]);
+            float degree = eulerAngle.GetElement(i);
             if (false == bDefault)
             {
                 // Try to prefer the shortest path of rotation.
-                float degree0 = 0.0f;
+                float degree0;
                 m_subTracks[i]->GetValue(time, degree0);
                 degree = PreferShortestRotPath(degree, degree0);
             }
             m_subTracks[i]->SetValue(time, degree, bDefault);
         }
-    }
-    else
-    {
-        assert(0);
     }
 }
 
@@ -290,7 +289,7 @@ void CCompoundSplineTrack::UpdateKeyDataAfterParentChanged(const AZ::Transform& 
         KeyValues(int i, float t, float v) : index(i), time(t), value(v) {};
         int index;
         float time;
-        float value;           
+        float value;
     };
 
     // Don't actually set the key data until we are done calculating all the new values.

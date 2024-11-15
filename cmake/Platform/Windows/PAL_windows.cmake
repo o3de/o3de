@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
+include(cmake/CompilerSettings.cmake)
 
 ly_set(PAL_EXECUTABLE_APPLICATION_FLAG WIN32)
 ly_set(PAL_LINKOPTION_MODULE MODULE)

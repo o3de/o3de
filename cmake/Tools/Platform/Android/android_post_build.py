@@ -24,7 +24,8 @@ ANDROID_ARCH = 'arm64-v8a'
 
 ASSET_MODE_PAK     = 'PAK'
 ASSET_MODE_LOOSE   = 'LOOSE'
-SUPPORTED_ASSET_MODES = [ASSET_MODE_PAK, ASSET_MODE_LOOSE]
+ASSET_MODE_NONE    = 'NONE'
+SUPPORTED_ASSET_MODES = [ASSET_MODE_PAK, ASSET_MODE_LOOSE, ASSET_MODE_NONE]
 ASSET_PLATFORM_KEY = 'android'
 
 SUPPORTED_BUILD_CONFIGS = ['debug', 'profile', 'release']
@@ -186,7 +187,9 @@ def post_build_action(android_app_root: Path, project_root: Path, gradle_version
         apply_pak_layout(project_root=project_root,
                          target_layout_root=target_layout_root,
                          asset_bundle_folder=asset_bundle_folder)
-
+    elif asset_mode == ASSET_MODE_NONE:
+        # Skip any asset layout
+        pass
     else:
         raise AndroidPostBuildError(f"Invalid Asset Mode '{asset_mode}'.")
 

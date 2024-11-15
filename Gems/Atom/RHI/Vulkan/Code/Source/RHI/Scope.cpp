@@ -5,28 +5,29 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom_RHI_Vulkan_Platform.h>
-#include <algorithm>
-#include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/BufferProperty.h>
+#include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/FrameGraphExecuteContext.h>
-#include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/ImageFrameAttachment.h>
+#include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
+#include <Atom_RHI_Vulkan_Platform.h>
+#include <AzCore/Math/MathIntrinsics.h>
+#include <RHI/BufferView.h>
 #include <RHI/CommandList.h>
+#include <RHI/Conversion.h>
+#include <RHI/Device.h>
+#include <RHI/Framebuffer.h>
 #include <RHI/GraphicsPipeline.h>
 #include <RHI/ImageView.h>
-#include <RHI/QueryPool.h>
 #include <RHI/PipelineState.h>
+#include <RHI/QueryPool.h>
 #include <RHI/RenderPass.h>
 #include <RHI/ResourcePoolResolver.h>
 #include <RHI/Scope.h>
 #include <RHI/SwapChain.h>
-#include <RHI/Framebuffer.h>
-#include <RHI/Device.h>
-#include <RHI/Conversion.h>
-#include <RHI/BufferView.h>
+#include <algorithm>
 
 namespace AZ
 {
@@ -611,11 +612,14 @@ namespace AZ
             case VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER:
                 if (barrier.m_imageBarrier.srcQueueFamilyIndex == barrier.m_imageBarrier.dstQueueFamilyIndex)
                 {
-                    // Barriers between subpasses have to be "optimized" as subpass dependencies and subpass layout transitions (for pipeline compatibilty)
-                    // Barriers to external scopes (outside of the group) can be optimized if we are using a renderpass and the optimization option is enabled.
+                    // Barriers between subpasses have to be "optimized" as subpass dependencies and subpass layout transitions (for
+                    // pipeline compatibilty) Barriers to external scopes (outside of the group) can be optimized if we are using a
+                    // renderpass and the optimization option is enabled.
                     bool useRenderpassBarrier = UsesRenderpass() && IsRenderAttachmentUsage(barrier.m_attachment->GetUsage());
-                    bool renderpassLayoutOptimizationEnabled = RHI::CheckBitsAll(optimizationFlags,BarrierOptimizationFlags::UseRenderpassLayout);
-                    useRenderpassBarrier &= renderpassLayoutOptimizationEnabled || !HasExternalConnection(barrier.m_attachment, slot);
+                    bool renderpassLayoutOptimizationEnabled =
+                        RHI::CheckBitsAll(optimizationFlags, BarrierOptimizationFlags::UseRenderpassLayout);
+                    useRenderpassBarrier &= (renderpassLayoutOptimizationEnabled || !HasExternalConnection(barrier.m_attachment, slot)) &&
+                        AreDepthStencilLayoutsCompatible(barrier, slot);
                     if (useRenderpassBarrier ||
                         (globalBarrierOptimizationEnabled &&
                          barrier.m_imageBarrier.oldLayout == barrier.m_imageBarrier.newLayout)) // If the layout doesn't change we can just
@@ -646,14 +650,77 @@ namespace AZ
             }
         }
 
+        bool Scope::AreDepthStencilLayoutsCompatible(const Barrier& barrier, BarrierSlot slot) const
+        {
+            // The two aspects of a depth stencil image could be in incompatible layouts so that an automatic layout transition
+            // by the renderpass doesn't work. In that case we will have two barriers each transitioning one aspect and we
+            // cannot optimize them. First we check if the usage is DepthStencil, there is only a single aspect and the layout
+            // changes.
+            if (barrier.m_attachment->GetUsage() == RHI::ScopeAttachmentUsage::DepthStencil &&
+                az_popcnt_u32(barrier.m_imageBarrier.subresourceRange.aspectMask) < 2 &&
+                barrier.m_imageBarrier.oldLayout != barrier.m_imageBarrier.newLayout)
+            {
+                const Image& image = static_cast<const Image&>(
+                    barrier.m_attachment->GetResourceView()->GetDeviceResourceView(GetDeviceIndex())->GetResource());
+
+                // Next, we check if the image actually has both a depth and a stencil aspect.
+                if (az_popcnt_u32(AZStd::to_underlying(image.GetAspectFlags())) == 2)
+                {
+                    VkImageLayout layout{ VK_IMAGE_LAYOUT_UNDEFINED };
+                    VkImageAspectFlags aspectFlags{ VK_IMAGE_ASPECT_NONE };
+
+                    // Finally, we need to go through all unoptimizedBarriers and for the barriers handling the same image, we
+                    // need to check if the layouts are compatible. E.g., DEPTH_READ_ONLY_OPTIMAL is compatible with
+                    // STENCIL_ATTACHMENT_OPTIMAL, but TRANSFER_DEST is not compatible with either of them.
+                    for (const Barrier& otherBarrier : m_unoptimizedBarriers[AZStd::to_underlying(slot)])
+                    {
+                        if (otherBarrier.m_type == VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER &&
+                            otherBarrier.m_imageBarrier.srcQueueFamilyIndex == otherBarrier.m_imageBarrier.dstQueueFamilyIndex &&
+                            otherBarrier.m_imageBarrier.image == barrier.m_imageBarrier.image &&
+                            otherBarrier.m_attachment->GetUsage() == RHI::ScopeAttachmentUsage::DepthStencil &&
+                            az_popcnt_u32(otherBarrier.m_imageBarrier.subresourceRange.aspectMask) == 1)
+                        {
+                            // First found barrier is used to initialize aspectFlags and layout
+                            if (aspectFlags == VK_IMAGE_ASPECT_NONE)
+                            {
+                                aspectFlags = otherBarrier.m_imageBarrier.subresourceRange.aspectMask;
+                                layout = FilterImageLayout(otherBarrier.m_imageBarrier.oldLayout, ConvertImageAspectFlags(aspectFlags));
+                            }
+                            // The second found barrier should not overlap with the aspects
+                            else if (!AZ::RHI::CheckBitsAll(aspectFlags, otherBarrier.m_imageBarrier.subresourceRange.aspectMask))
+                            {
+                                auto newLayout = CombineImageLayout(
+                                    FilterImageLayout(layout, ConvertImageAspectFlags(aspectFlags)),
+                                    FilterImageLayout(
+                                        otherBarrier.m_imageBarrier.oldLayout,
+                                        ConvertImageAspectFlags(otherBarrier.m_imageBarrier.subresourceRange.aspectMask)));
+
+                                // CombineImageLayout returns the first parameter if the layouts are incompatible
+                                if (newLayout == layout)
+                                {
+                                    return false;
+                                }
+
+                                layout = newLayout;
+                                aspectFlags |= otherBarrier.m_imageBarrier.subresourceRange.aspectMask;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return true;
+        }
+
         void Scope::OptimizeBarrier(const Barrier& unoptimizedBarrier, BarrierSlot slot)
         {
             uint32_t slotIndex = aznumeric_caster(slot);
-            AZStd::vector<Barrier>& barriers =
-                CanOptimizeBarrier(unoptimizedBarrier, slot) ? m_globalBarriers[slotIndex] : m_scopeBarriers[slotIndex];
+            bool canOptimize = CanOptimizeBarrier(unoptimizedBarrier, slot);
             auto filteredBarrier = unoptimizedBarrier;
             filteredBarrier.m_dstStageMask = RHI::FilterBits(unoptimizedBarrier.m_dstStageMask, m_deviceSupportedPipelineStageFlags);
-            filteredBarrier.m_srcStageMask = RHI::FilterBits(unoptimizedBarrier.m_srcStageMask, m_deviceSupportedPipelineStageFlags);            
+            filteredBarrier.m_srcStageMask = RHI::FilterBits(unoptimizedBarrier.m_srcStageMask, m_deviceSupportedPipelineStageFlags);
+
+            AZStd::vector<Barrier>& barriers = canOptimize ? m_globalBarriers[slotIndex] : m_scopeBarriers[slotIndex];
 
             switch (slot)
             {

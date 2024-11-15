@@ -243,40 +243,6 @@ namespace AZ
                            : FrameCaptureOutputResult{ FrameCaptureResult::InternalError, "Unable to save tif frame capture output to " + outputFilePath };
         }
 
-        FrameCaptureOutputResult DdsFrameCaptureOutput(
-            const AZStd::string& outputFilePath, const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult)
-        {
-            // write the read back result of the image attachment to a dds file
-            const auto outcome = AZ::DdsFile::WriteFile(
-                outputFilePath,
-                {readbackResult.m_imageDescriptor.m_size, readbackResult.m_imageDescriptor.m_format, readbackResult.m_dataBuffer.get()});
-
-            return outcome.IsSuccess() ? FrameCaptureOutputResult{FrameCaptureResult::Success, AZStd::nullopt}
-                                       : FrameCaptureOutputResult{FrameCaptureResult::InternalError, outcome.GetError().m_message};
-        }
-
-        FrameCaptureOutputResult PpmFrameCaptureOutput(
-            const AZStd::string& outputFilePath, const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult)
-        {
-            // write the read back result of the image attachment to a buffer
-            const AZStd::vector<uint8_t> outBuffer = Utils::PpmFile::CreatePpmFromImageBuffer(
-                *readbackResult.m_dataBuffer.get(), readbackResult.m_imageDescriptor.m_size, readbackResult.m_imageDescriptor.m_format);
-
-            // write the buffer to a ppm file
-            if (IO::FileIOStream fileStream(outputFilePath.c_str(), IO::OpenMode::ModeWrite | IO::OpenMode::ModeCreatePath);
-                fileStream.IsOpen())
-            {
-                fileStream.Write(outBuffer.size(), outBuffer.data());
-                fileStream.Close();
-
-                return FrameCaptureOutputResult{FrameCaptureResult::Success, AZStd::nullopt};
-            }
-
-            return FrameCaptureOutputResult{
-                FrameCaptureResult::FileWriteError,
-                AZStd::string::format("Failed to open file %s for writing", outputFilePath.c_str())};
-        }
-
         class FrameCaptureNotificationBusHandler final
             : public FrameCaptureNotificationBus::MultiHandler // Use multi handler as it has to handle all use cases
             , public AZ::BehaviorEBusHandler

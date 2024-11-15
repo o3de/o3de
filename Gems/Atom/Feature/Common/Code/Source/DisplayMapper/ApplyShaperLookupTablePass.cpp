@@ -6,7 +6,7 @@
  *
  */
 
-#include <Atom/Feature/DisplayMapper/ApplyShaperLookupTablePass.h>
+#include <DisplayMapper/ApplyShaperLookupTablePass.h>
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
 
 #include <Atom/RHI/Factory.h>

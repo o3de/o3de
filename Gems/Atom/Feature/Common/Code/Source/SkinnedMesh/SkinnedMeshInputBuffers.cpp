@@ -108,6 +108,13 @@ namespace AZ
             // Create a buffer view for each input stream in the current mesh
             for (; !streamIter.HasEnded(); ++streamIter, ++meshStreamIndex)
             {
+                // `IsValid` would return false for dummy buffers, since the index of those buffers equals the size of the buffer view.
+                // We shall skip dummy buffers to avoid empty pointers in the following code. 
+                if (!streamIter.IsValid())
+                {
+                    continue;
+                }
+
                 // Get the semantic from the input layout, and use that to get the SkinnedMeshStreamInfo
                 const SkinnedMeshVertexStreamInfo* streamInfo = SkinnedMeshVertexStreamPropertyInterface::Get()->GetInputStreamInfo(
                     inputLayout.GetStreamChannels()[meshStreamIndex].m_semantic);

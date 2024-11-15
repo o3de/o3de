@@ -40,7 +40,7 @@ namespace AZ
         {
             RHI::Ptr<ShaderStageFunction> newShaderStageFunction = ShaderStageFunction::Create(RHI::ToRHIShaderStage(stageDescriptor.m_stageType));
 
-            const Vulkan::ShaderByteCode& byteCode = stageDescriptor.m_byteCode;
+            const auto& byteCode = stageDescriptor.m_byteCode;
             const AZStd::string& entryFunctionName = stageDescriptor.m_entryFunctionName;
             const int byteCodeIndex = 0;
             newShaderStageFunction->SetByteCode(byteCodeIndex, byteCode, entryFunctionName);

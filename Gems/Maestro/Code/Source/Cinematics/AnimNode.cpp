@@ -16,6 +16,7 @@
 #include "CharacterTrack.h"
 #include "AnimSplineTrack.h"
 #include "BoolTrack.h"
+#include "MathConversion.h"
 #include "SelectTrack.h"
 #include "EventTrack.h"
 #include "SoundTrack.h"
@@ -777,7 +778,7 @@ bool CAnimNode::SetParamValue(float time, CAnimParamType param, float value)
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CAnimNode::SetParamValue(float time, CAnimParamType param, const Vec3& value)
+bool CAnimNode::SetParamValue(float time, CAnimParamType param, const AZ::Vector3& value)
 {
     if (m_bIgnoreSetParam)
     {
@@ -796,7 +797,7 @@ bool CAnimNode::SetParamValue(float time, CAnimParamType param, const Vec3& valu
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CAnimNode::SetParamValue(float time, CAnimParamType param, const Vec4& value)
+bool CAnimNode::SetParamValue(float time, CAnimParamType param, const AZ::Vector4& value)
 {
     if (m_bIgnoreSetParam)
     {
@@ -828,7 +829,7 @@ bool CAnimNode::GetParamValue(float time, CAnimParamType param, float& value)
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CAnimNode::GetParamValue(float time, CAnimParamType param, Vec3& value)
+bool CAnimNode::GetParamValue(float time, CAnimParamType param, AZ::Vector3& value)
 {
     CCompoundSplineTrack* pTrack = static_cast<CCompoundSplineTrack*>(GetTrackForParameter(param));
     if (pTrack && pTrack->GetValueType() == AnimValueType::Vector && pTrack->GetNumKeys() > 0)
@@ -841,7 +842,7 @@ bool CAnimNode::GetParamValue(float time, CAnimParamType param, Vec3& value)
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CAnimNode::GetParamValue(float time, CAnimParamType param, Vec4& value)
+bool CAnimNode::GetParamValue(float time, CAnimParamType param, AZ::Vector4& value)
 {
     CCompoundSplineTrack* pTrack = static_cast<CCompoundSplineTrack*>(GetTrackForParameter(param));
     if (pTrack && pTrack->GetValueType() == AnimValueType::Vector4 && pTrack->GetNumKeys() > 0)
@@ -1165,8 +1166,8 @@ void CAnimNode::AnimateSound(std::vector<SSoundInfo>& nodeSoundInfo, SAnimContex
 }
 
 void CAnimNode::SetParent(IAnimNode* parent)
-{ 
-    m_pParentNode = parent; 
+{
+    m_pParentNode = parent;
     if (parent)
     {
         m_parentNodeId = static_cast<CAnimNode*>(m_pParentNode)->GetId();
@@ -1205,7 +1206,7 @@ void CAnimNode::UpdateDynamicParams()
         // which could happen from multiple threads. Lock to avoid a crash iterating over the lua stack
         AZStd::lock_guard<AZStd::mutex> lock(m_updateDynamicParamsLock);
 
-        // run this on the main thread to prevent further threading issues downstream in 
+        // run this on the main thread to prevent further threading issues downstream in
         // AnimNodes that may use EBuses that are not thread safe
         if (gEnv && gEnv->mMainThreadId == CryGetCurrentThreadId())
         {

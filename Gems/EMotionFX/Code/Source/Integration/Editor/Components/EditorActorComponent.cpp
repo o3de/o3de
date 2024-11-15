@@ -145,6 +145,7 @@ namespace EMotionFX
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnSkinningMethodChanged)
                         ->EnumAttribute(SkinningMethod::DualQuat, "Dual quat skinning")
                         ->EnumAttribute(SkinningMethod::Linear, "Linear skinning")
+                        ->EnumAttribute(SkinningMethod::None, "Disabled")
                         ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorActorComponent::m_excludeFromReflectionCubeMaps, "Exclude from reflection cubemaps", "Actor will not be visible in baked reflection probe cubemaps")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnExcludeFromReflectionCubeMapsChanged)

@@ -205,6 +205,19 @@ namespace AZ
             passTemplate->m_slots.emplace_back(outputSlot);
 
             AddPassTemplate(passTemplate->m_name, std::move(passTemplate));
+
+            passTemplate = AZStd::make_shared<PassTemplate>();
+            passTemplate->m_passClass = "CopyPass";
+            passTemplate->m_name = "MultiDeviceCopyPassTemplate";
+
+            PassSlot inputOutputSlot;
+            inputOutputSlot.m_name = "InputOutput";
+            inputOutputSlot.m_slotType = PassSlotType::InputOutput;
+            inputOutputSlot.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Copy;
+            inputOutputSlot.m_loadStoreAction.m_loadAction = RHI::AttachmentLoadAction::Load;
+            passTemplate->m_slots.emplace_back(inputOutputSlot);
+
+            AddPassTemplate(passTemplate->m_name, std::move(passTemplate));
         }
 
         bool PassLibrary::AddPassTemplate(const Name& name, const AZStd::shared_ptr<PassTemplate>& passTemplate, bool hotReloading)

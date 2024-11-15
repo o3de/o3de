@@ -30,7 +30,11 @@ Start-Process -FilePath $sdkmanager -ArgumentList $ndk -RedirectStandardOutput "
 Install-ChocolateyEnvironmentVariable "LY_NDK_DIR" "C:\AndroidSdk\ndk\25.1.8937393" -VariableType 'Machine'
 
 Write-Host "Installing Gradle"
-$gradle_version = '7.0'
+$gradle_version = '8.7'
+$gradle_checksum = '194717442575a6f96e1c1befa2c30e9a4fc90f701d7aee33eb879b79e7ff05c0'
+
+#Gradle needs a custom installer due to being hardcoded to C:\Programdata in Chocolatey
+Import-Module C:\ProgramData\chocolatey\helpers\chocolateyInstaller.psm1 
 $packageName = 'gradle'
 $checksum = '81003F83B0056D20EEDF48CDDD4F52A9813163D4BA185BCF8ABD34B8EEEA4CBD'
 $url = "https://services.gradle.org/distributions/gradle-$gradle_version-all.zip"

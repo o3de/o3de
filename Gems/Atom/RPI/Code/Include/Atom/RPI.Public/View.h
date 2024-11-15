@@ -133,6 +133,17 @@ namespace AZ
             const AZ::Matrix4x4& GetWorldToClipMatrix() const;
             const AZ::Matrix4x4* GetWorldToClipExcludeMatrix() const;
             const AZ::Matrix4x4& GetClipToWorldMatrix() const;
+            const AZ::Matrix4x4& GetClipToViewMatrix() const;
+
+            //! Functions for getting the matrices that are used in the view srg
+            //! These are different from the matrices returned above as they take clip space offset into account
+            //! They are updated in the UpdateSrg function
+            //! Calling these functions before UpdateSrg will return the last frames values
+            const Matrix4x4& GetWorldToClipPrevMatrixWithOffset() const;
+            const Matrix4x4& GetWorldToClipMatrixWithOffset() const;
+            const Matrix4x4& GetViewToClipMatrixWithOffset() const;
+            const Matrix4x4& GetClipToWorldMatrixWithOffset() const;
+            const Matrix4x4& GetClipToViewMatrixWithOffset() const;
 
             AZ::Matrix3x4 GetWorldToViewMatrixAsMatrix3x4() const;
             AZ::Matrix3x4 GetViewToWorldMatrixAsMatrix3x4() const;
@@ -240,6 +251,12 @@ namespace AZ
             Matrix4x4 m_clipToViewMatrix;
             Matrix4x4 m_clipToWorldMatrix;
             AZStd::optional<Matrix4x4> m_worldToClipExcludeMatrix;
+
+            Matrix4x4 m_worldToClipPrevMatrixWithOffset;
+            Matrix4x4 m_worldToClipMatrixWithOffset;
+            Matrix4x4 m_viewToClipMatrixWithOffset;
+            Matrix4x4 m_clipToWorldMatrixWithOffset;
+            Matrix4x4 m_clipToViewMatrixWithOffset;
 
             // Cached View transform from ViewToWorld matrix 
             AZ::Transform m_viewTransform;

@@ -32,7 +32,7 @@ namespace AZ
 
     namespace Vulkan
     {
-        using ShaderByteCode = AZStd::vector<uint8_t>;
+        using ShaderByteCode = AZStd::vector<uint8_t, RHI::ShaderStageFunction::Allocator>;
         using ShaderByteCodeView = AZStd::span<const uint8_t>;
 
         /**
@@ -53,14 +53,14 @@ namespace AZ
 
         public:
             AZ_RTTI(ShaderStageFunction, "{A606478A-97E9-402D-A776-88EE72DAC6F9}", RHI::ShaderStageFunction);
-            AZ_CLASS_ALLOCATOR(ShaderStageFunction, AZ::SystemAllocator);
+            AZ_CLASS_ALLOCATOR_DECL
 
             static void Reflect(AZ::ReflectContext* context);
 
             static RHI::Ptr<ShaderStageFunction> Create(RHI::ShaderStage shaderStage);
 
             /// Assigns byte code to the function.
-            void SetByteCode(uint32_t subStageIndex, const ShaderByteCode& byteCode, const AZStd::string_view& entryFunctionName);
+            void SetByteCode(uint32_t subStageIndex, const AZStd::vector<uint8_t>& byteCode, const AZStd::string_view& entryFunctionName);
 
             /// Returns the assigned bytecode.
             ShaderByteCodeView GetByteCode(uint32_t subStageIndex) const;

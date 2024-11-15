@@ -11,7 +11,7 @@
 #include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
 #include <ACES/Aces.h>
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
-#include <Atom/Feature/DisplayMapper/ApplyShaperLookupTablePass.h>
+#include <DisplayMapper/ApplyShaperLookupTablePass.h>
 #include <PostProcessing/PostProcessingShaderOptionBase.h>
 
 namespace AZ

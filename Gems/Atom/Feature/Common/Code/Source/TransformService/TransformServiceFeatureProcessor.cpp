@@ -6,7 +6,7 @@
  *
  */
 
-#include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
+#include <TransformService/TransformServiceFeatureProcessor.h>
 
 #include <Atom/RHI/Factory.h>
 

@@ -453,6 +453,7 @@ def get_enabled_gems(cmake_file: pathlib.Path) -> set:
     return gem_target_set
 
 
+FALLBACK_ENGINE_PROJECT_PATHS_WARNINGS = set()
 
 def get_project_enabled_gems(project_path: pathlib.Path, include_dependencies:bool = True) -> dict or None:
     """
@@ -487,8 +488,12 @@ def get_project_enabled_gems(project_path: pathlib.Path, include_dependencies:bo
                             f'"{project_path}" which is required to resolve gem dependencies.')
             return result
 
-        logger.warning('Failed to determine the correct engine for the project at '
-                        f'"{project_path}", falling back to this engine at {engine_path}.')
+        # Warn about falling back to a default engine once per project
+        global FALLBACK_ENGINE_PROJECT_PATHS_WARNINGS
+        if project_path not in FALLBACK_ENGINE_PROJECT_PATHS_WARNINGS:
+            FALLBACK_ENGINE_PROJECT_PATHS_WARNINGS.add(project_path)
+            logger.warning('Failed to determine the correct engine for the project at '
+                           f'"{project_path}", falling back to this engine at {engine_path}.')
     
     engine_json_data = get_engine_json_data(engine_path=engine_path)
     if not engine_json_data:

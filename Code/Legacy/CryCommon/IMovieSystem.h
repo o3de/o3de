@@ -382,56 +382,22 @@ struct IAnimTrack
     // Applies a scale multiplier set in SetMultiplier(), if requested
     //////////////////////////////////////////////////////////////////////////
     virtual void GetValue(float time, float& value, bool applyMultiplier=false) = 0;
-    /**
-     * O3DE_DEPRECATION_NOTICE(GHI-9133)
-     * use equivalent GetValue that accepts AZ::Vector3
-     **/
-    virtual void GetValue(float time, Vec3& value, bool applyMultiplier = false) = 0;
-    /**
-     * O3DE_DEPRECATION_NOTICE(GHI-9133)
-     * use equivalent GetValue that accepts AZ::Vector4
-     **/
-    virtual void GetValue(float time, Vec4& value, bool applyMultiplier = false) = 0;
-        /**
-     * O3DE_DEPRECATION_NOTICE(GHI-9133)
-     * use equivalent GetValue that accepts AZ::Quaternion
-     **/
-    virtual void GetValue(float time, Quat& value) = 0;
+    virtual void GetValue(float time, AZ::Vector3& value, bool applyMultiplier = false) = 0;
+    virtual void GetValue(float time, AZ::Vector4& value, bool applyMultiplier = false) = 0;
+    virtual void GetValue(float time, AZ::Quaternion& value) = 0;
     virtual void GetValue(float time, bool& value) = 0;
     virtual void GetValue(float time, Maestro::AssetBlends<AZ::Data::AssetData>& value) = 0;
-
-    // support for AZ:: vector types - re-route to legacy types
-    void GetValue(float time, AZ::Vector3& value, bool applyMultiplier = false);
-    void GetValue(float time, AZ::Vector4& value, bool applyMultiplier = false);
-    void GetValue(float time, AZ::Quaternion& value);
 
     //////////////////////////////////////////////////////////////////////////
     // Set track value at specified time.
     // Adds new keys if required.
     //////////////////////////////////////////////////////////////////////////
     virtual void SetValue(float time, const float& value, bool bDefault = false, bool applyMultiplier = false) = 0;
-    /**
-     * O3DE_DEPRECATION_NOTICE(GHI-9133)
-     * use equivalent SetValue that accepts AZ::Vector3
-     **/
-    virtual void SetValue(float time, const Vec3& value, bool bDefault = false, bool applyMultiplier = false) = 0;
-    /**
-     * O3DE_DEPRECATION_NOTICE(GHI-9133)
-     * use equivalent SetValue that accepts AZ::Vector4
-     **/
-    virtual void SetValue(float time, const Vec4& value, bool bDefault = false, bool applyMultiplier = false) = 0;
-    /**
-     * O3DE_DEPRECATION_NOTICE(GHI-9133)
-     * use equivalent SetValue that accepts AZ::Quaternion
-     **/
-    virtual void SetValue(float time, const Quat& value, bool bDefault = false) = 0;
+    virtual void SetValue(float time, const AZ::Vector3& value, bool bDefault = false, bool applyMultiplier = false) = 0;
+    virtual void SetValue(float time, const AZ::Vector4& value, bool bDefault = false, bool applyMultiplier = false) = 0;
+    virtual void SetValue(float time, const AZ::Quaternion& value, bool bDefault = false) = 0;
     virtual void SetValue(float time, const bool& value, bool bDefault = false) = 0;
     virtual void SetValue(float time, const Maestro::AssetBlends<AZ::Data::AssetData>& value, bool bDefault = false) = 0;
-
-    // support for AZ:: vector types - re-route to legacy types
-    void SetValue(float time, AZ::Vector4& value, bool bDefault = false, bool applyMultiplier = false);
-    void SetValue(float time, AZ::Vector3& value, bool bDefault = false, bool applyMultiplier = false);
-    void SetValue(float time, AZ::Quaternion& value, bool bDefault = false);
 
     // Only for position tracks, offset all track keys by this amount.
     virtual void OffsetKeyPosition(const AZ::Vector3& value) = 0;
@@ -606,38 +572,14 @@ public:
     // Set float/vec3/vec4 parameter at given time.
     // @return true if parameter set, false if this parameter not exist in node.
     virtual bool SetParamValue(float time, CAnimParamType param, float value) = 0;
-    virtual bool SetParamValue(float time, CAnimParamType param, const Vec3& value) = 0;
-    virtual bool SetParamValue(float time, CAnimParamType param, const Vec4& value) = 0;
-
-    /**
-     * O3DE_DEPRECATION_NOTICE(GHI-9326)
-     * use equivalent SetParamValue that accepts AZ::Vector3
-     **/
-    bool SetParamValue(float time, CAnimParamType param, const AZ::Vector3& value);
-
-    /**
-     * O3DE_DEPRECATION_NOTICE(GHI-9326)
-     * use equivalent SetParamValue that accepts AZ::Vector4
-     **/
-    bool SetParamValue(float time, CAnimParamType param, const AZ::Vector4& value);
+    virtual bool SetParamValue(float time, CAnimParamType param, const AZ::Vector3& value) = 0;
+    virtual bool SetParamValue(float time, CAnimParamType param, const AZ::Vector4& value) = 0;
 
     // Get float/vec3/vec4 parameter at given time.
     // @return true if parameter exist, false if this parameter not exist in node.
     virtual bool GetParamValue(float time, CAnimParamType param, float& value) = 0;
-    virtual bool GetParamValue(float time, CAnimParamType param, Vec3& value) = 0;
-    virtual bool GetParamValue(float time, CAnimParamType param, Vec4& value) = 0;
-
-    /**
-     * O3DE_DEPRECATION_NOTICE(GHI-9326)
-     * use equivalent GetParamValue that accepts AZ::Vector4
-     **/
-    bool GetParamValue(float time, CAnimParamType param, AZ::Vector3& value);
-
-    /**
-     * O3DE_DEPRECATION_NOTICE(GHI-9326)
-     * use equivalent GetParamValue that accepts AZ::Vector4
-     **/
-    bool GetParamValue(float time, CAnimParamType param, AZ::Vector4& value);
+    virtual bool GetParamValue(float time, CAnimParamType param, AZ::Vector3& value) = 0;
+    virtual bool GetParamValue(float time, CAnimParamType param, AZ::Vector4& value) = 0;
 
     //! Evaluate animation node while not playing animation.
     virtual void StillUpdate() = 0;

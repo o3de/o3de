@@ -9,7 +9,7 @@
 #pragma once
 
 #include <CoreLights/DirectionalLightComponent.h>
-#include <CoreLights/DirectionalLightShadowNotificationBus.h>
+#include <Atom/Feature/CoreLights/DirectionalLightShadowNotificationBus.h>
 #include <Atom/Feature/Utils/EditorRenderComponentAdapter.h>
 #include <AtomLyIntegration/CommonFeatures/CoreLights/DirectionalLightComponentConfig.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>

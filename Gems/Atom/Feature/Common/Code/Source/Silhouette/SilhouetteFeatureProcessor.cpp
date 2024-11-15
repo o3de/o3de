@@ -159,6 +159,30 @@ namespace AZ::Render
             }
         }
     }
+
+    bool SilhouetteFeatureProcessor::NeedsCompositePass() const
+    {
+        if (auto scene = GetParentScene(); scene != nullptr)
+        {
+            if (m_rasterPass && m_rasterPass->GetRenderPipeline())
+            {
+                // Get DrawList from the dynamic draw interface and view
+                AZStd::vector<RHI::DrawListView> drawLists = AZ::RPI::DynamicDrawInterface::Get()->GetDrawListsForPass(m_rasterPass);
+                const AZStd::vector<AZ::RPI::ViewPtr>& views =
+                    m_rasterPass->GetRenderPipeline()->GetViews(m_rasterPass->GetPipelineViewTag());
+                RHI::DrawListView viewDrawList;
+                if (!views.empty())
+                {
+                    const AZ::RPI::ViewPtr& view = views.front();
+                    viewDrawList = view->GetDrawList(m_rasterPass->GetDrawListTag());
+                }
+
+                return !(drawLists.empty() && viewDrawList.empty());
+            }
+        }
+        return false;
+    }
+
     void SilhouetteFeatureProcessor::UpdatePasses(AZ::RPI::RenderPipeline* renderPipeline)
     {
         m_compositePass = nullptr;

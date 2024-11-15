@@ -11,7 +11,7 @@
 #include <Atom/RPI/Math.azsli>
 
 
-option enum class SkinningMethod { LinearSkinning, DualQuaternion } o_skinningMethod = SkinningMethod::LinearSkinning;
+option enum class SkinningMethod { LinearSkinning, DualQuaternion, NoSkinning } o_skinningMethod = SkinningMethod::LinearSkinning;
 option bool o_applyMorphTargets = false;
 
 float3 ReadFloat3FromFloatBuffer(Buffer<float> buffer, uint index)
@@ -209,6 +209,9 @@ void MainCS(uint3 thread_id: SV_DispatchThreadID)
             break;
         case SkinningMethod::DualQuaternion:
             SkinVertexDualQuaternion(i, position, normal, tangent, bitangent);
+            break;
+        case SkinningMethod::NoSkinning:
+            // Do nothing
             break;
         }
 

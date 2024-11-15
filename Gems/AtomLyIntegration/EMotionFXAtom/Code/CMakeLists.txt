@@ -22,7 +22,6 @@ ly_add_target(
             Gem::Atom_Utils.Static
             Gem::Atom_Feature_Common
             Gem::Atom_Feature_Common.Public
-            Gem::Atom_Feature_Common.Static
             Gem::Atom_RPI.Public
             Gem::Atom_RHI.Reflect
             Gem::CommonFeaturesAtom.Public
@@ -75,7 +74,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::AtomToolsFramework.Static
                 Gem::AtomToolsFramework.Editor
                 Gem::Atom_Component_DebugCamera.Static
-                Gem::Atom_Feature_Common.Static
+                Gem::Atom_Feature_Common.Public
                 Gem::CommonFeaturesAtom.Static
         RUNTIME_DEPENDENCIES
             Gem::EMotionFX.Editor

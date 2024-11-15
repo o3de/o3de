@@ -26,7 +26,7 @@ namespace AZ
             Base::Init(*descriptor.m_device);
 
             m_descriptor = descriptor;
-            const size_t alignedByteCodeSize = ((descriptor.m_bytecode.size() + 3) / 4) * 4;
+            const size_t alignedByteCodeSize = (descriptor.m_bytecode.size() + 3) / 4;
             // pCode is declared as uint32_t*, and remained bytes should be padded by 0.
             AZStd::vector<uint32_t> alignedByteCode(alignedByteCodeSize, 0);
             memcpy(alignedByteCode.data(), descriptor.m_bytecode.data(), descriptor.m_bytecode.size());

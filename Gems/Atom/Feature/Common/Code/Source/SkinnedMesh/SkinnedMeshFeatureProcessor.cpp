@@ -8,11 +8,11 @@
 
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshFeatureProcessorBus.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshStatsBus.h>
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 
 #include <SkinnedMesh/SkinnedMeshFeatureProcessor.h>
 #include <SkinnedMesh/SkinnedMeshRenderProxy.h>
 #include <SkinnedMesh/SkinnedMeshComputePass.h>
+#include <Mesh/MeshFeatureProcessor.h>
 #include <MorphTargets/MorphTargetComputePass.h>
 #include <MorphTargets/MorphTargetDispatchItem.h>
 

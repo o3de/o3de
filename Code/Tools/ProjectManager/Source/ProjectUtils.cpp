@@ -571,9 +571,9 @@ namespace O3DE::ProjectManager
             return true;
         }
 
-        bool FindSupportedCompiler(QWidget* parent)
+        bool FindSupportedCompiler(const ProjectInfo& projectInfo, QWidget* parent)
         {
-            auto findCompilerResult = FindSupportedCompilerForPlatform();
+            auto findCompilerResult = FindSupportedCompilerForPlatform(projectInfo);
 
             if (!findCompilerResult.IsSuccess())
             {

@@ -44,7 +44,8 @@ namespace EMotionFX
         enum class SkinningMethod : AZ::u32
         {
             DualQuat = 0,       ///< Dual Quaternions will be used to blend joints during skinning.
-            Linear              ///< Matrices will be used to blend joints during skinning.
+            Linear,             ///< Matrices will be used to blend joints during skinning.
+            None                ///< No skinning will be applied, the model will be rendered as-is. 
         };
 
         /**

@@ -369,6 +369,36 @@ namespace AZ
             return m_viewToWorldMatrix;
         }
 
+        const AZ::Matrix4x4& View::GetClipToViewMatrix() const
+        {
+            return m_clipToViewMatrix;
+        }
+
+        const Matrix4x4& View::GetWorldToClipPrevMatrixWithOffset() const
+        {
+            return m_worldToClipPrevMatrixWithOffset;
+        }
+
+        const Matrix4x4& View::GetWorldToClipMatrixWithOffset() const
+        {
+            return m_worldToClipMatrixWithOffset;
+        }
+
+        const Matrix4x4& View::GetViewToClipMatrixWithOffset() const
+        {
+            return m_viewToClipMatrixWithOffset;
+        }
+
+        const Matrix4x4& View::GetClipToWorldMatrixWithOffset() const
+        {
+            return m_clipToWorldMatrixWithOffset;
+        }
+
+        const Matrix4x4& View::GetClipToViewMatrixWithOffset() const
+        {
+            return m_clipToViewMatrixWithOffset;
+        }
+
         AZ::Matrix3x4 View::GetWorldToViewMatrixAsMatrix3x4() const
         {
             return AZ::Matrix3x4::UnsafeCreateFromMatrix4x4(m_worldToViewMatrix);
@@ -623,38 +653,43 @@ namespace AZ
 
         void View::UpdateSrg()
         {
+            if (m_clipSpaceOffset.IsZero())
+            {
+                m_worldToClipPrevMatrixWithOffset = m_viewToClipPrevMatrix * m_worldToViewPrevMatrix;
+                m_worldToClipMatrixWithOffset = m_worldToClipMatrix;
+                m_viewToClipMatrixWithOffset = m_viewToClipMatrix;
+                m_clipToWorldMatrixWithOffset = m_clipToWorldMatrix;
+                m_clipToViewMatrixWithOffset = m_clipToViewMatrix;
+            }
+            else
+            {
+                // Offset the current and previous frame clip matrices
+                Matrix4x4 offsetViewToClipMatrix = m_viewToClipMatrix;
+                offsetViewToClipMatrix.SetElement(0, 2, m_clipSpaceOffset.GetX());
+                offsetViewToClipMatrix.SetElement(1, 2, m_clipSpaceOffset.GetY());
+
+                Matrix4x4 offsetViewToClipPrevMatrix = m_viewToClipPrevMatrix;
+                offsetViewToClipPrevMatrix.SetElement(0, 2, m_clipSpaceOffset.GetX());
+                offsetViewToClipPrevMatrix.SetElement(1, 2, m_clipSpaceOffset.GetY());
+
+                // Build other matrices dependent on the view to clip matrices
+                Matrix4x4 offsetWorldToClipMatrix = offsetViewToClipMatrix * m_worldToViewMatrix;
+                Matrix4x4 offsetWorldToClipPrevMatrix = offsetViewToClipPrevMatrix * m_worldToViewPrevMatrix;
+
+                m_worldToClipPrevMatrixWithOffset = offsetWorldToClipPrevMatrix;
+                m_worldToClipMatrixWithOffset = offsetWorldToClipMatrix;
+                m_viewToClipMatrixWithOffset = offsetViewToClipMatrix;
+                m_clipToWorldMatrixWithOffset = offsetWorldToClipMatrix.GetInverseFull();
+                m_clipToViewMatrixWithOffset = offsetViewToClipMatrix.GetInverseFull();
+            }
+
             if (m_shaderResourceGroup)
             {
-                if (m_clipSpaceOffset.IsZero())
-                {
-                    Matrix4x4 worldToClipPrevMatrix = m_viewToClipPrevMatrix * m_worldToViewPrevMatrix;
-                    m_shaderResourceGroup->SetConstant(m_worldToClipPrevMatrixConstantIndex, worldToClipPrevMatrix);
-                    m_shaderResourceGroup->SetConstant(m_viewProjectionMatrixConstantIndex, m_worldToClipMatrix);
-                    m_shaderResourceGroup->SetConstant(m_projectionMatrixConstantIndex, m_viewToClipMatrix);
-                    m_shaderResourceGroup->SetConstant(m_clipToWorldMatrixConstantIndex, m_clipToWorldMatrix);
-                    m_shaderResourceGroup->SetConstant(m_projectionMatrixInverseConstantIndex, m_clipToViewMatrix);
-                }
-                else
-                {
-                    // Offset the current and previous frame clip matrices
-                    Matrix4x4 offsetViewToClipMatrix = m_viewToClipMatrix;
-                    offsetViewToClipMatrix.SetElement(0, 2, m_clipSpaceOffset.GetX());
-                    offsetViewToClipMatrix.SetElement(1, 2, m_clipSpaceOffset.GetY());
-
-                    Matrix4x4 offsetViewToClipPrevMatrix = m_viewToClipPrevMatrix;
-                    offsetViewToClipPrevMatrix.SetElement(0, 2, m_clipSpaceOffset.GetX());
-                    offsetViewToClipPrevMatrix.SetElement(1, 2, m_clipSpaceOffset.GetY());
-
-                    // Build other matrices dependent on the view to clip matrices
-                    Matrix4x4 offsetWorldToClipMatrix = offsetViewToClipMatrix * m_worldToViewMatrix;
-                    Matrix4x4 offsetWorldToClipPrevMatrix = offsetViewToClipPrevMatrix * m_worldToViewPrevMatrix;
-
-                    m_shaderResourceGroup->SetConstant(m_worldToClipPrevMatrixConstantIndex, offsetWorldToClipPrevMatrix);
-                    m_shaderResourceGroup->SetConstant(m_viewProjectionMatrixConstantIndex, offsetWorldToClipMatrix);
-                    m_shaderResourceGroup->SetConstant(m_projectionMatrixConstantIndex, offsetViewToClipMatrix);
-                    m_shaderResourceGroup->SetConstant(m_clipToWorldMatrixConstantIndex, offsetWorldToClipMatrix.GetInverseFull());
-                    m_shaderResourceGroup->SetConstant(m_projectionMatrixInverseConstantIndex, offsetViewToClipMatrix.GetInverseFull());
-                }
+                m_shaderResourceGroup->SetConstant(m_worldToClipPrevMatrixConstantIndex, m_worldToClipPrevMatrixWithOffset);
+                m_shaderResourceGroup->SetConstant(m_viewProjectionMatrixConstantIndex, m_worldToClipMatrix);
+                m_shaderResourceGroup->SetConstant(m_projectionMatrixConstantIndex, m_viewToClipMatrix);
+                m_shaderResourceGroup->SetConstant(m_clipToWorldMatrixConstantIndex, m_clipToWorldMatrix);
+                m_shaderResourceGroup->SetConstant(m_projectionMatrixInverseConstantIndex, m_clipToViewMatrix);
 
                 m_shaderResourceGroup->SetConstant(m_worldPositionConstantIndex, m_position);
                 m_shaderResourceGroup->SetConstant(m_viewMatrixConstantIndex, m_worldToViewMatrix);

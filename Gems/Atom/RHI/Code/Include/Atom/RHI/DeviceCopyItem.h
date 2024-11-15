@@ -45,6 +45,9 @@ namespace AZ::RHI
         uint32_t m_sourceOffset = 0;
         uint32_t m_sourceBytesPerRow = 0;
         uint32_t m_sourceBytesPerImage = 0;
+        // The source format is usually same as m_destinationImage's format. When destination image contains more than one aspect,
+        // the format should be compatiable with the aspect of the destination image's subresource
+        Format m_sourceFormat = Format::Unknown;
         Size m_sourceSize;
         const DeviceImage* m_destinationImage = nullptr;
         ImageSubresource m_destinationSubresource;
@@ -65,7 +68,7 @@ namespace AZ::RHI
         uint32_t m_destinationBytesPerImage = 0;
         // The destination format is usually same as m_sourceImage's format. When source image contains more than one aspect,
         // the format should be compatiable with the aspect of the source image's subresource
-        Format m_destinationFormat; 
+        Format m_destinationFormat = Format::Unknown;
     };
 
     struct DeviceCopyQueryToBufferDescriptor

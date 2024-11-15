@@ -211,92 +211,102 @@ namespace AZ
                 const RPI::BufferAssetView* weightsBuffAssetView =
                     modelLodAsset->GetSemanticBufferAssetView(Name(RPI::ShaderSemanticName_SkinWeights));
 
-                // Reserve enough memory for the default/common case. Use the element count from the main source buffer
-                blendIndexBufferData.reserve(indicesBuffAssetView->GetBufferAsset()->GetBufferViewDescriptor().m_elementCount);
-                blendWeightBufferData.reserve(weightsBuffAssetView->GetBufferAsset()->GetBufferViewDescriptor().m_elementCount);
-
-                // Now iterate over the actual data and populate the data for the per-actor buffers
-                uint32_t vertexBufferOffset = 0;
-                for (uint32_t jointIndex = 0; jointIndex < numJoints; ++jointIndex)
+                if(!indicesBuffAssetView || !weightsBuffAssetView)
                 {
-                    const EMotionFX::Mesh* mesh = actor->GetMesh(lodIndex, jointIndex);
-                    if (!mesh || mesh->GetIsCollisionMesh())
-                    {
-                        continue;
-                    }
-
-                    // For each sub-mesh within each mesh, we want to create a separate sub-piece.
-                    const uint32_t numSubMeshes = aznumeric_caster(mesh->GetNumSubMeshes());
-
-                    AZ_Assert(
-                        numSubMeshes == modelLodAsset->GetMeshes().size(),
-                        "Number of submeshes (%" PRIu32 ") in EMotionFX mesh (lod %d and joint index %d) "
-                        "doesn't match the number of meshes (%d) in model lod asset",
-                        numSubMeshes, lodIndex, jointIndex, modelLodAsset->GetMeshes().size());
-
-                    for (uint32_t subMeshIndex = 0; subMeshIndex < numSubMeshes; ++subMeshIndex)
-                    {
-                        const EMotionFX::SubMesh* subMesh = mesh->GetSubMesh(static_cast<uint32>(subMeshIndex));
-                        const uint32_t vertexCount = subMesh->GetNumVertices();
-
-                        // Skip empty sub-meshes and sub-meshes that would put the total vertex count beyond the supported range
-                        if (vertexCount > 0 && IsVertexCountWithinSupportedRange(vertexBufferOffset, vertexCount))
-                        {
-                            ProcessSkinInfluences(mesh, subMesh, skinnedMeshInputBuffers->GetInfluenceCountPerVertex(lodIndex, subMeshIndex), blendIndexBufferData, blendWeightBufferData);
-
-                            // Increment offsets so that the next sub-mesh can start at the right place
-                            vertexBufferOffset += vertexCount;
-                        }
-                    }   // for all submeshes
-                } // for all meshes
-
-                const RPI::BufferAssetView* jointIndicesBufferView = nullptr;
-                const RPI::BufferAssetView* skinWeightsBufferView = nullptr;
-
-                for (const auto& modelLodMesh : modelLodAsset->GetMeshes())
-                {
-                    // TODO: operate on a per-mesh basis
-
-                    // If the joint id/weight buffers haven't been found on a mesh yet, keep looking
-                    if (!jointIndicesBufferView)
-                    {
-                        jointIndicesBufferView = modelLodMesh.GetSemanticBufferAssetView(Name{ "SKIN_JOINTINDICES" });
-                        if (jointIndicesBufferView)
-                        {
-                            skinWeightsBufferView = modelLodMesh.GetSemanticBufferAssetView(Name{ "SKIN_WEIGHTS" });
-                            AZ_Error("CreateSkinnedMeshInputFromActor", skinWeightsBufferView, "Mesh '%s' on actor '%s' has joint indices but no joint weights", modelLodMesh.GetName().GetCStr(), fullFileName.c_str());
-                            break;
-                        }
-                    }
-                }
-
-                if (!jointIndicesBufferView || !skinWeightsBufferView)
-                {
-                    AZ_Error(
-                        "ProcessSkinInfluences", false,
-                        "Actor '%s' lod '%" PRIu32 "' has no skin influences, and will be stuck in bind pose.", fullFileName.c_str(),
-                        lodIndex);
+                    AZ_Warning(
+                            "ProcessSkinInfluences", false,
+                            "Actor '%s' lod '%" PRIu32 "' has no skin indice buffer, skinning would not be applicable on this mesh.", fullFileName.c_str(),
+                            lodIndex);
                 }
                 else
                 {
-                    Data::Asset<RPI::BufferAsset> jointIndicesBufferAsset = jointIndicesBufferView->GetBufferAsset();
-                    Data::Asset<RPI::BufferAsset> skinWeightsBufferAsset = skinWeightsBufferView->GetBufferAsset();
+                    // Reserve enough memory for the default/common case. Use the element count from the main source buffer
+                    blendIndexBufferData.reserve(indicesBuffAssetView->GetBufferAsset()->GetBufferViewDescriptor().m_elementCount);
+                    blendWeightBufferData.reserve(weightsBuffAssetView->GetBufferAsset()->GetBufferViewDescriptor().m_elementCount);
 
-                    // We're using the indices/weights buffers directly from the model.
-                    // However, EMFX has done some re-mapping of the id's, so we need to update the GPU buffer for it to have the correct data.
-                    size_t remappedJointIndexBufferSizeInBytes = blendIndexBufferData.size() * sizeof(blendIndexBufferData[0]);
-                    size_t remappedSkinWeightsBufferSizeInBytes = blendWeightBufferData.size() * sizeof(blendWeightBufferData[0]);
-
-                    AZ_Assert(jointIndicesBufferAsset->GetBufferDescriptor().m_byteCount == remappedJointIndexBufferSizeInBytes, "Joint indices data from EMotionFX is not the same size as the buffer from the model in '%s', lod '%d'", fullFileName.c_str(), lodIndex);
-                    AZ_Assert(skinWeightsBufferAsset->GetBufferDescriptor().m_byteCount == remappedSkinWeightsBufferSizeInBytes, "Skin weights data from EMotionFX is not the same size as the buffer from the model in '%s', lod '%d'", fullFileName.c_str(), lodIndex);
-
-                    if (Data::Instance<RPI::Buffer> jointIndicesBuffer = RPI::Buffer::FindOrCreate(jointIndicesBufferAsset))
+                    // Now iterate over the actual data and populate the data for the per-actor buffers
+                    uint32_t vertexBufferOffset = 0;
+                    for (uint32_t jointIndex = 0; jointIndex < numJoints; ++jointIndex)
                     {
-                        jointIndicesBuffer->UpdateData(blendIndexBufferData.data(), remappedJointIndexBufferSizeInBytes);
+                        const EMotionFX::Mesh* mesh = actor->GetMesh(lodIndex, jointIndex);
+                        if (!mesh || mesh->GetIsCollisionMesh())
+                        {
+                            continue;
+                        }
+
+                        // For each sub-mesh within each mesh, we want to create a separate sub-piece.
+                        const uint32_t numSubMeshes = aznumeric_caster(mesh->GetNumSubMeshes());
+
+                        AZ_Assert(
+                            numSubMeshes == modelLodAsset->GetMeshes().size(),
+                            "Number of submeshes (%" PRIu32 ") in EMotionFX mesh (lod %d and joint index %d) "
+                            "doesn't match the number of meshes (%d) in model lod asset",
+                            numSubMeshes, lodIndex, jointIndex, modelLodAsset->GetMeshes().size());
+
+                        for (uint32_t subMeshIndex = 0; subMeshIndex < numSubMeshes; ++subMeshIndex)
+                        {
+                            const EMotionFX::SubMesh* subMesh = mesh->GetSubMesh(static_cast<uint32>(subMeshIndex));
+                            const uint32_t vertexCount = subMesh->GetNumVertices();
+
+                            // Skip empty sub-meshes and sub-meshes that would put the total vertex count beyond the supported range
+                            if (vertexCount > 0 && IsVertexCountWithinSupportedRange(vertexBufferOffset, vertexCount))
+                            {
+                                ProcessSkinInfluences(mesh, subMesh, skinnedMeshInputBuffers->GetInfluenceCountPerVertex(lodIndex, subMeshIndex), blendIndexBufferData, blendWeightBufferData);
+
+                                // Increment offsets so that the next sub-mesh can start at the right place
+                                vertexBufferOffset += vertexCount;
+                            }
+                        }   // for all submeshes
+                    } // for all meshes
+
+                    const RPI::BufferAssetView* jointIndicesBufferView = nullptr;
+                    const RPI::BufferAssetView* skinWeightsBufferView = nullptr;
+
+                    for (const auto& modelLodMesh : modelLodAsset->GetMeshes())
+                    {
+                        // TODO: operate on a per-mesh basis
+
+                        // If the joint id/weight buffers haven't been found on a mesh yet, keep looking
+                        if (!jointIndicesBufferView)
+                        {
+                            jointIndicesBufferView = modelLodMesh.GetSemanticBufferAssetView(Name{ "SKIN_JOINTINDICES" });
+                            if (jointIndicesBufferView)
+                            {
+                                skinWeightsBufferView = modelLodMesh.GetSemanticBufferAssetView(Name{ "SKIN_WEIGHTS" });
+                                AZ_Error("CreateSkinnedMeshInputFromActor", skinWeightsBufferView, "Mesh '%s' on actor '%s' has joint indices but no joint weights", modelLodMesh.GetName().GetCStr(), fullFileName.c_str());
+                                break;
+                            }
+                        }
                     }
-                    if (Data::Instance<RPI::Buffer> skinWeightsBuffer = RPI::Buffer::FindOrCreate(skinWeightsBufferAsset))
+
+                    if (!jointIndicesBufferView || !skinWeightsBufferView)
                     {
-                        skinWeightsBuffer->UpdateData(blendWeightBufferData.data(), remappedSkinWeightsBufferSizeInBytes);
+                        AZ_Error(
+                            "ProcessSkinInfluences", false,
+                            "Actor '%s' lod '%" PRIu32 "' has no skin influences, and will be stuck in bind pose.", fullFileName.c_str(),
+                            lodIndex);
+                    }
+                    else
+                    {
+                        Data::Asset<RPI::BufferAsset> jointIndicesBufferAsset = jointIndicesBufferView->GetBufferAsset();
+                        Data::Asset<RPI::BufferAsset> skinWeightsBufferAsset = skinWeightsBufferView->GetBufferAsset();
+
+                        // We're using the indices/weights buffers directly from the model.
+                        // However, EMFX has done some re-mapping of the id's, so we need to update the GPU buffer for it to have the correct data.
+                        size_t remappedJointIndexBufferSizeInBytes = blendIndexBufferData.size() * sizeof(blendIndexBufferData[0]);
+                        size_t remappedSkinWeightsBufferSizeInBytes = blendWeightBufferData.size() * sizeof(blendWeightBufferData[0]);
+
+                        AZ_Assert(jointIndicesBufferAsset->GetBufferDescriptor().m_byteCount == remappedJointIndexBufferSizeInBytes, "Joint indices data from EMotionFX is not the same size as the buffer from the model in '%s', lod '%d'", fullFileName.c_str(), lodIndex);
+                        AZ_Assert(skinWeightsBufferAsset->GetBufferDescriptor().m_byteCount == remappedSkinWeightsBufferSizeInBytes, "Skin weights data from EMotionFX is not the same size as the buffer from the model in '%s', lod '%d'", fullFileName.c_str(), lodIndex);
+
+                        if (Data::Instance<RPI::Buffer> jointIndicesBuffer = RPI::Buffer::FindOrCreate(jointIndicesBufferAsset))
+                        {
+                            jointIndicesBuffer->UpdateData(blendIndexBufferData.data(), remappedJointIndexBufferSizeInBytes);
+                        }
+                        if (Data::Instance<RPI::Buffer> skinWeightsBuffer = RPI::Buffer::FindOrCreate(skinWeightsBufferAsset))
+                        {
+                            skinWeightsBuffer->UpdateData(blendWeightBufferData.data(), remappedSkinWeightsBufferSizeInBytes);
+                        }
                     }
                 }
 
@@ -349,6 +359,11 @@ namespace AZ
             else if (skinningMethod == EMotionFX::Integration::SkinningMethod::DualQuat)
             {
                 floatsPerBone = DualQuaternionSkinningFloatsPerBone;
+            }
+            else if (skinningMethod == EMotionFX::Integration::SkinningMethod::None)
+            {
+                AZ_Warning("ActorAsset", false, "Create bone transform called with no skinning, will return nullptr.");
+                return nullptr;
             }
             else
             {

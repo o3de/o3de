@@ -784,7 +784,13 @@ namespace AZ
 
             if (outStats)
             {
-                outStats->emplace(outStats->end(), allocator->GetName(), allocator->NumAllocatedBytes(), allocator->Capacity());
+                const char* parentName = "";
+                if (auto childAllocatorSchema = azrtti_cast<AZ::ChildAllocatorSchemaBase*>(allocator); childAllocatorSchema != nullptr)
+                {
+                    auto parentAllocator = childAllocatorSchema->GetParentAllocator();
+                    parentName = parentAllocator != nullptr ? parentAllocator->GetName() : "";
+                }
+                outStats->emplace(outStats->end(), allocator->GetName(), parentName, allocator->NumAllocatedBytes(), allocator->Capacity());
             }
         }
     }

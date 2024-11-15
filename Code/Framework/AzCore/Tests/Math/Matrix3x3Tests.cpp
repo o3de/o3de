@@ -64,6 +64,46 @@ namespace UnitTest
         EXPECT_EQ(memcmp(testFloatsMtx, testFloats, sizeof(testFloatsMtx)), 0);
     }
 
+    TEST(MATH_Matrix3x3, TestStoreToRowMajorFloat11)
+    {
+        Matrix3x3 m1 = Matrix3x3::CreateFromRowMajorFloat9(testFloats);
+        float output[12];
+        output[11] = -1;
+        // we expect the first two rows to be written with 4 floats, with the last value as garbage,
+        // but the last row only with 3 floats, such that the final value remains untouched
+        // clang-format off
+        float expected[12] = {
+            testFloats[0], testFloats[1], testFloats[2], 0.0f,
+            testFloats[3], testFloats[4], testFloats[5], 0.0f,
+            testFloats[6], testFloats[7], testFloats[8], -1.0f};
+        // clang-format on
+        m1.StoreToRowMajorFloat11(output);
+        EXPECT_EQ(memcmp(&expected[0], &output[0], sizeof(float) * 3), 0);
+        EXPECT_EQ(memcmp(&expected[3], &output[3], sizeof(float) * 3), 0);
+        EXPECT_EQ(memcmp(&expected[6], &output[6], sizeof(float) * 3), 0);
+        EXPECT_EQ(output[11], -1);
+    }
+
+    TEST(MATH_Matrix3x3, TestStoreToColumnMajorFloat11)
+    {
+        Matrix3x3 m1 = Matrix3x3::CreateFromRowMajorFloat9(testFloats);
+        float output[12];
+        output[11] = -1;
+        // we expect the first two columns to be written with 4 floats, with the last value as garbage,
+        // but the last column only with 3 floats, such that the final value remains untouched
+        // clang-format off
+        float expected[12] = {
+            testFloats[0], testFloats[3], testFloats[6], 0.0f,
+            testFloats[1], testFloats[4], testFloats[7], 0.0f,
+            testFloats[2], testFloats[5], testFloats[8], -1.0f};
+        // clang-format on
+        m1.StoreToColumnMajorFloat11(output);
+        EXPECT_EQ(memcmp(&expected[0], &output[0], sizeof(float) * 3), 0);
+        EXPECT_EQ(memcmp(&expected[3], &output[3], sizeof(float) * 3), 0);
+        EXPECT_EQ(memcmp(&expected[6], &output[6], sizeof(float) * 3), 0);
+        EXPECT_EQ(output[11], -1);
+    }
+
     TEST(MATH_Matrix3x3, TestCreateRotationX)
     {
         Matrix3x3 m1 = Matrix3x3::CreateRotationX(DegToRad(30.0f));

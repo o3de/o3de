@@ -171,13 +171,8 @@ namespace AZ::RHI
         // DirectX packing rules pack a float3x3 as such:
         //    [0, 0], [0, 1], [0, 2], <padding>,
         //    [1, 0], [1, 1], [1, 2], <padding>,
-        //    [1, 0], [2, 1], [2, 2]
+        //    [2, 0], [2, 1], [2, 2]
         // It's important to note that the last row is stored in 3 floats, not 4.
-
-        // For converting the data, we're using the Transform class as it's the only type that can store the data
-        // this way natively. Ideally Matrix3x3 would have a "StoreToRowMajorFloat11" method.
-
-        const Matrix3x4& transform = Matrix3x4::CreateFromMatrix3x3(value);
 
         // Packing rules put this at 11 floats (9 data, 2 padding).
         const size_t sizeInBytes = sizeof(float) * 11;
@@ -186,7 +181,7 @@ namespace AZ::RHI
             // Store the matrix into row major order
             const Interval interval = GetLayout()->GetInterval(inputIndex);
             float* matrixValue = reinterpret_cast<float*>(&m_constantData[interval.m_min]);
-            transform.StoreToRowMajorFloat12(matrixValue);
+            value.StoreToRowMajorFloat11(matrixValue);
 
             return true;
         }

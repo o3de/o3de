@@ -100,6 +100,12 @@ namespace AZ::RHI
         //! Can be used to reset the iterator if you want to use it for subsequent loops
         void Reset() { m_current = 0; }
 
+        //! Used to check if the current item is a valid buffer, useful when checking dummy buffers
+        bool IsValid()
+        {
+            return m_indices.GetIndex(m_current) < m_geometryView->GetStreamBufferViews().size();
+        }
+
         StreamIterator& operator++()
         {
             if (!HasEnded()) {

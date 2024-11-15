@@ -17,7 +17,8 @@ namespace AZ
         enum class SkinningMethod : uint8_t
         {
             DualQuaternion = 0,
-            LinearSkinning
+            LinearSkinning,
+            NoSkinning
         };
 
         struct SkinnedMeshShaderOptions

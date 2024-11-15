@@ -225,6 +225,8 @@ namespace AZ
             m_currentStates.m_stencilState = m_pipelineState->ConstDescriptor().m_renderStates.m_depthStencilState.m_stencil;
             m_currentStates.m_blendState0 = m_pipelineState->ConstDescriptor().m_renderStates.m_blendState.m_targets[0];
             m_currentStates.m_shaderVariantId = m_pipelineState->GetShaderVariantId();
+            // Force update of hash
+            m_currentStates.m_isDirty = true;
             m_currentStates.UpdateHash(m_drawStateOptions);
 
             m_cachedRhiPipelineStates[m_currentStates.m_hash] = m_pipelineState->GetRHIPipelineState();

@@ -144,6 +144,7 @@ namespace AZ
                 copyDescriptor.m_sourceOffset = 0;
                 copyDescriptor.m_sourceBytesPerRow = stagingRowPitch;
                 copyDescriptor.m_sourceBytesPerImage = stagingSlicePitch;
+                copyDescriptor.m_sourceFormat = packet.m_destinationImage->GetDescriptor().m_format;
                 copyDescriptor.m_sourceSize = subresourceLayout.m_size;
                 copyDescriptor.m_destinationImage = packet.m_destinationImage;
                 copyDescriptor.m_destinationSubresource.m_mipSlice = packet.m_subresource.m_mipSlice;

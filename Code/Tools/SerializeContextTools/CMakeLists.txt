@@ -11,7 +11,7 @@ if (NOT PAL_TRAIT_BUILD_HOST_TOOLS)
 endif()
 
 ly_add_target(
-    NAME SerializeContextTools.Object OBJECT
+    NAME SerializeContextTools.Private.Object OBJECT
     NAMESPACE AZ
     FILES_CMAKE
         serializecontexttools_object_files.cmake
@@ -38,7 +38,7 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             AZ::AzToolsFramework
-            $<TARGET_OBJECTS:SerializeContextTools.Object>
+            SerializeContextTools.Private.Object
 )
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
@@ -57,7 +57,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzToolsFramework
                 AZ::AzToolsFrameworkTestCommon
                 AZ::AzTest
-                $<TARGET_OBJECTS:SerializeContextTools.Object>
+                SerializeContextTools.Private.Object
     )
 
     ly_add_googletest(

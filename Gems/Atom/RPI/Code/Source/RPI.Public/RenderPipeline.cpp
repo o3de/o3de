@@ -604,6 +604,7 @@ namespace AZ
                 Ptr<ParentPass> newRoot = azrtti_cast<ParentPass*>(m_passTree.m_rootPass->Recreate().get());
                 newRoot->SetRenderPipeline(this);
                 newRoot->m_flags.m_isPipelineRoot = true;
+                newRoot->SetDeviceIndex(m_passTree.m_rootPass->GetDeviceIndex());
                 newRoot->ManualPipelineBuildAndInitialize();
 
                 // Validate the new root

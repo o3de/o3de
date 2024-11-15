@@ -11,7 +11,7 @@
 #include <AzCore/PlatformDef.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-extern "C" AZ_DLL_EXPORT void CleanUpRpiEditGenericClassInfo()
+extern "C" void CleanUpRpiEditGenericClassInfo()
 {
     // TODO(Atom_RPI-sharedlib): Uncomment this when Atom_RPI.Edit is converted to a shared library
     // AZ::GetCurrentSerializeContextModule().Cleanup();

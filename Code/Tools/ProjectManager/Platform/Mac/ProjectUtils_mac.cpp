@@ -65,7 +65,7 @@ namespace O3DE::ProjectManager
             return AZ::Success(QString{ cmakeInstalledPath });
         }
 
-        AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform()
+        AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform([[maybe_unused]] const ProjectInfo& projectInfo)
         {
             AZ::Outcome processEnvResult = SetupCommandLineProcessEnvironment();
             if (!processEnvResult.IsSuccess())

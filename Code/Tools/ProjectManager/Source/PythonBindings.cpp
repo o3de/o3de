@@ -295,12 +295,6 @@ namespace O3DE::ProjectManager
         AZStd::to_wstring(pyHomePath, pyBasePath);
         Py_SetPythonHome(pyHomePath.c_str());
 
-        // display basic Python information
-        AZ_TracePrintf("python", "Py_GetVersion=%s \n", Py_GetVersion());
-        AZ_TracePrintf("python", "Py_GetPath=%ls \n", Py_GetPath());
-        AZ_TracePrintf("python", "Py_GetExecPrefix=%ls \n", Py_GetExecPrefix());
-        AZ_TracePrintf("python", "Py_GetProgramFullPath=%ls \n", Py_GetProgramFullPath());
-
         PyImport_AppendInittab("azlmbr_redirect", RedirectOutput::PyInit_RedirectOutput);
 
         try
@@ -308,9 +302,16 @@ namespace O3DE::ProjectManager
             // ignore system location for sites site-packages
             Py_IsolatedFlag = 1; // -I - Also sets Py_NoUserSiteDirectory.  If removed PyNoUserSiteDirectory should be set.
             Py_IgnoreEnvironmentFlag = 1; // -E
+            Py_DontWriteBytecodeFlag = 1; // Do not generate precompiled bytecode
 
             const bool initializeSignalHandlers = true;
             pybind11::initialize_interpreter(initializeSignalHandlers);
+
+            // display basic Python information
+            AZ_Trace("python", "Py_GetVersion=%s \n", Py_GetVersion());
+            AZ_Trace("python", "Py_GetPath=%ls \n", Py_GetPath());
+            AZ_Trace("python", "Py_GetExecPrefix=%ls \n", Py_GetExecPrefix());
+            AZ_Trace("python", "Py_GetProgramFullPath=%ls \n", Py_GetProgramFullPath());
 
             RedirectOutput::Intialize(PyImport_ImportModule("azlmbr_redirect"), &PythonBindings::OnStdOut, &PythonBindings::OnStdError);
 
@@ -1110,6 +1111,7 @@ namespace O3DE::ProjectManager
         projectInfo.m_iconPath = Py_To_String_Optional(projectData, "icon", ProjectPreviewImagePath);
         projectInfo.m_engineName = Py_To_String_Optional(projectData, "engine", projectInfo.m_engineName);
         projectInfo.m_restricted = Py_To_String_Optional(projectData, "restricted", projectInfo.m_restricted);
+        projectInfo.m_isScriptOnly = Py_To_Int_Optional(projectData, "script_only", 0);
         if (projectData.contains("user_tags"))
         {
             for (auto tag : projectData["user_tags"])

@@ -36,7 +36,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
-            Gem::Multiplayer.Unified.Static
+            Gem::Multiplayer.Server.Static
             3rdParty::AWSGameLiftServerSDK
     )
 
@@ -83,7 +83,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzCore
                 AZ::AzTest
-                Gem::Multiplayer.Unified.Static
+                Gem::Multiplayer.Server.Static
                 Gem::${gem_name}.Server.Static
                 3rdParty::AWSGameLiftServerSDK
     )

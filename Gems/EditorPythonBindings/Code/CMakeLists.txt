@@ -41,6 +41,8 @@ ly_add_target(
         editorpythonbindings_editor_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/Source/Platform/${PAL_PLATFORM_NAME}
+        PRIVATE
             .
             Source
         PUBLIC

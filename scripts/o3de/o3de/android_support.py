@@ -9,7 +9,7 @@ import argparse
 import configparser
 import datetime
 import fnmatch
-import imghdr
+import puremagic
 import json
 import logging
 import os
@@ -61,8 +61,9 @@ else:
 
 ASSET_MODE_LOOSE = 'LOOSE'
 ASSET_MODE_PAK = 'PAK'
+ASSET_MODE_NONE = 'NONE'
 
-ASSET_MODES = [ASSET_MODE_LOOSE, ASSET_MODE_PAK]
+ASSET_MODES = [ASSET_MODE_LOOSE, ASSET_MODE_PAK, ASSET_MODE_NONE]
 
 BUILD_CONFIGURATIONS = ['Debug', 'Profile', 'Release']
 ANDROID_ARCH = 'arm64-v8a'
@@ -149,8 +150,8 @@ SETTINGS_SIGNING_KEY_PASSWORD   = register_setting(key='signconfig.key.password'
 
 # General O3DE build and deployment options
 SETTINGS_ASSET_MODE             = register_setting(key='asset.mode',
-                                                   description='The asset mode to determine how the assets are stored in the target APK. Valid values are LOOSE and PAK.',
-                                                   restricted_regex=f'({ASSET_MODE_LOOSE}|{ASSET_MODE_PAK})',
+                                                   description=f"The asset mode to determine how the assets are stored in the target APK. Valid values are {','.join(ASSET_MODES)}.",
+                                                   restricted_regex=f'({ASSET_MODE_LOOSE}|{ASSET_MODE_PAK}|{ASSET_MODE_NONE})',
                                                    restricted_regex_description=f"Valid values are {','.join(ASSET_MODES)}.")
 
 SETTINGS_STRIP_DEBUG            = register_setting(key='strip.debug',
@@ -1784,7 +1785,7 @@ class AndroidProjectGenerator(object):
             src_path = self._android_project_builder_path / src_file
             resolved_src = src_path.resolve(strict=True)
 
-            if imghdr.what(resolved_src) in ('rgb', 'gif', 'pbm', 'ppm', 'tiff', 'rast', 'xbm', 'jpeg', 'bmp', 'png'):
+            if puremagic.what(resolved_src) in ('rgb', 'gif', 'pbm', 'ppm', 'tiff', 'rast', 'xbm', 'jpeg', 'bmp', 'png'):
                 # If the source file is a binary asset, then perform a copy to the target path
                 logging.debug("Copy Binary file %s -> %s", str(src_path.resolve(strict=True)), str(dst_path.resolve()))
                 dst_path.parent.mkdir(parents=True, exist_ok=True)
