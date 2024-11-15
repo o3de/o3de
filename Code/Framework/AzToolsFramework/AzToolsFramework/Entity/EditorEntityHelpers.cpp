@@ -813,7 +813,10 @@ namespace AzToolsFramework
         {
             bool visible = IsEntitySetToBeVisible(entityId);
 
+#if !defined(CARBONATED)
+            // undo mechanism causes the affected entities to be deleted then created again, this brakes the entity visiility (white objects bug)
             AzToolsFramework::ScopedUndoBatch undo("Toggle Entity Visibility");
+#endif
 
             if (IsSelected(entityId))
             {
