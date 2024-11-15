@@ -957,6 +957,13 @@ namespace AZ
 
         // Load the actual modules
         LoadModules();
+
+#if defined (CARBONATED)
+        // Enable to dispatch console commands when all modules are loaded and all their commands are registered.
+        AZ::Interface<AZ::IConsole>::Get()->EnableToDispatchConsoleCommands();
+        AZ::Interface<AZ::IConsole>::Get()->ExecuteDeferredConsoleCommands();
+#endif
+
         ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "GemsLoaded", R"({})");
 
         // Execute user.cfg after modules have been loaded but before processing any command-line overrides

@@ -10,9 +10,10 @@
 set -o errexit # exit on the first failure encountered
 
 {
-    ln -s @CPACK_PACKAGING_INSTALL_PREFIX@/bin/Linux/profile/Default/o3de /usr/local/bin/o3de
-    ln -s @CPACK_PACKAGING_INSTALL_PREFIX@/bin/Linux/profile/Default/AssetProcessor /usr/local/bin/o3de.assetprocessor
-    ln -s @CPACK_PACKAGING_INSTALL_PREFIX@/bin/Linux/profile/Default/Editor /usr/local/bin/o3de.editor
+    ln -s -f @CPACK_PACKAGING_INSTALL_PREFIX@/bin/Linux/profile/Default/o3de /usr/local/bin/o3de
+    ln -s -f @CPACK_PACKAGING_INSTALL_PREFIX@/scripts/o3de.sh /usr/local/bin/o3de.sh
+    ln -s -f @CPACK_PACKAGING_INSTALL_PREFIX@/bin/Linux/profile/Default/AssetProcessor /usr/local/bin/o3de.assetprocessor
+    ln -s -f @CPACK_PACKAGING_INSTALL_PREFIX@/bin/Linux/profile/Default/Editor /usr/local/bin/o3de.editor
 
     # Generate the desktop icon
     DESKTOP_ICON_FILE=/usr/share/applications/o3de.desktop
@@ -24,20 +25,25 @@ Comment=O3DE Project Manager\n\
 Type=Application\n\
 Exec=@CPACK_PACKAGING_INSTALL_PREFIX@/bin/Linux/profile/Default/o3de\n\
 Path=@CPACK_PACKAGING_INSTALL_PREFIX@/bin/Linux/profile/Default/\n\
-Icon=@CPACK_PACKAGING_INSTALL_PREFIX@/o3de.svg\n\
+Icon=@CPACK_PACKAGING_INSTALL_PREFIX@/o3de_desktop.svg\n\
 Terminal=false\n\
 StartupWMClass=O3DE.SNAP\n\
 StartupNotify=true\n\
 X-GNOME-Autostart-enabled=true\n\
 " > $DESKTOP_ICON_FILE
 
-    if [ "" != "$SUDO_USER" ]
-    then
-        pushd @CPACK_PACKAGING_INSTALL_PREFIX@
-        chown -R $SUDO_USER .
-        sudo -u $SUDO_USER python/get_python.sh
-        popd
-    fi
+    pushd @CPACK_PACKAGING_INSTALL_PREFIX@
 
-} 
-#&> /dev/null # hide output
+    # Clear out any previously generated egg-info linked folder (as a result of the installer build)
+    sudo rm -rf scripts/o3de/o3de.egg-info
+
+    # The following folders must be writeable to support the egg-info creation during the bootstrapping of 
+    # python.
+    sudo chmod a+w Tools/LyTestTools
+    sudo chmod a+w Tools/RemoteConsole/ly_remote_console
+    sudo chmod a+w Gems/Atom/RPI/Tools
+    sudo chmod a+w Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface
+    sudo chmod a+w scripts/o3de
+
+    popd
+} &> /dev/null # hide output

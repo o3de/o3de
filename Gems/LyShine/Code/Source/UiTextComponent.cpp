@@ -3376,7 +3376,7 @@ void UiTextComponent::Activate()
 #if defined(CARBONATED)
     // Reload the font families if they were deleted while this UiTextComponent was inactive.
     // It is important for UiTextComponent which can be activated and deactivated many times.
-    if (!m_fontFamily->normal || !m_fontFamily->bold || !m_fontFamily->italic || !m_fontFamily->boldItalic)
+    if (m_fontFamily && (!m_fontFamily->normal || !m_fontFamily->bold || !m_fontFamily->italic || !m_fontFamily->boldItalic))
     {
         ChangeFont(m_fontFilename.GetAssetPath());
     }
