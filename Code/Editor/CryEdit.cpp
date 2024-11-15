@@ -2297,6 +2297,13 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
     return res;
 }
 
+#if defined(CARBONATED)
+bool CCryEditApp::HasConsoleSCBInputFocus() const
+{
+    return CConsoleSCB::GetCreatedInstance() && CConsoleSCB::GetCreatedInstance()->HasInputFocus();
+}
+#endif
+
 void CCryEditApp::DisplayLevelLoadErrors()
 {
     CCryEditDoc* currentLevel = GetIEditor()->GetDocument();

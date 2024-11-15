@@ -151,6 +151,9 @@ public:
 
     static void RegisterViewClass();
     void SetInputFocus();
+#if defined(CARBONATED)
+    bool HasInputFocus();
+#endif
     void AddToConsole(const QString& text, bool bNewLine);
     void FlushText();
     QSize sizeHint() const override;

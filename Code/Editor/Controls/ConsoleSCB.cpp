@@ -487,6 +487,13 @@ void CConsoleSCB::SetInputFocus()
     ui->lineEdit->setText(QString());
 }
 
+#if defined(CARBONATED)
+bool CConsoleSCB::HasInputFocus()
+{
+    return ui->lineEdit->hasFocus();
+}
+#endif
+
 void CConsoleSCB::AddToConsole(const QString& text, bool bNewLine)
 {
     m_lines.push_back({ text, bNewLine });
