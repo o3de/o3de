@@ -102,7 +102,7 @@ jobs:
           echo "Setup Android SDK..."
           scripts\build\build_node\Platform\Windows\install-windows-android.ps1
 
-          echo "C:\gradle\gradle-7.0\bin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+          echo "C:\gradle\gradle-8.7\bin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
           echo "TEMP=${{ github.workspace }}\Temp" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
           echo "TMP=${{ github.workspace }}\Temp" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
         
