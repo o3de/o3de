@@ -6,9 +6,17 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 #>
 Import-Module C:\ProgramData\chocolatey\helpers\chocolateyInstaller.psm1 
 
-Write-Host "Installing Android SDK"
-choco install -y android-sdk
-Install-ChocolateyEnvironmentVariable "ANDROID_HOME" "C:\Android\android-sdk" -VariableType 'Machine'
+#Android SDK Command line tools needs a custom installer due the latest command like version not being available in the Chocolatey repository
+$androidSdkPackageName = 'androidsdk'
+$androidSdkVersion = '11076708_latest'
+$androidSdkUrl = "https://dl.google.com/android/repository/commandlinetools-win-$androidSdkVersion.zip"
+$androidSdkChecksum = '4d6931209eebb1bfb7c7e8b240a6a3cb3ab24479ea294f3539429574b1eec862'
+$androidSdkInstallDir = "C:\AndroidSdk\cmdline-tools"
+$androidSdkLatestDir = "$androidSdkInstallDir\latest"
+Install-ChocolateyZipPackage $androidSdkPackageName $androidSdkUrl $androidSdkInstallDir -Checksum $androidSdkChecksum -ChecksumType 'sha256'
+Install-ChocolateyEnvironmentVariable "ANDROID_SDK_ROOT" "C:\AndroidSdk", -VariableType 'Machine'
+# Rename the Android SDK folder 'cmdline-tools' to match what the command line tools looks like normally in a full AndroidSDK install
+Rename-Item -Path "$androidSdkInstallDir\cmdline-tools" "$androidSdkLatestDir"
 
 # Set package versions
 $android_packages = '"platforms;android-28" "platforms;android-29" "platforms;android-30"'
@@ -54,3 +62,5 @@ Write-Host "Installing Ninja"
 $ninja_version = 1.10.0
 choco install -y ninja --version=$ninja_version --package-parameters="/installDir:C:\Ninja"
 Install-ChocolateyPath "C:\Ninja" -PathType 'Machine'
+
+refreshenv
