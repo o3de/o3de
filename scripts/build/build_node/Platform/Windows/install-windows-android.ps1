@@ -14,7 +14,7 @@ $androidSdkChecksum = '4d6931209eebb1bfb7c7e8b240a6a3cb3ab24479ea294f3539429574b
 $androidSdkInstallDir = "C:\AndroidSdk\cmdline-tools"
 $androidSdkLatestDir = "$androidSdkInstallDir\latest"
 Install-ChocolateyZipPackage $androidSdkPackageName $androidSdkUrl $androidSdkInstallDir -Checksum $androidSdkChecksum -ChecksumType 'sha256'
-Install-ChocolateyEnvironmentVariable "ANDROID_SDK_ROOT" "C:\AndroidSdk", -VariableType 'Machine'
+Install-ChocolateyEnvironmentVariable "ANDROID_SDK_ROOT" "C:\AndroidSdk" -VariableType 'Machine'
 # Rename the Android SDK folder 'cmdline-tools' to match what the command line tools looks like normally in a full AndroidSDK install
 Rename-Item -Path "$androidSdkInstallDir\cmdline-tools" "$androidSdkLatestDir"
 
