@@ -62,6 +62,7 @@ set(FILES
     Source/RPI.Edit/Common/AssetAliasesSourceData.cpp
     Source/RPI.Edit/Common/ColorUtils.cpp
     Source/RPI.Edit/Common/ConvertibleSource.cpp
+    Source/RPI.Edit/Common/DllMain.cpp
     Source/RPI.Edit/Common/JsonReportingHelper.cpp
     Source/RPI.Edit/Common/JsonUtils.cpp
 )

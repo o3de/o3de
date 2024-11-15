@@ -420,7 +420,7 @@ namespace AZ::RHI
         return AZStd::move(pipelineState);
     }
 
-    PipelineStateCache::PipelineStateEntry::PipelineStateEntry(
+    PipelineStateEntry::PipelineStateEntry(
         PipelineStateHash hash, ConstPtr<PipelineState> pipelineState, const PipelineStateDescriptor& descriptor)
         : m_hash{ hash }
         , m_pipelineState{ AZStd::move(pipelineState) }
@@ -441,7 +441,7 @@ namespace AZ::RHI
         }
     }
 
-    bool PipelineStateCache::PipelineStateEntry::operator == (const PipelineStateCache::PipelineStateEntry& rhs) const
+    bool PipelineStateEntry::operator == (const PipelineStateEntry& rhs) const
     {
         if(AZStd::get_if<AZ::RHI::PipelineStateDescriptorForDispatch>(&rhs.m_pipelineStateDescriptorVariant) &&
             AZStd::get_if<AZ::RHI::PipelineStateDescriptorForDispatch>(&m_pipelineStateDescriptorVariant))

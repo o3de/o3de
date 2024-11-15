@@ -14,6 +14,7 @@
 #include <RHI/CommandList.h>
 #include <RHI/Image.h>
 #include <RHI/QueryPool.h>
+#include <RHI/RenderPassBuilder.h>
 #include <RHI/SwapChain.h>
 
 namespace AZ
@@ -47,9 +48,7 @@ namespace AZ
                 AZ::u32 commandListIndex,
                 AZ::u32 commandListCount) const;
 
-            void End(
-                CommandList& commandList,
-                bool signalFencesForAliasedResources) const;
+            void End(CommandList& commandList) const;
             
             MTLRenderPassDescriptor* GetRenderPassDescriptor() const;
             
@@ -73,9 +72,7 @@ namespace AZ
             void WaitOnAllResourceFences(CommandList& commandList) const;
             void WaitOnAllResourceFences(id <MTLCommandBuffer> mtlCommandBuffer) const;
             
-            //! Accesors for the information cached in Compile phase
-            bool IsWritingToSwapChain() const;
-            bool IsRequestingSwapChain() const;
+            void SetRenderPassInfo(const RenderPassContext& renderPassContext);
             
         private:
             
@@ -96,30 +93,10 @@ namespace AZ
             void AddQueryPoolUse(RHI::Ptr<RHI::QueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access) override;
             //////////////////////////////////////////////////////////////////////////
             
-            //! Cache the multisample state and at the same time hook up the custom sample msaa positions for the render pass.
-            void ApplyMSAACustomPositions(const ImageView* imageView);
+            bool IsFirstUsage(const RHI::ScopeAttachment* scopeAttachment) const;
 
-            /// Render pass descriptor needed for RenderCommandEncoder or ParallelCommandEncoder
-            MTLRenderPassDescriptor*    m_renderPassDescriptor = nil;
+            RenderPassContext m_renderPassContext;
                         
-            /// Cache MultisampleState for the scope. It is passed on to the command list for validation check against the MultisampleState passed through the PipelineState
-            RHI::MultisampleState m_scopeMultisampleState;
-                        
-            ///Used to check if the scope needs to do a msaa resolve
-            bool m_isResolveNeeded = false;
-            
-            /// Used to check if we need to clear a render target thorugh load action.
-            bool m_isClearNeeded = false;
-            
-            //! Used to store resolve related attachment information
-            struct ResolveAttachmentData
-            {
-                int m_colorAttachmentIndex = 0;
-                MTLRenderPassDescriptor* m_renderPassDesc = nil;
-                RHI::ScopeAttachmentUsage m_attachmentUsage = RHI::ScopeAttachmentUsage::Uninitialized;
-                bool m_isStoreAction = false;
-            };
-            
             /// The list of fences to wait before executing this scope.
             FenceValueSet m_waitFencesByQueue = { {0} };
 
@@ -130,19 +107,7 @@ namespace AZ
             AZStd::vector<Fence> m_resourceFences[static_cast<uint32_t>(ResourceFenceAction::Count)];
 
             AZStd::vector<QueryPoolAttachment> m_queryPoolAttachments;
-            
-            /// Used to check if the current scope is requesting to a swapchain texture
-            bool m_isRequestingSwapChainDrawable = false;
-            
-            /// Used to check if the current scope is writing the swapchain texture
-            bool m_isWritingToSwapChainScope = false;
-            
-            /// Used to check if the current scope is a swapchain scope and the next scope will be used to capture the current frame
-            bool m_isSwapChainAndFrameCaptureEnabled = false;
-            
-            /// Used to request the drawable from the driver in the Execute phase (Scope::Begin)
-            const RHI::ImageScopeAttachment* m_swapChainAttachment = nullptr;
-            
+          
             /// Track all the heaps that will need too be made resident for this scope
             AZStd::set<id<MTLHeap>> m_residentHeaps;
 

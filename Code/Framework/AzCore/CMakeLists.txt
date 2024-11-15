@@ -152,7 +152,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 ${common_dir}
         BUILD_DEPENDENCIES
             PRIVATE
-                3rdParty::googletest::GMock
+                AZ::AzTest
                 3rdParty::GoogleBenchmark
     )
 

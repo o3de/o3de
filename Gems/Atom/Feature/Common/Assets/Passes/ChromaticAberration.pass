@@ -63,7 +63,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/PostProcessing/ChromaticAberration.shader"
                 },
-                "Make Fullscreen Pass": true
+                "FullscreenDispatch": true
             }
         }
     }

@@ -92,7 +92,7 @@ float4 GetSkyVolumeAtPosition(uint3 position)
     return float4(ss.L, 1.0 - transmittance);
 }
 
-// total thread count is based on the "Target Thread Count X/Y/Z" in the SkyVolumeLUT.pass file
+// total thread count is based on the "ThreadCountX/Y/Z" in the SkyVolumeLUT.pass file
 // and the number of threads per group specified in numthreads() below.
 // given a volume texture size is 32x32x32, with 1 thread per froxel
 // the following values are based on intention to improve locality when accessing 

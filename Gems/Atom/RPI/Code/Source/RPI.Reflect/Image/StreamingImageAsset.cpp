@@ -15,10 +15,6 @@ namespace AZ
 {
     namespace RPI
     {
-        const char* StreamingImageAsset::DisplayName = "StreamingImage";
-        const char* StreamingImageAsset::Group = "Image";
-        const char* StreamingImageAsset::Extension = "streamingimage";
-
         void StreamingImageAsset::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))

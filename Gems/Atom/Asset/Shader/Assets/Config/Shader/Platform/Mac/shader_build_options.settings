@@ -7,11 +7,12 @@
                 , "--namespace=mt"
                 , "--namespace=vk"
                 , "--pad-root-const"
+		, "--subpass-input-offset=100"
         ],
         "dxc": ["-spirv"
               , "-enable-16bit-types"
         ],
-        "spirv-cross": [],
+        "spirv-cross": ["--msl-framebuffer-fetch", "--msl-version 20300"],
         "metalair": ["-sdk", "macosx", "metal" // For xcrun
                    , "-fpreserve-invariance"
                    , "-c"

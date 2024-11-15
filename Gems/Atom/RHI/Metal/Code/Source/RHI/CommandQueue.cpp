@@ -103,7 +103,7 @@ namespace AZ
                 }
             }
             
-            id <MTLCommandBuffer> workRequestCommandBuffer = request.m_commandBuffer->GetMtlCommandBuffer();
+            id<MTLCommandBuffer> workRequestCommandBuffer = request.m_commandBuffer->GetMtlCommandBuffer();
             CommandQueueContext& context = device.GetCommandQueueContext();
             const FenceSet& compiledFences = context.GetCompiledFences();
             

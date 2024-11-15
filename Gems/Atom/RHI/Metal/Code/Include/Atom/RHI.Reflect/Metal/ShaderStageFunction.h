@@ -47,6 +47,7 @@ namespace AZ
 
             /// Assigns source code to the function.
             void SetSourceCode(const ShaderSourceCode& sourceCode);
+            void SetSourceCode(const AZStd::string_view sourceCode);
 
             /// Returns the assigned source code.
             const AZStd::string& GetSourceCode() const;

@@ -27,9 +27,9 @@ namespace AZ
             friend class AttachmentImageAssetCreator;
 
         public:
-            static const char* DisplayName;
-            static const char* Group;
-            static const char* Extension;
+            static constexpr const char* DisplayName{ "AttachmentImageAsset" };
+            static constexpr const char* Group{ "Image" };
+            static constexpr const char* Extension{ "attimage" };
 
             AZ_RTTI(AttachmentImageAsset, "{82CEA86B-E891-4969-8F35-D8017E8902C8}", ImageAsset);
             AZ_CLASS_ALLOCATOR(AttachmentImageAsset, AZ::SystemAllocator);

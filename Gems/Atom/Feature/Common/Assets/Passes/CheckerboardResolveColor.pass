@@ -220,7 +220,7 @@
                     "FilePath": "Shaders/Checkerboard/CheckerboardColorResolveCS.shader"
                 },
                 "BindViewSrg": true,
-                "Make Fullscreen Pass": true
+                "FullscreenDispatch": true
             }
         }
     }

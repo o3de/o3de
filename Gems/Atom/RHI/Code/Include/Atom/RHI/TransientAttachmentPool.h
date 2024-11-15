@@ -79,6 +79,12 @@ namespace AZ::RHI
         //! is used, after all allocations for that scope have been processed. It will also be removed from the cache.
         void DeactivateImage(const AttachmentId& attachmentId);
 
+        //! Called when a buffer is not used on a specific device this frame
+        void RemoveDeviceBuffer(int deviceIndex, Buffer* buffer);
+
+        //! Called when an image is not used on a specific device this frame
+        void RemoveDeviceImage(int deviceIndex, Image* image);
+
         //! Called when all allocations for the current scope have completed.
         void EndScope();
 

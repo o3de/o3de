@@ -55,6 +55,7 @@ namespace AZ
             AZStd::vector<id<CAMetalDrawable>> m_drawables;
             uint32_t m_refreshRate = 0;
             CGSize m_drawableSize;
+            mutable AZStd::mutex m_drawablesMutex;
         };
     }
 }

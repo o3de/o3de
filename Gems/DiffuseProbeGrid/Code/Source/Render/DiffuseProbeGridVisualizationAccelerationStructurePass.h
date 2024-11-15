@@ -16,6 +16,8 @@ namespace AZ
 {
     namespace Render
     {
+        class DiffuseProbeGrid;
+
         //! This pass builds the DiffuseProbeGrid visualization acceleration structure
         class DiffuseProbeGridVisualizationAccelerationStructurePass final
             : public RPI::Pass

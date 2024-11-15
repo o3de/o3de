@@ -28,7 +28,7 @@ namespace AZ
             // Note that StableId is uint32_t for legacy reasons: we used to use AssetId::m_subId as the material slot ID. But actually the original MaterialUid
             // is 64 bit so we might want to switch this to be uint64_t at some point.
             using StableId = uint32_t;
-            static const StableId InvalidStableId;
+            static constexpr StableId InvalidStableId{ AZStd::numeric_limits<ModelMaterialSlot::StableId>::max() };
 
             //! This ID must have a consistent value when the asset is reprocessed by the asset pipeline, and must be unique within the ModelLodAsset.
             //! In practice, this set using the MaterialUid from SceneAPI. See ModelAssetBuilderComponent::CreateMesh.

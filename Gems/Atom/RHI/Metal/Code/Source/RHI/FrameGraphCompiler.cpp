@@ -10,6 +10,7 @@
 #include <RHI/Device.h>
 #include <RHI/FrameGraphCompiler.h>
 #include <RHI/Scope.h>
+#include <RHI/RenderPassBuilder.h>
 
 namespace AZ
 {
@@ -34,6 +35,7 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileInternal(Metal)");
             RHI::FrameGraph& frameGraph = *request.m_frameGraph;
+            
             if (!RHI::CheckBitsAny(request.m_compileFlags, RHI::FrameSchedulerCompileFlags::DisableAsyncQueues))
             {
                 CompileAsyncQueueFences(frameGraph);
@@ -77,3 +79,4 @@ namespace AZ
         }
     }
 }
+                                

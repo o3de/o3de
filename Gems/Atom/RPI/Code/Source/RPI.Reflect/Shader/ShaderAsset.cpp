@@ -27,8 +27,6 @@ namespace AZ
 {
     namespace RPI
     {
-        const ShaderVariantStableId ShaderAsset::RootShaderVariantStableId{0};
-
         static constexpr uint32_t SubProductTypeBitPosition = 0;
         static constexpr uint32_t SubProductTypeNumBits = SupervariantIndexBitPosition - SubProductTypeBitPosition;
         [[maybe_unused]] static constexpr uint32_t SubProductTypeMaxValue = (1 << SubProductTypeNumBits) - 1;

@@ -59,7 +59,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/PostProcessing/DepthDownsample.shader"
                 },
-                "Make Fullscreen Pass": true,
+                "FullscreenDispatch": true,
                 "BindViewSrg": true
             }
         }

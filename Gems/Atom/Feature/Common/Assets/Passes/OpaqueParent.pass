@@ -518,7 +518,7 @@
                         "ShaderAsset": {
                             "FilePath": "Shaders/PostProcessing/ScreenSpaceSubsurfaceScatteringCS.shader"
                         },
-                        "Make Fullscreen Pass": true,
+                        "FullscreenDispatch": true,
                         "BindViewSrg": true
                     }
                 },

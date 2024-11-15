@@ -42,10 +42,11 @@ namespace AZ
             friend class ImageMipChainAssetTester;
             friend class StreamingImageAssetCreator;
             friend class StreamingImageAssetHandler;
+
         public:
-            static const char* DisplayName;
-            static const char* Extension;
-            static const char* Group;
+            static constexpr const char* DisplayName{ "ImageMipChain" };
+            static constexpr const char* Group{ "Image" };
+            static constexpr const char* Extension{ "imagemipchain" };
 
             AZ_RTTI(ImageMipChainAsset, "{CB403C8A-6982-4C9F-8090-78C9C36FBEDB}", Data::AssetData);
             AZ_CLASS_ALLOCATOR(ImageMipChainAsset, AZ::SystemAllocator);

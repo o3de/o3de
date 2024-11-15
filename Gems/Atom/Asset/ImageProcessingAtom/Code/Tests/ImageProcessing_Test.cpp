@@ -74,6 +74,8 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <ImageBuilderComponent.h>
 
+extern "C" void CleanUpRpiPublicGenericClassInfo();
+
 using namespace ImageProcessingAtom;
 
 namespace UnitTest
@@ -173,7 +175,7 @@ namespace UnitTest
             threadDesc.m_cpuId = 0; // Don't set processors IDs on windows
 #endif 
 
-            uint32_t numWorkerThreads = AZStd::thread::hardware_concurrency();
+            uint32_t numWorkerThreads = jobManagerDesc.GetWorkerThreadCount(AZStd::thread::hardware_concurrency());
 
             for (unsigned int i = 0; i < numWorkerThreads; ++i)
             {
@@ -256,6 +258,8 @@ namespace UnitTest
 
             AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(this);
             ComponentApplicationBus::Handler::BusDisconnect();
+
+            CleanUpRpiPublicGenericClassInfo();
         }
 
         //enum names for Images with specific identification

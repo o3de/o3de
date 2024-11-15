@@ -22,7 +22,6 @@ ly_associate_package(PACKAGE_NAME freetype-2.11.1-rev1-android                  
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.11.288-rev2-android                TARGETS AWSNativeSDK                PACKAGE_HASH 61620cb4c79f752328e4722fa36020dabe04167d83c94a0d302c08f3efa367b7)
 ly_associate_package(PACKAGE_NAME Lua-5.4.4-rev1-android                            TARGETS Lua                     PACKAGE_HASH 2adda1831577336454090f249baf09519f41bb73160cd1d5b5b33564729af4a2)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-android                         TARGETS mikkelsen               PACKAGE_HASH 075e8e4940884971063b5a9963014e2e517246fa269c07c7dc55b8cf2cd99705)
-ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-android                     TARGETS googletest              PACKAGE_HASH 95671be75287a61c9533452835c3647e9c1b30f81b34b43bcb0ec1997cc23894)
 ly_associate_package(PACKAGE_NAME googlebenchmark-1.7.0-rev2-android                TARGETS GoogleBenchmark         PACKAGE_HASH 972c1fd1dec3d1cecd7b05f1064e47e20775ea4ba211a08a53c4d1c7c1ccc905)
 ly_associate_package(PACKAGE_NAME png-1.6.37-rev2-android                           TARGETS PNG                     PACKAGE_HASH c2240299251d97d963d2e9f4320fbc384bfb2e1b1e073419d1171df0e8ea983d)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-android                  TARGETS libsamplerate           PACKAGE_HASH bf13662afe65d02bcfa16258a4caa9b875534978227d6f9f36c9cfa92b3fb12b)

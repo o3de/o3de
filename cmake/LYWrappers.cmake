@@ -90,7 +90,7 @@ define_property(TARGET PROPERTY RUNTIME_DEPENDENCIES_DEPENDS
 # \arg:AUTOGEN_RULES a set of AutoGeneration rules to be passed to the AzAutoGen expansion system
 function(ly_add_target)
 
-    set(options STATIC SHARED MODULE GEM_STATIC GEM_MODULE OBJECT HEADERONLY EXECUTABLE APPLICATION IMPORTED AUTOMOC AUTOUIC AUTORCC NO_UNITY)
+    set(options STATIC SHARED MODULE GEM_STATIC GEM_MODULE OBJECT HEADERONLY EXECUTABLE APPLICATION IMPORTED AUTOMOC AUTOUIC AUTORCC NO_UNITY EXPORT_ALL_SYMBOLS)
     set(oneValueArgs NAME NAMESPACE OUTPUT_SUBDIRECTORY OUTPUT_NAME)
     set(multiValueArgs FILES_CMAKE GENERATED_FILES INCLUDE_DIRECTORIES COMPILE_DEFINITIONS BUILD_DEPENDENCIES RUNTIME_DEPENDENCIES PLATFORM_INCLUDE_FILES TARGET_PROPERTIES AUTOGEN_RULES)
 
@@ -272,6 +272,14 @@ function(ly_add_target)
         target_compile_definitions(${ly_add_target_NAME}
             ${ly_add_target_COMPILE_DEFINITIONS}
         )
+    endif()
+
+    if(ly_add_target_SHARED AND ly_add_target_EXPORT_ALL_SYMBOLS)
+        if(PAL_PLATFORM_NAME STREQUAL "Windows")
+            set_target_properties(${ly_add_target_NAME} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+        else()
+            target_compile_options(${ly_add_target_NAME} PRIVATE ${PAL_TRAIT_EXPORT_ALL_SYMBOLS_COMPILE_OPTIONS})
+        endif()
     endif()
 
     # For any target that depends on AzTest and is built as an executable, an additional 'AZ_TEST_EXECUTABLE' define will

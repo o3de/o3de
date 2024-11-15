@@ -48,9 +48,9 @@ namespace AZ
             AZ_RTTI(MaterialAsset, "{522C7BE0-501D-463E-92C6-15184A2B7AD8}", AZ::Data::AssetData);
             AZ_CLASS_ALLOCATOR(MaterialAsset, SystemAllocator);
 
-            static const char* DisplayName;
-            static const char* Group;
-            static const char* Extension;
+            static constexpr const char* DisplayName{ "MaterialAsset" };
+            static constexpr const char* Group{ "Material" };
+            static constexpr const char* Extension{ "azmaterial" };
             
             static constexpr uint32_t UnspecifiedMaterialTypeVersion = static_cast<uint32_t>(-1);
 
@@ -132,7 +132,7 @@ namespace AZ
             //! Called by asset creators to assign the asset to a ready state.
             void SetReady();
 
-            static const char* s_debugTraceName;
+            static constexpr const char* s_debugTraceName{ "MaterialAsset" };
 
             Data::Asset<MaterialTypeAsset> m_materialTypeAsset = { AZ::Data::AssetLoadBehavior::PreLoad };
 

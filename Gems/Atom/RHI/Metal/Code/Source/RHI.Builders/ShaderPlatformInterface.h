@@ -83,7 +83,11 @@ namespace AZ
                                 AZStd::vector<char>& sourceMetalShader,
                                 const AssetBuilderSDK::PlatformInfo& platform,
                                 const RHI::ShaderBuildArguments& shaderBuildArguments,
-                                const bool isGraphicsDevModeEnabled) const;
+                                const bool isGraphicsDevModeEnabled,
+                                RHI::ShaderHardwareStage shaderStageType) const;
+            
+            // Updates the metal shader for using subpass inputs
+            void UpdateMetalSource(AZStd::string& metalSource, RHI::ShaderHardwareStage shaderStageType) const;
             
             using ArgBufferEntries = AZStd::pair<AZStd::string, uint32_t>;
             struct compareByRegisterId {

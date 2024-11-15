@@ -23,7 +23,9 @@
 #include <BuilderComponent.h>
 
 #include <Tests.Builders/BuilderTestFixture.h>
-  
+
+extern "C" void CleanUpRpiPublicGenericClassInfo();
+extern "C" void CleanUpRpiEditGenericClassInfo();
 
 namespace UnitTest
 {
@@ -118,6 +120,10 @@ namespace UnitTest
         NameDictionary::Destroy();
 
         m_context.reset();
+
+        CleanUpRpiPublicGenericClassInfo();
+        CleanUpRpiEditGenericClassInfo();
+
         LeakDetectionFixture::TearDown();
     }
 

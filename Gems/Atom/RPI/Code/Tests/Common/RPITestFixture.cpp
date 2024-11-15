@@ -63,7 +63,7 @@ namespace UnitTest
     {
         AssetManagerTestFixture::SetUp();
 
-        AZ::RPI::Validation::s_isEnabled = true;
+        AZ::RPI::Validation::SetEnabled(true);
         AZ::RHI::Validation::s_isEnabled = true;
 
         m_priorFileIO = AZ::IO::FileIOBase::GetInstance();
@@ -115,7 +115,7 @@ namespace UnitTest
         threadDesc.m_cpuId = 0; // Don't set processors IDs on windows
 #endif
 
-        uint32_t numWorkerThreads = AZStd::thread::hardware_concurrency();
+        uint32_t numWorkerThreads = desc.GetWorkerThreadCount(AZStd::thread::hardware_concurrency());
 
         for (unsigned int i = 0; i < numWorkerThreads; ++i)
         {

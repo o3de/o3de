@@ -87,6 +87,7 @@ namespace AZ
             
             RasterizerState m_rasterizerState;
             MTLPrimitiveType m_primitiveTopology = MTLPrimitiveTypeTriangle;
+            AZStd::array<int, RHI::Limits::Pipeline::AttachmentColorCountMax> m_attachmentIndexToColorIndex;
         };
     }
 }

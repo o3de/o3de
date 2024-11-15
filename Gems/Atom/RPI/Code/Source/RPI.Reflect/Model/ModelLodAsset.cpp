@@ -14,10 +14,6 @@ namespace AZ
 {
     namespace RPI
     {
-        const char* ModelLodAsset::DisplayName = "ModelLodAsset";
-        const char* ModelLodAsset::Group = "Model";
-        const char* ModelLodAsset::Extension = "azlod";
-
         void ModelLodAsset::Reflect(AZ::ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))

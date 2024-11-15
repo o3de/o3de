@@ -349,7 +349,7 @@ namespace AZ
             static AZ::Data::Instance<ShaderResourceGroup> CreateInternal(ShaderAsset& shaderAsset, const AZStd::any* srgInitParams);
 
             /// A name to be used in error messages
-            static const char* s_traceCategoryName;
+            static constexpr const char* s_traceCategoryName = "ShaderResourceGroup";
 
             /// Allows us to return const& to a null Image
             static const Data::Instance<Image> s_nullImage;

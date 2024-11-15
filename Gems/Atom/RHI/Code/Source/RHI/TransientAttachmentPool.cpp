@@ -153,7 +153,7 @@ namespace AZ::RHI
                 image->m_deviceObjects[deviceIndex]->SetName(name);
             }
         }
-        else
+        else if (!CheckBitsAny(m_compileFlags, TransientAttachmentPoolCompileFlags::DontAllocateResources))
         {
             if (auto potentialDeviceImage{ image->m_deviceObjects.find(deviceIndex) }; potentialDeviceImage != image->m_deviceObjects.end())
             {
@@ -217,7 +217,7 @@ namespace AZ::RHI
                 buffer->m_deviceObjects[deviceIndex]->SetName(name);
             }
         }
-        else
+        else if (!CheckBitsAny(m_compileFlags, TransientAttachmentPoolCompileFlags::DontAllocateResources))
         {
             if (auto potentialDeviceBuffer{ buffer->m_deviceObjects.find(deviceIndex) };
                 potentialDeviceBuffer != buffer->m_deviceObjects.end())
@@ -244,6 +244,18 @@ namespace AZ::RHI
     void TransientAttachmentPool::DeactivateImage(const AttachmentId& attachmentId)
     {
         GetDeviceTransientAttachmentPool(m_currentScope->GetDeviceIndex())->DeactivateImage(attachmentId);
+    }
+
+    void TransientAttachmentPool::RemoveDeviceBuffer(int deviceIndex, Buffer* buffer)
+    {
+        buffer->Init(ResetBit(buffer->GetDeviceMask(), deviceIndex));
+        buffer->m_deviceObjects.erase(deviceIndex);
+    }
+
+    void TransientAttachmentPool::RemoveDeviceImage(int deviceIndex, Image* image)
+    {
+        image->Init(ResetBit(image->GetDeviceMask(), deviceIndex));
+        image->m_deviceObjects.erase(deviceIndex);
     }
 
     AZStd::unordered_map<int, TransientAttachmentStatistics> TransientAttachmentPool::GetStatistics() const

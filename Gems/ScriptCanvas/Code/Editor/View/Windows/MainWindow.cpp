@@ -3555,7 +3555,7 @@ namespace ScriptCanvasEditor
         return findChild<QObject*>(elementName);
     }
 
-    AZ::EntityId MainWindow::FindEditorNodeIdByAssetNodeId([[maybe_unused]] const SourceHandle& assetId, AZ::EntityId assetNodeId) const
+    AZ::EntityId MainWindow::FindEditorNodeIdByAssetNodeId([[maybe_unused]] const SourceHandle& assetId, [[maybe_unused]] AZ::EntityId assetNodeId) const
     {
         const ScriptCanvas::ScriptCanvasId scriptId = GetActiveScriptCanvasId();
         AZ::EntityId newNodeId;
@@ -3563,7 +3563,7 @@ namespace ScriptCanvasEditor
         return newNodeId;
     }
 
-    AZ::EntityId MainWindow::FindAssetNodeIdByEditorNodeId([[maybe_unused]] const SourceHandle& assetId, AZ::EntityId editorNodeId) const
+    AZ::EntityId MainWindow::FindAssetNodeIdByEditorNodeId([[maybe_unused]] const SourceHandle& assetId, [[maybe_unused]] AZ::EntityId editorNodeId) const
     {
         const ScriptCanvas::ScriptCanvasId scriptId = GetActiveScriptCanvasId();
         AZ::EntityId originalNodeId;

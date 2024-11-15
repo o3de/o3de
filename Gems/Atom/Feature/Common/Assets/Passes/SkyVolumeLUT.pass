@@ -23,9 +23,9 @@
             ],
             "PassData": {
                 "$type": "ComputePassData",
-                "Target Thread Count X": "32",
-                "Target Thread Count Y": "32",
-                "Target Thread Count Z": "32",
+                "ThreadCountX": "32",
+                "ThreadCountY": "32",
+                "ThreadCountZ": "32",
                 "ShaderAsset": {
                     "FilePath": "Shaders/SkyAtmosphere/SkyVolumeLUT.shader"
                 },
