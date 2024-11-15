@@ -26,21 +26,22 @@ $ndk = '"ndk;21.4.7075529" "ndk;23.1.7779620" "ndk;25.1.8937393" "ndk;25.2.95196
 
 Write-Host "Installing Android SDK packages..."
 $sdkmanager = "$androidSdkLatestDir\bin\sdkmanager.bat"
-Write-Host "Installing Android platform packages..."
+Write-Host "Installing Android platform packages: $android_packages"
 Start-Process -FilePath $sdkmanager -ArgumentList $android_packages -RedirectStandardOutput "NUL" -RedirectStandardError "$host.Streams.Error" -NoNewWindow -Wait
-Write-Host "Installing Google Play packages..."
+Write-Host "Installing Google Play packages: $googleplay_packages"
 Start-Process -FilePath $sdkmanager -ArgumentList $googleplay_packages -RedirectStandardOutput "NUL" -RedirectStandardError "$host.Streams.Error" -NoNewWindow -Wait
-Write-Host "Installing Build Tools..."
+Write-Host "Installing Build Tools: $build_tools"
 Start-Process -FilePath $sdkmanager -ArgumentList $build_tools -RedirectStandardOutput "NUL" -RedirectStandardError "$host.Streams.Error" -NoNewWindow -Wait
-Write-Host "Installing Android NDK packages..."
+Write-Host "Installing Android NDK packages: $ndk"
 Start-Process -FilePath $sdkmanager -ArgumentList $ndk -RedirectStandardOutput "NUL" -RedirectStandardError "$host.Streams.Error" -NoNewWindow -Wait
 # Set the NDK environment
 Install-ChocolateyEnvironmentVariable "LY_NDK_DIR" "C:\AndroidSdk\ndk\25.1.8937393" -VariableType 'Machine'
 
-Write-Host "Installing Gradle"
+tree "C:\AndroidSdk\"
+
 $gradle_version = '8.7'
 $gradle_checksum = '194717442575a6f96e1c1befa2c30e9a4fc90f701d7aee33eb879b79e7ff05c0'
-
+Write-Host "Installing Gradle $gradle_version"
 #Gradle needs a custom installer due to being hardcoded to C:\Programdata in Chocolatey
 Import-Module C:\ProgramData\chocolatey\helpers\chocolateyInstaller.psm1 
 $packageName = 'gradle'
@@ -57,8 +58,8 @@ Install-ChocolateyEnvironmentVariable "GRADLE_BUILD_HOME" $gradle_home -Variable
 Install-ChocolateyPath "$gradle_home\bin" -PathType 'Machine'
 Install-BinFile -Name 'gradle' -Path $gradle_bat
 
-Write-Host "Installing Ninja"
 $ninja_version = 1.10.0
+Write-Host "Installing Ninja $ninja_version"
 choco install -y ninja --version=$ninja_version --package-parameters="/installDir:C:\Ninja"
 Install-ChocolateyPath "C:\Ninja" -PathType 'Machine'
 
