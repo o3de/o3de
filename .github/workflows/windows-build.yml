@@ -90,10 +90,7 @@ jobs:
         run: |
            git lfs install
            if ("${{ inputs.type }}" -eq "profile") { git lfs pull --include "*.ico,*.bmp" } else { git lfs pull }
-      #     git lfs fetch --all
-      #     git lfs checkout
 
-        
       - name: Configure environment
         run: |
           echo "Installing dependancies"

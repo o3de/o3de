@@ -50,14 +50,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           show-progress: false
-          lfs: true
-            
-      # - name: Git LFS pull
-      #   run: |
-      #     git lfs install
-      #     # [[ "${{ inputs.type }}" == "profile" ]] && git lfs fetch --include "*.ico,*.bmp" || git lfs fetch --all
-      #     git lfs fetch --all
-      #     git lfs checkout
 
       - name: Setup 3p, user, and build folders
         run: |

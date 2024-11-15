@@ -37,7 +37,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           show-progress: false
-          lfs: true
 
       - name: Setup 3p, user, and build folders
         run: |
@@ -102,7 +101,6 @@ jobs:
           echo "Setup Android SDK..."
           scripts\build\build_node\Platform\Windows\install-windows-android.ps1
 
-          echo "C:\gradle\gradle-8.7\bin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
           echo "TEMP=${{ github.workspace }}\Temp" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
           echo "TMP=${{ github.workspace }}\Temp" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
         
@@ -114,7 +112,6 @@ jobs:
           LY_3RDPARTY_PATH: ${{ github.workspace }}\3rdParty
           LY_NDK_DIR: C:\Android\android-sdk\ndk\21.4.7075529 
         run: |
-          scripts\o3de.bat register --this-engine
           python\python.cmd -u scripts\build\ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }} 
       
       - name: Compress artifacts
