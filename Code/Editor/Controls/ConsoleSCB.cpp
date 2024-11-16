@@ -488,7 +488,7 @@ void CConsoleSCB::SetInputFocus()
 }
 
 #if defined(CARBONATED)
-bool CConsoleSCB::HasInputFocus()
+bool CConsoleSCB::HasInputFocus() const
 {
     return ui->lineEdit->hasFocus();
 }

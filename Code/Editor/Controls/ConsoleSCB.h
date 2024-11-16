@@ -152,7 +152,7 @@ public:
     static void RegisterViewClass();
     void SetInputFocus();
 #if defined(CARBONATED)
-    bool HasInputFocus();
+    bool HasInputFocus() const;
 #endif
     void AddToConsole(const QString& text, bool bNewLine);
     void FlushText();
