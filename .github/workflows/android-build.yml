@@ -99,7 +99,7 @@ jobs:
           echo "Getting python..."
           python\get_python.bat
 
-          & "$env:ANDROID_HOME\bin\sdkmanager.bat" '"ndk;21.4.7075529" "ndk;23.1.7779620" "ndk;25.1.8937393" "ndk;25.2.9519653"'
+          & "$env:ANDROID_HOME\cmdline-tools\latest\bin\sdkmanager.bat" --install '"ndk;21.4.7075529" "ndk;23.1.7779620" "ndk;25.1.8937393" "ndk;25.2.9519653"' --sdk_root=$env:ANDROID_HOME
           echo "LY_NDK_DIR=$env:ANDROID_HOME\ndk\25.1.8937393" >> "$GITHUB_ENV"
           echo "JDK_HOME=$env:JAVA_HOME_11_X64" >> "$GITHUB_ENV"
           echo "JAVA_HOME=$env:JAVA_HOME_11_X64" >> "$GITHUB_ENV"
