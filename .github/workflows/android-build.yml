@@ -94,7 +94,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
             distribution: 'corretto'
-            java-version: '17'
+            java-version: '11'
 
       - name: Configure environment
         continue-on-error: true
@@ -105,8 +105,8 @@ jobs:
           echo "Getting python..."
           python\get_python.bat
 
-          echo "$JAVA_HOME=$JAVA_HOME_17_X64" >> $env:GITHUB_ENV
-          echo "$JDK_HOME=$JAVA_HOME_17_X64" >> $env:GITHUB_ENV
+          echo "$JAVA_HOME=$JAVA_HOME_11_X64" >> $env:GITHUB_ENV
+          echo "$JDK_HOME=$JAVA_HOME_11_X64" >> $env:GITHUB_ENV
 
           echo "Setup Android SDK..."
           scripts\build\build_node\Platform\Windows\install-windows-android.ps1
