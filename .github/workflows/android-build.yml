@@ -38,6 +38,11 @@ jobs:
         with:
           show-progress: false
 
+      - name: Git LFS pull
+        run: |
+          git lfs install
+          if ("${{ inputs.type }}" -eq "profile") { git lfs pull --include "*.ico,*.bmp" } else { git lfs pull }
+
       - name: Setup 3p, user, and build folders
         run: |
           "3rdParty", "build", ".o3de" | % {New-Item "${{ github.workspace }}\$_" -ItemType 'Directory' -Force}
@@ -83,17 +88,11 @@ jobs:
           echo "Last run id: ${{ fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id }}"
           
           tar -xvpf ${{ github.workspace }}\cache.tar `
-            python `
-            3rdParty\packages `
-            AutomatedTesting\Cache `
-            AutomatedTesting\user `
+            3rdParty/packages `
+            AutomatedTesting/Cache `
+            AutomatedTesting/user `
             .ccache
           rm ${{ github.workspace }}\cache.tar
-
-      - name: Git LFS pull
-        run: |
-          git lfs install
-          if ("${{ inputs.type }}" -eq "profile") { git lfs pull --include "*.ico,*.bmp" } else { git lfs pull }
 
       - name: Configure environment
         continue-on-error: true

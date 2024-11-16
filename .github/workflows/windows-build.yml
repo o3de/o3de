@@ -88,10 +88,9 @@ jobs:
           echo "Last run id: ${{ fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id }}"
           
           tar -xvpf ${{ github.workspace }}\cache.tar `
-            python `
-            3rdParty\packages `
-            AutomatedTesting\Cache `
-            AutomatedTesting\user `
+            3rdParty/packages `
+            AutomatedTesting/Cache `
+            AutomatedTesting/user `
             .ccache
           rm ${{ github.workspace }}\cache.tar
 
