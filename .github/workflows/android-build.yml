@@ -90,12 +90,6 @@ jobs:
           git lfs install
           if ("${{ inputs.type }}" -eq "profile") { git lfs pull --include "*.ico,*.bmp" } else { git lfs pull }
 
-      - name: Install Java
-        uses: actions/setup-java@v4
-        with:
-            distribution: 'corretto'
-            java-version: '21'
-
       - name: Configure environment
         continue-on-error: true
         env:
@@ -105,36 +99,19 @@ jobs:
           echo "Getting python..."
           python\get_python.bat
 
-          echo "$JAVA_HOME=$JAVA_HOME_21_X64" >> $env:GITHUB_ENV
-          echo "$JDK_HOME=$JAVA_HOME_21_X64" >> $env:GITHUB_ENV
-
-          echo "Setup Android SDK..."
-          scripts\build\build_node\Platform\Windows\install-windows-android.ps1
-
-          $varsToSync = @(
-            'ANDROID_SDK_ROOT',
-            'GRADLE_BUILD_HOME',
-            'JDK_PATH',
-            'JAVA_HOME',
-            'LY_NDK_DIR'
-          )
+          $env:ANDROID_HOME\bin\sdkmanager.bat '"ndk;21.4.7075529" "ndk;23.1.7779620" "ndk;25.1.8937393" "ndk;25.2.9519653"'
+          echo "LY_NDK_DIR=$env:ANDROID_HOME\ndk\25.1.8937393" >> "$GITHUB_ENV"
+          echo "JDK_HOME=$env:JAVA_HOME_11_X64" >> "$GITHUB_ENV"
+          echo "JAVA_HOME=$env:JAVA_HOME_11_X64" >> "$GITHUB_ENV"
           
-          foreach ($varName in $varsToSync) {
-            $value = [System.Environment]::GetEnvironmentVariable($varName, 'Machine')
-            if ($value) {
-              echo "$varName=$value" >> $env:GITHUB_ENV
-              echo "Exported $varName=$value to GitHub Environment"
-            } else {
-              echo "Warning: $varName not found in local environment"
-            }
-          }
-        
       - name: Add msbuild to PATH
         uses: ilammy/msvc-dev-cmd@v1
             
       - name: Build ${{ inputs.type }}
         env:
           LY_3RDPARTY_PATH: ${{ github.workspace }}\3rdParty
+          LY_NDK_DIR: 
+          JAVA_HOME: 
         run: |
           python\python.cmd -u scripts\build\ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }} 
       
@@ -159,4 +136,3 @@ jobs:
           overwrite: true
           path: |
             ${{ github.workspace }}\cache.tar
-
