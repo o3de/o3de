@@ -94,7 +94,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
             distribution: 'corretto'
-            java-version: '17.0.13.11+LTS'
+            java-version: '17.0.13'
 
       - name: Configure environment
         continue-on-error: true
