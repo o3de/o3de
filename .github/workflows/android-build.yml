@@ -82,7 +82,12 @@ jobs:
           echo "${{ inputs.platform }}_ARTIFACT_RUNID: ${{ vars[format('{0}_ARTIFACT_RUNID', inputs.platform)] }}"
           echo "Last run id: ${{ fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id }}"
           
-          tar -xvpf ${{ github.workspace }}\cache.tar
+          tar -xvpf ${{ github.workspace }}\cache.tar `
+            python `
+            3rdParty\packages `
+            AutomatedTesting\Cache `
+            AutomatedTesting\user `
+            .ccache
           rm ${{ github.workspace }}\cache.tar
 
       - name: Git LFS pull
@@ -120,10 +125,10 @@ jobs:
         if: (contains(github.ref, 'development') || contains(github.ref, ${{ vars.STABILIZATION_BRANCH }}))
         run: |
           tar --format=posix -cvpf ${{ github.workspace }}\cache.tar `
-            .o3de\Python `
             python `
             3rdParty\packages `
-            AutomatedTesting `
+            AutomatedTesting\Cache `
+            AutomatedTesting\user `
             .ccache
   
       - name: Save artifacts

@@ -51,6 +51,11 @@ jobs:
         with:
           show-progress: false
 
+      - name: Git LFS pull
+        run: |
+          git lfs install
+          [[ "${{ inputs.type }}" == "profile" ]] && git lfs pull --include "*.ico,*.bmp" || git lfs pull
+
       - name: Setup 3p, user, and build folders
         run: |
           mkdir -p .o3de build 3rdParty && ln -sf "$(pwd)/.o3de" ~/.o3de
@@ -93,13 +98,13 @@ jobs:
           echo "${{ inputs.platform }}_ARTIFACT_RUNID: ${{ vars[format('{0}_ARTIFACT_RUNID', inputs.platform)] }}"
           echo "Last run id: ${{ fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id }}"
           
-          tar -xvpf ${{ github.workspace }}/cache.tar
+          tar -xvpf ${{ github.workspace }}/cache.tar \
+            python \
+            3rdParty/packages \
+            AutomatedTesting/Cache \
+            AutomatedTesting/user \
+            .ccache
           rm ${{ github.workspace }}/cache.tar
-
-      - name: Git LFS pull
-        run: |
-          git lfs install
-          [[ "${{ inputs.type }}" == "profile" ]] && git lfs pull --include "*.ico,*.bmp" || git lfs pull
 
       - name: Configure environment
         continue-on-error: true
@@ -133,6 +138,7 @@ jobs:
           if [ "${{ inputs.desktop }}" == "true" ]; then 
             Xvfb :0 -screen 0 1400x1050x16 &
           fi
+          scripts/o3de.sh register --this-engine
           python/python.sh -u scripts/build/ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }}
 
       - name: Compress artifacts
@@ -140,10 +146,10 @@ jobs:
         if: (contains(github.ref, 'development') || contains(github.ref, ${{ vars.STABILIZATION_BRANCH }}))
         run: |
           tar --format=posix -cvpf ${{ github.workspace }}/cache.tar \
-            .o3de/Python \
             python \
             3rdParty/packages \
-            AutomatedTesting \
+            AutomatedTesting/Cache \
+            AutomatedTesting/user \
             .ccache
   
       - name: Save artifacts

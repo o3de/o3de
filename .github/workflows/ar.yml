@@ -32,7 +32,7 @@ jobs:
             image: windows-2022
             platform: Windows
             type: profile
-            last-artifact: false
+            last-artifact: true
     
     Windows-Asset:
         needs: Windows-Profile
@@ -73,7 +73,7 @@ jobs:
             image: ubuntu-22.04
             platform: Linux
             type: profile
-            last-artifact: false
+            last-artifact: true
 
     Linux-Asset:
         needs: Linux-Profile
