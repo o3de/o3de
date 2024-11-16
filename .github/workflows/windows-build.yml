@@ -106,7 +106,7 @@ jobs:
       - name: Build ${{ inputs.type }}
         env:
           LY_3RDPARTY_PATH: ${{ github.workspace }}\3rdParty
-        run: 
+        run: |
           scripts\o3de.bat register --this-engine
           python\python.cmd -u scripts\build\ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }} 
       
