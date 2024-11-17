@@ -69,7 +69,6 @@ jobs:
           store_cache: false
           restore_cache: false
           ccache_options: |
-            max_size=10G
             cache_dir=${{ github.workspace }}/.ccache
 
       - name: Get last run
@@ -104,6 +103,11 @@ jobs:
             AutomatedTesting/user \
             .ccache
           rm ${{ github.workspace }}/cache.tar
+
+      - name: Setup cmake
+        uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: "~3.30.0"
 
       - name: Configure environment
         continue-on-error: true

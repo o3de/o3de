@@ -58,7 +58,6 @@ jobs:
           store_cache: false
           restore_cache: false
           ccache_options: |
-            max_size=10G
             cache_dir=${{ github.workspace }}\.ccache
       
       - name: Get last run
@@ -94,6 +93,11 @@ jobs:
             .ccache
           rm ${{ github.workspace }}\cache.tar
 
+      - name: Setup cmake
+        uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: "~3.30.0"
+
       - name: Configure environment
         continue-on-error: true
         env:
@@ -109,8 +113,10 @@ jobs:
           echo "JAVA_HOME=$env:JAVA_HOME_17_X64" >> $env:GITHUB_ENV
           echo "GRADLE_BUILD_HOME=$env:GRADLE_HOME" >> $env:GITHUB_ENV
           
-      - name: Add msbuild to PATH
+      - name: Set MSBuild options
         uses: ilammy/msvc-dev-cmd@v1
+        with:
+          sdk: 10.0.22621.0
             
       - name: Build ${{ inputs.type }}
         env:
