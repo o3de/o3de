@@ -104,16 +104,6 @@ jobs:
             .ccache
           rm ${{ github.workspace }}/cache.tar
 
-      # - name: Setup cmake
-      #   uses: lukka/get-cmake@latest
-      #   with:
-      #     cmakeVersion: "~3.24.0"
-
-      - name: Install LLVM and Clang
-        uses: KyleMayes/install-llvm-action@v2
-        with:
-          version: "12"
-
       - name: Configure environment
         continue-on-error: true
         run: |
@@ -124,7 +114,7 @@ jobs:
           echo "Getting python..."
           ./python/get_python.sh
           echo "Installing additional python dependancies..."
-          ./python/pip.sh install -r ./scripts/build/build_node/Platform/${{ inputs.platform }}/requirements.txt --disable-pip-version-check --no-warn-script-location
+          ./python/pip.sh install tempfile2 PyGithub
 
           # If desktop is true, install desktop and x11 packages, otherwise install base packages
           [[ "${{ inputs.desktop }}" == "true" ]] && \

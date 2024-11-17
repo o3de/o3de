@@ -93,11 +93,6 @@ jobs:
             .ccache
           rm ${{ github.workspace }}\cache.tar
 
-      # - name: Setup cmake
-      #   uses: lukka/get-cmake@latest
-      #   with:
-      #     cmakeVersion: "~3.24.0"
-
       - name: Install build components
         run: |
           # For versions update see here: https://learn.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-build-tools?view=vs-2022
