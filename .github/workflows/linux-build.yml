@@ -124,7 +124,7 @@ jobs:
           echo "Getting python..."
           ./python/get_python.sh
           echo "Installing additional python dependancies..."
-          ./python/pip.sh install -r scripts/build/build_node/Platform/${{ inputs.platform }}/requirements.txt --disable-pip-version-check --no-warn-script-location
+          ./python/pip.sh install -r ./scripts/build/build_node/Platform/${{ inputs.platform }}/requirements.txt --disable-pip-version-check --no-warn-script-location
 
           # If desktop is true, install desktop and x11 packages, otherwise install base packages
           [[ "${{ inputs.desktop }}" == "true" ]] && \

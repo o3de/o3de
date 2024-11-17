@@ -99,7 +99,6 @@ jobs:
       #   with:
       #     cmakeVersion: "~3.24.0"
 
-
       - name: Install build components
         run: |
           # For versions update see here: https://learn.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-build-tools?view=vs-2022
@@ -129,8 +128,6 @@ jobs:
           echo "Installing dependancies"
           echo "Getting python..."
           python\get_python.bat
-          echo "Installing additional python dependancies..."
-          python\pip.cmd install -r scripts\build\build_node\Platform\${{ inputs.platform }}\requirements.txt --disable-pip-version-check --no-warn-script-location       
           
       - name: Build ${{ inputs.type }}
         env:
