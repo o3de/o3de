@@ -109,6 +109,7 @@ jobs:
           "Microsoft.VisualStudio.Component.VC.14.38.17.8.x86.x64"
           "Microsoft.VisualStudio.Component.VC.14.38.17.8.CLI.Support"
           "Microsoft.VisualStudio.Component.VC.14.38.17.8.ATL"
+          "Microsoft.VisualStudio.Component.Windows11SDK.22621"
           )
           [string]$workloadArgs = $componentsToInstall | ForEach-Object {" --add " +  $_}
           $Arguments = ('/c', "vs_installer.exe", 'modify', '--installPath', "`"$InstallPath`"",$workloadArgs, '--quiet', '--norestart', '--nocache')
@@ -129,7 +130,7 @@ jobs:
           echo "Getting python..."
           python\get_python.bat
           echo "Installing additional python dependancies..."
-          python\pip.cmd install -r scripts\build_node\Platform\${{ inputs.platform }}\requirements.txt --disable-pip-version-check --no-warn-script-location       
+          python\pip.cmd install -r scripts\build\build_node\Platform\${{ inputs.platform }}\requirements.txt --disable-pip-version-check --no-warn-script-location       
           
       - name: Build ${{ inputs.type }}
         env:

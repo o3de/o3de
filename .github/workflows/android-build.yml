@@ -107,6 +107,7 @@ jobs:
           "Microsoft.VisualStudio.Component.VC.14.38.17.8.x86.x64"
           "Microsoft.VisualStudio.Component.VC.14.38.17.8.CLI.Support"
           "Microsoft.VisualStudio.Component.VC.14.38.17.8.ATL"
+          "Microsoft.VisualStudio.Component.Windows11SDK.22621"
           )
           [string]$workloadArgs = $componentsToInstall | ForEach-Object {" --add " +  $_}
           $Arguments = ('/c', "vs_installer.exe", 'modify', '--installPath', "`"$InstallPath`"",$workloadArgs, '--quiet', '--norestart', '--nocache')
@@ -123,8 +124,6 @@ jobs:
                 
       - name: Configure environment
         continue-on-error: true
-        env:
-          chocolateyPackageFolder: "C:\\ProgramData\\chocolatey"
         run: |
           echo "Installing dependancies"
           echo "Getting python..."
