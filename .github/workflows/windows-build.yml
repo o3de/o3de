@@ -58,6 +58,7 @@ jobs:
           store_cache: false
           restore_cache: false
           ccache_options: |
+            max_size=10G
             cache_dir=${{ github.workspace }}\.ccache
       
       - name: Get last run
@@ -93,21 +94,24 @@ jobs:
             .ccache
           rm ${{ github.workspace }}\cache.tar
 
-      - name: Setup cmake
-        uses: lukka/get-cmake@latest
-        with:
-          cmakeVersion: "~3.24.0"
+      # - name: Setup cmake
+      #   uses: lukka/get-cmake@latest
+      #   with:
+      #     cmakeVersion: "~3.24.0"
 
       - name: Set MSBuild options
         uses: ilammy/msvc-dev-cmd@v1
         with:
-          sdk: 10.0.20348.0
+          sdk: 10.0.22621.0
+          toolset: 19.41.34123.0
 
       - name: Configure environment
         run: |
           echo "Installing dependancies"
           echo "Getting python..."
-          python\get_python.bat       
+          python\get_python.bat
+          echo "Installing additional python dependancies..."
+          python\pip.cmd install -r scripts\build_node\Platform\${{ inputs.platform }}\requirements.txt --disable-pip-version-check --no-warn-script-location       
           
       - name: Build ${{ inputs.type }}
         env:
