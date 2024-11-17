@@ -96,18 +96,18 @@ jobs:
       - name: Setup cmake
         uses: lukka/get-cmake@latest
         with:
-          cmakeVersion: "~3.30.0"
+          cmakeVersion: "~3.24.0"
+
+      - name: Set MSBuild options
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          sdk: 10.0.20348.0
 
       - name: Configure environment
         run: |
           echo "Installing dependancies"
           echo "Getting python..."
-          python\get_python.bat
-          
-      - name: Set MSBuild options
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          sdk: 10.0.22621.0
+          python\get_python.bat       
           
       - name: Build ${{ inputs.type }}
         env:
