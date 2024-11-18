@@ -40,9 +40,8 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME ${gem_name}.Public ${PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE}
+    NAME ${gem_name}.Public STATIC
     NAMESPACE Gem
-    EXPORT_ALL_SYMBOLS
     FILES_CMAKE
         atom_feature_common_public_files.cmake
     INCLUDE_DIRECTORIES
