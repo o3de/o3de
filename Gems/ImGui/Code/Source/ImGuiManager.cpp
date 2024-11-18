@@ -93,6 +93,14 @@ namespace
         const auto& it = AZStd::find(touches.cbegin(), touches.cend(), inputChannelId);
         return it != touches.cend() ? static_cast<unsigned int>(it - touches.cbegin()) : UINT_MAX;
     }
+
+#if defined(CARBONATED)
+    bool IsAnyWindowFocusedExcludingMainMenuBar()
+    {
+        ImGuiWindow* window = ImGui::GetCurrentContext()->NavWindow;
+        return !(window && (window->Flags & ImGuiWindowFlags_MenuBar) && strcmp(window->Name, "##MainMenuBar") == 0);
+    }
+#endif
 }
 
 void ImGuiManager::Initialize()
@@ -602,6 +610,14 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
         {
             return true;
         }
+
+#if defined(CARBONATED)
+        // If we have the Discrete Input Mode Disabled but any window is focused (excluding MainMenuBar).. then consume the input here.
+        if (IsAnyWindowFocusedExcludingMainMenuBar())
+        {
+            return true;
+        }
+#endif
 
         return consumeEvent;
     }

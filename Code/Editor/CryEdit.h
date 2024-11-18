@@ -159,6 +159,10 @@ public:
     QString GetRootEnginePath() const;
     void RedirectStdoutToNull();
 
+#if defined(CARBONATED)
+    bool HasConsoleSCBInputFocus() const;
+#endif
+
     // Overrides
 public:
     virtual bool InitInstance();
