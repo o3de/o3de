@@ -60,6 +60,18 @@ jobs:
         run: |
           mkdir -p .o3de build 3rdParty && ln -sf "$(pwd)/.o3de" ~/.o3de
 
+      - name: Setup ccache
+        uses: Chocobo1/setup-ccache-action@v1
+        continue-on-error: true
+        if: always()
+        with:
+          prepend_symlinks_to_path: false
+          store_cache: false
+          restore_cache: false
+          ccache_options: |
+            max_size=15G
+            cache_dir=${{ github.workspace }}\.ccache
+
       - name: Get last run
         uses: dawidd6/action-download-artifact@v6
         id: last-run-id
@@ -93,17 +105,10 @@ jobs:
             .ccache
           rm ${{ github.workspace }}/cache.tar
 
-      - name: Setup ccache
-        uses: Chocobo1/setup-ccache-action@v1
-        continue-on-error: true
-        if: always()
+      - name: Setup cmake
+        uses: lukka/get-cmake@latest
         with:
-          prepend_symlinks_to_path: false
-          store_cache: false
-          restore_cache: false
-          ccache_options: |
-            max_size=15G
-            cache_dir=${{ github.workspace }}\.ccache
+          cmakeVersion: "~3.30.0"
 
       - name: Configure environment
         continue-on-error: true

@@ -47,6 +47,19 @@ jobs:
         run: |
           "3rdParty", "build", ".o3de" | % {New-Item "${{ github.workspace }}\$_" -ItemType 'Directory' -Force}
           ".o3de" | % {New-Item -Path $env:USERPROFILE\$_ -ItemType SymbolicLink -Target ${{ github.workspace }}\$_ -Force}
+
+      - name: Setup ccache
+        uses: Chocobo1/setup-ccache-action@v1
+        continue-on-error: true
+        if: always()
+        with:
+          windows_compile_environment: msvc
+          prepend_symlinks_to_path: false
+          store_cache: false
+          restore_cache: false
+          ccache_options: |
+            max_size=15G
+            cache_dir=${{ github.workspace }}\.ccache
       
       - name: Get last run
         uses: dawidd6/action-download-artifact@v6
@@ -81,19 +94,6 @@ jobs:
             .ccache
           rm ${{ github.workspace }}\cache.tar
 
-      - name: Setup ccache
-        uses: Chocobo1/setup-ccache-action@v1
-        continue-on-error: true
-        if: always()
-        with:
-          windows_compile_environment: msvc
-          prepend_symlinks_to_path: false
-          store_cache: false
-          restore_cache: false
-          ccache_options: |
-            max_size=15G
-            cache_dir=${{ github.workspace }}\.ccache
-
       - name: Setup cmake
         uses: lukka/get-cmake@latest
         with:
@@ -108,6 +108,10 @@ jobs:
           "Microsoft.VisualStudio.Component.Windows11SDK.26100"
           )
           [string]$workloadArgs = $componentsToRemove | ForEach-Object {" --remove " +  $_}
+          $Arguments = ('/c', "vs_installer.exe", 'modify', '--installPath', "`"$InstallPath`"",$workloadArgs, '--quiet', '--norestart', '--nocache')
+          # should be run twice
+          $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
+          $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
           
           $componentsToInstall= @(
           "Microsoft.VisualStudio.Component.VC.14.42.17.12.x86.x64"
@@ -120,7 +124,6 @@ jobs:
           # should be run twice
           $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
           $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
-        shell: powershell
 
       - name: Set MSBuild options
         uses: ilammy/msvc-dev-cmd@v1
