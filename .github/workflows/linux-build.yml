@@ -59,17 +59,6 @@ jobs:
       - name: Setup 3p, user, and build folders
         run: |
           mkdir -p .o3de build 3rdParty && ln -sf "$(pwd)/.o3de" ~/.o3de
-          
-      - name: Setup ccache
-        uses: Chocobo1/setup-ccache-action@v1
-        continue-on-error: true
-        if: always()
-        with:
-          prepend_symlinks_to_path: false
-          store_cache: false
-          restore_cache: false
-          ccache_options: |
-            cache_dir=${{ github.workspace }}/.ccache
 
       - name: Get last run
         uses: dawidd6/action-download-artifact@v6
@@ -103,6 +92,18 @@ jobs:
             AutomatedTesting/user \
             .ccache
           rm ${{ github.workspace }}/cache.tar
+
+      - name: Setup ccache
+        uses: Chocobo1/setup-ccache-action@v1
+        continue-on-error: true
+        if: always()
+        with:
+          prepend_symlinks_to_path: false
+          store_cache: false
+          restore_cache: false
+          ccache_options: |
+            max_size=15G
+            cache_dir=${{ github.workspace }}\.ccache
 
       - name: Configure environment
         continue-on-error: true

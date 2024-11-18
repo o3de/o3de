@@ -100,7 +100,7 @@ jobs:
     Android-Profile:
         uses: ./.github/workflows/android-build.yml
         with:
-            compiler: msvc
+            compiler: clang
             config: profile
             image: windows-2022
             platform: Android

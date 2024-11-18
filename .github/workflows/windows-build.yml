@@ -47,19 +47,6 @@ jobs:
         run: |
           "3rdParty", "build", ".o3de" | % {New-Item "${{ github.workspace }}\$_" -ItemType 'Directory' -Force}
           ".o3de" | % {New-Item -Path $env:USERPROFILE\$_ -ItemType SymbolicLink -Target ${{ github.workspace }}\$_ -Force}
-
-      - name: Setup ccache
-        uses: Chocobo1/setup-ccache-action@v1
-        continue-on-error: true
-        if: always()
-        with:
-          windows_compile_environment: msvc
-          prepend_symlinks_to_path: false
-          store_cache: false
-          restore_cache: false
-          ccache_options: |
-            max_size=10G
-            cache_dir=${{ github.workspace }}\.ccache
       
       - name: Get last run
         uses: dawidd6/action-download-artifact@v6
@@ -94,15 +81,38 @@ jobs:
             .ccache
           rm ${{ github.workspace }}\cache.tar
 
+      - name: Setup ccache
+        uses: Chocobo1/setup-ccache-action@v1
+        continue-on-error: true
+        if: always()
+        with:
+          windows_compile_environment: msvc
+          prepend_symlinks_to_path: false
+          store_cache: false
+          restore_cache: false
+          ccache_options: |
+            max_size=15G
+            cache_dir=${{ github.workspace }}\.ccache
+
+      - name: Setup cmake
+        uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: "~3.30.0"
+
       - name: Install build components
         run: |
           # For versions update see here: https://learn.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-build-tools?view=vs-2022
           Set-Location "C:\Program Files (x86)\Microsoft Visual Studio\Installer\"
           $InstallPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise"
+          $componentsToRemove= @(
+          "Microsoft.VisualStudio.Component.Windows11SDK.26100"
+          )
+          [string]$workloadArgs = $componentsToRemove | ForEach-Object {" --remove " +  $_}
+          
           $componentsToInstall= @(
-          "Microsoft.VisualStudio.Component.VC.14.38.17.8.x86.x64"
-          "Microsoft.VisualStudio.Component.VC.14.38.17.8.CLI.Support"
-          "Microsoft.VisualStudio.Component.VC.14.38.17.8.ATL"
+          "Microsoft.VisualStudio.Component.VC.14.42.17.12.x86.x64"
+          "Microsoft.VisualStudio.Component.VC.14.42.17.12.CLI.Support"
+          "Microsoft.VisualStudio.Component.VC.14.42.17.12.ATL"
           "Microsoft.VisualStudio.Component.Windows11SDK.22621"
           )
           [string]$workloadArgs = $componentsToInstall | ForEach-Object {" --add " +  $_}
@@ -116,7 +126,7 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
         with:
           sdk: 10.0.22621.0
-          toolset: 14.38.17.8
+          toolset: 14.42.17.12
 
       - name: Configure environment
         run: |
