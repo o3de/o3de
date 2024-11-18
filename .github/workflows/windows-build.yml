@@ -135,7 +135,6 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
         with:
           sdk: 10.0.22621.0
-          toolset: 14.42.17.12
 
       - name: Configure environment
         run: |
