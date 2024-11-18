@@ -24,6 +24,9 @@
 
 namespace AZ::Render
 {
+    constexpr float MinViewPortWidth = 1280.f;
+    constexpr float MinViewPortHeight = 720.f;
+
     void StarsFeatureProcessor::Reflect(ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
@@ -65,8 +68,9 @@ namespace AZ::Render
             m_viewportSize = viewportContext->GetViewportSize();
             RPI::ViewportContextIdNotificationBus::Handler::BusConnect(viewportContext->GetId());
         }
-        else{
-            m_viewportSize = AzFramework::WindowSize(1280, 720);
+        else
+        {
+            m_viewportSize = AzFramework::WindowSize(MinViewPortWidth, MinViewPortHeight);
         }
         EnableSceneNotification();
 
@@ -99,9 +103,8 @@ namespace AZ::Render
     {
         const float width = static_cast<float>(m_viewportSize.m_width);
         const float height = static_cast<float>(m_viewportSize.m_height);
-        constexpr float minWidth = 1280.f;
-        constexpr float minHeight = 720.f;
-        const float size = m_radiusFactor * AZStd::min<float>(1.f, AZStd::min<float>(width / minWidth, height / minHeight));
+
+        const float size = m_radiusFactor * AZStd::min<float>(1.f, AZStd::min<float>(width / MinViewPortWidth, height / MinViewPortHeight));
 
         m_shaderConstants.m_scaleX = size / width;
         m_shaderConstants.m_scaleY = size / height;
