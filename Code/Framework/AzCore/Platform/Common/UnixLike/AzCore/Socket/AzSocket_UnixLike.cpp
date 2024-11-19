@@ -294,7 +294,7 @@ namespace AZ::AzSock
         return HandleSocketError(::select(sock + 1, readfdsock, writefdsock, exceptfdsock, timeout));
     }
 
-#if defined(CARBONATED) && AZ_TRAIT_USE_POLL_INSTEAD_SELECT_FOR_SOCKET_POLLING
+#if defined(CARBONATED) && AZ_TRAIT_SOCKETS_USE_POLL
     AZ::s32 Poll(AZPOLLFD* pFDs, AZ::s32 countFDs, AZ::s32 timeoutMs)
     {
         return ::poll(pFDs, countFDs, timeoutMs);
@@ -303,7 +303,7 @@ namespace AZ::AzSock
 
     AZ::s32 IsRecvPending(AZSOCKET sock, AZTIMEVAL* timeout)
     {
-#if defined(CARBONATED) && AZ_TRAIT_USE_POLL_INSTEAD_SELECT_FOR_SOCKET_POLLING
+#if defined(CARBONATED) && AZ_TRAIT_SOCKETS_USE_POLL
         // Use poll() instead select() to allow the sockets with descriptor values >= FD_SETSIZE
         AZPOLLFD fdPollData;
         fdPollData.fd = sock;
@@ -332,7 +332,7 @@ namespace AZ::AzSock
 
     AZ::s32 WaitForWritableSocket(AZSOCKET sock, AZTIMEVAL* timeout)
     {
-#if defined(CARBONATED) && AZ_TRAIT_USE_POLL_INSTEAD_SELECT_FOR_SOCKET_POLLING
+#if defined(CARBONATED) && AZ_TRAIT_SOCKETS_USE_POLL
         // Use poll() instead select() to allow the sockets with descriptor values >= FD_SETSIZE
         AZPOLLFD fdPollData;
         fdPollData.fd = sock;

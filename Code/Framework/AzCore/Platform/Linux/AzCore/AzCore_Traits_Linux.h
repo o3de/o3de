@@ -137,5 +137,5 @@
 
 #if defined (CARBONATED)
 // Carbonated traits ...
-#define AZ_TRAIT_USE_POLL_INSTEAD_SELECT_FOR_SOCKET_POLLING 0
+#define AZ_TRAIT_SOCKETS_USE_POLL 0
 #endif

@@ -13,7 +13,7 @@
 #include <netinet/tcp.h>
 #include <fcntl.h>
 
-#if defined(CARBONATED) && AZ_TRAIT_USE_POLL_INSTEAD_SELECT_FOR_SOCKET_POLLING
+#if defined(CARBONATED) && AZ_TRAIT_SOCKETS_USE_POLL
 #include <sys/poll.h>
 typedef pollfd AZPOLLFD;
 #endif
