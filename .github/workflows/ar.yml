@@ -120,7 +120,7 @@ jobs:
     Android-Gradle:
         uses: ./.github/workflows/android-build.yml
         with:
-            compiler: msvc
+            compiler: clang
             config: gradle
             image: windows-2022
             platform: Android

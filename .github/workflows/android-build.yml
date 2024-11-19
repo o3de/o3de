@@ -94,48 +94,9 @@ jobs:
             .ccache `
             build
           rm ${{ github.workspace }}\cache.tar
-
-      - name: Setup cmake
-        uses: lukka/get-cmake@latest
-        with:
-          cmakeVersion: "~3.30.0"
-
-      - name: Remove build components
-        run: |
-          # For versions update see here: https://learn.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-build-tools?view=vs-2022
-          Set-Location "C:\Program Files (x86)\Microsoft Visual Studio\Installer\"
-          $InstallPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise"
-          $componentsToRemove= @(
-          "Microsoft.VisualStudio.Component.Windows11SDK.26100"
-          )
-          [string]$workloadArgs = $componentsToRemove | ForEach-Object {" --remove " +  $_}
-          $Arguments = ('/c', "vs_installer.exe", 'modify', '--installPath', "`"$InstallPath`"",$workloadArgs, '--quiet', '--norestart', '--nocache')
-          # should be run twice
-          $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
-          $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
-  
-      - name: Install build components
-        run: |
-          # For versions update see here: https://learn.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-build-tools?view=vs-2022
-          Set-Location "C:\Program Files (x86)\Microsoft Visual Studio\Installer\"
-          $InstallPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise"
-          
-          $componentsToInstall= @(
-          "Microsoft.VisualStudio.Component.VC.14.42.17.12.x86.x64"
-          "Microsoft.VisualStudio.Component.VC.14.42.17.12.CLI.Support"
-          "Microsoft.VisualStudio.Component.VC.14.42.17.12.ATL"
-          "Microsoft.VisualStudio.Component.Windows11SDK.22621"
-          )
-          [string]$workloadArgs = $componentsToInstall | ForEach-Object {" --add " +  $_}
-          $Arguments = ('/c', "vs_installer.exe", 'modify', '--installPath', "`"$InstallPath`"",$workloadArgs, '--quiet', '--norestart', '--nocache')
-          # should be run twice
-          $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
-          $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
   
       - name: Set MSBuild options
         uses: ilammy/msvc-dev-cmd@v1
-        with:
-          sdk: 10.0.22621.0
                 
       - name: Configure environment
         continue-on-error: true
@@ -152,6 +113,10 @@ jobs:
           
       - name: Build ${{ inputs.type }}
         env:
+          CC:  ${{ inputs.compiler == 'gcc' && 'gcc' || 'clang'   }}
+          CXX: ${{ inputs.compiler == 'gcc' && 'g++' || 'clang++' }}
+          CMAKE_C_COMPILER_LAUNCHER: ccache
+          CMAKE_CXX_COMPILER_LAUNCHER: ccache
           LY_3RDPARTY_PATH: ${{ github.workspace }}\3rdParty
         run: |
           scripts\o3de.bat register --this-engine

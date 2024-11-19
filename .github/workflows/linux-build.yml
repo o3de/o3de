@@ -105,11 +105,6 @@ jobs:
             .ccache
           rm ${{ github.workspace }}/cache.tar
 
-      - name: Setup cmake
-        uses: lukka/get-cmake@latest
-        with:
-          cmakeVersion: "~3.30.0"
-
       - name: Configure environment
         continue-on-error: true
         run: |
@@ -144,7 +139,6 @@ jobs:
           if [ "${{ inputs.desktop }}" == "true" ]; then 
             Xvfb :0 -screen 0 1400x1050x16 &
           fi
-          scripts/o3de.sh register --this-engine
           python/python.sh -u scripts/build/ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }}
 
       - name: Compress artifacts
