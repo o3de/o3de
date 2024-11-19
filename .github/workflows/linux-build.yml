@@ -105,6 +105,11 @@ jobs:
             .ccache
           rm ${{ github.workspace }}/cache.tar
 
+      - name: Setup cmake
+        uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: "~3.30.0"
+
       - name: Configure environment
         continue-on-error: true
         run: |
