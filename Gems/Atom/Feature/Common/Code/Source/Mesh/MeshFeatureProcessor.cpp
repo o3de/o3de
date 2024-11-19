@@ -893,6 +893,13 @@ namespace AZ
                             continue;
                         }
 
+#if defined (CARBONATED)
+                        if (!modelHandle.m_model)
+                        {
+                            continue; // model not loaded yet
+                        }
+#endif
+
                         if (!r_meshInstancingEnabled)
                         {
                             for (RPI::MeshDrawPacketList& drawPacketList : modelHandle.m_drawPacketListsByLod)
