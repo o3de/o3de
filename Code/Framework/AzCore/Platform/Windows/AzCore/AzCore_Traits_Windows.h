@@ -123,3 +123,8 @@
 #define AZ_TRAIT_LEGACY_CRYPAK_UNIX_LIKE_FILE_SYSTEM 0
 #define AZ_TRAIT_LEGACY_CRYSYSTEM_DEFINE_DLLMAIN 1
 
+#if defined (CARBONATED)
+// Carbonated traits ...
+// Note: before we could enable this trait we need to implement polling via WSAPoll
+#define AZ_TRAIT_SOCKETS_USE_POLL 0
+#endif
