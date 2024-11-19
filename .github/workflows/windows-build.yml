@@ -141,6 +141,8 @@ jobs:
           echo "Installing dependancies"
           echo "Getting python..."
           python\get_python.bat
+          echo "Installing additional python dependancies..."
+          python\pip.sh install tempfile2 PyGithub
           
       - name: Build ${{ inputs.type }}
         env:

@@ -39,7 +39,7 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@v10
         with:
-          root-reserve-mb: 8000
+          root-reserve-mb: 6000
           swap-size-mb: 200
           remove-dotnet: true
           remove-haskell: true
@@ -70,7 +70,7 @@ jobs:
           restore_cache: false
           ccache_options: |
             max_size=15G
-            cache_dir=${{ github.workspace }}\.ccache
+            cache_dir=${{ github.workspace }}/.ccache
 
       - name: Get last run
         uses: dawidd6/action-download-artifact@v6

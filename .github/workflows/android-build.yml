@@ -91,7 +91,8 @@ jobs:
             3rdParty/packages `
             AutomatedTesting/Cache `
             AutomatedTesting/user `
-            .ccache
+            .ccache `
+            build
           rm ${{ github.workspace }}\cache.tar
 
       - name: Setup cmake
@@ -165,7 +166,7 @@ jobs:
             3rdParty\packages `
             AutomatedTesting\Cache `
             AutomatedTesting\user `
-            build
+            build `
             .ccache
   
       - name: Save artifacts
