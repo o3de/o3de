@@ -68,6 +68,10 @@ namespace AZ
             "This is helpful for simulating the worst case scenario for instancing for profiling performance.");
 
         struct MeshInstanceGroupData;
+
+        // ModelDataInstanceInterface provides an interface to ModelDataInstance
+        // It provides information about an instance of a model in the scene
+        // The class can be accessed through MeshHandles from the MeshFeatureProcessor
         class ModelDataInstanceInterface
         {
             friend class MeshFeatureProcessor;
