@@ -294,7 +294,7 @@ namespace AZ::AzSock
         return HandleSocketError(::select(sock + 1, readfdsock, writefdsock, exceptfdsock, timeout));
     }
 
-#if defined(CARBONATED) && AZ_TRAIT_SOCKETS_USE_POLL
+#if defined(CARBONATED) && defined(AZ_PLATFORM_ANDROID)
     AZ::s32 Poll(AZPOLLFD* pFDs, AZ::s32 countFDs, AZ::s32 timeoutMs)
     {
         return ::poll(pFDs, countFDs, timeoutMs);
@@ -303,8 +303,8 @@ namespace AZ::AzSock
 
     AZ::s32 IsRecvPending(AZSOCKET sock, AZTIMEVAL* timeout)
     {
-#if defined(CARBONATED) && AZ_TRAIT_SOCKETS_USE_POLL
-        // Use poll() instead select() to allow the sockets with descriptor values >= FD_SETSIZE
+#if defined(CARBONATED) && defined(AZ_PLATFORM_ANDROID)
+        // Use poll() instead select() for Android to allow the sockets with descriptor values >= FD_SETSIZE
         AZPOLLFD fdPollData;
         fdPollData.fd = sock;
         fdPollData.events = POLLIN;
@@ -332,8 +332,8 @@ namespace AZ::AzSock
 
     AZ::s32 WaitForWritableSocket(AZSOCKET sock, AZTIMEVAL* timeout)
     {
-#if defined(CARBONATED) && AZ_TRAIT_SOCKETS_USE_POLL
-        // Use poll() instead select() to allow the sockets with descriptor values >= FD_SETSIZE
+#if defined(CARBONATED) && defined(AZ_PLATFORM_ANDROID)
+        // Use poll() instead select() for Android to allow the sockets with descriptor values >= FD_SETSIZE
         AZPOLLFD fdPollData;
         fdPollData.fd = sock;
         fdPollData.events = POLLOUT;
