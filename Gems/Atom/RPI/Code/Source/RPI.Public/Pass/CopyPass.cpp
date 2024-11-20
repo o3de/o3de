@@ -205,11 +205,22 @@ namespace AZ
         {
             if (m_copyMode == CopyMode::SameDevice)
             {
+                if (IsTimestampQueryEnabled())
+                {
+                    m_queryEntries[AZStd::to_underlying(CopyIndex::SameDevice)].m_timestampResult = AZ::RPI::TimestampResult();
+                }
+
                 params.m_frameGraphBuilder->ImportScopeProducer(*m_copyScopeProducerSameDevice);
                 ReadbackScopeQueryResults(CopyIndex::SameDevice);
             }
             else if (m_copyMode == CopyMode::DifferentDevicesIntermediateHost)
             {
+                if (IsTimestampQueryEnabled())
+                {
+                    m_queryEntries[AZStd::to_underlying(CopyIndex::DeviceToHost)].m_timestampResult = AZ::RPI::TimestampResult();
+                    m_queryEntries[AZStd::to_underlying(CopyIndex::HostToDevice)].m_timestampResult = AZ::RPI::TimestampResult();
+                }
+
                 params.m_frameGraphBuilder->ImportScopeProducer(*m_copyScopeProducerDeviceToHost);
                 params.m_frameGraphBuilder->ImportScopeProducer(*m_copyScopeProducerHostToDevice);
                 m_currentBufferIndex = (m_currentBufferIndex + 1) % MaxFrames;
