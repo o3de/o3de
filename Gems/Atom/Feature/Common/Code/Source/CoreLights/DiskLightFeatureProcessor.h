@@ -67,8 +67,8 @@ namespace AZ
             void SetDiskData(LightHandle handle, const DiskLightData& data) override;
             const DiskLightData& GetDiskData(LightHandle handle) const override;
 
-            const Data::Instance<RPI::Buffer> GetLightBuffer()const;
-            uint32_t GetLightCount()const;
+            const Data::Instance<RPI::Buffer> GetLightBuffer() const override;
+            uint32_t GetLightCount() const override;
 
         private:
 

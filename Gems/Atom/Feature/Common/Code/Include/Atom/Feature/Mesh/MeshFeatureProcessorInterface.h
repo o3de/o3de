@@ -67,7 +67,54 @@ namespace AZ
             "Enable instanced draw calls in the MeshFeatureProcessor, but force one object per draw call. "
             "This is helpful for simulating the worst case scenario for instancing for profiling performance.");
 
-        class ModelDataInstance;
+        struct MeshInstanceGroupData;
+
+        // ModelDataInstanceInterface provides an interface to ModelDataInstance
+        // It provides information about an instance of a model in the scene
+        // The class can be accessed through MeshHandles from the MeshFeatureProcessor
+        class ModelDataInstanceInterface
+        {
+            friend class MeshFeatureProcessor;
+            friend class MeshLoader;
+
+        public:
+            AZ_RTTI(AZ::Render::ModelDataInstanceInterface, "{0B990760-AB5C-4357-A983-AD066EC9AC2E}");
+            virtual ~ModelDataInstanceInterface() = default;
+
+            virtual const Data::Instance<RPI::Model>& GetModel() = 0;
+            virtual const RPI::Cullable& GetCullable() = 0;
+
+            virtual const uint32_t GetLightingChannelMask() = 0;
+
+            using InstanceGroupHandle = StableDynamicArrayWeakHandle<MeshInstanceGroupData>;
+
+            //! PostCullingInstanceData represents the data the MeshFeatureProcessor needs after culling
+            //! in order to generate instanced draw calls
+            struct PostCullingInstanceData
+            {
+                InstanceGroupHandle m_instanceGroupHandle;
+                uint32_t m_instanceGroupPageIndex;
+                TransformServiceFeatureProcessorInterface::ObjectId m_objectId;
+            };
+
+            using PostCullingInstanceDataList = AZStd::vector<PostCullingInstanceData>;
+            virtual const bool IsSkinnedMesh() = 0;
+            virtual const AZ::Uuid& GetRayTracingUuid() const = 0;
+
+            //! Internally called when a DrawPacket used by this ModelDataInstance was updated.
+            virtual void HandleDrawPacketUpdate(RPI::MeshDrawPacket& meshDrawPacket) = 0;
+
+            //! Event that let's us know whenever one of the MeshDrawPackets has been updated.
+            //! This event can occur on multiple threads.
+            //! Provides the ModelDataInstance parent object that owns the MeshDrawPacket.
+            using MeshDrawPacketUpdatedEvent = Event<const ModelDataInstanceInterface&, const AZ::RPI::MeshDrawPacket&>;
+            //! Connects @handler to the MeshDrawPacketUpdatedEvent.
+            //! One of the most common reasons a MeshDrawPacket gets updated is
+            //! when a RenderPipeline is instantiated at runtime and it happens to contain
+            //! a RasterPass with a DrawListTag that matches one of the Shaders of one of the Materials in
+            //! a Mesh.
+            virtual void ConnectMeshDrawPacketUpdatedHandler(MeshDrawPacketUpdatedEvent::Handler& handler) = 0;
+        };
 
         //! Mesh feature processor data types for customizing model materials
         using CustomMaterialLodIndex = AZ::u64;
@@ -141,7 +188,7 @@ namespace AZ
         public:
             AZ_RTTI(AZ::Render::MeshFeatureProcessorInterface, "{975D7F0C-2E7E-4819-94D0-D3C4E2024721}", AZ::RPI::FeatureProcessor);
 
-            using MeshHandle = StableDynamicArrayHandle<ModelDataInstance>;
+            using MeshHandle = StableDynamicArrayHandle<ModelDataInstanceInterface>;
 
             //! Returns the object id for a mesh handle.
             virtual TransformServiceFeatureProcessorInterface::ObjectId GetObjectId(const MeshHandle& meshHandle) const = 0;
