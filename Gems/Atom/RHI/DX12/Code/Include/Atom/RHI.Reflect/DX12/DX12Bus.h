@@ -14,7 +14,7 @@
 
 namespace AZ::DX12
 {
-    //! Ebus for collecting requirements external handle requirements for creating memory/semaphores
+    //! Ebus for collecting external handle requirements for creating memory/semaphores
     class DX12RequirementsRequest : public AZ::EBusTraits
     {
     public:

@@ -13,7 +13,7 @@
 namespace AZ::RHI
 {
     class Device;
-    //! Ebus for collecting requirements for creating a PhysicalDevice.
+    //! Ebus to collect requirements for creating a PhysicalDevice.
     class RHIRequirementsRequest : public AZ::EBusTraits
     {
     public:

@@ -23,14 +23,15 @@ namespace AZ
         static size_t CalculateHeapAlignment(D3D12_HEAP_FLAGS heapFlags)
         {
             /**
-            * Heap alignment is the alignment of the actual heap we are allocating, not the base alignment of
-            * of sub-allocations from the heap. That is confusing in the D3D12 docs. The heap itself is
-            * required to be 4MB aligned if it holds MSAA textures. Therefore, this simple metric just
-            * forces 4MB alignment of the heap for all textures, because our chances of having an MSAA target
-            * across the whole frame is high, and the amount of internal fragmentation is low relative to the full
-            * heap size.
-            */
-           auto maskedFlags = heapFlags & ~(D3D12_HEAP_FLAG_SHARED);
+             * Heap alignment is the alignment of the actual heap we are allocating, not the base alignment of
+             * of sub-allocations from the heap. That is confusing in the D3D12 docs. The heap itself is
+             * required to be 4MB aligned if it holds MSAA textures. Therefore, this simple metric just
+             * forces 4MB alignment of the heap for all textures, because our chances of having an MSAA target
+             * across the whole frame is high, and the amount of internal fragmentation is low relative to the full
+             * heap size.
+             * To simply test the flags for equality, we mask the D3D12_HEAP_FLAG_SHARED prior to testing.
+             */
+            auto maskedFlags = heapFlags & ~(D3D12_HEAP_FLAG_SHARED);
             if (D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES == maskedFlags ||
                 D3D12_HEAP_FLAG_ALLOW_ONLY_RT_DS_TEXTURES == maskedFlags ||
                 D3D12_HEAP_FLAG_ALLOW_ONLY_NON_RT_DS_TEXTURES == maskedFlags)
