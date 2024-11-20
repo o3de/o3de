@@ -10,7 +10,7 @@
 #include <Material/UseTextureFunctor.h>
 #include <Material/SubsurfaceTransmissionParameterFunctor.h>
 #include <Material/Transform2DFunctor.h>
-#include <Material/ConvertEmissiveUnitFunctor.h>
+#include <Atom/Feature/Material/ConvertEmissiveUnitFunctor.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>

@@ -41,6 +41,7 @@ set(FILES
     Include/Atom/Feature/ImGui/SystemBus.h
     Include/Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessorInterface.h
     Include/Atom/Feature/LightingChannel/LightingChannelConfiguration.h
+    Include/Atom/Feature/Material/ConvertEmissiveUnitFunctor.h
     Include/Atom/Feature/Mesh/MeshCommon.h
     Include/Atom/Feature/Mesh/MeshFeatureProcessorInterface.h
     Include/Atom/Feature/Mesh/ModelReloaderSystemInterface.h
@@ -146,6 +147,7 @@ set(FILES
     Source/DisplayMapper/DisplayMapperConfigurationDescriptor.cpp
     Source/LightingChannel/LightingChannelConfiguration.cpp
     Source/MorphTargets/MorphTargetInputBuffers.cpp
+    Source/Material/ConvertEmissiveUnitFunctor.cpp
     Source/RayTracing/RayTracingPass.cpp
     Source/SkinnedMesh/SkinnedMeshInputBuffers.cpp
     Source/SkinnedMesh/SkinnedMeshInstance.cpp
