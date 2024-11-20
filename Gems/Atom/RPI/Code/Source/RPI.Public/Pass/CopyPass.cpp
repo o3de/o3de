@@ -640,7 +640,6 @@ namespace AZ
             // Destination Buffer
             PassAttachmentBinding& copyDest = GetOutputBinding(0);
             copyDesc.m_destinationBuffer = context.GetBuffer(copyDest.GetAttachment()->GetAttachmentId());
-            copyDesc.m_destinationBuffer = context.GetBuffer(copyDest.GetAttachment()->GetAttachmentId());
             copyDesc.m_destinationOffset = m_data.m_bufferDestinationOffset;
 
             m_copyItemSameDevice = copyDesc;
