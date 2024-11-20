@@ -57,6 +57,8 @@ namespace AZ
 
                     editContext->Class<DirectionalLightComponentConfig>("DirectionalLightComponentConfig", "")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
+                        ->DataElement(Edit::UIHandlers::CheckBox, &DirectionalLightComponentConfig::m_isVisible, "Visible", "Controls whether this light is visible.")
+
                         ->DataElement(Edit::UIHandlers::Color, &DirectionalLightComponentConfig::m_color, "Color", "Color of the light")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute("ColorEditorConfiguration", AZ::RPI::ColorUtils::GetLinearRgbEditorConfig())
