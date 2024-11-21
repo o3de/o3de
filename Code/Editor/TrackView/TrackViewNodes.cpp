@@ -653,6 +653,10 @@ void CTrackViewNodesCtrl::UpdateAnimNodeRecord(CRecord* record, CTrackViewAnimNo
             // In case of a missing entity, color it red.
             record->setForeground(0, TextColorForMissingEntity);
         }
+        else
+        {
+            record->setData(0, Qt::ForegroundRole, QPalette::ColorRole::NoRole);
+        }
     }
 
     // Mark the active director and other directors properly.
