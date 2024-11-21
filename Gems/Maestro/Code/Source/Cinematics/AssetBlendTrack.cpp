@@ -314,13 +314,13 @@ void CAssetBlendTrack::SetKeysAtTime(float time, const Maestro::AssetBlends<AZ::
     m_currKey = 0;
     m_fMinKeyValue = 0;
     m_fMaxKeyValue = 0;
-    const auto size = m_keys.size();
-    for (size_t i = 0; i < size; ++i)
+    const auto keysCount = m_keys.size();
+    for (size_t i = 0; i < keysCount; ++i)
     {
         auto& key = m_keys[i];
         // Try to restore values for ITimeRangeKey - not all values can be restored, information on duration and looping is missing
         key.m_startTime = key.time;
-        if (size > 1 && i < size - 1) // not the last key ?
+        if (keysCount > 1 && i < keysCount - 1) // not the last key ?
         {
             key.m_duration = m_keys[i + 1].time - key.time; // prolong to the next key
         }
@@ -335,10 +335,10 @@ void CAssetBlendTrack::SetKeysAtTime(float time, const Maestro::AssetBlends<AZ::
         // Accumulate values for TAnimTrack<AZ::IAssetBlendKey>
         m_fMinKeyValue = (key.time < m_fMinKeyValue) ? key.time : m_fMinKeyValue;
         m_fMaxKeyValue = (key.time > m_fMaxKeyValue) ? key.time : m_fMaxKeyValue;
-        key.m_bLoop = i < size - 1 && key.m_endTime < m_keys[i + 1].m_startTime;
+        key.m_bLoop = i < keysCount - 1 && key.m_endTime < m_keys[i + 1].m_startTime;
     }
     // TAnimTrack<AZ::IAssetBlendKey>
-    if (m_keys.empty())
+    if (keysCount == 0)
     {
         m_timeRange.start = 0.f;
         m_timeRange.end = 0.f;
