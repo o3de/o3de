@@ -70,7 +70,7 @@ namespace AZ::Render
         }
         else
         {
-            m_viewportSize = AzFramework::WindowSize(MinViewPortWidth, MinViewPortHeight);
+            m_viewportSize = AzFramework::WindowSize(static_cast<uint32_t>(MinViewPortWidth), static_cast<uint32_t>(MinViewPortHeight));
         }
         EnableSceneNotification();
 
