@@ -10,6 +10,8 @@
 
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/ReflectContext.h>
+#include <AzCore/Serialization/Json/ByteStreamSerializer.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
@@ -45,6 +47,10 @@ namespace AZ
                     ->Value("Indirect", CommonBufferPoolType::Indirect)
                     ->Value("Invalid", CommonBufferPoolType::Invalid)
                     ;
+            }
+            if (JsonRegistrationContext* jsonContext = azrtti_cast<JsonRegistrationContext*>(context))
+            {
+                jsonContext->Serializer<JsonByteStreamSerializer<Allocator>>()->HandlesType<AZStd::vector<uint8_t, Allocator>>();
             }
         }
 
