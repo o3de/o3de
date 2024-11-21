@@ -113,7 +113,6 @@ CAnimationContext::CAnimationContext()
     GetIEditor()->GetUndoManager()->AddListener(this);
     GetIEditor()->GetSequenceManager()->AddListener(this);
     GetIEditor()->RegisterNotifyListener(this);
-
     AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
 }
 
@@ -121,7 +120,6 @@ CAnimationContext::CAnimationContext()
 CAnimationContext::~CAnimationContext()
 {
     AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
-
     GetIEditor()->GetSequenceManager()->RemoveListener(this);
     GetIEditor()->GetUndoManager()->RemoveListener(this);
     GetIEditor()->UnregisterNotifyListener(this);
