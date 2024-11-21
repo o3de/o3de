@@ -22,6 +22,13 @@ namespace AZ
 {
     namespace DX12
     {
+        //! It is important to note that the usage of these functions requires care from the user.
+        //! This includes:
+        //! - Synchronizing with the renderer by waiting on a fence from the FrameGraph before
+        //!   starting execution as well as signaling the FrameGraph to continue execution
+        //! - Leaving the GPU in a valid state
+        //! - Returning resources in a valid state
+
         //! Provide access to native device handles
         ID3D12Device5* GetDeviceNativeHandle(RHI::Device& device);
         IDXGIAdapter3* GetPhysicalDeviceNativeHandle(const RHI::PhysicalDevice& device);
