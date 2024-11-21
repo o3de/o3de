@@ -251,7 +251,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
     output.m_specularColor = lightingOutput.m_specularColor;
     output.m_specularF0 = lightingOutput.m_specularF0;
     output.m_albedo = lightingOutput.m_albedo;
-    output.m_normal = lightingOutput.m_normal;
+    output.m_normal.xyz = lightingOutput.m_normal.xyz;
 
     return output;
 }
