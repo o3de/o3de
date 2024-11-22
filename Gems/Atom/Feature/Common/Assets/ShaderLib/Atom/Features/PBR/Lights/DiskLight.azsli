@@ -15,12 +15,8 @@
 #endif
 
 #if ENABLE_DISK_LIGHTS
-enum DiskLightFlag
-{
-    UseConeAngle = 1,
-};
 
-void ApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout LightingData lightingData)
+void ApplyDiskLight(DiskLight light, Surface surface, inout LightingData lightingData)
 {
     float3 posToLight = light.m_position - surface.position;
     float distanceToLight2 = dot(posToLight, posToLight); // light distance squared
@@ -169,7 +165,7 @@ void ApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout LightingDat
     }
 }
 
-float3 SampleDisk(float2 randomPoint, ViewSrg::DiskLight light)
+float3 SampleDisk(float2 randomPoint, DiskLight light)
 {
     // Uniformly distributed point at light surface
     float distanceFromCenter = sqrt(randomPoint.x) * light.m_diskRadius;
@@ -196,7 +192,7 @@ float3 SampleDisk(float2 randomPoint, ViewSrg::DiskLight light)
     return outPoint;
 }
 
-void ValidateDiskLight(ViewSrg::DiskLight light, Surface surface, inout LightingData lightingData)
+void ValidateDiskLight(DiskLight light, Surface surface, inout LightingData lightingData)
 {
     const uint sampleCount = 512;
 
@@ -219,7 +215,7 @@ void ApplyDiskLightInternal(uint lightIndex, Surface surface, inout LightingData
 {
     if (o_enableDiskLights)
     {
-        ViewSrg::DiskLight light = ViewSrg::m_diskLights[lightIndex];
+        DiskLight light = ViewSrg::m_diskLights[lightIndex];
         if(!IsSameLightChannel(lightingData.lightingChannels, light.m_lightingChannelMask))
         {
             return;

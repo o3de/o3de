@@ -12,114 +12,11 @@
 
 #include <Atom/RPI/Math.azsli>
 #include <Atom/Features/LightCulling/LightCullingShared.azsli>
-
-enum QuadLightFlag // Copied from QuadLight.azsli. See ATOM-3731
-{
-    None = 0x00,
-    EmitsBothDirections  = 0x01, // 1 << 0, // Quad should emit light from both sides
-    UseFastApproximation = 0x02, // 1 << 1, // Use a fast approximation instead of linearly transformed cosines.
-};
-
-enum DiskLightFlag
-{
-    UseConeAngle = 1,
-};
+#include <Atom/Features/PBR/Lights/LightStructures.azsli>
+#include <Atom/Features/Decals/DecalStructures.azsli>
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
-    // Figure out how to remove duplicate struct definitions.
-    // These are also defined in View.srg
-    // ATOM-3731
-    
-    struct SimplePointLight
-    {
-        float3 m_position;
-        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
-        float3 m_rgbIntensityCandelas;
-        float m_affectsGIFactor;
-        bool m_affectsGI;
-        uint m_lightingChannelMask;
-        float2 m_padding;
-    };
-
-    struct SimpleSpotLight
-    {
-        float4x4 m_viewProjectionMatrix;    // Light's view projection matrix. Used to calculate uv for gobo 
-        float3 m_position;
-        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
-        float3 m_direction;
-        float m_cosInnerConeAngle; // cosine of the outer cone angle
-        float3 m_rgbIntensityCandelas;
-        float m_cosOuterConeAngle; // cosine of the inner cone angle
-        uint m_shadowIndex; 
-        uint m_goboTexIndex;
-        float m_affectsGIFactor;
-        bool m_affectsGI;
-        uint m_lightingChannelMask;
-        [[pad_to(16)]] // Here to ensure we pad the struct to 16 in case someone adds incorrect padding
-    };
-
-    struct PointLight
-    {
-        float3 m_position;
-        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
-        float3 m_rgbIntensityCandelas;
-        float m_bulbRadius;
-        uint3 m_shadowIndices;
-        float m_affectsGIFactor;
-        bool m_affectsGI;
-        uint m_lightingChannelMask;
-        float2 m_padding;
-    };
-
-    struct DiskLight
-    {
-        float3 m_position;
-        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
-        float3 m_rgbIntensityCandelas;
-        float m_diskRadius;
-        float3 m_direction;
-        uint m_flags;
-        float m_cosInnerConeAngle;
-        float m_cosOuterConeAngle;
-        float m_bulbPositionOffset;
-        uint m_shadowIndex;
-        float m_affectsGIFactor;
-        bool m_affectsGI;
-        uint m_lightingChannelMask;
-        float m_padding;
-    };
-
-    struct CapsuleLight
-    {
-        float3 m_startPoint;   // One of the end points of the capsule
-        float m_radius;        // Radius of the capsule, ie distance from line segment to surface.
-        float3 m_direction;    // normalized vector from m_startPoint towards the other end point.
-        float m_length;        // length of the line segment making up the inside of the capsule. Doesn't include caps (0 length capsule == sphere)
-        float3 m_rgbIntensityCandelas; // total rgb luminous intensity of the capsule in candela
-        float m_invAttenuationRadiusSquared; // Inverse of the distance at which this light no longer has an effect, squared. Also used for falloff calculations.
-        float m_affectsGIFactor;
-        bool m_affectsGI;
-        uint m_lightingChannelMask;
-        float m_padding;
-    };
-    
-    struct QuadLight
-    {
-        float3 m_position;
-        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
-        float3 m_leftDir; // Direction from center of quad to the left edge
-        float m_halfWidth; // Half the width of the quad. m_leftDir * m_halfWidth is a vector from the center to the left edge.
-        float3 m_upDir; // Direction from center of quad to the top edge
-        float m_halfHeight; // Half the height of the quad. m_upDir * m_halfHeight is a vector from the center to the top edge.
-        float3 m_rgbIntensityNits;
-        uint m_flags; // See QuadLightFlag
-        float m_affectsGIFactor;
-        bool m_affectsGI;
-        uint m_lightingChannelMask;
-        float m_padding;
-    };
-    
     struct LightCullingConstants
     {
         float4x4        m_worldToView;
@@ -153,22 +50,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     // Destination light data
     RWStructuredBuffer<uint> m_lightList;
     RWTexture2D<uint> m_lightCount;
-    
-    struct Decal
-    {
-        float3 m_position;
-        float m_opacity;
-        float4 m_quaternion;
-        float3 m_halfSize;
-        float m_angleAttenuation;
-        float m_normalMapOpacity;
-        uint m_sortKeyPacked;
-        uint m_textureArrayIndex;
-        uint m_textureIndex;
-        float3 m_decalColor;
-        float m_decalColorFactor;
-        [[pad_to(16)]]
-    };
     
     StructuredBuffer<Decal> m_decals;
     uint m_decalCount;  
@@ -259,7 +140,7 @@ uint NextPowerTwo(uint x)
     return 2u << firstbithigh(max(1, x) - 1);
 }
 
-uint GetSortKey(PassSrg::Decal decal)
+uint GetSortKey(Decal decal)
 {
     return (decal.m_sortKeyPacked & 0xFF);
 }
@@ -268,8 +149,8 @@ bool AreDecalsOutofOrder(uint packedIndexLeft, uint packedIndexRight)
 {
     uint leftIndex = Light_GetIndex(packedIndexLeft);
     uint rightIndex = Light_GetIndex(packedIndexRight);
-    PassSrg::Decal leftDecal = PassSrg::m_decals[leftIndex];
-    PassSrg::Decal rightDecal = PassSrg::m_decals[rightIndex];
+    Decal leftDecal = PassSrg::m_decals[leftIndex];
+    Decal rightDecal = PassSrg::m_decals[rightIndex];
 
     uint leftSortIndex = GetSortKey(leftDecal);
     uint rightSortIndex = GetSortKey(rightDecal);
@@ -348,7 +229,7 @@ float2 ComputePointLightMinMaxZ(float lightRadius, float3 lightPosition)
     return minmax;
 }
 
-float2 ComputeSimpleSpotLightMinMax(PassSrg::SimpleSpotLight light, float3 lightPosition)
+float2 ComputeSimpleSpotLightMinMax(SimpleSpotLight light, float3 lightPosition)
 {
     float lightRadius = rsqrt(light.m_invAttenuationRadiusSquared);
     float2 minmax = lightPosition.z + lightRadius * float2(-1, 1) * RH_COORD_SYSTEM_REVERSE;  
@@ -357,7 +238,7 @@ float2 ComputeSimpleSpotLightMinMax(PassSrg::SimpleSpotLight light, float3 light
 
 // Return the minz and maxz of this quad light in view space 
 // Quad light must be double sided
-float2 ComputeQuadLightMinMaxZ_DoubleSided(PassSrg::QuadLight light, float3 lightPosition)
+float2 ComputeQuadLightMinMaxZ_DoubleSided(QuadLight light, float3 lightPosition)
 {
     const float lightRadius = rsqrt(light.m_invAttenuationRadiusSquared);                       
     const float2 minmax = lightPosition.z + lightRadius * float2(-1,1) * RH_COORD_SYSTEM_REVERSE;  
@@ -366,20 +247,20 @@ float2 ComputeQuadLightMinMaxZ_DoubleSided(PassSrg::QuadLight light, float3 ligh
 
 // Return the minz and maxz of this quad light in view space 
 // Quad light must be single sided
-float2 ComputeQuadLightMinMaxZ_SingleSided(PassSrg::QuadLight light, float3 lightPosition, float3 lightDirection)
+float2 ComputeQuadLightMinMaxZ_SingleSided(QuadLight light, float3 lightPosition, float3 lightDirection)
 {
     // [GFX TODO][ATOM-6170] We can compute a tighter bounds with single sided lights by bringing in one of bounds  
     return ComputeQuadLightMinMaxZ_DoubleSided(light, lightPosition);
 }
 
-float2 ComputeDiskLightMinMax(PassSrg::DiskLight light, float3 lightPosition)
+float2 ComputeDiskLightMinMax(DiskLight light, float3 lightPosition)
 {
     float lightRadius = rsqrt(light.m_invAttenuationRadiusSquared) + light.m_bulbPositionOffset;                       
     float2 minmax = lightPosition.z + lightRadius * float2(-1, 1) * RH_COORD_SYSTEM_REVERSE;  
     return minmax;
 }
 
-float2 ComputeCapsuleLightMinMax(PassSrg::CapsuleLight light, float3 lightPosition, float lightFalloffRadius)
+float2 ComputeCapsuleLightMinMax(CapsuleLight light, float3 lightPosition, float lightFalloffRadius)
 { 
     float offsetZ = abs(WorldToView_Vector(light.m_direction).z * light.m_length * 0.5f) + lightFalloffRadius;
     float nearZ = lightPosition.z - offsetZ * RH_COORD_SYSTEM_REVERSE;
@@ -392,7 +273,7 @@ void CullDecals(uint groupIndex, TileLightData tileLightData, float3 aabb_center
 {
     for (uint decalIndex = groupIndex ; decalIndex < PassSrg::m_decalCount ; decalIndex += TILE_DIM_X * TILE_DIM_Y)
     { 
-        PassSrg::Decal decal = PassSrg::m_decals[decalIndex];
+        Decal decal = PassSrg::m_decals[decalIndex];
         float3 decalPosition = WorldToView_Point(decal.m_position); 
         
         // just wrapping a bounding sphere around a cube for now to get a minor perf boost. i.e. the sphere radius is sqrt(x*x + y*y + z*z)
@@ -435,7 +316,7 @@ void CullSimplePointLights(uint groupIndex, TileLightData tileLightData, float3 
 {
     for (uint lightIndex = groupIndex ; lightIndex < PassSrg::m_simplePointLightCount ; lightIndex += TILE_DIM_X * TILE_DIM_Y)
     {
-        PassSrg::SimplePointLight light = PassSrg::m_simplePointLights[lightIndex];
+        SimplePointLight light = PassSrg::m_simplePointLights[lightIndex];
         CullPointLight(lightIndex, light.m_position, light.m_invAttenuationRadiusSquared, tileLightData, aabb_center, aabb_extents);
     }  
 }
@@ -444,7 +325,7 @@ void CullPointLights(uint groupIndex, TileLightData tileLightData, float3 aabb_c
 {
     for (uint lightIndex = groupIndex ; lightIndex < PassSrg::m_pointLightCount ; lightIndex += TILE_DIM_X * TILE_DIM_Y)
     {
-        PassSrg::PointLight light = PassSrg::m_pointLights[lightIndex];
+        PointLight light = PassSrg::m_pointLights[lightIndex];
         CullPointLight(lightIndex, light.m_position, light.m_invAttenuationRadiusSquared, tileLightData, aabb_center, aabb_extents);
     }  
 }
@@ -453,7 +334,7 @@ void CullSimpleSpotLights(uint groupIndex, TileLightData tileLightData, float3 a
 {
     for (uint lightIndex = groupIndex ; lightIndex < PassSrg::m_simpleSpotLightCount ; lightIndex += TILE_DIM_X * TILE_DIM_Y)
     {
-        PassSrg::SimpleSpotLight light = PassSrg::m_simpleSpotLights[lightIndex];
+        SimpleSpotLight light = PassSrg::m_simpleSpotLights[lightIndex];
         float3 lightPosition = WorldToView_Point(light.m_position);
         float3 lightDirection = WorldToView_Vector(light.m_direction);
         
@@ -477,7 +358,7 @@ void CullDiskLights(uint groupIndex, TileLightData tileLightData, float3 aabb_ce
 {
     for (uint lightIndex = groupIndex ; lightIndex < PassSrg::m_diskLightCount ; lightIndex += TILE_DIM_X * TILE_DIM_Y)
     {
-        PassSrg::DiskLight light = PassSrg::m_diskLights[lightIndex];
+        DiskLight light = PassSrg::m_diskLights[lightIndex];
         float3 lightPosition = WorldToView_Point(light.m_position - light.m_bulbPositionOffset * light.m_direction);
         float lightRadius = rsqrt(light.m_invAttenuationRadiusSquared) + light.m_diskRadius;
         float lightRadiusSqr = lightRadius * lightRadius;
@@ -522,7 +403,7 @@ void CullCapsuleLights(uint groupIndex, TileLightData tileLightData, float3 aabb
 {
     for (uint lightIndex = groupIndex ; lightIndex < PassSrg::m_capsuleLightCount ; lightIndex += TILE_DIM_X * TILE_DIM_Y)
     {
-        PassSrg::CapsuleLight light = PassSrg::m_capsuleLights[lightIndex];
+        CapsuleLight light = PassSrg::m_capsuleLights[lightIndex];
         float3 lightMiddleWorld = light.m_startPoint + light.m_direction * light.m_length * 0.5f;
         float3 lightMiddleView = WorldToView_Point(lightMiddleWorld);
         
@@ -553,7 +434,7 @@ void CullQuadLights(uint groupIndex, TileLightData tileLightData, float3 aabb_ce
 
     for (uint lightIndex = groupIndex ; lightIndex < PassSrg::m_quadLightCount ; lightIndex += TILE_DIM_X * TILE_DIM_Y)
     {
-        const PassSrg::QuadLight light = PassSrg::m_quadLights[lightIndex];
+        const QuadLight light = PassSrg::m_quadLights[lightIndex];
         const float3 lightPosition = WorldToView_Point(light.m_position);             
         
         bool potentiallyIntersects = TestSphereVsAabbInvSqrt(lightPosition, light.m_invAttenuationRadiusSquared, aabb_center, aabb_extents);
