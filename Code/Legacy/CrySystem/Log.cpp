@@ -78,7 +78,7 @@ static CLog::LogStringType indentString ("    ");
 // Gruber patch begin // AE -- update log while waiting for assets
 #if defined(CARBONATED)
 class LogNotificationProcessor
-    : public AZ::LogNotification::LogNotificatorBus::Handler
+    : public AZ::LogNotification::LogNotificationBus::Handler
 {
 public:
     LogNotificationProcessor()
@@ -91,11 +91,11 @@ public:
         if (m_log == nullptr && log != nullptr)
         {
             m_log = log;
-            AZ::LogNotification::LogNotificatorBus::Handler::BusConnect();
+            AZ::LogNotification::LogNotificationBus::Handler::BusConnect();
         }
         else if (m_log != nullptr && log == nullptr)
         {
-            AZ::LogNotification::LogNotificatorBus::Handler::BusDisconnect();
+            AZ::LogNotification::LogNotificationBus::Handler::BusDisconnect();
             m_log = log;
         }
         else
@@ -104,7 +104,7 @@ public:
         }
     }
 
-    // LogNotificatorBus implementation
+    // LogNotificationBus implementation
 
     void Update() override
     {

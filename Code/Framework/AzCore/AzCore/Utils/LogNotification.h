@@ -33,7 +33,7 @@ namespace AZ
             {
             }
         };
-        typedef EBus<LogNotificator> LogNotificatorBus;
+        typedef EBus<LogNotificator> LogNotificationBus;
     }
 }
 
