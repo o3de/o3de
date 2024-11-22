@@ -58,6 +58,11 @@ namespace VideoPlaybackFramework
         * Load the video with given path name, and play video if auto play is active
         */
         virtual void LoadVideo() = 0;
+        
+        /*
+        * Returns if video preload is complete and the video is ready to play, if not waiting for this to return true there can be sound without image
+        */
+        virtual bool IsReadyToPlay() = 0;
 #endif
 
         /*

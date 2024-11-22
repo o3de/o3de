@@ -10,6 +10,7 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Utils/LogNotification.h>
 #include <AzCore/Time/ITime.h>
 #include <CryCommon/ISystem.h>
 #include "IConsole.h"
@@ -353,6 +354,10 @@ void LoadScreenComponent::Stop()
             if (m_loadScreenState == LoadScreenState::Showing)
             {
                 EBUS_EVENT(LoadScreenBus, UpdateAndRender);
+#if defined(CARBONATED)
+                // deliver the log messages
+                AZ::LogNotification::LogNotificatorBus::Broadcast(&AZ::LogNotification::LogNotificatorBus::Events::Update);
+#endif
             }
 
             CrySleep(0);

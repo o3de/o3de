@@ -97,6 +97,7 @@ namespace VideoPlaybackFramework
                 ->Event("ResetPlayback", &VideoPlaybackRequestBus::Events::ResetPlayback)
                 ->Event("ClearResourcesAndHide", &VideoPlaybackRequestBus::Events::ClearResourcesAndHide)
                 ->Event("LoadVideo", &VideoPlaybackRequestBus::Events::LoadVideo)
+                ->Event("IsReadyToPlay", &VideoPlaybackRequestBus::Events::IsReadyToPlay)
 #endif
                 ->Event("IsPlaying", &VideoPlaybackRequestBus::Events::IsPlaying)
                 ->Event("GetQueueAheadCount", &VideoPlaybackRequestBus::Events::GetQueueAheadCount)
