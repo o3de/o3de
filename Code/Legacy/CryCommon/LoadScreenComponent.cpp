@@ -356,7 +356,7 @@ void LoadScreenComponent::Stop()
                 EBUS_EVENT(LoadScreenBus, UpdateAndRender);
 #if defined(CARBONATED)
                 // deliver the log messages
-                AZ::LogNotification::LogNotificatorBus::Broadcast(&AZ::LogNotification::LogNotificatorBus::Events::Update);
+                AZ::LogNotification::LogNotificationBus::Broadcast(&AZ::LogNotification::LogNotificationBus::Events::Update);
 #endif
             }
 

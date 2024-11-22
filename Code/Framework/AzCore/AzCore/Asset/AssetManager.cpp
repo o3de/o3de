@@ -350,7 +350,7 @@ namespace AZ::Data
 // Gruber patch begin // AE -- update log while waiting for assets
 #if defined(CARBONATED)
                         // if we are here then it is the main thread, let deliver the log messages
-                        AZ::LogNotification::LogNotificatorBus::Broadcast(&AZ::LogNotification::LogNotificatorBus::Events::Update);
+                        AZ::LogNotification::LogNotificationBus::Broadcast(&AZ::LogNotification::LogNotificationBus::Events::Update);
                         // update subscribers while waiting for assets
                         currentWaitForAssetUpdate += MaxWaitBetweenDispatchMs;
                         if (currentWaitForAssetUpdate >= MaxWaitForAssetUpdateMs)
