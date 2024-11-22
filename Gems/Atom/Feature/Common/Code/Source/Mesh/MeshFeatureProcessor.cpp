@@ -8,6 +8,7 @@
 
 #include <Mesh/MeshFeatureProcessor.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
+#include <Atom/Feature/Material/ConvertEmissiveUnitFunctor.h>
 #include <Atom/Feature/Mesh/MeshCommon.h>
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
 #include <Atom/Feature/RenderCommon.h>
@@ -21,8 +22,6 @@
 #include <Atom/RPI.Public/Model/ModelTagSystemComponent.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Scene.h>
-
-#include <Material/ConvertEmissiveUnitFunctor.h>
 
 #include <Atom/Utils/StableDynamicArray.h>
 #include <ReflectionProbe/ReflectionProbeFeatureProcessor.h>
