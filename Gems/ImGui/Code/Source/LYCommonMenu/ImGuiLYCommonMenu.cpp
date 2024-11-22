@@ -357,6 +357,14 @@ namespace ImGui
                     {
                         if (assetInfo.m_assetType == levelAssetType)
                         {
+#if defined(CARBONATED)
+                            // Ignore levels outside of the "levels" folder, as this function will pull every spawnable object in the entire project.
+                            constexpr AZStd::fixed_string<32> levelsFolder("levels");
+                            if (!assetInfo.m_relativePath.starts_with(levelsFolder))
+                            {
+                                return;
+                            }
+#endif
                             // A network spawnable is serialized to file as a ".network.spawnable". (See Multiplayer Gem's MultiplayerConstants.h)
                             // Filter out network spawnables from the level list, 
                             // but keep track of which levels require networking so they can be recognized in the level selection menu. 
