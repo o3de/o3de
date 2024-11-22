@@ -21,6 +21,8 @@
 #include "XcbBaseTestFixture.h"
 #include "XcbTestApplication.h"
 
+using ::testing::DoAll;
+
 namespace AzFramework
 {
     // Sets up default behavior for mock keyboard responses to xcb methods
