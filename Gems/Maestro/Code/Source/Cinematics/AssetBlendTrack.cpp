@@ -273,11 +273,151 @@ void CAssetBlendTrack::GetValue(float time, Maestro::AssetBlends<AZ::Data::Asset
     value = m_assetBlend;
 }
 
+void CAssetBlendTrack::SetKeysAtTime(float time, const Maestro::AssetBlends<AZ::Data::AssetData>& value)
+{
+    ClearKeys();
+    for (const auto& blend : value.m_assetBlends)
+    {
+        if (!blend.m_assetId.IsValid())
+        {
+            continue; // filter out blends for invalid AssetIds
+        }
+
+        AZ::IAssetBlendKey key;
+        key.m_assetId = blend.m_assetId;
+        key.m_description.clear(); // could be parsed to asset filename after requesting AssetData by Id
+        key.m_blendInTime = blend.m_blendInTime;
+        key.m_blendOutTime = blend.m_blendOutTime;
+        // IKey (key.flags nullified in ctor)
+        key.time = time + blend.m_time;
+
+        // Check that the key for the asset is unique in time-line
+        bool isUnique = true;
+        for (const auto& previousKey : m_keys)
+        {
+            if ((previousKey.m_assetId == key.m_assetId) &&
+                (fabs(previousKey.time - key.time) < AZ::Constants::Tolerance))
+            {
+                isUnique = false;
+                break;
+            }
+        }
+        if (isUnique)
+        {
+            m_keys.push_back(key);
+        }
+    }
+
+    SortKeys(); // sorting by key.time
+
+    m_lastTime = time;
+    m_currKey = 0;
+    m_fMinKeyValue = 0;
+    m_fMaxKeyValue = 0;
+    const auto keysCount = m_keys.size();
+    for (size_t i = 0; i < keysCount; ++i)
+    {
+        auto& key = m_keys[i];
+        // Try to restore values for ITimeRangeKey - not all values can be restored, information on duration and looping is missing
+        key.m_startTime = key.time;
+        if (keysCount > 1 && i < keysCount - 1) // not the last key ?
+        {
+            key.m_duration = m_keys[i + 1].time - key.time; // prolong to the next key
+        }
+        else
+        {
+            key.m_duration = key.m_blendInTime + key.m_blendOutTime + AZ::Constants::Tolerance; // set at least enough time to fade in/out
+        }
+        key.m_endTime = key.m_startTime + key.m_duration;
+        key.m_speed = 1;
+        key.m_bLoop = false;
+
+        // Accumulate values for TAnimTrack<AZ::IAssetBlendKey>
+        m_fMinKeyValue = (key.time < m_fMinKeyValue) ? key.time : m_fMinKeyValue;
+        m_fMaxKeyValue = (key.time > m_fMaxKeyValue) ? key.time : m_fMaxKeyValue;
+        key.m_bLoop = i < keysCount - 1 && key.m_endTime < m_keys[i + 1].m_startTime;
+    }
+    // TAnimTrack<AZ::IAssetBlendKey>
+    if (keysCount == 0)
+    {
+        m_timeRange.start = 0.f;
+        m_timeRange.end = 0.f;
+    }
+    else
+    {
+        m_timeRange.start = time;
+        m_timeRange.end = m_keys.back().m_endTime;
+    }
+}
+
+void CAssetBlendTrack::FilterBlends(const Maestro::AssetBlends<AZ::Data::AssetData>& value, Maestro::AssetBlends<AZ::Data::AssetData>& filteredValue) const
+{
+    filteredValue.m_assetBlends.clear();
+    for (const auto& nextBlend : value.m_assetBlends)
+    {
+        if (nextBlend.m_assetId.IsValid())
+        {
+            bool isUnique = true;
+            for (const auto& previousBlend : filteredValue.m_assetBlends)
+            {
+                if ((previousBlend.m_assetId == nextBlend.m_assetId) &&
+                    (fabs(previousBlend.m_time - nextBlend.m_time) < AZ::Constants::Tolerance))
+                {
+                    isUnique = false;
+                    break;
+                }
+            }
+            if (isUnique)
+            {
+                filteredValue.m_assetBlends.push_back(nextBlend);
+            }
+        }
+    }
+}
+
+void CAssetBlendTrack::ClearKeys()
+{
+    // TAnimTrack
+    m_keys.clear();
+    m_currKey = 0;
+    m_lastTime = -1;
+    m_timeRange.Clear();
+    m_bModified = 0;
+    m_fMinKeyValue = 0;
+    m_fMaxKeyValue = 0;
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CAssetBlendTrack::SetValue(float time, const Maestro::AssetBlends<AZ::Data::AssetData>& value, bool bDefault)
+{
+    if (bDefault)
+    {
+        SetDefaultValue(time, value);
+        return;
+    }
+    SetKeysAtTime(time, value);
+}
+
 //////////////////////////////////////////////////////////////////////////
 void CAssetBlendTrack::SetDefaultValue(const Maestro::AssetBlends<AZ::Data::AssetData>& defaultValue)
 {
-    m_defaultValue = defaultValue;
-    Invalidate();
+    SetDefaultValue(0.f, defaultValue);
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CAssetBlendTrack::SetDefaultValue(float time, const Maestro::AssetBlends<AZ::Data::AssetData>& defaultValue)
+{
+    Maestro::AssetBlends<AZ::Data::AssetData> fileteredValue;
+    FilterBlends(defaultValue, fileteredValue);
+    m_defaultValue = fileteredValue;
+
+    SetKeysAtTime(time, fileteredValue);
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CAssetBlendTrack::GetDefaultValue(Maestro::AssetBlends<AZ::Data::AssetData>& defaultValue) const
+{
+    defaultValue = m_defaultValue;
 }
 
 //////////////////////////////////////////////////////////////////////////
