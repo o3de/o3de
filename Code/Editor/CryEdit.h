@@ -109,7 +109,6 @@ public:
 
     static CCryEditApp* instance();
 
-    bool GetRootEnginePath(QDir& rootEnginePath) const;
     bool CreateLevel(bool& wasCreateLevelOperationCancelled);
     void LoadFile(QString fileName);
     void ForceNextIdleProcessing() { m_bForceProcessIdle = true; }
@@ -170,8 +169,6 @@ public:
 
     CCryDocManager* GetDocManager() { return m_pDocManager; }
 
-    void RegisterActionHandlers();
-
     // Implementation
     void OnCreateLevel();
     void OnOpenLevel();
@@ -181,23 +178,17 @@ public:
     void OnDocumentationTutorials();
     void OnDocumentationGlossary();
     void OnDocumentationO3DE();
-    void OnDocumentationGamelift();
     void OnDocumentationReleaseNotes();
     void OnDocumentationGameDevBlog();
     void OnDocumentationForums();
-    void OnDocumentationAWSSupport();
-    void OnCommercePublish();
-    void OnCommerceMerch();
     void OnEditHold();
     void OnEditFetch();
     void OnFileExportToGameNoSurfaceTexture();
     void OnViewSwitchToGame();
     void OnViewSwitchToGameFullScreen();
-    void OnViewDeploy();
     void OnMoveObject();
     void OnRenameObj();
     void OnUndo();
-    void OnOpenAssetImporter();
     void OnEditLevelData();
     void OnFileEditLogFile();
     void OnFileEditEditorini();
@@ -359,7 +350,6 @@ private:
     void OnViewConfigureLayout();
 
     void OnCustomizeKeyboard();
-    void OnToolsConfiguretools();
     void OnToolsScriptHelp();
     void OnViewCycle2dviewport();
     void OnDisplayGotoPosition();

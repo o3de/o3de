@@ -1962,12 +1962,6 @@ void CCryEditApp::OnDocumentationO3DE()
     QDesktopServices::openUrl(QUrl(webLink));
 }
 
-void CCryEditApp::OnDocumentationGamelift()
-{
-    QString webLink = tr("https://docs.aws.amazon.com/gamelift/");
-    QDesktopServices::openUrl(QUrl(webLink));
-}
-
 void CCryEditApp::OnDocumentationReleaseNotes()
 {
     QString webLink = tr("https://o3de.org/docs/release-notes/");
@@ -1976,19 +1970,13 @@ void CCryEditApp::OnDocumentationReleaseNotes()
 
 void CCryEditApp::OnDocumentationGameDevBlog()
 {
-    QString webLink = tr("https://aws.amazon.com/blogs/gamedev");
+    QString webLink = tr("https://o3de.org/news-blogs/");
     QDesktopServices::openUrl(QUrl(webLink));
 }
 
 void CCryEditApp::OnDocumentationForums()
 {
-    QString webLink = tr("https://o3de.org/community/");
-    QDesktopServices::openUrl(QUrl(webLink));
-}
-
-void CCryEditApp::OnDocumentationAWSSupport()
-{
-    QString webLink = tr("https://aws.amazon.com/contact-us");
+    QString webLink = tr("https://discord.com/invite/o3de");
     QDesktopServices::openUrl(QUrl(webLink));
 }
 
@@ -3316,11 +3304,6 @@ void CCryEditApp::OpenLUAEditor(const char* files)
 void CCryEditApp::PrintAlways(const AZStd::string& output)
 {
     m_stdoutRedirection.WriteBypassingRedirect(output.c_str(), static_cast<unsigned int>(output.size()));
-}
-
-QString CCryEditApp::GetRootEnginePath() const
-{
-    return m_rootEnginePath;
 }
 
 void CCryEditApp::RedirectStdoutToNull()

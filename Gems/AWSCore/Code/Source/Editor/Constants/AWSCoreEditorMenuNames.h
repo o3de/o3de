@@ -73,6 +73,22 @@ namespace AWSCore
         "https://o3de.org/docs/user-guide/gems/reference/aws/aws-core/scripting/"
     };
 
+    static constexpr const char* AWSSupport[] =
+    {
+        "AWS Support",
+        "o3de.menu.editor.aws.support",
+        ":/Notifications/link.svg",
+        "https://aws.amazon.com/contact-us"
+    };
+
+    static constexpr const char* AWSGameLift[] =
+    {
+        "GameLift documentation",
+        "o3de.menu.editor.aws.gamelift",
+        ":/Notifications/link.svg",
+        "https://docs.aws.amazon.com/gamelift/"
+    };
+
     static constexpr const char* O3DEAndAWS[] =
     {
         "O3DE && AWS",
