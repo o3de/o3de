@@ -575,10 +575,10 @@ namespace LUAEditor
             m_highlightingRules.push_back(rule);
         }
 
-        // Match against local and self keywords
+        // Match against local, self, true and false keywords
         {
             HighlightingRule rule;
-            rule.pattern = QRegularExpression(R"(\bself\b|\blocal\b)");
+            rule.pattern = QRegularExpression(R"(\bself\b|\blocal\b|\btrue\b|\bfalse\b)");
             rule.colorCB = [colors]()
             {
                 return colors->GetSpecialKeywordColor();
@@ -664,7 +664,7 @@ namespace LUAEditor
             {
                 if (state == ParserStates::Name)
                 {
-                    AZStd::string dhText(text.mid(position, length).toUtf8().constData());
+                    const AZStd::string dhText(text.mid(position, length).toUtf8().constData());
                     if (keywords && keywords->find(dhText) != keywords->end())
                     {
                         textFormat.setForeground(colors->GetKeywordColor());
