@@ -711,14 +711,19 @@ namespace LUAEditor
                 if (!canRunRegEx)
                     return;
 
+                // Special case to allow to lint methods via regex
+                const int nextCharPos = position + length;
+                const bool nextCharIsStartParenthesis = text.at(nextCharPos) == '(';
+
+                const QString dhText = nextCharIsStartParenthesis ? text.mid(position, length + 1) : text.mid(position, length);
                 for (const HighlightingRule& rule : m_highlightingRules)
                 {
-                    QRegularExpressionMatchIterator i = rule.pattern.globalMatch(text);
+                    QRegularExpressionMatchIterator i = rule.pattern.globalMatch(dhText);
                     while (i.hasNext())
                     {
                         QRegularExpressionMatch match = i.next();
                         textFormat.setForeground(rule.colorCB());
-                        setFormat(match.capturedStart(), match.capturedLength(), textFormat);
+                        setFormat(position + match.capturedStart(), match.capturedLength(), textFormat);
                     }
                 }
             };
