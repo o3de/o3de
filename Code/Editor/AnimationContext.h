@@ -16,6 +16,7 @@
 #include "TrackView/TrackViewSequenceManager.h"
 #include <Range.h>
 #include <IMovieSystem.h>
+#include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 
 class CTrackViewSequence;
 
@@ -36,6 +37,7 @@ class SANDBOX_API CAnimationContext
     : public IEditorNotifyListener
     , public IUndoManagerListener
     , public ITrackViewSequenceManagerListener
+    , public AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler
 {
     AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 public:
@@ -191,6 +193,8 @@ private:
 
     virtual void BeginUndoTransaction() override;
     virtual void EndUndoTransaction() override;
+
+    void OnPrefabInstancePropagationEnd() override;
 
     virtual void OnSequenceRemoved(CTrackViewSequence* pSequence) override;
 

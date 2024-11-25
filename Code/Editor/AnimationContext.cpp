@@ -113,11 +113,13 @@ CAnimationContext::CAnimationContext()
     GetIEditor()->GetUndoManager()->AddListener(this);
     GetIEditor()->GetSequenceManager()->AddListener(this);
     GetIEditor()->RegisterNotifyListener(this);
+    AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
 }
 
 //////////////////////////////////////////////////////////////////////////
 CAnimationContext::~CAnimationContext()
 {
+    AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
     GetIEditor()->GetSequenceManager()->RemoveListener(this);
     GetIEditor()->GetUndoManager()->RemoveListener(this);
     GetIEditor()->UnregisterNotifyListener(this);
@@ -650,6 +652,14 @@ void CAnimationContext::EndUndoTransaction()
     }
 
     SetRecordingInternal(m_bSavedRecordingState);
+}
+
+void CAnimationContext::OnPrefabInstancePropagationEnd()
+{
+    if (m_pSequence)
+    {
+        m_pSequence->BindToEditorObjects();
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////

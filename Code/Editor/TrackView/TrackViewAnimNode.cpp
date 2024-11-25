@@ -293,8 +293,12 @@ void CTrackViewAnimNode::BindToEditorObjects()
         if (const AZ::EntityId entityId = GetNodeEntityId();
             entityId.IsValid())
         {
-            RegisterEditorObjectListeners(entityId);
-            SetNodeEntityId(entityId);
+            const auto entity = AzToolsFramework::GetEntityById(entityId);
+            if (entity)
+            {
+                RegisterEditorObjectListeners(entityId);
+                SetNodeEntityId(entityId);
+            }
         }
 
         if (ownerChanged)
