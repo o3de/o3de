@@ -33,7 +33,7 @@ AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         Stores information about whenever animation is being recorded know,
         current sequence, current time in sequence etc.
 */
-class SANDBOX_API CAnimationContext
+class CAnimationContext
     : public IEditorNotifyListener
     , public IUndoManagerListener
     , public ITrackViewSequenceManagerListener
