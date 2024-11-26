@@ -12,12 +12,6 @@
 #include <Atom/Features/PBR/Lights/Ltc.azsli>
 
 #if ENABLE_QUAD_LIGHTS
-enum QuadLightFlag
-{
-    None = 0x00,
-    EmitsBothDirections  = 0x01, // 1 << 0, // Quad should emit light from both sides
-    UseFastApproximation = 0x02, // 1 << 1, // Use a fast approximation instead of linearly transformed cosines.
-};
 
 // Returns the solid angle at origin of a rectangle defined by points p0-p3. Does not handle horizon.
 // Modified from https://seblagarde.files.wordpress.com/2015/07/course_notes_moving_frostbite_to_pbr_v32.pdf Listing 11 on page 49.
@@ -76,7 +70,7 @@ float3 GetSpecularDominantDirection(float3 normal, float3 reflection, float roug
 }
 
 // Quad light approximation. Diffuse portion based on https://seblagarde.files.wordpress.com/2015/07/course_notes_moving_frostbite_to_pbr_v32.pdf Pages 49-50.
-void ApplyQuadLight(ViewSrg::QuadLight light, Surface surface, inout LightingData lightingData)
+void ApplyQuadLight(QuadLight light, Surface surface, inout LightingData lightingData)
 {
     float3 lightDirection = cross(light.m_leftDir, light.m_upDir); // left and up are already normalized.
 
@@ -211,7 +205,7 @@ void ApplyQuadLight(ViewSrg::QuadLight light, Surface surface, inout LightingDat
     }
 }
 
-float3 SampleRectangle(float2 randomPoint, ViewSrg::QuadLight light)
+float3 SampleRectangle(float2 randomPoint, QuadLight light)
 {
     randomPoint = randomPoint * 2.0 - 1.0; // transform to -1 to 1 range.
     randomPoint *= float2(light.m_halfWidth, light.m_halfHeight);
@@ -221,7 +215,7 @@ float3 SampleRectangle(float2 randomPoint, ViewSrg::QuadLight light)
     return outPoint;
 }
 
-void ValidateQuadLight(ViewSrg::QuadLight light, Surface surface, inout LightingData lightingData)
+void ValidateQuadLight(QuadLight light, Surface surface, inout LightingData lightingData)
 {
     float3 lightDirection = cross(light.m_leftDir, light.m_upDir); // left and up are already normalized.
 
@@ -256,7 +250,7 @@ void ApplyQuadLightInternal(uint lightIndex, Surface surface, inout LightingData
 {
     if (o_enableQuadLightApprox || o_enableQuadLightLTC)
     {
-        ViewSrg::QuadLight light = ViewSrg::m_quadLights[lightIndex];
+        QuadLight light = ViewSrg::m_quadLights[lightIndex];
         if(!IsSameLightChannel(lightingData.lightingChannels, light.m_lightingChannelMask))
         {
             return;

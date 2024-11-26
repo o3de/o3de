@@ -14,7 +14,7 @@
 #include <Atom/Features/Shadow/ProjectedShadow.azsli>
 #endif
 
-void ApplySimpleSpotLight(ViewSrg::SimpleSpotLight light, Surface surface, inout LightingData lightingData)
+void ApplySimpleSpotLight(SimpleSpotLight light, Surface surface, inout LightingData lightingData)
 {
     real3 posToLight = real3(light.m_position - surface.position);
     
@@ -91,7 +91,7 @@ void ApplySimpleSpotLightInternal(uint lightIndex, Surface surface, inout Lighti
 {
     if (o_enableSimpleSpotLights)
     {
-        ViewSrg::SimpleSpotLight light = ViewSrg::m_simpleSpotLights[lightIndex];
+        SimpleSpotLight light = ViewSrg::m_simpleSpotLights[lightIndex];
         if(!IsSameLightChannel(lightingData.lightingChannels, light.m_lightingChannelMask))
         {
             return;
