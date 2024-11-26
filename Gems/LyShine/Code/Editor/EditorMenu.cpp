@@ -55,7 +55,6 @@ void EditorWindow::EditorMenu_Open(QString optional_selectedFile)
         {
             dir = Path::GetPath(recentFiles.front());
         }
-
         // Else go to the default canvas directory
         else
         {
@@ -65,8 +64,9 @@ void EditorWindow::EditorMenu_Open(QString optional_selectedFile)
         AssetSelectionModel selection;
 
         StringFilter* stringFilter = new StringFilter();
-        stringFilter->SetName("UI Canvas");
-        stringFilter->SetFilterString(".uicanvas");
+        const QString& filterString = QString(".") + UICANVASEDITOR_CANVAS_EXTENSION;
+        stringFilter->SetName("UI Canvas files (*.uicanvas)");
+        stringFilter->SetFilterString(filterString);
         stringFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
         auto stringFilterPtr = FilterConstType(stringFilter);
 

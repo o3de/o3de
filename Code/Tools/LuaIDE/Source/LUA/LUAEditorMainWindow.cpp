@@ -824,7 +824,7 @@ namespace LUAEditor
         AssetSelectionModel selection;
 
         StringFilter* stringFilter = new StringFilter();
-        stringFilter->SetName("Lua script");
+        stringFilter->SetName("Lua file (*.lua)");
         stringFilter->SetFilterString(".lua");
         stringFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
         auto stringFilterPtr = FilterConstType(stringFilter);
@@ -840,7 +840,7 @@ namespace LUAEditor
             return;
         }
 
-        auto result = selection.GetResult();
+        auto* result = selection.GetResult();
 
         if (result == nullptr)
         {
