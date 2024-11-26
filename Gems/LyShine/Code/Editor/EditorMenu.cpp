@@ -7,8 +7,11 @@
  */
 #include "EditorCommon.h"
 #include <AzQtComponents/Buses/ShortcutDispatch.h>
-#include <AzToolsFramework/Slice/SliceUtilities.h>
+#include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
+#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
+#include <AzToolsFramework/Slice/SliceUtilities.h>
 
 #include "AlignToolbarSection.h"
 #include "ViewportAlign.h"
@@ -52,19 +55,39 @@ void EditorWindow::EditorMenu_Open(QString optional_selectedFile)
         {
             dir = Path::GetPath(recentFiles.front());
         }
+
         // Else go to the default canvas directory
         else
         {
             dir = FileHelpers::GetAbsoluteDir(UICANVASEDITOR_CANVAS_DIRECTORY);
         }
 
-        QFileDialog dialog(this, QString(), dir, "*." UICANVASEDITOR_CANVAS_EXTENSION);
-        dialog.setFileMode(QFileDialog::ExistingFiles);
+        AssetSelectionModel selection;
 
-        if (dialog.exec() == QDialog::Accepted)
+        StringFilter* stringFilter = new StringFilter();
+        stringFilter->SetName("UI Canvas");
+        stringFilter->SetFilterString(".uicanvas");
+        stringFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
+        auto stringFilterPtr = FilterConstType(stringFilter);
+
+        selection.SetDisplayFilter(stringFilterPtr);
+        selection.SetSelectionFilter(stringFilterPtr);
+        selection.SetMultiselect(true);
+
+        AssetBrowserComponentRequestBus::Broadcast(&AssetBrowserComponentRequests::PickAssets, selection, AzToolsFramework::GetActiveWindow());
+
+        if (!selection.IsValid())
         {
-            OpenCanvases(dialog.selectedFiles());
+            return;
         }
+
+        QStringList list;
+        for (const auto& result : selection.GetResults())
+        {
+            list.push_back(result->GetFullPath().c_str());
+        }
+
+        OpenCanvases(list);
     }
     else
     {
