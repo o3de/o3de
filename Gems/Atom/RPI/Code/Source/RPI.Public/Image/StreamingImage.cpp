@@ -497,14 +497,16 @@ namespace AZ
                 request.m_image = GetRHIImage();
                 request.m_mipSlices = mipSlices;
 
-                request.m_completeCallback = [=]()
+                // thisPtr makes sure the request holds an intrusive ptr to the current StreamingImage, so it doesn't get destroyed before
+                // the callback is executed
+                request.m_completeCallback = [=, thisPtr = RHI::Ptr<StreamingImage>(this)]()
                 {
 #ifdef AZ_RPI_STREAMING_IMAGE_DEBUG_LOG
                     AZ_TracePrintf("StreamingImage", "Upload mipchain done [%s]\n", mipChainAsset.GetHint().c_str());
 #endif
                     // make sure the callback isn't interrupted by Shutdown(), which could remove mipchains mid-processing
                     AZStd::scoped_lock<AZStd::mutex> guard(m_mipChainMutex);
-                    EvictMipChainAsset(mipChainIndex); 
+                    EvictMipChainAsset(mipChainIndex);
                 };
 
 #ifdef AZ_RPI_STREAMING_IMAGE_DEBUG_LOG
