@@ -94,7 +94,7 @@ real3 SpecularGGX( real3 dirToCamera, real3 dirToLight, real3 normal, real3 spec
     // D, G and F from the lighting equation
     // Note: the division by (4.0 * NdotL * NdotV) is already factored out in the G function as an optimization
     float D = NormalDistributionGGX(NdotH, roughnessA2);
-    real G = GeometricShadowingMaskingGGXCorrelated(NdotV, NdotL, roughnessA2);
+    float G = GeometricShadowingMaskingGGXCorrelated(NdotV, NdotL, roughnessA2);
     real3 F = FresnelSchlick(HdotV, specularF0);
 
     D = max(0.0, D);
