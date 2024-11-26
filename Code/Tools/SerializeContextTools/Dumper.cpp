@@ -7,10 +7,7 @@
  */
 
 #include <Dumper.h> // Moved to the top because AssetSerializer requires include for the SerializeContext
-#include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetSerializer.h>
-#include <AzCore/Asset/AssetManagerBus.h>
-#include <AzFramework/Helpers/AssetHelpers.h>
 #include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/IO/FileIO.h>
@@ -32,7 +29,13 @@
 #include <AzCore/Utils/Utils.h>
 #include <Application.h>
 #include <Utilities.h>
+
+#if defined(CARBONATED)
+#include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetManagerBus.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
+#include <AzFramework/Helpers/AssetHelpers.h>
+#endif
 
 namespace AZ::SerializeContextTools
 {
@@ -154,6 +157,7 @@ namespace AZ::SerializeContextTools
         };
     }
 
+#if defined(CARBONATED)
     const char* CleanupRelativePath(const char* path)
     {
         if (!path)
@@ -243,6 +247,7 @@ namespace AZ::SerializeContextTools
 
         return result;
     }
+#endif
 
     bool Dumper::DumpFiles(Application& application)
     {
