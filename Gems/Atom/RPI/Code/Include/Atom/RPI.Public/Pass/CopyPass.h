@@ -99,6 +99,9 @@ namespace AZ
                 RHI::DeviceImageSubresourceLayout m_inputImageLayout;
             };
 
+            // In case of an image to image copy, we need to store the format of the source image
+            RHI::Format m_sourceFormat{ RHI::Format::Unknown };
+
             // Multiple aspects cannot be copied at the same time, so we need a copy items (and corresponding other members)
             // for each aspect. This is the case for example, when we want to copy a depth-stencil-image.
             AZStd::vector<PerAspectCopyInfo> m_perAspectCopyInfos;

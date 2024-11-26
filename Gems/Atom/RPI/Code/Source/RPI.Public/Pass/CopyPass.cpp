@@ -325,9 +325,10 @@ namespace AZ
                         return;
                     }
                     const auto& sourceImageDescriptor = sourceImage->GetDescriptor();
+                    m_sourceFormat = sourceImageDescriptor.m_format;
                     const uint16_t sourceMipSlice = m_data.m_imageSourceSubresource.m_mipSlice;
                     RHI::ImageSubresourceRange sourceRange(sourceMipSlice, sourceMipSlice, 0, 0);
-                    RHI::ImageAspectFlags sourceImageAspectFlags = RHI::GetImageAspectFlags(sourceImageDescriptor.m_format);
+                    RHI::ImageAspectFlags sourceImageAspectFlags = RHI::GetImageAspectFlags(m_sourceFormat);
                     uint32_t sourceImageAspect = az_ctz_u32(AZStd::to_underlying(sourceImageAspectFlags));
 
                     auto aspectCount{ static_cast<int>(az_popcnt_u32(AZStd::to_underlying(sourceImageAspectFlags))) };
@@ -527,23 +528,10 @@ namespace AZ
 
                     RHI::ImageAspectFlags sourceImageAspectFlags{ RHI::ImageAspectFlags::Color };
                     uint32_t sourceImageAspect{};
-                    RHI::Format sourceFormat{};
 
                     if (copyType == RHI::CopyItemType::Image)
                     {
-                        auto inputId =
-                            (m_inputOutputCopy ? GetInputOutputBinding(0) : GetInputBinding(0)).GetAttachment()->GetAttachmentId();
-
-                        const auto* sourceImage = context.GetImage(inputId);
-                        if (!sourceImage)
-                        {
-                            AZ_Warning("CopyPass", false, "Failed to find attachment image %s for copy to buffer", inputId.GetCStr());
-                            return;
-                        }
-                        const auto& sourceImageDescriptor = sourceImage->GetDescriptor();
-
-                        sourceFormat = sourceImageDescriptor.m_format;
-                        sourceImageAspectFlags = RHI::GetImageAspectFlags(sourceFormat);
+                        sourceImageAspectFlags = RHI::GetImageAspectFlags(m_sourceFormat);
                         sourceImageAspect = az_ctz_u32(AZStd::to_underlying(sourceImageAspectFlags));
                     }
 
@@ -589,7 +577,7 @@ namespace AZ
                             copyDesc.m_sourceBytesPerRow = perAspectInfo.m_inputImageLayout.m_bytesPerRow;
                             copyDesc.m_sourceBytesPerImage = perAspectInfo.m_inputImageLayout.m_bytesPerImage;
                             copyDesc.m_sourceSize = perAspectInfo.m_inputImageLayout.m_size;
-                            copyDesc.m_sourceFormat = FindFormatForAspect(sourceFormat, static_cast<RHI::ImageAspect>(sourceImageAspect));
+                            copyDesc.m_sourceFormat = FindFormatForAspect(m_sourceFormat, static_cast<RHI::ImageAspect>(sourceImageAspect));
                         }
 
                         const auto* sourceBuffer = perAspectInfo.m_device2HostBuffer[m_currentBufferIndex]->GetRHIBuffer();
