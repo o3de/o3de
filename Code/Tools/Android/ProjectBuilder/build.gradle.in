@@ -72,6 +72,10 @@ ${OVERRIDE_JAVA_SOURCESET}
     aaptOptions {
         noCompress 'pak'
     }
+
+    // CARBONATED -- begin
+    ${CARBONATED_ASSET_PACK_LIST}
+    // CARBONATED -- end    
 }
 
 // Inject the zip64 option into package task to allow 4GiB apks
