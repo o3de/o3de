@@ -2066,7 +2066,6 @@ namespace AZ
                     m_objectSrgList.push_back(meshObjectSrg);
                 }
 
-                
                 bool materialRequiresForwardPassIblSpecular = MaterialRequiresForwardPassIblSpecular(material);
 
                 // Track whether any materials in this mesh require ForwardPassIblSpecular, we need this information when the ObjectSrg is

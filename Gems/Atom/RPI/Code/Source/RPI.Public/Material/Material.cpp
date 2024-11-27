@@ -141,8 +141,7 @@ namespace AZ
 #endif
                 pipelineData.m_shaderCollection = materialPipeline.m_shaderCollection;
 
-                if (!pipelineData.m_materialProperties.Init(
-                        materialPipeline.m_materialPropertiesLayout, materialPipeline.m_defaultPropertyValues))
+                if (!pipelineData.m_materialProperties.Init(materialPipeline.m_materialPropertiesLayout, materialPipeline.m_defaultPropertyValues))
                 {
                     return RHI::ResultCode::Fail;
                 }
