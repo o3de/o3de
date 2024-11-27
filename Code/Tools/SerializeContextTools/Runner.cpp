@@ -156,11 +156,15 @@ namespace SerializeContextTools
             // Set the command executed boolean to true
             commandExecuted = true;
             AZStd::string_view action = commandLine->GetMiscValue(0);
+
+#if defined(CARBONATED)            
             if (AZ::StringFunc::Equal("deplist", action))
             {
                 result = Dumper::CreateDependencyList(application);
             }
-            else if (AZ::StringFunc::Equal("dumpfiles", action))
+            else 
+#endif
+            if (AZ::StringFunc::Equal("dumpfiles", action))
             {
                 result = Dumper::DumpFiles(application);
             }

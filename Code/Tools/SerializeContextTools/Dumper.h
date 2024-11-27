@@ -34,7 +34,9 @@ namespace AZ::SerializeContextTools
         static bool CreateType(Application& application);
         static bool CreateUuid(Application& application);
 
+#if defined(CARBONATED)
         static bool CreateDependencyList(Application& application);
+#endif
 
     private:
         static AZStd::vector<Uuid> CreateFilterListByNames(SerializeContext* context, AZStd::string_view name);
