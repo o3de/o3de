@@ -803,8 +803,7 @@ namespace AZ
                 // Since there is only one task that will operate both on this view index and on the bucket with this instance group,
                 // there is no need to lock here.
                 RHI::DrawPacketBuilder drawPacketBuilder;
-                instanceGroup.m_perViewDrawPackets[viewIndex] =
-                    const_cast<RHI::DrawPacket*>(drawPacketBuilder.Clone(instanceGroup.m_drawPacket.GetRHIDrawPacket()));
+                instanceGroup.m_perViewDrawPackets[viewIndex] = drawPacketBuilder.Clone(instanceGroup.m_drawPacket.GetRHIDrawPacket());
             }
 
             // Now that we have a valid cloned draw packet, update it with the latest offset + count
@@ -1056,6 +1055,8 @@ namespace AZ
             MeshHandle meshDataHandle = m_modelData.emplace();
 
             meshDataHandle->m_descriptor = descriptor;
+            meshDataHandle->m_descriptor.m_modelChangedEventHandler.Connect(meshDataHandle->m_modelChangedEvent);
+            meshDataHandle->m_descriptor.m_objectSrgCreatedHandler.Connect(meshDataHandle->m_objectSrgCreatedEvent);
             meshDataHandle->m_scene = GetParentScene();
             meshDataHandle->m_objectId = m_transformService->ReserveObjectId();
             meshDataHandle->m_rayTracingUuid = AZ::Uuid::CreateRandom();
@@ -1087,6 +1088,69 @@ namespace AZ
                 return true;
             }
             return false;
+        }
+
+        void MeshFeatureProcessor::SetDrawItemEnabled(const MeshHandle& meshHandle, RHI::DrawListTag drawListTag, bool enabled)
+        {
+            AZ::RPI::MeshDrawPacketLods& drawPacketListByLod =
+                meshHandle.IsValid() && !r_meshInstancingEnabled ? meshHandle->m_drawPacketListsByLod : m_emptyDrawPacketLods;
+
+            for (AZ::RPI::MeshDrawPacketList& drawPacketList : drawPacketListByLod)
+            {
+                for (AZ::RPI::MeshDrawPacket& meshDrawPacket : drawPacketList)
+                {
+                    RHI::DrawPacket* drawPacket = meshDrawPacket.GetRHIDrawPacket();
+
+                    if (drawPacket != nullptr)
+                    {
+                        size_t drawItemCount = drawPacket->GetDrawItemCount();
+
+                        for (size_t idx = 0; idx < drawItemCount; ++idx)
+                        {
+                            // Ensure that the draw item belongs to the specified tag
+                            if (drawPacket->GetDrawListTag(idx) == drawListTag)
+                            {
+                                drawPacket->GetDrawItem(idx)->m_enabled = enabled;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        void MeshFeatureProcessor::PrintDrawPacketInfo(const MeshHandle& meshHandle)
+        {
+            AZStd::string stringOutput = "\n------- MESH INFO -------\n";
+
+            AZ::RPI::MeshDrawPacketLods& drawPacketListByLod =
+                meshHandle.IsValid() && !r_meshInstancingEnabled ? meshHandle->m_drawPacketListsByLod : m_emptyDrawPacketLods;
+
+            u32 lodCounter = 0;
+            for (AZ::RPI::MeshDrawPacketList& drawPacketList : drawPacketListByLod)
+            {
+                stringOutput += AZStd::string::format("--- Mesh Lod %u ---\n", lodCounter++);
+                u32 drawPacketCounter = 0;
+                for (AZ::RPI::MeshDrawPacket& meshDrawPacket : drawPacketList)
+                {
+                    RHI::DrawPacket* drawPacket = meshDrawPacket.GetRHIDrawPacket();
+                    if (drawPacket)
+                    {
+                        size_t numDrawItems = drawPacket->GetDrawItemCount();
+                        stringOutput += AZStd::string::format("-- Draw Packet %u (%zu Draw Items) --\n", drawPacketCounter++, numDrawItems);
+
+                        for (size_t drawItemIdx = 0; drawItemIdx < numDrawItems; ++drawItemIdx)
+                        {
+                            RHI::DrawItem* drawItem = drawPacket->GetDrawItem(drawItemIdx);
+                            RHI::DrawListTag tag = drawPacket->GetDrawListTag(drawItemIdx);
+                            stringOutput += AZStd::string::format("Item %zu | ", drawItemIdx);
+                            stringOutput += drawItem->m_enabled ? "Enabled  | " : "Disabled | ";
+                            stringOutput += AZStd::string::format("%s Tag\n", RHI::GetDrawListName(tag).GetCStr());
+                        }
+                    }
+                }
+            }
+            stringOutput += "\n";
+            AZ_Printf("MeshFeatureProcessor", stringOutput.c_str());
         }
 
         MeshFeatureProcessor::MeshHandle MeshFeatureProcessor::CloneMesh(const MeshHandle& meshHandle)
@@ -1150,7 +1214,7 @@ namespace AZ
 #endif
             if (meshHandle.IsValid())
             {
-                meshHandle->m_customMaterials = materials;
+                meshHandle->m_descriptor.m_customMaterials = materials;
                 if (meshHandle->m_model)
                 {
                     meshHandle->ReInit(this);
@@ -1585,6 +1649,8 @@ namespace AZ
                 return;
             }
 
+            m_modelAsset.QueueLoad();
+            Data::AssetBus::Handler::BusConnect(m_modelAsset.GetId());
             if (!m_modelAsset.IsReady())
             {
                 m_modelAsset.QueueLoad();
@@ -1607,10 +1673,9 @@ namespace AZ
             MEMORY_TAG(Mesh);
 #endif        	
             SystemTickBus::Handler::BusDisconnect();
-            m_parent->m_originalModelAsset = m_modelAsset;
 
             // Assign the fully loaded asset back to the mesh handle to not only hold asset id, but the actual data as well.
-            m_parent->m_originalModelAsset = asset;
+            m_parent->m_originalModelAsset = m_modelAsset;
 
             if (const auto& modelTags = m_modelAsset->GetTags(); !modelTags.empty())
             {
@@ -1781,7 +1846,8 @@ namespace AZ
 
             // We're intentionally using the MeshFeatureProcessor's value instead of using the cvar directly here,
             // because DeInit might be called after the cvar changes, but we want to do the de-initialization based
-            // on what the setting was before (when the resources were initialized). The MeshFeatureProcessor will still have the cached value in that case
+            // on what the setting was before (when the resources were initialized). The MeshFeatureProcessor will still have the cached
+            // value in that case
             if (!meshFeatureProcessor->IsMeshInstancingEnabled())
             {
                 m_drawPacketListsByLod.clear();
@@ -2048,7 +2114,8 @@ namespace AZ
 
                         // We also use this path when r_meshInstancingDebugForceUniqueObjectsForProfiling is true, which makes meshes that
                         // would otherwise be instanced end up in a unique group. This is helpful for performance profiling to test the
-                        // worst case scenario of lots of objects that don't actually end up getting instanced but still go down the instancing path
+                        // worst case scenario of lots of objects that don't actually end up getting instanced but still go down the
+                        // instancing path
                         key.m_forceInstancingOff = Uuid::CreateRandom();
                     }
 
@@ -2071,12 +2138,7 @@ namespace AZ
                 if (!r_meshInstancingEnabled || instanceGroupInsertResult.m_instanceCount == 1)
                 {
                     // setup the mesh draw packet
-                    RPI::MeshDrawPacket drawPacket(
-                        modelLod,
-                        meshIndex,
-                        material,
-                        meshObjectSrg,
-                        customMaterialInfo.m_uvMapping);
+                    RPI::MeshDrawPacket drawPacket(modelLod, meshIndex, material, meshObjectSrg, customMaterialInfo.m_uvMapping);
 
                     // set the shader option to select forward pass IBL specular if necessary
                     if (!drawPacket.SetShaderOption(s_o_meshUseForwardPassIBLSpecular_Name, AZ::RPI::ShaderOptionValue{ m_descriptor.m_useForwardPassIblSpecular }))
@@ -2508,6 +2570,7 @@ namespace AZ
 
             uint32_t enumVal = material->GetPropertyValue<uint32_t>(propertyIndex);
             AZ::Name irradianceColorSource = material->GetMaterialPropertiesLayout()->GetPropertyDescriptor(propertyIndex)->GetEnumName(enumVal);
+            RayTracingFeatureProcessor::SubMeshMaterial& subMeshMaterial = subMesh.m_material;
 
             if (irradianceColorSource.IsEmpty() || irradianceColorSource == s_Manual_Name)
             {
@@ -2632,8 +2695,7 @@ namespace AZ
 #if defined(CARBONATED)
             MEMORY_TAG(Mesh);
 #endif
-            TransformServiceFeatureProcessor* transformServiceFeatureProcessor =
-                meshFeatureProcessor->GetTransformServiceFeatureProcessor();
+            TransformServiceFeatureProcessor* transformServiceFeatureProcessor = meshFeatureProcessor->GetTransformServiceFeatureProcessor();
             ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor = meshFeatureProcessor->GetReflectionProbeFeatureProcessor();
             AZ::Transform transform = transformServiceFeatureProcessor->GetTransformForId(m_objectId);
 
@@ -2899,6 +2961,7 @@ namespace AZ
             m_cullable.m_cullData.m_boundingObb = localAabb.GetTransformedObb(localToWorld);
             m_cullable.m_cullData.m_visibilityEntry.m_boundingVolume = localAabb.GetTransformedAabb(localToWorld);
             m_cullable.m_cullData.m_visibilityEntry.m_userData = &m_cullable;
+            m_cullable.m_cullData.m_entityId = m_descriptor.m_entityId;
             if (!r_meshInstancingEnabled)
             {
                 m_cullable.m_cullData.m_visibilityEntry.m_typeFlags = AzFramework::VisibilityEntry::TYPE_RPI_Cullable;
@@ -2978,6 +3041,12 @@ namespace AZ
                     {
                         objectSrg->SetConstant(useReflectionProbeConstantIndex, false);
                     }
+                }
+
+                RHI::ShaderInputConstantIndex lightingChannelMaskIndex = objectSrg->FindShaderInputConstantIndex(AZ::Name("m_lightingChannelMask"));
+                if (lightingChannelMaskIndex.IsValid())
+                {
+                    objectSrg->SetConstant(lightingChannelMaskIndex, m_lightingChannelMask);
                 }
 
                 objectSrg->Compile();
