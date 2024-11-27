@@ -662,7 +662,11 @@ namespace AssetProcessor
 
             if(!handledDependencies)
             {
+#if defined(CARBONATED)
                 AZ_Warning(AssetBuilderSDK::WarningWindow, false, "The builder (%s) has not indicated it handled outputting product dependencies for file %s.  This could be a programming issue.", builderParams.m_assetBuilderDesc.m_name.c_str(), builderParams.m_processJobRequest.m_sourceFile.c_str());
+#else
+                AZ_Warning(AssetBuilderSDK::WarningWindow, false, "The builder (%s) has not indicated it handled outputting product dependencies for file %s.  This is a programmer error.", builderParams.m_assetBuilderDesc.m_name.c_str(), builderParams.m_processJobRequest.m_sourceFile.c_str());
+#endif
                 AZ_Warning(AssetBuilderSDK::WarningWindow, false, "For builders that output AZ serialized types, it is recommended to use AssetBuilderSDK::OutputObject which will handle outputting product depenedencies and creating the JobProduct.  This is fine to use even if your builder never has product dependencies.");
                 AZ_Warning(AssetBuilderSDK::WarningWindow, false, "For builders that need custom depenedency parsing that cannot be handled by AssetBuilderSDK::OutputObject or ones that output non-AZ serialized types, add the dependencies to m_dependencies and m_pathDependencies on the JobProduct and then set m_dependenciesHandled to true.");
                 jobLogTraceListener.AddWarning();
